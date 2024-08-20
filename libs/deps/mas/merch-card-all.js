@@ -244,20 +244,18 @@ var V=window,q=V.ShadowRoot&&(V.ShadyCSS===void 0||V.ShadyCSS.nativeShadow)&&"ad
     .share-icons {
       border: 2px solid #adadad;
       border-radius: 8px;
-      padding: 7px;
+      padding: 7px 7px 0 7px;
       position: absolute;
       top: -40px;
       right: 50px;
     }
 
     .share-icons a {
-      color: green;
       display: inline-block;
       width: 24px;
       height: 24px;
       background-size: contain;
       background-repeat: no-repeat;
-      text-indent: -9999px; /* Hides the text inside the anchor */
     }
 
     .share-icons > a:not(:first-child) {
