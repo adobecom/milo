@@ -38,7 +38,7 @@
     },
     {
       "action": "insertAfter",
-      "selector": "#insertafter",
+      "selector": "#insertafter #_href",
       "page filter (optional)": "",
       "param-newoffer=123": "",
       "chrome": "#modal",

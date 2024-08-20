@@ -129,8 +129,12 @@ export const createContent = (el, content, manifestId, targetManifestId, action,
   }
   if (el?.nodeName === 'A' && modifiers?.includes('href')) {
     if (action === 'replace') el.href = content;
-    else if (action === 'insertafter' || action === 'append') el.href = `${el.href}${content}`;
-    else if (action === 'insertbefore' || action === 'prepend') el.href = `${content}${el.href}`;
+    else if (action === 'insertafter' || action === 'append') {
+      el.setAttribute('href', `${el.getAttribute('href')}${content}`);
+    } else if (action === 'insertbefore' || action === 'prepend') {
+      el.setAttribute('href', `${content}${el.getAttribute('href')}`);
+    }
+    addManifestAndTargetId(el, manifestId, targetManifestId);
     return el;
   }
   if (checkSelectorType(content) !== 'fragment') {
@@ -445,13 +449,13 @@ export function handleCommands(commands, rootEl = document, forceInline = false)
 
     if (action in COMMANDS) {
       COMMANDS[action]({
-        el, target, manifestId, targetManifestId, modifiers, action,
+        el, target, manifestId, targetManifestId, action, modifiers,
       });
       return;
     }
     el?.insertAdjacentElement(
       CREATE_CMDS[action],
-      createContent(el, target, manifestId, targetManifestId),
+      createContent(el, target, manifestId, targetManifestId, action, modifiers),
     );
   });
 }
