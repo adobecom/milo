@@ -15,7 +15,7 @@ export function processTrackingLabels(text, config, charLimit) {
 
 function getHeaderCharLimit(str) {
   const defaultLimit = 20;
-  if (str === null || str === undefined || str.length === 0) return defaultLimit;
+  if (!str) return defaultLimit;
   if (str === 'off') return false;
   if (!Number.isNaN(Number(str))) return parseInt(str, 10);
   return defaultLimit;
