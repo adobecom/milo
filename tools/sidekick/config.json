@@ -25,9 +25,9 @@
     {
       "containerId": "tools",
       "id": "localize",
-      "title": "Localize project",
+      "title": "Localize",
       "environments": [ "edit" ],
-      "url": "https://locui--milo--adobecom.hlx.page/tools/loc",
+      "url": "/tools/loc/index.html?project=milo--adobecom",
       "passReferrer": true,
       "passConfig": true,
       "includePaths": [ "**/:x**" ]
@@ -37,8 +37,9 @@
       "id": "floodgate",
       "title": "Floodgate",
       "environments": [ "edit" ],
-      "url": "/tools/floodgate/index.html?project=milo--adobecom",
+      "url": "https://floodgateui--milo--adobecom.hlx.page/tools/floodgate",
       "passReferrer": true,
+      "passConfig": true,
       "excludePaths": [ "/**" ],
       "includePaths": [ "**/:x**" ]
     },

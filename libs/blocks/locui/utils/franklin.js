@@ -12,8 +12,8 @@ export async function preview(path) {
   return json;
 }
 
-export async function getStatus(path = '', editUrl = 'auto') {
-  let url = `${ADMIN}/status/${owner}/${repo}/main${path}`;
+export async function getStatus(path = '', editUrl = 'auto', fgFlag = false, fgColor = null) {
+  let url = `${ADMIN}/status/${owner}/${fgFlag ? `${repo}-${fgColor}` : repo}/main${path}`;
   url = editUrl ? `${url}?editUrl=${editUrl}` : url;
   const resp = await fetch(url, { cache: 'reload' });
   const json = await resp.json();

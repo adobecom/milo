@@ -32,6 +32,7 @@ const MILO_BLOCKS = [
   'form',
   'fragment',
   'featured-article',
+  'floodgateui',
   'global-footer',
   'global-navigation',
   'footer',

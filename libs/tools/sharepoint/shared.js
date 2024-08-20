@@ -1,5 +1,7 @@
 import getServiceConfig from '../../utils/service-config.js';
 
+const MOCK_REFERRER = 'https://adobe.sharepoint.com/:x:/r/sites/adobecom/_layouts/15/Doc.aspx?sourcedoc=%7B654BFAD2-84A7-442D-A13D-18DE87A405B7%7D';
+
 export async function getSharePointDetails(hlxOrigin) {
   const { sharepoint } = await getServiceConfig(hlxOrigin);
   const spSiteHostname = sharepoint.site.split(',')[0].split('/').pop();
@@ -12,7 +14,7 @@ export async function getSharePointDetails(hlxOrigin) {
 }
 
 export function getItemId() {
-  const referrer = new URLSearchParams(window.location.search).get('referrer');
+  const referrer = new URLSearchParams(window.location.search).get('referrer') || MOCK_REFERRER;
   const sourceDoc = referrer?.match(/sourcedoc=([^&]+)/)[1];
   const sourceId = decodeURIComponent(sourceDoc);
   return sourceId.slice(1, -1);

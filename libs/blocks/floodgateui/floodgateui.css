@@ -1,0 +1,924 @@
+body {
+  background: url('./img/bg.jpeg');
+  background-size: 100%;
+  background-repeat: repeat;
+  margin: 150px;
+  margin-top: 70px;
+}
+
+main {
+  max-height: 100vh;
+}
+
+.fgui {
+  max-width: 83.4%;
+  margin: 0 auto;
+  min-height: 100vh;
+  padding: 48px;
+}
+
+.fgui button:disabled {
+  opacity: 0.5;
+}
+
+.fgui-sync-badge-container {
+  position: fixed;
+  top: 0;
+  width: 83.4%;
+  margin: 0 auto;
+  display: flex;
+  justify-content: end;
+  z-index: 100;
+}
+
+.fgui-sync-badge {
+  background: #CEF8E0;
+  color: #15A46E;
+  font-size: 16px;
+  border-radius: 0 0 4px 4px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: end;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+button.fgui-sync-badge-header {
+  font-family: 'Adobe Clean', adobe-clean, sans-serif;
+  color: #15A46E;
+  background: #CEF8E0;
+  border: none;
+  font-weight: 700;
+  text-transform: uppercase;
+  line-height: 24px;
+  padding: 0 8px;
+  display: block;
+}
+
+.fgui-sync-badge-content {
+  padding: 0 8px;
+  line-height: 24px;
+  margin-top: -8px;
+}
+
+span.fgui-sync-badge-mono {
+  font-family: monospace;
+}
+
+.fgui-project-heading {
+  display: flex;
+  gap: 48px;
+  margin: 0 0 48px;
+}
+
+.fgui-project-heading-column {
+  flex: 1;
+}
+
+.fgui-project-details-project,
+.fgui-project-details-name {
+  display: flex;
+  gap: 12px;
+  text-transform: capitalize;
+  font-weight: 400;
+  font-size: 28px;
+  line-height: 35px;
+  align-items: center;
+}
+
+.fgui-project-details-edit {
+  background: url('../locui/img/edit-sheet.svg');
+  width: 68px;
+  text-indent: -1000px;
+  overflow: hidden;
+  display: block;
+  background-repeat: no-repeat;
+}
+
+.fgui-project-details-refresh {
+  background: url(../locui/img/spectrum-refresh.svg);
+  width: 26px;
+  text-indent: -1000px;
+  overflow: hidden;
+  display: block;
+  background-repeat: no-repeat;
+  border: none;
+  background-position: 50%;
+  background-color: #0f7c41;
+  height: 26px;
+  border-radius: 2px;
+}
+
+.fgui-project-promote-refresh {
+  background: url(../locui/img/spectrum-refresh.svg);
+  width: 22px;
+  background-color: #0f7c41;
+  height: 22px;
+  background-repeat: no-repeat;
+  border-radius: 2px;
+  border: none;
+  background-position: 50%;
+  margin-left: 10px;
+}
+
+.fgui-status-toast-section {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.fgui-status-toast {
+  position: relative;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  width: 420px;
+}
+
+.fgui-status-toast-type-info {
+  background: linear-gradient(0deg, rgb(0 154 206 / 100%) 0%, rgb(0 139 186 / 100%) 100%);
+  color: #003d52;
+}
+
+.fgui-status-toast-type-error {
+  background: #d66060;
+  color: #790909;
+}
+
+.fgui-status-toast-content {
+  margin: 0 16px;
+  display: flex;
+  align-items: center;
+}
+
+.fgui-status-toast-content-type {
+  margin: 0 6px 0 0;
+  font-weight: 700;
+  text-transform: uppercase;
+  line-height: 48px;
+}
+
+p.fgui-status-toast-description {
+  display: none;
+  margin: 0;
+  padding: 12px 16px;
+  background: rgba(255 255 255 / 10%);
+}
+
+div.fgui-status-toast-expand {
+  position: absolute;
+  right: 0;
+  top: 0;
+  text-indent: -1000px;
+  overflow: hidden;
+  width: 48px;
+  height: 48px;
+  transition: transform .2s ease-in-out;
+}
+
+div.fgui-status-toast.open div.fgui-status-toast-expand {
+  transform: rotate(90deg);
+}
+
+div.fgui-status-toast-expand::after {
+  content: '';
+  position: absolute;
+  right: 20px;
+  top: 18px;
+  text-indent: -1000px;
+  overflow: hidden;
+  border-right: 2px solid;
+  border-bottom: 2px solid;
+  transform: rotate(-45deg);
+  width: 10px;
+  height: 10px;
+}
+
+div.fgui-status-toast.open p.fgui-status-toast-description {
+  display: block;
+}
+
+
+.fgui-section {
+  margin-bottom: 36px;
+}
+
+.fgui-section-heading {
+  display: flex;
+  align-items: center;
+  margin: 24px 0 12px;
+}
+
+h2.fgui-section-label {
+  font-weight: 700;
+  text-transform: uppercase;
+  margin: 0;
+  font-size: 22px;
+  line-height: 1;
+}
+
+p.fgui-project-label {
+  font-size: 16px;
+  margin: 0;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.fgui-project-name-totals {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.fgui-project-name-totals h4 {
+  margin: 0;
+  font-weight: 400;
+}
+
+.fgui-subprojects {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+
+li.fgui-subproject {
+  position: relative;
+  min-height: 200px;
+  min-width: 80px;
+  max-width: 250px;
+  max-height: 250px;
+  border: 4px solid rgb(246 97 182);
+  background: rgb(255 100 194 / 30%);
+  border-radius: 6px;
+  padding: 18px 18px 72px;
+  -webkit-backdrop-filter: blur(.3em);
+  backdrop-filter: blur(.3em);
+}
+
+.fgui-subproject-badge {
+  position: absolute;
+  right: 0;
+  color: #FFF;
+  background: #000000;
+  text-transform: uppercase;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 0 8px;
+  border-radius: 6px 0 0 6px;
+}
+
+li.fgui-subproject.fgui-subproject-NOT.STARTED {
+  border-color: #B8B8B8;
+  background: rgb(234 234 234 / 25%);
+}
+
+li.fgui-subproject.fgui-subproject-placeholder {
+  border-color: #B8B8B8;
+  background: rgb(234 234 234 / 25%);
+}
+
+li.fgui-subproject.fgui-subproject-COMPLETED {
+  border-color: #093;
+  background: rgb(149 230 195 / 20%);
+}
+
+li.fgui-subproject.fgui-subproject-COMPLETED.WITH.ERROR {
+  border-color: #093;
+  background: rgb(149 230 195 / 20%);
+}
+
+li.fgui-subproject.fgui-subproject-FAILED {
+  border-color: rgb(205, 8, 8);
+  background: rgba(198, 138, 138, 0.2);
+}
+
+li.fgui-subproject.fgui-subproject-IN.PROGRESS {
+  border-color: rgb(238, 234, 11);
+  background: rgba(189, 194, 134, 0.2);
+}
+
+li.fgui-subproject.fgui-subproject-translated .fgui-subproject-badge {
+  background: #093;
+}
+
+li.fgui-subproject.fgui-subproject-rolling-out .fgui-subproject-badge,
+li.fgui-subproject.fgui-subproject-completed .fgui-subproject-badge {
+  background: rgb(246 97 182);
+}
+
+li.fgui-subproject.fgui-subproject-in-progress {
+  border-color: #80B3E7;
+  background: rgb(184 222 244 / 20%);
+}
+
+li.fgui-subproject.fgui-subproject-in-progress .fgui-subproject-badge {
+  background: #80B3E7;
+}
+
+h3.fgui-subproject-name {
+  font-weight: 400;
+  font-size: 16px;
+  margin: 0 0 24px;
+}
+
+div.fgui-subproject-items {
+  display: flex;
+  gap: 96px;
+}
+
+div.fgui-subproject-locales {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+button.fgui-subproject-locale {
+  font-family: 'Adobe Clean', adobe-clean, sans-serif;
+  background: rgb(0 0 0 / 15%);
+  margin: 4px 4px 0 0;
+  text-transform: uppercase;
+  padding: 4px 6px;
+  border-radius: 4px;
+  border: none;
+  font-size: 14px;
+  line-height: 1;
+}
+
+button.fgui-subproject-locale:hover {
+  cursor: pointer;
+  background: rgb(255 251 251 / 80%);
+}
+
+.fgui-subproject-action-area {
+  display: flex;
+  justify-content: end;
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+}
+
+div.fgui-url-heading-actions,
+div.fgui-url-heading-action-group {
+  min-height: 36px;
+  display: flex;
+  gap: 12px;
+}
+
+button.fg-action,
+button.fgui-urls-heading-action {
+  outline: transparent solid 0;
+  transition: outline 300ms;
+  border: none;
+  height: 36px;
+  font-family: 'Adobe Clean', adobe-clean, sans-serif;
+  color: #FFF;
+  background: #FF1593;
+  background-repeat: no-repeat;
+  background-size: 18px;
+  background-position: 12px center;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 0 18px;
+  clip-path: polygon(0% 0%, 12px 0%, calc(100% - 12px) 0%, 100% 12px, 100% calc(100% - 12px), 100% 100%, 0% 100%, 0% 100%);
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+li.fgui-subproject.fgui-subproject-translated button.fgui-urls-heading-action {
+  background: #093;
+}
+
+ul.fgui-urls {
+  margin: 0;
+  list-style: none;
+  background: rgb(213 213 213 / 11%);
+  padding: 0 18px;
+  border: 4px solid #e6e6e6;
+  border-radius: 6px;
+  -webkit-backdrop-filter: blur(.3em);
+  backdrop-filter: blur(0.3em);
+}
+
+li.fgui-url {
+  padding: 18px 0;
+  border-bottom: 1px solid #ccc;
+}
+
+li.fgui-url:last-child {
+  border-bottom: unset;
+}
+
+h3.fgui-url-label {
+  font-size: 16px;
+  line-height: 1;
+  margin: 0;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+p.fgui-url-path {
+  font-size: 1.4rem;
+  margin: 12px 0 24px;
+}
+
+/* TABS */
+
+.fgui-tabs {
+  min-height: 120px;
+}
+
+.fgui-url-tab-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.fgui-url-tab-group-cols-1 {
+  grid-template-columns: 1fr;
+}
+
+span.fgui-tab-buttons-suffix {
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #777;
+}
+
+.fgui-tab-buttons {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  margin-bottom: 12px;
+}
+
+.fgui-url-tab-button {
+  background: none;
+  font-size: 16px;
+  line-height: 1;
+  margin: 0;
+  font-weight: 700;
+  text-transform: uppercase;
+  border: none;
+  font-family: 'Adobe Clean', adobe-clean, sans-serif;
+  padding: 0 0 4px;
+}
+
+.fgui-url-tab-button[aria-selected="true"] {
+  border-bottom: 2px solid;
+}
+
+.fgui-tab-panel[aria-selected="false"] {
+  display: none;
+}
+
+/* END TABS */
+
+div.fgui-url-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.fgui-url-source-actions {
+  margin-top: 22px;
+  display: flex;
+  gap: 24px;
+}
+
+button.fgui-url-action {
+  position: relative;
+  min-width: 88px;
+  display: block;
+  padding: 44px 0 6px;
+  text-align: center;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #676767;
+  border-radius: 4px;
+  overflow: hidden;
+  border: none;
+  cursor: pointer;
+}
+
+.fgui-action-loading::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  background: url('../locui/img/spectrum-refresh.svg');
+  width: 26px;
+  height: 26px;
+  background-repeat: no-repeat;
+  background-position: 50%;
+  border-radius: 50%;
+  cursor: pointer;
+  animation: rotate 2s linear infinite;
+  background-color: #3d3d3d;
+}
+
+@keyframes rotate {
+  from {
+    transform: translate(-50%, -76%) rotate(0deg);
+  }
+
+  to {
+    transform: translate(-50%, -76%) rotate(360deg);
+  }
+}
+
+button.fgui-url-action[disabled] {
+  opacity: 0.25;
+  cursor: auto;
+}
+
+.fgui-urls-heading-action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Set an immediate transition delay for the tooltip */
+.fgui-urls-heading-action:disabled[title]::before {
+  content: attr(title);
+  display: none;
+  transition: opacity 0s ease-in-out;
+}
+
+/* Show the tooltip */
+.fgui-urls-heading-action:disabled:hover[title]::before {
+  display: block;
+  position: absolute;
+  bottom: 100%; /* Position above the button */
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #333;
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 1;
+  z-index: 1000;
+}
+
+button.fgui-url-action:hover {
+  text-decoration: none;
+  background-color: #d9d9d9;
+  color: #000;
+  box-shadow: inset 0 0 10px #9f9f9f;
+}
+
+button.fgui-url-action-edit {
+  background: url('../../ui/img/word-icon.svg') center 14px / 26px no-repeat;
+}
+
+button.fgui-url-action-view {
+  background: url('../../ui/img/aec-icon.svg') center 14px / 26px no-repeat;
+}
+
+.fgui-url-source-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  width: 80%;
+  color: #676767;
+  padding-top: 6px;
+}
+
+.fgui-url-source-details-col h3,
+.fgui-url-source-details-col p {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.fgui-url-source-details-col h3 {
+  font-size: 16px;
+  text-transform: uppercase;
+}
+
+#fgui-modal {
+  padding: 0 24px 24px;
+}
+
+#fgui-modal ul.fgui-urls {
+  backdrop-filter: unset;
+}
+
+@media screen and (min-width: 1200px) {
+  .fgui,
+  .fgui-sync-badge-container {
+    max-width: 1200px;
+  }
+
+  #fgui-modal {
+    min-width: 800px;
+  }
+}
+
+helix-sidekick {
+  display: none;
+}
+
+.pagination {
+  
+  text-align: right;
+  font-size: 1rem; /* Adjust the font size as needed */
+  margin-top: 10px;
+}
+
+.pagination-bottom {
+  margin-bottom: 20px;
+  padding-bottom: 30px;
+  text-align: right;
+
+}
+
+.prev-page,
+.next-page,
+.page-button {
+  font-size: 1rem;
+  background-color: #2e6c31;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  margin: 0 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.prev-page:hover,
+.next-page:hover,
+.page-button:hover {
+  background-color: #2e6c31;
+}
+
+.current-page {
+  background-color: #2e6c31;
+  font-size: 1rem;
+}
+
+.current-page:hover {
+  background-color: #2e6c31;
+}
+
+/* Add subtle colors and spacing to the table */
+.container {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.project-status {
+  background: rgb(213 213 213 / 11%);
+  padding: 20px;
+  margin-top: 10px;
+  border: 4px solid #e6e6e6;
+  border-radius: 6px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  -webkit-backdrop-filter: blur(.3em);
+  backdrop-filter: blur(0.3em);
+}
+
+#pr-status {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+#pr-status th, #pr-status td {
+  border: 1px solid #e6e6e6;
+  padding: 12px;
+  text-align: left;
+}
+
+#pr-status th {
+  background-color: #2e6c31;
+  color: white;
+}
+
+.title {
+  font-weight: 600;
+  margin-bottom: 10px;
+  margin-top: 5px;
+  font-size: larger;
+}
+
+/* Additional styles for better visibility and aesthetics */
+#pr-status td {
+  background-color: #ffffff;
+}
+
+#pr-status tr:nth-child(even) td {
+  background-color: rgb(213, 213, 213, 0.11);
+}
+
+#pr-status tr:hover {
+  background-color: #e0f7fa;
+  transition: background-color 0.3s;
+}
+
+
+#modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Ensure the overlay is on top of other elements */
+}
+
+#fg-modal {
+  background: #fff;
+  padding: 50px;
+  padding-bottom: 50px;
+  padding-left: 100px;
+  padding-right: 100px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.modal-content {
+  text-align: center;
+}
+
+.fgui-urls-heading-action.longer-button.yes-btn {
+  background-color: #2e6c31;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 10px; /* Add margin-right for space */
+}
+
+.fgui-urls-heading-action.longer-button.no-btn {
+  background-color: hsl(120, 7%, 11%);
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.longer-button {
+  width: 120px; /* Adjust the width as needed */
+}
+
+.search-box {
+  max-width: 2000px;
+}
+/* Styles for the search box */
+.search-box-pagination-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.search-box-container { /* Add the border to the container */
+  border-radius: 4px;
+  position: relative; /* Make the container relative for positioning the cross */
+}
+
+.search-box-container input {
+  font-size: 1.2rem;
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-right: 5px;
+  min-width: 450px;
+}
+
+.search-box-container input::placeholder {
+  font-size: 1.2rem; /* Adjust the font size for the placeholder */
+}
+
+.search-box-container button {
+  background-color: #2e6c31;
+  color: #fff;
+  border: none;
+  padding: 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 5px;
+  margin-left: 20px
+}
+
+.search-box-container button:hover {
+  background-color: #2e6c31;
+}
+
+.message { /* Green background color */
+  color: #000000; /* White text color */
+  font-weight: 800;
+  margin-bottom: 20px; /* Add space between the message and other content */
+  border-radius: 5px; /* Rounded corners */
+  font-size: 16px; /* Font size */
+}
+
+.search-box button.clear-icon {
+  background:#333;
+  border: none;
+  font-size: 1rem;
+  font-weight: 200;
+  cursor:pointer;
+  color: #2e6c31;
+  margin-left: -30px; /* Adjust the margin as needed */
+}
+
+
+.search-box .clear-icon:hover {
+  color: red;
+  cursor: pointer;/* Change the color as desired */
+}
+
+.loading-icon {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(0, 0, 0, 0.3);
+  border-radius: 50%;
+  border-top: 3px solid #0b4b1a;
+  animation: spin 1s linear infinite;
+}
+
+.loading-icon-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%; /* Assuming this is the height of the container, adjust as needed */
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes fadeInOut {
+  0%, 100% {
+    opacity: 0; /* Fully transparent at the start and end */
+  }
+  50% {
+    opacity: 1; /* Fully opaque in the middle */
+  }
+}
+
+.spectrum-search-field {
+  display: flex;
+  align-items: center;
+}
+
+.spectrum-search-field input {
+  min-width: 500px;
+  border: none;
+  flex-grow: 1;
+  padding: 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: white url('./img/searchBoxIcon.png') left center no-repeat;
+  padding-left: 45px; /* Adjust as needed to accommodate the image */
+  background-size: 4.5%;
+  background-position: 10px;
+}
+
+.spectrum-search-field .spectrum-search-icon {
+  width: 16px;
+  height: 16px;
+  /* Replace 'your-search-icon-url' with the actual URL or path to your search icon */
+}
+
+.clear-icon {
+  cursor: pointer;
+  margin-left: 8px;
+  margin-right: 10px;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.spectrum-search-field input::after {
+  content: '×'; /* Cross symbol content */
+  font-size: 1rem; /* Adjust the font size as needed */
+  color: black; /* Cross color */
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+.spectrum-search-field input:focus {
+  border-color: #ccc; /* Add border color for focus state */
+}
+
+.page-button.current-page {
+  background-color: #71b271; /* Use your desired background color here */
+  color: #333333; /* Use your desired text color here */
+}
