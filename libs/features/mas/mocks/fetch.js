@@ -21,5 +21,7 @@ export async function mockFetch(...stubs) {
         return found;
     });
     window.fetch = stub;
-    return stub;
+    return () => {
+      window.fetch = originalFetch;
+    }
 }

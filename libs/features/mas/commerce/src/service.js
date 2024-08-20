@@ -130,6 +130,14 @@ export function initService(getConfig, getProviders) {
         ));
     }
     // Return existing promise
-    return HTMLWcmsCommerceElement.promise;
-
+    if (HTMLWcmsCommerceElement.promise) return HTMLWcmsCommerceElement.promise;
+    // Return new promise resolving on "ready" event with new instance of service
+    return new Promise((resolve) => {
+        const listener = (event) => {
+            resolve(event.detail);
+        };
+        document.head.addEventListener(EVENT_TYPE_READY, listener, {
+            once: true,
+        });
+    });
 }
