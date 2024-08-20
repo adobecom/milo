@@ -45,40 +45,66 @@ const ChatBot = ({ data }) => {
     }
   };
 
+  const toggleChat = () => {
+    const container = document.querySelector('.chat-container');
+    const input = document.getElementById('quiz-input');
+    if (!container.classList.contains('active')) {
+      container.classList.add('active');
+      setTimeout(() => { input.focus(); }, 750);
+    } else {
+      container.classList.remove('active');
+      input.blur();
+    }
+  };
+
   useEffect(() => {
     document.getElementById('quiz-input').value = userInput;
-    document.getElementById('quiz-input').focus();
   }, [userInput]);
 
+  useEffect(() => {
+    document.getElementById('quiz-input').value = userInput;
+    const historyEl = document.querySelector('.chat-history');
+    historyEl.scrollTop = historyEl.scrollHeight;
+  }, [chatHistory]);
+
   return html`
-    <div class="chat-container">
-      <div class="chat-history">
-        ${chatHistory.map((entry) => html`
-          <div class="${entry.sender}-message">
-            ${entry.message}
-          </div>
-        `)}
+    <div class="chat-banner">
+      <p class="chat-header">Have more questions?</p>
+    </div>
+    <div class="chat-wrapper">
+      <div class="chat-tab">
+        <button onClick=${toggleChat} class="chat-invoke" tabindex="0">Ask AI</button>
       </div>
-      ${isTyping && html`<div class="bot-typing">Adobe AI is typing...</div>`}
-      <div class="input-container">
-        <${mlField}
-          cardsUsed=${false} 
-          onMLInput=${handleMLInput} 
-          onMLEnter=${handleMLEnter} 
-          placeholderText="Type your message..."
-        />
-        <div class="button-container">
-          <button onClick=${handleSendMessage}>Submit</button>
+      <div class="chat-container">
+        <p class="chat-intro">Ask AI about our products!</p>
+        <div class="chat-history">
+          ${chatHistory.map((entry) => html`
+            <div class="${entry.sender}-message">
+              ${entry.message}
+            </div>
+          `)}
         </div>
-        <div class="label-container">
-          <label>
-            <input 
-              type="checkbox" 
-              checked=${isMessageEnabled} 
-              onChange=${handleCheckboxChange} 
-            /> Enable System Settings(System: You are an expert recommender for Adobe products and want to help users understand why you recommend they purchase Photoshop given that they said their interests were)
-          </label>
-         </div>
+        ${isTyping && html`<div class="bot-typing">Adobe AI is typing...</div>`}
+        <div class="input-container">
+          <${mlField}
+            cardsUsed=${false} 
+            onMLInput=${handleMLInput} 
+            onMLEnter=${handleMLEnter} 
+            placeholderText="Enter Prompt"
+          />
+          <div class="button-container">
+            <button onClick=${handleSendMessage}>Submit</button>
+          </div>
+          <div class="label-container">
+            <label>
+              <input 
+                type="checkbox" 
+                checked=${isMessageEnabled} 
+                onChange=${handleCheckboxChange} 
+              /> Enable System Settings(System: You are an expert recommender for Adobe products and want to help users understand why you recommend they purchase Photoshop given that they said their interests were)
+            </label>
+          </div>
+        </div>
       </div>
     </div>
   `;
