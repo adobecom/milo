@@ -72,7 +72,7 @@ async function decorateLockupFromContent(el) {
 
 function decorateLockupRow(el, classes) {
   const child = el.querySelector(':scope > div');
-  if (child) child.classList.add('lockup-area');
+  child?.classList.add('lockup-area');
   const iconSizeClass = classes?.find((c) => c.endsWith('-icon'));
   if (iconSizeClass) el.classList.remove(iconSizeClass);
   const lockupSize = iconSizeClass ? `${iconSizeClass.split('-')[0]}-lockup` : 'l-lockup';
@@ -88,7 +88,11 @@ function decorateBg(el) {
 function wrapInnerHTMLInPTag(el) {
   const innerDiv = el.querySelector(':scope > div');
   const containsPTag = [...innerDiv.childNodes].some((node) => node.nodeName === 'P');
-  if (!containsPTag) innerDiv.innerHTML = `<p>${innerDiv.innerHTML}</p>`;
+  if (!containsPTag) {
+    const pTag = createTag('p');
+    while (innerDiv.firstChild) pTag.appendChild(innerDiv.firstChild);
+    innerDiv.appendChild(pTag);
+  }
 }
 
 function decorateText(el, classes) {
