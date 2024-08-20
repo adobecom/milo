@@ -89,7 +89,24 @@ async function findPageFragments(path) {
   }, []);
   const combinedUrls = Array.from(new Set([...fragmentUrls, ...assestsList]));
   if (combinedUrls.length === 0) return [];
-  return getUrls(combinedUrls, true);
+  return combinedUrls;
+}
+
+async function findDeepFragments(path) {
+  const searched = [];
+  const fragments = await findPageFragments(path);
+  if (!fragments) return [];
+  while (fragments.length !== searched.length) {
+    const needsSearch = fragments.filter((fragment) => !searched.includes(fragment.pathname));
+    for (const search of needsSearch) {
+      const nestedFragments = await findPageFragments(search.pathname);
+      const newFragments = nestedFragments.filter((nested) => !searched.includes(nested.pathname)
+        && !fragments.find((fragment) => fragment.pathname === nested.pathname));
+      if (newFragments?.length) fragments.push(...newFragments);
+      searched.push(search.pathname);
+    }
+  }
+  return fragments.length ? getUrls(fragments, true) : [];
 }
 
 export async function findFragments() {
@@ -97,7 +114,7 @@ export async function findFragments() {
   setStatus('fragments', 'info', 'Finding fragments.');
   const found = urls.value
     .filter((url) => !url.pathname.endsWith('.svg') && !url.pathname.endsWith('.pdf') && !url.pathname.endsWith('.mp4'))
-    .map((url) => findPageFragments(url.pathname));
+    .map((url) => findDeepFragments(url.pathname));
   const pageFragments = await Promise.all(found);
 
   // For each page, loop through all the found fragments
