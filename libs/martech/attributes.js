@@ -17,7 +17,7 @@ function getHeaderCharLimit(str) {
   const defaultLimit = 20;
   if (str === null || str === undefined) return defaultLimit;
   if (str === 'off') return 0;
-  if (!Number.isNaN(Number(str))) return Number(str);
+  if (!Number.isNaN(Number(str))) return parseInt(str, 10);
   return defaultLimit;
 }
 export function decorateDefaultLinkAnalytics(block, config) {
