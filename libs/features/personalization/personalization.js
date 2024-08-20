@@ -372,6 +372,26 @@ function modifySelectorTerm(term) {
   }
   return modifiedTerm;
 }
+export function modifyNonFragmentSelector(selector) {
+  let modifiedSelector = selector;
+  const terms = modifiedSelector.split('>').join(' > ').split(',').join(' , ')
+    .split(/\s+/);
+  terms.forEach((term, i) => {
+    if (term.toLowerCase() === 'main') {
+      const next = terms[i + 1]?.toLowerCase();
+      const nextNext = terms[i + 2]?.toLowerCase();
+      if (next?.startsWith('section') || nextNext?.startsWith('section')) {
+        terms[i] = '';
+        if (next === '>') terms[i + 1] = '';
+      }
+    } else {
+      terms[i] = modifySelectorTerm(term);
+    }
+  });
+  modifiedSelector = terms.join(' ');
+  console.log(`selector: ${selector}\nmodifiedSelector: ${modifiedSelector}`); // temp sanity check
+  return modifiedSelector;
+}
 
 function getSelectedElement({ selector, rootEl }) {
   let modifiedSelector = selector.trim();
@@ -389,22 +409,7 @@ function getSelectedElement({ selector, rootEl }) {
     }
   }
 
-  const terms = modifiedSelector.split('>').join(' > ').split(',').join(' , ')
-    .split(/\s+/);
-  terms.forEach((term, i) => {
-    if (term.toLowerCase() === 'main') {
-      const next = terms[i + 1]?.toLowerCase();
-      const nextNext = terms[i + 2]?.toLowerCase();
-      if (next?.startsWith('section') || nextNext?.startsWith('section')) {
-        terms[i] = '';
-        if (next === '>') terms[i + 1] = '';
-      }
-    } else {
-      terms[i] = modifySelectorTerm(term);
-    }
-  });
-  modifiedSelector = terms.join(' ');
-  console.log(`selector: ${selector}\nmodifiedSelector: ${modifiedSelector}`); // temp sanity check
+  modifiedSelector = modifyNonFragmentSelector(modifiedSelector);
   return querySelector(rootEl || document, modifiedSelector);
 }
 const addHash = (url, newHash) => {
