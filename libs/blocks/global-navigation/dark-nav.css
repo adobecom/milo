@@ -67,6 +67,7 @@
   .feds--dark .feds-navLink--hoverCaret:hover,
   .feds--dark .feds-navLink--hoverCaret:focus {
     color: var(--feds-color-link--desktop);
+    background-color: var(--background-color);
   }
 }
 
@@ -130,6 +131,7 @@
   
   /* Popup */
   .feds--dark .feds-popup {
+    background-color: var(--feds-background-popup);
     box-shadow: 0 3px 3px 0 rgb(255 255 255 / 20%);
   }
 }
@@ -170,7 +172,7 @@
 @media (min-width: 900px) {
   .feds--dark .feds-promo {
     border: 1px solid var(--feds-borderColor);
-    background: var(--feds-background-nav);
+    background: #1D1D1D;
   }
   
   .feds--dark .feds-promo--dark,
