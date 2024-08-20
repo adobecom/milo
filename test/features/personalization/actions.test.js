@@ -87,6 +87,7 @@ describe('insertAfter action', async () => {
     expect(document.querySelector('a[href="/fragments/insertafter"]')).to.be.null;
     expect(document.querySelector('a[href="/fragments/insertafterfragment"]')).to.be.null;
     expect(document.querySelector('#insertafter').getAttribute('href')).to.equal('/my-page.html');
+    expect(document.querySelector('#inserted-html')).to.be.null;
     await init(mepSettings);
     expect(getConfig().mep.commands[0].targetManifestId).to.equal(false);
 
@@ -100,6 +101,7 @@ describe('insertAfter action', async () => {
 
     expect(fragment.parentElement.previousElementSibling.querySelector('a[href="/fragments/insertaround"]')).to.exist;
     expect(document.querySelector('#insertafter').getAttribute('href')).to.equal('/my-page.html#modal');
+    expect(document.querySelector('#inserted-html')).to.not.be.null;
   });
 });
 
