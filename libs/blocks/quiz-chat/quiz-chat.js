@@ -6,10 +6,12 @@ const ChatBot = ({ data }) => {
   const [userInput, setUserInput] = useState('');
   const [chatHistory, setChatHistory] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
-  const [isMessageEnabled, setIsMessageEnabled] = useState(false);
+  const [isMessageEnabled, setIsMessageEnabled] = useState(true);
+  const [showPhotoshopButton, setShowPhotoshopButton] = useState(false);
 
   const handleMLInput = async (event) => {
     setUserInput(event.target.value);
+    setShowPhotoshopButton(false);
   };
 
   const handleCheckboxChange = () => {
@@ -24,14 +26,19 @@ const ChatBot = ({ data }) => {
       setChatHistory(newChatHistory);
 
       if (isMessageEnabled) {
-        finalMessage = `<s>[INST] <<SYS>>\n\n<</SYS>>\n\nSystem: You are an expert recommender for Adobe products and want to help users understand why you recommend they purchase Photoshop given that they said their interests were \\nuser:${finalMessage}[/INST]`;
+        finalMessage = `<s>[INST] <<SYS>>\n\n<</SYS>>\n\nSystem: You are an expert recommender for Adobe products and want to help users understand why you recommended they purchase Photoshop given their interests. Please respond with a short response, less than 300 characters. \\nuser:${finalMessage}[/INST]`;
       } else {
         finalMessage = `<s>[INST] <<SYS>>\n\n<</SYS>>\n\n \\nuser:${finalMessage}[/INST]`;
       }
 
       for await (const chunk of getMLResults(data.endpoint.text, 'CCHomeMLRepo1', finalMessage)) {
-        newChatHistory.push({ sender: 'bot', message: chunk });
+        const botMessage = chunk;
+        newChatHistory.push({ sender: 'bot', message: botMessage });
         setChatHistory([...newChatHistory]); // Spread to create a new reference
+        // Check if the bot's response contains the word "Photoshop"
+        if (botMessage.toLowerCase().includes('photoshop')) {
+          setShowPhotoshopButton(true);
+        }
       }
 
       setUserInput('');
@@ -85,6 +92,13 @@ const ChatBot = ({ data }) => {
           `)}
         </div>
         ${isTyping && html`<div class="bot-typing">Adobe AI is typing...</div>`}
+        ${showPhotoshopButton && html`
+          <div class="photoshop-button-container">
+            <button onClick=${() => { window.open('https://photoshop.adobe.com', '_blank'); }}>
+              Go to play Photoshop
+            </button>
+          </div>
+        `}
         <div class="input-container">
           <${mlField}
             cardsUsed=${false} 
@@ -101,7 +115,7 @@ const ChatBot = ({ data }) => {
                 type="checkbox" 
                 checked=${isMessageEnabled} 
                 onChange=${handleCheckboxChange} 
-              /> Enable System Settings(System: You are an expert recommender for Adobe products and want to help users understand why you recommend they purchase Photoshop given that they said their interests were)
+              /> Enable System Settings(System: You are an expert recommender for Adobe products and want to help users understand why you recommended they purchase Photoshop given their interests. Please respond with a short response, less than 300 characters.)
             </label>
           </div>
         </div>

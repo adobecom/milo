@@ -128,3 +128,23 @@ button:hover {
 .label-container {
   margin-top: 10px; /* Adds space above the label */
 }
+
+.photoshop-button-container {
+  margin: 10px;
+  text-align: right;
+}
+
+.photoshop-button-container button {
+  background-color: #0070f3; /* Adobe's blue color or choose a color that matches your design */
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.photoshop-button-container button:hover {
+  background-color: #005bb5; /* Darker shade for hover effect */
+}
