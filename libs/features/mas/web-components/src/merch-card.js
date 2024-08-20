@@ -1,13 +1,7 @@
 import { html, LitElement, nothing } from 'lit';
 import { sizeStyles, styles } from './merch-card.css.js';
+import { isMobile, isMobileOrTablet } from './utils.js';
 
-import {
-    ARROW_DOWN,
-    ARROW_LEFT,
-    ARROW_RIGHT,
-    ARROW_UP,
-    ENTER,
-} from './focus.js';
 import './global.css.js';
 import {
     EVENT_MERCH_CARD_READY,
@@ -127,8 +121,12 @@ export class MerchCard extends LitElement {
             );
             await Promise.all(prices.map((price) => price.onceSettled()));
             this.adjustTitleWidth();
-            this.adjustMiniCompareBodySlots();
-            this.adjustMiniCompareFooterRows();
+            if (!isMobile()) {
+              this.adjustMiniCompareBodySlots();
+              this.adjustMiniCompareFooterRows();
+            } else {
+              this.removeEmptyRows();
+            }
         });
     }
 
@@ -232,10 +230,6 @@ export class MerchCard extends LitElement {
             ...(this.footerSlot?.querySelectorAll('a[is="checkout-link"]') ??
                 []),
         ];
-    }
-
-    get isMobileOrTablet() {
-        return window.matchMedia('(max-width: 1024px)').matches;
     }
 
     async toggleStockOffer({ target }) {
@@ -379,14 +373,18 @@ export class MerchCard extends LitElement {
                   `}`;
     }
 
+    get promoBottom() {
+      return this.classList.contains('promo-bottom');
+  }
+
     renderSegment() {
         return html` ${this.badge}
             <div class="body">
                 <slot name="heading-xs"></slot>
                 <slot name="body-xxs"></slot>
-                <slot name="promo-text"></slot>
-                <slot name="callout-content"></slot>
+                ${!this.promoBottom ? html`<slot name="promo-text"></slot><slot name="callout-content"></slot>` : ''}
                 <slot name="body-xs"></slot>
+                ${this.promoBottom ? html`<slot name="promo-text"></slot><slot name="callout-content"></slot>` : ''}
             </div>
             <hr />
             ${this.secureLabelFooter}`;
@@ -399,17 +397,13 @@ export class MerchCard extends LitElement {
                 <slot name="heading-xs"></slot>
                 <slot name="heading-m"></slot>
                 <slot name="body-xxs"></slot>
-                <slot name="promo-text"></slot>
-                <slot name="callout-content"></slot>
+                ${!this.promoBottom ? html`<slot name="promo-text"></slot><slot name="callout-content"></slot> ` : ''}
                 <slot name="body-xs"></slot>
+                ${this.promoBottom ? html`<slot name="promo-text"></slot><slot name="callout-content"></slot> ` : ''}  
                 ${this.stockCheckbox}
             </div>
             <slot name="quantity-select"></slot>
             ${this.secureLabelFooter}`;
-    }
-
-    get promoBottom() {
-        return this.classList.contains('promo-bottom');
     }
 
     renderCatalog() {
@@ -418,7 +412,7 @@ export class MerchCard extends LitElement {
                     <slot name="icons"></slot> ${this.badge}
                     <div
                         class="action-menu
-                        ${this.isMobileOrTablet && this.actionMenu
+                        ${isMobileOrTablet() && this.actionMenu
                             ? 'always-visible'
                             : ''}
                         ${!this.actionMenu ? 'hidden' : 'invisible'}"
@@ -453,8 +447,7 @@ export class MerchCard extends LitElement {
                 <slot name="icons"></slot>
                 <slot name="heading-xs"></slot>
                 <slot name="body-xxs"></slot>
-                <slot name="promo-text"></slot>
-                <slot name="body-xs"></slot>
+                ${this.promoBottom ? html`<slot name="body-xs"></slot><slot name="promo-text"></slot>` : html`<slot name="promo-text"></slot><slot name="body-xs"></slot>`}
             </div>
             ${this.evergreen
                 ? html`
@@ -489,9 +482,9 @@ export class MerchCard extends LitElement {
                 <slot name="icons"></slot>
                 <slot name="heading-xs"></slot>
                 <slot name="body-xxs"></slot>
-                <slot name="promo-text"></slot>
-                <slot name="callout-content"></slot>
+                ${!this.promoBottom ? html`<slot name="promo-text"></slot><slot name="callout-content"></slot>` : ''}
                 <slot name="body-xs"></slot>
+                ${this.promoBottom ? html`<slot name="promo-text"></slot><slot name="callout-content"></slot>` : ''}
             </div>
             ${this.secureLabelFooter}`;
     }
@@ -540,8 +533,7 @@ export class MerchCard extends LitElement {
             <slot name="icons"></slot> ${this.badge}
             <slot name="heading-xs"></slot>
             <slot name="heading-m"></slot>
-            <slot name="promo-text"></slot>
-            <slot name="body-xs"></slot>
+            ${this.promoBottom ? html`<slot name="body-xs"></slot><slot name="promo-text"></slot>` : html`<slot name="promo-text"></slot><slot name="body-xs"></slot>`}
             <footer><slot name="footer"></slot></footer>
             ${this.defaultSlot}
         </div>`;
@@ -551,7 +543,6 @@ export class MerchCard extends LitElement {
         super.connectedCallback();
         this.#container = this.getContainer();
         this.setAttribute('tabindex', this.getAttribute('tabindex') ?? '0');
-        this.addEventListener('keydown', this.keydownHandler);
         this.addEventListener('mouseleave', this.toggleActionMenu);
         this.addEventListener(
             EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
@@ -574,7 +565,7 @@ export class MerchCard extends LitElement {
 
     disconnectedCallback() {
         super.disconnectedCallback();
-        this.removeEventListener('keydown', this.keydownHandler);
+
         this.removeEventListener(
             EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
             this.handleQuantitySelection,
@@ -602,71 +593,6 @@ export class MerchCard extends LitElement {
     }
 
     // custom methods
-    keydownHandler(e) {
-        const currentCard =
-            document.activeElement?.closest(MERCH_CARD_NODE_NAME);
-        if (!currentCard) return;
-        function selectNextCard(x, y) {
-            const el = document
-                .elementFromPoint(x, y)
-                ?.closest(MERCH_CARD_NODE_NAME);
-            if (el) {
-                currentCard.selected = false;
-                e.preventDefault();
-                e.stopImmediatePropagation();
-                el.focus();
-                el.selected = true;
-                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        }
-        const { x, y, width, height } = currentCard.getBoundingClientRect();
-        const offset = 64;
-
-        const { code } = e;
-        if (code === 'Tab') {
-            const focusableElements = Array.from(
-                this.querySelectorAll(
-                    'a[href], button:not([disabled]), textarea, input[type="text"], input[type="radio"], input[type="checkbox"], select',
-                ),
-            );
-            const firstFocusableElement = focusableElements[0];
-            const lastFocusableElement =
-                focusableElements[focusableElements.length - 1];
-
-            if (
-                !e.shiftKey &&
-                document.activeElement === lastFocusableElement
-            ) {
-                e.preventDefault();
-                e.stopImmediatePropagation();
-            } else if (
-                e.shiftKey &&
-                document.activeElement === firstFocusableElement
-            ) {
-                e.preventDefault();
-                e.stopImmediatePropagation();
-            }
-        } else {
-            switch (code) {
-                case ARROW_LEFT:
-                    selectNextCard(x - offset, y);
-                    break;
-                case ARROW_RIGHT:
-                    selectNextCard(x + width + offset, y);
-                    break;
-                case ARROW_UP:
-                    selectNextCard(x, y - offset);
-                    break;
-                case ARROW_DOWN:
-                    selectNextCard(x, y + height + offset);
-                    break;
-                case ENTER:
-                    if (this.variant === 'twp') return;
-                    this.footerSlot?.querySelector('a')?.click();
-                    break;
-            }
-        }
-    }
 
     updateMiniCompareElementMinHeight(el, name) {
         const elMinHeightPropertyName = `--consonant-merch-card-mini-compare-${name}-height`;
@@ -763,6 +689,20 @@ export class MerchCard extends LitElement {
             }
         });
     }
+
+    removeEmptyRows() {
+      if (this.variant !== MINI_COMPARE_CHART) return;
+      const footerRows = this.querySelectorAll('.footer-row-cell');
+      footerRows.forEach((row) => {
+          const rowDescription = row.querySelector('.footer-row-cell-description');
+          if (rowDescription) {
+              const isEmpty = !rowDescription.textContent.trim();
+              if (isEmpty) {
+                  row.remove();
+              }
+          }
+      });
+  }
 
     get storageOptions() {
         return this.querySelector('sp-radio-group#storage');

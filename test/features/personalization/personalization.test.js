@@ -4,7 +4,7 @@ import { assert, stub } from 'sinon';
 import { getConfig, setConfig } from '../../../libs/utils/utils.js';
 import {
   handleFragmentCommand, applyPers,
-  init, matchGlob, createFrag, combineMepSources,
+  init, matchGlob, createFrag, combineMepSources, buildVariantInfo,
 } from '../../../libs/features/personalization/personalization.js';
 import spoofParams from './spoofParams.js';
 import mepSettings from './mepSettings.js';
@@ -173,6 +173,109 @@ describe('Functional Test', () => {
     await loadManifestAndSetResponse('./mocks/manifestUseEntitlements.json');
     await init(mepSettings);
     expect(getConfig().mep?.martech).to.equal('|fireflies|manifest');
+  });
+
+  it('should resolve variants correctly with entitlements and tags exist', async () => {
+    expect(buildVariantInfo(['cc-all-apps-any & desktop'])).to.deep.equal({
+      allNames: [
+        'cc-all-apps-any',
+        'desktop',
+      ],
+      'cc-all-apps-any & desktop': [
+        'cc-all-apps-any & desktop',
+      ],
+    });
+    expect(buildVariantInfo(['desktop & cc-all-apps-any'])).to.deep.equal({
+      allNames: [
+        'desktop',
+        'cc-all-apps-any',
+      ],
+      'desktop & cc-all-apps-any': [
+        'desktop & cc-all-apps-any',
+      ],
+    });
+    expect(buildVariantInfo(['cc-all-apps-any'])).to.deep.equal({
+      allNames: [
+        'cc-all-apps-any',
+      ],
+      'cc-all-apps-any': [
+        'cc-all-apps-any',
+      ],
+    });
+    expect(buildVariantInfo(['phone, cc-all-apps-any'])).to.deep.equal({
+      allNames: [
+        'phone',
+        'cc-all-apps-any',
+      ],
+      'phone, cc-all-apps-any': [
+        'phone',
+        'cc-all-apps-any',
+      ],
+    });
+    expect(buildVariantInfo(['cc-all-apps-any, not desktop'])).to.deep.equal({
+      allNames: [
+        'cc-all-apps-any',
+        'desktop',
+      ],
+      'cc-all-apps-any, not desktop': [
+        'cc-all-apps-any',
+        'not desktop',
+      ],
+    });
+    expect(buildVariantInfo(['phone & not cc-all-apps-any'])).to.deep.equal({
+      allNames: [
+        'phone',
+        'cc-all-apps-any',
+      ],
+      'phone & not cc-all-apps-any': [
+        'phone & not cc-all-apps-any',
+      ],
+    });
+    expect(buildVariantInfo(['not phone & not cc-all-apps-any'])).to.deep.equal({
+      allNames: [
+        'phone',
+        'cc-all-apps-any',
+      ],
+      'not phone & not cc-all-apps-any': [
+        'not phone & not cc-all-apps-any',
+      ],
+    });
+    expect(buildVariantInfo(['not cc-free & not cc-all-apps-any'])).to.deep.equal({
+      allNames: [
+        'cc-free',
+        'cc-all-apps-any',
+      ],
+      'not cc-free & not cc-all-apps-any': [
+        'not cc-free & not cc-all-apps-any',
+      ],
+    });
+    expect(buildVariantInfo(['not cc-free, not cc-all-apps-any'])).to.deep.equal({
+      allNames: [
+        'cc-free',
+        'cc-all-apps-any',
+      ],
+      'not cc-free, not cc-all-apps-any': [
+        'not cc-free',
+        'not cc-all-apps-any',
+      ],
+    });
+    expect(buildVariantInfo(['not cc-free, not cc-all-apps-any', 'desktop & cc-paid, ios'])).to.deep.equal({
+      allNames: [
+        'cc-free',
+        'cc-all-apps-any',
+        'desktop',
+        'cc-paid',
+        'ios',
+      ],
+      'not cc-free, not cc-all-apps-any': [
+        'not cc-free',
+        'not cc-all-apps-any',
+      ],
+      'desktop & cc-paid, ios': [
+        'desktop & cc-paid',
+        'ios',
+      ],
+    });
   });
 
   it('invalid selector should output error to console', async () => {

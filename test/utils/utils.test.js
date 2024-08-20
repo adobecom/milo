@@ -192,7 +192,7 @@ describe('Utils', () => {
     it('Decorates placeholder', () => {
       const paragraphs = [...document.querySelectorAll('p')];
       const lastPara = paragraphs.pop();
-      expect(lastPara.textContent).to.equal('nothing to see here');
+      expect(lastPara.textContent).to.equal(' inkl. MwSt.');
     });
 
     it('Decorates meta helix url', () => {
@@ -243,6 +243,14 @@ describe('Utils', () => {
       expect(newTabLink.target).to.contain('_blank');
       newTabLink.href = newTabLink.href.replace('#_blank', '');
       expect(newTabLink.href).to.equal('https://www.adobe.com/test');
+    });
+
+    it('Add rel=nofollow to a link', () => {
+      const noFollowContainer = document.querySelector('main div');
+      utils.decorateLinks(noFollowContainer);
+      const noFollowLink = noFollowContainer.querySelector('.no-follow');
+      expect(noFollowLink.rel).to.contain('nofollow');
+      expect(noFollowLink.href).to.equal('https://www.adobe.com/test');
     });
 
     it('Sets up milo.deferredPromise', async () => {

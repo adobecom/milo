@@ -5,3 +5,4 @@ paths-ignore:
   - 'tools/floodgate/**'
   - 'tools/translation/**'
   - node_modules
+  - libs/deps/mas
