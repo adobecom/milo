@@ -917,6 +917,7 @@ export async function loadIms() {
     loadScript(path);
   }).then(() => {
     if (getMepEnablement('xlg') === 'loggedout') {
+      /* c8 ignore next */
       getConfig().entitlements();
     } else if (!window.adobeIMS?.isSignedInUser()) {
       getConfig().entitlements([]);

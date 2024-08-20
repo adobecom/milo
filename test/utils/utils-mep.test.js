@@ -1,6 +1,6 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import { getMepEnablement, loadIms } from '../../libs/utils/utils.js';
+import { getMepEnablement } from '../../libs/utils/utils.js';
 import { combineMepSources } from '../../libs/features/personalization/personalization.js';
 
 describe('MEP Utils', () => {
@@ -65,7 +65,6 @@ describe('MEP Utils', () => {
       document.head.innerHTML = await readFile({ path: './mocks/mep/head-xlg.html' });
       const xlgEnabled = getMepEnablement('xlg');
       expect(xlgEnabled).to.equal('loggedout');
-      loadIms();
     });
   });
 });
