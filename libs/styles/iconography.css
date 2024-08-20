@@ -1,40 +1,28 @@
-/* iconography.css
+/* iconograph.css
 This is consonant shared design patterns 
 dealing w/ groups of media and associated text 
 - lockup
+(coming soon...)
 - avatar
 */
 
 :root {
-  /* lockup sizes */
-  --type-lockup-all-weight: 700;
-  --type-lockup-xxl-size: 55px;
-  --type-lockup-xxl-ls: -0.01em;
-  --type-lockup-xl-size: 44px;
-  --type-lockup-xl-ls: -0.01em;
-  --type-lockup-l-size: 38px;
-  --type-lockup-l-ls: -0.01em;
-  --type-lockup-m-size: 27px;
-  --type-lockup-m-ls: -0.02em;
-  --type-lockup-s-size: 22px;
-  --type-lockup-s-ls: -0.02em;
-  --type-lockup-xs-size: 16px;
-  --type-lockup-xs-ls: 0;
-  --type-lockup-xxs-size: 11px;
-  --type-lockup-xxs-ls: -0.01em;
-
-  /* avatar sizes */
-  --avatar-size-xxl: 64px;
-  --avatar-size-xl: 56px;
-  --avatar-size-l: 40px;
-}
-
-@media (min-width: 1200px) {
-  :root {
-    --avatar-size-xxl: 80px;
-    --avatar-size-xl: 64px;
-    --avatar-size-l: 56px;
-  }
+    /* lockup sizes */
+    --type-lockup-all-weight: 700;
+    --type-lockup-xxl-size: 55px;
+    --type-lockup-xxl-ls: -0.01em;
+    --type-lockup-xl-size: 44px;
+    --type-lockup-xl-ls: -0.01em;
+    --type-lockup-l-size: 38px;
+    --type-lockup-l-ls: -0.01em;
+    --type-lockup-m-size: 27px;
+    --type-lockup-m-ls: -0.02em;
+    --type-lockup-s-size: 22px;
+    --type-lockup-s-ls: -0.02em;
+    --type-lockup-xs-size: 16px;
+    --type-lockup-xs-ls: 0;
+    --type-lockup-xxs-size: 11px;
+    --type-lockup-xxs-ls: -0.01em;
 }
 
 /* Lockup */
@@ -102,26 +90,3 @@ dealing w/ groups of media and associated text
 .l-lockup .lockup-area img { height: var(--icon-size-l); }
 .xl-lockup .lockup-area img { height: var(--icon-size-xl); }
 .xxl-lockup .lockup-area img { height: var(--icon-size-xxl); }
-
-.avatar-area {
-  line-height: 0;
-  margin-bottom: var(--spacing-s);
-}
-
-.l-avatar .avatar-area img {
-  border-radius: 50%;
-  height: var(--avatar-size-l);
-  width: var(--avatar-size-l);
-}
-
-.xl-avatar .avatar-area img {
-  border-radius: 50%;
-  height: var(--avatar-size-xl);
-  width: var(--avatar-size-xl);
-}
-
-.xxl-avatar .avatar-area img {
-  border-radius: 50%;
-  height: var(--avatar-size-xxl);
-  width: var(--avatar-size-xxl);
-}
