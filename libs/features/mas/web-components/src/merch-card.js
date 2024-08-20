@@ -334,6 +334,12 @@ export class MerchCard extends LitElement {
         return this.textContent.match(new RegExp(text, 'i')) !== null;
     }
 
+    _shareFacebook(e) {
+      e?.preventDefault();
+      const shareHref = `https://www.facebook.com/sharer/sharer.php?u=${window.location.href}`;
+      window.open(shareHref, 'newwindow', 'width=600, height=400');
+    }
+
     _shareTwitter(e) {
       e?.preventDefault();
       const description = encodeURIComponent(this.descriptionText);
@@ -341,13 +347,55 @@ export class MerchCard extends LitElement {
       window.open(shareHref, 'newwindow', 'width=600, height=400');
     }
 
+    _shareLinkedIn(e) {
+      e?.preventDefault();
+      const shareHref = `https://www.linkedin.com/sharing/share-offsite/?url=${window.location.href}`;
+      window.open(shareHref, 'newwindow', 'width=600, height=400');
+    }
+
+    _shareReddit(e) {
+      e?.preventDefault();
+      const shareHref = `https://reddit.com/submit?url=${window.location.href}`;
+      window.open(shareHref, 'newwindow', 'width=600, height=400');
+    }
+
+    _shareClipboard(e) {
+      e.preventDefault();
+      //const description = encodeURIComponent(this.descriptionText);
+      const text = `${description}\n${window.location.href}`;
+      navigator.clipboard.writeText(window.location.href).then(() => {
+        //copyButton.classList.add('copy-to-clipboard-copied');
+        //setTimeout(() => document.activeElement.blur(), 500);
+        // setTimeout(
+        //   () => copyButton.classList.remove('copy-to-clipboard-copied'),
+        //   2000,
+        // );
+      });
+    }
+
+    _toggleShareVisibility(e) {
+      e?.preventDefault();
+      var element = this.shadowRoot.querySelector('.share-icons');
+      if (element.style.display === "none") {
+          element.style.display = "block";
+      } else {
+          element.style.display = "none";
+      }
+    }
+
     get shareButton() {
       if (!this.share) {
         return html``;
       }
-      //const twitter = document
       return html`
-      <a id="share" class="share" href="" @click="${this._shareTwitter}">S</a>
+      <div class="share-icons" style="display: none;">
+        <a class="share-facebook" href="" @click="${this._shareFacebook}" title="Share to Facebook"></a>
+        <a class="share-twitter" href="" @click="${this._shareTwitter}" title="Share to Twitter"></a>
+        <a class="share-linkedin" href="" @click="${this._shareLinkedIn}" title="Share to LinkedIn"></a>
+        <a class="share-reddit" href="" @click="${this._shareReddit}" title="Share to Reddit"></a>
+        <a class="share-clipboard" href="" @click="${this._shareClipboard}" title="Copy to clipboard"></a>
+      </div>
+      <a class="share-link" href="" @click="${this._toggleShareVisibility}"><span class="share-icon" ></span> Spread the word</a>
       `;
     }
 

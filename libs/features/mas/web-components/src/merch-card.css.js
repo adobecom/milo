@@ -221,14 +221,74 @@ export const styles = css`
         background-size: contain;
     }
 
-    .share {
+    .share-link {
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .share-link:link,
+    .share-link:visited {
+      color: #757575;                 
+    }
+
+    .share-link:hover,
+    .share-link:active,
+    .share-icons a:hover,
+    .share-icons a:active {
+      filter: brightness(0.7);                 
+    }
+
+    .share-icon {
+      color: #adadad;
+      background-image: var(--share-icon); /* Replace with desired icon */
+      width: 24px; 
+      height: 24px; 
+      display: inline-block;
+      margin-right: 6px;
+    }
+
+    .share-icons {
+      border: 2px solid #adadad;
+      border-radius: 8px;
+      padding: 7px;
+      position: absolute;
+      top: -40px;
+      right: 50px;
+    }
+
+    .share-icons a {
+      color: green;
       display: inline-block;
       width: 24px;
       height: 24px;
-      background:  var(--share-icon) no-repeat;
       background-size: contain;
       background-repeat: no-repeat;
       text-indent: -9999px; /* Hides the text inside the anchor */
+    }
+
+    .share-icons > a:not(:first-child) {
+        margin-inline-start: 18px;
+    }
+
+    .share-facebook {
+      background:  var(--facebook-icon) no-repeat;
+    }
+
+    .share-twitter {
+      background:  var(--twitter-icon) no-repeat;
+    }
+
+    .share-linkedin {
+      background:  var(--linkedin-icon) no-repeat;
+    }
+
+    .share-reddit {
+      background:  var(--reddit-icon) no-repeat;
+    }
+
+    .share-clipboard {
+      background:  var(--clipboard-icon) no-repeat;
     }
 
     .checkbox-container {
@@ -316,6 +376,10 @@ export const styles = css`
     :host([variant='mini-compare-chart']) footer {
         min-height: var(--consonant-merch-card-mini-compare-footer-height);
         padding: var(--consonant-merch-spacing-xs);
+    }
+
+    :host([variant='plans'][share]) footer {
+        position: relative;
     }
 
     /* mini-compare card  */
