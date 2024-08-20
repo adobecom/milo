@@ -35,6 +35,17 @@
       "firefox": "",
       "android": "",
       "ios": ""
+    },
+    {
+      "action": "insertAfter",
+      "selector": "#insertafter",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "#modal",
+      "target-var1": "",
+      "firefox": "",
+      "android": "",
+      "ios": ""
     }
   ],
   ":type": "sheet"
