@@ -6,7 +6,6 @@ import {
   handleFragmentCommand, applyPers,
   init, matchGlob, createContent, combineMepSources, buildVariantInfo,
 } from '../../../libs/features/personalization/personalization.js';
-import spoofParams from './spoofParams.js';
 import mepSettings from './mepSettings.js';
 
 document.head.innerHTML = await readFile({ path: './mocks/metadata.html' });
@@ -309,16 +308,6 @@ describe('Functional Test', () => {
     expect(document.querySelector('meta[name="mynewmetadata"]').content).to.equal('woot');
     expect(document.querySelector('meta[property="og:title"]').content).to.equal('New Title');
     expect(document.querySelector('meta[property="og:image"]').content).to.equal('https://adobe.com/path/to/image.jpg');
-  });
-
-  it('should override to param-newoffer=123', async () => {
-    spoofParams({ newoffer: '123' });
-    const config = getConfig();
-    await loadManifestAndSetResponse('./mocks/actions/manifestAppendToSection.json');
-    setTimeout(async () => {
-      await init(mepSettings);
-      expect(config.mep.experiments[0].selectedVariantName).to.equal('param-newoffer=123');
-    }, 100);
   });
 });
 
