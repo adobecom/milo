@@ -47,7 +47,7 @@ export async function getFragmentByPath(path) {
 }
 
 const getFragment = async (res) => {
-  const eTag = res.headers.get('Etag');
+    const eTag = res.headers.get('Etag');
     const fragment = await res.json();
     fragment.etag = eTag;
     return fragment;
@@ -80,7 +80,82 @@ export async function saveFragment(fragment) {
     }).then(getFragment);
 }
 
+/**
+ * Copy a content fragment
+ * see: https://adobe-sites.redoc.ly/tag/Fragment-Management/#operation/fragments/copy
+ * @param {Object} fragment
+ */
+export async function copyFragment(fragment) {
+    // extract the last part in the path as name
+    let name = fragment.path.split('/').pop();
+    if (/copy\s?\d?/.test(fragment.title)) {
+        // increment the copy number
+        let suffix = fragment.name.match(/copy\s?(\d)?/)[1] || 1;
+        name = fragment.name.replace(/copy\s?\d?/, `copy ${++suffix}`);
+    } else {
+        // first copy
+        name = `${name}-copy-1`;
+    }
+    return await fetch(`${this.cfFragmentsUrl}/${fragment.id}/copy`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'If-Match': fragment.etag,
+            ...headers,
+        },
+        body: JSON.stringify({ name }),
+    }).then(getFragment);
+}
+
+/**
+ * Copy a content fragment using the AEM classic API
+ * @param {Object} fragment
+ */
+export async function copyFragmentClassic(fragment) {
+    const csrfToken = await this.getCsrfToken();
+    // extract the last part in the path as name
+    let name = fragment.path.split('/').pop();
+    // parent folder
+    let parentPath = fragment.path.split('/').slice(0, -1).join('/');
+    if (/copy\s?\d?/.test(fragment.title)) {
+        // increment the copy number
+        let suffix = fragment.name.match(/copy\s?(\d)?/)[1] || 1;
+        name = fragment.name.replace(/copy\s?\d?/, `copy ${++suffix}`);
+    } else {
+        // first copy
+        name = `${name}-copy-1`;
+    }
+    const formData = new FormData();
+    formData.append('cmd', 'copyPage');
+    formData.append('srcPath', fragment.path);
+    formData.append('destParentPath', parentPath);
+    formData.append('shallow', 'false');
+    formData.append('_charset_', 'UTF-8');
+    formData.append('destName', name);
+    formData.append('destTitle', fragment.title);
+
+    return await fetch(this.wcmcommandUrl, {
+        method: 'POST',
+        headers: {
+            ...headers,
+            'csrf-token': csrfToken,
+        },
+        body: formData,
+    }).then((res) => {
+        if (res.ok) {
+            return getFragmentById(fragment.path);
+        }
+    });
+}
+
 class AEM {
+    async getCsrfToken() {
+        const { token } = await fetch(this.csrfTokenUrl, {
+            headers,
+        }).then((res) => res.json());
+        return token;
+    }
+
     sites = {
         cf: {
             fragments: {
@@ -88,6 +163,7 @@ class AEM {
                 getCfByPath: getFragmentByPath.bind(this),
                 getCfById: getFragmentById.bind(this),
                 save: saveFragment.bind(this),
+                copyFragment: copyFragmentClassic.bind(this),
             },
         },
     };
@@ -97,6 +173,8 @@ class AEM {
         const sitesUrl = `${baseUrl}/adobe/sites`;
         this.cfFragmentsUrl = `${sitesUrl}/cf/fragments`;
         this.cfSearchUrl = `${this.cfFragmentsUrl}/search`;
+        this.wcmcommandUrl = `${baseUrl}/bin/wcmcommand`;
+        this.csrfTokenUrl = `${baseUrl}/libs/granite/csrf/token.json`;
     }
 }
 
