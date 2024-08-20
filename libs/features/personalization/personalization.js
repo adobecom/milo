@@ -389,7 +389,6 @@ export function modifyNonFragmentSelector(selector) {
     }
   });
   modifiedSelector = terms.join(' ');
-  console.log(`selector: ${selector}\nmodifiedSelector: ${modifiedSelector}`); // temp sanity check
   return modifiedSelector;
 }
 
