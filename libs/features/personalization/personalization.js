@@ -349,20 +349,24 @@ function modifySelectorTerm(term) {
   };
   const otherSelectors = ['row', 'col'];
   const htmlEls = ['div', 'a', 'p', 'strong', 'em', 'picture', 'source', 'img', 'h'];
-  const prefix = term.match(/^[a-zA-Z/-]*/)[0]?.toLowerCase();
-  const suffix = term.match(/[0-9]*$/)[0];
-  if (!prefix || htmlEls.includes(prefix)) return term;
+  let startText = term.match(/^[a-zA-Z/./-]*/)[0]?.toLowerCase();
+  const endNumber = term.match(/[0-9]*$/)[0];
+  if (!startText || htmlEls.includes(startText)) return term;
   let modifiedTerm = term;
-  if (otherSelectors.includes(prefix) || Object.keys(specificSelectors).includes(prefix)) {
-    if (otherSelectors.includes(prefix)) modifiedTerm = modifiedTerm.replace(prefix, '> div');
-    else modifiedTerm = modifiedTerm.replace(prefix, specificSelectors[prefix]);
-    if (suffix) modifiedTerm = modifiedTerm.replace(suffix, `:nth-child(${suffix})`);
+  if (otherSelectors.includes(startText) || Object.keys(specificSelectors).includes(startText)) {
+    if (otherSelectors.includes(startText)) modifiedTerm = modifiedTerm.replace(startText, '> div');
+    else modifiedTerm = modifiedTerm.replace(startText, specificSelectors[startText]);
+    if (endNumber) modifiedTerm = modifiedTerm.replace(endNumber, `:nth-child(${endNumber})`);
     return modifiedTerm;
   }
-  if (suffix) {
-    modifiedTerm = modifiedTerm.replace(suffix, `:nth-child(${suffix} of .${prefix})`);
+  if (!startText.startsWith('.')) {
+    startText = `.${startText}`;
+    modifiedTerm = `.${modifiedTerm}`;
   }
-  return `.${modifiedTerm}`;
+  if (endNumber) {
+    modifiedTerm = modifiedTerm.replace(endNumber, `:nth-child(${endNumber} of ${startText})`);
+  }
+  return modifiedTerm;
 }
 
 function getSelectedElement({ selector, rootEl }) {
