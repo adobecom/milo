@@ -70,7 +70,7 @@ async function validatedUrls(projectUrls) {
   return validateUrlsFormat(projectUrls);
 }
 
-export function getUrls(jsonUrls) {
+export function getUrls(jsonUrls, fgFlag = false) {
   const { locales } = getConfig();
   // Assume all URLs will be the same locale as the first URL
   const locale = getLocale(locales, jsonUrls[0].pathname);
