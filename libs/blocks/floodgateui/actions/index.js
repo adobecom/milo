@@ -62,7 +62,7 @@ async function findPageFragments(path) {
     const linkHref = links[i].href;
     // Check if it's a referenced asset
     if (isReferencedAsset(linkHref, baseUrlOrigin)) {
-      const pathname = new URL(linkHref).pathname;
+      const [pathname] = new URL(linkHref);
       // Check for duplicates against the original URLs
       if (!urls.value.some((originalUrl) => originalUrl.pathname === pathname)) {
         const sanitizedUrl = getSanitizedUrl(linkHref);
@@ -132,5 +132,5 @@ export async function findFragments() {
     updateExcelJson();
   } else {
     fragmentStatusCheck.value = 'COMPLETED';
-  }  
+  }
 }
