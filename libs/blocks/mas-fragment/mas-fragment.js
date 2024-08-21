@@ -9,6 +9,7 @@ export default async function init(el) {
   switch (el.dataset.type) {
     case 'merch-card':
       loadStyle(`${base}/blocks/merch-card/merch-card.css`);
+      // TODO optimize CLS.
       el.outerHTML = `<merch-card>
         <merch-datasource path="${el.dataset.path}" consonant></merch-datasource>
         </merch-card>`;
