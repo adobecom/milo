@@ -4,6 +4,7 @@ This repository provides individual Spectrum Web Components for consumption in S
 This feature is mainly designed for consumption by the different merch blocks.
 
 Please know that SWC is heavy, impacts page performance and is not suitable for cases where a Consonant component is already available in Milo, e.g: button.
+Be aware that the polyfills from the `custom-element.js` must be loaded before SWC dependencies, otherwise it may cause issues (only in Safari).
 
 To load SWC components, do as follows:
 
