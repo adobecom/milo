@@ -4,8 +4,11 @@ import { createTag } from './utils.js';
 const ATTR_AEM_BUCKET = 'aem-bucket';
 
 const xglMappings = {
-    'f731437c-1d9c-4e94-949b-5ab010f5d72b': 'upsell-cc',
+    '8a7b6c5d-4e3f-2a1b-9c8d-7e6f5a4b3c2d': 'photoshop-lapsed-upgrade',
+    'a1b2c3d4-e5f6-7890-abcd-ef1234567890': 'photography-upsell',
 };
+
+let xglProfilePromise;
 
 const cardContent = {
     catalog: {
@@ -262,6 +265,22 @@ export class MerchDataSource extends HTMLElement {
         let item = cache.get(this.path);
         if (!item) {
             item = await this.#aem.sites.cf.fragments.getCfByPath(this.path);
+        }
+        const mostRelevantProfile = (
+            sessionStorage.getItem('mas_xlg') ??
+            window.alloy_all?.data?._adobe_corpnew?.digitalData?.adobe?.xlg
+        )
+            ?.split(',')
+            ?.map((id) => xglMappings[id])
+            .find(Boolean);
+        const itemXlg = item.fields.find((field) => field.name === 'xlg')?.values[0];
+        if (mostRelevantProfile && itemXlg?.includes(mostRelevantProfile)) {
+            const promo = await this.#aem.sites.cf.fragments
+                .getCfByPath(`${this.path}-${mostRelevantProfile}`)
+                .catch(() => null);
+            if (promo) {
+                item = promo;
+            }
         }
         if (item) {
             const appendFn = (element) => {
