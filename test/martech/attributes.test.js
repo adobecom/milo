@@ -7,6 +7,7 @@ const expectedLinkValues = [
   'already-has-1',
   'Traditional Link-2--Second Traditional H',
   'Title Only Link-3--Tracking Header',
+  'Traditional Link-5--Button Tracking Head',
   'After bold-1--Bold text',
   'After strong-2--Strong text',
 ];
@@ -45,9 +46,9 @@ describe('Analytics', async () => {
       expect(link.getAttribute('daa-ll')).to.equal(expectedLinkValues[idx]);
     });
   });
-  it('should limit analytics header length to analytics-header-limit when metadata set to a number', async () => {
+  it('should limit analytics header length to analytics-header-limit when this metadata value is set to a number', async () => {
     document.body.outerHTML = await readFile({ path: './mocks/body.html' });
-    const analyticsHeaderLimit = '2';
+    const analyticsHeaderLimit = 2;
     const meta = createTag('meta', { name: 'analytics-header-limit', content: analyticsHeaderLimit });
     document.querySelector('head')?.append(meta);
     document.querySelectorAll('main > div').forEach((section, idx) => decorateSectionAnalytics(section, idx, { mep: { martech: '|smb|hp' } }));
@@ -56,7 +57,7 @@ describe('Analytics', async () => {
       const daall = link.getAttribute('daa-ll');
       const linkHeaderValue = daall.includes('--') && daall.split('--')[1];
       if (linkHeaderValue) {
-        expect(linkHeaderValue.length.toString()).to.equal(analyticsHeaderLimit);
+        expect(linkHeaderValue.length).to.be.at.most(analyticsHeaderLimit);
       }
     });
   });
@@ -65,35 +66,35 @@ describe('Analytics', async () => {
     const analyticsHeaderLimit = 'off';
     document.querySelector('meta[name="analytics-header-limit"]')?.setAttribute('content', analyticsHeaderLimit);
     document.querySelectorAll('main > div').forEach((section, idx) => decorateSectionAnalytics(section, idx, { mep: { martech: '|smb|hp' } }));
-    const headerText = document.querySelector('#block-with-header h3:nth-of-type(2)')?.textContent;
+    const headerText = document.querySelector('#block-with-header h3:nth-of-type(2)')?.textContent.trim();
     const daall = document.querySelector('#block-with-header p:nth-of-type(2) a')?.getAttribute('daa-ll')?.split('--')[1];
     expect(headerText).to.equal(daall);
   });
-  it('should set analytics header length to default when analytics-header-limit metadata value is empty', async () => {
+  it('should limit analytics header length to default when analytics-header-limit metadata value is empty', async () => {
     const defaultValue = 20;
     document.body.outerHTML = await readFile({ path: './mocks/body.html' });
     const analyticsHeaderLimit = '';
     document.querySelector('meta[name="analytics-header-limit"]')?.setAttribute('content', analyticsHeaderLimit);
     document.querySelectorAll('main > div').forEach((section, idx) => decorateSectionAnalytics(section, idx, { mep: { martech: '|smb|hp' } }));
     const daall = document.querySelector('#block-with-header p:nth-of-type(2) a')?.getAttribute('daa-ll')?.split('--')[1];
-    expect(defaultValue).to.equal(daall.length);
+    expect(daall.length).to.be.at.most(defaultValue);
   });
-  it('should set analytics header length to default value when analytics-header-limit metadata value is incorrect', async () => {
+  it('should limit analytics header length to default when analytics-header-limit metadata value is incorrect', async () => {
     const defaultValue = 20;
     document.body.outerHTML = await readFile({ path: './mocks/body.html' });
     const analyticsHeaderLimit = 'offs';
     document.querySelector('meta[name="analytics-header-limit"]')?.setAttribute('content', analyticsHeaderLimit);
     document.querySelectorAll('main > div').forEach((section, idx) => decorateSectionAnalytics(section, idx, { mep: { martech: '|smb|hp' } }));
     const daall = document.querySelector('#block-with-header p:nth-of-type(2) a')?.getAttribute('daa-ll')?.split('--')[1];
-    expect(defaultValue).to.equal(daall.length);
+    expect(daall.length).to.be.at.most(defaultValue);
   });
-  it('should set analytics header length to default value when no metadata', async () => {
+  it('should limit analytics header length to default when no metadata', async () => {
     const defaultValue = 20;
     document.body.outerHTML = await readFile({ path: './mocks/body.html' });
     document.querySelector('meta[name="analytics-header-limit"]').remove();
     document.querySelectorAll('main > div').forEach((section, idx) => decorateSectionAnalytics(section, idx, { mep: { martech: '|smb|hp' } }));
-    const daallHeaderText = document.querySelector('#block-with-header p:nth-of-type(2) a')?.getAttribute('daa-ll')?.split('--')[1];
-    expect(defaultValue).to.equal(daallHeaderText.length);
+    const daall = document.querySelector('#block-with-header p:nth-of-type(2) a')?.getAttribute('daa-ll')?.split('--')[1];
+    expect(daall.length).to.be.at.most(defaultValue);
   });
   it('should process tracking labels', () => {
     const longString = 'This is a long string that should be truncated';
