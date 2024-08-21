@@ -52,14 +52,26 @@ const ChatBot = ({ data }) => {
     }
   };
 
-  const toggleChat = () => {
-    const container = document.querySelector('.chat-container');
+  const toggleChat = (e) => {
+    const container = document.querySelector('.chat-wrapper');
+    const tab = container.querySelector('.chat-tab');
     const input = document.getElementById('quiz-input');
+    const button = e.target;
     if (!container.classList.contains('active')) {
       container.classList.add('active');
-      setTimeout(() => { input.focus(); }, 750);
+      button.classList.remove('outline');
+      button.classList.add('blue');
+      tab.classList.add('tab-bg');
+      setTimeout(() => {
+        input.focus();
+      }, 750);
     } else {
       container.classList.remove('active');
+      setTimeout(() => {
+        button.classList.remove('blue');
+        button.classList.add('outline');
+        tab.classList.remove('tab-bg');
+      }, 750);
       input.blur();
     }
   };
@@ -72,7 +84,7 @@ const ChatBot = ({ data }) => {
     document.getElementById('quiz-input').value = userInput;
     const historyEl = document.querySelector('.chat-history');
     historyEl.scrollTop = historyEl.scrollHeight;
-  }, [chatHistory]);
+  }, [chatHistory, userInput]);
 
   return html`
     <div class="chat-banner">
@@ -80,7 +92,7 @@ const ChatBot = ({ data }) => {
     </div>
     <div class="chat-wrapper">
       <div class="chat-tab">
-        <button onClick=${toggleChat} class="chat-invoke" tabindex="0">Ask AI</button>
+        <button onClick=${toggleChat} class="chat-invoke con-button outline" tabindex="0">Ask AI</button>
       </div>
       <div class="chat-container">
         <p class="chat-intro">Ask AI about our products!</p>
@@ -100,10 +112,10 @@ const ChatBot = ({ data }) => {
             placeholderText="Enter Prompt"
           />
           <div class="button-container">
-            <button onClick=${handleSendMessage}>Submit</button>
+            <button onClick=${handleSendMessage} class="con-button blue">Submit</button>
             ${showPhotoshopButton && html`
-              <button class="photoshop-button" onClick=${() => window.open('https://photoshop.adobe.com', '_blank')}>
-                Go to play Photoshop
+              <button class="con-button blue" onClick=${() => window.open('https://photoshop.adobe.com', '_blank')}>
+                Go to Photoshop
               </button>
             `}
           </div>
