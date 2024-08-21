@@ -206,6 +206,12 @@ merch-card:not([variant='inline-heading']) [slot='heading-xs'] a {
     color: var(--merch-color-grey-80);
 }
 
+merch-card [slot='starting-at'] {
+  font-size: var(--consonant-merch-card-body-xs-font-size);
+  line-height: var(--consonant-merch-card-body-xs-line-height);
+  font-weight: 500;
+}
+
 merch-card [slot='heading-xs'] a:not(:hover) {
     text-decoration: inherit;
 }

@@ -2,7 +2,6 @@ import { decorateButtons, decorateBlockHrs } from '../../utils/decorate.js';
 import { getConfig, createTag, loadStyle } from '../../utils/utils.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
 import { processTrackingLabels } from '../../martech/attributes.js';
-import { replaceKey } from '../../features/placeholders.js';
 import '../../deps/mas/merch-card.js';
 
 const TAG_PATTERN = /^[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-].*$/;
@@ -416,6 +415,19 @@ const updateBigPrices = (merchCard) => {
   });
 };
 
+const addStartingAt = async (styles, merchCard) => {
+  if (styles.includes('starting-at')) {
+    const { replaceKey } = await import('../../features/placeholders.js');
+    await replaceKey('starting-at', getConfig()).then((key) => {
+      const startingAt = createTag('div', { slot: 'starting-at' }, key);
+      const price = merchCard.querySelector('span[is="inline-price"]');
+      if (price) {
+        price.parentNode.prepend(startingAt);
+      }
+    });
+  }
+};
+
 export default async function init(el) {
   if (!el.querySelector(INNER_ELEMENTS_SELECTOR)) return el;
   const styles = [...el.classList];
@@ -548,6 +560,7 @@ export default async function init(el) {
 
   addStock(merchCard, styles);
   if (styles.includes('secure')) {
+    const { replaceKey } = await import('../../features/placeholders.js');
     await replaceKey('secure-transaction', getConfig()).then((key) => merchCard.setAttribute('secure-label', key));
   }
   merchCard.setAttribute('filters', categories.join(','));
@@ -584,7 +597,9 @@ export default async function init(el) {
         }
       }
     }
+
     updateBigPrices(merchCard);
+    await addStartingAt(styles, merchCard);
     decorateBlockHrs(merchCard);
     simplifyHrs(merchCard);
     if (merchCard.classList.contains('has-divider')) merchCard.setAttribute('custom-hr', true);
