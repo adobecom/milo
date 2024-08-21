@@ -245,7 +245,6 @@ main > .section[class*='-up'] > .content {
     order: 1;
   }
 
-  .section.one-up-mobile { grid-template-columns: 1fr; }
 }
 
 @media screen and (min-width: 600px) and (max-width: 1200px) {
@@ -253,10 +252,10 @@ main > .section[class*='-up'] > .content {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   }
   
-  .section.two-up-tablet { grid-template-columns: repeat(2, 1fr);  }
-  .section.three-up-tablet { grid-template-columns: repeat(3, 1fr);  }
-  .section.four-up-tablet { grid-template-columns: repeat(4, 1fr);  }
-  .section.five-up-tablet { grid-template-columns: repeat(5, 1fr);  }
+  .section.one-up-tablet { grid-template-columns: 1fr; }
+  .section.two-up-tablet { grid-template-columns: repeat(2, 1fr); }
+  .section.three-up-tablet { grid-template-columns: repeat(3, 1fr); }
+  .section.four-up-tablet { grid-template-columns: repeat(4, 1fr); }
 
   .section.masonry-layout {
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -264,15 +263,6 @@ main > .section[class*='-up'] > .content {
   
   .section.masonry-layout .grid-full-width:first-child {
     grid-column: 1 / -1;
-  }
-}
-
-@media screen and (max-width: 900px) {
-  .section.two-up.one-up-tablet,
-  .section.three-up.one-up-tablet,
-  .section.four-up.one-up-tablet,
-  .section.five-up.one-up-tablet {
-    grid-template-columns: 1fr;
   }
 }
 
