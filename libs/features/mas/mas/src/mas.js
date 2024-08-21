@@ -1,5 +1,4 @@
 import { init } from '@adobe/mas-commerce';
-
 const { origin, searchParams } = new URL(import.meta.url);
 
 const locale = searchParams.get('locale') ?? 'US_en';
@@ -19,5 +18,9 @@ const config = () => ({
 init(config);
 
 if (features.includes('merch-card')) {
-    import(`${origin}/libs/deps/merch-card-all.js`);
+  await Promise.allSettled([
+    import('../../web-components/src/merch-card.js'),
+    import('../../web-components/src/merch-icon.js'),
+    import('../../web-components/src/merch-datasource.js'),
+  ]);
 }

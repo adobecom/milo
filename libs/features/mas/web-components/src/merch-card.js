@@ -375,7 +375,11 @@ export class MerchCard extends LitElement {
 
     get promoBottom() {
       return this.classList.contains('promo-bottom');
-  }
+    }
+
+    get startingAt() {
+      return this.classList.contains('starting-at');
+    }
 
     renderSegment() {
         return html` ${this.badge}
