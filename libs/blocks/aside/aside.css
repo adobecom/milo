@@ -166,7 +166,7 @@
   align-items: center;
 }
 
-.aside .foreground.container .icon-area {
+.aside:not(.notification) .foreground.container .icon-area {
   max-height: 80px;
   display: flex;
   align-items: center;
@@ -409,6 +409,7 @@
 
 .aside.notification .foreground.container .icon-area img {
   max-height: 40px;
+  max-width: 234px;
   height: auto;
 }
 
