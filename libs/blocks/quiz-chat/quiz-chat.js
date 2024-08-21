@@ -92,13 +92,6 @@ const ChatBot = ({ data }) => {
           `)}
         </div>
         ${isTyping && html`<div class="bot-typing">Adobe AI is typing...</div>`}
-        ${showPhotoshopButton && html`
-          <div class="photoshop-button-container">
-            <button onClick=${() => { window.open('https://photoshop.adobe.com', '_blank'); }}>
-              Go to play Photoshop
-            </button>
-          </div>
-        `}
         <div class="input-container">
           <${mlField}
             cardsUsed=${false} 
@@ -108,6 +101,11 @@ const ChatBot = ({ data }) => {
           />
           <div class="button-container">
             <button onClick=${handleSendMessage}>Submit</button>
+            ${showPhotoshopButton && html`
+              <button class="photoshop-button" onClick=${() => window.open('https://photoshop.adobe.com', '_blank')}>
+                Go to play Photoshop
+              </button>
+            `}
           </div>
           <div class="label-container">
             <label>

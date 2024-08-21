@@ -121,21 +121,19 @@ button:hover {
   resize: vertical; /* Allow vertical resizing by the user, or set to 'none' to disable */
 }
 
-.button-container {
-  margin-top: 10px; /* Adds space above the button */
-}
-
 .label-container {
   margin-top: 10px; /* Adds space above the label */
 }
 
-.photoshop-button-container {
-  margin: 10px;
-  text-align: right;
+.button-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
 }
 
-.photoshop-button-container button {
-  background-color: #0070f3; /* Adobe's blue color or choose a color that matches your design */
+.button-container button {
+  background-color: #0070f3; /* Default color for all buttons */
   color: white;
   border: none;
   padding: 10px 20px;
@@ -145,6 +143,16 @@ button:hover {
   transition: background-color 0.3s ease;
 }
 
-.photoshop-button-container button:hover {
+.button-container button:hover {
   background-color: #005bb5; /* Darker shade for hover effect */
 }
+
+.photoshop-button {
+  margin-left: auto; /* Pushes the Photoshop button to the right */
+  background-color: #ff8c00; /* Photoshop button color, you can change this */
+}
+
+.photoshop-button:hover {
+  background-color: #e67e22; /* Darker shade for Photoshop button hover effect */
+}
+
