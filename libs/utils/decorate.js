@@ -16,7 +16,7 @@ export function decorateButtons(el, size) {
     }
     target.classList.add('con-button', buttonType);
     if (size) target.classList.add(size); /* button-l, button-xl */
-    const customClasses = [...target.href.matchAll(/#_button-([a-zA-Z]+)/g)];
+    const customClasses = [...target.href.matchAll(/#_button-([a-zA-Z-]+)/g)];
     if (customClasses) {
       customClasses.forEach((match) => {
         target.href = target.href.replace(match[0], '');
