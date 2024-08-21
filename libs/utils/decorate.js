@@ -278,3 +278,17 @@ export function applyInViewPortPlay(video) {
     observer.observe(video);
   }
 }
+
+export function decorateMultiViewport(el) {
+  const viewports = ['mobile-up', 'tablet-up', 'desktop-up'];
+  const foreground = el.querySelector('.foreground');
+  if (foreground.childElementCount === 2 || foreground.childElementCount === 3) {
+    [...foreground.children].forEach((child, index) => {
+      child.classList.add(viewports[index]);
+      if (foreground.childElementCount === 2 && index === 1) {
+        child.classList.add('tablet-up', 'desktop-up');
+      }
+    });
+  }
+  return foreground;
+}

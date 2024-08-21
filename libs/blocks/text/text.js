@@ -1,4 +1,4 @@
-import { decorateBlockBg, decorateBlockText, getBlockSize, decorateTextOverrides } from '../../utils/decorate.js';
+import { decorateBlockBg, decorateBlockText, getBlockSize, decorateTextOverrides, decorateMultiViewport } from '../../utils/decorate.js';
 import { createTag, loadStyle, getConfig, loadBlock } from '../../utils/utils.js';
 
 // size: [heading, body, ...detail]
@@ -23,18 +23,6 @@ const blockTypeSizes = {
     xlarge: ['xxl', 'l', 'xl'],
   },
 };
-
-function decorateMultiViewport(el) {
-  const viewports = ['mobile-up', 'tablet-up', 'desktop-up'];
-  const foreground = el.querySelector('.foreground');
-  if (foreground.childElementCount === 2 || foreground.childElementCount === 3) {
-    [...foreground.children].forEach((child, index) => {
-      child.className = viewports[index];
-      if (foreground.childElementCount === 2 && index === 1) child.className = 'tablet-up desktop-up';
-    });
-  }
-  return foreground;
-}
 
 function decorateBlockIconArea(el) {
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');

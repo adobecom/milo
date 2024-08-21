@@ -11,10 +11,10 @@
  */
 
 /*
-* Notification - v1.1
+* Notification - v1.2
 */
 
-import { decorateBlockText, decorateBlockBg, decorateTextOverrides } from '../../utils/decorate.js';
+import { decorateBlockText, decorateBlockBg, decorateTextOverrides, decorateMultiViewport } from '../../utils/decorate.js';
 import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
 
 const { miloLibs, codeRoot } = getConfig();
@@ -54,6 +54,8 @@ const closeSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
   </defs>
 </svg>`;
 
+let iconographyLoaded = false;
+
 function getOpts(el) {
   const optRows = [...el.querySelectorAll(':scope > div:nth-of-type(n+3)')];
   if (!optRows.length) return {};
@@ -73,13 +75,15 @@ function getBlockData(el) {
 }
 
 function wrapCopy(foreground) {
-  const text = foreground.querySelector('.text');
-  if (!text) return;
-  const heading = text?.querySelector('h1, h2, h3, h4, h5, h6, p:not(.icon-area, .action-area)');
-  const icon = heading?.previousElementSibling;
-  const body = heading?.nextElementSibling?.classList.contains('action-area') ? '' : heading?.nextElementSibling;
-  const copy = createTag('div', { class: 'copy-wrap' }, [heading, body].filter(Boolean));
-  text?.insertBefore(copy, icon?.nextSibling || text.children[0]);
+  const texts = foreground.querySelectorAll('.text');
+  if (!texts) return;
+  texts.forEach((text) => {
+    const heading = text?.querySelector('h1, h2, h3, h4, h5, h6, p:not(.icon-area, .action-area)');
+    const icon = heading?.previousElementSibling;
+    const body = heading?.nextElementSibling?.classList.contains('action-area') ? '' : heading?.nextElementSibling;
+    const copy = createTag('div', { class: 'copy-wrap' }, [heading, body].filter(Boolean));
+    text?.insertBefore(copy, icon?.nextSibling || text.children[0]);
+  });
 }
 
 function decorateClose(el) {
@@ -104,10 +108,11 @@ function decorateFlexible(el) {
 
 async function loadIconography() {
   await new Promise((resolve) => { loadStyle(`${base}/styles/iconography.css`, resolve); });
+  iconographyLoaded = true;
 }
 
 async function decorateLockup(lockupArea, el) {
-  await loadIconography();
+  if (!iconographyLoaded) await loadIconography();
   const icon = lockupArea.querySelector('picture');
   const content = icon.nextElementSibling || icon.nextSibling;
   const label = createTag('span', { class: 'lockup-label' }, content.nodeValue || content);
@@ -122,21 +127,29 @@ async function decorateLockup(lockupArea, el) {
   if (pre && pre[2] === 'icon') el.classList.replace(pre[0], `${pre[1]}-lockup`);
 }
 
+async function decorateForegroundText(el, container) {
+  const text = container?.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
+  text?.classList.add('text');
+  const iconArea = text?.querySelector('p picture')?.closest('p');
+  iconArea?.classList.add('icon-area');
+  if (iconArea?.textContent.trim()) await decorateLockup(iconArea, el);
+}
+
 async function decorateLayout(el) {
   const [background, ...rest] = el.querySelectorAll(':scope > div');
   const foreground = rest.pop();
   if (background) decorateBlockBg(el, background);
   foreground?.classList.add('foreground', 'container');
-  const text = foreground?.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
-  text?.classList.add('text');
-  const iconArea = text?.querySelector('p picture')?.closest('p');
-  iconArea?.classList.add('icon-area');
-  if (iconArea?.textContent.trim()) await decorateLockup(iconArea, el);
+  if (el.matches(`:is(.${pill}, .${ribbon})`)) {
+    foreground.querySelectorAll(':scope > div').forEach((div) => decorateForegroundText(el, div));
+  } else {
+    await decorateForegroundText(el, foreground);
+  }
   const fgMedia = foreground?.querySelector(':scope > div:not(.text) :is(img, video, a[href*=".mp4"])')?.closest('div');
   const bgMedia = el.querySelector(':scope > div:not(.foreground) :is(img, video, a[href*=".mp4"])')?.closest('div');
   const media = fgMedia ?? bgMedia;
   media?.classList.toggle('image', media && !media.classList.contains('text'));
-  foreground?.classList.toggle('no-image', !media && !iconArea);
+  foreground?.classList.toggle('no-image', !media && !el.querySelector('.icon-area'));
   if (el.matches(`:is(.${pill}, .${ribbon}):not(.no-closure)`)) decorateClose(el);
   if (el.matches(`.${pill}.flexible`)) decorateFlexible(el);
   return foreground;
@@ -152,5 +165,8 @@ export default async function init(el) {
   }
   decorateTextOverrides(el);
   el.querySelectorAll('a:not([class])').forEach((staticLink) => staticLink.classList.add('static'));
-  if (el.matches(`:is(.${ribbon}, .${pill})`)) wrapCopy(blockText);
+  if (el.matches(`:is(.${ribbon}, .${pill})`)) {
+    decorateMultiViewport(el);
+    wrapCopy(blockText);
+  }
 }
