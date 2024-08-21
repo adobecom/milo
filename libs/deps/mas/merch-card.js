@@ -156,10 +156,12 @@ import{html as o,LitElement as K,nothing as Q}from"/libs/deps/lit-all.min.js";im
         height: fit-content;
         flex-direction: column;
         width: fit-content;
+        max-width: 140px;
         border-radius: 5px;
         position: relative;
         top: 0;
         margin-left: var(--consonant-merch-spacing-xxs);
+        box-sizing: border-box;
     }
 
     .detail-bg-container {
@@ -781,6 +783,13 @@ merch-card[variant="catalog"] [slot="action-menu-content"] p {
 merch-card[variant="catalog"] [slot="action-menu-content"] a {
     color: var(--consonant-merch-card-background-color);
     text-decoration: underline;
+}
+
+merch-card[variant="catalog"] .payment-details {
+  font-size: var(--consonant-merch-card-body-font-size);
+  font-style: italic;
+  font-weight: 400;
+  line-height: var(--consonant-merch-card-body-line-height);
 }
 
 merch-card[variant="ccd-action"] .price-strikethrough {

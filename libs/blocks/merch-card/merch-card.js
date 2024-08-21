@@ -153,6 +153,53 @@ const parseTwpContent = async (el, merchCard) => {
   }
 };
 
+const appendPaymentDetails = (element, merchCard) => {
+  if (element.firstChild.nodeType !== Node.TEXT_NODE) return;
+  const paymentDetails = createTag('div', { class: 'payment-details' }, element.innerHTML);
+  const headingM = merchCard.querySelector('h4[slot="heading-m"]');
+  headingM?.append(paymentDetails);
+};
+
+const appendCalloutContent = (element, merchCard) => {
+  if (element.firstElementChild?.tagName !== 'EM') return;
+  let calloutSlot = merchCard.querySelector('div[slot="callout-content"]');
+  let calloutContainer = calloutSlot?.querySelector('div');
+  if (!calloutContainer) {
+    calloutSlot = createTag('div', { slot: 'callout-content' });
+    calloutContainer = createTag('div');
+    calloutSlot.appendChild(calloutContainer);
+    merchCard.appendChild(calloutSlot);
+  }
+
+  const calloutContentWrapper = createTag('div');
+  const calloutContent = createTag('div');
+  const emElement = element.firstElementChild;
+  const fragment = document.createDocumentFragment();
+  let imgElement = null;
+
+  emElement.childNodes.forEach((child) => {
+    if (child.nodeType === Node.ELEMENT_NODE && child.tagName === 'A' && child.innerText.trim().toLowerCase() === '#icon') {
+      const [imgSrc, tooltipText] = child.getAttribute('href')?.split('#') || [];
+      imgElement = createTag('img', {
+        src: imgSrc,
+        title: decodeURIComponent(tooltipText),
+        class: 'callout-icon',
+      });
+    } else {
+      const clone = child.cloneNode(true);
+      fragment.appendChild(clone);
+    }
+  });
+
+  calloutContent.appendChild(fragment);
+  calloutContentWrapper.appendChild(calloutContent);
+
+  if (imgElement) {
+    calloutContentWrapper.appendChild(imgElement);
+  }
+  calloutContainer.appendChild(calloutContentWrapper);
+};
+
 const parseContent = async (el, merchCard) => {
   let bodySlotName = `body-${merchCard.variant !== MINI_COMPARE_CHART ? 'xs' : 'm'}`;
   let headingMCount = 0;
@@ -174,7 +221,6 @@ const parseContent = async (el, merchCard) => {
   const innerElements = [
     ...el.querySelectorAll(INNER_ELEMENTS_SELECTOR),
   ];
-  const calloutContainer = createTag('div');
 
   innerElements.forEach((element) => {
     let { tagName } = element;
@@ -209,36 +255,9 @@ const parseContent = async (el, merchCard) => {
       }
       return;
     }
-    if (tagName === 'H6' && element.firstElementChild?.tagName === 'EM') {
-      const calloutContentWrapper = createTag('div');
-      const calloutContent = createTag('div');
-      const emElement = element.firstElementChild;
-      let imgElement = null;
-      const fragment = document.createDocumentFragment();
-
-      emElement.childNodes.forEach((child) => {
-        if (child.nodeType === Node.ELEMENT_NODE && child.tagName === 'A' && child.innerText.trim().toLowerCase() === '#icon') {
-          const [imgSrc, tooltipText] = child.getAttribute('href')?.split('#') || [];
-          imgElement = createTag('img', {
-            src: imgSrc,
-            title: decodeURIComponent(tooltipText),
-            class: 'callout-icon',
-          });
-        } else {
-          const clone = child.cloneNode(true);
-          fragment.appendChild(clone);
-        }
-      });
-
-      calloutContent.appendChild(fragment);
-      calloutContentWrapper.appendChild(calloutContent);
-
-      if (imgElement) {
-        calloutContentWrapper.appendChild(imgElement);
-      }
-
-      calloutContainer.appendChild(calloutContentWrapper);
-      return;
+    if (tagName === 'H6') {
+      appendPaymentDetails(element, merchCard);
+      appendCalloutContent(element, merchCard);
     }
     if (isParagraphTag(tagName)) {
       bodySlot.append(element);
@@ -246,12 +265,6 @@ const parseContent = async (el, merchCard) => {
     }
     if (mnemonicList) bodySlot.append(mnemonicList);
   });
-
-  if (calloutContainer.children.length > 0) {
-    const calloutSlot = createTag('div', { slot: 'callout-content' });
-    calloutSlot.appendChild(calloutContainer);
-    merchCard.appendChild(calloutSlot);
-  }
 
   if (merchCard.variant === MINI_COMPARE_CHART && merchCard.childNodes[1]) {
     merchCard.insertBefore(bodySlot, merchCard.childNodes[1]);
