@@ -5,7 +5,6 @@ const ATTR_AEM_BUCKET = 'aem-bucket';
 
 const cardContent = {
     catalog: {
-        name: 'catalog',
         title: {
             tag: 'h3',
             slot: 'heading-xs',
@@ -21,7 +20,6 @@ const cardContent = {
         ctas: { size: 'l' },
     },
     ah: {
-        name: 'ah',
         title: {
             tag: 'h3',
             slot: 'heading-xxs',
@@ -37,10 +35,32 @@ const cardContent = {
         ctas: { size: 's' },
     },
     'ccd-action': {
-        name: 'ccd-action',
         title: {
             tag: 'h3',
             slot: 'heading-xs',
+        },
+        prices: {
+            tag: 'h3',
+            slot: 'heading-xs',
+        },
+        description: {
+            tag: 'div',
+            slot: 'body-xs',
+        },
+        ctas: { size: 'l' },
+    },
+    'special-offers': {
+        name: {
+            tag: 'h4',
+            slot: 'detail-m',
+        },
+        title: {
+            tag: 'h4',
+            slot: 'detail-m',
+        },
+        backgroundImage: {
+            tag: 'div',
+            slot: 'bg-image',
         },
         prices: {
             tag: 'h3',
@@ -65,9 +85,9 @@ async function parseMerchCard(fragmentData, appendFn, merchCard) {
     item.path = item.path;
     item.model = item.model;
 
-    const { variant = 'ccd-action' } = item;
+    const { variant = 'catalog' } = item;
     merchCard.setAttribute('variant', variant);
-    const cardMapping = cardContent[variant];
+    const cardMapping = cardContent[variant] ?? 'catalog';
     item.icon?.forEach((icon) => {
         const merchIcon = createTag('merch-icon', {
             slot: 'icons',
@@ -79,7 +99,7 @@ async function parseMerchCard(fragmentData, appendFn, merchCard) {
         appendFn(merchIcon);
     });
 
-    if (item.title) {
+    if (item.title && cardMapping.title) {
         appendFn(
             createTag(
                 cardMapping.title.tag,
@@ -89,7 +109,17 @@ async function parseMerchCard(fragmentData, appendFn, merchCard) {
         );
     }
 
-    if (item.prices) {
+    if (item.backgroundImage && cardMapping.backgroundImage) {
+        appendFn(
+            createTag(
+                cardMapping.backgroundImage.tag,
+                { slot: cardMapping.backgroundImage.slot },
+                `<img loading="lazy" src="${item.backgroundImage}" width="600" height="362">`,
+            ),
+        );
+    }
+
+    if (item.prices && cardMapping.prices) {
         const prices = item.prices;
         const headingM = createTag(
             cardMapping.prices.tag,
@@ -99,7 +129,7 @@ async function parseMerchCard(fragmentData, appendFn, merchCard) {
         appendFn(headingM);
     }
 
-    if (item.description) {
+    if (item.description && cardMapping.description) {
         const body = createTag(
             cardMapping.description.tag,
             { slot: cardMapping.description.slot },
@@ -111,7 +141,7 @@ async function parseMerchCard(fragmentData, appendFn, merchCard) {
     if (item.ctas) {
         let ctas = item.ctas;
         const footer = createTag('div', { slot: 'footer' }, ctas);
-        [...footer.querySelectorAll('[is="checkout-link"]')].forEach((cta) => {
+        [...footer.querySelectorAll('a')].forEach((cta) => {
             const spectrumCta = createTag('sp-button', {}, cta);
             spectrumCta.addEventListener('click', (e) => {
                 e.stopPropagation();

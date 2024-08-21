@@ -13,7 +13,7 @@ const headers = {
  * @param {string} [params.query] - The search query
  * @returns {Promise<Array>} - A promise that resolves to an array of search results
  */
-export async function searchFragment({ path, query }) {
+export async function searchFragment({ path, query, variant }) {
     const filter = {};
     if (path) {
         filter.path = path;
@@ -24,6 +24,7 @@ export async function searchFragment({ path, query }) {
             queryMode: 'EXACT_WORDS',
         };
     }
+
     const searchParams = new URLSearchParams({
         query: JSON.stringify({ filter }),
     }).toString();
@@ -31,7 +32,19 @@ export async function searchFragment({ path, query }) {
         headers,
     })
         .then((res) => res.json())
-        .then((json) => json.items);
+        .then((json) => json.items)
+        .then((items) => {
+            // filter by variant
+            if (variant) {
+                return items.filter((item) => {
+                    const [itemVariant] = item.fields.find(
+                        (field) => field.name === 'variant',
+                    )?.values;
+                    return itemVariant === variant;
+                });
+            }
+            return items;
+        });
 }
 
 /**

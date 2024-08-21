@@ -23,7 +23,7 @@ import{html as n,LitElement as H,nothing as B}from"../lit-all.min.js";import{Lit
             width: var(--img-width);
             height: var(--img-height);
         }
-    `};customElements.define("merch-icon",h);import{css as y,unsafeCSS as u}from"../lit-all.min.js";var g="(max-width: 767px)",x="(max-width: 1199px)",c="(min-width: 768px)",a="(min-width: 1200px)",s="(min-width: 1600px)";var k=y`
+    `};customElements.define("merch-icon",h);import{css as y,unsafeCSS as f}from"../lit-all.min.js";var g="(max-width: 767px)",x="(max-width: 1199px)",c="(min-width: 768px)",a="(min-width: 1200px)",s="(min-width: 1600px)";var k=y`
     :host {
         position: relative;
         display: flex;
@@ -331,7 +331,7 @@ import{html as n,LitElement as H,nothing as B}from"../lit-all.min.js";import{Lit
         height: var(--consonant-merch-card-mini-compare-top-section-height);
     }
 
-    @media screen and ${u(x)} {
+    @media screen and ${f(x)} {
         [class*'-merch-cards'] :host([variant='mini-compare-chart']) footer {
             flex-direction: column;
             align-items: stretch;
@@ -339,7 +339,7 @@ import{html as n,LitElement as H,nothing as B}from"../lit-all.min.js";import{Lit
         }
     }
 
-    @media screen and ${u(a)} {
+    @media screen and ${f(a)} {
         :host([variant='mini-compare-chart']) footer {
             padding: var(--consonant-merch-spacing-xs)
                 var(--consonant-merch-spacing-s)
@@ -389,7 +389,7 @@ import{html as n,LitElement as H,nothing as B}from"../lit-all.min.js";import{Lit
     }
 `,z=()=>{let m=[y`
         /* Tablet */
-        @media screen and ${u(c)} {
+        @media screen and ${f(c)} {
             :host([size='wide']),
             :host([size='super-wide']) {
                 grid-column: span 3;
@@ -400,13 +400,13 @@ import{html as n,LitElement as H,nothing as B}from"../lit-all.min.js";import{Lit
         }
 
         /* Laptop */
-        @media screen and ${u(a)} {
+        @media screen and ${f(a)} {
             :host([size='super-wide']) {
                 grid-column: span 3;
             }
         `];return m.push(y`
         /* Large desktop */
-        @media screen and ${u(s)} {
+        @media screen and ${f(s)} {
             :host([size='super-wide']) {
                 grid-column: span 4;
             }
@@ -997,6 +997,17 @@ div[slot="footer"] {
 [slot="footer"] a {
     word-wrap: break-word;
     text-align: center;
+}
+
+sp-button a {
+    text-decoration: none;
+    color: var(
+        --highcontrast-button-content-color-default,
+        var(
+            --mod-button-content-color-default,
+            var(--spectrum-button-content-color-default)
+        )
+    );
 }
 
 [slot="footer"] a:not([class]) {
