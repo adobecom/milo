@@ -334,42 +334,39 @@ export class MerchCard extends LitElement {
         return this.textContent.match(new RegExp(text, 'i')) !== null;
     }
 
+    getShareURL() {
+      const currentPage = window.location.href.replace('promoshare--milo','main--milo');
+      const modalHash = this.footerSlot?.querySelector('a[data-modal-path]')?.getAttribute('data-modal-hash');
+      return `${currentPage}${encodeURIComponent(modalHash)}`;
+    }
+
     _shareFacebook(e) {
       e?.preventDefault();
-      const shareHref = `https://www.facebook.com/sharer/sharer.php?u=${window.location.href}`;
+      const shareHref = `https://www.facebook.com/sharer/sharer.php?u=${this.getShareURL()}`;
       window.open(shareHref, 'newwindow', 'width=600, height=400');
     }
 
     _shareTwitter(e) {
       e?.preventDefault();
       const description = encodeURIComponent(this.descriptionText);
-      const shareHref = `https://twitter.com/intent/tweet?text=${description}&url=${window.location.href}`;
+      const shareHref = `https://twitter.com/intent/tweet?text=${description}&url=${this.getShareURL()}`;
       window.open(shareHref, 'newwindow', 'width=600, height=400');
     }
 
     _shareLinkedIn(e) {
       e?.preventDefault();
-      const shareHref = `https://www.linkedin.com/sharing/share-offsite/?url=${window.location.href}`;
+      const shareHref = `https://www.linkedin.com/sharing/share-offsite/?url=${this.getShareURL()}`;
       window.open(shareHref, 'newwindow', 'width=600, height=400');
     }
 
     _shareReddit(e) {
       e?.preventDefault();
-      const shareHref = `https://reddit.com/submit?url=${window.location.href}`;
+      const shareHref = `https://reddit.com/submit?url=${this.getShareURL()}`;
       window.open(shareHref, 'newwindow', 'width=600, height=400');
     }
 
     _shareClipboard(e) {
-      e.preventDefault();
-      //const description = encodeURIComponent(this.descriptionText);
-      const text = `${description}\n${window.location.href}`;
-      navigator.clipboard.writeText(window.location.href).then(() => {
-        //copyButton.classList.add('copy-to-clipboard-copied');
-        //setTimeout(() => document.activeElement.blur(), 500);
-        // setTimeout(
-        //   () => copyButton.classList.remove('copy-to-clipboard-copied'),
-        //   2000,
-        // );
+      navigator.clipboard.writeText(this.getShareURL()).then(() => {
       });
     }
 
