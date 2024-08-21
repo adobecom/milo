@@ -63,7 +63,7 @@ async function decorateLockupFromContent(el) {
   await loadIconography();
   rows[0].classList.add('lockup-area');
   rows[0].childNodes.forEach((node) => {
-    if (node.nodeType === 3 && node.nodeValue !== ' ') {
+    if (node.nodeType === 3 && node.nodeValue?.trim()) {
       const newSpan = createTag('span', { class: 'lockup-label' }, node.nodeValue);
       node.parentElement.replaceChild(newSpan, node);
     }
