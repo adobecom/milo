@@ -335,7 +335,9 @@ export class MerchCard extends LitElement {
     }
 
     getShareURL() {
-      const currentPage = window.location.href.replace('promoshare--milo','main--milo');
+      const currentPage = window.location.href
+        .replace('https://main--cc--adobecom.hlx.live/','https://www.adobe.com/')
+        .replace('https://main--cc--adobecom.hlx.page/','https://www.adobe.com/');
       const modalHash = this.footerSlot?.querySelector('a[data-modal-path]')?.getAttribute('data-modal-hash');
       return `${currentPage}${encodeURIComponent(modalHash)}`;
     }
