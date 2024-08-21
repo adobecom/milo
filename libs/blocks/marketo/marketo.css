@@ -10,10 +10,13 @@
 .marketo .marketo-form-wrapper {
   box-sizing: border-box;
   max-width: 600px;
-  min-height: 400px;
   margin: 0 auto;
   padding: var(--spacing-l) 30px;
   background-color: var(--marketo-form-background);
+}
+
+.marketo.loading form {
+  min-height: 400px;
 }
 
 .marketo .marketo-title {
@@ -29,25 +32,37 @@
 }
 
 .marketo .mktoForm {
-  font-size: 16px;
-  font-weight: bold;
-  width: 100%!important;
-}
-
-.marketo form.mktoForm--fade-in {
-  visibility: hidden;
-  opacity: 0;
-}
-
-.marketo form.mktoForm--fade-in.mktoVisible {
   display: flex;
   flex-flow: row wrap;
   justify-content: space-between;
   column-gap: 4.6%;
   align-items: flex-start;
+  max-height: 400px;
+  overflow: hidden;
+  font-size: 16px;
+  font-weight: bold;
+  width: 100%!important;
+  visibility: hidden;
+  opacity: 0;
+}
+
+.marketo.success .marketo-title,
+.marketo.success .marketo-description,
+.marketo.success form.mktoVisible.mktoForm {
+  display: none;
+}
+
+.marketo form.mktoForm.mktoForm--fade-in {
+  transition: opacity 0.1s ease-in;
+  visibility: hidden;
+  opacity: 0;
+}
+
+.marketo form.mktoForm.mktoForm--fade-in.mktoVisible {
+  max-height: 10000px;
+  overflow: visible;
   visibility: visible;
   opacity: 1;
-  transition: opacity 1s ease-in, height 1s ease-in;
 }
 
 .marketo .mktoFormRow.mktoFormRowTop.comments,
