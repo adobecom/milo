@@ -15,7 +15,7 @@
  */
 import { parseEncodedConfig, loadScript, localizeLink, createTag, createIntersectionObserver } from '../../utils/utils.js';
 
-const ROOT_MARGIN = 1000;
+const ROOT_MARGIN = 50;
 const FORM_ID = 'form id';
 const BASE_URL = 'marketo host';
 const MUNCHKIN_ID = 'marketo munckin';
@@ -84,9 +84,11 @@ export const setPreferences = (formData) => {
 };
 
 export const formSuccess = (formEl, formData) => {
+  const el = formEl.closest('.marketo');
   const parentModal = formEl?.closest('.dialog-modal');
   const mktoSubmit = new Event('mktoSubmit');
 
+  el.classList.add('success');
   window.dispatchEvent(mktoSubmit);
   window.mktoSubmitted = true;
 
@@ -115,7 +117,9 @@ export const formSuccess = (formEl, formData) => {
 
 const readyForm = (form, formData) => {
   const formEl = form.getFormElem().get(0);
+  const el = formEl.closest('.marketo');
   const isDesktop = matchMedia('(min-width: 900px)');
+  el.classList.remove('loading');
 
   formEl.addEventListener('focus', ({ target }) => {
     /* c8 ignore next 9 */
@@ -216,6 +220,9 @@ export default function init(el) {
 
   fragment.append(formWrapper);
   el.replaceChildren(fragment);
+  el.classList.add('loading');
+
+  document.head.append(createTag('link', { rel: 'preconnect', href: `https://${baseURL}` }));
 
   createIntersectionObserver({
     el,
