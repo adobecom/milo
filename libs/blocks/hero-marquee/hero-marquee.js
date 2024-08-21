@@ -72,6 +72,7 @@ async function decorateLockupFromContent(el) {
 
 function decorateLockupRow(el, classes) {
   const child = el.querySelector(':scope > div');
+  loadIconography();
   child?.classList.add('lockup-area');
   const iconSizeClass = classes?.find((c) => c.endsWith('-icon'));
   if (iconSizeClass) el.classList.remove(iconSizeClass);

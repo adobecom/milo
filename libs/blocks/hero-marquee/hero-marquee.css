@@ -62,6 +62,10 @@
   justify-content: center;
 }
 
+.hero-marquee .row-lockup .lockup-area {
+  margin: 0;
+}
+
 .hero-marquee .lockup-area a,
 .hero-marquee .lockup-area a:hover {
   color: inherit;
