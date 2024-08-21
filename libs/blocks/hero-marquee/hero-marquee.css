@@ -328,6 +328,10 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   .hero-marquee.bg-top-tablet {
     padding-top: 0;
   }
+  
+  .hero-marquee.bg-bottom-tablet {
+    padding-bottom: 0;
+  }
 
   .hero-marquee.bg-bottom-tablet .background {
     order: 2;
