@@ -52,9 +52,7 @@ export async function searchFragment({ path, query, variant }) {
  * @returns the raw fragment item
  */
 export async function getFragmentByPath(path) {
-    return fetch(`${this.cfFragmentsUrl}?path=${path}`, {
-        headers,
-    })
+    return fetch(`${this.cfFragmentsUrl}?path=${path}`)
         .then((res) => res.json())
         .then(({ items: [item] }) => item);
 }
@@ -172,6 +170,8 @@ export async function publishFragment(fragment) {
         body: JSON.stringify({
             paths: [fragment.path],
             filterReferencesByStatus: ['DRAFT', 'UNPUBLISHED'],
+            workflowModelId:
+                '/var/workflow/models/scheduled_activation_with_references',
         }),
     });
 }

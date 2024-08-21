@@ -44,6 +44,7 @@ const MILO_BLOCKS = [
   'iframe',
   'instagram',
   'locui',
+  'mas-fragment',
   'marketo',
   'marquee',
   'marquee-anchors',
@@ -106,6 +107,7 @@ const AUTO_BLOCKS = [
   { 'pdf-viewer': '.pdf', styles: false },
   { video: '.mp4' },
   { merch: '/tools/ost?' },
+  { mas: 'adobe.com/mas/' },
 ];
 const DO_NOT_INLINE = [
   'accordion',
@@ -612,6 +614,17 @@ export function decorateAutoBlock(a) {
 
     // slack uploaded mp4s
     if (key === 'video' && !a.textContent.match('media_.*.mp4')) {
+      return false;
+    }
+
+    if (key === 'mas') {
+      // get the path value from the url hash
+      const path = new URLSearchParams(new URL(a.href).hash.split('#')[1]).get('path');
+      if (path) {
+        a.parentElement.outerHTML = `
+        <div class="mas-fragment" data-type="merch-card" data-path="${path}">
+        </div>`;
+      }
       return false;
     }
 

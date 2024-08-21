@@ -3,6 +3,10 @@ import { createTag } from './utils.js';
 
 const ATTR_AEM_BUCKET = 'aem-bucket';
 
+const xglMappings = {
+    'f731437c-1d9c-4e94-949b-5ab010f5d72b': 'upsell-cc',
+};
+
 const cardContent = {
     catalog: {
         title: {
@@ -74,7 +78,7 @@ const cardContent = {
     },
 };
 
-async function parseMerchCard(fragmentData, appendFn, merchCard) {
+async function parseMerchCard(fragmentData, appendFn, merchCard, consonant) {
     const item = fragmentData.fields.reduce(
         (acc, { name, multiple, values }) => {
             acc[name] = multiple ? values : values[0];
@@ -142,12 +146,20 @@ async function parseMerchCard(fragmentData, appendFn, merchCard) {
         let ctas = item.ctas;
         const footer = createTag('div', { slot: 'footer' }, ctas);
         [...footer.querySelectorAll('a')].forEach((cta) => {
-            const spectrumCta = createTag('sp-button', {}, cta);
-            spectrumCta.addEventListener('click', (e) => {
-                e.stopPropagation();
-                cta.click();
-            });
-            footer.appendChild(spectrumCta);
+            if (consonant) {
+                cta.classList.add('con-button');
+                if (cta.parentElement.tagName === 'STRONG') {
+                    cta.classList.add('blue');
+                }
+                footer.appendChild(cta);
+            } else {
+                const spectrumCta = createTag('sp-button', {}, cta);
+                spectrumCta.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    cta.click();
+                });
+                footer.appendChild(spectrumCta);
+            }
         });
         appendFn(footer);
     }
@@ -205,8 +217,13 @@ export class MerchDataSource extends HTMLElement {
      */
     path;
 
+    /**
+     * Consonant styling for CTAs.
+     */
+    consonant = false;
+
     static get observedAttributes() {
-        return ['source', 'path'];
+        return ['source', 'path', 'consonant'];
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
@@ -214,15 +231,26 @@ export class MerchDataSource extends HTMLElement {
     }
 
     connectedCallback() {
+        this.consonant = this.hasAttribute('consonant');
+        this.clearRefs();
         const bucket =
             this.getAttribute(ATTR_AEM_BUCKET) ??
-            document.querySelector('mas-studio')?.getAttribute(ATTR_AEM_BUCKET);
+            document
+                .querySelector('mas-studio')
+                ?.getAttribute(ATTR_AEM_BUCKET) ??
+            'publish-p22655-e59341';
         this.#aem = new AEM(bucket);
         this.fetchData();
     }
 
+    clearRefs() {
+        this.refs.forEach((ref) => {
+            ref.remove();
+        });
+    }
+
     refresh(flushCache = true) {
-        this.refs.forEach((ref) => ref.remove());
+        this.clearRefs();
         this.refs = [];
         if (flushCache) {
             this.cache.remove(this.path);
@@ -240,7 +268,7 @@ export class MerchDataSource extends HTMLElement {
                 this.parentElement.appendChild(element);
                 this.refs.push(element);
             };
-            parseMerchCard(item, appendFn, this.parentElement);
+            parseMerchCard(item, appendFn, this.parentElement, this.consonant);
             return;
         }
     }
