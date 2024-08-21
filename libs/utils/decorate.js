@@ -5,16 +5,23 @@ export function decorateButtons(el, size) {
   if (buttons.length === 0) return;
   const buttonTypeMap = { STRONG: 'blue', EM: 'outline', A: 'blue' };
   buttons.forEach((button) => {
+    let target = button;
     const parent = button.parentElement;
     const buttonType = buttonTypeMap[parent.nodeName] || 'outline';
     if (button.nodeName === 'STRONG') {
-      parent.classList.add('con-button', buttonType);
-      if (size) parent.classList.add(size); /* button-l, button-xl */
+      target = parent;
     } else {
-      button.classList.add('con-button', buttonType);
-      if (size) button.classList.add(size); /* button-l, button-xl */
       parent.insertAdjacentElement('afterend', button);
       parent.remove();
+    }
+    target.classList.add('con-button', buttonType);
+    if (size) target.classList.add(size); /* button-l, button-xl */
+    const customClasses = [...target.href.matchAll(/#_button-([a-zA-Z]+)/g)];
+    if (customClasses) {
+      customClasses.forEach((match) => {
+        target.href = target.href.replace(match[0], '');
+        target.classList.add(match[1]);
+      });
     }
     const actionArea = button.closest('p, div');
     if (actionArea) {
