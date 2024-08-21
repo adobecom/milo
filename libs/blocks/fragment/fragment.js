@@ -46,7 +46,7 @@ const insertInlineFrag = (sections, a, relHref) => {
 function replaceDotMedia(path, doc) {
   const resetAttributeBase = (tag, attr) => {
     doc.querySelectorAll(`${tag}[${attr}^="./media_"]`).forEach((el) => {
-      el[attr] = new URL(el.getAttribute(attr), new URL(path, window.location)).href;
+      el[attr] = new URL(el.getAttribute(attr), new URL(window.location)).href;
     });
   };
   resetAttributeBase('img', 'src');
