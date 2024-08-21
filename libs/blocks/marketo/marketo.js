@@ -13,7 +13,9 @@
 /*
  * Marketo Form
  */
-import { parseEncodedConfig, loadScript, localizeLink, createTag, createIntersectionObserver } from '../../utils/utils.js';
+import {
+  parseEncodedConfig, loadScript, loadLink, localizeLink, createTag, createIntersectionObserver,
+} from '../../utils/utils.js';
 
 const ROOT_MARGIN = 50;
 const FORM_ID = 'form id';
@@ -222,13 +224,17 @@ export default function init(el) {
   el.replaceChildren(fragment);
   el.classList.add('loading');
 
-  document.head.append(createTag('link', { rel: 'preconnect', href: `https://${baseURL}` }));
-
-  createIntersectionObserver({
-    el,
-    callback: (target) => {
-      loadMarketo(target, formData);
+  loadLink(`https://${baseURL}/js/forms2/js/forms2.min.js`, {
+    as: 'script',
+    rel: 'preload',
+    callback: () => {
+      createIntersectionObserver({
+        el,
+        callback: (target) => {
+          loadMarketo(target, formData);
+        },
+        options: { rootMargin: `${ROOT_MARGIN}px` },
+      });
     },
-    options: { rootMargin: `${ROOT_MARGIN}px` },
   });
 }
