@@ -67,11 +67,11 @@
 .feds-cta--primary {
   background-color: #066ce7;
   border-color: #066ce7;
-  color: rgb(255, 255, 255);
+  color: #fff;
 }
 
 .feds--dark .feds-cta--secondary {
-  background-color: #111;
+  background-color: var(--background-color);
   border-color: #393939;
   color: var(--feds-color-link--dark);
 }
@@ -221,7 +221,7 @@
 }
 
 .feds--dark .feds-regionPicker-wrapper > .fragment {
-  background: #111;
+  background: var(--feds-background-popup);
 }
 
 .feds--dark .feds-social-icon {
