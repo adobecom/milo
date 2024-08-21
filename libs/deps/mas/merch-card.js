@@ -1539,13 +1539,16 @@ body.merch-modal {
                   `:n`
                       <hr />
                       ${this.secureLabelFooter}
-                  `}`}get promoBottom(){return this.classList.contains("promo-bottom")}renderSegment(){return n` ${this.badge}
+                  `}
+            <slot></slot>`}get promoBottom(){return this.classList.contains("promo-bottom")}renderSegment(){return n` ${this.badge}
             <div class="body">
                 <slot name="heading-xs"></slot>
                 <slot name="body-xxs"></slot>
-                ${this.promoBottom?"":n`<slot name="promo-text"></slot><slot name="callout-content"></slot>`}
+                ${this.promoBottom?"":n`<slot name="promo-text"></slot
+                          ><slot name="callout-content"></slot>`}
                 <slot name="body-xs"></slot>
-                ${this.promoBottom?n`<slot name="promo-text"></slot><slot name="callout-content"></slot>`:""}
+                ${this.promoBottom?n`<slot name="promo-text"></slot
+                          ><slot name="callout-content"></slot>`:""}
             </div>
             <hr />
             ${this.secureLabelFooter}`}renderPlans(){return n` ${this.badge}
@@ -1554,9 +1557,11 @@ body.merch-modal {
                 <slot name="heading-xs"></slot>
                 <slot name="heading-m"></slot>
                 <slot name="body-xxs"></slot>
-                ${this.promoBottom?"":n`<slot name="promo-text"></slot><slot name="callout-content"></slot> `}
+                ${this.promoBottom?"":n`<slot name="promo-text"></slot
+                          ><slot name="callout-content"></slot> `}
                 <slot name="body-xs"></slot>
-                ${this.promoBottom?n`<slot name="promo-text"></slot><slot name="callout-content"></slot> `:""}  
+                ${this.promoBottom?n`<slot name="promo-text"></slot
+                          ><slot name="callout-content"></slot> `:""}
                 ${this.stockCheckbox}
             </div>
             <slot name="quantity-select"></slot>
@@ -1590,7 +1595,9 @@ body.merch-modal {
                 <slot name="icons"></slot>
                 <slot name="heading-xs"></slot>
                 <slot name="body-xxs"></slot>
-                ${this.promoBottom?n`<slot name="body-xs"></slot><slot name="promo-text"></slot>`:n`<slot name="promo-text"></slot><slot name="body-xs"></slot>`}
+                ${this.promoBottom?n`<slot name="body-xs"></slot
+                          ><slot name="promo-text"></slot>`:n`<slot name="promo-text"></slot
+                          ><slot name="body-xs"></slot>`}
             </div>
             ${this.evergreen?n`
                       <div
@@ -1615,9 +1622,11 @@ body.merch-modal {
                 <slot name="icons"></slot>
                 <slot name="heading-xs"></slot>
                 <slot name="body-xxs"></slot>
-                ${this.promoBottom?"":n`<slot name="promo-text"></slot><slot name="callout-content"></slot>`}
+                ${this.promoBottom?"":n`<slot name="promo-text"></slot
+                          ><slot name="callout-content"></slot>`}
                 <slot name="body-xs"></slot>
-                ${this.promoBottom?n`<slot name="promo-text"></slot><slot name="callout-content"></slot>`:""}
+                ${this.promoBottom?n`<slot name="promo-text"></slot
+                          ><slot name="callout-content"></slot>`:""}
             </div>
             ${this.secureLabelFooter}`}renderMiniCompareChart(){let{badge:e}=this;return n` <div class="top-section${e?" badge":""}">
                 <slot name="icons"></slot> ${e}
@@ -1644,7 +1653,9 @@ body.merch-modal {
             <slot name="icons"></slot> ${this.badge}
             <slot name="heading-xs"></slot>
             <slot name="heading-m"></slot>
-            ${this.promoBottom?n`<slot name="body-xs"></slot><slot name="promo-text"></slot>`:n`<slot name="promo-text"></slot><slot name="body-xs"></slot>`}
+            ${this.promoBottom?n`<slot name="body-xs"></slot
+                      ><slot name="promo-text"></slot>`:n`<slot name="promo-text"></slot
+                      ><slot name="body-xs"></slot>`}
             <footer><slot name="footer"></slot></footer>
             ${this.defaultSlot}
         </div>`}connectedCallback(){super.connectedCallback(),this.#e=this.getContainer(),this.setAttribute("tabindex",this.getAttribute("tabindex")??"0"),this.addEventListener("mouseleave",this.toggleActionMenu),this.addEventListener(E,this.handleQuantitySelection),this.addEventListener(S,this.merchCardReady,{once:!0}),this.updateComplete.then(()=>{this.merchCardReady()}),this.storageOptions?.addEventListener("change",this.handleStorageChange)}disconnectedCallback(){super.disconnectedCallback(),this.removeEventListener(E,this.handleQuantitySelection),this.storageOptions?.removeEventListener(w,this.handleStorageChange)}appendInvisibleSpacesToFooterLinks(){[...this.querySelectorAll('[slot="footer"] a')].forEach(e=>{_(e).forEach(r=>{let l=r.textContent.split(" ").map(b=>b.match(/.{1,7}/g)?.join("\u200B")).join(" ");r.textContent=l})})}updateMiniCompareElementMinHeight(e,t){let r=`--consonant-merch-card-mini-compare-${t}-height`,o=Math.max(0,parseInt(window.getComputedStyle(e).height)||0),i=parseInt(this.#e.style.getPropertyValue(r))||0;o>i&&this.#e.style.setProperty(r,`${o}px`)}async adjustTitleWidth(){if(!["segment","plans"].includes(this.variant))return;let e=this.getBoundingClientRect().width,t=this.badgeElement?.getBoundingClientRect().width||0;e===0||t===0||this.style.setProperty("--consonant-merch-card-heading-xs-max-width",`${Math.round(e-t-16)}px`)}async adjustMiniCompareBodySlots(){if(this.variant!==v||this.getBoundingClientRect().width===0)return;this.updateMiniCompareElementMinHeight(this.shadowRoot.querySelector(".top-section"),"top-section"),["heading-m","body-m","heading-m-price","price-commitment","offers","promo-text","callout-content","secure-transaction-label"].forEach(r=>this.updateMiniCompareElementMinHeight(this.shadowRoot.querySelector(`slot[name="${r}"]`),r)),this.updateMiniCompareElementMinHeight(this.shadowRoot.querySelector("footer"),"footer");let t=this.shadowRoot.querySelector(".mini-compare-chart-badge");t&&t.textContent!==""&&this.#e.style.setProperty("--consonant-merch-card-mini-compare-top-section-mobile-height","32px")}adjustMiniCompareFooterRows(){if(this.variant!==v||this.getBoundingClientRect().width===0)return;[...this.querySelector('[slot="footer-rows"]').children].forEach((t,r)=>{let o=Math.max(P,parseInt(window.getComputedStyle(t).height)||0),i=parseInt(this.#e.style.getPropertyValue(L(r+1)))||0;o>i&&this.#e.style.setProperty(L(r+1),`${o}px`)})}removeEmptyRows(){if(this.variant!==v)return;this.querySelectorAll(".footer-row-cell").forEach(t=>{let r=t.querySelector(".footer-row-cell-description");r&&!r.textContent.trim()&&t.remove()})}get storageOptions(){return this.querySelector("sp-radio-group#storage")}get storageSpecificOfferSelect(){let e=this.storageOptions?.selected;if(e){let t=this.querySelector(`merch-offer-select[storage="${e}"]`);if(t)return t}return this.querySelector("merch-offer-select")}get offerSelect(){return this.storageOptions?this.storageSpecificOfferSelect:this.querySelector("merch-offer-select")}get quantitySelect(){return this.querySelector("merch-quantity-select")}merchCardReady(){this.offerSelect&&!this.offerSelect.planType||this.dispatchEvent(new CustomEvent($,{bubbles:!0}))}handleStorageChange(){let e=this.closest("merch-card")?.offerSelect.cloneNode(!0);e&&this.dispatchEvent(new CustomEvent(w,{detail:{offerSelect:e},bubbles:!0}))}get dynamicPrice(){return this.querySelector('[slot="price"]')}selectMerchOffer(e){if(e===this.merchOffer)return;this.merchOffer=e;let t=this.dynamicPrice;if(e.price&&t){let r=e.price.cloneNode(!0);t.onceSettled?t.onceSettled().then(()=>{t.replaceWith(r)}):t.replaceWith(r)}}};customElements.define(p,d);

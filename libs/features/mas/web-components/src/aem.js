@@ -161,6 +161,32 @@ export async function copyFragmentClassic(fragment) {
     });
 }
 
+export async function publishFragment(fragment) {
+    await fetch(this.cfPublishUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'If-Match': fragment.etag,
+            ...headers,
+        },
+        body: JSON.stringify({
+            paths: [fragment.path],
+            filterReferencesByStatus: ['DRAFT', 'UNPUBLISHED'],
+        }),
+    });
+}
+
+export async function deleteFragment(fragment) {
+    await fetch(`${this.cfFragmentsUrl}/${fragment.id}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'If-Match': fragment.etag,
+            ...headers,
+        },
+    });
+}
+
 class AEM {
     async getCsrfToken() {
         const { token } = await fetch(this.csrfTokenUrl, {
@@ -177,6 +203,9 @@ class AEM {
                 getCfById: getFragmentById.bind(this),
                 save: saveFragment.bind(this),
                 copyFragment: copyFragmentClassic.bind(this),
+                publish: publishFragment.bind(this),
+                delete: deleteFragment.bind(this),
+                //unpublish: unpublishFragment.bind(this),
             },
         },
     };
@@ -186,6 +215,7 @@ class AEM {
         const sitesUrl = `${baseUrl}/adobe/sites`;
         this.cfFragmentsUrl = `${sitesUrl}/cf/fragments`;
         this.cfSearchUrl = `${this.cfFragmentsUrl}/search`;
+        this.cfPublishUrl = `${this.cfFragmentsUrl}/publish`;
         this.wcmcommandUrl = `${baseUrl}/bin/wcmcommand`;
         this.csrfTokenUrl = `${baseUrl}/libs/granite/csrf/token.json`;
     }

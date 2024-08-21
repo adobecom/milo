@@ -122,10 +122,10 @@ export class MerchCard extends LitElement {
             await Promise.all(prices.map((price) => price.onceSettled()));
             this.adjustTitleWidth();
             if (!isMobile()) {
-              this.adjustMiniCompareBodySlots();
-              this.adjustMiniCompareFooterRows();
+                this.adjustMiniCompareBodySlots();
+                this.adjustMiniCompareFooterRows();
             } else {
-              this.removeEmptyRows();
+                this.removeEmptyRows();
             }
         });
     }
@@ -370,21 +370,28 @@ export class MerchCard extends LitElement {
                 : html`
                       <hr />
                       ${this.secureLabelFooter}
-                  `}`;
+                  `}
+            <slot></slot>`;
     }
 
     get promoBottom() {
-      return this.classList.contains('promo-bottom');
-  }
+        return this.classList.contains('promo-bottom');
+    }
 
     renderSegment() {
         return html` ${this.badge}
             <div class="body">
                 <slot name="heading-xs"></slot>
                 <slot name="body-xxs"></slot>
-                ${!this.promoBottom ? html`<slot name="promo-text"></slot><slot name="callout-content"></slot>` : ''}
+                ${!this.promoBottom
+                    ? html`<slot name="promo-text"></slot
+                          ><slot name="callout-content"></slot>`
+                    : ''}
                 <slot name="body-xs"></slot>
-                ${this.promoBottom ? html`<slot name="promo-text"></slot><slot name="callout-content"></slot>` : ''}
+                ${this.promoBottom
+                    ? html`<slot name="promo-text"></slot
+                          ><slot name="callout-content"></slot>`
+                    : ''}
             </div>
             <hr />
             ${this.secureLabelFooter}`;
@@ -397,9 +404,15 @@ export class MerchCard extends LitElement {
                 <slot name="heading-xs"></slot>
                 <slot name="heading-m"></slot>
                 <slot name="body-xxs"></slot>
-                ${!this.promoBottom ? html`<slot name="promo-text"></slot><slot name="callout-content"></slot> ` : ''}
+                ${!this.promoBottom
+                    ? html`<slot name="promo-text"></slot
+                          ><slot name="callout-content"></slot> `
+                    : ''}
                 <slot name="body-xs"></slot>
-                ${this.promoBottom ? html`<slot name="promo-text"></slot><slot name="callout-content"></slot> ` : ''}  
+                ${this.promoBottom
+                    ? html`<slot name="promo-text"></slot
+                          ><slot name="callout-content"></slot> `
+                    : ''}
                 ${this.stockCheckbox}
             </div>
             <slot name="quantity-select"></slot>
@@ -447,7 +460,11 @@ export class MerchCard extends LitElement {
                 <slot name="icons"></slot>
                 <slot name="heading-xs"></slot>
                 <slot name="body-xxs"></slot>
-                ${this.promoBottom ? html`<slot name="body-xs"></slot><slot name="promo-text"></slot>` : html`<slot name="promo-text"></slot><slot name="body-xs"></slot>`}
+                ${this.promoBottom
+                    ? html`<slot name="body-xs"></slot
+                          ><slot name="promo-text"></slot>`
+                    : html`<slot name="promo-text"></slot
+                          ><slot name="body-xs"></slot>`}
             </div>
             ${this.evergreen
                 ? html`
@@ -482,9 +499,15 @@ export class MerchCard extends LitElement {
                 <slot name="icons"></slot>
                 <slot name="heading-xs"></slot>
                 <slot name="body-xxs"></slot>
-                ${!this.promoBottom ? html`<slot name="promo-text"></slot><slot name="callout-content"></slot>` : ''}
+                ${!this.promoBottom
+                    ? html`<slot name="promo-text"></slot
+                          ><slot name="callout-content"></slot>`
+                    : ''}
                 <slot name="body-xs"></slot>
-                ${this.promoBottom ? html`<slot name="promo-text"></slot><slot name="callout-content"></slot>` : ''}
+                ${this.promoBottom
+                    ? html`<slot name="promo-text"></slot
+                          ><slot name="callout-content"></slot>`
+                    : ''}
             </div>
             ${this.secureLabelFooter}`;
     }
@@ -533,7 +556,11 @@ export class MerchCard extends LitElement {
             <slot name="icons"></slot> ${this.badge}
             <slot name="heading-xs"></slot>
             <slot name="heading-m"></slot>
-            ${this.promoBottom ? html`<slot name="body-xs"></slot><slot name="promo-text"></slot>` : html`<slot name="promo-text"></slot><slot name="body-xs"></slot>`}
+            ${this.promoBottom
+                ? html`<slot name="body-xs"></slot
+                      ><slot name="promo-text"></slot>`
+                : html`<slot name="promo-text"></slot
+                      ><slot name="body-xs"></slot>`}
             <footer><slot name="footer"></slot></footer>
             ${this.defaultSlot}
         </div>`;
@@ -691,18 +718,20 @@ export class MerchCard extends LitElement {
     }
 
     removeEmptyRows() {
-      if (this.variant !== MINI_COMPARE_CHART) return;
-      const footerRows = this.querySelectorAll('.footer-row-cell');
-      footerRows.forEach((row) => {
-          const rowDescription = row.querySelector('.footer-row-cell-description');
-          if (rowDescription) {
-              const isEmpty = !rowDescription.textContent.trim();
-              if (isEmpty) {
-                  row.remove();
-              }
-          }
-      });
-  }
+        if (this.variant !== MINI_COMPARE_CHART) return;
+        const footerRows = this.querySelectorAll('.footer-row-cell');
+        footerRows.forEach((row) => {
+            const rowDescription = row.querySelector(
+                '.footer-row-cell-description',
+            );
+            if (rowDescription) {
+                const isEmpty = !rowDescription.textContent.trim();
+                if (isEmpty) {
+                    row.remove();
+                }
+            }
+        });
+    }
 
     get storageOptions() {
         return this.querySelector('sp-radio-group#storage');
