@@ -93,34 +93,35 @@ const init = async (el) => {
         // 4+ rows.open (0:bg[removed], 1:media, 2:copy, ...3:static, last:card-footer)
         decorateBgRow(el, head, hasOpenClass);
         rows = tail;
-        await decorateForeground(el, rows);
         decorateMedia(el, middle);
+        await decorateForeground(el, rows);
         break;
       case 3:
         // 3 rows (0:bg, 1:media, last:copy)
         // 3 rows.open (0:media, 1:copy, last:card-footer)
-        rows = tail;
         if (hasOpenClass) {
           el.classList.add('no-bg');
           rows = [middle, tail[0]];
+          decorateMedia(el, head);
         } else {
+          rows = tail;
           decorateBgRow(el, head);
+          decorateMedia(el, middle);
         }
         await decorateForeground(el, rows);
-        decorateMedia(el, hasOpenClass ? head : middle);
         break;
       case 2:
         // 2 rows (0:media, 1:copy)
-        rows = middle;
-        await decorateForeground(el, [rows]);
+        rows = [middle];
         decorateMedia(el, head);
         el.classList.add('no-bg');
+        await decorateForeground(el, rows);
         break;
       case 1:
         // 1 row  (0:copy)
-        rows = head;
-        await decorateForeground(el, [rows]);
+        rows = [head];
         el.classList.add('no-bg', 'no-media');
+        await decorateForeground(el, rows);
         break;
       default:
     }
