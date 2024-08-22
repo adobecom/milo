@@ -20,6 +20,9 @@ export function decorateButtons(el, size) {
     if (customClasses) {
       customClasses.forEach((match) => {
         target.href = target.href.replace(match[0], '');
+        if (target.dataset.modalHash) {
+          target.setAttribute('data-modal-hash', target.dataset.modalHash.replace(match[0], ''));
+        }
         target.classList.add(match[1]);
       });
     }
