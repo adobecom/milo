@@ -5,7 +5,7 @@ const ATTR_AEM_BUCKET = 'aem-bucket';
 
 const xglMappings = {
     '8a7b6c5d-4e3f-2a1b-9c8d-7e6f5a4b3c2d': 'photoshop-lapsed-upgrade',
-    'a1b2c3d4-e5f6-7890-abcd-ef1234567890': 'photography-upsell',
+    'f731437c-1d9c-4e94-949b-5ab010f5d72b': 'photography-upsell',
 };
 
 let xglProfilePromise;
