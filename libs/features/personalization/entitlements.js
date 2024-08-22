@@ -1,7 +1,7 @@
 import { getConfig } from '../../utils/utils.js';
 
 const ENTITLEMENT_MAP = {
-  '51b1f617-2e43-4e91-a98a-3b7716ecba8f': 'photoshop-any',
+  '31943c06-06de-4f5f-8689-18973c13207a': 'photoshop-any',
   '8ba78b22-90fb-4b97-a1c4-f8c03a45cbc2': 'indesign-any',
   '8d3c8ac2-2937-486b-b6ff-37f02271b09b': 'illustrator-any',
   'fd30e9c7-9ae9-44db-8e70-5c652a5bb1d2': 'cc-all-apps-any',
@@ -22,6 +22,7 @@ const ENTITLEMENT_MAP = {
   'fc2d5b34-fa75-4e80-9f23-7d4b40bcfc9b': 'cc-paid',
   'c6927505-97b3-4655-995a-6452630fa9cb': 'fresco-any',
   'e82be3ab-1fbc-4410-a099-af6ac6d5dffe': 'cc-paid-no-stock',
+  '08691170-f6d6-46c7-9f3c-543d7761b64a': 'free-no-trial-loggedin-today',
 
   // PEP segments
   '6cb0d58c-3a65-47e2-b459-c52bb158d5b6': 'lightroom-web-usage',
@@ -30,6 +31,10 @@ const ENTITLEMENT_MAP = {
   '5c6a4bb8-a2f3-4202-8cca-f5e918b969dc': 'firefly-signup-source',
   '20106303-e88c-4b15-93e5-f6a1c3215a12': 'firefly-web-usage',
   '3df0b0b0-d06e-4fcc-986e-cc97f54d04d8': 'acrobat-web-usage',
+
+  // Express segments
+  '2a537e84-b35f-4158-8935-170c22b8ae87': 'express-entitled',
+  'eb0dcb78-3e56-4b10-89f9-51831f2cc37f': 'express-pep',
 };
 
 export const getEntitlementMap = async () => {

@@ -77,18 +77,11 @@ We will use the Redirector extension for [Chrome](https://chrome.google.com/webs
 Please import `./redirector.json` and toggle `Debug commerce web components` rule.
 
 ### Build
-This section still requires discussions.<br />
-Main idea is to once the development is done, and ideally PR is already merged, the developer builds the artifacts and ships it to Milo as follows.<br />
-For non Milo consumers, we will support official releases to artifactory.
-
-# Consumption in Milo
 run
 ```
 npm run build
 ```
-copy the build artifacts to Milo's deps folder:
-```
-cp milo-libs/*  ~/git/milo/libs/deps
+Checkin the files updated in ~/git/milo/libs/deps/mas folder
 ```
 
 #### Troubleshooting

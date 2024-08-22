@@ -1,4 +1,4 @@
-import { readFile } from '@web/test-runner-commands';
+import { readFile, setViewport } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { waitFor, waitForElement } from '../helpers/waitfor.js';
@@ -68,6 +68,7 @@ describe('Utils', () => {
 
     describe('Configure Auto Block', () => {
       it('Disable auto block when #_dnb in url', async () => {
+        setViewport({ width: 600, height: 1500 });
         await waitForElement('.disable-autoblock');
         const disableAutoBlockLink = document.querySelector('.disable-autoblock');
         utils.decorateLinks(disableAutoBlockLink);
@@ -191,7 +192,7 @@ describe('Utils', () => {
     it('Decorates placeholder', () => {
       const paragraphs = [...document.querySelectorAll('p')];
       const lastPara = paragraphs.pop();
-      expect(lastPara.textContent).to.equal('nothing to see here');
+      expect(lastPara.textContent).to.equal(' inkl. MwSt.');
     });
 
     it('Decorates meta helix url', () => {
@@ -242,6 +243,14 @@ describe('Utils', () => {
       expect(newTabLink.target).to.contain('_blank');
       newTabLink.href = newTabLink.href.replace('#_blank', '');
       expect(newTabLink.href).to.equal('https://www.adobe.com/test');
+    });
+
+    it('Add rel=nofollow to a link', () => {
+      const noFollowContainer = document.querySelector('main div');
+      utils.decorateLinks(noFollowContainer);
+      const noFollowLink = noFollowContainer.querySelector('.no-follow');
+      expect(noFollowLink.rel).to.contain('nofollow');
+      expect(noFollowLink.href).to.equal('https://www.adobe.com/test');
     });
 
     it('Sets up milo.deferredPromise', async () => {

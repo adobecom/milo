@@ -4,6 +4,7 @@ const zeroImpactDirs = [
   '.kodiak',
   '.vscode',
   '.test',
+  '.browserslistrc',
   'libs/mep',
   '.eslintrc.js',
   'CODEOWNERS',
@@ -11,6 +12,7 @@ const zeroImpactDirs = [
   'LICENSE',
   'codecov.yaml',
   '.gitignore',
+  'package.json',
   'package-lock.json',
 ];
 const zeroImpactLabel = 'zero-impact';
