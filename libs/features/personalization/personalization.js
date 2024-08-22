@@ -540,8 +540,29 @@ export function parseManifestVariants(data, manifestPath, targetId) {
   return null;
 }
 
+function createMartechMetadataBlock(placeholders, config) {
+  if (config.locale.ietf === 'en-US') return;
+
+  const section = createTag('div');
+  const metaEl = createTag('div', { class: 'martech-metadata' });
+
+  section.append(metaEl);
+
+  const firstRow = placeholders[0];
+  const usCol = firstRow['en-us'] || firstRow.us || firstRow.en || firstRow.key;
+
+  if (!usCol) return;
+
+  Object.values(config.placeholders).forEach((item) => {
+    const row = createTag('div', undefined, `<div>${item}</div><div>${usCol}</div>`);
+    metaEl.appendChild(row);
+  });
+
+  document.querySelector('main').appendChild(section);
+}
+
 /* c8 ignore start */
-function parsePlaceholders(placeholders, config, selectedVariantName = '') {  
+function parsePlaceholders(placeholders, config, selectedVariantName = '') {
   if (!placeholders?.length || selectedVariantName === 'default') return config;
   const valueNames = [
     selectedVariantName.toLowerCase(),
@@ -565,27 +586,6 @@ function parsePlaceholders(placeholders, config, selectedVariantName = '') {
   createMartechMetadataBlock(placeholders, config);
 
   return config;
-}
-
-function createMartechMetadataBlock(placeholders, config) {
-  if (config.locale.ietf === 'en-US') return;
-
-  const section = createTag('div');
-  const metaEl = createTag('div', { class: 'martech-metadata' });
-
-  section.append(metaEl);
-
-  const firstRow = placeholders[0];
-  const usCol = firstRow['en-us'] || firstRow['us'] || firstRow['en'] || firstRow['key'];
-  
-  if(!usCol) return;
-
-  Object.values(config.placeholders).forEach((item, i) => {
-    const row = createTag('div', undefined, `<div>${item}</div><div>${usCol}</div>`);
-    metaEl.appendChild(row);
-  });
-
-  document.querySelector('main').appendChild(section);
 }
 
 const checkForParamMatch = (paramStr) => {
