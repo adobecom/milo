@@ -76,8 +76,7 @@ function decorateLockupRow(el, classes) {
   child?.classList.add('lockup-area');
   const iconSizeClass = classes?.find((c) => c.endsWith('-icon'));
   if (iconSizeClass) el.classList.remove(iconSizeClass);
-  const lockupSize = iconSizeClass ? `${iconSizeClass.split('-')[0]}-lockup` : 'l-lockup';
-  el.classList.add(lockupSize);
+  el.classList.add(`${iconSizeClass?.split('-')[0] || 'l'}-lockup`);
 }
 
 function decorateBg(el) {
