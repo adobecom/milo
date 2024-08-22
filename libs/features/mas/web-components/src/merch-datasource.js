@@ -4,8 +4,10 @@ import { createTag } from './utils.js';
 const ATTR_AEM_BUCKET = 'aem-bucket';
 
 const xglMappings = {
-    '8a7b6c5d-4e3f-2a1b-9c8d-7e6f5a4b3c2d': 'photoshop-lapsed-upgrade',
+    '3f499a92-88ac-4376-8c1e-90eda48565db': 'illustrator-lapsed',
+    'd50952b3-1245-4074-8edf-b72f44094ea9': 'photoshop-lapsed',
     'f731437c-1d9c-4e94-949b-5ab010f5d72b': 'photography-upsell',
+    '1abe0afe-e370-42b2-9daa-cb3ea9802b12': 'photoshop-single-app',
 };
 
 const cardContent = {
