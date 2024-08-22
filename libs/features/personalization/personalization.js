@@ -562,33 +562,30 @@ function parsePlaceholders(placeholders, config, selectedVariantName = '') {
     config.placeholders = { ...(config.placeholders || {}), ...results };
   }
 
-  setRegionalMetadata(placeholders, config)
+  createMartechMetadataBlock(placeholders, config)
 
   return config;
 }
 
-function setRegionalMetadata(placeholders, config) {
-  if (!config.locale.ietf !== 'en-US') {
-    // const metaEl = document.createElement('martech-metadata');
-    let html = '';
+function createMartechMetadataBlock(placeholders, config) {
+  if (config.locale.ietf === 'en-US') return;
 
-    Object.values(config.placeholders).forEach((item, i) => {
-      const usCol = placeholders[i]['en-us'] || placeholders[i]['us'] || placeholders[i]['en'];
+  const section = createTag('div');
+  const metaEl = createTag('div', { class: 'martech-metadata' });
 
-      if(!usCol) return; // may not be necessary?
+  section.append(metaEl);
 
-      html += `
-        <div>
-          <div>${item}</div>
-          <div>${usCol}</div>
-        </div>
-      `;
-    });
+  const firstRow = placeholders[0];
+  const usCol = firstRow['en-us'] || firstRow['us'] || firstRow['en'] || firstRow['key'];
+  
+  if(!usCol) return;
 
-    const metaEl = createTag('div', { class: 'martech-metadata' }, html);
-    document.head.appendChild(metaEl);
-    // Append to head or body?
-  }
+  Object.values(config.placeholders).forEach((item, i) => {
+    const row = createTag('div', undefined, `<div>${item}</div><div>${usCol}</div>`);
+    metaEl.appendChild(row);
+  });
+
+  document.querySelector('main').appendChild(section);
 }
 
 const checkForParamMatch = (paramStr) => {
