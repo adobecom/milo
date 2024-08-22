@@ -562,7 +562,7 @@ function parsePlaceholders(placeholders, config, selectedVariantName = '') {
     config.placeholders = { ...(config.placeholders || {}), ...results };
   }
 
-  createMartechMetadataBlock(placeholders, config)
+  createMartechMetadataBlock(placeholders, config);
 
   return config;
 }
