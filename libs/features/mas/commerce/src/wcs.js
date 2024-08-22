@@ -55,10 +55,13 @@ export function Wcs({ settings }) {
           const url = new URL(settings.wcsURL);
           url.searchParams.set('offer_selector_ids', options.offerSelectorIds.join(','));
           url.searchParams.set('country', options.country);
-          url.searchParams.set('language', options.language);
           url.searchParams.set('locale', options.locale);
           url.searchParams.set('landscape', env === Env.STAGE ? 'ALL' : settings.landscape);
           url.searchParams.set('api_key', apiKey);
+          // language can be undefined if its a UK offer
+          if (options.language) {
+            url.searchParams.set('language', options.language);
+          }
           if (options.promotionCode) {
             url.searchParams.set('promotion_code', options.promotionCode);
           }
