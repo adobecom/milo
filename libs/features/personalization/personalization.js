@@ -147,7 +147,7 @@ const COMMANDS = {
   },
 };
 
-function checkSelectorType(selector) {
+function getSelectorType(selector) {
   return selector?.startsWith('/') || selector?.startsWith('http') ? 'fragment' : 'css';
 }
 
@@ -302,7 +302,7 @@ function registerInBlockActions(cmd, manifestId, targetManifestId) {
   if (blockAndSelector.length > 1) {
     blockSelector = blockAndSelector.slice(1).join(' ');
     command.selector = blockSelector;
-    if (checkSelectorType(blockSelector) === 'fragment') {
+    if (getSelectorType(blockSelector) === 'fragment') {
       config.mep.inBlock[blockName].fragments ??= {};
       const { fragments } = config.mep.inBlock[blockName];
       delete command.selector;
@@ -334,7 +334,7 @@ function getSelectedElement(selector, action, rootEl) {
     const section = selector.trim().replace('section', '');
     if (section !== '' && Number.isNaN(section)) return null;
   }
-  if (checkSelectorType(selector) === 'fragment') {
+  if (getSelectorType(selector) === 'fragment') {
     try {
       const fragment = document.querySelector(`a[href*="${normalizePath(selector, false)}"], a[href*="${normalizePath(selector, true)}"]`);
       if (fragment) return fragment.parentNode;
@@ -465,7 +465,7 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
       selector,
       pageFilter,
       target: line[vn],
-      selectorType: checkSelectorType(selector),
+      selectorType: getSelectorType(selector),
       manifestId,
       targetManifestId,
     };
