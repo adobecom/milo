@@ -99,8 +99,13 @@ const init = async (el) => {
       case 3:
         // 3 rows (0:bg, 1:media, last:copy)
         // 3 rows.open (0:media, 1:copy, last:card-footer)
-        if (!hasOpenClass) decorateBgRow(el, head);
-        rows = hasOpenClass ? [middle, tail[0]] : tail;
+        rows = tail;
+        if (hasOpenClass) {
+          el.classList.add('no-bg');
+          rows = [middle, tail[0]];
+        } else {
+          decorateBgRow(el, head);
+        }
         await decorateForeground(el, rows);
         decorateMedia(el, hasOpenClass ? head : middle);
         break;
