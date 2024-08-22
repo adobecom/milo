@@ -6,7 +6,7 @@ const ATTR_AEM_BUCKET = 'aem-bucket';
 const xglMappings = {
     '3f499a92-88ac-4376-8c1e-90eda48565db': 'illustrator-lapsed',
     'd50952b3-1245-4074-8edf-b72f44094ea9': 'photoshop-lapsed',
-    '6841adaf-9eb8-4c8e-90ef-c0eb711e0e55': 'photography-upsell',
+    'f731437c-1d9c-4e94-949b-5ab010f5d72b': 'photography-upsell',
     '1abe0afe-e370-42b2-9daa-cb3ea9802b12': 'photoshop-single-app',
 };
 
