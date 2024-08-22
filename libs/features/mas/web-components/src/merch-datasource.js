@@ -264,7 +264,7 @@ export class MerchDataSource extends HTMLElement {
     async fetchData() {
         let item = cache.get(this.path);
         if (!item) {
-            item = await this.#aem.sites.cf.fragments.getCfByPath(this.path);
+            item = await this.#aem.sites.cf.fragments.getByPath(this.path);
         }
         const mostRelevantProfile = (
             sessionStorage.getItem('mas_xlg') ??
@@ -276,7 +276,7 @@ export class MerchDataSource extends HTMLElement {
         const itemXlg = item.fields.find((field) => field.name === 'xlg')?.values[0];
         if (mostRelevantProfile && itemXlg?.includes(mostRelevantProfile)) {
             const promo = await this.#aem.sites.cf.fragments
-                .getCfByPath(`${this.path}-${mostRelevantProfile}`)
+                .getByPath(`${this.path}-${mostRelevantProfile}`)
                 .catch(() => null);
             if (promo) {
                 item = promo;
