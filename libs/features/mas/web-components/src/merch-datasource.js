@@ -8,8 +8,6 @@ const xglMappings = {
     'f731437c-1d9c-4e94-949b-5ab010f5d72b': 'photography-upsell',
 };
 
-let xglProfilePromise;
-
 const cardContent = {
     catalog: {
         title: {

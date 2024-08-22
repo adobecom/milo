@@ -11,7 +11,7 @@ class AEM {
         this.csrfTokenUrl = `${baseUrl}/libs/granite/csrf/token.json`;
 
         this.headers = {
-            Authorization: `Bearer ${window.adobeid?.authorize?.()}`,
+            Authorization: `Bearer ${sessionStorage.getItem('masAccessToken') ?? window.adobeid?.authorize?.()}`,
             pragma: 'no-cache',
             'cache-control': 'no-cache',
         };
