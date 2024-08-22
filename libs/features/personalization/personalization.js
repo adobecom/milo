@@ -117,7 +117,7 @@ function addManifestAndTargetId(el, manifestId, targetManifestId) {
   if (targetManifestId) el.dataset.adobeTargetTestid = targetManifestId;
 }
 
-function checkSelectorType(selector) {
+function getSelectorType(selector) {
   const sel = selector.toLowerCase().trim();
   if (sel.includes('/fragments/') && (sel.startsWith('/') || sel.startsWith('http'))) return 'fragment';
   return 'other';
@@ -137,7 +137,7 @@ export const createContent = (el, content, manifestId, targetManifestId, action,
     addManifestAndTargetId(el, manifestId, targetManifestId);
     return el;
   }
-  if (checkSelectorType(content) !== 'fragment') {
+  if (getSelectorType(content) !== 'fragment') {
     if (action === 'replace') {
       el.innerHTML = content;
       return el;
@@ -319,7 +319,7 @@ function registerInBlockActions(cmd, manifestId, targetManifestId) {
   if (blockAndSelector.length > 1) {
     blockSelector = blockAndSelector.slice(1).join(' ');
     command.selector = blockSelector;
-    if (checkSelectorType(blockSelector) === 'fragment') {
+    if (getSelectorType(blockSelector) === 'fragment') {
       config.mep.inBlock[blockName].fragments ??= {};
       const { fragments } = config.mep.inBlock[blockName];
       delete command.selector;
@@ -396,7 +396,7 @@ function getSelectedElement({ selector, rootEl }) {
   let modifiedSelector = selector.trim();
   if (!modifiedSelector) return null;
 
-  if (checkSelectorType(modifiedSelector) === 'fragment') {
+  if (getSelectorType(modifiedSelector) === 'fragment') {
     try {
       const fragment = document.querySelector(
         `a[href*="${normalizePath(modifiedSelector, false)}"], a[href*="${normalizePath(modifiedSelector, true)}"]`,
@@ -500,7 +500,7 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
       modifiers,
       pageFilter,
       target: line[vn],
-      selectorType: checkSelectorType(selector),
+      selectorType: getSelectorType(selector),
       manifestId,
       targetManifestId,
     };
