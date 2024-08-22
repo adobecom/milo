@@ -541,7 +541,7 @@ export function parseManifestVariants(data, manifestPath, targetId) {
 }
 
 /* c8 ignore start */
-function parsePlaceholders(placeholders, config, selectedVariantName = '') {
+function parsePlaceholders(placeholders, config, selectedVariantName = '') {  
   if (!placeholders?.length || selectedVariantName === 'default') return config;
   const valueNames = [
     selectedVariantName.toLowerCase(),
@@ -561,7 +561,34 @@ function parsePlaceholders(placeholders, config, selectedVariantName = '') {
     }, {});
     config.placeholders = { ...(config.placeholders || {}), ...results };
   }
+
+  setRegionalMetadata(placeholders, config)
+
   return config;
+}
+
+function setRegionalMetadata(placeholders, config) {
+  if (!config.locale.ietf !== 'en-US') {
+    // const metaEl = document.createElement('martech-metadata');
+    let html = '';
+
+    Object.values(config.placeholders).forEach((item, i) => {
+      const usCol = placeholders[i]['en-us'] || placeholders[i]['us'] || placeholders[i]['en'];
+
+      if(!usCol) return; // may not be necessary?
+
+      html += `
+        <div>
+          <div>${item}</div>
+          <div>${usCol}</div>
+        </div>
+      `;
+    });
+
+    const metaEl = createTag('div', { class: 'martech-metadata' }, html);
+    document.head.appendChild(metaEl);
+    // Append to head or body?
+  }
 }
 
 const checkForParamMatch = (paramStr) => {
