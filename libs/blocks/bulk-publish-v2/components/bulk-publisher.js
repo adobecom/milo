@@ -1,7 +1,7 @@
 import './job-process.js';
 import { LitElement, html } from '../../../deps/lit-all.min.js';
 import { getSheet } from '../../../../tools/utils/utils.js';
-import { authenticate, startJob } from '../services.js';
+import { authenticate, startJob, stopJob } from '../services.js';
 import { getConfig } from '../../../utils/utils.js';
 import {
   delay,
@@ -294,6 +294,16 @@ class BulkPublish2 extends LitElement {
     if (this.mode === 'full') this.openJobs = false;
   };
 
+  async cancelJob(job) {
+    if (!job.status?.stopTime) {
+      await stopJob(job);
+    }
+    const { name } = job.result.job;
+    this.jobs = this.jobs.filter(({ result }) => result.job.name !== name);
+    this.requestUpdate();
+    if (this.mode === 'full' && !this.jobs.length) this.openJobs = false;
+  }
+
   /* c8 ignore next 14 */
   async reworkErrors(job) {
     if (this.mode === 'full') {
@@ -351,6 +361,7 @@ class BulkPublish2 extends LitElement {
             <job-process 
               .job=${job}
               .reworkErrors=${(errors) => this.reworkErrors(errors)}
+              .cancelJob=${() => this.cancelJob(job)}
               @progress="${this.setJobProgress}"
               @stopped="${this.setJobStopped}">
             </job-process>

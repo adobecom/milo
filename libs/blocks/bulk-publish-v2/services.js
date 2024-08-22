@@ -246,9 +246,26 @@ const updateRetry = async ({ queue, urls, process }) => {
   return newQueue;
 };
 
+const stopJob = async (job) => {
+  const { links } = job.result;
+  try {
+    const result = await fetch(links.self, { method: 'DELETE' });
+    /* c8 ignore next 3 */
+    if (!result.ok) {
+      throw new Error(getErrorText(result.status), { cause: result.status }, job.origin);
+    }
+    const json = await result.json();
+    return json;
+  /* c8 ignore next 3 */
+  } catch (error) {
+    return { status: error.cause };
+  }
+};
+
 export {
   authenticate,
   pollJobStatus,
   startJob,
+  stopJob,
   updateRetry,
 };

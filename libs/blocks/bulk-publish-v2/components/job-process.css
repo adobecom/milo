@@ -121,6 +121,11 @@
   font-size: 14px;
 }
 
+.cancel-job {
+  width: 12px;
+  cursor: pointer;
+}
+
 .job-id-link {
   width: 20px;
   cursor: pointer;

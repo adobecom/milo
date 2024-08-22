@@ -9,12 +9,14 @@ const styleSheet = await getSheet(`${base}/blocks/bulk-publish-v2/components/job
 const reworkIcon = `${base}/blocks/bulk-publish-v2/img/rework.svg`;
 const closeIcon = `${base}/blocks/bulk-publish-v2/img/close.svg`;
 const copyIcon = `${base}/blocks/bulk-publish-v2/img/copy.svg`;
+const cancelIcon = `${base}/blocks/bulk-publish-v2/img/cancel.svg`;
 
 class JobInfo extends LitElement {
   static get properties() {
     return {
       status: { type: Object },
       reworkErrors: { type: Function },
+      cancelJob: { type: Function },
       errFilter: { state: true },
       timer: { state: true },
       showTimes: { state: true },
@@ -140,6 +142,11 @@ class JobInfo extends LitElement {
               Copied to clipboard!
             </div>
           ` : nothing}
+          <img
+            title="${invocationId ? 'Remove' : 'Cancel'} Job"
+            src="${cancelIcon}"
+            class="cancel-job"
+            @click=${this.cancelJob} />
         </div>
         <div class="meta">
           <span class="status">
