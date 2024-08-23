@@ -112,7 +112,7 @@ const COMMANDS_KEYS = {
   replace: 'replace',
 };
 
-function addManifestAndTargetId(el, manifestId, targetManifestId) {
+function addIds(el, manifestId, targetManifestId) {
   if (manifestId) el.dataset.manifestId = manifestId;
   if (targetManifestId) el.dataset.adobeTargetTestid = targetManifestId;
 }
@@ -123,29 +123,15 @@ function getSelectorType(selector) {
   return 'other';
 }
 
-export const createContent = (el, content, manifestId, targetManifestId, action, modifiers) => {
-  if (action === 'replace') {
-    addManifestAndTargetId(el, manifestId, targetManifestId);
-  }
-  if (el?.nodeName === 'A' && modifiers?.includes('href')) {
-    if (action === 'replace') el.href = content;
-    else if (action === 'insertafter' || action === 'append') {
-      el.setAttribute('href', `${el.getAttribute('href')}${content}`);
-    } else if (action === 'insertbefore' || action === 'prepend') {
-      el.setAttribute('href', `${content}${el.getAttribute('href')}`);
-    }
-    addManifestAndTargetId(el, manifestId, targetManifestId);
-    return el;
-  }
-  if (getSelectorType(content) !== 'fragment') {
-    if (action === 'replace') {
-      el.innerHTML = content;
-      return el;
-    }
-    const container = createTag('div', {}, content);
-    addManifestAndTargetId(container, manifestId, targetManifestId);
-    return container;
-  }
+const getUpdatedHref = (el, content, action) => {
+  const href = el.getAttribute('href');
+  if (action === 'replace') return content;
+  if (action === 'insertafter' || action === 'append') return `${href}${content}`;
+  if (action === 'insertbefore' || action === 'prepend') return `${content}${href}`;
+  return content;
+};
+
+const createFrag = (el, action, content, manifestId, targetManifestId) => {
   if (action === 'replace') el.classList.add(CLASS_EL_DELETE, CLASS_EL_REPLACE);
   let href = content;
   try {
@@ -155,19 +141,39 @@ export const createContent = (el, content, manifestId, targetManifestId, action,
     // ignore
   }
   const a = createTag('a', { href }, content);
-  addManifestAndTargetId(a, manifestId, targetManifestId);
-  let frag = createTag('p', undefined, a);
+  addIds(a, manifestId, targetManifestId);
+  const frag = createTag('p', undefined, a);
   const isDelayedModalAnchor = /#.*delay=/.test(href);
   if (isDelayedModalAnchor) frag.classList.add('hide-block');
-  const isSection = el?.parentElement.nodeName === 'MAIN';
-  if (isSection) {
-    frag = createTag('div', undefined, frag);
-  }
   if (isInLcpSection(el)) {
     loadLink(`${localizeLink(a.href)}.plain.html`, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
   }
-  addManifestAndTargetId(frag, manifestId, targetManifestId);
   return frag;
+};
+
+export const createContent = (el, content, manifestId, targetManifestId, action, modifiers) => {
+  if (action === 'replace') {
+    addIds(el, manifestId, targetManifestId);
+  }
+  if (el?.nodeName === 'A' && modifiers?.includes('href')) {
+    el.href.setAttribute('href', getUpdatedHref(el, content, action));
+    addIds(el, manifestId, targetManifestId);
+    return el;
+  }
+  if (getSelectorType(content) !== 'fragment') {
+    if (action === 'replace') {
+      el.innerHTML = content;
+      return el;
+    }
+    const container = createTag('div', {}, content);
+    addIds(container, manifestId, targetManifestId);
+    return container;
+  }
+
+  const frag = createFrag(el, action, content, manifestId, targetManifestId);
+  addIds(frag, manifestId, targetManifestId);
+  if (el?.parentElement.nodeName === 'MAIN') return frag;
+  return createTag('div', undefined, frag);
 };
 
 const COMMANDS = {
@@ -433,7 +439,7 @@ export const updateFragDataProps = (a, inline, sections, fragment) => {
     if (manifestId) setDataIdOnChildren(sections, 'manifestId', manifestId);
     if (adobeTargetTestid) setDataIdOnChildren(sections, 'adobeTargetTestid', adobeTargetTestid);
   } else {
-    addManifestAndTargetId(fragment, manifestId, adobeTargetTestid);
+    addIds(fragment, manifestId, adobeTargetTestid);
   }
 };
 
@@ -880,7 +886,7 @@ export function handleFragmentCommand(command, a) {
   const { action, fragment, manifestId, targetManifestId } = command;
   if (action === COMMANDS_KEYS.replace) {
     a.href = fragment;
-    addManifestAndTargetId(a, manifestId, targetManifestId);
+    addIds(a, manifestId, targetManifestId);
     return fragment;
   }
   if (action === COMMANDS_KEYS.remove) {
@@ -920,7 +926,7 @@ export async function applyPers(manifests, postLCP = false) {
   if (config.mep.replacepage && !postLCP && main) {
     await replaceInner(config.mep.replacepage.val, main);
     const { manifestId, targetManifestId } = config.mep.replacepage;
-    addManifestAndTargetId(main, manifestId, targetManifestId);
+    addIds(main, manifestId, targetManifestId);
   }
 
   if (!postLCP) handleCommands(config.mep.commands);
