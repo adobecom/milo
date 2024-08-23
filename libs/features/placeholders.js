@@ -1,4 +1,5 @@
 const fetchedPlaceholders = {};
+window.mph = {};
 
 const getPlaceholdersPath = (config, sheet) => {
   const path = `${config.locale.contentRoot}/placeholders.json`;
@@ -20,6 +21,7 @@ const fetchPlaceholders = async (config, sheet) => {
       const placeholders = {};
       json.data.forEach((item) => {
         placeholders[item.key] = item.value;
+        window.mph[item.key] = item.value;
       });
       resolve(placeholders);
     });
