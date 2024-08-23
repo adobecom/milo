@@ -9,6 +9,7 @@ export default function init(a) {
     turnAnchorIntoVideo({
       src: a.href,
       anchorTag: a,
+      hash: a.hash || 'autoplay',
     });
   } else {
     const embed = `<div class="milo-video">
