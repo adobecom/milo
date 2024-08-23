@@ -125,7 +125,6 @@ function getSelectorType(selector) {
 
 const getUpdatedHref = (el, content, action) => {
   const href = el.getAttribute('href');
-  if (action === 'replace') return content;
   if (action === 'insertafter' || action === 'append') return `${href}${content}`;
   if (action === 'insertbefore' || action === 'prepend') return `${content}${href}`;
   return content;
@@ -408,6 +407,7 @@ function getSelectedElement({ selector: sel, rootEl }) {
       if (fragment) return fragment.parentNode;
       return null;
     } catch (e) {
+      /* c8 ignore next */
       return null;
     }
   }
