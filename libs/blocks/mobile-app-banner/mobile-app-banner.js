@@ -24,8 +24,9 @@ async function getECID() {
 }
 
 /* eslint-disable */
-function branchInit(key, ecidVal) {
+async function branchInit(key) {
   let initValue = false;
+  const ecid = await getECID();
   function initBranch() {
     if (initValue) {
       return;
@@ -64,7 +65,7 @@ function branchInit(key, ecidVal) {
     const performanceCookieConsent = cookieGrp.includes('C0002');
     const advertisingCookieConsent = cookieGrp.includes('C0004');
 
-    if (performanceCookieConsent && advertisingCookieConsent && isAndroid) branch.setBranchViewData({ data: { ecid: ecidVal }});
+    if (performanceCookieConsent && advertisingCookieConsent && isAndroid) branch.setBranchViewData({ data: { ecid: ecid }});
     branch.init(key, { tracking_disabled: !privacyConsent });
   }
 
@@ -81,7 +82,5 @@ export default async function init(el) {
   const classListArray = Array.from(el.classList);
   const product = classListArray.find((token) => token.startsWith('product-')).split('-')[1];
   const key = await getKey(product);
-  if (!key) return;
-  const ecid = await getECID();
-  branchInit(key, ecid);
+  if (key) branchInit(key);
 }
