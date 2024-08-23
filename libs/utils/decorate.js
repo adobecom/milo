@@ -280,14 +280,20 @@ export function applyInViewPortPlay(video) {
 }
 
 export function decorateMultiViewport(el) {
-  const viewports = ['mobile-up', 'tablet-up', 'desktop-up'];
+  const viewports = [
+    '(max-width: 599px)',
+    '(min-width: 600px) and (max-width: 1199px)',
+    '(min-width: 1200px)',
+  ];
   const foreground = el.querySelector('.foreground');
   if (foreground.childElementCount === 2 || foreground.childElementCount === 3) {
     [...foreground.children].forEach((child, index) => {
-      child.classList.add(viewports[index]);
-      if (foreground.childElementCount === 2 && index === 1) {
-        child.classList.add('tablet-up', 'desktop-up');
-      }
+      const mq = window.matchMedia(viewports[index]);
+      const setContent = ({ matches }) => {
+        if (matches) foreground.replaceChildren(child);
+      };
+      setContent(mq);
+      mq.addEventListener('change', setContent);
     });
   }
   return foreground;
