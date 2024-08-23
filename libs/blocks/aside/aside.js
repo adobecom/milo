@@ -217,10 +217,10 @@ function decorateLayout(el) {
   return foreground;
 }
 
-export default async function init(el) {
+export default function init(el) {
   el.classList.add('con-block');
   const blockData = getBlockData(el);
-  const blockText = await decorateLayout(el);
+  const blockText = decorateLayout(el);
   decorateBlockText(blockText, blockData);
   decorateStaticLinks(el);
   formatPromoButton(el);
