@@ -387,23 +387,13 @@ function modifySelectorTerm(termParam) {
   return startText.startsWith('.') ? term : `.${term}`;
 }
 export function modifyNonFragmentSelector(selector) {
-  let modifiedSelector = selector;
-  const terms = modifiedSelector.split('>').join(' > ').split(',').join(' , ')
-    .split(/\s+/);
-  terms.forEach((term, i) => {
-    if (term.toLowerCase() === 'main') {
-      const next = terms[i + 1]?.toLowerCase();
-      const nextNext = terms[i + 2]?.toLowerCase();
-      if (next?.startsWith('section') || nextNext?.startsWith('section')) {
-        terms[i] = '';
-        if (next === '>') terms[i + 1] = '';
-      }
-    } else {
-      terms[i] = modifySelectorTerm(term);
-    }
-  });
-  modifiedSelector = terms.join(' ');
-  return modifiedSelector;
+  return selector
+    .split('>').join(' > ')
+    .split(',').join(' , ')
+    .replaceAll(/main\s*>?\s*(section\d*)/gi, '$1')
+    .split(/\s+/)
+    .map(modifySelectorTerm)
+    .join(' ');
 }
 
 function getSelectedElement({ selector, rootEl }) {
