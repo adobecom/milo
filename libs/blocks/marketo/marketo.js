@@ -13,7 +13,14 @@
 /*
  * Marketo Form
  */
-import { parseEncodedConfig, loadScript, localizeLink, createTag, createIntersectionObserver } from '../../utils/utils.js';
+import {
+  parseEncodedConfig,
+  loadScript,
+  loadLink,
+  localizeLink,
+  createTag,
+  createIntersectionObserver,
+} from '../../utils/utils.js';
 
 const ROOT_MARGIN = 50;
 const FORM_ID = 'form id';
@@ -61,6 +68,7 @@ export const decorateURL = (destination, baseURL = window.location) => {
 
     return destinationUrl.href;
   } catch (e) {
+    /* c8 ignore next 4 */
     window.lana?.log(`Error with Marketo destination URL: ${destination} ${e.message}`);
   }
 
@@ -222,7 +230,7 @@ export default function init(el) {
   el.replaceChildren(fragment);
   el.classList.add('loading');
 
-  document.head.append(createTag('link', { rel: 'dns-prefetch', href: `https://${baseURL}` }));
+  loadLink(`https://${baseURL}`, { rel: 'dns-prefetch' });
 
   createIntersectionObserver({
     el,
