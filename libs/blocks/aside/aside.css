@@ -236,7 +236,7 @@
   flex-shrink: 0;
 }
 
-.aside .foreground.container .icon-area picture {
+.aside:not(.notification) .foreground.container .icon-area picture {
   height: 100%;
 }
 
@@ -1158,6 +1158,7 @@
 
   .aside.promobar .promo-text .action-area {
     gap: var(--spacing-s);
+    flex-wrap: nowrap;
   }
 
   .aside.promobar .promo-text.mobile-up,
