@@ -156,7 +156,7 @@ export const createContent = (el, content, manifestId, targetManifestId, action,
     addIds(el, manifestId, targetManifestId);
   }
   if (el?.nodeName === 'A' && modifiers?.includes('href')) {
-    el.href.setAttribute('href', getUpdatedHref(el, content, action));
+    el.setAttribute('href', getUpdatedHref(el, content, action));
     addIds(el, manifestId, targetManifestId);
     return el;
   }
@@ -350,7 +350,8 @@ function registerInBlockActions(cmd, manifestId, targetManifestId) {
   config.mep.inBlock[blockName].commands.push(command);
 }
 
-function modifySelectorTerm(term) {
+function modifySelectorTerm(termParam) {
+  let term = termParam;
   const specificSelectors = {
     section: 'main > div',
     'primary-cta': 'p strong a',
@@ -362,21 +363,20 @@ function modifySelectorTerm(term) {
   let startText = term.match(/^[a-zA-Z/./-]*/)[0]?.toLowerCase();
   const endNumber = term.match(/[0-9]*$/)[0];
   if (!startText || htmlEls.includes(startText)) return term;
-  let modifiedTerm = term;
   if (otherSelectors.includes(startText) || Object.keys(specificSelectors).includes(startText)) {
-    if (otherSelectors.includes(startText)) modifiedTerm = modifiedTerm.replace(startText, '> div');
-    else modifiedTerm = modifiedTerm.replace(startText, specificSelectors[startText]);
-    if (endNumber) modifiedTerm = modifiedTerm.replace(endNumber, `:nth-child(${endNumber})`);
-    return modifiedTerm;
+    if (otherSelectors.includes(startText)) term = term.replace(startText, '> div');
+    else term = term.replace(startText, specificSelectors[startText]);
+    if (endNumber) term = term.replace(endNumber, `:nth-child(${endNumber})`);
+    return term;
   }
   if (!startText.startsWith('.')) {
     startText = `.${startText}`;
-    modifiedTerm = `.${modifiedTerm}`;
+    term = `.${term}`;
   }
   if (endNumber) {
-    modifiedTerm = modifiedTerm.replace(endNumber, `:nth-child(${endNumber} of ${startText})`);
+    term = term.replace(endNumber, `:nth-child(${endNumber} of ${startText})`);
   }
-  return modifiedTerm;
+  return term;
 }
 export function modifyNonFragmentSelector(selector) {
   let modifiedSelector = selector;
