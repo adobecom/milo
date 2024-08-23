@@ -350,6 +350,9 @@ function registerInBlockActions(cmd, manifestId, targetManifestId) {
   config.mep.inBlock[blockName].commands.push(command);
 }
 
+const updateEndNumber = (endNumber, term) => (endNumber
+  ? term.replace(endNumber, `:nth-child(${endNumber})`)
+  : term);
 function modifySelectorTerm(termParam) {
   let term = termParam;
   const specificSelectors = {
@@ -360,23 +363,28 @@ function modifySelectorTerm(termParam) {
   };
   const otherSelectors = ['row', 'col'];
   const htmlEls = ['div', 'a', 'p', 'strong', 'em', 'picture', 'source', 'img', 'h'];
-  let startText = term.match(/^[a-zA-Z/./-]*/)[0]?.toLowerCase();
-  const endNumber = term.match(/[0-9]*$/)[0];
+  const startTextMatch = term.match(/^[a-zA-Z/./-]*/);
+  const startText = startTextMatch ? startTextMatch[0].toLowerCase() : '';
+  const endNumberMatch = term.match(/[0-9]*$/);
+  const endNumber = endNumberMatch ? endNumberMatch[0] : '';
   if (!startText || htmlEls.includes(startText)) return term;
-  if (otherSelectors.includes(startText) || Object.keys(specificSelectors).includes(startText)) {
-    if (otherSelectors.includes(startText)) term = term.replace(startText, '> div');
-    else term = term.replace(startText, specificSelectors[startText]);
-    if (endNumber) term = term.replace(endNumber, `:nth-child(${endNumber})`);
+  if (otherSelectors.includes(startText)) {
+    term = term.replace(startText, '> div');
+    term = updateEndNumber(endNumber, term);
     return term;
   }
-  if (!startText.startsWith('.')) {
-    startText = `.${startText}`;
-    term = `.${term}`;
+  if (Object.keys(specificSelectors).includes(startText)) {
+    term = term.replace(startText, specificSelectors[startText]);
+    term = updateEndNumber(endNumber, term);
+    return term;
   }
+
   if (endNumber) {
-    term = term.replace(endNumber, `:nth-child(${endNumber} of ${startText})`);
+    const nthChild = `:nth-child(${endNumber}${startText.startsWith('.') ? ` of ${startText}` : ''})`;
+    term = term.replace(endNumber, nthChild);
   }
-  return term;
+
+  return startText.startsWith('.') ? term : `.${term}`;
 }
 export function modifyNonFragmentSelector(selector) {
   let modifiedSelector = selector;
