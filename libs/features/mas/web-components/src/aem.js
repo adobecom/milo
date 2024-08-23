@@ -1,3 +1,5 @@
+import { wait } from './utils.js';
+
 class AEM {
     #author;
     constructor(bucket) {
@@ -142,7 +144,12 @@ class AEM {
             const doc = parser.parseFromString(responseText, 'text/html');
             const message = doc.getElementById('Message');
             const newPath = message?.textContent.trim();
-            return this.getFragmentByPath(newPath);
+            await wait(); // give time AEM to process the copy
+            let fragment = await this.getFragmentByPath(newPath);
+            if (fragment) {
+                fragment = await this.getFragmentById(fragment.id);
+            }
+            return fragment;
         }
         throw new Error('Failed to copy fragment');
     }
