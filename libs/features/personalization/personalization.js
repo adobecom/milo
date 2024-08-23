@@ -362,7 +362,7 @@ function modifySelectorTerm(termParam) {
     'action-area': 'p:has(em a, strong a)',
   };
   const otherSelectors = ['row', 'col'];
-  const htmlEls = ['div', 'a', 'p', 'strong', 'em', 'picture', 'source', 'img', 'h'];
+  const htmlEls = ['main', 'div', 'a', 'p', 'strong', 'em', 'picture', 'source', 'img', 'h'];
   const startTextMatch = term.match(/^[a-zA-Z/./-]*/);
   const startText = startTextMatch ? startTextMatch[0].toLowerCase() : '';
   const endNumberMatch = term.match(/[0-9]*$/);
@@ -379,12 +379,12 @@ function modifySelectorTerm(termParam) {
     return term;
   }
 
+  if (!startText.startsWith('.')) term = `.${term}`;
   if (endNumber) {
-    const nthChild = `:nth-child(${endNumber}${startText.startsWith('.') ? ` of ${startText}` : ''})`;
-    term = term.replace(endNumber, nthChild);
+    term = term.replace(endNumber, '');
+    term = `${term}:nth-child(${endNumber} of ${term})`;
   }
-
-  return startText.startsWith('.') ? term : `.${term}`;
+  return term;
 }
 export function modifyNonFragmentSelector(selector) {
   return selector
