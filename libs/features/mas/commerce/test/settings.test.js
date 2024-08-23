@@ -1,5 +1,5 @@
 import { Env } from '../src/external.js';
-import { Landscape, WCS_PROD_URL, WCS_STAGE_URL } from '../src/constants.js';
+import { Landscape, WCS_PROD_URL, WCS_STAGE_URL, WCS_PROD_CDN_STAGE_URL } from '../src/constants.js';
 import { Defaults } from '../src/defaults.js';
 import { getSettings } from '../src/settings.js';
 
@@ -49,6 +49,7 @@ describe('getSettings', () => {
       url.searchParams.set('entitlement', 'true');
       url.searchParams.set('modal', 'true');
       url.searchParams.set('commerce.landscape', 'DRAFT');
+      url.searchParams.set('commerce.env', 'STAGE');
       url.searchParams.set('wcsBufferDelay', '30');
       url.searchParams.set('wcsBufferLimit', '5');
       url.searchParams.set('quantity', '2');
@@ -77,6 +78,7 @@ describe('getSettings', () => {
           locale: "en_US",
           priceLiteralsURL: undefined,
           priceLiteralsPromise: undefined,
+          env: "STAGE",
           wcsURL: WCS_STAGE_URL
       });
     });

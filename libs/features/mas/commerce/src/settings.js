@@ -1,4 +1,4 @@
-import { PARAM_ENV, PARAM_LANDSCAPE, Landscape, WCS_PROD_URL, WCS_STAGE_URL } from './constants.js';
+import { PARAM_ENV, PARAM_LANDSCAPE, Landscape, WCS_PROD_URL, WCS_STAGE_URL, WCS_PROD_CDN_STAGE_URL } from './constants.js';
 import { Defaults } from './defaults.js';
 import {
     CheckoutWorkflow,
@@ -137,10 +137,13 @@ function getSettings(config = {}) {
     let wcsURL = WCS_PROD_URL;
 
     const lowHostEnv = ['local', 'stage'].includes(config.env?.name);
-    const forceWcsStage = getParameter(PARAM_ENV, commerce, { metadata: false }) === 'stage';
+    const forceWcsStage = getParameter(PARAM_ENV, commerce, { metadata: false })?.toLowerCase() === 'stage';
     if (lowHostEnv && forceWcsStage) {
       env = Env.STAGE;
       wcsURL = WCS_STAGE_URL;
+    }
+    if (lowHostEnv && window.location.href.startsWith('https://www.stage.adobe.com')) {
+      wcsURL = WCS_PROD_CDN_STAGE_URL;
     }
     
     const checkoutClientId =

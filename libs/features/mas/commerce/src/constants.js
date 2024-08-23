@@ -20,6 +20,7 @@ export const PARAM_AOS_API_KEY = 'commerce.aosKey';
 export const PARAM_WCS_API_KEY = 'commerce.wcsKey';
 
 export const WCS_PROD_URL = 'https://www.adobe.com/web_commerce_artifact';
+export const WCS_PROD_CDN_STAGE_URL = 'https://www.stage.adobe.com/web_commerce_artifact';
 export const WCS_STAGE_URL = 'https://www.stage.adobe.com/web_commerce_artifact_stage';
 
 export const STATE_FAILED = 'failed';
