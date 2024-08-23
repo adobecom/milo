@@ -14,6 +14,7 @@
  * Marketo Form
  */
 import {
+  getConfig,
   parseEncodedConfig,
   loadScript,
   loadLink,
@@ -150,7 +151,10 @@ export const loadMarketo = (el, formData) => {
   const munchkinID = formData[MUNCHKIN_ID];
   const formID = formData[FORM_ID];
 
-  loadScript(`https://${baseURL}/js/forms2/js/forms2.min.js`)
+  const config = getConfig();
+  const base = config.miloLibs || config.codeRoot;
+
+  loadScript(`${base}/deps/forms2.min.js`)
     .then(() => {
       const { MktoForms2 } = window;
       if (!MktoForms2) throw new Error('Marketo forms not loaded');
