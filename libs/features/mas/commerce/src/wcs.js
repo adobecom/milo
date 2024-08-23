@@ -69,7 +69,9 @@ export function Wcs({ settings }) {
             url.searchParams.set('currency', options.currency);
           }
           
-          const response = await fetch(url.toString());
+          const response = await fetch(url.toString(), {
+            credentials: 'omit'
+          });
           if (response.ok) {            
             const data = await response.json();
             log.debug('Fetched:', options, data);
