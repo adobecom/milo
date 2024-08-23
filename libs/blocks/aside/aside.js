@@ -163,13 +163,13 @@ function decoratePromobar(el) {
   return foreground;
 }
 
-async function loadIconography() {
+function loadIconography() {
   const { miloLibs, codeRoot } = getConfig();
   const base = miloLibs || codeRoot;
-  await new Promise((resolve) => { loadStyle(`${base}/styles/iconography.css`, resolve); });
+  return new Promise((resolve) => { loadStyle(`${base}/styles/iconography.css`, resolve); });
 }
 
-async function decorateLayout(el) {
+function decorateLayout(el) {
   const elems = el.querySelectorAll(':scope > div');
   if (elems.length > 1) {
     decorateBlockBg(el, elems[0]);
@@ -191,7 +191,7 @@ async function decorateLayout(el) {
   if (iconArea) {
     const iconVariant = el.className.match(/-(avatar|lockup)/);
     const iconClass = iconVariant ? `${iconVariant[1]}-area` : 'icon-area';
-    if (iconVariant) await loadIconography();
+    if (iconVariant) loadIconography();
     iconArea.classList.add(iconClass);
   }
   const foregroundImage = foreground.querySelector(':scope > div:not(.text) img')?.closest('div');
