@@ -299,6 +299,7 @@
 
 .notification .flexible-inner {
   inline-size: 100%;
+  box-shadow: 0 3px 6px #707070;
 }
 
 .notification .foreground > :is(.tablet-up, .desktop-up) {
@@ -431,6 +432,8 @@
 
   .notification.pill.flexible {
     pointer-events: none;
+    box-shadow: none;
+    padding-block-end: var(--spacing-xxs);
   }
 
   .notification .flexible-inner {
