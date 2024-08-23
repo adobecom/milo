@@ -156,11 +156,17 @@ export const loadMarketo = (el, formData) => {
 
   loadScript(`${base}/deps/forms2.min.js`)
     .then(() => {
-      const { MktoForms2 } = window;
-      if (!MktoForms2) throw new Error('Marketo forms not loaded');
+      createIntersectionObserver({
+        el,
+        callback: () => {
+          const { MktoForms2 } = window;
+          if (!MktoForms2) throw new Error('Marketo forms not loaded');
 
-      MktoForms2.loadForm(`//${baseURL}`, munchkinID, formID);
-      MktoForms2.whenReady((form) => { readyForm(form, formData); });
+          MktoForms2.loadForm(`//${baseURL}`, munchkinID, formID);
+          MktoForms2.whenReady((form) => { readyForm(form, formData); });
+        },
+        options: { rootMargin: `${ROOT_MARGIN}px` },
+      });
     })
     .catch(() => {
       /* c8 ignore next 2 */
@@ -235,12 +241,5 @@ export default function init(el) {
   el.classList.add('loading');
 
   loadLink(`https://${baseURL}`, { rel: 'dns-prefetch' });
-
-  createIntersectionObserver({
-    el,
-    callback: (target) => {
-      loadMarketo(target, formData);
-    },
-    options: { rootMargin: `${ROOT_MARGIN}px` },
-  });
+  loadMarketo(el, formData);
 }
