@@ -65,7 +65,7 @@ async function branchInit(key) {
     const performanceCookieConsent = cookieGrp.includes('C0002');
     const advertisingCookieConsent = cookieGrp.includes('C0004');
 
-    if (performanceCookieConsent && advertisingCookieConsent && isAndroid) branch.setBranchViewData({ data: { ecid: ecid }});
+    if (performanceCookieConsent && advertisingCookieConsent && isAndroid) branch.setBranchViewData({ data: { ecid }});
     branch.init(key, { tracking_disabled: !privacyConsent });
   }
 
