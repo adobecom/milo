@@ -31,6 +31,36 @@ const values = [
     a: 'main > div:nth-child(3) .table > div:nth-child(2) > div:nth-child(2) p strong a',
   },
   {
+    b: 'marquee primary-cta#_href',
+    a: '.marquee p strong a',
+    m: ['href'],
+  },
+  {
+    b: 'marquee primary-cta#_HREF',
+    a: '.marquee p strong a',
+    m: ['href'],
+  },
+  {
+    b: 'marquee primary-cta#_href_all',
+    a: '.marquee p strong a',
+    m: ['href', 'all'],
+  },
+  {
+    b: 'marquee primary-cta #_href_all',
+    a: '.marquee p strong a',
+    m: ['href', 'all'],
+  },
+  {
+    b: 'marquee primary-cta #_href#_all',
+    a: '.marquee p strong a',
+    m: ['href', 'all'],
+  },
+  {
+    b: 'marquee primary-cta #_href #_all',
+    a: '.marquee p strong a',
+    m: ['href', 'all'],
+  },
+  {
     b: 'section3 table row5 col2',
     a: 'main > div:nth-child(3) .table > div:nth-child(5) > div:nth-child(2)',
   },
@@ -82,7 +112,9 @@ const values = [
 describe('test different values', () => {
   values.forEach((value) => {
     it(`should return the expected value for ${value.b}`, () => {
-      expect(modifyNonFragmentSelector(value.b).trim()).to.equal(value.a.trim());
+      const { modifiedSelector, modifiers } = modifyNonFragmentSelector(value.b);
+      expect(modifiedSelector).to.equal(value.a);
+      expect(modifiers).to.deep.equal(value.m || []);
     });
   });
 });

@@ -385,35 +385,51 @@ function modifySelectorTerm(termParam) {
   }
   return term;
 }
+function getModifiers(selector) {
+  let sel = selector;
+  const modifiers = [];
+  const flags = sel.split('#_');
+  if (flags.length) {
+    sel = flags.shift();
+    flags.forEach((flag) => {
+      flag.split('_').forEach((mod) => modifiers.push(mod.toLowerCase().trim()));
+    });
+  }
+  return { sel, modifiers };
+}
 export function modifyNonFragmentSelector(selector) {
-  return selector
-    .split('>').join(' > ')
-    .split(',').join(' , ')
-    .replaceAll(/main\s*>?\s*(section\d*)/gi, '$1')
-    .split(/\s+/)
-    .map(modifySelectorTerm)
-    .join(' ');
+  const { sel, modifiers } = getModifiers(selector);
+  return {
+    modifiedSelector: sel
+      .split('>').join(' > ')
+      .split(',').join(' , ')
+      .replaceAll(/main\s*>?\s*(section\d*)/gi, '$1')
+      .split(/\s+/)
+      .map(modifySelectorTerm)
+      .join(' ')
+      .trim(),
+    modifiers,
+  };
 }
 
 function getSelectedElement({ selector: sel, rootEl }) {
-  let selector = sel.trim();
-  if (!selector) return null;
+  const selector = sel.trim();
+  if (!selector) return {};
 
   if (getSelectorType(selector) === 'fragment') {
     try {
       const fragment = document.querySelector(
         `a[href*="${normalizePath(selector, false)}"], a[href*="${normalizePath(selector, true)}"]`,
       );
-      if (fragment) return fragment.parentNode;
-      return null;
+      if (fragment) return { el: fragment.parentNode };
+      return {};
     } catch (e) {
       /* c8 ignore next */
-      return null;
+      return {};
     }
   }
-
-  selector = modifyNonFragmentSelector(selector);
-  return querySelector(rootEl || document, selector);
+  const { modifiedSelector, modifiers } = modifyNonFragmentSelector(selector);
+  return { el: querySelector(rootEl || document, modifiedSelector), modifiers };
 }
 const addHash = (url, newHash) => {
   if (!newHash) return url;
@@ -443,15 +459,13 @@ export const updateFragDataProps = (a, inline, sections, fragment) => {
 
 export function handleCommands(commands, rootEl = document, forceInline = false) {
   commands.forEach((cmd) => {
-    const {
-      manifestId, targetManifestId, action, selector, modifiers, target: trgt,
-    } = cmd;
+    const { manifestId, targetManifestId, action, selector, target: trgt } = cmd;
     const target = forceInline ? addHash(trgt, INLINE_HASH) : trgt;
     if (selector.startsWith(IN_BLOCK_SELECTOR_PREFIX)) {
       registerInBlockActions(cmd, manifestId, targetManifestId);
       return;
     }
-    const el = getSelectedElement({ selector, rootEl });
+    const { el, modifiers } = getSelectedElement({ selector, rootEl });
 
     if (!el || (!(action in COMMANDS) && !(action in CREATE_CMDS))) return;
 
@@ -478,17 +492,7 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
   const action = line.action?.toLowerCase()
     .replace('content', '').replace('fragment', '').replace('tosection', '');
   const pageFilter = line['page filter'] || line['page filter optional'];
-  let { selector } = line;
-  let modifiers = [];
-  const selectorArr = selector.split('#');
-  if (selectorArr.length > 1) {
-    const modString = selectorArr.pop();
-    if (modString.startsWith('_')) {
-      modifiers = modString.split('_');
-      modifiers.shift();
-      selector = selectorArr.join('#');
-    }
-  }
+  const { selector } = line;
 
   if (pageFilter && !matchGlob(pageFilter, new URL(window.location).pathname)) return;
 
@@ -501,7 +505,6 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
     const variantInfo = {
       action,
       selector,
-      modifiers,
       pageFilter,
       target: line[vn],
       selectorType: getSelectorType(selector),
@@ -532,7 +535,6 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
       } else {
         variants[vn][action].push({
           selector: normalizePath(selector),
-          modifiers,
           val: normalizePath(line[vn]),
           pageFilter,
           manifestId,
