@@ -119,7 +119,7 @@ function addIds(el, manifestId, targetManifestId) {
 
 function getSelectorType(selector) {
   const sel = selector.toLowerCase().trim();
-  if (sel.includes('/fragments/') && (sel.startsWith('/') || sel.startsWith('http'))) return 'fragment';
+  if (sel.startsWith('/') || sel.startsWith('http')) return 'fragment';
   return 'other';
 }
 
