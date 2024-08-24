@@ -388,11 +388,11 @@ function modifySelectorTerm(termParam) {
 function getModifiers(selector) {
   let sel = selector;
   const modifiers = [];
-  const flags = sel.split('#_');
+  const flags = sel.split(/\s+#_/);
   if (flags.length) {
     sel = flags.shift();
     flags.forEach((flag) => {
-      flag.split('_').forEach((mod) => modifiers.push(mod.toLowerCase().trim()));
+      flag.split(/_|#_/).forEach((mod) => modifiers.push(mod.toLowerCase().trim()));
     });
   }
   return { sel, modifiers };
