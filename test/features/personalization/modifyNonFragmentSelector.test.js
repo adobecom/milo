@@ -31,19 +31,18 @@ const values = [
     a: 'main > div:nth-child(3) .table > div:nth-child(2) > div:nth-child(2) p strong a',
   },
   {
+    b: 'marquee primary-cta #_href',
+    a: '.marquee p strong a',
+    m: ['href'],
+  },
+  {
+    b: 'marquee primary-cta #_HREF',
+    a: '.marquee p strong a',
+    m: ['href'],
+  },
+  {
     b: 'marquee primary-cta#_href',
-    a: '.marquee p strong a',
-    m: ['href'],
-  },
-  {
-    b: 'marquee primary-cta#_HREF',
-    a: '.marquee p strong a',
-    m: ['href'],
-  },
-  {
-    b: 'marquee primary-cta#_href_all',
-    a: '.marquee p strong a',
-    m: ['href', 'all'],
+    a: '.marquee p strong a#_href',
   },
   {
     b: 'marquee primary-cta #_href_all',
