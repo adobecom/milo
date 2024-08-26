@@ -3,6 +3,10 @@ import { deeplink, pushState } from '../src/deeplink.js';
 import { delay } from '../../web-components/test/utils.js';
 
 describe('Deep linking', () => {
+    beforeEach(() => {
+        document.location.hash = '';
+    });
+
     it('processes initial URL hash', async () => {
         const events = [];
         document.location.hash = 'filter=all&single_app=acrobat';

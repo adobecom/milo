@@ -22,9 +22,3 @@ let { metafile } = await build({
 });
 fs.writeFileSync('mas.json', JSON.stringify(metafile));
 
-({ metafile } = await build({
-    ...defaults,
-    entryPoints: ['./src/mas.min.js'],
-    outfile: '../../../deps/mas/mas.min.js',
-}));
-fs.writeFileSync('mas.min.json', JSON.stringify(metafile));

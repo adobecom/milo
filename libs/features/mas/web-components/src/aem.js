@@ -13,6 +13,7 @@ class AEM {
         this.csrfTokenUrl = `${baseUrl}/libs/granite/csrf/token.json`;
 
         this.headers = {
+            // IMS users might not not have all the permissions, token in the sessionStorage is a temporary workaround
             Authorization: `Bearer ${sessionStorage.getItem('masAccessToken') ?? window.adobeid?.authorize?.()}`,
             pragma: 'no-cache',
             'cache-control': 'no-cache',
