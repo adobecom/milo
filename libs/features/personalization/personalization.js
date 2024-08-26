@@ -214,9 +214,50 @@ const consolidateObjects = (arr, prop, existing = {}) => arr.reduce((propMap, it
   return { ...existing, ...propMap };
 }, {});
 
+export const formatPageFilter = (name) => {
+  // const config = getConfig();
+  // if (config.mep?.variantOverride?.[manifestPath]) {
+  //   return config.mep.variantOverride[manifestPath];
+  // }
+
+  // const variantInfo = buildVariantInfo(variantNames);
+
+  // const entitlementKeys = Object.values(await getEntitlementMap());
+  // const hasEntitlementTag = entitlementKeys.some((tag) => variantInfo.allNames.includes(tag));
+
+  // let userEntitlements = [];
+  // if (hasEntitlementTag) {
+  //   userEntitlements = await config.entitlements();
+  // }
+
+  // const hasMatch = (name) => {
+  //   if (name === '') return true;
+  //   if (name === variantLabel?.toLowerCase()) return true;
+  //   if (name.startsWith('param-')) return checkForParamMatch(name);
+  //   if (userEntitlements?.includes(name)) return true;
+  //   return PERSONALIZATION_KEYS.includes(name) && PERSONALIZATION_TAGS[name]();
+  // };
+
+  // const matchVariant = (name) => {
+  //   if (name.startsWith(TARGET_EXP_PREFIX)) return hasMatch(name);
+  //   const processedList = name.split('&').map((condition) => {
+  //     const reverse = condition.trim().startsWith(COLUMN_NOT_OPERATOR);
+  //     const match = hasMatch(condition.replace(COLUMN_NOT_OPERATOR, '').trim());
+  //     return reverse ? !match : match;
+  //   });
+  //   return !processedList.includes(false);
+  // };
+
+  // const matchingVariant = variantNames.find((variant) => variantInfo[variant].some(matchVariant));
+  // return matchingVariant;
+};
+
 export const matchGlob = (searchStr, inputStr) => {
   const pattern = searchStr.replace(/\*\*/g, '.*');
   const reg = new RegExp(`^${pattern}(\\.html)?$`, 'i'); // devtool bug needs this backtick: `
+
+  formatPageFilter(searchStr, inputStr);
+
   return reg.test(inputStr);
 };
 
