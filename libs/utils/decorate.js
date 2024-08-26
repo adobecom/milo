@@ -289,10 +289,10 @@ export function decorateMultiViewport(el) {
   if (foreground.childElementCount === 2 || foreground.childElementCount === 3) {
     [...foreground.children].forEach((child, index) => {
       const mq = window.matchMedia(viewports[index]);
-      const setContent = ({ matches }) => {
-        if (matches) foreground.replaceChildren(child);
+      const setContent = () => {
+        if (mq.matches) foreground.replaceChildren(child);
       };
-      setContent(mq);
+      setContent();
       mq.addEventListener('change', setContent);
     });
   }
