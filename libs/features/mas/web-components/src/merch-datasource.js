@@ -3,13 +3,6 @@ import { createTag } from './utils.js';
 
 const ATTR_AEM_BUCKET = 'aem-bucket';
 
-const xglMappings = {
-    '3f499a92-88ac-4376-8c1e-90eda48565db': 'illustrator-lapsed',
-    'd50952b3-1245-4074-8edf-b72f44094ea9': 'photoshop-lapsed',
-    '67129b31-eb1a-4c9e-b251-4561ac7c8602': 'photography-upsell',
-    '1abe0afe-e370-42b2-9daa-cb3ea9802b12': 'photoshop-single-app',
-};
-
 const cardContent = {
     catalog: {
         title: {
@@ -117,6 +110,7 @@ async function parseMerchCard(fragmentData, appendFn, merchCard, consonant) {
     }
 
     if (item.backgroundImage && cardMapping.backgroundImage) {
+      // TODO improve image logic
         appendFn(
             createTag(
                 cardMapping.backgroundImage.tag,
@@ -265,22 +259,6 @@ export class MerchDataSource extends HTMLElement {
         let item = cache.get(this.path);
         if (!item) {
             item = await this.#aem.sites.cf.fragments.getByPath(this.path);
-        }
-        const mostRelevantProfile = (
-            sessionStorage.getItem('mas_xlg') ??
-            window.alloy_all?.data?._adobe_corpnew?.digitalData?.adobe?.xlg
-        )
-            ?.split(',')
-            ?.map((id) => xglMappings[id])
-            .find(Boolean);
-        const itemXlg = item.fields.find((field) => field.name === 'xlg')?.values[0];
-        if (mostRelevantProfile && itemXlg?.includes(mostRelevantProfile)) {
-            const promo = await this.#aem.sites.cf.fragments
-                .getByPath(`${this.path}-${mostRelevantProfile}`)
-                .catch(() => null);
-            if (promo) {
-                item = promo;
-            }
         }
         if (item) {
             const appendFn = (element) => {
