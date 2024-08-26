@@ -1,4 +1,6 @@
-import { getConfig, getMetadata, loadIms, loadLink, loadScript } from '../utils/utils.js';
+import {
+  getConfig, getMetadata, loadIms, loadLink, loadScript, getMepEnablement,
+} from '../utils/utils.js';
 
 const ALLOY_SEND_EVENT = 'alloy_sendEvent';
 const ALLOY_SEND_EVENT_ERROR = 'alloy_sendEvent_error';
@@ -89,7 +91,8 @@ function sendTargetResponseAnalytics(failure, responseStart, timeout, message) {
   const timeoutTime = roundToQuarter(timeout);
   let val = `target response time ${responseTime}:timed out ${failure}:timeout ${timeoutTime}`;
   if (message) val += `:${message}`;
-  window.alloy('sendEvent', {
+  // eslint-disable-next-line no-underscore-dangle
+  window._satellite?.track?.('event', {
     documentUnloading: true,
     xdm: {
       eventType: 'web.webinteraction.linkClicks',
@@ -177,16 +180,20 @@ const loadMartechFiles = async (config) => {
   if (filesLoadedPromise) return filesLoadedPromise;
 
   filesLoadedPromise = async () => {
-    loadIms()
-      .then(() => {
-        if (window.adobeIMS.isSignedInUser()) setupEntitlementCallback();
-      })
-      .catch(() => {});
+    if (getMepEnablement('xlg') === 'loggedout') {
+      setupEntitlementCallback();
+    } else {
+      loadIms()
+        .then(() => {
+          if (window.adobeIMS.isSignedInUser()) setupEntitlementCallback();
+        })
+        .catch(() => {});
+    }
 
     setDeep(
       window,
       'alloy_all.data._adobe_corpnew.digitalData.page.pageInfo.language',
-      config.locale.ietf,
+      { locale: config.locale.prefix.replace('/', ''), langCode: config.locale.ietf },
     );
     setDeep(window, 'digitalData.diagnostic.franklin.implementation', 'milo');
 

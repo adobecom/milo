@@ -140,10 +140,12 @@ export const styles = css`
         height: fit-content;
         flex-direction: column;
         width: fit-content;
+        max-width: 140px;
         border-radius: 5px;
         position: relative;
         top: 0;
         margin-left: var(--consonant-merch-spacing-xxs);
+        box-sizing: border-box;
     }
 
     .detail-bg-container {
@@ -323,16 +325,6 @@ export const styles = css`
         }
     }
 
-    @media screen and ${unsafeCSS(MOBILE_LANDSCAPE)} {
-        :host([variant='mini-compare-chart']) .top-section {
-            padding-top: var(--consonant-merch-spacing-xs);
-        }
-        :host([variant='mini-compare-chart']) .mini-compare-chart-badge {
-            font-size: var(--consonant-merch-card-detail-font-size);
-            padding: 6px 8px;
-            top: 10px;
-        }
-    }
     @media screen and ${unsafeCSS(DESKTOP_UP)} {
         :host([variant='mini-compare-chart']) footer {
             padding: var(--consonant-merch-spacing-xs)

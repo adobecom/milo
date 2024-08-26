@@ -188,7 +188,10 @@ export async function getModal(details, custom) {
 
   if (!dialog.classList.contains('curtain-off')) {
     document.body.classList.add('disable-scroll');
-    const curtain = createTag('div', { class: 'modal-curtain is-open' });
+    const curtain = createTag('div', {
+      class: 'modal-curtain is-open',
+      'daa-ll': `${analyticsEventName}:modalClose:curtainClose`,
+    });
     curtain.addEventListener('click', (e) => {
       if (e.target === curtain) closeModal(dialog);
     });
@@ -219,7 +222,7 @@ export function getHashParams(hashStr) {
       params.hash = part;
     } else {
       const [key, val] = part.split('=');
-      if (key === 'delay' && parseInt(val, 10) > 0) {
+      if (key === 'delay') {
         params.delay = parseInt(val, 10) * 1000;
       }
     }
@@ -229,7 +232,7 @@ export function getHashParams(hashStr) {
 
 export function delayedModal(el) {
   const { hash, delay } = getHashParams(el?.dataset.modalHash);
-  if (!delay || !hash) return false;
+  if (delay === undefined || !hash) return false;
   isDelayedModal = true;
   const modalOpenEvent = new Event(`${hash}:modalOpen`);
   const pagesModalWasShownOn = window.sessionStorage.getItem(`shown:${hash}`);
