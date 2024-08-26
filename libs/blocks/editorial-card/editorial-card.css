@@ -149,10 +149,9 @@
 
 .editorial-card .background .milo-video, 
 .editorial-card .background .milo-iframe {
-    height: 100%;
-    padding-bottom: 0;
+  height: 100%;
+  padding-bottom: 0;
 }
-
 
 .editorial-card .lockup-area,
 .editorial-card .device {
@@ -189,7 +188,6 @@
 .editorial-card.center .action-area {
   justify-content: center;
 }
-
 
 .editorial-card hr {
   background-color: currentcolor;
@@ -275,7 +273,6 @@
   }
 
   .editorial-card .vp-media .tablet-only { display: block; }
-
 }
 
 /* desktop up */
