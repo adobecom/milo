@@ -808,6 +808,13 @@ a.static:hover {
   text-decoration: underline;
 }
 
+.share-link-black {
+  color: black;
+  text-decoration: underline;
+  font-weight: 700;
+}
+
+
 /* Tooltip */
 .tooltip-wrapper {
   visibility: hidden;

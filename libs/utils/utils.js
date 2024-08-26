@@ -624,6 +624,20 @@ export function decorateLinks(el) {
   const config = getConfig();
   decorateImageLinks(el);
   const anchors = el.getElementsByTagName('a');
+  const sharelinks = [...anchors].filter((a) => a.href.includes("_share-link"));
+  sharelinks.forEach((sl) => {
+    console.log('links', sl);
+    const btnLink = sl.href;
+    sl.href = '';
+    // sl.classList.add('static-links'); // static
+    const checkButton = sl.parentElement.nodeName === 'EM' || sl.parentElement.nodeName === 'STRONG';
+    if (!sl.classList.contains('con-button') && !checkButton) sl.classList.add('share-link-black'); // static
+    sl.addEventListener('click', async () => {
+      if (navigator.share) {
+        await navigator.share({ title: 'send', url: btnLink });
+      }
+    });
+  });
   return [...anchors].reduce((rdx, a) => {
     appendHtmlToLink(a);
     a.href = localizeLink(a.href);
