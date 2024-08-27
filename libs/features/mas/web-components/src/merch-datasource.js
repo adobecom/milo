@@ -110,7 +110,7 @@ async function parseMerchCard(fragmentData, appendFn, merchCard, consonant) {
     }
 
     if (item.backgroundImage && cardMapping.backgroundImage) {
-      // TODO improve image logic
+        // TODO improve image logic
         appendFn(
             createTag(
                 cardMapping.backgroundImage.tag,
@@ -152,6 +152,7 @@ async function parseMerchCard(fragmentData, appendFn, merchCard, consonant) {
             } else {
                 const spectrumCta = createTag('sp-button', {}, cta);
                 spectrumCta.addEventListener('click', (e) => {
+                    /* c8 ignore next 2 */
                     e.stopPropagation();
                     cta.click();
                 });
@@ -219,6 +220,11 @@ export class MerchDataSource extends HTMLElement {
      */
     consonant = false;
 
+    /**
+     * Internal promise to track the readiness of the web-component to render.
+     */
+    #readyPromise;
+
     static get observedAttributes() {
         return ['source', 'path', 'consonant'];
     }
@@ -232,12 +238,9 @@ export class MerchDataSource extends HTMLElement {
         this.clearRefs();
         const bucket =
             this.getAttribute(ATTR_AEM_BUCKET) ??
-            document
-                .querySelector('mas-studio')
-                ?.getAttribute(ATTR_AEM_BUCKET) ??
             'publish-p22655-e59341';
         this.#aem = new AEM(bucket);
-        this.fetchData();
+        this.refresh(true);
     }
 
     clearRefs() {
@@ -246,13 +249,23 @@ export class MerchDataSource extends HTMLElement {
         });
     }
 
-    refresh(flushCache = true) {
+    async refresh(flushCache = true) {
+        if (!this.path) return;
+
+        if (this.#readyPromise) {
+            const ready = await Promise.race([
+                this.#readyPromise,
+                Promise.resolve(false),
+            ]);
+            if (!ready) return; // already fetching data
+        }
+
         this.clearRefs();
         this.refs = [];
         if (flushCache) {
             this.cache.remove(this.path);
         }
-        this.fetchData();
+        this.#readyPromise = this.fetchData().then(() => true);
     }
 
     async fetchData() {
@@ -268,6 +281,13 @@ export class MerchDataSource extends HTMLElement {
             parseMerchCard(item, appendFn, this.parentElement, this.consonant);
             return;
         }
+    }
+
+    get ready() {
+        return (
+            this.#readyPromise ??
+            Promise.reject(new Error('datasource is not correctly configured'))
+        );
     }
 }
 

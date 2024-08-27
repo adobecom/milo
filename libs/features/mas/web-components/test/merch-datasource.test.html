@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
     <head>
         <meta charset="utf-8" />
@@ -20,24 +20,30 @@
             }
         </style>
     </head>
-    
+
     <body>
-      <script type="module" src="./merch-datasource.test.html.js"></script>
+        <script type="module" src="./merch-datasource.test.html.js"></script>
         <main></main>
         <template id="cards">
             <merch-card>
                 <merch-datasource
-                    odin
                     path="/content/dam/sandbox/mas/creative-cloud"
                 >
                 </merch-datasource>
             </merch-card>
             <merch-card>
+                <merch-datasource path="/content/dam/sandbox/mas/photoshop">
+                </merch-datasource>
+            </merch-card>
+            <merch-card>
                 <merch-datasource
-                    odin
-                    path="/content/dam/sandbox/mas/photoshop"
+                    consonant
+                    path="/content/dam/sandbox/mas/special-offers-students-and-teachers"
                 >
                 </merch-datasource>
+            </merch-card>
+            <merch-card>
+                <merch-datasource></merch-datasource>
             </merch-card>
         </template>
     </body>

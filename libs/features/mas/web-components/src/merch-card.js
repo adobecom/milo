@@ -1,4 +1,4 @@
-import { html, LitElement, nothing } from 'lit';
+import { html, LitElement } from 'lit';
 import { sizeStyles, styles } from './merch-card.css.js';
 import { isMobile, isMobileOrTablet } from './utils.js';
 
@@ -451,7 +451,8 @@ export class MerchCard extends LitElement {
                           ><slot name="callout-content"></slot>`
                     : ''}
             </div>
-            ${this.secureLabelFooter}`;
+            ${this.secureLabelFooter}
+            <slot></slot>`;
     }
 
     renderImage() {

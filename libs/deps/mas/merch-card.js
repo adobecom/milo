@@ -1590,7 +1590,8 @@ body.merch-modal {
                 ${this.promoBottom?n`<slot name="promo-text"></slot
                           ><slot name="callout-content"></slot>`:""}
             </div>
-            ${this.secureLabelFooter}`}renderImage(){return n`${this.cardImage}
+            ${this.secureLabelFooter}
+            <slot></slot>`}renderImage(){return n`${this.cardImage}
             <div class="body">
                 <slot name="icons"></slot>
                 <slot name="heading-xs"></slot>
