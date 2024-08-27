@@ -152,6 +152,14 @@
   inline-size: 100%;
 }
 
+.notification.ribbon [class*="heading-"]:only-child {
+  margin-block-end: var(--spacing-s);
+}
+
+.notification.ribbon.space-between [class*="heading-"]:only-child {
+  margin-block-end: 0;
+}
+
 .notification.ribbon.space-between .foreground .text {
   flex-wrap: nowrap;
   inline-size: 100%;
@@ -159,6 +167,9 @@
 
 .notification.ribbon.space-between .foreground .copy-wrap {
   margin-inline-end: var(--spacing-s);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .notification .foreground .image {
