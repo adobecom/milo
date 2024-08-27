@@ -514,7 +514,7 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
 
     if (action in COMMANDS && variantInfo.selectorType === 'fragment') {
       variants[vn].fragments.push({
-        selector: normalizePath(variantInfo.selector.split(' #_')[0]),
+        selector: normalizePath(variantInfo.selector),
         val: normalizePath(line[vn]),
         action,
         manifestId,
