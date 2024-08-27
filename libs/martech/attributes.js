@@ -4,11 +4,12 @@ const LEAD_UNDERSCORES = /^_+|_+$/g;
 export function processTrackingLabels(text, config, charLimit) {
   let analyticsValue = text?.replace(INVALID_CHARACTERS, ' ').replace(LEAD_UNDERSCORES, '').trim();
   if (config) {
-    const { analyticLocalization: mepObj, mepLoc = mepObj?.[analyticsValue] } = config.mep;
+    const { analyticLocalization, mep } = config;
+    const mepLoc = mep?.analyticLocalization?.[analyticsValue];
     if (mepLoc) {
       analyticsValue = mepLoc;
     } else {
-      const { analyticLocalization, loc = analyticLocalization?.[analyticsValue] } = config;
+      const loc = analyticLocalization?.[analyticsValue];
       if (loc) analyticsValue = loc;
     }
   }
