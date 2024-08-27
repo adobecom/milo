@@ -1,7 +1,7 @@
 import './job-process.js';
-import { LitElement, html } from '../../../deps/lit-all.min.js';
+import { LitElement, html, nothing } from '../../../deps/lit-all.min.js';
 import { getSheet } from '../../../../tools/utils/utils.js';
-import { authenticate, startJob, stopJob } from '../services.js';
+import { authenticate, startJob, stopJob, getSharedJob } from '../services.js';
 import { getConfig } from '../../../utils/utils.js';
 import {
   delay,
@@ -36,6 +36,7 @@ class BulkPublish2 extends LitElement {
     openJobs: { state: true },
     jobErrors: { state: true },
     user: { state: true },
+    errorShare: { state: true },
   };
 
   constructor() {
@@ -50,19 +51,24 @@ class BulkPublish2 extends LitElement {
     this.openJobs = false;
     this.jobErrors = false;
     this.user = null;
+    this.errorShare = null;
   }
 
   async connectedCallback() {
     super.connectedCallback();
-    authenticate(this);
     this.renderRoot.adoptedStyleSheets = [styleSheet, loaderSheet];
+    authenticate(this);
+    const shared = await getSharedJob();
     const resumes = sticky().get('resume');
-    /* c8 ignore next 6 */
-    if (resumes.length) {
-      this.jobs = resumes;
+    /* c8 ignore next 9 */
+    if (resumes.length || shared.length) {
+      this.jobs = [...resumes, ...shared];
       await delay(1000);
       this.openJobs = true;
       this.processing = 'resumed';
+    }
+    if (shared.error) {
+      this.errorShare = shared;
     }
   }
 
@@ -454,10 +460,26 @@ class BulkPublish2 extends LitElement {
     `;
   }
 
+  renderErrorShare() {
+    if (!this.user?.profile || !this.errorShare) return nothing;
+    return html`
+      <div class="login-prompt">
+        <div class="prompt">
+          <div class="message share">
+            <span>Sorry, shared job ( ${this.errorShare.share} )</span>
+            <strong>${this.errorShare.error.message}</strong>
+            <div class="close" @click=${() => { this.errorShare = null; }}>X</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
   render() {
     const { full, half, toggleMode } = this.getModeState();
     return html`
       ${this.renderLoginPrompt()}
+      ${this.renderErrorShare()}
       <header id="Header">
         <h1>Bulk Publishing</h1>
         <div class="mode-switcher">
