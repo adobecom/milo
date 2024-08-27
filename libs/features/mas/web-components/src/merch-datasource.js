@@ -283,7 +283,7 @@ export class MerchDataSource extends HTMLElement {
         }
     }
 
-    get ready() {
+    get updateComplete() {
         return (
             this.#readyPromise ??
             Promise.reject(new Error('datasource is not correctly configured'))

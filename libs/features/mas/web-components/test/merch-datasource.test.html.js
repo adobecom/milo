@@ -51,12 +51,12 @@ runTests(async () => {
             const dataSource = ccCard.querySelector('merch-datasource');
 
             document.querySelector('main').append(ccCard);
-            await dataSource.ready;
+            await dataSource.updateComplete;
             const before = ccCard.innerHTML;
             ccCard.footerSlot.test = true;
             await dataSource.refresh(true);
             await dataSource.refresh(true); // for extra coverage
-            await dataSource.ready;
+            await dataSource.updateComplete;
             const after = ccCard.innerHTML;
             expect(before).to.equal(after);
             expect(ccCard.footerSlot.test).to.undefined;
@@ -69,7 +69,7 @@ runTests(async () => {
                 cardWithMissingPath.querySelector('merch-datasource');
 
             document.querySelector('main').append(cardWithMissingPath);
-            await expect(dataSource.ready).to.be.rejectedWith('datasource is not correctly configured',
+            await expect(dataSource.updateComplete).to.be.rejectedWith('datasource is not correctly configured',
             );
         });
     });
