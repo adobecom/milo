@@ -161,7 +161,7 @@ export async function polyfills() {
     polyfills.promise = Promise.resolve();
   } else {
     const { base } = getConfig();
-    polyfills.promise = loadScript(`${base}/deps/custom-elements.js`);
+    polyfills.promise = await loadScript(`${base}/deps/custom-elements.js`);
   }
   return polyfills.promise;
 }

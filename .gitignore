@@ -2,7 +2,7 @@
 .aem/*
 coverage
 logs/*
-node_modules
+*node_modules
 .DS_Store
 .idea
 .iml
@@ -10,4 +10,3 @@ node_modules
 **/mas/*/stats.json
 test-html-results/
 test-results/
-
