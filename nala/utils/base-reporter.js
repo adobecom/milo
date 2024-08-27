@@ -75,8 +75,6 @@ class BaseReporter {
   }
 
   async onEnd() {
-    //this.printPersistingOption();
-    //await this.persistData();
     const summary = this.printResultSummary();
     const resultSummary = { summary };
 
@@ -187,7 +185,6 @@ class BaseReporter {
     return { name, tags, url, browser, env, branch, repo};
   }
 
-  // eslint-disable-next-line class-methods-use-this, no-empty-function
   async persistData() {}
 
   printPersistingOption() {
@@ -198,7 +195,6 @@ class BaseReporter {
     } else {
       console.log('Not persisting data');
     }
-    //this.branch1 = process.env.GITHUB_REF_NAME ?? 'local';
     this.branch = process.env.LOCAL_TEST_LIVE_URL;
   }
 
