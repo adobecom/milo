@@ -37,7 +37,7 @@ describe('resolveOfferSelectors', () => {
     });
 
     it('groups WCS requests by promotion code', async () => {
-        let fetch = await mockFetch(withWcs);
+        await mockFetch(withWcs);
         const client = Wcs({
             // @ts-ignore
             settings: {

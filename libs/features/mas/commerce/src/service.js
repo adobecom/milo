@@ -121,15 +121,18 @@ export function resetService() {
 /** @type {Commerce.initService} */
 export function initService(getConfig, getProviders) {
     // Callback is provided, activate service or/and return its promise
-    if (isFunction(getConfig)) {
-        const dataProviders = isFunction(getProviders) ? getProviders() : {};
-        if (dataProviders.force) resetService();
-        return (HTMLWcmsCommerceElement.promise ??= activateService(
-            getConfig(),
-            dataProviders,
-        ));
+    const config = isFunction(getConfig) ? getConfig() : null;
+    const dataProviders = isFunction(getProviders) ? getProviders() : {};
+    if (config) {
+      if (dataProviders.force) resetService();
+      activateService(config, dataProviders).then((serviceElement) => {
+          // @ts-ignore
+          initService.resolve(serviceElement);
+      });
     }
-    // Return existing promise
+    HTMLWcmsCommerceElement.promise ??= new Promise((resolve) => {
+        // @ts-ignore
+        initService.resolve = resolve;
+    });
     return HTMLWcmsCommerceElement.promise;
-
 }
