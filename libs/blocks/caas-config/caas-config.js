@@ -60,7 +60,7 @@ const caasFilesLoaded = loadCaasFiles();
 const ConfiguratorContext = createContext();
 
 const defaultOptions = {
-  accessibilityLevel: {
+  cardTitleAccessibilityLevel: {
     2: '2',
     3: '3',
     4: '4',
@@ -212,6 +212,7 @@ const defaultOptions = {
   },
   detailsTextOption: {
     default: 'Default',
+    createdDate: 'Created Date',
     modifiedDate: 'Modified Date',
   },
   cardHoverEffect: {
@@ -364,8 +365,9 @@ const UiPanel = () => html`
   <${Input} label="Use Overlay Links" prop="useOverlayLinks" type="checkbox" />
   <${Input} label="Show total card count at top" prop="showTotalResults" type="checkbox" />
   <${Input} label="Hide date for on-demand content" prop="hideDateInterval" type="checkbox" />
+  <${Input} label="Enable showing card badges (by default hidden)" prop="showCardBadges" type="checkbox" />
   <${Select} label="Card Style" prop="cardStyle" options=${defaultOptions.cardStyle} />
-  <${Select} options=${defaultOptions.accessibilityLevel} prop="accessibilityLevel" label="Card Accessibility Title Level" />
+  <${Select} options=${defaultOptions.cardTitleAccessibilityLevel} prop="cardTitleAccessibilityLevel" label="Card Accessibility Title Level" />
   <${Select} label="Layout" prop="container" options=${defaultOptions.container} />
   <${Select} label="Layout Type" prop="layoutType" options=${defaultOptions.layoutType} />
   <${Select} label="Grid Gap (Gutter)" prop="gutter" options=${defaultOptions.gutter} />

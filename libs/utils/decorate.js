@@ -56,7 +56,8 @@ export function decorateBlockText(el, config = ['m', 's', 'm'], type = null) {
     if (headings) {
       headings.forEach((h) => h.classList.add(`heading-${config[0]}`));
       if (config[2]) {
-        headings[0]?.previousElementSibling?.classList.add(`detail-${config[2]}`);
+        const prevSib = headings[0]?.previousElementSibling;
+        prevSib?.classList.toggle(`detail-${config[2]}`, !prevSib.querySelector('picture'));
         decorateIconArea(el);
       }
     }
@@ -69,7 +70,8 @@ export function decorateBlockText(el, config = ['m', 's', 'm'], type = null) {
         .forEach((text) => text.classList.add(`body-${config[1]}`));
     }
   }
-  decorateButtons(el);
+  const buttonSize = config.length > 3 ? `button-${config[3]}` : '';
+  decorateButtons(el, buttonSize);
   if (type === 'merch') decorateIconStack(el);
 }
 
@@ -170,12 +172,29 @@ export function decorateTextOverrides(el, options = ['-heading', '-body', '-deta
   });
 }
 
+function defineDeviceByScreenSize() {
+  const screenWidth = window.innerWidth;
+  if (screenWidth <= 600) {
+    return 'mobile';
+  }
+  return 'desktop';
+}
+
+export function getImgSrc(pic) {
+  let source = '';
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(pic, 'text/html');
+  if (defineDeviceByScreenSize() === 'mobile') source = doc.querySelector('source[type="image/webp"]:not([media])');
+  else source = doc.querySelector('source[type="image/webp"][media]');
+  return source?.srcset ? `poster='${source.srcset}'` : '';
+}
+
 export function getVideoAttrs(hash, dataset) {
   const isAutoplay = hash?.includes('autoplay');
   const isAutoplayOnce = hash?.includes('autoplay1');
   const playOnHover = hash?.includes('hoverplay');
   const playInViewport = hash?.includes('viewportplay');
-  const poster = dataset?.videoPoster ? `poster='${dataset.videoPoster}'` : '';
+  const poster = getImgSrc(dataset.videoPoster);
   const globalAttrs = `playsinline ${poster}`;
   const autoPlayAttrs = 'autoplay muted';
   const playInViewportAttrs = playInViewport ? 'data-play-viewport' : '';

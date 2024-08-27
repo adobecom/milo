@@ -100,6 +100,7 @@ describe('Plans Card', () => {
       elements: [
         { selector: 'h3[slot="heading-m"]' },
         { selector: 'h4[slot="heading-xs"]' },
+        { selector: 'strong span' },
         { selector: 'div[slot="body-xs"]', textContent: 'Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna. Nunc viverra imperdiet enim.MaecenasSee terms about lorem ipsum' },
         { attribute: { name: 'variant', value: 'plans' } },
         { attribute: { name: 'badge-background-color', value: '#EDCC2D' } },
@@ -395,6 +396,35 @@ describe('Merch Card with Offer Selection', () => {
     await delay();
     expect(document.querySelector('merch-quantity-select')).to.not.exist;
   });
+
+  it('should handle callout-content with h6 and em tags', async () => {
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/callout.html');
+
+    const merchCards = document.querySelectorAll('.merch-card');
+    const segmentCard = await init(merchCards[0]);
+    await delay();
+
+    // Assert
+    const calloutSlot = segmentCard.querySelector('[slot="callout-content"]');
+    expect(calloutSlot).to.exist;
+
+    const calloutContentWrapper = calloutSlot.querySelector('div > div');
+    expect(calloutContentWrapper).to.exist;
+
+    const imgElement = calloutContentWrapper.querySelector('img.callout-icon');
+    expect(imgElement).to.exist;
+    expect(imgElement.title).to.equal('this is a dummy tooltip text');
+
+    const calloutContent = calloutContentWrapper.querySelector('div > div');
+    expect(calloutContent).to.exist;
+    expect(calloutContent.textContent.trim()).to.equal('AI Assistant add-on available');
+
+    // Assert that price-commitment slot is appended
+    const miniCompareChart = await init(merchCards[1]);
+    await delay();
+    const priceCommitmentSlot = miniCompareChart.querySelector('[slot="price-commitment"]');
+    expect(priceCommitmentSlot).to.exist;
+  });
 });
 
 describe('Section metadata rules', async () => {
@@ -423,5 +453,47 @@ describe('Section metadata rules', async () => {
     document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/mep.html');
     const merchCard = await init(document.querySelector('.merch-card'));
     expect(merchCard.dataset.removedManifestId).to.exist;
+  });
+});
+
+describe('Viewport Responsiveness without Sinon', () => {
+  let originalMatchMedia;
+
+  beforeEach(() => {
+    // Store the original window.matchMedia
+    originalMatchMedia = window.matchMedia;
+  });
+
+  afterEach(() => {
+    // Restore the original window.matchMedia after each test
+    window.matchMedia = originalMatchMedia;
+  });
+
+  it('Adjusts layout for desktop viewports', async () => {
+    window.matchMedia = (query) => ({
+      matches: query.includes('(max-width: 600px)'),
+      addListener: () => {},
+      removeListener: () => {},
+    });
+
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/plans-card.html');
+    const merchCard = await init(document.querySelector('.merch-card.plans.edu.icons.secure'));
+    const bigPrice = merchCard.querySelector('strong span[is="inline-price"]');
+    expect(bigPrice).to.exist;
+    expect(bigPrice.style.fontSize).to.equal('24px');
+  });
+
+  it('Maintains layout for mobile viewports', async () => {
+    window.matchMedia = (query) => ({
+      matches: !query.includes('(max-width: 600px)'),
+      addListener: () => {},
+      removeListener: () => {},
+    });
+
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/plans-card.html');
+    const merchCard = await init(document.querySelector('.merch-card.plans.edu.icons.secure'));
+    const bigPrice = merchCard.querySelector('strong span[is="inline-price"]');
+    expect(bigPrice).to.exist;
+    expect(bigPrice.style.fontSize).to.equal('16px');
   });
 });

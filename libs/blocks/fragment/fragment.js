@@ -32,12 +32,6 @@ const updateFragMap = (fragment, a, href) => {
   }
 };
 
-const setManifestIdOnChildren = (sections, manifestId) => {
-  [...sections[0].children].forEach(
-    (child) => (child.dataset.manifestId = manifestId),
-  );
-};
-
 const insertInlineFrag = (sections, a, relHref) => {
   // Inline fragments only support one section, other sections are ignored
   const fragChildren = [...sections[0].children];
@@ -79,7 +73,7 @@ export default async function init(a) {
   }
 
   const path = new URL(a.href).pathname;
-  if (mep?.fragments?.[path] && mep) {
+  if (mep?.fragments?.[path]) {
     relHref = mep.handleFragmentCommand(mep?.fragments[path], a);
     if (!relHref) return;
   }
@@ -90,11 +84,16 @@ export default async function init(a) {
   }
 
   const { customFetch } = await import('../../utils/helpers.js');
-  const resp = await customFetch({ resource: `${a.href}.plain.html`, withCacheRules: true })
+  let resourcePath = a.href;
+  if (a.href.includes('/federal/')) {
+    const { getFederatedUrl } = await import('../../utils/federated.js');
+    resourcePath = getFederatedUrl(a.href);
+  }
+  const resp = await customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
     .catch(() => ({}));
 
   if (!resp?.ok) {
-    window.lana?.log(`Could not get fragment: ${a.href}.plain.html`);
+    window.lana?.log(`Could not get fragment: ${resourcePath}.plain.html`);
     return;
   }
 
@@ -106,7 +105,7 @@ export default async function init(a) {
   const sections = doc.querySelectorAll('body > div');
 
   if (!sections.length) {
-    window.lana?.log(`Could not make fragment: ${a.href}.plain.html`);
+    window.lana?.log(`Could not make fragment: ${resourcePath}.plain.html`);
     return;
   }
 
@@ -117,15 +116,10 @@ export default async function init(a) {
   }
 
   updateFragMap(fragment, a, relHref);
-
-  if (a.dataset.manifestId) {
-    if (inline) {
-      setManifestIdOnChildren(sections, a.dataset.manifestId);
-    } else {
-      fragment.dataset.manifestId = a.dataset.manifestId;
-    }
+  if (a.dataset.manifestId || a.dataset.adobeTargetTestid) {
+    const { updateFragDataProps } = await import('../../features/personalization/personalization.js');
+    updateFragDataProps(a, inline, sections, fragment);
   }
-
   if (inline) {
     insertInlineFrag(sections, a, relHref);
   } else {

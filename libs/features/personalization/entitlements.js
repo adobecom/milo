@@ -1,7 +1,7 @@
 import { getConfig } from '../../utils/utils.js';
 
 const ENTITLEMENT_MAP = {
-  '51b1f617-2e43-4e91-a98a-3b7716ecba8f': 'photoshop-any',
+  '31943c06-06de-4f5f-8689-18973c13207a': 'photoshop-any',
   '8ba78b22-90fb-4b97-a1c4-f8c03a45cbc2': 'indesign-any',
   '8d3c8ac2-2937-486b-b6ff-37f02271b09b': 'illustrator-any',
   'fd30e9c7-9ae9-44db-8e70-5c652a5bb1d2': 'cc-all-apps-any',
@@ -19,6 +19,11 @@ const ENTITLEMENT_MAP = {
   'eda8c774-420b-44c2-9006-f9a8d0fb5168': '3d-substance-texturing',
   '76e408f6-ab08-49f0-adb6-f9b4efcc205d': 'cc-free',
   '08216aa4-4a0f-4136-8b27-182212764a7c': 'dc-free',
+  'fc2d5b34-fa75-4e80-9f23-7d4b40bcfc9b': 'cc-paid',
+  'c6927505-97b3-4655-995a-6452630fa9cb': 'fresco-any',
+  'e82be3ab-1fbc-4410-a099-af6ac6d5dffe': 'cc-paid-no-stock',
+  '08691170-f6d6-46c7-9f3c-543d7761b64a': 'free-no-trial-loggedin-today',
+
   // PEP segments
   '6cb0d58c-3a65-47e2-b459-c52bb158d5b6': 'lightroom-web-usage',
   'caa3de84-6336-4fa8-8db2-240fc88106cc': 'photoshop-signup-source',

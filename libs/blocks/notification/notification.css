@@ -1,0 +1,588 @@
+.notification {
+  --min-block-size: 160px;
+  --min-block-size-ribbon: 50px;
+  --min-block-size-pill: 72px;
+  --margin-inline-pill-desktop: 80px;
+  --margin-inline-ribbon: 30px;
+  --max-inline-size-image: 75px;
+  --max-inline-size-icon: 231px;
+  --inline-size-image: auto;
+  --inline-size-pill: 85%;
+  --border-block-size: 10px;
+  --close-size: 20px;
+  --icon-size-xs: 24px;
+  --icon-size-s: 32px;
+  --icon-size-m: 40px;
+  --icon-size: 56px;
+  --icon-size-xl: 64px;
+  --pill-radius: 16px;
+
+  display: flex;
+  inline-size: 100%;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  overflow: hidden;
+  min-block-size: var(--min-block-size);
+}
+
+.notification.ribbon {
+  min-block-size: var(--min-block-size-ribbon);
+}
+
+.dark .notification,
+.notification.dark {
+  color: var(--color-white);
+}
+
+.notification p {
+  margin: 0;
+  inline-size: 100%;
+}
+
+.notification [class*="heading-"] {
+  margin-block-end: var(--spacing-xxs);
+}
+
+.notification [class*="heading-"] strong {
+  font-weight: unset;
+}
+
+.notification .text p:not(.icon-area, .action-area) {
+  margin-block-end: var(--spacing-s);
+}
+
+.notification.ribbon.space-between [class*="heading-"] + p {
+  margin-block-end: 0;
+}
+
+.notification .foreground {
+  display: flex;
+  position: relative;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  margin-block: var(--spacing-s);
+  box-sizing: border-box;
+  justify-content: flex-start;
+}
+
+.notification.ribbon .foreground {
+  inline-size: 100%;
+  margin-inline: var(--margin-inline-ribbon);
+  margin-block: 0;
+  padding-block: var(--spacing-s);
+}
+
+.notification .foreground [data-align=center],
+.notification.center .foreground,
+.notification.center .foreground > * {
+  text-align: center;
+  justify-content: center;
+}
+
+.notification.pill .foreground {
+  padding-inline: var(--spacing-xs) var(--spacing-xxs);
+  padding-block: var(--spacing-xs) var(--spacing-xxs);
+  margin: 0;
+  inline-size: 100%;
+}
+
+.notification.ribbon.xxs-padding .foreground {
+  padding-block: var(--spacing-xxs);
+}
+
+.notification.ribbon.xs-padding .foreground {
+  padding-block: var(--spacing-xs);
+}
+
+.notification:is(.ribbon, .pill) .close {
+  position: absolute;
+  inset-inline: auto var(--spacing-xxs);
+  inset-block: var(--spacing-xxs) auto;
+  block-size: var(--close-size);
+  inline-size: var(--close-size);
+  cursor: pointer;
+  margin: auto;
+  appearance: none;
+  border: none;
+  background: transparent;
+  padding: 0;
+}
+
+.notification .close .path {
+  fill: var(--text-color);
+}
+
+.dark .notification .close .path,
+.notification.dark .close .path {
+  fill: var(--color-white);
+}
+
+.notification .border {
+  display: block;
+  block-size: var(--border-block-size);
+  inline-size: 100%;
+}
+
+.notification .action-area {
+  gap: var(--spacing-s);
+  display: flex;
+  align-items: center;
+}
+
+.notification .background img {
+  min-block-size: unset;
+}
+
+.notification .foreground .text {
+  display: flex;
+  flex-wrap: wrap;
+  max-inline-size: none;
+  padding-block-start: 0;
+  padding-block-end: 0;
+}
+
+.notification.pill .foreground .text {
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: start;
+  inline-size: 100%;
+}
+
+.notification.ribbon.space-between .foreground .text {
+  flex-wrap: nowrap;
+  inline-size: 100%;
+}
+
+.notification.ribbon.space-between .foreground .copy-wrap {
+  margin-inline-end: var(--spacing-s);
+}
+
+.notification .foreground .image {
+  position: relative;
+  display: flex;
+  inline-size: var(--inline-size-image);
+  max-inline-size: var(--max-inline-size-image);
+  margin: 0;
+  order: -1;
+}
+
+.notification .foreground > div {
+  flex-grow: 1;
+  flex-basis: 100%;
+  min-inline-size: 0;
+}
+
+.notification .foreground .text a {
+  white-space: nowrap;
+}
+
+.notification .icon-area img {
+  display: flex;
+  align-items: center;
+  inline-size: auto;
+}
+
+.notification.ribbon .icon-area img {
+  max-block-size: var(--icon-size);
+}
+
+.notification .icon-area.lockup-area img {
+  max-block-size: unset;
+}
+
+.notification .lockup-area {
+  flex-wrap: nowrap;
+}
+
+.notification:is(.ribbon.m-icon, .pill) .icon-area img {
+  max-block-size: var(--icon-size-m);
+}
+
+.notification.s-icon:is(.ribbon, .pill) .icon-area img {
+  max-block-size: var(--icon-size-s);
+}
+
+.notification.xs-icon:is(.ribbon, .pill) .icon-area img {
+  max-block-size: var(--icon-size-xs);
+}
+
+.notification.ribbon.xl-icon .icon-area img {
+  max-block-size: var(--icon-size-xl);
+}
+
+.notification .text [class*="heading-"] + .action-area {
+  margin-block-start: var(--spacing-xs);
+}
+
+.notification.center .foreground .action-area {
+  justify-content: center;
+}
+
+.notification .foreground .icon-area {
+  block-size: auto;
+  max-inline-size: none;
+  margin-block-end: var(--spacing-xs);
+  flex-shrink: 0;
+  display: flex;
+}
+
+.notification .foreground .icon-area:not(.lockup-area) {
+  gap: var(--spacing-xs);
+}
+
+.notification.center .foreground .icon-area {
+  justify-content: center;
+}
+
+.notification.pill .foreground .icon-area {
+  margin-inline-end: 0;
+  margin-block-end: var(--spacing-xs);
+  inline-size: auto;
+}
+
+.notification.ribbon.space-between .foreground .icon-area {
+  align-items: center;
+  inline-size: auto;
+  margin-inline-end: var(--spacing-xs);
+  margin-block-end: 0;
+}
+
+.notification .foreground .image :is(picture, video),
+.notification .foreground .image picture img {
+  inline-size: 100%;
+  display: flex;
+}
+
+.notification .foreground .text a:not(.con-button) {
+  inline-size: auto;
+  font-weight: normal;
+}
+
+.notification .foreground .text .action-area > a {
+  margin-inline-end: 0;
+}
+
+.notification .foreground .text .heading-l {
+  margin-block-end: var(--spacing-xxs);
+}
+
+.notification .foreground:not(.no-image) .text .body-s.action-area,
+.notification .foreground:not(.no-image) .text .body-m.action-area {
+  margin-block-end: 0;
+}
+
+.notification.center .icon-area picture {
+  display: flex;
+  justify-content: center;
+}
+
+.notification.pill {
+  border-radius: var(--pill-radius);
+  inline-size: calc(100% - var(--spacing-m));
+  margin-inline: auto;
+}
+
+.notification.pill .foreground .action-area {
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.notification.ribbon.space-between .foreground .action-area {
+  flex-wrap: wrap;
+  align-self: center;
+  justify-content: flex-end;
+}
+
+.notification .flexible-inner {
+  inline-size: 100%;
+}
+
+.notification.pill .foreground .text > :not(.action-area) {
+  padding-inline-end: var(--spacing-xxs);
+  inline-size: calc(100% - var(--spacing-xxs));
+}
+
+@media screen and (min-width: 600px) {
+  .notification {
+    --max-inline-size-image: 188px;
+    --max-inline-size-banner: 800px;
+    --min-inline-size-flexible: 300px;
+    --inline-size-image: 35%;
+    --full-width: 1200px;
+    --padding-inline-flexible: 80px;
+  }
+
+  .notification:not(.pill, .ribbon) .foreground {
+    max-inline-size: var(--max-inline-size-banner);
+  }
+
+  .notification .foreground {
+    align-items: center;
+    flex-direction: row;
+    margin-block: 0;
+    margin-inline: auto;
+    padding-block: var(--spacing-s);
+    padding-inline: 0;
+    gap: var(--spacing-s);
+  }
+
+  .notification:is(.max-width-12-desktop, .ribbon) .foreground {
+    max-inline-size: var(--full-width);
+    margin-inline: var(--grid-margins-width);
+  }
+
+  .notification .foreground .image {
+    margin: 0;
+    padding: 0;
+    order: unset;
+  }
+
+  .notification .foreground .text.image {
+    justify-content: flex-start;
+  }
+
+  .notification .background {
+    overflow: hidden;
+    position: absolute;
+    inset: 0;
+  }
+
+  .notification .foreground .text {
+    margin-block-end: 0;
+    padding-inline-end: 0;
+  }
+
+  .notification .foreground .text + .image {
+    margin-inline-end: 0;
+  }
+
+  .notification .foreground .icon-area {
+    inline-size: auto;
+    margin-inline-end: var(--spacing-xs);
+    margin-block-end: 0;
+  }
+
+  .notification.ribbon .close {
+    inset-inline: auto var(--spacing-s);
+    inset-block: 0;
+  }
+
+  .notification.ribbon .foreground .text {
+    flex-flow: row nowrap;
+    align-items: center;
+  }
+
+  .notification.ribbon .action-area {
+    inline-size: auto;
+  }
+
+  .notification.ribbon .copy-wrap {
+    margin-inline-end: var(--spacing-s);
+  }
+
+  .notification.space-between .copy-wrap {
+    flex-basis: 100%;
+  }
+
+  .notification.ribbon .copy-wrap :last-child {
+    margin-block-end: 0;
+  }
+
+  .notification.center .copy-wrap {
+    text-align: start;
+  }
+
+  .notification.pill .foreground {
+    padding: var(--spacing-s);
+  }
+
+  .notification.pill:not(.flexible) .foreground {
+    inline-size: var(--grid-width);
+  }
+
+  .notification.pill .foreground .text {
+    align-items: center;
+    text-align: center;
+  }
+
+  .notification.pill .foreground .action-area {
+    justify-content: center;
+  }
+
+  .notification.ribbon.space-between .foreground .action-area {
+    flex-wrap: unset;
+  }
+
+  .notification.pill.flexible {
+    pointer-events: none;
+  }
+
+  .notification .flexible-inner {
+    position: relative;
+    margin: auto;
+    pointer-events: auto;
+    inline-size: auto;
+    padding-inline: var(--padding-inline-flexible);
+    overflow: hidden;
+    min-inline-size: var(--min-inline-size-flexible);
+    border-radius: var(--pill-radius);
+  }
+
+  .notification.pill .foreground .text > :not(.action-area) {
+    padding-inline-end: unset;
+    inline-size: unset;
+  }
+}
+
+@media screen and (min-width: 1200px) {
+  .notification {
+    --inline-size-image: 20%;
+    --inline-size-image-10: 30%;
+    --max-inline-size-image-10: 300px;
+    --inline-size-image-full: 33.333%;
+    --max-inline-size-image-full: 400px;
+    --pill-radius: 36px;
+  }
+
+  .notification:not(.pill, .ribbon) .foreground {
+    inline-size: calc(var(--grid-width) * (8 / 12));
+    margin-inline: var(--grid-margins-width-8);
+    gap: var(--spacing-m);
+  }
+
+  .notification:is(.max-width-12-desktop, .max-width-10-desktop) .foreground {
+    inline-size: unset;
+  }
+
+  .notification.max-width-12-desktop .foreground {
+    gap: var(--spacing-xl);
+    margin-inline: var(--grid-margins-width);
+  }
+
+  .notification.ribbon .foreground {
+    gap: var(--spacing-s);
+  }
+
+  .notification.max-width-10-desktop .foreground {
+    margin-inline: var(--grid-margins-width-10);
+    gap: var(--spacing-l);
+    max-inline-size: calc(var(--grid-column-width) * 10);
+  }
+
+  .notification .foreground > div {
+    object-fit: cover;
+    padding-inline-start: 0;
+  }
+
+  .notification .foreground .icon-area {
+    max-inline-size: var(--max-inline-size-icon);
+    margin-inline-end: var(--spacing-s);
+  }
+
+  .notification .foreground .lockup-area {
+    max-inline-size: none;
+  }
+
+  .notification.ribbon .foreground .icon-area {
+    flex-shrink: 0;
+  }
+
+  .notification .foreground .image {
+    inline-size: var(--inline-size-image);
+  }
+
+  .notification.max-width-10-desktop .foreground .image {
+    inline-size: var(--inline-size-image);
+    max-inline-size: var(--max-inline-size-image-10);
+  }
+
+  .notification.max-width-12-desktop .foreground .image {
+    inline-size: var(--inline-size-image-full);
+    max-inline-size: var(--max-inline-size-image-full);
+  }
+
+  .notification .foreground .text + .image {
+    margin-inline-end: 0;
+  }
+
+  .notification.pill {
+    min-block-size: var(--min-block-size-pill);
+    inline-size: var(--inline-size-pill);
+    margin-inline: auto;
+  }
+
+  .notification.pill p {
+    inline-size: auto;
+  }
+
+  .notification.pill .text [class*="heading-"],
+  .notification.pill .text p {
+    flex-shrink: 0;
+    margin-block-end: 0;
+  }
+
+  .notification.pill .foreground .text [class*="heading-"] {
+    margin-inline-end: var(--spacing-xxs);
+    margin-block-end: 0;
+  }
+
+  .notification.pill .close {
+    inset-inline: auto var(--spacing-s);
+    inset-block: 0;
+  }
+
+  .notification.pill .foreground {
+    padding-block: var(--spacing-xs);
+    padding-inline: var(--spacing-m);
+    margin: 0;
+  }
+
+  .notification.pill:not(.flexible) .foreground {
+    inline-size: calc(100% - var(--margin-inline-pill-desktop) * 2);
+  }
+
+  .notification.pill.flexible .foreground {
+    padding-inline: 0;
+  }
+
+  .notification.pill .foreground .icon-area {
+    margin-inline-end: var(--spacing-xs);
+    margin-block-end: 0;
+  }
+
+  .notification.pill .icon-area img {
+    max-block-size: var(--icon-size-m);
+  }
+
+  .notification.pill .foreground .action-area {
+    margin-inline-start: var(--spacing-s);
+  }
+
+  .notification.pill .foreground .text {
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .notification.pill.flexible .flexible-inner {
+    border-radius: var(--pill-radius);
+  }
+
+  .notification.pill .copy-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    text-align: start;
+  }
+
+  .notification.pill .copy-wrap > * {
+    max-inline-size: 100%;
+  }
+
+  .notification.ribbon.space-between .foreground .icon-area {
+    margin-inline-end: var(--spacing-s);
+  }
+}

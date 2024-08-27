@@ -301,7 +301,6 @@
 }
 
 .marquee.split .icon-area img {
-  height: auto;
   max-height: var(--icon-size-l);
   max-width: 275px;
   object-fit: contain;
@@ -488,13 +487,20 @@
     max-width: 212px;
   }
 
-
   .marquee.split.row-reversed .foreground.container {
     justify-content: flex-end;
   }
 
   html[dir="rtl"] .marquee.split.row-reversed .foreground.container {
     justify-content: flex-start;
+  }
+
+  html[dir="rtl"] .marquee.support-rtl.split .foreground.container {
+    flex-direction: row;
+  }
+
+  html[dir="rtl"] .marquee.support-rtl.split.row-reversed .foreground.container {
+    flex-direction: row-reverse;
   }
 
   .marquee.split .asset img,

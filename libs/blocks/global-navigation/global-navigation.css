@@ -33,7 +33,6 @@ header.global-navigation {
   top: 0;
   z-index: 10;
   background-color: var(--feds-background-nav--light);
-  visibility: visible;
   box-sizing: content-box;
   overflow-x: clip;
 }
@@ -84,7 +83,6 @@ header.global-navigation {
 
 /* Promo */
 .global-navigation .aside.promobar {
-  display: none; /* For when someone switches from desktop to mobile */
   z-index: 1;
 }
 
@@ -569,6 +567,11 @@ header.global-navigation {
     padding: 40px 0 0;
     max-height: calc(100vh - 100%);
     overflow: auto;
+    box-sizing: border-box;
+  }
+
+  .global-navigation.has-promo .feds-navItem--megaMenu .feds-popup {
+    max-height: calc(100vh - 100% - var(--global-height-navPromo));
   }
 
   [dir = "rtl"] .feds-navItem--megaMenu .feds-popup {

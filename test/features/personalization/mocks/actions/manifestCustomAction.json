@@ -9,6 +9,7 @@
       "page filter (optional)": "",
       "param-newoffer=123": "",
       "chrome": "/fragments/fragmentreplaced",
+      "target-var1": "/fragments/fragmentreplaced",
       "firefox": "",
       "android": "",
       "ios": ""
@@ -19,6 +20,7 @@
       "page filter (optional)": "",
       "param-newoffer=123": "",
       "chrome": "/fragments/new-large-menu",
+      "target-var1": "/fragments/new-large-menu",
       "firefox": "",
       "android": "",
       "ios": ""
@@ -29,6 +31,7 @@
       "page filter (optional)": "",
       "param-newoffer=123": "",
       "chrome": "/fragments/new-sub-menu",
+      "target-var1": "/fragments/new-sub-menu",
       "firefox": "",
       "android": "",
       "ios": ""
@@ -38,6 +41,7 @@
       "page filter (optional)": "",
       "param-newoffer=123": "",
       "chrome": "/fragments/even-more-new-sub-menu",
+      "target-var1": "/fragments/even-more-new-sub-menu",
       "firefox": "",
       "android": "",
       "ios": ""

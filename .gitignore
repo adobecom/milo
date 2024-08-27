@@ -1,11 +1,12 @@
 .hlx/*
 .aem/*
-coverage/*
+coverage
 logs/*
-node_modules/*
+node_modules
 .DS_Store
 .idea
 .iml
 .env
 test-html-results/
 test-results/
+**/mas/stats.json

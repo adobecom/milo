@@ -1,0 +1,240 @@
+{
+    "items": [
+        {
+            "path": "/content/dam/sandbox/mas/creative-cloud",
+            "title": "Creative Cloud All Apps",
+            "description": "",
+            "id": "be9aa9c6-b8e9-4058-aa6b-f0125647479a",
+            "created": {
+                "at": "2024-05-08T12:05:03.588Z",
+                "by": "johndoe@adobe.com",
+                "fullName": "John Doe"
+            },
+            "modified": {
+                "at": "2024-06-13T11:10:53.174Z",
+                "by": "johndoe@adobe.com",
+                "fullName": "John Doe"
+            },
+            "published": {
+                "at": "2024-06-13T11:11:01.224Z",
+                "by": "johndoe@adobe.com",
+                "fullName": "John Doe"
+            },
+            "status": "PUBLISHED",
+            "fields": [
+                {
+                    "name": "type",
+                    "type": "enumeration",
+                    "multiple": false,
+                    "values": [
+                        "ccd-action"
+                    ]
+                },
+                {
+                    "name": "icon",
+                    "type": "text",
+                    "multiple": true,
+                    "values": [
+                        "/test/mocks/img/creative-cloud.svg"
+                    ]
+                },
+                {
+                    "name": "name",
+                    "type": "text",
+                    "multiple": false,
+                    "values": [
+                        "creative-cloud"
+                    ]
+                },
+                {
+                    "name": "title",
+                    "type": "text",
+                    "multiple": false,
+                    "values": [
+                        "Creative Cloud All Apps"
+                    ]
+                },
+                {
+                    "name": "link",
+                    "type": "text",
+                    "multiple": false,
+                    "values": []
+                },
+                {
+                    "name": "prices",
+                    "type": "long-text",
+                    "multiple": false,
+                    "mimeType": "text/html",
+                    "values": [
+                        "<span is='inline-price' data-display-old-price='true' data-display-per-unit='false' data-promotion-code='CCI2AAUSQ22440CH' data-quantity='1' data-template='price' data-wcs-osi='r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8'></span>"
+                    ]
+                },
+                {
+                    "name": "description",
+                    "type": "long-text",
+                    "multiple": false,
+                    "mimeType": "text/html",
+                    "values": [
+                        "<p>Get 25 apps and games plus fonts, storage, templates, and tutorials for less than the price of Acrobat Pro, Photoshop, and Premiere Pro sold separately. (Substance 3D apps not included.)</p>"
+                    ]
+                },
+                {
+                    "name": "secure",
+                    "type": "boolean",
+                    "multiple": false,
+                    "values": [
+                        true
+                    ]
+                },
+                {
+                    "name": "stock",
+                    "type": "boolean",
+                    "multiple": false,
+                    "values": [
+                        true
+                    ]
+                },
+                {
+                    "name": "ctas",
+                    "type": "long-text",
+                    "multiple": false,
+                    "mimeType": "text/html",
+                    "values": [
+                        "<a is='checkout-link' data-checkout-workflow='UCv3' data-checkout-workflow-step='segmentation' data-promotion-code='CCI2AAUSQ22440CH' data-quantity='1' data-wcs-osi='r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8' data-extra-options='{}' href='#'><span>Buy now</span></a><a is='checkout-link' data-checkout-workflow='UCv3' data-checkout-workflow-step='email' data-quantity='1'data-wcs-osi='MV-_1XzZ6JAft_2wXu3a-z28noWUucHMdMtyIYcodak' data-extra-options='{}' href='#'><span>Free trial</span></a>"
+                    ]
+                }
+            ],
+            "variations": [],
+            "tags": [],
+            "references": [],
+            "model": {
+                "id": "L2NvbmYvc2FuZGJveC9zZXR0aW5ncy9kYW0vY2ZtL21vZGVscy9tZXJjaC1jYXJk",
+                "path": "/conf/sandbox/settings/dam/cfm/models/merch-card",
+                "name": "Merch Card",
+                "title": "Merch Card",
+                "description": "content for adobe.com merch-card web component."
+            },
+            "validationStatus": [],
+            "fieldTags": [],
+            "etag": "\"2028f561fa1f216104ee23d9ee4a141e\""
+        },
+        {
+            "path": "/content/dam/sandbox/mas/photoshop",
+            "title": "Photoshop",
+            "description": "",
+            "id": "d52dcff2-9dea-439e-a7a4-a53099ec9315",
+            "created": {
+                "at": "2024-05-08T12:05:04.785Z",
+                "by": "johndoe@adobe.com",
+                "fullName": "John Doe"
+            },
+            "modified": {
+                "at": "2024-06-13T11:10:20.455Z",
+                "by": "johndoe@adobe.com",
+                "fullName": "John Doe"
+            },
+            "published": {
+                "at": "2024-06-13T11:11:01.224Z",
+                "by": "johndoe@adobe.com",
+                "fullName": "John Doe"
+            },
+            "status": "PUBLISHED",
+            "fields": [
+                {
+                    "name": "type",
+                    "type": "enumeration",
+                    "multiple": false,
+                    "values": [
+                        "ccd-action"
+                    ]
+                },
+                {
+                    "name": "icon",
+                    "type": "text",
+                    "multiple": true,
+                    "values": [
+                        "/test/mocks/img/photoshop.svg"
+                    ]
+                },
+                {
+                    "name": "name",
+                    "type": "text",
+                    "multiple": false,
+                    "values": [
+                        "photoshop"
+                    ]
+                },
+                {
+                    "name": "title",
+                    "type": "text",
+                    "multiple": false,
+                    "values": [
+                        "Photoshop"
+                    ]
+                },
+                {
+                    "name": "link",
+                    "type": "text",
+                    "multiple": false,
+                    "values": []
+                },
+                {
+                    "name": "prices",
+                    "type": "long-text",
+                    "multiple": false,
+                    "mimeType": "text/html",
+                    "values": [
+                        "<span is='inline-price' data-display-per-unit='false' data-quantity='1' data-template='price' data-wcs-osi='A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M'></span>"
+                    ]
+                },
+                {
+                    "name": "description",
+                    "type": "long-text",
+                    "multiple": false,
+                    "mimeType": "text/html",
+                    "values": [
+                        "<p>Edit, composite, and create beautiful images, graphics, and art on desktop and iPad.</p>"
+                    ]
+                },
+                {
+                    "name": "secure",
+                    "type": "boolean",
+                    "multiple": false,
+                    "values": [
+                        true
+                    ]
+                },
+                {
+                    "name": "stock",
+                    "type": "boolean",
+                    "multiple": false,
+                    "values": [
+                        true
+                    ]
+                },
+                {
+                    "name": "ctas",
+                    "type": "long-text",
+                    "multiple": false,
+                    "mimeType": "text/html",
+                    "values": [
+                        "<a is='checkout-link' data-checkout-workflow='UCv3' data-checkout-workflow-step='segmentation' data-promotion-code='CCI2AAUSQ22440CH' data-quantity='1' data-wcs-osi='r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8' data-extra-options='{}' href='#'><span>Buy now</span></a><a is='checkout-link' data-checkout-workflow='UCv3' data-checkout-workflow-step='email' data-quantity='1'data-wcs-osi='MV-_1XzZ6JAft_2wXu3a-z28noWUucHMdMtyIYcodak' data-extra-options='{}' href='#'><span>Free trial</span></a>"
+                    ]
+                }
+            ],
+            "variations": [],
+            "tags": [],
+            "references": [],
+            "model": {
+                "id": "L2NvbmYvc2FuZGJveC9zZXR0aW5ncy9kYW0vY2ZtL21vZGVscy9tZXJjaC1jYXJk",
+                "path": "/conf/sandbox/settings/dam/cfm/models/merch-card",
+                "name": "Merch Card",
+                "title": "Merch Card",
+                "description": "content for adobe.com merch-card web component."
+            },
+            "validationStatus": [],
+            "fieldTags": [],
+            "etag": "\"343f00d61244effce6e55c31cc90d4f9\""
+        }
+    ]
+}

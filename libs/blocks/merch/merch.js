@@ -192,28 +192,48 @@ export async function fetchCheckoutLinkConfigs(base = '') {
     ?? fetch(`${base}${CHECKOUT_LINK_CONFIG_PATH}`).catch((e) => {
       log?.error('Failed to fetch checkout link configs', e);
     }).then((mappings) => {
-      if (!mappings?.ok) return undefined;
+      if (!mappings?.ok) return { data: [] };
       return mappings.json();
     });
   return fetchCheckoutLinkConfigs.promise;
 }
 
-export async function getCheckoutLinkConfig(productFamily) {
+export async function getCheckoutLinkConfig(productFamily, productCode, paCode) {
   let { base } = getConfig();
   if (/\.page$/.test(document.location.origin)) {
     /* c8 ignore next 2 */
     base = base.replace('.live', '.page');
   }
   const checkoutLinkConfigs = await fetchCheckoutLinkConfigs(base);
+  if (!checkoutLinkConfigs.data.length) return undefined;
   const { locale: { region } } = getConfig();
-  const productFamilyConfigs = checkoutLinkConfigs.data?.filter(
-    ({ [NAME_PRODUCT_FAMILY]: mappingProductFamily }) => mappingProductFamily === productFamily,
-  );
-  if (productFamilyConfigs.length === 0) return undefined;
-  const checkoutLinkConfig = productFamilyConfigs.find(
+
+  const {
+    paCodeConfigs,
+    productCodeConfigs,
+    productFamilyConfigs,
+  } = checkoutLinkConfigs.data.reduce((acc, config) => {
+    if (config[NAME_PRODUCT_FAMILY] === paCode) {
+      acc.paCodeConfigs.push(config);
+    } else if (config[NAME_PRODUCT_FAMILY] === productCode) {
+      acc.productCodeConfigs.push(config);
+    } else if (config[NAME_PRODUCT_FAMILY] === productFamily) {
+      acc.productFamilyConfigs.push(config);
+    }
+    return acc;
+  }, { paCodeConfigs: [], productCodeConfigs: [], productFamilyConfigs: [] });
+
+  // helps to fallback to product family config
+  // if no locale specific config is found below.
+  const productCheckoutLinkConfigs = [
+    ...paCodeConfigs, ...productCodeConfigs, ...productFamilyConfigs,
+  ];
+
+  if (!productCheckoutLinkConfigs.length) return undefined;
+  const checkoutLinkConfig = productCheckoutLinkConfigs.find(
     ({ [NAME_LOCALE]: locale }) => locale === '',
   );
-  const checkoutLinkConfigOverride = productFamilyConfigs.find(
+  const checkoutLinkConfigOverride = productCheckoutLinkConfigs.find(
     ({ [NAME_LOCALE]: locale }) => locale === region,
   ) ?? {};
   const overrides = Object.fromEntries(
@@ -231,14 +251,22 @@ export async function getCheckoutLinkConfig(productFamily) {
 export async function getDownloadAction(
   options,
   imsSignedInPromise,
-  [{ offerType, productArrangement: { productFamily: offerFamily } = {} }],
+  [{
+    offerType,
+    productArrangementCode,
+    productArrangement: { productCode, productFamily: offerFamily } = {},
+  }],
 ) {
   if (options.entitlement !== true) return undefined;
   const loggedIn = await imsSignedInPromise;
   if (!loggedIn) return undefined;
   const entitlements = await fetchEntitlements();
   if (!entitlements?.length) return undefined;
-  const checkoutLinkConfig = await getCheckoutLinkConfig(offerFamily);
+  const checkoutLinkConfig = await getCheckoutLinkConfig(
+    offerFamily,
+    productCode,
+    productArrangementCode,
+  );
   if (!checkoutLinkConfig?.DOWNLOAD_URL) return undefined;
   const offer = entitlements.find((
     { offer: { product_arrangement: { family: subscriptionFamily } } },
@@ -302,11 +330,26 @@ async function openFragmentModal(path, getModal) {
   return modal;
 }
 
+export function appendTabName(url) {
+  const metaPreselectPlan = document.querySelector('meta[name="preselect-plan"]');
+  if (!metaPreselectPlan?.content) return url;
+  let urlWithPlan;
+  try {
+    urlWithPlan = new URL(url);
+  } catch (err) {
+    window.lana?.log(`Invalid URL ${url} : ${err}`);
+    return url;
+  }
+  urlWithPlan.searchParams.set('plan', metaPreselectPlan.content);
+  return urlWithPlan.href;
+}
+
 async function openExternalModal(url, getModal) {
   await loadStyle(`${getConfig().base}/blocks/iframe/iframe.css`);
   const root = createTag('div', { class: 'milo-iframe' });
+  const urlWithTabName = appendTabName(url);
   createTag('iframe', {
-    src: url,
+    src: urlWithTabName,
     frameborder: '0',
     marginwidth: '0',
     marginheight: '0',
@@ -340,9 +383,17 @@ export async function openModal(e, url, offerType) {
 }
 
 export async function getModalAction(offers, options) {
-  const [{ offerType, productArrangement: { productFamily: offerFamily } = {} }] = offers ?? [{}];
+  const [{
+    offerType,
+    productArrangementCode,
+    productArrangement: { productCode, productFamily: offerFamily } = {},
+  }] = offers ?? [{}];
   if (options.modal !== true) return undefined;
-  const checkoutLinkConfig = await getCheckoutLinkConfig(offerFamily);
+  const checkoutLinkConfig = await getCheckoutLinkConfig(
+    offerFamily,
+    productCode,
+    productArrangementCode,
+  );
   if (!checkoutLinkConfig) return undefined;
   const columnName = (offerType === OFFER_TYPE_TRIAL) ? FREE_TRIAL_PATH : BUY_NOW_PATH;
   let url = checkoutLinkConfig[columnName];
@@ -379,7 +430,7 @@ export async function initService(force = false) {
   commerce.priceLiteralsPromise = fetchLiterals(PRICE_LITERALS_URL);
   initService.promise = initService.promise ?? polyfills().then(async () => {
     const { hostname, searchParams } = new URL(window.location.href);
-    let commerceLibPath = '../../deps/commerce.js';
+    let commerceLibPath = '../../deps/mas/commerce.js';
     if (/hlx\.(page|live)$|localhost$|www\.stage\.adobe\.com$/.test(hostname)) {
       const maslibs = searchParams.get('maslibs');
       if (maslibs) {

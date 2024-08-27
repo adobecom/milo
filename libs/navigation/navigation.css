@@ -1,0 +1,30 @@
+ /* Extracting the essential styles required for rendering the component independently */
+ .global-navigation, .global-footer, .dialog-modal {
+   font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
+   line-height: 27px;
+   color: #2c2c2c;
+   word-wrap: break-word;
+   -webkit-font-smoothing: antialiased;
+}
+  
+.global-navigation a, .global-footer a, .dialog-modal a {
+  text-decoration: none;
+}
+  
+.dialog-modal a {
+  color: #035FE6;
+}
+  
+.global-navigation img, .global-footer img {
+  max-width: 100%;
+  height: auto;
+}
+
+.global-navigation {
+  font-size: 18px;
+}
+ 
+header.global-navigation {
+  height: 64px;
+  visibility: hidden;
+}

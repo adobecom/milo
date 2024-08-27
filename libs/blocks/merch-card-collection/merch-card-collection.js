@@ -27,8 +27,9 @@ const LITERAL_SLOTS = [
 // allows improve TBT by returning control to the main thread.
 // eslint-disable-next-line no-promise-executor-return
 const makePause = async (timeout = 0) => new Promise((resolve) => setTimeout(resolve, timeout));
-
 const BLOCK_NAME = 'merch-card-collection';
+const PROD_INDEX = 'query-index-cards.json';
+const PREVIEW_INDEX = 'query-index-cards-preview.json';
 
 const fail = (el, err = '') => {
   window.lana?.log(`Failed to initialize merch cards: ${err}`);
@@ -131,11 +132,14 @@ export function parsePreferences(elements) {
 /** Retrieve cards from query-index  */
 async function fetchCardsData(config, type, el) {
   let cardsData;
-  const endpointElement = el.querySelector('a[href*="query-index-cards.json"]');
+  const usePreviewIndex = config.env.name === 'stage' && !window.location.host.includes('.live');
+  const endpointElement = el.querySelector(`a[href*="${usePreviewIndex ? PREVIEW_INDEX : PROD_INDEX}"]`)
+                            ?? el.querySelector(`a[href*="${PROD_INDEX}"]`);
   if (!endpointElement) {
     throw new Error('No query-index endpoint provided');
   }
-  endpointElement.remove();
+  el.querySelector(`a[href*="${PROD_INDEX}"]`)?.remove();
+  el.querySelector(`a[href*="${PREVIEW_INDEX}"]`)?.remove();
   let queryIndexCardPath = localizeLink(endpointElement.getAttribute('href'), config);
   if (/\.json$/.test(queryIndexCardPath)) {
     queryIndexCardPath = `${queryIndexCardPath}?sheet=${type}`;
@@ -182,11 +186,11 @@ export default async function init(el) {
   const type = el.classList[1];
   const cardsDataPromise = fetchCardsData(config, type, el);
 
-  const merchCardCollectionDep = import('../../deps/merch-card-collection.js');
+  const merchCardCollectionDep = import('../../deps/mas/merch-card-collection.js');
   let deps = [
     merchCardCollectionDep,
     import('../merch-card/merch-card.js'),
-    import('../../deps/merch-card.js'),
+    import('../../deps/mas/merch-card.js'),
   ];
 
   const { base, mep } = getConfig();
