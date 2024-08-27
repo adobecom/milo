@@ -540,10 +540,10 @@ export function parseManifestVariants(data, manifestPath, targetId) {
   return null;
 }
 
-function createMartechMetadata(placeholders, config, column) {
+export function createMartechMetadata(placeholders, config, column) {
   if (config.locale.ietf === 'en-US') return;
 
-  import('../../martech/attributes.js').then(({processTrackingLabels}) => { 
+  import('../../martech/attributes.js').then(({ processTrackingLabels }) => {
     config.mep.analyticLocalization ??= {};
 
     placeholders.forEach((item, i) => {
@@ -556,7 +556,9 @@ function createMartechMetadata(placeholders, config, column) {
       const translatedValue = processTrackingLabels(item[column]);
       config.mep.analyticLocalization[translatedValue] = usValue;
     });
-  }); 
+
+    console.log(getConfig().mep.analyticLocalization);
+  });
 }
 
 /* c8 ignore start */
