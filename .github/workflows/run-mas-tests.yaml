@@ -1,4 +1,4 @@
-name: MAS Unit Tests
+name: Unit Tests - MAS
 on:
   push:
     branches:
