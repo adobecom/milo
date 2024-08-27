@@ -10,6 +10,9 @@ const config = {
 
 // Note that the manifestPath doesn't matter as we stub the fetch
 describe('replace action', () => {
+  beforeEach(() => {
+    config.mep = {};
+  });
   it('testing create martech metadata output', async () => {
     expect(config.mep).to.deep.equal({});
 
