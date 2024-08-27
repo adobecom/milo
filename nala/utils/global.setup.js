@@ -5,7 +5,7 @@ const axios = require('axios');
 
 const MAIN_BRANCH_LIVE_URL = 'https://main--milo--adobecom.hlx.live';
 const STAGE_BRANCH_URL = 'https://milo.stage.adobe.com';
-const LOCALHOST_URL = 'http://127.0.0.1:3000';
+//const LOCALHOST_URL = 'http://127.0.0.1:3000';
 
 async function getGitHubPRBranchLiveUrl() {
   // get the pr number

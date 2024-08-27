@@ -7,7 +7,7 @@ function displayHelp() {
 
 \x1b[1m\x1b[37m## Nala command:\x1b[0m \x1b[1m\x1b[32mnpm run nala [env] [options]\x1b[0m
 
-\x1b[1m1] Env:\x1b[0m [\x1b[32mlocal\x1b[0m | \x1b[32mlibs\x1b[0m | \x1b[32mstage\x1b[0m | \x1b[32metc\x1b[0m ] \x1b[3mdefault: local\x1b[0m
+\x1b[1m1] Env:\x1b[0m [\x1b[32mlocal\x1b[0m | \x1b[32mlibs\x1b[0m | \x1b[32mbranch\x1b[0m | \x1b[32mstage\x1b[0m | \x1b[32metc\x1b[0m ] \x1b[3mdefault: local\x1b[0m
 
 \x1b[1m2] Options:\x1b[0m
 
@@ -22,20 +22,20 @@ function displayHelp() {
   \x1b[33m* milolibs=<local|prod|code|feature>\x1b[0m Milo library environment (default: none)
 
 \x1b[1mExamples:\x1b[0m
-  | \x1b[36mCommand\x1b[0m                                                | \x1b[36mDescription\x1b[0m                                                                                   |
-  |--------------------------------------------------------|-----------------------------------------------------------------------------------------------|
-  | npm run nala local                                     | Runs all nala tests on local environment on chrome browser                                    |
-  | npm run nala local accordion.test.js                   | Runs only accordion tests on local environment on chrome browser                              |
-  | npm run nala local @accordion                          | Runs only accordion annotated/tagged tests on local environment on chrome browser             |
-  | npm run nala local @accordion browser=firefox          | Runs only accordion annotated/tagged tests on local environment on firefox browser            |
-  | npm run nala local mode=ui                             | Runs all nala tests on local environment in UI mode on chrome browser                         |
-  | npm run nala local tags=@tag1,@tag2                    | Runs tests annotated with @tag1 and @tag2 on local environment on chrome browser              |         
+  | \x1b[36mCommand\x1b[0m                                                | \x1b[36mDescription\x1b[0m                                                                        |
+  |--------------------------------------------------------|------------------------------------------------------------------------------------|
+  | npm run nala local                                     | Runs all nala tests on local environment on chrome browser                         |
+  | npm run nala local accordion.test.js                   | Runs only accordion tests on local environment on chrome browser                   |
+  | npm run nala local @accordion                          | Runs only accordion annotated/tagged tests on local environment on chrome browser  |
+  | npm run nala local @accordion browser=firefox          | Runs only accordion annotated/tagged tests on local environment on firefox browser |
+  | npm run nala local mode=ui                             | Runs all nala tests on local environment in UI mode on chrome browser              |
+  | npm run nala local tags=@tag1,@tag2                    | Runs tests annotated with @tag1 and @tag2 on local environment on chrome browser   |         
 
 \x1b[1mDebugging:\x1b[0m
 -----------
-  | \x1b[36mCommand\x1b[0m                                                | \x1b[36mDescription\x1b[0m                                                                                   |
-  |--------------------------------------------------------|-----------------------------------------------------------------------------------------------|
-  | npm run nala local @test1 mode=debug                   | Runs @test1 on local environment in debug mode                                 |
+  | \x1b[36mCommand\x1b[0m                                                | \x1b[36mDescription\x1b[0m                                                                        |
+  |--------------------------------------------------------|------------------------------------------------------------------------------------|
+  | npm run nala local @test1 mode=debug                   | Runs @test1 on local environment in debug mode                                     |
 
 `);
 }
@@ -85,12 +85,13 @@ function parseArgs(args) {
 
 function getLocalTestLiveUrl(env, milolibs) {
   if (milolibs) {
+    process.env.MILO_LIBS = `?milolibs=${milolibs}`;
     if (env === 'local') {
-      return `http://127.0.0.1:3000/?milolibs=${milolibs}`;
+      return `http://127.0.0.1:3000`;
     } else if (env === 'libs') {
-      return `http://127.0.0.1:6456/?milolibs=${milolibs}`;
+      return `http://127.0.0.1:6456`;
     } else {
-      return `https://${env}--milo--adobecom.hlx.live/?milolibs=${milolibs}`;
+      return `https://${env}--milo--adobecom.hlx.live`;
     }
   } else {
     if (env === 'local') {

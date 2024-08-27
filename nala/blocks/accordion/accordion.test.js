@@ -14,7 +14,7 @@ test.describe('Milo Accordion Block test suite', () => {
     accordion = new AccordionBlock(page);
   });
 
-  // Test 0 : Accordion
+  // Test 0 : Accordion Container
   test(`${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
     console.info(`[Test Page]: ${baseURL}${features[0].path}${miloLibs}`);
     const { data } = features[0];
@@ -111,6 +111,7 @@ test.describe('Milo Accordion Block test suite', () => {
       await expect(await accordion.accordion).toHaveAttribute('daa-lh', await webUtil.getBlockDaalh('accordion-container', 1));  
     });
   });
+  
   // Test 3 : Accordion seo editorial
   test(`${features[3].name},${features[3].tags}`, async ({ page, baseURL }) => {
     console.info(`[Test Page]: ${baseURL}${features[3].path}${miloLibs}`);
@@ -123,8 +124,7 @@ test.describe('Milo Accordion Block test suite', () => {
     });
   
     await test.step('step-2: Verify accordion content/specs', async () => {
-      // Add verification steps here
-      // verify action area buttons, links and text
+      // verify action area buttons, links and text visibility and content
       await expect(await accordion.outlineButton).toBeVisible();
       await expect(await accordion.blueButton).toBeVisible();
       await expect(await accordion.textLink).toBeVisible();
