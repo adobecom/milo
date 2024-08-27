@@ -6,7 +6,6 @@ export default class Georouting {
 
         // global footer locators
         this.footer = this.page.locator('.global-footer');
-        //this.changeRegionLink = this.footer.locator('//a[@data-modal-path="/fragments/regions"]');
         this.changeRegionLink = this.footer.locator('.modal.link-block');
 
         // change region modal locators
@@ -26,10 +25,10 @@ export default class Georouting {
     }
 
     /**
-    * Verifies georouting modal.
-    * @param {data}  - data object from spec.
-    * @returns {Promise<boolean>} - Returns true if modal content is as expected.
-    */
+     * Verifies georouting modal content.
+     * @param {data}  - data object from spec.
+     * @returns {Promise<boolean>} - Returns true if modal content matches the expected data.
+     */    
     async verifyGeoModal(data) {
         try {
             await expect(this.geoModal).toBeVisible();
@@ -48,10 +47,10 @@ export default class Georouting {
     }
 
     /**
-    * Verifies multi tab georouting modal.
-    * @param {data}  - data object from spec.
-    * @returns {Promise<boolean>} - Returns true if modal content is as expected.
-    */
+     * Verifies multi tab georouting modal.
+     * @param {data}  - data object from spec.
+     * @returns {Promise<boolean>} - Returns true if modal content is as expected.
+     */
     async verifyMultiTabGeoModal(data) {
         try {
             await expect(this.geoModal).toBeVisible();
