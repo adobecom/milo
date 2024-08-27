@@ -57,4 +57,13 @@ describe('Analytics', async () => {
     }, 20);
     expect(processedString).to.equal('Buy now');
   });
+  it('should process tracking labels with foreign locale and MEP placeholder', () => {
+    const translatedString = 'Comprar ahora';
+    const processedString = processTrackingLabels(translatedString, {
+      locale: { ietf: 'es-ES' },
+      analyticLocalization: { 'Comprar ahora': 'Buy now' },
+      mep: { analyticLocalization: { 'Comprar ahora': 'Buy right now' } },
+    }, 20);
+    expect(processedString).to.equal('Buy right now');
+  });
 });
