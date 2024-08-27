@@ -540,10 +540,10 @@ export function parseManifestVariants(data, manifestPath, targetId) {
   return null;
 }
 
-export function createMartechMetadata(placeholders, config, column) {
+export async function createMartechMetadata(placeholders, config, column) {
   if (config.locale.ietf === 'en-US') return;
 
-  import('../../martech/attributes.js').then(({ processTrackingLabels }) => {
+  await import('../../martech/attributes.js').then(({ processTrackingLabels }) => {
     config.mep.analyticLocalization ??= {};
 
     placeholders.forEach((item, i) => {
@@ -556,8 +556,6 @@ export function createMartechMetadata(placeholders, config, column) {
       const translatedValue = processTrackingLabels(item[column]);
       config.mep.analyticLocalization[translatedValue] = usValue;
     });
-
-    console.log(getConfig().mep.analyticLocalization);
   });
 }
 
