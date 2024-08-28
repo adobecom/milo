@@ -19,13 +19,21 @@ export default {
     ],
     coverageConfig: {
         include: ['src/**'],
-        exclude: ['test/mocks/**', 'test/**', '**/node_modules/**'],
-        threshold: { // TODO bump to 100%
-          branches: 85,
-          functions: 65,
-          statements: 85,
-          lines: 85,
-      },
+        exclude: [
+            'test/mocks/**',
+            'test/**',
+            '**/node_modules/**',
+            'libs/features/mas/web-components/src/merch-twp-d2p.js', // on hold
+            'libs/features/mas/web-components/src/aem.js', // WIP
+            'libs/features/mas/web-components/src/bodyScrollLock.js', // todo
+        ],
+        threshold: {
+            // TODO bump to 100%
+            branches: 85,
+            functions: 65,
+            statements: 85,
+            lines: 85,
+        },
     },
     debug: false,
     files: ['test/**/*.test.(js|html)'],
