@@ -44,3 +44,9 @@ jobs:
           name: mas-web-components
           token: ${{ secrets.CODECOV_TOKEN }}
           working-directory: libs/features/mas/web-components
+
+      - name: List files in coverage directory
+        run: ls -al libs/features/mas/commerce/coverage
+
+      - name: List files in coverage directory
+        run: ls -al libs/features/mas/web-components/coverage
