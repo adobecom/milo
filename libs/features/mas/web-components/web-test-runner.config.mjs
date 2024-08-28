@@ -20,6 +20,12 @@ export default {
     coverageConfig: {
         include: ['src/**'],
         exclude: ['test/mocks/**', 'test/**', '**/node_modules/**'],
+        threshold: { // TODO bump to 100%
+          branches: 85,
+          functions: 65,
+          statements: 85,
+          lines: 85,
+      },
     },
     debug: false,
     files: ['test/**/*.test.(js|html)'],
