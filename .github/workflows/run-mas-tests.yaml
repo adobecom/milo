@@ -31,21 +31,16 @@ jobs:
         run: npm test
         working-directory: libs/features/mas
 
-      - name: List contents of coverage directory
-        run: |
-          echo "Contents of /home/runner/work/milo/milo/libs/features/mas/commerce/coverage:"
-          find  ${{ github.workspace }}/libs/features/mas/commerce
-
       - name: Upload commerce coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
           name: mas-commerce
           token: ${{ secrets.CODECOV_TOKEN }}
-          file: ${{ github.workspace }}/libs/features/mas/commerce/coverage/lcov.info
+          files: libs/features/mas/commerce/coverage/lcov.info
 
       - name: Upload web-components coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
           name: mas-web-components
           token: ${{ secrets.CODECOV_TOKEN }}
-          file: ${{ github.workspace }}/libs/features/mas/web-components/coverage/lcov.info
+          files: libs/features/mas/web-components/coverage/lcov.info
