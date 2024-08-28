@@ -11,6 +11,7 @@
  */
 
 import {createTag} from '../../utils/utils.js';
+import '../../deps/mas/countdown-timer.js';
 
 export default function init(el) {
   const styles = [...el.classList]; 
