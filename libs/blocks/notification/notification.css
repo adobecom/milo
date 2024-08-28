@@ -26,6 +26,7 @@
   flex-wrap: wrap;
   overflow: hidden;
   min-block-size: var(--min-block-size);
+  background: var(--color-white);
 }
 
 .notification.ribbon {
