@@ -679,19 +679,14 @@ export function decorateLinks(el) {
       const isConButton = ['EM', 'STRONG'].includes(a.parentElement.nodeName) || a.classList.contains('con-button');
       if (!isConButton) a.classList.add('copy-link');
       a.href = '';
-      // checks validity of the link
-      fetch(link)
-      .then((response) => {
-        if(response.ok && navigator.share) {
-          a.addEventListener('click', async (e) => {
-            e.preventDefault();
-            await navigator.share({ title: link, url: link });
-          });
-        } else {
-          window.lana.log('Web Share API is not supported in your browser', { tags: 'errorType=error,module=utils' });
-        }
-      })
-      .catch((e) => console.log(e));
+      if(navigator.share) {
+        a.addEventListener('click', async (e) => {
+          e.preventDefault();
+          await navigator.share({ title: link, url: link });
+        });
+      } else {
+        window.lana.log('Web Share API is not supported in your browser', { tags: 'errorType=error,module=utils' });
+      }
     };
     return rdx;
   }, []);
