@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { WebUtil } from '../../libs/webutil.js';
+import WebUtil from '../../libs/webutil.js';
 import { features } from './accordion.spec.js';
 import AccordionBlock from './accordion.page.js';
 

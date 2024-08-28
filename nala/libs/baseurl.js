@@ -1,7 +1,7 @@
-/* eslint-disable import/no-extraneous-dependencies, max-len, no-console */
+/* eslint-disable import/no-extraneous-dependencies, import/prefer-default-export, max-len, no-console */
 import { head } from 'axios';
 
-export default async function isBranchURLValid(url) {
+export async function isBranchURLValid(url) {
   try {
     const response = await head(url);
     if (response.status === 200) {

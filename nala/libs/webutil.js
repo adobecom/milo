@@ -1,4 +1,4 @@
-/* eslint-disable import/no-extraneous-dependencies, max-len, no-console */
+/* eslint-disable import/no-extraneous-dependencies, max-len, no-console, class-methods-use-this */
 
 import { expect } from '@playwright/test';
 
