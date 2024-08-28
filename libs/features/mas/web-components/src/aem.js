@@ -145,7 +145,7 @@ class AEM {
             const doc = parser.parseFromString(responseText, 'text/html');
             const message = doc.getElementById('Message');
             const newPath = message?.textContent.trim();
-            await wait(); // give time AEM to process the copy
+            await wait(); // give AEM time to process the copy
             let fragment = await this.getFragmentByPath(newPath);
             if (fragment) {
                 fragment = await this.getFragmentById(fragment.id);
