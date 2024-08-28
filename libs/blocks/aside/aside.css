@@ -144,7 +144,6 @@
   margin-bottom: 0;
   font-size: var(--type-body-s-size);
   line-height: var(--type-body-s-lh);
-  font-weight: bold;
 }
 
 .aside.promobar .promo-text .action-area {
@@ -656,6 +655,18 @@
 }
 
 @media screen and (min-width: 600px) {
+  .aside.small {
+    min-height: 420px;
+  }
+
+  .aside.medium {
+    min-height: 560px;
+  }
+
+  .aside.large {
+    min-height: 700px;
+  }
+
   .aside.media-top-mobile .foreground .image,
   .aside.media-top-mobile .split-image {
     order: unset;

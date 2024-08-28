@@ -196,8 +196,8 @@ function decorateLayout(el) {
   }
   const foregroundImage = foreground.querySelector(':scope > div:not(.text) img')?.closest('div');
   const bgImage = el.querySelector(':scope > div:not(.text):not(.foreground) img')?.closest('div');
-  const foregroundMedia = foreground.querySelector(':scope > div:not(.text) video, :scope > div:not(.text) a[href*=".mp4"]')?.closest('div');
-  const bgMedia = el.querySelector(':scope > div:not(.text):not(.foreground) video, :scope > div:not(.text):not(.foreground) a[href*=".mp4"]')?.closest('div');
+  const foregroundMedia = foreground.querySelector(':scope > div:not(.text) video, :scope > div:not(.text) a:is([href*=".mp4"], [href*="tv.adobe.com"])')?.closest('div');
+  const bgMedia = el.querySelector(':scope > div:not(.text):not(.foreground) video, :scope > div:not(.text):not(.foreground) a:is([href*=".mp4"], [href*="tv.adobe.com"])')?.closest('div');
   const image = foregroundImage ?? bgImage;
   const asideMedia = foregroundMedia ?? bgMedia ?? image;
   const isSplit = el.classList.contains('split');
