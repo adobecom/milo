@@ -36,17 +36,11 @@ jobs:
         with:
           name: mas-commerce
           token: ${{ secrets.CODECOV_TOKEN }}
-          working-directory: libs/features/mas/commerce
+          working-directory: ${{ env.GITHUB_WORKSPACE }}/libs/features/mas/commerce
 
       - name: Upload web-components coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
           name: mas-web-components
           token: ${{ secrets.CODECOV_TOKEN }}
-          working-directory: libs/features/mas/web-components
-
-      - name: List files in coverage directory
-        run: ls -al libs/features/mas/commerce/coverage
-
-      - name: List files in coverage directory
-        run: ls -al libs/features/mas/web-components/coverage
+          working-directory: ${{ env.GITHUB_WORKSPACE }}/libs/features/mas/web-components
