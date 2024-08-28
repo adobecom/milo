@@ -31,6 +31,11 @@ jobs:
         run: npm test
         working-directory: libs/features/mas
 
+      - name: List contents of coverage directory
+        run: |
+          echo "Contents of /home/runner/work/milo/milo/libs/features/mas/commerce/coverage:"
+          find  ${{ github.workspace }}/libs/features/mas/commerce
+
       - name: Upload commerce coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
