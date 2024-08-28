@@ -1,3 +1,7 @@
+:root {
+  --quiz-option-text-selected: #0b56af;
+}
+
 .quiz-page * {
   box-sizing: border-box;
 }
@@ -150,11 +154,11 @@ html[dir="rtl"] .quiz-option-icon {
 }
 
 .quiz-option.selected .quiz-option-title {
-  color: var(--link-hover-color-dark);
+  color: var(--quiz-option-text-selected);
 }
 
 .quiz-option.selected .quiz-option-text {
-  color: var(--link-hover-color-dark);
+  color: var(--quiz-option-text-selected);
   font-weight: 700;
 }
 
@@ -194,7 +198,7 @@ html[dir="rtl"] .quiz-option-icon {
 }
 
 .quiz-button-label {
-  color: var(--link-hover-color-dark);
+  color: var(--quiz-option-text-selected);
   font-size: 18px;
   font-weight: 700;
   line-height: 22px;

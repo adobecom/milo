@@ -55,10 +55,10 @@ const cardContent = {
 };
 
 async function parseMerchCard(item, merchCard) {
-    const cardJson = item.fields.reduce((acc, { name, multiple, values }) => {
-        acc[name] = multiple ? values : values[0];
-        return acc;
-    }, {});
+    const cardJson = Array.isArray(item.fields) ? item.fields.reduce((acc, { name, multiple, values }) => {
+      acc[name] = multiple ? values : values[0];
+      return acc;
+    }, {}) : {};
     const { type = 'catalog' } = cardJson;
     const cardType = cardContent[type] || cardContent.catalog;
 

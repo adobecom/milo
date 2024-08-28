@@ -1,5 +1,5 @@
 const STAGE_ENTITLEMENTS = {
-  '5a5fd14e-f4ca-49d2-9f87-835df5477e3c': 'photoshop-any',
+  '22ec76d1-b715-4ec5-8f36-b0db7c8b725a': 'photoshop-any',
   '09bc4ba3-ebed-4d05-812d-a1fb1a7e82ae': 'indesign-any',
   '25ede755-7181-4be2-801e-19f157c005ae': 'illustrator-any',
   'bf632803-4412-463d-83c5-757dda3224ee': 'cc-all-apps-any',

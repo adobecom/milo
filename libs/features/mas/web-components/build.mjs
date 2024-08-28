@@ -23,14 +23,6 @@ async function buildLitComponent(name) {
 Promise.all([
     build({
         bundle: true,
-        format: 'esm',
-        entryPoints: ['./src/merch-card-all.js'],
-        minify: true,
-        outfile: `${outfolder}/merch-card-all.js`,
-        sourcemap: true,
-    }),
-    build({
-        bundle: true,
         stdin: { contents: '' },
         inject: [
             './src/merch-card.js',
