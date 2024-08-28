@@ -23,7 +23,7 @@ import{html as n,LitElement as N}from"../lit-all.min.js";import{LitElement as L,
             width: var(--img-width);
             height: var(--img-height);
         }
-    `};customElements.define("merch-icon",h);import{css as b,unsafeCSS as u}from"../lit-all.min.js";var g="(max-width: 767px)",x="(max-width: 1199px)",c="(min-width: 768px)",a="(min-width: 1200px)",i="(min-width: 1600px)";var C=b`
+    `};customElements.define("merch-icon",h);import{css as b,unsafeCSS as f}from"../lit-all.min.js";var g="(max-width: 767px)",x="(max-width: 1199px)",c="(min-width: 768px)",a="(min-width: 1200px)",i="(min-width: 1600px)";var C=b`
     :host {
         position: relative;
         display: flex;
@@ -333,7 +333,7 @@ import{html as n,LitElement as N}from"../lit-all.min.js";import{LitElement as L,
         height: var(--consonant-merch-card-mini-compare-top-section-height);
     }
 
-    @media screen and ${u(x)} {
+    @media screen and ${f(x)} {
         [class*'-merch-cards'] :host([variant='mini-compare-chart']) footer {
             flex-direction: column;
             align-items: stretch;
@@ -341,7 +341,7 @@ import{html as n,LitElement as N}from"../lit-all.min.js";import{LitElement as L,
         }
     }
 
-    @media screen and ${u(a)} {
+    @media screen and ${f(a)} {
         :host([variant='mini-compare-chart']) footer {
             padding: var(--consonant-merch-spacing-xs)
                 var(--consonant-merch-spacing-s)
@@ -391,7 +391,7 @@ import{html as n,LitElement as N}from"../lit-all.min.js";import{LitElement as L,
     }
 `,z=()=>{let l=[b`
         /* Tablet */
-        @media screen and ${u(c)} {
+        @media screen and ${f(c)} {
             :host([size='wide']),
             :host([size='super-wide']) {
                 grid-column: span 3;
@@ -402,13 +402,13 @@ import{html as n,LitElement as N}from"../lit-all.min.js";import{LitElement as L,
         }
 
         /* Laptop */
-        @media screen and ${u(a)} {
+        @media screen and ${f(a)} {
             :host([size='super-wide']) {
                 grid-column: span 3;
             }
         `];return l.push(b`
         /* Large desktop */
-        @media screen and ${u(i)} {
+        @media screen and ${f(i)} {
             :host([size='super-wide']) {
                 grid-column: span 4;
             }

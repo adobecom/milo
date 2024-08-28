@@ -10,7 +10,6 @@ import {
     EVENT_MERCH_STORAGE_CHANGE,
     EVENT_MERCH_CARD_ACTION_MENU_TOGGLE,
 } from './constants.js';
-import { getTextNodes } from './utils.js';
 
 export const MERCH_CARD_NODE_NAME = 'MERCH-CARD';
 export const MERCH_CARD = 'merch-card';

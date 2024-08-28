@@ -26,6 +26,8 @@ export default {
             'src/merch-twp-d2p.js', // on hold
             'src/aem.js', // WIP
             'src/bodyScrollLock.js', // todo
+            'src/merch-subscription-panel.js', // on hold
+            'src/ merch-whats-included.js', // on hold
         ],
         threshold: {
             // TODO bump to 100%
