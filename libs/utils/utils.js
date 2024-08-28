@@ -624,16 +624,22 @@ export function decorateLinks(el) {
   const config = getConfig();
   decorateImageLinks(el);
   const anchors = el.getElementsByTagName('a');
-  const copylinks = [...anchors].filter((a) => a.href.includes("_copy-link"));
-  copylinks.forEach((sl) => {
-    const link = sl.href.split("#_copy-link")[0];
-    sl.href = '';
-    const isConButton = sl.parentElement.nodeName === 'EM' || sl.parentElement.nodeName === 'STRONG' || sl.classList.contains('con-button');
-    if (!isConButton) sl.classList.add('copy-link'); // to add specifc styling as per the design
-    sl.addEventListener('click', async () => {
-      if (navigator.share) await navigator.share({ title: 'send', url: link });
-    });
-  });
+  // const copylinks = [...anchors].filter((a) => a.href.includes("_copy-link"));
+  // copylinks.forEach((sl) => {
+  //   const link = sl.href.split("#_copy-link")[0];
+  //   const isConButton = sl.parentElement.nodeName === 'EM' || sl.parentElement.nodeName === 'STRONG' || sl.classList.contains('con-button');
+  //   if (!isConButton) sl.classList.add('copy-link');
+  //   sl.href = ''; // no redirect in case of error
+  //   if(navigator.share) {
+  //     // sl.href = ''; // if we need to redirect
+  //     sl.addEventListener('click', async () => {
+  //       navigator.clipboard.writeText(link);
+  //       await navigator.share({ title: link, url: link });
+  //     });
+  //   } else {
+  //     window.lana.log('Web Share API is not supported in your browser', { tags: 'errorType=error,module=utils' });
+  //   }
+  // });
   return [...anchors].reduce((rdx, a) => {
     appendHtmlToLink(a);
     a.href = localizeLink(a.href);
@@ -666,6 +672,27 @@ export function decorateLinks(el) {
         window.adobeIMS?.signIn();
       });
     }
+    const copyEvent = '#_evt-copy-link';
+    if (a.href.includes(copyEvent)) {
+      const link = a.href.split("#_evt-copy-link")[0];
+      // adds required styles
+      const isConButton = ['EM', 'STRONG'].includes(a.parentElement.nodeName) || a.classList.contains('con-button');
+      if (!isConButton) a.classList.add('copy-link');
+      a.href = '';
+      // checks validity of the link
+      fetch(link)
+      .then((response) => {
+        if(response.ok && navigator.share) {
+          a.addEventListener('click', async (e) => {
+            e.preventDefault();
+            await navigator.share({ title: link, url: link });
+          });
+        } else {
+          window.lana.log('Web Share API is not supported in your browser', { tags: 'errorType=error,module=utils' });
+        }
+      })
+      .catch((e) => console.log(e));
+    };
     return rdx;
   }, []);
 }
