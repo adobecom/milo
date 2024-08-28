@@ -1,4 +1,5 @@
 import { LitElement, html, css } from 'lit';
+import { styles } from './countdown-timer.css.js';
 
 export default class CountdownTimer extends LitElement {
   static properties = {
@@ -13,6 +14,8 @@ export default class CountdownTimer extends LitElement {
 
   #timeWords = [];
   #timeRangesObj = [];
+
+  static styles = [styles];
 
   constructor(endDateTime) {
     super();
@@ -77,26 +80,23 @@ export default class CountdownTimer extends LitElement {
       return html``;
     } else {
       return html`
-      <div class="countdown">
-          <div class="countdown-column">
-              <div class="countdown-word">${this.#timeWords[0]}</div>
-              <div>
-                  <div class="shape-content">${this.daysLeft}</div>
-              </div>
-          </div>
-          <div class="countdown-column">
-              <div class="countdown-word">${this.#timeWords[1]}</div>
-              <div>
-                  <div class="shape-content">${this.hoursLeft}</div>
-              </div>
-          </div>
-          <div class="countdown-column">
-              <div class="countdown-word">${this.#timeWords[2]}</div>
-              <div>
-                  <div class="shape-content">${this.minutesLeft}</div>
-              </div>
-          </div>
-      </div>`;
+      <div class="timer-container">
+        <div>${this.label}</div>
+        <div>
+            <div id="days" class="timer-box">${this.daysLeft}</div>
+            <div class="timer-label">${this.#timeWords[0]}</div>
+        </div>
+        <div>:</div>
+        <div>
+            <div id="hours" class="timer-box">${this.hoursLeft}</div>
+            <div class="timer-label">${this.#timeWords[1]}</div>
+        </div>
+        <div>:</div>
+        <div>
+            <div id="minutes" class="timer-box">${this.minutesLeft}</div>
+            <div class="timer-label">${this.#timeWords[2]}</div>
+        </div>
+    </div>`;
     }
   }
 
