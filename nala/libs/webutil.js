@@ -1,13 +1,13 @@
-import { expect } from '@playwright/test';
+/* eslint-disable import/no-extraneous-dependencies, max-len, no-console */
 
-const fs = require('fs');
+import { expect } from '@playwright/test';
 
 const { request } = require('@playwright/test');
 
 /**
  * A utility class for common web interactions.
  */
-exports.WebUtil = class WebUtil {
+export default class WebUtil {
   /**
    * Create a new instance of WebUtil.
    * @param {object} page - A Playwright page object.
@@ -200,14 +200,6 @@ exports.WebUtil = class WebUtil {
   }
 
   /**
-   * Load test data from yml file or json file in local
-   * @param {string} filePath
-  */
-  static async loadTestData(dataFilePath) {
-    return dataFilePath.includes('.yml') ? yaml.load(fs.readFileSync(dataFilePath, 'utf8')) : JSON.parse(fs.readFileSync(dataFilePath, 'utf8'));
-  }
-
-  /**
    * Load test data from remote json file
    * @param {string} path
    * @param {string} url
@@ -257,7 +249,7 @@ exports.WebUtil = class WebUtil {
    * @param {string} project - The project identifier, defaulting to 'milo' if not provided.
    * @returns {string} - A string formatted as 'gnav|<project>|nopzn|nopzn'.
    */
-  async getGnavDaalh(project = milo) {
+  async getGnavDaalh(project) {
     return `gnav|${project}|nopzn|nopzn`;
   }
 
@@ -268,7 +260,7 @@ exports.WebUtil = class WebUtil {
    * @param {string} pznFileName - Manifest filename, which is sliced to its first 20 characters.
    * @returns {string} - A string formatted as 'gnav|<project>|<pznExpName>|<pznFileName>'.
    */
-  async getPznGnavDaalh(project = milo, pznExpName, pznFileName) {
+  async getPznGnavDaalh(pznExpName, pznFileName, project) {
     const slicedExpName = pznExpName.slice(0, 15);
     const slicedFileName = pznFileName.slice(0, 15);
     return `gnav|${project}|${slicedExpName}|${slicedFileName}`;
@@ -323,7 +315,7 @@ exports.WebUtil = class WebUtil {
    * @param {boolean} [pzn=false] - boolean parameter, defaulting to false.(for personalization)
    * @returns {string} - A string formatted as '<cleanedLinkText>-<counter>--<cleanedLastHeaderText>'.
    */
-  async getLinkDaall(linkText, counter, lastHeaderText, pzn = false) {
+  async getLinkDaall(linkText, counter, lastHeaderText) {
     const cleanAndSliceText = (text) => text
       ?.replace(/[^\w\s]+/g, ' ')
       .replace(/\s+/g, ' ')
@@ -334,5 +326,4 @@ exports.WebUtil = class WebUtil {
     const slicedLastHeaderText = cleanAndSliceText(lastHeaderText);
     return `${slicedLinkText}-${counter}--${slicedLastHeaderText}`;
   }
-};
-
+}

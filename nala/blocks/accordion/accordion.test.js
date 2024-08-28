@@ -47,8 +47,8 @@ test.describe('Milo Accordion Block test suite', () => {
     });
 
     await test.step('step-3: Verify analytics attributes', async () => {
-      await expect(await accordion.section).toHaveAttribute('daa-lh', await webUtil.getSectionDaalh(1)); 
-      await expect(await accordion.accordion).toHaveAttribute('daa-lh', await webUtil.getBlockDaalh('accordion-container', 1));  
+      await expect(await accordion.section).toHaveAttribute('daa-lh', await webUtil.getSectionDaalh(1));
+      await expect(await accordion.accordion).toHaveAttribute('daa-lh', await webUtil.getBlockDaalh('accordion-container', 1));
     });
   });
 
@@ -108,21 +108,21 @@ test.describe('Milo Accordion Block test suite', () => {
     });
 
     await test.step('step-3: Verify analytics attributes', async () => {
-      await expect(await accordion.accordion).toHaveAttribute('daa-lh', await webUtil.getBlockDaalh('accordion-container', 1));  
+      await expect(await accordion.accordion).toHaveAttribute('daa-lh', await webUtil.getBlockDaalh('accordion-container', 1));
     });
   });
-  
+
   // Test 3 : Accordion seo editorial
   test(`${features[3].name},${features[3].tags}`, async ({ page, baseURL }) => {
     console.info(`[Test Page]: ${baseURL}${features[3].path}${miloLibs}`);
     const { data } = features[3];
-  
+
     await test.step('step-1: Go to accordion test page', async () => {
       await page.goto(`${baseURL}${features[3].path}${miloLibs}`);
       await page.waitForLoadState('domcontentloaded');
       await expect(page).toHaveURL(`${baseURL}${features[3].path}${miloLibs}`);
     });
-  
+
     await test.step('step-2: Verify accordion content/specs', async () => {
       // verify action area buttons, links and text visibility and content
       await expect(await accordion.outlineButton).toBeVisible();
@@ -130,8 +130,7 @@ test.describe('Milo Accordion Block test suite', () => {
       await expect(await accordion.textLink).toBeVisible();
 
       await expect(await accordion.outlineButton).toContainText(data.outlineButtonText);
-      await expect(await accordion.blueButton).toContainText(data.blueButtonText)     
-      
+      await expect(await accordion.blueButton).toContainText(data.blueButtonText);
     });
   });
 });

@@ -1,6 +1,6 @@
-const { devices } = require('@playwright/test');
+/* eslint-disable import/no-extraneous-dependencies */
 
-// const envs = require('./envs/envs.js');
+const { devices } = require('@playwright/test');
 
 /**
  * @see https://playwright.dev/docs/test-configuration
@@ -54,9 +54,7 @@ const config = {
     },
     {
       name: 'milo-live-webkit',
-      use: {
-        ...devices['Desktop Safari'],
-      },
+      use: { ...devices['Desktop Safari'] },
     },
     /* Test Against Mobile View ports */
     {

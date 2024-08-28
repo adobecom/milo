@@ -1,3 +1,5 @@
+/* eslint-disable import/no-extraneous-dependencies, no-console */
+
 import axios from 'axios';
 
 /**
@@ -5,13 +7,9 @@ import axios from 'axios';
  * @param {string} webhookUrl - The Slack channel webhook.
  * @param {Object} messageContent - The content of the message to send.
  */
-async function sendSlackMessage(webhookUrl, messageContent) {
+export default async function sendSlackMessage(webhookUrl, messageContent) {
   try {
-    const response = await axios.post(webhookUrl, messageContent, {
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
+    const response = await axios.post(webhookUrl, messageContent, { headers: { 'Content-Type': 'application/json' } });
 
     if (response.status !== 200) {
       throw new Error(`Error sending message to Slack. Status: ${response.status}. Message: ${response.data}`);
@@ -21,7 +19,3 @@ async function sendSlackMessage(webhookUrl, messageContent) {
     console.error('Axios error:', error);
   }
 }
-
-export {  
-  sendSlackMessage,  
-};

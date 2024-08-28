@@ -1,5 +1,5 @@
 export default class Accordion {
-  constructor(page, nth=0) {
+  constructor(page, nth = 0) {
     this.page = page;
     // accordion locators
     this.section = this.page.locator('.section').nth(nth);
@@ -14,16 +14,9 @@ export default class Accordion {
 
     // accordion blocks attributes
     this.attributes = {
-      'accordion-container': {
-        'class': 'accordion-container con-block max-width-10-desktop',
-      },
-      'accordion-container.seo': {
-        'class': 'accordion-container seo con-block max-width-10-desktop',
-      },
-      'accordion-container-quiet-large': {
-        'class': 'accordion-container quiet max-width-12-desktop-large con-block',
-      },    
-    }
+      'accordion-container': { class: 'accordion-container con-block max-width-10-desktop' },
+      'accordion-container.seo': { class: 'accordion-container seo con-block max-width-10-desktop' },
+      'accordion-container-quiet-large': { class: 'accordion-container quiet max-width-12-desktop-large con-block' },
+    };
   }
 }
-

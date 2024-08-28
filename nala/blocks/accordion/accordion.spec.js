@@ -49,7 +49,7 @@ module.exports = {
         outlineButtonText: 'Lorem ipsum',
         blueButtonText: 'Learn more',
       },
-      tags: '@accordion @t3 @smoke @regression @milo'
+      tags: '@accordion @t3 @smoke @regression @milo',
     },
 
   ],

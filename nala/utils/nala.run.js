@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+/* eslint-disable no-console */
+
 const { spawn } = require('child_process');
 
 function displayHelp() {
@@ -50,12 +52,12 @@ function parseArgs(args) {
     mode: 'headless',
     config: '',
     project: '',
-    milolibs: ''
+    milolibs: '',
   };
 
   const parsedParams = { ...defaultParams };
 
-  args.forEach(arg => {
+  args.forEach((arg) => {
     if (arg.includes('=')) {
       const [key, value] = arg.split('=');
       parsedParams[key] = value;
@@ -87,25 +89,24 @@ function getLocalTestLiveUrl(env, milolibs) {
   if (milolibs) {
     process.env.MILO_LIBS = `?milolibs=${milolibs}`;
     if (env === 'local') {
-      return `http://127.0.0.1:3000`;
-    } else if (env === 'libs') {
-      return `http://127.0.0.1:6456`;
-    } else {
-      return `https://${env}--milo--adobecom.hlx.live`;
-    }
-  } else {
-    if (env === 'local') {
       return 'http://127.0.0.1:3000';
-    } else if (env === 'libs') {
+    } if (env === 'libs') {
       return 'http://127.0.0.1:6456';
-    } else {
-      return `https://${env}--milo--adobecom.hlx.live`;
     }
+    return `https://${env}--milo--adobecom.hlx.live`;
   }
+  if (env === 'local') {
+    return 'http://127.0.0.1:3000';
+  } if (env === 'libs') {
+    return 'http://127.0.0.1:6456';
+  }
+  return `https://${env}--milo--adobecom.hlx.live`;
 }
 
 function buildPlaywrightCommand(parsedParams, localTestLiveUrl) {
-  const { browser, device, test, tag, mode, config, project } = parsedParams;
+  const {
+    browser, device, test, tag, mode, config, project,
+  } = parsedParams;
 
   const envVariables = {
     ...process.env,
@@ -156,14 +157,13 @@ function runNalaTest() {
 
   console.log(`\n Executing nala run command: ${finalCommand}`);
   console.log(`\n Using URL: ${localTestLiveUrl}\n`);
-
   console.log(`\n\x1b[1m\x1b[33mExecuting nala run command:\x1b[0m \x1b[32m${finalCommand}\x1b[0m\n\x1b[1m\x1b[33mUsing URL:\x1b[0m \x1b[32m${localTestLiveUrl}\x1b[0m\n`);
-
 
   const testProcess = spawn(finalCommand, { stdio: 'inherit', shell: true, env: envVariables });
 
   testProcess.on('close', (code) => {
-    console.log(`Playwright tests exited with code ${code}`);
+    // eslint-disable-next-line no-console
+    console.log(`Nala tests exited with code ${code}`);
     process.exit(code);
   });
 }
@@ -177,5 +177,5 @@ module.exports = {
   parseArgs,
   getLocalTestLiveUrl,
   buildPlaywrightCommand,
-  runNalaTest
+  runNalaTest,
 };
