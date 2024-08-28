@@ -49,6 +49,7 @@ export function isMobileOrTablet() {
     return window.matchMedia('(max-width: 1024px)').matches;
 }
 
+/* c8 ignore next 4 */
 export function wait(ms = 1000) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
