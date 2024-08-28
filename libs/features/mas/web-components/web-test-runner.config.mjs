@@ -23,9 +23,9 @@ export default {
             'test/mocks/**',
             'test/**',
             '**/node_modules/**',
-            'libs/features/mas/web-components/src/merch-twp-d2p.js', // on hold
-            'libs/features/mas/web-components/src/aem.js', // WIP
-            'libs/features/mas/web-components/src/bodyScrollLock.js', // todo
+            'src/merch-twp-d2p.js', // on hold
+            'src/aem.js', // WIP
+            'src/bodyScrollLock.js', // todo
         ],
         threshold: {
             // TODO bump to 100%
