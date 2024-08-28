@@ -1,4 +1,6 @@
 .aside {
+  --min-height: 160px;
+
   display: flex;
   width: 100%;
   position: relative;
@@ -27,6 +29,10 @@
 
 .aside [class^="body-"] {
   margin-bottom: var(--spacing-s);
+}
+
+.aside:not(.notification, .promobar) {
+  min-height: var(--min-height);
 }
 
 .aside.promobar [class^="body-"],
@@ -655,16 +661,22 @@
 }
 
 @media screen and (min-width: 600px) {
-  .aside.small {
-    min-height: 420px;
+  .aside {
+    --min-height-small: 420px;
+    --min-height-medium: 560px;
+    --min-height-large: 700px;
   }
 
-  .aside.medium {
-    min-height: 560px;
+  .aside.small:not(.notification, .promobar) {
+    min-height: var(--min-height-small);
   }
 
-  .aside.large {
-    min-height: 700px;
+  .aside.medium:not(.notification, .promobar) {
+    min-height: var(--min-height-medium);
+  }
+
+  .aside.large:not(.notification, .promobar) {
+    min-height: var(--min-height-large);
   }
 
   .aside.media-top-mobile .foreground .image,
