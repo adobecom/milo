@@ -882,7 +882,7 @@ export const getMepEnablement = (mdKey, paramKey = false) => {
   return getMdValue(mdKey);
 };
 
-let imsLoaded;
+let imsLoaded = window.adobeIMS?.initialized;
 export async function loadIms() {
   imsLoaded = imsLoaded || new Promise((resolve, reject) => {
     const {
