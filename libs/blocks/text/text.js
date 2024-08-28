@@ -24,9 +24,8 @@ const blockTypeSizes = {
   },
 };
 
-function decorateMultiViewport(el) {
+function decorateMultiViewport(foreground) {
   const viewports = ['mobile-up', 'tablet-up', 'desktop-up'];
-  const foreground = el.querySelector('.foreground');
   if (foreground.childElementCount === 2 || foreground.childElementCount === 3) {
     [...foreground.children].forEach((child, index) => {
       child.className = viewports[index];
@@ -36,14 +35,11 @@ function decorateMultiViewport(el) {
   return foreground;
 }
 
-function decorateBlockIconArea(el) {
-  const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
-  const first = el.querySelector('.foreground > div :first-child');
+function decorateBlockIconArea(content, el) {
+  const headings = content.querySelectorAll('h1, h2, h3, h4, h5, h6');
+  const first = content.children[0];
   const firstImg = first?.querySelector('img');
-  if (firstImg) {
-    first.classList.add(`${el.matches('[class*="-lockup"]') ? 'lockup' : 'img'}-area`);
-    if (el.matches('.show-alt')) first.appendChild(createTag('p', { class: 'alt' }, 'foo'));
-  }
+  if (firstImg) first.classList.add(`${el.matches('[class*="-lockup"]') ? 'lockup' : 'img'}-area`);
   if (!headings) return;
   headings.forEach((h) => {
     const hPrevElem = h.previousElementSibling;
@@ -103,8 +99,11 @@ export default async function init(el) {
   const hasLinkFarm = el.classList.contains('link-farm');
   rows.forEach((row) => {
     row.classList.add('foreground');
-    if (!hasLinkFarm) decorateBlockText(row, blockTypeSizes[blockType][size]);
-    decorateBlockIconArea(row);
+    if (!hasLinkFarm) {
+      decorateBlockText(row, blockTypeSizes[blockType][size]);
+      decorateMultiViewport(el);
+    }
+    [...row.children].forEach((child) => decorateBlockIconArea(child, el));
   });
   if (el.classList.contains('full-width')) helperClasses.push('max-width-8-desktop', 'center', 'xxl-spacing');
   if (el.classList.contains('intro')) helperClasses.push('max-width-8-desktop', 'xxl-spacing-top', 'xl-spacing-bottom');
@@ -115,7 +114,6 @@ export default async function init(el) {
   if (hasLinkFarm) decorateLinkFarms(el);
   el.classList.add(...helperClasses);
   decorateTextOverrides(el);
-  if (!hasLinkFarm) decorateMultiViewport(el);
 
   const lastActionArea = el.querySelector('.action-area:last-of-type');
   if (lastActionArea) {
