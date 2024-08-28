@@ -730,28 +730,34 @@ async function decorateIcons(area, config) {
 async function decoratePlaceholders(area, config) {
   const el = area.querySelector('main') || area;
   const regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
-  const walker = document.createTreeWalker(
-    el,
-    NodeFilter.SHOW_TEXT,
-    {
-      acceptNode(node) {
-        const a = regex.test(node.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
-        regex.lastIndex = 0;
-        return a;
-      },
-    },
-  );
+  const walker = document.createTreeWalker(el, NodeFilter.SHOW_ALL, null, false);
   const nodes = [];
   let node = walker.nextNode();
   while (node !== null) {
-    nodes.push(node);
+    let matchFound = false;
+    if (node.nodeType === Node.TEXT_NODE) {
+      matchFound = regex.test(node.nodeValue);
+    } else if (node.nodeType === Node.ELEMENT_NODE && node.hasAttribute('href')) {
+      const hrefValue = node.getAttribute('href');
+      matchFound = regex.test(hrefValue);
+    }
+    if (matchFound) {
+      nodes.push(node);
+      regex.lastIndex = 0;
+    }
     node = walker.nextNode();
   }
   if (!nodes.length) return;
   const { replaceText } = await import('../features/placeholders.js');
-  const replaceNodes = nodes.map(async (textNode) => {
-    textNode.nodeValue = await replaceText(textNode.nodeValue, config, regex);
-    textNode.nodeValue = textNode.nodeValue.replace(/&nbsp;/g, '\u00A0');
+  const replaceNodes = nodes.map(async (node) => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      let newValue = await replaceText(node.nodeValue, config, regex);
+      node.nodeValue = newValue.replace(/&nbsp;/g, '\u00A0');
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+      let hrefValue = node.getAttribute('href');
+      let newValue = await replaceText(hrefValue, config, regex);
+      node.setAttribute('href', newValue.replace(/&nbsp;/g, '\u00A0'));
+    }
   });
   await Promise.all(replaceNodes);
 }
