@@ -557,7 +557,6 @@ export class MerchCard extends LitElement {
             'change',
             this.handleStorageChange,
         );
-        // this.appendInvisibleSpacesToFooterLinks();
     }
 
     disconnectedCallback() {
@@ -571,22 +570,6 @@ export class MerchCard extends LitElement {
             EVENT_MERCH_STORAGE_CHANGE,
             this.handleStorageChange,
         );
-    }
-
-    appendInvisibleSpacesToFooterLinks() {
-        // append invisible spaces every 7 chars so that text wraps correctly on mobile.
-        [...this.querySelectorAll('[slot="footer"] a')].forEach((link) => {
-            const textNodes = getTextNodes(link);
-            // find words and add invisible space
-            textNodes.forEach((node) => {
-                const text = node.textContent;
-                const words = text.split(' ');
-                const newText = words
-                    .map((word) => word.match(/.{1,7}/g)?.join('\u200B'))
-                    .join(' ');
-                node.textContent = newText;
-            });
-        });
     }
 
     // custom methods
