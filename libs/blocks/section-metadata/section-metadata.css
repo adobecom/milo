@@ -253,7 +253,6 @@ main > .section[class*='-up'] > .content {
   }
   
   .section.one-up-tablet { grid-template-columns: 1fr; }
-  .section.two-up-tablet { grid-template-columns: repeat(2, 1fr); }
   .section.three-up-tablet { grid-template-columns: repeat(3, 1fr); }
   .section.four-up-tablet { grid-template-columns: repeat(4, 1fr); }
 
