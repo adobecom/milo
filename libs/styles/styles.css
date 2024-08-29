@@ -809,9 +809,7 @@ a.static:hover {
 }
 
 .copy-link {
-  color: black;
-  text-decoration: underline;
-  font-weight: 700;
+  font-weight: bold;
 }
 
 

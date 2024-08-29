@@ -658,12 +658,11 @@ export function decorateLinks(el) {
     }
     const copyEvent = '#_evt-copy-link';
     if (a.href.includes(copyEvent)) {
-      const link = a.href.split("#_evt-copy-link")[0];
-      // adds required styles
+      const link = a.href.split('#_evt-copy-link')[0];
       const isConButton = ['EM', 'STRONG'].includes(a.parentElement.nodeName) || a.classList.contains('con-button');
-      if (!isConButton) a.classList.add('copy-link');
+      if (!isConButton) a.classList.add('static', 'copy-link');
       a.href = '';
-      if(navigator.share) {
+      if (navigator.share) {
         a.addEventListener('click', async (e) => {
           e.preventDefault();
           await navigator.share({ title: link, url: link });
@@ -671,7 +670,7 @@ export function decorateLinks(el) {
       } else {
         window.lana.log('Web Share API is not supported in your browser', { tags: 'errorType=error,module=utils' });
       }
-    };
+    }
     return rdx;
   }, []);
 }
