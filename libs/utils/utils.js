@@ -749,14 +749,14 @@ async function decoratePlaceholders(area, config) {
   }
   if (!nodes.length) return;
   const { replaceText } = await import('../features/placeholders.js');
-  const replaceNodes = nodes.map(async (node) => {
-    if (node.nodeType === Node.TEXT_NODE) {
-      let newValue = await replaceText(node.nodeValue, config, regex);
-      node.nodeValue = newValue.replace(/&nbsp;/g, '\u00A0');
-    } else if (node.nodeType === Node.ELEMENT_NODE) {
-      let hrefValue = node.getAttribute('href');
-      let newValue = await replaceText(hrefValue, config, regex);
-      node.setAttribute('href', newValue.replace(/&nbsp;/g, '\u00A0'));
+  const replaceNodes = nodes.map(async (el) => {
+    if (el.nodeType === Node.TEXT_NODE) {
+      const newValue = await replaceText(el.nodeValue, config, regex);
+      el.nodeValue = newValue.replace(/&nbsp;/g, '\u00A0');
+    } else if (el.nodeType === Node.ELEMENT_NODE) {
+      const hrefValue = el.getAttribute('href');
+      const newValue = await replaceText(hrefValue, config, regex);
+      el.setAttribute('href', newValue.replace(/&nbsp;/g, '\u00A0'));
     }
   });
   await Promise.all(replaceNodes);
