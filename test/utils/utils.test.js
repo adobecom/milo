@@ -97,9 +97,9 @@ describe('Utils', () => {
       });
       it('Implements a copy action', async () => {
         await waitForElement('.copy-action');
-        const login = document.querySelector('.copy-action');
-        utils.decorateLinks(login);
-        expect(login.href).to.equal('');
+        const copy = document.querySelector('.copy-action');
+        utils.decorateLinks(copy);
+        expect(copy.href).to.equal('');
       });
     });
 
