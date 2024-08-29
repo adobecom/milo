@@ -324,6 +324,10 @@
   inline-size: calc(100% - var(--spacing-xxs));
 }
 
+.notification.pill .copy-wrap p:first-child:not(:only-child) {
+  margin-block-end: var(--spacing-xxs);
+}
+
 @media screen and (min-width: 600px) {
   .notification {
     --max-inline-size-image: 188px;
@@ -564,7 +568,6 @@
   }
 
   .notification.pill .foreground .text [class*="heading-"] {
-    margin-inline-end: var(--spacing-xxs);
     margin-block-end: 0;
   }
 
@@ -615,6 +618,7 @@
     flex-wrap: wrap;
     align-items: baseline;
     text-align: start;
+    gap: var(--spacing-xxs);
   }
 
   .notification.pill .copy-wrap > * {
@@ -623,5 +627,9 @@
 
   .notification.ribbon.space-between .foreground .icon-area {
     margin-inline-end: var(--spacing-s);
+  }
+
+  .notification.pill .copy-wrap p:first-child:not(:only-child) {
+    margin-block-end: 0;
   }
 }
