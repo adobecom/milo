@@ -609,17 +609,6 @@ div[slot="footer"] {
     text-align: center;
 }
 
-sp-button a {
-    text-decoration: none;
-    color: var(
-        --highcontrast-button-content-color-default,
-        var(
-            --mod-button-content-color-default,
-            var(--spectrum-button-content-color-default)
-        )
-    );
-}
-
 [slot="footer"] a:not([class]) {
     font-weight: 700;
     font-size: var(--consonant-merch-card-cta-font-size);
@@ -1084,9 +1073,15 @@ span[is="inline-price"][data-template='strikethrough'] {
     text-decoration: line-through;
 }
 
-sp-button a[is="checkout-link"] {
-  color: inherit;
+merch-card sp-button a {
   text-decoration: none;
+    color: var(
+        --highcontrast-button-content-color-default,
+        var(
+            --mod-button-content-color-default,
+            var(--spectrum-button-content-color-default)
+        )
+    );
 }
 
 merch-card span.placeholder-resolved[data-template='strikethrough'],

@@ -14,7 +14,7 @@ async function buildLitComponent(name) {
         platform: 'browser',
         outfile: `${outfolder}/${name}.js`,
         plugins: [rewriteImports()],
-        sourcemap: true,
+        // sourcemap: true,
     });
 
     writeFileSync(`../../../../libs/deps/mas/${name}.json`, JSON.stringify(metafile));
@@ -31,7 +31,6 @@ Promise.all([
         format: 'esm',
         minify: true,
         outfile: `${outfolder}/merch-card.js`,
-        sourcemap: true,
         plugins: [rewriteImports()],
     }),
     build({
@@ -50,7 +49,6 @@ Promise.all([
         format: 'esm',
         minify: true,
         plugins: [rewriteImports()],
-        sourcemap: true,
         outfile: `${outfolder}/merch-card-collection.js`,
     }),
     build({

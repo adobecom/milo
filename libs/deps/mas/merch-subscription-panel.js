@@ -139,4 +139,3 @@ import{html as s,LitElement as m}from"../lit-all.min.js";var i=class{constructor
             data-quantity="${this.quantity}"
             href="#"
         ></a>`}};window.customElements.define("merch-subscription-panel",l);
-//# sourceMappingURL=merch-subscription-panel.js.map

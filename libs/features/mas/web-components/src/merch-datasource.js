@@ -3,6 +3,8 @@ import { createTag } from './utils.js';
 
 const ATTR_AEM_BUCKET = 'aem-bucket';
 
+const CTA_TAG_NAMES = ['SP-BUTTON', 'A'];
+
 const VARIANTS = {
     CATALOG: 'catalog',
     AH: 'ah',
@@ -105,7 +107,11 @@ async function parseMerchCard(fragmentData, appendFn, merchCard, consonant) {
 
     if (item.ctas) {
         const footer = createTag('div', { slot: 'footer' }, item.ctas);
-        [...footer.querySelectorAll('strong,a')].forEach((cta) => {
+        [...footer.querySelectorAll('a')].forEach((cta) => {
+            if (cta.textContent.trim() === '') {
+                cta.remove();
+                return;
+            }
             if (consonant) {
                 cta.classList.add('con-button');
                 if (cta.parentElement.tagName === 'STRONG') {
@@ -123,7 +129,7 @@ async function parseMerchCard(fragmentData, appendFn, merchCard, consonant) {
             }
         });
         [...footer.children].forEach((el) => {
-            if (!['STRONG', 'SP-BUTTON', 'A'].includes(el.tagName)) {
+            if (!CTA_TAG_NAMES.includes(el.tagName)) {
                 footer.removeChild(el);
             }
         });
@@ -207,7 +213,7 @@ export class MerchDataSource extends HTMLElement {
         const bucket =
             this.getAttribute(ATTR_AEM_BUCKET) ?? 'publish-p22655-e59341';
         this.#aem = new AEM(bucket);
-        this.refresh(true);
+        this.refresh(false);
     }
 
     clearRefs() {
@@ -239,6 +245,7 @@ export class MerchDataSource extends HTMLElement {
         let item = cache.get(this.path);
         if (!item) {
             item = await this.#aem.sites.cf.fragments.getByPath(this.path);
+            cache.add(item);
         }
         if (item) {
             const appendFn = (element) => {
