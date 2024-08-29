@@ -1013,6 +1013,10 @@ async function loadPostLCP(config) {
     import('../features/personalization/personalization.js')
       .then(({ addMepAnalytics }) => addMepAnalytics(config, header));
   }
+  if (config.mep?.preview) {
+    import('../features/personalization/preview.js')
+      .then(({ default: decoratePreviewMode }) => decoratePreviewMode());
+  }
 }
 
 export function scrollToHashedElement(hash) {
@@ -1067,11 +1071,6 @@ export async function loadDeferred(area, blocks, config) {
         delay: getMetadata('pageperf-delay'),
         sampleRate: parseInt(getMetadata('pageperf-rate'), 10),
       }));
-  }
-
-  if (config.mep?.preview) {
-    import('../features/personalization/preview.js')
-      .then(({ default: decoratePreviewMode }) => decoratePreviewMode());
   }
 }
 
