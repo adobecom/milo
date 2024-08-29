@@ -45,10 +45,11 @@ export default class CountdownTimer extends LitElement {
   }
 
   countdownStart() {
+    const oneMinuteInMs = 60000;
     this.countdownUpdate();
     this.countdownInterval = setInterval(() => {
       this.countdownUpdate();
-    }, 60000);
+    }, oneMinuteInMs);
   }
 
   countdownUpdate() {
