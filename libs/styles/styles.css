@@ -441,7 +441,7 @@
   --type-heading-xl-weight: var(--s2-black-font-weight);
   --type-heading-all-weight: var(--s2-extra-bold-font-weight);
   --type-heading-lh: 1.25;
-  --type-heading-xxxl-size: calc(var(--font-size-multiplier, 1) * 44px); /* original not in S2 */
+  --type-heading-xxxl-size: calc(var(--font-size-multiplier, 1) * 44px); /* Not S2 */
   --type-heading-xxxl-lh: var(--type-heading-lh);
   --type-heading-xxl-size: calc(var(--font-size-multiplier, 1) * var(--s2-font-size-1200));
   --type-heading-xxl-lh: var(--type-heading-lh);
@@ -453,9 +453,9 @@
   --type-heading-m-lh: var(--type-heading-lh);
   --type-heading-s-size: calc(var(--font-size-multiplier, 1) * var(--s2-font-size-600));
   --type-heading-s-lh: var(--type-heading-lh);
-  --type-heading-xs-size: calc(var(--font-size-multiplier, 1) * 16px); /* original not in S2 */
+  --type-heading-xs-size: calc(var(--font-size-multiplier, 1) * 16px); /* Not S2 */
   --type-heading-xs-lh: var(--type-heading-lh);
-  --type-heading-xxs-size: calc(var(--font-size-multiplier, 1) * 14px); /* original not in S2 */
+  --type-heading-xxs-size: calc(var(--font-size-multiplier, 1) * 14px); /* Not S2 */
   --type-heading-xxs-lh: var(--type-heading-lh);
 
   @media (min-width: 768px) { /* Tablet */
@@ -532,7 +532,7 @@
   --type-detail-all-weight: var(--s2-bold-font-weight);
   --type-detail-lh: 1.2;
   --type-detail-all-transform: uppercase;
-  --type-detail-xl-size: calc(var(--font-size-multiplier, 1) * 20px); /* original not in S2 */
+  --type-detail-xl-size: calc(var(--font-size-multiplier, 1) * 20px); /* Not S2 */
   --type-detail-xl-lh: var(--type-detail-lh);
   --type-detail-l-size: calc(var(--font-size-multiplier, 1) * var(--s2-font-size-300));
   --type-detail-l-lh: var(--type-detail-lh);
@@ -561,7 +561,7 @@
 
   /* S2 Body */
   --type-body-lh: 1.5;
-  --type-body-xxl-size: calc(var(--font-size-multiplier, 1) * 28px); /* original not in S2 */
+  --type-body-xxl-size: calc(var(--font-size-multiplier, 1) * 28px); /* Not S2 */
   --type-body-xxl-lh: var(--type-body-lh);
   --type-body-xl-size: calc(var(--font-size-multiplier, 1) * var(--s2-font-size-500, 22px));
   --type-body-xl-lh: var(--type-body-lh);
@@ -573,7 +573,7 @@
   --type-body-s-lh: var(--type-body-lh);
   --type-body-xs-size: calc(var(--font-size-multiplier, 1) * var(--s2-font-size-100, 14px));
   --type-body-xs-lh: var(--type-body-lh);
-  --type-body-xxs-size: calc(var(--font-size-multiplier, 1) * 12px); /* original not in S2 */
+  --type-body-xxs-size: calc(var(--font-size-multiplier, 1) * 12px); /* Not S2 */
   --type-body-xxs-lh: var(--type-body-lh);
 
   @media (min-width: 1680px) { /* Large desktop */
