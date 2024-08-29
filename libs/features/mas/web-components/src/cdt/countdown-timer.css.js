@@ -8,25 +8,41 @@ import {
 } from '../media.js';
 
 export const styles = css`
+    .countdown-timer {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        padding: 20px;
+        border-radius: 10px;
+    }
+
+    .timer-label {
+        font-size: 16px;
+        font-weight: bold;
+        text-align: center;
+        font-color: #FFFFFF
+    }
 
     .timer-container {
         display: flex;
+        flex-direction: column;
         align-items: center;
-        gap: 8px;
-    }
+    } 
     
     .timer-box {
-        background-color: white;
-        color: black;
-        padding: 10px 20px
+        background-color: #EBEBEB;
+        color: #1D1D1D;
+        padding: 10px 20px;
         border-radius: 8px;
-        font-size: 1.5rem;
-        min-width: 60px;
+        font-size: 18px;
+        font-weight: regular;
         text-align: center;
     }
     
     .timer-label {
-        font-size: 0.75rem;
+        font-size: 14px;
+        font-weight: regular;
+        font-color: #D1D1D1;
         text-align: center;
     }
 `;

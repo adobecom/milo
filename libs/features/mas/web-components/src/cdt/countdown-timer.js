@@ -13,7 +13,7 @@ export default class CountdownTimer extends LitElement {
   };
 
   #timeWords = [];
-  #timeRangesObj = [];
+  #timeRangesEpoch = [];
 
   static styles = [styles];
 
@@ -30,7 +30,7 @@ export default class CountdownTimer extends LitElement {
 
   firstUpdated() {
     this.#timeWords = this.daysHoursMins.split(' ');
-    this.#timeRangesObj = this.timeRanges.split(', ').map(range => Date.parse(range));
+    this.#timeRangesEpoch = this.timeRanges.split(',');
     this.countdownStart();
   }
 
@@ -55,9 +55,9 @@ export default class CountdownTimer extends LitElement {
 
     let currentTime = Date.now();    
     //find the time range where the current time is between the start and end time
-    for (let i = 0; i < this.#timeRangesObj.length; i += 2) {
-      const startTime = this.#timeRangesObj[i];
-      const endTime = this.#timeRangesObj[i + 1];
+    for (let i = 0; i < this.#timeRangesEpoch.length; i += 2) {
+      const startTime = this.#timeRangesEpoch[i];
+      const endTime = this.#timeRangesEpoch[i + 1];
       
       if (currentTime >= startTime && currentTime <= endTime) {
         this.isVisible = true;
@@ -80,20 +80,20 @@ export default class CountdownTimer extends LitElement {
       return html``;
     } else {
       return html`
-      <div class="timer-container">
-        <div>${this.label}</div>
-        <div>
-            <div id="days" class="timer-box">${this.daysLeft}</div>
+      <div class="${this.classList}">
+        <div class="timer-label">${this.label}</div>
+        <div class="timer-container">
+            <div class="timer-box">${this.lpad(this.daysLeft, -2)}</div>
             <div class="timer-label">${this.#timeWords[0]}</div>
         </div>
         <div>:</div>
-        <div>
-            <div id="hours" class="timer-box">${this.hoursLeft}</div>
+        <div class="timer-container">
+            <div class="timer-box">${this.lpad(this.hoursLeft, -2)}</div>
             <div class="timer-label">${this.#timeWords[1]}</div>
         </div>
         <div>:</div>
-        <div>
-            <div id="minutes" class="timer-box">${this.minutesLeft}</div>
+        <div class="timer-container">
+            <div class="timer-box">${this.lpad(this.minutesLeft, -2)}</div>
             <div class="timer-label">${this.#timeWords[2]}</div>
         </div>
     </div>`;
