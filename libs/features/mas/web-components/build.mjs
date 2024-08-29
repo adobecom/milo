@@ -50,6 +50,7 @@ Promise.all([
         format: 'esm',
         minify: true,
         plugins: [rewriteImports()],
+        sourcemap: true,
         outfile: `${outfolder}/merch-card-collection.js`,
     }),
     build({

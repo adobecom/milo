@@ -716,6 +716,8 @@ export class MerchCard extends LitElement {
         );
     }
 
+    // TODO enable with TWP //
+    /* c8 ignore next 11 */
     handleStorageChange() {
         const offerSelect =
             this.closest('merch-card')?.offerSelect.cloneNode(true);
@@ -732,6 +734,8 @@ export class MerchCard extends LitElement {
         return this.querySelector('[slot="price"]');
     }
 
+    // TODO enable with TWP //
+    /* c8 ignore next 16 */
     selectMerchOffer(offer) {
         if (offer === this.merchOffer) return;
         this.merchOffer = offer;
