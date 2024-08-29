@@ -82,19 +82,30 @@ export default class CountdownTimer extends LitElement {
       return html`
       <div class="${this.classList}">
         <div class="timer-label">${this.label}</div>
-        <div class="timer-container">
-            <div class="timer-box">${this.lpad(this.daysLeft, -2)}</div>
-            <div class="timer-label">${this.#timeWords[0]}</div>
-        </div>
-        <div>:</div>
-        <div class="timer-container">
-            <div class="timer-box">${this.lpad(this.hoursLeft, -2)}</div>
-            <div class="timer-label">${this.#timeWords[1]}</div>
-        </div>
-        <div>:</div>
-        <div class="timer-container">
-            <div class="timer-box">${this.lpad(this.minutesLeft, -2)}</div>
-            <div class="timer-label">${this.#timeWords[2]}</div>
+        <div class="timer-container-parent">
+          <div class="timer-container">
+              <div class="timer-unit-container">
+                <div class="timer-box">${Math.floor(this.daysLeft/10)}</div>
+                <div class="timer-box">${this.daysLeft%10}</div>
+              </div>
+              <div class="timer-unit-label">${this.#timeWords[0]}</div>
+          </div>
+          <div class="timer-label">:</div>
+          <div class="timer-container">
+              <div class="timer-unit-container">
+                <div class="timer-box">${Math.floor(this.hoursLeft/10)}</div>
+                <div class="timer-box">${this.hoursLeft%10}</div>
+              </div>
+              <div class="timer-unit-label">${this.#timeWords[1]}</div>
+          </div>
+          <div class="timer-label">:</div>
+          <div class="timer-container">
+              <div class="timer-unit-container">
+                <div class="timer-box">${Math.floor(this.minutesLeft/10)}</div>
+                <div class="timer-box">${this.minutesLeft%10}</div>
+              </div>
+              <div class="timer-unit-label">${this.#timeWords[2]}</div>
+          </div>
         </div>
     </div>`;
     }
