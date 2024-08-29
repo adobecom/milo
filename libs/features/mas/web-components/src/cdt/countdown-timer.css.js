@@ -1,4 +1,4 @@
-import { css, unsafeCSS } from 'lit';
+import { css } from 'lit';
 import {
     DESKTOP_UP,
     LARGE_DESKTOP,

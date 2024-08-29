@@ -1,4 +1,4 @@
-import { LitElement, html, css } from 'lit';
+import { LitElement, html } from 'lit';
 import { styles } from './countdown-timer.css.js';
 
 export default class CountdownTimer extends LitElement {
@@ -65,14 +65,12 @@ export default class CountdownTimer extends LitElement {
         this.daysLeft = Math.floor(diffTime / (1000 * 60 * 60 * 24));
         this.hoursLeft = Math.floor((diffTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
         this.minutesLeft = Math.floor((diffTime % (1000 * 60 * 60)) / (1000 * 60));
-        this.requestUpdate(); 
         return;
       }
     }
 
     //if the current time is not in any of the time ranges, the countdown is completed
     this.countdownCompleted();    
-    this.requestUpdate(); 
   }
 
   render() {
@@ -109,10 +107,6 @@ export default class CountdownTimer extends LitElement {
         </div>
     </div>`;
     }
-  }
-
-  lpad(input, length) {
-    return ('0' + input).slice(length);
   }
 }
 
