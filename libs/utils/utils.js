@@ -658,7 +658,7 @@ export function decorateLinks(el) {
     }
     const copyEvent = '#_evt-copy-link';
     if (a.href.includes(copyEvent)) {
-      const link = a.href.split('#_evt-copy-link')[0];
+      const link = a.href.split(copyEvent)[0];
       const isConButton = ['EM', 'STRONG'].includes(a.parentElement.nodeName) || a.classList.contains('con-button');
       if (!isConButton) a.classList.add('static', 'copy-link');
       a.href = '';
