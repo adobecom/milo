@@ -656,7 +656,7 @@ export function decorateLinks(el) {
         window.adobeIMS?.signIn();
       });
     }
-    const copyEvent = '#_evt-copy-link';
+    const copyEvent = '#_evt-copy';
     if (a.href.includes(copyEvent)) {
       const link = a.href.split(copyEvent)[0];
       const isConButton = ['EM', 'STRONG'].includes(a.parentElement.nodeName) || a.classList.contains('con-button');
@@ -668,7 +668,7 @@ export function decorateLinks(el) {
           await navigator.share({ title: link, url: link });
         });
       } else {
-        window.lana.log('Web Share API is not supported in your browser', { tags: 'errorType=error,module=utils' });
+        console.log('Web Share API is not supported in this browser');
       }
     }
     return rdx;

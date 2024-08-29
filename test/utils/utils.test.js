@@ -95,6 +95,13 @@ describe('Utils', () => {
         utils.decorateLinks(login);
         expect(login.href).to.equal('https://www.stage.adobe.com/');
       });
+      it('Implements a copy link action', async () => {
+        window.navigator.share = () => {};
+        await waitForElement('.copy-action');
+        const copy = document.querySelector('.copy-action');
+        utils.decorateLinks(copy);
+        expect(copy.classList.contains('copy-link')).to.be.true;
+      });
     });
 
     describe('Fragments', () => {
