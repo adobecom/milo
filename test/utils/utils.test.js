@@ -96,11 +96,22 @@ describe('Utils', () => {
         expect(login.href).to.equal('https://www.stage.adobe.com/');
       });
       it('Implements a copy link action', async () => {
-        window.navigator.share = () => {};
+        window.navigator.share = sinon.stub().resolves();
         await waitForElement('.copy-action');
         const copy = document.querySelector('.copy-action');
         utils.decorateLinks(copy);
         expect(copy.classList.contains('copy-link')).to.be.true;
+      });
+      it('triggers the event listener on clicking the custom links', async () => {
+        window.navigator.share = sinon.stub().resolves();
+        const login = document.querySelector('.login-action');
+        const copy = document.querySelector('.copy-action');
+        const clickEvent = new Event('click', { bubbles: true, cancelable: true });
+        const preventDefaultSpy = sinon.spy(clickEvent, 'preventDefault');
+        login.dispatchEvent(clickEvent);
+        copy.dispatchEvent(clickEvent);
+        expect(preventDefaultSpy.calledTwice).to.be.true;
+        expect(window.navigator.share.calledOnce).to.be.true;
       });
     });
 
