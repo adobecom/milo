@@ -192,6 +192,10 @@
   background-color: var(--color-white);
 }
 
+.section.sticky-top:has(.notification.pill) {
+  height: 0;
+}
+
 .section.sticky-bottom {
   position: sticky;
   bottom: 0;
