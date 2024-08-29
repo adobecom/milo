@@ -3,74 +3,6 @@ import { createTag } from './utils.js';
 
 const ATTR_AEM_BUCKET = 'aem-bucket';
 
-const cardContent = {
-    catalog: {
-        title: {
-            tag: 'h3',
-            slot: 'heading-xs',
-        },
-        prices: {
-            tag: 'h3',
-            slot: 'heading-xs',
-        },
-        description: {
-            tag: 'div',
-            slot: 'body-xs',
-        },
-        ctas: { size: 'l' },
-    },
-    ah: {
-        title: {
-            tag: 'h3',
-            slot: 'heading-xxs',
-        },
-        prices: {
-            tag: 'h3',
-            slot: 'heading-xs',
-        },
-        description: {
-            tag: 'div',
-            slot: 'body-xxs',
-        },
-        ctas: { size: 's' },
-    },
-    'ccd-action': {
-        title: {
-            tag: 'h3',
-            slot: 'heading-xs',
-        },
-        prices: {
-            tag: 'h3',
-            slot: 'heading-xs',
-        },
-        description: {
-            tag: 'div',
-            slot: 'body-xs',
-        },
-        ctas: { size: 'l' },
-    },
-    'special-offers': {
-        name: {
-            tag: 'h4',
-            slot: 'detail-m',
-        },
-        title: {
-            tag: 'h4',
-            slot: 'detail-m',
-        },
-        backgroundImage: {
-            tag: 'div',
-            slot: 'bg-image',
-        },
-        prices: {
-            tag: 'h3',
-            slot: 'heading-xs',
-        },
-        description: {
-            tag: 'div',
-            slot: 'body-xs',
-        },
-        ctas: { size: 'l' },
 const VARIANTS = {
     CATALOG: 'catalog',
     AH: 'ah',
@@ -105,7 +37,6 @@ const cardContent = {
         description: { tag: 'div', slot: 'body-xs' },
         ctas: { size: 'l' },
     },
-};
 };
 
 async function parseMerchCard(fragmentData, appendFn, merchCard, consonant) {
@@ -269,8 +200,7 @@ export class MerchDataSource extends HTMLElement {
         this.consonant = this.hasAttribute('consonant');
         this.clearRefs();
         const bucket =
-            this.getAttribute(ATTR_AEM_BUCKET) ??
-            'publish-p22655-e59341';
+            this.getAttribute(ATTR_AEM_BUCKET) ?? 'publish-p22655-e59341';
         this.#aem = new AEM(bucket);
         this.refresh(true);
     }
