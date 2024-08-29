@@ -83,14 +83,15 @@
   margin-bottom: var(--spacing-xs);
 }
 
-.text-block :is(.img-area, .lockup-area) {
+.text-block :is(.image, .lockup-area) {
   margin-block-end: var(--spacing-m);
 }
 
-.text-block .img-area em {
+.text-block .image em {
   display: block;
   font-size: var(--type-body-s-size);
   line-height: var(--type-body-s-lh);
+  margin-block-start: var(--spacing-xs);
 }
 
 .text-block .icon-list-item {
@@ -185,6 +186,10 @@
 
 .text-block .icon-area picture {
   line-height: 0em;
+}
+
+.text-block .image picture {
+  display: flex;
 }
 
 /* icon inline */
