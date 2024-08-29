@@ -1,4 +1,6 @@
 .text-block {
+  --ribbon-height: 10px;
+
   position: relative;
 }
 
@@ -85,10 +87,6 @@
   margin-block-end: var(--spacing-m);
 }
 
-.text-block.rounded-corners .img-area img {
-  border-radius: 16px;
-}
-
 .text-block .img-area em {
   display: block;
   font-size: var(--type-body-s-size);
@@ -103,6 +101,15 @@
 .text-block .icon-list-item .icon.margin-right:not(.margin-left) { /* target first node only */
   position: absolute;
   inset: 0 100% auto auto;
+}
+
+.text-block.ribbon {
+  inline-size: 100%;
+  block-size: var(--ribbon-height);
+}
+
+.text-block .lockup-area img {
+  width: auto;
 }
 
 /* Alignment */

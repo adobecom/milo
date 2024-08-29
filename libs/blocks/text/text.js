@@ -39,7 +39,7 @@ function decorateBlockIconArea(content, el) {
   const headings = content.querySelectorAll('h1, h2, h3, h4, h5, h6');
   const first = content.children[0];
   const firstImg = first?.querySelector('img');
-  if (firstImg) first.classList.add(`${el.matches('[class*="-lockup"]') ? 'lockup' : 'img'}-area`);
+  if (firstImg) first.classList.add(el.matches('[class*="-lockup"]') ? 'lockup-area' : 'image');
   if (!headings) return;
   headings.forEach((h) => {
     const hPrevElem = h.previousElementSibling;
@@ -78,14 +78,20 @@ function decorateLinkFarms(el) {
   });
 }
 
+function addStyle(filename) {
+  const { miloLibs, codeRoot } = getConfig();
+  const base = miloLibs || codeRoot;
+  loadStyle(`${base}/styles/${filename}.css`);
+}
+
 export default async function init(el) {
   el.classList.add('text-block', 'con-block');
   let rows = el.querySelectorAll(':scope > div');
-  if (rows.length > 1) {
+  if (rows.length > 1 || el.matches('.ribbon')) {
     if (rows[0].textContent !== '') el.classList.add('has-bg');
     const [head, ...tail] = rows;
     decorateBlockBg(el, head);
-    rows = tail;
+    rows = tail || rows;
   }
   const helperClasses = [];
   let blockType = 'text';
@@ -101,7 +107,7 @@ export default async function init(el) {
     row.classList.add('foreground');
     if (!hasLinkFarm) {
       decorateBlockText(row, blockTypeSizes[blockType][size]);
-      decorateMultiViewport(el);
+      decorateMultiViewport(row);
     }
     [...row.children].forEach((child) => decorateBlockIconArea(child, el));
   });
@@ -128,6 +134,8 @@ export default async function init(el) {
     mnemonicList.querySelectorAll('p').forEach((product) => product.removeAttribute('class'));
     await loadBlock(mnemonicList);
   }
+  if (el.matches('[class*="rounded-corners"]')) addStyle('rounded-corners');
+  if (el.matches('[class*="-lockup"]')) addStyle('iconography');
   // Override Detail with Title L style if class exists - Temporary solution until Spectrum 2
   if (el.classList.contains('l-title')) el.querySelector('[class*="detail-"]')?.classList.add('title-l');
 }
