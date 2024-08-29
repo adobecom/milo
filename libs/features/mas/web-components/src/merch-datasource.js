@@ -71,7 +71,41 @@ const cardContent = {
             slot: 'body-xs',
         },
         ctas: { size: 'l' },
+const VARIANTS = {
+    CATALOG: 'catalog',
+    AH: 'ah',
+    CCD_ACTION: 'ccd-action',
+    SPECIAL_OFFERS: 'special-offers',
+};
+
+const cardContent = {
+    [VARIANTS.CATALOG]: {
+        title: { tag: 'h3', slot: 'heading-xs' },
+        prices: { tag: 'h3', slot: 'heading-xs' },
+        description: { tag: 'div', slot: 'body-xs' },
+        ctas: { size: 'l' },
     },
+    [VARIANTS.AH]: {
+        title: { tag: 'h3', slot: 'heading-xxs' },
+        prices: { tag: 'h3', slot: 'heading-xs' },
+        description: { tag: 'div', slot: 'body-xxs' },
+        ctas: { size: 's' },
+    },
+    [VARIANTS.CCD_ACTION]: {
+        title: { tag: 'h3', slot: 'heading-xs' },
+        prices: { tag: 'h3', slot: 'heading-xs' },
+        description: { tag: 'div', slot: 'body-xs' },
+        ctas: { size: 'l' },
+    },
+    [VARIANTS.SPECIAL_OFFERS]: {
+        name: { tag: 'h4', slot: 'detail-m' },
+        title: { tag: 'h4', slot: 'detail-m' },
+        backgroundImage: { tag: 'div', slot: 'bg-image' },
+        prices: { tag: 'h3', slot: 'heading-xs' },
+        description: { tag: 'div', slot: 'body-xs' },
+        ctas: { size: 'l' },
+    },
+};
 };
 
 async function parseMerchCard(fragmentData, appendFn, merchCard, consonant) {
