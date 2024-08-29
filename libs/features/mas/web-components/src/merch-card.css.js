@@ -3,8 +3,6 @@ import {
     DESKTOP_UP,
     LARGE_DESKTOP,
     TABLET_UP,
-    MOBILE_LANDSCAPE,
-    TABLET_DOWN,
 } from './media.js';
 
 export const styles = css`
@@ -26,26 +24,6 @@ export const styles = css`
         visibility: hidden;
     }
 
-    :host([variant='special-offers']) {
-        min-height: 439px;
-    }
-
-    :host([variant='catalog']) {
-        min-height: 330px;
-    }
-
-    :host([variant='plans']) {
-        min-height: 348px;
-    }
-
-    :host([variant='segment']) {
-        min-height: 214px;
-    }
-
-    :host([variant='ccd-action']:not([size])) {
-        width: var(--consonant-merch-card-ccd-action-width);
-    }
-
     :host([aria-selected]) {
         outline: none;
         box-sizing: border-box;
@@ -65,10 +43,6 @@ export const styles = css`
     .action-menu.always-visible {
         visibility: visible;
         background-image: var(--ellipsis-icon);
-    }
-
-    :host([variant='mini-compare-chart']) > slot:not([name='icons']) {
-        display: block;
     }
 
     .top-section {
@@ -133,19 +107,6 @@ export const styles = css`
         right: initial;
         padding: 8px 11px;
         border-radius: 0 5px 5px 0;
-    }
-
-    .body .catalog-badge {
-        display: flex;
-        height: fit-content;
-        flex-direction: column;
-        width: fit-content;
-        max-width: 140px;
-        border-radius: 5px;
-        position: relative;
-        top: 0;
-        margin-left: var(--consonant-merch-spacing-xxs);
-        box-sizing: border-box;
     }
 
     .detail-bg-container {
@@ -251,127 +212,9 @@ export const styles = css`
         margin-top: 2px;
     }
 
-    .twp-badge {
-        padding: 4px 10px 5px 10px;
-    }
-
-    :host([aria-selected]) .twp-badge {
-        margin-inline-end: 2px;
-        padding-inline-end: 9px;
-    }
-
-    :host([variant='twp']) {
-        padding: 4px 10px 5px 10px;
-    }
-
     slot[name='icons'] {
         display: flex;
         gap: 8px;
-    }
-
-    :host([variant='twp']) ::slotted(merch-offer-select) {
-        display: none;
-    }
-
-    :host([variant='twp']) .top-section {
-        flex: 0;
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-start;
-        height: 100%;
-        gap: var(--consonant-merch-spacing-xxs);
-        padding: var(--consonant-merch-spacing-xs)
-            var(--consonant-merch-spacing-xs) var(--consonant-merch-spacing-xs)
-            var(--consonant-merch-spacing-xs);
-        align-items: flex-start;
-    }
-
-    :host([variant='twp']) .body {
-        padding: 0 var(--consonant-merch-spacing-xs);
-    }
-
-    :host([variant='twp']) footer {
-        gap: var(--consonant-merch-spacing-xxs);
-        flex-direction: column;
-        align-self: flex-start;
-    }
-
-    :host([variant='special-offers'].center) {
-        text-align: center;
-    }
-
-    /* plans */
-    :host([variant='plans']) {
-        min-height: 348px;
-    }
-
-    :host([variant='mini-compare-chart']) footer {
-        min-height: var(--consonant-merch-card-mini-compare-footer-height);
-        padding: var(--consonant-merch-spacing-xs);
-    }
-
-    /* mini-compare card  */
-    :host([variant='mini-compare-chart']) .top-section {
-        padding-top: var(--consonant-merch-spacing-s);
-        padding-inline-start: var(--consonant-merch-spacing-s);
-        height: var(--consonant-merch-card-mini-compare-top-section-height);
-    }
-
-    @media screen and ${unsafeCSS(TABLET_DOWN)} {
-        [class*'-merch-cards'] :host([variant='mini-compare-chart']) footer {
-            flex-direction: column;
-            align-items: stretch;
-            text-align: center;
-        }
-    }
-
-    @media screen and ${unsafeCSS(DESKTOP_UP)} {
-        :host([variant='mini-compare-chart']) footer {
-            padding: var(--consonant-merch-spacing-xs)
-                var(--consonant-merch-spacing-s)
-                var(--consonant-merch-spacing-s)
-                var(--consonant-merch-spacing-s);
-        }
-    }
-
-    :host([variant='mini-compare-chart']) slot[name='footer-rows'] {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: end;
-    }
-    /* mini-compare card heights for the slots: heading-m, body-m, heading-m-price, price-commitment, offers, promo-text, footer */
-    :host([variant='mini-compare-chart']) slot[name='heading-m'] {
-        min-height: var(--consonant-merch-card-mini-compare-heading-m-height);
-    }
-    :host([variant='mini-compare-chart']) slot[name='body-m'] {
-        min-height: var(--consonant-merch-card-mini-compare-body-m-height);
-    }
-    :host([variant='mini-compare-chart']) slot[name='heading-m-price'] {
-        min-height: var(
-            --consonant-merch-card-mini-compare-heading-m-price-height
-        );
-    }
-    :host([variant='mini-compare-chart']) slot[name='price-commitment'] {
-        min-height: var(
-            --consonant-merch-card-mini-compare-price-commitment-height
-        );
-    }
-    :host([variant='mini-compare-chart']) slot[name='offers'] {
-        min-height: var(--consonant-merch-card-mini-compare-offers-height);
-    }
-    :host([variant='mini-compare-chart']) slot[name='promo-text'] {
-        min-height: var(--consonant-merch-card-mini-compare-promo-text-height);
-    }
-    :host([variant='mini-compare-chart']) slot[name='callout-content'] {
-        min-height: var(
-            --consonant-merch-card-mini-compare-callout-content-height
-        );
-    }
-
-    :host([variant='plans']) ::slotted([slot='heading-xs']),
-    :host([variant='segment']) ::slotted([slot='heading-xs']) {
-        max-width: var(--consonant-merch-card-heading-xs-max-width, 100%);
     }
 `;
 
