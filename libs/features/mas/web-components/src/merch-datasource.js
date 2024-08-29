@@ -82,7 +82,6 @@ async function parseMerchCard(fragmentData, appendFn, merchCard, consonant) {
         },
         { id: fragmentData.id },
     );
-    item.path = item.path;
     item.model = item.model;
 
     const { variant = 'catalog' } = item;
@@ -140,8 +139,7 @@ async function parseMerchCard(fragmentData, appendFn, merchCard, consonant) {
     }
 
     if (item.ctas) {
-        let ctas = item.ctas;
-        const footer = createTag('div', { slot: 'footer' }, ctas);
+        const footer = createTag('div', { slot: 'footer' }, item.ctas);
         [...footer.querySelectorAll('a')].forEach((cta) => {
             if (consonant) {
                 cta.classList.add('con-button');
