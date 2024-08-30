@@ -8,7 +8,6 @@ const defaults = {
     bundle: true,
     format: 'esm',
     metafile: true,
-    sourcemap: true,
     minify: true,
     platform: 'browser',
     target: ['es2020'],
