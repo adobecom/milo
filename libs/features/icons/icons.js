@@ -82,6 +82,7 @@ async function decorateIcon(icon, config) {
   const fedRoot = getFederatedContentRoot();
   const svgFedPath = `${fedRoot}/federal/libs/img/icons/svgs/${iconName}.svg`;
   const svgFedAemPath = `https://main--federal--adobecom.aem.page/federal/libs/img/icons/svgs/${iconName}.svg`;
+  const svgFedUnionPath = `https://main--federal-union--adobecom.aem.live/libs/svgs/${iconName}.svg`;
   // const { miloLibs, codeRoot } = config;
   // const base = miloLibs || codeRoot;
   // console.log('fedRoot', fedRoot);
@@ -93,7 +94,7 @@ async function decorateIcon(icon, config) {
   // set link in header
   // const newSvg = loadLink(svgFedPath, { rel: 'preload', as: 'fetch', crossorigin: 'anonymous' });
 
-  const newIcon = await getSvgFromFile(svgFedPath, iconName);
+  const newIcon = await getSvgFromFile(svgFedUnionPath, iconName);
   if (!newIcon) fetchedIcons[iconName] = undefined;
   console.log('Error:', iconName, newIcon);
   return newIcon;
