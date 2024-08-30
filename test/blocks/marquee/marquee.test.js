@@ -163,4 +163,10 @@ describe('marquee', () => {
       expect(log.calledOnceWith(`Failed to load mnemonic marquee module: ${error}`)).to.be.false;
     });
   });
+
+  describe('Embedding countdown-timer', () => {
+    const marquee = document.getElementById('countdown-timer');
+    init(marquee);
+    expect(marquee.querySelector('.countdown-timer')).to.exist;
+  });
 });

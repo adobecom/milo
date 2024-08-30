@@ -12,7 +12,7 @@ export const styles = css`
         display: flex;
         flex-direction: row;
         align-items: center;
-        padding: 20px;
+        padding: 20px 0px;
         border-radius: 10px;
     }
     
@@ -20,7 +20,7 @@ export const styles = css`
         display: flex;
         flex-direction: column;
         align-items: center;
-        padding: 20px;
+        padding: 20px 0px;
         border-radius: 10px;
     }
 
