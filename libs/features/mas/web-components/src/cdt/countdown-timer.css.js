@@ -1,72 +1,76 @@
 import { css } from 'lit';
-import {
-    DESKTOP_UP,
-    LARGE_DESKTOP,
-    TABLET_UP,
-    MOBILE_LANDSCAPE,
-    TABLET_DOWN,
-} from '../media.js';
 
 export const styles = css`
-    .countdown-timer.horizontal {
+    .horizontal {
         display: flex;
         flex-direction: row;
         align-items: center;
         padding: 20px 0px;
-        border-radius: 10px;
     }
     
-    .countdown-timer.vertical {
+    .vertical {
         display: flex;
         flex-direction: column;
         align-items: center;
         padding: 20px 0px;
-        border-radius: 10px;
     }
 
-    .countdown-timer.horizontal > div.timer-label {
+    .timer-label {
         font-size: 16px;
         font-weight: bold;
         text-align: center;
-        font-color: #FFFFFF;
         height: 27px;
+    }
+
+    .light .timer-label {
+        color: #000000;
+    }
+
+    .dark .timer-label {
+        color: #FFFFFF;
+    }
+
+    .horizontal .timer-label {
         align-self: center;
         margin: 0px 2px 27px 2px;
     }
 
-    .countdown-timer.vertical > div.timer-label {
-        font-size: 16px;
-        font-weight: bold;
-        text-align: center;
-        font-color: #FFFFFF;
-        height: 27px;
+    .vertical .timer-label {
         align-self: flex-start;
     }
 
-    .countdown-timer.vertical > div.timer-container-parent {
+    .vertical > div.timer-block {
         display: flex;
         align-self: flex-start;
     }
 
-    .countdown-timer.horizontal > div.timer-container-parent {
+    .horizontal > div.timer-block {
         display: flex;
         margin-left: 10px;
     }
 
-    .timer-container {
+    .timer-fragment {
         display: flex;
         flex-direction: column;
         align-items: center;
     }
     
     .timer-box {
-        background-color: #EBEBEB;
-        color: #1D1D1D;
         padding: 0px 9px;
         border-radius: 5px;
         font-size: 18px;
         font-weight: bold;
         text-align: center;
+    }
+
+    .light .timer-box {
+        background-color: #222222;
+        color: #FFFFFF;
+    }
+
+    .dark .timer-box {
+        background-color: #EBEBEB;
+        color: #1D1D1D;
     }
 
     .timer-unit-container {
@@ -80,7 +84,14 @@ export const styles = css`
         width: 100%;
         font-size: 14px;
         font-weight: regular;
-        font-color: #D1D1D1;
         text-align: left;
+    }
+
+    .light .timer-unit-label {
+        color: #464646;
+    }
+
+    .dark .timer-unit-label {
+        color: #D1D1D1;
     }
 `;
