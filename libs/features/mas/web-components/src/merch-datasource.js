@@ -3,8 +3,6 @@ import { createTag } from './utils.js';
 
 const ATTR_AEM_BUCKET = 'aem-bucket';
 
-const CTA_TAG_NAMES = ['SP-BUTTON', 'A'];
-
 const VARIANTS = {
     CATALOG: 'catalog',
     AH: 'ah',
