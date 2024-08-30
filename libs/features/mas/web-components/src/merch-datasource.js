@@ -107,17 +107,14 @@ async function parseMerchCard(fragmentData, appendFn, merchCard, consonant) {
 
     if (item.ctas) {
         const footer = createTag('div', { slot: 'footer' }, item.ctas);
+        const ctas = [];
         [...footer.querySelectorAll('a')].forEach((cta) => {
-            if (cta.textContent.trim() === '') {
-                cta.remove();
-                return;
-            }
             if (consonant) {
                 cta.classList.add('con-button');
                 if (cta.parentElement.tagName === 'STRONG') {
                     cta.classList.add('blue');
                 }
-                footer.appendChild(cta);
+                ctas.push(cta);
             } else {
                 const spectrumCta = createTag('sp-button', {}, cta);
                 spectrumCta.addEventListener('click', (e) => {
@@ -125,14 +122,11 @@ async function parseMerchCard(fragmentData, appendFn, merchCard, consonant) {
                     e.stopPropagation();
                     cta.click();
                 });
-                footer.appendChild(spectrumCta);
+                ctas.push(spectrumCta);
             }
         });
-        [...footer.children].forEach((el) => {
-            if (!CTA_TAG_NAMES.includes(el.tagName)) {
-                footer.removeChild(el);
-            }
-        });
+        footer.innerHTML = '';
+        footer.append(...ctas);
         appendFn(footer);
     }
 }
