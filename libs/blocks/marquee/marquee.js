@@ -87,7 +87,7 @@ export async function loadCountDownTimer(el) {
       loadStyle(`${base}/blocks/countdown-timer/countdown-timer.css`, resolve);
     });
     const loadModule = import('../countdown-timer/countdown-timer.js')
-      .then(() => loadCountDownTimer(el));
+      .then(() => { const countDownTimer = el.querySelector('.countdown-timer'); loadBlock(countDownTimer); });
     await Promise.all([stylePromise, loadModule]);
   } catch (err) {
     window.lana?.log(`Failed to load countdown timer module: ${err}`);
