@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Countdown timer demo page</title>
+        <script>
+            window.process = {
+                env: {},
+            };
+        </script>
+        <style>
+            main {
+                display: flex;
+                align-items: center;
+                gap: 20px;
+                flex-direction: column;
+                padding: 40px;
+            }
+            main > div {
+                display: initial;
+            }
+        </style>
+    </head>
+
+<body>
+<script type="module" src="./countdown-timer.test.html.js"></script>
+<main>
+    <div class="section center">
+      <countdown-timer class="countdown-timer horizontal dark" label="ENDS IN" dayshoursmins="DAYS HOURS MINS" timeranges="1724702400000,1727683200000,1733083200000,1734508800000"></countdown-timer>
+    </div>
+</main>
+</body>
+</html>
