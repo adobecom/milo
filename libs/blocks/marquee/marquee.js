@@ -82,8 +82,13 @@ export async function loadMnemonicList(foreground) {
 
 export async function loadCountDownTimer(el) {
   try {
-    const countDownTimer = el.querySelector('.countdown-timer');
-    await loadBlock(countDownTimer);
+    const { base } = getConfig();
+    const stylePromise = new Promise((resolve) => {
+      loadStyle(`${base}/blocks/countdown-timer/countdown-timer.css`, resolve);
+    });
+    const loadModule = import('../countdown-timer/countdown-timer.js')
+      .then(() => loadCountDownTimer(el));
+    await Promise.all([stylePromise, loadModule]);
   } catch (err) {
     window.lana?.log(`Failed to load countdown timer module: ${err}`);
   }
