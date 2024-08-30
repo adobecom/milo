@@ -96,7 +96,7 @@ import{LitElement as d,html as n}from"/libs/deps/lit-all.min.js";import{css as o
       <div class="${this.classList}">
         <div class="timer-label">${this.label}</div>
         <div class="timer-block">
-          <div class="timer-fragment">
+          <div id="cdt-days" class="timer-fragment">
               <div class="timer-unit-container">
                 <div class="timer-box">${Math.floor(this.daysLeft/10)}</div>
                 <div class="timer-box">${this.daysLeft%10}</div>
@@ -104,7 +104,7 @@ import{LitElement as d,html as n}from"/libs/deps/lit-all.min.js";import{css as o
               <div class="timer-unit-label">${this.#t[0]}</div>
           </div>
           <div class="timer-label">:</div>
-          <div class="timer-fragment">
+          <div id="cdt-hours" class="timer-fragment">
               <div class="timer-unit-container">
                 <div class="timer-box">${Math.floor(this.hoursLeft/10)}</div>
                 <div class="timer-box">${this.hoursLeft%10}</div>
@@ -112,7 +112,7 @@ import{LitElement as d,html as n}from"/libs/deps/lit-all.min.js";import{css as o
               <div class="timer-unit-label">${this.#t[1]}</div>
           </div>
           <div class="timer-label">:</div>
-          <div class="timer-fragment">
+          <div id="cdt-minutes" class="timer-fragment">
               <div class="timer-unit-container">
                 <div class="timer-box">${Math.floor(this.minutesLeft/10)}</div>
                 <div class="timer-box">${this.minutesLeft%10}</div>
