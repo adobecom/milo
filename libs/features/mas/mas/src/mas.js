@@ -5,7 +5,6 @@ import '@adobe/mas-web-components/src/merch-datasource.js';
 
 const { searchParams } = new URL(import.meta.url);
 const locale = searchParams.get('locale') ?? 'US_en';
-const lang = searchParams.get('lang') ?? 'en'; // to be used in the future
 const isStage = searchParams.get('env') === 'stage';
 
 const envName = isStage ? 'stage' : 'prod';
