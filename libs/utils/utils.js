@@ -752,11 +752,11 @@ async function decoratePlaceholders(area, config) {
   const replaceNodes = nodes.map(async (nodeEl) => {
     if (nodeEl.nodeType === Node.TEXT_NODE) {
       const newValue = await replaceText(nodeEl.nodeValue, config, regex);
-      nodeEl.nodeValue = newValue.replace(/&nbsp;/g, '\u00A0');
+      nodeEl.nodeValue = newValue;
     } else if (nodeEl.nodeType === Node.ELEMENT_NODE) {
       const hrefValue = nodeEl.getAttribute('href');
       const newValue = await replaceText(hrefValue, config, regex);
-      nodeEl.setAttribute('href', newValue.replace(/&nbsp;/g, '\u00A0'));
+      nodeEl.setAttribute('href', newValue);
     }
   });
   await Promise.all(replaceNodes);

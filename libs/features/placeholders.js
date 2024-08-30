@@ -114,6 +114,7 @@ export async function replaceText(text, config, regex = /{{(.*?)}}|%7B%7B(.*?)%7
   // The .shift method is very slow, thus using normal iterator
   let i = 0;
   // eslint-disable-next-line no-plusplus
-  const finalText = text.replaceAll(regex, () => placeholders[i++]);
+  let finalText = text.replaceAll(regex, () => placeholders[i++]);
+  finalText = finalText.replace(/&nbsp;/g, '\u00A0');
   return finalText;
 }
