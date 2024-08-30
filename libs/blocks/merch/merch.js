@@ -180,6 +180,7 @@ export async function fetchEntitlements() {
 }
 
 export async function fetchLiterals(url) {
+  // eslint-disable-next-line no-async-promise-executor
   fetchLiterals.promise = fetchLiterals.promise ?? new Promise(async (resolve) => {
     const response = await fetch(url);
     if (response.ok) {
