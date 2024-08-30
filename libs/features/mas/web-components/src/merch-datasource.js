@@ -107,14 +107,21 @@ async function parseMerchCard(fragmentData, appendFn, merchCard, consonant) {
         const footer = createTag('div', { slot: 'footer' }, item.ctas);
         const ctas = [];
         [...footer.querySelectorAll('a')].forEach((cta) => {
+            const strong = cta.parentElement.tagName === 'STRONG';
             if (consonant) {
                 cta.classList.add('con-button');
-                if (cta.parentElement.tagName === 'STRONG') {
+                if (strong) {
                     cta.classList.add('blue');
                 }
                 ctas.push(cta);
             } else {
-                const spectrumCta = createTag('sp-button', {}, cta);
+                const treatment = strong ? 'fill' : 'outline';
+                const variant = strong ? 'accent' : 'primary';
+                const spectrumCta = createTag(
+                    'sp-button',
+                    { treatment, variant },
+                    cta,
+                );
                 spectrumCta.addEventListener('click', (e) => {
                     /* c8 ignore next 2 */
                     e.stopPropagation();
