@@ -374,7 +374,7 @@ export async function openModal(e, url, offerType) {
   if (/\/fragments\//.test(url)) {
     const fragmentPath = url.split(/hlx.(page|live)/).pop();
     modal = await openFragmentModal(fragmentPath, getModal);
-  } else if (/^https?:/.test(url)) {
+  } else {
     modal = await openExternalModal(url, getModal);
   }
   if (modal) {
