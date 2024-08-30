@@ -32,7 +32,7 @@ export const styles = css`
 
     .horizontal .timer-label {
         align-self: center;
-        margin: 0px 2px 27px 2px;
+        margin: 0px 2px 45px 2px;
     }
 
     .vertical .timer-label {
@@ -57,6 +57,7 @@ export const styles = css`
     
     .timer-box {
         padding: 0px 9px;
+        width: 10px;
         border-radius: 5px;
         font-size: 18px;
         font-weight: bold;

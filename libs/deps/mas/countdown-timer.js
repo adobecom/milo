@@ -30,7 +30,7 @@ import{LitElement as d,html as n}from"/libs/deps/lit-all.min.js";import{css as o
 
     .horizontal .timer-label {
         align-self: center;
-        margin: 0px 2px 27px 2px;
+        margin: 0px 2px 45px 2px;
     }
 
     .vertical .timer-label {
@@ -55,6 +55,7 @@ import{LitElement as d,html as n}from"/libs/deps/lit-all.min.js";import{css as o
     
     .timer-box {
         padding: 0px 9px;
+        width: 10px;
         border-radius: 5px;
         font-size: 18px;
         font-weight: bold;
