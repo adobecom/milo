@@ -180,9 +180,17 @@ export async function fetchEntitlements() {
 }
 
 export async function fetchLiterals(url) {
-  fetchLiterals.promise = fetchLiterals.promise ?? new Promise((resolve) => {
-    fetch(url)
-      .then((response) => response.json().then(({ data }) => resolve(data)));
+  fetchLiterals.promise = fetchLiterals.promise ?? new Promise(async (resolve) => {
+    const response = await fetch(url);
+    if (response.ok) {
+      response.json().then(({ data }) => resolve(data));
+    } else {
+      const { Defaults } = await import('../../deps/mas/commerce.js');
+      resolve([{
+        ...Defaults.defaultLiterals,
+        lang: Defaults.language,
+      }]);
+    }
   });
   return fetchLiterals.promise;
 }

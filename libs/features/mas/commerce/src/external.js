@@ -20,6 +20,7 @@ import {
     priceAnnual,
     discount,
 } from '@dexter/tacocat-consonant-templates';
+import { defaultLiterals } from '@dexter/tacocat-consonant-templates/src/price/template';
 import {
     computePromoStatus,
     delay,
@@ -90,4 +91,5 @@ export {
     toKebabCase,
     toPositiveFiniteInteger,
     webCommerceArtifact,
+    defaultLiterals,
 };

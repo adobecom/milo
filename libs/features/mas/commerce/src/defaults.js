@@ -4,6 +4,7 @@ import {
     Env,
     Landscape,
     WcsEnv,
+    defaultLiterals,
 } from './external.js';
 
 /** @type {Commerce.Defaults} */
@@ -30,4 +31,5 @@ export const Defaults = Object.freeze({
     wcsEnv: WcsEnv.PRODUCTION,
     landscape: Landscape.PUBLISHED,
     wcsBufferLimit: 1,
+    defaultLiterals,
 });
