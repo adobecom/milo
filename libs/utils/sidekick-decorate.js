@@ -1,4 +1,23 @@
+import { miloUserCanPublish } from './utils.js';
+
+const PUBLISH_BTN = '.publish.plugin button';
+const CONFIRM_MESSAGE = 'Are you sure? This will publish to production.';
+const NO_AUTH_MESSAGE = 'This page currently cannot be published';
+
 export default function stylePublish(sk) {
+  sk.addEventListener('statusfetched', async (event) => {
+    const thisPage = event?.detail?.data;
+    const enablePublish = await miloUserCanPublish(thisPage);
+    const publishBtn = event?.target?.shadowRoot?.querySelector(PUBLISH_BTN);
+    if (publishBtn) {
+      publishBtn.setAttribute('disabled', !enablePublish);
+      const message = publishBtn.querySelector('span');
+      if (message) {
+        message.innerText = enablePublish ? CONFIRM_MESSAGE : NO_AUTH_MESSAGE;
+      }
+    }
+  });
+
   const style = new CSSStyleSheet();
   style.replaceSync(`
     :host {
@@ -10,12 +29,14 @@ export default function stylePublish(sk) {
       order: 100;
     }
     .publish.plugin button {
+      position: relative;
+    }
+    .publish.plugin button:not([disabled=true]) {
       background: var(--bg-color);
       border-color: #b46157;
       color: var(--text-color);
-      position: relative;
     }
-    .publish.plugin button:hover {
+    .publish.plugin button:not([disabled=true]):hover {
       background-color: var(--hlx-sk-button-hover-bg);
       border-color: unset;
       color: var(--hlx-sk-button-hover-color);
@@ -51,9 +72,7 @@ export default function stylePublish(sk) {
   `);
   sk.shadowRoot.adoptedStyleSheets = [style];
   setTimeout(() => {
-    const btn = sk.shadowRoot.querySelector('.publish.plugin button');
-    btn?.insertAdjacentHTML('beforeend', `
-      <span>Are you sure? This will publish to production.</span>
-    `);
-  }, 500);
+    const btn = sk.shadowRoot.querySelector(PUBLISH_BTN);
+    btn?.insertAdjacentHTML('beforeend', `<span>${CONFIRM_MESSAGE}</span>`);
+  }, 800);
 }

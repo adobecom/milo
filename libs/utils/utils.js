@@ -1,5 +1,7 @@
 /* eslint-disable no-console */
 
+import { getCustomConfig } from '../../tools/utils/utils.js';
+
 const MILO_TEMPLATES = [
   '404',
   'featured-story',
@@ -1295,3 +1297,26 @@ export function loadLana(options = {}) {
 }
 
 export const reloadPage = () => window.location.reload();
+
+export const miloUserCanPublish = async (page) => {
+  if (!page) return false;
+  // sidekick status detail
+  const { live, profile, webPath } = page;
+  let canPublish = live?.permissions?.includes('write');
+  // check custom publish permissions config
+  const config = await getCustomConfig('/.milo/publish-permissions-config.json');
+  if (canPublish && config) {
+    // supporting only one wildcard(**)
+    const item = config.urls?.data?.find(({ url }) => (
+      url.endsWith('**') ? webPath.includes(url.slice(0, -2)) : url === webPath
+    ));
+    if (item) {
+      canPublish = false;
+      const publishers = config[item.group];
+      if (publishers && profile?.email) {
+        canPublish = !!publishers.data?.find(({ user }) => user === profile.email);
+      }
+    }
+  }
+  return canPublish;
+};
