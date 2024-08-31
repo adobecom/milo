@@ -33,10 +33,6 @@ export class SpecialOffer extends VariantLayout {
                 `}`;
   }
 
-  get titleSelector() {
-    return '[slot="detail-m"]';
-  } 
-
   static variantStyle = css`
     :host([variant='special-offers']) {
       min-height: 439px;

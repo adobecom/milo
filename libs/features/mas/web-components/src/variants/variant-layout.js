@@ -63,10 +63,6 @@ export class VariantLayout {
     return html`<footer>${secureLabel}<slot name="footer"></slot></footer>`;
   }
 
-  get titleSelector() {
-    return '[slot="heading-xs"]';
-  }
-
   async adjustTitleWidth() {
     const cardWidth = this.card.getBoundingClientRect().width;
     const badgeWidth =

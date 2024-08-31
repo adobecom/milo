@@ -104,14 +104,14 @@ export class MerchCard extends LitElement {
         }
         this.updateComplete.then(async () => {
             const allPrices = Array.from(
-                this.querySelectorAll('span[is="inline-price"][data-wcs-osi]'),
+              this.querySelectorAll('span[is="inline-price"][data-wcs-osi]'),
             );
             // Filter out prices within the callout-content slot
             const prices = allPrices.filter(
                 (price) => !price.closest('[slot="callout-content"]'),
             );
             await Promise.all(prices.map((price) => price.onceSettled()));
-            this.variantLayout.postCardUpdateHook(this);          
+            this.variantLayout.postCardUpdateHook(this);
         });
     }
 
@@ -185,7 +185,7 @@ export class MerchCard extends LitElement {
     }
 
     get titleElement() {        
-        return this.querySelector(this.variantLayout.titleSelector);
+        return this.querySelector('.card-heading');
     }
 
     get title() {
