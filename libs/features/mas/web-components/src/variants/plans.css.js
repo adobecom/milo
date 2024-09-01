@@ -1,7 +1,10 @@
 import { TABLET_UP, DESKTOP_UP, LARGE_DESKTOP,} from '../media.js';
 export const CSS = `
---consonant-merch-card-plans-width: 300px;
---consonant-merch-card-plans-icon-size: 40px;
+:root {
+  --consonant-merch-card-plans-width: 300px;
+  --consonant-merch-card-plans-icon-size: 40px;
+}
+  
 merch-card[variant="plans"] [slot="description"] {
   min-height: 84px;
 }

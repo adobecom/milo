@@ -1,7 +1,9 @@
 import { TABLET_UP, DESKTOP_UP, LARGE_DESKTOP,} from '../media.js';
 
 export const CSS = `
---consonant-merch-card-inline-heading-width: 300px;
+:root {
+  --consonant-merch-card-inline-heading-width: 300px;
+}
 
 .one-merch-card.inline-heading,
 .two-merch-cards.inline-heading,
