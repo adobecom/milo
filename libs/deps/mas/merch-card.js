@@ -258,7 +258,7 @@ import{html as Pe,LitElement as Ne,nothing as De}from"/libs/deps/lit-all.min.js"
                 grid-column: span 4;
             }
         }
-    `),o};import{html as $}from"/libs/deps/lit-all.min.js";var p=class o{static styleMap={};card;constructor(e){if(this.card=e,!o?.styleMap?.[this.card.variant]){o.styleMap[this.card.variant]=!0;let t=document.createElement("style");t.innerHTML=this.getGlobalCSS(),document.head.appendChild(t)}}get badge(){let e;if(!(!this.card.badgeBackgroundColor||!this.card.badgeColor||!this.card.badgeText))return this.evergreen&&(e=`border: 1px solid ${this.card.badgeBackgroundColor}; border-right: none;`),$`
+    `),o};import{html as $}from"/libs/deps/lit-all.min.js";var p=class o{static styleMap={};card;insertVariantStyle(){if(!o?.styleMap?.[this.card.variant]){o.styleMap[this.card.variant]=!0;let e=document.createElement("style");e.innerHTML=this.getGlobalCSS(),document.head.appendChild(e)}}constructor(e){this.card=e,setTimeout(()=>this.insertVariantStyle(),1)}get badge(){let e;if(!(!this.card.badgeBackgroundColor||!this.card.badgeColor||!this.card.badgeText))return this.evergreen&&(e=`border: 1px solid ${this.card.badgeBackgroundColor}; border-right: none;`),$`
         <div
             id="badge"
             class="${this.card.variant}-badge"

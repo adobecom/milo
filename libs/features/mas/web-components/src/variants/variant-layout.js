@@ -4,14 +4,19 @@ export class VariantLayout {
   static styleMap = {};
 
   card;
-  constructor(card) {
-    this.card = card;
+
+  insertVariantStyle() {
     if (!VariantLayout?.styleMap?.[this.card.variant]) {
       VariantLayout.styleMap[this.card.variant] = true;
       const styles = document.createElement('style');
       styles.innerHTML = this.getGlobalCSS();
-      document.head.appendChild(styles);      
+      document.head.appendChild(styles);
     }
+  }
+
+  constructor(card) {
+    this.card = card;
+    setTimeout(() => this.insertVariantStyle(), 1);
   }
 
   get badge() {
