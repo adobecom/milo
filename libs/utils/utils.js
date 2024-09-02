@@ -623,9 +623,8 @@ export function decorateAutoBlock(a) {
 const decorateCopyLink = (a, evt) => {
   const userAgent = navigator.userAgent.toLowerCase();
   const isMobile = /android|iphone|ipod|blackberry|iemobile|opera mini|mobile/.test(userAgent) && !/ipad/.test(userAgent);
-  if (!isMobile) {
+  if (!isMobile || !navigator.share) {
     a.remove();
-    console.log('Copy link is not supported for this device');
     return;
   }
   const link = a.href.split(evt)[0];
