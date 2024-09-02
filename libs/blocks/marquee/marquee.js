@@ -82,6 +82,7 @@ export async function loadMnemonicList(foreground) {
 
 export function loadCountDownTimer(el) {
   const countDownTimer = el.querySelector('.countdown-timer');
+  countDownTimer.style.display = 'none'; // Hide the countdown timer until it's loaded
   loadBlock(countDownTimer);
 }
 
