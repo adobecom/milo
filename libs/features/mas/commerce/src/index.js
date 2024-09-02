@@ -1,12 +1,10 @@
 import { CheckoutLink } from './checkout-link.js';
-import { TAG_NAME_SERVICE } from './constants.js';
+import { TAG_NAME_SERVICE, Landscape } from './constants.js';
 import { Defaults } from './defaults.js';
 import {
     CheckoutWorkflow,
     CheckoutWorkflowStep,
     WcsCommitment,
-    WcsEnv,
-    Landscape,
     WcsTerm,
     WcsPlanType,
     applyPlanType,
@@ -25,7 +23,6 @@ export {
     InlinePrice,
     Log,
     WcsCommitment,
-    WcsEnv,
     Landscape,
     WcsTerm,
     WcsPlanType,
