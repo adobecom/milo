@@ -657,22 +657,20 @@ export function decorateLinks(el) {
       });
     }
     const copyEvent = '#_evt-copy';
+    const isMobile = window.matchMedia('(max-width: 767px)').matches;
     if (a.href.includes(copyEvent)) {
       const link = a.href.split(copyEvent)[0];
       const isConButton = ['EM', 'STRONG'].includes(a.parentElement.nodeName) || a.classList.contains('con-button');
       if (!isConButton) a.classList.add('static', 'copy-link');
       a.href = '';
-      if (navigator.share) {
+      if (isMobile) {
         a.addEventListener('click', async (e) => {
           e.preventDefault();
-          await navigator.share({ title: link, url: link })
-            .catch((err) => {
-              console.log('Error sharing:', err);
-            });
+          if (navigator.share) await navigator.share({ title: link, url: link });
         });
       } else {
         a.remove();
-        console.log('Web Share API is not supported in this browser');
+        console.log('Copy link is not supported for this device');
       }
     }
     return rdx;
