@@ -1,4 +1,5 @@
-import { createIntersectionObserver, createTag, isInTextNode } from '../../utils/utils.js';
+// part of the code is an optimized version of lite-youtube-embed -> https://github.com/paulirish/lite-youtube-embed
+import { createIntersectionObserver, createTag, isInTextNode, loadLink } from '../../utils/utils.js';
 
 class LiteYTEmbed extends HTMLElement {
   connectedCallback() {
@@ -17,19 +18,14 @@ class LiteYTEmbed extends HTMLElement {
     this.needsYTApiForAutoplay = navigator.vendor.includes('Apple') || navigator.userAgent.includes('Mobi');
   }
 
-  static addPrefetch(kind, url, as) {
-    const linkEl = createTag('link', { rel: kind, href: url });
-    if (as) linkEl.as = as;
-    document.head.append(linkEl);
-  }
-
   static warmConnections() {
     if (LiteYTEmbed.preconnected) return;
-    LiteYTEmbed.addPrefetch('preconnect', 'https://www.youtube-nocookie.com');
-    LiteYTEmbed.addPrefetch('preconnect', 'https://www.google.com');
-    LiteYTEmbed.addPrefetch('preconnect', 'https://googleads.g.doubleclick.net');
-    LiteYTEmbed.addPrefetch('preconnect', 'https://static.doubleclick.net');
     LiteYTEmbed.preconnected = true;
+    ['www.youtube-nocookie.com',
+      'www.google.com',
+      'googleads.g.doubleclick.net',
+      'static.doubleclick.net',
+    ].forEach((url) => loadLink(`https://${url}`, { rel: 'preconnect' }));
   }
 
   static loadYouTubeAPI() {
@@ -77,9 +73,9 @@ class LiteYTEmbed extends HTMLElement {
   }
 }
 
-if (!customElements.get('lite-youtube')) customElements.define('lite-youtube', LiteYTEmbed);
-
 export default async function init(a) {
+  if (!customElements.get('lite-youtube')) customElements.define('lite-youtube', LiteYTEmbed);
+
   const embedVideo = () => {
     if (isInTextNode(a) || !a.origin?.includes('youtu')) return;
     const title = !a.textContent.includes('http') ? a.textContent : 'Youtube Video';

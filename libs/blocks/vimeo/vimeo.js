@@ -1,11 +1,6 @@
-import { createIntersectionObserver, createTag, isInTextNode } from '../../utils/utils.js';
-
-function addPrefetch(kind, url, as) {
-  const linkElem = createTag('link', { rel: kind, href: url });
-  if (as) linkElem.as = as;
-  linkElem.crossorigin = true;
-  document.head.append(linkElem);
-}
+// part of the code is an optimized version of lite-vimeo-embed -> https://github.com/luwes/lite-vimeo-embed
+import { replaceKey } from '../../features/placeholders.js';
+import { createIntersectionObserver, createTag, getConfig, isInTextNode, loadLink } from '../../utils/utils.js';
 
 class LiteVimeo extends HTMLElement {
   static preconnected = false;
@@ -22,10 +17,11 @@ class LiteVimeo extends HTMLElement {
   static warmConnections() {
     if (LiteVimeo.preconnected) return;
     LiteVimeo.preconnected = true;
-    addPrefetch('preconnect', 'https://player.vimeo.com');
-    addPrefetch('preconnect', 'https://i.vimeocdn.com');
-    addPrefetch('preconnect', 'https://f.vimeocdn.com');
-    addPrefetch('preconnect', 'https://fresnel.vimeocdn.com');
+    ['player.vimeo.com',
+      'i.vimeocdn.com',
+      'f.vimeocdn.com',
+      'fresnel.vimeocdn.com',
+    ].forEach((url) => loadLink(`https://${url}`, { rel: 'preconnect' }));
   }
 
   setupThumbnail() {
@@ -36,7 +32,7 @@ class LiteVimeo extends HTMLElement {
     fetch(`https://vimeo.com/api/v2/video/${this.videoId}.json`)
       .then((response) => response.json())
       .then((data) => {
-        const thumbnailUrl = data[0].thumbnail_large?.replace(/-d_[\dx]+$/i, `-d_${roundedWidth}x${roundedHeight}`);
+        const thumbnailUrl = data[0]?.thumbnail_large?.replace(/-d_[\dx]+$/i, `-d_${roundedWidth}x${roundedHeight}`);
         this.style.backgroundImage = `url("${thumbnailUrl}")`;
       })
       .catch((e) => {
@@ -44,8 +40,12 @@ class LiteVimeo extends HTMLElement {
       });
   }
 
-  setupPlayButton() {
-    const playBtnEl = createTag('button', { type: 'button', 'aria-label': 'Play video', class: 'ltv-playbtn' });
+  async setupPlayButton() {
+    const playBtnEl = createTag('button', {
+      type: 'button',
+      'aria-label': `${await replaceKey('play-video', getConfig())}`,
+      class: 'ltv-playbtn',
+    });
     this.append(playBtnEl);
   }
 
@@ -61,15 +61,14 @@ class LiteVimeo extends HTMLElement {
       src: `https://player.vimeo.com/video/${encodeURIComponent(this.videoId)}?autoplay=1`,
     });
     this.insertAdjacentElement('afterend', iframeEl);
-    this.remove();
     iframeEl.addEventListener('load', () => iframeEl.focus(), { once: true });
+    this.remove();
   }
 }
 
-if (!customElements.get('lite-vimeo')) customElements.define('lite-vimeo', LiteVimeo);
-
 export default async function init(a) {
   if (isInTextNode(a)) return;
+  if (!customElements.get('lite-vimeo')) customElements.define('lite-vimeo', LiteVimeo);
 
   const embedVimeo = () => {
     const url = new URL(a.href);
