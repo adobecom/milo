@@ -657,7 +657,7 @@ export function decorateLinks(el) {
       });
     }
     const copyEvent = '#_evt-copy';
-    const isMobile = window.matchMedia('(max-width: 767px)').matches;
+    const isMobile = /android|iphone|ipod|blackberry|iemobile|opera mini|mobile/.test(navigator.userAgent.toLowerCase());
     if (a.href.includes(copyEvent)) {
       const link = a.href.split(copyEvent)[0];
       const isConButton = ['EM', 'STRONG'].includes(a.parentElement.nodeName) || a.classList.contains('con-button');
