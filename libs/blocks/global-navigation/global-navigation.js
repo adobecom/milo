@@ -320,7 +320,7 @@ class Gnav {
     isDesktop.addEventListener('change', closeAllDropdowns);
   }, 'Error in global navigation init', 'errorType=error,module=gnav');
 
-  ims = async () => loadIms()
+  ims = async () => window.adobeIMS?.initialized ? this.imsReady() : loadIms()
     .then(() => this.imsReady())
     .catch((e) => {
       if (e?.message === 'IMS timeout') {
