@@ -154,7 +154,9 @@ export class MerchCardCollection extends LitElement {
         let reduced = new Map(result);
         children.forEach((child) => {
             if (reduced.has(child)) {
-                child.style.order = reduced.get(child);
+                const index = reduced.get(child);
+                child.style.order = index;
+                child.setAttribute("tabindex", index + 1);
                 child.size = child.filters[this.filter]?.size;
                 child.style.removeProperty('display');
                 child.requestUpdate();

@@ -11,12 +11,14 @@
  */
 
 /*
-* Notification - v1.0
+* Notification - v1.2
 */
 
-import { decorateBlockText, decorateBlockBg, decorateTextOverrides } from '../../utils/decorate.js';
-import { createTag } from '../../utils/utils.js';
+import { decorateBlockText, decorateBlockBg, decorateTextOverrides, decorateMultiViewport } from '../../utils/decorate.js';
+import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
 
+const { miloLibs, codeRoot } = getConfig();
+const base = miloLibs || codeRoot;
 const variants = ['banner', 'ribbon', 'pill'];
 const sizes = ['small', 'medium', 'large'];
 const [banner, ribbon, pill] = variants;
@@ -26,7 +28,7 @@ const defaultVariant = banner;
 const blockConfig = {
   [banner]: {
     [small]: ['s', 's', 's', 'm'],
-    [medium]: ['m', 'm', 'm', 'm'],
+    [medium]: ['m', 'm', 'm', 'l'],
     [large]: ['l', 'l', 'l', 'l'],
   },
   [ribbon]: {
@@ -52,6 +54,8 @@ const closeSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
   </defs>
 </svg>`;
 
+let iconographyLoaded = false;
+
 function getOpts(el) {
   const optRows = [...el.querySelectorAll(':scope > div:nth-of-type(n+3)')];
   if (!optRows.length) return {};
@@ -65,18 +69,21 @@ function getBlockData(el) {
   const variant = variants.find((varClass) => el.classList.contains(varClass)) || defaultVariant;
   const size = sizes.find((sizeClass) => el.classList.contains(sizeClass)) || defaultSize;
   const fontSizes = [...blockConfig[variant][size]];
-  if (el.classList.contains('s-button')) fontSizes.splice(3, 1, 'm');
+  const buttonSize = el.className.match(/([xsml]+)-button/);
+  if (buttonSize) fontSizes.splice(3, 1, buttonSize[1]);
   return { fontSizes, options: { ...getOpts(el) } };
 }
 
 function wrapCopy(foreground) {
-  const text = foreground.querySelector('.text');
-  if (!text) return;
-  const heading = text?.querySelector('h1, h2, h3, h4, h5, h6, p:not(.icon-area, .action-area)');
-  const icon = heading?.previousElementSibling;
-  const body = heading?.nextElementSibling?.classList.contains('action-area') ? '' : heading?.nextElementSibling;
-  const copy = createTag('div', { class: 'copy-wrap' }, [heading, body].filter(Boolean));
-  text?.insertBefore(copy, icon?.nextSibling || text.children[0]);
+  const texts = foreground.querySelectorAll('.text');
+  if (!texts) return;
+  texts.forEach((text) => {
+    const heading = text?.querySelector('h1, h2, h3, h4, h5, h6, p:not(.icon-area, .action-area)');
+    const icon = heading?.previousElementSibling;
+    const body = heading?.nextElementSibling?.classList.contains('action-area') ? '' : heading?.nextElementSibling;
+    const copy = createTag('div', { class: 'copy-wrap' }, [heading, body].filter(Boolean));
+    text?.insertBefore(copy, icon?.nextSibling || text.children[0]);
+  });
 }
 
 function decorateClose(el) {
@@ -99,34 +106,67 @@ function decorateFlexible(el) {
   el.appendChild(inner);
 }
 
-function decorateLayout(el) {
+async function loadIconography() {
+  await new Promise((resolve) => { loadStyle(`${base}/styles/iconography.css`, resolve); });
+  iconographyLoaded = true;
+}
+
+async function decorateLockup(lockupArea, el) {
+  if (!iconographyLoaded) await loadIconography();
+  const icon = lockupArea.querySelector('picture');
+  const content = icon.nextElementSibling || icon.nextSibling;
+  const label = createTag('span', { class: 'lockup-label' }, content.nodeValue || content);
+  if (content.nodeType === 3) {
+    lockupArea.replaceChild(label, content);
+  } else {
+    lockupArea.appendChild(label);
+  }
+  lockupArea.classList.add('lockup-area');
+  const pre = el.className.match(/([xsml]+)-(lockup|icon)/);
+  if (!pre) el.classList.add(`${el.matches('.pill') ? 'm' : 'l'}-lockup`);
+  if (pre && pre[2] === 'icon') el.classList.replace(pre[0], `${pre[1]}-lockup`);
+}
+
+async function decorateForegroundText(el, container) {
+  const text = container?.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
+  text?.classList.add('text');
+  const iconArea = text?.querySelector('p:has(picture)');
+  iconArea?.classList.add('icon-area');
+  if (iconArea?.textContent.trim()) await decorateLockup(iconArea, el);
+}
+
+async function decorateLayout(el) {
   const [background, ...rest] = el.querySelectorAll(':scope > div');
   const foreground = rest.pop();
   if (background) decorateBlockBg(el, background);
   foreground?.classList.add('foreground', 'container');
-  const text = foreground?.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
-  text?.classList.add('text');
-  const iconArea = text?.querySelector('p picture')?.closest('p');
-  iconArea?.classList.add('icon-area');
+  if (el.matches(`:is(.${pill}, .${ribbon})`)) {
+    foreground.querySelectorAll(':scope > div').forEach((div) => decorateForegroundText(el, div));
+  } else {
+    await decorateForegroundText(el, foreground);
+  }
   const fgMedia = foreground?.querySelector(':scope > div:not(.text) :is(img, video, a[href*=".mp4"])')?.closest('div');
   const bgMedia = el.querySelector(':scope > div:not(.foreground) :is(img, video, a[href*=".mp4"])')?.closest('div');
   const media = fgMedia ?? bgMedia;
   media?.classList.toggle('image', media && !media.classList.contains('text'));
-  foreground?.classList.toggle('no-image', !media && !iconArea);
+  foreground?.classList.toggle('no-image', !media && !el.querySelector('.icon-area'));
   if (el.matches(`:is(.${pill}, .${ribbon}):not(.no-closure)`)) decorateClose(el);
   if (el.matches(`.${pill}.flexible`)) decorateFlexible(el);
   return foreground;
 }
 
-export default function init(el) {
+export default async function init(el) {
   el.classList.add('con-block');
   const { fontSizes, options } = getBlockData(el);
-  const blockText = decorateLayout(el);
+  const blockText = await decorateLayout(el);
   decorateBlockText(blockText, fontSizes);
   if (options.borderBottom) {
     el.append(createTag('div', { style: `background: ${options.borderBottom};`, class: 'border' }));
   }
   decorateTextOverrides(el);
   el.querySelectorAll('a:not([class])').forEach((staticLink) => staticLink.classList.add('static'));
-  if (el.matches(`:is(.${ribbon}, .${pill})`)) wrapCopy(blockText);
+  if (el.matches(`:is(.${ribbon}, .${pill})`)) {
+    wrapCopy(blockText);
+    decorateMultiViewport(el);
+  }
 }

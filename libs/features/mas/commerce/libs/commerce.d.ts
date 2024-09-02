@@ -3,11 +3,6 @@ import {
     WorkflowStep,
 } from '@pandora/commerce-checkout-url-builder';
 import {
-    ProviderEnvironment,
-    Landscape,
-    Environment,
-} from '@pandora/data-source-utils';
-import {
     PriceDetails,
     ResolvedOffer,
     Term,
@@ -131,8 +126,8 @@ declare global {
 
         interface Settings {
             country: string;
-            env: ProviderEnvironment;
-            landscape: Landscape;
+            env: string;
+            landscape: string;
             // TODO: ideally, this setting should be processed by price template and belong to price settings
             forceTaxExclusive: boolean;
             language: string;
@@ -334,7 +329,6 @@ declare global {
                 checkoutWorkflow: CheckoutType;
                 checkoutWorkflowStep: WorkflowStep;
                 entitlement: boolean;
-                upgrade: boolean;
                 modal: boolean;
                 extraOptions: Partial<Record<keyof CheckoutLinkParameter, any>>;
             }
@@ -575,8 +569,7 @@ declare global {
                 wcsApiKey: string;
                 wcsBufferDelay: number;
                 wcsBufferLimit: number;
-                wcsEnv: Environment;
-                domainSwitch: boolean;
+                wcsURL: string;
             }
         }
     }

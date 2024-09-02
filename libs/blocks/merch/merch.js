@@ -161,7 +161,7 @@ export async function polyfills() {
     polyfills.promise = Promise.resolve();
   } else {
     const { base } = getConfig();
-    polyfills.promise = loadScript(`${base}/deps/custom-elements.js`);
+    polyfills.promise = await loadScript(`${base}/deps/custom-elements.js`);
   }
   return polyfills.promise;
 }
@@ -374,7 +374,7 @@ export async function openModal(e, url, offerType) {
   if (/\/fragments\//.test(url)) {
     const fragmentPath = url.split(/hlx.(page|live)/).pop();
     modal = await openFragmentModal(fragmentPath, getModal);
-  } else if (/^https?:/.test(url)) {
+  } else {
     modal = await openExternalModal(url, getModal);
   }
   if (modal) {
