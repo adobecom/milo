@@ -703,7 +703,7 @@ header:not(.global-navigation) ~ main {
   the 'global-navigation' class should also be removed from the 'header' selector
   all of the ':not(.global-navigation)' rules can be entirely removed.
  */
-header.global-navigation {
+header.global-navigation, header.global-navigation.feds--dark {
   height: var(--global-height-nav);
   visibility: hidden;
 }
