@@ -24,6 +24,17 @@
       "firefox": "",
       "android": "",
       "ios": ""
+    },
+    {
+      "action": "insertBefore",
+      "selector": "#insertbefore #_href",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "/de",
+      "target-var1": "",
+      "firefox": "",
+      "android": "",
+      "ios": ""
     }
   ],
   ":type": "sheet"
