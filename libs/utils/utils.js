@@ -668,6 +668,7 @@ export function decorateLinks(el) {
           await navigator.share({ title: link, url: link });
         });
       } else {
+        a.remove();
         console.log('Web Share API is not supported in this browser');
       }
     }
