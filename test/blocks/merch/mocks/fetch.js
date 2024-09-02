@@ -60,7 +60,7 @@ export async function mockFetch() {
         href: args[0],
         pathname: args[0],
         searchParams: null,
-      }
+      };
     }
     const { href, pathname, searchParams } = url;
     // literals mock
@@ -79,13 +79,11 @@ export async function mockFetch() {
     }
 
     if (href.includes('/price-literals-404')) {
-      return Promise.resolve({
-        ok: false,
-      });
+      return Promise.resolve({ ok: false });
     }
 
     if (href.includes('/price-literals-500')) {
-      new Error('fetch error')
+      throw new Error('fetch error');
     }
 
     // wcs mock

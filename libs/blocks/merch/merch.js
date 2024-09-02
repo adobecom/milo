@@ -181,22 +181,19 @@ export async function fetchEntitlements() {
 }
 
 async function loadDefaultPriceLiterals() {
-  return await fetch(DEFAULT_PRICE_LITERALS_PATH);
+  return fetch(DEFAULT_PRICE_LITERALS_PATH);
 }
 
 export async function fetchLiterals(url) {
   fetchLiterals.promise = fetchLiterals.promise ?? new Promise((resolve) => {
     fetch(url)
-      .catch((e) => {
-        return loadDefaultPriceLiterals();
-      })
+      .catch(() => loadDefaultPriceLiterals())
       .then(async (response) => {
         if (response.ok) {
           return response.json().then(({ data }) => resolve(data));
-        } else {
-          const defaultPriceLiterals = await loadDefaultPriceLiterals();
-          return defaultPriceLiterals.json().then(({ data }) => resolve(data));
         }
+        const defaultPriceLiterals = await loadDefaultPriceLiterals();
+        return defaultPriceLiterals.json().then(({ data }) => resolve(data));
       });
   });
   return fetchLiterals.promise;
