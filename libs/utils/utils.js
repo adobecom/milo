@@ -727,15 +727,25 @@ async function decorateIcons(area, config) {
   await loadIcons(icons, config);
 }
 
-async function decoratePlaceholders(area, config) {
-  const el = area.querySelector('main') || area;
+export async function customFetch({ resource, withCacheRules }) {
+  const options = {};
+  if (withCacheRules) {
+    const params = new URLSearchParams(window.location.search);
+    options.cache = params.get('cache') === 'off' ? 'reload' : 'default';
+  }
+  return fetch(resource, options);
+}
+
+const findReplaceableNodes = (area) => {
   const regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
   const walker = document.createTreeWalker(
-    el,
+    area,
     NodeFilter.SHOW_TEXT,
     {
       acceptNode(node) {
-        const a = regex.test(node.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+        const a = regex.test(node.nodeValue)
+          ? NodeFilter.FILTER_ACCEPT
+          : NodeFilter.FILTER_REJECT;
         regex.lastIndex = 0;
         return a;
       },
@@ -747,13 +757,20 @@ async function decoratePlaceholders(area, config) {
     nodes.push(node);
     node = walker.nextNode();
   }
+  return nodes;
+};
+
+let placeholderRequest;
+async function decoratePlaceholders(area, config) {
+  if (!area) return;
+  const nodes = findReplaceableNodes(area);
   if (!nodes.length) return;
-  const { replaceText } = await import('../features/placeholders.js');
-  const replaceNodes = nodes.map(async (textNode) => {
-    textNode.nodeValue = await replaceText(textNode.nodeValue, config, regex);
-    textNode.nodeValue = textNode.nodeValue.replace(/&nbsp;/g, '\u00A0');
-  });
-  await Promise.all(replaceNodes);
+  const placeholderPath = `${config.locale?.contentRoot}/placeholders.json`;
+  placeholderRequest = placeholderRequest
+  || customFetch({ resource: placeholderPath, withCacheRules: true })
+    .catch(() => ({}));
+  const { decoratePlaceholderArea } = await import('../features/placeholders.js');
+  await decoratePlaceholderArea({ placeholderPath, placeholderRequest, nodes });
 }
 
 async function loadFooter() {
@@ -987,6 +1004,7 @@ async function checkForPageMods() {
 }
 
 async function loadPostLCP(config) {
+  await decoratePlaceholders(document.body.querySelector('header'), config);
   if (config.mep?.targetEnabled === 'gnav') {
     /* c8 ignore next 2 */
     const { init } = await import('../features/personalization/personalization.js');
@@ -1174,11 +1192,11 @@ async function processSection(section, config, isDoc) {
     const { default: loadInlineFrags } = await import('../blocks/fragment/fragment.js');
     const fragPromises = inlineFrags.map((link) => loadInlineFrags(link));
     await Promise.all(fragPromises);
-    await decoratePlaceholders(section.el, config);
     const newlyDecoratedSection = decorateSection(section.el, section.idx);
     section.blocks = newlyDecoratedSection.blocks;
     section.preloadLinks = newlyDecoratedSection.preloadLinks;
   }
+  await decoratePlaceholders(section.el, config);
 
   if (section.preloadLinks.length) {
     const [modals, nonModals] = partition(section.preloadLinks, (block) => block.classList.contains('modal'));
@@ -1214,8 +1232,6 @@ export async function loadArea(area = document) {
     appendHtmlToCanonicalUrl();
   }
   const config = getConfig();
-
-  await decoratePlaceholders(area, config);
 
   if (isDoc) {
     decorateDocumentExtras();
