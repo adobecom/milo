@@ -665,7 +665,10 @@ export function decorateLinks(el) {
       if (navigator.share) {
         a.addEventListener('click', async (e) => {
           e.preventDefault();
-          await navigator.share({ title: link, url: link });
+          await navigator.share({ title: link, url: link })
+            .catch((err) => {
+              console.log('Error sharing:', err);
+            });
         });
       } else {
         a.remove();
