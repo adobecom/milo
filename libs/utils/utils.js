@@ -620,6 +620,24 @@ export function decorateAutoBlock(a) {
   });
 }
 
+const decorateCopyLink = (a, evt) => {
+  const userAgent = navigator.userAgent.toLowerCase();
+  const isMobile = /android|iphone|ipod|blackberry|iemobile|opera mini|mobile/.test(userAgent) && !/ipad/.test(userAgent);
+  if (!isMobile) {
+    a.remove();
+    console.log('Copy link is not supported for this device');
+    return;
+  }
+  const link = a.href.split(evt)[0];
+  const isConButton = ['EM', 'STRONG'].includes(a.parentElement.nodeName) || a.classList.contains('con-button');
+  if (!isConButton) a.classList.add('static', 'copy-link');
+  a.href = '';
+  a.addEventListener('click', async (e) => {
+    e.preventDefault();
+    if (navigator.share) await navigator.share({ title: link, url: link });
+  });
+};
+
 export function decorateLinks(el) {
   const config = getConfig();
   decorateImageLinks(el);
@@ -657,21 +675,8 @@ export function decorateLinks(el) {
       });
     }
     const copyEvent = '#_evt-copy';
-    const isMobile = /android|iphone|ipod|blackberry|iemobile|opera mini|mobile/.test(navigator.userAgent.toLowerCase());
     if (a.href.includes(copyEvent)) {
-      const link = a.href.split(copyEvent)[0];
-      const isConButton = ['EM', 'STRONG'].includes(a.parentElement.nodeName) || a.classList.contains('con-button');
-      if (!isConButton) a.classList.add('static', 'copy-link');
-      a.href = '';
-      if (isMobile) {
-        a.addEventListener('click', async (e) => {
-          e.preventDefault();
-          if (navigator.share) await navigator.share({ title: link, url: link });
-        });
-      } else {
-        a.remove();
-        console.log('Copy link is not supported for this device');
-      }
+      decorateCopyLink(a, copyEvent);
     }
     return rdx;
   }, []);
