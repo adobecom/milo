@@ -151,6 +151,7 @@ describe('Merch Block', () => {
     document.head.innerHTML = await readMockText('/test/blocks/merch/mocks/head.html');
     document.body.innerHTML = await readMockText('/test/blocks/merch/mocks/body.html');
     ({ setCheckoutLinkConfigs, setSubscriptionsData } = await mockFetch());
+    fetchLiterals.promise = null;
     config.commerce = { priceLiteralsPromise: fetchLiterals(PRICE_LITERALS_URL) };
     setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
   });
@@ -225,6 +226,35 @@ describe('Merch Block', () => {
     it('renders merch link to GB price', async () => {
       const el = await validatePriceSpan('.merch.price.gb', {});
       expect(/£/.test(el.textContent)).to.be.true;
+    });
+  });
+
+  describe('price literals', () => {
+    it('loads standard price literals', async () => {
+      fetchLiterals.promise = null;
+      const data = await fetchLiterals(PRICE_LITERALS_URL);
+      expect(Array.isArray(data)).to.be.true;
+      expect(data.length).to.equal(1);
+      expect(data[0].lang).to.equal('en');
+      expect(data[0].default).to.be.false;
+    });
+
+    it('loads default price literals after 404', async () => {
+      fetchLiterals.promise = null;
+      const data = await fetchLiterals('https://www.adobe.com/federal/commerce/price-literals-404.json');
+      expect(Array.isArray(data)).to.be.true;
+      expect(data.length).to.equal(1);
+      expect(data[0].lang).to.equal('en');
+      expect(data[0].default).to.be.true;
+    });
+
+    it('loads default price literals after 500', async () => {
+      fetchLiterals.promise = null;
+      const data = await fetchLiterals('https://www.adobe.com/federal/commerce/price-literals-500.json');
+      expect(Array.isArray(data)).to.be.true;
+      expect(data.length).to.equal(1);
+      expect(data[0].lang).to.equal('en');
+      expect(data[0].default).to.be.true;
     });
   });
 

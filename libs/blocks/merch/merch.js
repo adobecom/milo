@@ -4,6 +4,7 @@ import {
 import { replaceKey } from '../../features/placeholders.js';
 
 export const PRICE_LITERALS_URL = 'https://www.adobe.com/federal/commerce/price-literals.json';
+export const DEFAULT_PRICE_LITERALS_PATH = '/libs/features/mas/commerce/default-price-literals.json';
 export const CHECKOUT_LINK_CONFIG_PATH = '/commerce/checkout-link.json'; // relative to libs.
 
 export const PRICE_TEMPLATE_DISCOUNT = 'discount';
@@ -179,10 +180,24 @@ export async function fetchEntitlements() {
   return fetchEntitlements.promise;
 }
 
+async function loadDefaultPriceLiterals() {
+  return await fetch(DEFAULT_PRICE_LITERALS_PATH);
+}
+
 export async function fetchLiterals(url) {
   fetchLiterals.promise = fetchLiterals.promise ?? new Promise((resolve) => {
     fetch(url)
-      .then((response) => response.json().then(({ data }) => resolve(data)));
+      .catch((e) => {
+        return loadDefaultPriceLiterals();
+      })
+      .then(async (response) => {
+        if (response.ok) {
+          return response.json().then(({ data }) => resolve(data));
+        } else {
+          const defaultPriceLiterals = await loadDefaultPriceLiterals();
+          return defaultPriceLiterals.json().then(({ data }) => resolve(data));
+        }
+      });
   });
   return fetchLiterals.promise;
 }

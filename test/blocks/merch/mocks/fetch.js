@@ -19,6 +19,7 @@ export async function mockFetch() {
   // this path allows to import this mock from tests for other blocks (e.g. commerce)
   const basePath = '/test/blocks/merch/mocks/';
   const literals = await readMockJSON(`${basePath}literals.json`);
+  const defaultLiterals = await readMockJSON(`${basePath}default-price-literals.json`);
   const offers = await readMockJSON(`${basePath}offers.json`);
   const namedOffers = await readMockJSON(`${basePath}named-offers.json`);
 
@@ -51,7 +52,17 @@ export async function mockFetch() {
   };
 
   sinon.stub(window, 'fetch').callsFake((...args) => {
-    const { href, pathname, searchParams } = new URL(String(args[0]));
+    let url;
+    try {
+      url = new URL(String(args[0]));
+    } catch (err) {
+      url = {
+        href: args[0],
+        pathname: args[0],
+        searchParams: null,
+      }
+    }
+    const { href, pathname, searchParams } = url;
     // literals mock
     if (href === PRICE_LITERALS_URL) {
       return Promise.resolve({
@@ -59,6 +70,24 @@ export async function mockFetch() {
         json: () => Promise.resolve(literals),
       });
     }
+
+    if (href.includes('/default-price-literals')) {
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(defaultLiterals),
+      });
+    }
+
+    if (href.includes('/price-literals-404')) {
+      return Promise.resolve({
+        ok: false,
+      });
+    }
+
+    if (href.includes('/price-literals-500')) {
+      new Error('fetch error')
+    }
+
     // wcs mock
     if (pathname.endsWith('/web_commerce_artifact')) {
       const osis = searchParams.get('offer_selector_ids').split(',');
