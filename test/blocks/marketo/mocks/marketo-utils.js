@@ -63,3 +63,7 @@ export function createIntersectionObserver({ el, callback /* , once = true, opti
 }
 
 export const localizeLink = (href) => href;
+
+export const loadLink = stub().returns(new Promise((resolve) => {
+  resolve();
+}));
