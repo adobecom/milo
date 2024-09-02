@@ -80,10 +80,10 @@ export async function loadMnemonicList(foreground) {
   }
 }
 
-export function loadCountDownTimer(el) {
+export async function loadCountDownTimer(el) {
   const countDownTimer = el.querySelector('.countdown-timer');
   countDownTimer.style.display = 'none'; // Hide the countdown timer until it's loaded
-  loadBlock(countDownTimer);
+  await loadBlock(countDownTimer);
 }
 
 function decorateSplit(el, foreground, media) {
@@ -144,6 +144,6 @@ export default async function init(el) {
   }
 
   if (el.classList.contains('countdown-timer')) {
-    loadCountDownTimer(el);
+    await loadCountDownTimer(el);
   }
 }
