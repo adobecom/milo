@@ -197,7 +197,7 @@ export async function createProject() {
   const url = await getMilocUrl();
   setStatus('service', 'info', 'Creating new project.');
   const body = `${origin}${heading.value.path}.json`;
-  const opts = { method: 'POST', headers: { 'User-Token': accessToken.value }, body };
+  const opts = { method: 'POST', headers: { 'User-Token': accessToken.value,'loc-ui-url': window.location.href }, body };
   const resp = await fetch(`${url}create-project`, opts);
   if (resp.status === 201) {
     setExcelStatus('Project Created', '');
