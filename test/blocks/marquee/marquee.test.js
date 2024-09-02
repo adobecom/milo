@@ -164,7 +164,7 @@ describe('marquee', () => {
     });
   });
 
-  describe('Embedding countdown-timer', () => {
+  describe('Embedding countdown-timer inside marquee', () => {
     const marquee = document.getElementById('countdown-timer');
     init(marquee);
     expect(marquee.querySelector('.countdown-timer')).to.exist;
