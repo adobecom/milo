@@ -8,3 +8,5 @@ logs/*
 .iml
 .env
 **/mas/*/stats.json
+test-html-results/
+test-results/
