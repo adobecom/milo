@@ -80,14 +80,9 @@ export async function loadMnemonicList(foreground) {
   }
 }
 
-export async function loadCountDownTimer(el) {
-  const { base } = getConfig();
-  const stylePromise = new Promise((resolve) => {
-    loadStyle(`${base}/blocks/countdown-timer/countdown-timer.css`, resolve);
-  });
-  const loadModule = import('../countdown-timer/countdown-timer.js')
-    .then(() => { const countDownTimer = el.querySelector('.countdown-timer'); loadBlock(countDownTimer); });
-  await Promise.all([stylePromise, loadModule]);
+export function loadCountDownTimer(el) {
+  const countDownTimer = el.querySelector('.countdown-timer');
+  loadBlock(countDownTimer);
 }
 
 function decorateSplit(el, foreground, media) {
@@ -148,6 +143,6 @@ export default async function init(el) {
   }
 
   if (el.classList.contains('countdown-timer')) {
-    await loadCountDownTimer(el);
+    loadCountDownTimer(el);
   }
 }
