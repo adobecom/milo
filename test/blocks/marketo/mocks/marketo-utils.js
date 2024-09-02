@@ -67,3 +67,5 @@ export const localizeLink = (href) => href;
 export const loadLink = stub().returns(new Promise((resolve) => {
   resolve();
 }));
+
+export const customFetch = stub();

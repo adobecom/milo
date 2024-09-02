@@ -1,5 +1,5 @@
 /* eslint-disable max-classes-per-file */
-import { createTag, getConfig, loadArea, localizeLink } from '../../utils/utils.js';
+import { createTag, getConfig, loadArea, localizeLink, customFetch } from '../../utils/utils.js';
 
 const fragMap = {};
 
@@ -83,7 +83,6 @@ export default async function init(a) {
     return;
   }
 
-  const { customFetch } = await import('../../utils/helpers.js');
   let resourcePath = a.href;
   if (a.href.includes('/federal/')) {
     const { getFederatedUrl } = await import('../../utils/federated.js');
