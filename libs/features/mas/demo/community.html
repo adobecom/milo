@@ -5,6 +5,9 @@
         <meta name="robots" content="noindex, nofollow" />
         <meta name="nofollow-links" content="on" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <script src="/libs/features/spectrum-web-components/dist/theme.js" type="module"></script>
+        <script src="/libs/features/spectrum-web-components/dist/button.js" type="module"></script>
+
         <script src="/libs/deps/mas/mas.js" type="module"></script>
         <!-- 
           For Canadian French locale
@@ -13,6 +16,7 @@
     </head>
     <body>
       <main>
+        <sp-theme color="light" scale="medium">
         <div class="four-merch-cards catalog">
           <merch-card><merch-datasource path="/content/dam/sandbox/mas/catalog/creative-cloud-all-apps"></merch-datasource></merch-card>
           <merch-card><merch-datasource path="/content/dam/sandbox/mas/catalog/photoshop"></merch-datasource></merch-card>
@@ -20,6 +24,7 @@
           <merch-card><merch-datasource path="/content/dam/sandbox/mas/catalog/premiere-pro"></merch-datasource></merch-card>
           <merch-card><merch-datasource path="/content/dam/sandbox/mas/catalog/adobe-express"></merch-datasource></merch-card>
         </div>
+        </sp-theme>
       </main>
     </body>
 </html>
