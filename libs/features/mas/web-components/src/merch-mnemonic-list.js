@@ -5,8 +5,9 @@ export class MerchMnemonicList extends LitElement {
         :host {
             display: flex;
             flex-direction: row;
-            gap: 10px;
-            margin-bottom: 10px;
+            gap: 5px;
+            margin-bottom: 5px;
+            margin-right: 10px;
             align-items: flex-end;
         }
 

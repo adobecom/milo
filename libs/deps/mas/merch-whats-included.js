@@ -8,7 +8,6 @@ import{html as e,css as o,LitElement as l}from"../lit-all.min.js";var t=class ex
             place-content: stretch start;
             box-sizing: border-box;
             align-self: baseline;
-            margin-top: 16px;
             margin-bottom: 16px;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             grid-auto-rows: unset;

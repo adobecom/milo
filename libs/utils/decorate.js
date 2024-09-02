@@ -5,16 +5,26 @@ export function decorateButtons(el, size) {
   if (buttons.length === 0) return;
   const buttonTypeMap = { STRONG: 'blue', EM: 'outline', A: 'blue' };
   buttons.forEach((button) => {
+    let target = button;
     const parent = button.parentElement;
     const buttonType = buttonTypeMap[parent.nodeName] || 'outline';
     if (button.nodeName === 'STRONG') {
-      parent.classList.add('con-button', buttonType);
-      if (size) parent.classList.add(size); /* button-l, button-xl */
+      target = parent;
     } else {
-      button.classList.add('con-button', buttonType);
-      if (size) button.classList.add(size); /* button-l, button-xl */
       parent.insertAdjacentElement('afterend', button);
       parent.remove();
+    }
+    target.classList.add('con-button', buttonType);
+    if (size) target.classList.add(size); /* button-l, button-xl */
+    const customClasses = target.href && [...target.href.matchAll(/#_button-([a-zA-Z-]+)/g)];
+    if (customClasses) {
+      customClasses.forEach((match) => {
+        target.href = target.href.replace(match[0], '');
+        if (target.dataset.modalHash) {
+          target.setAttribute('data-modal-hash', target.dataset.modalHash.replace(match[0], ''));
+        }
+        target.classList.add(match[1]);
+      });
     }
     const actionArea = button.closest('p, div');
     if (actionArea) {
@@ -277,4 +287,24 @@ export function applyInViewPortPlay(video) {
     });
     observer.observe(video);
   }
+}
+
+export function decorateMultiViewport(el) {
+  const viewports = [
+    '(max-width: 599px)',
+    '(min-width: 600px) and (max-width: 1199px)',
+    '(min-width: 1200px)',
+  ];
+  const foreground = el.querySelector('.foreground');
+  if (foreground.childElementCount === 2 || foreground.childElementCount === 3) {
+    [...foreground.children].forEach((child, index) => {
+      const mq = window.matchMedia(viewports[index]);
+      const setContent = () => {
+        if (mq.matches) foreground.replaceChildren(child);
+      };
+      setContent();
+      mq.addEventListener('change', setContent);
+    });
+  }
+  return foreground;
 }

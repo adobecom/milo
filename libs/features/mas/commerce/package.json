@@ -11,7 +11,7 @@
     "types": "src/index.d.ts",
     "sideEffects": false,
     "scripts": {
-        "build": "npm run build:bundle && npm run build:types",
+        "build": "npm run test:ci && npm run build:bundle && npm run build:types",
         "build:bundle": "node ./build.mjs",
         "build:types": "cp ./src/index.d.ts ./libs/commerce.d.ts",
         "build:watch": "npm run build:bundle --watch",
@@ -20,16 +20,11 @@
     },
     "dependencies": {
         "@dexter/tacocat-consonant-templates": "file:./internal/tacocat-consonant-templates-1.13.0.tgz",
-        "@dexter/tacocat-core": "file:./internal/tacocat-core-1.12.2.tgz",
-        "@dexter/tacocat-wcs-client": "file:./internal/tacocat-wcs-client-1.17.0.tgz",
+        "@dexter/tacocat-core": "file:./internal/tacocat-core-1.13.0.tgz",
         "@pandora/commerce-checkout-url-builder": "file:./internal/commerce-checkout-url-builder-1.6.0.tgz",
         "@pandora/data-models-odm": "file:./internal/data-models-odm-0.5.4.tgz",
-        "@pandora/data-source-wcs": "file:./internal/data-source-wcs-0.2.8.tgz",
         "@pandora/data-source-utils": "file:./internal/data-source-utils-0.3.1.tgz",
         "@pandora/fetch": "file:./internal/fetch-1.3.4.tgz",
-        "@pandora/react-auth-provider": "file:./internal/react-auth-provider-1.2.1.tgz",
-        "@pandora/react-env-provider": "file:./internal/react-env-provider-1.2.2.tgz",
-        "@pandora/react-fetch-provider": "file:./internal/react-fetch-provider-1.2.2.tgz",
         "@pandora/logger": "file:./internal/logger-1.3.0.tgz"
     },
     "devDependencies": {
