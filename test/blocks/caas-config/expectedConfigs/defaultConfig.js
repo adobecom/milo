@@ -40,6 +40,7 @@ const defaultConfig = {
     reservoir: { sample: 3, pool: 1000 },
     ctaAction: '_self',
     additionalRequestParams: {},
+    dynamicCTAForLiveEvents: false,
   },
   headers: [],
   hideCtaIds: [
