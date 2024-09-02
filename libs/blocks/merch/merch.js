@@ -189,12 +189,11 @@ export async function fetchLiterals(url) {
     fetch(url)
       .catch(() => loadDefaultPriceLiterals())
       .then(async (response) => {
-        if (response.ok) {
-          return response.json().then(({ data }) => resolve(data));
-        }
-        const defaultPriceLiterals = await loadDefaultPriceLiterals();
-        return defaultPriceLiterals.json().then(({ data }) => resolve(data));
-      });
+        if (response.ok) return response.json();
+        return loadDefaultPriceLiterals()
+          .then((defaultPriceLiterals) => defaultPriceLiterals.json());
+      })
+      .then(({ data }) => resolve(data));
   });
   return fetchLiterals.promise;
 }
