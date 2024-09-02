@@ -83,7 +83,7 @@ export async function mockFetch() {
     }
 
     if (href.includes('/price-literals-500')) {
-      throw new Error('fetch error');
+      return Promise.reject(new Error('fetch error'));
     }
 
     // wcs mock
