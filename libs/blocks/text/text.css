@@ -121,7 +121,7 @@
 
 .text-block .icon-area {
   display: flex;
-  column-gap: var(--spacing-xxs);
+  column-gap: var(--spacing-xs);
 }
 
 .text-block p.icon-area { /* NOT <a/> tags with icons in them */
