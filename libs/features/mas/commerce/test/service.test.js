@@ -8,11 +8,10 @@ import { mockIms, unmockIms } from './mocks/ims.js';
 import { expect } from './utilities.js';
 import { mockProviders } from './mocks/providers.js';
 import { withWcs } from './mocks/wcs.js';
-import { withLiterals } from './mocks/literals.js';
 
 describe('commerce service', () => {
     before(async () => {
-        await mockFetch(withWcs, withLiterals);
+        await mockFetch(withWcs);
     });
 
     afterEach(() => {

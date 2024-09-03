@@ -43,7 +43,7 @@ async function activateService(config, dataProviders) {
     const settings = Object.freeze(getSettings(config));
     // Fetch price literals
     try {
-        literals.price = await fetchPriceLiterals(settings);
+        literals.price = fetchPriceLiterals(settings);
     } catch (error) {
         log.warn('Price literals were not fetched:', error);
     }

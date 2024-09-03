@@ -19,7 +19,6 @@ import { mockConfig } from './mocks/config.js';
 import { mockFetch } from './mocks/fetch.js';
 import { mockIms, unmockIms } from './mocks/ims.js';
 import { mockLana, unmockLana } from './mocks/lana.js';
-import { withLiterals } from './mocks/literals.js';
 import { mockProviders } from './mocks/providers.js';
 import { withWcs } from './mocks/wcs.js';
 import { expect, sinon } from './utilities.js';
@@ -51,7 +50,7 @@ afterEach(() => {
 });
 
 beforeEach(async () => {
-    fetch = await mockFetch(withWcs, withLiterals);
+    fetch = await mockFetch(withWcs);
     mockLana();
 });
 

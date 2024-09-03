@@ -3,8 +3,6 @@ import {
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
-export const PRICE_LITERALS_URL = 'https://www.adobe.com/federal/commerce/price-literals.json';
-export const DEFAULT_PRICE_LITERALS_PATH = '/libs/features/mas/commerce/default-price-literals.json';
 export const CHECKOUT_LINK_CONFIG_PATH = '/commerce/checkout-link.json'; // relative to libs.
 
 export const PRICE_TEMPLATE_DISCOUNT = 'discount';
@@ -178,24 +176,6 @@ export async function fetchEntitlements() {
       },
     ));
   return fetchEntitlements.promise;
-}
-
-async function loadDefaultPriceLiterals() {
-  return fetch(DEFAULT_PRICE_LITERALS_PATH);
-}
-
-export async function fetchLiterals(url) {
-  fetchLiterals.promise = fetchLiterals.promise ?? new Promise((resolve) => {
-    fetch(url)
-      .catch(() => loadDefaultPriceLiterals())
-      .then(async (response) => {
-        if (response.ok) return response.json();
-        return loadDefaultPriceLiterals()
-          .then((defaultPriceLiterals) => defaultPriceLiterals.json());
-      })
-      .then(({ data }) => resolve(data));
-  });
-  return fetchLiterals.promise;
 }
 
 export async function fetchCheckoutLinkConfigs(base = '') {
@@ -438,7 +418,6 @@ export async function initService(force = false) {
     fetchCheckoutLinkConfigs.promise = undefined;
   }
   const { env, commerce = {}, locale } = getConfig();
-  commerce.priceLiteralsPromise = fetchLiterals(PRICE_LITERALS_URL);
   initService.promise = initService.promise ?? polyfills().then(async () => {
     const { hostname, searchParams } = new URL(window.location.href);
     let commerceLibPath = '../../deps/mas/commerce.js';

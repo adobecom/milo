@@ -218,8 +218,6 @@ function getSettings(config = {}) {
         modal,
         env,
         forceTaxExclusive,
-        priceLiteralsURL: commerce.priceLiteralsURL,
-        priceLiteralsPromise: commerce.priceLiteralsPromise,
         promotionCode,
         quantity,
         wcsApiKey,

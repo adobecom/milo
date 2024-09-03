@@ -8,4 +8,3 @@ LICENSE
 web-test-runner.config.mjs
 codecov.yaml
 libs/features/mas/*
-!libs/features/mas/commerce/default-price-literals.json
