@@ -16,7 +16,7 @@ const loadVideo = (a) => {
   }
 
   const attrs = getVideoAttrs(hash, dataset);
-  const video = `<video ${attrs}>
+  const video = `<video ${attrs} width='1920px' height='800px'>
         <source src="${videoPath}" type="video/mp4" />
       </video>`;
   if (!a.parentNode) return;
