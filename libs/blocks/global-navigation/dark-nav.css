@@ -1,0 +1,256 @@
+:root {
+  --text-color: #F2F2F2;
+  --background-color: #111;
+  --link-color: #1473e6;
+  --link-hover-color: #1473e6;
+  /* Top navigation - backgrounds */
+  --feds-background-popup: #111;
+  --feds-background-nav: #222;
+  --feds-background-nav--desktop: #1B1B1B;
+  /* Top navigation - borders */
+  --feds-borderColor: #303030;
+  --feds-borderColor-menu: #4B4B4B;
+  --feds-borderColor-navLink: #DBDBDB;
+  /* Top navigation - colors */
+  --feds-color-adobeBrand: #FFF;
+  --feds-color-headline--mobile: #F2F2F2;
+  --feds-color-headline: #EBEBEB;
+  --feds-color-popup: #EBEBEB;
+  --feds-color-hamburger: #FFF;
+  --feds-color-breadcrumbs--current: #DBDBDB;
+  --feds-color-signIn: #DBDBDB;
+  --feds-color-search: #DBDBDB;
+  /* Links */
+  --feds-color-link: #F2F2F2;
+  /* --feds-color-link--mobile: #F2F2F2; */
+  --feds-color-link--desktop: #DBDBDB;
+  --feds-color-link--hover: #1473e6;
+  --feds-color-blue-link: #5eaaf7;
+  --feds-color-navLink-description: #B0B0B0;
+  --feds-color-link-breadcrumbs: #B0B0B0;
+  --feds-background-link--hover: #1B1B1B;
+  --feds-borderColor-link: #323232;
+  /* Footer */
+  --feds-background-footer: #222;
+  --feds-background-footer--desktop: #1B1B1B;
+  --feds-borderColor-featuredProducts: #999;
+  /* Dropdown */
+  --feds-color-profile-heading--dark: #909090;
+  --feds-color-profile--dark: #DBDBDB;
+  --feds-color-profile--emphasis--dark: #F2F2F2;
+  --feds-border-profile--dark: 1px solid var(--feds-borderColor);
+}
+
+.feds--dark .feds-navLink--hoverCaret:hover,
+.feds--dark .feds-navLink--hoverCaret:focus {
+  background-color: #151515;
+}
+
+/* Desktop styles */
+@media (min-width: 900px) {
+  .feds--dark .feds-navLink {
+    color: var(--feds-color-link--desktop);
+  }
+
+  .feds--dark .feds-navLink:hover {
+    color: var(--feds-color-link--hover);
+  }
+  
+  .feds--dark .feds-navLink--hoverCaret:hover,
+  .feds--dark .feds-navLink--hoverCaret:focus {
+    color: var(--feds-color-link--desktop);
+    background-color: var(--background-color);
+  }
+}
+
+/* global-navigation.css */
+.feds-cta--primary {
+  background-color: #066ce7;
+  border-color: #066ce7;
+  color: #fff;
+}
+
+.feds--dark .feds-cta--secondary {
+  background-color: var(--background-color);
+  border-color: #393939;
+  color: var(--feds-color-link--dark);
+}
+
+.feds--dark .feds-cta--secondary:hover,
+.feds--dark .feds-cta--secondary:focus {
+  border-color: #444;
+  background-color: #2C2C2C;
+  color: var(--feds-color-link--dark);
+}
+
+/* Popup */
+.feds--dark .feds-popup {
+  background-color: #151515;
+}
+
+.feds--dark .feds-popup .feds-navLink {
+  color: var(--feds-color-popup);
+}
+
+.feds--dark .feds-popup .feds-navLink:hover,
+.feds--dark .feds-popup .feds-navLink:focus {
+  color: var(--feds-color-link--hover);
+}
+
+.feds--dark .feds-popup .feds-navLink--blue {
+  color: var(--feds-color-blue-link);
+}
+
+.feds--dark .feds-popup .feds-navLink--blue:hover,
+.feds--dark .feds-popup .feds-navLink--blue:focus {
+  color: var(--feds-color-link--hover);
+}
+
+.feds--dark .feds-brand-label,
+.feds--dark .feds-brand-image,
+.feds--dark .feds-logo,
+.feds--dark .feds-logo-label {
+  color: var(--feds-color-adobeBrand);
+}
+
+/* Desktop styles */
+@media (min-width: 900px) {
+  header.global-navigation.feds--dark {
+    background-color: var(--feds-background-nav--desktop);
+  }
+  
+  .feds--dark .feds-topnav-wrapper {
+    background-color: var(--feds-background-nav--desktop);
+  }
+  
+  /* Popup */
+  .feds--dark .feds-popup {
+    background-color: var(--feds-background-popup);
+    box-shadow: 0 3px 3px 0 rgb(255 255 255 / 20%);
+  }
+}
+
+/* gnav-search.css */
+.feds--dark .feds-search-input {
+  border: 1px solid var(--feds-borderColor);
+  background-color: transparent;
+  color: var(--feds-color-search);
+}
+
+.feds--dark .feds-search-icons svg path {
+  fill: var(--feds-color-search);
+}
+
+.feds--dark .feds-search-clear {
+  border: none;
+  color: var(--feds-color-search);
+}
+
+.feds--dark .feds-search-clear:hover {
+  color: var(--feds-color-link--hover);
+}
+
+.feds--dark .feds-search-results:not(:empty) {
+  border-color: var(--feds-borderColor);
+}
+
+.feds--dark .feds-search-result {
+  color: var(--feds-color-link);
+}
+
+.feds--dark .feds-search-result:hover,
+.feds--dark .feds-search-result:focus {
+  background: var(--feds-background-nav);
+}
+
+@media (min-width: 900px) {
+  .feds--dark .feds-promo {
+    border: 1px solid var(--feds-borderColor);
+    background: #1D1D1D;
+  }
+  
+  .feds--dark .feds-promo--dark,
+  .feds--dark .feds-promo--dark a:not(.feds-cta) {
+    color: var(--feds-color-headline);
+  }
+  
+  .feds--dark .feds-promo-link {
+    color: var(--feds-color-blue-link);
+  }
+
+  .feds--dark .feds-promo-link:hover {
+    color: var(--feds-color-link--hover);
+  }
+}
+
+@media (min-width: 1200px) {
+  .feds--dark .feds-crossCloudMenu-wrapper {
+    border-top: solid 1px var(--feds-borderColor);
+    background-color: var(--feds-background-popup);
+  }
+}
+
+/* dropdown.css */
+.feds--dark .feds-profile-name {
+  color: var(--feds-color-profile--emphasis--dark);
+}
+
+.feds--dark .feds-profile-email {
+  color: var(--feds-color-profile-heading--dark);
+}
+
+.feds--dark .feds-profile-account {
+  color: var(--feds-color-profile--dark);
+}
+
+.feds--dark .feds-profile-menu {
+  border: var(--feds-border-profile--dark);
+  background: var(--feds-background-nav);
+}
+
+.feds--dark .feds-local-menu {
+  border-top: var(--feds-border-profile--dark);
+}
+
+.feds--dark .feds-local-menu h5 {
+  color: var(--feds-color-profile-heading--dark);
+}
+
+.feds--dark .feds-profile-action {
+  border-top: var(--feds-border-profile--dark);
+}
+
+.feds--dark .feds-regionPicker-wrapper > .fragment {
+  background: var(--feds-background-popup);
+}
+
+.feds--dark .feds-social-icon {
+  color: #AAA;
+}
+
+.feds-social-link:hover .feds-social-icon {
+  color: #CCC;
+}
+
+.dialog-modal .region-nav {
+  color: var(--feds-color-link);
+  background-color: var(--feds-background-popup);
+}
+
+.dialog-modal .region-nav a {
+  color: var(--feds-color-blue-link);
+}
+
+.dialog-modal .region-nav a:hover {
+  text-decoration: underline;
+}
+
+header.global-navigation.feds--dark {
+  visibility: visible;
+}
+
+@media (min-width: 900px) {
+  .global-footer.feds--dark {
+    background: var(--feds-background-footer--desktop);
+  }
+}
