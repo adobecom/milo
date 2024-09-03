@@ -1,5 +1,13 @@
 import { wait } from './utils.js';
 
+class AEMError extends Error {
+    constructor(message, details = {}) {
+        super(message);
+        this.name = 'AEMError';
+        this.details = details;
+    }
+}
+
 class AEM {
     #author;
     constructor(bucket) {
@@ -13,7 +21,7 @@ class AEM {
         this.csrfTokenUrl = `${baseUrl}/libs/granite/csrf/token.json`;
 
         this.headers = {
-            // IMS users might not not have all the permissions, token in the sessionStorage is a temporary workaround
+            // IMS users might not have all the permissions, token in the sessionStorage is a temporary workaround
             Authorization: `Bearer ${sessionStorage.getItem('masAccessToken') ?? window.adobeid?.authorize?.()}`,
             pragma: 'no-cache',
             'cache-control': 'no-cache',
@@ -21,9 +29,15 @@ class AEM {
     }
 
     async getCsrfToken() {
-        const { token } = await fetch(this.csrfTokenUrl, {
+        const response = await fetch(this.csrfTokenUrl, {
             headers: this.headers,
-        }).then((res) => res.json());
+        });
+        if (!response.ok) {
+            throw new AEMError(
+                `Failed to get CSRF token: ${response.status} ${response.statusText}`,
+            );
+        }
+        const { token } = await response.json();
         return token;
     }
 
@@ -50,22 +64,25 @@ class AEM {
         const searchParams = new URLSearchParams({
             query: JSON.stringify({ filter }),
         }).toString();
-        return fetch(`${this.cfSearchUrl}?${searchParams}`, {
+        const response = await fetch(`${this.cfSearchUrl}?${searchParams}`, {
             headers: this.headers,
-        })
-            .then((res) => res.json())
-            .then((json) => json.items)
-            .then((items) => {
-                if (variant) {
-                    return items.filter((item) => {
-                        const [itemVariant] = item.fields.find(
-                            (field) => field.name === 'variant',
-                        )?.values;
-                        return itemVariant === variant;
-                    });
-                }
-                return items;
+        });
+        if (!response.ok) {
+            throw new AEMError(
+                `Search failed: ${response.status} ${response.statusText}`,
+            );
+        }
+        const json = await response.json();
+        let items = json.items;
+        if (variant) {
+            items = items.filter((item) => {
+                const [itemVariant] = item.fields.find(
+                    (field) => field.name === 'variant',
+                )?.values;
+                return itemVariant === variant;
             });
+        }
+        return items;
     }
 
     /**
@@ -75,9 +92,19 @@ class AEM {
      */
     async getFragmentByPath(path) {
         const headers = this.#author ? this.headers : {};
-        return fetch(`${this.cfFragmentsUrl}?path=${path}`, { headers })
-            .then((res) => res.json())
-            .then(({ items: [item] }) => item);
+        const response = await fetch(`${this.cfFragmentsUrl}?path=${path}`, {
+            headers,
+        });
+        if (!response.ok) {
+            throw new AEMError(
+                `Failed to get fragment: ${response.status} ${response.statusText}`,
+            );
+        }
+        const { items } = await response.json();
+        if (!items || items.length === 0) {
+            throw new AEMError('Fragment not found');
+        }
+        return items[0];
     }
 
     async getFragment(res) {
@@ -93,9 +120,15 @@ class AEM {
      * @returns {Promise<Object>} the raw fragment item
      */
     async getFragmentById(id) {
-        return await fetch(`${this.cfFragmentsUrl}/${id}`, {
+        const response = await fetch(`${this.cfFragmentsUrl}/${id}`, {
             headers: this.headers,
-        }).then(this.getFragment);
+        });
+        if (!response.ok) {
+            throw new AEMError(
+                `Failed to get fragment: ${response.status} ${response.statusText}`,
+            );
+        }
+        return await this.getFragment(response);
     }
 
     /**
@@ -105,7 +138,7 @@ class AEM {
      */
     async saveFragment(fragment) {
         const { title, fields } = fragment;
-        return await fetch(`${this.cfFragmentsUrl}/${fragment.id}`, {
+        const response = await fetch(`${this.cfFragmentsUrl}/${fragment.id}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -113,7 +146,13 @@ class AEM {
                 ...this.headers,
             },
             body: JSON.stringify({ title, fields }),
-        }).then(this.getFragment);
+        });
+        if (!response.ok) {
+            throw new AEMError(
+                `Failed to save fragment: ${response.status} ${response.statusText}`,
+            );
+        }
+        return await this.getFragment(response);
     }
 
     /**
@@ -139,20 +178,25 @@ class AEM {
             },
             body: formData,
         });
-        if (res.ok) {
-            const responseText = await res.text();
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(responseText, 'text/html');
-            const message = doc.getElementById('Message');
-            const newPath = message?.textContent.trim();
-            await wait(); // give AEM time to process the copy
-            let fragment = await this.getFragmentByPath(newPath);
-            if (fragment) {
-                fragment = await this.getFragmentById(fragment.id);
-            }
-            return fragment;
+        if (!res.ok) {
+            throw new AEMError(
+                `Failed to copy fragment: ${res.status} ${res.statusText}`,
+            );
         }
-        throw new Error('Failed to copy fragment');
+        const responseText = await res.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(responseText, 'text/html');
+        const message = doc.getElementById('Message');
+        const newPath = message?.textContent.trim();
+        if (!newPath) {
+            throw new AEMError('Failed to extract new path from copy response');
+        }
+        await wait(); // give AEM time to process the copy
+        let newFragment = await this.getFragmentByPath(newPath);
+        if (newFragment) {
+            newFragment = await this.getFragmentById(newFragment.id);
+        }
+        return newFragment;
     }
 
     /**
@@ -161,7 +205,7 @@ class AEM {
      * @returns {Promise<void>}
      */
     async publishFragment(fragment) {
-        await fetch(this.cfPublishUrl, {
+        const response = await fetch(this.cfPublishUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -175,6 +219,11 @@ class AEM {
                     '/var/workflow/models/scheduled_activation_with_references',
             }),
         });
+        if (!response.ok) {
+            throw new AEMError(
+                `Failed to publish fragment: ${response.status} ${response.statusText}`,
+            );
+        }
     }
 
     /**
@@ -183,7 +232,7 @@ class AEM {
      * @returns {Promise<void>}
      */
     async deleteFragment(fragment) {
-        await fetch(`${this.cfFragmentsUrl}/${fragment.id}`, {
+        const response = await fetch(`${this.cfFragmentsUrl}/${fragment.id}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
@@ -191,21 +240,47 @@ class AEM {
                 ...this.headers,
             },
         });
+        if (!response.ok) {
+            throw new AEMError(
+                `Failed to delete fragment: ${response.status} ${response.statusText}`,
+            );
+        }
     }
 
     sites = {
         cf: {
             fragments: {
+                /**
+                 * @see AEM#searchFragment
+                 */
                 search: this.searchFragment.bind(this),
+                /**
+                 * @see AEM#getFragmentByPath
+                 */
                 getByPath: this.getFragmentByPath.bind(this),
+                /**
+                 * @see AEM#getFragmentById
+                 */
                 getById: this.getFragmentById.bind(this),
+                /**
+                 * @see AEM#saveFragment
+                 */
                 save: this.saveFragment.bind(this),
+                /**
+                 * @see AEM#copyFragmentClassic
+                 */
                 copy: this.copyFragmentClassic.bind(this),
+                /**
+                 * @see AEM#publishFragment
+                 */
                 publish: this.publishFragment.bind(this),
+                /**
+                 * @see AEM#deleteFragment
+                 */
                 delete: this.deleteFragment.bind(this),
             },
         },
     };
 }
 
-export { AEM };
+export { AEM, AEMError };
