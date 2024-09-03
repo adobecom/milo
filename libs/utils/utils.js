@@ -1187,75 +1187,56 @@ export function partition(arr, fn) {
 }
 
 async function processSection(section, config, isDoc) {
+  // todo:
+  // We need to run execute the sync part of the icons&placeholders AFTER the inline frags resolved
+  const promises = [
+    decoratePlaceholders(section.el, config),
+    decorateIcons(section.el, config),
+  ];
   const inlineFrags = [...section.el.querySelectorAll('a[href*="#_inline"]')];
   if (inlineFrags.length) {
-    const { default: loadInlineFrags } = await import('../blocks/fragment/fragment.js');
-    const fragPromises = inlineFrags.map((link) => loadInlineFrags(link));
-    await Promise.all(fragPromises);
-    const newlyDecoratedSection = decorateSection(section.el, section.idx);
-    section.blocks = newlyDecoratedSection.blocks;
-    section.preloadLinks = newlyDecoratedSection.preloadLinks;
+    const loadInlineFragsPromise = import('../blocks/fragment/fragment.js').then(({ default: loadInlineFrags }) => {
+      const fragPromises = inlineFrags.map((link) => loadInlineFrags(link));
+      return Promise.all(fragPromises).then(() => {
+        const newlyDecoratedSection = decorateSection(section.el, section.idx);
+        section.blocks = newlyDecoratedSection.blocks;
+        section.preloadLinks = newlyDecoratedSection.preloadLinks;
+      });
+    });
+    promises.push(loadInlineFragsPromise);
   }
-  await decoratePlaceholders(section.el, config);
-
   if (section.preloadLinks.length) {
     const [modals, nonModals] = partition(section.preloadLinks, (block) => block.classList.contains('modal'));
-    const preloads = nonModals.map((block) => loadBlock(block));
-    await Promise.all(preloads);
+    nonModals.forEach((block) => promises.push(loadBlock(block)));
     modals.forEach((block) => loadBlock(block));
   }
-
-  const loaded = section.blocks.map((block) => loadBlock(block));
-
-  await decorateIcons(section.el, config);
-
-  // Only move on to the next section when all blocks are loaded.
-  await Promise.all(loaded);
-
-  // Show the section when all blocks inside are done.
-  delete section.el.dataset.status;
-
-  if (isDoc && section.el.dataset.idx === '0') {
-    await loadPostLCP(config);
-  }
-
+  section.blocks.forEach((block) => promises.push(loadBlock(block)));
+  await Promise.all(promises);
+  delete section.el.dataset.status; // show section once loading finished
+  if (isDoc && section.el.dataset.idx === '0') await loadPostLCP(config);
   delete section.el.dataset.idx;
-
   return section.blocks;
 }
 
 export async function loadArea(area = document) {
   const isDoc = area === document;
-
   if (isDoc) {
     await checkForPageMods();
     appendHtmlToCanonicalUrl();
   }
   const config = getConfig();
-
-  if (isDoc) {
-    decorateDocumentExtras();
-  }
-
+  if (isDoc) decorateDocumentExtras();
   const sections = decorateSections(area, isDoc);
-
   const areaBlocks = [];
   for (const section of sections) {
     const sectionBlocks = await processSection(section, config, isDoc);
     areaBlocks.push(...sectionBlocks);
-
     areaBlocks.forEach((block) => {
       if (!block.className.includes('metadata')) block.dataset.block = '';
     });
   }
-
-  const currentHash = window.location.hash;
-  if (currentHash) {
-    scrollToHashedElement(currentHash);
-  }
-
+  if (window.location.hash) scrollToHashedElement(window.location.hash);
   if (isDoc) await documentPostSectionLoading(config);
-
   await loadDeferred(area, areaBlocks, config);
 }
 
