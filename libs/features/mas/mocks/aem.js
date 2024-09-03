@@ -14,6 +14,8 @@ export async function withAem(originalFetch) {
                 .then(({ items }) => items.find((item) => item.path === path));
             if (item) {
                 return Promise.resolve({
+                    ok: true,
+                    status: 200,
                     json: () => Promise.resolve({ items: [item] }),
                 });
             }
