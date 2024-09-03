@@ -1,9 +1,9 @@
 /*
  * Marquee - v6.0
  */
-
-import { decorateButtons, getBlockSize, decorateBlockBg } from '../../utils/decorate.js';
-import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
+import {
+  createTag, getConfig, loadStyle, decorateButtons, getBlockSize, decorateBlockBg,
+} from '../../utils/utils.js';
 
 // [headingSize, bodySize, detailSize]
 const blockTypeSizes = {
