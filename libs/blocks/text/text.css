@@ -192,6 +192,10 @@
   display: flex;
 }
 
+.text-block.center .image picture {
+  flex-direction: center;
+}
+
 /* icon inline */
 .text-block.icon-inline .foreground > div {
   display: grid;
