@@ -118,14 +118,14 @@ export const getTargetPersonalization = async () => {
   const responseStart = Date.now();
   window.addEventListener(ALLOY_SEND_EVENT, () => {
     const responseTime = calculateResponseTime(responseStart);
-    window.lana.log(`target response time: ${responseTime}`, { tags: 'errorType=info,module=martech' });
+    window.lana.log(`target response time: ${responseTime}`, { tags: 'module-martech', errorType: 'i' });
   }, { once: true });
 
   let manifests = [];
   let propositions = [];
   const response = await waitForEventOrTimeout(ALLOY_SEND_EVENT, timeout);
   if (response.error) {
-    window.lana.log('target response time: ad blocker', { tags: 'errorType=info,module=martech' });
+    window.lana.log('target response time: ad blocker', { tags: 'errorType-info,module-martech' });
     return [];
   }
   if (response.timeout) {
