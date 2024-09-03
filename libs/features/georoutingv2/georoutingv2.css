@@ -143,6 +143,7 @@
 @media (min-width: 480px) {
   .dialog-modal.locale-modal-v2 {
     background-image: url('/libs/features/georoutingv2/img/GeoModal_BG_Map_Desktop_smaller.jpeg');
+    background-image: url('https://main--cc--adobecom.hlx.live/cc-shared/assets/img/product-icons/svg/photoshop-40.svg');
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
@@ -171,6 +172,7 @@
 
 @media (min-width: 1200px) {
   .dialog-modal.locale-modal-v2 {
-    background-image: url('/libs/features/georoutingv2/img/GeoModal_BG_Map_Desktop_smaller.jpeg');
+    /* background-image: url('/libs/features/georoutingv2/img/GeoModal_BG_Map_Desktop_smaller.jpeg'); */
+    background-image: url('https://main--cc--adobecom.hlx.live/cc-shared/assets/img/product-icons/svg/photoshop-40.svg');
   }
 }
