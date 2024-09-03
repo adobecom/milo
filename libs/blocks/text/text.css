@@ -122,6 +122,40 @@
 .text-block .icon-area {
   display: flex;
   column-gap: var(--spacing-xxs);
+  margin-block-end: var(--spacing-m);
+}
+
+.text-block.xxs-icon .icon-area {
+  height: var(--icon-size-xxs);
+}
+
+.text-block.xs-icon .icon-area {
+  height: var(--icon-size-xs);
+}
+
+.text-block.s-icon .icon-area {
+  height: var(--icon-size-s);
+}
+
+.text-block.m-icon .icon-area {
+  height: var(--icon-size-m);
+}
+
+.text-block.l-icon .icon-area {
+  height: var(--icon-size-l);
+}
+
+.text-block.xl-icon .icon-area {
+  height: var(--icon-size-xl);
+}
+
+.text-block.xxl-icon .icon-area {
+  height: var(--icon-size-xxl);
+}
+
+.text-block .icon-area img {
+  max-height: 100%;
+  width: auto;
 }
 
 .text-block.center .action-area,
