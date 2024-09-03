@@ -109,10 +109,10 @@ export default async function init(el) {
   rows.forEach((row) => {
     row.classList.add('foreground');
     if (!hasLinkFarm) {
-      decorateBlockText(row, blockTypeSizes[blockType][size]);
+      [...row.children].forEach((c) => decorateBlockText(c, blockTypeSizes[blockType][size]));
       decorateMultiViewport(row);
     }
-    [...row.children].forEach((child) => decorateBlockIconArea(child, el));
+    [...row.children].forEach((c) => decorateBlockIconArea(c, el));
   });
   if (el.classList.contains('full-width')) helperClasses.push('max-width-8-desktop', 'center', 'xxl-spacing');
   if (el.classList.contains('intro')) helperClasses.push('max-width-8-desktop', 'xxl-spacing-top', 'xl-spacing-bottom');
@@ -140,5 +140,7 @@ export default async function init(el) {
   if (el.matches('[class*="rounded-corners"]')) addStyle('rounded-corners');
   if (el.matches('[class*="-lockup"]')) addStyle('iconography');
   // Override Detail with Title L style if class exists - Temporary solution until Spectrum 2
-  if (el.classList.contains('l-title')) el.querySelector('[class*="detail-"]')?.classList.add('title-l');
+  if (el.classList.contains('l-title')) {
+    el.querySelectorAll('[class*="detail-"]')?.forEach((detail) => detail.classList.add('title-l'));
+  }
 }
