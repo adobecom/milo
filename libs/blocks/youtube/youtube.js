@@ -30,7 +30,7 @@ class LiteYTEmbed extends HTMLElement {
 
   static loadYouTubeAPI() {
     return new Promise((resolve) => {
-      if (window.YT && window.YT.Player) {
+      if (window.YT?.Player) {
         resolve();
         return;
       }

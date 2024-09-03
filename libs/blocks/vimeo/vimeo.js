@@ -7,7 +7,6 @@ class LiteVimeo extends HTMLElement {
 
   connectedCallback() {
     this.videoId = this.getAttribute('videoid');
-    this.language = this.getAttribute('language') || '';
     this.setupThumbnail();
     this.setupPlayButton();
     this.addEventListener('pointerover', LiteVimeo.warmConnections, { once: true });
