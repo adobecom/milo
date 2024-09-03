@@ -193,7 +193,7 @@
 }
 
 .text-block.center .image picture {
-  flex-direction: center;
+  justify-content: center;
 }
 
 /* icon inline */
