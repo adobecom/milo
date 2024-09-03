@@ -4,9 +4,8 @@ import { assert, stub } from 'sinon';
 import { getConfig, setConfig } from '../../../libs/utils/utils.js';
 import {
   handleFragmentCommand, applyPers,
-  init, matchGlob, createFrag, combineMepSources, buildVariantInfo,
+  init, matchGlob, createContent, combineMepSources, buildVariantInfo,
 } from '../../../libs/features/personalization/personalization.js';
-import spoofParams from './spoofParams.js';
 import mepSettings from './mepSettings.js';
 
 document.head.innerHTML = await readFile({ path: './mocks/metadata.html' });
@@ -54,37 +53,39 @@ describe('Functional Test', () => {
   });
 
   it('Can select elements using block-#', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
     await loadManifestAndSetResponse('./mocks/manifestBlockNumber.json');
 
-    expect(document.querySelector('.marquee')).to.not.be.null;
+    const firstMarquee = document.getElementsByClassName('marquee')[0];
+    const secondMarquee = document.getElementsByClassName('marquee')[1];
+    expect(firstMarquee).to.not.be.null;
+    expect(secondMarquee).to.not.be.null;
     expect(document.querySelector('a[href="/fragments/replace/marquee/r2c1"]')).to.be.null;
     expect(document.querySelector('a[href="/fragments/replace/marquee-2/r3c2"]')).to.be.null;
-    const secondMarquee = document.getElementsByClassName('marquee')[1];
-    expect(secondMarquee).to.not.be.null;
 
     await init(mepSettings);
 
     const fragment = document.querySelector('a[href="/fragments/replace/marquee/r2c1"]');
-    expect(fragment).to.not.be.null;
-    const replacedCell = document.querySelector('.marquee > div:nth-child(2) > div:nth-child(1)');
-    expect(replacedCell.firstChild.firstChild).to.equal(fragment);
     const secondFrag = document.querySelector('a[href="/fragments/replace/marquee-2/r2c2"]');
-    expect(secondMarquee.lastElementChild.lastElementChild.firstChild.firstChild)
-      .to.equal(secondFrag);
+    expect(fragment).to.not.be.null;
+    expect(secondFrag).to.not.be.null;
+
+    const firstMarqueeReplacedCell = firstMarquee.querySelector('p > a');
+    const secondMarqueeReplacedCell = secondMarquee.querySelector('p > a');
+    expect(firstMarqueeReplacedCell.href).to.equal(fragment.href);
+    expect(secondMarqueeReplacedCell.href).to.equal(secondFrag.href);
   });
 
   it('Can select blocks using section and block indexs', async () => {
     await loadManifestAndSetResponse('./mocks/manifestSectionBlock.json');
 
-    expect(document.querySelector('.special-block')).to.not.be.null;
+    expect(document.querySelector('.custom-block-1')).to.not.be.null;
     expect(document.querySelector('.custom-block-2')).to.not.be.null;
-    expect(document.querySelector('.custom-block-3')).to.not.be.null;
 
     await init(mepSettings);
 
-    expect(document.querySelector('.special-block')).to.be.null;
+    expect(document.querySelector('.custom-block-1')).to.be.null;
     expect(document.querySelector('.custom-block-2')).to.be.null;
-    expect(document.querySelector('.custom-block-3')).to.be.null;
   });
 
   it('scheduled manifest should apply changes if active (bts)', async () => {
@@ -285,7 +286,7 @@ describe('Functional Test', () => {
 
     await init(mepSettings);
 
-    assert.calledWith(window.console.log, 'Invalid selector: ', '.bad...selector');
+    assert.calledWith(window.console.log, 'Invalid selector: ');
     window.console.log.reset();
   });
 
@@ -307,16 +308,6 @@ describe('Functional Test', () => {
     expect(document.querySelector('meta[name="mynewmetadata"]').content).to.equal('woot');
     expect(document.querySelector('meta[property="og:title"]').content).to.equal('New Title');
     expect(document.querySelector('meta[property="og:image"]').content).to.equal('https://adobe.com/path/to/image.jpg');
-  });
-
-  it('should override to param-newoffer=123', async () => {
-    spoofParams({ newoffer: '123' });
-    const config = getConfig();
-    await loadManifestAndSetResponse('./mocks/actions/manifestAppendToSection.json');
-    setTimeout(async () => {
-      await init(mepSettings);
-      expect(config.mep.experiments[0].selectedVariantName).to.equal('param-newoffer=123');
-    }, 100);
   });
 });
 
@@ -367,7 +358,7 @@ describe('matchGlob function', () => {
     const parent = document.createElement('div');
     const el = document.createElement('div');
     parent.appendChild(el);
-    const wrapper = createFrag(el, '/fragments/promos/path-to-promo/#modal-hash:delay=1');
+    const wrapper = createContent(el, '/fragments/promos/path-to-promo/#modal-hash:delay=1');
     expect(wrapper.tagName).to.equal('P');
     expect(wrapper.classList.contains('hide-block')).to.be.true;
   });

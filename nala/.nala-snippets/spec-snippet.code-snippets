@@ -1,0 +1,25 @@
+{
+  "Create Nala Spec": {
+    "prefix": "create nala spec",
+    "body": [
+      "module.exports = {",
+      "  FeatureName: '${1:Block or Feature Name}',",
+      "  features: [",
+      "    {",
+      "      tcid: '0',",
+      "      name: '@${2:spec-name}',",
+      "      path: '/drafts/nala/[${3:test-page-path}]',",
+      "      data: {",
+      "        attribute-1: '${4:value}',",
+      "        attribute-2: '${5:value}',",
+      "        attribute-3: '${6:value}',",
+      "      },",
+      "      tags: '@Block  @smoke @regression @milo',",
+      "    },",
+      "  ],",
+      "};"
+    ],
+    "description": "Create a Nala spec with block name or feature name"
+  }
+}
+

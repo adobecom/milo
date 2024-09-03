@@ -86,6 +86,8 @@ describe('insertAfter action', async () => {
 
     expect(document.querySelector('a[href="/fragments/insertafter"]')).to.be.null;
     expect(document.querySelector('a[href="/fragments/insertafterfragment"]')).to.be.null;
+    expect(document.querySelector('#insertafter').getAttribute('href')).to.equal('/my-page.html');
+    expect(document.querySelector('#inserted-html')).to.be.null;
     await init(mepSettings);
     expect(getConfig().mep.commands[0].targetManifestId).to.equal(false);
 
@@ -98,6 +100,8 @@ describe('insertAfter action', async () => {
     expect(fragment).to.not.be.null;
 
     expect(fragment.parentElement.previousElementSibling.querySelector('a[href="/fragments/insertaround"]')).to.exist;
+    expect(document.querySelector('#insertafter').getAttribute('href')).to.equal('/my-page.html#modal');
+    expect(document.querySelector('#inserted-html')).to.not.be.null;
   });
 });
 
@@ -109,6 +113,7 @@ describe('insertBefore action', async () => {
     setFetchResponse(manifestJson);
 
     expect(document.querySelector('a[href="/fragments/insertbefore"]')).to.be.null;
+    expect(document.querySelector('#insertbefore').getAttribute('href')).to.equal('/my-page.html');
     await init(mepSettings);
     expect(getConfig().mep.commands[0].targetManifestId).to.equal(false);
 
@@ -121,11 +126,12 @@ describe('insertBefore action', async () => {
     expect(fragment).to.not.be.null;
 
     expect(fragment.parentElement.nextElementSibling.querySelector('a[href="/fragments/insertaround"]')).to.exist;
+    expect(document.querySelector('#insertbefore').getAttribute('href')).to.equal('/de/my-page.html');
   });
 });
 
 describe('prependToSection action', async () => {
-  it('appendToSection should add fragment to beginning of section', async () => {
+  it('prependToSection should add fragment to beginning of section', async () => {
     let manifestJson = await readFile({ path: './mocks/actions/manifestPrependToSection.json' });
 
     manifestJson = JSON.parse(manifestJson);
@@ -154,6 +160,34 @@ describe('appendToSection action', async () => {
 
     const fragment = document.querySelector('main > div:nth-child(2) > div:last-child a[href="/test/features/personalization/mocks/fragments/appendToSection"]');
     expect(fragment).to.not.be.null;
+  });
+});
+
+describe('replace action with html/text instead of fragment', () => {
+  it('should replace marquee content', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
+    let manifestJson = await readFile({ path: './mocks/actions/manifestUpdate.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+
+    const primaryCTA = document.querySelector('.marquee p strong a');
+    const secondaryCTA = document.querySelector('.marquee p a');
+    const header = document.querySelector('.marquee h2');
+    const actionArea = document.querySelector('main div:nth-child(5) .marquee p:has(em a, strong a)');
+
+    expect(header.innerText).to.not.equal('updated text');
+    expect(primaryCTA.innerText).to.not.equal('updated text');
+    expect(primaryCTA.href).to.not.equal('updated text');
+    expect(secondaryCTA.innerText).to.not.equal('updated text');
+    expect(actionArea.innerHTML).to.not.equal('<p>updated text</p>');
+
+    await init(mepSettings);
+
+    expect(header.innerText).to.equal('updated text');
+    expect(primaryCTA.innerText).to.equal('updated text');
+    expect(primaryCTA.href).to.equal('https://test.com/updated_href');
+    expect(secondaryCTA.innerText).to.equal('updated text');
+    expect(actionArea.innerHTML).to.equal('<p>updated text</p>');
   });
 });
 

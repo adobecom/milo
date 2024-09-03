@@ -3,8 +3,8 @@
 }
 
 .feds-search-dropdown {
-  border-bottom: 1px solid var(--feds-borderColor--light);
-  background-color: var(--feds-background-nav--light);
+  border-bottom: 1px solid var(--feds-borderColor);
+  background-color: var(--feds-background-nav);
 }
 
 .feds-search-bar {

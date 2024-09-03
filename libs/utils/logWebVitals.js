@@ -62,7 +62,21 @@ function getElementInfo(el) {
   return `${el.outerHTML.substring(0, 100)}...`;
 }
 
-function observeLCP(lanaData, delay) {
+function isFragmentFromMep(fragPath, mep) {
+  return mep.experiments?.some(({ selectedVariant }) => {
+    const { commands = [], fragments = [] } = selectedVariant || {};
+
+    return commands.some((cmd) => {
+      try {
+        return new URL(cmd.target).pathname === fragPath;
+      } catch {
+        return false;
+      }
+    }) || fragments.some((cmd) => cmd?.val === fragPath);
+  });
+}
+
+function observeLCP(lanaData, delay, mep) {
   new PerformanceObserver((list) => {
     const entries = list.getEntries();
     const lastEntry = entries[entries.length - 1]; // Use the latest LCP candidate
@@ -70,6 +84,13 @@ function observeLCP(lanaData, delay) {
     const lcpEl = lastEntry.element;
     lanaData.lcpElType = lcpEl.nodeName.toLowerCase();
     lanaData.lcpEl = getElementInfo(lcpEl);
+    const closestFrag = lcpEl.closest('.fragment');
+    lanaData.isFrag = closestFrag ? 'true' : 'false';
+    if (closestFrag) {
+      lanaData.isMep = isFragmentFromMep(closestFrag.dataset.path, mep) ? 'true' : 'false';
+    } else {
+      lanaData.isMep = 'false';
+    }
 
     setTimeout(() => {
       sendToLana(lanaData);
@@ -99,7 +120,7 @@ export default function webVitals(mep, { delay = 1000, sampleRate = 50 } = {}) {
     const lanaData = {};
     logMepExperiments(lanaData, mep);
     observeCLS(lanaData);
-    observeLCP(lanaData, delay);
+    observeLCP(lanaData, delay, mep);
   }
   if (getConsent()) {
     handleEvent();

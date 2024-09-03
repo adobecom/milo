@@ -1,0 +1,65 @@
+{
+  "total": 5,
+  "offset": 0,
+  "limit": 5,
+  "data": [
+    {
+      "action": "replace",
+      "selector": ".marquee h2",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "",
+      "target-var1": "updated text",
+      "firefox": "",
+      "android": "",
+      "ios": ""
+    },
+    {
+      "action": "replace",
+      "selector": "marquee primary-cta",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "",
+      "target-var1": "updated text",
+      "firefox": "",
+      "android": "",
+      "ios": ""
+    },
+    {
+      "action": "replace",
+      "selector": ".marquee primary-cta",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "",
+      "'modifier": "href",
+      "target-var1": "https://test.com/updated_href",
+      "firefox": "",
+      "android": "",
+      "ios": ""
+    },
+    {
+      "action": "replace",
+      "selector": "marquee secondary-cta",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "",
+      "target-var1": "updated text",
+      "firefox": "",
+      "android": "",
+      "ios": ""
+    },
+    {
+      "action": "replace",
+      "selector": "section5 marquee action-area",
+      "'modifier": "html",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "",
+      "target-var1": "<p>updated text</p>",
+      "firefox": "",
+      "android": "",
+      "ios": ""
+    }
+  ],
+  ":type": "sheet"
+}

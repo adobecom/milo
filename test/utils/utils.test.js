@@ -3,10 +3,9 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { waitFor, waitForElement } from '../helpers/waitfor.js';
 import { mockFetch } from '../helpers/generalHelpers.js';
-import { createTag } from '../../libs/utils/utils.js';
+import { createTag, customFetch } from '../../libs/utils/utils.js';
 
 const utils = {};
-
 const config = {
   codeRoot: '/libs',
   locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
@@ -29,6 +28,12 @@ describe('Utils', () => {
 
   after(() => {
     delete window.hlx;
+  });
+
+  it('fetches with cache param', async () => {
+    window.fetch = mockFetch({ payload: true });
+    const resp = await customFetch({ resource: './mocks/taxonomy.json', withCacheRules: true });
+    expect(resp.json()).to.be.true;
   });
 
   describe('with body', () => {
