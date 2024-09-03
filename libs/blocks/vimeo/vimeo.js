@@ -5,9 +5,8 @@ import { createIntersectionObserver, createTag, getConfig, isInTextNode, loadLin
 class LiteVimeo extends HTMLElement {
   static preconnected = false;
 
-  static isMobile = navigator.userAgent.includes('Mobi');
-
   connectedCallback() {
+    this.isMobile = navigator.userAgent.includes('Mobi');
     this.videoId = this.getAttribute('videoid');
     this.setupThumbnail();
     this.setupPlayButton();
@@ -59,7 +58,7 @@ class LiteVimeo extends HTMLElement {
       title: 'Content from Vimeo',
       allow: 'accelerometer; fullscreen; autoplay; encrypted-media; gyroscope; picture-in-picture',
       allowFullscreen: true,
-      src: `https://player.vimeo.com/video/${encodeURIComponent(this.videoId)}?autoplay=1&muted=${LiteVimeo.isMobile ? 1 : 0}`,
+      src: `https://player.vimeo.com/video/${encodeURIComponent(this.videoId)}?autoplay=1&muted=${this.isMobile ? 1 : 0}`,
     });
     this.insertAdjacentElement('afterend', iframeEl);
     iframeEl.addEventListener('load', () => iframeEl.focus(), { once: true });
