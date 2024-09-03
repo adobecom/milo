@@ -582,6 +582,25 @@ export function parseManifestVariants(data, manifestPath, targetId) {
   return null;
 }
 
+export async function createMartechMetadata(placeholders, config, column) {
+  if (config.locale.ietf === 'en-US') return;
+
+  await import('../../martech/attributes.js').then(({ processTrackingLabels }) => {
+    config.mep.analyticLocalization ??= {};
+
+    placeholders.forEach((item, i) => {
+      const firstRow = placeholders[i];
+      let usValue = firstRow['en-us'] || firstRow.us || firstRow.en || firstRow.key;
+
+      if (!usValue) return;
+
+      usValue = processTrackingLabels(usValue);
+      const translatedValue = processTrackingLabels(item[column]);
+      config.mep.analyticLocalization[translatedValue] = usValue;
+    });
+  });
+}
+
 /* c8 ignore start */
 function parsePlaceholders(placeholders, config, selectedVariantName = '') {
   if (!placeholders?.length || selectedVariantName === 'default') return config;
@@ -603,6 +622,9 @@ function parsePlaceholders(placeholders, config, selectedVariantName = '') {
     }, {});
     config.placeholders = { ...(config.placeholders || {}), ...results };
   }
+
+  createMartechMetadata(placeholders, config, val);
+
   return config;
 }
 

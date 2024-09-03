@@ -27,6 +27,8 @@ export function createTag(tag, attributes, html) {
 
 export const getConfig = () => ({});
 
+export const customFetch = stub();
+
 export const loadStyle = stub();
 
 export const loadScript = stub();
