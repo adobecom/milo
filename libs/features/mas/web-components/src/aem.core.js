@@ -1,7 +1,5 @@
 import { wait } from './utils.js';
 
-const NETWORK_ERROR_MESSAGE = 'Network error';
-
 class AEM {
     #author;
     constructor(bucket) {
@@ -26,7 +24,7 @@ class AEM {
         const response = await fetch(this.csrfTokenUrl, {
             headers: this.headers,
         }).catch((err) => {
-            throw new Error(`${NETWORK_ERROR_MESSAGE}: ${err.message}`);
+            throw new Error(`Network errorf: ${err.message}`);
         });
         if (!response.ok) {
             throw new Error(
@@ -63,7 +61,7 @@ class AEM {
         const response = await fetch(`${this.cfSearchUrl}?${searchParams}`, {
             headers: this.headers,
         }).catch((err) => {
-            throw new Error(`${NETWORK_ERROR_MESSAGE}: ${err.message}`);
+            throw new Error(`Network error: ${err.message}`);
         });
         if (!response.ok) {
             throw new Error(
@@ -93,7 +91,7 @@ class AEM {
         const response = await fetch(`${this.cfFragmentsUrl}?path=${path}`, {
             headers,
         }).catch((err) => {
-            throw new Error(`${NETWORK_ERROR_MESSAGE}: ${err.message}`);
+            throw new Error(`Network error: ${err.message}`);
         });
         if (!response.ok) {
             throw new Error(
@@ -147,7 +145,7 @@ class AEM {
             },
             body: JSON.stringify({ title, fields }),
         }).catch((err) => {
-            throw new Error(`${NETWORK_ERROR_MESSAGE}: ${err.message}`);
+            throw new Error(`Network error: ${err.message}`);
         });
         if (!response.ok) {
             throw new Error(
@@ -180,7 +178,7 @@ class AEM {
             },
             body: formData,
         }).catch((err) => {
-            throw new Error(`${NETWORK_ERROR_MESSAGE}: ${err.message}`);
+            throw new Error(`Network error: ${err.message}`);
         });
         if (!res.ok) {
             throw new Error(
@@ -223,7 +221,7 @@ class AEM {
                     '/var/workflow/models/scheduled_activation_with_references',
             }),
         }).catch((err) => {
-            throw new Error(`${NETWORK_ERROR_MESSAGE}: ${err.message}`);
+            throw new Error(`Network error: ${err.message}`);
         });
         if (!response.ok) {
             throw new Error(
@@ -247,7 +245,7 @@ class AEM {
                 ...this.headers,
             },
         }).catch((err) => {
-            throw new Error(`${NETWORK_ERROR_MESSAGE}: ${err.message}`);
+            throw new Error(`Network error: ${err.message}`);
         });
         if (!response.ok) {
             throw new Error(
