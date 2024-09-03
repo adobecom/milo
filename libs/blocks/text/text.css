@@ -196,6 +196,10 @@
   justify-content: center;
 }
 
+.text-block.right .image picture {
+  justify-content: flex-end;
+}
+
 /* icon inline */
 .text-block.icon-inline .foreground > div {
   display: grid;
