@@ -16,7 +16,7 @@
 
 .text-block [class^="heading"] { margin: 0 0 var(--spacing-xs) 0; }
 
-.text-block [class^="detail"] { margin: 0 0 var(--spacing-xxs) 0; }
+.text-block [class^="detail"] { margin: 0 0 var(--spacing-xs) 0; }
 
 .text-block .cta-container,
 .text-block p.action-area { margin-top: var(--spacing-s); }
