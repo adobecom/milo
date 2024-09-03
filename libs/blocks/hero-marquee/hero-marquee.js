@@ -1,12 +1,11 @@
 import {
-  decorateBlockBg,
+  createTag, loadStyle, getConfig, decorateBlockBg,
   decorateBlockHrs,
   decorateBlockText,
   decorateTextOverrides,
   decorateButtons,
   handleObjectFit,
-} from '../../utils/decorate.js';
-import { createTag, loadStyle, getConfig } from '../../utils/utils.js';
+} from '../../utils/utils.js';
 
 const contentTypes = ['list', 'qrcode', 'lockup', 'text', 'bgcolor', 'supplemental'];
 const rowTypeKeyword = 'con-block-row-';
