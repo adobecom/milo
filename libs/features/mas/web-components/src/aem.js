@@ -224,6 +224,7 @@ class AEM {
                 `Failed to publish fragment: ${response.status} ${response.statusText}`,
             );
         }
+        return await response.json();
     }
 
     /**
@@ -245,6 +246,7 @@ class AEM {
                 `Failed to delete fragment: ${response.status} ${response.statusText}`,
             );
         }
+        return response; //204 No Content
     }
 
     sites = {
