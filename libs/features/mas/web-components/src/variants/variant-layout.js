@@ -6,7 +6,7 @@ export class VariantLayout {
   card;
 
   insertVariantStyle() {
-    if (!VariantLayout?.styleMap?.[this.card.variant]) {
+    if (!VariantLayout.styleMap[this.card.variant]) {
       VariantLayout.styleMap[this.card.variant] = true;
       const styles = document.createElement('style');
       styles.innerHTML = this.getGlobalCSS();

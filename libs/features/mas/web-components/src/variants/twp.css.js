@@ -53,29 +53,6 @@ merch-card[variant='twp'] merch-offer-select {
   grid-template-columns: var(--consonant-merch-card-image-width);
 }
 
-@media screen and ${DESKTOP_UP} {
-  :root {
-    --consonant-merch-card-twp-width: 268px;
-  }
-  .one-merch-card.twp
-  .two-merch-cards.twp {
-      grid-template-columns: repeat(2, var(--consonant-merch-card-twp-width));
-  }
-  .three-merch-cards.twp {
-      grid-template-columns: repeat(3, var(--consonant-merch-card-twp-width));
-  }
-}
-
-@media screen and ${LARGE_DESKTOP} {
-    .one-merch-card.twp
-    .two-merch-cards.twp {
-        grid-template-columns: repeat(2, var(--consonant-merch-card-twp-width));
-    }
-    .three-merch-cards.twp {
-    grid-template-columns: repeat(3, var(--consonant-merch-card-twp-width));
-  }
-}
-
 @media screen and ${MOBILE_LANDSCAPE} {
   :root {
     --consonant-merch-card-twp-width: 300px;
@@ -97,6 +74,29 @@ merch-card[variant='twp'] merch-offer-select {
   }
   .three-merch-cards.twp {
       grid-template-columns: repeat(3, var(--consonant-merch-card-twp-width));
+  }
+}
+  
+@media screen and ${DESKTOP_UP} {
+  :root {
+    --consonant-merch-card-twp-width: 268px;
+  }
+  .one-merch-card.twp
+  .two-merch-cards.twp {
+      grid-template-columns: repeat(2, var(--consonant-merch-card-twp-width));
+  }
+  .three-merch-cards.twp {
+      grid-template-columns: repeat(3, var(--consonant-merch-card-twp-width));
+  }
+}
+
+@media screen and ${LARGE_DESKTOP} {
+    .one-merch-card.twp
+    .two-merch-cards.twp {
+        grid-template-columns: repeat(2, var(--consonant-merch-card-twp-width));
+    }
+    .three-merch-cards.twp {
+    grid-template-columns: repeat(3, var(--consonant-merch-card-twp-width));
   }
 }
 `;
