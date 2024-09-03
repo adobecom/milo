@@ -1,5 +1,6 @@
 *.json
 !*/**/*.json
+!libs/features/mas/**/*.json
 .*
 *.md
 test/*
