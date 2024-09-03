@@ -2,6 +2,8 @@
 import { createIntersectionObserver, createTag, isInTextNode, loadLink } from '../../utils/utils.js';
 
 class LiteYTEmbed extends HTMLElement {
+  static isMobile = navigator.userAgent.includes('Mobi');
+
   connectedCallback() {
     this.videoId = this.getAttribute('videoid');
     const playBtnEl = createTag('button', { type: 'button', class: 'lty-playbtn' });
@@ -15,7 +17,7 @@ class LiteYTEmbed extends HTMLElement {
     playBtnEl.append(playBtnLabelEl);
     this.addEventListener('pointerover', LiteYTEmbed.warmConnections, { once: true });
     this.addEventListener('click', this.addIframe);
-    this.needsYTApiForAutoplay = navigator.vendor.includes('Apple') || navigator.userAgent.includes('Mobi');
+    this.needsYTApiForAutoplay = navigator.vendor.includes('Apple') || LiteYTEmbed.isMobile;
   }
 
   static warmConnections() {
@@ -47,6 +49,7 @@ class LiteYTEmbed extends HTMLElement {
     const params = new URLSearchParams(this.getAttribute('params') || []);
     params.append('autoplay', '1');
     params.append('playsinline', '1');
+    if (LiteYTEmbed.isMobile) params.append('mute', '1');
 
     if (this.needsYTApiForAutoplay) {
       await LiteYTEmbed.loadYouTubeAPI();
