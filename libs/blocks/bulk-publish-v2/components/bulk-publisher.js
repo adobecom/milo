@@ -1,7 +1,7 @@
 import './job-process.js';
 import { LitElement, html } from '../../../deps/lit-all.min.js';
 import { getSheet } from '../../../../tools/utils/utils.js';
-import { authenticate, startJob } from '../services.js';
+import { authenticate, getPublishable, startJob } from '../services.js';
 import { getConfig } from '../../../utils/utils.js';
 import {
   delay,
@@ -95,7 +95,11 @@ class BulkPublish2 extends LitElement {
     this.validateUrls();
   }
 
-  setJobErrors(errors) {
+  setJobErrors(jobErrors, authErrors) {
+    const errors = [
+      ...jobErrors,
+      ...authErrors.map((href) => ({ href, message: 'Not able to publish' })),
+    ];
     const urls = [];
     errors.forEach((error) => {
       const matched = this.urls.filter((url) => {
@@ -323,7 +327,8 @@ class BulkPublish2 extends LitElement {
         class="panel-title"
         @click=${handleToggle}>
         <span class="title">
-          Job Results
+          ${this.jobs.length ? html`<strong>${this.jobs.length}</strong>` : ''}
+          Job Result${this.jobs.length > 1 ? 's' : ''}
         </span>
         <div class="jobs-tools${showList}">
           <div 
@@ -380,16 +385,17 @@ class BulkPublish2 extends LitElement {
   async submit() {
     if (!this.isDisabled()) {
       this.processing = 'started';
+      const { authorized, unauthorized } = await getPublishable(this);
       const job = await startJob({
-        urls: this.urls,
+        urls: authorized,
         process: this.process.toLowerCase(),
         useBulk: this.user.permissions[this.process]?.useBulk ?? false,
       });
       const { complete, error } = processJobResult(job);
       this.jobs = [...this.jobs, ...complete];
       this.processing = complete.length ? 'job' : false;
-      if (error.length) {
-        this.setJobErrors(error);
+      if (error.length || unauthorized.length) {
+        this.setJobErrors(error, unauthorized);
       } else {
         if (this.mode === 'full') this.openJobs = true;
         this.reset();

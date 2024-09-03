@@ -1,3 +1,4 @@
+import { userCanPublishPage } from '../../utils/utils.js';
 import {
   PROCESS_TYPES,
   getErrorText,
@@ -246,8 +247,31 @@ const updateRetry = async ({ queue, urls, process }) => {
   return newQueue;
 };
 
+// publish authentication services
+const getPublishable = async ({ urls, process, user }) => {
+  let publishable = { authorized: [], unauthorized: [] };
+  if (!isLive(process)) {
+    publishable.authorized = urls;
+  } else {
+    const { permissions, profile } = user;
+    const live = { permissions: ['read'] };
+    if (permissions?.publish?.canUse) {
+      live.permissions.push('write');
+    }
+    publishable = await urls.reduce(async (init, url) => {
+      const result = await init;
+      const detail = { webPath: new URL(url).pathname, live, profile };
+      const auth = await userCanPublishPage(detail);
+      result[`${auth ? '' : 'un'}authorized`].push(url);
+      return result;
+    }, Promise.resolve(publishable));
+  }
+  return publishable;
+};
+
 export {
   authenticate,
+  getPublishable,
   pollJobStatus,
   startJob,
   updateRetry,

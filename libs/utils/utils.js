@@ -1298,15 +1298,15 @@ export function loadLana(options = {}) {
 
 export const reloadPage = () => window.location.reload();
 
-export const miloUserCanPublish = async (page) => {
-  if (!page) return false;
+export const userCanPublishPage = async (detail) => {
+  if (!detail) return false;
   // sidekick status detail
-  const { live, profile, webPath } = page;
+  const { live, profile, webPath } = detail;
   let canPublish = live?.permissions?.includes('write');
   // check custom publish permissions config
   const config = await getCustomConfig('/.milo/publish-permissions-config.json');
   if (canPublish && config) {
-    // supporting only one wildcard(**)
+    // supporting one wildcard (**)
     const item = config.urls?.data?.find(({ url }) => (
       url.endsWith('**') ? webPath.includes(url.slice(0, -2)) : url === webPath
     ));

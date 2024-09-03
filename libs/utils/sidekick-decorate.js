@@ -1,4 +1,4 @@
-import { miloUserCanPublish } from './utils.js';
+import { userCanPublishPage } from './utils.js';
 
 const PUBLISH_BTN = '.publish.plugin button';
 const CONFIRM_MESSAGE = 'Are you sure? This will publish to production.';
@@ -7,7 +7,7 @@ const NO_AUTH_MESSAGE = 'This page currently cannot be published';
 export default function stylePublish(sk) {
   sk.addEventListener('statusfetched', async (event) => {
     const thisPage = event?.detail?.data;
-    const enablePublish = await miloUserCanPublish(thisPage);
+    const enablePublish = await userCanPublishPage(thisPage);
     const publishBtn = event?.target?.shadowRoot?.querySelector(PUBLISH_BTN);
     if (publishBtn) {
       publishBtn.setAttribute('disabled', !enablePublish);
