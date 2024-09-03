@@ -627,7 +627,7 @@ const decorateCopyLink = (a, evt) => {
     a.remove();
     return;
   }
-  const link = a.href.split(evt)[0];
+  const link = a.href.replace(evt, '');
   const isConButton = ['EM', 'STRONG'].includes(a.parentElement.nodeName) || a.classList.contains('con-button');
   if (!isConButton) a.classList.add('static', 'copy-link');
   a.href = '';
