@@ -135,16 +135,16 @@ export const LANGMAP = {
 };
 
 // signIn, decorateSignIn and decorateProfileTrigger can be removed if IMS takes over the profile
-const signIn = () => {
+const signIn = (options = {}) => {
   if (typeof window.adobeIMS?.signIn !== 'function') {
     lanaLog({ message: 'IMS signIn method not available', tags: 'errorType=warn,module=gnav' });
     return;
   }
-
-  window.adobeIMS.signIn();
+  window.adobeIMS.signIn(options);
 };
 
 const decorateSignIn = async ({ rawElem, decoratedElem }) => {
+  const { susiContexts, env } = getConfig();
   const dropdownElem = rawElem.querySelector(':scope > div:nth-child(2)');
   const signInLabel = await replaceKey('sign-in', getFedsPlaceholderConfig());
   let signInElem;
@@ -154,7 +154,7 @@ const decorateSignIn = async ({ rawElem, decoratedElem }) => {
 
     signInElem.addEventListener('click', (e) => {
       e.preventDefault();
-      signIn();
+      signIn({ dctx_id: susiContexts[env.name] });
     });
   } else {
     signInElem = toFragment`<button daa-ll="${signInLabel}" class="feds-signIn" aria-expanded="false" aria-haspopup="true">${signInLabel}</button>`;
@@ -171,7 +171,7 @@ const decorateSignIn = async ({ rawElem, decoratedElem }) => {
       dropdownSignInAnchor.replaceWith(dropdownSignInButton);
       dropdownSignInButton.addEventListener('click', (e) => {
         e.preventDefault();
-        signIn();
+        signIn({ dctx_id: susiContexts[env.name] });
       });
     } else {
       lanaLog({ message: 'Sign in link not found in dropdown.', tags: 'errorType=warn,module=gnav' });
