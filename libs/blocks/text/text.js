@@ -87,7 +87,7 @@ function addStyle(filename) {
 export default async function init(el) {
   el.classList.add('text-block', 'con-block');
   let rows = el.querySelectorAll(':scope > div');
-  if (rows.length > 1 || el.matches('.ribbon')) {
+  if (rows.length > 1 || el.matches('.accent-bar')) {
     if (rows[0].textContent !== '') el.classList.add('has-bg');
     const [head, ...tail] = rows;
     decorateBlockBg(el, head);

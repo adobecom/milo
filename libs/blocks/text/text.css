@@ -1,5 +1,5 @@
 .text-block {
-  --ribbon-height: 10px;
+  --accent-height: 10px;
 
   position: relative;
 }
@@ -104,9 +104,9 @@
   inset: 0 100% auto auto;
 }
 
-.text-block.ribbon {
+.text-block.accent-bar {
   inline-size: 100%;
-  block-size: var(--ribbon-height);
+  block-size: var(--accent-height);
 }
 
 .text-block .lockup-area img {
@@ -117,6 +117,11 @@
 .text-block.center {
   text-align: center;
   align-items: center;
+}
+
+.text-block .icon-area {
+  display: flex;
+  column-gap: var(--spacing-xxs);
 }
 
 .text-block.center .action-area,
@@ -173,11 +178,6 @@
 
 .section[class*='grid-width-'] .text-block .foreground {
   max-width: unset;
-}
-
-.text-block .icon-area {
-  display: flex;
-  column-gap: var(--spacing-xxs);
 }
 
 .text-block .icon-area.con-button {
