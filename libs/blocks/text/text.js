@@ -36,13 +36,12 @@ function decorateMultiViewport(foreground) {
 }
 
 function decorateBlockIconArea(content, el) {
-  const headings = content.querySelectorAll('h1, h2, h3, h4, h5, h6');
   const first = content.children[0];
-  const firstImg = first?.querySelector('img');
-  if (firstImg) {
+  if (first?.querySelector('img')) {
     const areaClass = el.className.match(/-(lockup|icon)/);
     first.classList.add(areaClass ? `${areaClass[1]}-area` : 'image');
   }
+  const headings = content.querySelectorAll('h1, h2, h3, h4, h5, h6');
   if (!headings) return;
   headings.forEach((h) => {
     const hPrevElem = h.previousElementSibling;
