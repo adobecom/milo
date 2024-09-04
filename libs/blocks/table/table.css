@@ -706,10 +706,10 @@ header.global-navigation {
     align-items: initial;
   }
 
-  .table .action-area {
+  .table :is(.heading-button,.action-area) {
     max-width: 100%;
-  } 
-  
+  }
+
   .table .action-area .con-button.button-l {
     overflow: hidden;
   }
