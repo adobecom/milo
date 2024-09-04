@@ -1,0 +1,32 @@
+name: CaaS Tests
+
+on:
+  pull_request:
+    types: [labeled]
+  workflow_dispatch:  # This allows manual triggering of the workflow
+
+jobs:
+  run-caas-tests:
+    name: Running CaaS Tests
+    runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'run-caas')
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Run CaaS Tests
+        uses: adobecom/nala@caas-nala
+        with:
+          test-type: 'caas'
+        env:
+          labels: 'run-caas'
+          branch: ${{ github.head_ref || github.ref_name }}
+          repoName: ${{ github.repository }}
+          prUrl: ${{ github.event.pull_request.head.repo.html_url || github.event.repository.html_url }}
+          prOrg: ${{ github.repository_owner }}
+          prRepo: ${{ github.event.repository.name }}
+          prBranch: ${{ github.head_ref || github.ref_name }}
+          prBaseBranch: ${{ github.base_ref || github.ref_name }}
+          IMS_EMAIL: ${{ secrets.IMS_EMAIL }}
+          IMS_PASS: ${{ secrets.IMS_PASS }}
+          # Add any additional environment variables needed for CaaS tests
