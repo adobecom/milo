@@ -356,8 +356,8 @@ function modifySelectorTerm(termParam) {
   let term = termParam;
   const specificSelectors = {
     section: 'main > div',
-    'primary-cta': 'p strong a',
-    'secondary-cta': 'p em a',
+    'primary-cta': '* > strong a',
+    'secondary-cta': '* > em a',
     'action-area': '*:has(> em a, > strong a)',
   };
   const otherSelectors = ['row', 'col'];
