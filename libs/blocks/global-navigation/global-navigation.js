@@ -154,7 +154,7 @@ const decorateSignIn = async ({ rawElem, decoratedElem }) => {
 
     signInElem.addEventListener('click', (e) => {
       e.preventDefault();
-      signIn({ dctx_id: susiContexts[env.name] });
+      signIn(susiContexts ? { dctx_id: susiContexts[env.name] } : {});
     });
   } else {
     signInElem = toFragment`<button daa-ll="${signInLabel}" class="feds-signIn" aria-expanded="false" aria-haspopup="true">${signInLabel}</button>`;
@@ -171,7 +171,7 @@ const decorateSignIn = async ({ rawElem, decoratedElem }) => {
       dropdownSignInAnchor.replaceWith(dropdownSignInButton);
       dropdownSignInButton.addEventListener('click', (e) => {
         e.preventDefault();
-        signIn({ dctx_id: susiContexts[env.name] });
+        signIn(susiContexts ? { dctx_id: susiContexts[env.name] } : {});
       });
     } else {
       lanaLog({ message: 'Sign in link not found in dropdown.', tags: 'errorType=warn,module=gnav' });
