@@ -358,7 +358,7 @@ function modifySelectorTerm(termParam) {
     section: 'main > div',
     'primary-cta': 'p strong a',
     'secondary-cta': 'p em a',
-    'action-area': 'p:has(em a, strong a)',
+    'action-area': '*:has(> em a, > strong a)',
   };
   const otherSelectors = ['row', 'col'];
   const htmlEls = ['main', 'div', 'a', 'p', 'strong', 'em', 'picture', 'source', 'img', 'h'];

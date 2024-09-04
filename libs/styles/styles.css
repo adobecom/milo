@@ -808,6 +808,10 @@ a.static:hover {
   text-decoration: underline;
 }
 
+.copy-link {
+  font-weight: 700;
+}
+
 /* Tooltip */
 .tooltip-wrapper {
   visibility: hidden;
