@@ -1,7 +1,30 @@
 import { createTag } from '../../utils/utils.js';
 
-let fetchedIcons;
+let fetchedSpriteIcons;
+let fetchedLocalIcons;
+let fetchedFederalSvgImages;
 let fetched = false;
+
+export async function getSvgFromFile(path, name) {
+  /* c8 ignore next */
+  if (!path) return null;
+
+  let resp;
+  try {
+    // if (fetchedSpriteIcons[name] === undefined) return fetchIcons[name];
+    resp = await fetch(path);
+    const text = await resp.text();
+    const parser = new DOMParser();
+    const parsedText = parser.parseFromString(text, 'image/svg+xml');
+    const svg = parsedText.firstChild;
+    svg.id = name;
+    const parsedSvg = parsedText.querySelector('svg');
+    parsedSvg.classList.add('icon-milo', `icon-milo-${name}`);
+    return parsedSvg;
+  } catch (error) {
+    return null;
+  }
+}
 
 async function getSVGsfromFile(path) {
   /* c8 ignore next */
@@ -30,10 +53,10 @@ export const fetchIcons = (config) => new Promise(async (resolve) => {
   if (!fetched) {
     const { miloLibs, codeRoot } = config;
     const base = miloLibs || codeRoot;
-    fetchedIcons = await getSVGsfromFile(`${base}/img/icons/icons.svg`);
+    fetchedSpriteIcons = await getSVGsfromFile(`${base}/img/icons/icons.svg`);
     fetched = true;
   }
-  resolve(fetchedIcons);
+  resolve(fetchedSpriteIcons);
 });
 
 function decorateToolTip(icon) {
@@ -51,25 +74,38 @@ function decorateToolTip(icon) {
   wrapper.parentElement.replaceChild(icon, wrapper);
 }
 
+function isUrlValid(string) {
+  try {
+    const newUrl = new URL(string);
+    return newUrl;
+  } catch (err) {
+    return false;
+  }
+}
+
 export default async function loadIcons(icons, config) {
   const iconSVGs = await fetchIcons(config);
-  const iconImages = {};
   if (!iconSVGs) return;
+  const { contentRoot } = config.locale;
   icons.forEach(async (icon) => {
     const { classList } = icon;
     if (classList.contains('icon-tooltip')) decorateToolTip(icon);
     const iconName = icon.classList[1].replace('icon-', '');
     const existingIcon = icon.querySelector('svg');
     if (!iconSVGs[iconName] || existingIcon) {
-      // check for icon in federal repo as img
-      const federalIconSrc = `https://main--federal-union--adobecom.aem.page/libs/svgs/${iconName}.svg`;
-      const iconImg = createTag('img', { class: `${iconName}`, src: federalIconSrc });
-      iconImages[iconName] = iconImg;
-      // console.log('federalIconSrc', iconName, federalIconSrc, iconImg);
-      // console.log('insert img', iconImages[iconName]);
-      icon.insertAdjacentHTML('afterbegin', iconImages[iconName].outerHTML);
+      // check for icon in local /assets/icons/svgs/
+      const localIconSvg = await getSvgFromFile(`${contentRoot}/assets/icons/svgs/${iconName}.svg`, iconName);
+      if (localIconSvg && localIconSvg !== null) {
+        icon.insertAdjacentHTML('afterbegin', localIconSvg.outerHTML);
+      } else {
+        // check for icon in /federal/libs/img/icons/svgs/ repo as <img/>
+        const federalIconSrc = `https://main--federal--adobecom.aem.page/federal/libs/img/icons/svgs/${iconName}.svg`;
+        const fedUrl = isUrlValid(federalIconSrc);
+        if (!fedUrl) return;
+        const iconImg = createTag('img', { class: `${iconName}`, src: federalIconSrc });
+        icon.insertAdjacentHTML('afterbegin', iconImg.outerHTML);
+      }
     } else {
-      console.log('insert svg', iconSVGs[iconName]);
       icon.insertAdjacentHTML('afterbegin', iconSVGs[iconName].outerHTML);
     }
 
