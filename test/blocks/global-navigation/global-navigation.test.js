@@ -16,6 +16,7 @@ import initGnav, { getUniversalNavLocale, osMap } from '../../../libs/blocks/glo
 import { isDesktop, isTangentToViewport, toFragment } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
 import logoOnlyNav from './mocks/global-navigation-only-logo.plain.js';
 import longNav from './mocks/global-navigation-long.plain.js';
+import darkNav from './mocks/dark-global-navigation.plain.js';
 import globalNavigationMock from './mocks/global-navigation.plain.js';
 import { getConfig } from '../../../tools/send-to-caas/send-utils.js';
 
@@ -598,6 +599,25 @@ describe('global navigation', () => {
       gnav.decorateAppPrompt();
       const weAppPrompt = document.head.querySelector('link[href$="/webapp-prompt.css"]');
       expect(!!weAppPrompt).to.be.true;
+    });
+  });
+
+  describe('GNav Dark theme', () => {
+    it('should not contain dark theme class if dark theme is not configured', async () => {
+      await createFullGlobalNavigation();
+      expect(document.querySelector(selectors.globalNav).classList.contains('feds--dark')).to.be.false;
+    });
+    it('should contain dark theme class if dark theme is configured', async () => {
+      await createFullGlobalNavigation({ customConfig: { theme: 'dark' } });
+      expect(document.querySelector(selectors.globalNav).classList.contains('feds--dark')).to.be.true;
+    });
+    it('should use first image if not dark theme', async () => {
+      await createFullGlobalNavigation({ globalNavigation: darkNav });
+      expect(document.querySelector(`${selectors.brandImage} img`).getAttribute('src')).to.equal('http://localhost:2000/test/blocks/global-navigation/mocks/adobe-logo.svg');
+    });
+    it('should use second image for dark theme', async () => {
+      await createFullGlobalNavigation({ globalNavigation: darkNav, customConfig: { theme: 'dark' } });
+      expect(document.querySelector(`${selectors.brandImage} img`).getAttribute('src')).to.equal('http://localhost:2000/test/blocks/global-navigation/mocks/adobe-dark-logo.svg');
     });
   });
 });

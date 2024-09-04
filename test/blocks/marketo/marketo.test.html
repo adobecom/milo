@@ -65,7 +65,7 @@
     import { expect } from '@esm-bundle/chai';
     import { stub } from 'sinon';
     import { waitForElement } from '../../helpers/waitfor.js';
-    import { loadScript, parseEncodedConfig } from '../../../libs/utils/utils.js';
+    import { loadScript, loadLink, parseEncodedConfig } from '../../../libs/utils/utils.js';
     import init, { setPreferences, formValidate, formSuccess } from '../../../libs/blocks/marketo/marketo.js';
 
     runTests(() => {
@@ -84,6 +84,10 @@
           expect(wrapper).to.exist;
           expect(title).to.exist;
           expect(desc).to.exist;
+        });
+
+        it('preload Marketo', async () => {
+          expect(loadLink.calledOnce).to.be.true;
         });
 
         it('loads Marketo script', async () => {

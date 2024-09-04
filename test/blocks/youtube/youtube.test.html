@@ -9,22 +9,62 @@
     </script>
   </head>
   <body>
-    <a href="https://www.youtube.com/embed/LWJCbruwNC0">Youtube Embed Link</a>
-    <a href="https://www.youtu.be/LWJCbruwNC0">Youtube Share Link</a>
   </body>
   <script type="module">
     import { runTests } from '@web/test-runner-mocha';
     import { readFile } from '@web/test-runner-commands';
     import { expect } from '@esm-bundle/chai';
+    import sinon from 'sinon';
     import { loadScript } from '../../../libs/utils/utils.js';
     import init from '../../../libs/blocks/youtube/youtube.js';
 
     runTests(() => {
-      describe('twitter', () => {
-        it('Renders an iframe for both types of youtube links', async () => {
-          const youtube = document.querySelectorAll('a');
-          youtube.forEach(async (link) => init(link));
-          expect(document.querySelectorAll('iframe').length).to.equal(2);
+      beforeEach(() => {
+        document.body.innerHTML = '<a href="https://www.youtube.com/embed/abc?abc=abc">Youtube Embed Link</a>';
+      });
+
+      afterEach(() => {
+        document.body.innerHTML = '';
+        sinon.restore();
+      });
+
+      describe('youtube', () => {
+        it('Should load lite youtube instead of iframe', async () => {
+          init(document.querySelector('a'));
+          expect(document.querySelector('iframe')).to.be.null;
+          expect(document.querySelector('lite-youtube')).to.not.be.null;
+        });
+
+        it('Should load youtube resources on lite youtube hover', async () => {
+          init(document.querySelector('a'));
+          document.querySelector('lite-youtube').dispatchEvent(new MouseEvent('pointerover'));
+          expect(document.querySelector('link[rel="preconnect"][href="https://www.youtube-nocookie.com"]')).to.not.be.null;
+          expect(document.querySelector('link[rel="preconnect"][href="https://www.google.com"]')).to.not.be.null;
+          expect(document.querySelector('link[rel="preconnect"][href="https://googleads.g.doubleclick.net"]')).to.not.be.null;
+          expect(document.querySelector('link[rel="preconnect"][href="https://static.doubleclick.net"]')).to.not.be.null;
+        });
+
+        it('Should add iframe when lite youtube is clicked', async () => {
+          init(document.querySelector('a'));
+          document.querySelector('.lty-playbtn').click();
+          expect(document.querySelector('iframe')).to.not.be.null;
+          expect(document.querySelector('lite-youtube')).to.be.null;
+        });
+
+        it('Should load youtube iframe API on Mobile browsers', async () => {
+          const userAgentStub = sinon
+            .stub(navigator, 'userAgent')
+            .value('Mobi');
+          init(document.querySelector('a'));
+          document.querySelector('.lty-playbtn').click();
+          expect(document.querySelector('script[src="https://www.youtube.com/iframe_api"]')).to.not.be.null;
+        });
+
+        it('Should stop execution for not valid youtube links', async () => {
+          const youtube = document.querySelector('a');
+          youtube.href = 'https://www.bubblegum.com/watch?v=abc';
+          init(youtube);
+          expect(document.querySelector('lite-youtube')).to.be.null;
         });
       });
     });

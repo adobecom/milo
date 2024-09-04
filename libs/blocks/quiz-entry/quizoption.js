@@ -144,7 +144,7 @@ export const GetQuizOption = ({
 
   return html`
   <div class="quiz-options-container" role="group" aria-labelledby="question" tabindex="0" onkeydown=${handleKey}>
-  ${index > 0 && html`<button onClick=${prev} class="carousel-arrow arrow-prev ${isRTL ? 'rtl' : ''}"></button>`}
+  ${index > 0 && html`<button onClick=${prev} class="carousel-arrow arrow-prev ${isRTL ? 'rtl' : ''}" aria-label="Previous"></button>`}
   <div class="carousel-slides ${index > 0 ? 'align-right' : ''}">
     ${options.data.slice(index + 1, index + visibleCount).map((option, idx) => html`
       <${OptionCard} 
@@ -162,6 +162,6 @@ export const GetQuizOption = ({
         onClick=${onOptionClick(option)}
         />`)}
   </div>
-  ${(index + visibleCount < options.data.length) && html`<button onClick=${next} class="carousel-arrow arrow-next ${isRTL ? 'rtl' : ''}"></button>`}
+  ${(index + visibleCount < options.data.length) && html`<button onClick=${next} class="carousel-arrow arrow-next ${isRTL ? 'rtl' : ''}" aria-label="Next"></button>`}
   </div>`;
 };

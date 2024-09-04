@@ -5,15 +5,8 @@ import logWebVitals from '../../libs/utils/logWebVitals.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 
+window.adobePrivacy = { activeCookieGroups: () => ['C0002'] };
 describe('Log Web Vitals', () => {
-  before(() => {
-    window.adobePrivacy = { activeCookieGroups: () => ['C0002'] };
-  });
-
-  after(() => {
-    delete window.adobePrivacy;
-  });
-
   it('Logs data to lana', (done) => {
     window.lana = {
       log: (logStr, logOpts) => {
@@ -39,6 +32,8 @@ describe('Log Web Vitals', () => {
         expect(vitals.manifest4selected).to.equal('target-var-marqueelink');
         expect(vitals.os).to.be.oneOf(['mac', 'win', 'android', 'linux', '']);
         expect(vitals.url).to.equal('localhost:2000/');
+        expect(vitals.isMep).to.equal('false');
+        expect(vitals.isFrag).to.equal('false');
         expect(parseInt(vitals.windowHeight, 10)).to.be.greaterThan(200);
         expect(parseInt(vitals.windowWidth, 10)).to.be.greaterThan(200);
 

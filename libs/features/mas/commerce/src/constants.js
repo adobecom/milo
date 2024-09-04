@@ -19,8 +19,16 @@ export const PARAM_LANDSCAPE = 'commerce.landscape';
 export const PARAM_AOS_API_KEY = 'commerce.aosKey';
 export const PARAM_WCS_API_KEY = 'commerce.wcsKey';
 
+export const WCS_PROD_URL = 'https://www.adobe.com/web_commerce_artifact';
+export const WCS_STAGE_URL = 'https://www.stage.adobe.com/web_commerce_artifact_stage';
+
 export const STATE_FAILED = 'failed';
 export const STATE_PENDING = 'pending';
 export const STATE_RESOLVED = 'resolved';
 
 export const TAG_NAME_SERVICE = 'wcms-commerce';
+
+export const Landscape = {
+  DRAFT: "DRAFT",
+  PUBLISHED: "PUBLISHED"
+}
