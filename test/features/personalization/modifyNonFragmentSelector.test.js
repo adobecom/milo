@@ -4,7 +4,7 @@ import { modifyNonFragmentSelector } from '../../../libs/features/personalizatio
 const values = [
   {
     b: 'main section1 marquee action-area',
-    a: 'main > div:nth-child(1) .marquee p:has(em a, strong a)',
+    a: 'main > div:nth-child(1) .marquee *:has(> em a, > strong a)',
   },
   {
     b: 'main > section1 .marquee h2',
