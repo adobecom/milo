@@ -622,13 +622,14 @@ export function decorateAutoBlock(a) {
 
 const decorateCopyLink = (a, evt) => {
   const userAgent = navigator.userAgent.toLowerCase();
-  const isMobile = /android|iphone|ipod|blackberry|iemobile|opera mini|mobile/.test(userAgent) && !/ipad/.test(userAgent);
+  const isMobile = /android|iphone|ipod|mobile/.test(userAgent) && !/ipad/.test(userAgent);
   if (!isMobile || !navigator.share) {
     a.remove();
     return;
   }
   const link = a.href.replace(evt, '');
-  const isConButton = ['EM', 'STRONG'].includes(a.parentElement.nodeName) || a.classList.contains('con-button');
+  const isConButton = ['EM', 'STRONG'].includes(a.parentElement.nodeName)
+    || a.classList.contains('con-button');
   if (!isConButton) a.classList.add('static', 'copy-link');
   a.href = '';
   a.addEventListener('click', async (e) => {
