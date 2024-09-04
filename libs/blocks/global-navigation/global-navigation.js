@@ -34,12 +34,14 @@ import {
   trigger,
   yieldToMain,
   addMepHighlightAndTargetId,
+  isDarkMode,
+  darkIcons,
 } from './utilities/utilities.js';
 
 import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
 
 export const CONFIG = {
-  icons,
+  icons: isDarkMode() ? darkIcons : icons,
   delays: {
     mainNavDropdowns: 800,
     loadDelayed: 3000,
@@ -320,7 +322,7 @@ class Gnav {
     isDesktop.addEventListener('change', closeAllDropdowns);
   }, 'Error in global navigation init', 'errorType=error,module=gnav');
 
-  ims = async () => loadIms()
+  ims = async () => (window.adobeIMS?.initialized ? this.imsReady() : loadIms()
     .then(() => this.imsReady())
     .catch((e) => {
       if (e?.message === 'IMS timeout') {
@@ -328,7 +330,7 @@ class Gnav {
         return;
       }
       lanaLog({ message: 'GNAV: Error with IMS', e, tags: 'errorType=info,module=gnav' });
-    });
+    }));
 
   decorateTopNav = () => {
     this.elements.mobileToggle = this.decorateToggle();
@@ -605,7 +607,7 @@ class Gnav {
       env: environment,
       locale,
       imsClientId: window.adobeid?.client_id,
-      theme: 'light',
+      theme: isDarkMode() ? 'dark' : 'light',
       onReady: () => {
         this.decorateAppPrompt({ getAnchorState: () => window.UniversalNav.getComponent?.('app-switcher') });
       },
@@ -746,6 +748,14 @@ class Gnav {
 
     // Create image element
     const getImageEl = () => {
+      if (isDarkMode()) {
+        const allSvgImgs = rawBlock.querySelectorAll('picture img[src$=".svg"]');
+        if (allSvgImgs.length === 2) return allSvgImgs[1];
+
+        const images = blockLinks.filter((blockLink) => imgRegex.test(blockLink.href)
+        || imgRegex.test(blockLink.textContent));
+        if (images.length === 2) return getBrandImage(images[1]);
+      }
       const svgImg = rawBlock.querySelector('picture img[src$=".svg"]');
       if (svgImg) return svgImg;
 
@@ -1027,6 +1037,7 @@ export default async function init(block) {
     block.setAttribute('daa-im', 'true');
     const mepMartech = mep?.martech || '';
     block.setAttribute('daa-lh', `gnav|${getExperienceName()}${mepMartech}`);
+    if (isDarkMode()) block.classList.add('feds--dark');
     return gnav;
   } catch (e) {
     lanaLog({ message: 'Could not create global navigation.', e, tags: 'errorType=error,module=gnav' });

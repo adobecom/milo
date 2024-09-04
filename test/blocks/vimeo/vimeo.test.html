@@ -3,7 +3,8 @@
     <script type="importmap">
       {
         "imports": {
-          "../../../libs/utils/utils.js": "../instagram/mocks/embed-utils.js"
+          "../../../libs/utils/utils.js": "../instagram/mocks/embed-utils.js",
+          "../../../libs/features/placeholders.js": "./mocks/placeholders.js"
         }
       }
     </script>
@@ -16,17 +17,28 @@
     import { readFile } from '@web/test-runner-commands';
     import { expect } from '@esm-bundle/chai';
     import init from '../../../libs/blocks/vimeo/vimeo.js';
-    
+
     runTests(() => {
       describe('vimeo', () => {
-        it('renders embed video for vimeo link', () => {
-          const vimeo = document.querySelector('a');
+        it('Should load lite vimeo instead of iframe', async () => {
+          init(document.querySelector('a'));
+          expect(document.querySelector('iframe')).to.be.null;
+          expect(document.querySelector('lite-vimeo')).to.not.be.null;
+        });
 
-          init(vimeo);
-          const iframe = document.querySelector("iframe")
-          const wrapper = document.querySelector('.embed-vimeo');
-          expect(wrapper).to.not.be.null;
-          expect(iframe).to.exist
+        it('Should load vimeo resources on lite vimeo hover', async () => {
+          init(document.querySelector('a'));
+          document.querySelector('lite-vimeo').dispatchEvent(new MouseEvent('pointerover'));
+          expect(document.querySelector('link[rel="preconnect"][href="https://player.vimeo.com"]')).to.not.be.null;
+          expect(document.querySelector('link[rel="preconnect"][href="https://i.vimeocdn.com"]')).to.not.be.null;
+          expect(document.querySelector('link[rel="preconnect"][href="https://f.vimeocdn.com"]')).to.not.be.null;
+          expect(document.querySelector('link[rel="preconnect"][href="https://fresnel.vimeocdn.com"]')).to.not.be.null;
+        });
+
+        it('Should add iframe when lite vimeo is clicked', async () => {
+          document.querySelector('.ltv-playbtn').click();
+          expect(document.querySelector('iframe')).to.not.be.null;
+          expect(document.querySelector('lite-vimeo')).to.be.null;
         });
       });
     });
