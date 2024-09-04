@@ -1,3 +1,4 @@
+import { readFile } from '@web/test-runner-commands';
 import { delay } from '../src/external.js';
 import { TAG_NAME_SERVICE, Defaults, init, reset } from '../src/index.js';
 import { HTMLWcmsCommerceElement } from '../src//service.js';
@@ -70,7 +71,11 @@ describe('commerce service', () => {
 
         describe('property "literals"', () => {
             it('returns "price literals" object', async () => {
-                const instance = await init(mockConfig());
+                const priceLiterals = await (readFile({ path: '../price-literals.json' }));
+                const commerce = {
+                  priceLiterals: JSON.parse(priceLiterals),
+                };
+                const instance = await init(mockConfig(commerce));
                 [
                     'alternativePriceAriaLabel',
                     'freeAriaLabel',

@@ -4,7 +4,7 @@ import { EVENT_TYPE_READY, TAG_NAME_SERVICE } from './constants.js';
 import { Defaults } from './defaults.js';
 import { isFunction } from './external.js';
 import { Ims } from './ims.js';
-import { fetchPriceLiterals } from './literals.js';
+import { getPriceLiterals } from './literals.js';
 import { Log } from './log.js';
 import { Price } from './price.js';
 import { getSettings } from './settings.js';
@@ -43,7 +43,7 @@ async function activateService(config, dataProviders) {
     const settings = Object.freeze(getSettings(config));
     // Fetch price literals
     try {
-        literals.price = fetchPriceLiterals(settings);
+        literals.price = await getPriceLiterals(settings, config.commerce.priceLiterals);
     } catch (error) {
         log.warn('Price literals were not fetched:', error);
     }
