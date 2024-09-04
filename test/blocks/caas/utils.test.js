@@ -736,6 +736,21 @@ describe('getCountryAndLang', () => {
       locales: '',
     });
   });
+
+  it('should include partial load settings in the config', async () => {
+    const state = {
+      ...defaultState,
+      partialLoadEnabled: true,
+      partialLoadCount: 75,
+    };
+
+    const config = await getConfig(state, strings);
+
+    expect(config.collection.partialLoadWithBackgroundFetch).to.deep.equal({
+      enabled: true,
+      partialLoadCount: 75,
+    });
+  });
 });
 
 describe('getFloodgateCaasConfig', () => {

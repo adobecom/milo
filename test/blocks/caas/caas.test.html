@@ -109,6 +109,24 @@
           expect(loadStyle.callCount).to.equal(1);
           expect(caasEl).to.equal(document.getElementById('caas'));
         });
+
+        it('initializes CaaS collection with partial load settings', async () => {
+          const a = document.getElementById('caaslink');
+          const hash = new URL(a.href).hash.substring(1);
+          const decodedState = JSON.parse(atob(hash));
+          decodedState.partialLoadEnabled = true;
+          decodedState.partialLoadCount = 50;
+          a.href = `${a.href.split('#')[0]}#${btoa(JSON.stringify(decodedState))}`;
+
+          await init(a);
+          await waitForElement('#caas');
+          await delay(50);
+
+          expect(config.collection.partialLoadWithBackgroundFetch).to.deep.equal({
+            enabled: true,
+            partialLoadCount: 50,
+          });
+        });
       });
     });
   </script>

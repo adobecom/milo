@@ -219,6 +219,10 @@ const defaultOptions = {
     default: 'Default',
     grow: 'Grow',
   },
+  partialLoadEnabled: {
+    true: 'Enabled',
+    false: 'Disabled',
+  }
 };
 
 const getTagList = (root) => Object.entries(root).reduce((options, [, tag]) => {
@@ -353,6 +357,8 @@ const BasicsPanel = ({ tagsData }) => {
     <${Input} label="Total Cards to Show" prop="totalCardsToShow" type="number" />
     <${Input} label="Auto detect country & lang" prop="autoCountryLang" type="checkbox" />
     ${!state.autoCountryLang && countryLangOptions}
+  <${Select} label="Partial Load Enabled" prop="partialLoadEnabled" options="${defaultOptions.partialLoadEnabled}" />
+  <${Input} label="Partial Load Count" prop="partialLoadCount" type="number" />
 
   `;
 };
