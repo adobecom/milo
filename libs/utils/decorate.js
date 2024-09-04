@@ -54,16 +54,9 @@ export function decorateBlockText(el, config = ['m', 's', 'm'], type = null) {
   const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
   if (!el.classList.contains('default')) {
     if (headings) {
-      const lastHeading = headings[headings.length - 1];
-      if (type === 'allowDetailHeading') {
-        lastHeading?.classList.add(`heading-${config[0]}`);
-      } else {
-        headings.forEach((h) => h.classList.add(`heading-${config[0]}`));
-      }
+      headings.forEach((h) => h.classList.add(`heading-${config[0]}`));
       if (config[2]) {
-        const prevSib = (type === 'allowDetailHeading')
-          ? lastHeading?.previousElementSibling
-          : headings[0]?.previousElementSibling;
+        const prevSib = headings[0]?.previousElementSibling;
         prevSib?.classList.toggle(`detail-${config[2]}`, !prevSib.querySelector('picture'));
         decorateIconArea(el);
       }
