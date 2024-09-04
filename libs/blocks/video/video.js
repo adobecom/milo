@@ -28,7 +28,7 @@ const loadVideo = (a) => {
 };
 
 export default function init(a) {
-  a.classList.add('hide-video');
+  // a.classList.add('hide-video');
   // if (a.textContent.includes('no-lazy')) {
   //   loadVideo(a);
   // } else {
@@ -36,6 +36,6 @@ export default function init(a) {
       el: a,
       options: { rootMargin: `${ROOT_MARGIN}px` },
       callback: loadVideo,
-    // });
-  }
+    });
+  // }
 }
