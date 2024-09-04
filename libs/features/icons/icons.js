@@ -1,3 +1,5 @@
+import { createTag } from '../../utils/utils.js';
+
 let fetchedIcons;
 let fetched = false;
 
@@ -51,13 +53,26 @@ function decorateToolTip(icon) {
 
 export default async function loadIcons(icons, config) {
   const iconSVGs = await fetchIcons(config);
+  const iconImages = {};
   if (!iconSVGs) return;
   icons.forEach(async (icon) => {
     const { classList } = icon;
     if (classList.contains('icon-tooltip')) decorateToolTip(icon);
     const iconName = icon.classList[1].replace('icon-', '');
     const existingIcon = icon.querySelector('svg');
-    if (!iconSVGs[iconName] || existingIcon) return;
+    if (!iconSVGs[iconName] || existingIcon) {
+      // check for icon in federal repo as img
+      const federalIconSrc = `https://main--federal-union--adobecom.aem.page/libs/svgs/${iconName}.svg`;
+      const iconImg = createTag('img', { class: `${iconName}`, src: federalIconSrc });
+      iconImages[iconName] = iconImg;
+      // console.log('federalIconSrc', iconName, federalIconSrc, iconImg);
+      // console.log('insert img', iconImages[iconName]);
+      icon.insertAdjacentHTML('afterbegin', iconImages[iconName].outerHTML);
+    } else {
+      console.log('insert svg', iconSVGs[iconName]);
+      icon.insertAdjacentHTML('afterbegin', iconSVGs[iconName].outerHTML);
+    }
+
     const parent = icon.parentElement;
     if (parent.childNodes.length > 1) {
       if (parent.lastChild === icon) {
@@ -69,6 +84,5 @@ export default async function loadIcons(icons, config) {
         icon.classList.add('margin-inline-start', 'margin-inline-end');
       }
     }
-    icon.insertAdjacentHTML('afterbegin', iconSVGs[iconName].outerHTML);
   });
 }
