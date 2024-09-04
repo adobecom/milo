@@ -29,13 +29,13 @@ const loadVideo = (a) => {
 
 export default function init(a) {
   a.classList.add('hide-video');
-  if (a.textContent.includes('no-lazy')) {
-    loadVideo(a);
-  } else {
+  // if (a.textContent.includes('no-lazy')) {
+  //   loadVideo(a);
+  // } else {
     createIntersectionObserver({
       el: a,
       options: { rootMargin: `${ROOT_MARGIN}px` },
       callback: loadVideo,
-    });
+    // });
   }
 }
