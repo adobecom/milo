@@ -632,9 +632,5 @@ describe('global navigation', () => {
       expect(customSearchElement).to.exist;
       expect(customSearchElement.classList.contains('feds-client-search')).to.be.true;
     });
-
-    afterEach(() => {
-      sinon.restore();
-    });
   });
 });
