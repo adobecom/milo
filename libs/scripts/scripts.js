@@ -22,11 +22,16 @@ import locales from '../utils/locales.js';
 const prodDomains = ['milo.adobe.com'];
 
 const stageDomainsMap = {
-  'www.adobe.com': 'www.stage.adobe.com',
-  'blog.adobe.com': 'blog.stage.adobe.com',
-  'business.adobe.com': 'business.stage.adobe.com',
-  'helpx.adobe.com': 'helpx.stage.adobe.com',
-  'news.adobe.com': 'news.stage.adobe.com',
+  'www.stage.adobe.com': { 'www.adobe.com': 'www.stage.adobe.com' },
+  'business.stage.adobe.com': {
+    'www.adobe.com': 'www.stage.adobe.com',
+    'business.adobe.com': 'business.stage.adobe.com',
+    'blog.adobe.com': 'blog.stage.adobe.com',
+    'helpx.adobe.com': 'helpx.stage.adobe.com',
+    'news.adobe.com': 'news.stage.adobe.com',
+  },
+  '--bacom--adobecom.hlx.page': { 'business.adobe.com': 'origin' },
+  '.business-graybox.adobe.com': { 'business.adobe.com': 'origin' },
 };
 
 const config = {

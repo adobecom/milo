@@ -628,8 +628,22 @@ export function decorateLinks(el) {
     appendHtmlToLink(a);
     a.href = localizeLink(a.href);
     decorateSVG(a);
-    if (config.env?.name === 'stage' && config.stageDomainsMap?.[a.hostname]) {
-      a.href = a.href.replace(a.hostname, config.stageDomainsMap[a.hostname]);
+    if (config.env?.name === 'stage' && config.stageDomainsMap) {
+      const { hostname } = window.location;
+      const matchedRules = Object.entries(config.stageDomainsMap)
+        .find(([domain]) => hostname.includes(domain));
+
+      if (matchedRules) {
+        const [, domainsMap] = matchedRules;
+        const matchedDomain = Object.keys(domainsMap)
+          .find((domain) => a.href.includes(domain));
+
+        if (matchedDomain) {
+          a.href = a.href.replace(a.hostname, domainsMap[matchedDomain] === 'origin'
+            ? hostname
+            : domainsMap[matchedDomain]);
+        }
+      }
     }
     if (a.href.includes('#_blank')) {
       a.setAttribute('target', '_blank');
