@@ -99,17 +99,17 @@ export default async function loadIcons(icons, config) {
         icon.insertAdjacentHTML('afterbegin', localIconSvg.outerHTML);
       } else {
         // check for icon in /federal/libs/img/icons/svgs/ repo as <img/>
-        // const federalIconSrc = `https://main--federal--adobecom.aem.page/federal/libs/img/icons/svgs/${iconName}.svg`;
-        // const fedUrl = isUrlValid(federalIconSrc);
-        // if (!fedUrl) return;
-        // const iconImg = createTag('img', { class: `${iconName}`, src: federalIconSrc });
-        // icon.insertAdjacentHTML('afterbegin', iconImg.outerHTML);
+        const federalIconSrc = `https://main--federal--adobecom.aem.page/federal/libs/img/icons/svgs/${iconName}.svg`;
+        const fedUrl = isUrlValid(federalIconSrc);
+        if (!fedUrl) return;
+        const iconImg = createTag('img', { class: `${iconName}`, src: federalIconSrc });
+        icon.insertAdjacentHTML('afterbegin', iconImg.outerHTML);
 
         // get SVG from adobe.com
-        const adobeSrcUrl = await getSvgFromFile(`https://www.adobe.com/federal/libs/img/icons/svgs/${iconName}.svg`, iconName);
-        if (adobeSrcUrl) {
-          icon.insertAdjacentHTML('afterbegin', adobeSrcUrl.outerHTML);
-        }
+        // const adobeSrcUrl = await getSvgFromFile(`https://www.adobe.com/federal/libs/img/icons/svgs/${iconName}.svg`, iconName);
+        // if (adobeSrcUrl) {
+        //   icon.insertAdjacentHTML('afterbegin', adobeSrcUrl.outerHTML);
+        // }
       }
     } else {
       icon.insertAdjacentHTML('afterbegin', iconSVGs[iconName].outerHTML);
