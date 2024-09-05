@@ -118,7 +118,8 @@ export async function replaceText(
   // The .shift method is very slow, thus using normal iterator
   let i = 0;
   // eslint-disable-next-line no-plusplus
-  const finalText = text.replaceAll(regex, () => placeholders[i++]);
+  let finalText = text.replaceAll(regex, () => placeholders[i++]);
+  finalText = finalText.replace(/&nbsp;/g, '\u00A0');
   return finalText;
 }
 
@@ -130,9 +131,15 @@ export async function decoratePlaceholderArea({
   if (!nodes.length) return;
   const config = getConfig();
   await fetchPlaceholders({ placeholderPath, config, placeholderRequest });
-  const replaceNodes = nodes.map(async (textNode) => {
-    textNode.nodeValue = await replaceText(textNode.nodeValue, config);
-    textNode.nodeValue = textNode.nodeValue.replace(/&nbsp;/g, '\u00A0');
+  const replaceNodes = nodes.map(async (nodeEl) => {
+    if (nodeEl.nodeType === Node.TEXT_NODE) {
+      const newValue = await replaceText(nodeEl.nodeValue, config);
+      nodeEl.nodeValue = newValue;
+    } else if (nodeEl.nodeType === Node.ELEMENT_NODE) {
+      const hrefValue = nodeEl.getAttribute('href');
+      const newValue = await replaceText(hrefValue, config);
+      nodeEl.setAttribute('href', newValue);
+    }
   });
   await Promise.all(replaceNodes);
 }
