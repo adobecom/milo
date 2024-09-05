@@ -133,12 +133,10 @@ export async function decoratePlaceholderArea({
   await fetchPlaceholders({ placeholderPath, config, placeholderRequest });
   const replaceNodes = nodes.map(async (nodeEl) => {
     if (nodeEl.nodeType === Node.TEXT_NODE) {
-      const newValue = await replaceText(nodeEl.nodeValue, config);
-      nodeEl.nodeValue = newValue;
+      nodeEl.nodeValue = await replaceText(nodeEl.nodeValue, config);
     } else if (nodeEl.nodeType === Node.ELEMENT_NODE) {
-      const hrefValue = nodeEl.getAttribute('href');
-      const newValue = await replaceText(hrefValue, config);
-      nodeEl.setAttribute('href', newValue);
+      const hrefVal = await replaceText(nodeEl.getAttribute('href'), config);
+      nodeEl.setAttribute('href', hrefVal);
     }
   });
   await Promise.all(replaceNodes);
