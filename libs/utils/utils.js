@@ -253,6 +253,9 @@ export const [setConfig, updateConfig, getConfig] = (() => {
 
 export function getSusiOptions() {
   const { susiOptions, env } = getConfig();
+
+  if (!susiOptions) return {};
+
   const optionsForEnv = {};
 
   Object.keys(susiOptions).forEach((key) => {
