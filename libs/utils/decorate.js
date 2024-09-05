@@ -61,9 +61,10 @@ export function decorateIconArea(el) {
 }
 
 export function decorateBlockText(el, config = ['m', 's', 'm'], type = null) {
-  const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
+  let headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
   if (!el.classList.contains('default')) {
     if (headings) {
+      if (type === 'hasDetailHeading' && headings.length > 1) headings = [...headings].splice(1);
       headings.forEach((h) => h.classList.add(`heading-${config[0]}`));
       if (config[2]) {
         const prevSib = headings[0]?.previousElementSibling;
