@@ -620,31 +620,36 @@ export function decorateAutoBlock(a) {
   });
 }
 
+function convertStageLinks(config, anchors) {
+  if (config.env?.name === 'prod' || !config.stageDomainsMap) return;
+  [...anchors].forEach((a) => {
+    const { hostname } = window.location;
+    const matchedRules = Object.entries(config.stageDomainsMap)
+      .find(([domain]) => hostname.includes(domain));
+
+    if (matchedRules) {
+      const [, domainsMap] = matchedRules;
+      const matchedDomain = Object.keys(domainsMap)
+        .find((domain) => a.href.includes(domain));
+
+      if (matchedDomain) {
+        a.href = a.href.replace(a.hostname, domainsMap[matchedDomain] === 'origin'
+          ? hostname
+          : domainsMap[matchedDomain]);
+      }
+    }
+  });
+}
+
 export function decorateLinks(el) {
   const config = getConfig();
   decorateImageLinks(el);
   const anchors = el.getElementsByTagName('a');
+  convertStageLinks(config, anchors);
   return [...anchors].reduce((rdx, a) => {
     appendHtmlToLink(a);
     a.href = localizeLink(a.href);
     decorateSVG(a);
-    if (config.env?.name !== 'prod' && config.stageDomainsMap) {
-      const { hostname } = window.location;
-      const matchedRules = Object.entries(config.stageDomainsMap)
-        .find(([domain]) => hostname.includes(domain));
-
-      if (matchedRules) {
-        const [, domainsMap] = matchedRules;
-        const matchedDomain = Object.keys(domainsMap)
-          .find((domain) => a.href.includes(domain));
-
-        if (matchedDomain) {
-          a.href = a.href.replace(a.hostname, domainsMap[matchedDomain] === 'origin'
-            ? hostname
-            : domainsMap[matchedDomain]);
-        }
-      }
-    }
     if (a.href.includes('#_blank')) {
       a.setAttribute('target', '_blank');
       a.href = a.href.replace('#_blank', '');
