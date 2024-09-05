@@ -74,9 +74,9 @@ export const waitForFooterToDecorate = (targetedSelectors = allSelectors) => Pro
     .map((key) => waitForElement(allSelectors[key])),
 );
 
-export const createFullGlobalFooter = async ({ waitForDecoration, viewport = 'desktop' }) => {
+export const createFullGlobalFooter = async ({ waitForDecoration, viewport = 'desktop', customConfig = {} }) => {
   await setViewport(viewports[viewport]);
-  setConfig(config);
+  setConfig({ ...config, ...customConfig });
   // we need to import the footer class in here so it can use the config we have set above
   // if we import it at the top of the file, an empty config will be defined and used by the footer
 

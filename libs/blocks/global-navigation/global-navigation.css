@@ -32,7 +32,7 @@ header.global-navigation {
   position: sticky;
   top: 0;
   z-index: 10;
-  background-color: var(--feds-background-nav--light);
+  background-color: var(--feds-background-nav);
   box-sizing: content-box;
   overflow-x: clip;
 }
@@ -43,7 +43,7 @@ header.global-navigation {
   display: flex;
   justify-content: center;
   height: var(--feds-height-nav);
-  background-color: var(--feds-background-nav--light);
+  background-color: var(--feds-background-nav);
 }
 
 .feds-topnav {
@@ -62,8 +62,8 @@ header.global-navigation {
   display: none;
   flex-direction: column;
   height: 100vh;
-  border-top: 1px solid var(--feds-borderColor--light);
-  background-color: var(--feds-background-nav--light);
+  border-top: 1px solid var(--feds-borderColor);
+  background-color: var(--feds-background-nav);
 }
 
 [dir = "rtl"] .feds-nav-wrapper {
@@ -94,7 +94,7 @@ header.global-navigation {
   border: none;
   background: transparent;
   box-shadow: none;
-  color: #2d2d2d;
+  color: var(--feds-color-hamburger);
   cursor: pointer;
   font-size: 20px;
   font-weight: 300;
@@ -153,7 +153,7 @@ header.global-navigation {
 /* Popup */
 .feds-popup {
   display: none;
-  background-color: var(--feds-background-popup--light);
+  background-color: var(--feds-background-popup);
 }
 
 .feds-popup p {
@@ -174,7 +174,7 @@ header.global-navigation {
   font-size: 14px;
   font-weight: 400;
   line-height: 1.4;
-  color: var(--feds-color-link--light);
+  color: var(--feds-color-link);
   white-space: nowrap;
 }
 
@@ -187,7 +187,7 @@ header.global-navigation {
 }
 
 .feds-navItem:not(:last-child) > .feds-navLink {
-  border-bottom: 1px solid var(--feds-borderColor-link--light);
+  border-bottom: 1px solid var(--feds-borderColor-link);
 }
 
 /* Item with active dropdown */
@@ -201,7 +201,7 @@ header.global-navigation {
   bottom: 0;
   left: 0;
   width: 2px;
-  background: var(--feds-color-link--light);
+  background: var(--feds-color-link);
   content: "";
   z-index: 1;
 }
@@ -213,7 +213,7 @@ header.global-navigation {
 
 .feds-popup .feds-navLink:hover,
 .feds-popup .feds-navLink:focus {
-  background-color: var(--feds-background-link--hover--light);
+  background-color: var(--feds-background-link--hover);
 }
 
 .feds-cta-wrapper {
@@ -287,11 +287,11 @@ header.global-navigation {
   display: none;
   font-size: 20px;
   line-height: 1;
-  color: var(--feds-color-link--light);
+  color: var(--feds-color-link);
 }
 
 .feds-search-close:hover {
-  color: var(--feds-color-link--hover--light);
+  color: var(--feds-color-link--hover);
 }
 
 .feds-search-close:before {
@@ -302,7 +302,7 @@ header.global-navigation {
 .feds-breadcrumbs-wrapper {
   display: flex;
   order: -1;
-  border-bottom: 1px solid var(--feds-borderColor--light);
+  border-bottom: 1px solid var(--feds-borderColor);
 }
 
 .feds-breadcrumbs {
@@ -355,11 +355,11 @@ header.global-navigation {
 
 .feds-breadcrumbs a {
   display: block;
-  color: #707070;
+  color: var(--feds-color-link-breadcrumbs);
 }
 
 .feds-breadcrumbs [aria-current] {
-  color: #2c2c2c;
+  color: var(--feds-color-breadcrumbs--current);
 }
 
 .feds-breadcrumbs li:not(:first-of-type)::before {
@@ -408,7 +408,7 @@ header.global-navigation {
 .feds-signIn {
   padding: 11px var(--feds-gutter);
   border-radius: var(--feds-radius-utilityIcon);
-  color: #4B4B4B;
+  color: var(--feds-color-signIn);
   white-space: nowrap;
   border: none;
   font: inherit;
@@ -425,7 +425,7 @@ header.global-navigation {
   display: none;
   right: 0;
   top: 100%;
-  background-color: var(--feds-background-popup--light);
+  background-color: var(--feds-background-popup);
   overflow: hidden;
   box-shadow: 0 3px 3px 0 rgb(0 0 0 / 20%);
   line-height: 1.4;
@@ -451,14 +451,18 @@ header.global-navigation {
 .feds-signIn-dropdown li > a,
 .feds-signIn-dropdown .feds-signIn {
   display: block;
-  color: var(--feds-color-link--light);
+  color: var(--feds-color-link);
   padding: 6px 32px;
 }
 
 .feds-signIn-dropdown li > a:hover,
 .feds-signIn-dropdown .feds-signIn:hover {
-  color: var(--feds-color-link--hover--light);
-  background-color: var(--feds-background-link--hover--light);
+  color: var(--feds-color-link--hover);
+  background-color: var(--feds-background-link--hover);
+}
+
+.feds-utilities .unav-comp-profile .secondary-button{
+  line-height: inherit;
 }
 
 #feds-googleLogin {
@@ -482,7 +486,7 @@ header.global-navigation {
   }
 
   .feds-topnav-wrapper {
-    border-bottom: 1px solid var(--feds-borderColor--light);
+    border-bottom: 1px solid var(--feds-borderColor);
     box-sizing: content-box;
   }
 
@@ -588,8 +592,8 @@ header.global-navigation {
   }
 
   .feds-navItem--section:only-of-type {
-    border-left: 1px solid var(--feds-borderColor--light);
-    border-right: 1px solid var(--feds-borderColor--light);
+    border-left: 1px solid var(--feds-borderColor);
+    border-right: 1px solid var(--feds-borderColor);
   }
 
   .feds-navItem--section > .feds-navLink {
@@ -642,11 +646,11 @@ header.global-navigation {
   }
 
   .feds-search-trigger svg path {
-    fill: var(--feds-color-link--light);
+    fill: var(--feds-color-link);
   }
 
   .feds-search-trigger:hover svg path {
-    fill: var(--feds-color-link--hover--light);
+    fill: var(--feds-color-link--hover);
   }
 
   /* Breadcrumbs */
@@ -658,7 +662,7 @@ header.global-navigation {
     justify-content: center;
     border-bottom: unset;
     box-shadow: 0 3px 2px rgb(142 142 142 / 30%);
-    background: var(--feds-background-nav--light);
+    background: var(--feds-background-nav);
     transform: translate3d(0,0,0); /* Fix Safari issues w/ position: sticky */
   }
 

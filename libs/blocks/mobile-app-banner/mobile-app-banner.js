@@ -13,9 +13,20 @@ async function getKey(product) {
   return keyMatch[0]?.key;
 }
 
+async function getECID() {
+  let ecid = null;
+  if (window.alloy) {
+    await window.alloy('getIdentity').then((data) => {
+      ecid = data?.identity?.ECID;
+    }).catch((err) => window.lana.log(`Error fetching ECID: ${err}`, { tags: 'errorType=error,module=mobile-app-banner' }));
+  }
+  return ecid;
+}
+
 /* eslint-disable */
-function branchInit(key) {
+async function branchInit(key) {
   let initValue = false;
+  const ecid = await getECID();
   function initBranch() {
     if (initValue) {
       return;
@@ -48,8 +59,16 @@ function branchInit(key) {
       0
     );
     const privacyConsent = window.adobePrivacy?.hasUserProvidedConsent();
+    const isAndroid = navigator.userAgent.includes('Android');
+    
+    const cookieGrp = window.adobePrivacy?.activeCookieGroups();
+    const performanceCookieConsent = cookieGrp.includes('C0002');
+    const advertisingCookieConsent = cookieGrp.includes('C0004');
+
+    if (performanceCookieConsent && advertisingCookieConsent && isAndroid) branch.setBranchViewData({ data: { ecid }});
     branch.init(key, { tracking_disabled: !privacyConsent });
   }
+
   ['adobePrivacy:PrivacyConsent', 'adobePrivacy:PrivacyReject', 'adobePrivacy:PrivacyCustom']
     .forEach((event) => {
       window.addEventListener(event, initBranch);

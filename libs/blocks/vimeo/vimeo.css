@@ -5,3 +5,59 @@
   position: relative; 
   padding-bottom: 56.25%;
 }
+
+lite-vimeo {
+  aspect-ratio: 16 / 9;
+  background-color: #000;
+  position: relative;
+  display: block;
+  contain: content;
+  background-position: center center;
+  background-size: cover;
+  cursor: pointer;
+}
+
+lite-vimeo > .ltv-playbtn {
+  font-size: 10px;
+  padding: 0;
+  width: 6.5em;
+  height: 4em;
+  background: rgb(23, 35, 34, 75%);
+  z-index: 1;
+  opacity: .8;
+  border-radius: .5em;
+  transition: opacity .2s ease-out, background .2s ease-out;
+  outline: 0;
+  border: 0;
+  cursor: pointer;
+}
+
+lite-vimeo:hover > .ltv-playbtn {
+  background-color: rgb(0, 173, 239);
+  opacity: 1;
+}
+
+lite-vimeo > .ltv-playbtn::before {
+  content: '';
+  border-style: solid;
+  border-width: 10px 0 10px 20px;
+  border-color: transparent transparent transparent #fff;
+}
+
+lite-vimeo > .ltv-playbtn,
+lite-vimeo > .ltv-playbtn::before {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate3d(-50%, -50%, 0);
+}
+
+lite-vimeo.ltv-activated {
+  cursor: unset;
+}
+
+lite-vimeo.ltv-activated::before,
+lite-vimeo.ltv-activated > .ltv-playbtn {
+  opacity: 0;
+  pointer-events: none;
+}
