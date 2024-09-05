@@ -813,8 +813,8 @@ class Gnav {
     analyticsValue: 'Logo',
   });
 
-  decorateCustomSearch = () => {
-    this.elements.customSearch = toFragment`<div class="feds-search"></div>`;
+  decorateClientSearch = () => {
+    this.elements.customSearch = toFragment`<div class="feds-client-search"></div>`;
     return this.elements.customSearch;
   };
 
@@ -827,7 +827,7 @@ class Gnav {
         ${isDesktop.matches ? '' : this.decorateSearch()}
         ${this.elements.mainNav}
         ${isDesktop.matches ? this.decorateSearch() : ''}
-        ${getConfig().searchEnabled === 'on' ? this.decorateCustomSearch() : ''}
+        ${getConfig().searchEnabled === 'on' ? this.decorateClientSearch() : ''}
       </div>
     `;
 
