@@ -628,7 +628,7 @@ export function decorateLinks(el) {
     appendHtmlToLink(a);
     a.href = localizeLink(a.href);
     decorateSVG(a);
-    if (config.env?.name === 'stage' && config.stageDomainsMap) {
+    if (config.env?.name !== 'prod' && config.stageDomainsMap) {
       const { hostname } = window.location;
       const matchedRules = Object.entries(config.stageDomainsMap)
         .find(([domain]) => hostname.includes(domain));
