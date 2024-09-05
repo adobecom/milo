@@ -622,12 +622,8 @@ describe('global navigation', () => {
   });
 
   describe('decorateClientSearch', () => {
-    let gnav;
-    beforeEach(async () => {
-      gnav = await createFullGlobalNavigation();
-    });
-
     it('should return the custom search element', async () => {
+      const gnav = await createFullGlobalNavigation();
       const customSearchElement = gnav.decorateClientSearch();
       expect(customSearchElement).to.exist;
       expect(customSearchElement.classList.contains('feds-client-search')).to.be.true;
