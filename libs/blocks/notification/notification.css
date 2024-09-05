@@ -16,7 +16,7 @@
   --icon-size: 56px;
   --icon-size-xl: 64px;
   --pill-radius: 16px;
-  --pill-shadow: 0 3px 6px #707070;
+  --pill-shadow: 0 3px 6px #00000029;
 
   display: flex;
   inline-size: 100%;
