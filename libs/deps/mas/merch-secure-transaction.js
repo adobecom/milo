@@ -1,4 +1,4 @@
-import{LitElement as p,html as n}from"/libs/deps/lit-all.min.js";import{css as l}from"/libs/deps/lit-all.min.js";var i=l`
+import{LitElement as p,html as n}from"../lit-all.min.js";import{css as l}from"../lit-all.min.js";var i=l`
     #label {
         align-items: center;
         cursor: pointer;
@@ -30,4 +30,3 @@ import{LitElement as p,html as n}from"/libs/deps/lit-all.min.js";import{css as l
                 >
             </overlay-trigger>
         `:o}};window.customElements.define(a,t);export{t as default};
-//# sourceMappingURL=merch-secure-transaction.js.map
