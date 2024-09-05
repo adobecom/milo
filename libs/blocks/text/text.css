@@ -14,7 +14,11 @@
 
 .text-block [class^="body-"]:only-child { margin: 0; }
 
-.text-block :is([class^="heading"], [class^="detail"]) { margin: 0 0 var(--spacing-xs) 0; }
+.text-block [class^="heading"] { margin: 0 0 var(--spacing-xs) 0; }
+
+.text-block [class^="detail"] { margin: 0 0 var(--spacing-xxs) 0; }
+
+.text-block [class^="detail"] strong { font-weight: unset; } /* bugfix for FF */
 
 .text-block .cta-container,
 .text-block p.action-area { margin-top: var(--spacing-s); }
@@ -76,7 +80,7 @@
 .text-block .title-l {
   font-size: var(--type-body-m-size);
   line-height: var(--type-body-m-lh);
-  font-weight: bold;
+  font-weight: 700;
   text-transform: none;
   margin-bottom: var(--spacing-xs);
 }
@@ -163,7 +167,7 @@
 .text-block.center .icon-area { justify-content: center; }
 
 .text-block.right {
-  text-align: right;
+  text-align: end;
   align-items: end;
 }
 
@@ -221,6 +225,7 @@
 
 .text-block .icon-area picture {
   line-height: 0em;
+  height: inherit; /* Safari + FF bug fix */
 }
 
 .text-block .image picture {
