@@ -22,5 +22,11 @@ describe('countdown-timer', () => {
     init(block);
     const cdt = await waitForElement('.countdown-timer');
     expect(cdt).to.exist;
+
+    cdt.setAttribute('timeranges', '2, 2');
+    expect(cdt).to.exist;
+
+    cdt.remove();
+    expect(cdt.isConnected).to.be.false;
   });
 });
