@@ -96,10 +96,7 @@ class BulkPublish2 extends LitElement {
   }
 
   setJobErrors(jobErrors, authErrors) {
-    const errors = [
-      ...jobErrors,
-      ...authErrors.map((href) => ({ href, message: 'Not able to publish' })),
-    ];
+    const errors = [...jobErrors, ...authErrors];
     const urls = [];
     errors.forEach((error) => {
       const matched = this.urls.filter((url) => {

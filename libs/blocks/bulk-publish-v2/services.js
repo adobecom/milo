@@ -247,7 +247,7 @@ const updateRetry = async ({ queue, urls, process }) => {
   return newQueue;
 };
 
-// publish authentication services
+// publish authentication service
 const getPublishable = async ({ urls, process, user }) => {
   let publishable = { authorized: [], unauthorized: [] };
   if (!isLive(process)) {
@@ -261,8 +261,9 @@ const getPublishable = async ({ urls, process, user }) => {
     publishable = await urls.reduce(async (init, url) => {
       const result = await init;
       const detail = { webPath: new URL(url).pathname, live, profile };
-      const auth = await userCanPublishPage(detail);
-      result[`${auth ? '' : 'un'}authorized`].push(url);
+      const { canPublish, message } = await userCanPublishPage(detail);
+      if (canPublish) result.authorized.push(url);
+      else result.unauthorized.push({ href: url, message });
       return result;
     }, Promise.resolve(publishable));
   }

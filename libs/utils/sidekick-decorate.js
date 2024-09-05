@@ -2,18 +2,17 @@ import { userCanPublishPage } from './utils.js';
 
 const PUBLISH_BTN = '.publish.plugin button';
 const CONFIRM_MESSAGE = 'Are you sure? This will publish to production.';
-const NO_AUTH_MESSAGE = 'This page currently cannot be published';
 
 export default function stylePublish(sk) {
   sk.addEventListener('statusfetched', async (event) => {
-    const thisPage = event?.detail?.data;
-    const enablePublish = await userCanPublishPage(thisPage);
-    const publishBtn = event?.target?.shadowRoot?.querySelector(PUBLISH_BTN);
-    if (publishBtn) {
-      publishBtn.setAttribute('disabled', !enablePublish);
-      const message = publishBtn.querySelector('span');
-      if (message) {
-        message.innerText = enablePublish ? CONFIRM_MESSAGE : NO_AUTH_MESSAGE;
+    const page = event?.detail?.data;
+    const { canPublish, message } = await userCanPublishPage(page);
+    const btn = event?.target?.shadowRoot?.querySelector(PUBLISH_BTN);
+    if (btn) {
+      btn.setAttribute('disabled', !canPublish);
+      const messageText = btn.querySelector('span');
+      if (messageText) {
+        messageText.innerText = canPublish ? CONFIRM_MESSAGE : message;
       }
     }
   });
@@ -73,6 +72,7 @@ export default function stylePublish(sk) {
   sk.shadowRoot.adoptedStyleSheets = [style];
   setTimeout(() => {
     const btn = sk.shadowRoot.querySelector(PUBLISH_BTN);
+    btn?.setAttribute('disabled', true);
     btn?.insertAdjacentHTML('beforeend', `<span>${CONFIRM_MESSAGE}</span>`);
   }, 800);
 }
