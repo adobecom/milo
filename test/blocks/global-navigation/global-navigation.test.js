@@ -620,4 +620,21 @@ describe('global navigation', () => {
       expect(document.querySelector(`${selectors.brandImage} img`).getAttribute('src')).to.equal('http://localhost:2000/test/blocks/global-navigation/mocks/adobe-dark-logo.svg');
     });
   });
+
+  describe('decorateClientSearch', () => {
+    let gnav;
+    beforeEach(async () => {
+      gnav = await createFullGlobalNavigation();
+    });
+  
+    it('should return the custom search element', async () => {
+      const customSearchElement = gnav.decorateClientSearch();
+      expect(customSearchElement).to.exist;
+      expect(customSearchElement.classList.contains('feds-client-search')).to.be.true;
+    });
+
+    afterEach(() => {
+      sinon.restore();
+    });
+  });
 });
