@@ -30,7 +30,11 @@ const stageDomainsMap = {
     'helpx.adobe.com': 'helpx.stage.adobe.com',
     'news.adobe.com': 'news.stage.adobe.com',
   },
-  '--bacom--adobecom.hlx.page': { 'business.adobe.com': 'origin' },
+  '--milo--robert-bogos.hlx.page': {
+    'milo.adobe.com': 'origin',
+    'business.adobe.com': 'main--bacom--adobecom.hlx.page',
+  },
+  '--bacom--adobecom.hlx.live': { 'business.adobe.com': 'origin' },
   '.business-graybox.adobe.com': { 'business.adobe.com': 'origin' },
 };
 
