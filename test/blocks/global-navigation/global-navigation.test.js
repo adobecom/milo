@@ -626,7 +626,7 @@ describe('global navigation', () => {
     beforeEach(async () => {
       gnav = await createFullGlobalNavigation();
     });
-  
+
     it('should return the custom search element', async () => {
       const customSearchElement = gnav.decorateClientSearch();
       expect(customSearchElement).to.exist;
