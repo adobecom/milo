@@ -5,6 +5,7 @@ import {
   loadIms,
   decorateLinks,
   loadScript,
+  getSusiOptions,
 } from '../../utils/utils.js';
 import {
   closeAllDropdowns,
@@ -83,8 +84,8 @@ export const CONFIG = {
             },
           },
           callbacks: {
-            onSignIn: () => { window.adobeIMS?.signIn(); },
-            onSignUp: () => { window.adobeIMS?.signIn(); },
+            onSignIn: () => { window.adobeIMS?.signIn(getSusiOptions()); },
+            onSignUp: () => { window.adobeIMS?.signIn(getSusiOptions()); },
           },
         },
       },
@@ -144,7 +145,6 @@ const signIn = (options = {}) => {
 };
 
 const decorateSignIn = async ({ rawElem, decoratedElem }) => {
-  const { susiContexts, env } = getConfig();
   const dropdownElem = rawElem.querySelector(':scope > div:nth-child(2)');
   const signInLabel = await replaceKey('sign-in', getFedsPlaceholderConfig());
   let signInElem;
@@ -154,7 +154,7 @@ const decorateSignIn = async ({ rawElem, decoratedElem }) => {
 
     signInElem.addEventListener('click', (e) => {
       e.preventDefault();
-      signIn(susiContexts ? { dctx_id: susiContexts[env.name] } : {});
+      signIn(getSusiOptions());
     });
   } else {
     signInElem = toFragment`<button daa-ll="${signInLabel}" class="feds-signIn" aria-expanded="false" aria-haspopup="true">${signInLabel}</button>`;
@@ -171,7 +171,7 @@ const decorateSignIn = async ({ rawElem, decoratedElem }) => {
       dropdownSignInAnchor.replaceWith(dropdownSignInButton);
       dropdownSignInButton.addEventListener('click', (e) => {
         e.preventDefault();
-        signIn(susiContexts ? { dctx_id: susiContexts[env.name] } : {});
+        signIn(getSusiOptions());
       });
     } else {
       lanaLog({ message: 'Sign in link not found in dropdown.', tags: 'errorType=warn,module=gnav' });

@@ -1,5 +1,5 @@
 /* eslint-disable no-continue */
-import { loadScript, loadStyle } from '../../libs/utils/utils.js';
+import { getSusiOptions, loadScript, loadStyle } from '../../libs/utils/utils.js';
 import { getImsToken } from '../utils/utils.js';
 import {
   loadTingleModalFiles,
@@ -51,7 +51,7 @@ const checkIms = async () => {
       'You must be logged in with an Adobe ID in order to publish to CaaS.\nDo you want to log in?',
     );
     if (shouldLogIn) {
-      window.adobeIMS.signIn();
+      window.adobeIMS.signIn(getSusiOptions());
     }
     return false;
   }

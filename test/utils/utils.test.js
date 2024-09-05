@@ -9,6 +9,12 @@ const utils = {};
 const config = {
   codeRoot: '/libs',
   locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
+  susiOptions: {
+    dctx_id: {
+      stage: 'dctx_id',
+      prod: 'dctx_id',
+    },
+  },
 };
 const ogFetch = window.fetch;
 
