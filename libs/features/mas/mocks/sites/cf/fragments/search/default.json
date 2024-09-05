@@ -26,33 +26,25 @@
                     "name": "type",
                     "type": "enumeration",
                     "multiple": false,
-                    "values": [
-                        "ccd-action"
-                    ]
+                    "values": ["ccd-action"]
                 },
                 {
                     "name": "icon",
                     "type": "text",
                     "multiple": true,
-                    "values": [
-                        "/test/mocks/img/creative-cloud.svg"
-                    ]
+                    "values": ["/test/mocks/img/creative-cloud.svg"]
                 },
                 {
                     "name": "name",
                     "type": "text",
                     "multiple": false,
-                    "values": [
-                        "creative-cloud"
-                    ]
+                    "values": ["creative-cloud"]
                 },
                 {
                     "name": "title",
                     "type": "text",
                     "multiple": false,
-                    "values": [
-                        "Creative Cloud All Apps"
-                    ]
+                    "values": ["Creative Cloud All Apps"]
                 },
                 {
                     "name": "link",
@@ -82,17 +74,13 @@
                     "name": "secure",
                     "type": "boolean",
                     "multiple": false,
-                    "values": [
-                        true
-                    ]
+                    "values": [true]
                 },
                 {
                     "name": "stock",
                     "type": "boolean",
                     "multiple": false,
-                    "values": [
-                        true
-                    ]
+                    "values": [true]
                 },
                 {
                     "name": "ctas",
@@ -144,33 +132,25 @@
                     "name": "type",
                     "type": "enumeration",
                     "multiple": false,
-                    "values": [
-                        "ccd-action"
-                    ]
+                    "values": ["ccd-action"]
                 },
                 {
                     "name": "icon",
                     "type": "text",
                     "multiple": true,
-                    "values": [
-                        "/test/mocks/img/photoshop.svg"
-                    ]
+                    "values": ["/test/mocks/img/photoshop.svg"]
                 },
                 {
                     "name": "name",
                     "type": "text",
                     "multiple": false,
-                    "values": [
-                        "photoshop"
-                    ]
+                    "values": ["photoshop"]
                 },
                 {
                     "name": "title",
                     "type": "text",
                     "multiple": false,
-                    "values": [
-                        "Photoshop"
-                    ]
+                    "values": ["Photoshop"]
                 },
                 {
                     "name": "link",
@@ -200,17 +180,13 @@
                     "name": "secure",
                     "type": "boolean",
                     "multiple": false,
-                    "values": [
-                        true
-                    ]
+                    "values": [true]
                 },
                 {
                     "name": "stock",
                     "type": "boolean",
                     "multiple": false,
-                    "values": [
-                        true
-                    ]
+                    "values": [true]
                 },
                 {
                     "name": "ctas",
@@ -235,6 +211,146 @@
             "validationStatus": [],
             "fieldTags": [],
             "etag": "\"343f00d61244effce6e55c31cc90d4f9\""
+        },
+        {
+            "path": "/content/dam/sandbox/mas/special-offers-students-and-teachers",
+            "title": "Special Offers Students and Teachers",
+            "description": "",
+            "id": "64382bf2-6308-4245-85c6-ea43e0edb287",
+            "created": {
+                "at": "2024-08-15T21:48:42.597Z",
+                "by": "johndoe@adobe.com",
+                "fullName": "John Doe"
+            },
+            "modified": {
+                "at": "2024-08-27T11:58:39.08Z",
+                "by": "johndoe@adobe.com",
+                "fullName": "John Doe"
+            },
+            "published": {
+                "at": "2024-08-26T09:22:58.047Z",
+                "by": "johndoe@adobe.com",
+                "fullName": "John Doe"
+            },
+            "status": "MODIFIED",
+            "fields": [
+                {
+                    "name": "variant",
+                    "type": "enumeration",
+                    "multiple": false,
+                    "locked": false,
+                    "values": ["special-offers"]
+                },
+                {
+                    "name": "icon",
+                    "type": "text",
+                    "multiple": true,
+                    "locked": false,
+                    "values": []
+                },
+                {
+                    "name": "name",
+                    "type": "text",
+                    "multiple": false,
+                    "locked": false,
+                    "values": ["Special Offers Students and Teachers"]
+                },
+                {
+                    "name": "title",
+                    "type": "text",
+                    "multiple": false,
+                    "locked": false,
+                    "values": ["Individuals"]
+                },
+                {
+                    "name": "link",
+                    "type": "text",
+                    "multiple": false,
+                    "locked": false,
+                    "values": []
+                },
+                {
+                    "name": "backgroundImage",
+                    "type": "text",
+                    "multiple": false,
+                    "locked": false,
+                    "values": [
+                        "/test/img/special-offers-img2.png"
+                    ]
+                },
+                {
+                    "name": "prices",
+                    "type": "long-text",
+                    "multiple": false,
+                    "locked": false,
+                    "mimeType": "text/html",
+                    "values": [
+                        "<p>Save over 30% on Creative Cloud All Apps.</p>"
+                    ]
+                },
+                {
+                    "name": "description",
+                    "type": "long-text",
+                    "multiple": false,
+                    "locked": false,
+                    "mimeType": "text/html",
+                    "values": [
+                        "<p>Join us for the creative event of the year Oct 14-16. Register by August 31 and save US$200 on a full conference pass.</p><p><a class=\"modal link-block \" href=\"https://www.adobe.com/products/special-offers.html#max-modal-advanced\" data-modal-path=\"/cc-shared/fragments/modals/max-conference/terms-advanced-pricing\" data-modal-hash=\"#max-modal-advanced\">See terms﻿</a></p>"
+                    ]
+                },
+                {
+                    "name": "secure",
+                    "type": "boolean",
+                    "multiple": false,
+                    "locked": false,
+                    "values": [false]
+                },
+                {
+                    "name": "stock",
+                    "type": "boolean",
+                    "multiple": false,
+                    "locked": false,
+                    "values": [false]
+                },
+                {
+                    "name": "ctas",
+                    "type": "long-text",
+                    "multiple": false,
+                    "locked": false,
+                    "mimeType": "text/html",
+                    "values": [
+                        "<p><strong><a href=\"\" data-checkout-workflow=\"UCv3\" data-checkout-workflow-step=\"email\" data-promotion-code=\"\" data-quantity=\"1\" data-wcs-osi=\"r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8\" is=\"checkout-link\" data-ims-country=\"CH\">Buy now</a>﻿</strong></p>"
+                    ]
+                },
+                {
+                    "name": "xlg",
+                    "type": "text",
+                    "multiple": false,
+                    "locked": false,
+                    "values": ["photoshop-lapsed"]
+                }
+            ],
+            "variations": [],
+            "tags": [],
+            "references": [],
+            "model": {
+                "id": "L2NvbmYvc2FuZGJveC9zZXR0aW5ncy9kYW0vY2ZtL21vZGVscy9tZXJjaC1jYXJk",
+                "path": "/conf/sandbox/settings/dam/cfm/models/merch-card",
+                "name": "Merch Card",
+                "title": "Merch Card",
+                "description": "content for adobe.com merch-card web component."
+            },
+            "validationStatus": [
+                {
+                    "property": "fields.description.values[0].<list element>",
+                    "message": "has unsafe html content"
+                },
+                {
+                    "property": "fields.ctas.values[0].<list element>",
+                    "message": "has unsafe html content"
+                }
+            ],
+            "fieldTags": []
         }
     ]
 }

@@ -13,7 +13,7 @@ import { appendMiloStyles } from './utils.js';
 import { mockIms } from './mocks/ims.js';
 import { withWcs } from './mocks/wcs.js';
 import { withLiterals } from './mocks/literals.js';
-import mas from './mocks/mas.js';
+import mas from './mas.js';
 
 const skipTests = sessionStorage.getItem('skipTests');
 
