@@ -435,20 +435,27 @@ describe('Utils', () => {
 
     it('should convert prod links to stage links on stage env', async () => {
       const stageDomainsMap = {
-        'www.adobe.com': 'www.stage.adobe.com',
-        'blog.adobe.com': 'blog.stage.adobe.com',
-        'business.adobe.com': 'business.stage.adobe.com',
-        'helpx.adobe.com': 'helpx.stage.adobe.com',
-        'news.adobe.com': 'news.stage.adobe.com',
+        localhost: {
+          'www.adobe.com': 'www.stage.adobe.com',
+          'milo.adobe.com': 'origin',
+        },
       };
       utils.setConfig({
         ...config,
         env: { name: 'stage' },
         stageDomainsMap,
       });
-      const links = Object.keys(stageDomainsMap).map((prodDom) => document.body.appendChild(createTag('a', { href: `https://${prodDom}`, 'data-prod-dom': prodDom })));
+      const links = Object.keys(stageDomainsMap.localhost)
+        .map((prodDom) => document.body.appendChild(createTag('a', {
+          href: `https://${prodDom}`,
+          'data-prod-dom': prodDom,
+        })));
       await utils.decorateLinks(document.body);
-      links.forEach((l) => expect(l.hostname === stageDomainsMap[l.dataset.prodDom]).to.be.true);
+      links.forEach((l) => {
+        const expectedDomain = stageDomainsMap.localhost[l.dataset.prodDom] === 'origin' ? 'localhost'
+          : stageDomainsMap.localhost[l.dataset.prodDom];
+        expect(l.hostname).to.equal(expectedDomain);
+      });
     });
   });
 
