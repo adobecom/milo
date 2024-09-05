@@ -1,25 +1,80 @@
-import { createIntersectionObserver, createTag, isInTextNode } from '../../utils/utils.js';
+// part of the code is an optimized version of lite-vimeo-embed -> https://github.com/luwes/lite-vimeo-embed
+import { replaceKey } from '../../features/placeholders.js';
+import { createIntersectionObserver, createTag, getConfig, isInTextNode, loadLink } from '../../utils/utils.js';
 
-export default function init(a) {
+class LiteVimeo extends HTMLElement {
+  static preconnected = false;
+
+  connectedCallback() {
+    this.isMobile = navigator.userAgent.includes('Mobi');
+    this.videoId = this.getAttribute('videoid');
+    this.setupThumbnail();
+    this.setupPlayButton();
+    this.addEventListener('pointerover', LiteVimeo.warmConnections, { once: true });
+    this.addEventListener('click', this.addIframe);
+  }
+
+  static warmConnections() {
+    if (LiteVimeo.preconnected) return;
+    LiteVimeo.preconnected = true;
+    ['player.vimeo.com',
+      'i.vimeocdn.com',
+      'f.vimeocdn.com',
+      'fresnel.vimeocdn.com',
+    ].forEach((url) => loadLink(`https://${url}`, { rel: 'preconnect' }));
+  }
+
+  setupThumbnail() {
+    const { width, height } = this.getBoundingClientRect();
+    const roundedWidth = Math.min(Math.ceil(width / 100) * 100, 1920);
+    const roundedHeight = Math.round((roundedWidth / width) * height);
+
+    fetch(`https://vimeo.com/api/v2/video/${this.videoId}.json`)
+      .then((response) => response.json())
+      .then((data) => {
+        const thumbnailUrl = data[0]?.thumbnail_large?.replace(/-d_[\dx]+$/i, `-d_${roundedWidth}x${roundedHeight}`);
+        this.style.backgroundImage = `url("${thumbnailUrl}")`;
+      })
+      .catch((e) => {
+        window.lana.log(`Error fetching Vimeo thumbnail: ${e}`, { tags: 'errorType=info,module=vimeo' });
+      });
+  }
+
+  async setupPlayButton() {
+    const playBtnEl = createTag('button', {
+      type: 'button',
+      'aria-label': `${await replaceKey('play-video', getConfig())}`,
+      class: 'ltv-playbtn',
+    });
+    this.append(playBtnEl);
+  }
+
+  addIframe() {
+    if (this.classList.contains('ltv-activated')) return;
+    this.classList.add('ltv-activated');
+    const iframeEl = createTag('iframe', {
+      style: 'border: 0; top: 0; left: 0; width: 100%; height: 100%; position: absolute; background-color: #000;',
+      frameborder: '0',
+      title: 'Content from Vimeo',
+      allow: 'accelerometer; fullscreen; autoplay; encrypted-media; gyroscope; picture-in-picture',
+      allowFullscreen: true,
+      src: `https://player.vimeo.com/video/${encodeURIComponent(this.videoId)}?autoplay=1&muted=${this.isMobile ? 1 : 0}`,
+    });
+    this.insertAdjacentElement('afterend', iframeEl);
+    iframeEl.addEventListener('load', () => iframeEl.focus(), { once: true });
+    this.remove();
+  }
+}
+
+export default async function init(a) {
   if (isInTextNode(a)) return;
+  if (!customElements.get('lite-vimeo')) customElements.define('lite-vimeo', LiteVimeo);
+
   const embedVimeo = () => {
     const url = new URL(a.href);
-    let src = url.href;
-    if (url.hostname !== 'player.vimeo.com') {
-      const video = url.pathname.split('/')[1];
-      src = `https://player.vimeo.com/video/${video}?app_id=122963`;
-    }
-    const iframe = createTag('iframe', {
-      src,
-      style: 'border: 0; top: 0; left: 0; width: 100%; height: 100%; position: absolute;',
-      frameborder: '0',
-      allow: 'autoplay; fullscreen; picture-in-picture',
-      allowfullscreen: 'true',
-      title: 'Content from Vimeo',
-      loading: 'lazy',
-    });
-    const wrapper = createTag('div', { class: 'embed-vimeo' }, iframe);
-
+    const videoid = url.pathname.split('/')[url.hostname === 'player.vimeo.com' ? 2 : 1];
+    const liteVimeo = createTag('lite-vimeo', { videoid });
+    const wrapper = createTag('div', { class: 'embed-vimeo' }, liteVimeo);
     a.parentElement.replaceChild(wrapper, a);
   };
 

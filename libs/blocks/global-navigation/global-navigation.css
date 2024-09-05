@@ -461,6 +461,10 @@ header.global-navigation {
   background-color: var(--feds-background-link--hover);
 }
 
+.feds-utilities .unav-comp-profile .secondary-button{
+  line-height: inherit;
+}
+
 #feds-googleLogin {
   position: absolute;
   top: 100%;
