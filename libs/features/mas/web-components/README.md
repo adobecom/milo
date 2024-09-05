@@ -70,12 +70,6 @@ To preview all available 'merch-card' components, open `http://localhost:2023`, 
 Please refer to the main tacocat.js/README.md for more details.
 
 
-#### On Milo
-
-By default, Milo will load `merch-*.js` from `/libs/deps`<br/>
-We will use the Redirector extension for [Chrome](https://chrome.google.com/webstore/detail/redirector/ocgpenflpmgnfapjedencafcfakcekcd)/[Firefox](https://addons.mozilla.org/en-US/firefox/addon/redirector/) for redirecting those files to web-test-runner on the port `2023`.<br/>
-Please import `./redirector.json` and toggle `Debug commerce web components` rule.
-
 ### Build
 run
 ```
