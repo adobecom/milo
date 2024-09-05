@@ -16,6 +16,9 @@ setConfig(config);
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const { default: init } = await import('../../../libs/blocks/countdown-timer/countdown-timer.js');
 
+// eslint-disable-next-line no-promise-executor-return
+const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay));
+
 describe('countdown-timer', () => {
   it('decorates cdt', async () => {
     const block = document.querySelector('.countdown-timer');
@@ -23,8 +26,9 @@ describe('countdown-timer', () => {
     const cdt = await waitForElement('.countdown-timer');
     expect(cdt).to.exist;
 
-    cdt.setAttribute('timeranges', '2, 2');
-    expect(cdt).to.exist;
+    await sleep(61000);
+
+    cdt.countdownCompleted();
 
     cdt.remove();
     expect(cdt.isConnected).to.be.false;
