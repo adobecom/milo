@@ -760,23 +760,21 @@ export async function customFetch({ resource, withCacheRules }) {
 
 const findReplaceableNodes = (area) => {
   const regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
-  const walker = document.createTreeWalker(
-    area,
-    NodeFilter.SHOW_TEXT,
-    {
-      acceptNode(node) {
-        const a = regex.test(node.nodeValue)
-          ? NodeFilter.FILTER_ACCEPT
-          : NodeFilter.FILTER_REJECT;
-        regex.lastIndex = 0;
-        return a;
-      },
-    },
-  );
+  const walker = document.createTreeWalker(area, NodeFilter.SHOW_ALL);
   const nodes = [];
   let node = walker.nextNode();
   while (node !== null) {
-    nodes.push(node);
+    let matchFound = false;
+    if (node.nodeType === Node.TEXT_NODE) {
+      matchFound = regex.test(node.nodeValue);
+    } else if (node.nodeType === Node.ELEMENT_NODE && node.hasAttribute('href')) {
+      const hrefValue = node.getAttribute('href');
+      matchFound = regex.test(hrefValue);
+    }
+    if (matchFound) {
+      nodes.push(node);
+      regex.lastIndex = 0;
+    }
     node = walker.nextNode();
   }
   return nodes;
