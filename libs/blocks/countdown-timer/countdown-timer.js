@@ -2,10 +2,15 @@ import { createTag } from '../../utils/utils.js';
 
 export class CountdownTimer extends HTMLElement {
   #daysLeft = '';
+
   #hoursLeft = '';
+
   #minutesLeft = '';
+
   #isVisible = false;
+
   #timeWords = [];
+
   #timeRangesEpoch = [];
 
   constructor() {
@@ -18,7 +23,7 @@ export class CountdownTimer extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ['label', 'dayshoursmins', 'timeranges', 'daysLeft', 'hoursLeft', 'minutesLeft', 'isVisible'];
+    return ['label', 'dayshoursmins', 'timeranges'];
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
@@ -50,7 +55,7 @@ export class CountdownTimer extends HTMLElement {
   }
 
   countdownUpdate() {
-    let currentTime = Date.now();
+    const currentTime = Date.now();
 
     for (let i = 0; i < this.timeRangesEpoch.length; i += 2) {
       const startTime = this.timeRangesEpoch[i];
@@ -225,7 +230,7 @@ export default function init(el) {
 
   const cdt = createTag('countdown-timer', { class: styles.join(' ') });
   cdt.setAttribute('label', cdtLabel);
-  cdt.setAttribute('daysHoursMins', daysHoursMins);
-  cdt.setAttribute('timeRanges', timeRanges);
+  cdt.setAttribute('dayshoursmins', daysHoursMins);
+  cdt.setAttribute('timeranges', timeRanges);
   el.replaceWith(cdt);
 }
