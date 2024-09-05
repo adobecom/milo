@@ -24,7 +24,7 @@ const values = [
   },
   {
     b: 'marquee.light:nth-child(2) header',
-    a: '.marquee.light:nth-child(2) is:(h1, h2, h3, h4, h5, h6)',
+    a: '.marquee.light:nth-child(2) :is(h1, h2, h3, h4, h5, h6)',
   },
   {
     b: 'any-marquee.light:nth-child(2) h2',
