@@ -28,35 +28,35 @@ const values = [
   },
   {
     b: 'section3 table row2 col2 primary-cta',
-    a: 'main > div:nth-child(3) .table > div:nth-child(2) > div:nth-child(2) * > strong a',
+    a: 'main > div:nth-child(3) .table > div:nth-child(2) > div:nth-child(2) strong a',
   },
   {
     b: 'marquee primary-cta #_href',
-    a: '.marquee * > strong a',
+    a: '.marquee strong a',
     m: ['href'],
   },
   {
     b: 'marquee primary-cta #_HREF',
-    a: '.marquee * > strong a',
+    a: '.marquee strong a',
     m: ['href'],
   },
   {
     b: 'marquee primary-cta#_href',
-    a: '.marquee * > strong a#_href',
+    a: '.marquee strong a#_href',
   },
   {
     b: 'marquee primary-cta #_href_all',
-    a: '.marquee * > strong a',
+    a: '.marquee strong a',
     m: ['href', 'all'],
   },
   {
     b: 'marquee primary-cta #_href#_all',
-    a: '.marquee * > strong a',
+    a: '.marquee strong a',
     m: ['href', 'all'],
   },
   {
     b: 'marquee primary-cta #_href #_all',
-    a: '.marquee * > strong a',
+    a: '.marquee strong a',
     m: ['href', 'all'],
   },
   {
@@ -65,7 +65,7 @@ const values = [
   },
   {
     b: 'section3 table row2 col4 secondary-cta',
-    a: 'main > div:nth-child(3) .table > div:nth-child(2) > div:nth-child(4) * > em a',
+    a: 'main > div:nth-child(3) .table > div:nth-child(2) > div:nth-child(4) em a',
   },
   {
     b: 'section4 merch-card',
@@ -85,7 +85,7 @@ const values = [
   },
   {
     b: '.text:has(#im-a-unique-text-block) secondary-cta',
-    a: '.text:has(#im-a-unique-text-block) * > em a',
+    a: '.text:has(#im-a-unique-text-block) em a',
   },
   {
     b: 'section1 .random-block2',
