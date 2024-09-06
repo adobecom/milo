@@ -257,7 +257,7 @@ export function getSusiOptions() {
   if (!susiOptions) return {};
 
   return Object.keys(susiOptions).reduce((opts, key) => {
-    opts[key] = susiOptions[key][envName];
+    opts[key] = susiOptions[key][envName] || susiOptions[key];
     return opts;
   }, {});
 }
