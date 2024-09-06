@@ -15,9 +15,7 @@ import '../src/merch-subscription-panel.js';
 
 import { delay } from './utils.js';
 import { mockIms } from './mocks/ims.js';
-import { _$LE } from 'lit';
 import { withWcs } from './mocks/wcs.js';
-import { withLiterals } from './mocks/literals.js';
 import mas from './mas.js';
 import { getTemplateContent } from './utils.js';
 
@@ -38,7 +36,7 @@ runTests(async () => {
         // Activate mocks
         mockLana();
         await mockIms();
-        await mockFetch(withWcs, withLiterals);
+        await mockFetch(withWcs);
         await mas();
     });
 
