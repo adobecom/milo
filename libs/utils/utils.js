@@ -252,17 +252,14 @@ export const [setConfig, updateConfig, getConfig] = (() => {
 })();
 
 export function getSusiOptions() {
-  const { susiOptions, env } = getConfig();
+  const { susiOptions, env: { name: envName } } = getConfig();
 
   if (!susiOptions) return {};
 
-  const optionsForEnv = {};
-
-  Object.keys(susiOptions).forEach((key) => {
-    optionsForEnv[key] = susiOptions[key][env.name];
-  });
-
-  return optionsForEnv;
+  return Object.keys(susiOptions).reduce((opts, key) => {
+    opts[key] = susiOptions[key][envName];
+    return opts;
+  }, {});
 }
 
 export function isInTextNode(node) {
