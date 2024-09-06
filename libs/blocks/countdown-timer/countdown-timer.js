@@ -13,72 +13,7 @@ export class CountdownTimer extends HTMLElement {
 
   #timeRangesEpoch = [];
 
-  constructor() {
-    super();
-    this.attachShadow({ mode: 'open' });
-
-    this.label = '';
-    this.dayshoursmins = '';
-    this.timeranges = '';
-  }
-
-  static get observedAttributes() {
-    return ['label', 'dayshoursmins', 'timeranges'];
-  }
-
-  attributeChangedCallback(name, oldValue, newValue) {
-    this[name] = newValue;
-  }
-
-  connectedCallback() {
-    this.timeWords = this.dayshoursmins.split(' ');
-    this.timeRangesEpoch = this.timeranges.split(',');
-    this.countdownStart();
-  }
-
-  disconnectedCallback() {
-    clearInterval(this.countdownInterval);
-  }
-
-  countdownCompleted() {
-    this.isVisible = false;
-    clearInterval(this.countdownInterval);
-    this.update();
-  }
-
-  countdownStart() {
-    const oneMinuteInMs = 60000;
-    this.countdownUpdate();
-    this.countdownInterval = setInterval(() => { this.countdownUpdate(); }, oneMinuteInMs);
-  }
-
-  countdownUpdate() {
-    const currentTime = Date.now();
-
-    for (let i = 0; i < this.timeRangesEpoch.length; i += 2) {
-      const startTime = this.timeRangesEpoch[i];
-      const endTime = this.timeRangesEpoch[i + 1];
-
-      if (currentTime >= startTime && currentTime <= endTime) {
-        this.isVisible = true;
-        const diffTime = endTime - currentTime;
-        this.daysLeft = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-        this.hoursLeft = Math.floor((diffTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        this.minutesLeft = Math.floor((diffTime % (1000 * 60 * 60)) / (1000 * 60));
-        this.update();
-        return;
-      }
-    }
-    this.countdownCompleted();
-  }
-
-  update() {
-    if (!this.isVisible) {
-      this.shadowRoot.innerHTML = '';
-      return;
-    }
-
-    const styles = `
+  static css = `
     .horizontal {
         display: flex;
         flex-direction: row;
@@ -178,8 +113,73 @@ export class CountdownTimer extends HTMLElement {
         color: #D1D1D1;
     }`;
 
+  constructor() {
+    super();
+    this.attachShadow({ mode: 'open' });
+
+    this.label = '';
+    this.dayshoursmins = '';
+    this.timeranges = '';
+  }
+
+  static get observedAttributes() {
+    return ['label', 'dayshoursmins', 'timeranges'];
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    this[name] = newValue;
+  }
+
+  connectedCallback() {
+    this.timeWords = this.dayshoursmins.split(' ');
+    this.timeRangesEpoch = this.timeranges.split(',');
+    this.countdownStart();
+  }
+
+  disconnectedCallback() {
+    clearInterval(this.countdownInterval);
+  }
+
+  countdownCompleted() {
+    this.isVisible = false;
+    clearInterval(this.countdownInterval);
+    this.update();
+  }
+
+  countdownStart() {
+    const oneMinuteInMs = 60000;
+    this.countdownUpdate();
+    this.countdownInterval = setInterval(() => { this.countdownUpdate(); }, oneMinuteInMs);
+  }
+
+  countdownUpdate() {
+    const currentTime = Date.now();
+
+    for (let i = 0; i < this.timeRangesEpoch.length; i += 2) {
+      const startTime = this.timeRangesEpoch[i];
+      const endTime = this.timeRangesEpoch[i + 1];
+
+      if (currentTime >= startTime && currentTime <= endTime) {
+        this.isVisible = true;
+        const diffTime = endTime - currentTime;
+        this.daysLeft = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        this.hoursLeft = Math.floor((diffTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        this.minutesLeft = Math.floor((diffTime % (1000 * 60 * 60)) / (1000 * 60));
+        this.update();
+        return;
+      }
+    }
+    this.countdownCompleted();
+  }
+
+  update() {
+    if (!this.isVisible) {
+      this.shadowRoot.innerHTML = '';
+      return;
+    }
+
     this.shadowRoot.innerHTML = `
-      <style>${styles}</style>
+      <style>${CountdownTimer.css}</style>
       <div class="${this.classList}">
         <div class="timer-label">${this.label}</div>
         <div class="timer-block">
@@ -230,9 +230,11 @@ export default function init(el) {
     .flatMap((div) => Array.from(div.querySelectorAll(':scope > div')).map((innerDiv) => Date.parse(innerDiv.textContent.trim()))) // Extract the text content of each inner div
     .join(','); // Join the array into a comma-separated string
 
-  const cdt = createTag('countdown-timer', { class: styles.join(' ') });
-  cdt.setAttribute('label', cdtLabel);
-  cdt.setAttribute('dayshoursmins', daysHoursMins);
-  cdt.setAttribute('timeranges', timeRanges);
+  const cdt = createTag('countdown-timer', {
+    class: styles.join(' '),
+    label: cdtLabel,
+    dayshoursmins: daysHoursMins,
+    timeranges: timeRanges,
+  });
   el.replaceWith(cdt);
 }
