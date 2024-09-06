@@ -206,7 +206,7 @@ export default async function init(el) {
     : null;
   if (assetUnknown) assetUnknown.classList.add('asset-unknown');
 
-  decorateBlockText(copy, textDefault);
+  decorateBlockText(copy, textDefault, 'hasDetailHeading');
   await decorateLockupFromContent(copy);
   extendButtonsClass(copy);
 

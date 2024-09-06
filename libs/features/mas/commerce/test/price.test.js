@@ -24,9 +24,6 @@ function mockInlinePrice(wcsOsi = '', options = {}, append = true) {
     return element;
 }
 
-/** @type {import('sinon').SinonStub} */
-let fetch;
-
 afterEach(() => {
     document.body.innerHTML = '';
     resetService();
@@ -34,7 +31,7 @@ afterEach(() => {
 });
 
 beforeEach(async () => {
-    fetch = await mockFetch(withWcs);
+    await mockFetch(withWcs);
     mockLana();
 });
 

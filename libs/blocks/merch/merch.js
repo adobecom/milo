@@ -355,6 +355,8 @@ async function openExternalModal(url, getModal) {
   });
 }
 
+const isInternalModal = (url) => /\/fragments\//.test(url);
+
 export async function openModal(e, url, offerType) {
   e.preventDefault();
   e.stopImmediatePropagation();
@@ -362,7 +364,7 @@ export async function openModal(e, url, offerType) {
   await import('../modal/modal.merch.js');
   const offerTypeClass = offerType === OFFER_TYPE_TRIAL ? 'twp' : 'crm';
   let modal;
-  if (/\/fragments\//.test(url)) {
+  if (isInternalModal(url)) {
     const fragmentPath = url.split(/hlx.(page|live)/).pop();
     modal = await openFragmentModal(fragmentPath, getModal);
   } else {
@@ -389,7 +391,8 @@ export async function getModalAction(offers, options) {
   const columnName = (offerType === OFFER_TYPE_TRIAL) ? FREE_TRIAL_PATH : BUY_NOW_PATH;
   let url = checkoutLinkConfig[columnName];
   if (!url) return undefined;
-  url = localizeLink(checkoutLinkConfig[columnName]);
+  url = isInternalModal(url)
+    ? localizeLink(checkoutLinkConfig[columnName]) : checkoutLinkConfig[columnName];
   return { url, handler: (e) => openModal(e, url, offerType) };
 }
 
