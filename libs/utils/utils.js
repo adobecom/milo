@@ -256,10 +256,15 @@ export function getSusiOptions() {
 
   if (!susiOptions) return {};
 
-  return Object.keys(susiOptions).reduce((opts, key) => {
-    opts[key] = susiOptions[key][envName] || susiOptions[key];
-    return opts;
-  }, {});
+  try {
+    return Object.keys(susiOptions).reduce((opts, key) => {
+      opts[key] = susiOptions[key][envName] || susiOptions[key];
+      return opts;
+    }, {});
+  } catch (e) {
+    window.lana?.log('Error while attempting to parse SUSI options:', e);
+    return {};
+  }
 }
 
 export function isInTextNode(node) {
