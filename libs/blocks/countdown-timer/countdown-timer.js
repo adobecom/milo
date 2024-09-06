@@ -49,9 +49,7 @@ export class CountdownTimer extends HTMLElement {
   countdownStart() {
     const oneMinuteInMs = 60000;
     this.countdownUpdate();
-    this.countdownInterval = setInterval(() => {
-      this.countdownUpdate();
-    }, oneMinuteInMs);
+    this.countdownInterval = setInterval(() => { this.countdownUpdate(); }, oneMinuteInMs);
   }
 
   countdownUpdate() {
