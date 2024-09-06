@@ -152,7 +152,7 @@ function getEnv(conf) {
   const query = PAGE_URL.searchParams.get('env');
   if (query) return { ...ENVS[query], consumer: conf[query] };
 
-  const { clientEnv } = conf;
+  const clientEnv = window.miloClientEnv;
   if (clientEnv) return { ...ENVS[clientEnv], consumer: conf[clientEnv] };
 
   if (host.includes('localhost')) return { ...ENVS.local, consumer: conf.local };
