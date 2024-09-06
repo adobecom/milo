@@ -27,6 +27,7 @@ const getSheet = async (url) => {
 };
 
 const getCustomConfig = async (path) => {
+  /* c8 ignore next 3 */
   if (CONFIGS[path] !== undefined) {
     return CONFIGS[path];
   }

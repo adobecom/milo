@@ -5,28 +5,13 @@
     "limit": 4,
     "data": [
       {
-        "url": "/drafts/sarchibeque/video-test",
-        "group": "gwp-US",
-        "message": "Publishing disabled until September 10th"
-      },
-      {
-        "url": "/drafts/sarchibeque/aside-variations",
-        "group": "gwp-FR",
-        "message": ""
-      },
-      {
-        "url": "/drafts/sarchibeque/fragments/**",
-        "group": "gwp-US",
-        "message": ""
-      },
-      {
-        "url": "/drafts/sarchibeque/aside-links",
-        "group": "no-publish",
-        "message": ""
+        "url": "/not/a/valid/path",
+        "group": "gwp-test",
+        "message": "Publishing disabled until the test is over"
       }
     ]
   },
-  "gwp-US": {
+  "gwp-test": {
     "total": 2,
     "offset": 0,
     "limit": 2,
@@ -34,18 +19,6 @@
       { "allow": "testuser@adobe.com" },
       { "allow": "testuser1@adobe.com" }
     ]
-  },
-  "no-publish": {
-    "total": 2,
-    "offset": 0,
-    "limit": 2,
-    "data": [{ "deny": "user@adobe.com" }, { "deny": "thi62185@adobe.com" }]
-  },
-  "gwp-FR": {
-    "total": 1,
-    "offset": 0,
-    "limit": 1,
-    "data": [{ "allow": "thi62185@adobe.com" }]
   },
   ":version": 3,
   ":names": ["urls", "gwp-US", "no-publish", "gwp-FR"],

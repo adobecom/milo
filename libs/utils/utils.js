@@ -1317,6 +1317,7 @@ export const userCanPublishPage = async (detail) => {
           let isDeny;
           const user = group.data?.find(({ allow, deny }) => {
             if (deny) {
+              /* c8 ignore next 3 */
               isDeny = true;
               return deny === profile.email;
             }

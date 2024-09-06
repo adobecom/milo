@@ -122,6 +122,16 @@ describe('Bulk Publish Tool', () => {
     bulkPub.clearJobs();
   });
 
+  it('can trigger cannot publish config', async () => {
+    await clock.runAllAsync();
+    await setProcess(rootEl, 'publish');
+    await setTextArea(rootEl, 'https://error--milo--adobecom.hlx.page/not/a/valid/path');
+    await mouseEvent(rootEl.querySelector('#RunProcess'));
+    const errors = rootEl.querySelector('.errors');
+    expect(errors.querySelector('strong').innerText).to.equal('Publishing disabled until the test is over');
+    await mouseEvent(rootEl.querySelector('.fix-btn'));
+  });
+
   it('can submit valid bulk publish job', async () => {
     await clock.runAllAsync();
     await mouseEvent(rootEl.querySelector('.switch.full'));
