@@ -1,16 +1,6 @@
 import { LitElement, html } from 'lit';
 
-import '@spectrum-web-components/theme/theme-light.js';
-import '@spectrum-web-components/theme/scale-large.js';
-import '@spectrum-web-components/theme/sp-theme.js';
-import '@spectrum-web-components/dialog/sp-dialog-wrapper.js';
-import '@spectrum-web-components/button/sp-button.js';
-import '@spectrum-web-components/overlay/sp-overlay.js';
-
-import { Overlay } from '@spectrum-web-components/overlay';
 import { MatchMediaController } from '@spectrum-web-components/reactive-controllers/src/MatchMedia.js';
-
-import './global.css.js';
 
 import styles from './plans-modal.css.js';
 import { MOBILE_LANDSCAPE } from './media.js';

@@ -40,9 +40,6 @@ function mockCheckoutLink(wcsOsi, options = {}, append = true) {
     return element;
 }
 
-/** @type {import('sinon').SinonStub} */
-let fetch;
-
 afterEach(() => {
     document.body.innerHTML = '';
     resetService();
@@ -51,7 +48,7 @@ afterEach(() => {
 });
 
 beforeEach(async () => {
-    fetch = await mockFetch(withWcs, withLiterals);
+    await mockFetch(withWcs, withLiterals);
     mockLana();
 });
 
@@ -66,7 +63,7 @@ describe('class "CheckoutLink"', () => {
     });
 
     it('renders link with workflow step from settings', async () => {
-        await initService(
+        const commerce = await initService(
             mockConfig({
                 checkoutWorkflowStep: CheckoutWorkflowStep.SEGMENTATION,
             }),

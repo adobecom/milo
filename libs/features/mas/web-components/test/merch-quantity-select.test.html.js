@@ -11,7 +11,7 @@ import { appendMiloStyles, delay } from './utils.js';
 import { ARROW_DOWN, ARROW_UP } from '../src/focus.js';
 import { withWcs } from './mocks/wcs.js';
 import { withLiterals } from './mocks/literals.js';
-import mas from './mocks/mas.js';
+import mas from './mas.js';
 
 const skipTests = sessionStorage.getItem('skipTests');
 
