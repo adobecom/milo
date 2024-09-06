@@ -132,5 +132,8 @@ describe('media', () => {
       const detail = medias[8].querySelector('.detail-l');
       expect(detail).to.exist;
     });
+    it('has a cdt', () => {
+      expect(medias[8].querySelector('.countdown-timer')).to.exist;
+    });
   });
 });
