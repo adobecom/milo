@@ -1,7 +1,9 @@
-import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { getLocale, setConfig } from '../../../libs/utils/utils.js';
 import { waitForElement } from '../../helpers/waitfor.js';
+import { readMockText } from '../merch/mocks/fetch.js';
+
+const { default: init } = await import('../../../libs/blocks/countdown-timer/countdown-timer.js');
 
 const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
 const config = {
@@ -13,13 +15,10 @@ const config = {
 
 setConfig(config);
 
-document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-const { default: init } = await import('../../../libs/blocks/countdown-timer/countdown-timer.js');
-
 describe('countdown-timer', () => {
   it('decorates cdt', async () => {
-    const block = document.querySelector('.countdown-timer');
-    init(block);
+    document.body.innerHTML = await readMockText('/test/blocks/countdown-timer/mocks/cdt_ok.html');
+    init(document.querySelector('.countdown-timer'));
     const cdt = await waitForElement('.countdown-timer');
     expect(cdt).to.exist;
 
@@ -37,5 +36,11 @@ describe('countdown-timer', () => {
 
     cdt.remove();
     expect(cdt.isConnected).to.be.false;
+  });
+
+  it('decorates cdt with no timeRangesEpoch', async () => {
+    document.body.innerHTML = await readMockText('/test/blocks/countdown-timer/mocks/cdt_error.html');
+    init(document.querySelector('.countdown-timer'));
+    expect(document.querySelector('.countdown-timer')).to.not.exist;
   });
 });
