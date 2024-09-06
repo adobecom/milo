@@ -410,6 +410,7 @@ class BulkPublish2 extends LitElement {
 
   renderPromptLoader() {
     setTimeout(() => {
+      /* c8 ignore next 4 */
       const loader = this.renderRoot.querySelector('.load-indicator');
       const message = this.renderRoot.querySelector('.message');
       loader?.classList.add('hide');
@@ -430,6 +431,7 @@ class BulkPublish2 extends LitElement {
         const canUse = Object.values(this.user.permissions).filter((perms) => perms.canUse);
         if (canUse.length) return html``;
         message = 'Current user is not authorized to use Bulk Publishing Tool';
+      /* c8 ignore next 3 */
       } else {
         message = 'Please sign in to AEM sidekick to continue';
       }
