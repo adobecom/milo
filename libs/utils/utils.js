@@ -640,12 +640,12 @@ const decorateCopyLink = (a, evt) => {
 
 function convertStageLinks(config, anchors) {
   if (config.env?.name === 'prod' || !config.stageDomainsMap) return;
+  const { hostname } = window.location;
+  const matchedRules = Object.entries(config.stageDomainsMap)
+    .find(([domain]) => hostname.includes(domain));
+  if (!matchedRules) return;
+  const [, domainsMap] = matchedRules;
   [...anchors].forEach((a) => {
-    const { hostname } = window.location;
-    const matchedRules = Object.entries(config.stageDomainsMap)
-      .find(([domain]) => hostname.includes(domain));
-    if (!matchedRules) return;
-    const [, domainsMap] = matchedRules;
     const matchedDomain = Object.keys(domainsMap)
       .find((domain) => a.href.includes(domain));
     if (!matchedDomain) return;
