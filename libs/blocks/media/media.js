@@ -1,7 +1,7 @@
 /* media - consonant v6 */
 
 import { decorateBlockBg, decorateBlockText, getBlockSize, decorateTextOverrides, applyHoverPlay } from '../../utils/decorate.js';
-import { createTag, loadStyle, getConfig } from '../../utils/utils.js';
+import { createTag, loadStyle, getConfig, loadBlock } from '../../utils/utils.js';
 
 const blockTypeSizes = {
   small: ['xs', 's', 'm'],
@@ -31,6 +31,15 @@ function decorateQr(el) {
   googlePlay.classList.add('google-play');
   googlePlay.textContent = '';
   qrImage.classList.add('qr-code-img');
+}
+
+export async function loadCountDownTimer(el) {
+  const countDownTimer = el.querySelector('.countdown-timer');
+  countDownTimer.style.display = 'none'; // Hide the countdown timer until it's loaded
+  if (el.classList.contains('center') || el.classList.contains('centered')) {
+    countDownTimer.classList.add('center');
+  }
+  await loadBlock(countDownTimer);
 }
 
 export default function init(el) {
@@ -105,4 +114,8 @@ export default function init(el) {
   const mediaRowReversed = el.querySelector(':scope > .foreground > .media-row > div').classList.contains('text');
   if (mediaRowReversed) el.classList.add('media-reverse-mobile');
   decorateTextOverrides(el);
+
+  if (el.classList.contains('countdown-timer')) {
+    loadCountDownTimer(el);
+  }
 }
