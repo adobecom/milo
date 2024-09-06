@@ -28,6 +28,10 @@ describe('countdown-timer', () => {
     cdt.countdownUpdate();
     expect(cdt.isVisible).to.be.true;
 
+    cdt.timeRangesEpoch = [1725599876000, 0];
+    cdt.countdownUpdate();
+    expect(cdt.isVisible).to.be.false;
+
     cdt.countdownCompleted();
     expect(cdt.isVisible).to.be.false;
 

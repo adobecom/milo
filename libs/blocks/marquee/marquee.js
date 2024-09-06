@@ -83,6 +83,9 @@ export async function loadMnemonicList(foreground) {
 export async function loadCountDownTimer(el) {
   const countDownTimer = el.querySelector('.countdown-timer');
   countDownTimer.style.display = 'none'; // Hide the countdown timer until it's loaded
+  if (el.classList.contains('center') || el.classList.contains('centered')) {
+    countDownTimer.classList.add('center');
+  }
   await loadBlock(countDownTimer);
 }
 
