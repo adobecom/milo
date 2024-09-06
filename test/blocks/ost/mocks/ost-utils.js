@@ -9,7 +9,29 @@ const getConfig = () => ({
     '': { prefix: '', ietf: 'en-US', tk: 'hah7vzn.css' },
     ch_de: { prefix: '/ch_de', ietf: 'de-CH', tk: 'vin7zsi.css' },
   },
+  susiOptions: {
+    dctx_id: {
+      stage: 'dctx_id',
+      prod: 'dctx_id',
+    },
+  },
 });
+
+const getSusiOptions = () => {
+  const { susiOptions, env: { name: envName } } = getConfig();
+
+  if (!susiOptions) return {};
+
+  try {
+    return Object.keys(susiOptions).reduce((opts, key) => {
+      opts[key] = susiOptions[key][envName] || susiOptions[key];
+      return opts;
+    }, {});
+  } catch (e) {
+    window.lana?.log('Error while attempting to parse SUSI options:', e);
+    return {};
+  }
+};
 
 const getLocale = (locales, pathname) => locales[pathname.split('/', 2)[1]?.toLowerCase()] || locales[''];
 
@@ -110,4 +132,5 @@ export {
   unmockOstDeps,
   mockRes,
   customFetch,
+  getSusiOptions,
 };

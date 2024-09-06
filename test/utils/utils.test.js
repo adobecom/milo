@@ -9,12 +9,6 @@ const utils = {};
 const config = {
   codeRoot: '/libs',
   locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
-  susiOptions: {
-    dctx_id: {
-      stage: 'dctx_id',
-      prod: 'dctx_id',
-    },
-  },
 };
 const ogFetch = window.fetch;
 
@@ -713,6 +707,52 @@ describe('Utils', () => {
       block3.setAttribute('data-modal-path', 'modalPath2');
       const blocks = [block1, block2, block3];
       expect(utils.filterDuplicatedLinkBlocks(blocks)).to.deep.equal([block1, block2]);
+    });
+  });
+
+  describe('getSusiOptions', () => {
+    afterEach(() => {
+      utils.setConfig(config);
+    });
+
+    it('returns susi options for the current env', () => {
+      utils.setConfig({
+        ...config,
+        env: { name: 'stage' },
+        susiOptions: {
+          dctx_id: {
+            stage: 'dctx_id_stage',
+            prod: 'dctx_id_prod',
+          },
+        },
+      });
+      expect(utils.getSusiOptions()).to.deep.equal({ dctx_id: 'dctx_id_stage' });
+    });
+
+    it('returns empty object if no susiOptions found in miloConfig', () => {
+      utils.setConfig({
+        ...config,
+        env: { name: 'stage' },
+      });
+      expect(utils.getSusiOptions()).to.deep.equal({});
+    });
+
+    it('returns non env specific option if a env specific option is not found', () => {
+      utils.setConfig({
+        ...config,
+        env: { name: 'stage' },
+        susiOptions: { dctx_id: 'dctx_id_stage' },
+      });
+      expect(utils.getSusiOptions()).to.deep.equal({ dctx_id: 'dctx_id_stage' });
+    });
+
+    it('returns empty object is an empty object was given as susiOptions', () => {
+      utils.setConfig({
+        ...config,
+        env: { name: 'stage' },
+        susiOptions: {},
+      });
+      expect(utils.getSusiOptions()).to.deep.equal({});
     });
   });
 });
