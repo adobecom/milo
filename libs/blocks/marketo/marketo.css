@@ -4,16 +4,23 @@
   --marketo-form-border: #6E6E6E;
   --marketo-form-error: #D7373F;
   --marketo-form-selected: #0265DC;
+  --marketo-form-placeholder-height: calc(78px * 3 + 57px); /* 3 rows + submit */
+  --marketo-form-min-height: 215px;
+  --marketo-form-max-height: 10000px;
 }
 
 /* stylelint-disable selector-class-pattern */
 .marketo .marketo-form-wrapper {
   box-sizing: border-box;
   max-width: 600px;
-  min-height: 400px;
+  min-height: var(--marketo-form-min-height);
   margin: 0 auto;
   padding: var(--spacing-l) 30px;
   background-color: var(--marketo-form-background);
+}
+
+.marketo.loading form {
+  min-height: var(--marketo-form-placeholder-height);
 }
 
 .marketo .marketo-title {
@@ -29,25 +36,37 @@
 }
 
 .marketo .mktoForm {
-  font-size: 16px;
-  font-weight: bold;
-  width: 100%!important;
-}
-
-.marketo form.mktoForm--fade-in {
-  visibility: hidden;
-  opacity: 0;
-}
-
-.marketo form.mktoForm--fade-in.mktoVisible {
   display: flex;
   flex-flow: row wrap;
   justify-content: space-between;
   column-gap: 4.6%;
   align-items: flex-start;
+  max-height: var(--marketo-form-placeholder-height);
+  overflow: hidden;
+  font-size: 16px;
+  font-weight: bold;
+  width: 100%!important;
+  visibility: hidden;
+  opacity: 0;
+}
+
+.marketo.success .marketo-title,
+.marketo.success .marketo-description,
+.marketo.success form.mktoVisible.mktoForm {
+  display: none;
+}
+
+.marketo form.mktoForm.mktoForm--fade-in {
+  transition: opacity 0.5s ease-in, max-height 0.5s ease-in;
+  visibility: hidden;
+  opacity: 0;
+}
+
+.marketo form.mktoForm.mktoForm--fade-in.mktoVisible {
+  max-height: var(--marketo-form-max-height);
+  overflow: visible;
   visibility: visible;
   opacity: 1;
-  transition: opacity 1s ease-in, height 1s ease-in;
 }
 
 .marketo .mktoFormRow.mktoFormRowTop.comments,

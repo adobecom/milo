@@ -1,4 +1,4 @@
-import { html, LitElement, nothing } from 'lit';
+import { LitElement } from 'lit';
 import { sizeStyles, styles } from './merch-card.css.js';
 import { getVariantLayout, getVariantStyles } from './variants/variants.js';
 
@@ -9,7 +9,6 @@ import {
     EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
     EVENT_MERCH_STORAGE_CHANGE,
 } from './constants.js';
-import { getTextNodes } from './utils.js';
 
 export const MERCH_CARD_NODE_NAME = 'MERCH-CARD';
 export const MERCH_CARD = 'merch-card';
@@ -225,13 +224,6 @@ export class MerchCard extends LitElement {
       return this.classList.contains('starting-at');
     }
 
-    get defaultSlot() {
-        const defaultSlotElement = this.querySelector(
-            ':scope > a:not([slot]),:scope > p:not([slot]),:scope > div:not([slot]),:scope > span:not([slot])',
-        );
-        if (!defaultSlotElement) return nothing;
-        return html`<slot></slot>`;
-    }
 
     connectedCallback() {
         super.connectedCallback();
@@ -254,7 +246,6 @@ export class MerchCard extends LitElement {
             'change',
             this.handleStorageChange,
         );
-        // this.appendInvisibleSpacesToFooterLinks();
     }
 
     disconnectedCallback() {
@@ -269,22 +260,6 @@ export class MerchCard extends LitElement {
             EVENT_MERCH_STORAGE_CHANGE,
             this.handleStorageChange,
         );
-    }
-
-    appendInvisibleSpacesToFooterLinks() {
-        // append invisible spaces every 7 chars so that text wraps correctly on mobile.
-        [...this.querySelectorAll('[slot="footer"] a')].forEach((link) => {
-            const textNodes = getTextNodes(link);
-            // find words and add invisible space
-            textNodes.forEach((node) => {
-                const text = node.textContent;
-                const words = text.split(' ');
-                const newText = words
-                    .map((word) => word.match(/.{1,7}/g)?.join('\u200B'))
-                    .join(' ');
-                node.textContent = newText;
-            });
-        });
     }
 
     // custom methods
@@ -322,6 +297,8 @@ export class MerchCard extends LitElement {
         );
     }
 
+    // TODO enable with TWP //
+    /* c8 ignore next 11 */
     handleStorageChange() {
         const offerSelect =
             this.closest('merch-card')?.offerSelect.cloneNode(true);
@@ -338,6 +315,8 @@ export class MerchCard extends LitElement {
         return this.querySelector('[slot="price"]');
     }
 
+    // TODO enable with TWP //
+    /* c8 ignore next 16 */
     selectMerchOffer(offer) {
         if (offer === this.merchOffer) return;
         this.merchOffer = offer;

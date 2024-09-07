@@ -1,11 +1,9 @@
-import { PARAM_ENV, PARAM_LANDSCAPE } from './constants.js';
+import { PARAM_ENV, PARAM_LANDSCAPE, Landscape, WCS_PROD_URL, WCS_STAGE_URL } from './constants.js';
 import { Defaults } from './defaults.js';
 import {
     CheckoutWorkflow,
     CheckoutWorkflowStep,
     Env,
-    WcsEnv,
-    Landscape,
     getParameter,
     toBoolean,
     toEnumeration,
@@ -135,15 +133,16 @@ function getSettings(config = {}) {
     // TODO: add alias names for meta, search and storage
     // See https://git.corp.adobe.com/wcms/tacocat.js/pull/348#discussion_r6557570
     const { commerce = {}, locale = undefined } = config;
-    const hostEnv =
-        config.env?.name === HostEnv.PROD
-            ? HostEnv.PROD
-            : toEnumeration(
-                  getParameter(PARAM_ENV, commerce, { metadata: false }),
-                  HostEnv,
-                  HostEnv.PROD,
-              );
-    const env = hostEnv === HostEnv.STAGE ? Env.STAGE : Env.PRODUCTION;
+    let env = Env.PRODUCTION;
+    let wcsURL = WCS_PROD_URL;
+
+    const lowHostEnv = ['local', 'stage'].includes(config.env?.name);
+    const forceWcsStage = getParameter(PARAM_ENV, commerce, { metadata: false })?.toLowerCase() === 'stage';
+    if (lowHostEnv && forceWcsStage) {
+      env = Env.STAGE;
+      wcsURL = WCS_STAGE_URL;
+    }
+    
     const checkoutClientId =
         getParameter('checkoutClientId', commerce) ?? Defaults.checkoutClientId;
     const checkoutWorkflow = toEnumeration(
@@ -204,7 +203,6 @@ function getSettings(config = {}) {
         getParameter('wcsBufferLimit', commerce),
         Defaults.wcsBufferLimit,
     );
-    const domainSwitch = toBoolean(getParameter('domain.switch', commerce), false);
 
     return {
         ...getLocaleSettings({ locale }),
@@ -227,9 +225,8 @@ function getSettings(config = {}) {
         wcsApiKey,
         wcsBufferDelay,
         wcsBufferLimit,
-        wcsEnv: env === Env.STAGE ? WcsEnv.STAGE : WcsEnv.PRODUCTION,
+        wcsURL,
         landscape,
-        domainSwitch,
     };
 }
 

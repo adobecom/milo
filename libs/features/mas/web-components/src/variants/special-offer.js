@@ -30,7 +30,8 @@ export class SpecialOffer extends VariantLayout {
               : html`
                     <hr />
                     ${this.secureLabelFooter}
-                `}`;
+                `}
+                <slot></slot>`;
   }
 
   static variantStyle = css`

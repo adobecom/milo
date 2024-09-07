@@ -1,9 +1,5 @@
 import { css, unsafeCSS } from 'lit';
-import {
-    DESKTOP_UP,
-    LARGE_DESKTOP,
-    TABLET_UP,
-} from './media.js';
+import { DESKTOP_UP, LARGE_DESKTOP, TABLET_UP, } from './media.js';
 
 export const styles = css`
     :host {

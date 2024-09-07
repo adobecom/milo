@@ -190,6 +190,7 @@ describe('getConfig', () => {
         showFooterDivider: false,
         useOverlayLinks: false,
         additionalRequestParams: {},
+        dynamicCTAForLiveEvents: false,
         banner: {
           register: { description: 'Sign Up', url: '#registration' },
           upcoming: { description: 'Upcoming' },
@@ -453,6 +454,7 @@ describe('getConfig', () => {
         showFooterDivider: false,
         useOverlayLinks: false,
         additionalRequestParams: {},
+        dynamicCTAForLiveEvents: false,
         banner: {
           register: { description: 'Sign Up', url: '#registration' },
           upcoming: { description: 'Upcoming' },
@@ -777,6 +779,7 @@ describe('getFloodgateCaasConfig', () => {
         showFooterDivider: false,
         useOverlayLinks: false,
         additionalRequestParams: {},
+        dynamicCTAForLiveEvents: false,
         banner: {
           register: { description: 'Sign Up', url: '#registration' },
           upcoming: { description: 'Upcoming' },

@@ -18,7 +18,7 @@ export class CCDAction extends VariantLayout {
         <slot name="heading-m"></slot>
         ${this.promoBottom ? html`<slot name="body-xs"></slot><slot name="promo-text"></slot>` : html`<slot name="promo-text"></slot><slot name="body-xs"></slot>`}
         <footer><slot name="footer"></slot></footer>
-        ${this.defaultSlot}
+        <slot></slot>
     </div>`;
   }
   static variantStyle = css`
