@@ -52,17 +52,19 @@ export class CountdownTimer extends HTMLElement {
         margin: 0px 2px 45px 2px;
     }
 
-    .vertical .timer-label {
+    .vertical not(.centre) .timer-label {
         align-self: flex-start;
     }
 
-    .vertical > div.timer-block {
+    .timer-block {
         display: flex;
+    }
+
+    .vertical not(.centre) > div.timer-block {
         align-self: flex-start;
     }
 
     .horizontal > div.timer-block {
-        display: flex;
         margin-left: 10px;
     }
 
