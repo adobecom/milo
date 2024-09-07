@@ -356,14 +356,17 @@ function modifySelectorTerm(termParam) {
   let term = termParam;
   const specificSelectors = {
     section: 'main > div',
-    'primary-cta': 'p strong a',
-    'secondary-cta': 'p em a',
-    'action-area': 'p:has(em a, strong a)',
+    'primary-cta': 'strong a',
+    'secondary-cta': 'em a',
+    'action-area': '*:has(> em a, > strong a)',
+    'any-marquee': '[class*="marquee"]',
+    header: ':is(h1, h2, h3, h4, h5, h6)',
   };
   const otherSelectors = ['row', 'col'];
   const htmlEls = ['main', 'div', 'a', 'p', 'strong', 'em', 'picture', 'source', 'img', 'h'];
   const startTextMatch = term.match(/^[a-zA-Z/./-]*/);
   const startText = startTextMatch ? startTextMatch[0].toLowerCase() : '';
+  const startTextPart1 = startText.split(/\.|:/)[0];
   const endNumberMatch = term.match(/[0-9]*$/);
   const endNumber = endNumberMatch ? endNumberMatch[0] : '';
   if (!startText || htmlEls.includes(startText)) return term;
@@ -372,8 +375,8 @@ function modifySelectorTerm(termParam) {
     term = updateEndNumber(endNumber, term);
     return term;
   }
-  if (Object.keys(specificSelectors).includes(startText)) {
-    term = term.replace(startText, specificSelectors[startText]);
+  if (Object.keys(specificSelectors).includes(startTextPart1)) {
+    term = term.replace(startTextPart1, specificSelectors[startTextPart1]);
     term = updateEndNumber(endNumber, term);
     return term;
   }
@@ -582,6 +585,25 @@ export function parseManifestVariants(data, manifestPath, targetId) {
   return null;
 }
 
+export async function createMartechMetadata(placeholders, config, column) {
+  if (config.locale.ietf === 'en-US') return;
+
+  await import('../../martech/attributes.js').then(({ processTrackingLabels }) => {
+    config.mep.analyticLocalization ??= {};
+
+    placeholders.forEach((item, i) => {
+      const firstRow = placeholders[i];
+      let usValue = firstRow['en-us'] || firstRow.us || firstRow.en || firstRow.key;
+
+      if (!usValue) return;
+
+      usValue = processTrackingLabels(usValue);
+      const translatedValue = processTrackingLabels(item[column]);
+      config.mep.analyticLocalization[translatedValue] = usValue;
+    });
+  });
+}
+
 /* c8 ignore start */
 function parsePlaceholders(placeholders, config, selectedVariantName = '') {
   if (!placeholders?.length || selectedVariantName === 'default') return config;
@@ -603,6 +625,9 @@ function parsePlaceholders(placeholders, config, selectedVariantName = '') {
     }, {});
     config.placeholders = { ...(config.placeholders || {}), ...results };
   }
+
+  createMartechMetadata(placeholders, config, val);
+
   return config;
 }
 

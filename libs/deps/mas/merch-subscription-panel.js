@@ -1,4 +1,4 @@
-import{html as s,LitElement as m}from"/libs/deps/lit-all.min.js";var i=class{constructor(t,o){this.key=Symbol("match-media-key"),this.matches=!1,this.host=t,this.host.addController(this),this.media=window.matchMedia(o),this.matches=this.media.matches,this.onChange=this.onChange.bind(this),t.addController(this)}hostConnected(){var t;(t=this.media)==null||t.addEventListener("change",this.onChange)}hostDisconnected(){var t;(t=this.media)==null||t.removeEventListener("change",this.onChange)}onChange(t){this.matches!==t.matches&&(this.matches=t.matches,this.host.requestUpdate(this.key,!this.matches))}};import{css as E}from"/libs/deps/lit-all.min.js";var f=E`
+import{html as s,LitElement as m}from"../lit-all.min.js";var i=class{constructor(t,o){this.key=Symbol("match-media-key"),this.matches=!1,this.host=t,this.host.addController(this),this.media=window.matchMedia(o),this.matches=this.media.matches,this.onChange=this.onChange.bind(this),t.addController(this)}hostConnected(){var t;(t=this.media)==null||t.addEventListener("change",this.onChange)}hostDisconnected(){var t;(t=this.media)==null||t.removeEventListener("change",this.onChange)}onChange(t){this.matches!==t.matches&&(this.matches=t.matches,this.host.requestUpdate(this.key,!this.matches))}};import{css as E}from"../lit-all.min.js";var f=E`
     :host {
         --merch-focused-outline: var(--merch-color-focus-ring) auto 1px;
         background-color: #f5f5f5;
@@ -139,4 +139,3 @@ import{html as s,LitElement as m}from"/libs/deps/lit-all.min.js";var i=class{con
             data-quantity="${this.quantity}"
             href="#"
         ></a>`}};window.customElements.define("merch-subscription-panel",l);
-//# sourceMappingURL=merch-subscription-panel.js.map

@@ -13,7 +13,7 @@ import '../src/merch-quantity-select.js';
 import { appendMiloStyles, delay } from './utils.js';
 import { mockIms } from './mocks/ims.js';
 import { withWcs } from './mocks/wcs.js';
-import mas from './mocks/mas.js';
+import mas from './mas.js';
 
 const skipTests = sessionStorage.getItem('skipTests');
 
@@ -98,6 +98,8 @@ runTests(async () => {
             expect(actionMenuContent.classList.contains('hidden')).to.be.true;
             expect(actionMenu).to.exist;
             expect(actionMenuContent).to.exist;
+            catalogCard.toggleActionMenu();
+            
         });
 
         it('should have and interact with  quantity-selector', async () => {

@@ -705,4 +705,12 @@ header.global-navigation {
     flex-direction: column;
     align-items: initial;
   }
+
+  .table :is(.heading-button,.action-area) {
+    max-width: 100%;
+  }
+
+  .table .action-area .con-button.button-l {
+    overflow: hidden;
+  }
 }
