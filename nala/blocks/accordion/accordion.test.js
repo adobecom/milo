@@ -1,3 +1,4 @@
+/* eslint-disable import/no-extraneous-dependencies, max-len, no-console */
 import { expect, test } from '@playwright/test';
 import WebUtil from '../../libs/webutil.js';
 import { features } from './accordion.spec.js';
