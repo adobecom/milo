@@ -813,9 +813,7 @@ class Gnav {
     analyticsValue: 'Logo',
   });
 
-  decorateClientSearch = () => {
-    return toFragment`<div class="feds-client-search"></div>`;
-  };
+  decorateClientSearch = () => toFragment`<div class="feds-client-search"></div>`;
 
   decorateMainNav = async () => {
     const breadcrumbs = isDesktop.matches ? '' : await this.decorateBreadcrumbs();
