@@ -239,7 +239,7 @@ describe('PEP', () => {
         }),
       });
       expect(window.lana.log.getCalls().find((c) => c.args[0].includes('Error on getting anchor state'))).to.exist;
-      expect(window.lana.log.getCalls().find((c) => c.args[1].tags.includes('errorType=error,module=pep'))).to.exist;
+      expect(window.lana.log.getCalls().find((c) => c.args[1].tags.includes('pep'))).to.exist;
     });
 
     it('should send log when cannot fetch content for prompt', async () => {
@@ -256,7 +256,7 @@ describe('PEP', () => {
       });
       await initPep({});
       expect(window.lana.log.getCalls().find((c) => c.args[0].includes('Error fetching content for prompt'))).to.exist;
-      expect(window.lana.log.getCalls().find((c) => c.args[1].tags.includes('errorType=error,module=pep'))).to.exist;
+      expect(window.lana.log.getCalls().find((c) => c.args[1].tags.includes('pep'))).to.exist;
     });
   });
 });
