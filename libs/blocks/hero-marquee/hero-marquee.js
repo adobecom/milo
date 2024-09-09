@@ -132,14 +132,14 @@ function parseKeyString(str) {
   return result;
 }
 
-function loadContentType(el, key, classes) {
+async function loadContentType(el, key, classes) {
   if (classes !== undefined && classes.length) el.classList.add(...classes);
   switch (key) {
     case 'bgcolor':
       decorateBg(el);
       break;
     case 'lockup':
-      decorateLockupRow(el, classes);
+      await decorateLockupRow(el, classes);
       break;
     case 'qrcode':
       decorateQr(el);
