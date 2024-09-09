@@ -814,8 +814,7 @@ class Gnav {
   });
 
   decorateClientSearch = () => {
-    this.elements.customSearch = toFragment`<div class="feds-client-search"></div>`;
-    return this.elements.customSearch;
+    return toFragment`<div class="feds-client-search"></div>`;
   };
 
   decorateMainNav = async () => {
