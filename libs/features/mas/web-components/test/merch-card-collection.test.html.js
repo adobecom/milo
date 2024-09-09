@@ -91,6 +91,17 @@ runTests(async () => {
               await delay(100);
               expect(document.body.classList.contains('merch-modal')).to.be.true;
           });
+
+          it('removes the class for modal when closing the filters modal', async () => {
+            render();
+            await delay(100);
+            merchCards.shadowRoot.querySelector('#filtersButton').click();
+            await delay(100);
+            expect(document.body.classList.contains('merch-modal')).to.be.true;
+            document.querySelector('merch-sidenav').shadowRoot.querySelector('#sidenav').querySelector('sp-link').click();
+            await delay(100);
+            expect(document.body.classList.contains('merch-modal')).to.be.false;
+        });
       });
       
       describe('merch-card-collection web component on desktop', () => {
