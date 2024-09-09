@@ -30,10 +30,10 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - name: Set execute permission for nalarun.sh
-        run: chmod +x ./nala/util/pr.run.sh
+        run: chmod +x ./nala/utils/pr.run.sh
 
       - name: Run Nala Tests via pr.run.sh
-        run: ./nala/util/pr.run.sh
+        run: ./nala/utils/pr.run.sh
         env:
           labels: ${{ join(github.event.pull_request.labels.*.name, ' ') }}
           branch: ${{ github.event.pull_request.head.ref }}
