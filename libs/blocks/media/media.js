@@ -36,6 +36,8 @@ function decorateQr(el) {
 export async function loadCountDownTimer(el) {
   const countDownTimer = el.querySelector('.countdown-timer');
   countDownTimer.style.display = 'none'; // Hide the countdown timer until it's loaded
+  const classList = [...countDownTimer.classList].filter((c) => ['vertical', 'horizontal', 'light', 'dark', 'center', 'countdown-timer'].includes(c));
+  countDownTimer.className = classList.join(' ');
   await loadBlock(countDownTimer);
 }
 

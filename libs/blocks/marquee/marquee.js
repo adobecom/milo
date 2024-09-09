@@ -86,6 +86,8 @@ export async function loadCountDownTimer(el) {
   if (el.classList.contains('center') || el.classList.contains('centered')) {
     countDownTimer.classList.add('center');
   }
+  const classList = [...countDownTimer.classList].filter((c) => ['vertical', 'horizontal', 'light', 'dark', 'center', 'countdown-timer'].includes(c));
+  countDownTimer.className = classList.join(' ');
   await loadBlock(countDownTimer);
 }
 

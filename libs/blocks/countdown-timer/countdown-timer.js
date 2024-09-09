@@ -17,25 +17,23 @@ export class CountdownTimer extends HTMLElement {
     .horizontal {
         display: flex;
         flex-direction: row;
-        align-items: center;
         padding: 20px 0px;
     }
     
     .vertical {
         display: flex;
         flex-direction: column;
-        align-items: center;
         padding: 20px 0px;
     }
 
     .center {
+        align-items: center;
         justify-content: center;
     }
 
     .timer-label {
         font-size: 16px;
         font-weight: bold;
-        text-align: center;
         height: 27px;
     }
 
@@ -48,23 +46,14 @@ export class CountdownTimer extends HTMLElement {
     }
 
     .horizontal .timer-label {
-        align-self: center;
         margin: 0px 2px 45px 2px;
-    }
-
-    .vertical not(.centre) .timer-label {
-        align-self: flex-start;
     }
 
     .timer-block {
         display: flex;
     }
 
-    .vertical not(.centre) > div.timer-block {
-        align-self: flex-start;
-    }
-
-    .horizontal > div.timer-block {
+    .horizontal .timer-block {
         margin-left: 10px;
     }
 
