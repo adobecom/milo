@@ -813,11 +813,6 @@ class Gnav {
     analyticsValue: 'Logo',
   });
 
-  // eslint-disable-next-line class-methods-use-this
-  decorateClientSearch() {
-    return toFragment`<div class="feds-client-search"></div>`;
-  }
-
   decorateMainNav = async () => {
     const breadcrumbs = isDesktop.matches ? '' : await this.decorateBreadcrumbs();
     this.elements.mainNav = toFragment`<div class="feds-nav"></div>`;
@@ -827,7 +822,7 @@ class Gnav {
         ${isDesktop.matches ? '' : this.decorateSearch()}
         ${this.elements.mainNav}
         ${isDesktop.matches ? this.decorateSearch() : ''}
-        ${this.decorateClientSearch()}
+        ${getConfig().searchEnabled === 'on' ? toFragment`<div class="feds-client-search"></div>` : ''}
       </div>
     `;
 

@@ -621,12 +621,10 @@ describe('global navigation', () => {
     });
   });
 
-  describe('decorateClientSearch', () => {
-    it('should return the custom search element', async () => {
-      const gnav = await createFullGlobalNavigation();
-      const customSearchElement = gnav.decorateClientSearch();
-      expect(customSearchElement).to.exist;
-      expect(customSearchElement.classList.contains('feds-client-search')).to.be.true;
+  describe('Client search earch feature in global navigation', () => {
+    it('should append the feds-client-search div when search is enabled', async () => {
+      await createFullGlobalNavigation({ customConfig: { searchEnabled: 'on' } });
+      expect(document.querySelector(selectors.topNavWrapper).classList.contains('feds-client-search')).to.exist;
     });
   });
 });
