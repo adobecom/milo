@@ -1,4 +1,4 @@
-import { createTag, createIntersectionObserver } from './utils.js';
+import { createTag } from './utils.js';
 
 export function decorateButtons(el, size) {
   const buttons = el.querySelectorAll('em a, strong a, p > a strong');
@@ -61,9 +61,10 @@ export function decorateIconArea(el) {
 }
 
 export function decorateBlockText(el, config = ['m', 's', 'm'], type = null) {
-  const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
+  let headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
   if (!el.classList.contains('default')) {
     if (headings) {
+      if (type === 'hasDetailHeading' && headings.length > 1) headings = [...headings].splice(1);
       headings.forEach((h) => h.classList.add(`heading-${config[0]}`));
       if (config[2]) {
         const prevSib = headings[0]?.previousElementSibling;
@@ -104,14 +105,16 @@ export function handleFocalpoint(pic, child, removeChild) {
   image.style.objectPosition = `${x} ${y}`;
 }
 
-export async function decorateBlockBg(block, node, { useHandleFocalpoint = false } = {}) {
+export async function decorateBlockBg(block, node, { useHandleFocalpoint = false, className = 'background' } = {}) {
   const childCount = node.childElementCount;
   if (node.querySelector('img, video, a[href*=".mp4"]') || childCount > 1) {
-    node.classList.add('background');
+    node.classList.add(className);
     const binaryVP = [['mobile-only'], ['tablet-only', 'desktop-only']];
     const allVP = [['mobile-only'], ['tablet-only'], ['desktop-only']];
     const viewports = childCount === 2 ? binaryVP : allVP;
     [...node.children].forEach((child, i) => {
+      const videoLink = child.querySelector('a[href*=".mp4"]');
+      if (videoLink && !videoLink.hash) videoLink.hash = 'autoplay';
       if (childCount > 1) child.classList.add(...viewports[i]);
       const pic = child.querySelector('picture');
       if (useHandleFocalpoint && pic
@@ -197,7 +200,7 @@ export function getImgSrc(pic) {
   return source?.srcset ? `poster='${source.srcset}'` : '';
 }
 
-function getVideoAttrs(hash, dataset) {
+export function getVideoAttrs(hash, dataset) {
   const isAutoplay = hash?.includes('autoplay');
   const isAutoplayOnce = hash?.includes('autoplay1');
   const playOnHover = hash?.includes('hoverplay');
@@ -255,7 +258,7 @@ export function handleObjectFit(bgRow) {
   });
 }
 
-function getVideoIntersectionObserver() {
+export function getVideoIntersectionObserver() {
   if (!window?.videoIntersectionObs) {
     window.videoIntersectionObs = new window.IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -276,7 +279,7 @@ function getVideoIntersectionObserver() {
   return window.videoIntersectionObs;
 }
 
-function applyInViewPortPlay(video) {
+export function applyInViewPortPlay(video) {
   if (!video) return;
   if (video.hasAttribute('data-play-viewport')) {
     const observer = getVideoIntersectionObserver();
@@ -305,22 +308,4 @@ export function decorateMultiViewport(el) {
     });
   }
   return foreground;
-}
-
-export function turnAnchorIntoVideo({ src, anchorTag, hash }) {
-  const { dataset, parentElement } = anchorTag;
-  const attrs = getVideoAttrs(hash || anchorTag.hash, dataset);
-  const video = `<video ${attrs} data-video-source=${src}></video>`;
-  anchorTag.insertAdjacentHTML('afterend', video);
-  const videoEl = parentElement.querySelector('video');
-  createIntersectionObserver({
-    el: parentElement,
-    options: { rootMargin: '1000px' },
-    callback: () => {
-      videoEl?.appendChild(createTag('source', { src, type: 'video/mp4' }));
-    },
-  });
-  applyHoverPlay(videoEl);
-  applyInViewPortPlay(videoEl);
-  anchorTag.remove();
 }
