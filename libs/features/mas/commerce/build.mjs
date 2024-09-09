@@ -12,7 +12,6 @@ const { metafile } = await build({
     minify: true,
     outfile: '../../../../libs/deps/mas/commerce.js',
     platform: 'browser',
-    sourcemap: true,
     target: ['es2020'],
 });
 

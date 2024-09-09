@@ -1073,6 +1073,17 @@ span[is="inline-price"][data-template='strikethrough'] {
     text-decoration: line-through;
 }
 
+merch-card sp-button a {
+  text-decoration: none;
+    color: var(
+        --highcontrast-button-content-color-default,
+        var(
+            --mod-button-content-color-default,
+            var(--spectrum-button-content-color-default)
+        )
+    );
+}
+
 merch-card span.placeholder-resolved[data-template='strikethrough'],
 merch-card span.price.price-strikethrough {
   font-size: var(--consonant-merch-card-body-xs-font-size);

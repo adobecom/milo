@@ -10,7 +10,6 @@ import {
     EVENT_MERCH_STORAGE_CHANGE,
     EVENT_MERCH_CARD_ACTION_MENU_TOGGLE,
 } from './constants.js';
-import { getTextNodes } from './utils.js';
 
 export const MERCH_CARD_NODE_NAME = 'MERCH-CARD';
 export const MERCH_CARD = 'merch-card';
@@ -370,7 +369,8 @@ export class MerchCard extends LitElement {
                 : html`
                       <hr />
                       ${this.secureLabelFooter}
-                  `}`;
+                  `}
+                  <slot></slot>`;
     }
 
     get promoBottom() {
@@ -524,14 +524,6 @@ export class MerchCard extends LitElement {
             <footer><slot name="footer"></slot></footer>`;
     }
 
-    get defaultSlot() {
-        const defaultSlotElement = this.querySelector(
-            ':scope > a:not([slot]),:scope > p:not([slot]),:scope > div:not([slot]),:scope > span:not([slot])',
-        );
-        if (!defaultSlotElement) return nothing;
-        return html`<slot></slot>`;
-    }
-
     renderCcdAction() {
         return html` <div class="body">
             <slot name="icons"></slot> ${this.badge}
@@ -539,7 +531,7 @@ export class MerchCard extends LitElement {
             <slot name="heading-m"></slot>
             ${this.promoBottom ? html`<slot name="body-xs"></slot><slot name="promo-text"></slot>` : html`<slot name="promo-text"></slot><slot name="body-xs"></slot>`}
             <footer><slot name="footer"></slot></footer>
-            ${this.defaultSlot}
+            <slot></slot>
         </div>`;
     }
 
@@ -564,7 +556,6 @@ export class MerchCard extends LitElement {
             'change',
             this.handleStorageChange,
         );
-        // this.appendInvisibleSpacesToFooterLinks();
     }
 
     disconnectedCallback() {
@@ -578,22 +569,6 @@ export class MerchCard extends LitElement {
             EVENT_MERCH_STORAGE_CHANGE,
             this.handleStorageChange,
         );
-    }
-
-    appendInvisibleSpacesToFooterLinks() {
-        // append invisible spaces every 7 chars so that text wraps correctly on mobile.
-        [...this.querySelectorAll('[slot="footer"] a')].forEach((link) => {
-            const textNodes = getTextNodes(link);
-            // find words and add invisible space
-            textNodes.forEach((node) => {
-                const text = node.textContent;
-                const words = text.split(' ');
-                const newText = words
-                    .map((word) => word.match(/.{1,7}/g)?.join('\u200B'))
-                    .join(' ');
-                node.textContent = newText;
-            });
-        });
     }
 
     // custom methods
@@ -741,6 +716,8 @@ export class MerchCard extends LitElement {
         );
     }
 
+    // TODO enable with TWP //
+    /* c8 ignore next 11 */
     handleStorageChange() {
         const offerSelect =
             this.closest('merch-card')?.offerSelect.cloneNode(true);
@@ -757,6 +734,8 @@ export class MerchCard extends LitElement {
         return this.querySelector('[slot="price"]');
     }
 
+    // TODO enable with TWP //
+    /* c8 ignore next 16 */
     selectMerchOffer(offer) {
         if (offer === this.merchOffer) return;
         this.merchOffer = offer;
