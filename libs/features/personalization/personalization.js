@@ -7,7 +7,7 @@ import {
 import { getEntitlementMap } from './entitlements.js';
 
 /* c8 ignore start */
-const PHONE_SIZE = window.screen.width < 600 || window.screen.height < 600;
+const PHONE_SIZE = window.screen.width < 550 || window.screen.height < 550;
 export const PERSONALIZATION_TAGS = {
   all: () => true,
   chrome: () => navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Edg'),
