@@ -1,4 +1,3 @@
-/* eslint-disable import/no-extraneous-dependencies, max-len, no-console */
 import { expect, test } from '@playwright/test';
 import { features } from './aside.spec.js';
 import AsideBlock from './aside.page.js';

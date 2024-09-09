@@ -1,4 +1,3 @@
-/* eslint-disable import/no-extraneous-dependencies, max-len, no-console */
 import { expect, test } from '@playwright/test';
 import { features } from './iframe.spec.js';
 import IframeBlock from './iframe.page.js';

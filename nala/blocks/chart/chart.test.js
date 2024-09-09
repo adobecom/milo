@@ -1,4 +1,3 @@
-/* eslint-disable import/no-extraneous-dependencies, max-len, no-console */
 import { expect, test } from '@playwright/test';
 import { features } from './chart.spec.js';
 import ChartBlock from './chart.page.js';

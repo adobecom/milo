@@ -1,4 +1,4 @@
-/* eslint-disable import/no-extraneous-dependencies, max-len, no-console, no-await-in-loop, import/extensions */
+/* eslint-disable no-await-in-loop, import/extensions */
 import { expect, test } from '@playwright/test';
 import { features } from './header.spec.js';
 import FedsHeader from './header.page.js';

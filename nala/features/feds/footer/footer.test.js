@@ -1,4 +1,4 @@
-/* eslint-disable import/named, import/no-extraneous-dependencies, max-len, no-console, no-await-in-loop, import/extensions */
+/* eslint-disable no-await-in-loop, import/extensions */
 import { expect, test } from '@playwright/test';
 import { features } from './footer.spec.js';
 import FedsFooter from './footer.page.js';

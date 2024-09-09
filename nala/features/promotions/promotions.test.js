@@ -1,4 +1,3 @@
-/* eslint-disable import/no-extraneous-dependencies, max-len, no-console, no-plusplus */
 import { expect, test } from '@playwright/test';
 import { features } from './promotions.spec.js';
 import PromoPage from './promotions.page.js';
