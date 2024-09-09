@@ -18,7 +18,7 @@ function htmlToElement(html) {
 function decorateVideo(clone, figEl) {
   const videoTag = clone.querySelector('video');
   const anchorTag = clone.querySelector('a[href*=".mp4"]');
-  if(!anchorTag?.hash) anchorTag?.hash = '#autoplay';
+  if (anchorTag && !anchorTag.hash) anchorTag.hash = '#autoplay';
   if (anchorTag) turnAnchorIntoVideo({ src: anchorTag.href, anchorTag });
   if (videoTag) {
     videoTag.removeAttribute('data-mouseevent');
