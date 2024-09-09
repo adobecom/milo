@@ -103,3 +103,28 @@ export const delay = (timeOut, cb) => new Promise((resolve) => {
     resolve((cb && cb()) || null);
   }, timeOut);
 });
+
+/**
+ * Waits for predicate function to be true or times out.
+ * @param {function} predicate Callback that returns boolean
+ * @param {number} timeout Timeout in milliseconds
+ * @param {number} interval Interval delay in milliseconds
+ * @returns {Promise}
+ */
+export function waitFor(predicate, timeout = 1000, interval = 100) {
+  return new Promise((resolve, reject) => {
+    if (predicate()) resolve();
+
+    const intervalId = setInterval(() => {
+      if (predicate()) {
+        clearInterval(intervalId);
+        resolve();
+      }
+    }, interval);
+
+    setTimeout(() => {
+      clearInterval(intervalId);
+      reject(new Error('Timed out waiting for predicate to be true'));
+    }, timeout);
+  });
+}

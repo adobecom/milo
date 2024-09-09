@@ -20,6 +20,19 @@ const config = { locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } }, imsClien
 setConfig(config);
 
 describe('Gnav', () => {
+  before(() => {
+    window.adobeid = {
+      client_id: 'milo',
+      scope: 'gnav',
+    };
+    window.adobeIMS = { getAccessToken: () => false, isSignedInUser: () => false };
+  });
+
+  after(() => {
+    delete window.adobeid;
+    delete window.adobeIMS;
+  });
+
   beforeEach(() => {
     sinon.spy(console, 'log');
   });
@@ -30,6 +43,7 @@ describe('Gnav', () => {
 
   it('test wrong gnav', async () => {
     gnav = await mod.default(document.querySelector('header'));
+    window.adobeid.onReady();
     expect(gnav).to.be.not.null;
   });
 
@@ -157,55 +171,61 @@ describe('Gnav', () => {
 });
 
 describe('Localized Gnav', () => {
-
-  before( async () => {
+  before(async () => {
+    window.adobeid = {
+      client_id: 'milo',
+      scope: 'gnav',
+    };
+    window.adobeIMS = { getAccessToken: () => false, isSignedInUser: () => false };
     // Load Localized Gnav
     await loadDefaultHtml();
     document.head.getElementsByTagName('meta')[0].setAttribute('content', '/test/blocks/gnav/mocks/simple-gnav');
-    const localizedConfig = { locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' }, fi: { ietf: 'fi-FI', tk: 'aaz7dvd.css' }, } };
+    const localizedConfig = { locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' }, fi: { ietf: 'fi-FI', tk: 'aaz7dvd.css' } } };
     localizedConfig.pathname = '/fi/gnav';
     localizedConfig.prodDomains = ['milo.adobe.com'];
     setConfig(localizedConfig);
     gnav = await mod.default(document.querySelector('header'));
   });
 
-  after (async () => {
+  after(async () => {
     // reset to regular Gnav
     setConfig(config);
     await loadDefaultHtml();
     gnav = await mod.default(document.querySelector('header'));
-  })
+    delete window.adobeid;
+    delete window.adobeIMS;
+  });
 
   it('Test Gnav Localized Links', async () => {
     const links = document.getElementById('localized-links').getElementsByTagName('a');
-    links.forEach((anchor) => {
-      expect(anchor.href.startsWith('https://milo.adobe.com/fi/'), "Menu Links should be localized").true;
+    [...links].forEach((anchor) => {
+      expect(anchor.href.startsWith('https://milo.adobe.com/fi/'), 'Menu Links should be localized').true;
     });
   });
 
   it('Test Gnav DNT Links', async () => {
     const dntLinks = document.getElementById('dnt-links')
       .getElementsByTagName('a');
-    dntLinks.forEach((anchor) => {
+    [...dntLinks].forEach((anchor) => {
       const dntLink = anchor.href;
-      expect(dntLink.startsWith('https://milo.adobe.com/fi/'), "Menu DNT Links should not be localized").false;
-      expect(dntLink.endsWith('#_dnt'), "#_dnt should be stripped").false;
+      expect(dntLink.startsWith('https://milo.adobe.com/fi/'), 'Menu DNT Links should not be localized').false;
+      expect(dntLink.endsWith('#_dnt'), '#_dnt should be stripped').false;
     });
   });
 
   it('Test Gnav Breadcrumb Links', async () => {
     const breadcrumbLinks = document.querySelector('header nav.breadcrumbs').getElementsByTagName('a');
-    breadcrumbLinks.forEach((anchor) => {
-      expect(anchor.href.startsWith('http://localhost:2000/fi/'), "Breadcrumb Links should be localized").true;
+    [...breadcrumbLinks].forEach((anchor) => {
+      expect(anchor.href.startsWith('http://localhost:2000/fi/'), 'Breadcrumb Links should be localized').true;
     });
   });
 
   it('Test Gnav Cta Link', async () => {
     const ctaLink = document.querySelector('.gnav-cta').getElementsByTagName('a')[0];
-    expect(ctaLink.href.startsWith('http://localhost:2000/fi/'), "Cta Link should be localized").true;
+    expect(ctaLink.href.startsWith('http://localhost:2000/fi/'), 'Cta Link should be localized').true;
   });
 
   it('Test Gnav Brand Link', async () => {
-    expect(document.querySelector('.gnav-brand').href.startsWith('http://localhost:2000/fi/'), "Brand Link should be localized").true;
+    expect(document.querySelector('.gnav-brand').href.startsWith('http://localhost:2000/fi/'), 'Brand Link should be localized').true;
   });
 });

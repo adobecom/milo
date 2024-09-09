@@ -5,14 +5,40 @@ document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const { default: init } = await import('../../../libs/blocks/quote/quote.js');
 const quotes = document.querySelectorAll('.quote');
 
-/* eslint-disable-next-line no-restricted-syntax */
-for await (const quote of quotes) {
-  await init(quote);
-}
+describe('Quote', () => {
+  quotes.forEach((quote) => {
+    const authorType = quote.classList[1].replaceAll('-', ' ');
+    describe(`authored as ${authorType}`, () => {
+      before(() => {
+        init(quote);
+      });
 
-describe('Blockquote', () => {
-  it('Renders as a blockquote element', async () => {
-    const quote = quotes[0].querySelector('blockquote');
-    expect(quote).to.exist;
+      if (authorType.includes('image')) {
+        it('has image', () => {
+          const image = quote.querySelector('img').src;
+          expect(image).to.exist;
+        });
+      }
+
+      it('has blockquote text', () => {
+        const blockquote = quote.querySelector('blockquote').textContent;
+        expect(blockquote).to.exist;
+        expect(blockquote).to.not.be.empty;
+      });
+
+      if (authorType.includes('caption')) {
+        it('has figcaption', () => {
+          const figcaption = quote.querySelector('.figcaption').textContent;
+          expect(figcaption).to.exist;
+          expect(figcaption).to.not.be.empty;
+        });
+
+        it('has cite', () => {
+          const cite = quote.querySelector('cite').textContent;
+          expect(cite).to.exist;
+          expect(cite).to.not.be.empty;
+        });
+      }
+    });
   });
 });

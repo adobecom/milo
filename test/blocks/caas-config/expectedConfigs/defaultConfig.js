@@ -6,13 +6,16 @@ const defaultConfig = {
     collectionButtonStyle: 'primary',
     resultsPerPage: 5,
     endpoint:
-      'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10',
+      'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10',
     fallbackEndpoint: '',
+    hideDateInterval: false,
     totalCardsToShow: 10,
     cardStyle: 'half-height',
+    cardHoverEffect: 'default',
     showTotalResults: false,
     i18n: {
       cardTitleAccessibilityLevel: 6,
+      lastModified: 'Last modified {date}',
       prettyDateIntervalFormat: '{ddd}, {LLL} {dd} | {timeRange} {timeZone}',
       totalResultsText: '{total} results',
       title: '',
@@ -20,9 +23,11 @@ const defaultConfig = {
       onErrorDescription:
         'Please try reloading the page or try coming back to the page another time.',
       titleHeadingLevel: 'h3',
-
     },
+    detailsTextOption: 'default',
     setCardBorders: false,
+    showCardBadges: false,
+    showFooterDivider: false,
     useOverlayLinks: false,
     banner: {
       register: { description: 'Sign Up', url: '#registration' },
@@ -33,13 +38,83 @@ const defaultConfig = {
     useLightText: false,
     disableBanners: false,
     reservoir: { sample: 3, pool: 1000 },
-    ctaAction: '_blank',
-    additionalRequestParams: {}
+    ctaAction: '_self',
+    additionalRequestParams: {},
+    dynamicCTAForLiveEvents: false,
   },
+  headers: [],
+  hideCtaIds: [
+    '',
+  ],
+  hideCtaTags: [],
   featuredCards: [
     '',
   ],
   filterPanel: {
+    categories: [
+      {
+        group: 'All Topics',
+        id: '',
+        items: [],
+        title: 'All Topics',
+      },
+      {
+        group: 'photo',
+        icon: '',
+        id: 'caas:product-categories/photo',
+        items: [],
+        title: 'Photo',
+      },
+      {
+        group: 'graphic-design',
+        id: 'caas:product-categories/graphic-design',
+        icon: '',
+        items: [],
+        title: 'Graphic Design',
+      },
+      {
+        group: 'video',
+        id: 'caas:product-categories/video',
+        icon: '',
+        items: [],
+        title: 'Video',
+      },
+      {
+        group: 'illustration',
+        id: 'caas:product-categories/illustration',
+        icon: '',
+        items: [],
+        title: 'Illustration',
+      },
+      {
+        group: 'ui-and-ux',
+        id: 'caas:product-categories/ui-and-ux',
+        icon: '',
+        items: [],
+        title: 'UI and UX',
+      },
+      {
+        group: 'acrobat-and-pdf',
+        id: 'caas:product-categories/acrobat-and-pdf',
+        icon: '',
+        items: [],
+        title: 'Acrobat and PDF',
+      },
+      {
+        group: '3d-and-ar',
+        id: 'caas:product-categories/3d-and-ar',
+        icon: '',
+        items: [],
+        title: '3D and AR',
+      },
+      {
+        group: 'social-media',
+        id: 'caas:product-categories/social-media',
+        icon: '',
+        items: [],
+        title: 'Social Media',
+      },
+    ],
     enabled: false,
     eventFilter: '',
     type: 'left',
@@ -127,9 +202,9 @@ const defaultConfig = {
   analytics: { trackImpressions: '', collectionIdentifier: '' },
   target: {
     enabled: '',
-    lastViewedSession: ''
+    lastViewedSession: '',
   },
-  customCard: ["card","return ``"]
+  customCard: ['card', 'return ``'],
 };
 
 export default defaultConfig;

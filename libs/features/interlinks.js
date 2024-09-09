@@ -23,7 +23,8 @@ export function checkAndAddMatch(matches, contender, maxMatches) {
  * @param {string} path The location of the keywords file to be used for interlinks.
  * @param {number} limit The maximum amount of keywords to fetch from the file.  Default is 1000.
  */
-export default async function interlink(path, limit = 1000) {
+export default async function interlink(path, language, limit = 1000) {
+  const isExceptionLanguage = ['zh', 'ko', 'ja', 'th', 'he'].includes(language);
   const articleBody = document.querySelector('main');
   const resp = await fetch(`${path}?limit=${limit}`);
   if (!(articleBody && resp.ok)) return;
@@ -35,6 +36,7 @@ export default async function interlink(path, limit = 1000) {
   const maxLinks = (Math.floor(articleWords / 100)) - articleLinks;
   // eslint-disable-next-line no-useless-return
   if (maxLinks <= 0) return;
+  const wordBorder = isExceptionLanguage ? '' : '\\b';
   const keywords = (Array.isArray(json) ? json : json.data)
     // scan article to filter keywords down to relevant ones
     .filter(({ Keyword }) => articleText.indexOf(Keyword.toLowerCase()) !== -1)
@@ -42,7 +44,7 @@ export default async function interlink(path, limit = 1000) {
     .sort((a, b) => b.Keyword.length - a.Keyword.length)
     // prepare regexps
     .map((item) => ({
-      regexp: new RegExp(`\\b(${item.Keyword.replace(/[/\\^$*+?.()|[\]{}]/g, '\\$&')})\\b`, 'iu'),
+      regexp: new RegExp(`${wordBorder}(${item.Keyword.replace(/[/\\^$*+?.()|[\]{}]/g, '\\$&')})${wordBorder}`, 'iu'),
       ...item,
     }));
   // eslint-disable-next-line no-useless-return
@@ -55,7 +57,7 @@ export default async function interlink(path, limit = 1000) {
       const paraLinks = p.querySelectorAll('a').length;
       const paraWords = p.textContent.split(/\s/).length;
       const maxParaLinks = Math.floor(paraWords / 40) - paraLinks;
-      if (maxParaLinks > 0) {
+      if (isExceptionLanguage || maxParaLinks > 0) {
         Array.from(p.childNodes)
         // filter out non text nodes
           .filter((node) => node.nodeType === Node.TEXT_NODE)
@@ -78,14 +80,11 @@ export default async function interlink(path, limit = 1000) {
             // split text node, insert link with matched text, and add link tracking
               .forEach(({ item, start, end }) => {
                 const text = textNode.nodeValue;
-                if (!p.getAttribute('daa-lh')) {
-                  p.setAttribute('daa-lh', 'interlinks_p_'.concat(item.Keyword));
-                }
                 const a = document.createElement('a');
                 a.title = item.Keyword;
                 a.href = item.URL;
                 a.setAttribute('data-origin', 'interlink');
-                a.setAttribute('daa-ll', a.title);
+                a.setAttribute('daa-ll', `${a.title}--interlinks_p_${item.Keyword}`);
                 a.appendChild(document.createTextNode(text.substring(start, end)));
                 p.insertBefore(a, textNode.nextSibling);
                 p.insertBefore(document.createTextNode(text.substring(end)), a.nextSibling);

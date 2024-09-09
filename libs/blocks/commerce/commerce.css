@@ -1,0 +1,119 @@
+
+::-webkit-scrollbar {
+  background-color: #303030;
+  width: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #676767;
+  border-radius: 10px;
+}
+
+.in-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.commerce {
+  width: 360px;
+  height: 354px;
+  overflow: hidden;
+  background-color: #303030;
+  color: #fff;
+  font-size: 0.78rem;
+  margin: 0;
+  padding: 0;
+}
+
+.offer-search-wrapper {
+  position: sticky;
+}
+
+.offer-details-wrapper {
+  padding: 5px;
+  position: relative;
+}
+
+.offer-details-wrapper .not-valid-url {
+  text-align: center;
+}
+
+.offer-details {
+  margin: 0;
+  padding: 0 0px 0 10px;
+  list-style: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: pre;
+  overflow-y: scroll;
+  height: 310px;
+}
+
+.offer-details .offer-detail {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: break-spaces;
+  line-height: 1.5rem;
+}
+
+.offer-details .offer-detail .offer-value {
+  font-weight: 700;
+}
+
+.offer-details .con-button {
+  border: 2px solid #fff;
+  color: #fff;
+  margin: 5px 10px 10px;
+}
+
+.offer-details a.con-button.placeholder-resolved {
+  float: right;
+}
+
+.offer-details button.con-button {
+  float: left;
+}
+
+.offer-search {
+  width: 100%;
+  display: block;
+  font-family: var(--body-font-family);
+  background: rgb(0 0 0 / 35%);
+  border: none;
+  margin: 0;
+  padding: 0 12px;
+  line-height: 36px;
+  font-weight: 700;
+  color: #FFF;
+  box-sizing: border-box;
+  transition: padding .2s ease-in-out;
+}
+
+.offer-search-icon {
+  position: absolute;
+  content: '';
+  width: 36px;
+  height: 36px;
+  left: -36px;
+  top: 0;
+  background: url('/libs/ui/img/spectrum-search.svg') center / 24px no-repeat;
+  transition: left .2s ease-in-out;
+}
+
+.offer-search:hover + .offer-search-icon, .offer-search:focus + .offer-search-icon {
+  left: 6px;
+}
+
+.offer-search:hover, .offer-search:focus {
+  padding: 0 42px;
+}
+
+.offer-search::placeholder {
+  color: #FFF;
+}
+
+.offer-search:focus::placeholder {
+  color: #676767;
+}

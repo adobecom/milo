@@ -1,0 +1,115 @@
+[
+  {
+    "offerId": "632B3ADD940A7FBB7864AA5AD19B8D28",
+    "startDate": "2015-12-04T17:38:19.000Z",
+    "endDate": "2100-04-13T21:20:00.000Z",
+    "priceDetails": {
+      "price": 43.99,
+      "priceWithoutDiscount": 54.99,
+      "priceWithoutTax": 43.99,
+      "priceWithoutDiscountAndTax": 54.99,
+      "usePrecision": true,
+      "formatString": "'US$'#,##0.00",
+      "taxDisplay": "TAX_EXCLUSIVE",
+      "taxTerm": "TAX"
+    },
+    "analytics": "{\"offerId\":\"632B3ADD940A7FBB7864AA5AD19B8D28\",\"label\":\"ccsn_direct_individual\",\"price\":\"43.99\",\"amountWithoutTax\":\"43.99\",\"commitmentType\":\"YEAR\",\"billingFrequency\":\"MONTHLY\",\"currencyCode\":\"USD\"}",
+    "productArrangementCode": "ccsn_direct_individual",
+    "productArrangement": {
+      "productFamily": "CC_ALL_APPS"
+    },
+    "buyingProgram": "RETAIL",
+    "commitment": "YEAR",
+    "term": "MONTHLY",
+    "customerSegment": "INDIVIDUAL",
+    "marketSegments": ["COM"],
+    "salesChannel": "DIRECT",
+    "offerType": "BASE",
+    "pricePoint": "REGULAR",
+    "language": "MULT",
+    "merchant": "ADOBE"
+  },
+  {
+    "offerId": "30404A88D89A328584307175B8B27616",
+    "startDate": "2015-11-17T20:52:25.000Z",
+    "priceDetails": {
+      "price": 20.99,
+      "priceWithoutTax": 20.99,
+      "usePrecision": true,
+      "formatString": "'US$'#,##0.00",
+      "taxDisplay": "TAX_EXCLUSIVE",
+      "taxTerm": "TAX"
+    },
+    "analytics": "{\"offerId\":\"30404A88D89A328584307175B8B27616\",\"label\":\"phsp_direct_individual\",\"price\":\"20.99\",\"amountWithoutTax\":\"20.99\",\"commitmentType\":\"YEAR\",\"billingFrequency\":\"MONTHLY\",\"currencyCode\":\"USD\"}",
+    "productArrangementCode": "phsp_direct_individual",
+    "productArrangement": {
+      "productFamily": "PHOTOSHOP"
+    },
+    "buyingProgram": "RETAIL",
+    "commitment": "YEAR",
+    "term": "MONTHLY",
+    "customerSegment": "INDIVIDUAL",
+    "marketSegments": ["COM"],
+    "salesChannel": "DIRECT",
+    "offerType": "BASE",
+    "pricePoint": "REGULAR",
+    "language": "MULT",
+    "merchant": "ADOBE"
+  },
+  {
+    "offerId": "BB6F26A4FBD69FFD455EFD7FF3D0CBB0",
+    "startDate": "2015-11-17T20:09:20.000Z",
+    "endDate": "2023-12-20T07:58:00.000Z",
+    "priceDetails": {
+      "price": 15.99,
+      "priceWithoutDiscount": 20.99,
+      "priceWithoutTax": 15.99,
+      "priceWithoutDiscountAndTax": 20.99,
+      "usePrecision": true,
+      "formatString": "'US$'#,##0.00",
+      "taxDisplay": "TAX_EXCLUSIVE",
+      "taxTerm": "TAX"
+    },
+    "analytics": "{\"offerId\":\"BB6F26A4FBD69FFD455EFD7FF3D0CBB0\",\"label\":\"phsp_direct_individual\",\"price\":\"15.99\",\"amountWithoutTax\":\"15.99\",\"commitmentType\":\"YEAR\",\"billingFrequency\":\"MONTHLY\",\"currencyCode\":\"USD\"}",
+    "productArrangementCode": "phsp_direct_individual",
+    "productArrangement": {
+      "productFamily": "PHOTOSHOP"
+    },
+    "buyingProgram": "RETAIL",
+    "commitment": "YEAR",
+    "term": "MONTHLY",
+    "customerSegment": "INDIVIDUAL",
+    "marketSegments": ["COM"],
+    "salesChannel": "DIRECT",
+    "offerType": "PROMOTION",
+    "pricePoint": "PROMO_BLACK_FRIDAY",
+    "language": "MULT",
+    "merchant": "ADOBE"
+  },
+  {
+    "offerId": "57A0ADB680032709167EFF5B8544C3D4",
+    "startDate": "2020-06-01T13:00:00.000Z",
+    "priceDetails": {
+      "price": 358.8,
+      "priceWithoutTax": 358.8,
+      "usePrecision": true,
+      "formatString": "'US$'#,##0.00",
+      "taxDisplay": "TAX_EXCLUSIVE",
+      "taxTerm": "TAX"
+    },
+    "analytics": "{\"offerId\":\"57A0ADB680032709167EFF5B8544C3D4\",\"label\":\"perpetual_acrobat_standard_2020_perpetual_individual\",\"price\":\"358.8\",\"amountWithoutTax\":\"358.8\",\"commitmentType\":\"PERPETUAL\",\"currencyCode\":\"USD\"}",
+    "productArrangementCode": "perpetual_acrobat_standard_2020_perpetual_individual",
+    "productArrangement": {
+      "productFamily": "ACROBAT"
+    },
+    "buyingProgram": "RETAIL",
+    "commitment": "PERPETUAL",
+    "customerSegment": "INDIVIDUAL",
+    "marketSegments": ["COM"],
+    "salesChannel": "DIRECT",
+    "offerType": "BASE",
+    "pricePoint": "FULL",
+    "language": "EN",
+    "merchant": "ADOBE"
+  }
+]

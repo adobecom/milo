@@ -51,11 +51,13 @@ describe('Carousel', () => {
   });
 
   it('Keyboard navigation to go to next and previous slide', async () => {
+    const carouselContainer = document.body.querySelector('.carousel');
+    carouselContainer.classList.add('show-2');
     const nextButton = document.body.querySelector('.carousel-next');
     const previousButton = document.body.querySelector('.carousel-next');
     const slides = document.body.querySelectorAll('.carousel-slide');
     const slideIndicators = document.body.querySelectorAll('.carousel-indicator');
-    
+
     nextButton.focus();
     await sendKeys({ press: 'ArrowRight' });
     let activeSlide = slides[1].classList.contains('active');
@@ -108,7 +110,7 @@ describe('Carousel', () => {
     expect(lightboxActive).to.be.true;
     expect(curtain).to.exist;
 
-    //Close lightbox by clicking on curtain
+    // Close lightbox by clicking on curtain
     curtain.click();
     lightboxActive = el.classList.contains('lightbox-active');
     curtain = el.querySelector('.carousel-curtain');
@@ -137,11 +139,11 @@ describe('Carousel', () => {
 
   it('Mobile swipe distance and direction capture', () => {
     const swipeDistance = {};
-    const swipe = {xMin: 50, xStart: 2402, xEnd: 2284};
-    const swipeRight = {xMin: 50, xStart: 2284, xEnd: 2402};
+    const swipe = { xMin: 50, xStart: 2402, xEnd: 2284 };
+    const swipeRight = { xMin: 50, xStart: 2284, xEnd: 2402 };
     swipeDistance.xDistance = getSwipeDistance(swipe.xStart, swipe.xEnd);
-    const swipeDirection =  getSwipeDirection(swipe, swipeDistance);
-    const swipeRightDirection =  getSwipeDirection(swipeRight, swipeDistance);
+    const swipeDirection = getSwipeDirection(swipe, swipeDistance);
+    const swipeRightDirection = getSwipeDirection(swipeRight, swipeDistance);
     expect(swipeDirection).to.equal('left');
     expect(swipeRightDirection).to.equal('right');
     expect(swipeDistance.xDistance).to.be.greaterThan(50);
@@ -149,7 +151,7 @@ describe('Carousel', () => {
 
   it('Mobile swipe distance end is zero', () => {
     const swipeDistance = {};
-    const swipe = {xMin: 50, xStart: 2402, xEnd: 0};
+    const swipe = { xMin: 50, xStart: 2402, xEnd: 0 };
     swipeDistance.xDistance = getSwipeDistance(swipe.xStart, swipe.xEnd);
     expect(swipeDistance.xDistance).to.equal(0);
   });

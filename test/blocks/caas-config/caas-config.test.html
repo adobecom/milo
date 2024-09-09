@@ -90,7 +90,7 @@
 
         const expectedConfig = cloneObj(defaultConfig);
         expectedConfig.collection.endpoint =
-          'https://www.adobe.com/chimera-api/collection?originSelection=hawks,northstar&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10';
+          'https://www.adobe.com/chimera-api/collection?originSelection=hawks,northstar&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10';
 
         expect(config).to.eql(expectedConfig);
       });
@@ -104,7 +104,22 @@
         ]);
         await delay(50);
         expectedConfig.collection.endpoint =
-          'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=caas:topic,caas:country/ca,caas:country/cn&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10'
+          'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=caas:topic,caas:country/ca,caas:country/cn&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10'
+        expect(config).to.eql(expectedConfig);
+      });
+
+      it('Should be able to send a secondary source and content-type tag', async () => {
+        const expectedConfig = cloneObj(defaultConfig);
+        const enableAdvancedTags = findByLabel('Use a secondary source for some content types');
+        enableAdvancedTags.checked = true;
+        enableAdvancedTags.dispatchEvent(new Event('change'));
+        await delay(50);
+
+        await tagSelectorDropdownChoose('Secondary Source', 'Bacom');
+        await tagSelectorDropdownChoose('Secondary Content Type Tags', 'Customer Story');
+
+        expectedConfig.collection.endpoint =
+          'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&secondSource=bacom&secondaryTags=caas:content-type/customer-story&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10';
         expect(config).to.eql(expectedConfig);
       });
 
@@ -116,7 +131,7 @@
         const expectedConfig = cloneObj(defaultConfig);
         expectedConfig.country = 'ca';
         expectedConfig.collection.endpoint =
-        'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=ca&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10'
+        'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=ca&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10'
         await delay(50)
         expect(config).to.eql(expectedConfig);
       });
@@ -133,7 +148,7 @@
 
         const expectedConfig = cloneObj(defaultConfig);
         expectedConfig.collection.endpoint =
-        'https://www.adobe.com/chimera-api/collection/My%20Target%20Activity.json?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10&flatFile=false';
+        'https://www.adobe.com/chimera-api/collection/My%20Target%20Activity.json?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10&flatFile=false';
         expectedConfig.target.enabled = true;
         expect(config).to.eql(expectedConfig);
       });
@@ -157,7 +172,7 @@
 
         const expectedConfig = cloneObj(defaultConfig);
         expectedConfig.collection.endpoint =
-        'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=caas:topic,caas:country/ca&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10';
+        'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=caas:topic,caas:country/ca&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10';
 
         expect(config).to.eql(expectedConfig);
       });
@@ -167,25 +182,58 @@
         featuredCardAdd.click();
 
         const contentIdEl = await waitForElement('#contentId');
-        contentIdEl.value = 'a-featured-card-id';
+        contentIdEl.value = '985be96f-2d15-4350-a17c-b3a07fde5c81';
         contentIdEl.dispatchEvent(new Event('change'));
         await delay(150);
 
         const expectedConfig = cloneObj(defaultConfig);
         expectedConfig.collection.endpoint =
-        'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=a-featured-card-id&environment=&draft=false&size=10';
-        expectedConfig.featuredCards = ['a-featured-card-id'];
+        'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=985be96f-2d15-4350-a17c-b3a07fde5c81&environment=&draft=false&size=10';
+        expectedConfig.featuredCards = ['985be96f-2d15-4350-a17c-b3a07fde5c81'];
         expect(config).to.eql(expectedConfig);
       });
+
+      it('Can add cta ids to hide', async () => {
+        const hideCtaAdd = configPanelEl.querySelector('.hideCtaIds.multifield-add');
+        hideCtaAdd.click();
+
+        const contentIdEl = await waitForElement('#contentId');
+        contentIdEl.value = 'hide-cta-id';
+        contentIdEl.dispatchEvent(new Event('change'));
+        await delay(150);
+
+        const expectedConfig = cloneObj(defaultConfig);
+        expectedConfig.collection.endpoint =
+        'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10';
+        expectedConfig.hideCtaIds = ['hide-cta-id'];
+        expect(config).to.eql(expectedConfig);
+      });
+
+
+      it('Can add tags to use for hiding ctas', async() => {
+        await tagSelectorModalChoose('Tags that should hide CTAS', [
+          ['Topic', 'Contracts']
+        ]);
+        const expectedConfig = cloneObj(defaultConfig);
+        expectedConfig.hideCtaTags = ['caas:topic/contracts'];
+        expect(config).to.eql(expectedConfig);
+
+      })
 
       it('has error if tag URL is wrong', async () => {
         const tagUrlInput = findByLabel('Tags Url', configPanelEl);
         tagUrlInput.value = 'https://not.the.right.url/tags';
         tagUrlInput.dispatchEvent(new Event('change'));
-        const errorEl = await waitForElement('.tool-error');
-        expect(errorEl).to.not.be.null;
-        expect(errorEl.textContent).to.be.equal('Unable to fetch tags, loading backup tags.  Please check tags url in the Advanced Panel');
+        const toolErrorEl = await waitForElement('.tool-error');
+        expect(toolErrorEl).to.not.be.null;
 
+        // Due to a race condition, the error message may be one of two things
+        let correctErrorMsg = false;
+        if (toolErrorEl.textContent === 'Tags url is not defined in the Advanced Panel'
+          || toolErrorEl.textContent === 'Unable to fetch tags, loading backup tags.  Please check tags url in the Advanced Panel') {
+            correctErrorMsg = true;
+        }
+        expect(correctErrorMsg).to.be.true;
         const expectedConfig = cloneObj(defaultConfig);
         expect(config).to.eql(expectedConfig);
       });
@@ -248,7 +296,7 @@
         const openedOnLoadCb = findByLabel('Opened on load');
         openedOnLoadCb.checked = true;
         openedOnLoadCb.dispatchEvent(new Event('change'));
-        await delay(50);
+        await delay(100);
 
         expect(openedOnLoadCb.checked).to.be.true;
       });
@@ -258,7 +306,18 @@
         copyBtn.click();
         await delay(50);
         const copyTextArea = document.querySelector('.copy-text');
-        expect(copyTextArea.value.split('#')[1]).to.equal('eyJhZGRpdGlvbmFsUmVxdWVzdFBhcmFtcyI6W10sImFuYWx5dGljc0NvbGxlY3Rpb25OYW1lIjoiIiwiYW5hbHl0aWNzVHJhY2tJbXByZXNzaW9uIjpmYWxzZSwiYW5kTG9naWNUYWdzIjpbXSwiYm9va21hcmtJY29uU2VsZWN0IjoiIiwiYm9va21hcmtJY29uVW5zZWxlY3QiOiIiLCJjYXJkU3R5bGUiOiJoYWxmLWhlaWdodCIsImNhcmRUaXRsZUFjY2Vzc2liaWxpdHlMZXZlbCI6NiwiY29sbGVjdGlvbkJ0blN0eWxlIjoicHJpbWFyeSIsImNvbGxlY3Rpb25OYW1lIjoiIiwiY29sbGVjdGlvblRpdGxlIjoiIiwiY29sbGVjdGlvblNpemUiOiIiLCJjb250YWluZXIiOiIxMjAwTWF4V2lkdGgiLCJjb250ZW50VHlwZVRhZ3MiOltdLCJjb3VudHJ5IjoiY2Fhczpjb3VudHJ5L3VzIiwiY3VzdG9tQ2FyZCI6IiIsImN0YUFjdGlvbiI6Il9ibGFuayIsImRvTm90TGF6eUxvYWQiOmZhbHNlLCJkaXNhYmxlQmFubmVycyI6ZmFsc2UsImRyYWZ0RGIiOmZhbHNlLCJlbmRwb2ludCI6Ind3dy5hZG9iZS5jb20vY2hpbWVyYS1hcGkvY29sbGVjdGlvbiIsImVudmlyb25tZW50IjoiIiwiZXhjbHVkZWRDYXJkcyI6W10sImV4Y2x1ZGVUYWdzIjpbXSwiZmFsbGJhY2tFbmRwb2ludCI6IiIsImZlYXR1cmVkQ2FyZHMiOltdLCJmaWx0ZXJFdmVudCI6IiIsImZpbHRlckxvY2F0aW9uIjoibGVmdCIsImZpbHRlckxvZ2ljIjoib3IiLCJmaWx0ZXJzIjpbXSwiZmlsdGVyc1Nob3dFbXB0eSI6ZmFsc2UsImd1dHRlciI6IjR4IiwiaW5jbHVkZVRhZ3MiOltdLCJsYW5ndWFnZSI6ImNhYXM6bGFuZ3VhZ2UvZW4iLCJsYXlvdXRUeXBlIjoiNHVwIiwibG9hZE1vcmVCdG5TdHlsZSI6InByaW1hcnkiLCJvbmx5U2hvd0Jvb2ttYXJrZWRDYXJkcyI6ZmFsc2UsIm9yTG9naWNUYWdzIjpbXSwicGFnaW5hdGlvbkFuaW1hdGlvblN0eWxlIjoicGFnZWQiLCJwYWdpbmF0aW9uRW5hYmxlZCI6ZmFsc2UsInBhZ2luYXRpb25RdWFudGl0eVNob3duIjpmYWxzZSwicGFnaW5hdGlvblR5cGUiOiJwYWdpbmF0b3IiLCJwYWdpbmF0aW9uVXNlVGhlbWUzIjpmYWxzZSwicGxhY2Vob2xkZXJVcmwiOiIiLCJyZXN1bHRzUGVyUGFnZSI6NSwic2VhcmNoRmllbGRzIjpbXSwic2V0Q2FyZEJvcmRlcnMiOmZhbHNlLCJzaG93Qm9va21hcmtzRmlsdGVyIjpmYWxzZSwic2hvd0Jvb2ttYXJrc09uQ2FyZHMiOmZhbHNlLCJzaG93RmlsdGVycyI6ZmFsc2UsInNob3dTZWFyY2giOmZhbHNlLCJzaG93VG90YWxSZXN1bHRzIjpmYWxzZSwic29ydERhdGVBc2MiOmZhbHNlLCJzb3J0RGF0ZURlc2MiOmZhbHNlLCJzb3J0RGF0ZU1vZGlmaWVkIjpmYWxzZSwic29ydERlZmF1bHQiOiJkYXRlRGVzYyIsInNvcnRFbmFibGVQb3B1cCI6ZmFsc2UsInNvcnRFbmFibGVSYW5kb21TYW1wbGluZyI6ZmFsc2UsInNvcnRFdmVudFNvcnQiOmZhbHNlLCJzb3J0RmVhdHVyZWQiOmZhbHNlLCJzb3J0TW9kaWZpZWRBc2MiOmZhbHNlLCJzb3J0TW9kaWZpZWREZXNjIjpmYWxzZSwic29ydFJhbmRvbSI6ZmFsc2UsInNvcnRSZXNlcnZvaXJQb29sIjoxMDAwLCJzb3J0UmVzZXJ2b2lyU2FtcGxlIjozLCJzb3J0VGl0bGVBc2MiOmZhbHNlLCJzb3J0VGl0bGVEZXNjIjpmYWxzZSwic291cmNlIjpbImhhd2tzIl0sInRhZ3NVcmwiOiJ3d3cuYWRvYmUuY29tL2NoaW1lcmEtYXBpL3RhZ3MiLCJ0YXJnZXRBY3Rpdml0eSI6IiIsInRhcmdldEVuYWJsZWQiOmZhbHNlLCJ0aGVtZSI6ImxpZ2h0ZXN0IiwidGl0bGVIZWFkaW5nTGV2ZWwiOiJoMyIsInRvdGFsQ2FyZHNUb1Nob3ciOjEwLCJ1c2VMaWdodFRleHQiOmZhbHNlLCJ1c2VPdmVybGF5TGlua3MiOmZhbHNlLCJjb2xsZWN0aW9uQnV0dG9uU3R5bGUiOiJwcmltYXJ5IiwidXNlckluZm8iOltdfQ==')
+
+        // Windows/OSX/Linux encode the hash very slightly differently
+        // This is due to different header values in the zip output
+        // The header is the part before the first / in the hash
+        // Due to this we only compare the characters after the header value
+
+        const hashWithoutHeader = 'bNhD9Lzw7Wafb9qCb7V0jBrxZN/aihyIoxuRIIkxxVHJor1L0vxek9ek4N+kNOR9v3gz/FaCUZk0WzFf8J6DnHTiovMj++jYTqrFQabk6LNbktvqMz2e07EWWg/E4E2DBNKylX5ExKKOfL1ChyIQYGQ8O5GlT1Q6912RHt9WWCi0PULTxIDCtKFh2zRZs0Z88Ep0qcKeNJLvHGOkaYoy/WT+ySHBqz42JuZRg8g8l6qLk1nLQbHAhZUzoqI3mZotnNCL7fSZkX8qSbeeidroC14ixeah0wJLjW3Cvv/eYZdAWncjEp1/m8xd4/1MrLlsTWj40NQ58yCsXIhMSwGft70Pw8ULwTNUKnGp9MyxSOJGJvz2aXMyEoi/EW/jebAlUz6bSHo4Gl2AtuqGZykHOT8f+H62qSdtI6OVy+QiKjvhRUvUgS12hgw9Q64ehShFvnLUjW6Ftu4Dv0gSFKmbZltRCQ405GHMEeXoewomZyBE4uMnNXBtGlxTYnknAMmijdmBj+5KAKmAte/OWJLSsGMx5hBdaikyQ66FJHL9K/E6gfUmX56rmpueoCMypm7++i5koEVTvptQKVwwbNf0fCo/AEzBuLKM7g+mdantDkQFbBCiw00H3/4CRdQMNhSScmEeoI0SgXsjhXQVb4puxI2uaWNuyHaee9jYhcjcXaii0TbQurK7SRx8HClRifOTZRrUN8hssfwSwrDnFtnfsbU0tkDo1GN88Hkqs8HG4aEBiSUahe3PmqhGHPhj2O3S7ROBvM+ERnCzXGk3XGo+SrALXDBX20J6Ck9iBHIlZklPjwfElXRIOqsApvCZidE/6rFWUycjSce3XSVv3ba922ojkstPqCNvcnNmnEifQgTiu+MTGYCDHUYILL3/AnvAO+EJK53rUzGTAHIKJQ6m6e1fDtfM7qkM9uXDFv4JVVO2hqo0e7fp0IA75nhxP0HW7EyZgl9FtCR3+QxnXsFMIPbozabcjMiL7NJ/PbwwpSxTZ4xW/vh83jhN4E67VjijhcvLi20wwFP4qzp/v1HhGxKOuQI47/azjyhE9djtRHOcgLrj4xKGPS04hgzb+gO/8Wrf7T7V9mgmOqX5GUNoW7csnysdoiCpJmjtQnMpIxkwEj9voOnrrgwaPr2d0BpqttqdBU6P3MzDTnQUUPLqNzSkO1X//AxGj3OyCCAAA';
+
+        const hash = copyTextArea.value.split('#')[1].trim();
+
+        // remove the header from the hash, which is the first 21 characters
+        expect(hash.slice(21)).to.equal(hashWithoutHeader);
       });
 
       it('Clones an object', () => {
@@ -278,11 +337,19 @@
         expect(updateObj({ a: 'blah', d: 1234 }, allKeys)).to.eql({ a: 'blah', b: 2, c: [6, 7, 8], d: 1234 });
       });
 
-      it('Converts Base 64 to UTF-8', () => {
-        const hash = '#eyJjYXJkU3R5bGUiOiJmdWxsLWNhcmQiLCJjb2xsZWN0aW9uQnRuU3R5bGUiOiJwcmltYXJ5IiwiY29udGFpbmVyIjoiODNQZXJjZW50IiwiY291bnRyeSI6ImNhYXM6Y291bnRyeS91cyIsImNvbnRlbnRUeXBlVGFncyI6W10sImRpc2FibGVCYW5uZXJzIjpmYWxzZSwiZHJhZnREYiI6ZmFsc2UsImd1dHRlciI6IjR4IiwibGFuZ3VhZ2UiOiJjYWFzOmxhbmd1YWdlL2VuIiwibGF5b3V0VHlwZSI6IjN1cCIsImxvYWRNb3JlQnRuU3R5bGUiOiJwcmltYXJ5IiwicGFnaW5hdGlvbkFuaW1hdGlvblN0eWxlIjoicGFnZWQiLCJwYWdpbmF0aW9uRW5hYmxlZCI6ZmFsc2UsInBhZ2luYXRpb25RdWFudGl0eVNob3duIjpmYWxzZSwicGFnaW5hdGlvblVzZVRoZW1lMyI6ZmFsc2UsInBhZ2luYXRpb25UeXBlIjoibm9uZSIsInJlc3VsdHNQZXJQYWdlIjoiMSIsInNldENhcmRCb3JkZXJzIjpmYWxzZSwic2hvd0ZpbHRlcnMiOmZhbHNlLCJzaG93U2VhcmNoIjpmYWxzZSwic29ydERlZmF1bHQiOiJ0aXRsZURlc2MiLCJzb3J0RW5hYmxlUG9wdXAiOmZhbHNlLCJzb3J0RW5hYmxlUmFuZG9tU2FtcGxpbmciOmZhbHNlLCJzb3J0UmVzZXJ2b2lyU2FtcGxlIjozLCJzb3J0UmVzZXJ2b2lyUG9vbCI6MTAwMCwic291cmNlIjpbImhhd2tzIl0sInRoZW1lIjoibGlnaHRlc3QiLCJ0b3RhbENhcmRzVG9TaG93IjoiMyIsInVzZUxpZ2h0VGV4dCI6ZmFsc2V9';
+      it('Converts Verson1 Hash Base 64 to UTF-8', async () => {
+        const hash = 'eyJhZGRpdGlvbmFsUmVxdWVzdFBhcmFtcyI6W10sImFuYWx5dGljc0NvbGxlY3Rpb25OYW1lIjoiIiwiYW5hbHl0aWNzVHJhY2tJbXByZXNzaW9uIjpmYWxzZSwiYW5kTG9naWNUYWdzIjpbXSwiYXV0b0NvdW50cnlMYW5nIjpmYWxzZSwiYm9va21hcmtJY29uU2VsZWN0IjoiIiwiYm9va21hcmtJY29uVW5zZWxlY3QiOiIiLCJjYXJkU3R5bGUiOiJoYWxmLWhlaWdodCIsImNhcmRUaXRsZUFjY2Vzc2liaWxpdHlMZXZlbCI6NiwiY29sbGVjdGlvbkJ0blN0eWxlIjoicHJpbWFyeSIsImNvbGxlY3Rpb25OYW1lIjoiIiwiY29sbGVjdGlvblRpdGxlIjoiIiwiY29sbGVjdGlvblNpemUiOiIiLCJjb250YWluZXIiOiIxMjAwTWF4V2lkdGgiLCJjb250ZW50VHlwZVRhZ3MiOltdLCJjb3VudHJ5IjoiY2Fhczpjb3VudHJ5L3VzIiwiY3VzdG9tQ2FyZCI6IiIsImN0YUFjdGlvbiI6Il9ibGFuayIsImRvTm90TGF6eUxvYWQiOmZhbHNlLCJkaXNhYmxlQmFubmVycyI6ZmFsc2UsImRyYWZ0RGIiOmZhbHNlLCJlbmRwb2ludCI6Ind3dy5hZG9iZS5jb20vY2hpbWVyYS1hcGkvY29sbGVjdGlvbiIsImVudmlyb25tZW50IjoiIiwiZXhjbHVkZWRDYXJkcyI6W10sImV4Y2x1ZGVUYWdzIjpbXSwiZmFsbGJhY2tFbmRwb2ludCI6IiIsImZlYXR1cmVkQ2FyZHMiOltdLCJmaWx0ZXJFdmVudCI6IiIsImZpbHRlckJ1aWxkUGFuZWwiOiJhdXRvbWF0aWMiLCJmaWx0ZXJMb2NhdGlvbiI6ImxlZnQiLCJmaWx0ZXJMb2dpYyI6Im9yIiwiZmlsdGVycyI6W10sImZpbHRlcnNDdXN0b20iOltdLCJmaWx0ZXJzU2hvd0VtcHR5IjpmYWxzZSwiZ3V0dGVyIjoiNHgiLCJoZWFkZXJzIjpbXSwiaGVhZGVycyI6W10sImhpZGVDdGFJZHMiOltdLCJpbmNsdWRlVGFncyI6W10sImxhbmd1YWdlIjoiY2FhczpsYW5ndWFnZS9lbiIsImxheW91dFR5cGUiOiI0dXAiLCJsb2FkTW9yZUJ0blN0eWxlIjoicHJpbWFyeSIsIm9ubHlTaG93Qm9va21hcmtlZENhcmRzIjpmYWxzZSwib3JMb2dpY1RhZ3MiOltdLCJwYWdpbmF0aW9uQW5pbWF0aW9uU3R5bGUiOiJwYWdlZCIsInBhZ2luYXRpb25FbmFibGVkIjpmYWxzZSwicGFnaW5hdGlvblF1YW50aXR5U2hvd24iOmZhbHNlLCJwYWdpbmF0aW9uVHlwZSI6InBhZ2luYXRvciIsInBhZ2luYXRpb25Vc2VUaGVtZTMiOmZhbHNlLCJwbGFjZWhvbGRlclVybCI6IiIsInJlc3VsdHNQZXJQYWdlIjo1LCJzZWFyY2hGaWVsZHMiOltdLCJzZXRDYXJkQm9yZGVycyI6ZmFsc2UsInNob3dCb29rbWFya3NGaWx0ZXIiOmZhbHNlLCJzaG93Qm9va21hcmtzT25DYXJkcyI6ZmFsc2UsInNob3dGaWx0ZXJzIjpmYWxzZSwic2hvd1NlYXJjaCI6ZmFsc2UsInNob3dUb3RhbFJlc3VsdHMiOmZhbHNlLCJzb3J0RGF0ZUFzYyI6ZmFsc2UsInNvcnREYXRlRGVzYyI6ZmFsc2UsInNvcnREYXRlTW9kaWZpZWQiOmZhbHNlLCJzb3J0RGVmYXVsdCI6ImRhdGVEZXNjIiwic29ydEVuYWJsZVBvcHVwIjpmYWxzZSwic29ydEVuYWJsZVJhbmRvbVNhbXBsaW5nIjpmYWxzZSwic29ydEV2ZW50U29ydCI6ZmFsc2UsInNvcnRGZWF0dXJlZCI6ZmFsc2UsInNvcnRNb2RpZmllZEFzYyI6ZmFsc2UsInNvcnRNb2RpZmllZERlc2MiOmZhbHNlLCJzb3J0UmFuZG9tIjpmYWxzZSwic29ydFJlc2Vydm9pclBvb2wiOjEwMDAsInNvcnRSZXNlcnZvaXJTYW1wbGUiOjMsInNvcnRUaXRsZUFzYyI6ZmFsc2UsInNvcnRUaXRsZURlc2MiOmZhbHNlLCJzb3VyY2UiOlsiaGF3a3MiXSwidGFnc1VybCI6Ind3dy5hZG9iZS5jb20vY2hpbWVyYS1hcGkvdGFncyIsInRhcmdldEFjdGl2aXR5IjoiIiwidGFyZ2V0RW5hYmxlZCI6ZmFsc2UsInRoZW1lIjoibGlnaHRlc3QiLCJkZXRhaWxzVGV4dE9wdGlvbiI6ImRlZmF1bHQiLCJ0aXRsZUhlYWRpbmdMZXZlbCI6ImgzIiwidG90YWxDYXJkc1RvU2hvdyI6MTAsInVzZUxpZ2h0VGV4dCI6ZmFsc2UsInVzZU92ZXJsYXlMaW5rcyI6ZmFsc2UsImNvbGxlY3Rpb25CdXR0b25TdHlsZSI6InByaW1hcnkiLCJ1c2VySW5mbyI6W119';
         window.location.hash = hash;
-        const hashConfig = getHashConfig();
+        const hashConfig = await getHashConfig();
         expect(hashConfig.cardStyle).to.equal('half-height');
+      });
+
+      it('Converts Verson2 Gzipped Hash Base 64 to UTF-8', async () => {
+        const hash = '~~H4sIAAAAAAAAE3VVTXPbNhD9Lzw7sVK3PehmyfbEM3KsRvL0kOl0VsBSxAjEsgAomen0v3cX/JSi3Ii32K+3D8t/M9DaREMO7Ff8p8YQ1+ChDNn82183GTDcRKPCkqxFJfe+QInZPMsmxq0HdXguK48h8I1snoMNKBf0ivZGbWHfx6sjLal20TcrcPvh5o7oUII/PCtyG5RMbYop/ubCxKLA601srNSS19Z+EKDDtyZavFdKytkZa2KzwiPabP4724dGFtH1ASpvOEuTTc1jnyOWAl+CG/N9wFwE49Dz8dMvs9kLvP9pdCw6E7q4bSoc2VAtE3xbAYR5d7ytgzjUIVK5lKba2BHuUzo+/s1E5Ixp+kJxBd+bFYEeuNQmwM7iAhxXEkbYQx4fdsMZna7IOKHzdDp9BE07/KiovFWFKdHDB6jM7dhlJh5H48mV6LoZ4LuytUYtVXYtddDYI2ezO5bH45iOPXOEWPszz9zYiP7xOERvgUVtrF6Dk/El+ZTAkhvMK1LQsWIxjxOcdccg+QE6yxOWid8zaFPQ6bGsYjNwtK9jTNP89Z3DFAh6CFMYjcsIz/r8PDZu3AUTlgVfwx77cffnWxRyLTRUJ31IuroSiKf6Qh6vCpWcbaTgRfdCBi670slfPL0K9sYlru6dKdPHEJWrkLczXnl0IqFRU6Pljxpc5Bclud0Ve9dBByT6R+NbwG2BJd6NjhYUFmSZ2Ddv28HzGqltDGv060TXbzdZQPCqeDJoe74DRml4QV5PVR4mlISnNNfrtld3zpcYn3qdTLBNynwGbSnKskxFjgby8QEi3gf1A/aAV8AX0iY3E46TAXPgsMyD7v1aQzuQNVWsjKlDi3/lTUvlBsrKmslWTRfkQW344wx96t7fGdhXdNlCj//QRpv2HMKA/kjGr4l4nJ9ms9mFIVXJU71r8XZXXwRO4EW62iv2+pYVcDqEjBUQWdqtZn6+v+ROJlf9HqPsz6OR550N2KXQo8hTlonZF5F/hrJlkZe6DVt8j69Vt2t0Nyd2kFI/82Zg4ru/TFbciUFUkjS2JXksQsZNVgdcSWiJNiRl8PWInlfAyrjDqKnJv4oXEV3ZAuzpn11O7Ztw/DeYPvr//gcuiyqz3gcAAA==';
+        window.location.hash = hash;
+        // v2 getHashConfig is async
+        const hashConfig = await getHashConfig();
+        expect(hashConfig.cardStyle).to.equal('full-card');
       });
 
     });

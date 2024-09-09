@@ -30,4 +30,11 @@ describe('Faas', () => {
     const faas = await waitForElement('.faas-form-wrapper');
     expect(faas).to.exist;
   });
+
+  a.textContent = 'no-lazy';
+  it('FaaS no-lazy Initiation', async () => {
+    await init(a);
+    const faas = await waitForElement('.faas-form-wrapper');
+    expect(faas).to.exist;
+  });
 });

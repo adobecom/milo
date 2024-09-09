@@ -58,7 +58,7 @@ function Comments({
 
   const charCountElement = html`
     <span class="comment-counter">${charCount}/${maxLength}</span>
-  `
+  `;
   return html`
     <fieldset className=${commentsClass}>
       <label htmlFor="rating-comments" />

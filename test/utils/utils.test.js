@@ -1,36 +1,54 @@
-import { readFile } from '@web/test-runner-commands';
+import { readFile, setViewport } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import { waitForElement } from '../helpers/waitfor.js';
+import { waitFor, waitForElement } from '../helpers/waitfor.js';
+import { mockFetch } from '../helpers/generalHelpers.js';
+import { createTag, customFetch } from '../../libs/utils/utils.js';
 
 const utils = {};
-
 const config = {
   codeRoot: '/libs',
   locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
 };
+const ogFetch = window.fetch;
 
 describe('Utils', () => {
+  let head;
+  let body;
   before(async () => {
+    head = await readFile({ path: './mocks/head.html' });
+    body = await readFile({ path: './mocks/body.html' });
     const module = await import('../../libs/utils/utils.js');
     module.setConfig(config);
     Object.keys(module).forEach((func) => {
       utils[func] = module[func];
     });
+    window.hlx = { rum: { isSelected: false } };
+  });
+
+  after(() => {
+    delete window.hlx;
+  });
+
+  it('fetches with cache param', async () => {
+    window.fetch = mockFetch({ payload: true });
+    const resp = await customFetch({ resource: './mocks/taxonomy.json', withCacheRules: true });
+    expect(resp.json()).to.be.true;
   });
 
   describe('with body', () => {
-    before(() => {
+    beforeEach(async () => {
+      window.fetch = mockFetch({ payload: { data: '' } });
+      document.head.innerHTML = head;
+      document.body.innerHTML = body;
+      await utils.loadArea();
       sinon.spy(console, 'log');
     });
 
-    after(() => {
+    afterEach(() => {
+      window.fetch = ogFetch;
+      // eslint-disable-next-line no-console
       console.log.restore();
-    });
-
-    before(async () => {
-      document.head.innerHTML = await readFile({ path: './mocks/head.html' });
-      document.body.innerHTML = await readFile({ path: './mocks/body.html' });
     });
 
     describe('Template', () => {
@@ -52,24 +70,69 @@ describe('Utils', () => {
         expect(link.target).to.equal('_blank');
       });
     });
-    
+
     describe('Configure Auto Block', () => {
-      it('Disable auto block when #_dnb in url', () => {
-        const disableAutoBlockLink =
-          document.querySelector('.disable-autoblock');
+      it('Disable auto block when #_dnb in url', async () => {
+        setViewport({ width: 600, height: 1500 });
+        await waitForElement('.disable-autoblock');
+        const disableAutoBlockLink = document.querySelector('.disable-autoblock');
         utils.decorateLinks(disableAutoBlockLink);
-        expect(disableAutoBlockLink.href).to.equal(
-          'https://www.instagram.com/'
-        );
+        expect(disableAutoBlockLink.href).to.equal('https://www.instagram.com/');
       });
 
-      it('Auto block works as expected when #_dnb is not added to url', () => {
-        const autoBlockLink = document.querySelector(
-          '[href="https://twitter.com/Adobe"]'
-        );
+      it('Auto block works as expected when #_dnb is not added to url', async () => {
+        const a = await waitForElement('[href="https://twitter.com/Adobe"]');
+        utils.decorateAutoBlock(a);
+        const autoBlockLink = document.querySelector('[href="https://twitter.com/Adobe"]');
         expect(autoBlockLink.className).to.equal('twitter link-block');
       });
-    }); 
+
+      it('Does not error on invalid url', () => {
+        const autoBlock = utils.decorateAutoBlock('http://HostName:Port/lc/system/console/configMgr');
+        expect(autoBlock).to.equal(false);
+      });
+    });
+
+    describe('Custom Link Actions', () => {
+      const originalUserAgent = navigator.userAgent;
+      before(() => {
+        window.navigator.share = sinon.stub().resolves();
+        Object.defineProperty(navigator, 'userAgent', {
+          value: 'android',
+          writable: true,
+        });
+      });
+
+      after(() => {
+        Object.defineProperty(navigator, 'userAgent', {
+          value: originalUserAgent,
+          writable: true,
+        });
+      });
+
+      it('Implements a login action', async () => {
+        await waitForElement('.login-action');
+        const login = document.querySelector('.login-action');
+        utils.decorateLinks(login);
+        expect(login.href).to.equal('https://www.stage.adobe.com/');
+      });
+      it('Implements a copy link action', async () => {
+        await waitForElement('.copy-action');
+        const copy = document.querySelector('.copy-action');
+        utils.decorateLinks(copy);
+        expect(copy.classList.contains('copy-link')).to.be.true;
+      });
+      it('triggers the event listener on clicking the custom links', async () => {
+        const login = document.querySelector('.login-action');
+        const copy = document.querySelector('.copy-action');
+        const clickEvent = new Event('click', { bubbles: true, cancelable: true });
+        const preventDefaultSpy = sinon.spy(clickEvent, 'preventDefault');
+        login.dispatchEvent(clickEvent);
+        copy.dispatchEvent(clickEvent);
+        expect(preventDefaultSpy.calledTwice).to.be.true;
+        expect(window.navigator.share.calledOnce).to.be.true;
+      });
+    });
 
     describe('Fragments', () => {
       it('fully unwraps a fragment', () => {
@@ -81,14 +144,14 @@ describe('Utils', () => {
       it('Does not unwrap when sibling content present', () => {
         const fragments = document.querySelectorAll('.link-block.fragment');
         utils.decorateAutoBlock(fragments[1]);
-        expect(fragments[1].parentElement.nodeName).to.equal('P');
+        expect(fragments[1].parentElement.nodeName).to.equal('DIV');
         expect(fragments[1].parentElement.textContent).to.contain('My sibling');
       });
 
       it('Does not unwrap when not in paragraph tag', () => {
         const fragments = document.querySelectorAll('.link-block.fragment');
         utils.decorateAutoBlock(fragments[1]);
-        expect(fragments[1].parentElement.nodeName).to.equal('P');
+        expect(fragments[1].parentElement.nodeName).to.equal('DIV');
         expect(fragments[1].parentElement.textContent).to.contain('My sibling');
       });
     });
@@ -117,7 +180,9 @@ describe('Utils', () => {
     });
 
     it('Does not setup nofollow links', async () => {
-      const gaLink = document.querySelector('a[href="https://analytics.google.com"]');
+      window.fetch = mockFetch({ payload: { data: [] } });
+      await utils.loadDeferred(document, [], { links: 'on' }, () => {});
+      const gaLink = document.querySelector('a[href="https://analytics.google.com/"]');
       expect(gaLink.getAttribute('rel')).to.be.null;
     });
 
@@ -131,20 +196,9 @@ describe('Utils', () => {
       metaPath.content = '/test/utils/mocks/nofollow.json';
 
       document.head.append(metaOn, metaPath);
-      await utils.loadDeferred(document, [], { contentRoot: '' });
+      await utils.loadDeferred(document, [], { contentRoot: '' }, () => {});
       const gaLink = document.querySelector('a[href^="https://analytics.google.com"]');
       expect(gaLink).to.exist;
-    });
-
-    it('loadDelayed() test - expect moduled', async () => {
-      const mod = await utils.loadDelayed(0);
-      expect(mod).to.exist;
-    });
-
-    it('loadDelayed() test - expect nothing', async () => {
-      document.head.querySelector('meta[name="interlinks"]').remove();
-      const mod = await utils.loadDelayed(0);
-      expect(mod).to.be.null;
     });
 
     it('Converts UTF-8 to Base 64', () => {
@@ -159,6 +213,7 @@ describe('Utils', () => {
 
     it('Successfully dies parsing a bad config', () => {
       utils.parseEncodedConfig('error');
+      // eslint-disable-next-line no-console
       expect(console.log.args[0][0].name).to.equal('InvalidCharacterError');
     });
 
@@ -174,7 +229,10 @@ describe('Utils', () => {
     it('Decorates placeholder', () => {
       const paragraphs = [...document.querySelectorAll('p')];
       const lastPara = paragraphs.pop();
-      expect(lastPara.textContent).to.equal('nothing to see here');
+      expect(lastPara.textContent).to.equal(' inkl. MwSt.');
+      const plceholderhref = document.querySelector('.placeholder');
+      const hrefValue = plceholderhref.getAttribute('href');
+      expect(hrefValue).to.equal('tel:phone number substance');
     });
 
     it('Decorates meta helix url', () => {
@@ -191,7 +249,7 @@ describe('Utils', () => {
       window.dispatchEvent(event);
       await waitForElement('#milo');
       expect(document.getElementById('milo')).to.exist;
-    })
+    });
 
     it('getLocale default return', () => {
       expect(utils.getLocale().ietf).to.equal('en-US');
@@ -227,11 +285,29 @@ describe('Utils', () => {
       expect(newTabLink.href).to.equal('https://www.adobe.com/test');
     });
 
+    it('Add rel=nofollow to a link', () => {
+      const noFollowContainer = document.querySelector('main div');
+      utils.decorateLinks(noFollowContainer);
+      const noFollowLink = noFollowContainer.querySelector('.no-follow');
+      expect(noFollowLink.rel).to.contain('nofollow');
+      expect(noFollowLink.href).to.equal('https://www.adobe.com/test');
+    });
+
+    it('Sets up milo.deferredPromise', async () => {
+      const { resolveDeferred } = utils.getConfig();
+      expect(window.milo.deferredPromise).to.exist;
+      utils.loadDeferred(document, [], {}, resolveDeferred);
+      const result = await window.milo.deferredPromise;
+      expect(result).to.be.true;
+    });
+
     describe('SVGs', () => {
       it('Not a valid URL', () => {
+        document.body.innerHTML = '<div class="bad-url">https://www.adobe.com/test</div>';
         const a = document.querySelector('.bad-url');
         try {
-          const textContentUrl = new URL(a.textContent);
+          // eslint-disable-next-line no-new
+          new URL(a.textContent);
         } catch (err) {
           expect(err.message).to.equal("Failed to construct 'URL': Invalid URL");
         }
@@ -243,8 +319,9 @@ describe('Utils', () => {
         config.locales = {
           '': { ietf: 'en-US', tk: 'hah7vzn.css' },
           africa: { ietf: 'en', tk: 'pps7abe.css' },
-          il_he: { ietf: 'he', tk: 'nwq1mna.css' },
-          mena_ar: { ietf: 'ar', tk: 'dis2dpj.css' },
+          il_he: { ietf: 'he', tk: 'nwq1mna.css', dir: 'rtl' },
+          langstore: { ietf: 'en-US', tk: 'hah7vzn.css' },
+          mena_ar: { ietf: 'ar', tk: 'dis2dpj.css', dir: 'rtl' },
           ua: { tk: 'aaz7dvd.css' },
         };
       });
@@ -260,6 +337,11 @@ describe('Utils', () => {
         expect(document.documentElement.getAttribute('dir')).to.equal('ltr');
       });
 
+      it('LTR Languages have dir as ltr for langstore path', () => {
+        setConfigWithPath('/langstore/en/solutions');
+        expect(document.documentElement.getAttribute('dir')).to.equal('ltr');
+      });
+
       it('RTL Languages have dir as rtl', () => {
         setConfigWithPath('/il_he/solutions');
         expect(document.documentElement.getAttribute('dir')).to.equal('rtl');
@@ -267,14 +349,21 @@ describe('Utils', () => {
         expect(document.documentElement.getAttribute('dir')).to.equal('rtl');
       });
 
+      it('RTL Languages have dir as rtl for langstore path', () => {
+        setConfigWithPath('/langstore/he/solutions');
+        expect(document.documentElement.getAttribute('dir')).to.equal('rtl');
+        setConfigWithPath('/langstore/ar/solutions');
+        expect(document.documentElement.getAttribute('dir')).to.equal('rtl');
+      });
+
       it('Gracefully dies when locale ietf is missing and dir is not set.', () => {
         setConfigWithPath('/ua/solutions');
-        expect(document.documentElement.getAttribute('dir')).null;
+        expect(document.documentElement.getAttribute('dir')).to.equal('ltr');
       });
     });
 
     describe('localizeLink', () => {
-      before(async () => {
+      before(() => {
         config.locales = {
           '': { ietf: 'en-US', tk: 'hah7vzn.css' },
           fi: { ietf: 'fi-FI', tk: 'aaz7dvd.css' },
@@ -283,7 +372,6 @@ describe('Utils', () => {
         };
         config.prodDomains = ['milo.adobe.com', 'www.adobe.com'];
         config.pathname = '/be_fr/page';
-        config.origin = 'https://main--milo--adobecom';
         utils.setConfig(config);
       });
 
@@ -338,6 +426,15 @@ describe('Utils', () => {
           .equal('https://www.adobe.com/be_fr/solutions/customer-experience-personalization-at-scale.html');
       });
 
+      it('Live domain html link which is not in prod domains is absolute and localized', () => {
+        expect(utils.localizeLink('https://test.adobe.com/solutions/customer-experience-personalization-at-scale.html', window.location.hostname, true))
+          .to
+          .equal('https://test.adobe.com/be_fr/solutions/customer-experience-personalization-at-scale.html');
+        expect(utils.localizeLink('https://test.adobe.com/solutions/customer-experience-personalization-at-scale.html', window.location.hostname, true))
+          .to
+          .equal('https://test.adobe.com/be_fr/solutions/customer-experience-personalization-at-scale.html');
+      });
+
       it('Live domain html link with #_dnt is left absolute, not localized and #_dnt is removed', () => {
         expect(utils.localizeLink('https://milo.adobe.com/solutions/customer-experience-personalization-at-scale.html#_dnt', 'main--milo--adobecom.hlx.page'))
           .to
@@ -366,14 +463,250 @@ describe('Utils', () => {
       });
       expect(io instanceof IntersectionObserver).to.be.true;
     });
+
+    it('should remove any blocks with the hide-block class from the DOM', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+      const hiddenQuoteBlock = document.querySelector('.quote.hide-block');
+      expect(hiddenQuoteBlock).to.exist;
+      const block = await utils.loadBlock(hiddenQuoteBlock);
+      expect(block).to.be.null;
+      expect(document.querySelector('.quote.hide-block')).to.be.null;
+    });
+
+    it('should convert prod links to stage links on stage env', async () => {
+      const stageDomainsMap = {
+        'www.adobe.com': 'www.stage.adobe.com',
+        'blog.adobe.com': 'blog.stage.adobe.com',
+        'business.adobe.com': 'business.stage.adobe.com',
+        'helpx.adobe.com': 'helpx.stage.adobe.com',
+        'news.adobe.com': 'news.stage.adobe.com',
+      };
+      utils.setConfig({
+        ...config,
+        env: { name: 'stage' },
+        stageDomainsMap,
+      });
+      const links = Object.keys(stageDomainsMap).map((prodDom) => document.body.appendChild(createTag('a', { href: `https://${prodDom}`, 'data-prod-dom': prodDom })));
+      await utils.decorateLinks(document.body);
+      links.forEach((l) => expect(l.hostname === stageDomainsMap[l.dataset.prodDom]).to.be.true);
+    });
   });
 
-  it('adds privacy trigger to cookie preferences link in footer', () => {
-    window.adobePrivacy = { showPreferenceCenter: sinon.spy() };
-    document.body.innerHTML = '<footer><a href="https://www.adobe.com/#openPrivacy" id="privacy-link">Cookie preferences</a></footer>';
-    utils.loadPrivacy();
-    const privacyLink = document.querySelector('#privacy-link');
-    privacyLink.click();
-    expect(adobePrivacy.showPreferenceCenter.called).to.be.true;
+  describe('title-append', async () => {
+    beforeEach(async () => {
+      document.head.innerHTML = await readFile({ path: './mocks/head-title-append.html' });
+    });
+    it('should append to title using string from metadata', async () => {
+      const expected = 'Document Title NOODLE';
+      await utils.loadArea();
+      await waitFor(() => document.title === expected);
+      expect(document.title).to.equal(expected);
+    });
+  });
+
+  describe('seotech', async () => {
+    beforeEach(async () => {
+      window.lana = { log: (msg) => console.error(msg) };
+      document.head.innerHTML = await readFile({ path: './mocks/head-seotech-video.html' });
+    });
+    afterEach(() => {
+      window.lana.release?.();
+    });
+    it('should import feature when metadata is defined and error if invalid', async () => {
+      const expectedError = 'SEOTECH: Failed to construct \'URL\': Invalid URL';
+      await utils.loadArea();
+      const lanaStub = sinon.stub(window.lana, 'log');
+      await waitFor(() => lanaStub.calledOnceWith(expectedError));
+      expect(lanaStub.calledOnceWith(expectedError)).to.be.true;
+    });
+  });
+
+  describe('scrollToHashedElement', () => {
+    before(() => {
+      const div = document.createElement('div');
+      div.className = 'global-navigation';
+      document.body.appendChild(div);
+      window.location.hash = '#not-block';
+      window.scrollBy = () => {};
+    });
+
+    it('should scroll to the hashed element', () => {
+      let scrollToCalled = false;
+      window.scrollTo = () => {
+        scrollToCalled = true;
+      };
+
+      utils.scrollToHashedElement('#not-block');
+      expect(scrollToCalled).to.be.true;
+      expect(document.getElementById('not-block')).to.exist;
+    });
+
+    it('should not scroll if no hash is present', () => {
+      window.location.hash = '';
+      let scrollToCalled = false;
+      window.scrollBy = () => {
+        scrollToCalled = true;
+      };
+      utils.scrollToHashedElement('');
+      expect(scrollToCalled).to.be.false;
+    });
+
+    it('should scroll to the hashed element with special character', () => {
+      let scrollToCalled = false;
+      window.scrollTo = () => {
+        scrollToCalled = true;
+      };
+
+      utils.scrollToHashedElement('#tools-f%C3%BCr-das-verhalten');
+      expect(scrollToCalled).to.be.true;
+      expect(document.getElementById('tools-für-das-verhalten')).to.exist;
+    });
+  });
+
+  describe('useDotHtml', async () => {
+    beforeEach(async () => {
+      window.lana = { log: (msg) => console.error(msg) };
+      document.body.innerHTML = await readFile({ path: './mocks/useDotHtml.html' });
+    });
+    afterEach(() => {
+      window.lana.release?.();
+    });
+    it('should add .html to relative links when enabled', async () => {
+      utils.setConfig({ useDotHtml: true, htmlExclude: [/exclude\/.*/gm] });
+      expect(utils.getConfig().useDotHtml).to.be.true;
+      await utils.decorateLinks(document.getElementById('linklist'));
+      expect(document.getElementById('excluded')?.getAttribute('href'))
+        .to.equal('/exclude/this/page');
+      const htmlLinks = document.querySelectorAll('.has-html');
+      htmlLinks.forEach((link) => {
+        expect(link.href).to.contain('.html');
+      });
+    });
+
+    it('should not add .html to relative links when disabled', async () => {
+      utils.setConfig({ useDotHtml: false, htmlExclude: [/exclude\/.*/gm] });
+      expect(utils.getConfig().useDotHtml).to.be.false;
+      await utils.decorateLinks(document.getElementById('linklist'));
+      expect(document.getElementById('excluded')?.getAttribute('href'))
+        .to.equal('/exclude/this/page');
+      const htmlLinks = document.querySelectorAll('.has-html');
+      htmlLinks.forEach((link) => {
+        expect(link.href).to.not.contain('.html');
+      });
+    });
+  });
+
+  describe('footer promo', () => {
+    const favicon = '<link rel="icon" href="data:,">';
+    const typeTaxonomy = '<meta name="footer-promo-type" content="taxonomy">';
+    const ccxVideo = '<meta name="footer-promo-tag" content="ccx-video-links">';
+    const analytics = '<meta property="article:tag" content="Analytics">';
+    const commerce = '<meta property="article:tag" content="Commerce">';
+    const summit = '<meta property="article:tag" content="Summit">';
+    let oldHead;
+    let promoBody;
+    let taxonomyData;
+
+    before(async () => {
+      oldHead = document.head.innerHTML;
+      promoBody = await readFile({ path: './mocks/body-footer-promo.html' });
+      taxonomyData = await readFile({ path: './mocks/taxonomy.json' });
+    });
+
+    beforeEach(() => {
+      document.body.innerHTML = promoBody;
+      window.fetch = mockFetch({ payload: JSON.parse(taxonomyData) });
+    });
+
+    afterEach(() => {
+      window.fetch = ogFetch;
+    });
+
+    after(() => {
+      document.head.innerHTML = oldHead;
+    });
+
+    it('loads from metadata', async () => {
+      document.head.innerHTML = favicon + ccxVideo;
+      await utils.decorateFooterPromo();
+      const a = document.querySelector('main > div:last-of-type a');
+      expect(a.href).includes('/fragments/footer-promos/ccx-video-links');
+    });
+
+    it('loads from taxonomy in order on sheet', async () => {
+      document.head.innerHTML = ccxVideo + typeTaxonomy + analytics + commerce + summit;
+      await utils.decorateFooterPromo();
+      const a = document.querySelector('main > div:last-of-type a');
+      expect(a.href).includes('/fragments/footer-promos/commerce');
+    });
+
+    it('loads backup from tag when taxonomy has no promo', async () => {
+      document.head.innerHTML = ccxVideo + typeTaxonomy + summit;
+      await utils.decorateFooterPromo();
+      const a = document.querySelector('main > div:last-of-type a');
+      expect(a.href).includes('/fragments/footer-promos/ccx-video-links');
+    });
+  });
+
+  describe('createTag', async () => {
+    /**
+       * create tag creates a tag from first parameter tag name,
+       * second parameter is requested attributes map in created tag,
+       * third parameter is the innerHTML of the tag, can be either node or text,
+       * fourth parameter is an object of creation options:
+       *  - @parent parent element to append the tag to.
+       */
+    createTag('var', { class: 'foo' }, 'bar', { parent: document.body });
+    const varTag = document.querySelector('body > var.foo');
+    expect(varTag).to.exist;
+    expect(varTag.textContent).to.equal('bar');
+  });
+
+  describe('personalization', async () => {
+    const MANIFEST_JSON = {
+      info: { total: 2, offset: 0, limit: 2, data: [{ key: 'manifest-type', value: 'Personalization' }, { key: 'manifest-override-name', value: '' }, { key: 'name', value: '1' }] }, placeholders: { total: 0, offset: 0, limit: 0, data: [] }, experiences: { total: 1, offset: 0, limit: 1, data: [{ action: 'insertContentAfter', selector: '.marquee', 'page filter (optional)': '/products/special-offers', chrome: 'https://main--milo--adobecom.hlx.page/drafts/mariia/fragments/personalizationtext' }] }, ':version': 3, ':names': ['info', 'placeholders', 'experiences'], ':type': 'multi-sheet',
+    };
+    function htmlResponse() {
+      return new Promise((resolve) => {
+        resolve({
+          ok: true,
+          json: () => MANIFEST_JSON,
+        });
+      });
+    }
+
+    it('should process personalization manifest and save in config', async () => {
+      window.fetch = sinon.stub().returns(htmlResponse());
+      document.head.innerHTML = await readFile({ path: './mocks/head-personalization.html' });
+      await utils.loadArea();
+      const resultConfig = utils.getConfig();
+      const resultExperiment = resultConfig.mep.experiments[0];
+      expect(resultConfig.mep.preview).to.be.true;
+      expect(resultConfig.mep.experiments.length).to.equal(3);
+      expect(resultExperiment.manifest).to.equal('https://main--milo--adobecom.hlx.page/products/special-offers-manifest.json');
+    });
+  });
+
+  describe('filterDuplicatedLinkBlocks', () => {
+    it('returns empty array if receives invalid params', () => {
+      expect(utils.filterDuplicatedLinkBlocks()).to.deep.equal([]);
+    });
+
+    it('removes duplicated link-blocks', () => {
+      const block1 = document.createElement('div');
+      block1.classList.add('modal');
+      block1.setAttribute('data-modal-hash', 'modalHash1');
+      block1.setAttribute('data-modal-path', 'modalPath1');
+      const block2 = document.createElement('div');
+      block2.classList.add('modal');
+      block2.setAttribute('data-modal-hash', 'modalHash2');
+      block2.setAttribute('data-modal-path', 'modalPath2');
+      const block3 = document.createElement('div');
+      block3.classList.add('modal');
+      block3.setAttribute('data-modal-hash', 'modalHash2');
+      block3.setAttribute('data-modal-path', 'modalPath2');
+      const blocks = [block1, block2, block3];
+      expect(utils.filterDuplicatedLinkBlocks(blocks)).to.deep.equal([block1, block2]);
+    });
   });
 });

@@ -1,0 +1,95 @@
+{
+  "metadata": {
+    "total": 2,
+    "offset": 0,
+    "limit": 2,
+    "data": [
+      {
+        "Sheet": "sheet1",
+        "Title": "Sheet 1"
+      },
+      {
+        "Sheet": "sheet2",
+        "Title": "Sheet 2"
+      }
+    ]
+  },
+  "sheet1": {
+    "total": 4,
+    "offset": 0,
+    "limit": 4,
+    "data": [
+      {
+        "prop": "prop1",
+        "label": "Field with options and default",
+        "options": "option1:Label 1,option2:Label 2",
+        "default": "option1",
+        "required": "yes",
+        "description": "This field has options and a default value"
+      },
+      {
+        "prop": "prop2",
+        "label": "Field with options and no default",
+        "options": ",option1:Label 1,option2:Label 2",
+        "required": "yes",
+        "description": "This field has options but no default value"
+      },
+      {
+        "prop": "prop3",
+        "label": "Required field with no options and no default",
+        "options": "",
+        "required": "yes",
+        "description": "This is a required field with no options or default value"
+      },
+      {
+        "prop": "prop4",
+        "label": "Non-required field with no options and no default",
+        "required": "no",
+        "description": "This is a non-required field with no options or default value"
+      }
+    ]
+  },
+  "sheet2": {
+    "total": 4,
+    "offset": 0,
+    "limit": 4,
+    "data": [
+      {
+        "prop": "prop5",
+        "label": "Field with options separated by commas",
+        "options": "option1,option2,option3",
+        "default": "option1",
+        "required": "yes",
+        "description": "This field has options separated by commas"
+      },
+      {
+        "prop": "prop6",
+        "label": "Field with empty options",
+        "required": "no",
+        "description": "This field has no options"
+      },
+      {
+        "prop": "prop7",
+        "label": "Required field with default",
+        "default": "option1",
+        "required": "yes",
+        "description": "This is a required field with a default value"
+      },
+      {
+        "prop": "prop8",
+        "label": "Non-required field with default and one option",
+        "default": "option1",
+        "options": "option1",
+        "required": "no",
+        "description": "This is a non-required field with a default value"
+      }
+    ]
+  },
+  ":version": 1,
+  ":names": [
+    "metadata",
+    "sheet1",
+    "sheet2"
+  ],
+  ":type": "multi-sheet"
+}

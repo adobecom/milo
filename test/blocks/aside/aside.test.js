@@ -1,62 +1,163 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
+import { waitForElement } from '../../helpers/waitfor.js';
+import { setConfig } from '../../../libs/utils/utils.js';
 
-document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const { default: init } = await import('../../../libs/blocks/aside/aside.js');
-const types = ['simple', 'split', 'inline', 'notification'];
+const standardBody = await readFile({ path: './mocks/standard.html' });
+const splitBody = await readFile({ path: './mocks/split.html' });
+const conf = { miloLibs: 'http://localhost:2000/libs' };
+
+setConfig(conf);
 
 describe('aside', () => {
-  const asides = document.querySelectorAll('.aside');
-  asides.forEach((aside) => {
-    init(aside);
+  describe('standard', () => {
+    before(() => {
+      document.body.innerHTML = standardBody;
+      const blocks = document.querySelectorAll('.aside');
+      blocks.forEach((el) => init(el));
+    });
 
-    const typeIndex = types.findIndex((v) => aside.classList.contains(v));
-    const type = typeIndex >= 0 ? types[typeIndex] : 'default';
+    it('allows a background color', async () => {
+      const el = await waitForElement('#test-default');
+      expect(window.getComputedStyle(el)?.backgroundColor).to.equal('rgb(238, 238, 238)');
+    });
 
-    describe(`aside ${type}`, () => {
-      const isInline = type === 'inline';
+    it('allows a background image', async () => {
+      const el = await waitForElement('#test-default-2 .background img');
+      expect(el).to.exist;
+    });
 
-      if (type !== 'notification') {
-        it('has a heading', () => {
-          const heading = aside.querySelector('[class^=heading-]');
-          expect(heading).to.exist;
-        });
+    it('allows an icon image', async () => {
+      const el = await waitForElement('#test-default .icon-area img');
+      expect(el).to.exist;
+    });
 
-        it('icon has a wrapper', () => {
-          const icon = aside.querySelector('.text picture');
+    it('has Detail M by default', async () => {
+      const el = await waitForElement('#test-default .detail-m');
+      expect(el).to.exist;
+    });
 
-          if (icon) {
-            expect(icon.closest('.icon-area')).to.exist;
-          }
-        });
+    it('has Heading XL by default', async () => {
+      const el = await waitForElement('#test-default .heading-xl');
+      expect(el).to.exist;
+    });
 
-        it('has a body', () => {
-          const body = aside.querySelector('[class^=body-]');
-          expect(body).to.exist;
-        });
+    it('has Body S by default', async () => {
+      const el = await waitForElement('#test-default p.body-s');
+      expect(el).to.exist;
+    });
 
-        it('button has a wrapper', () => {
-          const button = aside.querySelector('.text .con-button');
+    it('allows a cta', async () => {
+      const el = await waitForElement('#test-default .action-area .con-button');
+      expect(el).to.exist;
+    });
 
-          if (aside.querySelector('.text .con-button')) {
-            expect(button.closest('p')).to.exist;
-          }
-        });
-      }
+    it('allows supplemental text', async () => {
+      const el = await waitForElement('#test-default .supplemental-text');
+      expect(el).to.exist;
+    });
 
-      if (type === 'default' || type === isInline) {
-        it('has an image', () => {
-          const image = aside.querySelector('.image');
-          expect(image).to.exist;
-        });
-      }
+    it('allows a foreground image', async () => {
+      const el = await waitForElement('#test-default .foreground .image img');
+      expect(el).to.exist;
+    });
 
-      if (type === types[1]) {
-        it('has a background image', () => {
-          const body = aside.querySelector('.split-image');
-          expect(body).to.exist;
-        });
-      }
+    it('allows text overrides', async () => {
+      const el = await waitForElement('#test-text-overrides');
+      expect(el.querySelector('.detail-l')).to.exist;
+      expect(el.querySelector('.heading-l')).to.exist;
+      expect(el.querySelector('p.body-m')).to.exist;
+    });
+
+    it('allows Title L to override Detail', async () => {
+      const el = await waitForElement('#test-title .detail-m.title-l');
+      expect(el).to.exist;
+    });
+
+    it('allows an avatar', async () => {
+      const el = await waitForElement('#test-avatar .avatar-area img');
+      expect(el).to.exist;
+    });
+
+    it('allows a product lockup', async () => {
+      const el = await waitForElement('#test-lockup .lockup-area img');
+      expect(el).to.exist;
+    });
+  });
+
+  describe('split', () => {
+    before(() => {
+      document.body.innerHTML = splitBody;
+      const blocks = document.querySelectorAll('.aside');
+      blocks.forEach((el) => init(el));
+    });
+
+    it('allows a background color', async () => {
+      const el = await waitForElement('#test-default');
+      expect(window.getComputedStyle(el)?.backgroundColor).to.equal('rgb(30, 30, 30)');
+    });
+
+    it('allows an icon image', async () => {
+      const el = await waitForElement('#test-default .icon-area img');
+      expect(el).to.exist;
+    });
+
+    it('has Detail M by default', async () => {
+      const el = await waitForElement('#test-default .detail-m');
+      expect(el).to.exist;
+    });
+
+    it('has Heading XL by default', async () => {
+      const el = await waitForElement('#test-default .heading-xl');
+      expect(el).to.exist;
+    });
+
+    it('has Body S by default', async () => {
+      const el = await waitForElement('#test-default p.body-s');
+      expect(el).to.exist;
+    });
+
+    it('allows icon stack', async () => {
+      const el = await waitForElement('#test-default .icon-stack-area');
+      expect(el).to.exist;
+    });
+
+    it('allows a cta', async () => {
+      const el = await waitForElement('#test-default .action-area .con-button');
+      expect(el).to.exist;
+    });
+
+    it('allows supplemental text', async () => {
+      const el = await waitForElement('#test-default .supplemental-text');
+      expect(el).to.exist;
+    });
+
+    it('allows a split image', async () => {
+      const el = await waitForElement('#test-default .split-image img');
+      expect(el).to.exist;
+    });
+
+    it('allows text overrides', async () => {
+      const el = await waitForElement('#test-text-overrides');
+      expect(el.querySelector('.detail-l')).to.exist;
+      expect(el.querySelector('.heading-l')).to.exist;
+      expect(el.querySelector('p.body-m')).to.exist;
+    });
+
+    it('allows Title L to override Detail', async () => {
+      const el = await waitForElement('#test-title .detail-m.title-l');
+      expect(el).to.exist;
+    });
+
+    it('allows an avatar', async () => {
+      const el = await waitForElement('#test-avatar .avatar-area img');
+      expect(el).to.exist;
+    });
+
+    it('allows a product lockup', async () => {
+      const el = await waitForElement('#test-lockup .lockup-area img');
+      expect(el).to.exist;
     });
   });
 });

@@ -1,0 +1,58 @@
+{
+  "total": 5,
+  "offset": 0,
+  "limit": 5,
+  "data": [
+    {
+      "action": "insertContentAfter",
+      "selector": ".marquee",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "/test/features/personalization/mocks/fragments/insertafter2",
+      "firefox": "",
+      "android": "",
+      "ios": ""
+    },
+    {
+      "action": "insertContentAfter",
+      "selector": "'/.marqueee",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "/test/features/personalization/mocks/fragments/insertafter3",
+      "firefox": "",
+      "android": "",
+      "ios": ""
+    },
+    {
+      "action": "insertAfter",
+      "selector": "[href=\"/fragments/\"]",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "/test/features/personalization/mocks/fragments/insertafter3",
+      "firefox": "",
+      "android": "",
+      "ios": ""
+    },
+    {
+      "action": "insertAfter",
+      "selector": "/fragments/hello-world",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "/test/features/personalization/mocks/fragments/insertafter3",
+      "firefox": "",
+      "android": "",
+      "ios": ""
+    },
+    {
+      "action": "insertAfter",
+      "selector": "http\"",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "/test/features/personalization/mocks/fragments/insertafter3",
+      "firefox": "",
+      "android": "",
+      "ios": ""
+    }
+  ],
+  ":type": "sheet"
+}

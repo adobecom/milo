@@ -53,5 +53,17 @@ describe('init', () => {
 
     expect(blockEl.classList.length).to.equal(0);
   });
-  console.log(document.body.innerHTML)
+
+  it('should have play button', () => {
+    const blockEl = sections[4].querySelector('.figure');
+    init(blockEl);
+    expect(sections[4].querySelector('span.modal-img-link')).to.exist;
+  });
+
+  it('anchor tag should end in .mp4 and have videoPoster data attribute', () => {
+    const blockEl = sections[5].querySelector('.figure');
+    init(blockEl);
+    expect(sections[5].querySelector('.figure a[href*=".mp4"]')).to.exist;
+    expect(sections[5].querySelector('.figure a').hasAttribute('videoPoster')).to.exist;
+  });
 });

@@ -1,0 +1,28 @@
+{
+  "total": 2,
+  "offset": 0,
+  "limit": 5,
+  "data": [
+    {
+      "action": "replaceMerchCard",
+      "selector": "#features-of-milo-experimentation-platform",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "/fragments/fragmentreplaced",
+      "firefox": "",
+      "android": "",
+      "ios": ""
+    },
+    {
+      "action": "replaceMerchCard",
+      "selector": "#features-of-milo-experimentation-platform",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "/fragments/fragmentalsoreplaced",
+      "firefox": "",
+      "android": "",
+      "ios": ""
+    }
+  ],
+  ":type": "sheet"
+}

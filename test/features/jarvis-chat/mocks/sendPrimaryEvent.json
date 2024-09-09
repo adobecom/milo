@@ -1,0 +1,15 @@
+{
+  "events": [
+    {
+      "data": {
+        "event.workflow": "default",
+        "event.subtype": "default",
+        "event.type": "default",
+        "content.name": "default",
+        "exp.variation_id": "1",
+        "exp.container_id": "x",
+        "exp.campaign_id": "2"
+      }
+    }
+  ]
+}

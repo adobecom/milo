@@ -172,7 +172,6 @@ function getMergedMdast(left, right) {
   const mergedMdast = { type: 'root', children: [] };
   let leftPointer = 0;
   const leftArray = Array.from(left.entries());
-  // eslint-disable-next-line no-restricted-syntax
   for (const [rightHash, rightOpInfo] of right) {
     if (left.has(rightHash)) {
       for (leftPointer; leftPointer < leftArray.length; leftPointer += 1) {

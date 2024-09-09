@@ -1,0 +1,46 @@
+main > .section > .inline-wrapper {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 8px 0 12px;
+}
+
+main > .section > .inline-wrapper > .inline {
+  margin: 0;
+}
+
+main > .section.center > .inline-wrapper {
+  margin: 0 auto;
+  justify-content: center;
+  text-align: center;
+}
+
+main > .section.center > .inline {
+  margin: 0 auto;
+}
+
+main > .section > .inline-wrapper > .inline + .inline {
+  margin-left: 20px;
+  padding-left: 0;
+  margin-right: 0;
+  padding-right: 0;
+}
+
+@media screen and (max-width: 600px) {
+  main > .section > .inline-wrapper {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+  }
+
+  main > .section.center > .inline-wrapper {
+    align-items: center;
+  }
+
+  main > .section > .inline-wrapper > .inline + .inline {
+    margin-left: 0;
+    padding-left: 0;
+    margin-right: 0;
+    padding-right: 0;
+  }
+}

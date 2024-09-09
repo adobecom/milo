@@ -1,0 +1,21 @@
+<html>
+  <head></head>
+  <body></body>
+  <script type="module">
+    import { runTests } from '@web/test-runner-mocha';
+    import { readFile } from '@web/test-runner-commands';
+    import { expect } from '@esm-bundle/chai';
+    import { createFullGlobalNavigation } from './test-utilities.js';
+    import { waitForElement } from '../../helpers/waitfor.js';
+
+    runTests(() => {
+      describe('Gnav on page with .html extension', () => {
+        it('uses the correct section menu path', async () => {
+          await createFullGlobalNavigation();
+          const sectionDropdown = waitForElement('section.feds-navItem--section .feds-popup:not(:empty)');
+          expect(sectionDropdown).to.exist;
+        });
+      });
+    });
+  </script>
+</html>

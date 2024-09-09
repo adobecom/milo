@@ -1,0 +1,397 @@
+.brick {
+  position: relative;
+  display: flex;
+  text-size-adjust: none;
+  min-height: 300px;
+}
+
+.brick,
+.brick.click a.foreground {
+  color: inherit;
+}
+
+.brick.light,
+.brick.light.click a.foreground {
+  color: var(--text-color);
+}
+
+.brick.dark,
+.dark.brick.click a.foreground {
+  color: var(--color-white);
+}
+
+.brick .background {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  top: 0;
+  overflow: hidden;
+}
+
+.brick .foreground {
+  position: relative; 
+  display: flex;
+  flex-grow: 1;
+  padding: var(--spacing-m);
+}
+
+.brick .foreground .brick-media {
+  display: none;
+}
+
+.brick.rounded-corners,
+.brick.rounded-corners .background,
+.brick.rounded-corners .foreground {
+  border-radius: var(--spacing-xs);
+}
+
+.brick.horizontal-center .foreground,
+.brick.horizontal-center .foreground .action-area,
+.brick.center .foreground,
+.brick.center .foreground .action-area {
+  align-items: center;
+  text-align: center;
+  justify-content: center;
+}
+
+.brick.horizontal-center .foreground {
+  align-items: flex-start;
+}
+
+.brick .background div,
+.brick .background p,
+.brick .background picture {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.brick .background p,
+.brick .background picture {
+  display: block;
+}
+
+.brick .background img {
+  object-fit: contain;
+  object-position: bottom center;
+  width: 100%;
+  height: 100%;
+}
+
+.brick .mobile-only,
+.brick .tablet-only,
+.brick .desktop-only {
+  display: none;
+}
+
+.brick .foreground p {
+  padding: 0;
+  margin: 0;
+}
+
+.brick .foreground div > * {
+  margin-top: var(--spacing-xs);
+}
+
+.brick .foreground .brick-text *:first-child,
+.brick .foreground .brick-text p.icon-area + * {
+  margin-top: 0;
+}
+
+.brick .foreground p.icon-area {
+  display: inline-flex;
+  gap: var(--spacing-xs);
+  align-items: center;
+  margin-bottom: var(--spacing-s);
+  font-weight: 700;
+  font-size: var(--type-heading-s-size);
+  line-height: var(--type-heading-s-lh);
+}
+
+.brick .foreground p.icon-area.icon-gap-s {
+  gap: var(--spacing-s);
+}
+
+.brick .foreground p.action-area {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-top: var(--spacing-s);
+}
+
+.brick .icon-stack-area li picture {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.brick .foreground .icon-area picture {
+  display: flex;
+}
+
+.brick .icon-stack-area li img {
+  width: var(--icon-size-s);
+  height: auto;
+}
+
+.brick .icon-stack-area li .list-text a {
+  display: inline-block;
+}
+
+.brick .foreground .icon-area img {
+  height: var(--icon-size-l);
+  width: auto;
+}
+
+.brick.click > a {
+  text-decoration: none;
+}
+
+.brick .icon-stack-area {
+  display: flex;
+  flex-flow: row wrap;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+}
+
+.brick.center .icon-stack-area {
+  display: inline-flex;
+  width: auto;
+}
+
+.brick .icon-stack-area li,
+.brick .icon-stack-area li a {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  text-align: left;
+  flex-shrink: 0;
+}
+
+.brick .foreground a:not([class]),
+.brick .foreground span.first-link {
+  font-weight: 700;
+}
+
+[dir="rtl"] .brick .icon-stack-area li,
+[dir="rtl"] .brick .icon-stack-area li a {
+  text-align: right;
+}
+
+.brick.click a.foreground .first-link:not([class*="button"]) {
+  color: var(--link-color);
+  text-decoration: none;
+}
+
+.brick.click:hover a.foreground .first-link:not([class*="button"]) {
+  text-decoration: underline;
+  color: var(--link-hover-color);
+}
+
+.static-links .brick.click a.foreground .first-link:not([class*="button"]),
+.static-links .brick.click a.foreground a:not([class*="button"]),
+.brick.static-links.click a.foreground .first-link:not([class*="button"]),
+.brick.static-links.click a.foreground a:not([class*="button"]) {
+  color: inherit;
+  text-decoration: underline;
+}
+
+.brick.click:hover .first-link.con-button,
+.brick.click:active .first-link.con-button,
+.dark .brick.click:hover .first-link.con-button,
+.dark .brick.click:active .first-link.con-button,
+.brick.dark.click:hover .first-link.con-button,
+.brick.dark.click:active .first-link.con-button {
+  background-color: var(--color-white);
+  color: var(--color-black);
+  text-decoration: none;
+}
+
+.brick.light.click:hover .first-link.con-button,
+.brick.light.click:active .first-link.con-button,
+.light .brick.click:hover .first-link.con-button,
+.light .brick.click:active .first-link.con-button {
+  background-color: var(--color-black);
+  border-color: var(--color-black);
+  color: var(--color-white);
+}
+
+.brick.click:hover .first-link.con-button.blue,
+.brick.click:active .first-link.con-button.blue {
+  background: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+  color: var(--color-white);
+}
+
+@media screen and (max-width: 600px) {
+  .brick .mobile-only {
+    display: block;
+  }
+}
+
+@media screen and (min-width: 600px) {
+  .brick {
+    min-height: 384px;
+  }
+
+  .brick .foreground {
+    padding: var(--spacing-l);
+  }
+}
+
+@media screen and (min-width: 600px) and (max-width: 1199px) {
+  .brick .tablet-only {
+    display: block;
+  }
+}
+
+@media screen and (min-width: 1200px) {
+  .brick .desktop-only,
+  .brick .foreground .brick-media {
+    display: block;
+  }
+
+  .brick.split .foreground {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    padding: 0;
+  }
+
+  .brick .foreground p.icon-area {
+    font-size: var(--type-heading-xs-size);
+    line-height: var(--type-heading-xs-lh);
+  }
+
+  .brick.stack .foreground {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-m);
+    justify-content: space-between;
+    padding: var(--spacing-l) var(--spacing-l) 0 var(--spacing-l);
+  }
+
+  .brick.split.horizontal-center .foreground,
+  .brick.split.center .foreground {
+    padding: var(--spacing-l);
+  }
+
+  .brick.stack.media-left .foreground {
+    padding: 0 var(--spacing-l) var(--spacing-l) var(--spacing-l);
+  }
+
+  .brick.stack .foreground .brick-text,
+  .brick.stack .foreground .brick-media {
+    margin: 0;
+    padding: 0;
+  }
+
+  .brick.split.stack .foreground .brick-text {
+    width: 41.66%;
+  }
+
+  .brick.split.horizontal-center .foreground .brick-text,
+  .brick.split.center .foreground .brick-text {
+    margin: 0;
+    grid-column: 4 / span 6;
+  }
+
+  .brick.split .foreground .brick-text,
+  .brick.split.row.media-right .foreground .brick-text,
+  .brick.split.row.media-left .foreground .brick-media {
+    grid-column: span 6;
+  }
+
+  .brick.split.row.media-left .foreground .brick-text,
+  .brick.split.row.media-right .foreground .brick-media {
+    grid-column: 7 / span 6;
+  }
+
+  .brick.split.grid-full-width.row.media-right .foreground .brick-text {
+    grid-column: span 5;
+  }
+
+  .brick.split.grid-full-width.row.media-left .foreground .brick-text {
+    grid-column: 8 / span 5;
+  }
+
+  .brick.split.row .foreground,
+  .brick.split.row .foreground .brick-media,
+  .brick.split.row .foreground picture {
+    border-radius: inherit;
+  }
+
+  .brick.stack .foreground .brick-media picture,
+  .brick.stack .foreground .brick-media img,
+  .brick.stack .foreground .brick-media video {
+    width: 100%;
+    height: auto;
+  }
+
+  .brick.split.row .foreground .brick-media img,
+  .brick.split.row .foreground .brick-media video {
+    width: 50%;
+    height: 100%;
+    object-fit: cover;
+    padding: 0;
+    margin: 0;
+    position: absolute;
+  }
+  
+  .brick .foreground .brick-media video,
+  .brick.split.row .foreground .brick-media video {
+    object-fit: fill;
+    display: flex;
+    margin: 0;
+  }
+
+  .brick.stack .foreground .brick-media picture {
+    display: flex;
+    margin: 0;
+    padding: 0;
+  }
+
+  .brick.horizontal-center.media-right .foreground,
+  .brick.horizontal-center.media-left .foreground {
+    align-items: center;
+  }
+
+  .brick.split:not(.stack):not(.center) .foreground .brick-text {
+    margin: var(--spacing-l);
+  }
+
+  .brick.split.grid-full-width:not(.stack):not(.center) .foreground .brick-text,
+  [dir='rtl'] .brick.split.row.grid-full-width.media-left .foreground .brick-text {
+    margin-right: 0;
+    margin-left: var(--spacing-l);
+  }
+
+  .brick.split.row.grid-full-width.media-left .foreground .brick-text,
+  [dir='rtl'] .brick.split.grid-full-width:not(.stack):not(.center) .foreground .brick-text {
+    margin-right: var(--spacing-l);
+    margin-left: 0;
+  }
+
+  .brick.split.row.media-left .foreground .brick-media img,
+  .brick.split.row.media-left .foreground .brick-media video,
+  [dir='rtl'] .brick.split.row.media-right .foreground .brick-media img,
+  [dir='rtl'] .brick.split.row.media-right .foreground .brick-media video {
+    border-radius: 0;
+    border-top-left-radius: inherit;
+    border-bottom-left-radius: inherit;
+  }
+
+  .brick.split.row.media-right .foreground .brick-media img,
+  .brick.split.row.media-right .foreground .brick-media video,
+  [dir='rtl'] .brick.split.row.media-left .foreground .brick-media img,
+  [dir='rtl'] .brick.split.row.media-left .foreground .brick-media video {
+    border-radius: 0;
+    border-top-right-radius: inherit;
+    border-bottom-right-radius: inherit;
+  }
+}

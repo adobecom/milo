@@ -1,0 +1,57 @@
+{
+  "query_prefix": "photoshop",
+  "locale": "fr_FR",
+  "suggested_completions": [
+    {
+      "name": "photoshop",
+      "score": 774.7841,
+      "scope": "learn"
+    },
+    {
+      "name": "photoshop transparent background",
+      "score": 423.9653,
+      "scope": "learn"
+    },
+    {
+      "name": "photoshop 3d",
+      "score": 423.9653,
+      "scope": "learn"
+    },
+    {
+      "name": "photoshop lightroom",
+      "score": 422.43842,
+      "scope": "learn"
+    },
+    {
+      "name": "photoshop elements",
+      "score": 422.43842,
+      "scope": "learn"
+    },
+    {
+      "name": "photoshop 2022",
+      "score": 422.43842,
+      "scope": "learn"
+    },
+    {
+      "name": "photoshop scratch disk full",
+      "score": 421.5302,
+      "scope": "learn"
+    },
+    {
+      "name": "photoshop iphone",
+      "score": 421.5302,
+      "scope": "learn"
+    },
+    {
+      "name": "photoshop change color of object",
+      "score": 421.5302,
+      "scope": "learn"
+    },
+    {
+      "name": "photoshop textures",
+      "score": 421.5302,
+      "scope": "learn"
+    }
+  ],
+  "elastic_search_time": 20.58686
+}

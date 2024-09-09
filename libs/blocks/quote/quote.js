@@ -22,8 +22,10 @@ export default function init(el) {
   el.classList.add(...blockVarints);
   const allRows = el.querySelectorAll(':scope > div');
   const lastRow = allRows[allRows.length - 1];
+  const lastDiv = lastRow.querySelector('div');
+  if (!lastDiv.firstElementChild && lastDiv.textContent) lastDiv.append(createTag('p', null, lastDiv.textContent));
   const imageRow = allRows.length > 1 ? allRows[0] : false;
-  const copyNodes = lastRow.querySelectorAll('h1, h2, h3, h4, h5, h6, p');
+  const copyNodes = lastDiv.querySelectorAll(':scope > h1, :scope > h2, :scope > h3, :scope > h4, :scope > h5, :scope > h6, :scope > p, :scope > em, :scope > strong, :scope > blockquote p');
   const blockquote = createTag('blockquote', {}, copyNodes[0]);
   const figcaption = createTag('figcaption', {}, copyNodes[1]);
   const cite = createTag('cite', {}, copyNodes[2]);

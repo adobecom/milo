@@ -7,6 +7,11 @@ async function loadBlocks(content, list, query) {
   blocks(content, list, query);
 }
 
+async function loadTemplates(content, list) {
+  const { default: templates } = await import('./lists/templates.js');
+  templates(content, list);
+}
+
 async function loadPlaceholders(content, list) {
   const { default: placeholders } = await import('./lists/placeholders.js');
   placeholders(content, list);
@@ -20,6 +25,11 @@ async function loadIcons(content, list) {
 async function loadAssets(content, list) {
   const { default: assets } = await import('./lists/assets.js');
   assets(content, list);
+}
+
+async function loadPersonalization(content, list) {
+  const { default: personalization } = await import('./lists/personalization.js');
+  personalization(content, list);
 }
 
 function addSearch(content, list) {
@@ -60,6 +70,9 @@ async function loadList(type, content, list) {
       addSearch(content, list);
       loadBlocks(content, list, query);
       break;
+    case 'templates':
+      loadTemplates(content, list);
+      break;
     case 'placeholders':
       loadPlaceholders(content, list);
       break;
@@ -68,6 +81,9 @@ async function loadList(type, content, list) {
       break;
     case 'assets':
       loadAssets(content, list);
+      break;
+    case 'personalization_tags':
+      loadPersonalization(content, list);
       break;
     default:
       await import('../../utils/lana.js');
@@ -79,10 +95,13 @@ async function fetchLibrary(domain) {
   const { searchParams } = new URL(window.location.href);
   const suppliedLibrary = searchParams.get('library');
   const library = suppliedLibrary || `${domain}${LIBRARY_PATH}`;
-
-  const resp = await fetch(library);
-  if (!resp.ok) return null;
-  return resp.json();
+  try {
+    const resp = await fetch(library);
+    if (!resp.ok) return null;
+    return resp.json();
+  } catch {
+    return null;
+  }
 }
 
 async function getSuppliedLibrary() {
@@ -109,10 +128,12 @@ async function combineLibraries(base, supplied) {
   const assetsPath = url.searchParams.get('assets');
 
   const library = {
-    blocks: base.blocks.data,
-    placeholders: base.placeholders?.data,
-    icons: base.icons?.data,
     assets: await fetchAssetsData(assetsPath),
+    blocks: base.blocks.data,
+    templates: base.templates?.data,
+    icons: base.icons?.data,
+    personalization_tags: base.personalization?.data,
+    placeholders: base.placeholders?.data,
   };
 
   if (supplied) {
@@ -122,6 +143,10 @@ async function combineLibraries(base, supplied) {
 
     if (supplied.placeholders.data.length > 0) {
       library.placeholders = supplied.placeholders.data;
+    }
+
+    if (supplied.templates?.data.length > 0) {
+      library.templates.push(...supplied.templates.data);
     }
   }
 
@@ -137,7 +162,7 @@ function createList(libraries) {
   Object.keys(libraries).forEach((type) => {
     if (!libraries[type] || libraries[type].length === 0) return;
 
-    const item = createTag('li', { class: 'content-type' }, type);
+    const item = createTag('li', { class: 'content-type' }, type.replace('_', ' '));
     libraryList.append(item);
 
     const list = document.createElement('ul');
@@ -146,11 +171,12 @@ function createList(libraries) {
 
     item.addEventListener('click', (e) => {
       const skLibrary = e.target.closest('.sk-library');
-      skLibrary.querySelector('.sk-library-title-text').textContent = type;
+      skLibrary.querySelector('.sk-library-title-text').textContent = type.replace('_', ' ');
       libraryList.classList.add('inset');
       list.classList.add('inset');
       skLibrary.classList.add('allow-back');
       loadList(type, libraries[type], list);
+      window.hlx?.rum.sampleRUM('click', { source: e.target });
     });
   });
 

@@ -1,0 +1,40 @@
+{
+  "configs": {
+    "total": 11,
+    "offset": 0,
+    "limit": 11,
+    "data": [
+      {
+        "key": "prod.glaas.clientId",
+        "value": "prod-not-super-secret-client-id",
+        "Comments": ""
+      },
+      {
+        "key": "prod.sharepoint.folder",
+        "value": "prod-folder",
+        "Comments": ""
+      },
+      {
+        "key": "stage.glaas.clientId",
+        "value": "stage-not-super-secret-client-id",
+        "Comments": ""
+      },
+      {
+        "key": "stage.sharepoint.siteId",
+        "value": "milo-stage",
+        "Comments": ""
+      },
+      {
+        "key": "local.glaas.clientId",
+        "value": "local-not-super-secret-client-id",
+        "Comments": ""
+      }
+    ]
+  },
+  ":version": 3,
+  ":names": [
+    "configs",
+    "locales"
+  ],
+  ":type": "multi-sheet"
+}

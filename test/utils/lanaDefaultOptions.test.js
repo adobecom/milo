@@ -20,7 +20,7 @@ it('lana should load existing window.lana.options', async () => {
     sampleRate: 100,
     tags: '',
     implicitSampleRate: 100,
-    endpointStage: "https://www.stage.adobe.com/lana/ll",
+    endpointStage: 'https://www.stage.adobe.com/lana/ll',
     useProd: true,
   });
 });

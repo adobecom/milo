@@ -1,23 +1,24 @@
-/* eslint-disable no-undef */
+/* global $ */
 
 import {
   loadStyle,
   loadScript,
   getConfig,
   createTag,
+  localizeLink,
 } from '../../utils/utils.js';
 
 const { env, miloLibs, codeRoot } = getConfig();
 let state = {};
 
 export const getFaasHostSubDomain = (environment) => {
-  const faasEnv = environment ?? env.name;
-  // TODO: prod should be updated as '' when QA is done from FAAS team.
-  if (faasEnv === 'prod') {
+  const { searchParams } = new URL(window.location.href);
+  const faasEnv = environment ?? searchParams.get('faas-env');
+  if (env.name === 'prod' || faasEnv === 'prod') {
     return '';
   }
   if (faasEnv === 'stage') {
-    return 'dev.';
+    return 'staging.';
   }
   if (faasEnv === 'dev') {
     return 'dev.';
@@ -29,12 +30,8 @@ export const getFaasHostSubDomain = (environment) => {
 };
 
 const base = miloLibs || codeRoot;
-
 export const faasHostUrl = `https://${getFaasHostSubDomain()}apps.enterprise.adobe.com`;
-let faasCurrentJS = `${faasHostUrl}/faas/service/jquery.faas-current.js`;
-if (env.name === 'local') {
-  faasCurrentJS = `${base}/deps/jquery.faas-current.js`;
-}
+const faasCurrentJS = base.includes('localhost') ? `${base}/deps/jquery.faas-current.js` : `${faasHostUrl}/faas/service/jquery.faas-current.js`;
 export const loadFaasFiles = () => {
   loadStyle(`${base}/blocks/faas/faas.css`);
   return Promise.all([
@@ -240,19 +237,19 @@ const beforeSubmitCallback = () => {
     const email = document.querySelector('.FaaS-1 input');
     const country = document.querySelector('.FaaS-14 select');
 
-    fetch('https://us-central1-adobe---aa-university.cloudfunctions.net/register', { 
+    fetch('https://us-central1-adobe---aa-university.cloudfunctions.net/register', {
       method: 'POST',
       body: JSON.stringify({
         first_name: firstName.value,
         last_name: lastName.value,
         email: email.value,
         university: 'none',
-        country: country.value
-      })
+        country: country.value,
+      }),
     })
-    .catch((error) => {
-      console.error('AA Sandbox Error:', error);
-    });
+      .catch((error) => {
+        window.lana.log(`AA Sandbox Error: ${error.reason || error.error || error.message || error}`, { tags: 'errorType=info,module=faas' });
+      });
   }
 };
 /* c8 ignore stop */
@@ -262,25 +259,13 @@ export const makeFaasConfig = (targetState) => {
     state = defaultState;
     return state;
   }
-  
-  let url = targetState.d;
-  let destinationURL = '';
-  try {
-    // checking if URL is absolute.
-    new URL(url);
-    destinationURL = targetState.d;
-  }
-  catch (e) {
-    // in case of relative:
-    destinationURL = window.location.origin + targetState.d;
-  }
 
   const config = {
     multicampaignradiostyle: targetState.multicampaignradiostyle ?? false,
     hidePrepopulated: targetState.hidePrepopulated ?? false,
     id: targetState.id,
     l: targetState.l,
-    d: destinationURL,
+    d: localizeLink(targetState.d),
     as: targetState.as,
     ar: targetState.ar,
     pc: {
@@ -305,8 +290,8 @@ export const makeFaasConfig = (targetState) => {
         149: '',
       },
     },
-    e: { 
-      afterYiiLoadedCallback, 
+    e: {
+      afterYiiLoadedCallback,
       beforeSubmitCallback,
     },
     style_backgroundTheme: targetState.style_backgroundTheme || 'white',
@@ -333,7 +318,7 @@ export const makeFaasConfig = (targetState) => {
   if (targetState.q103) {
     Object.assign(config.q, { 103: { c: targetState.q103 } });
   }
-  
+
   return config;
 };
 
@@ -347,7 +332,8 @@ export const initFaas = (config, targetEl) => {
   ${state.style_backgroundTheme || 'white'}
   ${state.style_layout || 'column1'}
   ${state.isGate ? 'gated' : ''}
-  ${isNext ? 'next' : ''}`,
+  ${isNext ? 'next' : ''}
+  ${`faas-form-${state.id}` || ''}`,
   });
 
   const formTitleWrapperEl = createTag('div', { class: `faas-title text-${state.title_align || 'center'}` });
@@ -365,8 +351,12 @@ export const initFaas = (config, targetEl) => {
   const formEl = createTag('div', { class: 'faas-form-wrapper' });
   if (state.complete) {
     if (state.js) {
-        Object.keys(state.js).forEach((key) => {
-        state[key] = state.js[key];
+      Object.keys(state.js).forEach((key) => {
+        if (key === 'd') {
+          state[key] = localizeLink(state.js[key]);
+        } else {
+          state[key] = state.js[key];
+        }
       });
       delete state.js;
     }

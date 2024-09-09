@@ -1,0 +1,15 @@
+{
+  "total": 5,
+  "offset": 0,
+  "limit": 5,
+  "data": [
+    {
+      "action": "replacePage",
+      "selector": "",
+      "page filter (optional)": "/no/match/**",
+      "param-newoffer=123": "",
+      "chrome": "/test/features/personalization/mocks/replacePage"
+    }
+  ],
+  ":type": "sheet"
+}

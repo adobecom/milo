@@ -1,0 +1,24 @@
+{
+  "total": 21,
+  "offset": 0,
+  "limit": 21,
+  "data": [
+    {
+      "key": "recommended-for-you",
+      "value": "Recommended for you"
+    },
+    {
+      "key": "no-results",
+      "value": "No results found"
+    },
+    {
+      "key": "share-twitter",
+      "value": "Click to share on twitter"
+    },
+    {
+      "key": "copied-to-clipboard",
+      "value": "Link copied to clipboard"
+    }
+  ],
+  ":type": "sheet"
+}

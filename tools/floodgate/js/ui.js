@@ -10,7 +10,7 @@ import {
   getFloodgateUrl,
 } from './utils.js';
 
-const ACTION_BUTTON_IDS = ['reloadProject', 'copyFiles', 'promoteFiles'];
+const ACTION_BUTTON_IDS = ['reloadProject', 'copyFiles', 'promoteFiles', 'updateFragments', 'delete'];
 
 function getSharepointStatus(doc, isFloodgate) {
   let sharepointStatus = 'Connect to Sharepoint';
@@ -52,9 +52,9 @@ function createTableWithHeaders() {
   return table;
 }
 
-function getFloodgatedContentInfoHtml(url, fgSpViewUrl, fgDocStatus) {
+function getFloodgatedContentInfoHtml(url, fgSpViewUrl, fgDocStatus, fgColor) {
   if (fgDocStatus.hasSourceFile) {
-    const fgPageUrl = getAnchorHtml(getFloodgateUrl(url), 'Url');
+    const fgPageUrl = getAnchorHtml(getFloodgateUrl(url, fgColor), 'Url');
     const fgDocDisplayText = getAnchorHtml(fgSpViewUrl.replace('<relativePath>', fgDocStatus.msg), 'File');
     return `${fgPageUrl}, ${fgDocDisplayText}`;
   }
@@ -72,6 +72,7 @@ async function updateProjectDetailsUI(projectDetail, config) {
   const table = createTableWithHeaders();
   const spViewUrl = config.sp.shareUrl;
   const fgSpViewUrl = config.sp.fgShareUrl;
+  const { fgColor } = projectDetail;
 
   projectDetail.urls.forEach((urlInfo, url) => {
     const tr = createTag('tr');
@@ -87,7 +88,9 @@ async function updateProjectDetailsUI(projectDetail, config) {
 
     // Floodgated file data
     const fgDocStatus = getSharepointStatus(urlInfo.doc, true);
-    tr.appendChild(createColumn(getFloodgatedContentInfoHtml(url, fgSpViewUrl, fgDocStatus)));
+    tr.appendChild(createColumn(
+      getFloodgatedContentInfoHtml(url, fgSpViewUrl, fgDocStatus, fgColor),
+    ));
     tr.appendChild(createColumn(fgDocStatus.modificationInfo));
 
     table.appendChild(tr);
@@ -98,10 +101,21 @@ async function updateProjectDetailsUI(projectDetail, config) {
 }
 
 function updateProjectStatusUI(status) {
-  document.querySelector('#copy-status').innerHTML = status.copy.status;
-  document.querySelector('#copy-status-ts').innerHTML = status.copy.lastRun;
-  document.querySelector('#promote-status').innerHTML = status.promote.status;
-  document.querySelector('#promote-status-ts').innerHTML = status.promote.lastRun;
+  if (status?.copyStatus?.payload?.action?.type === 'copyAction') {
+    document.querySelector('#copy-status').innerHTML = status.copyStatus.payload.action.status;
+    document.querySelector('#copy-status-msg').innerHTML = status.copyStatus.payload.action.message;
+    document.querySelector('#copy-status-ts').innerHTML = status.copyStatus.payload.action.startTime;
+  }
+  if (status?.promoteStatus?.payload?.action?.type === 'promoteAction') {
+    document.querySelector('#promote-status').innerHTML = status.promoteStatus.payload.action.status;
+    document.querySelector('#promote-status-msg').innerHTML = status.promoteStatus.payload.action.message;
+    document.querySelector('#promote-status-ts').innerHTML = status.promoteStatus.payload.action.startTime;
+  }
+  if (status?.deleteStatus?.payload?.action?.type === 'deleteAction') {
+    document.querySelector('#delete-status').innerHTML = status.deleteStatus.payload.action.status;
+    document.querySelector('#delete-status-msg').innerHTML = status.deleteStatus.payload.action.message;
+    document.querySelector('#delete-status-ts').innerHTML = status.deleteStatus.payload.action.startTime;
+  }
   document.querySelector('.project-status').hidden = false;
 }
 

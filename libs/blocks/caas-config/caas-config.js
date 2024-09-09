@@ -1,4 +1,6 @@
-/* global ClipboardItem */
+/* eslint-disable compat/compat */
+/* eslint-disable react-hooks/exhaustive-deps */
+
 import {
   createContext,
   html,
@@ -12,10 +14,18 @@ import {
   getConfig,
   parseEncodedConfig,
   loadStyle,
-  utf8ToB64,
 } from '../../utils/utils.js';
 import Accordion from '../../ui/controls/Accordion.js';
-import { defaultState, initCaas, loadCaasFiles, loadCaasTags, loadStrings } from '../caas/utils.js';
+import {
+  decodeCompressedString,
+  defaultState,
+  initCaas,
+  isValidHtmlUrl,
+  isValidUuid,
+  loadCaasFiles,
+  loadCaasTags,
+  loadStrings,
+} from '../caas/utils.js';
 import { Input as FormInput, Select as FormSelect } from '../../ui/controls/formControls.js';
 import TagSelect from '../../ui/controls/TagSelector.js';
 import MultiField from '../../ui/controls/MultiField.js';
@@ -33,23 +43,24 @@ const updateObj = (obj, defaultObj) => {
   return obj;
 };
 
-const isValidUuid = (id) => /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id);
-
-const getHashConfig = () => {
+const getHashConfig = async () => {
   const { hash } = window.location;
   if (!hash) return null;
   window.location.hash = '';
 
   const encodedConfig = hash.startsWith('#') ? hash.substring(1) : hash;
-  return parseEncodedConfig(encodedConfig);
-}
+  const config = encodedConfig.startsWith('~~')
+    ? await decodeCompressedString(encodedConfig.substring(2))
+    : parseEncodedConfig(encodedConfig);
+  return config;
+};
 
 const caasFilesLoaded = loadCaasFiles();
 
 const ConfiguratorContext = createContext();
 
 const defaultOptions = {
-  accessibilityLevel: {
+  cardTitleAccessibilityLevel: {
     2: '2',
     3: '3',
     4: '4',
@@ -64,12 +75,14 @@ const defaultOptions = {
     'double-wide': 'Double Width Card',
     product: 'Product Card',
     'text-card': 'Text Card',
-    'custom-card': 'Custom Card'
+    'icon-card': 'Icon Card',
+    'custom-card': 'Custom Card',
   },
   collectionBtnStyle: {
     primary: 'Primary',
     'call-to-action': 'Call To Action',
     link: 'Link',
+    dark: 'Dark',
     hidden: 'Hide CTAs',
   },
   container: {
@@ -78,10 +91,11 @@ const defaultOptions = {
     '83Percent': '83% Container',
     '32Margin': '32 Margin Container',
     carousel: 'Carousel',
+    categories: 'Product Categories',
   },
   ctaActions: {
-    '_blank': 'New Tab',
-    '_self': 'Same Tab',
+    _blank: 'New Tab',
+    _self: 'Same Tab',
   },
   draftDb: {
     false: 'Live',
@@ -99,6 +113,8 @@ const defaultOptions = {
       '14257-chimera-stage.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection',
     '14257-chimera-dev.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection':
       '14257-chimera-dev.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection',
+    '14257-chimera-feature.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection':
+      '14257-chimera-feature.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection',
   },
   filterBuildPanel: {
     automatic: 'Automatic',
@@ -169,6 +185,7 @@ const defaultOptions = {
   source: {
     bacom: 'Bacom',
     doccloud: 'DocCloud',
+    events: 'Events',
     experienceleague: 'Experience League',
     hawks: 'Hawks',
     magento: 'Magento',
@@ -176,6 +193,8 @@ const defaultOptions = {
     milo: 'Milo',
     northstar: 'Northstar',
     workfront: 'Workfront',
+    'bacom-blog': 'Bacom Blog',
+    news: 'Newsroom',
   },
   tagsUrl: 'https://www.adobe.com/chimera-api/tags',
   titleHeadingLevel: {
@@ -191,13 +210,21 @@ const defaultOptions = {
     dark: 'Dark Theme',
     darkest: 'Darkest Theme',
   },
+  detailsTextOption: {
+    default: 'Default',
+    createdDate: 'Created Date',
+    modifiedDate: 'Modified Date',
+  },
+  cardHoverEffect: {
+    default: 'Default',
+    grow: 'Grow',
+  },
 };
 
-const getTagList = (root) =>
-  Object.entries(root).reduce((options, [, tag]) => {
-    options[tag.tagID] = tag.title;
-    return options;
-  }, {});
+const getTagList = (root) => Object.entries(root).reduce((options, [, tag]) => {
+  options[tag.tagID] = tag.title;
+  return options;
+}, {});
 
 const getTagTree = (root) => {
   const options = Object.entries(root).reduce((opts, [, tag]) => {
@@ -238,7 +265,9 @@ const Select = ({ label, options, prop, sort = false }) => {
   `;
 };
 
-const Input = ({ label, type = 'text', prop, defaultValue = '', title}) => {
+const Input = ({
+  label, type = 'text', prop, defaultValue = '', title, placeholder,
+}) => {
   const context = useContext(ConfiguratorContext);
 
   const onInputChange = (val, e) => {
@@ -261,6 +290,7 @@ const Input = ({ label, type = 'text', prop, defaultValue = '', title}) => {
       title=${title}
       onChange=${onInputChange}
       value=${context.state[prop]}
+      placeholder=${placeholder}
     />
   `;
 };
@@ -288,7 +318,10 @@ const DropdownSelect = ({ label, options, prop }) => {
 };
 
 const BasicsPanel = ({ tagsData }) => {
+  const { state } = useContext(ConfiguratorContext);
+
   if (!tagsData) return '';
+
   const countryTags = getTagList(tagsData.country.tags);
   const languageTags = getTagList(tagsData.language.tags);
 
@@ -307,30 +340,45 @@ const BasicsPanel = ({ tagsData }) => {
     delete countryTags['caas:country/gr_en'];
   }
 
+  const countryLangOptions = html`
+    <${Select} options=${countryTags} prop="country" label="Country" sort />
+    <${Select} options=${languageTags} prop="language" label="Language" sort />`;
+
   return html`
-    <${Input} label="Collection Name (only displayed in author link)" prop="collectionName" type="text" />
-    <${Input} label="Collection Title" prop="collectionTitle" type="text" title="Enter a title, {placeholder}, or leave empty "/>
+  <${Input} label="Collection Name" placeholder="Only used in the author link" prop="collectionName" type="text" />
+  <${Input} label="Collection Title" prop="collectionTitle" type="text" title="Enter a title, {placeholder}, or leave empty "/>
     <${Select} options=${defaultOptions.titleHeadingLevel} prop="titleHeadingLevel" label="Collection Title Level" />
     <${DropdownSelect} options=${defaultOptions.source} prop="source" label="Source" />
-    <${Select} options=${countryTags} prop="country" label="Country" sort />
-    <${Select} options=${languageTags} prop="language" label="Language" sort />
     <${Input} label="Results Per Page" prop="resultsPerPage" type="number" />
     <${Input} label="Total Cards to Show" prop="totalCardsToShow" type="number" />
+    <${Input} label="Auto detect country & lang" prop="autoCountryLang" type="checkbox" />
+    ${!state.autoCountryLang && countryLangOptions}
+
   `;
 };
 
 const UiPanel = () => html`
   <${Input} label="Show Card Borders" prop="setCardBorders" type="checkbox" />
+  <${Input} label="Show Footer Dividers" prop="showFooterDivider" type="checkbox" />
   <${Input} label="Disable Card Banners" prop="disableBanners" type="checkbox" />
   <${Input} label="Use Light Text" prop="useLightText" type="checkbox" />
   <${Input} label="Use Overlay Links" prop="useOverlayLinks" type="checkbox" />
   <${Input} label="Show total card count at top" prop="showTotalResults" type="checkbox" />
+  <${Input} label="Hide date for on-demand content" prop="hideDateInterval" type="checkbox" />
+  <${Input} label="Enable showing card badges (by default hidden)" prop="showCardBadges" type="checkbox" />
+  <${Input} label="Show a different CTA for live events" prop="dynamicCTAForLiveEvents" type="checkbox" />
   <${Select} label="Card Style" prop="cardStyle" options=${defaultOptions.cardStyle} />
-  <${Select} options=${defaultOptions.accessibilityLevel} prop="accessibilityLevel" label="Card Accessibility Title Level" />
+  <${Select} options=${defaultOptions.cardTitleAccessibilityLevel} prop="cardTitleAccessibilityLevel" label="Card Accessibility Title Level" />
   <${Select} label="Layout" prop="container" options=${defaultOptions.container} />
   <${Select} label="Layout Type" prop="layoutType" options=${defaultOptions.layoutType} />
   <${Select} label="Grid Gap (Gutter)" prop="gutter" options=${defaultOptions.gutter} />
   <${Select} label="Theme" prop="theme" options=${defaultOptions.theme} />
+  <${Select} label="Details Text" prop="detailsTextOption" options=${defaultOptions.detailsTextOption} />
+  <${Select}
+    label="Card Hover Effect"
+    prop="cardHoverEffect"
+    options=${defaultOptions.cardHoverEffect}
+  />
   <${Select}
     label="Collection Button Style"
     prop="collectionBtnStyle"
@@ -350,11 +398,11 @@ const UiPanel = () => html`
 `;
 
 const TagsPanel = ({ tagsData }) => {
+  const context = useContext(ConfiguratorContext);
   if (!tagsData) return '';
   const contentTypeTags = getTagList(tagsData['content-type'].tags);
 
   const allTags = getTagTree(tagsData);
-  const context = useContext(ConfiguratorContext);
 
   const onLogicTagChange = (prop) => (values) => {
     context.dispatch({
@@ -364,6 +412,10 @@ const TagsPanel = ({ tagsData }) => {
     });
   };
 
+  const secondarySourcePanel = html`
+    <${DropdownSelect} options=${defaultOptions.source} prop="secondarySource" label="Secondary Source" />
+    <${DropdownSelect} options=${contentTypeTags} prop="secondaryTags" label="Secondary Content Type Tags" />`;
+
   return html`
     <${DropdownSelect}
       options=${contentTypeTags}
@@ -372,6 +424,7 @@ const TagsPanel = ({ tagsData }) => {
     />
     <${DropdownSelect} options=${allTags} prop="includeTags" label="Tags to Include" />
     <${DropdownSelect} options=${allTags} prop="excludeTags" label="Tags to Exclude" />
+    <label>Complex Queries (Include & Exclude)</label>
     <${MultiField}
       onChange=${onLogicTagChange('andLogicTags')}
       className="andLogicTags"
@@ -395,11 +448,30 @@ const TagsPanel = ({ tagsData }) => {
     >
       <${TagSelect} id="orTags" options=${allTags} label="Tags"
     /><//>
+    <${MultiField}
+      onChange=${onLogicTagChange('notLogicTags')}
+      className="notLogicTags"
+      values=${context.state.notLogicTags}
+      title="NOT logic Tags"
+      subTitle=""
+    >
+    <${FormSelect}
+      label="Intra Tag Logic"
+      name="intraTagLogicExclude"
+      options=${defaultOptions.intraTagLogicOptions}
+    />
+    <${TagSelect} id="notTags" options=${allTags} label="Tags"
+  /><//>
+    <label>Advanced Tag Configurations</label>
+    <${Input} label="Use a secondary source for some content types" prop="showSecondarySource" type="checkbox" />
+    ${context.state.showSecondarySource && secondarySourcePanel}
   `;
 };
 
-const CardsPanel = () => {
+const CardsPanel = ({ tagsData }) => {
   const context = useContext(ConfiguratorContext);
+
+  const allTags = getTagTree(tagsData);
 
   const onChange = (prop) => (values) => {
     context.dispatch({
@@ -415,19 +487,30 @@ const CardsPanel = () => {
       className="featuredCards"
       values=${context.state.featuredCards}
       title="Featured Cards"
-      subTitle="Enter the UUID for cards to be featured"
+      subTitle="URLS or UUIDs for featured cards"
     >
-      <${FormInput} name="contentId" onValidate=${isValidUuid} />
+      <${FormInput} name="contentId" onValidate=${(value) => isValidHtmlUrl(value) || isValidUuid(value)} />
     <//>
     <${MultiField}
       onChange=${onChange('excludedCards')}
       className="excludedCards"
       values=${context.state.excludedCards}
       title="Excluded Cards"
-      subTitle="Enter the UUID for cards to be excluded"
+      subTitle="UUIDs for excluded cards"
     >
       <${FormInput} name="contentId" onValidate=${isValidUuid} />
     <//>
+    <${MultiField}
+      onChange=${onChange('hideCtaIds')}
+      className="hideCtaIds"
+      values=${context.state.hideCtaIds}
+      title="Hidden CTAs"
+      subTitle="UUIDs for cards no CTAs"
+    >
+      <${FormInput} name="contentId" onValidate${isValidUuid} />
+    <//>
+    <hr class="divider"/>
+    <${DropdownSelect} options=${allTags} prop="hideCtaTags" label="Tags that should hide CTAS" />
   `;
 };
 
@@ -435,7 +518,7 @@ const BookmarksPanel = () => html`
   <${Input} label="Show bookmark icon on cards" prop="showBookmarksOnCards" type="checkbox" />
   <${Input} label="Only show bookmarked cards" prop="onlyShowBookmarkedCards" type="checkbox" />
   <${Input}
-    label="Show the Bookmarks Filter In The Card Collection"
+    label="Show Bookmarks Filter"
     prop="showBookmarksFilter"
     type="checkbox"
   />
@@ -495,23 +578,62 @@ const FilterPanel = ({ tagsData }) => {
     <${Select} label="Filter Location" prop="filterLocation" options=${defaultOptions.filterLocation} />
     <${Select} label="Filter logic within each tag panel" prop="filterLogic" options=${defaultOptions.filterLogic} />
     <${Select} label="Event Filter" prop="filterEvent" options=${defaultOptions.filterEvent} />
+    <${Select} label="Automatic or Custom Panel" prop="filterBuildPanel" options=${defaultOptions.filterBuildPanel} />
+  `;
+
+  const FilterBuildPanel = html`
+    <${FilterOptions}>
     <${MultiField}
       onChange=${onChange('filters')}
       className="filters"
       values=${context.state.filters}
-      title="Filter Tags"
+      title="Automatic Filters"
       subTitle=""
     >
-    <${TagSelect} id="filterTag" options=${allTags} label="Main Tag" singleSelect />
+      <${TagSelect} id="filterTag" options=${allTags} label="Main Tag" singleSelect />
       <${FormInput} label="Opened on load" name="openedOnLoad" type="checkbox" />
       <${FormInput} label="Icon Path" name="icon" />
       <${TagSelect} id="excludeTags" options=${allTags} label="Tags to Exclude" />
     <//>
   `;
 
+  const FilterCustomBuildPanel = html`
+    <${FilterOptions}>
+    <${MultiField}
+      onChange=${onChange('filtersCustom')}
+      className="filtersCustom"
+      values=${context.state.filtersCustom}
+      title="Custom Filters"
+      addBtnTitle="New Group"
+      subTitle=""
+    >
+      <${FormInput} label="Group Name" name="group" />
+
+      <!-- nested multifield  -->
+      <${MultiField}
+        className="filtersCustomItems"
+        parentValues=${context.state.filtersCustom}
+        title="Filters"
+        subTitle=""
+        addBtnLabel="+"
+        addBtnTitle="New Filter"
+        name="filtersCustomItems"
+      >
+        <${FormInput} label="Filter label" name="filtersCustomLabel"/>
+        <${TagSelect} id="customFilterTag" options=${allTags} label="Filter Tag" singleSelect />
+      <//>
+      <!-- End nested multifield -->
+
+      <${FormInput} label="Opened on load" name="openedOnLoad" type="checkbox" />
+    <//>
+  `;
+
   return html`
     <${Input} label="Show Filters" prop="showFilters" type="checkbox" />
-    ${state.showFilters && FilterOptions}
+    ${state.showFilters
+      && (state.filterBuildPanel === 'custom'
+        ? FilterCustomBuildPanel
+        : FilterBuildPanel)}
   `;
 };
 
@@ -552,15 +674,13 @@ const PaginationPanel = () => {
   `;
 };
 
-const TargetPanel = () =>
-  html`
+const TargetPanel = () => html`
     <${Input} label="Target Enabled" prop="targetEnabled" type="checkbox" />
     <${Input} label="Last Viewed Session" prop="lastViewedSession" type="checkbox" />
     <${Input} label="Target Activity" prop="targetActivity" type="text" />
   `;
 
-const AnalyticsPanel = () =>
-  html`<${Input} label="Track Impression" prop="analyticsTrackImpression" type="checkbox" />
+const AnalyticsPanel = () => html`<${Input} label="Track Impression" prop="analyticsTrackImpression" type="checkbox" />
   <${Input} label="Collection Name" prop="analyticsCollectionName" type="text" />`;
 
 const AdvancedPanel = () => {
@@ -578,17 +698,20 @@ const AdvancedPanel = () => {
     });
   };
 
-  function getAdditionalQueryParams(){
-    if(Array.isArray(context.state.additionalRequestParams)){
+  function getAdditionalQueryParams() {
+    if (Array.isArray(context.state.additionalRequestParams)) {
       return context.state.additionalRequestParams;
     }
-    return Object.entries(context.state.additionalRequestParams).map(([key, value]) => ({key, value}));
+    return Object.entries(context.state.additionalRequestParams)
+      .map(([key, value]) => ({ key, value }));
   }
+
   return html`
     <button class="resetToDefaultState" onClick=${onClick}>Reset to default state</button>
+    <${Input} label="Preview Floodgate Cards" prop="fetchCardsFromFloodgateTree" type="checkbox" />
     <${Input} label="Show IDs (only in the configurator)" prop="showIds" type="checkbox" />
     <${Input} label="Do not lazyload" prop="doNotLazyLoad" type="checkbox" />
-    <${Input} label="Collection Size (defaults to Total Cards To Show)" prop="collectionSize" type="text" />
+    <${Input} label="Collection Size (Defaults: Total Cards)" prop="collectionSize" type="text" />
     <${Select} label="CaaS Endpoint" prop="endpoint" options=${defaultOptions.endpoints} />
     <${Input}
       label="Fallback Endpoint"
@@ -618,21 +741,26 @@ const reducer = (state, action) => {
       return { ...state, [action.prop]: action.value };
     case 'RESET_STATE':
       return cloneObj(defaultState);
+    case 'SET_STATE':
+      return cloneObj(action.value);
     /* c8 ignore next 2 */
     default:
       return state;
   }
 };
 
-const getInitialState = () => {
-  let state = getHashConfig();
+const getInitialState = async () => {
+  let state = await getHashConfig();
   // /* c8 ignore next 2 */
   if (!state) {
     const lsState = localStorage.getItem(LS_KEY);
-    if (lsState) {
+    // For backwards compatibilty: Check that localStorage state exists
+    // and it contains the new filtersCustom attribute before using it
+    if (lsState?.includes('filtersCustom')) {
       try {
         state = JSON.parse(lsState);
         /* c8 ignore next */
+      // eslint-disable-next-line no-empty
       } catch (e) {}
     }
   }
@@ -644,6 +772,44 @@ const getInitialState = () => {
 
 const saveStateToLocalStorage = (state) => {
   localStorage.setItem(LS_KEY, JSON.stringify(state));
+};
+
+/**
+ * Removes the JSON key "fetchCardsFromFloodgateTree" from the Copied URL to Caas.
+ * Caas Collection will determine if the content should be served from floodgate
+ * based on  metadata.xslx logic in caas-libs
+ * @param {*} key jsonKey
+ * @param {*} value jsonValue
+ * @returns replacedJson
+ */
+const fgKeyReplacer = (key, value) => (key === 'fetchCardsFromFloodgateTree' ? undefined : value);
+
+const getEncodedObject = async (obj, replacer = null) => {
+  if (!window.CompressionStream) {
+    await import('../../deps/compression-streams-pollyfill.js');
+  }
+
+  const objToStream = (data) => new Blob(
+    [JSON.stringify(data, replacer)],
+    { type: 'text/plain' },
+  ).stream();
+
+  const compressStream = async (stream) => new Response(
+    // eslint-disable-next-line no-undef
+    stream.pipeThrough(new CompressionStream('gzip')),
+  );
+
+  const responseToBuffer = async (res) => {
+    const blob = await res.blob();
+    return blob.arrayBuffer();
+  };
+
+  const b64encode = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf)));
+
+  const stream = objToStream(obj);
+  const compressedResponse = await compressStream(stream);
+  const buffer = await responseToBuffer(compressedResponse);
+  return b64encode(buffer);
 };
 
 /* c8 ignore start */
@@ -661,20 +827,25 @@ const CopyBtn = () => {
     }, 2000);
   };
 
-  const getUrl = () => {
-    const url = window.location.href.split('#')[0];
-    return `${url}#${utf8ToB64(JSON.stringify(state))}`;
+  const getUrl = async () => {
+    const url = new URL(window.location.href);
+    url.search = '';
+    const hashStr = await getEncodedObject(state, fgKeyReplacer);
+    // starts with ~~ to differentiate from old hash format
+    url.hash = `~~${hashStr}`;
+    return url.href;
   };
 
-  const copyConfig = () => {
-    setConfigUrl(getUrl());
+  const copyConfig = async () => {
+    const url = await getUrl();
+    setConfigUrl(url);
     if (!navigator?.clipboard) {
       setTempStatus(setIsError);
       return;
     }
 
     const link = document.createElement('a');
-    link.href = getUrl();
+    link.href = url;
     const dateStr = new Date().toLocaleString('us-EN', {
       weekday: 'long',
       year: 'numeric',
@@ -685,7 +856,7 @@ const CopyBtn = () => {
       hour12: false,
     });
     const collectionName = state.collectionName ? `- ${state.collectionName} ` : '';
-    link.textContent = `Content as a Service ${collectionName}- ${dateStr}${state.doNotLazyLoad ? ' (no-lazy)' : ''}`;
+    link.textContent = `Content as a Service v2 ${collectionName}- ${dateStr}${state.doNotLazyLoad ? ' (no-lazy)' : ''}`;
 
     const blob = new Blob([link.outerHTML], { type: 'text/html' });
     const data = [new ClipboardItem({ [blob.type]: blob })];
@@ -716,8 +887,8 @@ const CopyBtn = () => {
   return html` <textarea class=${`copy-text ${(!navigator?.clipboard) ? '' : 'hide'}`}>${configUrl}</textarea>
     <button
       class="copy-config ${isError === true ? 'is-error' : ''} ${isSuccess === true
-        ? 'is-success'
-        : ''}"
+  ? 'is-success'
+  : ''}"
       onClick=${copyConfig}
     >
       ${btnText}
@@ -739,7 +910,7 @@ const getPanels = (tagsData) => [
   },
   {
     title: 'Cards',
-    content: html`<${CardsPanel} />`,
+    content: html`<${CardsPanel} tagsData=${tagsData} />`,
   },
   {
     title: 'Sort',
@@ -802,7 +973,7 @@ const idOverlayMO = () => {
 };
 
 const Configurator = ({ rootEl }) => {
-  const [state, dispatch] = useReducer(reducer, getInitialState() || cloneObj(defaultState));
+  const [state, dispatch] = useReducer(reducer, {});
   const [isCaasLoaded, setIsCaasLoaded] = useState(false);
   const [strings, setStrings] = useState();
   const [panels, setPanels] = useState([]);
@@ -815,10 +986,20 @@ const Configurator = ({ rootEl }) => {
       .then(() => {
         setIsCaasLoaded(true);
       })
-      .catch((error) => {
-        /* c8 ignore next */
-        console.log('Error loading script: ', error);
+      .catch((e) => {
+        /* c8 ignore next 2 */
+        // eslint-disable-next-line no-console
+        console.log('Error loading script: ', e);
       });
+  }, []);
+
+  useEffect(() => {
+    const setInitialState = async () => {
+      const initialState = await getInitialState();
+      dispatch({ type: 'SET_STATE', value: initialState });
+    };
+
+    setInitialState();
   }, []);
 
   useEffect(() => {
@@ -837,6 +1018,7 @@ const Configurator = ({ rootEl }) => {
   }, [state.placeholderUrl]);
 
   useEffect(async () => {
+    if (!state.tagsUrl) return;
     const { tags, errorMsg } = await loadCaasTags(state.tagsUrl);
     setPanels(getPanels(tags));
     setError(errorMsg || '');
@@ -853,6 +1035,10 @@ const Configurator = ({ rootEl }) => {
     }
   }, [isCaasLoaded, state, strings]);
 
+  const toogleCollapsed = () => {
+    document.body.classList.toggle('panel-collapsed');
+  };
+
   return html`
     <${ConfiguratorContext.Provider} value=${{ state, dispatch }}>
     <div class="tool-header">
@@ -866,6 +1052,9 @@ const Configurator = ({ rootEl }) => {
         <div class="config-panel">
           ${error && html`<div class="tool-error">${error}</div>`}
           <${Accordion} lskey=caasconfig items=${panels} alwaysOpen=${false} />
+        </div>
+        <div>
+          <button class="collapse-panel" onClick=${() => toogleCollapsed()}>⇆</button>
         </div>
         <div class="content-panel">
           <div class="modalContainer"></div>
@@ -886,10 +1075,10 @@ const init = async (el) => {
 };
 
 export {
+  // eslint-disable-next-line no-restricted-exports
   init as default,
   cloneObj,
   getHashConfig,
-  isValidUuid,
   loadCaasTags,
   updateObj,
 };

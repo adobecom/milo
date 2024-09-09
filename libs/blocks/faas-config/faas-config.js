@@ -24,13 +24,17 @@ const sortObjects = (obj) => Object.entries(obj).sort((a, b) => {
   return x < y ? -1 : x > y ? 1 : 0;
 });
 
+function deepCopy(obj) {
+  return JSON.parse(JSON.stringify(obj));
+}
+
 const getHashConfig = () => {
   const { hash } = window.location;
   if (!hash) return null;
   window.location.hash = '';
 
   const encodedConfig = hash.startsWith('#') ? hash.substring(1) : hash;
-  let hashConfig = parseEncodedConfig(encodedConfig);
+  const hashConfig = parseEncodedConfig(encodedConfig);
   hashConfig.pjs36 ||= hashConfig.p.js[36] || '';
   hashConfig.pjs39 ||= hashConfig.p.js[39] || '';
   hashConfig.pjs92 ||= hashConfig.p.js[92] || '';
@@ -38,13 +42,13 @@ const getHashConfig = () => {
   hashConfig.pjs94 ||= hashConfig.p.js[94] || '';
   hashConfig[149] ||= hashConfig.p.js[149] || '';
   hashConfig[172] ||= hashConfig.p.js[172] || '';
-  hashConfig.q103 ||= hashConfig.q[103]?.c || {};
+  hashConfig.q103 ||= hashConfig.q[103]?.c || [];
   hashConfig.pc1 ||= hashConfig.pc[1] || false;
   hashConfig.pc2 ||= hashConfig.pc[2] || false;
   hashConfig.pc3 ||= hashConfig.pc[3] || false;
   hashConfig.pc4 ||= hashConfig.pc[4] || false;
   hashConfig.pc5 ||= hashConfig.pc[5] || false;
-  if(hashConfig.complete) {
+  if (hashConfig.complete) {
     Object.keys(hashConfig.js).forEach((key) => {
       hashConfig[key] = hashConfig.js[key];
     });
@@ -52,7 +56,7 @@ const getHashConfig = () => {
     hashConfig.complete = false;
   }
   return hashConfig;
-}
+};
 
 const getInitialState = () => {
   const hashConfig = getHashConfig();
@@ -68,9 +72,11 @@ const getInitialState = () => {
   }
   return null;
 };
+
 const saveStateToLocalStorage = (state) => {
   localStorage.setItem(LS_KEY, JSON.stringify(state));
 };
+
 const getObjFromAPI = async (apiPath) => {
   const resp = await fetch(`${faasHostUrl}${apiPath}`);
   if (resp.ok) {
@@ -79,12 +85,15 @@ const getObjFromAPI = async (apiPath) => {
   }
   return false;
 };
+
 const reducer = (state, action) => {
   switch (action.type) {
     case 'SELECT_CHANGE':
     case 'INPUT_CHANGE':
     case 'MULTI_SELECT_CHANGE':
       return { ...state, [action.prop]: action.value };
+    case 'RESET_STATE':
+      return deepCopy(defaultState);
     default:
       console.log('DEFAULT');
       return state;
@@ -113,7 +122,7 @@ const CopyBtn = () => {
     const inputs = document.querySelectorAll('#ai_Required select, #ai_Required input');
     const requiredPanelExpandButton = document.querySelector('#ai_Required button[aria-label=Expand]');
     inputs.forEach((input) => {
-      if(input.id === '149') {
+      if (input.id === '149') {
         return;
       }
       if (!input.value) {
@@ -131,11 +140,10 @@ const CopyBtn = () => {
         input.focus();
         return;
       }
-      if(input.name == "v" && !/^[A-Za-z0-9]*$/.test(input.value)) {
+      if (input.name === 'v' && !/^[A-Za-z0-9]*$/.test(input.value)) {
         inputValidation = false;
         setErrorMessage('Campagin ID allows only letters and numbers');
         input.focus();
-        return;
       }
     });
     return inputValidation;
@@ -145,6 +153,16 @@ const CopyBtn = () => {
     const url = window.location.href.split('#')[0];
     return `${url}#${utf8ToB64(JSON.stringify(state))}`;
   };
+
+  const dateStr = new Date().toLocaleString('us-EN', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+    hour12: false,
+  });
 
   const copyConfig = () => {
     setConfigUrl(getUrl());
@@ -162,7 +180,7 @@ const CopyBtn = () => {
     const formTemplate = document.getElementById('id').options[document.getElementById('id').selectedIndex].text;
     const link = document.createElement('a');
     link.href = getUrl();
-    link.textContent = `Form as a Service - ${formTemplate}`;
+    link.textContent = `Form as a Service - ${formTemplate} - ${dateStr}`;
 
     const blob = new Blob([link.outerHTML], { type: 'text/html' });
     // eslint-disable-next-line no-undef
@@ -267,6 +285,7 @@ const RequiredPanel = () => {
   };
 
   if (!Object.keys(langOptions).length) {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     useEffect(() => {
       getObjFromAPI('/faas/api/locale').then((data) => {
         data.forEach((l) => {
@@ -404,10 +423,28 @@ const StylePanel = () => html`
   <${Select}
     label="Title Size"
     prop="title_size"
-    options="${{ h1: 'H1', h2: 'H2', h3: 'H3', h4: 'H4', h5: 'H5', h6: 'H6', p: 'P' }}" />
+    options="${{
+    h1: 'H1', h2: 'H2', h3: 'H3', h4: 'H4', h5: 'H5', h6: 'H6', p: 'P',
+  }}" />
   <${Select} label="Title Alignment" prop="title_align" options="${{ left: 'Left', center: 'Center', right: 'Right' }}" />
   <${Select} label="Custom Theme" prop="style_customTheme" options="${{ none: 'None' }}" />
 `;
+
+const AdvancedPanel = () => {
+  const { dispatch } = useContext(ConfiguratorContext);
+  const onClick = () => {
+    const firstPanel = document.querySelector('.accordion-item button[aria-label=Expand]');
+
+    localStorage.removeItem(LS_KEY);
+    dispatch({ type: 'RESET_STATE' });
+    firstPanel.click();
+  };
+
+  return html`
+    <button class="resetToDefaultState" onClick=${onClick}>Reset to default state</button>
+  `;
+};
+
 const Configurator = ({ rootEl }) => {
   const [state, dispatch] = useReducer(reducer, getInitialState() || defaultState);
   const [isFaasLoaded, setIsFaasLoaded] = useState(false);
@@ -445,7 +482,12 @@ const Configurator = ({ rootEl }) => {
   {
     title: 'Style',
     content: html`<${StylePanel} />`,
+  },
+  {
+    title: 'Advanced',
+    content: html`<${AdvancedPanel} />`,
   }];
+
   return html`
     <${ConfiguratorContext.Provider} value=${{ state, dispatch }}>
       <div class="tool-header">

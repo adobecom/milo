@@ -1,0 +1,206 @@
+<html>
+  <head>
+    <link rel="icon" href="">
+    <link rel="canonical" href="http://localhost:2000/test/utils/appendHtmlToLink.test">
+  </head>
+  <body>
+    <main>
+      <div id="sameserverlinks">
+        <a href="http://localhost:2000/testA"></a>
+        <a href="http://localhost:2000/has/qp?a=1&b=2"></a>
+        <a href="http://localhost:2000/has/hash#blah"></a>
+        <a href="http://localhost:2000/has/qp/and/hash?r=34&hello=world#blah"></a>
+        <a href="http://localhost:2000"></a>
+        <a href="http://localhost:2000/"></a>
+        <a href="http://localhost:2000/endswithslash/"></a>
+        <a href="http://localhost:2000/has/extension.html"></a>
+        <a href="http://localhost:2000/has/json/extension.json"></a>
+        <a href="http://localhost:2000/has/css/extension.css"></a>
+        <a href="http://localhost/wrongport"></a>
+        <a href="http://localhost:2000/#hash"></a>
+        <a href="http://localhost:2000/?q=puppies"></a>
+        <a href="http://localhost:2000/?q=puppies#hash"></a>
+        <a href="http://localhost:2000#hash"></a>
+        <a href="http://localhost:2000?q=puppies"></a>
+        <a href="http://localhost:2000?q=puppies#hash"></a>
+      </div>
+      <div id="relativelinks">
+        <a href="/test/relative/link"></a>
+        <a href="/test/endswith/slash/"></a>
+        <a href="/has/qp?a=1&b=2"></a>
+        <a href="/has/hash#blah"></a>
+        <a href="/has/qp/and/hash?r=34&hello=world#blah"></a>
+        <a href="/test/relative/linkwith.html"></a>
+        <a href="/"></a>
+        <a href=""></a>
+      </div>
+      <div id="externallinks">
+        <a href="http://adobe.com/test"></a>
+        <a href="http://adobe.com/test/"></a>
+        <a href="http://google.com"></a>
+      </div>
+      <div id="sameserverlinks-exclude">
+        <a href="http://localhost:2000/exclude/this/link"></a>
+        <a href="http://localhost:2000/jp/exclude/this/link"></a>
+        <a href="http://localhost:2000/ca_fr/exclude/this/link"></a>
+        <a href="http://localhost:2000/deep/path/exclude/this/link"></a>
+        <a href="http://localhost:2000/this/link/not/excluded"></a>
+      </div>
+      <div id="linkstodecorate">
+        <a href="http://localhost:2000/testA"></a>
+        <a href="http://localhost:2000/endswithslash/"></a>
+        <a href="http://localhost:2000/has/qp/and/hash?r=34&hello=world#blah"></a>
+        <a href="http://localhost:2000/has/extension.html"></a>
+        <a href="/test/relative/link"></a>
+        <a href="/test/endswith/slash/"></a>
+        <a href="/has/qp/and/hash?r=34&hello=world#blah"></a>
+        <a href="/test/relative/linkwith.html"></a>
+        <a href="http://adobe.com/test"></a>
+        <a href="http://adobe.com/test/"></a>
+      </div>
+      <div id="loadarealinks">
+        <a href="http://localhost:2000/testA"></a>
+        <a href="http://localhost:2000/endswithslash/"></a>
+        <a href="http://localhost:2000/has/qp/and/hash?r=34&hello=world#blah"></a>
+        <a href="http://localhost:2000/has/extension.html"></a>
+        <a href="/test/relative/link"></a>
+        <a href="/test/endswith/slash/"></a>
+        <a href="/has/qp/and/hash?r=34&hello=world#blah"></a>
+        <a href="/test/relative/linkwith.html"></a>
+        <a href="http://adobe.com/test"></a>
+        <a href="http://adobe.com/test/"></a>
+      </div>
+    </main>
+  </body>
+  <script type="module">
+    import { runTests } from '@web/test-runner-mocha';
+    import { expect } from '@esm-bundle/chai';
+    import { decorateLinks, appendHtmlToLink, setConfig, loadArea } from './../../libs/utils/utils.js';
+    setConfig({
+      htmlExclude: [
+        /localhost:2000\/exclude\/.*/,
+        /localhost:2000\/(\w\w|(\w\w_\w\w))\/exclude\/.*/,
+      ],
+    });
+
+    runTests(() => {
+      describe('appendHtmlToLink', () => {
+        it('same server links', async () => {
+          const links = document.getElementById('sameserverlinks');
+          const hrefs = [...links.querySelectorAll('a')].map((a) => {
+            appendHtmlToLink(a);
+            return a.getAttribute('href');
+          });
+          expect(hrefs).to.eql([
+          'http://localhost:2000/testA.html',
+          'http://localhost:2000/has/qp.html?a=1&b=2',
+          'http://localhost:2000/has/hash.html#blah',
+          'http://localhost:2000/has/qp/and/hash.html?r=34&hello=world#blah',
+          'http://localhost:2000',
+          'http://localhost:2000/',
+          'http://localhost:2000/endswithslash/',
+          'http://localhost:2000/has/extension.html',
+          'http://localhost:2000/has/json/extension.json',
+          'http://localhost:2000/has/css/extension.css',
+          'http://localhost/wrongport',
+          'http://localhost:2000/#hash',
+          'http://localhost:2000/?q=puppies',
+          'http://localhost:2000/?q=puppies#hash',
+          'http://localhost:2000#hash',
+          'http://localhost:2000?q=puppies',
+          'http://localhost:2000?q=puppies#hash',
+          ]);
+        });
+
+        it('relative links', async () => {
+          const links = document.getElementById('relativelinks');
+          const hrefs = [...links.querySelectorAll('a')].map((a) => {
+            appendHtmlToLink(a);
+            return a.getAttribute('href');
+          });
+          expect(hrefs).to.eql([
+          '/test/relative/link.html',
+          '/test/endswith/slash/',
+          '/has/qp.html?a=1&b=2',
+          '/has/hash.html#blah',
+          '/has/qp/and/hash.html?r=34&hello=world#blah',
+          '/test/relative/linkwith.html',
+          '/',
+          '',
+          ])
+        });
+
+        it('external links are not modified', async () => {
+          const links = document.getElementById('externallinks');
+          const hrefs = [...links.querySelectorAll('a')].map((a) => {
+            appendHtmlToLink(a);
+            return a.getAttribute('href');
+          });
+          expect(hrefs).to.eql([
+          'http://adobe.com/test',
+          'http://adobe.com/test/',
+          'http://google.com',
+          ])
+        });
+
+        it('same server links in htmlExclude list not modified', async () => {
+          const links = document.getElementById('sameserverlinks-exclude');
+          const hrefs = [...links.querySelectorAll('a')].map((a) => {
+            appendHtmlToLink(a);
+            return a.getAttribute('href');
+          });
+          expect(hrefs).to.eql([
+          'http://localhost:2000/exclude/this/link',
+          'http://localhost:2000/jp/exclude/this/link',
+          'http://localhost:2000/ca_fr/exclude/this/link',
+          'http://localhost:2000/deep/path/exclude/this/link.html',
+          'http://localhost:2000/this/link/not/excluded.html',
+          ])
+        });
+      });
+
+      describe('Decorate Links', () => {
+        it('calls the method to append .html extension if needed', () => {
+          const links = document.getElementById('linkstodecorate');
+          decorateLinks(links);
+          const hrefs = [...links.querySelectorAll('a')].map((a) => a.href);
+          expect(hrefs).to.eql([
+          'http://localhost:2000/testA.html',
+          'http://localhost:2000/endswithslash/',
+          'http://localhost:2000/has/qp/and/hash.html?r=34&hello=world#blah',
+          'http://localhost:2000/has/extension.html',
+          'http://localhost:2000/test/relative/link.html',
+          'http://localhost:2000/test/endswith/slash/',
+          'http://localhost:2000/has/qp/and/hash.html?r=34&hello=world#blah',
+          'http://localhost:2000/test/relative/linkwith.html',
+          'http://adobe.com/test',
+          'http://adobe.com/test/',
+          ]);
+        });
+      });
+
+      describe('Load Area', () => {
+        it('appends .html to links and canonical URL if needed', async () => {
+          await loadArea();
+          const canonicalLinkElem = document.querySelector('link[rel="canonical"]');
+          const canonicalLinkHref = canonicalLinkElem.getAttribute('href');
+          expect(canonicalLinkHref.endsWith('.html')).to.be.true;
+          const links = document.getElementById('loadarealinks');
+          const hrefs = [...links.querySelectorAll('a')].map((a) => a.href);
+          expect(hrefs).to.eql([
+          'http://localhost:2000/testA.html',
+          'http://localhost:2000/endswithslash/',
+          'http://localhost:2000/has/qp/and/hash.html?r=34&hello=world#blah',
+          'http://localhost:2000/has/extension.html',
+          'http://localhost:2000/test/relative/link.html',
+          'http://localhost:2000/test/endswith/slash/',
+          'http://localhost:2000/has/qp/and/hash.html?r=34&hello=world#blah',
+          'http://localhost:2000/test/relative/linkwith.html',
+          'http://adobe.com/test',
+          'http://adobe.com/test/',
+          ]);
+        });
+      });
+    });
+  </script>
+</html>

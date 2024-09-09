@@ -2,8 +2,12 @@ import { html, render } from '../../deps/htm-preact.js';
 
 import { getMetadata, loadStyle, getConfig } from '../../utils/utils.js';
 import HelixReview from './components/helixReview/HelixReview.js';
+import { checkPostUrl } from './utils/utils.js';
 
-const COMMENT_THRESHOLD = 3;
+const getCommentThreshold = (defaultThreshold = 3) => {
+  const threshold = parseInt(getMetadata('comment-threshold'), 10);
+  return (Number.isInteger(threshold) && threshold > 0) ? threshold : defaultThreshold;
+};
 
 const getReviewPath = (url) => {
   try {
@@ -40,10 +44,10 @@ const getProductJson = () => {
   };
 };
 
-const App = ({ rootEl, strings }) => html`
+const App = ({ strings }) => html`
     <${HelixReview}
       clickTimeout="5000"
-      commentThreshold=${COMMENT_THRESHOLD}
+      commentThreshold=${getCommentThreshold()}
       hideTitleOnReload=${strings.hideTitleOnReload}
       lang=${getPageLocale()}
       reviewTitle=${strings.reviewTitle}
@@ -54,9 +58,6 @@ const App = ({ rootEl, strings }) => html`
       visitorId=${getVisitorId()}
       reviewPath=${getReviewPath(strings.postUrl)}
       initialValue=${strings.initialValue}
-      onRatingSet=${({ rating, comment }) => {}}
-      onRatingHover=${({ rating }) => {}}
-      onReviewLoad=${({ hasRated, rating }) => {}}
     />
   `;
 
@@ -115,15 +116,21 @@ const removeMetaDataElements = (el) => {
 };
 
 export default async function init(el) {
-  const { miloLibs, codeRoot } = getConfig();
+  const { miloLibs, codeRoot, env } = getConfig();
   const base = miloLibs || codeRoot;
 
   loadStyle(`${base}/ui/page/page.css`);
   const metaData = getMetaData(el);
   const strings = getStrings(metaData);
-  removeMetaDataElements(el);
 
-  const app = html` <${App} rootEl=${el} strings="${strings}" /> `;
+  if (strings.postUrl) {
+    strings.postUrl = checkPostUrl(strings.postUrl, env);
+    removeMetaDataElements(el);
 
-  render(app, el);
+    const app = html` <${App} strings="${strings}" /> `;
+
+    render(app, el);
+  } else {
+    throw new Error('Invalid postUrl. Initialization aborted.');
+  }
 }

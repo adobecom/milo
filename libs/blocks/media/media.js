@@ -1,32 +1,44 @@
-/*
- * Copyright 2022 Adobe. All rights reserved.
- * This file is licensed to you under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License. You may obtain a copy
- * of the License at http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software distributed under
- * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
- * OF ANY KIND, either express or implied. See the License for the specific language
- * governing permissions and limitations under the License.
- */
+/* media - consonant v6 */
 
-/*
- * media - consonant v5.1
- */
-
-import { decorateBlockBg, decorateBlockText, getBlockSize } from '../../utils/decorate.js';
-import { decorateBlockAnalytics } from '../../martech/attributes.js';
-import { createTag } from '../../utils/utils.js';
+import { decorateBlockBg, decorateBlockText, getBlockSize, decorateTextOverrides, applyHoverPlay } from '../../utils/decorate.js';
+import { createTag, loadStyle, getConfig } from '../../utils/utils.js';
 
 const blockTypeSizes = {
   small: ['xs', 's', 'm'],
   medium: ['m', 's', 'm'],
+  'medium-compact': ['xl', 'm', 'l'],
   large: ['xl', 'm', 'l'],
   xlarge: ['xxl', 'm', 'l'],
 };
 
+function decorateAvatar(el) {
+  // is the first row a picture only
+  const childElements = el.children[0]?.children;
+  if (childElements.length !== 1) return;
+  [...childElements].forEach((e, i) => {
+    if (e.localName !== null && e.localName === 'picture') childElements[i].classList.add('avatar');
+  });
+}
+
+function decorateQr(el) {
+  const text = el.querySelector('.text');
+  if (!text) return;
+  const appStore = text.children[(text.children.length - 1)];
+  const googlePlay = text.children[(text.children.length - 2)];
+  const qrImage = text.children[(text.children.length - 3)];
+  appStore.classList.add('app-store');
+  appStore.textContent = '';
+  googlePlay.classList.add('google-play');
+  googlePlay.textContent = '';
+  qrImage.classList.add('qr-code-img');
+}
+
 export default function init(el) {
-  decorateBlockAnalytics(el);
+  if (el.className.includes('rounded-corners')) {
+    const { miloLibs, codeRoot } = getConfig();
+    const base = miloLibs || codeRoot;
+    loadStyle(`${base}/styles/rounded-corners.css`);
+  }
   el.classList.add('con-block');
   let rows = el.querySelectorAll(':scope > div');
   if (rows.length > 1) {
@@ -35,23 +47,62 @@ export default function init(el) {
     decorateBlockBg(el, head);
     rows = tail;
   }
+  let blockType = null;
+  const types = ['merch', 'qr-code'];
+  [...types].forEach((type) => {
+    if (!el.classList.contains(type)) return;
+    blockType = type;
+  });
   const size = getBlockSize(el);
   const container = createTag('div', { class: 'container foreground' });
+
   rows.forEach((row) => {
     row.classList.add('media-row');
     const header = row.querySelector('h1, h2, h3, h4, h5, h6');
     if (header) {
       const text = header.closest('div');
       text.classList.add('text');
-      decorateBlockText(text, blockTypeSizes[size]);
+      decorateAvatar(text);
+      decorateBlockText(text, blockTypeSizes[size], blockType);
     }
     const image = row.querySelector(':scope > div:not([class])');
     if (image) image.classList.add('image');
-    const img = image.querySelector(':scope img');
+    const img = image?.querySelector(':scope img');
     if (header && img?.alt === '') img.alt = header.textContent;
+    const imageVideo = image?.querySelector('video');
+    if (imageVideo) applyHoverPlay(imageVideo);
+
+    // subcopy
+    const actionArea = row.querySelector('p.action-area');
+    if (actionArea?.nextElementSibling?.tagName === 'P') {
+      actionArea.nextElementSibling.className = 'subcopy';
+    }
+
+    // subcopy with links
+    if (actionArea?.nextElementSibling?.tagName === 'H3') {
+      actionArea.nextElementSibling.classList.remove('heading-m', 'body-xl');
+      actionArea.nextElementSibling.classList.add('heading-xs');
+      const links = row.querySelectorAll('h3.heading-xs ~ p.body-s a, h3.heading-xs ~ p.icon-area a');
+      links.forEach((link) => {
+        link.parentElement.className = 'subcopy-link';
+        link.className = 'body-xxs';
+      });
+    }
+    const lastActionArea = el.querySelector('.action-area:last-of-type');
+    if (lastActionArea) {
+      const div = createTag('div', { class: 'cta-container' });
+      lastActionArea.insertAdjacentElement('afterend', div);
+      if (lastActionArea.previousElementSibling.className.includes('icon-stack-area')) {
+        div.append(lastActionArea.previousElementSibling);
+      }
+      div.append(lastActionArea);
+    }
     container.append(row);
   });
+
+  if (blockType === 'qr-code') decorateQr(container);
   el.append(container);
   const mediaRowReversed = el.querySelector(':scope > .foreground > .media-row > div').classList.contains('text');
   if (mediaRowReversed) el.classList.add('media-reverse-mobile');
+  decorateTextOverrides(el);
 }

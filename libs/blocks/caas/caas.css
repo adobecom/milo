@@ -1,4 +1,4 @@
-a[href*='/tools/caas#'] {
+a[href*='/tools/caas#'], a[href*='/tools/caas?'] {
   visibility: hidden !important;
 }
 
@@ -9,34 +9,6 @@ main .consonant-TopFilters-filtersWrapper:first-child {
 main > .section > .content .consonant-Wrapper--1200MaxWidth .consonant-Wrapper-inner,
 main > .section > .content .consonant-Wrapper--1600MaxWidth .consonant-Wrapper-inner { 
   width: 100%;
-}
-
-/* temp fix for caas */
-[class$='Card-logo'] {
-  border: 1px solid transparent;
-  background-color: white;
-  border-bottom-right-radius: 4px;
-  border-top-right-radius: 4px;
-  min-height: 48px;
-  max-height: 48px;
-  bottom: 16px;
-  display: block;
-  font-size: 0;
-  left: 0;
-  line-height: 0;
-  padding: 8px 24px;
-  position: absolute;
-  z-index: 1;
-}
-
-[class$='Card-logo'] img {
-  height: auto;
-  min-height: 32px;
-  max-height: 32px;
-  max-width: 90px;
-  object-fit: contain;
-  user-select: none;
-  width: auto;
 }
 
 /* Dexter Modal CSS - can be removed when caas team fixes MWPW-118588*/
@@ -207,7 +179,6 @@ main > .section > .content .consonant-Wrapper--1600MaxWidth .consonant-Wrapper-i
       justify-content: flex-end
   }
 }
-
 
 .dexter-Modal {
   display: none;
@@ -401,4 +372,202 @@ main > .section > .content .consonant-Wrapper--1600MaxWidth .consonant-Wrapper-i
       overflow-y: auto
   }
 }
+
 /* End Dexter Modal */
+
+/* CaaS Configurator Overrrides */
+.config-panel hr.divider {
+  margin: 15px 0 8px;
+  border-color: #666;}
+
+.config-panel dt.title span {
+  font-size: 18px;
+}
+
+.config-panel dt.title.is-expanded span, 
+dt.title.is-expanded button {
+  font-weight: 300;
+}
+
+.config-panel .multifield {
+  background-color: #404040;
+  border-bottom: 0;
+  padding: 0;
+  margin: 14px 0 0;
+}
+
+.config-panel .multifield.filtersCustomItems {
+  margin: 0 0 20px 14px;
+  width: 250px;
+}
+
+.config-panel .multifield > .multifield-header h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 2px 6px;
+}
+
+.config-panel .multifield > .multifield-set{
+  padding-bottom: 13px;
+}
+
+.config-panel .multifield > .multifield-set:not(:nth-child(2)) {
+  border-top: 2px solid #5d8c0499;
+}
+
+.config-panel .multifield > .multifield-set > .multifield-fields .fields {
+  margin: 0;
+}
+
+.config-panel .accordion {
+  margin: 0 0 0 6px;
+}
+
+.config-panel dd.content.is-expanded {
+  margin-top: 0;
+  max-height: 999999px; /* needed for transition animation */
+}
+
+.config-panel dd.content .field {
+  margin: 8px 0;
+}
+
+.config-panel .accordion-item {
+  margin: 1px 0;
+}
+
+.config-panel .accordion > .accordion-item {
+  margin: 1px 0;
+}
+
+.config-panel .accordion > .accordion-item .title {
+  cursor: pointer;
+}
+
+.config-panel .accordion dt.title {
+  gap: 0;
+}
+
+.config-panel .accordion .tagselect {
+  margin: 0;
+}
+
+.config-panel .accordion dd.content button {
+  background-color: #666;
+  cursor: pointer;
+}
+
+.config-panel .accordion dd.content button.multifield-delete {
+  margin: 8px 16px;
+  background-color: #858585;
+}
+
+.config-panel .accordion dd.content button.multifield-delete:hover {
+  background-color: #AAA;
+}
+
+.config-panel .accordion dd.content .filtersCustomItems button.multifield-delete {
+  margin: 2px 16px;
+  background-color: #999;
+}
+
+.config-panel .accordion dd.content .filtersCustomItems button.multifield-delete:hover {
+  background-color: #AAA;
+}
+
+.config-panel .accordion dd.content button:hover {
+  background-color: #505050;
+}
+
+.config-panel .accordion .multifield > .multifield-header h5 {
+  font-size: 15px;
+  margin: 0 6px;
+  font-weight: 300;
+  font-style: italic;
+  color: #aaa;
+}
+
+.config-panel .accordion dd.content .content-container {
+  padding: 20px;
+}
+
+.config-panel .accordion dd.content .field select, 
+.config-panel .accordion dd.content .field input {
+  font-size: 14px;
+}
+
+.config-panel .accordion .tagselect label,
+.config-panel .accordion dd.content .field label {
+  margin-left: 6px;
+}
+
+.config-panel .accordion .multifield-fields .field {
+  padding-left: 8px;
+}
+
+.config-panel .accordion .multifield input, 
+.multifield .tagselect-input {
+  border: solid 1px #666 !important;
+  margin-left: 8px;
+}
+
+.multifield > .multifield-set > .multifield-delete {
+  margin: 8px 20px;
+}
+
+.config-panel .accordion .field input, 
+.config-panel .accordion .field select, 
+.config-panel .accordion .tagselect-input {
+  border: #666 solid 1px !important;
+}
+
+.config-panel .accordion .multifield > .multifield-header h5 {
+  max-width: 220px;
+}
+
+.config-panel .accordion input[type=checkbox] {
+  align-self: baseline;
+  margin-top: 6px;
+}
+
+/* collapsible panel */
+button.collapse-panel {
+  border: none;
+  font-size: 18px;
+  width: 26px;
+  height: 32px;
+  cursor: pointer;
+}
+
+button.collapse-panel:hover {
+background: #666;
+color: #eee;
+}
+
+.tool-content {
+  transition: all 400ms;
+  grid-template-columns: 340px 20px 1fr;
+  gap: 6px;
+}
+
+.panel-collapsed .config-panel {
+  z-index: -1;
+}
+
+.panel-collapsed .tool-content {
+  grid-template-columns: 20px 20px 1fr;
+}
+
+.panel-collapsed dt.title span {
+  color: #333;
+  padding: 0 3px;
+}
+
+.panel-collapsed button {
+  cursor:pointer;
+}
+
+.tool-content > div:nth-child(2) {
+  padding-top: 10px;
+  border-top: solid 2px #000;
+}

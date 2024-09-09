@@ -5,8 +5,6 @@ on:
     branches:
       - main
   pull_request:
-    branches:
-      - main
 
 jobs:
   check:
@@ -14,7 +12,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Check for unsupported functions
         run: |

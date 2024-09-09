@@ -3,7 +3,7 @@ import { getConfig, loadStyle } from '../../utils/utils.js';
 import createPortal from '../../deps/portal.js'; // '../../deps/portal.js';
 import useOnClickOutside from '../../hooks/useOnClickOutside.js';
 import useLockBodyScroll from '../../hooks/useLockBodyScroll.js';
-import useDebounce from '../../hooks/useDebounce.js';
+import Picker from './TagSelectPicker.js';
 
 const { miloLibs, codeRoot } = getConfig();
 loadStyle(`${miloLibs || codeRoot}/ui/controls/tagSelector.css`);
@@ -108,125 +108,23 @@ const TagSelectModal = ({
   singleSelect = false,
   value = [],
 }) => {
-  const [columns, setColumns] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
   const modalRef = useRef(null);
-
-  const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   useOnClickOutside(modalRef, close);
   useLockBodyScroll();
 
-  useEffect(() => {
-    setColumns([getCols(options)]);
-  }, []);
-
-  useEffect(() => {
-    if (debouncedSearchTerm && debouncedSearchTerm.length > 2) {
-      setIsSearching(true);
-    } else {
-      setIsSearching(false);
-    }
-  }, [debouncedSearchTerm]);
-
-  const onCheck = (e) => {
-    e.preventDefault();
-    const inputEl = e.currentTarget.firstChild;
-
-    if (singleSelect) {
-      onToggle(inputEl.id);
-      close();
-      return;
-    }
-
-    if (inputEl.classList.contains('checked')) {
-      inputEl.classList.remove('checked');
-    } else {
-      inputEl.classList.add('checked');
-    }
-    onToggle(inputEl.id);
-  };
-
-  const onExpand = (e) => {
-    if (e.target.type === 'checkbox') {
-      onCheck(e);
-      return;
-    }
-
-    const itemEl = e.target.classList.contains('tagselect-item')
-      ? e.target
-      : e.target.parentElement;
-
-    itemEl.parentElement.childNodes.forEach((node) => node.classList.remove('expanded'));
-    itemEl.classList.add('expanded');
-
-    const cols = [];
-    const addColumn = (option) => {
-      cols.unshift(getCols(option));
-      if (option.parent) {
-        addColumn(option.parent);
-      }
-    };
-
-    const { key: selectedKey } = itemEl.dataset;
-    addColumn(optionMap[selectedKey]);
-    cols.unshift(getCols(options)); // add the root
-
-    setColumns(cols);
-  };
-
-  const getCols = (root) => {
-    const items = Object.entries(root.children || root).map(([id, option]) => {
-      const isChecked = value.includes(id);
-      return html`
-        <div
-          class="tagselect-item"
-          key=${id}
-          data-key=${id}
-          onClick=${option.children ? onExpand : onCheck}
-        >
-          <input id=${id} type="checkbox" class="cb ${isChecked ? 'checked' : ''}" /><label
-            class="label"
-            >${option.label.replace('&amp;', '&')}</label
-          ><span class=${option.children ? 'has-children' : ''}></span>
-        </div>
-      `;
-    });
-    return html`<div class="col">${items}</div>`;
-  };
-
-  const getSearchResults = () => {
-    const lowerSearchTerm = debouncedSearchTerm.toLowerCase();
-    return Object.entries(optionMap)
-      .filter(([, { label }]) => label.toLowerCase().includes(lowerSearchTerm))
-      .map(([id, { label, path }]) => {
-        const isChecked = value.includes(id);
-
-        return html`
-          <div class="search-item" onClick=${onCheck}>
-            <input id=${id} type="checkbox" class="cb ${isChecked ? 'checked' : ''}" />
-            <label>
-              <span class="label">${label}</span>
-              <span class="path">${path}</span>
-            </label>
-          </div>
-        `;
-      });
-  };
-
   return html`
     <div class="tagselect-modal-overlay">
       <div class="tagselect-modal" ref=${modalRef}>
-        <input
-          class="tagselect-modal-search"
-          placeholder="Search..."
-          onInput=${(e) => setSearchTerm(e.target.value)}
-          type="search"
-        />
         <button class="tagselect-modal-close" onClick=${close}></button>
-        ${!isSearching && html`<div class="tagselect-modal-cols">${columns}</div>`}
-        ${isSearching && html`<div class="tagselect-modal-table">${getSearchResults()}</div>`}
+        <${Picker}
+          close=${close}
+          toggleTag=${onToggle}
+          options=${options}
+          optionMap=${optionMap}
+          singleSelect=${singleSelect}
+          selectedTags=${value}
+        />
       </div>
     </div>
   `;
@@ -316,7 +214,7 @@ const TagSelect = ({
             viewBox="0 0 20 20"
             aria-hidden="true"
             focusable="false"
-            class="tagselect-tag-closeX"
+            class="tagselect-tag-close"
           >
             <path
               d="M14.348 14.849c-0.469 0.469-1.229 0.469-1.697 0l-2.651-3.030-2.651 3.029c-0.469 0.469-1.229 0.469-1.697 0-0.469-0.469-0.469-1.229 0-1.697l2.758-3.15-2.759-3.152c-0.469-0.469-0.469-1.228 0-1.697s1.228-0.469 1.697 0l2.652 3.031 2.651-3.031c0.469-0.469 1.228-0.469 1.697 0s0.469 1.229 0 1.697l-2.758 3.152 2.758 3.15c0.469 0.469 0.469 1.229 0 1.698z"

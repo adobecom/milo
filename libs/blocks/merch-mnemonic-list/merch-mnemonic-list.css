@@ -1,0 +1,6 @@
+.merch-mnemonic-list {
+  display: flex;
+  height: 380px;
+  flex-flow: column;
+  flex-wrap: wrap;
+}

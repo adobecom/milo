@@ -1,4 +1,4 @@
-import { loadScript, getConfig, createTag } from '../../utils/utils.js';
+import { loadScript, getConfig, createTag, customFetch } from '../../utils/utils.js';
 import {
   throttle,
   parseValue,
@@ -122,7 +122,8 @@ export function processMarkData(series, xUnit) {
 }
 
 export async function fetchData(link) {
-  const resp = await fetch(link.href.toLowerCase());
+  const resp = await customFetch({ resource: link.href.toLowerCase(), withCacheRules: true })
+    .catch(() => ({}));
 
   if (!resp.ok) return {};
 
@@ -454,7 +455,9 @@ const setDonutListeners = (chart, source, seriesData, units = []) => {
   chart.on('legendselectchanged', ({ selected }) => { mouseOutValue = handleDonutSelect(sourceData, selected, chart, units?.[0], title); });
 };
 
-const initChart = ({ chartWrapper, chartType, data, series, size, ...rest }) => {
+const initChart = ({
+  chartWrapper, chartType, data, series, size, ...rest
+}) => {
   const themeName = getTheme(size);
   const options = { chartType, processedData: data, series, size, ...rest };
   const chartOptions = getChartOptions(options);

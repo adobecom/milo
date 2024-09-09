@@ -1,0 +1,16 @@
+.library-container-start,
+.section.masonry-layout .library-container-start[class*='grid-'] {
+  display: none;
+}
+
+.library-container-start::before {
+  display: block;
+  content: 'Library Container Start';
+  background: #6eb4e4;
+  line-height: 28px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #293c51;
+  padding: 6px 12px;
+}

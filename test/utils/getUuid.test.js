@@ -1,6 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import getUuid from '../../libs/utils/getUuid.js';
-import { isValidUuid } from '../../libs/blocks/caas-config/caas-config.js';
+import { isValidUuid } from '../../libs/blocks/caas/utils.js';
 
 const LONG_STRING = 'go milo'.repeat(2000);
 describe('Get a UUID from a string', () => {

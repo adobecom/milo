@@ -1,5 +1,6 @@
 import { getConfig } from '../../utils/utils.js';
 import * as taxonomyLibrary from '../../scripts/taxonomy.js';
+import { updateLinkWithLangRoot } from '../../utils/helpers.js';
 
 /*
  *
@@ -89,7 +90,7 @@ function loadArticleTaxonomy(article) {
 
     const articleTax = computeTaxonomyFromTopics(topics, path);
 
-    clonedArticle.category = articleTax.category;
+    clonedArticle.category ??= articleTax.category;
 
     // topics = tags as an array
     clonedArticle.topics = topics;
@@ -114,7 +115,9 @@ export function getTaxonomyModule() {
 }
 
 export async function loadTaxonomy() {
-  taxonomyModule = await taxonomyLibrary.default(getConfig(), '/topics');
+  const config = getConfig();
+  const taxonomyRoot = config.taxonomyRoot || '/topics';
+  taxonomyModule = await taxonomyLibrary.default(config, taxonomyRoot);
   if (taxonomyModule) {
     // taxonomy loaded, post loading adjustments
     // fix the links which have been created before the taxonomy has been loaded
@@ -126,7 +129,7 @@ export async function loadTaxonomy() {
         a.href = tax.link;
       } else {
         // eslint-disable-next-line no-console
-        window.lana.log(`Trying to get a link for an unknown topic: ${topic} (current page)`);
+        window.lana.log(`Trying to get a link for an unknown topic: ${topic} (current page)`, { tags: 'errorType=warn,module=article-feed' });
         a.href = '#';
       }
       delete a.dataset.topicLink;
@@ -262,7 +265,7 @@ export function getArticleTaxonomy(article) {
 export function getLinkForTopic(topic, path) {
   const titleSubs = { 'Transformation digitale': 'Transformation numérique' };
 
-  const catLink = [getTaxonomyModule()?.get(topic)].map((tax) => tax?.link ?? '#');
+  const catLink = updateLinkWithLangRoot([getTaxonomyModule()?.get(topic)].map((tax) => tax?.link ?? '#'));
 
   if (catLink === '#') {
     // eslint-disable-next-line no-console
@@ -278,7 +281,9 @@ export function getLinkForTopic(topic, path) {
  * @returns card Generated card
  */
 export function buildArticleCard(article, type = 'article', eager = false) {
-  const { title, description, image, imageAlt, date } = article;
+  const {
+    title, h1, description, image, imageAlt, date,
+  } = article;
 
   const path = article.path.split('.')[0];
 
@@ -298,8 +303,8 @@ export function buildArticleCard(article, type = 'article', eager = false) {
       <p class="${type}-card-category">
         ${categoryTag}
       </p>
-      <h3>${title}</h3>
-      <p class="${type}-card-description">${description}</p>
+      <h3>${h1 || title}</h3>
+      <p class="${type}-card-description">${description && description !== '0' ? description : ''}</p>
       <p class="${type}-card-date">${formatCardLocaleDate(date)}
     </div>`;
   return card;

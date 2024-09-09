@@ -7,7 +7,8 @@ const conf = { locales };
 setConfig(conf);
 const config = getConfig();
 
-document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+const bodyHTML = await readFile({ path: './mocks/body.html' });
+document.body.innerHTML = bodyHTML;
 const { default: init } = await import('../../../libs/blocks/recommended-articles/recommended-articles.js');
 
 describe('creates feature article block', () => {
@@ -32,5 +33,23 @@ describe('creates feature article block', () => {
     await init(articles[2]);
     const articleCards = articles[2].querySelector('.articles-cards');
     expect(articleCards).to.be.null;
+  });
+
+  it('sets default taxonomy path to "topics"', async () => {
+    document.body.innerHTML = bodyHTML;
+    config.locale.contentRoot = '/test/blocks/recommended-articles/mocks';
+    config.taxonomyRoot = undefined;
+    await init(document.querySelector('#default'));
+    const categoryLink = document.querySelector('#default .article-card-category a');
+    expect(categoryLink.href.includes('/topics/')).to.be.true;
+  });
+
+  it('sets taxonomy path to "tags"', async () => {
+    document.body.innerHTML = bodyHTML;
+    config.locale.contentRoot = '/test/blocks/recommended-articles/mocks';
+    config.taxonomyRoot = '/tags';
+    await init(document.querySelector('#default'));
+    const categoryLink = document.querySelector('#default .article-card-category a');
+    expect(categoryLink.href.includes('/tags/')).to.be.true;
   });
 });

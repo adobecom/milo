@@ -1,0 +1,38 @@
+name: Dispatch workflows
+
+on:
+  push:
+    branches:
+      - main
+      - stage
+
+jobs:
+  dispatch-dc:
+    name: Dispatch DC workflow
+    if: github.repository == 'adobecom/milo'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4    
+      - uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          base: ${{ github.ref }}
+          filters: |
+            src:
+              - 'libs/**'    
+      - if: steps.changes.outputs.src == 'true'
+        name: Trigger DC Workflow
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.DC_PAT }}
+          script: |
+            github.rest.actions.createWorkflowDispatch({
+              owner: 'adobecom',
+              repo: 'dc',
+              workflow_id: 'test-milo.yml',
+              ref: 'stage',
+              inputs: {
+                miloBranch: '${{ github.ref_name }}'
+              },              
+            }) 

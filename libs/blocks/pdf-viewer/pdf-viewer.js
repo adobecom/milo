@@ -2,7 +2,7 @@
 
 import { createTag, getConfig, loadScript } from '../../utils/utils.js';
 
-const API_SOURCE_URL = 'https://documentcloud.adobe.com/view-sdk/viewer.js';
+const API_SOURCE_URL = 'https://acrobatservices.adobe.com/view-sdk/viewer.js';
 const PDF_RENDER_DIV_ID = 'adobe-dc-view';
 const CLIENT_ID_LIVE = '96e41871f28349e08b3562747a72dc75';
 
@@ -28,10 +28,8 @@ const init = async (a) => {
 
   if (!url) return;
 
-  const foundPdfs = document.querySelectorAll('.pdf-container');
-  const idSuffix = foundPdfs.length + 1;
-
-  const pdfViewerDiv = createTag('div', { class: 'pdf-container', id: `${PDF_RENDER_DIV_ID}_${idSuffix}` });
+  const id = `${PDF_RENDER_DIV_ID}_${Math.random().toString().slice(2)}`;
+  const pdfViewerDiv = createTag('div', { class: 'pdf-container', id });
 
   a?.insertAdjacentElement('afterend', pdfViewerDiv);
   a?.remove();
@@ -45,7 +43,7 @@ const init = async (a) => {
     const adobeDCView = new AdobeDC.View(
       {
         clientId,
-        divId: `${PDF_RENDER_DIV_ID}_${idSuffix}`,
+        divId: id,
         reportSuiteId,
       },
     );
@@ -54,6 +52,7 @@ const init = async (a) => {
         content: { location: { url } },
         metaData: { fileName },
       },
+      { embedMode: 'IN_LINE' },
     );
 
     adobeDCView.registerCallback(

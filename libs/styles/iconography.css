@@ -1,0 +1,127 @@
+/* iconography.css
+This is consonant shared design patterns 
+dealing w/ groups of media and associated text 
+- lockup
+- avatar
+*/
+
+:root {
+  /* lockup sizes */
+  --type-lockup-all-weight: 700;
+  --type-lockup-xxl-size: 55px;
+  --type-lockup-xxl-ls: -0.01em;
+  --type-lockup-xl-size: 44px;
+  --type-lockup-xl-ls: -0.01em;
+  --type-lockup-l-size: 38px;
+  --type-lockup-l-ls: -0.01em;
+  --type-lockup-m-size: 27px;
+  --type-lockup-m-ls: -0.02em;
+  --type-lockup-s-size: 22px;
+  --type-lockup-s-ls: -0.02em;
+  --type-lockup-xs-size: 16px;
+  --type-lockup-xs-ls: 0;
+  --type-lockup-xxs-size: 11px;
+  --type-lockup-xxs-ls: -0.01em;
+
+  /* avatar sizes */
+  --avatar-size-xxl: 64px;
+  --avatar-size-xl: 56px;
+  --avatar-size-l: 40px;
+}
+
+@media (min-width: 1200px) {
+  :root {
+    --avatar-size-xxl: 80px;
+    --avatar-size-xl: 64px;
+    --avatar-size-l: 56px;
+  }
+}
+
+/* Lockup */
+.lockup-area {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-s);
+  font-weight: var(--type-lockup-all-weight);
+  line-height: 1.25em;
+}
+
+.lockup-area > * { line-height: 0; }
+
+.center .lockup-area { justify-content: center; }
+.right .lockup-area { justify-content: flex-end; }
+
+.xxs-lockup .lockup-area {
+  font-size: var(--type-lockup-xxs-size);
+  letter-spacing:var(--type-lockup-xxs-ls);
+  gap: 4px;
+}
+
+.xs-lockup .lockup-area {
+  font-size: var(--type-lockup-xs-size);
+  letter-spacing:var(--type-lockup-xs-ls);
+  gap: 6px;
+}
+
+.s-lockup .lockup-area {
+  font-size: var(--type-lockup-s-size);
+  letter-spacing:var(--type-lockup-s-ls);
+  gap: 8px;
+}
+
+.m-lockup .lockup-area {
+  font-size: var(--type-lockup-m-size);
+  letter-spacing:var(--type-lockup-m-ls);
+  gap: 10px;
+}
+
+.l-lockup .lockup-area {
+  font-size: var(--type-lockup-l-size);
+  letter-spacing:var(--type-lockup-l-ls);
+  gap: 15px;
+}
+
+.xl-lockup .lockup-area {
+  font-size: var(--type-lockup-xl-size);
+  letter-spacing:var(--type-lockup-xl-ls);
+  gap: 17px;
+}
+
+.xxl-lockup .lockup-area {
+  font-size: var(--type-lockup-xxl-size);
+  letter-spacing:var(--type-lockup-xxl-ls);
+  gap: 20px;
+}
+
+.xxs-lockup .lockup-area img { height: var(--icon-size-xxs); }
+.xs-lockup .lockup-area img { height: var(--icon-size-xs); }
+.s-lockup .lockup-area img { height: var(--icon-size-s); }
+.m-lockup .lockup-area img { height: var(--icon-size-m); }
+.l-lockup .lockup-area img { height: var(--icon-size-l); }
+.xl-lockup .lockup-area img { height: var(--icon-size-xl); }
+.xxl-lockup .lockup-area img { height: var(--icon-size-xxl); }
+
+.avatar-area {
+  line-height: 0;
+  margin-bottom: var(--spacing-s);
+}
+
+.l-avatar .avatar-area img {
+  border-radius: 50%;
+  height: var(--avatar-size-l);
+  width: var(--avatar-size-l);
+}
+
+.xl-avatar .avatar-area img {
+  border-radius: 50%;
+  height: var(--avatar-size-xl);
+  width: var(--avatar-size-xl);
+}
+
+.xxl-avatar .avatar-area img {
+  border-radius: 50%;
+  height: var(--avatar-size-xxl);
+  width: var(--avatar-size-xxl);
+}

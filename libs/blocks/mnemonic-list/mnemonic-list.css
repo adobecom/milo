@@ -1,0 +1,44 @@
+.marquee .mnemonic-list {
+  margin: var(--spacing-xs) 0 ;
+}
+
+.merch-card .mnemonic-list {
+  padding: var(--consonant-merch-spacing-xs) 0;
+}
+
+.merch-card .mnemonic-list .product-list {
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.mnemonic-list .product-list {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  justify-content: center;
+  width: 100%;
+  text-align: center;
+  position: relative;
+  margin: 0 0 var(--spacing-s);
+}
+
+.mnemonic-list .product-list:last-child {
+  margin-bottom: 0;
+}
+
+.mnemonic-list .product-item {
+  display: flex;
+  flex: none;
+  gap: var(--spacing-xxs);
+  min-height: 32px;
+  line-height: initial;
+}
+
+.mnemonic-list .product-list .product-item strong {
+  font-size: var(--type-heading-xxs-size);
+  line-height: var(--type-heading-xs-lh);
+}
+
+.mnemonic-list .product-list .product-item picture img {
+  width: var(--icon-size-xs);
+}

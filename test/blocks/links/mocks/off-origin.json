@@ -1,0 +1,23 @@
+{
+  "total": 2,
+  "offset": 0,
+  "limit": 2,
+  "data": [
+    {
+      "domain": "https://analytics.google.com",
+      "window": "_blank",
+      "rel": "nofollow noopener noreferrer"
+    },
+    {
+      "domain": "https://www.shopify.com",
+      "window": "",
+      "rel": ""
+    },
+    {
+      "domain": "off-origin",
+      "window": "_blank",
+      "rel": ""
+    }
+  ],
+  ":type": "sheet"
+}

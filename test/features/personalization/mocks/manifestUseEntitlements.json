@@ -1,0 +1,40 @@
+{
+  "info":{
+    "total":2,
+    "offset":0,
+    "limit":2,
+    "data":[
+      {
+        "key":"manifest-type",
+        "value":"Personalization"
+      }
+    ]
+  },
+  "experiences":{
+    "total":1,
+    "offset":0,
+    "limit":1,
+    "data":[
+      {
+        "action":"replaceContent",
+        "selector":"#notthere",
+        "page filter (optional)":"",
+        "fireflies":"https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/139173-mep-and/android"
+      }
+    ]
+  },
+  "placeholders":{
+    "total":0,
+    "offset":0,
+    "limit":0,
+    "data":[]
+  },
+  ":version":3,
+  ":names":[
+    "info",
+    "experiences",
+    "placeholders"
+  ],
+  ":type":"multi-sheet"
+}
+

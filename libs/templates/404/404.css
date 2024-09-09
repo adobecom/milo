@@ -1,4 +1,4 @@
-main {
+.legacy-404 main {
   position: relative;
   padding: 20px 15px;
 }
@@ -68,16 +68,12 @@ main {
 }
 
 @media (min-width: 1200px) {
-  main {
+  .legacy-404 main {
     padding: 40px 80px;
   }
 }
 
 @media (min-width: 1600px) {
-  main {
-    padding: 40px 80px;
-  }
-
   .columns-404 {
     grid-template-columns: 300px 300px 300px;
   }

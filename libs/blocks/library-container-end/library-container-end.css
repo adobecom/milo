@@ -1,0 +1,17 @@
+
+.library-container-end,
+.section.masonry-layout .library-container-end[class*='grid-'] {
+  display: none;
+}
+
+.library-container-end::before {
+  display: block;
+  content: 'Library Container End';
+  background: #6eb4e4;
+  line-height: 28px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #293c51;
+  padding: 6px 12px;
+}

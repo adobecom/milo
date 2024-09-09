@@ -1,6 +1,4 @@
 /* eslint-disable no-plusplus */
-/* eslint-disable no-await-in-loop */
-/* eslint-disable no-restricted-syntax */
 import { delay, waitForElement, waitForUpdate } from './waitfor.js';
 
 const asyncSome = async (arr, predicate) => {
@@ -70,11 +68,11 @@ const tagSelectorModalSelectItem = async (label, choices = []) => {
   selectEl.click();
   const modalEl = await waitForElement('.tagselect-modal-overlay');
 
-  const columnsEl = modalEl.querySelector('.tagselect-modal-cols');
+  const columnsEl = modalEl.querySelector('.tagselect-picker-cols');
   await waitForUpdate(columnsEl);
 
   const selectItem = async (choice, idx, selectCheckbox = false) => {
-    await waitForElement(`.tagselect-modal-cols .col:nth-child(${idx + 1})`, {
+    await waitForElement(`.tagselect-picker-cols .col:nth-child(${idx + 1})`, {
       rootEl: modalEl,
       options: { subtree: true, characterData: true, childList: true },
     });
@@ -99,13 +97,14 @@ const tagSelectorModalSelectItem = async (label, choices = []) => {
     return choiceFound;
   };
 
-  choices.forEach(async (choice, i) => {
+  for (let i = 0; i < choices.length; i += 1) {
     const selectCheckbox = i === choices.length - 1;
     const choiceFound = await selectItem(choices[i], i, selectCheckbox);
     if (!choiceFound) {
       console.warn('tagSelectorModalChoose: Unable to find label:', choices[i]);
     }
-  });
+  }
+
   modalEl.querySelector('.tagselect-modal-close').click();
   await delay(50);
 };

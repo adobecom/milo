@@ -6,7 +6,7 @@ import {
 } from '../../../../deps/htm-preact.js';
 
 import { addToAverage } from '../../utils/utils.js';
-import sanitizeComment from '../../utils/sanitizeComment.js';
+import sanitizeComment from '../../../../utils/sanitizeComment.js';
 import Comments from './Comments.js';
 import Ratings from './Ratings.js';
 import RatingSummary from './RatingSummary.js';
@@ -57,6 +57,11 @@ function Review({
   const [timeoutId, setTimeoutId] = useState(null);
 
   const beforeUnloadCallback = useRef(null);
+  const titleComponent = useRef(
+    html`
+      <h3 className="hlx-reviewTitle">${strings.reviewTitle}</h3>
+    `,
+  );
 
   useEffect(() => {
     if (staticRating) {
@@ -64,7 +69,7 @@ function Review({
       setIsInteractive(false);
       if (hideTitleOnReload !== 'false') setDisplayTitle(false);
     }
-  }, [staticRating]);
+  }, [staticRating, hideTitleOnReload]);
 
   useEffect(() => {
     if (initialRating) {
@@ -96,11 +101,11 @@ function Review({
       window.setTimeout(() => {
         window.removeEventListener(
           BEFORE_UNLOAD_EVENT,
-          beforeUnloadCallback.current
+          beforeUnloadCallback.current,
         );
         beforeUnloadCallback.current = null;
         sendSetRating();
-      }, parseInt(clickTimeout, 10))
+      }, parseInt(clickTimeout, 10)),
     );
   };
 
@@ -113,7 +118,7 @@ function Review({
     if (beforeUnloadCallback.current !== null) {
       window.removeEventListener(
         BEFORE_UNLOAD_EVENT,
-        beforeUnloadCallback.current
+        beforeUnloadCallback.current,
       );
       beforeUnloadCallback.current = null;
     }
@@ -122,7 +127,7 @@ function Review({
   const handleRatingClick = (
     newRating,
     ev,
-    { isKeyboardSelection = false } = {}
+    { isKeyboardSelection = false } = {},
   ) => {
     if (!isInteractive) return;
 
@@ -137,13 +142,13 @@ function Review({
     }
 
     setAverageRating(
-      addToAverage(newRating, Number(averageRating), updatedTotalReviews)
+      addToAverage(newRating, Number(averageRating), updatedTotalReviews),
     );
 
     if (
-      !isKeyboardSelection &&
-      newRating > commentThreshold &&
-      !displayComments
+      !isKeyboardSelection
+      && newRating > commentThreshold
+      && !displayComments
     ) {
       handleClickAboveCommentThreshold(newRating, updatedTotalReviews);
       return;
@@ -156,9 +161,9 @@ function Review({
     setRating(newRating);
 
     if (
-      isKeyboardSelection &&
-      newRating > commentThreshold &&
-      !displayComments
+      isKeyboardSelection
+      && newRating > commentThreshold
+      && !displayComments
     ) {
       onRatingSet({
         rating: newRating,
@@ -214,12 +219,8 @@ function Review({
     />
   `;
 
-  const titleComponent = html`
-    <h3 className="hlx-reviewTitle">${strings.reviewTitle}</h3>
-  `;
-
   const ratings = html`
-    ${displayTitle && titleComponent}
+    ${displayTitle && titleComponent.current}
 
     <form className="hlx-Review" onSubmit=${handleSubmit}>
       ${ratingComponent} ${displayComments && commentsComponent}

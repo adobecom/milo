@@ -73,6 +73,37 @@ try {
 }
 ```
 
+## Useage outside of Milo
+
+If you can use dynamic imports you can do similar to milo:
+```
+function loadLana(options = {}) {
+  if (window.lana) return;
+
+  const lanaError = (e) => {
+    window.lana?.log(e.reason || e.error || e.message, { errorType: 'i' });
+  };
+
+  window.lana = {
+    log: async (...args) => {
+      window.removeEventListener('error', lanaError);
+      window.removeEventListener('unhandledrejection', lanaError);
+      await import('https://milo.adobe.com/libs/utils/lana.js');
+      return window.lana.log(...args);
+    },
+    debug: false,
+    options,
+  };
+
+  window.addEventListener('error', lanaError);
+  window.addEventListener('unhandledrejection', lanaError);
+}
+```
+This has the advantage of not loading lana until it's needed.  This also will automatically catch any global errors or unhandledrejections.
+
+If you need to include lana.js directly (or can't load dynamic modules) you can use a script tag:
+`<script src="https://milo.adobe.com/libs/utils/lana.js"></script>`
+
 ## Notes
 * Implicit Error logging
     * There are 2 global event listeners added by LANA to catch errors:

@@ -4,6 +4,7 @@
         "dbaeumer.vscode-eslint",
         "editorconfig.editorconfig",
         "ryanluker.vscode-coverage-gutters",
-        "eamodio.gitlens"
+        "eamodio.gitlens",
+        "github.vscode-pull-request-github"
     ]
 }

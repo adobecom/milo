@@ -1,0 +1,22 @@
+.bulk-publish-v2 {
+  position: relative;
+  background: linear-gradient(169deg, rgb(91 192 246 / 100%) 0%, rgb(15 228 240 / 100%) 50%, rgb(255 255 255 / 100%) 100%) no-repeat;
+  height: 100vh;
+  display: flex;
+  align-items: start;
+}
+
+.bulk-publish-v2.pushdown {
+  height: 95.7vh;
+}
+
+.bulk-publish-v2::before {
+  content: '';
+  background: var(--bg-img) no-repeat;
+  opacity: .05;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+}

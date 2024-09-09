@@ -1,0 +1,13 @@
+{
+  "events": [
+    {
+      "data": {
+        "event.workflow": "init",
+        "event.subcategory": "launch",
+        "event.subtype": "event.subtype",
+        "content.name": "icon",
+        "event.type": "click"
+      }
+    }
+  ]
+}

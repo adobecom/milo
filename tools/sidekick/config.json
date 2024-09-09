@@ -9,12 +9,23 @@
   ],
   "plugins": [
     {
+      "id": "path",
+      "title": "Path",
+      "environments": [ "edit" ],
+      "url": "/tools/path-finder",
+      "isPalette": true,
+      "passReferrer": true,
+      "passConfig": true,
+      "paletteRect": "top: 50%; left: 50%; transform: translate(-50%,-50%); height: 84px; width: 900px; overflow: hidden; border-radius: 6px; box-shadow: 0 20px 35px 0px rgba(0, 0, 0, 0.5);",
+      "includePaths": [ "**.docx**", "**.xlsx**" ]
+    },
+    {
       "id": "library",
       "title": "Library",
       "environments": [ "edit" ],
       "isPalette": true,
       "paletteRect": "top: auto; bottom: 25px; left: 25px; height: 388px; width: 360px;",
-      "url": "/tools/library",
+      "url": "/tools/library?skipConsent=true",
       "includePaths": [ "**.docx**" ]
     },
     {
@@ -34,6 +45,17 @@
     },
     {
       "containerId": "tools",
+      "id": "localize-v2",
+      "title": "Localize project (V2)",
+      "environments": [ "edit" ],
+      "url": "https://locui--milo--adobecom.hlx.page/tools/loc",
+      "passReferrer": true,
+      "passConfig": true,
+      "excludePaths": [ "/**" ],
+      "includePaths": [ "**/:x**" ]
+    },
+    {
+      "containerId": "tools",
       "id": "floodgate",
       "title": "Floodgate",
       "environments": [ "edit" ],
@@ -46,9 +68,9 @@
       "containerId": "tools",
       "title": "Send to CaaS",
       "id": "sendtocaas",
-      "environments": ["dev","preview", "live", "prod"],
+      "environments": ["dev", "preview", "live", "prod"],
       "event": "send-to-caas",
-      "excludePaths": ["/tools/caas**", "*.json"]
+      "excludePaths": ["/tools/caas**", "/tools/ost**", "*.json"]
     },
     {
       "containerId": "tools",
@@ -67,6 +89,16 @@
     },
     {
       "containerId": "tools",
+      "id": "offerpreview",
+      "title": "Offer preview",
+      "environments": [ "edit" ],
+      "isPalette": true,
+      "paletteRect": "top: auto; bottom: 25px; left: 75px; height: 388px; width: 360px;",
+      "url": "/tools/commerce",
+      "includePaths": [ "**.docx**" ]
+    },
+    {
+      "containerId": "tools",
       "id": "locales",
       "title": "Locales",
       "environments": [ "edit", "dev", "preview", "live" ],
@@ -76,6 +108,63 @@
       "paletteRect": "top: auto; bottom: 25px; left: 75px; height: 388px; width: 360px;",
       "url": "/tools/locale-nav",
       "includePaths": [ "**.docx**" ]
+    },
+    {
+      "containerId": "tools",
+      "id": "ost",
+      "title": "Use offer",
+      "environments": [ "edit", "dev", "preview" ],
+      "url": "https://milo.adobe.com/tools/ost",
+      "includePaths": [ "**.docx**" ],
+      "passConfig": true,
+      "passReferrer": true
+    },
+    {
+      "containerId": "tools",
+      "title": "Tag Selector",
+      "id": "tag-selector",
+      "environments": ["edit"],
+      "url": "https://milo.adobe.com/tools/tag-selector",
+      "isPalette": true,
+      "paletteRect": "top: 150px; left: 7%; height: 675px; width: 85vw;"
+    },
+    {
+      "containerId": "tools",
+      "title": "Send to CaaS",
+      "id": "sendtocaas",
+      "environments": ["live", "prod"],
+      "event": "send-to-caas",
+      "excludePaths": ["/tools/caas**", "/tools/ost**", "*.json"]
+    },
+    {
+      "containerId": "tools",
+      "id": "version-history",
+      "title": "Version History",
+      "environments": [ "edit" ],
+      "url": "/tools/version-history",
+      "isPalette": true,
+      "passReferrer": true,
+      "passConfig": true,
+      "paletteRect": "top: auto; bottom: 20px; left: 20px; height: 498px; width: 460px;",
+      "includePaths": [ "**.docx**", "**.xlsx**" ]
+    },
+    {
+      "containerId": "tools",
+      "id": "caas-configurator",
+      "title": "CaaS Configurator",
+      "environments": [ "edit", "preview", "dev" ],
+      "url": "https://milo.adobe.com/tools/caas",
+      "isPalette": false,
+      "includePaths": [ "**.docx**"]
+    },
+    {
+      "containerId": "tools",
+      "id": "faas-configurator",
+      "title": "FaaS Configurator",
+      "environments": [ "edit", "preview", "dev" ],
+      "url": "https://milo.adobe.com/tools/faas",
+      "isPalette": false,
+      "includePaths": [ "**.docx**"]
     }
   ]
 }

@@ -1,0 +1,89 @@
+.milo-tooltip {
+  position: relative;
+  text-decoration: none;
+  border-bottom: none;
+}
+
+.milo-tooltip::before {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 100%;
+  margin-left: 12px;
+  width: 200px;
+  padding: 10px;
+  border-radius: 5px;
+  background: #0469E3;
+  color: #fff;
+  text-align: left;
+  display: none;
+  z-index: 10;
+}
+
+.milo-tooltip::after {
+  content: "";
+  position: absolute;
+  left: 100%;
+  margin-left: -4px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 8px solid #0469E3;
+  border-color: transparent #0469E3 transparent transparent;
+  display: none;
+  z-index: 10;
+}
+
+.milo-tooltip.left::before {
+  left: initial;
+  margin: initial;
+  right: 100%;
+  margin-right: 12px;
+}
+
+.milo-tooltip.left::after {
+  left: -8px;
+  margin-right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 8px solid #0469E3;
+  border-color: transparent transparent transparent #0469E3;
+}
+
+.milo-tooltip.top::before {
+  left: 50%;
+  transform: translateX(-50%) translateY(-100%);
+  top: -10px;
+  margin-bottom: 15px;
+}
+
+.milo-tooltip.top::after {
+  left: 50%;
+  top: -2px;
+  transform: translateY(-50%);
+  border: 8px solid #0469E3;
+  border-color: #0469E3 transparent transparent;
+}
+
+.milo-tooltip.bottom::before {
+  left: 50%;  
+  transform: translateX(-50%);
+  top: 100%;
+  margin-top: 12px;
+}
+
+.milo-tooltip.bottom::after {
+  left: 50%;
+  top: calc(100% + 4px);
+  transform: translateY(-50%);
+  border: 8px solid #0469E3;
+  border-color: transparent transparent #0469E3;
+}
+
+.milo-tooltip:hover::before {
+  display: block; 
+}
+
+.milo-tooltip:hover::after {
+  display: block;
+}

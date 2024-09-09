@@ -1,0 +1,246 @@
+.job-process {
+  position: relative;
+}
+
+.job-info {
+  height: 26px;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 5px 10px;
+  font-size: 15px;
+  background-color: rgba(238 238 238 / 90%);
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+}
+
+.job-info .process {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.job-info .process .topic {
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.job-info .progress {
+  display: flex;
+}
+
+.job-totals {
+  background-color: white;
+  padding: 0 7px;
+  border-radius: 4px;
+}
+
+.job-totals.errors {
+  border-radius: 5px 0 0 5px;
+}
+
+.error-tools {
+  background-color: var(--error);
+  border-radius: 0 5px 5px 0;
+  color: white;
+  cursor: pointer;
+}
+
+.error-tools .tools {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  padding: 0 7px;
+}
+
+.error-tools .count {
+  padding: 7px;
+}
+
+.error-tools:hover {
+  background-color: #ba3a2f;
+}
+
+.error-tools .tools .rework {
+  margin-left: 5px;
+  display: flex;
+  align-items: center;
+}
+
+.error-tools .tools .rework img,
+.error-tools .tools .close img {
+  width: 10px;
+}
+
+.filtered .error-tools {
+  border-radius: 5px;
+}
+
+.timer {
+  cursor: pointer;
+  background: white;
+  border-radius: 5px;
+  padding: 0 10px;
+  text-align: center;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.timer:hover {
+  font-weight: bold;
+}
+
+.show-times {
+  padding-bottom: 7px;
+  border-radius: 5px 5px 0 0;
+  z-index: 2;
+  position: relative;
+}
+
+.job-timing {
+  background-color: rgba(255 255 255 / 93%);
+  border-radius: 0 0 5px 5px;
+  border: 1px solid #eee;
+  position: absolute;
+  top: 32px;
+  right: -1px;
+  z-index: 1;
+  padding: 3px 10px;
+  min-width: 132px;
+  border-top: 0;
+}
+
+.job-timing .stat {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  font-size: 14px;
+}
+
+.job-id-link {
+  width: 20px;
+  cursor: pointer;
+  color: var(--link-color);
+}
+
+.job-id-copied {
+  background-color: rgba(255 255 255 / 78%);
+  position: absolute;
+  padding: 0 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  top: 4px;
+  left: 72px;
+}
+
+.status {
+  display: flex;
+  gap: 7px;
+}
+
+.result {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  background-color: white;
+  border-bottom: 1px solid #eee;
+  padding: 7px 10px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  align-items: center;
+}
+
+.result.copied.indicator::after {
+  content: 'Copied to Clipboard!';
+  width: 25%;
+  position: absolute;
+  background: linear-gradient(90deg, rgba(255 255 255 / 100%) 0%, rgba(255 255 255 / 0%) 100%);
+  transition: all 0.6s;
+}
+
+.result.link:hover {
+  cursor: pointer;
+  background-color: #f9f9f9;
+}
+
+.filter-errors .result:not(.error) {
+  display: none;
+}
+
+.result .process {
+  font-style: italic;
+  color: #666;
+  white-space: nowrap;
+  overflow-x: scroll;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.result .process::-webkit-scrollbar {
+  display: none;
+}
+
+.result .url {
+  margin-left: 5px;
+  font-style: normal;
+  color: black;
+}
+
+.status[has-update] {
+  display: none;
+}
+
+.result.success.link .url {
+  color: var(--link-color);
+}
+
+.result.success.link.opened .url {
+  color: var(--accent);
+}
+
+.meta {
+  display: flex;
+  justify-content: end;
+  min-width: var(--meta-width);
+}
+
+.meta .success {
+  color: var(--success);
+}
+
+.meta .error {
+  background-color: var(--error);
+  padding: 0 10px;
+  border-radius: 5px;
+  color: white;
+  text-transform: uppercase;
+  font-size: 12px;
+  height: 20px;
+  line-height: 19px;
+  font-weight: bold;
+}
+
+.meta i {
+  color: #999;
+}
+
+.process-icon {
+  width: 16px;
+}
+
+.process-icon.working {
+  animation: spin 4s linear infinite;
+}
+
+@keyframes spin { 
+  100% {
+      transform:rotate(360deg); 
+  } 
+}

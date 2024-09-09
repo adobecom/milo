@@ -10,7 +10,7 @@ async function loadDefaultHtml() {
 await loadDefaultHtml();
 
 const gnavMod = await import('../../../libs/blocks/gnav/gnav.js');
-const contextualMod = await import('../../../libs/blocks/gnav/gnav-contextual-search.js')
+const contextualMod = await import('../../../libs/blocks/gnav/gnav-contextual-search.js');
 let gnav;
 
 const conf = { locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } } };
@@ -74,5 +74,19 @@ describe('contextual search', () => {
     await contextualMod.default({ value, resultsEl, searchInputEl, advancedSearchEl });
 
     expect(resultsEl.querySelector('a')).to.be.exist;
+  });
+
+  it('retains spacing and capitalization of results', async () => {
+    config.locale.contentRoot = '/test/blocks/gnav/mocks';
+
+    const searchInputEl = gnav.el.querySelector('.gnav-search-input');
+    const resultsEl = gnav.el.querySelector('.gnav-search-results > ul');
+    const advancedSearchEl = null;
+    const value = 'adobe experience';
+
+    await contextualMod.default({ value, resultsEl, searchInputEl, advancedSearchEl });
+
+    const heading = resultsEl.querySelector('.article-card h3');
+    expect(heading.textContent).to.equal('Get Ready For the Adobe Experience Festival');
   });
 });
