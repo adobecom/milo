@@ -320,12 +320,10 @@ class Gnav {
     for await (const task of tasks) {
       await yieldToMain();
       await task();
-      // Dispatching an event when gnav is visible after loadBaseStyles
-      if (task.name === 'ims') {
-        window.dispatchEvent(new CustomEvent('feds:nav.ready'));
-      }
     }
-
+    // Dispatching an event when gnav loads and is visible
+    window.dispatchEvent(new CustomEvent('feds:nav.ready'));
+    
     document.addEventListener('click', closeOnClickOutside);
     isDesktop.addEventListener('change', closeAllDropdowns);
   }, 'Error in global navigation init', 'errorType=error,module=gnav');

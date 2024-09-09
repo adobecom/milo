@@ -35,7 +35,14 @@ function getParamsConfigs(configs) {
 
 export default async function loadBlock(configs, customLib) {
   const {
-    header, footer, authoringPath, env = 'prod', locale = '', theme,
+    header,
+    footer,
+    authoringPath,
+    env = 'prod',
+    locale = '',
+    theme,
+    onReady,
+    onError,
   } = configs || {};
   const branch = new URLSearchParams(window.location.search).get('navbranch');
   const miloLibs = branch ? `https://${branch}--milo--adobecom.hlx.page` : customLib || envMap[env];
@@ -71,7 +78,8 @@ export default async function loadBlock(configs, customLib) {
       });
     }
   });
-  window.addEventListener('feds:nav.ready', () => onReady())
+  window.addEventListener('feds:nav.ready', () => onReady && onReady());
+  window.addEventListener('feds:nav.error', ({ detail }) => onError && onError(detail?.message))
 }
 
 window.loadNavigation = loadBlock;
