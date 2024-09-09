@@ -74,5 +74,5 @@ export default function stylePublish(sk) {
     const btn = sk.shadowRoot.querySelector(PUBLISH_BTN);
     btn?.setAttribute('disabled', true);
     btn?.insertAdjacentHTML('beforeend', `<span>${CONFIRM_MESSAGE}</span>`);
-  }, 800);
+  }, 500);
 }
