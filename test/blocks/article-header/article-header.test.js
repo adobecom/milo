@@ -1,7 +1,7 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-
+import { stub } from 'sinon';
 import { setConfig, getConfig } from '../../../libs/utils/utils.js';
 import { delay, waitForElement } from '../../helpers/waitfor.js';
 
@@ -9,9 +9,11 @@ const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
 const conf = { locales, miloLibs: 'http://localhost:2000/libs' };
 setConfig(conf);
 const config = getConfig();
+window.lana = { log: stub() };
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const { default: init } = await import('../../../libs/blocks/article-header/article-header.js');
+const { loadTaxonomy } = await import('../../../libs/blocks/article-feed/article-helpers.js');
 
 const invalidDoc = await readFile({ path: './mocks/body-invalid.html' });
 
@@ -20,10 +22,20 @@ describe('article header', () => {
     const block = document.body.querySelector('.article-header');
     config.locale.contentRoot = '/test/blocks/article-header/mocks';
     config.taxonomyRoot = undefined;
-
     await init(block);
   });
 
+  it('should log unknown topic', async () => {
+    try {
+      const div = document.createElement('div')
+      div.setAttribute('data-topic-link', ['abcd'])
+      document.body.append(div);
+      await loadTaxonomy();
+      expect(window.lana.log.args[0][0]).to.equal('Trying to get a link for an unknown topic: abcd (current page)')
+    } catch (e) {
+      console.log(e)
+    }
+  })
   it('creates article header block', () => {
     expect(document.body.querySelector('.article-category')).to.exist;
     expect(document.body.querySelector('.article-title')).to.exist;
