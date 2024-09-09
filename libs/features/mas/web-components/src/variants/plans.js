@@ -16,7 +16,7 @@ export class Plans extends VariantLayout {
   }
 
   get stockCheckbox() {
-    return this.checkboxLabel
+    return this.card.checkboxLabel
         ? html`<label id="stock-checkbox">
                 <input type="checkbox" @change=${this.card.toggleStockOffer}></input>
                 <span></span>

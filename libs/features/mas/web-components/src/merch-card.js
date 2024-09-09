@@ -2,11 +2,13 @@ import { LitElement } from 'lit';
 import { sizeStyles, styles } from './merch-card.css.js';
 import { getVariantLayout, getVariantStyles } from './variants/variants.js';
 
+
 import './global.css.js';
 import {
     EVENT_MERCH_CARD_READY,
     EVENT_MERCH_OFFER_SELECT_READY,
     EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
+    EVENT_MERCH_CARD_ACTION_MENU_TOGGLE,
     EVENT_MERCH_STORAGE_CHANGE,
 } from './constants.js';
 
@@ -184,7 +186,7 @@ export class MerchCard extends LitElement {
     }
 
     get titleElement() {        
-        return this.querySelector('.card-heading');
+        return this.querySelector(this.variantLayout?.headingSelector || '.card-heading');
     }
 
     get title() {
@@ -224,7 +226,6 @@ export class MerchCard extends LitElement {
       return this.classList.contains('starting-at');
     }
 
-
     connectedCallback() {
         super.connectedCallback();
         this.variantLayout = getVariantLayout(this);
@@ -261,7 +262,6 @@ export class MerchCard extends LitElement {
             this.handleStorageChange,
         );
     }
-
     // custom methods
 
     get storageOptions() {
@@ -295,6 +295,28 @@ export class MerchCard extends LitElement {
         this.dispatchEvent(
             new CustomEvent(EVENT_MERCH_CARD_READY, { bubbles: true }),
         );
+    }
+
+    toggleActionMenu(e) {
+      //beware this is an event on card, so this points to the card, not the layout
+      const retract = e?.type === 'mouseleave' ? true : undefined;
+      const actionMenuContentSlot = this.shadowRoot.querySelector(
+          'slot[name="action-menu-content"]',
+      );
+      if (!actionMenuContentSlot) return;
+      if (!retract) {
+          this.dispatchEvent(
+              new CustomEvent(EVENT_MERCH_CARD_ACTION_MENU_TOGGLE, {
+                  bubbles: true,
+                  composed: true,
+                  detail: {
+                      card: this.name,
+                      type: 'action-menu',
+                  },
+              }),
+          );
+      }
+      actionMenuContentSlot.classList.toggle('hidden', retract);
     }
 
     // TODO enable with TWP //

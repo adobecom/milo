@@ -58,6 +58,10 @@ export class VariantLayout {
   get promoBottom() {
     return this.card.classList.contains('promo-bottom');
   }
+
+  get headingSelector() {
+    return '[slot="heading-xs"]';
+  }
   
   get secureLabelFooter() {
     const secureLabel = this.card.secureLabel

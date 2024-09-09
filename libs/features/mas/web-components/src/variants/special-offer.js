@@ -10,6 +10,10 @@ export class SpecialOffer extends VariantLayout {
   getGlobalCSS() {
     return CSS;
   }
+
+  get headingSelector() {
+    return '[slot="detail-m"]';
+  }
   
   renderLayout () {
       return html`${this.cardImage}

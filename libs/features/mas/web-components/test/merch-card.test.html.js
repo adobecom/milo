@@ -99,7 +99,6 @@ runTests(async () => {
             expect(actionMenu).to.exist;
             expect(actionMenuContent).to.exist;
             catalogCard.toggleActionMenu();
-            
         });
 
         it('should have and interact with  quantity-selector', async () => {

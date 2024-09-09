@@ -35,7 +35,7 @@ merch-card[variant="twp"] [slot="body-xs"] ul li::before {
 merch-card[variant="twp"] [slot="footer"] {
   font-size: var(--consonant-merch-card-body-xs-font-size);
   line-height: var(--consonant-merch-card-body-xs-line-height);
-  padding: var(--consonant-merch-spacing-s)
+  padding: var(--consonant-merch-spacing-s);
   var(--consonant-merch-spacing-xs) var(--consonant-merch-spacing-xs);
   color: var(--merch-color-grey-80);
   display: flex;
