@@ -94,6 +94,21 @@ describe('article header', () => {
     const categoryLink = document.querySelector('.article-category a');
     expect(categoryLink.href.includes('/topics/')).to.be.true;
   });
+
+  it('adds an author image from a link', () => {
+    const img = document.querySelector('.article-author-image img');
+    const link = document.querySelector('.article-author a');
+    expect(img).to.exist;
+    expect(link).to.exist;
+  });
+
+  it('adds an author image from data attribute', async () => {
+    await init(document.querySelector('#article-header-no-author-link'));
+    const img = document.querySelector('.article-author-image img');
+    const author = document.querySelector('.article-author [data-author-page]');
+    expect(img).to.exist;
+    expect(author).to.exist;
+  });
 });
 
 describe('test the invalid article header', () => {
