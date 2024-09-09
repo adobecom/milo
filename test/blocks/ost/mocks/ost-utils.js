@@ -17,22 +17,6 @@ const getConfig = () => ({
   },
 });
 
-const getSusiOptions = () => {
-  const { susiOptions, env: { name: envName } } = getConfig();
-
-  if (!susiOptions) return {};
-
-  try {
-    return Object.keys(susiOptions).reduce((opts, key) => {
-      opts[key] = susiOptions[key][envName] || susiOptions[key];
-      return opts;
-    }, {});
-  } catch (e) {
-    window.lana?.log('Error while attempting to parse SUSI options:', e);
-    return {};
-  }
-};
-
 const getLocale = (locales, pathname) => locales[pathname.split('/', 2)[1]?.toLowerCase()] || locales[''];
 
 function getMetadata(name, doc = document) {
@@ -132,5 +116,4 @@ export {
   unmockOstDeps,
   mockRes,
   customFetch,
-  getSusiOptions,
 };

@@ -1,5 +1,5 @@
 /* eslint-disable no-continue */
-import { getSusiOptions, loadScript, loadStyle } from '../../libs/utils/utils.js';
+import { loadScript, loadStyle } from '../../libs/utils/utils.js';
 import { getImsToken } from '../utils/utils.js';
 import {
   loadTingleModalFiles,
