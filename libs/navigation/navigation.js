@@ -71,6 +71,7 @@ export default async function loadBlock(configs, customLib) {
       });
     }
   });
+  window.addEventListener('feds:nav.ready', () => onReady())
 }
 
 window.loadNavigation = loadBlock;

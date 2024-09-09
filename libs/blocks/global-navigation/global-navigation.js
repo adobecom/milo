@@ -320,6 +320,10 @@ class Gnav {
     for await (const task of tasks) {
       await yieldToMain();
       await task();
+      // Dispatching an event when gnav is visible after loadBaseStyles
+      if (task.name === 'ims') {
+        window.dispatchEvent(new CustomEvent('feds:nav.ready'));
+      }
     }
 
     document.addEventListener('click', closeOnClickOutside);
