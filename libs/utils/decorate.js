@@ -307,9 +307,9 @@ export function decorateMultiViewport(el) {
   return foreground;
 }
 
-export function turnAnchorIntoVideo({ src, anchorTag, hash }) {
+export function turnAnchorIntoVideo({ src, anchorTag }) {
   const { dataset, parentElement } = anchorTag;
-  const attrs = getVideoAttrs(hash || anchorTag.hash, dataset);
+  const attrs = getVideoAttrs(anchorTag.hash || 'autoplay', dataset);
   const video = `<video ${attrs} data-video-source=${src}></video>`;
   anchorTag.insertAdjacentHTML('afterend', video);
   const videoEl = parentElement.querySelector('video');
