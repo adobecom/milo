@@ -8,42 +8,22 @@ import {
     WcsPlanType,
     WcsTerm,
     applyPlanType,
-    webCommerceArtifact,
 } from './external.js';
 import { Log } from './log.js';
 
-/** @typedef {import('@pandora/data-source-wcs').GetWebCommerceArtifactOptions} WcsOptions */
-/** @typedef {import('@pandora/data-source-wcs').getWebCommerceArtifactPromise} getWcsOffers */
 /**
  * @typedef {Map<string, {
  *  resolve: (offers: Commerce.Wcs.Offer[]) => void,
  *  reject: (reason: Error) => void
  * }>} WcsPromises
  */
-const ACOM = '_acom';
-const WcsBaseUrl = {
-    [Env.PRODUCTION]: 'https://www.adobe.com',
-    [Env.STAGE]: 'https://www.stage.adobe.com',
-    [Env.PRODUCTION + ACOM]: 'https://www.adobe.com',
-    [Env.STAGE + ACOM]: 'https://www.stage.adobe.com',
-};
-
 /**
  * @param {{ settings: Commerce.Wcs.Settings }} params
  * @returns {Commerce.Wcs.Client}
  */
 export function Wcs({ settings }) {
     const log = Log.module('wcs');
-    const { env, domainSwitch, wcsApiKey: apiKey } = settings;
-    const baseUrl = domainSwitch ? WcsBaseUrl[env + ACOM] : WcsBaseUrl[env];
-    // Create @pandora Wcs client.
-    const fetchOptions = {
-        apiKey,
-        baseUrl,
-        fetch: window.fetch.bind(window),
-    };
-    const getWcsOffers = webCommerceArtifact(fetchOptions);
-
+    const { env, wcsApiKey: apiKey } = settings;
     /**
      * Cache of promises resolving to arrays of Wcs offers grouped by osi-based keys.
      * @type {Map<string, Promise<Commerce.Wcs.Offer[]>>}
@@ -51,7 +31,7 @@ export function Wcs({ settings }) {
     const cache = new Map();
     /**
      * Queue of pending requests to Wcs grouped by locale and promo.
-     * @type {Map<string, { options: WcsOptions, promises: WcsPromises }>}
+     * @type {Map<string, { options, promises: WcsPromises }>}
      */
     const queue = new Map();
     let timer;
@@ -63,29 +43,40 @@ export function Wcs({ settings }) {
      * If WCS does not provide an offer for particular osi,
      * its pending promise will be rejected with "not found".
      * In case of any other Wcs/Network error, promises are rejected with "bad request".
-     * @param {WcsOptions} options
+     * @param options
      * @param {WcsPromises} promises
      * @param reject - used for recursion, prevents rejection of promises with missing offers
      */
     async function resolveWcsOffers(options, promises, reject = true) {
         let message = ERROR_MESSAGE_OFFER_NOT_FOUND;
+        log.debug('Fetching:', options);
         try {
-            log.debug('Fetching:', options);
-            options.offerSelectorIds = options.offerSelectorIds.sort();
-            const { data } = await getWcsOffers(
-                options,
-                {
-                    apiKey,
-                    environment: settings.wcsEnv,
-                    // @ts-ignore
-                    landscape: env === Env.STAGE ? 'ALL' : settings.landscape,
-                },
-                ({ resolvedOffers }) => ({
-                    offers: resolvedOffers.map(applyPlanType),
-                }),
-            );
+          options.offerSelectorIds = options.offerSelectorIds.sort();
+          const url = new URL(settings.wcsURL);
+          url.searchParams.set('offer_selector_ids', options.offerSelectorIds.join(','));
+          url.searchParams.set('country', options.country);
+          url.searchParams.set('locale', options.locale);
+          url.searchParams.set('landscape', env === Env.STAGE ? 'ALL' : settings.landscape);
+          url.searchParams.set('api_key', apiKey);
+          // language can be undefined if its a UK offer
+          if (options.language) {
+            url.searchParams.set('language', options.language);
+          }
+          if (options.promotionCode) {
+            url.searchParams.set('promotion_code', options.promotionCode);
+          }
+          if (options.currency) {
+            url.searchParams.set('currency', options.currency);
+          }
+          
+          const response = await fetch(url.toString(), {
+            credentials: 'omit'
+          });
+          if (response.ok) {            
+            const data = await response.json();
             log.debug('Fetched:', options, data);
-            const { offers } = data ?? {};
+            let offers = data.resolvedOffers ?? [];
+            offers = offers.map(applyPlanType);
             // resolve all promises that have offers
             promises.forEach(({ resolve }, offerSelectorId) => {
                 // select offers with current OSI
@@ -99,25 +90,28 @@ export function Wcs({ settings }) {
                     promises.delete(offerSelectorId);
                     resolve(resolved);
                 }
-            });
-        } catch (error) {
-            // in case of 404 WCS error caused by a request with multiple osis,
-            // fallback to `fetch-by-one` strategy
-            if (error.status === 404 && options.offerSelectorIds.length > 1) {
-                log.debug('Multi-osi 404, fallback to fetch-by-one strategy');
-                await Promise.allSettled(
-                    options.offerSelectorIds.map((offerSelectorId) =>
-                        resolveWcsOffers(
-                            { ...options, offerSelectorIds: [offerSelectorId] },
-                            promises,
-                            false, // do not reject promises for missing offers, this will be done below
-                        ),
+            });  
+          }
+          // in case of 404 WCS error caused by a request with multiple osis,
+          // fallback to `fetch-by-one` strategy
+          else if (response.status === 404 && options.offerSelectorIds.length > 1) {
+            log.debug('Multi-osi 404, fallback to fetch-by-one strategy');
+            await Promise.allSettled(
+                options.offerSelectorIds.map((offerSelectorId) =>
+                    resolveWcsOffers(
+                        { ...options, offerSelectorIds: [offerSelectorId] },
+                        promises,
+                        false, // do not reject promises for missing offers, this will be done below
                     ),
-                );
-            } else {
-                log.error('Failed:', options, error);
-                message = ERROR_MESSAGE_BAD_REQUEST;
-            }
+                ),
+            );
+          } else {
+            message = ERROR_MESSAGE_BAD_REQUEST;
+            log.error(message, options);
+          }
+        } catch (e) {
+          message = ERROR_MESSAGE_BAD_REQUEST;
+          log.error(message, options, e);
         }
 
         if (reject && promises.size) {

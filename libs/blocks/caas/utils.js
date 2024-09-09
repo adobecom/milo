@@ -599,6 +599,7 @@ export const getConfig = async (originalState, strs = {}) => {
       },
       detailsTextOption: state.detailsTextOption,
       hideDateInterval: state.hideDateInterval,
+      dynamicCTAForLiveEvents: state.dynamicCTAForLiveEvents,
       setCardBorders: state.setCardBorders,
       showFooterDivider: state.showFooterDivider,
       useOverlayLinks: state.useOverlayLinks,
@@ -764,6 +765,7 @@ export const initCaas = async (state, caasStrs, el) => {
 
 export const defaultState = {
   additionalRequestParams: [],
+  dynamicCTAForLiveEvents: false,
   analyticsCollectionName: '',
   analyticsTrackImpression: false,
   andLogicTags: [],

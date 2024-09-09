@@ -1,23 +1,25 @@
 import { init } from '@adobe/mas-commerce';
+import '@adobe/mas-web-components/src/merch-card.js';
+import '@adobe/mas-web-components/src/merch-icon.js';
+import '@adobe/mas-web-components/src/merch-datasource.js';
 
-const { origin, searchParams } = new URL(import.meta.url);
-
+const { searchParams } = new URL(import.meta.url);
 const locale = searchParams.get('locale') ?? 'US_en';
-const lang = searchParams.get('lang') ?? 'en';
 const isStage = searchParams.get('env') === 'stage';
-const features = searchParams.get('features');
 
 const envName = isStage ? 'stage' : 'prod';
 const commerceEnv = isStage ? 'STAGE' : 'PROD';
 
+const priceLiteralsPromise = fetch(
+    'https://www.adobe.com/federal/commerce/price-literals.json',
+).then((response) => response.json().then(({ data }) => data));
+
 const config = () => ({
     env: { name: envName },
-    commerce: { 'commerce.env': commerceEnv },
+    commerce: { 'commerce.env': commerceEnv, priceLiteralsPromise },
     locale: { prefix: locale },
 });
 
-init(config);
+const promise = init(config);
 
-if (features.includes('merch-card')) {
-    import(`${origin}/libs/deps/merch-card-all.js`);
-}
+export default promise;

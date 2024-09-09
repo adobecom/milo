@@ -5206,6 +5206,12 @@ merch-card:not([variant='inline-heading']) [slot='heading-xs'] a {
     color: var(--merch-color-grey-80);
 }
 
+merch-card [slot='starting-at'] {
+  font-size: var(--consonant-merch-card-body-xs-font-size);
+  line-height: var(--consonant-merch-card-body-xs-line-height);
+  font-weight: 500;
+}
+
 merch-card [slot='heading-xs'] a:not(:hover) {
     text-decoration: inherit;
 }
@@ -5372,6 +5378,13 @@ merch-card[variant="catalog"] [slot="action-menu-content"] p {
 merch-card[variant="catalog"] [slot="action-menu-content"] a {
     color: var(--consonant-merch-card-background-color);
     text-decoration: underline;
+}
+
+merch-card[variant="catalog"] [slot="payment-details"] {
+  font-size: var(--consonant-merch-card-body-font-size);
+  font-style: italic;
+  font-weight: 400;
+  line-height: var(--consonant-merch-card-body-line-height);
 }
 
 merch-card[variant="ccd-action"] .price-strikethrough {

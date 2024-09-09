@@ -97,13 +97,13 @@
 .feds-local-menu a,
 .feds-profile-actions a {
   display: block;
-  color: var(--feds-color-link--light);
+  color: var(--feds-color-link);
 }
 
 .feds-local-menu a:hover,
 .feds-profile-actions a:hover {
-  color: var(--feds-color-link--hover--light);
-  background-color: var(--feds-background-link--hover--light);
+  color: var(--feds-color-link--hover);
+  background-color: var(--feds-background-link--hover);
 }
 
 .feds-local-menu a {

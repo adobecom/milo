@@ -533,7 +533,7 @@ export function decorateImageLinks(el) {
       const pic = img.closest('picture');
       const picParent = pic.parentElement;
       if (href.includes('.mp4')) {
-        const a = createTag('a', { href: url, 'data-video-poster': img.src });
+        const a = createTag('a', { href: url, 'data-video-poster': pic.outerHTML });
         a.innerHTML = url;
         pic.replaceWith(a);
       } else {
@@ -620,6 +620,24 @@ export function decorateAutoBlock(a) {
   });
 }
 
+const decorateCopyLink = (a, evt) => {
+  const userAgent = navigator.userAgent.toLowerCase();
+  const isMobile = /android|iphone|mobile/.test(userAgent) && !/ipad/.test(userAgent);
+  if (!isMobile || !navigator.share) {
+    a.remove();
+    return;
+  }
+  const link = a.href.replace(evt, '');
+  const isConButton = ['EM', 'STRONG'].includes(a.parentElement.nodeName)
+    || a.classList.contains('con-button');
+  if (!isConButton) a.classList.add('static', 'copy-link');
+  a.href = '';
+  a.addEventListener('click', async (e) => {
+    e.preventDefault();
+    if (navigator.share) await navigator.share({ title: link, url: link });
+  });
+};
+
 export function decorateLinks(el) {
   const config = getConfig();
   decorateImageLinks(el);
@@ -655,6 +673,10 @@ export function decorateLinks(el) {
         e.preventDefault();
         window.adobeIMS?.signIn();
       });
+    }
+    const copyEvent = '#_evt-copy';
+    if (a.href.includes(copyEvent)) {
+      decorateCopyLink(a, copyEvent);
     }
     return rdx;
   }, []);
@@ -727,33 +749,48 @@ async function decorateIcons(area, config) {
   await loadIcons(icons, config);
 }
 
-async function decoratePlaceholders(area, config) {
-  const el = area.querySelector('main') || area;
+export async function customFetch({ resource, withCacheRules }) {
+  const options = {};
+  if (withCacheRules) {
+    const params = new URLSearchParams(window.location.search);
+    options.cache = params.get('cache') === 'off' ? 'reload' : 'default';
+  }
+  return fetch(resource, options);
+}
+
+const findReplaceableNodes = (area) => {
   const regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
-  const walker = document.createTreeWalker(
-    el,
-    NodeFilter.SHOW_TEXT,
-    {
-      acceptNode(node) {
-        const a = regex.test(node.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
-        regex.lastIndex = 0;
-        return a;
-      },
-    },
-  );
+  const walker = document.createTreeWalker(area, NodeFilter.SHOW_ALL);
   const nodes = [];
   let node = walker.nextNode();
   while (node !== null) {
-    nodes.push(node);
+    let matchFound = false;
+    if (node.nodeType === Node.TEXT_NODE) {
+      matchFound = regex.test(node.nodeValue);
+    } else if (node.nodeType === Node.ELEMENT_NODE && node.hasAttribute('href')) {
+      const hrefValue = node.getAttribute('href');
+      matchFound = regex.test(hrefValue);
+    }
+    if (matchFound) {
+      nodes.push(node);
+      regex.lastIndex = 0;
+    }
     node = walker.nextNode();
   }
+  return nodes;
+};
+
+let placeholderRequest;
+async function decoratePlaceholders(area, config) {
+  if (!area) return;
+  const nodes = findReplaceableNodes(area);
   if (!nodes.length) return;
-  const { replaceText } = await import('../features/placeholders.js');
-  const replaceNodes = nodes.map(async (textNode) => {
-    textNode.nodeValue = await replaceText(textNode.nodeValue, config, regex);
-    textNode.nodeValue = textNode.nodeValue.replace(/&nbsp;/g, '\u00A0');
-  });
-  await Promise.all(replaceNodes);
+  const placeholderPath = `${config.locale?.contentRoot}/placeholders.json`;
+  placeholderRequest = placeholderRequest
+  || customFetch({ resource: placeholderPath, withCacheRules: true })
+    .catch(() => ({}));
+  const { decoratePlaceholderArea } = await import('../features/placeholders.js');
+  await decoratePlaceholderArea({ placeholderPath, placeholderRequest, nodes });
 }
 
 async function loadFooter() {
@@ -839,76 +876,6 @@ export async function decorateFooterPromo(doc = document) {
   await initFooterPromo(footerPromoTag, footerPromoType, doc);
 }
 
-let imsLoaded;
-export async function loadIms() {
-  imsLoaded = imsLoaded || new Promise((resolve, reject) => {
-    const {
-      locale, imsClientId, imsScope, env, base, adobeid,
-    } = getConfig();
-    if (!imsClientId) {
-      reject(new Error('Missing IMS Client ID'));
-      return;
-    }
-    const [unavMeta, ahomeMeta] = [getMetadata('universal-nav')?.trim(), getMetadata('adobe-home-redirect')];
-    const defaultScope = `AdobeID,openid,gnav${unavMeta && unavMeta !== 'off' ? ',pps.read,firefly_api,additional_info.roles,read_organizations' : ''}`;
-    const timeout = setTimeout(() => reject(new Error('IMS timeout')), 5000);
-    window.adobeid = {
-      client_id: imsClientId,
-      scope: imsScope || defaultScope,
-      locale: locale?.ietf?.replace('-', '_') || 'en_US',
-      redirect_uri: ahomeMeta === 'on'
-        ? `https://www${env.name !== 'prod' ? '.stage' : ''}.adobe.com${locale.prefix}` : undefined,
-      autoValidateToken: true,
-      environment: env.ims,
-      useLocalStorage: false,
-      onReady: () => {
-        resolve();
-        clearTimeout(timeout);
-      },
-      onError: reject,
-      ...adobeid,
-    };
-    const path = PAGE_URL.searchParams.get('useAlternateImsDomain')
-      ? 'https://auth.services.adobe.com/imslib/imslib.min.js'
-      : `${base}/deps/imslib.min.js`;
-    loadScript(path);
-  }).then(() => {
-    if (!window.adobeIMS?.isSignedInUser()) {
-      getConfig().entitlements([]);
-    }
-  }).catch((e) => {
-    getConfig().entitlements([]);
-    throw e;
-  });
-
-  return imsLoaded;
-}
-
-export async function loadMartech({
-  persEnabled = false,
-  persManifests = [],
-  postLCP = false,
-} = {}) {
-  // eslint-disable-next-line no-underscore-dangle
-  if (window.marketingtech?.adobe?.launch && window._satellite) {
-    return true;
-  }
-
-  if (PAGE_URL.searchParams.get('martech') === 'off'
-    || PAGE_URL.searchParams.get('marketingtech') === 'off'
-    || getMetadata('martech') === 'off') {
-    return false;
-  }
-
-  window.targetGlobalSettings = { bodyHidingEnabled: false };
-  loadIms().catch(() => {});
-
-  const { default: initMartech } = await import('../martech/martech.js');
-  await initMartech({ persEnabled, persManifests, postLCP });
-
-  return true;
-}
-
 const getMepValue = (val) => {
   const valMap = { on: true, off: false, gnav: 'gnav' };
   const finalVal = val?.toLowerCase().trim();
@@ -952,6 +919,79 @@ export const getMepEnablement = (mdKey, paramKey = false) => {
   return getMdValue(mdKey);
 };
 
+let imsLoaded;
+export async function loadIms() {
+  imsLoaded = imsLoaded || new Promise((resolve, reject) => {
+    const {
+      locale, imsClientId, imsScope, env, base, adobeid,
+    } = getConfig();
+    if (!imsClientId) {
+      reject(new Error('Missing IMS Client ID'));
+      return;
+    }
+    const [unavMeta, ahomeMeta] = [getMetadata('universal-nav')?.trim(), getMetadata('adobe-home-redirect')];
+    const defaultScope = `AdobeID,openid,gnav${unavMeta && unavMeta !== 'off' ? ',pps.read,firefly_api,additional_info.roles,read_organizations' : ''}`;
+    const timeout = setTimeout(() => reject(new Error('IMS timeout')), 5000);
+    window.adobeid = {
+      client_id: imsClientId,
+      scope: imsScope || defaultScope,
+      locale: locale?.ietf?.replace('-', '_') || 'en_US',
+      redirect_uri: ahomeMeta === 'on'
+        ? `https://www${env.name !== 'prod' ? '.stage' : ''}.adobe.com${locale.prefix}` : undefined,
+      autoValidateToken: true,
+      environment: env.ims,
+      useLocalStorage: false,
+      onReady: () => {
+        resolve();
+        clearTimeout(timeout);
+      },
+      onError: reject,
+      ...adobeid,
+    };
+    const path = PAGE_URL.searchParams.get('useAlternateImsDomain')
+      ? 'https://auth.services.adobe.com/imslib/imslib.min.js'
+      : `${base}/deps/imslib.min.js`;
+    loadScript(path);
+  }).then(() => {
+    if (getMepEnablement('xlg') === 'loggedout') {
+      /* c8 ignore next */
+      getConfig().entitlements();
+    } else if (!window.adobeIMS?.isSignedInUser()) {
+      getConfig().entitlements([]);
+    }
+  }).catch((e) => {
+    getConfig().entitlements([]);
+    throw e;
+  });
+
+  return imsLoaded;
+}
+
+export async function loadMartech({
+  persEnabled = false,
+  persManifests = [],
+  postLCP = false,
+} = {}) {
+  // eslint-disable-next-line no-underscore-dangle
+  if (window.marketingtech?.adobe?.launch && window._satellite) {
+    return true;
+  }
+
+  if (PAGE_URL.searchParams.get('martech') === 'off'
+    || PAGE_URL.searchParams.get('marketingtech') === 'off'
+    || getMetadata('martech') === 'off') {
+    return false;
+  }
+
+  window.targetGlobalSettings = { bodyHidingEnabled: false };
+  loadIms().catch(() => {});
+
+  const { default: initMartech } = await import('../martech/martech.js');
+  await initMartech({ persEnabled, persManifests, postLCP });
+
+  return true;
+}
+
 async function checkForPageMods() {
   const {
     mep: mepParam,
@@ -963,9 +1003,10 @@ async function checkForPageMods() {
   const pzn = getMepEnablement('personalization');
   const promo = getMepEnablement('manifestnames', PROMO_PARAM);
   const target = martech === 'off' ? false : getMepEnablement('target');
+  const xlg = martech === 'off' ? false : getMepEnablement('xlg');
   if (!(pzn || target || promo || mepParam
-    || mepHighlight || mepButton || mepParam === '')) return;
-  if (target) {
+    || mepHighlight || mepButton || mepParam === '' || xlg)) return;
+  if (target || xlg) {
     loadMartech();
   } else if (pzn && martech !== 'off') {
     loadIms()
@@ -983,6 +1024,7 @@ async function checkForPageMods() {
 }
 
 async function loadPostLCP(config) {
+  await decoratePlaceholders(document.body.querySelector('header'), config);
   if (config.mep?.targetEnabled === 'gnav') {
     /* c8 ignore next 2 */
     const { init } = await import('../features/personalization/personalization.js');
@@ -1008,10 +1050,6 @@ async function loadPostLCP(config) {
   if (config?.mep) {
     import('../features/personalization/personalization.js')
       .then(({ addMepAnalytics }) => addMepAnalytics(config, header));
-  }
-  if (config.mep?.preview) {
-    import('../features/personalization/preview.js')
-      .then(({ default: decoratePreviewMode }) => decoratePreviewMode());
   }
 }
 
@@ -1067,6 +1105,10 @@ export async function loadDeferred(area, blocks, config) {
         delay: getMetadata('pageperf-delay'),
         sampleRate: parseInt(getMetadata('pageperf-rate'), 10),
       }));
+  }
+  if (config.mep?.preview) {
+    import('../features/personalization/preview.js')
+      .then(({ default: decoratePreviewMode }) => decoratePreviewMode());
   }
 }
 
@@ -1170,11 +1212,11 @@ async function processSection(section, config, isDoc) {
     const { default: loadInlineFrags } = await import('../blocks/fragment/fragment.js');
     const fragPromises = inlineFrags.map((link) => loadInlineFrags(link));
     await Promise.all(fragPromises);
-    await decoratePlaceholders(section.el, config);
     const newlyDecoratedSection = decorateSection(section.el, section.idx);
     section.blocks = newlyDecoratedSection.blocks;
     section.preloadLinks = newlyDecoratedSection.preloadLinks;
   }
+  await decoratePlaceholders(section.el, config);
 
   if (section.preloadLinks.length) {
     const [modals, nonModals] = partition(section.preloadLinks, (block) => block.classList.contains('modal'));
@@ -1210,8 +1252,6 @@ export async function loadArea(area = document) {
     appendHtmlToCanonicalUrl();
   }
   const config = getConfig();
-
-  await decoratePlaceholders(area, config);
 
   if (isDoc) {
     decorateDocumentExtras();

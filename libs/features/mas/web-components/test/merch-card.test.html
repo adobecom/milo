@@ -58,7 +58,7 @@
         </div>
         <div id="firstcards" class="three-merch-cards special-offers">
             <h2 style="grid-column: span 1 / -1; text-align: center;">Three cards</h2>
-            <merch-card types="web,mobile" variant="special-offers" badge-color="#EDCC2D"
+            <merch-card class="intro-pricing" types="web,mobile" variant="special-offers" badge-color="#EDCC2D"
                 badge-background-color="#000000" badge-text="Best value">
                 <h4 slot="detail-m" id="individuals">INDIVIDUALS</h4>
                 <h3 slot="heading-xs">Save over 30% on Creative Cloud All Apps.</h3>
@@ -390,6 +390,7 @@
                 <h3 slot="heading-m">
                     <span is="inline-price" data-display-per-unit="false" data-display-recurrence="true"
                         data-display-tax="false" data-template="priceOptical" data-wcs-osi="abm-edu"></span>
+                    <div class="payment-details">Inclusive of VAT</div>
                 </h3>
                 <div slot="body-xs">
                     <p>Lightroom, Lightroom Classic, Photoshop on desktop and iPad, and 1TB of cloud storage.</p>
@@ -905,7 +906,7 @@
         <div class="four-merch-cards catalog">
             <merch-card size="wide" variant="catalog" action-menu="true" badge-color="#EDCC2D"
                 badge-background-color="#000000" badge-text="Best value">
-                <merch-icon slot="icons" size="l" src="../test/img/cc-logo.png" alt="Creative Cloud All Apps"
+                <merch-icon slot="icons" size="l" src="/test/mocks/img/creative-cloud.svg" alt="Creative Cloud All Apps"
                     href="https://www.adobe.com/creativecloud/all-apps.html"></merch-icon>
                 <div slot="action-menu-content">
                     <p><strong>Best for</strong>:</p>
@@ -950,9 +951,9 @@
                     <a href="https://business.adobe.com/" class="con-button blue">Save now</a>
                 </div>
             </merch-card>
-            <merch-card variant="catalog" action-menu="true" badge-color="#EDCC2D" badge-background-color="#000000"
+            <merch-card variant="catalog" action-menu="true" class="starting-at" badge-color="#EDCC2D" badge-background-color="#000000"
                 badge-text="Best value">
-                <merch-icon slot="icons" size="l" src="../test/img/cc-logo.png"
+                <merch-icon slot="icons" size="l" src="/test/mocks/img/creative-cloud.svg"
                     alt="Creative Cloud All Apps"></merch-icon>
                 <div slot="action-menu-content">
                     <p><strong>Best for</strong>:</p>
@@ -1039,7 +1040,7 @@
             <merch-card variant="plans" badge-color="#EDCC2D" badge-background-color="#000000"" badge-text=" Best value"
                 secure-label="Secure Transaction" checkbox-label="Add a 30-day free trial of Adobe Stock.*"
                 stock-offer-osis="stock-puf,stock-abm,stock-m2m">
-                <merch-icon slot="icons" size="l" src="../test/img/cc-logo.png"
+                <merch-icon slot="icons" size="l" src="/test/mocks/img/creative-cloud.svg"
                     alt="Creative Cloud All Apps"></merch-icon>
                 <h4 slot="heading-xs">Creative Cloud All Apps</h4>
                 <h3 slot="heading-m">
@@ -1078,7 +1079,7 @@
             <merch-card variant="plans" badge-color="#EDCC2D" badge-background-color="#000000"" badge-text=" Best value"
                 checkbox-label="Add a 30-day free trial of Adobe Stock.*"
                 stock-offer-osis="stock-puf,stock-abm,stock-m2m">
-                <merch-icon slot="icons" size="l" src="../test/img/cc-logo.png"
+                <merch-icon slot="icons" size="l" src="/test/mocks/img/creative-cloud.svg"
                     alt="Creative Cloud All Apps"></merch-icon>
                 <h4 slot="heading-xs">Photography</h4>
                 <h3 slot="heading-m">
@@ -1115,7 +1116,7 @@
             <merch-card variant="plans" badge-color="#EDCC2D" badge-background-color="#000000"" badge-text=" Best value"
                 checkbox-label="Add a 30-day free trial of Adobe Stock.*"
                 stock-offer-osis="stock-puf,stock-abm,stock-m2m">
-                <merch-icon slot="icons" size="l" src="../test/img/cc-logo.png"
+                <merch-icon slot="icons" size="l" src="/test/mocks/img/creative-cloud.svg"
                     alt="Creative Cloud All Apps"></merch-icon>
                 <h4 slot="heading-xs">Photography</h4>
                 <h3 slot="heading-m">
@@ -1232,6 +1233,81 @@
                 </div>
             </merch-card>
         </div>
+<div class="one-merch-card ccd-action">
+  <merch-card class="" tabindex="0" variant="ccd-action" filters="" types="">
+    <sp-status-light size="l" variant="info" dir="ltr"></sp-status-light>
+    <merch-icon
+      slot="icons"
+      src="https://www.adobe.com/content/dam/shared/images/product-icons/svg/creative-cloud.svg"
+      alt=""
+      href=""
+      size="l"
+      >undefined</merch-icon
+    >
+    <h3 slot="heading-xs">CC All Apps</h3>
+    <h3 slot="heading-xs">
+      <p>
+        <span
+          is="inline-price"
+          data-display-old-price="true"
+          data-display-per-unit="false"
+          data-promotion-code="CCI2AAUSQ22440CH"
+          data-quantity="1"
+          data-template="price"
+          data-wcs-osi="r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8"
+          class="placeholder-resolved"
+          ><span class="price" aria-label="US$35.99 per month"
+            ><span class="price-currency-symbol">US$</span
+            ><span class="price-currency-space disabled"></span
+            ><span class="price-integer">35</span
+            ><span class="price-decimals-delimiter">.</span
+            ><span class="price-decimals">99</span
+            ><span class="price-recurrence">/mo</span
+            ><span class="price-unit-type disabled"></span
+            ><span class="price-tax-inclusivity disabled"></span></span
+          >&nbsp;<span
+            class="price price-strikethrough"
+            aria-label="Regularly at US$59.99 per month"
+            ><span class="price-currency-symbol">US$</span
+            ><span class="price-currency-space disabled"></span
+            ><span class="price-integer">59</span
+            ><span class="price-decimals-delimiter">.</span
+            ><span class="price-decimals">99</span
+            ><span class="price-recurrence">/mo</span
+            ><span class="price-unit-type disabled"></span
+            ><span class="price-tax-inclusivity disabled"></span></span></span
+        >﻿
+      </p>
+    </h3>
+    <div slot="body-xs">
+      <div>
+        Get 20+ creative apps including Photoshop and Illustrator.&nbsp;
+      </div>
+    </div>
+    <div slot="footer">
+      <a
+          class="con-button blue"
+          is="checkout-link"
+          data-checkout-workflow="UCv3"
+          data-checkout-workflow-step="segmentation"
+          data-promotion-code="CCI2AAUSQ22440CH"
+          data-quantity="1"
+          data-wcs-osi="r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8"
+          data-extra-options="{}"
+          ><span>Buy now</span></a
+        ><a
+        class="con-button"
+          is="checkout-link"
+          data-checkout-workflow="UCv3"
+          data-checkout-workflow-step="email"
+          data-quantity="1"
+          data-wcs-osi="MV-_1XzZ6JAft_2wXu3a-z28noWUucHMdMtyIYcodak"
+          data-extra-options="{}"
+          ><span>Free trial</span></a>
+    </div></merch-card
+  >
+</div>
+
     </main>
 </body>
 </html>

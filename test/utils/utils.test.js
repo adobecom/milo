@@ -1,12 +1,11 @@
-import { readFile } from '@web/test-runner-commands';
+import { readFile, setViewport } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { waitFor, waitForElement } from '../helpers/waitfor.js';
 import { mockFetch } from '../helpers/generalHelpers.js';
-import { createTag } from '../../libs/utils/utils.js';
+import { createTag, customFetch } from '../../libs/utils/utils.js';
 
 const utils = {};
-
 const config = {
   codeRoot: '/libs',
   locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
@@ -29,6 +28,12 @@ describe('Utils', () => {
 
   after(() => {
     delete window.hlx;
+  });
+
+  it('fetches with cache param', async () => {
+    window.fetch = mockFetch({ payload: true });
+    const resp = await customFetch({ resource: './mocks/taxonomy.json', withCacheRules: true });
+    expect(resp.json()).to.be.true;
   });
 
   describe('with body', () => {
@@ -68,6 +73,7 @@ describe('Utils', () => {
 
     describe('Configure Auto Block', () => {
       it('Disable auto block when #_dnb in url', async () => {
+        setViewport({ width: 600, height: 1500 });
         await waitForElement('.disable-autoblock');
         const disableAutoBlockLink = document.querySelector('.disable-autoblock');
         utils.decorateLinks(disableAutoBlockLink);
@@ -88,11 +94,43 @@ describe('Utils', () => {
     });
 
     describe('Custom Link Actions', () => {
+      const originalUserAgent = navigator.userAgent;
+      before(() => {
+        window.navigator.share = sinon.stub().resolves();
+        Object.defineProperty(navigator, 'userAgent', {
+          value: 'android',
+          writable: true,
+        });
+      });
+
+      after(() => {
+        Object.defineProperty(navigator, 'userAgent', {
+          value: originalUserAgent,
+          writable: true,
+        });
+      });
+
       it('Implements a login action', async () => {
         await waitForElement('.login-action');
         const login = document.querySelector('.login-action');
         utils.decorateLinks(login);
         expect(login.href).to.equal('https://www.stage.adobe.com/');
+      });
+      it('Implements a copy link action', async () => {
+        await waitForElement('.copy-action');
+        const copy = document.querySelector('.copy-action');
+        utils.decorateLinks(copy);
+        expect(copy.classList.contains('copy-link')).to.be.true;
+      });
+      it('triggers the event listener on clicking the custom links', async () => {
+        const login = document.querySelector('.login-action');
+        const copy = document.querySelector('.copy-action');
+        const clickEvent = new Event('click', { bubbles: true, cancelable: true });
+        const preventDefaultSpy = sinon.spy(clickEvent, 'preventDefault');
+        login.dispatchEvent(clickEvent);
+        copy.dispatchEvent(clickEvent);
+        expect(preventDefaultSpy.calledTwice).to.be.true;
+        expect(window.navigator.share.calledOnce).to.be.true;
       });
     });
 
@@ -192,6 +230,9 @@ describe('Utils', () => {
       const paragraphs = [...document.querySelectorAll('p')];
       const lastPara = paragraphs.pop();
       expect(lastPara.textContent).to.equal(' inkl. MwSt.');
+      const plceholderhref = document.querySelector('.placeholder');
+      const hrefValue = plceholderhref.getAttribute('href');
+      expect(hrefValue).to.equal('tel:phone number substance');
     });
 
     it('Decorates meta helix url', () => {

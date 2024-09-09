@@ -1,11 +1,5 @@
 import { css, unsafeCSS } from 'lit';
-import {
-    DESKTOP_UP,
-    LARGE_DESKTOP,
-    TABLET_UP,
-    MOBILE_LANDSCAPE,
-    TABLET_DOWN,
-} from './media.js';
+import { DESKTOP_UP, LARGE_DESKTOP, TABLET_UP, TABLET_DOWN } from './media.js';
 
 export const styles = css`
     :host {
@@ -140,10 +134,12 @@ export const styles = css`
         height: fit-content;
         flex-direction: column;
         width: fit-content;
+        max-width: 140px;
         border-radius: 5px;
         position: relative;
         top: 0;
         margin-left: var(--consonant-merch-spacing-xxs);
+        box-sizing: border-box;
     }
 
     .detail-bg-container {

@@ -3,69 +3,56 @@ import { createTag } from './utils.js';
 
 const ATTR_AEM_BUCKET = 'aem-bucket';
 
+const VARIANTS = {
+    CATALOG: 'catalog',
+    AH: 'ah',
+    CCD_ACTION: 'ccd-action',
+    SPECIAL_OFFERS: 'special-offers',
+};
+
 const cardContent = {
-    catalog: {
-        name: 'catalog',
-        title: {
-            tag: 'h3',
-            slot: 'heading-xs',
-        },
-        prices: {
-            tag: 'h3',
-            slot: 'heading-xs',
-        },
-        description: {
-            tag: 'div',
-            slot: 'body-xs',
-        },
+    [VARIANTS.CATALOG]: {
+        title: { tag: 'h3', slot: 'heading-xs' },
+        prices: { tag: 'h3', slot: 'heading-xs' },
+        description: { tag: 'div', slot: 'body-xs' },
         ctas: { size: 'l' },
     },
-    ah: {
-        name: 'ah',
-        title: {
-            tag: 'h3',
-            slot: 'heading-xxs',
-        },
-        prices: {
-            tag: 'h3',
-            slot: 'heading-xs',
-        },
-        description: {
-            tag: 'div',
-            slot: 'body-xxs',
-        },
+    [VARIANTS.AH]: {
+        title: { tag: 'h3', slot: 'heading-xxs' },
+        prices: { tag: 'h3', slot: 'heading-xs' },
+        description: { tag: 'div', slot: 'body-xxs' },
         ctas: { size: 's' },
     },
-    'ccd-action': {
-        name: 'ccd-action',
-        title: {
-            tag: 'h3',
-            slot: 'heading-xs',
-        },
-        prices: {
-            tag: 'h3',
-            slot: 'heading-xs',
-        },
-        description: {
-            tag: 'div',
-            slot: 'body-xs',
-        },
+    [VARIANTS.CCD_ACTION]: {
+        title: { tag: 'h3', slot: 'heading-xs' },
+        prices: { tag: 'h3', slot: 'heading-xs' },
+        description: { tag: 'div', slot: 'body-xs' },
+        ctas: { size: 'l' },
+    },
+    [VARIANTS.SPECIAL_OFFERS]: {
+        name: { tag: 'h4', slot: 'detail-m' },
+        title: { tag: 'h4', slot: 'detail-m' },
+        backgroundImage: { tag: 'div', slot: 'bg-image' },
+        prices: { tag: 'h3', slot: 'heading-xs' },
+        description: { tag: 'div', slot: 'body-xs' },
         ctas: { size: 'l' },
     },
 };
 
-async function parseMerchCard(item, merchCard) {
-    const cardJson = item.fields.reduce((acc, { name, multiple, values }) => {
-        acc[name] = multiple ? values : values[0];
-        return acc;
-    }, {});
-    const { type = 'catalog' } = cardJson;
-    const cardType = cardContent[type] || cardContent.catalog;
+async function parseMerchCard(fragmentData, appendFn, merchCard, consonant) {
+    const item = fragmentData.fields.reduce(
+        (acc, { name, multiple, values }) => {
+            acc[name] = multiple ? values : values[0];
+            return acc;
+        },
+        { id: fragmentData.id },
+    );
+    item.model = item.model;
 
-    merchCard.variant = type;
-
-    merchCard.setAttribute('variant', type);
-    cardJson.icon?.forEach((icon) => {
+    const { variant = 'catalog' } = item;
+    merchCard.setAttribute('variant', variant);
+    const cardMapping = cardContent[variant] ?? 'catalog';
+    item.icon?.forEach((icon) => {
         const merchIcon = createTag('merch-icon', {
             slot: 'icons',
             src: icon,
@@ -73,54 +60,89 @@ async function parseMerchCard(item, merchCard) {
             href: '',
             size: 'l',
         });
-        merchCard.append(merchIcon);
+        appendFn(merchIcon);
     });
 
-    if (cardJson.title) {
-        merchCard.append(
+    if (item.title && cardMapping.title) {
+        appendFn(
             createTag(
-                cardType.title.tag,
-                { slot: cardType.title.slot },
-                cardJson.title,
+                cardMapping.title.tag,
+                { slot: cardMapping.title.slot },
+                item.title,
             ),
         );
     }
 
-    if (cardJson.prices) {
-        const prices = cardJson.prices;
+    if (item.backgroundImage && cardMapping.backgroundImage) {
+        // TODO improve image logic
+        appendFn(
+            createTag(
+                cardMapping.backgroundImage.tag,
+                { slot: cardMapping.backgroundImage.slot },
+                `<img loading="lazy" src="${item.backgroundImage}" width="600" height="362">`,
+            ),
+        );
+    }
+
+    if (item.prices && cardMapping.prices) {
+        const prices = item.prices;
         const headingM = createTag(
-            cardType.prices.tag,
-            { slot: cardType.prices.slot },
+            cardMapping.prices.tag,
+            { slot: cardMapping.prices.slot },
             prices,
         );
-        merchCard.append(headingM);
+        appendFn(headingM);
     }
 
-    merchCard.append(
-        createTag('p', { slot: 'body-xxs', id: 'individuals1' }, 'Desktop'),
-    );
-
-    if (cardJson.description) {
+    if (item.description && cardMapping.description) {
         const body = createTag(
-            cardType.description.tag,
-            { slot: cardType.description.slot },
-            cardJson.description,
+            cardMapping.description.tag,
+            { slot: cardMapping.description.slot },
+            item.description,
         );
-        merchCard.append(body);
+        appendFn(body);
     }
 
-    if (cardJson.ctas) {
-        let ctas = cardJson.ctas;
-        const footer = createTag('div', { slot: 'footer' }, ctas);
-        merchCard.append(footer);
+    if (item.ctas) {
+        const footer = createTag('div', { slot: 'footer' }, item.ctas);
+        const ctas = [];
+        [...footer.querySelectorAll('a')].forEach((cta) => {
+            const strong = cta.parentElement.tagName === 'STRONG';
+            if (consonant) {
+                cta.classList.add('con-button');
+                if (strong) {
+                    cta.classList.add('blue');
+                }
+                ctas.push(cta);
+            } else {
+                const treatment = strong ? 'fill' : 'outline';
+                const variant = strong ? 'accent' : 'primary';
+                const spectrumCta = createTag(
+                    'sp-button',
+                    { treatment, variant },
+                    cta,
+                );
+                spectrumCta.addEventListener('click', (e) => {
+                    /* c8 ignore next 2 */
+                    e.stopPropagation();
+                    cta.click();
+                });
+                ctas.push(spectrumCta);
+            }
+        });
+        footer.innerHTML = '';
+        footer.append(...ctas);
+        appendFn(footer);
     }
 }
 
 class FragmentCache {
     #fragmentCache = new Map();
+
     clear() {
         this.#fragmentCache.clear();
     }
+
     add(...items) {
         items.forEach((item) => {
             const { path } = item;
@@ -129,12 +151,15 @@ class FragmentCache {
             }
         });
     }
+
     has(path) {
         return this.#fragmentCache.has(path);
     }
+
     get(path) {
         return this.#fragmentCache.get(path);
     }
+
     remove(path) {
         this.#fragmentCache.delete(path);
     }
@@ -148,18 +173,33 @@ const cache = new FragmentCache();
  */
 export class MerchDataSource extends HTMLElement {
     /**
-     * @type {import('./aem.js').AEM}
+     * @type {import('@adobe/mas-web-components').AEM}
      */
     #aem;
     cache = cache;
+
+    /**
+     * @type {HtmlElement[]}
+     */
+    refs = [];
 
     /**
      * @type {string} fragment path
      */
     path;
 
+    /**
+     * Consonant styling for CTAs.
+     */
+    consonant = false;
+
+    /**
+     * Internal promise to track the readiness of the web-component to render.
+     */
+    #readyPromise;
+
     static get observedAttributes() {
-        return ['source', 'path'];
+        return ['source', 'path', 'consonant'];
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
@@ -167,41 +207,59 @@ export class MerchDataSource extends HTMLElement {
     }
 
     connectedCallback() {
+        this.consonant = this.hasAttribute('consonant');
+        this.clearRefs();
         const bucket =
-            this.getAttribute(ATTR_AEM_BUCKET) ??
-            document.querySelector('mas-studio')?.getAttribute(ATTR_AEM_BUCKET);
+            this.getAttribute(ATTR_AEM_BUCKET) ?? 'publish-p22655-e59341';
         this.#aem = new AEM(bucket);
-        this.fetchData();
+        this.refresh(false);
     }
 
-    refresh() {
-        this.cache.remove(this.path);
-        this.fetchData();
+    clearRefs() {
+        this.refs.forEach((ref) => {
+            ref.remove();
+        });
+    }
+
+    async refresh(flushCache = true) {
+        if (!this.path) return;
+
+        if (this.#readyPromise) {
+            const ready = await Promise.race([
+                this.#readyPromise,
+                Promise.resolve(false),
+            ]);
+            if (!ready) return; // already fetching data
+        }
+
+        this.clearRefs();
+        this.refs = [];
+        if (flushCache) {
+            this.cache.remove(this.path);
+        }
+        this.#readyPromise = this.fetchData().then(() => true);
     }
 
     async fetchData() {
         let item = cache.get(this.path);
         if (!item) {
-            item = await this.#aem.sites.cf.fragments.getCfByPath(this.path);
+            item = await this.#aem.sites.cf.fragments.getByPath(this.path);
+            cache.add(item);
         }
         if (item) {
-            parseMerchCard(item, this.parentElement);
-            this.render();
+            const appendFn = (element) => {
+                this.parentElement.appendChild(element);
+                this.refs.push(element);
+            };
+            parseMerchCard(item, appendFn, this.parentElement, this.consonant);
             return;
         }
-
-        this.render();
     }
 
-    async render() {
-        if (!this.isConnected) return;
-        if (this.parentElement.tagName !== 'MERCH-CARD') return;
-        await Promise.all(
-            [
-                ...this.parentElement.querySelectorAll(
-                    '[is="inline-price"],[is="checkout-link"]',
-                ),
-            ].map((el) => el.onceSettled()),
+    get updateComplete() {
+        return (
+            this.#readyPromise ??
+            Promise.reject(new Error('datasource is not correctly configured'))
         );
     }
 }

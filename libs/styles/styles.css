@@ -127,7 +127,7 @@
   --icon-size-s: 32px;
   --icon-size-xs: 24px;
   --icon-size-xxs: 16px;
-  
+
   /* z-index */
   --above-all: 9000; /* Used for page tools that overlay page content */
 }
@@ -211,7 +211,8 @@
 .detail-xl,
 .detail-l,
 .detail-m,
-.detail-s {
+.detail-s,
+.detail-xs {
   margin: 0;
 }
 
@@ -703,7 +704,7 @@ header:not(.global-navigation) ~ main {
   the 'global-navigation' class should also be removed from the 'header' selector
   all of the ':not(.global-navigation)' rules can be entirely removed.
  */
-header.global-navigation {
+header.global-navigation, header.global-navigation.feds--dark {
   height: var(--global-height-nav);
   visibility: hidden;
 }
@@ -765,6 +766,10 @@ h6 {
   line-height: var(--type-heading-xs-lh);
 }
 
+:is(h1, h2, h3, h4, h5, h6, p):lang(ja) {
+  line-break: strict;
+}
+
 /* Links */
 a.auto-block,
 a.fragment {
@@ -802,6 +807,10 @@ a.static:hover {
 .static-links a:not([class*="button"]) {
   color: inherit;
   text-decoration: underline;
+}
+
+.copy-link {
+  font-weight: 700;
 }
 
 /* Tooltip */

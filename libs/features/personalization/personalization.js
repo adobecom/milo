@@ -93,30 +93,6 @@ const isInLcpSection = (el) => {
   return lcpSection === el || lcpSection?.contains(el);
 };
 
-export const createFrag = (el, url, manifestId, targetManifestId) => {
-  let href = url;
-  try {
-    const { pathname, search, hash } = new URL(url);
-    href = `${pathname}${search}${hash}`;
-  } catch {
-    // ignore
-  }
-  const a = createTag('a', { href }, url);
-  if (manifestId) a.dataset.manifestId = manifestId;
-  if (targetManifestId) a.dataset.adobeTargetTestid = targetManifestId;
-  let frag = createTag('p', undefined, a);
-  const isDelayedModalAnchor = /#.*delay=/.test(href);
-  if (isDelayedModalAnchor) frag.classList.add('hide-block');
-  const isSection = el.parentElement.nodeName === 'MAIN';
-  if (isSection) {
-    frag = createTag('div', undefined, frag);
-  }
-  if (isInLcpSection(el)) {
-    loadLink(`${localizeLink(a.href)}.plain.html`, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
-  }
-  return frag;
-};
-
 const GLOBAL_CMDS = [
   'insertscript',
   'replacepage',
@@ -127,12 +103,80 @@ const GLOBAL_CMDS = [
 const CREATE_CMDS = {
   insertafter: 'afterend',
   insertbefore: 'beforebegin',
-  prependtosection: 'afterbegin',
-  appendtosection: 'beforeend',
+  prepend: 'afterbegin',
+  append: 'beforeend',
+};
+
+const COMMANDS_KEYS = {
+  remove: 'remove',
+  replace: 'replace',
+};
+
+function addIds(el, manifestId, targetManifestId) {
+  if (manifestId) el.dataset.manifestId = manifestId;
+  if (targetManifestId) el.dataset.adobeTargetTestid = targetManifestId;
+}
+
+function getSelectorType(selector) {
+  const sel = selector.toLowerCase().trim();
+  if (sel.startsWith('/') || sel.startsWith('http')) return 'fragment';
+  return 'other';
+}
+
+const getUpdatedHref = (el, content, action) => {
+  const href = el.getAttribute('href');
+  if (action === 'insertafter' || action === 'append') return `${href}${content}`;
+  if (action === 'insertbefore' || action === 'prepend') return `${content}${href}`;
+  return content;
+};
+
+const createFrag = (el, action, content, manifestId, targetManifestId) => {
+  if (action === 'replace') el.classList.add(CLASS_EL_DELETE, CLASS_EL_REPLACE);
+  let href = content;
+  try {
+    const { pathname, search, hash } = new URL(content);
+    href = `${pathname}${search}${hash}`;
+  } catch {
+    // ignore
+  }
+  const a = createTag('a', { href }, content);
+  addIds(a, manifestId, targetManifestId);
+  const frag = createTag('p', undefined, a);
+  const isDelayedModalAnchor = /#.*delay=/.test(href);
+  if (isDelayedModalAnchor) frag.classList.add('hide-block');
+  if (isInLcpSection(el)) {
+    loadLink(`${localizeLink(a.href)}.plain.html`, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
+  }
+  return frag;
+};
+
+export const createContent = (el, content, manifestId, targetManifestId, action, modifiers) => {
+  if (action === 'replace') {
+    addIds(el, manifestId, targetManifestId);
+  }
+  if (el?.nodeName === 'A' && modifiers?.includes('href')) {
+    el.setAttribute('href', getUpdatedHref(el, content, action));
+    addIds(el, manifestId, targetManifestId);
+    return el;
+  }
+  if (getSelectorType(content) !== 'fragment') {
+    if (action === 'replace') {
+      el.innerHTML = content;
+      return el;
+    }
+    const container = createTag('div', {}, content);
+    addIds(container, manifestId, targetManifestId);
+    return container;
+  }
+
+  const frag = createFrag(el, action, content, manifestId, targetManifestId);
+  addIds(frag, manifestId, targetManifestId);
+  if (el?.parentElement.nodeName !== 'MAIN') return frag;
+  return createTag('div', undefined, frag);
 };
 
 const COMMANDS = {
-  remove: (el, target, manifestId) => {
+  [COMMANDS_KEYS.remove]: ({ el, target, manifestId }) => {
     if (target === 'false') return;
     if (manifestId) {
       el.dataset.removedManifestId = manifestId;
@@ -140,16 +184,14 @@ const COMMANDS = {
     }
     el.classList.add(CLASS_EL_DELETE);
   },
-  replace: (el, target, manifestId, targetManifestId) => {
+  [COMMANDS_KEYS.replace]: ({ el, target, modifiers, manifestId, targetManifestId }) => {
     if (!el || el.classList.contains(CLASS_EL_REPLACE)) return;
-    el.insertAdjacentElement('beforebegin', createFrag(el, target, manifestId, targetManifestId));
-    el.classList.add(CLASS_EL_DELETE, CLASS_EL_REPLACE);
+    el.insertAdjacentElement(
+      'beforebegin',
+      createContent(el, target, manifestId, targetManifestId, 'replace', modifiers),
+    );
   },
 };
-
-function checkSelectorType(selector) {
-  return selector?.startsWith('/') || selector?.startsWith('http') ? 'fragment' : 'css';
-}
 
 const fetchData = async (url, type = DATA_TYPE.JSON) => {
   try {
@@ -240,8 +282,7 @@ const setMetadata = (metadata) => {
   const propName = selector.startsWith('og:') ? 'property' : 'name';
   let metaEl = document.querySelector(`meta[${propName}="${selector}"]`);
   if (!metaEl) {
-    metaEl = document.createElement('meta');
-    metaEl.setAttribute(propName, selector);
+    metaEl = createTag('meta', { [propName]: selector });
     document.head.append(metaEl);
   }
   metaEl.setAttribute('content', val);
@@ -259,13 +300,6 @@ function normalizeKeys(obj) {
   }, {});
 }
 
-const getDivInTargetedCell = (tableCell) => {
-  tableCell.replaceChildren();
-  const div = document.createElement('div');
-  tableCell.appendChild(div);
-  return div;
-};
-
 const querySelector = (el, selector, all = false) => {
   try {
     return all ? el.querySelectorAll(selector) : el.querySelector(selector);
@@ -275,18 +309,6 @@ const querySelector = (el, selector, all = false) => {
     return null;
   }
 };
-
-function getTrailingNumber(s) {
-  const match = s.match(/\d+$/);
-  return match ? parseInt(match[0], 10) : null;
-}
-
-function getSection(rootEl, idx) {
-  return rootEl === document
-    ? document.querySelector(`body > main > div:nth-child(${idx})`)
-    : rootEl.querySelector(`:scope > div:nth-child(${idx})`);
-}
-
 function registerInBlockActions(cmd, manifestId, targetManifestId) {
   const { action, target, selector } = cmd;
   const command = { action, target, manifestId, targetManifestId };
@@ -302,7 +324,7 @@ function registerInBlockActions(cmd, manifestId, targetManifestId) {
   if (blockAndSelector.length > 1) {
     blockSelector = blockAndSelector.slice(1).join(' ');
     command.selector = blockSelector;
-    if (checkSelectorType(blockSelector) === 'fragment') {
+    if (getSelectorType(blockSelector) === 'fragment') {
       config.mep.inBlock[blockName].fragments ??= {};
       const { fragments } = config.mep.inBlock[blockName];
       delete command.selector;
@@ -327,70 +349,91 @@ function registerInBlockActions(cmd, manifestId, targetManifestId) {
   config.mep.inBlock[blockName].commands.push(command);
 }
 
-function getSelectedElement(selector, action, rootEl) {
-  if (!selector) return null;
-  if ((action.includes('appendtosection') || action.includes('prependtosection'))) {
-    if (!selector.includes('section')) return null;
-    const section = selector.trim().replace('section', '');
-    if (section !== '' && Number.isNaN(section)) return null;
+const updateEndNumber = (endNumber, term) => (endNumber
+  ? term.replace(endNumber, `:nth-child(${endNumber})`)
+  : term);
+function modifySelectorTerm(termParam) {
+  let term = termParam;
+  const specificSelectors = {
+    section: 'main > div',
+    'primary-cta': 'strong a',
+    'secondary-cta': 'em a',
+    'action-area': '*:has(> em a, > strong a)',
+    'any-marquee': '[class*="marquee"]',
+    header: ':is(h1, h2, h3, h4, h5, h6)',
+  };
+  const otherSelectors = ['row', 'col'];
+  const htmlEls = ['main', 'div', 'a', 'p', 'strong', 'em', 'picture', 'source', 'img', 'h'];
+  const startTextMatch = term.match(/^[a-zA-Z/./-]*/);
+  const startText = startTextMatch ? startTextMatch[0].toLowerCase() : '';
+  const startTextPart1 = startText.split(/\.|:/)[0];
+  const endNumberMatch = term.match(/[0-9]*$/);
+  const endNumber = endNumberMatch ? endNumberMatch[0] : '';
+  if (!startText || htmlEls.includes(startText)) return term;
+  if (otherSelectors.includes(startText)) {
+    term = term.replace(startText, '> div');
+    term = updateEndNumber(endNumber, term);
+    return term;
   }
-  if (checkSelectorType(selector) === 'fragment') {
-    try {
-      const fragment = document.querySelector(`a[href*="${normalizePath(selector, false)}"], a[href*="${normalizePath(selector, true)}"]`);
-      if (fragment) return fragment.parentNode;
-      return null;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  let selectedEl;
-  if (selector.includes('.') || !['section', 'block', 'row'].some((s) => selector.includes(s))) {
-    selectedEl = querySelector(rootEl, selector);
-    if (selectedEl) return selectedEl;
-  }
-
-  const terms = selector.split(/\s+/);
-
-  let section = null;
-  if (terms[0]?.startsWith('section')) {
-    const sectionIdx = getTrailingNumber(terms[0]) || 1;
-    section = getSection(rootEl, sectionIdx);
-    terms.shift();
-  }
-
-  if (terms.length) {
-    const blockStr = terms.shift();
-    if (blockStr.includes('.')) {
-      selectedEl = querySelector(section || rootEl, blockStr);
-    } else {
-      const blockIndex = getTrailingNumber(blockStr) || 1;
-      const blockName = blockStr.replace(`${blockIndex}`, '');
-      if (blockName === 'block') {
-        if (!section) section = getSection(rootEl, 1);
-        selectedEl = querySelector(section, `:scope > div:nth-of-type(${blockIndex})`);
-      } else {
-        selectedEl = querySelector(section || rootEl, `.${blockName}`, true)?.[blockIndex - 1];
-      }
-    }
-  } else if (section) {
-    return section;
+  if (Object.keys(specificSelectors).includes(startTextPart1)) {
+    term = term.replace(startTextPart1, specificSelectors[startTextPart1]);
+    term = updateEndNumber(endNumber, term);
+    return term;
   }
 
-  if (terms.length) {
-    // find targeted table cell in rowX colY format
-    const rowColMatch = /row(?<row>\d+)\s+col(?<col>\d+)/gm.exec(terms.join(' '));
-    if (rowColMatch) {
-      const { row, col } = rowColMatch.groups;
-      const tableCell = querySelector(selectedEl, `:nth-child(${row}) > :nth-child(${col})`);
-      if (!tableCell) return null;
-      return getDivInTargetedCell(tableCell);
-    }
+  if (!startText.startsWith('.')) term = `.${term}`;
+  if (endNumber) {
+    term = term.replace(endNumber, '');
+    term = `${term}:nth-child(${endNumber} of ${term})`;
   }
-
-  return selectedEl;
+  return term;
+}
+function getModifiers(selector) {
+  let sel = selector;
+  const modifiers = [];
+  const flags = sel.split(/\s+#_/);
+  if (flags.length) {
+    sel = flags.shift();
+    flags.forEach((flag) => {
+      flag.split(/_|#_/).forEach((mod) => modifiers.push(mod.toLowerCase().trim()));
+    });
+  }
+  return { sel, modifiers };
+}
+export function modifyNonFragmentSelector(selector) {
+  const { sel, modifiers } = getModifiers(selector);
+  return {
+    modifiedSelector: sel
+      .split('>').join(' > ')
+      .split(',').join(' , ')
+      .replaceAll(/main\s*>?\s*(section\d*)/gi, '$1')
+      .split(/\s+/)
+      .map(modifySelectorTerm)
+      .join(' ')
+      .trim(),
+    modifiers,
+  };
 }
 
+function getSelectedElement({ selector: sel, rootEl }) {
+  const selector = sel.trim();
+  if (!selector) return {};
+
+  if (getSelectorType(selector) === 'fragment') {
+    try {
+      const fragment = document.querySelector(
+        `a[href*="${normalizePath(selector, false)}"], a[href*="${normalizePath(selector, true)}"]`,
+      );
+      if (fragment) return { el: fragment.parentNode };
+      return {};
+    } catch (e) {
+      /* c8 ignore next */
+      return {};
+    }
+  }
+  const { modifiedSelector, modifiers } = modifyNonFragmentSelector(selector);
+  return { el: querySelector(rootEl || document, modifiedSelector), modifiers };
+}
 const addHash = (url, newHash) => {
   if (!newHash) return url;
   try {
@@ -413,10 +456,10 @@ export const updateFragDataProps = (a, inline, sections, fragment) => {
     if (manifestId) setDataIdOnChildren(sections, 'manifestId', manifestId);
     if (adobeTargetTestid) setDataIdOnChildren(sections, 'adobeTargetTestid', adobeTargetTestid);
   } else {
-    if (manifestId) fragment.dataset.manifestId = manifestId;
-    if (adobeTargetTestid) fragment.dataset.adobeTargetTestid = adobeTargetTestid;
+    addIds(fragment, manifestId, adobeTargetTestid);
   }
 };
+
 export function handleCommands(commands, rootEl = document, forceInline = false) {
   commands.forEach((cmd) => {
     const { manifestId, targetManifestId, action, selector, target: trgt } = cmd;
@@ -425,20 +468,20 @@ export function handleCommands(commands, rootEl = document, forceInline = false)
       registerInBlockActions(cmd, manifestId, targetManifestId);
       return;
     }
+    const { el, modifiers } = getSelectedElement({ selector, rootEl });
+
+    if (!el || (!(action in COMMANDS) && !(action in CREATE_CMDS))) return;
 
     if (action in COMMANDS) {
-      const el = getSelectedElement(selector, action, rootEl);
-      COMMANDS[action](el, target, manifestId, targetManifestId);
-    } else if (action in CREATE_CMDS) {
-      const el = getSelectedElement(selector, action, rootEl);
-      el?.insertAdjacentElement(
-        CREATE_CMDS[action],
-        createFrag(el, target, manifestId, targetManifestId),
-      );
-    } else {
-      /* c8 ignore next 2 */
-      console.log('Invalid command found: ', cmd);
+      COMMANDS[action]({
+        el, target, manifestId, targetManifestId, action, modifiers,
+      });
+      return;
     }
+    el?.insertAdjacentElement(
+      CREATE_CMDS[action],
+      createContent(el, target, manifestId, targetManifestId, action, modifiers),
+    );
   });
 }
 
@@ -448,9 +491,11 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
   let targetId = manifestId.replace('.json', '');
   if (fTargetId) targetId = fTargetId;
   if (!config.mep?.preview) manifestId = false;
-  const action = line.action?.toLowerCase().replace('content', '').replace('fragment', '');
-  const { selector } = line;
+  // retro support
+  const action = line.action?.toLowerCase()
+    .replace('content', '').replace('fragment', '').replace('tosection', '');
   const pageFilter = line['page filter'] || line['page filter optional'];
+  const { selector } = line;
 
   if (pageFilter && !matchGlob(pageFilter, new URL(window.location).pathname)) return;
 
@@ -465,14 +510,14 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
       selector,
       pageFilter,
       target: line[vn],
-      selectorType: checkSelectorType(selector),
+      selectorType: getSelectorType(selector),
       manifestId,
       targetManifestId,
     };
 
     if (action in COMMANDS && variantInfo.selectorType === 'fragment') {
       variants[vn].fragments.push({
-        selector: normalizePath(variantInfo.selector),
+        selector: normalizePath(variantInfo.selector.split(' #_')[0]),
         val: normalizePath(line[vn]),
         action,
         manifestId,
@@ -540,6 +585,25 @@ export function parseManifestVariants(data, manifestPath, targetId) {
   return null;
 }
 
+export async function createMartechMetadata(placeholders, config, column) {
+  if (config.locale.ietf === 'en-US') return;
+
+  await import('../../martech/attributes.js').then(({ processTrackingLabels }) => {
+    config.mep.analyticLocalization ??= {};
+
+    placeholders.forEach((item, i) => {
+      const firstRow = placeholders[i];
+      let usValue = firstRow['en-us'] || firstRow.us || firstRow.en || firstRow.key;
+
+      if (!usValue) return;
+
+      usValue = processTrackingLabels(usValue);
+      const translatedValue = processTrackingLabels(item[column]);
+      config.mep.analyticLocalization[translatedValue] = usValue;
+    });
+  });
+}
+
 /* c8 ignore start */
 function parsePlaceholders(placeholders, config, selectedVariantName = '') {
   if (!placeholders?.length || selectedVariantName === 'default') return config;
@@ -561,6 +625,9 @@ function parsePlaceholders(placeholders, config, selectedVariantName = '') {
     }, {});
     config.placeholders = { ...(config.placeholders || {}), ...results };
   }
+
+  createMartechMetadata(placeholders, config, val);
+
   return config;
 }
 
@@ -842,13 +909,12 @@ export function cleanAndSortManifestList(manifests) {
 
 export function handleFragmentCommand(command, a) {
   const { action, fragment, manifestId, targetManifestId } = command;
-  if (action === 'replace') {
+  if (action === COMMANDS_KEYS.replace) {
     a.href = fragment;
-    if (manifestId) a.dataset.manifestId = manifestId;
-    if (targetManifestId) a.dataset.adobeTargetTestid = targetManifestId;
+    addIds(a, manifestId, targetManifestId);
     return fragment;
   }
-  if (action === 'remove') {
+  if (action === COMMANDS_KEYS.remove) {
     if (manifestId) {
       a.parentElement.dataset.removedManifestId = manifestId;
     } else {
@@ -885,8 +951,7 @@ export async function applyPers(manifests, postLCP = false) {
   if (config.mep.replacepage && !postLCP && main) {
     await replaceInner(config.mep.replacepage.val, main);
     const { manifestId, targetManifestId } = config.mep.replacepage;
-    if (manifestId) main.dataset.manifestId = manifestId;
-    if (targetManifestId) main.dataset.adobeTargetTestid = targetManifestId;
+    addIds(main, manifestId, targetManifestId);
   }
 
   if (!postLCP) handleCommands(config.mep.commands);

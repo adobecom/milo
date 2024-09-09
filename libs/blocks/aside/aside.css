@@ -1,4 +1,6 @@
 .aside {
+  --min-height: 160px;
+
   display: flex;
   width: 100%;
   position: relative;
@@ -27,6 +29,10 @@
 
 .aside [class^="body-"] {
   margin-bottom: var(--spacing-s);
+}
+
+.aside:not(.notification, .promobar) {
+  min-height: var(--min-height);
 }
 
 .aside.promobar [class^="body-"],
@@ -144,7 +150,6 @@
   margin-bottom: 0;
   font-size: var(--type-body-s-size);
   line-height: var(--type-body-s-lh);
-  font-weight: bold;
 }
 
 .aside.promobar .promo-text .action-area {
@@ -166,7 +171,7 @@
   align-items: center;
 }
 
-.aside .foreground.container .icon-area {
+.aside:not(.notification) .foreground.container .icon-area {
   max-height: 80px;
   display: flex;
   align-items: center;
@@ -236,7 +241,7 @@
   flex-shrink: 0;
 }
 
-.aside .foreground.container .icon-area picture {
+.aside:not(.notification) .foreground.container .icon-area picture {
   height: 100%;
 }
 
@@ -409,6 +414,7 @@
 
 .aside.notification .foreground.container .icon-area img {
   max-height: 40px;
+  max-width: 234px;
   height: auto;
 }
 
@@ -655,6 +661,24 @@
 }
 
 @media screen and (min-width: 600px) {
+  .aside {
+    --min-height-small: 420px;
+    --min-height-medium: 560px;
+    --min-height-large: 700px;
+  }
+
+  .aside.small:not(.notification, .promobar) {
+    min-height: var(--min-height-small);
+  }
+
+  .aside.medium:not(.notification, .promobar) {
+    min-height: var(--min-height-medium);
+  }
+
+  .aside.large:not(.notification, .promobar) {
+    min-height: var(--min-height-large);
+  }
+
   .aside.media-top-mobile .foreground .image,
   .aside.media-top-mobile .split-image {
     order: unset;
@@ -1012,11 +1036,11 @@
     padding-left: 0;
   }
 
-  .aside .foreground.container .text {
+  .aside:not(.notification) .foreground.container .text {
     flex: 1 0 calc(var(--grid-column-width) * 6);
   }
 
-  .aside .foreground.container .image {
+  .aside:not(.notification) .foreground.container .image {
     flex: 1 0 calc(var(--grid-column-width) * 5);
   }
 
@@ -1157,6 +1181,7 @@
 
   .aside.promobar .promo-text .action-area {
     gap: var(--spacing-s);
+    flex-wrap: nowrap;
   }
 
   .aside.promobar .promo-text.mobile-up,
