@@ -5,7 +5,6 @@ import {
   loadIms,
   decorateLinks,
   loadScript,
-  getSusiOptions,
 } from '../../utils/utils.js';
 import {
   closeAllDropdowns,
@@ -84,8 +83,8 @@ export const CONFIG = {
             },
           },
           callbacks: {
-            onSignIn: () => { window.adobeIMS?.signIn(getSusiOptions()); },
-            onSignUp: () => { window.adobeIMS?.signIn(getSusiOptions()); },
+            onSignIn: () => { window.adobeIMS?.signIn(getConfig().susiOptions); },
+            onSignUp: () => { window.adobeIMS?.signIn(getConfig().susiOptions); },
           },
         },
       },
@@ -154,7 +153,7 @@ const decorateSignIn = async ({ rawElem, decoratedElem }) => {
 
     signInElem.addEventListener('click', (e) => {
       e.preventDefault();
-      signIn(getSusiOptions());
+      signIn(getConfig().susiOptions);
     });
   } else {
     signInElem = toFragment`<button daa-ll="${signInLabel}" class="feds-signIn" aria-expanded="false" aria-haspopup="true">${signInLabel}</button>`;
@@ -171,7 +170,7 @@ const decorateSignIn = async ({ rawElem, decoratedElem }) => {
       dropdownSignInAnchor.replaceWith(dropdownSignInButton);
       dropdownSignInButton.addEventListener('click', (e) => {
         e.preventDefault();
-        signIn(getSusiOptions());
+        signIn(getConfig().susiOptions);
       });
     } else {
       lanaLog({ message: 'Sign in link not found in dropdown.', tags: 'errorType=warn,module=gnav' });

@@ -51,7 +51,7 @@ const checkIms = async () => {
       'You must be logged in with an Adobe ID in order to publish to CaaS.\nDo you want to log in?',
     );
     if (shouldLogIn) {
-      window.adobeIMS.signIn(getSusiOptions());
+      window.adobeIMS.signIn(getConfig().susiOptions);
     }
     return false;
   }

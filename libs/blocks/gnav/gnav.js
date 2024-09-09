@@ -6,7 +6,6 @@ import {
   getMetadata,
   loadIms,
   localizeLink,
-  getSusiOptions,
 } from '../../utils/utils.js';
 
 import {
@@ -511,7 +510,7 @@ class Gnav {
     }
     signInEl.addEventListener('click', (e) => {
       e.preventDefault();
-      window.adobeIMS.signIn(getSusiOptions());
+      window.adobeIMS.signIn(getConfig().susiOptions);
     });
     profileEl.append(signIn);
   };

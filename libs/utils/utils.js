@@ -251,22 +251,6 @@ export const [setConfig, updateConfig, getConfig] = (() => {
   ];
 })();
 
-export function getSusiOptions() {
-  const { susiOptions, env: { name: envName } } = getConfig();
-
-  if (!susiOptions) return {};
-
-  try {
-    return Object.keys(susiOptions).reduce((opts, key) => {
-      opts[key] = susiOptions[key][envName] || susiOptions[key];
-      return opts;
-    }, {});
-  } catch (e) {
-    window.lana?.log('Error while attempting to parse SUSI options:', e);
-    return {};
-  }
-}
-
 export function isInTextNode(node) {
   return node.parentElement.firstChild.nodeType === Node.TEXT_NODE;
 }
@@ -687,7 +671,7 @@ export function decorateLinks(el) {
       a.href = a.href.replace(loginEvent, '');
       a.addEventListener('click', (e) => {
         e.preventDefault();
-        window.adobeIMS?.signIn(getSusiOptions());
+        window.adobeIMS?.signIn(getConfig().susiOptions);
       });
     }
     const copyEvent = '#_evt-copy';

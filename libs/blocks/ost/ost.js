@@ -3,7 +3,6 @@ import {
   getConfig,
   getLocale,
   getMetadata,
-  getSusiOptions,
   loadScript,
   loadStyle,
 } from '../../utils/utils.js';
@@ -276,7 +275,7 @@ export default async function init(el) {
       },
       onReady: () => {
         if (!window.adobeIMS.isSignedInUser()) {
-          window.adobeIMS.signIn(getSusiOptions());
+          window.adobeIMS.signIn(getConfig().susiOptions);
         }
       },
     };
