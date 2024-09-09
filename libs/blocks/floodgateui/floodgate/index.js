@@ -12,7 +12,7 @@ import { setStatus } from '../utils/status.js';
 import { getStatus, preview } from '../../locui/utils/franklin.js';
 import login from '../../../tools/sharepoint/login.js';
 import { getUrls } from '../../locui/loc/index.js';
-import { isUrl, getUrl } from '../utils/url.js';
+import { isUrl, getUrl, validateUrl } from '../utils/url.js';
 
 const MOCK_REFERRER = 'https://adobe.sharepoint.com/:x:/r/sites/adobecom/_layouts/15/Doc.aspx?sourcedoc=%7B12F9079D-E580-4407-973D-2330B171B2CB%7D&file=DemoFgUI.xlsx&action=default&mobileredirect=true';
 const REQUIRED_KEYS = ['ref', 'repo', 'owner', 'host', 'project', 'referrer'];
@@ -83,7 +83,6 @@ export async function loadDetails() {
     const json = await resp.json();
     const jsonUrls = json.urls.data.map((item) => new URL(item.URL));
     const projectUrls = getUrls(jsonUrls, true);
-    urls.value = projectUrls;
     urls.value = await validatedUrls(projectUrls);
     if (json.settings) loadProjectSettings(json.settings.data);
     loadDetailsCheck.value = true;
