@@ -621,7 +621,7 @@ describe('global navigation', () => {
     });
   });
 
-  describe('Client search earch feature in global navigation', () => {
+  describe('Client search feature in global navigation', () => {
     it('should append the feds-client-search div when search is enabled', async () => {
       await createFullGlobalNavigation({ customConfig: { searchEnabled: 'on' } });
       expect(document.querySelector(selectors.topNavWrapper).classList.contains('feds-client-search')).to.exist;
