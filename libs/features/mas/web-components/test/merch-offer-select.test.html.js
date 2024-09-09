@@ -12,7 +12,7 @@ import '../src/merch-quantity-select.js';
 import { delay } from './utils.js';
 import { withWcs } from './mocks/wcs.js';
 import { withLiterals } from './mocks/literals.js';
-import mas from './mocks/mas.js';
+import mas from './mas.js';
 
 function getDynamicElements(merchCard, merchOfferSelect) {
     const price = merchOfferSelect.price;

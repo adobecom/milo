@@ -25,9 +25,10 @@ async function decorateLockupFromContent(el) {
 const extendDeviceContent = (el) => {
   const detail = el.querySelector('[class^="detail-"]');
   const prevElem = detail?.previousElementSibling;
-  if (!prevElem || ![...prevElem.classList].some((c) => c.startsWith('body-'))) return;
-  prevElem.classList.remove('body-m');
-  prevElem.classList.add('body-xxs', 'device');
+  if (!prevElem) return;
+  const elBodyClass = [...prevElem.classList].find((c) => c.startsWith('body-'));
+  prevElem.classList.remove(elBodyClass);
+  prevElem.classList.add('device');
 };
 
 const decorateMedia = (el, media) => {
@@ -37,14 +38,14 @@ const decorateMedia = (el, media) => {
   if (mediaVideo) {
     applyHoverPlay(mediaVideo);
   }
-  if (media.children.length > 1) decorateBlockBg(el, media);
+  if (media.children.length > 1) decorateBlockBg(el, media, { className: 'vp-media' });
 };
 
 const decorateForeground = async (el, rows) => {
-  rows.forEach(async (row, i) => {
+  rows.forEach((row, i) => {
     if (i === 0) {
       row.classList.add('foreground');
-      await decorateLockupFromContent(row);
+      decorateLockupFromContent(row);
     } else if (i === (rows.length - 1)) {
       row.classList.add('card-footer');
       if (!row.textContent.trim()) row.classList.add('empty');
@@ -57,12 +58,14 @@ const decorateForeground = async (el, rows) => {
 };
 
 const decorateBgRow = (el, background, remove) => {
-  if (background.textContent.trim() === '' || remove) {
+  const rows = background.querySelectorAll(':scope > div');
+  const bgRowsEmpty = [...rows].every((row) => row.innerHTML.trim() === '');
+  if (bgRowsEmpty || remove) {
     el.classList.add('no-bg');
     background.remove();
-    return;
+  } else {
+    decorateBlockBg(el, background);
   }
-  decorateBlockBg(el, background);
 };
 
 function handleClickableCard(el) {

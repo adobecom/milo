@@ -30,7 +30,7 @@ export const getConfig = () => ({});
 export const loadStyle = stub();
 
 export const loadScript = stub();
-
+export const customFetch = stub();
 export const utf8ToB64 = (str) => window.btoa(unescape(encodeURIComponent(str)));
 
 export function createIntersectionObserver({ el, callback /* , once = true, options = {} */ }) {
