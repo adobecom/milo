@@ -1302,7 +1302,9 @@ export const userCanPublishPage = async (detail) => {
   if (!detail) return false;
   const { live, profile, webPath } = detail;
   let canPublish = live?.permissions?.includes('write');
-  let message = 'Publishing is currently disabled for this page';
+  let message = canPublish === undefined
+    ? 'Please sign into sidekick to publish this page'
+    : 'Publishing is currently disabled for this page';
   if (canPublish) {
     const config = await getCustomConfig('/.milo/publish-permissions-config.json');
     if (config) {
