@@ -1,4 +1,3 @@
-/* eslint-disable import/no-extraneous-dependencies, max-len, no-console, chai-friendly/no-unused-expressions */
 import { expect, test } from '@playwright/test';
 import WebUtil from '../../libs/webutil.js';
 import { features } from './marquee.spec.js';
