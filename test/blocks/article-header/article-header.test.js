@@ -1,7 +1,6 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import sinon from 'sinon';
-import { stub } from 'sinon';
+import sinon, { stub } from 'sinon';
 import { setConfig, getConfig } from '../../../libs/utils/utils.js';
 import { delay, waitForElement } from '../../helpers/waitfor.js';
 
@@ -27,15 +26,15 @@ describe('article header', () => {
 
   it('should log unknown topic', async () => {
     try {
-      const div = document.createElement('div')
-      div.setAttribute('data-topic-link', ['abcd'])
+      const div = document.createElement('div');
+      div.setAttribute('data-topic-link', ['abcd']);
       document.body.append(div);
       await loadTaxonomy();
-      expect(window.lana.log.args[0][0]).to.equal('Trying to get a link for an unknown topic: abcd (current page)')
+      expect(window.lana.log.args[0][0]).to.equal('Trying to get a link for an unknown topic: abcd (current page)');
     } catch (e) {
-      console.log(e)
+      console.log(e);
     }
-  })
+  });
   it('creates article header block', () => {
     expect(document.body.querySelector('.article-category')).to.exist;
     expect(document.body.querySelector('.article-title')).to.exist;
@@ -123,7 +122,6 @@ describe('test the invalid article header', () => {
 
   it('adds invalid-date when invalid date is provided', async () => {
     await init(document.body.querySelector('.article-header'));
-
     const date = await waitForElement('.article-date-invalid');
     expect(date).to.exist;
   });

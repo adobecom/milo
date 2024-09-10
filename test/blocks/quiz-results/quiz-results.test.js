@@ -79,7 +79,7 @@ describe('Quiz Results', () => {
   it('should return misconfigured block', async () => {
     const el = document.body.querySelector('.nested-three');
     localStorage.setItem('misconf', JSON.stringify(mockData.mockTwo));
-    el.classList.remove('nested')
+    el.classList.remove('nested');
     await init(el, 'quiz-results', 'misconf');
     expect(window.lana.log.args[2][0]).to.equal(`${LOADING_ERROR} The quiz-results block is misconfigured`);
   });
