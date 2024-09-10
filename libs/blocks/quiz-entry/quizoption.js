@@ -1,5 +1,6 @@
 import { html, useState, useEffect } from '../../deps/htm-preact.js';
 import { getSwipeDistance, getSwipeDirection } from '../carousel/carousel.js';
+import { removeLeftToRightMark } from '../quiz/utils.js';
 
 export const OptionCard = ({
   text, title, image, icon, iconTablet, iconDesktop, options,
@@ -17,13 +18,13 @@ export const OptionCard = ({
 
   const getIconHtml = () => html`<div class="quiz-option-icon">
     <picture>
-      ${iconDesktop && html`<source media="(min-width: 1024px)" srcset="${iconDesktop}" />`}
-      ${iconTablet && html`<source media="(min-width: 600px)" srcset="${iconTablet}" />`}
-      <img src="${icon}" alt="" loading="lazy" />
+      ${iconDesktop && html`<source media="(min-width: 1024px)" srcset="${removeLeftToRightMark(iconDesktop)}" />`}
+      ${iconTablet && html`<source media="(min-width: 600px)" srcset="${removeLeftToRightMark(iconTablet)}" />`}
+      <img src="${removeLeftToRightMark(icon)}" alt="" loading="lazy" />
     </picture>
   </div>`;
 
-  const imageHtml = image ? html`<div class="quiz-option-image" style="background-image: url('${image}'); background-size: cover" loading="lazy"></div>` : null;
+  const imageHtml = image ? html`<div class="quiz-option-image" style="background-image: url('${removeLeftToRightMark(image)}'); background-size: cover" loading="lazy"></div>` : null;
   const titleHtml = title ? html`<p class="quiz-option-title">${title}</p>` : null;
   const textHtml = text ? html`<p class="quiz-option-text">${text}</p>` : null;
 

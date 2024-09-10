@@ -1,4 +1,4 @@
-import { getNormalizedMetadata } from '../quiz/utils.js';
+import { getNormalizedMetadata, getLocalizedURL } from '../quiz/utils.js';
 
 export async function fetchJson(path) {
   const response = await fetch(path);
@@ -104,8 +104,8 @@ export const handleSelections = (prevSelections, selectedQuestion, selections) =
 
 export async function getQuizEntryData(el) {
   const blockData = getNormalizedMetadata(el);
-  const dataPath = blockData.data.text;
-  const quizPath = blockData.quiz.text;
+  const dataPath = getLocalizedURL(blockData.data.text);
+  const quizPath = getLocalizedURL(blockData.quiz.text);
   const maxQuestions = Number(blockData.maxquestions?.text) || 10;
   const analyticsType = blockData.analyticstype?.text;
   const analyticsQuiz = blockData.analyticsquiz?.text;
