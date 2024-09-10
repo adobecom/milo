@@ -2,6 +2,7 @@ import { AEM } from './aem.js';
 import { createTag } from './utils.js';
 
 const ATTR_AEM_BUCKET = 'aem-bucket';
+const AEM_BUCKET = 'publish-p22655-e59341';
 
 const VARIANTS = {
     CATALOG: 'catalog',
@@ -210,7 +211,7 @@ export class MerchDataSource extends HTMLElement {
         this.consonant = this.hasAttribute('consonant');
         this.clearRefs();
         const bucket =
-            this.getAttribute(ATTR_AEM_BUCKET) ?? 'publish-p22655-e59341';
+            this.getAttribute(ATTR_AEM_BUCKET) ?? AEM_BUCKET;
         this.#aem = new AEM(bucket);
         this.refresh(false);
     }
