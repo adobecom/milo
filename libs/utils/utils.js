@@ -638,9 +638,8 @@ const decorateCopyLink = (a, evt) => {
   });
 };
 
-function convertStageLinks(config, anchors) {
+export function convertStageLinks({ anchors, config, hostname }) {
   if (config.env?.name === 'prod' || !config.stageDomainsMap) return;
-  const { hostname } = window.location;
   const matchedRules = Object.entries(config.stageDomainsMap)
     .find(([domain]) => hostname.includes(domain));
   if (!matchedRules) return;
@@ -659,7 +658,8 @@ export function decorateLinks(el) {
   const config = getConfig();
   decorateImageLinks(el);
   const anchors = el.getElementsByTagName('a');
-  convertStageLinks(config, anchors);
+  const { hostname } = window.location;
+  convertStageLinks({ anchors, config, hostname });
   return [...anchors].reduce((rdx, a) => {
     appendHtmlToLink(a);
     a.href = localizeLink(a.href);
