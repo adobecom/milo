@@ -16,7 +16,6 @@ import '../src/sidenav/merch-sidenav.js';
 import '../src/merch-card-collection.js';
 
 import { withWcs } from './mocks/wcs.js';
-import { withLiterals } from './mocks/literals.js';
 import mas from './mas.js';
 
 const searchParams = new URLSearchParams(document.location.search);
@@ -75,7 +74,7 @@ const shouldSkipTests = sessionStorage.getItem('skipTests') ? 'true' : 'false';
 runTests(async () => {
     await toggleLargeDesktop();
     mockLana();
-    await mockFetch(withWcs, withLiterals);
+    await mockFetch(withWcs);
     await mas();
     if (shouldSkipTests !== 'true') {
       describe('merch-card-collection web component', () => {

@@ -1,6 +1,4 @@
 import sinon from 'sinon';
-
-import { PRICE_LITERALS_URL } from '../../../../libs/blocks/merch/merch.js';
 import { applyPlanType } from '../../../../libs/deps/mas/commerce.js';
 
 const { fetch } = window;
@@ -18,7 +16,6 @@ export const readMockText = async (path) => {
 export async function mockFetch() {
   // this path allows to import this mock from tests for other blocks (e.g. commerce)
   const basePath = '/test/blocks/merch/mocks/';
-  const literals = await readMockJSON(`${basePath}literals.json`);
   const offers = await readMockJSON(`${basePath}offers.json`);
   const namedOffers = await readMockJSON(`${basePath}named-offers.json`);
 
@@ -51,14 +48,8 @@ export async function mockFetch() {
   };
 
   sinon.stub(window, 'fetch').callsFake((...args) => {
-    const { href, pathname, searchParams } = new URL(String(args[0]));
-    // literals mock
-    if (href === PRICE_LITERALS_URL) {
-      return Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve(literals),
-      });
-    }
+    const { pathname, searchParams } = new URL(String(args[0]));
+
     // wcs mock
     if (pathname.endsWith('/web_commerce_artifact')) {
       const osis = searchParams.get('offer_selector_ids').split(',');
