@@ -3,7 +3,7 @@ import { expect } from '@esm-bundle/chai';
 import sinon, { stub } from 'sinon';
 import { delay } from '../../helpers/waitfor.js';
 import { setConfig } from '../../../libs/utils/utils.js';
-import init, { setPreferences, decorateURL, FORM_PARAM } from '../../../libs/blocks/marketo/marketo.js';
+import init, { setPreferences, decorateURL, setProductOfInterest, FORM_PARAM } from '../../../libs/blocks/marketo/marketo.js';
 
 const innerHTML = await readFile({ path: './mocks/body.html' });
 window.lana = { log: stub() };
@@ -41,6 +41,16 @@ describe('marketo', () => {
     expect(window.mcz_marketoForm_pref).to.have.property('second');
     expect(window.mcz_marketoForm_pref.second).to.have.property('key');
     expect(window.mcz_marketoForm_pref.second.key).to.equal('value2');
+  });
+});
+
+describe('marketo setProductOfInterest', () => {
+  it('sets POI by query param', async () => {
+    const formData = {};
+    setProductOfInterest(formData, '?poi=poi1');
+
+    expect(formData).to.have.property('program.poi');
+    expect(formData['program.poi']).to.equal('poi1');
   });
 });
 

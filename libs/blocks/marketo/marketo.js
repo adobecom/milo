@@ -29,6 +29,8 @@ const MUNCHKIN_ID = 'marketo munckin';
 const SUCCESS_TYPE = 'form.success.type';
 const SUCCESS_CONTENT = 'form.success.content';
 const SUCCESS_SECTION = 'form.success.section';
+const PROGRAM_POI = 'program.poi';
+const POI_FILTER = 'field_filters.products';
 const FORM_MAP = {
   'success-type': SUCCESS_TYPE,
   'destination-type': SUCCESS_TYPE,
@@ -39,6 +41,7 @@ const FORM_MAP = {
   'sfdc-campaign-id': 'program.campaignids.sfdc',
 };
 export const FORM_PARAM = 'form';
+const QUERY_POI = 'poi';
 
 export const formValidate = (formEl) => {
   formEl.classList.remove('hide-errors');
@@ -53,6 +56,7 @@ export const decorateURL = (destination, baseURL = window.location) => {
     const { hostname, pathname, search, hash } = destinationUrl;
 
     if (!hostname) {
+      /* c8 ignore next 2 */
       throw new Error('URL does not have a valid host');
     }
 
@@ -146,6 +150,15 @@ export const formSuccess = (formEl, formData) => {
   return false;
 };
 
+export function setProductOfInterest(formData, search = window.location.search) {
+  const productOfInterest = new URLSearchParams(search).get(QUERY_POI);
+
+  if (productOfInterest) {
+    formData[PROGRAM_POI] = productOfInterest;
+    formData[POI_FILTER] = 'hidden';
+  }
+}
+
 const readyForm = (form, formData) => {
   const formEl = form.getFormElem().get(0);
   const el = formEl.closest('.marketo');
@@ -238,6 +251,7 @@ export default function init(el) {
     if (destinationUrl) formData[SUCCESS_CONTENT] = destinationUrl;
   }
 
+  setProductOfInterest(formData);
   setPreferences(formData);
 
   const fragment = new DocumentFragment();
