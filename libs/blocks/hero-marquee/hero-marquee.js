@@ -52,8 +52,8 @@ function decorateQr(el) {
   });
 }
 
-function loadIconography() {
-  return new Promise((resolve) => { loadStyle(`${base}/styles/iconography.css`, resolve); });
+async function loadIconography() {
+  await new Promise((resolve) => { loadStyle(`${base}/styles/iconography.css`, resolve); });
 }
 
 async function decorateLockupFromContent(el) {
@@ -248,7 +248,7 @@ export default async function init(el) {
       firstCol.parentElement.classList.add(`row-${parsed.key}`, 'con-block');
       firstCol.remove();
       cols[1].classList.add('row-wrapper');
-      if (contentTypes.includes(parsed.key)) loadContentType(row, parsed.key, parsed.classes);
+      if (contentTypes.includes(parsed.key)) await loadContentType(row, parsed.key, parsed.classes);
     } else {
       row.classList.add('norm');
       decorateBlockHrs(row);
