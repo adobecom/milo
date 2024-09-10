@@ -7,7 +7,7 @@ import {
 import { getEntitlementMap } from './entitlements.js';
 
 /* c8 ignore start */
-const PHONE_SIZE = window.screen.width < 768 || window.screen.height < 768;
+const PHONE_SIZE = window.screen.width < 550 || window.screen.height < 550;
 export const PERSONALIZATION_TAGS = {
   all: () => true,
   chrome: () => navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Edg'),
@@ -356,14 +356,20 @@ function modifySelectorTerm(termParam) {
   let term = termParam;
   const specificSelectors = {
     section: 'main > div',
-    'primary-cta': 'p strong a',
-    'secondary-cta': 'p em a',
+    'primary-cta': 'strong a',
+    'secondary-cta': 'em a',
     'action-area': '*:has(> em a, > strong a)',
+    'any-marquee': '[class*="marquee"]',
+    'any-header': ':is(h1, h2, h3, h4, h5, h6)',
   };
   const otherSelectors = ['row', 'col'];
-  const htmlEls = ['main', 'div', 'a', 'p', 'strong', 'em', 'picture', 'source', 'img', 'h'];
+  const htmlEls = [
+    'html', 'body', 'header', 'footer', 'main',
+    'div', 'a', 'p', 'strong', 'em', 'picture', 'source', 'img', 'h',
+  ];
   const startTextMatch = term.match(/^[a-zA-Z/./-]*/);
   const startText = startTextMatch ? startTextMatch[0].toLowerCase() : '';
+  const startTextPart1 = startText.split(/\.|:/)[0];
   const endNumberMatch = term.match(/[0-9]*$/);
   const endNumber = endNumberMatch ? endNumberMatch[0] : '';
   if (!startText || htmlEls.includes(startText)) return term;
@@ -372,8 +378,8 @@ function modifySelectorTerm(termParam) {
     term = updateEndNumber(endNumber, term);
     return term;
   }
-  if (Object.keys(specificSelectors).includes(startText)) {
-    term = term.replace(startText, specificSelectors[startText]);
+  if (Object.keys(specificSelectors).includes(startTextPart1)) {
+    term = term.replace(startTextPart1, specificSelectors[startTextPart1]);
     term = updateEndNumber(endNumber, term);
     return term;
   }
@@ -887,8 +893,6 @@ export function cleanAndSortManifestList(manifests) {
           freshManifest = manifestObj[manifest.manifestPath];
         }
         freshManifest.name = fullManifest.name;
-        freshManifest.selectedVariantName = fullManifest.selectedVariantName;
-        freshManifest.selectedVariant = freshManifest.variants[freshManifest.selectedVariantName];
         manifestObj[manifest.manifestPath] = freshManifest;
       } else {
         manifestObj[manifest.manifestPath] = manifest;

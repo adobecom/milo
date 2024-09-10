@@ -614,6 +614,14 @@ header.global-navigation {
     right: initial;
   }
 
+  .table .row-heading .col-heading .pricing {
+    overflow-wrap: anywhere;
+  }
+
+  .table .row-heading .col-heading span[is='inline-price'] {
+    display: inline;
+  }
+
   .table .row-heading .col:nth-child(n+1) {
     padding: 20px;
   }
@@ -704,5 +712,13 @@ header.global-navigation {
   .table.merch .col-merch .col-merch-content {
     flex-direction: column;
     align-items: initial;
+  }
+
+  .table :is(.heading-button,.action-area) {
+    max-width: 100%;
+  }
+
+  .table .action-area .con-button.button-l {
+    overflow: hidden;
   }
 }

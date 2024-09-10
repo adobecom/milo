@@ -24,9 +24,8 @@ const blockTypeSizes = {
   },
 };
 
-function decorateMultiViewport(el) {
+function decorateMultiViewport(foreground) {
   const viewports = ['mobile-up', 'tablet-up', 'desktop-up'];
-  const foreground = el.querySelector('.foreground');
   if (foreground.childElementCount === 2 || foreground.childElementCount === 3) {
     [...foreground.children].forEach((child, index) => {
       child.className = viewports[index];
@@ -36,8 +35,13 @@ function decorateMultiViewport(el) {
   return foreground;
 }
 
-function decorateBlockIconArea(el) {
-  const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
+function decorateBlockIconArea(content, el) {
+  const first = content.children[0];
+  if (first?.querySelector('img')) {
+    const areaClass = el.className.match(/-(lockup|icon)/);
+    first.classList.add(areaClass ? `${areaClass[1]}-area` : 'image');
+  }
+  const headings = content.querySelectorAll('h1, h2, h3, h4, h5, h6');
   if (!headings) return;
   headings.forEach((h) => {
     const hPrevElem = h.previousElementSibling;
@@ -76,14 +80,20 @@ function decorateLinkFarms(el) {
   });
 }
 
+function addStyle(filename) {
+  const { miloLibs, codeRoot } = getConfig();
+  const base = miloLibs || codeRoot;
+  loadStyle(`${base}/styles/${filename}.css`);
+}
+
 export default async function init(el) {
   el.classList.add('text-block', 'con-block');
   let rows = el.querySelectorAll(':scope > div');
-  if (rows.length > 1) {
+  if (rows.length > 1 || el.matches('.accent-bar')) {
     if (rows[0].textContent !== '') el.classList.add('has-bg');
     const [head, ...tail] = rows;
     decorateBlockBg(el, head);
-    rows = tail;
+    rows = tail || rows;
   }
   const helperClasses = [];
   let blockType = 'text';
@@ -97,8 +107,11 @@ export default async function init(el) {
   const hasLinkFarm = el.classList.contains('link-farm');
   rows.forEach((row) => {
     row.classList.add('foreground');
-    if (!hasLinkFarm) decorateBlockText(row, blockTypeSizes[blockType][size]);
-    decorateBlockIconArea(row);
+    if (!hasLinkFarm) {
+      [...row.children].forEach((c) => decorateBlockText(c, blockTypeSizes[blockType][size]));
+      decorateMultiViewport(row);
+    }
+    [...row.children].forEach((c) => decorateBlockIconArea(c, el));
   });
   if (el.classList.contains('full-width')) helperClasses.push('max-width-8-desktop', 'center', 'xxl-spacing');
   if (el.classList.contains('intro')) helperClasses.push('max-width-8-desktop', 'xxl-spacing-top', 'xl-spacing-bottom');
@@ -109,7 +122,6 @@ export default async function init(el) {
   if (hasLinkFarm) decorateLinkFarms(el);
   el.classList.add(...helperClasses);
   decorateTextOverrides(el);
-  if (!hasLinkFarm) decorateMultiViewport(el);
 
   const lastActionArea = el.querySelector('.action-area:last-of-type');
   if (lastActionArea) {
@@ -123,5 +135,11 @@ export default async function init(el) {
   if (foreground) {
     mnemonicList.querySelectorAll('p').forEach((product) => product.removeAttribute('class'));
     await loadBlock(mnemonicList);
+  }
+  if (el.matches('[class*="rounded-corners"]')) addStyle('rounded-corners');
+  if (el.matches('[class*="-lockup"]')) addStyle('iconography');
+  // Override Detail with Title L style if class exists - Temporary solution until Spectrum 2
+  if (el.classList.contains('l-title')) {
+    el.querySelectorAll('[class*="detail-"]')?.forEach((detail) => detail.classList.add('title-l'));
   }
 }
