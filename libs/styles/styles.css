@@ -714,6 +714,11 @@ header.global-navigation.has-promo {
   min-height: calc(var(--global-height-nav) + var(--global-height-navPromo));
 }
 
+header.global-navigation a {
+  color: initial;
+  text-decoration: unset;
+}
+
 @media (min-width: 900px) {
   header.global-navigation.has-breadcrumbs {
     padding-bottom: var(--global-height-breadcrumbs);
@@ -783,6 +788,7 @@ a {
 
 a:hover {
   color: var(--link-hover-color);
+  text-decoration-style: double;
 }
 
 /* Links Quiet */

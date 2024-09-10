@@ -11,6 +11,11 @@
   list-style-type: none;
 }
 
+.global-footer a {
+  color: initial;
+  text-decoration: unset;
+}
+
 .global-footer a:hover {
   text-decoration: none;
 }
