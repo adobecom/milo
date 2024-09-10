@@ -56,7 +56,7 @@ describe('article header', () => {
     expect(windowStub.firstCall.args[0]).to.equal(`https://www.twitter.com/share?&url=${url}&text=${title}`);
     expect(windowStub.firstCall.args[2]).to.equal('popup,top=233,left=233,width=700,height=467');
 
-    stub.restore();
+    windowStub.restore();
   });
 
   it('updates share text after deferred event', async () => {
