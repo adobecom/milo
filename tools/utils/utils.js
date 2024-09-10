@@ -34,8 +34,7 @@ const getCustomConfig = async (path) => {
   let config = null;
   const resp = await fetch(path);
   if (resp.ok) {
-    const json = await resp.json();
-    config = json;
+    config = await resp.json();
   }
   CONFIGS[path] = config;
   return CONFIGS[path];
