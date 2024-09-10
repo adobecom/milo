@@ -96,6 +96,7 @@ function addCloseButton(el) {
   el.querySelector('.foreground').appendChild(closeBtn);
   closeBtn.addEventListener('click', (e) => {
     e.target.closest('.section').classList.add('close-sticky-section');
+    document.dispatchEvent(new CustomEvent('milo:sticky:closed'));
   });
 }
 

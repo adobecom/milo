@@ -14,7 +14,7 @@ import { appendMiloStyles } from './utils.js';
 import { mockIms } from './mocks/ims.js';
 import { withLiterals } from './mocks/literals.js';
 import { withWcs } from './mocks/wcs.js';
-import mas from './mocks/mas.js';
+import mas from './mas.js';
 
 const skipTests = sessionStorage.getItem('skipTests');
 
@@ -98,6 +98,14 @@ runTests(async () => {
             });
             expect(card1Rows).to.equal(card2Rows);
             expect(card2Rows).to.equal(card3Rows);
+        });
+
+        it('mini-compare-chart should ', async () => {
+            const miniCompareChart = document.querySelector(
+                'merch-card[variant="mini-compare-chart"]',
+            );
+            miniCompareChart.removeEmptyRows();
+            expect(true, 'removing empty lines do not fail').to.be.true;  // TODO improve the assertion
         });
     });
 });

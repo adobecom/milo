@@ -37,6 +37,7 @@ export default async function loadBlock(configs, customLib) {
   const {
     header, footer, authoringPath, env = 'prod', locale = '', theme,
   } = configs || {};
+  window.miloClientEnv = env;
   const branch = new URLSearchParams(window.location.search).get('navbranch');
   const miloLibs = branch ? `https://${branch}--milo--adobecom.hlx.page` : customLib || envMap[env];
   if (!header && !footer) {
@@ -72,5 +73,4 @@ export default async function loadBlock(configs, customLib) {
     }
   });
 }
-
 window.loadNavigation = loadBlock;

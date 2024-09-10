@@ -508,7 +508,7 @@ export default function init(el) {
     expandSection = handleSection(sectionParams);
   });
 
-    handleHighlight(el);
+  handleHighlight(el);
   if (isMerch) formatMerchTable(el);
 
   let isDecorated = false;

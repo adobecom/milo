@@ -3,8 +3,24 @@ import { modifyNonFragmentSelector } from '../../../libs/features/personalizatio
 
 const values = [
   {
+    b: 'body > main > div',
+    a: 'body > main > div',
+  },
+  {
+    b: 'main header',
+    a: 'main header',
+  },
+  {
+    b: 'main footer',
+    a: 'main footer',
+  },
+  {
+    b: 'any-marquee action-area',
+    a: '[class*="marquee"] *:has(> em a, > strong a)',
+  },
+  {
     b: 'main section1 marquee action-area',
-    a: 'main > div:nth-child(1) .marquee p:has(em a, strong a)',
+    a: 'main > div:nth-child(1) .marquee *:has(> em a, > strong a)',
   },
   {
     b: 'main > section1 .marquee h2',
@@ -19,6 +35,18 @@ const values = [
     a: '.marquee.light:nth-child(2) h2',
   },
   {
+    b: 'marquee.light:nth-child(2) any-header',
+    a: '.marquee.light:nth-child(2) :is(h1, h2, h3, h4, h5, h6)',
+  },
+  {
+    b: 'any-marquee.light:nth-child(2) h2',
+    a: '[class*="marquee"].light:nth-child(2) h2',
+  },
+  {
+    b: 'any-marquee:nth-child(2) h2',
+    a: '[class*="marquee"]:nth-child(2) h2',
+  },
+  {
     b: 'section2 text3',
     a: 'main > div:nth-child(2) .text:nth-child(3 of .text)',
   },
@@ -28,35 +56,35 @@ const values = [
   },
   {
     b: 'section3 table row2 col2 primary-cta',
-    a: 'main > div:nth-child(3) .table > div:nth-child(2) > div:nth-child(2) p strong a',
+    a: 'main > div:nth-child(3) .table > div:nth-child(2) > div:nth-child(2) strong a',
   },
   {
     b: 'marquee primary-cta #_href',
-    a: '.marquee p strong a',
+    a: '.marquee strong a',
     m: ['href'],
   },
   {
     b: 'marquee primary-cta #_HREF',
-    a: '.marquee p strong a',
+    a: '.marquee strong a',
     m: ['href'],
   },
   {
     b: 'marquee primary-cta#_href',
-    a: '.marquee p strong a#_href',
+    a: '.marquee strong a#_href',
   },
   {
     b: 'marquee primary-cta #_href_all',
-    a: '.marquee p strong a',
+    a: '.marquee strong a',
     m: ['href', 'all'],
   },
   {
     b: 'marquee primary-cta #_href#_all',
-    a: '.marquee p strong a',
+    a: '.marquee strong a',
     m: ['href', 'all'],
   },
   {
     b: 'marquee primary-cta #_href #_all',
-    a: '.marquee p strong a',
+    a: '.marquee strong a',
     m: ['href', 'all'],
   },
   {
@@ -65,7 +93,7 @@ const values = [
   },
   {
     b: 'section3 table row2 col4 secondary-cta',
-    a: 'main > div:nth-child(3) .table > div:nth-child(2) > div:nth-child(4) p em a',
+    a: 'main > div:nth-child(3) .table > div:nth-child(2) > div:nth-child(4) em a',
   },
   {
     b: 'section4 merch-card',
@@ -85,7 +113,7 @@ const values = [
   },
   {
     b: '.text:has(#im-a-unique-text-block) secondary-cta',
-    a: '.text:has(#im-a-unique-text-block) p em a',
+    a: '.text:has(#im-a-unique-text-block) em a',
   },
   {
     b: 'section1 .random-block2',

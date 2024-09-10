@@ -14,7 +14,7 @@ async function buildLitComponent(name) {
         platform: 'browser',
         outfile: `${outfolder}/${name}.js`,
         plugins: [rewriteImports()],
-        sourcemap: true,
+        // sourcemap: true,
     });
 
     writeFileSync(`../../../../libs/deps/mas/${name}.json`, JSON.stringify(metafile));
@@ -27,12 +27,10 @@ Promise.all([
         inject: [
             './src/merch-card.js',
             './src/merch-icon.js',
-            './src/merch-datasource.js',
         ],
         format: 'esm',
         minify: true,
         outfile: `${outfolder}/merch-card.js`,
-        sourcemap: true,
         plugins: [rewriteImports()],
     }),
     build({
@@ -54,13 +52,6 @@ Promise.all([
         outfile: `${outfolder}/merch-card-collection.js`,
     }),
     build({
-        bundle: true,
-        entryPoints: ['./src/plans-modal.js'],
-        format: 'esm',
-        plugins: [rewriteImports()],
-        outfile: `${outfolder}/plans-modal.js`,
-    }),
-    build({
         entryPoints: ['./src/sidenav/merch-sidenav.js'],
         bundle: true,
         minify: true,
@@ -77,6 +68,7 @@ Promise.all([
     buildLitComponent('merch-twp-d2p'),
     buildLitComponent('merch-whats-included'),
     buildLitComponent('merch-mnemonic-list'),
+    buildLitComponent('merch-datasource'),
 ]).catch(() => process.exit(1));
 
 function rewriteImports(rew) {
@@ -85,7 +77,7 @@ function rewriteImports(rew) {
         setup(build) {
             build.onResolve({ filter: /^lit(\/.*)?$/ }, (args) => {
                 return {
-                    path: '/libs/deps/lit-all.min.js',
+                    path: '../lit-all.min.js',
                     external: true,
                 };
             });

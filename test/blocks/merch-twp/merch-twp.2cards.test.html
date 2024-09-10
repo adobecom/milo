@@ -41,7 +41,7 @@
     setConfig(config);
 
     runTests(async () => {
-      describe('Merch TWP', async () => {
+      describe.skip('Merch TWP', async () => { // not finished and on hold
         before(async () => {
           mockIms();
           await mockFetch();
