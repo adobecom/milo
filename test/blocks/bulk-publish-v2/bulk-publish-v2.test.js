@@ -114,14 +114,6 @@ describe('Bulk Publish Tool', () => {
     await mouseEvent(rootEl.querySelector('.fix-btn'));
   });
 
-  it('can validate milo urls and enable form', async () => {
-    await clock.runAllAsync();
-    await setProcess(rootEl, 'publish');
-    await setTextArea(rootEl, testPage);
-    expect(rootEl.querySelector('#RunProcess').getAttribute('disable')).to.equal('false');
-    bulkPub.clearJobs();
-  });
-
   it('can trigger cannot publish config', async () => {
     await clock.runAllAsync();
     await setProcess(rootEl, 'publish');
@@ -132,6 +124,14 @@ describe('Bulk Publish Tool', () => {
     await mouseEvent(rootEl.querySelector('.fix-btn'));
   });
 
+  it('can validate milo urls and enable form', async () => {
+    await clock.runAllAsync();
+    await setProcess(rootEl, 'publish');
+    await setTextArea(rootEl, testPage);
+    expect(rootEl.querySelector('#RunProcess').getAttribute('disable')).to.equal('false');
+    bulkPub.clearJobs();
+  });
+
   it('can submit valid bulk publish job', async () => {
     await clock.runAllAsync();
     await mouseEvent(rootEl.querySelector('.switch.full'));
@@ -140,6 +140,17 @@ describe('Bulk Publish Tool', () => {
     await mouseEvent(rootEl.querySelector('#RunProcess'));
     expect(rootEl.querySelectorAll('job-process')).to.have.lengthOf(1);
     await mouseEvent(rootEl.querySelector('.switch.half'));
+  });
+
+  it('can toggle job timing flyout', async () => {
+    await clock.runAllAsync();
+    const doneJobProcess = rootEl.querySelector('job-process');
+    const jobInfo = doneJobProcess?.shadowRoot.querySelector('job-info');
+    const timerDetail = jobInfo?.shadowRoot.querySelector('.timer');
+    await mouseEvent(timerDetail);
+    await clock.runAllAsync();
+    await mouseEvent(timerDetail);
+    expect(timerDetail.classList.contains('show-times')).to.be.false;
   });
 
   it('can submit valid bulk preview job', async () => {
@@ -184,17 +195,6 @@ describe('Bulk Publish Tool', () => {
     expect(rootEl.querySelectorAll('job-process')).to.have.lengthOf(4);
   });
 
-  it('can toggle job timing flyout', async () => {
-    await clock.runAllAsync();
-    const doneJobProcess = rootEl.querySelector('job-process');
-    const jobInfo = doneJobProcess?.shadowRoot.querySelector('job-info');
-    const timerDetail = jobInfo?.shadowRoot.querySelector('.timer');
-    await mouseEvent(timerDetail);
-    await clock.runAllAsync();
-    await mouseEvent(timerDetail);
-    expect(timerDetail.classList.contains('show-times')).to.be.false;
-  });
-
   it('can toggle view mode', async () => {
     await mouseEvent(rootEl.querySelector('.switch.full'));
     await clock.runAllAsync();
@@ -228,7 +228,6 @@ describe('Bulk Publish Tool', () => {
   it('can clear bulk jobs', async () => {
     await clock.runAllAsync();
     await mouseEvent(rootEl.querySelector('.clear-jobs'));
-    await clock.runAllAsync();
     expect(rootEl.querySelectorAll('job-process')).to.have.lengthOf(0);
   });
 });
