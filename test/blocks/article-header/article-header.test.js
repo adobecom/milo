@@ -47,14 +47,14 @@ describe('article header', () => {
   it('should open link popup when share links are clicked', () => {
     // first share link is twitter
     const shareLink = document.querySelector('.article-byline-sharing a');
-    const stub = sinon.stub(window, 'open');
+    const windowStub = sinon.stub(window, 'open');
     shareLink.click();
 
     const url = encodeURIComponent(window.location.href);
     const title = encodeURIComponent(document.querySelector('h1').textContent);
-    expect(stub.calledOnce).to.be.true;
-    expect(stub.firstCall.args[0]).to.equal(`https://www.twitter.com/share?&url=${url}&text=${title}`);
-    expect(stub.firstCall.args[2]).to.equal('popup,top=233,left=233,width=700,height=467');
+    expect(windowStub.calledOnce).to.be.true;
+    expect(windowStub.firstCall.args[0]).to.equal(`https://www.twitter.com/share?&url=${url}&text=${title}`);
+    expect(windowStub.firstCall.args[2]).to.equal('popup,top=233,left=233,width=700,height=467');
 
     stub.restore();
   });
