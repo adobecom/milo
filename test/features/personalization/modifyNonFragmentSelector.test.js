@@ -135,6 +135,14 @@ const values = [
     b: 'custom-block3',
     a: '.custom-block:nth-child(3 of .custom-block)',
   },
+  {
+    b: 'any-marquee ol li:nth-child(2)',
+    a: '[class*="marquee"] ol li:nth-child(2)',
+  },
+  {
+    b: 'any-marquee ul li:nth-child(2)',
+    a: '[class*="marquee"] ul li:nth-child(2)',
+  },
 ];
 describe('test different values', () => {
   values.forEach((value) => {
