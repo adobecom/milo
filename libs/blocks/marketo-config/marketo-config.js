@@ -1,6 +1,6 @@
 import { html, render, useContext, useState, useEffect } from '../../deps/htm-preact.js';
 import { utf8ToB64, loadBlock, createTag } from '../../utils/utils.js';
-import { setPreferences } from '../marketo/marketo.js';
+import { SESSION_POI, setPreferences } from '../marketo/marketo.js';
 import { ConfiguratorContext, ConfiguratorProvider, saveStateToLocalStorage } from './context.js';
 import Accordion from '../../ui/controls/Accordion.js';
 import CopyBtn from '../../ui/controls/CopyBtn.js';
@@ -282,5 +282,6 @@ export default async function init(el) {
     <${ConfiguratorWrapper} title=${title} link=${link} />
   `;
 
+  sessionStorage.removeItem(SESSION_POI);
   render(app, el);
 }

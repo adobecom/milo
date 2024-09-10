@@ -29,6 +29,8 @@ const MUNCHKIN_ID = 'marketo munckin';
 const SUCCESS_TYPE = 'form.success.type';
 const SUCCESS_CONTENT = 'form.success.content';
 const SUCCESS_SECTION = 'form.success.section';
+const PROGRAM_POI = 'program.poi';
+const POI_FILTER = 'field_filters.products';
 const FORM_MAP = {
   'success-type': SUCCESS_TYPE,
   'destination-type': SUCCESS_TYPE,
@@ -38,6 +40,9 @@ const FORM_MAP = {
   'co-partner-names': 'program.copartnernames',
   'sfdc-campaign-id': 'program.campaignids.sfdc',
 };
+
+const QUERY_POI = 'marketo-poi';
+export const SESSION_POI = 'marketo_poi';
 
 export const formValidate = (formEl) => {
   formEl.classList.remove('hide-errors');
@@ -123,6 +128,21 @@ export const formSuccess = (formEl, formData) => {
   return false;
 };
 
+export function setProductOfInterest(formData, search = window.location.search) {
+  if (formData[PROGRAM_POI]) return;
+
+  const queryPoi = new URLSearchParams(search).get(QUERY_POI);
+  if (queryPoi === 'clear') {
+    sessionStorage.removeItem(SESSION_POI);
+    return;
+  }
+
+  const sessionPoi = sessionStorage.getItem(SESSION_POI);
+  const productOfInterest = queryPoi || sessionPoi || null;
+
+  formData[PROGRAM_POI] = productOfInterest;
+}
+
 const readyForm = (form, formData) => {
   const formEl = form.getFormElem().get(0);
   const el = formEl.closest('.marketo');
@@ -206,6 +226,8 @@ export default function init(el) {
     if (destinationUrl) formData[SUCCESS_CONTENT] = destinationUrl;
   }
 
+  setProductOfInterest(formData);
+  if (formData[PROGRAM_POI]) formData[POI_FILTER] = 'hidden';
   setPreferences(formData);
 
   const fragment = new DocumentFragment();

@@ -1,8 +1,9 @@
 import { readFile } from '@web/test-runner-commands';
+import sinon from 'sinon';
 import { expect } from '@esm-bundle/chai';
 import { delay } from '../../helpers/waitfor.js';
 import { setConfig } from '../../../libs/utils/utils.js';
-import init, { setPreferences, decorateURL } from '../../../libs/blocks/marketo/marketo.js';
+import init, { setPreferences, decorateURL, setProductOfInterest } from '../../../libs/blocks/marketo/marketo.js';
 
 const innerHTML = await readFile({ path: './mocks/body.html' });
 
@@ -39,6 +40,51 @@ describe('marketo', () => {
     expect(window.mcz_marketoForm_pref).to.have.property('second');
     expect(window.mcz_marketoForm_pref.second).to.have.property('key');
     expect(window.mcz_marketoForm_pref.second.key).to.equal('value2');
+  });
+});
+
+describe('marketo setProductOfInterest', () => {
+  before(() => {
+    sinon.stub(sessionStorage, 'setItem');
+    sinon.stub(sessionStorage, 'removeItem');
+    sinon.stub(sessionStorage, 'getItem');
+  });
+
+  after(() => {
+    sinon.restore();
+  });
+
+  it('keeps POI if already set', async () => {
+    const formData = { 'program.poi': 'poi0' };
+    setProductOfInterest(formData, '?marketo-poi=poi1');
+
+    expect(formData).to.have.property('program.poi');
+    expect(formData['program.poi']).to.equal('poi0');
+  });
+
+  it('sets POI by query param', async () => {
+    const formData = {};
+    setProductOfInterest(formData, '?marketo-poi=poi1');
+
+    expect(formData).to.have.property('program.poi');
+    expect(formData['program.poi']).to.equal('poi1');
+  });
+
+  it('sets POI by stored value', async () => {
+    const formData = {};
+    sessionStorage.getItem.returns('poi2');
+    setProductOfInterest(formData, '');
+
+    expect(formData).to.have.property('program.poi');
+    expect(formData['program.poi']).to.equal('poi2');
+  });
+
+  it('clears stored POI', async () => {
+    const formData = {};
+    setProductOfInterest(formData, '?marketo-poi=clear');
+
+    expect(formData).to.not.have.property('program.poi');
+    expect(sessionStorage.removeItem.calledOnce).to.be.true;
   });
 });
 
