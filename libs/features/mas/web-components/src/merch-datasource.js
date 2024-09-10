@@ -2,7 +2,7 @@ import { AEM } from './aem.js';
 import { createTag } from './utils.js';
 
 const ATTR_AEM_BUCKET = 'aem-bucket';
-const AEM_BUCKET = 'publish-p22655-e59341';
+const AEM_BUCKET = 'publish-p22655-e155390';
 
 const VARIANTS = {
     CATALOG: 'catalog',
