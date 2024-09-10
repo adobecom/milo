@@ -8,7 +8,6 @@ import {
     EVENT_MERCH_CARD_READY,
     EVENT_MERCH_OFFER_SELECT_READY,
     EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
-    EVENT_MERCH_CARD_ACTION_MENU_TOGGLE,
     EVENT_MERCH_STORAGE_CHANGE,
 } from './constants.js';
 
@@ -296,7 +295,7 @@ export class MerchCard extends LitElement {
             new CustomEvent(EVENT_MERCH_CARD_READY, { bubbles: true }),
         );
     }
-    
+
     // TODO enable with TWP //
     /* c8 ignore next 11 */
     handleStorageChange() {

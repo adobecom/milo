@@ -81,6 +81,7 @@ runTests(async () => {
                 'm2m,stock-m2m',
             );
         });
+
         it('should display an action menu on hover for catalog variant', async () => {
             const catalogCard = document.querySelector(
                 'merch-card[variant="catalog"]',
@@ -98,6 +99,23 @@ runTests(async () => {
             expect(actionMenuContent.classList.contains('hidden')).to.be.true;
             expect(actionMenu).to.exist;
             expect(actionMenuContent).to.exist;
+        });
+
+        it('should display some content when action is clicked for catalog variant', async () => {
+            const catalogCard = document.querySelector(
+                'merch-card[variant="catalog"]',
+            );
+            catalogCard.dispatchEvent(
+                new MouseEvent('mouseover', { bubbles: true }),
+            );
+            await delay(100);        
+            const actionMenu = catalogCard.shadowRoot.querySelector('.action-menu');
+            const actionMenuContent = catalogCard.shadowRoot.querySelector(
+                '.action-menu-content',
+            );
+            await actionMenu.click();
+            await delay(100);
+            expect(actionMenuContent.classList.contains('hidden')).to.be.false;
         });
 
         it('should have and interact with  quantity-selector', async () => {
