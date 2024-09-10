@@ -2,7 +2,7 @@
 import { createTag, getConfig, loadArea, localizeLink } from '../../utils/utils.js';
 
 const fragmentCachePromise = fetch(
-  document.querySelector('link[rel="preload"][as="fetch"][href*="/fragment/"]')
+  document.querySelector('link[as="fetch"][href*="/fragment/"]')
     .href,
 )
   .catch(() => null)
