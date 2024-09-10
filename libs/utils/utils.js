@@ -150,11 +150,8 @@ const PROMO_PARAM = 'promo';
 function getEnv(conf) {
   const { host } = window.location;
   const query = PAGE_URL.searchParams.get('env');
+
   if (query) return { ...ENVS[query], consumer: conf[query] };
-
-  const clientEnv = window.miloClientEnv;
-  if (clientEnv) return { ...ENVS[clientEnv], consumer: conf[clientEnv] };
-
   if (host.includes('localhost')) return { ...ENVS.local, consumer: conf.local };
   /* c8 ignore start */
   if (host.includes(`${SLD}.page`)
