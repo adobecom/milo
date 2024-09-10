@@ -23,6 +23,7 @@ export const CSS = `
   :root {
     --consonant-merch-card-segment-width: 276px;
   }
+    
   .two-merch-cards.segment,
   .three-merch-cards.segment,
   .four-merch-cards.segment {

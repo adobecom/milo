@@ -26,6 +26,7 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
   :root {
     --consonant-merch-card-special-offers-width: 302px;
   }
+    
   .two-merch-cards.special-offers,
   .three-merch-cards.special-offers,
   .four-merch-cards.special-offers {

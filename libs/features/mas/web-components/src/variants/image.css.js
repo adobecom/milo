@@ -24,6 +24,7 @@ export const CSS = `
   :root {
     --consonant-merch-card-image-width: 378px;
   }
+    
   .three-merch-cards.image,
   .four-merch-cards.image {
       grid-template-columns: repeat(3, var(--consonant-merch-card-image-width));

@@ -18,7 +18,7 @@ export class Catalog extends VariantLayout {
                     ? 'always-visible'
                     : ''}
                 ${!this.card.actionMenu ? 'hidden' : 'invisible'}"
-                @click="${this.card.toggleActionMenu}"
+                @click="${Catalog.toggleActionMenu}"
             ></div>
         </div>
         <slot
@@ -47,11 +47,33 @@ export class Catalog extends VariantLayout {
     return CSS;
   }
 
+  static toggleActionMenu = (e) => {
+    //beware this is an event on card, so this points to the card, not the layout
+    const retract = e?.type === 'mouseleave' ? true : undefined;
+    const actionMenuContentSlot = this.shadowRoot.querySelector(
+        'slot[name="action-menu-content"]',
+    );
+    if (!actionMenuContentSlot) return;
+    if (!retract) {
+        this.dispatchEvent(
+            new CustomEvent(EVENT_MERCH_CARD_ACTION_MENU_TOGGLE, {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    card: this.name,
+                    type: 'action-menu',
+                },
+            }),
+        );
+    }
+    actionMenuContentSlot.classList.toggle('hidden', retract);
+  }
+
   connectedCallbackHook() {
-    this.card.addEventListener('mouseleave', this.card.toggleActionMenu);
+    this.card.addEventListener('mouseleave', Catalog.toggleActionMenu);
   }
   disconnectedCallbackHook() {
-    this.card.removeEventListener('mouseleave', this.card.toggleActionMenu);
+    this.card.removeEventListener('mouseleave', Catalog.toggleActionMenu);
   }
   static variantStyle = css`
     :host([variant='catalog']) {

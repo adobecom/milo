@@ -98,7 +98,6 @@ runTests(async () => {
             expect(actionMenuContent.classList.contains('hidden')).to.be.true;
             expect(actionMenu).to.exist;
             expect(actionMenuContent).to.exist;
-            catalogCard.toggleActionMenu();
         });
 
         it('should have and interact with  quantity-selector', async () => {

@@ -296,29 +296,7 @@ export class MerchCard extends LitElement {
             new CustomEvent(EVENT_MERCH_CARD_READY, { bubbles: true }),
         );
     }
-
-    toggleActionMenu(e) {
-      //beware this is an event on card, so this points to the card, not the layout
-      const retract = e?.type === 'mouseleave' ? true : undefined;
-      const actionMenuContentSlot = this.shadowRoot.querySelector(
-          'slot[name="action-menu-content"]',
-      );
-      if (!actionMenuContentSlot) return;
-      if (!retract) {
-          this.dispatchEvent(
-              new CustomEvent(EVENT_MERCH_CARD_ACTION_MENU_TOGGLE, {
-                  bubbles: true,
-                  composed: true,
-                  detail: {
-                      card: this.name,
-                      type: 'action-menu',
-                  },
-              }),
-          );
-      }
-      actionMenuContentSlot.classList.toggle('hidden', retract);
-    }
-
+    
     // TODO enable with TWP //
     /* c8 ignore next 11 */
     handleStorageChange() {
