@@ -1,6 +1,17 @@
 /* eslint-disable max-classes-per-file */
 import { createTag, getConfig, loadArea, localizeLink } from '../../utils/utils.js';
 
+const fragmentCachePromise = fetch(
+  document.querySelector('link[rel="preload"][as="fetch"][href*="/fragment/"]')
+    .href,
+)
+  .catch(() => null)
+  .then((resp) => resp.text())
+  .then((htmlString) => {
+    const parser = new DOMParser();
+    return parser.parseFromString(htmlString, 'text/html');
+  });
+
 const fragMap = {};
 
 const removeHash = (url) => {
@@ -89,20 +100,36 @@ export default async function init(a) {
     const { getFederatedUrl } = await import('../../utils/federated.js');
     resourcePath = getFederatedUrl(a.href);
   }
-  const resp = await customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
-    .catch(() => ({}));
-
-  if (!resp?.ok) {
-    window.lana?.log(`Could not get fragment: ${resourcePath}.plain.html`);
-    return;
+  const fragmentCache = await fragmentCachePromise;
+  let fragmentInCache;
+  if (fragmentCache) {
+    const url = new URL(resourcePath);
+    fragmentInCache = fragmentCache.querySelector(`[data-path="${url.pathname}"]`);
   }
+  let sections;
+  if (!fragmentInCache) {
+    const resp = await customFetch({
+      resource: `${resourcePath}.plain.html`,
+      withCacheRules: true,
+    }).catch(() => ({}));
 
-  const html = await resp.text();
-  const doc = new DOMParser().parseFromString(html, 'text/html');
-  replaceDotMedia(a.href, doc);
-  if (decorateArea) decorateArea(doc, { fragmentLink: a });
+    if (!resp?.ok) {
+      window.lana?.log(`Could not get fragment: ${resourcePath}.plain.html`);
+      return;
+    }
 
-  const sections = doc.querySelectorAll('body > div');
+    const html = await resp.text();
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    replaceDotMedia(a.href, doc);
+    if (decorateArea) decorateArea(doc, { fragmentLink: a });
+
+    sections = doc.querySelectorAll('body > div');
+  } else {
+    replaceDotMedia(a.href, fragmentInCache);
+    if (decorateArea) decorateArea(fragmentInCache, { fragmentLink: a });
+
+    sections = fragmentInCache.querySelectorAll(':scope > div');
+  }
 
   if (!sections.length) {
     window.lana?.log(`Could not make fragment: ${resourcePath}.plain.html`);
