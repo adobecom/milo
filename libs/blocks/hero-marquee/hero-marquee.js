@@ -52,8 +52,8 @@ function decorateQr(el) {
   });
 }
 
-async function loadIconography() {
-  await new Promise((resolve) => { loadStyle(`${base}/styles/iconography.css`, resolve); });
+function loadIconography() {
+  return new Promise((resolve) => { loadStyle(`${base}/styles/iconography.css`, resolve); });
 }
 
 async function decorateLockupFromContent(el) {
