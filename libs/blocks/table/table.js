@@ -6,7 +6,7 @@ const DESKTOP_SIZE = 900;
 const MOBILE_SIZE = 768;
 const tableHighlightLoadedEvent = new Event('milo:table:highlight:loaded');
 let tableIndex = 0;
-const isMobileLandscape = () => (window.matchMedia("(orientation: landscape)").matches && window.innerHeight <= MOBILE_SIZE);
+const isMobileLandscape = () => (window.matchMedia('(orientation: landscape)').matches && window.innerHeight <= MOBILE_SIZE);
 function defineDeviceByScreenSize() {
   const screenWidth = window.innerWidth;
   if (screenWidth >= DESKTOP_SIZE) {
@@ -528,7 +528,6 @@ export default function init(el) {
 
     const handleResize = () => {
       applyStylesBasedOnScreenSize(el, originTable);
-      console.log("Value of sticky header",isStickyHeader(el));
       if (isStickyHeader(el)) handleScrollEffect(el);
     };
     handleResize();
