@@ -2,7 +2,7 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { delay } from '../../helpers/waitfor.js';
 import { setConfig } from '../../../libs/utils/utils.js';
-import init, { setPreferences, decorateURL } from '../../../libs/blocks/marketo/marketo.js';
+import init, { setPreferences, decorateURL, setProductOfInterest, SESSION_POI } from '../../../libs/blocks/marketo/marketo.js';
 
 const innerHTML = await readFile({ path: './mocks/body.html' });
 
@@ -39,6 +39,44 @@ describe('marketo', () => {
     expect(window.mcz_marketoForm_pref).to.have.property('second');
     expect(window.mcz_marketoForm_pref.second).to.have.property('key');
     expect(window.mcz_marketoForm_pref.second.key).to.equal('value2');
+  });
+});
+
+describe('marketo setProductOfInterest', () => {
+  afterEach(() => {
+    sessionStorage.clear();
+  });
+
+  it('keeps POI if already set', async () => {
+    const formData = { 'program.poi': 'poi0' };
+    setProductOfInterest(formData, '?marketo-poi=poi1');
+
+    expect(formData).to.have.property('program.poi');
+    expect(formData['program.poi']).to.equal('poi0');
+  });
+
+  it('does not set POI if not in query param', async () => {
+    const formData = {};
+    setProductOfInterest(formData, '');
+
+    expect(formData).to.not.have.property('program.poi');
+  });
+
+  it('sets POI by query param', async () => {
+    const formData = {};
+    setProductOfInterest(formData, '?marketo-poi=poi1');
+
+    expect(formData).to.have.property('program.poi');
+    expect(formData['program.poi']).to.equal('poi1');
+  });
+
+  it('sets POI by stored value', async () => {
+    const formData = {};
+    sessionStorage.setItem(SESSION_POI, 'poi2');
+    setProductOfInterest(formData, '');
+
+    expect(formData).to.have.property('program.poi');
+    expect(formData['program.poi']).to.equal('poi2');
   });
 });
 
