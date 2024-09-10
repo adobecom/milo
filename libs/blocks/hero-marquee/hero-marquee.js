@@ -132,14 +132,14 @@ function parseKeyString(str) {
   return result;
 }
 
-async function loadContentType(el, key, classes) {
+function loadContentType(el, key, classes) {
   if (classes !== undefined && classes.length) el.classList.add(...classes);
   switch (key) {
     case 'bgcolor':
       decorateBg(el);
       break;
     case 'lockup':
-      await decorateLockupRow(el, classes);
+      decorateLockupRow(el, classes);
       break;
     case 'qrcode':
       decorateQr(el);
@@ -237,8 +237,7 @@ export default async function init(el) {
     }
   });
 
-  const promiseArr = [];
-  [...rows].forEach(async (row) => {
+  [...rows].forEach((row) => {
     const cols = row.querySelectorAll(':scope > div');
     const firstCol = cols[0];
     const firstColText = firstCol.textContent.toLowerCase().trim();
@@ -249,7 +248,7 @@ export default async function init(el) {
       firstCol.parentElement.classList.add(`row-${parsed.key}`, 'con-block');
       firstCol.remove();
       cols[1].classList.add('row-wrapper');
-      if (contentTypes.includes(parsed.key)) promiseArr.push(loadContentType(row, parsed.key, parsed.classes));
+      if (contentTypes.includes(parsed.key)) loadContentType(row, parsed.key, parsed.classes);
     } else {
       row.classList.add('norm');
       decorateBlockHrs(row);
@@ -257,5 +256,4 @@ export default async function init(el) {
     }
   });
   decorateTextOverrides(el, ['-heading', '-body', '-detail'], mainCopy);
-  await Promise.all(promiseArr);
 }
