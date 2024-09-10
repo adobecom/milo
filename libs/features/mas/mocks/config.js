@@ -1,5 +1,3 @@
-import { priceLiteralsURL } from './literals.js';
-
 export const mockConfig =
     (
         commerce = {},
@@ -11,7 +9,6 @@ export const mockConfig =
     ) =>
     () => ({
         commerce: {
-            priceLiteralsURL,
             ...commerce,
         },
         env,

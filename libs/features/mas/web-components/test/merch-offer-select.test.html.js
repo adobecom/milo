@@ -3,7 +3,6 @@ import { expect } from '@esm-bundle/chai';
 
 import { mockLana } from './mocks/lana.js';
 import { mockFetch } from './mocks/fetch.js';
-import { mockConfig } from './mocks/config.js';
 
 import '../src/merch-offer.js';
 import '../src/merch-offer-select.js';
@@ -11,7 +10,6 @@ import '../src/merch-quantity-select.js';
 
 import { delay } from './utils.js';
 import { withWcs } from './mocks/wcs.js';
-import { withLiterals } from './mocks/literals.js';
 import mas from './mas.js';
 
 function getDynamicElements(merchCard, merchOfferSelect) {
@@ -51,7 +49,7 @@ const renderCard = async (id) => {
 
 runTests(async () => {
     mockLana();
-    await mockFetch(withWcs, withLiterals);
+    await mockFetch(withWcs);
     await mas();
 
     describe('merch-offer-select web component', async () => {

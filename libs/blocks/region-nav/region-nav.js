@@ -3,7 +3,8 @@ import { getConfig } from '../../utils/utils.js';
 /* c8 ignore next 11 */
 function handleEvent(prefix, link) {
   const domain = window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com' : '';
-  document.cookie = `international=${prefix};path=/;${domain}`;
+  const maxAge = 365 * 24 * 60 * 60; // max-age in seconds for 365 days
+  document.cookie = `international=${prefix};max-age=${maxAge};path=/;${domain}`;
   sessionStorage.setItem('international', prefix);
   fetch(link.href, { method: 'HEAD' }).then((resp) => {
     if (!resp.ok) throw new Error('request failed');

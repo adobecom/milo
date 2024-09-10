@@ -22,7 +22,7 @@ declare global {
                 Commerce.Checkout.Settings &
                     Commerce.Price.Settings &
                     Commerce.Wcs.Settings,
-                'locale' | 'priceLiteralsURL' | 'quantity'
+                'locale' | 'quantity'
             > & {
                 quantity: number;
             }
@@ -514,8 +514,6 @@ declare global {
                 displayRecurrence: boolean;
                 displayTax: boolean;
                 forceTaxExclusive: boolean;
-                priceLiteralsURL: string;
-                priceLiteralsPromise: Promise<Response>;
             }
         }
 
