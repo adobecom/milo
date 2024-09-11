@@ -1,10 +1,8 @@
 /* eslint-disable max-classes-per-file */
 import { createTag, getConfig, loadArea, localizeLink } from '../../utils/utils.js';
 
-const fragmentCachePromise = fetch(
-  document.querySelector('link[rel="preload"][href*="/fragment/"]')
-    .href,
-)
+const fragmentCachePromise = fetch(document.querySelector('link[rel="preload"][href*="/fragment/"]')
+  .href, { credentials: 'anonymous' })
   .catch(() => null)
   .then((resp) => resp.text())
   .then((htmlString) => {
