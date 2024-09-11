@@ -22,19 +22,18 @@ import locales from '../utils/locales.js';
 const prodDomains = ['milo.adobe.com'];
 
 const stageDomainsMap = {
-  'www.stage.adobe.com': { 'www.adobe.com': 'www.stage.adobe.com' },
-  'business.stage.adobe.com': {
-    'www.adobe.com': 'www.stage.adobe.com',
-    'business.adobe.com': 'business.stage.adobe.com',
-    'blog.adobe.com': 'blog.stage.adobe.com',
+  'www.stage.adobe.com': {
+    'www.adobe.com': 'origin',
     'helpx.adobe.com': 'helpx.stage.adobe.com',
-    'news.adobe.com': 'news.stage.adobe.com',
   },
-  '--milo--robert-bogos.hlx.page': {
-    'milo.adobe.com': 'origin',
+  '--bacom--adobecom.hlx.live': {
+    'business.adobe.com': 'origin',
+    'news.adobe.com': 'main--news--adobecom.hlx.live',
+  },
+  '--blog--adobecom.hlx.page': {
+    'blog.adobe.com': 'origin',
     'business.adobe.com': 'main--bacom--adobecom.hlx.page',
   },
-  '--bacom--adobecom.hlx.live': { 'business.adobe.com': 'origin' },
   '.business-graybox.adobe.com': { 'business.adobe.com': 'origin' },
 };
 
