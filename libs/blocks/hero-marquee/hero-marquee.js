@@ -249,7 +249,9 @@ export default async function init(el) {
       firstCol.parentElement.classList.add(`row-${parsed.key}`, 'con-block');
       firstCol.remove();
       cols[1].classList.add('row-wrapper');
-      if (contentTypes.includes(parsed.key)) promiseArr.push(loadContentType(row, parsed.key, parsed.classes));
+      if (contentTypes.includes(parsed.key)) {
+        promiseArr.push(loadContentType(row, parsed.key, parsed.classes));
+      }
     } else {
       row.classList.add('norm');
       decorateBlockHrs(row);
