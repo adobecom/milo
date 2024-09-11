@@ -6,7 +6,6 @@ import { expect } from '@esm-bundle/chai';
 import { mockLana } from './mocks/lana.js';
 import { mockIms } from './mocks/ims.js';
 import { mockFetch } from './mocks/fetch.js';
-import { mockConfig } from './mocks/config.js';
 
 import '../src/global.css.js';
 import '../src/merch-offer-select.js';
@@ -32,7 +31,6 @@ import {
 } from './merch-twp-d2p.utils.js';
 import { appendMiloStyles, delay } from './utils.js';
 import { withWcs } from './mocks/wcs.js';
-import { withLiterals } from './mocks/literals.js';
 import mas from './mas.js';
 
 const ABM = 'ABM';
@@ -42,7 +40,7 @@ const M2M = 'M2M';
 runTests(async () => {
     appendMiloStyles();
     mockLana();
-    await mockFetch(withWcs, withLiterals);
+    await mockFetch(withWcs);
     await mockIms();
     await mas();
 

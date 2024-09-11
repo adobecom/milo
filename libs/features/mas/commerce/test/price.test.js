@@ -9,7 +9,6 @@ import { initService, resetService } from '../src/service.js';
 import { mockConfig } from './mocks/config.js';
 import { mockFetch } from './mocks/fetch.js';
 import { mockLana, unmockLana } from './mocks/lana.js';
-import { withLiterals } from './mocks/literals.js';
 import snapshots from './mocks/snapshots.js';
 import { withWcs } from './mocks/wcs.js';
 import { expect } from './utilities.js';
@@ -32,7 +31,7 @@ afterEach(() => {
 });
 
 beforeEach(async () => {
-    await mockFetch(withWcs, withLiterals);
+    await mockFetch(withWcs);
     mockLana();
 });
 

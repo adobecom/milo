@@ -14,7 +14,6 @@ import { mockLana, unmockLana } from './mocks/lana.js';
 import { expect } from './utilities.js';
 import { initService } from '../src/service.js';
 import { mockFetch } from './mocks/fetch.js';
-import { withLiterals } from './mocks/literals.js';
 
 let id = 1;
 /**
@@ -62,8 +61,7 @@ describe('custom span-based placeholder', () => {
         document.body.innerHTML = '';
     });
 
-    before(async () => {
-        await mockFetch(withLiterals);
+    before( () => {
         mockLana();
     });
 

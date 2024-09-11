@@ -7,7 +7,7 @@ import {
 import { getEntitlementMap } from './entitlements.js';
 
 /* c8 ignore start */
-const PHONE_SIZE = window.screen.width < 768 || window.screen.height < 768;
+const PHONE_SIZE = window.screen.width < 550 || window.screen.height < 550;
 export const PERSONALIZATION_TAGS = {
   all: () => true,
   chrome: () => navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Edg'),
@@ -360,10 +360,14 @@ function modifySelectorTerm(termParam) {
     'secondary-cta': 'em a',
     'action-area': '*:has(> em a, > strong a)',
     'any-marquee': '[class*="marquee"]',
-    header: ':is(h1, h2, h3, h4, h5, h6)',
+    'any-header': ':is(h1, h2, h3, h4, h5, h6)',
   };
   const otherSelectors = ['row', 'col'];
-  const htmlEls = ['main', 'div', 'a', 'p', 'strong', 'em', 'picture', 'source', 'img', 'h'];
+  const htmlEls = [
+    'html', 'body', 'header', 'footer', 'main',
+    'div', 'a', 'p', 'strong', 'em', 'picture', 'source', 'img', 'h',
+    'ul', 'ol', 'li',
+  ];
   const startTextMatch = term.match(/^[a-zA-Z/./-]*/);
   const startText = startTextMatch ? startTextMatch[0].toLowerCase() : '';
   const startTextPart1 = startText.split(/\.|:/)[0];
@@ -890,8 +894,6 @@ export function cleanAndSortManifestList(manifests) {
           freshManifest = manifestObj[manifest.manifestPath];
         }
         freshManifest.name = fullManifest.name;
-        freshManifest.selectedVariantName = fullManifest.selectedVariantName;
-        freshManifest.selectedVariant = freshManifest.variants[freshManifest.selectedVariantName];
         manifestObj[manifest.manifestPath] = freshManifest;
       } else {
         manifestObj[manifest.manifestPath] = manifest;
