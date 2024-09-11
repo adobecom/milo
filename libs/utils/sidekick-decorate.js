@@ -1,4 +1,4 @@
-import { userCanPublishPage } from './utils.js';
+import userCanPublishPage from '../tools/utils/publish.js';
 
 const PUBLISH_BTN = '.publish.plugin button';
 const BACKUP_PROFILE = '.profile-email';

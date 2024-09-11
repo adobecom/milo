@@ -1,4 +1,4 @@
-import { userCanPublishPage } from '../../utils/utils.js';
+import userCanPublishPage from '../../tools/utils/publish.js';
 import {
   PROCESS_TYPES,
   getErrorText,
