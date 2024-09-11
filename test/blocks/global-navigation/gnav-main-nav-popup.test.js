@@ -5,6 +5,7 @@ import {
   createFullGlobalNavigation,
   selectors,
   isElementVisible,
+  unavVersion,
 } from './test-utilities.js';
 import { toFragment } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
 import globalNavigationMock from './mocks/global-navigation.plain.js';
@@ -14,7 +15,7 @@ describe('main nav popups', () => {
   before(() => {
     document.head.innerHTML = `<link rel="icon" href="/libs/img/favicons/favicon.ico" size="any">
     <script src="https://auth.services.adobe.com/imslib/imslib.min.js" type="javascript/blocked" data-loaded="true"></script>
-    <script src="https://stage.adobeccstatic.com/unav/1.1/UniversalNav.js" type="javascript/blocked" data-loaded="true"></script>
+    <script src="https://stage.adobeccstatic.com/unav/${unavVersion}/UniversalNav.js" type="javascript/blocked" data-loaded="true"></script>
     `;
   });
 
