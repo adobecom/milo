@@ -12,17 +12,16 @@ import '../src/merch-quantity-select.js';
 
 import { appendMiloStyles, toggleMobile } from './utils.js';
 import { mockIms } from './mocks/ims.js';
-import { withLiterals } from './mocks/literals.js';
 import { withWcs } from './mocks/wcs.js';
 import mas from './mas.js';
 
 const skipTests = sessionStorage.getItem('skipTests');
 
 runTests(async () => {
-    toggleMobile();
+    await toggleMobile();
     mockIms();
     mockLana();
-    await mockFetch(withWcs, withLiterals);
+    await mockFetch(withWcs);
     await mas();
     if (skipTests !== null) {
         appendMiloStyles();
