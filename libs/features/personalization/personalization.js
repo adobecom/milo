@@ -2,7 +2,7 @@
 /* eslint-disable no-console */
 
 import {
-  createTag, getConfig, loadLink, loadScript, localizeLink, updateConfig,
+  createTag, getConfig, loadLink, loadScript, localizeLink,
 } from '../../utils/utils.js';
 import { getEntitlementMap } from './entitlements.js';
 
@@ -366,7 +366,6 @@ function modifySelectorTerm(termParam) {
   const htmlEls = [
     'html', 'body', 'header', 'footer', 'main',
     'div', 'a', 'p', 'strong', 'em', 'picture', 'source', 'img', 'h',
-    'ul', 'ol', 'li',
   ];
   const startTextMatch = term.match(/^[a-zA-Z/./-]*/);
   const startText = startTextMatch ? startTextMatch[0].toLowerCase() : '';
@@ -791,28 +790,13 @@ export async function getManifestConfig(info, variantOverride = false) {
   }
 
   manifestConfig.manifestPath = normalizePath(manifestPath);
-  const selectedVariantName = await getPersonalizationVariant(
+  manifestConfig.selectedVariantName = await getPersonalizationVariant(
     manifestConfig.manifestPath,
     manifestConfig.variantNames,
     variantLabel,
   );
 
-  if (selectedVariantName && manifestConfig.variantNames.includes(selectedVariantName)) {
-    manifestConfig.run = true;
-    manifestConfig.selectedVariantName = selectedVariantName;
-    manifestConfig.selectedVariant = manifestConfig.variants[selectedVariantName];
-  } else {
-    /* c8 ignore next 2 */
-    manifestConfig.selectedVariantName = 'default';
-    manifestConfig.selectedVariant = 'default';
-  }
-  const placeholders = manifestPlaceholders || data?.placeholders?.data;
-  if (placeholders) {
-    updateConfig(
-      parsePlaceholders(placeholders, getConfig(), manifestConfig.selectedVariantName),
-    );
-  }
-
+  manifestConfig.placeholderData = manifestPlaceholders || data?.placeholders?.data;
   manifestConfig.name = name;
   manifestConfig.manifest = manifestPath;
   manifestConfig.manifestUrl = manifestUrl;
@@ -894,10 +878,26 @@ export function cleanAndSortManifestList(manifests) {
           freshManifest = manifestObj[manifest.manifestPath];
         }
         freshManifest.name = fullManifest.name;
+        freshManifest.selectedVariantName = fullManifest.selectedVariantName;
+        freshManifest.selectedVariant = freshManifest.variants[freshManifest.selectedVariantName];
         manifestObj[manifest.manifestPath] = freshManifest;
       } else {
         manifestObj[manifest.manifestPath] = manifest;
       }
+
+      const manifestConfig = manifestObj[manifest.manifestPath];
+      const { selectedVariantName, variantNames, placeholderData } = manifestConfig;
+      if (selectedVariantName && variantNames.includes(selectedVariantName)) {
+        manifestConfig.run = true;
+        manifestConfig.selectedVariantName = selectedVariantName;
+        manifestConfig.selectedVariant = manifestConfig.variants[selectedVariantName];
+      } else {
+        /* c8 ignore next 2 */
+        manifestConfig.selectedVariantName = 'default';
+        manifestConfig.selectedVariant = 'default';
+      }
+
+      parsePlaceholders(placeholderData, getConfig(), manifestConfig.selectedVariantName);
     } catch (e) {
       console.warn(e);
       window.lana?.log(`MEP Error parsing manifests: ${e.toString()}`);
