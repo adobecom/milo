@@ -6,6 +6,7 @@ import { signal } from '../../../deps/htm-preact.js';
 import { origin, preview } from '../../locui/utils/franklin.js';
 import { decorateSections } from '../../../utils/utils.js';
 import { getUrls } from '../../locui/loc/index.js';
+import { validatedUrls } from '../floodgate/index.js';
 
 export const showRolloutOptions = signal(false);
 
@@ -62,7 +63,7 @@ async function findPageFragments(path) {
     const linkHref = links[i].href;
     // Check if it's a referenced asset
     if (isReferencedAsset(linkHref, baseUrlOrigin)) {
-      const [pathname] = new URL(linkHref);
+      const pathname = new URL(linkHref)?.pathname;
       // Check for duplicates against the original URLs
       if (!urls.value.some((originalUrl) => originalUrl.pathname === pathname)) {
         const sanitizedUrl = getSanitizedUrl(linkHref);
@@ -89,7 +90,7 @@ async function findPageFragments(path) {
   }, []);
   const combinedUrls = Array.from(new Set([...fragmentUrls, ...assestsList]));
   if (combinedUrls.length === 0) return [];
-  return combinedUrls;
+  return validatedUrls(combinedUrls);
 }
 
 async function findDeepFragments(path) {
