@@ -47,6 +47,7 @@ export class VariantLayout {
     </div>`;
   }
 
+  /* c8 ignore next 3 */
   getGlobalCSS() {
     return '';
   }
@@ -95,6 +96,7 @@ export class VariantLayout {
     //nothing to do by default
   }
 
+  /* c8 ignore next 3 */
   renderLayout () {
     //nothing to do by default
   }
