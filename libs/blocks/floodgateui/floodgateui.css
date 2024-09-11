@@ -407,6 +407,22 @@ li.fgui-url {
   border-bottom: 1px solid #ccc;
 }
 
+li.fgui-url.error .fgui-url-path {
+  color: red;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+li.fgui-url.error .fgui-url-path span {
+  color: white;
+  background-color: red;
+  border-radius: 5px;
+  padding: 0 5px;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
 li.fgui-url:last-child {
   border-bottom: unset;
 }
