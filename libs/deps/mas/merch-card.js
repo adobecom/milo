@@ -452,7 +452,6 @@ merch-card[variant="ccd-action"] .price-strikethrough {
   `};import{html as v}from"../lit-all.min.js";var Q=`
 :root {
   --consonant-merch-card-image-width: 300px;
-  --consonant-merch-card-image-height: 180px;
 }
 
 .one-merch-card.image,
@@ -1367,6 +1366,9 @@ merch-card[variant='twp'] merch-offer-select {
     --consonant-merch-card-max-width: 300px;
     --transition: cmax-height 0.3s linear, opacity 0.3s linear;
 
+    /* background image */
+    --consonant-merch-card-bg-img-height: 180px;
+
     /* inline SVGs */
     --checkmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath fill='%23fff' d='M3.788 9A.999.999 0 0 1 3 8.615l-2.288-3a1 1 0 1 1 1.576-1.23l1.5 1.991 3.924-4.991a1 1 0 1 1 1.576 1.23l-4.712 6A.999.999 0 0 1 3.788 9z' class='spectrum-UIIcon--medium'/%3E%3C/svg%3E%0A");
 
@@ -1609,8 +1611,8 @@ div[slot="footer"] {
 div[slot='bg-image'] img {
     position: relative;
     width: 100%;
-    min-height: var(--consonant-merch-card-image-height);
-    max-height: var(--consonant-merch-card-image-height);
+    min-height: var(--consonant-merch-card-bg-img-height);
+    max-height: var(--consonant-merch-card-bg-img-height);
     object-fit: cover;
     border-top-left-radius: 16px;
     border-top-right-radius: 16px;

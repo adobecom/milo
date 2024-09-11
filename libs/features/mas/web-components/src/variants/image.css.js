@@ -2,7 +2,6 @@ import { TABLET_UP, DESKTOP_UP, LARGE_DESKTOP,} from '../media.js';
 export const CSS = `
 :root {
   --consonant-merch-card-image-width: 300px;
-  --consonant-merch-card-image-height: 180px;
 }
 
 .one-merch-card.image,
