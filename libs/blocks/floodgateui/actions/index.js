@@ -6,7 +6,6 @@ import { signal } from '../../../deps/htm-preact.js';
 import { origin, preview } from '../../locui/utils/franklin.js';
 import { decorateSections } from '../../../utils/utils.js';
 import { getUrls } from '../../locui/loc/index.js';
-import { validatedUrls } from '../floodgate/index.js';
 
 export const showRolloutOptions = signal(false);
 
@@ -90,7 +89,7 @@ async function findPageFragments(path) {
   }, []);
   const combinedUrls = Array.from(new Set([...fragmentUrls, ...assestsList]));
   if (combinedUrls.length === 0) return [];
-  return validatedUrls(combinedUrls);
+  return combinedUrls;
 }
 
 async function findDeepFragments(path) {

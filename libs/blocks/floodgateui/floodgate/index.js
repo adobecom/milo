@@ -41,7 +41,7 @@ export function validateUrlsFormat(projectUrls, removeMedia = false) {
   return projectUrls;
 }
 
-export async function validatedUrls(projectUrls) {
+async function validatedUrls(projectUrls) {
   const validateUrls = [...projectUrls];
   while (validateUrls.length) {
     try {
