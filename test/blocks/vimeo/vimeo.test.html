@@ -15,9 +15,11 @@
   <script type="module">
     import { runTests } from '@web/test-runner-mocha';
     import { readFile } from '@web/test-runner-commands';
+    import sinon, { stub } from 'sinon';
     import { expect } from '@esm-bundle/chai';
     import init from '../../../libs/blocks/vimeo/vimeo.js';
-
+    import { delay } from '../../helpers/waitfor.js';
+    window.lana = { log: stub() };
     runTests(() => {
       describe('vimeo', () => {
         it('Should load lite vimeo instead of iframe', async () => {
@@ -40,6 +42,14 @@
           expect(document.querySelector('iframe')).to.not.be.null;
           expect(document.querySelector('lite-vimeo')).to.be.null;
         });
+      });
+
+      it('Should log error while fetch Vimeo thumbnail', async () => {
+        const fetchStub = sinon.stub(window, 'fetch');
+        fetchStub.returns(Promise.reject(new Error('Network Error')));
+        init(document.querySelector('a'));
+        await delay(200)
+        expect(window.lana.log.args[0][0]).equals('Error fetching Vimeo thumbnail: Error: Network Error');
       });
     });
   </script>
