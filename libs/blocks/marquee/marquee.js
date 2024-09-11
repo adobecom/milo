@@ -136,4 +136,7 @@ export default async function init(el) {
   if (el.classList.contains('mnemonic-list') && foreground) {
     await loadMnemonicList(foreground);
   }
+
+  const { default: loadCdt } = await import('../../features/countdown-timer/countdown-timer.js');
+  await loadCdt(children[0]);
 }
