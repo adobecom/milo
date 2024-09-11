@@ -6,6 +6,7 @@ import { signal } from '../../../deps/htm-preact.js';
 import { origin, preview } from '../../locui/utils/franklin.js';
 import { decorateSections } from '../../../utils/utils.js';
 import { getUrls } from '../../locui/loc/index.js';
+import { validateUrlsFormat } from '../floodgate/index.js';
 
 export const showRolloutOptions = signal(false);
 
@@ -133,11 +134,12 @@ export async function findFragments() {
     }
     return acc;
   }, []);
+
   setStatus('fragments', 'info', `${forExcel.length} fragments found.`, null, 1500);
   setExcelStatus(`Found ${forExcel.length} fragments.`);
 
   if (forExcel.length > 0) {
-    urls.value = [...urls.value];
+    urls.value = [...validateUrlsFormat(urls.value)];
     // Update language cards count
     const itemId = getItemId();
     const resp = await updateExcelTable({ itemId, tablename: 'URL', values: forExcel });
