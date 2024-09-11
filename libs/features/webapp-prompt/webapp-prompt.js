@@ -334,3 +334,4 @@ export default async function init(config) {
     return null;
   }
 }
+
