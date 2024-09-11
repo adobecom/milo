@@ -19,7 +19,6 @@ export function isMatching(container, query, type, titleText) {
   return searchTokens.every((token) => tagsString.toLowerCase().includes(token.toLowerCase()));
 }
 
-/* global ClipboardItem */
 export default function createCopy(blob) {
   const data = [new ClipboardItem({ [blob.type]: blob })];
   navigator.clipboard.write(data);
