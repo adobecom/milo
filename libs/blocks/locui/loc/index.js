@@ -96,7 +96,8 @@ async function loadLocales() {
     const locales = language.Locales || found?.livecopies;
     if (locales) {
       const localesTrim = locales.replaceAll(' ', '');
-      language.locales = localesTrim.includes('\n') ? localesTrim.split('\n') : localesTrim.split(',');
+      const localesList = localesTrim.includes('\n') ? localesTrim.split('\n') : localesTrim.split(',');
+      language.locales = localesList.filter((locale) => locale !== '');
     }
     return language;
   })];
