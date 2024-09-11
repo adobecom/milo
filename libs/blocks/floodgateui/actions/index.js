@@ -50,7 +50,7 @@ async function findPageFragments(path) {
   const isIndex = path.lastIndexOf('index');
   const hlxPath = isIndex > 0 ? path.substring(0, isIndex) : path;
   const resp = await fetch(`${origin}${hlxPath}`);
-  if (!resp.ok) return [];
+  if (!resp.ok) return undefined;
   const html = await resp.text();
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
@@ -101,9 +101,13 @@ async function findDeepFragments(path) {
     const needsSearch = fragments.filter((fragment) => !searched.includes(fragment.pathname));
     for (const search of needsSearch) {
       const nestedFragments = await findPageFragments(search.pathname);
-      const newFragments = nestedFragments.filter((nested) => !searched.includes(nested.pathname)
-        && !fragments.find((fragment) => fragment.pathname === nested.pathname));
-      if (newFragments?.length) fragments.push(...newFragments);
+      if (nestedFragments === undefined) {
+        search.valid = 'not found';
+      } else {
+        const newFragments = nestedFragments.filter((nested) => !searched.includes(nested.pathname)
+          && !fragments.find((fragment) => fragment.pathname === nested.pathname));
+        if (newFragments?.length) fragments.push(...newFragments);
+      }
       searched.push(search.pathname);
     }
   }
