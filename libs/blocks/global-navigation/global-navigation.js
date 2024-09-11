@@ -624,13 +624,11 @@ class Gnav {
 
     // Exposing UNAV config for consumers
     CONFIG.universalNav.universalNavConfig = getConfiguration();
-    window.UniversalNav(CONFIG.universalNav.universalNavConfig)
-      .then(() => {
-        this.decorateAppPrompt({ getAnchorState: () => window.UniversalNav.getComponent?.('app-switcher') });
-        isDesktop.addEventListener('change', () => {
-          window.UniversalNav.reload(CONFIG.universalNav.universalNavConfig);
-        });
-      });
+    await window.UniversalNav(CONFIG.universalNav.universalNavConfig);
+    this.decorateAppPrompt({ getAnchorState: () => window.UniversalNav.getComponent?.('app-switcher') });
+    isDesktop.addEventListener('change', () => {
+      window.UniversalNav.reload(CONFIG.universalNav.universalNavConfig);
+    });
   };
 
   decorateAppPrompt = async ({ getAnchorState } = {}) => {
