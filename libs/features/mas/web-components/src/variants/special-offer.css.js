@@ -17,7 +17,7 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
 }
 
 @media screen and ${MOBILE_LANDSCAPE} {
-  :root {
+  :root {
     --consonant-merch-card-special-offers-width: 302px;
   }
 } 

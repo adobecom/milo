@@ -28,6 +28,7 @@ export const CSS = `
     :root {
       --consonant-merch-card-catalog-width: 276px;
     }
+
     .three-merch-cards.catalog,
     .four-merch-cards.catalog {
         grid-template-columns: repeat(3, var(--consonant-merch-card-catalog-width));

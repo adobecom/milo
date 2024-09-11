@@ -36,6 +36,7 @@ export const CSS = `
   :root {
     --consonant-merch-card-segment-width: 302px;
   }
+    
   .three-merch-cards.segment {
       grid-template-columns: repeat(3, minmax(276px, var(--consonant-merch-card-segment-width)));
   }

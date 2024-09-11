@@ -21,7 +21,9 @@ export const CSS = `
 }
 
 @media screen and ${DESKTOP_UP} {
-  --consonant-merch-card-inline-heading-width: 378px;
+  :root {
+    --consonant-merch-card-inline-heading-width: 378px;
+  }
 
   .three-merch-cards.inline-heading,
   .four-merch-cards.inline-heading {
