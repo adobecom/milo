@@ -264,6 +264,7 @@
 
 .table .section-row .col {
   padding: 16px 24px;
+  column-gap: 0.5ch;
 }
 
 .table .section-row .col:has(> p:nth-child(2)) {

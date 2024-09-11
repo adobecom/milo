@@ -10,6 +10,30 @@ const config = {
   codeRoot: '/libs',
   locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
 };
+const stageDomainsMap = {
+  'www.stage.adobe.com': {
+    'www.adobe.com': 'origin',
+    'business.adobe.com': 'business.stage.adobe.com',
+    'blog.adobe.com': 'blog.stage.adobe.com',
+    'helpx.adobe.com': 'helpx.stage.adobe.com',
+    'news.adobe.com': 'news.stage.adobe.com',
+  },
+  '--bacom--adobecom.hlx.live': {
+    'business.adobe.com': 'origin',
+    'blog.adobe.com': 'main--blog--adobecom.hlx.live',
+    'helpx.adobe.com': 'main--helpx--adobecom.hlx.live',
+    'news.adobe.com': 'main--news--adobecom.hlx.live',
+  },
+  '--blog--adobecom.hlx.page': {
+    'blog.adobe.com': 'origin',
+    'business.adobe.com': 'main--bacom--adobecom.hlx.page',
+    'helpx.adobe.com': 'main--helpx--adobecom.hlx.page',
+    'news.adobe.com': 'main--news--adobecom.hlx.page',
+  },
+  '.business-graybox.adobe.com': { 'business.adobe.com': 'origin' },
+};
+const prodDomains = ['www.adobe.com', 'business.adobe.com', 'blog.adobe.com', 'helpx.adobe.com', 'news.adobe.com'];
+const externalDomains = ['external1.com', 'external2.com'];
 const ogFetch = window.fetch;
 
 describe('Utils', () => {
@@ -114,7 +138,7 @@ describe('Utils', () => {
         await waitForElement('.login-action');
         const login = document.querySelector('.login-action');
         utils.decorateLinks(login);
-        expect(login.href).to.equal('https://www.stage.adobe.com/');
+        expect(login.href).to.equal('https://www.adobe.com/');
       });
       it('Implements a copy link action', async () => {
         await waitForElement('.copy-action');
@@ -473,22 +497,71 @@ describe('Utils', () => {
       expect(document.querySelector('.quote.hide-block')).to.be.null;
     });
 
-    it('should convert prod links to stage links on stage env', async () => {
-      const stageDomainsMap = {
-        'www.adobe.com': 'www.stage.adobe.com',
-        'blog.adobe.com': 'blog.stage.adobe.com',
-        'business.adobe.com': 'business.stage.adobe.com',
-        'helpx.adobe.com': 'helpx.stage.adobe.com',
-        'news.adobe.com': 'news.stage.adobe.com',
-      };
-      utils.setConfig({
+    it('should convert links on stage when stageDomainsMap provided', async () => {
+      const stageConfig = {
         ...config,
         env: { name: 'stage' },
         stageDomainsMap,
+      };
+
+      Object.entries(stageDomainsMap).forEach(([hostname, domainsMap]) => {
+        const anchors = Object.keys(domainsMap).map((d) => utils.createTag('a', { href: `https://${d}` }));
+        const externalAnchors = externalDomains.map((url) => utils.createTag('a', { href: url }));
+
+        utils.convertStageLinks({
+          anchors: [...anchors, ...externalAnchors],
+          config: stageConfig,
+          hostname,
+        });
+
+        anchors.forEach((a, index) => {
+          const expectedDomain = Object.values(domainsMap)[index];
+          expect(a.href).to.contain(expectedDomain === 'origin' ? hostname : expectedDomain);
+        });
+
+        externalAnchors.forEach((a) => expect(a.href).to.equal(a.href));
       });
-      const links = Object.keys(stageDomainsMap).map((prodDom) => document.body.appendChild(createTag('a', { href: `https://${prodDom}`, 'data-prod-dom': prodDom })));
-      await utils.decorateLinks(document.body);
-      links.forEach((l) => expect(l.hostname === stageDomainsMap[l.dataset.prodDom]).to.be.true);
+    });
+
+    it('should not convert links on stage when no stageDomainsMap provided', async () => {
+      const stageConfig = {
+        ...config,
+        env: { name: 'stage' },
+      };
+
+      Object.entries(stageDomainsMap).forEach(([hostname, domainsMap]) => {
+        const anchors = Object.keys(domainsMap).map((d) => utils.createTag('a', { href: `https://${d}` }));
+        const externalAnchors = externalDomains.map((url) => utils.createTag('a', { href: url }));
+
+        utils.convertStageLinks({
+          anchors: [...anchors, ...externalAnchors],
+          config: stageConfig,
+          hostname,
+        });
+
+        [...anchors, ...externalAnchors].forEach((a) => expect(a.href).to.equal(a.href));
+      });
+    });
+
+    it('should not convert links on prod', async () => {
+      const prodConfig = {
+        ...config,
+        env: { name: 'prod' },
+        stageDomainsMap,
+      };
+
+      prodDomains.forEach((hostname) => {
+        const anchors = prodDomains.map((d) => utils.createTag('a', { href: `https://${d}` }));
+        const externalAnchors = externalDomains.map((url) => utils.createTag('a', { href: url }));
+
+        utils.convertStageLinks({
+          anchors: [...anchors, ...externalAnchors],
+          config: prodConfig,
+          hostname,
+        });
+
+        [...anchors, ...externalAnchors].forEach((a) => expect(a.href).to.equal(a.href));
+      });
     });
   });
 

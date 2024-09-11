@@ -12,14 +12,12 @@ import merch, {
   buildCta,
   getCheckoutContext,
   initService,
-  fetchLiterals,
   fetchCheckoutLinkConfigs,
   getCheckoutLinkConfig,
   getDownloadAction,
   fetchEntitlements,
   getModalAction,
   getCheckoutAction,
-  PRICE_LITERALS_URL,
   PRICE_TEMPLATE_REGULAR,
   getMasBase,
   appendTabName,
@@ -151,7 +149,6 @@ describe('Merch Block', () => {
     document.head.innerHTML = await readMockText('/test/blocks/merch/mocks/head.html');
     document.body.innerHTML = await readMockText('/test/blocks/merch/mocks/body.html');
     ({ setCheckoutLinkConfigs, setSubscriptionsData } = await mockFetch());
-    config.commerce = { priceLiteralsPromise: fetchLiterals(PRICE_LITERALS_URL) };
     setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
   });
 
