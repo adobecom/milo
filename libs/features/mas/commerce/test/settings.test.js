@@ -27,8 +27,6 @@ describe('getSettings', () => {
         expect(getSettings()).to.deep.equal({
             ...Defaults,
             locale: `${Defaults.language}_${Defaults.country}`,
-            priceLiteralsURL: undefined,
-            priceLiteralsPromise: undefined,
             quantity: [Defaults.quantity],
         });
     });
@@ -76,8 +74,6 @@ describe('getSettings', () => {
           quantity: [2],
           wcsApiKey: 'testapikey',
           locale: "en_US",
-          priceLiteralsURL: undefined,
-          priceLiteralsPromise: undefined,
           env: "STAGE",
           wcsURL: WCS_STAGE_URL
       });
@@ -111,8 +107,6 @@ describe('getSettings', () => {
             env: Env.STAGE,
             language: 'nb',
             locale: 'nb_NO',
-            priceLiteralsURL: undefined,
-            priceLiteralsPromise: undefined,
             quantity: [Defaults.quantity],
             wcsApiKey,
             wcsURL: WCS_STAGE_URL,
