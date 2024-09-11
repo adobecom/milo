@@ -6,6 +6,7 @@ import { signal } from '../../../deps/htm-preact.js';
 import { origin, preview } from '../../locui/utils/franklin.js';
 import { decorateSections } from '../../../utils/utils.js';
 import { getUrls } from '../../locui/loc/index.js';
+import { validateUrlsFormat } from '../floodgate/index.js';
 
 export const showRolloutOptions = signal(false);
 
@@ -49,7 +50,7 @@ async function findPageFragments(path) {
   const isIndex = path.lastIndexOf('index');
   const hlxPath = isIndex > 0 ? path.substring(0, isIndex) : path;
   const resp = await fetch(`${origin}${hlxPath}`);
-  if (!resp.ok) return [];
+  if (!resp.ok) return undefined;
   const html = await resp.text();
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
@@ -62,7 +63,7 @@ async function findPageFragments(path) {
     const linkHref = links[i].href;
     // Check if it's a referenced asset
     if (isReferencedAsset(linkHref, baseUrlOrigin)) {
-      const [pathname] = new URL(linkHref);
+      const pathname = new URL(linkHref)?.pathname;
       // Check for duplicates against the original URLs
       if (!urls.value.some((originalUrl) => originalUrl.pathname === pathname)) {
         const sanitizedUrl = getSanitizedUrl(linkHref);
@@ -100,9 +101,13 @@ async function findDeepFragments(path) {
     const needsSearch = fragments.filter((fragment) => !searched.includes(fragment.pathname));
     for (const search of needsSearch) {
       const nestedFragments = await findPageFragments(search.pathname);
-      const newFragments = nestedFragments.filter((nested) => !searched.includes(nested.pathname)
-        && !fragments.find((fragment) => fragment.pathname === nested.pathname));
-      if (newFragments?.length) fragments.push(...newFragments);
+      if (nestedFragments === undefined) {
+        search.valid = 'not found';
+      } else {
+        const newFragments = nestedFragments.filter((nested) => !searched.includes(nested.pathname)
+          && !fragments.find((fragment) => fragment.pathname === nested.pathname));
+        if (newFragments?.length) fragments.push(...newFragments);
+      }
       searched.push(search.pathname);
     }
   }
@@ -133,11 +138,12 @@ export async function findFragments() {
     }
     return acc;
   }, []);
+
   setStatus('fragments', 'info', `${forExcel.length} fragments found.`, null, 1500);
   setExcelStatus(`Found ${forExcel.length} fragments.`);
 
   if (forExcel.length > 0) {
-    urls.value = [...urls.value];
+    urls.value = [...validateUrlsFormat(urls.value)];
     // Update language cards count
     const itemId = getItemId();
     const resp = await updateExcelTable({ itemId, tablename: 'URL', values: forExcel });
