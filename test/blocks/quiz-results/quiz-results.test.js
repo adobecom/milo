@@ -76,4 +76,11 @@ describe('Quiz Results', () => {
     expect(el.querySelector('.fragment > .section > .content').getAttribute('daa-lh')).to.equal('b1|content');
     expect(el.querySelector('a').getAttribute('daa-ll')).to.equal('Fragment link-1--This is a basic frag');
   });
+  it('should return misconfigured block', async () => {
+    const el = document.body.querySelector('.nested-three');
+    localStorage.setItem('misconf', JSON.stringify(mockData.mockTwo));
+    el.classList.remove('nested');
+    await init(el, 'quiz-results', 'misconf');
+    expect(window.lana.log.args[2][0]).to.equal(`${LOADING_ERROR} The quiz-results block is misconfigured`);
+  });
 });
