@@ -48,7 +48,7 @@ export default async function loadBlock(configs, customLib) {
   const miloLibs = branch ? `https://${branch}--milo--adobecom.hlx.page` : customLib || envMap[env];
   if (!header && !footer) {
     console.error('Global navigation Error: header and footer configurations are missing.');
-    onError('Global navigation Error: header and footer configurations are missing.');
+    onError?.('Global navigation Error: header and footer configurations are missing.');
     return;
   }
   // Relative path can't be used, as the script will run on consumer's app
@@ -79,8 +79,8 @@ export default async function loadBlock(configs, customLib) {
       });
     }
   });
-  window.addEventListener('feds:nav.ready', () => onReady && onReady());
-  window.addEventListener('feds:nav.error', ({ detail }) => onError && onError(detail?.message));
+  window.addEventListener('milo:globalnav:ready', () => onReady?.());
+  window.addEventListener('milo:globalnav:error', ({ detail }) => onError?.(detail?.message));
 }
 
 window.loadNavigation = loadBlock;
