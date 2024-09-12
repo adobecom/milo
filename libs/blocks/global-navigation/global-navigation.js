@@ -322,7 +322,7 @@ class Gnav {
       await task();
     }
     // Dispatching an event when gnav loads and is visible
-    window.dispatchEvent(new CustomEvent('feds:globalnav:ready'));
+    window.dispatchEvent(new CustomEvent('milo:globalnav:ready'));
 
     document.addEventListener('click', closeOnClickOutside);
     isDesktop.addEventListener('change', closeAllDropdowns);

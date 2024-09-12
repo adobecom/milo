@@ -42,7 +42,7 @@ export const lanaLog = ({ message, e = '', tags = 'errorType=default' }) => {
     sampleRate: 1,
     tags,
   });
-  window.dispatchEvent(new CustomEvent('feds:globalnav:error', { detail: { message: `${message} - ${e}` } }));
+  window.dispatchEvent(new CustomEvent('milo:globalnav:error', { detail: { message: `${message} - ${e}` } }));
 };
 
 export const logErrorFor = async (fn, message, tags) => {
