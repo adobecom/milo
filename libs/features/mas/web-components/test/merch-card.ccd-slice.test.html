@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Merch Card Web Component demo page</title>
+    <script>
+        window.process = {
+            env: {},
+        };
+    </script>
+    <style>
+        main {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-direction: column;
+            padding-top: 80px;
+        }
+
+        main>div {
+            display: initial;
+        }
+
+        .action-area {
+            display: contents;
+        }
+
+        #sidenav {
+            display: none;
+        }
+
+        @media screen and (min-width: 1440px) {
+            #sidenav {
+                flex: 1;
+                justify-content: stretch;
+                padding-top: 8px;
+                display: flex;
+                position: fixed;
+                bottom: 0px;
+                left: 0px;
+                gap: 20px;
+                flex-direction: column;
+                width: 220px;
+            }
+        }
+
+        #firstcards {
+            background: linear-gradient(90deg, rgba(2, 0, 36, 1) 0%, rgba(140, 43, 95, 0.4430147058823529) 35%, rgba(0, 212, 255, 1) 100%);
+        }
+    </style>
+</head>
+
+<body>
+    <script type="module" src="./merch-card.ccd-slice.test.html.js"></script>
+    <main>
+        <div id="sidenav">
+            <button onclick="toggleRTL()">Toggle RTL</button>
+            <button onclick="skipTests()">Skip tests</button>
+            <button onclick="runTests()">Run tests</button>
+        </div>
+        <div class="one-merch-card ccd-slice">
+  <merch-card class="" tabindex="0" variant="ccd-slice" filters="" types="">
+    <sp-status-light size="l" variant="info" dir="ltr"></sp-status-light>
+    <merch-icon
+      slot="icons"
+      src="https://www.adobe.com/content/dam/shared/images/product-icons/svg/creative-cloud.svg"
+      alt=""
+      href=""
+      size="l"
+      >undefined</merch-icon
+    >
+    <p slot="body-s">
+      <strong>Save 40% when you upgrade to Creative Cloud All Apps</strong>
+    </p>
+    <div slot="footer">
+      <a
+          class="con-button blue"
+          is="checkout-link"
+          data-checkout-workflow="UCv3"
+          data-checkout-workflow-step="segmentation"
+          data-promotion-code="CCI2AAUSQ22440CH"
+          data-quantity="1"
+          data-wcs-osi="r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8"
+          data-extra-options="{}"
+          ><span>Buy now</span></a
+        >
+    </div>
+    
+    </merch-card
+  >
+</div>
+<div class="one-merch-card ccd-slice-wide">
+  <merch-card size="wide" class="" tabindex="0" variant="ccd-slice" filters="" types="">
+    <sp-status-light size="l" variant="info" dir="ltr"></sp-status-light>
+    <merch-icon
+      slot="icons"
+      src="https://www.adobe.com/content/dam/shared/images/product-icons/svg/creative-cloud.svg"
+      alt=""
+      href=""
+      size="l"
+      >undefined</merch-icon
+    >
+    <p slot="body-s">
+      <strong>Explore the power of AI with your all-in-one app.</strong>
+      <a href="https://www.adobe.com/creativecloud/all-apps.html" target="_blank">See terms</a>
+            </p>
+    <div slot="footer">
+      <a
+          class="con-button blue"
+          is="checkout-link"
+          data-checkout-workflow="UCv3"
+          data-checkout-workflow-step="segmentation"
+          data-promotion-code="CCI2AAUSQ22440CH"
+          data-quantity="1"
+          data-wcs-osi="r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8"
+          data-extra-options="{}"
+          ><span>Buy now</span></a
+        >
+    </div>
+    
+    </merch-card>
+</div>
+
+</main>
+</body>
+</html>
