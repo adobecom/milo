@@ -6,6 +6,7 @@ const DESKTOP_SIZE = 900;
 const MOBILE_SIZE = 768;
 const tableHighlightLoadedEvent = new Event('milo:table:highlight:loaded');
 let tableIndex = 0;
+const isMobileLandscape = () => (window.matchMedia('(orientation: landscape)').matches && window.innerHeight <= MOBILE_SIZE);
 function defineDeviceByScreenSize() {
   const screenWidth = window.innerWidth;
   if (screenWidth >= DESKTOP_SIZE) {
@@ -15,6 +16,12 @@ function defineDeviceByScreenSize() {
     return 'MOBILE';
   }
   return 'TABLET';
+}
+
+function isStickyHeader(el) {
+  return el.classList.contains('sticky')
+    || (el.classList.contains('sticky-desktop-up') && defineDeviceByScreenSize() === 'DESKTOP')
+    || (el.classList.contains('sticky-tablet-up') && defineDeviceByScreenSize() !== 'MOBILE' && !isMobileLandscape());
 }
 
 function handleHeading(table, headingCols) {
@@ -382,7 +389,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
     }
 
     if ((!isMerch && !table.querySelector('.col-3'))
-    || (isMerch && !table.querySelector('.col-2'))) return;
+      || (isMerch && !table.querySelector('.col-2'))) return;
 
     const filterChangeEvent = () => {
       table.innerHTML = originTable.innerHTML;
@@ -501,10 +508,6 @@ export default function init(el) {
     expandSection = handleSection(sectionParams);
   });
 
-  const isStickyHeader = el.classList.contains('sticky')
-    || (el.classList.contains('sticky-desktop-up') && defineDeviceByScreenSize() === 'DESKTOP')
-    || (el.classList.contains('sticky-tablet-up') && defineDeviceByScreenSize() !== 'MOBILE');
-
   handleHighlight(el);
   if (isMerch) formatMerchTable(el);
 
@@ -525,7 +528,7 @@ export default function init(el) {
 
     const handleResize = () => {
       applyStylesBasedOnScreenSize(el, originTable);
-      if (isStickyHeader) handleScrollEffect(el);
+      if (isStickyHeader(el)) handleScrollEffect(el);
     };
     handleResize();
 
