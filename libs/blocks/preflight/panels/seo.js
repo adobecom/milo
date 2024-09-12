@@ -160,7 +160,7 @@ async function spidyCheck(url) {
     connectionError();
   } catch (e) {
     connectionError();
-    window.lana.log(`There was a problem connecting to the link check API ${url}. ${e}`, { tags: 'errorType=info,module=preflight' });
+    window.lana.log(`There was a problem connecting to the link check API ${url}. ${e}`, { tags: 'preflight', errorType: 'i' });
   }
   return false;
 }
@@ -182,7 +182,7 @@ async function getSpidyResults(url, opts) {
       return acc;
     }, []);
   } catch (e) {
-    window.lana.log(`There was a problem connecting to the link check API ${url}/api/url-http-status. ${e}`, { tags: 'errorType=info,module=preflight' });
+    window.lana.log(`There was a problem connecting to the link check API ${url}/api/url-http-status. ${e}`, { tags: 'preflight', errorType: 'i' });
     return [];
   }
 }

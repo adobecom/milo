@@ -42,6 +42,7 @@ export class SpecialOffer extends VariantLayout {
     :host([variant='special-offers']) {
       min-height: 439px;
     }
+      
     :host([variant='special-offers'].center) {
       text-align: center;
     }  

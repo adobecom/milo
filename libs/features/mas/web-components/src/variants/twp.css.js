@@ -5,6 +5,7 @@ export const CSS = `
   --consonant-merch-card-twp-mobile-width: 300px;
   --consonant-merch-card-twp-mobile-height: 358px;
 }
+  
 merch-card[variant="twp"] div[class$='twp-badge'] {
   padding: 4px 10px 5px 10px;
 }
@@ -96,7 +97,7 @@ merch-card[variant='twp'] merch-offer-select {
         grid-template-columns: repeat(2, var(--consonant-merch-card-twp-width));
     }
     .three-merch-cards.twp {
-    grid-template-columns: repeat(3, var(--consonant-merch-card-twp-width));
+        grid-template-columns: repeat(3, var(--consonant-merch-card-twp-width));
   }
 }
 `;

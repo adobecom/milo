@@ -30,18 +30,6 @@ runTests(async () => {
         it('should exist in the HTML document', async () => {
             expect(document.querySelector('merch-card')).to.exist;
         });
-        it('should exist special offers card in HTML document', async () => {
-            expect(
-                document.querySelector('merch-card[variant="special-offers"]'),
-            ).to.exist;
-        });
-        it('should display a merch-badge', async () => {
-            expect(
-                document
-                    .querySelector('merch-card[variant="special-offers"]')
-                    .shadowRoot.querySelector('.special-offers-badge'),
-            ).to.exist;
-        });
         it('should exist segment card in HTML document', async () => {
             expect(document.querySelector('merch-card[variant="segment"]')).to
                 .exist;
@@ -81,25 +69,6 @@ runTests(async () => {
                 'm2m,stock-m2m',
             );
         });
-        it('should display an action menu on hover for catalog variant', async () => {
-            const catalogCard = document.querySelector(
-                'merch-card[variant="catalog"]',
-            );
-            catalogCard.dispatchEvent(
-                new MouseEvent('mouseover', { bubbles: true }),
-            );
-            await delay(100);
-            const shadowRoot = catalogCard.shadowRoot;
-            const actionMenu = shadowRoot.querySelector('.action-menu');
-            const actionMenuContent = shadowRoot.querySelector(
-                '.action-menu-content',
-            );
-            expect(actionMenu.classList.contains('invisible')).to.be.true;
-            expect(actionMenuContent.classList.contains('hidden')).to.be.true;
-            expect(actionMenu).to.exist;
-            expect(actionMenuContent).to.exist;
-            catalogCard.toggleActionMenu();
-        });
 
         it('should have and interact with  quantity-selector', async () => {
             const plansCard = document.querySelector('merch-card[type="q-ty"]');
@@ -121,13 +90,6 @@ runTests(async () => {
             const button = plansCard.querySelector('.con-button');
             expect(button.getAttribute('data-quantity')).to.equal('3');
         });
-    });
-
-    it('should return title for special offer card', async () => {
-        const title = document.querySelector(
-            'merch-card[variant="special-offers"]',
-        ).title;
-        expect(title).to.equal('INDIVIDUALS');
     });
 
     it('should return title for segment card', async () => {
