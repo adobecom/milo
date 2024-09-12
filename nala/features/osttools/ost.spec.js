@@ -19,7 +19,7 @@ module.exports = {
         taxLabel: 'excl. tax',
       },
       browserParams: '?token=',
-      tags: '@ost @commerce @regression @nopr @jk',
+      tags: '@ost @commerce @regression @nopr',
     },
     {
       tcid: '1',
