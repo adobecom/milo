@@ -366,6 +366,7 @@ function modifySelectorTerm(termParam) {
   const htmlEls = [
     'html', 'body', 'header', 'footer', 'main',
     'div', 'a', 'p', 'strong', 'em', 'picture', 'source', 'img', 'h',
+    'ul', 'ol', 'li',
   ];
   const startTextMatch = term.match(/^[a-zA-Z/./-]*/);
   const startText = startTextMatch ? startTextMatch[0].toLowerCase() : '';
@@ -893,6 +894,8 @@ export function cleanAndSortManifestList(manifests) {
           freshManifest = manifestObj[manifest.manifestPath];
         }
         freshManifest.name = fullManifest.name;
+        freshManifest.selectedVariantName = fullManifest.selectedVariantName;
+        freshManifest.selectedVariant = freshManifest.variants[freshManifest.selectedVariantName];
         manifestObj[manifest.manifestPath] = freshManifest;
       } else {
         manifestObj[manifest.manifestPath] = manifest;

@@ -57,7 +57,7 @@ Promise.all([
         minify: true,
         outfile: `${outfolder}/merch-sidenav.js`,
         format: 'esm',
-        plugins: [rewriteImports()],
+        plugins: [rewriteImportsToLibsFolder()],
         external: ['lit'],
     }),
     buildLitComponent('merch-icon'),
@@ -83,4 +83,18 @@ function rewriteImports(rew) {
             });
         },
     };
+}
+
+function rewriteImportsToLibsFolder(rew) {
+  return {
+      name: 'rewrite-imports-to-libs-folder',
+      setup(build) {
+          build.onResolve({ filter: /^lit(\/.*)?$/ }, (args) => {
+              return {
+                  path: '/libs/deps/lit-all.min.js',
+                  external: true,
+              };
+          });
+      },
+  };
 }
