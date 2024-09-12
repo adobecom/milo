@@ -80,7 +80,7 @@ export default async function loadBlock(configs, customLib) {
     }
   });
   window.addEventListener('feds:nav.ready', () => onReady && onReady());
-  window.addEventListener('feds:nav.error', ({ detail }) => onError && onError(detail?.message))
+  window.addEventListener('feds:nav.error', ({ detail }) => onError && onError(detail?.message));
 }
 
 window.loadNavigation = loadBlock;

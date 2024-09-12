@@ -323,7 +323,7 @@ class Gnav {
     }
     // Dispatching an event when gnav loads and is visible
     window.dispatchEvent(new CustomEvent('feds:nav.ready'));
-    
+
     document.addEventListener('click', closeOnClickOutside);
     isDesktop.addEventListener('change', closeAllDropdowns);
   }, 'Error in global navigation init', 'errorType=error,module=gnav');
