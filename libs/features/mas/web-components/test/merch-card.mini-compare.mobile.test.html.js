@@ -4,12 +4,13 @@ import { expect } from '@esm-bundle/chai';
 
 import { mockLana } from './mocks/lana.js';
 import { mockFetch } from './mocks/fetch.js';
+import { mockConfig } from './mocks/config.js';
 
 import '../src/merch-offer.js';
 import '../src/merch-offer-select.js';
 import '../src/merch-quantity-select.js';
 
-import { appendMiloStyles } from './utils.js';
+import { appendMiloStyles, toggleMobile } from './utils.js';
 import { mockIms } from './mocks/ims.js';
 import { withWcs } from './mocks/wcs.js';
 import mas from './mas.js';
@@ -17,6 +18,7 @@ import mas from './mas.js';
 const skipTests = sessionStorage.getItem('skipTests');
 
 runTests(async () => {
+    await toggleMobile();
     mockIms();
     mockLana();
     await mockFetch(withWcs);
@@ -25,8 +27,8 @@ runTests(async () => {
         appendMiloStyles();
         return;
     }
-    describe('merch-card web component with mini-compare variant', () => {
-        it('mini-compare-chart should have same body slot heights', async () => {
+    describe('[mobile] merch-card web component with mini-compare variant', () => {
+        it('[mobile] mini-compare-chart should have same body slot heights', async () => {
             const miniCompareCharts = document.querySelectorAll(
                 'merch-card[variant="mini-compare-chart"]',
             );
@@ -70,35 +72,7 @@ runTests(async () => {
             expect(card2Slots).to.equal(card3Slots);
         });
 
-        it('mini-compare-chart should have same height footer rows', async () => {
-            const miniCompareCharts = document.querySelectorAll(
-                'merch-card[variant="mini-compare-chart"]',
-            );
-            await Promise.all(
-                [...miniCompareCharts].map((card) => card.updateComplete),
-            );
-            const [card1Rows, card2Rows, card3Rows] = [
-                ...miniCompareCharts,
-            ].map((miniCompareChart) => {
-                const heights = new Array(5)
-                    .fill()
-                    .map((_, i) =>
-                        Math.round(
-                            window.getComputedStyle(
-                                miniCompareChart.querySelector(
-                                    `.footer-row-cell:nth-child(${i + 1})`,
-                                ),
-                            ).height,
-                        ),
-                    )
-                    .join(',');
-                return heights;
-            });
-            expect(card1Rows).to.equal(card2Rows);
-            expect(card2Rows).to.equal(card3Rows);
-        });
-
-        it('mini-compare-chart should ', async () => {
+        it('[mobile] mini-compare-chart should ', async () => {
             const miniCompareChart = document.querySelector(
                 'merch-card[variant="mini-compare-chart"]',
             );

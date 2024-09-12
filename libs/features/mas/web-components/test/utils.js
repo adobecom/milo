@@ -23,6 +23,12 @@ export async function toggleLargeDesktop() {
     } catch {}
 }
 
+export async function toggleMobile() {
+  try {
+      await setViewport({ width: 430, height: 932 });
+  } catch {}
+}
+
 window.skipTests = () => {
     window.location.hash = '';
     sessionStorage.setItem('skipTests', 'true');
