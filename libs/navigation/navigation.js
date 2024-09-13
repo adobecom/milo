@@ -70,17 +70,21 @@ export default async function loadBlock(configs, customLib) {
   };
   setConfig(clientConfig);
 
-  blockConfig.forEach((block) => {
-    const configBlock = configs[block.key];
-    if (configBlock) {
-      bootstrapBlock(`${miloLibs}/libs`, {
-        ...block,
-        ...(block.key === 'header' && { unavComponents: configBlock.unavComponents, redirect: configBlock.redirect }),
-      });
+  try {
+    for await (const block of blockConfig) {
+      const configBlock = configs[block.key];
+      if (configBlock) {
+        await bootstrapBlock(`${miloLibs}/libs`, {
+          ...block,
+          ...(block.key === 'header' && { unavComponents: configBlock.unavComponents, redirect: configBlock.redirect }),
+        });
+      }
     }
-  });
-  window.addEventListener('milo:globalnav:ready', () => onReady?.());
-  window.addEventListener('milo:globalnav:error', ({ detail }) => onError?.(detail?.message));
+    onReady?.();
+  } catch (e) {
+    onError?.(e);
+    throw e;
+  }
 }
 
 window.loadNavigation = loadBlock;

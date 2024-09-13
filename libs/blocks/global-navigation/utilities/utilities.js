@@ -42,7 +42,7 @@ export const lanaLog = ({ message, e = '', tags = 'errorType=default' }) => {
     sampleRate: 1,
     tags,
   });
-  window.dispatchEvent(new CustomEvent('milo:globalnav:error', { detail: { message: `${message} - ${e}` } }));
+  console.error(message);
 };
 
 export const logErrorFor = async (fn, message, tags) => {

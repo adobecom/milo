@@ -1058,9 +1058,17 @@ async function loadPostLCP(config) {
   }
   const header = document.querySelector('header');
   if (header) {
-    header.classList.add('gnav-hide');
-    await loadBlock(header);
-    header.classList.remove('gnav-hide');
+    try {
+      header.classList.add('gnav-hide');
+      await loadBlock(header);
+      header.classList.remove('gnav-hide');
+    } catch (e) {
+      window.lana.log(`${e.message} | gnav-source: ${e.url} | href: ${window.location.href}`, {
+        clientId: 'feds-milo',
+        sampleRate: 1,
+        tags: e.tags,
+      });
+    }
   }
   loadTemplate();
   const { default: loadFonts } = await import('./fonts.js');
