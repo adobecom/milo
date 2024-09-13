@@ -12,17 +12,38 @@ export class CCDSlice extends VariantLayout {
   }
 
   renderLayout() {
-    return html` <div class="body">
-        <slot name="icons"></slot> ${this.badge}
-        <slot name="body-s"></slot>
-        <footer><slot name="footer"></slot></footer>
-        <slot name="background"></slot>
-        <slot></slot>
-    </div>`;
+    return html` <div class="content">
+          <slot name="icons"></slot> ${this.badge}
+          <slot name="body-s"></slot>
+          <slot name="footer"></slot>
+        </div>
+        <slot name="image"></slot>
+        <slot></slot>`;
   }
+
   static variantStyle = css`
-    :host([variant='ccd-slice']:not([size])) {
-      width: var(--consonant-merch-card-ccd-slice-width);
+    :host([variant='ccd-slice']) {
+      width: var(--consonant-merch-card-ccd-slice-single-width);
+      border-radius: 4px;
+      display: flex;
+      flex-flow: wrap;
+    }
+
+    :host([variant='ccd-slice'][size='wide']) {
+      width: var(--consonant-merch-card-ccd-slice-wide-width);
+    }
+
+    :host([variant='ccd-slice']) .content {
+      display: flex;
+      gap: var(--consonant-merch-spacing-xxs);
+      padding: var(--consonant-merch-spacing-xs) 0
+        var(--consonant-merch-spacing-xs)
+        var(--consonant-merch-spacing-xs);
+      width: 154px;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex: 1 0 0;
     }
   `;
 }

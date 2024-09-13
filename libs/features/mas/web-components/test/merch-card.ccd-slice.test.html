@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Merch Card Web Component demo page</title>
+    <title>Merch Card CCD SliceWeb Component demo page</title>
     <script>
         window.process = {
             env: {},
@@ -45,10 +45,6 @@
                 width: 220px;
             }
         }
-
-        #firstcards {
-            background: linear-gradient(90deg, rgba(2, 0, 36, 1) 0%, rgba(140, 43, 95, 0.4430147058823529) 35%, rgba(0, 212, 255, 1) 100%);
-        }
     </style>
 </head>
 
@@ -61,35 +57,47 @@
             <button onclick="runTests()">Run tests</button>
         </div>
         <div class="one-merch-card ccd-slice">
-  <merch-card class="" tabindex="0" variant="ccd-slice" filters="" types="">
-    <sp-status-light size="l" variant="info" dir="ltr"></sp-status-light>
-    <merch-icon
-      slot="icons"
-      src="https://www.adobe.com/content/dam/shared/images/product-icons/svg/creative-cloud.svg"
-      alt=""
-      href=""
-      size="l"
-      >undefined</merch-icon
-    >
-    <p slot="body-s">
-      <strong>Save 40% when you upgrade to Creative Cloud All Apps</strong>
-    </p>
-    <div slot="footer">
-      <a
-          class="con-button blue"
-          is="checkout-link"
-          data-checkout-workflow="UCv3"
-          data-checkout-workflow-step="segmentation"
-          data-promotion-code="CCI2AAUSQ22440CH"
-          data-quantity="1"
-          data-wcs-osi="r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8"
-          data-extra-options="{}"
-          ><span>Buy now</span></a
-        >
-    </div>
-    
-    </merch-card
-  >
+          <merch-card class="" tabindex="0" variant="ccd-slice" filters="" types="">
+            <sp-status-light size="l" variant="info" dir="ltr"></sp-status-light>
+            <merch-icon
+              slot="icons"
+              src="https://www.adobe.com/content/dam/shared/images/product-icons/svg/photoshop.svg"
+              alt=""
+              href=""
+              size="l"
+              >undefined</merch-icon
+            >
+            <merch-icon
+              slot="icons"
+              src="https://www.adobe.com/content/dam/shared/images/product-icons/svg/lightroom.svg"
+              alt=""
+              href=""
+              size="l"
+              >undefined</merch-icon
+            >
+            <p slot="body-s">
+              <strong>Creative Cloud Photography plan.<br>
+              Starting at US$19.99/mo
+              </strong>
+            </p>
+            <div slot="footer">
+              <a
+                  class="con-button blue"
+                  is="checkout-link"
+                  data-checkout-workflow="UCv3"
+                  data-checkout-workflow-step="segmentation"
+                  data-promotion-code="CCI2AAUSQ22440CH"
+                  data-quantity="1"
+                  data-wcs-osi="r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8"
+                  data-extra-options="{}"
+                  ><span>Buy now</span></a
+                >
+            </div>
+            <div slot="image">
+              <img src="./img/creative-cloud.png" alt="">
+            </div>
+            </merch-card
+          >
 </div>
 <div class="one-merch-card ccd-slice-wide">
   <merch-card size="wide" class="" tabindex="0" variant="ccd-slice" filters="" types="">
@@ -103,8 +111,8 @@
       >undefined</merch-icon
     >
     <p slot="body-s">
-      <strong>Explore the power of AI with your all-in-one app.</strong>
-      <a href="https://www.adobe.com/creativecloud/all-apps.html" target="_blank">See terms</a>
+      <strong>Save over 30% on Creative Cloud All Apps. Register for MAX by August 31 and save US$200 on a full conference pass.</strong>
+      <br><a href="https://www.adobe.com/creativecloud/all-apps.html" target="_blank">See terms</a>
             </p>
     <div slot="footer">
       <a
@@ -116,10 +124,12 @@
           data-quantity="1"
           data-wcs-osi="r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8"
           data-extra-options="{}"
-          ><span>Buy now</span></a
+          ><span>Register now</span></a
         >
     </div>
-    
+    <div slot="image">
+      <img src="./img/max.png" alt="">
+    </div>
     </merch-card>
 </div>
 
