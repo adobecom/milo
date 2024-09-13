@@ -9,12 +9,6 @@ const getConfig = () => ({
     '': { prefix: '', ietf: 'en-US', tk: 'hah7vzn.css' },
     ch_de: { prefix: '/ch_de', ietf: 'de-CH', tk: 'vin7zsi.css' },
   },
-  susiOptions: {
-    dctx_id: {
-      stage: 'dctx_id',
-      prod: 'dctx_id',
-    },
-  },
 });
 
 const getLocale = (locales, pathname) => locales[pathname.split('/', 2)[1]?.toLowerCase()] || locales[''];

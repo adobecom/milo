@@ -40,6 +40,7 @@ import {
 
 import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
 
+const SIGNIN_CONTEXT = getConfig()?.signInContext;
 export const CONFIG = {
   icons: isDarkMode() ? darkIcons : icons,
   delays: {
@@ -83,8 +84,8 @@ export const CONFIG = {
             },
           },
           callbacks: {
-            onSignIn: () => { window.adobeIMS?.signIn(getConfig().susiOptions); },
-            onSignUp: () => { window.adobeIMS?.signIn(getConfig().susiOptions); },
+            onSignIn: () => { window.adobeIMS?.signIn(SIGNIN_CONTEXT); },
+            onSignUp: () => { window.adobeIMS?.signIn(SIGNIN_CONTEXT); },
           },
         },
       },
@@ -153,7 +154,7 @@ const decorateSignIn = async ({ rawElem, decoratedElem }) => {
 
     signInElem.addEventListener('click', (e) => {
       e.preventDefault();
-      signIn(getConfig().susiOptions);
+      signIn(SIGNIN_CONTEXT);
     });
   } else {
     signInElem = toFragment`<button daa-ll="${signInLabel}" class="feds-signIn" aria-expanded="false" aria-haspopup="true">${signInLabel}</button>`;
@@ -170,7 +171,7 @@ const decorateSignIn = async ({ rawElem, decoratedElem }) => {
       dropdownSignInAnchor.replaceWith(dropdownSignInButton);
       dropdownSignInButton.addEventListener('click', (e) => {
         e.preventDefault();
-        signIn(getConfig().susiOptions);
+        signIn(SIGNIN_CONTEXT);
       });
     } else {
       lanaLog({ message: 'Sign in link not found in dropdown.', tags: 'errorType=warn,module=gnav' });

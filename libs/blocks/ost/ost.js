@@ -275,7 +275,8 @@ export default async function init(el) {
       },
       onReady: () => {
         if (!window.adobeIMS.isSignedInUser()) {
-          window.adobeIMS.signIn(getConfig().susiOptions);
+          const { signInContext } = getConfig();
+          window.adobeIMS.signIn(signInContext);
         }
       },
     };
