@@ -672,7 +672,8 @@ export function decorateLinks(el) {
       a.href = a.href.replace(loginEvent, '');
       a.addEventListener('click', (e) => {
         e.preventDefault();
-        window.adobeIMS?.signIn(getConfig().susiOptions);
+        const { signInContext } = config;
+        window.adobeIMS?.signIn(signInContext);
       });
     }
     const copyEvent = '#_evt-copy';
