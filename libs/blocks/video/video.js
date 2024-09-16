@@ -3,6 +3,13 @@ import { applyHoverPlay, getVideoAttrs, applyInViewPortPlay } from '../../utils/
 
 const ROOT_MARGIN = 1000;
 
+function urlExists(url) {
+  const http = new XMLHttpRequest();
+  http.open('HEAD', url, false);
+  http.send();
+  return http.status !== 404;
+}
+
 const loadVideo = (a) => {
   const { pathname, hash, dataset } = a;
   let videoPath = `.${pathname}`;
@@ -15,7 +22,9 @@ const loadVideo = (a) => {
     videoPath = `${root}${mediaFilename}`;
   }
 
-  const attrs = getVideoAttrs(hash, dataset);
+  const pathExists = urlExists(videoPath);
+  videoPath = pathExists ? videoPath : null;
+  const attrs = getVideoAttrs(hash, dataset, pathExists);
   const video = `<video ${attrs}>
         <source src="${videoPath}" type="video/mp4" />
       </video>`;

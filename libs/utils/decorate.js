@@ -200,7 +200,7 @@ export function getImgSrc(pic) {
   return source?.srcset ? `poster='${source.srcset}'` : '';
 }
 
-export function getVideoAttrs(hash, dataset) {
+export function getVideoAttrs(hash, dataset, videoPath) {
   const isAutoplay = hash?.includes('autoplay');
   const isAutoplayOnce = hash?.includes('autoplay1');
   const playOnHover = hash?.includes('hoverplay');
@@ -210,6 +210,9 @@ export function getVideoAttrs(hash, dataset) {
   const autoPlayAttrs = 'autoplay muted';
   const playInViewportAttrs = playInViewport ? 'data-play-viewport' : '';
 
+  if (videoPath === null) {
+    return `${globalAttrs}`;
+  }
   if (isAutoplay && !isAutoplayOnce) {
     return `${globalAttrs} ${autoPlayAttrs} loop ${playInViewportAttrs}`;
   }
@@ -227,6 +230,7 @@ export function getVideoAttrs(hash, dataset) {
 
 export function applyHoverPlay(video) {
   if (!video) return;
+  console.log('applyHoverPlay()', video);
   if (video.hasAttribute('data-hoverplay') && !video.hasAttribute('data-mouseevent')) {
     video.addEventListener('mouseenter', () => { video.play(); });
     video.addEventListener('mouseleave', () => { video.pause(); });
