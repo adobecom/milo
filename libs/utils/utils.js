@@ -1026,8 +1026,7 @@ async function checkForPageMods() {
 }
 
 async function loadPostLCP(config) {
-  const event = new Event(MILO_EVENTS.POSTLCP);
-  document.dispatchEvent(event);
+  document.dispatchEvent(new Event(MILO_EVENTS.POSTLCP));
   await decoratePlaceholders(document.body.querySelector('header'), config);
   if (config.mep?.targetEnabled === 'gnav') {
     /* c8 ignore next 2 */
@@ -1076,8 +1075,7 @@ export function scrollToHashedElement(hash) {
 }
 
 export async function loadDeferred(area, blocks, config) {
-  const event = new Event(MILO_EVENTS.DEFERRED);
-  area.dispatchEvent(event);
+  area.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
 
   if (area !== document) {
     return;
