@@ -1221,38 +1221,39 @@ export function partition(arr, fn) {
   );
 }
 
-async function processSection(section, config, isDoc) {
+const decorateInlineFragments = async (section) => {
   const inlineFrags = [...section.el.querySelectorAll('a[href*="#_inline"]')];
-  if (inlineFrags.length) {
-    const { default: loadInlineFrags } = await import('../blocks/fragment/fragment.js');
-    const fragPromises = inlineFrags.map((link) => loadInlineFrags(link));
-    await Promise.all(fragPromises);
-    const newlyDecoratedSection = decorateSection(section.el, section.idx);
-    section.blocks = newlyDecoratedSection.blocks;
-    section.preloadLinks = newlyDecoratedSection.preloadLinks;
-  }
-  await decoratePlaceholders(section.el, config);
+  if (!inlineFrags.length) return;
+  const { default: loadInlineFrags } = await import('../blocks/fragment/fragment.js');
+  const fragPromises = inlineFrags.map((link) => loadInlineFrags(link));
+  await Promise.all(fragPromises);
+  const newlyDecoratedSection = decorateSection(section.el, section.idx);
+  section.blocks = newlyDecoratedSection.blocks;
+  section.preloadLinks = newlyDecoratedSection.preloadLinks;
+};
 
+async function processSection(section, config, isDoc) {
+  await decorateInlineFragments(section);
+  const tasks = [
+    decoratePlaceholders(section.el, config),
+    decorateIcons(section.el, config),
+  ];
+  if (section.classList.contains('marquee') || section.classList.contains('hero-marquee')) {
+    loadLink('./utils/decorate.js', { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+  }
   if (section.preloadLinks.length) {
     const [modals, nonModals] = partition(section.preloadLinks, (block) => block.classList.contains('modal'));
-    const preloads = nonModals.map((block) => loadBlock(block));
-    await Promise.all(preloads);
+    nonModals.forEach((block) => tasks.push(loadBlock(block)));
     modals.forEach((block) => loadBlock(block));
   }
+  section.blocks.forEach((block) => tasks.push(loadBlock(block)));
 
-  const loaded = section.blocks.map((block) => loadBlock(block));
-
-  await decorateIcons(section.el, config);
-
-  // Only move on to the next section when all blocks are loaded.
-  await Promise.all(loaded);
+  await Promise.all(tasks);
 
   // Show the section when all blocks inside are done.
   delete section.el.dataset.status;
 
-  if (isDoc && section.el.dataset.idx === '0') {
-    await loadPostLCP(config);
-  }
+  if (isDoc && section.el.dataset.idx === '0') await loadPostLCP(config);
 
   delete section.el.dataset.idx;
 
