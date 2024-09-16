@@ -25,7 +25,7 @@ function addBroadcastEventField(videoObj, blockKey, blockValue) {
       videoObj.publication[i][camelize(key)] = blockValue;
       break;
     default:
-      window.lana.log(`VideoMetadata -- Unknown BroadcastEvent property: ${blockKey}`, { tags: 'errorType=warn,module=video-metadata' });
+      window.lana.log(`VideoMetadata -- Unknown BroadcastEvent property: ${blockKey}`, { tags: 'video-metadata' });
       break;
   }
 }
@@ -45,7 +45,7 @@ function addClipField(videoObj, blockKey, blockValue) {
       videoObj.hasPart[i][camelize(key)] = blockValue;
       break;
     default:
-      window.lana.log(`VideoMetadata -- Unhandled Clip property: ${blockKey}`, { tags: 'errorType=warn,module=video-metadata' });
+      window.lana.log(`VideoMetadata -- Unhandled Clip property: ${blockKey}`, { tags: 'video-metadata' });
       break;
   }
 }
@@ -61,7 +61,7 @@ function addSeekToActionField(videoObj, blockKey, blockValue) {
       videoObj.potentialAction['startOffset-input'] = blockValue;
       break;
     default:
-      window.lana.log(`VideoMetadata -- Unhandled SeekToAction property: ${blockKey}`, { tags: 'errorType=warn,module=video-metadata' });
+      window.lana.log(`VideoMetadata -- Unhandled SeekToAction property: ${blockKey}`, { tags: 'video-metadata' });
       break;
   }
 }
@@ -96,7 +96,7 @@ export function createVideoObject(record) {
         addSeekToActionField(video, blockKey, blockVal);
         break;
       default:
-        window.lana.log(`VideoMetadata -- Unhandled VideoObject property: ${blockKey}`, { tags: 'errorType=warn,module=video-metadata' });
+        window.lana.log(`VideoMetadata -- Unhandled VideoObject property: ${blockKey}`, { tags: 'video-metadata' });
         break;
     }
   });

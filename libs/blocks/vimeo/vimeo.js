@@ -36,7 +36,7 @@ class LiteVimeo extends HTMLElement {
         this.style.backgroundImage = `url("${thumbnailUrl}")`;
       })
       .catch((e) => {
-        window.lana.log(`Error fetching Vimeo thumbnail: ${e}`, { tags: 'errorType=info,module=vimeo' });
+        window.lana.log(`Error fetching Vimeo thumbnail: ${e}`, { tags: 'vimeo', errorType: 'i' });
       });
   }
 
