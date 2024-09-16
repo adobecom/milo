@@ -191,16 +191,17 @@ function defineDeviceByScreenSize() {
   return 'desktop';
 }
 
-export function getImgSrc(pic) {
+export function getImgSrc(pic, srcOnly = false) {
   let source = '';
   const parser = new DOMParser();
   const doc = parser.parseFromString(pic, 'text/html');
   if (defineDeviceByScreenSize() === 'mobile') source = doc.querySelector('source[type="image/webp"]:not([media])');
   else source = doc.querySelector('source[type="image/webp"][media]');
-  return source?.srcset ? `poster='${source.srcset}'` : '';
+  const imgSrc = srcOnly ? `${source.srcset}` : `poster='${source.srcset}'`;
+  return source?.srcset ? imgSrc : '';
 }
 
-export function getVideoAttrs(hash, dataset, videoPath) {
+export function getVideoAttrs(hash, dataset) {
   const isAutoplay = hash?.includes('autoplay');
   const isAutoplayOnce = hash?.includes('autoplay1');
   const playOnHover = hash?.includes('hoverplay');
@@ -210,9 +211,6 @@ export function getVideoAttrs(hash, dataset, videoPath) {
   const autoPlayAttrs = 'autoplay muted';
   const playInViewportAttrs = playInViewport ? 'data-play-viewport' : '';
 
-  if (videoPath === null) {
-    return `${globalAttrs}`;
-  }
   if (isAutoplay && !isAutoplayOnce) {
     return `${globalAttrs} ${autoPlayAttrs} loop ${playInViewportAttrs}`;
   }
@@ -230,7 +228,6 @@ export function getVideoAttrs(hash, dataset, videoPath) {
 
 export function applyHoverPlay(video) {
   if (!video) return;
-  console.log('applyHoverPlay()', video);
   if (video.hasAttribute('data-hoverplay') && !video.hasAttribute('data-mouseevent')) {
     video.addEventListener('mouseenter', () => { video.play(); });
     video.addEventListener('mouseleave', () => { video.pause(); });

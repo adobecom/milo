@@ -1,5 +1,5 @@
 import { createIntersectionObserver, getConfig } from '../../utils/utils.js';
-import { applyHoverPlay, getVideoAttrs, applyInViewPortPlay } from '../../utils/decorate.js';
+import { applyHoverPlay, getVideoAttrs, getImgSrc, applyInViewPortPlay } from '../../utils/decorate.js';
 
 const ROOT_MARGIN = 1000;
 
@@ -23,16 +23,21 @@ const loadVideo = (a) => {
   }
 
   const pathExists = urlExists(videoPath);
-  videoPath = pathExists ? videoPath : null;
-  const attrs = getVideoAttrs(hash, dataset, pathExists);
-  const video = `<video ${attrs}>
+  const attrs = getVideoAttrs(hash, dataset);
+  if (!a.parentNode) return;
+  if (!pathExists) {
+    const poster = getImgSrc(dataset.videoPoster, true);
+    const pic = `<picture class="poster-img"><img src="${poster}" /></picture>`;
+    a.insertAdjacentHTML('afterend', pic);
+  } else {
+    const video = `<video ${attrs}>
         <source src="${videoPath}" type="video/mp4" />
       </video>`;
-  if (!a.parentNode) return;
-  a.insertAdjacentHTML('afterend', video);
-  const videoElem = document.body.querySelector(`source[src="${videoPath}"]`)?.parentElement;
-  applyHoverPlay(videoElem);
-  applyInViewPortPlay(videoElem);
+    a.insertAdjacentHTML('afterend', video);
+    const videoElem = document.body.querySelector(`source[src="${videoPath}"]`)?.parentElement;
+    applyHoverPlay(videoElem);
+    applyInViewPortPlay(videoElem);
+  }
   a.remove();
 };
 
