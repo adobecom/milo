@@ -3,7 +3,7 @@ import { expect, assert } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { waitFor, waitForElement } from '../../helpers/waitfor.js';
 
-import { setConfig } from '../../../libs/utils/utils.js';
+import { setConfig, createTag } from '../../../libs/utils/utils.js';
 
 setConfig({});
 const { default: init } = await import('../../../libs/blocks/video/video.js');
@@ -15,6 +15,12 @@ describe('video uploaded using franklin bot', () => {
 
   afterEach(() => {
     document.body.innerHTML = '';
+  });
+
+  it('decorates video', (done) => {
+    const anchor = createTag('a');
+    anchor.remove = () => done();
+    init(anchor);
   });
 
   it('decorates video', async () => {
