@@ -16,6 +16,7 @@
   --icon-size: 56px;
   --icon-size-xl: 64px;
   --pill-radius: 16px;
+  --pill-shadow: 0 3px 6px #00000029;
 
   display: flex;
   inline-size: 100%;
@@ -25,6 +26,7 @@
   flex-wrap: wrap;
   overflow: hidden;
   min-block-size: var(--min-block-size);
+  background: var(--color-white);
 }
 
 .notification.ribbon {
@@ -151,6 +153,14 @@
   inline-size: 100%;
 }
 
+.notification.ribbon [class*="heading-"]:only-child {
+  margin-block-end: var(--spacing-s);
+}
+
+.notification.ribbon.space-between [class*="heading-"]:only-child {
+  margin-block-end: 0;
+}
+
 .notification.ribbon.space-between .foreground .text {
   flex-wrap: nowrap;
   inline-size: 100%;
@@ -158,6 +168,9 @@
 
 .notification.ribbon.space-between .foreground .copy-wrap {
   margin-inline-end: var(--spacing-s);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .notification .foreground .image {
@@ -195,6 +208,12 @@
 
 .notification .lockup-area {
   flex-wrap: nowrap;
+}
+
+.notification .foreground .image :is(picture, video),
+.notification .foreground .image picture img {
+  inline-size: 100%;
+  display: flex;
 }
 
 .notification:is(.ribbon.m-icon, .pill) .icon-area img {
@@ -250,12 +269,6 @@
   margin-block-end: 0;
 }
 
-.notification .foreground .image :is(picture, video),
-.notification .foreground .image picture img {
-  inline-size: 100%;
-  display: flex;
-}
-
 .notification .foreground .text a:not(.con-button) {
   inline-size: auto;
   font-weight: normal;
@@ -283,6 +296,7 @@
   border-radius: var(--pill-radius);
   inline-size: calc(100% - var(--spacing-m));
   margin-inline: auto;
+  box-shadow: var(--pill-shadow);
 }
 
 .notification.pill .foreground .action-area {
@@ -296,14 +310,38 @@
   justify-content: flex-end;
 }
 
+.notification.flexible {
+  background: unset;
+}
+
 .notification .flexible-inner {
   inline-size: 100%;
+  box-shadow: var(--pill-shadow);
+}
+
+.notification.pill.no-shadow,
+.notification.pill.no-shadow.flexible .flexible-inner {
+  box-shadow: unset;
+}
+
+.notification .foreground > :is(.tablet-up, .desktop-up) {
+  display: none;
 }
 
 .notification.pill .foreground .text > :not(.action-area) {
   padding-inline-end: var(--spacing-xxs);
   inline-size: calc(100% - var(--spacing-xxs));
 }
+
+.notification.pill .copy-wrap p:first-child:not(:only-child) {
+  margin-block-end: var(--spacing-xxs);
+}
+
+.notification.pill.max-width-6 { max-width: 600px; }
+.notification.pill.max-width-8 { max-width: 800px; }
+.notification.pill.max-width-10 { max-width: 1000px; }
+.notification.pill.max-width-12 { max-width: 1200px; }
+.notification.pill.max-width-auto { max-width: unset; }
 
 @media screen and (min-width: 600px) {
   .notification {
@@ -327,6 +365,14 @@
     padding-block: var(--spacing-s);
     padding-inline: 0;
     gap: var(--spacing-s);
+  }
+
+  .notification .foreground > :is(.mobile-up, .desktop-up) {
+    display: none;
+  }
+
+  .notification .foreground > .tablet-up {
+    display: flex;
   }
 
   .notification:is(.max-width-12-desktop, .ribbon) .foreground {
@@ -418,6 +464,8 @@
 
   .notification.pill.flexible {
     pointer-events: none;
+    box-shadow: none;
+    padding-block-end: var(--spacing-xxs);
   }
 
   .notification .flexible-inner {
@@ -435,6 +483,12 @@
     padding-inline-end: unset;
     inline-size: unset;
   }
+
+  .notification.pill.max-width-6-tablet { max-width: 600px; }
+  .notification.pill.max-width-8-tablet { max-width: 800px; }
+  .notification.pill.max-width-10-tablet { max-width: 1000px; }
+  .notification.pill.max-width-12-tablet { max-width: 1200px; }
+  .notification.pill.max-width-auto-tablet { max-width: unset; }
 }
 
 @media screen and (min-width: 1200px) {
@@ -444,7 +498,8 @@
     --max-inline-size-image-10: 300px;
     --inline-size-image-full: 33.333%;
     --max-inline-size-image-full: 400px;
-    --pill-radius: 36px;
+    --max-inline-size-pill: 1600px;
+    --pill-radius: 100px;
   }
 
   .notification:not(.pill, .ribbon) .foreground {
@@ -470,6 +525,14 @@
     margin-inline: var(--grid-margins-width-10);
     gap: var(--spacing-l);
     max-inline-size: calc(var(--grid-column-width) * 10);
+  }
+
+  .notification .foreground > :is(.mobile-up, .tablet-up) {
+    display: none;
+  }
+
+  .notification .foreground > .desktop-up {
+    display: flex;
   }
 
   .notification .foreground > div {
@@ -511,6 +574,7 @@
   .notification.pill {
     min-block-size: var(--min-block-size-pill);
     inline-size: var(--inline-size-pill);
+    max-inline-size: var(--max-inline-size-pill);
     margin-inline: auto;
   }
 
@@ -525,7 +589,6 @@
   }
 
   .notification.pill .foreground .text [class*="heading-"] {
-    margin-inline-end: var(--spacing-xxs);
     margin-block-end: 0;
   }
 
@@ -549,7 +612,7 @@
   }
 
   .notification.pill .foreground .icon-area {
-    margin-inline-end: var(--spacing-xs);
+    margin-inline-end: var(--spacing-s);
     margin-block-end: 0;
   }
 
@@ -576,6 +639,7 @@
     flex-wrap: wrap;
     align-items: baseline;
     text-align: start;
+    gap: var(--spacing-xxs);
   }
 
   .notification.pill .copy-wrap > * {
@@ -585,4 +649,14 @@
   .notification.ribbon.space-between .foreground .icon-area {
     margin-inline-end: var(--spacing-s);
   }
+
+  .notification.pill .copy-wrap p:first-child:not(:only-child) {
+    margin-block-end: 0;
+  }
+
+  .notification.pill.max-width-6-desktop { max-width: 600px; }
+  .notification.pill.max-width-8-desktop { max-width: 800px; }
+  .notification.pill.max-width-10-desktop { max-width: 1000px; }
+  .notification.pill.max-width-12-desktop { max-width: 1200px; }
+  .notification.pill.max-width-auto-desktop { max-width: unset; }
 }

@@ -3,15 +3,13 @@ import { expect } from '@esm-bundle/chai';
 
 import { mockLana } from './mocks/lana.js';
 import { mockFetch } from './mocks/fetch.js';
-import { mockConfig } from './mocks/config.js';
 
 import '../src/merch-quantity-select.js';
 
 import { appendMiloStyles, delay } from './utils.js';
 import { ARROW_DOWN, ARROW_UP } from '../src/focus.js';
 import { withWcs } from './mocks/wcs.js';
-import { withLiterals } from './mocks/literals.js';
-import mas from './mocks/mas.js';
+import mas from './mas.js';
 
 const skipTests = sessionStorage.getItem('skipTests');
 
@@ -20,7 +18,7 @@ runTests(async () => {
 
     if (skipTests === null) {
         mockLana();
-        await mockFetch(withWcs, withLiterals);
+        await mockFetch(withWcs);
         await mas();
         describe('merch-quantity-selector web component', () => {
             const quantitySelect = document.querySelector(

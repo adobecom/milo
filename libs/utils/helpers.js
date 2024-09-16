@@ -20,11 +20,20 @@ export function updateLinkWithLangRoot(link) {
   }
 }
 
-export async function customFetch({ resource, withCacheRules }) {
-  const options = {};
-  if (withCacheRules) {
-    const params = new URLSearchParams(window.location.search);
-    options.cache = params.get('cache') === 'off' ? 'reload' : 'default';
+/**
+ * Replaces the origin of the provided link with location.origin.
+ *
+ * @param link
+ * @returns {string|*}
+ */
+export function overrideUrlOrigin(link) {
+  try {
+    const url = new URL(link);
+    if (url.hostname !== window.location.hostname) {
+      return link.replace(url.origin, window.location.origin);
+    }
+  } catch (e) {
+    // ignore
   }
-  return fetch(resource, options);
+  return link;
 }

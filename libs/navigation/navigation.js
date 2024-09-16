@@ -4,7 +4,7 @@ const blockConfig = [
     name: 'global-navigation',
     targetEl: 'header',
     appendType: 'prepend',
-    params: ['imsClientId'],
+    params: ['imsClientId', 'searchEnabled'],
   },
   {
     key: 'footer',
@@ -34,7 +34,9 @@ function getParamsConfigs(configs) {
 }
 
 export default async function loadBlock(configs, customLib) {
-  const { header, footer, authoringPath, env = 'prod', locale = '' } = configs || {};
+  const {
+    header, footer, authoringPath, env = 'prod', locale = '', theme,
+  } = configs || {};
   const branch = new URLSearchParams(window.location.search).get('navbranch');
   const miloLibs = branch ? `https://${branch}--milo--adobecom.hlx.page` : customLib || envMap[env];
   if (!header && !footer) {
@@ -55,6 +57,7 @@ export default async function loadBlock(configs, customLib) {
     pathname: `/${locale}`,
     locales: configs.locales || locales,
     contentRoot: authoringPath || footer.authoringPath,
+    theme,
     ...paramConfigs,
   };
   setConfig(clientConfig);

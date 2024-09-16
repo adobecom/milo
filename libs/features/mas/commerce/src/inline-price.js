@@ -162,6 +162,7 @@ export class HTMLPriceSpanElement extends HTMLSpanElement {
      * Resolves default value of displayTax property, based on provided geo info and segments.
      * @returns {boolean}
      */
+    /* c8 ignore next 26 */
     resolveDisplayTaxForGeoAndSegment(
         country,
         language,
@@ -192,8 +193,9 @@ export class HTMLPriceSpanElement extends HTMLSpanElement {
     /**
      * Resolves default value of displayTax property, based on provided geo info and segments extracted from offers object.
      * @returns {boolean}
-     */
-    async resolveDisplayTax(service, options) {
+    */
+   /* c8 ignore next 15 */
+   async resolveDisplayTax(service, options) {
         const [offerSelectors] = await service.resolveOfferSelectors(options);
         const offers = selectOffers(await offerSelectors, options);
         if (offers?.length) {
