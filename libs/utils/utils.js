@@ -459,6 +459,9 @@ export async function loadBlock(block) {
   const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : codeRoot;
   let path = `${base}/blocks/${name}`;
 
+  if (name === 'marquee' || name === 'hero-marquee') {
+    loadLink(`${base}/utils/decorate.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+  }
   if (mep?.blocks?.[name]) path = mep.blocks[name];
 
   const blockPath = `${path}/${name}`;
@@ -466,7 +469,6 @@ export async function loadBlock(block) {
   const styleLoaded = hasStyles && new Promise((resolve) => {
     loadStyle(`${blockPath}.css`, resolve);
   });
-
   const scriptLoaded = new Promise((resolve) => {
     (async () => {
       try {
@@ -1238,9 +1240,6 @@ async function processSection(section, config, isDoc) {
     decoratePlaceholders(section.el, config),
     decorateIcons(section.el, config),
   ];
-  if (section.classList.contains('marquee') || section.classList.contains('hero-marquee')) {
-    loadLink('./utils/decorate.js', { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
-  }
   if (section.preloadLinks.length) {
     const [modals, nonModals] = partition(section.preloadLinks, (block) => block.classList.contains('modal'));
     nonModals.forEach((block) => tasks.push(loadBlock(block)));
