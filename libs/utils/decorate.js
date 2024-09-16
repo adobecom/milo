@@ -307,11 +307,10 @@ export function decorateMultiViewport(el) {
   return foreground;
 }
 
-export function turnAnchorIntoVideo({ src, anchorTag }) {
+export function decorateAnchorVideo({ src, anchorTag }) {
   if (anchorTag.closest('.marquee, .aside, .hero-marquee') && !anchorTag.hash) anchorTag.hash = '#autoplay';
   const { dataset, parentElement } = anchorTag;
-  const attrs = getVideoAttrs(anchorTag.hash, dataset);
-  const video = `<video ${attrs} data-video-source=${src}></video>`;
+  const video = `<video ${getVideoAttrs(anchorTag.hash, dataset)} data-video-source=${src}></video>`;
   anchorTag.insertAdjacentHTML('afterend', video);
   const videoEl = parentElement.querySelector('video');
   createIntersectionObserver({

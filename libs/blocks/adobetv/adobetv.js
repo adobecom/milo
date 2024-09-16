@@ -1,4 +1,4 @@
-import { turnAnchorIntoVideo } from '../../utils/decorate.js';
+import { decorateAnchorVideo } from '../../utils/decorate.js';
 
 export default function init(a) {
   a.classList.add('hide-video');
@@ -6,7 +6,7 @@ export default function init(a) {
   if (a.href.includes('.mp4') && bgBlocks.some((b) => a.closest(`.${b}`))) {
     a.classList.add('hide');
     if (!a.parentNode) return;
-    turnAnchorIntoVideo({
+    decorateAnchorVideo({
       src: a.href,
       anchorTag: a,
     });

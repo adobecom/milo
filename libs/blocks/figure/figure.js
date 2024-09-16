@@ -1,4 +1,4 @@
-import { applyHoverPlay, turnAnchorIntoVideo } from '../../utils/decorate.js';
+import { applyHoverPlay, decorateAnchorVideo } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
 
 function buildCaption(pEl) {
@@ -19,7 +19,7 @@ function decorateVideo(clone, figEl) {
   const videoTag = clone.querySelector('video');
   const anchorTag = clone.querySelector('a[href*=".mp4"]');
   if (anchorTag && !anchorTag.hash) anchorTag.hash = '#autoplay';
-  if (anchorTag) turnAnchorIntoVideo({ src: anchorTag.href, anchorTag });
+  if (anchorTag) decorateAnchorVideo({ src: anchorTag.href, anchorTag });
   if (videoTag) {
     videoTag.removeAttribute('data-mouseevent');
     if (videoTag.dataset?.videoSource) {
