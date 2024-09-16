@@ -1,13 +1,17 @@
 import userCanPublishPage from '../tools/utils/publish.js';
 
 const PUBLISH_BTN = '.publish.plugin button';
-const BACKUP_PROFILE = '.profile-email';
+const PROFILE = '.profile-email';
 const CONFIRM_MESSAGE = 'Are you sure? This will publish to production.';
 
 export default function stylePublish(sk) {
   const setupPublishBtn = async (page, btn) => {
     const { canPublish, message } = await userCanPublishPage(page, false);
-    btn.setAttribute('disabled', !canPublish);
+    if (canPublish) {
+      btn.removeAttribute('disabled');
+    } else {
+      btn.setAttribute('disabled', true);
+    }
     const messageText = btn.querySelector('span');
     const text = canPublish ? CONFIRM_MESSAGE : message;
     if (messageText) {
@@ -94,7 +98,7 @@ export default function stylePublish(sk) {
       const page = {
         webPath: window.location.pathname,
         // added for edge case where the statusfetched event isnt fired on refresh
-        profile: { email: sk.shadowRoot.querySelector(BACKUP_PROFILE)?.innerText },
+        profile: { email: sk.shadowRoot.querySelector(PROFILE)?.innerText },
       };
       setupPublishBtn(page, btn);
     }
