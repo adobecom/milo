@@ -1,9 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-console */
 
-import {
-  createTag, getConfig, loadLink, loadScript, localizeLink,
-} from '../../utils/utils.js';
+import { createTag, getConfig, loadLink, loadScript, localizeLink } from '../../utils/utils.js';
 import { getEntitlementMap } from './entitlements.js';
 
 /* c8 ignore start */
