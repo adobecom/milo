@@ -21,20 +21,15 @@ const loadVideo = (a) => {
     const mediaFilename = pathname.split('/').pop();
     videoPath = `${root}${mediaFilename}`;
   }
-
   const pathExists = urlExists(videoPath);
   const attrs = getVideoAttrs(hash, dataset);
   if (!a.parentNode) return;
-  if (!pathExists) {
-    const poster = getImgSrc(dataset.videoPoster, true);
-    const pic = `<picture class="poster-img"><img src="${poster}" /></picture>`;
-    a.insertAdjacentHTML('afterend', pic);
-  } else {
-    const video = `<video ${attrs}>
-        <source src="${videoPath}" type="video/mp4" />
-      </video>`;
-    a.insertAdjacentHTML('afterend', video);
-    const videoElem = document.body.querySelector(`source[src="${videoPath}"]`)?.parentElement;
+  const newElem = (!pathExists)
+    ? `<picture class="poster-img"><img src="${getImgSrc(dataset.videoPoster, true)}" /></picture>`
+    : `<video ${attrs}><source src="${videoPath}" type="video/mp4" /></video>`;
+  a.insertAdjacentHTML('afterend', newElem);
+  const videoElem = document.body.querySelector(`source[src="${videoPath}"]`)?.parentElement;
+  if (videoElem) {
     applyHoverPlay(videoElem);
     applyInViewPortPlay(videoElem);
   }
