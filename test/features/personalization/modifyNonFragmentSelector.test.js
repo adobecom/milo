@@ -117,7 +117,7 @@ const values = [
   },
   {
     b: 'section1 .random-block2',
-    a: 'main > div:nth-child(1) .random-block:nth-child(2 of .random-block)',
+    a: 'main > div:nth-child(1) .random-block2',
   },
   {
     b: 'main > section30',
