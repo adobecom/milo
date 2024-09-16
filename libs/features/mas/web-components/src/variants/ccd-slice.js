@@ -36,9 +36,8 @@ export class CCDSlice extends VariantLayout {
     :host([variant='ccd-slice']) .content {
       display: flex;
       gap: var(--consonant-merch-spacing-xxs);
-      padding: var(--consonant-merch-spacing-xs) 0
-        var(--consonant-merch-spacing-xs)
-        var(--consonant-merch-spacing-xs);
+      padding: var(--consonant-merch-spacing-xs);
+      padding-start: 0;
       width: 154px;
       flex-direction: column;
       justify-content: space-between;
