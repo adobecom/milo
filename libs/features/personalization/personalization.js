@@ -359,6 +359,7 @@ function modifySelectorTerm(termParam) {
     'primary-cta': 'strong a',
     'secondary-cta': 'em a',
     'action-area': '*:has(> em a, > strong a)',
+    'any-marquee-section': 'main > div:has([class*="marquee"])',
     'any-marquee': '[class*="marquee"]',
     'any-header': ':is(h1, h2, h3, h4, h5, h6)',
   };
