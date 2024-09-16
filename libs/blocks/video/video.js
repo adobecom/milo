@@ -3,7 +3,10 @@ import { decorateAnchorVideo } from '../../utils/decorate.js';
 
 export default function init(a) {
   a.classList.add('hide-video');
-  if (!a.parentNode) return;
+  if (!a.parentNode) {
+    a.remove();
+    return;
+  }
   const { pathname } = a;
   let videoPath = `.${pathname}`;
   if (pathname.match('media_.*.mp4')) {
