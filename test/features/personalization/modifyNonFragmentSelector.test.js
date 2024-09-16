@@ -147,6 +147,10 @@ const values = [
     b: 'any-marquee-section',
     a: 'main > div:has([class*="marquee"])',
   },
+  {
+    b: '.aside03',
+    a: '.aside03',
+  },
 ];
 describe('test different values', () => {
   values.forEach((value) => {
