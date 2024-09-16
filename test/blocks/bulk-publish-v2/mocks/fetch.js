@@ -11,7 +11,6 @@ const requests = {
   delstatus: 'https://admin.hlx.page/job/adobecom/milo/main/preview-remove/job-2024-01-24t23-16-20-377z/details',
   retry: 'https://admin.hlx.page/preview/adobecom/milo/main/tools/bulk-publish-v2-test',
   index: 'https://admin.hlx.page/index/adobecom/milo/main/tools/bulk-publish-v2-test',
-  permissions: '/.milo/publish-permissions-config.json',
 };
 
 const getMocks = async () => {
@@ -26,7 +25,7 @@ const getMocks = async () => {
 export async function mockFetch() {
   const mocks = await getMocks();
   stub(window, 'fetch').callsFake((...args) => {
-    const headers = args[1]?.body ?? null;
+    const headers = args[1].body ?? null;
     const body = headers ? JSON.parse(headers) : false;
     const [resource] = args;
     const response = mocks.find((mock) => (body.delete ? mock.request === 'delete' : mock.url === resource));
