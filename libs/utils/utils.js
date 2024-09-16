@@ -776,6 +776,7 @@ export async function customFetch({ resource, withCacheRules }) {
 }
 
 const findReplaceableNodes = (area) => {
+  if (!area) return [];
   const regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
   const walker = document.createTreeWalker(area, NodeFilter.SHOW_ALL);
   const nodes = [];
@@ -798,16 +799,21 @@ const findReplaceableNodes = (area) => {
 };
 
 let placeholderRequest;
-async function decoratePlaceholders(area, config) {
-  if (!area) return;
+let decoratePlaceholderArea;
+let placeholderPath;
+async function fetchPlaceholders(area, config) {
+  if (!area) return null;
   const nodes = findReplaceableNodes(area);
-  if (!nodes.length) return;
-  const placeholderPath = `${config.locale?.contentRoot}/placeholders.json`;
+  if (!nodes.length) return null;
+  placeholderPath = `${config.locale?.contentRoot}/placeholders.json`;
   placeholderRequest = placeholderRequest
-  || customFetch({ resource: placeholderPath, withCacheRules: true })
-    .catch(() => ({}));
-  const { decoratePlaceholderArea } = await import('../features/placeholders.js');
-  await decoratePlaceholderArea({ placeholderPath, placeholderRequest, nodes });
+    || customFetch({ resource: placeholderPath, withCacheRules: true })
+      .catch(() => ({}));
+
+  return import('../features/placeholders.js')
+    .then((placeholderModule) => {
+      decoratePlaceholderArea = placeholderModule.decoratePlaceholderArea;
+    });
 }
 
 async function loadFooter() {
@@ -1041,7 +1047,14 @@ async function checkForPageMods() {
 }
 
 async function loadPostLCP(config) {
-  await decoratePlaceholders(document.body.querySelector('header'), config);
+  await fetchPlaceholders(document.body.querySelector('header'), config);
+  if (decoratePlaceholderArea) {
+    await decoratePlaceholderArea({
+      placeholderPath,
+      placeholderRequest,
+      nodes: findReplaceableNodes(document.body.querySelector('header')),
+    });
+  }
   if (config.mep?.targetEnabled === 'gnav') {
     /* c8 ignore next 2 */
     const { init } = await import('../features/personalization/personalization.js');
@@ -1237,7 +1250,7 @@ const decorateInlineFragments = async (section) => {
 async function processSection(section, config, isDoc) {
   await decorateInlineFragments(section);
   const tasks = [
-    decoratePlaceholders(section.el, config),
+    fetchPlaceholders(section.el, config),
     decorateIcons(section.el, config),
   ];
   if (section.preloadLinks.length) {
@@ -1249,6 +1262,13 @@ async function processSection(section, config, isDoc) {
 
   await Promise.all(tasks);
 
+  if (decoratePlaceholderArea) {
+    await decoratePlaceholderArea({
+      placeholderPath,
+      placeholderRequest,
+      nodes: findReplaceableNodes(section.el),
+    });
+  }
   // Show the section when all blocks inside are done.
   delete section.el.dataset.status;
 
