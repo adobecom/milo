@@ -756,14 +756,14 @@ function decorateHeader() {
   if (promo?.length) header.classList.add('has-promo');
 }
 
-async function decorateIcons(area, config) {
-  const icons = area.querySelectorAll('span.icon');
-  if (icons.length === 0) return;
+let loadIcons;
+async function decorateIcons(config) {
+  if (loadIcons) return loadIcons;
   const { base } = config;
   loadStyle(`${base}/features/icons/icons.css`);
   loadLink(`${base}/img/icons/icons.svg`, { rel: 'preload', as: 'fetch', crossorigin: 'anonymous' });
-  const { default: loadIcons } = await import('../features/icons/icons.js');
-  await loadIcons(icons, config);
+  loadIcons = await import('../features/icons/icons.js').default;
+  return loadIcons;
 }
 
 export async function customFetch({ resource, withCacheRules }) {
@@ -801,15 +801,11 @@ const findReplaceableNodes = (area) => {
 let placeholderRequest;
 let decoratePlaceholderArea;
 let placeholderPath;
-async function fetchPlaceholders(area, config) {
-  if (!area) return null;
-  const nodes = findReplaceableNodes(area);
-  if (!nodes.length) return null;
+async function fetchPlaceholders(config) {
   placeholderPath = `${config.locale?.contentRoot}/placeholders.json`;
   placeholderRequest = placeholderRequest
     || customFetch({ resource: placeholderPath, withCacheRules: true })
       .catch(() => ({}));
-
   return import('../features/placeholders.js')
     .then((placeholderModule) => {
       decoratePlaceholderArea = placeholderModule.decoratePlaceholderArea;
@@ -1047,12 +1043,13 @@ async function checkForPageMods() {
 }
 
 async function loadPostLCP(config) {
-  await fetchPlaceholders(document.body.querySelector('header'), config);
-  if (decoratePlaceholderArea) {
+  const nodes = findReplaceableNodes(document.body.querySelector('header'));
+  if (nodes.length) await fetchPlaceholders(document.body.querySelector('header'), config);
+  if (nodes.length && decoratePlaceholderArea) {
     await decoratePlaceholderArea({
-      placeholderPath,
       placeholderRequest,
-      nodes: findReplaceableNodes(document.body.querySelector('header')),
+      nodes,
+      placeholderPath,
     });
   }
   if (config.mep?.targetEnabled === 'gnav') {
@@ -1249,10 +1246,11 @@ const decorateInlineFragments = async (section) => {
 
 async function processSection(section, config, isDoc) {
   await decorateInlineFragments(section);
-  const tasks = [
-    fetchPlaceholders(section.el, config),
-    decorateIcons(section.el, config),
-  ];
+  const tasks = [];
+  const icons = section.el.querySelectorAll('span.icon');
+  if (icons.length > 0) tasks.push(decorateIcons(config));
+  if (findReplaceableNodes(section.el).length) tasks.push(fetchPlaceholders(section.el, config));
+
   if (section.preloadLinks.length) {
     const [modals, nonModals] = partition(section.preloadLinks, (block) => block.classList.contains('modal'));
     nonModals.forEach((block) => tasks.push(loadBlock(block)));
@@ -1262,14 +1260,19 @@ async function processSection(section, config, isDoc) {
 
   await Promise.all(tasks);
 
-  if (decoratePlaceholderArea) {
-    await decoratePlaceholderArea({
-      placeholderPath,
-      placeholderRequest,
-      nodes: findReplaceableNodes(section.el),
-    });
+  const postDecorationTasks = [];
+
+  if (icons.length > 0 && loadIcons) {
+    postDecorationTasks.push(loadIcons(icons, config));
   }
-  // Show the section when all blocks inside are done.
+  const nodes = findReplaceableNodes(section.el);
+  if (nodes.length && decoratePlaceholderArea) {
+    postDecorationTasks.push(
+      decoratePlaceholderArea({ placeholderRequest, nodes, placeholderPath }),
+    );
+  }
+
+  await Promise.all(postDecorationTasks);
   delete section.el.dataset.status;
 
   if (isDoc && section.el.dataset.idx === '0') await loadPostLCP(config);
