@@ -138,7 +138,7 @@ ENVS.local = {
   name: 'local',
 };
 
-export const MILO_EVENTS = { DEFERRED: 'milo:deferred' };
+export const MILO_EVENTS = { DEFERRED: 'milo:deferred', DELAYED: 'milo:delayed', POSTLCP: 'milo:postlcp' };
 
 const LANGSTORE = 'langstore';
 const PREVIEW = 'target-preview';
@@ -1026,6 +1026,8 @@ async function checkForPageMods() {
 }
 
 async function loadPostLCP(config) {
+  const event = new Event(MILO_EVENTS.POSTLCP);
+  document.dispatchEvent(event);
   await decoratePlaceholders(document.body.querySelector('header'), config);
   if (config.mep?.targetEnabled === 'gnav') {
     /* c8 ignore next 2 */
@@ -1189,7 +1191,7 @@ async function documentPostSectionLoading(config) {
   initSidekick();
 
   const { default: delayed } = await import('../scripts/delayed.js');
-  delayed([getConfig, getMetadata, loadScript, loadStyle, loadIms]);
+  delayed([getConfig, getMetadata, loadScript, loadStyle, loadIms, MILO_EVENTS]);
 
   import('../martech/attributes.js').then((analytics) => {
     document.querySelectorAll('main > div').forEach((section, idx) => analytics.decorateSectionAnalytics(section, idx, config));

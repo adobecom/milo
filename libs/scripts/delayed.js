@@ -69,8 +69,11 @@ const loadDelayed = ([
   loadScript,
   loadStyle,
   loadIms,
+  MILO_EVENTS,
 ], DELAY = 3000) => new Promise((resolve) => {
   setTimeout(() => {
+    const event = new Event(MILO_EVENTS.DELAYED);
+    document.dispatchEvent(event);
     loadPrivacy(getConfig, loadScript);
     loadJarvisChat(getConfig, getMetadata, loadScript, loadStyle);
     loadGoogleLogin(getMetadata, loadIms, loadScript);
