@@ -620,4 +620,11 @@ describe('global navigation', () => {
       expect(document.querySelector(`${selectors.brandImage} img`).getAttribute('src')).to.equal('http://localhost:2000/test/blocks/global-navigation/mocks/adobe-dark-logo.svg');
     });
   });
+
+  describe('Client search feature in global navigation', () => {
+    it('should append the feds-client-search div when search is enabled', async () => {
+      await createFullGlobalNavigation({ customConfig: { searchEnabled: 'on' } });
+      expect(document.querySelector(selectors.topNavWrapper).classList.contains('feds-client-search')).to.exist;
+    });
+  });
 });
