@@ -1,7 +1,5 @@
-import { AEM } from './aem.js';
+import { AemDataSource } from './aem-datasource.js';
 import { createTag } from './utils.js';
-
-const ATTR_AEM_BUCKET = 'aem-bucket';
 
 const VARIANTS = {
     CATALOG: 'catalog',
@@ -136,131 +134,32 @@ async function parseMerchCard(fragmentData, appendFn, merchCard, consonant) {
     }
 }
 
-class FragmentCache {
-    #fragmentCache = new Map();
-
-    clear() {
-        this.#fragmentCache.clear();
-    }
-
-    add(...items) {
-        items.forEach((item) => {
-            const { path } = item;
-            if (path) {
-                this.#fragmentCache.set(path, item);
-            }
-        });
-    }
-
-    has(path) {
-        return this.#fragmentCache.has(path);
-    }
-
-    get(path) {
-        return this.#fragmentCache.get(path);
-    }
-
-    remove(path) {
-        this.#fragmentCache.delete(path);
-    }
-}
-const cache = new FragmentCache();
-
 /**
  * Custom element representing a MerchDataSource.
  *
  * @attr {string} path - fragment path
  */
-export class MerchDataSource extends HTMLElement {
-    /**
-     * @type {import('@adobe/mas-web-components').AEM}
-     */
-    #aem;
-    cache = cache;
-
-    /**
-     * @type {HtmlElement[]}
-     */
-    refs = [];
-
-    /**
-     * @type {string} fragment path
-     */
-    path;
-
-    /**
-     * Consonant styling for CTAs.
-     */
-    consonant = false;
-
-    /**
-     * Internal promise to track the readiness of the web-component to render.
-     */
-    #readyPromise;
-
-    static get observedAttributes() {
-        return ['source', 'path', 'consonant'];
-    }
-
-    attributeChangedCallback(name, oldValue, newValue) {
-        this[name] = newValue;
-    }
-
-    connectedCallback() {
-        this.consonant = this.hasAttribute('consonant');
-        this.clearRefs();
-        const bucket =
-            this.getAttribute(ATTR_AEM_BUCKET) ?? 'publish-p22655-e59341';
-        this.#aem = new AEM(bucket);
-        this.refresh(false);
-    }
-
-    clearRefs() {
-        this.refs.forEach((ref) => {
-            ref.remove();
-        });
-    }
+export class MerchDataSource extends AemDataSource {
 
     async refresh(flushCache = true) {
-        if (!this.path) return;
-
-        if (this.#readyPromise) {
-            const ready = await Promise.race([
-                this.#readyPromise,
-                Promise.resolve(false),
-            ]);
-            if (!ready) return; // already fetching data
-        }
-
-        this.clearRefs();
-        this.refs = [];
-        if (flushCache) {
-            this.cache.remove(this.path);
-        }
-        this.#readyPromise = this.fetchData().then(() => true);
+        await super.refresh(flushCache);
+        this.render();
     }
 
-    async fetchData() {
-        let item = cache.get(this.path);
-        if (!item) {
-            item = await this.#aem.sites.cf.fragments.getByPath(this.path);
-            cache.add(item);
-        }
-        if (item) {
+    async render() {
+        await this.updateComplete;
+        if (this.item) {
             const appendFn = (element) => {
                 this.parentElement.appendChild(element);
                 this.refs.push(element);
             };
-            parseMerchCard(item, appendFn, this.parentElement, this.consonant);
-            return;
+            parseMerchCard(
+                this.item,
+                appendFn,
+                this.parentElement,
+                this.consonant,
+            );
         }
-    }
-
-    get updateComplete() {
-        return (
-            this.#readyPromise ??
-            Promise.reject(new Error('datasource is not correctly configured'))
-        );
     }
 }
 
