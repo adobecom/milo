@@ -143,6 +143,10 @@ const values = [
     b: 'any-marquee ul li:nth-child(2)',
     a: '[class*="marquee"] ul li:nth-child(2)',
   },
+  {
+    b: 'any-marquee-section',
+    a: 'main > div:has([class*="marquee"])',
+  },
 ];
 describe('test different values', () => {
   values.forEach((value) => {
