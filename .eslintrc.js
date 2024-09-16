@@ -45,6 +45,17 @@ module.exports = {
       files: ['test/**/*.js'],
       rules: { 'no-console': 0 },
     },
+    {
+      // Override for nala test
+      files: ['nala/**/*.js', 'nala/**/*.test.js'],
+      rules: {
+        'no-console': 0,
+        'import/no-extraneous-dependencies': 0,
+        'max-len': 0,
+        'chai-friendly/no-unused-expressions': 0,
+        'no-plusplus': 0,
+      },
+    },
   ],
   ignorePatterns: [
     '/libs/deps/*',
