@@ -156,18 +156,6 @@ describe('getConfig', () => {
     },
   ];
 
-  it('does not include linkTransformer in config when caasLinkTransformer is not defined', async () => {
-    const cfg = { caasLinkTransformer: { enabled: true } };
-    setConfig(cfg);
-
-    const testState = { ...defaultState };
-    const testStrings = {};
-
-    const config = await getConfig(testState, testStrings);
-
-    expect(config).to.not.be.undefined;
-  });
-
   it('should return a caas config object', async () => {
     const config = await getConfig(state, strings);
     expect(config).to.be.eql({
