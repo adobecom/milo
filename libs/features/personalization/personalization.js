@@ -148,7 +148,7 @@ const createFrag = (el, action, content, manifestId, targetManifestId) => {
   return frag;
 };
 
-export const createContent = (el, content, manifestId, targetManifestId, action, modifiers) => {
+export const createContent = (el, { content, manifestId, targetManifestId, action, modifiers }) => {
   if (action === 'replace') {
     addIds(el, manifestId, targetManifestId);
   }
@@ -174,19 +174,19 @@ export const createContent = (el, content, manifestId, targetManifestId, action,
 };
 
 const COMMANDS = {
-  [COMMANDS_KEYS.remove]: ({ el, target, manifestId }) => {
-    if (target === 'false') return;
+  [COMMANDS_KEYS.remove]: (el, { content, manifestId }) => {
+    if (content === 'false') return;
     if (manifestId) {
       el.dataset.removedManifestId = manifestId;
       return;
     }
     el.classList.add(CLASS_EL_DELETE);
   },
-  [COMMANDS_KEYS.replace]: ({ el, target, modifiers, manifestId, targetManifestId }) => {
+  [COMMANDS_KEYS.replace]: (el, cmd) => {
     if (!el || el.classList.contains(CLASS_EL_REPLACE)) return;
     el.insertAdjacentElement(
       'beforebegin',
-      createContent(el, target, manifestId, targetManifestId, 'replace', modifiers),
+      createContent(el, cmd),
     );
   },
 };
@@ -308,8 +308,8 @@ const querySelector = (el, selector, all = false) => {
   }
 };
 function registerInBlockActions(cmd, manifestId, targetManifestId) {
-  const { action, target, selector } = cmd;
-  const command = { action, target, manifestId, targetManifestId };
+  const { action, content, selector } = cmd;
+  const command = { action, content, manifestId, targetManifestId };
 
   const blockAndSelector = selector.substring(IN_BLOCK_SELECTOR_PREFIX.length).trim().split(/\s+/);
   const [blockName] = blockAndSelector;
@@ -330,14 +330,14 @@ function registerInBlockActions(cmd, manifestId, targetManifestId) {
 
       // eslint-disable-next-line no-restricted-syntax
       for (const key in fragments) {
-        if (fragments[key].target === blockSelector) fragments[key] = command;
+        if (fragments[key].content === blockSelector) fragments[key] = command;
       }
       fragments[blockSelector] = command;
 
       blockSelector = normalizePath(blockSelector);
       // eslint-disable-next-line no-restricted-syntax
       for (const key in fragments) {
-        if (fragments[key].target === blockSelector) fragments[key] = command;
+        if (fragments[key].content === blockSelector) fragments[key] = command;
       }
       fragments[blockSelector] = command;
       return;
@@ -419,26 +419,26 @@ export function modifyNonFragmentSelector(selector) {
 }
 
 function getSelectedElements({ selector: sel, rootEl }) {
-  if (!sel.trim()) return {};
-  const { selector, modifiers, selectorType } = modifyNonFragmentSelector(sel);
+  const selector = sel.trim();
+  if (!selector) return {};
 
-  const results = { modifiers };
-  if (selectorType !== 'fragment') {
-    results.els = querySelector(rootEl, selector, modifiers);
-  } else {
+  if (getSelectorType(selector) === 'fragment') {
     try {
-      results.els = querySelector(
-        rootEl,
+      const fragment = document.querySelector(
         `a[href*="${normalizePath(selector, false)}"], a[href*="${normalizePath(selector, true)}"]`,
-        [...modifiers, 'all'],
       );
-      results.els.map((el) => el.parentNode);
+      if (fragment) return { el: fragment.parentNode };
+      return {};
     } catch (e) {
       /* c8 ignore next */
       return {};
     }
   }
-  return results;
+  const { modifiedSelector, modifiers } = modifyNonFragmentSelector(selector);
+  let els = (rootEl || document).querySelectorAll(modifiedSelector);
+  if (modifiers.includes('all')) return { els, modifiers };
+  els = [els[0]];
+  return { els, modifiers };
 }
 const addHash = (url, newHash) => {
   if (!newHash) return url;
@@ -468,8 +468,8 @@ export const updateFragDataProps = (a, inline, sections, fragment) => {
 
 export function handleCommands(commands, rootEl = document, forceInline = false) {
   commands.forEach((cmd) => {
-    const { action, target, selector } = cmd;
-    cmd.target = forceInline ? addHash(target, INLINE_HASH) : target;
+    const { action, content, selector } = cmd;
+    cmd.content = forceInline ? addHash(content, INLINE_HASH) : content;
     if (selector.startsWith(IN_BLOCK_SELECTOR_PREFIX)) {
       registerInBlockActions(cmd);
       return;
@@ -517,7 +517,7 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
       action,
       selector,
       pageFilter,
-      target: line[vn],
+      content: line[vn],
       selectorType: getSelectorType(selector),
       manifestId,
       targetManifestId,
