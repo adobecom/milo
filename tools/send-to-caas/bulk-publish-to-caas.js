@@ -17,9 +17,10 @@ import {
 import comEnterpriseToCaasTagMap from './comEnterpriseToCaasTagMap.js';
 
 const LS_KEY = 'bulk-publish-caas';
-const FIELDS = ['host', 'repo', 'owner', 'excelFile', 'caasEnv', 'urls', 'contentType', 'publishToFloodgate'];
+const FIELDS = ['preset', 'host', 'repo', 'owner', 'excelFile', 'caasEnv', 'urls', 'contentType', 'publishToFloodgate'];
 const FIELDS_CB = ['draftOnly', 'usePreview', 'useHtml'];
 const DEFAULT_VALUES = {
+  preset: 'default',
   caasEnv: 'Prod',
   contentType: 'caas:content-type/article',
   excelFile: '',
@@ -222,6 +223,62 @@ const loadFromLS = () => {
     /* c8 ignore next */
   } catch (e) { /* do nothing */ }
 };
+
+const PRESETS = {
+  default: {
+    preset: 'default',
+    host: '',
+    owner: '',
+    repo: '',
+    contentType: ''
+  },
+  milo: {
+    preset: 'milo',
+    host: 'milo.adobe.com',
+    owner: 'adobecom',
+    repo: 'milo',
+    contentType: 'caas:content-type/article'
+  },
+  bacom: {
+    preset: 'bacom',
+    host: 'business.adobe.com',
+    owner: 'adobecom',
+    repo: 'bacom',
+    contentType: 'caas:content-type/article'
+  },
+  doccloud: {
+    preset: 'doccloud',
+    host: 'dc.adobe.com',
+    owner: 'adobecom',
+    repo: 'dc',
+    contentType: 'caas:content-type/article'
+  },
+  news: {
+    preset: 'news',
+    host: 'news.adobe.com',
+    owner: 'adobecom',
+    repo: 'news',
+    contentType: 'caas:content-type/blog'
+  }
+}
+
+const preset = document.querySelector('#preset');
+preset.addEventListener('change', () => {
+  const { value } = preset;
+  // console.log(PRESETS[value]);
+  const ls = localStorage.getItem(LS_KEY);
+  // console.log(typeof ls);
+  const config = ls ? JSON.parse(ls) : {};
+  config.preset = PRESETS[value].preset;
+  config.host = PRESETS[value].host;
+  config.owner = PRESETS[value].owner;
+  config.repo = PRESETS[value].repo;
+  config.contentType = PRESETS[value].contentType;
+  console.log(config)
+  setConfig(config);
+  window.localStorage.setItem(LS_KEY, JSON.stringify(getConfig()));
+  loadFromLS();
+});
 
 const init = async () => {
   await loadTingleModalFiles(loadScript, loadStyle);
