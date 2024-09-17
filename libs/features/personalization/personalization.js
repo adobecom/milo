@@ -419,23 +419,26 @@ export function modifyNonFragmentSelector(selector) {
 }
 
 function getSelectedElements({ selector: sel, rootEl }) {
-  const selector = sel.trim();
-  if (!selector) return {};
+  if (!sel.trim()) return {};
+  const { selector, modifiers, selectorType } = modifyNonFragmentSelector(sel);
 
-  if (getSelectorType(selector) === 'fragment') {
+  const results = { modifiers };
+  if (selectorType !== 'fragment') {
+    results.els = querySelector(rootEl, selector, modifiers);
+  } else {
     try {
-      const fragment = document.querySelector(
+      results.els = querySelector(
+        rootEl,
         `a[href*="${normalizePath(selector, false)}"], a[href*="${normalizePath(selector, true)}"]`,
+        [...modifiers, 'all'],
       );
-      if (fragment) return { el: fragment.parentNode };
-      return {};
+      results.els.map((el) => el.parentNode);
     } catch (e) {
       /* c8 ignore next */
       return {};
     }
   }
-  const { modifiedSelector, modifiers } = modifyNonFragmentSelector(selector);
-  return { el: querySelector(rootEl || document, modifiedSelector), modifiers };
+  return results;
 }
 const addHash = (url, newHash) => {
   if (!newHash) return url;
