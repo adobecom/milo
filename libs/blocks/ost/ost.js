@@ -274,10 +274,7 @@ export default async function init(el) {
         openOst();
       },
       onReady: () => {
-        if (!window.adobeIMS.isSignedInUser()) {
-          const { signInContext } = getConfig();
-          window.adobeIMS.signIn(signInContext);
-        }
+        if (!window.adobeIMS.isSignedInUser()) window.adobeIMS.signIn();
       },
     };
 
