@@ -19,7 +19,7 @@ const CountdownTimer = {
       const daysHoursMins = 'DAYS HOURS MINS';  //getMetadata('cdt:daysHoursMins');
       const startTime = '2024-07-19T04:27:57.938Z';//getMetadata('cdt:endTime');
       const endTime = '2024-10-19T04:27:57.938Z';//getMetadata('cdt:endTime');
-      const variant = 'light,horizontal';// getMetadata('cdt:variant');
+      const variant = 'dark,horizontal';// getMetadata('cdt:variant');
 
       const timeRanges = "1724702400000,1727683200000,1733083200000,1734508800000"; // fix this
 
@@ -54,7 +54,7 @@ const CountdownTimer = {
 
     // Create and append main container
     const container = document.createElement('div');
-    container.className = styles.join(' ');
+    container.className = styles.join(' '); // "countdown-timer horizontal dark";//
     el.appendChild(container);
 
     // Create and append label
@@ -156,8 +156,6 @@ const CountdownTimer = {
       el.innerHTML = '';
       return;
     }
-
-    this.createTimer(el, el.classList);
   }
 };
 
