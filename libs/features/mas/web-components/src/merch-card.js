@@ -25,6 +25,8 @@ export class MerchCard extends LitElement {
             type: String,
             attribute: 'badge-background-color',
         },
+        stripSize: { type: String, attribute: 'strip-size' },
+        stripBackground: { type: String, attribute: 'strip-background' },
         badgeText: { type: String, attribute: 'badge-text' },
         actionMenu: { type: Boolean, attribute: 'action-menu' },
         actionMenuContent: { type: String, attribute: 'action-menu-content' },
@@ -143,6 +145,20 @@ export class MerchCard extends LitElement {
         return this.shadowRoot
             .querySelector('slot[name="footer"]')
             ?.assignedElements()[0];
+    }
+
+    get strip() {
+      if (this.stripBackground) {
+        switch (this.stripSize) {
+            case 'wide':
+                return '44px';
+            case 'small':
+                return '4px';
+            default:
+                return '0';
+        }
+      }
+      return '';
     }
 
     get price() {

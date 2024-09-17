@@ -8,6 +8,7 @@ const VARIANTS = {
     AH: 'ah',
     CCD_ACTION: 'ccd-action',
     SPECIAL_OFFERS: 'special-offers',
+    CCD_SUGGESTED: 'ccd-suggested',
 };
 
 const cardContent = {
@@ -33,6 +34,13 @@ const cardContent = {
         name: { tag: 'h4', slot: 'detail-m' },
         title: { tag: 'h4', slot: 'detail-m' },
         backgroundImage: { tag: 'div', slot: 'bg-image' },
+        prices: { tag: 'h3', slot: 'heading-xs' },
+        description: { tag: 'div', slot: 'body-xs' },
+        ctas: { size: 'l' },
+    },
+    [VARIANTS.CCD_SUGGESTED]: {
+        name: { tag: 'h4', slot: 'detail-m' },
+        title: { tag: 'h3', slot: 'heading-xs' },
         prices: { tag: 'h3', slot: 'heading-xs' },
         description: { tag: 'div', slot: 'body-xs' },
         ctas: { size: 'l' },

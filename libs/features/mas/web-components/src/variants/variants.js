@@ -8,6 +8,7 @@ import { Product } from './product.js';
 import { Segment } from './segment.js';
 import { SpecialOffer } from './special-offer.js';
 import { TWP } from './twp.js';
+import { CCDSuggested } from './ccd-suggested.js';
 
 const getVariantLayout = (card) => {
   switch (card.variant) {
@@ -31,6 +32,8 @@ const getVariantLayout = (card) => {
       return new SpecialOffer(card);
     case 'twp':
       return new TWP(card);
+    case 'ccd-suggested':
+      return new CCDSuggested(card);
     default:
       return new Product(card);
   }
@@ -45,6 +48,7 @@ const getVariantStyles = () => {
   styles.push(Segment.variantStyle);
   styles.push(SpecialOffer.variantStyle);
   styles.push(TWP.variantStyle);
+  styles.push(CCDSuggested.variantStyle);
   return styles;
 }
 
