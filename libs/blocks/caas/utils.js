@@ -740,6 +740,10 @@ export const getConfig = async (originalState, strs = {}) => {
     customCard: ['card', `return \`${state.customCard}\``],
     headers: caasRequestHeaders,
   };
+
+  if (pageConfig.caasLinkTransformer) {
+    config.linkTransformer = pageConfig.caasLinkTransformer;
+  }
   return config;
 };
 
