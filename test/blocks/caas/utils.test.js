@@ -158,10 +158,10 @@ describe('getConfig', () => {
 
   it('includes linkTransformer in config when caasLinkTransformer is defined in pageConfig', async () => {
     const mockTransformer = (url) => `transformed-${url}`;
-    setConfig(
-      ...cfg,
-      { caasLinkTransformer: mockTransformer }
-    );
+    const cfg = {
+      caasLinkTransformer: mockTransformer
+    };
+    setConfig(cfg);
 
     const testState = { ...defaultState };
     const testStrings = {};
@@ -172,6 +172,7 @@ describe('getConfig', () => {
   });
 
   it('does not include linkTransformer in config when caasLinkTransformer is not defined', async () => {
+    const cfg = {};
     setConfig(cfg);
 
     const testState = { ...defaultState };
