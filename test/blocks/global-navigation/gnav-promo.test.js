@@ -1,13 +1,13 @@
 /* eslint-disable no-restricted-syntax */
 import { expect } from '@esm-bundle/chai';
-import { createFullGlobalNavigation } from './test-utilities.js';
+import { createFullGlobalNavigation, unavVersion } from './test-utilities.js';
 import { toFragment } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
 
 describe('Promo', () => {
   before(() => {
     document.head.innerHTML = `<link rel="icon" href="/libs/img/favicons/favicon.ico" size="any">
     <script src="https://auth.services.adobe.com/imslib/imslib.min.js" type="javascript/blocked" data-loaded="true"></script>
-    <script src="https://stage.adobeccstatic.com/unav/1.1/UniversalNav.js" type="javascript/blocked" data-loaded="true"></script>
+    <script src="https://stage.adobeccstatic.com/unav/${unavVersion}/UniversalNav.js" type="javascript/blocked" data-loaded="true"></script>
     `;
   });
 
