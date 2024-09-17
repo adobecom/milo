@@ -3,10 +3,11 @@ const GOOGLE_ID = '530526366930-l874a90ipfkn26naa71r010u8epp39jt.apps.googleuser
 const PLACEHOLDER = 'feds-googleLogin';
 const WRAPPER = 'feds-profile';
 
-const onToken = async (getMetadata, data) => {
+const onToken = async (getMetadata, data, getConfig) => {
   let destination;
+  const config = getConfig();
   try {
-    destination = new URL(getMetadata('google-login-redirect'))?.href;
+    destination = typeof config.googleLoginURLCallback === 'function' ? new URL(config.googleLoginURLCallback()) : new URL(getMetadata('google-login-redirect'))?.href;
   } catch {
     // Do nothing
   }
@@ -30,7 +31,7 @@ const onToken = async (getMetadata, data) => {
   });
 };
 
-export default async function initGoogleLogin(loadIms, getMetadata, loadScript) {
+export default async function initGoogleLogin(loadIms, getMetadata, loadScript, getConfig) {
   try {
     await loadIms();
   } catch {
@@ -45,7 +46,7 @@ export default async function initGoogleLogin(loadIms, getMetadata, loadScript) 
 
   window.google?.accounts?.id?.initialize({
     client_id: GOOGLE_ID,
-    callback: (data) => onToken(getMetadata, data),
+    callback: (data) => onToken(getMetadata, data, getConfig),
     prompt_parent_id: PLACEHOLDER,
     cancel_on_tap_outside: false,
   });

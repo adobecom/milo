@@ -49,7 +49,7 @@ export const loadPrivacy = async (getConfig, loadScript) => {
   });
 };
 
-export const loadGoogleLogin = async (getMetadata, loadIms, loadScript) => {
+export const loadGoogleLogin = async (getMetadata, loadIms, loadScript, getConfig) => {
   const googleLogin = getMetadata('google-login')?.toLowerCase();
   if (window.adobeIMS?.isSignedInUser() || !['mobile', 'desktop', 'on'].includes(googleLogin)) return;
   const desktopViewport = window.matchMedia('(min-width: 900px)').matches;
@@ -57,7 +57,7 @@ export const loadGoogleLogin = async (getMetadata, loadIms, loadScript) => {
   if (googleLogin === 'desktop' && !desktopViewport) return;
 
   const { default: initGoogleLogin } = await import('../features/google-login.js');
-  initGoogleLogin(loadIms, getMetadata, loadScript);
+  initGoogleLogin(loadIms, getMetadata, loadScript, getConfig);
 };
 
 /**
@@ -69,13 +69,11 @@ const loadDelayed = ([
   loadScript,
   loadStyle,
   loadIms,
-  MILO_EVENTS,
 ], DELAY = 3000) => new Promise((resolve) => {
   setTimeout(() => {
-    document.dispatchEvent(new Event(MILO_EVENTS.DELAYED));
     loadPrivacy(getConfig, loadScript);
     loadJarvisChat(getConfig, getMetadata, loadScript, loadStyle);
-    loadGoogleLogin(getMetadata, loadIms, loadScript);
+    loadGoogleLogin(getMetadata, loadIms, loadScript, getConfig);
     if (getMetadata('interlinks') === 'on') {
       const { locale } = getConfig();
       const path = `${locale.contentRoot}/keywords.json`;

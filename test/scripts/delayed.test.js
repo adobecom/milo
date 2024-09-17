@@ -1,7 +1,7 @@
 import sinon from 'sinon';
 import { expect } from '@esm-bundle/chai';
 import loadDelayed, { loadPrivacy, loadJarvisChat, loadGoogleLogin } from '../../libs/scripts/delayed.js';
-import { getMetadata, getConfig, setConfig, loadIms, MILO_EVENTS } from '../../libs/utils/utils.js';
+import { getMetadata, getConfig, setConfig, loadIms } from '../../libs/utils/utils.js';
 
 describe('Delayed', () => {
   const loadScript = sinon.stub().returns(() => new Promise((resolve) => { resolve(); }));
@@ -42,7 +42,7 @@ describe('Delayed', () => {
   it('should load interlinks logic', async () => {
     const clock = sinon.useFakeTimers({ toFake: ['setTimeout'] });
     document.querySelector('head')?.insertAdjacentHTML('beforeend', '<meta name="interlinks" content="on">');
-    loadDelayed([getConfig, getMetadata, loadScript, loadStyle, loadIms, MILO_EVENTS])
+    loadDelayed([getConfig, getMetadata, loadScript, loadStyle, loadIms])
       .then((module) => {
         expect(module).to.exist;
         expect(typeof module === 'object').to.equal(true);
@@ -54,7 +54,7 @@ describe('Delayed', () => {
   it('should skip load interlinks logic when metadata is off', async () => {
     const clock = sinon.useFakeTimers({ toFake: ['setTimeout'] });
     document.head.querySelector('meta[name="interlinks"]')?.remove();
-    loadDelayed([getConfig, getMetadata, loadScript, loadStyle, loadIms, MILO_EVENTS])
+    loadDelayed([getConfig, getMetadata, loadScript, loadStyle, loadIms])
       .then((module) => {
         expect(module == null).to.equal(true);
       });
