@@ -1196,8 +1196,8 @@ async function documentPostSectionLoading(config) {
   document.body.appendChild(createTag('div', { id: 'page-load-ok-milo', style: 'display: none;' }));
   if (config.dynamicNavKey) {
     const { miloLibs } = getConfig();
-    const { default: loadPreview } = await import('../features/dynamic-navigation/preview.js');
     await loadStyle(`${miloLibs}/features/dynamic-navigation/preview.css`);
+    const { default: loadPreview } = await import('../features/dynamic-navigation/preview.js');
     loadPreview();
   }
 }

@@ -109,7 +109,6 @@ export default function main() {
   const statusClass = STATUS;
   processDisableValues(dynamicNavDisableValues, previewWidget.querySelector('.disable-values'));
   previewWidget.classList.add(statusClass);
-  topNav.insertBefore(previewWidget, fedsProfile);
   const dnsClose = previewWidget.querySelector('.dns-close');
 
   previewWidget.addEventListener('click', () => {
@@ -120,4 +119,6 @@ export default function main() {
   dnsClose.addEventListener('click', () => {
     topNav.removeChild(previewWidget);
   });
+
+  topNav.insertBefore(previewWidget, fedsProfile);
 }
