@@ -1,4 +1,4 @@
-name: Nala Tests
+name: Nala Tests (Consuming Apps)
 
 on:
   pull_request:
@@ -8,11 +8,12 @@ jobs:
   action:
     name: Running E2E & IT
     runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, ' ')
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
-      - name: Run Nala
+      - name: Run Nala Tests (Consuming Apps) 
         uses: adobecom/nala@main # Change if doing dev work
         env:
           labels: ${{ join(github.event.pull_request.labels.*.name, 'run-nala-on') }}
