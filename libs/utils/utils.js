@@ -1044,7 +1044,7 @@ async function checkForPageMods() {
 
 async function loadPostLCP(config) {
   const nodes = findReplaceableNodes(document.body.querySelector('header'));
-  if (nodes.length) await fetchPlaceholders(document.body.querySelector('header'), config);
+  if (nodes.length) await fetchPlaceholders(config);
   if (nodes.length && decoratePlaceholderArea) {
     await decoratePlaceholderArea({
       placeholderRequest,
@@ -1250,7 +1250,7 @@ async function processSection(section, config, isDoc) {
   const tasks = [];
   const icons = section.el.querySelectorAll('span.icon');
   if (icons.length > 0) tasks.push(fetchIcons(config));
-  if (findReplaceableNodes(section.el).length) tasks.push(fetchPlaceholders(section.el, config));
+  if (findReplaceableNodes(section.el).length) tasks.push(fetchPlaceholders(config));
   if (section.preloadLinks.length) {
     const [modals, nonModals] = partition(section.preloadLinks, (block) => block.classList.contains('modal'));
     nonModals.forEach((block) => tasks.push(loadBlock(block)));
