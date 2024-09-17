@@ -155,7 +155,8 @@ p.preflight-content-heading-edit {
   bottom: 0;
 }
 
-.preflight-group-row.preflight-group-detail.is-checked::before {
+.preflight-group-row.preflight-group-detail.is-checked::before,
+.preflight-group-row.preflight-group-detail.is-checked.not-found::before {
   background-image: url('./img/check.svg');
   background-repeat: no-repeat;
   font-weight: 700;
@@ -175,6 +176,12 @@ a.preflight-edit {
   text-indent: -1000px;
   overflow: hidden;
   height: 32px;
+}
+
+.preflight-group-row.preflight-group-detail.not-found::before {
+  background-image: url('./img/red-error.svg');
+  background-repeat: no-repeat;
+  font-weight: 700;
 }
 
 .preflight-group-items {
