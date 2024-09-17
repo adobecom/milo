@@ -6,12 +6,12 @@ export async function withAem(originalFetch) {
                 '/test/mocks/sites/cf/fragments/search/authorPayload.json',
             );
         } else if (/cf\/fragments/.test(pathname) && searchParams.has('path')) {
-            const fragmentId = searchParams.get('fragmentId');
+            const path = searchParams.get('path');
             const item = await originalFetch(
                 '/test/mocks/sites/cf/fragments/search/authorPayload.json',
             )
                 .then((res) => res.json())
-                .then(({ items }) => items.find((item) => item.id === id));
+                .then(({ items }) => items.find((item) => item.path === path));
             if (item) {
                 return Promise.resolve({
                     ok: true,
