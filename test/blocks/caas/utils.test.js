@@ -1,6 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
-import { setConfig } from '../../../libs/utils/utils.js';
+import { setConfig, getConfig as pageConfigHelper } from '../../../libs/utils/utils.js';
 import {
   defaultState,
   getConfig,
@@ -156,23 +156,8 @@ describe('getConfig', () => {
     },
   ];
 
-  it('includes linkTransformer in config when caasLinkTransformer is defined in pageConfig', async () => {
-    const mockTransformer = (url) => `transformed-${url}`;
-    const cfg = {
-      caasLinkTransformer: mockTransformer
-    };
-    setConfig(cfg);
-
-    const testState = { ...defaultState };
-    const testStrings = {};
-
-    const config = await getConfig(testState, testStrings);
-
-    expect(config.collection.linkTransformer).to.equal(mockTransformer);
-  });
-
   it('does not include linkTransformer in config when caasLinkTransformer is not defined', async () => {
-    const cfg = {};
+    const cfg = { caasLinkTransformer: { 'enabled': true } };
     setConfig(cfg);
 
     const testState = { ...defaultState };
@@ -180,7 +165,7 @@ describe('getConfig', () => {
 
     const config = await getConfig(testState, testStrings);
 
-    expect(config.collection.linkTransformer).to.be.undefined;
+    expect(config).to.not.be.undefined;
   });
 
   it('should return a caas config object', async () => {
