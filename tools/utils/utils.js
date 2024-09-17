@@ -1,7 +1,6 @@
 const IMS_CLIENT_ID = 'milo_ims';
 const IMS_PROD_URL = 'https://auth.services.adobe.com/imslib/imslib.min.js';
 const STYLE_SHEETS = {};
-const CONFIGS = {};
 
 const getImsToken = async (loadScript) => {
   window.adobeid = {
@@ -26,15 +25,4 @@ const getSheet = async (url) => {
   return sheet;
 };
 
-const getCustomConfig = async (path) => {
-  /* c8 ignore next 3 */
-  if (CONFIGS[path] !== undefined) {
-    return CONFIGS[path];
-  }
-  const resp = await fetch(path);
-  const config = resp.ok ? await resp.json() : null;
-  CONFIGS[path] = config;
-  return config;
-};
-
-export { getImsToken, getSheet, getCustomConfig };
+export { getImsToken, getSheet };

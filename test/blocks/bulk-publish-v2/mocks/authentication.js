@@ -23,7 +23,7 @@ class MockAuth extends HTMLElement {
       bubbles: true,
       detail: {
         data: {
-          profile: { name: 'Unit Test', email: 'tester@adobe.com' },
+          profile: { name: 'Unit Test' },
           preview: { permissions },
           live: { permissions },
         },
