@@ -1,4 +1,3 @@
-/* eslint-disable import/no-extraneous-dependencies, max-len, no-console */
 import { expect, test } from '@playwright/test';
 import { features } from './georouting.spec.js';
 import Georouting from './georouting.page.js';

@@ -822,6 +822,7 @@ class Gnav {
         ${isDesktop.matches ? '' : this.decorateSearch()}
         ${this.elements.mainNav}
         ${isDesktop.matches ? this.decorateSearch() : ''}
+        ${getConfig().searchEnabled === 'on' ? toFragment`<div class="feds-client-search"></div>` : ''}
       </div>
     `;
 

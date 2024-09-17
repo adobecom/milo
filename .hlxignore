@@ -3,6 +3,7 @@
 .*
 *.md
 test/*
+nala
 build/*
 LICENSE
 web-test-runner.config.mjs
