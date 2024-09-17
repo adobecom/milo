@@ -556,6 +556,15 @@ describe('global navigation', () => {
         fetchStub.calledOnceWith('http://localhost:2000/gnav.plain.html'),
       ).to.be.true;
     });
+
+    it('disable AED(Active Element Detetction) if gnav-souce used with hash "#_noActiveItem" modifier', async () => {
+      const gnavMeta = toFragment`<meta name="gnav-source" content="https://adobe.com/federal${customPath}#_noActiveItem">`;
+      document.head.append(gnavMeta);
+      document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
+      await initGnav(document.body.querySelector('header'));
+      const isActiveElement = !!document.querySelector('.global-navigation .feds-navItem--active');
+      expect(isActiveElement).to.be.false;
+    });
   });
 
   describe('Dynamic nav', () => {
