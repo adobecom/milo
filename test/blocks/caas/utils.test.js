@@ -1,6 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
-import { setConfig, getConfig as pageConfigHelper } from '../../../libs/utils/utils.js';
+import { setConfig } from '../../../libs/utils/utils.js';
 import {
   defaultState,
   getConfig,
@@ -157,7 +157,7 @@ describe('getConfig', () => {
   ];
 
   it('does not include linkTransformer in config when caasLinkTransformer is not defined', async () => {
-    const cfg = { caasLinkTransformer: { 'enabled': true } };
+    const cfg = { caasLinkTransformer: { enabled: true } };
     setConfig(cfg);
 
     const testState = { ...defaultState };
