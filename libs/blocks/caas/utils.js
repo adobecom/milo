@@ -738,7 +738,7 @@ export const getConfig = async (originalState, strs = {}) => {
       lastViewedSession: state.lastViewedSession || '',
     },
     customCard: ['card', `return \`${state.customCard}\``],
-    linkTransformer: pageConfig.caasLinkTransformer,
+    linkTransformer: pageConfig.caasLinkTransformer || {},
     headers: caasRequestHeaders,
   };
 
