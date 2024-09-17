@@ -45,6 +45,8 @@ describe('Bootstrapper', async () => {
       }
       if (url.includes('/placeholders')) return mockRes({ payload: placeholders });
       if (url.includes('/footer.plain.html')) return mockRes({ payload: await readFile({ path: '../blocks/region-nav/mocks/regions.html' }) });
+      if (url.includes('/gnav.plain.html')) return mockRes({ payload: await readFile({ path: './mocks/gnav.html' }) });
+
       return null;
     });
     setConfig({ miloLibs, contentRoot: '/federal/dev' });
