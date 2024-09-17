@@ -21,10 +21,6 @@
   z-index: -1;
 }
 
-.dialog-modal.locale-modal-v2 .georouting-bg svg {
-  width: 100%;
-}
-
 .dialog-modal.locale-modal-v2 .picker {
   position: fixed;
   margin-top: 2px;
@@ -138,12 +134,6 @@
 .dialog-modal.locale-modal-v2 .tabs .tab-content {
   border-bottom: initial;
   padding: initial;
-}
-
-@media (min-width: 480px) {
-  .dialog-modal.locale-modal-v2 .georouting-bg {
-    display: none;
-  }
 }
 
 @media (min-width: 600px) {
