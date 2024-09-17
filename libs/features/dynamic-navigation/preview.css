@@ -86,10 +86,11 @@
   border-radius: 32px;
   background-color: transparent;
   color: #eee;
-  height: 22px;
-  width: 22px;
+  height: 18px;
+  width: 19px;
   top: 6px;
   right: 6px;
+  box-sizing: border-box;
 }
 
 .dynamic-nav-status .dns-close::after {
@@ -99,16 +100,10 @@
   position: absolute;
   width: 6px;
   height: 6px;
-  left: 5px;
-  top: -7px;
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.dynamic-nav-status.enabled .dns-close::after,
-.dynamic-nav-status.inactive .dns-close::after {
   left: 7px;
   top: -5px;
+  font-size: 18px;
+  font-weight: 600;
 }
 
 .dynamic-nav-status .details {
