@@ -156,6 +156,31 @@ describe('getConfig', () => {
     },
   ];
 
+  it('includes linkTransformer in config when caasLinkTransformer is defined in pageConfig', async () => {
+    const mockTransformer = (url) => `transformed-${url}`;
+    setConfig({caasLinkTransformer: mockTransformer})
+
+    const testState = { ...defaultState };
+    const testStrings = {};
+
+    const config = await getConfig(testState, testStrings);
+
+    expect(config.collection.linkTransformer).to.equal(mockTransformer);
+  });
+
+
+  it('does not include linkTransformer in config when caasLinkTransformer is not defined', async () => {
+    setConfig({});
+
+    const testState = { ...defaultState };
+    const testStrings = {};
+
+    const config = await getConfig(testState, testStrings);
+
+    expect(config.collection.linkTransformer).to.be.undefined;
+  });
+
+
   it('should return a caas config object', async () => {
     const config = await getConfig(state, strings);
     expect(config).to.be.eql({
