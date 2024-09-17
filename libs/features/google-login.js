@@ -7,7 +7,7 @@ const onToken = async (getMetadata, data, getConfig) => {
   let destination;
   const config = getConfig();
   try {
-    destination = typeof config.googleLoginURLCallback === 'function' ? new URL(config.googleLoginURLCallback()) : new URL(getMetadata('google-login-redirect'))?.href;
+    destination = typeof config.googleLoginURLCallback === 'function' ? new URL(await config.googleLoginURLCallback()) : new URL(getMetadata('google-login-redirect'))?.href;
   } catch {
     // Do nothing
   }
