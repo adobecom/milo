@@ -228,7 +228,6 @@ function buildContent(currentPage, locale, geoData, locales) {
 async function getDetails(currentPage, localeMatches, geoData) {
   const availableLocales = await getAvailableLocales(localeMatches);
   if (!availableLocales.length) return null;
-  const { innerWidth } = window;
   const georoutingWrapper = createTag('div', { class: 'georouting-wrapper fragment', style: 'display:none;' });
   currentPage.url = window.location.hash ? document.location.href : '#';
   if (availableLocales.length === 1) {
