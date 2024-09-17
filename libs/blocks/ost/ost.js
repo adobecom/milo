@@ -1,11 +1,5 @@
 import ctaTextOption from './ctaTextOption.js';
-import {
-  getConfig,
-  getLocale,
-  getMetadata,
-  loadScript,
-  loadStyle,
-} from '../../utils/utils.js';
+import { getConfig, getLocale, getMetadata, loadScript, loadStyle } from '../../utils/utils.js';
 
 export const AOS_API_KEY = 'wcms-commerce-ims-user-prod';
 export const CHECKOUT_CLIENT_ID = 'creative';
@@ -274,7 +268,9 @@ export default async function init(el) {
         openOst();
       },
       onReady: () => {
-        if (!window.adobeIMS.isSignedInUser()) window.adobeIMS.signIn();
+        if (!window.adobeIMS.isSignedInUser()) {
+          window.adobeIMS.signIn();
+        }
       },
     };
 
