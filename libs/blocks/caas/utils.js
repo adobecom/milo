@@ -741,11 +741,11 @@ export const getConfig = async (originalState, strs = {}) => {
     headers: caasRequestHeaders,
   };
 
-  // codecov-ignore-start
+  // codecov-ignore
   if (pageConfig.caasLinkTransformer) {
+    // codecov-ignore
     config.linkTransformer = pageConfig.caasLinkTransformer;
   }
-  // codecov-ignore-end
   return config;
 };
 
