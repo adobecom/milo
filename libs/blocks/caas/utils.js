@@ -738,14 +738,10 @@ export const getConfig = async (originalState, strs = {}) => {
       lastViewedSession: state.lastViewedSession || '',
     },
     customCard: ['card', `return \`${state.customCard}\``],
+    linkTransformer: pageConfig.caasLinkTransformer,
     headers: caasRequestHeaders,
   };
 
-  // codecov-ignore
-  if (pageConfig.caasLinkTransformer) {
-    // codecov-ignore
-    config.linkTransformer = pageConfig.caasLinkTransformer;
-  }
   return config;
 };
 
