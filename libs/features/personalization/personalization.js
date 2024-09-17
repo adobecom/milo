@@ -418,7 +418,7 @@ export function modifyNonFragmentSelector(selector) {
   };
 }
 
-function getSelectedElement({ selector: sel, rootEl }) {
+function getSelectedElements({ selector: sel, rootEl }) {
   const selector = sel.trim();
   if (!selector) return {};
 
@@ -465,26 +465,28 @@ export const updateFragDataProps = (a, inline, sections, fragment) => {
 
 export function handleCommands(commands, rootEl = document, forceInline = false) {
   commands.forEach((cmd) => {
-    const { manifestId, targetManifestId, action, selector, target: trgt } = cmd;
-    const target = forceInline ? addHash(trgt, INLINE_HASH) : trgt;
+    const { action, target, selector } = cmd;
+    cmd.target = forceInline ? addHash(target, INLINE_HASH) : target;
     if (selector.startsWith(IN_BLOCK_SELECTOR_PREFIX)) {
-      registerInBlockActions(cmd, manifestId, targetManifestId);
+      registerInBlockActions(cmd);
       return;
     }
-    const { el, modifiers } = getSelectedElement({ selector, rootEl });
+    const { els, modifiers } = getSelectedElements({ selector, rootEl });
+    cmd.modifiers = modifiers;
 
-    if (!el || (!(action in COMMANDS) && !(action in CREATE_CMDS))) return;
+    els?.forEach((el) => {
+      if (!el || (!(action in COMMANDS) && !(action in CREATE_CMDS))) return;
 
-    if (action in COMMANDS) {
-      COMMANDS[action]({
-        el, target, manifestId, targetManifestId, action, modifiers,
-      });
-      return;
-    }
-    el?.insertAdjacentElement(
-      CREATE_CMDS[action],
-      createContent(el, target, manifestId, targetManifestId, action, modifiers),
-    );
+      if (action in COMMANDS) {
+        COMMANDS[action](el, cmd);
+        return;
+      }
+      const insertAnchor = getSelectorType(selector) === 'fragment' ? el.parentElement?.parentElement : el;
+      insertAnchor?.insertAdjacentElement(
+        CREATE_CMDS[action],
+        createContent(el, cmd),
+      );
+    });
   });
 }
 
