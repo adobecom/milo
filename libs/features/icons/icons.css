@@ -87,3 +87,18 @@
 .milo-tooltip:hover::after {
   display: block;
 }
+
+span.icon svg {
+  height: 1em;
+  position: relative;
+  top: .1em;
+  width: auto;
+}
+
+span.icon[size='xxs'] svg { height: var(--icon-size-xxs); }
+span.icon[size='xs'] svg { height: var(--icon-size-xs); }
+span.icon[size='s'] svg { height: var(--icon-size-s); }
+span.icon[size='m'] svg { height: var(--icon-size-m); }
+span.icon[size='l'] svg { height: var(--icon-size-l); }
+span.icon[size='xl'] svg { height: var(--icon-size-xl); }
+span.icon[size='xxl'] svg { height: var(--icon-size-xxl); }

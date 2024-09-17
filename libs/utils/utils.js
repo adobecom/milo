@@ -718,7 +718,8 @@ async function decorateIcons(area, config) {
   const { base } = config;
   loadStyle(`${base}/features/icons/icons.css`);
   loadLink(`${base}/img/icons/icons.svg`, { rel: 'preload', as: 'fetch', crossorigin: 'anonymous' });
-  const { default: loadIcons } = await import('../features/icons/icons.js');
+  const { default: loadIcons, setNodeIndexClass } = await import('../features/icons/icons.js');
+  setNodeIndexClass(icons);
   await loadIcons(icons, config);
 }
 

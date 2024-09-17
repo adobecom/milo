@@ -1,47 +1,85 @@
 import { getSvgFromFile } from '../../features/icons/icons.js';
 import { createTag } from '../../utils/utils.js';
-import { copyToClipboard } from '../../utils/tools.js';
 
-const icons = [];
+async function copyToClipboard(elem, copyTxt) {
+  try {
+    await navigator.clipboard.writeText(copyTxt);
+
+    const tooltip = createTag('div', { role: 'status', 'aria-live': 'polite', class: 'copied-to-clipboard' }, 'copied');
+    elem.append(tooltip);
+
+    setTimeout(() => {
+      tooltip.remove();
+      elem.classList.remove('copy-success');
+      elem.classList.remove('copy-failure');
+    }, 1500);
+    elem.classList.remove('copy-failure');
+    elem.classList.add('copy-success');
+  } catch (e) {
+    elem.classList.add('copy-failure');
+    elem.classList.remove('copy-success');
+  }
+}
 
 function initCopyLinks(el) {
   const links = el.querySelectorAll('.fetch-icon');
-  console.log('initCopyLinks', links);
-
   [...links].forEach((link) => {
     link.addEventListener('click', () => {
-      console.log('Button clicked!', link);
-      copyToClipboard(link, link.alt);
+      const dataCopy = link.getAttributeNode('data-copy');
+      console.log('Button clicked!', link, dataCopy.value);
+      copyToClipboard(link, dataCopy.value);
     });
   });
   console.log('allIcons', el, links);
 }
 
-async function fetchIconList(url) {
-  const resp = await fetch(url);
-  const respJson = await resp.json()
+const icons = [];
+
+function fetchIconList(url) {
+  return fetch(url)
+    .then((resp) => resp.json())
     .then((json) => {
       json.content.data.forEach((icon) => {
         icons.push(icon);
       });
+      return json;
+    })
+    .catch((err) => {
+      console.error('Failed to fetch icons:', err);
+      return { error: err };
     });
-  if (!resp.ok) { return { error: respJson }; }
-  return { list: respJson };
 }
 
-export default async function init(el) {
+export default function init(el) {
   const row = el.querySelector(':scope > div');
-  await fetchIconList(row.textContent);
 
-  if (!icons.length) return;
-  const iconDiv = createTag('div', { class: 'fetched-icons' });
-  [...icons].forEach(async (icon) => {
-    console.log(icon.name);
-    const iconSvg = await getSvgFromFile(icon.url, icon.name);
-    if (!iconSvg) return;
-    icon.svg = iconSvg;
-    const iconLink = createTag('a', { alt: `${icon.name}`, class: `fetch-icon ${icon.name}` }, icon.svg);
-    iconDiv.append(iconLink);
-  });
-  el.append(iconDiv);
+  fetchIconList(row.textContent)
+    .then(() => {
+      if (!icons.length) return;
+      const iconDiv = createTag('div', { class: 'fetched-icons' });
+      const svgPromises = icons.map((icon) => getSvgFromFile(icon.url, icon.name)
+        .then((iconSvg) => {
+          icon.svg = iconSvg;
+          return icon;
+        }));
+      Promise.all(svgPromises).then((updatedIcons) => {
+        updatedIcons.forEach((icon) => {
+          if (icon.svg) {
+            const iconLink = createTag('a', {
+              title: `${icon.name}`,
+              alt: `${icon.name}`,
+              'data-copy': `${icon.ref}`,
+              'aria-label': `${icon.name}`,
+              class: `fetch-icon ${icon.name}`,
+            }, icon.svg);
+            iconDiv.append(iconLink);
+          }
+        });
+        el.append(iconDiv);
+        initCopyLinks(el);
+      });
+    })
+    .catch((err) => {
+      console.error('Error initializing icons:', err);
+    });
 }
