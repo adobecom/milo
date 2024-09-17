@@ -15,7 +15,7 @@ jobs:
       - name: Run Nala
         uses: adobecom/nala@main # Change if doing dev work
         env:
-          labels: ${{ join(github.event.pull_request.labels.*.name, ' ') }}
+          labels: ${{ join(github.event.pull_request.labels.*.name, 'run-nala-on') }}
           branch: ${{ github.event.pull_request.head.ref }}
           repoName: ${{ github.repository }}
           prUrl: ${{ github.event.pull_request.head.repo.html_url }}
