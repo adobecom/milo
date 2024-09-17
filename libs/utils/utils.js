@@ -756,14 +756,14 @@ function decorateHeader() {
   if (promo?.length) header.classList.add('has-promo');
 }
 
-let loadIcons;
-async function decorateIcons(config) {
-  if (loadIcons) return loadIcons;
+let decorateIcons;
+async function fetchIcons(config) {
+  if (decorateIcons) return decorateIcons;
   const { base } = config;
   loadStyle(`${base}/features/icons/icons.css`);
   loadLink(`${base}/img/icons/icons.svg`, { rel: 'preload', as: 'fetch', crossorigin: 'anonymous' });
-  loadIcons = await import('../features/icons/icons.js').default;
-  return loadIcons;
+  return import('../features/icons/icons.js')
+    .then((mod) => { decorateIcons = mod.default; });
 }
 
 export async function customFetch({ resource, withCacheRules }) {
@@ -1246,25 +1246,21 @@ const decorateInlineFragments = async (section) => {
 
 async function processSection(section, config, isDoc) {
   await decorateInlineFragments(section);
+
   const tasks = [];
   const icons = section.el.querySelectorAll('span.icon');
-  if (icons.length > 0) tasks.push(decorateIcons(config));
+  if (icons.length > 0) tasks.push(fetchIcons(config));
   if (findReplaceableNodes(section.el).length) tasks.push(fetchPlaceholders(section.el, config));
-
   if (section.preloadLinks.length) {
     const [modals, nonModals] = partition(section.preloadLinks, (block) => block.classList.contains('modal'));
     nonModals.forEach((block) => tasks.push(loadBlock(block)));
     modals.forEach((block) => loadBlock(block));
   }
   section.blocks.forEach((block) => tasks.push(loadBlock(block)));
-
   await Promise.all(tasks);
 
   const postDecorationTasks = [];
-
-  if (icons.length > 0 && loadIcons) {
-    postDecorationTasks.push(loadIcons(icons, config));
-  }
+  if (icons.length > 0 && decorateIcons) postDecorationTasks.push(decorateIcons(icons, config));
   const nodes = findReplaceableNodes(section.el);
   if (nodes.length && decoratePlaceholderArea) {
     postDecorationTasks.push(
