@@ -373,7 +373,7 @@ function modifySelectorTerm(termParam) {
   const startText = startTextMatch ? startTextMatch[0].toLowerCase() : '';
   const startTextPart1 = startText.split(/\.|:/)[0];
   const endNumberMatch = term.match(/[0-9]*$/);
-  const endNumber = endNumberMatch ? endNumberMatch[0] : '';
+  const endNumber = endNumberMatch && startText.match(/^[a-zA-Z]/) ? endNumberMatch[0] : '';
   if (!startText || htmlEls.includes(startText)) return term;
   if (otherSelectors.includes(startText)) {
     term = term.replace(startText, '> div');
