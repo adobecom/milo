@@ -1,6 +1,6 @@
-import { getMetadata } from '../utils/utils.js';
+import { getMetadata } from '../../utils/utils.js';
 
-function isDynamicNavDisabled() {
+export function isDynamicNavDisabled() {
   const dynamicNavDisableValues = getMetadata('dynamic-nav-disable');
   if (!dynamicNavDisableValues) return false;
 

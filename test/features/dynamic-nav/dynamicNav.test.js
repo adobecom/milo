@@ -1,13 +1,19 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { setConfig } from '../../../libs/utils/utils.js';
-import dynamicNav from '../../../libs/features/dynamic-navigation.js';
+import dynamicNav from '../../../libs/features/dynamic-navigation/dynamic-navigation.js';
 
 describe('Dynamic nav', () => {
   beforeEach(() => {
     const conf = { dynamicNavKey: 'bacom' };
     setConfig(conf);
     window.sessionStorage.setItem('gnavSource', 'some-source-string');
+  });
+
+  it('Saves the original gnav source to sesstionStorage regardless of dnamic-nav metadata', async () => {
+    document.head.innerHTML = await readFile({ path: './mocks/off.html' });
+    dynamicNav('gnav/aem-sites', 'nocom');
+    expect(window.sessionStorage.getItem('ogSource')).to.equal('gnav/aem-sites');
   });
 
   it('Saves the gnavSource and dynamicNavKey to session storage', async () => {
