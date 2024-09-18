@@ -17,7 +17,6 @@
   align-items: center;
 }
 
-.hero-marquee.no-min-height { min-height: unset; }
 .hero-marquee.s-min-height { min-height: var(--s-min-height); }
 .hero-marquee.l-min-height { min-height: var(--l-min-height); }
 
