@@ -26,11 +26,9 @@ function initCopyLinks(el) {
   [...links].forEach((link) => {
     link.addEventListener('click', () => {
       const dataCopy = link.getAttributeNode('data-copy');
-      console.log('Button clicked!', link, dataCopy.value);
       copyToClipboard(link, dataCopy.value);
     });
   });
-  console.log('allIcons', el, links);
 }
 
 const icons = [];

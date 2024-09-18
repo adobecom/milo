@@ -1,5 +1,4 @@
-import { getFederatedContentRoot, getFederatedUrl } from '../../utils/federated.js';
-import { loadLink } from '../../utils/utils.js';
+import { getFederatedContentRoot } from '../../utils/federated.js';
 
 let fetchedIcons;
 let fetched = false;
