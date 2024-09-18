@@ -265,16 +265,13 @@ const PRESETS = {
 const preset = document.querySelector('#preset');
 preset.addEventListener('change', () => {
   const { value } = preset;
-  // console.log(PRESETS[value]);
   const ls = localStorage.getItem(LS_KEY);
-  // console.log(typeof ls);
   const config = ls ? JSON.parse(ls) : {};
   config.preset = PRESETS[value].preset;
   config.host = PRESETS[value].host;
   config.owner = PRESETS[value].owner;
   config.repo = PRESETS[value].repo;
   config.contentType = PRESETS[value].contentType;
-  console.log(config)
   setConfig(config);
   window.localStorage.setItem(LS_KEY, JSON.stringify(getConfig()));
   loadFromLS();

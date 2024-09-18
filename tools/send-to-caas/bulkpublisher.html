@@ -5,11 +5,15 @@
   </head>
 
   <body>
+    <div class="page-title">
+      <h1><i>CaaS</i> Bulk Publisher <i>Tool</i></h1>
+    </div>  
+
     <div class="bulk-publisher">
       <div class="main">
         <div class="options-panel">
           <dt class="title is-expanded">
-            <span>CaaS Bulk Publisher</span>
+            <span>Settings</span>
           </dt>
           <dd class="content is-expanded">
 
@@ -111,36 +115,61 @@
             </div>
             <div id="caas-draft-cb" class="field checkbox">
               <input type="checkbox" id="draftOnly" name="draftOnly" />
-              <label for="draftOnly">Publish to Draft only</label>
+              <label for="draftOnly">Publish to Draft only <span class="help">(?)</span></label>
             </div>
             <div id="use-preview-cb" class="field checkbox">
               <input type="checkbox" id="usePreview" name="usePreview" />
-              <label for="usePreview">Use Preview Content</label>
+              <label for="usePreview">Use Preview Content <span class="help">(?)</span></label>
             </div>
             <div id="use-html-cb" class="field checkbox">
               <input type="checkbox" id="useHtml" name="useHtml" />
-              <label for="useHtml">Use .html extension on CTA links</label>
+              <label for="useHtml">Use .html extension on CTA links <span class="help">(?)</span></label>
             </div>
-            <button id="bulkpublish" href="#">Bulk Publish</button>
+            <!-- <button id="bulkpublish" href="#">Bulk Publish</button> -->
           </dd>
         </div>
-        <dd class="urls">
-          <div class="urls-label">
-            <label for="urls">URLs:</label>
+
+        <div class="content-panel">
+
+          <div class="urls">
+            <!-- <div class="urls-label">
+              <label for="urls">URLs:</label>
+            </div> -->
+            <h2>URLs:</h2>
+            <textarea id="urls" name="urls" rows="10" cols="50"></textarea>
+
+            <div class="button-container">
+              <button id="bulkpublish" href="#">Publish</button>
+            </div>
+
           </div>
-          <textarea id="urls" name="urls" rows="10" cols="50"></textarea>
-        </dd>
+
+          <div class="status">
+            <h2>Status</h2> 
+            <p class="status-ready">Online</p>
+
+            <div class="success">
+              <label for="success">Success:</label>
+              <br>
+              <textarea id="success" name="success" rows="10" cols="50"></textarea>
+            </div>
+
+            <div class="errors">
+              <label for="errors">Errors:</label>
+              <br>
+              <textarea id="errors" name="errors" rows="10" cols="50"></textarea>
+            </div>
+          </div>
+
+        </div>
+
+
+
+        
       </div>
-      <dd class="results">
-        <div>
-          <label for="errors">Errors:</label>
-          <textarea id="errors" name="errors" rows="10" cols="50"></textarea>
-        </div>
-        <div>
-          <label for="success">Success:</label>
-          <textarea id="success" name="success" rows="10" cols="50"></textarea>
-        </div>
-      </dd>
+
+
+
     </div>
     <script type="module">
       import init from './bulk-publish-to-caas.js';
