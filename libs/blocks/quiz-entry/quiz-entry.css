@@ -1,6 +1,6 @@
 .quiz-entry {
   --quiz-button-disabled-bg: #757575;
-  --quiz-button-disabled-text: #FFF6F6;
+  --quiz-button-disabled-text: #FFF;
 }
 
 .quiz-container {
@@ -25,12 +25,13 @@
   font-size: var(--type-heading-xl-size);
   line-height: var(--type-heading-xl-lh);
   font-weight: var(--type-heading-all-weight);
-  margin-bottom: 8px;
+  margin: 0 0 8px;
 }
 
 .quiz-subtitle {
   font-size: var(--type-heading-l-size);
   line-height: var(--type-heading-l-lh);
+  margin: 0;
 }
 
 .quiz-question-container {
