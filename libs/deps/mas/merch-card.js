@@ -1003,9 +1003,10 @@ merch-card[variant="plans"] [slot="quantity-select"] {
           <slot name="icons"></slot>
           <slot name="heading-xs"></slot>
           <slot name="body-xxs"></slot>
-          ${this.promoBottom?"":N`<slot name="promo-text"></slot><slot name="callout-content"></slot>`}
+          ${this.promoBottom?"":N`<slot name="promo-text"></slot>`}
           <slot name="body-xs"></slot>
-          ${this.promoBottom?N`<slot name="promo-text"></slot><slot name="callout-content"></slot>`:""}
+          ${this.promoBottom?N`<slot name="promo-text"></slot>`:""}
+          <slot name="callout-content"></slot>
       </div>
       ${this.secureLabelFooter}`}};import{html as B,css as fe}from"../lit-all.min.js";var oe=`
 :root {

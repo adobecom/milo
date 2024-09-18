@@ -357,8 +357,24 @@ const simplifyHrs = (el) => {
   hrs.forEach((hr) => {
     if (hr.parentElement.tagName === 'P') {
       hr.parentElement.replaceWith(hr);
+      hr.style.width = '100%';
     }
   });
+  if (el.variant === PRODUCT) {
+    const calloutContent = el.querySelector('div[slot="callout-content"]');
+    if (calloutContent) {
+      const bodySlot = el.querySelector('div[slot="body-xs"]');
+      if (bodySlot) {
+        //move all elements except paragraphs to the callout-content slot
+        const elements = [...bodySlot.children];
+        elements.forEach((element) => {
+          if (element.tagName !== 'P') {
+            calloutContent.appendChild(element);
+          }
+        });
+      }
+    }
+  }
 };
 
 const getMiniCompareChartFooterRows = (el) => {

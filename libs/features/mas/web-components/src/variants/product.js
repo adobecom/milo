@@ -17,9 +17,10 @@ export class Product extends VariantLayout {
           <slot name="icons"></slot>
           <slot name="heading-xs"></slot>
           <slot name="body-xxs"></slot>
-          ${!this.promoBottom ? html`<slot name="promo-text"></slot><slot name="callout-content"></slot>` : ''}
+          ${!this.promoBottom ? html`<slot name="promo-text"></slot>` : ''}
           <slot name="body-xs"></slot>
-          ${this.promoBottom ? html`<slot name="promo-text"></slot><slot name="callout-content"></slot>` : ''}
+          ${this.promoBottom ? html`<slot name="promo-text"></slot>` : ''}
+          <slot name="callout-content"></slot>
       </div>
       ${this.secureLabelFooter}`;
   }
