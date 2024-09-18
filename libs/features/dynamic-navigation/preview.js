@@ -66,8 +66,8 @@ const returnPath = (url) => {
   return sourceUrl.pathname;
 };
 
-export default function main() {
-  const { dynamicNavKey } = getConfig();
+export default async function main() {
+  const { dynamicNavKey, miloLibs } = getConfig();
   const storedSource = window.sessionStorage.getItem('gnavSource');
   const authoredSource = getMetadata('gnav-source') || 'Metadata not found: site gnav source';
   const dynamicNavStatus = getMetadata('dynamic-nav');
@@ -81,6 +81,8 @@ export default function main() {
   };
   const previewWidget = createTag('div', { class: 'dynamic-nav-status' });
 
+  loadStyle(`${miloLibs}/features/dynamic-navigation/preview.css`);
+
   previewWidget.innerHTML = 
   `
     <span class="title"><span class="dns-badge"></span>Dynamic Nav</span>
@@ -91,7 +93,7 @@ export default function main() {
           <span>${tooltipInfo[STATUS]}</span>
         </p>
       </div>
-      <p>Status: <span class="text-status ${STATUS}">${STATUS}</span></p> 
+      <p>Status: <span>${STATUS}</span></p> 
       <p>Setting: <span>${dynamicNavStatus}</span></p>
       <div class="consumer-key">
         <p>Consumer key: <span>${dynamicNavKey}</span></p>

@@ -31,10 +31,11 @@
   border: 2px solid white;
   border-radius: 32px;
   background-color: transparent;
+  box-sizing: border-box;
   color: #eee;
-  padding: 4px;
-  height: 8px;
-  width: 8px;
+  padding: 8px;
+  height: 12px;
+  width: 12px;
   margin: 4px 8px 4px 0;
   cursor: pointer;
   display: flex;
@@ -52,7 +53,7 @@
     border-top: 2px solid;
     border-right: 2px solid;
     transform: rotate(45deg);
-    left: 4px;
+    left: 5px;
     bottom: 5px;
     transition-duration: 0.2s;
 }
@@ -144,22 +145,6 @@
 
 .dynamic-nav-status .details span {
   font-weight: 300;
-}
-
-.dynamic-nav-status .text-status {
-  font-weight: 600;
-}
-
-.dynamic-nav-status .text-status.active {
-  color: #280;
-}
-
-.dynamic-nav-status .text-status.enabled {
-  color: #ec4;
-}
-
-.dynamic-nav-status .text-status.inactive {
-  color: #e20;
 }
 
 .dynamic-nav-status .details .additional-info {
