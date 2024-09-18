@@ -204,6 +204,7 @@ const defaultConfig = {
     enabled: '',
     lastViewedSession: '',
   },
+  linkTransformer: {},
   customCard: ['card', 'return ``'],
 };
 
