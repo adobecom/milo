@@ -2,6 +2,7 @@ import {
   createTag, getConfig, loadArea, loadScript, loadStyle, localizeLink,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
+import '../../deps/mas/commerce.js';
 
 export const PRICE_LITERALS_URL = 'https://www.adobe.com/federal/commerce/price-literals.json';
 export const CHECKOUT_LINK_CONFIG_PATH = '/commerce/checkout-link.json'; // relative to libs.
@@ -429,14 +430,7 @@ export async function initService(force = false) {
   const { env, commerce = {}, locale } = getConfig();
   commerce.priceLiteralsPromise = fetchLiterals(PRICE_LITERALS_URL);
   initService.promise = initService.promise ?? polyfills().then(async () => {
-    const { hostname, searchParams } = new URL(window.location.href);
-    let commerceLibPath = '../../deps/mas/commerce.js';
-    if (/hlx\.(page|live)$|localhost$|www\.stage\.adobe\.com$/.test(hostname)) {
-      const maslibs = searchParams.get('maslibs');
-      if (maslibs) {
-        commerceLibPath = `${getMasBase(hostname, maslibs)}/libs/commerce.js`;
-      }
-    }
+    const commerceLibPath = '../../deps/mas/commerce.js';
     const commerceLib = await import(commerceLibPath);
     const service = await commerceLib.init(() => ({
       env,
