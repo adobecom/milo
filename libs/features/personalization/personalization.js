@@ -926,6 +926,21 @@ export function handleFragmentCommand(command, a) {
   return false;
 }
 
+export function parseNestedPlaceholders({ placeholders }) {
+  if (!placeholders) return;
+  Object.entries(placeholders).forEach(([key, value]) => {
+    const matches = value.match(/{{(.*?)}}/g);
+    if (matches) {
+      matches.forEach((match) => {
+        const foundKey = match.replace(/{{|}}/g, '').trim();
+        if (placeholders[foundKey]) {
+          placeholders[key] = placeholders[key].replace(match, placeholders[foundKey]);
+        }
+      });
+    }
+  });
+}
+
 export async function applyPers(manifests, postLCP = false) {
   if (!manifests?.length) return;
   let experiments = manifests;
@@ -935,6 +950,7 @@ export async function applyPers(manifests, postLCP = false) {
   }
 
   experiments = cleanAndSortManifestList(experiments);
+  parseNestedPlaceholders(config);
 
   let results = [];
 
