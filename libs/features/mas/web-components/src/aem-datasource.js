@@ -45,7 +45,7 @@ export class AemDataSource extends HTMLElement {
 
     cache = cache;
 
-    /** 
+    /**
      * @type {import('@adobe/mas-web-components').Fragment}
      */
     item;
@@ -68,7 +68,7 @@ export class AemDataSource extends HTMLElement {
     /**
      * Internal promise to track the readiness of the web-component to render.
      */
-    #readyPromise;
+    _readyPromise;
 
     static get observedAttributes() {
         return ['path'];
@@ -96,9 +96,9 @@ export class AemDataSource extends HTMLElement {
     async refresh(flushCache = true) {
         if (!this.path) return;
 
-        if (this.#readyPromise) {
+        if (this._readyPromise) {
             const ready = await Promise.race([
-                this.#readyPromise,
+                this._readyPromise,
                 Promise.resolve(false),
             ]);
             if (!ready) return; // already fetching data
@@ -109,7 +109,7 @@ export class AemDataSource extends HTMLElement {
         if (flushCache) {
             this.cache.remove(this.path);
         }
-        this.#readyPromise = this.fetchData().then(() => true);
+        this._readyPromise = this.fetchData().then(() => true);
     }
 
     async fetchData() {
@@ -119,13 +119,18 @@ export class AemDataSource extends HTMLElement {
             cache.add(item);
         }
         this.item = item;
+        this.render();
     }
 
     get updateComplete() {
         return (
-            this.#readyPromise ??
+            this._readyPromise ??
             Promise.reject(new Error('datasource is not correctly configured'))
         );
+    }
+
+    async render() {
+        // abstract method
     }
 }
 

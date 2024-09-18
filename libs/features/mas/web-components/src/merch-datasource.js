@@ -140,14 +140,7 @@ async function parseMerchCard(fragmentData, appendFn, merchCard, consonant) {
  * @attr {string} path - fragment path
  */
 export class MerchDataSource extends AemDataSource {
-
-    async refresh(flushCache = true) {
-        await super.refresh(flushCache);
-        this.render();
-    }
-
     async render() {
-        await this.updateComplete;
         if (this.item) {
             const appendFn = (element) => {
                 this.parentElement.appendChild(element);

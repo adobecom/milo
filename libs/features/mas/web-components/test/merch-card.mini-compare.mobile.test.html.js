@@ -15,18 +15,12 @@ import { mockIms } from './mocks/ims.js';
 import { withWcs } from './mocks/wcs.js';
 import mas from './mas.js';
 
-const skipTests = sessionStorage.getItem('skipTests');
-
 runTests(async () => {
     await toggleMobile();
     mockIms();
     mockLana();
     await mockFetch(withWcs);
     await mas();
-    if (skipTests !== null) {
-        appendMiloStyles();
-        return;
-    }
     describe('[mobile] merch-card web component with mini-compare variant', () => {
         it('[mobile] mini-compare-chart should have same body slot heights', async () => {
             const miniCompareCharts = document.querySelectorAll(
@@ -72,12 +66,12 @@ runTests(async () => {
             expect(card2Slots).to.equal(card3Slots);
         });
 
-        it('[mobile] mini-compare-chart should ', async () => {
+        it('[mobile] mini-compare-chart should remove empty rows', async () => {
             const miniCompareChart = document.querySelector(
                 'merch-card[variant="mini-compare-chart"]',
             );
             miniCompareChart?.variantLayout?.removeEmptyRows();
-            expect(true, 'removing empty lines do not fail').to.be.true;  // TODO improve the assertion
+            expect(true, 'removing empty lines do not fail').to.be.true; // TODO improve the assertion
         });
     });
 });

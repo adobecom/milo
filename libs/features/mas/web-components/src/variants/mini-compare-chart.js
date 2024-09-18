@@ -54,7 +54,7 @@ export class MiniCompareChart extends VariantLayout {
   }
 
   adjustMiniCompareBodySlots () {
-    if (this.card.getBoundingClientRect().width === 0) return;
+    if (this.card.getBoundingClientRect().width < 10) return; // cards not visible except for the borders.
   
     this.updateMiniCompareElementMinHeight(
         this.card.shadowRoot.querySelector('.top-section'),
