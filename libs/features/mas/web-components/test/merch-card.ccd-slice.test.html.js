@@ -22,7 +22,6 @@ runTests(async () => {
     mockLana();
     await mockFetch(withWcs);
     await mas();
-    appendMiloStyles();
     
     describe('merch-card web component', () => {
       it('should exist in the HTML document', async () => {
