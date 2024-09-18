@@ -239,16 +239,17 @@ import{LitElement as we}from"../lit-all.min.js";import{LitElement as me,html as 
         @media screen and ${A(h)} {
             :host([size='wide']),
             :host([size='super-wide']) {
-                grid-column: 1 / -1;
+                grid-column: span 3;
                 width: 100%;
+                max-width: var(--consonant-merch-card-tablet-wide-width);
                 margin: 0 auto;
             }
         }
 
         /* Laptop */
         @media screen and ${A(s)} {
-            :host([size='wide']) {
-                grid-column: span 2;
+            :host([size='super-wide']) {
+                grid-column: span 3;
             }
         `];return r.push(M`
         /* Large desktop */
@@ -802,7 +803,7 @@ merch-card .footer-row-cell:nth-child(8) {
               <span class="secure-transaction-label"
                   >${this.card.secureLabel}</span
               ></slot
-          >`:_`<slot name="secure-transaction-label"></slot>`;return _`<footer>${e}<slot name="footer"></slot></footer>`};updateMiniCompareElementMinHeight(e,t){let o=`--consonant-merch-card-mini-compare-${t}-height`,l=Math.max(0,parseInt(window.getComputedStyle(e).height)||0),p=parseInt(this.getContainer().style.getPropertyValue(o))||0;l>p&&this.getContainer().style.setProperty(o,`${l}px`)}adjustMiniCompareBodySlots(){if(this.card.getBoundingClientRect().width===0)return;this.updateMiniCompareElementMinHeight(this.card.shadowRoot.querySelector(".top-section"),"top-section"),["heading-m","body-m","heading-m-price","price-commitment","offers","promo-text","callout-content","secure-transaction-label"].forEach(o=>this.updateMiniCompareElementMinHeight(this.card.shadowRoot.querySelector(`slot[name="${o}"]`),o)),this.updateMiniCompareElementMinHeight(this.card.shadowRoot.querySelector("footer"),"footer");let t=this.card.shadowRoot.querySelector(".mini-compare-chart-badge");t&&t.textContent!==""&&this.getContainer().style.setProperty("--consonant-merch-card-mini-compare-top-section-mobile-height","32px")}adjustMiniCompareFooterRows(){if(this.card.getBoundingClientRect().width===0)return;[...this.card.querySelector('[slot="footer-rows"]')?.children].forEach((t,o)=>{let l=Math.max(xe,parseInt(window.getComputedStyle(t).height)||0),p=parseInt(this.getContainer().style.getPropertyValue(this.getRowMinHeightPropertyName(o+1)))||0;l>p&&this.getContainer().style.setProperty(this.getRowMinHeightPropertyName(o+1),`${l}px`)})}removeEmptyRows(){this.card.querySelectorAll(".footer-row-cell").forEach(t=>{let o=t.querySelector(".footer-row-cell-description");o&&!o.textContent.trim()&&t.remove()})}renderLayout(){return _` <div class="top-section${this.badge?" badge":""}">
+          >`:_`<slot name="secure-transaction-label"></slot>`;return _`<footer>${e}<slot name="footer"></slot></footer>`};updateMiniCompareElementMinHeight(e,t){let o=`--consonant-merch-card-mini-compare-${t}-height`,l=Math.max(0,parseInt(window.getComputedStyle(e).height)||0),p=parseInt(this.getContainer().style.getPropertyValue(o))||0;l>p&&this.getContainer().style.setProperty(o,`${l}px`)}adjustMiniCompareBodySlots(){if(this.card.getBoundingClientRect().width<10)return;this.updateMiniCompareElementMinHeight(this.card.shadowRoot.querySelector(".top-section"),"top-section"),["heading-m","body-m","heading-m-price","price-commitment","offers","promo-text","callout-content","secure-transaction-label"].forEach(o=>this.updateMiniCompareElementMinHeight(this.card.shadowRoot.querySelector(`slot[name="${o}"]`),o)),this.updateMiniCompareElementMinHeight(this.card.shadowRoot.querySelector("footer"),"footer");let t=this.card.shadowRoot.querySelector(".mini-compare-chart-badge");t&&t.textContent!==""&&this.getContainer().style.setProperty("--consonant-merch-card-mini-compare-top-section-mobile-height","32px")}adjustMiniCompareFooterRows(){if(this.card.getBoundingClientRect().width===0)return;[...this.card.querySelector('[slot="footer-rows"]')?.children].forEach((t,o)=>{let l=Math.max(xe,parseInt(window.getComputedStyle(t).height)||0),p=parseInt(this.getContainer().style.getPropertyValue(this.getRowMinHeightPropertyName(o+1)))||0;l>p&&this.getContainer().style.setProperty(this.getRowMinHeightPropertyName(o+1),`${l}px`)})}removeEmptyRows(){this.card.querySelectorAll(".footer-row-cell").forEach(t=>{let o=t.querySelector(".footer-row-cell-description");o&&!o.textContent.trim()&&t.remove()})}renderLayout(){return _` <div class="top-section${this.badge?" badge":""}">
             <slot name="icons"></slot> ${this.badge}
         </div>
         <slot name="heading-m"></slot>
