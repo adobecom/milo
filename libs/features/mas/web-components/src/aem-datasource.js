@@ -129,6 +129,7 @@ export class AemDataSource extends HTMLElement {
         );
     }
 
+    /* c8 ignore next 3 */
     async render() {
         // abstract method
     }
