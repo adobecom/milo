@@ -9,7 +9,7 @@ const onToken = async (getMetadata, data, getConfig) => {
   try {
     destination = typeof config.googleLoginURLCallback === 'function' ? new URL(await config.googleLoginURLCallback()) : new URL(getMetadata('google-login-redirect'))?.href;
   } catch {
-    // Do nothing
+    // Do nothing at all
   }
 
   await window.adobeIMS.socialHeadlessSignIn({
