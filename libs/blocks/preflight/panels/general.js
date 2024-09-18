@@ -69,6 +69,10 @@ async function setContent() {
   };
 
   getStatuses();
+  const sk = document.querySelector('helix-sidekick');
+  sk?.addEventListener('statusfetched', async () => {
+    getStatuses();
+  });
 }
 
 async function handleAction(action) {
@@ -210,12 +214,13 @@ export default function General() {
         <div id=preview-action class=preflight-action-wrapper>
           <button class=preflight-action onClick=${() => handleAction('preview')}>Preview</button>
         </div>
-        <div id=publish-action class="preflight-action-wrapper${tooltip ? ' tooltip' : ''}" data-tooltip=${tooltip}>
-          ${!!publishable && html`
+        ${!!publishable && html`
+          <div id=publish-action class="preflight-action-wrapper${tooltip ? ' tooltip' : ''}" data-tooltip=${tooltip}>
             <button class="preflight-action" onClick=${() => handleAction('live')}>
               Publish
-            </button>`}
-        </div>
+            </button>
+          </div>
+        `}
       `}
     </div>
   `;
