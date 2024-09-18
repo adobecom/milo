@@ -246,7 +246,7 @@ const startInitialization = async (config, event, onDemand) => {
       initErrorCallback: () => {},
       chatStateCallback: () => {},
       getContextCallback: () => {},
-      signInProvider: window.adobeIMS?.signIn,
+      signInProvider: () => window.adobeIMS?.signIn(config.signInContext),
       analyticsCallback: (eventData) => {
         if (!window.alloy_all || !window.digitalData) return;
         const data = eventData?.events?.[0]?.data;
