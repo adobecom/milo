@@ -867,7 +867,7 @@ const CopyBtn = () => {
       hour12: false,
     });
     const collectionName = state.collectionName ? `- ${state.collectionName} ` : '';
-    link.textContent = `Content as a Service v2 ${collectionName}- ${dateStr}${state.doNotLazyLoad ? ' (no-lazy)' : ''}`;
+    link.textContent = `Content as a Service v3 ${collectionName}- ${dateStr}${state.doNotLazyLoad ? ' (no-lazy)' : ''}`;
 
     const blob = new Blob([link.outerHTML], { type: 'text/html' });
     const data = [new ClipboardItem({ [blob.type]: blob })];
