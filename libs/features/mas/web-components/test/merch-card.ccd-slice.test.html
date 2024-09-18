@@ -22,40 +22,12 @@
         main>div {
             display: initial;
         }
-
-        .action-area {
-            display: contents;
-        }
-
-        #sidenav {
-            display: none;
-        }
-
-        @media screen and (min-width: 1440px) {
-            #sidenav {
-                flex: 1;
-                justify-content: stretch;
-                padding-top: 8px;
-                display: flex;
-                position: fixed;
-                bottom: 0px;
-                left: 0px;
-                gap: 20px;
-                flex-direction: column;
-                width: 220px;
-            }
-        }
     </style>
 </head>
 
 <body>
     <script type="module" src="./merch-card.ccd-slice.test.html.js"></script>
     <main>
-        <div id="sidenav">
-            <button onclick="toggleRTL()">Toggle RTL</button>
-            <button onclick="skipTests()">Skip tests</button>
-            <button onclick="runTests()">Run tests</button>
-        </div>
         <div class="one-merch-card ccd-slice">
           <merch-card class="" tabindex="0" variant="ccd-slice" filters="" types="">
             <sp-status-light size="l" variant="info" dir="ltr"></sp-status-light>
