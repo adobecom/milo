@@ -132,14 +132,14 @@ function parseKeyString(str) {
   return result;
 }
 
-function loadContentType(el, key, classes) {
+async function loadContentType(el, key, classes) {
   if (classes !== undefined && classes.length) el.classList.add(...classes);
   switch (key) {
     case 'bgcolor':
       decorateBg(el);
       break;
     case 'lockup':
-      decorateLockupRow(el, classes);
+      await decorateLockupRow(el, classes);
       break;
     case 'qrcode':
       decorateQr(el);
@@ -164,14 +164,16 @@ function loadBreakpointThemes() {
 export default async function init(el) {
   el.classList.add('con-block');
   let rows = el.querySelectorAll(':scope > div');
-  if (rows.length > 1 && rows[0].textContent !== '') {
+  if (rows.length <= 1) return;
+  const [head, ...tail] = rows;
+  rows = tail;
+  if (head.textContent.trim() === '') {
+    head.remove();
+  } else {
     el.classList.add('has-bg');
-    const [head, ...tail] = rows;
     handleObjectFit(head);
     decorateBlockBg(el, head, { useHandleFocalpoint: true });
-    rows = tail;
   }
-
   // get first row that's not a keyword key/value row
   const mainRowIndex = rows.findIndex((row) => {
     const firstColText = row.children[0].textContent.toLowerCase().trim();
@@ -237,6 +239,7 @@ export default async function init(el) {
     }
   });
 
+  const promiseArr = [];
   [...rows].forEach(async (row) => {
     const cols = row.querySelectorAll(':scope > div');
     const firstCol = cols[0];
@@ -248,7 +251,9 @@ export default async function init(el) {
       firstCol.parentElement.classList.add(`row-${parsed.key}`, 'con-block');
       firstCol.remove();
       cols[1].classList.add('row-wrapper');
-      if (contentTypes.includes(parsed.key)) loadContentType(row, parsed.key, parsed.classes);
+      if (contentTypes.includes(parsed.key)) {
+        promiseArr.push(loadContentType(row, parsed.key, parsed.classes));
+      }
     } else {
       row.classList.add('norm');
       decorateBlockHrs(row);
@@ -256,4 +261,5 @@ export default async function init(el) {
     }
   });
   decorateTextOverrides(el, ['-heading', '-body', '-detail'], mainCopy);
+  await Promise.all(promiseArr);
 }

@@ -7,6 +7,7 @@ import {
   selectors,
   isElementVisible,
   viewports,
+  unavVersion,
 } from './test-utilities.js';
 import { isDesktop, setActiveLink, toFragment } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
 import globalNavigationActiveMock from './mocks/global-navigation-active.plain.js';
@@ -15,7 +16,7 @@ describe('main nav', () => {
   before(() => {
     document.head.innerHTML = `<link rel="icon" href="/libs/img/favicons/favicon.ico" size="any">
     <script src="https://auth.services.adobe.com/imslib/imslib.min.js" type="javascript/blocked" data-loaded="true"></script>
-    <script src="https://stage.adobeccstatic.com/unav/1.1/UniversalNav.js" type="javascript/blocked" data-loaded="true"></script>
+    <script src="https://stage.adobeccstatic.com/unav/${unavVersion}/UniversalNav.js" type="javascript/blocked" data-loaded="true"></script>
     `;
   });
 

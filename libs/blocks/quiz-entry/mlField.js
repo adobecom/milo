@@ -26,7 +26,7 @@ export const getMLResults = async (endpoint, apiKey, threshold, input, count, va
     body: JSON.stringify(params),
   })
     .then((response) => response.json())
-    .catch((error) => window.lana.log(`ERROR: Fetching fi codes ${error}`, { tags: 'errorType=info,module=quiz-entry' }));
+    .catch((error) => window.lana.log(`ERROR: Fetching fi codes ${error}`, { tags: 'quiz-entry', errorType: 'i' }));
 
   let value;
   let highestProb = null;
