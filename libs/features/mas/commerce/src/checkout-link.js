@@ -10,6 +10,12 @@ import { selectOffers, useService } from './utilities.js';
 export const CLASS_NAME_DOWNLOAD = 'download';
 export const CLASS_NAME_UPGRADE = 'upgrade';
 
+/**
+ * HTML Checkout Link Anchor element, extends anchor
+ * 
+ * @element a[data-wcs-osi]
+ * @fires merch:click
+ */
 export class HTMLCheckoutAnchorElement extends HTMLAnchorElement {
     static is = 'checkout-link';
     static tag = 'a';

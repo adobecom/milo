@@ -84,7 +84,11 @@ const DISPLAY_TAX_MAP = {
     TEAM_EDU: [GeoMap.sea, GeoMap.kr], // school and uni
 };
 
-/** @type {Commerce.Price.PlaceholderConstructor} */
+/** 
+ * HTML Price Web Component, extends span
+ * 
+ * @element span[data-wcs-osi]
+ **/
 export class HTMLPriceSpanElement extends HTMLSpanElement {
     static is = 'inline-price';
     static tag = 'span';

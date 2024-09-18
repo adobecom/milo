@@ -1,5 +1,7 @@
 import { writeFileSync } from 'node:fs';
 import { build } from 'esbuild';
+import { exec } from 'child_process';
+
 
 const outfolder = '../../../../libs/deps/mas';
 
@@ -17,7 +19,11 @@ async function buildLitComponent(name) {
         // sourcemap: true,
     });
 
-    writeFileSync(`../../../../libs/deps/mas/${name}.json`, JSON.stringify(metafile));
+    writeFileSync(`${outfolder}/${name}.json`, JSON.stringify(metafile));
+}
+
+async function generateDoc() {
+  return exec(`wca analyze .. --features event --visibility public --outFile ${outfolder}/doc.md`);
 }
 
 Promise.all([
@@ -69,6 +75,7 @@ Promise.all([
     buildLitComponent('merch-whats-included'),
     buildLitComponent('merch-mnemonic-list'),
     buildLitComponent('merch-datasource'),
+    generateDoc(),
 ]).catch(() => process.exit(1));
 
 function rewriteImports(rew) {
