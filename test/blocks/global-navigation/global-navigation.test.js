@@ -26,8 +26,8 @@ import { getConfig } from '../../../tools/send-to-caas/send-utils.js';
 
 async function initGnav(block) {
   try {
-    await initNav(block)
-  } catch(e) {
+    await initNav(block);
+  } catch (e) {
     // should throw error
   }
 }
