@@ -218,11 +218,11 @@ export class MerchCard extends LitElement {
         this.filters = newFilters;
     }
 
-    /* c8 ignore next 3 */
     includes(text) {
         return this.textContent.match(new RegExp(text, 'i')) !== null;
     }
 
+    /* c8 ignore next 3 */
     get startingAt() {
         return this.classList.contains('starting-at');
     }
