@@ -1111,10 +1111,10 @@ export async function loadDeferred(area, blocks, config) {
       .then(({ default: decoratePreviewMode }) => decoratePreviewMode());
   }
   if (config?.dynamicNavKey) {
-    // const { miloLibs } = getConfig();
-    loadStyle(`../features/dynamic-navigation/preview.css`);
+    loadStyle('../features/dynamic-navigation/preview.css');
     const { default: loadPreview } = await import('../features/dynamic-navigation/preview.js');
     loadPreview();
+  }
 }
 
 function initSidekick() {
