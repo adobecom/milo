@@ -70,6 +70,7 @@ styles.innerHTML = `
     --consonant-merch-card-border-color: #eaeaea;
     --color-accent: #1473E6;
     --merch-color-focus-ring: #1473E6;
+    --merch-color-grey-60: #6D6D6D;
     --merch-color-grey-80: #2c2c2c;
     --merch-color-green-promo: #2D9D78;
 

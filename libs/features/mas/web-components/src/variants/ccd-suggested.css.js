@@ -14,31 +14,27 @@ export const CSS = `
     grid-template-columns: var(--consonant-merch-card-ccd-suggested-width);
 }
 
-merch-card[variant="ccd-suggested"] [slot='heading-xxs'] {
+merch-card[variant="ccd-suggested"] [slot='detail-m'] {
+  color: var(--merch-color-grey-60);
+}
+
+merch-card[variant="ccd-suggested"] [slot='icons'] {
+    flex-flow: wrap;
+    place-self: flex-start;
+}
+
+merch-card[variant="ccd-suggested"] [slot='heading-xs'] {
   font-size: var(--consonant-merch-card-heading-xxs-font-size);
   line-height: var(--consonant-merch-card-heading-xxs-line-height);
+
 }
 
-merch-card[variant="ccd-suggested"] [slot='body-s'] a:not(.con-button) {
-    font-size: var(--consonant-merch-card-body-xxs-font-size);
-    font-style: normal;
-    font-weight: 400;
-    line-height: var(--consonant-merch-card-body-xxs-line-height);
-    text-decoration-line: underline;
-    color: var(--merch-color-grey-80);
+merch-card[variant="ccd-suggested"] [slot='cta'] a {
+  text-decoration: none;
+  color: var(--merch-color-grey-60);
+  font-weight: 500;
 }
 
-merch-card[variant="ccd-suggested"] [slot='image'] {
-  display: flex;
-  justify-content: center;
-  flex-shrink: 0;
-  width: var(--consonant-merch-card-ccd-suggested-background-img-size);
-  height: var(--consonant-merch-card-ccd-suggested-background-img-size);
-  overflow: hidden;
-  border-radius: 50%;
-  padding: var(--consonant-merch-spacing-xs);
-  align-self: center;
-}
 
 @media screen and ${TABLET_UP} {
   .two-merch-cards.ccd-suggested,

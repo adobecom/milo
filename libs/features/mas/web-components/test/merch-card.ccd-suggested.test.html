@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Merch Card CCD Suggested Web Component demo page</title>
+    <script>
+        window.process = {
+            env: {},
+        };
+    </script>
+    <style>
+        main {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-direction: column;
+            padding-top: 80px;
+        }
+
+        main>div {
+            display: initial;
+        }
+
+        .action-area {
+            display: contents;
+        }
+
+        #sidenav {
+            display: none;
+        }
+
+        @media screen and (min-width: 1440px) {
+            #sidenav {
+                flex: 1;x
+                justify-content: stretch;
+                padding-top: 8px;
+                display: flex;
+                position: fixed;
+                bottom: 0px;
+                left: 0px;
+                gap: 20px;
+                flex-direction: column;
+                width: 220px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <script type="module" src="./merch-card.ccd-suggested.test.html.js"></script>
+    <main>
+        <div id="sidenav">
+            <button onclick="toggleRTL()">Toggle RTL</button>
+            <button onclick="skipTests()">Skip tests</button>
+            <button onclick="runTests()">Run tests</button>
+        </div>
+        <div class="one-merch-card ccd-suggested">
+          <merch-card class="" tabindex="0" variant="ccd-suggested" filters="" types="">
+            <sp-status-light size="l" variant="info" dir="ltr"></sp-status-light>
+            <merch-icon
+              slot="icons"
+              src="https://www.adobe.com/content/dam/shared/images/product-icons/svg/photoshop.svg"
+              alt=""
+              href=""
+              size="l"
+              >undefined</merch-icon
+            >
+            <merch-icon
+              slot="icons"
+              src="https://www.adobe.com/content/dam/shared/images/product-icons/svg/lightroom.svg"
+              alt=""
+              href=""
+              size="l"
+              >undefined</merch-icon
+            >
+            <p slot="detail-m">YOUR EXPIRED PLAN</p>
+            <p slot="heading-xs"><strong>Photography plan (20GB)</strong></p>
+            <p slot="body-xs">
+              Creative Cloud Photography plan.<br>
+              Starting at US$19.99/mo
+            </p>
+            <div slot="price">
+              <span
+          is="inline-price"
+          data-display-old-price="true"
+          data-display-per-unit="false"
+          data-promotion-code=""
+          data-quantity="1"
+          data-template="price"
+          data-wcs-osi="r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8"
+          class="placeholder-resolved"
+          ><span class="price" aria-label="US$35.99 per month"
+            ><span class="price-currency-symbol">US$</span
+            ><span class="price-currency-space disabled"></span
+            ><span class="price-integer">35</span
+            ><span class="price-decimals-delimiter">.</span
+            ><span class="price-decimals">99</span
+            ><span class="price-recurrence">/mo</span
+            ><span class="price-unit-type disabled"></span
+            ><span class="price-tax-inclusivity disabled"></span>
+            </span
+          ></span>
+        </div>
+          <div slot="cta">
+                <a
+                  is="checkout-link"
+                  data-checkout-workflow="UCv3"
+                  data-checkout-workflow-step="segmentation"
+                  data-promotion-code="CCI2AAUSQ22440CH"
+                  data-quantity="1"
+                  data-wcs-osi="r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8"
+                  data-extra-options="{}"
+                  ><span>Buy now</span></a
+                >
+          </div>
+          </merch-card>
+        </div>
+        <div class="one-merch-card ccd-suggested-strip">
+          <merch-card strip-size="wide" strip-background="./img/strip-wide.png" tabindex="0" variant="ccd-suggested" filters="" types="">
+            <sp-status-light size="l" variant="info" dir="ltr"></sp-status-light>
+            <merch-icon
+              slot="icons"
+              src="https://www.adobe.com/content/dam/shared/images/product-icons/svg/photoshop.svg"
+              alt=""
+              href=""
+              size="l"
+              >undefined</merch-icon
+            >
+            <merch-icon
+              slot="icons"
+              src="https://www.adobe.com/content/dam/shared/images/product-icons/svg/lightroom.svg"
+              alt=""
+              href=""
+              size="l"
+              >undefined</merch-icon
+            >
+            <p slot="detail-m">YOUR EXPIRED PLAN</p>
+            <p slot="heading-xs"><strong>Photography plan (20GB)</strong></p>
+            <p slot="body-xs">
+              Creative Cloud Photography plan.<br>
+              Starting at US$19.99/mo
+            </p>
+              <div slot="price">
+                <span
+          is="inline-price"
+          data-display-old-price="true"
+          data-display-per-unit="false"
+          data-promotion-code=""
+          data-quantity="1"
+          data-template="price"
+          data-wcs-osi="r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8"
+          class="placeholder-resolved"
+          ><span class="price" aria-label="US$35.99 per month"
+            ><span class="price-currency-symbol">US$</span
+            ><span class="price-currency-space disabled"></span
+            ><span class="price-integer">35</span
+            ><span class="price-decimals-delimiter">.</span
+            ><span class="price-decimals">99</span
+            ><span class="price-recurrence">/mo</span
+            ><span class="price-unit-type disabled"></span
+            ><span class="price-tax-inclusivity disabled"></span></span
+          ></span
+                >
+              </div>
+                <div slot="cta">
+                  <a
+                  is="checkout-link"
+                  data-checkout-workflow="UCv3"
+                  data-checkout-workflow-step="segmentation"
+                  data-promotion-code="CCI2AAUSQ22440CH"
+                  data-quantity="1"
+                  data-wcs-osi="r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8"
+                  data-extra-options="{}"
+                  ><span>Buy now</span></a
+                >
+                </div>
+          </merch-card>
+</div>
+</main>
+</body>
+</html>
