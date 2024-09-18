@@ -89,7 +89,7 @@ p.preflight-content-heading {
 }
 
 p.preflight-content-heading-edit {
-  padding-left: 4px;
+    padding-left: 4px;
 }
 
 .preflight-group-row {
@@ -334,11 +334,11 @@ span.preflight-time {
   animation: spin 2s linear infinite;
 }
 
-@keyframes spin {
-  100% {
-    -webkit-transform: rotate(360deg);
-    transform: rotate(360deg);
-  }
+@keyframes spin { 
+  100% { 
+    -webkit-transform: rotate(360deg); 
+    transform:rotate(360deg); 
+  } 
 }
 
 .result-icon.green {
@@ -398,7 +398,7 @@ span.preflight-time {
 .dialog-modal#preflight .problem-links table td a {
   color: #fff;
   display: inline-block;
-  overflow-x: scroll;
+  overflow-x: scroll; 
   position: absolute;
   top: 50%;
   left: 0;
@@ -439,19 +439,19 @@ span.preflight-time {
 }
 
 .problem-link {
-  border: 3px solid #000 !important;
-  color: #fff !important;
-  font-size: larger !important;
-  font-weight: bold !important;
-  padding-top: 12px !important;
-  padding-bottom: 12px !important;
+  border: 3px solid #000!important;
+  color: #fff!important;
+  font-size: larger!important;
+  font-weight: bold!important;
+  padding-top: 12px!important;
+  padding-bottom: 12px!important;
   animation: pulse 1.5s ease-out infinite;
 }
 
 .problem-link:hover {
-  background-color: transparent !important;
-  color: inherit !important;
-  border-color: rgb(255 0 0) !important;
+  background-color: transparent!important;
+  color: inherit!important;
+  border-color:rgb(255 0 0)!important;
 }
 
 .problem-link::after {
@@ -462,17 +462,9 @@ span.preflight-time {
 }
 
 @keyframes pulse {
-  0% {
-    background-color: rgb(255 0 0);
-  }
-
-  50% {
-    background-color: rgb(150 0 0);
-  }
-
-  100% {
-    background-color: rgb(255 0 0);
-  }
+  0% {background-color: rgb(255 0 0);}
+  50% {background-color: rgb(150 0 0);}
+  100% {background-color: rgb(255 0 0);}
 }
 
 /* Accessibility css */
@@ -485,7 +477,7 @@ span.preflight-time {
   margin-bottom: 20px;
 }
 
-.access-columns .grid-heading+.access-columns .grid-heading {
+.access-columns .grid-heading + .access-columns .grid-heading {
   margin-top: 20px;
 }
 
@@ -531,7 +523,7 @@ span.preflight-time {
   margin-bottom: 0;
 }
 
-.access-columns .grid-heading.is-closed+.access-image-grid {
+.access-columns .grid-heading.is-closed + .access-image-grid {
   display: none;
 }
 
