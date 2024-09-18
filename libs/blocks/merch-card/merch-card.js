@@ -365,7 +365,6 @@ const simplifyHrs = (el) => {
     if (calloutContent) {
       const bodySlot = el.querySelector('div[slot="body-xs"]');
       if (bodySlot) {
-        //move all elements except paragraphs to the callout-content slot
         const elements = [...bodySlot.children];
         elements.forEach((element) => {
           if (element.tagName !== 'P') {
