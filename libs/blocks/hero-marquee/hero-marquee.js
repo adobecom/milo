@@ -167,7 +167,9 @@ export default async function init(el) {
   if (rows.length <= 1) return;
   const [head, ...tail] = rows;
   rows = tail;
-  if (head.textContent.trim() === '') {
+  const emptyHead = head.innerText.trim() === '' && head.children.length === 0;
+  const emptyHeadChildren = [...head.children].some((child) => child.children.length === 0);
+  if (emptyHead || emptyHeadChildren) {
     head.remove();
   } else {
     el.classList.add('has-bg');
