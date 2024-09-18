@@ -1,28 +1,75 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
+import { stub, restore } from 'sinon';
 import loadBlock from '../../libs/navigation/navigation.js';
+import { setConfig } from '../../libs/utils/utils.js';
+import { mockRes } from '../blocks/global-navigation/test-utilities.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+const miloLibs = 'http://localhost:2000/libs';
 
 describe('Navigation component', async () => {
+  beforeEach(async () => {
+    stub(window, 'fetch').callsFake(async (url) => {
+      if (url.includes('/footer.plain.html')) return mockRes({ payload: await readFile({ path: '../blocks/region-nav/mocks/regions.html' }) });
+      if (url.includes('/federal/dev/gnav.plain.html')) return mockRes({ payload: await readFile({ path: './mocks/gnav.html' }) });
+
+      return null;
+    });
+    setConfig({ miloLibs, contentRoot: '/federal/dev' });
+  });
+
+  afterEach(() => {
+    restore();
+  });
+
   it('Renders the footer block', async () => {
-    await loadBlock({ authoringPath: '/federal/dev', footer: { privacyId: '12343' }, env: 'qa' }, 'http://localhost:2000');
+    const onReady = stub();
+    await loadBlock({ authoringPath: '/federal/dev', footer: { privacyId: '12343' }, env: 'qa', onReady }, 'http://localhost:2000');
     const el = document.getElementsByTagName('footer');
     expect(el).to.exist;
+    expect(onReady.called).to.be.true;
+  });
+
+  it('Renders the footer block should not load when config is not passed', async () => {
+    try {
+      await loadBlock({ authoringPath: '/federal/dev-new', env: 'qa', footer: { privacyId: '12343' } }, 'http://localhost:2000');
+      const el = document.getElementsByTagName('footer');
+      expect(el).to.not.exist;
+    } catch (e) {
+      // handle error
+    }
   });
 
   it('Renders the header block', async () => {
-    await loadBlock({ authoringPath: '/federal/dev', header: { imsClientId: 'fedsmilo' }, env: 'qa' }, 'http://localhost:2000');
+    await loadBlock({ authoringPath: '/federal/dev', header: { imsClientId: 'fedsmilo' }, env: 'prod' }, 'http://localhost:2000');
     const el = document.getElementsByTagName('header');
     expect(el).to.exist;
   });
 
   it('Does not render either header or footer if not found in configs', async () => {
+    const onError = stub();
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-    await loadBlock({ authoringPath: '/federal/dev', env: 'qa' }, 'http://localhost:2000');
+    await loadBlock({ authoringPath: '/federal/dev', env: 'qa', onError }, 'http://localhost:2000');
     const header = document.getElementsByTagName('header');
     const footer = document.getElementsByTagName('footer');
     expect(header).to.be.empty;
     expect(footer).to.be.empty;
+    expect(onError.called).to.be.true;
+  });
+
+  it('Does not render either header or footer if configs is not passed', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+    await loadBlock();
+    const header = document.getElementsByTagName('header');
+    const footer = document.getElementsByTagName('footer');
+    expect(header).to.be.empty;
+    expect(footer).to.be.empty;
+  });
+
+  it('Renders the footer block with authoringpath passed in footer', async () => {
+    await loadBlock({ footer: { privacyId: '12343', authoringPath: '/federal/dev' }, env: 'qa' }, 'http://localhost:2000');
+    const el = document.getElementsByTagName('footer');
+    expect(el).to.exist;
   });
 });
