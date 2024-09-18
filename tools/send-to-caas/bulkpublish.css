@@ -4,6 +4,7 @@
 
 .bulk-publisher {
   margin: 32px;
+  margin: 0;
 }
 
 .bulk-publisher .title {
@@ -32,12 +33,13 @@ dd.content .field {
 }
 
 .urls {
-  width: 700px;
+  /* width: 700px; */
 }
 
 #urls {
   width: 100%;
   height: 520px;
+  height: 320px;
   margin-top: 6px;
 }
 
@@ -53,3 +55,138 @@ dd.content .field {
 .urls-label label {
   margin-left: 12px;
 }
+
+/* override the default styles */
+body {
+  padding: 0;
+  margin: 0;
+}
+.content.is-expanded .field.checkbox {
+  flex-direction: row;
+  justify-content: flex-start;
+}
+.content.is-expanded input[type=checkbox] {
+  align-self: baseline;
+  margin-top: 2px;
+}
+
+.page-title {
+  margin: 0;
+  background: linear-gradient(360deg, #6f9b01, transparent);
+  padding: 3px 30px;
+  border-bottom: solid 1px #ddd;
+  color: #202020;
+}
+.page-title i {
+  font-style: normal;
+  font-weight: 300;
+}
+dd.content.is-expanded {
+  margin-top: 0;
+}
+
+.content-panel {
+  padding: 0 50px;
+  width: 100%;
+}
+.content-panel h2 {
+  margin-bottom: 0;
+}
+
+textarea#urls,
+textarea#errors,
+textarea#success {
+  width: 100%;
+}
+textarea#errors,
+textarea#success {
+  border: none;
+  background: #eee;
+}
+textarea#success {
+  border: solid green;
+}
+textarea#errors{
+  border: solid red;
+}
+
+.button-area {
+  text-align: center;
+}
+#bulkpublish {
+  margin: 20px 0;
+  font-size: 18px;
+  background: #6e9b00;
+  border: solid 1px lightgreen;
+  padding: 8px 30px;
+  border-radius: 12px;
+  color: white;
+}
+
+span.help {
+  color: black;
+  background: #666;
+  padding: 0 5px;
+  margin-left: 10px;
+  border-radius: 0px;
+  cursor: pointer;
+}
+
+span.help:hover {
+  background: #505050;
+  color: #fff;
+}
+
+.success, 
+.errors {
+  display: none;
+}
+
+.success label, 
+.errors label {
+  font-size: 18px;
+  margin: 16px 0 0 0;
+  display: block;
+}
+
+.errors label {
+    color: red;
+    display: flex;
+    justify-content: space-between;
+}
+
+.success label {
+  color: green;
+}
+
+.errors label span {
+  font-size: 22px;
+  border: solid 1px #000;
+  width: 30px;
+  text-align: center;
+  border-radius: 50%;
+  color: #fff;
+  top: 15px;
+  position: relative;
+  background: darkred;
+  right: -12px;
+}
+
+
+.hidden {
+  display: none;
+}
+
+p.status-signed-in i,
+p.status-signed-out i {
+  font-size: 24px;
+  padding-right: 10px;
+  color: green;
+  font-weight: 800;
+  vertical-align: -2px;
+}
+
+p.status-signed-out i {
+  color: red;
+}
+

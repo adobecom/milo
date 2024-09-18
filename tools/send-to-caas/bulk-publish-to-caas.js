@@ -17,9 +17,10 @@ import {
 import comEnterpriseToCaasTagMap from './comEnterpriseToCaasTagMap.js';
 
 const LS_KEY = 'bulk-publish-caas';
-const FIELDS = ['host', 'repo', 'owner', 'excelFile', 'caasEnv', 'urls', 'contentType', 'publishToFloodgate'];
+const FIELDS = ['preset', 'host', 'repo', 'owner', 'excelFile', 'caasEnv', 'urls', 'contentType', 'publishToFloodgate'];
 const FIELDS_CB = ['draftOnly', 'usePreview', 'useHtml'];
 const DEFAULT_VALUES = {
+  preset: 'default',
   caasEnv: 'Prod',
   contentType: 'caas:content-type/article',
   excelFile: '',
@@ -44,9 +45,11 @@ const fetchExcelJson = async (url) => {
   return [];
 };
 
-const checkIms = async () => {
+const checkIms = async (prompt = true) => {
+  if (location.search.includes('mode=dev')) return 'fake-token';
+  
   const accessToken = await getImsToken(loadScript);
-  if (!accessToken) {
+  if (!accessToken && prompt) {
     const shouldLogIn = await showConfirm(
       'You must be logged in with an Adobe ID in order to publish to CaaS.\nDo you want to log in?',
     );
@@ -185,8 +188,25 @@ const processData = async (data, accessToken) => {
 
   if (statusModal.modal) statusModal.close();
 
-  document.getElementById('errors').value = JSON.stringify(errorArr, null, 2);
-  document.getElementById('success').value = JSON.stringify(successArr, null, 2);
+  console.log(successArr.length, errorArr.length);
+  document.querySelector('.status-signed-in').style.display = 'none';
+  document.querySelector('.status-signed-out').style.display = 'none';
+
+  if (successArr.length) {
+    const successContainer = document.getElementById('success');
+    successContainer.style.display = 'block';
+    successContainer.value = JSON.stringify(successArr, null, 2);
+  }
+  if (errorArr.length) {
+    const errorContainer = document.querySelector('.errors');
+    errorContainer.style.display = 'block';
+
+    errorContainer.querySelector('#errors').value = JSON.stringify(errorArr, null, 2);
+  }
+
+  // document.getElementById('errors').value = JSON.stringify(errorArr, null, 2);
+  // document.getElementById('success').value = JSON.stringify(successArr, null, 2);
+
   showAlert(`Successfully published ${successArr.length} pages. \n\n Failed to publish ${errorArr.length} pages.`);
 };
 
@@ -223,10 +243,92 @@ const loadFromLS = () => {
   } catch (e) { /* do nothing */ }
 };
 
+const PRESETS = {
+  default: {
+    preset: 'default',
+    host: '',
+    owner: '',
+    repo: '',
+    contentType: ''
+  },
+  milo: {
+    preset: 'milo',
+    host: 'milo.adobe.com',
+    owner: 'adobecom',
+    repo: 'milo',
+    contentType: 'caas:content-type/article'
+  },
+  bacom: {
+    preset: 'bacom',
+    host: 'business.adobe.com',
+    owner: 'adobecom',
+    repo: 'bacom',
+    contentType: 'caas:content-type/article'
+  },
+  doccloud: {
+    preset: 'doccloud',
+    host: 'dc.adobe.com',
+    owner: 'adobecom',
+    repo: 'dc',
+    contentType: 'caas:content-type/article'
+  },
+  news: {
+    preset: 'news',
+    host: 'news.adobe.com',
+    owner: 'adobecom',
+    repo: 'news',
+    contentType: 'caas:content-type/blog'
+  }
+}
+
+const preset = document.querySelector('#preset');
+preset.addEventListener('change', () => {
+  const { value } = preset;
+  const ls = localStorage.getItem(LS_KEY);
+  const config = ls ? JSON.parse(ls) : {};
+  config.preset = PRESETS[value].preset;
+  config.host = PRESETS[value].host;
+  config.owner = PRESETS[value].owner;
+  config.repo = PRESETS[value].repo;
+  config.contentType = PRESETS[value].contentType;
+  setConfig(config);
+  window.localStorage.setItem(LS_KEY, JSON.stringify(getConfig()));
+  loadFromLS();
+});
+
+const checkUserStatus = async () => {
+  const accessToken = await checkIms(false);
+  if (accessToken) {
+    document.querySelector('.status-checking').style.display = 'none';
+    document.querySelector('.status-signed-in').style.display = 'block';
+  } else {
+    document.querySelector('.status-checking').style.display = 'none';
+    document.querySelector('.status-signed-out').style.display = 'block';
+  }
+  return true;
+}
+
+const helpButtons = document.querySelectorAll('.help');
+helpButtons.forEach((btn) => {
+  btn.addEventListener('click', (e) => {
+    // const { target } = e;
+    // const { help } = target.dataset;
+    // const helpText = document.querySelector(`.help-text[data-help="${help}"]`);
+    // helpText.style.display = helpText.style.display === 'block' ? 'none' : 'block';
+    // console.log('help for: ', e.target.closest('div').id);
+    e.preventDefault();
+    const el = e.target.closest('div').id
+    showAlert(`<p><b>Help</b><p>Help for "${el}" is on its way! Stay tuned.</p>`);
+  });
+}
+);
+
+
 const init = async () => {
   await loadTingleModalFiles(loadScript, loadStyle);
   await loadCaasTags();
   loadFromLS();
+  checkUserStatus();
 
   window.addEventListener('beforeunload', () => {
     FIELDS.forEach((field) => {
