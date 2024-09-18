@@ -150,6 +150,21 @@ const createFrag = (el, action, content, manifestId, targetManifestId) => {
   return frag;
 };
 
+export const checkCustomPlaceholders = (content) => {
+  //check if content has {{}}, move into new function and export
+  // reference modifyNonFragmentSelector.test for unit testing
+  let newContent = content;
+
+  if (newContent.match(/{{(.*)}}/)) {
+    const config = getConfig();
+    const regEx = new RegExp(Object.keys(config.placeholders).map((item) => `{{${item}}}`).join('|'), 'gi');
+
+    newContent = newContent.replace(regEx, (matched) => config.placeholders[matched.replace(/[\]{}]/g, '')]);
+  }
+
+  return newContent;
+};
+
 export const createContent = (el, content, manifestId, targetManifestId, action, modifiers) => {
   if (action === 'replace') {
     addIds(el, manifestId, targetManifestId);
@@ -160,11 +175,15 @@ export const createContent = (el, content, manifestId, targetManifestId, action,
     return el;
   }
   if (getSelectorType(content) !== 'fragment') {
+    const newContent = checkCustomPlaceholders(content);
+
     if (action === 'replace') {
-      el.innerHTML = content;
+      el.innerHTML = newContent;
+
       return el;
     }
-    const container = createTag('div', {}, content);
+
+    const container = createTag('div', {}, newContent);
     addIds(container, manifestId, targetManifestId);
     return container;
   }
