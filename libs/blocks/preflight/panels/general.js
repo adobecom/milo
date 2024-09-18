@@ -1,4 +1,5 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
+import userCanPublishPage from '../../../tools/utils/publish.js';
 
 const NOT_FOUND = { preview: { lastModified: 'Not found' }, live: { lastModified: 'Not found' } };
 
@@ -16,19 +17,19 @@ async function getStatus(url) {
   const resp = await fetch(adminUrl);
   if (!resp.ok) return {};
   const json = await resp.json();
+  const publish = await userCanPublishPage(json, false);
   const preview = json.preview.lastModified || 'Never';
   const live = json.live.lastModified || 'Never';
   const edit = json.edit.url;
-  return { url, edit, preview, live };
+  return { url, edit, preview, live, publish };
 }
 
-function getStatuses() {
-  Object.keys(content.value).forEach((key) => {
-    content.value[key].items.forEach((item, idx) => {
-      getStatus(item.url).then((status) => {
-        content.value[key].items[idx] = status;
-        content.value = { ...content.value };
-      });
+async function getStatuses() {
+  Object.keys(content.value).forEach(async (key) => {
+    content.value[key].items.forEach(async (item, idx) => {
+      const status = await getStatus(item.url);
+      content.value[key].items[idx] = status;
+      content.value = { ...content.value };
     });
   });
 }
@@ -73,7 +74,8 @@ async function setContent() {
 async function handleAction(action) {
   Object.keys(content.value).map(async (key) => {
     content.value[key].items.forEach(async (item, idx) => {
-      if (!item.checked) return;
+      const checkPublish = action === 'live' ? (item.publish && !item.publish.canPublish) : false;
+      if (!item.checked || checkPublish) return;
       content.value[key].items[idx].action = action;
       content.value = { ...content.value };
       const adminUrl = getAdminUrl(item.url, action);
@@ -128,7 +130,19 @@ function prettyPath(url) {
   return url.hash ? `${url.pathname} (${url.hash})` : url.pathname;
 }
 
+function usePublishProps(item) {
+  let disablePublish;
+  if (item.publish && !item.publish.canPublish) {
+    disablePublish = html`${item.publish.message}`;
+  }
+  return {
+    publishText: html`${item.action === 'live' ? 'Publishing' : prettyDate(item.live)}`,
+    disablePublish,
+  };
+}
+
 function Item({ name, item, idx }) {
+  const { publishText, disablePublish } = usePublishProps(item);
   const isChecked = item.checked ? ' is-checked' : '';
   const isFetching = item.edit ? '' : ' is-fetching';
   if (!item.url) return undefined;
@@ -139,7 +153,9 @@ function Item({ name, item, idx }) {
       <p><a href=${item.url.pathname} target=_blank>${prettyPath(item.url)}</a></p>
       <p>${item.edit && html`<a href=${item.edit} class=preflight-edit target=_blank>EDIT</a>`}</p>
       <p class=preflight-date-wrapper>${item.action === 'preview' ? 'Previewing' : prettyDate(item.preview)}</p>
-      <p class=preflight-date-wrapper>${item.action === 'live' ? 'Publishing' : prettyDate(item.live)}</p>
+      <p class="preflight-date-wrapper">
+        ${isChecked && disablePublish ? html`<span class=disabled-publish>${disablePublish}</span>` : publishText}
+      </p>
     </div>`;
 }
 
@@ -167,11 +183,17 @@ function ContentGroup({ name, group }) {
 export default function General() {
   useEffect(() => { setContent(); }, []);
 
-  const checked = Object.keys(content.value)
-    .find((key) => content.value[key].items.find((item) => item.checked));
+  const allChecked = Object.values(content.value)
+    .flatMap((item) => item.items).filter((item) => item.checked);
+
+  const checked = !!allChecked.length;
+  const publishable = allChecked
+    .filter((item) => item.checked && !!item.publish?.canPublish).length;
 
   const hasPage = content.value.page;
   const selectStyle = checked ? 'Select none' : 'Select all';
+
+  const tooltip = allChecked.length !== publishable && 'Puplishing disabled pages will be ignored';
 
   return html`
     <div class=preflight-general-content>
@@ -188,8 +210,11 @@ export default function General() {
         <div id=preview-action class=preflight-action-wrapper>
           <button class=preflight-action onClick=${() => handleAction('preview')}>Preview</button>
         </div>
-        <div id=publish-action class=preflight-action-wrapper>
-          <button class=preflight-action onClick=${() => handleAction('live')}>Publish</button>
+        <div id=publish-action class="preflight-action-wrapper${tooltip ? ' tooltip' : ''}" data-tooltip=${tooltip}>
+          ${!!publishable && html`
+            <button class="preflight-action" onClick=${() => handleAction('live')}>
+              Publish
+            </button>`}
         </div>
       `}
     </div>
