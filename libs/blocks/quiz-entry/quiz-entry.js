@@ -212,7 +212,7 @@ const App = ({
         }
         if (fiResults.errors) error = fiResults.errors[0].title;
         if (fiResults.error_code) error = fiResults.message;
-        window.lana.log(`ML results error - ${error}`, { tags: 'errorType=info,module=quiz-entry' });
+        window.lana.log(`ML results error - ${error}`, { tags: 'quiz-entry', errorType: 'i' });
         sendMLFieldAnalytics(fallback, false);
       }
 
@@ -345,8 +345,8 @@ const App = ({
 
   return html`<div class="quiz-container">
     <div class="quiz-heading-container">
-      <div id="question" class="quiz-title">${quizLists.strings[selectedQuestion.questions].heading}</div>
-      <div class="quiz-subtitle">${quizLists.strings[selectedQuestion.questions]['sub-head']}</div>
+      <h2 id="question" class="quiz-title">${quizLists.strings[selectedQuestion.questions].heading}</h2>
+      <p class="quiz-subtitle">${quizLists.strings[selectedQuestion.questions]['sub-head']}</p>
     </div>
     <div class="quiz-question-container">
       <div class="quiz-input-container">

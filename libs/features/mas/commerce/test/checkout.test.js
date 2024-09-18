@@ -19,7 +19,6 @@ import { mockConfig } from './mocks/config.js';
 import { mockFetch } from './mocks/fetch.js';
 import { mockIms, unmockIms } from './mocks/ims.js';
 import { mockLana, unmockLana } from './mocks/lana.js';
-import { withLiterals } from './mocks/literals.js';
 import { mockProviders } from './mocks/providers.js';
 import { withWcs } from './mocks/wcs.js';
 import { expect, sinon } from './utilities.js';
@@ -40,9 +39,6 @@ function mockCheckoutLink(wcsOsi, options = {}, append = true) {
     return element;
 }
 
-/** @type {import('sinon').SinonStub} */
-let fetch;
-
 afterEach(() => {
     document.body.innerHTML = '';
     resetService();
@@ -51,7 +47,7 @@ afterEach(() => {
 });
 
 beforeEach(async () => {
-    fetch = await mockFetch(withWcs, withLiterals);
+    await mockFetch(withWcs);
     mockLana();
 });
 
@@ -66,7 +62,7 @@ describe('class "CheckoutLink"', () => {
     });
 
     it('renders link with workflow step from settings', async () => {
-        await initService(
+        const commerce = await initService(
             mockConfig({
                 checkoutWorkflowStep: CheckoutWorkflowStep.SEGMENTATION,
             }),

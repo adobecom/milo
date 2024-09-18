@@ -620,17 +620,50 @@ export function decorateAutoBlock(a) {
   });
 }
 
+const decorateCopyLink = (a, evt) => {
+  const userAgent = navigator.userAgent.toLowerCase();
+  const isMobile = /android|iphone|mobile/.test(userAgent) && !/ipad/.test(userAgent);
+  if (!isMobile || !navigator.share) {
+    a.remove();
+    return;
+  }
+  const link = a.href.replace(evt, '');
+  const isConButton = ['EM', 'STRONG'].includes(a.parentElement.nodeName)
+    || a.classList.contains('con-button');
+  if (!isConButton) a.classList.add('static', 'copy-link');
+  a.href = '';
+  a.addEventListener('click', async (e) => {
+    e.preventDefault();
+    if (navigator.share) await navigator.share({ title: link, url: link });
+  });
+};
+
+export function convertStageLinks({ anchors, config, hostname }) {
+  if (config.env?.name === 'prod' || !config.stageDomainsMap) return;
+  const matchedRules = Object.entries(config.stageDomainsMap)
+    .find(([domain]) => hostname.includes(domain));
+  if (!matchedRules) return;
+  const [, domainsMap] = matchedRules;
+  [...anchors].forEach((a) => {
+    const matchedDomain = Object.keys(domainsMap)
+      .find((domain) => a.href.includes(domain));
+    if (!matchedDomain) return;
+    a.href = a.href.replace(a.hostname, domainsMap[matchedDomain] === 'origin'
+      ? hostname
+      : domainsMap[matchedDomain]);
+  });
+}
+
 export function decorateLinks(el) {
   const config = getConfig();
   decorateImageLinks(el);
   const anchors = el.getElementsByTagName('a');
+  const { hostname } = window.location;
+  convertStageLinks({ anchors, config, hostname });
   return [...anchors].reduce((rdx, a) => {
     appendHtmlToLink(a);
     a.href = localizeLink(a.href);
     decorateSVG(a);
-    if (config.env?.name === 'stage' && config.stageDomainsMap?.[a.hostname]) {
-      a.href = a.href.replace(a.hostname, config.stageDomainsMap[a.hostname]);
-    }
     if (a.href.includes('#_blank')) {
       a.setAttribute('target', '_blank');
       a.href = a.href.replace('#_blank', '');
@@ -655,6 +688,10 @@ export function decorateLinks(el) {
         e.preventDefault();
         window.adobeIMS?.signIn();
       });
+    }
+    const copyEvent = '#_evt-copy';
+    if (a.href.includes(copyEvent)) {
+      decorateCopyLink(a, copyEvent);
     }
     return rdx;
   }, []);
@@ -738,23 +775,21 @@ export async function customFetch({ resource, withCacheRules }) {
 
 const findReplaceableNodes = (area) => {
   const regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
-  const walker = document.createTreeWalker(
-    area,
-    NodeFilter.SHOW_TEXT,
-    {
-      acceptNode(node) {
-        const a = regex.test(node.nodeValue)
-          ? NodeFilter.FILTER_ACCEPT
-          : NodeFilter.FILTER_REJECT;
-        regex.lastIndex = 0;
-        return a;
-      },
-    },
-  );
+  const walker = document.createTreeWalker(area, NodeFilter.SHOW_ALL);
   const nodes = [];
   let node = walker.nextNode();
   while (node !== null) {
-    nodes.push(node);
+    let matchFound = false;
+    if (node.nodeType === Node.TEXT_NODE) {
+      matchFound = regex.test(node.nodeValue);
+    } else if (node.nodeType === Node.ELEMENT_NODE && node.hasAttribute('href')) {
+      const hrefValue = node.getAttribute('href');
+      matchFound = regex.test(hrefValue);
+    }
+    if (matchFound) {
+      nodes.push(node);
+      regex.lastIndex = 0;
+    }
     node = walker.nextNode();
   }
   return nodes;

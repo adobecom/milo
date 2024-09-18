@@ -16,7 +16,7 @@
   --icon-size: 56px;
   --icon-size-xl: 64px;
   --pill-radius: 16px;
-  --pill-shadow: 0 3px 6px #707070;
+  --pill-shadow: 0 3px 6px #00000029;
 
   display: flex;
   inline-size: 100%;
@@ -310,9 +310,18 @@
   justify-content: flex-end;
 }
 
+.notification.flexible {
+  background: unset;
+}
+
 .notification .flexible-inner {
   inline-size: 100%;
   box-shadow: var(--pill-shadow);
+}
+
+.notification.pill.no-shadow,
+.notification.pill.no-shadow.flexible .flexible-inner {
+  box-shadow: unset;
 }
 
 .notification .foreground > :is(.tablet-up, .desktop-up) {
@@ -327,6 +336,12 @@
 .notification.pill .copy-wrap p:first-child:not(:only-child) {
   margin-block-end: var(--spacing-xxs);
 }
+
+.notification.pill.max-width-6 { max-width: 600px; }
+.notification.pill.max-width-8 { max-width: 800px; }
+.notification.pill.max-width-10 { max-width: 1000px; }
+.notification.pill.max-width-12 { max-width: 1200px; }
+.notification.pill.max-width-auto { max-width: unset; }
 
 @media screen and (min-width: 600px) {
   .notification {
@@ -468,6 +483,12 @@
     padding-inline-end: unset;
     inline-size: unset;
   }
+
+  .notification.pill.max-width-6-tablet { max-width: 600px; }
+  .notification.pill.max-width-8-tablet { max-width: 800px; }
+  .notification.pill.max-width-10-tablet { max-width: 1000px; }
+  .notification.pill.max-width-12-tablet { max-width: 1200px; }
+  .notification.pill.max-width-auto-tablet { max-width: unset; }
 }
 
 @media screen and (min-width: 1200px) {
@@ -632,4 +653,10 @@
   .notification.pill .copy-wrap p:first-child:not(:only-child) {
     margin-block-end: 0;
   }
+
+  .notification.pill.max-width-6-desktop { max-width: 600px; }
+  .notification.pill.max-width-8-desktop { max-width: 800px; }
+  .notification.pill.max-width-10-desktop { max-width: 1000px; }
+  .notification.pill.max-width-12-desktop { max-width: 1200px; }
+  .notification.pill.max-width-auto-desktop { max-width: unset; }
 }

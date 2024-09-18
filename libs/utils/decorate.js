@@ -61,9 +61,10 @@ export function decorateIconArea(el) {
 }
 
 export function decorateBlockText(el, config = ['m', 's', 'm'], type = null) {
-  const headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
+  let headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
   if (!el.classList.contains('default')) {
     if (headings) {
+      if (type === 'hasDetailHeading' && headings.length > 1) headings = [...headings].splice(1);
       headings.forEach((h) => h.classList.add(`heading-${config[0]}`));
       if (config[2]) {
         const prevSib = headings[0]?.previousElementSibling;
@@ -104,10 +105,10 @@ export function handleFocalpoint(pic, child, removeChild) {
   image.style.objectPosition = `${x} ${y}`;
 }
 
-export async function decorateBlockBg(block, node, { useHandleFocalpoint = false } = {}) {
+export async function decorateBlockBg(block, node, { useHandleFocalpoint = false, className = 'background' } = {}) {
   const childCount = node.childElementCount;
   if (node.querySelector('img, video, a[href*=".mp4"]') || childCount > 1) {
-    node.classList.add('background');
+    node.classList.add(className);
     const binaryVP = [['mobile-only'], ['tablet-only', 'desktop-only']];
     const allVP = [['mobile-only'], ['tablet-only'], ['desktop-only']];
     const viewports = childCount === 2 ? binaryVP : allVP;

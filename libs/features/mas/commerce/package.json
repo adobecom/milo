@@ -16,7 +16,7 @@
         "build:types": "cp ./src/index.d.ts ./libs/commerce.d.ts",
         "build:watch": "npm run build:bundle --watch",
         "test": "wtr --config ./web-test-runner.config.mjs --coverage --watch",
-        "test:ci": "wtr --config ./web-test-runner.config.mjs"
+        "test:ci": "wtr --config ./web-test-runner.config.mjs --coverage"
     },
     "dependencies": {
         "@dexter/tacocat-consonant-templates": "file:./internal/tacocat-consonant-templates-1.13.0.tgz",
