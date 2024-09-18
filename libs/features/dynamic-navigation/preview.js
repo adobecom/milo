@@ -74,20 +74,24 @@ export default function main() {
   const currentSource = getCurrentSource(dynamicNavStatus, storedSource, authoredSource);
   const dynamicNavDisableValues = getMetadata('dynamic-nav-disable');
   const STATUS = getStatus(dynamicNavStatus, isDynamicNavDisabled(), storedSource);
-  const ENABLED_INFO = 'The enabled status means that this page has dynamic nav set to "on", but an entry page has not been visited first to set the data';
-
+  const tooltipInfo = {
+    active: 'Displayed in green, this status appears when a user is on an entry page or a page with the Dynamic Nav enabled, indicating that the nav is fully functioning.',
+    enabled: 'Displayed in yellow, this status indicates that the Dynamic Nav is set to "on," but the user has not yet visited an entry page.',
+    inactive: 'Displayed in red, this status indicates that the Dynamic Nav is either not configured or has been disabled.',
+  };
   const previewWidget = createTag('div', { class: 'dynamic-nav-status' });
 
   previewWidget.innerHTML = 
   `
     <span class="title"><span class="dns-badge"></span>Dynamic Nav</span>
     <section class="details hidden">
-      <span class="dns-close"></span> 
-      <div class="message ${STATUS === ENABLED ? 'additional-info' : ''}">
-        <p>${STATUS === ENABLED ? 'Additional Info: <span>' : ''}
-        <span>${STATUS === ENABLED ? ENABLED_INFO : ''}</span></p>
+      <span class="dns-close"></span>
+      <div class="message additional-info">
+        <p>Additional Info:
+          <span>${tooltipInfo[STATUS]}</span>
+        </p>
       </div>
-      <p>Status: <span>${STATUS}</span></p> 
+      <p>Status: <span class="text-status ${STATUS}">${STATUS}</span></p> 
       <p>Setting: <span>${dynamicNavStatus}</span></p>
       <div class="consumer-key">
         <p>Consumer key: <span>${dynamicNavKey}</span></p>

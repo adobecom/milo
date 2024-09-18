@@ -1110,6 +1110,11 @@ export async function loadDeferred(area, blocks, config) {
     import('../features/personalization/preview.js')
       .then(({ default: decoratePreviewMode }) => decoratePreviewMode());
   }
+  if (config?.dynamicNavKey) {
+    // const { miloLibs } = getConfig();
+    loadStyle(`../features/dynamic-navigation/preview.css`);
+    const { default: loadPreview } = await import('../features/dynamic-navigation/preview.js');
+    loadPreview();
 }
 
 function initSidekick() {
@@ -1194,12 +1199,6 @@ async function documentPostSectionLoading(config) {
   });
 
   document.body.appendChild(createTag('div', { id: 'page-load-ok-milo', style: 'display: none;' }));
-  if (config.dynamicNavKey) {
-    const { miloLibs } = getConfig();
-    await loadStyle(`${miloLibs}/features/dynamic-navigation/preview.css`);
-    const { default: loadPreview } = await import('../features/dynamic-navigation/preview.js');
-    loadPreview();
-  }
 }
 
 export function partition(arr, fn) {
