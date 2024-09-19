@@ -71,8 +71,9 @@ npm run test:watch
 `npm run test:watch` can give misleading coverage reports. Use `npm run test` for accurate coverage reporting.
 
 ### Nala E2E UI Testing
+---
 
-#### Running Nala Tests
+#### 1. Running Nala Tests
 Nala tests are run using the `npm run nala <env> [options]` command:
 
 ```sh
@@ -85,15 +86,14 @@ npm run nala <env> [options]
   - browser=<chrome|firefox|webkit>    # Browser to use (default: chrome)
   - device=<desktop|mobile>            # Device (default: desktop)
   - test=<.test.js>                    # Specific test file to run (runs all tests in the file)
-  - tag=<@tag>                         # Tags to filter tests by annotations ex: @test1 @accordion @marquee
-  - -g, --g=<@tag>                     # Tags to filter tests by annotations ex: @test1 @accordion @marquee
+  - -g, --g=<@tag>                     # Tag to filter tests by annotations ex: @test1 @accordion @marquee
   - mode=<headless|ui|debug|headed>    # Mode (default: headless)
   - config=<config-file>               # Configuration file (default: Playwright default)
   - project=<project-name>             # Project configuration (default: milo-live-chromium)
   - milolibs=<local|prod|feature|any|> # Milolibs?=<env> 
 
 ```
-#### Nala Help Command:
+#### 2. Nala Help Command:
 To view examples of how to use Nala commands with various options, you can run
 ```sh
 npm run nala help
