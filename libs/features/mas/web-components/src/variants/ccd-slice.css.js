@@ -1,5 +1,3 @@
-import { TABLET_UP, DESKTOP_UP, LARGE_DESKTOP } from "../media.js";
-
 export const CSS = `
 :root {
   --consonant-merch-card-ccd-slice-single-width: 322px;
