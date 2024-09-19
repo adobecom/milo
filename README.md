@@ -71,7 +71,7 @@ npm run test:watch
 `npm run test:watch` can give misleading coverage reports. Use `npm run test` for accurate coverage reporting.
 
 ### Nala E2E UI Testing
-___
+-----
 
 #### 1. Running Nala Tests
 Nala tests are run using the `npm run nala <env> [options]` command:
