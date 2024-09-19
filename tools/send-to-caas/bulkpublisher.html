@@ -21,10 +21,15 @@
               <label for="preset">Consumer Presets:</label>
               <select name="preset" id="preset">
                 <option value="default">Select a preset... </option>
+                <option value="blog">Adobe Blog (blog)</option>
                 <option value="bacom">Adobe Business (bacom)</option>
+                <option value="express">Adobe Express (express)</option>
                 <option value="news">Adobe News (news)</option>
-                <option value="doccloud">Document Cloud (dc)</option>
+                <option value="cc">Creative Cloud (cc)</option>
+                <option value="dc">Document Cloud (dc)</option>
                 <option value="milo">Milo</option>
+                <option disabled>─────────────────────────────</option>
+                <option value="advanced">Advaced: Custom Settings</option>
                 </select>
             </div>
     
@@ -155,6 +160,26 @@
             <p class="status-signed-out hidden"><i>&#10008</i><b>User Signed Out</b>. 
               You must <a href="javascript:window.adobeIMS.signIn()">sign in</a> to use this tool.
             </p>
+
+            <table class="success-table hidden">
+              <thead>
+                <tr>
+                  <th width="80px">&nbsp;</th>
+                  <th width="65%">URL</th>
+                  <th width="30%">EntityID</th>
+                </tr>
+              <tbody></tbody>
+            </table>
+
+            <table class="error-table hidden">
+              <thead>
+                <tr>
+                  <th width="80px">&nbsp;</th>
+                  <th width="65%">URL</th>
+                  <th width="30%">Response</th>
+                </tr>
+              <tbody></tbody>
+            </table>
 
             <div class="success">
               <label for="success">Success:</label>

@@ -1,6 +1,6 @@
-#bulkpublish {
+/* #bulkpublish {
   margin: 20px;
-}
+} */
 
 .bulk-publisher {
   margin: 32px;
@@ -26,14 +26,16 @@ dd.content .field {
 
 .main {
   display: flex;
+  min-height: calc(100% - 90px);
 }
 
 .options-panel {
   min-width: 400px;
+  background: #1D1D1D;
 }
 
 .urls {
-  /* width: 700px; */
+  width: 700px;
 }
 
 #urls {
@@ -60,11 +62,14 @@ dd.content .field {
 body {
   padding: 0;
   margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
+
 .content.is-expanded .field.checkbox {
   flex-direction: row;
   justify-content: flex-start;
 }
+
 .content.is-expanded input[type=checkbox] {
   align-self: baseline;
   margin-top: 2px;
@@ -77,10 +82,12 @@ body {
   border-bottom: solid 1px #ddd;
   color: #202020;
 }
+
 .page-title i {
   font-style: normal;
-  font-weight: 300;
+  font-weight: 400;
 }
+
 dd.content.is-expanded {
   margin-top: 0;
 }
@@ -89,23 +96,28 @@ dd.content.is-expanded {
   padding: 0 50px;
   width: 100%;
 }
+
 .content-panel h2 {
   margin-bottom: 0;
 }
 
+.urls,
 textarea#urls,
 textarea#errors,
 textarea#success {
   width: 100%;
 }
+
 textarea#errors,
 textarea#success {
   border: none;
   background: #eee;
 }
+
 textarea#success {
   border: solid green;
 }
+
 textarea#errors{
   border: solid red;
 }
@@ -113,6 +125,7 @@ textarea#errors{
 .button-area {
   text-align: center;
 }
+
 #bulkpublish {
   margin: 20px 0;
   font-size: 18px;
@@ -126,10 +139,13 @@ textarea#errors{
 span.help {
   color: black;
   background: #666;
-  padding: 0 5px;
+  padding: 0 3px;
   margin-left: 10px;
-  border-radius: 0px;
+  border-radius: 10px;
   cursor: pointer;
+  background: transparent;
+  color: #999;
+  letter-spacing: 1px;
 }
 
 span.help:hover {
@@ -190,3 +206,38 @@ p.status-signed-out i {
   color: red;
 }
 
+table.error-table,
+table.success-table {
+  width: 100%;
+  border-top: solid 1px red;
+  margin-top: 20px;
+}
+
+table.success-table {
+  border-top: solid 1px green;
+}
+
+table.error-table th,
+table.success-table th {
+  text-align: left;
+}
+
+td.error {
+  color: red;
+  font-weight: bold;
+  text-align: center;
+}
+
+td.ok {
+  color: green;
+  font-weight: bold;
+  text-align: center;
+}
+
+thead tr {
+  background: #f0f0f0;
+}
+
+tbody tr:hover {
+  background: #f0f0ff;
+}

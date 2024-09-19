@@ -58,6 +58,7 @@ const checkIms = async (prompt = true) => {
     }
     return false;
   }
+  // console.log('accessToken', accessToken);
   return accessToken;
 };
 
@@ -188,27 +189,37 @@ const processData = async (data, accessToken) => {
 
   if (statusModal.modal) statusModal.close();
 
-  console.log(successArr.length, errorArr.length);
   document.querySelector('.status-signed-in').style.display = 'none';
   document.querySelector('.status-signed-out').style.display = 'none';
-
   if (successArr.length) {
-    const successContainer = document.getElementById('success');
-    successContainer.style.display = 'block';
-    successContainer.value = JSON.stringify(successArr, null, 2);
+    showSuccessTable(successArr);
   }
   if (errorArr.length) {
-    const errorContainer = document.querySelector('.errors');
-    errorContainer.style.display = 'block';
-
-    errorContainer.querySelector('#errors').value = JSON.stringify(errorArr, null, 2);
+    showErrorTable(errorArr);
   }
-
-  // document.getElementById('errors').value = JSON.stringify(errorArr, null, 2);
-  // document.getElementById('success').value = JSON.stringify(successArr, null, 2);
 
   showAlert(`Successfully published ${successArr.length} pages. \n\n Failed to publish ${errorArr.length} pages.`);
 };
+
+function showSuccessTable(successArr) {
+  const successTable = document.querySelector('.success-table');
+  const tableBody = successTable.querySelector('tbody');
+  tableBody.innerHTML = '';
+  successTable.style.display = 'block';
+  successArr.forEach(([pageUrl, response]) => {
+    tableBody.innerHTML += `<tr><td class="ok">OK</td><td><a href="${pageUrl}">${pageUrl}</a></td><td>${response}</td></tr>`;
+  });
+}
+
+function showErrorTable(errorArr) {
+  const errorTable = document.querySelector('.error-table');
+  const tableBody = errorTable.querySelector('tbody');
+  tableBody.innerHTML = '';
+  errorTable.style.display = 'block';
+  errorArr.forEach(([pageUrl, response]) => {
+    tableBody.innerHTML += `<tr><td class="error">Failed</td><td><a href="${pageUrl}">${pageUrl}</a></td><td>${response}</td></tr>`;
+  });
+}
 
 const bulkPublish = async () => {
   const accessToken = await checkIms();
@@ -251,12 +262,19 @@ const PRESETS = {
     repo: '',
     contentType: ''
   },
-  milo: {
-    preset: 'milo',
-    host: 'milo.adobe.com',
+  advanced: {
+    preset: 'advanced',
+    host: '',
+    owner: '',
+    repo: '',
+    contentType: ''
+  },
+  blog: {
+    preset: 'blog',
+    host: 'blog.adobe.com',
     owner: 'adobecom',
-    repo: 'milo',
-    contentType: 'caas:content-type/article'
+    repo: 'blog',
+    contentType: 'caas:content-type/blog'
   },
   bacom: {
     preset: 'bacom',
@@ -265,11 +283,11 @@ const PRESETS = {
     repo: 'bacom',
     contentType: 'caas:content-type/article'
   },
-  doccloud: {
-    preset: 'doccloud',
-    host: 'dc.adobe.com',
+  express: {
+    preset: 'express',
+    host: 'express.adobe.com',
     owner: 'adobecom',
-    repo: 'dc',
+    repo: 'express',
     contentType: 'caas:content-type/article'
   },
   news: {
@@ -277,13 +295,35 @@ const PRESETS = {
     host: 'news.adobe.com',
     owner: 'adobecom',
     repo: 'news',
-    contentType: 'caas:content-type/blog'
+    contentType: 'caas:content-type/article'
+  },
+  cc: {
+    preset: 'cc',
+    host: 'cc.adobe.com',
+    owner: 'adobecom',
+    repo: 'dc',
+    contentType: 'caas:content-type/article'
+  },
+  dc: {
+    preset: 'dc',
+    host: 'acrobat.adobe.com',
+    owner: 'adobecom',
+    repo: 'dc',
+    contentType: 'caas:content-type/article'
+  },
+  milo: {
+    preset: 'milo',
+    host: 'milo.adobe.com',
+    owner: 'adobecom',
+    repo: 'milo',
+    contentType: 'caas:content-type/article'
   }
 }
 
 const preset = document.querySelector('#preset');
 preset.addEventListener('change', () => {
   const { value } = preset;
+  document.body.classList.add('preset');
   const ls = localStorage.getItem(LS_KEY);
   const config = ls ? JSON.parse(ls) : {};
   config.preset = PRESETS[value].preset;
@@ -311,14 +351,16 @@ const checkUserStatus = async () => {
 const helpButtons = document.querySelectorAll('.help');
 helpButtons.forEach((btn) => {
   btn.addEventListener('click', (e) => {
-    // const { target } = e;
-    // const { help } = target.dataset;
-    // const helpText = document.querySelector(`.help-text[data-help="${help}"]`);
-    // helpText.style.display = helpText.style.display === 'block' ? 'none' : 'block';
-    // console.log('help for: ', e.target.closest('div').id);
     e.preventDefault();
     const el = e.target.closest('div').id
-    showAlert(`<p><b>Help</b><p>Help for "${el}" is on its way! Stay tuned.</p>`);
+
+    if (el === 'use-preview-cb') {
+      showAlert(`<p><b>Use Preview Content</b><p>When checked, the tool will published from 
+      <p><tt>https://main--{repo}--{owner}.hlx.live</tt>
+      <p>This is useful for testing before publishing to production.</p>`);
+    } else {
+        showAlert(`<p><b>Help</b><p>Help for "${el}" is on its way! Stay tuned.</p>`);
+    }
   });
 }
 );
