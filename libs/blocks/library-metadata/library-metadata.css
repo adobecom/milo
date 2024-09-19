@@ -18,6 +18,7 @@
 
 .library-meta-row {
   background-color: #EFEFEF;
+  color: initial;
   display: grid;
   grid-template-columns: 1fr 1fr;
   margin-top: 4px;

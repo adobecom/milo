@@ -759,7 +759,7 @@ export const addMepAnalytics = (config, header) => {
     }
   });
 };
-export async function getManifestConfig(info, variantOverride = false) {
+export async function getManifestConfig(info = {}, variantOverride = false) {
   const {
     name,
     manifestData,
