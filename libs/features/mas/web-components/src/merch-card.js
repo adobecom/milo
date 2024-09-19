@@ -148,7 +148,7 @@ export class MerchCard extends LitElement {
     }
 
     get strip() {
-      if (this.stripBackground) {
+      if (this.stripSize && this.stripBackground) {
         switch (this.stripSize) {
             case 'wide':
                 return '44px';
