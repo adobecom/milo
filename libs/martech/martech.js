@@ -121,25 +121,25 @@ export const getTargetPersonalization = async () => {
     window.lana.log(`target response time: ${responseTime}`, { tags: 'martech', errorType: 'i' });
   }, { once: true });
 
-  let manifests = [];
-  let propositions = [];
+  let targetManifests = [];
+  let targetPropositions = [];
   const response = await waitForEventOrTimeout(ALLOY_SEND_EVENT, timeout);
   if (response.error) {
     window.lana.log('target response time: ad blocker', { tags: 'martech', errorType: 'i' });
-    return [];
+    return { targetManifests, targetPropositions };
   }
   if (response.timeout) {
     waitForEventOrTimeout(ALLOY_SEND_EVENT, 5100 - timeout)
       .then(() => sendTargetResponseAnalytics(true, responseStart, timeout));
   } else {
     sendTargetResponseAnalytics(false, responseStart, timeout);
-    manifests = handleAlloyResponse(response.result);
-    propositions = response.result?.propositions || [];
+    targetManifests = handleAlloyResponse(response.result);
+    targetPropositions = response.result?.propositions || [];
   }
 
   return {
-    targetManifests: manifests,
-    targetPropositions: propositions,
+    targetManifests,
+    targetPropositions,
   };
 };
 
