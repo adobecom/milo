@@ -137,10 +137,7 @@ export const getTargetPersonalization = async () => {
     targetPropositions = response.result?.propositions || [];
   }
 
-  return {
-    targetManifests,
-    targetPropositions,
-  };
+  return { targetManifests, targetPropositions };
 };
 
 const setupEntitlementCallback = () => {
