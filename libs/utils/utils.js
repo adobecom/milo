@@ -1261,7 +1261,7 @@ async function processSection(section, config, isDoc) {
   }
 
   section.blocks.forEach((block) => loadBlocks.push(loadBlock(block)));
-  console.log(loadBlocks);
+
   // Only move on to the next section when all blocks are loaded.
   await Promise.all(loadBlocks);
 
