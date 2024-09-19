@@ -164,6 +164,17 @@ export const checkCustomPlaceholders = (content) => {
   return newContent;
 };
 
+export function replacePlaceholders(value, placeholders) {
+  let val = value;
+  const matches = val.match(/{{(.*?)}}/g);
+  if (!matches) return val;
+  matches.forEach((match) => {
+    const key = match.replace(/{{|}}/g, '').trim();
+    if (placeholders[key]) val = val.replace(match, placeholders[key]);
+  });
+  return val;
+}
+
 export const createContent = (el, content, manifestId, targetManifestId, action, modifiers) => {
   if (action === 'replace') {
     addIds(el, manifestId, targetManifestId);
@@ -174,7 +185,8 @@ export const createContent = (el, content, manifestId, targetManifestId, action,
     return el;
   }
   if (getSelectorType(content) !== 'fragment') {
-    const newContent = checkCustomPlaceholders(content);
+    const config = getConfig();
+    const newContent = replacePlaceholders(content, config.placeholders);
 
     if (action === 'replace') {
       el.innerHTML = newContent;
@@ -946,16 +958,7 @@ export function handleFragmentCommand(command, a) {
   return false;
 }
 
-function replacePlaceholders(value, placeholders) {
-  let val = value;
-  const matches = val.match(/{{(.*?)}}/g);
-  if (!matches) return val;
-  matches.forEach((match) => {
-    const key = match.replace(/{{|}}/g, '').trim();
-    if (placeholders[key]) val = val.replace(match, placeholders[key]);
-  });
-  return val;
-}
+
 
 export function parseNestedPlaceholders({ placeholders }) {
   if (!placeholders) return;
