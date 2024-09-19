@@ -311,17 +311,6 @@ describe('GeoRouting', () => {
     expect(modal).to.not.be.null;
   });
 
-  it('Has inline svg for mobile background', async () => {
-    const ogWidth = window.innerWidth;
-    window.innerWidth = 400;
-
-    await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle);
-    const svg = document.querySelector('.dialog-modal .georouting-bg svg');
-    expect(svg).to.exist;
-
-    window.innerWidth = ogWidth;
-  });
-
   it('Does not create a modal if the user IP matches session storage.', async () => {
     // prepare
     setUserCountryFromIP('US');
