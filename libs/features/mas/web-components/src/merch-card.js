@@ -98,6 +98,18 @@ export class MerchCard extends LitElement {
         this.selected = false;
     }
 
+    firstUpdated() {
+        this.variantLayout = getVariantLayout(this, false);
+        this.variantLayout?.connectedCallbackHook();
+    }
+
+    willUpdate(changedProperties) {
+        if (changedProperties.has('variant') || !this.variantLayout) {
+            this.variantLayout = getVariantLayout(this);
+            this.variantLayout.connectedCallbackHook();
+        }
+    }
+
     updated(changedProperties) {
         if (
             changedProperties.has('badgeBackgroundColor') ||
@@ -105,12 +117,7 @@ export class MerchCard extends LitElement {
         ) {
             this.style.border = this.computedBorderStyle;
         }
-        if (changedProperties.has('variant')) {
-            this.variantLayout = getVariantLayout(this);
-            this.variantLayout.connectedCallbackHook();
-            this.requestUpdate();
-          }
-          this.variantLayout?.postCardUpdateHook(this);
+        this.variantLayout?.postCardUpdateHook(this);
     }
 
     get prices() {
