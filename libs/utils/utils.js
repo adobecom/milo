@@ -660,8 +660,7 @@ export function decorateLinks(el) {
   decorateImageLinks(el);
   const anchors = el.getElementsByTagName('a');
   const { hostname } = window.location;
-  convertStageLinks({ anchors, config, hostname });
-  return [...anchors].reduce((rdx, a) => {
+  const links = [...anchors].reduce((rdx, a) => {
     appendHtmlToLink(a);
     a.href = localizeLink(a.href);
     decorateSVG(a);
@@ -696,6 +695,8 @@ export function decorateLinks(el) {
     }
     return rdx;
   }, []);
+  convertStageLinks({ anchors, config, hostname });
+  return links;
 }
 
 function decorateContent(el) {
