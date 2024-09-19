@@ -70,16 +70,16 @@ const returnPath = (url) => {
   return sourceUrl.pathname;
 };
 
-const createPreviewWidget = (dynamicNavKey) => {
+const createStatusWidget = (dynamicNavKey) => {
   const storedSource = window.sessionStorage.getItem('gnavSource');
   const authoredSource = getMetadata('gnav-source') || 'Metadata not found: site gnav source';
   const dynamicNavSetting = getMetadata('dynamic-nav');
   const currentSource = getCurrentSource(dynamicNavSetting, storedSource, authoredSource);
   const dynamicNavDisableValues = getMetadata('dynamic-nav-disable');
   const status = getStatus(dynamicNavSetting, isDynamicNavDisabled(), storedSource);
-  const previewWidget = createTag('div', { class: 'dynamic-nav-status' });
+  const statusWidget = createTag('div', { class: 'dynamic-nav-status' });
 
-  previewWidget.innerHTML = `
+  statusWidget.innerHTML = `
     <span class="title"><span class="dns-badge"></span>Dynamic Nav</span>
     <section class="details hidden">
       <span class="dns-close"></span>
@@ -103,15 +103,15 @@ const createPreviewWidget = (dynamicNavKey) => {
     </section>
   `;
 
-  processDisableValues(dynamicNavDisableValues, previewWidget.querySelector('.disable-values'));
-  previewWidget.classList.add(status);
+  processDisableValues(dynamicNavDisableValues, statusWidget.querySelector('.disable-values'));
+  statusWidget.classList.add(status);
 
-  previewWidget.addEventListener('click', () => {
-    previewWidget.querySelector('.details').classList.toggle('hidden');
-    previewWidget.querySelector('.dns-badge').classList.toggle('dns-open');
+  statusWidget.addEventListener('click', () => {
+    statusWidget.querySelector('.details').classList.toggle('hidden');
+    statusWidget.querySelector('.dns-badge').classList.toggle('dns-open');
   });
 
-  return previewWidget;
+  return statusWidget;
 };
 
 export default async function main() {
@@ -120,14 +120,14 @@ export default async function main() {
 
   loadStyle(`${miloLibs || `${codeRoot}/libs`}/features/dynamic-navigation/status.css`);
 
-  const previewWidget = createPreviewWidget(dynamicNavKey);
+  const statusWidget = createStatusWidget(dynamicNavKey);
   const topNav = document.querySelector('.feds-topnav');
   const fedsWrapper = document.querySelector('.feds-nav-wrapper');
-  const dnsClose = previewWidget.querySelector('.dns-close');
+  const dnsClose = statusWidget.querySelector('.dns-close');
 
   dnsClose.addEventListener('click', () => {
-    topNav.removeChild(previewWidget);
+    topNav.removeChild(statusWidget);
   });
 
-  fedsWrapper.after(previewWidget);
+  fedsWrapper.after(statusWidget);
 }
