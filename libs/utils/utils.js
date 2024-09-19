@@ -1148,6 +1148,7 @@ function decorateMeta() {
   const contents = document.head.querySelectorAll(`[content*=".${SLD}."]`);
   contents.forEach((meta) => {
     if (meta.getAttribute('property') === 'hlx:proxyUrl') return;
+    if (meta.getAttribute('name').endsWith('schedule')) return;
     try {
       const url = new URL(meta.content);
       const localizedLink = localizeLink(`${origin}${url.pathname}`);
