@@ -205,7 +205,8 @@ input.sk-library-search-input:focus {
  * Fixes block list getting cut off with search
  * Margin height equal to search bar height
 */
-.sk-library ul.con-blocks-list.inset {
+.sk-library ul.con-blocks-list.inset,
+.sk-library ul.con-templates-list.inset  {
   margin-bottom: 39px;
 }
 
@@ -242,7 +243,8 @@ input.sk-library-search-input:focus {
   font-weight: 700;
 }
 
-.sk-library .block-group.is-hidden {
+.sk-library .block-group.is-hidden,
+.con-templates-list .template.is-hidden {
   display: none;
 }
 
