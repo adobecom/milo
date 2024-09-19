@@ -695,7 +695,7 @@ export function decorateLinks(el) {
     return rdx;
   }, []);
   convertStageLinks({ anchors, config, hostname });
-  return result;
+  return links;
 }
 
 function decorateContent(el) {
