@@ -926,18 +926,21 @@ export function handleFragmentCommand(command, a) {
   return false;
 }
 
+function replacePlaceholders(value, placeholders) {
+  let val = value;
+  const matches = val.match(/{{(.*?)}}/g);
+  if (!matches) return val;
+  matches.forEach((match) => {
+    const key = match.replace(/{{|}}/g, '').trim();
+    if (placeholders[key]) val = val.replace(match, placeholders[key]);
+  });
+  return val;
+}
+
 export function parseNestedPlaceholders({ placeholders }) {
   if (!placeholders) return;
   Object.entries(placeholders).forEach(([key, value]) => {
-    const matches = value.match(/{{(.*?)}}/g);
-    if (matches) {
-      matches.forEach((match) => {
-        const foundKey = match.replace(/{{|}}/g, '').trim();
-        if (placeholders[foundKey]) {
-          placeholders[key] = placeholders[key].replace(match, placeholders[foundKey]);
-        }
-      });
-    }
+    placeholders[key] = replacePlaceholders(value, placeholders);
   });
 }
 
