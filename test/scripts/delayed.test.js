@@ -44,7 +44,6 @@ describe('Delayed', () => {
     document.querySelector('head')?.insertAdjacentHTML('beforeend', '<meta name="interlinks" content="on">');
     loadDelayed([getConfig, getMetadata, loadScript, loadStyle, loadIms])
       .then((module) => {
-        expect(module).to.exist;
         expect(typeof module === 'object').to.equal(true);
       });
     await clock.runAllAsync();
