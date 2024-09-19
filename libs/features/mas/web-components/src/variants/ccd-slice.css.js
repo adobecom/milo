@@ -17,4 +17,9 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a:not(.con-button) {
     text-decoration-line: underline;
     color: var(--merch-color-grey-80);
   }
+
+  merch-card[variant="ccd-slice"] [slot='image'] img {
+    overflow: hidden;
+    border-radius: 50%;
+  }
 `;

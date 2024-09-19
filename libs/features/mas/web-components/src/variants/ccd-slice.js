@@ -67,5 +67,10 @@ export class CCDSlice extends VariantLayout {
       padding: var(--consonant-merch-spacing-xs);
       align-self: center;
     }
+
+    :host([variant='ccd-slice']) ::slotted([slot='image']) img {
+      overflow: hidden;
+      border-radius: 50%;
+    }
   `;
 }
