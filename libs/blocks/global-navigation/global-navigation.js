@@ -48,7 +48,7 @@ function getHelpChildren() {
     { type: 'Support' },
     { type: 'Community' },
   ];
-};
+}
 
 export const CONFIG = {
   icons: isDarkMode() ? darkIcons : icons,
