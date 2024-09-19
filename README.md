@@ -104,6 +104,9 @@ npm run nala help
 
 - **Tip**: To effectively watch or debug, focus on one test at a time to avoid opening excessive browser instances or debugger windows.
 
+#### 3. Nala Documentation
+For detailed guides and documentation on Nala, please visit the [Nala GitHub Wiki](https://github.com/adobecom/milo/wiki/Nala#nala-introduction).
+
 
   
 
