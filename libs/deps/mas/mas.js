@@ -1440,7 +1440,7 @@ merch-card:not([variant='inline-heading']) [slot='heading-xs'] a {
     color: var(--merch-color-grey-80);
 }
 
-merch-card [div.starting-at] {
+merch-card div.starting-at {
   font-size: var(--consonant-merch-card-body-xs-font-size);
   line-height: var(--consonant-merch-card-body-xs-line-height);
   font-weight: 500;
