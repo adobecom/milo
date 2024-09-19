@@ -942,8 +942,6 @@ export function handleFragmentCommand(command, a) {
   return false;
 }
 
-
-
 export function parseNestedPlaceholders({ placeholders }) {
   if (!placeholders) return;
   Object.entries(placeholders).forEach(([key, value]) => {
