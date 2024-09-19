@@ -1111,8 +1111,8 @@ export async function loadDeferred(area, blocks, config) {
       .then(({ default: decoratePreviewMode }) => decoratePreviewMode());
   }
   if (config?.dynamicNavKey) {
-    const { default: loadStatus } = await import('../features/dynamic-navigation/status.js');
-    loadStatus();
+    const { default: loadDNStatus } = await import('../features/dynamic-navigation/status.js');
+    loadDNStatus();
   }
 }
 
