@@ -42,6 +42,14 @@ import {
 
 import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
 
+function getHelpChildren() {
+  const { unavHelpChildren } = getConfig();
+  return unavHelpChildren || [
+    { type: 'Support' },
+    { type: 'Community' },
+  ];
+};
+
 export const CONFIG = {
   icons: isDarkMode() ? darkIcons : icons,
   delays: {
@@ -97,13 +105,7 @@ export const CONFIG = {
       },
       help: {
         name: 'help',
-        attributes: {
-          children: [
-            { type: 'Support' },
-            { type: 'Community' },
-            // { type: 'Jarvis', appid: window.adobeid?.client_id },
-          ],
-        },
+        attributes: { children: getHelpChildren() },
       },
     },
   },
