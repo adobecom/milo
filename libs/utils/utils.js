@@ -659,7 +659,7 @@ export function decorateLinks(el) {
   decorateImageLinks(el);
   const anchors = el.getElementsByTagName('a');
   const { hostname } = window.location;
-  const result = [...anchors].reduce((rdx, a) => {
+  const links = [...anchors].reduce((rdx, a) => {
     appendHtmlToLink(a);
     a.href = localizeLink(a.href);
     decorateSVG(a);
