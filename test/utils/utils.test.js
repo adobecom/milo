@@ -74,7 +74,7 @@ describe('Utils', () => {
     });
   });
 
-  it('renders global navigation when header tag is present', async ()=> {
+  it('renders global navigation when header tag is present', async () => {
     const bodyWithheader = await readFile({ path: './mocks/body-gnav.html' });
     document.head.innerHTML = head;
     document.body.innerHTML = bodyWithheader;
