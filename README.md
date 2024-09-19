@@ -99,7 +99,7 @@ To view examples of how to use Nala commands with various options, you can run
 npm run nala help
 ```
 
-### ⚠️ Important Note
+#### ⚠️ Important Note
 - **Debug and UI Mode Caution**: When using `debug` or `ui` mode, it is recommended to run only a single test using annotations (e.g., `@test1`). Running multiple tests in these modes (e.g., `npm run nala local mode=debug` or `mode=ui`) will launch a separate browser or debugger window for each test, which can quickly become resource-intensive and challenging to manage.
 
 - **Tip**: To effectively watch or debug, focus on one test at a time to avoid opening excessive browser instances or debugger windows.
