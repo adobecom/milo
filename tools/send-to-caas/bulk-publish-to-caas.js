@@ -191,6 +191,7 @@ const processData = async (data, accessToken) => {
 
   document.querySelector('.status-signed-in').style.display = 'none';
   document.querySelector('.status-signed-out').style.display = 'none';
+  resetStatusTables()
   if (successArr.length) {
     showSuccessTable(successArr);
   }
@@ -201,10 +202,20 @@ const processData = async (data, accessToken) => {
   showAlert(`Successfully published ${successArr.length} pages. \n\n Failed to publish ${errorArr.length} pages.`);
 };
 
+function resetStatusTables() {
+  const successTable = document.querySelector('.success-table');
+  const successTBody = successTable.querySelector('tbody');
+  successTBody.innerHTML = '';
+  successTable.style.display = 'none';
+  const errorTable = document.querySelector('.error-table');
+  const errorTBody = errorTable.querySelector('tbody');
+  errorTBody.innerHTML = '';
+  errorTable.style.display = 'none';
+}
+
 function showSuccessTable(successArr) {
   const successTable = document.querySelector('.success-table');
   const tableBody = successTable.querySelector('tbody');
-  tableBody.innerHTML = '';
   successTable.style.display = 'block';
   successArr.forEach(([pageUrl, response]) => {
     tableBody.innerHTML += `<tr><td class="ok">OK</td><td><a href="${pageUrl}">${pageUrl}</a></td><td>${response}</td></tr>`;
@@ -214,7 +225,6 @@ function showSuccessTable(successArr) {
 function showErrorTable(errorArr) {
   const errorTable = document.querySelector('.error-table');
   const tableBody = errorTable.querySelector('tbody');
-  tableBody.innerHTML = '';
   errorTable.style.display = 'block';
   errorArr.forEach(([pageUrl, response]) => {
     tableBody.innerHTML += `<tr><td class="error">Failed</td><td><a href="${pageUrl}">${pageUrl}</a></td><td>${response}</td></tr>`;
@@ -352,12 +362,19 @@ const helpButtons = document.querySelectorAll('.help');
 helpButtons.forEach((btn) => {
   btn.addEventListener('click', (e) => {
     e.preventDefault();
-    const el = e.target.closest('div').id
+    const el = e.target.classList[1]
 
-    if (el === 'use-preview-cb') {
+    if (el === 'use-preview') {
       showAlert(`<p><b>Use Preview Content</b><p>When checked, the tool will published from 
       <p><tt>https://main--{repo}--{owner}.hlx.live</tt>
       <p>This is useful for testing before publishing to production.</p>`);
+
+    } else if (el === 'host') {
+      showAlert(`<p><b>Host</b><p>Enter the host of the site you are publishing content to. For example:</p>
+        <p>
+         <tt>&nbsp; milo.adobe.com</tt> <br>
+         <tt>&nbsp; blog.adobe.com</tt> <br>
+         <tt>&nbsp; business.adobe.com</tt>.</p>`);
     } else {
         showAlert(`<p><b>Help</b><p>Help for "${el}" is on its way! Stay tuned.</p>`);
     }

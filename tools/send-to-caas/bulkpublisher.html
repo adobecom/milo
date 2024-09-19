@@ -20,7 +20,7 @@
             <div class="field">
               <label for="preset">Consumer Presets:</label>
               <select name="preset" id="preset">
-                <option value="default">Select a preset... </option>
+                <option value="default">Select a Preset... </option>
                 <option value="blog">Adobe Blog (blog)</option>
                 <option value="bacom">Adobe Business (bacom)</option>
                 <option value="express">Adobe Express (express)</option>
@@ -28,21 +28,21 @@
                 <option value="cc">Creative Cloud (cc)</option>
                 <option value="dc">Document Cloud (dc)</option>
                 <option value="milo">Milo</option>
-                <option disabled>─────────────────────────────</option>
-                <option value="advanced">Advaced: Custom Settings</option>
+                <option disabled>────────────────────</option>
+                <option value="advanced">Advanced: Custom Settings</option>
                 </select>
             </div>
     
             <div class="field">
-              <label for="host">Host:</label>
+              <label for="host">Host:  <span class="help host" title="Help">(?)</span></label>
               <input id="host" name="host" type="text" />
             </div>
             <div class="field">
-              <label for="repo">Repo:</label>
+              <label for="repo">Repo:  <span class="help repo" title="Help">(?)</span></label>
               <input id="repo" name="repo" type="text" />
             </div>
             <div class="field">
-              <label for="owner">Repo Owner:</label>
+              <label for="owner">Repo Owner:   <span class="help owner" title="Help">(?)</span></label>
               <input id="owner" name="owner" type="text" />
             </div>
             <div class="field">
@@ -120,15 +120,15 @@
             </div>
             <div id="caas-draft-cb" class="field checkbox">
               <input type="checkbox" id="draftOnly" name="draftOnly" />
-              <label for="draftOnly">Publish to Draft only <span class="help" title="Help">(?)</span></label>
+              <label for="draftOnly">Publish to Draft only <span class="help draft" title="Help">(?)</span></label>
             </div>
             <div id="use-preview-cb" class="field checkbox">
               <input type="checkbox" id="usePreview" name="usePreview" />
-              <label for="usePreview">Use Preview Content <span class="help" title="Help">(?)</span></label>
+              <label for="usePreview">Use Preview Content <span class="help use-preview" title="Help">(?)</span></label>
             </div>
             <div id="use-html-cb" class="field checkbox">
               <input type="checkbox" id="useHtml" name="useHtml" />
-              <label for="useHtml">Use .html extension on CTA links <span class="help" title="Help">(?)</span></label>
+              <label for="useHtml">Use .html extension on CTA links <span class="help use-html" title="Help">(?)</span></label>
             </div>
             <!-- <button id="bulkpublish" href="#">Bulk Publish</button> -->
           </dd>
@@ -144,8 +144,7 @@
             <textarea id="urls" 
               name="urls" 
               rows="10"
-              placeholder="Enter URLs to publish here...">
-            </textarea>
+              placeholder="Enter URLs to publish here..."></textarea>
 
             <div class="button-container">
               <button id="bulkpublish" href="#">Publish</button>
@@ -164,7 +163,7 @@
             <table class="success-table hidden">
               <thead>
                 <tr>
-                  <th width="80px">&nbsp;</th>
+                  <th width="80px">Success</th>
                   <th width="65%">URL</th>
                   <th width="30%">EntityID</th>
                 </tr>
@@ -174,7 +173,7 @@
             <table class="error-table hidden">
               <thead>
                 <tr>
-                  <th width="80px">&nbsp;</th>
+                  <th width="80px">Errors</th>
                   <th width="65%">URL</th>
                   <th width="30%">Response</th>
                 </tr>

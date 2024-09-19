@@ -71,14 +71,14 @@ body {
 }
 
 .content.is-expanded input[type=checkbox] {
-  align-self: baseline;
+  /* align-self: baseline; */
   margin-top: 2px;
 }
 
 .page-title {
   margin: 0;
   background: linear-gradient(360deg, #6f9b01, transparent);
-  padding: 3px 30px;
+  padding: 43px 30px 2px;
   border-bottom: solid 1px #ddd;
   color: #202020;
 }
@@ -140,16 +140,18 @@ span.help {
   color: black;
   background: #666;
   padding: 0 3px;
-  margin-left: 10px;
+  margin-left: 0;
   border-radius: 10px;
   cursor: pointer;
   background: transparent;
   color: #999;
   letter-spacing: 1px;
+  font-size: 12px;
+  vertical-align: super;
 }
 
 span.help:hover {
-  background: #505050;
+  background: darkred;
   color: #fff;
 }
 
