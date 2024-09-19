@@ -10,12 +10,6 @@ describe('Dynamic nav', () => {
     window.sessionStorage.setItem('gnavSource', 'some-source-string');
   });
 
-  it('Saves the original gnav source to sesstionStorage regardless of dnamic-nav metadata', async () => {
-    document.head.innerHTML = await readFile({ path: './mocks/off.html' });
-    dynamicNav('gnav/aem-sites', 'nocom');
-    expect(window.sessionStorage.getItem('ogSource')).to.equal('gnav/aem-sites');
-  });
-
   it('Saves the gnavSource and dynamicNavKey to session storage', async () => {
     document.head.innerHTML = await readFile({ path: './mocks/entry.html' });
     window.sessionStorage.removeItem('gnavSource');

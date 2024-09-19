@@ -1111,8 +1111,7 @@ export async function loadDeferred(area, blocks, config) {
       .then(({ default: decoratePreviewMode }) => decoratePreviewMode());
   }
   if (config?.dynamicNavKey) {
-    loadStyle('../features/dynamic-navigation/preview.css');
-    const { default: loadPreview } = await import('../features/dynamic-navigation/preview.js');
+    const { default: loadPreview } = await import('../features/dynamic-navigation/status.js');
     loadPreview();
   }
 }

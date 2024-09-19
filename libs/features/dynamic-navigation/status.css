@@ -45,17 +45,17 @@
 
 .dns-badge::after { 
   content: '';
-    display: block;
-    box-sizing: border-box;
-    position: absolute;
-    width: 6px;
-    height: 6px;
-    border-top: 2px solid;
-    border-right: 2px solid;
-    transform: rotate(45deg);
-    left: 5px;
-    bottom: 5px;
-    transition-duration: 0.2s;
+  display: block;
+  box-sizing: border-box;
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-top: 2px solid;
+  border-right: 2px solid;
+  transform: rotate(45deg);
+  left: 5px;
+  bottom: 5px;
+  transition-duration: 0.2s;
 }
 
 .dns-badge.dns-open::after{
@@ -171,4 +171,3 @@
   border: 1px solid rgb(160 160 160);
   padding: 8px 10px;
 }
-
