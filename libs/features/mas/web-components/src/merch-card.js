@@ -239,10 +239,6 @@ export class MerchCard extends LitElement {
         return this.textContent.match(new RegExp(text, 'i')) !== null;
     }
 
-    get startingAt() {
-        return this.classList.contains('starting-at');
-    }
-
     connectedCallback() {
         super.connectedCallback();
         this.setAttribute('tabindex', this.getAttribute('tabindex') ?? '0');
