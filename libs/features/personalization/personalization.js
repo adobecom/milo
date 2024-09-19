@@ -151,16 +151,17 @@ const createFrag = (el, action, content, manifestId, targetManifestId) => {
 };
 
 export const checkCustomPlaceholders = (content) => {
-  //check if content has {{}}, move into new function and export
-  // reference modifyNonFragmentSelector.test for unit testing
   let newContent = content;
 
-  if (newContent.match(/{{(.*)}}/)) {
-    const config = getConfig();
-    const regEx = new RegExp(Object.keys(config.placeholders).map((item) => `{{${item}}}`).join('|'), 'gi');
+  const config = getConfig();
+  const regex = /{{(.*?)}}/g;
 
-    newContent = newContent.replace(regEx, (matched) => config.placeholders[matched.replace(/[\]{}]/g, '')]);
-  }
+  newContent = newContent.replace(regex, (match, prop) => {
+    if (Object.prototype.hasOwnProperty.call(config.placeholders, prop)) {
+      return config.placeholders[prop];
+    }
+    return match;
+  });
 
   return newContent;
 };
