@@ -849,7 +849,7 @@ merch-card .footer-row-cell:nth-child(8) {
     }
     :host([variant='mini-compare-chart']) slot[name='body-xxs'] {
         min-height: var(
-            --consonant-merch-card-mini-compare-heading-body-xxs-height
+            --consonant-merch-card-mini-compare-body-xxs-height
         );
     }
     :host([variant='mini-compare-chart']) slot[name='price-commitment'] {

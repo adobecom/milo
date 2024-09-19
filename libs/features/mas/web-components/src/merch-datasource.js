@@ -50,37 +50,39 @@ async function parseMerchCard(fragmentData, appendFn, merchCard, consonant) {
     const { variant = 'catalog' } = item;
     merchCard.setAttribute('variant', variant);
     const cardMapping = cardContent[variant] ?? 'catalog';
-    item.icon?.forEach((icon) => {
-        const merchIcon = createTag('merch-icon', {
-            slot: 'icons',
-            src: icon,
-            alt: '',
-            href: '',
-            size: 'l',
-        });
-        appendFn(merchIcon);
-    });
+    item.mnemonicIcon?.forEach((icon, idx) => {
+      const href = item.mnemonicLink?.length > idx ? item.mnemonicLink[idx] : '';
+      const alt = item.mnemonicAlt?.length > idx ? item.mnemonicAlt[idx] : '';
+      const merchIcon = createTag('merch-icon', {
+          slot: 'icons',
+          src: icon,
+          alt,
+          href,
+          size: 'l',
+      });
+      appendFn(merchIcon);
+  });
 
-    if (item.title && cardMapping.title) {
-        appendFn(
-            createTag(
-                cardMapping.title.tag,
-                { slot: cardMapping.title.slot },
-                item.title,
-            ),
-        );
-    }
+  if (item.cardTitle && cardMapping.title) {
+      appendFn(
+          createTag(
+              cardMapping.title.tag,
+              { slot: cardMapping.title.slot },
+              item.cardTitle,
+          ),
+      );
+  }
 
-    if (item.backgroundImage && cardMapping.backgroundImage) {
-        // TODO improve image logic
-        appendFn(
-            createTag(
-                cardMapping.backgroundImage.tag,
-                { slot: cardMapping.backgroundImage.slot },
-                `<img loading="lazy" src="${item.backgroundImage}" width="600" height="362">`,
-            ),
-        );
-    }
+  if (item.backgroundImage && cardMapping.backgroundImage) {
+      // TODO improve image logic
+      appendFn(
+          createTag(
+              cardMapping.backgroundImage.tag,
+              { slot: cardMapping.backgroundImage.slot },
+              `<img loading="lazy" src="${item.backgroundImage}" width="600" height="362">`,
+          ),
+      );
+  }
 
     if (item.prices && cardMapping.prices) {
         const prices = item.prices;

@@ -1,6 +1,7 @@
 import { AEM } from './aem.js';
 
 const ATTR_AEM_BUCKET = 'aem-bucket';
+const AEM_BUCKET = 'publish-p22655-e155390';
 
 class FragmentCache {
     #fragmentCache = new Map();
@@ -81,8 +82,7 @@ export class AemDataSource extends HTMLElement {
     connectedCallback() {
         this.consonant = this.hasAttribute('consonant');
         this.clearRefs();
-        const bucket =
-            this.getAttribute(ATTR_AEM_BUCKET) ?? 'publish-p22655-e59341';
+        const bucket = this.getAttribute(ATTR_AEM_BUCKET) ?? AEM_BUCKET;
         this.#aem = new AEM(bucket);
         this.refresh(false);
     }

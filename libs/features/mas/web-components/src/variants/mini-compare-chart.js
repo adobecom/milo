@@ -144,8 +144,9 @@ export class MiniCompareChart extends VariantLayout {
         ${this.getMiniCompareFooter()}
         <slot name="footer-rows"><slot name="body-s"></slot></slot>`;
   }
-  postCardUpdateHook() {
+  async postCardUpdateHook() {
     if (!isMobile()) {
+      await Promise.all(this.card.prices.map((price) => price.onceSettled()));
       this.adjustMiniCompareBodySlots();
       this.adjustMiniCompareFooterRows();
     } else {
@@ -205,7 +206,7 @@ export class MiniCompareChart extends VariantLayout {
     }
     :host([variant='mini-compare-chart']) slot[name='body-xxs'] {
         min-height: var(
-            --consonant-merch-card-mini-compare-heading-body-xxs-height
+            --consonant-merch-card-mini-compare-body-xxs-height
         );
     }
     :host([variant='mini-compare-chart']) slot[name='price-commitment'] {
