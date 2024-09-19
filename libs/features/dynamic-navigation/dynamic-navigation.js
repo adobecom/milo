@@ -14,14 +14,26 @@ export function foundDisableValues() {
   return foundValues.length ? foundValues : false;
 }
 
+function dynamicNavGroupMatches(groupMetaData) {
+  const storedGroup = window.sessionStorage.getItem('dynamicNavGroup');
+  if (groupMetaData && storedGroup) return storedGroup === groupMetaData;
+  return false;
+}
+
 export default function dynamicNav(url, key) {
   if (foundDisableValues()) return url;
   const metadataContent = getMetadata('dynamic-nav');
+  const dynamicNavGroup = getMetadata('dynamic-nav-group');
 
   if (metadataContent === 'entry') {
     window.sessionStorage.setItem('gnavSource', url);
     window.sessionStorage.setItem('dynamicNavKey', key);
+    if (dynamicNavGroup) window.sessionStorage.setItem('dynamicNavGroup', dynamicNavGroup);
     return url;
+  }
+
+  if (metadataContent === 'on' && dynamicNavGroup) {
+    if (!dynamicNavGroupMatches(dynamicNavGroup)) return url;
   }
 
   if (metadataContent !== 'on' || key !== window.sessionStorage.getItem('dynamicNavKey')) return url;

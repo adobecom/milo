@@ -82,6 +82,8 @@ const createStatusWidget = (dynamicNavKey) => {
   const foundValues = foundDisableValues();
   const status = getStatus(dynamicNavSetting, foundValues.length >= 1, storedSource);
   const statusWidget = createTag('div', { class: 'dynamic-nav-status' });
+  const groupMetaSetting = getMetadata('dynamic-nav-group') || 'Group not set';
+  const groupsMatch = groupMetaSetting === window.sessionStorage.getItem('dynamicNavGroup') ? 'Yes' : 'No';
 
   statusWidget.innerHTML = `
     <span class="title"><span class="dns-badge"></span>Dynamic Nav</span>
@@ -94,6 +96,8 @@ const createStatusWidget = (dynamicNavKey) => {
       </div>
       <p class="status">Status: <span>${status}</span></p> 
       <p class="setting">Setting: <span>${dynamicNavSetting}</span></p>
+      <p class="group">Group: <span>${groupMetaSetting}</span></p>
+      <p class="group-match">Group matches stored group: <span>${groupsMatch}</span></p>
       <p class="consumer-key">Consumer key: <span>${dynamicNavKey}</span></p>
       <div class="nav-source-info">
         <p>Authored and stored source match: <span>${authoredSource === currentSource}</span></p>

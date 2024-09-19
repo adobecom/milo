@@ -159,6 +159,67 @@ describe('Dynamic Nav Status', () => {
       expect(info.authoredSource).to.equal('/test');
       expect(info.storedSource).to.equal('/test');
     });
+
+    it('displays the correct information for a group match', () => {
+      document.querySelector('meta[name="dynamic-nav"]').setAttribute('content', 'on');
+      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.hlx/test');
+
+      const groupMeta = document.createElement('meta');
+      groupMeta.setAttribute('name', 'dynamic-nav-group');
+      groupMeta.setAttribute('content', 'test');
+      document.head.appendChild(groupMeta);
+
+      window.sessionStorage.setItem('dynamicNavGroup', 'test');
+
+      dynamicNav();
+      status();
+
+      const statusWidget = document.querySelector('.dynamic-nav-status');
+      const group = statusWidget.querySelector('.group span');
+      const groupMatch = statusWidget.querySelector('.group-match span');
+
+      expect(group.innerText).to.equal('test');
+      expect(groupMatch.innerText).to.equal('Yes');
+    });
+
+    it('displays the correct information for a group mismatch', () => {
+      document.querySelector('meta[name="dynamic-nav"]').setAttribute('content', 'on');
+      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.hlx/test');
+
+      const groupMeta = document.createElement('meta');
+      groupMeta.setAttribute('name', 'dynamic-nav-group');
+      groupMeta.setAttribute('content', 'test');
+      document.head.appendChild(groupMeta);
+
+      window.sessionStorage.setItem('dynamicNavGroup', 'no-test');
+
+      dynamicNav();
+      status();
+
+      const statusWidget = document.querySelector('.dynamic-nav-status');
+      const group = statusWidget.querySelector('.group span');
+      const groupMatch = statusWidget.querySelector('.group-match span');
+
+      expect(group.innerText).to.equal('test');
+      expect(groupMatch.innerText).to.equal('No');
+    });
+
+    it('displays the correct information for no group being set', () => {
+      document.querySelector('meta[name="dynamic-nav"]').setAttribute('content', 'on');
+      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.hlx/test');
+
+      window.sessionStorage.setItem('dynamicNavGroup', 'no-test');
+
+      dynamicNav();
+      status();
+
+      const statusWidget = document.querySelector('.dynamic-nav-status');
+      const group = statusWidget.querySelector('.group span');
+      const groupMatch = statusWidget.querySelector('.group-match span');
+
+      expect(group.innerText).to.equal('Group not set');
+      expect(groupMatch.innerText).to.equal('No');
+    });
   });
 
   describe('disabled values', () => {
