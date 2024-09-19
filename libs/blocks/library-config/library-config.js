@@ -2,12 +2,12 @@ import { createTag } from '../../utils/utils.js';
 
 const LIBRARY_PATH = '/docs/library/library.json';
 
-async function loadBlocks(content, list, query, type) {
+async function loadBlocks({ content, list, query, type }) {
   const { default: blocks } = await import('./lists/blocks.js');
   blocks(content, list, query, type);
 }
 
-async function loadTemplates(content, list, query, type) {
+async function loadTemplates({ content, list, query, type }) {
   const { default: templates } = await import('./lists/templates.js');
   templates(content, list, query, type);
 }
@@ -32,7 +32,7 @@ async function loadPersonalization(content, list) {
   personalization(content, list);
 }
 
-function addSearch(content, list, type) {
+function addSearch({ content, list, type }) {
   const skLibrary = list.closest('.sk-library');
   const header = skLibrary.querySelector('.sk-library-header');
   let search = skLibrary.querySelector('.sk-library-search');
@@ -51,10 +51,10 @@ function addSearch(content, list, type) {
 
       switch (type) {
         case 'blocks':
-          loadBlocks(content, list, query, type);
+          loadBlocks({ content, list, query, type });
           break;
         case 'templates':
-          loadTemplates(content, list, query, type);
+          loadTemplates({ content, list, query, type });
           break;
         default:
       }
@@ -66,10 +66,10 @@ function addSearch(content, list, type) {
 
       switch (type) {
         case 'blocks':
-          loadBlocks(content, list, query, type);
+          loadBlocks({ content, list, query, type });
           break;
         case 'templates':
-          loadTemplates(content, list, query, type);
+          loadTemplates({ content, list, query, type });
           break;
         default:
       }
@@ -87,12 +87,12 @@ async function loadList(type, content, list) {
   const query = list.closest('.sk-library').querySelector('.sk-library-search-input')?.value;
   switch (type) {
     case 'blocks':
-      addSearch(content, list, type);
-      loadBlocks(content, list, query, type);
+      addSearch({ content, list, type });
+      loadBlocks({ content, list, query, type });
       break;
     case 'templates':
-      addSearch(content, list, type);
-      loadTemplates(content, list, query, type);
+      addSearch({ content, list, type });
+      loadTemplates({ content, list, query, type });
       break;
     case 'placeholders':
       loadPlaceholders(content, list);
