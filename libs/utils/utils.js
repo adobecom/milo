@@ -1256,7 +1256,7 @@ async function processSection(section, config, isDoc) {
   const loadBlocks = [...stylePromises];
   if (section.preloadLinks.length) {
     const [modals, blocks] = partition(section.preloadLinks, (block) => block.classList.contains('modal'));
-    blocks.forEach((block) => loadBlocks.push(loadBlock(block)));
+    await Promise.all(blocks.map((block) => loadBlock(block)));
     modals.forEach((block) => loadBlock(block));
   }
 
