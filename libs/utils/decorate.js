@@ -47,8 +47,11 @@ export function decorateIconStack(el) {
     const picIndex = links[0].querySelector('a picture') ? 0 : 1;
     const linkImg = links[picIndex];
     const linkText = links[1 - picIndex];
-    linkText.prepend(linkImg.querySelector('picture'));
-    linkImg.remove();
+    const linkPic = linkImg.querySelector('picture');
+    if (linkPic) {
+      linkText.prepend(linkPic);
+      linkImg.remove();
+    }
   });
 }
 
