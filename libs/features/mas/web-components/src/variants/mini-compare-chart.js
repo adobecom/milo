@@ -39,10 +39,10 @@ export class MiniCompareChart extends VariantLayout {
     const elMinHeightPropertyName = `--consonant-merch-card-mini-compare-${name}-height`;
     const height = Math.max(
         0,
-        parseInt(window.getComputedStyle(el).height) || 0,
+        parseFloat(window.getComputedStyle(el).height) || 0,
     );
     const maxMinHeight =
-        parseInt(
+        parseFloat(
             this.getContainer().style.getPropertyValue(elMinHeightPropertyName),
         ) || 0;
     if (height > maxMinHeight) {
@@ -54,7 +54,7 @@ export class MiniCompareChart extends VariantLayout {
   }
 
   adjustMiniCompareBodySlots () {
-    if (this.card.getBoundingClientRect().width < 10) return; // cards not visible except for the borders.
+    if (this.card.getBoundingClientRect().width <= 2) return;
   
     this.updateMiniCompareElementMinHeight(
         this.card.shadowRoot.querySelector('.top-section'),
@@ -65,11 +65,11 @@ export class MiniCompareChart extends VariantLayout {
         'heading-m',
         'body-m',
         'heading-m-price',
+        'body-xxs',
         'price-commitment',
         'offers',
         'promo-text',
         'callout-content',
-        'secure-transaction-label',
     ];
   
     slots.forEach((slot) =>
@@ -99,10 +99,10 @@ export class MiniCompareChart extends VariantLayout {
     [...footerRows?.children].forEach((el, index) => {
         const height = Math.max(
             FOOTER_ROW_MIN_HEIGHT,
-            parseInt(window.getComputedStyle(el).height) || 0,
+            parseFloat(window.getComputedStyle(el).height) || 0,
         );
         const maxMinHeight =
-            parseInt(
+            parseFloat(
                 this.getContainer().style.getPropertyValue(
                     this.getRowMinHeightPropertyName(index + 1),
                 ),
@@ -201,6 +201,11 @@ export class MiniCompareChart extends VariantLayout {
     :host([variant='mini-compare-chart']) slot[name='heading-m-price'] {
         min-height: var(
             --consonant-merch-card-mini-compare-heading-m-price-height
+        );
+    }
+    :host([variant='mini-compare-chart']) slot[name='body-xxs'] {
+        min-height: var(
+            --consonant-merch-card-mini-compare-heading-body-xxs-height
         );
     }
     :host([variant='mini-compare-chart']) slot[name='price-commitment'] {

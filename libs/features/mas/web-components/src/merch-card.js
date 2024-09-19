@@ -9,6 +9,7 @@ import {
     EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
     EVENT_MERCH_STORAGE_CHANGE,
 } from './constants.js';
+import { VariantLayout } from './variants/variant-layout.js';
 
 export const MERCH_CARD_NODE_NAME = 'MERCH-CARD';
 export const MERCH_CARD = 'merch-card';
@@ -85,6 +86,9 @@ export class MerchCard extends LitElement {
 
     customerSegment;
     marketSegment;
+    /**
+     * @type {VariantLayout>}
+     */
     variantLayout;
 
     constructor() {
@@ -104,8 +108,21 @@ export class MerchCard extends LitElement {
         if (changedProperties.has('variant')) {
             this.variantLayout = getVariantLayout(this);
             this.variantLayout.connectedCallbackHook();
-            this.variantLayout.postCardUpdateHook(this);
             this.requestUpdate();
+            (async () => {
+                await this.updateComplete;
+                const allPrices = Array.from(
+                    this.querySelectorAll(
+                        'span[is="inline-price"][data-wcs-osi]',
+                    ),
+                );
+                // Filter out prices within the callout-content slot
+                const prices = allPrices.filter(
+                    (price) => !price.closest('[slot="callout-content"]'),
+                );
+                await Promise.all(prices.map((price) => price.onceSettled()));
+                this.variantLayout.postCardUpdateHook(this);
+            })();
         }
     }
 
