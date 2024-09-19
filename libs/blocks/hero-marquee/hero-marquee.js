@@ -140,9 +140,8 @@ function isElementEmpty(element) {
     }
   }
   if (element.childNodes.length === 0) return true;
-  const nonEmptyElements = ['IMG', 'VIDEO', 'PICTURE', 'IFRAME', 'OBJECT', 'EMBED'];
   for (const child of element.children) {
-    if (nonEmptyElements.includes(child.tagName) || !isElementEmpty(child)) {
+    if (child.hasChildNodes()) {
       return false;
     }
   }
@@ -184,6 +183,7 @@ export default async function init(el) {
   if (rows.length <= 1) return;
   const [head, ...tail] = rows;
   rows = tail;
+  console.log('isEmpty head', isElementEmpty(head), head, el);
   if (isElementEmpty(head)) {
     head.remove();
   } else {
