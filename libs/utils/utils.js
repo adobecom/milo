@@ -1223,7 +1223,7 @@ export function partition(arr, fn) {
   );
 }
 
-const preloadBlocks = (section) => section?.blocks.map((block) => {
+const preloadBlocks = (blocks = []) => blocks.map((block) => {
   if (block.classList.contains('hide-block')) return null;
   const { blockPath, hasStyles, name } = getBlockData(block);
   if (name === 'marquee' || name === 'hero-marquee') {
@@ -1247,20 +1247,21 @@ async function resolveInlineFrags(section) {
 async function processSection(section, config, isDoc) {
   await resolveInlineFrags(section);
   const firstSection = section.el.dataset.idx === '0';
-  const stylePromises = firstSection ? preloadBlocks(section) : [];
+  const stylePromises = firstSection ? preloadBlocks(section.blocks) : [];
+  preloadBlocks(section.preloadLinks);
   await Promise.all([
     decoratePlaceholders(section.el, config),
     decorateIcons(section.el, config),
   ]);
   const loadBlocks = [...stylePromises];
   if (section.preloadLinks.length) {
-    const [modals, blockPreloads] = partition(section.preloadLinks, (block) => block.classList.contains('modal'));
-    blockPreloads.forEach((block) => loadBlocks.push(loadBlock(block)));
+    const [modals, blocks] = partition(section.preloadLinks, (block) => block.classList.contains('modal'));
+    blocks.forEach((block) => loadBlocks.push(loadBlock(block)));
     modals.forEach((block) => loadBlock(block));
   }
 
   section.blocks.forEach((block) => loadBlocks.push(loadBlock(block)));
-
+  console.log(loadBlocks);
   // Only move on to the next section when all blocks are loaded.
   await Promise.all(loadBlocks);
 
