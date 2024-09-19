@@ -148,22 +148,6 @@ const createFrag = (el, action, content, manifestId, targetManifestId) => {
   return frag;
 };
 
-export const checkCustomPlaceholders = (content) => {
-  let newContent = content;
-
-  const config = getConfig();
-  const regex = /{{(.*?)}}/g;
-
-  newContent = newContent.replace(regex, (match, prop) => {
-    if (Object.prototype.hasOwnProperty.call(config.placeholders, prop)) {
-      return config.placeholders[prop];
-    }
-    return match;
-  });
-
-  return newContent;
-};
-
 export function replacePlaceholders(value, placeholders) {
   let val = value;
   const matches = val.match(/{{(.*?)}}/g);
