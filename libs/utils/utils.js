@@ -1126,6 +1126,10 @@ export async function loadDeferred(area, blocks, config) {
     import('../features/personalization/preview.js')
       .then(({ default: decoratePreviewMode }) => decoratePreviewMode());
   }
+  if (config?.dynamicNavKey) {
+    const { default: loadDNStatus } = await import('../features/dynamic-navigation/status.js');
+    loadDNStatus();
+  }
 }
 
 function initSidekick() {
