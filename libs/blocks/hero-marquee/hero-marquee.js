@@ -122,6 +122,7 @@ function extendButtonsClass(copy) {
     button.classList.add('button-xl', 'button-justified-mobile');
   });
 }
+
 function parseKeyString(str) {
   const regex = /^(\w+)\s*\((.*)\)$/;
   const match = str.match(regex);
@@ -130,6 +131,22 @@ function parseKeyString(str) {
   const classes = match[2].split(',').map((c) => c.trim());
   const result = { key, classes };
   return result;
+}
+
+function isElementEmpty(element) {
+  for (const node of element.childNodes) {
+    if (node.nodeType === Node.TEXT_NODE && !node.nodeValue.trim()) {
+      element.removeChild(node);
+    }
+  }
+  if (element.childNodes.length === 0) return true;
+  const nonEmptyElements = ['IMG', 'VIDEO', 'PICTURE', 'IFRAME', 'OBJECT', 'EMBED'];
+  for (const child of element.children) {
+    if (nonEmptyElements.includes(child.tagName) || !isElementEmpty(child)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 async function loadContentType(el, key, classes) {
@@ -164,14 +181,16 @@ function loadBreakpointThemes() {
 export default async function init(el) {
   el.classList.add('con-block');
   let rows = el.querySelectorAll(':scope > div');
-  if (rows.length > 1 && rows[0].textContent !== '') {
+  if (rows.length <= 1) return;
+  const [head, ...tail] = rows;
+  rows = tail;
+  if (isElementEmpty(head)) {
+    head.remove();
+  } else {
     el.classList.add('has-bg');
-    const [head, ...tail] = rows;
     handleObjectFit(head);
     decorateBlockBg(el, head, { useHandleFocalpoint: true });
-    rows = tail;
   }
-
   // get first row that's not a keyword key/value row
   const mainRowIndex = rows.findIndex((row) => {
     const firstColText = row.children[0].textContent.toLowerCase().trim();

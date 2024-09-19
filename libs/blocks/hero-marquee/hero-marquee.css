@@ -17,6 +17,7 @@
   align-items: center;
 }
 
+.hero-marquee.no-min-height { min-height: unset;}
 .hero-marquee.s-min-height { min-height: var(--s-min-height); }
 .hero-marquee.l-min-height { min-height: var(--l-min-height); }
 
@@ -148,6 +149,11 @@ html[dir="rtl"] .hero-marquee .foreground {
 
 .hero-marquee .foreground div:empty {
   display: none;
+}
+
+div[class*='-up'] .hero-marquee.has-bg.grid-full-width { 
+  padding-left: 0;
+  padding-right: 0;
 }
 
 /* Row Types */
