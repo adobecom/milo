@@ -31,7 +31,8 @@ function displayHelp() {
   | npm run nala local @accordion                          | Runs only accordion annotated/tagged tests on local environment on chrome browser  |
   | npm run nala local @accordion browser=firefox          | Runs only accordion annotated/tagged tests on local environment on firefox browser |
   | npm run nala local mode=ui                             | Runs all nala tests on local environment in UI mode on chrome browser              |
-  | npm run nala local tags=@tag1,@tag2                    | Runs tests annotated with @tag1 and @tag2 on local environment on chrome browser   |         
+  | npm run nala local -g=@accordion                       | Runs tests annotated with tag i.e @accordion on local env on chrome browser        |
+  | npm run nala local -g=@accordion browser=firefox       | Runs tests annotated with tag i.e @accordion on local env on Firefox browser       |        
 
 \x1b[1mDebugging:\x1b[0m
 -----------
