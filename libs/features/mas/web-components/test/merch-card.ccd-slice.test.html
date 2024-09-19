@@ -25,6 +25,7 @@
 <body>
     <script type="module" src="./merch-card.ccd-slice.test.html.js"></script>
     <main>
+      <sp-theme theme="spectrum" color="light" scale="medium">
           <merch-card class="" tabindex="0" variant="ccd-slice" filters="" types="">
             <sp-status-light size="l" variant="info" dir="ltr"></sp-status-light>
             <merch-icon
@@ -49,17 +50,7 @@
               </strong>
             </p>
             <div slot="footer">
-              <a
-                  class="con-button blue"
-                  is="checkout-link"
-                  data-checkout-workflow="UCv3"
-                  data-checkout-workflow-step="segmentation"
-                  data-promotion-code="CCI2AAUSQ22440CH"
-                  data-quantity="1"
-                  data-wcs-osi="r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8"
-                  data-extra-options="{}"
-                  ><span>Buy now</span></a
-                >
+                <sp-button size="s" focusable>Buy now</sp-button>
             </div>
             <div slot="image">
               <img src="./img/creative-cloud.png" alt="">
@@ -81,22 +72,13 @@
       <br><a href="https://www.adobe.com/creativecloud/all-apps.html" target="_blank">See terms</a>
             </p>
     <div slot="footer">
-      <a
-          class="con-button blue"
-          is="checkout-link"
-          data-checkout-workflow="UCv3"
-          data-checkout-workflow-step="segmentation"
-          data-promotion-code="CCI2AAUSQ22440CH"
-          data-quantity="1"
-          data-wcs-osi="r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8"
-          data-extra-options="{}"
-          ><span>Register now</span></a
-        >
+        <sp-button size="s" focusable>Register now</sp-button>
     </div>
     <div slot="image">
       <img src="./img/max.png" alt="">
     </div>
     </merch-card>
+  </sp-theme>
 </main>
 </body>
 </html>

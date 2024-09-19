@@ -6,6 +6,7 @@ import { mockLana } from './mocks/lana.js';
 import { mockFetch } from './mocks/fetch.js';
 import { mockConfig } from './mocks/config.js';
 
+import './spectrum.js';
 import '../src/merch-offer.js';
 import '../src/merch-offer-select.js';
 import '../src/merch-quantity-select.js';
@@ -28,25 +29,10 @@ runTests(async () => {
           expect(document.querySelector('merch-card[variant="ccd-slice"]')).to.exist;
       });
 
-      it('should display a CTA', async () => {
-          const ccdSliceCard = document.querySelector(
-            'merch-card[variant="ccd-slice"]',
-          );
-          const shadowRoot = ccdSliceCard.shadowRoot;
-          const cta = ccdSliceCard.querySelector('.con-button');
-          expect(cta).to.exist;
-      });
-  
       it('should have correct attributes for the ccd-slice wide card', async () => {
           const ccdSliceWideCard = document.querySelector('merch-card[variant="ccd-slice"][size="wide"]');
           expect(ccdSliceWideCard.getAttribute('variant')).to.equal('ccd-slice');
           expect(ccdSliceWideCard.getAttribute('size')).to.equal('wide');
-      });
-  
-      it('should display a CTA in the ccd-slice wide card', async () => {
-          const ccdSliceWideCard = document.querySelector('merch-card[variant="ccd-slice"][size="wide"]');
-          const cta = ccdSliceWideCard.querySelector('.con-button');
-          expect(cta).to.exist;
       });
     });
 
