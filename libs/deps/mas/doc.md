@@ -1,17 +1,13 @@
-# a[data-wcs-osi]
+# a[is="checkout-link"]
 
 HTML Checkout Link Anchor element, extends anchor
-
-## Events
-
-| Event         |
-|---------------|
-| `merch:click` |
+special member _onceSettled_ promise that either resolves or fail with web commerce information.
 
 
-# span[data-wcs-osi]
+# span[is="inline-price"]
 
-HTML Price Web Component, extends span
+HTML Price Web Component, extends span.
+special member _onceSettled_ promise that either resolves or fail with web commerce information.
 
 
 # wcms-commerce

@@ -12,9 +12,9 @@ export const CLASS_NAME_UPGRADE = 'upgrade';
 
 /**
  * HTML Checkout Link Anchor element, extends anchor
+ * special member _onceSettled_ promise that either resolves or fail with web commerce information.
  * 
- * @element a[data-wcs-osi]
- * @fires merch:click
+ * @element a[is="checkout-link"]
  */
 export class HTMLCheckoutAnchorElement extends HTMLAnchorElement {
     static is = 'checkout-link';

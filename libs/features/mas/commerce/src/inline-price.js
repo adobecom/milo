@@ -85,9 +85,10 @@ const DISPLAY_TAX_MAP = {
 };
 
 /** 
- * HTML Price Web Component, extends span
+ * HTML Price Web Component, extends span.
+ * special member _onceSettled_ promise that either resolves or fail with web commerce information.
  * 
- * @element span[data-wcs-osi]
+ * @element span[is="inline-price"]
  **/
 export class HTMLPriceSpanElement extends HTMLSpanElement {
     static is = 'inline-price';
