@@ -41,14 +41,11 @@ export default async function loadBlock(configs, customLib) {
     env = 'prod',
     locale = '',
     theme,
-    onReady,
-    onError,
   } = configs || {};
   const branch = new URLSearchParams(window.location.search).get('navbranch');
   const miloLibs = branch ? `https://${branch}--milo--adobecom.hlx.page` : customLib || envMap[env];
   if (!header && !footer) {
     console.error('Global navigation Error: header and footer configurations are missing.');
-    onError?.('Global navigation Error: header and footer configurations are missing.');
     return;
   }
   // Relative path can't be used, as the script will run on consumer's app
@@ -69,21 +66,20 @@ export default async function loadBlock(configs, customLib) {
     ...paramConfigs,
   };
   setConfig(clientConfig);
-
-  try {
-    for await (const block of blockConfig) {
-      const configBlock = configs[block.key];
+  for await (const block of blockConfig) {
+    const configBlock = configs[block.key];
+    try {
       if (configBlock) {
         await bootstrapBlock(`${miloLibs}/libs`, {
           ...block,
           ...(block.key === 'header' && { unavComponents: configBlock.unavComponents, redirect: configBlock.redirect }),
         });
+        configBlock.onReady?.();
       }
+    } catch (e) {
+      configBlock.onError?.(e);
+      throw e;
     }
-    onReady?.();
-  } catch (e) {
-    onError?.(e);
-    throw e;
   }
 }
 
