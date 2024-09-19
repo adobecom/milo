@@ -11,22 +11,6 @@ export class CCDSuggested extends VariantLayout {
     return CSS;
   }
 
-  get headingSelector() {
-    return '[slot="detail-m"]';
-  }
-
-  get stripStyle() {
-    if (this.strip && this.stripBackground) {
-      return `
-        background: ${this.stripBackground};  
-        background-size: ${this.strip} 100%;
-        background-repeat: no-repeat;
-        background-position: left;
-      `;
-    }
-    return '';
-  }
-
   renderLayout () {
       return html`
           <div style="${this.stripStyle}" class="body">
@@ -69,6 +53,18 @@ export class CCDSuggested extends VariantLayout {
       padding-inline-start: var(--consonant-merch-spacing-xxs);
     }
 
+    :host([variant='ccd-suggested'][strip-size='small']) {
+      width: 
+    }
+    
+    :host([variant='ccd-suggested'][strip-size='wide']) ::slotted([slot='body-xs']) {
+      padding-inline-start: 48px;
+    }
+
+    :host([variant='ccd-suggested'][strip-size='wide']) ::slotted([slot='price']) {
+      padding-inline-start: 48px;
+    }
+
     :host([variant='ccd-suggested']) slot[name='detail-m'] {
       flex-flow: wrap;
       place-self: flex-start;
@@ -77,9 +73,9 @@ export class CCDSuggested extends VariantLayout {
     :host([variant='ccd-suggested']) .footer {
       display: flex;
       justify-content: space-between;
-      flex-grow: 1;
+      flex-grow: 0;
       margin-top: auto;
-      align-items: flex-end;
+      align-items: center;
     }
   `;
 };

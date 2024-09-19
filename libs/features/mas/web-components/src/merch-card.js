@@ -147,20 +147,6 @@ export class MerchCard extends LitElement {
             ?.assignedElements()[0];
     }
 
-    get strip() {
-      if (this.stripSize && this.stripBackground) {
-        switch (this.stripSize) {
-            case 'wide':
-                return '44px';
-            case 'small':
-                return '4px';
-            default:
-                return '0';
-        }
-      }
-      return '';
-    }
-
     get price() {
         return this.headingmMSlot?.querySelector('span[is="inline-price"]');
     }
