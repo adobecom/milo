@@ -183,7 +183,6 @@ export default async function init(el) {
   if (rows.length <= 1) return;
   const [head, ...tail] = rows;
   rows = tail;
-  console.log('isEmpty head', isElementEmpty(head), head, el);
   if (isElementEmpty(head)) {
     head.remove();
   } else {
