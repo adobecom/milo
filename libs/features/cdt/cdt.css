@@ -5,9 +5,7 @@
 }
 
 .vertical {
-  display: flex;
   flex-direction: column;
-  padding: 20px 0;
 }
 
 .center {
@@ -52,7 +50,7 @@
   width: 10px;
   border-radius: 5px;
   font-size: var(--type-body-m-size);
-  font-weight: bold;
+  font-weight: 700;
   text-align: center;
 }
 
@@ -75,7 +73,7 @@
 .timer-unit-label {
   width: 100%;
   font-size: var(--type-body-xs-size);
-  font-weight: regular;
+  font-weight: 400;
   text-align: start;
 }
 
