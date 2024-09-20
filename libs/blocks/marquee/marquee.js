@@ -141,11 +141,7 @@ export default async function init(el) {
     const { default: initCDT } = await import('../../features/cdt/cdt.js');
     const classesToAdd = [];
     if (el.classList.contains('center')) classesToAdd.push('center');
-    if (el.classList.contains('dark')) {
-      classesToAdd.push('dark');
-    } else {
-      classesToAdd.push('light');
-    }
+    classesToAdd.push(el.classList.contains('dark') ? 'dark' : 'light');
     await initCDT(text, classesToAdd);
   }
 }
