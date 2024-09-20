@@ -58,33 +58,21 @@ async function loadCountdownTimer(container) {
   function render(daysLeft, hoursLeft, minutesLeft) {
     if (!isVisible) return;
 
-    // Clear previous content
     removeCountdown();
 
-    // Create label element
     const labelElement = document.createElement('div');
     labelElement.classList.add('timer-label');
     labelElement.textContent = cdtLabel;
     container.appendChild(labelElement);
 
-    // Create timer block
     const timerBlock = document.createElement('div');
     timerBlock.classList.add('timer-block');
     container.appendChild(timerBlock);
 
-    // Days fragment
     timerBlock.appendChild(createTimerFragment(daysLeft, cdtDays));
-
-    // Separator
     timerBlock.appendChild(createSeparator());
-
-    // Hours fragment
     timerBlock.appendChild(createTimerFragment(hoursLeft, cdtHours));
-
-    // Separator
     timerBlock.appendChild(createSeparator());
-
-    // Minutes fragment
     timerBlock.appendChild(createTimerFragment(minutesLeft, cdtMins));
   }
 
@@ -119,7 +107,6 @@ async function loadCountdownTimer(container) {
     }, oneMinuteinMs);
   }
 
-  // Start the countdown
   startCountdown();
 }
 
