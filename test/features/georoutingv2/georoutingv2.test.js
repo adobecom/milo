@@ -1,6 +1,5 @@
 import { stub } from 'sinon';
 import { expect } from '@esm-bundle/chai';
-import { setViewport } from '@web/test-runner-commands';
 
 const { default: init, getCookie } = await import('../../../libs/features/georoutingv2/georoutingv2.js');
 let { getMetadata } = await import('../../../libs/utils/utils.js');
@@ -200,7 +199,6 @@ const setGeorouting = (setting) => {
   stubURLSearchParamsGet = stubURLSearchParamsGet.withArgs('georouting').returns(setting);
 };
 
-const ogInnerHeight = window.innerHeight;
 const ogFetch = window.fetch;
 window.fetch = stub();
 
