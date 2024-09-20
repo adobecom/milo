@@ -554,7 +554,7 @@ div[data-failed="true"]::before {
 
 span.icon {
   height: 100%;
-  width: 18px;
+  width: 1em;
   display: inline-block;
   margin-inline: var(--spacing-xxs);
 }

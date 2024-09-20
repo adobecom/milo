@@ -2,6 +2,7 @@ import { getFederatedContentRoot } from '../../utils/federated.js';
 
 let fetchedIcons;
 let fetched = false;
+const federalIcons = {};
 
 async function getSVGsfromFile(path) {
   /* c8 ignore next */
@@ -25,7 +26,7 @@ async function getSVGsfromFile(path) {
 }
 
 // eslint-disable-next-line no-async-promise-executor
-export const fetchIcons = (icons, config) => new Promise(async (resolve) => {
+export const fetchIcons = (config) => new Promise(async (resolve) => {
   /* c8 ignore next */
   if (!fetched) {
     const { miloLibs, codeRoot } = config;
@@ -63,52 +64,35 @@ function decorateToolTip(icon) {
   wrapper.parentElement.replaceChild(icon, wrapper);
 }
 
-export async function getSvgFromFile(path, name) {
-  /* c8 ignore next */
-  if (!path) return null;
-
-  let resp;
-  try {
-    // if (fetchedIcons[name] === undefined) return fetchIcons[name];
-    resp = await fetch(path);
-    const text = await resp.text();
-    const parser = new DOMParser();
-    const parsedText = parser.parseFromString(text, 'image/svg+xml');
-    const svg = parsedText.firstChild;
-    svg.id = name;
-    const parsedSvg = parsedText.querySelector('svg');
-    parsedSvg.classList.add('icon-milo', `icon-milo-${name}`);
-    fetchedIcons[name] = parsedSvg;
-    return parsedSvg;
-  } catch (error) {
-    return null;
+// Function to fetch and inject SVG icons
+export async function injectSVGIcons(icons) {
+  const fedRoot = getFederatedContentRoot();
+  // Iterate through each icon element
+  for (const icon of icons) {
+    // Extract the icon name from the class list (assuming it is the second class)
+    const iconName = [...icon.classList].find((c) => c.startsWith('icon-')).substring(5);
+    if (!iconName || iconName === 'tooltip') return;
+    try {
+      if (!federalIcons[iconName]) {
+        const url = `${fedRoot}/federal/assets/icons/svgs/${iconName}.svg`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`Failed to fetch SVG for ${iconName}: ${response.statusText}`);
+        const svgText = await response.text();
+        federalIcons[iconName] = svgText;
+      }
+      icon.insertAdjacentHTML('afterbegin', federalIcons[iconName]);
+    } catch (error) {
+      console.error(`Error fetching or inserting icon ${iconName}:`, error);
+    }
   }
 }
 
-async function decorateIcon(icon) {
-  const iconName = Array.from(icon.classList)
-    .find((c) => c.startsWith('icon-'))
-    .substring(5);
-  if (fetchedIcons[iconName] !== undefined || iconName === 'tooltip') return icon;
-  const fedRoot = getFederatedContentRoot();
-  const svgFedPath = `${fedRoot}/federal/assets/icons/svgs/${iconName}.svg`;
-  const newIcon = await getSvgFromFile(svgFedPath, iconName);
-  return newIcon;
-}
-
-export default async function loadIcons(icons, config) {
-  const iconSVGs = await fetchIcons(icons, config);
-  if (!iconSVGs) return;
+export default async function loadIcons(icons) {
+  injectSVGIcons(icons);
   icons.forEach(async (icon) => {
     icon.classList.add('milo-icon');
-    await decorateIcon(icon, config);
-    const { classList } = icon;
-    if (classList.contains('icon-tooltip')) decorateToolTip(icon);
-    const iconName = icon.classList[1].replace('icon-', '');
-    const existingIcon = icon.querySelector('svg');
-    if (!iconSVGs[iconName] || existingIcon) return;
+    if (icon.classList.contains('icon-tooltip')) decorateToolTip(icon);
     const parent = icon.parentElement;
     if (parent.parentElement.tagName === 'LI') parent.parentElement.classList.add('icon-list-item');
-    icon.insertAdjacentHTML('afterbegin', iconSVGs[iconName].outerHTML);
   });
 }
