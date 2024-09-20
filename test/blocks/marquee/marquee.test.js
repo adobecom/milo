@@ -16,9 +16,7 @@ const video = await readFile({ path: './mocks/video.html' });
 const multipleIcons = await readFile({ path: './mocks/multiple-icons.html' });
 
 describe('marquee', () => {
-  const meta = document.createElement('meta');
-  meta.name = 'countdown-timer';
-  meta.content = '2024-08-26 12:00:00 PST,2026-08-30 00:00:00 PST';
+  const meta = Object.assign(document.createElement('meta'), { name: 'countdown-timer', content: '2024-08-26 12:00:00 PST,2026-08-30 00:00:00 PST' });
   document.head.appendChild(meta);
   const marquees = document.querySelectorAll('.marquee');
   marquees.forEach((marquee) => {

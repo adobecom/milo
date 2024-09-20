@@ -13,9 +13,7 @@ setConfig(conf);
 describe('Hero Marquee', () => {
   before(async () => {
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-    const meta = document.createElement('meta');
-    meta.name = 'countdown-timer';
-    meta.content = '2024-08-26 12:00:00 PST,2026-08-30 00:00:00 PST';
+    const meta = Object.assign(document.createElement('meta'), { name: 'countdown-timer', content: '2024-08-26 12:00:00 PST,2026-08-30 00:00:00 PST' });
     document.head.appendChild(meta);
     const { default: init } = await import('../../../libs/blocks/hero-marquee/hero-marquee.js');
     const marquees = document.querySelectorAll('.hero-marquee');
@@ -40,8 +38,8 @@ describe('Hero Marquee', () => {
     expect(hr).to.exist;
   });
 
-  describe('Embedding countdown-timer inside hero-marquee', () => {
-    const marquee = document.getElementById('hero-all-cdt');
+  it('Embedding countdown-timer inside hero-marquee', async () => {
+    const marquee = document.getElementById('hero-cdt');
     expect(marquee.getElementsByClassName('timer-label')).to.exist;
   });
 });

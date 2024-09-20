@@ -5,6 +5,8 @@ document.head.innerHTML = "<link rel='stylesheet' href='../../../libs/blocks/med
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const { default: init } = await import('../../../libs/blocks/media/media.js');
 describe('media', () => {
+  const meta = Object.assign(document.createElement('meta'), { name: 'countdown-timer', content: '2024-08-26 12:00:00 PST,2026-08-30 00:00:00 PST' });
+  document.head.appendChild(meta);
   const medias = document.querySelectorAll('.media');
   medias.forEach((media) => {
     init(media);
@@ -131,6 +133,9 @@ describe('media', () => {
     it('has a detail-l', () => {
       const detail = medias[8].querySelector('.detail-l');
       expect(detail).to.exist;
+    });
+    it('has a cdt', () => {
+      expect(medias[8].getElementsByClassName('timer-label')).to.exist;
     });
   });
 });

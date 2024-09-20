@@ -33,7 +33,7 @@ function decorateQr(el) {
   qrImage.classList.add('qr-code-img');
 }
 
-export default function init(el) {
+export default async function init(el) {
   if (el.className.includes('rounded-corners')) {
     const { miloLibs, codeRoot } = getConfig();
     const base = miloLibs || codeRoot;
@@ -105,4 +105,15 @@ export default function init(el) {
   const mediaRowReversed = el.querySelector(':scope > .foreground > .media-row > div').classList.contains('text');
   if (mediaRowReversed) el.classList.add('media-reverse-mobile');
   decorateTextOverrides(el);
+
+  if (el.classList.contains('countdown-timer')) {
+    const { default: initCDT } = await import('../../features/cdt/cdt.js');
+    const classesToAdd = [];
+    if (el.classList.contains('dark')) {
+      classesToAdd.push('dark');
+    } else {
+      classesToAdd.push('light');
+    }
+    await initCDT(container, classesToAdd);
+  }
 }
