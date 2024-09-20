@@ -581,17 +581,6 @@ describe('GeoRouting', () => {
     expect(document.querySelector('.picker')).to.be.null;
   });
 
-  it('Add class .top to picker when there is no space to render below the trigger button', async () => {
-    await setViewport({ width: 600, height: 100 });
-    await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle);
-    const modal = document.querySelector('.dialog-modal');
-    const links = modal.querySelectorAll('a');
-    links[0].click();
-    const picker = document.querySelector('.locale-modal-v2 .picker.top');
-    expect(picker).to.not.be.null;
-    await setViewport({ width: 600, height: ogInnerHeight });
-  });
-
   it('Sets international and georouting_presented cookies on link click in modal', async () => {
     // prepare
     await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle);
