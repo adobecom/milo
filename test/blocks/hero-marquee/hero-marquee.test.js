@@ -41,5 +41,22 @@ describe('Hero Marquee', () => {
   it('Embedding countdown-timer inside hero-marquee', async () => {
     const marquee = document.getElementById('hero-cdt');
     expect(marquee.getElementsByClassName('timer-label')).to.exist;
+
+    // update the meta tag for negative cases of countdown-timer
+    const meta = document.querySelector('meta[name="countdown-timer"]');
+    meta.setAttribute('content', '2024-08-26 12:00:00 PST');
+    const { default: init } = await import('../../../libs/blocks/hero-marquee/hero-marquee.js');
+    await init(marquee);
+    expect(marquee.getElementsByClassName('timer-label')).to.not.exist;
+
+    // update the meta tag for invalid countdown-timer
+    meta.setAttribute('content', 'random,invalid');
+    await init(marquee);
+    expect(marquee.getElementsByClassName('timer-label')).to.not.exist;
+
+    // update the meta tag for invalid countdown-timer
+    document.head.removeChild(meta);
+    await init(marquee);
+    expect(marquee.getElementsByClassName('timer-label')).to.not.exist;
   });
 });
