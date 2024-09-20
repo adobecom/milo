@@ -70,7 +70,8 @@ function findMetaFragments(doc) {
     fragments = [...metas]
       .filter((meta) => {
         const content = meta.getAttribute('content');
-        return content?.includes('/fragments/') && isUrl(content);
+        const isOGUrl = meta.getAttribute('property') === 'og:url';
+        return content?.includes('/fragments/') && isUrl(content) && !isOGUrl;
       })
       .map((meta) => new URL(meta.getAttribute('content')));
   }
