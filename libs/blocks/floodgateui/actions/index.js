@@ -77,7 +77,14 @@ async function findPageFragments(path) {
   const fragments = [...doc.querySelectorAll('.fragment, .modal.link-block')];
   const fragmentUrls = fragments.reduce((acc, fragment) => {
     // Normalize the fragment path to support production urls.
-    const pathname = fragment.dataset.modalPath || new URL(fragment.href).pathname.replace('.html', '');
+    const originalUrl = fragment.dataset.modalPath || fragment.dataset.path || fragment.href;
+    let pathname;
+    try {
+      pathname = new URL(originalUrl, origin).pathname.replace('.html', '');
+    } catch (error) {
+      setStatus('service', 'error', 'Invalid Fragment Path in files', originalUrl);
+      return acc;
+    }
 
     // Find duplicates across the current iterator and the original url list
     const accDupe = acc.some((url) => url.pathname === pathname);
@@ -85,6 +92,7 @@ async function findPageFragments(path) {
 
     if (accDupe || dupe) return acc;
     const fragmentUrl = new URL(`${origin}${pathname}`);
+    fragmentUrl.alt = fragment.textContent;
     acc.push(fragmentUrl);
     return acc;
   }, []);
@@ -111,42 +119,38 @@ async function findDeepFragments(path) {
       searched.push(search.pathname);
     }
   }
-  return fragments.length ? getUrls(fragments, true) : [];
+  return fragments.length ? fragments : [];
 }
 
 export async function findFragments() {
   fragmentStatusCheck.value = 'IN PROGRESS';
-  setStatus('fragments', 'info', 'Finding fragments.');
   const found = urls.value
     .filter((url) => !url.pathname.endsWith('.svg') && !url.pathname.endsWith('.pdf') && !url.pathname.endsWith('.mp4'))
     .map((url) => findDeepFragments(url.pathname));
   const pageFragments = await Promise.all(found);
 
   // For each page, loop through all the found fragments
-  const forExcel = pageFragments.reduce((acc, fragments) => {
+  const foundFragments = pageFragments.reduce((acc, fragments) => {
     if (fragments.length > 0) {
       fragments.forEach((fragment) => {
         // De-dupe across pages that share fragments
-        const dupe = acc.some((url) => url[0] === fragment.href);
-        if (!dupe) {
-          // Push into urls state for the UI
-          urls.value.push(fragment);
-          // Push into excel
-          acc.push([fragment.href]);
-        }
+        const dupe = acc.some((url) => url[0]?.pathname === fragment.pathname);
+        if (!dupe) acc.push([fragment]);
       });
     }
     return acc;
   }, []);
+  return validateUrlsFormat(foundFragments);
+}
 
-  setStatus('fragments', 'info', `${forExcel.length} fragments found.`, null, 1500);
-  setExcelStatus(`Found ${forExcel.length} fragments.`);
+async function syncToExcel(newUrls) {
+  setStatus('fragments', 'info', `${newUrls.length} fragments found.`, null, 1500);
+  setExcelStatus(`Found ${newUrls.length} fragments.`);
 
-  if (forExcel.length > 0) {
-    urls.value = [...validateUrlsFormat(urls.value)];
-    // Update language cards count
+  if (newUrls.length > 0) {
+    urls.value = [...urls.value, ...getUrls(newUrls.map((path) => path[0]), true)];
     const itemId = getItemId();
-    const resp = await updateExcelTable({ itemId, tablename: 'URL', values: forExcel });
+    const resp = await updateExcelTable({ itemId, tablename: 'URL', values: newUrls });
     if (resp.status !== 201) {
       setStatus('fragments', 'error', 'Couldn\'t add to Excel.');
       fragmentStatusCheck.value = 'ERROR';
@@ -156,4 +160,10 @@ export async function findFragments() {
   } else {
     fragmentStatusCheck.value = 'COMPLETED';
   }
+}
+
+export async function findAllFragments() {
+  setStatus('fragments', 'info', 'Finding fragments.');
+  const forExcel = await findFragments();
+  await syncToExcel(forExcel);
 }

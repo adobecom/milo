@@ -71,10 +71,13 @@ async function validatedUrls(projectUrls) {
 }
 
 export function getUrls(jsonUrls, fgFlag = false) {
+export function getUrls(jsonUrls, fgFlag = false) {
+  if (jsonUrls.length === 0) return [];
   const { locales } = getConfig();
   // Assume all URLs will be the same locale as the first URL
   const locale = getLocale(locales, jsonUrls[0].pathname);
-  const langstorePrefix = fgFlag ? '' : (locale.prefix ? `/langstore${locale.prefix}` : '/langstore/en');
+  const prefix = locale.prefix ? `/langstore${locale.prefix}` : '/langstore/en';
+  const langstorePrefix = fgFlag ? '' : prefix;
   // Loop through each url to get langstore information
   return jsonUrls.map((url) => {
     url.langstore = {
