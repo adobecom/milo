@@ -14,45 +14,30 @@ function loadCountdownTimer(
   let isVisible = false;
   let interval;
 
-  function createTimerBox(value) {
-    const unitContainer = createTag('div', { class: 'timer-unit-container' });
-    const tensBox = createTag('div', { class: 'timer-box' }, Math.floor(value / 10).toString());
-    const onesBox = createTag('div', { class: 'timer-box' }, (value % 10).toString());
+  function appendTimerBox(parent, value, label) {
+    const fragment = createTag('div', { class: 'timer-fragment' }, null, { parent });
+    const unitContainer = createTag('div', { class: 'timer-unit-container' }, null, { parent: fragment });
+    createTag('div', { class: 'timer-unit-label' }, label, { parent: fragment });
 
-    unitContainer.appendChild(tensBox);
-    unitContainer.appendChild(onesBox);
-    return unitContainer;
-  }
-
-  function createTimerFragment(value, label) {
-    const fragment = createTag('div', { class: 'timer-fragment' });
-    const unitContainer = createTimerBox(value);
-    const unitLabel = createTag('div', { class: 'timer-unit-label' }, label);
-
-    fragment.appendChild(unitContainer);
-    fragment.appendChild(unitLabel);
-    return fragment;
-  }
-
-  function appendLabel(parent, label) {
-    const labelElement = createTag('div', { class: 'timer-label' }, label);
-    parent.appendChild(labelElement);
-  }
-
-  function appendTimerBlock(parent) {
-    const timerBlock = createTag('div', { class: 'timer-block' });
-    parent.appendChild(timerBlock);
-    return timerBlock;
-  }
-
-  function appendTimerFragment(parent, timeValue, label) {
-    const fragment = createTimerFragment(timeValue, label);
-    parent.appendChild(fragment);
+    createTag('div', { class: 'timer-box' }, Math.floor(value / 10).toString(), { parent: unitContainer });
+    createTag('div', { class: 'timer-box' }, (value % 10).toString(), { parent: unitContainer });
   }
 
   function appendSeparator(parent) {
-    const separator = createTag('div', { class: 'timer-separator' }, ':');
-    parent.appendChild(separator);
+    createTag('div', { class: 'timer-separator' }, ':', { parent });
+  }
+
+  function appendTimerBlock(parent, daysLeft, hoursLeft, minutesLeft) {
+    const timerBlock = createTag('div', { class: 'timer-block' }, null, { parent });
+    appendTimerBox(timerBlock, daysLeft, cdtDays);
+    appendSeparator(timerBlock);
+    appendTimerBox(timerBlock, hoursLeft, cdtHours);
+    appendSeparator(timerBlock);
+    appendTimerBox(timerBlock, minutesLeft, cdtMins);
+  }
+
+  function appendTimerLabel(parent, label) {
+    createTag('div', { class: 'timer-label' }, label, { parent });
   }
 
   function removeCountdown() {
@@ -64,14 +49,8 @@ function loadCountdownTimer(
 
     removeCountdown();
 
-    appendLabel(container, cdtLabel);
-    const timerBlock = appendTimerBlock(container);
-
-    appendTimerFragment(timerBlock, daysLeft, cdtDays);
-    appendSeparator(timerBlock);
-    appendTimerFragment(timerBlock, hoursLeft, cdtHours);
-    appendSeparator(timerBlock);
-    appendTimerFragment(timerBlock, minutesLeft, cdtMins);
+    appendTimerLabel(container, cdtLabel);
+    appendTimerBlock(container, daysLeft, hoursLeft, minutesLeft);
   }
 
   function updateCountdown() {
@@ -118,14 +97,28 @@ export default async function initCDT(el, classList) {
       placeholders.map(replacePlaceholder),
     );
 
-    const cdtRange = (getMetadata('countdown-timer')).split(',');
-    const timeRangesEpoch = cdtRange.map((time) => Date.parse(time?.trim()));
+    const cdtMetadata = getMetadata('countdown-timer');
+    if (cdtMetadata === null) {
+      throw new Error('Metadata for countdown-timer is not available');
+    }
 
-    const cdtDiv = createTag('div', { class: 'countdown-timer' });
+    const cdtRange = cdtMetadata.split(',');
+    if (cdtRange.length % 2 !== 0) {
+      throw new Error('Invalid countdown timer range');
+    }
+
+    const timeRangesEpoch = cdtRange.map((time) => {
+      const parsedTime = Date.parse(time?.trim());
+      return Number.isNaN(parsedTime) ? null : parsedTime;
+    });
+    if (timeRangesEpoch.includes(null)) {
+      throw new Error('Invalid format for countdown timer range');
+    }
+
+    const cdtDiv = createTag('div', { class: 'countdown-timer' }, null, { parent: el });
     cdtDiv.classList.add(isMobileDevice() ? 'vertical' : 'horizontal');
     cdtDiv.classList.add(classList.contains('dark') ? 'dark' : 'light');
     if (classList.contains('center')) cdtDiv.classList.add('center');
-    el.appendChild(cdtDiv);
 
     loadCountdownTimer(cdtDiv, cdtLabel, cdtDays, cdtHours, cdtMins, timeRangesEpoch);
   } catch (error) {
