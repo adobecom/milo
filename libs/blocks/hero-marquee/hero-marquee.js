@@ -259,5 +259,18 @@ export default async function init(el) {
     }
   });
   decorateTextOverrides(el, ['-heading', '-body', '-detail'], mainCopy);
+
+  if (el.classList.contains('countdown-timer')) {
+    const { default: initCDT } = await import('../../features/cdt/cdt.js');
+    const classesToAdd = [];
+    if (el.classList.contains('center')) classesToAdd.push('center');
+    if (el.classList.contains('dark')) {
+      classesToAdd.push('dark');
+    } else {
+      classesToAdd.push('light');
+    }
+    await initCDT(copy, classesToAdd);
+  }
+
   await Promise.all(promiseArr);
 }

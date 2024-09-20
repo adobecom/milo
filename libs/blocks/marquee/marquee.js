@@ -136,4 +136,16 @@ export default async function init(el) {
   if (el.classList.contains('mnemonic-list') && foreground) {
     await loadMnemonicList(foreground);
   }
+
+  if (el.classList.contains('countdown-timer')) {
+    const { default: initCDT } = await import('../../features/cdt/cdt.js');
+    const classesToAdd = [];
+    if (el.classList.contains('center')) classesToAdd.push('center');
+    if (el.classList.contains('dark')) {
+      classesToAdd.push('dark');
+    } else {
+      classesToAdd.push('light');
+    }
+    await initCDT(text, classesToAdd);
+  }
 }
