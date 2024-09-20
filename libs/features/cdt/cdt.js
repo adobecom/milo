@@ -43,9 +43,7 @@ async function loadCountdownTimer(container) {
   }
 
   function removeCountdown() {
-    while (container.firstChild) {
-      container.removeChild(container.firstChild);
-    }
+    container.innerHTML = '';
   }
 
   function createSeparator() {
@@ -102,9 +100,7 @@ async function loadCountdownTimer(container) {
   function startCountdown() {
     const oneMinuteinMs = 60000;
     updateCountdown();
-    interval = setInterval(() => {
-      updateCountdown();
-    }, oneMinuteinMs);
+    interval = setInterval(updateCountdown, oneMinuteinMs);
   }
 
   startCountdown();
