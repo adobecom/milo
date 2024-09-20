@@ -42,6 +42,12 @@ async function loadCountdownTimer(container) {
     return fragment;
   }
 
+  function removeCountdown() {
+    while (container.firstChild) {
+      container.removeChild(container.firstChild);
+    }
+  }
+
   function createSeparator() {
     const separator = document.createElement('div');
     separator.classList.add('timer-label');
@@ -53,7 +59,7 @@ async function loadCountdownTimer(container) {
     if (!isVisible) return;
 
     // Clear previous content
-    container.innerHTML = '';
+    removeCountdown();
 
     // Create label element
     const labelElement = document.createElement('div');
@@ -102,14 +108,15 @@ async function loadCountdownTimer(container) {
 
     isVisible = false;
     clearInterval(interval);
-    container.innerHTML = ''; // Hide the countdown when time is over
+    removeCountdown();
   }
 
   function startCountdown() {
+    const oneMinuteinMs = 60000;
     updateCountdown();
     interval = setInterval(() => {
       updateCountdown();
-    }, 60000);
+    }, oneMinuteinMs);
   }
 
   // Start the countdown
