@@ -7,13 +7,6 @@ import './merch-sidenav-checkbox-group.js';
 import { SPECTRUM_MOBILE_LANDSCAPE, TABLET_DOWN } from '../media.js';
 import { disableBodyScroll, enableBodyScroll } from '../bodyScrollLock.js';
 
-document.addEventListener('sp-opened', () => {
-    document.body.classList.add('merch-modal');
-});
-document.addEventListener('sp-closed', () => {
-    document.body.classList.remove('merch-modal');
-});
-
 export class MerchSideNav extends LitElement {
     static properties = {
         sidenavTitle: { type: String },
@@ -137,11 +130,13 @@ export class MerchSideNav extends LitElement {
     closeModal(e) {
         e.preventDefault();
         this.dialog?.close();
+        document.body.classList.remove('merch-modal');
     }
 
     openModal() {
         this.updateComplete.then(async () => {
             disableBodyScroll(this.dialog);
+            document.body.classList.add('merch-modal');
             const options = {
                 trigger: this.#target,
                 notImmediatelyClosable: true,

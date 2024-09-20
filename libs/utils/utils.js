@@ -638,17 +638,31 @@ const decorateCopyLink = (a, evt) => {
   });
 };
 
+export function convertStageLinks({ anchors, config, hostname }) {
+  if (config.env?.name === 'prod' || !config.stageDomainsMap) return;
+  const matchedRules = Object.entries(config.stageDomainsMap)
+    .find(([domain]) => hostname.includes(domain));
+  if (!matchedRules) return;
+  const [, domainsMap] = matchedRules;
+  [...anchors].forEach((a) => {
+    const matchedDomain = Object.keys(domainsMap)
+      .find((domain) => a.href.includes(domain));
+    if (!matchedDomain) return;
+    a.href = a.href.replace(a.hostname, domainsMap[matchedDomain] === 'origin'
+      ? hostname
+      : domainsMap[matchedDomain]);
+  });
+}
+
 export function decorateLinks(el) {
   const config = getConfig();
   decorateImageLinks(el);
   const anchors = el.getElementsByTagName('a');
-  return [...anchors].reduce((rdx, a) => {
+  const { hostname } = window.location;
+  const links = [...anchors].reduce((rdx, a) => {
     appendHtmlToLink(a);
     a.href = localizeLink(a.href);
     decorateSVG(a);
-    if (config.env?.name === 'stage' && config.stageDomainsMap?.[a.hostname]) {
-      a.href = a.href.replace(a.hostname, config.stageDomainsMap[a.hostname]);
-    }
     if (a.href.includes('#_blank')) {
       a.setAttribute('target', '_blank');
       a.href = a.href.replace('#_blank', '');
@@ -680,6 +694,8 @@ export function decorateLinks(el) {
     }
     return rdx;
   }, []);
+  convertStageLinks({ anchors, config, hostname });
+  return links;
 }
 
 function decorateContent(el) {
