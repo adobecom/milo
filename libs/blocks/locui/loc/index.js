@@ -13,8 +13,7 @@ import {
 import { setStatus } from '../utils/status.js';
 import { getStatus, preview } from '../utils/franklin.js';
 import login from '../../../tools/sharepoint/login.js';
-import getServiceConfig from '../../../utils/service-config.js';
-import { getProjectStatus, getServiceUpdates } from '../utils/miloc.js';
+import { getServiceUpdates } from '../utils/miloc.js';
 
 const LANG_ACTIONS = ['Translate', 'English Copy', 'Rollout'];
 const MOCK_REFERRER = 'https%3A%2F%2Fadobe.sharepoint.com%2F%3Ax%3A%2Fr%2Fsites%2Fadobecom%2F_layouts%2F15%2FDoc.aspx%3Fsourcedoc%3D%257B94460FAC-CDEE-4B31-B8E0-AA5E3F45DCC5%257D%26file%3Dwesco-demo.xlsx';
@@ -25,13 +24,12 @@ let resourcePath;
 let previewPath;
 
 export function getUrls(jsonUrls, fgFlag = false) {
-  if (jsonUrls.length === 0) {
-    return []
-  }
+  if (jsonUrls.length === 0) return [];
   const { locales } = getConfig();
   // Assume all URLs will be the same locale as the first URL
   const locale = getLocale(locales, jsonUrls[0].pathname);
-  const langstorePrefix = fgFlag ? '' : (locale.prefix ? `/langstore${locale.prefix}` : '/langstore/en');
+  const prefix = locale.prefix ? `/langstore${locale.prefix}` : '/langstore/en';
+  const langstorePrefix = fgFlag ? '' : prefix;
   // Loop through each url to get langstore information
   return jsonUrls.map((url) => {
     url.langstore = {
