@@ -119,11 +119,7 @@ export default async function initCDT(el, classesToAdd) {
     classesToAdd.forEach((className) => {
       cdtDiv.classList.add(className);
     });
-    if (isMobileDevice()) {
-      cdtDiv.classList.add('vertical');
-    } else {
-      cdtDiv.classList.add('horizontal');
-    }
+    cdtDiv.classList.add(isMobileDevice() ? 'vertical' : 'horizontal');
     el.appendChild(cdtDiv);
     await loadCountdownTimer(cdtDiv);
   } catch (error) {
