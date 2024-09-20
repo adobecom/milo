@@ -1,56 +1,62 @@
-import { getMetadata, getConfig, loadStyle } from '../../utils/utils.js';
+import { getMetadata, getConfig, loadStyle, createTag } from '../../utils/utils.js';
 import { replaceKey } from '../placeholders.js';
 
 const replacePlaceholder = async (key) => replaceKey(key, getConfig());
 
-async function loadCountdownTimer(container) {
-  const cdtLabel = await replacePlaceholder('cdt-ends-in');
-  const cdtDays = await replacePlaceholder('cdt-days');
-  const cdtHours = await replacePlaceholder('cdt-hours');
-  const cdtMins = await replacePlaceholder('cdt-mins');
-  const cdtRange = (getMetadata('countdown-timer')).split(',');
-  const timeRangesEpoch = cdtRange.map((time) => Date.parse(time.trim()));
+function loadCountdownTimer(
+  container,
+  cdtLabel,
+  cdtDays,
+  cdtHours,
+  cdtMins,
+  timeRangesEpoch,
+) {
   let isVisible = false;
   let interval;
 
-  const { miloLibs, codeRoot } = getConfig();
-  await Promise.resolve(loadStyle(`${miloLibs || codeRoot}/features/cdt/cdt.css`));
+  function createTimerBox(value) {
+    const unitContainer = createTag('div', { class: 'timer-unit-container' });
+    const tensBox = createTag('div', { class: 'timer-box' }, Math.floor(value / 10).toString());
+    const onesBox = createTag('div', { class: 'timer-box' }, (value % 10).toString());
+
+    unitContainer.appendChild(tensBox);
+    unitContainer.appendChild(onesBox);
+    return unitContainer;
+  }
 
   function createTimerFragment(value, label) {
-    const fragment = document.createElement('div');
-    fragment.classList.add('timer-fragment');
+    const fragment = createTag('div', { class: 'timer-fragment' });
+    const unitContainer = createTimerBox(value);
+    const unitLabel = createTag('div', { class: 'timer-unit-label' }, label);
 
-    const unitContainer = document.createElement('div');
-    unitContainer.classList.add('timer-unit-container');
     fragment.appendChild(unitContainer);
-
-    const tensBox = document.createElement('div');
-    tensBox.classList.add('timer-box');
-    tensBox.textContent = Math.floor(value / 10);
-    unitContainer.appendChild(tensBox);
-
-    const onesBox = document.createElement('div');
-    onesBox.classList.add('timer-box');
-    onesBox.textContent = value % 10;
-    unitContainer.appendChild(onesBox);
-
-    const unitLabel = document.createElement('div');
-    unitLabel.classList.add('timer-unit-label');
-    unitLabel.textContent = label;
     fragment.appendChild(unitLabel);
-
     return fragment;
+  }
+
+  function appendLabel(parent, label) {
+    const labelElement = createTag('div', { class: 'timer-label' }, label);
+    parent.appendChild(labelElement);
+  }
+
+  function appendTimerBlock(parent) {
+    const timerBlock = createTag('div', { class: 'timer-block' });
+    parent.appendChild(timerBlock);
+    return timerBlock;
+  }
+
+  function appendTimerFragment(parent, timeValue, label) {
+    const fragment = createTimerFragment(timeValue, label);
+    parent.appendChild(fragment);
+  }
+
+  function appendSeparator(parent) {
+    const separator = createTag('div', { class: 'timer-separator' }, ':');
+    parent.appendChild(separator);
   }
 
   function removeCountdown() {
     container.innerHTML = '';
-  }
-
-  function createSeparator() {
-    const separator = document.createElement('div');
-    separator.classList.add('timer-label');
-    separator.textContent = ':';
-    return separator;
   }
 
   function render(daysLeft, hoursLeft, minutesLeft) {
@@ -58,20 +64,14 @@ async function loadCountdownTimer(container) {
 
     removeCountdown();
 
-    const labelElement = document.createElement('div');
-    labelElement.classList.add('timer-label');
-    labelElement.textContent = cdtLabel;
-    container.appendChild(labelElement);
+    appendLabel(container, cdtLabel);
+    const timerBlock = appendTimerBlock(container);
 
-    const timerBlock = document.createElement('div');
-    timerBlock.classList.add('timer-block');
-    container.appendChild(timerBlock);
-
-    timerBlock.appendChild(createTimerFragment(daysLeft, cdtDays));
-    timerBlock.appendChild(createSeparator());
-    timerBlock.appendChild(createTimerFragment(hoursLeft, cdtHours));
-    timerBlock.appendChild(createSeparator());
-    timerBlock.appendChild(createTimerFragment(minutesLeft, cdtMins));
+    appendTimerFragment(timerBlock, daysLeft, cdtDays);
+    appendSeparator(timerBlock);
+    appendTimerFragment(timerBlock, hoursLeft, cdtHours);
+    appendSeparator(timerBlock);
+    appendTimerFragment(timerBlock, minutesLeft, cdtMins);
   }
 
   function updateCountdown() {
@@ -108,16 +108,26 @@ async function loadCountdownTimer(container) {
 
 const isMobileDevice = () => /Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-export default async function initCDT(el, classesToAdd) {
+export default async function initCDT(el, classList) {
   try {
-    const cdtDiv = document.createElement('div');
-    cdtDiv.classList.add('countdown-timer');
-    classesToAdd.forEach((className) => {
-      cdtDiv.classList.add(className);
-    });
+    const { miloLibs, codeRoot } = getConfig();
+    loadStyle(`${miloLibs || codeRoot}/features/cdt/cdt.css`);
+
+    const placeholders = ['cdt-ends-in', 'cdt-days', 'cdt-hours', 'cdt-mins'];
+    const [cdtLabel, cdtDays, cdtHours, cdtMins] = await Promise.all(
+      placeholders.map(replacePlaceholder),
+    );
+
+    const cdtRange = (getMetadata('countdown-timer')).split(',');
+    const timeRangesEpoch = cdtRange.map((time) => Date.parse(time?.trim()));
+
+    const cdtDiv = createTag('div', { class: 'countdown-timer' });
     cdtDiv.classList.add(isMobileDevice() ? 'vertical' : 'horizontal');
+    cdtDiv.classList.add(classList.contains('dark') ? 'dark' : 'light');
+    if (classList.contains('center')) cdtDiv.classList.add('center');
     el.appendChild(cdtDiv);
-    await loadCountdownTimer(cdtDiv);
+
+    loadCountdownTimer(cdtDiv, cdtLabel, cdtDays, cdtHours, cdtMins, timeRangesEpoch);
   } catch (error) {
     window.lana?.log(`Failed to load countdown timer module: ${error}`, { tags: 'countdown-timer' });
   }

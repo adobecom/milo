@@ -262,10 +262,7 @@ export default async function init(el) {
 
   if (el.classList.contains('countdown-timer')) {
     const { default: initCDT } = await import('../../features/cdt/cdt.js');
-    const classesToAdd = [];
-    if (el.classList.contains('center')) classesToAdd.push('center');
-    classesToAdd.push(el.classList.contains('dark') ? 'dark' : 'light');
-    await initCDT(copy, classesToAdd);
+    await initCDT(copy, el.classList);
   }
 
   await Promise.all(promiseArr);
