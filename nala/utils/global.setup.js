@@ -43,7 +43,7 @@ async function getGitHubPRBranchLiveUrl() {
     console.info('PR From ORG   : ', prFromOrg);
     console.info('PR From REPO  : ', prFromRepoName);
     console.info('PR Branch(U)  : ', prBranch);
-    console.info('PR Number     : ', prNumber ? prNumber : 'Auto-PR');
+    console.info('PR Number     : ', prNumber || 'Auto-PR');
     console.info('PR From Branch live url : ', prBranchLiveUrl);
   } catch (err) {
     console.error(`Error => Error in setting PR Branch test URL : ${prBranchLiveUrl}`);
@@ -66,10 +66,10 @@ async function getGitHubMiloLibsBranchLiveUrl() {
     console.info('Milo Libs : ', miloLibs);
   } catch (err) {
     console.error(
-      `Error => Error in setting PR Branch test URL : ${prBranchLiveUrl}`
+      `Error => Error in setting PR Branch test URL : ${prBranchLiveUrl}`,
     );
     console.info(
-      `Note: PR branch test url  ${prBranchLiveUrl} is not valid, Exiting test execution.`
+      `Note: PR branch test url  ${prBranchLiveUrl} is not valid, Exiting test execution.`,
     );
     process.exit(1);
   }
@@ -86,10 +86,10 @@ async function getCircleCIBranchLiveUrl() {
   } catch (err) {
     console.error(
       'Error => Error in setting Stage Branch test URL : ',
-      stageBranchLiveUrl
+      stageBranchLiveUrl,
     );
     console.info(
-      'Note: Stage branch test url is not valid, Exiting test execution.'
+      'Note: Stage branch test url is not valid, Exiting test execution.',
     );
     process.exit(1);
   }
@@ -98,14 +98,12 @@ async function getCircleCIBranchLiveUrl() {
 async function getLocalBranchLiveUrl() {
   let localTestLiveUrl;
   try {
-    const localGitRootDir = execSync('git rev-parse --show-toplevel', {
-      encoding: 'utf-8',
-    }).trim();
+    const localGitRootDir = execSync('git rev-parse --show-toplevel', { encoding: 'utf-8' }).trim();
 
     if (localGitRootDir) {
       const gitRemoteOriginUrl = execSync(
         'git config --get remote.origin.url',
-        { cwd: localGitRootDir, encoding: 'utf-8' }
+        { cwd: localGitRootDir, encoding: 'utf-8' },
       ).trim();
       const match = gitRemoteOriginUrl.match(/github\.com\/(.*?)\/(.*?)\.git/);
 
@@ -115,8 +113,7 @@ async function getLocalBranchLiveUrl() {
           cwd: localGitRootDir,
           encoding: 'utf-8',
         }).trim();
-        localTestLiveUrl =
-          process.env.LOCAL_TEST_LIVE_URL || MAIN_BRANCH_LIVE_URL;
+        localTestLiveUrl = process.env.LOCAL_TEST_LIVE_URL || MAIN_BRANCH_LIVE_URL;
         if (await isBranchURLValid(localTestLiveUrl)) {
           console.info('Git ORG      : ', localOrg);
           console.info('Git REPO     : ', localRepo);
@@ -127,10 +124,10 @@ async function getLocalBranchLiveUrl() {
     }
   } catch (error) {
     console.error(
-      `Error => Error in setting local test URL : ${localTestLiveUrl}\n`
+      `Error => Error in setting local test URL : ${localTestLiveUrl}\n`,
     );
     console.info(
-      'Note: Local or branch test url is not valid, Exiting test execution.\n'
+      'Note: Local or branch test url is not valid, Exiting test execution.\n',
     );
     process.exit(1);
   }
