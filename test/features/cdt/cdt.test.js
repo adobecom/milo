@@ -49,3 +49,14 @@ describe('CDT test error case invalid  cdt metdata format', () => {
     expect(container.querySelectorAll('.timer-label')).to.have.lengthOf(0);
   });
 });
+
+describe('CDT test start is equal to end date', () => {
+  before(() => {
+    document.head.innerHTML = '<meta name="countdown-timer" content="2024-08-26 12:00:00 PST,2024-08-26 12:00:00 PST">';
+  });
+  it('check for countdown-timer meta data', async () => {
+    const container = document.getElementById('cdt-container');
+    await initCDT(container, container.classList);
+    expect(container.querySelectorAll('.timer-label')).to.have.lengthOf(0);
+  });
+});
