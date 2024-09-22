@@ -1,12 +1,16 @@
 import { readFile, setViewport } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
+import { setConfig, getConfig } from '../../../libs/utils/utils.js';
 
-document.head.innerHTML = "<link rel='stylesheet' href='../../../libs/blocks/media/media.css'>";
+const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
+const conf = { locales, miloLibs: 'http://localhost:2000/libs' };
+setConfig(conf);
+getConfig().locale.contentRoot = '/test/blocks/media/mocks';
+
+document.head.innerHTML = '<link rel="stylesheet" href="../../../libs/blocks/media/media.css"><meta name="countdown-timer" content="2024-08-26 12:00:00 PST,2026-08-30 00:00:00 PST">';
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const { default: init } = await import('../../../libs/blocks/media/media.js');
 describe('media', () => {
-  const meta = Object.assign(document.createElement('meta'), { name: 'countdown-timer', content: '2024-08-26 12:00:00 PST,2026-08-30 00:00:00 PST' });
-  document.head.appendChild(meta);
   const medias = document.querySelectorAll('.media');
   medias.forEach((media) => {
     init(media);
@@ -135,7 +139,7 @@ describe('media', () => {
       expect(detail).to.exist;
     });
     it('has a cdt', () => {
-      expect(medias[8].getElementsByClassName('timer-label')).to.exist;
+      expect(medias[8].querySelectorAll('.timer-label')).to.have.lengthOf(1);
     });
   });
 });
