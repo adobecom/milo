@@ -513,10 +513,8 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
   // retro support
   const action = line.action?.toLowerCase()
     .replace('content', '').replace('fragment', '').replace('tosection', '');
-  if (config.mep?.preview && !action) {
-    console.log('Invalid action found: ', line);
-    return;
-  }
+  if (config.mep?.preview && !action) console.log('Invalid action found: ', line);
+  if (!action) return;
   const pageFilter = line['page filter'] || line['page filter optional'];
   const { selector } = line;
 
