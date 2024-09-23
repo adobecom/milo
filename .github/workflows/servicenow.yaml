@@ -1,4 +1,4 @@
-name: Create CMR in SKMS
+name: Create CMR in ServiceNow
 
 on:
   pull_request:
@@ -70,11 +70,11 @@ jobs:
           echo "$release" >> $GITHUB_ENV
           echo "RS_EOF" >> $GITHUB_ENV
 
-      - name: Create CMR in SKMS
+      - name: Create CMR in ServiceNow
         run: |
-          DEFAULT_SKMS_URL='api.skms.adobe.com'
+          DEFAULT_SERVICENOW_URL=''
 
-          function skms_request() {
+          function servicenow_request() {
             local username=$1
             local passkey=$2
             local object=$3
@@ -107,7 +107,7 @@ jobs:
             fi
 
             if [ -z "$url" ]; then
-              url=$DEFAULT_SKMS_URL
+              url=$DEFAULT_SERVICENOW_URL
             fi
 
             local params="{\"_username\":\"${username}\",\"_passkey\":\"${passkey}\",\"_object\":\"${object}\",\"_method\": \"${method}\"}"
@@ -127,4 +127,4 @@ jobs:
             fi
           }
 
-          skms_request '${{ secrets.SKMS_USER }}' '${{ secrets.SKMS_PASS }}' CmrDao createCmrFromPreapprovedChangeModel '{"change_executor":"${{ secrets.SKMS_CHANGE_EXECUTOR }}","maintenance_window_end_time":"${{ env.end_time }}","maintenance_window_start_time":"${{ env.start_time }}","preapproved_change_model_id":"${{ secrets.SKMS_CHANGE_MODEL_ID }}","summary":"${{ env.release_summary }}"}'
+          servicenow_request '${{ secrets.SKMS_USER }}' '${{ secrets.SKMS_PASS }}' CmrDao createCmrFromPreapprovedChangeModel '{"change_executor":"${{ secrets.SKMS_CHANGE_EXECUTOR }}","maintenance_window_end_time":"${{ env.end_time }}","maintenance_window_start_time":"${{ env.start_time }}","preapproved_change_model_id":"${{ secrets.SKMS_CHANGE_MODEL_ID }}","summary":"${{ env.release_summary }}"}'
