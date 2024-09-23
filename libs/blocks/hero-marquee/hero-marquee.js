@@ -5,6 +5,7 @@ import {
   decorateTextOverrides,
   decorateButtons,
   handleObjectFit,
+  loadCDT,
 } from '../../utils/decorate.js';
 import { createTag, loadStyle, getConfig } from '../../utils/utils.js';
 
@@ -259,5 +260,10 @@ export default async function init(el) {
     }
   });
   decorateTextOverrides(el, ['-heading', '-body', '-detail'], mainCopy);
+
+  if (el.classList.contains('countdown-timer')) {
+    promiseArr.push(loadCDT(copy, el.classList));
+  }
+
   await Promise.all(promiseArr);
 }
