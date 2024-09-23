@@ -1,6 +1,6 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import initCDT from '../../../libs/features/cdt/cdt.js';
+import { loadCDT } from '../../../libs/utils/decorate.js';
 import { setConfig } from '../../../libs/utils/utils.js';
 
 const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
@@ -11,7 +11,7 @@ document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 describe('CDT test error case no metadata', () => {
   it('check for countdown-timer meta data', async () => {
     const container = document.getElementById('cdt-container');
-    await initCDT(container, container.classList);
+    await loadCDT(container, container.classList);
     expect(container.querySelectorAll('.timer-label')).to.have.lengthOf(0);
   });
 });
@@ -22,7 +22,7 @@ describe('CDT test error case invalid date', () => {
   });
   it('check for countdown-timer meta data', async () => {
     const container = document.getElementById('cdt-container');
-    await initCDT(container, container.classList);
+    await loadCDT(container, container.classList);
     expect(container.querySelectorAll('.timer-label')).to.have.lengthOf(0);
   });
 });
@@ -33,7 +33,7 @@ describe('CDT test success case', () => {
   });
   it('check for countdown-timer meta data', async () => {
     const container = document.getElementById('cdt-container');
-    await initCDT(container, container.classList);
+    await loadCDT(container, container.classList);
     expect(container.querySelectorAll('.timer-label')).to.have.lengthOf(1);
     container.innerHTML = '';
   });
@@ -45,7 +45,7 @@ describe('CDT test error case invalid  cdt metdata format', () => {
   });
   it('check for countdown-timer meta data', async () => {
     const container = document.getElementById('cdt-container');
-    await initCDT(container, container.classList);
+    await loadCDT(container, container.classList);
     expect(container.querySelectorAll('.timer-label')).to.have.lengthOf(0);
   });
 });
@@ -56,7 +56,7 @@ describe('CDT test start is equal to end date', () => {
   });
   it('check for countdown-timer meta data', async () => {
     const container = document.getElementById('cdt-container');
-    await initCDT(container, container.classList);
+    await loadCDT(container, container.classList);
     expect(container.querySelectorAll('.timer-label')).to.have.lengthOf(0);
   });
 });
