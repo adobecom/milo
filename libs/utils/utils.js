@@ -1226,11 +1226,11 @@ export function partition(arr, fn) {
 const preloadBlocks = (blocks = []) => blocks.map((block) => {
   if (block.classList.contains('hide-block')) return null;
   const { blockPath, hasStyles, name } = getBlockData(block);
-  if (name === 'marquee' || name === 'hero-marquee') {
+  if (['marquee', 'hero-marquee'].includes(name)) {
     loadLink(`${getConfig().base}/utils/decorate.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
   }
   loadLink(`${blockPath}.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
-  return hasStyles ? new Promise((resolve) => { loadStyle(`${blockPath}.css`, resolve); }) : null;
+  return hasStyles && new Promise((resolve) => { loadStyle(`${blockPath}.css`, resolve); });
 }).filter(Boolean);
 
 async function resolveInlineFrags(section) {
