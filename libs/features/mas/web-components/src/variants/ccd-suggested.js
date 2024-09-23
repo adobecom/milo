@@ -3,9 +3,6 @@ import { VariantLayout } from './variant-layout';
 import { CSS } from './ccd-suggested.css.js';
 
 export class CCDSuggested extends VariantLayout {
-  constructor(card) {
-    super(card);
-  }
 
   getGlobalCSS() {
     return CSS;
