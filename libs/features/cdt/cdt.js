@@ -39,9 +39,7 @@ function loadCountdownTimer(
   }
 
   function removeCountdown() {
-    while (container.firstChild) {
-      container.removeChild(container.firstChild);
-    }
+    container.replaceChildren();
   }
 
   function render(daysLeft, hoursLeft, minutesLeft) {
