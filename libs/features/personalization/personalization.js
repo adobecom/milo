@@ -576,7 +576,7 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
       variants[vn].commands.push(variantInfo);
     } else {
       /* c8 ignore next 2 */
-      console.log('Invalid action found: ', line);
+      previewLog('Invalid action found: ', line);
     }
   });
 };
