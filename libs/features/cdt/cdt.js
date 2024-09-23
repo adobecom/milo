@@ -86,37 +86,33 @@ function loadCountdownTimer(
 const isMobileDevice = () => /Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
 export default async function initCDT(el, classList) {
-  try {
-    const placeholders = ['cdt-ends-in', 'cdt-days', 'cdt-hours', 'cdt-mins'];
-    const [cdtLabel, cdtDays, cdtHours, cdtMins] = await Promise.all(
-      placeholders.map((placeholder) => replaceKey(placeholder, getConfig())),
-    );
+  const placeholders = ['cdt-ends-in', 'cdt-days', 'cdt-hours', 'cdt-mins'];
+  const [cdtLabel, cdtDays, cdtHours, cdtMins] = await Promise.all(
+    placeholders.map((placeholder) => replaceKey(placeholder, getConfig())),
+  );
 
-    const cdtMetadata = getMetadata('countdown-timer');
-    if (cdtMetadata === null) {
-      throw new Error('Metadata for countdown-timer is not available');
-    }
-
-    const cdtRange = cdtMetadata.split(',');
-    if (cdtRange.length % 2 !== 0) {
-      throw new Error('Invalid countdown timer range');
-    }
-
-    const timeRangesEpoch = cdtRange.map((time) => {
-      const parsedTime = Date.parse(time?.trim());
-      return Number.isNaN(parsedTime) ? null : parsedTime;
-    });
-    if (timeRangesEpoch.includes(null)) {
-      throw new Error('Invalid format for countdown timer range');
-    }
-
-    const cdtDiv = createTag('div', { class: 'countdown-timer' }, null, { parent: el });
-    cdtDiv.classList.add(isMobileDevice() ? 'vertical' : 'horizontal');
-    cdtDiv.classList.add(classList.contains('dark') ? 'dark' : 'light');
-    if (classList.contains('center')) cdtDiv.classList.add('center');
-
-    loadCountdownTimer(cdtDiv, cdtLabel, cdtDays, cdtHours, cdtMins, timeRangesEpoch);
-  } catch (error) {
-    window.lana?.log(`Failed to load countdown timer module: ${error}`, { tags: 'countdown-timer' });
+  const cdtMetadata = getMetadata('countdown-timer');
+  if (cdtMetadata === null) {
+    throw new Error('Metadata for countdown-timer is not available');
   }
+
+  const cdtRange = cdtMetadata.split(',');
+  if (cdtRange.length % 2 !== 0) {
+    throw new Error('Invalid countdown timer range');
+  }
+
+  const timeRangesEpoch = cdtRange.map((time) => {
+    const parsedTime = Date.parse(time?.trim());
+    return Number.isNaN(parsedTime) ? null : parsedTime;
+  });
+  if (timeRangesEpoch.includes(null)) {
+    throw new Error('Invalid format for countdown timer range');
+  }
+
+  const cdtDiv = createTag('div', { class: 'countdown-timer' }, null, { parent: el });
+  cdtDiv.classList.add(isMobileDevice() ? 'vertical' : 'horizontal');
+  cdtDiv.classList.add(classList.contains('dark') ? 'dark' : 'light');
+  if (classList.contains('center')) cdtDiv.classList.add('center');
+
+  loadCountdownTimer(cdtDiv, cdtLabel, cdtDays, cdtHours, cdtMins, timeRangesEpoch);
 }

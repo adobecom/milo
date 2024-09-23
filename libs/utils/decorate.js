@@ -314,13 +314,12 @@ export function decorateMultiViewport(el) {
 
 export async function loadCDT(el, classList) {
   try {
-    // Load the CSS and JS in parallel using Promise.all()
     await Promise.all([
       loadStyle(`${miloLibs || codeRoot}/features/cdt/cdt.css`),
       import('../features/cdt/cdt.js')
         .then(({ default: initCDT }) => initCDT(el, classList)),
     ]);
-  } catch (err) {
-    window.lana?.log(`Failed to load CDT module: ${err}`);
+  } catch (error) {
+    window.lana?.log(`Failed to load countdown timer module: ${error}`, { tags: 'countdown-timer' });
   }
 }
