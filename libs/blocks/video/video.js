@@ -1,9 +1,12 @@
 import { getConfig } from '../../utils/utils.js';
-import { turnAnchorIntoVideo } from '../../utils/decorate.js';
+import { decorateAnchorVideo } from '../../utils/decorate.js';
 
 export default function init(a) {
   a.classList.add('hide-video');
-  if (!a.parentNode) return;
+  if (!a.parentNode) {
+    a.remove();
+    return;
+  }
   const { pathname } = a;
   let videoPath = `.${pathname}`;
   if (pathname.match('media_.*.mp4')) {
@@ -14,7 +17,7 @@ export default function init(a) {
     const mediaFilename = pathname.split('/').pop();
     videoPath = `${root}${mediaFilename}`;
   }
-  turnAnchorIntoVideo({
+  decorateAnchorVideo({
     src: videoPath,
     anchorTag: a,
   });
