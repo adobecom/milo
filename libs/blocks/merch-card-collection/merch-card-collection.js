@@ -1,3 +1,4 @@
+import { overrideUrlOrigin } from '../../utils/helpers.js';
 import {
   createTag, decorateLinks, getConfig, loadBlock, loadStyle, localizeLink,
 } from '../../utils/utils.js';
@@ -57,7 +58,7 @@ async function getCardsRoot(config, html) {
 }
 
 const fetchOverrideCard = (action, config) => new Promise((resolve, reject) => {
-  fetch(`${localizeLink(action?.target, config)}.plain.html`).then((res) => {
+  fetch(`${localizeLink(overrideUrlOrigin(action?.target))}.plain.html`).then((res) => {
     if (res.ok) {
       res.text().then((cardContent) => {
         const response = { path: action.target, cardContent: /^<div>(.*)<\/div>$/.exec(cardContent.replaceAll('\n', ''))[1] };
@@ -187,7 +188,10 @@ export default async function init(el) {
   const cardsDataPromise = fetchCardsData(config, type, el);
 
   const merchCardCollectionDep = import('../../deps/mas/merch-card-collection.js');
+  const polyfills = import('../merch/merch.js');
+  await polyfills;
   let deps = [
+    polyfills,
     merchCardCollectionDep,
     import('../merch-card/merch-card.js'),
     import('../../deps/mas/merch-card.js'),

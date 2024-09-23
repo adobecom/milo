@@ -4,7 +4,7 @@ import { EVENT_TYPE_READY, TAG_NAME_SERVICE } from './constants.js';
 import { Defaults } from './defaults.js';
 import { isFunction } from './external.js';
 import { Ims } from './ims.js';
-import { fetchPriceLiterals } from './literals.js';
+import { getPriceLiterals } from './literals.js';
 import { Log } from './log.js';
 import { Price } from './price.js';
 import { getSettings } from './settings.js';
@@ -43,7 +43,7 @@ async function activateService(config, dataProviders) {
     const settings = Object.freeze(getSettings(config));
     // Fetch price literals
     try {
-        literals.price = await fetchPriceLiterals(settings);
+        literals.price = await getPriceLiterals(settings, config.commerce.priceLiterals);
     } catch (error) {
         log.warn('Price literals were not fetched:', error);
     }
@@ -121,23 +121,18 @@ export function resetService() {
 /** @type {Commerce.initService} */
 export function initService(getConfig, getProviders) {
     // Callback is provided, activate service or/and return its promise
-    if (isFunction(getConfig)) {
-        const dataProviders = isFunction(getProviders) ? getProviders() : {};
-        if (dataProviders.force) resetService();
-        return (HTMLWcmsCommerceElement.promise ??= activateService(
-            getConfig(),
-            dataProviders,
-        ));
+    const config = isFunction(getConfig) ? getConfig() : null;
+    const dataProviders = isFunction(getProviders) ? getProviders() : {};
+    if (config) {
+      if (dataProviders.force) resetService();
+      activateService(config, dataProviders).then((serviceElement) => {
+          // @ts-ignore
+          initService.resolve(serviceElement);
+      });
     }
-    // Return existing promise
-    if (HTMLWcmsCommerceElement.promise) return HTMLWcmsCommerceElement.promise;
-    // Return new promise resolving on "ready" event with new instance of service
-    return new Promise((resolve) => {
-        const listener = (event) => {
-            resolve(event.detail);
-        };
-        document.head.addEventListener(EVENT_TYPE_READY, listener, {
-            once: true,
-        });
+    HTMLWcmsCommerceElement.promise ??= new Promise((resolve) => {
+        // @ts-ignore
+        initService.resolve = resolve;
     });
+    return HTMLWcmsCommerceElement.promise;
 }

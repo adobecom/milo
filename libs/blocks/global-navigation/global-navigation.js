@@ -34,12 +34,16 @@ import {
   trigger,
   yieldToMain,
   addMepHighlightAndTargetId,
+  isDarkMode,
+  darkIcons,
+  setDisableAEDState,
+  getDisableAEDState,
 } from './utilities/utilities.js';
 
 import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
 
 export const CONFIG = {
-  icons,
+  icons: isDarkMode() ? darkIcons : icons,
   delays: {
     mainNavDropdowns: 800,
     loadDelayed: 3000,
@@ -320,7 +324,7 @@ class Gnav {
     isDesktop.addEventListener('change', closeAllDropdowns);
   }, 'Error in global navigation init', 'errorType=error,module=gnav');
 
-  ims = async () => loadIms()
+  ims = async () => (window.adobeIMS?.initialized ? this.imsReady() : loadIms()
     .then(() => this.imsReady())
     .catch((e) => {
       if (e?.message === 'IMS timeout') {
@@ -328,7 +332,7 @@ class Gnav {
         return;
       }
       lanaLog({ message: 'GNAV: Error with IMS', e, tags: 'errorType=info,module=gnav' });
-    });
+    }));
 
   decorateTopNav = () => {
     this.elements.mobileToggle = this.decorateToggle();
@@ -519,7 +523,7 @@ class Gnav {
       return 'linux';
     };
 
-    const unavVersion = new URLSearchParams(window.location.search).get('unavVersion') || '1.1';
+    const unavVersion = new URLSearchParams(window.location.search).get('unavVersion') || '1.3';
     await Promise.all([
       loadScript(`https://${environment}.adobeccstatic.com/unav/${unavVersion}/UniversalNav.js`),
       loadStyles(`https://${environment}.adobeccstatic.com/unav/${unavVersion}/UniversalNav.css`),
@@ -605,10 +609,7 @@ class Gnav {
       env: environment,
       locale,
       imsClientId: window.adobeid?.client_id,
-      theme: 'light',
-      onReady: () => {
-        this.decorateAppPrompt({ getAnchorState: () => window.UniversalNav.getComponent?.('app-switcher') });
-      },
+      theme: isDarkMode() ? 'dark' : 'light',
       analyticsContext: {
         consumer: {
           name: 'adobecom',
@@ -625,8 +626,8 @@ class Gnav {
 
     // Exposing UNAV config for consumers
     CONFIG.universalNav.universalNavConfig = getConfiguration();
-    window.UniversalNav(CONFIG.universalNav.universalNavConfig);
-
+    await window.UniversalNav(CONFIG.universalNav.universalNavConfig);
+    this.decorateAppPrompt({ getAnchorState: () => window.UniversalNav.getComponent?.('app-switcher') });
     isDesktop.addEventListener('change', () => {
       window.UniversalNav.reload(CONFIG.universalNav.universalNavConfig);
     });
@@ -746,6 +747,14 @@ class Gnav {
 
     // Create image element
     const getImageEl = () => {
+      if (isDarkMode()) {
+        const allSvgImgs = rawBlock.querySelectorAll('picture img[src$=".svg"]');
+        if (allSvgImgs.length === 2) return allSvgImgs[1];
+
+        const images = blockLinks.filter((blockLink) => imgRegex.test(blockLink.href)
+        || imgRegex.test(blockLink.textContent));
+        if (images.length === 2) return getBrandImage(images[1]);
+      }
       const svgImg = rawBlock.querySelector('picture img[src$=".svg"]');
       if (svgImg) return svgImg;
 
@@ -812,6 +821,7 @@ class Gnav {
         ${isDesktop.matches ? '' : this.decorateSearch()}
         ${this.elements.mainNav}
         ${isDesktop.matches ? this.decorateSearch() : ''}
+        ${getConfig().searchEnabled === 'on' ? toFragment`<div class="feds-client-search"></div>` : ''}
       </div>
     `;
 
@@ -829,8 +839,9 @@ class Gnav {
 
     if (!hasActiveLink()) {
       const sections = this.elements.mainNav.querySelectorAll('.feds-navItem--section');
+      const disableAED = getDisableAEDState();
 
-      if (sections.length === 1) {
+      if (!disableAED && sections.length === 1) {
         sections[0].classList.add(selectors.activeNavItem.slice(1));
         setActiveLink(true);
       }
@@ -1016,7 +1027,11 @@ const getSource = async () => {
 export default async function init(block) {
   try {
     const { mep } = getConfig();
-    const url = await getSource();
+    const sourceUrl = await getSource();
+    const [url, hash = ''] = sourceUrl.split('#');
+    if (hash === '_noActiveItem') {
+      setDisableAEDState();
+    }
     const content = await fetchAndProcessPlainHtml({ url });
     if (!content) return null;
     const gnav = new Gnav({
@@ -1027,6 +1042,7 @@ export default async function init(block) {
     block.setAttribute('daa-im', 'true');
     const mepMartech = mep?.martech || '';
     block.setAttribute('daa-lh', `gnav|${getExperienceName()}${mepMartech}`);
+    if (isDarkMode()) block.classList.add('feds--dark');
     return gnav;
   } catch (e) {
     lanaLog({ message: 'Could not create global navigation.', e, tags: 'errorType=error,module=gnav' });

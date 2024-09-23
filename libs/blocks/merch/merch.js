@@ -3,7 +3,6 @@ import {
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
-export const PRICE_LITERALS_URL = 'https://www.adobe.com/federal/commerce/price-literals.json';
 export const CHECKOUT_LINK_CONFIG_PATH = '/commerce/checkout-link.json'; // relative to libs.
 
 export const PRICE_TEMPLATE_DISCOUNT = 'discount';
@@ -161,7 +160,7 @@ export async function polyfills() {
     polyfills.promise = Promise.resolve();
   } else {
     const { base } = getConfig();
-    polyfills.promise = loadScript(`${base}/deps/custom-elements.js`);
+    polyfills.promise = await loadScript(`${base}/deps/custom-elements.js`);
   }
   return polyfills.promise;
 }
@@ -177,14 +176,6 @@ export async function fetchEntitlements() {
       },
     ));
   return fetchEntitlements.promise;
-}
-
-export async function fetchLiterals(url) {
-  fetchLiterals.promise = fetchLiterals.promise ?? new Promise((resolve) => {
-    fetch(url)
-      .then((response) => response.json().then(({ data }) => resolve(data)));
-  });
-  return fetchLiterals.promise;
 }
 
 export async function fetchCheckoutLinkConfigs(base = '') {
@@ -364,6 +355,8 @@ async function openExternalModal(url, getModal) {
   });
 }
 
+const isInternalModal = (url) => /\/fragments\//.test(url);
+
 export async function openModal(e, url, offerType) {
   e.preventDefault();
   e.stopImmediatePropagation();
@@ -371,10 +364,10 @@ export async function openModal(e, url, offerType) {
   await import('../modal/modal.merch.js');
   const offerTypeClass = offerType === OFFER_TYPE_TRIAL ? 'twp' : 'crm';
   let modal;
-  if (/\/fragments\//.test(url)) {
+  if (isInternalModal(url)) {
     const fragmentPath = url.split(/hlx.(page|live)/).pop();
     modal = await openFragmentModal(fragmentPath, getModal);
-  } else if (/^https?:/.test(url)) {
+  } else {
     modal = await openExternalModal(url, getModal);
   }
   if (modal) {
@@ -398,7 +391,8 @@ export async function getModalAction(offers, options) {
   const columnName = (offerType === OFFER_TYPE_TRIAL) ? FREE_TRIAL_PATH : BUY_NOW_PATH;
   let url = checkoutLinkConfig[columnName];
   if (!url) return undefined;
-  url = localizeLink(checkoutLinkConfig[columnName]);
+  url = isInternalModal(url)
+    ? localizeLink(checkoutLinkConfig[columnName]) : checkoutLinkConfig[columnName];
   return { url, handler: (e) => openModal(e, url, offerType) };
 }
 
@@ -427,7 +421,6 @@ export async function initService(force = false) {
     fetchCheckoutLinkConfigs.promise = undefined;
   }
   const { env, commerce = {}, locale } = getConfig();
-  commerce.priceLiteralsPromise = fetchLiterals(PRICE_LITERALS_URL);
   initService.promise = initService.promise ?? polyfills().then(async () => {
     const { hostname, searchParams } = new URL(window.location.href);
     let commerceLibPath = '../../deps/mas/commerce.js';

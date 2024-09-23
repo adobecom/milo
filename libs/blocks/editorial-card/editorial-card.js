@@ -25,9 +25,10 @@ async function decorateLockupFromContent(el) {
 const extendDeviceContent = (el) => {
   const detail = el.querySelector('[class^="detail-"]');
   const prevElem = detail?.previousElementSibling;
-  if (!prevElem || ![...prevElem.classList].some((c) => c.startsWith('body-'))) return;
-  prevElem.classList.remove('body-m');
-  prevElem.classList.add('body-xxs', 'device');
+  if (!prevElem) return;
+  const elBodyClass = [...prevElem.classList].find((c) => c.startsWith('body-'));
+  prevElem.classList.remove(elBodyClass);
+  prevElem.classList.add('device');
 };
 
 const decorateMedia = (el, media) => {
@@ -37,14 +38,14 @@ const decorateMedia = (el, media) => {
   if (mediaVideo) {
     applyHoverPlay(mediaVideo);
   }
-  if (media.children.length > 1) decorateBlockBg(el, media);
+  if (media.children.length > 1) decorateBlockBg(el, media, { className: 'vp-media' });
 };
 
 const decorateForeground = async (el, rows) => {
-  rows.forEach(async (row, i) => {
+  rows.forEach((row, i) => {
     if (i === 0) {
       row.classList.add('foreground');
-      await decorateLockupFromContent(row);
+      decorateLockupFromContent(row);
     } else if (i === (rows.length - 1)) {
       row.classList.add('card-footer');
       if (!row.textContent.trim()) row.classList.add('empty');
@@ -56,8 +57,10 @@ const decorateForeground = async (el, rows) => {
   });
 };
 
-const decorateBgRow = (el, background) => {
-  if (background.textContent.trim() === '') {
+const decorateBgRow = (el, background, remove = false) => {
+  const rows = background.querySelectorAll(':scope > div');
+  const bgRowsEmpty = [...rows].every((row) => row.innerHTML.trim() === '');
+  if (bgRowsEmpty || remove) {
     el.classList.add('no-bg');
     background.remove();
     return;
@@ -78,38 +81,50 @@ function handleClickableCard(el) {
 
 const init = async (el) => {
   el.classList.add('con-block');
-  if (el.className.includes('open')) {
-    el.classList.add('no-border', 'l-rounded-corners-image', 'static-links-copy');
-  }
-  if (el.className.includes('rounded-corners')) {
-    loadStyle(`${base}/styles/rounded-corners.css`);
-  }
+  const hasOpenClass = el.className.includes('open');
+  if (hasOpenClass) el.classList.add('no-border', 'l-rounded-corners-image', 'static-links-copy');
+  if (el.className.includes('rounded-corners')) loadStyle(`${base}/styles/rounded-corners.css`);
   if (![...el.classList].some((c) => c.endsWith('-lockup'))) el.classList.add('m-lockup');
   let rows = el.querySelectorAll(':scope > div');
   const [head, middle, ...tail] = rows;
   if (rows.length === 4) el.classList.add('equal-height');
   if (rows.length >= 1) {
-    const count = rows.length >= 3 ? 'three-plus' : rows.length;
+    const count = rows.length >= 4 ? 'four-plus' : rows.length;
     switch (count) {
-      case 'three-plus':
-        // 3+ rows (0:bg, 1:media, 2:copy, ...3:static, last:card-footer)
-        decorateBgRow(el, head);
+      case 'four-plus':
+        // 4+ rows (0:bg, 1:media, 2:copy, ...3:static, last:card-footer)
+        // 4+ rows.open (0:bg[removed], 1:media, 2:copy, ...3:static, last:card-footer)
+        decorateBgRow(el, head, hasOpenClass);
         rows = tail;
-        await decorateForeground(el, rows);
         decorateMedia(el, middle);
+        await decorateForeground(el, rows);
+        break;
+      case 3:
+        // 3 rows (0:bg, 1:media, last:copy)
+        // 3 rows.open (0:media, 1:copy, last:card-footer)
+        if (hasOpenClass) {
+          el.classList.add('no-bg');
+          rows = [middle, tail[0]];
+          decorateMedia(el, head);
+        } else {
+          rows = tail;
+          decorateBgRow(el, head);
+          decorateMedia(el, middle);
+        }
+        await decorateForeground(el, rows);
         break;
       case 2:
         // 2 rows (0:media, 1:copy)
-        rows = middle;
-        await decorateForeground(el, [rows]);
+        rows = [middle];
         decorateMedia(el, head);
         el.classList.add('no-bg');
+        await decorateForeground(el, rows);
         break;
       case 1:
         // 1 row  (0:copy)
-        rows = head;
-        await decorateForeground(el, [rows]);
+        rows = [head];
         el.classList.add('no-bg', 'no-media');
+        await decorateForeground(el, rows);
         break;
       default:
     }

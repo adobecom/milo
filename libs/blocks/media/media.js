@@ -1,6 +1,13 @@
 /* media - consonant v6 */
 
-import { decorateBlockBg, decorateBlockText, getBlockSize, decorateTextOverrides, applyHoverPlay } from '../../utils/decorate.js';
+import {
+  decorateBlockBg,
+  decorateBlockText,
+  getBlockSize,
+  decorateTextOverrides,
+  applyHoverPlay,
+  loadCDT,
+} from '../../utils/decorate.js';
 import { createTag, loadStyle, getConfig } from '../../utils/utils.js';
 
 const blockTypeSizes = {
@@ -33,7 +40,7 @@ function decorateQr(el) {
   qrImage.classList.add('qr-code-img');
 }
 
-export default function init(el) {
+export default async function init(el) {
   if (el.className.includes('rounded-corners')) {
     const { miloLibs, codeRoot } = getConfig();
     const base = miloLibs || codeRoot;
@@ -105,4 +112,8 @@ export default function init(el) {
   const mediaRowReversed = el.querySelector(':scope > .foreground > .media-row > div').classList.contains('text');
   if (mediaRowReversed) el.classList.add('media-reverse-mobile');
   decorateTextOverrides(el);
+
+  if (el.classList.contains('countdown-timer')) {
+    await loadCDT(container, el.classList);
+  }
 }

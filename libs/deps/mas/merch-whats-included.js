@@ -1,4 +1,4 @@
-import{html as e,css as o,LitElement as l}from"/libs/deps/lit-all.min.js";var t=class extends l{static styles=o`
+import{html as e,css as o,LitElement as l}from"../lit-all.min.js";var t=class extends l{static styles=o`
         :host {
             display: inline-grid;
             place-items: end start;
@@ -8,7 +8,6 @@ import{html as e,css as o,LitElement as l}from"/libs/deps/lit-all.min.js";var t=
             place-content: stretch start;
             box-sizing: border-box;
             align-self: baseline;
-            margin-top: 16px;
             margin-bottom: 16px;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             grid-auto-rows: unset;
@@ -41,4 +40,3 @@ import{html as e,css as o,LitElement as l}from"/libs/deps/lit-all.min.js";var t=
             ${this.isMobile&&this.rows.length>this.mobileRows?e`<div @click=${this.toggle} class="see-more">
                       ${this.showAll?"- See less":"+ See more"}
                   </div>`:e``}`}get isMobile(){return window.matchMedia("(max-width: 767px)").matches}get rows(){return this.querySelectorAll("merch-mnemonic-list")}};customElements.define("merch-whats-included",t);export{t as MerchWhatsIncluded};
-//# sourceMappingURL=merch-whats-included.js.map

@@ -14,7 +14,7 @@
     "scripts": {
         "build": "node build.mjs",
         "test": "wtr --config ./web-test-runner.config.mjs --coverage --watch --debug",
-        "test:ci": "wtr --config ./web-test-runner.config.mjs"
+        "test:ci": "wtr --config ./web-test-runner.config.mjs --coverage"
     },
     "dependencies": {
     },

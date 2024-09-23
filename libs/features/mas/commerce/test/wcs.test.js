@@ -1,4 +1,5 @@
 import { ERROR_MESSAGE_OFFER_NOT_FOUND } from '../src/constants.js';
+import { Defaults } from '../src/defaults.js';
 import { Wcs } from '../src/wcs.js';
 
 import { mockFetch } from './mocks/fetch.js';
@@ -12,9 +13,9 @@ describe('resolveOfferSelectors', () => {
         const client = Wcs({
             // @ts-ignore
             settings: {
-                country: 'US',
-                language: 'en',
+                ...Defaults,
                 locale: 'en_US',
+                wcsBufferLimit: 4,
             },
         });
         const results = await Promise.allSettled(
@@ -37,12 +38,11 @@ describe('resolveOfferSelectors', () => {
     });
 
     it('groups WCS requests by promotion code', async () => {
-        let fetch = await mockFetch(withWcs);
+        await mockFetch(withWcs);
         const client = Wcs({
             // @ts-ignore
             settings: {
-                country: 'US',
-                language: 'en',
+              ...Defaults,
                 locale: 'en_US',
                 wcsBufferLimit: 2,
             },

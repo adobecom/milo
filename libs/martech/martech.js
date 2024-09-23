@@ -1,4 +1,6 @@
-import { getConfig, getMetadata, loadIms, loadLink, loadScript } from '../utils/utils.js';
+import {
+  getConfig, getMetadata, loadIms, loadLink, loadScript, getMepEnablement,
+} from '../utils/utils.js';
 
 const ALLOY_SEND_EVENT = 'alloy_sendEvent';
 const ALLOY_SEND_EVENT_ERROR = 'alloy_sendEvent_error';
@@ -116,29 +118,26 @@ export const getTargetPersonalization = async () => {
   const responseStart = Date.now();
   window.addEventListener(ALLOY_SEND_EVENT, () => {
     const responseTime = calculateResponseTime(responseStart);
-    window.lana.log(`target response time: ${responseTime}`, { tags: 'errorType=info,module=martech' });
+    window.lana.log(`target response time: ${responseTime}`, { tags: 'martech', errorType: 'i' });
   }, { once: true });
 
-  let manifests = [];
-  let propositions = [];
+  let targetManifests = [];
+  let targetPropositions = [];
   const response = await waitForEventOrTimeout(ALLOY_SEND_EVENT, timeout);
   if (response.error) {
-    window.lana.log('target response time: ad blocker', { tags: 'errorType=info,module=martech' });
-    return [];
+    window.lana.log('target response time: ad blocker', { tags: 'martech', errorType: 'i' });
+    return { targetManifests, targetPropositions };
   }
   if (response.timeout) {
     waitForEventOrTimeout(ALLOY_SEND_EVENT, 5100 - timeout)
       .then(() => sendTargetResponseAnalytics(true, responseStart, timeout));
   } else {
     sendTargetResponseAnalytics(false, responseStart, timeout);
-    manifests = handleAlloyResponse(response.result);
-    propositions = response.result?.propositions || [];
+    targetManifests = handleAlloyResponse(response.result);
+    targetPropositions = response.result?.propositions || [];
   }
 
-  return {
-    targetManifests: manifests,
-    targetPropositions: propositions,
-  };
+  return { targetManifests, targetPropositions };
 };
 
 const setupEntitlementCallback = () => {
@@ -178,11 +177,15 @@ const loadMartechFiles = async (config) => {
   if (filesLoadedPromise) return filesLoadedPromise;
 
   filesLoadedPromise = async () => {
-    loadIms()
-      .then(() => {
-        if (window.adobeIMS.isSignedInUser()) setupEntitlementCallback();
-      })
-      .catch(() => {});
+    if (getMepEnablement('xlg') === 'loggedout') {
+      setupEntitlementCallback();
+    } else {
+      loadIms()
+        .then(() => {
+          if (window.adobeIMS.isSignedInUser()) setupEntitlementCallback();
+        })
+        .catch(() => {});
+    }
 
     setDeep(
       window,

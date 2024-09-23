@@ -190,6 +190,7 @@ describe('getConfig', () => {
         showFooterDivider: false,
         useOverlayLinks: false,
         additionalRequestParams: {},
+        dynamicCTAForLiveEvents: false,
         banner: {
           register: { description: 'Sign Up', url: '#registration' },
           upcoming: { description: 'Upcoming' },
@@ -396,6 +397,7 @@ describe('getConfig', () => {
       },
       language: 'en',
       country: 'us',
+      linkTransformer: {},
       customCard: [
         'card',
         'return ``',
@@ -453,6 +455,7 @@ describe('getConfig', () => {
         showFooterDivider: false,
         useOverlayLinks: false,
         additionalRequestParams: {},
+        dynamicCTAForLiveEvents: false,
         banner: {
           register: { description: 'Sign Up', url: '#registration' },
           upcoming: { description: 'Upcoming' },
@@ -668,6 +671,7 @@ describe('getConfig', () => {
         enabled: true,
         lastViewedSession: '',
       },
+      linkTransformer: {},
     });
   });
 });
@@ -777,6 +781,7 @@ describe('getFloodgateCaasConfig', () => {
         showFooterDivider: false,
         useOverlayLinks: false,
         additionalRequestParams: {},
+        dynamicCTAForLiveEvents: false,
         banner: {
           register: { description: 'Sign Up', url: '#registration' },
           upcoming: { description: 'Upcoming' },
@@ -992,6 +997,7 @@ describe('getFloodgateCaasConfig', () => {
         enabled: true,
         lastViewedSession: '',
       },
+      linkTransformer: {},
     });
   });
 });
