@@ -2,7 +2,7 @@
  * Marquee - v6.0
  */
 
-import { decorateButtons, getBlockSize, decorateBlockBg } from '../../utils/decorate.js';
+import { decorateButtons, getBlockSize, decorateBlockBg, loadCDT } from '../../utils/decorate.js';
 import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
 
 // [headingSize, bodySize, detailSize]
@@ -133,12 +133,15 @@ export default async function init(el) {
   if (iconArea?.childElementCount > 1) decorateMultipleIconArea(iconArea);
   extendButtonsClass(text);
   if (el.classList.contains('split')) decorateSplit(el, foreground, media);
+
+  const promiseArr = [];
   if (el.classList.contains('mnemonic-list') && foreground) {
-    await loadMnemonicList(foreground);
+    promiseArr.push(loadMnemonicList(foreground));
   }
 
   if (el.classList.contains('countdown-timer')) {
-    const { default: initCDT } = await import('../../features/cdt/cdt.js');
-    await initCDT(text, el.classList);
+    promiseArr.push(loadCDT(text, el.classList));
   }
+
+  await Promise.all(promiseArr);
 }

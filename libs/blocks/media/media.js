@@ -1,6 +1,13 @@
 /* media - consonant v6 */
 
-import { decorateBlockBg, decorateBlockText, getBlockSize, decorateTextOverrides, applyHoverPlay } from '../../utils/decorate.js';
+import {
+  decorateBlockBg,
+  decorateBlockText,
+  getBlockSize,
+  decorateTextOverrides,
+  applyHoverPlay,
+  loadCDT,
+} from '../../utils/decorate.js';
 import { createTag, loadStyle, getConfig } from '../../utils/utils.js';
 
 const blockTypeSizes = {
@@ -107,7 +114,6 @@ export default async function init(el) {
   decorateTextOverrides(el);
 
   if (el.classList.contains('countdown-timer')) {
-    const { default: initCDT } = await import('../../features/cdt/cdt.js');
-    await initCDT(container, el.classList);
+    await loadCDT(container, el.classList);
   }
 }

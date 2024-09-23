@@ -1,7 +1,5 @@
-import { getMetadata, getConfig, loadStyle, createTag } from '../../utils/utils.js';
+import { getMetadata, getConfig, createTag } from '../../utils/utils.js';
 import { replaceKey } from '../placeholders.js';
-
-const replacePlaceholder = async (key) => replaceKey(key, getConfig());
 
 function loadCountdownTimer(
   container,
@@ -89,12 +87,9 @@ const isMobileDevice = () => /Android|webOS|iPhone|iPad|iPod/i.test(navigator.us
 
 export default async function initCDT(el, classList) {
   try {
-    const { miloLibs, codeRoot } = getConfig();
-    loadStyle(`${miloLibs || codeRoot}/features/cdt/cdt.css`);
-
     const placeholders = ['cdt-ends-in', 'cdt-days', 'cdt-hours', 'cdt-mins'];
     const [cdtLabel, cdtDays, cdtHours, cdtMins] = await Promise.all(
-      placeholders.map(replacePlaceholder),
+      placeholders.map((placeholder) => replaceKey(placeholder, getConfig())),
     );
 
     const cdtMetadata = getMetadata('countdown-timer');
