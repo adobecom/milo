@@ -51,7 +51,11 @@
     "@spectrum-web-components/tooltip": "^0.46.0",
     "@spectrum-web-components/tray": "^0.46.0",
     "@spectrum-web-components/underlay": "^0.46.0",
-    "lit": "^2.8.0"
+    "lit": "^2.8.0",
+    "markdown-it": "^14.1.0",
+    "markdown-it-attrs": "^4.2.0",
+    "markdown-it-container": "^4.0.0",
+    "markdown-it-highlightjs": "^4.2.0"
   },
   "devDependencies": {
     "@esm-bundle/chai": "4.3.4-fix.0",

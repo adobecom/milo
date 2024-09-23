@@ -1,0 +1,257 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Custom Element Documentation</title>
+  <!-- Include your custom element script as an ES6 module -->
+  <script src="../../../features/spectrum-web-components/dist/theme.js" type="module"></script>
+  <script src="../../../features/spectrum-web-components/dist/button.js" type="module"></script>
+  <script type="module" src="../../../deps/mas/mas.js"></script>
+  <!-- Include Highlight.js stylesheet for syntax highlighting -->
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
+  <!-- Include any additional stylesheets -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<main>
+<sp-theme color="light" scale="medium">
+<h1>checkout-link</h1>
+<p>This customized built-in element renders a checkout link supporting most of the features documented at <a href="https://wiki.corp.adobe.com/pages/viewpage.action?spaceKey=businessservices&amp;title=UCv3+Link+Creation+Guide">https://wiki.corp.adobe.com/pages/viewpage.action?spaceKey=businessservices&amp;title=UCv3+Link+Creation+Guide</a>.
+Sometimes a checkout-link can be also referred as placeholder as it can be used as an inline link resolving at runtime.</p>
+<p>Behind the scene, it uses <a href="https://git.corp.adobe.com/PandoraUI/commerce-core">https://git.corp.adobe.com/PandoraUI/commerce-core</a> to generate the checkout url.</p>
+<p>It requires an Offer Selector ID.</p>
+<h2>Offer Selector ID <br></h2>
+<p>AOS generated a stable reference for a set of natural keys allowing to retrieve a specific offer whose offer ID can change over time.</p>
+<p><a href="https://developers.corp.adobe.com/aos/docs/guide/apis/api.yaml#/paths/offer_selectors/post">API: Create an offer selector</a></p>
+<h2>Example <br></h2>
+<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">href</span>=<span class="hljs-string">&quot;#&quot;</span> <span class="hljs-attr">is</span>=<span class="hljs-string">&quot;checkout-link&quot;</span> <span class="hljs-attr">data-wcs-osi</span>=<span class="hljs-string">&quot;A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M&quot;</span>&gt;</span>Buy now<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
+</code></pre>
+<h3>Demo<br></h3>
+<p>This is a functional <strong>buy now</strong> button: <a href="#" is="checkout-link" data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M">Buy now</a></p>
+<h2>Attributes</h2>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Description</th>
+<th>Default Value</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>data-wcs-osi</code></td>
+<td>Offer Selector ID, can be multiple, seperated by comma</td>
+<td></td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>data-checkout-workflow</code></td>
+<td>Target checkout workflow to for the generation of checkout urls</td>
+<td>UCv3</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>data-checkout-workflow-step</code></td>
+<td><a href="https://wiki.corp.adobe.com/pages/viewpage.action?spaceKey=businessservices&amp;title=UCv3+Link+Creation+Guide#UCv3LinkCreationGuide-RegularWorkflow">workflow step</a> to land on on the unified checkout page</td>
+<td>email</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>data-extra-options</code></td>
+<td>additional query params to append to the url, see: <a href="https://wiki.corp.adobe.com/pages/viewpage.action?spaceKey=businessservices&amp;title=UCv3+Link+Creation+Guide#UCv3LinkCreationGuide-Tableofpublicqueryparams">Table of public query params</a></td>
+<td>{}</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>data-ims-country</code></td>
+<td>the ims country to code of the user if signed in, overrides the locale country in the generated checkout url</td>
+<td></td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>data-perpetual</code></td>
+<td>whether this is a perpetual offer <code>true|false</code></td>
+<td></td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>data-promotion-code</code></td>
+<td>Flex promotion code, if applicable</td>
+<td></td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>data-quantity</code></td>
+<td>Quantity of the offer to purchase</td>
+<td>1</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>data-entitlement</code></td>
+<td><code>entitlement</code> flag for client side interpretation</td>
+<td><code>false</code></td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>data-upgrade</code></td>
+<td><code>upgrade</code> flag for client side interpretation</td>
+<td><code>false</code></td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>data-modal</code></td>
+<td><code>modal</code> flag for client side interpretation</td>
+<td><code>false</code></td>
+<td><code>false</code></td>
+</tr>
+</tbody>
+</table>
+<h2>Examples <br></h2>
+<h2>Custom Workflow Step</h2>
+<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">href</span>=<span class="hljs-string">&quot;#&quot;</span> <span class="hljs-attr">is</span>=<span class="hljs-string">&quot;checkout-link&quot;</span> <span class="hljs-attr">data-wcs-osi</span>=<span class="hljs-string">&quot;A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M&quot;</span> <span class="hljs-attr">data-checkout-workflow-step</span>=<span class="hljs-string">&quot;recommendation&quot;</span>&gt;</span>Buy now<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
+</code></pre>
+<h3>Demo<br></h3>
+<p><a href="#" is="checkout-link" data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M" data-checkout-workflow-step="recommendation">Buy now</a></p>
+<h2>Multiple Quantities</h2>
+<p>Two photoshop and three acrobat pro single apps (TEAMS):</p>
+<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">href</span>=<span class="hljs-string">&quot;#&quot;</span> <span class="hljs-attr">is</span>=<span class="hljs-string">&quot;checkout-link&quot;</span> <span class="hljs-attr">data-wcs-osi</span>=<span class="hljs-string">&quot;yHKQJK2VOMSY5bINgg7oa2ov9RnmnU1oJe4NOg4QTYI,vV01ci-KLH6hYdRfUKMBFx009hdpxZcIRG1-BY_PutE&quot;</span> <span class="hljs-attr">data-quantity</span>=<span class="hljs-string">&quot;2,3&quot;</span>&gt;</span>Buy now<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
+</code></pre>
+<h3>Demo<br></h3>
+<p><a href="#" is="checkout-link" data-wcs-osi="yHKQJK2VOMSY5bINgg7oa2ov9RnmnU1oJe4NOg4QTYI,vV01ci-KLH6hYdRfUKMBFx009hdpxZcIRG1-BY_PutE" data-quantity="2,3">Buy now</a></p>
+<h2>Custom query params</h2>
+<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">href</span>=<span class="hljs-string">&quot;#&quot;</span> <span class="hljs-attr">is</span>=<span class="hljs-string">&quot;checkout-link&quot;</span> <span class="hljs-attr">data-wcs-osi</span>=<span class="hljs-string">&quot;A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M&quot;</span> <span class="hljs-attr">data-extra-options</span>=<span class="hljs-string">&quot;{<span class="hljs-symbol">&amp;quot;</span>promoid<span class="hljs-symbol">&amp;quot;</span>:<span class="hljs-symbol">&amp;quot;</span>promo12345<span class="hljs-symbol">&amp;quot;</span>,<span class="hljs-symbol">&amp;quot;</span>mv<span class="hljs-symbol">&amp;quot;</span>:1,<span class="hljs-symbol">&amp;quot;</span>mv2<span class="hljs-symbol">&amp;quot;</span>:2}&quot;</span>&gt;</span>Buy now<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
+</code></pre>
+<h3>Demo<br></h3>
+<p><a href="#" is="checkout-link" data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M" data-extra-options="{&quot;promoid&quot;:&quot;promo12345&quot;,&quot;mv&quot;:1,&quot;mv2&quot;:2}">Buy now</a></p>
+<h2>IMS Country</h2>
+<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">href</span>=<span class="hljs-string">&quot;#&quot;</span> <span class="hljs-attr">is</span>=<span class="hljs-string">&quot;checkout-link&quot;</span> <span class="hljs-attr">data-wcs-osi</span>=<span class="hljs-string">&quot;A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M&quot;</span> <span class="hljs-attr">data-ims-country</span>=<span class="hljs-string">&quot;JP&quot;</span>&gt;</span>Buy now<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
+</code></pre>
+<h3>Demo<br></h3>
+<p><a href="#" is="checkout-link" data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M" data-ims-country="JP">Buy now</a></p>
+<h2>Properties</h2>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>onceSettled</code></td>
+<td>promise that resolves when the custom-element either resolves or fails to resolve the offer</td>
+</tr>
+<tr>
+<td><code>options</code></td>
+<td>JSON object with the complete set of properties used to resolve the offer</td>
+</tr>
+<tr>
+<td><code>value</code></td>
+<td>The actual offer that is used to render the checkout link. In some cases WCS can return multiple offers but only one will be picked to render for a single app.</td>
+</tr>
+</tbody>
+</table>
+<h3>Example <br></h3>
+<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;co1&quot;</span> <span class="hljs-attr">href</span>=<span class="hljs-string">&quot;#&quot;</span> <span class="hljs-attr">is</span>=<span class="hljs-string">&quot;checkout-link&quot;</span> <span class="hljs-attr">data-wcs-osi</span>=<span class="hljs-string">&quot;A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M&quot;</span> <span class="hljs-attr">data-ims-country</span>=<span class="hljs-string">&quot;CA&quot;</span>&gt;</span>Buy now<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;module&quot;</span>&gt;</span><span class="language-javascript">
+  <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;co1&#x27;</span>).<span class="hljs-title function_">onceSettled</span>().<span class="hljs-title function_">then</span>(<span class="hljs-function"><span class="hljs-params">el</span> =&gt;</span> {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&quot;Options used to resolve the offer: &quot;</span>, el.<span class="hljs-property">options</span>);
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&quot;Actual raw offer used to generate the checkout link: &quot;</span>, el.<span class="hljs-property">value</span>);
+  });
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+</code></pre>
+<p><a id="co1" href="#" is="checkout-link" data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M" data-ims-country="CA">Buy now</a></p>
+<script type="module">
+  document.getElementById('co1').onceSettled().then(el => {
+    console.log("Options used to resolve the offer: ", el.options);
+    console.log("Actual raw offer used to generate the checkout link: ", el.value);
+  });
+</script>
+<h2>Methods</h2>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>requestUpdate(true|false)</code></td>
+<td>causes a re-render using the actual options</td>
+</tr>
+</tbody>
+</table>
+<h2>Events</h2>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>wcms:placeholder:pending</code></td>
+<td>fires when checkout link starts loading</td>
+</tr>
+<tr>
+<td><code>wcms:placeholder:resolved</code></td>
+<td>fires when the offer is successfully  resolved</td>
+</tr>
+<tr>
+<td><code>wcms:placeholder:failed</code></td>
+<td>fires when the offer is could not be found or fetched</td>
+</tr>
+<tr>
+<td><code>click</code></td>
+<td>native click event on the <code>a</code>  element</td>
+</tr>
+</tbody>
+</table>
+<br>
+<p>For each events except <code>click</code>, the following css classes are toggled on the element: <code>placeholder-pending</code>, <code>placeholder-resolved</code>, <code>placeholder-failed</code>.</p>
+<div class="warning">
+<p><strong>Note</strong>: Event names with <code>wcms:placeholder</code> prefix can be subject to change.</p>
+</div>
+<h3>Example <br></h3>
+<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;co2&quot;</span> <span class="hljs-attr">href</span>=<span class="hljs-string">&quot;#&quot;</span> <span class="hljs-attr">is</span>=<span class="hljs-string">&quot;checkout-link&quot;</span> <span class="hljs-attr">data-wcs-osi</span>=<span class="hljs-string">&quot;A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M&quot;</span>&gt;</span>Buy now (click me)<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;module&quot;</span>&gt;</span><span class="language-javascript">
+  <span class="hljs-keyword">const</span> logTarget = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;logTarget&#x27;</span>);
+  <span class="hljs-keyword">const</span> <span class="hljs-title function_">log</span> = (<span class="hljs-params">...messages</span>) =&gt; logTarget.<span class="hljs-property">innerHTML</span> = <span class="hljs-string">`<span class="hljs-subst">${logTarget.innerHTML}</span>&lt;br&gt;<span class="hljs-subst">${messages.join(<span class="hljs-string">&#x27; &#x27;</span>)}</span>`</span>;
+  <span class="hljs-keyword">const</span> a = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;co2&#x27;</span>);
+  a.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;wcms:placeholder:pending&#x27;</span>, <span class="hljs-function">() =&gt;</span> <span class="hljs-title function_">log</span>(<span class="hljs-string">&#x27;placeholder pending&#x27;</span>));
+  a.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;wcms:placeholder:resolved&#x27;</span>, <span class="hljs-function">() =&gt;</span> <span class="hljs-title function_">log</span>(<span class="hljs-string">&#x27;placeholder resolved&#x27;</span>));
+  a.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;wcms:placeholder:failed&#x27;</span>, <span class="hljs-function">() =&gt;</span> <span class="hljs-title function_">log</span>(<span class="hljs-string">&#x27;placeholder failed&#x27;</span>));
+  a.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;click&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">e</span>) =&gt;</span> {
+    e.<span class="hljs-title function_">preventDefault</span>();
+    e.<span class="hljs-title function_">stopPropagation</span>();
+    <span class="hljs-title function_">log</span>(<span class="hljs-string">&#x27;checkout link is clicked: &#x27;</span>, e.<span class="hljs-property">target</span>.<span class="hljs-property">href</span>);
+  });
+  a.<span class="hljs-property">addEvent</span>
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+</code></pre>
+<p><a id="co2" href="#" is="checkout-link" data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M">Buy now (click me)</a></p>
+<script type="module">
+  const logTarget = document.getElementById('logTarget');
+  const log = (...messages) => logTarget.innerHTML = `${logTarget.innerHTML}<br>${messages.join(' ')}`;
+  const a = document.getElementById('co2');
+  a.addEventListener('wcms:placeholder:pending', () => log('placeholder pending'));
+  a.addEventListener('wcms:placeholder:resolved', () => log('placeholder resolved'));
+  a.addEventListener('wcms:placeholder:failed', () => log('placeholder failed'));
+  a.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    log('checkout link is clicked: ', e.target.href);
+  });
+  a.addEvent
+</script>
+<h3>Logs <br></h3>
+<pre><code id="logTarget" class="language-html"></code></pre>
+
+</sp-theme>
+</main>
+</body>
+</html>

@@ -88,3 +88,6 @@ document.body.append(span);
 
 For full list of package exports, see `src/index.js`.
 
+::: warning
+**Note**: Ensure you have included the custom element script.
+:::

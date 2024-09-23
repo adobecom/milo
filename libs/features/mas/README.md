@@ -17,12 +17,11 @@ Refer to the corresponding README.md under any of the packages:
 * commerce - contains generic commerce-related logic, 'price' and 'checkout-link' web components
 * web-components - merch-card, merch-offer-selector and other web components
 
-# Consumption of artifacts in Milo
-Please run 'npm run build'
+### Generate docs
+
+```sh
+node build-docs.mjs commerce/checkout-link.md docs/checkout-link.html
 ```
-npm run build
-```
-Copy required artifacts folder to milo/libs/deps/mas.
 
 #### Troubleshooting
 Please reach out to us in `#tacocat-friends` for any questions.
