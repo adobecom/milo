@@ -5,15 +5,17 @@ const zeroImpactDirs = [
   '.vscode',
   '.test',
   '.browserslistrc',
-  'libs/mep',
+  '.gitignore',
   '.eslintrc.js',
   'CODEOWNERS',
   'web-test-runner.config.mjs',
   'LICENSE',
   'codecov.yaml',
-  '.gitignore',
   'package.json',
   'package-lock.json',
+  'test',
+  'libs/mep',
+  'nala'
 ];
 const zeroImpactLabel = 'zero-impact';
 
