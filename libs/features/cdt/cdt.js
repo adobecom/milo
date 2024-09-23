@@ -39,7 +39,9 @@ function loadCountdownTimer(
   }
 
   function removeCountdown() {
-    container.innerHTML = '';
+    while (container.firstChild) {
+      container.removeChild(container.firstChild);
+    }
   }
 
   function render(daysLeft, hoursLeft, minutesLeft) {
@@ -52,7 +54,8 @@ function loadCountdownTimer(
   }
 
   function updateCountdown() {
-    const currentTime = Date.now();
+    const instant = new URL(window.location.href)?.searchParams?.get('instant');
+    const currentTime = instant ? new Date(instant) : Date.now();
 
     for (let i = 0; i < timeRangesEpoch.length; i += 2) {
       const startTime = timeRangesEpoch[i];
@@ -83,7 +86,9 @@ function loadCountdownTimer(
   startCountdown();
 }
 
-const isMobileDevice = () => /Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent);
+function isMobile() {
+  return window.matchMedia('(max-width: 767px)').matches;
+}
 
 export default async function initCDT(el, classList) {
   const placeholders = ['cdt-ends-in', 'cdt-days', 'cdt-hours', 'cdt-mins'];
@@ -110,7 +115,7 @@ export default async function initCDT(el, classList) {
   }
 
   const cdtDiv = createTag('div', { class: 'countdown-timer' }, null, { parent: el });
-  cdtDiv.classList.add(isMobileDevice() ? 'vertical' : 'horizontal');
+  cdtDiv.classList.add(isMobile() ? 'vertical' : 'horizontal');
   cdtDiv.classList.add(classList.contains('dark') ? 'dark' : 'light');
   if (classList.contains('center')) cdtDiv.classList.add('center');
 
