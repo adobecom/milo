@@ -513,6 +513,10 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
   // retro support
   const action = line.action?.toLowerCase()
     .replace('content', '').replace('fragment', '').replace('tosection', '');
+  if (config.mep?.preview && !action) {
+    console.log('Invalid action found: ', line);
+    return;
+  }
   const pageFilter = line['page filter'] || line['page filter optional'];
   const { selector } = line;
 
@@ -565,9 +569,6 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
       }
     } else if (action in COMMANDS || action in CREATE_CMDS) {
       variants[vn].commands.push(variantInfo);
-    } else {
-      /* c8 ignore next 2 */
-      console.log('Invalid action found: ', line);
     }
   });
 };
