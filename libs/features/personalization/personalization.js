@@ -207,9 +207,14 @@ const COMMANDS = {
   },
 };
 
-const previewLog = (...msg) => {
+const log = (...msg) => {
   const config = getConfig();
   if (config.mep?.preview) console.log(...msg);
+};
+
+const warn = (...msg) => {
+  const config = getConfig();
+  if (config.mep?.preview) console.warn(...msg);
 };
 
 const fetchData = async (url, type = DATA_TYPE.JSON) => {
@@ -225,7 +230,7 @@ const fetchData = async (url, type = DATA_TYPE.JSON) => {
     return await resp[type]();
   } catch (e) {
     /* c8 ignore next 3 */
-    previewLog(`Error loading content: ${url}`, e.message || e);
+    log(`Error loading content: ${url}`, e.message || e);
   }
   return null;
 };
@@ -324,7 +329,7 @@ const querySelector = (el, selector, all = false) => {
     return all ? el.querySelectorAll(selector) : el.querySelector(selector);
   } catch (e) {
     /* eslint-disable-next-line no-console */
-    previewLog('Invalid selector: ', selector);
+    log('Invalid selector: ', selector);
     return null;
   }
 };
@@ -519,7 +524,7 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
   const action = line.action?.toLowerCase()
     .replace('content', '').replace('fragment', '').replace('tosection', '');
   if (!action) {
-    previewLog('Invalid action found: ', line);
+    log('Invalid action found: ', line);
     return;
   }
   const pageFilter = line['page filter'] || line['page filter optional'];
@@ -576,7 +581,7 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
       variants[vn].commands.push(variantInfo);
     } else {
       /* c8 ignore next 2 */
-      previewLog('Invalid action found: ', line);
+      log('Invalid action found: ', line);
     }
   });
 };
@@ -608,7 +613,7 @@ export function parseManifestVariants(data, manifestPath, targetId) {
     return manifestConfig;
   } catch (e) {
     /* c8 ignore next 3 */
-    previewLog('error parsing personalization manifestConfig:', e, experiences);
+    log('error parsing personalization manifestConfig:', e, experiences);
   }
   return null;
 }
@@ -786,7 +791,7 @@ export async function getManifestConfig(info = {}, variantOverride = false) {
 
   if (!manifestConfig) {
     /* c8 ignore next 3 */
-    previewLog('Error loading personalization manifestConfig: ', name || manifestPath);
+    log('Error loading personalization manifestConfig: ', name || manifestPath);
     return null;
   }
   const infoKeyMap = {
@@ -924,7 +929,7 @@ export function cleanAndSortManifestList(manifests) {
 
       parsePlaceholders(placeholderData, getConfig(), manifestConfig.selectedVariantName);
     } catch (e) {
-      console.warn(e);
+      warn(e);
       window.lana?.log(`MEP Error parsing manifests: ${e.toString()}`);
     }
   });
@@ -1080,7 +1085,7 @@ export async function init(enablements = {}) {
   try {
     await applyPers(manifests, postLCP);
   } catch (e) {
-    console.warn(e);
+    warn(e);
     window.lana?.log(`MEP Error: ${e.toString()}`);
   }
 }
