@@ -20,16 +20,6 @@ merch-card[variant="ccd-suggested"] [slot='heading-xs'] {
 
 }
 
-merch-card[variant="ccd-suggested"] [slot='price'] {
-  display: flex;
-  align-items: center;
-}
-
-merch-card[variant="ccd-suggested"] [slot='cta'] {
-  display: flex;
-  align-items: center;
-}
-
 merch-card[variant="ccd-suggested"] [slot='cta'] a {
   text-decoration: none;
   color: var(--merch-color-grey-60);

@@ -11,9 +11,9 @@ export class CCDSuggested extends VariantLayout {
   renderLayout () {
       return html`
           <div style="${this.stripStyle}" class="body">
-              <div class="top-secton">
+              <div class="header">
                 <slot name="icons"></slot>
-                <div class="header">
+                <div class="headings">
                   <slot name="detail-m"></slot>
                   <slot name="heading-xs"></slot>
                 </div>
@@ -40,18 +40,28 @@ export class CCDSuggested extends VariantLayout {
       height: auto;
     }
 
-    :host([variant='ccd-suggested']) .top-secton {
+    :host([variant='ccd-suggested']) .header {
       display: flex;
       flex-flow: wrap;
       place-self: flex-start;
     }
 
-    :host([variant='ccd-suggested']) .header {
+    :host([variant='ccd-suggested']) .headings {
       padding-inline-start: var(--consonant-merch-spacing-xxs);
     }
 
-    :host([variant='ccd-suggested'][strip-size='small']) {
-      width: 
+    :host([variant='ccd-suggested']) ::slotted([slot='icons']) {
+      flex-flow: wrap;
+      place-self: flex-start;
+    }
+
+    :host([variant='ccd-suggested']) ::slotted([slot='heading-xs']) {
+      font-size: var(--consonant-merch-card-heading-xxs-font-size);
+      line-height: var(--consonant-merch-card-heading-xxs-line-height);
+    }
+
+    :host([variant='ccd-suggested']) ::slotted([slot='detail-m']) {
+      color: var(--merch-color-grey-60);
     }
     
     :host([variant='ccd-suggested'][strip-size='wide']) ::slotted([slot='body-xs']) {
@@ -62,10 +72,16 @@ export class CCDSuggested extends VariantLayout {
       padding-inline-start: 48px;
     }
 
-    :host([variant='ccd-suggested']) slot[name='detail-m'] {
-      flex-flow: wrap;
-      place-self: flex-start;
+    :host([variant='ccd-suggested']) ::slotted([slot='price']) {
+      display: flex;
+      align-items: center;
     }
+
+    :host([variant='ccd-suggested']) ::slotted([slot='cta']) {
+      display: flex;
+      align-items: center;
+    }
+
 
     :host([variant='ccd-suggested']) .footer {
       display: flex;
