@@ -207,6 +207,11 @@ const COMMANDS = {
   },
 };
 
+const previewLog = (...msg) => {
+  const config = getConfig();
+  if (config.mep?.preview) console.log(...msg);
+};
+
 const fetchData = async (url, type = DATA_TYPE.JSON) => {
   try {
     const resp = await fetch(normalizePath(url));
@@ -220,7 +225,7 @@ const fetchData = async (url, type = DATA_TYPE.JSON) => {
     return await resp[type]();
   } catch (e) {
     /* c8 ignore next 3 */
-    console.log(`Error loading content: ${url}`, e.message || e);
+    previewLog(`Error loading content: ${url}`, e.message || e);
   }
   return null;
 };
@@ -319,7 +324,7 @@ const querySelector = (el, selector, all = false) => {
     return all ? el.querySelectorAll(selector) : el.querySelector(selector);
   } catch (e) {
     /* eslint-disable-next-line no-console */
-    console.log('Invalid selector: ', selector);
+    previewLog('Invalid selector: ', selector);
     return null;
   }
 };
@@ -513,6 +518,10 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
   // retro support
   const action = line.action?.toLowerCase()
     .replace('content', '').replace('fragment', '').replace('tosection', '');
+  if (!action) {
+    previewLog('Invalid action found: ', line);
+    return;
+  }
   const pageFilter = line['page filter'] || line['page filter optional'];
   const { selector } = line;
 
@@ -599,7 +608,7 @@ export function parseManifestVariants(data, manifestPath, targetId) {
     return manifestConfig;
   } catch (e) {
     /* c8 ignore next 3 */
-    console.log('error parsing personalization manifestConfig:', e, experiences);
+    previewLog('error parsing personalization manifestConfig:', e, experiences);
   }
   return null;
 }
@@ -777,7 +786,7 @@ export async function getManifestConfig(info = {}, variantOverride = false) {
 
   if (!manifestConfig) {
     /* c8 ignore next 3 */
-    console.log('Error loading personalization manifestConfig: ', name || manifestPath);
+    previewLog('Error loading personalization manifestConfig: ', name || manifestPath);
     return null;
   }
   const infoKeyMap = {
