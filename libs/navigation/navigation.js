@@ -78,7 +78,6 @@ export default async function loadBlock(configs, customLib) {
       }
     } catch (e) {
       configBlock.onError?.(e);
-      throw e;
     }
   }
 }
