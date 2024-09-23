@@ -66,10 +66,10 @@ async function getGitHubMiloLibsBranchLiveUrl() {
     console.info('Milo Libs : ', miloLibs);
   } catch (err) {
     console.error(
-      `Error => Error in setting PR Branch test URL : ${prBranchLiveUrl}`
+      `Error => Error in setting PR Branch test URL : ${prBranchLiveUrl}`,
     );
     console.info(
-      `Note: PR branch test url  ${prBranchLiveUrl} is not valid, Exiting test execution.`
+      `Note: PR branch test url  ${prBranchLiveUrl} is not valid, Exiting test execution.`,
     );
     process.exit(1);
   }
@@ -89,7 +89,7 @@ async function getCircleCIBranchLiveUrl() {
       stageBranchLiveUrl,
     );
     console.info(
-      'Note: Stage branch test url is not valid, Exiting test execution.'
+      'Note: Stage branch test url is not valid, Exiting test execution.',
     );
     process.exit(1);
   }
@@ -124,10 +124,10 @@ async function getLocalBranchLiveUrl() {
     }
   } catch (error) {
     console.error(
-      `Error => Error in setting local test URL : ${localTestLiveUrl}\n`
+      `Error => Error in setting local test URL : ${localTestLiveUrl}\n`,
     );
     console.info(
-      'Note: Local or branch test url is not valid, Exiting test execution.\n'
+      'Note: Local or branch test url is not valid, Exiting test execution.\n',
     );
     process.exit(1);
   }
