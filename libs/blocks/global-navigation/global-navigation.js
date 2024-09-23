@@ -269,6 +269,7 @@ class Gnav {
   constructor({ content, block } = {}) {
     this.content = content;
     this.block = block;
+    this.customLinks = getConfig()?.customLinks.split(",");
 
     this.blocks = {
       profile: {
@@ -834,7 +835,10 @@ class Gnav {
 
     for await (const [index, item] of items.entries()) {
       await yieldToMain();
-      this.elements.mainNav.appendChild(this.decorateMainNavItem(item, index));
+      const mainNavItem = this.decorateMainNavItem(item, index);
+      if (mainNavItem) {
+        this.elements.mainNav.appendChild(mainNavItem);
+      }
     }
 
     if (!hasActiveLink()) {
@@ -853,8 +857,9 @@ class Gnav {
   // eslint-disable-next-line class-methods-use-this
   getMainNavItemType = (item) => {
     const itemTopParent = item.closest('div');
+    const isLinkGroup = !!item.closest('.link-group');
     const hasSyncDropdown = itemTopParent instanceof HTMLElement
-      && itemTopParent.childElementCount > 1;
+      && !isLinkGroup && itemTopParent.childElementCount > 1;
     if (hasSyncDropdown) return 'syncDropdownTrigger';
     const hasAsyncDropdown = itemTopParent instanceof HTMLElement
       && itemTopParent.closest('.large-menu') instanceof HTMLElement;
@@ -943,6 +948,8 @@ class Gnav {
             ${decorateCta({ elem: item, type: itemType, index: index + 1 })}
           </div>`, item);
       case 'link': {
+        let customLinkModifier = '';
+        let removeCustomLink = false;
         const linkElem = item.querySelector('a');
         linkElem.className = 'feds-navLink';
         linkElem.setAttribute('daa-ll', getAnalyticsValue(linkElem.textContent, index + 1));
@@ -954,11 +961,25 @@ class Gnav {
           linkElem.setAttribute('tabindex', 0);
         }
 
+        const customLinksSection = item.closest('.link-group');
+        if (customLinksSection) {
+          const removeLink = () => {
+            let url = new URL(linkElem.href);
+            linkElem.setAttribute('href', `${url.origin}${url.pathname}${url.search}`);
+            const linkHash = url.hash.slice(2);
+            return !this.customLinks.includes(linkHash);
+          }
+          [...customLinksSection.classList].splice(1).forEach((className) => {
+            customLinkModifier = ` feds-navItem--${className}`;
+          });
+          removeCustomLink = removeLink();
+        }
+
         const linkTemplate = toFragment`
-          <div class="feds-navItem${activeModifier}">
+          <div class="feds-navItem${activeModifier}${customLinkModifier}">
             ${linkElem}
           </div>`;
-        return addMepHighlightAndTargetId(linkTemplate, item);
+        return removeCustomLink ? null : addMepHighlightAndTargetId(linkTemplate, item);
       }
       case 'text':
         return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered">

@@ -562,6 +562,10 @@ header.global-navigation {
     flex-direction: initial;
   }
 
+  .feds-navItem--mobile-only {
+    display: none;
+  }
+
   .feds-navItem--megaMenu {
     position: static;
   }
