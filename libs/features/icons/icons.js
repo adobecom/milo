@@ -64,35 +64,47 @@ function decorateToolTip(icon) {
   wrapper.parentElement.replaceChild(icon, wrapper);
 }
 
-// Function to fetch and inject SVG icons
 export async function injectSVGIcons(icons) {
   const fedRoot = getFederatedContentRoot();
-  // Iterate through each icon element
-  for (const icon of icons) {
-    // Extract the icon name from the class list (assuming it is the second class)
-    const iconName = [...icon.classList].find((c) => c.startsWith('icon-')).substring(5);
-    if (!iconName || iconName === 'tooltip') return;
-    try {
-      if (!federalIcons[iconName]) {
-        const url = `${fedRoot}/federal/assets/icons/svgs/${iconName}.svg`;
-        const response = await fetch(url);
-        if (!response.ok) throw new Error(`Failed to fetch SVG for ${iconName}: ${response.statusText}`);
-        const svgText = await response.text();
-        federalIcons[iconName] = svgText;
-      }
-      icon.insertAdjacentHTML('afterbegin', federalIcons[iconName]);
-    } catch (error) {
-      console.error(`Error fetching or inserting icon ${iconName}:`, error);
+  const iconRequests = [];
+  const iconsToFetch = new Map();
+
+  icons.forEach((icon) => {
+    icon.classList.add('milo-icon');
+    const iconName = [...icon.classList].find((c) => c.startsWith('icon-'))?.substring(5);
+    if (icon.dataset.svgInjected || !iconName) return;
+    if (iconName === 'tooltip') {
+      decorateToolTip(icon);
+      return;
     }
+    if (!federalIcons[iconName] && !iconsToFetch.has(iconName)) {
+      const url = `${fedRoot}/federal/assets/icons/svgs/${iconName}.svg`;
+      iconsToFetch.set(iconName, fetch(url).then(async (response) => {
+        if (!response.ok) throw new Error(`Failed to fetch SVG for ${iconName}: ${response.statusText}`);
+        federalIcons[iconName] = await response.text();
+      }));
+    }
+    iconRequests.push(iconsToFetch.get(iconName));
+
+    const parent = icon.parentElement;
+    if (parent.parentElement.tagName === 'LI') parent.parentElement.classList.add('icon-list-item');
+  });
+
+  try {
+    await Promise.all(iconRequests);
+  } catch (error) {
+    window.lana.log('Error fetching icons:', error);
   }
+
+  icons.forEach((icon) => {
+    const iconName = [...icon.classList].find((c) => c.startsWith('icon-'))?.substring(5);
+    if (iconName && federalIcons[iconName] && !icon.dataset.svgInjected) {
+      icon.insertAdjacentHTML('afterbegin', federalIcons[iconName]);
+      icon.dataset.svgInjected = 'true';
+    }
+  });
 }
 
 export default async function loadIcons(icons) {
   injectSVGIcons(icons);
-  icons.forEach(async (icon) => {
-    icon.classList.add('milo-icon');
-    if (icon.classList.contains('icon-tooltip')) decorateToolTip(icon);
-    const parent = icon.parentElement;
-    if (parent.parentElement.tagName === 'LI') parent.parentElement.classList.add('icon-list-item');
-  });
 }

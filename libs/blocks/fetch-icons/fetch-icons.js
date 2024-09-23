@@ -62,7 +62,7 @@ export default function init(el) {
         const iconLink = createTag('a', {
           title: `${i.name}`,
           alt: `${i.name}`,
-          'data-copy': `${i.ref}`,
+          'data-copy': `:${i.name}:`,
           'aria-label': `${i.name}`,
           class: `fetch-icon ${i.name}`,
         }, getIconPlainTxt(i));
