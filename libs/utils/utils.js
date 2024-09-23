@@ -1223,7 +1223,7 @@ export function partition(arr, fn) {
   );
 }
 
-const preloadBlocks = (blocks = []) => blocks.map((block) => {
+const preloadBlockResources = (blocks = []) => blocks.map((block) => {
   if (block.classList.contains('hide-block')) return null;
   const { blockPath, hasStyles, name } = getBlockData(block);
   if (['marquee', 'hero-marquee'].includes(name)) {
@@ -1247,8 +1247,8 @@ async function resolveInlineFrags(section) {
 async function processSection(section, config, isDoc) {
   await resolveInlineFrags(section);
   const firstSection = section.el.dataset.idx === '0';
-  const stylePromises = firstSection ? preloadBlocks(section.blocks) : [];
-  preloadBlocks(section.preloadLinks);
+  const stylePromises = firstSection ? preloadBlockResources(section.blocks) : [];
+  preloadBlockResources(section.preloadLinks);
   await Promise.all([
     decoratePlaceholders(section.el, config),
     decorateIcons(section.el, config),
