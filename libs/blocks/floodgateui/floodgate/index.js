@@ -24,16 +24,17 @@ let resourcePath;
 let previewPath;
 
 export function validateUrlsFormat(projectUrls, removeMedia = false) {
-  projectUrls.forEach((projectUrl) => {
-    const url = getUrl(projectUrl);
-    const domain = isUrl(url.alt) ?? url;
-    if (domain.origin !== origin) {
-      const aemUrl = domain.hostname?.split('--').length === 3;
+  projectUrls.forEach((projectUrl, idx) => {
+    const urlObj = getUrl(projectUrl);
+    const url = isUrl(urlObj.alt) ?? urlObj;
+    if (url.origin !== origin) {
+      const aemUrl = url.hostname?.split('--').length === 3;
       url.valid = !aemUrl ? 'not AEM url' : 'not same domain';
     }
-    if ((/\.(gif|jpg|jpeg|tiff|png|webp)$/i).test(domain.pathname)) {
+    if ((/\.(gif|jpg|jpeg|tiff|png|webp)$/i).test(url.pathname)) {
       url.valid = 'media';
     }
+    projectUrls[idx] = Array.isArray(projectUrls[idx]) ? [url] : url;
   });
   if (removeMedia) {
     return projectUrls.filter((url) => getUrl(url).valid !== 'media');
