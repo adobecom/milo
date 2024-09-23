@@ -30,7 +30,6 @@ const SUCCESS_TYPE = 'form.success.type';
 const SUCCESS_CONTENT = 'form.success.content';
 const SUCCESS_SECTION = 'form.success.section';
 const PROGRAM_POI = 'program.poi';
-const POI_FILTER = 'field_filters.products';
 const FORM_MAP = {
   'success-type': SUCCESS_TYPE,
   'destination-type': SUCCESS_TYPE,
@@ -40,7 +39,6 @@ const FORM_MAP = {
   'co-partner-names': 'program.copartnernames',
   'sfdc-campaign-id': 'program.campaignids.sfdc',
 };
-
 const QUERY_POI = 'marketo-poi';
 export const SESSION_POI = 'marketo_poi';
 
@@ -57,6 +55,7 @@ export const decorateURL = (destination, baseURL = window.location) => {
     const { hostname, pathname, search, hash } = destinationUrl;
 
     if (!hostname) {
+      /* c8 ignore next 2 */
       throw new Error('URL does not have a valid host');
     }
 
@@ -132,15 +131,10 @@ export function setProductOfInterest(formData, search = window.location.search) 
   if (formData[PROGRAM_POI]) return;
 
   const queryPoi = new URLSearchParams(search).get(QUERY_POI);
-  if (queryPoi === 'clear') {
-    sessionStorage.removeItem(SESSION_POI);
-    return;
-  }
-
   const sessionPoi = sessionStorage.getItem(SESSION_POI);
-  const productOfInterest = queryPoi || sessionPoi || null;
+  const productOfInterest = queryPoi || sessionPoi;
 
-  formData[PROGRAM_POI] = productOfInterest;
+  if (productOfInterest) formData[PROGRAM_POI] = productOfInterest;
 }
 
 const readyForm = (form, formData) => {
@@ -227,7 +221,6 @@ export default function init(el) {
   }
 
   setProductOfInterest(formData);
-  if (formData[PROGRAM_POI]) formData[POI_FILTER] = 'hidden';
   setPreferences(formData);
 
   const fragment = new DocumentFragment();

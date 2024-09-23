@@ -1,9 +1,8 @@
 import { readFile } from '@web/test-runner-commands';
-import sinon from 'sinon';
 import { expect } from '@esm-bundle/chai';
 import { delay } from '../../helpers/waitfor.js';
 import { setConfig } from '../../../libs/utils/utils.js';
-import init, { setPreferences, decorateURL, setProductOfInterest } from '../../../libs/blocks/marketo/marketo.js';
+import init, { setPreferences, decorateURL, setProductOfInterest, SESSION_POI } from '../../../libs/blocks/marketo/marketo.js';
 
 const innerHTML = await readFile({ path: './mocks/body.html' });
 
@@ -44,14 +43,8 @@ describe('marketo', () => {
 });
 
 describe('marketo setProductOfInterest', () => {
-  before(() => {
-    sinon.stub(sessionStorage, 'setItem');
-    sinon.stub(sessionStorage, 'removeItem');
-    sinon.stub(sessionStorage, 'getItem');
-  });
-
-  after(() => {
-    sinon.restore();
+  afterEach(() => {
+    sessionStorage.clear();
   });
 
   it('keeps POI if already set', async () => {
@@ -60,6 +53,13 @@ describe('marketo setProductOfInterest', () => {
 
     expect(formData).to.have.property('program.poi');
     expect(formData['program.poi']).to.equal('poi0');
+  });
+
+  it('does not set POI if not in query param', async () => {
+    const formData = {};
+    setProductOfInterest(formData, '');
+
+    expect(formData).to.not.have.property('program.poi');
   });
 
   it('sets POI by query param', async () => {
@@ -72,19 +72,11 @@ describe('marketo setProductOfInterest', () => {
 
   it('sets POI by stored value', async () => {
     const formData = {};
-    sessionStorage.getItem.returns('poi2');
+    sessionStorage.setItem(SESSION_POI, 'poi2');
     setProductOfInterest(formData, '');
 
     expect(formData).to.have.property('program.poi');
     expect(formData['program.poi']).to.equal('poi2');
-  });
-
-  it('clears stored POI', async () => {
-    const formData = {};
-    setProductOfInterest(formData, '?marketo-poi=clear');
-
-    expect(formData).to.not.have.property('program.poi');
-    expect(sessionStorage.removeItem.calledOnce).to.be.true;
   });
 });
 
