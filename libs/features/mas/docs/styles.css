@@ -61,3 +61,22 @@ tr:nth-child(even) {
 .warning p {
   margin: 0;
 }
+
+.price-unit-type::before {
+  content: " ";
+}
+
+.example {
+  margin: 20px 0;
+  background-color: var(--spectrum-global-color-gray-300);
+}
+
+.placeholder-failed {
+  display: inline-block;
+  border: 1px solid #f00;
+  padding: 0 10px;
+}
+
+.placeholder-failed::after {
+  content: "failed";
+}
