@@ -75,6 +75,7 @@ const MILO_BLOCKS = [
   'tabs',
   'table-of-contents',
   'text',
+  'timeline',
   'walls-io',
   'table',
   'table-metadata',
