@@ -1038,11 +1038,7 @@ export default async function init(block) {
     const error = new Error('Could not create global navigation. Content not found!');
     error.tags = 'errorType=error,module=gnav';
     error.url = url;
-    window.lana.log(`${error.message} | gnav-source: ${error.url} | href: ${window.location.href}`, {
-      clientId: 'feds-milo',
-      sampleRate: 1,
-      tags: error.tags,
-    });
+    lanaLog({ message: error.message, error, tags: 'errorType=error,module=gnav' });
     throw error;
   }
   const gnav = new Gnav({
