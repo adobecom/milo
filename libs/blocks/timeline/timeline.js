@@ -1,4 +1,4 @@
-import { createTag } from '../../../utils/utils.js';
+import { createTag } from '../../utils/utils.js';
 
 function isColor(str) {
   const hexRegex = /^#(?:[0-9a-fA-F]{3}){1,2}$/;

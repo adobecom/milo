@@ -2,6 +2,7 @@ import { AEM } from './aem.js';
 import { createTag } from './utils.js';
 
 const ATTR_AEM_BUCKET = 'aem-bucket';
+const AEM_BUCKET = 'publish-p22655-e155390';
 
 const VARIANTS = {
     CATALOG: 'catalog',
@@ -60,23 +61,25 @@ async function parseMerchCard(fragmentData, appendFn, merchCard, consonant) {
     const { variant = 'catalog' } = item;
     merchCard.setAttribute('variant', variant);
     const cardMapping = cardContent[variant] ?? 'catalog';
-    item.icon?.forEach((icon) => {
+    item.mnemonicIcon?.forEach((icon, idx) => {
+        const href = item.mnemonicLink?.length > idx ? item.mnemonicLink[idx] : '';
+        const alt = item.mnemonicAlt?.length > idx ? item.mnemonicAlt[idx] : '';
         const merchIcon = createTag('merch-icon', {
             slot: 'icons',
             src: icon,
-            alt: '',
-            href: '',
+            alt,
+            href,
             size: 'l',
         });
         appendFn(merchIcon);
     });
 
-    if (item.title && cardMapping.title) {
+    if (item.cardTitle && cardMapping.title) {
         appendFn(
             createTag(
                 cardMapping.title.tag,
                 { slot: cardMapping.title.slot },
-                item.title,
+                item.cardTitle,
             ),
         );
     }
@@ -218,7 +221,7 @@ export class MerchDataSource extends HTMLElement {
         this.consonant = this.hasAttribute('consonant');
         this.clearRefs();
         const bucket =
-            this.getAttribute(ATTR_AEM_BUCKET) ?? 'publish-p22655-e59341';
+            this.getAttribute(ATTR_AEM_BUCKET) ?? AEM_BUCKET;
         this.#aem = new AEM(bucket);
         this.refresh(false);
     }

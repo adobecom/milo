@@ -5,7 +5,7 @@
   "data": [
     {
       "action": "removeContent",
-      "selector": ".custom-block1",
+      "selector": ".custom-block-1",
       "page filter (optional)": "",
       "param-newoffer=123": "",
       "all": "on"
