@@ -51,7 +51,7 @@ This is a functional **buy now** button: <a href="#" is="checkout-link" data-wcs
 
 
 
-### Examples {#examples} <br>
+### Examples {#examples}
 
 
 #### Custom Workflow Step
@@ -94,7 +94,7 @@ Two photoshop and three acrobat pro single apps (TEAMS):
 <a href="#" is="checkout-link" data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M" data-ims-country="JP">Buy now</a>
 
 
-## Properties {#properties} <br>
+## Properties {#properties}
 
 | Property      | Description                       |
 |---------------|-----------------------------------|
