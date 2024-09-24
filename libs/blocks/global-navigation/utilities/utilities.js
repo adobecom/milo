@@ -42,7 +42,6 @@ export const lanaLog = ({ message, e = '', tags = 'errorType=default' }) => {
     sampleRate: 1,
     tags,
   });
-  console.error(message);
 };
 
 export const logErrorFor = async (fn, message, tags) => {
