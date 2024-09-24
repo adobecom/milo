@@ -78,7 +78,7 @@ export class Product extends VariantLayout {
   }
 
   static variantStyle = css`
-    :host([variant='product']) {
+    :host([variant='mini-compare-chart']) > slot:not([name='icons']) {
         display: block;
     }
     :host([variant='product']) slot[name='body-xs'] {

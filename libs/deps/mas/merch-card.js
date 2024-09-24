@@ -1009,7 +1009,7 @@ merch-card[variant="plans"] [slot="quantity-select"] {
           <slot name="callout-content"></slot>
       </div>
       ${this.secureLabelFooter}`}postCardUpdateHook(){L()||this.adjustProductBodySlots()}static variantStyle=ft`
-    :host([variant='product']) {
+    :host([variant='mini-compare-chart']) > slot:not([name='icons']) {
         display: block;
     }
     :host([variant='product']) slot[name='body-xs'] {
