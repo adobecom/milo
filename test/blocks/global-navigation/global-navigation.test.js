@@ -640,10 +640,16 @@ describe('global navigation', () => {
   });
 
   describe('Custom Links for mobile hamburger menu', () => {
-    it('Add custom links through Link Group block in parallel to large menu\'s', async() => {
-      const customLinks = 'home,learn'
-      await createFullGlobalNavigation({ viewport: 'mobile', globalNavigation: navigationWithCustomLinks, customConfig: { customLinks } });
-      expect(document.querySelectorAll(selectors.customMobileLink).length).to.equal(customLinks.split(",").length);
+    it('Add custom links through Link Group block in parallel to large menu\'s', async () => {
+      const customLinks = 'home,learn';
+      await createFullGlobalNavigation({
+        viewport: 'mobile',
+        globalNavigation: navigationWithCustomLinks,
+        customConfig: { customLinks },
+      });
+      expect(
+        document.querySelectorAll(selectors.customMobileLink).length,
+      ).to.equal(customLinks.split(',').length);
     });
   });
 });

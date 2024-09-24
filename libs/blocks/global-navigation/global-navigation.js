@@ -269,7 +269,7 @@ class Gnav {
   constructor({ content, block } = {}) {
     this.content = content;
     this.block = block;
-    this.customLinks = getConfig()?.customLinks ? getConfig().customLinks.split(",") : [];
+    this.customLinks = getConfig()?.customLinks ? getConfig().customLinks.split(',') : [];
 
     this.blocks = {
       profile: {
@@ -964,11 +964,11 @@ class Gnav {
         const customLinksSection = item.closest('.link-group');
         if (customLinksSection) {
           const removeLink = () => {
-            let url = new URL(linkElem.href);
+            const url = new URL(linkElem.href);
             linkElem.setAttribute('href', `${url.origin}${url.pathname}${url.search}`);
             const linkHash = url.hash.slice(2);
             return !this.customLinks.includes(linkHash);
-          }
+          };
           [...customLinksSection.classList].splice(1).forEach((className) => {
             customLinkModifier = ` feds-navItem--${className}`;
           });
