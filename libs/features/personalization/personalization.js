@@ -579,9 +579,6 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
       }
     } else if (action in COMMANDS || action in CREATE_CMDS) {
       variants[vn].commands.push(variantInfo);
-    } else {
-      /* c8 ignore next 2 */
-      log('Invalid action found: ', line);
     }
   });
 };
