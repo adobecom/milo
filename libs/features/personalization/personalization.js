@@ -212,11 +212,6 @@ const log = (...msg) => {
   if (config.mep?.preview) console.log(...msg);
 };
 
-const warn = (...msg) => {
-  const config = getConfig();
-  if (config.mep?.preview) console.warn(...msg);
-};
-
 const fetchData = async (url, type = DATA_TYPE.JSON) => {
   try {
     const resp = await fetch(normalizePath(url));
@@ -926,7 +921,7 @@ export function cleanAndSortManifestList(manifests) {
 
       parsePlaceholders(placeholderData, getConfig(), manifestConfig.selectedVariantName);
     } catch (e) {
-      warn(e);
+      log(`MEP Error parsing manifests: ${e.toString()}`);
       window.lana?.log(`MEP Error parsing manifests: ${e.toString()}`);
     }
   });
@@ -1082,7 +1077,7 @@ export async function init(enablements = {}) {
   try {
     await applyPers(manifests, postLCP);
   } catch (e) {
-    warn(e);
+    log(`MEP Error: ${e.toString()}`);
     window.lana?.log(`MEP Error: ${e.toString()}`);
   }
 }
