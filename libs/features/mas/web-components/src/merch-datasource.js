@@ -39,7 +39,7 @@ const cardContent = {
     [VARIANTS.CCD_SUGGESTED]: {
         name: { tag: 'h4', slot: 'detail-m' },
         title: { tag: 'h3', slot: 'heading-xs' },
-        prices: { tag: 'h3', slot: 'heading-xs' },
+        prices: { tag: 'h3', slot: 'price' },
         description: { tag: 'div', slot: 'body-xs' },
         ctas: { size: 'l' },
     },

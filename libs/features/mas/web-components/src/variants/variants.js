@@ -48,7 +48,7 @@ const getVariantStyles = () => {
     styles.push(Segment.variantStyle);
     styles.push(SpecialOffer.variantStyle);
     styles.push(TWP.variantStyle);
-    styles.push(TWP.variantStyle);
+    styles.push(CCDSuggested.variantStyle);
     return styles;
 };
 

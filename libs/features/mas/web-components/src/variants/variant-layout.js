@@ -82,11 +82,13 @@ export class VariantLayout {
 
   get stripStyle() {
     if (this.strip && this.card.stripBackground) {
+      const spTheme = document.querySelector('sp-theme');
+      const isRTL = document.dir === 'rtl' || spTheme.dir === 'rtl';
       return `
         background: ${this.card.stripBackground.startsWith('url') ? this.card.stripBackground : `url("${this.card.stripBackground}")`};
         background-size: ${this.strip} 100%;
         background-repeat: no-repeat;
-        background-position: left;
+        background-position: ${isRTL ? 'right' : 'left'};
       `;
     }
     return '';
