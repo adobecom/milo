@@ -269,7 +269,7 @@ class Gnav {
   constructor({ content, block } = {}) {
     this.content = content;
     this.block = block;
-    this.customLinks = getConfig()?.customLinks.split(",");
+    this.customLinks = getConfig()?.customLinks ? getConfig().customLinks.split(",") : [];
 
     this.blocks = {
       profile: {
