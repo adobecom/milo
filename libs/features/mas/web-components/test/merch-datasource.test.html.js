@@ -13,7 +13,7 @@ const expect = chai.expect;
 
 runTests(async () => {
     const [cc, photoshop] = await fetch(
-        'mocks/sites/cf/fragments/search/default.json',
+        'mocks/sites/cf/fragments/search/authorPayload.json',
     )
         .then((res) => res.json())
         .then(({ items }) => items);
@@ -44,6 +44,7 @@ runTests(async () => {
             const [ccCard, photoshopCard] = getTemplateContent('cards');
             document.querySelector('main').append(ccCard, photoshopCard);
             expect(aemMock.count).to.equal(0);
+            const card = document.querySelector('main merch-card:has(> merch-datasource[path="/content/dam/sandbox/mas/creative-cloud"])');
         });
 
         it('re-renders a card after clearing the cache', async () => {

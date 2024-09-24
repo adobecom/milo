@@ -117,7 +117,7 @@ const values = [
   },
   {
     b: 'section1 .random-block2',
-    a: 'main > div:nth-child(1) .random-block:nth-child(2 of .random-block)',
+    a: 'main > div:nth-child(1) .random-block2',
   },
   {
     b: 'main > section30',
@@ -142,6 +142,14 @@ const values = [
   {
     b: 'any-marquee ul li:nth-child(2)',
     a: '[class*="marquee"] ul li:nth-child(2)',
+  },
+  {
+    b: 'any-marquee-section',
+    a: 'main > div:has([class*="marquee"])',
+  },
+  {
+    b: '.aside03',
+    a: '.aside03',
   },
 ];
 describe('test different values', () => {

@@ -5,6 +5,7 @@ import {
   decorateTextOverrides,
   decorateButtons,
   handleObjectFit,
+  loadCDT,
 } from '../../utils/decorate.js';
 import { createTag, loadStyle, getConfig } from '../../utils/utils.js';
 
@@ -132,14 +133,14 @@ function parseKeyString(str) {
   return result;
 }
 
-function loadContentType(el, key, classes) {
+async function loadContentType(el, key, classes) {
   if (classes !== undefined && classes.length) el.classList.add(...classes);
   switch (key) {
     case 'bgcolor':
       decorateBg(el);
       break;
     case 'lockup':
-      decorateLockupRow(el, classes);
+      await decorateLockupRow(el, classes);
       break;
     case 'qrcode':
       decorateQr(el);
@@ -237,6 +238,7 @@ export default async function init(el) {
     }
   });
 
+  const promiseArr = [];
   [...rows].forEach(async (row) => {
     const cols = row.querySelectorAll(':scope > div');
     const firstCol = cols[0];
@@ -248,7 +250,9 @@ export default async function init(el) {
       firstCol.parentElement.classList.add(`row-${parsed.key}`, 'con-block');
       firstCol.remove();
       cols[1].classList.add('row-wrapper');
-      if (contentTypes.includes(parsed.key)) loadContentType(row, parsed.key, parsed.classes);
+      if (contentTypes.includes(parsed.key)) {
+        promiseArr.push(loadContentType(row, parsed.key, parsed.classes));
+      }
     } else {
       row.classList.add('norm');
       decorateBlockHrs(row);
@@ -256,4 +260,10 @@ export default async function init(el) {
     }
   });
   decorateTextOverrides(el, ['-heading', '-body', '-detail'], mainCopy);
+
+  if (el.classList.contains('countdown-timer')) {
+    promiseArr.push(loadCDT(copy, el.classList));
+  }
+
+  await Promise.all(promiseArr);
 }
