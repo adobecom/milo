@@ -345,8 +345,8 @@ const App = ({
 
   return html`<div class="quiz-container">
     <div class="quiz-heading-container">
-      <div id="question" class="quiz-title">${quizLists.strings[selectedQuestion.questions].heading}</div>
-      <div class="quiz-subtitle">${quizLists.strings[selectedQuestion.questions]['sub-head']}</div>
+      <h2 id="question" class="quiz-title">${quizLists.strings[selectedQuestion.questions].heading}</h2>
+      <p class="quiz-subtitle">${quizLists.strings[selectedQuestion.questions]['sub-head']}</p>
     </div>
     <div class="quiz-question-container">
       <div class="quiz-input-container">

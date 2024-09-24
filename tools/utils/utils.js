@@ -31,10 +31,13 @@ const getCustomConfig = async (path) => {
   if (CONFIGS[path] !== undefined) {
     return CONFIGS[path];
   }
+  let config = null;
   const resp = await fetch(path);
-  const config = resp.ok ? await resp.json() : null;
+  if (resp.ok) {
+    config = await resp.json();
+  }
   CONFIGS[path] = config;
-  return config;
+  return CONFIGS[path];
 };
 
 export { getImsToken, getSheet, getCustomConfig };

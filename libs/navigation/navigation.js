@@ -4,7 +4,7 @@ const blockConfig = [
     name: 'global-navigation',
     targetEl: 'header',
     appendType: 'prepend',
-    params: ['imsClientId'],
+    params: ['imsClientId', 'searchEnabled', 'unavHelpChildren'],
   },
   {
     key: 'footer',

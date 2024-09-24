@@ -66,7 +66,7 @@ export default class Georouting {
         await expect(this.geoModal.locator(`//a[text()="${data[tab].button}"]`)).toBeVisible({ timeout: 1000 });
         await expect(this.geoModal.locator(`//a[text()="${data[tab].link}"]`).nth(index)).toBeVisible({ timeout: 1000 });
         await expect(this.geoModal.locator(`//img[@alt="${data[tab].flag}"]`)).toBeVisible({ timeout: 1000 });
-        index = +1;
+        index += 1;
       }
 
       return true;

@@ -660,7 +660,7 @@ const PaginationPanel = () => {
       options=${defaultOptions.paginationType}
     />
     <${Select}
-      label="Animation Style"
+      label="Carousel Animation Style"
       prop="paginationAnimationStyle"
       options=${defaultOptions.paginationAnimationStyle}
     />

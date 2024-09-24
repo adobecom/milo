@@ -36,9 +36,19 @@ import {
   addMepHighlightAndTargetId,
   isDarkMode,
   darkIcons,
+  setDisableAEDState,
+  getDisableAEDState,
 } from './utilities/utilities.js';
 
 import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
+
+function getHelpChildren() {
+  const { unavHelpChildren } = getConfig();
+  return unavHelpChildren || [
+    { type: 'Support' },
+    { type: 'Community' },
+  ];
+}
 
 export const CONFIG = {
   icons: isDarkMode() ? darkIcons : icons,
@@ -95,13 +105,7 @@ export const CONFIG = {
       },
       help: {
         name: 'help',
-        attributes: {
-          children: [
-            { type: 'Support' },
-            { type: 'Community' },
-            // { type: 'Jarvis', appid: window.adobeid?.client_id },
-          ],
-        },
+        attributes: { children: getHelpChildren() },
       },
     },
   },
@@ -521,7 +525,7 @@ class Gnav {
       return 'linux';
     };
 
-    const unavVersion = new URLSearchParams(window.location.search).get('unavVersion') || '1.1';
+    const unavVersion = new URLSearchParams(window.location.search).get('unavVersion') || '1.3';
     await Promise.all([
       loadScript(`https://${environment}.adobeccstatic.com/unav/${unavVersion}/UniversalNav.js`),
       loadStyles(`https://${environment}.adobeccstatic.com/unav/${unavVersion}/UniversalNav.css`),
@@ -608,9 +612,6 @@ class Gnav {
       locale,
       imsClientId: window.adobeid?.client_id,
       theme: isDarkMode() ? 'dark' : 'light',
-      onReady: () => {
-        this.decorateAppPrompt({ getAnchorState: () => window.UniversalNav.getComponent?.('app-switcher') });
-      },
       analyticsContext: {
         consumer: {
           name: 'adobecom',
@@ -627,8 +628,8 @@ class Gnav {
 
     // Exposing UNAV config for consumers
     CONFIG.universalNav.universalNavConfig = getConfiguration();
-    window.UniversalNav(CONFIG.universalNav.universalNavConfig);
-
+    await window.UniversalNav(CONFIG.universalNav.universalNavConfig);
+    this.decorateAppPrompt({ getAnchorState: () => window.UniversalNav.getComponent?.('app-switcher') });
     isDesktop.addEventListener('change', () => {
       window.UniversalNav.reload(CONFIG.universalNav.universalNavConfig);
     });
@@ -822,6 +823,7 @@ class Gnav {
         ${isDesktop.matches ? '' : this.decorateSearch()}
         ${this.elements.mainNav}
         ${isDesktop.matches ? this.decorateSearch() : ''}
+        ${getConfig().searchEnabled === 'on' ? toFragment`<div class="feds-client-search"></div>` : ''}
       </div>
     `;
 
@@ -839,8 +841,9 @@ class Gnav {
 
     if (!hasActiveLink()) {
       const sections = this.elements.mainNav.querySelectorAll('.feds-navItem--section');
+      const disableAED = getDisableAEDState();
 
-      if (sections.length === 1) {
+      if (!disableAED && sections.length === 1) {
         sections[0].classList.add(selectors.activeNavItem.slice(1));
         setActiveLink(true);
       }
@@ -1026,7 +1029,11 @@ const getSource = async () => {
 export default async function init(block) {
   try {
     const { mep } = getConfig();
-    const url = await getSource();
+    const sourceUrl = await getSource();
+    const [url, hash = ''] = sourceUrl.split('#');
+    if (hash === '_noActiveItem') {
+      setDisableAEDState();
+    }
     const content = await fetchAndProcessPlainHtml({ url });
     if (!content) return null;
     const gnav = new Gnav({
