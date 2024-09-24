@@ -1,6 +1,6 @@
-# checkout-link
+# checkout-link {#checkout-link}
 
-## Introduction
+## Introduction {#introduction}
 This custom element renders a checkout link supporting most of the features documented at https://wiki.corp.adobe.com/pages/viewpage.action?spaceKey=businessservices&title=UCv3+Link+Creation+Guide.<br>
 Sometimes a checkout-link can be also referred as placeholder as it can be used as an inline link resolving at runtime.<br>
 The term placeholder will be deprecated and it is recommended to refer as **checkout-link custom element** going forward.
@@ -14,7 +14,7 @@ AOS generated a stable reference for a set of natural keys allowing to retrieve 
 
 [API: Create an offer selector](https://developers.corp.adobe.com/aos/docs/guide/apis/api.yaml#/paths/offer_selectors/post)
 
-### WCS
+### WCS {#wcs}
 WCS (pronounced weks) provides APIs returning Commerce data required by Adobe.com.
 
 https://developers.corp.adobe.com/wcs/docs/guide/introduction.md
@@ -34,7 +34,7 @@ https://developers.corp.adobe.com/wcs/docs/api/openapi/wcs/latest.yaml#/schemas/
 This is a functional **buy now** button: <a href="#" is="checkout-link" data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M">Buy now</a>
 
 
-## Attributes
+## Attributes {#attributes}
 
 | Attribute                    | Description                                                                                     | Default Value | Required |
 |------------------------------|-------------------------------------------------------------------------------------------------|---------------|----------|
@@ -52,7 +52,7 @@ This is a functional **buy now** button: <a href="#" is="checkout-link" data-wcs
 
 
 
-### Examples <br>
+### Examples {#examples} <br>
 
 
 #### Custom Workflow Step
@@ -95,7 +95,7 @@ Two photoshop and three acrobat pro single apps (TEAMS):
 <a href="#" is="checkout-link" data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M" data-ims-country="JP">Buy now</a>
 
 
-## Properties
+## Properties {#properties} <br>
 
 | Property      | Description                       |
 |---------------|-----------------------------------|
@@ -131,14 +131,14 @@ Two photoshop and three acrobat pro single apps (TEAMS):
 ```
 
 
-## Methods
+## Methods {#methods}
 
 | Property      | Description                       |
 |---------------|-----------------------------------|
 | `requestUpdate(true\|false)` |  causes a re-render using the actual options      |
 
 
-## Events
+## Events {#events}
 
 | Event     | Description                       |
 |-----------|-----------------------------------|

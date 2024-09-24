@@ -16,26 +16,26 @@
 <body>
 <main>
 <sp-theme color="light" scale="medium">
-<h1>checkout-link</h1>
-<h2>Introduction</h2>
+<h1 id="checkout-link" tabindex="-1"><a class="header-anchor" href="#checkout-link">checkout-link</a></h1>
+<h2 id="introduction" tabindex="-1"><a class="header-anchor" href="#introduction">Introduction</a></h2>
 <p>This custom element renders a checkout link supporting most of the features documented at <a href="https://wiki.corp.adobe.com/pages/viewpage.action?spaceKey=businessservices&amp;title=UCv3+Link+Creation+Guide.">https://wiki.corp.adobe.com/pages/viewpage.action?spaceKey=businessservices&amp;title=UCv3+Link+Creation+Guide.</a><br>
 Sometimes a checkout-link can be also referred as placeholder as it can be used as an inline link resolving at runtime.<br>
 The term placeholder will be deprecated and it is recommended to refer as <strong>checkout-link custom element</strong> going forward.</p>
 <p>Behind the scene, it uses <a href="https://git.corp.adobe.com/PandoraUI/commerce-core">https://git.corp.adobe.com/PandoraUI/commerce-core</a> to generate the checkout url.</p>
 <p>It requires an Offer Selector ID to retrieve the offer from WCS.</p>
-<h3>Offer Selector ID <br></h3>
+<h3 id="offer-selector-id" tabindex="-1"><a class="header-anchor" href="#offer-selector-id">Offer Selector ID <br></a></h3>
 <p>AOS generated a stable reference for a set of natural keys allowing to retrieve a specific offer whose offer ID can change over time.</p>
 <p><a href="https://developers.corp.adobe.com/aos/docs/guide/apis/api.yaml#/paths/offer_selectors/post">API: Create an offer selector</a></p>
-<h3>WCS</h3>
+<h3 id="wcs" tabindex="-1"><a class="header-anchor" href="#wcs">WCS</a></h3>
 <p>WCS (pronounced weks) provides APIs returning Commerce data required by <a href="http://Adobe.com">Adobe.com</a>.</p>
 <p><a href="https://developers.corp.adobe.com/wcs/docs/guide/introduction.md">https://developers.corp.adobe.com/wcs/docs/guide/introduction.md</a>
 <a href="https://developers.corp.adobe.com/wcs/docs/api/openapi/wcs/latest.yaml#/schemas/Web-Commerce-Artifacts">https://developers.corp.adobe.com/wcs/docs/api/openapi/wcs/latest.yaml#/schemas/Web-Commerce-Artifacts</a></p>
-<h3>Example <br></h3>
+<h3 id="example" tabindex="-1"><a class="header-anchor" href="#example">Example <br></a></h3>
 <pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">href</span>=<span class="hljs-string">&quot;#&quot;</span> <span class="hljs-attr">is</span>=<span class="hljs-string">&quot;checkout-link&quot;</span> <span class="hljs-attr">data-wcs-osi</span>=<span class="hljs-string">&quot;A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M&quot;</span>&gt;</span>Buy now<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
 </code></pre>
-<h4>Demo<br></h4>
+<h4 id="demo" tabindex="-1"><a class="header-anchor" href="#demo">Demo<br></a></h4>
 <p>This is a functional <strong>buy now</strong> button: <a href="#" is="checkout-link" data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M">Buy now</a></p>
-<h2>Attributes</h2>
+<h2 id="attributes" tabindex="-1"><a class="header-anchor" href="#attributes">Attributes</a></h2>
 <table>
 <thead>
 <tr>
@@ -114,29 +114,29 @@ The term placeholder will be deprecated and it is recommended to refer as <stron
 </tr>
 </tbody>
 </table>
-<h3>Examples <br></h3>
-<h4>Custom Workflow Step</h4>
+<h3 id="examples-%7B%23examples%7D" tabindex="-1"><a class="header-anchor" href="#examples-%7B%23examples%7D">Examples {#examples} <br></a></h3>
+<h4 id="custom-workflow-step" tabindex="-1"><a class="header-anchor" href="#custom-workflow-step">Custom Workflow Step</a></h4>
 <pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">href</span>=<span class="hljs-string">&quot;#&quot;</span> <span class="hljs-attr">is</span>=<span class="hljs-string">&quot;checkout-link&quot;</span> <span class="hljs-attr">data-wcs-osi</span>=<span class="hljs-string">&quot;A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M&quot;</span> <span class="hljs-attr">data-checkout-workflow-step</span>=<span class="hljs-string">&quot;recommendation&quot;</span>&gt;</span>Buy now<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
 </code></pre>
-<h5>Demo<br></h5>
+<h5 id="demo-1" tabindex="-1"><a class="header-anchor" href="#demo-1">Demo<br></a></h5>
 <p><a href="#" is="checkout-link" data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M" data-checkout-workflow-step="recommendation">Buy now</a></p>
-<h4>Multiple Quantities</h4>
+<h4 id="multiple-quantities" tabindex="-1"><a class="header-anchor" href="#multiple-quantities">Multiple Quantities</a></h4>
 <p>Two photoshop and three acrobat pro single apps (TEAMS):</p>
 <pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">href</span>=<span class="hljs-string">&quot;#&quot;</span> <span class="hljs-attr">is</span>=<span class="hljs-string">&quot;checkout-link&quot;</span> <span class="hljs-attr">data-wcs-osi</span>=<span class="hljs-string">&quot;yHKQJK2VOMSY5bINgg7oa2ov9RnmnU1oJe4NOg4QTYI,vV01ci-KLH6hYdRfUKMBFx009hdpxZcIRG1-BY_PutE&quot;</span> <span class="hljs-attr">data-quantity</span>=<span class="hljs-string">&quot;2,3&quot;</span>&gt;</span>Buy now<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
 </code></pre>
-<h5>Demo<br></h5>
+<h5 id="demo-2" tabindex="-1"><a class="header-anchor" href="#demo-2">Demo<br></a></h5>
 <p><a href="#" is="checkout-link" data-wcs-osi="yHKQJK2VOMSY5bINgg7oa2ov9RnmnU1oJe4NOg4QTYI,vV01ci-KLH6hYdRfUKMBFx009hdpxZcIRG1-BY_PutE" data-quantity="2,3">Buy now</a></p>
-<h4>Custom query params</h4>
+<h4 id="custom-query-params" tabindex="-1"><a class="header-anchor" href="#custom-query-params">Custom query params</a></h4>
 <pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">href</span>=<span class="hljs-string">&quot;#&quot;</span> <span class="hljs-attr">is</span>=<span class="hljs-string">&quot;checkout-link&quot;</span> <span class="hljs-attr">data-wcs-osi</span>=<span class="hljs-string">&quot;A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M&quot;</span> <span class="hljs-attr">data-extra-options</span>=<span class="hljs-string">&quot;{<span class="hljs-symbol">&amp;quot;</span>promoid<span class="hljs-symbol">&amp;quot;</span>:<span class="hljs-symbol">&amp;quot;</span>promo12345<span class="hljs-symbol">&amp;quot;</span>,<span class="hljs-symbol">&amp;quot;</span>mv<span class="hljs-symbol">&amp;quot;</span>:1,<span class="hljs-symbol">&amp;quot;</span>mv2<span class="hljs-symbol">&amp;quot;</span>:2}&quot;</span>&gt;</span>Buy now<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
 </code></pre>
-<h5>Demo<br></h5>
+<h5 id="demo-3" tabindex="-1"><a class="header-anchor" href="#demo-3">Demo<br></a></h5>
 <p><a href="#" is="checkout-link" data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M" data-extra-options="{&quot;promoid&quot;:&quot;promo12345&quot;,&quot;mv&quot;:1,&quot;mv2&quot;:2}">Buy now</a></p>
-<h4>IMS Country</h4>
+<h4 id="ims-country" tabindex="-1"><a class="header-anchor" href="#ims-country">IMS Country</a></h4>
 <pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">href</span>=<span class="hljs-string">&quot;#&quot;</span> <span class="hljs-attr">is</span>=<span class="hljs-string">&quot;checkout-link&quot;</span> <span class="hljs-attr">data-wcs-osi</span>=<span class="hljs-string">&quot;A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M&quot;</span> <span class="hljs-attr">data-ims-country</span>=<span class="hljs-string">&quot;JP&quot;</span>&gt;</span>Buy now<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
 </code></pre>
-<h5>Demo<br></h5>
+<h5 id="demo-4" tabindex="-1"><a class="header-anchor" href="#demo-4">Demo<br></a></h5>
 <p><a href="#" is="checkout-link" data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M" data-ims-country="JP">Buy now</a></p>
-<h2>Properties</h2>
+<h2 id="properties-%7B%23properties%7D" tabindex="-1"><a class="header-anchor" href="#properties-%7B%23properties%7D">Properties {#properties} <br></a></h2>
 <table>
 <thead>
 <tr>
@@ -159,7 +159,7 @@ The term placeholder will be deprecated and it is recommended to refer as <stron
 </tr>
 </tbody>
 </table>
-<h3>Example <br></h3>
+<h3 id="example-1" tabindex="-1"><a class="header-anchor" href="#example-1">Example <br></a></h3>
 <pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;co1&quot;</span> <span class="hljs-attr">href</span>=<span class="hljs-string">&quot;#&quot;</span> <span class="hljs-attr">is</span>=<span class="hljs-string">&quot;checkout-link&quot;</span> <span class="hljs-attr">data-wcs-osi</span>=<span class="hljs-string">&quot;A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M&quot;</span> <span class="hljs-attr">data-ims-country</span>=<span class="hljs-string">&quot;CA&quot;</span>&gt;</span>Buy now<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
 <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;module&quot;</span>&gt;</span><span class="language-javascript">
   <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;co1&#x27;</span>).<span class="hljs-title function_">onceSettled</span>().<span class="hljs-title function_">then</span>(<span class="hljs-function"><span class="hljs-params">el</span> =&gt;</span> {
@@ -175,11 +175,11 @@ The term placeholder will be deprecated and it is recommended to refer as <stron
     document.getElementById('coOptions').innerHTML = JSON.stringify(el.options, null, '\t');
   });
 </script>
-<h4>value property</h4>
+<h4 id="value-property" tabindex="-1"><a class="header-anchor" href="#value-property">value property</a></h4>
 <pre><code id="coValue" class="language-json"></code></pre>
-<h4>options property</h4>
+<h4 id="options-property" tabindex="-1"><a class="header-anchor" href="#options-property">options property</a></h4>
 <pre><code id="coOptions" class="language-json"></code></pre>
-<h2>Methods</h2>
+<h2 id="methods" tabindex="-1"><a class="header-anchor" href="#methods">Methods</a></h2>
 <table>
 <thead>
 <tr>
@@ -194,7 +194,7 @@ The term placeholder will be deprecated and it is recommended to refer as <stron
 </tr>
 </tbody>
 </table>
-<h2>Events</h2>
+<h2 id="events" tabindex="-1"><a class="header-anchor" href="#events">Events</a></h2>
 <table>
 <thead>
 <tr>
@@ -226,7 +226,7 @@ The term placeholder will be deprecated and it is recommended to refer as <stron
 <div class="warning">
 <p><strong>Note</strong>: Event names with <code>wcms:placeholder</code> prefix can be subject to change.</p>
 </div>
-<h3>Example <br></h3>
+<h3 id="example-2" tabindex="-1"><a class="header-anchor" href="#example-2">Example <br></a></h3>
 <pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;co2&quot;</span> <span class="hljs-attr">href</span>=<span class="hljs-string">&quot;#&quot;</span> <span class="hljs-attr">is</span>=<span class="hljs-string">&quot;checkout-link&quot;</span> <span class="hljs-attr">data-wcs-osi</span>=<span class="hljs-string">&quot;A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M&quot;</span>&gt;</span>Buy now (click me)<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
 <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;module&quot;</span>&gt;</span><span class="language-javascript">
   <span class="hljs-keyword">const</span> logTarget = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;logTarget&#x27;</span>);
@@ -258,7 +258,7 @@ The term placeholder will be deprecated and it is recommended to refer as <stron
   });
   a.addEvent
 </script>
-<h4>Logs <br></h4>
+<h4 id="logs" tabindex="-1"><a class="header-anchor" href="#logs">Logs <br></a></h4>
 <pre><code id="logTarget" class="language-html"></code></pre>
 
 </sp-theme>

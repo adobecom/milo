@@ -5,6 +5,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import markdownIt from 'markdown-it';
 import markdownItAttrs from 'markdown-it-attrs';
+import markdownItAnchor from 'markdown-it-anchor';
 import markdownItContainer from 'markdown-it-container';
 import markdownItHighlightjs from 'markdown-it-highlightjs';
 
@@ -31,6 +32,9 @@ const md = markdownIt({
     typographer: true,
 })
     .use(markdownItAttrs)
+    .use(markdownItAnchor, {
+        permalink: markdownItAnchor.permalink.headerLink(),
+    })
     .use(markdownItContainer, 'warning')
     .use(markdownItHighlightjs);
 
