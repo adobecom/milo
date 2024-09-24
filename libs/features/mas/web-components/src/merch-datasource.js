@@ -41,7 +41,7 @@ const cardContent = {
     },
     [VARIANTS.CCD_SLICE]: {
       backgroundImage: { tag: 'div', slot: 'image' },
-      description: { tag: 'div', slot: 'body-xs' },
+      description: { tag: 'div', slot: 'body-s' },
       ctas: { size: 'l' },
   },
 };
