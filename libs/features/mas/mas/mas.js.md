@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This is a javasript library enables M@S on any web surface.
+This is a javasript library that enables M@S on any web surface.
 
 mas.js includes the followings custom elements:
 
