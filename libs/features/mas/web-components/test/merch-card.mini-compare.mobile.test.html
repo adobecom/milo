@@ -10,6 +10,7 @@
             env: {},
         };
     </script>
+    <link rel="stylesheet" href="http://localhost:2023/__wds-outside-root__/3/styles/styles.css"/>
     <style>
         main {
             display: flex;
@@ -19,47 +20,19 @@
             padding-top: 80px;
         }
 
-        main>div {
+        main > div {
             display: initial;
         }
 
         .action-area {
             display: contents;
         }
-
-        #sidenav {
-            display: none;
-        }
-
-        @media screen and (min-width: 1440px) {
-            #sidenav {
-                flex: 1;
-                justify-content: stretch;
-                padding-top: 8px;
-                display: flex;
-                position: fixed;
-                bottom: 0px;
-                left: 0px;
-                gap: 20px;
-                flex-direction: column;
-                width: 220px;
-            }
-        }
-
-        #firstcards {
-            background: linear-gradient(90deg, rgba(2, 0, 36, 1) 0%, rgba(140, 43, 95, 0.4430147058823529) 35%, rgba(0, 212, 255, 1) 100%);
-        }
-    </style>
+    </style>     
+  <script type="module" src="./merch-card.mini-compare.mobile.test.html.js"></script>
 </head>
 
 <body>
-    <script type="module" src="./merch-card.mini-compare.mobile.test.html.js"></script>
     <main>
-        <div id="sidenav">
-            <button onclick="toggleRTL()">Toggle RTL</button>
-            <button onclick="skipTests()">Skip tests</button>
-            <button onclick="runTests()">Run tests</button>
-        </div>
         <div class="three-merch-cards mini-compare-chart">
 
             <merch-card class="merch-card mini-compare-chart" variant="mini-compare-chart"

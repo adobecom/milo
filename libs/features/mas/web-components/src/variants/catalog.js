@@ -41,7 +41,8 @@ export class Catalog extends VariantLayout {
                   ><slot name="callout-content"></slot>`
             : ''}
     </div>
-    ${this.secureLabelFooter}`;
+    ${this.secureLabelFooter}
+    <slot></slot>`;
   }
 
   getGlobalCSS() {
@@ -79,6 +80,7 @@ export class Catalog extends VariantLayout {
   static variantStyle = css`
     :host([variant='catalog']) {
       min-height: 330px;
+      width: var(--consonant-merch-card-catalog-width);
     }
 
     .body .catalog-badge {
