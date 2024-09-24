@@ -14,48 +14,6 @@ Designs:
 
 ## examples
 
-### Static HTML
-
-```html
-<merch-card variant="plans" badge-color="#EDCC2D" badge-background-color="#000000"" badge-text=" Best value">
-  <merch-icon slot="icons" size="l" src="https://www.adobe.com/content/dam/shared/images/product-icons/svg/creative-cloud.svg" alt="Creative Cloud All Apps"></merch-icon>
-  <h4 slot="heading-xs">Creative Cloud All Apps</h4>
-  <h3 slot="heading-m">
-      <span is="inline-price" data-display-per-unit="false" data-display-recurrence="true"
-          data-display-tax="false" data-wcs-osi="r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8"></span>
-  </h3>
-  <p slot="body-xxs">Desktop</p>
-  <div slot="body-xs">
-      <p>Get 20+ Creative Cloud apps including Photoshop, Illustrator, Adobe Express, Premiere Pro, and
-          Acrobat Pro. (Substance 3D apps are not included.)</p>
-      <p><a href="https://adobe.com">See plans & pricing details</a></p>
-  </div>
-  <div slot="footer">
-      <a is="checkout-link" href="#" class="con-button blue active" data-wcs-osi="r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8">Save now</a>
-  </div>
-</merch-card>
-```
-
-#### Demo
-
-<merch-card variant="plans" badge-color="#EDCC2D" badge-background-color="#000000" badge-text="Best value">
-  <merch-icon slot="icons" size="l" src="https://www.adobe.com/content/dam/shared/images/product-icons/svg/creative-cloud.svg" alt="Creative Cloud All Apps"></merch-icon>
-  <h4 slot="heading-xs">Creative Cloud All Apps</h4>
-  <h3 slot="heading-m">
-      <span is="inline-price" data-display-per-unit="false" data-display-recurrence="true"
-          data-display-tax="false" data-wcs-osi="r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8"></span>
-  </h3>
-  <p slot="body-xxs">Desktop</p>
-  <div slot="body-xs">
-      <p>Get 20+ Creative Cloud apps including Photoshop, Illustrator, Adobe Express, Premiere Pro, and
-          Acrobat Pro. (Substance 3D apps are not included.)</p>
-      <p><a href="https://adobe.com">See plans & pricing details</a></p>
-  </div>
-  <div slot="footer">
-      <a is="checkout-link" href="#" class="con-button blue active" data-wcs-osi="r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8">Save now</a>
-  </div>
-</merch-card>
-
 ### Odin/AEM Fragments
 
 ```html
@@ -100,13 +58,55 @@ Designs:
 
 [See logs](#logs)
 
+### Static HTML
+
+```html
+<merch-card variant="plans" badge-color="#EDCC2D" badge-background-color="#000000"" badge-text=" Best value">
+  <merch-icon slot="icons" size="l" src="https://www.adobe.com/content/dam/shared/images/product-icons/svg/creative-cloud.svg" alt="Creative Cloud All Apps"></merch-icon>
+  <h4 slot="heading-xs">Creative Cloud All Apps</h4>
+  <h3 slot="heading-m">
+      <span is="inline-price" data-display-per-unit="false" data-display-recurrence="true"
+          data-display-tax="false" data-wcs-osi="r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8"></span>
+  </h3>
+  <p slot="body-xxs">Desktop</p>
+  <div slot="body-xs">
+      <p>Get 20+ Creative Cloud apps including Photoshop, Illustrator, Adobe Express, Premiere Pro, and
+          Acrobat Pro. (Substance 3D apps are not included.)</p>
+      <p><a href="https://adobe.com">See plans & pricing details</a></p>
+  </div>
+  <div slot="footer">
+      <a is="checkout-link" href="#" class="con-button blue active" data-wcs-osi="r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8">Save now</a>
+  </div>
+</merch-card>
+```
+
+#### Demo
+
+<merch-card variant="plans" badge-color="#EDCC2D" badge-background-color="#000000" badge-text="Best value">
+  <merch-icon slot="icons" size="l" src="https://www.adobe.com/content/dam/shared/images/product-icons/svg/creative-cloud.svg" alt="Creative Cloud All Apps"></merch-icon>
+  <h4 slot="heading-xs">Creative Cloud All Apps</h4>
+  <h3 slot="heading-m">
+      <span is="inline-price" data-display-per-unit="false" data-display-recurrence="true"
+          data-display-tax="false" data-wcs-osi="r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8"></span>
+  </h3>
+  <p slot="body-xxs">Desktop</p>
+  <div slot="body-xs">
+      <p>Get 20+ Creative Cloud apps including Photoshop, Illustrator, Adobe Express, Premiere Pro, and
+          Acrobat Pro. (Substance 3D apps are not included.)</p>
+      <p><a href="https://adobe.com">See plans & pricing details</a></p>
+  </div>
+  <div slot="footer">
+      <a is="checkout-link" href="#" class="con-button blue active" data-wcs-osi="r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8">Save now</a>
+  </div>
+</merch-card>
+
 ### Attributes
 
-| Name        | Description                                                                                  | Default Value                        | Required |
-| ----------- | -------------------------------------------------------------------------------------------- | ------------------------------------ | -------- |
-| `variant`   | Variant in terms design. Not required when used with an `aem-fragment`                       |                                      | `false`  |
-| `consonant` | Whether to use consonant styles for CTAs without sp-button decorator around the footer CTAs. | `true` if `aem-fragment` is not used | `false`  |
-| `size`      | a card can span over 2 columns or entire row with `wide\|super-wide`                         | `medium`                             | `false`  |
+| Name        | Description                                                                         | Default Value                        | Required |
+| ----------- | ----------------------------------------------------------------------------------- | ------------------------------------ | -------- |
+| `variant`   | Variant in terms design. Not required when used with an `aem-fragment`              |                                      | `false`  |
+| `consonant` | Whether to use consonant styles without sp-button decorator around the footer CTAs. | `true` if `aem-fragment` is not used | `false`  |
+| `size`      | a card can span over 2 columns or entire row with `wide\|super-wide`                | `medium`                             | `false`  |
 
 #### Active variants:
 

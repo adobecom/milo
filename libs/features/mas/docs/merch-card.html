@@ -34,6 +34,44 @@
 <p><strong>ACOM</strong>: <a href="https://www.figma.com/design/tiEUQLJ1hVlosqwzAATVXZ/Cards-(Merch)?node-id=1086-17994&amp;t=LeMR0vbaBoEKaKln-1">https://www.figma.com/design/tiEUQLJ1hVlosqwzAATVXZ/Cards-(Merch)?node-id=1086-17994&amp;t=LeMR0vbaBoEKaKln-1</a></p>
 <p><strong>CCD</strong>: <a href="https://www.figma.com/proto/7tUtNgFelfMjgPoJ5QcE1k/Merch%40Scale-Frameworks?node-id=2077-63597&amp;t=cWfdzWlga79eyjyI-1">https://www.figma.com/proto/7tUtNgFelfMjgPoJ5QcE1k/Merch%40Scale-Frameworks?node-id=2077-63597&amp;t=cWfdzWlga79eyjyI-1</a></p>
 <h2 id="examples" tabindex="-1"><a class="header-anchor" href="#examples">examples</a></h2>
+<h3 id="odin%2Faem-fragments" tabindex="-1"><a class="header-anchor" href="#odin%2Faem-fragments">Odin/AEM Fragments</a></h3>
+<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">merch-card</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">aem-fragment</span> <span class="hljs-attr">title</span>=<span class="hljs-string">&quot;CCD Slice Creative Cloud Photography&quot;</span> <span class="hljs-attr">fragment</span>=<span class="hljs-string">&quot;830f76be-0e83-4faf-9051-3dbb1a1dff04&quot;</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">merch-card</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;module&quot;</span>&gt;</span><span class="language-javascript">
+  <span class="hljs-keyword">const</span> log = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;log&#x27;</span>);
+  <span class="hljs-keyword">const</span> <span class="hljs-title function_">logger</span> = (<span class="hljs-params">...messages</span>) =&gt; log.<span class="hljs-property">innerHTML</span> = <span class="hljs-string">`<span class="hljs-subst">${log.innerHTML}</span>&lt;br&gt;<span class="hljs-subst">${messages.join(<span class="hljs-string">&#x27; &#x27;</span>)}</span>`</span>;
+  <span class="hljs-keyword">const</span> fragment1 = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;fragment1&#x27;</span>);
+
+  fragment1.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;load&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">e</span>) =&gt;</span> {
+    <span class="hljs-title function_">logger</span>(<span class="hljs-string">&#x27;aem-fragment is loaded: &#x27;</span>, <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(e.<span class="hljs-property">target</span>.<span class="hljs-property">data</span>, <span class="hljs-literal">null</span>, <span class="hljs-string">&#x27;\t&#x27;</span>));
+  });
+
+  <span class="hljs-keyword">const</span> card1 = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;card1&#x27;</span>);
+   card1.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;ready&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">e</span>) =&gt;</span> {
+    <span class="hljs-title function_">logger</span>(<span class="hljs-string">&#x27;merch-card is ready: &#x27;</span>, e.<span class="hljs-property">target</span>.<span class="hljs-property">variant</span>);
+  });
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+
+</code></pre>
+<h4 id="demo" tabindex="-1"><a class="header-anchor" href="#demo">Demo</a></h4>
+<merch-card id="card1">
+        <aem-fragment id="fragment1" title="CCD Slice Creative Cloud Photography" fragment="830f76be-0e83-4faf-9051-3dbb1a1dff04">
+</merch-card>
+<script type="module">
+  const log = document.getElementById('log');
+  const logger = (...messages) => log.innerHTML = `${log.innerHTML}<br>${messages.join(' ')}`;
+  const fragment1 = document.getElementById('fragment1');
+  fragment1.addEventListener('load', (e) => {
+    logger('aem-fragment is loaded: ', JSON.stringify(e.target.data, null, '\t'));
+  });
+  const card1 = document.getElementById('card1');
+   card1.addEventListener('ready', (e) => {
+    logger('merch-card is ready: ', e.target.variant);
+  });
+</script>
+<p><a href="#logs">See logs</a></p>
 <h3 id="static-html" tabindex="-1"><a class="header-anchor" href="#static-html">Static HTML</a></h3>
 <pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">merch-card</span> <span class="hljs-attr">variant</span>=<span class="hljs-string">&quot;plans&quot;</span> <span class="hljs-attr">badge-color</span>=<span class="hljs-string">&quot;#EDCC2D&quot;</span> <span class="hljs-attr">badge-background-color</span>=<span class="hljs-string">&quot;#000000&quot;</span>&quot; <span class="hljs-attr">badge-text</span>=<span class="hljs-string">&quot; Best value&quot;</span>&gt;</span>
   <span class="hljs-tag">&lt;<span class="hljs-name">merch-icon</span> <span class="hljs-attr">slot</span>=<span class="hljs-string">&quot;icons&quot;</span> <span class="hljs-attr">size</span>=<span class="hljs-string">&quot;l&quot;</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;https://www.adobe.com/content/dam/shared/images/product-icons/svg/creative-cloud.svg&quot;</span> <span class="hljs-attr">alt</span>=<span class="hljs-string">&quot;Creative Cloud All Apps&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">merch-icon</span>&gt;</span>
@@ -53,7 +91,7 @@
   <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">merch-card</span>&gt;</span>
 </code></pre>
-<h4 id="demo" tabindex="-1"><a class="header-anchor" href="#demo">Demo</a></h4>
+<h4 id="demo-1" tabindex="-1"><a class="header-anchor" href="#demo-1">Demo</a></h4>
 <merch-card variant="plans" badge-color="#EDCC2D" badge-background-color="#000000" badge-text="Best value">
   <merch-icon slot="icons" size="l" src="https://www.adobe.com/content/dam/shared/images/product-icons/svg/creative-cloud.svg" alt="Creative Cloud All Apps"></merch-icon>
   <h4 slot="heading-xs">Creative Cloud All Apps</h4>
@@ -71,42 +109,6 @@
       <a is="checkout-link" href="#" class="con-button blue active" data-wcs-osi="r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8">Save now</a>
   </div>
 </merch-card>
-<h3 id="odin%2Faem-fragments" tabindex="-1"><a class="header-anchor" href="#odin%2Faem-fragments">Odin/AEM Fragments</a></h3>
-<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">merch-card</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">aem-fragment</span> <span class="hljs-attr">title</span>=<span class="hljs-string">&quot;CCD Slice Creative Cloud Photography&quot;</span> <span class="hljs-attr">fragment</span>=<span class="hljs-string">&quot;830f76be-0e83-4faf-9051-3dbb1a1dff04&quot;</span>&gt;</span>
-<span class="hljs-tag">&lt;/<span class="hljs-name">merch-card</span>&gt;</span>
-
-<span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;module&quot;</span>&gt;</span><span class="language-javascript">
-  <span class="hljs-keyword">const</span> log = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;log&#x27;</span>);
-  <span class="hljs-keyword">const</span> <span class="hljs-title function_">logger</span> = (<span class="hljs-params">...messages</span>) =&gt; log.<span class="hljs-property">innerHTML</span> = <span class="hljs-string">`<span class="hljs-subst">${log.innerHTML}</span>&lt;br&gt;<span class="hljs-subst">${messages.join(<span class="hljs-string">&#x27; &#x27;</span>)}</span>`</span>;
-  <span class="hljs-keyword">const</span> card1 = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;card1&#x27;</span>);
-   card1.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;ready&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">e</span>) =&gt;</span> {
-    <span class="hljs-title function_">logger</span>(<span class="hljs-string">&#x27;merch-card:ready: &#x27;</span>, e.<span class="hljs-property">target</span>.<span class="hljs-property">variant</span>);
-  });
-  <span class="hljs-keyword">const</span> fragment1 = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;fragment1&#x27;</span>);
-  fragment1.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;load&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">e</span>) =&gt;</span> {
-    <span class="hljs-title function_">logger</span>(<span class="hljs-string">&#x27;aem-fragment:load: &#x27;</span>, <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(e.<span class="hljs-property">target</span>.<span class="hljs-property">data</span>, <span class="hljs-literal">null</span>, <span class="hljs-string">&#x27;\t&#x27;</span>));
-  });
-</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
-
-</code></pre>
-<h4 id="demo-1" tabindex="-1"><a class="header-anchor" href="#demo-1">Demo</a></h4>
-<merch-card id="card1">
-        <aem-fragment id="fragment1" title="CCD Slice Creative Cloud Photography" fragment="830f76be-0e83-4faf-9051-3dbb1a1dff04">
-</merch-card>
-<script type="module">
-  const log = document.getElementById('log');
-  const logger = (...messages) => log.innerHTML = `${log.innerHTML}<br>${messages.join(' ')}`;
-  const card1 = document.getElementById('card1');
-   card1.addEventListener('ready', (e) => {
-    logger('merch-card:ready: ', e.target.variant);
-  });
-  const fragment1 = document.getElementById('fragment1');
-  fragment1.addEventListener('load', (e) => {
-    logger('aem-fragment:load: ', JSON.stringify(e.target.data, null, '\t'));
-  });
-</script>
-<p><a href="#logs">See logs</a></p>
 <h3 id="attributes" tabindex="-1"><a class="header-anchor" href="#attributes">Attributes</a></h3>
 <table>
 <thead>
@@ -126,7 +128,7 @@
 </tr>
 <tr>
 <td><code>consonant</code></td>
-<td>Whether to use consonant styles for CTAs without sp-button decorator around the footer CTAs.</td>
+<td>Whether to use consonant styles without sp-button decorator around the footer CTAs.</td>
 <td><code>true</code> if <code>aem-fragment</code> is not used</td>
 <td><code>false</code></td>
 </tr>
