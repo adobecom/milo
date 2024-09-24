@@ -511,7 +511,7 @@ export default async function init(el) {
     }
   }
   let footerRows;
-  if ([MINI_COMPARE_CHART, PLANS, SEGMENT].includes(cardType)) {
+  if ([MINI_COMPARE_CHART, PLANS, SEGMENT, PRODUCT].includes(cardType)) {
     intersectionObserver.observe(merchCard);
   }
   if (cardType === MINI_COMPARE_CHART) {
