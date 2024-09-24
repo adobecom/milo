@@ -4,22 +4,43 @@ TAGS=""
 REPORTER=""
 EXCLUDE_TAGS="--grep-invert nopr"
 EXIT_STATUS=0
-PR_NUMBER=$(echo "$GITHUB_REF" | awk -F'/' '{print $3}')
-echo "PR Number: $PR_NUMBER"
 
-# Extract feature branch name from GITHUB_HEAD_REF
-FEATURE_BRANCH="$GITHUB_HEAD_REF"
+echo "GITHUB_REF: $GITHUB_REF"
+echo "GITHUB_HEAD_REF: $GITHUB_HEAD_REF"
+
+if [[ "$GITHUB_REF" == refs/pull/* ]]; then
+  # extract PR number and branch name
+  PR_NUMBER=$(echo "$GITHUB_REF" | awk -F'/' '{print $3}')
+  FEATURE_BRANCH="$GITHUB_HEAD_REF"
+elif [[ "$GITHUB_REF" == refs/heads/* ]]; then
+  # extract branch name from GITHUB_REF
+  FEATURE_BRANCH=$(echo "$GITHUB_REF" | awk -F'/' '{print $3}')
+else
+  echo "Unknown reference format"
+fi
+
 # Replace "/" characters in the feature branch name with "-"
 FEATURE_BRANCH=$(echo "$FEATURE_BRANCH" | sed 's/\//-/g')
+
+echo "PR Number: ${PR_NUMBER:-"N/A"}"
 echo "Feature Branch Name: $FEATURE_BRANCH"
 
+repository=${GITHUB_REPOSITORY}
+repoParts=(${repository//\// }) 
+toRepoOrg=${repoParts[0]}
+toRepoName=${repoParts[1]}
+
+prRepo=${prRepo:-$toRepoName}
+prOrg=${prOrg:-$toRepoOrg}
+
 PR_BRANCH_LIVE_URL_GH="https://$FEATURE_BRANCH--$prRepo--$prOrg.hlx.live"
+
 # set pr branch url as env
 export PR_BRANCH_LIVE_URL_GH
 export PR_NUMBER
 
 echo "PR Branch live URL: $PR_BRANCH_LIVE_URL_GH"
-echo "*******************************"
+
 
 # Convert GitHub Tag(@) labels that can be grepped
 for label in ${labels}; do
@@ -37,9 +58,11 @@ done
 REPORTER=$reporter
 [[ ! -z "$REPORTER" ]] && REPORTER="--reporter $REPORTER"
 
-echo "*** Running Nala on $FEATURE_BRANCH ***"
-echo "Tags : $TAGS"
-echo "npx playwright test ${TAGS} ${EXCLUDE_TAGS} ${REPORTER}"
+echo "Running Nala on branch: $FEATURE_BRANCH "
+echo "Tags : ${TAGS:-"No @tags or annotations on this PR"}"
+echo "Run Command : npx playwright test ${TAGS} ${EXCLUDE_TAGS} ${REPORTER}"
+echo -e "\n"
+echo "*******************************"
 
 # Navigate to the GitHub Action path and install dependencies
 cd "$GITHUB_ACTION_PATH" || exit

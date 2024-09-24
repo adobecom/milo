@@ -1,4 +1,6 @@
-import { createTag } from './utils.js';
+import { createTag, loadStyle, getConfig } from './utils.js';
+
+const { miloLibs, codeRoot } = getConfig();
 
 export function decorateButtons(el, size) {
   const buttons = el.querySelectorAll('em a, strong a, p > a strong');
@@ -308,4 +310,16 @@ export function decorateMultiViewport(el) {
     });
   }
   return foreground;
+}
+
+export async function loadCDT(el, classList) {
+  try {
+    await Promise.all([
+      loadStyle(`${miloLibs || codeRoot}/features/cdt/cdt.css`),
+      import('../features/cdt/cdt.js')
+        .then(({ default: initCDT }) => initCDT(el, classList)),
+    ]);
+  } catch (error) {
+    window.lana?.log(`Failed to load countdown timer module: ${error}`, { tags: 'countdown-timer' });
+  }
 }
