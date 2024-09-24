@@ -979,7 +979,7 @@ merch-card[variant="plans"] [slot="quantity-select"] {
       grid-template-columns: repeat(4, var(--consonant-merch-card-product-width));
   }
 }
-`;var pt,He=class extends R{constructor(r){super(r);q(this,pt)}getContainer(){return Z(this,pt,U(this,pt)??this.card.closest('[class*="-merch-cards"]')??this.card.parentElement),U(this,pt)}getGlobalCSS(){return Xa}updateCardElementMinHeight(r,n){let i=`--consonant-merch-card-product-${n}-height`,o=Math.max(0,parseInt(window.getComputedStyle(r).height)||0),a=parseInt(this.getContainer().style.getPropertyValue(i))||0;o>a&&this.getContainer().style.setProperty(i,`${o}px`)}adjustProductBodySlots(){if(this.card.getBoundingClientRect().width===0)return;["heading-xs","body-xxs","body-xs","promo-text","callout-content"].forEach(n=>this.updateCardElementMinHeight(this.card.shadowRoot.querySelector(`slot[name="${n}"]`),n))}renderLayout(){return g` ${this.badge}
+`;var pt,He=class extends R{constructor(r){super(r);q(this,pt)}getContainer(){return Z(this,pt,U(this,pt)??this.card.closest('[class*="-merch-cards"]')??this.card.parentElement),U(this,pt)}getGlobalCSS(){return Xa}updateCardElementMinHeight(r,n){let i=`--consonant-merch-card-product-${n}-height`,o=Math.max(0,parseInt(window.getComputedStyle(r).height)||0),a=parseInt(this.getContainer().style.getPropertyValue(i))||0;o>a&&this.getContainer().style.setProperty(i,`${o}px`)}adjustProductBodySlots(){if(this.card.getBoundingClientRect().width===0)return;["heading-xs","body-xxs","body-xs","promo-text","callout-content","body-lower"].forEach(n=>this.updateCardElementMinHeight(this.card.shadowRoot.querySelector(`slot[name="${n}"]`),n))}renderLayout(){return g` ${this.badge}
       <div class="body">
           <slot name="icons"></slot>
           <slot name="heading-xs"></slot>
@@ -988,25 +988,31 @@ merch-card[variant="plans"] [slot="quantity-select"] {
           <slot name="body-xs"></slot>
           ${this.promoBottom?g`<slot name="promo-text"></slot>`:""}
           <slot name="callout-content"></slot>
+          <slot name="body-lower"></slot>
       </div>
       ${this.secureLabelFooter}`}postCardUpdateHook(){zr()||this.adjustProductBodySlots()}};pt=new WeakMap,x(He,"variantStyle",$`
-    :host([variant='mini-compare-chart']) > slot:not([name='icons']) {
+    :host([variant='product']) > slot:not([name='icons']) {
         display: block;
     }
     :host([variant='product']) slot[name='body-xs'] {
         min-height: var(--consonant-merch-card-product-body-xs-height);
+        display: block;
     }
     :host([variant='product']) slot[name='heading-xs'] {
         min-height: var(--consonant-merch-card-product-heading-xs-height);
+        display: block;
     }
     :host([variant='product']) slot[name='body-xxs'] {
         min-height: var(--consonant-merch-card-product-body-xxs-height);
+        display: block;
     }
     :host([variant='product']) slot[name='promo-text'] {
         min-height: var(--consonant-merch-card-product-promo-text-height);
+        display: block;
     }
     :host([variant='product']) slot[name='callout-content'] {
         min-height: var(--consonant-merch-card-product-callout-content-height);
+        display: block;
     }
   `);var Wa=`
 :root {

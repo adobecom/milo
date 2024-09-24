@@ -362,15 +362,17 @@ const simplifyHrs = (el) => {
   });
   if (el.variant === PRODUCT) {
     const calloutContent = el.querySelector('div[slot="callout-content"]');
-    if (calloutContent) {
-      const bodySlot = el.querySelector('div[slot="body-xs"]');
-      if (bodySlot) {
-        const elements = [...bodySlot.children];
-        elements.forEach((element) => {
-          if (element.tagName !== 'P') {
-            calloutContent.appendChild(element);
-          }
-        });
+    const bodySlot = el.querySelector('div[slot="body-xs"]');
+    if (calloutContent && bodySlot) {
+      const bodyLowerContent = createTag('div', { slot: 'body-lower' });
+      const elements = [...bodySlot.children];
+      elements.forEach((element) => {
+        if (element.tagName !== 'P') {
+          bodyLowerContent.append(element);
+        }
+      });
+      if (bodyLowerContent.childNodes.length > 0) {
+        calloutContent.parentElement.appendChild(bodyLowerContent);
       }
     }
   }
