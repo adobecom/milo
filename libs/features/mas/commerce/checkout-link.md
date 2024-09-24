@@ -15,10 +15,9 @@ AOS generated a stable reference for a set of natural keys allowing to retrieve 
 [API: Create an offer selector](https://developers.corp.adobe.com/aos/docs/guide/apis/api.yaml#/paths/offer_selectors/post)
 
 ### WCS {#wcs}
-WCS (pronounced weks) provides APIs returning Commerce data required by Adobe.com.
+[WCS](https://developers.corp.adobe.com/wcs/docs/guide/introduction.md) (pronounced weks) provides APIs returning Commerce data required by Adobe.com.
 
-https://developers.corp.adobe.com/wcs/docs/guide/introduction.md
-https://developers.corp.adobe.com/wcs/docs/api/openapi/wcs/latest.yaml#/schemas/Web-Commerce-Artifacts
+API: https://developers.corp.adobe.com/wcs/docs/api/openapi/wcs/latest.yaml#/schemas/Web-Commerce-Artifacts
 
 
 
