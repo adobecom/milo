@@ -1,24 +1,35 @@
 # checkout-link
-This customized built-in element renders a checkout link supporting most of the features documented at https://wiki.corp.adobe.com/pages/viewpage.action?spaceKey=businessservices&title=UCv3+Link+Creation+Guide.
-Sometimes a checkout-link can be also referred as placeholder as it can be used as an inline link resolving at runtime.
+
+## Introduction
+This custom element renders a checkout link supporting most of the features documented at https://wiki.corp.adobe.com/pages/viewpage.action?spaceKey=businessservices&title=UCv3+Link+Creation+Guide.<br>
+Sometimes a checkout-link can be also referred as placeholder as it can be used as an inline link resolving at runtime.<br>
+The term placeholder will be deprecated and it is recommended to refer as **checkout-link custom element** going forward.
 
 Behind the scene, it uses https://git.corp.adobe.com/PandoraUI/commerce-core to generate the checkout url.
 
-It requires an Offer Selector ID.
+It requires an Offer Selector ID to retrieve the offer from WCS.
 
-## Offer Selector ID <br>
+### Offer Selector ID <br>
 AOS generated a stable reference for a set of natural keys allowing to retrieve a specific offer whose offer ID can change over time.
 
 [API: Create an offer selector](https://developers.corp.adobe.com/aos/docs/guide/apis/api.yaml#/paths/offer_selectors/post)
 
+### WCS
+WCS (pronounced weks) provides APIs returning Commerce data required by Adobe.com.
 
-## Example <br>
+https://developers.corp.adobe.com/wcs/docs/guide/introduction.md
+https://developers.corp.adobe.com/wcs/docs/api/openapi/wcs/latest.yaml#/schemas/Web-Commerce-Artifacts
+
+
+
+
+### Example <br>
 
 ```html
 <a href="#" is="checkout-link" data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M">Buy now</a>
 ```
 
-### Demo<br>
+#### Demo<br>
 
 This is a functional **buy now** button: <a href="#" is="checkout-link" data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M">Buy now</a>
 
@@ -41,46 +52,46 @@ This is a functional **buy now** button: <a href="#" is="checkout-link" data-wcs
 
 
 
-## Examples <br>
+### Examples <br>
 
 
-## Custom Workflow Step
+#### Custom Workflow Step
 
 ```html
 <a href="#" is="checkout-link" data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M" data-checkout-workflow-step="recommendation">Buy now</a>
 ```
 
-### Demo<br>
+##### Demo<br>
 <a href="#" is="checkout-link" data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M" data-checkout-workflow-step="recommendation">Buy now</a>
 
-## Multiple Quantities
+#### Multiple Quantities
 Two photoshop and three acrobat pro single apps (TEAMS):
 
 ```html
 <a href="#" is="checkout-link" data-wcs-osi="yHKQJK2VOMSY5bINgg7oa2ov9RnmnU1oJe4NOg4QTYI,vV01ci-KLH6hYdRfUKMBFx009hdpxZcIRG1-BY_PutE" data-quantity="2,3">Buy now</a>
 ```
 
-### Demo<br>
+##### Demo<br>
 <a href="#" is="checkout-link" data-wcs-osi="yHKQJK2VOMSY5bINgg7oa2ov9RnmnU1oJe4NOg4QTYI,vV01ci-KLH6hYdRfUKMBFx009hdpxZcIRG1-BY_PutE" data-quantity="2,3">Buy now</a>
 
 
-## Custom query params
+#### Custom query params
 
 ```html
 <a href="#" is="checkout-link" data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M" data-extra-options="{&quot;promoid&quot;:&quot;promo12345&quot;,&quot;mv&quot;:1,&quot;mv2&quot;:2}">Buy now</a>
 ```
 
-### Demo<br>
+##### Demo<br>
 <a href="#" is="checkout-link" data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M" data-extra-options="{&quot;promoid&quot;:&quot;promo12345&quot;,&quot;mv&quot;:1,&quot;mv2&quot;:2}">Buy now</a>
 
 
-## IMS Country
+#### IMS Country
 
 ```html
 <a href="#" is="checkout-link" data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M" data-ims-country="JP">Buy now</a>
 ```
 
-### Demo<br>
+##### Demo<br>
 <a href="#" is="checkout-link" data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M" data-ims-country="JP">Buy now</a>
 
 
@@ -98,18 +109,26 @@ Two photoshop and three acrobat pro single apps (TEAMS):
 <a id="co1" href="#" is="checkout-link" data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M" data-ims-country="CA">Buy now</a>
 <script type="module">
   document.getElementById('co1').onceSettled().then(el => {
-    console.log("Options used to resolve the offer: ", el.options);
-    console.log("Actual raw offer used to generate the checkout link: ", el.value);
+    document.getElementById('coValue').innerHTML = JSON.stringify(el.value, null, '\t');
+    document.getElementById('coOptions').innerHTML = JSON.stringify(el.options, null, '\t');
   });
 </script>
-````
+```
 <a id="co1" href="#" is="checkout-link" data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M" data-ims-country="CA">Buy now</a>
 <script type="module">
   document.getElementById('co1').onceSettled().then(el => {
-    console.log("Options used to resolve the offer: ", el.options);
-    console.log("Actual raw offer used to generate the checkout link: ", el.value);
+    document.getElementById('coValue').innerHTML = JSON.stringify(el.value, null, '\t');
+    document.getElementById('coOptions').innerHTML = JSON.stringify(el.options, null, '\t');
   });
 </script>
+
+#### value property
+```json {#coValue}
+```
+
+#### options property
+```json {#coOptions}
+```
 
 
 ## Methods
@@ -175,6 +194,6 @@ For each events except `click`, the following css classes are toggled on the ele
 </script>
 
 
-### Logs <br>
+#### Logs <br>
 ```html {#logTarget}
 ```
