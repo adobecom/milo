@@ -524,7 +524,7 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
   const action = line.action?.toLowerCase()
     .replace('content', '').replace('fragment', '').replace('tosection', '');
   if (!action) {
-    log('Invalid action found: ', line);
+    log('Row found with empty action field: ', line);
     return;
   }
   const pageFilter = line['page filter'] || line['page filter optional'];
