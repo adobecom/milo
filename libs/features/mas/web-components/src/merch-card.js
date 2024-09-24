@@ -4,12 +4,15 @@ import { getVariantLayout, getVariantStyles } from './variants/variants.js';
 
 import './global.css.js';
 import {
+    EVENT_LOAD,
     EVENT_MERCH_CARD_READY,
     EVENT_MERCH_OFFER_SELECT_READY,
     EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
     EVENT_MERCH_STORAGE_CHANGE,
+    EVENT_READY,
 } from './constants.js';
 import { VariantLayout } from './variants/variant-layout.js';
+import { parseMerchCard } from './fragment-utils.js';
 
 export const MERCH_CARD_NODE_NAME = 'MERCH-CARD';
 export const MERCH_CARD = 'merch-card';
@@ -27,8 +30,8 @@ export class MerchCard extends LitElement {
         },
         badgeText: { type: String, attribute: 'badge-text' },
         actionMenu: { type: Boolean, attribute: 'action-menu' },
-        actionMenuContent: { type: String, attribute: 'action-menu-content' },
         customHr: { type: Boolean, attribute: 'custom-hr' },
+        consonant: { type: Boolean, attribute: 'consonant' },
         detailBg: { type: String, attribute: 'detail-bg' },
         secureLabel: { type: String, attribute: 'secure-label' },
         checkboxLabel: { type: String, attribute: 'checkbox-label' },
@@ -96,11 +99,15 @@ export class MerchCard extends LitElement {
         this.filters = {};
         this.types = '';
         this.selected = false;
+        this.handleLoadEvent = this.handleLoadEvent.bind(this);
     }
 
     firstUpdated() {
         this.variantLayout = getVariantLayout(this, false);
         this.variantLayout?.connectedCallbackHook();
+        this.aemFragment?.updateComplete.catch(() => {
+            this.style.display = 'none';
+        });
     }
 
     willUpdate(changedProperties) {
@@ -258,6 +265,9 @@ export class MerchCard extends LitElement {
             'change',
             this.handleStorageChange,
         );
+
+        // aem-fragment logic
+        this.addEventListener(EVENT_LOAD, this.handleLoadEvent);
     }
 
     disconnectedCallback() {
@@ -272,8 +282,24 @@ export class MerchCard extends LitElement {
             EVENT_MERCH_STORAGE_CHANGE,
             this.handleStorageChange,
         );
+        this.removeEventListener(EVENT_LOAD, this.handleLoadEvent);
     }
+
     // custom methods
+    handleLoadEvent(e) {
+        if (e.target.nodeName === 'AEM-FRAGMENT') {
+            const fragment = e.detail;
+            if (!fragment) return;
+            parseMerchCard(fragment, this);
+            this.dispatchEvent(
+                new CustomEvent(EVENT_READY, { bubbles: true, composed: true }),
+            );
+        }
+    }
+
+    get aemFragment() {
+        return this.querySelector('aem-fragment');
+    }
 
     get storageOptions() {
         return this.querySelector('sp-radio-group#storage');

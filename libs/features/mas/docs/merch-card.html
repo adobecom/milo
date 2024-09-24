@@ -1,0 +1,252 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>M@S Web Components</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script>
+    if (/localhost/.test(window.location.host)) {
+      const meta = document.createElement('meta');
+      meta.name = 'aem-base-url';
+      meta.content = 'http://localhost:8080'; // local AEM proxy URL
+      document.head.appendChild(meta);
+      }
+  </script>
+  <!-- Include your custom element script as an ES6 module -->
+  <script src="../../../features/spectrum-web-components/dist/theme.js" type="module"></script>
+  <script src="../../../features/spectrum-web-components/dist/button.js" type="module"></script>
+  <script type="module" src="../../../deps/mas/mas.js"></script>
+  <!-- Include Highlight.js stylesheet for syntax highlighting -->
+  <link rel="stylesheet" href="../../../styles/styles.css">
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
+  <!-- Include any additional stylesheets -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<main>
+<sp-theme color="light" scale="medium">
+<h1 id="merch-card-custom-element" tabindex="-1"><a class="header-anchor" href="#merch-card-custom-element">merch-card custom element</a></h1>
+<h2 id="introduction" tabindex="-1"><a class="header-anchor" href="#introduction">Introduction</a></h2>
+<p>This custom element implements all the merch-card variants provided in acom and ccd figma designs.</p>
+<p>A <code>merch-card</code> can be rendered using either static html markup or <code>aem-fragment</code> custom element to retrieve a card from Odin/AEM.</p>
+<p>Designs:</p>
+<p><strong>ACOM</strong>: <a href="https://www.figma.com/design/tiEUQLJ1hVlosqwzAATVXZ/Cards-(Merch)?node-id=1086-17994&amp;t=LeMR0vbaBoEKaKln-1">https://www.figma.com/design/tiEUQLJ1hVlosqwzAATVXZ/Cards-(Merch)?node-id=1086-17994&amp;t=LeMR0vbaBoEKaKln-1</a></p>
+<p><strong>CCD</strong>: <a href="https://www.figma.com/proto/7tUtNgFelfMjgPoJ5QcE1k/Merch%40Scale-Frameworks?node-id=2077-63597&amp;t=cWfdzWlga79eyjyI-1">https://www.figma.com/proto/7tUtNgFelfMjgPoJ5QcE1k/Merch%40Scale-Frameworks?node-id=2077-63597&amp;t=cWfdzWlga79eyjyI-1</a></p>
+<h2 id="examples" tabindex="-1"><a class="header-anchor" href="#examples">examples</a></h2>
+<h3 id="static-html" tabindex="-1"><a class="header-anchor" href="#static-html">Static HTML</a></h3>
+<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">merch-card</span> <span class="hljs-attr">variant</span>=<span class="hljs-string">&quot;plans&quot;</span> <span class="hljs-attr">badge-color</span>=<span class="hljs-string">&quot;#EDCC2D&quot;</span> <span class="hljs-attr">badge-background-color</span>=<span class="hljs-string">&quot;#000000&quot;</span>&quot; <span class="hljs-attr">badge-text</span>=<span class="hljs-string">&quot; Best value&quot;</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">merch-icon</span> <span class="hljs-attr">slot</span>=<span class="hljs-string">&quot;icons&quot;</span> <span class="hljs-attr">size</span>=<span class="hljs-string">&quot;l&quot;</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;https://www.adobe.com/content/dam/shared/images/product-icons/svg/creative-cloud.svg&quot;</span> <span class="hljs-attr">alt</span>=<span class="hljs-string">&quot;Creative Cloud All Apps&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">merch-icon</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">h4</span> <span class="hljs-attr">slot</span>=<span class="hljs-string">&quot;heading-xs&quot;</span>&gt;</span>Creative Cloud All Apps<span class="hljs-tag">&lt;/<span class="hljs-name">h4</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">h3</span> <span class="hljs-attr">slot</span>=<span class="hljs-string">&quot;heading-m&quot;</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">is</span>=<span class="hljs-string">&quot;inline-price&quot;</span> <span class="hljs-attr">data-display-per-unit</span>=<span class="hljs-string">&quot;false&quot;</span> <span class="hljs-attr">data-display-recurrence</span>=<span class="hljs-string">&quot;true&quot;</span>
+          <span class="hljs-attr">data-display-tax</span>=<span class="hljs-string">&quot;false&quot;</span> <span class="hljs-attr">data-wcs-osi</span>=<span class="hljs-string">&quot;r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">h3</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">p</span> <span class="hljs-attr">slot</span>=<span class="hljs-string">&quot;body-xxs&quot;</span>&gt;</span>Desktop<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">slot</span>=<span class="hljs-string">&quot;body-xs&quot;</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Get 20+ Creative Cloud apps including Photoshop, Illustrator, Adobe Express, Premiere Pro, and
+          Acrobat Pro. (Substance 3D apps are not included.)<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">href</span>=<span class="hljs-string">&quot;https://adobe.com&quot;</span>&gt;</span>See plans &amp; pricing details<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">slot</span>=<span class="hljs-string">&quot;footer&quot;</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">is</span>=<span class="hljs-string">&quot;checkout-link&quot;</span> <span class="hljs-attr">href</span>=<span class="hljs-string">&quot;#&quot;</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;con-button blue active&quot;</span> <span class="hljs-attr">data-wcs-osi</span>=<span class="hljs-string">&quot;r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&quot;</span>&gt;</span>Save now<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">merch-card</span>&gt;</span>
+</code></pre>
+<h4 id="demo" tabindex="-1"><a class="header-anchor" href="#demo">Demo</a></h4>
+<merch-card variant="plans" badge-color="#EDCC2D" badge-background-color="#000000" badge-text="Best value">
+  <merch-icon slot="icons" size="l" src="https://www.adobe.com/content/dam/shared/images/product-icons/svg/creative-cloud.svg" alt="Creative Cloud All Apps"></merch-icon>
+  <h4 slot="heading-xs">Creative Cloud All Apps</h4>
+  <h3 slot="heading-m">
+      <span is="inline-price" data-display-per-unit="false" data-display-recurrence="true"
+          data-display-tax="false" data-wcs-osi="r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8"></span>
+  </h3>
+  <p slot="body-xxs">Desktop</p>
+  <div slot="body-xs">
+      <p>Get 20+ Creative Cloud apps including Photoshop, Illustrator, Adobe Express, Premiere Pro, and
+          Acrobat Pro. (Substance 3D apps are not included.)</p>
+      <p><a href="https://adobe.com">See plans & pricing details</a></p>
+  </div>
+  <div slot="footer">
+      <a is="checkout-link" href="#" class="con-button blue active" data-wcs-osi="r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8">Save now</a>
+  </div>
+</merch-card>
+<h3 id="odin%2Faem-fragments" tabindex="-1"><a class="header-anchor" href="#odin%2Faem-fragments">Odin/AEM Fragments</a></h3>
+<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">merch-card</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">aem-fragment</span> <span class="hljs-attr">title</span>=<span class="hljs-string">&quot;CCD Slice Creative Cloud Photography&quot;</span> <span class="hljs-attr">fragment</span>=<span class="hljs-string">&quot;830f76be-0e83-4faf-9051-3dbb1a1dff04&quot;</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">merch-card</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;module&quot;</span>&gt;</span><span class="language-javascript">
+  <span class="hljs-keyword">const</span> log = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;log&#x27;</span>);
+  <span class="hljs-keyword">const</span> <span class="hljs-title function_">logger</span> = (<span class="hljs-params">...messages</span>) =&gt; log.<span class="hljs-property">innerHTML</span> = <span class="hljs-string">`<span class="hljs-subst">${log.innerHTML}</span>&lt;br&gt;<span class="hljs-subst">${messages.join(<span class="hljs-string">&#x27; &#x27;</span>)}</span>`</span>;
+  <span class="hljs-keyword">const</span> card1 = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;card1&#x27;</span>);
+   card1.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;ready&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">e</span>) =&gt;</span> {
+    <span class="hljs-title function_">logger</span>(<span class="hljs-string">&#x27;merch-card:ready: &#x27;</span>, e.<span class="hljs-property">target</span>.<span class="hljs-property">variant</span>);
+  });
+  <span class="hljs-keyword">const</span> fragment1 = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;fragment1&#x27;</span>);
+  fragment1.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;load&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">e</span>) =&gt;</span> {
+    <span class="hljs-title function_">logger</span>(<span class="hljs-string">&#x27;aem-fragment:load: &#x27;</span>, <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(e.<span class="hljs-property">target</span>.<span class="hljs-property">data</span>, <span class="hljs-literal">null</span>, <span class="hljs-string">&#x27;\t&#x27;</span>));
+  });
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+
+</code></pre>
+<h4 id="demo-1" tabindex="-1"><a class="header-anchor" href="#demo-1">Demo</a></h4>
+<merch-card id="card1">
+        <aem-fragment id="fragment1" title="CCD Slice Creative Cloud Photography" fragment="830f76be-0e83-4faf-9051-3dbb1a1dff04">
+</merch-card>
+<script type="module">
+  const log = document.getElementById('log');
+  const logger = (...messages) => log.innerHTML = `${log.innerHTML}<br>${messages.join(' ')}`;
+  const card1 = document.getElementById('card1');
+   card1.addEventListener('ready', (e) => {
+    logger('merch-card:ready: ', e.target.variant);
+  });
+  const fragment1 = document.getElementById('fragment1');
+  fragment1.addEventListener('load', (e) => {
+    logger('aem-fragment:load: ', JSON.stringify(e.target.data, null, '\t'));
+  });
+</script>
+<p><a href="#logs">See logs</a></p>
+<h3 id="attributes" tabindex="-1"><a class="header-anchor" href="#attributes">Attributes</a></h3>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+<th>Default Value</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>variant</code></td>
+<td>Variant in terms design. Not required when used with an <code>aem-fragment</code></td>
+<td></td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>consonant</code></td>
+<td>Whether to use consonant styles for CTAs without sp-button decorator around the footer CTAs.</td>
+<td><code>true</code> if <code>aem-fragment</code> is not used</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>size</code></td>
+<td>a card can span over 2 columns or entire row with <code>wide|super-wide</code></td>
+<td><code>medium</code></td>
+<td><code>false</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="active-variants%3A" tabindex="-1"><a class="header-anchor" href="#active-variants%3A">Active variants:</a></h4>
+<ul>
+<li><code>catalog</code></li>
+<li><code>ccd-action</code></li>
+<li><code>image</code></li>
+<li><code>inline-heading</code></li>
+<li><code>mini-compare-chart</code></li>
+<li><code>plans</code></li>
+<li><code>product</code></li>
+<li><code>segment</code></li>
+<li><code>special-offers</code></li>
+<li><code>twp</code></li>
+<li><code>ccd-slice</code></li>
+</ul>
+<h3 id="properties" tabindex="-1"><a class="header-anchor" href="#properties">Properties</a></h3>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>updateComplete</code></td>
+<td>a promise that resolves when the <code>merch-card</code> finishes to render</td>
+</tr>
+</tbody>
+</table>
+<h3 id="events" tabindex="-1"><a class="header-anchor" href="#events">Events</a></h3>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ready</code></td>
+<td>fires when rendered together with <code>aem-fragment</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="aem-fragment-custom-element" tabindex="-1"><a class="header-anchor" href="#aem-fragment-custom-element">aem-fragment custom element</a></h2>
+<h3 id="attributes-1" tabindex="-1"><a class="header-anchor" href="#attributes-1">Attributes</a></h3>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+<th>Default Value</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>fragment</code></td>
+<td>Fragment id. The copy/use feature in M@S Studio will copy the id/markup to the clipboard</td>
+<td></td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>title</code></td>
+<td>Informative title</td>
+<td></td>
+<td><code>false</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="properties-1" tabindex="-1"><a class="header-anchor" href="#properties-1">Properties</a></h3>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>data</code></td>
+<td>Current fragment RAW data that is used to render the merch-card</td>
+</tr>
+<tr>
+<td><code>updateComplete</code></td>
+<td>Promise that resolves when the fragment is retrieved and <code>load</code> event is fired</td>
+</tr>
+</tbody>
+</table>
+<h3 id="events-1" tabindex="-1"><a class="header-anchor" href="#events-1">Events</a></h3>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>load</code></td>
+<td>fires when the fragment is successfully loaded</td>
+</tr>
+</tbody>
+</table>
+<h4 id="logs" tabindex="-1"><a class="header-anchor" href="#logs">Logs <br></a></h4>
+<pre><code id="log" class="language-html">
+</code></pre>
+
+</sp-theme>
+</main>
+</body>
+</html>

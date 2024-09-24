@@ -52,7 +52,7 @@ runTests(async () => {
                         const el =
                             miniCompareChart.shadowRoot.querySelector(selector);
                         if (!el) return 0;
-                        return parseFloat(window.getComputedStyle(el).height);
+                        return parseInt(window.getComputedStyle(el).height);
                     })
                     .join(',');
                 return heights;

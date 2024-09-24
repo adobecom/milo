@@ -100,4 +100,9 @@ export class VariantLayout {
   renderLayout () {
     //nothing to do by default
   }
+
+  get aemFragmentMapping() {
+    //nothing to do by default
+    return undefined;
+  }
 }

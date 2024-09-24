@@ -3,12 +3,22 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Custom Element Documentation</title>
+  <title>M@S Web Components</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script>
+    if (/localhost/.test(window.location.host)) {
+      const meta = document.createElement('meta');
+      meta.name = 'aem-base-url';
+      meta.content = 'http://localhost:8080'; // local AEM proxy URL
+      document.head.appendChild(meta);
+      }
+  </script>
   <!-- Include your custom element script as an ES6 module -->
   <script src="../../../features/spectrum-web-components/dist/theme.js" type="module"></script>
   <script src="../../../features/spectrum-web-components/dist/button.js" type="module"></script>
   <script type="module" src="../../../deps/mas/mas.js"></script>
   <!-- Include Highlight.js stylesheet for syntax highlighting -->
+  <link rel="stylesheet" href="../../../styles/styles.css">
   <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
   <!-- Include any additional stylesheets -->
   <link rel="stylesheet" href="styles.css">
