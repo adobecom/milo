@@ -52,12 +52,32 @@ function getIconPlainTxt(icon) {
   return span;
 }
 
+function addSearch(input) {
+  const items = document.querySelectorAll('.fetched-icons a');
+  input.addEventListener('keyup', (ev) => {
+    const text = ev.target.value;
+    const pat = new RegExp(text, 'gi');
+    for (let i = 0; i < items.length; i += 1) {
+      const item = items[i];
+      if (pat.test(item.classList.contains(text))) {
+        item.classList.remove('hidden');
+      } else {
+        item.classList.add('hidden');
+      }
+    }
+  });
+}
+
 export default function init(el) {
   const row = el.querySelector(':scope > div');
   fetchIconList(row.textContent)
     .then(() => {
       if (!iconList.length) return;
       const iconDiv = createTag('div', { class: 'fetched-icons' });
+      const search = createTag('input', {
+        type: 'search',
+        placeholder: 'Type here to filter the list',
+      });
       [...iconList].forEach((i) => {
         const iconLink = createTag('a', {
           title: `${i.name}`,
@@ -68,9 +88,11 @@ export default function init(el) {
         }, getIconPlainTxt(i));
         iconDiv.append(iconLink);
       });
+      el.append(search);
       el.append(iconDiv);
       const spanIcons = el.querySelectorAll('span.icon');
       injectSVGIcons(spanIcons);
       initCopyLinks(el);
+      addSearch(search);
     });
 }

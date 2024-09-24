@@ -23,6 +23,8 @@
   border: 1px solid transparent;
 }
 
+.fetched-icons a.hidden { display: none; }
+
 .fetched-icons a:hover,
 .fetched-icons a:active,
 .fetched-icons a:focus {
