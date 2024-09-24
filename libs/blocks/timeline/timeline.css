@@ -1,9 +1,11 @@
 .timeline {
   box-sizing: border-box;
-  padding: 0 0 var(--spacing-xl) 0;
-  width: var(--grid-container-width);
-  max-width: 968px;
+  padding: 0 var(--grid-margins-width) var(--spacing-xl) var(--grid-margins-width);
+  width: 100%;
   margin: 0 auto;
+}
+.dialog-modal .timeline {
+  padding: 0 var(--spacing-xl) var(--spacing-xl) var(--spacing-xl);
 }
 
 .timeline .row {
@@ -123,9 +125,15 @@
 }
 
 @media screen and (min-width: 600px) {
+  .dialog-modal .timeline {
+    padding: 0 var(--spacing-xl) var(--spacing-xl) var(--spacing-xl);
+  }
+}
+
+@media screen and (min-width:1120px) {
   .timeline {
-    width: 100%;
-    padding: 0 var(--grid-margins-width) var(--spacing-xl) var(--grid-margins-width);
+    padding-left: calc((100vw - 1000px) / 2);
+    padding-right: calc((100vw - 1000px) / 2);
   }
 
   .dialog-modal .timeline {
@@ -133,10 +141,3 @@
   }
 }
 
-@media screen and (min-width: 1200px) {
-  .timeline {
-    padding: 0 0 var(--spacing-xxl) 0;
-    width: 968px;
-    max-width: 100%;
-  }
-}

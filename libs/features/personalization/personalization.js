@@ -148,6 +148,17 @@ const createFrag = (el, action, content, manifestId, targetManifestId) => {
   return frag;
 };
 
+export function replacePlaceholders(value, placeholders) {
+  let val = value;
+  const matches = val.match(/{{(.*?)}}/g);
+  if (!matches) return val;
+  matches.forEach((match) => {
+    const key = match.replace(/{{|}}/g, '').trim();
+    if (placeholders[key]) val = val.replace(match, placeholders[key]);
+  });
+  return val;
+}
+
 export const createContent = (el, content, manifestId, targetManifestId, action, modifiers) => {
   if (action === 'replace') {
     addIds(el, manifestId, targetManifestId);
@@ -158,11 +169,16 @@ export const createContent = (el, content, manifestId, targetManifestId, action,
     return el;
   }
   if (getSelectorType(content) !== 'fragment') {
+    const config = getConfig();
+    const newContent = replacePlaceholders(content, config.placeholders);
+
     if (action === 'replace') {
-      el.innerHTML = content;
+      el.innerHTML = newContent;
+
       return el;
     }
-    const container = createTag('div', {}, content);
+
+    const container = createTag('div', {}, newContent);
     addIds(container, manifestId, targetManifestId);
     return container;
   }
@@ -727,7 +743,7 @@ export const addMepAnalytics = (config, header) => {
     }
   });
 };
-export async function getManifestConfig(info, variantOverride = false) {
+export async function getManifestConfig(info = {}, variantOverride = false) {
   const {
     name,
     manifestData,
@@ -926,6 +942,13 @@ export function handleFragmentCommand(command, a) {
   return false;
 }
 
+export function parseNestedPlaceholders({ placeholders }) {
+  if (!placeholders) return;
+  Object.entries(placeholders).forEach(([key, value]) => {
+    placeholders[key] = replacePlaceholders(value, placeholders);
+  });
+}
+
 export async function applyPers(manifests, postLCP = false) {
   if (!manifests?.length) return;
   let experiments = manifests;
@@ -935,6 +958,7 @@ export async function applyPers(manifests, postLCP = false) {
   }
 
   experiments = cleanAndSortManifestList(experiments);
+  parseNestedPlaceholders(config);
 
   let results = [];
 

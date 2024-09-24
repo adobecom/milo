@@ -36,6 +36,8 @@ import {
   addMepHighlightAndTargetId,
   isDarkMode,
   darkIcons,
+  setDisableAEDState,
+  getDisableAEDState,
 } from './utilities/utilities.js';
 
 import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
@@ -837,8 +839,9 @@ class Gnav {
 
     if (!hasActiveLink()) {
       const sections = this.elements.mainNav.querySelectorAll('.feds-navItem--section');
+      const disableAED = getDisableAEDState();
 
-      if (sections.length === 1) {
+      if (!disableAED && sections.length === 1) {
         sections[0].classList.add(selectors.activeNavItem.slice(1));
         setActiveLink(true);
       }
@@ -1024,7 +1027,11 @@ const getSource = async () => {
 export default async function init(block) {
   try {
     const { mep } = getConfig();
-    const url = await getSource();
+    const sourceUrl = await getSource();
+    const [url, hash = ''] = sourceUrl.split('#');
+    if (hash === '_noActiveItem') {
+      setDisableAEDState();
+    }
     const content = await fetchAndProcessPlainHtml({ url });
     if (!content) return null;
     const gnav = new Gnav({
