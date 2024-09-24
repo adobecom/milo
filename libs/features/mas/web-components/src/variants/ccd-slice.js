@@ -71,6 +71,8 @@ export class CCDSlice extends VariantLayout {
     :host([variant='ccd-slice']) ::slotted([slot='image']) img {
       overflow: hidden;
       border-radius: 50%;
+      width: inherit;
+      height: inherit;
     }
   `;
 }
