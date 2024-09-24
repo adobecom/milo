@@ -24,8 +24,8 @@ Designs:
 <script type="module">
   const log = document.getElementById('log');
   const logger = (...messages) => log.innerHTML = `${log.innerHTML}<br>${messages.join(' ')}`;
+  
   const fragment1 = document.getElementById('fragment1');
-
   fragment1.addEventListener('load', (e) => {
     logger('aem-fragment is loaded: ', JSON.stringify(e.target.data, null, '\t'));
   });
