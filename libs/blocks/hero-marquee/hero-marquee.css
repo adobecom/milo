@@ -151,6 +151,7 @@ html[dir="rtl"] .hero-marquee .foreground {
   display: none;
 }
 
+div[class*='-up'] .hero-marquee.has-bg.full-width,
 div[class*='-up'] .hero-marquee.has-bg.grid-full-width { 
   padding-left: 0;
   padding-right: 0;
