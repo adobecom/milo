@@ -2,7 +2,6 @@ import { LitElement } from 'lit';
 import { sizeStyles, styles } from './merch-card.css.js';
 import { getVariantLayout, getVariantStyles } from './variants/variants.js';
 
-
 import './global.css.js';
 import {
     EVENT_MERCH_CARD_READY,
@@ -10,6 +9,7 @@ import {
     EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
     EVENT_MERCH_STORAGE_CHANGE,
 } from './constants.js';
+import { VariantLayout } from './variants/variant-layout.js';
 
 export const MERCH_CARD_NODE_NAME = 'MERCH-CARD';
 export const MERCH_CARD = 'merch-card';
@@ -88,13 +88,28 @@ export class MerchCard extends LitElement {
 
     customerSegment;
     marketSegment;
-    variantLayout; 
+    /**
+     * @type {VariantLayout>}
+     */
+    variantLayout;
 
     constructor() {
         super();
         this.filters = {};
         this.types = '';
         this.selected = false;
+    }
+
+    firstUpdated() {
+        this.variantLayout = getVariantLayout(this, false);
+        this.variantLayout?.connectedCallbackHook();
+    }
+
+    willUpdate(changedProperties) {
+        if (changedProperties.has('variant') || !this.variantLayout) {
+            this.variantLayout = getVariantLayout(this);
+            this.variantLayout.connectedCallbackHook();
+        }
     }
 
     updated(changedProperties) {
@@ -104,22 +119,23 @@ export class MerchCard extends LitElement {
         ) {
             this.style.border = this.computedBorderStyle;
         }
-        this.updateComplete.then(async () => {
-            const allPrices = Array.from(
-              this.querySelectorAll('span[is="inline-price"][data-wcs-osi]'),
-            );
-            // Filter out prices within the callout-content slot
-            const prices = allPrices.filter(
-                (price) => !price.closest('[slot="callout-content"]'),
-            );
-            await Promise.all(prices.map((price) => price.onceSettled()));
-            this.variantLayout.postCardUpdateHook(this);
-        });
+        this.variantLayout?.postCardUpdateHook(this);
+    }
+
+    get prices() {
+        return Array.from(
+            this.querySelectorAll('span[is="inline-price"][data-wcs-osi]'),
+        );
     }
 
     render() {
-      if (!this.isConnected || this.style.display === 'none') return;
-      return this.variantLayout.renderLayout();
+        if (
+            !this.isConnected ||
+            !this.variantLayout ||
+            this.style.display === 'none'
+        )
+            return;
+        return this.variantLayout.renderLayout();
     }
 
     get computedBorderStyle() {
@@ -186,8 +202,10 @@ export class MerchCard extends LitElement {
         }
     }
 
-    get titleElement() {        
-        return this.querySelector(this.variantLayout?.headingSelector || '.card-heading');
+    get titleElement() {
+        return this.querySelector(
+            this.variantLayout?.headingSelector || '.card-heading',
+        );
     }
 
     get title() {
@@ -223,14 +241,8 @@ export class MerchCard extends LitElement {
         return this.textContent.match(new RegExp(text, 'i')) !== null;
     }
 
-    get startingAt() {
-      return this.classList.contains('starting-at');
-    }
-
     connectedCallback() {
         super.connectedCallback();
-        this.variantLayout = getVariantLayout(this);
-        this.variantLayout.connectedCallbackHook();
         this.setAttribute('tabindex', this.getAttribute('tabindex') ?? '0');
         this.addEventListener(
             EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
