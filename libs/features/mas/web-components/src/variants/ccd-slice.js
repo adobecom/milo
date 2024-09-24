@@ -39,7 +39,7 @@ export class CCDSlice extends VariantLayout {
       display: flex;
       gap: var(--consonant-merch-spacing-xxs);
       padding: var(--consonant-merch-spacing-xs);
-      padding-start: 0;
+      padding-inline-end: 0;
       width: 154px;
       flex-direction: column;
       justify-content: space-between;
