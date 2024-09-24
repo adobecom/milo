@@ -47,6 +47,7 @@ export class Product extends VariantLayout {
       'body-xs',
       'promo-text',
       'callout-content',
+      'body-lower'
     ];
 
     slots.forEach((slot) =>
@@ -67,6 +68,7 @@ export class Product extends VariantLayout {
           <slot name="body-xs"></slot>
           ${this.promoBottom ? html`<slot name="promo-text"></slot>` : ''}
           <slot name="callout-content"></slot>
+          <slot name="body-lower"></slot>
       </div>
       ${this.secureLabelFooter}`;
   }
@@ -83,18 +85,27 @@ export class Product extends VariantLayout {
     }
     :host([variant='product']) slot[name='body-xs'] {
         min-height: var(--consonant-merch-card-product-body-xs-height);
+        display: block;
     }
     :host([variant='product']) slot[name='heading-xs'] {
         min-height: var(--consonant-merch-card-product-heading-xs-height);
+        display: block;
     }
     :host([variant='product']) slot[name='body-xxs'] {
         min-height: var(--consonant-merch-card-product-body-xxs-height);
+        display: block;
     }
     :host([variant='product']) slot[name='promo-text'] {
         min-height: var(--consonant-merch-card-product-promo-text-height);
+        display: block;
     }
     :host([variant='product']) slot[name='callout-content'] {
         min-height: var(--consonant-merch-card-product-callout-content-height);
+        display: block;
+    }
+    :host([variant='product']) slot[name='body-lower'] {
+        min-height: var(--consonant-merch-card-product-body-lower-height);
+        display: block;
     }
   `;
 }

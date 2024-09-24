@@ -365,12 +365,16 @@ const simplifyHrs = (el) => {
     if (calloutContent) {
       const bodySlot = el.querySelector('div[slot="body-xs"]');
       if (bodySlot) {
+        let bodyLowerContent =  createTag('div', { slot: 'body-lower' });
         const elements = [...bodySlot.children];
         elements.forEach((element) => {
           if (element.tagName !== 'P') {
-            calloutContent.appendChild(element);
+            bodyLowerContent.append(element);
           }
         });
+        if (bodyLowerContent.childNodes.length > 0) {
+          calloutContent.parentElement.appendChild(bodyLowerContent);
+        }
       }
     }
   }
