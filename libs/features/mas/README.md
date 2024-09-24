@@ -20,7 +20,7 @@ Refer to the corresponding README.md under any of the packages:
 ### Generate docs
 
 ```sh
-node build-docs.mjs commerce/checkout-link.md docs/checkout-link.html
+node run build:docs
 ```
 
 #### Troubleshooting

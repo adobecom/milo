@@ -37,9 +37,9 @@ This is a functional **buy now** button: <a href="#" is="checkout-link" data-wcs
 
 | Attribute                    | Description                                                                                     | Default Value | Required |
 |------------------------------|-------------------------------------------------------------------------------------------------|---------------|----------|
-| `data-wcs-osi`               | Offer Selector ID, can be multiple, seperated by comma           |               |   `true`       |
-| `data-checkout-workflow`     | Target checkout workflow to for the generation of checkout urls     | UCv3              |         `false` |
-| `data-checkout-workflow-step`| [workflow step](https://wiki.corp.adobe.com/pages/viewpage.action?spaceKey=businessservices&title=UCv3+Link+Creation+Guide#UCv3LinkCreationGuide-RegularWorkflow) to land on on the unified checkout page|     email          |     `false`     |
+| `data-wcs-osi`               | Offer Selector ID, can be multiple, separeted by comma           |               |   `true`       |
+| `data-checkout-workflow`     | Target checkout workflow for the generation of checkout urls     | UCv3              |         `false` |
+| `data-checkout-workflow-step`| [workflow step](https://wiki.corp.adobe.com/pages/viewpage.action?spaceKey=businessservices&title=UCv3+Link+Creation+Guide#UCv3LinkCreationGuide-RegularWorkflow) to land on the unified checkout page|     email          |     `false`     |
 | `data-extra-options`         | additional query params to append to the url, see: [Table of public query params](https://wiki.corp.adobe.com/pages/viewpage.action?spaceKey=businessservices&title=UCv3+Link+Creation+Guide#UCv3LinkCreationGuide-Tableofpublicqueryparams)|        {}       |   `false`       |
 | `data-ims-country`           | the ims country to code of the user if signed in, overrides the locale country in the generated checkout url           |              |   `false`       |
 | `data-perpetual`             | whether this is a perpetual offer `true\|false`             |               |        `false`  |
@@ -143,13 +143,13 @@ Two photoshop and three acrobat pro single apps (TEAMS):
 |-----------|-----------------------------------|
 | `wcms:placeholder:pending` | fires when checkout link starts loading    |
 | `wcms:placeholder:resolved`| fires when the offer is successfully  resolved  |
-| `wcms:placeholder:failed`  | fires when the offer is could not be found or fetched     |
+| `wcms:placeholder:failed`  | fires when the offer could not be found or fetched     |
 | `click`   | native click event on the `a`  element      |
 
 
 <br>
 
-For each events except `click`, the following css classes are toggled on the element: `placeholder-pending`, `placeholder-resolved`, `placeholder-failed`.
+For each event except `click`, the following css classes are toggled on the element: `placeholder-pending`, `placeholder-resolved`, `placeholder-failed`.
 
 ::: warning
 **Note**: Event names with `wcms:placeholder` prefix can be subject to change.
