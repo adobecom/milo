@@ -1,0 +1,82 @@
+main {
+  display: flex;
+  justify-content: center;
+}
+
+sp-theme {
+  max-width: 1100px;
+  font-family:
+    var(
+      --mod-body-sans-serif-font-family,
+      var(--spectrum-body-sans-serif-font-family)
+    );
+  font-style:
+    var(
+      --mod-body-sans-serif-font-style,
+      var(--spectrum-body-sans-serif-font-style)
+    );
+  font-weight:
+    var(
+      --mod-body-sans-serif-font-weight,
+      var(--spectrum-body-sans-serif-font-weight)
+    );
+  font-size: var(--mod-body-font-size, var(--spectrum-body-font-size));
+  color:
+    var(
+      --highcontrast-body-font-color,
+      var(--mod-body-font-color, var(--spectrum-body-font-color))
+    );
+  line-height: var(--mod-body-line-height, var(--spectrum-body-line-height));
+  margin-block: 0;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+th {
+  background-color: #f2f2f2;
+  text-align: left;
+}
+
+tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.warning {
+  padding: 15px;
+  background-color: #fff3cd;
+  border-left: 6px solid #ffeeba;
+  margin-bottom: 20px;
+  border-radius: 4px;
+}
+
+.warning p {
+  margin: 0;
+}
+
+.price-unit-type::before {
+  content: " ";
+}
+
+.example {
+  margin: 20px 0;
+  background-color: var(--spectrum-global-color-gray-300);
+}
+
+.placeholder-failed {
+  display: inline-block;
+  border: 1px solid #f00;
+  padding: 0 10px;
+}
+
+.placeholder-failed::after {
+  content: "failed";
+}
