@@ -52,17 +52,6 @@ describe('Functional Test', () => {
     expect(fragment.parentElement.previousElementSibling.className).to.equal('marquee');
     // TODO: add check for after3
   });
-  // it('Missing action ', async () => {
-  //   await loadManifestAndSetResponse('./mocks/manifestInvalid.json');
-
-  //   expect(document.querySelector('.marquee')).to.not.be.null;
-  //   expect(document.querySelector('a[href="/test/features/personalization/mocks/fragments/insertafter2"]')).to.be.null;
-  //   await init(mepSettings);
-  //   const fragment = document.querySelector('a[href="/test/features/personalization/mocks/fragments/insertafter2"]');
-  //   expect(fragment).to.not.be.null;
-  //   expect(fragment.parentElement.previousElementSibling.className).to.equal('marquee');
-  //   // TODO: add check for after3
-  // });
 
   it('Can select elements using block-#', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
