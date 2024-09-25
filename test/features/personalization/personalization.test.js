@@ -7,7 +7,7 @@ import {
   init, matchGlob, createContent, combineMepSources, buildVariantInfo,
 } from '../../../libs/features/personalization/personalization.js';
 import mepSettings from './mepSettings.js';
-import mepSettingsPreview from './mepSettingsPreview.js';
+import mepSettingsPreview from './mepPreviewSettings.js';
 
 document.head.innerHTML = await readFile({ path: './mocks/metadata.html' });
 document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
@@ -52,6 +52,17 @@ describe('Functional Test', () => {
     expect(fragment.parentElement.previousElementSibling.className).to.equal('marquee');
     // TODO: add check for after3
   });
+  // it('Missing action ', async () => {
+  //   await loadManifestAndSetResponse('./mocks/manifestInvalid.json');
+
+  //   expect(document.querySelector('.marquee')).to.not.be.null;
+  //   expect(document.querySelector('a[href="/test/features/personalization/mocks/fragments/insertafter2"]')).to.be.null;
+  //   await init(mepSettings);
+  //   const fragment = document.querySelector('a[href="/test/features/personalization/mocks/fragments/insertafter2"]');
+  //   expect(fragment).to.not.be.null;
+  //   expect(fragment.parentElement.previousElementSibling.className).to.equal('marquee');
+  //   // TODO: add check for after3
+  // });
 
   it('Can select elements using block-#', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
@@ -282,22 +293,25 @@ describe('Functional Test', () => {
 
   it('invalid selector should output error to console in preview mode', async () => {
     window.console.log = stub();
-
     await loadManifestAndSetResponse('./mocks/manifestInvalidSelector.json');
-
     await init(mepSettingsPreview);
-
     assert.calledWith(window.console.log, 'Invalid selector: ');
     window.console.log.reset();
   });
+
   it('invalid selector should not output error to console if not in preview mode', async () => {
     window.console.log = stub();
-
     await loadManifestAndSetResponse('./mocks/manifestInvalidSelector.json');
-
     await init(mepSettings);
-
     assert.neverCalledWith(window.console.log, 'Invalid selector: ');
+    window.console.log.reset();
+  });
+
+  it('missing selector should output error to console if in preview mode', async () => {
+    window.console.log = stub();
+    await loadManifestAndSetResponse('./mocks/manifestEmptyAction.json');
+    await init(mepSettingsPreview);
+    assert.calledWith(window.console.log, 'Row found with empty action field: ');
     window.console.log.reset();
   });
 

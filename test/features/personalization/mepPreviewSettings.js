@@ -1,7 +1,7 @@
 const mepSettings = {
   mepParam: false,
   mepHighlight: false,
-  mepButton: true,
+  mepButton: 'on',
   pzn: '/path/to/manifest.json',
   promo: false,
   target: false,
