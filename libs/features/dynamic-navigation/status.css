@@ -1,4 +1,4 @@
-.dynamic-nav-status  {
+.dynamic-nav-status {
   border: 2px solid white;
   border-radius: 32px;
   color: #eee;
@@ -58,7 +58,7 @@
   transition-duration: 0.2s;
 }
 
-.dns-badge.dns-open::after{
+.dns-badge.dns-open::after {
   transform: rotate(135deg);
   transition-duration: 0.2s;
 }
@@ -135,7 +135,7 @@
   rotate: 180deg;
 }
 
-.dynamic-nav-status p{
+.dynamic-nav-status p {
   margin: 2px;
 }
 
@@ -160,7 +160,7 @@
   width: 100%;
 }
 
-.dynamic-nav-status .disable-values caption{
+.dynamic-nav-status .disable-values caption {
   min-width: 100%;
   text-align: left;
   font-weight: 600;

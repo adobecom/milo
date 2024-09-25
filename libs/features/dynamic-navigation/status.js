@@ -115,8 +115,7 @@ const createStatusWidget = (dynamicNavKey) => {
 };
 
 export default async function main() {
-  const { dynamicNavKey, miloLibs, codeRoot, env } = getConfig();
-  if (env?.name === 'prod') return;
+  const { dynamicNavKey, miloLibs, codeRoot } = getConfig();
 
   loadStyle(`${miloLibs || `${codeRoot}/libs`}/features/dynamic-navigation/status.css`);
 

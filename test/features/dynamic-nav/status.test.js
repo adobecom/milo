@@ -1,6 +1,6 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import { getConfig, setConfig, createTag } from '../../../libs/utils/utils.js';
+import { getConfig, setConfig, createTag, loadDeferred } from '../../../libs/utils/utils.js';
 import dynamicNav from '../../../libs/features/dynamic-navigation/dynamic-navigation.js';
 import status, { tooltipInfo, ACTIVE, INACTIVE, ENABLED } from '../../../libs/features/dynamic-navigation/status.js';
 
@@ -27,15 +27,24 @@ describe('Dynamic Nav Status', () => {
     setConfig(conf);
   });
 
-  it('does not load the widget on production', () => {
+  it('does not load the widget on production', async () => {
     const conf = getConfig();
     conf.env.name = 'prod';
 
-    dynamicNav();
-    status();
+    await loadDeferred(document, [], conf, () => {});
 
     const statusWidget = document.querySelector('.dynamic-nav-status');
     expect(statusWidget).to.be.null;
+  });
+
+  it('does load the widget on a lower env', async () => {
+    const conf = getConfig();
+    conf.env.name = 'local';
+
+    await loadDeferred(document, [], conf, () => {});
+
+    const statusWidget = document.querySelector('.dynamic-nav-status');
+    expect(statusWidget).to.exist;
   });
 
   it('loads the status widget', () => {

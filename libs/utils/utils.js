@@ -1126,7 +1126,7 @@ export async function loadDeferred(area, blocks, config) {
     import('../features/personalization/preview.js')
       .then(({ default: decoratePreviewMode }) => decoratePreviewMode());
   }
-  if (config?.dynamicNavKey) {
+  if (config?.dynamicNavKey && config?.env?.name !== 'prod') {
     const { default: loadDNStatus } = await import('../features/dynamic-navigation/status.js');
     loadDNStatus();
   }
