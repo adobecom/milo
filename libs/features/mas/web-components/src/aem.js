@@ -13,6 +13,7 @@ class AEM {
         this.#author = /^author-/.test(bucket);
         const baseUrl =
             baseUrlOverride || `https://${bucket}.adobeaemcloud.com`;
+        this.baseUrl = baseUrl;
         const sitesUrl = `${baseUrl}/adobe/sites`;
         this.cfFragmentsUrl = `${sitesUrl}/cf/fragments`;
         this.cfSearchUrl = `${this.cfFragmentsUrl}/search`;
@@ -327,7 +328,7 @@ class AEM {
                  * @see getFragmentById
                  */
                 getById: (id) =>
-                    getFragmentById(this.cfFragmentsUrl, id, this.headers),
+                    getFragmentById(this.baseUrl, id, this.headers),
                 /**
                  * @see AEM#saveFragment
                  */

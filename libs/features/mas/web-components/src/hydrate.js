@@ -1,6 +1,6 @@
 import { createTag } from './utils.js';
 
-export async function parseMerchCard(fragmentData, merchCard) {
+export async function hydrate(fragmentData, merchCard) {
     const fragment = fragmentData.fields.reduce(
         (acc, { name, multiple, values }) => {
             acc[name] = multiple ? values : values[0];

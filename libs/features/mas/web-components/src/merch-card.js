@@ -4,15 +4,15 @@ import { getVariantLayout, getVariantStyles } from './variants/variants.js';
 
 import './global.css.js';
 import {
-    EVENT_LOAD,
+    EVENT_MAS_LOAD,
     EVENT_MERCH_CARD_READY,
     EVENT_MERCH_OFFER_SELECT_READY,
     EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
     EVENT_MERCH_STORAGE_CHANGE,
-    EVENT_READY,
+    EVENT_MAS_READY,
 } from './constants.js';
 import { VariantLayout } from './variants/variant-layout.js';
-import { parseMerchCard } from './fragment-utils.js';
+import { hydrate } from './hydrate.js';
 
 export const MERCH_CARD_NODE_NAME = 'MERCH-CARD';
 export const MERCH_CARD = 'merch-card';
@@ -267,7 +267,7 @@ export class MerchCard extends LitElement {
         );
 
         // aem-fragment logic
-        this.addEventListener(EVENT_LOAD, this.handleLoadEvent);
+        this.addEventListener(EVENT_MAS_LOAD, this.handleLoadEvent);
     }
 
     disconnectedCallback() {
@@ -290,9 +290,12 @@ export class MerchCard extends LitElement {
         if (e.target.nodeName === 'AEM-FRAGMENT') {
             const fragment = e.detail;
             if (!fragment) return;
-            parseMerchCard(fragment, this);
+            hydrate(fragment, this);
             this.dispatchEvent(
-                new CustomEvent(EVENT_READY, { bubbles: true, composed: true }),
+                new CustomEvent(EVENT_MAS_READY, {
+                    bubbles: true,
+                    composed: true,
+                }),
             );
         }
     }

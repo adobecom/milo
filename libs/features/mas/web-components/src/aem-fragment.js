@@ -1,3 +1,4 @@
+import { EVENT_MAS_LOAD } from './constants.js';
 import { getFragmentById } from './getFragmentById.js';
 
 const sheet = new CSSStyleSheet();
@@ -8,6 +9,9 @@ const baseUrl =
     'https://publish-p22655-e155390.adobeaemcloud.com';
 
 const ATTRIBUTE_FRAGMENT = 'fragment';
+const ATTRIBUTE_IMS = 'ims';
+
+let headers;
 
 class FragmentCache {
     #fragmentCache = new Map();
@@ -61,6 +65,11 @@ export class AemFragment extends HTMLElement {
     consonant = false;
 
     /**
+     * @type {boolean} whether an access token should be used via IMS.
+     */
+    ims = false;
+
+    /**
      * Internal promise to track the readiness of the web-component to render.
      */
     _readyPromise;
@@ -73,6 +82,20 @@ export class AemFragment extends HTMLElement {
         super();
         this.attachShadow({ mode: 'open' });
         this.shadowRoot.adoptedStyleSheets = [sheet];
+
+        const ims = this.getAttribute(ATTRIBUTE_IMS);
+        if (['', true].includes(ims)) {
+            this.ims = true;
+            if (!headers) {
+                headers = {
+                    Authorization: `Bearer ${window.adobeid?.authorize?.()}`,
+                    pragma: 'no-cache',
+                    'cache-control': 'no-cache',
+                };
+            }
+        } else {
+            this.ims = false;
+        }
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
@@ -97,7 +120,7 @@ export class AemFragment extends HTMLElement {
         }
         this._readyPromise = this.fetchData().then(() => {
             this.dispatchEvent(
-                new CustomEvent('load', {
+                new CustomEvent(EVENT_MAS_LOAD, {
                     detail: this.data,
                     bubbles: true,
                     composed: true,
@@ -110,7 +133,11 @@ export class AemFragment extends HTMLElement {
     async fetchData() {
         let fragment = cache.get(this.fragmentId);
         if (!fragment) {
-            fragment = await getFragmentById(baseUrl, this.fragmentId);
+            fragment = await getFragmentById(
+                baseUrl,
+                this.fragmentId,
+                this.ims ? headers : undefined,
+            );
             cache.add(fragment);
         }
         this.data = fragment;

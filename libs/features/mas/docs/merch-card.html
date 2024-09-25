@@ -36,20 +36,20 @@
 <h2 id="examples" tabindex="-1"><a class="header-anchor" href="#examples">examples</a></h2>
 <h3 id="odin%2Faem-fragments" tabindex="-1"><a class="header-anchor" href="#odin%2Faem-fragments">Odin/AEM Fragments</a></h3>
 <pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">merch-card</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">aem-fragment</span> <span class="hljs-attr">title</span>=<span class="hljs-string">&quot;CCD Slice Creative Cloud Photography&quot;</span> <span class="hljs-attr">fragment</span>=<span class="hljs-string">&quot;830f76be-0e83-4faf-9051-3dbb1a1dff04&quot;</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">aem-fragment</span> <span class="hljs-attr">title</span>=<span class="hljs-string">&quot;CCD Slice Creative Cloud Photography&quot;</span> <span class="hljs-attr">fragment</span>=<span class="hljs-string">&quot;830f76be-0e83-4faf-9051-3dbb1a1dff04&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">aem-fragment</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">merch-card</span>&gt;</span>
 
 <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;module&quot;</span>&gt;</span><span class="language-javascript">
   <span class="hljs-keyword">const</span> log = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;log&#x27;</span>);
   <span class="hljs-keyword">const</span> <span class="hljs-title function_">logger</span> = (<span class="hljs-params">...messages</span>) =&gt; log.<span class="hljs-property">innerHTML</span> = <span class="hljs-string">`<span class="hljs-subst">${log.innerHTML}</span>&lt;br&gt;<span class="hljs-subst">${messages.join(<span class="hljs-string">&#x27; &#x27;</span>)}</span>`</span>;
-  
+
   <span class="hljs-keyword">const</span> fragment1 = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;fragment1&#x27;</span>);
   fragment1.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;load&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">e</span>) =&gt;</span> {
     <span class="hljs-title function_">logger</span>(<span class="hljs-string">&#x27;aem-fragment is loaded: &#x27;</span>, <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(e.<span class="hljs-property">target</span>.<span class="hljs-property">data</span>, <span class="hljs-literal">null</span>, <span class="hljs-string">&#x27;\t&#x27;</span>));
   });
 
   <span class="hljs-keyword">const</span> card1 = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;card1&#x27;</span>);
-   card1.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;ready&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">e</span>) =&gt;</span> {
+   card1.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;mas:ready&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">e</span>) =&gt;</span> {
     <span class="hljs-title function_">logger</span>(<span class="hljs-string">&#x27;merch-card is ready: &#x27;</span>, e.<span class="hljs-property">target</span>.<span class="hljs-property">variant</span>);
   });
 </span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
@@ -57,18 +57,25 @@
 </code></pre>
 <h4 id="demo" tabindex="-1"><a class="header-anchor" href="#demo">Demo</a></h4>
 <merch-card id="card1">
-        <aem-fragment id="fragment1" title="CCD Slice Creative Cloud Photography" fragment="830f76be-0e83-4faf-9051-3dbb1a1dff04">
+        <aem-fragment id="fragment1" title="CCD Slice Creative Cloud Photography" fragment="830f76be-0e83-4faf-9051-3dbb1a1dff04"></aem-fragment>
 </merch-card>
 <script type="module">
   const log = document.getElementById('log');
-  const logger = (...messages) => log.innerHTML = `${log.innerHTML}<br>${messages.join(' ')}`;
+  const logger = (...messages) => log.innerHTML = `${messages.join(' ')}<br>${log.innerHTML}`;
   const fragment1 = document.getElementById('fragment1');
-  fragment1.addEventListener('load', (e) => {
+  fragment1.addEventListener('mas:load', (e) => {
     logger('aem-fragment is loaded: ', JSON.stringify(e.target.data, null, '\t'));
   });
   const card1 = document.getElementById('card1');
-   card1.addEventListener('ready', (e) => {
+   card1.addEventListener('mas:ready', (e) => {
     logger('merch-card is ready: ', e.target.variant);
+  });
+   card1.addEventListener('click', (e) => {
+    if (e.target.tagName === 'A') {
+      e.preventDefault();
+      e.stopPropagation();
+      logger('merch-card cta click: ', e.target);
+    }
   });
 </script>
 <p><a href="#logs">See logs</a></p>
@@ -179,7 +186,7 @@
 </thead>
 <tbody>
 <tr>
-<td><code>ready</code></td>
+<td><code>mas:ready</code></td>
 <td>fires when rendered together with <code>aem-fragment</code></td>
 </tr>
 </tbody>
@@ -205,6 +212,12 @@
 <tr>
 <td><code>title</code></td>
 <td>Informative title</td>
+<td></td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>ims</code></td>
+<td>attempts to use IMS access token via <code>window.adobeid.authorize()</code> to fetch fragment</td>
 <td></td>
 <td><code>false</code></td>
 </tr>
@@ -239,7 +252,7 @@
 </thead>
 <tbody>
 <tr>
-<td><code>load</code></td>
+<td><code>mas:load</code></td>
 <td>fires when the fragment is successfully loaded</td>
 </tr>
 </tbody>

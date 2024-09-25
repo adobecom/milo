@@ -18,20 +18,20 @@ Designs:
 
 ```html
 <merch-card>
-    <aem-fragment title="CCD Slice Creative Cloud Photography" fragment="830f76be-0e83-4faf-9051-3dbb1a1dff04">
+    <aem-fragment title="CCD Slice Creative Cloud Photography" fragment="830f76be-0e83-4faf-9051-3dbb1a1dff04"></aem-fragment>
 </merch-card>
 
 <script type="module">
   const log = document.getElementById('log');
   const logger = (...messages) => log.innerHTML = `${log.innerHTML}<br>${messages.join(' ')}`;
-  
+
   const fragment1 = document.getElementById('fragment1');
   fragment1.addEventListener('load', (e) => {
     logger('aem-fragment is loaded: ', JSON.stringify(e.target.data, null, '\t'));
   });
 
   const card1 = document.getElementById('card1');
-   card1.addEventListener('ready', (e) => {
+   card1.addEventListener('mas:ready', (e) => {
     logger('merch-card is ready: ', e.target.variant);
   });
 </script>
@@ -41,18 +41,25 @@ Designs:
 #### Demo
 
 <merch-card id="card1">
-        <aem-fragment id="fragment1" title="CCD Slice Creative Cloud Photography" fragment="830f76be-0e83-4faf-9051-3dbb1a1dff04">
+        <aem-fragment id="fragment1" title="CCD Slice Creative Cloud Photography" fragment="830f76be-0e83-4faf-9051-3dbb1a1dff04"></aem-fragment>
 </merch-card>
 <script type="module">
   const log = document.getElementById('log');
-  const logger = (...messages) => log.innerHTML = `${log.innerHTML}<br>${messages.join(' ')}`;
+  const logger = (...messages) => log.innerHTML = `${messages.join(' ')}<br>${log.innerHTML}`;
   const fragment1 = document.getElementById('fragment1');
-  fragment1.addEventListener('load', (e) => {
+  fragment1.addEventListener('mas:load', (e) => {
     logger('aem-fragment is loaded: ', JSON.stringify(e.target.data, null, '\t'));
   });
   const card1 = document.getElementById('card1');
-   card1.addEventListener('ready', (e) => {
+   card1.addEventListener('mas:ready', (e) => {
     logger('merch-card is ready: ', e.target.variant);
+  });
+   card1.addEventListener('click', (e) => {
+    if (e.target.tagName === 'A') {
+      e.preventDefault();
+      e.stopPropagation();
+      logger('merch-card cta click: ', e.target);
+    }
   });
 </script>
 
@@ -132,7 +139,7 @@ Designs:
 
 | Name    | Description                                      |
 | ------- | ------------------------------------------------ |
-| `ready` | fires when rendered together with `aem-fragment` |
+| `mas:ready` | fires when rendered together with `aem-fragment` |
 
 ## aem-fragment custom element
 
@@ -142,6 +149,7 @@ Designs:
 | ---------- | ---------------------------------------------------------------------------------------- | ------------- | -------- |
 | `fragment` | Fragment id. The copy/use feature in M@S Studio will copy the id/markup to the clipboard |               | `true`   |
 | `title`    | Informative title                                                                        |               | `false`  |
+| `ims`      | attempts to use IMS access token via `window.adobeid.authorize()` to fetch fragment      |               | `false`  |
 
 ### Properties
 
@@ -154,7 +162,7 @@ Designs:
 
 | Name   | Description                                    |
 | ------ | ---------------------------------------------- |
-| `load` | fires when the fragment is successfully loaded |
+| `mas:load` | fires when the fragment is successfully loaded |
 
 #### Logs <br>
 

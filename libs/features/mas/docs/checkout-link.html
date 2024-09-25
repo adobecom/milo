@@ -254,16 +254,16 @@ The term placeholder will be deprecated and it is recommended to refer as <stron
 </code></pre>
 <p><a id="co2" href="#" is="checkout-link" data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M">Buy now (click me)</a></p>
 <script type="module">
-  const logTarget = document.getElementById('logTarget');
-  const log = (...messages) => logTarget.innerHTML = `${logTarget.innerHTML}<br>${messages.join(' ')}`;
+  const log = document.getElementById('log');
+  const logger = (...messages) => log.innerHTML = `${messages.join(' ')}<br>${logTarget.innerHTML}`;
   const a = document.getElementById('co2');
-  a.addEventListener('wcms:placeholder:pending', () => log('placeholder pending'));
-  a.addEventListener('wcms:placeholder:resolved', () => log('placeholder resolved'));
-  a.addEventListener('wcms:placeholder:failed', () => log('placeholder failed'));
+  a.addEventListener('wcms:placeholder:pending', () => logger('placeholder pending'));
+  a.addEventListener('wcms:placeholder:resolved', () => logger('placeholder resolved'));
+  a.addEventListener('wcms:placeholder:failed', () => logger('placeholder failed'));
   a.addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();
-    log('checkout link is clicked: ', e.target.href);
+    logger('checkout link is clicked: ', e.target.href);
   });
   a.addEvent
 </script>
