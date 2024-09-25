@@ -93,8 +93,8 @@ function decorateForOnLinkClick(link, urlPrefix, localePrefix, eventType = 'Swit
   const eventName = `${eventType}:${modPrefix.split('_')[0]}-${modCurrPrefix.split('_')[0]}|Geo_Routing_Modal`;
   link.setAttribute('daa-ll', eventName);
   link.addEventListener('click', () => {
-    const domain = window.location.host === 'adobe.com' || window.location.host.endsWith('.adobe.com') 
-      ? 'domain=adobe.com' 
+    const domain = window.location.host === 'adobe.com' || window.location.host.endsWith('.adobe.com')
+      ? 'domain=adobe.com'
       : '';
     document.cookie = `international=${modPrefix};path=/;${domain}`;
     window.location.href = link.href;
@@ -102,7 +102,6 @@ function decorateForOnLinkClick(link, urlPrefix, localePrefix, eventType = 'Swit
   });
 }
 
-// Cross icon
 const CLOSE_ICON = `
 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
   <g transform="translate(-10500 3403)">
@@ -112,34 +111,37 @@ const CLOSE_ICON = `
   </g>
 </svg>`;
 
-function buildToasterContent(geoData, locale, multipleLocales, currentPage) {
-  const lang = config.locales[locale.prefix]?.ietf ?? '';
-  const geo = geoData.filter((c) => c.prefix === locale.prefix);
-  const titleText = geo.length ? geo[0][currentPage.geo] : '';
-  
-  const contentContainer = createTag('div', { id: 'content-container' });
-  const title = createTag('h5', { lang }, locale.title.replace('{{geo}}', titleText));
-  const text = createTag('p', { class: 'locale-text', lang }, locale.text);
-
-  const footer = createTag('div', { class: 'georouting-toaster-footer' });
-  const span = createTag('span', { class: 'icon margin-inline-end' });
-  
-  const flagFile = locale.globeGrid?.toLowerCase().trim() === 'on' ? 'globe-grid.png' : `flag-${locale.geo.replace('_', '-')}.svg`;
+function buildFlagImage(locale) {
+  const flagFile = locale.globeGrid?.toLowerCase().trim() === 'on'
+    ? 'globe-grid.png'
+    : `flag-${locale.geo.replace('_', '-')}.svg`;
   const img = createTag('img', {
     class: 'icon-milo',
     width: 15,
     height: 15,
     alt: locale.button,
+    src: `${config.miloLibs || config.codeRoot}/img/georouting/${flagFile}`,
   });
-  
   img.addEventListener(
     'error',
     () => (img.src = `${config.miloLibs || config.codeRoot}/features/georoutingv2/img/globe-grid.png`),
-    { once: true }
+    { once: true },
   );
+  return img;
+}
 
-  img.src = `${config.miloLibs || config.codeRoot}/img/georouting/${flagFile}`;
-  span.appendChild(img); 
+function buildToasterContent(geoData, locale, multipleLocales, currentPage) {
+  const lang = config.locales[locale.prefix]?.ietf ?? '';
+  const geo = geoData.filter((c) => c.prefix === locale.prefix);
+  const titleText = geo.length ? geo[0][currentPage.geo] : '';
+  const contentContainer = createTag('div', { id: 'content-container' });
+  const title = createTag('h5', { lang }, locale.title.replace('{{geo}}', titleText));
+  const text = createTag('p', { class: 'locale-text', lang }, locale.text);
+  const footer = createTag('div', { class: 'georouting-toaster-footer' });
+  const span = createTag('span', { class: 'icon margin-inline-end' });
+
+  const img = buildFlagImage(locale);
+  span.appendChild(img);
 
   const mainAction = createTag('a', {
     class: 'con-button blue button-l',
@@ -156,55 +158,39 @@ function buildToasterContent(geoData, locale, multipleLocales, currentPage) {
   const linkWrapper = createTag('div', { class: 'link-wrapper' }, mainAction);
   linkWrapper.appendChild(altAction);
   footer.append(linkWrapper);
-  
+
   contentContainer.appendChild(title);
   contentContainer.appendChild(text);
   contentContainer.appendChild(footer);
-  
+
   return contentContainer;
 }
 
 function updateToasterContent(details, geoData, currentPage) {
   const contentContainer = document.querySelector('#content-container');
-  
+
   if (contentContainer) {
     contentContainer.innerHTML = ''; // Clear existing content
-
     const { locale } = details;
-    
     // Check if locale and geoData exist, else use fallback
     if (!locale || !geoData) {
-      console.error('Locale or geoData is missing');
+      window.lana?.log('Locale or geoData is missing');
       return;
     }
-    
+
     const geoEntry = geoData.find((c) => c.prefix === locale.prefix);
     const titleText = geoEntry ? geoEntry[currentPage.geo] : 'Default Title';
 
     // Create new title, text, and footer elements dynamically
     const title = createTag('h5', { class: 'title' }, locale.title.replace('{{geo}}', titleText || ''));
     const text = createTag('p', { class: 'locale-text' }, locale.text || 'No text available');
-    
+
     const footer = createTag('div', { class: 'georouting-toaster-footer' });
     const span = createTag('span', { class: 'icon margin-inline-end' });
-    
-    const flagFile = locale.globeGrid?.toLowerCase().trim() === 'on' ? 'globe-grid.png' : `flag-${locale.geo.replace('_', '-')}.svg`;
-    const img = createTag('img', {
-      class: 'icon-milo',
-      width: 15,
-      height: 15,
-      alt: locale.button,
-    });
-    
-    img.addEventListener(
-      'error',
-      () => (img.src = `${config.miloLibs || config.codeRoot}/features/georoutingv2/img/globe-grid.png`),
-      { once: true }
-    );
-    
-    img.src = `${config.miloLibs || config.codeRoot}/img/georouting/${flagFile}`;
+
+    const img = buildFlagImage(locale);
     span.appendChild(img);
-    
+
     const mainAction = createTag('a', {
       class: 'con-button blue button-l',
       role: 'button',
@@ -212,20 +198,16 @@ function updateToasterContent(details, geoData, currentPage) {
     }, span);
 
     mainAction.append(locale.button);
-    
     const altAction = createTag('a', { href: currentPage.url }, currentPage.button);
     decorateForOnLinkClick(altAction, currentPage.prefix, locale.prefix, 'Stay');
-    
     const linkWrapper = createTag('div', { class: 'link-wrapper' }, mainAction);
     linkWrapper.appendChild(altAction);
     footer.append(linkWrapper);
-    
     contentContainer.appendChild(title);
     contentContainer.appendChild(text);
     contentContainer.appendChild(footer);
   }
 }
-
 
 function closeToaster(toaster) {
   const closeEvent = new Event('toaster:closed');
@@ -238,8 +220,7 @@ function createToasterElement(geoData, locale, multipleLocales, currentPage) {
   const georoutingToasterContent = createTag('div', { class: 'georouting-toaster-content' });
   const navArrow = createTag('div', { class: 'nav-arrow' });
   const navArrowInner = createTag('div', { class: 'nav-arrow-inner' });
-  
-  // Add close button
+
   const closeButton = createTag('button', { class: 'dialog-close', 'aria-label': 'Close' }, CLOSE_ICON);
   closeButton.addEventListener('click', () => {
     closeToaster(toaster);
@@ -259,7 +240,7 @@ function createToasterElement(geoData, locale, multipleLocales, currentPage) {
 
     select.addEventListener('change', async (event) => {
       const selectedLocalePrefix = event.target.value;
-      const selectedLocale = multipleLocales.find(loc => loc.prefix === selectedLocalePrefix);
+      const selectedLocale = multipleLocales.find((loc) => loc.prefix === selectedLocalePrefix);
 
       if (selectedLocale) {
         const updatedDetails = await getDetails(currentPage, [selectedLocale], geoData);
@@ -276,23 +257,22 @@ function createToasterElement(geoData, locale, multipleLocales, currentPage) {
   georoutingToasterContent.appendChild(contentContainer);
 
   toaster.appendChild(georoutingToasterContent);
-  //document.body.appendChild(toaster);  // Append toaster to the DOM to display it
-   const observer = new MutationObserver(() => {
-  const brandContainer = document.querySelector('.feds-brand-container');
-  if (brandContainer) {
-    brandContainer.appendChild(toaster);
-    observer.disconnect();
-  }
+  const observer = new MutationObserver(() => {
+    const brandContainer = document.querySelector('.feds-brand-container');
+    if (brandContainer) {
+      brandContainer.appendChild(toaster);
+      observer.disconnect();
+    }
   });
   observer.observe(document, {
     childList: true,
-    subtree: true
+    subtree: true,
   });
 }
 
 async function getDetails(currentPage, localeMatches, geoData) {
   const availableLocales = await getAvailableLocales(localeMatches);
-  
+
   if (!availableLocales.length) return null;
 
   if (!currentPage.url) {
@@ -315,7 +295,6 @@ async function getDetails(currentPage, localeMatches, geoData) {
 
 async function showToaster(currentPage, localeMatches, geoData) {
   const details = await getDetails(currentPage, localeMatches, geoData);
-  
   if (details) {
     const { locale, multipleLocales } = details;
     createToasterElement(geoData, locale, multipleLocales, currentPage);
@@ -384,6 +363,6 @@ export default async function loadGeoRoutingToaster(
       await showToaster(urlGeoData, localeMatches, json.geos.data);
     }
   } catch (e) {
-    console.error(e.message);
+    window.lana?.log(e.message);
   }
 }

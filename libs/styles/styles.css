@@ -970,7 +970,7 @@ a.static:hover {
 .georouting-toaster {
   position: absolute;
   display: flex;
-  border: 1px solid #505050;
+  border: 1px solid #8a8a8a;
   border-radius: 5px;
   left: 50px;
   top: 70px;
