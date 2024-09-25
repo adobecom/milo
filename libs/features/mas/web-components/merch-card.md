@@ -175,7 +175,7 @@ Designs:
 | Name             | Description                                                                    |
 | ---------------- | ------------------------------------------------------------------------------ |
 | `data`           | Current fragment RAW data that is used to render the merch-card                |
-| `updateComplete` | Promise that resolves when the fragment is retrieved and `load` event is fired |
+| `updateComplete` | Promise that resolves when the fragment is retrieved and `aem:load` event is fired |
 
 ### Events
 
