@@ -47,6 +47,16 @@ export class Product extends VariantLayout {
       ${this.secureLabelFooter}`;
   }
 
+  connectedCallbackHook() {
+    super.connectedCallbackHook();
+    window.addEventListener('resize', this.postCardUpdateHook.bind(this));
+  }
+
+  disconnectedCallbackHook() {
+    window.removeEventListener('resize', this.postCardUpdateHook.bind(this));
+    super.disconnectedCallbackHook();
+  }
+
   postCardUpdateHook() {
     if (!isMobile()) {
       this.adjustProductBodySlots();
