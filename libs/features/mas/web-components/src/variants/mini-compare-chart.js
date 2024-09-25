@@ -10,15 +10,8 @@ export class MiniCompareChart extends VariantLayout {
     super(card);
   }
 
-  #container;
-
   getRowMinHeightPropertyName = (index) =>
     `--consonant-merch-card-footer-row-${index}-min-height`;
-
-  getContainer() {
-    this.#container = this.#container ?? this.card.closest('[class*="-merch-cards"]') ?? this.card.parentElement;
-    return this.#container;
-  }
 
   getGlobalCSS() {
     return CSS;

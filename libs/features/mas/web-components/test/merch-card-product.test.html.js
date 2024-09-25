@@ -42,7 +42,31 @@ runTests(async () => {
         }),
       );
 
-      
+      const [card1Slots, card2Slots, card3Slots] = [
+        ...products,
+      ].map((product) => {
+        const heights = [
+          'slot[name="heading-xs"]',
+          'slot[name="body-xxs"]',
+          'slot[name="body-xs"]',
+          'slot[name="callout-content"]',
+          'slot[name="body-lower"]',
+        ]
+          .map((selector) => {
+            const el =
+              product.shadowRoot.querySelector(selector);
+            if (!el) return 0;
+            return parseFloat(window.getComputedStyle(el).height);
+          })
+          .join(',');
+        return heights;
+      });
+      expect(card1Slots).to.not.contain('auto');
+      console.log('card1Slots', card1Slots);
+      console.log('card2Slots', card2Slots);
+      console.log('card3Slots', card3Slots);
+      expect(card1Slots).to.equal(card2Slots);
+      expect(card2Slots).to.equal(card3Slots);
     });
   });
 });

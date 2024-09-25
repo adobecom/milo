@@ -258,7 +258,7 @@ import{LitElement as Et}from"../lit-all.min.js";import{LitElement as dt,html as 
                 grid-column: span 4;
             }
         }
-    `),r};import{html as z}from"../lit-all.min.js";var m=class r{static styleMap={};card;insertVariantStyle(){if(!r.styleMap[this.card.variant]){r.styleMap[this.card.variant]=!0;let t=document.createElement("style");t.innerHTML=this.getGlobalCSS(),document.head.appendChild(t)}}constructor(t){this.card=t,this.insertVariantStyle()}get badge(){let t;if(!(!this.card.badgeBackgroundColor||!this.card.badgeColor||!this.card.badgeText))return this.evergreen&&(t=`border: 1px solid ${this.card.badgeBackgroundColor}; border-right: none;`),z`
+    `),r};import{html as z}from"../lit-all.min.js";var m=class r{static styleMap={};card;#t;getContainer(){return this.#t=this.#t??this.card.closest('[class*="-merch-cards"]')??this.card.parentElement,this.#t}insertVariantStyle(){if(!r.styleMap[this.card.variant]){r.styleMap[this.card.variant]=!0;let t=document.createElement("style");t.innerHTML=this.getGlobalCSS(),document.head.appendChild(t)}}updateCardElementMinHeight(t,e){let o=`--consonant-merch-card-${this.card.variant}-${e}-height`,h=Math.max(0,parseInt(window.getComputedStyle(t).height)||0),p=parseInt(this.getContainer().style.getPropertyValue(o))||0;h>p&&this.getContainer().style.setProperty(o,`${h}px`)}constructor(t){this.card=t,this.insertVariantStyle()}get badge(){let t;if(!(!this.card.badgeBackgroundColor||!this.card.badgeColor||!this.card.badgeText))return this.evergreen&&(t=`border: 1px solid ${this.card.badgeBackgroundColor}; border-right: none;`),z`
         <div
             id="badge"
             class="${this.card.variant}-badge"
@@ -799,7 +799,7 @@ merch-card .footer-row-cell:nth-child(7) {
 merch-card .footer-row-cell:nth-child(8) {
   min-height: var(--consonant-merch-card-footer-row-8-min-height);
 }
-`;var xt=32,y=class extends m{constructor(t){super(t)}#t;getRowMinHeightPropertyName=t=>`--consonant-merch-card-footer-row-${t}-min-height`;getContainer(){return this.#t=this.#t??this.card.closest('[class*="-merch-cards"]')??this.card.parentElement,this.#t}getGlobalCSS(){return tt}getMiniCompareFooter=()=>{let t=this.card.secureLabel?$`<slot name="secure-transaction-label">
+`;var xt=32,y=class extends m{constructor(t){super(t)}getRowMinHeightPropertyName=t=>`--consonant-merch-card-footer-row-${t}-min-height`;getGlobalCSS(){return tt}getMiniCompareFooter=()=>{let t=this.card.secureLabel?$`<slot name="secure-transaction-label">
               <span class="secure-transaction-label"
                   >${this.card.secureLabel}</span
               ></slot
@@ -1005,7 +1005,7 @@ merch-card[variant="plans"] [slot="quantity-select"] {
       grid-template-columns: repeat(4, var(--consonant-merch-card-product-width));
   }
 }
-`;var x=class extends m{constructor(t){super(t)}#t;getContainer(){return this.#t=this.#t??this.card.closest('[class*="-merch-cards"]')??this.card.parentElement,this.#t}getGlobalCSS(){return ot}updateCardElementMinHeight(t,e){let o=`--consonant-merch-card-product-${e}-height`,h=Math.max(0,parseInt(window.getComputedStyle(t).height)||0),p=parseInt(this.getContainer().style.getPropertyValue(o))||0;h>p&&this.getContainer().style.setProperty(o,`${h}px`)}adjustProductBodySlots(){if(this.card.getBoundingClientRect().width===0)return;["heading-xs","body-xxs","body-xs","promo-text","callout-content","body-lower"].forEach(e=>this.updateCardElementMinHeight(this.card.shadowRoot.querySelector(`slot[name="${e}"]`),e))}renderLayout(){return B` ${this.badge}
+`;var x=class extends m{constructor(t){super(t)}getGlobalCSS(){return ot}adjustProductBodySlots(){if(this.card.getBoundingClientRect().width===0)return;["heading-xs","body-xxs","body-xs","promo-text","callout-content","body-lower"].forEach(e=>this.updateCardElementMinHeight(this.card.shadowRoot.querySelector(`slot[name="${e}"]`),e))}renderLayout(){return B` ${this.badge}
       <div class="body">
           <slot name="icons"></slot>
           <slot name="heading-xs"></slot>
