@@ -2,10 +2,7 @@
 import sinon from 'sinon';
 import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
-import {
-  initJarvisChat,
-  openChat,
-} from '../../../libs/features/jarvis-chat.js';
+import { initJarvisChat, openChat } from '../../../libs/features/jarvis-chat.js';
 import { setConfig, getConfig } from '../../../libs/utils/utils.js';
 
 const defaultConfig = {
@@ -21,33 +18,17 @@ describe('Jarvis Chat', () => {
   let isAdobeMessagingClientInitializedStub;
   let getMessagingExperienceStateStub;
   beforeEach(() => {
-    window.AdobeMessagingExperienceClient =
-      window.AdobeMessagingExperienceClient || {
+    window.AdobeMessagingExperienceClient = window.AdobeMessagingExperienceClient
+      || {
         initialize: () => {},
         openMessagingWindow: () => {},
         isAdobeMessagingClientInitialized: () => {},
         getMessagingExperienceState: () => {},
       };
-    initializeSpy = sinon.spy(
-      window.AdobeMessagingExperienceClient,
-      'initialize'
-    );
-    openMessagingWindowSpy = sinon.spy(
-      window.AdobeMessagingExperienceClient,
-      'openMessagingWindow'
-    );
-    isAdobeMessagingClientInitializedStub = sinon
-      .stub(
-        window.AdobeMessagingExperienceClient,
-        'isAdobeMessagingClientInitialized'
-      )
-      .returns(true);
-    getMessagingExperienceStateStub = sinon
-      .stub(
-        window.AdobeMessagingExperienceClient,
-        'getMessagingExperienceState'
-      )
-      .returns({ windowState: 'hidden' });
+    initializeSpy = sinon.spy(window.AdobeMessagingExperienceClient, 'initialize');
+    openMessagingWindowSpy = sinon.spy(window.AdobeMessagingExperienceClient, 'openMessagingWindow');
+    isAdobeMessagingClientInitializedStub = sinon.stub(window.AdobeMessagingExperienceClient, 'isAdobeMessagingClientInitialized').returns(true);
+    getMessagingExperienceStateStub = sinon.stub(window.AdobeMessagingExperienceClient, 'getMessagingExperienceState').returns({ windowState: 'hidden' });
   });
 
   afterEach(() => {
@@ -187,16 +168,12 @@ describe('Jarvis Chat', () => {
   });
 
   it('should open a chat session upon click', async () => {
-    document.body.innerHTML = await readFile({
-      path: './mocks/jarvis-chat.html',
-    });
+    document.body.innerHTML = await readFile({ path: './mocks/jarvis-chat.html' });
     setConfig(defaultConfig);
     const config = getConfig();
     await initJarvisChat(config, sinon.stub(), sinon.stub(), sinon.stub());
     const args = initializeSpy.getCall(0).args[0];
-    args.callbacks.initCallback({
-      releaseControl: { showAdobeMessaging: true },
-    });
+    args.callbacks.initCallback({ releaseControl: { showAdobeMessaging: true } });
     openMessagingWindowSpy.resetHistory();
     document.body.querySelector('a').click();
     expect(openMessagingWindowSpy.called).to.be.true;
@@ -212,51 +189,35 @@ describe('Jarvis Chat', () => {
     await initJarvisChat(config, sinon.stub(), sinon.stub(), sinon.stub());
     const args = initializeSpy.getCall(0).args[0];
 
-    const iconRender = await readFile({
-      path: './mocks/sendChatIconRenderEvent.json',
-    });
+    const iconRender = await readFile({ path: './mocks/sendChatIconRenderEvent.json' });
     window.digitalData = window.digitalData || {};
     window.alloy_all = window.digitalData || {};
     window._satellite = window._satellite || { track: sinon.spy() };
     window._satellite.track.resetHistory();
     args.callbacks.analyticsCallback(JSON.parse(iconRender));
-    expect(window.digitalData.primaryEvent.eventInfo.eventName).to.equal(
-      'chat:init:launch:event.subtype:icon:render'
-    );
+    expect(window.digitalData.primaryEvent.eventInfo.eventName).to.equal('chat:init:launch:event.subtype:icon:render');
     expect(window.digitalData.chat.chatInfo.chatType).to.equal('render');
     expect(window._satellite.track.called).to.be.true;
 
-    const iconClick = await readFile({
-      path: './mocks/sendChatIconClickEvent.json',
-    });
+    const iconClick = await readFile({ path: './mocks/sendChatIconClickEvent.json' });
     window._satellite.track.resetHistory();
     args.callbacks.analyticsCallback(JSON.parse(iconClick));
-    expect(window.digitalData.primaryEvent.eventInfo.eventName).to.equal(
-      'chat:init:launch:event.subtype:icon:click'
-    );
+    expect(window.digitalData.primaryEvent.eventInfo.eventName).to.equal('chat:init:launch:event.subtype:icon:click');
     expect(window.digitalData.chat.chatInfo.chatType).to.equal('click');
     expect(window._satellite.track.called).to.be.true;
 
     const product = await readFile({ path: './mocks/sendProductEvent.json' });
     window._satellite.track.resetHistory();
     args.callbacks.analyticsCallback(JSON.parse(product));
-    expect(window.digitalData.primaryEvent.eventInfo.eventName).to.equal(
-      'chat:product:auth-subproduct:sub:type'
-    );
-    expect(
-      window.digitalData.chat.chatInfo.primaryProduct.productName
-    ).to.equal('sub');
+    expect(window.digitalData.primaryEvent.eventInfo.eventName).to.equal('chat:product:auth-subproduct:sub:type');
+    expect(window.digitalData.chat.chatInfo.primaryProduct.productName).to.equal('sub');
     expect(window._satellite.track.called).to.be.true;
 
     window.digitalData = { sophiaResponse: { fromPage: 'test2' } };
-    const survey = await readFile({
-      path: './mocks/sendSurveyFeedbackEvent.json',
-    });
+    const survey = await readFile({ path: './mocks/sendSurveyFeedbackEvent.json' });
     window._satellite.track.resetHistory();
     args.callbacks.analyticsCallback(JSON.parse(survey));
-    expect(window.digitalData.primaryEvent.eventInfo.eventName).to.equal(
-      'chat:survey:5-star-survey:test:type:id'
-    );
+    expect(window.digitalData.primaryEvent.eventInfo.eventName).to.equal('chat:survey:5-star-survey:test:type:id');
     expect(window._satellite.track.called).to.be.true;
 
     const error = await readFile({ path: './mocks/sendChatErrorEvent.json' });
@@ -266,9 +227,7 @@ describe('Jarvis Chat', () => {
     expect(window.digitalData.chat.chatInfo.chatErrorType).to.equal('init');
     expect(window._satellite.track.called).to.be.true;
 
-    window.digitalData = {
-      sophiaResponse: { fromPage: [{ variationId: '2', campaignId: '3' }] },
-    };
+    window.digitalData = { sophiaResponse: { fromPage: [{ variationId: '2', campaignId: '3' }] } };
     const def = await readFile({ path: './mocks/sendPrimaryEvent.json' });
     window._satellite.track.resetHistory();
     args.callbacks.analyticsCallback(JSON.parse(def));
@@ -286,15 +245,11 @@ describe('Jarvis Chat', () => {
     await initJarvisChat(config, sinon.stub(), sinon.stub(), sinon.stub());
     const args = initializeSpy.getCall(0).args[0];
     // Set uninitialized state
-    args.callbacks.initCallback({
-      releaseControl: { showAdobeMessaging: false },
-    });
+    args.callbacks.initCallback({ releaseControl: { showAdobeMessaging: false } });
     initializeSpy.resetHistory();
 
     config.jarvis.onDemand = true;
-    document.body.innerHTML = await readFile({
-      path: './mocks/jarvis-chat.html',
-    });
+    document.body.innerHTML = await readFile({ path: './mocks/jarvis-chat.html' });
     await initJarvisChat(config, sinon.stub(), sinon.stub(), sinon.stub());
     expect(initializeSpy.called).to.be.false;
     document.querySelector('a').click();
@@ -303,9 +258,7 @@ describe('Jarvis Chat', () => {
     });
     expect(initializeSpy.called).to.be.true;
     const params = initializeSpy.getCall(0).args[0];
-    params.callbacks.initCallback({
-      releaseControl: { showAdobeMessaging: true },
-    });
+    params.callbacks.initCallback({ releaseControl: { showAdobeMessaging: true } });
     params.callbacks.onReadyCallback();
     expect(openMessagingWindowSpy.called).to.be.true;
   });
@@ -313,30 +266,31 @@ describe('Jarvis Chat', () => {
     setConfig(defaultConfig);
     const config = getConfig();
     config.jarvis.onDemand = false;
-
+  
     const loadScriptSpy = sinon.spy();
     const loadStyleSpy = sinon.spy();
-
+  
     await initJarvisChat(config, loadScriptSpy, loadStyleSpy, sinon.stub());
-
+  
     const expectedAsset = 'https://stage-client.messaging.adobe.com/latest/AdobeMessagingClient';
     expect(loadScriptSpy.calledWithExactly(`${expectedAsset}.js`)).to.be.true;
     expect(loadStyleSpy.calledWithExactly(`${expectedAsset}.css`)).to.be.true;
   });
-
+  
   it('should use prod asset URL in prod environment', async () => {
     setConfig(defaultConfig);
     const config = getConfig();
     config.jarvis.onDemand = false;
     config.env.name = 'prod';
-
+  
     const loadScriptSpy = sinon.spy();
     const loadStyleSpy = sinon.spy();
-
+  
     await initJarvisChat(config, loadScriptSpy, loadStyleSpy, sinon.stub());
-
+  
     const expectedAsset = 'https://client.messaging.adobe.com/latest/AdobeMessagingClient';
     expect(loadScriptSpy.calledWithExactly(`${expectedAsset}.js`)).to.be.true;
     expect(loadStyleSpy.calledWithExactly(`${expectedAsset}.css`)).to.be.true;
   });
+  
 });
