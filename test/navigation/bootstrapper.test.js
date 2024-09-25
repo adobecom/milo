@@ -5,6 +5,7 @@ import loadBlock from '../../libs/navigation/bootstrapper.js';
 import fetchedFooter from '../blocks/global-footer/mocks/fetched-footer.js';
 import placeholders from '../blocks/global-navigation/mocks/placeholders.js';
 import { setConfig } from '../../libs/utils/utils.js';
+import { mockRes } from '../blocks/global-navigation/test-utilities.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 
@@ -24,15 +25,6 @@ const blockConfig = {
 
 const miloLibs = 'http://localhost:2000/libs';
 
-const mockRes = ({ payload, status = 200, ok = true } = {}) => new Promise((resolve) => {
-  resolve({
-    status,
-    ok,
-    json: () => payload,
-    text: () => payload,
-  });
-});
-
 describe('Bootstrapper', async () => {
   beforeEach(async () => {
     stub(window, 'fetch').callsFake(async (url) => {
@@ -45,6 +37,8 @@ describe('Bootstrapper', async () => {
       }
       if (url.includes('/placeholders')) return mockRes({ payload: placeholders });
       if (url.includes('/footer.plain.html')) return mockRes({ payload: await readFile({ path: '../blocks/region-nav/mocks/regions.html' }) });
+      if (url.includes('/gnav.plain.html')) return mockRes({ payload: await readFile({ path: './mocks/gnav.html' }) });
+
       return null;
     });
     setConfig({ miloLibs, contentRoot: '/federal/dev' });
