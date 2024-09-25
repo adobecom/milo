@@ -51,7 +51,7 @@ export default class MarqueeAnchors {
         linkHeader: this.anchorLinks.locator('h4#anchor-link-to-adobe'),
         linkText: this.anchorLinks.locator('#anchor-link-to-adobe p').nth(0),
         icon: this.anchorLinks.nth(3).locator('img.icon-milo'),
-      }
+      },
     };
   }
 }
