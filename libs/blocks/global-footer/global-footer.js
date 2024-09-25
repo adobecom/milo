@@ -36,9 +36,10 @@ const CONFIG = {
 };
 
 class Footer {
-  constructor({ block } = {}) {
+  constructor({ block, content } = {}) {
     this.block = block;
     this.elements = {};
+    this.body = content;
     this.init();
   }
 
@@ -70,15 +71,6 @@ class Footer {
   }, 'Error in global footer init', 'errorType=error,module=global-footer');
 
   decorateContent = () => logErrorFor(async () => {
-    // Fetch footer content
-    const url = getMetadata('footer-source') || `${locale.contentRoot}/footer`;
-    this.body = await fetchAndProcessPlainHtml({
-      url,
-      shouldDecorateLinks: false,
-    });
-
-    if (!this.body) return;
-
     const [region, social] = ['.region-selector', '.social'].map((selector) => this.body.querySelector(selector));
     const [regionParent, socialParent] = [region?.parentElement, social?.parentElement];
     // We remove and add again the region and social elements from the body to make sure
@@ -89,7 +81,7 @@ class Footer {
 
     regionParent?.appendChild(region);
     socialParent?.appendChild(social);
-
+    const url = getMetadata('footer-source') || `${locale.contentRoot}/footer`;
     const path = getFederatedUrl(url);
     federatePictureSources({ section: this.body, forceFederate: path.includes('/federal/') });
 
@@ -368,13 +360,25 @@ class Footer {
   };
 }
 
-export default function init(block) {
-  try {
-    const footer = new Footer({ block });
-    if (isDarkMode()) block.classList.add('feds--dark');
-    return footer;
-  } catch (e) {
-    lanaLog({ message: 'Could not create footer', e });
-    return null;
+export default async function init(block) {
+  // Fetch footer content
+  const url = getMetadata('footer-source') || `${locale.contentRoot}/footer`;
+  const content = await fetchAndProcessPlainHtml({
+    url,
+    shouldDecorateLinks: false,
+  });
+
+  if (!content) {
+    const error = new Error('Could not create global footer. Content not found!');
+    error.tags = 'errorType=error,module=gnav';
+    error.url = url;
+    lanaLog({ message: 'Could not create global footer. Content not found!', error });
+    throw error;
   }
+  const footer = new Footer({
+    block,
+    content,
+  });
+  if (isDarkMode()) block.classList.add('feds--dark');
+  return footer;
 }

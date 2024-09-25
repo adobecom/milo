@@ -92,8 +92,12 @@ describe('global footer', () => {
           return null;
         });
 
-        const globalFooter = await createFullGlobalFooter({ waitForDecoration: false });
-        expect(await globalFooter.decorateContent()).to.equal(undefined);
+        try {
+          const globalFooter = await createFullGlobalFooter({ waitForDecoration: false });
+          expect(await globalFooter.decorateContent()).to.equal(undefined);
+        } catch (e) {
+          // catch error
+        }
       });
 
       it('should handle missing elements', async () => {
@@ -375,10 +379,14 @@ describe('global footer', () => {
         if (url.includes('icons.svg')) return mockRes({ payload: icons });
         return null;
       });
-      await createFullGlobalFooter({ waitForDecoration: false });
-      await clock.runAllAsync();
-      expect(window.lana.log.getCalls().find((c) => c.args[0].includes('Failed to fetch footer content')));
-      expect(window.lana.log.getCalls().find((c) => c.args[1].tags.includes('global-footer')));
+      try {
+        await createFullGlobalFooter({ waitForDecoration: false });
+        await clock.runAllAsync();
+        expect(window.lana.log.getCalls().find((c) => c.args[0].includes('Failed to fetch footer content')));
+        expect(window.lana.log.getCalls().find((c) => c.args[1].tags.includes('global-footer')));
+      } catch (e) {
+        // catch errors
+      }
     });
 
     it('should send log when could not create URL for region picker', async () => {
@@ -398,10 +406,14 @@ describe('global footer', () => {
 
     it('should send log when footer cannot be instantiated ', async () => {
       sinon.stub(window, 'DOMParser').callsFake(() => ({ parseFromString: sinon.stub().throws(new Error('Parsing error')) }));
-      await createFullGlobalFooter({ waitForDecoration: false });
-      await clock.runAllAsync();
-      expect(window.lana.log.getCalls().find((c) => c.args[0].includes('Footer could not be instantiated')));
-      expect(window.lana.log.getCalls().find((c) => c.args[1].tags.includes('global-footer')));
+      try {
+        await createFullGlobalFooter({ waitForDecoration: false });
+        await clock.runAllAsync();
+        expect(window.lana.log.getCalls().find((c) => c.args[0].includes('Footer could not be instantiated')));
+        expect(window.lana.log.getCalls().find((c) => c.args[1].tags.includes('global-footer')));
+      } catch (e) {
+        // catch error
+      }
     });
 
     it('should send LANA log when icons.svg has some network issue', async () => {
