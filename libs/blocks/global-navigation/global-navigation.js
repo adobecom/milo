@@ -625,6 +625,7 @@ class Gnav {
         onAnalyticsEvent,
       },
       children: getChildren(),
+      isSectionDividerRequired: getConfig()?.showUnavSectionDivider,
     });
 
     // Exposing UNAV config for consumers
