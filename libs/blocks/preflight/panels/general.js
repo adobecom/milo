@@ -1,7 +1,12 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
 import userCanPublishPage from '../../../tools/utils/publish.js';
 
-const NOT_FOUND = { preview: { lastModified: 'Not found' }, live: { lastModified: 'Not found' } };
+const DEF_NOT_FOUND = 'Not found';
+const DEF_NEVER = 'Never';
+const NOT_FOUND = {
+  preview: { lastModified: DEF_NOT_FOUND },
+  live: { lastModified: DEF_NOT_FOUND },
+};
 
 const content = signal({});
 
@@ -17,9 +22,9 @@ async function getStatus(url) {
   const resp = await fetch(adminUrl);
   if (!resp.ok) return {};
   const json = await resp.json();
+  const preview = json.preview.lastModified || DEF_NEVER;
+  const live = json.live.lastModified || DEF_NEVER;
   const publish = await userCanPublishPage(json, false);
-  const preview = json.preview.lastModified || 'Never';
-  const live = json.live.lastModified || 'Never';
   const edit = json.edit.url;
   return { url, edit, preview, live, publish };
 }
@@ -40,7 +45,8 @@ function getUrl(el) {
   try {
     return new URL(dataPath);
   } catch {
-    const path = dataPath ? `${window.location.origin}${dataPath}` : el.href;
+    const elPath = el.href || (el.src && el.nodeName === 'IFRAME' ? el?.parentElement.dataset.pdfSrc : el.src);
+    const path = dataPath ? `${window.location.origin}${dataPath}` : elPath;
     return new URL(path);
   }
 }
@@ -65,6 +71,8 @@ async function setContent() {
     page: { items: [{ url: new URL(window.location.href), edit: null, preview: 'Fetching', live: 'Fetching' }] },
     fragments: { items: findLinks('main .fragment, a[data-modal-path], [data-path]') },
     links: { items: findLinks('main a[href^="/"') },
+    svgs: { items: findLinks('img[src$=".svg"') },
+    pdfs: { items: findLinks('main iframe') },
     nav: { items: findLinks('header a[href^="/"'), closed: true },
   };
 
@@ -116,6 +124,14 @@ function toggleGroup(name) {
   content.value = { ...content.value };
 }
 
+function checkPublishing(item, isFetching) {
+  if ((item.preview === DEF_NEVER && item.live === DEF_NEVER)
+    || (item.preview === DEF_NOT_FOUND && item.live === DEF_NOT_FOUND)) {
+    return ' not-found';
+  }
+  return isFetching;
+}
+
 function prettyDate(string) {
   if (Number.isNaN(Date.parse(string))) return string;
 
@@ -152,7 +168,7 @@ function Item({ name, item, idx }) {
   if (!item.url) return undefined;
 
   return html`
-    <div class="preflight-group-row preflight-group-detail${isChecked}${isFetching}"
+    <div class="preflight-group-row preflight-group-detail${isChecked}${checkPublishing(item, isFetching)}"
       onClick=${(e) => handleChange(e.target, name, idx)}>
       <p><a href=${item.url.pathname} target=_blank>${prettyPath(item.url)}</a></p>
       <p>${item.edit && html`<a href=${item.edit} class=preflight-edit target=_blank>EDIT</a>`}</p>

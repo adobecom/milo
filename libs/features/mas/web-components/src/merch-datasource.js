@@ -6,6 +6,7 @@ const VARIANTS = {
     AH: 'ah',
     CCD_ACTION: 'ccd-action',
     SPECIAL_OFFERS: 'special-offers',
+    CCD_SLICE: 'ccd-slice',
 };
 
 const cardContent = {
@@ -35,6 +36,11 @@ const cardContent = {
         description: { tag: 'div', slot: 'body-xs' },
         ctas: { size: 'l' },
     },
+    [VARIANTS.CCD_SLICE]: {
+      backgroundImage: { tag: 'div', slot: 'image' },
+      description: { tag: 'div', slot: 'body-s' },
+      ctas: { size: 'l' },
+  },
 };
 
 async function parseMerchCard(fragmentData, appendFn, merchCard, consonant) {
