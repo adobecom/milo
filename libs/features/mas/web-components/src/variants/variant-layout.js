@@ -16,7 +16,7 @@ export class VariantLayout {
 
   constructor(card) {
     this.card = card;
-    setTimeout(() => this.insertVariantStyle(), 1);
+    this.insertVariantStyle();
   }
 
   get badge() {
