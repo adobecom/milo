@@ -87,6 +87,10 @@ merch-card {
   margin: 32px;
 }
 
+merch-card:not([variant]) {
+  display: none;
+}
+
 pre {
   max-height: 500px;
   overflow: scroll;
