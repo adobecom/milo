@@ -85,3 +85,13 @@ tr:nth-child(even) {
 merch-card {
   margin: 32px;
 }
+
+pre {
+  max-height: 500px;
+  overflow: scroll;
+  background-color: var(--spectrum-global-color-gray-300);
+}
+
+#log {
+  display: block;
+}

@@ -1,4 +1,4 @@
-import { EVENT_MAS_LOAD } from './constants.js';
+import { EVENT_AEM_LOAD } from './constants.js';
 import { getFragmentById } from './getFragmentById.js';
 
 const sheet = new CSSStyleSheet();
@@ -120,7 +120,7 @@ export class AemFragment extends HTMLElement {
         }
         this._readyPromise = this.fetchData().then(() => {
             this.dispatchEvent(
-                new CustomEvent(EVENT_MAS_LOAD, {
+                new CustomEvent(EVENT_AEM_LOAD, {
                     detail: this.data,
                     bubbles: true,
                     composed: true,

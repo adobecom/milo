@@ -4,7 +4,7 @@ import { getVariantLayout, getVariantStyles } from './variants/variants.js';
 
 import './global.css.js';
 import {
-    EVENT_MAS_LOAD,
+    EVENT_AEM_LOAD,
     EVENT_MERCH_CARD_READY,
     EVENT_MERCH_OFFER_SELECT_READY,
     EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
@@ -267,7 +267,7 @@ export class MerchCard extends LitElement {
         );
 
         // aem-fragment logic
-        this.addEventListener(EVENT_MAS_LOAD, this.handleLoadEvent);
+        this.addEventListener(EVENT_AEM_LOAD, this.handleLoadEvent);
     }
 
     disconnectedCallback() {
@@ -282,7 +282,7 @@ export class MerchCard extends LitElement {
             EVENT_MERCH_STORAGE_CHANGE,
             this.handleStorageChange,
         );
-        this.removeEventListener(EVENT_MAS_LOAD, this.handleLoadEvent);
+        this.removeEventListener(EVENT_AEM_LOAD, this.handleLoadEvent);
     }
 
     // custom methods

@@ -35,7 +35,13 @@ const md = markdownIt({
 })
     .use(markdownItAttrs)
     .use(markdownItAnchor, {
-        permalink: markdownItAnchor.permalink.headerLink(),
+        permalink: markdownItAnchor.permalink.linkInsideHeader({
+            symbol: '#',
+            renderAttrs: (slug, state) => ({
+                href: `#${slug}`,
+                title: 'Permalink to this heading',
+            }),
+        }),
     })
     .use(markdownItContainer, 'warning')
     .use(markdownItHighlightjs);

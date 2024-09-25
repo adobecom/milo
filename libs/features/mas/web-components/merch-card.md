@@ -31,7 +31,7 @@ Designs:
         (log.innerHTML = `${messages.join(' ')}<br>${log.innerHTML}`);
 
     const fragment1 = document.getElementById('fragment1');
-    fragment1.addEventListener('mas:load', (e) => {
+    fragment1.addEventListener('aem:load', (e) => {
         logger(
             'aem-fragment is loaded: ',
             JSON.stringify(e.target.data, null, '\t'),
@@ -62,7 +62,7 @@ Designs:
   const log = document.getElementById('log');
   const logger = (...messages) => log.innerHTML = `${messages.join(' ')}<br>${log.innerHTML}`;
   const fragment1 = document.getElementById('fragment1');
-  fragment1.addEventListener('mas:load', (e) => {
+  fragment1.addEventListener('aem:load', (e) => {
     logger('aem-fragment is loaded: ', JSON.stringify(e.target.data, null, '\t'));
   });
   const card1 = document.getElementById('card1');
@@ -78,7 +78,10 @@ Designs:
   });
 </script>
 
-[See logs](#logs)
+#### Logs
+```html {#log}
+
+```
 
 ### Static HTML
 
@@ -177,10 +180,4 @@ Designs:
 
 | Name       | Description                                    |
 | ---------- | ---------------------------------------------- |
-| `mas:load` | fires when the fragment is successfully loaded |
-
-#### Logs <br>
-
-```html {#log}
-
-```
+| `aem:load` | fires when the fragment is successfully loaded |

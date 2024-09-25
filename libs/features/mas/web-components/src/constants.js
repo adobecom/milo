@@ -51,5 +51,5 @@ export const EVENT_MERCH_CARD_COLLECTION_SHOWMORE =
 
 export const EVENT_MERCH_SIDENAV_SELECT = 'merch-sidenav:select';
 
-export const EVENT_MAS_LOAD = 'mas:load';
+export const EVENT_AEM_LOAD = 'aem:load';
 export const EVENT_MAS_READY = 'mas:ready';
