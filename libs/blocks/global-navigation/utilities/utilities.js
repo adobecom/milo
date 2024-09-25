@@ -330,6 +330,7 @@ export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true
       e: `${res.statusText} url: ${res.url}`,
       tags: 'errorType=info,module=utilities',
     });
+    return null;
   }
   const text = await res.text();
   const { body } = new DOMParser().parseFromString(text, 'text/html');
