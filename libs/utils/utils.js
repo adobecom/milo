@@ -1053,8 +1053,8 @@ async function loadPostLCP(config) {
   }
   const georouting = getMetadata('georouting') || config.geoRouting;
   if (georouting === 'on') {
-    const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
-    await loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
+    const { default: loadGeoRoutingToaster } = await import('../features/georoutingv2/georouting-toaster.js');
+    await loadGeoRoutingToaster(config, createTag, getMetadata, loadBlock, loadStyle);
   }
   const header = document.querySelector('header');
   if (header) {
