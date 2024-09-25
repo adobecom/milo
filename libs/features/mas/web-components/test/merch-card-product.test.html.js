@@ -62,9 +62,6 @@ runTests(async () => {
         return heights;
       });
       expect(card1Slots).to.not.contain('auto');
-      console.log('card1Slots', card1Slots);
-      console.log('card2Slots', card2Slots);
-      console.log('card3Slots', card3Slots);
       expect(card1Slots).to.equal(card2Slots);
       expect(card2Slots).to.equal(card3Slots);
     });

@@ -503,11 +503,9 @@ describe('Product Merch Card', () => {
     document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/product.html');
     const merchCard = await init(document.querySelector('.product'));
 
-    // Assert
     const calloutSlot = merchCard.querySelector('[slot="callout-content"]');
     expect(calloutSlot).to.exist;
 
-    // Assert that lower body slot is appended
     const lowerBodySlot = merchCard.querySelector('[slot="body-lower"]');
     expect(lowerBodySlot).to.exist;
   });
