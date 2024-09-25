@@ -3,24 +3,15 @@
 ## Introduction {#introduction}
 
 This custom element renders a checkout link supporting most of the features documented at https://wiki.corp.adobe.com/pages/viewpage.action?spaceKey=businessservices&title=UCv3+Link+Creation+Guide.<br>
-Sometimes a checkout-link can be also referred as placeholder as it can be used as an inline link resolving at runtime.<br>
-The term placeholder will be deprecated and it is recommended to refer as **checkout-link custom element** going forward.
+Sometimes a checkout-link can be also referred as checkout-link as it can be used as an inline link resolving at runtime.<br>
+The term checkout-link will be deprecated and it is recommended to refer as **checkout-link custom element** going forward.
 
 Behind the scene, it uses https://git.corp.adobe.com/PandoraUI/commerce-core to generate the checkout url.
 
-It requires an Offer Selector ID to retrieve the offer from WCS.
+It requires an Offer Selector ID to retrieve the offer details from WCS.
 
-### Offer Selector Id
+See [MAS](mas.html) introduction to learn more.
 
-AOS generated a stable reference for a set of natural keys allowing to retrieve a specific offer whose offer ID can change over time.
-
-[API: Create an offer selector](https://developers.corp.adobe.com/aos/docs/guide/apis/api.yaml#/paths/offer_selectors/post)
-
-### WCS {#wcs}
-
-[WCS](https://developers.corp.adobe.com/wcs/docs/guide/introduction.md) (pronounced weks) provides APIs returning Commerce data required by Adobe.com.
-
-API: https://developers.corp.adobe.com/wcs/docs/api/openapi/wcs/latest.yaml#/schemas/Web-Commerce-Artifacts
 
 ### Example
 
@@ -219,13 +210,13 @@ For each event except `click`, the following css classes are toggled on the elem
         (log.innerHTML = `${messages.join(' ')}<br>${log.innerHTML}`);
     const a = document.getElementById('co2');
     a.addEventListener('wcms:placeholder:pending', () =>
-        logger('placeholder pending'),
+        logger('checkout-link pending'),
     );
     a.addEventListener('wcms:placeholder:resolved', () =>
-        logger('placeholder resolved'),
+        logger('checkout-link resolved'),
     );
     a.addEventListener('wcms:placeholder:failed', () =>
-        logger('placeholder failed'),
+        logger('checkout-link failed'),
     );
     a.addEventListener('click', (e) => {
         e.preventDefault();
@@ -242,9 +233,9 @@ For each event except `click`, the following css classes are toggled on the elem
   const log = document.getElementById('log');
   const logger = (...messages) => log.innerHTML = `${messages.join(' ')}<br>${log.innerHTML}`;
   const a = document.getElementById('co2');
-  a.addEventListener('wcms:placeholder:pending', () => logger('placeholder pending'));
-  a.addEventListener('wcms:placeholder:resolved', () => logger('placeholder resolved'));
-  a.addEventListener('wcms:placeholder:failed', () => logger('placeholder failed'));
+  a.addEventListener('wcms:placeholder:pending', () => logger('checkout-link pending'));
+  a.addEventListener('wcms:placeholder:resolved', () => logger('checkout-link resolved'));
+  a.addEventListener('wcms:placeholder:failed', () => logger('checkout-link failed'));
   a.addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();

@@ -29,16 +29,11 @@
 <h1 id="checkout-link" tabindex="-1">checkout-link <a class="header-anchor" href="#checkout-link" href="#checkout-link" title="Permalink to this heading">#</a></h1>
 <h2 id="introduction" tabindex="-1">Introduction <a class="header-anchor" href="#introduction" href="#introduction" title="Permalink to this heading">#</a></h2>
 <p>This custom element renders a checkout link supporting most of the features documented at <a href="https://wiki.corp.adobe.com/pages/viewpage.action?spaceKey=businessservices&amp;title=UCv3+Link+Creation+Guide.">https://wiki.corp.adobe.com/pages/viewpage.action?spaceKey=businessservices&amp;title=UCv3+Link+Creation+Guide.</a><br>
-Sometimes a checkout-link can be also referred as placeholder as it can be used as an inline link resolving at runtime.<br>
-The term placeholder will be deprecated and it is recommended to refer as <strong>checkout-link custom element</strong> going forward.</p>
+Sometimes a checkout-link can be also referred as checkout-link as it can be used as an inline link resolving at runtime.<br>
+The term checkout-link will be deprecated and it is recommended to refer as <strong>checkout-link custom element</strong> going forward.</p>
 <p>Behind the scene, it uses <a href="https://git.corp.adobe.com/PandoraUI/commerce-core">https://git.corp.adobe.com/PandoraUI/commerce-core</a> to generate the checkout url.</p>
-<p>It requires an Offer Selector ID to retrieve the offer from WCS.</p>
-<h3 id="offer-selector-id" tabindex="-1">Offer Selector Id <a class="header-anchor" href="#offer-selector-id" href="#offer-selector-id" title="Permalink to this heading">#</a></h3>
-<p>AOS generated a stable reference for a set of natural keys allowing to retrieve a specific offer whose offer ID can change over time.</p>
-<p><a href="https://developers.corp.adobe.com/aos/docs/guide/apis/api.yaml#/paths/offer_selectors/post">API: Create an offer selector</a></p>
-<h3 id="wcs" tabindex="-1">WCS <a class="header-anchor" href="#wcs" href="#wcs" title="Permalink to this heading">#</a></h3>
-<p><a href="https://developers.corp.adobe.com/wcs/docs/guide/introduction.md">WCS</a> (pronounced weks) provides APIs returning Commerce data required by <a href="http://Adobe.com">Adobe.com</a>.</p>
-<p>API: <a href="https://developers.corp.adobe.com/wcs/docs/api/openapi/wcs/latest.yaml#/schemas/Web-Commerce-Artifacts">https://developers.corp.adobe.com/wcs/docs/api/openapi/wcs/latest.yaml#/schemas/Web-Commerce-Artifacts</a></p>
+<p>It requires an Offer Selector ID to retrieve the offer details from WCS.</p>
+<p>See <a href="mas.html">MAS</a> introduction to learn more.</p>
 <h3 id="example" tabindex="-1">Example <a class="header-anchor" href="#example" href="#example" title="Permalink to this heading">#</a></h3>
 <pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">a</span>
     <span class="hljs-attr">href</span>=<span class="hljs-string">&quot;#&quot;</span>
@@ -298,13 +293,13 @@ The term placeholder will be deprecated and it is recommended to refer as <stron
         (log.<span class="hljs-property">innerHTML</span> = <span class="hljs-string">`<span class="hljs-subst">${messages.join(<span class="hljs-string">&#x27; &#x27;</span>)}</span>&lt;br&gt;<span class="hljs-subst">${log.innerHTML}</span>`</span>);
     <span class="hljs-keyword">const</span> a = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;co2&#x27;</span>);
     a.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;wcms:placeholder:pending&#x27;</span>, <span class="hljs-function">() =&gt;</span>
-        <span class="hljs-title function_">logger</span>(<span class="hljs-string">&#x27;placeholder pending&#x27;</span>),
+        <span class="hljs-title function_">logger</span>(<span class="hljs-string">&#x27;checkout-link pending&#x27;</span>),
     );
     a.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;wcms:placeholder:resolved&#x27;</span>, <span class="hljs-function">() =&gt;</span>
-        <span class="hljs-title function_">logger</span>(<span class="hljs-string">&#x27;placeholder resolved&#x27;</span>),
+        <span class="hljs-title function_">logger</span>(<span class="hljs-string">&#x27;checkout-link resolved&#x27;</span>),
     );
     a.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;wcms:placeholder:failed&#x27;</span>, <span class="hljs-function">() =&gt;</span>
-        <span class="hljs-title function_">logger</span>(<span class="hljs-string">&#x27;placeholder failed&#x27;</span>),
+        <span class="hljs-title function_">logger</span>(<span class="hljs-string">&#x27;checkout-link failed&#x27;</span>),
     );
     a.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;click&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">e</span>) =&gt;</span> {
         e.<span class="hljs-title function_">preventDefault</span>();
@@ -319,9 +314,9 @@ The term placeholder will be deprecated and it is recommended to refer as <stron
   const log = document.getElementById('log');
   const logger = (...messages) => log.innerHTML = `${messages.join(' ')}<br>${log.innerHTML}`;
   const a = document.getElementById('co2');
-  a.addEventListener('wcms:placeholder:pending', () => logger('placeholder pending'));
-  a.addEventListener('wcms:placeholder:resolved', () => logger('placeholder resolved'));
-  a.addEventListener('wcms:placeholder:failed', () => logger('placeholder failed'));
+  a.addEventListener('wcms:placeholder:pending', () => logger('checkout-link pending'));
+  a.addEventListener('wcms:placeholder:resolved', () => logger('checkout-link resolved'));
+  a.addEventListener('wcms:placeholder:failed', () => logger('checkout-link failed'));
   a.addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();

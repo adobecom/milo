@@ -79,6 +79,7 @@ Designs:
 </script>
 
 #### Logs
+
 ```html {#log}
 
 ```
@@ -167,7 +168,7 @@ Designs:
 | ---------- | ---------------------------------------------------------------------------------------- | ------------- | -------- |
 | `fragment` | Fragment id. The copy/use feature in M@S Studio will copy the id/markup to the clipboard |               | `true`   |
 | `title`    | Informative title                                                                        |               | `false`  |
-| `ims`      | attempts to use IMS access token via `window.adobeid.authorize()` to fetch fragment      |               | `false`  |
+| `ims`      | attempts to use an IMS access token via `window.adobeid.authorize()` to fetch a fragment |               | `false`  |
 
 ### Properties
 

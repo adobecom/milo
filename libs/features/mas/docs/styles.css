@@ -64,7 +64,8 @@ tr:nth-child(even) {
   margin: 0;
 }
 
-.price-unit-type::before {
+.price-unit-type::before,
+.price-tax-inclusivity::before {
   content: " ";
 }
 
