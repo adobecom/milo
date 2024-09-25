@@ -102,7 +102,7 @@ export async function hydrate(fragmentData, merchCard) {
                     cta,
                 );
                 spectrumCta.addEventListener('click', (e) => {
-                    /* c8 ignore next 3 */
+                    /* c8 ignore next 4 */
                     if (e.target === spectrumCta) {
                         e.stopPropagation();
                         cta.click();
