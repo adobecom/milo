@@ -141,3 +141,4 @@ export async function decoratePlaceholderArea({
   });
   await Promise.all(replaceNodes);
 }
+
