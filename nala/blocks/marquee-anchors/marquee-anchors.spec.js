@@ -34,8 +34,8 @@ module.exports = {
             h4Text: 'Link to Adobe',
             linkText: 'Link to a new page',
             href: 'https://adobe.com/',
-          }
-        }
+          },
+        },
       },
       tags: '@marquee @marquee-anchors @smoke @regression @milo',
     },
@@ -72,11 +72,10 @@ module.exports = {
             h4Text: 'Link to Adobe',
             linkText: 'Link to a new page',
             href: 'https://adobe.com/',
-          }
-        }
+          },
+        },
       },
       tags: '@marquee @marquee-anchors @smoke @regression @milo',
-    },   
+    },
   ],
 };
-

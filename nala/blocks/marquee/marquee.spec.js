@@ -24,7 +24,7 @@ module.exports = {
         blueButtonText: 'Call to action',
       },
       tags: '@marquee @m16 @marquee-background @smoke @regression @milo',
-    },    
+    },
     {
       tcid: '2',
       name: 'Marquee (small)',
@@ -96,7 +96,7 @@ module.exports = {
         blueButtonText: 'Action',
       },
       tags: '@marquee @marquee-large-standard @smoke @regression @milo',
-    },        
+    },
     {
       tcid: '8',
       name: 'Marquee (quiet)',
@@ -230,9 +230,9 @@ module.exports = {
         outlineButtonText: 'Lorem ipsum',
         blueButtonText: 'Learn more',
         linkText: 'Text link',
-        
+
       },
       tags: '@marquee @m16 @marquee-background @smoke @regression @milo',
-    },   
+    },
   ],
 };
