@@ -1127,6 +1127,8 @@ export async function loadDeferred(area, blocks, config) {
       .then(({ default: decoratePreviewMode }) => decoratePreviewMode());
   }
   if (config?.dynamicNavKey && config?.env?.name !== 'prod') {
+    const { miloLibs } = getConfig();
+    loadStyle(`${miloLibs}/features/dynamic-navigation/status.css`);
     const { default: loadDNStatus } = await import('../features/dynamic-navigation/status.js');
     loadDNStatus();
   }

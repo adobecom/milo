@@ -115,10 +115,7 @@ const createStatusWidget = (dynamicNavKey) => {
 };
 
 export default async function main() {
-  const { dynamicNavKey, miloLibs, codeRoot } = getConfig();
-
-  loadStyle(`${miloLibs || `${codeRoot}/libs`}/features/dynamic-navigation/status.css`);
-
+  const { dynamicNavKey } = getConfig();
   const statusWidget = createStatusWidget(dynamicNavKey);
   const topNav = document.querySelector('.feds-topnav');
   const fedsWrapper = document.querySelector('.feds-nav-wrapper');
