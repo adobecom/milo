@@ -42,7 +42,7 @@ export async function hydrate(fragmentData, merchCard) {
         appendFn(merchIcon);
     });
 
-    if (fragment.size && cardMapping.allowedSizes?.includes(fragment.size)) {
+    if (fragment.size && aemFragmentMapping.allowedSizes?.includes(fragment.size)) {
         merchCard.setAttribute('size', fragment.size);
     }
 
