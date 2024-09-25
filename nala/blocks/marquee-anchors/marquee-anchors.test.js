@@ -68,7 +68,7 @@ test.describe('Milo Marquee Anchors test suite', () => {
 
       await expect(await marquee.outlineButton).toHaveAttribute('daa-ll', await webUtil.getLinkDaall(data.outlineButtonText, 1, data.h2Text));
       await expect(await marquee.blueButton).toHaveAttribute('daa-ll', await webUtil.getLinkDaall(data.blueButtonText, 2, data.h2Text));
-      
+
       await expect(await marquee.anchorLink.howTo.link).toHaveAttribute('daa-ll', await webUtil.getLinkDaall(`${data.anchors.howTo.h4Text} ${data.anchors.howTo.linkText}`, 3, data.anchors.headerText));
       await expect(await marquee.anchorLink.text.link).toHaveAttribute('daa-ll', await webUtil.getLinkDaall(`${data.anchors.text.h4Text} ${data.anchors.text.linkText}`, 4, data.anchors.howTo.h4Text));
       await expect(await marquee.anchorLink.media.link).toHaveAttribute('daa-ll', await webUtil.getLinkDaall(`${data.anchors.media.h4Text} ${data.anchors.media.linkText}`, 5, data.anchors.text.h4Text));
