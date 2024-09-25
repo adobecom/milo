@@ -506,7 +506,7 @@ export function decorateSVG(a) {
     const src = textUrl.hostname.includes(`.${SLD}.`) ? textUrl.pathname : textUrl;
 
     const img = createTag('img', { loading: 'lazy', src });
-    if (altText) img.alt = altText;
+    img.alt = altText || '';
     const pic = createTag('picture', null, img);
 
     if (textUrl.pathname === hrefUrl.pathname) {
