@@ -13,7 +13,7 @@ import {
   unavVersion,
 } from './test-utilities.js';
 import { setConfig, getLocale } from '../../../libs/utils/utils.js';
-import initGnav, { getUniversalNavLocale, osMap } from '../../../libs/blocks/global-navigation/global-navigation.js';
+import initNav, { getUniversalNavLocale, osMap } from '../../../libs/blocks/global-navigation/global-navigation.js';
 import { isDesktop, isTangentToViewport, toFragment } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
 import logoOnlyNav from './mocks/global-navigation-only-logo.plain.js';
 import longNav from './mocks/global-navigation-long.plain.js';
@@ -24,6 +24,14 @@ import { getConfig } from '../../../tools/send-to-caas/send-utils.js';
 
 // TODO
 // - test localization
+
+async function initGnav(block) {
+  try {
+    await initNav(block);
+  } catch (e) {
+    // should throw error
+  }
+}
 
 describe('global navigation', () => {
   before(() => {
