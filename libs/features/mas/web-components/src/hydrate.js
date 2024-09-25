@@ -42,6 +42,10 @@ export async function hydrate(fragmentData, merchCard) {
         appendFn(merchIcon);
     });
 
+    if (fragment.size && cardMapping.allowedSizes?.includes(fragment.size)) {
+        merchCard.setAttribute('size', fragment.size);
+    }
+
     if (fragment.cardTitle && aemFragmentMapping.title) {
         appendFn(
             createTag(

@@ -6,6 +6,7 @@ const AEM_FRAGMENT_MAPPING = {
     backgroundImage: { tag: 'div', slot: 'image' },
     description: { tag: 'div', slot: 'body-s' },
     ctas: { size: 'l' },
+    allowedSizes: ['wide'],
 };
 
 export class CCDSlice extends VariantLayout {

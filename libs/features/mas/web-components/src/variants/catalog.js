@@ -9,6 +9,7 @@ const AEM_FRAGMENT_MAPPING = {
     prices: { tag: 'h3', slot: 'heading-xs' },
     description: { tag: 'div', slot: 'body-xs' },
     ctas: { size: 'l' },
+    allowedSizes: ['wide', 'super-wide'],
 };
 
 export class Catalog extends VariantLayout {
