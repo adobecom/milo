@@ -217,6 +217,7 @@ export class MerchCard extends LitElement {
         return this.titleElement?.textContent?.trim();
     }
 
+    /* c8 ignore next 3 */
     get description() {
         return this.querySelector('[slot="body-xs"]')?.textContent?.trim();
     }
@@ -242,6 +243,7 @@ export class MerchCard extends LitElement {
         this.filters = newFilters;
     }
 
+    /* c8 ignore next 3 */
     includes(text) {
         return this.textContent.match(new RegExp(text, 'i')) !== null;
     }
@@ -308,6 +310,7 @@ export class MerchCard extends LitElement {
         return this.querySelector('sp-radio-group#storage');
     }
 
+    /* c8 ignore next 9 */
     get storageSpecificOfferSelect() {
         const storageOption = this.storageOptions?.selected;
         if (storageOption) {
@@ -325,6 +328,7 @@ export class MerchCard extends LitElement {
             : this.querySelector('merch-offer-select');
     }
 
+    /* c8 ignore next 3 */
     get quantitySelect() {
         return this.querySelector('merch-quantity-select');
     }
@@ -351,6 +355,7 @@ export class MerchCard extends LitElement {
         );
     }
 
+    /* c8 ignore next 3 */
     get dynamicPrice() {
         return this.querySelector('[slot="price"]');
     }

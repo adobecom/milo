@@ -240,21 +240,21 @@ Try polyfilling it using "@formatjs/intl-pluralrules"
             }
         }
     `),e};var Gt=class Gt{constructor(t){x(this,"card");this.card=t,this.insertVariantStyle()}insertVariantStyle(){if(!Gt.styleMap[this.card.variant]){Gt.styleMap[this.card.variant]=!0;let t=document.createElement("style");t.innerHTML=this.getGlobalCSS(),document.head.appendChild(t)}}get badge(){let t;if(!(!this.card.badgeBackgroundColor||!this.card.badgeColor||!this.card.badgeText))return this.evergreen&&(t=`border: 1px solid ${this.card.badgeBackgroundColor}; border-right: none;`),g`
-        <div
-            id="badge"
-            class="${this.card.variant}-badge"
-            style="background-color: ${this.card.badgeBackgroundColor};
+            <div
+                id="badge"
+                class="${this.card.variant}-badge"
+                style="background-color: ${this.card.badgeBackgroundColor};
                 color: ${this.card.badgeColor};
                 ${t}"
-        >
-            ${this.card.badgeText}
-        </div>
-    `}get cardImage(){return g` <div class="image">
-        <slot name="bg-image"></slot>
-        ${this.badge}
-    </div>`}getGlobalCSS(){return""}get evergreen(){return this.card.classList.contains("intro-pricing")}get promoBottom(){return this.card.classList.contains("promo-bottom")}get headingSelector(){return'[slot="heading-xs"]'}get secureLabelFooter(){let t=this.card.secureLabel?g`<span class="secure-transaction-label"
-              >${this.card.secureLabel}</span
-          >`:"";return g`<footer>${t}<slot name="footer"></slot></footer>`}async adjustTitleWidth(){let t=this.card.getBoundingClientRect().width,r=this.card.badgeElement?.getBoundingClientRect().width||0;t===0||r===0||this.card.style.setProperty("--consonant-merch-card-heading-xs-max-width",`${Math.round(t-r-16)}px`)}postCardUpdateHook(){}connectedCallbackHook(){}disconnectedCallbackHook(){}renderLayout(){}get aemFragmentMapping(){}};x(Gt,"styleMap",{});var O=Gt;function Ae(e,t={},r){let n=document.createElement(e);r instanceof HTMLElement?n.appendChild(r):n.innerHTML=r;for(let[i,o]of Object.entries(t))n.setAttribute(i,o);return n}function ka(){return window.matchMedia("(max-width: 767px)").matches}function Va(){return window.matchMedia("(max-width: 1024px)").matches}var Ra="merch-offer-select:ready",$a="merch-card:ready",Ua="merch-card:action-menu-toggle";var Ei="merch-storage:change",Ti="merch-quantity-selector:change";var Ht="aem:load",Ma="mas:ready";var Da=`
+            >
+                ${this.card.badgeText}
+            </div>
+        `}get cardImage(){return g` <div class="image">
+            <slot name="bg-image"></slot>
+            ${this.badge}
+        </div>`}getGlobalCSS(){return""}get evergreen(){return this.card.classList.contains("intro-pricing")}get promoBottom(){return this.card.classList.contains("promo-bottom")}get headingSelector(){return'[slot="heading-xs"]'}get secureLabelFooter(){let t=this.card.secureLabel?g`<span class="secure-transaction-label"
+                  >${this.card.secureLabel}</span
+              >`:"";return g`<footer>${t}<slot name="footer"></slot></footer>`}async adjustTitleWidth(){let t=this.card.getBoundingClientRect().width,r=this.card.badgeElement?.getBoundingClientRect().width||0;t===0||r===0||this.card.style.setProperty("--consonant-merch-card-heading-xs-max-width",`${Math.round(t-r-16)}px`)}postCardUpdateHook(){}connectedCallbackHook(){}disconnectedCallbackHook(){}renderLayout(){}get aemFragmentMapping(){}};x(Gt,"styleMap",{});var O=Gt;function Ae(e,t={},r){let n=document.createElement(e);r instanceof HTMLElement?n.appendChild(r):n.innerHTML=r;for(let[i,o]of Object.entries(t))n.setAttribute(i,o);return n}function ka(){return window.matchMedia("(max-width: 767px)").matches}function Va(){return window.matchMedia("(max-width: 1024px)").matches}var Ra="merch-offer-select:ready",$a="merch-card:ready",Ua="merch-card:action-menu-toggle";var Ei="merch-storage:change",Ti="merch-quantity-selector:change";var Ht="aem:load",Ma="mas:ready";var Da=`
 :root {
   --consonant-merch-card-catalog-width: 276px;
   --consonant-merch-card-catalog-icon-size: 40px;

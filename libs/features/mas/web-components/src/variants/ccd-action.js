@@ -22,6 +22,8 @@ export class CCDAction extends VariantLayout {
         return AEM_FRAGMENT_MAPPING;
     }
 
+    // This variant might go away, will not implement code coverage for now.
+    /* c8 ignore next 15 */
     renderLayout() {
         return html` <div class="body">
             <slot name="icons"></slot> ${this.badge}

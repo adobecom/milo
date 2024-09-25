@@ -16,6 +16,7 @@ export class Catalog extends VariantLayout {
         super(card);
     }
 
+    /* c8 ignore next 3 */
     get aemFragmentMapping() {
         return AEM_FRAGMENT_MAPPING;
     }

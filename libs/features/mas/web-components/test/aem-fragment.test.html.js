@@ -1,6 +1,7 @@
 import { runTests } from '@web/test-runner-mocha';
 import chai from '@esm-bundle/chai';
 import chaiAsPromised from '@esm-bundle/chai-as-promised';
+import sinon from 'sinon';
 
 import { mockFetch } from './mocks/fetch.js';
 import { withWcs } from './mocks/wcs.js';
@@ -78,6 +79,15 @@ runTests(async () => {
             await expect(aemFragment.updateComplete).to.be.rejectedWith(
                 'AEM fragment cannot be loaded',
             );
+        });
+
+        it('uses ims token to retrieve a fragment', async () => {
+            const [, , , , cardWithIms] = getTemplateContent('cards');
+            const aemFragment = cardWithIms.querySelector('aem-fragment');
+            window.adobeid = { authorize: sinon.stub() };
+            spTheme.append(cardWithIms);
+            await expect(aemFragment.updateComplete);
+            sinon.assert.calledOnce(window.adobeid.authorize);
         });
     });
 });

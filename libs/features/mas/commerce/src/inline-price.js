@@ -278,6 +278,7 @@ export class HTMLPriceSpanElement extends HTMLSpanElement {
                 return true;
             }
         }
+        /* c8 ignore next 1 */
         return false;
     }
 

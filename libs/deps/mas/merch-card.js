@@ -259,21 +259,21 @@ import{LitElement as He}from"../lit-all.min.js";import{LitElement as we,html as 
             }
         }
     `),r};import{html as M}from"../lit-all.min.js";var m=class r{static styleMap={};card;insertVariantStyle(){if(!r.styleMap[this.card.variant]){r.styleMap[this.card.variant]=!0;let e=document.createElement("style");e.innerHTML=this.getGlobalCSS(),document.head.appendChild(e)}}constructor(e){this.card=e,this.insertVariantStyle()}get badge(){let e;if(!(!this.card.badgeBackgroundColor||!this.card.badgeColor||!this.card.badgeText))return this.evergreen&&(e=`border: 1px solid ${this.card.badgeBackgroundColor}; border-right: none;`),M`
-        <div
-            id="badge"
-            class="${this.card.variant}-badge"
-            style="background-color: ${this.card.badgeBackgroundColor};
+            <div
+                id="badge"
+                class="${this.card.variant}-badge"
+                style="background-color: ${this.card.badgeBackgroundColor};
                 color: ${this.card.badgeColor};
                 ${e}"
-        >
-            ${this.card.badgeText}
-        </div>
-    `}get cardImage(){return M` <div class="image">
-        <slot name="bg-image"></slot>
-        ${this.badge}
-    </div>`}getGlobalCSS(){return""}get evergreen(){return this.card.classList.contains("intro-pricing")}get promoBottom(){return this.card.classList.contains("promo-bottom")}get headingSelector(){return'[slot="heading-xs"]'}get secureLabelFooter(){let e=this.card.secureLabel?M`<span class="secure-transaction-label"
-              >${this.card.secureLabel}</span
-          >`:"";return M`<footer>${e}<slot name="footer"></slot></footer>`}async adjustTitleWidth(){let e=this.card.getBoundingClientRect().width,t=this.card.badgeElement?.getBoundingClientRect().width||0;e===0||t===0||this.card.style.setProperty("--consonant-merch-card-heading-xs-max-width",`${Math.round(e-t-16)}px`)}postCardUpdateHook(){}connectedCallbackHook(){}disconnectedCallbackHook(){}renderLayout(){}get aemFragmentMapping(){}};import{html as F,css as Se}from"../lit-all.min.js";function b(r,e={},t){let o=document.createElement(r);t instanceof HTMLElement?o.appendChild(t):o.innerHTML=t;for(let[n,p]of Object.entries(e))o.setAttribute(n,p);return o}function X(){return window.matchMedia("(max-width: 767px)").matches}function ee(){return window.matchMedia("(max-width: 1024px)").matches}var te="merch-offer-select:ready",re="merch-card:ready",oe="merch-card:action-menu-toggle";var B="merch-storage:change",G="merch-quantity-selector:change";var V="aem:load",ne="mas:ready";var ae=`
+            >
+                ${this.card.badgeText}
+            </div>
+        `}get cardImage(){return M` <div class="image">
+            <slot name="bg-image"></slot>
+            ${this.badge}
+        </div>`}getGlobalCSS(){return""}get evergreen(){return this.card.classList.contains("intro-pricing")}get promoBottom(){return this.card.classList.contains("promo-bottom")}get headingSelector(){return'[slot="heading-xs"]'}get secureLabelFooter(){let e=this.card.secureLabel?M`<span class="secure-transaction-label"
+                  >${this.card.secureLabel}</span
+              >`:"";return M`<footer>${e}<slot name="footer"></slot></footer>`}async adjustTitleWidth(){let e=this.card.getBoundingClientRect().width,t=this.card.badgeElement?.getBoundingClientRect().width||0;e===0||t===0||this.card.style.setProperty("--consonant-merch-card-heading-xs-max-width",`${Math.round(e-t-16)}px`)}postCardUpdateHook(){}connectedCallbackHook(){}disconnectedCallbackHook(){}renderLayout(){}get aemFragmentMapping(){}};import{html as F,css as Se}from"../lit-all.min.js";function b(r,e={},t){let o=document.createElement(r);t instanceof HTMLElement?o.appendChild(t):o.innerHTML=t;for(let[n,p]of Object.entries(e))o.setAttribute(n,p);return o}function X(){return window.matchMedia("(max-width: 767px)").matches}function ee(){return window.matchMedia("(max-width: 1024px)").matches}var te="merch-offer-select:ready",re="merch-card:ready",oe="merch-card:action-menu-toggle";var B="merch-storage:change",G="merch-quantity-selector:change";var V="aem:load",ne="mas:ready";var ae=`
 :root {
   --consonant-merch-card-catalog-width: 276px;
   --consonant-merch-card-catalog-icon-size: 40px;
