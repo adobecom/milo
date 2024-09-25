@@ -2,7 +2,8 @@
 /* eslint-disable no-console */
 
 import { createTag, getConfig, loadLink, loadScript, localizeLink } from '../../utils/utils.js';
-import { getEntitlementMap } from './entitlements.js';
+
+const entitlementsPromise = import('./entitlements.js');
 
 /* c8 ignore start */
 const PHONE_SIZE = window.screen.width < 550 || window.screen.height < 550;
@@ -685,6 +686,7 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
 
   const variantInfo = buildVariantInfo(variantNames);
 
+  const { getEntitlementMap } = await entitlementsPromise;
   const entitlementKeys = Object.values(await getEntitlementMap());
   const hasEntitlementTag = entitlementKeys.some((tag) => variantInfo.allNames.includes(tag));
 
@@ -997,18 +999,22 @@ export async function applyPers(manifests, postLCP = false) {
   config.mep.martech = `|${pznVariants.join('--')}|${pznManifests.join('--')}`;
 }
 
-export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => {
+export const combineMepSources = async (persEnabled, promoEnabled, promoUtilsPromise, mepParam) => {
   let persManifests = [];
+  let initialPersManifestsPromises = [];
 
   if (persEnabled) {
-    persManifests = persEnabled.toLowerCase()
+    initialPersManifestsPromises = persEnabled.toLowerCase()
       .split(/,|(\s+)|(\\n)/g)
       .filter((path) => path?.trim())
-      .map((manifestPath) => ({ manifestPath }));
+      .map((manifestPath) => {
+        const normalizedURL = normalizePath(manifestPath);
+        return fetch(normalizedURL, { mode: 'same-origin' });
+      });
   }
 
   if (promoEnabled) {
-    const { default: getPromoManifests } = await import('./promo-utils.js');
+    const { default: getPromoManifests } = await promoUtilsPromise;
     persManifests = persManifests.concat(getPromoManifests(promoEnabled, PAGE_URL.searchParams));
   }
 
@@ -1031,7 +1037,13 @@ export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => 
       }
     });
   }
-  return persManifests;
+  return initialPersManifestsPromises.concat(persManifests
+    .filter((m) => !m.disabled)
+    .map((manifest) => {
+      const normalizedURL = normalizePath(manifest.manifestPath);
+      // loadLink(normalizedURL, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
+      return fetch(normalizedURL, { mode: 'same-origin' });
+    }));
 };
 
 export async function init(enablements = {}) {
@@ -1040,6 +1052,7 @@ export async function init(enablements = {}) {
     mepParam, mepHighlight, mepButton, pzn, promo, target, postLCP,
   } = enablements;
   const config = getConfig();
+  let manifestPromises = [];
   if (!postLCP) {
     config.mep = {
       handleFragmentCommand,
@@ -1052,17 +1065,34 @@ export async function init(enablements = {}) {
       experiments: [],
       geoPrefix: config.locale?.prefix.split('/')[1]?.toLowerCase() || 'en-us',
     };
-    manifests = manifests.concat(await combineMepSources(pzn, promo, mepParam));
-    manifests?.forEach((manifest) => {
-      if (manifest.disabled) return;
-      const normalizedURL = normalizePath(manifest.manifestPath);
-      loadLink(normalizedURL, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
-    });
+
+    const promoUtilsPromise = promo ? import('./promo-utils.js') : null;
+    manifestPromises = manifestPromises
+      .concat(await combineMepSources(pzn, promo, promoUtilsPromise, mepParam));
   }
 
   if (target === true || (target === 'gnav' && postLCP)) {
     const { getTargetPersonalization } = await import('../../martech/martech.js');
     const { targetManifests, targetPropositions } = await getTargetPersonalization();
+    manifests = await Promise.all((await Promise.all(manifestPromises))
+      .map(async (resp) => {
+        try {
+          if (!resp.ok) {
+            /* c8 ignore next 5 */
+            if (resp.status === 404) {
+              throw new Error('File not found');
+            }
+            throw new Error(`Invalid response: ${resp.status} ${resp.statusText}`);
+          }
+          const manifestData = await resp.json();
+          return { manifestData };
+        } catch (e) {
+          /* c8 ignore next 3 */
+          console.log(`Error loading content: ${resp.url}`, e.message || e);
+        }
+        return null;
+      })
+      .filter(Boolean));
     manifests = manifests.concat(targetManifests);
     if (targetPropositions?.length && window._satellite) {
       window._satellite.track('propositionDisplay', targetPropositions);
