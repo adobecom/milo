@@ -1034,6 +1034,28 @@ export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => 
   return persManifests;
 };
 
+const preloadMarqueeImage = () => {
+  let url;
+  const imgUrls = {};
+  const breakpoints = {
+    tabletMin: 600,
+    desktopMin: 1200,
+  };
+  const marqueeImages = document.querySelectorAll('main div:first-child picture img');
+  if (marqueeImages?.length) {
+    imgUrls.mobile = marqueeImages[0]?.src;
+    imgUrls.tablet = marqueeImages[1]?.src;
+    imgUrls.desktop = marqueeImages[2]?.src;
+  }
+  switch (true) {
+    case window.innerWidth >= breakpoints.desktopMin: url = imgUrls.desktop; break;
+    case window.innerWidth >= breakpoints.tabletMin
+      && window.innerWidth < breakpoints.desktopMin: url = imgUrls.tablet; break;
+    default: url = imgUrls.mobile;
+  }
+  if (url) loadLink(url, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
+};
+
 export async function init(enablements = {}) {
   let manifests = [];
   const {
@@ -1059,7 +1081,7 @@ export async function init(enablements = {}) {
       loadLink(normalizedURL, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
     });
   }
-
+  preloadMarqueeImage();
   if (target === true || (target === 'gnav' && postLCP)) {
     const { getTargetPersonalization } = await import('../../martech/martech.js');
     const { targetManifests, targetPropositions } = await getTargetPersonalization();
