@@ -1307,7 +1307,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a:not(.con-button) {
     overflow: hidden;
     border-radius: 50%;
   }
-`;var wl={backgroundImage:{tag:"div",slot:"image"},description:{tag:"div",slot:"body-s"},ctas:{size:"l"},allowedSizes:["wide"]},dt=class extends O{getGlobalCSS(){return Wa}get aemFragmentMapping(){return wl}renderLayout(){return g` <div class="content">
+`;var wl={backgroundImage:{tag:"div",slot:"image"},description:{tag:"div",slot:"body-s"},ctas:{size:"s"},allowedSizes:["wide"]},dt=class extends O{getGlobalCSS(){return Wa}get aemFragmentMapping(){return wl}renderLayout(){return g` <div class="content">
                 <slot name="icons"></slot> ${this.badge}
                 <slot name="body-s"></slot>
                 <slot name="footer"></slot>

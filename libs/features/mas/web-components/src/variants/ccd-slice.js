@@ -5,7 +5,7 @@ import { CSS } from './ccd-slice.css.js';
 const AEM_FRAGMENT_MAPPING = {
     backgroundImage: { tag: 'div', slot: 'image' },
     description: { tag: 'div', slot: 'body-s' },
-    ctas: { size: 'l' },
+    ctas: { size: 's' },
     allowedSizes: ['wide'],
 };
 
