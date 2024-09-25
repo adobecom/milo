@@ -1085,7 +1085,7 @@ export async function init(enablements = {}) {
             throw new Error(`Invalid response: ${resp.status} ${resp.statusText}`);
           }
           const manifestData = await resp.json();
-          return { manifestData };
+          return { manifestData, manifestPath: resp.url };
         } catch (e) {
           /* c8 ignore next 3 */
           console.log(`Error loading content: ${resp.url}`, e.message || e);
