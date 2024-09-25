@@ -24,7 +24,7 @@ See [MAS](mas.html) introduction to learn more.
 >
 ```
 
-#### Demo<br>
+#### Demo
 
 This is a functional **buy now** button: <a href="#" is="checkout-link" data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M">Buy now</a>
 
@@ -58,7 +58,7 @@ This is a functional **buy now** button: <a href="#" is="checkout-link" data-wcs
 >
 ```
 
-##### Demo<br>
+##### Demo
 
 <a href="#" is="checkout-link" data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M" data-checkout-workflow-step="recommendation">Buy now</a>
 
@@ -76,7 +76,7 @@ Two photoshop and three acrobat pro single apps (TEAMS):
 >
 ```
 
-##### Demo<br>
+##### Demo
 
 <a href="#" is="checkout-link" data-wcs-osi="yHKQJK2VOMSY5bINgg7oa2ov9RnmnU1oJe4NOg4QTYI,vV01ci-KLH6hYdRfUKMBFx009hdpxZcIRG1-BY_PutE" data-quantity="2,3">Buy now</a>
 
@@ -92,7 +92,7 @@ Two photoshop and three acrobat pro single apps (TEAMS):
 >
 ```
 
-##### Demo<br>
+##### Demo
 
 <a href="#" is="checkout-link" data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M" data-extra-options="{&quot;promoid&quot;:&quot;promo12345&quot;,&quot;mv&quot;:1,&quot;mv2&quot;:2}">Buy now</a>
 
@@ -108,7 +108,7 @@ Two photoshop and three acrobat pro single apps (TEAMS):
 >
 ```
 
-##### Demo<br>
+##### Demo
 
 <a href="#" is="checkout-link" data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M" data-ims-country="JP">Buy now</a>
 
