@@ -1,6 +1,4 @@
-import { createTag, loadStyle, getConfig } from './utils.js';
-
-const { miloLibs, codeRoot } = getConfig();
+import { createTag } from './utils.js';
 
 export function decorateButtons(el, size) {
   const buttons = el.querySelectorAll('em a, strong a, p > a strong');
@@ -314,6 +312,7 @@ export function decorateMultiViewport(el) {
   }
   return foreground;
 }
+<<<<<<< HEAD
 
 export async function loadCDT(el, classList) {
   try {
@@ -326,3 +325,5 @@ export async function loadCDT(el, classList) {
     window.lana?.log(`Failed to load countdown timer module: ${error}`, { tags: 'countdown-timer' });
   }
 }
+=======
+>>>>>>> fb228f18 (Revert "MWPW-156749: Fix video CLS " (#2899) (#2900))
