@@ -335,8 +335,8 @@ export default async function loadGeoRoutingToaster(
   getMetadata = getMetadataFunc;
   loadStyle = loadStyleFunc;
 
-  const { miloLibs, codeRoot } = config;
-  await new Promise((resolve) => { loadStyle(`${miloLibs || codeRoot}/features/georouting-toaster/georouting-toaster.css`, resolve); });
+  // const { miloLibs, codeRoot } = config;
+  // await new Promise((resolve) => { loadStyle(`${miloLibs || codeRoot}/features/georouting-toaster/georouting-toaster.css`, resolve); });
 
   const urls = [
     `${config.contentRoot ?? ''}/georoutingv2.json`,
