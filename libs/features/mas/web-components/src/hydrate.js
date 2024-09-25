@@ -58,7 +58,7 @@ export async function hydrate(fragmentData, merchCard) {
             createTag(
                 aemFragmentMapping.backgroundImage.tag,
                 { slot: aemFragmentMapping.backgroundImage.slot },
-                `<img loading="lazy" src="${fragment.backgroundImage}" width="600" height="362">`,
+                `<img loading="lazy" src="${fragment.backgroundImage}" />`,
             ),
         );
     }
