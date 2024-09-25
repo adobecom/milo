@@ -112,6 +112,25 @@ export const LOCALES = {
 const URL_ENCODED_COMMA = '%2C';
 export const fgHeaderName = 'X-Adobe-Floodgate';
 export const fgHeaderValue = 'pink';
+export const URL_SAFE_CHARS = [
+  // Digits (10)
+  '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+
+  // Uppercase letters (26)
+  'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+  'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+
+  // Lowercase letters (26, including 'z')
+  'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+  'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+
+  // Unreserved punctuation (4)
+  '-', '.', '_', '~',
+
+  // Sub-delimiters and additional characters (19)
+  '!', '$', '&', "'", '(', ')', '*', '+', ',', ';', '=', ':', '@',
+  '/', '?', '[', ']', '`', '^' // Added '^' to reach 85 characters
+];
 
 const pageConfig = pageConfigHelper();
 const pageLocales = Object.keys(pageConfig.locales || {});
@@ -196,6 +215,80 @@ export const decodeCompressedString = async (txt) => {
   const stream = b64toStream(txt);
   const resp = await decompressStream(stream);
   return responseToJSON(resp);
+};
+
+export const b85DecodeCompressedString = async (txt) => {
+  if (!window.DecompressionStream) {
+    await import('../../deps/compression-streams-pollyfill.js');
+  }
+
+  // Mapping from character to its index in URL_SAFE_CHARS
+  const URL_SAFE_CHARS_MAP = {};
+  for (let i = 0; i < URL_SAFE_CHARS.length; i++) {
+    URL_SAFE_CHARS_MAP[URL_SAFE_CHARS[i]] = i;
+  }
+
+  // Base85 decoding function using BigInt and URL-safe characters
+  function base85Decode(input) {
+    input = input.replace(/\s+/g, '');
+    input = decodeURIComponent(input);
+
+    const outputBytes = [];
+    let value = BigInt(0);
+    let count = 0;
+
+    for (let i = 0; i < input.length; i++) {
+        const c = input[i];
+
+        if (!(c in URL_SAFE_CHARS_MAP)) {
+            throw new Error(`Invalid character '${c}' in Base85 encoding.`);
+        }
+
+        value = value * BigInt(85) + BigInt(URL_SAFE_CHARS_MAP[c]);
+        count++;
+
+        if (count === 5) {
+            const bytes = [];
+            for (let j = 3; j >= 0; j--) {
+                bytes[j] = Number(value & BigInt(0xFF));
+                value >>= BigInt(8);
+            }
+            outputBytes.push(...bytes);
+            value = BigInt(0);
+            count = 0;
+        }
+    }
+
+    // Handle remaining characters
+    if (count > 0) {
+        for (let i = count; i < 5; i++) {
+            value = value * BigInt(85) + BigInt(84); // Padding with the highest value
+        }
+
+        const bytes = [];
+        for (let j = 3; j >= 0; j--) {
+            bytes[j] = Number(value & BigInt(0xFF));
+            value >>= BigInt(8);
+        }
+        const bytesToExtract = count - 1;
+        outputBytes.push(...bytes.slice(0, bytesToExtract));
+    }
+
+    return new Uint8Array(outputBytes);
+  }
+
+  async function decompressBytes(compressedBytes) {
+    const decompressedStream = new Blob([compressedBytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+    const decompressedArrayBuffer = await new Response(decompressedStream).arrayBuffer();
+    const decoder = new TextDecoder();
+    const decompressedStr = decoder.decode(decompressedArrayBuffer);
+
+    return decompressedStr;
+  }
+
+  const decodedBytes = base85Decode(txt);
+  const decompressedStr = await decompressBytes(decodedBytes);
+  return JSON.parse(decompressedStr);
 };
 
 export const loadCaasFiles = async () => {

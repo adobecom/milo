@@ -18,6 +18,7 @@ import {
 import Accordion from '../../ui/controls/Accordion.js';
 import {
   decodeCompressedString,
+  b85DecodeCompressedString,
   defaultState,
   initCaas,
   isValidHtmlUrl,
@@ -25,6 +26,7 @@ import {
   loadCaasFiles,
   loadCaasTags,
   loadStrings,
+  URL_SAFE_CHARS,
 } from '../caas/utils.js';
 import { Input as FormInput, Select as FormSelect } from '../../ui/controls/formControls.js';
 import TagSelect from '../../ui/controls/TagSelector.js';
@@ -49,10 +51,10 @@ const getHashConfig = async () => {
   window.location.hash = '';
 
   const encodedConfig = hash.startsWith('#') ? hash.substring(1) : hash;
-  const config = encodedConfig.startsWith('~~')
-    ? await decodeCompressedString(encodedConfig.substring(2))
-    : parseEncodedConfig(encodedConfig);
-  return config;
+
+  if (encodedConfig.startsWith('~~')) return decodeCompressedString(encodedConfig.substring(2));
+  if (encodedConfig.startsWith('++')) return b85DecodeCompressedString(encodedConfig.substring(2));
+  return parseEncodedConfig(encodedConfig);
 };
 
 const caasFilesLoaded = loadCaasFiles();
@@ -789,27 +791,54 @@ const getEncodedObject = async (obj, replacer = null) => {
     await import('../../deps/compression-streams-pollyfill.js');
   }
 
-  const objToStream = (data) => new Blob(
-    [JSON.stringify(data, replacer)],
-    { type: 'text/plain' },
-  ).stream();
+  async function compressString(inputStr) {
+    const encoder = new TextEncoder();
+    const inputBytes = encoder.encode(inputStr);
 
-  const compressStream = async (stream) => new Response(
-    // eslint-disable-next-line no-undef
-    stream.pipeThrough(new CompressionStream('gzip')),
-  );
+    const compressedStream = new Blob([inputBytes]).stream().pipeThrough(new CompressionStream('gzip'));
+    const compressedArrayBuffer = await new Response(compressedStream).arrayBuffer();
+    const compressedBytes = new Uint8Array(compressedArrayBuffer);
 
-  const responseToBuffer = async (res) => {
-    const blob = await res.blob();
-    return blob.arrayBuffer();
-  };
+    return compressedBytes;
+  }
 
-  const b64encode = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf)));
+  // Base85 encoding function using BigInt and URL-safe characters
+  function base85Encode(bytes) {
+    let output = '';
+    let i = 0;
+    while (i < bytes.length) {
+        let chunkSize = Math.min(4, bytes.length - i);
+        let value = BigInt(0);
+        for (let j = 0; j < chunkSize; j++) {
+            value = (value << BigInt(8)) | BigInt(bytes[i + j]);
+        }
+        // Pad value if chunkSize < 4
+        if (chunkSize < 4) {
+            value <<= BigInt((4 - chunkSize) * 8);
+        }
 
-  const stream = objToStream(obj);
-  const compressedResponse = await compressStream(stream);
-  const buffer = await responseToBuffer(compressedResponse);
-  return b64encode(buffer);
+        // Generate the encoded string
+        let encoded = '';
+        for (let j = 0; j < 5; j++) {
+            let index = Number(value % BigInt(85));
+            let char = URL_SAFE_CHARS[index];
+            encoded = char + encoded;
+            value = value / BigInt(85);
+        }
+        if (chunkSize < 4) {
+            // Since 'encoded' is built from right to left, extract from the start
+            encoded = encoded.substring(0, chunkSize + 1);
+        }
+        output += encoded;
+
+        i += chunkSize;
+    }
+    return output;
+  }
+
+  const compressedBytes = await compressString(JSON.stringify(obj, replacer));
+  const encodedStr = base85Encode(compressedBytes);
+  return encodedStr;
 };
 
 /* c8 ignore start */
@@ -842,8 +871,8 @@ const CopyBtn = () => {
     url.search = '';
     const reducedState = removeDefaultsFromState(state);
     const hashStr = await getEncodedObject(reducedState, fgKeyReplacer);
-    // starts with ~~ to differentiate from old hash format
-    url.hash = `~~${hashStr}`;
+    // starts with ++ to differentiate from old hash format
+    url.hash = `++${hashStr}`;
     return url.href;
   };
 
