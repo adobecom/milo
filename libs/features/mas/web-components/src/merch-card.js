@@ -282,7 +282,7 @@ export class MerchCard extends LitElement {
             EVENT_MERCH_STORAGE_CHANGE,
             this.handleStorageChange,
         );
-        this.removeEventListener(EVENT_LOAD, this.handleLoadEvent);
+        this.removeEventListener(EVENT_MAS_LOAD, this.handleLoadEvent);
     }
 
     // custom methods
