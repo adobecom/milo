@@ -35,6 +35,12 @@
   display: flex;
 }
 
+html[dir="rtl"] .horizontal .timer-block {
+  margin-right: 10px;
+  margin-left: 0px;
+  flex-direction: row-reverse;
+}
+
 .horizontal .timer-block {
   margin-left: 10px;
 }
@@ -62,6 +68,10 @@
 .dark .timer-box {
   background-color: #EBEBEB;
   color: #1D1D1D;
+}
+
+html[dir="rtl"] .timer-unit-container {
+  flex-direction: row-reverse;
 }
 
 .timer-unit-container {
