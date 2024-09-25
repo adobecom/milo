@@ -697,7 +697,7 @@ class Gnav {
         this.elements.mainNav.style.removeProperty('padding-bottom');
       } else {
         const offset = Math.ceil(this.elements.topnavWrapper.getBoundingClientRect().bottom);
-        this.elements.mainNav.style.setProperty('padding-bottom', `${offset}px`);
+        this.elements.mainNav.style.setProperty('padding-bottom', `${2 * offset}px`);
       }
     };
 
