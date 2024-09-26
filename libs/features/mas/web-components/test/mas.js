@@ -1,4 +1,4 @@
-import { init } from '@adobe/mas-commerce';
+import { init } from '@adobecom/mas-commerce';
 import '../../src/merch-card.js';
 import '../../src/merch-icon.js';
 import '../../src/merch-datasource.js';
