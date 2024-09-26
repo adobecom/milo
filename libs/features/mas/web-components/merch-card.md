@@ -12,9 +12,9 @@ Designs:
 
 **CCD**: https://www.figma.com/proto/7tUtNgFelfMjgPoJ5QcE1k/Merch%40Scale-Frameworks?node-id=2077-63597&t=cWfdzWlga79eyjyI-1
 
-## examples
+## Examples
 
-### Odin/AEM Fragments
+### With a Odin/AEM Fragment
 
 ```html {.demo .light}
 <merch-card id="card1">
@@ -59,7 +59,7 @@ Designs:
 
 ```
 
-### Static HTML
+### With static content (dynamic pricing)
 
 ```html {.demo .light}
 <merch-card variant="plans" badge-color="#EDCC2D" badge-background-color="#000000"" badge-text=" Best value">
