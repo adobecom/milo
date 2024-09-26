@@ -1080,3 +1080,39 @@ button.dialog-close {
   padding: 5px;
   box-sizing: border-box;
 }
+
+.picker {
+  position: absolute;
+  margin-top: 2px;
+  background: #FFF;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  border: 1px solid #B1B1B1;
+  border-radius: 4px;
+  padding-inline-start: 0;
+  min-width: 200px; /* Adjusted min-width for better dropdown size */
+  z-index: 110; /* Ensure dropdown appears above other elements */
+  max-height: 200px; /* Add max-height with scrolling */
+  overflow-y: auto; /* Enable scroll if there are many options */
+}
+
+.picker li {
+  list-style-type: none;
+}
+
+.picker li a {
+  display: block;
+  padding: 10px 12px;
+  color: #222;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.picker li a:hover {
+  background-color: #e5e5e5;
+}
+.icon-milo.down-arrow {
+  float: right;
+  margin-left: 4px;
+  top: 3px;
+  filter: brightness(0) invert(1);
+}
