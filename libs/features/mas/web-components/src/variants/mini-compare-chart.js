@@ -10,15 +10,8 @@ export class MiniCompareChart extends VariantLayout {
     super(card);
   }
 
-  #container;
-
   getRowMinHeightPropertyName = (index) =>
     `--consonant-merch-card-footer-row-${index}-min-height`;
-
-  getContainer() {
-    this.#container = this.#container ?? this.card.closest('[class*="-merch-cards"]') ?? this.card.parentElement;
-    return this.#container;
-  }
 
   getGlobalCSS() {
     return CSS;
@@ -35,28 +28,10 @@ export class MiniCompareChart extends VariantLayout {
     return html`<footer>${secureLabel}<slot name="footer"></slot></footer>`;
   }
 
-  updateMiniCompareElementMinHeight (el, name) {
-    const elMinHeightPropertyName = `--consonant-merch-card-mini-compare-${name}-height`;
-    const height = Math.max(
-        0,
-        parseFloat(window.getComputedStyle(el).height) || 0,
-    );
-    const maxMinHeight =
-        parseFloat(
-            this.getContainer().style.getPropertyValue(elMinHeightPropertyName),
-        ) || 0;
-    if (height > maxMinHeight) {
-        this.getContainer().style.setProperty(
-            elMinHeightPropertyName,
-            `${height}px`,
-        );
-    }
-  }
-
   adjustMiniCompareBodySlots () {
     if (this.card.getBoundingClientRect().width <= 2) return;
   
-    this.updateMiniCompareElementMinHeight(
+    this.updateCardElementMinHeight(
         this.card.shadowRoot.querySelector('.top-section'),
         'top-section',
     );
@@ -73,12 +48,12 @@ export class MiniCompareChart extends VariantLayout {
     ];
   
     slots.forEach((slot) =>
-        this.updateMiniCompareElementMinHeight(
+        this.updateCardElementMinHeight(
             this.card.shadowRoot.querySelector(`slot[name="${slot}"]`),
             slot,
         ),
     );
-    this.updateMiniCompareElementMinHeight(
+    this.updateCardElementMinHeight(
         this.card.shadowRoot.querySelector('footer'),
         'footer',
     );
@@ -88,7 +63,7 @@ export class MiniCompareChart extends VariantLayout {
     );
     if (badge && badge.textContent !== '') {
         this.getContainer().style.setProperty(
-            '--consonant-merch-card-mini-compare-top-section-mobile-height',
+            '--consonant-merch-card-mini-compare-chart-top-section-mobile-height',
             '32px',
         );
     }
@@ -158,7 +133,7 @@ export class MiniCompareChart extends VariantLayout {
         display: block;
     }
     :host([variant='mini-compare-chart']) footer {
-        min-height: var(--consonant-merch-card-mini-compare-footer-height);
+        min-height: var(--consonant-merch-card-mini-compare-chart-footer-height);
         padding: var(--consonant-merch-spacing-xs);
     }
 
@@ -166,7 +141,7 @@ export class MiniCompareChart extends VariantLayout {
     :host([variant='mini-compare-chart']) .top-section {
         padding-top: var(--consonant-merch-spacing-s);
         padding-inline-start: var(--consonant-merch-spacing-s);
-        height: var(--consonant-merch-card-mini-compare-top-section-height);
+        height: var(--consonant-merch-card-mini-compare-chart-top-section-height);
     }
 
     @media screen and ${unsafeCSS(TABLET_DOWN)} {
@@ -194,35 +169,35 @@ export class MiniCompareChart extends VariantLayout {
     }
     /* mini-compare card heights for the slots: heading-m, body-m, heading-m-price, price-commitment, offers, promo-text, footer */
     :host([variant='mini-compare-chart']) slot[name='heading-m'] {
-        min-height: var(--consonant-merch-card-mini-compare-heading-m-height);
+        min-height: var(--consonant-merch-card-mini-compare-chart-heading-m-height);
     }
     :host([variant='mini-compare-chart']) slot[name='body-m'] {
-        min-height: var(--consonant-merch-card-mini-compare-body-m-height);
+        min-height: var(--consonant-merch-card-mini-compare-chart-body-m-height);
     }
     :host([variant='mini-compare-chart']) slot[name='heading-m-price'] {
         min-height: var(
-            --consonant-merch-card-mini-compare-heading-m-price-height
+            --consonant-merch-card-mini-compare-chart-heading-m-price-height
         );
     }
     :host([variant='mini-compare-chart']) slot[name='body-xxs'] {
         min-height: var(
-            --consonant-merch-card-mini-compare-body-xxs-height
+            --consonant-merch-card-mini-compare-chart-body-xxs-height
         );
     }
     :host([variant='mini-compare-chart']) slot[name='price-commitment'] {
         min-height: var(
-            --consonant-merch-card-mini-compare-price-commitment-height
+            --consonant-merch-card-mini-compare-chart-price-commitment-height
         );
     }
     :host([variant='mini-compare-chart']) slot[name='offers'] {
-        min-height: var(--consonant-merch-card-mini-compare-offers-height);
+        min-height: var(--consonant-merch-card-mini-compare-chart-offers-height);
     }
     :host([variant='mini-compare-chart']) slot[name='promo-text'] {
-        min-height: var(--consonant-merch-card-mini-compare-promo-text-height);
+        min-height: var(--consonant-merch-card-mini-compare-chart-promo-text-height);
     }
     :host([variant='mini-compare-chart']) slot[name='callout-content'] {
         min-height: var(
-            --consonant-merch-card-mini-compare-callout-content-height
+            --consonant-merch-card-mini-compare-chart-callout-content-height
         );
     }
   `;

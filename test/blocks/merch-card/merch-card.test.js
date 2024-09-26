@@ -497,3 +497,16 @@ describe('Viewport Responsiveness without Sinon', () => {
     expect(bigPrice.style.fontSize).to.equal('16px');
   });
 });
+
+describe('Product Merch Card', () => {
+  it('Supports Product Merch card with callout', async () => {
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/product.html');
+    const merchCard = await init(document.querySelector('.product'));
+
+    const calloutSlot = merchCard.querySelector('[slot="callout-content"]');
+    expect(calloutSlot).to.exist;
+
+    const lowerBodySlot = merchCard.querySelector('[slot="body-lower"]');
+    expect(lowerBodySlot).to.exist;
+  });
+});
