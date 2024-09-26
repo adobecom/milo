@@ -31,18 +31,20 @@
   margin: 0 2px 27px;
 }
 
+.timer-separator {
+  margin: 0px 2px;
+}
+
 .timer-block {
   display: flex;
 }
 
-html[dir="rtl"] .horizontal .timer-block {
-  margin-right: 10px;
-  margin-left: 0px;
-  flex-direction: row-reverse;
+.countdown-timer .horizontal {
+  column-gap: 10px;
 }
 
-.horizontal .timer-block {
-  margin-left: 10px;
+html[dir="rtl"] .horizontal .timer-block {
+  flex-direction: row-reverse;
 }
 
 .timer-fragment {
