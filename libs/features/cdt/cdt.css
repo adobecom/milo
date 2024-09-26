@@ -16,7 +16,7 @@
 .timer-label {
   font-size: 16px;
   font-weight: 700;
-  height: 27px;
+  line-height: 27px;
 }
 
 .light .timer-label {
@@ -33,6 +33,7 @@
 
 .timer-separator {
   margin: 0px 2px;
+  line-height: 27px;
 }
 
 .timer-block {
@@ -53,6 +54,7 @@
   font-size: 18px;
   font-weight: 700;
   text-align: center;
+  line-height: 27px;
 }
 
 .light .timer-box {
@@ -80,6 +82,7 @@ html[dir="rtl"] .timer-unit-container {
   font-size: 14px;
   font-weight: 400;
   text-align: start;
+  line-height: 27px;
 }
 
 .light .timer-unit-label {
