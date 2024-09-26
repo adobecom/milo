@@ -639,9 +639,12 @@ class Gnav {
     const state = getMetadata('app-prompt')?.toLowerCase();
     const entName = getMetadata('app-prompt-entitlement')?.toLowerCase();
     const promptPath = getMetadata('app-prompt-path')?.toLowerCase();
+    const hasMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i.test(navigator.userAgent);
+
     if (state === 'off'
       || !window.adobeIMS?.isSignedInUser()
       || !isDesktop.matches
+      || hasMobileUA
       || !entName?.length
       || !promptPath?.length) return;
 
