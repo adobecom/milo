@@ -107,6 +107,13 @@ export const CONFIG = {
         name: 'help',
         attributes: { children: getHelpChildren() },
       },
+      jarvis: {
+        name: 'jarvis',
+        attributes: {
+          appid: getConfig().jarvis?.id,
+          callbacks: getConfig().jarvis?.callbacks,
+        },
+      },
     },
   },
 };
