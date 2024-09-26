@@ -42,6 +42,14 @@ import {
 
 import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
 
+function getHelpChildren() {
+  const { unavHelpChildren } = getConfig();
+  return unavHelpChildren || [
+    { type: 'Support' },
+    { type: 'Community' },
+  ];
+}
+
 export const CONFIG = {
   icons: isDarkMode() ? darkIcons : icons,
   delays: {
@@ -97,13 +105,7 @@ export const CONFIG = {
       },
       help: {
         name: 'help',
-        attributes: {
-          children: [
-            { type: 'Support' },
-            { type: 'Community' },
-            // { type: 'Jarvis', appid: window.adobeid?.client_id },
-          ],
-        },
+        attributes: { children: getHelpChildren() },
       },
     },
   },
@@ -1025,27 +1027,28 @@ const getSource = async () => {
 };
 
 export default async function init(block) {
-  try {
-    const { mep } = getConfig();
-    const sourceUrl = await getSource();
-    const [url, hash = ''] = sourceUrl.split('#');
-    if (hash === '_noActiveItem') {
-      setDisableAEDState();
-    }
-    const content = await fetchAndProcessPlainHtml({ url });
-    if (!content) return null;
-    const gnav = new Gnav({
-      content,
-      block,
-    });
-    gnav.init();
-    block.setAttribute('daa-im', 'true');
-    const mepMartech = mep?.martech || '';
-    block.setAttribute('daa-lh', `gnav|${getExperienceName()}${mepMartech}`);
-    if (isDarkMode()) block.classList.add('feds--dark');
-    return gnav;
-  } catch (e) {
-    lanaLog({ message: 'Could not create global navigation.', e, tags: 'errorType=error,module=gnav' });
-    return null;
+  const { mep } = getConfig();
+  const sourceUrl = await getSource();
+  const [url, hash = ''] = sourceUrl.split('#');
+  if (hash === '_noActiveItem') {
+    setDisableAEDState();
   }
+  const content = await fetchAndProcessPlainHtml({ url });
+  if (!content) {
+    const error = new Error('Could not create global navigation. Content not found!');
+    error.tags = 'errorType=error,module=gnav';
+    error.url = url;
+    lanaLog({ message: error.message, error, tags: 'errorType=error,module=gnav' });
+    throw error;
+  }
+  const gnav = new Gnav({
+    content,
+    block,
+  });
+  gnav.init();
+  block.setAttribute('daa-im', 'true');
+  const mepMartech = mep?.martech || '';
+  block.setAttribute('daa-lh', `gnav|${getExperienceName()}${mepMartech}`);
+  if (isDarkMode()) block.classList.add('feds--dark');
+  return gnav;
 }

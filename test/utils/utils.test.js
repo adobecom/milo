@@ -60,6 +60,28 @@ describe('Utils', () => {
     expect(resp.json()).to.be.true;
   });
 
+  describe('core-functionality', () => {
+    it('preloads blocks for performance reasons', async () => {
+      document.head.innerHTML = head;
+      document.body.innerHTML = await readFile({ path: './mocks/marquee.html' });
+      await utils.loadArea();
+      const scriptPreload = document.head.querySelector('link[href*="/libs/blocks/marquee/marquee.js"]');
+      const marqueeDecoratePreload = document.head.querySelector('link[href*="/libs/utils/decorate.js"]');
+      const stylePreload = document.head.querySelector('link[href*="/libs/blocks/marquee/marquee.css"]');
+      expect(marqueeDecoratePreload).to.exist;
+      expect(scriptPreload).to.exist;
+      expect(stylePreload).to.exist;
+    });
+  });
+
+  it('renders global navigation when header tag is present', async () => {
+    const bodyWithheader = await readFile({ path: './mocks/body-gnav.html' });
+    document.head.innerHTML = head;
+    document.body.innerHTML = bodyWithheader;
+    await utils.loadArea();
+    expect(document.querySelector('.global-navigation')).to.exist;
+  });
+
   describe('with body', () => {
     beforeEach(async () => {
       window.fetch = mockFetch({ payload: { data: '' } });
