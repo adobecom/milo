@@ -37,10 +37,7 @@
 
 .timer-block {
   display: flex;
-}
-
-.countdown-timer .horizontal {
-  column-gap: 10px;
+  margin-inline-start: 10px;
 }
 
 html[dir="rtl"] .horizontal .timer-block {
