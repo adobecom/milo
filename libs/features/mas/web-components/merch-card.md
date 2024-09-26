@@ -53,8 +53,6 @@ Designs:
 </script>
 ```
 
-#### Demo {.demo}
-
 #### Logs
 
 ```html {#log}
@@ -82,9 +80,6 @@ Designs:
   </div>
 </merch-card>
 ```
-
-#### Demo {.demo}
-
 
 ### Attributes
 
