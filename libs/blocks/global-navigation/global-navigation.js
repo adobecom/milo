@@ -1045,7 +1045,7 @@ export default async function init(block) {
     content,
     block,
   });
-  gnav.init();
+  await gnav.init();
   block.setAttribute('daa-im', 'true');
   const mepMartech = mep?.martech || '';
   block.setAttribute('daa-lh', `gnav|${getExperienceName()}${mepMartech}`);
