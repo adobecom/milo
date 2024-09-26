@@ -1225,7 +1225,7 @@ export function partition(arr, fn) {
   );
 }
 
-const preloadBlockResources = (blocks = []) => blocks.map((block) => {
+export const preloadBlockResources = (blocks = []) => blocks.map((block) => {
   if (block.classList.contains('hide-block')) return null;
   const { blockPath, hasStyles, name } = getBlockData(block);
   if (['marquee', 'hero-marquee'].includes(name)) {
