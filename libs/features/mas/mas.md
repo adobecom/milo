@@ -32,7 +32,7 @@ MAS includes the following key components:
     - Core commerce for basic functionality
     - UI components for user interface elements
 
-5. **mas.js**: A JavaScript library to enable "4" on any page. [mas.js documentation](/libs/features/mas/docs/mas.js.html)
+5. **mas.js**: A JavaScript library to enable "4" on any page. [mas.js documentation](/libs/features/mas/docs/mas.js.html){.con-button .blue}
 
 ## Terminology
 
