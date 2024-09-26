@@ -135,8 +135,8 @@ async function decorateLockup(lockupArea, el) {
 async function decorateForegroundText(el, container) {
   const text = container?.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
   text?.classList.add('text');
-  if (el.classList.contains('countdown-timer') && !el.matches('.pill, .ribbon')) {
-    await Promise.resolve(loadCDT(text, el.classList));
+  if (el.matches('.countdown-timer') && !el.matches('.pill, .ribbon')) {
+    await loadCDT(text, el.classList);
   }
   const iconArea = text?.querySelector('p:has(picture)');
   iconArea?.classList.add('icon-area');
