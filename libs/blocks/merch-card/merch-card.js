@@ -359,6 +359,22 @@ const simplifyHrs = (el) => {
       hr.parentElement.replaceWith(hr);
     }
   });
+  if (el.variant === PRODUCT) {
+    const calloutContent = el.querySelector('div[slot="callout-content"]');
+    const bodySlot = el.querySelector('div[slot="body-xs"]');
+    if (calloutContent && bodySlot) {
+      const bodyLowerContent = createTag('div', { slot: 'body-lower' });
+      const elements = [...bodySlot.children];
+      elements.forEach((element) => {
+        if (element.tagName !== 'P') {
+          bodyLowerContent.append(element);
+        }
+      });
+      if (bodyLowerContent.childNodes.length > 0) {
+        calloutContent.parentElement.appendChild(bodyLowerContent);
+      }
+    }
+  }
 };
 
 const getMiniCompareChartFooterRows = (el) => {
@@ -496,7 +512,7 @@ export default async function init(el) {
     }
   }
   let footerRows;
-  if ([MINI_COMPARE_CHART, PLANS, SEGMENT].includes(cardType)) {
+  if ([MINI_COMPARE_CHART, PLANS, SEGMENT, PRODUCT].includes(cardType)) {
     intersectionObserver.observe(merchCard);
   }
   if (cardType === MINI_COMPARE_CHART) {

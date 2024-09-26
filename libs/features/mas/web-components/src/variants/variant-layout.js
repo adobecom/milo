@@ -5,12 +5,38 @@ export class VariantLayout {
 
   card;
 
+  #container;
+
+  getContainer() {
+    this.#container = this.#container ?? this.card.closest('[class*="-merch-cards"]') ?? this.card.parentElement;
+    return this.#container;
+  }
+
   insertVariantStyle() {
     if (!VariantLayout.styleMap[this.card.variant]) {
       VariantLayout.styleMap[this.card.variant] = true;
       const styles = document.createElement('style');
       styles.innerHTML = this.getGlobalCSS();
       document.head.appendChild(styles);
+    }
+  }
+
+  updateCardElementMinHeight(el, name) {
+    const elMinHeightPropertyName = `--consonant-merch-card-${this.card.variant}-${name}-height`;
+    const height = Math.max(
+      0,
+      parseInt(window.getComputedStyle(el).height) || 0,
+    );
+    const maxMinHeight =
+      parseInt(
+        this.getContainer().style.getPropertyValue(elMinHeightPropertyName),
+      ) || 0;
+
+    if (height > maxMinHeight) {
+      this.getContainer().style.setProperty(
+        elMinHeightPropertyName,
+        `${height}px`,
+      );
     }
   }
 

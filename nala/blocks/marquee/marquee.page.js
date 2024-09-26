@@ -4,12 +4,16 @@ export default class Marquee {
     // marquee types locators
     this.marquee = page.locator('.marquee').nth(nth);
     this.marqueeLight = page.locator('.marquee.light');
+    this.marqueeLightXxlButton = page.locator('.marquee.light.xxl-button');
     this.marqueeSmall = page.locator('.marquee.small');
     this.marqueeSmallLight = page.locator('.marquee.small.light');
+    this.marqueeDark = page.locator('.marquee.dark');
     this.marqueeSmallDark = page.locator('.marquee.small.dark');
     this.marqueeLarge = page.locator('.marquee.large');
     this.marqueeLargeLight = page.locator('.marquee.large.light');
     this.marqueeLargeDark = page.locator('.marquee.large.dark');
+    this.marqueeLargeStandardDark = page.locator('.marquee.large.standard.dark');
+    this.marqueeLargeCompactDark = page.locator('.marquee.large.compact.dark');
     this.marqueeQuiet = page.locator('.marquee.quiet');
     this.marqueeInline = page.locator('.marquee');
     this.marqueeSplitSmall = page.locator('.marquee.split.small');
@@ -26,12 +30,12 @@ export default class Marquee {
     this.brandImage = this.marquee.locator('.detail-m');
 
     // marquee headings
-    this.headingXL = this.marquee.locator('.heading-xl');
+    this.headingXL = this.marquee.locator('.heading-xl').nth(0);
     this.headingXXL = this.marquee.locator('.heading-xxl');
 
     // marquee body area
     this.bodyM = this.marquee.locator('.body-m');
-    this.bodyXL = this.marquee.locator('.body-xl');
+    this.bodyXL = this.marquee.locator('.body-xl').nth(0);
 
     // marquee actions area
     this.actionArea = this.marquee.locator('.action-area');
@@ -52,7 +56,9 @@ export default class Marquee {
 
     this.actionLink1 = this.marquee.locator('a').nth(0);
     this.actionLink2 = this.marquee.locator('a').nth(1);
+    this.actionLink3 = this.marquee.locator('a').nth(2);
 
+    this.supplementalText = this.marquee.locator('.supplemental-text');
     // background images
     this.background = this.marquee.locator('.background');
     this.backgroundImage = this.marquee.locator('div.background img');
@@ -71,6 +77,7 @@ export default class Marquee {
 
     // media images
     this.mediaImage = this.marquee.locator('div.asset img');
+    this.foregroundAssetImage = this.marquee.locator('div.asset img');
 
     // marquee attributes
     this.attributes = {
