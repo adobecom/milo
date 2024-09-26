@@ -40,7 +40,7 @@
   margin-inline-start: 10px;
 }
 
-html[dir="rtl"] .horizontal .timer-block {
+html[dir="rtl"] .timer-block {
   flex-direction: row-reverse;
 }
 
