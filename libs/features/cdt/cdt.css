@@ -40,10 +40,6 @@
   margin-inline-start: 10px;
 }
 
-html[dir="rtl"] .timer-block {
-  flex-direction: row-reverse;
-}
-
 .timer-fragment {
   display: flex;
   flex-direction: column;
