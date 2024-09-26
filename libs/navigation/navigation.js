@@ -45,7 +45,6 @@ export default async function loadBlock(configs, customLib) {
   const branch = new URLSearchParams(window.location.search).get('navbranch');
   const miloLibs = branch ? `https://${branch}--milo--adobecom.hlx.page` : customLib || envMap[env];
   if (!header && !footer) {
-    // eslint-disable-next-line no-console
     console.error('Global navigation Error: header and footer configurations are missing.');
     return;
   }
