@@ -14,7 +14,7 @@ Designs:
 
 ## Examples
 
-### With a Odin/AEM Fragment
+### With an Odin/AEM Fragment
 
 ```html {.demo .light}
 <merch-card id="card1">
