@@ -24,6 +24,7 @@ import merch, {
   appendTabName,
   reopenModal,
   setCtaHash,
+  openModal,
 } from '../../../libs/blocks/merch/merch.js';
 
 import { mockFetch, unmockFetch, readMockText } from './mocks/fetch.js';
@@ -470,6 +471,20 @@ describe('Merch Block', () => {
         const clickSpy = sinon.spy(cta, 'click');
         reopenModal(cta);
         expect(clickSpy.called).to.be.true;
+        window.location.hash = prevHash;
+      });
+    });
+
+    describe('openModal', () => {
+      it('sets the new hash and event listener to restore the hash on close', async () => {
+        const prevHash = window.location.hash;
+        const event = new CustomEvent('dummy');
+        await openModal(event, 'https://www.adobe.com/mini-plans/creativecloud.html?mid=ft&web=1', 'TRIAL', 'try-photoshop');
+        expect(window.location.hash).to.equal('#try-photoshop');
+        const modalCloseEvent = new CustomEvent('milo:modal:closed');
+        window.dispatchEvent(modalCloseEvent);
+        expect(window.location.hash).to.equal(prevHash);
+        document.body.querySelector('.dialog-modal').remove();
         window.location.hash = prevHash;
       });
     });
