@@ -59,9 +59,9 @@ const htmlContent = md.render(inputContent);
 const masJs = skipMas
     ? ''
     : '<script type="module" src="../../../deps/mas/mas.js"></script>';
-    
-    // HTML template with your custom element script
-    const htmlTemplate = `
+
+// HTML template with your custom element script
+const htmlTemplate = `
     <!DOCTYPE html>
     <html>
     <head>
@@ -94,6 +94,22 @@ const masJs = skipMas
 ${htmlContent}
 </sp-theme>
 </main>
+<script type="module">
+  document.querySelectorAll('code.demo').forEach(el => {
+      const targetContainer = document.createElement('div');
+      targetContainer.classList.toggle('light', el.classList.contains('light'));
+      targetContainer.innerHTML = \`<h4>Demo: </h4><div class="demo-container">\${el.textContent}</div>\`;
+      el.parentElement.after(targetContainer);
+      // Extract and evaluate <script> tags
+      const scriptTags = targetContainer.getElementsByTagName('script');
+      for (let i = 0; i < scriptTags.length; i++) {
+          const script = document.createElement('script');
+          script.text = scriptTags[i].text;
+          document.body.appendChild(script); // Appends to the document to execute
+          scriptTags[i].remove(); // Remove the script tag
+      }
+  });
+</script>
 </body>
 </html>
 `;

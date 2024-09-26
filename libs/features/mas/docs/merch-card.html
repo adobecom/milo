@@ -37,7 +37,7 @@
 <p><strong>CCD</strong>: <a href="https://www.figma.com/proto/7tUtNgFelfMjgPoJ5QcE1k/Merch%40Scale-Frameworks?node-id=2077-63597&amp;t=cWfdzWlga79eyjyI-1">https://www.figma.com/proto/7tUtNgFelfMjgPoJ5QcE1k/Merch%40Scale-Frameworks?node-id=2077-63597&amp;t=cWfdzWlga79eyjyI-1</a></p>
 <h2 id="examples" tabindex="-1">examples <a class="header-anchor" href="#examples" href="#examples" title="Permalink to this heading">#</a></h2>
 <h3 id="odin%2Faem-fragments" tabindex="-1">Odin/AEM Fragments <a class="header-anchor" href="#odin%2Faem-fragments" href="#odin%2Faem-fragments" title="Permalink to this heading">#</a></h3>
-<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">merch-card</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;card1&quot;</span>&gt;</span>
+<pre><code class="hljs demo light language-html"><span class="hljs-tag">&lt;<span class="hljs-name">merch-card</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;card1&quot;</span>&gt;</span>
     <span class="hljs-tag">&lt;<span class="hljs-name">aem-fragment</span>
         <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;fragment1&quot;</span>
         <span class="hljs-attr">title</span>=<span class="hljs-string">&quot;CCD Slice Creative Cloud Photography&quot;</span>
@@ -72,34 +72,12 @@
     });
 </span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
 </code></pre>
-<h4 id="demo" tabindex="-1">Demo <a class="header-anchor" href="#demo" href="#demo" title="Permalink to this heading">#</a></h4>
-<merch-card id="card1">
-        <aem-fragment id="fragment1" title="CCD Slice Creative Cloud Photography" fragment="830f76be-0e83-4faf-9051-3dbb1a1dff04"></aem-fragment>
-</merch-card>
-<script type="module">
-  const log = document.getElementById('log');
-  const logger = (...messages) => log.innerHTML = `${messages.join(' ')}<br>${log.innerHTML}`;
-  const fragment1 = document.getElementById('fragment1');
-  fragment1.addEventListener('aem:load', (e) => {
-    logger('aem-fragment is loaded: ', JSON.stringify(e.target.data, null, '\t'));
-  });
-  const card1 = document.getElementById('card1');
-   card1.addEventListener('mas:ready', (e) => {
-    logger('merch-card is ready: ', e.target.variant);
-  });
-   card1.addEventListener('click', (e) => {
-    if (e.target.tagName === 'A') {
-      e.preventDefault();
-      e.stopPropagation();
-      logger('merch-card cta click: ', e.target);
-    }
-  });
-</script>
+<h4 class="demo" id="demo" tabindex="-1">Demo <a class="header-anchor" href="#demo" href="#demo" title="Permalink to this heading">#</a></h4>
 <h4 id="logs" tabindex="-1">Logs <a class="header-anchor" href="#logs" href="#logs" title="Permalink to this heading">#</a></h4>
 <pre><code id="log" class="language-html">
 </code></pre>
 <h3 id="static-html" tabindex="-1">Static HTML <a class="header-anchor" href="#static-html" href="#static-html" title="Permalink to this heading">#</a></h3>
-<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">merch-card</span> <span class="hljs-attr">variant</span>=<span class="hljs-string">&quot;plans&quot;</span> <span class="hljs-attr">badge-color</span>=<span class="hljs-string">&quot;#EDCC2D&quot;</span> <span class="hljs-attr">badge-background-color</span>=<span class="hljs-string">&quot;#000000&quot;</span>&quot; <span class="hljs-attr">badge-text</span>=<span class="hljs-string">&quot; Best value&quot;</span>&gt;</span>
+<pre><code class="hljs demo light language-html"><span class="hljs-tag">&lt;<span class="hljs-name">merch-card</span> <span class="hljs-attr">variant</span>=<span class="hljs-string">&quot;plans&quot;</span> <span class="hljs-attr">badge-color</span>=<span class="hljs-string">&quot;#EDCC2D&quot;</span> <span class="hljs-attr">badge-background-color</span>=<span class="hljs-string">&quot;#000000&quot;</span>&quot; <span class="hljs-attr">badge-text</span>=<span class="hljs-string">&quot; Best value&quot;</span>&gt;</span>
   <span class="hljs-tag">&lt;<span class="hljs-name">merch-icon</span> <span class="hljs-attr">slot</span>=<span class="hljs-string">&quot;icons&quot;</span> <span class="hljs-attr">size</span>=<span class="hljs-string">&quot;l&quot;</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;https://www.adobe.com/content/dam/shared/images/product-icons/svg/creative-cloud.svg&quot;</span> <span class="hljs-attr">alt</span>=<span class="hljs-string">&quot;Creative Cloud All Apps&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">merch-icon</span>&gt;</span>
   <span class="hljs-tag">&lt;<span class="hljs-name">h4</span> <span class="hljs-attr">slot</span>=<span class="hljs-string">&quot;heading-xs&quot;</span>&gt;</span>Creative Cloud All Apps<span class="hljs-tag">&lt;/<span class="hljs-name">h4</span>&gt;</span>
   <span class="hljs-tag">&lt;<span class="hljs-name">h3</span> <span class="hljs-attr">slot</span>=<span class="hljs-string">&quot;heading-m&quot;</span>&gt;</span>
@@ -117,24 +95,7 @@
   <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">merch-card</span>&gt;</span>
 </code></pre>
-<h4 id="demo-1" tabindex="-1">Demo <a class="header-anchor" href="#demo-1" href="#demo-1" title="Permalink to this heading">#</a></h4>
-<merch-card variant="plans" badge-color="#EDCC2D" badge-background-color="#000000" badge-text="Best value">
-  <merch-icon slot="icons" size="l" src="https://www.adobe.com/content/dam/shared/images/product-icons/svg/creative-cloud.svg" alt="Creative Cloud All Apps"></merch-icon>
-  <h4 slot="heading-xs">Creative Cloud All Apps</h4>
-  <h3 slot="heading-m">
-      <span is="inline-price" data-display-per-unit="false" data-display-recurrence="true"
-          data-display-tax="false" data-wcs-osi="r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8"></span>
-  </h3>
-  <p slot="body-xxs">Desktop</p>
-  <div slot="body-xs">
-      <p>Get 20+ Creative Cloud apps including Photoshop, Illustrator, Adobe Express, Premiere Pro, and
-          Acrobat Pro. (Substance 3D apps are not included.)</p>
-      <p><a href="https://adobe.com">See plans & pricing details</a></p>
-  </div>
-  <div slot="footer">
-      <a is="checkout-link" href="#" class="con-button blue active" data-wcs-osi="r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8">Save now</a>
-  </div>
-</merch-card>
+<h4 class="demo" id="demo-1" tabindex="-1">Demo <a class="header-anchor" href="#demo-1" href="#demo-1" title="Permalink to this heading">#</a></h4>
 <h3 id="attributes" tabindex="-1">Attributes <a class="header-anchor" href="#attributes" href="#attributes" title="Permalink to this heading">#</a></h3>
 <table>
 <thead>
@@ -279,5 +240,21 @@
 
 </sp-theme>
 </main>
+<script type="module">
+  document.querySelectorAll('code.demo').forEach(el => {
+      const targetContainer = document.createElement('div');
+      targetContainer.classList.toggle('light', el.classList.contains('light'));
+      targetContainer.innerHTML = `<h4>Demo: </h4><div class="demo-container">${el.textContent}</div>`;
+      el.parentElement.after(targetContainer);
+      // Extract and evaluate <script> tags
+      const scriptTags = targetContainer.getElementsByTagName('script');
+      for (let i = 0; i < scriptTags.length; i++) {
+          const script = document.createElement('script');
+          script.text = scriptTags[i].text;
+          document.body.appendChild(script); // Appends to the document to execute
+          scriptTags[i].remove(); // Remove the script tag
+      }
+  });
+</script>
 </body>
 </html>

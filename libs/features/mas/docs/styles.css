@@ -84,10 +84,6 @@ tr:nth-child(even) {
   content: "failed";
 }
 
-merch-card {
-  margin: 32px;
-}
-
 merch-card:not([variant]) {
   display: none;
 }
@@ -96,6 +92,17 @@ pre {
   max-height: 500px;
   overflow: scroll;
   background-color: var(--spectrum-global-color-gray-300);
+}
+
+.demo-container {
+  display: flex;
+  padding: 16px;
+  flex-direction: column;
+  background-color: var(--spectrum-global-color-gray-300);
+}
+
+.light .demo-container {
+  background-color: var(--spectrum-global-color-gray-100);
 }
 
 #log {

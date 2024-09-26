@@ -12,10 +12,9 @@ It requires an Offer Selector ID to retrieve the offer details from WCS.
 
 See [MAS](mas.html) introduction to learn more.
 
-
 ### Example
 
-```html
+```html {.demo}
 <a
     href="#"
     is="checkout-link"
@@ -23,10 +22,6 @@ See [MAS](mas.html) introduction to learn more.
     >Buy now</a
 >
 ```
-
-#### Demo
-
-This is a functional **buy now** button: <a href="#" is="checkout-link" data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M">Buy now</a>
 
 ## Attributes {#attributes}
 
@@ -48,7 +43,7 @@ This is a functional **buy now** button: <a href="#" is="checkout-link" data-wcs
 
 #### Custom Workflow Step
 
-```html
+```html {.demo}
 <a
     href="#"
     is="checkout-link"
@@ -58,15 +53,11 @@ This is a functional **buy now** button: <a href="#" is="checkout-link" data-wcs
 >
 ```
 
-##### Demo
-
-<a href="#" is="checkout-link" data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M" data-checkout-workflow-step="recommendation">Buy now</a>
-
 #### Multiple Quantities
 
 Two photoshop and three acrobat pro single apps (TEAMS):
 
-```html
+```html {.demo}
 <a
     href="#"
     is="checkout-link"
@@ -76,13 +67,9 @@ Two photoshop and three acrobat pro single apps (TEAMS):
 >
 ```
 
-##### Demo
-
-<a href="#" is="checkout-link" data-wcs-osi="yHKQJK2VOMSY5bINgg7oa2ov9RnmnU1oJe4NOg4QTYI,vV01ci-KLH6hYdRfUKMBFx009hdpxZcIRG1-BY_PutE" data-quantity="2,3">Buy now</a>
-
 #### Custom query params
 
-```html
+```html {.demo}
 <a
     href="#"
     is="checkout-link"
@@ -92,13 +79,9 @@ Two photoshop and three acrobat pro single apps (TEAMS):
 >
 ```
 
-##### Demo
-
-<a href="#" is="checkout-link" data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M" data-extra-options="{&quot;promoid&quot;:&quot;promo12345&quot;,&quot;mv&quot;:1,&quot;mv2&quot;:2}">Buy now</a>
-
 #### IMS Country
 
-```html
+```html {.demo}
 <a
     href="#"
     is="checkout-link"
@@ -107,10 +90,6 @@ Two photoshop and three acrobat pro single apps (TEAMS):
     >Buy now</a
 >
 ```
-
-##### Demo
-
-<a href="#" is="checkout-link" data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M" data-ims-country="JP">Buy now</a>
 
 ## Properties {#properties}
 
@@ -122,7 +101,7 @@ Two photoshop and three acrobat pro single apps (TEAMS):
 
 ### Example
 
-```html
+```html {.demo}
 <a
     id="co1"
     href="#"
@@ -149,15 +128,6 @@ Two photoshop and three acrobat pro single apps (TEAMS):
         });
 </script>
 ```
-
-<a id="co1" href="#" is="checkout-link" data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M" data-ims-country="CA">Buy now</a>
-
-<script type="module">
-  document.getElementById('co1').onceSettled().then(el => {
-    document.getElementById('coValue').innerHTML = JSON.stringify(el.value, null, '\t');
-    document.getElementById('coOptions').innerHTML = JSON.stringify(el.options, null, '\t');
-  });
-</script>
 
 #### value property
 
@@ -196,7 +166,7 @@ For each event except `click`, the following css classes are toggled on the elem
 
 ### Example
 
-```html
+```html {.demo}
 <a
     id="co2"
     href="#"
@@ -226,23 +196,6 @@ For each event except `click`, the following css classes are toggled on the elem
     a.addEvent;
 </script>
 ```
-
-<a id="co2" href="#" is="checkout-link" data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M">Buy now (click me)</a>
-
-<script type="module">
-  const log = document.getElementById('log');
-  const logger = (...messages) => log.innerHTML = `${messages.join(' ')}<br>${log.innerHTML}`;
-  const a = document.getElementById('co2');
-  a.addEventListener('wcms:placeholder:pending', () => logger('checkout-link pending'));
-  a.addEventListener('wcms:placeholder:resolved', () => logger('checkout-link resolved'));
-  a.addEventListener('wcms:placeholder:failed', () => logger('checkout-link failed'));
-  a.addEventListener('click', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    logger('checkout link is clicked: ', e.target.href);
-  });
-  a.addEvent
-</script>
 
 #### Logs
 
