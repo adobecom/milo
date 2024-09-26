@@ -11,11 +11,14 @@ const App = ({ name, count, onClick } = {}) => {
 };
 
 export default async function init(el, props) {
+  const handleClick = () => {
+    props.dispatch({type: props.dispatchType})
+  }
   const app = html`
     <${App}
       name="${props.name}"
       count="${props.count}"
-      onClick=${props.onClick}
+      onClick=${handleClick}
     />
   `;
   render(app, el);
