@@ -15,8 +15,7 @@ export default async function init(el, props) {
     <${App}
       name="${props.name}"
       count="${props.count}"
-      onClick="${props.onClick}"
-      dispatch=${props.dispatch}
+      onClick=${props.onClick}
     />
   `;
   render(app, el);
