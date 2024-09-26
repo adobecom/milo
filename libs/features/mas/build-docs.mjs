@@ -59,15 +59,17 @@ const htmlContent = md.render(inputContent);
 const masJs = skipMas
     ? ''
     : '<script type="module" src="../../../deps/mas/mas.js"></script>';
-
-// HTML template with your custom element script
-const htmlTemplate = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>M@S Web Components</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+    
+    // HTML template with your custom element script
+    const htmlTemplate = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <meta charset="UTF-8">
+    <title>M@S Web Components</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script type="module" src="../../../deps/custom-elements.js"></script>
+  
   <script>
     if (/localhost/.test(window.location.host)) {
       const meta = document.createElement('meta');
