@@ -52,7 +52,7 @@ runTests(async () => {
                         const el =
                             miniCompareChart.shadowRoot.querySelector(selector);
                         if (!el) return 0;
-                        return parseFloat(window.getComputedStyle(el).height);
+                        return parseInt(window.getComputedStyle(el).height, 10);
                     })
                     .join(',');
                 return heights;
@@ -76,12 +76,13 @@ runTests(async () => {
                     .fill()
                     .map(
                         (_, i) =>
-                            parseFloat(
+                            parseInt(
                                 window.getComputedStyle(
                                     miniCompareChart.querySelector(
                                         `.footer-row-cell:nth-child(${i + 1})`,
                                     ),
                                 ),
+                                10,
                             ).height,
                     )
                     .join(',');
