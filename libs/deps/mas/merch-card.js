@@ -1016,7 +1016,7 @@ merch-card[variant="plans"] [slot="quantity-select"] {
           <slot name="callout-content"></slot>
           <slot name="body-lower"></slot>
       </div>
-      ${this.secureLabelFooter}`}connectedCallbackHook(){super.connectedCallbackHook(),window.addEventListener("resize",this.postCardUpdateHook.bind(this))}disconnectedCallbackHook(){window.removeEventListener("resize",this.postCardUpdateHook.bind(this)),super.disconnectedCallbackHook()}postCardUpdateHook(){T()||this.adjustProductBodySlots()}static variantStyle=bt`
+      ${this.secureLabelFooter}`}connectedCallbackHook(){super.connectedCallbackHook(),window.addEventListener("resize",this.postCardUpdateHook.bind(this))}postCardUpdateHook(){T()||this.adjustProductBodySlots()}static variantStyle=bt`
     :host([variant='product']) > slot:not([name='icons']) {
         display: block;
     }
@@ -1040,7 +1040,7 @@ merch-card[variant="plans"] [slot="quantity-select"] {
         min-height: var(--consonant-merch-card-product-callout-content-height);
         display: block;
     }
-  `};import{html as U,css as yt}from"../lit-all.min.js";var nt=`
+  `};import{html as V,css as yt}from"../lit-all.min.js";var nt=`
 :root {
   --consonant-merch-card-segment-width: 378px;
 }
@@ -1086,13 +1086,13 @@ merch-card[variant="plans"] [slot="quantity-select"] {
       grid-template-columns: repeat(4, minmax(276px, var(--consonant-merch-card-segment-width)));
   }
 }
-`;var E=class extends d{constructor(t){super(t)}getGlobalCSS(){return nt}postCardUpdateHook(){this.adjustTitleWidth()}renderLayout(){return U` ${this.badge}
+`;var E=class extends d{constructor(t){super(t)}getGlobalCSS(){return nt}postCardUpdateHook(){this.adjustTitleWidth()}renderLayout(){return V` ${this.badge}
     <div class="body">
         <slot name="heading-xs"></slot>
         <slot name="body-xxs"></slot>
-        ${this.promoBottom?"":U`<slot name="promo-text"></slot><slot name="callout-content"></slot>`}
+        ${this.promoBottom?"":V`<slot name="promo-text"></slot><slot name="callout-content"></slot>`}
         <slot name="body-xs"></slot>
-        ${this.promoBottom?U`<slot name="promo-text"></slot><slot name="callout-content"></slot>`:""}
+        ${this.promoBottom?V`<slot name="promo-text"></slot><slot name="callout-content"></slot>`:""}
     </div>
     <hr />
     ${this.secureLabelFooter}`}static variantStyle=yt`
@@ -1102,7 +1102,7 @@ merch-card[variant="plans"] [slot="quantity-select"] {
     :host([variant='segment']) ::slotted([slot='heading-xs']) {
       max-width: var(--consonant-merch-card-heading-xs-max-width, 100%);
     }
-  `};import{html as V,css as wt}from"../lit-all.min.js";var ct=`
+  `};import{html as U,css as wt}from"../lit-all.min.js";var ct=`
 :root {
   --consonant-merch-card-special-offers-width: 378px;
 }
@@ -1150,20 +1150,20 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
     grid-template-columns: repeat(4, minmax(300px, var(--consonant-merch-card-special-offers-width)));
   }
 }
-`;var S=class extends d{constructor(t){super(t)}getGlobalCSS(){return ct}get headingSelector(){return'[slot="detail-m"]'}renderLayout(){return V`${this.cardImage}
+`;var S=class extends d{constructor(t){super(t)}getGlobalCSS(){return ct}get headingSelector(){return'[slot="detail-m"]'}renderLayout(){return U`${this.cardImage}
           <div class="body">
               <slot name="detail-m"></slot>
               <slot name="heading-xs"></slot>
               <slot name="body-xs"></slot>
           </div>
-          ${this.evergreen?V`
+          ${this.evergreen?U`
                     <div
                         class="detail-bg-container"
                         style="background: ${this.card.detailBg}"
                     >
                         <slot name="detail-bg"></slot>
                     </div>
-                `:V`
+                `:U`
                     <hr />
                     ${this.secureLabelFooter}
                 `}

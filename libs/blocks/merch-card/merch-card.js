@@ -357,7 +357,6 @@ const simplifyHrs = (el) => {
   hrs.forEach((hr) => {
     if (hr.parentElement.tagName === 'P') {
       hr.parentElement.replaceWith(hr);
-      hr.style.width = '100%';
     }
   });
   if (el.variant === PRODUCT) {

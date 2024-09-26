@@ -997,7 +997,7 @@ merch-card[variant="plans"] [slot="quantity-select"] {
           <slot name="callout-content"></slot>
           <slot name="body-lower"></slot>
       </div>
-      ${this.secureLabelFooter}`}connectedCallbackHook(){super.connectedCallbackHook(),window.addEventListener("resize",this.postCardUpdateHook.bind(this))}disconnectedCallbackHook(){window.removeEventListener("resize",this.postCardUpdateHook.bind(this)),super.disconnectedCallbackHook()}postCardUpdateHook(){Fr()||this.adjustProductBodySlots()}};g(ze,"variantStyle",P`
+      ${this.secureLabelFooter}`}connectedCallbackHook(){super.connectedCallbackHook(),window.addEventListener("resize",this.postCardUpdateHook.bind(this))}postCardUpdateHook(){Fr()||this.adjustProductBodySlots()}};g(ze,"variantStyle",P`
     :host([variant='product']) > slot:not([name='icons']) {
         display: block;
     }
