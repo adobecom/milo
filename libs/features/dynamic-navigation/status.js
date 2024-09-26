@@ -1,4 +1,4 @@
-import { createTag, getConfig, getMetadata, loadStyle } from '../../utils/utils.js';
+import { createTag, getConfig, getMetadata } from '../../utils/utils.js';
 import { isDynamicNavDisabled } from './dynamic-navigation.js';
 
 export const ACTIVE = 'active';
