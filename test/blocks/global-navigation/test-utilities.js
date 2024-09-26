@@ -42,6 +42,7 @@ export const selectors = {
   mainNav: '.feds-nav',
   imsSignIn: '.feds-signIn',
   crossCloudMenuWrapper: '.feds-crossCloudMenu-wrapper',
+  customMobileLink: '.feds-navItem--mobile-only',
 };
 
 export const viewports = {
