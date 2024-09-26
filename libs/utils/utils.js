@@ -4,7 +4,7 @@ const MILO_TEMPLATES = [
   '404',
   'featured-story',
 ];
-const MILO_BLOCKS = [
+export const MILO_BLOCKS = [
   'accordion',
   'action-item',
   'action-scroller',
@@ -447,7 +447,7 @@ export async function loadTemplate() {
   await Promise.all([styleLoaded, scriptLoaded]);
 }
 
-function getBlockData(block) {
+export function getBlockData(block) {
   const name = block.classList[0];
   const { miloLibs, codeRoot, mep } = getConfig();
   const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : codeRoot;
@@ -1225,7 +1225,7 @@ export function partition(arr, fn) {
   );
 }
 
-export const preloadBlockResources = (blocks = []) => blocks.map((block) => {
+const preloadBlockResources = (blocks = []) => blocks.map((block) => {
   if (block.classList.contains('hide-block')) return null;
   const { blockPath, hasStyles, name } = getBlockData(block);
   if (['marquee', 'hero-marquee'].includes(name)) {

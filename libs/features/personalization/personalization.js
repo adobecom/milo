@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-console */
 
-import { createTag, getConfig, loadLink, loadScript, localizeLink, preloadBlockResources } from '../../utils/utils.js';
+import { createTag, getConfig, loadLink, loadScript, localizeLink } from '../../utils/utils.js';
 import { getEntitlementMap } from './entitlements.js';
 
 /* c8 ignore start */
@@ -1034,6 +1034,8 @@ export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => 
   return persManifests;
 };
 
+
+
 export async function init(enablements = {}) {
   let manifests = [];
   const {
@@ -1061,9 +1063,15 @@ export async function init(enablements = {}) {
   }
 
   if (target === true) {
-    //This is only for testing purposes
-    const lcpBlocks = [...document.querySelectorAll('body > main > div:first-child > *[class]')];
-    preloadBlockResources(lcpBlocks);
+    const { getBlockData, loadStyle, MILO_BLOCKS } = await import('../../utils/utils.js');
+    const preloadMepBlockResources = (blocks = []) => blocks.map((block) => {
+      if (block.classList.contains('hide-block')) return null;
+      const { blockPath, hasStyles } = getBlockData(block);
+      loadLink(`${blockPath}.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+      return hasStyles && new Promise((resolve) => { loadStyle(`${blockPath}.css`, resolve); });
+    }).filter(Boolean);
+    const lcpBlocks = [...document.querySelectorAll('body > main > div:first-child > *[class]')].filter((block) => MILO_BLOCKS.includes(block.className));
+    preloadMepBlockResources(lcpBlocks);
   }
   if (target === true || (target === 'gnav' && postLCP)) {
     const { getTargetPersonalization } = await import('../../martech/martech.js');
