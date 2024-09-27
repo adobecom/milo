@@ -576,6 +576,7 @@ export {
   getCardMetadata,
   getCaasProps,
   getConfig,
+  getKeyValPairs,
   isPagePublished,
   loadCaasTags,
   postDataToCaaS,
