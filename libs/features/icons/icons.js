@@ -37,7 +37,7 @@ export const fetchIcons = (config) => new Promise(async (resolve) => {
   resolve(fetchedIcons);
 });
 
-export function setNodeIndexClass(icons) {
+export async function setNodeIndexClass(icons) {
   icons.forEach(async (icon) => {
     const parent = icon.parentNode;
     const children = parent.childNodes;
@@ -87,12 +87,13 @@ export async function injectSVGIcons(icons) {
     iconRequests.push(iconsToFetch.get(iconName));
 
     const parent = icon.parentElement;
-    if (parent.parentElement.tagName === 'LI') parent.parentElement.classList.add('icon-list-item');
+    if (parent && parent.parentElement.tagName === 'LI') parent.parentElement.classList.add('icon-list-item');
   });
 
   try {
     await Promise.all(iconRequests);
   } catch (error) {
+    /* c8 ignore next */
     window.lana.log('Error fetching icons:', error);
   }
 
@@ -105,6 +106,6 @@ export async function injectSVGIcons(icons) {
   });
 }
 
-export default async function loadIcons(icons) {
-  injectSVGIcons(icons);
+export default async function loadIcons(icons, config) {
+  injectSVGIcons(icons, config);
 }
