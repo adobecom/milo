@@ -32,6 +32,10 @@ const COLUMN_NOT_OPERATOR = 'not ';
 const TARGET_EXP_PREFIX = 'target-';
 const INLINE_HASH = '_inline';
 const PAGE_URL = new URL(window.location.href);
+const FLAGS = {
+  all: 'all',
+  includeFragments: 'include-fragments',
+};
 
 export const TRACKED_MANIFEST_TYPE = 'personalization';
 
@@ -434,25 +438,24 @@ export function modifyNonFragmentSelector(selector) {
   };
 }
 
-function getSelectedElements({ selector: sel, rootEl }) {
+function getSelectedElements(sel) {
   const selector = sel.trim();
   if (!selector) return {};
 
   if (getSelectorType(selector) === 'fragment') {
     try {
-      const fragment = document.querySelector(
+      const fragments = document.querySelectorAll(
         `a[href*="${normalizePath(selector, false)}"], a[href*="${normalizePath(selector, true)}"]`,
       );
-      if (fragment) return { el: fragment.parentNode };
-      return {};
+      return { els: fragments, modifiers: [FLAGS.all, FLAGS.includeFragments] };
     } catch (e) {
       /* c8 ignore next */
-      return {};
+      return { els: [], modifiers: [] };
     }
   }
   const { modifiedSelector, modifiers } = modifyNonFragmentSelector(selector);
-  let els = (rootEl || document).querySelectorAll(modifiedSelector);
-  if (modifiers.includes('all')) return { els, modifiers };
+  let els = document.querySelectorAll(modifiedSelector);
+  if (modifiers.includes(FLAGS.all) || !els.length) return { els, modifiers };
   els = [els[0]];
   return { els, modifiers };
 }
@@ -482,7 +485,7 @@ export const updateFragDataProps = (a, inline, sections, fragment) => {
   }
 };
 
-export function handleCommands(commands, rootEl = document, forceInline = false) {
+export function handleCommands(commands, rootEl, forceInline = false) {
   commands.forEach((cmd) => {
     const { action, content, selector } = cmd;
     cmd.content = forceInline ? addHash(content, INLINE_HASH) : content;
@@ -490,23 +493,29 @@ export function handleCommands(commands, rootEl = document, forceInline = false)
       registerInBlockActions(cmd);
       return;
     }
-    const { els, modifiers } = getSelectedElements({ selector, rootEl });
+    const { els, modifiers } = getSelectedElements(selector);
     cmd.modifiers = modifiers;
 
     els?.forEach((el) => {
-      if (!el || (!(action in COMMANDS) && !(action in CREATE_CMDS))) return;
+      if (!el || (!(action in COMMANDS) && !(action in CREATE_CMDS))
+        || (rootEl && !rootEl.contains(el))) return;
 
       if (action in COMMANDS) {
         COMMANDS[action](el, cmd);
         return;
       }
-      const insertAnchor = getSelectorType(selector) === 'fragment' ? el.parentElement?.parentElement : el;
+      const insertAnchor = getSelectorType(selector) === 'fragment' ? el.parentElement : el;
       insertAnchor?.insertAdjacentElement(
         CREATE_CMDS[action],
         createContent(el, cmd),
       );
     });
+    if ((els.length && !cmd.modifiers.includes(FLAGS.all))
+      || !cmd.modifiers.includes(FLAGS.includeFragments)) {
+      cmd.completed = true;
+    }
   });
+  return commands.filter((cmd) => !cmd.completed);
 }
 
 const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) => {
@@ -985,7 +994,7 @@ export async function applyPers(manifests, postLCP = false) {
     addIds(main, manifestId, targetManifestId);
   }
 
-  if (!postLCP) handleCommands(config.mep.commands);
+  if (!postLCP) config.mep.commands = handleCommands(config.mep.commands);
   deleteMarkedEls();
 
   const pznList = results.filter((r) => (r.experiment?.manifestType === TRACKED_MANIFEST_TYPE));
@@ -1047,7 +1056,6 @@ export async function init(enablements = {}) {
   const config = getConfig();
   if (!postLCP) {
     config.mep = {
-      handleFragmentCommand,
       updateFragDataProps,
       preview: (mepButton !== 'off'
         && (config.env?.name !== 'prod' || mepParam || mepParam === '' || mepButton)),
