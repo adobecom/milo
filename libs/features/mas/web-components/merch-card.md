@@ -14,7 +14,7 @@ Designs:
 
 ## Examples
 
-### With an Odin/AEM Fragment
+### With an Odin/AEM Fragment (VPN required)
 
 ```html {.demo .light}
 <merch-card id="card1">
@@ -87,7 +87,7 @@ Designs:
 | ----------- | ----------------------------------------------------------------------------------- | ------------------------------------ | -------- |
 | `variant`   | Variant in terms design. Not required when used with an `aem-fragment`              |                                      | `false`  |
 | `consonant` | Whether to use consonant styles without sp-button decorator around the footer CTAs. | `true` if `aem-fragment` is not used | `false`  |
-| `size`      | a card can span over 2 columns or entire row with `wide\|super-wide`                | `medium`                             | `false`  |
+| `size`      | card width; a card can span over 2 columns or entire row on a css grid `wide\|super-wide`       |                                      | `false`  |
 
 #### Active variants:
 
@@ -127,9 +127,9 @@ Designs:
 
 ### Properties
 
-| Name             | Description                                                                    |
-| ---------------- | ------------------------------------------------------------------------------ |
-| `data`           | Current fragment RAW data that is used to render the merch-card                |
+| Name             | Description                                                                        |
+| ---------------- | ---------------------------------------------------------------------------------- |
+| `data`           | Current fragment RAW data that is used to render the merch-card                    |
 | `updateComplete` | Promise that resolves when the fragment is retrieved and `aem:load` event is fired |
 
 ### Events
