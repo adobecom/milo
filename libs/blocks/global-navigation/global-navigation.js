@@ -101,7 +101,7 @@ export const CONFIG = {
       appswitcher: { name: 'app-switcher' },
       notifications: {
         name: 'notifications',
-        attributes: { notificationsConfig: { applicationContext: { appID: 'adobecom' } } },
+        attributes: { notificationsConfig: { applicationContext: { appID: window.adobeid?.client_id } } },
       },
       help: {
         name: 'help',
