@@ -349,7 +349,7 @@ function checkCtaUrl(s, options, i) {
  * funcs that return an object with { error: string } will report the error
  */
 const props = {
-  arbitrary: (s) => getKeyValPairs(s).map((pair) => ({ pair })),
+  arbitrary: (s) => getKeyValPairs(s).map((pair) => ( pair )),
   badgeimage: () => getImagePathMd('badgeimage'),
   badgetext: 0,
   bookmarkaction: 0,
