@@ -2,7 +2,6 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { setConfig, getConfig } from '../../../libs/utils/utils.js';
 
-
 const mockBody = await readFile({ path: './mocks/body.html' });
 const { default: init } = await import('../../../libs/blocks/notification/notification.js');
 
