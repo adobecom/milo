@@ -32,7 +32,7 @@ const updateFragMap = (fragment, a, href) => {
   }
 };
 
-const insertInlineFrag = (sections, a, relHref, commands, handleMepCommands) => {
+const insertInlineFrag = (sections, a, relHref, mep, handleMepCommands) => {
   // Inline fragments only support one section, other sections are ignored
   const fragChildren = [...sections[0].children];
   if (a.parentElement.nodeName === 'DIV' && !a.parentElement.attributes.length) {
@@ -42,7 +42,7 @@ const insertInlineFrag = (sections, a, relHref, commands, handleMepCommands) => 
   }
   fragChildren.forEach((child) => {
     child.setAttribute('data-path', relHref);
-    if (handleMepCommands) handleMepCommands(commands, child);
+    if (handleMepCommands) mep.commands = handleMepCommands(mep.commands, child);
   });
 };
 
@@ -129,7 +129,7 @@ export default async function init(a) {
     handleMepCommands = handleCommands;
   }
   if (inline) {
-    insertInlineFrag(sections, a, relHref, mep?.commands, handleMepCommands);
+    insertInlineFrag(sections, a, relHref, mep, handleMepCommands);
   } else {
     a.parentElement.replaceChild(fragment, a);
     if (handleMepCommands) handleMepCommands(mep?.commands, fragment);
