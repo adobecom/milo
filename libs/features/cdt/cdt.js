@@ -12,6 +12,9 @@ function loadCountdownTimer(
   let isVisible = false;
   let interval;
 
+  const instant = new URL(window.location.href)?.searchParams?.get('instant');
+  let currentTime = instant ? Date.parse(instant) : Date.now();
+
   function appendTimerBox(parent, value, label) {
     const fragment = createTag('div', { class: 'timer-fragment' }, null, { parent });
     const unitContainer = createTag('div', { class: 'timer-unit-container' }, null, { parent: fragment });
@@ -52,9 +55,6 @@ function loadCountdownTimer(
   }
 
   function updateCountdown() {
-    const instant = new URL(window.location.href)?.searchParams?.get('instant');
-    const currentTime = instant ? new Date(instant) : Date.now();
-
     for (let i = 0; i < timeRangesEpoch.length; i += 2) {
       const startTime = timeRangesEpoch[i];
       const endTime = timeRangesEpoch[i + 1];
@@ -78,7 +78,10 @@ function loadCountdownTimer(
   function startCountdown() {
     const oneMinuteinMs = 60000;
     updateCountdown();
-    interval = setInterval(updateCountdown, oneMinuteinMs);
+    interval = setInterval(() => {
+      currentTime += oneMinuteinMs;
+      updateCountdown();
+    }, oneMinuteinMs);
   }
 
   startCountdown();
