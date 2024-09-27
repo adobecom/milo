@@ -30,9 +30,8 @@
 <sp-theme color="light" scale="medium">
 <h1 id="inline-price" tabindex="-1">inline-price <a class="header-anchor" href="#inline-price" href="#inline-price" title="Permalink to this heading">#</a></h1>
 <h2 id="introduction" tabindex="-1">Introduction <a class="header-anchor" href="#introduction" href="#introduction" title="Permalink to this heading">#</a></h2>
-<p>This custom element renders an inline price supporting various display options and configurations. It retrieves pricing information based on the provided Offer Selector ID.</p>
-<p>It requires an Offer Selector ID to retrieve the offer details from WCS.</p>
-<p>See <a href="mas.html">MAS</a> introduction to learn more.</p>
+<p>This custom element renders an inline price supporting various display options and configurations. It retrieves pricing information from WCS based on the provided Offer Selector ID.</p>
+<p>See <a href="mas.html#terminology">MAS</a> to learn more.</p>
 <h3 id="example" tabindex="-1">Example <a class="header-anchor" href="#example" href="#example" title="Permalink to this heading">#</a></h3>
 <pre><code class="hljs demo language-html"><span class="hljs-tag">&lt;<span class="hljs-name">span</span>
     <span class="hljs-attr">is</span>=<span class="hljs-string">&quot;inline-price&quot;</span>
@@ -100,7 +99,7 @@
 </tr>
 <tr>
 <td><code>data-template</code></td>
-<td>One of price, priceDiscount, priceOptical, priceStrikethrough, priceAnnual</td>
+<td>One of price, discount, optical, strikethrough, priceAnnual</td>
 <td>price</td>
 <td><code>false</code></td>
 </tr>
@@ -133,7 +132,7 @@
 </tr>
 <tr>
 <td><code>strikethrough</code></td>
-<td>render the price as strikethrough</td>
+<td>render the price as strikethrough.</td>
 </tr>
 </tbody>
 </table>

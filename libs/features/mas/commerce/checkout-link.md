@@ -10,7 +10,7 @@ Behind the scene, it uses https://git.corp.adobe.com/PandoraUI/commerce-core to 
 
 It requires an Offer Selector ID to retrieve the offer details from WCS.
 
-See [MAS](mas.html) introduction to learn more.
+See [MAS](mas.html#terminology) to learn more.
 
 ### Example
 

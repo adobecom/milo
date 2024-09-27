@@ -2,11 +2,9 @@
 
 ## Introduction {#introduction}
 
-This custom element renders an inline price supporting various display options and configurations. It retrieves pricing information based on the provided Offer Selector ID.
+This custom element renders an inline price supporting various display options and configurations. It retrieves pricing information from WCS based on the provided Offer Selector ID.
 
-It requires an Offer Selector ID to retrieve the offer details from WCS.
-
-See [MAS](mas.html) introduction to learn more.
+See [MAS](mas.html#terminology) to learn more.
 
 ### Example
 
@@ -29,7 +27,7 @@ See [MAS](mas.html) introduction to learn more.
 | `data-perpetual`          | Whether this is a perpetual offer                                                           | `false`       | `false`  |
 | `data-promotion-code`     | Flex promotion code to apply, if applicable                                                 |               | `false`  |
 | `data-tax-exclusive`      | Whether to force tax exclusive price, if `false`, it's automatic, driven by country service | `false`       | `false`  |
-| `data-template`           | One of price, priceDiscount, priceOptical, priceStrikethrough, priceAnnual                  | price         | `false`  |
+| `data-template`           | One of price, discount, optical, strikethrough, priceAnnual                  | price         | `false`  |
 
 ### data-template values
 
@@ -39,7 +37,7 @@ See [MAS](mas.html) introduction to learn more.
 | `discount`      | Displays the promo price in percentage, e.g:, 19%               |
 | `optical`       | For **paid upfront offers**(PUF), renders the monthly price     |
 | `annual`        | For **annual, billed monthly** offers, renders the yearly price |
-| `strikethrough` | render the price as strikethrough                               |
+| `strikethrough` | render the price as strikethrough.                               |
 
 ### Examples {#examples}
 
