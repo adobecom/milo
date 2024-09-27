@@ -1016,9 +1016,9 @@ export const combineMepSources = async (persEnabled, promoEnabled, promoUtilsPro
       .filter((path) => path?.trim())
       .map((manifestPath) => ({ manifestPath }));
     initialPersManifestsPromises = initialPersManifests.map(({ manifestPath }) => {
-        const normalizedURL = normalizePath(manifestPath);
-        return fetch(normalizedURL, { mode: 'same-origin' });
-      });
+      const normalizedURL = normalizePath(manifestPath);
+      return fetch(normalizedURL, { mode: 'same-origin' });
+    });
   }
 
   if (promoEnabled) {
