@@ -133,23 +133,6 @@ function parseKeyString(str) {
   return result;
 }
 
-function isElementEmpty(el) {
-  const asset = el.querySelector('picture, video');
-  console.log('el.textContent', !el.textContent.trim(), !el.querySelector('picture', 'video'));
-  for (const node of el.childNodes) {
-    if (node.nodeType === Node.TEXT_NODE && !node.nodeValue.trim()) {
-      el.removeChild(node);
-    }
-  }
-  if (el.childNodes.length === 0) return true;
-  for (const child of el.children) {
-    if (child.hasChildNodes()) {
-      return false;
-    }
-  }
-  return true;
-}
-
 async function loadContentType(el, key, classes) {
   if (classes !== undefined && classes.length) el.classList.add(...classes);
   switch (key) {
