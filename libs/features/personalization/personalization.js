@@ -1080,25 +1080,24 @@ export async function init(enablements = {}) {
       .concat(await combineMepSources(pzn, promo, promoUtilsPromise, mepParam));
   }
 
-  manifests = await Promise.all((await Promise.all(manifestPromises))
-    .map(async (resp) => {
-      try {
-        if (!resp.ok) {
-          /* c8 ignore next 5 */
-          if (resp.status === 404) {
-            throw new Error('File not found');
-          }
-          throw new Error(`Invalid response: ${resp.status} ${resp.statusText}`);
+  manifestPromises = manifestPromises.map((mPromise) => mPromise.then(async (resp) => {
+    try {
+      if (!resp.ok) {
+        /* c8 ignore next 5 */
+        if (resp.status === 404) {
+          throw new Error('File not found');
         }
-        const manifestData = await resp.json();
-        return { manifestData, manifestPath: resp.url };
-      } catch (e) {
-        /* c8 ignore next 3 */
-        console.log(`Error loading content: ${resp.url}`, e.message || e);
+        throw new Error(`Invalid response: ${resp.status} ${resp.statusText}`);
       }
-      return null;
-    })
-    .filter(Boolean));
+      const manifestData = await resp.json();
+      return { manifestData, manifestPath: resp.url };
+    } catch (e) {
+      /* c8 ignore next 3 */
+      console.log(`Error loading content: ${resp.url}`, e.message || e);
+    }
+    return null;
+  }));
+  manifests = (await Promise.all(manifestPromises)).filter(Boolean);
   if (target === true || (target === 'gnav' && postLCP)) {
     const { getTargetPersonalization } = await import('../../martech/martech.js');
     const { targetManifests, targetPropositions } = await getTargetPersonalization();
