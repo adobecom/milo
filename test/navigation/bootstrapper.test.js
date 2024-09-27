@@ -19,13 +19,7 @@ const blockConfig = {
     name: 'global-navigation',
     targetEl: 'header',
     appendType: 'prepend',
-    unav: {
-      unavComponents: 'profile',
-      unavHelpChildren: [
-        { type: 'Support' },
-        { type: 'Community' }
-      ],
-    }
+    unav: { unavComponents: 'profile' }
   },
 };
 
