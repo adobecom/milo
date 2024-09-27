@@ -21,7 +21,7 @@ function displayHelp() {
   \x1b[33m* config=<config-file>\x1b[0m               Custom configuration file to use (default: Playwright's default)
   \x1b[33m* project=<project-name>\x1b[0m             Project configuration (default: milo-live-chromium)
   \x1b[33m* milolibs=<local|prod|code|feature>\x1b[0m Milo library environment (default: none)
-  \x1b[33m* owner=<repo-owner>\x1b[0m                 repo owner (default owner = adobecom)
+  \x1b[33m* owner=<repo-owner>\x1b[0m                 repo owner (default owner = adobecom) 
 
 \x1b[1mExamples:\x1b[0m
   | \x1b[36mCommand\x1b[0m                                                | \x1b[36mDescription\x1b[0m                                                                        |
