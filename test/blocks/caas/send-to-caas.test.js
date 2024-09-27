@@ -24,4 +24,10 @@ describe('checkUrl function', () => {
     const result = getOrigin('someFloodgateColor');
     expect(result).to.equal('doccloud');
   });
+
+  it('should send arbitrary fields as key-value pairs when set', () => {
+    const authoredPairs = "mpcVideoId:mpcVideoIdGM,thumbnailUrl: thumbnailUrlGM";
+    const result = getKeyValPairs(authoredPairs);
+    expect(JSON.stringify(result)).to.equal('[{"mpcVideoId":"mpcVideoIdGM"},{"thumbnailUrl":"thumbnailUrlGM"}]');
+  });
 });
