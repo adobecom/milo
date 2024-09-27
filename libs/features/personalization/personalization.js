@@ -323,11 +323,9 @@ function normalizeKeys(obj) {
   }, {});
 }
 
-function registerInBlockActions(cmd, manifestId, targetManifestId) {
-  const { action, content, selector } = cmd;
-  const command = { action, content, manifestId, targetManifestId };
-
-  const blockAndSelector = selector.substring(IN_BLOCK_SELECTOR_PREFIX.length).trim().split(/\s+/);
+function registerInBlockActions(command) {
+  const blockAndSelector = command.selector.substring(IN_BLOCK_SELECTOR_PREFIX.length)
+    .trim().split(/\s+/);
   const [blockName] = blockAndSelector;
 
   const config = getConfig();
