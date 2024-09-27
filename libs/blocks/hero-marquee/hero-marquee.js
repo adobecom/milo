@@ -133,14 +133,16 @@ function parseKeyString(str) {
   return result;
 }
 
-function isElementEmpty(element) {
-  for (const node of element.childNodes) {
+function isElementEmpty(el) {
+  const asset = el.querySelector('picture, video');
+  console.log('el.textContent', !el.textContent.trim(), !el.querySelector('picture', 'video'));
+  for (const node of el.childNodes) {
     if (node.nodeType === Node.TEXT_NODE && !node.nodeValue.trim()) {
-      element.removeChild(node);
+      el.removeChild(node);
     }
   }
-  if (element.childNodes.length === 0) return true;
-  for (const child of element.children) {
+  if (el.childNodes.length === 0) return true;
+  for (const child of el.children) {
     if (child.hasChildNodes()) {
       return false;
     }
@@ -183,7 +185,7 @@ export default async function init(el) {
   if (rows.length <= 1) return;
   const [head, ...tail] = rows;
   rows = tail;
-  if (isElementEmpty(head)) {
+  if (!head.textContent.trim() && !head.querySelector('picture', 'video')) {
     head.remove();
   } else {
     el.classList.add('has-bg');
