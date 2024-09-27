@@ -650,8 +650,15 @@ export function convertStageLinks({ anchors, config, hostname }) {
       .find((domain) => a.href.includes(domain));
     if (!matchedDomain) return;
     a.href = a.href.replace(a.hostname, domainsMap[matchedDomain] === 'origin'
-      ? hostname
-      : domainsMap[matchedDomain]);
+      ? hostname.to || hostname
+      : domainsMap[matchedDomain].to || domainsMap[matchedDomain]);
+    if (!domainsMap[matchedDomain].removeExt) return;
+    const urlObject = new URL(a.href);
+    const path = urlObject.pathname;
+    const extension = path.split('.').pop();
+    if (!extension) return;
+    urlObject.pathname = path.replace(`.${extension}`, '');
+    a.href = urlObject.toString();
   });
 }
 

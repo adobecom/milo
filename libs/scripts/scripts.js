@@ -35,6 +35,7 @@ const stageDomainsMap = {
     'business.adobe.com': 'main--bacom--adobecom.hlx.page',
   },
   '.business-graybox.adobe.com': { 'business.adobe.com': 'origin' },
+  localhost: { 'www.adobe.com': { to: 'main--dc--adobecom.hlx.page', removeExt: true } },
 };
 
 const config = {
