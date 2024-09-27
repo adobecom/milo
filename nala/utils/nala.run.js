@@ -76,9 +76,9 @@ function parseArgs(args) {
     } else if (['ui', 'debug', 'headless', 'headed'].includes(arg)) {
       parsedParams.mode = arg;
     } else if (arg.startsWith('owner=')) {
-      const [_, owner] = arg.split('=');
+      const owner = arg.split('=')[1];
       parsedParams.owner = owner || 'adobecom';
-    }else {
+    } else {
       parsedParams.env = arg;
     }
   });
