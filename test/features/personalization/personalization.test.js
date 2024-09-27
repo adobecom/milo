@@ -40,7 +40,7 @@ describe('Functional Test', () => {
       '11111111-aaaa-bbbb-6666-cccccccccccc': 'my-special-app',
       '22222222-xxxx-bbbb-7777-cccccccccccc': 'fireflies',
     };
-    stub(URLSearchParams.prototype, 'get').returns([{'instant' : "2023-02-11"}]);
+    stub(URLSearchParams.prototype, 'get').returns([{ instant: '2023-02-11' }]);
   });
 
   it('Invalid selector should not fail page render and rest of items', async () => {
