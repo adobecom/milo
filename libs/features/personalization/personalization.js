@@ -1085,16 +1085,16 @@ export async function init(enablements = {}) {
       try {
         if (!resp.ok) {
           /* c8 ignore next 5 */
-            if (resp.status === 404) {
-              throw new Error('File not found');
-            }
+          if (resp.status === 404) {
+            throw new Error('File not found');
+          }
           throw new Error(`Invalid response: ${resp.status} ${resp.statusText}`);
         }
         const manifestData = await resp.json();
         return { manifestData, manifestPath: resp.url };
       } catch (e) {
         /* c8 ignore next 3 */
-          console.log(`Error loading content: ${resp.url}`, e.message || e);
+        console.log(`Error loading content: ${resp.url}`, e.message || e);
       }
       return null;
     })
