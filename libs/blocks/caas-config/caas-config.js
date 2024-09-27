@@ -660,7 +660,7 @@ const PaginationPanel = () => {
       options=${defaultOptions.paginationType}
     />
     <${Select}
-      label="Animation Style"
+      label="Carousel Animation Style"
       prop="paginationAnimationStyle"
       options=${defaultOptions.paginationAnimationStyle}
     />
@@ -827,10 +827,21 @@ const CopyBtn = () => {
     }, 2000);
   };
 
+  const removeDefaultsFromState = (fullState) => {
+    const reducedState = {};
+    Object.keys(fullState).forEach((key) => {
+      if (JSON.stringify(fullState[key]) !== JSON.stringify(defaultState[key])) {
+        reducedState[key] = fullState[key];
+      }
+    });
+    return reducedState;
+  };
+
   const getUrl = async () => {
     const url = new URL(window.location.href);
     url.search = '';
-    const hashStr = await getEncodedObject(state, fgKeyReplacer);
+    const reducedState = removeDefaultsFromState(state);
+    const hashStr = await getEncodedObject(reducedState, fgKeyReplacer);
     // starts with ~~ to differentiate from old hash format
     url.hash = `~~${hashStr}`;
     return url.href;
@@ -856,7 +867,7 @@ const CopyBtn = () => {
       hour12: false,
     });
     const collectionName = state.collectionName ? `- ${state.collectionName} ` : '';
-    link.textContent = `Content as a Service v2 ${collectionName}- ${dateStr}${state.doNotLazyLoad ? ' (no-lazy)' : ''}`;
+    link.textContent = `Content as a Service v3 ${collectionName}- ${dateStr}${state.doNotLazyLoad ? ' (no-lazy)' : ''}`;
 
     const blob = new Blob([link.outerHTML], { type: 'text/html' });
     const data = [new ClipboardItem({ [blob.type]: blob })];

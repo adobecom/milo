@@ -1,13 +1,11 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-console */
 
-import {
-  createTag, getConfig, loadLink, loadScript, localizeLink, updateConfig,
-} from '../../utils/utils.js';
+import { createTag, getConfig, loadLink, loadScript, localizeLink } from '../../utils/utils.js';
 import { getEntitlementMap } from './entitlements.js';
 
 /* c8 ignore start */
-const PHONE_SIZE = window.screen.width < 768 || window.screen.height < 768;
+const PHONE_SIZE = window.screen.width < 550 || window.screen.height < 550;
 export const PERSONALIZATION_TAGS = {
   all: () => true,
   chrome: () => navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Edg'),
@@ -150,6 +148,17 @@ const createFrag = (el, action, content, manifestId, targetManifestId) => {
   return frag;
 };
 
+export function replacePlaceholders(value, placeholders) {
+  let val = value;
+  const matches = val.match(/{{(.*?)}}/g);
+  if (!matches) return val;
+  matches.forEach((match) => {
+    const key = match.replace(/{{|}}/g, '').trim();
+    if (placeholders[key]) val = val.replace(match, placeholders[key]);
+  });
+  return val;
+}
+
 export const createContent = (el, content, manifestId, targetManifestId, action, modifiers) => {
   if (action === 'replace') {
     addIds(el, manifestId, targetManifestId);
@@ -160,11 +169,16 @@ export const createContent = (el, content, manifestId, targetManifestId, action,
     return el;
   }
   if (getSelectorType(content) !== 'fragment') {
+    const config = getConfig();
+    const newContent = replacePlaceholders(content, config.placeholders);
+
     if (action === 'replace') {
-      el.innerHTML = content;
+      el.innerHTML = newContent;
+
       return el;
     }
-    const container = createTag('div', {}, content);
+
+    const container = createTag('div', {}, newContent);
     addIds(container, manifestId, targetManifestId);
     return container;
   }
@@ -193,6 +207,11 @@ const COMMANDS = {
   },
 };
 
+const log = (...msg) => {
+  const config = getConfig();
+  if (config.mep?.preview) console.log(...msg);
+};
+
 const fetchData = async (url, type = DATA_TYPE.JSON) => {
   try {
     const resp = await fetch(normalizePath(url));
@@ -206,7 +225,7 @@ const fetchData = async (url, type = DATA_TYPE.JSON) => {
     return await resp[type]();
   } catch (e) {
     /* c8 ignore next 3 */
-    console.log(`Error loading content: ${url}`, e.message || e);
+    log(`Error loading content: ${url}`, e.message || e);
   }
   return null;
 };
@@ -305,7 +324,7 @@ const querySelector = (el, selector, all = false) => {
     return all ? el.querySelectorAll(selector) : el.querySelector(selector);
   } catch (e) {
     /* eslint-disable-next-line no-console */
-    console.log('Invalid selector: ', selector);
+    log('Invalid selector: ', selector);
     return null;
   }
 };
@@ -359,16 +378,21 @@ function modifySelectorTerm(termParam) {
     'primary-cta': 'strong a',
     'secondary-cta': 'em a',
     'action-area': '*:has(> em a, > strong a)',
+    'any-marquee-section': 'main > div:has([class*="marquee"])',
     'any-marquee': '[class*="marquee"]',
-    header: ':is(h1, h2, h3, h4, h5, h6)',
+    'any-header': ':is(h1, h2, h3, h4, h5, h6)',
   };
   const otherSelectors = ['row', 'col'];
-  const htmlEls = ['main', 'div', 'a', 'p', 'strong', 'em', 'picture', 'source', 'img', 'h'];
+  const htmlEls = [
+    'html', 'body', 'header', 'footer', 'main',
+    'div', 'a', 'p', 'strong', 'em', 'picture', 'source', 'img', 'h',
+    'ul', 'ol', 'li',
+  ];
   const startTextMatch = term.match(/^[a-zA-Z/./-]*/);
   const startText = startTextMatch ? startTextMatch[0].toLowerCase() : '';
   const startTextPart1 = startText.split(/\.|:/)[0];
   const endNumberMatch = term.match(/[0-9]*$/);
-  const endNumber = endNumberMatch ? endNumberMatch[0] : '';
+  const endNumber = endNumberMatch && startText.match(/^[a-zA-Z]/) ? endNumberMatch[0] : '';
   if (!startText || htmlEls.includes(startText)) return term;
   if (otherSelectors.includes(startText)) {
     term = term.replace(startText, '> div');
@@ -494,6 +518,10 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
   // retro support
   const action = line.action?.toLowerCase()
     .replace('content', '').replace('fragment', '').replace('tosection', '');
+  if (!action) {
+    log('Row found with empty action field: ', line);
+    return;
+  }
   const pageFilter = line['page filter'] || line['page filter optional'];
   const { selector } = line;
 
@@ -546,9 +574,6 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
       }
     } else if (action in COMMANDS || action in CREATE_CMDS) {
       variants[vn].commands.push(variantInfo);
-    } else {
-      /* c8 ignore next 2 */
-      console.log('Invalid action found: ', line);
     }
   });
 };
@@ -580,7 +605,7 @@ export function parseManifestVariants(data, manifestPath, targetId) {
     return manifestConfig;
   } catch (e) {
     /* c8 ignore next 3 */
-    console.log('error parsing personalization manifestConfig:', e, experiences);
+    log('error parsing personalization manifestConfig:', e, experiences);
   }
   return null;
 }
@@ -724,7 +749,7 @@ export const addMepAnalytics = (config, header) => {
     }
   });
 };
-export async function getManifestConfig(info, variantOverride = false) {
+export async function getManifestConfig(info = {}, variantOverride = false) {
   const {
     name,
     manifestData,
@@ -758,7 +783,7 @@ export async function getManifestConfig(info, variantOverride = false) {
 
   if (!manifestConfig) {
     /* c8 ignore next 3 */
-    console.log('Error loading personalization manifestConfig: ', name || manifestPath);
+    log('Error loading personalization manifestConfig: ', name || manifestPath);
     return null;
   }
   const infoKeyMap = {
@@ -787,28 +812,13 @@ export async function getManifestConfig(info, variantOverride = false) {
   }
 
   manifestConfig.manifestPath = normalizePath(manifestPath);
-  const selectedVariantName = await getPersonalizationVariant(
+  manifestConfig.selectedVariantName = await getPersonalizationVariant(
     manifestConfig.manifestPath,
     manifestConfig.variantNames,
     variantLabel,
   );
 
-  if (selectedVariantName && manifestConfig.variantNames.includes(selectedVariantName)) {
-    manifestConfig.run = true;
-    manifestConfig.selectedVariantName = selectedVariantName;
-    manifestConfig.selectedVariant = manifestConfig.variants[selectedVariantName];
-  } else {
-    /* c8 ignore next 2 */
-    manifestConfig.selectedVariantName = 'default';
-    manifestConfig.selectedVariant = 'default';
-  }
-  const placeholders = manifestPlaceholders || data?.placeholders?.data;
-  if (placeholders) {
-    updateConfig(
-      parsePlaceholders(placeholders, getConfig(), manifestConfig.selectedVariantName),
-    );
-  }
-
+  manifestConfig.placeholderData = manifestPlaceholders || data?.placeholders?.data;
   manifestConfig.name = name;
   manifestConfig.manifest = manifestPath;
   manifestConfig.manifestUrl = manifestUrl;
@@ -896,8 +906,22 @@ export function cleanAndSortManifestList(manifests) {
       } else {
         manifestObj[manifest.manifestPath] = manifest;
       }
+
+      const manifestConfig = manifestObj[manifest.manifestPath];
+      const { selectedVariantName, variantNames, placeholderData } = manifestConfig;
+      if (selectedVariantName && variantNames.includes(selectedVariantName)) {
+        manifestConfig.run = true;
+        manifestConfig.selectedVariantName = selectedVariantName;
+        manifestConfig.selectedVariant = manifestConfig.variants[selectedVariantName];
+      } else {
+        /* c8 ignore next 2 */
+        manifestConfig.selectedVariantName = 'default';
+        manifestConfig.selectedVariant = 'default';
+      }
+
+      parsePlaceholders(placeholderData, getConfig(), manifestConfig.selectedVariantName);
     } catch (e) {
-      console.warn(e);
+      log(`MEP Error parsing manifests: ${e.toString()}`);
       window.lana?.log(`MEP Error parsing manifests: ${e.toString()}`);
     }
   });
@@ -924,6 +948,13 @@ export function handleFragmentCommand(command, a) {
   return false;
 }
 
+export function parseNestedPlaceholders({ placeholders }) {
+  if (!placeholders) return;
+  Object.entries(placeholders).forEach(([key, value]) => {
+    placeholders[key] = replacePlaceholders(value, placeholders);
+  });
+}
+
 export async function applyPers(manifests, postLCP = false) {
   if (!manifests?.length) return;
   let experiments = manifests;
@@ -933,6 +964,7 @@ export async function applyPers(manifests, postLCP = false) {
   }
 
   experiments = cleanAndSortManifestList(experiments);
+  parseNestedPlaceholders(config);
 
   let results = [];
 
@@ -1045,7 +1077,7 @@ export async function init(enablements = {}) {
   try {
     await applyPers(manifests, postLCP);
   } catch (e) {
-    console.warn(e);
+    log(`MEP Error: ${e.toString()}`);
     window.lana?.log(`MEP Error: ${e.toString()}`);
   }
 }

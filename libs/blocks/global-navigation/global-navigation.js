@@ -36,11 +36,22 @@ import {
   addMepHighlightAndTargetId,
   isDarkMode,
   darkIcons,
+  setDisableAEDState,
+  getDisableAEDState,
 } from './utilities/utilities.js';
 
 import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
 
 const SIGNIN_CONTEXT = getConfig()?.signInContext;
+
+function getHelpChildren() {
+  const { unavHelpChildren } = getConfig();
+  return unavHelpChildren || [
+    { type: 'Support' },
+    { type: 'Community' },
+  ];
+}
+
 export const CONFIG = {
   icons: isDarkMode() ? darkIcons : icons,
   delays: {
@@ -96,13 +107,7 @@ export const CONFIG = {
       },
       help: {
         name: 'help',
-        attributes: {
-          children: [
-            { type: 'Support' },
-            { type: 'Community' },
-            // { type: 'Jarvis', appid: window.adobeid?.client_id },
-          ],
-        },
+        attributes: { children: getHelpChildren() },
       },
     },
   },
@@ -267,6 +272,7 @@ class Gnav {
   constructor({ content, block } = {}) {
     this.content = content;
     this.block = block;
+    this.customLinks = getConfig()?.customLinks ? getConfig().customLinks.split(',') : [];
 
     this.blocks = {
       profile: {
@@ -521,7 +527,7 @@ class Gnav {
       return 'linux';
     };
 
-    const unavVersion = new URLSearchParams(window.location.search).get('unavVersion') || '1.1';
+    const unavVersion = new URLSearchParams(window.location.search).get('unavVersion') || '1.3';
     await Promise.all([
       loadScript(`https://${environment}.adobeccstatic.com/unav/${unavVersion}/UniversalNav.js`),
       loadStyles(`https://${environment}.adobeccstatic.com/unav/${unavVersion}/UniversalNav.css`),
@@ -608,9 +614,6 @@ class Gnav {
       locale,
       imsClientId: window.adobeid?.client_id,
       theme: isDarkMode() ? 'dark' : 'light',
-      onReady: () => {
-        this.decorateAppPrompt({ getAnchorState: () => window.UniversalNav.getComponent?.('app-switcher') });
-      },
       analyticsContext: {
         consumer: {
           name: 'adobecom',
@@ -627,8 +630,8 @@ class Gnav {
 
     // Exposing UNAV config for consumers
     CONFIG.universalNav.universalNavConfig = getConfiguration();
-    window.UniversalNav(CONFIG.universalNav.universalNavConfig);
-
+    await window.UniversalNav(CONFIG.universalNav.universalNavConfig);
+    this.decorateAppPrompt({ getAnchorState: () => window.UniversalNav.getComponent?.('app-switcher') });
     isDesktop.addEventListener('change', () => {
       window.UniversalNav.reload(CONFIG.universalNav.universalNavConfig);
     });
@@ -638,9 +641,12 @@ class Gnav {
     const state = getMetadata('app-prompt')?.toLowerCase();
     const entName = getMetadata('app-prompt-entitlement')?.toLowerCase();
     const promptPath = getMetadata('app-prompt-path')?.toLowerCase();
+    const hasMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i.test(navigator.userAgent);
+
     if (state === 'off'
       || !window.adobeIMS?.isSignedInUser()
       || !isDesktop.matches
+      || hasMobileUA
       || !entName?.length
       || !promptPath?.length) return;
 
@@ -671,6 +677,11 @@ class Gnav {
     const toggle = this.elements.mobileToggle;
     const isExpanded = this.isToggleExpanded();
     toggle?.setAttribute('aria-expanded', !isExpanded);
+    if (!isExpanded) {
+      document.body.classList.add('disable-scroll');
+    } else {
+      document.body.classList.remove('disable-scroll');
+    }
     this.elements.navWrapper?.classList?.toggle('feds-nav-wrapper--expanded', !isExpanded);
     closeAllDropdowns();
     setCurtainState(!isExpanded);
@@ -695,7 +706,7 @@ class Gnav {
         this.elements.mainNav.style.removeProperty('padding-bottom');
       } else {
         const offset = Math.ceil(this.elements.topnavWrapper.getBoundingClientRect().bottom);
-        this.elements.mainNav.style.setProperty('padding-bottom', `${offset}px`);
+        this.elements.mainNav.style.setProperty('padding-bottom', `${2 * offset}px`);
       }
     };
 
@@ -717,6 +728,7 @@ class Gnav {
       if (isDesktop.matches) {
         toggle.setAttribute('aria-expanded', false);
         this.elements.navWrapper.classList.remove('feds-nav-wrapper--expanded');
+        document.body.classList.remove('disable-scroll');
         setCurtainState(false);
         closeAllDropdowns();
         this.blocks?.search?.instance?.clearSearchForm();
@@ -822,6 +834,7 @@ class Gnav {
         ${isDesktop.matches ? '' : this.decorateSearch()}
         ${this.elements.mainNav}
         ${isDesktop.matches ? this.decorateSearch() : ''}
+        ${getConfig().searchEnabled === 'on' ? toFragment`<div class="feds-client-search"></div>` : ''}
       </div>
     `;
 
@@ -834,13 +847,17 @@ class Gnav {
 
     for await (const [index, item] of items.entries()) {
       await yieldToMain();
-      this.elements.mainNav.appendChild(this.decorateMainNavItem(item, index));
+      const mainNavItem = this.decorateMainNavItem(item, index);
+      if (mainNavItem) {
+        this.elements.mainNav.appendChild(mainNavItem);
+      }
     }
 
     if (!hasActiveLink()) {
       const sections = this.elements.mainNav.querySelectorAll('.feds-navItem--section');
+      const disableAED = getDisableAEDState();
 
-      if (sections.length === 1) {
+      if (!disableAED && sections.length === 1) {
         sections[0].classList.add(selectors.activeNavItem.slice(1));
         setActiveLink(true);
       }
@@ -852,8 +869,9 @@ class Gnav {
   // eslint-disable-next-line class-methods-use-this
   getMainNavItemType = (item) => {
     const itemTopParent = item.closest('div');
+    const isLinkGroup = !!item.closest('.link-group');
     const hasSyncDropdown = itemTopParent instanceof HTMLElement
-      && itemTopParent.childElementCount > 1;
+      && !isLinkGroup && itemTopParent.childElementCount > 1;
     if (hasSyncDropdown) return 'syncDropdownTrigger';
     const hasAsyncDropdown = itemTopParent instanceof HTMLElement
       && itemTopParent.closest('.large-menu') instanceof HTMLElement;
@@ -942,6 +960,8 @@ class Gnav {
             ${decorateCta({ elem: item, type: itemType, index: index + 1 })}
           </div>`, item);
       case 'link': {
+        let customLinkModifier = '';
+        let removeCustomLink = false;
         const linkElem = item.querySelector('a');
         linkElem.className = 'feds-navLink';
         linkElem.setAttribute('daa-ll', getAnalyticsValue(linkElem.textContent, index + 1));
@@ -953,11 +973,25 @@ class Gnav {
           linkElem.setAttribute('tabindex', 0);
         }
 
+        const customLinksSection = item.closest('.link-group');
+        if (customLinksSection) {
+          const removeLink = () => {
+            const url = new URL(linkElem.href);
+            linkElem.setAttribute('href', `${url.origin}${url.pathname}${url.search}`);
+            const linkHash = url.hash.slice(2);
+            return !this.customLinks.includes(linkHash);
+          };
+          [...customLinksSection.classList].splice(1).forEach((className) => {
+            customLinkModifier = ` feds-navItem--${className}`;
+          });
+          removeCustomLink = removeLink();
+        }
+
         const linkTemplate = toFragment`
-          <div class="feds-navItem${activeModifier}">
+          <div class="feds-navItem${activeModifier}${customLinkModifier}">
             ${linkElem}
           </div>`;
-        return addMepHighlightAndTargetId(linkTemplate, item);
+        return removeCustomLink ? null : addMepHighlightAndTargetId(linkTemplate, item);
       }
       case 'text':
         return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered">
@@ -1024,23 +1058,28 @@ const getSource = async () => {
 };
 
 export default async function init(block) {
-  try {
-    const { mep } = getConfig();
-    const url = await getSource();
-    const content = await fetchAndProcessPlainHtml({ url });
-    if (!content) return null;
-    const gnav = new Gnav({
-      content,
-      block,
-    });
-    gnav.init();
-    block.setAttribute('daa-im', 'true');
-    const mepMartech = mep?.martech || '';
-    block.setAttribute('daa-lh', `gnav|${getExperienceName()}${mepMartech}`);
-    if (isDarkMode()) block.classList.add('feds--dark');
-    return gnav;
-  } catch (e) {
-    lanaLog({ message: 'Could not create global navigation.', e, tags: 'errorType=error,module=gnav' });
-    return null;
+  const { mep } = getConfig();
+  const sourceUrl = await getSource();
+  const [url, hash = ''] = sourceUrl.split('#');
+  if (hash === '_noActiveItem') {
+    setDisableAEDState();
   }
+  const content = await fetchAndProcessPlainHtml({ url });
+  if (!content) {
+    const error = new Error('Could not create global navigation. Content not found!');
+    error.tags = 'errorType=error,module=gnav';
+    error.url = url;
+    lanaLog({ message: error.message, error, tags: 'errorType=error,module=gnav' });
+    throw error;
+  }
+  const gnav = new Gnav({
+    content,
+    block,
+  });
+  gnav.init();
+  block.setAttribute('daa-im', 'true');
+  const mepMartech = mep?.martech || '';
+  block.setAttribute('daa-lh', `gnav|${getExperienceName()}${mepMartech}`);
+  if (isDarkMode()) block.classList.add('feds--dark');
+  return gnav;
 }

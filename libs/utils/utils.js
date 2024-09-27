@@ -75,6 +75,7 @@ const MILO_BLOCKS = [
   'tabs',
   'table-of-contents',
   'text',
+  'timeline',
   'walls-io',
   'table',
   'table-metadata',
@@ -447,27 +448,27 @@ export async function loadTemplate() {
   await Promise.all([styleLoaded, scriptLoaded]);
 }
 
+function getBlockData(block) {
+  const name = block.classList[0];
+  const { miloLibs, codeRoot, mep } = getConfig();
+  const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : codeRoot;
+  let path = `${base}/blocks/${name}`;
+  if (mep?.blocks?.[name]) path = mep.blocks[name];
+  const blockPath = `${path}/${name}`;
+  const hasStyles = AUTO_BLOCKS.find((ab) => Object.keys(ab).includes(name))?.styles ?? true;
+
+  return { blockPath, name, hasStyles };
+}
+
 export async function loadBlock(block) {
   if (block.classList.contains('hide-block')) {
     block.remove();
     return null;
   }
-
-  const name = block.classList[0];
-  const hasStyles = AUTO_BLOCKS.find((ab) => Object.keys(ab).includes(name))?.styles ?? true;
-  const { miloLibs, codeRoot, mep } = getConfig();
-
-  const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : codeRoot;
-  let path = `${base}/blocks/${name}`;
-
-  if (mep?.blocks?.[name]) path = mep.blocks[name];
-
-  const blockPath = `${path}/${name}`;
-
+  const { name, blockPath, hasStyles } = getBlockData(block);
   const styleLoaded = hasStyles && new Promise((resolve) => {
     loadStyle(`${blockPath}.css`, resolve);
   });
-
   const scriptLoaded = new Promise((resolve) => {
     (async () => {
       try {
@@ -639,17 +640,31 @@ const decorateCopyLink = (a, evt) => {
   });
 };
 
+export function convertStageLinks({ anchors, config, hostname }) {
+  if (config.env?.name === 'prod' || !config.stageDomainsMap) return;
+  const matchedRules = Object.entries(config.stageDomainsMap)
+    .find(([domain]) => hostname.includes(domain));
+  if (!matchedRules) return;
+  const [, domainsMap] = matchedRules;
+  [...anchors].forEach((a) => {
+    const matchedDomain = Object.keys(domainsMap)
+      .find((domain) => a.href.includes(domain));
+    if (!matchedDomain) return;
+    a.href = a.href.replace(a.hostname, domainsMap[matchedDomain] === 'origin'
+      ? hostname
+      : domainsMap[matchedDomain]);
+  });
+}
+
 export function decorateLinks(el) {
   const config = getConfig();
   decorateImageLinks(el);
   const anchors = el.getElementsByTagName('a');
-  return [...anchors].reduce((rdx, a) => {
+  const { hostname } = window.location;
+  const links = [...anchors].reduce((rdx, a) => {
     appendHtmlToLink(a);
     a.href = localizeLink(a.href);
     decorateSVG(a);
-    if (config.env?.name === 'stage' && config.stageDomainsMap?.[a.hostname]) {
-      a.href = a.href.replace(a.hostname, config.stageDomainsMap[a.hostname]);
-    }
     if (a.href.includes('#_blank')) {
       a.setAttribute('target', '_blank');
       a.href = a.href.replace('#_blank', '');
@@ -682,6 +697,8 @@ export function decorateLinks(el) {
     }
     return rdx;
   }, []);
+  convertStageLinks({ anchors, config, hostname });
+  return links;
 }
 
 function decorateContent(el) {
@@ -718,6 +735,8 @@ function decorateDefaults(el) {
 }
 
 function decorateHeader() {
+  const breadcrumbs = document.querySelector('.breadcrumbs');
+  breadcrumbs?.remove();
   const header = document.querySelector('header');
   if (!header) return;
   const headerMeta = getMetadata('header');
@@ -731,7 +750,7 @@ function decorateHeader() {
   || getConfig().breadcrumbs;
   if (metadataConfig === 'off') return;
   const baseBreadcrumbs = getMetadata('breadcrumbs-base')?.length;
-  const breadcrumbs = document.querySelector('.breadcrumbs');
+
   const autoBreadcrumbs = getMetadata('breadcrumbs-from-url') === 'on';
   const dynamicNavActive = getMetadata('dynamic-nav') === 'on'
     && window.sessionStorage.getItem('gnavSource') !== null;
@@ -1208,41 +1227,51 @@ export function partition(arr, fn) {
   );
 }
 
-async function processSection(section, config, isDoc) {
-  const inlineFrags = [...section.el.querySelectorAll('a[href*="#_inline"]')];
-  if (inlineFrags.length) {
-    const { default: loadInlineFrags } = await import('../blocks/fragment/fragment.js');
-    const fragPromises = inlineFrags.map((link) => loadInlineFrags(link));
-    await Promise.all(fragPromises);
-    const newlyDecoratedSection = decorateSection(section.el, section.idx);
-    section.blocks = newlyDecoratedSection.blocks;
-    section.preloadLinks = newlyDecoratedSection.preloadLinks;
+const preloadBlockResources = (blocks = []) => blocks.map((block) => {
+  if (block.classList.contains('hide-block')) return null;
+  const { blockPath, hasStyles, name } = getBlockData(block);
+  if (['marquee', 'hero-marquee'].includes(name)) {
+    loadLink(`${getConfig().base}/utils/decorate.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
   }
-  await decoratePlaceholders(section.el, config);
+  loadLink(`${blockPath}.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+  return hasStyles && new Promise((resolve) => { loadStyle(`${blockPath}.css`, resolve); });
+}).filter(Boolean);
 
+async function resolveInlineFrags(section) {
+  const inlineFrags = [...section.el.querySelectorAll('a[href*="#_inline"]')];
+  if (!inlineFrags.length) return;
+  const { default: loadInlineFrags } = await import('../blocks/fragment/fragment.js');
+  const fragPromises = inlineFrags.map((link) => loadInlineFrags(link));
+  await Promise.all(fragPromises);
+  const newlyDecoratedSection = decorateSection(section.el, section.idx);
+  section.blocks = newlyDecoratedSection.blocks;
+  section.preloadLinks = newlyDecoratedSection.preloadLinks;
+}
+
+async function processSection(section, config, isDoc) {
+  await resolveInlineFrags(section);
+  const firstSection = section.el.dataset.idx === '0';
+  const stylePromises = firstSection ? preloadBlockResources(section.blocks) : [];
+  preloadBlockResources(section.preloadLinks);
+  await Promise.all([
+    decoratePlaceholders(section.el, config),
+    decorateIcons(section.el, config),
+  ]);
+  const loadBlocks = [...stylePromises];
   if (section.preloadLinks.length) {
-    const [modals, nonModals] = partition(section.preloadLinks, (block) => block.classList.contains('modal'));
-    const preloads = nonModals.map((block) => loadBlock(block));
-    await Promise.all(preloads);
+    const [modals, blocks] = partition(section.preloadLinks, (block) => block.classList.contains('modal'));
+    await Promise.all(blocks.map((block) => loadBlock(block)));
     modals.forEach((block) => loadBlock(block));
   }
 
-  const loaded = section.blocks.map((block) => loadBlock(block));
-
-  await decorateIcons(section.el, config);
+  section.blocks.forEach((block) => loadBlocks.push(loadBlock(block)));
 
   // Only move on to the next section when all blocks are loaded.
-  await Promise.all(loaded);
+  await Promise.all(loadBlocks);
 
-  // Show the section when all blocks inside are done.
   delete section.el.dataset.status;
-
-  if (isDoc && section.el.dataset.idx === '0') {
-    await loadPostLCP(config);
-  }
-
+  if (isDoc && firstSection) await loadPostLCP(config);
   delete section.el.dataset.idx;
-
   return section.blocks;
 }
 

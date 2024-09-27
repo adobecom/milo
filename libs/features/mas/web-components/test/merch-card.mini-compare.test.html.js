@@ -4,29 +4,21 @@ import { expect } from '@esm-bundle/chai';
 
 import { mockLana } from './mocks/lana.js';
 import { mockFetch } from './mocks/fetch.js';
-import { mockConfig } from './mocks/config.js';
 
+import './utils.js';
 import '../src/merch-offer.js';
 import '../src/merch-offer-select.js';
 import '../src/merch-quantity-select.js';
 
-import { appendMiloStyles } from './utils.js';
 import { mockIms } from './mocks/ims.js';
-import { withLiterals } from './mocks/literals.js';
 import { withWcs } from './mocks/wcs.js';
 import mas from './mas.js';
-
-const skipTests = sessionStorage.getItem('skipTests');
 
 runTests(async () => {
     mockIms();
     mockLana();
-    await mockFetch(withWcs, withLiterals);
+    await mockFetch(withWcs);
     await mas();
-    if (skipTests !== null) {
-        appendMiloStyles();
-        return;
-    }
     describe('merch-card web component with mini-compare variant', () => {
         it('mini-compare-chart should have same body slot heights', async () => {
             const miniCompareCharts = document.querySelectorAll(
@@ -49,21 +41,19 @@ runTests(async () => {
                     'slot[name="heading-m"]',
                     'slot[name="body-m"]',
                     'slot[name="heading-m-price"]',
+                    'slot[name="body-xxs"]',
                     'slot[name="price-commitment"]',
                     'slot[name="offers"]',
                     'slot[name="promo-text"]',
                     'slot[name="callout-content"]',
                     'footer',
                 ]
-                    .map((selector) =>
-                        Math.round(
-                            window.getComputedStyle(
-                                miniCompareChart.shadowRoot.querySelector(
-                                    selector,
-                                ),
-                            ).height,
-                        ),
-                    )
+                    .map((selector) => {
+                        const el =
+                            miniCompareChart.shadowRoot.querySelector(selector);
+                        if (!el) return 0;
+                        return parseInt(window.getComputedStyle(el).height, 10);
+                    })
                     .join(',');
                 return heights;
             });
@@ -84,28 +74,31 @@ runTests(async () => {
             ].map((miniCompareChart) => {
                 const heights = new Array(5)
                     .fill()
-                    .map((_, i) =>
-                        Math.round(
-                            window.getComputedStyle(
-                                miniCompareChart.querySelector(
-                                    `.footer-row-cell:nth-child(${i + 1})`,
+                    .map(
+                        (_, i) =>
+                            parseInt(
+                                window.getComputedStyle(
+                                    miniCompareChart.querySelector(
+                                        `.footer-row-cell:nth-child(${i + 1})`,
+                                    ),
                                 ),
+                                10,
                             ).height,
-                        ),
                     )
                     .join(',');
                 return heights;
             });
+            expect(card1Rows).to.not.contain('NaN');
             expect(card1Rows).to.equal(card2Rows);
             expect(card2Rows).to.equal(card3Rows);
         });
 
-        it('mini-compare-chart should ', async () => {
+        it('mini-compare-chart should remove empty rows', async () => {
             const miniCompareChart = document.querySelector(
                 'merch-card[variant="mini-compare-chart"]',
             );
-            miniCompareChart.removeEmptyRows();
-            expect(true, 'removing empty lines do not fail').to.be.true;  // TODO improve the assertion
+            miniCompareChart?.variantLayout?.removeEmptyRows();
+            expect(true, 'removing empty lines do not fail').to.be.true; // TODO improve the assertion
         });
     });
 });

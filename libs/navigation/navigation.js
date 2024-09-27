@@ -4,7 +4,7 @@ const blockConfig = [
     name: 'global-navigation',
     targetEl: 'header',
     appendType: 'prepend',
-    params: ['imsClientId'],
+    params: ['imsClientId', 'searchEnabled', 'unavHelpChildren', 'customLinks'],
   },
   {
     key: 'footer',
@@ -35,7 +35,12 @@ function getParamsConfigs(configs) {
 
 export default async function loadBlock(configs, customLib) {
   const {
-    header, footer, authoringPath, env = 'prod', locale = '', theme,
+    header,
+    footer,
+    authoringPath,
+    env = 'prod',
+    locale = '',
+    theme,
   } = configs || {};
   const branch = new URLSearchParams(window.location.search).get('navbranch');
   const miloLibs = branch ? `https://${branch}--milo--adobecom.hlx.page` : customLib || envMap[env];
@@ -61,16 +66,20 @@ export default async function loadBlock(configs, customLib) {
     ...paramConfigs,
   };
   setConfig(clientConfig);
-
-  blockConfig.forEach((block) => {
+  for await (const block of blockConfig) {
     const configBlock = configs[block.key];
-    if (configBlock) {
-      bootstrapBlock(`${miloLibs}/libs`, {
-        ...block,
-        ...(block.key === 'header' && { unavComponents: configBlock.unavComponents, redirect: configBlock.redirect }),
-      });
+    try {
+      if (configBlock) {
+        await bootstrapBlock(`${miloLibs}/libs`, {
+          ...block,
+          ...(block.key === 'header' && { unavComponents: configBlock.unavComponents, redirect: configBlock.redirect }),
+        });
+        configBlock.onReady?.();
+      }
+    } catch (e) {
+      configBlock.onError?.(e);
     }
-  });
+  }
 }
 
 window.loadNavigation = loadBlock;

@@ -3,6 +3,18 @@ import { modifyNonFragmentSelector } from '../../../libs/features/personalizatio
 
 const values = [
   {
+    b: 'body > main > div',
+    a: 'body > main > div',
+  },
+  {
+    b: 'main header',
+    a: 'main header',
+  },
+  {
+    b: 'main footer',
+    a: 'main footer',
+  },
+  {
     b: 'any-marquee action-area',
     a: '[class*="marquee"] *:has(> em a, > strong a)',
   },
@@ -23,7 +35,7 @@ const values = [
     a: '.marquee.light:nth-child(2) h2',
   },
   {
-    b: 'marquee.light:nth-child(2) header',
+    b: 'marquee.light:nth-child(2) any-header',
     a: '.marquee.light:nth-child(2) :is(h1, h2, h3, h4, h5, h6)',
   },
   {
@@ -105,7 +117,7 @@ const values = [
   },
   {
     b: 'section1 .random-block2',
-    a: 'main > div:nth-child(1) .random-block:nth-child(2 of .random-block)',
+    a: 'main > div:nth-child(1) .random-block2',
   },
   {
     b: 'main > section30',
@@ -122,6 +134,22 @@ const values = [
   {
     b: 'custom-block3',
     a: '.custom-block:nth-child(3 of .custom-block)',
+  },
+  {
+    b: 'any-marquee ol li:nth-child(2)',
+    a: '[class*="marquee"] ol li:nth-child(2)',
+  },
+  {
+    b: 'any-marquee ul li:nth-child(2)',
+    a: '[class*="marquee"] ul li:nth-child(2)',
+  },
+  {
+    b: 'any-marquee-section',
+    a: 'main > div:has([class*="marquee"])',
+  },
+  {
+    b: '.aside03',
+    a: '.aside03',
   },
 ];
 describe('test different values', () => {

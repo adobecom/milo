@@ -10,24 +10,34 @@ import {
   viewports,
   unavLocalesTestData,
   analyticsTestData,
+  unavVersion,
 } from './test-utilities.js';
 import { setConfig, getLocale } from '../../../libs/utils/utils.js';
-import initGnav, { getUniversalNavLocale, osMap } from '../../../libs/blocks/global-navigation/global-navigation.js';
+import initNav, { getUniversalNavLocale, osMap } from '../../../libs/blocks/global-navigation/global-navigation.js';
 import { isDesktop, isTangentToViewport, toFragment } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
 import logoOnlyNav from './mocks/global-navigation-only-logo.plain.js';
 import longNav from './mocks/global-navigation-long.plain.js';
 import darkNav from './mocks/dark-global-navigation.plain.js';
+import navigationWithCustomLinks from './mocks/navigation-with-custom-links.plain.js';
 import globalNavigationMock from './mocks/global-navigation.plain.js';
 import { getConfig } from '../../../tools/send-to-caas/send-utils.js';
 
 // TODO
 // - test localization
 
+async function initGnav(block) {
+  try {
+    await initNav(block);
+  } catch (e) {
+    // should throw error
+  }
+}
+
 describe('global navigation', () => {
   before(() => {
     document.head.innerHTML = `<link rel="icon" href="/libs/img/favicons/favicon.ico" size="any">
     <script src="https://auth.services.adobe.com/imslib/imslib.min.js" type="javascript/blocked" data-loaded="true"></script>
-    <script src="https://stage.adobeccstatic.com/unav/1.1/UniversalNav.js" type="javascript/blocked" data-loaded="true"></script>
+    <script src="https://stage.adobeccstatic.com/unav/${unavVersion}/UniversalNav.js" type="javascript/blocked" data-loaded="true"></script>
     `;
   });
 
@@ -366,8 +376,8 @@ describe('global navigation', () => {
         toFake: ['setTimeout'],
         shouldAdvanceTime: true,
       });
-      window.UniversalNav = sinon.spy();
-      window.UniversalNav.reload = sinon.spy();
+      window.UniversalNav = sinon.spy(() => Promise.resolve());
+      window.UniversalNav.reload = sinon.spy(() => Promise.resolve());
       // eslint-disable-next-line no-underscore-dangle
       window._satellite = { track: sinon.spy() };
       window.alloy = () => new Promise((resolve) => {
@@ -556,6 +566,15 @@ describe('global navigation', () => {
         fetchStub.calledOnceWith('http://localhost:2000/gnav.plain.html'),
       ).to.be.true;
     });
+
+    it('disable AED(Active Element Detetction) if gnav-souce used with hash "#_noActiveItem" modifier', async () => {
+      const gnavMeta = toFragment`<meta name="gnav-source" content="https://adobe.com/federal${customPath}#_noActiveItem">`;
+      document.head.append(gnavMeta);
+      document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
+      await initGnav(document.body.querySelector('header'));
+      const isActiveElement = !!document.querySelector('.global-navigation .feds-navItem--active');
+      expect(isActiveElement).to.be.false;
+    });
   });
 
   describe('Dynamic nav', () => {
@@ -578,7 +597,7 @@ describe('global navigation', () => {
       document.head.innerHTML = `<meta name="app-prompt" content="off" />
       <link rel="icon" href="/libs/img/favicons/favicon.ico" size="any" />
       <script src="https://auth.services.adobe.com/imslib/imslib.min.js" type="javascript/blocked" data-loaded="true"></script>
-      <script src="https://stage.adobeccstatic.com/unav/1.1/UniversalNav.js" type="javascript/blocked" data-loaded="true"></script>
+      <script src="https://stage.adobeccstatic.com/unav/${unavVersion}/UniversalNav.js" type="javascript/blocked" data-loaded="true"></script>
       `;
       const gnav = await createFullGlobalNavigation({});
       gnav.decorateAppPrompt();
@@ -592,7 +611,7 @@ describe('global navigation', () => {
       <meta name="app-prompt-path" content="https://dismiss-pep--milo--adobecom.hlx.page/drafts/raghavs/pep-prompt-content"/>
       <link rel="icon" href="/libs/img/favicons/favicon.ico" size="any" />
       <script src="https://auth.services.adobe.com/imslib/imslib.min.js" type="javascript/blocked" data-loaded="true"></script>
-      <script src="https://stage.adobeccstatic.com/unav/1.1/UniversalNav.js" type="javascript/blocked" data-loaded="true"></script>
+      <script src="https://stage.adobeccstatic.com/unav/${unavVersion}/UniversalNav.js" type="javascript/blocked" data-loaded="true"></script>
       `;
       const gnav = await createFullGlobalNavigation({});
       window.adobeIMS = { isSignedInUser: () => true };
@@ -618,6 +637,27 @@ describe('global navigation', () => {
     it('should use second image for dark theme', async () => {
       await createFullGlobalNavigation({ globalNavigation: darkNav, customConfig: { theme: 'dark' } });
       expect(document.querySelector(`${selectors.brandImage} img`).getAttribute('src')).to.equal('http://localhost:2000/test/blocks/global-navigation/mocks/adobe-dark-logo.svg');
+    });
+  });
+
+  describe('Client search feature in global navigation', () => {
+    it('should append the feds-client-search div when search is enabled', async () => {
+      await createFullGlobalNavigation({ customConfig: { searchEnabled: 'on' } });
+      expect(document.querySelector(selectors.topNavWrapper).classList.contains('feds-client-search')).to.exist;
+    });
+  });
+
+  describe('Custom Links for mobile hamburger menu', () => {
+    it('Add custom links through Link Group block in parallel to large menu\'s', async () => {
+      const customLinks = 'home,learn';
+      await createFullGlobalNavigation({
+        viewport: 'mobile',
+        globalNavigation: navigationWithCustomLinks,
+        customConfig: { customLinks },
+      });
+      expect(
+        document.querySelectorAll(selectors.customMobileLink).length,
+      ).to.equal(customLinks.split(',').length);
     });
   });
 });

@@ -155,7 +155,8 @@ p.preflight-content-heading-edit {
   bottom: 0;
 }
 
-.preflight-group-row.preflight-group-detail.is-checked::before {
+.preflight-group-row.preflight-group-detail.is-checked::before,
+.preflight-group-row.preflight-group-detail.is-checked.not-found::before {
   background-image: url('./img/check.svg');
   background-repeat: no-repeat;
   font-weight: 700;
@@ -175,6 +176,12 @@ a.preflight-edit {
   text-indent: -1000px;
   overflow: hidden;
   height: 32px;
+}
+
+.preflight-group-row.preflight-group-detail.not-found::before {
+  background-image: url('./img/red-error.svg');
+  background-repeat: no-repeat;
+  font-weight: 700;
 }
 
 .preflight-group-items {
@@ -198,6 +205,10 @@ span.preflight-date {
 
 p.preflight-date-wrapper {
   margin: 0;
+}
+
+p.preflight-date-wrapper .disabled-publish {
+  font-size: 0.8em;
 }
 
 .preflight-group-row p {
@@ -238,6 +249,9 @@ span.preflight-time {
 }
 
 .preflight-action {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
   background: var(--action-color);
   color: #FFF;
   font-weight: 700;
@@ -251,6 +265,51 @@ span.preflight-time {
   clip-path: polygon(0% 0%, var(--notch-size) 0%, calc(100% - var(--notch-size)) 0%, 100% var(--notch-size), 100% calc(100% - var(--notch-size)), 100% 100%, 0% 100%, 0% 100%);
 }
 
+.tooltip {
+  position: relative;
+}
+
+.tooltip::before {
+  content: attr(data-tooltip);
+  position: absolute;
+  right: 74%;
+  transform: translateX(50%);
+  bottom: 130%;
+  margin-top: 15px;
+  width: max-content;
+  max-width: 157px;
+  padding: 10px;
+  border-radius: 4px;
+  background: white;
+  color: var(--action-color);
+  text-align: center;
+  font-size: 14px;
+  font-weight: 400;
+  opacity: 0;
+  transition: opacity 0.3s, visibility 0.3s;
+  visibility: hidden;
+  line-height: 19px;
+}
+
+.tooltip::after {
+  content: '';
+  bottom: 103%;
+  right: 69%;
+  position: absolute;
+  margin: 12px 1px 0;
+  border: 5px solid white;
+  border-color: white transparent transparent;
+  opacity: 0;
+  transition: 200ms;
+  visibility: hidden;
+}
+
+.tooltip:hover::before,
+.tooltip:hover::after {
+  opacity: 1;
+  visibility: visible;
+  z-index: 9;
+}
 
 /* SEO */
 .seo-columns {
@@ -346,7 +405,7 @@ span.preflight-time {
 .dialog-modal#preflight .problem-links table td a {
   color: #fff;
   display: inline-block;
-  overflow-x: scroll;  
+  overflow-x: scroll; 
   position: absolute;
   top: 50%;
   left: 0;

@@ -3,61 +3,57 @@ import { build } from 'esbuild';
 
 const outfolder = '../../../../libs/deps/mas';
 
+const defaults = {
+    bundle: true,
+    format: 'esm',
+    minify: true,
+    // sourcemap: true,
+    platform: 'browser',
+};
+
 async function buildLitComponent(name) {
     const { metafile } = await build({
-        bundle: true,
+        ...defaults,
         entryPoints: [`./src/${name}.js`],
         external: ['lit'],
-        format: 'esm',
         metafile: true,
-        minify: true,
-        platform: 'browser',
         outfile: `${outfolder}/${name}.js`,
         plugins: [rewriteImports()],
-        // sourcemap: true,
     });
 
-    writeFileSync(`../../../../libs/deps/mas/${name}.json`, JSON.stringify(metafile));
+    writeFileSync(
+        `../../../../libs/deps/mas/${name}.json`,
+        JSON.stringify(metafile),
+    );
 }
 
 Promise.all([
     build({
-        bundle: true,
+        ...defaults,
         stdin: { contents: '' },
-        inject: [
-            './src/merch-card.js',
-            './src/merch-icon.js',
-        ],
-        format: 'esm',
-        minify: true,
+        inject: ['./src/merch-card.js', './src/merch-icon.js'],
         outfile: `${outfolder}/merch-card.js`,
         plugins: [rewriteImports()],
     }),
     build({
-        bundle: true,
+        ...defaults,
         stdin: { contents: '' },
         inject: ['./src/merch-offer.js', './src/merch-offer-select.js'],
-        format: 'esm',
-        minify: true,
+
         outfile: `${outfolder}/merch-offer-select.js`,
-        sourcemap: true,
         plugins: [rewriteImports()],
     }),
     build({
-        bundle: true,
+        ...defaults,
         entryPoints: ['./src/merch-card-collection.js'],
-        format: 'esm',
-        minify: true,
         plugins: [rewriteImports()],
         outfile: `${outfolder}/merch-card-collection.js`,
     }),
     build({
+        ...defaults,
         entryPoints: ['./src/sidenav/merch-sidenav.js'],
-        bundle: true,
-        minify: true,
         outfile: `${outfolder}/merch-sidenav.js`,
-        format: 'esm',
-        plugins: [rewriteImports()],
+        plugins: [rewriteImportsToLibsFolder()],
         external: ['lit'],
     }),
     buildLitComponent('merch-icon'),
@@ -71,13 +67,27 @@ Promise.all([
     buildLitComponent('merch-datasource'),
 ]).catch(() => process.exit(1));
 
-function rewriteImports(rew) {
+function rewriteImports() {
     return {
         name: 'rewrite-imports',
         setup(build) {
-            build.onResolve({ filter: /^lit(\/.*)?$/ }, (args) => {
+            build.onResolve({ filter: /^lit(\/.*)?$/ }, () => {
                 return {
                     path: '../lit-all.min.js',
+                    external: true,
+                };
+            });
+        },
+    };
+}
+
+function rewriteImportsToLibsFolder() {
+    return {
+        name: 'rewrite-imports-to-libs-folder',
+        setup(build) {
+            build.onResolve({ filter: /^lit(\/.*)?$/ }, () => {
+                return {
+                    path: '/libs/deps/lit-all.min.js',
                     external: true,
                 };
             });
