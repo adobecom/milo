@@ -318,15 +318,6 @@ function normalizeKeys(obj) {
   }, {});
 }
 
-const querySelector = (el, selector, all = false) => {
-  try {
-    return all ? el.querySelectorAll(selector) : el.querySelector(selector);
-  } catch (e) {
-    /* eslint-disable-next-line no-console */
-    console.log('Invalid selector: ', selector);
-    return null;
-  }
-};
 function registerInBlockActions(cmd, manifestId, targetManifestId) {
   const { action, content, selector } = cmd;
   const command = { action, content, manifestId, targetManifestId };
