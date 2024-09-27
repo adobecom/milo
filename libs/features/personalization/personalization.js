@@ -211,6 +211,11 @@ const COMMANDS = {
   },
 };
 
+const log = (...msg) => {
+  const config = getConfig();
+  if (config.mep?.preview) console.log(...msg);
+};
+
 const fetchData = async (url, type = DATA_TYPE.JSON) => {
   try {
     const resp = await fetch(normalizePath(url));
@@ -224,7 +229,7 @@ const fetchData = async (url, type = DATA_TYPE.JSON) => {
     return await resp[type]();
   } catch (e) {
     /* c8 ignore next 3 */
-    console.log(`Error loading content: ${url}`, e.message || e);
+    log(`Error loading content: ${url}`, e.message || e);
   }
   return null;
 };
@@ -518,6 +523,10 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
   // retro support
   const action = line.action?.toLowerCase()
     .replace('content', '').replace('fragment', '').replace('tosection', '');
+  if (!action) {
+    log('Row found with empty action field: ', line);
+    return;
+  }
   const pageFilter = line['page filter'] || line['page filter optional'];
   const { selector } = line;
 
@@ -570,9 +579,6 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
       }
     } else if (action in COMMANDS || action in CREATE_CMDS) {
       variants[vn].commands.push(variantInfo);
-    } else {
-      /* c8 ignore next 2 */
-      console.log('Invalid action found: ', line);
     }
   });
 };
@@ -604,7 +610,7 @@ export function parseManifestVariants(data, manifestPath, targetId) {
     return manifestConfig;
   } catch (e) {
     /* c8 ignore next 3 */
-    console.log('error parsing personalization manifestConfig:', e, experiences);
+    log('error parsing personalization manifestConfig:', e, experiences);
   }
   return null;
 }
@@ -782,7 +788,7 @@ export async function getManifestConfig(info = {}, variantOverride = false) {
 
   if (!manifestConfig) {
     /* c8 ignore next 3 */
-    console.log('Error loading personalization manifestConfig: ', name || manifestPath);
+    log('Error loading personalization manifestConfig: ', name || manifestPath);
     return null;
   }
   const infoKeyMap = {
@@ -920,7 +926,7 @@ export function cleanAndSortManifestList(manifests) {
 
       parsePlaceholders(placeholderData, getConfig(), manifestConfig.selectedVariantName);
     } catch (e) {
-      console.warn(e);
+      log(`MEP Error parsing manifests: ${e.toString()}`);
       window.lana?.log(`MEP Error parsing manifests: ${e.toString()}`);
     }
   });
@@ -1075,7 +1081,7 @@ export async function init(enablements = {}) {
   try {
     await applyPers(manifests, postLCP);
   } catch (e) {
-    console.warn(e);
+    log(`MEP Error: ${e.toString()}`);
     window.lana?.log(`MEP Error: ${e.toString()}`);
   }
 }
