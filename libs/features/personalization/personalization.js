@@ -1030,15 +1030,15 @@ export const combineMepSources = async (persEnabled, promoEnabled, promoUtilsPro
     const persManifestPaths = persManifests
       .concat(initialPersManifests)
       .map((manifest) => {
-      const { manifestPath } = manifest;
-      if (manifestPath.startsWith('/')) return manifestPath;
-      try {
-        const url = new URL(manifestPath);
-        return url.pathname;
-      } catch (e) {
-        return manifestPath;
-      }
-    });
+        const { manifestPath } = manifest;
+        if (manifestPath.startsWith('/')) return manifestPath;
+        try {
+          const url = new URL(manifestPath);
+          return url.pathname;
+        } catch (e) {
+          return manifestPath;
+        }
+      });
 
     mepParam.split('---').forEach((manifestPair) => {
       const manifestPath = manifestPair.trim().toLowerCase().split('--')[0];
