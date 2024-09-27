@@ -766,9 +766,13 @@ describe('Utils', () => {
         resolve({
           ok: true,
           json: () => MANIFEST_JSON,
+          url: 'https://main--milo--adobecom.hlx.page/products/special-offers-manifest.json',
         });
       });
     }
+    before(() => {
+      sinon.stub(URLSearchParams.prototype, 'get').withArgs('instant').returns('2023-12-02');
+    });
 
     it('should process personalization manifest and save in config', async () => {
       window.fetch = sinon.stub().returns(htmlResponse());
@@ -777,7 +781,7 @@ describe('Utils', () => {
       const resultConfig = utils.getConfig();
       const resultExperiment = resultConfig.mep.experiments[0];
       expect(resultConfig.mep.preview).to.be.true;
-      expect(resultConfig.mep.experiments.length).to.equal(3);
+      expect(resultConfig.mep.experiments.length).to.equal(1);
       expect(resultExperiment.manifest).to.equal('https://main--milo--adobecom.hlx.page/products/special-offers-manifest.json');
     });
   });
