@@ -25,6 +25,7 @@ const stageDomainsMap = {
   'www.stage.adobe.com': {
     'www.adobe.com': 'origin',
     'helpx.adobe.com': 'helpx.stage.adobe.com',
+    'business.adobe.com': { to: 'business.stage.adobe.com', removeExt: true },
   },
   '--bacom--adobecom.hlx.live': {
     'business.adobe.com': 'origin',
@@ -35,7 +36,8 @@ const stageDomainsMap = {
     'business.adobe.com': 'main--bacom--adobecom.hlx.page',
   },
   '.business-graybox.adobe.com': { 'business.adobe.com': 'origin' },
-  localhost: { 'www.adobe.com': { to: 'main--dc--adobecom.hlx.page', removeExt: true } },
+  // TODO: will remove after QE approval
+  '--milo--robert-bogos.hlx.page': { 'www.adobe.com': { to: 'main--dc--adobecom.hlx.page', removeExt: true } },
 };
 
 const config = {
