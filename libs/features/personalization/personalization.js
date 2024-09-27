@@ -1089,7 +1089,7 @@ export async function init(enablements = {}) {
       loadLink(normalizedURL, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
     });
   }
-  preloadMarqueeImages();
+  if (target === true) preloadMarqueeImages();
   if (target === true || (target === 'gnav' && postLCP)) {
     const { getTargetPersonalization } = await import('../../martech/martech.js');
     const { targetManifests, targetPropositions } = await getTargetPersonalization();
