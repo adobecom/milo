@@ -1,13 +1,17 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import { setConfig } from '../../../libs/utils/utils.js';
+import { setConfig, getConfig } from '../../../libs/utils/utils.js';
 
-const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
-const conf = { locales };
-setConfig(conf);
 
 const mockBody = await readFile({ path: './mocks/body.html' });
 const { default: init } = await import('../../../libs/blocks/notification/notification.js');
+
+const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
+const conf = { locales, miloLibs: 'http://localhost:2000/libs' };
+setConfig(conf);
+getConfig().locale.contentRoot = '/test/blocks/notification/mocks';
+
+document.head.innerHTML = '<link rel="stylesheet" href="../../../libs/blocks/notification/notification.css"><meta name="countdown-timer" content="2024-08-26 12:00:00 PST,2026-08-30 00:00:00 PST">';
 
 describe('notification', async () => {
   let notifs;
@@ -42,8 +46,11 @@ describe('notification', async () => {
       expect(img).to.exist;
     });
     it('supports a bottom border', () => {
-      const border = notifs[2].querySelector(':scope > .border');
+      const border = notifs[3].querySelector(':scope > .border');
       expect(border).to.exist;
+    });
+    it('has a cdt', () => {
+      expect(notifs[1].querySelectorAll('.timer-label')).to.have.lengthOf(1);
     });
   });
 
