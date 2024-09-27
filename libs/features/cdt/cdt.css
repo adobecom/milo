@@ -52,7 +52,7 @@
 
 .timer-box {
   padding: 0 calc(var(--font-size-multiplier, 1) * 9px);
-  width: calc(var(--font-size-multiplier, 1) * 10px);
+  width: var(--type-detail-s-size);
   border-radius: 5px;
   font-size: var(--type-body-m-size);
   font-weight: 700;
