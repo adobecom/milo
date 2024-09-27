@@ -1008,12 +1008,14 @@ export async function applyPers(manifests, postLCP = false) {
 export const combineMepSources = async (persEnabled, promoEnabled, promoUtilsPromise, mepParam) => {
   let persManifests = [];
   let initialPersManifestsPromises = [];
+  let initialPersManifests = [];
 
   if (persEnabled) {
-    initialPersManifestsPromises = persEnabled.toLowerCase()
+    initialPersManifests = persEnabled.toLowerCase()
       .split(/,|(\s+)|(\\n)/g)
       .filter((path) => path?.trim())
-      .map((manifestPath) => {
+      .map((manifestPath) => ({ manifestPath }));
+    initialPersManifestsPromises = initialPersManifests.map(({ manifestPath }) => {
         const normalizedURL = normalizePath(manifestPath);
         return fetch(normalizedURL, { mode: 'same-origin' });
       });
@@ -1025,7 +1027,9 @@ export const combineMepSources = async (persEnabled, promoEnabled, promoUtilsPro
   }
 
   if (mepParam && mepParam !== 'off') {
-    const persManifestPaths = persManifests.map((manifest) => {
+    const persManifestPaths = persManifests
+      .concat(initialPersManifests)
+      .map((manifest) => {
       const { manifestPath } = manifest;
       if (manifestPath.startsWith('/')) return manifestPath;
       try {
@@ -1044,10 +1048,9 @@ export const combineMepSources = async (persEnabled, promoEnabled, promoUtilsPro
     });
   }
   return initialPersManifestsPromises.concat(persManifests
-    .filter((m) => !m.disabled)
+    .filter((m) => !('disabled' in m) || !m.disabled)
     .map((manifest) => {
       const normalizedURL = normalizePath(manifest.manifestPath);
-      // loadLink(normalizedURL, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
       return fetch(normalizedURL, { mode: 'same-origin' });
     }));
 };
@@ -1057,6 +1060,7 @@ export async function init(enablements = {}) {
   const {
     mepParam, mepHighlight, mepButton, pzn, promo, target, postLCP,
   } = enablements;
+  const promoUtilsPromise = promo ? import('./promo-utils.js') : null;
   const config = getConfig();
   let manifestPromises = [];
   if (!postLCP) {
@@ -1072,33 +1076,32 @@ export async function init(enablements = {}) {
       geoPrefix: config.locale?.prefix.split('/')[1]?.toLowerCase() || 'en-us',
     };
 
-    const promoUtilsPromise = promo ? import('./promo-utils.js') : null;
     manifestPromises = manifestPromises
       .concat(await combineMepSources(pzn, promo, promoUtilsPromise, mepParam));
   }
 
-  if (target === true || (target === 'gnav' && postLCP)) {
-    const { getTargetPersonalization } = await import('../../martech/martech.js');
-    const { targetManifests, targetPropositions } = await getTargetPersonalization();
-    manifests = await Promise.all((await Promise.all(manifestPromises))
-      .map(async (resp) => {
-        try {
-          if (!resp.ok) {
-            /* c8 ignore next 5 */
+  manifests = await Promise.all((await Promise.all(manifestPromises))
+    .map(async (resp) => {
+      try {
+        if (!resp.ok) {
+          /* c8 ignore next 5 */
             if (resp.status === 404) {
               throw new Error('File not found');
             }
-            throw new Error(`Invalid response: ${resp.status} ${resp.statusText}`);
-          }
-          const manifestData = await resp.json();
-          return { manifestData, manifestPath: resp.url };
-        } catch (e) {
-          /* c8 ignore next 3 */
-          console.log(`Error loading content: ${resp.url}`, e.message || e);
+          throw new Error(`Invalid response: ${resp.status} ${resp.statusText}`);
         }
-        return null;
-      })
-      .filter(Boolean));
+        const manifestData = await resp.json();
+        return { manifestData, manifestPath: resp.url };
+      } catch (e) {
+        /* c8 ignore next 3 */
+          console.log(`Error loading content: ${resp.url}`, e.message || e);
+      }
+      return null;
+    })
+    .filter(Boolean));
+  if (target === true || (target === 'gnav' && postLCP)) {
+    const { getTargetPersonalization } = await import('../../martech/martech.js');
+    const { targetManifests, targetPropositions } = await getTargetPersonalization();
     manifests = manifests.concat(targetManifests);
     if (targetPropositions?.length && window._satellite) {
       window._satellite.track('propositionDisplay', targetPropositions);

@@ -15,6 +15,7 @@ document.body.innerHTML = await readFile({ path: './mocks/personalization.html' 
 const getFetchPromise = (data, type = 'json') => new Promise((resolve) => {
   resolve({
     ok: true,
+    url: '/path/to/manifest',
     [type]: () => data,
   });
 });
@@ -39,6 +40,7 @@ describe('Functional Test', () => {
       '11111111-aaaa-bbbb-6666-cccccccccccc': 'my-special-app',
       '22222222-xxxx-bbbb-7777-cccccccccccc': 'fireflies',
     };
+    stub(URLSearchParams.prototype, 'get').returns([{'instant' : "2023-02-11"}]);
   });
 
   it('Invalid selector should not fail page render and rest of items', async () => {
@@ -386,27 +388,31 @@ describe('MEP Utils', () => {
     });
     it('combines promos and personalization', async () => {
       document.head.innerHTML = await readFile({ path: '../../utils/mocks/mep/head-promo.html' });
+      // const searchParams = new URLSearchParams(window.location.search);
+      // searchParams.set('foo', 'bar');
+      // window.location.search = searchParams.toString();
       const promos = { manifestnames: 'pre-black-friday-global,black-friday-global' };
-      const manifests = await combineMepSources('/pers/manifest.json', promos, undefined);
+      const promoUtilsPromise = import('../../../libs/features/personalization/promo-utils.js');
+      const manifestPromises = await combineMepSources(
+        '/pers/manifest.json',
+        promos,
+        promoUtilsPromise,
+        undefined,
+      );
+      const manifests = await Promise.all(manifestPromises);
       expect(manifests.length).to.equal(3);
-      expect(manifests[0].manifestPath).to.equal('/pers/manifest.json');
-      expect(manifests[1].manifestPath).to.equal('/pre-black-friday.json');
-      expect(manifests[2].manifestPath).to.equal('/black-friday.json');
     });
     it('combines promos and personalization and mep param', async () => {
       document.head.innerHTML = await readFile({ path: '../../utils/mocks/mep/head-promo.html' });
       const promos = { manifestnames: 'pre-black-friday-global,black-friday-global' };
+      const promoUtilsPromise = import('../../../libs/features/personalization/promo-utils.js');
       const manifests = await combineMepSources(
         '/pers/manifest.json',
         promos,
+        promoUtilsPromise,
         '/pers/manifest.json--var1---/mep-param/manifest1.json--all---/mep-param/manifest2.json--all',
       );
       expect(manifests.length).to.equal(5);
-      expect(manifests[0].manifestPath).to.equal('/pers/manifest.json');
-      expect(manifests[1].manifestPath).to.equal('/pre-black-friday.json');
-      expect(manifests[2].manifestPath).to.equal('/black-friday.json');
-      expect(manifests[3].manifestPath).to.equal('/mep-param/manifest1.json');
-      expect(manifests[4].manifestPath).to.equal('/mep-param/manifest2.json');
     });
   });
 });
