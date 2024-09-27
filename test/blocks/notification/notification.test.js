@@ -45,11 +45,11 @@ describe('notification', async () => {
       expect(img).to.exist;
     });
     it('supports a bottom border', () => {
-      const border = notifs[3].querySelector(':scope > .border');
+      const border = notifs[2].querySelector(':scope > .border');
       expect(border).to.exist;
     });
     it('has a cdt', () => {
-      expect(notifs[1].querySelectorAll('.timer-label')).to.have.lengthOf(1);
+      expect(notifs[15].querySelectorAll('.timer-label')).to.have.lengthOf(1);
     });
   });
 

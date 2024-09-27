@@ -14,9 +14,9 @@
 }
 
 .timer-label {
-  font-size: 16px;
+  font-size: var(--type-body-s-size);
   font-weight: 700;
-  line-height: 27px;
+  line-height: var(--type-body-xxl-size);
 }
 
 .light .timer-label {
@@ -28,17 +28,20 @@
 }
 
 .horizontal .timer-label {
-  margin: 0 2px 27px;
+  margin: 0 2px var(--type-body-xxl-size);
 }
 
 .timer-separator {
   margin: 0px 2px;
-  line-height: 27px;
+  line-height: var(--type-body-xxl-size);
+}
+
+.horizontal .timer-block {
+  margin-inline-start: 10px;
 }
 
 .timer-block {
   display: flex;
-  margin-inline-start: 10px;
 }
 
 .timer-fragment {
@@ -48,13 +51,13 @@
 }
 
 .timer-box {
-  padding: 0 9px;
-  width: 10px;
+  padding: 0 calc(var(--font-size-multiplier, 1) * 9px);
+  width: calc(var(--font-size-multiplier, 1) * 10px);
   border-radius: 5px;
-  font-size: 18px;
+  font-size: var(--type-body-m-size);
   font-weight: 700;
   text-align: center;
-  line-height: 27px;
+  line-height: var(--type-body-xxl-size);
 }
 
 .light .timer-box {
@@ -79,10 +82,10 @@ html[dir="rtl"] .timer-unit-container {
 
 .timer-unit-label {
   width: 100%;
-  font-size: 14px;
+  font-size: var(--type-body-xs-size);
   font-weight: 400;
   text-align: start;
-  line-height: 27px;
+  line-height: var(--type-body-xxl-size);
 }
 
 .light .timer-unit-label {
