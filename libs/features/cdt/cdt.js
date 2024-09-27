@@ -11,6 +11,7 @@ function loadCountdownTimer(
 ) {
   let isVisible = false;
   let interval;
+  const oneMinuteinMs = 60000;
 
   const instant = new URL(window.location.href)?.searchParams?.get('instant');
   let currentTime = instant ? Date.parse(instant) : Date.now();
@@ -66,6 +67,7 @@ function loadCountdownTimer(
         const hoursLeft = Math.floor((diffTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
         const minutesLeft = Math.floor((diffTime % (1000 * 60 * 60)) / (1000 * 60));
         render(daysLeft, hoursLeft, minutesLeft);
+        currentTime += oneMinuteinMs;
         return;
       }
     }
@@ -76,12 +78,8 @@ function loadCountdownTimer(
   }
 
   function startCountdown() {
-    const oneMinuteinMs = 60000;
     updateCountdown();
-    interval = setInterval(() => {
-      currentTime += oneMinuteinMs;
-      updateCountdown();
-    }, oneMinuteinMs);
+    interval = setInterval(updateCountdown, oneMinuteinMs);
   }
 
   startCountdown();
