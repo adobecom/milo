@@ -1624,6 +1624,10 @@ merch-card [slot='callout-content'] > div > div {
     padding: var(--consonant-merch-spacing-xxxs) var(--consonant-merch-spacing-xxxs) var(--consonant-merch-spacing-xxxs) var(--consonant-merch-spacing-xxs);
 }
 
+merch-card [slot='callout-content']:dir(rtl) > div > div > div {
+    text-align: right;
+}
+
 merch-card [slot='callout-content'] > div > div > div {
     display: inline-block;
     text-align: left;
