@@ -111,13 +111,14 @@ export default async function initCDT(el, classList) {
     const parsedTime = Date.parse(time?.trim());
     return Number.isNaN(parsedTime) ? null : parsedTime;
   });
+
   if (timeRangesEpoch.includes(null)) {
     throw new Error('Invalid format for countdown timer range');
   }
 
   const cdtDiv = createTag('div', { class: 'countdown-timer' }, null, { parent: el });
   cdtDiv.classList.add(isMobile() ? 'vertical' : 'horizontal');
-  cdtDiv.classList.add(classList.contains('dark') ? 'dark' : 'light');
+  if (classList.contains('dark')) cdtDiv.classList.add('dark');
   if (classList.contains('center')) cdtDiv.classList.add('center');
 
   loadCountdownTimer(cdtDiv, cdtLabel, cdtDays, cdtHours, cdtMins, timeRangesEpoch);
