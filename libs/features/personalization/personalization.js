@@ -1034,8 +1034,6 @@ export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => 
   return persManifests;
 };
 
-
-
 export async function init(enablements = {}) {
   let manifests = [];
   const {
@@ -1063,16 +1061,19 @@ export async function init(enablements = {}) {
   }
 
   if (target === true) {
-    const { getBlockData, loadStyle, MILO_BLOCKS } = await import('../../utils/utils.js');
-    const preloadMepBlockResources = (blocks = []) => blocks.map((block) => {
+    const { getBlockData, loadStyle } = await import('../../utils/utils.js');
+    const preloadMepBlocks = (blocks = []) => blocks.map((block) => {
       if (block.classList.contains('hide-block')) return null;
       const { blockPath, hasStyles } = getBlockData(block);
+      loadLink(`${getConfig().base}/utils/decorate.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
       loadLink(`${blockPath}.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
       return hasStyles && new Promise((resolve) => { loadStyle(`${blockPath}.css`, resolve); });
     }).filter(Boolean);
-    const lcpBlocks = [...document.querySelectorAll('body > main > div:first-child > *[class]')].filter((block) => MILO_BLOCKS.includes(block.className));
-    preloadMepBlockResources(lcpBlocks);
+
+    const lcpBlocks = [...document.querySelectorAll('body > main > div:first-child > *[class]')];
+    preloadMepBlocks(lcpBlocks);
   }
+
   if (target === true || (target === 'gnav' && postLCP)) {
     const { getTargetPersonalization } = await import('../../martech/martech.js');
     const { targetManifests, targetPropositions } = await getTargetPersonalization();
