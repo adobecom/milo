@@ -1034,26 +1034,34 @@ export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => 
   return persManifests;
 };
 
-const preloadMarqueeImage = () => {
-  let url;
-  const imgUrls = {};
-  const breakpoints = {
-    tabletMin: 600,
-    desktopMin: 1200,
-  };
-  const marqueeImages = document.querySelectorAll('main div:first-child picture img');
-  if (marqueeImages?.length) {
-    imgUrls.mobile = marqueeImages[0]?.src;
-    imgUrls.tablet = marqueeImages[1]?.src;
-    imgUrls.desktop = marqueeImages[2]?.src;
+const preloadMarqueeImages = () => {
+  const isDesktop = window.innerWidth >= 1200;
+  const isTablet = window.innerWidth >= 600 && !isDesktop;
+  const isMobile = window.innerWidth < 600;
+  const headerBlock = document.querySelector('main > div:first-child > div'); // *marquee or text
+  const nonBgImages = headerBlock?.querySelectorAll(':scope > div:not(:first-child) img');
+  const hasBackground = headerBlock?.querySelectorAll(':scope > div')?.length > 1;
+  if (hasBackground) {
+    let bgUrl = '';
+    const bgColumns = headerBlock.querySelectorAll(':scope > div:first-child div');
+    if (isMobile) {
+      bgUrl = bgColumns[0].querySelector('img')?.src;
+    }
+    if (isTablet) {
+      bgUrl = bgColumns.length >= 2
+        ? bgColumns[1].querySelector('img')?.src
+        : bgColumns[0].querySelector('img')?.src;
+    }
+    if (isDesktop) {
+      bgUrl = bgColumns[bgColumns.length - 1].querySelector('img')?.src;
+    }
+    if (bgUrl) loadLink(bgUrl, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
   }
-  switch (true) {
-    case window.innerWidth >= breakpoints.desktopMin: url = imgUrls.desktop; break;
-    case window.innerWidth >= breakpoints.tabletMin
-      && window.innerWidth < breakpoints.desktopMin: url = imgUrls.tablet; break;
-    default: url = imgUrls.mobile;
+  if (nonBgImages?.length) {
+    nonBgImages.forEach((img) => {
+      loadLink(img.src, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
+    });
   }
-  if (url) loadLink(url, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
 };
 
 export async function init(enablements = {}) {
@@ -1081,7 +1089,7 @@ export async function init(enablements = {}) {
       loadLink(normalizedURL, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
     });
   }
-  preloadMarqueeImage();
+  preloadMarqueeImages();
   if (target === true || (target === 'gnav' && postLCP)) {
     const { getTargetPersonalization } = await import('../../martech/martech.js');
     const { targetManifests, targetPropositions } = await getTargetPersonalization();
