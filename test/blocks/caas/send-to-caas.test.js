@@ -1,7 +1,7 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 
-import { checkUrl, getOrigin, setConfig } from '../../../tools/send-to-caas/send-utils.js';
+import { checkUrl, getKeyValPairs, getOrigin, setConfig } from '../../../tools/send-to-caas/send-utils.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 
@@ -26,7 +26,7 @@ describe('checkUrl function', () => {
   });
 
   it('should send arbitrary fields as key-value pairs when set', () => {
-    const authoredPairs = "mpcVideoId:mpcVideoIdGM,thumbnailUrl: thumbnailUrlGM";
+    const authoredPairs = 'mpcVideoId:mpcVideoIdGM,thumbnailUrl: thumbnailUrlGM';
     const result = getKeyValPairs(authoredPairs);
     expect(JSON.stringify(result)).to.equal('[{"mpcVideoId":"mpcVideoIdGM"},{"thumbnailUrl":"thumbnailUrlGM"}]');
   });

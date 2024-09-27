@@ -34,9 +34,7 @@ const getKeyValPairs = (s) => {
     .filter((v) => isKeyValPair.test(v))
     .map((v) => {
       const [key, ...value] = v.split(':');
-      return {
-        [key.trim()]: value.join(':').trim()
-      };
+      return { [key.trim()]: value.join(':').trim() };
     });
 };
 
