@@ -127,6 +127,7 @@
   --icon-size-s: 32px;
   --icon-size-xs: 24px;
   --icon-size-xxs: 16px;
+  --icon-spacing: 8px;
 
   /* z-index */
   --above-all: 9000; /* Used for page tools that overlay page content */
@@ -348,6 +349,7 @@
   line-height: 20px;
   min-height: 21px;
   padding: 7px 18px 8px;
+  --icon-spacing: 12px;
 }
 
 .xl-button .con-button,
@@ -357,20 +359,23 @@
   line-height: 24px;
   min-height: 28px;
   padding: 10px 24px 8px;
+  --icon-spacing: 14px;
+}
+
+.xxl-button .con-button,
+.con-button.button-xxl {
+  border-radius: 30px;
+  font-size: 22px;
+  line-height: 27px;
+  min-height: 27px;
+  padding: 14px 30px 15px;
+  --icon-spacing: 14px;
 }
 
 .con-button.button-justified {
   display: block;
   text-align: center;
   width: 100%;
-}
-
-.xxl-button .con-button {
-  border-radius: 30px;
-  font-size: 22px;
-  line-height: 27px;
-  min-height: 27px;
-  padding: 14px 30px 15px;
 }
 
 .dark .con-button {
@@ -557,11 +562,11 @@ span.icon {
   height: 100%;
   width: 1em;
   display: inline-block;
-  margin-inline: var(--spacing-xxs);
+  margin-inline: var(--icon-spacing);
 }
 
 span.icon.node-index-first { margin-inline-start: unset; }
-span.icon.node-index-middle {  margin-inline: var(--spacing-xxs); }
+span.icon.node-index-middle {  margin-inline: var(--icon-spacing); }
 span.icon.node-index-last {  margin-inline-end: unset; }
 span.icon.node-index-only {  margin-inline: unset; }
 
@@ -571,12 +576,6 @@ span.icon svg {
   top: .1em;
   width: auto;
 }
-
-.button-l .con-button span.icon,
-.con-button.button-l span.icon { margin-inline: 12px; }
-
-.button-xl .con-button span.icon,
-.con-button.button-xl span.icon { margin-inline: 14px; }
 
 /* Con Block Utils */
 .con-block.xs-spacing { padding: var(--spacing-xs) 0; }
