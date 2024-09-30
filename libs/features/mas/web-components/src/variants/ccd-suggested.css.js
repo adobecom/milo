@@ -1,8 +1,8 @@
 export const CSS = `
 :root {
-  --consonant-merch-card-ccd-suggested-width: 304px;
-  --consonant-merch-card-ccd-suggested-height: 205px;
-  --consonant-merch-card-ccd-suggested-background-img-size: 119px;
+  --merch-card-ccd-suggested-width: 304px;
+  --merch-card-ccd-suggested-height: 205px;
+  --merch-card-ccd-suggested-background-img-size: 119px;
 }
 
 merch-card[variant="ccd-suggested"] [slot='detail-m'] {
@@ -15,8 +15,8 @@ merch-card[variant="ccd-suggested"] [slot='icons'] {
 }
 
 merch-card[variant="ccd-suggested"] [slot='heading-xs'] {
-  font-size: var(--consonant-merch-card-heading-xxs-font-size);
-  line-height: var(--consonant-merch-card-heading-xxs-line-height);
+  font-size: var(--merch-card-heading-xxs-font-size);
+  line-height: var(--merch-card-heading-xxs-line-height);
 
 }
 
