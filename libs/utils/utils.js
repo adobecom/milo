@@ -649,10 +649,11 @@ export function convertStageLinks({ anchors, config, hostname }) {
     const matchedDomain = Object.keys(domainsMap)
       .find((domain) => a.href.includes(domain));
     if (!matchedDomain) return;
-    a.href = a.href.replace(a.hostname, domainsMap[matchedDomain] === 'origin'
+    const convTargetDomain = domainsMap[matchedDomain];
+    a.href = a.href.replace(a.hostname, convTargetDomain === 'origin'
       ? hostname.to || hostname
-      : domainsMap[matchedDomain].to || domainsMap[matchedDomain]);
-    if (domainsMap[matchedDomain].useExt) return;
+      : convTargetDomain.to || convTargetDomain);
+    if (convTargetDomain.useExt) return;
     const urlObject = new URL(a.href);
     const path = urlObject.pathname;
     const extension = path.split('.').pop();
