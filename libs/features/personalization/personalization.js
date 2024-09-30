@@ -1067,17 +1067,9 @@ export async function init(enablements = {}) {
   }
 
   if (target === true) {
-    const { getBlockData, loadStyle } = await import('../../utils/utils.js');
-    const preloadMepBlocks = (blocks = []) => blocks.map((block) => {
-      if (block.classList.contains('hide-block')) return null;
-      const { blockPath, hasStyles } = getBlockData(block);
-      loadLink(`${getConfig().base}/utils/decorate.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
-      loadLink(`${blockPath}.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
-      return hasStyles && new Promise((resolve) => { loadStyle(`${blockPath}.css`, resolve); });
-    }).filter(Boolean);
-
+    const { preloadBlockResources } = await import('../../utils/utils.js');
     const lcpBlocks = [...document.querySelectorAll('body > main > div:first-child > *[class]')];
-    preloadMepBlocks(lcpBlocks);
+    preloadBlockResources(lcpBlocks, false);
   }
 
   if (target === true || (target === 'gnav' && postLCP)) {
