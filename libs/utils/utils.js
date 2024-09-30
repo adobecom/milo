@@ -778,7 +778,7 @@ export async function customFetch({ resource, withCacheRules }) {
 }
 
 const findReplaceableNodes = (area) => {
-  const regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
+  const regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D|%7b%7b(.*?)%7d%7d/g;
   const walker = document.createTreeWalker(area, NodeFilter.SHOW_ALL);
   const nodes = [];
   let node = walker.nextNode();

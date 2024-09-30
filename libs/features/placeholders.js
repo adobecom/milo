@@ -29,6 +29,7 @@ const fetchPlaceholders = async ({ config, sheet, placeholderRequest, placeholde
 };
 
 function keyToStr(key) {
+  console.log('keyyy', key);
   return key.replaceAll('-', ' ');
 }
 
@@ -104,7 +105,7 @@ export async function replaceKeyArray(keys, config, sheet = 'default') {
 export async function replaceText(
   text,
   config,
-  regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g,
+  regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D|%7b%7b(.*?)%7d%7d/g,
   sheet = 'default',
 ) {
   if (typeof text !== 'string' || !text.length) return '';
@@ -113,7 +114,8 @@ export async function replaceText(
   if (!matches.length) {
     return text;
   }
-  const keys = Array.from(matches, (match) => match[1] || match[2]);
+  const keys = Array.from(matches, (match) => match[1] || match[2] || match[3]);
+  console.log('keyyy', keys, matches);
   const placeholders = await replaceKeyArray(keys, config, sheet);
   // The .shift method is very slow, thus using normal iterator
   let i = 0;
@@ -130,11 +132,14 @@ export async function decoratePlaceholderArea({
 }) {
   if (!nodes.length) return;
   const config = getConfig();
+  console.log('---', nodes)
   await fetchPlaceholders({ placeholderPath, config, placeholderRequest });
   const replaceNodes = nodes.map(async (nodeEl) => {
     if (nodeEl.nodeType === Node.TEXT_NODE) {
+      console.log('nodes', nodeEl.nodeValue);
       nodeEl.nodeValue = await replaceText(nodeEl.nodeValue, config);
     } else if (nodeEl.nodeType === Node.ELEMENT_NODE) {
+      console.log('nodeshred', nodeEl.getAttribute('href'));
       const hrefVal = await replaceText(nodeEl.getAttribute('href'), config);
       nodeEl.setAttribute('href', hrefVal);
     }
