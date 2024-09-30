@@ -5,6 +5,35 @@ let createTag;
 let getMetadata;
 let loadStyle;
 
+const LOCATION_ICON = `
+<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+  <g transform="translate(-10500 3403)">
+    <circle cx="10" cy="10" r="10" transform="translate(10500 -3403)" fill="#707070"/>
+    <path d="M10,4A5.373,5.373,0,0,0,4.5,9.5C4.5,13,10,19,10,19s5.5-6,5.5-9.5A5.373,5.373,0,0,0,10,4Zm0,7.5A2,2,0,1,1,12,9.5,2,2,0,0,1,10,11.5Z" transform="translate(10500 -3403)" fill="#fff"/>
+  </g>
+</svg>`;
+
+async function appendLocationIcon() {
+  const observer = new MutationObserver(() => {
+    const navWrapper = document.querySelector('.feds-topnav');
+    if (navWrapper) {
+      const locationIcon = document.createElement('div');
+      locationIcon.classList.add('location-icon-container');
+      locationIcon.innerHTML = LOCATION_ICON;
+      navWrapper.appendChild(locationIcon);
+      locationIcon.addEventListener('click', () => {
+        console.log('Toaster icon clicked');
+        // TODO: toaster logic (e.g., show or hide a toaster popup)
+      });
+      observer.disconnect();
+    }
+  });
+  observer.observe(document, {
+    childList: true,
+    subtree: true,
+  });
+}
+
 export const getCookie = (name) => document.cookie
   .split('; ')
   .find((row) => row.startsWith(`${name}=`))
@@ -323,9 +352,9 @@ function createToasterElement(geoData, locale, multipleLocales, currentPage) {
   toaster.appendChild(georoutingToasterContent);
 
   const observer = new MutationObserver(() => {
-    const brandContainer = document.querySelector('.feds-brand-container');
-    if (brandContainer) {
-      brandContainer.appendChild(toaster);
+    const locationContainer = document.querySelector('.location-icon-container');
+    if (locationContainer) {
+      locationContainer.appendChild(toaster);
       observer.disconnect();
     }
   });
@@ -355,6 +384,8 @@ export default async function loadGeoRoutingToaster(
   createTag = createTagFunc;
   getMetadata = getMetadataFunc;
   loadStyle = loadStyleFunc;
+
+  await appendLocationIcon();
 
   // const { miloLibs, codeRoot } = config;
   // await new Promise((resolve) => { loadStyle(`${miloLibs || codeRoot}/features/georouting-toaster/georouting-toaster.css`, resolve); });
