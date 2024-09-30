@@ -13,7 +13,7 @@ const config = {
 const stageDomainsMap = {
   'www.stage.adobe.com': {
     'www.adobe.com': 'origin',
-    'business.adobe.com': 'business.stage.adobe.com',
+    'business.adobe.com': { to: 'business.stage.adobe.com', useExt: true },
     'blog.adobe.com': 'blog.stage.adobe.com',
     'helpx.adobe.com': 'helpx.stage.adobe.com',
     'news.adobe.com': 'news.stage.adobe.com',
@@ -518,8 +518,10 @@ describe('Utils', () => {
       expect(block).to.be.null;
       expect(document.querySelector('.quote.hide-block')).to.be.null;
     });
+  });
 
-    it('should convert links on stage when stageDomainsMap provided', async () => {
+  describe('stageDomainsMap', () => {
+    it('should convert links when stageDomainsMap provided', async () => {
       const stageConfig = {
         ...config,
         env: { name: 'stage' },
@@ -537,7 +539,8 @@ describe('Utils', () => {
         });
 
         anchors.forEach((a, index) => {
-          const expectedDomain = Object.values(domainsMap)[index];
+          const expectedDomain = Object.values(domainsMap)[index]?.to
+          || Object.values(domainsMap)[index];
           expect(a.href).to.contain(expectedDomain === 'origin' ? hostname : expectedDomain);
         });
 
@@ -545,7 +548,7 @@ describe('Utils', () => {
       });
     });
 
-    it('should not convert links on stage when no stageDomainsMap provided', async () => {
+    it('should not convert links when no stageDomainsMap provided', async () => {
       const stageConfig = {
         ...config,
         env: { name: 'stage' },
@@ -562,6 +565,34 @@ describe('Utils', () => {
         });
 
         [...anchors, ...externalAnchors].forEach((a) => expect(a.href).to.equal(a.href));
+      });
+    });
+
+    it('should remove extensions upon conversion', async () => {
+      const stageConfig = {
+        ...config,
+        env: { name: 'stage' },
+        stageDomainsMap,
+      };
+
+      Object.entries(stageDomainsMap).forEach(([hostname, domainsMap]) => {
+        const extension = '.html';
+        const anchors = Object.keys(domainsMap).map((d) => utils.createTag('a', { href: `https://${d}/abc${extension}` }));
+        const useExtAnchor = Object.values(domainsMap).find((v) => v.useExt)?.to;
+
+        utils.convertStageLinks({
+          anchors: [...anchors],
+          config: stageConfig,
+          hostname,
+        });
+
+        anchors.forEach((a) => {
+          if (a.href.includes(useExtAnchor)) {
+            expect(a.href).to.contain(extension);
+          } else {
+            expect(a.href).to.not.contain(extension);
+          }
+        });
       });
     });
 
