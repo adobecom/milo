@@ -25,7 +25,6 @@ const stageDomainsMap = {
   'www.stage.adobe.com': {
     'www.adobe.com': 'origin',
     'helpx.adobe.com': 'helpx.stage.adobe.com',
-    'business.adobe.com': 'business.stage.adobe.com',
   },
   '--bacom--adobecom.hlx.live': {
     'business.adobe.com': 'origin',
