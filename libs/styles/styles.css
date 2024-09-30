@@ -553,19 +553,30 @@ div[data-failed="true"]::before {
   color: var(--color-gray-300);
 }
 
-span.icon.margin-right { margin-right: 8px; }
+span.icon {
+  height: 100%;
+  width: 1em;
+  display: inline-block;
+  margin-inline: var(--spacing-xxs);
+}
 
-span.icon.margin-left { margin-left: 8px; }
+span.icon.node-index-first { margin-inline-start: unset; }
+span.icon.node-index-middle {  margin-inline: var(--spacing-xxs); }
+span.icon.node-index-last {  margin-inline-end: unset; }
+span.icon.node-index-only {  margin-inline: unset; }
 
-span.icon.margin-inline-end { margin-inline-end: 8px; }
+span.icon svg {
+  height: 1em;
+  position: relative;
+  top: .1em;
+  width: auto;
+}
 
-span.icon.margin-inline-start { margin-inline-start: 8px; }
+.button-l .con-button span.icon,
+.con-button.button-l span.icon { margin-inline: 12px; }
 
-.button-l .con-button span.icon.margin-left,
-.con-button.button-l span.icon.margin-left { margin-left: 12px; }
-
-.button-xl .con-button span.icon.margin-left,
-.con-button.button-xl span.icon.margin-left { margin-left: 14px; }
+.button-xl .con-button span.icon,
+.con-button.button-xl span.icon { margin-inline: 14px; }
 
 /* Con Block Utils */
 .con-block.xs-spacing { padding: var(--spacing-xs) 0; }
