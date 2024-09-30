@@ -652,7 +652,7 @@ export function convertStageLinks({ anchors, config, hostname }) {
     a.href = a.href.replace(a.hostname, domainsMap[matchedDomain] === 'origin'
       ? hostname.to || hostname
       : domainsMap[matchedDomain].to || domainsMap[matchedDomain]);
-    if (!domainsMap[matchedDomain].removeExt) return;
+    if (domainsMap[matchedDomain].useExt) return;
     const urlObject = new URL(a.href);
     const path = urlObject.pathname;
     const extension = path.split('.').pop();
