@@ -34,18 +34,18 @@ describe('checkUrl function', () => {
   it('should only accept valid key:value pairs as arbitrary fields', () => {
     const escapeChars = 'key1: value\nwith\nnewlines, key2: value\twith\ttabs';
     const resultEscapeChars = getKeyValPairs(escapeChars);
-    expect (JSON.stringify(resultEscapeChars)).to.equal('[]');
+    expect(JSON.stringify(resultEscapeChars)).to.equal('[]');
 
     const missingColon = 'key1 value1, key2: value2';
     const resultMissingColon = getKeyValPairs(missingColon);
-    expect (JSON.stringify(resultMissingColon)).to.equal('[]');
+    expect(JSON.stringify(resultMissingColon)).to.equal('[]');
 
     const multipeColons = 'key1: value1: extra, key2: value2';
     const resultMultipeColons = getKeyValPairs(multipeColons);
-    expect (JSON.stringify(resultMultipeColons)).to.equal('[]');
+    expect(JSON.stringify(resultMultipeColons)).to.equal('[]');
 
     const emptyKeyVal = ': value, key:, :, key: value';
     const resultEmptyKeyVal = getKeyValPairs(emptyKeyVal);
-    expect (JSON.stringify(resultEmptyKeyVal)).to.equal('[]');
+    expect(JSON.stringify(resultEmptyKeyVal)).to.equal('[]');
   });
 });
