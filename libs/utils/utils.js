@@ -720,7 +720,7 @@ async function decorateIcons(area, config) {
   loadLink(`${base}/img/icons/icons.svg`, { rel: 'preload', as: 'fetch', crossorigin: 'anonymous' });
   const { default: loadIcons, setNodeIndexClass } = await import('../features/icons/icons.js');
   setNodeIndexClass(icons);
-  await loadIcons(icons, config);
+  await loadIcons(icons);
 }
 
 async function decoratePlaceholders(area, config) {

@@ -64,7 +64,7 @@ function decorateToolTip(icon) {
   wrapper.parentElement.replaceChild(icon, wrapper);
 }
 
-export async function injectSVGIcons(icons) {
+export default async function loadIcons(icons) {
   const fedRoot = getFederatedContentRoot();
   const iconRequests = [];
   const iconsToFetch = new Map();
@@ -93,7 +93,7 @@ export async function injectSVGIcons(icons) {
   try {
     await Promise.all(iconRequests);
   } catch (error) {
-    /* c8 ignore next */
+    /* c8 ignore next 2 */
     window.lana.log('Error fetching icons:', error);
   }
 
@@ -104,8 +104,4 @@ export async function injectSVGIcons(icons) {
       icon.dataset.svgInjected = 'true';
     }
   });
-}
-
-export default async function loadIcons(icons, config) {
-  injectSVGIcons(icons, config);
 }
