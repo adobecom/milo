@@ -43,8 +43,8 @@ import {
 import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
 
 function getHelpChildren() {
-  const { unavHelpChildren } = getConfig();
-  return unavHelpChildren || [
+  const { unav } = getConfig();
+  return unav?.unavHelpChildren || [
     { type: 'Support' },
     { type: 'Community' },
   ];
@@ -101,11 +101,18 @@ export const CONFIG = {
       appswitcher: { name: 'app-switcher' },
       notifications: {
         name: 'notifications',
-        attributes: { notificationsConfig: { applicationContext: { appID: 'adobecom' } } },
+        attributes: { notificationsConfig: { applicationContext: { appID: getConfig().unav?.uncAppId || 'adobecom' } } },
       },
       help: {
         name: 'help',
         attributes: { children: getHelpChildren() },
+      },
+      jarvis: {
+        name: 'jarvis',
+        attributes: {
+          appid: getConfig().jarvis?.id,
+          callbacks: getConfig().jarvis?.callbacks,
+        },
       },
     },
   },
@@ -625,6 +632,7 @@ class Gnav {
         onAnalyticsEvent,
       },
       children: getChildren(),
+      isSectionDividerRequired: getConfig()?.unav?.showSectionDivider,
     });
 
     // Exposing UNAV config for consumers
