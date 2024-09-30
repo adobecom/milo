@@ -5,35 +5,6 @@ let createTag;
 let getMetadata;
 let loadStyle;
 
-const LOCATION_ICON = `
-<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
-  <g transform="translate(-10500 3403)">
-    <circle cx="10" cy="10" r="10" transform="translate(10500 -3403)" fill="#707070"/>
-    <path d="M10,4A5.373,5.373,0,0,0,4.5,9.5C4.5,13,10,19,10,19s5.5-6,5.5-9.5A5.373,5.373,0,0,0,10,4Zm0,7.5A2,2,0,1,1,12,9.5,2,2,0,0,1,10,11.5Z" transform="translate(10500 -3403)" fill="#fff"/>
-  </g>
-</svg>`;
-
-async function appendLocationIcon() {
-  const observer = new MutationObserver(() => {
-    const navWrapper = document.querySelector('.feds-topnav');
-    if (navWrapper) {
-      const locationIcon = document.createElement('div');
-      locationIcon.classList.add('location-icon-container');
-      locationIcon.innerHTML = LOCATION_ICON;
-      navWrapper.appendChild(locationIcon);
-      locationIcon.addEventListener('click', () => {
-        console.log('Toaster icon clicked');
-        // TODO: toaster logic (e.g., show or hide a toaster popup)
-      });
-      observer.disconnect();
-    }
-  });
-  observer.observe(document, {
-    childList: true,
-    subtree: true,
-  });
-}
-
 export const getCookie = (name) => document.cookie
   .split('; ')
   .find((row) => row.startsWith(`${name}=`))
@@ -45,6 +16,7 @@ const getAkamaiCode = () => new Promise((resolve, reject) => {
   if (akamaiLocale !== null) {
     resolve(akamaiLocale.toLowerCase());
   } else {
+    /* c8 ignore next 5 */
     fetch('https://geo2.adobe.com/json/', { cache: 'no-cache' }).then((resp) => {
       if (resp.ok) {
         resp.json().then((data) => {
@@ -53,14 +25,15 @@ const getAkamaiCode = () => new Promise((resolve, reject) => {
           resolve(code);
         });
       } else {
-        reject(new Error(`Error fetching Akamai code: ${resp.statusText}`));
+        reject(new Error(`Something went wrong getting the akamai Code. Response status text: ${resp.statusText}`));
       }
     }).catch((error) => {
-      reject(new Error(`Error fetching Akamai code: ${error.message}`));
+      reject(new Error(`Something went wrong getting the akamai Code. ${error.message}`));
     });
   }
 });
 
+// Determine if any of the locales can be linked to.
 async function getAvailableLocales(locales) {
   const fallback = getMetadata('fallbackrouting') || config.fallbackRouting;
 
@@ -104,6 +77,20 @@ function getGeoroutingOverride() {
   return georouting === 'off';
 }
 
+function decorateForOnLinkClick(link, urlPrefix, localePrefix, eventType = 'Switch') {
+  const modCurrPrefix = localePrefix || 'us';
+  const modPrefix = urlPrefix || 'us';
+  const eventName = `${eventType}:${modPrefix.split('_')[0]}-${modCurrPrefix.split('_')[0]}|Geo_Routing_Modal`;
+  link.setAttribute('daa-ll', eventName);
+  link.addEventListener('click', () => {
+    // set cookie so legacy code on adobecom still works properly.
+    const domain = window.location.host === 'adobe.com'
+      || window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com' : '';
+    document.cookie = `international=${modPrefix};path=/;${domain}`;
+    link.closest('.dialog-modal').dispatchEvent(new Event('closeModal'));
+  });
+}
+
 function getCodes(data) {
   return data.akamaiCodes.split(',').map((a) => a.toLowerCase().trim());
 }
@@ -114,6 +101,51 @@ function getMatches(data, suppliedCode) {
     if (localeCodes.some((code) => code === suppliedCode)) rdx.push(locale);
     return rdx;
   }, []);
+}
+
+function removeOnClickOutsideElement(element, event, button) {
+  const func = (evt) => {
+    if (event === evt) return; // ignore initial click event
+    let targetEl = evt.target;
+    while (targetEl) {
+      if (targetEl === element) {
+        // click inside
+        return;
+      }
+      // Go up the DOM
+      targetEl = targetEl.parentNode;
+    }
+    // This is a click outside.
+    element.remove();
+    button.setAttribute('aria-expanded', false);
+    document.removeEventListener('click', func);
+  };
+  document.addEventListener('click', func);
+}
+
+function openPicker(button, locales, country, event, dir, currentPage) {
+  if (document.querySelector('.picker')) {
+    return;
+  }
+
+  const list = createTag('ul', { class: 'picker', dir });
+  locales.forEach((l) => {
+    const lang = config.locales[l.prefix]?.ietf ?? '';
+    const a = createTag('a', { lang, href: l.url }, `${country} - ${l.language}`);
+    decorateForOnLinkClick(a, l.prefix, currentPage.prefix);
+    const li = createTag('li', {}, a);
+    list.appendChild(li);
+  });
+
+  button.parentNode.insertBefore(list, button.nextSibling);
+  const buttonRect = button.getBoundingClientRect();
+  const spaceBelowButton = window.innerHeight - buttonRect.bottom;
+  if (spaceBelowButton <= list.offsetHeight) {
+    list.classList.add('top');
+  }
+
+  button.setAttribute('aria-expanded', true);
+  removeOnClickOutsideElement(list, event, button);
 }
 
 async function getDetails(currentPage, localeMatches, geoData) {
@@ -143,21 +175,6 @@ function closeToaster(toaster) {
   const closeEvent = new Event('toaster:closed');
   window.dispatchEvent(closeEvent);
   toaster.remove();
-}
-
-function decorateForOnLinkClick(link, urlPrefix, localePrefix, eventType = 'Switch') {
-  const modCurrPrefix = localePrefix || 'us';
-  const modPrefix = urlPrefix || 'us';
-  const eventName = `${eventType}:${modPrefix.split('_')[0]}-${modCurrPrefix.split('_')[0]}|Geo_Routing_Modal`;
-  link.setAttribute('daa-ll', eventName);
-  link.addEventListener('click', () => {
-    const domain = window.location.host === 'adobe.com' || window.location.host.endsWith('.adobe.com')
-      ? 'domain=adobe.com'
-      : '';
-    document.cookie = `international=${modPrefix};path=/;${domain}`;
-    const toaster = link.closest('.georouting-toaster');
-    if (toaster) closeToaster(toaster);
-  });
 }
 
 const CLOSE_ICON = `
@@ -197,52 +214,6 @@ function buildDownArrowIcon() {
     height: 15,
   });
   return downArrow;
-}
-
-function removeOnClickOutsideElement(element, event, button) {
-  const func = (evt) => {
-    if (event === evt) return; // ignore initial click event
-    let targetEl = evt.target;
-    while (targetEl) {
-      if (targetEl === element) {
-        // click inside
-        return;
-      }
-      // Go up the DOM
-      targetEl = targetEl.parentNode;
-    }
-    // This is a click outside.
-    element.remove();
-    button.setAttribute('aria-expanded', false);
-    document.removeEventListener('click', func);
-  };
-  document.addEventListener('click', func);
-}
-
-function openPicker(button, locales, country, event, dir, currentPage) {
-  // Avoid opening multiple pickers at the same time
-  if (document.querySelector('.picker')) {
-    return;
-  }
-
-  const list = createTag('ul', { class: 'picker', dir });
-  locales.forEach((l) => {
-    const lang = config.locales[l.prefix]?.ietf ?? '';
-    const a = createTag('a', { lang, href: l.url }, `${country} - ${l.language}`);
-    decorateForOnLinkClick(a, l.prefix, currentPage.prefix);
-    const li = createTag('li', {}, a);
-    list.appendChild(li);
-  });
-
-  button.parentNode.insertBefore(list, button.nextSibling);
-  const buttonRect = button.getBoundingClientRect();
-  const spaceBelowButton = window.innerHeight - buttonRect.bottom;
-  if (spaceBelowButton <= list.offsetHeight) {
-    list.classList.add('top');
-  }
-
-  button.setAttribute('aria-expanded', true);
-  removeOnClickOutsideElement(list, event, button);
 }
 
 function buildToasterElements(contentContainer, geoData, locale, multipleLocales, currentPage) {
@@ -370,6 +341,35 @@ async function showToaster(currentPage, localeMatches, geoData) {
     const { locale, multipleLocales } = details;
     createToasterElement(geoData, locale, multipleLocales, currentPage);
   }
+}
+
+const LOCATION_ICON = `
+<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+  <g transform="translate(-10500 3403)">
+    <circle cx="10" cy="10" r="10" transform="translate(10500 -3403)" fill="#707070"/>
+    <path d="M10,4A5.373,5.373,0,0,0,4.5,9.5C4.5,13,10,19,10,19s5.5-6,5.5-9.5A5.373,5.373,0,0,0,10,4Zm0,7.5A2,2,0,1,1,12,9.5,2,2,0,0,1,10,11.5Z" transform="translate(10500 -3403)" fill="#fff"/>
+  </g>
+</svg>`;
+
+async function appendLocationIcon() {
+  const observer = new MutationObserver(() => {
+    const navWrapper = document.querySelector('.feds-topnav');
+    if (navWrapper) {
+      const locationIcon = document.createElement('div');
+      locationIcon.classList.add('location-icon-container');
+      locationIcon.innerHTML = LOCATION_ICON;
+      navWrapper.appendChild(locationIcon);
+      locationIcon.addEventListener('click', () => {
+        console.log('Toaster icon clicked');
+        // TODO: toaster logic (e.g., show or hide a toaster popup)
+      });
+      observer.disconnect();
+    }
+  });
+  observer.observe(document, {
+    childList: true,
+    subtree: true,
+  });
 }
 
 export default async function loadGeoRoutingToaster(
