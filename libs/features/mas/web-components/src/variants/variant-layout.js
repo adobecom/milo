@@ -52,6 +52,10 @@ export class VariantLayout {
     return '';
   }
 
+  get theme() {
+    return document.querySelector('sp-theme');
+  }
+
   get evergreen() {
     return this.card.classList.contains('intro-pricing');
   }
@@ -80,9 +84,13 @@ export class VariantLayout {
     return '';
   }
 
+  get theme() {
+    return this.card.theme;
+  }
+
   get stripStyle() {
     if (this.strip && this.card.stripBackground) {
-      const spTheme = document.querySelector('sp-theme');
+      const spTheme = this.card.theme;
       const isRTL = document.dir === 'rtl' || spTheme.dir === 'rtl';
       return `
         background: ${this.card.stripBackground.startsWith('url') ? this.card.stripBackground : `url("${this.card.stripBackground}")`};
