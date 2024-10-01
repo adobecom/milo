@@ -475,7 +475,7 @@ div[class*="-up"] .media .foreground > .media-row {
   }
 }
 
-.media.in-modal > .container.foreground > .media-row {
+.media.in-modal:not(.space-between) > .container.foreground > .media-row {
   display: grid;
   gap: 0;
 }
@@ -503,7 +503,7 @@ div[class*="-up"] .media .foreground > .media-row {
 }
 
 @media (orientation: landscape) {
-  .media.in-modal > .container.foreground > .media-row {
+  .media.in-modal:not(.space-between) > .container.foreground > .media-row {
     grid-template-columns: 1fr 1fr;
   }
 
