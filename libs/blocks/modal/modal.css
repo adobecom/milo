@@ -21,11 +21,6 @@
   z-index: 102;
 }
 
-.dialog-modal.locale-modal-v2 .georouting-wrapper {
-  display: block !important;
-  padding: 56px 24px 40px;
-}
-
 .dialog-modal.commerce-frame {
   z-index: 103;
 }
@@ -319,4 +314,10 @@
 
 .disable-scroll {
   overflow: hidden;
+}
+
+
+.dialog-modal.locale-modal-v2 .georouting-wrapper {
+  display: block !important;
+  padding: 56px 24px 40px;
 }
