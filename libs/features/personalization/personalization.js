@@ -333,6 +333,7 @@ function registerInBlockActions(command) {
   config.mep.inBlock[blockName] ??= {};
 
   let blockSelector;
+  if (blockAndSelector.length === 1) delete command.selector;
   if (blockAndSelector.length > 1) {
     blockSelector = blockAndSelector.slice(1).join(' ');
     command.selector = blockSelector;
