@@ -28,7 +28,7 @@ export default async function bootstrapBlock(miloLibs, blockConfig) {
     });
   }
 
-  initBlock(document.querySelector(targetEl));
+  await initBlock(document.querySelector(targetEl));
   if (blockConfig.targetEl === 'footer') {
     const { loadPrivacy } = await import(`${miloLibs}/scripts/delayed.js`);
     setTimeout(() => {

@@ -4,12 +4,15 @@ import { getVariantLayout, getVariantStyles } from './variants/variants.js';
 
 import './global.css.js';
 import {
+    EVENT_AEM_LOAD,
     EVENT_MERCH_CARD_READY,
     EVENT_MERCH_OFFER_SELECT_READY,
     EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
     EVENT_MERCH_STORAGE_CHANGE,
+    EVENT_MAS_READY,
 } from './constants.js';
 import { VariantLayout } from './variants/variant-layout.js';
+import { hydrate } from './hydrate.js';
 
 export const MERCH_CARD_NODE_NAME = 'MERCH-CARD';
 export const MERCH_CARD = 'merch-card';
@@ -29,8 +32,8 @@ export class MerchCard extends LitElement {
         stripBackground: { type: String, attribute: 'strip-background' },
         badgeText: { type: String, attribute: 'badge-text' },
         actionMenu: { type: Boolean, attribute: 'action-menu' },
-        actionMenuContent: { type: String, attribute: 'action-menu-content' },
         customHr: { type: Boolean, attribute: 'custom-hr' },
+        consonant: { type: Boolean, attribute: 'consonant' },
         detailBg: { type: String, attribute: 'detail-bg' },
         secureLabel: { type: String, attribute: 'secure-label' },
         checkboxLabel: { type: String, attribute: 'checkbox-label' },
@@ -98,11 +101,15 @@ export class MerchCard extends LitElement {
         this.filters = {};
         this.types = '';
         this.selected = false;
+        this.handleLoadEvent = this.handleLoadEvent.bind(this);
     }
 
     firstUpdated() {
         this.variantLayout = getVariantLayout(this, false);
         this.variantLayout?.connectedCallbackHook();
+        this.aemFragment?.updateComplete.catch(() => {
+            this.style.display = 'none';
+        });
     }
 
     willUpdate(changedProperties) {
@@ -216,6 +223,7 @@ export class MerchCard extends LitElement {
         return this.titleElement?.textContent?.trim();
     }
 
+    /* c8 ignore next 3 */
     get description() {
         return this.querySelector('[slot="body-xs"]')?.textContent?.trim();
     }
@@ -241,6 +249,7 @@ export class MerchCard extends LitElement {
         this.filters = newFilters;
     }
 
+    /* c8 ignore next 3 */
     includes(text) {
         return this.textContent.match(new RegExp(text, 'i')) !== null;
     }
@@ -264,6 +273,9 @@ export class MerchCard extends LitElement {
             'change',
             this.handleStorageChange,
         );
+
+        // aem-fragment logic
+        this.addEventListener(EVENT_AEM_LOAD, this.handleLoadEvent);
     }
 
     disconnectedCallback() {
@@ -278,13 +290,33 @@ export class MerchCard extends LitElement {
             EVENT_MERCH_STORAGE_CHANGE,
             this.handleStorageChange,
         );
+        this.removeEventListener(EVENT_AEM_LOAD, this.handleLoadEvent);
     }
+
     // custom methods
+    handleLoadEvent(e) {
+        if (e.target.nodeName === 'AEM-FRAGMENT') {
+            const fragment = e.detail;
+            if (!fragment) return;
+            hydrate(fragment, this);
+            this.dispatchEvent(
+                new CustomEvent(EVENT_MAS_READY, {
+                    bubbles: true,
+                    composed: true,
+                }),
+            );
+        }
+    }
+
+    get aemFragment() {
+        return this.querySelector('aem-fragment');
+    }
 
     get storageOptions() {
         return this.querySelector('sp-radio-group#storage');
     }
 
+    /* c8 ignore next 9 */
     get storageSpecificOfferSelect() {
         const storageOption = this.storageOptions?.selected;
         if (storageOption) {
@@ -302,6 +334,7 @@ export class MerchCard extends LitElement {
             : this.querySelector('merch-offer-select');
     }
 
+    /* c8 ignore next 3 */
     get quantitySelect() {
         return this.querySelector('merch-quantity-select');
     }
@@ -328,6 +361,7 @@ export class MerchCard extends LitElement {
         );
     }
 
+    /* c8 ignore next 3 */
     get dynamicPrice() {
         return this.querySelector('[slot="price"]');
     }

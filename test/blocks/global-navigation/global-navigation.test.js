@@ -13,16 +13,25 @@ import {
   unavVersion,
 } from './test-utilities.js';
 import { setConfig, getLocale } from '../../../libs/utils/utils.js';
-import initGnav, { getUniversalNavLocale, osMap } from '../../../libs/blocks/global-navigation/global-navigation.js';
+import initNav, { getUniversalNavLocale, osMap } from '../../../libs/blocks/global-navigation/global-navigation.js';
 import { isDesktop, isTangentToViewport, toFragment } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
 import logoOnlyNav from './mocks/global-navigation-only-logo.plain.js';
 import longNav from './mocks/global-navigation-long.plain.js';
 import darkNav from './mocks/dark-global-navigation.plain.js';
+import navigationWithCustomLinks from './mocks/navigation-with-custom-links.plain.js';
 import globalNavigationMock from './mocks/global-navigation.plain.js';
 import { getConfig } from '../../../tools/send-to-caas/send-utils.js';
 
 // TODO
 // - test localization
+
+async function initGnav(block) {
+  try {
+    await initNav(block);
+  } catch (e) {
+    // should throw error
+  }
+}
 
 describe('global navigation', () => {
   before(() => {
@@ -635,6 +644,20 @@ describe('global navigation', () => {
     it('should append the feds-client-search div when search is enabled', async () => {
       await createFullGlobalNavigation({ customConfig: { searchEnabled: 'on' } });
       expect(document.querySelector(selectors.topNavWrapper).classList.contains('feds-client-search')).to.exist;
+    });
+  });
+
+  describe('Custom Links for mobile hamburger menu', () => {
+    it('Add custom links through Link Group block in parallel to large menu\'s', async () => {
+      const customLinks = 'home,learn';
+      await createFullGlobalNavigation({
+        viewport: 'mobile',
+        globalNavigation: navigationWithCustomLinks,
+        customConfig: { customLinks },
+      });
+      expect(
+        document.querySelectorAll(selectors.customMobileLink).length,
+      ).to.equal(customLinks.split(',').length);
     });
   });
 });

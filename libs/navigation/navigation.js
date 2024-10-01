@@ -4,7 +4,7 @@ const blockConfig = [
     name: 'global-navigation',
     targetEl: 'header',
     appendType: 'prepend',
-    params: ['imsClientId', 'searchEnabled', 'unavHelpChildren'],
+    params: ['imsClientId', 'searchEnabled', 'unav', 'customLinks', 'jarvis'],
   },
   {
     key: 'footer',
@@ -35,11 +35,17 @@ function getParamsConfigs(configs) {
 
 export default async function loadBlock(configs, customLib) {
   const {
-    header, footer, authoringPath, env = 'prod', locale = '', theme,
+    header,
+    footer,
+    authoringPath,
+    env = 'prod',
+    locale = '',
+    theme,
   } = configs || {};
   const branch = new URLSearchParams(window.location.search).get('navbranch');
   const miloLibs = branch ? `https://${branch}--milo--adobecom.hlx.page` : customLib || envMap[env];
   if (!header && !footer) {
+    // eslint-disable-next-line no-console
     console.error('Global navigation Error: header and footer configurations are missing.');
     return;
   }
@@ -52,6 +58,7 @@ export default async function loadBlock(configs, customLib) {
 
   const paramConfigs = getParamsConfigs(configs, miloLibs);
   const clientConfig = {
+    clientEnv: env,
     origin: `https://main--federal--adobecom.hlx.${env === 'prod' ? 'live' : 'page'}`,
     miloLibs: `${miloLibs}/libs`,
     pathname: `/${locale}`,
@@ -61,16 +68,20 @@ export default async function loadBlock(configs, customLib) {
     ...paramConfigs,
   };
   setConfig(clientConfig);
-
-  blockConfig.forEach((block) => {
+  for await (const block of blockConfig) {
     const configBlock = configs[block.key];
-    if (configBlock) {
-      bootstrapBlock(`${miloLibs}/libs`, {
-        ...block,
-        ...(block.key === 'header' && { unavComponents: configBlock.unavComponents, redirect: configBlock.redirect }),
-      });
+    try {
+      if (configBlock) {
+        await bootstrapBlock(`${miloLibs}/libs`, {
+          ...block,
+          ...(block.key === 'header' && { unavComponents: configBlock.unav?.unavComponents, redirect: configBlock.redirect }),
+        });
+        configBlock.onReady?.();
+      }
+    } catch (e) {
+      configBlock.onError?.(e);
     }
-  });
+  }
 }
 
 window.loadNavigation = loadBlock;

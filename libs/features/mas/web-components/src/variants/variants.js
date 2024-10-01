@@ -9,6 +9,7 @@ import { Segment } from './segment.js';
 import { SpecialOffer } from './special-offer.js';
 import { TWP } from './twp.js';
 import { CCDSuggested } from './ccd-suggested.js';
+import { CCDSlice } from './ccd-slice.js';
 
 const getVariantLayout = (card, mustMatch = false) => {
     switch (card.variant) {
@@ -34,6 +35,8 @@ const getVariantLayout = (card, mustMatch = false) => {
             return new TWP(card);
         case 'ccd-suggested':
               return new CCDSuggested(card);
+        case 'ccd-slice':
+            return new CCDSlice(card);
         default:
             return mustMatch ? undefined : new Product(card);
     }
@@ -44,11 +47,13 @@ const getVariantStyles = () => {
     styles.push(Catalog.variantStyle);
     styles.push(CCDAction.variantStyle);
     styles.push(MiniCompareChart.variantStyle);
+    styles.push(Product.variantStyle);
     styles.push(Plans.variantStyle);
     styles.push(Segment.variantStyle);
     styles.push(SpecialOffer.variantStyle);
     styles.push(TWP.variantStyle);
     styles.push(CCDSuggested.variantStyle);
+    styles.push(CCDSlice.variantStyle);
     return styles;
 };
 
