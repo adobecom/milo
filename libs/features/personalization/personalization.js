@@ -449,7 +449,14 @@ function getSelectedElements(sel) {
     }
   }
   const { modifiedSelector, modifiers } = modifyNonFragmentSelector(selector);
-  let els = document.querySelectorAll(modifiedSelector);
+  let els;
+  try {
+    els = document.querySelectorAll(modifiedSelector);
+  } catch (e) {
+  /* eslint-disable-next-line no-console */
+    log('Invalid selector: ', selector);
+    return null;
+  }
   if (modifiers.includes(FLAGS.all) || !els.length) return { els, modifiers };
   els = [els[0]];
   return { els, modifiers };
