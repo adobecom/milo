@@ -321,7 +321,7 @@ export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true
   const mepGnav = getConfig()?.mep?.inBlock?.['global-navigation'];
   const mepFragment = mepGnav?.fragments?.[path];
   if (mepFragment && mepFragment.action === 'replace') {
-    path = mepFragment.target;
+    path = mepFragment.content;
   }
   const res = await fetch(path.replace(/(\.html$|$)/, '.plain.html'));
   if (res.status !== 200) {

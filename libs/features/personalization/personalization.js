@@ -485,6 +485,7 @@ export function handleCommands(commands, rootEl, forceInline = false) {
     cmd.content = forceInline ? addHash(content, INLINE_HASH) : content;
     if (selector.startsWith(IN_BLOCK_SELECTOR_PREFIX)) {
       registerInBlockActions(cmd);
+      cmd.selectorType = IN_BLOCK_SELECTOR_PREFIX;
       return;
     }
     const { els, modifiers } = getSelectedElements(selector);
@@ -509,7 +510,8 @@ export function handleCommands(commands, rootEl, forceInline = false) {
       cmd.completed = true;
     }
   });
-  return commands.filter((cmd) => !cmd.completed);
+  return commands.filter((cmd) => !cmd.completed
+    && cmd.selectorType !== IN_BLOCK_SELECTOR_PREFIX);
 }
 
 const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) => {
