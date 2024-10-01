@@ -88,7 +88,7 @@ import{LitElement as Dt}from"../lit-all.min.js";import{LitElement as wt,html as 
         display: flex;
         justify-content: flex-end;
         box-sizing: border-box;
-        align-items: flex-end;
+        align-items: center;
         width: 100%;
         flex-flow: wrap;
         gap: var(--consonant-merch-spacing-xs);

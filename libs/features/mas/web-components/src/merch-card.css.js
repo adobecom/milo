@@ -66,7 +66,7 @@ export const styles = css`
         display: flex;
         justify-content: flex-end;
         box-sizing: border-box;
-        align-items: flex-end;
+        align-items: center;
         width: 100%;
         flex-flow: wrap;
         gap: var(--consonant-merch-spacing-xs);
