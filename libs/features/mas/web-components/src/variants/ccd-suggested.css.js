@@ -6,7 +6,7 @@ export const CSS = `
 }
 
 merch-card[variant="ccd-suggested"] [slot='detail-m'] {
-  color: var(--merch-color-grey-60);
+  color: var(--spectrum-gray-800, --merch-color-grey-60);
 }
 
 merch-card[variant="ccd-suggested"] [slot='icons'] {
@@ -15,6 +15,7 @@ merch-card[variant="ccd-suggested"] [slot='icons'] {
 }
 
 merch-card[variant="ccd-suggested"] [slot='heading-xs'] {
+  color: var(--spectrum-gray-800, #F8F8F8);
   font-size: var(--merch-card-heading-xxs-font-size);
   line-height: var(--merch-card-heading-xxs-line-height);
 

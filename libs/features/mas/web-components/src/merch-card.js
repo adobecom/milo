@@ -122,6 +122,10 @@ export class MerchCard extends LitElement {
         this.variantLayout?.postCardUpdateHook(this);
     }
 
+    get theme() {
+    return this.closest('sp-theme');
+    }
+
     get prices() {
         return Array.from(
             this.querySelectorAll('span[is="inline-price"][data-wcs-osi]'),

@@ -29,6 +29,8 @@ export class CCDSuggested extends VariantLayout {
 
   static variantStyle = css`
     :host([variant='ccd-suggested']) {
+      background-color: var(
+        --spectrum-gray-50, #fff);
       width: var(--merch-card-ccd-suggested-width);
       min-height: var(--merch-card-ccd-suggested-height);
       border-radius: 4px;
@@ -56,12 +58,12 @@ export class CCDSuggested extends VariantLayout {
     }
 
     :host([variant='ccd-suggested']) ::slotted([slot='heading-xs']) {
-      font-size: var(--consonant-merch-card-heading-xxs-font-size);
-      line-height: var(--consonant-merch-card-heading-xxs-line-height);
+      font-size: var(--merch-card-heading-xxs-font-size);
+      line-height: var(--merch-card-heading-xxs-line-height);
     }
 
     :host([variant='ccd-suggested']) ::slotted([slot='detail-m']) {
-      color: var(--merch-color-grey-60);
+      color: var(--spectrum-gray-100, --merch-color-grey-60);
     }
     
     :host([variant='ccd-suggested'][strip-size='wide']) ::slotted([slot='body-xs']) {
@@ -75,6 +77,7 @@ export class CCDSuggested extends VariantLayout {
     :host([variant='ccd-suggested']) ::slotted([slot='price']) {
       display: flex;
       align-items: center;
+      color: var(--spectrum-gray-800, #F8F8F8);
     }
 
     :host([variant='ccd-suggested']) ::slotted([slot='cta']) {

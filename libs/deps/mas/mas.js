@@ -10,9 +10,9 @@ Try polyfilling it using "@formatjs/intl-pluralrules"
         display: flex;
         flex-direction: column;
         text-align: start;
-        background-color: var(--consonant-merch-card-background-color);
+        background-color: var(--merch-card-background-color);
         grid-template-columns: repeat(auto-fit, minmax(300px, max-content));
-        background-color: var(--consonant-merch-card-background-color);
+        background-color: var(--merch-card-background-color);
         font-family: var(--body-font-family, 'Adobe Clean');
         border-radius: var(--consonant-merch-spacing-xs);
         border: 1px solid var(--consonant-merch-card-border-color);
@@ -331,7 +331,7 @@ merch-card[variant="catalog"] [slot="action-menu-content"] p {
 }
 
 merch-card[variant="catalog"] [slot="action-menu-content"] a {
-  color: var(--consonant-merch-card-background-color);
+  color: var(--merch-card-background-color);
   text-decoration: underline;
 }
 
@@ -1288,7 +1288,7 @@ merch-card[variant='twp'] merch-offer-select {
     --consonant-merch-card-detail-font-size: 12px;
     --consonant-merch-card-detail-font-weight: 500;
     --consonant-merch-card-detail-letter-spacing: 0.8px;
-    --consonant-merch-card-background-color: #fff;
+    --merch-card-background-color: #fff;
 
     --consonant-merch-card-heading-font-size: 18px;
     --consonant-merch-card-heading-line-height: 22.5px;
