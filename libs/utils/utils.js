@@ -1043,7 +1043,7 @@ async function checkForPageMods() {
 }
 
 async function loadPostLCP(config) {
-  const caiImgs = [...document.querySelectorAll('img[alt*="|"]')] // no video support (for now)
+  const caiImgs = [...document.querySelectorAll('img[alt]')] // no video support (for now)
     .map((img) => {
       if (!img) return null;
 
@@ -1068,7 +1068,7 @@ async function loadPostLCP(config) {
       const parent = img.parentElement; // guaranteed non null in this case
       container.replaceChildren(img, caiIcon);
       parent.append(container);
-      const block = img.closest('.background').parentElement;
+      const block = img.closest('.background')?.parentElement ?? img.closest('div');
       block?.addEventListener('pointerenter', () => {
         caiIcon.classList.add('show');
       });
