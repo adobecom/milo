@@ -4,7 +4,6 @@
 } */
 
 .dialog-modal.locale-modal-v2 {
-  display: block !important;
   overflow: visible;
   font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
 }
