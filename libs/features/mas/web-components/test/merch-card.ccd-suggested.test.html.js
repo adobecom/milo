@@ -34,7 +34,13 @@ runTests(async () => {
       it('should have strip with size small for the ccd-suggested wide card', async () => {
         const ccdSliceWideCard = document.querySelector('merch-card[variant="ccd-suggested"][strip-size="small"]');
         expect(ccdSliceWideCard.getAttribute('variant')).to.equal('ccd-suggested');
-    });
+     });
+
+     it('should have dark theme', async () => {
+      const ccdSliceDarkCard = document.querySelector('merch-card[variant="ccd-suggested"][strip-size="small"].dark-theme');
+      const theme = ccdSliceDarkCard.theme.color;
+      expect(theme.to.equal('dark'));
+   });
     });
 
 });
