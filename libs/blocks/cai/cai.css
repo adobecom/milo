@@ -35,7 +35,7 @@
   margin-bottom: 16px;
 }
 
-#cai-img-container .cai-tooltip .title .cai-subtitle {
+#cai-img-container .cai-tooltip .title #cai-subtitle {
   color: var(--color-gray-500);
 }
 
