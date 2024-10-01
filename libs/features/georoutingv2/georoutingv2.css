@@ -10,6 +10,7 @@
 }
 
 .dialog-modal.locale-modal-v2 .georouting-wrapper {
+  padding: 56px 24px 40px;
   display: block !important;
 }
 
