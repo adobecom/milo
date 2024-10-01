@@ -53,17 +53,12 @@ export class CCDSuggested extends VariantLayout {
     }
 
     :host([variant='ccd-suggested']) ::slotted([slot='icons']) {
-      flex-flow: wrap;
       place-self: flex-start;
     }
 
     :host([variant='ccd-suggested']) ::slotted([slot='heading-xs']) {
       font-size: var(--merch-card-heading-xxs-font-size);
       line-height: var(--merch-card-heading-xxs-line-height);
-    }
-
-    :host([variant='ccd-suggested']) ::slotted([slot='detail-m']) {
-      color: var(--spectrum-gray-100, --merch-color-grey-60);
     }
     
     :host([variant='ccd-suggested'][strip-size='wide']) ::slotted([slot='body-xs']) {

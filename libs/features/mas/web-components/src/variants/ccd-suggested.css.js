@@ -9,11 +9,6 @@ merch-card[variant="ccd-suggested"] [slot='detail-m'] {
   color: var(--spectrum-gray-800, --merch-color-grey-60);
 }
 
-merch-card[variant="ccd-suggested"] [slot='icons'] {
-    flex-flow: wrap;
-    place-self: flex-start;
-}
-
 merch-card[variant="ccd-suggested"] [slot='heading-xs'] {
   color: var(--spectrum-gray-800, #F8F8F8);
   font-size: var(--merch-card-heading-xxs-font-size);
