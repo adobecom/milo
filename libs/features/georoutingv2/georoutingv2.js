@@ -376,6 +376,7 @@ export default async function loadGeoRoutingToaster(
   conf,
   createTagFunc,
   getMetadataFunc,
+  loadBlockFunc,
   loadStyleFunc,
 ) {
   if (getGeoroutingOverride()) return;
@@ -387,8 +388,8 @@ export default async function loadGeoRoutingToaster(
 
   await appendLocationIcon();
 
-  // const { miloLibs, codeRoot } = config;
-  // await new Promise((resolve) => { loadStyle(`${miloLibs || codeRoot}/features/georoutingv2/georoutingv2.css`, resolve); });
+  const { miloLibs, codeRoot } = config;
+  await new Promise((resolve) => { loadStyle(`${miloLibs || codeRoot}/features/georoutingv2/georoutingv2.css`, resolve); });
 
   const urls = [
     `${config.contentRoot ?? ''}/georoutingv2.json`,
