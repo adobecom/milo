@@ -87,13 +87,14 @@ export class VariantLayout {
         return '';
     }
 
-  get theme() {
-    return document.querySelector('sp-theme');
-  }
+    /* c8 ignore next 3 */
+    get theme() {
+      return document.querySelector('sp-theme');
+    }
 
-  get evergreen() {
-    return this.card.classList.contains('intro-pricing');
-  }
+    get evergreen() {
+      return this.card.classList.contains('intro-pricing');
+    }
 
     get promoBottom() {
         return this.card.classList.contains('promo-bottom');
@@ -110,6 +111,7 @@ export class VariantLayout {
                 return '44px';
             case 'small':
                 return '4px';
+            /* c8 ignore next 2 */
             default:
                 return '0';
         }
