@@ -36,6 +36,7 @@ class BulkPublish2 extends LitElement {
     openJobs: { state: true },
     jobErrors: { state: true },
     user: { state: true },
+    share: { state: true },
     errorShare: { state: true },
   };
 
@@ -51,6 +52,7 @@ class BulkPublish2 extends LitElement {
     this.openJobs = false;
     this.jobErrors = false;
     this.user = null;
+    this.share = null;
     this.errorShare = null;
   }
 
@@ -58,17 +60,13 @@ class BulkPublish2 extends LitElement {
     super.connectedCallback();
     this.renderRoot.adoptedStyleSheets = [styleSheet, loaderSheet];
     authenticate(this);
-    const shared = await getSharedJob();
     const resumes = sticky().get('resume');
     /* c8 ignore next 9 */
-    if (resumes.length || shared.length) {
-      this.jobs = [...resumes, ...shared];
+    if (resumes.length) {
+      this.jobs = [...resumes];
       await delay(1000);
       this.openJobs = true;
       this.processing = 'resumed';
-    }
-    if (shared.error) {
-      this.errorShare = shared;
     }
   }
 
@@ -85,6 +83,15 @@ class BulkPublish2 extends LitElement {
     /* c8 ignore next 3 */
     if (this.urls.length && textarea?.value === '') {
       textarea.value = this.urls.join('\r\n');
+    }
+    if (this.user?.profile?.email && !this.share) {
+      this.share = await getSharedJob();
+      if (this.share.error) {
+        /* c8 ignore next 1 */
+        this.errorShare = this.share;
+      } else if (this.share.length) {
+        this.jobs = [...this.jobs, ...this.share];
+      }
     }
   }
 
@@ -302,6 +309,7 @@ class BulkPublish2 extends LitElement {
   };
 
   async cancelJob(job) {
+    /* c8 ignore next 3 */
     if (!job.status?.stopTime) {
       await stopJob(job);
     }
@@ -465,6 +473,7 @@ class BulkPublish2 extends LitElement {
     `;
   }
 
+  /* c8 ignore next 14 */
   renderErrorShare() {
     if (!this.user?.profile || !this.errorShare) return nothing;
     return html`

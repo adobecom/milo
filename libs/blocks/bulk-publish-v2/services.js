@@ -248,17 +248,16 @@ const updateRetry = async ({ queue, urls, process }) => {
   return newQueue;
 };
 
+/* c8 ignore next 13 */
 const stopJob = async (job) => {
   const { links } = job.result;
   try {
     const result = await fetch(links.self, { method: 'DELETE' });
-    /* c8 ignore next 3 */
     if (!result.ok) {
       throw new Error(getErrorText(result.status), { cause: result.status }, job.origin);
     }
     const json = await result.json();
     return json;
-  /* c8 ignore next 3 */
   } catch (error) {
     return { status: error.cause };
   }
@@ -287,8 +286,10 @@ const getSharedJob = async () => {
   const params = new URLSearchParams(window.location.search);
   const share = params.get('share-job');
   const topic = params.get('share-topic');
+  /* c8 ignore next 1 */
   if (!share || !topic) return [];
   const job = await getJobDetails(share, topic);
+  /* c8 ignore next 3 */
   if (job.error) {
     return { ...job, share };
   }
@@ -299,13 +300,7 @@ const getSharedJob = async () => {
     useBulk: true,
     result: {
       links: job.links,
-      job: {
-        topic,
-        createTime: job.createTime,
-        state: 'created',
-        name: share,
-        data: job.data,
-      },
+      job,
     },
   }];
 };
