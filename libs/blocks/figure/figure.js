@@ -1,4 +1,5 @@
-import { applyHoverPlay, getVideoAttrs } from '../../utils/decorate.js';
+import { applyHoverPlay, decorateAnchorVideo } from '../../utils/decorate.js';
+import { createTag } from '../../utils/utils.js';
 
 function buildCaption(pEl) {
   const figCaptionEl = document.createElement('figcaption');
@@ -15,23 +16,22 @@ function htmlToElement(html) {
 }
 
 function decorateVideo(clone, figEl) {
-  let video = clone.querySelector('video');
-  const videoLink = clone.querySelector('a[href*=".mp4"]');
-  if (videoLink) {
-    const { href, hash, dataset } = videoLink;
-    const attrs = getVideoAttrs(hash, dataset);
-    const videoElem = `<video ${attrs}>
-      <source src="${href}" type="video/mp4" />
-    </video>`;
-
-    videoLink.insertAdjacentHTML('afterend', videoElem);
-    videoLink.remove();
-    video = clone.querySelector('video');
-  }
-  if (video) {
-    video.removeAttribute('data-mouseevent');
-    applyHoverPlay(video);
-    figEl.prepend(video);
+  const videoTag = clone.querySelector('video');
+  const anchorTag = clone.querySelector('a[href*=".mp4"]');
+  if (anchorTag && !anchorTag.hash) anchorTag.hash = '#autoplay';
+  if (anchorTag) decorateAnchorVideo({ src: anchorTag.href, anchorTag });
+  if (videoTag) {
+    videoTag.removeAttribute('data-mouseevent');
+    if (videoTag.dataset?.videoSource) {
+      videoTag.appendChild(
+        createTag('source', {
+          src: videoTag.dataset?.videoSource,
+          type: 'video/mp4',
+        }),
+      );
+    }
+    applyHoverPlay(videoTag);
+    figEl.prepend(videoTag);
   }
 }
 
