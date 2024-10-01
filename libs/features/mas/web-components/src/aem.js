@@ -1,4 +1,3 @@
-import { getFragmentById, getFragment } from './getFragmentById.js';
 import { wait } from './utils.js';
 
 const NETWORK_ERROR_MESSAGE = 'Network error';
@@ -13,7 +12,6 @@ class AEM {
         this.#author = /^author-/.test(bucket);
         const baseUrl =
             baseUrlOverride || `https://${bucket}.adobeaemcloud.com`;
-        this.baseUrl = baseUrl;
         const sitesUrl = `${baseUrl}/adobe/sites`;
         this.cfFragmentsUrl = `${sitesUrl}/cf/fragments`;
         this.cfSearchUrl = `${this.cfFragmentsUrl}/search`;
@@ -124,6 +122,30 @@ class AEM {
         return items[0];
     }
 
+    async getFragment(res) {
+        const eTag = res.headers.get('Etag');
+        const fragment = await res.json();
+        fragment.etag = eTag;
+        return fragment;
+    }
+
+    /**
+     * Get fragment by ID
+     * @param {string} id fragment id
+     * @returns {Promise<Object>} the raw fragment item
+     */
+    async getFragmentById(id) {
+        const response = await fetch(`${this.cfFragmentsUrl}/${id}`, {
+            headers: this.headers,
+        });
+        if (!response.ok) {
+            throw new Error(
+                `Failed to get fragment: ${response.status} ${response.statusText}`,
+            );
+        }
+        return await this.getFragment(response);
+    }
+
     /**
      * Save given fragment
      * @param {Object} fragment
@@ -147,7 +169,7 @@ class AEM {
                 `Failed to save fragment: ${response.status} ${response.statusText}`,
             );
         }
-        return await getFragment(response);
+        return await this.getFragment(response);
     }
 
     /**
@@ -191,7 +213,7 @@ class AEM {
         await wait(); // give AEM time to process the copy
         let newFragment = await this.getFragmentByPath(newPath);
         if (newFragment) {
-            newFragment = await this.sites.cf.fragments.getById(newFragment.id);
+            newFragment = await this.getFragmentById(newFragment.id);
         }
         return newFragment;
     }
@@ -325,10 +347,9 @@ class AEM {
                  */
                 getByPath: this.getFragmentByPath.bind(this),
                 /**
-                 * @see getFragmentById
+                 * @see AEM#getFragmentById
                  */
-                getById: (id) =>
-                    getFragmentById(this.baseUrl, id, this.headers),
+                getById: this.getFragmentById.bind(this),
                 /**
                  * @see AEM#saveFragment
                  */

@@ -1,7 +1,6 @@
 import { runTests } from '@web/test-runner-mocha';
 import chai from '@esm-bundle/chai';
 import chaiAsPromised from '@esm-bundle/chai-as-promised';
-import sinon from 'sinon';
 
 import { mockFetch } from './mocks/fetch.js';
 import { withWcs } from './mocks/wcs.js';
@@ -20,10 +19,10 @@ runTests(async () => {
         .then(({ items }) => items);
 
     await mas();
-    await customElements.whenDefined('aem-fragment');
-    const { cache } = document.createElement('aem-fragment');
+    await customElements.whenDefined('merch-datasource');
+    const { cache } = document.createElement('merch-datasource');
 
-    describe('aem-fragment web component', () => {
+    describe('merch-datasource web component', () => {
         let aemMock;
         let spTheme = document.querySelector('sp-theme');
 
@@ -34,36 +33,32 @@ runTests(async () => {
 
         it('has fragment cache', async () => {
             expect(cache).to.exist;
-            expect(cache.has('id123')).to.false;
-            cache.add({ id: 'id123', test: 1 });
-            expect(cache.has('id123')).to.true;
+            expect(cache.has('/test')).to.false;
+            cache.add({ path: '/test', test: 1 });
+            expect(cache.has('/test')).to.true;
             cache.clear();
-            expect(cache.has('id123')).to.false;
+            expect(cache.has('/test')).to.false;
         });
 
         it('renders a merch card from cache', async () => {
             cache.add(cc, photoshop);
-            expect(aemMock.count).to.equal(0);
             const [ccCard, photoshopCard] = getTemplateContent('cards');
             spTheme.append(ccCard, photoshopCard);
-            const ccdDataSource = ccCard.querySelector('aem-fragment');
-            await ccdDataSource.updateComplete;
-            await ccCard.updateComplete;
-            expect(ccCard.querySelectorAll('[slot]')).to.have.length(5);
+            expect(aemMock.count).to.equal(0);
+            const card = document.querySelector('main merch-card:has(> merch-datasource[path="/content/dam/sandbox/mas/creative-cloud"])');
         });
 
         it('re-renders a card after clearing the cache', async () => {
             const [, , ccCard] = getTemplateContent('cards'); //special offers students-and-teachers.
-            const aemFragment = ccCard.querySelector('aem-fragment');
+            const dataSource = ccCard.querySelector('merch-datasource');
 
             spTheme.append(ccCard);
-            await aemFragment.updateComplete;
-            await ccCard.updateComplete;
+            await dataSource.updateComplete;
             const before = ccCard.innerHTML;
             ccCard.footerSlot.test = true;
-            await aemFragment.refresh(true);
-            await aemFragment.refresh(true); // for extra coverage
-            await aemFragment.updateComplete;
+            await dataSource.refresh(true);
+            await dataSource.refresh(true); // for extra coverage
+            await dataSource.updateComplete;
             const after = ccCard.innerHTML;
             expect(before).to.equal(after);
             expect(ccCard.footerSlot.test).to.undefined;
@@ -72,22 +67,13 @@ runTests(async () => {
 
         it('ignores incomplete markup', async () => {
             const [, , , cardWithMissingPath] = getTemplateContent('cards');
-            const aemFragment =
-                cardWithMissingPath.querySelector('aem-fragment');
+            const dataSource =
+                cardWithMissingPath.querySelector('merch-datasource');
 
             spTheme.append(cardWithMissingPath);
-            await expect(aemFragment.updateComplete).to.be.rejectedWith(
-                'AEM fragment cannot be loaded',
+            await expect(dataSource.updateComplete).to.be.rejectedWith(
+                'datasource is not correctly configured',
             );
-        });
-
-        it('uses ims token to retrieve a fragment', async () => {
-            const [, , , , cardWithIms] = getTemplateContent('cards');
-            const aemFragment = cardWithIms.querySelector('aem-fragment');
-            window.adobeid = { authorize: sinon.stub() };
-            spTheme.append(cardWithIms);
-            await expect(aemFragment.updateComplete);
-            sinon.assert.calledOnce(window.adobeid.authorize);
         });
     });
 });

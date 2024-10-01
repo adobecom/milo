@@ -43,8 +43,8 @@ import {
 import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
 
 function getHelpChildren() {
-  const { unav } = getConfig();
-  return unav?.unavHelpChildren || [
+  const { unavHelpChildren } = getConfig();
+  return unavHelpChildren || [
     { type: 'Support' },
     { type: 'Community' },
   ];
@@ -90,7 +90,6 @@ export const CONFIG = {
                   error: (e) => lanaLog({ message: 'Profile Menu error', e, tags: 'errorType=error,module=universalnav' }),
                 },
               },
-              ...getConfig().unav?.profile?.config,
             },
           },
           callbacks: {
@@ -102,18 +101,11 @@ export const CONFIG = {
       appswitcher: { name: 'app-switcher' },
       notifications: {
         name: 'notifications',
-        attributes: { notificationsConfig: { applicationContext: { appID: getConfig().unav?.uncAppId || 'adobecom' } } },
+        attributes: { notificationsConfig: { applicationContext: { appID: 'adobecom' } } },
       },
       help: {
         name: 'help',
         attributes: { children: getHelpChildren() },
-      },
-      jarvis: {
-        name: 'jarvis',
-        attributes: {
-          appid: getConfig().jarvis?.id,
-          callbacks: getConfig().jarvis?.callbacks,
-        },
       },
     },
   },
@@ -633,7 +625,6 @@ class Gnav {
         onAnalyticsEvent,
       },
       children: getChildren(),
-      isSectionDividerRequired: getConfig()?.unav?.showSectionDivider,
     });
 
     // Exposing UNAV config for consumers
@@ -1084,7 +1075,7 @@ export default async function init(block) {
     content,
     block,
   });
-  await gnav.init();
+  gnav.init();
   block.setAttribute('daa-im', 'true');
   const mepMartech = mep?.martech || '';
   block.setAttribute('daa-lh', `gnav|${getExperienceName()}${mepMartech}`);

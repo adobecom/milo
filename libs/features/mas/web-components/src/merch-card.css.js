@@ -1,5 +1,5 @@
 import { css, unsafeCSS } from 'lit';
-import { DESKTOP_UP, TABLET_UP } from './media.js';
+import { DESKTOP_UP, LARGE_DESKTOP, TABLET_UP, } from './media.js';
 
 export const styles = css`
     :host {
@@ -221,18 +221,28 @@ export const sizeStyles = () => {
         @media screen and ${unsafeCSS(TABLET_UP)} {
             :host([size='wide']),
             :host([size='super-wide']) {
+                grid-column: span 3;
                 width: 100%;
-                grid-column: 1 / -1;
+                max-width: var(--consonant-merch-card-tablet-wide-width);
+                margin: 0 auto;
             }
         }
 
         /* Laptop */
         @media screen and ${unsafeCSS(DESKTOP_UP)} {
-            :host([size='wide']) {
-                grid-column: span 2;
+            :host([size='super-wide']) {
+                grid-column: span 3;
             }
         `,
     ];
 
+    styles.push(css`
+        /* Large desktop */
+        @media screen and ${unsafeCSS(LARGE_DESKTOP)} {
+            :host([size='super-wide']) {
+                grid-column: span 4;
+            }
+        }
+    `);
     return styles;
 };

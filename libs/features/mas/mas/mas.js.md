@@ -17,13 +17,13 @@ Add the following script in your document `head` element.
 ```html
 <!-- for US english -->
 <script
-    src="https://ccd--milo--adobecom.hlx.page/libs/deps/mas/mas.js"
+    src="https://ccd-checkout-link--milo--yesil.hlx.page/libs/deps/mas/mas.js"
     type="module"
 ></script>
 
 <!-- for other locales, pass locale parameter from the table below -->
 <script
-    src="https://ccd--milo--adobecom.hlx.page/libs/deps/mas/mas.js?locale=CA_en"
+    src="https://ccd-checkout-link--milo--yesil.hlx.page/libs/deps/mas/mas.js?locale=CA_en"
     type="module"
 ></script>
 ```
@@ -52,7 +52,7 @@ It is programmatically added by mas.js and its tag name can be changed later.
 
 <script type="module">
   const params = new URLSearchParams(document.location.search);
-  let masJs = 'https://ccd--milo--adobecom.hlx.page/libs/deps/mas/mas.js';
+  let masJs = 'https://ccd-checkout-link--milo--yesil.hlx.page/libs/deps/mas/mas.js';
   const locale = params.get('locale');
   if (locale) {
     masJs = `${masJs}?locale=${locale}`;

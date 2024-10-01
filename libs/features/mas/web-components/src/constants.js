@@ -38,18 +38,14 @@ export const EVENT_MERCH_STOCK_CHANGE = 'merch-stock:change';
 
 export const EVENT_MERCH_STORAGE_CHANGE = 'merch-storage:change';
 
-
 export const EVENT_MERCH_QUANTITY_SELECTOR_CHANGE =
-'merch-quantity-selector:change';
+    'merch-quantity-selector:change';
 
 export const EVENT_MERCH_SEARCH_CHANGE = 'merch-search:change';
 
 export const EVENT_MERCH_CARD_COLLECTION_SORT = 'merch-card-collection:sort';
 
 export const EVENT_MERCH_CARD_COLLECTION_SHOWMORE =
-'merch-card-collection:showmore';
+    'merch-card-collection:showmore';
 
 export const EVENT_MERCH_SIDENAV_SELECT = 'merch-sidenav:select';
-
-export const EVENT_AEM_LOAD = 'aem:load';
-export const EVENT_MAS_READY = 'mas:ready';
