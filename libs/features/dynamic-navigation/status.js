@@ -29,13 +29,13 @@ const getStatus = (status, disabled, storageSource) => {
   return INACTIVE;
 };
 
-const processDisableValues = (arr, elem) => {
-  if (arr === null || arr === undefined || arr.length === 0) return;
+const processDisableValues = (valueStr, elem) => {
+  if (!valueStr || valueStr.length === 0) return;
 
-  const diableValueList = arr.split(',');
+  const disableValueList = valueStr.split(',');
   const table = createTag('table');
 
-  const tableDOM = `
+  table.innerHTML = `
       <caption>Disable Values</caption>
       <thead>
         <tr>
@@ -46,10 +46,9 @@ const processDisableValues = (arr, elem) => {
       <tbody>
       </tbody>`;
 
-  table.innerHTML = tableDOM;
   const tBody = table.querySelector('tbody');
 
-  diableValueList.forEach((pair) => {
+  disableValueList.forEach((pair) => {
     const itemRow = createTag('tr');
     const [key, value] = pair.split(';');
     const keyElem = createTag('td');
@@ -65,7 +64,7 @@ const processDisableValues = (arr, elem) => {
 };
 
 const returnPath = (url) => {
-  if (!url.includes('https://')) return '';
+  if (!url.startsWith('https://')) return '';
   const sourceUrl = new URL(url);
   return sourceUrl.pathname;
 };
