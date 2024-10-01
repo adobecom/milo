@@ -154,6 +154,8 @@ function getEnv(conf) {
 
   if (query) return { ...ENVS[query], consumer: conf[query] };
   if (host.includes('localhost')) return { ...ENVS.local, consumer: conf.local };
+  const { clientEnv } = conf;
+  if (clientEnv) return { ...ENVS[clientEnv], consumer: conf[clientEnv] };
   /* c8 ignore start */
   if (host.includes(`${SLD}.page`)
     || host.includes(`${SLD}.live`)
