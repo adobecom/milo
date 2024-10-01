@@ -3,6 +3,7 @@
 }
 
 .dialog-modal.locale-modal-v2,
+.dialog-modal.locale-modal-v2 ~ .modal-curtain.is-open,
 .dialog-modal.locale-modal-v2 .georouting-wrapper {
   display: none;
 }
