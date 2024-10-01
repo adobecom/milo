@@ -1069,7 +1069,7 @@ export async function init(enablements = {}) {
   if (target === true) {
     const { preloadBlockResources } = await import('../../utils/utils.js');
     const lcpBlocks = [...document.querySelectorAll('body > main > div:first-child > *[class]')];
-    preloadBlockResources(lcpBlocks, false);
+    preloadBlockResources(lcpBlocks);
   }
 
   if (target === true || (target === 'gnav' && postLCP)) {
