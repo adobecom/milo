@@ -774,6 +774,39 @@ h6 {
   line-break: strict;
 }
 
+/* CAI */
+
+#cai-img-container {
+  height: 100%;
+  width: 100%;
+  position: relative;
+}
+
+#cai-img-container .cai-icon{
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  padding: 12px;
+  z-index: 3;
+  opacity: 0;
+  animation: fadeOut 0.2s ease-in-out;
+}
+ 
+#cai-img-container .cai-icon.show {
+  opacity: 1;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px) }
+  to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; transform: translateY(12px) }
+}
+
 /* Links */
 a.auto-block,
 a.fragment {

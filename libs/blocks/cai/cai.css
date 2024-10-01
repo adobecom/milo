@@ -1,0 +1,102 @@
+#cai-img-container .cai-tooltip {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  z-index: 4;
+
+  width: 350px;
+  height: auto;
+  max-height: 350px;
+  border-radius: 16px;
+
+  background: white;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  transition: width 0.3s ease-in-out, max-height 0.3s ease-in-out;
+}
+
+#cai-img-container .cai-tooltip.hide, 
+#cai-img-container .cai-tooltip.loading.hide { 
+  pointer-events: none;
+  width: 0;
+  max-height: 0;
+  animation: closeloader 0.3s ease-in-out, close 0.3s ease-in-out;
+  overflow: hidden;
+}
+
+#cai-img-container .cai-tooltip .title {
+  margin-left: 16px;
+  margin-right: 16px;
+}
+
+#cai-img-container .cai-tooltip .title h3 {
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+#cai-img-container .cai-tooltip .title .cai-subtitle {
+  color: var(--color-gray-500);
+}
+
+#cai-img-container .cai-tooltip .content {
+  margin-left: 16px;
+  margin-right: 16px;
+  margin-bottom: 16px;
+}
+
+#cai-img-container .cai-tooltip.loading {
+  display: grid;
+  align-items: center;
+  width: 100px;
+  height: 100px;
+  max-height: 100px;
+  animation: openloader 0.3s ease-in-out;
+}
+#cai-img-container .cai-tooltip .loader {
+  width: 50px;
+  padding: 4px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  margin: 0 auto;
+  background: var(--color-accent);
+  --_m: 
+    conic-gradient(#0000 10%,#000),
+    linear-gradient(#000 0 0) content-box;
+  -webkit-mask: var(--_m);
+          mask: var(--_m);
+  -webkit-mask-composite: source-out;
+          mask-composite: subtract;
+  animation: l3 1s infinite linear;
+}
+@keyframes l3 {to{transform: rotate(1turn)}}
+
+
+@keyframes close {
+  from { 
+    width: 350px;
+    max-height: 350px;
+  }
+  to {
+    width: 0;
+    max-height: 0;
+  }
+}
+@keyframes closeloader {
+  from { 
+    width: 100px;
+    max-height: 100px;
+  }
+  to {
+    width: 0;
+    max-height: 0;
+  }
+}
+@keyframes openloader {
+  from { 
+    width: 0;
+    max-height: 0;
+  }
+  to {
+    width: 100px;
+    max-height: 100px;
+  }
+}

@@ -1043,6 +1043,46 @@ async function checkForPageMods() {
 }
 
 async function loadPostLCP(config) {
+  const caiImgs = [...document.querySelectorAll('img[alt*="|"]')] // no video support (for now)
+    .map((img) => {
+      if (!img) return null;
+
+      const xs = img.alt.split('|').map((x) => x.trim());
+      if (!xs.length) return null;
+
+      const [cai, ...rest] = xs;
+      img.alt = rest.join('|');
+
+      if (cai !== 'CAI') return null;
+
+      const container = createTag('div');
+      container.id = 'cai-img-container';
+      const caiIcon = createTag('div');
+      caiIcon.classList.add('cai-icon');
+      caiIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" viewBox="0 0 28 28" preserveAspectRatio="xMidYMid meet" part="svg">
+      <g>
+          <path fill="white" d="M1.45605 14C1.45605 7.06999 7.07006 1.45599 14.0001 1.45599C20.9301 1.45599 26.5441 7.06999 26.5441 14V26.544H14.0001C7.07006 26.544 1.45605 20.93 1.45605 14Z"></path>
+          <path fill="#141414" fill-rule="evenodd" d="M25.578 14V25.578H14C7.602 25.578 2.422 20.398 2.422 14C2.422 7.602 7.602 2.422 14 2.422C20.398 2.422 25.578 7.602 25.578 14ZM0 14C0 6.272 6.272 0 14 0C21.728 0 28 6.272 28 14V28H14C6.272 28 0 21.728 0 14ZM5.572 14.56C5.572 17.444 7.518 19.88 10.612 19.88C13.16 19.88 14.882 18.2 15.302 16.002H12.782C12.46 17.01 11.648 17.626 10.612 17.626C9.044 17.626 8.022 16.394 8.022 14.56C8.022 12.726 9.044 11.494 10.612 11.494C11.62 11.494 12.418 12.068 12.754 13.02H15.288C14.84 10.878 13.132 9.24 10.612 9.24C7.504 9.24 5.572 11.676 5.572 14.56ZM18.676 9.52H16.296V19.614H18.774V14.35C18.774 13.356 19.054 12.712 19.53 12.306C19.95 11.928 20.496 11.732 21.392 11.732H22.022V9.394H21.406C20.104 9.394 19.236 9.87 18.676 10.598V9.506V9.52Z" clip-rule="evenodd"></path>
+      </g>
+      </svg>`;
+      const parent = img.parentElement; // guaranteed non null in this case
+      container.replaceChildren(img, caiIcon);
+      parent.append(container);
+      const block = img.closest('.background').parentElement;
+      block?.addEventListener('pointerenter', () => {
+        caiIcon.classList.add('show');
+      });
+      block?.addEventListener('pointerleave', () => {
+        caiIcon.classList.remove('show');
+      });
+      return { img, container, caiIcon };
+    })
+    .filter(Boolean);
+
+  if (caiImgs.length) {
+    const { default: initCAI } = await import('../blocks/cai/cai.js');
+    caiImgs.forEach(initCAI);
+  }
   await decoratePlaceholders(document.body.querySelector('header'), config);
   if (config.mep?.targetEnabled === 'gnav') {
     /* c8 ignore next 2 */
