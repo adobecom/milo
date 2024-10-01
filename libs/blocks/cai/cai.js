@@ -1,7 +1,7 @@
 import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
-import { createC2pa } from '../../deps/cai-tools.min.js';
+import { createC2pa, selectFormattedGenerator, selectEditsAndActivity } from '../../deps/cai-tools.min.js';
 
-const { miloLibs } = getConfig();
+const miloLibs = getConfig().miloLibs ?? '/libs';
 loadStyle(`${miloLibs}/blocks/cai/cai.css`);
 
 const tooltipContent = ({ issuer, date, info, app, aiTool }) => `
@@ -32,12 +32,15 @@ const extractMetadata = async (img) => {
   try {
     // Read in our sample image and get a manifest store
     const [src] = img.src.split('?');
-    console.log(await c2pa.read(src));
     const { manifestStore } = await c2pa.read(src);
 
     // Get the active manifest
     const { activeManifest } = manifestStore;
-    return activeManifest;
+    const { issuer, time } = activeManifest.signatureInfo;
+    const date = new Date(time).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    const app = selectFormattedGenerator(activeManifest);
+    console.log(await selectEditsAndActivity(activeManifest));
+    return { issuer, date, info: 'soup', app };
   } catch (err) {
     console.error('Error reading image:', err);
   }
