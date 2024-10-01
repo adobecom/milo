@@ -358,7 +358,8 @@ describe('matchGlob function', () => {
         targetManifestId: '',
         action: 'insertAfter',
         modifiers: [],
-      });
+      },
+    );
     expect(wrapper.tagName).to.equal('P');
     expect(wrapper.classList.contains('hide-block')).to.be.true;
   });
