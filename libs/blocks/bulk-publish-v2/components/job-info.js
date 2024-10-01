@@ -157,7 +157,7 @@ class JobInfo extends LitElement {
           ` : nothing}
           ${invocationId ? html`
             <img
-              title="Share this Job"
+              title="Copy job link"
               src="${shareIcon}"
               class="share-link"
               @click=${this.copyShareLink} />
