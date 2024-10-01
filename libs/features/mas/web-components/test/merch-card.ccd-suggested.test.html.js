@@ -39,7 +39,7 @@ runTests(async () => {
      it('should have dark theme', async () => {
       const ccdSliceDarkCard = document.querySelector('merch-card[variant="ccd-suggested"][strip-size="small"].dark-theme');
       const theme = ccdSliceDarkCard.theme.color;
-      expect(theme.to.equal('dark'));
+      expect(theme).to.equal('dark');
    });
     });
 
