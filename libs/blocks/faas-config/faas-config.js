@@ -136,13 +136,13 @@ const CopyBtn = () => {
       }
       if (input.id === 'pjs36' && !/^[A-Za-z0-9]*$/.test(input.value)) {
         inputValidation = false;
-        setErrorMessage('Campagin ID allows only letters and numbers');
+        setErrorMessage('Campaign ID allows only letters and numbers');
         input.focus();
         return;
       }
       if (input.name === 'v' && !/^[A-Za-z0-9]*$/.test(input.value)) {
         inputValidation = false;
-        setErrorMessage('Campagin ID allows only letters and numbers');
+        setErrorMessage('Campaign ID allows only letters and numbers');
         input.focus();
       }
     });
@@ -278,7 +278,7 @@ const RequiredPanel = () => {
       values=${values}
       title="Multiple Campaign Ids"
       >
-        <${FormInput} name="v" label="Campagin ID" />
+        <${FormInput} name="v" label="Campaign ID" />
         <${FormInput} name="l" label="Description" />
       <//>
     `);
@@ -359,7 +359,7 @@ const RequiredPanel = () => {
             values=${context.state.q103}
             title="Multiple Campaign Ids"
             >
-              <${FormInput} name="v" label="Campagin ID" />
+              <${FormInput} name="v" label="Campaign ID" />
               <${FormInput} name="l" label="Description" />
             <//>`;
           setField103(internalCampIDs);
@@ -367,7 +367,7 @@ const RequiredPanel = () => {
         }
       });
       if (formId !== '63') {
-        setFieldpjs36(html`<${Input} label="Internal Campagin ID" prop="pjs36" placeholder="ex) 70114000002XYvIAAW" />`);
+        setFieldpjs36(html`<${Input} label="Internal Campaign ID" prop="pjs36" placeholder="ex) 70114000002XYvIAAW" />`);
       }
       // eslint-disable-next-line no-use-before-define
     }).catch((err) => {
@@ -404,7 +404,7 @@ const RequiredPanel = () => {
 };
 const OptionalPanel = () => html`
   <${Input} label="Form Title" prop="title" />
-  <${Input} label="Onsite Campagin ID" prop="pjs39" />
+  <${Input} label="Onsite Campaign ID" prop="pjs39" />
   <${Input} label="Hide Prepopulated Fields" prop="hidePrepopulated" type="checkbox" />
   <${Input} label="Auto Submit" prop="as" type="checkbox" />
   <${Input} label="Auto Response" prop="ar" type="checkbox" />
