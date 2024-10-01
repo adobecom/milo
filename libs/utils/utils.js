@@ -153,9 +153,11 @@ function getEnv(conf) {
   const query = PAGE_URL.searchParams.get('env');
 
   if (query) return { ...ENVS[query], consumer: conf[query] };
-  if (host.includes('localhost')) return { ...ENVS.local, consumer: conf.local };
+
   const { clientEnv } = conf;
   if (clientEnv) return { ...ENVS[clientEnv], consumer: conf[clientEnv] };
+
+  if (host.includes('localhost')) return { ...ENVS.local, consumer: conf.local };
   /* c8 ignore start */
   if (host.includes(`${SLD}.page`)
     || host.includes(`${SLD}.live`)
