@@ -2,6 +2,11 @@
   --modal-focus-color: #109cde;
 }
 
+.dialog-modal.locale-modal-v2 .georouting-wrapper {
+  display: block !important;
+  padding: 56px 24px 40px;
+}
+
 .dialog-modal {
   background: #fff;
   border-radius: 6px;
@@ -19,11 +24,6 @@
   visibility: visible;
   overflow: auto;
   z-index: 102;
-}
-
-.dialog-modal.locale-modal-v2 .georouting-wrapper {
-  display: block !important;
-  padding: 56px 24px 40px;
 }
 
 .dialog-modal.commerce-frame {
