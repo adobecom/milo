@@ -4,7 +4,7 @@ const blockConfig = [
     name: 'global-navigation',
     targetEl: 'header',
     appendType: 'prepend',
-    params: ['imsClientId', 'searchEnabled', 'unavHelpChildren', 'customLinks'],
+    params: ['imsClientId', 'searchEnabled', 'unav', 'customLinks', 'jarvis'],
   },
   {
     key: 'footer',
@@ -45,6 +45,7 @@ export default async function loadBlock(configs, customLib) {
   const branch = new URLSearchParams(window.location.search).get('navbranch');
   const miloLibs = branch ? `https://${branch}--milo--adobecom.hlx.page` : customLib || envMap[env];
   if (!header && !footer) {
+    // eslint-disable-next-line no-console
     console.error('Global navigation Error: header and footer configurations are missing.');
     return;
   }
@@ -72,7 +73,7 @@ export default async function loadBlock(configs, customLib) {
       if (configBlock) {
         await bootstrapBlock(`${miloLibs}/libs`, {
           ...block,
-          ...(block.key === 'header' && { unavComponents: configBlock.unavComponents, redirect: configBlock.redirect }),
+          ...(block.key === 'header' && { unavComponents: configBlock.unav?.unavComponents, redirect: configBlock.redirect }),
         });
         configBlock.onReady?.();
       }
