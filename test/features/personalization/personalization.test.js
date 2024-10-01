@@ -8,7 +8,6 @@ import {
 } from '../../../libs/features/personalization/personalization.js';
 import mepSettings from './mepSettings.js';
 import mepSettingsPreview from './mepPreviewSettings.js';
-import action from '../../../libs/utils/action.js';
 
 document.head.innerHTML = await readFile({ path: './mocks/metadata.html' });
 document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
@@ -351,8 +350,8 @@ describe('matchGlob function', () => {
     const parent = document.createElement('div');
     const el = document.createElement('div');
     parent.appendChild(el);
-    // el, { content, manifestId, targetManifestId, action, modifiers }
-    const wrapper = createContent(el,
+    const wrapper = createContent(
+      el,
       {
         content: '/fragments/promos/path-to-promo/#modal-hash:delay=1',
         manifestId: 'manifest',
