@@ -90,6 +90,7 @@ export const CONFIG = {
                   error: (e) => lanaLog({ message: 'Profile Menu error', e, tags: 'errorType=error,module=universalnav' }),
                 },
               },
+              ...getConfig().unav?.profile?.config,
             },
           },
           callbacks: {
@@ -1083,7 +1084,7 @@ export default async function init(block) {
     content,
     block,
   });
-  gnav.init();
+  await gnav.init();
   block.setAttribute('daa-im', 'true');
   const mepMartech = mep?.martech || '';
   block.setAttribute('daa-lh', `gnav|${getExperienceName()}${mepMartech}`);
