@@ -649,17 +649,10 @@ export function convertStageLinks({ anchors, config, hostname }) {
     const matchedDomain = Object.keys(domainsMap)
       .find((domain) => a.href.includes(domain));
     if (!matchedDomain) return;
-    const convTargetDomain = domainsMap[matchedDomain];
-    a.href = a.href.replace(a.hostname, convTargetDomain === 'origin'
-      ? hostname.to || hostname
-      : convTargetDomain.to || convTargetDomain);
-    if (convTargetDomain.useExt) return;
-    const urlObject = new URL(a.href);
-    const path = urlObject.pathname;
-    const extension = path.split('.').pop();
-    if (!extension) return;
-    urlObject.pathname = path.replace(`.${extension}`, '');
-    a.href = urlObject.toString();
+    a.href = a.href.replace(a.hostname, domainsMap[matchedDomain] === 'origin'
+      ? hostname
+      : domainsMap[matchedDomain]);
+    if (/(\.page|\.live).*\.html(?=\?|$)/.test(a.href)) a.href = a.href.replace(/\.html(?=\?|$)/, '');
   });
 }
 

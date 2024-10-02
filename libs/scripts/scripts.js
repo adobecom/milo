@@ -38,7 +38,7 @@ const stageDomainsMap = {
   // TODO: remove after QE approval
   '--milo--robert-bogos.hlx.page': {
     'www.adobe.com': 'main--dc--adobecom.hlx.page',
-    'business.adobe.com': { to: 'business.stage.adobe.com', useExt: true },
+    'business.adobe.com': 'business.stage.adobe.com',
   },
 };
 

@@ -13,7 +13,7 @@ const config = {
 const stageDomainsMap = {
   'www.stage.adobe.com': {
     'www.adobe.com': 'origin',
-    'business.adobe.com': { to: 'business.stage.adobe.com', useExt: true },
+    'business.adobe.com': 'business.stage.adobe.com',
     'blog.adobe.com': 'blog.stage.adobe.com',
     'helpx.adobe.com': 'helpx.stage.adobe.com',
     'news.adobe.com': 'news.stage.adobe.com',
@@ -578,7 +578,6 @@ describe('Utils', () => {
       Object.entries(stageDomainsMap).forEach(([hostname, domainsMap]) => {
         const extension = '.html';
         const anchors = Object.keys(domainsMap).map((d) => utils.createTag('a', { href: `https://${d}/abc${extension}` }));
-        const useExtAnchor = Object.values(domainsMap).find((v) => v.useExt)?.to;
 
         utils.convertStageLinks({
           anchors: [...anchors],
@@ -587,10 +586,10 @@ describe('Utils', () => {
         });
 
         anchors.forEach((a) => {
-          if (a.href.includes(useExtAnchor)) {
-            expect(a.href).to.contain(extension);
-          } else {
+          if (/\.page|\.live/.test(a.href)) {
             expect(a.href).to.not.contain(extension);
+          } else {
+            expect(a.href).to.contain(extension);
           }
         });
       });
