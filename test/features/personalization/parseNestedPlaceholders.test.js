@@ -35,7 +35,7 @@ describe('replacePlaceholders()', () => {
     const newStr = replacePlaceholders(str, config.placeholders);
     expect(newStr).to.equal('Buy now and save 50% off CC All Apps.');
   });
-  it('should not break when ther are no placeholders availble', () => {
+  it('should not break when there are no placeholders available', () => {
     const str = 'For just {{promo-price}}, get 20+...';
     const newStr = replacePlaceholders(str, null);
     expect(newStr).to.equal(str);
