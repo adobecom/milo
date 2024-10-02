@@ -14,7 +14,7 @@
 * Notification - v1.2
 */
 
-import { decorateBlockText, decorateBlockBg, decorateTextOverrides, decorateMultiViewport } from '../../utils/decorate.js';
+import { decorateBlockText, decorateBlockBg, decorateTextOverrides, decorateMultiViewport, loadCDT } from '../../utils/decorate.js';
 import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
 
 const { miloLibs, codeRoot } = getConfig();
@@ -135,6 +135,9 @@ async function decorateLockup(lockupArea, el) {
 async function decorateForegroundText(el, container) {
   const text = container?.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
   text?.classList.add('text');
+  if (el.classList.contains('countdown-timer') && !el.classList.contains('pill') && !el.classList.contains('ribbon')) {
+    await loadCDT(text, el.classList);
+  }
   const iconArea = text?.querySelector('p:has(picture)');
   iconArea?.classList.add('icon-area');
   if (iconArea?.textContent.trim()) await decorateLockup(iconArea, el);

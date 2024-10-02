@@ -43,8 +43,8 @@ import {
 import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
 
 function getHelpChildren() {
-  const { unavHelpChildren } = getConfig();
-  return unavHelpChildren || [
+  const { unav } = getConfig();
+  return unav?.unavHelpChildren || [
     { type: 'Support' },
     { type: 'Community' },
   ];
@@ -90,6 +90,7 @@ export const CONFIG = {
                   error: (e) => lanaLog({ message: 'Profile Menu error', e, tags: 'errorType=error,module=universalnav' }),
                 },
               },
+              ...getConfig().unav?.profile?.config,
             },
           },
           callbacks: {
@@ -101,11 +102,18 @@ export const CONFIG = {
       appswitcher: { name: 'app-switcher' },
       notifications: {
         name: 'notifications',
-        attributes: { notificationsConfig: { applicationContext: { appID: 'adobecom' } } },
+        attributes: { notificationsConfig: { applicationContext: { appID: getConfig().unav?.uncAppId || 'adobecom' } } },
       },
       help: {
         name: 'help',
         attributes: { children: getHelpChildren() },
+      },
+      jarvis: {
+        name: 'jarvis',
+        attributes: {
+          appid: getConfig().jarvis?.id,
+          callbacks: getConfig().jarvis?.callbacks,
+        },
       },
     },
   },
@@ -271,6 +279,7 @@ class Gnav {
   constructor({ content, block } = {}) {
     this.content = content;
     this.block = block;
+    this.customLinks = getConfig()?.customLinks ? getConfig().customLinks.split(',') : [];
 
     this.blocks = {
       profile: {
@@ -624,6 +633,7 @@ class Gnav {
         onAnalyticsEvent,
       },
       children: getChildren(),
+      isSectionDividerRequired: getConfig()?.unav?.showSectionDivider,
     });
 
     // Exposing UNAV config for consumers
@@ -639,9 +649,12 @@ class Gnav {
     const state = getMetadata('app-prompt')?.toLowerCase();
     const entName = getMetadata('app-prompt-entitlement')?.toLowerCase();
     const promptPath = getMetadata('app-prompt-path')?.toLowerCase();
+    const hasMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i.test(navigator.userAgent);
+
     if (state === 'off'
       || !window.adobeIMS?.isSignedInUser()
       || !isDesktop.matches
+      || hasMobileUA
       || !entName?.length
       || !promptPath?.length) return;
 
@@ -672,6 +685,11 @@ class Gnav {
     const toggle = this.elements.mobileToggle;
     const isExpanded = this.isToggleExpanded();
     toggle?.setAttribute('aria-expanded', !isExpanded);
+    if (!isExpanded) {
+      document.body.classList.add('disable-scroll');
+    } else {
+      document.body.classList.remove('disable-scroll');
+    }
     this.elements.navWrapper?.classList?.toggle('feds-nav-wrapper--expanded', !isExpanded);
     closeAllDropdowns();
     setCurtainState(!isExpanded);
@@ -696,7 +714,7 @@ class Gnav {
         this.elements.mainNav.style.removeProperty('padding-bottom');
       } else {
         const offset = Math.ceil(this.elements.topnavWrapper.getBoundingClientRect().bottom);
-        this.elements.mainNav.style.setProperty('padding-bottom', `${offset}px`);
+        this.elements.mainNav.style.setProperty('padding-bottom', `${2 * offset}px`);
       }
     };
 
@@ -718,6 +736,7 @@ class Gnav {
       if (isDesktop.matches) {
         toggle.setAttribute('aria-expanded', false);
         this.elements.navWrapper.classList.remove('feds-nav-wrapper--expanded');
+        document.body.classList.remove('disable-scroll');
         setCurtainState(false);
         closeAllDropdowns();
         this.blocks?.search?.instance?.clearSearchForm();
@@ -836,7 +855,10 @@ class Gnav {
 
     for await (const [index, item] of items.entries()) {
       await yieldToMain();
-      this.elements.mainNav.appendChild(this.decorateMainNavItem(item, index));
+      const mainNavItem = this.decorateMainNavItem(item, index);
+      if (mainNavItem) {
+        this.elements.mainNav.appendChild(mainNavItem);
+      }
     }
 
     if (!hasActiveLink()) {
@@ -855,8 +877,9 @@ class Gnav {
   // eslint-disable-next-line class-methods-use-this
   getMainNavItemType = (item) => {
     const itemTopParent = item.closest('div');
+    const isLinkGroup = !!item.closest('.link-group');
     const hasSyncDropdown = itemTopParent instanceof HTMLElement
-      && itemTopParent.childElementCount > 1;
+      && !isLinkGroup && itemTopParent.childElementCount > 1;
     if (hasSyncDropdown) return 'syncDropdownTrigger';
     const hasAsyncDropdown = itemTopParent instanceof HTMLElement
       && itemTopParent.closest('.large-menu') instanceof HTMLElement;
@@ -945,6 +968,8 @@ class Gnav {
             ${decorateCta({ elem: item, type: itemType, index: index + 1 })}
           </div>`, item);
       case 'link': {
+        let customLinkModifier = '';
+        let removeCustomLink = false;
         const linkElem = item.querySelector('a');
         linkElem.className = 'feds-navLink';
         linkElem.setAttribute('daa-ll', getAnalyticsValue(linkElem.textContent, index + 1));
@@ -956,11 +981,25 @@ class Gnav {
           linkElem.setAttribute('tabindex', 0);
         }
 
+        const customLinksSection = item.closest('.link-group');
+        if (customLinksSection) {
+          const removeLink = () => {
+            const url = new URL(linkElem.href);
+            linkElem.setAttribute('href', `${url.origin}${url.pathname}${url.search}`);
+            const linkHash = url.hash.slice(2);
+            return !this.customLinks.includes(linkHash);
+          };
+          [...customLinksSection.classList].splice(1).forEach((className) => {
+            customLinkModifier = ` feds-navItem--${className}`;
+          });
+          removeCustomLink = removeLink();
+        }
+
         const linkTemplate = toFragment`
-          <div class="feds-navItem${activeModifier}">
+          <div class="feds-navItem${activeModifier}${customLinkModifier}">
             ${linkElem}
           </div>`;
-        return addMepHighlightAndTargetId(linkTemplate, item);
+        return removeCustomLink ? null : addMepHighlightAndTargetId(linkTemplate, item);
       }
       case 'text':
         return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered">
@@ -1045,7 +1084,7 @@ export default async function init(block) {
     content,
     block,
   });
-  gnav.init();
+  await gnav.init();
   block.setAttribute('daa-im', 'true');
   const mepMartech = mep?.martech || '';
   block.setAttribute('daa-lh', `gnav|${getExperienceName()}${mepMartech}`);

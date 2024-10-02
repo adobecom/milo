@@ -1102,5 +1102,43 @@
             "language": "MULT",
             "merchant": "ADOBE"
         }
-    ]
+    ],
+    "nTbB50pS4lLGv_x1l_UKggd-lxxo2zAJ7WYDa2mW19s-mult": [
+      {
+          "offerSelectorIds": [
+              "nTbB50pS4lLGv_x1l_UKggd-lxxo2zAJ7WYDa2mW19s"
+          ],
+          "offerId": "44C623423443E5D4D7F53719C25F71D7",
+          "startDate": "2022-08-08T07:00:00.000Z",
+          "endDate": "2099-12-20T07:58:00.000Z",
+          "priceDetails": {
+              "price": 22.19,
+              "priceWithoutDiscount": 23.99,
+              "priceWithoutTax": 22.19,
+              "priceWithoutDiscountAndTax": 23.99,
+              "usePrecision": true,
+              "formatString": "'US$'#,##0.00",
+              "taxDisplay": "TAX_EXCLUSIVE",
+              "taxTerm": "TAX"
+          },
+          "analytics": "{\"offerId\":\"44C623423443E5D4D7F53719C25F71D7\",\"label\":\"acrobat_pro_dc_plus_sign_funnel_team\",\"price\":\"22.19\",\"amountWithoutTax\":\"22.19\",\"commitmentType\":\"YEAR\",\"billingFrequency\":\"MONTHLY\",\"currencyCode\":\"USD\"}",
+          "productArrangementCode": "acrobat_pro_dc_plus_sign_funnel_team",
+          "productArrangement": {
+              "productFamily": "ACROBAT",
+              "productCode": "ASIG"
+          },
+          "buyingProgram": "RETAIL",
+          "commitment": "YEAR",
+          "term": "MONTHLY",
+          "customerSegment": "TEAM",
+          "marketSegments": [
+              "COM"
+          ],
+          "salesChannel": "DIRECT",
+          "offerType": "PROMOTION",
+          "pricePoint": "ACROBAT_PRO_ASIG_FY22_LO_TEAM_BUNDLE_7_5_OFF_WW_COM",
+          "language": "MULT",
+          "merchant": "ADOBE"
+      }
+  ]
 }
