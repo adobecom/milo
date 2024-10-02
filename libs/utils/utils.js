@@ -654,7 +654,7 @@ export function convertStageLinks({ anchors, config, hostname }) {
       .find((domain) => a.href.includes(domain));
     if (!matchedDomain) return;
     a.href = a.href.replace(a.hostname, domainsMap[matchedDomain] === 'origin'
-      ? hostname
+      ? a.hostname
       : domainsMap[matchedDomain]);
   });
 }
