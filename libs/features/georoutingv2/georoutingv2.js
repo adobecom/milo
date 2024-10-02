@@ -77,6 +77,12 @@ function getGeoroutingOverride() {
   return georouting === 'off';
 }
 
+function closeToaster(toaster) {
+  const closeEvent = new Event('toaster:closed');
+  window.dispatchEvent(closeEvent);
+  toaster.remove();
+}
+
 function decorateForOnLinkClick(link, urlPrefix, localePrefix, eventType = 'Switch') {
   const modCurrPrefix = localePrefix || 'us';
   const modPrefix = urlPrefix || 'us';
@@ -87,7 +93,8 @@ function decorateForOnLinkClick(link, urlPrefix, localePrefix, eventType = 'Swit
     const domain = window.location.host === 'adobe.com'
       || window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com' : '';
     document.cookie = `international=${modPrefix};path=/;${domain}`;
-    link.closest('.dialog-modal').dispatchEvent(new Event('closeModal'));
+    const toaster = link.closest('.georouting-toaster');
+    if (toaster) closeToaster(toaster);
   });
 }
 
@@ -169,12 +176,6 @@ async function getDetails(currentPage, localeMatches, geoData) {
     locale: sortedLocales[0],
     multipleLocales: sortedLocales,
   };
-}
-
-function closeToaster(toaster) {
-  const closeEvent = new Event('toaster:closed');
-  window.dispatchEvent(closeEvent);
-  toaster.remove();
 }
 
 const CLOSE_ICON = `
