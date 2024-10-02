@@ -538,7 +538,7 @@ describe('Utils', () => {
 
         anchors.forEach((a, index) => {
           const expectedDomain = Object.values(domainsMap)[index];
-          expect(a.href).to.contain(expectedDomain === 'origin' ? hostname : expectedDomain);
+          expect(a.href).to.contain(expectedDomain === 'origin' ? a.hostname : expectedDomain);
         });
 
         externalAnchors.forEach((a) => expect(a.href).to.equal(a.href));
