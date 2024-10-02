@@ -222,34 +222,31 @@ function buildToasterElements(contentContainer, geoData, locale, multipleLocales
   contentContainer.innerHTML = '';
 
   const lang = config.locales[locale.prefix]?.ietf ?? '';
+  const dir = config.locales[locale.prefix]?.dir ?? 'ltr';
   const geo = geoData.filter((c) => c.prefix === locale.prefix);
   const titleText = geo.length ? geo[0][currentPage.geo] : '';
-  const title = createTag('h5', { lang }, locale.title.replace('{{geo}}', titleText));
-  const text = createTag('p', { class: 'locale-text', lang }, locale.text);
+  const title = createTag('h5', { lang, dir }, locale.title.replace('{{geo}}', titleText));
+  const text = createTag('p', { class: 'locale-text', lang, dir }, locale.text);
   const footer = createTag('div', { class: 'georouting-toaster-footer' });
   const span = createTag('span', { class: 'icon margin-inline-end' });
-
   const img = buildFlagImage(locale);
   span.appendChild(img);
 
   const mainAction = createTag('a', {
     class: 'con-button blue button-l',
-    lang: locale.lang,
+    lang, // Assign language
     role: 'button',
     href: locale.url,
     'aria-haspopup': !!multipleLocales,
     'aria-expanded': false,
   }, span);
-
   mainAction.append(locale.button);
-
-  // If there are multiple locales, append the down-arrow icon
   if (multipleLocales) {
     const downArrowIcon = buildDownArrowIcon();
     span.appendChild(downArrowIcon);
     mainAction.addEventListener('click', (e) => {
       e.preventDefault();
-      openPicker(mainAction, multipleLocales, locale.button, e, 'ltr', currentPage);
+      openPicker(mainAction, multipleLocales, locale.button, e, dir, currentPage);
     });
   } else {
     mainAction.href = locale.url;
@@ -258,11 +255,9 @@ function buildToasterElements(contentContainer, geoData, locale, multipleLocales
 
   const altAction = createTag('a', { lang, href: currentPage.url }, currentPage.button);
   decorateForOnLinkClick(altAction, currentPage.prefix, locale.prefix, 'Stay');
-
   const linkWrapper = createTag('div', { class: 'link-wrapper' }, mainAction);
   linkWrapper.appendChild(altAction);
   footer.append(linkWrapper);
-
   contentContainer.appendChild(title);
   contentContainer.appendChild(text);
   contentContainer.appendChild(footer);
