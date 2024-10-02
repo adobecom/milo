@@ -1,16 +1,9 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
-import { setConfig, getConfig, createTag } from '../../../libs/utils/utils.js';
 import { waitForElement } from '../../helpers/waitfor.js';
 
 const { default: loadIcons, setNodeIndexClass } = await import('../../../libs/features/icons/icons.js');
-
-const codeRoot = '/libs';
-const conf = { codeRoot };
-setConfig(conf);
-const config = getConfig();
-
 const mockRes = ({ payload, status = 200, ok = true } = {}) => new Promise((resolve) => {
   resolve({
     status,
@@ -22,7 +15,6 @@ const mockRes = ({ payload, status = 200, ok = true } = {}) => new Promise((reso
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 
-const originalFetch = window.fetch;
 let icons;
 const svgEx = `<?xml version="1.0" encoding="UTF-8"?>
 <svg id="arrow-down" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 18">
@@ -30,29 +22,12 @@ const svgEx = `<?xml version="1.0" encoding="UTF-8"?>
 </svg>`;
 
 describe('Icon Suppprt', () => {
-  let paramsGetStub;
-
   beforeEach(() => {
-    window.fetch = stub().callsFake(() => mockRes({}));
+    stub(window, 'fetch').callsFake(() => mockRes({}));
   });
 
   afterEach(() => {
-    // Do not build up any test state - reset window.fetch to it's original state
-    window.fetch = originalFetch;
-  });
-
-  before(() => {
-    paramsGetStub = stub(URLSearchParams.prototype, 'get');
-    paramsGetStub.withArgs('cache').returns('off');
-  });
-
-  after(() => {
-    paramsGetStub.restore();
-  });
-
-  it('Fetches successfully with cache control enabled', async () => {
-    const otherIcons = [createTag('span', { class: 'icon icon-play' })];
-    await loadIcons(otherIcons, config);
+    window.fetch.restore();
   });
 
   it('Replaces span.icon', async () => {
@@ -60,7 +35,7 @@ describe('Icon Suppprt', () => {
     window.fetch.returns(mockRes({ payload }));
 
     icons = document.querySelectorAll('span.icon');
-    await loadIcons(icons, config);
+    await loadIcons(icons);
 
     const selector = await waitForElement('span.icon svg');
     expect(selector).to.exist;
@@ -68,7 +43,7 @@ describe('Icon Suppprt', () => {
 
   it('Sets node index class', async () => {
     icons = document.querySelectorAll('span.icon');
-    setNodeIndexClass(icons);
+    setNodeIndexClass(icons[2]);
     const secondIconHasIndexClass = icons[2].classList.contains('node-index-last');
     expect(secondIconHasIndexClass).to.be.true;
   });

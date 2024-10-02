@@ -764,8 +764,7 @@ async function decorateIcons(area, config) {
   const { base } = config;
   loadStyle(`${base}/features/icons/icons.css`);
   loadLink(`${base}/utils/federated.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
-  const { default: loadIcons, setNodeIndexClass } = await import('../features/icons/icons.js');
-  setNodeIndexClass(icons);
+  const { default: loadIcons } = await import('../features/icons/icons.js');
   await loadIcons(icons);
 }
 

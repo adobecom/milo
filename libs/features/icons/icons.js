@@ -52,16 +52,15 @@ function decorateToolTip(icon) {
   wrapper.parentElement.replaceChild(icon, wrapper);
 }
 
-export async function setNodeIndexClass(icons) {
-  icons.forEach(async (icon) => {
-    const parent = icon.parentNode;
-    const children = parent.childNodes;
-    const nodeIndex = Array.prototype.indexOf.call(children, icon);
-    let indexClass = (nodeIndex === children.length - 1) ? 'last' : 'middle';
-    if (nodeIndex === 0) indexClass = 'first';
-    if (children.length === 1) indexClass = 'only';
-    icon.classList.add(`node-index-${indexClass}`);
-  });
+export function setNodeIndexClass(icon) {
+  const parent = icon.parentNode;
+  const children = parent.childNodes;
+  console.log('parent', parent, 'children', children);
+  const nodeIndex = Array.prototype.indexOf.call(children, icon);
+  let indexClass = (nodeIndex === children.length - 1) ? 'last' : 'middle';
+  if (nodeIndex === 0) indexClass = 'first';
+  if (children.length === 1) indexClass = 'only';
+  icon.classList.add(`node-index-${indexClass}`);
 }
 
 export default async function loadIcons(icons) {
@@ -71,6 +70,7 @@ export default async function loadIcons(icons) {
 
   icons.forEach((icon) => {
     icon.classList.add('milo-icon');
+    setNodeIndexClass(icon);
     const iconName = [...icon.classList].find((c) => c.startsWith('icon-'))?.substring(5);
     if (icon.dataset.svgInjected || !iconName) return;
     if (iconName === 'tooltip') {
