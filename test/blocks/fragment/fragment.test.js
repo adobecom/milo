@@ -64,7 +64,7 @@ describe('Fragments', () => {
     const a = document.querySelector('a.frag-a');
     await getFragment(a);
     expect(document.querySelector('h4')).to.exist;
-    expect(window.lana.log.args[2][0]).to.equal('ERROR: Fragment Circular Reference loading http://localhost:2000/test/blocks/fragment/mocks/fragments/frag-a');
+    expect(window.lana.log.args[2][0]).to.equal('ERROR: Fragment Circular Reference loading http://localhost:2000/test/blocks/fragment/mocks/fragments/frag-b');
   });
 
   it('Inlines fragments inside a block', async () => {
