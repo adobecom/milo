@@ -109,8 +109,6 @@ const defaultOptions = {
       'business.stage.adobe.com/chimera-api/collection',
     '14257-chimera.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection':
       '14257-chimera.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection',
-    '14257-chimera-sanrai.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection':
-    '14257-chimera-sanrai.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection',
     '14257-chimera-stage.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection':
       '14257-chimera-stage.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection',
     '14257-chimera-dev.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection':
