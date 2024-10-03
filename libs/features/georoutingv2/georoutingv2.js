@@ -349,7 +349,7 @@ const LOCATION_ICON = `
 
 async function appendLocationIcon() {
   const observer = new MutationObserver(() => {
-    const navWrapper = document.querySelector('.feds-topnav');
+    const navWrapper = document.querySelector('.feds-nav-wrapper');
     if (navWrapper) {
       const locationIcon = document.createElement('div');
       locationIcon.classList.add('location-icon-container');
