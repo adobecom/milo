@@ -158,7 +158,7 @@ export function replacePlaceholders(value, placeholders) {
   if (!matches) return val;
   matches.forEach((match) => {
     const key = match.replace(/{{|}}/g, '').trim();
-    if (placeholders[key]) val = val.replace(match, placeholders[key]);
+    if (placeholders?.[key]) val = val.replace(match, placeholders[key]);
   });
   return val;
 }
