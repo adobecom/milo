@@ -6,7 +6,7 @@ export default async function login({
   scopes,
   extraScopes,
   telemetry = {},
-  config = {},
+  config,
   suppliedOrigin,
 }) {
   const msalConfig = await getMSALConfig({ telemetry, config, suppliedOrigin });
