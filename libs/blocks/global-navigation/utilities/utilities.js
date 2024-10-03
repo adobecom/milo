@@ -321,7 +321,7 @@ export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true
   const mepGnav = getConfig()?.mep?.inBlock?.['global-navigation'];
   const mepFragment = mepGnav?.fragments?.[path];
   if (mepFragment && mepFragment.action === 'replace') {
-    path = mepFragment.target;
+    path = mepFragment.content;
   }
   const res = await fetch(path.replace(/(\.html$|$)/, '.plain.html'));
   if (res.status !== 200) {
@@ -338,8 +338,9 @@ export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true
   if (mepFragment?.targetManifestId) body.dataset.adobeTargetTestid = mepFragment.targetManifestId;
   const commands = mepGnav?.commands;
   if (commands?.length) {
+    /* c8 ignore next 4 */
     const { handleCommands, deleteMarkedEls } = await import('../../../features/personalization/personalization.js');
-    handleCommands(commands, body, true);
+    handleCommands(commands, body, true, true);
     deleteMarkedEls(body);
   }
   const inlineFrags = [...body.querySelectorAll('a[href*="#_inline"]')];
