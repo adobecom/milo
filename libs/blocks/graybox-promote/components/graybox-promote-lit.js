@@ -119,7 +119,12 @@ const preview = async (context) => {
   context.previewUrl = new URL((await res.json()).preview.url);
 };
 
-const loginToSharepoint = async (context) => login({ scopes: ['files.readwrite', 'sites.readwrite.all'], telemetry: TELEMETRY, config: CONFIG })
+const loginToSharepoint = async (context) => login({
+  scopes: ['files.readwrite', 'sites.readwrite.all'],
+  telemetry: TELEMETRY,
+  config: CONFIG,
+  suppliedOrigin: window.location.origin,
+})
   .then(() => {
     context.setup.spToken = accessToken.value || accessTokenExtra.value;
   });
