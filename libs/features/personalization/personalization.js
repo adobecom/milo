@@ -433,13 +433,14 @@ export function modifyNonFragmentSelector(selector) {
   };
 }
 
-function getSelectedElements(sel) {
+function getSelectedElements(sel, rootEl, forceRootEl) {
+  const root = forceRootEl ? rootEl : document;
   const selector = sel.trim();
   if (!selector) return {};
 
   if (getSelectorType(selector) === 'fragment') {
     try {
-      const fragments = document.querySelectorAll(
+      const fragments = root.querySelectorAll(
         `a[href*="${normalizePath(selector, false)}"], a[href*="${normalizePath(selector, true)}"]`,
       );
       return { els: fragments, modifiers: [FLAGS.all, FLAGS.includeFragments] };
@@ -451,7 +452,7 @@ function getSelectedElements(sel) {
   const { modifiedSelector, modifiers } = modifyNonFragmentSelector(selector);
   let els;
   try {
-    els = document.querySelectorAll(modifiedSelector);
+    els = root.querySelectorAll(modifiedSelector);
   } catch (e) {
   /* eslint-disable-next-line no-console */
     log('Invalid selector: ', selector);
@@ -487,7 +488,7 @@ export const updateFragDataProps = (a, inline, sections, fragment) => {
   }
 };
 
-export function handleCommands(commands, rootEl, forceInline = false) {
+export function handleCommands(commands, rootEl, forceInline = false, forceRootEl = false) {
   commands.forEach((cmd) => {
     const { action, content, selector } = cmd;
     cmd.content = forceInline ? addHash(content, INLINE_HASH) : content;
@@ -496,7 +497,7 @@ export function handleCommands(commands, rootEl, forceInline = false) {
       cmd.selectorType = IN_BLOCK_SELECTOR_PREFIX;
       return;
     }
-    const { els, modifiers } = getSelectedElements(selector);
+    const { els, modifiers } = getSelectedElements(selector, rootEl, forceRootEl);
     cmd.modifiers = modifiers;
 
     els?.forEach((el) => {

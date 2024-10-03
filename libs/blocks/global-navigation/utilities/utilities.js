@@ -339,7 +339,7 @@ export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true
   const commands = mepGnav?.commands;
   if (commands?.length) {
     const { handleCommands, deleteMarkedEls } = await import('../../../features/personalization/personalization.js');
-    handleCommands(commands, body, true);
+    handleCommands(commands, body, true, true);
     deleteMarkedEls(body);
   }
   const inlineFrags = [...body.querySelectorAll('a[href*="#_inline"]')];
