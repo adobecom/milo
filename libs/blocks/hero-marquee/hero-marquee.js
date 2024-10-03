@@ -123,7 +123,6 @@ function extendButtonsClass(copy) {
     button.classList.add('button-xl', 'button-justified-mobile');
   });
 }
-
 function parseKeyString(str) {
   const regex = /^(\w+)\s*\((.*)\)$/;
   const match = str.match(regex);
@@ -166,16 +165,14 @@ function loadBreakpointThemes() {
 export default async function init(el) {
   el.classList.add('con-block');
   let rows = el.querySelectorAll(':scope > div');
-  if (rows.length <= 1) return;
-  const [head, ...tail] = rows;
-  rows = tail;
-  if (!head.textContent.trim() && !head.querySelector('picture', 'video')) {
-    head.remove();
-  } else {
+  if (rows.length > 1 && rows[0].textContent !== '') {
     el.classList.add('has-bg');
+    const [head, ...tail] = rows;
     handleObjectFit(head);
     decorateBlockBg(el, head, { useHandleFocalpoint: true });
+    rows = tail;
   }
+
   // get first row that's not a keyword key/value row
   const mainRowIndex = rows.findIndex((row) => {
     const firstColText = row.children[0].textContent.toLowerCase().trim();
