@@ -350,6 +350,9 @@ const BasicsPanel = ({ tagsData }) => {
     <${Select} options=${countryTags} prop="country" label="Country" sort />
     <${Select} options=${languageTags} prop="language" label="Language" sort />`;
 
+  const partialLoadOptions = html`
+    <${Input} label="Partial Load Count" prop="partialLoadCount" type="number" />`;
+
   return html`
   <${Input} label="Collection Name" placeholder="Only used in the author link" prop="collectionName" type="text" />
   <${Input} label="Collection Title" prop="collectionTitle" type="text" title="Enter a title, {placeholder}, or leave empty "/>
@@ -360,8 +363,7 @@ const BasicsPanel = ({ tagsData }) => {
     <${Input} label="Auto detect country & lang" prop="autoCountryLang" type="checkbox" />
     ${!state.autoCountryLang && countryLangOptions}
   <${Input} label="Partial Load Enabled" prop="partialLoadEnabled" options="${defaultOptions.partialLoadEnabled}" type="checkbox"  />
-  <${Input} label="Partial Load Count" prop="partialLoadCount" type="number" />
-
+    ${state.partialLoadEnabled && partialLoadOptions}
   `;
 };
 
