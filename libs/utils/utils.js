@@ -656,7 +656,7 @@ export function convertStageLinks({ anchors, config, hostname }) {
     a.href = a.href.replace(a.hostname, domainsMap[matchedDomain] === 'origin'
       ? hostname
       : domainsMap[matchedDomain]);
-    if (/(\.page|\.live).*\.html(?=\?|$)/.test(a.href)) a.href = a.href.replace(/\.html(?=\?|$)/, '');
+    if (/(\.page|\.live).*\.html(?=[?#]|$)/.test(a.href)) a.href = a.href.replace(/\.html(?=[?#]|$)/, '');
   });
 }
 
