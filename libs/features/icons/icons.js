@@ -82,7 +82,7 @@ export default async function loadIcons(icons) {
           const svgDoc = parser.parseFromString(text, 'image/svg+xml');
           const svgElement = svgDoc.querySelector('svg');
           if (!svgElement) {
-            console.error(`No SVG element found in fetched content for ${iconName}`);
+            window.lana?.log(`No SVG element found in fetched content for ${iconName}`);
             return;
           }
           const svgClone = svgElement.cloneNode(true);
