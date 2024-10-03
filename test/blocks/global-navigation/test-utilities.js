@@ -215,9 +215,12 @@ export const createFullGlobalNavigation = async ({
     ),
   ]);
 
-  const instance = await initGnav(document.body.querySelector('header'));
-  instance.imsReady();
-  await clock.runAllAsync();
+  const instancePromise = initGnav(document.body.querySelector('header'));
+
+  await clock.runToLastAsync();
+  const instance = await instancePromise;
+  const imsPromise = instance.imsReady();
+  await clock.runToLastAsync();
   // We restore the clock here, because waitForElement uses setTimeout
   clock.restore();
 
@@ -242,6 +245,7 @@ export const createFullGlobalNavigation = async ({
     waitForElements.push(waitForElement(selectors.breadcrumbsWrapper, document.body));
   }
   await Promise.all(waitForElements);
+  await imsPromise;
 
   window.fetch = ogFetch;
   window.adobeIMS = undefined;
