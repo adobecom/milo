@@ -36,7 +36,7 @@ header.global-navigation, header.global-navigation.feds--dark {
   .feds-promo-link:hover {
     color: #136FF6;
   }
-  .feds--full-width .feds-topnav{
+  .feds--full-width .feds-topnav {
     max-width: none;
     padding: 0 10px 0 15px;
   }
