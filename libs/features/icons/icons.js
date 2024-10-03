@@ -39,8 +39,8 @@ export const fetchIcons = (config) => new Promise(async (resolve) => {
 
 function decorateToolTip(icon) {
   const wrapper = icon.closest('em');
-  wrapper.className = 'tooltip-wrapper';
   if (!wrapper) return;
+  wrapper.className = 'tooltip-wrapper';
   const conf = wrapper.textContent.split('|');
   // Text is the last part of a tooltip
   const content = conf.pop().trim();
@@ -48,7 +48,7 @@ function decorateToolTip(icon) {
   icon.dataset.tooltip = content;
   // Position is the next to last part of a tooltip
   const place = conf.pop()?.trim().toLowerCase() || 'right';
-  icon.className = `icon icon-info milo-tooltip ${place}`;
+  icon.className = `icon icon-info-outline milo-tooltip ${place}`;
   wrapper.parentElement.replaceChild(icon, wrapper);
 }
 
@@ -68,38 +68,43 @@ export default async function loadIcons(icons) {
   const iconsToFetch = new Map();
 
   icons.forEach((icon) => {
-    icon.classList.add('milo-icon');
     setNodeIndexClass(icon);
+    if (icon.classList.contains('icon-tooltip')) decorateToolTip(icon);
     const iconName = [...icon.classList].find((c) => c.startsWith('icon-'))?.substring(5);
     if (icon.dataset.svgInjected || !iconName) return;
-    if (iconName === 'tooltip') {
-      decorateToolTip(icon);
-      return;
-    }
     if (!federalIcons[iconName] && !iconsToFetch.has(iconName)) {
       const url = `${fedRoot}/federal/assets/icons/svgs/${iconName}.svg`;
-      iconsToFetch.set(iconName, fetch(url).then(async (response) => {
-        if (!response.ok) throw new Error(`Failed to fetch SVG for ${iconName}: ${response.statusText}`);
-        federalIcons[iconName] = await response.text();
-      }));
+      iconsToFetch.set(iconName, fetch(url)
+        .then(async (res) => {
+          if (!res.ok) throw new Error(`Failed to fetch SVG for ${iconName}: ${res.statusText}`);
+          const text = await res.text();
+          const parser = new DOMParser();
+          const svgDoc = parser.parseFromString(text, 'image/svg+xml');
+          const svgElement = svgDoc.querySelector('svg');
+          if (!svgElement) {
+            console.error(`No SVG element found in fetched content for ${iconName}`);
+            return;
+          }
+          const svgClone = svgElement.cloneNode(true);
+          svgClone.classList.add('icon-milo', `icon-milo-${iconName}`);
+          federalIcons[iconName] = svgClone;
+        })
+        .catch((error) => {
+          window.lana?.log(`Error fetching SVG for ${iconName}:`, error);
+        }));
     }
     iconRequests.push(iconsToFetch.get(iconName));
-
     const parent = icon.parentElement;
     if (parent && parent.parentElement.tagName === 'LI') parent.parentElement.classList.add('icon-list-item');
   });
 
-  try {
-    await Promise.all(iconRequests);
-  } catch (error) {
-    /* c8 ignore next 2 */
-    window.lana.log('Error fetching icons:', error);
-  }
+  await Promise.all(iconRequests);
 
   icons.forEach((icon) => {
     const iconName = [...icon.classList].find((c) => c.startsWith('icon-'))?.substring(5);
     if (iconName && federalIcons[iconName] && !icon.dataset.svgInjected) {
-      icon.insertAdjacentHTML('afterbegin', federalIcons[iconName]);
+      const svgClone = federalIcons[iconName].cloneNode(true);
+      icon.appendChild(svgClone);
       icon.dataset.svgInjected = 'true';
     }
   });
