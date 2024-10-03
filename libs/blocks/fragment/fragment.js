@@ -2,7 +2,6 @@
 import { createTag, getConfig, loadArea, localizeLink, customFetch } from '../../utils/utils.js';
 
 const fragMap = {};
-window.fm = fragMap;
 
 const removeHash = (url) => {
   const urlNoHash = url.split('#')[0];
@@ -31,9 +30,9 @@ const updateFragMap = (fragment, a, href) => {
 
       fragLinks.forEach((link) => {
         const localizedHref = localizeLink(removeHash(link.href));
-        const hasHrefAsParent = hrefNode.findParent(localizedHref);
-        if (hasHrefAsParent) {
-          hrefNode.isRecursive = true;
+        const parentNodeSameHref = hrefNode.findParent(localizedHref);
+        if (parentNodeSameHref) {
+          parentNodeSameHref.isRecursive = true;
         } else {
           hrefNode.addChild(localizedHref);
         }
