@@ -1233,8 +1233,9 @@ export function partition(arr, fn) {
 export const preloadBlockResources = (blocks = []) => blocks.map((block) => {
   if (block.classList.contains('hide-block')) return null;
   const { blockPath, hasStyles, name } = getBlockData(block);
-  if (['marquee', 'hero-marquee'].includes(name)) {
+  if (['marquee', 'hero-marquee', 'homepage-brick'].includes(name)) {
     loadLink(`${getConfig().base}/utils/decorate.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+    if (name === 'homepage-brick') loadLink(`${getConfig().base}/martech/attributes.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
   }
   loadLink(`${blockPath}.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
   return hasStyles && new Promise((resolve) => { loadStyle(`${blockPath}.css`, resolve); });
