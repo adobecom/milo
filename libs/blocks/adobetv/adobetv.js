@@ -4,11 +4,11 @@ import { applyHoverPlay, getVideoAttrs } from '../../utils/decorate.js';
 const ROOT_MARGIN = 1000;
 
 const loadAdobeTv = (a) => {
-  const bgBlocks = ['aside', 'marquee'];
+  const bgBlocks = ['aside', 'marquee', 'hero-marquee'];
   if (a.href.includes('.mp4') && bgBlocks.some((b) => a.closest(`.${b}`))) {
     a.classList.add('hide');
-    const { href, hash } = a;
-    const attrs = getVideoAttrs(hash || 'autoplay');
+    const { href, hash, dataset } = a;
+    const attrs = getVideoAttrs(hash || 'autoplay', dataset);
     const video = `<video ${attrs}>
           <source src="${href}" type="video/mp4" />
         </video>`;

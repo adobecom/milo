@@ -20,7 +20,7 @@ function decorateNextPreviousBtns() {
   const previousBtn = createTag(
     'button',
     {
-      class: 'carousel-button carousel-previous',
+      class: 'carousel-button carousel-previous is-delayed',
       'aria-label': 'Previous',
       'data-toggle': 'previous',
     },
@@ -30,7 +30,7 @@ function decorateNextPreviousBtns() {
   const nextBtn = createTag(
     'button',
     {
-      class: 'carousel-button carousel-next',
+      class: 'carousel-button carousel-next is-delayed',
       'aria-label': 'Next',
       'data-toggle': 'next',
     },
@@ -43,7 +43,7 @@ function decorateLightboxButtons() {
   const expandBtn = createTag(
     'button',
     {
-      class: 'lightbox-button carousel-expand',
+      class: 'lightbox-button carousel-expand is-delayed',
       'aria-label': 'Open in full screen',
     },
     LIGHTBOX_ICON,
@@ -51,7 +51,7 @@ function decorateLightboxButtons() {
   const closeBtn = createTag(
     'button',
     {
-      class: 'lightbox-button carousel-close',
+      class: 'lightbox-button carousel-close is-delayed',
       'aria-label': 'Close full screen carousel',
     },
     CLOSE_ICON,
@@ -156,6 +156,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   referenceSlide.classList.remove('reference-slide');
   referenceSlide.style.order = null;
   activeSlide.classList.remove('active');
+  activeSlide.querySelectorAll('a').forEach((focusableElement) => { focusableElement.setAttribute('tabindex', -1); });
   activeSlideIndicator.classList.remove('active');
   activeSlideIndicator.setAttribute('tabindex', -1);
 
@@ -206,6 +207,22 @@ function moveSlides(event, carouselElements, jumpToIndex) {
 
   // Update active slide and indicator dot attributes
   activeSlide.classList.add('active');
+  const indexOfActive = [...activeSlide.parentElement.children]
+    .findIndex((ele) => activeSlide.isSameNode(ele));
+  const IndexOfShowClass = [...carouselElements.el.classList].findIndex((ele) => ele.includes('show-'));
+  const tempSlides = [...slides.slice(indexOfActive), ...slides.slice(0, indexOfActive)];
+  if (IndexOfShowClass >= 0) {
+    const show = parseInt(carouselElements.el.classList[IndexOfShowClass].split('-')[1], 10);
+    tempSlides.forEach((slide, index) => {
+      let tabIndex = -1;
+      if (index < show) {
+        tabIndex = 0;
+      }
+      slide.querySelectorAll('a').forEach((focusableElement) => { focusableElement.setAttribute('tabindex', tabIndex); });
+    });
+  } else {
+    activeSlide.querySelectorAll('a').forEach((focusableElement) => { focusableElement.setAttribute('tabindex', 0); });
+  }
   activeSlideIndicator.classList.add('active');
   activeSlideIndicator.setAttribute('tabindex', 0);
 
@@ -325,7 +342,7 @@ export default function init(el) {
   const fragment = new DocumentFragment();
   const nextPreviousBtns = decorateNextPreviousBtns();
   const slideIndicators = decorateSlideIndicators(slides);
-  const controlsContainer = createTag('div', { class: 'carousel-controls' });
+  const controlsContainer = createTag('div', { class: 'carousel-controls is-delayed' });
 
   fragment.append(...slides);
   const slideWrapper = createTag('div', { class: 'carousel-wrapper' });
@@ -371,5 +388,18 @@ export default function init(el) {
   parentArea.addEventListener(MILO_EVENTS.DEFERRED, handleDeferredImages, true);
 
   slides[0].classList.add('active');
+  const IndexOfShowClass = [...el.classList].findIndex((ele) => ele.includes('show-'));
+  let NoOfVisibleSlides = 1;
+  if (IndexOfShowClass >= 0) {
+    NoOfVisibleSlides = parseInt(el.classList[IndexOfShowClass].split('-')[1], 10);
+  }
+  slides.slice(NoOfVisibleSlides).forEach((slide) => slide.querySelectorAll('a').forEach((focusableElement) => { focusableElement.setAttribute('tabindex', -1); }));
   handleChangingSlides(carouselElements);
+
+  function handleLateLoadingNavigation() {
+    [...el.querySelectorAll('.is-delayed')].forEach((item) => item.classList.remove('is-delayed'));
+    parentArea.removeEventListener(MILO_EVENTS.DEFERRED, handleLateLoadingNavigation, true);
+  }
+
+  parentArea.addEventListener(MILO_EVENTS.DEFERRED, handleLateLoadingNavigation, true);
 }

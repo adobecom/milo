@@ -1,5 +1,5 @@
-import { readFile, sendMouse, sendKeys } from '@web/test-runner-commands';
-import { expect } from '@esm-bundle/chai';
+import { readFile, sendMouse, sendKeys, resetMouse } from '@web/test-runner-commands';
+import { expect } from 'chai';
 import { MILO_EVENTS } from '../../../libs/utils/utils.js';
 import { delay, waitForElement } from '../../helpers/waitfor.js';
 
@@ -11,6 +11,10 @@ describe('table and tablemetadata', () => {
     const tables = document.querySelectorAll('.table');
     tables.forEach((t) => init(t));
     window.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
+  });
+
+  afterEach(async () => {
+    await resetMouse();
   });
 
   describe('standard table', () => {
@@ -37,7 +41,7 @@ describe('table and tablemetadata', () => {
     });
 
     it('hovering-test', async () => {
-      const headingCol = table.querySelector('.row-heading .col:not(.hidden)');
+      const headingCol = table.querySelector('.row-heading .col.col-2:not(.hidden)');
       const sectionHeads = table.querySelectorAll('.section-head');
       const lastSectionHead = sectionHeads[sectionHeads.length - 1];
       const lastExpandIcon = lastSectionHead.querySelector('.icon.expand');

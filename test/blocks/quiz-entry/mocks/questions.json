@@ -1,0 +1,529 @@
+{
+  "q-rather": {
+    "total": 2,
+    "offset": 0,
+    "limit": 2,
+    "data": [
+      {
+        "options": "template",
+        "next": "RESET,q-customer",
+        "data-analytics-title": "ccx"
+      },
+      {
+        "options": "custom",
+        "next": "RESULT",
+        "data-analytics-title": "Flagship"
+      }
+    ]
+  },
+  "questions": {
+    "total": 9,
+    "offset": 0,
+    "limit": 9,
+    "data": [
+      {
+        "questions": "q-category",
+        "max-selections": "3",
+        "min-selections": "1"
+      },
+      {
+        "questions": "q-rather",
+        "max-selections": "1",
+        "min-selections": "1"
+      },
+      {
+        "questions": "q-video",
+        "max-selections": "1",
+        "min-selections": "1"
+      },
+      {
+        "questions": "q-photo",
+        "max-selections": "1",
+        "min-selections": "1"
+      },
+      {
+        "questions": "q-customer",
+        "max-selections": "1",
+        "min-selections": "1"
+      },
+      {
+        "questions": "q-3d",
+        "max-selections": "1",
+        "min-selections": "1"
+      },
+      {
+        "questions": "q-pdf",
+        "max-selections": "1",
+        "min-selections": "1"
+      },
+      {
+        "questions": "q-design",
+        "max-selections": "1",
+        "min-selections": "1"
+      },
+      {
+        "questions": "q-illustration",
+        "max-selections": "1",
+        "min-selections": "1"
+      }
+    ]
+  },
+  "q-3d": {
+    "total": 5,
+    "offset": 0,
+    "limit": 5,
+    "data": [
+      {
+        "options": "stage",
+        "next": "q-customer"
+      },
+      {
+        "options": "texture",
+        "next": "q-customer"
+      },
+      {
+        "options": "materials",
+        "next": "q-customer"
+      },
+      {
+        "options": "model",
+        "next": "q-customer"
+      },
+      {
+        "options": "assets",
+        "next": "q-customer"
+      }
+    ]
+  },
+  "q-pdf": {
+    "total": 6,
+    "offset": 0,
+    "limit": 6,
+    "data": [
+      {
+        "options": "create",
+        "next": "q-customer"
+      },
+      {
+        "options": "edit",
+        "next": "q-customer"
+      },
+      {
+        "options": "share",
+        "next": "q-customer"
+      },
+      {
+        "options": "secure",
+        "next": "q-customer"
+      },
+      {
+        "options": "sign",
+        "next": "q-customer"
+      },
+      {
+        "options": "track",
+        "next": "q-customer"
+      }
+    ]
+  },
+  "q-category": {
+    "total": 22,
+    "offset": 0,
+    "limit": 22,
+    "data": [
+      {
+        "options": "fi_code",
+        "next": "",
+        "type": "form",
+        "endpoint": "acom-prd-recom-v01",
+        "api-key": "CCHomeMLRepo1",
+        "threshold": "0.7",
+        "fallback": "photoshop_cc,illustrator_cc,premierepro_cc",
+        "ac-endpoint": "autocomplete",
+        "ac-scope": "adobe_com",
+        "ac-client-id": "adobedotcom2"
+      },
+      {
+        "options": "photo",
+        "next": "q-rather,q-photo",
+        "type": "card",
+        "endpoint": "",
+        "api-key": "",
+        "threshold": "",
+        "fallback": "",
+        "ac-endpoint": "",
+        "ac-scope": "",
+        "ac-client-id": ""
+      },
+      {
+        "options": "video",
+        "next": "q-rather,q-video",
+        "type": "card",
+        "endpoint": "",
+        "api-key": "",
+        "threshold": "",
+        "fallback": "",
+        "ac-endpoint": "",
+        "ac-scope": "",
+        "ac-client-id": ""
+      },
+      {
+        "options": "design",
+        "next": "q-rather,q-design",
+        "type": "card",
+        "endpoint": "",
+        "api-key": "",
+        "threshold": "",
+        "fallback": "",
+        "ac-endpoint": "",
+        "ac-scope": "",
+        "ac-client-id": ""
+      },
+      {
+        "options": "illustration",
+        "next": "q-rather,q-illustration",
+        "type": "card",
+        "endpoint": "",
+        "api-key": "",
+        "threshold": "",
+        "fallback": "",
+        "ac-endpoint": "",
+        "ac-scope": "",
+        "ac-client-id": ""
+      },
+      {
+        "options": "3d",
+        "next": "NOT(q-rather),q-3d",
+        "type": "card",
+        "endpoint": "",
+        "api-key": "",
+        "threshold": "",
+        "fallback": "",
+        "ac-endpoint": "",
+        "ac-scope": "",
+        "ac-client-id": ""
+      },
+      {
+        "options": "pdf",
+        "next": "q-rather,q-pdf",
+        "type": "card",
+        "endpoint": "",
+        "api-key": "",
+        "threshold": "",
+        "fallback": "",
+        "ac-endpoint": "",
+        "ac-scope": "",
+        "ac-client-id": ""
+      },
+      {
+        "options": "acrobat_dc_pro",
+        "next": "q-customer",
+        "type": "api_return_code",
+        "endpoint": "",
+        "api-key": "",
+        "threshold": "",
+        "fallback": "",
+        "ac-endpoint": "",
+        "ac-scope": "",
+        "ac-client-id": ""
+      },
+      {
+        "options": "aftereffects_cc",
+        "next": "q-rather,q-customer",
+        "type": "api_return_code",
+        "endpoint": "",
+        "api-key": "",
+        "threshold": "",
+        "fallback": "",
+        "ac-endpoint": "",
+        "ac-scope": "",
+        "ac-client-id": ""
+      },
+      {
+        "options": "audition_cc",
+        "next": "q-rather,q-customer",
+        "type": "api_return_code",
+        "endpoint": "",
+        "api-key": "",
+        "threshold": "",
+        "fallback": "",
+        "ac-endpoint": "",
+        "ac-scope": "",
+        "ac-client-id": ""
+      },
+      {
+        "options": "flash_professional_cc",
+        "next": "q-rather,q-customer",
+        "type": "api_return_code",
+        "endpoint": "",
+        "api-key": "",
+        "threshold": "",
+        "fallback": "",
+        "ac-endpoint": "",
+        "ac-scope": "",
+        "ac-client-id": ""
+      },
+      {
+        "options": "illustrator_cc",
+        "next": "q-rather,q-customer",
+        "type": "api_return_code",
+        "endpoint": "",
+        "api-key": "",
+        "threshold": "",
+        "fallback": "",
+        "ac-endpoint": "",
+        "ac-scope": "",
+        "ac-client-id": ""
+      },
+      {
+        "options": "indesign_cc",
+        "next": "q-rather,q-customer",
+        "type": "api_return_code",
+        "endpoint": "",
+        "api-key": "",
+        "threshold": "",
+        "fallback": "",
+        "ac-endpoint": "",
+        "ac-scope": "",
+        "ac-client-id": ""
+      },
+      {
+        "options": "lightroom_cc",
+        "next": "q-rather,q-customer",
+        "type": "api_return_code",
+        "endpoint": "",
+        "api-key": "",
+        "threshold": "",
+        "fallback": "",
+        "ac-endpoint": "",
+        "ac-scope": "",
+        "ac-client-id": ""
+      },
+      {
+        "options": "photoshop_cc",
+        "next": "q-rather,q-customer",
+        "type": "api_return_code",
+        "endpoint": "",
+        "api-key": "",
+        "threshold": "",
+        "fallback": "",
+        "ac-endpoint": "",
+        "ac-scope": "",
+        "ac-client-id": ""
+      },
+      {
+        "options": "premierepro_cc",
+        "next": "q-rather,q-customer",
+        "type": "api_return_code",
+        "endpoint": "",
+        "api-key": "",
+        "threshold": "",
+        "fallback": "",
+        "ac-endpoint": "",
+        "ac-scope": "",
+        "ac-client-id": ""
+      },
+      {
+        "options": "sbst_stager",
+        "next": "q-customer",
+        "type": "api_return_code",
+        "endpoint": "",
+        "api-key": "",
+        "threshold": "",
+        "fallback": "",
+        "ac-endpoint": "",
+        "ac-scope": "",
+        "ac-client-id": ""
+      },
+      {
+        "options": "sbst_painter",
+        "next": "q-customer",
+        "type": "api_return_code",
+        "endpoint": "",
+        "api-key": "",
+        "threshold": "",
+        "fallback": "",
+        "ac-endpoint": "",
+        "ac-scope": "",
+        "ac-client-id": ""
+      },
+      {
+        "options": "sbst_alchemist",
+        "next": "q-customer",
+        "type": "api_return_code",
+        "endpoint": "",
+        "api-key": "",
+        "threshold": "",
+        "fallback": "",
+        "ac-endpoint": "",
+        "ac-scope": "",
+        "ac-client-id": ""
+      },
+      {
+        "options": "sbst_shaper",
+        "next": "q-customer",
+        "type": "api_return_code",
+        "endpoint": "",
+        "api-key": "",
+        "threshold": "",
+        "fallback": "",
+        "ac-endpoint": "",
+        "ac-scope": "",
+        "ac-client-id": ""
+      },
+      {
+        "options": "sbst_designer",
+        "next": "q-customer",
+        "type": "api_return_code",
+        "endpoint": "",
+        "api-key": "",
+        "threshold": "",
+        "fallback": "",
+        "ac-endpoint": "",
+        "ac-scope": "",
+        "ac-client-id": ""
+      },
+      {
+        "options": "free_spark",
+        "next": "q-customer",
+        "type": "api_return_code",
+        "endpoint": "",
+        "api-key": "",
+        "threshold": "",
+        "fallback": "",
+        "ac-endpoint": "",
+        "ac-scope": "",
+        "ac-client-id": ""
+      }
+    ]
+  },
+  "q-customer": {
+    "total": 3,
+    "offset": 0,
+    "limit": 3,
+    "data": [
+      {
+        "options": "educational",
+        "next": "RESULT"
+      },
+      {
+        "options": "business",
+        "next": "RESULT"
+      },
+      {
+        "options": "individual",
+        "next": "RESULT"
+      }
+    ]
+  },
+  "q-video": {
+    "total": 5,
+    "offset": 0,
+    "limit": 5,
+    "data": [
+      {
+        "options": "social",
+        "next": "q-customer"
+      },
+      {
+        "options": "pro",
+        "next": "q-customer"
+      },
+      {
+        "options": "movement",
+        "next": "q-customer"
+      },
+      {
+        "options": "animate",
+        "next": "q-customer"
+      },
+      {
+        "options": "sound",
+        "next": "q-customer"
+      }
+    ]
+  },
+  "q-photo": {
+    "total": 5,
+    "offset": 0,
+    "limit": 5,
+    "data": [
+      {
+        "options": "organize",
+        "next": "q-customer"
+      },
+      {
+        "options": "batch",
+        "next": "q-customer"
+      },
+      {
+        "options": "edit",
+        "next": "q-customer"
+      },
+      {
+        "options": "color",
+        "next": "q-customer"
+      },
+      {
+        "options": "blend",
+        "next": "q-customer"
+      }
+    ]
+  },
+  "q-design": {
+    "total": 3,
+    "offset": 0,
+    "limit": 3,
+    "data": [
+      {
+        "options": "layouts",
+        "next": "q-customer"
+      },
+      {
+        "options": "images",
+        "next": "q-customer"
+      },
+      {
+        "options": "graphics",
+        "next": "q-customer"
+      }
+    ]
+  },
+  "q-illustration": {
+    "total": 4,
+    "offset": 0,
+    "limit": 4,
+    "data": [
+      {
+        "options": "raster",
+        "next": "q-customer"
+      },
+      {
+        "options": "vector",
+        "next": "q-customer"
+      },
+      {
+        "options": "crisp",
+        "next": "q-customer"
+      },
+      {
+        "options": "images",
+        "next": "q-customer"
+      }
+    ]
+  },
+  ":version": 3,
+  ":names": [
+    "q-rather",
+    "questions",
+    "q-3d",
+    "q-pdf",
+    "q-category",
+    "q-customer",
+    "q-video",
+    "q-photo",
+    "q-design",
+    "q-illustration"
+  ],
+  ":type": "multi-sheet"
+}

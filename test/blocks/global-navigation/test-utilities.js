@@ -66,16 +66,18 @@ export const analyticsTestData = {
   'app-switcher|click|footer|all-apps': 'AppLauncher.allapps',
   'app-switcher|click|footer|see-all-apps': 'AppLauncher.allapps',
   'app-switcher|render|component': 'AppLauncher.appIconToggle',
-  'profile|click|account': 'View Account|gnav|milo',
+  'profile|click|account': 'View Account|gnav|milo|unav',
   'profile|click|sign-in': 'Sign In|gnav|milo|unav',
   'profile|click|sign-out': 'Sign Out|gnav|milo|unav',
-  'profile|render|component': 'Account|gnav|milo',
+  'profile|render|component': 'Account|gnav|milo|unav',
   'unc|click|dismiss': 'Dismiss Notifications',
   'unc|click|icon': 'Open Notifications panel',
   'unc|click|link': 'Open Notification',
   'unc|click|markRead': 'Mark Notification as read',
   'unc|click|markUnread': 'Mark Notification as unread',
 };
+
+export const unavVersion = '1.3';
 
 export const unavLocalesTestData = Object.entries(LANGMAP).reduce((acc, curr) => {
   const result = [];
@@ -176,7 +178,7 @@ export const createFullGlobalNavigation = async ({
     if (url.endsWith('large-menu-cross-cloud.plain.html')) { return mockRes({ payload: largeMenuCrossCloud }); }
     if (url.endsWith('large-menu-active.plain.html')) { return mockRes({ payload: largeMenuActiveMock }); }
     if (url.endsWith('large-menu-wide-column.plain.html')) { return mockRes({ payload: largeMenuWideColumnMock }); }
-    if (url.includes('https://www.stage.adobe.com')
+    if (url.includes('https://main--federal--adobecom.hlx.page')
       && url.endsWith('feds-menu.plain.html')) { return mockRes({ payload: largeMenuMock }); }
     if (url.includes('gnav')) { return mockRes({ payload: globalNavigation || globalNavigationMock }); }
     if (url.includes('correct-promo-fragment')) { return mockRes({ payload: correctPromoFragmentMock }); }

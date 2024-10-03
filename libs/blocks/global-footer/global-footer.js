@@ -5,6 +5,7 @@ import {
   getMetadata,
   getConfig,
   loadBlock,
+  localizeLink,
 } from '../../utils/utils.js';
 
 import {
@@ -18,7 +19,11 @@ import {
   lanaLog,
   logErrorFor,
   toFragment,
+  federatePictureSources,
+  isDarkMode,
 } from '../global-navigation/utilities/utilities.js';
+
+import { getFederatedUrl } from '../../utils/federated.js';
 
 import { replaceKey } from '../../features/placeholders.js';
 
@@ -70,12 +75,7 @@ class Footer {
     this.body = await fetchAndProcessPlainHtml({
       url,
       shouldDecorateLinks: false,
-    })
-      .catch((e) => lanaLog({
-        message: `Error fetching footer content ${url}`,
-        e,
-        tags: 'errorType=error,module=global-footer',
-      }));
+    });
 
     if (!this.body) return;
 
@@ -89,6 +89,9 @@ class Footer {
 
     regionParent?.appendChild(region);
     socialParent?.appendChild(social);
+
+    const path = getFederatedUrl(url);
+    federatePictureSources({ section: this.body, forceFederate: path.includes('/federal/') });
 
     // Order is important, decorateFooter makes use of elements
     // which have already been created in previous steps
@@ -148,7 +151,13 @@ class Footer {
 
   loadIcons = async () => {
     const file = await fetch(`${base}/blocks/global-footer/icons.svg`);
-
+    if (!file.ok) {
+      lanaLog({
+        message: 'Issue with loadIcons',
+        e: `${file.statusText} url: ${file.url}`,
+        tags: 'errorType=info,module=global-footer',
+      });
+    }
     const content = await file.text();
     const elem = toFragment`<div class="feds-footer-icons">${content}</div>`;
     this.block.append(elem);
@@ -221,7 +230,20 @@ class Footer {
     if (url.hash !== '') {
       // Hash -> region selector opens a modal
       decorateAutoBlock(regionPickerElem); // add modal-specific attributes
+      // TODO remove logs after finding the root cause for the region picker 404s -> MWPW-143627
+      if (regionPickerElem.classList[0] !== 'modal') {
+        lanaLog({
+          message: `Modal block class missing from region picker pre loading the block; locale: ${locale}; regionPickerElem: ${regionPickerElem.outerHTML}`,
+          tags: 'errorType=warn,module=global-footer',
+        });
+      }
       await loadBlock(regionPickerElem); // load modal logic and styles
+      if (regionPickerElem.classList[0] !== 'modal') {
+        lanaLog({
+          message: `Modal block class missing from region picker post loading the block; locale: ${locale}; regionPickerElem: ${regionPickerElem.outerHTML}`,
+          tags: 'errorType=warn,module=global-footer',
+        });
+      }
       // 'decorateAutoBlock' logic replaces class name entirely, need to add it back
       regionPickerElem.classList.add(regionPickerClass);
       regionPickerElem.addEventListener('click', () => {
@@ -238,6 +260,7 @@ class Footer {
     } else {
       // No hash -> region selector expands a dropdown
       regionPickerElem.href = '#'; // reset href value to not get treated as a fragment
+      regionSelector.href = localizeLink(regionSelector.href);
       decorateAutoBlock(regionSelector); // add fragment-specific class(es)
       this.elements.regionPicker.append(regionSelector); // add fragment after regionPickerElem
       await loadBlock(regionSelector); // load fragment and replace original link
@@ -266,13 +289,15 @@ class Footer {
 
     const socialElem = toFragment`<ul class="feds-social" daa-lh="Social"></ul>`;
 
+    const sanitizeLink = (link) => link.replace('#_blank', '').replace('#_dnb', '');
+
     CONFIG.socialPlatforms.forEach((platform, index) => {
       const link = socialBlock.querySelector(`a[href*="${platform}"]`);
       if (!link) return;
 
       const iconElem = toFragment`<li class="feds-social-item">
           <a
-            href="${link.href}"
+            href="${sanitizeLink(link.href)}"
             class="feds-social-link"
             aria-label="${platform}"
             daa-ll="${getAnalyticsValue(platform, index + 1)}"
@@ -346,6 +371,7 @@ class Footer {
 export default function init(block) {
   try {
     const footer = new Footer({ block });
+    if (isDarkMode()) block.classList.add('feds--dark');
     return footer;
   } catch (e) {
     lanaLog({ message: 'Could not create footer', e });

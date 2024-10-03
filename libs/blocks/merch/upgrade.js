@@ -39,6 +39,9 @@ function buildUrl(upgradeOffer, upgradable, env) {
   url.searchParams.append('surface', 'ADOBE_COM');
   url.searchParams.append('ctx', 'if');
   url.searchParams.append('ctxRtUrl', encodeURIComponent(window.location.href));
+  if (upgradeOffer.dataset?.promotionCode) {
+    url.searchParams.append('promoCode', upgradeOffer.dataset.promotionCode);
+  }
   return url.toString();
 }
 
@@ -140,7 +143,7 @@ export default async function handleUpgradeOffer(
       return getModal(null, { id: 'switch-modal', content, closeEvent: 'closeModal', class: ['upgrade-flow-modal'] });
     };
     const text = await replaceKey('upgrade-now', getConfig());
-    return { text, url: upgradeUrl, handler: showModal };
+    return { text, className: 'upgrade', url: upgradeUrl, handler: showModal };
   }
   return undefined;
 }

@@ -1,0 +1,22 @@
+{
+  "total": 5,
+  "offset": 0,
+  "limit": 5,
+  "data": [
+    {
+      "action": "replaceContent",
+      "selector": "marquee row2 col1",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "all": "/fragments/replace/marquee/r2c1"
+    },
+    {
+      "action": "replaceContent",
+      "selector": "section5 marquee row2 col2",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "all": "/fragments/replace/marquee-2/r2c2"
+    }
+  ],
+  ":type": "sheet"
+}

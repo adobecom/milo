@@ -1,5 +1,6 @@
 import { getMetadata, getConfig } from '../../../../utils/utils.js';
-import { toFragment, lanaLog, getFederatedUrl } from '../../utilities/utilities.js';
+import { toFragment, lanaLog } from '../../utilities/utilities.js';
+import { getFederatedUrl } from '../../../../utils/federated.js';
 
 const metadata = {
   seo: 'breadcrumbs-seo',

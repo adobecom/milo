@@ -1,5 +1,5 @@
 import { createTag } from '../../../utils/utils.js';
-import createCopy from '../library-utils.js';
+import createCopy, { isMatching } from '../library-utils.js';
 import { getMetadata } from '../../section-metadata/section-metadata.js';
 
 const LIBRARY_METADATA = 'library-metadata';
@@ -43,13 +43,14 @@ function getContainerName(container) {
   return getAuthorName(container) || getBlockName(firstBlock);
 }
 
-function getTable(block) {
+export function getTable(block, returnDom = false) {
   const name = getBlockName(block);
   const rows = [...block.children];
   const maxCols = rows.reduce((cols, row) => (
     row.children.length > cols ? row.children.length : cols), 0);
   const table = document.createElement('table');
   table.setAttribute('border', 1);
+  table.setAttribute('style', 'width: 100%');
   const headerRow = document.createElement('tr');
   headerRow.append(createTag('th', { colspan: maxCols }, name));
   table.append(headerRow);
@@ -57,6 +58,7 @@ function getTable(block) {
     const tr = document.createElement('tr');
     [...row.children].forEach((col) => {
       const td = document.createElement('td');
+      td.setAttribute('style', `width: ${100 / row.children.length}%`);
       if (row.children.length < maxCols) {
         td.setAttribute('colspan', maxCols);
       }
@@ -65,10 +67,11 @@ function getTable(block) {
     });
     table.append(tr);
   });
+  if (returnDom) return table;
   return table.outerHTML;
 }
 
-function handleLinks(element, path) {
+export function handleLinks(element, path) {
   if (!element || !path) return;
   try {
     const url = new URL(path);
@@ -83,7 +86,7 @@ function handleLinks(element, path) {
   }
 }
 
-function decorateImages(element, path) {
+export function decorateImages(element, path) {
   if (!element || !path) return;
   try {
     const url = new URL(path);
@@ -127,13 +130,6 @@ export function getSearchTags(container) {
       : containerName;
   }
   return containerName;
-}
-
-export function isMatching(container, query) {
-  const tagsString = getSearchTags(container);
-  if (!query || !tagsString) return false;
-  const searchTokens = query.split(' ');
-  return searchTokens.every((token) => tagsString.toLowerCase().includes(token.toLowerCase()));
 }
 
 function getBlockType(subSection, withinContainer) {
@@ -244,7 +240,7 @@ export function getContainers(doc) {
   return containers;
 }
 
-export default async function loadBlocks(blocks, list, query) {
+export default async function loadBlocks(blocks, list, query, type) {
   list.textContent = '';
   blocks.forEach(async (block) => {
     const titleText = createTag('p', { class: 'item-title' }, block.name);
@@ -274,7 +270,6 @@ export default async function loadBlocks(blocks, list, query) {
     const html = await resp.text();
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
-
     const containers = getContainers(doc);
     let matchingContainerFound = false;
 
@@ -283,17 +278,19 @@ export default async function loadBlocks(blocks, list, query) {
       const name = document.createElement('p');
       name.textContent = getContainerName(container);
       const copy = document.createElement('button');
+      copy.id = `${getContainerName(container)}-block-copy`;
       copy.addEventListener('click', (e) => {
         const containerHtml = getHtml(container, block.path);
         e.target.classList.add('copied');
         setTimeout(() => { e.target.classList.remove('copied'); }, 3000);
         const blob = new Blob([`${BLOCK_SPACING}${containerHtml}${BLOCK_SPACING}`], { type: 'text/html' });
         createCopy(blob);
+        window.hlx?.rum.sampleRUM('click', { source: e.target });
       });
       item.append(name, copy);
 
       if (query) {
-        if (isMatching(container, query)) {
+        if (isMatching(container, query, type)) {
           matchingContainerFound = true;
         } else {
           item.classList.add('is-hidden');

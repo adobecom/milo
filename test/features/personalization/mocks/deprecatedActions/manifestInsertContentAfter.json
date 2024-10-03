@@ -1,0 +1,28 @@
+{
+  "total": 5,
+  "offset": 0,
+  "limit": 5,
+  "data": [
+    {
+      "action": "insertContentAfter",
+      "selector": ".marquee",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "/test/features/personalization/mocks/fragments/insertafter",
+      "firefox": "",
+      "android": "",
+      "ios": ""
+    },
+    {
+      "action": "insertContentAfter",
+      "selector": "main > div",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "/fragments/insertafter#delayed-modal:delay=1",
+      "firefox": "",
+      "android": "",
+      "ios": ""
+    }
+  ],
+  ":type": "sheet"
+}

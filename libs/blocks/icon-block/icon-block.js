@@ -70,10 +70,27 @@ function decorateContent(el) {
       const textContent = el.querySelectorAll('.text-content > :not(.icon-area)');
       const secondColumn = createTag('div', { class: 'second-column' });
       textContent.forEach((content) => {
-        secondColumn.append(content);
+        let nodeToInsert = content;
+        const firstIcon = content.querySelector('.icon:first-child');
+        if (firstIcon) {
+          const titleRowSpan = createTag('span', { class: 'title-row' });
+          titleRowSpan.append(firstIcon, content);
+          nodeToInsert = titleRowSpan;
+        }
+
+        secondColumn.append(nodeToInsert);
       });
       if (secondColumn.children.length === 1) el.classList.add('items-center');
       el.querySelector('.foreground .text-content').append(secondColumn);
+    }
+    const lastActionArea = el.querySelector('.action-area:last-of-type');
+    if (lastActionArea) {
+      const div = createTag('div', { class: 'cta-container' });
+      lastActionArea.insertAdjacentElement('afterend', div);
+      if (lastActionArea.previousElementSibling.className.includes('action-area')) {
+        div.append(lastActionArea.previousElementSibling);
+      }
+      div.append(lastActionArea);
     }
   }
 }

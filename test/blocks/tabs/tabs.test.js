@@ -1,5 +1,5 @@
 import { readFile, sendKeys, setViewport } from '@web/test-runner-commands';
-import { expect } from '@esm-bundle/chai';
+import { expect } from 'chai';
 import { delay } from '../../helpers/waitfor.js';
 import { loadStyle } from '../../../libs/utils/utils.js';
 
@@ -62,23 +62,6 @@ describe('tabs', () => {
     expect(rightPaddle.getAttribute('disabled')).to.equal('');
   });
 
-  it('left paddle scrolls tabList', async () => {
-    setViewport({ width: MOBILE_WIDTH, height: HEIGHT });
-    window.innerWidth = MOBILE_WIDTH;
-    window.dispatchEvent(new Event('resize'));
-    const tabList = allTabs[3].querySelector('[role="tablist"]');
-    const leftPaddle = allTabs[3].querySelector('.paddle-left');
-    tabList.scrollLeft = 50;
-    await delay(200);
-
-    expect(tabList.scrollLeft).to.not.equal(0);
-    expect(leftPaddle.getAttribute('disabled')).to.equal(null);
-    leftPaddle.click();
-    await delay(300);
-
-    expect(tabList.scrollLeft).to.equal(0);
-  });
-
   it('right paddle scrolls tabList', async () => {
     setViewport({ width: MOBILE_WIDTH, height: HEIGHT });
     window.innerWidth = MOBILE_WIDTH;
@@ -94,5 +77,21 @@ describe('tabs', () => {
     await delay(300);
 
     expect(tabList.scrollLeft).to.not.equal(0);
+  });
+
+  it('left paddle scrolls tabList', async () => {
+    setViewport({ width: MOBILE_WIDTH, height: HEIGHT });
+    window.innerWidth = MOBILE_WIDTH;
+    window.dispatchEvent(new Event('resize'));
+    const tabList = allTabs[3].querySelector('[role="tablist"]');
+    const leftPaddle = allTabs[3].querySelector('.paddle-left');
+    await delay(200);
+
+    expect(tabList.scrollLeft).to.not.equal(0);
+    expect(leftPaddle.getAttribute('disabled')).to.equal(null);
+    leftPaddle.click();
+    await delay(300);
+
+    expect(tabList.scrollLeft).to.equal(0);
   });
 });

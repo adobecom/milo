@@ -8,7 +8,7 @@ const IMS_COMMERCE_CLIENT_ID = 'aos_milo_commerce';
 const IMS_SCOPE = 'AdobeID,openid';
 const IMS_ENV = 'prod';
 const IMS_PROD_URL = 'https://auth.services.adobe.com/imslib/imslib.min.js';
-const OST_VERSION = '1.14.4';
+const OST_VERSION = '1.18.4';
 const OST_BASE = `https://www.stage.adobe.com/special/tacocat/ost/lib/${OST_VERSION}`;
 const OST_SCRIPT_URL = `${OST_BASE}/index.js`;
 const OST_STYLE_URL = `${OST_BASE}/index.css`;
@@ -24,6 +24,20 @@ export const WCS_LANDSCAPE = 'PUBLISHED';
  * Each value is OST property name.
  */
 const METADATA_MAPPINGS = { 'checkout-workflow': 'workflow' };
+
+const priceDefaultOptions = {
+  term: true,
+  seat: true,
+  tax: false,
+  old: false,
+  exclusive: false,
+};
+
+const updateParams = (params, key, value) => {
+  if (value !== priceDefaultOptions[key]) {
+    params.set(key, value);
+  }
+};
 
 document.body.classList.add('tool', 'tool-ost');
 
@@ -65,11 +79,11 @@ export const createLinkMarkup = (
         displayOldPrice,
         forceTaxExclusive,
       } = options;
-      params.set('term', displayRecurrence);
-      params.set('seat', displayPerUnit);
-      params.set('tax', displayTax);
-      params.set('old', displayOldPrice);
-      params.set('exclusive', forceTaxExclusive);
+      updateParams(params, 'term', displayRecurrence);
+      updateParams(params, 'seat', displayPerUnit);
+      updateParams(params, 'tax', displayTax);
+      updateParams(params, 'old', displayOldPrice);
+      updateParams(params, 'exclusive', forceTaxExclusive);
     }
     return `https://milo.adobe.com/tools/ost?${params.toString()}`;
   };
@@ -84,7 +98,7 @@ export const createLinkMarkup = (
 
 export async function loadOstEnv() {
   /* c8 ignore next */
-  const { Log, Defaults, getLocaleSettings } = await import('../../deps/commerce.js');
+  const { Log, Defaults, getLocaleSettings } = await import('../../deps/mas/commerce.js');
 
   const searchParameters = new URLSearchParams(window.location.search);
   const ostSearchParameters = new URLSearchParams();

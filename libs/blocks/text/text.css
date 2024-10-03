@@ -1,4 +1,6 @@
 .text-block {
+  --accent-height: 10px;
+
   position: relative;
 }
 
@@ -16,6 +18,9 @@
 
 .text-block [class^="detail"] { margin: 0 0 var(--spacing-xxs) 0; }
 
+.text-block [class^="detail"] strong { font-weight: unset; } /* bugfix for FF */
+
+.text-block .cta-container,
 .text-block p.action-area { margin-top: var(--spacing-s); }
 
 .text-block div > *:last-child { margin-bottom: 0; }
@@ -30,7 +35,6 @@
   position: absolute;
   right: 0;
   top: 0;
-  z-index: -1;
   overflow: hidden;
 }
 
@@ -62,10 +66,33 @@
   align-items: center;
 }
 
+.text-block .cta-container .action-area {
+  width: 100%;
+}
+
 .text-block hr {
   border-color: #e1e1e1;
   border-style: solid;
   margin: var(--spacing-m) 0;
+}
+
+.text-block .title-l {
+  font-size: var(--type-body-m-size);
+  line-height: var(--type-body-m-lh);
+  font-weight: 700;
+  text-transform: none;
+  margin-bottom: var(--spacing-xs);
+}
+
+.text-block :is(.image, .lockup-area) {
+  margin-block-end: var(--spacing-m);
+}
+
+.text-block .image em {
+  display: block;
+  font-size: var(--type-body-s-size);
+  line-height: var(--type-body-s-lh);
+  margin-block-start: var(--spacing-xs);
 }
 
 .text-block .icon-list-item {
@@ -78,17 +105,68 @@
   inset: 0 100% auto auto;
 }
 
+.text-block.accent-bar {
+  inline-size: 100%;
+  block-size: var(--accent-height);
+}
+
+.text-block .lockup-area img {
+  width: auto;
+}
+
 /* Alignment */
 .text-block.center {
   text-align: center;
   align-items: center;
 }
 
+.text-block .icon-area {
+  display: flex;
+  column-gap: var(--spacing-xs);
+}
+
+.text-block p.icon-area { /* NOT <a/> tags with icons in them */
+  margin-block-end: var(--spacing-m);
+}
+
+.text-block.xxs-icon .icon-area {
+  height: var(--icon-size-xxs);
+}
+
+.text-block.xs-icon .icon-area {
+  height: var(--icon-size-xs);
+}
+
+.text-block.s-icon .icon-area {
+  height: var(--icon-size-s);
+}
+
+.text-block.m-icon .icon-area {
+  height: var(--icon-size-m);
+}
+
+.text-block.l-icon .icon-area {
+  height: var(--icon-size-l);
+}
+
+.text-block.xl-icon .icon-area {
+  height: var(--icon-size-xl);
+}
+
+.text-block.xxl-icon .icon-area {
+  height: var(--icon-size-xxl);
+}
+
+.text-block .icon-area img {
+  max-height: 100%;
+  width: auto;
+}
+
 .text-block.center .action-area,
 .text-block.center .icon-area { justify-content: center; }
 
 .text-block.right {
-  text-align: right;
+  text-align: end;
   align-items: end;
 }
 
@@ -140,17 +218,25 @@
   max-width: unset;
 }
 
-.text-block .icon-area {
-  display: flex;
-  column-gap: var(--spacing-xxs);
-}
-
 .text-block .icon-area.con-button {
   column-gap: unset;
 }
 
 .text-block .icon-area picture {
   line-height: 0em;
+  height: inherit; /* Safari + FF bug fix */
+}
+
+.text-block .image picture {
+  display: flex;
+}
+
+.text-block.center .image picture {
+  justify-content: center;
+}
+
+.text-block.right .image picture {
+  justify-content: flex-end;
 }
 
 /* icon inline */
@@ -162,7 +248,8 @@
   justify-content: start;
 }
 
-.text-block.icon-inline .foreground [class^="body-"] {
+.text-block.icon-inline .foreground [class^="body-"],
+.text-block.icon-inline .foreground .cta-container {
   grid-column: span 2;
   margin-top: 0;
 }
@@ -191,9 +278,39 @@
   display: none;
 }
 
+/* Text Alignment */
+.section[class*="-up"] .text-block:not(.legal, .link-farm) {
+  display: flex;
+  align-self: stretch;
+}
+
+.section[class*="-up"] .text-block:not(.legal, .link-farm) .foreground {
+  display: flex;
+  align-self: stretch;
+  width: 100%;
+}
+
+.section[class*="-up"] .text-block:not(.legal, .link-farm) .foreground > div {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.section[class*="-up"] .text-block:not(.legal, .link-farm) [class^="heading"],
+.section[class*="-up"] .text-block:not(.legal, .link-farm) p:not([class^="detail-"]),
+.section[class*="-up"] .text-block:not(.legal, .link-farm) [class^="body-"] {
+  margin-bottom: 0;
+}
+
+.section[class*="-up"] .text-block:not(.legal, .link-farm) .cta-container {
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  height: 100%;
+}
+
 /* Tablet up */
 @media screen and (min-width: 600px) {
-
   .inset.text-block .foreground::before {
     display: none;
   }

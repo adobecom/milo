@@ -27,6 +27,10 @@ export const getConfig = () => config;
 
 export const setConfig = (c) => { config = c; };
 
+export const customFetch = stub();
+
+export const loadArea = stub();
+
 export const loadScript = stub();
 
 export const loadStyle = stub();

@@ -361,6 +361,8 @@ async function getAllMarquees(promoId, origin) {
 
   /* eslint-disable object-curly-newline */
   const response = await fetch(`${endPoint}?${payload}`, {
+    // TODO: refactor to not use AbortSignal.timeout() as it's not supported for Safari 14
+    /* eslint-disable-next-line */
     signal: AbortSignal.timeout(REQUEST_TIMEOUT),
   }).catch((error) => fetchExceptionHandler('getAllMarquees', error));
 
@@ -384,6 +386,8 @@ async function getMarqueeId() {
       'x-api-key': 'ChimeraAcom',
     },
     body: `{"endpoint":"acom-banner-recom-v1","contentType":"application/json","payload":{"data":{"visitedLinks": ${JSON.stringify(visitedLinks)}, "segment": ${JSON.stringify(segments)}}}}`,
+    // TODO: refactor to not use AbortSignal.timeout() as it's not supported for Safari 14
+    /* eslint-disable-next-line */
     signal: AbortSignal.timeout(REQUEST_TIMEOUT),
   }).catch((error) => fetchExceptionHandler('getMarqueeId', error));
 
@@ -807,7 +811,19 @@ export default async function init(el) {
   const marqueesPromise = getAllMarquees(promoId, origin);
   await Promise.all([martechPromise, marqueesPromise]);
   marquees = await marqueesPromise;
-  const event = await waitForEventOrTimeout('alloy_sendEvent', ALLOY_TIMEOUT, new Event(''));
+
+  let event;
+  if (window.alloy_pageView) {
+    // eslint-disable-next-line camelcase, no-undef
+    const sent = await alloy_pageView.sent;
+    if (sent?.destinations[0]?.segments) {
+      event = { detail: { type: 'pageView', result: { destinations: sent.destinations } } };
+    } else {
+      return loadFallback(marquee, metadata);
+    }
+  } else {
+    event = await waitForEventOrTimeout('alloy_sendEvent', ALLOY_TIMEOUT, new Event(''));
+  }
 
   if (authorPreview()) {
     return renderMarquee(marquee, marquees, urlParams.get('marqueeId'), metadata);

@@ -70,6 +70,38 @@
   padding: var(--spacing-xxs) 0;
 }
 
+.section.xxxl-padding {
+  padding: var(--spacing-xxxl);
+}
+
+.section.xxl-padding {
+  padding: var(--spacing-xxl);
+}
+
+.section.xl-padding {
+  padding: var(--spacing-xl);
+}
+
+.section.l-padding {
+  padding: var(--spacing-l);
+}
+
+.section.m-padding {
+  padding: var(--spacing-m);
+}
+
+.section.s-padding {
+  padding: var(--spacing-s);
+}
+
+.section.xs-padding {
+  padding: var(--spacing-xs);
+}
+
+.section.xxs-padding {
+  padding: var(--spacing-xxs);
+}
+
 .section picture.section-background {
   display: block;
   position: absolute;
@@ -160,6 +192,10 @@
   background-color: var(--color-white);
 }
 
+.section.sticky-top:has(.notification.pill) {
+  height: 0;
+}
+
 .section.sticky-bottom {
   position: sticky;
   bottom: 0;
@@ -169,7 +205,7 @@
 
 .section.sticky-bottom.promo-sticky-section {
   background: none;
-  z-index: 4;
+  z-index: 40000;
 }
 
 .section.sticky-bottom.popup {
@@ -212,12 +248,17 @@ main > .section[class*='-up'] > .content {
   .section.two-up.reverse-mobile > div:nth-child(2) {
     order: 1;
   }
+
 }
 
 @media screen and (min-width: 600px) and (max-width: 1200px) {
   .section.five-up {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   }
+  
+  .section.one-up-tablet { grid-template-columns: 1fr; }
+  .section.three-up-tablet { grid-template-columns: repeat(3, 1fr); }
+  .section.four-up-tablet { grid-template-columns: repeat(4, 1fr); }
 
   .section.masonry-layout {
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -257,19 +298,19 @@ main > .section[class*='-up'] > .content {
 
 @media screen and (min-width: 1200px) {
   .section.two-up {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .section.three-up {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .section.four-up {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .section.five-up {
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 
   .section.grid-template-columns-1-2 {

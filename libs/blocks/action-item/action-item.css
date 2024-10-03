@@ -133,6 +133,10 @@
   transform: scale(1.05);
 }
 
+.action-item.float-icon .main-image {
+  display: block;
+}
+
 .action-item.float-icon .floated-icon {
   display: flex;
   position: absolute;

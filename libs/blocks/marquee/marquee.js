@@ -2,7 +2,7 @@
  * Marquee - v6.0
  */
 
-import { decorateButtons, getBlockSize, decorateBlockBg } from '../../utils/decorate.js';
+import { decorateButtons, getBlockSize, decorateBlockBg, loadCDT } from '../../utils/decorate.js';
 import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
 
 // [headingSize, bodySize, detailSize]
@@ -33,9 +33,12 @@ function decorateText(el, size) {
 }
 
 function decorateMultipleIconArea(iconArea) {
-  iconArea.querySelectorAll(':scope > picture').forEach((picture) => {
+  let count = 0;
+  iconArea.querySelectorAll(':scope picture').forEach((picture) => {
+    count += 1;
     const src = picture.querySelector('img')?.getAttribute('src');
     const a = picture.nextElementSibling;
+    if (count > 1) iconArea.setAttribute('icon-count', count);
     if (src?.endsWith('.svg') || a?.tagName !== 'A') return;
     if (!a.querySelector('img')) {
       a.innerHTML = '';
@@ -43,7 +46,6 @@ function decorateMultipleIconArea(iconArea) {
       a.appendChild(picture);
     }
   });
-  if (iconArea.childElementCount > 1) iconArea.classList.add('icon-area-multiple');
 }
 
 function extendButtonsClass(text) {
@@ -78,6 +80,29 @@ export async function loadMnemonicList(foreground) {
   }
 }
 
+function decorateSplit(el, foreground, media) {
+  if (foreground && media) {
+    media.classList.add('bleed');
+    foreground.insertAdjacentElement('beforebegin', media);
+  }
+
+  let mediaCreditInner;
+  const txtContent = media?.lastChild?.textContent?.trim();
+  if (txtContent?.match(/^http.*\.mp4/)) return;
+  if (txtContent) {
+    mediaCreditInner = createTag('p', { class: 'body-s' }, txtContent);
+  } else if (media.lastElementChild?.tagName !== 'PICTURE') {
+    mediaCreditInner = media.lastElementChild;
+  }
+
+  if (mediaCreditInner) {
+    const mediaCredit = createTag('div', { class: 'media-credit container' }, mediaCreditInner);
+    el.appendChild(mediaCredit);
+    el.classList.add('has-credit');
+    media?.lastChild.remove();
+  }
+}
+
 export default async function init(el) {
   const excDark = ['light', 'quiet'];
   if (!excDark.some((s) => el.classList.contains(s))) el.classList.add('dark');
@@ -107,28 +132,16 @@ export default async function init(el) {
   const iconArea = text.querySelector('.icon-area');
   if (iconArea?.childElementCount > 1) decorateMultipleIconArea(iconArea);
   extendButtonsClass(text);
-  if (el.classList.contains('split')) {
-    if (foreground && media) {
-      media.classList.add('bleed');
-      foreground.insertAdjacentElement('beforebegin', media);
-    }
+  if (el.classList.contains('split')) decorateSplit(el, foreground, media);
 
-    let mediaCreditInner;
-    const txtContent = media?.lastChild?.textContent?.trim();
-    if (txtContent) {
-      mediaCreditInner = createTag('p', { class: 'body-s' }, txtContent);
-    } else if (media.lastElementChild?.tagName !== 'PICTURE') {
-      mediaCreditInner = media.lastElementChild;
-    }
-
-    if (mediaCreditInner) {
-      const mediaCredit = createTag('div', { class: 'media-credit container' }, mediaCreditInner);
-      el.appendChild(mediaCredit);
-      el.classList.add('has-credit');
-      media?.lastChild.remove();
-    }
-  }
+  const promiseArr = [];
   if (el.classList.contains('mnemonic-list') && foreground) {
-    await loadMnemonicList(foreground);
+    promiseArr.push(loadMnemonicList(foreground));
   }
+
+  if (el.classList.contains('countdown-timer')) {
+    promiseArr.push(loadCDT(text, el.classList));
+  }
+
+  await Promise.all(promiseArr);
 }

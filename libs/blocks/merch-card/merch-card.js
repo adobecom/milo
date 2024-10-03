@@ -1,86 +1,250 @@
 import { decorateButtons, decorateBlockHrs } from '../../utils/decorate.js';
-import { getConfig, createTag } from '../../utils/utils.js';
+import { getConfig, createTag, loadStyle } from '../../utils/utils.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
 import { processTrackingLabels } from '../../martech/attributes.js';
-import { replaceKey } from '../../features/placeholders.js';
-import '../../deps/merch-card.js';
+import '../../deps/mas/merch-card.js';
+import '../../deps/lit-all.min.js';
 
 const TAG_PATTERN = /^[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-].*$/;
 
-const CARD_TYPES = ['segment', 'special-offers', 'plans', 'catalog', 'product', 'inline-heading', 'image', 'mini-compare-chart'];
-
+const SEGMENT = 'segment';
+const SPECIAL_OFFERS = 'special-offers';
+const PLANS = 'plans';
+const CATALOG = 'catalog';
+const PRODUCT = 'product';
 const MINI_COMPARE_CHART = 'mini-compare-chart';
+const TWP = 'twp';
+const CARD_TYPES = [
+  SEGMENT,
+  SPECIAL_OFFERS,
+  PLANS,
+  CATALOG,
+  PRODUCT,
+  'inline-heading',
+  'image',
+  MINI_COMPARE_CHART,
+  TWP,
+];
 
-const MULTI_OFFER_CARDS = ['plans', 'product', MINI_COMPARE_CHART];
-// Force cards to refresh once they become visible so that the footer rows are properly aligned.
-const intersectionObserver = new IntersectionObserver((entries) => {
-  entries.forEach((entry) => {
-    const container = entry.target.closest('main > div');
-    if (!container) return;
-    [...container.querySelectorAll('merch-card')].forEach((card) => card.requestUpdate());
-    intersectionObserver.unobserve(entry.target);
-  });
-});
+const CARD_SIZES = ['wide', 'super-wide'];
 
-const textStyles = {
-  H5: 'detail-m',
+const SLOT_MAP_DEFAULT = {
+  H5: 'promo-text',
   H4: 'body-xxs',
   H3: 'heading-xs',
   H2: 'heading-m',
 };
+
+const SLOT_MAP = { 'special-offers': { H5: 'detail-m' } };
+
+const HEADING_MAP = {
+  'special-offers': {
+    H5: 'H4',
+    H3: 'H3',
+  },
+};
+
+const INNER_ELEMENTS_SELECTOR = 'h2, h3, h4, h5, h6, p, ul, em';
+
+const MULTI_OFFER_CARDS = [PLANS, PRODUCT, MINI_COMPARE_CHART, TWP];
+// Force cards to refresh once they become visible so that the footer rows are properly aligned.
+const intersectionObserver = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (entry.target.clientHeight === 0) return;
+    intersectionObserver.unobserve(entry.target);
+    entry.target.requestUpdate();
+  });
+});
 
 const getPodType = (styles) => styles?.find((style) => CARD_TYPES.includes(style));
 
 const isHeadingTag = (tagName) => /^H[2-5]$/.test(tagName);
 const isParagraphTag = (tagName) => tagName === 'P';
 
-const appendSlot = (slotEls, slotName, merchCard) => {
-  if (slotEls.length === 0) return;
+const appendSlot = (slotEls, slotName, merchCard, nodeName = 'p') => {
+  if (slotEls.length === 0 || merchCard.variant !== MINI_COMPARE_CHART) return;
   const newEl = createTag(
-    'p',
+    nodeName,
     { slot: slotName, class: slotName },
   );
-  slotEls.forEach((e, index) => {
+  slotEls.forEach((e) => {
     newEl.innerHTML += e.innerHTML;
-    if (index < slotEls.length - 1) {
-      newEl.innerHTML += '<br>';
-    }
   });
   merchCard.append(newEl);
 };
 
-const parseContent = (el, merchCard) => {
-  const innerElements = [
-    ...el.querySelectorAll('h2, h3, h4, h5, p, ul, em'),
-  ];
+export async function loadMnemonicList(foreground) {
+  try {
+    const { base } = getConfig();
+    const stylePromise = new Promise((resolve) => {
+      loadStyle(`${base}/blocks/mnemonic-list/mnemonic-list.css`, resolve);
+    });
+    const loadModule = import(`${base}/blocks/mnemonic-list/mnemonic-list.js`)
+      .then(({ decorateMnemonicList }) => decorateMnemonicList(foreground));
+    await Promise.all([stylePromise, loadModule]);
+  } catch (err) {
+    window.lana?.log(`Failed to load mnemonic list module: ${err}`);
+  }
+}
+
+function extractQuantitySelect(el) {
+  const quantitySelectConfig = [...el.querySelectorAll('ul')]
+    .find((ul) => ul.querySelector('li')?.innerText?.includes('Quantity'));
+  const configMarkup = quantitySelectConfig?.querySelector('ul');
+  if (!configMarkup) return null;
+  const config = configMarkup.children;
+  if (config.length !== 2) return null;
+  const attributes = {};
+  attributes.title = config[0].textContent.trim();
+  const values = config[1].textContent.split(',')
+    .map((value) => value.trim())
+    .filter((value) => /^\d*$/.test(value))
+    .map((value) => (value === '' ? undefined : Number(value)));
+  quantitySelectConfig.remove();
+  if (![3, 4, 5].includes(values.length)) return null;
+  import('../../deps/mas/merch-quantity-select.js');
+  [attributes.min, attributes.max, attributes.step, attributes['default-value'], attributes['max-input']] = values;
+  const quantitySelect = createTag('merch-quantity-select', attributes);
+  return quantitySelect;
+}
+
+const parseTwpContent = async (el, merchCard) => {
+  const quantitySelect = extractQuantitySelect(el);
+  if (quantitySelect) {
+    merchCard.append(quantitySelect);
+  }
+  let allElements = el?.children[0]?.children[0]?.children;
+  if (!allElements?.length) return;
+  allElements = [...allElements];
+  const contentGroups = allElements.reduce((acc, curr) => {
+    if (curr.tagName.toLowerCase() === 'p' && curr.textContent.trim() === '--') {
+      acc.push([]);
+    } else {
+      acc[acc.length - 1].push(curr);
+    }
+    return acc;
+  }, [[]]);
+
+  contentGroups.forEach((group, index) => {
+    if (index === 0) { // Top section
+      const headings = group.filter((e) => e.tagName.toLowerCase() === 'h3');
+      const topBody = group.filter((e) => e.tagName.toLowerCase() === 'p');
+      appendSlot(headings, 'heading-xs', merchCard);
+      appendSlot(topBody, 'body-xs-top', merchCard);
+    } else if (index === 1) { // Body section
+      const content = group.filter((e) => e.tagName.toLowerCase() === 'p' || e.tagName.toLowerCase() === 'ul');
+      const bodySlot = createTag('div', { slot: 'body-xs' }, content);
+      merchCard.append(bodySlot);
+
+      const whatsIncludedLink = bodySlot.querySelector('a[href*="merch-whats-included"]');
+      if (whatsIncludedLink) {
+        whatsIncludedLink.classList.add('merch-whats-included');
+      }
+    } else if (index === 2) { // Footer section
+      const footerContent = group.filter((e) => ['h5', 'p'].includes(e.tagName.toLowerCase()));
+      const footer = createTag('div', { slot: 'footer' }, footerContent);
+      merchCard.append(footer);
+    }
+  });
+
+  const offerSelection = el.querySelector('ul');
+  if (offerSelection) {
+    const { initOfferSelection } = await import('./merch-offer-select.js');
+    await initOfferSelection(merchCard, offerSelection);
+  }
+};
+
+const appendPaymentDetails = (element, merchCard) => {
+  if (element.firstChild.nodeType !== Node.TEXT_NODE) return;
+  const paymentDetails = createTag('div', { class: 'payment-details' }, element.innerHTML);
+  const headingM = merchCard.querySelector('h4[slot="heading-m"]');
+  headingM?.append(paymentDetails);
+};
+
+const appendCalloutContent = (element, merchCard) => {
+  if (element.firstElementChild?.tagName !== 'EM') return;
+  let calloutSlot = merchCard.querySelector('div[slot="callout-content"]');
+  let calloutContainer = calloutSlot?.querySelector('div');
+  if (!calloutContainer) {
+    calloutSlot = createTag('div', { slot: 'callout-content' });
+    calloutContainer = createTag('div');
+    calloutSlot.appendChild(calloutContainer);
+    merchCard.appendChild(calloutSlot);
+  }
+
+  const calloutContentWrapper = createTag('div');
+  const calloutContent = createTag('div');
+  const emElement = element.firstElementChild;
+  const fragment = document.createDocumentFragment();
+  let imgElement = null;
+
+  emElement.childNodes.forEach((child) => {
+    if (child.nodeType === Node.ELEMENT_NODE && child.tagName === 'A' && child.innerText.trim().toLowerCase() === '#icon') {
+      const [imgSrc, tooltipText] = child.getAttribute('href')?.split('#') || [];
+      imgElement = createTag('img', {
+        src: imgSrc,
+        title: decodeURIComponent(tooltipText),
+        class: 'callout-icon',
+      });
+    } else {
+      const clone = child.cloneNode(true);
+      fragment.appendChild(clone);
+    }
+  });
+
+  calloutContent.appendChild(fragment);
+  calloutContentWrapper.appendChild(calloutContent);
+
+  if (imgElement) {
+    calloutContentWrapper.appendChild(imgElement);
+  }
+  calloutContainer.appendChild(calloutContentWrapper);
+};
+
+const parseContent = async (el, merchCard) => {
   let bodySlotName = `body-${merchCard.variant !== MINI_COMPARE_CHART ? 'xs' : 'm'}`;
   let headingMCount = 0;
 
   if (merchCard.variant === MINI_COMPARE_CHART) {
     bodySlotName = 'body-m';
-    const promoText = el.querySelectorAll('h5');
     const priceSmallType = el.querySelectorAll('h6');
-    appendSlot(promoText, 'promo-text', merchCard);
-    appendSlot(priceSmallType, 'price-commitment', merchCard);
+    // Filter out any h6 elements that contain an <em> tag
+    const filteredPriceSmallType = Array.from(priceSmallType).filter((h6) => !h6.querySelector('em'));
+    if (filteredPriceSmallType.length > 0) appendSlot(filteredPriceSmallType, 'price-commitment', merchCard);
   }
 
   let headingSize = 3;
   const bodySlot = createTag('div', { slot: bodySlotName });
+  const mnemonicList = el.querySelector('.mnemonic-list');
+  if (mnemonicList) {
+    await loadMnemonicList(mnemonicList);
+  }
+  const innerElements = [
+    ...el.querySelectorAll(INNER_ELEMENTS_SELECTOR),
+  ];
 
   innerElements.forEach((element) => {
     let { tagName } = element;
     if (isHeadingTag(tagName)) {
-      let slotName = textStyles[tagName];
+      let slotName = SLOT_MAP[merchCard.variant]?.[tagName] || SLOT_MAP_DEFAULT[tagName];
       if (slotName) {
         if (['H2', 'H3', 'H4', 'H5'].includes(tagName)) {
-          if (tagName === 'H2') {
-            headingMCount += 1;
+          element.classList.add('card-heading');
+          if (merchCard.badgeText) {
+            element.closest('div[role="tabpanel"')?.classList.add('badge-merch-cards');
           }
-          if (headingMCount === 2 && merchCard.variant === MINI_COMPARE_CHART) {
-            slotName = 'heading-m-price';
+          if (HEADING_MAP[merchCard.variant]?.[tagName]) {
+            tagName = HEADING_MAP[merchCard.variant][tagName];
+          } else {
+            if (tagName === 'H2') {
+              headingMCount += 1;
+            }
+            if (headingMCount === 2 && merchCard.variant === MINI_COMPARE_CHART) {
+              slotName = 'heading-m-price';
+            }
+            tagName = `H${headingSize}`;
+            headingSize += 1;
           }
-          tagName = `H${headingSize}`;
-          headingSize += 1;
         }
         element.setAttribute('slot', slotName);
         const newElement = createTag(tagName);
@@ -92,10 +256,15 @@ const parseContent = (el, merchCard) => {
       }
       return;
     }
+    if (tagName === 'H6') {
+      appendPaymentDetails(element, merchCard);
+      appendCalloutContent(element, merchCard);
+    }
     if (isParagraphTag(tagName)) {
       bodySlot.append(element);
       merchCard.append(bodySlot);
     }
+    if (mnemonicList) bodySlot.append(mnemonicList);
   });
 
   if (merchCard.variant === MINI_COMPARE_CHART && merchCard.childNodes[1]) {
@@ -104,15 +273,17 @@ const parseContent = (el, merchCard) => {
 };
 
 const getBadgeStyle = (badgeMetadata) => {
-  const badgeStyleRegex = /^#[0-9a-fA-F]+, #[0-9a-fA-F]+$/;
+  const badgeStyleRegex = /^#[0-9a-fA-F]+, #[0-9a-fA-F]+(, #[0-9a-fA-F]+)?$/;
   if (!badgeStyleRegex.test(badgeMetadata[0]?.innerText)) return null;
-  const style = badgeMetadata[0].innerText;
-  const badgeBackgroundColor = style.split(',')[0].trim();
-  const badgeColor = style.split(',')[1].trim();
+  const style = badgeMetadata[0].innerText.split(',').map((s) => s.trim());
+  if (style.length < 2) return null;
+  const badgeBackgroundColor = style[0];
+  const badgeColor = style[1];
+  const borderColor = style[2] !== 'none' ? style[2] : null;
   const badgeWrapper = badgeMetadata[0].parentNode;
   const badgeText = badgeMetadata[1].innerText;
   badgeWrapper.remove();
-  return { badgeBackgroundColor, badgeColor, badgeText };
+  return { badgeBackgroundColor, badgeColor, badgeText, borderColor };
 };
 
 const getActionMenuContent = (el) => {
@@ -166,7 +337,7 @@ const decorateMerchCardLinkAnalytics = (el) => {
 };
 
 const addStock = (merchCard, styles) => {
-  if (styles.includes('add-stock')) {
+  if (styles.includes('add-stock') && merchCard.variant !== TWP) {
     let stock;
     const selector = styles.includes('edu') ? '.merch-offers.stock.edu > *' : '.merch-offers.stock > *';
     const [label, ...rest] = [...document.querySelectorAll(selector)];
@@ -190,25 +361,6 @@ const simplifyHrs = (el) => {
   });
 };
 
-function extractQuantitySelect(el) {
-  const quantitySelectConfig = el.querySelector('ul');
-  if (!quantitySelectConfig) return null;
-  const configMarkup = quantitySelectConfig.querySelector('li');
-  if (!configMarkup || !configMarkup.textContent.includes('Quantity')) return null;
-  const config = configMarkup.querySelector('ul').querySelectorAll('li');
-  if (config.length !== 2) return null;
-  const attributes = {};
-  attributes.title = config[0].textContent.trim();
-  const quantityValues = config[1].textContent.split(',').map((value) => value.trim())
-    .filter((value) => /^\d+$/.test(value));
-  if (quantityValues.length !== 3) return null;
-  import('../../deps/merch-quantity-select.js');
-  [attributes.min, attributes.max, attributes.step] = quantityValues.map(Number);
-  const quantitySelect = createTag('merch-quantity-select', attributes);
-  quantitySelectConfig.remove();
-  return quantitySelect;
-}
-
 const getMiniCompareChartFooterRows = (el) => {
   let footerRows = Array.from(el.children).slice(1);
   footerRows = footerRows.filter((row) => !row.querySelector('.footer-row-cell'));
@@ -225,7 +377,7 @@ const decorateFooterRows = (merchCard, footerRows) => {
     footerRows.forEach((row) => {
       const rowIcon = row.firstElementChild.querySelector('picture');
       const rowText = row.querySelector('div > div:nth-child(2)').innerHTML;
-      const rowTextParagraph = createTag('p', { class: 'footer-row-cell-description' }, rowText);
+      const rowTextParagraph = createTag('div', { class: 'footer-row-cell-description' }, rowText);
       const footerRowCell = createTag('div', { class: 'footer-row-cell' });
       if (rowIcon) {
         rowIcon.classList.add('footer-row-icon');
@@ -240,14 +392,47 @@ const decorateFooterRows = (merchCard, footerRows) => {
 
 const setMiniCompareOfferSlot = (merchCard, offers) => {
   if (merchCard.variant !== MINI_COMPARE_CHART) return;
-  const miniCompareOffers = createTag('div', { slot: 'offers' }, offers);
-  if (offers === undefined) { miniCompareOffers.appendChild(createTag('p')); }
+  const miniCompareOffers = merchCard.querySelector('div[slot="offers"]');
+  if (offers) {
+    miniCompareOffers.append(offers);
+  } else {
+    miniCompareOffers.appendChild(createTag('p'));
+  }
   merchCard.appendChild(miniCompareOffers);
 };
 
-const init = async (el) => {
+const updateBigPrices = (merchCard) => {
+  const prices = merchCard.querySelectorAll('strong > em > span[is="inline-price"]');
+  const isMobile = window.matchMedia('(max-width: 1199px)').matches;
+  prices.forEach((span) => {
+    const strongTag = span.parentNode.parentNode;
+    const emTag = span.parentNode;
+    strongTag.replaceChild(span, emTag);
+    if (!isMobile) {
+      span.style.cssText = 'font-size: 24px; line-height: 22.5px;';
+    } else {
+      span.style.cssText = 'font-size: 16px; line-height: 24px;';
+    }
+  });
+};
+
+const addStartingAt = async (styles, merchCard) => {
+  if (styles.includes('starting-at')) {
+    const { replaceKey } = await import('../../features/placeholders.js');
+    await replaceKey('starting-at', getConfig()).then((key) => {
+      const startingAt = createTag('div', { class: 'starting-at' }, key);
+      const price = merchCard.querySelector('span[is="inline-price"]');
+      if (price) {
+        price.parentNode.prepend(startingAt);
+      }
+    });
+  }
+};
+
+export default async function init(el) {
+  if (!el.querySelector(INNER_ELEMENTS_SELECTOR)) return el;
   const styles = [...el.classList];
-  const cardType = getPodType(styles) || 'product';
+  const cardType = getPodType(styles) || PRODUCT;
   if (!styles.includes(cardType)) {
     styles.push(cardType);
   }
@@ -270,6 +455,7 @@ const init = async (el) => {
   }
   const merchCard = createTag('merch-card', { class: styles.join(' '), 'data-block': '' });
   merchCard.setAttribute('variant', cardType);
+  merchCard.setAttribute('size', styles.find((style) => CARD_SIZES.includes(style)) || '');
   if (el.dataset.removedManifestId) {
     merchCard.dataset.removedManifestId = el.dataset.removedManifestId;
   }
@@ -301,21 +487,26 @@ const init = async (el) => {
         );
         merchCard.setAttribute('badge-color', badge.badgeColor);
         merchCard.setAttribute('badge-text', badge.badgeText);
+        if (badge.borderColor) merchCard.setAttribute('border-color', badge.borderColor);
+        merchCard.classList.add('badge-card');
+      } else if (badgeMetadata.children.length === 1) {
+        const borderColor = badgeMetadata.children[0].innerText.trim();
+        if (borderColor.startsWith('#')) merchCard.setAttribute('border-color', borderColor);
       }
     }
   }
   let footerRows;
+  if ([MINI_COMPARE_CHART, PLANS, SEGMENT].includes(cardType)) {
+    intersectionObserver.observe(merchCard);
+  }
   if (cardType === MINI_COMPARE_CHART) {
-    const container = el.closest('[data-status="decorated"]');
-    if (container) {
-      intersectionObserver.observe(container);
-    }
     footerRows = getMiniCompareChartFooterRows(el);
   }
-  const images = el.querySelectorAll('picture');
+  const allPictures = el.querySelectorAll('picture');
+  const pictures = Array.from(allPictures).filter((picture) => !picture.closest('.mnemonic-list'));
   let image;
   const icons = [];
-  images.forEach((img) => {
+  pictures.forEach((img) => {
     const imgNode = img.querySelector('img');
     const { width, height } = imgNode;
     const isSquare = Math.abs(width - height) <= 10;
@@ -327,7 +518,7 @@ const init = async (el) => {
       }
     }
   });
-  const actionMenuContent = cardType === 'catalog'
+  const actionMenuContent = cardType === CATALOG
     ? getActionMenuContent(el)
     : null;
   if (actionMenuContent) {
@@ -357,61 +548,67 @@ const init = async (el) => {
       const img = {
         src: icon.querySelector('img').src,
         alt: icon.querySelector('img').alt,
+        href: icon.closest('a')?.href ?? '',
       };
       return img;
     });
-    merchCard.setAttribute(
-      'icons',
-      JSON.stringify(Array.from(iconImgs)),
-    );
+    iconImgs.forEach((icon) => {
+      const merchIcon = createTag('merch-icon', { slot: 'icons', src: icon.src, alt: icon.alt, href: icon.href, size: 'l' });
+      merchCard.appendChild(merchIcon);
+    });
     icons.forEach((icon) => icon.remove());
   }
 
   addStock(merchCard, styles);
   if (styles.includes('secure')) {
+    const { replaceKey } = await import('../../features/placeholders.js');
     await replaceKey('secure-transaction', getConfig()).then((key) => merchCard.setAttribute('secure-label', key));
   }
   merchCard.setAttribute('filters', categories.join(','));
   merchCard.setAttribute('types', types.join(','));
-  parseContent(el, merchCard);
-  const footer = createTag('div', { slot: 'footer' });
-  if (ctas) {
-    if (merchCard.variant === 'mini-compare-chart') {
-      decorateButtons(ctas, 'button-l');
-    } else {
-      decorateButtons(ctas);
-    }
-    footer.append(ctas);
-  }
-  merchCard.appendChild(footer);
 
-  if (MULTI_OFFER_CARDS.includes(cardType)) {
-    const quantitySelect = extractQuantitySelect(el);
-    const offerSelection = el.querySelector('ul');
-    if (offerSelection) {
-      const { initOfferSelection } = await import('./merch-offer-select.js');
-      setMiniCompareOfferSlot(merchCard, undefined);
-      initOfferSelection(merchCard, offerSelection, quantitySelect);
+  if (merchCard.variant !== TWP) {
+    parseContent(el, merchCard);
+
+    const footer = createTag('div', { slot: 'footer' });
+    if (ctas) {
+      decorateButtons(ctas, (merchCard.variant === MINI_COMPARE_CHART) ? 'button-l' : undefined);
+      footer.append(ctas);
     }
-    if (quantitySelect) {
+    merchCard.appendChild(footer);
+
+    if (MULTI_OFFER_CARDS.includes(cardType)) {
+      const quantitySelect = extractQuantitySelect(el);
+      const offerSelection = el.querySelector('ul');
       if (merchCard.variant === MINI_COMPARE_CHART) {
-        setMiniCompareOfferSlot(merchCard, quantitySelect);
-      } else {
-        const bodySlot = merchCard.querySelector('div[slot="body-xs"]');
-        bodySlot.append(quantitySelect);
+        const miniCompareOffers = createTag('div', { slot: 'offers' });
+        merchCard.append(miniCompareOffers);
+      }
+      if (offerSelection) {
+        const { initOfferSelection } = await import('./merch-offer-select.js');
+        setMiniCompareOfferSlot(merchCard, undefined);
+        initOfferSelection(merchCard, offerSelection, quantitySelect);
+      }
+      if (quantitySelect) {
+        if (merchCard.variant === MINI_COMPARE_CHART) {
+          setMiniCompareOfferSlot(merchCard, quantitySelect);
+        } else {
+          const bodySlot = merchCard.querySelector('div[slot="body-xs"]');
+          bodySlot.append(quantitySelect);
+        }
       }
     }
-  }
 
-  decorateBlockHrs(merchCard);
-  simplifyHrs(merchCard);
-  if (merchCard.classList.contains('has-divider')) {
-    merchCard.setAttribute('custom-hr', true);
+    updateBigPrices(merchCard);
+    await addStartingAt(styles, merchCard);
+    decorateBlockHrs(merchCard);
+    simplifyHrs(merchCard);
+    if (merchCard.classList.contains('has-divider')) merchCard.setAttribute('custom-hr', true);
+    decorateFooterRows(merchCard, footerRows);
+  } else {
+    parseTwpContent(el, merchCard);
   }
-  decorateFooterRows(merchCard, footerRows);
   el.replaceWith(merchCard);
   decorateMerchCardLinkAnalytics(merchCard);
   return merchCard;
-};
-
-export default init;
+}

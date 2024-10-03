@@ -1,0 +1,15 @@
+{
+  "total": 5,
+  "offset": 0,
+  "limit": 5,
+  "data": [
+    {
+      "action": "replaceContent",
+      "selector": ".bad...selector",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "all": "on"
+    }
+  ],
+  ":type": "sheet"
+}

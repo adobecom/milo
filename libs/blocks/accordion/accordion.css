@@ -12,6 +12,10 @@ dl.accordion {
   border-bottom: 1px solid var(--color-gray-500);
 }
 
+.accordion-container.no-borders dl.accordion {
+  border: none;
+}
+
 .accordion dd {
   margin: 0;
   padding: var(--spacing-xs);
@@ -32,13 +36,18 @@ dl.accordion {
   line-height: var(--type-heading-s-lh);
   padding: var(--spacing-s) var(--spacing-m) var(--spacing-s) var(--spacing-xs);
   position: relative;
-  text-align: left;
+  text-align: start;
   width: 100%;
+  -webkit-text-size-adjust: 100%;
 }
 
 .accordion dt button:hover {
   cursor: pointer;
   color: var(--color-black);
+}
+
+.accordion-container.no-borders .accordion dt button {
+  border: none;
 }
 
 .accordion dt .accordion-heading {

@@ -22,7 +22,6 @@ function getMetadata(name, doc = document) {
 const loadScript = () => Promise.resolve();
 
 const loadStyle = () => Promise.resolve();
-
 const mockRes = ({ payload, status = 200 } = {}) => new Promise((resolve) => {
   resolve({
     status,
@@ -32,7 +31,6 @@ const mockRes = ({ payload, status = 200 } = {}) => new Promise((resolve) => {
     text: () => payload,
   });
 });
-
 function mockOstDeps({ failStatus = false, failMetadata = false, mockToken, overrideParams } = {}) {
   const options = {
     country: 'CH',
@@ -100,6 +98,16 @@ function unmockOstDeps() {
   window.history.replaceState({}, '', ogUrl);
 }
 
+const customFetch = window.fetch;
+
 export {
-  getConfig, getLocale, getMetadata, loadScript, loadStyle, mockOstDeps, mockRes, unmockOstDeps,
+  getConfig,
+  getLocale,
+  getMetadata,
+  loadScript,
+  loadStyle,
+  mockOstDeps,
+  unmockOstDeps,
+  mockRes,
+  customFetch,
 };

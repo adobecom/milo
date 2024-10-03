@@ -1,26 +1,29 @@
-import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { delay } from '../../helpers/waitfor.js';
 
-import { CheckoutWorkflow, CheckoutWorkflowStep, Defaults, Log } from '../../../libs/deps/commerce.js';
+import { CheckoutWorkflow, CheckoutWorkflowStep, Defaults, Log } from '../../../libs/deps/mas/commerce.js';
 
 import merch, {
   PRICE_TEMPLATE_DISCOUNT,
   PRICE_TEMPLATE_OPTICAL,
   PRICE_TEMPLATE_STRIKETHROUGH,
+  PRICE_TEMPLATE_ANNUAL,
+  CHECKOUT_ALLOWED_KEYS,
   buildCta,
   getCheckoutContext,
   initService,
-  priceLiteralsURL,
   fetchCheckoutLinkConfigs,
   getCheckoutLinkConfig,
   getDownloadAction,
   fetchEntitlements,
   getModalAction,
   getCheckoutAction,
+  PRICE_TEMPLATE_REGULAR,
+  getMasBase,
+  appendTabName,
 } from '../../../libs/blocks/merch/merch.js';
 
-import { mockFetch, unmockFetch } from './mocks/fetch.js';
+import { mockFetch, unmockFetch, readMockText } from './mocks/fetch.js';
 import { mockIms, unmockIms } from './mocks/ims.js';
 import { createTag, setConfig } from '../../../libs/utils/utils.js';
 import getUserEntitlements from '../../../libs/blocks/global-navigation/utilities/getUserEntitlements.js';
@@ -50,15 +53,41 @@ const CHECKOUT_LINK_CONFIGS = {
     BUY_NOW_PATH: 'X',
     LOCALE: 'fr',
   },
-  { PRODUCT_FAMILY: 'CC_ALL_APPS', DOWNLOAD_URL: 'https://creativecloud.adobe.com/apps/download', LOCALE: '' }],
+  { PRODUCT_FAMILY: 'CC_ALL_APPS', DOWNLOAD_URL: 'https://creativecloud.adobe.com/apps/download', LOCALE: '' },
+  {
+    PRODUCT_FAMILY: 'PREMIERE',
+    DOWNLOAD_TEXT: 'Download',
+    DOWNLOAD_URL: 'https://creativecloud.adobe.com/apps/download/premiere',
+    FREE_TRIAL_PATH: '/test/blocks/merch/mocks/fragments/twp',
+    BUY_NOW_PATH: '',
+    LOCALE: '',
+  },
+  {
+    PRODUCT_FAMILY: 'testPaCode',
+    DOWNLOAD_TEXT: 'paCode',
+  },
+  {
+    PRODUCT_FAMILY: 'testProductCode',
+    DOWNLOAD_TEXT: 'productCode',
+  },
+  ],
 };
 
 const config = {
   codeRoot: '/libs',
-  commerce: { priceLiteralsURL },
   env: { name: 'prod' },
   imsClientId: 'test_client_id',
   placeholders: { 'upgrade-now': 'Upgrade Now', download: 'Download' },
+};
+
+const updateSearch = ({ maslibs } = {}) => {
+  const url = new URL(window.location);
+  if (!maslibs) {
+    url.searchParams.delete('maslibs');
+  } else {
+    url.searchParams.set('maslibs', maslibs);
+  }
+  window.history.pushState({}, '', url);
 };
 
 /**
@@ -117,8 +146,8 @@ describe('Merch Block', () => {
 
   before(async () => {
     window.lana = { log: () => { } };
-    document.head.innerHTML = await readFile({ path: './mocks/head.html' });
-    document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+    document.head.innerHTML = await readMockText('/test/blocks/merch/mocks/head.html');
+    document.body.innerHTML = await readMockText('/test/blocks/merch/mocks/body.html');
     ({ setCheckoutLinkConfigs, setSubscriptionsData } = await mockFetch());
     setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
   });
@@ -129,10 +158,13 @@ describe('Merch Block', () => {
     await initService(true);
     Log.reset();
     Log.use(Log.Plugins.quietFilter);
+    fetchCheckoutLinkConfigs.promise = undefined;
+    await fetchCheckoutLinkConfigs('http://localhost:3000/libs');
   });
 
   afterEach(() => {
     setSubscriptionsData();
+    updateSearch();
   });
 
   it('does not decorate merch with bad content', async () => {
@@ -173,6 +205,14 @@ describe('Merch Block', () => {
 
     it('renders merch link to discount price', async () => {
       await validatePriceSpan('.merch.price.discount', { template: PRICE_TEMPLATE_DISCOUNT });
+    });
+
+    it('renders merch link to annual price', async () => {
+      await validatePriceSpan('.merch.price.annual', { template: PRICE_TEMPLATE_ANNUAL });
+    });
+
+    it('renders merch link to the regular price if template is invalid', async () => {
+      await validatePriceSpan('.merch.price.invalid', { template: PRICE_TEMPLATE_REGULAR });
     });
 
     it('renders merch link to tax exclusive price with tax exclusive attribute', async () => {
@@ -297,7 +337,7 @@ describe('Merch Block', () => {
       const { nodeName, href } = await el.onceSettled();
       expect(nodeName).to.equal('A');
       expect(el.getAttribute('is')).to.equal('checkout-link');
-      expect(/0ADF92A6C8514F2800BE9E87DB641D2A/.test(href)).to.be.true;
+      expect(/49133266E474B3E6EE5D1CB98B95B824/.test(href)).to.be.true;
     });
 
     it('renders merch link to cta with empty promo', async () => {
@@ -411,9 +451,6 @@ describe('Merch Block', () => {
     });
   });
 
-  describe('TWP and D2P modals', () => {
-  });
-
   describe('Download flow', () => {
     it('supports download use case', async () => {
       mockIms();
@@ -456,9 +493,8 @@ describe('Merch Block', () => {
     it('fetchCheckoutLinkConfigs: returns null if mapping cannot be fetched', async () => {
       fetchCheckoutLinkConfigs.promise = undefined;
       setCheckoutLinkConfigs(null);
-      const mappings = await fetchCheckoutLinkConfigs();
-      expect(mappings).to.be.undefined;
-      setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
+      const mappings = await fetchCheckoutLinkConfigs('http://localhost:2000/libs');
+      expect(mappings.data).to.empty;
       fetchCheckoutLinkConfigs.promise = undefined;
     });
 
@@ -468,7 +504,7 @@ describe('Merch Block', () => {
     });
 
     it('getDownloadAction: returns undefined if not entitled', async () => {
-      const checkoutLinkConfig = await getDownloadAction({ entitlement: true }, Promise.resolve(true), 'ILLUSTRATOR');
+      const checkoutLinkConfig = await getDownloadAction({ entitlement: true }, Promise.resolve(true), [{ productArrangement: { productFamily: 'ILLUSTRATOR' } }]);
       expect(checkoutLinkConfig).to.be.undefined;
     });
 
@@ -476,7 +512,7 @@ describe('Merch Block', () => {
       const [photoshopConfig] = CHECKOUT_LINK_CONFIGS.data;
       photoshopConfig.DOWNLOAD_URL = '';
       setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
-      const checkoutLinkConfig = await getDownloadAction({ entitlement: true }, Promise.resolve(true), 'PHOTOSHOP');
+      const checkoutLinkConfig = await getDownloadAction({ entitlement: true }, Promise.resolve(true), [{ productArrangement: { productFamily: 'PHOTOSHOP' } }]);
       expect(checkoutLinkConfig).to.be.undefined;
     });
 
@@ -486,38 +522,27 @@ describe('Merch Block', () => {
       getUserEntitlements();
       mockIms('US');
       setSubscriptionsData(SUBSCRIPTION_DATA_ALL_APPS_RAW_ELIGIBLE);
-      const { url } = await getDownloadAction({ entitlement: true }, Promise.resolve(true), 'CC_ALL_APPS');
+      const { url } = await getDownloadAction({ entitlement: true }, Promise.resolve(true), [{ productArrangement: { productFamily: 'CC_ALL_APPS' } }]);
       expect(url).to.equal('https://creativecloud.adobe.com/apps/download');
     });
 
-    it('getModalAction: returns undefined if checkout-link config is not found', async () => {
-      fetchCheckoutLinkConfigs.promise = undefined;
-      setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
-      const action = await getModalAction({}, { modal: true }, 'XYZ');
-      expect(action).to.be.undefined;
-    });
-
-    it('getModalAction: returns undefined if modal path is cancelled', async () => {
-      setConfig({
-        ...config,
-        pathname: '/fr/test.html',
-        locales: { fr: { ietf: 'fr-FR' } },
-        prodDomains: PROD_DOMAINS,
-        placeholders: { download: 'Télécharger' },
-      });
-      fetchCheckoutLinkConfigs.promise = undefined;
-      setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
-      const action = await getModalAction([{}], { modal: true }, 'PHOTOSHOP');
-      expect(action).to.be.undefined;
-    });
-
     it('getCheckoutAction: handles errors gracefully', async () => {
-      const action = await getCheckoutAction([{ productArrangement: {} }], {}, Promise.reject(new Error('error')));
-      expect(action).to.be.undefined;
+      const imsSignedInPromise = new Promise((resolve, reject) => {
+        setTimeout(() => {
+          reject(new Error('error'));
+        }, 1);
+      });
+      const action = await getCheckoutAction([{ productArrangement: {} }], {}, imsSignedInPromise);
+      expect(action).to.be.empty;
     });
   });
 
   describe('Upgrade Flow', () => {
+    beforeEach(() => {
+      getMasBase.baseUrl = undefined;
+      updateSearch({});
+    });
+
     it('updates CTA text to Upgrade Now', async () => {
       mockIms();
       getUserEntitlements();
@@ -549,6 +574,33 @@ describe('Merch Block', () => {
       document.querySelector('.modal-curtain').click();
     });
 
+    it('renders Milo TWP modal', async () => {
+      mockIms();
+      const el = document.querySelector('.merch.cta.milo.twp');
+      const cta = await merch(el);
+      const { nodeName, textContent } = await cta.onceSettled();
+      expect(nodeName).to.equal('A');
+      expect(textContent).to.equal('Free Trial');
+      expect(cta.getAttribute('href')).to.equal('#');
+      cta.click();
+      await delay(100);
+      let modal = document.getElementById('checkout-link-modal');
+      expect(modal.querySelector('[data-path]').dataset.path).to.equal('/test/blocks/merch/mocks/fragments/twp');
+      expect(modal.querySelector('h1').innerText).to.equal('twp modal');
+      document.querySelector('.modal-curtain').click();
+      await delay(100);
+      const [,,,, checkoutLinkConfig] = CHECKOUT_LINK_CONFIGS.data;
+      checkoutLinkConfig.FREE_TRIAL_PATH = 'http://main--milo--adobecom.hlx.page/test/blocks/merch/mocks/fragments/twp-url';
+      await cta.render();
+      cta.click();
+      await delay(100);
+      modal = document.getElementById('checkout-link-modal');
+      expect(modal.querySelector('h1').innerText).to.equal('twp modal #2');
+      expect(modal.querySelector('[data-path]').dataset.path).to.equal('/test/blocks/merch/mocks/fragments/twp-url');
+      document.querySelector('.modal-curtain').click();
+      await delay(100);
+    });
+
     it('renders D2P modal', async () => {
       mockIms();
       const el = document.querySelector('.merch.cta.d2p');
@@ -563,6 +615,218 @@ describe('Merch Block', () => {
       const modal = document.getElementById('checkout-link-modal');
       expect(modal).to.exist;
       document.querySelector('.modal-curtain').click();
+    });
+
+    it('renders TWP modal with preselected plan', async () => {
+      mockIms();
+      const meta = document.createElement('meta');
+      meta.setAttribute('name', 'preselect-plan');
+      meta.setAttribute('content', 'edu');
+      document.getElementsByTagName('head')[0].appendChild(meta);
+      const el = document.querySelector('.merch.cta.twp.preselected-plan');
+      const cta = await merch(el);
+      const { nodeName } = await cta.onceSettled();
+      expect(nodeName).to.equal('A');
+      cta.click();
+      await delay(100);
+      expect(document.querySelector('iframe').src).to.equal('https://www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1&plan=edu');
+      document.querySelector('meta[name="preselect-plan"]').remove();
+    });
+
+    it('getCheckoutLinkConfig: finds using paCode', async () => {
+      let checkoutLinkConfig = await getCheckoutLinkConfig(undefined, undefined, 'testPaCode');
+      expect(checkoutLinkConfig.DOWNLOAD_TEXT).to.equal('paCode');
+      checkoutLinkConfig = await getCheckoutLinkConfig('', '', 'testPaCode');
+      expect(checkoutLinkConfig.DOWNLOAD_TEXT).to.equal('paCode');
+    });
+
+    it('getCheckoutLinkConfig: finds using productCode', async () => {
+      let checkoutLinkConfig = await getCheckoutLinkConfig(undefined, 'testProductCode', undefined);
+      expect(checkoutLinkConfig.DOWNLOAD_TEXT).to.equal('productCode');
+      checkoutLinkConfig = await getCheckoutLinkConfig('', 'testProductCode', '');
+      expect(checkoutLinkConfig.DOWNLOAD_TEXT).to.equal('productCode');
+    });
+
+    it('getModalAction: returns undefined if modal path is cancelled', async () => {
+      setConfig({
+        ...config,
+        pathname: '/fr/test.html',
+        locales: { fr: { ietf: 'fr-FR' } },
+        prodDomains: PROD_DOMAINS,
+        placeholders: { download: 'Télécharger' },
+      });
+      fetchCheckoutLinkConfigs.promise = undefined;
+      setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
+      const action = await getModalAction([{ productArrangement: { productFamily: 'PHOTOSHOP' } }], { modal: true });
+      expect(action).to.be.undefined;
+    });
+
+    it('getModalAction: returns undefined if checkout-link config is not found', async () => {
+      fetchCheckoutLinkConfigs.promise = undefined;
+      setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
+      const action = await getModalAction([{ productArrangement: { productFamily: 'XZY' } }], { modal: true });
+      expect(action).to.be.undefined;
+    });
+
+    const MODAL_URLS = [
+      {
+        url: 'https://www.adobe.com/mini-plans/illustrator1.html?mid=ft&web=1',
+        plan: 'edu',
+        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator1.html?mid=ft&web=1&plan=edu',
+      },
+      {
+        url: 'https://www.adobe.com/mini-plans/illustrator2.html?mid=ft&web=1&plan=abc',
+        plan: 'edu',
+        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator2.html?mid=ft&web=1&plan=edu',
+      },
+      {
+        url: 'https://www.adobe.com/mini-plans/illustrator3.html?mid=ft&web=1#thisishash',
+        plan: 'edu',
+        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator3.html?mid=ft&web=1&plan=edu#thisishash',
+      },
+      {
+        url: 'https://www.adobe.com/mini-plans/illustrator4.html',
+        plan: 'edu',
+        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator4.html?plan=edu',
+      },
+      {
+        url: 'https://www.adobe.com/mini-plans/illustrator5.html#thisishash',
+        plan: 'edu',
+        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator5.html?plan=edu#thisishash',
+      },
+      {
+        url: 'https://www.adobe.com/mini-plans/illustrator6.html?mid=ft&web=1',
+        plan: 'team',
+        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator6.html?mid=ft&web=1&plan=team',
+      },
+      {
+        url: 'https://www.adobe.com/mini-plans/illustrator7.html?mid=ft&web=1',
+        plan: '',
+        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator7.html?mid=ft&web=1',
+      },
+      {
+        url: 'https://www.adobe.com/mini-plans/illustrator8.selector.html/resource?mid=ft&web=1#thisishash',
+        plan: 'team',
+        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator8.selector.html/resource?mid=ft&web=1&plan=team#thisishash',
+      },
+      {
+        url: 'https://www.adobe.com/mini-plans/illustrator9.sel1.sel2.html/resource#thisishash',
+        plan: 'team',
+        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator9.sel1.sel2.html/resource?plan=team#thisishash',
+      },
+      {
+        url: 'www.adobe.com/mini-plans/illustrator10.html?mid=ft&web=1', // invalid URL, protocol is missing
+        plan: 'edu',
+        urlWithPlan: 'www.adobe.com/mini-plans/illustrator10.html?mid=ft&web=1',
+      },
+    ];
+    MODAL_URLS.forEach((modalUrl) => {
+      it(`appends preselected plan ${modalUrl.plan} to modal URL ${modalUrl.url}`, async () => {
+        const meta = document.createElement('meta');
+        meta.setAttribute('name', 'preselect-plan');
+        meta.setAttribute('content', modalUrl.plan);
+        document.getElementsByTagName('head')[0].appendChild(meta);
+
+        const resultUrl = appendTabName(modalUrl.url);
+        expect(resultUrl).to.equal(modalUrl.urlWithPlan);
+        document.querySelector('meta[name="preselect-plan"]').remove();
+      });
+    });
+  });
+
+  describe('checkout link with optional params', async () => {
+    const checkoutUcv2Keys = [
+      'rurl', 'authCode', 'curl',
+
+    ];
+    const checkoutAllowKeysMapping = {
+      quantity: 'q',
+      checkoutPromoCode: 'apc',
+      ctxrturl: 'ctxRtUrl',
+      country: 'co',
+      language: 'lang',
+      clientId: 'cli',
+      context: 'ctx',
+      productArrangementCode: 'pa',
+      offerType: 'ot',
+      marketSegment: 'ms',
+      authCode: 'code',
+      rurl: 'rUrl',
+      curl: 'cUrl',
+    };
+    const segmentation = [
+      'ot',
+      'pa',
+      'ms',
+    ];
+
+    const keyValueMapping = { lang: 'en', ms: 'COM', ot: 'BASE', pa: 'phsp_direct_individual' };
+
+    const skipKeys = ['quantity', 'co', 'country', 'lang', 'language'];
+
+    CHECKOUT_ALLOWED_KEYS.forEach((key) => {
+      if (skipKeys.includes(key)) return;
+      const mappedKey = checkoutAllowKeysMapping[key] ?? key;
+      it(`renders checkout link with "${mappedKey}" parameter`, async () => {
+        const a = document.createElement('a', { is: 'checkout-link' });
+        a.classList.add('merch');
+        const searchParams = new URLSearchParams();
+        searchParams.set('osi', 1);
+        searchParams.set('type', 'checkoutUrl');
+        if (checkoutUcv2Keys.includes(key)) {
+          searchParams.set('workflow', 'ucv2');
+        }
+        const value = keyValueMapping[mappedKey] ?? 'test';
+        searchParams.set(key, value);
+        if (segmentation.includes(mappedKey)) {
+          searchParams.set('workflowStep', 'segmentation');
+        }
+        a.setAttribute('href', `/tools/ost?${searchParams.toString()}`);
+        document.body.appendChild(a);
+        const el = await merch(a);
+        await el.onceSettled();
+        expect(el.getAttribute('href')).to.match(new RegExp(`https://commerce.adobe.com/.*${mappedKey}=${value}`));
+        el.remove();
+      });
+    });
+  });
+
+  describe('M@S consumption', () => {
+    describe('maslibs parameter', () => {
+      beforeEach(() => {
+        getMasBase.baseUrl = undefined;
+        updateSearch({});
+      });
+
+      it('should load commerce.js via maslibs', async () => {
+        initService.promise = undefined;
+        getMasBase.baseUrl = 'http://localhost:2000/test/blocks/merch/mas';
+        updateSearch({ maslibs: 'test' });
+        setConfig(config);
+        await mockIms();
+        const commerce = await initService(true);
+        expect(commerce.mock).to.be.true;
+      });
+
+      it('should return the default Adobe URL if no maslibs parameter is present', () => {
+        expect(getMasBase()).to.equal('https://www.adobe.com/mas');
+      });
+
+      it('should return the stage Adobe URL if maslibs=stage', () => {
+        expect(getMasBase('https://main--milo--adobecom.hlx.live', 'stage')).to.equal('https://www.stage.adobe.com/mas');
+      });
+
+      it('should return the local URL if maslibs=local', () => {
+        expect(getMasBase('https://main--milo--adobecom.hlx.live', 'local')).to.equal('http://localhost:9001');
+      });
+
+      it('should return the hlx live URL from the fork if maslibs contains double dashes', () => {
+        expect(getMasBase('https://main--milo--adobecom.hlx.live', 'test--mas--user')).to.equal('https://test--mas--user.hlx.live');
+      });
+
+      it('should return the hlx page URL from the fork if maslibs contains double dashes', () => {
+        expect(getMasBase('https://main--milo--adobecom.hlx.page', 'test--mas--user')).to.equal('https://test--mas--user.hlx.page');
+      });
     });
   });
 });

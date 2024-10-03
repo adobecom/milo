@@ -20,11 +20,13 @@ const categorize = (tagData) => tagData
 
 const getCopyBtn = (tagName) => {
   const copy = createTag('button', { class: 'copy' });
+  copy.id = `${tagName}-tag-copy`;
   copy.addEventListener('click', (e) => {
     e.target.classList.add('copied');
     setTimeout(() => { e.target.classList.remove('copied'); }, 3000);
     const blob = new Blob([tagName], { type: 'text/plain' });
     createCopy(blob);
+    window.hlx?.rum.sampleRUM('click', { source: e.target });
   });
   return copy;
 };

@@ -1,0 +1,32 @@
+{
+  "total": 5,
+  "offset": 0,
+  "limit": 5,
+  "data": [
+    {
+      "action": "updateMetadata",
+      "selector": "georouting",
+      "page filter (optional)": "",
+      "all": "on"
+    },
+    {
+      "action": "updateMetadata",
+      "selector": "mynewmetadata",
+      "page filter (optional)": "",
+      "all": "woot"
+    },
+    {
+      "action": "updateMetadata",
+      "selector": "og:title",
+      "page filter (optional)": "",
+      "all": "New Title"
+    },
+    {
+      "action": "updateMetadata",
+      "selector": "og:image",
+      "page filter (optional)": "",
+      "all": "https://adobe.com/path/to/image.jpg"
+    }
+  ],
+  ":type": "sheet"
+}

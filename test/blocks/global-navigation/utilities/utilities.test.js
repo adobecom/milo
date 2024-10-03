@@ -1,10 +1,10 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import {
+  fetchAndProcessPlainHtml,
   toFragment,
   getFedsPlaceholderConfig,
   federatePictureSources,
-  getFederatedContentRoot,
   getAnalyticsValue,
   decorateCta,
   hasActiveLink,
@@ -14,16 +14,28 @@ import {
   trigger,
   getExperienceName,
   logErrorFor,
-  getFederatedUrl,
 } from '../../../../libs/blocks/global-navigation/utilities/utilities.js';
-import { setConfig } from '../../../../libs/utils/utils.js';
+import { setConfig, getConfig } from '../../../../libs/utils/utils.js';
 import { createFullGlobalNavigation, config } from '../test-utilities.js';
+import mepInBlock from '../mocks/mep-config.js';
 
-const baseHost = 'https://www.stage.adobe.com';
+const baseHost = 'https://main--federal--adobecom.hlx.page';
 describe('global navigation utilities', () => {
   beforeEach(() => {
     document.body.innerHTML = '';
   });
+  it('fetchAndProcessPlainHtml with MEP', () => {
+    expect(fetchAndProcessPlainHtml).to.exist;
+    const mepConfig = getConfig();
+    mepConfig.mep = mepInBlock;
+    fetchAndProcessPlainHtml({ url: '/old/navigation' }).then((fragment) => {
+      const inNewMenu = fragment.querySelector('#only-in-new-menu');
+      expect(inNewMenu).to.exist;
+      const newMenu = fragment.querySelector('a[href*="mep-large-menu-table"]');
+      expect(newMenu).to.exist;
+    });
+  });
+
   it('toFragment', () => {
     expect(toFragment).to.exist;
     const fragment = toFragment`<div>test</div>`;
@@ -33,15 +45,6 @@ describe('global navigation utilities', () => {
     const fragment2 = toFragment`<span>${fragment}</span>`;
     expect(fragment2.innerHTML).to.equal('<div>test</div>');
     expect(fragment2.tagName).to.equal('SPAN');
-  });
-
-  // No tests for using the the live url and .hlx. urls
-  // as mocking window.location.origin is not possible
-  describe('getFedsContentRoot', () => {
-    it('should return content source for localhost', () => {
-      const contentSource = getFederatedContentRoot();
-      expect(contentSource).to.equal(baseHost);
-    });
   });
 
   describe('federatePictureSources', () => {
@@ -383,57 +386,6 @@ describe('global navigation utilities', () => {
 
       // Restore the original window.lana.log method
       window.lana.log = originalLanaLog;
-    });
-  });
-
-  describe('getFederatedUrl', () => {
-    it('should return the url if its not federated', () => {
-      expect(getFederatedUrl('https://adobe.com/foo-fragment.html')).to.equal(
-        'https://adobe.com/foo-fragment.html',
-      );
-
-      expect(getFederatedUrl('/foo-fragment.html')).to.equal(
-        '/foo-fragment.html',
-      );
-
-      expect(getFederatedUrl('/lu_de/foo-fragment.html')).to.equal(
-        '/lu_de/foo-fragment.html',
-      );
-    });
-
-    it('should return the federated url', () => {
-      expect(
-        getFederatedUrl('https://adobe.com/federal/foo-fragment.html'),
-      ).to.equal(
-        `${baseHost}/federal/foo-fragment.html`,
-      );
-      expect(
-        getFederatedUrl('https://adobe.com/lu_de/federal/gnav/foofooter.html'),
-      ).to.equal(
-        `${baseHost}/lu_de/federal/gnav/foofooter.html`,
-      );
-    });
-
-    it('should return the federated url for a relative link', () => {
-      expect(
-        getFederatedUrl('/federal/foo-fragment.html'),
-      ).to.equal(
-        `${baseHost}/federal/foo-fragment.html`,
-      );
-    });
-
-    it('should return the federated url for a relative link including hashes and search params', () => {
-      expect(
-        getFederatedUrl('/federal/foo-fragment.html?foo=bar#test'),
-      ).to.equal(
-        `${baseHost}/federal/foo-fragment.html?foo=bar#test`,
-      );
-    });
-
-    it('should return the url for invalid urls', () => {
-      expect(getFederatedUrl('en-US/federal/')).to.equal('en-US/federal/');
-      expect(getFederatedUrl(null)).to.equal(null);
-      expect(getFederatedUrl(123121)).to.equal(123121);
     });
   });
 });

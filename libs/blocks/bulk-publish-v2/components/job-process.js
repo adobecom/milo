@@ -1,7 +1,8 @@
+import './job-info.js';
 import { LitElement, html } from '../../../deps/lit-all.min.js';
-import { getSheet } from '../../../../tools/utils/utils.js';
-import { displayDate, getStatusText, delay } from '../utils.js';
+import { getStatusProps, updateJobUrls, isSuccess, isDelete, delay } from '../utils.js';
 import { pollJobStatus, updateRetry } from '../services.js';
+import { getSheet } from '../../../../tools/utils/utils.js';
 import { getConfig } from '../../../utils/utils.js';
 
 const { miloLibs, codeRoot } = getConfig();
@@ -12,9 +13,9 @@ class JobProcess extends LitElement {
   static get properties() {
     return {
       job: { type: Object },
+      reworkErrors: { type: Function },
       jobStatus: { state: true },
       queue: { state: true },
-      expandDate: { state: true },
     };
   }
 
@@ -22,7 +23,6 @@ class JobProcess extends LitElement {
     super();
     this.jobStatus = undefined;
     this.queue = [];
-    this.expandDate = false;
   }
 
   async connectedCallback() {
@@ -30,7 +30,12 @@ class JobProcess extends LitElement {
     this.renderRoot.adoptedStyleSheets = [styleSheet];
     if (this.job?.useBulk) {
       await pollJobStatus(this.job, (detail) => {
-        this.jobStatus = detail;
+        if (detail.state === 'stopped') {
+          this.jobStatus = detail;
+        /* c8 ignore next 3 */
+        } else {
+          updateJobUrls(detail, this.renderRoot);
+        }
         this.dispatchEvent(new CustomEvent('progress', { detail }));
       });
     } else {
@@ -39,10 +44,11 @@ class JobProcess extends LitElement {
   }
 
   async updated() {
-    if (this.jobStatus?.state === 'stopped') {
+    const stopped = this.jobStatus?.state === 'stopped';
+    if (stopped) {
       this.dispatchEvent(new CustomEvent('stopped', { detail: this.jobStatus }));
     }
-    if (this.jobStatus?.progress?.failed !== 0) {
+    if (stopped && this.jobStatus?.progress?.failed > 0) {
       const timeouts = this.jobStatus?.data?.resources?.filter((job) => job.status === 503) ?? [];
       this.retry(timeouts);
     }
@@ -66,11 +72,11 @@ class JobProcess extends LitElement {
 
   async onClick({ url, code, topic }, pathIndex) {
     const results = this.renderRoot.querySelectorAll('.result');
-    const isPOST = !['preview-remove', 'publish-remove'].includes(topic);
-    if (this.jobStatus && (code === 200 || code === 204) && isPOST) {
+    const isPOST = !isDelete(topic);
+    /* c8 ignore next 3 */
+    if (this.jobStatus && isSuccess(code) && isPOST) {
       results[pathIndex].classList.add('opened');
       window.open(url, '_blank');
-    /* c8 ignore next 6 */
     } else {
       await navigator.clipboard.writeText(url);
       results[pathIndex].classList.add('copied', 'indicator');
@@ -81,67 +87,66 @@ class JobProcess extends LitElement {
 
   getJob(path) {
     const jobData = this.jobStatus ?? this.job.result.job;
-    const { topic, data, startTime, stopTime, createTime } = jobData;
+    const { topic, data } = jobData;
     const resource = data?.resources?.find((src) => src.path === path || src.webPath === path);
-    let { state, status } = resource ?? jobData;
+    let { status } = resource ?? jobData;
 
-    const success = [200, 204];
     const retry = this.queue?.find((item) => item.path === path);
-    if (retry) {
-      status = retry.status;
-      state = !success.includes(status) && retry.count < 3 ? 'queued' : 'stopped';
-    }
+    if (retry) status = retry.status;
 
-    const style = success.includes(status)
-      ? ` success${['preview-remove', 'publish-remove'].includes(topic) ? '' : ' link'}`
-      : '';
-
-    const origin = ['publish', 'index'].includes(topic) && success.includes(status)
+    const origin = ['publish', 'index'].includes(topic) && isSuccess(status)
       ? this.job.origin.replace('.page', '.live')
       : this.job.origin;
 
-    // sometimes stopTime is returned from API as an empty string
-    const stop = stopTime && stopTime !== '' ? stopTime : undefined;
-    const stamp = stop ?? startTime ?? createTime;
-
-    const statusText = jobData.error ? { code: 404, text: jobData.error, color: 'error' } : null;
+    const statusProps = getStatusProps({
+      status,
+      topic,
+      count: retry?.count,
+      altText: jobData.error,
+    });
 
     return {
       topic,
-      style,
+      status: statusProps,
       url: resource?.href ?? `${origin}${path}`,
-      status: statusText ?? getStatusText(status, state, retry?.count),
-      time: {
-        stamp,
-        label: stopTime ? 'Finished' : 'Started',
-      },
     };
+  }
+
+  renderJobItem(path, pathIndex) {
+    const jobPath = typeof path === 'object' ? path.path : path;
+    const { status, topic, url } = this.getJob(jobPath);
+    const link = isDelete(topic) ? '' : ' link';
+    return html`
+      <div
+        job-item=${jobPath}
+        class="${status.style}${link}"
+        @click=${() => this.onClick({ url, code: status.code, topic }, pathIndex)}>
+        <div class="process">
+          <img 
+            class="process-icon ${status.color}" 
+            src=${status.icon} 
+            alt="${status.text} Icon" 
+            title="${status.text}" />
+          <span class="url">${url}</span>
+        </div>
+        <div class="meta">
+          <span class="status ${status.color}">
+            ${status.text !== 'Working' ? status.text : ''}
+          </span>
+        </div>
+      </div>
+    `;
   }
 
   render() {
     const { job } = this.job.result;
-    return job.data.paths.map((path, pathIndex) => {
-      const jobPath = typeof path === 'object' ? path.path : path;
-      const { style, status, topic, url, time } = this.getJob(jobPath);
-      return html`
-        <div 
-          class="result${style}"
-          @click=${() => this.onClick({ url, code: status.code, topic }, pathIndex)}>
-          <div class="process">
-            ${topic} <span class="url">${url}</span>
-          </div>
-          <div class="meta">
-            <span class="${status.color}">${status.text}</span>
-            <span
-              class="date-stamp"
-              @mouseover=${() => { this.expandDate = url; }}
-              @mouseleave=${() => { this.expandDate = false; }}>
-              <i>${this.expandDate === url ? time.label : ''}</i> ${displayDate(time.stamp)}
-            </span>
-          </div>
-        </div>
-      `;
-    });
+    const jobData = this.jobStatus ?? this.job.result.job;
+    return html`
+      <div class="job-process">
+        <job-info .status=${jobData} .reworkErrors=${() => this.reworkErrors(jobData)}></job-info>
+        ${job.data.paths.map((path, pathIndex) => this.renderJobItem(path, pathIndex))}
+      </div>
+    `;
   }
 }
 

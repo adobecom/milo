@@ -168,9 +168,11 @@ describe('getConfig', () => {
         endpoint:
           'https://www.adobe.com/chimera-api/collection/myTargetActivity.json?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=((%22caas%3Aproducts%2Findesign%22%2BAND%2B%22caas%3Aproducts%2Freader%22)%2BAND%2B(%22caas%3Acountry%2Fbr%22%2BOR%2B%22caas%3Acountry%2Fca%22))%2BAND%2B((%22caas%3Acontent-type%2Fvideo%22%2BAND%2B%22caas%3Acontent-type%2Fblog%22))&excludeIds=&currentEntityId=&featuredCards=c94ec235-50c2-595e-9fa8-0b4602c08712%2Ce9d71f5e-e7c9-5d6d-89e9-2ffdad17b8bd&environment=&draft=true&size=10&flatFile=false',
         fallbackEndpoint: '',
+        hideDateInterval: false,
         totalCardsToShow: 10,
         cardStyle: 'half-height',
         ctaAction: '_self',
+        cardHoverEffect: 'default',
         detailsTextOption: 'default',
         showTotalResults: false,
         i18n: {
@@ -184,8 +186,11 @@ describe('getConfig', () => {
           titleHeadingLevel: 'h3',
         },
         setCardBorders: false,
+        showCardBadges: false,
+        showFooterDivider: false,
         useOverlayLinks: false,
         additionalRequestParams: {},
+        dynamicCTAForLiveEvents: false,
         banner: {
           register: { description: 'Sign Up', url: '#registration' },
           upcoming: { description: 'Upcoming' },
@@ -205,6 +210,70 @@ describe('getConfig', () => {
         eventFilter: '',
         type: 'left',
         showEmptyFilters: false,
+        categories: [
+          {
+            group: 'All Topics',
+            id: '',
+            items: [],
+            title: 'All Topics',
+          },
+          {
+            group: 'photo',
+            icon: '',
+            id: 'caas:product-categories/photo',
+            items: [],
+            title: 'Photo',
+          },
+          {
+            group: 'graphic-design',
+            id: 'caas:product-categories/graphic-design',
+            icon: '',
+            items: [],
+            title: 'Graphic Design',
+          },
+          {
+            group: 'video',
+            id: 'caas:product-categories/video',
+            icon: '',
+            items: [],
+            title: 'Video',
+          },
+          {
+            group: 'illustration',
+            id: 'caas:product-categories/illustration',
+            icon: '',
+            items: [],
+            title: 'Illustration',
+          },
+          {
+            group: 'ui-and-ux',
+            id: 'caas:product-categories/ui-and-ux',
+            icon: '',
+            items: [],
+            title: 'UI and UX',
+          },
+          {
+            group: 'acrobat-and-pdf',
+            id: 'caas:product-categories/acrobat-and-pdf',
+            icon: '',
+            items: [],
+            title: 'Acrobat and PDF',
+          },
+          {
+            group: '3d-and-ar',
+            id: 'caas:product-categories/3d-and-ar',
+            icon: '',
+            items: [],
+            title: '3D and AR',
+          },
+          {
+            group: 'social-media',
+            id: 'caas:product-categories/social-media',
+            icon: '',
+            items: [],
+            title: 'Social Media',
+          },
+        ],
         filters: [
           {
             group: 'Life Sciences',
@@ -328,6 +397,7 @@ describe('getConfig', () => {
       },
       language: 'en',
       country: 'us',
+      linkTransformer: {},
       customCard: [
         'card',
         'return ``',
@@ -363,9 +433,11 @@ describe('getConfig', () => {
         endpoint:
           'https://www.adobe.com/chimera-api/collection/myTargetActivity.json?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=fr&country=be&complexQuery=((%22caas%3Aproducts%2Findesign%22%2BAND%2B%22caas%3Aproducts%2Freader%22)%2BAND%2B(%22caas%3Acountry%2Fbr%22%2BOR%2B%22caas%3Acountry%2Fca%22))%2BAND%2B((%22caas%3Acontent-type%2Fvideo%22%2BAND%2B%22caas%3Acontent-type%2Fblog%22))&excludeIds=&currentEntityId=&featuredCards=b6aa23a7-f6bf-51f4-a2b6-0a93fc31bd16%2Ce9d71f5e-e7c9-5d6d-89e9-2ffdad17b8bd&environment=&draft=true&size=10&flatFile=false',
         fallbackEndpoint: '',
+        hideDateInterval: false,
         totalCardsToShow: 10,
         cardStyle: 'half-height',
         ctaAction: '_self',
+        cardHoverEffect: 'default',
         detailsTextOption: 'default',
         showTotalResults: false,
         i18n: {
@@ -379,8 +451,11 @@ describe('getConfig', () => {
           titleHeadingLevel: 'h3',
         },
         setCardBorders: false,
+        showCardBadges: false,
+        showFooterDivider: false,
         useOverlayLinks: false,
         additionalRequestParams: {},
+        dynamicCTAForLiveEvents: false,
         banner: {
           register: { description: 'Sign Up', url: '#registration' },
           upcoming: { description: 'Upcoming' },
@@ -400,6 +475,70 @@ describe('getConfig', () => {
         eventFilter: '',
         type: 'left',
         showEmptyFilters: false,
+        categories: [
+          {
+            group: 'All Topics',
+            id: '',
+            items: [],
+            title: 'All Topics',
+          },
+          {
+            group: 'photo',
+            icon: '',
+            id: 'caas:product-categories/photo',
+            items: [],
+            title: 'Photo',
+          },
+          {
+            group: 'graphic-design',
+            id: 'caas:product-categories/graphic-design',
+            icon: '',
+            items: [],
+            title: 'Graphic Design',
+          },
+          {
+            group: 'video',
+            id: 'caas:product-categories/video',
+            icon: '',
+            items: [],
+            title: 'Video',
+          },
+          {
+            group: 'illustration',
+            id: 'caas:product-categories/illustration',
+            icon: '',
+            items: [],
+            title: 'Illustration',
+          },
+          {
+            group: 'ui-and-ux',
+            id: 'caas:product-categories/ui-and-ux',
+            icon: '',
+            items: [],
+            title: 'UI and UX',
+          },
+          {
+            group: 'acrobat-and-pdf',
+            id: 'caas:product-categories/acrobat-and-pdf',
+            icon: '',
+            items: [],
+            title: 'Acrobat and PDF',
+          },
+          {
+            group: '3d-and-ar',
+            id: 'caas:product-categories/3d-and-ar',
+            icon: '',
+            items: [],
+            title: '3D and AR',
+          },
+          {
+            group: 'social-media',
+            id: 'caas:product-categories/social-media',
+            icon: '',
+            items: [],
+            title: 'Social Media',
+          },
+        ],
         filters: [
           {
             group: 'Sciences de la vie',
@@ -532,6 +671,7 @@ describe('getConfig', () => {
         enabled: true,
         lastViewedSession: '',
       },
+      linkTransformer: {},
     });
   });
 });
@@ -619,9 +759,11 @@ describe('getFloodgateCaasConfig', () => {
         endpoint:
           'https://www.adobe.com/chimera-api/collection/myTargetActivity.json?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=((%22caas%3Aproducts%2Findesign%22%2BAND%2B%22caas%3Aproducts%2Freader%22)%2BAND%2B(%22caas%3Acountry%2Fbr%22%2BOR%2B%22caas%3Acountry%2Fca%22))%2BAND%2B((%22caas%3Acontent-type%2Fvideo%22%2BAND%2B%22caas%3Acontent-type%2Fblog%22))&excludeIds=&currentEntityId=&featuredCards=c94ec235-50c2-595e-9fa8-0b4602c08712%2Ce9d71f5e-e7c9-5d6d-89e9-2ffdad17b8bd&environment=&draft=true&size=10&flatFile=false',
         fallbackEndpoint: '',
+        hideDateInterval: false,
         totalCardsToShow: 10,
         cardStyle: 'half-height',
         ctaAction: '_self',
+        cardHoverEffect: 'default',
         detailsTextOption: 'default',
         showTotalResults: false,
         i18n: {
@@ -635,8 +777,11 @@ describe('getFloodgateCaasConfig', () => {
           titleHeadingLevel: 'h3',
         },
         setCardBorders: false,
+        showCardBadges: false,
+        showFooterDivider: false,
         useOverlayLinks: false,
         additionalRequestParams: {},
+        dynamicCTAForLiveEvents: false,
         banner: {
           register: { description: 'Sign Up', url: '#registration' },
           upcoming: { description: 'Upcoming' },
@@ -656,6 +801,70 @@ describe('getFloodgateCaasConfig', () => {
         eventFilter: '',
         type: 'left',
         showEmptyFilters: false,
+        categories: [
+          {
+            group: 'All Topics',
+            id: '',
+            items: [],
+            title: 'All Topics',
+          },
+          {
+            group: 'photo',
+            icon: '',
+            id: 'caas:product-categories/photo',
+            items: [],
+            title: 'Photo',
+          },
+          {
+            group: 'graphic-design',
+            id: 'caas:product-categories/graphic-design',
+            icon: '',
+            items: [],
+            title: 'Graphic Design',
+          },
+          {
+            group: 'video',
+            id: 'caas:product-categories/video',
+            icon: '',
+            items: [],
+            title: 'Video',
+          },
+          {
+            group: 'illustration',
+            id: 'caas:product-categories/illustration',
+            icon: '',
+            items: [],
+            title: 'Illustration',
+          },
+          {
+            group: 'ui-and-ux',
+            id: 'caas:product-categories/ui-and-ux',
+            icon: '',
+            items: [],
+            title: 'UI and UX',
+          },
+          {
+            group: 'acrobat-and-pdf',
+            id: 'caas:product-categories/acrobat-and-pdf',
+            icon: '',
+            items: [],
+            title: 'Acrobat and PDF',
+          },
+          {
+            group: '3d-and-ar',
+            id: 'caas:product-categories/3d-and-ar',
+            icon: '',
+            items: [],
+            title: '3D and AR',
+          },
+          {
+            group: 'social-media',
+            id: 'caas:product-categories/social-media',
+            icon: '',
+            items: [],
+            title: 'Social Media',
+          },
+        ],
         filters: [
           {
             group: 'Life Sciences',
@@ -788,6 +997,7 @@ describe('getFloodgateCaasConfig', () => {
         enabled: true,
         lastViewedSession: '',
       },
+      linkTransformer: {},
     });
   });
 });

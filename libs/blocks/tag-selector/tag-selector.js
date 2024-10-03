@@ -86,7 +86,7 @@ const TagSelector = ({ consumerUrls = [] }) => {
 
     const fetchCasS = async () => {
       const { tags, errorMsg } = await loadCaasTags(caasTagUrl);
-      if (errorMsg) window.lana.log(`Tag Selector. Error fetching caas tags: ${errorMsg}`);
+      if (errorMsg) window.lana.log(`Tag Selector. Error fetching caas tags: ${errorMsg}`, { tags: 'tag-selector', errorType: 'i' });
 
       setTagSelectorTags((prevConsumerTags) => ({ CaaS: tags, ...prevConsumerTags }));
     };

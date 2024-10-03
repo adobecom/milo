@@ -378,7 +378,7 @@ describe('global footer', () => {
       await createFullGlobalFooter({ waitForDecoration: false });
       await clock.runAllAsync();
       expect(window.lana.log.getCalls().find((c) => c.args[0].includes('Failed to fetch footer content')));
-      expect(window.lana.log.getCalls().find((c) => c.args[1].tags.includes('errorType=warn,module=global-footer')));
+      expect(window.lana.log.getCalls().find((c) => c.args[1].tags.includes('global-footer')));
     });
 
     it('should send log when could not create URL for region picker', async () => {
@@ -393,7 +393,7 @@ describe('global footer', () => {
         // should throw error
       }
       expect(window.lana.log.getCalls().find((c) => c.args[0].includes('Could not create URL for region picker')));
-      expect(window.lana.log.getCalls().find((c) => c.args[1].tags.includes('errorType=error,module=global-footer')));
+      expect(window.lana.log.getCalls().find((c) => c.args[1].tags.includes('global-footer')));
     });
 
     it('should send log when footer cannot be instantiated ', async () => {
@@ -401,7 +401,36 @@ describe('global footer', () => {
       await createFullGlobalFooter({ waitForDecoration: false });
       await clock.runAllAsync();
       expect(window.lana.log.getCalls().find((c) => c.args[0].includes('Footer could not be instantiated')));
-      expect(window.lana.log.getCalls().find((c) => c.args[1].tags.includes('errorType=error,module=global-footer')));
+      expect(window.lana.log.getCalls().find((c) => c.args[1].tags.includes('global-footer')));
+    });
+
+    it('should send LANA log when icons.svg has some network issue', async () => {
+      window.fetch.restore();
+      stub(window, 'fetch').callsFake(async (url) => {
+        if (url.includes('/footer')) {
+          return mockRes({
+            payload: fetchedFooter(
+              { regionPickerHash: '' },
+            ),
+          });
+        }
+        if (url.includes('/placeholders')) return mockRes({ payload: placeholders });
+        if (url.includes('icons.svg')) return mockRes({ payload: null, ok: false, status: 400 });
+        return null;
+      });
+      await createFullGlobalFooter({ waitForDecoration: true });
+      expect(window.lana.log.getCalls().find((c) => c.args[0].includes('Issue with loadIcons')));
+    });
+  });
+
+  describe('dark mode footer', async () => {
+    it('should not contain dark theme class if dark theme is not configured', async () => {
+      await createFullGlobalFooter({ waitForDecoration: true });
+      expect(document.querySelector('footer').classList.contains('feds--dark')).to.be.false;
+    });
+    it('should contain dark theme class if dark theme is configured', async () => {
+      await createFullGlobalFooter({ waitForDecoration: true, customConfig: { theme: 'dark' } });
+      expect(document.querySelector('footer').classList.contains('feds--dark')).to.be.true;
     });
   });
 });

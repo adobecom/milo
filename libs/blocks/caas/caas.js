@@ -54,8 +54,11 @@ const loadCaas = async (a) => {
   }
 
   const { env } = getConfig();
-  const { host, href } = window.location;
+  const { host, href, search } = window.location;
   let chimeraEndpoint = 'www.adobe.com/chimera-api/collection';
+  const queryParams = new URLSearchParams(search);
+  const caasEndpoint = queryParams.get('caasendpoint');
+  const caasContainer = queryParams.get('caascontainer');
 
   if (href.includes('/events/hub')) {
     if (host.includes('dev')) {
@@ -67,14 +70,16 @@ const loadCaas = async (a) => {
     }
   }
 
-  if (host.includes('stage.adobe') || env?.name === 'local' || host.includes('stage--') || host.includes('dev--')) {
+  if (host.includes('dev--')) {
+    chimeraEndpoint = D_CAAS_AIO;
+  } else if (host.includes('stage.adobe') || env?.name === 'local' || caasEndpoint === 'stage') {
     chimeraEndpoint = S_CAAS_AIO;
-  } else if (host.includes('.hlx.')) {
+  } else if (host.includes('.hlx.') || caasEndpoint === 'prod') {
     // If invoking URL is not an Acom URL, then switch to AIO
     chimeraEndpoint = P_CAAS_AIO;
   }
 
-  if (host.includes('hlx.page') || env?.name === 'local') {
+  if (host.includes('hlx.page') || env?.name === 'local' || caasContainer === 'draft') {
     state.draftDb = true;
   }
 

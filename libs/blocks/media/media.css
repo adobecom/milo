@@ -70,6 +70,7 @@
   display: flex;
   gap: var(--spacing-s);
   align-items: flex-start;
+  width: 100%;
 }
 
 .media .text .icon-area {
@@ -254,6 +255,49 @@ div[class*="-up"] .media .foreground > .media-row {
   height: var(--icon-size-xxl);
 }
 
+/* Text Alignment */
+.section[class*="-up"] .media:not(.media-reverse-mobile, .qr-code) {
+  display: flex;
+  align-self: stretch;
+}
+
+.section[class*="-up"] .media:not(.media-reverse-mobile, .qr-code) .foreground {
+  display: flex;
+  align-self: stretch;
+  width: 100%
+}
+
+.section[class*="-up"] .media:not(.media-reverse-mobile, .qr-code) .foreground > div.media-row {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.section[class*="-up"] .media:not(.media-reverse-mobile, .qr-code) .foreground .text {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.section[class*="-up"] .media:not(.media-reverse-mobile, .qr-code) [class*="heading-"],
+.section[class*="-up"] .media:not(.media-reverse-mobile, .qr-code) p:not([class*="detail-"]):not(.subcopy-link),
+.section[class*="-up"] .media:not(.media-reverse-mobile, .qr-code) [class*="body-"] {
+  margin-bottom: 0;
+}
+
+.section[class*="-up"] .media.merch.bio:not(.media-reverse-mobile, .qr-code) [class*="body-"]:first-child:not(.action-area, .icon-stack-area) {
+  margin-top: 0;
+  margin-bottom: revert;
+}
+
+.section[class*="-up"] .media:not(.media-reverse-mobile, .qr-code) .cta-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  width: 100%;
+  height: 100%;
+}
+
 @media screen and (min-width: 600px) {
   .media > .foreground .media-row {
     gap: var(--spacing-m);
@@ -265,6 +309,14 @@ div[class*="-up"] .media .foreground > .media-row {
   .media.large > .foreground .media-row .image {
     width: 50%;
   }
+
+  .media.medium-compact > .foreground .media-row .image {
+    width: 41.667%;
+  }
+
+  .media.medium-compact > .foreground .media-row .text {
+    width: 55%;
+  }
   
   .media[class*="-up"] .foreground > .media-row .image,
   div[class*="-up"] .media .foreground > .media-row .image {
@@ -273,6 +325,10 @@ div[class*="-up"] .media .foreground > .media-row {
 
   .media.small > .foreground .media-row {
     max-width: 800px;
+  }
+
+  .media.medium-compact > .foreground .media-row {
+    max-width: 1200px;
   }
 
   .media.large > .foreground .media-row {
@@ -317,6 +373,10 @@ div[class*="-up"] .media .foreground > .media-row {
   
   .media .icon-stack-area {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .section[class*="-up"] .media:not(.media-reverse-mobile) .foreground > div.media-row {
+    gap: 0;
   }
 }
 
@@ -378,4 +438,101 @@ div[class*="-up"] .media .foreground > .media-row {
   .media.large.bio .avatar img {
     height: 120px;
   }
+}
+
+/* In the delayed modal used for promotions */
+.media.in-modal > .container.foreground {
+  width: 250px;
+}
+
+@media (min-width: 430px) and (orientation: portrait) {
+  .media.in-modal > .container.foreground {
+    width: 320px;
+  }
+}
+
+@media (min-width: 430px) and (orientation: landscape) {
+  .media.in-modal > .container.foreground {
+    width: 540px;
+  }
+}
+
+@media (min-width: 768px) {
+  .media.in-modal:not(.full-bleed-image) > .container.foreground {
+    width: 500px;
+  }
+}
+
+@media (min-width: 829px) {
+  .media.in-modal:not(.full-bleed-image) > .container.foreground {
+    width: 700px;
+  }
+}
+
+@media (min-width: 1366px) {
+  .media.in-modal > .container.foreground {
+    width: 800px;
+  }
+}
+
+.media.in-modal > .container.foreground > .media-row {
+  display: grid;
+  gap: 0;
+}
+
+.media.in-modal.full-bleed-image {
+  padding: 0;
+}
+
+.media.in-modal.full-bleed-image > .container.foreground {
+  width: 100%;
+}
+
+@media (orientation: portrait) {
+  .media.in-modal > .container.foreground > .media-row {
+    grid-template-rows: 1fr auto;
+  }
+
+  .media.in-modal.media-reverse-mobile > .container.foreground > .media-row div:first-child {
+    grid-area: 2 / 1 / 3 / 2;
+  }
+  
+  .media.in-modal.media-reverse-mobile > .container.foreground > .media-row div:nth-child(2) {
+    grid-area: 1 / 1 / 2 / 2;
+  }
+}
+
+@media (orientation: landscape) {
+  .media.in-modal > .container.foreground > .media-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .media.in-modal > .container.foreground > .media-row div:first-child {
+    grid-area: 1 / 1 / 2 / 2;
+  }
+  
+  .media.in-modal > .container.foreground > .media-row div:nth-child(2) {
+    grid-area: 1 / 2 / 2 / 3;
+  }
+}
+
+.media.in-modal > .container.foreground > .media-row > .text {
+  width: auto;
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+  -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+}
+
+.media.in-modal.full-bleed-image > .container.foreground > .media-row > .text {
+  padding: var(--spacing-s);
+}
+
+.media.in-modal.full-bleed-image > .container.foreground > .media-row > .image {
+  height: 100%;
+}
+
+.media.in-modal.full-bleed-image > .container.foreground > .media-row > .image img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
 }

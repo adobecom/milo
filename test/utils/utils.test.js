@@ -1,16 +1,39 @@
-import { readFile } from '@web/test-runner-commands';
+import { readFile, setViewport } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { waitFor, waitForElement } from '../helpers/waitfor.js';
 import { mockFetch } from '../helpers/generalHelpers.js';
-import { createTag } from '../../libs/utils/utils.js';
+import { createTag, customFetch } from '../../libs/utils/utils.js';
 
 const utils = {};
-
 const config = {
   codeRoot: '/libs',
   locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
 };
+const stageDomainsMap = {
+  'www.stage.adobe.com': {
+    'www.adobe.com': 'origin',
+    'business.adobe.com': 'business.stage.adobe.com',
+    'blog.adobe.com': 'blog.stage.adobe.com',
+    'helpx.adobe.com': 'helpx.stage.adobe.com',
+    'news.adobe.com': 'news.stage.adobe.com',
+  },
+  '--bacom--adobecom.hlx.live': {
+    'business.adobe.com': 'origin',
+    'blog.adobe.com': 'main--blog--adobecom.hlx.live',
+    'helpx.adobe.com': 'main--helpx--adobecom.hlx.live',
+    'news.adobe.com': 'main--news--adobecom.hlx.live',
+  },
+  '--blog--adobecom.hlx.page': {
+    'blog.adobe.com': 'origin',
+    'business.adobe.com': 'main--bacom--adobecom.hlx.page',
+    'helpx.adobe.com': 'main--helpx--adobecom.hlx.page',
+    'news.adobe.com': 'main--news--adobecom.hlx.page',
+  },
+  '.business-graybox.adobe.com': { 'business.adobe.com': 'origin' },
+};
+const prodDomains = ['www.adobe.com', 'business.adobe.com', 'blog.adobe.com', 'helpx.adobe.com', 'news.adobe.com'];
+const externalDomains = ['external1.com', 'external2.com'];
 const ogFetch = window.fetch;
 
 describe('Utils', () => {
@@ -29,6 +52,26 @@ describe('Utils', () => {
 
   after(() => {
     delete window.hlx;
+  });
+
+  it('fetches with cache param', async () => {
+    window.fetch = mockFetch({ payload: true });
+    const resp = await customFetch({ resource: './mocks/taxonomy.json', withCacheRules: true });
+    expect(resp.json()).to.be.true;
+  });
+
+  describe('core-functionality', () => {
+    it('preloads blocks for performance reasons', async () => {
+      document.head.innerHTML = head;
+      document.body.innerHTML = await readFile({ path: './mocks/marquee.html' });
+      await utils.loadArea();
+      const scriptPreload = document.head.querySelector('link[href*="/libs/blocks/marquee/marquee.js"]');
+      const marqueeDecoratePreload = document.head.querySelector('link[href*="/libs/utils/decorate.js"]');
+      const stylePreload = document.head.querySelector('link[href*="/libs/blocks/marquee/marquee.css"]');
+      expect(marqueeDecoratePreload).to.exist;
+      expect(scriptPreload).to.exist;
+      expect(stylePreload).to.exist;
+    });
   });
 
   describe('with body', () => {
@@ -68,6 +111,7 @@ describe('Utils', () => {
 
     describe('Configure Auto Block', () => {
       it('Disable auto block when #_dnb in url', async () => {
+        setViewport({ width: 600, height: 1500 });
         await waitForElement('.disable-autoblock');
         const disableAutoBlockLink = document.querySelector('.disable-autoblock');
         utils.decorateLinks(disableAutoBlockLink);
@@ -87,6 +131,47 @@ describe('Utils', () => {
       });
     });
 
+    describe('Custom Link Actions', () => {
+      const originalUserAgent = navigator.userAgent;
+      before(() => {
+        window.navigator.share = sinon.stub().resolves();
+        Object.defineProperty(navigator, 'userAgent', {
+          value: 'android',
+          writable: true,
+        });
+      });
+
+      after(() => {
+        Object.defineProperty(navigator, 'userAgent', {
+          value: originalUserAgent,
+          writable: true,
+        });
+      });
+
+      it('Implements a login action', async () => {
+        await waitForElement('.login-action');
+        const login = document.querySelector('.login-action');
+        utils.decorateLinks(login);
+        expect(login.href).to.equal('https://www.adobe.com/');
+      });
+      it('Implements a copy link action', async () => {
+        await waitForElement('.copy-action');
+        const copy = document.querySelector('.copy-action');
+        utils.decorateLinks(copy);
+        expect(copy.classList.contains('copy-link')).to.be.true;
+      });
+      it('triggers the event listener on clicking the custom links', async () => {
+        const login = document.querySelector('.login-action');
+        const copy = document.querySelector('.copy-action');
+        const clickEvent = new Event('click', { bubbles: true, cancelable: true });
+        const preventDefaultSpy = sinon.spy(clickEvent, 'preventDefault');
+        login.dispatchEvent(clickEvent);
+        copy.dispatchEvent(clickEvent);
+        expect(preventDefaultSpy.calledTwice).to.be.true;
+        expect(window.navigator.share.calledOnce).to.be.true;
+      });
+    });
+
     describe('Fragments', () => {
       it('fully unwraps a fragment', () => {
         const fragments = document.querySelectorAll('.link-block.fragment');
@@ -97,14 +182,14 @@ describe('Utils', () => {
       it('Does not unwrap when sibling content present', () => {
         const fragments = document.querySelectorAll('.link-block.fragment');
         utils.decorateAutoBlock(fragments[1]);
-        expect(fragments[1].parentElement.nodeName).to.equal('P');
+        expect(fragments[1].parentElement.nodeName).to.equal('DIV');
         expect(fragments[1].parentElement.textContent).to.contain('My sibling');
       });
 
       it('Does not unwrap when not in paragraph tag', () => {
         const fragments = document.querySelectorAll('.link-block.fragment');
         utils.decorateAutoBlock(fragments[1]);
-        expect(fragments[1].parentElement.nodeName).to.equal('P');
+        expect(fragments[1].parentElement.nodeName).to.equal('DIV');
         expect(fragments[1].parentElement.textContent).to.contain('My sibling');
       });
     });
@@ -182,7 +267,10 @@ describe('Utils', () => {
     it('Decorates placeholder', () => {
       const paragraphs = [...document.querySelectorAll('p')];
       const lastPara = paragraphs.pop();
-      expect(lastPara.textContent).to.equal('nothing to see here');
+      expect(lastPara.textContent).to.equal(' inkl. MwSt.');
+      const plceholderhref = document.querySelector('.placeholder');
+      const hrefValue = plceholderhref.getAttribute('href');
+      expect(hrefValue).to.equal('tel:phone number substance');
     });
 
     it('Decorates meta helix url', () => {
@@ -233,6 +321,14 @@ describe('Utils', () => {
       expect(newTabLink.target).to.contain('_blank');
       newTabLink.href = newTabLink.href.replace('#_blank', '');
       expect(newTabLink.href).to.equal('https://www.adobe.com/test');
+    });
+
+    it('Add rel=nofollow to a link', () => {
+      const noFollowContainer = document.querySelector('main div');
+      utils.decorateLinks(noFollowContainer);
+      const noFollowLink = noFollowContainer.querySelector('.no-follow');
+      expect(noFollowLink.rel).to.contain('nofollow');
+      expect(noFollowLink.href).to.equal('https://www.adobe.com/test');
     });
 
     it('Sets up milo.deferredPromise', async () => {
@@ -414,6 +510,73 @@ describe('Utils', () => {
       expect(block).to.be.null;
       expect(document.querySelector('.quote.hide-block')).to.be.null;
     });
+
+    it('should convert links on stage when stageDomainsMap provided', async () => {
+      const stageConfig = {
+        ...config,
+        env: { name: 'stage' },
+        stageDomainsMap,
+      };
+
+      Object.entries(stageDomainsMap).forEach(([hostname, domainsMap]) => {
+        const anchors = Object.keys(domainsMap).map((d) => utils.createTag('a', { href: `https://${d}` }));
+        const externalAnchors = externalDomains.map((url) => utils.createTag('a', { href: url }));
+
+        utils.convertStageLinks({
+          anchors: [...anchors, ...externalAnchors],
+          config: stageConfig,
+          hostname,
+        });
+
+        anchors.forEach((a, index) => {
+          const expectedDomain = Object.values(domainsMap)[index];
+          expect(a.href).to.contain(expectedDomain === 'origin' ? hostname : expectedDomain);
+        });
+
+        externalAnchors.forEach((a) => expect(a.href).to.equal(a.href));
+      });
+    });
+
+    it('should not convert links on stage when no stageDomainsMap provided', async () => {
+      const stageConfig = {
+        ...config,
+        env: { name: 'stage' },
+      };
+
+      Object.entries(stageDomainsMap).forEach(([hostname, domainsMap]) => {
+        const anchors = Object.keys(domainsMap).map((d) => utils.createTag('a', { href: `https://${d}` }));
+        const externalAnchors = externalDomains.map((url) => utils.createTag('a', { href: url }));
+
+        utils.convertStageLinks({
+          anchors: [...anchors, ...externalAnchors],
+          config: stageConfig,
+          hostname,
+        });
+
+        [...anchors, ...externalAnchors].forEach((a) => expect(a.href).to.equal(a.href));
+      });
+    });
+
+    it('should not convert links on prod', async () => {
+      const prodConfig = {
+        ...config,
+        env: { name: 'prod' },
+        stageDomainsMap,
+      };
+
+      prodDomains.forEach((hostname) => {
+        const anchors = prodDomains.map((d) => utils.createTag('a', { href: `https://${d}` }));
+        const externalAnchors = externalDomains.map((url) => utils.createTag('a', { href: url }));
+
+        utils.convertStageLinks({
+          anchors: [...anchors, ...externalAnchors],
+          config: prodConfig,
+          hostname,
+        });
+
+        [...anchors, ...externalAnchors].forEach((a) => expect(a.href).to.equal(a.href));
+      });
+    });
   });
 
   describe('title-append', async () => {
@@ -527,7 +690,6 @@ describe('Utils', () => {
     const analytics = '<meta property="article:tag" content="Analytics">';
     const commerce = '<meta property="article:tag" content="Commerce">';
     const summit = '<meta property="article:tag" content="Summit">';
-    const promoConfig = { locale: { contentRoot: '/test/utils/mocks' } };
     let oldHead;
     let promoBody;
     let taxonomyData;
@@ -553,21 +715,21 @@ describe('Utils', () => {
 
     it('loads from metadata', async () => {
       document.head.innerHTML = favicon + ccxVideo;
-      await utils.decorateFooterPromo(promoConfig);
+      await utils.decorateFooterPromo();
       const a = document.querySelector('main > div:last-of-type a');
       expect(a.href).includes('/fragments/footer-promos/ccx-video-links');
     });
 
     it('loads from taxonomy in order on sheet', async () => {
       document.head.innerHTML = ccxVideo + typeTaxonomy + analytics + commerce + summit;
-      await utils.decorateFooterPromo(promoConfig);
+      await utils.decorateFooterPromo();
       const a = document.querySelector('main > div:last-of-type a');
       expect(a.href).includes('/fragments/footer-promos/commerce');
     });
 
     it('loads backup from tag when taxonomy has no promo', async () => {
       document.head.innerHTML = ccxVideo + typeTaxonomy + summit;
-      await utils.decorateFooterPromo(promoConfig);
+      await utils.decorateFooterPromo();
       const a = document.querySelector('main > div:last-of-type a');
       expect(a.href).includes('/fragments/footer-promos/ccx-video-links');
     });
@@ -605,10 +767,33 @@ describe('Utils', () => {
       document.head.innerHTML = await readFile({ path: './mocks/head-personalization.html' });
       await utils.loadArea();
       const resultConfig = utils.getConfig();
-      const resultExperiment = resultConfig.experiments[0];
+      const resultExperiment = resultConfig.mep.experiments[0];
       expect(resultConfig.mep.preview).to.be.true;
-      expect(resultConfig.experiments.length).to.equal(3);
-      expect(resultExperiment.manifest).to.equal('/products/special-offers-manifest.json');
+      expect(resultConfig.mep.experiments.length).to.equal(3);
+      expect(resultExperiment.manifest).to.equal('https://main--milo--adobecom.hlx.page/products/special-offers-manifest.json');
+    });
+  });
+
+  describe('filterDuplicatedLinkBlocks', () => {
+    it('returns empty array if receives invalid params', () => {
+      expect(utils.filterDuplicatedLinkBlocks()).to.deep.equal([]);
+    });
+
+    it('removes duplicated link-blocks', () => {
+      const block1 = document.createElement('div');
+      block1.classList.add('modal');
+      block1.setAttribute('data-modal-hash', 'modalHash1');
+      block1.setAttribute('data-modal-path', 'modalPath1');
+      const block2 = document.createElement('div');
+      block2.classList.add('modal');
+      block2.setAttribute('data-modal-hash', 'modalHash2');
+      block2.setAttribute('data-modal-path', 'modalPath2');
+      const block3 = document.createElement('div');
+      block3.classList.add('modal');
+      block3.setAttribute('data-modal-hash', 'modalHash2');
+      block3.setAttribute('data-modal-path', 'modalPath2');
+      const blocks = [block1, block2, block3];
+      expect(utils.filterDuplicatedLinkBlocks(blocks)).to.deep.equal([block1, block2]);
     });
   });
 });

@@ -14,6 +14,7 @@ const { default: init } = await import('../../../libs/blocks/marquee/marquee.js'
 const { default: videoBLock } = await import('../../../libs/blocks/video/video.js');
 const video = await readFile({ path: './mocks/video.html' });
 const multipleIcons = await readFile({ path: './mocks/multiple-icons.html' });
+
 describe('marquee', () => {
   const marquees = document.querySelectorAll('.marquee');
   marquees.forEach((marquee) => {
@@ -98,13 +99,13 @@ describe('marquee', () => {
     it('using img', () => {
       const marquee = document.getElementById('using-images');
       init(marquee);
-      expect(marquee.querySelector('.icon-area-multiple')).to.exist;
+      expect(marquee.querySelector('[icon-count]')).to.exist;
     });
 
     it('using svg', () => {
       const marquee = document.getElementById('using-svgs');
       init(marquee);
-      expect(marquee.querySelector('.icon-area-multiple')).to.exist;
+      expect(marquee.querySelector('[icon-count]')).to.exist;
     });
   });
 

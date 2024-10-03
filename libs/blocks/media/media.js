@@ -1,11 +1,19 @@
 /* media - consonant v6 */
 
-import { decorateBlockBg, decorateBlockText, getBlockSize, decorateTextOverrides, applyHoverPlay } from '../../utils/decorate.js';
+import {
+  decorateBlockBg,
+  decorateBlockText,
+  getBlockSize,
+  decorateTextOverrides,
+  applyHoverPlay,
+  loadCDT,
+} from '../../utils/decorate.js';
 import { createTag, loadStyle, getConfig } from '../../utils/utils.js';
 
 const blockTypeSizes = {
   small: ['xs', 's', 'm'],
   medium: ['m', 's', 'm'],
+  'medium-compact': ['xl', 'm', 'l'],
   large: ['xl', 'm', 'l'],
   xlarge: ['xxl', 'm', 'l'],
 };
@@ -32,7 +40,7 @@ function decorateQr(el) {
   qrImage.classList.add('qr-code-img');
 }
 
-export default function init(el) {
+export default async function init(el) {
   if (el.className.includes('rounded-corners')) {
     const { miloLibs, codeRoot } = getConfig();
     const base = miloLibs || codeRoot;
@@ -87,6 +95,15 @@ export default function init(el) {
         link.className = 'body-xxs';
       });
     }
+    const lastActionArea = el.querySelector('.action-area:last-of-type');
+    if (lastActionArea) {
+      const div = createTag('div', { class: 'cta-container' });
+      lastActionArea.insertAdjacentElement('afterend', div);
+      if (lastActionArea.previousElementSibling.className.includes('icon-stack-area')) {
+        div.append(lastActionArea.previousElementSibling);
+      }
+      div.append(lastActionArea);
+    }
     container.append(row);
   });
 
@@ -95,4 +112,8 @@ export default function init(el) {
   const mediaRowReversed = el.querySelector(':scope > .foreground > .media-row > div').classList.contains('text');
   if (mediaRowReversed) el.classList.add('media-reverse-mobile');
   decorateTextOverrides(el);
+
+  if (el.classList.contains('countdown-timer')) {
+    await loadCDT(container, el.classList);
+  }
 }

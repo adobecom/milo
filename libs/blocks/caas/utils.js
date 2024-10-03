@@ -551,7 +551,9 @@ export const getConfig = async (originalState, strs = {}) => {
   && state.targetActivity ? `/${encodeURIComponent(state.targetActivity)}.json` : '';
   const flatFile = targetActivity ? '&flatFile=false' : '';
   const localesQueryParam = locales ? `&locales=${locales}` : '';
-  const debug = '&debug=true';
+  const debug = (state.showIds && document.location.pathname.includes('/tools/caas'))
+    || state.container === 'categories'
+    ? '&debug=true' : '';
   const collectionTags = state.includeTags ? state.includeTags.join(',') : '';
   const excludeContentWithTags = state.excludeTags ? state.excludeTags.join(',') : '';
 
@@ -580,6 +582,7 @@ export const getConfig = async (originalState, strs = {}) => {
       }&size=${state.collectionSize || state.totalCardsToShow}${localesQueryParam}${debug}${flatFile}`,
       fallbackEndpoint: state.fallbackEndpoint,
       totalCardsToShow: state.totalCardsToShow,
+      showCardBadges: state.showCardBadges,
       cardStyle: state.cardStyle,
       showTotalResults: state.showTotalResults,
       i18n: {
@@ -595,6 +598,8 @@ export const getConfig = async (originalState, strs = {}) => {
         lastModified: strs.lastModified || 'Last modified {date}',
       },
       detailsTextOption: state.detailsTextOption,
+      hideDateInterval: state.hideDateInterval,
+      dynamicCTAForLiveEvents: state.dynamicCTAForLiveEvents,
       setCardBorders: state.setCardBorders,
       showFooterDivider: state.showFooterDivider,
       useOverlayLinks: state.useOverlayLinks,
@@ -733,8 +738,10 @@ export const getConfig = async (originalState, strs = {}) => {
       lastViewedSession: state.lastViewedSession || '',
     },
     customCard: ['card', `return \`${state.customCard}\``],
+    linkTransformer: pageConfig.caasLinkTransformer || {},
     headers: caasRequestHeaders,
   };
+
   return config;
 };
 
@@ -760,6 +767,7 @@ export const initCaas = async (state, caasStrs, el) => {
 
 export const defaultState = {
   additionalRequestParams: [],
+  dynamicCTAForLiveEvents: false,
   analyticsCollectionName: '',
   analyticsTrackImpression: false,
   andLogicTags: [],
@@ -798,6 +806,7 @@ export const defaultState = {
   headers: [],
   hideCtaIds: [],
   hideCtaTags: [],
+  hideDateInterval: false,
   includeTags: [],
   language: 'caas:language/en',
   layoutType: '4up',
@@ -816,6 +825,7 @@ export const defaultState = {
   secondaryTags: [],
   secondarySource: [],
   setCardBorders: false,
+  showCardBadges: false,
   showFooterDivider: false,
   showBookmarksFilter: false,
   showBookmarksOnCards: false,

@@ -61,3 +61,11 @@ export function createIntersectionObserver({ el, callback /* , once = true, opti
   // fire immediately
   callback(el, { target: el });
 }
+
+export const localizeLink = (href) => href;
+
+export const loadLink = stub().returns(new Promise((resolve) => {
+  resolve();
+}));
+
+export const customFetch = stub();

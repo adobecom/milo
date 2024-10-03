@@ -1,7 +1,8 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 
-const { getContainers, getSearchTags, isMatching, getHtml } = await import('../../../libs/blocks/library-config/lists/blocks.js');
+const { getContainers, getSearchTags, getHtml } = await import('../../../libs/blocks/library-config/lists/blocks.js');
+const { isMatching } = await import('../../../libs/blocks/library-config/library-utils.js');
 const BLOCK_PAGE_URL = 'https://main--milo--adobecom.hlx.page/path/to/block/page';
 
 function verifyContainer(container, elementsLength, hasLibraryMetadata) {
@@ -35,8 +36,8 @@ describe('Library Config: text', () => {
     const searchTags = getSearchTags(containers[0]);
     expect(searchTags).to.equal('tb-2up-gr10 tb-3up-gr12 text');
     // verify isMatching()
-    expect(isMatching(containers[0], 'tb-2up-gr10')).to.be.true;
-    expect(isMatching(containers[0], 'non-existing')).to.be.false;
+    expect(isMatching(containers[0], 'tb-2up-gr10', 'blocks')).to.be.true;
+    expect(isMatching(containers[0], 'non-existing', 'blocks')).to.be.false;
   });
 });
 
@@ -62,8 +63,8 @@ describe('Library Config: chart', () => {
     const searchTags = getSearchTags(containers[0]);
     expect(searchTags).to.equal('chart-0 chart (area, green, border)');
     // verify isMatching()
-    expect(isMatching(containers[0], 'chart-0')).to.be.true;
-    expect(isMatching(containers[0], 'non-existing')).to.be.false;
+    expect(isMatching(containers[0], 'chart-0', 'blocks')).to.be.true;
+    expect(isMatching(containers[0], 'non-existing', 'blocks')).to.be.false;
   });
 });
 
@@ -89,8 +90,8 @@ describe('Library Config: marquee', () => {
     const searchTags = getSearchTags(containers[0]);
     expect(searchTags).to.equal('mq-std-md-lt mq-std-md-rt mq-std-md-lt-vid marquee-dark marquee');
     // verify isMatching()
-    expect(isMatching(containers[0], 'mq-std-md-lt')).to.be.true;
-    expect(isMatching(containers[0], 'non-existing')).to.be.false;
+    expect(isMatching(containers[0], 'mq-std-md-lt', 'blocks')).to.be.true;
+    expect(isMatching(containers[0], 'non-existing', 'blocks')).to.be.false;
   });
 });
 
@@ -168,10 +169,10 @@ describe('Library Config: containers', () => {
   it('isMatching', async () => {
     document.body.innerHTML = mixedHtml;
     const containers = getContainers(document);
-    expect(isMatching(containers[0], 'tag1')).to.be.false;
-    expect(isMatching(containers[1], 'tag1')).to.be.true;
-    expect(isMatching(containers[2], 'tag2')).to.be.true;
-    expect(isMatching(containers[3], 'tag3')).to.be.true;
-    expect(isMatching(containers[4], 'tag4')).to.be.true;
+    expect(isMatching(containers[0], 'tag1', 'blocks')).to.be.false;
+    expect(isMatching(containers[1], 'tag1', 'blocks')).to.be.true;
+    expect(isMatching(containers[2], 'tag2', 'blocks')).to.be.true;
+    expect(isMatching(containers[3], 'tag3', 'blocks')).to.be.true;
+    expect(isMatching(containers[4], 'tag4', 'blocks')).to.be.true;
   });
 });

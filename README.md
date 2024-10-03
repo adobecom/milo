@@ -59,6 +59,7 @@ https://feat-branch--project--owner.hlx.page/?milolibs=local (feature code, stag
 ```
 
 ## Testing
+### Unit Testing
 ```sh
 npm run test
 ```
@@ -68,3 +69,46 @@ npm run test:watch
 ```
 ### Coverage
 `npm run test:watch` can give misleading coverage reports. Use `npm run test` for accurate coverage reporting.
+
+### Nala E2E UI Testing
+-----
+
+#### 1. Running Nala Tests
+Nala tests are run using the `npm run nala <env> [options]` command:
+
+```sh
+npm run nala <env> [options]
+```
+```sh
+# env: [local | libs | branch | stage | etc ] default: local
+
+# options:
+  - browser=<chrome|firefox|webkit>    # Browser to use (default: chrome)
+  - device=<desktop|mobile>            # Device (default: desktop)
+  - test=<.test.js>                    # Specific test file to run (runs all tests in the file)
+  - -g, --g=<@tag>                     # Tag to filter tests by annotations ex: @test1 @accordion @marquee
+  - mode=<headless|ui|debug|headed>    # Mode (default: headless)
+  - config=<config-file>               # Configuration file (default: Playwright default)
+  - project=<project-name>             # Project configuration (default: milo-live-chromium)
+  - milolibs=<local|prod|feature|any|> # Milolibs?=<env> 
+
+```
+#### 2. Nala Help Command:
+To view examples of how to use Nala commands with various options, you can run
+```sh
+npm run nala help
+```
+
+#### ⚠️ Important Note
+- **Debug and UI Mode Caution**: When using `debug` or `ui` mode, it is recommended to run only a single test using annotations (e.g., `@test1`). Running multiple tests in these modes (e.g., `npm run nala local mode=debug` or `mode=ui`) will launch a separate browser or debugger window for each test, which can quickly become resource-intensive and challenging to manage.
+
+- **Tip**: To effectively watch or debug, focus on one test at a time to avoid opening excessive browser instances or debugger windows.
+
+#### 3. Nala Documentation
+For detailed guides and documentation on Nala, please visit the [Nala GitHub Wiki](https://github.com/adobecom/milo/wiki/Nala#nala-introduction).
+
+
+  
+
+
+
