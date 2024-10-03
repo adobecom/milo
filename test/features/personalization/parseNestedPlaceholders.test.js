@@ -1,5 +1,5 @@
 import { expect } from '@esm-bundle/chai';
-import { parseNestedPlaceholders, createContent, replacePlaceholders } from '../../../libs/features/personalization/personalization.js';
+import { parseNestedPlaceholders, createContent, replacePlaceholders, parsePlaceholders } from '../../../libs/features/personalization/personalization.js';
 import { getConfig } from '../../../libs/utils/utils.js';
 
 const config = getConfig();
@@ -10,6 +10,7 @@ config.placeholders = {
   'promo-description': 'For just {{promo-price}}, get 20+...',
   'promo-price': 'US$49.99',
 };
+config.locale = { region: 'US', ietf: 'en-US' };
 describe('test different values for parseNestedPlaceholders', () => {
   it('should update placeholders', () => {
     parseNestedPlaceholders(config);
@@ -51,5 +52,21 @@ describe('replacePlaceholders()', () => {
     const str = 'For just {{promo-price}}, get 20+...';
     const newStr = replacePlaceholders(str, null);
     expect(newStr).to.equal(str);
+  });
+});
+
+describe('parsePlaceholders()', () => {
+  it('should parse placeholders', () => {
+    const response = parsePlaceholders([
+      {
+        'en-US': 'bar',
+        key: 'foo',
+      },
+    ], config);
+    expect(response.placeholders.foo).to.equal('bar');
+  });
+  it('should not break when there are no placeholders available', () => {
+    const response = parsePlaceholders(null, config);
+    expect(response.placeholders).to.exist;
   });
 });
