@@ -603,6 +603,10 @@ export const getConfig = async (originalState, strs = {}) => {
       setCardBorders: state.setCardBorders,
       showFooterDivider: state.showFooterDivider,
       useOverlayLinks: state.useOverlayLinks,
+      partialLoadWithBackgroundFetch: {
+        enabled: state.partialLoadEnabled,
+        partialLoadCount: state.partialLoadCount,
+      },
       collectionButtonStyle: state.collectionBtnStyle,
       banner: {
         register: {
@@ -819,6 +823,8 @@ export const defaultState = {
   paginationQuantityShown: false,
   paginationType: 'paginator',
   paginationUseTheme3: false,
+  partialLoadEnabled: false,
+  partialLoadCount: 100,
   placeholderUrl: '',
   resultsPerPage: 5,
   searchFields: [],
