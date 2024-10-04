@@ -91,13 +91,14 @@ export function Checkout({ providers, settings }, dataProviders) {
     }
 
     /** @type {Commerce.Checkout.buildCheckoutAction} */
-    async function buildCheckoutAction(offers, options) {
+    async function buildCheckoutAction(offers, options, el) {
         // eslint-disable-next-line react-hooks/rules-of-hooks
         const instance = useService();
         const checkoutAction = await dataProviders.getCheckoutAction?.(
             offers,
             options,
             instance.imsSignedInPromise,
+            el
         );
         if (checkoutAction) {
             return checkoutAction;
