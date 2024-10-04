@@ -89,8 +89,8 @@ export default async function loadIcons(icons) {
           svgClone.classList.add('icon-milo', `icon-milo-${iconName}`);
           federalIcons[iconName] = svgClone;
         })
+        /* c8 ignore next 3 */
         .catch((error) => {
-          /* c8 ignore next */
           window.lana?.log(`Error fetching SVG for ${iconName}:`, error);
         }));
     }
