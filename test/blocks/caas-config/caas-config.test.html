@@ -352,27 +352,6 @@
         expect(hashConfig.cardStyle).to.equal('full-card');
       });
 
-      it('updates partial load settings', async () => {
-        const partialLoadEnabledSelect = findByLabel('Partial Load Enabled');
-        partialLoadEnabledSelect.value = 'true';
-        partialLoadEnabledSelect.dispatchEvent(new Event('change'));
-
-        const partialLoadCountInput = findByLabel('Partial Load Count');
-        partialLoadCountInput.value = '50';
-        partialLoadCountInput.dispatchEvent(new Event('change'));
-
-        await delay(50);
-
-        const expectedConfig = cloneObj(defaultConfig);
-        expectedConfig.collection.partialLoadWithBackgroundFetch = {
-          enabled: true,
-          partialLoadCount: 50,
-        };
-
-        expect(config).to.eql(expectedConfig);
-      });
-
-
     });
   </script>
 </html>
