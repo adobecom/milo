@@ -151,3 +151,9 @@
     max-width: 720px;
   }
 }
+
+@media only screen and (max-device-width: 956px) and (orientation: landscape) {
+  .dialog-modal.locale-modal-v2 {
+      overflow: auto;
+  }
+}
