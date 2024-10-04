@@ -90,6 +90,7 @@ export default async function loadIcons(icons) {
           federalIcons[iconName] = svgClone;
         })
         .catch((error) => {
+          /* c8 ignore next */
           window.lana?.log(`Error fetching SVG for ${iconName}:`, error);
         }));
     }
