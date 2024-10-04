@@ -130,6 +130,13 @@ function jumpToDirection(activeSlideIndex, jumpToIndex, slideContainer) {
   }
 }
 
+function checkSlideForVideo(activeSlide) {
+  const video = activeSlide.querySelector('video');
+  if (video && video.played.length > 0) {
+    video.pause();
+  }
+}
+
 function moveSlides(event, carouselElements, jumpToIndex) {
   const {
     slideContainer,
@@ -144,6 +151,8 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   let activeSlide = slideContainer.querySelector('.active');
   let activeSlideIndicator = controlsContainer.querySelector('.active');
   const activeSlideIndex = activeSlideIndicator.dataset.index;
+
+  checkSlideForVideo(activeSlide);
 
   // Track reference slide - last slide initially
   if (!referenceSlide) {
