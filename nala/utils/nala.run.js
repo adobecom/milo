@@ -13,15 +13,15 @@ function displayHelp() {
 
 \x1b[1m2] Options:\x1b[0m
 
-  \x1b[33m* browser=<chrome|firefox|webkit>\x1b[0m    Browser to use (default: chrome)
-  \x1b[33m* device=<desktop|mobile>\x1b[0m            Device (default: desktop)
-  \x1b[33m* test=<.test.js>\x1b[0m                    Test file to run (default: all tests)
-  \x1b[33m* tag=<@tag>\x1b[0m                         Tags to filter tests by annotations ex: @test1 @accordion @marquee
-  \x1b[33m* -g, --g=<@tag>\x1b[0m                     Tags to filter tests by annotations ex: @test1 @accordion @marquee
+  \x1b[33m* browser=<chrome|firefox|webkit>\x1b[0m    Browser to run the test in
+  \x1b[33m* device=<desktop|mobile>\x1b[0m            Device type to run the test on
+  \x1b[33m* test=<.test.js>\x1b[0m                    Specific test file to run (runs all tests in the file)
+  \x1b[33m* -g, --g=<@tag>\x1b[0m                     Annotation Tag to filter and run tests by annotation (e.g., @test1, @accordion, @marquee)
   \x1b[33m* mode=<headless|ui|debug|headed>\x1b[0m    Mode (default: headless)
-  \x1b[33m* config=<config-file>\x1b[0m               Configuration file (default: Playwright default)
+  \x1b[33m* config=<config-file>\x1b[0m               Custom configuration file to use (default: Playwright's default)
   \x1b[33m* project=<project-name>\x1b[0m             Project configuration (default: milo-live-chromium)
   \x1b[33m* milolibs=<local|prod|code|feature>\x1b[0m Milo library environment (default: none)
+  \x1b[33m* owner=<repo-owner>\x1b[0m                 repo owner (default owner = adobecom) 
 
 \x1b[1mExamples:\x1b[0m
   | \x1b[36mCommand\x1b[0m                                                | \x1b[36mDescription\x1b[0m                                                                        |
@@ -31,7 +31,9 @@ function displayHelp() {
   | npm run nala local @accordion                          | Runs only accordion annotated/tagged tests on local environment on chrome browser  |
   | npm run nala local @accordion browser=firefox          | Runs only accordion annotated/tagged tests on local environment on firefox browser |
   | npm run nala local mode=ui                             | Runs all nala tests on local environment in UI mode on chrome browser              |
-  | npm run nala local tags=@tag1,@tag2                    | Runs tests annotated with @tag1 and @tag2 on local environment on chrome browser   |         
+  | npm run nala local -g=@accordion                       | Runs tests annotated with tag i.e @accordion on local env on chrome browser        |
+  | npm run nala local -g=@accordion browser=firefox       | Runs tests annotated with tag i.e @accordion on local env on Firefox browser       |
+  | npm run nala <featurebranch> owner='<owner>'           | Runs all nala tests on the specified feature branch for the given repo owner       |        
 
 \x1b[1mDebugging:\x1b[0m
 -----------
@@ -53,6 +55,7 @@ function parseArgs(args) {
     config: '',
     project: '',
     milolibs: '',
+    owner: 'adobecom',
   };
 
   const parsedParams = { ...defaultParams };
@@ -72,6 +75,9 @@ function parseArgs(args) {
       parsedParams.config = arg;
     } else if (['ui', 'debug', 'headless', 'headed'].includes(arg)) {
       parsedParams.mode = arg;
+    } else if (arg.startsWith('owner=')) {
+      const owner = arg.split('=')[1];
+      parsedParams.owner = owner || 'adobecom';
     } else {
       parsedParams.env = arg;
     }
@@ -85,7 +91,7 @@ function parseArgs(args) {
   return parsedParams;
 }
 
-function getLocalTestLiveUrl(env, milolibs) {
+function getLocalTestLiveUrl(env, milolibs, owner = 'adobecom') {
   if (milolibs) {
     process.env.MILO_LIBS = `?milolibs=${milolibs}`;
     if (env === 'local') {
@@ -93,14 +99,14 @@ function getLocalTestLiveUrl(env, milolibs) {
     } if (env === 'libs') {
       return 'http://127.0.0.1:6456';
     }
-    return `https://${env}--milo--adobecom.hlx.live`;
+    return `https://${env}--milo--${owner}.hlx.live`;
   }
   if (env === 'local') {
     return 'http://127.0.0.1:3000';
   } if (env === 'libs') {
     return 'http://127.0.0.1:6456';
   }
-  return `https://${env}--milo--adobecom.hlx.live`;
+  return `https://${env}--milo--${owner}.hlx.live`;
 }
 
 function buildPlaywrightCommand(parsedParams, localTestLiveUrl) {
@@ -152,7 +158,7 @@ function runNalaTest() {
   }
 
   const parsedParams = parseArgs(args);
-  const localTestLiveUrl = getLocalTestLiveUrl(parsedParams.env, parsedParams.milolibs);
+  const localTestLiveUrl = getLocalTestLiveUrl(parsedParams.env, parsedParams.milolibs, parsedParams.owner);
   const { finalCommand, envVariables } = buildPlaywrightCommand(parsedParams, localTestLiveUrl);
 
   console.log(`\n Executing nala run command: ${finalCommand}`);

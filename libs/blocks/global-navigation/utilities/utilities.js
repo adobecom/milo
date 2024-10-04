@@ -133,7 +133,7 @@ export function getAnalyticsValue(str, index) {
 
 export function getExperienceName() {
   const experiencePath = getMetadata('gnav-source');
-  const explicitExperience = experiencePath?.split('/').pop();
+  const explicitExperience = experiencePath?.split('#')[0]?.split('/').pop();
   if (explicitExperience?.length
     && explicitExperience !== 'gnav') return explicitExperience;
 
@@ -257,6 +257,15 @@ export function setActiveDropdown(elem) {
   });
 }
 
+// Disable AED(Active Element Detection)
+export const [setDisableAEDState, getDisableAEDState] = (() => {
+  let disableAED = false;
+  return [
+    () => { disableAED = true; },
+    () => disableAED,
+  ];
+})();
+
 export const [hasActiveLink, setActiveLink, getActiveLink] = (() => {
   let activeLinkFound;
 
@@ -264,7 +273,8 @@ export const [hasActiveLink, setActiveLink, getActiveLink] = (() => {
     () => activeLinkFound,
     (val) => { activeLinkFound = !!val; },
     (area) => {
-      if (hasActiveLink() || !(area instanceof HTMLElement)) return null;
+      const disableAED = getDisableAEDState();
+      if (disableAED || hasActiveLink() || !(area instanceof HTMLElement)) return null;
       const { origin, pathname } = window.location;
       const url = `${origin}${pathname}`;
       const activeLink = [
@@ -311,7 +321,7 @@ export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true
   const mepGnav = getConfig()?.mep?.inBlock?.['global-navigation'];
   const mepFragment = mepGnav?.fragments?.[path];
   if (mepFragment && mepFragment.action === 'replace') {
-    path = mepFragment.target;
+    path = mepFragment.content;
   }
   const res = await fetch(path.replace(/(\.html$|$)/, '.plain.html'));
   if (res.status !== 200) {
@@ -320,6 +330,7 @@ export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true
       e: `${res.statusText} url: ${res.url}`,
       tags: 'errorType=info,module=utilities',
     });
+    return null;
   }
   const text = await res.text();
   const { body } = new DOMParser().parseFromString(text, 'text/html');
@@ -327,8 +338,9 @@ export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true
   if (mepFragment?.targetManifestId) body.dataset.adobeTargetTestid = mepFragment.targetManifestId;
   const commands = mepGnav?.commands;
   if (commands?.length) {
+    /* c8 ignore next 4 */
     const { handleCommands, deleteMarkedEls } = await import('../../../features/personalization/personalization.js');
-    handleCommands(commands, body, true);
+    handleCommands(commands, body, true, true);
     deleteMarkedEls(body);
   }
   const inlineFrags = [...body.querySelectorAll('a[href*="#_inline"]')];

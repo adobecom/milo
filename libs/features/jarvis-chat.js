@@ -204,7 +204,7 @@ const openChat = (event) => {
 };
 
 const startInitialization = async (config, event, onDemand) => {
-  const asset = 'https://client.messaging.adobe.com/latest/AdobeMessagingClient';
+  const asset = `https://${config.env.name !== 'prod' ? 'stage-' : ''}client.messaging.adobe.com/latest/AdobeMessagingClient`;
   await Promise.all([
     loadStyle(`${asset}.css`),
     loadScript(`${asset}.js`),

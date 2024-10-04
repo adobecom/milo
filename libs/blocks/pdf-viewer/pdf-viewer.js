@@ -31,6 +31,7 @@ const init = async (a) => {
   const id = `${PDF_RENDER_DIV_ID}_${Math.random().toString().slice(2)}`;
   const pdfViewerDiv = createTag('div', { class: 'pdf-container', id });
 
+  pdfViewerDiv.dataset.pdfSrc = url;
   a?.insertAdjacentElement('afterend', pdfViewerDiv);
   a?.remove();
 

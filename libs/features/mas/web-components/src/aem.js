@@ -1,18 +1,27 @@
+import { getFragmentById, getFragment } from './getFragmentById.js';
 import { wait } from './utils.js';
 
 const NETWORK_ERROR_MESSAGE = 'Network error';
 
+const defaultSearchOptions = {
+    sort: [{ on: 'created', order: 'ASC' }],
+};
+
 class AEM {
     #author;
-    constructor(bucket) {
+    constructor(bucket, baseUrlOverride) {
         this.#author = /^author-/.test(bucket);
-        const baseUrl = `https://${bucket}.adobeaemcloud.com`;
+        const baseUrl =
+            baseUrlOverride || `https://${bucket}.adobeaemcloud.com`;
+        this.baseUrl = baseUrl;
         const sitesUrl = `${baseUrl}/adobe/sites`;
         this.cfFragmentsUrl = `${sitesUrl}/cf/fragments`;
         this.cfSearchUrl = `${this.cfFragmentsUrl}/search`;
         this.cfPublishUrl = `${this.cfFragmentsUrl}/publish`;
         this.wcmcommandUrl = `${baseUrl}/bin/wcmcommand`;
         this.csrfTokenUrl = `${baseUrl}/libs/granite/csrf/token.json`;
+        this.foldersUrl = `${baseUrl}/adobe/folders`;
+        this.foldersClassicUrl = `${baseUrl}/api/assets`;
 
         this.headers = {
             // IMS users might not have all the permissions, token in the sessionStorage is a temporary workaround
@@ -38,49 +47,57 @@ class AEM {
     }
 
     /**
-     * Search for content fragments
+     * Search for content fragments.
      * @param {Object} params - The search options
      * @param {string} [params.path] - The path to search in
      * @param {string} [params.query] - The search query
-     * @param {string} [params.variant] - The variant to filter by
-     * @returns {Promise<Array>} - A promise that resolves to an array of search results
+     * @returns A generator function that fetches all the matching data using a cursor that is returned by the search API
      */
-    async searchFragment({ path, query, variant }) {
-        const filter = {};
-        if (path) {
-            filter.path = path;
-        }
+    async *searchFragment({ path, query = '', sort }) {
+        const filter = {
+            path,
+        };
         if (query) {
             filter.fullText = {
                 text: encodeURIComponent(query),
                 queryMode: 'EXACT_WORDS',
             };
+        } else {
+            filter.onlyDirectChildren = true;
         }
+        const searchQuery = { ...defaultSearchOptions, filter };
+        if (sort) {
+            searchQuery.sort = sort;
+        }
+        const params = {
+            query: JSON.stringify(searchQuery),
+        };
 
-        const searchParams = new URLSearchParams({
-            query: JSON.stringify({ filter }),
-        }).toString();
-        const response = await fetch(`${this.cfSearchUrl}?${searchParams}`, {
-            headers: this.headers,
-        }).catch((err) => {
-            throw new Error(`${NETWORK_ERROR_MESSAGE}: ${err.message}`);
-        });
-        if (!response.ok) {
-            throw new Error(
-                `Search failed: ${response.status} ${response.statusText}`,
-            );
-        }
-        const json = await response.json();
-        let items = json.items;
-        if (variant) {
-            items = items.filter((item) => {
-                const [itemVariant] = item.fields.find(
-                    (field) => field.name === 'variant',
-                )?.values;
-                return itemVariant === variant;
+        let cursor;
+        while (true) {
+            if (cursor) {
+                params.cursor = cursor;
+            }
+            const searchParams = new URLSearchParams(params).toString();
+            const response = await fetch(
+                `${this.cfSearchUrl}?${searchParams}`,
+                {
+                    headers: this.headers,
+                },
+            ).catch((err) => {
+                throw new Error(`${NETWORK_ERROR_MESSAGE}: ${err.message}`);
             });
+            if (!response.ok) {
+                throw new Error(
+                    `Search failed: ${response.status} ${response.statusText}`,
+                );
+            }
+            let items;
+            ({ items, cursor } = await response.json());
+
+            yield items;
+            if (!cursor) break;
         }
-        return items;
     }
 
     /**
@@ -107,30 +124,6 @@ class AEM {
         return items[0];
     }
 
-    async getFragment(res) {
-        const eTag = res.headers.get('Etag');
-        const fragment = await res.json();
-        fragment.etag = eTag;
-        return fragment;
-    }
-
-    /**
-     * Get fragment by ID
-     * @param {string} id fragment id
-     * @returns {Promise<Object>} the raw fragment item
-     */
-    async getFragmentById(id) {
-        const response = await fetch(`${this.cfFragmentsUrl}/${id}`, {
-            headers: this.headers,
-        });
-        if (!response.ok) {
-            throw new Error(
-                `Failed to get fragment: ${response.status} ${response.statusText}`,
-            );
-        }
-        return await this.getFragment(response);
-    }
-
     /**
      * Save given fragment
      * @param {Object} fragment
@@ -154,7 +147,7 @@ class AEM {
                 `Failed to save fragment: ${response.status} ${response.statusText}`,
             );
         }
-        return await this.getFragment(response);
+        return await getFragment(response);
     }
 
     /**
@@ -198,7 +191,7 @@ class AEM {
         await wait(); // give AEM time to process the copy
         let newFragment = await this.getFragmentByPath(newPath);
         if (newFragment) {
-            newFragment = await this.getFragmentById(newFragment.id);
+            newFragment = await this.sites.cf.fragments.getById(newFragment.id);
         }
         return newFragment;
     }
@@ -257,6 +250,69 @@ class AEM {
         return response; //204 No Content
     }
 
+    /**
+     * @param {*} path
+     */
+    async listFolders(path) {
+        const query = new URLSearchParams({
+            path,
+        }).toString();
+
+        const response = await fetch(`${this.foldersUrl}/?${query}`, {
+            method: 'GET',
+            headers: {
+                ...this.headers,
+                'X-Adobe-Accept-Experimental': '1',
+            },
+        }).catch((err) => {
+            throw new Error(`${NETWORK_ERROR_MESSAGE}: ${err.message}`);
+        });
+        if (!response.ok) {
+            throw new Error(
+                `Failed to list folders: ${response.status} ${response.statusText}`,
+            );
+        }
+        return await response.json();
+    }
+
+    /**
+     * @param {*} path
+     */
+    async listFoldersClassic(path) {
+        const relativePath = path?.replace(/^\/content\/dam/, '');
+
+        const response = await fetch(
+            `${this.foldersClassicUrl}${relativePath}.json?limit=1000`, // TODO: this is a workaround until Folders API is fixed.
+            {
+                method: 'GET',
+                headers: { ...this.headers },
+            },
+        ).catch((err) => {
+            throw new Error(`${NETWORK_ERROR_MESSAGE}: ${err.message}`);
+        });
+
+        if (!response.ok) {
+            throw new Error(
+                `Failed to list folders: ${response.status} ${response.statusText}`,
+            );
+        }
+        const {
+            properties: { name },
+            entities = [],
+        } = await response.json();
+        return {
+            self: { name, path },
+            children: entities
+                .filter(({ class: [firstClass] }) => /folder/.test(firstClass))
+                .map(({ properties: { name, title } }) => ({
+                    name,
+                    title,
+                    folderId: `${path}/${name}`,
+                    path: `${path}/${name}`,
+                })),
+        };
+    }
+
     sites = {
         cf: {
             fragments: {
@@ -269,9 +325,10 @@ class AEM {
                  */
                 getByPath: this.getFragmentByPath.bind(this),
                 /**
-                 * @see AEM#getFragmentById
+                 * @see getFragmentById
                  */
-                getById: this.getFragmentById.bind(this),
+                getById: (id) =>
+                    getFragmentById(this.baseUrl, id, this.headers),
                 /**
                  * @see AEM#saveFragment
                  */
@@ -290,6 +347,12 @@ class AEM {
                 delete: this.deleteFragment.bind(this),
             },
         },
+    };
+    folders = {
+        /**
+         * @see AEM#listFolders
+         */
+        list: this.listFoldersClassic.bind(this),
     };
 }
 

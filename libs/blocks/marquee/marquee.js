@@ -2,7 +2,7 @@
  * Marquee - v6.0
  */
 
-import { decorateButtons, getBlockSize, decorateBlockBg } from '../../utils/decorate.js';
+import { decorateButtons, getBlockSize, decorateBlockBg, loadCDT } from '../../utils/decorate.js';
 import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
 
 // [headingSize, bodySize, detailSize]
@@ -88,7 +88,7 @@ function decorateSplit(el, foreground, media) {
 
   let mediaCreditInner;
   const txtContent = media?.lastChild?.textContent?.trim();
-  if (txtContent?.match(/^http.*\.mp4/)) return;
+  if (txtContent?.match(/^http.*\.mp4/) || media?.lastChild?.tagName === 'VIDEO') return;
   if (txtContent) {
     mediaCreditInner = createTag('p', { class: 'body-s' }, txtContent);
   } else if (media.lastElementChild?.tagName !== 'PICTURE') {
@@ -99,7 +99,7 @@ function decorateSplit(el, foreground, media) {
     const mediaCredit = createTag('div', { class: 'media-credit container' }, mediaCreditInner);
     el.appendChild(mediaCredit);
     el.classList.add('has-credit');
-    media?.lastChild.remove();
+    media?.lastChild?.remove();
   }
 }
 
@@ -133,7 +133,15 @@ export default async function init(el) {
   if (iconArea?.childElementCount > 1) decorateMultipleIconArea(iconArea);
   extendButtonsClass(text);
   if (el.classList.contains('split')) decorateSplit(el, foreground, media);
+
+  const promiseArr = [];
   if (el.classList.contains('mnemonic-list') && foreground) {
-    await loadMnemonicList(foreground);
+    promiseArr.push(loadMnemonicList(foreground));
   }
+
+  if (el.classList.contains('countdown-timer')) {
+    promiseArr.push(loadCDT(text, el.classList));
+  }
+
+  await Promise.all(promiseArr);
 }
