@@ -265,7 +265,7 @@ merch-card [slot="body-xxs"] {
 merch-card [slot="body-xs"] {
     font-size: var(--consonant-merch-card-body-xs-font-size);
     line-height: var(--consonant-merch-card-body-xs-line-height);
-    color: var(--spectrum-gray-800, );
+    color: var(--spectrum-gray-800, #2c2c2c);
 }
 
 merch-card [slot="body-m"] {

@@ -130,7 +130,7 @@ export class MerchCard extends LitElement {
     }
 
     get theme() {
-    return this.closest('sp-theme');
+      return this.closest('sp-theme');
     }
 
     get prices() {

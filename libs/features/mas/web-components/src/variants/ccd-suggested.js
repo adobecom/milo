@@ -18,7 +18,7 @@ export class CCDSuggested extends VariantLayout {
 
     /* c8 ignore next 3 */
     get aemFragmentMapping() {
-        return AEM_FRAGMENT_MAPPING;
+      return AEM_FRAGMENT_MAPPING;
     }
 
   renderLayout () {
