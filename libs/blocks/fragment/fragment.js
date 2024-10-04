@@ -11,7 +11,7 @@ const removeHash = (url) => {
 const isCircularRef = (href) => [...Object.values(fragMap)]
   .some((tree) => {
     const node = tree.find(href);
-    return node ? !(node.isLeaf) : false;
+    return node?.isRecursive;
   });
 
 const updateFragMap = (fragment, a, href) => {
@@ -19,15 +19,24 @@ const updateFragMap = (fragment, a, href) => {
     .filter((link) => localizeLink(link.href).includes('/fragments/'));
   if (!fragLinks.length) return;
 
-  if (document.body.contains(a)) { // is fragment on page (not nested)
+  if (document.body.contains(a) && !a.parentElement?.closest('.fragment')) {
     // eslint-disable-next-line no-use-before-define
     fragMap[href] = new Tree(href);
     fragLinks.forEach((link) => fragMap[href].insert(href, localizeLink(removeHash(link.href))));
   } else {
     Object.values(fragMap).forEach((tree) => {
-      if (tree.find(href)) {
-        fragLinks.forEach((link) => tree.insert(href, localizeLink(removeHash(link.href))));
-      }
+      const hrefNode = tree.find(href);
+      if (!hrefNode) return;
+
+      fragLinks.forEach((link) => {
+        const localizedHref = localizeLink(removeHash(link.href));
+        const parentNodeSameHref = hrefNode.findParent(localizedHref);
+        if (parentNodeSameHref) {
+          parentNodeSameHref.isRecursive = true;
+        } else {
+          hrefNode.addChild(localizedHref);
+        }
+      });
     });
   }
 };
@@ -143,10 +152,19 @@ class Node {
     this.value = value;
     this.parent = parent;
     this.children = [];
+    this.isRecursive = false;
   }
 
-  get isLeaf() {
-    return this.children.length === 0;
+  addChild(key, value = key) {
+    const alreadyHasChild = this.children.some((n) => n.key === key);
+    if (!alreadyHasChild) {
+      this.children.push(new Node(key, value, this));
+    }
+  }
+
+  findParent(key) {
+    if (this.parent?.key === key) return this.parent;
+    return this.parent?.findParent(key);
   }
 }
 
