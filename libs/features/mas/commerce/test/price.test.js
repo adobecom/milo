@@ -4,7 +4,7 @@ import {
 } from '../src/constants.js';
 import { InlinePrice } from '../src/inline-price.js';
 import { definePlaceholder } from '../src/placeholder.js';
-import { initService, resetService } from '../src/service.js';
+import { init, reset } from '../src/mas-commerce-service.js';
 
 import { mockConfig } from './mocks/config.js';
 import { mockFetch } from './mocks/fetch.js';
@@ -26,7 +26,7 @@ function mockInlinePrice(wcsOsi = '', options = {}, append = true) {
 
 afterEach(() => {
     document.body.innerHTML = '';
-    resetService();
+    reset();
     unmockLana();
 });
 
@@ -37,14 +37,14 @@ beforeEach(async () => {
 
 describe('class "InlinePrice"', () => {
     it('renders price', async () => {
-        await initService(mockConfig(), true);
+        await init(mockConfig(), true);
         const inlinePrice = mockInlinePrice('puf');
         await inlinePrice.onceSettled();
         expect(inlinePrice.innerHTML).to.be.html(snapshots.price);
     });
 
     it('renders strikethrough price', async () => {
-        await initService(mockConfig(), true);
+        await init(mockConfig(), true);
         const inlinePrice = mockInlinePrice('puf');
         Object.assign(inlinePrice.dataset, { template: 'strikethrough' });
         await inlinePrice.onceSettled();
@@ -52,7 +52,7 @@ describe('class "InlinePrice"', () => {
     });
 
     it('renders optical price', async () => {
-        await initService(mockConfig(), true);
+        await init(mockConfig(), true);
         const inlinePrice = mockInlinePrice('puf');
         Object.assign(inlinePrice.dataset, {
             template: 'optical',
@@ -64,7 +64,7 @@ describe('class "InlinePrice"', () => {
     });
 
     it('renders annual price', async () => {
-        await initService(mockConfig(), true);
+        await init(mockConfig(), true);
         const inlinePrice = mockInlinePrice('abm');
         Object.assign(inlinePrice.dataset, { template: 'annual' });
         await inlinePrice.onceSettled();
@@ -72,7 +72,7 @@ describe('class "InlinePrice"', () => {
     });
 
     it('renders price with promo with strikethrough', async () => {
-        await initService(mockConfig(), true);
+        await init(mockConfig(), true);
         const inlinePrice = mockInlinePrice('abm-promo');
         inlinePrice.dataset.promotionCode = 'nicopromo';
         await inlinePrice.onceSettled();
@@ -80,7 +80,7 @@ describe('class "InlinePrice"', () => {
     });
 
     it('renders price with promo', async () => {
-        await initService(mockConfig(), true);
+        await init(mockConfig(), true);
         const inlinePrice = mockInlinePrice('abm-promo');
         inlinePrice.dataset.promotionCode = 'nicopromo';
         inlinePrice.dataset.displayOldPrice = 'false';
@@ -89,7 +89,7 @@ describe('class "InlinePrice"', () => {
     });
 
     it('renders price with offer data', async () => {
-        await initService(mockConfig(), true);
+        await init(mockConfig(), true);
         class InlineOffer extends InlinePrice {
             static is = 'inline-offer';
             static tag = 'span';
@@ -134,7 +134,7 @@ describe('class "InlinePrice"', () => {
     });
 
     it('overrides price literals', async () => {
-        const commerce = await initService(mockConfig(), true);
+        const commerce = await init(mockConfig(), true);
         const disposer = commerce.providers.price((element, options) => {
             options.literals = {
                 recurrenceLabel: 'every month',
@@ -150,7 +150,7 @@ describe('class "InlinePrice"', () => {
     });
 
     it('does not render failed price', async () => {
-        await initService(mockConfig(), true);
+        await init(mockConfig(), true);
         const inlinePrice = mockInlinePrice('xyz');
         inlinePrice.innerHTML = 'test';
         await expect(inlinePrice.onceSettled()).to.be.eventually.rejectedWith(
@@ -160,7 +160,7 @@ describe('class "InlinePrice"', () => {
     });
 
     it('does not render missing offer', async () => {
-        await initService(mockConfig(), true);
+        await init(mockConfig(), true);
         const inlinePrice = mockInlinePrice('no-offer');
         await expect(inlinePrice.onceSettled()).to.be.eventually.rejectedWith(
             ERROR_MESSAGE_OFFER_NOT_FOUND,
@@ -169,7 +169,7 @@ describe('class "InlinePrice"', () => {
     });
 
     it('renders perpetual offer', async () => {
-        await initService(mockConfig(), true);
+        await init(mockConfig(), true);
         const inlinePrice = mockInlinePrice('perpetual', { perpetual: true });
         await inlinePrice.onceSettled();
         // expect(inlinePrice.innerHTML).to.be.empty;
@@ -183,7 +183,7 @@ describe('class "InlinePrice"', () => {
     });
 
     it('renders tax exclusive price', async () => {
-        await initService(
+        await init(
             mockConfig({
                 forceTaxExclusive: true,
             }),
@@ -196,7 +196,7 @@ describe('class "InlinePrice"', () => {
     });
 
     it('renders discount percentage', async () => {
-        await initService(mockConfig(), true);
+        await init(mockConfig(), true);
         const inlinePrice = mockInlinePrice('abm-promo');
         inlinePrice.dataset.template = 'discount';
         await inlinePrice.onceSettled();
@@ -204,7 +204,7 @@ describe('class "InlinePrice"', () => {
     });
 
     it('renders no discount markup', async () => {
-        await initService(mockConfig(), true);
+        await init(mockConfig(), true);
         const inlinePrice = mockInlinePrice('abm');
         inlinePrice.dataset.template = 'discount';
         await inlinePrice.onceSettled();
@@ -213,7 +213,7 @@ describe('class "InlinePrice"', () => {
 
     describe('property "isInlinePrice"', () => {
         it('returns true', async () => {
-            await initService(mockConfig(), true);
+            await init(mockConfig(), true);
             const inlinePrice = mockInlinePrice('abm');
             expect(inlinePrice.isInlinePrice).to.be.true;
         });
@@ -221,7 +221,7 @@ describe('class "InlinePrice"', () => {
 
     describe('method "renderOffers"', () => {
         it('fails placeholder if "orders" array is empty', async () => {
-            await initService(mockConfig(), true);
+            await init(mockConfig(), true);
             const inlinePrice = mockInlinePrice('abm');
             inlinePrice.renderOffers([], {}, inlinePrice.togglePending());
             expect(inlinePrice.state).to.equal(InlinePrice.STATE_FAILED);
@@ -230,7 +230,7 @@ describe('class "InlinePrice"', () => {
 
     describe('method "updateOptions"', () => {
         it('updates element data attributes', async () => {
-            await initService(mockConfig(), true);
+            await init(mockConfig(), true);
             const inlinePrice = InlinePrice.createInlinePrice({
                 template: 'price',
                 wcsOsi: 'abm',
@@ -274,7 +274,7 @@ describe('class "InlinePrice"', () => {
 
     describe('static method "getInlinePrices"', () => {
         it('returns list of found links', async () => {
-            await initService(mockConfig(), true);
+            await init(mockConfig(), true);
             const inlinePrice1 = mockInlinePrice('abm');
             const inlinePrice2 = mockInlinePrice('m2m');
             expect(InlinePrice.getInlinePrices()).to.deep.equal([
@@ -644,7 +644,7 @@ describe('class "InlinePrice"', () => {
             SEGMENTS.forEach((segment, index) => {
                 it(`renders price with tax info for "${test.locale}" and "${segment}"`, async () => {
                     const config = mockConfig({}, { prefix: test.locale });
-                    const service = await initService(config, true);
+                    const service = await init(config, true);
                     const inlinePrice = mockInlinePrice(segment);
                     inlinePrice.removeAttribute('data-display-tax');
                     await inlinePrice.onceSettled();
@@ -666,7 +666,7 @@ describe('class "InlinePrice"', () => {
         });
 
         it('renders price with tax info for AE, default tax value', async () => {
-            await initService(mockConfig(), true);
+            await init(mockConfig(), true);
             const inlinePrice = mockInlinePrice('abm-team-gov');
             inlinePrice.removeAttribute('data-display-tax');
             inlinePrice.dataset.country = 'AE';
@@ -681,7 +681,7 @@ describe('class "InlinePrice"', () => {
 describe('commerce service', () => {
     describe('function "buildPriceHTML"', () => {
         it('returns empty string if no orders provided', async () => {
-            const { buildPriceHTML } = await initService(mockConfig(), true);
+            const { buildPriceHTML } = await init(mockConfig(), true);
             expect(buildPriceHTML([])).to.be.empty;
         });
     });

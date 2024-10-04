@@ -26,7 +26,7 @@ export const STATE_FAILED = 'failed';
 export const STATE_PENDING = 'pending';
 export const STATE_RESOLVED = 'resolved';
 
-export const TAG_NAME_SERVICE = 'wcms-commerce';
+export const TAG_NAME_SERVICE = 'mas-commerce-service';
 
 export const Landscape = {
   DRAFT: "DRAFT",

@@ -5,7 +5,7 @@ import {
     updatePlaceholder,
 } from './placeholder.js';
 import { selectOffers, useService } from './utilities.js';
-import { GeoMap } from './settings.js';
+import { GeoMap } from './localeSettings.js';
 
 // countries where tax is displayed for all segments by default
 const DISPLAY_ALL_TAX_COUNTRIES = [
@@ -223,7 +223,7 @@ export class HTMLPriceSpanElement extends HTMLSpanElement {
         const options = service.collectPriceOptions(
             overrides,
             this.placeholder,
-        );
+        );        
         if (!options.wcsOsi.length) return false;
 
         /*
