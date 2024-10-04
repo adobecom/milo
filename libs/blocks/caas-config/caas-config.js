@@ -222,7 +222,7 @@ const defaultOptions = {
   partialLoadEnabled: {
     true: 'Enabled',
     false: 'Disabled',
-  }
+  },
 };
 
 const getTagList = (root) => Object.entries(root).reduce((options, [, tag]) => {
