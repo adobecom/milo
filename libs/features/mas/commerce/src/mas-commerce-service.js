@@ -21,6 +21,7 @@ export class MasCommerceService extends HTMLElement {
     /** @type {Promise<Commerce.Instance>} */
     static promise = null;
     startup = null;
+    dataProviders = null;
 
     get config() {
       const { searchParams } = new URL(import.meta.url);
@@ -43,8 +44,9 @@ export class MasCommerceService extends HTMLElement {
 
     registerCheckoutAction( action ) {
       if (typeof(action) != 'function' ) return;
+      this.dataProviders = { getCheckoutAction : action };
       if (this.startup) {
-        Object.assign(this, { ...Checkout(this.startup, { getCheckoutAction : action })})
+        Object.assign(this, { ...Checkout(this.startup, this.dataProviders)})
       }
     }
 
@@ -60,7 +62,7 @@ export class MasCommerceService extends HTMLElement {
      * @param providers, if not provided, the one from registrations before activation will be taken
      * @returns 
      */
-    async activate(config = this.config, dataProviders = null) {
+    async activate(config = this.config, dataProviders = this.dataProviders) {
       // Load settings and literals
       const log = Log.init(config.env).module('service');
       log.debug('Activating:', config);

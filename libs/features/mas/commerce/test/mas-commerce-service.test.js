@@ -115,6 +115,13 @@ describe('commerce service', () => {
             expect(element).to.be.instanceof(MasCommerceService);
         });
 
+        it('registers checkout action', async () => {
+          const el = createMasTag({});
+          el.registerCheckoutAction((offers, options, imsPromise) => { /* nop for now */ });
+          await el.activate();
+          expect(el.buildCheckoutAction).to.be.not.undefined;
+        });
+
         describe('property "config"', () => {
           it('generates config from attributes', async () => {
             const el = createMasTag({'env':'stage', 'locale': 'fr_CA', 'language':'es', 'country':'CA'});

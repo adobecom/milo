@@ -29,6 +29,10 @@ You do need to have mas.js on your page / application, including it can be done 
 | `country`  | currency & price country you need | US or locale country if set                                     | `false`       | `false` |
 | `autostart`| presence of the web component suffices to enable merch at scale on your page                        | `false`       | `false` |
 
+### Methods
+| Name                   | Description                                                                                         | 
+| --------------------------------  | ---------------------------------------------------------------------------------------- | 
+| `registerCheckoutAction (action)` | registers an action, that must have signature (offers, options, imsSignedInPromise)      |
 ### Examples
 ```html
 <!-- for US english production-->
