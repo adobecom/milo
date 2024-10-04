@@ -66,7 +66,7 @@ export const styles = css`
         display: flex;
         justify-content: flex-end;
         box-sizing: border-box;
-        align-items: center;
+        align-items: flex-end;
         width: 100%;
         flex-flow: wrap;
         gap: var(--consonant-merch-spacing-xs);
@@ -168,6 +168,7 @@ export const styles = css`
         align-items: center;
         flex: 1;
         line-height: normal;
+        align-self: center;
     }
 
     .secure-transaction-label::before {

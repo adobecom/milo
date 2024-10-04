@@ -88,7 +88,7 @@ import{LitElement as Dt}from"../lit-all.min.js";import{LitElement as wt,html as 
         display: flex;
         justify-content: flex-end;
         box-sizing: border-box;
-        align-items: center;
+        align-items: flex-end;
         width: 100%;
         flex-flow: wrap;
         gap: var(--consonant-merch-spacing-xs);
@@ -190,6 +190,7 @@ import{LitElement as Dt}from"../lit-all.min.js";import{LitElement as wt,html as 
         align-items: center;
         flex: 1;
         line-height: normal;
+        align-self: center;
     }
 
     .secure-transaction-label::before {

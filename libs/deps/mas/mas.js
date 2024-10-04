@@ -69,7 +69,7 @@ Try polyfilling it using "@formatjs/intl-pluralrules"
         display: flex;
         justify-content: flex-end;
         box-sizing: border-box;
-        align-items: center;
+        align-items: flex-end;
         width: 100%;
         flex-flow: wrap;
         gap: var(--consonant-merch-spacing-xs);
@@ -171,6 +171,7 @@ Try polyfilling it using "@formatjs/intl-pluralrules"
         align-items: center;
         flex: 1;
         line-height: normal;
+        align-self: center;
     }
 
     .secure-transaction-label::before {
