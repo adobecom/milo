@@ -17,6 +17,7 @@ const getFetchPromise = (data, type = 'json') => new Promise((resolve) => {
   resolve({
     ok: true,
     [type]: () => data,
+    url: 'path/to/manifest.json',
   });
 });
 

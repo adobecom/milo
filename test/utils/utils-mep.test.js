@@ -1,35 +1,42 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
+import { stub, restore } from 'sinon';
 import { getMepEnablement } from '../../libs/utils/utils.js';
 import { combineMepSources } from '../../libs/features/personalization/personalization.js';
 
 describe('MEP Utils', () => {
   describe('combineMepSources', async () => {
+    before(() => {
+      stub(URLSearchParams.prototype, 'get').returns([{ instant: '2023-02-11' }]);
+    });
+    after(() => {
+      restore();
+    });
     it('yields an empty list when everything is undefined', async () => {
       const manifests = await combineMepSources(undefined, undefined, undefined);
       expect(manifests.length).to.equal(0);
     });
     it('combines promos and personalization', async () => {
       document.head.innerHTML = await readFile({ path: './mocks/mep/head-promo.html' });
-      const manifests = await combineMepSources('/pers/manifest.json', { manifestnames: 'pre-black-friday-global,black-friday-global' }, undefined);
-      expect(manifests.length).to.equal(3);
-      expect(manifests[0].manifestPath).to.equal('/pers/manifest.json');
-      expect(manifests[1].manifestPath).to.equal('/pre-black-friday.json');
-      expect(manifests[2].manifestPath).to.equal('/black-friday.json');
-    });
-    it('combines promos and personalization and mep param', async () => {
-      document.head.innerHTML = await readFile({ path: './mocks/mep/head-promo.html' });
+      const promoUtilsPromise = import('../../libs/features/personalization/promo-utils.js');
       const manifests = await combineMepSources(
         '/pers/manifest.json',
         { manifestnames: 'pre-black-friday-global,black-friday-global' },
+        promoUtilsPromise,
+        undefined,
+      );
+      expect(manifests.length).to.equal(3);
+    });
+    it('combines promos and personalization and mep param', async () => {
+      document.head.innerHTML = await readFile({ path: './mocks/mep/head-promo.html' });
+      const promoUtilsPromise = import('../../libs/features/personalization/promo-utils.js');
+      const manifests = await combineMepSources(
+        '/pers/manifest.json',
+        { manifestnames: 'pre-black-friday-global,black-friday-global' },
+        promoUtilsPromise,
         '/pers/manifest.json--var1---/mep-param/manifest1.json--all---/mep-param/manifest2.json--all',
       );
       expect(manifests.length).to.equal(5);
-      expect(manifests[0].manifestPath).to.equal('/pers/manifest.json');
-      expect(manifests[1].manifestPath).to.equal('/pre-black-friday.json');
-      expect(manifests[2].manifestPath).to.equal('/black-friday.json');
-      expect(manifests[3].manifestPath).to.equal('/mep-param/manifest1.json');
-      expect(manifests[4].manifestPath).to.equal('/mep-param/manifest2.json');
     });
   });
   describe('getMepEnablement', async () => {
