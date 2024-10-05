@@ -113,7 +113,7 @@ import{LitElement as Dt}from"../lit-all.min.js";import{LitElement as wt,html as 
         right: 0;
         font-size: var(--type-heading-xxs-size);
         font-weight: 500;
-        max-width: 180px;
+        max-width: 30%;
         line-height: 16px;
         text-align: center;
         padding: 8px 11px;
@@ -1550,6 +1550,10 @@ merch-card [slot='heading-xs'] {
     line-height: var(--consonant-merch-card-heading-xs-line-height);
     margin: 0;
     text-decoration: none;
+}
+
+merch-card .badge-heading {
+    max-width: 70%;
 }
 
 merch-card.dc-pricing [slot='heading-xs'] {
