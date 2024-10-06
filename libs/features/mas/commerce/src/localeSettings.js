@@ -100,15 +100,14 @@ function getMiloLocaleSettings(locale) {
   };
 }
 
-function getLocaleSettings({ locale = {}, country = undefined, language = undefined } = {}) {
+function getLocaleSettings({ locale = {}, language = undefined } = {}) {
   //we consider only milo consumer to have locale being an object with prefix member
   if (locale?.prefix) return getMiloLocaleSettings(locale);
   // passed this line, either nothing is set, or a well formed locale
-  if (typeof(locale) === 'object') locale = null;
-  locale ??= DEFAULT_LOCALE;
-  language ??= locale.split('_')?.[0] || Defaults.language;
-  country ??= locale.split('_')?.[1] || Defaults.country;
-  return { locale, country, language };
+  const masLocale = (typeof(locale) === 'string') ? locale : DEFAULT_LOCALE;
+  language ??= masLocale.split('_')?.[0] || Defaults.language;
+  const country = masLocale.split('_')?.[1] || Defaults.country;
+  return { locale: masLocale, country, language };
 }
 
 export { getLocaleSettings, MiloMap as GeoMap };

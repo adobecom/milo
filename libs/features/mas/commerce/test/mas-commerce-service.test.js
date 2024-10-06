@@ -36,18 +36,6 @@ describe('commerce service', () => {
             });
         });
 
-        it('if called witout args, returns a promise resolving when new instance is created', async () => {
-            let resolved = null;
-            init().then((instance) => {
-                resolved = instance;
-            });
-            await delay();
-            expect(resolved).to.be.null;
-            const instance = await init(mockConfig());
-            await delay();
-            expect(resolved).to.be.equal(instance);
-        });
-
         it('returns same object for subsequent inits', async () => {
             const instance = await init(mockConfig());
             expect(await init()).to.be.equal(instance);
@@ -107,7 +95,7 @@ describe('commerce service', () => {
     }
 
     describe(`component "${TAG_NAME_SERVICE}"`, () => {
-        it('appears inthe document head when the service activates', async () => {
+        it('appears in the document head when the service activates', async () => {
             let element = document.head.querySelector(TAG_NAME_SERVICE);
             expect(element).to.be.null;
             await init(mockConfig());
@@ -122,6 +110,20 @@ describe('commerce service', () => {
           expect(el.buildCheckoutAction).to.be.not.undefined;
         });
 
+        it('registers checkout action also after service are already enabled', async () => {
+          const el = createMasTag({ autostart: true });
+          await el.promise;
+          el.registerCheckoutAction((offers, options, imsPromise) => { /* nop for now */ });
+          expect(el.buildCheckoutAction).to.be.not.undefined;
+        });
+
+        it('autostarts with default data', async () => {
+          const el = createMasTag({ autostart: true });
+          await el.activate();
+          expect(el.log).to.be.not.undefined;
+          expect(el.providers).to.be.not.undefined;
+        });
+
         describe('property "config"', () => {
           it('generates config from attributes', async () => {
             const el = createMasTag({'env':'stage', 'locale': 'fr_CA', 'language':'es', 'country':'CA'});
@@ -134,15 +136,6 @@ describe('commerce service', () => {
             expect(el?.config).to.not.be.empty;
             expect(el.config).to.deep.equal({ env: { name: 'prod' }, commerce: { 'commerce.env': 'PROD' }});
           })
-        });
-
-        describe('property "isEnabled"', () => {
-            it('returns true', async () => {
-                await init(mockConfig());
-                const element = document.head.querySelector(TAG_NAME_SERVICE);
-                // @ts-ignore
-                expect(element.isEnabled).to.be.true;
-            });
         });
     });
 });

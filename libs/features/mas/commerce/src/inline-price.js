@@ -223,7 +223,7 @@ export class HTMLPriceSpanElement extends HTMLSpanElement {
         const options = service.collectPriceOptions(
             overrides,
             this.placeholder,
-        );        
+        );
         if (!options.wcsOsi.length) return false;
 
         /*

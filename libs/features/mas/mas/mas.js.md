@@ -26,7 +26,6 @@ You do need to have mas.js on your page / application, including it can be done 
 | `env`      | commerce environment you want this page to use, either `stage` or `prod`                            | `prod`        | `false` |
 | `locale`   | currency & price locale you need, must belong to one of the [supported locales](#supported-locales) | `en_US`       | `false` |
 | `language` | language you need any literals in | en or locale langauge if set                                    | `false`       | `false` |
-| `country`  | currency & price country you need | US or locale country if set                                     | `false`       | `false` |
 | `autostart`| presence of the web component suffices to enable merch at scale on your page                        | `false`       | `false` |
 
 ### Methods
