@@ -655,7 +655,7 @@ export function parsePlaceholders(placeholders, config, selectedVariantName = ''
     'value',
     'other',
   ];
-  const keys = placeholders && placeholders.length ? Object.entries(placeholders[0]) : [];
+  const keys = placeholders?.length ? Object.entries(placeholders[0]) : [];
   const keyVal = keys.find(([key]) => valueNames.includes(key.toLowerCase()));
   const key = keyVal?.[0];
 

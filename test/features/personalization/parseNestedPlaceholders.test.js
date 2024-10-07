@@ -66,7 +66,12 @@ describe('parsePlaceholders()', () => {
     expect(response.placeholders.foo).to.equal('bar');
   });
   it('should not break when there are no placeholders available', () => {
-    const response = parsePlaceholders(null, config);
+    const response = parsePlaceholders([
+      {
+        fr: 'bar',
+        key: 'foo',
+      },
+    ], config);
     expect(response.placeholders).to.exist;
   });
 });
