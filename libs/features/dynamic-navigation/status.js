@@ -1,5 +1,5 @@
 import { createTag, getConfig, getMetadata } from '../../utils/utils.js';
-import { isDynamicNavDisabled } from './dynamic-navigation.js';
+import { foundDisableValues } from './dynamic-navigation.js';
 
 export const ACTIVE = 'active';
 export const ENABLED = 'enabled';
@@ -29,11 +29,12 @@ const getStatus = (status, disabled, storageSource) => {
   return INACTIVE;
 };
 
-const processDisableValues = (valueStr, elem) => {
+const processDisableValues = (valueStr, elem, foundValues = false) => {
   if (!valueStr || valueStr.length === 0) return;
 
   const disableValueList = valueStr.split(',');
   const table = createTag('table');
+  const flatValues = Array.isArray(foundValues) && foundValues.flat();
 
   table.innerHTML = `
       <caption>Disable Values</caption>
@@ -41,6 +42,7 @@ const processDisableValues = (valueStr, elem) => {
         <tr>
           <th>Key</th>
           <th>Value</th>
+          <th>Match?</th>
         </tr>
       </thead>
       <tbody>
@@ -53,10 +55,12 @@ const processDisableValues = (valueStr, elem) => {
     const [key, value] = pair.split(';');
     const keyElem = createTag('td');
     const valElem = createTag('td');
+    const matchElem = createTag('td');
     keyElem.innerText = key;
     valElem.innerText = value;
+    matchElem.innerText = flatValues && flatValues.includes(value) ? 'yes' : 'no';
 
-    itemRow.append(keyElem, valElem);
+    itemRow.append(keyElem, valElem, matchElem);
     tBody.append(itemRow);
   });
 
@@ -75,7 +79,8 @@ const createStatusWidget = (dynamicNavKey) => {
   const dynamicNavSetting = getMetadata('dynamic-nav');
   const currentSource = getCurrentSource(dynamicNavSetting, storedSource, authoredSource);
   const dynamicNavDisableValues = getMetadata('dynamic-nav-disable');
-  const status = getStatus(dynamicNavSetting, isDynamicNavDisabled(), storedSource);
+  const foundValues = foundDisableValues();
+  const status = getStatus(dynamicNavSetting, foundValues.length >= 1, storedSource);
   const statusWidget = createTag('div', { class: 'dynamic-nav-status' });
 
   statusWidget.innerHTML = `
@@ -102,7 +107,7 @@ const createStatusWidget = (dynamicNavKey) => {
     </section>
   `;
 
-  processDisableValues(dynamicNavDisableValues, statusWidget.querySelector('.disable-values'));
+  processDisableValues(dynamicNavDisableValues, statusWidget.querySelector('.disable-values'), foundValues);
   statusWidget.classList.add(status);
 
   statusWidget.addEventListener('click', () => {

@@ -217,6 +217,8 @@ describe('Dynamic Nav Status', () => {
       expect(disableValuesTable.querySelector('tbody tr td:nth-child(1)').innerText).to.equal('PrimaryProductName');
       expect(disableValuesTable.querySelector('tbody tr td:nth-child(2)')).to.exist;
       expect(disableValuesTable.querySelector('tbody tr td:nth-child(2)').innerText).to.equal('Commerce Cloud');
+      expect(disableValuesTable.querySelector('tbody tr td:nth-child(3)')).to.exist;
+      expect(disableValuesTable.querySelector('tbody tr td:nth-child(3)').innerText).to.equal('yes');
     });
   });
 

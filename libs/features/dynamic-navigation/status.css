@@ -171,3 +171,9 @@
   border: 1px solid rgb(160 160 160);
   padding: 8px 10px;
 }
+
+@media screen and (max-width: 600px) {
+  .dynamic-nav-status {
+    display: none;
+  }
+}
