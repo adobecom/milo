@@ -1,10 +1,17 @@
 export default async function bootstrapBlock(miloLibs, blockConfig) {
-  const { name, targetEl } = blockConfig;
+  const { name, targetEl, layout } = blockConfig;
   const { getConfig, createTag, loadLink, loadScript } = await import(`${miloLibs}/utils/utils.js`);
   const { default: initBlock } = await import(`${miloLibs}/blocks/${name}/${name}.js`);
 
   const styles = [`${miloLibs}/blocks/${name}/${name}.css`, `${miloLibs}/navigation/navigation.css`];
   styles.forEach((url) => loadLink(url, { rel: 'stylesheet' }));
+  
+  const setNavLayout = () => {
+    const element = document.querySelector(targetEl);
+    if (element && layout === 'fullWidth') {
+      element.classList.add('feds--full-width');
+    }
+  }
 
   if (!document.querySelector(targetEl)) {
     const block = createTag(targetEl, { class: name });
@@ -12,6 +19,7 @@ export default async function bootstrapBlock(miloLibs, blockConfig) {
   }
   // Configure Unav components and redirect uri
   if (blockConfig.targetEl === 'header') {
+    setNavLayout();
     const metaTags = [
       { key: 'unavComponents', name: 'universal-nav' },
       { key: 'redirect', name: 'adobe-home-redirect' },
