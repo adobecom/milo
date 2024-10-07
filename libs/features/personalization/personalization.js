@@ -36,6 +36,7 @@ const FLAGS = {
   all: 'all',
   includeFragments: 'include-fragments',
 };
+let IS_POST_LCP = false;
 
 export const TRACKED_MANIFEST_TYPE = 'personalization';
 
@@ -489,6 +490,7 @@ export const updateFragDataProps = (a, inline, sections, fragment) => {
 };
 
 export function handleCommands(commands, rootEl, forceInline = false, forceRootEl = false) {
+  const section1 = document.querySelector('main > div');
   commands.forEach((cmd) => {
     const { action, content, selector } = cmd;
     cmd.content = forceInline ? addHash(content, INLINE_HASH) : content;
@@ -501,8 +503,10 @@ export function handleCommands(commands, rootEl, forceInline = false, forceRootE
     cmd.modifiers = modifiers;
 
     els?.forEach((el) => {
-      if (!el || (!(action in COMMANDS) && !(action in CREATE_CMDS))
-        || (rootEl && !rootEl.contains(el))) return;
+      if (!el
+        || (!(action in COMMANDS) && !(action in CREATE_CMDS))
+        || (rootEl && !rootEl.contains(el))
+        || (IS_POST_LCP && section1?.contains(el))) return;
 
       if (action in COMMANDS) {
         COMMANDS[action](el, cmd);
@@ -969,7 +973,7 @@ export function parseNestedPlaceholders({ placeholders }) {
   });
 }
 
-export async function applyPers(manifests, postLCP = false) {
+export async function applyPers(manifests) {
   if (!manifests?.length) return;
   let experiments = manifests;
   const config = getConfig();
@@ -994,13 +998,13 @@ export async function applyPers(manifests, postLCP = false) {
   config.mep.commands = consolidateArray(results, 'commands', config.mep.commands);
 
   const main = document.querySelector('main');
-  if (config.mep.replacepage && !postLCP && main) {
+  if (config.mep.replacepage && !IS_POST_LCP && main) {
     await replaceInner(config.mep.replacepage.val, main);
     const { manifestId, targetManifestId } = config.mep.replacepage;
     addIds(main, manifestId, targetManifestId);
   }
 
-  if (!postLCP) config.mep.commands = handleCommands(config.mep.commands);
+  config.mep.commands = handleCommands(config.mep.commands);
   deleteMarkedEls();
 
   const pznList = results.filter((r) => (r.experiment?.manifestType === TRACKED_MANIFEST_TYPE));
@@ -1060,7 +1064,9 @@ export async function init(enablements = {}) {
     mepParam, mepHighlight, mepButton, pzn, promo, target, postLCP,
   } = enablements;
   const config = getConfig();
-  if (!postLCP) {
+  if (postLCP) {
+    IS_POST_LCP = true;
+  } else {
     config.mep = {
       updateFragDataProps,
       preview: (mepButton !== 'off'
@@ -1079,7 +1085,7 @@ export async function init(enablements = {}) {
     });
   }
 
-  if (target === true || (target === 'gnav' && postLCP)) {
+  if (target === true || (target === 'postlcp' && postLCP)) {
     const { getTargetPersonalization } = await import('../../martech/martech.js');
     const { targetManifests, targetPropositions } = await getTargetPersonalization();
     manifests = manifests.concat(targetManifests);
@@ -1088,7 +1094,7 @@ export async function init(enablements = {}) {
     }
   }
   try {
-    await applyPers(manifests, postLCP);
+    await applyPers(manifests);
   } catch (e) {
     log(`MEP Error: ${e.toString()}`);
     window.lana?.log(`MEP Error: ${e.toString()}`);
