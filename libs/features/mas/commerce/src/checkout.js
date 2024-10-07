@@ -18,7 +18,6 @@ import { toOfferSelectorIds, toQuantity, useService } from './utilities.js';
 export function Checkout({ providers, settings }, dataProviders) {
     const log = Log.module('checkout');
 
-    /** @type {Commerce.Checkout.collectCheckoutOptions} */
     function collectCheckoutOptions(overrides, placeholder) {
         const {
             checkoutClientId,
@@ -84,7 +83,13 @@ export function Checkout({ providers, settings }, dataProviders) {
         return options;
     }
 
-    /** @type {Commerce.Checkout.buildCheckoutAction} */
+    /**
+     * will build a checkoutAction out of passed offers & options
+     * 
+     * @param {*} offers 
+     * @param {*} options 
+     * @returns 
+     */
     async function buildCheckoutAction(offers, options) {
         // eslint-disable-next-line react-hooks/rules-of-hooks
         const instance = useService();

@@ -19,6 +19,11 @@ export class MasCommerceService extends HTMLElement {
     static instance;
     promise = null;
     startup = null;
+    /**
+     * can contain: 
+     * @method getCheckoutAction 
+     * 
+     */
     dataProviders = null;
 
     get config() {
@@ -51,7 +56,7 @@ export class MasCommerceService extends HTMLElement {
     get autostart() {
       return this.getAttribute('autostart') || false;
     }
-    
+
     /**
      * @param config, if not provided, the one from attributes of the element will be taken
      * @param providers, if not provided, the one from registrations before activation will be taken

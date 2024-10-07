@@ -23,7 +23,7 @@
   <script type="module">
     const params = new URLSearchParams(document.location.search);
     const masCommerceService = document.querySelector('mas-commerce-service');
-    ['locale','language','country','env'].forEach((attribute) => {
+    ['locale','language','env'].forEach((attribute) => {
       const value = params.get(attribute);
       if (value) masCommerceService.setAttribute(attribute, value);
     });
@@ -81,12 +81,6 @@
 <td><code>language</code></td>
 <td>language you need any literals in</td>
 <td>en or locale langauge if set</td>
-<td><code>false</code></td>
-</tr>
-<tr>
-<td><code>autostart</code></td>
-<td>presence of the web component suffices to enable merch at scale on your page</td>
-<td><code>false</code></td>
 <td><code>false</code></td>
 </tr>
 </tbody>

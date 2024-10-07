@@ -23,7 +23,7 @@
   <script type="module">
     const params = new URLSearchParams(document.location.search);
     const masCommerceService = document.querySelector('mas-commerce-service');
-    ['locale','language','country','env'].forEach((attribute) => {
+    ['locale','language','env'].forEach((attribute) => {
       const value = params.get(attribute);
       if (value) masCommerceService.setAttribute(attribute, value);
     });

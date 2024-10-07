@@ -163,13 +163,12 @@ export const HTMLPlaceholderMixin = {
         }
         bucket.dispose();
         bucket.dispose = ignore;
-    },
-
+    },  
     /**
-     * Returns a promise resolving or rejecting when finishes an async operation
-     * performed by this component.
-     * If no operation is in progress,
-     * the returned promise is aslready resolved or rejected.
+     * Returns a promise resolving to this placeholder
+     * when its value is resolved or rejected.
+     * If placeholder is not pending for completion of an async operation
+     * the returned promise is already resolved or rejected.
      */
     onceSettled() {
         const { error, promises, state } = init(this);

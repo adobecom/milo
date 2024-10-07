@@ -1,14 +1,3 @@
-import {
-    CheckoutType,
-    WorkflowStep,
-} from '@pandora/commerce-checkout-url-builder';
-import {
-    PriceDetails,
-    ResolvedOffer,
-    Term,
-    Commitment,
-} from '@pandora/data-models-odm';
-
 type RequiredKey<Type, Key extends keyof Type> = Type & {
     [Property in Key]-?: Type[Property];
 };
@@ -63,66 +52,6 @@ declare global {
                 ietf?: string;
                 prefix?: string;
             };
-        }
-
-        interface DataProviders {
-            getCheckoutAction: (
-                offers: ResolvedOffer[],
-                options?: AnyOptions,
-                imsSignedInPromise?: Commerce.Ims.imsSignedInResponse,
-            ) => Promise<Commerce.Checkout.CheckoutAction>;
-            force: boolean;
-        }
-
-        interface Instance
-            extends Checkout.Client,
-                Ims.Client,
-                Price.Client,
-                Wcs.Client,
-                PlaceholderConstants,
-                HTMLElement {
-            readonly ERROR_MESSAGE_BAD_REQUEST: string;
-            readonly ERROR_MESSAGE_OFFER_NOT_FOUND: string;
-            readonly EVENT_TYPE_ERROR: string;
-            readonly EVENT_TYPE_READY: string;
-            readonly Log: Log.Root;
-            readonly defaults: Defaults;
-            readonly providers: {
-                /**
-                 * Registers checkout options provider - a function accepting
-                 * checkout options object and modifying it.
-                 */
-                placeholder(
-                    provider: Checkout.provideCheckoutOptions
-                ): () => void;
-                /**
-                 * Registers price options provider - a function accepting
-                 * price options object and modifying it.
-                 */
-                price(provider: Price.providePriceOptions): () => void;
-            };
-            readonly literals: Literals;
-        }
-
-        interface Literals {
-            price: Price.Literals;
-        }
-
-        interface Options extends Settings {
-            perpetual: boolean;
-            wcsOsi: string[];
-        }
-
-        interface Settings {
-            country: string;
-            env: string;
-            landscape: string;
-            // TODO: ideally, this setting should be processed by price template and belong to price settings
-            forceTaxExclusive: boolean;
-            language: string;
-            locale: string;
-            promotionCode: string;
-            quantity: number[];
         }
 
         interface Placeholder extends HTMLElement {
