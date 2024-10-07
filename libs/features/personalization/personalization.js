@@ -656,17 +656,18 @@ export function parsePlaceholders(placeholders, config, selectedVariantName = ''
     'other',
   ];
   const keys = placeholders && placeholders.length ? Object.entries(placeholders[0]) : [];
-  const [val] = keys.find(([key]) => valueNames.includes(key.toLowerCase()));
+  const keyVal = keys.find(([key]) => valueNames.includes(key.toLowerCase()));
+  const key = keyVal?.[0];
 
-  if (val) {
+  if (key) {
     const results = placeholders.reduce((res, item) => {
-      res[item.key] = item[val];
+      res[item.key] = item[key];
       return res;
     }, {});
     config.placeholders = { ...(config.placeholders || {}), ...results };
   }
 
-  createMartechMetadata(placeholders, config, val);
+  createMartechMetadata(placeholders, config, key);
 
   return config;
 }
