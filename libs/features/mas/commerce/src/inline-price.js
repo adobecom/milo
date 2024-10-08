@@ -1,91 +1,30 @@
 import {
-    createPlaceholder,
-    definePlaceholder,
-    selectPlaceholders,
-    updatePlaceholder,
-} from './placeholder.js';
+    createMasElement,
+    selectMasElement,
+    updateMasElement,
+    MasElement,
+} from './mas-element.js';
 import { selectOffers, useService } from './utilities.js';
-import { GeoMap } from './localeSettings.js';
 
 // countries where tax is displayed for all segments by default
-const DISPLAY_ALL_TAX_COUNTRIES = [
-    GeoMap.uk,
-    GeoMap.au,
-    GeoMap.fr,
-    GeoMap.at,
-    GeoMap.be_en,
-    GeoMap.be_fr,
-    GeoMap.be_nl,
-    GeoMap.bg,
-    GeoMap.ch_de,
-    GeoMap.ch_fr,
-    GeoMap.ch_it,
-    GeoMap.cz,
-    GeoMap.de,
-    GeoMap.dk,
-    GeoMap.ee,
-    GeoMap.eg_ar,
-    GeoMap.eg_en,
-    GeoMap.es,
-    GeoMap.fi,
-    GeoMap.fr,
-    GeoMap.gr_el,
-    GeoMap.gr_en,
-    GeoMap.hu,
-    GeoMap.ie,
-    GeoMap.it,
-    GeoMap.lu_de,
-    GeoMap.lu_en,
-    GeoMap.lu_fr,
-    GeoMap.nl,
-    GeoMap.no,
-    GeoMap.pl,
-    GeoMap.pt,
-    GeoMap.ro,
-    GeoMap.se,
-    GeoMap.si,
-    GeoMap.sk,
-    GeoMap.tr,
-    GeoMap.ua,
-    GeoMap.id_en,
-    GeoMap.id_id,
-    GeoMap.in_en,
-    GeoMap.in_hi,
-    GeoMap.jp,
-    GeoMap.my_en,
-    GeoMap.my_ms,
-    GeoMap.nz,
-    GeoMap.th_en,
-    GeoMap.th_th,
-];
-// countries where tax is displayed for some segments only by default
-const DISPLAY_TAX_MAP = {
-    INDIVIDUAL_COM: [
-        GeoMap.za,
-        GeoMap.lt,
-        GeoMap.lv,
-        GeoMap.ng,
-        GeoMap.sa_ar,
-        GeoMap.sa_en,
-        GeoMap.za,
-        GeoMap.sg,
-        GeoMap.kr,
-    ], // individual
-    TEAM_COM: [
-        GeoMap.za,
-        GeoMap.lt,
-        GeoMap.lv,
-        GeoMap.ng,
-        GeoMap.za,
-        GeoMap.co,
-        GeoMap.kr,
-    ], // business
-    INDIVIDUAL_EDU: [GeoMap.lt, GeoMap.lv, GeoMap.sa_en, GeoMap.sea], // student
-    TEAM_EDU: [GeoMap.sea, GeoMap.kr], // school and uni
-};
+  const DISPLAY_ALL_TAX_COUNTRIES = ['GB_en','AU_en','FR_fr','AT_de','BE_en','BE_fr','BE_nl','BG_bg','CH_de','CH_fr','CH_it',
+    'CZ_cs','DE_de','DK_da','EE_et','EG_ar','EG_en','ES_es','FI_fi','FR_fr','GR_el','GR_en','HU_hu','IE_en','IT_it','LU_de',
+    'LU_en','LU_fr','NL_nl','NO_nb','PL_pl','PT_pt','RO_ro','SE_sv','SI_sl','SK_sk','TR_tr','UA_uk','ID_en','ID_in','IN_en',
+    'IN_hi','JP_ja','MY_en','MY_ms','NZ_en','TH_en','TH_th'];
 
-/** @type {Commerce.Price.PlaceholderConstructor} */
-export class HTMLPriceSpanElement extends HTMLSpanElement {
+  // countries where tax is displayed for some segments only by default
+  const DISPLAY_TAX_MAP = {
+    // individual
+    INDIVIDUAL_COM: ['ZA_en','LT_lt','LV_lv','NG_en','SA_ar','SA_en','ZA_en','SG_en','KR_ko'],
+    // business
+    TEAM_COM: ['ZA_en','LT_lt','LV_lv','NG_en','ZA_en','CO_es','KR_ko'], 
+    // student
+    INDIVIDUAL_EDU: ['LT_lt','LV_lv','SA_en','SG_en'], 
+    // school and uni
+    TEAM_EDU: ['SG_en','KR_ko'], 
+  };
+
+export class InlinePrice extends HTMLSpanElement {
     static is = 'inline-price';
     static tag = 'span';
     static get observedAttributes() {
@@ -102,7 +41,6 @@ export class HTMLPriceSpanElement extends HTMLSpanElement {
         ];
     }
 
-    /** @type {Commerce.Price.PlaceholderConstructor["createInlinePrice"]} */
     static createInlinePrice(options) {
         // eslint-disable-next-line react-hooks/rules-of-hooks
         const service = useService();
@@ -119,9 +57,7 @@ export class HTMLPriceSpanElement extends HTMLSpanElement {
             template,
             wcsOsi,
         } = service.collectPriceOptions(options);
-        /** @type {Commerce.Price.Placeholder} */
-        // @ts-ignore
-        const element = createPlaceholder(HTMLPriceSpanElement, {
+        const element = createMasElement(InlinePrice, {
             displayOldPrice,
             displayPerUnit,
             displayRecurrence,
@@ -137,11 +73,9 @@ export class HTMLPriceSpanElement extends HTMLSpanElement {
     }
 
     // TODO: consider moving this function to the `web-components` package
-    /** @type {Commerce.Price.PlaceholderConstructor["getInlinePrices"]} */
     static getInlinePrices(container) {
         /** @type {Commerce.Price.Placeholder[]} */
-        // @ts-ignore
-        const elements = selectPlaceholders(HTMLPriceSpanElement, container);
+        const elements = selectMasElement(InlinePrice, container);
         return elements;
     }
 
@@ -149,13 +83,26 @@ export class HTMLPriceSpanElement extends HTMLSpanElement {
         return true;
     }
 
-    /**
-     * Returns `this`, typed as Placeholder mixin.
-     * @type {Commerce.Price.Placeholder}
-     */
-    get placeholder() {
-        // @ts-ignore
-        return this;
+    masElement = new MasElement(this);
+
+    attributeChangedCallback(name, _, value) {      
+      this.masElement.attributeChangedCallback(name, _, value);
+    }
+
+    connectedCallback() {
+      this.masElement.connectedCallback();
+    }
+
+    disconnectedCallback() {
+      this.masElement.disconnectedCallback();
+    };
+
+    onceSettled() {
+      return this.masElement.onceSettled();
+    }
+
+    get value() {
+      return this.masElement.value;
     }
 
     /**
@@ -222,21 +169,21 @@ export class HTMLPriceSpanElement extends HTMLSpanElement {
         if (!service) return false;
         const options = service.collectPriceOptions(
             overrides,
-            this.placeholder,
+            this,
         );
         if (!options.wcsOsi.length) return false;
 
         /*
         Commented out until issues in content with manually added tax labels are resolved
 
-        if (!this.placeholder.dataset.displayTax) {
+        if (!this.masElement.dataset.displayTax) {
             // set default value for displayTax if not set neither in OST nor in price URL
             options.displayTax =
                 (await this.resolveDisplayTax(service, options)) || false;
         }
         */
 
-        const version = this.placeholder.togglePending(options);
+        const version = this.masElement.togglePending(options);
         this.innerHTML = '';
         const [promise] = service.resolveOfferSelectors(options);
         return this.renderOffers(
@@ -264,16 +211,16 @@ export class HTMLPriceSpanElement extends HTMLSpanElement {
         const options = service.collectPriceOptions({
             ...this.dataset,
             ...overrides,
-        });
-        version ??= this.placeholder.togglePending(options);
+        }, this);
+        version ??= this.masElement.togglePending(options);
         if (offers.length) {
-            if (this.placeholder.toggleResolved(version, offers, options)) {
+            if (this.masElement.toggleResolved(version, offers, options)) {
                 this.innerHTML = service.buildPriceHTML(offers, options);
                 return true;
             }
         } else {
             const error = new Error(`Not provided: ${options?.wcsOsi ?? '-'}`);
-            if (this.placeholder.toggleFailed(version, error, options)) {
+            if (this.masElement.toggleFailed(version, error, options)) {
                 this.innerHTML = '';
                 return true;
             }
@@ -298,7 +245,7 @@ export class HTMLPriceSpanElement extends HTMLSpanElement {
             template,
             wcsOsi,
         } = service.collectPriceOptions(options);
-        updatePlaceholder(this, {
+        updateMasElement(this, {
             displayOldPrice,
             displayPerUnit,
             displayRecurrence,
@@ -314,4 +261,7 @@ export class HTMLPriceSpanElement extends HTMLSpanElement {
     }
 }
 
-export const InlinePrice = definePlaceholder(HTMLPriceSpanElement);
+// Define custom DOM element
+if (!window.customElements.get(InlinePrice.is)) {
+  window.customElements.define(InlinePrice.is, InlinePrice, { extends: InlinePrice.tag });
+}

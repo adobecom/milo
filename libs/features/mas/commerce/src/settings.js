@@ -10,13 +10,20 @@ import {
     toPositiveFiniteInteger,
 } from './external.js';
 import { toQuantity } from './utilities.js';
-import { getLocaleSettings } from './localeSettings.js';
 
 const HostEnv = Object.freeze({
     LOCAL: 'local',
     PROD: 'prod',
     STAGE: 'stage',
 });
+
+
+function getLocaleSettings({ locale = undefined, country = undefined, language = undefined, } = {}) {
+  language ??= locale?.split('_')?.[0] || Defaults.language;
+  country ??= locale?.split('_')?.[1] || Defaults.country;
+  locale ??= `${language}_${country}`;
+  return { locale, country, language };
+}
 
 function getSettings(config = {}) {
     // Always use `prod` env by default, regardless Milo env
