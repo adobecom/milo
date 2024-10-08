@@ -1,21 +1,26 @@
 import { getConfig } from '../../utils/utils.js';
 
-/* c8 ignore next 11 */
-function handleEvent(prefix, link) {
+function setInternational(prefix) {
   const domain = window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com' : '';
   const maxAge = 365 * 24 * 60 * 60; // max-age in seconds for 365 days
   document.cookie = `international=${prefix};max-age=${maxAge};path=/;${domain}`;
   sessionStorage.setItem('international', prefix);
+}
+
+function handleEvent({ prefix, link, callback } = {}) {
+  if (typeof callback !== 'function') return;
+
   fetch(link.href, { method: 'HEAD' }).then((resp) => {
     if (!resp.ok) throw new Error('request failed');
-    window.location.assign(link.href);
+    callback(link.href);
   }).catch(() => {
     const prefixUrl = prefix ? `/${prefix}` : '';
-    window.location.assign(`${prefixUrl}/`);
+    callback(`${prefixUrl}/`);
   });
 }
 
-function decorateLink(link, config, path) {
+function decorateLink(link, path) {
+  let hrefAdapted;
   let pathname = link.getAttribute('href');
   if (pathname.startsWith('http')) {
     try { pathname = new URL(pathname).pathname; } catch (e) { /* href does not contain domain */ }
@@ -25,10 +30,33 @@ function decorateLink(link, config, path) {
   let { href } = link;
   if (href.endsWith('/')) href = href.slice(0, -1);
   link.href = `${href}${path}`;
+
+  link.addEventListener('mouseover', () => {
+    setTimeout(() => {
+      if (link.matches(':hover') && !hrefAdapted) {
+        handleEvent({
+          prefix,
+          link,
+          callback: (newHref) => {
+            link.href = newHref;
+            hrefAdapted = true;
+          },
+        });
+      }
+    }, 100);
+  });
+
   link.addEventListener('click', (e) => {
-    /* c8 ignore next 2 */
+    setInternational(prefix);
+    if (hrefAdapted) return;
     e.preventDefault();
-    handleEvent(prefix, link, config);
+    handleEvent({
+      prefix,
+      link,
+      callback: (newHref) => {
+        window.open(newHref, e.ctrlKey || e.metaKey ? '_blank' : '_self');
+      },
+    });
   });
 }
 
@@ -40,5 +68,5 @@ export default function init(block) {
   if (!links.length) return;
   const { prefix } = config.locale;
   const path = window.location.href.replace(`${window.location.origin}${prefix}`, '').replace('#langnav', '');
-  links.forEach((l) => decorateLink(l, config, path));
+  links.forEach((link) => decorateLink(link, path));
 }
