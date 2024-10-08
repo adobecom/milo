@@ -30,14 +30,15 @@ function decorateAvatar(el) {
 function decorateQr(el) {
   const text = el.querySelector('.text');
   if (!text) return;
-  const appStore = text.children[(text.children.length - 1)];
-  const googlePlay = text.children[(text.children.length - 2)];
+  const appStore = text.children[(text.children.length - 1)]?.querySelector('a');
+  const googlePlay = text.children[(text.children.length - 2)]?.querySelector('a');
   const qrImage = text.children[(text.children.length - 3)];
+  if (!qrImage || !appStore || !googlePlay) return;
+  qrImage.classList.add('qr-code-img');
   appStore.classList.add('app-store');
   appStore.textContent = '';
   googlePlay.classList.add('google-play');
   googlePlay.textContent = '';
-  qrImage.classList.add('qr-code-img');
 }
 
 export default async function init(el) {
