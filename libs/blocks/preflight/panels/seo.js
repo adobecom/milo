@@ -314,7 +314,7 @@ async function getResults() {
 
   const red = icons.find((icon) => icon === 'red');
   if (red) {
-    const sk = document.querySelector('helix-sidekick');
+    const sk = document.querySelector('aem-sidekick, helix-sidekick');
     if (sk) {
       const publishBtn = sk.shadowRoot.querySelector('div.publish.plugin button');
       publishBtn.addEventListener('click', () => {

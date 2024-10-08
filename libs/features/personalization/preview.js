@@ -58,7 +58,7 @@ function getRepo() {
   const [, repo] = new URL(window.location.href).hostname.split('--');
   if (repo) return repo;
   try {
-    const sidekick = document.querySelector('helix-sidekick');
+    const sidekick = document.querySelector('aem-sidekick, helix-sidekick');
     if (sidekick) {
       const [, sidekickRepo] = new URL(JSON.parse(sidekick.getAttribute('status'))?.live.url).hostname.split('--');
       return sidekickRepo;
