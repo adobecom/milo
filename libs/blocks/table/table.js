@@ -99,27 +99,27 @@ function handleHeading(table, headingCols) {
 
 function handleAddOnContent(table) {
   const addOnKey = 'ADDON';
-  const allAddOns = [...table.querySelectorAll('.section-row-title')]
+  const addOns = [...table.querySelectorAll('.section-row-title')]
     .filter((row) => row.innerText.includes(addOnKey));
-  if (allAddOns.length) {
-    table.classList.add('add-on-content');
-    allAddOns.forEach((addOn) => {
+  if (addOns.length) {
+    table.classList.add('has-addon');
+    addOns.forEach((addOn) => {
       const addOnRow = addOn.parentElement;
       addOnRow.remove();
       const [position, order, style] = addOn.innerText.split('_')
-        .filter((key) => key !== addOnKey).map((keys) => keys.toLowerCase());
+        .filter((key) => key !== addOnKey).map((key) => key.toLowerCase());
       if (position && order) {
         [...table.querySelector('.row-heading').children].forEach((headCol) => {
           const indexAttr = 'data-col-index';
           const colIndex = headCol.getAttribute(indexAttr);
           if (colIndex > 1) { // ignore the key column
-            const addon = `${position}-${order}`;
-            const content = createTag('div', { class: addon }, [...addOnRow.children]
+            const content = `${position}-${order}`;
+            const tag = createTag('div', { class: content }, [...addOnRow.children]
               .find((col) => col.getAttribute(indexAttr) === colIndex)?.innerHTML);
-            if (style) content.classList.add(style);
+            if (style) tag.classList.add(style);
             const el = headCol.querySelector(`.${position}`);
-            el.classList.add(`has-${addon}`);
-            el.insertAdjacentElement(order === 'before' ? 'beforebegin' : 'afterend', content);
+            el?.classList.add(`has-${content}`);
+            el?.insertAdjacentElement(order === 'before' ? 'beforebegin' : 'afterend', tag);
           }
         });
       }
