@@ -32,8 +32,8 @@ function decorateQr(el) {
   if (!text) return;
   const qrImage = text.children[(text.children.length - 3)];
   const qrCodeLinks = el.querySelectorAll('a');
-  const appStore = qrCodeLinks[0];
-  const googlePlay = qrCodeLinks[1];
+  const appStore = qrCodeLinks[1];
+  const googlePlay = qrCodeLinks[0];
   appStore.classList.add('app-store');
   appStore.textContent = '';
   googlePlay.classList.add('google-play');
