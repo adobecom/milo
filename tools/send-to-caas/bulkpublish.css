@@ -43,6 +43,8 @@ dd.content .field {
   height: 520px;
   height: 320px;
   margin-top: 6px;
+  font-size: 16px;
+  font-family: system-ui;
 }
 
 .urls-label {
@@ -75,9 +77,21 @@ body {
   margin-top: 2px;
 }
 
+select#preset {
+  border: solid 1px #b9ce84;
+}
+
+.advanced-settings {
+  display: none;
+}
+
+body.advanced .advanced-settings {
+  display: block;
+}
+
 .page-title {
   margin: 0;
-  background: linear-gradient(360deg, #6f9b01, transparent);
+  background: linear-gradient(360deg, #6f9b01, #fff);
   padding: 43px 30px 2px;
   border-bottom: solid 1px #ddd;
   color: #202020;
@@ -95,6 +109,8 @@ dd.content.is-expanded {
 .content-panel {
   padding: 0 50px;
   width: 100%;
+  background: #f0f0f0;
+  position: relative;
 }
 
 .content-panel h2 {
@@ -242,4 +258,28 @@ thead tr {
 
 tbody tr:hover {
   background: #f0f0ff;
+}
+
+/* themes */
+.theme {
+  position: absolute;
+  right: 30px;
+  top: 10px;
+}
+
+@media (prefers-color-scheme: dark) {
+    .content-panel {
+      background: #444;
+      color: #fafafa;
+    }
+
+    .content-panel textarea#urls {
+      background: #666;
+      color: white;
+    }
+
+    .content-panel textarea#urls::placeholder {
+      color: #b0b0b0;
+    }
+
 }

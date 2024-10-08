@@ -18,7 +18,7 @@
           <dd class="content is-expanded">
 
             <div class="field">
-              <label for="preset">Consumer Presets:</label>
+              <label for="preset"><b>Consumer Presets:</b></label>
               <select name="preset" id="preset">
                 <option value="default">Select a Preset... </option>
                 <option value="blog">Adobe Blog (blog)</option>
@@ -31,26 +31,36 @@
                 <option disabled>────────────────────</option>
                 <option value="advanced">Advanced: Custom Settings</option>
                 </select>
+
+              </div>
+
+   
+            <div class="advanced-settings">
+              <hr width="90%" style="border: solid 1px #666;">
+              <div class="field">
+                <label for="host">Host:  <span class="help host" title="Help">(?)</span></label>
+                <input id="host" name="host" type="text" />
+              </div>
+              <div class="field">
+                <label for="repo">Repo:  <span class="help repo" title="Help">(?)</span></label>
+                <input id="repo" name="repo" type="text" />
+              </div>
+              <div class="field">
+                <label for="owner">Repo Owner:   <span class="help owner" title="Help">(?)</span></label>
+                <input id="owner" name="owner" type="text" />
+              </div>
+
+              <div class="field">
+                <label for="excelFile">Excel File (optional):</label>
+                <input id="excelFile" name="excelFile" type="text" />
+              </div>
             </div>
-    
+
+
+            <hr width="90%" style="border: solid 1px #666;">
+
             <div class="field">
-              <label for="host">Host:  <span class="help host" title="Help">(?)</span></label>
-              <input id="host" name="host" type="text" />
-            </div>
-            <div class="field">
-              <label for="repo">Repo:  <span class="help repo" title="Help">(?)</span></label>
-              <input id="repo" name="repo" type="text" />
-            </div>
-            <div class="field">
-              <label for="owner">Repo Owner:   <span class="help owner" title="Help">(?)</span></label>
-              <input id="owner" name="owner" type="text" />
-            </div>
-            <div class="field">
-              <label for="excelFile">Excel File Url (Leave blank if using URLs field):</label>
-              <input id="excelFile" name="excelFile" type="text" />
-            </div>
-            <div class="field">
-              <label for="contentType">ContentType to use (if not in card metadata):</label>
+              <label for="contentType">ContentType Fallback:</label>
               <select name="contentType" id="contentType">
                 <option value="">Auto Detect</option>
                 <option value="caas:content-type/announcements">Announcements</option>
@@ -135,6 +145,11 @@
         </div>
 
         <div class="content-panel">
+
+          <div class="theme">Theme: 
+            <input type="radio" id="dark" name="theme" value="dark" checked>Dark
+            <input type="radio" id="light" name="theme" value="light">Light
+          </div>
 
           <div class="urls">
             <!-- <div class="urls-label">

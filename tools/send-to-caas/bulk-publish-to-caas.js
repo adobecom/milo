@@ -333,6 +333,11 @@ const PRESETS = {
 const preset = document.querySelector('#preset');
 preset.addEventListener('change', () => {
   const { value } = preset;
+  document.body.classList = '';
+  if (value === 'advanced') {
+    document.body.classList.add('advanced');
+    return;
+  }
   document.body.classList.add('preset');
   const ls = localStorage.getItem(LS_KEY);
   const config = ls ? JSON.parse(ls) : {};
@@ -381,7 +386,6 @@ helpButtons.forEach((btn) => {
   });
 }
 );
-
 
 const init = async () => {
   await loadTingleModalFiles(loadScript, loadStyle);
