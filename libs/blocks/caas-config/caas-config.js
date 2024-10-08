@@ -965,7 +965,6 @@ export const addIdOverlays = () => {
       idBtn.classList.add('cardid');
       idBtn.innerText = card.id;
 
-      // Add a title attribute to display a message on hover
       idBtn.title = 'Click to copy this ID';
 
       idBtn.addEventListener('click', (e) => {
