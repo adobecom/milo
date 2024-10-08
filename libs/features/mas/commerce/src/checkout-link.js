@@ -2,7 +2,6 @@ import { ignore } from './external.js';
 import {
     createPlaceholder,
     definePlaceholder,
-    selectPlaceholders,
     updatePlaceholder,
 } from './placeholder.js';
 import { selectOffers, useService } from './utilities.js';
@@ -73,18 +72,6 @@ export class HTMLCheckoutAnchorElement extends HTMLAnchorElement {
         });
         if (innerHTML) element.innerHTML = `<span>${innerHTML}</span>`;
         return element;
-    }
-
-    // TODO: consider moving this function to the `web-components` package
-    /** @type {Commerce.Checkout.PlaceholderConstructor["getCheckoutLinks"]} */
-    static getCheckoutLinks(container) {
-        /** @type {Commerce.Checkout.Placeholder[]} */
-        // @ts-ignore
-        const elements = selectPlaceholders(
-            HTMLCheckoutAnchorElement,
-            container,
-        );
-        return elements;
     }
 
     get isCheckoutLink() {

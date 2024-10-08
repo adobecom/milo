@@ -1,4 +1,4 @@
-import { EVENT_AEM_LOAD } from './constants.js';
+import { EVENT_AEM_LOAD, EVENT_AEM_ERROR } from './constants.js';
 import { getFragmentById } from './getFragmentById.js';
 
 const sheet = new CSSStyleSheet();
@@ -101,13 +101,18 @@ export class AemFragment extends HTMLElement {
     attributeChangedCallback(name, oldValue, newValue) {
         if (name === ATTRIBUTE_FRAGMENT) {
             this.fragmentId = newValue;
-            this.refresh(false);
+            this.refresh();
+        }
+    }
+
+    connectedCallback() {
+        if (!this.fragmentId) {
+            this.#fail('Missing fragment id');
+            return;
         }
     }
 
     async refresh(flushCache = true) {
-        if (!this.fragmentId) return;
-
         if (this._readyPromise) {
             const ready = await Promise.race([
                 this._readyPromise,
@@ -118,16 +123,31 @@ export class AemFragment extends HTMLElement {
         if (flushCache) {
             this.cache.remove(this.fragmentId);
         }
-        this._readyPromise = this.fetchData().then(() => {
-            this.dispatchEvent(
-                new CustomEvent(EVENT_AEM_LOAD, {
-                    detail: this.data,
-                    bubbles: true,
-                    composed: true,
-                }),
-            );
-            return true;
-        });
+        this._readyPromise = this.fetchData()
+            .then(() => {
+                this.dispatchEvent(
+                    new CustomEvent(EVENT_AEM_LOAD, {
+                        detail: this.data,
+                        bubbles: true,
+                        composed: true,
+                    }),
+                );
+                return true;
+            })
+            .catch(() => {
+                this.#fail('Network error: failed to load fragment');
+                return false;
+            });
+    }
+
+    #fail(error) {
+        this.dispatchEvent(
+            new CustomEvent(EVENT_AEM_ERROR, {
+                detail: error,
+                bubbles: true,
+                composed: true,
+            }),
+        );
     }
 
     async fetchData() {

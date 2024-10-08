@@ -154,6 +154,10 @@ export class MasCommerceService extends HTMLElement {
         this.activate();
       }
     }
+
+    flushWcsCache() {
+      this.flushWcsCache();
+    }
 }
 
 // Register service component

@@ -42,7 +42,7 @@ describe('resolveOfferSelectors', () => {
         const client = Wcs({
             // @ts-ignore
             settings: {
-              ...Defaults,
+                ...Defaults,
                 locale: 'en_US',
                 wcsBufferLimit: 2,
             },
@@ -67,5 +67,21 @@ describe('resolveOfferSelectors', () => {
             }),
         ]);
         expect(fetch.callCount).to.equal(3);
+    });
+
+    it('flushes WCS cache', async () => {
+        await mockFetch(withWcs);
+        const client = Wcs({
+            settings: {
+                ...Defaults,
+                locale: 'en_US',
+            },
+        });
+        await client.resolveOfferSelectors({ wcsOsi: ['abm'] });
+        await client.resolveOfferSelectors({ wcsOsi: ['abm'] });
+        expect(fetch.callCount).to.equal(1);
+        await client.flushWcsCache();
+        await client.resolveOfferSelectors({ wcsOsi: ['abm'] });
+        expect(fetch.callCount).to.equal(2);
     });
 });

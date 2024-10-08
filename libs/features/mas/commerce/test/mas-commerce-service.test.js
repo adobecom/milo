@@ -1,5 +1,3 @@
-import { readFile } from '@web/test-runner-commands';
-import { delay } from '../src/external.js';
 import { Defaults, init, reset } from '../src/index.js';
 import { MasCommerceService } from '../src/mas-commerce-service.js';
 
@@ -10,6 +8,8 @@ import { expect } from './utilities.js';
 import { mockProviders } from './mocks/providers.js';
 import { withWcs } from './mocks/wcs.js';
 import { TAG_NAME_SERVICE } from '../src/constants.js';
+
+const { fetch: originalFetch } = window;
 
 describe('commerce service', () => {
     before(async () => {
@@ -55,12 +55,13 @@ describe('commerce service', () => {
             it('returns "Defauls" object', async () => {
                 const instance = await init(mockConfig());
                 expect(instance.defaults).to.deep.equal(Defaults);
+                expect(typeof instance.flushWcsCache).to.equal('function');
             });
         });
 
         describe('property "literals"', () => {
             it('returns "price literals" object', async () => {
-                const priceLiterals = await (readFile({ path: '../price-literals.json' }));
+                const priceLiterals = await originalFetch('/price-literals.json').then((r) => r.text());
                 const commerce = {
                   priceLiterals: JSON.parse(priceLiterals),
                 };

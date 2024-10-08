@@ -1,7 +1,6 @@
 import {
     createPlaceholder,
     definePlaceholder,
-    selectPlaceholders,
     updatePlaceholder,
 } from './placeholder.js';
 import { selectOffers, useService } from './utilities.js';
@@ -134,15 +133,6 @@ export class HTMLPriceSpanElement extends HTMLSpanElement {
             wcsOsi,
         });
         return element;
-    }
-
-    // TODO: consider moving this function to the `web-components` package
-    /** @type {Commerce.Price.PlaceholderConstructor["getInlinePrices"]} */
-    static getInlinePrices(container) {
-        /** @type {Commerce.Price.Placeholder[]} */
-        // @ts-ignore
-        const elements = selectPlaceholders(HTMLPriceSpanElement, container);
-        return elements;
     }
 
     get isInlinePrice() {

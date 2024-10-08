@@ -6,20 +6,21 @@ import sinon from 'sinon';
 import { mockFetch } from './mocks/fetch.js';
 import { withWcs } from './mocks/wcs.js';
 import { withAem } from './mocks/aem.js';
-import mas from './mas.js';
 import { getTemplateContent } from './utils.js';
+import '../src/merch-card.js';
+import '../src/aem-fragment.js';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
 runTests(async () => {
+    await document.querySelector('mas-commerce-service').activate();
     const [cc, photoshop] = await fetch(
         'mocks/sites/cf/fragments/search/authorPayload.json',
     )
         .then((res) => res.json())
         .then(({ items }) => items);
 
-    await mas();
     await customElements.whenDefined('aem-fragment');
     const { cache } = document.createElement('aem-fragment');
 
@@ -74,11 +75,16 @@ runTests(async () => {
             const [, , , cardWithMissingPath] = getTemplateContent('cards');
             const aemFragment =
                 cardWithMissingPath.querySelector('aem-fragment');
+            let aemErrorTriggered = false;
+            aemFragment.addEventListener('aem:error', (event) => {
+                aemErrorTriggered = true;
+            });
 
             spTheme.append(cardWithMissingPath);
             await expect(aemFragment.updateComplete).to.be.rejectedWith(
                 'AEM fragment cannot be loaded',
             );
+            expect(aemErrorTriggered).to.true;
         });
 
         it('uses ims token to retrieve a fragment', async () => {
