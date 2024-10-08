@@ -106,7 +106,7 @@ function handleAddOnContent(table) {
     allAddOns.forEach((addOn) => {
       const addOnRow = addOn.parentElement;
       addOnRow.remove();
-      const [position, order] = addOn.innerText.split('_')
+      const [position, order, style] = addOn.innerText.split('_')
         .filter((key) => key !== addOnKey).map((keys) => keys.toLowerCase());
       if (position && order) {
         [...table.querySelector('.row-heading').children].forEach((headCol) => {
@@ -114,13 +114,12 @@ function handleAddOnContent(table) {
           const colIndex = headCol.getAttribute(indexAttr);
           if (colIndex > 1) { // ignore the key column
             const addon = `${position}-${order}`;
-            const positionEl = headCol.querySelector(`.${position}`);
-            positionEl.classList.add(`has-${addon}`);
-            positionEl.insertAdjacentElement(
-              order === 'before' ? 'beforebegin' : 'afterend',
-              createTag('div', { class: addon }, [...addOnRow.children]
-                .find((col) => col.getAttribute(indexAttr) === colIndex)?.innerHTML),
-            );
+            const content = createTag('div', { class: addon }, [...addOnRow.children]
+              .find((col) => col.getAttribute(indexAttr) === colIndex)?.innerHTML);
+            if (style) content.classList.add(style);
+            const el = headCol.querySelector(`.${position}`);
+            el.classList.add(`has-${addon}`);
+            el.insertAdjacentElement(order === 'before' ? 'beforebegin' : 'afterend', content);
           }
         });
       }
