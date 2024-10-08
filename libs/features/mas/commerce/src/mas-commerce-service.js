@@ -1,8 +1,7 @@
 import { Checkout } from './checkout.js';
 import * as Constants from './constants.js';
-import { EVENT_TYPE_READY, TAG_NAME_SERVICE } from './constants.js';
+import { EVENT_TYPE_READY } from './constants.js';
 import { Defaults } from './defaults.js';
-import { isFunction } from './external.js';
 import { Ims } from './ims.js';
 import { getPriceLiterals } from './literals.js';
 import { Log } from './log.js';
@@ -11,6 +10,8 @@ import { getSettings } from './settings.js';
 import { Wcs } from './wcs.js';
 import { setImmediate } from './utilities.js';
 
+export const TAG_NAME_SERVICE = 'mas-commerce-service';
+
 /**
  * Custom web component to provide active instance of commerce service
  * to consumers, appended to the head section of current document.
@@ -18,8 +19,6 @@ import { setImmediate } from './utilities.js';
 export class MasCommerceService extends HTMLElement {
     static instance;
     promise = null;
-    startup = null;
-    dataProviders = null;
 
     get config() {
       const { searchParams } = new URL(import.meta.url);
@@ -31,62 +30,64 @@ export class MasCommerceService extends HTMLElement {
         env: { name: envName },
         commerce: { 'commerce.env': commerceEnv },
       };
+      //root parameters
       ['locale','country','language'].forEach((attribute) => {
         const value = this.getAttribute(attribute);
         if (value) {
           config[attribute] = value;
         }
       });
+      //commerce parameters
+      ['checkoutWorkflowStep','forceTaxExclusive','checkoutClientId'].forEach((attribute) => {
+        const value = this.getAttribute(attribute);
+        if (value) {
+          config.commerce[attribute] = value;
+        }
+      });
       return config;
     }
 
-    registerCheckoutAction( action ) {
-      if (typeof(action) != 'function' ) return;
-      this.dataProviders = { getCheckoutAction : action };
-      if (this.startup) {
-        Object.assign(this, { ...Checkout(this.startup, this.dataProviders)})
-      }
+    async registerCheckoutAction( action ) {
+      if (typeof(action) != 'function' ) return;    
+      this.buildCheckoutAction = async (offers, options) => {
+        const checkoutAction = await action?.(
+          offers,
+          options,
+          this.imsSignedInPromise,
+        );
+        if (checkoutAction) {
+          return checkoutAction;
+        }
+        return null;
+      };
     }
 
-    get autostart() {
-      return this.getAttribute('autostart') || false;
-    }
-    
-    /**
-     * @param config, if not provided, the one from attributes of the element will be taken
-     * @param providers, if not provided, the one from registrations before activation will be taken
-     * @returns 
-     */
-    async innerActivate(resolve, config, dataProviders) {
+    async activate(resolve) {
+      const config = this.config;
         // Load settings and literals
       const log = Log.init(config.env).module('service');
-      log.debug('Activating:', config);
-      const literals = { price: {} };
+      log.debug('Activating:', config);      
       const settings = Object.freeze(getSettings(config));
       // Fetch price literals
+      const literals = { price: {} };
       try {
         literals.price = await getPriceLiterals(settings, config.commerce.priceLiterals);
-      } catch (error) {
-        log.warn('Price literals were not fetched:', error);
-      }
+      } catch(e) {}
       // Create checkout/price options providers registry
       const providers = { 
-        /** @type {Set<Commerce.Checkout.provideCheckoutOptions>} */
         checkout: new Set(),
-        /** @type {Set<Commerce.Price.providePriceOptions>} */
         price: new Set(),
       };
-      this.startup = { literals, providers, settings };      
+      const startup = { literals, providers, settings };      
       // Extend web component object with service API
-      // @ts-ignore
       MasCommerceService.instance = Object.defineProperties(
         this,
         Object.getOwnPropertyDescriptors({
           // Activate modules and expose their API as combined flat object
-          ...Checkout(this.startup, dataProviders),
-          ...Ims(this.startup),
-          ...Price(this.startup),
-          ...Wcs(this.startup),
+          ...Checkout(startup),
+          ...Ims(startup),
+          ...Price(startup),
+          ...Wcs(startup),
           ...Constants,
           // Defined serviceweb  component API
           Log,
@@ -99,6 +100,7 @@ export class MasCommerceService extends HTMLElement {
           get log() {
               return Log;
           },
+          /* c8 ignore next 11 */
           get providers() {
               return {
                   checkout(provider) {
@@ -121,63 +123,27 @@ export class MasCommerceService extends HTMLElement {
         const event = new CustomEvent(EVENT_TYPE_READY, {
           bubbles: true,
           cancelable: false,
-          detail: MasCommerceService.instance,
+          detail: this,
         });
         this.dispatchEvent(event);
       });
       resolve(this);
     }
 
-    /**
-     * @param config, if not provided, the one from attributes of the element will be taken
-     * @param providers, if not provided, the one from registrations before activation will be taken
-     * @returns
-     */
-    async activate(config, dataProviders) {
+    connectedCallback() {
       if (this.promise) {
         return this.promise;
       }
-      MasCommerceService.instance = this;
       this.promise = new Promise((resolve) => {
-        this.innerActivate(resolve, {...this.config, ...config}, {...this.dataProviders, ...dataProviders});
+        this.activate(resolve);
       });
-      return this.promise;
     }
 
-    connectedCallback() {
-      if (this.autostart) {
-        this.activate();
-      }
+    disconnectedCallback() {
     }
 }
 
 // Register service component
-window.customElements.define(TAG_NAME_SERVICE, MasCommerceService);
-
-/** used for removing */
-export function reset() {
-  // Remove service web component
-  document.head.querySelector(TAG_NAME_SERVICE)?.remove();
-  Log.reset();
-}
-
-/**
- * Used for enabling commerce from function call
- * @param {*} getConfig 
- * @param {*} getProviders 
- * @returns 
- */
-export function init(getConfig, getProviders) {
-  // Callback is provided, activate service or/and return its promise
-  const config = isFunction(getConfig) ? getConfig() : {};
-  const dataProviders = isFunction(getProviders) ? getProviders() : {};
-  if (dataProviders.force) reset();
-  const prevEl = document.querySelector(TAG_NAME_SERVICE);
-  if (prevEl && prevEl.promise) return prevEl.promise;
-  prevEl?.remove();
-  // Append web component and dispatch "ready" event
-  // Create custom web component to expose service instance to the DOM
-  const element = document.createElement(TAG_NAME_SERVICE);
-  document.head.append(element);
-  return element.activate(config, dataProviders);    
+if (!window.customElements.get(TAG_NAME_SERVICE)) {
+  window.customElements.define(TAG_NAME_SERVICE, MasCommerceService);
 }

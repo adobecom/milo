@@ -1,20 +1,42 @@
 import { ignore } from './external.js';
-import {
-    createPlaceholder,
-    definePlaceholder,
-    selectPlaceholders,
-    updatePlaceholder,
-} from './placeholder.js';
+import {    
+    createMasElement,
+    selectMasElement,
+    updateMasElement,
+    MasElement,
+} from './mas-element.js';
 import { selectOffers, useService } from './utilities.js';
 
 export const CLASS_NAME_DOWNLOAD = 'download';
 export const CLASS_NAME_UPGRADE = 'upgrade';
 
-export class HTMLCheckoutAnchorElement extends HTMLAnchorElement {
+export class CheckoutLink extends HTMLAnchorElement {
     static is = 'checkout-link';
     static tag = 'a';
 
     #checkoutActionHandler;
+
+    masElement = new MasElement(this);
+
+    attributeChangedCallback(name, _, value) {      
+      this.masElement.attributeChangedCallback(name, _, value);
+    }
+
+    connectedCallback() {
+      this.masElement.connectedCallback();
+    }
+
+    disconnectedCallback() {
+      this.masElement.disconnectedCallback();
+    };
+
+    onceSettled() {
+      return this.masElement.onceSettled();
+    }
+
+    get value() {
+      return this.masElement.value;
+    }
 
     constructor() {
         super();
@@ -38,7 +60,6 @@ export class HTMLCheckoutAnchorElement extends HTMLAnchorElement {
         ];
     }
 
-    /** @type {Commerce.Checkout.PlaceholderConstructor["createCheckoutLink"]} */
     static createCheckoutLink(options = {}, innerHTML = '') {
         // eslint-disable-next-line react-hooks/rules-of-hooks
         const service = useService();
@@ -56,9 +77,8 @@ export class HTMLCheckoutAnchorElement extends HTMLAnchorElement {
             wcsOsi,
             extraOptions,
         } = service.collectCheckoutOptions(options);
-        /** @type {Commerce.Checkout.Placeholder} */
-        // @ts-ignore
-        const element = createPlaceholder(HTMLCheckoutAnchorElement, {
+
+        const element = createMasElement(CheckoutLink, {
             checkoutMarketSegment,
             checkoutWorkflow,
             checkoutWorkflowStep,
@@ -76,12 +96,9 @@ export class HTMLCheckoutAnchorElement extends HTMLAnchorElement {
     }
 
     // TODO: consider moving this function to the `web-components` package
-    /** @type {Commerce.Checkout.PlaceholderConstructor["getCheckoutLinks"]} */
-    static getCheckoutLinks(container) {
-        /** @type {Commerce.Checkout.Placeholder[]} */
-        // @ts-ignore
-        const elements = selectPlaceholders(
-            HTMLCheckoutAnchorElement,
+    static getCheckoutLinks(container) {        
+        const elements = selectMasElement(
+            CheckoutLink,
             container,
         );
         return elements;
@@ -89,15 +106,6 @@ export class HTMLCheckoutAnchorElement extends HTMLAnchorElement {
 
     get isCheckoutLink() {
         return true;
-    }
-
-    /**
-     * Returns `this`, typed as Placeholder mixin.
-     * @type {Commerce.Checkout.Placeholder}
-     */
-    get placeholder() {
-        // @ts-ignore
-        return this;
     }
 
     /**
@@ -121,23 +129,22 @@ export class HTMLCheckoutAnchorElement extends HTMLAnchorElement {
         }
         const options = service.collectCheckoutOptions(
             overrides,
-            this.placeholder,
+            this,
         );
         if (!options.wcsOsi.length) return false;
         let extraOptions;
         try {
-            // @ts-ignore
             extraOptions = JSON.parse(options.extraOptions ?? '{}');
         } catch (e) {
-            this.placeholder.log.error('cannot parse exta checkout options', e);
+            this.masElement.log?.error('cannot parse exta checkout options', e);
         }
-        const version = this.placeholder.togglePending(options);
+        const version = this.masElement.togglePending(options);
         this.href = '';
         const promises = service.resolveOfferSelectors(options);
         let offers = await Promise.all(promises);
         // offer is expected to contain one or two offers at max (en, mult)
         offers = offers.map((offer) => selectOffers(offer, options));
-        const checkoutAction = await service.buildCheckoutAction(
+        const checkoutAction = await service.buildCheckoutAction?.(
             offers.flat(),
             { ...extraOptions, ...options },
         );
@@ -170,16 +177,16 @@ export class HTMLCheckoutAnchorElement extends HTMLAnchorElement {
         const service = useService();
         if (!service) return false;
         const extraOptions = JSON.parse(
-            this.placeholder.dataset.extraOptions ?? 'null',
+            this.dataset.extraOptions ?? 'null',
         );
         options = { ...extraOptions, ...options, ...overrides };
-        version ??= this.placeholder.togglePending(options);
+        version ??= this.masElement.togglePending(options);
         if (this.#checkoutActionHandler) {
             this.#checkoutActionHandler = undefined;
         }
         if (checkoutAction) {
             this.classList.remove(CLASS_NAME_DOWNLOAD, CLASS_NAME_UPGRADE);
-            this.placeholder.toggleResolved(version, offers, options);
+            this.masElement.toggleResolved(version, offers, options);
             const { url, text, className, handler } = checkoutAction;
             if (url) this.href = url;
             if (text) this.firstElementChild.innerHTML = text;
@@ -190,14 +197,14 @@ export class HTMLCheckoutAnchorElement extends HTMLAnchorElement {
             }
             return true;
         } else if (offers.length) {
-            if (this.placeholder.toggleResolved(version, offers, options)) {
+            if (this.masElement.toggleResolved(version, offers, options)) {
                 const url = service.buildCheckoutURL(offers, options);
                 this.setAttribute('href', url);
                 return true;
             }
         } else {
             const error = new Error(`Not provided: ${options?.wcsOsi ?? '-'}`);
-            if (this.placeholder.toggleFailed(version, error, options)) {
+            if (this.masElement.toggleFailed(version, error, options)) {
                 this.setAttribute('href', '#');
                 return true;
             }
@@ -221,7 +228,7 @@ export class HTMLCheckoutAnchorElement extends HTMLAnchorElement {
             quantity,
             wcsOsi,
         } = service.collectCheckoutOptions(options);
-        updatePlaceholder(this, {
+        updateMasElement(this, {
             checkoutMarketSegment,
             checkoutWorkflow,
             checkoutWorkflowStep,
@@ -237,4 +244,7 @@ export class HTMLCheckoutAnchorElement extends HTMLAnchorElement {
     }
 }
 
-export const CheckoutLink = definePlaceholder(HTMLCheckoutAnchorElement);
+// Define custom DOM element
+if (!window.customElements.get(CheckoutLink.is)) {
+  window.customElements.define(CheckoutLink.is, CheckoutLink, { extends: CheckoutLink.tag });
+}

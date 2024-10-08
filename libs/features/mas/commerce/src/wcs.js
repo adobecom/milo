@@ -135,6 +135,18 @@ export function Wcs({ settings }) {
         );
     }
 
+     /**
+     * Resolves requested list of "Offer Selector Ids" (`osis`) from Wcs or local cache.
+     * Returns one promise per osi, the promise resolves to array of product offers
+     * associated with this osi.
+     *
+     * If `multiple` is set to false (this is default value), resolved array will contain only one
+     * offer, selected by country/language-perpetual algorithm.
+     * Otherwise. all responded offers are returned.
+     *
+     * If `forceTaxExclusive` is set to true (default value defined in settings),
+     * then returned prices are transformed into tax exclusive variant.
+     */
     function resolveOfferSelectors({
         country,
         language,

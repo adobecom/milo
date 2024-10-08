@@ -151,18 +151,14 @@ Two photoshop and three acrobat pro single apps (TEAMS):
 
 | Event                       | Description                                        |
 | --------------------------- | -------------------------------------------------- |
-| `wcms:placeholder:pending`  | fires when checkout link starts loading            |
-| `wcms:placeholder:resolved` | fires when the offer is successfully resolved      |
-| `wcms:placeholder:failed`   | fires when the offer could not be found or fetched |
+| `mas:pending`  | fires when checkout link starts loading            |
+| `mas:resolved` | fires when the offer is successfully resolved      |
+| `mas:failed`   | fires when the offer could not be found or fetched |
 | `click`                     | native click event on the `a` element              |
 
 <br>
 
 For each event except `click`, the following css classes are toggled on the element: `placeholder-pending`, `placeholder-resolved`, `placeholder-failed`.
-
-::: warning
-**Note**: Event names with `wcms:placeholder` prefix can be subject to change.
-:::
 
 ### Example
 
@@ -179,13 +175,13 @@ For each event except `click`, the following css classes are toggled on the elem
     const logger = (...messages) =>
         (log.innerHTML = `${messages.join(' ')}<br>${log.innerHTML}`);
     const a = document.getElementById('co2');
-    a.addEventListener('wcms:placeholder:pending', () =>
+    a.addEventListener('mas:pending', () =>
         logger('checkout-link pending'),
     );
-    a.addEventListener('wcms:placeholder:resolved', () =>
+    a.addEventListener('mas:resolved', () =>
         logger('checkout-link resolved'),
     );
-    a.addEventListener('wcms:placeholder:failed', () =>
+    a.addEventListener('mas:failed', () =>
         logger('checkout-link failed'),
     );
     a.addEventListener('click', (e) => {

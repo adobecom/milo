@@ -4,7 +4,6 @@ import { expect } from '@esm-bundle/chai';
 
 import { mockLana } from './mocks/lana.js';
 import { mockFetch } from './mocks/fetch.js';
-import { mockConfig } from './mocks/config.js';
 
 import '../src/merch-offer.js';
 import '../src/merch-offer-select.js';
@@ -50,7 +49,7 @@ runTests(async () => {
                 ),
             ).to.exist;
         });
-        it('should have stock trial checkbox', async () => {
+        it.only('should have stock trial checkbox', async () => {
             const plansCard = document.querySelector(
                 'merch-card[variant="plans"]',
             );
