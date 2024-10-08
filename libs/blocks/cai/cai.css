@@ -4,7 +4,7 @@
   bottom: 10px;
   z-index: 4;
 
-  width: 350px;
+  width: 400px;
   height: auto;
   max-height: 400px;
   border-radius: 16px;
@@ -74,7 +74,7 @@
 
 @keyframes close {
   from { 
-    width: 350px;
+    width: 400px;
     max-height: 400px;
   }
   to {
