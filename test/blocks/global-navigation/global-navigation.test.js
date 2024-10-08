@@ -20,6 +20,7 @@ import longNav from './mocks/global-navigation-long.plain.js';
 import darkNav from './mocks/dark-global-navigation.plain.js';
 import navigationWithCustomLinks from './mocks/navigation-with-custom-links.plain.js';
 import globalNavigationMock from './mocks/global-navigation.plain.js';
+import noDropdownNav from './mocks/global-navigation-no-dropdown.plain.js';
 import { getConfig } from '../../../tools/send-to-caas/send-utils.js';
 
 // TODO
@@ -71,6 +72,16 @@ describe('global navigation', () => {
         globalNavigation: mockWithWrongSignInHref,
       });
       expect(window.lana.log.getCalls().find((c) => c.args[0].includes('Sign in link not found in dropdown.'))).to.exist;
+    });
+
+    it('should render backup signInElem if no dropdown div is found', async () => {
+      await createFullGlobalNavigation({ signedIn: false, globalNavigation: noDropdownNav });
+      console.log(document.body.innerHTML);
+      const signInElem = document.querySelector(selectors.imsSignIn);
+      expect(isElementVisible(signInElem)).to.equal(true);
+
+      signInElem.click();
+      expect(window.lana.log.getCalls().find((c) => c.args[0].includes('Sign in dropdown not found.'))).to.exist;
     });
 
     it("should log when there's issues within onReady", async () => {
