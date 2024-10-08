@@ -5,13 +5,13 @@ export default async function bootstrapBlock(miloLibs, blockConfig) {
 
   const styles = [`${miloLibs}/blocks/${name}/${name}.css`, `${miloLibs}/navigation/navigation.css`];
   styles.forEach((url) => loadLink(url, { rel: 'stylesheet' }));
-  
+
   const setNavLayout = () => {
     const element = document.querySelector(targetEl);
     if (element && layout === 'fullWidth') {
       element.classList.add('feds--full-width');
     }
-  }
+  };
 
   if (!document.querySelector(targetEl)) {
     const block = createTag(targetEl, { class: name });
