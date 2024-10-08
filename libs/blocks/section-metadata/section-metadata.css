@@ -208,11 +208,6 @@
   z-index: 4; 
 }
 
-.section.sticky-bottom.promo-sticky-section.popup {
-  background: none;
-  z-index: 40000;
-}
-
 .section.sticky-bottom.popup {
   bottom: var(--spacing-xs);
 }
