@@ -71,8 +71,8 @@ const extractMetadata = async (img) => {
     const app = selectFormattedGenerator(activeManifest);
     console.log(await selectEditsAndActivity(activeManifest));
     const generativeInfo = await selectGenerativeInfo(activeManifest);
-    const { info, aiApp } = parseGenerativeInfo(generativeInfo);
-    return { issuer, date, info, app, aiApp };
+    const { info, aiTool } = parseGenerativeInfo(generativeInfo);
+    return { issuer, date, info, app, aiTool };
   } catch (err) {
     console.error('Error reading image:', err);
   }
