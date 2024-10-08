@@ -1142,7 +1142,7 @@ function initSidekick() {
     init({ createTag, loadBlock, loadScript, loadStyle });
   };
 
-  if (document.querySelector('helix-sidekick')) {
+  if (document.querySelector('aem-sidekick, helix-sidekick')) {
     initPlugins();
   } else {
     document.addEventListener('sidekick-ready', () => {
