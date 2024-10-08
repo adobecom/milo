@@ -97,6 +97,37 @@ function handleHeading(table, headingCols) {
   });
 }
 
+function decorateAddonContent(table) {
+  const addOnKey = 'ADDON';
+  const allAddOns = [...table.querySelectorAll('.section-row-title')]
+    .filter((row) => row.innerText.includes(addOnKey));
+  if (allAddOns.length) {
+    table.classList.add('add-on');
+    allAddOns.forEach((addOn) => {
+      const addOnRow = addOn.parentElement;
+      addOnRow.remove();
+      const [position, order] = addOn.innerText.split('_')
+        .filter((key) => key !== addOnKey).map((keys) => keys.toLowerCase());
+      if (position && order) {
+        [...table.querySelector('.row-heading').children].forEach((headCol) => {
+          const indexAttr = 'data-col-index';
+          const colIndex = headCol.getAttribute(indexAttr);
+          if (colIndex > 1) { // ignore the key column
+            const addon = `${position}-${order}`;
+            const positionEl = headCol.querySelector(`.${position}`);
+            positionEl.classList.add(`has-${addon}`);
+            positionEl.insertAdjacentElement(
+              order === 'before' ? 'beforebegin' : 'afterend',
+              createTag('div', { class: addon }, [...addOnRow.children]
+                .find((col) => col.getAttribute(indexAttr) === colIndex)?.innerHTML),
+            );
+          }
+        });
+      }
+    });
+  }
+}
+
 function handleHighlight(table) {
   const isHighlightTable = table.classList.contains('highlight');
   const firstRow = table.querySelector('.row-1');
@@ -125,6 +156,7 @@ function handleHighlight(table) {
   }
 
   handleHeading(table, headingCols);
+  decorateAddonContent(table);
   table.dispatchEvent(tableHighlightLoadedEvent);
 }
 
