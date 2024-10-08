@@ -68,7 +68,6 @@ export default async function loadIcons(icons) {
   const iconsToFetch = new Map();
 
   icons.forEach((icon) => {
-    setNodeIndexClass(icon);
     if (icon.classList.contains('icon-tooltip')) decorateToolTip(icon);
     const iconName = [...icon.classList].find((c) => c.startsWith('icon-'))?.substring(5);
     if (icon.dataset.svgInjected || !iconName) return;
