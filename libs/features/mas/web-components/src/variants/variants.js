@@ -44,6 +44,7 @@ const getVariantStyles = () => {
     styles.push(Catalog.variantStyle);
     styles.push(CCDAction.variantStyle);
     styles.push(MiniCompareChart.variantStyle);
+    styles.push(Product.variantStyle);
     styles.push(Plans.variantStyle);
     styles.push(Segment.variantStyle);
     styles.push(SpecialOffer.variantStyle);
