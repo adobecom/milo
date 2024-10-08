@@ -32,6 +32,10 @@ const COLUMN_NOT_OPERATOR = 'not ';
 const TARGET_EXP_PREFIX = 'target-';
 const INLINE_HASH = '_inline';
 const PAGE_URL = new URL(window.location.href);
+const FLAGS = {
+  all: 'all',
+  includeFragments: 'include-fragments',
+};
 
 export const TRACKED_MANIFEST_TYPE = 'personalization';
 
@@ -154,12 +158,12 @@ export function replacePlaceholders(value, placeholders) {
   if (!matches) return val;
   matches.forEach((match) => {
     const key = match.replace(/{{|}}/g, '').trim();
-    if (placeholders[key]) val = val.replace(match, placeholders[key]);
+    if (placeholders?.[key]) val = val.replace(match, placeholders[key]);
   });
   return val;
 }
 
-export const createContent = (el, content, manifestId, targetManifestId, action, modifiers) => {
+export const createContent = (el, { content, manifestId, targetManifestId, action, modifiers }) => {
   if (action === 'replace') {
     addIds(el, manifestId, targetManifestId);
   }
@@ -190,21 +194,26 @@ export const createContent = (el, content, manifestId, targetManifestId, action,
 };
 
 const COMMANDS = {
-  [COMMANDS_KEYS.remove]: ({ el, target, manifestId }) => {
-    if (target === 'false') return;
+  [COMMANDS_KEYS.remove]: (el, { content, manifestId }) => {
+    if (content === 'false') return;
     if (manifestId) {
       el.dataset.removedManifestId = manifestId;
       return;
     }
     el.classList.add(CLASS_EL_DELETE);
   },
-  [COMMANDS_KEYS.replace]: ({ el, target, modifiers, manifestId, targetManifestId }) => {
+  [COMMANDS_KEYS.replace]: (el, cmd) => {
     if (!el || el.classList.contains(CLASS_EL_REPLACE)) return;
     el.insertAdjacentElement(
       'beforebegin',
-      createContent(el, target, manifestId, targetManifestId, 'replace', modifiers),
+      createContent(el, cmd),
     );
   },
+};
+
+const log = (...msg) => {
+  const config = getConfig();
+  if (config.mep?.preview) console.log(...msg);
 };
 
 const fetchData = async (url, type = DATA_TYPE.JSON) => {
@@ -220,7 +229,7 @@ const fetchData = async (url, type = DATA_TYPE.JSON) => {
     return await resp[type]();
   } catch (e) {
     /* c8 ignore next 3 */
-    console.log(`Error loading content: ${url}`, e.message || e);
+    log(`Error loading content: ${url}`, e.message || e);
   }
   return null;
 };
@@ -314,20 +323,9 @@ function normalizeKeys(obj) {
   }, {});
 }
 
-const querySelector = (el, selector, all = false) => {
-  try {
-    return all ? el.querySelectorAll(selector) : el.querySelector(selector);
-  } catch (e) {
-    /* eslint-disable-next-line no-console */
-    console.log('Invalid selector: ', selector);
-    return null;
-  }
-};
-function registerInBlockActions(cmd, manifestId, targetManifestId) {
-  const { action, target, selector } = cmd;
-  const command = { action, target, manifestId, targetManifestId };
-
-  const blockAndSelector = selector.substring(IN_BLOCK_SELECTOR_PREFIX.length).trim().split(/\s+/);
+function registerInBlockActions(command) {
+  const blockAndSelector = command.selector.substring(IN_BLOCK_SELECTOR_PREFIX.length)
+    .trim().split(/\s+/);
   const [blockName] = blockAndSelector;
 
   const config = getConfig();
@@ -335,6 +333,7 @@ function registerInBlockActions(cmd, manifestId, targetManifestId) {
   config.mep.inBlock[blockName] ??= {};
 
   let blockSelector;
+  if (blockAndSelector.length === 1) delete command.selector;
   if (blockAndSelector.length > 1) {
     blockSelector = blockAndSelector.slice(1).join(' ');
     command.selector = blockSelector;
@@ -346,14 +345,14 @@ function registerInBlockActions(cmd, manifestId, targetManifestId) {
 
       // eslint-disable-next-line no-restricted-syntax
       for (const key in fragments) {
-        if (fragments[key].target === blockSelector) fragments[key] = command;
+        if (fragments[key].content === blockSelector) fragments[key] = command;
       }
       fragments[blockSelector] = command;
 
       blockSelector = normalizePath(blockSelector);
       // eslint-disable-next-line no-restricted-syntax
       for (const key in fragments) {
-        if (fragments[key].target === blockSelector) fragments[key] = command;
+        if (fragments[key].content === blockSelector) fragments[key] = command;
       }
       fragments[blockSelector] = command;
       return;
@@ -434,24 +433,34 @@ export function modifyNonFragmentSelector(selector) {
   };
 }
 
-function getSelectedElement({ selector: sel, rootEl }) {
+function getSelectedElements(sel, rootEl, forceRootEl) {
+  const root = forceRootEl ? rootEl : document;
   const selector = sel.trim();
   if (!selector) return {};
 
   if (getSelectorType(selector) === 'fragment') {
     try {
-      const fragment = document.querySelector(
+      const fragments = root.querySelectorAll(
         `a[href*="${normalizePath(selector, false)}"], a[href*="${normalizePath(selector, true)}"]`,
       );
-      if (fragment) return { el: fragment.parentNode };
-      return {};
+      return { els: fragments, modifiers: [FLAGS.all, FLAGS.includeFragments] };
     } catch (e) {
       /* c8 ignore next */
-      return {};
+      return { els: [], modifiers: [] };
     }
   }
   const { modifiedSelector, modifiers } = modifyNonFragmentSelector(selector);
-  return { el: querySelector(rootEl || document, modifiedSelector), modifiers };
+  let els;
+  try {
+    els = root.querySelectorAll(modifiedSelector);
+  } catch (e) {
+  /* eslint-disable-next-line no-console */
+    log('Invalid selector: ', selector);
+    return null;
+  }
+  if (modifiers.includes(FLAGS.all) || !els.length) return { els, modifiers };
+  els = [els[0]];
+  return { els, modifiers };
 }
 const addHash = (url, newHash) => {
   if (!newHash) return url;
@@ -479,29 +488,39 @@ export const updateFragDataProps = (a, inline, sections, fragment) => {
   }
 };
 
-export function handleCommands(commands, rootEl = document, forceInline = false) {
+export function handleCommands(commands, rootEl, forceInline = false, forceRootEl = false) {
   commands.forEach((cmd) => {
-    const { manifestId, targetManifestId, action, selector, target: trgt } = cmd;
-    const target = forceInline ? addHash(trgt, INLINE_HASH) : trgt;
+    const { action, content, selector } = cmd;
+    cmd.content = forceInline ? addHash(content, INLINE_HASH) : content;
     if (selector.startsWith(IN_BLOCK_SELECTOR_PREFIX)) {
-      registerInBlockActions(cmd, manifestId, targetManifestId);
+      registerInBlockActions(cmd);
+      cmd.selectorType = IN_BLOCK_SELECTOR_PREFIX;
       return;
     }
-    const { el, modifiers } = getSelectedElement({ selector, rootEl });
+    const { els, modifiers } = getSelectedElements(selector, rootEl, forceRootEl);
+    cmd.modifiers = modifiers;
 
-    if (!el || (!(action in COMMANDS) && !(action in CREATE_CMDS))) return;
+    els?.forEach((el) => {
+      if (!el || (!(action in COMMANDS) && !(action in CREATE_CMDS))
+        || (rootEl && !rootEl.contains(el))) return;
 
-    if (action in COMMANDS) {
-      COMMANDS[action]({
-        el, target, manifestId, targetManifestId, action, modifiers,
-      });
-      return;
+      if (action in COMMANDS) {
+        COMMANDS[action](el, cmd);
+        return;
+      }
+      const insertAnchor = getSelectorType(selector) === 'fragment' ? el.parentElement : el;
+      insertAnchor?.insertAdjacentElement(
+        CREATE_CMDS[action],
+        createContent(el, cmd),
+      );
+    });
+    if ((els.length && !cmd.modifiers.includes(FLAGS.all))
+      || !cmd.modifiers.includes(FLAGS.includeFragments)) {
+      cmd.completed = true;
     }
-    el?.insertAdjacentElement(
-      CREATE_CMDS[action],
-      createContent(el, target, manifestId, targetManifestId, action, modifiers),
-    );
   });
+  return commands.filter((cmd) => !cmd.completed
+    && cmd.selectorType !== IN_BLOCK_SELECTOR_PREFIX);
 }
 
 const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) => {
@@ -513,6 +532,10 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
   // retro support
   const action = line.action?.toLowerCase()
     .replace('content', '').replace('fragment', '').replace('tosection', '');
+  if (!action) {
+    log('Row found with empty action field: ', line);
+    return;
+  }
   const pageFilter = line['page filter'] || line['page filter optional'];
   const { selector } = line;
 
@@ -528,7 +551,7 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
       action,
       selector,
       pageFilter,
-      target: line[vn],
+      content: line[vn],
       selectorType: getSelectorType(selector),
       manifestId,
       targetManifestId,
@@ -565,9 +588,6 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
       }
     } else if (action in COMMANDS || action in CREATE_CMDS) {
       variants[vn].commands.push(variantInfo);
-    } else {
-      /* c8 ignore next 2 */
-      console.log('Invalid action found: ', line);
     }
   });
 };
@@ -599,7 +619,7 @@ export function parseManifestVariants(data, manifestPath, targetId) {
     return manifestConfig;
   } catch (e) {
     /* c8 ignore next 3 */
-    console.log('error parsing personalization manifestConfig:', e, experiences);
+    log('error parsing personalization manifestConfig:', e, experiences);
   }
   return null;
 }
@@ -777,7 +797,7 @@ export async function getManifestConfig(info = {}, variantOverride = false) {
 
   if (!manifestConfig) {
     /* c8 ignore next 3 */
-    console.log('Error loading personalization manifestConfig: ', name || manifestPath);
+    log('Error loading personalization manifestConfig: ', name || manifestPath);
     return null;
   }
   const infoKeyMap = {
@@ -915,7 +935,7 @@ export function cleanAndSortManifestList(manifests) {
 
       parsePlaceholders(placeholderData, getConfig(), manifestConfig.selectedVariantName);
     } catch (e) {
-      console.warn(e);
+      log(`MEP Error parsing manifests: ${e.toString()}`);
       window.lana?.log(`MEP Error parsing manifests: ${e.toString()}`);
     }
   });
@@ -980,7 +1000,7 @@ export async function applyPers(manifests, postLCP = false) {
     addIds(main, manifestId, targetManifestId);
   }
 
-  if (!postLCP) handleCommands(config.mep.commands);
+  if (!postLCP) config.mep.commands = handleCommands(config.mep.commands);
   deleteMarkedEls();
 
   const pznList = results.filter((r) => (r.experiment?.manifestType === TRACKED_MANIFEST_TYPE));
@@ -1042,7 +1062,6 @@ export async function init(enablements = {}) {
   const config = getConfig();
   if (!postLCP) {
     config.mep = {
-      handleFragmentCommand,
       updateFragDataProps,
       preview: (mepButton !== 'off'
         && (config.env?.name !== 'prod' || mepParam || mepParam === '' || mepButton)),
@@ -1071,7 +1090,7 @@ export async function init(enablements = {}) {
   try {
     await applyPers(manifests, postLCP);
   } catch (e) {
-    console.warn(e);
+    log(`MEP Error: ${e.toString()}`);
     window.lana?.log(`MEP Error: ${e.toString()}`);
   }
 }
