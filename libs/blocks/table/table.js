@@ -97,12 +97,12 @@ function handleHeading(table, headingCols) {
   });
 }
 
-function decorateAddonContent(table) {
+function handleAddOnContent(table) {
   const addOnKey = 'ADDON';
   const allAddOns = [...table.querySelectorAll('.section-row-title')]
     .filter((row) => row.innerText.includes(addOnKey));
   if (allAddOns.length) {
-    table.classList.add('add-on');
+    table.classList.add('add-on-content');
     allAddOns.forEach((addOn) => {
       const addOnRow = addOn.parentElement;
       addOnRow.remove();
@@ -156,7 +156,7 @@ function handleHighlight(table) {
   }
 
   handleHeading(table, headingCols);
-  decorateAddonContent(table);
+  handleAddOnContent(table);
   table.dispatchEvent(tableHighlightLoadedEvent);
 }
 

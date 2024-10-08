@@ -456,7 +456,7 @@
   }
 }
 
-.table.add-on .col-heading {
+.table.add-on-content .col-heading {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -464,13 +464,13 @@
   flex: 1 1 0;
 }
 
-.table.add-on p.body {
+.table.add-on-content p.body {
   font-size: var(--type-body-xxs-size);
   line-height: var(--type-body-xxs-lh);
   margin-bottom: var(--spacing-xxs);
 }
 
-.table.add-on .heading-content-after {
+.table.add-on-content .heading-content-after {
   background-color: #D9D9D9;
   font-size: var(--type-body-xs-size);
   line-height: var(--type-body-xs-lh);
@@ -484,8 +484,8 @@
   font-weight: 400;
 }
 
-.table.add-on .heading-content-after .icon,
-.table.add-on .active .icon-milo-info path {
+.table.add-on-content .heading-content-after .icon,
+.table.add-on-content .active .icon-milo-info path {
   color: black;
 }
 
