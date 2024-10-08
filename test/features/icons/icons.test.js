@@ -1,6 +1,6 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import { stub } from 'sinon';
+import sinon, { stub } from 'sinon';
 import { waitForElement } from '../../helpers/waitfor.js';
 
 const { default: loadIcons, setNodeIndexClass } = await import('../../../libs/features/icons/icons.js');
@@ -27,7 +27,7 @@ describe('Icon Suppprt', () => {
   });
 
   afterEach(() => {
-    window.fetch.restore();
+    sinon.restore();
   });
 
   it('Replaces span.icon', async () => {
