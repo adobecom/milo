@@ -68,9 +68,11 @@ export default async function loadIcons(icons) {
   const iconsToFetch = new Map();
 
   icons.forEach((icon) => {
+    setNodeIndexClass(icon);
     if (icon.classList.contains('icon-tooltip')) decorateToolTip(icon);
     const iconName = [...icon.classList].find((c) => c.startsWith('icon-'))?.substring(5);
     if (icon.dataset.svgInjected || !iconName) return;
+    icon.setAttribute('data-name', iconName);
     if (!federalIcons[iconName] && !iconsToFetch.has(iconName)) {
       const url = `${fedRoot}/federal/assets/icons/svgs/${iconName}.svg`;
       iconsToFetch.set(iconName, fetch(url)
@@ -101,7 +103,7 @@ export default async function loadIcons(icons) {
   await Promise.all(iconRequests);
 
   icons.forEach((icon) => {
-    const iconName = [...icon.classList].find((c) => c.startsWith('icon-'))?.substring(5);
+    const iconName = icon.getAttribute('data-name');
     if (iconName && federalIcons[iconName] && !icon.dataset.svgInjected) {
       const svgClone = federalIcons[iconName].cloneNode(true);
       icon.appendChild(svgClone);
