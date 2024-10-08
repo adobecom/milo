@@ -394,7 +394,7 @@ merch-card[variant="catalog"] .payment-details {
             margin-left: var(--consonant-merch-spacing-xxs);
             box-sizing: border-box;
         }
-    `};import{html as U,css as kt}from"../lit-all.min.js";var ct=`
+    `};import{html as F,css as kt}from"../lit-all.min.js";var ct=`
 :root {
   --consonant-merch-card-ccd-action-width: 276px;
   --consonant-merch-card-ccd-action-min-height: 320px;
@@ -431,12 +431,12 @@ merch-card[variant="ccd-action"] .price-strikethrough {
       grid-template-columns: repeat(4, var(--consonant-merch-card-ccd-action-width));
   }
 }
-`;var zt={title:{tag:"h3",slot:"heading-xs"},prices:{tag:"h3",slot:"heading-xs"},description:{tag:"div",slot:"body-xs"},ctas:{size:"l"}},E=class extends m{constructor(t){super(t)}getGlobalCSS(){return ct}get aemFragmentMapping(){return zt}renderLayout(){return U` <div class="body">
+`;var zt={title:{tag:"h3",slot:"heading-xs"},prices:{tag:"h3",slot:"heading-xs"},description:{tag:"div",slot:"body-xs"},ctas:{size:"l"}},E=class extends m{constructor(t){super(t)}getGlobalCSS(){return ct}get aemFragmentMapping(){return zt}renderLayout(){return F` <div class="body">
             <slot name="icons"></slot> ${this.badge}
             <slot name="heading-xs"></slot>
             <slot name="heading-m"></slot>
-            ${this.promoBottom?U`<slot name="body-xs"></slot
-                      ><slot name="promo-text"></slot>`:U`<slot name="promo-text"></slot
+            ${this.promoBottom?F`<slot name="body-xs"></slot
+                      ><slot name="promo-text"></slot>`:F`<slot name="promo-text"></slot
                       ><slot name="body-xs"></slot>`}
             <footer><slot name="footer"></slot></footer>
             <slot></slot>
@@ -958,7 +958,7 @@ merch-card[variant="plans"] [slot="quantity-select"] {
     :host([variant='plans']) ::slotted([slot='heading-xs']) {
       max-width: var(--consonant-merch-card-heading-xs-max-width, 100%);
     }
-  `};import{html as F,css as At}from"../lit-all.min.js";var pt=`
+  `};import{html as U,css as At}from"../lit-all.min.js";var pt=`
 :root {
   --consonant-merch-card-product-width: 300px;
 }
@@ -998,14 +998,14 @@ merch-card[variant="plans"] [slot="quantity-select"] {
       grid-template-columns: repeat(4, var(--consonant-merch-card-product-width));
   }
 }
-`;var y=class extends m{constructor(t){super(t)}getGlobalCSS(){return pt}adjustProductBodySlots(){if(this.card.getBoundingClientRect().width===0)return;["heading-xs","body-xxs","body-xs","promo-text","callout-content","body-lower"].forEach(e=>this.updateCardElementMinHeight(this.card.shadowRoot.querySelector(`slot[name="${e}"]`),e))}renderLayout(){return F` ${this.badge}
+`;var y=class extends m{constructor(t){super(t)}getGlobalCSS(){return pt}adjustProductBodySlots(){if(this.card.getBoundingClientRect().width===0)return;["heading-xs","body-xxs","body-xs","promo-text","callout-content","body-lower"].forEach(e=>this.updateCardElementMinHeight(this.card.shadowRoot.querySelector(`slot[name="${e}"]`),e))}renderLayout(){return U` ${this.badge}
       <div class="body">
           <slot name="icons"></slot>
           <slot name="heading-xs"></slot>
           <slot name="body-xxs"></slot>
-          ${this.promoBottom?"":F`<slot name="promo-text"></slot>`}
+          ${this.promoBottom?"":U`<slot name="promo-text"></slot>`}
           <slot name="body-xs"></slot>
-          ${this.promoBottom?F`<slot name="promo-text"></slot>`:""}
+          ${this.promoBottom?U`<slot name="promo-text"></slot>`:""}
           <slot name="callout-content"></slot>
           <slot name="body-lower"></slot>
       </div>
@@ -1336,7 +1336,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a:not(.con-button) {
     font-weight: 400;
     line-height: var(--consonant-merch-card-body-xxs-line-height);
     text-decoration-line: underline;
-    color: var(--merch-color-grey-80);
+    color: var(--spectrum-blue-800, #147AF3);
   }
 
   merch-card[variant="ccd-slice"] [slot='image'] img {
@@ -1352,6 +1352,8 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a:not(.con-button) {
             <slot></slot>`}static variantStyle=Ht`
         :host([variant='ccd-slice']) {
             width: var(--consonant-merch-card-ccd-slice-single-width);
+            background-color: var(
+              --spectrum-gray-50, #fff);
             border-radius: 4px;
             display: flex;
             flex-flow: wrap;
@@ -1545,7 +1547,7 @@ merch-card span[is=inline-price] {
 }
 
 merch-card [slot='heading-xs'] {
-    color: var(--merch-color-grey-80);
+    color: var(--spectrum-gray-800, #2c2c2c);
     font-size: var(--consonant-merch-card-heading-xs-font-size);
     line-height: var(--consonant-merch-card-heading-xs-line-height);
     margin: 0;
@@ -1574,14 +1576,14 @@ merch-card [slot='heading-s'] {
     font-size: var(--consonant-merch-card-heading-s-font-size);
     line-height: var(--consonant-merch-card-heading-s-line-height);
     margin: 0;
-    color: var(--merch-color-grey-80);
+    color: var(--spectrum-gray-800, #2c2c2c);
 }
 
 merch-card [slot='heading-m'] {
     font-size: var(--consonant-merch-card-heading-m-font-size);
     line-height: var(--consonant-merch-card-heading-m-line-height);
     margin: 0;
-    color: var(--merch-color-grey-80);
+    color: var(--spectrum-gray-800, #2c2c2c);
     font-weight: 700;
 }
 
@@ -1602,14 +1604,14 @@ merch-card [slot='heading-l'] {
     font-size: var(--consonant-merch-card-heading-l-font-size);
     line-height: var(--consonant-merch-card-heading-l-line-height);
     margin: 0;
-    color: var(--merch-color-grey-80);
+    color: var(--spectrum-gray-800, #2c2c2c);
 }
 
 merch-card [slot='heading-xl'] {
     font-size: var(--consonant-merch-card-heading-xl-font-size);
     line-height: var(--consonant-merch-card-heading-xl-line-height);
     margin: 0;
-    color: var(--merch-color-grey-80);
+    color: var(--spectrum-gray-800, #2c2c2c);
 }
 
 merch-card [slot='callout-content'] {
@@ -1664,32 +1666,36 @@ merch-card [slot="body-xxs"] {
     line-height: var(--consonant-merch-card-body-xxs-line-height);
     font-weight: normal;
     letter-spacing: var(--consonant-merch-card-body-xxs-letter-spacing);
-    color: var(--merch-color-grey-80);
+    color: var(--spectrum-gray-800, #2c2c2c);
     margin: 0;
 }
 
 merch-card [slot="body-xs"] {
     font-size: var(--consonant-merch-card-body-xs-font-size);
     line-height: var(--consonant-merch-card-body-xs-line-height);
-    color: var(--merch-color-grey-80);
+    color: var(--spectrum-gray-800, #2c2c2c);
 }
 
 merch-card [slot="body-m"] {
     font-size: var(--consonant-merch-card-body-m-font-size);
     line-height: var(--consonant-merch-card-body-m-line-height);
-    color: var(--merch-color-grey-80);
+    color: var(--spectrum-gray-800, #2c2c2c);
 }
 
 merch-card [slot="body-l"] {
     font-size: var(--consonant-merch-card-body-l-font-size);
     line-height: var(--consonant-merch-card-body-l-line-height);
-    color: var(--merch-color-grey-80);
+    color: var(--spectrum-gray-800, #2c2c2c);
+}
+
+merch-card [slot="body-s"] {
+    color: var(--spectrum-gray-800, #2c2c2c);
 }
 
 merch-card [slot="body-xl"] {
     font-size: var(--consonant-merch-card-body-xl-font-size);
     line-height: var(--consonant-merch-card-body-xl-line-height);
-    color: var(--merch-color-grey-80);
+    color: var(--spectrum-gray-800, #2c2c2c);
 }
 
 [slot="cci-footer"] p,
