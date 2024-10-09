@@ -78,6 +78,7 @@ export default async function loadBlock(configs, customLib) {
             unavComponents: configBlock.unav?.unavComponents,
             redirect: configBlock.redirect,
             layout: configBlock.layout,
+            noBorder: configBlock.noBorder,
           }),
         });
         configBlock.onReady?.();

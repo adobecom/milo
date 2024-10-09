@@ -1,5 +1,5 @@
 export default async function bootstrapBlock(miloLibs, blockConfig) {
-  const { name, targetEl, layout } = blockConfig;
+  const { name, targetEl, layout, noBorder } = blockConfig;
   const { getConfig, createTag, loadLink, loadScript } = await import(`${miloLibs}/utils/utils.js`);
   const { default: initBlock } = await import(`${miloLibs}/blocks/${name}/${name}.js`);
 
@@ -10,6 +10,9 @@ export default async function bootstrapBlock(miloLibs, blockConfig) {
     const element = document.querySelector(targetEl);
     if (element && layout === 'fullWidth') {
       element.classList.add('feds--full-width');
+    }
+    if (element && noBorder) {
+      element.classList.add('feds--no-border');
     }
   };
 
