@@ -49,10 +49,7 @@
 </ul>
 <h2 id="enablement-mas-commerce-service" tabindex="-1">Enablement <code>mas-commerce-service</code> <a class="header-anchor" href="#enablement-mas-commerce-service" href="#enablement-mas-commerce-service" title="Permalink to this heading">#</a></h2>
 <p>You do need to have mas.js on your page / application, including it can be done like the following</p>
-<pre><code class="hljs language-html">  <span class="hljs-tag">&lt;<span class="hljs-name">script</span>
-      <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;/libs/deps/mas/mas.js&quot;</span>
-      <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;module&quot;</span>
-  &gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;/libs/deps/mas/mas.js&quot;</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;module&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
 </code></pre>
 <h3 id="attributes" tabindex="-1">Attributes <a class="header-anchor" href="#attributes" href="#attributes" title="Permalink to this heading">#</a></h3>
 <table>
@@ -62,6 +59,7 @@
 <th>Description</th>
 <th>Default Value</th>
 <th>Required</th>
+<th></th>
 </tr>
 </thead>
 <tbody>
@@ -70,17 +68,20 @@
 <td>commerce environment you want this page to use, either <code>stage</code> or <code>prod</code></td>
 <td><code>prod</code></td>
 <td><code>false</code></td>
+<td></td>
 </tr>
 <tr>
 <td><code>locale</code></td>
 <td>currency &amp; price locale you need, must belong to one of the <a href="#supported-locales">supported locales</a></td>
 <td><code>en_US</code></td>
 <td><code>false</code></td>
+<td></td>
 </tr>
 <tr>
 <td><code>language</code></td>
 <td>language you need any literals in</td>
 <td>en or locale langauge if set</td>
+<td><code>false</code></td>
 <td><code>false</code></td>
 </tr>
 </tbody>
@@ -97,6 +98,10 @@
 <tr>
 <td><code>registerCheckoutAction (action)</code></td>
 <td>registers an action, that must have signature (offers, options, imsSignedInPromise)</td>
+</tr>
+<tr>
+<td><code>flushWcsCache()</code></td>
+<td>flush the payload cache for WCS calls</td>
 </tr>
 </tbody>
 </table>
@@ -132,6 +137,16 @@
   ></span
   >.
 </p>
+<h4 id="flushwcscache" tabindex="-1">flushWcsCache <a class="header-anchor" href="#flushwcscache" href="#flushwcscache" title="Permalink to this heading">#</a></h4>
+<p>Toggle the network tab and click on <code>Refresh</code> button below</p>
+<pre><code class="hljs demo language-html"><span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;btnRefresh&quot;</span>&gt;</span>Refresh<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;module&quot;</span>&gt;</span><span class="language-javascript">
+    <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;btnRefresh&#x27;</span>).<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;click&#x27;</span>, <span class="hljs-function">() =&gt;</span> {
+        <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&#x27;mas-commerce-service&#x27;</span>).<span class="hljs-title function_">flushWcsCache</span>();
+        <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&#x27;span[is=&quot;inline-price&quot;]&#x27;</span>).<span class="hljs-title function_">requestUpdate</span>(<span class="hljs-literal">true</span>);
+    });
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+</code></pre>
 <h3 id="supported-locales" tabindex="-1">Supported locales <a class="header-anchor" href="#supported-locales" href="#supported-locales" title="Permalink to this heading">#</a></h3>
 <table>
 <thead>

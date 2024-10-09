@@ -41,8 +41,8 @@
 <h1 id="checkout-link" tabindex="-1">checkout-link <a class="header-anchor" href="#checkout-link" href="#checkout-link" title="Permalink to this heading">#</a></h1>
 <h2 id="introduction" tabindex="-1">Introduction <a class="header-anchor" href="#introduction" href="#introduction" title="Permalink to this heading">#</a></h2>
 <p>This custom element renders a checkout link supporting most of the features documented at <a href="https://wiki.corp.adobe.com/pages/viewpage.action?spaceKey=businessservices&amp;title=UCv3+Link+Creation+Guide.">https://wiki.corp.adobe.com/pages/viewpage.action?spaceKey=businessservices&amp;title=UCv3+Link+Creation+Guide.</a><br>
-Sometimes a checkout-link can be also referred as checkout-link as it can be used as an inline link resolving at runtime.<br>
-The term checkout-link will be deprecated and it is recommended to refer as <strong>checkout-link custom element</strong> going forward.</p>
+Sometimes a checkout-link can be also referred as placeholder, as it can be used as an inline link resolving at runtime.<br>
+The term placeholder will be deprecated and it is recommended to refer as <strong>checkout-link custom element</strong> going forward.</p>
 <p>Behind the scene, it uses <a href="https://git.corp.adobe.com/PandoraUI/commerce-core">https://git.corp.adobe.com/PandoraUI/commerce-core</a> to generate the checkout url.</p>
 <p>It requires an Offer Selector ID to retrieve the offer details from WCS.</p>
 <p>See <a href="mas.html#terminology">MAS</a> to learn more.</p>
@@ -237,8 +237,8 @@ The term checkout-link will be deprecated and it is recommended to refer as <str
 </thead>
 <tbody>
 <tr>
-<td><code>requestUpdate(true|false)</code></td>
-<td>causes a re-render using the actual options</td>
+<td><code>requestUpdate(true | false)</code></td>
+<td>Causes a re-render using the actual options, force = false by default, meaning if no change is found will skip</td>
 </tr>
 </tbody>
 </table>
@@ -282,6 +282,7 @@ The term checkout-link will be deprecated and it is recommended to refer as <str
     <span class="hljs-attr">data-wcs-osi</span>=<span class="hljs-string">&quot;A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M&quot;</span>
     &gt;</span>Buy now (click me)&lt;/a
 &gt;
+<span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;btnRefresh&quot;</span>&gt;</span>Refresh<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
 <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;module&quot;</span>&gt;</span><span class="language-javascript">
     <span class="hljs-keyword">const</span> log = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;log&#x27;</span>);
     <span class="hljs-keyword">const</span> <span class="hljs-title function_">logger</span> = (<span class="hljs-params">...messages</span>) =&gt;
@@ -301,7 +302,10 @@ The term checkout-link will be deprecated and it is recommended to refer as <str
         e.<span class="hljs-title function_">stopPropagation</span>();
         <span class="hljs-title function_">logger</span>(<span class="hljs-string">&#x27;checkout link is clicked: &#x27;</span>, e.<span class="hljs-property">target</span>.<span class="hljs-property">href</span>);
     });
-    a.<span class="hljs-property">addEvent</span>;
+    <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;btnRefresh&#x27;</span>).<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;click&#x27;</span>, <span class="hljs-function">() =&gt;</span> {
+        a.<span class="hljs-title function_">requestUpdate</span>(<span class="hljs-literal">true</span>);
+    });
+
 </span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
 </code></pre>
 <h4 id="logs" tabindex="-1">Logs <a class="header-anchor" href="#logs" href="#logs" title="Permalink to this heading">#</a></h4>

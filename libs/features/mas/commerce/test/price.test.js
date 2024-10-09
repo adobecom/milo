@@ -272,18 +272,6 @@ describe('class "InlinePrice"', () => {
         });
     });
 
-    describe('static method "getInlinePrices"', () => {
-        it('returns list of found links', async () => {
-            await init(mockConfig(), true);
-            const inlinePrice1 = mockInlinePrice('abm');
-            const inlinePrice2 = mockInlinePrice('m2m');
-            expect(InlinePrice.getInlinePrices()).to.deep.equal([
-                inlinePrice1,
-                inlinePrice2,
-            ]);
-        });
-    });
-
     /*
     Commented out until issues in content with manually added tax labels are resolved
 

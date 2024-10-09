@@ -145,7 +145,6 @@
                 buildPriceHTML: buildPriceHTML;
                 collectPriceOptions: collectPriceOptions;
                 createInlinePrice: PlaceholderConstructor['createInlinePrice'];
-                getInlinePrices: PlaceholderConstructor['getInlinePrices'];
             }
 
             interface Options extends Commerce.Options, Settings {
@@ -177,11 +176,6 @@
             interface PlaceholderConstructor
                 extends Commerce.PlaceholderConstructor {
                 createInlinePrice(options?: AnyOptions): Placeholder | null;
-                /**
-                 * Selects and returns all inline price placeholders located in the given `container`.
-                 * Uses `document.body` if `conainer` is omitted.
-                 */
-                getInlinePrices(container?: Element): Placeholder[];
             }
 
             interface Settings extends Commerce.Settings {

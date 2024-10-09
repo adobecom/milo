@@ -101,7 +101,7 @@ export class AemFragment extends HTMLElement {
     attributeChangedCallback(name, oldValue, newValue) {
         if (name === ATTRIBUTE_FRAGMENT) {
             this.fragmentId = newValue;
-            this.refresh();
+            this.refresh(false);
         }
     }
 

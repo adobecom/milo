@@ -3,8 +3,8 @@
 ## Introduction {#introduction}
 
 This custom element renders a checkout link supporting most of the features documented at https://wiki.corp.adobe.com/pages/viewpage.action?spaceKey=businessservices&title=UCv3+Link+Creation+Guide.<br>
-Sometimes a checkout-link can be also referred as checkout-link as it can be used as an inline link resolving at runtime.<br>
-The term checkout-link will be deprecated and it is recommended to refer as **checkout-link custom element** going forward.
+Sometimes a checkout-link can be also referred as placeholder, as it can be used as an inline link resolving at runtime.<br>
+The term placeholder will be deprecated and it is recommended to refer as **checkout-link custom element** going forward.
 
 Behind the scene, it uses https://git.corp.adobe.com/PandoraUI/commerce-core to generate the checkout url.
 
@@ -143,9 +143,9 @@ Two photoshop and three acrobat pro single apps (TEAMS):
 
 ## Methods {#methods}
 
-| Property                     | Description                                 |
-| ---------------------------- | ------------------------------------------- |
-| `requestUpdate(true\|false)` | causes a re-render using the actual options |
+| Property                       | Description                                                                                                    |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------- |
+| `requestUpdate(true \| false)` | Causes a re-render using the actual options, force = false by default, meaning if no change is found will skip |
 
 ## Events {#events}
 
@@ -174,6 +174,7 @@ For each event except `click`, the following css classes are toggled on the elem
     data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M"
     >Buy now (click me)</a
 >
+<button id="btnRefresh">Refresh</button>
 <script type="module">
     const log = document.getElementById('log');
     const logger = (...messages) =>
@@ -193,7 +194,10 @@ For each event except `click`, the following css classes are toggled on the elem
         e.stopPropagation();
         logger('checkout link is clicked: ', e.target.href);
     });
-    a.addEvent;
+    document.getElementById('btnRefresh').addEventListener('click', () => {
+        a.requestUpdate(true);
+    });
+
 </script>
 ```
 

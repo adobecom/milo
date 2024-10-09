@@ -12,14 +12,14 @@ export async function hydrate(fragmentData, merchCard) {
     if (!variant) return;
     fragment.model = fragment.model;
 
+    merchCard.variantLayout?.refs?.forEach((ref) => ref.remove());
     merchCard.variant = variant;
     await merchCard.updateComplete;
+    merchCard.variantLayout.refs ??= [];
     const { aemFragmentMapping } = merchCard.variantLayout;
 
     if (!aemFragmentMapping) return;
 
-    merchCard.variantLayout.refs ??= [];
-    merchCard.variantLayout.refs.forEach((ref) => ref.remove());
     const appendFn = (el) => {
         merchCard.variantLayout.refs.push(el);
         merchCard.append(el);

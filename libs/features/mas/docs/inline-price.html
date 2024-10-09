@@ -162,7 +162,7 @@
     <span class="hljs-attr">data-display-per-unit</span>=<span class="hljs-string">&quot;true&quot;</span>
     <span class="hljs-attr">data-display-tax</span>=<span class="hljs-string">&quot;true&quot;</span>
 &gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
- vs 
+vs
 <span class="hljs-tag">&lt;<span class="hljs-name">span</span>
     <span class="hljs-attr">is</span>=<span class="hljs-string">&quot;inline-price&quot;</span>
     <span class="hljs-attr">data-wcs-osi</span>=<span class="hljs-string">&quot;1ZyMOJpSngx9IU5AjEDyp7oRBz843zNlbbtPKbIb1gM&quot;</span>
@@ -178,7 +178,7 @@
     <span class="hljs-attr">data-display-per-unit</span>=<span class="hljs-string">&quot;true&quot;</span>
     <span class="hljs-attr">data-display-tax</span>=<span class="hljs-string">&quot;true&quot;</span>
 &gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
- vs 
+vs
 <span class="hljs-tag">&lt;<span class="hljs-name">span</span>
     <span class="hljs-attr">is</span>=<span class="hljs-string">&quot;inline-price&quot;</span>
     <span class="hljs-attr">data-wcs-osi</span>=<span class="hljs-string">&quot;Mutn1LYoGojkrcMdCLO7LQlx1FyTHw27ETsfLv0h8DQ&quot;</span>
@@ -250,8 +250,8 @@
 </thead>
 <tbody>
 <tr>
-<td><code>requestUpdate(true|false)</code></td>
-<td>Causes a re-render using the actual options</td>
+<td><code>requestUpdate(true | false)</code></td>
+<td>Causes a re-render using the actual options, force = false by default, meaning if no change is found will skip</td>
 </tr>
 </tbody>
 </table>
@@ -288,6 +288,7 @@
     <span class="hljs-attr">is</span>=<span class="hljs-string">&quot;inline-price&quot;</span>
     <span class="hljs-attr">data-wcs-osi</span>=<span class="hljs-string">&quot;r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&quot;</span>
 &gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;btnRefresh&quot;</span>&gt;</span>Refresh<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
 <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;module&quot;</span>&gt;</span><span class="language-javascript">
     <span class="hljs-keyword">const</span> log = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;log&#x27;</span>);
     <span class="hljs-keyword">const</span> <span class="hljs-title function_">logger</span> = (<span class="hljs-params">...messages</span>) =&gt;
@@ -302,6 +303,9 @@
     span.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;wcms:placeholder:failed&#x27;</span>, <span class="hljs-function">() =&gt;</span>
         <span class="hljs-title function_">logger</span>(<span class="hljs-string">&#x27;inline-price failed&#x27;</span>),
     );
+    <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;btnRefresh&#x27;</span>).<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;click&#x27;</span>, <span class="hljs-function">() =&gt;</span> {
+      span.<span class="hljs-title function_">requestUpdate</span>(<span class="hljs-literal">true</span>);
+    });
 </span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
 </code></pre>
 <h4 id="logs" tabindex="-1">Logs <a class="header-anchor" href="#logs" href="#logs" title="Permalink to this heading">#</a></h4>

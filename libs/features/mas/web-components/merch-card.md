@@ -26,30 +26,32 @@ Designs:
 </merch-card>
 
 <script type="module">
-    const log = document.getElementById('log');
-    const logger = (...messages) =>
-        (log.innerHTML = `${messages.join(' ')}<br>${log.innerHTML}`);
+    {
+        const log = document.getElementById('log');
+        const logger = (...messages) =>
+            (log.innerHTML = `${messages.join(' ')}<br>${log.innerHTML}`);
 
-    const fragment1 = document.getElementById('fragment1');
-    fragment1.addEventListener('aem:load', (e) => {
-        logger(
-            'aem-fragment is loaded: ',
-            JSON.stringify(e.target.data, null, '\t'),
-        );
-    });
+        const fragment1 = document.getElementById('fragment1');
+        fragment1.addEventListener('aem:load', (e) => {
+            logger(
+                'aem-fragment is loaded: ',
+                JSON.stringify(e.target.data, null, '\t'),
+            );
+        });
 
-    const card1 = document.getElementById('card1');
-    card1.addEventListener('mas:ready', (e) => {
-        logger('merch-card is ready: ', e.target.variant);
-    });
+        const card1 = document.getElementById('card1');
+        card1.addEventListener('mas:ready', (e) => {
+            logger('merch-card is ready: ', e.target.variant);
+        });
 
-    card1.addEventListener('click', (e) => {
-        if (e.target.tagName === 'A') {
-            e.preventDefault();
-            e.stopPropagation();
-            logger('merch-card cta click: ', e.target);
-        }
-    });
+        card1.addEventListener('click', (e) => {
+            if (e.target.tagName === 'A') {
+                e.preventDefault();
+                e.stopPropagation();
+                logger('merch-card cta click: ', e.target);
+            }
+        });
+    }
 </script>
 ```
 
@@ -83,11 +85,11 @@ Designs:
 
 ### Attributes
 
-| Name        | Description                                                                         | Default Value                        | Required |
-| ----------- | ----------------------------------------------------------------------------------- | ------------------------------------ | -------- |
-| `variant`   | Variant in terms design. Not required when used with an `aem-fragment`              |                                      | `false`  |
-| `consonant` | Whether to use consonant styles without sp-button decorator around the footer CTAs. | `true` if `aem-fragment` is not used | `false`  |
-| `size`      | card width; a card can span over 2 columns or entire row on a css grid `wide\|super-wide`       |                                      | `false`  |
+| Name        | Description                                                                               | Default Value                        | Required |
+| ----------- | ----------------------------------------------------------------------------------------- | ------------------------------------ | -------- |
+| `variant`   | Variant in terms design. Not required when used with an `aem-fragment`                    |                                      | `false`  |
+| `consonant` | Whether to use consonant styles without sp-button decorator around the footer CTAs.       | `true` if `aem-fragment` is not used | `false`  |
+| `size`      | card width; a card can span over 2 columns or entire row on a css grid `wide\|super-wide` |                                      | `false`  |
 
 #### Active variants:
 
@@ -111,9 +113,54 @@ Designs:
 
 ### Events
 
-| Name        | Description                                      |
-| ----------- | ------------------------------------------------ |
-| `mas:ready` | fires when rendered together with `aem-fragment` |
+| Name        | Description                                                                  |
+| ----------- | ---------------------------------------------------------------------------- |
+| `mas:ready` | fires when all the prices & checkout links are resolved & renderered         |
+| `mas:error` | fires when at least a price or checkout link cannot be resolved after render |
+
+### `mas:ready` & `mas:error`
+
+```html {.demo .light}
+<style>
+    .event-demo {
+        outline: 2px solid;
+    }
+    merch-card.ready {
+        outline-color: lime;
+    }
+
+    merch-card.error {
+        outline-color: red;
+        display: block;
+        width: 300px;
+        height: 200px;
+        margin-top: 16px;
+    }
+</style>
+<merch-card class="event-demo">
+    <aem-fragment
+        fragment="d8008cac-010f-4607-bacc-a7a327da1312"
+    ></aem-fragment>
+</merch-card>
+
+<merch-card class="event-demo">
+    <aem-fragment fragment="wrong-fragment-id"></aem-fragment>
+</merch-card>
+
+<script type="module">
+    {
+        const [psCard, errorCard] = document.querySelectorAll('.event-demo');
+        [psCard, errorCard].forEach((card) => {
+            card.addEventListener('mas:ready', () =>
+                card.classList.add('ready'),
+            );
+            card.addEventListener('mas:error', () =>
+                card.classList.add('error'),
+            );
+        });
+    }
+</script>
+```
 
 ## aem-fragment custom element
 
@@ -132,8 +179,45 @@ Designs:
 | `data`           | Current fragment RAW data that is used to render the merch-card                    |
 | `updateComplete` | Promise that resolves when the fragment is retrieved and `aem:load` event is fired |
 
+### Mthod
+
+| Name        | Description                          |
+| ----------- | ------------------------------------ |
+| `refresh()` | Refreshes fragment content from Odin |
+
 ### Events
 
-| Name       | Description                                    |
-| ---------- | ---------------------------------------------- |
-| `aem:load` | fires when the fragment is successfully loaded |
+| Name        | Description                                                                             |
+| ----------- | --------------------------------------------------------------------------------------- |
+| `aem:load`  | fires when the fragment is successfully loaded                                          |
+| `aem:error` | fires when the fragment cannot be loaded, e.g. network error, wrong fragment id, etc... |
+
+```html {.demo .light}
+<merch-card id="psCard2">
+    <aem-fragment
+        fragment="d8008cac-010f-4607-bacc-a7a327da1312"
+    ></aem-fragment>
+</merch-card>
+<button id="btnRefresh">Refresh</button>
+<script type="module">
+    {
+        const log = document.getElementById('log2');
+        const logger = (...messages) =>
+            (log.innerHTML = `${messages.join(' ')}<br>${log.innerHTML}`);
+
+        const psCard = document.getElementById('psCard2');
+        psCard.addEventListener('mas:ready', (e) => {
+            logger('merch-card is ready: ', e.target.variant);
+        });
+        const aemFragment = psCard.querySelector('aem-fragment');
+        aemFragment.addEventListener('aem:load', () => logger());
+        document.getElementById('btnRefresh').addEventListener('click', () => {
+            aemFragment.refresh();
+        });
+    }
+</script>
+```
+
+```html {#log2}
+
+```

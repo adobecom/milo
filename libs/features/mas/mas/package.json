@@ -1,6 +1,6 @@
 {
     "name": "@adobecom/mas-js",
-    "version": "0.0.5",
+    "version": "0.0.6",
     "description": "Merch at Scale commerce & web components",
     "scripts": {
         "test:ci": "echo",

@@ -137,7 +137,7 @@ export class MerchCard extends LitElement {
     }
 
     get theme() {
-      return this.closest('sp-theme');
+        return this.closest('sp-theme');
     }
 
     get prices() {
@@ -282,8 +282,8 @@ export class MerchCard extends LitElement {
         );
 
         // aem-fragment logic
-        this.addEventListener(EVENT_AEM_LOAD, this.handleAemFragmentEvents);
         this.addEventListener(EVENT_AEM_ERROR, this.handleAemFragmentEvents);
+        this.addEventListener(EVENT_AEM_LOAD, this.handleAemFragmentEvents);
 
         if (!this.aemFragment) this.checkReady();
     }
@@ -300,8 +300,8 @@ export class MerchCard extends LitElement {
             EVENT_MERCH_STORAGE_CHANGE,
             this.handleStorageChange,
         );
-        this.removeEventListener(EVENT_AEM_LOAD, this.handleAemFragmentEvents);
         this.removeEventListener(EVENT_AEM_ERROR, this.handleAemFragmentEvents);
+        this.removeEventListener(EVENT_AEM_LOAD, this.handleAemFragmentEvents);
     }
 
     // custom methods
@@ -329,7 +329,7 @@ export class MerchCard extends LitElement {
     }
 
     get isLoadSuccess() {
-        this.querySelector('.error,.placeholder-failed') === null;
+        return this.querySelector('.error,.placeholder-failed') === null;
     }
 
     async checkReady() {
@@ -339,11 +339,11 @@ export class MerchCard extends LitElement {
                     'span[is="inline-price"][data-wcs-osi],a[is="checkout-link"][data-wcs-osi]',
                 ),
             ].map((element) => element.onceSettled()),
-        ).finally(() => this.isLoadSuccess);
-        const failPromise = new Promise((resolve) =>
+        ).then(() => this.isLoadSuccess);
+        const timeoutPromise = new Promise((resolve) =>
             setTimeout(() => resolve(false), MERCH_CARD_LOAD_TIMEOUT),
         );
-        const success = await Promise.race([successPromise, failPromise]);
+        const success = await Promise.race([successPromise, timeoutPromise]);
         if (success === true) {
             this.dispatchEvent(
                 new CustomEvent(EVENT_MAS_READY, {

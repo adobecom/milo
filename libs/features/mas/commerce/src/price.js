@@ -109,7 +109,7 @@ export function Price({ literals, providers, settings }) {
         return method(context, offer);
     }
 
-    const { createInlinePrice, getInlinePrices } = InlinePrice;
+    const { createInlinePrice } = InlinePrice;
 
     return {
         InlinePrice,
@@ -117,6 +117,5 @@ export function Price({ literals, providers, settings }) {
         collectPriceOptions,
         // TODO: remove after update of Milo merch block
         createInlinePrice,
-        getInlinePrices,
     };
 }
