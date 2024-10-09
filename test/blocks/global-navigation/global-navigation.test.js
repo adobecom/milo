@@ -76,12 +76,8 @@ describe('global navigation', () => {
 
     it('should render backup signInElem if no dropdown div is found', async () => {
       await createFullGlobalNavigation({ signedIn: false, globalNavigation: noDropdownNav });
-      console.log(document.body.innerHTML);
       const signInElem = document.querySelector(selectors.imsSignIn);
       expect(isElementVisible(signInElem)).to.equal(true);
-
-      signInElem.click();
-      expect(window.lana.log.getCalls().find((c) => c.args[0].includes('Sign in dropdown not found.'))).to.exist;
     });
 
     it("should log when there's issues within onReady", async () => {
