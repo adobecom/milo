@@ -42,13 +42,11 @@ export async function hydrate(fragmentData, merchCard) {
         appendFn(merchIcon);
     });
 
-    /* c8 ignore next 3 */
-    if (
-        fragment.size &&
-        aemFragmentMapping.allowedSizes?.includes(fragment.size)
-    ) {
+    /* c8 ignore next 2 */
+    if (!fragment.size) {
+        merchCard.removeAttribute('size');
+    } else if (aemFragmentMapping.allowedSizes?.includes(fragment.size))
         merchCard.setAttribute('size', fragment.size);
-    }
 
     if (fragment.cardTitle && aemFragmentMapping.title) {
         appendFn(
