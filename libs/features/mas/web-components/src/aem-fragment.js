@@ -141,6 +141,7 @@ export class AemFragment extends HTMLElement {
     }
 
     #fail(error) {
+      this.classList.add('error');
         this.dispatchEvent(
             new CustomEvent(EVENT_AEM_ERROR, {
                 detail: error,

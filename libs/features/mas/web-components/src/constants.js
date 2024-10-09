@@ -54,3 +54,4 @@ export const EVENT_MERCH_SIDENAV_SELECT = 'merch-sidenav:select';
 export const EVENT_AEM_LOAD = 'aem:load';
 export const EVENT_AEM_ERROR = 'aem:error';
 export const EVENT_MAS_READY = 'mas:ready';
+export const EVENT_MAS_ERROR = 'mas:error';
