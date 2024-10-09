@@ -1,4 +1,5 @@
 import { getFederatedContentRoot } from '../../utils/federated.js';
+import { loadLink, loadStyle } from '../../utils/utils.js';
 
 let fetchedIcons;
 let fetched = false;
@@ -25,6 +26,7 @@ async function getSVGsfromFile(path) {
   return miloIcons;
 }
 
+// TODO: remove after all consumers have stopped calling this method
 // eslint-disable-next-line no-async-promise-executor
 export const fetchIcons = (config) => new Promise(async (resolve) => {
   /* c8 ignore next */
@@ -48,18 +50,79 @@ function decorateToolTip(icon) {
   icon.dataset.tooltip = content;
   // Position is the next to last part of a tooltip
   const place = conf.pop()?.trim().toLowerCase() || 'right';
-  icon.className = `icon icon-info-outline milo-tooltip ${place}`;
+  const defaultIcon = 'info-outline';
+  icon.className = `icon icon-${defaultIcon} milo-tooltip ${place}`;
+  icon.dataset.name = defaultIcon;
   wrapper.parentElement.replaceChild(icon, wrapper);
 }
 
-export function setNodeIndexClass(icon) {
-  const parent = icon.parentNode;
-  const children = parent.childNodes;
-  const nodeIndex = [...children].indexOf.call(children, icon);
-  let indexClass = (nodeIndex === children.length - 1) ? 'last' : 'middle';
-  if (nodeIndex === 0) indexClass = 'first';
-  if (children.length === 1) indexClass = 'only';
-  icon.classList.add(`node-index-${indexClass}`);
+export function getIconData(icon) {
+  const fedRoot = getFederatedContentRoot();
+  const name = [...icon.classList].find((c) => c.startsWith('icon-'))?.substring(5);
+  const path = `${fedRoot}/federal/assets/icons/svgs/${name}.svg`;
+  return { path, name };
+}
+
+function preloadInViewIconResources(config) {
+  const { base } = config;
+  loadStyle(`${base}/features/icons/icons.css`);
+  loadLink(`${base}/utils/federated.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+  loadLink(`${base}/features/icons/icons.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+}
+
+const preloadInViewIcons = async (icons = []) => icons.forEach((icon) => {
+  const { path } = getIconData(icon);
+  loadLink(path, { rel: 'preload', as: 'fetch', crossorigin: 'anonymous' });
+});
+
+function isElementInView(e) {
+  const rect = e.getBoundingClientRect();
+  return (
+    rect.top >= 0
+    && rect.left >= 0
+    && rect.bottom <= (window.innerHeight || document.documentElement.clientHeight)
+    && rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+  );
+}
+
+function filterDuplicatedIcons(icons) {
+  if (!icons.length) return [];
+  const uniqueIconKeys = new Set();
+  const uniqueIcons = [];
+  for (const icon of icons) {
+    const key = [...icon.classList].find((c) => c.startsWith('icon-'))?.substring(5);
+    if (!uniqueIconKeys.has(key)) {
+      uniqueIconKeys.add(key);
+      uniqueIcons.push(icon);
+    }
+  }
+  return uniqueIcons;
+}
+
+export function decorateIcons(area, icons, config) {
+  if (!icons.length) return;
+  const iconsATF = [...icons].filter((icon) => isElementInView(icon));
+  const uniqueIcons = filterDuplicatedIcons(iconsATF);
+  if (!uniqueIcons.length) return;
+  preloadInViewIcons(uniqueIcons);
+  preloadInViewIconResources(config);
+  icons.forEach((icon) => {
+    const iconName = [...icon.classList].find((c) => c.startsWith('icon-'))?.substring(5);
+    if (!iconName) return;
+    icon.dataset.name = iconName;
+  });
+}
+
+export function setIconsIndexClass(icons) {
+  [...icons].forEach((icon) => {
+    const parent = icon.parentNode;
+    const children = parent.childNodes;
+    const nodeIndex = [...children].indexOf.call(children, icon);
+    let indexClass = (nodeIndex === children.length - 1) ? 'last' : 'middle';
+    if (nodeIndex === 0) indexClass = 'first';
+    if (children.length === 1) indexClass = 'only';
+    icon.classList.add(`node-index-${indexClass}`);
+  });
 }
 
 export default async function loadIcons(icons) {
@@ -68,11 +131,9 @@ export default async function loadIcons(icons) {
   const iconsToFetch = new Map();
 
   icons.forEach((icon) => {
-    setNodeIndexClass(icon);
     if (icon.classList.contains('icon-tooltip')) decorateToolTip(icon);
-    const iconName = [...icon.classList].find((c) => c.startsWith('icon-'))?.substring(5);
+    const iconName = icon.dataset.name;
     if (icon.dataset.svgInjected || !iconName) return;
-    icon.setAttribute('data-name', iconName);
     if (!federalIcons[iconName] && !iconsToFetch.has(iconName)) {
       const url = `${fedRoot}/federal/assets/icons/svgs/${iconName}.svg`;
       iconsToFetch.set(iconName, fetch(url)
@@ -103,7 +164,7 @@ export default async function loadIcons(icons) {
   await Promise.all(iconRequests);
 
   icons.forEach((icon) => {
-    const iconName = icon.getAttribute('data-name');
+    const iconName = icon.dataset.name;
     if (iconName && federalIcons[iconName] && !icon.dataset.svgInjected) {
       const svgClone = federalIcons[iconName].cloneNode(true);
       icon.appendChild(svgClone);
