@@ -570,9 +570,9 @@ span.icon {
 }
 
 span.icon.node-index-first { margin-inline-start: unset; }
-span.icon.node-index-middle {  margin-inline: var(--icon-spacing); }
-span.icon.node-index-last {  margin-inline-end: unset; }
-span.icon.node-index-only {  margin-inline: unset; }
+span.icon.node-index-middle { margin-inline: var(--icon-spacing); }
+span.icon.node-index-last { margin-inline-end: unset; }
+span.icon.node-index-only { margin-inline: unset; }
 
 span.icon svg {
   height: 1em;
