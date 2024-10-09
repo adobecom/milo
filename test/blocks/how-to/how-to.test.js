@@ -1,5 +1,6 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
+import { delay } from '../../helpers/waitfor.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const { default: init } = await import('../../../libs/blocks/how-to/how-to.js');
@@ -99,10 +100,13 @@ describe('How To', () => {
     expect(howToList).to.exist;
   });
 
-  it('Renders a video', async () => {
-    const howTo = document.querySelector('#test5');
+  it('Renders a AdobeTV video', async () => {
+    const howTo = document.getElementById('test5');
+    const { default: adobeTV } = await import('../../../libs/blocks/adobetv/adobetv.js');
+    adobeTV(howTo.querySelector('a'));
+    await delay();
     init(howTo);
-    const howToList = document.querySelector('#test5 a');
-    expect(howToList).to.exist;
+    const iframe = howTo.querySelector('iframe');
+    expect(iframe).to.exist;
   });
 });
