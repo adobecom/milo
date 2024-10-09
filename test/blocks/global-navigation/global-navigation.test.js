@@ -78,6 +78,9 @@ describe('global navigation', () => {
       await createFullGlobalNavigation({ signedIn: false, globalNavigation: noDropdownNav });
       const signInElem = document.querySelector(selectors.imsSignIn);
       expect(isElementVisible(signInElem)).to.equal(true);
+
+      signInElem.click();
+      expect(window.adobeIMS.signIn.calledOnce).to.be.true;
     });
 
     it("should log when there's issues within onReady", async () => {
