@@ -1296,14 +1296,6 @@ async function processSection(section, config, isDoc) {
   // Only move on to the next section when all blocks are loaded.
   await Promise.all(loadBlocks);
 
-  console.log('section', section);
-  // const sections = document.body.querySelectorAll('div.section');
-  // if (sections.length) {
-  //   sections.forEach((section) => {
-  //     decorateIcons(section, config);
-  //   });
-  // }
-
   delete section.el.dataset.status;
   if (isDoc && firstSection) await loadPostLCP(config);
   delete section.el.dataset.idx;
