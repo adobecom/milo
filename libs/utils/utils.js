@@ -1030,7 +1030,7 @@ async function checkForPageMods() {
   const xlg = martech === 'off' ? false : getMepEnablement('xlg');
   if (!(pzn || target || promo || mepParam
     || mepHighlight || mepButton || mepParam === '' || xlg)) return;
-  if (target === true || xlg) {
+  if (target || xlg) {
     loadMartech();
   } else if (pzn && martech !== 'off') {
     loadIms()
