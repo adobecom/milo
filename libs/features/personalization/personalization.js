@@ -1085,7 +1085,7 @@ export async function init(enablements = {}) {
     });
   }
 
-  if (target === true || (target === 'postlcp' && postLCP)) {
+  if (target === true || postLCP) {
     const { getTargetPersonalization } = await import('../../martech/martech.js');
     const { targetManifests, targetPropositions } = await getTargetPersonalization();
     manifests = manifests.concat(targetManifests);

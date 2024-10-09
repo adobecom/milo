@@ -1030,7 +1030,7 @@ async function checkForPageMods() {
   const xlg = martech === 'off' ? false : getMepEnablement('xlg');
   if (!(pzn || target || promo || mepParam
     || mepHighlight || mepButton || mepParam === '' || xlg)) return;
-  if (target || xlg) {
+  if (target === true || xlg) {
     loadMartech();
   } else if (pzn && martech !== 'off') {
     loadIms()
@@ -1049,7 +1049,7 @@ async function checkForPageMods() {
 
 async function loadPostLCP(config) {
   await decoratePlaceholders(document.body.querySelector('header'), config);
-  if (config.mep?.targetEnabled === 'postLCP') {
+  if (config.mep?.targetEnabled === 'postlcp') {
     /* c8 ignore next 2 */
     const { init } = await import('../features/personalization/personalization.js');
     await init({ postLCP: true });
