@@ -55,7 +55,7 @@ function decorateToolTip(icon) {
 export function setNodeIndexClass(icon) {
   const parent = icon.parentNode;
   const children = parent.childNodes;
-  const nodeIndex = Array.prototype.indexOf.call(children, icon);
+  const nodeIndex = [...children].indexOf.call(children, icon);
   let indexClass = (nodeIndex === children.length - 1) ? 'last' : 'middle';
   if (nodeIndex === 0) indexClass = 'first';
   if (children.length === 1) indexClass = 'only';
