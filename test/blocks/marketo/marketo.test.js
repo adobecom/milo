@@ -2,7 +2,7 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { delay } from '../../helpers/waitfor.js';
 import { setConfig } from '../../../libs/utils/utils.js';
-import init, { setPreferences, decorateURL } from '../../../libs/blocks/marketo/marketo.js';
+import init, { setPreferences, decorateURL, FORM_PARAM } from '../../../libs/blocks/marketo/marketo.js';
 
 const innerHTML = await readFile({ path: './mocks/body.html' });
 
@@ -102,5 +102,25 @@ describe('marketo decorateURL', () => {
     const baseURL = new URL('https://business.adobe.com/marketo-block.html');
     const result = decorateURL('Thank you for submitting the form', baseURL);
     expect(result).to.be.null;
+  });
+});
+
+const onePage = await readFile({ path: './mocks/one-page-experience.html' });
+
+describe('Marketo one page experience', () => {
+  beforeEach(() => {
+    document.body.innerHTML = onePage;
+  });
+
+  it('shows success section if ungated', async () => {
+    const url = new URL(window.location);
+    url.searchParams.set(FORM_PARAM, 'off');
+    window.history.pushState({}, '', url);
+
+    init(document.querySelector('.marketo'));
+    expect(document.querySelector('.section.form-success').classList.contains('hide-block')).to.be.false;
+
+    url.searchParams.delete(FORM_PARAM);
+    window.history.pushState({}, '', url);
   });
 });
