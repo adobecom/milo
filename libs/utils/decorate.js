@@ -326,3 +326,15 @@ export async function loadCDT(el, classList) {
     window.lana?.log(`Failed to load countdown timer module: ${error}`, { tags: 'countdown-timer' });
   }
 }
+
+export function decorateA11yForLinks(el, headerTxt) {
+  if (!el || !headerTxt?.trim()) return;
+
+  el.querySelectorAll('a')?.forEach((link) => {
+    const linkTxt = link.textContent?.trim();
+    if (!linkTxt) return;
+
+    const a11yTxt = `${linkTxt} about ${headerTxt.trim()}`;
+    link.setAttribute('aria-label', a11yTxt);
+  });
+}

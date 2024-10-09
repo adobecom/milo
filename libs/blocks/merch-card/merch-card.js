@@ -1,4 +1,4 @@
-import { decorateButtons, decorateBlockHrs } from '../../utils/decorate.js';
+import { decorateButtons, decorateBlockHrs, decorateA11yForLinks } from '../../utils/decorate.js';
 import { getConfig, createTag, loadStyle } from '../../utils/utils.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
 import { processTrackingLabels } from '../../martech/attributes.js';
@@ -624,6 +624,7 @@ export default async function init(el) {
   } else {
     parseTwpContent(el, merchCard);
   }
+  decorateA11yForLinks(merchCard, merchCard.title);
   el.replaceWith(merchCard);
   decorateMerchCardLinkAnalytics(merchCard);
   return merchCard;
