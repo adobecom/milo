@@ -71,4 +71,11 @@ describe('Bootstrapper', async () => {
     const el = document.querySelector('header');
     expect(el.classList.contains('feds--full-width')).to.be.true;
   });
+
+  it('Renders the header with no border bottom', async () => {
+    blockConfig.header.noBorder = true;
+    await loadBlock(miloLibs, blockConfig.header);
+    const el = document.querySelector('header');
+    expect(el.classList.contains('feds--no-border')).to.be.true;
+  });
 });
