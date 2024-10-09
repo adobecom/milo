@@ -465,13 +465,6 @@ function getBlockData(block) {
   return { blockPath, name, hasStyles };
 }
 
-function getIconData(icon) {
-  const fedRoot = 'https://main--federal--adobecom.hlx.page'; // getFederatedContentRoot()
-  const name = [...icon.classList].find((c) => c.startsWith('icon-'))?.substring(5);
-  const path = `${fedRoot}/federal/assets/icons/svgs/${name}.svg`;
-  return { path, name };
-}
-
 export async function loadBlock(block) {
   if (block.classList.contains('hide-block')) {
     block.remove();
@@ -784,16 +777,6 @@ function decorateHeader() {
   if (promo?.length) header.classList.add('has-promo');
 }
 
-async function decorateIcons(area, config) {
-  const icons = area.querySelectorAll('span.icon');
-  if (icons.length === 0) return;
-  const { base } = config;
-  loadStyle(`${base}/features/icons/icons.css`);
-  loadLink(`${base}/utils/federated.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
-  const { default: loadIcons } = await import('../features/icons/icons.js');
-  await loadIcons(icons);
-}
-
 export async function customFetch({ resource, withCacheRules }) {
   const options = {};
   if (withCacheRules) {
@@ -869,25 +852,10 @@ export function filterDuplicatedLinkBlocks(blocks) {
   return uniqueBlocks;
 }
 
-function filterDuplicatedIcons(icons) {
-  if (!icons.length) return [];
-  const uniqueIconKeys = new Set();
-  const uniqueIcons = [];
-  for (const icon of icons) {
-    const key = [...icon.classList].find((c) => c.startsWith('icon-'))?.substring(5);
-    if (!uniqueIconKeys.has(key)) {
-      uniqueIconKeys.add(key);
-      uniqueIcons.push(icon);
-    }
-  }
-  return uniqueIcons;
-}
-
 function decorateSection(section, idx) {
   let links = decorateLinks(section);
   decorateDefaults(section);
   const blocks = section.querySelectorAll(':scope > div[class]:not(.content)');
-  const sectionIcons = section.querySelectorAll('span.icon');
 
   const { doNotInline } = getConfig();
   const blockLinks = [...blocks].reduce((blkLinks, block) => {
@@ -920,7 +888,6 @@ function decorateSection(section, idx) {
     el: section,
     idx,
     preloadLinks: filterDuplicatedLinkBlocks(blockLinks.autoBlocks),
-    preloadIcons: filterDuplicatedIcons(sectionIcons),
   };
 }
 
@@ -1220,9 +1187,8 @@ function decorateDocumentExtras() {
   decorateHeader();
 }
 
-async function documentPostSectionLoading(config) {
+async function documentPostSectionLoading(area, config) {
   decorateFooterPromo();
-
   const appendage = getMetadata('title-append');
   if (appendage) {
     import('../features/title-append/title-append.js').then((module) => module.default(appendage));
@@ -1275,11 +1241,6 @@ const preloadBlockResources = (blocks = []) => blocks.map((block) => {
   return hasStyles && new Promise((resolve) => { loadStyle(`${blockPath}.css`, resolve); });
 }).filter(Boolean);
 
-const preloadSectionResources = async (section, icons = []) => icons.forEach((icon) => {
-  const { path } = getIconData(icon);
-  loadLink(path, { rel: 'preload', as: 'fetch', crossorigin: 'anonymous' });
-});
-
 async function resolveInlineFrags(section) {
   const inlineFrags = [...section.el.querySelectorAll('a[href*="#_inline"]')];
   if (!inlineFrags.length) return;
@@ -1296,10 +1257,8 @@ async function processSection(section, config, isDoc) {
   const firstSection = section.el.dataset.idx === '0';
   const stylePromises = firstSection ? preloadBlockResources(section.blocks) : [];
   preloadBlockResources(section.preloadLinks);
-  if (firstSection) preloadSectionResources(section, section.preloadIcons);
   await Promise.all([
     decoratePlaceholders(section.el, config),
-    decorateIcons(section.el, config),
   ]);
   const loadBlocks = [...stylePromises];
   if (section.preloadLinks.length) {
@@ -1332,6 +1291,14 @@ export async function loadArea(area = document) {
     decorateDocumentExtras();
   }
 
+  const allIcons = area.querySelectorAll('span.icon');
+  const iconUtils = [];
+  if (allIcons.length) {
+    const { setIconsIndexClass, decorateIcons } = await import('../features/icons/icons.js');
+    setIconsIndexClass(allIcons);
+    iconUtils.decorateIcons = decorateIcons;
+  }
+
   const sections = decorateSections(area, isDoc);
 
   const areaBlocks = [];
@@ -1344,13 +1311,18 @@ export async function loadArea(area = document) {
     });
   }
 
+  if (allIcons.length && isDoc) await iconUtils.decorateIcons(area, allIcons, config);
+
   const currentHash = window.location.hash;
   if (currentHash) {
     scrollToHashedElement(currentHash);
   }
 
-  if (isDoc) await documentPostSectionLoading(config);
-
+  if (isDoc) {
+    const { default: loadIcons } = await import('../features/icons/icons.js');
+    loadIcons(allIcons);
+    await documentPostSectionLoading(area, config);
+  }
   await loadDeferred(area, areaBlocks, config);
 }
 

@@ -3,7 +3,7 @@ import { expect } from '@esm-bundle/chai';
 import sinon, { stub } from 'sinon';
 import { waitForElement } from '../../helpers/waitfor.js';
 
-const { default: loadIcons, setNodeIndexClass } = await import('../../../libs/features/icons/icons.js');
+const { default: loadIcons, getIconData, setIconsIndexClass } = await import('../../../libs/features/icons/icons.js');
 const mockRes = ({ payload, status = 200, ok = true } = {}) => new Promise((resolve) => {
   resolve({
     status,
@@ -35,15 +35,19 @@ describe('Icon Suppprt', () => {
     window.fetch.returns(mockRes({ payload }));
 
     icons = document.querySelectorAll('span.icon');
+    icons.forEach((icon) => {
+      const { name } = getIconData(icon);
+      icon.dataset.name = name;
+    });
     await loadIcons(icons);
 
     const selector = await waitForElement('span.icon svg');
     expect(selector).to.exist;
   });
 
-  it('Sets node index class', async () => {
+  it('Sets icon index class', async () => {
     icons = document.querySelectorAll('span.icon');
-    setNodeIndexClass(icons[2]);
+    setIconsIndexClass(icons);
     const secondIconHasIndexClass = icons[2].classList.contains('node-index-last');
     expect(secondIconHasIndexClass).to.be.true;
   });
