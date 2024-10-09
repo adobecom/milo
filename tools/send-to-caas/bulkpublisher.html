@@ -17,8 +17,9 @@
           </dt>
           <dd class="content is-expanded">
 
+            <h4>Consumer Presets</h4>
+
             <div class="field">
-              <label for="preset"><b>Consumer Presets:</b></label>
               <select name="preset" id="preset">
                 <option value="default">Select a Preset... </option>
                 <option value="blog">Adobe Blog (blog)</option>
@@ -29,12 +30,10 @@
                 <option value="dc">Document Cloud (dc)</option>
                 <option value="milo">Milo</option>
                 <option disabled>────────────────────</option>
-                <option value="advanced">Advanced: Custom Settings</option>
-                </select>
+                <option value="advanced">Advanced: View/Change Settings</option>
+              </select>
+            </div>
 
-              </div>
-
-   
             <div class="advanced-settings">
               <hr width="90%" style="border: solid 1px #666;">
               <div class="field">
@@ -56,11 +55,12 @@
               </div>
             </div>
 
-
             <hr width="90%" style="border: solid 1px #666;">
 
+            <h4>Options</h4>
+
             <div class="field">
-              <label for="contentType">ContentType Fallback:</label>
+              <label for="contentType">ContentType Fallback: <span class="help content-type-fallback" title="Help">(?)</span></label>
               <select name="contentType" id="contentType">
                 <option value="">Auto Detect</option>
                 <option value="caas:content-type/announcements">Announcements</option>
@@ -112,7 +112,7 @@
               </select>
             </div>
             <div class="field">
-              <label for="caasEnv">CaaS Env</label>
+              <label for="caasEnv">CaaS Environment <span class="help caas-environment" title="Help">(?)</span></label>
               <select name="1A" id="caasEnv">
                 <option>Prod</option>
                 <option>Stage</option>
@@ -120,7 +120,7 @@
               </select>
             </div>
             <div class="field">
-              <label for="publishToFloodgate">Publish to Floodgate</label>
+              <label for="publishToFloodgate">Publish to Floodgate <span class="help caas-environment" title="Help">(?)</span></label>
               <select name="publishToFloodgate" id="publishToFloodgate">
                 <option value="default">--</option>
                 <option value="pink">Pink</option>
@@ -140,21 +140,22 @@
               <input type="checkbox" id="useHtml" name="useHtml" />
               <label for="useHtml">Use .html extension on CTA links <span class="help use-html" title="Help">(?)</span></label>
             </div>
-            <!-- <button id="bulkpublish" href="#">Bulk Publish</button> -->
           </dd>
         </div>
 
-        <div class="content-panel">
+        <div class="content-panel dark">
 
-          <div class="theme">Theme: 
+          <div class="theme-options">Theme: 
             <input type="radio" id="dark" name="theme" value="dark" checked>Dark
             <input type="radio" id="light" name="theme" value="light">Light
           </div>
 
           <div class="urls">
-            <!-- <div class="urls-label">
+            <!-- 
+            <div class="urls-label">
               <label for="urls">URLs:</label>
-            </div> -->
+            </div> 
+            -->
             <h2>URLs:</h2>
             <textarea id="urls" 
               name="urls" 
@@ -163,6 +164,7 @@
 
             <div class="button-container">
               <button id="bulkpublish" href="#">Publish</button>
+              <span class="config-msg" > &nbsp; * Please Select a Preset or Custom Settings</span>
             </div>
 
           </div>

@@ -249,6 +249,7 @@ const bulkPublish = async () => {
 };
 
 const loadFromLS = () => {
+  document.body.classList = '';
   const ls = localStorage.getItem(LS_KEY);
   if (!ls) return;
   try {
@@ -256,10 +257,16 @@ const loadFromLS = () => {
     const config = getConfig();
     FIELDS.forEach((field) => {
       document.getElementById(field).value = config[field] ?? DEFAULT_VALUES[field];
+      if (field === 'preset' && config[field] === 'advanced') {
+        document.body.classList = 'advanced';
+      } else if (field === 'preset' && config[field] !== 'default') {
+        document.body.classList = 'preset';
+      }
     });
     FIELDS_CB.forEach((field) => {
       document.getElementById(field).checked = config[field] ?? DEFAULT_VALUES_CB[field];
     });
+
     /* c8 ignore next */
   } catch (e) { /* do nothing */ }
 };
@@ -334,11 +341,15 @@ const preset = document.querySelector('#preset');
 preset.addEventListener('change', () => {
   const { value } = preset;
   document.body.classList = '';
+  
   if (value === 'advanced') {
     document.body.classList.add('advanced');
     return;
+  } else if (value === 'default') {
+    document.body.classList = '';
+  } else {
+    document.body.classList.add('preset');
   }
-  document.body.classList.add('preset');
   const ls = localStorage.getItem(LS_KEY);
   const config = ls ? JSON.parse(ls) : {};
   config.preset = PRESETS[value].preset;
@@ -370,9 +381,10 @@ helpButtons.forEach((btn) => {
     const el = e.target.classList[1]
 
     if (el === 'use-preview') {
-      showAlert(`<p><b>Use Preview Content</b><p>When checked, the tool will published from 
-      <p><tt>https://main--{repo}--{owner}.hlx.live</tt>
-      <p>This is useful for testing before publishing to production.</p>`);
+      showAlert(`<p><b>Use Preview Content</b>
+        <p>When this option is checked, the tool will publish content from:
+        <p><tt>https://main--{repo}--{owner}.hlx.live</tt>
+        <p>This can be useful for testing before publishing to production.</p>`);
 
     } else if (el === 'host') {
       showAlert(`<p><b>Host</b><p>Enter the host of the site you are publishing content to. For example:</p>
@@ -386,6 +398,14 @@ helpButtons.forEach((btn) => {
   });
 }
 );
+
+const themeOptions = document.querySelectorAll('.theme-options');
+themeOptions.forEach((btn) => {
+  btn.addEventListener('click', (e) => {
+    document.querySelector('.content-panel').classList.toggle('dark');
+  });
+});
+
 
 const init = async () => {
   await loadTingleModalFiles(loadScript, loadStyle);

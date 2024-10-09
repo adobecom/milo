@@ -3,12 +3,20 @@
 } */
 
 .bulk-publisher {
+  /* font-family: "Adobe Clean", adobe-clean, "Trebuchet MS", sans-serif; */
   margin: 32px;
   margin: 0;
 }
 
 .bulk-publisher .title {
   grid-template-columns: 1fr;
+}
+
+dd.content .field label {
+  margin-bottom: 8px;
+  font-size: 15px;
+  margin-bottom: 10px;
+  color: #aaa;
 }
 
 dd.content .field {
@@ -33,6 +41,11 @@ dd.content .field {
   min-width: 400px;
   background: #1D1D1D;
 }
+.options-panel h4 {
+  margin: 20px 20px -10px;
+  font-size: 16px;
+  font-weight: 500;
+}
 
 .urls {
   width: 700px;
@@ -45,13 +58,15 @@ dd.content .field {
   margin-top: 6px;
   font-size: 16px;
   font-family: system-ui;
+  border-radius: 16px;
+  padding: 10px;
 }
 
 .urls-label {
   height: 36px;
   background: #6F9B00;
   color: #FFF;
-  font-weight: 700;
+  font-weight: 400;
   display: flex;
   align-items: center;
 }
@@ -60,11 +75,12 @@ dd.content .field {
   margin-left: 12px;
 }
 
+
 /* override the default styles */
 body {
   padding: 0;
   margin: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: Arial, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .content.is-expanded .field.checkbox {
@@ -74,7 +90,8 @@ body {
 
 .content.is-expanded input[type=checkbox] {
   /* align-self: baseline; */
-  margin-top: 2px;
+  margin-top: -4px;
+  
 }
 
 select#preset {
@@ -82,11 +99,16 @@ select#preset {
 }
 
 .advanced-settings {
-  display: none;
+  /* display: none; */
+  height: 0;
+  overflow: hidden;
+  transition: height .5s;
 }
 
 body.advanced .advanced-settings {
-  display: block;
+  /* display: block; */
+  height: 380px;
+  /* transition: height .5s; */
 }
 
 .page-title {
@@ -150,6 +172,16 @@ textarea#errors{
   padding: 8px 30px;
   border-radius: 12px;
   color: white;
+}
+
+.config-msg {
+  color: #aaa;
+  display: inline-block;
+}
+
+body.preset .config-msg,
+body.advanced .config-msg {
+  display: none;
 }
 
 span.help {
@@ -216,7 +248,7 @@ p.status-signed-out i {
   font-size: 24px;
   padding-right: 10px;
   color: green;
-  font-weight: 800;
+  font-weight: 600;
   vertical-align: -2px;
 }
 
@@ -231,6 +263,11 @@ table.success-table {
   margin-top: 20px;
 }
 
+table.error-table th,
+table.success-table th {
+  font-weight: 500;
+}
+
 table.success-table {
   border-top: solid 1px green;
 }
@@ -240,8 +277,14 @@ table.success-table th {
   text-align: left;
 }
 
+table.error-table td,
+table.success-table td {
+  font-size: 15px;
+  padding: 4px 0;
+}
+
 td.error {
-  color: red;
+  color: #ee0000;
   font-weight: bold;
   text-align: center;
 }
@@ -261,25 +304,36 @@ tbody tr:hover {
 }
 
 /* themes */
-.theme {
+.theme-options {
   position: absolute;
   right: 30px;
   top: 10px;
+  font-size: 15px;
 }
 
-@media (prefers-color-scheme: dark) {
-    .content-panel {
-      background: #444;
-      color: #fafafa;
-    }
+.content-panel.dark {
+  background: #444;
+  color: #fafafa;
+}
 
-    .content-panel textarea#urls {
-      background: #666;
-      color: white;
-    }
+.content-panel.dark textarea#urls {
+  background: #666;
+  color: white;
+}
 
-    .content-panel textarea#urls::placeholder {
-      color: #b0b0b0;
-    }
+.content-panel.dark textarea#urls::placeholder {
+  color: #b0b0b0;
+}
 
+.content-panel.dark thead tr {
+  background: #333;
+  color: white;
+}
+
+.content-panel.dark a,
+.content-panel.dark table.error-table a{
+  color: #ccc;
+}
+.content-panel.dark table td:not(.error) {
+  color: #ccc;
 }
