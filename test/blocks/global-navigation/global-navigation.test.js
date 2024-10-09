@@ -75,12 +75,20 @@ describe('global navigation', () => {
     });
 
     it('should render backup signInElem if no dropdown div is found', async () => {
-      await createFullGlobalNavigation({ signedIn: false, globalNavigation: noDropdownNav });
+      const ogIms = window.adobeIMS;
+      const gnav = await createFullGlobalNavigation({
+        signedIn: false,
+        globalNavigation: noDropdownNav,
+      });
       const signInElem = document.querySelector(selectors.imsSignIn);
       expect(isElementVisible(signInElem)).to.equal(true);
 
+      let signInClicked = false;
+      window.adobeIMS = { signIn: () => { signInClicked = true; }, isSignedInUser: () => false };
+      await gnav.imsReady();
       signInElem.click();
-      expect(window.adobeIMS.signIn.calledOnce).to.be.true;
+      expect(signInClicked).to.be.true;
+      window.adobeIMS = ogIms;
     });
 
     it("should log when there's issues within onReady", async () => {
