@@ -1058,6 +1058,15 @@ export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => 
   return persManifests;
 };
 
+async function callMartech(config) {
+  const { getTargetPersonalization } = await import('../../martech/martech.js');
+  const { targetManifests, targetPropositions } = await getTargetPersonalization();
+  config.mep.targetManifests = targetManifests;
+  if (targetPropositions?.length && window._satellite) {
+    window._satellite.track('propositionDisplay', targetPropositions);
+  }
+  return targetManifests;
+}
 export async function init(enablements = {}) {
   let manifests = [];
   const {
@@ -1085,13 +1094,19 @@ export async function init(enablements = {}) {
     });
   }
 
-  if (target === true || postLCP) {
-    const { getTargetPersonalization } = await import('../../martech/martech.js');
-    const { targetManifests, targetPropositions } = await getTargetPersonalization();
+  if (target === true) {
+    const targetManifests = await callMartech(config);
     manifests = manifests.concat(targetManifests);
-    if (targetPropositions?.length && window._satellite) {
-      window._satellite.track('propositionDisplay', targetPropositions);
-    }
+    // const { getTargetPersonalization } = await import('../../martech/martech.js');
+    // const { targetManifests, targetPropositions } = await getTargetPersonalization();
+    // manifests = manifests.concat(targetManifests);
+    // if (targetPropositions?.length && window._satellite) {
+    //   window._satellite.track('propositionDisplay', targetPropositions);
+    // }
+  } else if (target === 'postlcp') {
+    callMartech(config);
+  } else if (postLCP) {
+    manifests = config.mep.targetManifests;
   }
   try {
     await applyPers(manifests);
