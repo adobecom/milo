@@ -30,7 +30,7 @@ function handleStickyPromobar(section, delay) {
   if (section.querySelector('.popup:is(.promobar)')) section.classList.add('popup');
   let stickySectionEl = null;
   let hasScrollControl;
-  if ((section.querySelector(':is(.promobar, .notification:not(.no-hide))').classList.contains('no-delay'))
+  if ((section.querySelector(':is(.promobar, .notification)').classList.contains('no-delay'))
     || (delay && section.classList.contains('popup'))) {
     hasScrollControl = true;
   }
@@ -40,7 +40,9 @@ function handleStickyPromobar(section, delay) {
   }
   const io = promoIntersectObserve(section, stickySectionEl);
   if (stickySectionEl) io.observe(stickySectionEl);
-  io.observe(document.querySelector('footer'));
+  if (section.querySelector(':is(.promobar, .notification:not(.no-hide))')) {
+    io.observe(document.querySelector('footer'));
+  }
 }
 
 export default async function handleStickySection(sticky, section) {
@@ -53,7 +55,7 @@ export default async function handleStickySection(sticky, section) {
       break;
     }
     case 'sticky-bottom': {
-      if (section.querySelector(':is(.promobar, .notification:not(.no-hide))')) {
+      if (section.querySelector(':is(.promobar, .notification)')) {
         const metadata = getMetadata(section.querySelector('.section-metadata'));
         const delay = getDelayTime(metadata.delay?.text);
         if (delay) setTimeout(() => { handleStickyPromobar(section, delay); }, delay);
