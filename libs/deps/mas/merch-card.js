@@ -1349,7 +1349,7 @@ merch-card[variant="ccd-suggested"] [slot='cta'] a {
   color: var(--merch-color-grey-60);
   font-weight: 500;
 }
-`;var Gt={name:{tag:"h4",slot:"detail-m"},title:{tag:"h3",slot:"heading-xs"},price:{tag:"p",slot:"price"},description:{tag:"div",slot:"body-xs"},cta:{slot:"cta",size:"s"}},_=class extends d{getGlobalCSS(){return vt}get aemFragmentMapping(){return Gt}renderLayout(){return Bt`
+`;var Gt={name:{tag:"h4",slot:"detail-m"},title:{tag:"h3",slot:"heading-xs"},price:{tag:"p",slot:"price"},description:{tag:"div",slot:"body-xs"},ctas:{slot:"cta",size:"s"}},_=class extends d{getGlobalCSS(){return vt}get aemFragmentMapping(){return Gt}renderLayout(){return Bt`
           <div style="${this.stripStyle}" class="body">
               <div class="header">
                 <slot name="icons"></slot>
