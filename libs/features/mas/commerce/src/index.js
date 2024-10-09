@@ -11,7 +11,7 @@ import {
 } from './external.js';
 import { InlinePrice } from './inline-price.js';
 import { Log } from './log.js';
-import { initService, resetService } from './service.js';
+import { init, reset } from './mas-commerce-service.js';
 import { getLocaleSettings, getSettings } from './settings.js';
 
 export {
@@ -29,6 +29,6 @@ export {
     applyPlanType,
     getLocaleSettings,
     getSettings,
-    initService as init,
-    resetService as reset,
+    init,
+    reset,
 };

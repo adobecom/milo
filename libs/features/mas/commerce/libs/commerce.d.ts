@@ -38,20 +38,12 @@ declare global {
         ) => T &
             PlaceholderConstants & { new (): InstanceType<T> & Placeholder };
 
-        type getLocaleSettings = (
-            config?: Pick<Config, 'locale'>
-        ) => Pick<Settings, 'country' | 'language' | 'locale'>;
-
-        type getSettings = (
-            config?: Config
-        ) => Checkout.Settings & Price.Settings & Wcs.Settings;
-
-        type initService = (
+        type init = (
             getConfig?: () => Config,
             getProviders?: () => DataProviders
         ) => Promise<Readonly<Instance>>;
 
-        type resetService = () => void;
+        type reset = () => void;
 
         type useService = () => Instance | null;
 
@@ -110,9 +102,6 @@ declare global {
                 price(provider: Price.providePriceOptions): () => void;
             };
             readonly literals: Literals;
-            readonly settings: Readonly<
-                Checkout.Settings & Price.Settings & Wcs.Settings
-            >;
         }
 
         interface Literals {
@@ -594,8 +583,6 @@ export declare const Log: Commerce.Log.Root;
 export declare const WcsCommitment: Commerce.Wcs.WcsCommitment;
 export declare const WcsPlanType: Commerce.Wcs.WcsPlanType;
 export declare const WcsTerm: Commerce.Wcs.WcsTerm;
-export declare const getLocaleSettings: Commerce.getLocaleSettings;
-export declare const getSettings: Commerce.getSettings;
 /**
  * Returns promise resolving to active instance of `Commerce` service.
  * When called for first time with `getConfig` function provided
@@ -608,9 +595,9 @@ export declare const getSettings: Commerce.getSettings;
  * init(getConfig);
  * init(getConfig, true);
  */
-export declare const init: Commerce.initService;
+export declare const init: Commerce.init;
 /**
  * Disposes active instance of `Commerce` service allowing it to be initialised again
  * via normal call to `init`.
  */
-export declare const reset: Commerce.resetService;
+export declare const reset: Commerce.reset;

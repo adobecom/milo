@@ -13,13 +13,7 @@ import { Log } from './log.js';
 import { toOfferSelectorIds, toQuantity, useService } from './utilities.js';
 
 /**
- * @param {{
- *  literals: Commerce.Literals;
- *  providers: { checkout: Iterable<Commerce.Checkout.provideCheckoutOptions> };
- *  settings: Commerce.Checkout.Settings;
- * }} startup
- * @param {Commerce.DataProviders} dataProviders
- * @returns {Commerce.Checkout.Client}
+ * generate Checkout configuration
  */
 export function Checkout({ providers, settings }, dataProviders) {
     const log = Log.module('checkout');

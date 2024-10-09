@@ -9,7 +9,6 @@
     "main": "src/index.js",
     "type": "module",
     "types": "src/index.d.ts",
-    "sideEffects": false,
     "scripts": {
         "build": "npm run test:ci && npm run build:bundle && npm run build:types",
         "build:bundle": "node ./build.mjs",

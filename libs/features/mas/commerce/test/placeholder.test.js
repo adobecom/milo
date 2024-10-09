@@ -12,8 +12,7 @@ import { createPlaceholder, definePlaceholder } from '../src/placeholder.js';
 import { mockConfig } from './mocks/config.js';
 import { mockLana, unmockLana } from './mocks/lana.js';
 import { expect } from './utilities.js';
-import { initService } from '../src/service.js';
-import { mockFetch } from './mocks/fetch.js';
+import { init } from '../src/mas-commerce-service.js';
 
 let id = 1;
 /**
@@ -115,7 +114,7 @@ describe('custom span-based placeholder', () => {
         it('sets element state to "pending"', async () => {
             const element = await mockPlaceholder();
             element.toggleResolved(element.togglePending(), []);
-            await initService(mockConfig(), true);
+            await init(mockConfig(), true);
             await delay();
             expect(element.state).to.equal(STATE_PENDING);
         });
@@ -124,7 +123,7 @@ describe('custom span-based placeholder', () => {
     describe('change of attributes', () => {
         it('sets element state to "pending"', async () => {
             const element = await mockPlaceholder();
-            await initService(mockConfig(), true);
+            await init(mockConfig(), true);
             element.toggleResolved(element.togglePending(), []);
             expect(element.state).to.equal(STATE_RESOLVED);
             element.dataset.test1 = 'test1';
@@ -253,7 +252,7 @@ describe('custom span-based placeholder', () => {
 
     describe('method "requestUpdate"', () => {
         it('restores previous state if render method returns false', async () => {
-            await initService(mockConfig(), true);
+            await init(mockConfig(), true);
             const element = await mockPlaceholder({
                 render() {
                     return false;

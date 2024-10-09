@@ -13,7 +13,7 @@ import {
     CheckoutWorkflowStep,
     delay,
 } from '../src/external.js';
-import { initService, resetService } from '../src/service.js';
+import { init, reset } from '../src/mas-commerce-service.js';
 
 import { mockConfig } from './mocks/config.js';
 import { mockFetch } from './mocks/fetch.js';
@@ -41,7 +41,7 @@ function mockCheckoutLink(wcsOsi, options = {}, append = true) {
 
 afterEach(() => {
     document.body.innerHTML = '';
-    resetService();
+    reset();
     unmockIms();
     unmockLana();
 });
@@ -53,7 +53,7 @@ beforeEach(async () => {
 
 describe('class "CheckoutLink"', () => {
     it('renders link', async () => {
-        await initService(mockConfig(), mockProviders());
+        await init(mockConfig(), mockProviders());
         const checkoutLink = mockCheckoutLink('abm');
         await checkoutLink.onceSettled();
         expect(checkoutLink.href).to.equal(
@@ -62,7 +62,7 @@ describe('class "CheckoutLink"', () => {
     });
 
     it('renders link with workflow step from settings', async () => {
-        const commerce = await initService(
+        const commerce = await init(
             mockConfig({
                 checkoutWorkflowStep: CheckoutWorkflowStep.SEGMENTATION,
             }),
@@ -76,7 +76,7 @@ describe('class "CheckoutLink"', () => {
     });
 
     it('renders link with workflow step from dataset', async () => {
-        await initService(mockConfig(), mockProviders());
+        await init(mockConfig(), mockProviders());
         const checkoutLink = mockCheckoutLink('abm', {
             checkoutWorkflowStep: CheckoutWorkflowStep.SEGMENTATION,
         });
@@ -88,7 +88,7 @@ describe('class "CheckoutLink"', () => {
 
     it('renders link with ims country', async () => {
         mockIms('CH');
-        const service = await initService(mockConfig(), mockProviders());
+        const service = await init(mockConfig(), mockProviders());
         const checkoutLink = mockCheckoutLink('abm');
         await service.imsCountryPromise;
         await delay(1);
@@ -99,7 +99,7 @@ describe('class "CheckoutLink"', () => {
     });
 
     it('renders link with promo from dataset', async () => {
-        await initService(mockConfig(), mockProviders());
+        await init(mockConfig(), mockProviders());
         const checkoutLink = mockCheckoutLink('abm-promo', {
             promotionCode: 'nicopromo',
         });
@@ -115,7 +115,7 @@ describe('class "CheckoutLink"', () => {
     });
 
     it('renders multiple checkout links', async () => {
-        await initService(mockConfig(), mockProviders());
+        await init(mockConfig(), mockProviders());
         const abm = mockCheckoutLink('abm');
         const puf = mockCheckoutLink('puf');
         const m2m = mockCheckoutLink('m2m');
@@ -132,7 +132,7 @@ describe('class "CheckoutLink"', () => {
     });
 
     it('render link with multiple OSIs', async () => {
-        await initService(mockConfig(), mockProviders());
+        await init(mockConfig(), mockProviders());
         const checkoutLink = mockCheckoutLink('abm,stock-abm', {
             quantity: '2,2',
         });
@@ -143,7 +143,7 @@ describe('class "CheckoutLink"', () => {
     });
 
     it('fails with missing offer', async () => {
-        await initService(mockConfig(), mockProviders());
+        await init(mockConfig(), mockProviders());
         const checkoutLink = mockCheckoutLink('no-offer');
         await expect(checkoutLink.onceSettled()).eventually.be.rejectedWith(
             ERROR_MESSAGE_OFFER_NOT_FOUND,
@@ -151,7 +151,7 @@ describe('class "CheckoutLink"', () => {
     });
 
     it('fails with bad request', async () => {
-        await initService(mockConfig(), mockProviders());
+        await init(mockConfig(), mockProviders());
         const checkoutLink = mockCheckoutLink('xyz');
         await expect(checkoutLink.onceSettled()).eventually.be.rejectedWith(
             ERROR_MESSAGE_BAD_REQUEST,
@@ -159,7 +159,7 @@ describe('class "CheckoutLink"', () => {
     });
 
     it('renders link for perpetual offers', async () => {
-        await initService(mockConfig(), mockProviders());
+        await init(mockConfig(), mockProviders());
         const checkoutLink = mockCheckoutLink('perpetual', {
             perpetual: 'true',
         });
@@ -179,7 +179,7 @@ describe('class "CheckoutLink"', () => {
     });
 
     it('renders link with extra options and cleans up once unset', async () => {
-        await initService(mockConfig(), mockProviders());
+        await init(mockConfig(), mockProviders());
         const checkoutLink = mockCheckoutLink('abm', {
             extraOptions: '{"mv":1, "mv2":2, "promoid": "abc"}',
         });
@@ -196,7 +196,7 @@ describe('class "CheckoutLink"', () => {
 
     describe('property "isCheckoutLink"', () => {
         it('returns true', async () => {
-            await initService(mockConfig(), mockProviders());
+            await init(mockConfig(), mockProviders());
             const checkoutLink = mockCheckoutLink('abm');
             expect(checkoutLink.isCheckoutLink).to.be.true;
         });
@@ -204,7 +204,7 @@ describe('class "CheckoutLink"', () => {
 
     describe('method "render"', () => {
         it('returns false if element is not connected to DOM', async () => {
-            await initService(mockConfig(), mockProviders());
+            await init(mockConfig(), mockProviders());
             const checkoutLink = mockCheckoutLink('no-offer', {}, false);
             expect(await checkoutLink.render()).to.be.false;
         });
@@ -212,7 +212,7 @@ describe('class "CheckoutLink"', () => {
 
     describe('method "renderOffers"', () => {
         it('returns false and does not render href if element is not connected to DOM', async () => {
-            await initService(mockConfig(), mockProviders());
+            await init(mockConfig(), mockProviders());
             const checkoutLink = mockCheckoutLink('no-offer', {}, false);
             checkoutLink.href = HREF;
             expect(await checkoutLink.renderOffers([])).to.be.false;
@@ -220,7 +220,7 @@ describe('class "CheckoutLink"', () => {
         });
 
         it('returns false and renders failed placeholder if offers array is empty', async () => {
-            await initService(mockConfig(), mockProviders());
+            await init(mockConfig(), mockProviders());
             const checkoutLink = mockCheckoutLink('no-offer', {});
             checkoutLink.href = HREF;
             expect(await checkoutLink.renderOffers([])).to.be.true;
@@ -230,7 +230,7 @@ describe('class "CheckoutLink"', () => {
         });
 
         it('skips rendering if version has changed', async () => {
-            await initService(mockConfig(), mockProviders());
+            await init(mockConfig(), mockProviders());
             const checkoutLink = mockCheckoutLink('no-offer', {}, false);
             checkoutLink.href = HREF;
             const version = checkoutLink.togglePending();
@@ -243,7 +243,7 @@ describe('class "CheckoutLink"', () => {
 
     describe('method "updateOptions"', () => {
         it('updates element data attributes', async () => {
-            await initService(mockConfig(), mockProviders());
+            await init(mockConfig(), mockProviders());
             const link = CheckoutLink.createCheckoutLink({
                 quantity: ['1'],
                 wcsOsi: 'abm',
@@ -281,7 +281,7 @@ describe('class "CheckoutLink"', () => {
 
     describe('static method "selectCheckoutLinks"', () => {
         it('returns list of found links', async () => {
-            await initService(mockConfig(), mockProviders());
+            await init(mockConfig(), mockProviders());
             const checkoutLink1 = mockCheckoutLink('abm');
             const checkoutLink2 = mockCheckoutLink('m2m');
             expect(CheckoutLink.getCheckoutLinks()).to.deep.equal([
@@ -294,7 +294,7 @@ describe('class "CheckoutLink"', () => {
     describe('logged-in features', () => {
         it('renders download link', async () => {
             mockIms('US');
-            await initService(
+            await init(
                 mockConfig(),
                 mockProviders({
                     checkoutAction: {
@@ -316,7 +316,7 @@ describe('class "CheckoutLink"', () => {
         it('renders upgrade button', async () => {
             mockIms('US');
             const handler = sinon.stub();
-            await initService(
+            await init(
                 mockConfig(),
                 mockProviders({
                     checkoutAction: {
@@ -336,7 +336,7 @@ describe('class "CheckoutLink"', () => {
         });
 
         it('skips entitlements check', async () => {
-            await initService(mockConfig(), mockProviders());
+            await init(mockConfig(), mockProviders());
             const checkoutLink = mockCheckoutLink('abm');
             checkoutLink.dataset.entitlement = 'false';
             await checkoutLink.onceSettled();
@@ -351,7 +351,7 @@ describe('class "CheckoutLink"', () => {
 describe('commerce service', () => {
     describe('function "buildCheckoutURL"', () => {
         it('returns empty string if no offers provided', async () => {
-            const { buildCheckoutURL } = await initService(
+            const { buildCheckoutURL } = await init(
                 mockConfig(),
                 mockProviders(),
             );
