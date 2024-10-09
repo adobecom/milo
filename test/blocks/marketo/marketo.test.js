@@ -104,3 +104,23 @@ describe('marketo decorateURL', () => {
     expect(result).to.be.null;
   });
 });
+
+const onePage = await readFile({ path: './mocks/one-page-experience.html' });
+
+describe('Marketo one page experience', () => {
+  beforeEach(() => {
+    document.body.innerHTML = onePage;
+  });
+
+  it('shows success section given the ungated query param', async () => {
+    const url = new URL(window.location);
+    url.searchParams.set('ungated', true);
+    window.history.pushState({}, '', url);
+
+    init(document.querySelector('.marketo'));
+    expect(document.querySelector('.section.form-success').classList.contains('hide-block')).to.be.false;
+
+    url.searchParams.delete('ungated');
+    window.history.pushState({}, '', url);
+  });
+});

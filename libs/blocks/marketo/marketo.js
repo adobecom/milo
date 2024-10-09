@@ -38,6 +38,7 @@ const FORM_MAP = {
   'co-partner-names': 'program.copartnernames',
   'sfdc-campaign-id': 'program.campaignids.sfdc',
 };
+const UNGATED_PARAM = 'ungated';
 
 export const formValidate = (formEl) => {
   formEl.classList.remove('hide-errors');
@@ -91,6 +92,19 @@ export const setPreferences = (formData) => {
   Object.entries(formData).forEach(([key, value]) => setPreference(key, value));
 };
 
+function showSuccessSection(formData) {
+  try {
+    const section = formData[SUCCESS_SECTION].toLowerCase().replaceAll(' ', '-');
+    const success = document.querySelector(`.section.${section}`);
+    success.classList.remove('hide-block');
+    success.scrollIntoView({ behavior: 'smooth' });
+    setPreference(SUCCESS_TYPE, 'message');
+  } catch (e) {
+    /* c8 ignore next 2 */
+    window.lana?.log('Error showing Marketo success section', { tags: 'errorType=warn,module=marketo' });
+  }
+}
+
 export const formSuccess = (formEl, formData) => {
   const el = formEl.closest('.marketo');
   const parentModal = formEl?.closest('.dialog-modal');
@@ -108,18 +122,7 @@ export const formSuccess = (formEl, formData) => {
   }
 
   if (formData?.[SUCCESS_TYPE] !== 'section') return true;
-
-  try {
-    const section = formData[SUCCESS_SECTION].toLowerCase().replaceAll(' ', '-');
-    const success = document.querySelector(`.section.${section}`);
-    success.classList.remove('hide-block');
-    success.scrollIntoView({ behavior: 'smooth' });
-    setPreference(SUCCESS_TYPE, 'message');
-  } catch (e) {
-    /* c8 ignore next 2 */
-    window.lana?.log('Error showing Marketo success section', { tags: 'errorType=warn,module=marketo' });
-  }
-
+  showSuccessSection(formData);
   return false;
 };
 
@@ -195,6 +198,15 @@ export default function init(el) {
 
   if (!formID || !baseURL || !munchkinID) {
     el.style.display = 'none';
+    return;
+  }
+
+  const searchParams = new URLSearchParams(window.location.search);
+  const ungated = searchParams.get(UNGATED_PARAM);
+
+  if (ungated) {
+    showSuccessSection(formData);
+    el.classList.add('hide-block');
     return;
   }
 
