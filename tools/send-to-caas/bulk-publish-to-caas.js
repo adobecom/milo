@@ -218,7 +218,12 @@ function showSuccessTable(successArr) {
   const tableBody = successTable.querySelector('tbody');
   successTable.style.display = 'block';
   successArr.forEach(([pageUrl, response]) => {
-    tableBody.innerHTML += `<tr><td class="ok">OK</td><td><a href="${pageUrl}">${pageUrl}</a></td><td>${response}</td></tr>`;
+    tableBody.innerHTML += `<tr>
+      <td class="ok">OK</td>
+      <td><a href="${pageUrl}">${pageUrl}</a></td>
+      <td class="entityid"><a target="_blank" href="https://14257-chimera.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection?debug=1&featuredCards=${response}">${response}</a></td>
+    </tr>`;
+
   });
 }
 

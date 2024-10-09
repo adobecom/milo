@@ -283,6 +283,12 @@ table.success-table td {
   padding: 4px 0;
 }
 
+table.success-table td.entityid a {
+  font-family: monospace;
+  font-size: 14px;
+  text-decoration: none;
+}
+
 td.error {
   color: #ee0000;
   font-weight: bold;
@@ -328,6 +334,9 @@ tbody tr:hover {
 .content-panel.dark thead tr {
   background: #333;
   color: white;
+}
+.content-panel.dark  tbody tr:hover {
+  background: #505050;
 }
 
 .content-panel.dark a,
