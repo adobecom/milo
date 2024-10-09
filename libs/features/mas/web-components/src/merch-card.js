@@ -33,6 +33,8 @@ export class MerchCard extends LitElement {
             type: String,
             attribute: 'badge-background-color',
         },
+        stripSize: { type: String, attribute: 'strip-size' },
+        stripBackground: { type: String, attribute: 'strip-background' },
         badgeText: { type: String, attribute: 'badge-text' },
         actionMenu: { type: Boolean, attribute: 'action-menu' },
         customHr: { type: Boolean, attribute: 'custom-hr' },
@@ -132,6 +134,10 @@ export class MerchCard extends LitElement {
             this.style.border = this.computedBorderStyle;
         }
         this.variantLayout?.postCardUpdateHook(this);
+    }
+
+    get theme() {
+      return this.closest('sp-theme');
     }
 
     get prices() {

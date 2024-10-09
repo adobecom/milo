@@ -88,8 +88,13 @@ export class VariantLayout {
         return '';
     }
 
+    /* c8 ignore next 3 */
+    get theme() {
+      return document.querySelector('sp-theme');
+    }
+
     get evergreen() {
-        return this.card.classList.contains('intro-pricing');
+      return this.card.classList.contains('intro-pricing');
     }
 
     get promoBottom() {
@@ -98,6 +103,33 @@ export class VariantLayout {
 
     get headingSelector() {
         return '[slot="heading-xs"]';
+    }
+
+    get strip() {
+      if (this.card.stripSize && this.card.stripBackground) {
+        switch (this.card.stripSize) {
+            case 'wide':
+                return '44px';
+            case 'small':
+                return '4px';
+            /* c8 ignore next 2 */
+            default:
+                return '0';
+        }
+      }
+      return '';
+    }
+
+    get stripStyle() {
+      if (this.strip && this.card.stripBackground) {
+        return `
+          background: ${this.card.stripBackground.startsWith('url') ? this.card.stripBackground : `url("${this.card.stripBackground}")`};
+          background-size: ${this.strip} 100%;
+          background-repeat: no-repeat;
+          background-position: ${this.card.theme.dir === 'ltr' ? 'left' : 'right'};
+        `;
+      }
+      return '';
     }
 
     get secureLabelFooter() {
