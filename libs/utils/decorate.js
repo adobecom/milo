@@ -351,7 +351,6 @@ export function decorateA11yForLinks(el, headerTxt) {
     const linkTxt = link.textContent?.trim();
     if (!linkTxt) return;
 
-    const a11yTxt = `${linkTxt} about ${headerTxt.trim()}`;
-    link.setAttribute('aria-label', a11yTxt);
+    link.setAttribute('aria-label', `${linkTxt} about ${headerTxt.trim()}`);
   });
 }
