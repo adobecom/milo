@@ -69,6 +69,7 @@ styles.innerHTML = `
     --merch-color-grey-60: var(--spectrum-global-color-gray-600, #6D6D6D);
     --merch-color-grey-80: #2c2c2c;
     --merch-color-green-promo: #2D9D78;
+    --merch-color-content-neutral-default: #222222; /* CCD */
 
     /* merch card generic */
     --consonant-merch-card-max-width: 300px;

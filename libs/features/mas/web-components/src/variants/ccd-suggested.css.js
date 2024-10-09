@@ -6,7 +6,7 @@ export const CSS = `
 }
 
 merch-card[variant="ccd-suggested"] [slot='detail-m'] {
-  color: var(--spectrum-gray-800, --merch-color-grey-60);
+  color: var(--merch-color-grey-60);
 }
 
 merch-card[variant="ccd-suggested"] [slot='heading-xs'] {
@@ -18,7 +18,7 @@ merch-card[variant="ccd-suggested"] [slot='heading-xs'] {
 
 merch-card[variant="ccd-suggested"] [slot='cta'] a {
   text-decoration: none;
-  color: var(--merch-color-grey-60);
-  font-weight: 500;
+  color: var(--merch-color-content-neutral-default);
+  font-weight: 700;
 }
 `;

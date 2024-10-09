@@ -116,7 +116,7 @@ export class AemFragment extends HTMLElement {
             if (!ready) return; // already fetching data
         }
         if (flushCache) {
-            this.cache.remove(this.fragmentId);
+            cache.remove(this.fragmentId);
         }
         this._readyPromise = this.fetchData().then(() => {
             this.dispatchEvent(
