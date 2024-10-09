@@ -281,7 +281,7 @@ describe('class "CheckoutLink"', () => {
 
     describe('static method "selectCheckoutLinks"', () => {
         it('returns list of found links', async () => {
-            await initMasCommerceService();;
+            await initMasCommerceService();
             const checkoutLink1 = mockCheckoutLink('abm');
             const checkoutLink2 = mockCheckoutLink('m2m');
             expect(CheckoutLink.getCheckoutLinks()).to.deep.equal([

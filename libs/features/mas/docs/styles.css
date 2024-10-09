@@ -108,3 +108,7 @@ pre {
 #log {
   display: block;
 }
+
+button {
+  margin-top: 16px;
+}

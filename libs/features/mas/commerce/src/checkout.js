@@ -85,10 +85,10 @@ export function Checkout({ providers, settings }) {
 
     /**
      * will build a checkoutAction out of passed offers & options
-     * 
-     * @param {*} offers 
-     * @param {*} options 
-     * @returns 
+     *
+     * @param {*} offers
+     * @param {*} options
+     * @returns
      */
     /** @type {Commerce.Checkout.buildCheckoutURL} */
     function buildCheckoutURL(offers, options) {
@@ -145,7 +145,7 @@ export function Checkout({ providers, settings }) {
         return buildCheckoutUrl(workflow, data);
     }
 
-    const { createCheckoutLink, getCheckoutLinks } = CheckoutLink;
+    const { createCheckoutLink } = CheckoutLink;
     return {
         CheckoutLink,
         CheckoutWorkflow,
@@ -153,6 +153,5 @@ export function Checkout({ providers, settings }) {
         buildCheckoutURL,
         collectCheckoutOptions,
         createCheckoutLink,
-        getCheckoutLinks,
     };
 }
