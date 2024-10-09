@@ -2,7 +2,7 @@
  * Marquee - v6.0
  */
 
-import { decorateButtons, getBlockSize, decorateBlockBg, loadCDT } from '../../utils/decorate.js';
+import { decorateButtons, getBlockSize, decorateBlockBg, loadCDT, decorateA11yForLinks } from '../../utils/decorate.js';
 import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
 
 // [headingSize, bodySize, detailSize]
@@ -131,6 +131,10 @@ export default async function init(el) {
   decorateText(text, size);
   const iconArea = text.querySelector('.icon-area');
   if (iconArea?.childElementCount > 1) decorateMultipleIconArea(iconArea);
+
+  const headEl = [...el.querySelectorAll('h1')].find((h1) => !h1.className.startsWith('heading-'));
+  const headingTxt = iconArea?.textContent?.trim() || headEl?.textContent.trim();
+  decorateA11yForLinks(text, headingTxt);
   extendButtonsClass(text);
   if (el.classList.contains('split')) decorateSplit(el, foreground, media);
 

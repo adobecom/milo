@@ -144,7 +144,7 @@ describe('Catalog Card', () => {
     const [icon1, icon2] = merchCard.querySelectorAll('merch-icon');
     expect(icon1.outerHTML).to.equal('<merch-icon slot="icons" src="http://localhost:2000/test/blocks/merch-card/mocks/photoshop.svg" alt="Photoshop" href="https://www.adobe.com/photoshop.html?source=icon1" size="l"></merch-icon>');
     expect(icon2.outerHTML).to.equal('<merch-icon slot="icons" src="http://localhost:2000/test/blocks/merch-card/mocks/photoshop.svg" alt="Photoshop" href="https://www.adobe.com/photoshop.html?source=icon2" size="l"></merch-icon>');
-    expect(merchCard.titleElement.outerHTML).to.equal('<h3 class="card-heading" slot="heading-xs"><a href="https://www.adobe.com/photoshop.html" daa-ll="Photoshop-1--Photoshop">Photoshop</a></h3>');
+    expect(merchCard.titleElement.outerHTML).to.equal('<h3 class="card-heading" slot="heading-xs"><a href="https://www.adobe.com/photoshop.html" aria-label="Photoshop about Photoshop" daa-ll="Photoshop-1--Photoshop">Photoshop</a></h3>');
   });
 
   it('Supports Catalog card', async () => {

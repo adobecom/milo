@@ -14,7 +14,14 @@
 * Aside - v5.1
 */
 
-import { decorateBlockText, decorateIconStack, applyHoverPlay, decorateBlockBg, decorateTextOverrides } from '../../utils/decorate.js';
+import {
+  decorateBlockText,
+  decorateIconStack,
+  applyHoverPlay,
+  decorateBlockBg,
+  decorateTextOverrides,
+  decorateA11yForLinks,
+} from '../../utils/decorate.js';
 import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
 
 // standard/default aside uses same text sizes as the split
@@ -226,6 +233,7 @@ export default function init(el) {
   decorateStaticLinks(el);
   formatPromoButton(el);
   decorateTextOverrides(el);
+  decorateA11yForLinks(el.querySelector('.action-area'), el.querySelector('h3')?.textContent?.trim());
   // Override Detail with Title L style if class exists - Temporary solution until Spectrum 2
   if (el.classList.contains('l-title')) el.querySelector('[class*="detail-"]')?.classList.add('title-l');
 }

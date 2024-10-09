@@ -343,3 +343,14 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
   applyInViewPortPlay(videoEl);
   anchorTag.remove();
 }
+
+export function decorateA11yForLinks(el, headerTxt) {
+  if (!el || !headerTxt?.trim()) return;
+
+  el.querySelectorAll('a')?.forEach((link) => {
+    const linkTxt = link.textContent?.trim();
+    if (!linkTxt) return;
+
+    link.setAttribute('aria-label', `${linkTxt} about ${headerTxt.trim()}`);
+  });
+}
