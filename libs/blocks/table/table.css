@@ -479,7 +479,7 @@
   display: flex;
   align-items: center;
   flex-direction: row;
-  text-align: left;
+  text-align: start;
   font-style: normal;
   font-weight: 400;
 }
