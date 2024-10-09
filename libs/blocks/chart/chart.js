@@ -163,7 +163,7 @@ export const donutTooltipFormatter = ({
   name,
   percent,
 } = {}, unit = '') => (
-  `${marker} ${name}<br />${data[value[0]]}${unit} ${percent}%<i class="tooltip-icon"></i>`
+  `${marker} ${name}<br />${data[value[0]]}${unit}${unit !== '%' ? ` ${percent}%` : ''}<i class="tooltip-icon"></i>`
 );
 
 export const pieTooltipFormatter = ({

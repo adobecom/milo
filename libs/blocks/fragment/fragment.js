@@ -32,15 +32,18 @@ const updateFragMap = (fragment, a, href) => {
   }
 };
 
-const insertInlineFrag = (sections, a, relHref) => {
+const insertInlineFrag = (sections, a, relHref, mep, handleMepCommands) => {
   // Inline fragments only support one section, other sections are ignored
   const fragChildren = [...sections[0].children];
-  fragChildren.forEach((child) => child.setAttribute('data-path', relHref));
   if (a.parentElement.nodeName === 'DIV' && !a.parentElement.attributes.length) {
     a.parentElement.replaceWith(...fragChildren);
   } else {
     a.replaceWith(...fragChildren);
   }
+  fragChildren.forEach((child) => {
+    child.setAttribute('data-path', relHref);
+    if (handleMepCommands) mep.commands = handleMepCommands(mep.commands, child);
+  });
 };
 
 function replaceDotMedia(path, doc) {
@@ -74,7 +77,8 @@ export default async function init(a) {
 
   const path = new URL(a.href).pathname;
   if (mep?.fragments?.[path]) {
-    relHref = mep.handleFragmentCommand(mep?.fragments[path], a);
+    const { handleFragmentCommand } = await import('../../features/personalization/personalization.js');
+    relHref = handleFragmentCommand(mep?.fragments[path], a);
     if (!relHref) return;
   }
 
@@ -119,10 +123,16 @@ export default async function init(a) {
     const { updateFragDataProps } = await import('../../features/personalization/personalization.js');
     updateFragDataProps(a, inline, sections, fragment);
   }
+  let handleMepCommands = false;
+  if (mep?.commands?.length) {
+    const { handleCommands } = await import('../../features/personalization/personalization.js');
+    handleMepCommands = handleCommands;
+  }
   if (inline) {
-    insertInlineFrag(sections, a, relHref);
+    insertInlineFrag(sections, a, relHref, mep, handleMepCommands);
   } else {
     a.parentElement.replaceChild(fragment, a);
+    if (handleMepCommands) handleMepCommands(mep?.commands, fragment);
     await loadArea(fragment);
   }
 }

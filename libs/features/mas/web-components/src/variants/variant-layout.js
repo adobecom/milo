@@ -1,129 +1,144 @@
 import { html } from 'lit';
 
 export class VariantLayout {
-  static styleMap = {};
+    static styleMap = {};
 
-  card;
+    card;
 
-  #container;
+    #container;
 
-  getContainer() {
-    this.#container = this.#container ?? this.card.closest('[class*="-merch-cards"]') ?? this.card.parentElement;
-    return this.#container;
-  }
-
-  insertVariantStyle() {
-    if (!VariantLayout.styleMap[this.card.variant]) {
-      VariantLayout.styleMap[this.card.variant] = true;
-      const styles = document.createElement('style');
-      styles.innerHTML = this.getGlobalCSS();
-      document.head.appendChild(styles);
+    getContainer() {
+        this.#container =
+            this.#container ??
+            this.card.closest('[class*="-merch-cards"]') ??
+            this.card.parentElement;
+        return this.#container;
     }
-  }
 
-  updateCardElementMinHeight(el, name) {
-    const elMinHeightPropertyName = `--consonant-merch-card-${this.card.variant}-${name}-height`;
-    const height = Math.max(
-      0,
-      parseInt(window.getComputedStyle(el).height) || 0,
-    );
-    const maxMinHeight =
-      parseInt(
-        this.getContainer().style.getPropertyValue(elMinHeightPropertyName),
-      ) || 0;
-
-    if (height > maxMinHeight) {
-      this.getContainer().style.setProperty(
-        elMinHeightPropertyName,
-        `${height}px`,
-      );
+    insertVariantStyle() {
+        if (!VariantLayout.styleMap[this.card.variant]) {
+            VariantLayout.styleMap[this.card.variant] = true;
+            const styles = document.createElement('style');
+            styles.innerHTML = this.getGlobalCSS();
+            document.head.appendChild(styles);
+        }
     }
-  }
 
-  constructor(card) {
-    this.card = card;
-    this.insertVariantStyle();
-  }
+    updateCardElementMinHeight(el, name) {
+        const elMinHeightPropertyName = `--consonant-merch-card-${this.card.variant}-${name}-height`;
+        const height = Math.max(
+            0,
+            parseInt(window.getComputedStyle(el).height) || 0,
+        );
+        const maxMinHeight =
+            parseInt(
+                this.getContainer().style.getPropertyValue(
+                    elMinHeightPropertyName,
+                ),
+            ) || 0;
 
-  get badge() {
-    let additionalStyles;
-    if (!this.card.badgeBackgroundColor || !this.card.badgeColor || !this.card.badgeText) {
-        return;
+        if (height > maxMinHeight) {
+            this.getContainer().style.setProperty(
+                elMinHeightPropertyName,
+                `${height}px`,
+            );
+        }
     }
-    if (this.evergreen) {
-        additionalStyles = `border: 1px solid ${this.card.badgeBackgroundColor}; border-right: none;`;
+
+    constructor(card) {
+        this.card = card;
+        this.insertVariantStyle();
     }
-    return html`
-        <div
-            id="badge"
-            class="${this.card.variant}-badge"
-            style="background-color: ${this.card.badgeBackgroundColor};
+
+    get badge() {
+        let additionalStyles;
+        if (
+            !this.card.badgeBackgroundColor ||
+            !this.card.badgeColor ||
+            !this.card.badgeText
+        ) {
+            return;
+        }
+        if (this.evergreen) {
+            additionalStyles = `border: 1px solid ${this.card.badgeBackgroundColor}; border-right: none;`;
+        }
+        return html`
+            <div
+                id="badge"
+                class="${this.card.variant}-badge"
+                style="background-color: ${this.card.badgeBackgroundColor};
                 color: ${this.card.badgeColor};
                 ${additionalStyles}"
-        >
-            ${this.card.badgeText}
-        </div>
-    `;
-  }
+            >
+                ${this.card.badgeText}
+            </div>
+        `;
+    }
 
-  get cardImage() {
-    return html` <div class="image">
-        <slot name="bg-image"></slot>
-        ${this.badge}
-    </div>`;
-  }
+    get cardImage() {
+        return html` <div class="image">
+            <slot name="bg-image"></slot>
+            ${this.badge}
+        </div>`;
+    }
 
-  /* c8 ignore next 3 */
-  getGlobalCSS() {
-    return '';
-  }
+    /* c8 ignore next 3 */
+    getGlobalCSS() {
+        return '';
+    }
 
-  get evergreen() {
-    return this.card.classList.contains('intro-pricing');
-  }
+    get evergreen() {
+        return this.card.classList.contains('intro-pricing');
+    }
 
-  get promoBottom() {
-    return this.card.classList.contains('promo-bottom');
-  }
+    get promoBottom() {
+        return this.card.classList.contains('promo-bottom');
+    }
 
-  get headingSelector() {
-    return '[slot="heading-xs"]';
-  }
-  
-  get secureLabelFooter() {
-    const secureLabel = this.card.secureLabel
-        ? html`<span class="secure-transaction-label"
-              >${this.card.secureLabel}</span
-          >`
-        : '';
-    return html`<footer>${secureLabel}<slot name="footer"></slot></footer>`;
-  }
+    get headingSelector() {
+        return '[slot="heading-xs"]';
+    }
 
-  async adjustTitleWidth() {
-    const cardWidth = this.card.getBoundingClientRect().width;
-    const badgeWidth =
-        this.card.badgeElement?.getBoundingClientRect().width || 0;
-    if (cardWidth === 0 || badgeWidth === 0) return;
-    this.card.style.setProperty(
-        '--consonant-merch-card-heading-xs-max-width',
-        `${Math.round(cardWidth - badgeWidth - 16)}px`, // consonant-merch-spacing-xs
-    );
-  }
+    get secureLabelFooter() {
+        const secureLabel = this.card.secureLabel
+            ? html`<span class="secure-transaction-label"
+                  >${this.card.secureLabel}</span
+              >`
+            : '';
+        return html`<footer>${secureLabel}<slot name="footer"></slot></footer>`;
+    }
 
-  postCardUpdateHook() {
-    //nothing to do by default
-  }
+    async adjustTitleWidth() {
+        const cardWidth = this.card.getBoundingClientRect().width;
+        const badgeWidth =
+            this.card.badgeElement?.getBoundingClientRect().width || 0;
+        if (cardWidth === 0 || badgeWidth === 0) return;
+        this.card.style.setProperty(
+            '--consonant-merch-card-heading-xs-max-width',
+            `${Math.round(cardWidth - badgeWidth - 16)}px`, // consonant-merch-spacing-xs
+        );
+    }
 
-  connectedCallbackHook() {
-    //nothing to do by default
-  }
+    postCardUpdateHook() {
+        //nothing to do by default
+    }
 
-  disconnectedCallbackHook() {
-    //nothing to do by default
-  }
+    connectedCallbackHook() {
+        //nothing to do by default
+    }
 
-  /* c8 ignore next 3 */
-  renderLayout () {
-    //nothing to do by default
-  }
+    disconnectedCallbackHook() {
+        //nothing to do by default
+    }
+
+    /* c8 ignore next 3 */
+    renderLayout() {
+        //nothing to do by default
+    }
+
+    /* c8 ignore next 4 */
+    get aemFragmentMapping() {
+        //nothing to do by default
+        return undefined;
+    }
 }

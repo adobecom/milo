@@ -43,8 +43,8 @@ import {
 import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
 
 function getHelpChildren() {
-  const { unavHelpChildren } = getConfig();
-  return unavHelpChildren || [
+  const { unav } = getConfig();
+  return unav?.unavHelpChildren || [
     { type: 'Support' },
     { type: 'Community' },
   ];
@@ -90,6 +90,7 @@ export const CONFIG = {
                   error: (e) => lanaLog({ message: 'Profile Menu error', e, tags: 'errorType=error,module=universalnav' }),
                 },
               },
+              ...getConfig().unav?.profile?.config,
             },
           },
           callbacks: {
@@ -101,11 +102,18 @@ export const CONFIG = {
       appswitcher: { name: 'app-switcher' },
       notifications: {
         name: 'notifications',
-        attributes: { notificationsConfig: { applicationContext: { appID: 'adobecom' } } },
+        attributes: { notificationsConfig: { applicationContext: { appID: getConfig().unav?.uncAppId || 'adobecom' } } },
       },
       help: {
         name: 'help',
         attributes: { children: getHelpChildren() },
+      },
+      jarvis: {
+        name: 'jarvis',
+        attributes: {
+          appid: getConfig().jarvis?.id,
+          callbacks: getConfig().jarvis?.callbacks,
+        },
       },
     },
   },
@@ -271,7 +279,7 @@ class Gnav {
   constructor({ content, block } = {}) {
     this.content = content;
     this.block = block;
-    this.customLinks = getConfig()?.customLinks ? getConfig().customLinks.split(',') : [];
+    this.customLinks = getConfig()?.customLinks?.split(',') || [];
 
     this.blocks = {
       profile: {
@@ -625,6 +633,7 @@ class Gnav {
         onAnalyticsEvent,
       },
       children: getChildren(),
+      isSectionDividerRequired: getConfig()?.unav?.showSectionDivider,
     });
 
     // Exposing UNAV config for consumers
@@ -676,11 +685,7 @@ class Gnav {
     const toggle = this.elements.mobileToggle;
     const isExpanded = this.isToggleExpanded();
     toggle?.setAttribute('aria-expanded', !isExpanded);
-    if (!isExpanded) {
-      document.body.classList.add('disable-scroll');
-    } else {
-      document.body.classList.remove('disable-scroll');
-    }
+    document.body.classList.toggle('disable-scroll', !isExpanded);
     this.elements.navWrapper?.classList?.toggle('feds-nav-wrapper--expanded', !isExpanded);
     closeAllDropdowns();
     setCurtainState(!isExpanded);
@@ -990,7 +995,7 @@ class Gnav {
           <div class="feds-navItem${activeModifier}${customLinkModifier}">
             ${linkElem}
           </div>`;
-        return removeCustomLink ? null : addMepHighlightAndTargetId(linkTemplate, item);
+        return removeCustomLink ? '' : addMepHighlightAndTargetId(linkTemplate, item);
       }
       case 'text':
         return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered">
@@ -1075,7 +1080,7 @@ export default async function init(block) {
     content,
     block,
   });
-  gnav.init();
+  await gnav.init();
   block.setAttribute('daa-im', 'true');
   const mepMartech = mep?.martech || '';
   block.setAttribute('daa-lh', `gnav|${getExperienceName()}${mepMartech}`);
