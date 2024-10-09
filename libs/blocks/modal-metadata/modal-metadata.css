@@ -1,3 +1,10 @@
 .modal-metadata {
   display: none;
 }
+
+@media (max-width: 600px) {
+ .survey {
+  height: 40px;
+  width: 100px; 
+ }
+}
