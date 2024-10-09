@@ -1094,20 +1094,10 @@ export async function init(enablements = {}) {
     });
   }
 
-  if (target === true) {
-    const targetManifests = await callMartech(config);
-    manifests = manifests.concat(targetManifests);
-    // const { getTargetPersonalization } = await import('../../martech/martech.js');
-    // const { targetManifests, targetPropositions } = await getTargetPersonalization();
-    // manifests = manifests.concat(targetManifests);
-    // if (targetPropositions?.length && window._satellite) {
-    //   window._satellite.track('propositionDisplay', targetPropositions);
-    // }
-  } else if (target === 'postlcp') {
-    callMartech(config);
-  } else if (postLCP) {
-    manifests = config.mep.targetManifests;
-  }
+  if (target === true) manifests = manifests.concat(await callMartech(config));
+  if (target === 'postlcp') callMartech(config);
+  if (postLCP) manifests = config.mep.targetManifests;
+  if (!manifests || !manifests.length) return;
   try {
     await applyPers(manifests);
   } catch (e) {
