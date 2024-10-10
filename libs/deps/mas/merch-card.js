@@ -113,7 +113,7 @@ import{LitElement as Dt}from"../lit-all.min.js";import{LitElement as wt,html as 
         right: 0;
         font-size: var(--type-heading-xxs-size);
         font-weight: 500;
-        max-width: 30%;
+        max-width: 180px;
         line-height: 16px;
         text-align: center;
         padding: 8px 11px;
