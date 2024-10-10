@@ -105,6 +105,14 @@
 <td><code>flushWcsCache()</code></td>
 <td>flush the payload cache for WCS calls</td>
 </tr>
+<tr>
+<td><code>refreshOffers()</code></td>
+<td><code>flushWcsCache</code> + refresh prices + checkout links</td>
+</tr>
+<tr>
+<td><code>refreshFragments()</code></td>
+<td><code>flushWcsCache</code> + refresh fragment content from Odin. This results in card content update with offers</td>
+</tr>
 </tbody>
 </table>
 <h3 id="examples" tabindex="-1">Examples <a class="header-anchor" href="#examples" href="#examples" title="Permalink to this heading">#</a></h3>
@@ -142,7 +150,7 @@
   ></span
   >.
 </p>
-<h4 id="flushwcscache" tabindex="-1">flushWcsCache <a class="header-anchor" href="#flushwcscache" href="#flushwcscache" title="Permalink to this heading">#</a></h4>
+<h4 id="refreshoffers" tabindex="-1">refreshOffers <a class="header-anchor" href="#refreshoffers" href="#refreshoffers" title="Permalink to this heading">#</a></h4>
 <p>Toggle the network tab and click on <code>Refresh</code> button below</p>
 <pre><code class="hljs demo language-html"><span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;btnRefresh&quot;</span>&gt;</span>Refresh<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
 <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;module&quot;</span>&gt;</span><span class="language-javascript">
