@@ -29,10 +29,12 @@ You do need to have mas.js on your page / application, including it can be done 
 
 ### Methods
 
-| Name                               | Description                                                                          |
-| ---------------------------------- | ------------------------------------------------------------------------------------ |
-|  `registerCheckoutAction (action)` |  registers an action, that must have signature (offers, options, imsSignedInPromise) |
-|  `flushWcsCache()`                 |  flush the payload cache for WCS calls                                               |
+| Name                               | Description                                                                                            |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------ |
+|  `registerCheckoutAction (action)` |  registers an action, that must have signature (offers, options, imsSignedInPromise)                   |
+|  `flushWcsCache()`                 |  flush the payload cache for WCS calls                                                                 |
+|  `refreshOffers()`                 | `flushWcsCache` + refresh prices + checkout links                                                      |
+|  `refreshFragments()`              |  `flushWcsCache` + refresh fragment content from Odin. This results in card content update with offers |
 
 ### Examples
 
@@ -74,7 +76,7 @@ you can play around with below price, either adding locale, language or env as p
   >.
 </p>
 
-#### flushWcsCache
+#### refreshOffers
 
 Toggle the network tab and click on `Refresh` button below
 
