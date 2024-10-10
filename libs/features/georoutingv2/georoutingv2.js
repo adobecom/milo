@@ -257,7 +257,8 @@ async function showModal(details) {
     new Promise((resolve) => { loadStyle(`${miloLibs || codeRoot}/features/georoutingv2/georoutingv2.css`, resolve); }),
     import('../../blocks/modal/modal.js'),
   ];
-  const { getModal, sendAnalytics } = await Promise.all(promises)[3];
+  const result = await Promise.all(promises);
+  const { getModal, sendAnalytics } = result[3];
   sendAnalyticsFunc = sendAnalytics;
   return getModal(null, { class: 'locale-modal-v2', id: 'locale-modal-v2', content: details, closeEvent: 'closeModal' });
 }
