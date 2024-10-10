@@ -1,4 +1,4 @@
-import { createTag } from '../../utils/utils.js';
+import { createTag, createIntersectionObserver } from '../../utils/utils.js';
 import { decorateTextOverrides } from '../../utils/decorate.js';
 
 const getSrc = (image) => image.src || image.querySelector('[src]')?.src || image.href;
@@ -47,19 +47,7 @@ const setJsonLd = (heading, description, mainImage, stepsLd) => {
 };
 
 const getImage = (el) => el.querySelector('picture') || el.querySelector('a[href$=".svg"');
-const getVideo = (el) => {
-  const video = el.querySelector('video');
-  if (video) {
-    const src = video.getAttribute('data-video-source');
-    video.appendChild(createTag('source', { src, type: 'video/mp4' }));
-    return video;
-  }
-  const adobeTV = el.querySelector('.milo-video');
-  if (adobeTV) {
-    return adobeTV;
-  }
-  return null;
-};
+const getVideo = (el) => el.querySelector('video') || el.querySelector('iframe').parentElement;
 
 const getHowToInfo = (el) => {
   const infoDiv = el.querySelector(':scope > div > div');
@@ -147,6 +135,16 @@ export default function init(el) {
   if (mainVideo) {
     const videoClass = `how-to-media${isLargeMedia ? ' how-to-media-large video' : ''}`;
     el.append(createTag('div', { class: videoClass }, mainVideo));
+    const src = mainVideo?.getAttribute('data-video-source');
+    if (src) {
+      createIntersectionObserver({
+        el: mainVideo,
+        options: { rootMargin: '1000px' },
+        callback: () => {
+          mainVideo?.appendChild(createTag('source', { src, type: 'video/mp4' }));
+        },
+      });
+    }
   }
 
   if (isSeo) {
