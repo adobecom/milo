@@ -8,10 +8,10 @@ export default async function bootstrapBlock(miloLibs, blockConfig) {
 
   const setNavLayout = () => {
     const element = document.querySelector(targetEl);
-    if (element && layout === 'fullWidth') {
+    if (layout === 'fullWidth') {
       element.classList.add('feds--full-width');
     }
-    if (element && noBorder) {
+    if (noBorder) {
       element.classList.add('feds--no-border');
     }
   };
