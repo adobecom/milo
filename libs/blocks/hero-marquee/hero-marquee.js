@@ -208,6 +208,8 @@ export default async function init(el) {
   if (assetUnknown) assetUnknown.classList.add('asset-unknown');
 
   decorateBlockText(copy, textDefault, 'hasDetailHeading');
+  const blockLockupClass = [...el.classList].find((c) => c.endsWith('-lockup'));
+  if (blockLockupClass === undefined) copy.classList.add('l-lockup');
   await decorateLockupFromContent(copy);
   extendButtonsClass(copy);
 
