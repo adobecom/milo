@@ -1,5 +1,10 @@
 import {
-  createTag, getConfig, loadArea, loadScript, loadStyle, localizeLink,
+  createTag,
+  getConfig,
+  loadArea,
+  loadScript,
+  loadStyle,
+  localizeLink,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
@@ -108,8 +113,11 @@ export const CHECKOUT_ALLOWED_KEYS = [
 
 export const CC_SINGLE_APPS_ALL = CC_SINGLE_APPS.flatMap((item) => item);
 
-export const CC_ALL_APPS = ['CC_ALL_APPS',
-  'CC_ALL_APPS_STOCK_BUNDLE', 'CC_PRO'];
+export const CC_ALL_APPS = [
+  'CC_ALL_APPS',
+  'CC_ALL_APPS_STOCK_BUNDLE',
+  'CC_PRO',
+];
 
 const NAME_LOCALE = 'LOCALE';
 const NAME_PRODUCT_FAMILY = 'PRODUCT_FAMILY';
@@ -166,30 +174,37 @@ export async function polyfills() {
 }
 
 export async function fetchEntitlements() {
-  fetchEntitlements.promise = fetchEntitlements.promise ?? import('../global-navigation/utilities/getUserEntitlements.js')
-    .then(({ default: getUserEntitlements }) => getUserEntitlements(
-      {
-        params:
-          [
-            { name: 'include', value: 'OFFER.PRODUCT_ARRANGEMENT' }],
-        format: 'raw',
-      },
-    ));
+  fetchEntitlements.promise =
+    fetchEntitlements.promise ??
+    import('../global-navigation/utilities/getUserEntitlements.js').then(
+      ({ default: getUserEntitlements }) =>
+        getUserEntitlements({
+          params: [{ name: 'include', value: 'OFFER.PRODUCT_ARRANGEMENT' }],
+          format: 'raw',
+        })
+    );
   return fetchEntitlements.promise;
 }
 
 export async function fetchCheckoutLinkConfigs(base = '') {
-  fetchCheckoutLinkConfigs.promise = fetchCheckoutLinkConfigs.promise
-    ?? fetch(`${base}${CHECKOUT_LINK_CONFIG_PATH}`).catch((e) => {
-      log?.error('Failed to fetch checkout link configs', e);
-    }).then((mappings) => {
-      if (!mappings?.ok) return { data: [] };
-      return mappings.json();
-    });
+  fetchCheckoutLinkConfigs.promise =
+    fetchCheckoutLinkConfigs.promise ??
+    fetch(`${base}${CHECKOUT_LINK_CONFIG_PATH}`)
+      .catch((e) => {
+        log?.error('Failed to fetch checkout link configs', e);
+      })
+      .then((mappings) => {
+        if (!mappings?.ok) return { data: [] };
+        return mappings.json();
+      });
   return fetchCheckoutLinkConfigs.promise;
 }
 
-export async function getCheckoutLinkConfig(productFamily, productCode, paCode) {
+export async function getCheckoutLinkConfig(
+  productFamily,
+  productCode,
+  paCode
+) {
   let { base } = getConfig();
   if (/\.page$/.test(document.location.origin)) {
     /* c8 ignore next 2 */
@@ -197,38 +212,43 @@ export async function getCheckoutLinkConfig(productFamily, productCode, paCode) 
   }
   const checkoutLinkConfigs = await fetchCheckoutLinkConfigs(base);
   if (!checkoutLinkConfigs.data.length) return undefined;
-  const { locale: { region } } = getConfig();
-
   const {
-    paCodeConfigs,
-    productCodeConfigs,
-    productFamilyConfigs,
-  } = checkoutLinkConfigs.data.reduce((acc, config) => {
-    if (config[NAME_PRODUCT_FAMILY] === paCode) {
-      acc.paCodeConfigs.push(config);
-    } else if (config[NAME_PRODUCT_FAMILY] === productCode) {
-      acc.productCodeConfigs.push(config);
-    } else if (config[NAME_PRODUCT_FAMILY] === productFamily) {
-      acc.productFamilyConfigs.push(config);
-    }
-    return acc;
-  }, { paCodeConfigs: [], productCodeConfigs: [], productFamilyConfigs: [] });
+    locale: { region },
+  } = getConfig();
+
+  const { paCodeConfigs, productCodeConfigs, productFamilyConfigs } =
+    checkoutLinkConfigs.data.reduce(
+      (acc, config) => {
+        if (config[NAME_PRODUCT_FAMILY] === paCode) {
+          acc.paCodeConfigs.push(config);
+        } else if (config[NAME_PRODUCT_FAMILY] === productCode) {
+          acc.productCodeConfigs.push(config);
+        } else if (config[NAME_PRODUCT_FAMILY] === productFamily) {
+          acc.productFamilyConfigs.push(config);
+        }
+        return acc;
+      },
+      { paCodeConfigs: [], productCodeConfigs: [], productFamilyConfigs: [] }
+    );
 
   // helps to fallback to product family config
   // if no locale specific config is found below.
   const productCheckoutLinkConfigs = [
-    ...paCodeConfigs, ...productCodeConfigs, ...productFamilyConfigs,
+    ...paCodeConfigs,
+    ...productCodeConfigs,
+    ...productFamilyConfigs,
   ];
 
   if (!productCheckoutLinkConfigs.length) return undefined;
   const checkoutLinkConfig = productCheckoutLinkConfigs.find(
-    ({ [NAME_LOCALE]: locale }) => locale === '',
+    ({ [NAME_LOCALE]: locale }) => locale === ''
   );
-  const checkoutLinkConfigOverride = productCheckoutLinkConfigs.find(
-    ({ [NAME_LOCALE]: locale }) => locale === region,
-  ) ?? {};
+  const checkoutLinkConfigOverride =
+    productCheckoutLinkConfigs.find(
+      ({ [NAME_LOCALE]: locale }) => locale === region
+    ) ?? {};
   const overrides = Object.fromEntries(
-    Object.entries(checkoutLinkConfigOverride).filter(([, value]) => value),
+    Object.entries(checkoutLinkConfigOverride).filter(([, value]) => value)
   );
   const finalConfig = { ...checkoutLinkConfig, ...overrides };
   Object.entries(finalConfig).forEach(([key, value]) => {
@@ -242,11 +262,13 @@ export async function getCheckoutLinkConfig(productFamily, productCode, paCode) 
 export async function getDownloadAction(
   options,
   imsSignedInPromise,
-  [{
-    offerType,
-    productArrangementCode,
-    productArrangement: { productCode, productFamily: offerFamily } = {},
-  }],
+  [
+    {
+      offerType,
+      productArrangementCode,
+      productArrangement: { productCode, productFamily: offerFamily } = {},
+    },
+  ]
 ) {
   if (options.entitlement !== true) return undefined;
   const loggedIn = await imsSignedInPromise;
@@ -256,22 +278,31 @@ export async function getDownloadAction(
   const checkoutLinkConfig = await getCheckoutLinkConfig(
     offerFamily,
     productCode,
-    productArrangementCode,
+    productArrangementCode
   );
   if (!checkoutLinkConfig?.DOWNLOAD_URL) return undefined;
-  const offer = entitlements.find((
-    { offer: { product_arrangement: { family: subscriptionFamily } } },
-  ) => {
-    if (CC_ALL_APPS.includes(subscriptionFamily)) return true; // has all apps
-    if (CC_ALL_APPS.includes(offerFamily)) return false; // hasn't all apps and cta is all apps
-    const singleAppFamily = CC_SINGLE_APPS // has single and and cta is single app
-      .find((singleAppFamilies) => singleAppFamilies.includes(offerFamily));
-    return singleAppFamily?.includes(subscriptionFamily);
-  });
+  const offer = entitlements.find(
+    ({
+      offer: {
+        product_arrangement: { family: subscriptionFamily },
+      },
+    }) => {
+      if (CC_ALL_APPS.includes(subscriptionFamily)) return true; // has all apps
+      if (CC_ALL_APPS.includes(offerFamily)) return false; // hasn't all apps and cta is all apps
+      const singleAppFamily = CC_SINGLE_APPS.find(
+        (
+          singleAppFamilies // has single and and cta is single app
+        ) => singleAppFamilies.includes(offerFamily)
+      );
+      return singleAppFamily?.includes(subscriptionFamily);
+    }
+  );
   if (!offer) return undefined;
   const config = getConfig();
-  const text = await replaceKey(checkoutLinkConfig.DOWNLOAD_TEXT
-      || PLACEHOLDER_KEY_DOWNLOAD, config);
+  const text = await replaceKey(
+    checkoutLinkConfig.DOWNLOAD_TEXT || PLACEHOLDER_KEY_DOWNLOAD,
+    config
+  );
   const url = localizeLink(checkoutLinkConfig.DOWNLOAD_URL);
   const type = offerType?.toLowerCase() ?? '';
   return { text, className: `download ${type}`, url };
@@ -280,7 +311,7 @@ export async function getDownloadAction(
 export async function getUpgradeAction(
   options,
   imsSignedInPromise,
-  [{ productArrangement: { productFamily: offerFamily } = {} }],
+  [{ productArrangement: { productFamily: offerFamily } = {} }]
 ) {
   if (!options.upgrade) return undefined;
   const loggedIn = await imsSignedInPromise;
@@ -289,7 +320,9 @@ export async function getUpgradeAction(
   if (upgradeOffer === null) {
     upgradeOffer = undefined;
     // will enter only once
-    upgradeOffer = await document.querySelector('.merch-offers.upgrade [data-wcs-osi]');
+    upgradeOffer = await document.querySelector(
+      '.merch-offers.upgrade [data-wcs-osi]'
+    );
   }
   await upgradeOffer?.onceSettled();
   if (upgradeOffer && entitlements?.length && offerFamily) {
@@ -299,7 +332,7 @@ export async function getUpgradeAction(
       upgradeOffer,
       entitlements,
       CC_SINGLE_APPS_ALL,
-      CC_ALL_APPS,
+      CC_ALL_APPS
     );
     return upgradeAction;
   }
@@ -322,7 +355,9 @@ async function openFragmentModal(path, getModal) {
 }
 
 export function appendTabName(url) {
-  const metaPreselectPlan = document.querySelector('meta[name="preselect-plan"]');
+  const metaPreselectPlan = document.querySelector(
+    'meta[name="preselect-plan"]'
+  );
   if (!metaPreselectPlan?.content) return url;
   let urlWithPlan;
   try {
@@ -339,14 +374,19 @@ async function openExternalModal(url, getModal) {
   await loadStyle(`${getConfig().base}/blocks/iframe/iframe.css`);
   const root = createTag('div', { class: 'milo-iframe' });
   const urlWithTabName = appendTabName(url);
-  createTag('iframe', {
-    src: urlWithTabName,
-    frameborder: '0',
-    marginwidth: '0',
-    marginheight: '0',
-    allowfullscreen: 'true',
-    loading: 'lazy',
-  }, '', { parent: root });
+  createTag(
+    'iframe',
+    {
+      src: urlWithTabName,
+      frameborder: '0',
+      marginwidth: '0',
+      marginheight: '0',
+      allowfullscreen: 'true',
+      loading: 'lazy',
+    },
+    '',
+    { parent: root }
+  );
   return getModal(null, {
     id: 'checkout-link-modal',
     content: root,
@@ -376,23 +416,27 @@ export async function openModal(e, url, offerType) {
 }
 
 export async function getModalAction(offers, options) {
-  const [{
-    offerType,
-    productArrangementCode,
-    productArrangement: { productCode, productFamily: offerFamily } = {},
-  }] = offers ?? [{}];
+  const [
+    {
+      offerType,
+      productArrangementCode,
+      productArrangement: { productCode, productFamily: offerFamily } = {},
+    },
+  ] = offers ?? [{}];
   if (options.modal !== true) return undefined;
   const checkoutLinkConfig = await getCheckoutLinkConfig(
     offerFamily,
     productCode,
-    productArrangementCode,
+    productArrangementCode
   );
   if (!checkoutLinkConfig) return undefined;
-  const columnName = (offerType === OFFER_TYPE_TRIAL) ? FREE_TRIAL_PATH : BUY_NOW_PATH;
+  const columnName =
+    offerType === OFFER_TYPE_TRIAL ? FREE_TRIAL_PATH : BUY_NOW_PATH;
   let url = checkoutLinkConfig[columnName];
   if (!url) return undefined;
   url = isInternalModal(url)
-    ? localizeLink(checkoutLinkConfig[columnName]) : checkoutLinkConfig[columnName];
+    ? localizeLink(checkoutLinkConfig[columnName])
+    : checkoutLinkConfig[columnName];
   return { url, handler: (e) => openModal(e, url, offerType) };
 }
 
@@ -421,28 +465,35 @@ export async function initService(force = false) {
     fetchCheckoutLinkConfigs.promise = undefined;
   }
   const { env, commerce = {}, locale } = getConfig();
-  initService.promise = initService.promise ?? polyfills().then(async () => {
-    const { hostname, searchParams } = new URL(window.location.href);
-    let commerceLibPath = '../../deps/mas/commerce.js';
-    if (/hlx\.(page|live)$|localhost$|www\.stage\.adobe\.com$/.test(hostname)) {
-      const maslibs = searchParams.get('maslibs');
-      if (maslibs) {
-        commerceLibPath = `${getMasBase(hostname, maslibs)}/libs/commerce.js`;
+  initService.promise =
+    initService.promise ??
+    polyfills().then(async () => {
+      const { hostname, searchParams } = new URL(window.location.href);
+      let commerceLibPath = '../../deps/mas/commerce.js';
+      if (
+        /hlx\.(page|live)$|localhost$|www\.stage\.adobe\.com$/.test(hostname)
+      ) {
+        const maslibs = searchParams.get('maslibs');
+        if (maslibs) {
+          commerceLibPath = `${getMasBase(hostname, maslibs)}/libs/commerce.js`;
+        }
       }
-    }
-    const commerceLib = await import(commerceLibPath);
-    const service = await commerceLib.init(() => ({
-      env,
-      commerce,
-      locale,
-    }), () => ({ getCheckoutAction, force }));
-    service.imsSignedInPromise.then((isSignedIn) => {
-      if (isSignedIn) {
-        fetchEntitlements();
-      }
+      const commerceLib = await import(commerceLibPath);
+      const service = await commerceLib.init(
+        () => ({
+          env,
+          commerce,
+          locale,
+        }),
+        () => ({ getCheckoutAction, force })
+      );
+      service.imsSignedInPromise.then((isSignedIn) => {
+        if (isSignedIn) {
+          fetchEntitlements();
+        }
+      });
+      return service;
     });
-    return service;
-  });
   return initService.promise;
 }
 
@@ -450,9 +501,11 @@ export async function getCommerceContext(el, params) {
   const wcsOsi = params.get('osi');
   if (!wcsOsi) return null;
   const perpetual = params.get('perp') === 'true' || undefined;
-  const promotionCode = (
-    params.get('promo') ?? params.get('promotionCode') ?? el.closest('[data-promotion-code]')?.dataset.promotionCode
-  ) || undefined;
+  const promotionCode =
+    (params.get('promo') ??
+      params.get('promotionCode') ??
+      el.closest('[data-promotion-code]')?.dataset.promotionCode) ||
+    undefined;
   return { promotionCode, perpetual, wcsOsi };
 }
 
@@ -475,7 +528,8 @@ export async function getCheckoutContext(el, params) {
   const { checkoutClientId } = settings;
   const checkoutMarketSegment = params.get('marketSegment');
   const checkoutWorkflow = params.get('workflow') ?? settings.checkoutWorkflow;
-  const checkoutWorkflowStep = params?.get('workflowStep') ?? settings.checkoutWorkflowStep;
+  const checkoutWorkflowStep =
+    params?.get('workflowStep') ?? settings.checkoutWorkflowStep;
   const entitlement = params?.get('entitlement');
   const upgrade = params?.get('upgrade');
   const modal = params?.get('modal');
@@ -509,7 +563,8 @@ export async function getPriceContext(el, params) {
   const displayTax = params.get('tax');
   const forceTaxExclusive = params.get('exclusive');
   // The PRICE_TEMPLATE_MAPPING supports legacy OST links
-  const template = PRICE_TEMPLATE_MAPPING.get(params.get('type')) ?? PRICE_TEMPLATE_REGULAR;
+  const template =
+    PRICE_TEMPLATE_MAPPING.get(params.get('type')) ?? PRICE_TEMPLATE_REGULAR;
   return {
     ...context,
     displayOldPrice,
@@ -523,7 +578,9 @@ export async function getPriceContext(el, params) {
 
 export async function buildCta(el, params) {
   const large = !!el.closest('.marquee');
-  const strong = el.firstElementChild?.tagName === 'STRONG' || el.parentElement?.tagName === 'STRONG';
+  const strong =
+    el.firstElementChild?.tagName === 'STRONG' ||
+    el.parentElement?.tagName === 'STRONG';
   if (el.closest('.merch-offers.upgrade')) {
     params.append('entitlement', 'false');
   }
@@ -558,14 +615,18 @@ export default async function init(el) {
   if (!el?.classList?.contains('merch')) return undefined;
   const { searchParams } = new URL(el.href);
   const isCta = searchParams.get('type') === 'checkoutUrl';
-  const merch = await (isCta ? buildCta : buildPrice)(el, searchParams);
-  const service = await initService();
-  log = service.Log.module('merch');
-  if (merch) {
-    log.debug('Rendering:', { options: { ...merch.dataset }, merch, el });
-    el.replaceWith(merch);
-    return merch;
+  try {
+    const merch = await (isCta ? buildCta : buildPrice)(el, searchParams);
+    const service = await initService();
+    log = service.Log.module('merch');
+    if (merch) {
+      log.debug('Rendering:', { options: { ...merch.dataset }, merch, el });
+      el.replaceWith(merch);
+      await merch.onceSettled();
+      return merch;
+    }
+  } catch (e) {
+    log.warn('Failed to get context:', { el });
   }
-  log.warn('Failed to get context:', { el });
   return null;
 }
