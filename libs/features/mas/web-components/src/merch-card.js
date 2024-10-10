@@ -344,7 +344,6 @@ export class MerchCard extends LitElement {
             setTimeout(() => resolve(false), MERCH_CARD_LOAD_TIMEOUT),
         );
         const success = await Promise.race([successPromise, timeoutPromise]);
-        console.log(successPromise, timeoutPromise, success);
         if (success === true) {
             this.dispatchEvent(
                 new CustomEvent(EVENT_MAS_READY, {

@@ -167,6 +167,10 @@ export class InlinePrice extends HTMLSpanElement {
         return this.masElement.value;
     }
 
+    requestUpdate(force = false) {
+        return this.masElement.requestUpdate(force);
+    }
+
     /**
      * Resolves default value of displayTax property, based on provided geo info and segments.
      * @returns {boolean}

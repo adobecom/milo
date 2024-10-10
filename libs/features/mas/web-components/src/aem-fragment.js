@@ -136,12 +136,13 @@ export class AemFragment extends HTMLElement {
             })
             .catch(() => {
                 this.#fail('Network error: failed to load fragment');
+                this._readyPromise = null;
                 return false;
             });
     }
 
     #fail(error) {
-      this.classList.add('error');
+        this.classList.add('error');
         this.dispatchEvent(
             new CustomEvent(EVENT_AEM_ERROR, {
                 detail: error,

@@ -28,3 +28,4 @@ await build({
 });
 
 fs.writeFileSync('mas.json', JSON.stringify(metafile));
+

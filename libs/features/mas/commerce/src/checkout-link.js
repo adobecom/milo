@@ -37,6 +37,10 @@ export class CheckoutLink extends HTMLAnchorElement {
         return this.masElement.value;
     }
 
+    requestUpdate(force = false) {
+        return this.masElement.requestUpdate(force);
+    }
+
     constructor() {
         super();
         this.addEventListener('click', this.clickHandler);

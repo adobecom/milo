@@ -225,6 +225,8 @@
     <span class="hljs-tag">&lt;<span class="hljs-name">aem-fragment</span> <span class="hljs-attr">fragment</span>=<span class="hljs-string">&quot;wrong-fragment-id&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">aem-fragment</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">merch-card</span>&gt;</span>
 
+<span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;btnRefreshFragments&quot;</span>&gt;</span>Refresh Fragments<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+
 <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;module&quot;</span>&gt;</span><span class="language-javascript">
     {
         <span class="hljs-keyword">const</span> target = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;log2&#x27;</span>);
@@ -243,6 +245,14 @@
                 card.<span class="hljs-property">classList</span>.<span class="hljs-title function_">add</span>(<span class="hljs-string">&#x27;error&#x27;</span>);
                 <span class="hljs-title function_">log</span>(target, <span class="hljs-string">`<span class="hljs-subst">${e.target.nodeName}</span>: <span class="hljs-subst">${e.detail}</span>`</span>);
             });
+
+            <span class="hljs-variable language_">document</span>
+                .<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;btnRefreshFragments&#x27;</span>)
+                .<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;click&#x27;</span>, <span class="hljs-function">() =&gt;</span> {
+                    <span class="hljs-variable language_">document</span>
+                        .<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&#x27;mas-commerce-service&#x27;</span>)
+                        .<span class="hljs-title function_">refreshFragments</span>();
+                });
         });
     }
 </span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>

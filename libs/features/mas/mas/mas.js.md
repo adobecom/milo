@@ -51,6 +51,9 @@ You do need to have mas.js on your page / application, including it can be done 
 
 <!-- for other locale, with different language -->
 <mas-commerce-service locale="en_CA" language="es"></mas-commerce-service>
+
+<!-- or with a country and language -->
+<mas-commerce-service country="JP" language="en"></mas-commerce-service>
 ```
 
 you can play around with below price, either adding locale, language or env as parameters that will be injected to `mas-commerce-service` as attributes, and then it will be activated.
