@@ -147,9 +147,9 @@ vs
 
 | Event                       | Description                                        |
 | --------------------------- | -------------------------------------------------- |
-| `wcms:placeholder:pending`  | Fires when inline price starts loading             |
-| `wcms:placeholder:resolved` | Fires when the price is successfully resolved      |
-| `wcms:placeholder:failed`   | Fires when the price could not be found or fetched |
+| `mas:pending`  | Fires when inline price starts loading             |
+| `mas:resolved` | Fires when the price is successfully resolved      |
+| `mas:failed`   | Fires when the price could not be found or fetched |
 
 For each event, the following CSS classes are toggled on the element: `placeholder-pending`, `placeholder-resolved`, `placeholder-failed`.
 
@@ -171,13 +171,13 @@ For each event, the following CSS classes are toggled on the element: `placehold
     const logger = (...messages) =>
         (log.innerHTML = `${messages.join(' ')}<br>${log.innerHTML}`);
     const span = document.getElementById('ip2');
-    span.addEventListener('wcms:placeholder:pending', () =>
+    span.addEventListener('mas:pending', () =>
         logger('inline-price pending'),
     );
-    span.addEventListener('wcms:placeholder:resolved', () =>
+    span.addEventListener('mas:resolved', () =>
         logger('inline-price resolved'),
     );
-    span.addEventListener('wcms:placeholder:failed', () =>
+    span.addEventListener('mas:failed', () =>
         logger('inline-price failed'),
     );
     document.getElementById('btnRefresh').addEventListener('click', () => {

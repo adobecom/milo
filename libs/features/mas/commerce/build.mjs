@@ -9,7 +9,7 @@ const { metafile } = await build({
     entryPoints: ['./src/index.js'],
     format: 'esm',
     metafile: true,
-    minify: true,
+    minify: false,
     outfile: '../../../../libs/deps/mas/commerce.js',
     platform: 'browser',
     target: ['es2020'],

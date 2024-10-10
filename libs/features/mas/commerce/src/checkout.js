@@ -10,12 +10,12 @@ import {
 } from './external.js';
 import { Defaults } from './defaults.js';
 import { Log } from './log.js';
-import { toOfferSelectorIds, toQuantity, useService } from './utilities.js';
+import { toOfferSelectorIds, toQuantity } from './utilities.js';
 
 /**
  * generate Checkout configuration
  */
-export function Checkout({ providers, settings }, dataProviders) {
+export function Checkout({ providers, settings }) {
     const log = Log.module('checkout');
 
     function collectCheckoutOptions(overrides, placeholder) {
@@ -104,7 +104,11 @@ export function Checkout({ providers, settings }, dataProviders) {
         return null;
     }
 
-    /** @type {Commerce.Checkout.buildCheckoutURL} */
+    /**
+     * @param {*} offers
+     * @param {*} options
+     * @returns a checkout URL
+     */
     function buildCheckoutURL(offers, options) {
         if (!Array.isArray(offers) || !offers.length || !options) {
             return '';
@@ -136,8 +140,6 @@ export function Checkout({ providers, settings }, dataProviders) {
         if (offers.length === 1) {
             const [{ offerId, offerType, productArrangementCode }] = offers;
             const {
-                // TODO: fix type definition in @pandora, Wcs responds with marketSegments (array)
-                // @ts-ignore
                 marketSegments: [marketSegment],
             } = offers[0];
             Object.assign(data, {
@@ -166,7 +168,6 @@ export function Checkout({ providers, settings }, dataProviders) {
         CheckoutLink,
         CheckoutWorkflow,
         CheckoutWorkflowStep,
-        buildCheckoutAction,
         buildCheckoutURL,
         collectCheckoutOptions,
         createCheckoutLink,

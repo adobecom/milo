@@ -252,15 +252,15 @@ The term placeholder will be deprecated and it is recommended to refer as <stron
 </thead>
 <tbody>
 <tr>
-<td><code>wcms:placeholder:pending</code></td>
+<td><code>mas:pending</code></td>
 <td>fires when checkout link starts loading</td>
 </tr>
 <tr>
-<td><code>wcms:placeholder:resolved</code></td>
+<td><code>mas:resolved</code></td>
 <td>fires when the offer is successfully resolved</td>
 </tr>
 <tr>
-<td><code>wcms:placeholder:failed</code></td>
+<td><code>mas:failed</code></td>
 <td>fires when the offer could not be found or fetched</td>
 </tr>
 <tr>
@@ -271,9 +271,6 @@ The term placeholder will be deprecated and it is recommended to refer as <stron
 </table>
 <br>
 <p>For each event except <code>click</code>, the following css classes are toggled on the element: <code>placeholder-pending</code>, <code>placeholder-resolved</code>, <code>placeholder-failed</code>.</p>
-<div class="warning">
-<p><strong>Note</strong>: Event names with <code>wcms:placeholder</code> prefix can be subject to change.</p>
-</div>
 <h3 id="example-2" tabindex="-1">Example <a class="header-anchor" href="#example-2" href="#example-2" title="Permalink to this heading">#</a></h3>
 <pre><code class="hljs demo language-html"><span class="hljs-tag">&lt;<span class="hljs-name">a</span>
     <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;co2&quot;</span>
@@ -288,13 +285,13 @@ The term placeholder will be deprecated and it is recommended to refer as <stron
     <span class="hljs-keyword">const</span> <span class="hljs-title function_">logger</span> = (<span class="hljs-params">...messages</span>) =&gt;
         (log.<span class="hljs-property">innerHTML</span> = <span class="hljs-string">`<span class="hljs-subst">${messages.join(<span class="hljs-string">&#x27; &#x27;</span>)}</span>&lt;br&gt;<span class="hljs-subst">${log.innerHTML}</span>`</span>);
     <span class="hljs-keyword">const</span> a = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;co2&#x27;</span>);
-    a.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;wcms:placeholder:pending&#x27;</span>, <span class="hljs-function">() =&gt;</span>
+    a.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;mas:pending&#x27;</span>, <span class="hljs-function">() =&gt;</span>
         <span class="hljs-title function_">logger</span>(<span class="hljs-string">&#x27;checkout-link pending&#x27;</span>),
     );
-    a.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;wcms:placeholder:resolved&#x27;</span>, <span class="hljs-function">() =&gt;</span>
+    a.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;mas:resolved&#x27;</span>, <span class="hljs-function">() =&gt;</span>
         <span class="hljs-title function_">logger</span>(<span class="hljs-string">&#x27;checkout-link resolved&#x27;</span>),
     );
-    a.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;wcms:placeholder:failed&#x27;</span>, <span class="hljs-function">() =&gt;</span>
+    a.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;mas:failed&#x27;</span>, <span class="hljs-function">() =&gt;</span>
         <span class="hljs-title function_">logger</span>(<span class="hljs-string">&#x27;checkout-link failed&#x27;</span>),
     );
     a.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;click&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">e</span>) =&gt;</span> {

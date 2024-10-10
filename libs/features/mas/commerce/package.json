@@ -8,11 +8,9 @@
     ],
     "main": "src/index.js",
     "type": "module",
-    "types": "src/index.d.ts",
     "scripts": {
-        "build": "npm run test:ci && npm run build:bundle && npm run build:types",
+        "build": "npm run test:ci && npm run build:bundle",
         "build:bundle": "node ./build.mjs",
-        "build:types": "cp ./src/index.d.ts ./libs/commerce.d.ts",
         "build:watch": "npm run build:bundle --watch",
         "test": "wtr --config ./web-test-runner.config.mjs --coverage --watch",
         "test:ci": "wtr --config ./web-test-runner.config.mjs --coverage"
