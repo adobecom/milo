@@ -1292,11 +1292,9 @@ export async function loadArea(area = document) {
   }
 
   const allIcons = area.querySelectorAll('span.icon');
-  const iconUtils = [];
   if (allIcons.length) {
-    const { setIconsIndexClass, decorateIcons } = await import('../features/icons/icons.js');
+    const { setIconsIndexClass } = await import('../features/icons/icons.js');
     setIconsIndexClass(allIcons);
-    iconUtils.decorateIcons = decorateIcons;
   }
 
   const sections = decorateSections(area, isDoc);
@@ -1311,7 +1309,11 @@ export async function loadArea(area = document) {
     });
   }
 
-  if (allIcons.length && isDoc) await iconUtils.decorateIcons(area, allIcons, config);
+  if (allIcons.length) {
+    const { default: loadIcons, decorateIcons } = await import('../features/icons/icons.js');
+    await decorateIcons(area, allIcons, config);
+    await loadIcons(allIcons);
+  }
 
   const currentHash = window.location.hash;
   if (currentHash) {
@@ -1319,8 +1321,6 @@ export async function loadArea(area = document) {
   }
 
   if (isDoc) {
-    const { default: loadIcons } = await import('../features/icons/icons.js');
-    loadIcons(allIcons);
     await documentPostSectionLoading(area, config);
   }
   await loadDeferred(area, areaBlocks, config);

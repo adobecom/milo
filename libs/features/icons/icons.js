@@ -39,7 +39,7 @@ export const fetchIcons = (config) => new Promise(async (resolve) => {
   resolve(fetchedIcons);
 });
 
-function decorateToolTip(icon) {
+async function decorateToolTip(icon) {
   const wrapper = icon.closest('em');
   if (!wrapper) return;
   wrapper.className = 'tooltip-wrapper';
@@ -99,7 +99,7 @@ function filterDuplicatedIcons(icons) {
   return uniqueIcons;
 }
 
-export function decorateIcons(area, icons, config) {
+export async function decorateIcons(area, icons, config) {
   if (!icons.length) return;
   const iconsATF = [...icons].filter((icon) => isElementInView(icon));
   const uniqueIcons = filterDuplicatedIcons(iconsATF);
@@ -130,8 +130,9 @@ export default async function loadIcons(icons) {
   const iconRequests = [];
   const iconsToFetch = new Map();
 
-  icons.forEach((icon) => {
-    if (icon.classList.contains('icon-tooltip')) decorateToolTip(icon);
+  icons.forEach(async (icon) => {
+    const isToolTip = icon.classList.contains('icon-tooltip');
+    if (isToolTip) decorateToolTip(icon);
     const iconName = icon.dataset.name;
     if (icon.dataset.svgInjected || !iconName) return;
     if (!federalIcons[iconName] && !iconsToFetch.has(iconName)) {
