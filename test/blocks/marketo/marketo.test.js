@@ -2,7 +2,7 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { delay } from '../../helpers/waitfor.js';
 import { setConfig } from '../../../libs/utils/utils.js';
-import init, { setPreferences, decorateURL, GATE_PARAM } from '../../../libs/blocks/marketo/marketo.js';
+import init, { setPreferences, decorateURL, FORM_PARAM } from '../../../libs/blocks/marketo/marketo.js';
 
 const innerHTML = await readFile({ path: './mocks/body.html' });
 
@@ -114,13 +114,13 @@ describe('Marketo one page experience', () => {
 
   it('shows success section if ungated', async () => {
     const url = new URL(window.location);
-    url.searchParams.set(GATE_PARAM, 'off');
+    url.searchParams.set(FORM_PARAM, 'off');
     window.history.pushState({}, '', url);
 
     init(document.querySelector('.marketo'));
     expect(document.querySelector('.section.form-success').classList.contains('hide-block')).to.be.false;
 
-    url.searchParams.delete(GATE_PARAM);
+    url.searchParams.delete(FORM_PARAM);
     window.history.pushState({}, '', url);
   });
 });

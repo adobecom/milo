@@ -38,7 +38,7 @@ const FORM_MAP = {
   'co-partner-names': 'program.copartnernames',
   'sfdc-campaign-id': 'program.campaignids.sfdc',
 };
-export const GATE_PARAM = 'marketoGate';
+export const FORM_PARAM = 'marketoForm';
 
 export const formValidate = (formEl) => {
   formEl.classList.remove('hide-errors');
@@ -202,7 +202,7 @@ export default function init(el) {
   }
 
   const searchParams = new URLSearchParams(window.location.search);
-  const ungated = searchParams.get(GATE_PARAM) === 'off';
+  const ungated = searchParams.get(FORM_PARAM) === 'off';
 
   if (ungated) {
     showSuccessSection(formData);
