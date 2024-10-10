@@ -24,7 +24,7 @@ You do need to have mas.js on your page / application, including it can be done 
 | ---------- | --------------------------------------------------------------------------------------------------- | ---------------------------- | -------- |
 |  `env`     | commerce environment you want this page to use, either `stage` or `prod`                            |  `prod`                      |  `false` |
 | `locale`   | currency & price locale you need, must belong to one of the [supported locales](#supported-locales) | `en_US`                      | `false`  |
-| `country`  | country of the offers to retrieve from WCS, determines the currency, price format, etc.             | en or locale langauge if set | `false`  |
+| `country`  | country of the offers to retrieve from WCS, determines the currency, price format, etc.             | US or locale country if set | `false`  |
 | `language` | language of the price literal, e.g: per license                                                     | en or locale langauge if set | `false`  |
 
 ### Methods
@@ -44,6 +44,9 @@ You do need to have mas.js on your page / application, including it can be done 
 
 <!-- for US english stage-->
 <mas-commerce-service env="stage"></mas-commerce-service>
+
+<!-- for other country & language -->
+<mas-commerce-service country="CA" language="fr"></mas-commerce-service>
 
 <!-- for other locales, pass locale parameter from the table below -->
 <mas-commerce-service locale="en_CA"></mas-commerce-service>
