@@ -93,11 +93,12 @@ Two photoshop and three acrobat pro single apps (TEAMS):
 
 ## Properties {#properties}
 
-| Property      | Description                                                                                                                                                     |
-| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `onceSettled` | promise that resolves when the custom-element either resolves or fails to resolve the offer                                                                     |
-| `options`     | JSON object with the complete set of properties used to resolve the offer                                                                                       |
-| `value`       | The actual offer that is used to render the checkout link. In some cases WCS can return multiple offers but only one will be picked to render for a single app. |
+| Property         | Description                                                                                                                                                     |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `isCheckoutLink` | on checkout link elements, it will return `true`                                                                                                                |
+| `onceSettled`    | promise that resolves when the custom-element either resolves or fails to resolve the offer                                                                     |
+| `options`        | JSON object with the complete set of properties used to resolve the offer                                                                                       |
+| `value`          | The actual offer that is used to render the checkout link. In some cases WCS can return multiple offers but only one will be picked to render for a single app. |
 
 ### Example
 
@@ -149,12 +150,12 @@ Two photoshop and three acrobat pro single apps (TEAMS):
 
 ## Events {#events}
 
-| Event                       | Description                                        |
-| --------------------------- | -------------------------------------------------- |
+| Event          | Description                                        |
+| -------------- | -------------------------------------------------- |
 | `mas:pending`  | fires when checkout link starts loading            |
 | `mas:resolved` | fires when the offer is successfully resolved      |
 | `mas:failed`   | fires when the offer could not be found or fetched |
-| `click`                     | native click event on the `a` element              |
+| `click`        | native click event on the `a` element              |
 
 <br>
 
@@ -176,15 +177,9 @@ For each event except `click`, the following css classes are toggled on the elem
     const logger = (...messages) =>
         (log.innerHTML = `${messages.join(' ')}<br>${log.innerHTML}`);
     const a = document.getElementById('co2');
-    a.addEventListener('mas:pending', () =>
-        logger('checkout-link pending'),
-    );
-    a.addEventListener('mas:resolved', () =>
-        logger('checkout-link resolved'),
-    );
-    a.addEventListener('mas:failed', () =>
-        logger('checkout-link failed'),
-    );
+    a.addEventListener('mas:pending', () => logger('checkout-link pending'));
+    a.addEventListener('mas:resolved', () => logger('checkout-link resolved'));
+    a.addEventListener('mas:failed', () => logger('checkout-link failed'));
     a.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -193,7 +188,6 @@ For each event except `click`, the following css classes are toggled on the elem
     document.getElementById('btnRefresh').addEventListener('click', () => {
         a.requestUpdate(true);
     });
-
 </script>
 ```
 

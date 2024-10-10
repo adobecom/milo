@@ -19,15 +19,15 @@
   <script src="../../../features/spectrum-web-components/dist/theme.js" type="module"></script>
   <script src="../../../features/spectrum-web-components/dist/button.js" type="module"></script>
   <script type="module" src="../../../deps/mas/mas.js"></script>
-  <mas-commerce-service></mas-commerce-service>
+
   <script type="module">
     const params = new URLSearchParams(document.location.search);
-    const masCommerceService = document.querySelector('mas-commerce-service');
+    const masCommerceService = document.createElement('mas-commerce-service');
     ['locale','language','env'].forEach((attribute) => {
       const value = params.get(attribute);
       if (value) masCommerceService.setAttribute(attribute, value);
     });
-    masCommerceService.activate();
+    document.head.appendChild(masCommerceService);
   </script>
   <!-- Include Highlight.js stylesheet for syntax highlighting -->
   <link rel="stylesheet" href="../../../styles/styles.css">
@@ -142,8 +142,7 @@
 <pre><code class="hljs demo language-html"><span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;btnRefresh&quot;</span>&gt;</span>Refresh<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
 <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;module&quot;</span>&gt;</span><span class="language-javascript">
     <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;btnRefresh&#x27;</span>).<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;click&#x27;</span>, <span class="hljs-function">() =&gt;</span> {
-        <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&#x27;mas-commerce-service&#x27;</span>).<span class="hljs-title function_">flushWcsCache</span>();
-        <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&#x27;span[is=&quot;inline-price&quot;]&#x27;</span>).<span class="hljs-title function_">requestUpdate</span>(<span class="hljs-literal">true</span>);
+        <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&#x27;mas-commerce-service&#x27;</span>).<span class="hljs-title function_">refreshOffers</span>();
     });
 </span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
 </code></pre>

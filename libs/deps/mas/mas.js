@@ -218,6 +218,7 @@ Try polyfilling it using "@formatjs/intl-pluralrules"
 `,Da=()=>[P`
         /* Tablet */
         @media screen and ${fe(R)} {
+        @media screen and ${fe(R)} {
             :host([size='wide']),
             :host([size='super-wide']) {
                 width: 100%;
@@ -226,6 +227,7 @@ Try polyfilling it using "@formatjs/intl-pluralrules"
         }
 
         /* Laptop */
+        @media screen and ${fe(I)} {
         @media screen and ${fe(I)} {
             :host([size='wide']) {
                 grid-column: span 2;
@@ -243,7 +245,12 @@ Try polyfilling it using "@formatjs/intl-pluralrules"
         `}get cardImage(){return g` <div class="image">
             <slot name="bg-image"></slot>
             ${this.badge}
-        </div>`}getGlobalCSS(){return""}get evergreen(){return this.card.classList.contains("intro-pricing")}get promoBottom(){return this.card.classList.contains("promo-bottom")}get headingSelector(){return'[slot="heading-xs"]'}get secureLabelFooter(){let t=this.card.secureLabel?g`<span class="secure-transaction-label"
+        </div>`}getGlobalCSS(){return""}get theme(){return document.querySelector("sp-theme")}get evergreen(){return this.card.classList.contains("intro-pricing")}get promoBottom(){return this.card.classList.contains("promo-bottom")}get headingSelector(){return'[slot="heading-xs"]'}get strip(){if(this.card.stripSize&&this.card.stripBackground)switch(this.card.stripSize){case"wide":return"44px";case"small":return"4px";default:return"0"}return""}get stripStyle(){return this.strip&&this.card.stripBackground?`
+          background: ${this.card.stripBackground.startsWith("url")?this.card.stripBackground:`url("${this.card.stripBackground}")`};
+          background-size: ${this.strip} 100%;
+          background-repeat: no-repeat;
+          background-position: ${this.card.theme.dir==="ltr"?"left":"right"};
+        `:""}get secureLabelFooter(){let t=this.card.secureLabel?g`<span class="secure-transaction-label"
                   >${this.card.secureLabel}</span
               >`:"";return x`<footer>${t}<slot name="footer"></slot></footer>`}async adjustTitleWidth(){let t=this.card.getBoundingClientRect().width,r=this.card.badgeElement?.getBoundingClientRect().width||0;t===0||r===0||this.card.style.setProperty("--consonant-merch-card-heading-xs-max-width",`${Math.round(t-r-16)}px`)}postCardUpdateHook(){}connectedCallbackHook(){}disconnectedCallbackHook(){}renderLayout(){}get aemFragmentMapping(){}};it=new WeakMap,g(Ft,"styleMap",{});var C=Ft;function ue(e,t={},r){let n=document.createElement(e);r instanceof HTMLElement?n.appendChild(r):n.innerHTML=r;for(let[i,o]of Object.entries(t))n.setAttribute(i,o);return n}function Kr(){return window.matchMedia("(max-width: 767px)").matches}function Ga(){return window.matchMedia("(max-width: 1024px)").matches}var Ha="merch-offer-select:ready",za="merch-card:ready",Fa="merch-card:action-menu-toggle";var Vi="merch-storage:change",Ri="merch-quantity-selector:change";var ot="aem:load",at="aem:error",Ba="mas:ready",Ka="mas:error";var ja=`
 :root {
@@ -629,6 +636,7 @@ merch-card[variant="ccd-action"] .price-strikethrough {
 
 /* mini compare mobile */ 
 @media screen and ${xe} {
+@media screen and ${xe} {
   :root {
     --consonant-merch-card-mini-compare-chart-width: 302px;
     --consonant-merch-card-mini-compare-chart-wide-width: 302px;
@@ -666,7 +674,7 @@ merch-card[variant="ccd-action"] .price-strikethrough {
   }
 }
 
-@media screen and ${_r} {
+@media screen and ${Nr} {
   .three-merch-cards.mini-compare-chart merch-card [slot="footer"] a,
   .four-merch-cards.mini-compare-chart merch-card [slot="footer"] a {
     flex: 1;
@@ -813,6 +821,7 @@ merch-card .footer-row-cell:nth-child(8) {
         }
     }
 
+    @media screen and ${fe(I)} {
     @media screen and ${fe(I)} {
         :host([variant='mini-compare-chart']) footer {
             padding: var(--consonant-merch-spacing-xs)
@@ -1029,6 +1038,7 @@ merch-card[variant="plans"] [slot="quantity-select"] {
 
 /* Mobile */
 @media screen and ${xe} {
+@media screen and ${xe} {
   :root {
     --consonant-merch-card-segment-width: 276px;
   }
@@ -1093,6 +1103,7 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
   grid-template-columns: minmax(300px, var(--consonant-merch-card-special-offers-width));
 }
 
+@media screen and ${xe} {
 @media screen and ${xe} {
   :root {
     --consonant-merch-card-special-offers-width: 302px;
@@ -1208,6 +1219,7 @@ merch-card[variant='twp'] merch-offer-select {
   grid-template-columns: var(--consonant-merch-card-image-width);
 }
 
+@media screen and ${xe} {
 @media screen and ${xe} {
   :root {
     --consonant-merch-card-twp-width: 300px;

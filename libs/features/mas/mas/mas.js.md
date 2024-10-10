@@ -78,8 +78,7 @@ Toggle the network tab and click on `Refresh` button below
 <button id="btnRefresh">Refresh</button>
 <script type="module">
     document.getElementById('btnRefresh').addEventListener('click', () => {
-        document.querySelector('mas-commerce-service').flushWcsCache();
-        document.querySelector('span[is="inline-price"]').requestUpdate(true);
+        document.querySelector('mas-commerce-service').refreshOffers();
     });
 </script>
 ```

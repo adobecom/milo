@@ -92,11 +92,12 @@ vs
 
 ## Properties {#properties}
 
-| Property      | Description                                                                                  |
-| ------------- | -------------------------------------------------------------------------------------------- |
-| `onceSettled` | Promise that resolves when the custom-element either resolves or fails to retrieve the price |
-| `options`     | JSON object with the complete set of properties used to resolve the price                    |
-| `value`       | The actual price data that is used to render the inline price.                               |
+| Property         | Description                                                                                  |
+| ---------------- | -------------------------------------------------------------------------------------------- |
+| `isInlinePrice` | on inline price elements, it will return `true`                                                     |
+| `onceSettled`    | Promise that resolves when the custom-element either resolves or fails to retrieve the price |
+| `options`        | JSON object with the complete set of properties used to resolve the price                    |
+| `value`          | The actual price data that is used to render the inline price.                               |
 
 ### Example
 
@@ -145,8 +146,8 @@ vs
 
 ## Events {#events}
 
-| Event                       | Description                                        |
-| --------------------------- | -------------------------------------------------- |
+| Event          | Description                                        |
+| -------------- | -------------------------------------------------- |
 | `mas:pending`  | Fires when inline price starts loading             |
 | `mas:resolved` | Fires when the price is successfully resolved      |
 | `mas:failed`   | Fires when the price could not be found or fetched |
@@ -171,17 +172,13 @@ For each event, the following CSS classes are toggled on the element: `placehold
     const logger = (...messages) =>
         (log.innerHTML = `${messages.join(' ')}<br>${log.innerHTML}`);
     const span = document.getElementById('ip2');
-    span.addEventListener('mas:pending', () =>
-        logger('inline-price pending'),
-    );
+    span.addEventListener('mas:pending', () => logger('inline-price pending'));
     span.addEventListener('mas:resolved', () =>
         logger('inline-price resolved'),
     );
-    span.addEventListener('mas:failed', () =>
-        logger('inline-price failed'),
-    );
+    span.addEventListener('mas:failed', () => logger('inline-price failed'));
     document.getElementById('btnRefresh').addEventListener('click', () => {
-      span.requestUpdate(true);
+        span.requestUpdate(true);
     });
 </script>
 ```

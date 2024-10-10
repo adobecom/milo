@@ -78,15 +78,15 @@ const htmlTemplate = `
   <script src="../../../features/spectrum-web-components/dist/theme.js" type="module"></script>
   <script src="../../../features/spectrum-web-components/dist/button.js" type="module"></script>
   <script type="module" src="../../../deps/mas/mas.js"></script>
-  <mas-commerce-service></mas-commerce-service>
+
   <script type="module">
     const params = new URLSearchParams(document.location.search);
-    const masCommerceService = document.querySelector('mas-commerce-service');
+    const masCommerceService = document.createElement('mas-commerce-service');
     ['locale','language','env'].forEach((attribute) => {
       const value = params.get(attribute);
       if (value) masCommerceService.setAttribute(attribute, value);
     });
-    masCommerceService.activate();
+    document.head.appendChild(masCommerceService);
   </script>
   <!-- Include Highlight.js stylesheet for syntax highlighting -->
   <link rel="stylesheet" href="../../../styles/styles.css">

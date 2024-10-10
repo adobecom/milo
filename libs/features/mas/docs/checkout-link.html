@@ -19,15 +19,15 @@
   <script src="../../../features/spectrum-web-components/dist/theme.js" type="module"></script>
   <script src="../../../features/spectrum-web-components/dist/button.js" type="module"></script>
   <script type="module" src="../../../deps/mas/mas.js"></script>
-  <mas-commerce-service></mas-commerce-service>
+
   <script type="module">
     const params = new URLSearchParams(document.location.search);
-    const masCommerceService = document.querySelector('mas-commerce-service');
+    const masCommerceService = document.createElement('mas-commerce-service');
     ['locale','language','env'].forEach((attribute) => {
       const value = params.get(attribute);
       if (value) masCommerceService.setAttribute(attribute, value);
     });
-    masCommerceService.activate();
+    document.head.appendChild(masCommerceService);
   </script>
   <!-- Include Highlight.js stylesheet for syntax highlighting -->
   <link rel="stylesheet" href="../../../styles/styles.css">
@@ -181,6 +181,10 @@ The term placeholder will be deprecated and it is recommended to refer as <stron
 </thead>
 <tbody>
 <tr>
+<td><code>isCheckoutLink</code></td>
+<td>on checkout link elements, it will return <code>true</code></td>
+</tr>
+<tr>
 <td><code>onceSettled</code></td>
 <td>promise that resolves when the custom-element either resolves or fails to resolve the offer</td>
 </tr>
@@ -288,15 +292,9 @@ The term placeholder will be deprecated and it is recommended to refer as <stron
     <span class="hljs-keyword">const</span> <span class="hljs-title function_">logger</span> = (<span class="hljs-params">...messages</span>) =&gt;
         (log.<span class="hljs-property">innerHTML</span> = <span class="hljs-string">`<span class="hljs-subst">${messages.join(<span class="hljs-string">&#x27; &#x27;</span>)}</span>&lt;br&gt;<span class="hljs-subst">${log.innerHTML}</span>`</span>);
     <span class="hljs-keyword">const</span> a = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;co2&#x27;</span>);
-    a.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;mas:pending&#x27;</span>, <span class="hljs-function">() =&gt;</span>
-        <span class="hljs-title function_">logger</span>(<span class="hljs-string">&#x27;checkout-link pending&#x27;</span>),
-    );
-    a.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;mas:resolved&#x27;</span>, <span class="hljs-function">() =&gt;</span>
-        <span class="hljs-title function_">logger</span>(<span class="hljs-string">&#x27;checkout-link resolved&#x27;</span>),
-    );
-    a.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;mas:failed&#x27;</span>, <span class="hljs-function">() =&gt;</span>
-        <span class="hljs-title function_">logger</span>(<span class="hljs-string">&#x27;checkout-link failed&#x27;</span>),
-    );
+    a.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;mas:pending&#x27;</span>, <span class="hljs-function">() =&gt;</span> <span class="hljs-title function_">logger</span>(<span class="hljs-string">&#x27;checkout-link pending&#x27;</span>));
+    a.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;mas:resolved&#x27;</span>, <span class="hljs-function">() =&gt;</span> <span class="hljs-title function_">logger</span>(<span class="hljs-string">&#x27;checkout-link resolved&#x27;</span>));
+    a.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;mas:failed&#x27;</span>, <span class="hljs-function">() =&gt;</span> <span class="hljs-title function_">logger</span>(<span class="hljs-string">&#x27;checkout-link failed&#x27;</span>));
     a.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;click&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">e</span>) =&gt;</span> {
         e.<span class="hljs-title function_">preventDefault</span>();
         e.<span class="hljs-title function_">stopPropagation</span>();
@@ -305,7 +303,6 @@ The term placeholder will be deprecated and it is recommended to refer as <stron
     <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;btnRefresh&#x27;</span>).<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;click&#x27;</span>, <span class="hljs-function">() =&gt;</span> {
         a.<span class="hljs-title function_">requestUpdate</span>(<span class="hljs-literal">true</span>);
     });
-
 </span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
 </code></pre>
 <h4 id="logs" tabindex="-1">Logs <a class="header-anchor" href="#logs" href="#logs" title="Permalink to this heading">#</a></h4>

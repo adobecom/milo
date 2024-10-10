@@ -288,11 +288,47 @@ export class MerchCard extends LitElement {
     }
 
     // custom methods
-    handleLoadEvent(e) {
-        if (e.target.nodeName === 'AEM-FRAGMENT') {
-            const fragment = e.detail;
-            if (!fragment) return;
-            hydrate(fragment, this);
+    async handleAemFragmentEvents(e) {
+        if (e.type === EVENT_AEM_ERROR) {
+            this.#fail('AEM fragment cannot be loaded');
+        }
+        if (e.type === EVENT_AEM_LOAD) {
+            if (e.target.nodeName === 'AEM-FRAGMENT') {
+                const fragment = e.detail;
+                await hydrate(fragment, this);
+                this.checkReady();
+            }
+        }
+    }
+
+    #fail(error) {
+        this.dispatchEvent(
+            new CustomEvent(EVENT_MAS_ERROR, {
+                detail: error,
+                bubbles: true,
+                composed: true,
+            }),
+        );
+    }
+
+    async checkReady() {
+        const successPromise = Promise.all(
+            [
+                ...this.querySelectorAll(
+                    'span[is="inline-price"][data-wcs-osi],a[is="checkout-link"][data-wcs-osi]',
+                ),
+            ].map((element) => element.onceSettled().catch(() => element)),
+        ).then((elements) =>
+            elements.every((el) =>
+                el.classList.contains('placeholder-resolved'),
+            ),
+        );
+        const timeoutPromise = new Promise((resolve) =>
+            setTimeout(() => resolve(false), MERCH_CARD_LOAD_TIMEOUT),
+        );
+        const success = await Promise.race([successPromise, timeoutPromise]);
+        console.log(successPromise, timeoutPromise, success);
+        if (success === true) {
             this.dispatchEvent(
                 new CustomEvent(EVENT_MAS_READY, {
                     bubbles: true,
@@ -300,6 +336,7 @@ export class MerchCard extends LitElement {
                 }),
             );
         }
+        this.#fail('Contains unresolved offers');
     }
 
     get aemFragment() {

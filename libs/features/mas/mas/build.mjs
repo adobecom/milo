@@ -21,4 +21,3 @@ let { metafile } = await build({
     outfile: '../../../deps/mas/mas.js',
 });
 fs.writeFileSync('mas.json', JSON.stringify(metafile));
-
