@@ -967,9 +967,10 @@ class Gnav {
         let customLinkModifier = '';
         let removeCustomLink = false;
         const linkElem = item.querySelector('a');
+        const customLinksSection = item.closest('.link-group');
         linkElem.className = 'feds-navLink';
         linkElem.setAttribute('daa-ll', getAnalyticsValue(linkElem.textContent, index + 1));
-        if (itemHasActiveLink) {
+        if (itemHasActiveLink && !customLinksSection) {
           linkElem.removeAttribute('href');
           linkElem.setAttribute('role', 'link');
           linkElem.setAttribute('aria-disabled', 'true');
@@ -977,7 +978,6 @@ class Gnav {
           linkElem.setAttribute('tabindex', 0);
         }
 
-        const customLinksSection = item.closest('.link-group');
         if (customLinksSection) {
           const removeLink = () => {
             const url = new URL(linkElem.href);
