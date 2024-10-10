@@ -302,7 +302,7 @@ export function decorateMultiViewport(el) {
       '(min-width: 600px) and (max-width: 1199px)',
       '(min-width: 1200px)',
       '(min-width: 600px)',
-    ].filter((vp, id) => (cols === 2 ? [0, 3].includes(id) : id !== 3));
+    ].filter((v, i) => (cols === 2 ? [0, 3].includes(i) : i !== 3));
     [...foreground.children].forEach((child, index) => {
       const mq = window.matchMedia(viewports[index]);
       const setContent = () => mq.matches && foreground.replaceChildren(child);
