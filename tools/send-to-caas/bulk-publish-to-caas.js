@@ -392,11 +392,24 @@ helpButtons.forEach((btn) => {
         <p>This can be useful for testing before publishing to production.</p>`);
 
     } else if (el === 'host') {
-      showAlert(`<p><b>Host</b><p>Enter the host of the site you are publishing content to. For example:</p>
+      showAlert(`<p><b>Host</b><p>Enter the host of the site you are publishing content to.</p>
         <p>
          <tt>&nbsp; milo.adobe.com</tt> <br>
          <tt>&nbsp; blog.adobe.com</tt> <br>
          <tt>&nbsp; business.adobe.com</tt>.</p>`);
+
+      } else if (el === 'repo') {
+        showAlert(`<p><b>Repo</b>
+          <p>The <b>Repo</b> is the name of the repository where the content will be published.</p>
+          <p>For example:</p>
+          <p><tt>https://main--<b>{repo}</b>--{owner}.hlx.live</tt>`)
+
+      } else if (el === 'owner') {
+        showAlert(`<p><b>Repo Owner</b>
+          <p>The <b>Repo Owner</b> is the owner of the repository where the content will be published. For example:</p>
+          <p>For example:</p>
+          <p><tt>https://main--{repo}--<b>{owner}</b>.hlx.live</tt>`)
+                
     } else {
         showAlert(`<p><b>Help</b><p>Help for "${el}" is on its way! Stay tuned.</p>`);
     }
