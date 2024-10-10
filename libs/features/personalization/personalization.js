@@ -31,6 +31,7 @@ const CLASS_EL_REPLACE = 'p13n-replaced';
 const COLUMN_NOT_OPERATOR = 'not ';
 const TARGET_EXP_PREFIX = 'target-';
 const INLINE_HASH = '_inline';
+const MARTECH_RETURNED_EVENT = 'martechReturned';
 const PAGE_URL = new URL(window.location.href);
 const FLAGS = {
   all: 'all',
@@ -1065,8 +1066,17 @@ async function callMartech(config) {
   if (targetPropositions?.length && window._satellite) {
     window._satellite.track('propositionDisplay', targetPropositions);
   }
+  if (config.mep.targetEnabled === 'postlcp') {
+    const event = new CustomEvent(MARTECH_RETURNED_EVENT, { detail: 'Martech returned' });
+    window.dispatchEvent(event);
+  }
   return targetManifests;
 }
+const awaitMartech = () => new Promise((resolve) => {
+  const listener = (event) => resolve(event.detail);
+  window.addEventListener(MARTECH_RETURNED_EVENT, listener, { once: true });
+});
+
 export async function init(enablements = {}) {
   let manifests = [];
   const {
@@ -1096,7 +1106,10 @@ export async function init(enablements = {}) {
 
   if (target === true) manifests = manifests.concat(await callMartech(config));
   if (target === 'postlcp') callMartech(config);
-  if (postLCP) manifests = config.mep.targetManifests;
+  if (postLCP) {
+    if (!config.mep.targetManifests) await awaitMartech();
+    manifests = config.mep.targetManifests;
+  }
   if (!manifests || !manifests.length) return;
   try {
     await applyPers(manifests);
