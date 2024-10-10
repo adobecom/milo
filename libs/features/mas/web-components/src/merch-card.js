@@ -328,22 +328,23 @@ export class MerchCard extends LitElement {
         );
     }
 
-    get isLoadSuccess() {
-        return this.querySelector('.error,.placeholder-failed') === null;
-    }
-
     async checkReady() {
         const successPromise = Promise.all(
             [
                 ...this.querySelectorAll(
                     'span[is="inline-price"][data-wcs-osi],a[is="checkout-link"][data-wcs-osi]',
                 ),
-            ].map((element) => element.onceSettled()),
-        ).then(() => this.isLoadSuccess);
+            ].map((element) => element.onceSettled().catch(() => element)),
+        ).then((elements) =>
+            elements.every((el) =>
+                el.classList.contains('placeholder-resolved'),
+            ),
+        );
         const timeoutPromise = new Promise((resolve) =>
             setTimeout(() => resolve(false), MERCH_CARD_LOAD_TIMEOUT),
         );
         const success = await Promise.race([successPromise, timeoutPromise]);
+        console.log(successPromise, timeoutPromise, success);
         if (success === true) {
             this.dispatchEvent(
                 new CustomEvent(EVENT_MAS_READY, {
@@ -353,7 +354,7 @@ export class MerchCard extends LitElement {
             );
             return;
         }
-        this.#fail('Failed to load merch card');
+        this.#fail('Contains unresolved offers');
     }
 
     get aemFragment() {

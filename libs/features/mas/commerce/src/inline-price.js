@@ -6,22 +6,78 @@ import {
 import { selectOffers, useService } from './utilities.js';
 
 // countries where tax is displayed for all segments by default
-  const DISPLAY_ALL_TAX_COUNTRIES = ['GB_en','AU_en','FR_fr','AT_de','BE_en','BE_fr','BE_nl','BG_bg','CH_de','CH_fr','CH_it',
-    'CZ_cs','DE_de','DK_da','EE_et','EG_ar','EG_en','ES_es','FI_fi','FR_fr','GR_el','GR_en','HU_hu','IE_en','IT_it','LU_de',
-    'LU_en','LU_fr','NL_nl','NO_nb','PL_pl','PT_pt','RO_ro','SE_sv','SI_sl','SK_sk','TR_tr','UA_uk','ID_en','ID_in','IN_en',
-    'IN_hi','JP_ja','MY_en','MY_ms','NZ_en','TH_en','TH_th'];
+const DISPLAY_ALL_TAX_COUNTRIES = [
+    'GB_en',
+    'AU_en',
+    'FR_fr',
+    'AT_de',
+    'BE_en',
+    'BE_fr',
+    'BE_nl',
+    'BG_bg',
+    'CH_de',
+    'CH_fr',
+    'CH_it',
+    'CZ_cs',
+    'DE_de',
+    'DK_da',
+    'EE_et',
+    'EG_ar',
+    'EG_en',
+    'ES_es',
+    'FI_fi',
+    'FR_fr',
+    'GR_el',
+    'GR_en',
+    'HU_hu',
+    'IE_en',
+    'IT_it',
+    'LU_de',
+    'LU_en',
+    'LU_fr',
+    'NL_nl',
+    'NO_nb',
+    'PL_pl',
+    'PT_pt',
+    'RO_ro',
+    'SE_sv',
+    'SI_sl',
+    'SK_sk',
+    'TR_tr',
+    'UA_uk',
+    'ID_en',
+    'ID_in',
+    'IN_en',
+    'IN_hi',
+    'JP_ja',
+    'MY_en',
+    'MY_ms',
+    'NZ_en',
+    'TH_en',
+    'TH_th',
+];
 
-  // countries where tax is displayed for some segments only by default
-  const DISPLAY_TAX_MAP = {
+// countries where tax is displayed for some segments only by default
+const DISPLAY_TAX_MAP = {
     // individual
-    INDIVIDUAL_COM: ['ZA_en','LT_lt','LV_lv','NG_en','SA_ar','SA_en','ZA_en','SG_en','KR_ko'],
+    INDIVIDUAL_COM: [
+        'ZA_en',
+        'LT_lt',
+        'LV_lv',
+        'NG_en',
+        'SA_ar',
+        'SA_en',
+        'ZA_en',
+        'SG_en',
+        'KR_ko',
+    ],
     // business
-    TEAM_COM: ['ZA_en','LT_lt','LV_lv','NG_en','ZA_en','CO_es','KR_ko'], 
+    TEAM_COM: ['ZA_en', 'LT_lt', 'LV_lv', 'NG_en', 'ZA_en', 'CO_es', 'KR_ko'],
     // student
-    INDIVIDUAL_EDU: ['LT_lt','LV_lv','SA_en','SG_en'], 
+    INDIVIDUAL_EDU: ['LT_lt', 'LV_lv', 'SA_en', 'SG_en'],
     // school and uni
-    TEAM_EDU: ['SG_en','KR_ko'], 
-  };
+    TEAM_EDU: ['SG_en', 'KR_ko'],
+};
 
 export class InlinePrice extends HTMLSpanElement {
     static is = 'inline-price';
@@ -71,30 +127,44 @@ export class InlinePrice extends HTMLSpanElement {
         return element;
     }
 
+    constructor() {
+        super();
+        this.handleClick = this.handleClick.bind(this);
+    }
+
     get isInlinePrice() {
         return true;
     }
 
     masElement = new MasElement(this);
 
-    attributeChangedCallback(name, _, value) {      
-      this.masElement.attributeChangedCallback(name, _, value);
+    attributeChangedCallback(name, _, value) {
+        this.masElement.attributeChangedCallback(name, _, value);
     }
 
     connectedCallback() {
-      this.masElement.connectedCallback();
+        this.masElement.connectedCallback();
+        this.addEventListener('click', this.handleClick);
     }
 
     disconnectedCallback() {
-      this.masElement.disconnectedCallback();
-    };
+        this.masElement.disconnectedCallback();
+        this.removeEventListener('click', this.handleClick.bind(this));
+    }
+
+    handleClick(event) {
+        if (event.target === this) return;
+        // re-dispatch click event from the price element
+        event.stopImmediatePropagation();
+        this.dispatchEvent(new CustomEvent('click', { bubbles: true }));
+    }
 
     onceSettled() {
-      return this.masElement.onceSettled();
+        return this.masElement.onceSettled();
     }
 
     get value() {
-      return this.masElement.value;
+        return this.masElement.value;
     }
 
     /**
@@ -132,9 +202,9 @@ export class InlinePrice extends HTMLSpanElement {
     /**
      * Resolves default value of displayTax property, based on provided geo info and segments extracted from offers object.
      * @returns {boolean}
-    */
-   /* c8 ignore next 15 */
-   async resolveDisplayTax(service, options) {
+     */
+    /* c8 ignore next 15 */
+    async resolveDisplayTax(service, options) {
         const [offerSelectors] = await service.resolveOfferSelectors(options);
         const offers = selectOffers(await offerSelectors, options);
         if (offers?.length) {
@@ -159,10 +229,7 @@ export class InlinePrice extends HTMLSpanElement {
         // eslint-disable-next-line react-hooks/rules-of-hooks
         const service = useService();
         if (!service) return false;
-        const options = service.collectPriceOptions(
-            overrides,
-            this,
-        );
+        const options = service.collectPriceOptions(overrides, this);
         if (!options.wcsOsi.length) return false;
 
         /*
@@ -200,10 +267,13 @@ export class InlinePrice extends HTMLSpanElement {
         // eslint-disable-next-line react-hooks/rules-of-hooks
         const service = useService();
         if (!service) return false;
-        const options = service.collectPriceOptions({
-            ...this.dataset,
-            ...overrides,
-        }, this);
+        const options = service.collectPriceOptions(
+            {
+                ...this.dataset,
+                ...overrides,
+            },
+            this,
+        );
         version ??= this.masElement.togglePending(options);
         if (offers.length) {
             if (this.masElement.toggleResolved(version, offers, options)) {
@@ -255,5 +325,7 @@ export class InlinePrice extends HTMLSpanElement {
 
 // Define custom DOM element
 if (!window.customElements.get(InlinePrice.is)) {
-  window.customElements.define(InlinePrice.is, InlinePrice, { extends: InlinePrice.tag });
+    window.customElements.define(InlinePrice.is, InlinePrice, {
+        extends: InlinePrice.tag,
+    });
 }

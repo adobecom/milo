@@ -312,6 +312,8 @@ var VariantLayout = class _VariantLayout {
     }
   }
   updateCardElementMinHeight(el, name) {
+    if (!el)
+      return;
     const elMinHeightPropertyName = `--consonant-merch-card-${this.card.variant}-${name}-height`;
     const height = Math.max(
       0,
@@ -363,6 +365,10 @@ var VariantLayout = class _VariantLayout {
   getGlobalCSS() {
     return "";
   }
+  /* c8 ignore next 3 */
+  get theme() {
+    return document.querySelector("sp-theme");
+  }
   get evergreen() {
     return this.card.classList.contains("intro-pricing");
   }
@@ -371,6 +377,30 @@ var VariantLayout = class _VariantLayout {
   }
   get headingSelector() {
     return '[slot="heading-xs"]';
+  }
+  get strip() {
+    if (this.card.stripSize && this.card.stripBackground) {
+      switch (this.card.stripSize) {
+        case "wide":
+          return "44px";
+        case "small":
+          return "4px";
+        default:
+          return "0";
+      }
+    }
+    return "";
+  }
+  get stripStyle() {
+    if (this.strip && this.card.stripBackground) {
+      return `
+          background: ${this.card.stripBackground.startsWith("url") ? this.card.stripBackground : `url("${this.card.stripBackground}")`};
+          background-size: ${this.strip} 100%;
+          background-repeat: no-repeat;
+          background-position: ${this.card.theme.dir === "ltr" ? "left" : "right"};
+        `;
+    }
+    return "";
   }
   get secureLabelFooter() {
     const secureLabel = this.card.secureLabel ? html2`<span class="secure-transaction-label"
@@ -434,7 +464,9 @@ var EVENT_MERCH_CARD_ACTION_MENU_TOGGLE = "merch-card:action-menu-toggle";
 var EVENT_MERCH_STORAGE_CHANGE = "merch-storage:change";
 var EVENT_MERCH_QUANTITY_SELECTOR_CHANGE = "merch-quantity-selector:change";
 var EVENT_AEM_LOAD = "aem:load";
+var EVENT_AEM_ERROR = "aem:error";
 var EVENT_MAS_READY = "mas:ready";
+var EVENT_MAS_ERROR = "mas:error";
 
 // src/variants/catalog.css.js
 var CSS = `
@@ -1873,11 +1905,138 @@ var TWP = class extends VariantLayout {
   `;
 };
 
-// src/variants/ccd-slice.js
+// src/variants/ccd-suggested.js
 import { html as html13, css as css11 } from "../lit-all.min.js";
 
-// src/variants/ccd-slice.css.js
+// src/variants/ccd-suggested.css.js
 var CSS11 = `
+:root {
+  --merch-card-ccd-suggested-width: 304px;
+  --merch-card-ccd-suggested-height: 205px;
+  --merch-card-ccd-suggested-background-img-size: 119px;
+}
+
+merch-card[variant="ccd-suggested"] [slot="detail-m"] {
+  color: var(--merch-color-grey-60);
+}
+
+merch-card[variant="ccd-suggested"] [slot="heading-xs"] {
+  color: var(--spectrum-gray-800, #F8F8F8);
+  font-size: var(--merch-card-heading-xxs-font-size);
+  line-height: var(--merch-card-heading-xxs-line-height);
+
+}
+
+merch-card[variant="ccd-suggested"] [slot="cta"] a {
+  text-decoration: none;
+  color: var(--spectrum-gray-800);
+  font-weight: 700;
+}
+`;
+
+// src/variants/ccd-suggested.js
+var AEM_FRAGMENT_MAPPING4 = {
+  subtitle: { tag: "h4", slot: "detail-m" },
+  title: { tag: "h3", slot: "heading-xs" },
+  prices: { tag: "p", slot: "price" },
+  description: { tag: "div", slot: "body-xs" },
+  ctas: { slot: "cta", size: "s", button: false }
+};
+var CCDSuggested = class extends VariantLayout {
+  getGlobalCSS() {
+    return CSS11;
+  }
+  /* c8 ignore next 3 */
+  get aemFragmentMapping() {
+    return AEM_FRAGMENT_MAPPING4;
+  }
+  renderLayout() {
+    return html13`
+          <div style="${this.stripStyle}" class="body">
+              <div class="header">
+                <slot name="icons"></slot>
+                <div class="headings">
+                  <slot name="detail-m"></slot>
+                  <slot name="heading-xs"></slot>
+                </div>
+              </div>
+              <slot name="body-xs"></slot>
+              <div class="footer">
+                <slot name="price"></slot>
+                <slot name="cta"></slot>
+              </div>
+          </div>
+                <slot></slot>`;
+  }
+  static variantStyle = css11`
+    :host([variant='ccd-suggested']) {
+      background-color: var(
+        --spectrum-gray-50, #fff);
+      width: var(--merch-card-ccd-suggested-width);
+      min-height: var(--merch-card-ccd-suggested-height);
+      border-radius: 4px;
+      display: flex;
+      flex-flow: wrap;
+    }
+
+    :host([variant='ccd-suggested']) .body {
+      height: auto;
+    }
+
+    :host([variant='ccd-suggested']) .header {
+      display: flex;
+      flex-flow: wrap;
+      place-self: flex-start;
+    }
+
+    :host([variant='ccd-suggested']) .headings {
+      padding-inline-start: var(--consonant-merch-spacing-xxs);
+    }
+
+    :host([variant='ccd-suggested']) ::slotted([slot='icons']) {
+      place-self: flex-start;
+    }
+
+    :host([variant='ccd-suggested']) ::slotted([slot='heading-xs']) {
+      font-size: var(--merch-card-heading-xxs-font-size);
+      line-height: var(--merch-card-heading-xxs-line-height);
+    }
+    
+    :host([variant='ccd-suggested'][strip-size='wide']) ::slotted([slot='body-xs']) {
+      padding-inline-start: 48px;
+    }
+
+    :host([variant='ccd-suggested'][strip-size='wide']) ::slotted([slot='price']) {
+      padding-inline-start: 48px;
+    }
+
+    :host([variant='ccd-suggested']) ::slotted([slot='price']) {
+      display: flex;
+      align-items: center;
+      color: var(--spectrum-gray-800, #F8F8F8);
+    }
+
+    :host([variant='ccd-suggested']) ::slotted([slot='cta']) {
+      display: flex;
+      align-items: center;
+    }
+
+
+    :host([variant='ccd-suggested']) .footer {
+      display: flex;
+      justify-content: space-between;
+      flex-grow: 0;
+      margin-top: auto;
+      align-items: center;
+    }
+  `;
+};
+
+// src/variants/ccd-slice.js
+import { html as html14, css as css12 } from "../lit-all.min.js";
+
+// src/variants/ccd-slice.css.js
+var CSS12 = `
 :root {
   --consonant-merch-card-ccd-slice-single-width: 322px;
   --consonant-merch-card-ccd-slice-icon-size: 30px;
@@ -1902,7 +2061,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a:not(.con-button) {
 `;
 
 // src/variants/ccd-slice.js
-var AEM_FRAGMENT_MAPPING4 = {
+var AEM_FRAGMENT_MAPPING5 = {
   backgroundImage: { tag: "div", slot: "image" },
   description: { tag: "div", slot: "body-s" },
   ctas: { size: "s" },
@@ -1910,14 +2069,14 @@ var AEM_FRAGMENT_MAPPING4 = {
 };
 var CCDSlice = class extends VariantLayout {
   getGlobalCSS() {
-    return CSS11;
+    return CSS12;
   }
   /* c8 ignore next 3 */
   get aemFragmentMapping() {
-    return AEM_FRAGMENT_MAPPING4;
+    return AEM_FRAGMENT_MAPPING5;
   }
   renderLayout() {
-    return html13` <div class="content">
+    return html14` <div class="content">
                 <slot name="icons"></slot> ${this.badge}
                 <slot name="body-s"></slot>
                 <slot name="footer"></slot>
@@ -1925,7 +2084,7 @@ var CCDSlice = class extends VariantLayout {
             <slot name="image"></slot>
             <slot></slot>`;
   }
-  static variantStyle = css11`
+  static variantStyle = css12`
         :host([variant='ccd-slice']) {
             width: var(--consonant-merch-card-ccd-slice-single-width);
             background-color: var(
@@ -2011,6 +2170,8 @@ var getVariantLayout = (card, mustMatch = false) => {
       return new SpecialOffer(card);
     case "twp":
       return new TWP(card);
+    case "ccd-suggested":
+      return new CCDSuggested(card);
     case "ccd-slice":
       return new CCDSlice(card);
     default:
@@ -2027,6 +2188,7 @@ var getVariantStyles = () => {
   styles3.push(Segment.variantStyle);
   styles3.push(SpecialOffer.variantStyle);
   styles3.push(TWP.variantStyle);
+  styles3.push(CCDSuggested.variantStyle);
   styles3.push(CCDSlice.variantStyle);
   return styles3;
 };
@@ -2417,13 +2579,13 @@ async function hydrate(fragmentData, merchCard) {
   if (!variant)
     return;
   fragment.model = fragment.model;
+  merchCard.variantLayout?.refs?.forEach((ref) => ref.remove());
   merchCard.variant = variant;
   await merchCard.updateComplete;
+  merchCard.variantLayout.refs ??= [];
   const { aemFragmentMapping } = merchCard.variantLayout;
   if (!aemFragmentMapping)
     return;
-  merchCard.variantLayout.refs ??= [];
-  merchCard.variantLayout.refs.forEach((ref) => ref.remove());
   const appendFn = (el) => {
     merchCard.variantLayout.refs.push(el);
     merchCard.append(el);
@@ -2440,15 +2602,25 @@ async function hydrate(fragmentData, merchCard) {
     });
     appendFn(merchIcon);
   });
-  if (fragment.size && aemFragmentMapping.allowedSizes?.includes(fragment.size)) {
+  if (!fragment.size) {
+    merchCard.removeAttribute("size");
+  } else if (aemFragmentMapping.allowedSizes?.includes(fragment.size))
     merchCard.setAttribute("size", fragment.size);
-  }
   if (fragment.cardTitle && aemFragmentMapping.title) {
     appendFn(
       createTag(
         aemFragmentMapping.title.tag,
         { slot: aemFragmentMapping.title.slot },
         fragment.cardTitle
+      )
+    );
+  }
+  if (fragment.subtitle && aemFragmentMapping.subtitle) {
+    appendFn(
+      createTag(
+        aemFragmentMapping.subtitle.tag,
+        { slot: aemFragmentMapping.subtitle.slot },
+        fragment.subtitle
       )
     );
   }
@@ -2479,7 +2651,12 @@ async function hydrate(fragmentData, merchCard) {
     appendFn(body);
   }
   if (fragment.ctas) {
-    const footer = createTag("div", { slot: "footer" }, fragment.ctas);
+    const { slot, button = true } = aemFragmentMapping.ctas;
+    const footer = createTag(
+      "div",
+      { slot: slot ?? "footer" },
+      fragment.ctas
+    );
     const ctas = [];
     [...footer.querySelectorAll("a")].forEach((cta) => {
       const strong = cta.parentElement.tagName === "STRONG";
@@ -2490,6 +2667,10 @@ async function hydrate(fragmentData, merchCard) {
         }
         ctas.push(cta);
       } else {
+        if (!button) {
+          ctas.push(cta);
+          return;
+        }
         const treatment = strong ? "fill" : "outline";
         const variant2 = strong ? "accent" : "primary";
         const spectrumCta = createTag(
@@ -2514,6 +2695,7 @@ async function hydrate(fragmentData, merchCard) {
 
 // src/merch-card.js
 var MERCH_CARD = "merch-card";
+var MERCH_CARD_LOAD_TIMEOUT = 2e3;
 var MerchCard = class extends LitElement2 {
   static properties = {
     name: { type: String, attribute: "name", reflect: true },
@@ -2525,6 +2707,8 @@ var MerchCard = class extends LitElement2 {
       type: String,
       attribute: "badge-background-color"
     },
+    stripSize: { type: String, attribute: "strip-size" },
+    stripBackground: { type: String, attribute: "strip-background" },
     badgeText: { type: String, attribute: "badge-text" },
     actionMenu: { type: Boolean, attribute: "action-menu" },
     customHr: { type: Boolean, attribute: "custom-hr" },
@@ -2584,12 +2768,13 @@ var MerchCard = class extends LitElement2 {
    * @type {VariantLayout>}
    */
   variantLayout;
+  #ready = false;
   constructor() {
     super();
     this.filters = {};
     this.types = "";
     this.selected = false;
-    this.handleLoadEvent = this.handleLoadEvent.bind(this);
+    this.handleAemFragmentEvents = this.handleAemFragmentEvents.bind(this);
   }
   firstUpdated() {
     this.variantLayout = getVariantLayout(this, false);
@@ -2609,6 +2794,9 @@ var MerchCard = class extends LitElement2 {
       this.style.border = this.computedBorderStyle;
     }
     this.variantLayout?.postCardUpdateHook(this);
+  }
+  get theme() {
+    return this.closest("sp-theme");
   }
   get prices() {
     return Array.from(
@@ -2724,7 +2912,10 @@ var MerchCard = class extends LitElement2 {
       "change",
       this.handleStorageChange
     );
-    this.addEventListener(EVENT_AEM_LOAD, this.handleLoadEvent);
+    this.addEventListener(EVENT_AEM_ERROR, this.handleAemFragmentEvents);
+    this.addEventListener(EVENT_AEM_LOAD, this.handleAemFragmentEvents);
+    if (!this.aemFragment)
+      this.checkReady();
   }
   disconnectedCallback() {
     super.disconnectedCallback();
@@ -2737,22 +2928,58 @@ var MerchCard = class extends LitElement2 {
       EVENT_MERCH_STORAGE_CHANGE,
       this.handleStorageChange
     );
-    this.removeEventListener(EVENT_AEM_LOAD, this.handleLoadEvent);
+    this.removeEventListener(EVENT_AEM_ERROR, this.handleAemFragmentEvents);
+    this.removeEventListener(EVENT_AEM_LOAD, this.handleAemFragmentEvents);
   }
   // custom methods
-  handleLoadEvent(e) {
-    if (e.target.nodeName === "AEM-FRAGMENT") {
-      const fragment = e.detail;
-      if (!fragment)
-        return;
-      hydrate(fragment, this);
+  async handleAemFragmentEvents(e) {
+    if (e.type === EVENT_AEM_ERROR) {
+      this.#fail("AEM fragment cannot be loaded");
+    }
+    if (e.type === EVENT_AEM_LOAD) {
+      if (e.target.nodeName === "AEM-FRAGMENT") {
+        const fragment = e.detail;
+        await hydrate(fragment, this);
+        this.checkReady();
+      }
+    }
+  }
+  #fail(error) {
+    this.dispatchEvent(
+      new CustomEvent(EVENT_MAS_ERROR, {
+        detail: error,
+        bubbles: true,
+        composed: true
+      })
+    );
+  }
+  async checkReady() {
+    const successPromise = Promise.all(
+      [
+        ...this.querySelectorAll(
+          'span[is="inline-price"][data-wcs-osi],a[is="checkout-link"][data-wcs-osi]'
+        )
+      ].map((element) => element.onceSettled().catch(() => element))
+    ).then(
+      (elements) => elements.every(
+        (el) => el.classList.contains("placeholder-resolved")
+      )
+    );
+    const timeoutPromise = new Promise(
+      (resolve) => setTimeout(() => resolve(false), MERCH_CARD_LOAD_TIMEOUT)
+    );
+    const success = await Promise.race([successPromise, timeoutPromise]);
+    console.log(successPromise, timeoutPromise, success);
+    if (success === true) {
       this.dispatchEvent(
         new CustomEvent(EVENT_MAS_READY, {
           bubbles: true,
           composed: true
         })
       );
+      return;
     }
+    this.#fail("Contains unresolved offers");
   }
   get aemFragment() {
     return this.querySelector("aem-fragment");
