@@ -150,6 +150,10 @@ html[dir="rtl"] .hero-marquee .foreground {
   display: none;
 }
 
+.hero-marquee .foreground div.empty-asset:empty {
+  display: block;
+}
+
 /* Row Types */
 .hero-marquee .row-list {
   text-align: left;
