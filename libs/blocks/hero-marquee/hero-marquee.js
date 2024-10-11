@@ -6,6 +6,7 @@ import {
   decorateButtons,
   handleObjectFit,
   loadCDT,
+  decorateA11yForLinks,
 } from '../../utils/decorate.js';
 import { createTag, loadStyle, getConfig } from '../../utils/utils.js';
 
@@ -266,4 +267,8 @@ export default async function init(el) {
   }
 
   await Promise.all(promiseArr);
+
+  const headEl = [...el.querySelectorAll('h1')].find((h1) => !h1.className.startsWith('heading-'));
+  const headingTxt = el.querySelector('.lockup-area')?.textContent?.trim() || headEl?.textContent.trim();
+  decorateA11yForLinks(el, headingTxt);
 }
