@@ -6,6 +6,7 @@ const CONFIRM_MESSAGE = 'Are you sure? This will publish to production.';
 
 export default function stylePublish(sk) {
   const setupPublishBtn = async (page, btn) => {
+    console.log('setupPublishBtn');
     const { canPublish, message } = await userCanPublishPage(page, false);
     if (canPublish) {
       btn.removeAttribute('disabled');
@@ -80,18 +81,22 @@ export default function stylePublish(sk) {
     }
   `);
 
-  sk.shadowRoot.adoptedStyleSheets = [style];
+  const isHelixSk = sk.nodeName === 'HELIX-SIDEKICK';
+  if (isHelixSk) sk.shadowRoot.adoptedStyleSheets = [style];
 
   sk.addEventListener('statusfetched', async (event) => {
+    console.log('statusfetched');
     const page = event?.detail?.data;
-    const btn = event?.target?.shadowRoot?.querySelector(PUBLISH_BTN);
+    const btn = isHelixSk ? event?.target?.shadowRoot?.querySelector(PUBLISH_BTN) : event?.target?.shadowRoot?.querySelector('plugin-action-bar')?.shadowRoot?.querySelector('sk-action-button.publish');
     if (page && btn) {
       setupPublishBtn(page, btn);
     }
   });
 
   setTimeout(async () => {
-    const btn = sk.shadowRoot.querySelector(PUBLISH_BTN);
+    console.log('timeout');
+    const btn = isHelixSk ? sk.shadowRoot.querySelector(PUBLISH_BTN) : sk.shadowRoot.querySelector('plugin-action-bar').shadowRoot.querySelector('sk-action-button.publish');
+    console.log(sk.shadowRoot.querySelector('plugin-action-bar').shadowRoot);
     btn?.setAttribute('disabled', true);
     const message = btn?.querySelector('span');
     if (btn && !message) {
