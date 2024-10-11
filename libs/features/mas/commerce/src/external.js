@@ -7,14 +7,6 @@ import {
 import { Term, Commitment } from '@pandora/data-models-odm';
 
 import {
-    price,
-    pricePromo,
-    priceOptical,
-    priceStrikethrough,
-    priceAnnual,
-    discount,
-} from '@dexter/tacocat-consonant-templates';
-import {
     computePromoStatus,
     delay,
     equalsCaseInsensitive,
@@ -50,6 +42,17 @@ const WcsCommitment = freeze({ ...Commitment });
 const WcsPlanType = freeze({ ...PlanType });
 /** @type {Commerce.Wcs.WcsTerm} */
 const WcsTerm = freeze({ ...Term });
+
+const dummyRender = () => `RNd ${Math.floor(Math.random()*1000)}`;
+
+const {
+  price = dummyRender,
+  pricePromo = dummyRender,
+  priceOptical = dummyRender,
+  priceStrikethrough = dummyRender,
+  priceAnnual = dummyRender,
+  discount = dummyRender,
+} = {};
 
 export {
     CheckoutWorkflow,
