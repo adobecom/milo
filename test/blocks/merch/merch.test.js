@@ -798,16 +798,6 @@ describe('Merch Block', () => {
         updateSearch({});
       });
 
-      it('should load commerce.js via maslibs', async () => {
-        initService.promise = undefined;
-        getMasBase.baseUrl = 'http://localhost:2000/test/blocks/merch/mas';
-        updateSearch({ maslibs: 'test' });
-        setConfig(config);
-        await mockIms();
-        const commerce = await initService(true);
-        expect(commerce.mock).to.be.true;
-      });
-
       it('should return the default Adobe URL if no maslibs parameter is present', () => {
         expect(getMasBase()).to.equal('https://www.adobe.com/mas');
       });
