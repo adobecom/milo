@@ -76,8 +76,12 @@ async function decorateLockupRow(el, classes) {
   await loadIconography();
   child?.classList.add('lockup-area');
   const iconSizeClass = classes?.find((c) => c.endsWith('-icon'));
-  if (iconSizeClass) el.classList.remove(iconSizeClass);
-  el.classList.add(`${iconSizeClass?.split('-')[0] || 'l'}-lockup`);
+  const lockupSizeClass = classes?.find((c) => c.endsWith('-lockup'));
+  const usedLockupClass = iconSizeClass || lockupSizeClass;
+  if (usedLockupClass) {
+    el.classList.remove(usedLockupClass);
+    el.classList.add(`${usedLockupClass?.split('-')[0] || 'l'}-lockup`);
+  }
 }
 
 function decorateBg(el) {
@@ -208,8 +212,6 @@ export default async function init(el) {
   if (assetUnknown) assetUnknown.classList.add('asset-unknown');
 
   decorateBlockText(copy, textDefault, 'hasDetailHeading');
-  const blockLockupClass = [...el.classList].find((c) => c.endsWith('-lockup'));
-  if (blockLockupClass === undefined) copy.classList.add('l-lockup');
   await decorateLockupFromContent(copy);
   extendButtonsClass(copy);
 
@@ -221,7 +223,9 @@ export default async function init(el) {
 
   const assetRow = allRows[0].classList.contains('asset');
   if (assetRow) el.classList.add('asset-left');
-  const mainCopy = createTag('div', { class: 'main-copy' });
+  const lockupClass = [...el.classList].find((c) => c.endsWith('-lockup'));
+  if (lockupClass) el.classList.remove(lockupClass);
+  const mainCopy = createTag('div', { class: `main-copy ${lockupClass || 'l-lockup'}` });
   while (copy.childNodes.length > 0) {
     mainCopy.appendChild(copy.childNodes[0]);
   }
@@ -239,7 +243,6 @@ export default async function init(el) {
       copy.append(row);
     }
   });
-
   const promiseArr = [];
   [...rows].forEach(async (row) => {
     const cols = row.querySelectorAll(':scope > div');
