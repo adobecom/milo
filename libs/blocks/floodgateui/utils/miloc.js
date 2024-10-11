@@ -52,23 +52,11 @@ export async function getParamsFg(config) {
   const adminPageUri = window.location.href;
   const { fgShareUrl } = config.sharepoint.site;
   const fgShareUrlColor = fgShareUrl.replace(/<fgColor>/g, heading.value.fgColor);
-  const { fgRootFolder } = config.sharepoint.site;
-  const fgRootFolderColor = fgRootFolder.replace(/<fgColor>/g, heading.value.fgColor);
-  const promoteIgnorePaths = getPromoteIgnorePaths(config);
-  const { promoteDraftsOnly } = config.sharepoint.site;
-  const draftsOnly = promoteDraftsOnly === undefined || promoteDraftsOnly === 'true' || promoteDraftsOnly === '';
   const params = {
     adminPageUri,
     projectExcelPath: projectPath,
     shareUrl: config.sharepoint.site.shareUrl,
     fgShareUrl: fgShareUrlColor,
-    rootFolder: config.sharepoint.site.rootFolder,
-    fgRootFolder: fgRootFolderColor,
-    promoteIgnorePaths,
-    draftsOnly,
-    driveId: config.driveId || '',
-    fgColor: heading.value.fgColor,
-    spSite: config.spSite,
   };
   return params;
 }
