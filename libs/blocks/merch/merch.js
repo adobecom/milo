@@ -564,6 +564,12 @@ export default async function init(el) {
   if (merch) {
     log.debug('Rendering:', { options: { ...merch.dataset }, merch, el });
     el.replaceWith(merch);
+    await Promise.race([
+      merch.onceSettled(),
+      new Promise((resolve) => {
+        setTimeout(resolve, 1000);
+      }),
+    ]);
     return merch;
   }
   log.warn('Failed to get context:', { el });
