@@ -80,8 +80,8 @@ async function decorateLockupRow(el, classes) {
   const usedLockupClass = iconSizeClass || lockupSizeClass;
   if (usedLockupClass) {
     el.classList.remove(usedLockupClass);
-    el.classList.add(`${usedLockupClass?.split('-')[0] || 'l'}-lockup`);
   }
+  el.classList.add(`${usedLockupClass?.split('-')[0] || 'l'}-lockup`);
 }
 
 function decorateBg(el) {
