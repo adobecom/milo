@@ -272,8 +272,8 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   }
 
   /* con-vars support */
-  .hero-marquee:is(.bg-top-mobile, .bg-bottom-mobile, .bg-top-tablet, .bg-bottom-tablet) .background,
-  .hero-marquee:is(.bg-top-mobile, .bg-bottom-mobile, .bg-top-tablet, .bg-bottom-tablet) .background video {
+  .hero-marquee:is(.bg-top-mobile, .bg-bottom-mobile) .background,
+  .hero-marquee:is(.bg-top-mobile, .bg-bottom-mobile) .background video {
       position: relative;
       width: 100%;
   }
