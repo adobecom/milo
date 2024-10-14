@@ -28,7 +28,7 @@ const stageDomainsMap = {
   },
   // Test app
   'adobecom.github.io': {
-    'www.adobe.com': 'stage.adobe.com',
+    'www.adobe.com': 'www.stage.adobe.com',
     'helpx.adobe.com': 'helpx.stage.adobe.com',
   },
 };
