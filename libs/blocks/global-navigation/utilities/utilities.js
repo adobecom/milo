@@ -266,20 +266,22 @@ export const [setDisableAEDState, getDisableAEDState] = (() => {
   ];
 })();
 
-export const [hasActiveLink, setActiveLink, getActiveLink] = (() => {
+export const [hasActiveLink, setActiveLink, isActiveLink, getActiveLink] = (() => {
   let activeLinkFound;
+  const { origin, pathname } = window.location;
+  const url = `${origin}${pathname}`;
 
   return [
     () => activeLinkFound,
     (val) => { activeLinkFound = !!val; },
+    (el) => (el.href === url || el.href.startsWith(`${url}?`) || el.href.startsWith(`${url}#`)),
     (area) => {
+      const isCustomLinks = area.closest('.link-group')?.classList.contains('mobile-only');
       const disableAED = getDisableAEDState();
-      if (disableAED || hasActiveLink() || !(area instanceof HTMLElement)) return null;
-      const { origin, pathname } = window.location;
-      const url = `${origin}${pathname}`;
+      if (disableAED || isCustomLinks || hasActiveLink() || !(area instanceof HTMLElement)) return null;
       const activeLink = [
         ...area.querySelectorAll('a:not([data-modal-hash])'),
-      ].find((el) => (el.href === url || el.href.startsWith(`${url}?`) || el.href.startsWith(`${url}#`)));
+      ].find(isActiveLink);
 
       if (!activeLink) return null;
 
