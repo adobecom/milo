@@ -277,8 +277,8 @@ export const [hasActiveLink, setActiveLink, isActiveLink, getActiveLink] = (() =
     (el) => (el.href === url || el.href.startsWith(`${url}?`) || el.href.startsWith(`${url}#`)),
     (area) => {
       const isCustomLinks = area.closest('.link-group')?.classList.contains('mobile-only');
-      const disableAED = getDisableAEDState();
-      if (disableAED || isCustomLinks || hasActiveLink() || !(area instanceof HTMLElement)) return null;
+      const disableAED = getDisableAEDState() || isCustomLinks;
+      if (disableAED || hasActiveLink() || !(area instanceof HTMLElement)) return null;
       const activeLink = [
         ...area.querySelectorAll('a:not([data-modal-hash])'),
       ].find(isActiveLink);
