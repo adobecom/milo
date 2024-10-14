@@ -37,7 +37,7 @@ const FLAGS = {
   all: 'all',
   includeFragments: 'include-fragments',
 };
-let IS_POST_LCP = false;
+let isPostLCP = false;
 
 export const TRACKED_MANIFEST_TYPE = 'personalization';
 
@@ -507,7 +507,7 @@ export function handleCommands(commands, rootEl, forceInline = false, forceRootE
       if (!el
         || (!(action in COMMANDS) && !(action in CREATE_CMDS))
         || (rootEl && !rootEl.contains(el))
-        || (IS_POST_LCP && section1?.contains(el))) return;
+        || (isPostLCP && section1?.contains(el))) return;
 
       if (action in COMMANDS) {
         COMMANDS[action](el, cmd);
@@ -999,7 +999,7 @@ export async function applyPers(manifests) {
   config.mep.commands = consolidateArray(results, 'commands', config.mep.commands);
 
   const main = document.querySelector('main');
-  if (config.mep.replacepage && !IS_POST_LCP && main) {
+  if (config.mep.replacepage && !isPostLCP && main) {
     await replaceInner(config.mep.replacepage.val, main);
     const { manifestId, targetManifestId } = config.mep.replacepage;
     addIds(main, manifestId, targetManifestId);
@@ -1084,7 +1084,7 @@ export async function init(enablements = {}) {
   } = enablements;
   const config = getConfig();
   if (postLCP) {
-    IS_POST_LCP = true;
+    isPostLCP = true;
   } else {
     config.mep = {
       updateFragDataProps,
