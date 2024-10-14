@@ -15,8 +15,8 @@
       }
     </script>
     <!-- Include your custom element script as an ES6 module -->
-    <!-- <script src="../../../features/spectrum-web-components/dist/theme.js" type="module"></script>
-    <script src="../../../features/spectrum-web-components/dist/button.js" type="module"></script> -->
+    <script src="../../../features/spectrum-web-components/dist/theme.js" type="module"></script>
+    <script src="../../../features/spectrum-web-components/dist/button.js" type="module"></script>
     <script type="module" src="../../../deps/mas/mas.js"></script>
 
     <script type="module">
@@ -47,6 +47,10 @@
         max-width: 1200px;
         margin: 0 auto;
       }
+
+      .container h5 {
+        color: #136ff6;
+      }
     </style>
     <mas-commerce-service></mas-commerce-service>
 </head>
@@ -54,9 +58,28 @@
   <main>
     <sp-theme color="light" scale="medium">
       <h1 id="ccd-gallery" tabindex="-1">CCD Gallery <a class="header-anchor" href="#ccd-gallery" href="#ccd-gallery" title="Permalink to this heading">#</a></h1>
-      <h2 id="ccd-suggested-card" tabindex="-1">CCD Suggested Card <a class="header-anchor" href="#ccd-suggested-card" href="#ccd-suggested-card" title="Permalink to this heading">#</a></h2>
-
+      
+      <h2 id="ccd-slice-card" tabindex="-1">CCD Slice Card <a class="header-anchor" href="#ccd-slice-card" href="#ccd-slice-card" title="Permalink to this heading">#</a></h2>
       <div class="container">
+        <h5>Percentage</h5>
+        <h5>Two icons & pricing</h5>
+        <h5>See Terms link</h5>
+        <merch-card><aem-fragment fragment="0ef2a804-e788-4959-abb8-b4d96a18b0ef"></aem-fragment></merch-card>
+        <merch-card><aem-fragment fragment="58c7906f-70a6-4e2b-bc29-257ff2ade513"></aem-fragment></merch-card>
+        <merch-card><aem-fragment fragment="51c23f28-504f-450d-9764-0e60f1e279b2"></aem-fragment></merch-card>
+        <merch-card><aem-fragment fragment="2a293069-1f9a-45ae-9840-2fa0303fe685"></aem-fragment></merch-card>
+      </div>
+
+      <h2 id="ccd-slice-wide-card" tabindex="-1">CCD Slice Wide Card <a class="header-anchor" href="#ccd-slice-wide-card" href="#ccd-slice-wide-card" title="Permalink to this heading">#</a></h2>
+      <div class="container">
+        <merch-card><aem-fragment fragment="bdf40d06-5914-4f1f-aa10-77c5676fe671"></aem-fragment></merch-card>
+      </div>
+
+      <h2 id="ccd-suggested-card" tabindex="-1">CCD Suggested Card <a class="header-anchor" href="#ccd-suggested-card" href="#ccd-suggested-card" title="Permalink to this heading">#</a></h2>
+      <div class="container">
+        <h5>With eyebrow</h5>
+        <h5>See Terms link</h5>
+        <h5>No eyebrow, price with term</h5>
         <merch-card><aem-fragment fragment="0a2ac7c9-1965-488e-beca-856849305313"></aem-fragment></merch-card>
         <merch-card><aem-fragment fragment="549f6981-f5c8-4512-b41c-313d60f375b2"></aem-fragment></merch-card>
         <merch-card><aem-fragment fragment="8b198434-f32d-4a77-8be0-cd6b9f7155b1"></aem-fragment></merch-card>
