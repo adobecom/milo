@@ -47,7 +47,7 @@ const setJsonLd = (heading, description, mainImage, stepsLd) => {
 };
 
 const getImage = (el) => el.querySelector('picture') || el.querySelector('a[href$=".svg"');
-const getVideo = (el) => el.querySelector('video') || el.querySelector('iframe').parentElement;
+const getVideo = (el) => el.querySelector('video') || el.querySelector('iframe')?.parentElement;
 
 const getHowToInfo = (el) => {
   const infoDiv = el.querySelector(':scope > div > div');
