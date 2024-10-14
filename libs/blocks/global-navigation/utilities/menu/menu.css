@@ -165,7 +165,7 @@
     flex-direction: column;
     width: 100%;
     border: 1px solid var(--feds-borderColor);
-    background: var(--feds-background-nav);
+    background: var(--feds-background-promo);
     white-space: normal;
     box-sizing: content-box;
   }
