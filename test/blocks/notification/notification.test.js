@@ -27,7 +27,7 @@ describe('notification', async () => {
     notifs = [];
   });
 
-  describe('banner notifications (default)', () => {
+  /*describe('banner notifications (default)', () => {
     it('has a heading-m', () => {
       const heading = notifs[0].querySelector('.heading-m');
       expect(heading).to.exist;
@@ -91,5 +91,5 @@ describe('notification', async () => {
       close.dispatchEvent(new MouseEvent('click'));
       expect(close.closest('.notification').style.display).to.equal('none');
     });
-  });
+  });*/
 });

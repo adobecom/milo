@@ -1,4 +1,7 @@
-import{html as e,css as i,LitElement as s}from"../lit-all.min.js";var t=class extends s{static styles=i`
+// src/merch-mnemonic-list.js
+import { html, css, LitElement } from "../lit-all.min.js";
+var MerchMnemonicList = class extends LitElement {
+  static styles = css`
         :host {
             display: flex;
             flex-direction: row;
@@ -24,7 +27,21 @@ import{html as e,css as i,LitElement as s}from"../lit-all.min.js";var t=class ex
         :host .hidden {
             display: none;
         }
-    `;static properties={description:{type:String,attribute:!0}};constructor(){super()}render(){return e`
+    `;
+  static properties = {
+    description: { type: String, attribute: true }
+  };
+  constructor() {
+    super();
+  }
+  render() {
+    return html`
             <slot name="icon"></slot>
             <slot name="description">${this.description}</slot>
-        `}};customElements.define("merch-mnemonic-list",t);export{t as MerchMnemonicList};
+        `;
+  }
+};
+customElements.define("merch-mnemonic-list", MerchMnemonicList);
+export {
+  MerchMnemonicList
+};

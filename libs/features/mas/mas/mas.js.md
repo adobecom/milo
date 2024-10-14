@@ -20,11 +20,12 @@ You do need to have mas.js on your page / application, including it can be done 
 
 ### Attributes
 
-| Name       | Description                                                                                         | Default Value                | Required |         |
-| ---------- | --------------------------------------------------------------------------------------------------- | ---------------------------- | -------- | ------- |
-|  `env`     | commerce environment you want this page to use, either `stage` or `prod`                            |  `prod`                      |  `false` |         |
-| `locale`   | currency & price locale you need, must belong to one of the [supported locales](#supported-locales) | `en_US`                      | `false`  |         |
-| `language` | language you need any literals in                                                                   | en or locale langauge if set | `false`  | `false` |
+| Name       | Description                                                                                         | Default Value                | Required |
+| ---------- | --------------------------------------------------------------------------------------------------- | ---------------------------- | -------- |
+|  `env`     | commerce environment you want this page to use, either `stage` or `prod`                            |  `prod`                      |  `false` |
+| `locale`   | currency & price locale you need, must belong to one of the [supported locales](#supported-locales) | `en_US`                      | `false`  |
+| `country`  | country of the offers to retrieve from WCS, determines the currency, price format, etc.             | en or locale langauge if set | `false`  |
+| `language` | language of the price literal, e.g: per license                                                     | en or locale langauge if set | `false`  |
 
 ### Methods
 
@@ -50,6 +51,9 @@ You do need to have mas.js on your page / application, including it can be done 
 
 <!-- for other locale, with different language -->
 <mas-commerce-service locale="en_CA" language="es"></mas-commerce-service>
+
+<!-- or with a country and language -->
+<mas-commerce-service country="JP" language="en"></mas-commerce-service>
 ```
 
 you can play around with below price, either adding locale, language or env as parameters that will be injected to `mas-commerce-service` as attributes, and then it will be activated.

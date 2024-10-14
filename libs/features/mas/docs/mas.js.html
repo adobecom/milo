@@ -59,7 +59,6 @@
 <th>Description</th>
 <th>Default Value</th>
 <th>Required</th>
-<th></th>
 </tr>
 </thead>
 <tbody>
@@ -68,20 +67,23 @@
 <td>commerce environment you want this page to use, either <code>stage</code> or <code>prod</code></td>
 <td><code>prod</code></td>
 <td><code>false</code></td>
-<td></td>
 </tr>
 <tr>
 <td><code>locale</code></td>
 <td>currency &amp; price locale you need, must belong to one of the <a href="#supported-locales">supported locales</a></td>
 <td><code>en_US</code></td>
 <td><code>false</code></td>
-<td></td>
+</tr>
+<tr>
+<td><code>country</code></td>
+<td>country of the offers to retrieve from WCS, determines the currency, price format, etc.</td>
+<td>en or locale langauge if set</td>
+<td><code>false</code></td>
 </tr>
 <tr>
 <td><code>language</code></td>
-<td>language you need any literals in</td>
+<td>language of the price literal, e.g: per license</td>
 <td>en or locale langauge if set</td>
-<td><code>false</code></td>
 <td><code>false</code></td>
 </tr>
 </tbody>
@@ -120,6 +122,9 @@
 
 <span class="hljs-comment">&lt;!-- for other locale, with different language --&gt;</span>
 <span class="hljs-tag">&lt;<span class="hljs-name">mas-commerce-service</span> <span class="hljs-attr">locale</span>=<span class="hljs-string">&quot;en_CA&quot;</span> <span class="hljs-attr">language</span>=<span class="hljs-string">&quot;es&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">mas-commerce-service</span>&gt;</span>
+
+<span class="hljs-comment">&lt;!-- or with a country and language --&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">mas-commerce-service</span> <span class="hljs-attr">country</span>=<span class="hljs-string">&quot;JP&quot;</span> <span class="hljs-attr">language</span>=<span class="hljs-string">&quot;en&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">mas-commerce-service</span>&gt;</span>
 </code></pre>
 <p>you can play around with below price, either adding locale, language or env as parameters that will be injected to <code>mas-commerce-service</code> as attributes, and then it will be activated.</p>
 <p class="example">

@@ -10,12 +10,17 @@ import {
     EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
     EVENT_MERCH_STORAGE_CHANGE,
     EVENT_MAS_READY,
+    EVENT_AEM_ERROR,
+    EVENT_MAS_ERROR,
 } from './constants.js';
 import { VariantLayout } from './variants/variant-layout.js';
 import { hydrate } from './hydrate.js';
 
 export const MERCH_CARD_NODE_NAME = 'MERCH-CARD';
 export const MERCH_CARD = 'merch-card';
+
+// if merch cards does not initialise in 2s, it will dispatch mas:error event
+const MERCH_CARD_LOAD_TIMEOUT = 2000;
 
 export class MerchCard extends LitElement {
     static properties = {
@@ -28,6 +33,8 @@ export class MerchCard extends LitElement {
             type: String,
             attribute: 'badge-background-color',
         },
+        stripSize: { type: String, attribute: 'strip-size' },
+        stripBackground: { type: String, attribute: 'strip-background' },
         badgeText: { type: String, attribute: 'badge-text' },
         actionMenu: { type: Boolean, attribute: 'action-menu' },
         customHr: { type: Boolean, attribute: 'custom-hr' },
@@ -94,12 +101,14 @@ export class MerchCard extends LitElement {
      */
     variantLayout;
 
+    #ready = false;
+
     constructor() {
         super();
         this.filters = {};
         this.types = '';
         this.selected = false;
-        this.handleLoadEvent = this.handleLoadEvent.bind(this);
+        this.handleAemFragmentEvents = this.handleAemFragmentEvents.bind(this);
     }
 
     firstUpdated() {
@@ -125,6 +134,10 @@ export class MerchCard extends LitElement {
             this.style.border = this.computedBorderStyle;
         }
         this.variantLayout?.postCardUpdateHook(this);
+    }
+
+    get theme() {
+        return this.closest('sp-theme');
     }
 
     get prices() {
@@ -269,7 +282,10 @@ export class MerchCard extends LitElement {
         );
 
         // aem-fragment logic
-        this.addEventListener(EVENT_AEM_LOAD, this.handleLoadEvent);
+        this.addEventListener(EVENT_AEM_ERROR, this.handleAemFragmentEvents);
+        this.addEventListener(EVENT_AEM_LOAD, this.handleAemFragmentEvents);
+
+        if (!this.aemFragment) this.checkReady();
     }
 
     disconnectedCallback() {
@@ -284,7 +300,8 @@ export class MerchCard extends LitElement {
             EVENT_MERCH_STORAGE_CHANGE,
             this.handleStorageChange,
         );
-        this.removeEventListener(EVENT_AEM_LOAD, this.handleLoadEvent);
+        this.removeEventListener(EVENT_AEM_ERROR, this.handleAemFragmentEvents);
+        this.removeEventListener(EVENT_AEM_LOAD, this.handleAemFragmentEvents);
     }
 
     // custom methods
@@ -327,7 +344,6 @@ export class MerchCard extends LitElement {
             setTimeout(() => resolve(false), MERCH_CARD_LOAD_TIMEOUT),
         );
         const success = await Promise.race([successPromise, timeoutPromise]);
-        console.log(successPromise, timeoutPromise, success);
         if (success === true) {
             this.dispatchEvent(
                 new CustomEvent(EVENT_MAS_READY, {
@@ -335,6 +351,7 @@ export class MerchCard extends LitElement {
                     composed: true,
                 }),
             );
+            return;
         }
         this.#fail('Contains unresolved offers');
     }

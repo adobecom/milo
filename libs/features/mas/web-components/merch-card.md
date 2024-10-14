@@ -160,6 +160,8 @@ Designs:
     <aem-fragment fragment="wrong-fragment-id"></aem-fragment>
 </merch-card>
 
+<button id="btnRefreshFragments">Refresh Fragments</button>
+
 <script type="module">
     {
         const target = document.getElementById('log2');
@@ -178,6 +180,14 @@ Designs:
                 card.classList.add('error');
                 log(target, `${e.target.nodeName}: ${e.detail}`);
             });
+
+            document
+                .getElementById('btnRefreshFragments')
+                .addEventListener('click', () => {
+                    document
+                        .querySelector('mas-commerce-service')
+                        .refreshFragments();
+                });
         });
     }
 </script>

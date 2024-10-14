@@ -1,7 +1,6 @@
 import { ignore } from './external.js';
-import {    
+import {
     createMasElement,
-    selectMasElement,
     updateMasElement,
     MasElement,
 } from './mas-element.js';
@@ -18,24 +17,28 @@ export class CheckoutLink extends HTMLAnchorElement {
 
     masElement = new MasElement(this);
 
-    attributeChangedCallback(name, _, value) {      
-      this.masElement.attributeChangedCallback(name, _, value);
+    attributeChangedCallback(name, _, value) {
+        this.masElement.attributeChangedCallback(name, _, value);
     }
 
     connectedCallback() {
-      this.masElement.connectedCallback();
+        this.masElement.connectedCallback();
     }
 
     disconnectedCallback() {
-      this.masElement.disconnectedCallback();
-    };
+        this.masElement.disconnectedCallback();
+    }
 
     onceSettled() {
-      return this.masElement.onceSettled();
+        return this.masElement.onceSettled();
     }
 
     get value() {
-      return this.masElement.value;
+        return this.masElement.value;
+    }
+
+    requestUpdate(force = false) {
+        return this.masElement.requestUpdate(force);
     }
 
     constructor() {
@@ -95,15 +98,6 @@ export class CheckoutLink extends HTMLAnchorElement {
         return element;
     }
 
-    // TODO: consider moving this function to the `web-components` package
-    static getCheckoutLinks(container) {        
-        const elements = selectMasElement(
-            CheckoutLink,
-            container,
-        );
-        return elements;
-    }
-
     get isCheckoutLink() {
         return true;
     }
@@ -127,10 +121,7 @@ export class CheckoutLink extends HTMLAnchorElement {
                 if (countryCode) this.dataset.imsCountry = countryCode;
             }, ignore);
         }
-        const options = service.collectCheckoutOptions(
-            overrides,
-            this,
-        );
+        const options = service.collectCheckoutOptions(overrides, this);
         if (!options.wcsOsi.length) return false;
         let extraOptions;
         try {
@@ -176,9 +167,7 @@ export class CheckoutLink extends HTMLAnchorElement {
         // eslint-disable-next-line react-hooks/rules-of-hooks
         const service = useService();
         if (!service) return false;
-        const extraOptions = JSON.parse(
-            this.dataset.extraOptions ?? 'null',
-        );
+        const extraOptions = JSON.parse(this.dataset.extraOptions ?? 'null');
         options = { ...extraOptions, ...options, ...overrides };
         version ??= this.masElement.togglePending(options);
         if (this.#checkoutActionHandler) {
@@ -246,5 +235,7 @@ export class CheckoutLink extends HTMLAnchorElement {
 
 // Define custom DOM element
 if (!window.customElements.get(CheckoutLink.is)) {
-  window.customElements.define(CheckoutLink.is, CheckoutLink, { extends: CheckoutLink.tag });
+    window.customElements.define(CheckoutLink.is, CheckoutLink, {
+        extends: CheckoutLink.tag,
+    });
 }

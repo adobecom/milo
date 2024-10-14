@@ -6,20 +6,21 @@ import sinon from 'sinon';
 import { mockFetch } from './mocks/fetch.js';
 import { withWcs } from './mocks/wcs.js';
 import { withAem } from './mocks/aem.js';
-import mas from './mas.js';
 import { getTemplateContent } from './utils.js';
+import '../src/merch-card.js';
+import '../src/aem-fragment.js';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
 runTests(async () => {
+    await document.querySelector('mas-commerce-service').activate();
     const [cc, photoshop] = await fetch(
         'mocks/sites/cf/fragments/search/authorPayload.json',
     )
         .then((res) => res.json())
         .then(({ items }) => items);
 
-    await mas();
     await customElements.whenDefined('aem-fragment');
     const { cache } = document.createElement('aem-fragment');
 
@@ -72,13 +73,38 @@ runTests(async () => {
 
         it('ignores incomplete markup', async () => {
             const [, , , cardWithMissingPath] = getTemplateContent('cards');
+
+            let masErrorTriggered = false;
+            cardWithMissingPath.addEventListener('mas:error', () => {
+                masErrorTriggered = true;
+            });
             const aemFragment =
                 cardWithMissingPath.querySelector('aem-fragment');
+            let aemErrorTriggered = false;
+            aemFragment.addEventListener('aem:error', () => {
+                aemErrorTriggered = true;
+            });
 
             spTheme.append(cardWithMissingPath);
             await expect(aemFragment.updateComplete).to.be.rejectedWith(
                 'AEM fragment cannot be loaded',
             );
+            expect(masErrorTriggered).to.true;
+            expect(aemErrorTriggered).to.true;
+        });
+
+        it.only('merch-card fails when aem-fragment contains incorrect merch data', async () => {
+            const [, , , , , cardWithWrongOsis] = getTemplateContent('cards');
+
+            let masErrorTriggered = false;
+            cardWithWrongOsis.addEventListener('mas:error', () => {
+                masErrorTriggered = true;
+            });
+            spTheme.append(cardWithWrongOsis);
+            await expect(
+                cardWithWrongOsis.querySelector('aem-fragment').updateComplete,
+            );
+            expect(masErrorTriggered).to.true;
         });
 
         it('uses ims token to retrieve a fragment', async () => {

@@ -1,6 +1,5 @@
 import {
     createMasElement,
-    selectMasElement,
     updateMasElement,
     MasElement,
 } from './mas-element.js';
@@ -128,12 +127,6 @@ export class InlinePrice extends HTMLSpanElement {
         return element;
     }
 
-    // TODO: consider moving this function to the `web-components` package
-    static getInlinePrices(container) {
-        const elements = selectMasElement(InlinePrice, container);
-        return elements;
-    }
-
     constructor() {
         super();
         this.handleClick = this.handleClick.bind(this);
@@ -172,6 +165,10 @@ export class InlinePrice extends HTMLSpanElement {
 
     get value() {
         return this.masElement.value;
+    }
+
+    requestUpdate(force = false) {
+        return this.masElement.requestUpdate(force);
     }
 
     /**

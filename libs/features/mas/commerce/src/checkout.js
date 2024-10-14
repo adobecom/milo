@@ -90,7 +90,25 @@ export function Checkout({ providers, settings }) {
      * @param {*} options
      * @returns
      */
-    /** @type {Commerce.Checkout.buildCheckoutURL} */
+    async function buildCheckoutAction(offers, options) {
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        const instance = useService();
+        const checkoutAction = await dataProviders.getCheckoutAction?.(
+            offers,
+            options,
+            instance.imsSignedInPromise,
+        );
+        if (checkoutAction) {
+            return checkoutAction;
+        }
+        return null;
+    }
+
+    /**
+     * @param {*} offers
+     * @param {*} options
+     * @returns a checkout URL
+     */
     function buildCheckoutURL(offers, options) {
         if (!Array.isArray(offers) || !offers.length || !options) {
             return '';

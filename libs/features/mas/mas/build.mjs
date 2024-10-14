@@ -20,4 +20,11 @@ let { metafile } = await build({
     entryPoints: ['./src/mas.js'],
     outfile: '../../../deps/mas/mas.js',
 });
+
+await build({
+    ...defaults,
+    entryPoints: ['./src/mas.js'],
+    outfile: './dist/mas.js',
+});
+
 fs.writeFileSync('mas.json', JSON.stringify(metafile));

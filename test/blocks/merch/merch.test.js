@@ -795,4 +795,59 @@ describe('Merch Block', () => {
       });
     });
   });
+
+  describe('locale settings', () => {
+    it('should map correct commerce locale', async () => {
+      [
+        { prefix: '/ar', expectedLocale: 'es_AR' },
+        { prefix: '/africa', expectedLocale: 'en_MU' },
+        { prefix: '', expectedLocale: 'en_US' },
+        { prefix: '/ae_ar', expectedLocale: 'ar_AE' },
+      ].forEach(({ prefix, expectedLocale }) => {
+        it(`returns correct locale for "${prefix}"`, () => {
+          const wcsLocale = getMiloLocaleSettings({ locale: { prefix } }).locale;
+          expect(wcsLocale).to.be.equal(expectedLocale);
+        });
+      });
+    });
+  });
+
+  describe('M@S consumption', () => {
+    describe('maslibs parameter', () => {
+      beforeEach(() => {
+        getMasBase.baseUrl = undefined;
+        updateSearch({});
+      });
+
+      it('should load commerce.js via maslibs', async () => {
+        initService.promise = undefined;
+        getMasBase.baseUrl = 'http://localhost:2000/test/blocks/merch/mas';
+        updateSearch({ maslibs: 'test' });
+        setConfig(config);
+        await mockIms();
+        const commerce = await initService(true);
+        expect(commerce.mock).to.be.true;
+      });
+
+      it('should return the default Adobe URL if no maslibs parameter is present', () => {
+        expect(getMasBase()).to.equal('https://www.adobe.com/mas');
+      });
+
+      it('should return the stage Adobe URL if maslibs=stage', () => {
+        expect(getMasBase('https://main--milo--adobecom.hlx.live', 'stage')).to.equal('https://www.stage.adobe.com/mas');
+      });
+
+      it('should return the local URL if maslibs=local', () => {
+        expect(getMasBase('https://main--milo--adobecom.hlx.live', 'local')).to.equal('http://localhost:9001');
+      });
+
+      it('should return the hlx live URL from the fork if maslibs contains double dashes', () => {
+        expect(getMasBase('https://main--milo--adobecom.hlx.live', 'test--mas--user')).to.equal('https://test--mas--user.hlx.live');
+      });
+
+      it('should return the hlx page URL from the fork if maslibs contains double dashes', () => {
+        expect(getMasBase('https://main--milo--adobecom.hlx.page', 'test--mas--user')).to.equal('https://test--mas--user.hlx.page');
+      });
+    });
+  });
 });

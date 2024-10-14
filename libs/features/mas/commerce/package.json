@@ -1,5 +1,5 @@
 {
-    "name": "@adobe/mas-commerce",
+    "name": "@adobecom/mas-commerce",
     "version": "2.0.0",
     "files": [
         "lib",
