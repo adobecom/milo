@@ -7,14 +7,16 @@ import { mockFetch } from './mocks/fetch.js';
 import { withWcs } from './mocks/wcs.js';
 import { withAem } from './mocks/aem.js';
 import { getTemplateContent } from './utils.js';
+import mas from './mas.js';
 import '../src/merch-card.js';
 import '../src/aem-fragment.js';
+
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
 runTests(async () => {
-    await document.querySelector('mas-commerce-service').activate();
+    await mas();
     const [cc, photoshop] = await fetch(
         'mocks/sites/cf/fragments/search/authorPayload.json',
     )
@@ -93,7 +95,7 @@ runTests(async () => {
             expect(aemErrorTriggered).to.true;
         });
 
-        it.only('merch-card fails when aem-fragment contains incorrect merch data', async () => {
+        it('merch-card fails when aem-fragment contains incorrect merch data', async () => {
             const [, , , , , cardWithWrongOsis] = getTemplateContent('cards');
 
             let masErrorTriggered = false;
@@ -101,9 +103,8 @@ runTests(async () => {
                 masErrorTriggered = true;
             });
             spTheme.append(cardWithWrongOsis);
-            await expect(
-                cardWithWrongOsis.querySelector('aem-fragment').updateComplete,
-            );
+            expect(cardWithWrongOsis.querySelector('aem-fragment').updateComplete
+          );
             expect(masErrorTriggered).to.true;
         });
 
@@ -112,7 +113,7 @@ runTests(async () => {
             const aemFragment = cardWithIms.querySelector('aem-fragment');
             window.adobeid = { authorize: sinon.stub() };
             spTheme.append(cardWithIms);
-            await expect(aemFragment.updateComplete);
+            expect(aemFragment.updateComplete);
             sinon.assert.calledOnce(window.adobeid.authorize);
         });
     });

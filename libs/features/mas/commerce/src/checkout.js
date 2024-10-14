@@ -9,7 +9,6 @@ import {
     toEnumeration,
 } from './external.js';
 import { Defaults } from './defaults.js';
-import { Log } from './log.js';
 import { toOfferSelectorIds, toQuantity } from './utilities.js';
 
 /**
