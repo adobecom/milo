@@ -11,6 +11,7 @@
   --feds-borderColor: #303030;
   --feds-borderColor-menu: #4B4B4B;
   --feds-borderColor-navLink: #DBDBDB;
+  --feds-background-promo: #1D1D1D;
   /* Top navigation - colors */
   --feds-color-adobeBrand: #FFF;
   --feds-color-headline--mobile: #F2F2F2;
@@ -166,7 +167,7 @@
 @media (min-width: 900px) {
   .feds--dark .feds-promo {
     border: 1px solid var(--feds-borderColor);
-    background: #1D1D1D;
+    background: var(--feds-background-promo);
   }
   
   .feds--dark .feds-promo--dark,
