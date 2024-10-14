@@ -15,12 +15,18 @@
       }
     </script>
     <!-- Include your custom element script as an ES6 module -->
-    <script src="../../../features/spectrum-web-components/dist/theme.js" type="module"></script>
     <script src="../../../features/spectrum-web-components/dist/button.js" type="module"></script>
     <script type="module" src="../../../deps/mas/mas.js"></script>
 
     <script type="module">
       const params = new URLSearchParams(document.location.search);
+      // theme
+      const darkTheme = params?.get('theme')?.toLowerCase() === 'dark';
+      const theme = document.createElement('script');
+      theme.setAttribute('src', `../../../features/spectrum-web-components/dist/themes/${darkTheme ? 'dark' : 'light'}.js`);
+      theme.setAttribute('type', `module`);
+      document.head.appendChild(theme);
+      // mas-commerce-service
       const masCommerceService = document.createElement('mas-commerce-service');
       ['locale','language','env'].forEach((attribute) => {
         const value = params.get(attribute);
@@ -28,39 +34,19 @@
       });
       document.head.appendChild(masCommerceService);
     </script>
-    <!-- Include Highlight.js stylesheet for syntax highlighting -->
     <link rel="stylesheet" href="../../../styles/styles.css">
-    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
     <!-- Include any additional stylesheets -->
     <link rel="stylesheet" href="styles.css">
-    <style>
-      body {
-        margin: 0;
-        padding: 20px;
-        background-color: #f4f4f4;
-      }
-  
-      .container {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr); /* 3 cards per row */
-        gap: 20px;
-        max-width: 1200px;
-        margin: 0 auto;
-      }
-
-      .container h5 {
-        color: #136ff6;
-      }
-    </style>
-    <mas-commerce-service></mas-commerce-service>
 </head>
+
 <body>
   <main>
-    <sp-theme color="light" scale="medium">
+    <sp-theme color="light" scale="medium"> 
+      <div class="gallery-content">
       <h1 id="ccd-gallery" tabindex="-1">CCD Gallery <a class="header-anchor" href="#ccd-gallery" href="#ccd-gallery" title="Permalink to this heading">#</a></h1>
-      
+      Switch Theme: <a href="?theme=dark">Dark</a> OR <a href="?theme=light">Light</a>
       <h2 id="ccd-slice-card" tabindex="-1">CCD Slice Card <a class="header-anchor" href="#ccd-slice-card" href="#ccd-slice-card" title="Permalink to this heading">#</a></h2>
-      <div class="container">
+      <div class="gallery-grid-3">
         <h5>Percentage</h5>
         <h5>Two icons & pricing</h5>
         <h5>See Terms link</h5>
@@ -71,12 +57,12 @@
       </div>
 
       <h2 id="ccd-slice-wide-card" tabindex="-1">CCD Slice Wide Card <a class="header-anchor" href="#ccd-slice-wide-card" href="#ccd-slice-wide-card" title="Permalink to this heading">#</a></h2>
-      <div class="container">
+      <div>
         <merch-card><aem-fragment fragment="bdf40d06-5914-4f1f-aa10-77c5676fe671"></aem-fragment></merch-card>
       </div>
 
       <h2 id="ccd-suggested-card" tabindex="-1">CCD Suggested Card <a class="header-anchor" href="#ccd-suggested-card" href="#ccd-suggested-card" title="Permalink to this heading">#</a></h2>
-      <div class="container">
+      <div class="gallery-grid-3">
         <h5>With eyebrow</h5>
         <h5>See Terms link</h5>
         <h5>No eyebrow, price with term</h5>
@@ -88,7 +74,14 @@
         <merch-card><aem-fragment fragment="45783ec8-ed85-4595-a445-3f018ac4ad9d"></aem-fragment></merch-card>
         <merch-card><aem-fragment fragment="6217fb6d-e793-4235-af70-6f82401fc5de"></aem-fragment></merch-card>
       </div>
+    </div>
     </sp-theme>
+    <script type="module">
+      if (new URLSearchParams(document.location.search)?.get('theme')?.toLowerCase() === 'dark') {
+        document.querySelectorAll('sp-theme').forEach((theme) => theme.setAttribute('color', 'dark'));
+      }
+    </script>
   </main>
 </body>
+
 </html>
