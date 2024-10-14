@@ -77,13 +77,19 @@ export function decorateBlockText(el, config = ['m', 's', 'm'], type = null) {
         decorateIconArea(el);
       }
     }
+    const bodyDefault = `body-${config[1]}`;
     const emptyEls = el.querySelectorAll('p:not([class]), ul:not([class]), ol:not([class])');
     if (emptyEls.length) {
-      emptyEls.forEach((p) => p.classList.add(`body-${config[1]}`));
+      emptyEls.forEach((p) => p.classList.add(bodyDefault));
     } else {
-      [...el.querySelectorAll('div:not([class])')]
-        .filter((emptyDivs) => emptyDivs.textContent.trim() !== '')
-        .forEach((text) => text.classList.add(`body-${config[1]}`));
+      const emptyDivs = el.querySelectorAll('div:not([class])');
+      if (emptyDivs.length) {
+        [...emptyDivs].filter((div) => div.textContent.trim() !== '').forEach((text) => {
+          text.classList.add(bodyDefault);
+        });
+      } else if (!el.classList.length) {
+        el.classList.add(bodyDefault);
+      }
     }
   }
   const buttonSize = config.length > 3 ? `button-${config[3]}` : '';
