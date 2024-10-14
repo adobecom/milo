@@ -27,7 +27,7 @@ const stageDomainsMap = {
     'helpx.adobe.com': 'helpx.stage.adobe.com',
   },
   // Test app
-  'adobecom.github.io/nav-consumer': {
+  'adobecom.github.io': {
     'www.adobe.com': 'stage.adobe.com',
     'helpx.adobe.com': 'helpx.stage.adobe.com',
   },
