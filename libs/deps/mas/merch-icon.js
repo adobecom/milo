@@ -1,24 +1,6 @@
-// src/merch-icon.js
-import { LitElement, html, css } from "../lit-all.min.js";
-var MerchIcon = class extends LitElement {
-  static properties = {
-    size: { type: String, attribute: true },
-    src: { type: String, attribute: true },
-    alt: { type: String, attribute: true },
-    href: { type: String, attribute: true }
-  };
-  constructor() {
-    super();
-    this.size = "m";
-    this.alt = "";
-  }
-  render() {
-    const { href } = this;
-    return href ? html`<a href="${href}">
+import{LitElement as r,html as e,css as s}from"../lit-all.min.js";var t=class extends r{static properties={size:{type:String,attribute:!0},src:{type:String,attribute:!0},alt:{type:String,attribute:!0},href:{type:String,attribute:!0}};constructor(){super(),this.size="m",this.alt=""}render(){let{href:i}=this;return i?e`<a href="${i}">
                   <img src="${this.src}" alt="${this.alt}" loading="lazy" />
-              </a>` : html` <img src="${this.src}" alt="${this.alt}" loading="lazy" />`;
-  }
-  static styles = css`
+              </a>`:e` <img src="${this.src}" alt="${this.alt}" loading="lazy" />`}static styles=s`
         :host {
             --img-width: 32px;
             --img-height: 32px;
@@ -41,9 +23,4 @@ var MerchIcon = class extends LitElement {
             width: var(--img-width);
             height: var(--img-height);
         }
-    `;
-};
-customElements.define("merch-icon", MerchIcon);
-export {
-  MerchIcon as default
-};
+    `};customElements.define("merch-icon",t);export{t as default};

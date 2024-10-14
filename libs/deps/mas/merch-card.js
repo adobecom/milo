@@ -1,27 +1,6 @@
-// src/merch-card.js
-import { LitElement as LitElement2 } from "../lit-all.min.js";
-
-// src/merch-icon.js
-import { LitElement, html, css } from "../lit-all.min.js";
-var MerchIcon = class extends LitElement {
-  static properties = {
-    size: { type: String, attribute: true },
-    src: { type: String, attribute: true },
-    alt: { type: String, attribute: true },
-    href: { type: String, attribute: true }
-  };
-  constructor() {
-    super();
-    this.size = "m";
-    this.alt = "";
-  }
-  render() {
-    const { href } = this;
-    return href ? html`<a href="${href}">
+import{LitElement as Kt}from"../lit-all.min.js";import{LitElement as zt,html as J,css as Lt}from"../lit-all.min.js";var n=class extends zt{static properties={size:{type:String,attribute:!0},src:{type:String,attribute:!0},alt:{type:String,attribute:!0},href:{type:String,attribute:!0}};constructor(){super(),this.size="m",this.alt=""}render(){let{href:t}=this;return t?J`<a href="${t}">
                   <img src="${this.src}" alt="${this.alt}" loading="lazy" />
-              </a>` : html` <img src="${this.src}" alt="${this.alt}" loading="lazy" />`;
-  }
-  static styles = css`
+              </a>`:J` <img src="${this.src}" alt="${this.alt}" loading="lazy" />`}static styles=Lt`
         :host {
             --img-width: 32px;
             --img-height: 32px;
@@ -44,22 +23,7 @@ var MerchIcon = class extends LitElement {
             width: var(--img-width);
             height: var(--img-height);
         }
-    `;
-};
-customElements.define("merch-icon", MerchIcon);
-
-// src/merch-card.css.js
-import { css as css2, unsafeCSS } from "../lit-all.min.js";
-
-// src/media.js
-var MOBILE_LANDSCAPE = "(max-width: 767px)";
-var TABLET_DOWN = "(max-width: 1199px)";
-var TABLET_UP = "(min-width: 768px)";
-var DESKTOP_UP = "(min-width: 1200px)";
-var LARGE_DESKTOP = "(min-width: 1600px)";
-
-// src/merch-card.css.js
-var styles = css2`
+    `};customElements.define("merch-icon",n);import{css as tt,unsafeCSS as X}from"../lit-all.min.js";var y="(max-width: 767px)",$="(max-width: 1199px)",l="(min-width: 768px)",h="(min-width: 1200px)",g="(min-width: 1600px)";var et=tt`
     :host {
         position: relative;
         display: flex;
@@ -270,12 +234,9 @@ var styles = css2`
         display: flex;
         gap: 8px;
     }
-`;
-var sizeStyles = () => {
-  const styles3 = [
-    css2`
+`,rt=()=>[tt`
         /* Tablet */
-        @media screen and ${unsafeCSS(TABLET_UP)} {
+        @media screen and ${X(l)} {
             :host([size='wide']),
             :host([size='super-wide']) {
                 width: 100%;
@@ -284,192 +245,31 @@ var sizeStyles = () => {
         }
 
         /* Laptop */
-        @media screen and ${unsafeCSS(DESKTOP_UP)} {
+        @media screen and ${X(h)} {
             :host([size='wide']) {
                 grid-column: span 2;
             }
-        `
-  ];
-  return styles3;
-};
-
-// src/variants/variant-layout.js
-import { html as html2 } from "../lit-all.min.js";
-var VariantLayout = class _VariantLayout {
-  static styleMap = {};
-  card;
-  #container;
-  getContainer() {
-    this.#container = this.#container ?? this.card.closest('[class*="-merch-cards"]') ?? this.card.parentElement;
-    return this.#container;
-  }
-  insertVariantStyle() {
-    if (!_VariantLayout.styleMap[this.card.variant]) {
-      _VariantLayout.styleMap[this.card.variant] = true;
-      const styles3 = document.createElement("style");
-      styles3.innerHTML = this.getGlobalCSS();
-      document.head.appendChild(styles3);
-    }
-  }
-  updateCardElementMinHeight(el, name) {
-    if (!el)
-      return;
-    const elMinHeightPropertyName = `--consonant-merch-card-${this.card.variant}-${name}-height`;
-    const height = Math.max(
-      0,
-      parseInt(window.getComputedStyle(el).height) || 0
-    );
-    const maxMinHeight = parseInt(
-      this.getContainer().style.getPropertyValue(
-        elMinHeightPropertyName
-      )
-    ) || 0;
-    if (height > maxMinHeight) {
-      this.getContainer().style.setProperty(
-        elMinHeightPropertyName,
-        `${height}px`
-      );
-    }
-  }
-  constructor(card) {
-    this.card = card;
-    this.insertVariantStyle();
-  }
-  get badge() {
-    let additionalStyles;
-    if (!this.card.badgeBackgroundColor || !this.card.badgeColor || !this.card.badgeText) {
-      return;
-    }
-    if (this.evergreen) {
-      additionalStyles = `border: 1px solid ${this.card.badgeBackgroundColor}; border-right: none;`;
-    }
-    return html2`
+        `];import{html as R}from"../lit-all.min.js";var d=class r{static styleMap={};card;#t;getContainer(){return this.#t=this.#t??this.card.closest('[class*="-merch-cards"]')??this.card.parentElement,this.#t}insertVariantStyle(){if(!r.styleMap[this.card.variant]){r.styleMap[this.card.variant]=!0;let t=document.createElement("style");t.innerHTML=this.getGlobalCSS(),document.head.appendChild(t)}}updateCardElementMinHeight(t,e){if(!t)return;let a=`--consonant-merch-card-${this.card.variant}-${e}-height`,o=Math.max(0,parseInt(window.getComputedStyle(t).height)||0),m=parseInt(this.getContainer().style.getPropertyValue(a))||0;o>m&&this.getContainer().style.setProperty(a,`${o}px`)}constructor(t){this.card=t,this.insertVariantStyle()}get badge(){let t;if(!(!this.card.badgeBackgroundColor||!this.card.badgeColor||!this.card.badgeText))return this.evergreen&&(t=`border: 1px solid ${this.card.badgeBackgroundColor}; border-right: none;`),R`
             <div
                 id="badge"
                 class="${this.card.variant}-badge"
                 style="background-color: ${this.card.badgeBackgroundColor};
                 color: ${this.card.badgeColor};
-                ${additionalStyles}"
+                ${t}"
             >
                 ${this.card.badgeText}
             </div>
-        `;
-  }
-  get cardImage() {
-    return html2` <div class="image">
+        `}get cardImage(){return R` <div class="image">
             <slot name="bg-image"></slot>
             ${this.badge}
-        </div>`;
-  }
-  /* c8 ignore next 3 */
-  getGlobalCSS() {
-    return "";
-  }
-  /* c8 ignore next 3 */
-  get theme() {
-    return document.querySelector("sp-theme");
-  }
-  get evergreen() {
-    return this.card.classList.contains("intro-pricing");
-  }
-  get promoBottom() {
-    return this.card.classList.contains("promo-bottom");
-  }
-  get headingSelector() {
-    return '[slot="heading-xs"]';
-  }
-  get strip() {
-    if (this.card.stripSize && this.card.stripBackground) {
-      switch (this.card.stripSize) {
-        case "wide":
-          return "44px";
-        case "small":
-          return "4px";
-        default:
-          return "0";
-      }
-    }
-    return "";
-  }
-  get stripStyle() {
-    if (this.strip && this.card.stripBackground) {
-      return `
-          background: ${this.card.stripBackground.startsWith("url") ? this.card.stripBackground : `url("${this.card.stripBackground}")`};
+        </div>`}getGlobalCSS(){return""}get theme(){return document.querySelector("sp-theme")}get evergreen(){return this.card.classList.contains("intro-pricing")}get promoBottom(){return this.card.classList.contains("promo-bottom")}get headingSelector(){return'[slot="heading-xs"]'}get strip(){if(this.card.stripSize&&this.card.stripBackground)switch(this.card.stripSize){case"wide":return"44px";case"small":return"4px";default:return"0"}return""}get stripStyle(){return this.strip&&this.card.stripBackground?`
+          background: ${this.card.stripBackground.startsWith("url")?this.card.stripBackground:`url("${this.card.stripBackground}")`};
           background-size: ${this.strip} 100%;
           background-repeat: no-repeat;
-          background-position: ${this.card.theme.dir === "ltr" ? "left" : "right"};
-        `;
-    }
-    return "";
-  }
-  get secureLabelFooter() {
-    const secureLabel = this.card.secureLabel ? html2`<span class="secure-transaction-label"
+          background-position: ${this.card.theme.dir==="ltr"?"left":"right"};
+        `:""}get secureLabelFooter(){let t=this.card.secureLabel?R`<span class="secure-transaction-label"
                   >${this.card.secureLabel}</span
-              >` : "";
-    return html2`<footer>${secureLabel}<slot name="footer"></slot></footer>`;
-  }
-  async adjustTitleWidth() {
-    const cardWidth = this.card.getBoundingClientRect().width;
-    const badgeWidth = this.card.badgeElement?.getBoundingClientRect().width || 0;
-    if (cardWidth === 0 || badgeWidth === 0)
-      return;
-    this.card.style.setProperty(
-      "--consonant-merch-card-heading-xs-max-width",
-      `${Math.round(cardWidth - badgeWidth - 16)}px`
-      // consonant-merch-spacing-xs
-    );
-  }
-  postCardUpdateHook() {
-  }
-  connectedCallbackHook() {
-  }
-  disconnectedCallbackHook() {
-  }
-  /* c8 ignore next 3 */
-  renderLayout() {
-  }
-  /* c8 ignore next 4 */
-  get aemFragmentMapping() {
-    return void 0;
-  }
-};
-
-// src/variants/catalog.js
-import { html as html3, css as css3 } from "../lit-all.min.js";
-
-// src/utils.js
-function createTag(tag, attributes = {}, content) {
-  const element = document.createElement(tag);
-  if (content instanceof HTMLElement) {
-    element.appendChild(content);
-  } else {
-    element.innerHTML = content;
-  }
-  for (const [key, value] of Object.entries(attributes)) {
-    element.setAttribute(key, value);
-  }
-  return element;
-}
-function isMobile() {
-  return window.matchMedia("(max-width: 767px)").matches;
-}
-function isMobileOrTablet() {
-  return window.matchMedia("(max-width: 1024px)").matches;
-}
-
-// src/constants.js
-var EVENT_MERCH_OFFER_SELECT_READY = "merch-offer-select:ready";
-var EVENT_MERCH_CARD_READY = "merch-card:ready";
-var EVENT_MERCH_CARD_ACTION_MENU_TOGGLE = "merch-card:action-menu-toggle";
-var EVENT_MERCH_STORAGE_CHANGE = "merch-storage:change";
-var EVENT_MERCH_QUANTITY_SELECTOR_CHANGE = "merch-quantity-selector:change";
-var EVENT_AEM_LOAD = "aem:load";
-var EVENT_AEM_ERROR = "aem:error";
-var EVENT_MAS_READY = "mas:ready";
-var EVENT_MAS_ERROR = "mas:error";
-
-// src/variants/catalog.css.js
-var CSS = `
+              >`:"";return R`<footer>${t}<slot name="footer"></slot></footer>`}async adjustTitleWidth(){let t=this.card.getBoundingClientRect().width,e=this.card.badgeElement?.getBoundingClientRect().width||0;t===0||e===0||this.card.style.setProperty("--consonant-merch-card-heading-xs-max-width",`${Math.round(t-e-16)}px`)}postCardUpdateHook(){}connectedCallbackHook(){}disconnectedCallbackHook(){}renderLayout(){}get aemFragmentMapping(){}};import{html as q,css as _t}from"../lit-all.min.js";function v(r,t={},e){let a=document.createElement(r);e instanceof HTMLElement?a.appendChild(e):a.innerHTML=e;for(let[o,m]of Object.entries(t))a.setAttribute(o,m);return a}function O(){return window.matchMedia("(max-width: 767px)").matches}function ot(){return window.matchMedia("(max-width: 1024px)").matches}var at="merch-offer-select:ready",nt="merch-card:ready",ct="merch-card:action-menu-toggle";var U="merch-storage:change",I="merch-quantity-selector:change";var P="aem:load",N="aem:error",it="mas:ready",st="mas:error";var dt=`
 :root {
   --consonant-merch-card-catalog-width: 276px;
   --consonant-merch-card-catalog-icon-size: 40px;
@@ -481,7 +281,7 @@ var CSS = `
     grid-template-columns: var(--consonant-merch-card-catalog-width);
 }
 
-@media screen and ${TABLET_UP} {
+@media screen and ${l} {
     :root {
       --consonant-merch-card-catalog-width: 302px;
     }
@@ -493,7 +293,7 @@ var CSS = `
     }
 }
 
-@media screen and ${DESKTOP_UP} {
+@media screen and ${h} {
     :root {
       --consonant-merch-card-catalog-width: 276px;
     }
@@ -504,7 +304,7 @@ var CSS = `
     }
 }
 
-@media screen and ${LARGE_DESKTOP} {
+@media screen and ${g} {
     .four-merch-cards.catalog {
         grid-template-columns: repeat(4, var(--consonant-merch-card-catalog-width));
     }
@@ -555,84 +355,33 @@ merch-card[variant="catalog"] .payment-details {
   font-style: italic;
   font-weight: 400;
   line-height: var(--consonant-merch-card-body-line-height);
-}`;
-
-// src/variants/catalog.js
-var AEM_FRAGMENT_MAPPING = {
-  title: { tag: "h3", slot: "heading-xs" },
-  prices: { tag: "h3", slot: "heading-xs" },
-  description: { tag: "div", slot: "body-xs" },
-  ctas: { size: "l" },
-  allowedSizes: ["wide", "super-wide"]
-};
-var Catalog = class extends VariantLayout {
-  constructor(card) {
-    super(card);
-  }
-  /* c8 ignore next 3 */
-  get aemFragmentMapping() {
-    return AEM_FRAGMENT_MAPPING;
-  }
-  renderLayout() {
-    return html3` <div class="body">
+}`;var At={title:{tag:"h3",slot:"heading-xs"},prices:{tag:"h3",slot:"heading-xs"},description:{tag:"div",slot:"body-xs"},ctas:{size:"l"},allowedSizes:["wide","super-wide"]},E=class extends d{constructor(t){super(t)}get aemFragmentMapping(){return At}renderLayout(){return q` <div class="body">
                 <div class="top-section">
                     <slot name="icons"></slot> ${this.badge}
                     <div
                         class="action-menu
-                ${isMobileOrTablet() && this.card.actionMenu ? "always-visible" : ""}
-                ${!this.card.actionMenu ? "hidden" : "invisible"}"
+                ${ot()&&this.card.actionMenu?"always-visible":""}
+                ${this.card.actionMenu?"invisible":"hidden"}"
                         @click="${this.toggleActionMenu}"
                     ></div>
                 </div>
                 <slot
                     name="action-menu-content"
                     class="action-menu-content
-            ${!this.card.actionMenuContent ? "hidden" : ""}"
+            ${this.card.actionMenuContent?"":"hidden"}"
                     >${this.card.actionMenuContent}</slot
                 >
                 <slot name="heading-xs"></slot>
                 <slot name="heading-m"></slot>
                 <slot name="body-xxs"></slot>
-                ${!this.promoBottom ? html3`<slot name="promo-text"></slot
-                          ><slot name="callout-content"></slot>` : ""}
+                ${this.promoBottom?"":q`<slot name="promo-text"></slot
+                          ><slot name="callout-content"></slot>`}
                 <slot name="body-xs"></slot>
-                ${this.promoBottom ? html3`<slot name="promo-text"></slot
-                          ><slot name="callout-content"></slot>` : ""}
+                ${this.promoBottom?q`<slot name="promo-text"></slot
+                          ><slot name="callout-content"></slot>`:""}
             </div>
             ${this.secureLabelFooter}
-            <slot></slot>`;
-  }
-  getGlobalCSS() {
-    return CSS;
-  }
-  toggleActionMenu = (e) => {
-    const retract = e?.type === "mouseleave" ? true : void 0;
-    const actionMenuContentSlot = this.card.shadowRoot.querySelector(
-      'slot[name="action-menu-content"]'
-    );
-    if (!actionMenuContentSlot)
-      return;
-    if (!retract) {
-      this.card.dispatchEvent(
-        new CustomEvent(EVENT_MERCH_CARD_ACTION_MENU_TOGGLE, {
-          bubbles: true,
-          composed: true,
-          detail: {
-            card: this.card.name,
-            type: "action-menu"
-          }
-        })
-      );
-    }
-    actionMenuContentSlot.classList.toggle("hidden", retract);
-  };
-  connectedCallbackHook() {
-    this.card.addEventListener("mouseleave", this.toggleActionMenu);
-  }
-  disconnectedCallbackHook() {
-    this.card.removeEventListener("mouseleave", this.toggleActionMenu);
-  }
-  static variantStyle = css3`
+            <slot></slot>`}getGlobalCSS(){return dt}toggleActionMenu=t=>{let e=t?.type==="mouseleave"?!0:void 0,a=this.card.shadowRoot.querySelector('slot[name="action-menu-content"]');a&&(e||this.card.dispatchEvent(new CustomEvent(ct,{bubbles:!0,composed:!0,detail:{card:this.card.name,type:"action-menu"}})),a.classList.toggle("hidden",e))};connectedCallbackHook(){this.card.addEventListener("mouseleave",this.toggleActionMenu)}disconnectedCallbackHook(){this.card.removeEventListener("mouseleave",this.toggleActionMenu)}static variantStyle=_t`
         :host([variant='catalog']) {
             min-height: 330px;
             width: var(--consonant-merch-card-catalog-width);
@@ -650,14 +399,7 @@ var Catalog = class extends VariantLayout {
             margin-left: var(--consonant-merch-spacing-xxs);
             box-sizing: border-box;
         }
-    `;
-};
-
-// src/variants/ccd-action.js
-import { html as html4, css as css4 } from "../lit-all.min.js";
-
-// src/variants/ccd-action.css.js
-var CSS2 = `
+    `};import{html as j,css as Tt}from"../lit-all.min.js";var ht=`
 :root {
   --consonant-merch-card-ccd-action-width: 276px;
   --consonant-merch-card-ccd-action-min-height: 320px;
@@ -674,7 +416,7 @@ merch-card[variant="ccd-action"] .price-strikethrough {
     font-size: 18px;
 }
 
-@media screen and ${TABLET_UP} {
+@media screen and ${l} {
   .two-merch-cards.ccd-action,
   .three-merch-cards.ccd-action,
   .four-merch-cards.ccd-action {
@@ -682,63 +424,32 @@ merch-card[variant="ccd-action"] .price-strikethrough {
   }
 }
 
-@media screen and ${DESKTOP_UP} {
+@media screen and ${h} {
   .three-merch-cards.ccd-action,
   .four-merch-cards.ccd-action {
       grid-template-columns: repeat(3, var(--consonant-merch-card-ccd-action-width));
   }
 }
 
-@media screen and ${LARGE_DESKTOP} {
+@media screen and ${g} {
   .four-merch-cards.ccd-action {
       grid-template-columns: repeat(4, var(--consonant-merch-card-ccd-action-width));
   }
 }
-`;
-
-// src/variants/ccd-action.js
-var AEM_FRAGMENT_MAPPING2 = {
-  title: { tag: "h3", slot: "heading-xs" },
-  prices: { tag: "h3", slot: "heading-xs" },
-  description: { tag: "div", slot: "body-xs" },
-  ctas: { size: "l" }
-};
-var CCDAction = class extends VariantLayout {
-  constructor(card) {
-    super(card);
-  }
-  getGlobalCSS() {
-    return CSS2;
-  }
-  get aemFragmentMapping() {
-    return AEM_FRAGMENT_MAPPING2;
-  }
-  // This variant might go away, will not implement code coverage for now.
-  /* c8 ignore next 15 */
-  renderLayout() {
-    return html4` <div class="body">
+`;var Mt={title:{tag:"h3",slot:"heading-xs"},prices:{tag:"h3",slot:"heading-xs"},description:{tag:"div",slot:"body-xs"},ctas:{size:"l"}},S=class extends d{constructor(t){super(t)}getGlobalCSS(){return ht}get aemFragmentMapping(){return Mt}renderLayout(){return j` <div class="body">
             <slot name="icons"></slot> ${this.badge}
             <slot name="heading-xs"></slot>
             <slot name="heading-m"></slot>
-            ${this.promoBottom ? html4`<slot name="body-xs"></slot
-                      ><slot name="promo-text"></slot>` : html4`<slot name="promo-text"></slot
+            ${this.promoBottom?j`<slot name="body-xs"></slot
+                      ><slot name="promo-text"></slot>`:j`<slot name="promo-text"></slot
                       ><slot name="body-xs"></slot>`}
             <footer><slot name="footer"></slot></footer>
             <slot></slot>
-        </div>`;
-  }
-  static variantStyle = css4`
+        </div>`}static variantStyle=Tt`
         :host([variant='ccd-action']:not([size])) {
             width: var(--consonant-merch-card-ccd-action-width);
         }
-    `;
-};
-
-// src/variants/image.js
-import { html as html5 } from "../lit-all.min.js";
-
-// src/variants/image.css.js
-var CSS3 = `
+    `};import{html as C}from"../lit-all.min.js";var mt=`
 :root {
   --consonant-merch-card-image-width: 300px;
 }
@@ -750,7 +461,7 @@ var CSS3 = `
   grid-template-columns: var(--consonant-merch-card-image-width);
 }
 
-@media screen and ${TABLET_UP} {
+@media screen and ${l} {
   .two-merch-cards.image,
   .three-merch-cards.image,
   .four-merch-cards.image {
@@ -758,7 +469,7 @@ var CSS3 = `
   }
 }
 
-@media screen and ${DESKTOP_UP} {
+@media screen and ${h} {
   :root {
     --consonant-merch-card-image-width: 378px;
   }
@@ -769,48 +480,29 @@ var CSS3 = `
   }
 }
 
-@media screen and ${LARGE_DESKTOP} {
+@media screen and ${g} {
   .four-merch-cards.image {
       grid-template-columns: repeat(4, var(--consonant-merch-card-image-width));
   }
 }
-`;
-
-// src/variants/image.js
-var Image = class extends VariantLayout {
-  constructor(card) {
-    super(card);
-  }
-  getGlobalCSS() {
-    return CSS3;
-  }
-  renderLayout() {
-    return html5`${this.cardImage}
+`;var H=class extends d{constructor(t){super(t)}getGlobalCSS(){return mt}renderLayout(){return C`${this.cardImage}
     <div class="body">
         <slot name="icons"></slot>
         <slot name="heading-xs"></slot>
         <slot name="body-xxs"></slot>
-        ${this.promoBottom ? html5`<slot name="body-xs"></slot><slot name="promo-text"></slot>` : html5`<slot name="promo-text"></slot><slot name="body-xs"></slot>`}
+        ${this.promoBottom?C`<slot name="body-xs"></slot><slot name="promo-text"></slot>`:C`<slot name="promo-text"></slot><slot name="body-xs"></slot>`}
     </div>
-    ${this.evergreen ? html5`
+    ${this.evergreen?C`
               <div
                   class="detail-bg-container"
-                  style="background: ${this.card["detailBg"]}"
+                  style="background: ${this.card.detailBg}"
               >
                   <slot name="detail-bg"></slot>
               </div>
-          ` : html5`
+          `:C`
               <hr />
               ${this.secureLabelFooter}
-          `}`;
-  }
-};
-
-// src/variants/inline-heading.js
-import { html as html6 } from "../lit-all.min.js";
-
-// src/variants/inline-heading.css.js
-var CSS4 = `
+          `}`}};import{html as pt}from"../lit-all.min.js";var lt=`
 :root {
   --consonant-merch-card-inline-heading-width: 300px;
 }
@@ -822,7 +514,7 @@ var CSS4 = `
     grid-template-columns: var(--consonant-merch-card-inline-heading-width);
 }
 
-@media screen and ${TABLET_UP} {
+@media screen and ${l} {
   .two-merch-cards.inline-heading,
   .three-merch-cards.inline-heading,
   .four-merch-cards.inline-heading {
@@ -830,7 +522,7 @@ var CSS4 = `
   }
 }
 
-@media screen and ${DESKTOP_UP} {
+@media screen and ${h} {
   :root {
     --consonant-merch-card-inline-heading-width: 378px;
   }
@@ -841,23 +533,12 @@ var CSS4 = `
   }
 }
 
-@media screen and ${LARGE_DESKTOP} {
+@media screen and ${g} {
   .four-merch-cards.inline-heading {
       grid-template-columns: repeat(4, var(--consonant-merch-card-inline-heading-width));
   }
 }
-`;
-
-// src/variants/inline-heading.js
-var InlineHeading = class extends VariantLayout {
-  constructor(card) {
-    super(card);
-  }
-  getGlobalCSS() {
-    return CSS4;
-  }
-  renderLayout() {
-    return html6` ${this.badge}
+`;var B=class extends d{constructor(t){super(t)}getGlobalCSS(){return lt}renderLayout(){return pt` ${this.badge}
     <div class="body">
         <div class="top-section">
             <slot name="icons"></slot>
@@ -865,15 +546,7 @@ var InlineHeading = class extends VariantLayout {
         </div>
         <slot name="body-xs"></slot>
     </div>
-    ${!this.card.customHr ? html6`<hr />` : ""} ${this.secureLabelFooter}`;
-  }
-};
-
-// src/variants/mini-compare-chart.js
-import { html as html7, css as css5, unsafeCSS as unsafeCSS2 } from "../lit-all.min.js";
-
-// src/variants/mini-compare-chart.css.js
-var CSS5 = `
+    ${this.card.customHr?"":pt`<hr />`} ${this.secureLabelFooter}`}};import{html as D,css as $t,unsafeCSS as ut}from"../lit-all.min.js";var gt=`
   :root {
     --consonant-merch-card-mini-compare-chart-icon-size: 32px;
     --consonant-merch-card-mini-compare-mobile-cta-font-size: 15px;
@@ -979,7 +652,7 @@ var CSS5 = `
 }
 
 /* mini compare mobile */ 
-@media screen and ${MOBILE_LANDSCAPE} {
+@media screen and ${y} {
   :root {
     --consonant-merch-card-mini-compare-chart-width: 302px;
     --consonant-merch-card-mini-compare-chart-wide-width: 302px;
@@ -1017,7 +690,7 @@ var CSS5 = `
   }
 }
 
-@media screen and ${TABLET_DOWN} {
+@media screen and ${$} {
   .three-merch-cards.mini-compare-chart merch-card [slot="footer"] a,
   .four-merch-cards.mini-compare-chart merch-card [slot="footer"] a {
     flex: 1;
@@ -1048,7 +721,7 @@ var CSS5 = `
     line-height: var(--consonant-merch-card-body-xs-line-height);
   }
 }
-@media screen and ${TABLET_UP} {
+@media screen and ${l} {
   :root {
     --consonant-merch-card-mini-compare-chart-width: 302px;
     --consonant-merch-card-mini-compare-chart-wide-width: 302px;
@@ -1066,7 +739,7 @@ var CSS5 = `
 }
 
 /* desktop */
-@media screen and ${DESKTOP_UP} {
+@media screen and ${h} {
   :root {
     --consonant-merch-card-mini-compare-chart-width: 378px;
     --consonant-merch-card-mini-compare-chart-wide-width: 484px;  
@@ -1087,7 +760,7 @@ var CSS5 = `
   }
 }
 
-@media screen and ${LARGE_DESKTOP} {
+@media screen and ${g} {
   .four-merch-cards.mini-compare-chart {
       grid-template-columns: repeat(4, var(--consonant-merch-card-mini-compare-chart-width));
   }
@@ -1124,99 +797,11 @@ merch-card .footer-row-cell:nth-child(7) {
 merch-card .footer-row-cell:nth-child(8) {
   min-height: var(--consonant-merch-card-footer-row-8-min-height);
 }
-`;
-
-// src/variants/mini-compare-chart.js
-var FOOTER_ROW_MIN_HEIGHT = 32;
-var MiniCompareChart = class extends VariantLayout {
-  constructor(card) {
-    super(card);
-  }
-  getRowMinHeightPropertyName = (index) => `--consonant-merch-card-footer-row-${index}-min-height`;
-  getGlobalCSS() {
-    return CSS5;
-  }
-  getMiniCompareFooter = () => {
-    const secureLabel = this.card.secureLabel ? html7`<slot name="secure-transaction-label">
+`;var Rt=32,k=class extends d{constructor(t){super(t)}getRowMinHeightPropertyName=t=>`--consonant-merch-card-footer-row-${t}-min-height`;getGlobalCSS(){return gt}getMiniCompareFooter=()=>{let t=this.card.secureLabel?D`<slot name="secure-transaction-label">
               <span class="secure-transaction-label"
                   >${this.card.secureLabel}</span
               ></slot
-          >` : html7`<slot name="secure-transaction-label"></slot>`;
-    return html7`<footer>${secureLabel}<slot name="footer"></slot></footer>`;
-  };
-  adjustMiniCompareBodySlots() {
-    if (this.card.getBoundingClientRect().width <= 2)
-      return;
-    this.updateCardElementMinHeight(
-      this.card.shadowRoot.querySelector(".top-section"),
-      "top-section"
-    );
-    const slots = [
-      "heading-m",
-      "body-m",
-      "heading-m-price",
-      "body-xxs",
-      "price-commitment",
-      "offers",
-      "promo-text",
-      "callout-content"
-    ];
-    slots.forEach(
-      (slot) => this.updateCardElementMinHeight(
-        this.card.shadowRoot.querySelector(`slot[name="${slot}"]`),
-        slot
-      )
-    );
-    this.updateCardElementMinHeight(
-      this.card.shadowRoot.querySelector("footer"),
-      "footer"
-    );
-    const badge = this.card.shadowRoot.querySelector(
-      ".mini-compare-chart-badge"
-    );
-    if (badge && badge.textContent !== "") {
-      this.getContainer().style.setProperty(
-        "--consonant-merch-card-mini-compare-chart-top-section-mobile-height",
-        "32px"
-      );
-    }
-  }
-  adjustMiniCompareFooterRows() {
-    if (this.card.getBoundingClientRect().width === 0)
-      return;
-    const footerRows = this.card.querySelector('[slot="footer-rows"]');
-    [...footerRows?.children].forEach((el, index) => {
-      const height = Math.max(
-        FOOTER_ROW_MIN_HEIGHT,
-        parseFloat(window.getComputedStyle(el).height) || 0
-      );
-      const maxMinHeight = parseFloat(
-        this.getContainer().style.getPropertyValue(
-          this.getRowMinHeightPropertyName(index + 1)
-        )
-      ) || 0;
-      if (height > maxMinHeight) {
-        this.getContainer().style.setProperty(
-          this.getRowMinHeightPropertyName(index + 1),
-          `${height}px`
-        );
-      }
-    });
-  }
-  removeEmptyRows() {
-    const footerRows = this.card.querySelectorAll(".footer-row-cell");
-    footerRows.forEach((row) => {
-      const rowDescription = row.querySelector(".footer-row-cell-description");
-      if (rowDescription) {
-        const isEmpty = !rowDescription.textContent.trim();
-        if (isEmpty) {
-          row.remove();
-        }
-      }
-    });
-  }
-  renderLayout() {
-    return html7` <div class="top-section${this.badge ? " badge" : ""}">
+          >`:D`<slot name="secure-transaction-label"></slot>`;return D`<footer>${t}<slot name="footer"></slot></footer>`};adjustMiniCompareBodySlots(){if(this.card.getBoundingClientRect().width<=2)return;this.updateCardElementMinHeight(this.card.shadowRoot.querySelector(".top-section"),"top-section"),["heading-m","body-m","heading-m-price","body-xxs","price-commitment","offers","promo-text","callout-content"].forEach(a=>this.updateCardElementMinHeight(this.card.shadowRoot.querySelector(`slot[name="${a}"]`),a)),this.updateCardElementMinHeight(this.card.shadowRoot.querySelector("footer"),"footer");let e=this.card.shadowRoot.querySelector(".mini-compare-chart-badge");e&&e.textContent!==""&&this.getContainer().style.setProperty("--consonant-merch-card-mini-compare-chart-top-section-mobile-height","32px")}adjustMiniCompareFooterRows(){if(this.card.getBoundingClientRect().width===0)return;[...this.card.querySelector('[slot="footer-rows"]')?.children].forEach((e,a)=>{let o=Math.max(Rt,parseFloat(window.getComputedStyle(e).height)||0),m=parseFloat(this.getContainer().style.getPropertyValue(this.getRowMinHeightPropertyName(a+1)))||0;o>m&&this.getContainer().style.setProperty(this.getRowMinHeightPropertyName(a+1),`${o}px`)})}removeEmptyRows(){this.card.querySelectorAll(".footer-row-cell").forEach(e=>{let a=e.querySelector(".footer-row-cell-description");a&&!a.textContent.trim()&&e.remove()})}renderLayout(){return D` <div class="top-section${this.badge?" badge":""}">
             <slot name="icons"></slot> ${this.badge}
         </div>
         <slot name="heading-m"></slot>
@@ -1228,18 +813,7 @@ var MiniCompareChart = class extends VariantLayout {
         <slot name="promo-text"></slot>
         <slot name="callout-content"></slot>
         ${this.getMiniCompareFooter()}
-        <slot name="footer-rows"><slot name="body-s"></slot></slot>`;
-  }
-  async postCardUpdateHook() {
-    if (!isMobile()) {
-      await Promise.all(this.card.prices.map((price) => price.onceSettled()));
-      this.adjustMiniCompareBodySlots();
-      this.adjustMiniCompareFooterRows();
-    } else {
-      this.removeEmptyRows();
-    }
-  }
-  static variantStyle = css5`
+        <slot name="footer-rows"><slot name="body-s"></slot></slot>`}async postCardUpdateHook(){O()?this.removeEmptyRows():(await Promise.all(this.card.prices.map(t=>t.onceSettled())),this.adjustMiniCompareBodySlots(),this.adjustMiniCompareFooterRows())}static variantStyle=$t`
     :host([variant='mini-compare-chart']) > slot:not([name='icons']) {
         display: block;
     }
@@ -1255,7 +829,7 @@ var MiniCompareChart = class extends VariantLayout {
         height: var(--consonant-merch-card-mini-compare-chart-top-section-height);
     }
 
-    @media screen and ${unsafeCSS2(TABLET_DOWN)} {
+    @media screen and ${ut($)} {
         [class*'-merch-cards'] :host([variant='mini-compare-chart']) footer {
             flex-direction: column;
             align-items: stretch;
@@ -1263,7 +837,7 @@ var MiniCompareChart = class extends VariantLayout {
         }
     }
 
-    @media screen and ${unsafeCSS2(DESKTOP_UP)} {
+    @media screen and ${ut(h)} {
         :host([variant='mini-compare-chart']) footer {
             padding: var(--consonant-merch-spacing-xs)
                 var(--consonant-merch-spacing-s)
@@ -1311,14 +885,7 @@ var MiniCompareChart = class extends VariantLayout {
             --consonant-merch-card-mini-compare-chart-callout-content-height
         );
     }
-  `;
-};
-
-// src/variants/plans.js
-import { html as html8, css as css6 } from "../lit-all.min.js";
-
-// src/variants/plans.css.js
-var CSS6 = `
+  `};import{html as F,css as Ot}from"../lit-all.min.js";var xt=`
 :root {
   --consonant-merch-card-plans-width: 300px;
   --consonant-merch-card-plans-icon-size: 40px;
@@ -1344,7 +911,7 @@ merch-card[variant="plans"] [slot="quantity-select"] {
 }
 
 /* Tablet */
-@media screen and ${TABLET_UP} {
+@media screen and ${l} {
   :root {
     --consonant-merch-card-plans-width: 302px;
   }
@@ -1356,7 +923,7 @@ merch-card[variant="plans"] [slot="quantity-select"] {
 }
 
 /* desktop */
-@media screen and ${DESKTOP_UP} {
+@media screen and ${h} {
   :root {
     --consonant-merch-card-plans-width: 276px;
   }
@@ -1367,47 +934,28 @@ merch-card[variant="plans"] [slot="quantity-select"] {
 }
 
 /* Large desktop */
-    @media screen and ${LARGE_DESKTOP} {
+    @media screen and ${g} {
     .four-merch-cards.plans {
         grid-template-columns: repeat(4, var(--consonant-merch-card-plans-width));
     }
 }
-`;
-
-// src/variants/plans.js
-var Plans = class extends VariantLayout {
-  constructor(card) {
-    super(card);
-  }
-  getGlobalCSS() {
-    return CSS6;
-  }
-  postCardUpdateHook() {
-    this.adjustTitleWidth();
-  }
-  get stockCheckbox() {
-    return this.card.checkboxLabel ? html8`<label id="stock-checkbox">
+`;var z=class extends d{constructor(t){super(t)}getGlobalCSS(){return xt}postCardUpdateHook(){this.adjustTitleWidth()}get stockCheckbox(){return this.card.checkboxLabel?F`<label id="stock-checkbox">
                 <input type="checkbox" @change=${this.card.toggleStockOffer}></input>
                 <span></span>
                 ${this.card.checkboxLabel}
-            </label>` : "";
-  }
-  renderLayout() {
-    return html8` ${this.badge}
+            </label>`:""}renderLayout(){return F` ${this.badge}
         <div class="body">
             <slot name="icons"></slot>
             <slot name="heading-xs"></slot>
             <slot name="heading-m"></slot>
             <slot name="body-xxs"></slot>
-            ${!this.promoBottom ? html8`<slot name="promo-text"></slot><slot name="callout-content"></slot> ` : ""}
+            ${this.promoBottom?"":F`<slot name="promo-text"></slot><slot name="callout-content"></slot> `}
             <slot name="body-xs"></slot>
-            ${this.promoBottom ? html8`<slot name="promo-text"></slot><slot name="callout-content"></slot> ` : ""}  
+            ${this.promoBottom?F`<slot name="promo-text"></slot><slot name="callout-content"></slot> `:""}  
             ${this.stockCheckbox}
         </div>
         <slot name="quantity-select"></slot>
-        ${this.secureLabelFooter}`;
-  }
-  static variantStyle = css6`
+        ${this.secureLabelFooter}`}static variantStyle=Ot`
     :host([variant='plans']) {
       min-height: 348px;
     }
@@ -1415,14 +963,7 @@ var Plans = class extends VariantLayout {
     :host([variant='plans']) ::slotted([slot='heading-xs']) {
       max-width: var(--consonant-merch-card-heading-xs-max-width, 100%);
     }
-  `;
-};
-
-// src/variants/product.js
-import { html as html9, css as css7 } from "../lit-all.min.js";
-
-// src/variants/product.css.js
-var CSS7 = `
+  `};import{html as K,css as Pt}from"../lit-all.min.js";var ft=`
 :root {
   --consonant-merch-card-product-width: 300px;
 }
@@ -1436,7 +977,7 @@ var CSS7 = `
 }
 
 /* Tablet */
-@media screen and ${TABLET_UP} {
+@media screen and ${l} {
     .two-merch-cards.product,
     .three-merch-cards.product,
     .four-merch-cards.product {
@@ -1445,7 +986,7 @@ var CSS7 = `
 }
 
 /* desktop */
-@media screen and ${DESKTOP_UP} {
+@media screen and ${h} {
   :root {
     --consonant-merch-card-product-width: 378px;
   }
@@ -1457,63 +998,23 @@ var CSS7 = `
 }
 
 /* Large desktop */
-@media screen and ${LARGE_DESKTOP} {
+@media screen and ${g} {
   .four-merch-cards.product {
       grid-template-columns: repeat(4, var(--consonant-merch-card-product-width));
   }
 }
-`;
-
-// src/variants/product.js
-var Product = class extends VariantLayout {
-  constructor(card) {
-    super(card);
-  }
-  getGlobalCSS() {
-    return CSS7;
-  }
-  adjustProductBodySlots() {
-    if (this.card.getBoundingClientRect().width === 0)
-      return;
-    const slots = [
-      "heading-xs",
-      "body-xxs",
-      "body-xs",
-      "promo-text",
-      "callout-content",
-      "body-lower"
-    ];
-    slots.forEach(
-      (slot) => this.updateCardElementMinHeight(
-        this.card.shadowRoot.querySelector(`slot[name="${slot}"]`),
-        slot
-      )
-    );
-  }
-  renderLayout() {
-    return html9` ${this.badge}
+`;var w=class extends d{constructor(t){super(t)}getGlobalCSS(){return ft}adjustProductBodySlots(){if(this.card.getBoundingClientRect().width===0)return;["heading-xs","body-xxs","body-xs","promo-text","callout-content","body-lower"].forEach(e=>this.updateCardElementMinHeight(this.card.shadowRoot.querySelector(`slot[name="${e}"]`),e))}renderLayout(){return K` ${this.badge}
       <div class="body">
           <slot name="icons"></slot>
           <slot name="heading-xs"></slot>
           <slot name="body-xxs"></slot>
-          ${!this.promoBottom ? html9`<slot name="promo-text"></slot>` : ""}
+          ${this.promoBottom?"":K`<slot name="promo-text"></slot>`}
           <slot name="body-xs"></slot>
-          ${this.promoBottom ? html9`<slot name="promo-text"></slot>` : ""}
+          ${this.promoBottom?K`<slot name="promo-text"></slot>`:""}
           <slot name="callout-content"></slot>
           <slot name="body-lower"></slot>
       </div>
-      ${this.secureLabelFooter}`;
-  }
-  connectedCallbackHook() {
-    super.connectedCallbackHook();
-    window.addEventListener("resize", this.postCardUpdateHook.bind(this));
-  }
-  postCardUpdateHook() {
-    if (!isMobile()) {
-      this.adjustProductBodySlots();
-    }
-  }
-  static variantStyle = css7`
+      ${this.secureLabelFooter}`}connectedCallbackHook(){super.connectedCallbackHook(),window.addEventListener("resize",this.postCardUpdateHook.bind(this))}postCardUpdateHook(){O()||this.adjustProductBodySlots()}static variantStyle=Pt`
     :host([variant='product']) > slot:not([name='icons']) {
         display: block;
     }
@@ -1537,14 +1038,7 @@ var Product = class extends VariantLayout {
         min-height: var(--consonant-merch-card-product-callout-content-height);
         display: block;
     }
-  `;
-};
-
-// src/variants/segment.js
-import { html as html10, css as css8 } from "../lit-all.min.js";
-
-// src/variants/segment.css.js
-var CSS8 = `
+  `};import{html as W,css as Nt}from"../lit-all.min.js";var vt=`
 :root {
   --consonant-merch-card-segment-width: 378px;
 }
@@ -1558,13 +1052,13 @@ var CSS8 = `
 }
 
 /* Mobile */
-@media screen and ${MOBILE_LANDSCAPE} {
+@media screen and ${y} {
   :root {
     --consonant-merch-card-segment-width: 276px;
   }
 }
 
-@media screen and ${TABLET_UP} {
+@media screen and ${l} {
   :root {
     --consonant-merch-card-segment-width: 276px;
   }
@@ -1577,7 +1071,7 @@ var CSS8 = `
 }
 
 /* desktop */
-@media screen and ${DESKTOP_UP} {
+@media screen and ${h} {
   :root {
     --consonant-merch-card-segment-width: 302px;
   }
@@ -1590,46 +1084,23 @@ var CSS8 = `
       grid-template-columns: repeat(4, minmax(276px, var(--consonant-merch-card-segment-width)));
   }
 }
-`;
-
-// src/variants/segment.js
-var Segment = class extends VariantLayout {
-  constructor(card) {
-    super(card);
-  }
-  getGlobalCSS() {
-    return CSS8;
-  }
-  postCardUpdateHook() {
-    this.adjustTitleWidth();
-  }
-  renderLayout() {
-    return html10` ${this.badge}
+`;var L=class extends d{constructor(t){super(t)}getGlobalCSS(){return vt}postCardUpdateHook(){this.adjustTitleWidth()}renderLayout(){return W` ${this.badge}
     <div class="body">
         <slot name="heading-xs"></slot>
         <slot name="body-xxs"></slot>
-        ${!this.promoBottom ? html10`<slot name="promo-text"></slot><slot name="callout-content"></slot>` : ""}
+        ${this.promoBottom?"":W`<slot name="promo-text"></slot><slot name="callout-content"></slot>`}
         <slot name="body-xs"></slot>
-        ${this.promoBottom ? html10`<slot name="promo-text"></slot><slot name="callout-content"></slot>` : ""}
+        ${this.promoBottom?W`<slot name="promo-text"></slot><slot name="callout-content"></slot>`:""}
     </div>
     <hr />
-    ${this.secureLabelFooter}`;
-  }
-  static variantStyle = css8`
+    ${this.secureLabelFooter}`}static variantStyle=Nt`
     :host([variant='segment']) {
       min-height: 214px;
     }
     :host([variant='segment']) ::slotted([slot='heading-xs']) {
       max-width: var(--consonant-merch-card-heading-xs-max-width, 100%);
     }
-  `;
-};
-
-// src/variants/special-offer.js
-import { html as html11, css as css9 } from "../lit-all.min.js";
-
-// src/variants/special-offer.css.js
-var CSS9 = `
+  `};import{html as Y,css as Ht}from"../lit-all.min.js";var bt=`
 :root {
   --consonant-merch-card-special-offers-width: 378px;
 }
@@ -1646,13 +1117,13 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
   grid-template-columns: minmax(300px, var(--consonant-merch-card-special-offers-width));
 }
 
-@media screen and ${MOBILE_LANDSCAPE} {
+@media screen and ${y} {
   :root {
     --consonant-merch-card-special-offers-width: 302px;
   }
 } 
   
-@media screen and ${TABLET_UP} {
+@media screen and ${l} {
   :root {
     --consonant-merch-card-special-offers-width: 302px;
   }
@@ -1665,63 +1136,36 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
 }
 
 /* desktop */
-@media screen and ${DESKTOP_UP} {
+@media screen and ${h} {
   .three-merch-cards.special-offers,
   .four-merch-cards.special-offers {
     grid-template-columns: repeat(3, minmax(300px, var(--consonant-merch-card-special-offers-width)));
   }
 }
 
-@media screen and ${LARGE_DESKTOP} {
+@media screen and ${g} {
   .four-merch-cards.special-offers {
     grid-template-columns: repeat(4, minmax(300px, var(--consonant-merch-card-special-offers-width)));
   }
 }
-`;
-
-// src/variants/special-offer.js
-var AEM_FRAGMENT_MAPPING3 = {
-  name: { tag: "h4", slot: "detail-m" },
-  title: { tag: "h4", slot: "detail-m" },
-  backgroundImage: { tag: "div", slot: "bg-image" },
-  prices: { tag: "h3", slot: "heading-xs" },
-  description: { tag: "div", slot: "body-xs" },
-  ctas: { size: "l" }
-};
-var SpecialOffer = class extends VariantLayout {
-  constructor(card) {
-    super(card);
-  }
-  getGlobalCSS() {
-    return CSS9;
-  }
-  get headingSelector() {
-    return '[slot="detail-m"]';
-  }
-  get aemFragmentMapping() {
-    return AEM_FRAGMENT_MAPPING3;
-  }
-  renderLayout() {
-    return html11`${this.cardImage}
+`;var Bt={name:{tag:"h4",slot:"detail-m"},title:{tag:"h4",slot:"detail-m"},backgroundImage:{tag:"div",slot:"bg-image"},prices:{tag:"h3",slot:"heading-xs"},description:{tag:"div",slot:"body-xs"},ctas:{size:"l"}},_=class extends d{constructor(t){super(t)}getGlobalCSS(){return bt}get headingSelector(){return'[slot="detail-m"]'}get aemFragmentMapping(){return Bt}renderLayout(){return Y`${this.cardImage}
             <div class="body">
                 <slot name="detail-m"></slot>
                 <slot name="heading-xs"></slot>
                 <slot name="body-xs"></slot>
             </div>
-            ${this.evergreen ? html11`
+            ${this.evergreen?Y`
                       <div
                           class="detail-bg-container"
-                          style="background: ${this.card["detailBg"]}"
+                          style="background: ${this.card.detailBg}"
                       >
                           <slot name="detail-bg"></slot>
                       </div>
-                  ` : html11`
+                  `:Y`
                       <hr />
                       ${this.secureLabelFooter}
                   `}
-            <slot></slot>`;
-  }
-  static variantStyle = css9`
+            <slot></slot>`}static variantStyle=Ht`
         :host([variant='special-offers']) {
             min-height: 439px;
         }
@@ -1733,14 +1177,7 @@ var SpecialOffer = class extends VariantLayout {
         :host([variant='special-offers'].center) {
             text-align: center;
         }
-    `;
-};
-
-// src/variants/twp.js
-import { html as html12, css as css10 } from "../lit-all.min.js";
-
-// src/variants/twp.css.js
-var CSS10 = `
+    `};import{html as Dt,css as Ft}from"../lit-all.min.js";var yt=`
 :root {
   --consonant-merch-card-twp-width: 268px;
   --consonant-merch-card-twp-mobile-width: 300px;
@@ -1795,7 +1232,7 @@ merch-card[variant='twp'] merch-offer-select {
   grid-template-columns: var(--consonant-merch-card-image-width);
 }
 
-@media screen and ${MOBILE_LANDSCAPE} {
+@media screen and ${y} {
   :root {
     --consonant-merch-card-twp-width: 300px;
   }
@@ -1806,7 +1243,7 @@ merch-card[variant='twp'] merch-offer-select {
   }
 }
 
-@media screen and ${TABLET_UP} {
+@media screen and ${l} {
   :root {
     --consonant-merch-card-twp-width: 268px;
   }
@@ -1819,7 +1256,7 @@ merch-card[variant='twp'] merch-offer-select {
   }
 }
   
-@media screen and ${DESKTOP_UP} {
+@media screen and ${h} {
   :root {
     --consonant-merch-card-twp-width: 268px;
   }
@@ -1832,7 +1269,7 @@ merch-card[variant='twp'] merch-offer-select {
   }
 }
 
-@media screen and ${LARGE_DESKTOP} {
+@media screen and ${g} {
     .one-merch-card.twp
     .two-merch-cards.twp {
         grid-template-columns: repeat(2, var(--consonant-merch-card-twp-width));
@@ -1841,18 +1278,7 @@ merch-card[variant='twp'] merch-offer-select {
         grid-template-columns: repeat(3, var(--consonant-merch-card-twp-width));
   }
 }
-`;
-
-// src/variants/twp.js
-var TWP = class extends VariantLayout {
-  constructor(card) {
-    super(card);
-  }
-  getGlobalCSS() {
-    return CSS10;
-  }
-  renderLayout() {
-    return html12`${this.badge}
+`;var A=class extends d{constructor(t){super(t)}getGlobalCSS(){return yt}renderLayout(){return Dt`${this.badge}
       <div class="top-section">
           <slot name="icons"></slot>
           <slot name="heading-xs"></slot>
@@ -1861,9 +1287,7 @@ var TWP = class extends VariantLayout {
       <div class="body">
           <slot name="body-xs"></slot>
       </div>
-      <footer><slot name="footer"></slot></footer>`;
-  }
-  static variantStyle = css10`
+      <footer><slot name="footer"></slot></footer>`}static variantStyle=Ft`
     :host([variant='twp']) {
       padding: 4px 10px 5px 10px;
     }
@@ -1902,14 +1326,7 @@ var TWP = class extends VariantLayout {
       flex-direction: column;
       align-self: flex-start;
     }
-  `;
-};
-
-// src/variants/ccd-suggested.js
-import { html as html13, css as css11 } from "../lit-all.min.js";
-
-// src/variants/ccd-suggested.css.js
-var CSS11 = `
+  `};import{html as Gt,css as Vt}from"../lit-all.min.js";var wt=`
 :root {
   --merch-card-ccd-suggested-width: 304px;
   --merch-card-ccd-suggested-height: 205px;
@@ -1932,26 +1349,7 @@ merch-card[variant="ccd-suggested"] [slot="cta"] a {
   color: var(--spectrum-gray-800);
   font-weight: 700;
 }
-`;
-
-// src/variants/ccd-suggested.js
-var AEM_FRAGMENT_MAPPING4 = {
-  subtitle: { tag: "h4", slot: "detail-m" },
-  title: { tag: "h3", slot: "heading-xs" },
-  prices: { tag: "p", slot: "price" },
-  description: { tag: "div", slot: "body-xs" },
-  ctas: { slot: "cta", size: "s", button: false }
-};
-var CCDSuggested = class extends VariantLayout {
-  getGlobalCSS() {
-    return CSS11;
-  }
-  /* c8 ignore next 3 */
-  get aemFragmentMapping() {
-    return AEM_FRAGMENT_MAPPING4;
-  }
-  renderLayout() {
-    return html13`
+`;var Ut={subtitle:{tag:"h4",slot:"detail-m"},title:{tag:"h3",slot:"heading-xs"},prices:{tag:"p",slot:"price"},description:{tag:"div",slot:"body-xs"},ctas:{slot:"cta",size:"s",button:!1}},T=class extends d{getGlobalCSS(){return wt}get aemFragmentMapping(){return Ut}renderLayout(){return Gt`
           <div style="${this.stripStyle}" class="body">
               <div class="header">
                 <slot name="icons"></slot>
@@ -1966,9 +1364,7 @@ var CCDSuggested = class extends VariantLayout {
                 <slot name="cta"></slot>
               </div>
           </div>
-                <slot></slot>`;
-  }
-  static variantStyle = css11`
+                <slot></slot>`}static variantStyle=Vt`
     :host([variant='ccd-suggested']) {
       background-color: var(
         --spectrum-gray-50, #fff);
@@ -2029,14 +1425,7 @@ var CCDSuggested = class extends VariantLayout {
       margin-top: auto;
       align-items: center;
     }
-  `;
-};
-
-// src/variants/ccd-slice.js
-import { html as html14, css as css12 } from "../lit-all.min.js";
-
-// src/variants/ccd-slice.css.js
-var CSS12 = `
+  `};import{html as It,css as qt}from"../lit-all.min.js";var Et=`
 :root {
   --consonant-merch-card-ccd-slice-single-width: 322px;
   --consonant-merch-card-ccd-slice-icon-size: 30px;
@@ -2058,33 +1447,13 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a:not(.con-button) {
     overflow: hidden;
     border-radius: 50%;
   }
-`;
-
-// src/variants/ccd-slice.js
-var AEM_FRAGMENT_MAPPING5 = {
-  backgroundImage: { tag: "div", slot: "image" },
-  description: { tag: "div", slot: "body-s" },
-  ctas: { size: "s" },
-  allowedSizes: ["wide"]
-};
-var CCDSlice = class extends VariantLayout {
-  getGlobalCSS() {
-    return CSS12;
-  }
-  /* c8 ignore next 3 */
-  get aemFragmentMapping() {
-    return AEM_FRAGMENT_MAPPING5;
-  }
-  renderLayout() {
-    return html14` <div class="content">
+`;var jt={backgroundImage:{tag:"div",slot:"image"},description:{tag:"div",slot:"body-s"},ctas:{size:"s"},allowedSizes:["wide"]},M=class extends d{getGlobalCSS(){return Et}get aemFragmentMapping(){return jt}renderLayout(){return It` <div class="content">
                 <slot name="icons"></slot> ${this.badge}
                 <slot name="body-s"></slot>
                 <slot name="footer"></slot>
             </div>
             <slot name="image"></slot>
-            <slot></slot>`;
-  }
-  static variantStyle = css12`
+            <slot></slot>`}static variantStyle=qt`
         :host([variant='ccd-slice']) {
             width: var(--consonant-merch-card-ccd-slice-single-width);
             background-color: var(
@@ -2144,58 +1513,7 @@ var CCDSlice = class extends VariantLayout {
             width: inherit;
             height: inherit;
         }
-    `;
-};
-
-// src/variants/variants.js
-var getVariantLayout = (card, mustMatch = false) => {
-  switch (card.variant) {
-    case "catalog":
-      return new Catalog(card);
-    case "ccd-action":
-      return new CCDAction(card);
-    case "image":
-      return new Image(card);
-    case "inline-heading":
-      return new InlineHeading(card);
-    case "mini-compare-chart":
-      return new MiniCompareChart(card);
-    case "plans":
-      return new Plans(card);
-    case "product":
-      return new Product(card);
-    case "segment":
-      return new Segment(card);
-    case "special-offers":
-      return new SpecialOffer(card);
-    case "twp":
-      return new TWP(card);
-    case "ccd-suggested":
-      return new CCDSuggested(card);
-    case "ccd-slice":
-      return new CCDSlice(card);
-    default:
-      return mustMatch ? void 0 : new Product(card);
-  }
-};
-var getVariantStyles = () => {
-  const styles3 = [];
-  styles3.push(Catalog.variantStyle);
-  styles3.push(CCDAction.variantStyle);
-  styles3.push(MiniCompareChart.variantStyle);
-  styles3.push(Product.variantStyle);
-  styles3.push(Plans.variantStyle);
-  styles3.push(Segment.variantStyle);
-  styles3.push(SpecialOffer.variantStyle);
-  styles3.push(TWP.variantStyle);
-  styles3.push(CCDSuggested.variantStyle);
-  styles3.push(CCDSlice.variantStyle);
-  return styles3;
-};
-
-// src/global.css.js
-var styles2 = document.createElement("style");
-styles2.innerHTML = `
+    `};var Q=(r,t=!1)=>{switch(r.variant){case"catalog":return new E(r);case"ccd-action":return new S(r);case"image":return new H(r);case"inline-heading":return new B(r);case"mini-compare-chart":return new k(r);case"plans":return new z(r);case"product":return new w(r);case"segment":return new L(r);case"special-offers":return new _(r);case"twp":return new A(r);case"ccd-suggested":return new T(r);case"ccd-slice":return new M(r);default:return t?void 0:new w(r)}},St=()=>{let r=[];return r.push(E.variantStyle),r.push(S.variantStyle),r.push(k.variantStyle),r.push(w.variantStyle),r.push(z.variantStyle),r.push(L.variantStyle),r.push(_.variantStyle),r.push(A.variantStyle),r.push(T.variantStyle),r.push(M.variantStyle),r};var Ct=document.createElement("style");Ct.innerHTML=`
 :root {
     --consonant-merch-card-detail-font-size: 12px;
     --consonant-merch-card-detail-font-weight: 500;
@@ -2563,489 +1881,4 @@ body.merch-modal {
     scrollbar-gutter: stable;
     height: 100vh;
 }
-`;
-document.head.appendChild(styles2);
-
-// src/hydrate.js
-async function hydrate(fragmentData, merchCard) {
-  const fragment = fragmentData.fields.reduce(
-    (acc, { name, multiple, values }) => {
-      acc[name] = multiple ? values : values[0];
-      return acc;
-    },
-    { id: fragmentData.id }
-  );
-  const { variant } = fragment;
-  if (!variant)
-    return;
-  fragment.model = fragment.model;
-  merchCard.variantLayout?.refs?.forEach((ref) => ref.remove());
-  merchCard.variant = variant;
-  await merchCard.updateComplete;
-  merchCard.variantLayout.refs ??= [];
-  const { aemFragmentMapping } = merchCard.variantLayout;
-  if (!aemFragmentMapping)
-    return;
-  const appendFn = (el) => {
-    merchCard.variantLayout.refs.push(el);
-    merchCard.append(el);
-  };
-  fragment.mnemonicIcon?.forEach((icon, idx) => {
-    const href = fragment.mnemonicLink?.length > idx ? fragment.mnemonicLink[idx] : "";
-    const alt = fragment.mnemonicAlt?.length > idx ? fragment.mnemonicAlt[idx] : "";
-    const merchIcon = createTag("merch-icon", {
-      slot: "icons",
-      src: icon,
-      alt,
-      href,
-      size: "l"
-    });
-    appendFn(merchIcon);
-  });
-  if (!fragment.size) {
-    merchCard.removeAttribute("size");
-  } else if (aemFragmentMapping.allowedSizes?.includes(fragment.size))
-    merchCard.setAttribute("size", fragment.size);
-  if (fragment.cardTitle && aemFragmentMapping.title) {
-    appendFn(
-      createTag(
-        aemFragmentMapping.title.tag,
-        { slot: aemFragmentMapping.title.slot },
-        fragment.cardTitle
-      )
-    );
-  }
-  if (fragment.subtitle && aemFragmentMapping.subtitle) {
-    appendFn(
-      createTag(
-        aemFragmentMapping.subtitle.tag,
-        { slot: aemFragmentMapping.subtitle.slot },
-        fragment.subtitle
-      )
-    );
-  }
-  if (fragment.backgroundImage && aemFragmentMapping.backgroundImage) {
-    appendFn(
-      createTag(
-        aemFragmentMapping.backgroundImage.tag,
-        { slot: aemFragmentMapping.backgroundImage.slot },
-        `<img loading="lazy" src="${fragment.backgroundImage}" />`
-      )
-    );
-  }
-  if (fragment.prices && aemFragmentMapping.prices) {
-    const prices = fragment.prices;
-    const headingM = createTag(
-      aemFragmentMapping.prices.tag,
-      { slot: aemFragmentMapping.prices.slot },
-      prices
-    );
-    appendFn(headingM);
-  }
-  if (fragment.description && aemFragmentMapping.description) {
-    const body = createTag(
-      aemFragmentMapping.description.tag,
-      { slot: aemFragmentMapping.description.slot },
-      fragment.description
-    );
-    appendFn(body);
-  }
-  if (fragment.ctas) {
-    const { slot, button = true } = aemFragmentMapping.ctas;
-    const footer = createTag(
-      "div",
-      { slot: slot ?? "footer" },
-      fragment.ctas
-    );
-    const ctas = [];
-    [...footer.querySelectorAll("a")].forEach((cta) => {
-      const strong = cta.parentElement.tagName === "STRONG";
-      if (merchCard.consonant) {
-        cta.classList.add("con-button");
-        if (strong) {
-          cta.classList.add("blue");
-        }
-        ctas.push(cta);
-      } else {
-        if (!button) {
-          ctas.push(cta);
-          return;
-        }
-        const treatment = strong ? "fill" : "outline";
-        const variant2 = strong ? "accent" : "primary";
-        const spectrumCta = createTag(
-          "sp-button",
-          { treatment, variant: variant2 },
-          cta
-        );
-        spectrumCta.addEventListener("click", (e) => {
-          if (e.target === spectrumCta) {
-            e.stopPropagation();
-            cta.click();
-          }
-        });
-        ctas.push(spectrumCta);
-      }
-    });
-    footer.innerHTML = "";
-    footer.append(...ctas);
-    appendFn(footer);
-  }
-}
-
-// src/merch-card.js
-var MERCH_CARD = "merch-card";
-var MERCH_CARD_LOAD_TIMEOUT = 2e3;
-var MerchCard = class extends LitElement2 {
-  static properties = {
-    name: { type: String, attribute: "name", reflect: true },
-    variant: { type: String, reflect: true },
-    size: { type: String, attribute: "size", reflect: true },
-    badgeColor: { type: String, attribute: "badge-color" },
-    borderColor: { type: String, attribute: "border-color" },
-    badgeBackgroundColor: {
-      type: String,
-      attribute: "badge-background-color"
-    },
-    stripSize: { type: String, attribute: "strip-size" },
-    stripBackground: { type: String, attribute: "strip-background" },
-    badgeText: { type: String, attribute: "badge-text" },
-    actionMenu: { type: Boolean, attribute: "action-menu" },
-    customHr: { type: Boolean, attribute: "custom-hr" },
-    consonant: { type: Boolean, attribute: "consonant" },
-    detailBg: { type: String, attribute: "detail-bg" },
-    secureLabel: { type: String, attribute: "secure-label" },
-    checkboxLabel: { type: String, attribute: "checkbox-label" },
-    selected: { type: Boolean, attribute: "aria-selected", reflect: true },
-    storageOption: { type: String, attribute: "storage", reflect: true },
-    stockOfferOsis: {
-      type: Object,
-      attribute: "stock-offer-osis",
-      converter: {
-        fromAttribute: (value) => {
-          const [PUF, ABM, M2M] = value.split(",");
-          return { PUF, ABM, M2M };
-        }
-      }
-    },
-    filters: {
-      type: String,
-      reflect: true,
-      converter: {
-        fromAttribute: (value) => {
-          return Object.fromEntries(
-            value.split(",").map((filter) => {
-              const [key, order, size] = filter.split(":");
-              const value2 = Number(order);
-              return [
-                key,
-                {
-                  order: isNaN(value2) ? void 0 : value2,
-                  size
-                }
-              ];
-            })
-          );
-        },
-        toAttribute: (value) => {
-          return Object.entries(value).map(
-            ([key, { order, size }]) => [key, order, size].filter((v) => v != void 0).join(":")
-          ).join(",");
-        }
-      }
-    },
-    types: {
-      type: String,
-      attribute: "types",
-      reflect: true
-    },
-    merchOffer: { type: Object }
-  };
-  static styles = [styles, getVariantStyles(), ...sizeStyles()];
-  customerSegment;
-  marketSegment;
-  /**
-   * @type {VariantLayout>}
-   */
-  variantLayout;
-  #ready = false;
-  constructor() {
-    super();
-    this.filters = {};
-    this.types = "";
-    this.selected = false;
-    this.handleAemFragmentEvents = this.handleAemFragmentEvents.bind(this);
-  }
-  firstUpdated() {
-    this.variantLayout = getVariantLayout(this, false);
-    this.variantLayout?.connectedCallbackHook();
-    this.aemFragment?.updateComplete.catch(() => {
-      this.style.display = "none";
-    });
-  }
-  willUpdate(changedProperties) {
-    if (changedProperties.has("variant") || !this.variantLayout) {
-      this.variantLayout = getVariantLayout(this);
-      this.variantLayout.connectedCallbackHook();
-    }
-  }
-  updated(changedProperties) {
-    if (changedProperties.has("badgeBackgroundColor") || changedProperties.has("borderColor")) {
-      this.style.border = this.computedBorderStyle;
-    }
-    this.variantLayout?.postCardUpdateHook(this);
-  }
-  get theme() {
-    return this.closest("sp-theme");
-  }
-  get prices() {
-    return Array.from(
-      this.querySelectorAll('span[is="inline-price"][data-wcs-osi]')
-    );
-  }
-  render() {
-    if (!this.isConnected || !this.variantLayout || this.style.display === "none")
-      return;
-    return this.variantLayout.renderLayout();
-  }
-  get computedBorderStyle() {
-    if (this.variant !== "twp") {
-      return `1px solid ${this.borderColor ? this.borderColor : this.badgeBackgroundColor}`;
-    }
-    return "";
-  }
-  get badgeElement() {
-    return this.shadowRoot.getElementById("badge");
-  }
-  get headingmMSlot() {
-    return this.shadowRoot.querySelector('slot[name="heading-m"]').assignedElements()[0];
-  }
-  get footerSlot() {
-    return this.shadowRoot.querySelector('slot[name="footer"]')?.assignedElements()[0];
-  }
-  get price() {
-    return this.headingmMSlot?.querySelector('span[is="inline-price"]');
-  }
-  get checkoutLinks() {
-    return [
-      ...this.footerSlot?.querySelectorAll('a[is="checkout-link"]') ?? []
-    ];
-  }
-  async toggleStockOffer({ target }) {
-    if (!this.stockOfferOsis)
-      return;
-    const elements = this.checkoutLinks;
-    if (elements.length === 0)
-      return;
-    for (const element of elements) {
-      await element.onceSettled();
-      const planType = element.value?.[0]?.planType;
-      if (!planType)
-        return;
-      const stockOfferOsi = this.stockOfferOsis[planType];
-      if (!stockOfferOsi)
-        return;
-      const osis = element.dataset.wcsOsi.split(",").filter((osi) => osi !== stockOfferOsi);
-      if (target.checked) {
-        osis.push(stockOfferOsi);
-      }
-      element.dataset.wcsOsi = osis.join(",");
-    }
-  }
-  handleQuantitySelection(event) {
-    const elements = this.checkoutLinks;
-    for (const element of elements) {
-      element.dataset.quantity = event.detail.option;
-    }
-  }
-  get titleElement() {
-    return this.querySelector(
-      this.variantLayout?.headingSelector || ".card-heading"
-    );
-  }
-  get title() {
-    return this.titleElement?.textContent?.trim();
-  }
-  /* c8 ignore next 3 */
-  get description() {
-    return this.querySelector('[slot="body-xs"]')?.textContent?.trim();
-  }
-  /**
-   * If the card is the single app, set the order for all filters to 2.
-   * If not, increment the order for all filters after the second card by 1.
-   * @param {*} singleApp
-   */
-  updateFilters(singleApp) {
-    const newFilters = { ...this.filters };
-    Object.keys(newFilters).forEach((key) => {
-      if (singleApp) {
-        newFilters[key].order = Math.min(newFilters[key].order || 2, 2);
-        return;
-      }
-      const value = newFilters[key].order;
-      if (value === 1 || isNaN(value))
-        return;
-      newFilters[key].order = Number(value) + 1;
-    });
-    this.filters = newFilters;
-  }
-  /* c8 ignore next 3 */
-  includes(text) {
-    return this.textContent.match(new RegExp(text, "i")) !== null;
-  }
-  connectedCallback() {
-    super.connectedCallback();
-    this.setAttribute("tabindex", this.getAttribute("tabindex") ?? "0");
-    this.addEventListener(
-      EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
-      this.handleQuantitySelection
-    );
-    this.addEventListener(
-      EVENT_MERCH_OFFER_SELECT_READY,
-      this.merchCardReady,
-      { once: true }
-    );
-    this.updateComplete.then(() => {
-      this.merchCardReady();
-    });
-    this.storageOptions?.addEventListener(
-      "change",
-      this.handleStorageChange
-    );
-    this.addEventListener(EVENT_AEM_ERROR, this.handleAemFragmentEvents);
-    this.addEventListener(EVENT_AEM_LOAD, this.handleAemFragmentEvents);
-    if (!this.aemFragment)
-      this.checkReady();
-  }
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    this.variantLayout.disconnectedCallbackHook();
-    this.removeEventListener(
-      EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
-      this.handleQuantitySelection
-    );
-    this.storageOptions?.removeEventListener(
-      EVENT_MERCH_STORAGE_CHANGE,
-      this.handleStorageChange
-    );
-    this.removeEventListener(EVENT_AEM_ERROR, this.handleAemFragmentEvents);
-    this.removeEventListener(EVENT_AEM_LOAD, this.handleAemFragmentEvents);
-  }
-  // custom methods
-  async handleAemFragmentEvents(e) {
-    if (e.type === EVENT_AEM_ERROR) {
-      this.#fail("AEM fragment cannot be loaded");
-    }
-    if (e.type === EVENT_AEM_LOAD) {
-      if (e.target.nodeName === "AEM-FRAGMENT") {
-        const fragment = e.detail;
-        await hydrate(fragment, this);
-        this.checkReady();
-      }
-    }
-  }
-  #fail(error) {
-    this.dispatchEvent(
-      new CustomEvent(EVENT_MAS_ERROR, {
-        detail: error,
-        bubbles: true,
-        composed: true
-      })
-    );
-  }
-  async checkReady() {
-    const successPromise = Promise.all(
-      [
-        ...this.querySelectorAll(
-          'span[is="inline-price"][data-wcs-osi],a[is="checkout-link"][data-wcs-osi]'
-        )
-      ].map((element) => element.onceSettled().catch(() => element))
-    ).then(
-      (elements) => elements.every(
-        (el) => el.classList.contains("placeholder-resolved")
-      )
-    );
-    const timeoutPromise = new Promise(
-      (resolve) => setTimeout(() => resolve(false), MERCH_CARD_LOAD_TIMEOUT)
-    );
-    const success = await Promise.race([successPromise, timeoutPromise]);
-    if (success === true) {
-      this.dispatchEvent(
-        new CustomEvent(EVENT_MAS_READY, {
-          bubbles: true,
-          composed: true
-        })
-      );
-      return;
-    }
-    this.#fail("Contains unresolved offers");
-  }
-  get aemFragment() {
-    return this.querySelector("aem-fragment");
-  }
-  get storageOptions() {
-    return this.querySelector("sp-radio-group#storage");
-  }
-  /* c8 ignore next 9 */
-  get storageSpecificOfferSelect() {
-    const storageOption = this.storageOptions?.selected;
-    if (storageOption) {
-      const merchOfferSelect = this.querySelector(
-        `merch-offer-select[storage="${storageOption}"]`
-      );
-      if (merchOfferSelect)
-        return merchOfferSelect;
-    }
-    return this.querySelector("merch-offer-select");
-  }
-  get offerSelect() {
-    return this.storageOptions ? this.storageSpecificOfferSelect : this.querySelector("merch-offer-select");
-  }
-  /* c8 ignore next 3 */
-  get quantitySelect() {
-    return this.querySelector("merch-quantity-select");
-  }
-  merchCardReady() {
-    if (this.offerSelect && !this.offerSelect.planType)
-      return;
-    this.dispatchEvent(
-      new CustomEvent(EVENT_MERCH_CARD_READY, { bubbles: true })
-    );
-  }
-  // TODO enable with TWP //
-  /* c8 ignore next 11 */
-  handleStorageChange() {
-    const offerSelect = this.closest("merch-card")?.offerSelect.cloneNode(true);
-    if (!offerSelect)
-      return;
-    this.dispatchEvent(
-      new CustomEvent(EVENT_MERCH_STORAGE_CHANGE, {
-        detail: { offerSelect },
-        bubbles: true
-      })
-    );
-  }
-  /* c8 ignore next 3 */
-  get dynamicPrice() {
-    return this.querySelector('[slot="price"]');
-  }
-  // TODO enable with TWP //
-  /* c8 ignore next 16 */
-  selectMerchOffer(offer) {
-    if (offer === this.merchOffer)
-      return;
-    this.merchOffer = offer;
-    const previousPrice = this.dynamicPrice;
-    if (offer.price && previousPrice) {
-      const newPrice = offer.price.cloneNode(true);
-      if (previousPrice.onceSettled) {
-        previousPrice.onceSettled().then(() => {
-          previousPrice.replaceWith(newPrice);
-        });
-      } else {
-        previousPrice.replaceWith(newPrice);
-      }
-    }
-  }
-};
-customElements.define(MERCH_CARD, MerchCard);
+`;document.head.appendChild(Ct);async function kt(r,t){let e=r.fields.reduce((p,{name:u,multiple:b,values:x})=>(p[u]=b?x:x[0],p),{id:r.id}),{variant:a}=e;if(!a)return;e.model=e.model,t.variantLayout?.refs?.forEach(p=>p.remove()),t.variant=a,await t.updateComplete,t.variantLayout.refs??=[];let{aemFragmentMapping:o}=t.variantLayout;if(!o)return;let m=p=>{t.variantLayout.refs.push(p),t.append(p)};if(e.mnemonicIcon?.forEach((p,u)=>{let b=e.mnemonicLink?.length>u?e.mnemonicLink[u]:"",x=e.mnemonicAlt?.length>u?e.mnemonicAlt[u]:"",f=v("merch-icon",{slot:"icons",src:p,alt:x,href:b,size:"l"});m(f)}),e.size?o.allowedSizes?.includes(e.size)&&t.setAttribute("size",e.size):t.removeAttribute("size"),e.cardTitle&&o.title&&m(v(o.title.tag,{slot:o.title.slot},e.cardTitle)),e.subtitle&&o.subtitle&&m(v(o.subtitle.tag,{slot:o.subtitle.slot},e.subtitle)),e.backgroundImage&&o.backgroundImage&&m(v(o.backgroundImage.tag,{slot:o.backgroundImage.slot},`<img loading="lazy" src="${e.backgroundImage}" />`)),e.prices&&o.prices){let p=e.prices,u=v(o.prices.tag,{slot:o.prices.slot},p);m(u)}if(e.description&&o.description){let p=v(o.description.tag,{slot:o.description.slot},e.description);m(p)}if(e.ctas){let{slot:p,button:u=!0}=o.ctas,b=v("div",{slot:p??"footer"},e.ctas),x=[];[...b.querySelectorAll("a")].forEach(f=>{let G=f.parentElement.tagName==="STRONG";if(t.consonant)f.classList.add("con-button"),G&&f.classList.add("blue"),x.push(f);else{if(!u){x.push(f);return}let V=v("sp-button",{treatment:G?"fill":"outline",variant:G?"accent":"primary"},f);V.addEventListener("click",Z=>{Z.target===V&&(Z.stopPropagation(),f.click())}),x.push(V)}}),b.innerHTML="",b.append(...x),m(b)}}var i="merch-card",Wt=2e3,c=class extends Kt{static properties={name:{type:String,attribute:"name",reflect:!0},variant:{type:String,reflect:!0},size:{type:String,attribute:"size",reflect:!0},badgeColor:{type:String,attribute:"badge-color"},borderColor:{type:String,attribute:"border-color"},badgeBackgroundColor:{type:String,attribute:"badge-background-color"},stripSize:{type:String,attribute:"strip-size"},stripBackground:{type:String,attribute:"strip-background"},badgeText:{type:String,attribute:"badge-text"},actionMenu:{type:Boolean,attribute:"action-menu"},customHr:{type:Boolean,attribute:"custom-hr"},consonant:{type:Boolean,attribute:"consonant"},detailBg:{type:String,attribute:"detail-bg"},secureLabel:{type:String,attribute:"secure-label"},checkboxLabel:{type:String,attribute:"checkbox-label"},selected:{type:Boolean,attribute:"aria-selected",reflect:!0},storageOption:{type:String,attribute:"storage",reflect:!0},stockOfferOsis:{type:Object,attribute:"stock-offer-osis",converter:{fromAttribute:t=>{let[e,a,o]=t.split(",");return{PUF:e,ABM:a,M2M:o}}}},filters:{type:String,reflect:!0,converter:{fromAttribute:t=>Object.fromEntries(t.split(",").map(e=>{let[a,o,m]=e.split(":"),p=Number(o);return[a,{order:isNaN(p)?void 0:p,size:m}]})),toAttribute:t=>Object.entries(t).map(([e,{order:a,size:o}])=>[e,a,o].filter(m=>m!=null).join(":")).join(",")}},types:{type:String,attribute:"types",reflect:!0},merchOffer:{type:Object}};static styles=[et,St(),...rt()];customerSegment;marketSegment;variantLayout;#t=!1;constructor(){super(),this.filters={},this.types="",this.selected=!1,this.handleAemFragmentEvents=this.handleAemFragmentEvents.bind(this)}firstUpdated(){this.variantLayout=Q(this,!1),this.variantLayout?.connectedCallbackHook(),this.aemFragment?.updateComplete.catch(()=>{this.style.display="none"})}willUpdate(t){(t.has("variant")||!this.variantLayout)&&(this.variantLayout=Q(this),this.variantLayout.connectedCallbackHook())}updated(t){(t.has("badgeBackgroundColor")||t.has("borderColor"))&&(this.style.border=this.computedBorderStyle),this.variantLayout?.postCardUpdateHook(this)}get theme(){return this.closest("sp-theme")}get prices(){return Array.from(this.querySelectorAll('span[is="inline-price"][data-wcs-osi]'))}render(){if(!(!this.isConnected||!this.variantLayout||this.style.display==="none"))return this.variantLayout.renderLayout()}get computedBorderStyle(){return this.variant!=="twp"?`1px solid ${this.borderColor?this.borderColor:this.badgeBackgroundColor}`:""}get badgeElement(){return this.shadowRoot.getElementById("badge")}get headingmMSlot(){return this.shadowRoot.querySelector('slot[name="heading-m"]').assignedElements()[0]}get footerSlot(){return this.shadowRoot.querySelector('slot[name="footer"]')?.assignedElements()[0]}get price(){return this.headingmMSlot?.querySelector('span[is="inline-price"]')}get checkoutLinks(){return[...this.footerSlot?.querySelectorAll('a[is="checkout-link"]')??[]]}async toggleStockOffer({target:t}){if(!this.stockOfferOsis)return;let e=this.checkoutLinks;if(e.length!==0)for(let a of e){await a.onceSettled();let o=a.value?.[0]?.planType;if(!o)return;let m=this.stockOfferOsis[o];if(!m)return;let p=a.dataset.wcsOsi.split(",").filter(u=>u!==m);t.checked&&p.push(m),a.dataset.wcsOsi=p.join(",")}}handleQuantitySelection(t){let e=this.checkoutLinks;for(let a of e)a.dataset.quantity=t.detail.option}get titleElement(){return this.querySelector(this.variantLayout?.headingSelector||".card-heading")}get title(){return this.titleElement?.textContent?.trim()}get description(){return this.querySelector('[slot="body-xs"]')?.textContent?.trim()}updateFilters(t){let e={...this.filters};Object.keys(e).forEach(a=>{if(t){e[a].order=Math.min(e[a].order||2,2);return}let o=e[a].order;o===1||isNaN(o)||(e[a].order=Number(o)+1)}),this.filters=e}includes(t){return this.textContent.match(new RegExp(t,"i"))!==null}connectedCallback(){super.connectedCallback(),this.setAttribute("tabindex",this.getAttribute("tabindex")??"0"),this.addEventListener(I,this.handleQuantitySelection),this.addEventListener(at,this.merchCardReady,{once:!0}),this.updateComplete.then(()=>{this.merchCardReady()}),this.storageOptions?.addEventListener("change",this.handleStorageChange),this.addEventListener(N,this.handleAemFragmentEvents),this.addEventListener(P,this.handleAemFragmentEvents),this.aemFragment||this.checkReady()}disconnectedCallback(){super.disconnectedCallback(),this.variantLayout.disconnectedCallbackHook(),this.removeEventListener(I,this.handleQuantitySelection),this.storageOptions?.removeEventListener(U,this.handleStorageChange),this.removeEventListener(N,this.handleAemFragmentEvents),this.removeEventListener(P,this.handleAemFragmentEvents)}async handleAemFragmentEvents(t){if(t.type===N&&this.#e("AEM fragment cannot be loaded"),t.type===P&&t.target.nodeName==="AEM-FRAGMENT"){let e=t.detail;await kt(e,this),this.checkReady()}}#e(t){this.dispatchEvent(new CustomEvent(st,{detail:t,bubbles:!0,composed:!0}))}async checkReady(){let t=Promise.all([...this.querySelectorAll('span[is="inline-price"][data-wcs-osi],a[is="checkout-link"][data-wcs-osi]')].map(o=>o.onceSettled().catch(()=>o))).then(o=>o.every(m=>m.classList.contains("placeholder-resolved"))),e=new Promise(o=>setTimeout(()=>o(!1),Wt));if(await Promise.race([t,e])===!0){this.dispatchEvent(new CustomEvent(it,{bubbles:!0,composed:!0}));return}this.#e("Contains unresolved offers")}get aemFragment(){return this.querySelector("aem-fragment")}get storageOptions(){return this.querySelector("sp-radio-group#storage")}get storageSpecificOfferSelect(){let t=this.storageOptions?.selected;if(t){let e=this.querySelector(`merch-offer-select[storage="${t}"]`);if(e)return e}return this.querySelector("merch-offer-select")}get offerSelect(){return this.storageOptions?this.storageSpecificOfferSelect:this.querySelector("merch-offer-select")}get quantitySelect(){return this.querySelector("merch-quantity-select")}merchCardReady(){this.offerSelect&&!this.offerSelect.planType||this.dispatchEvent(new CustomEvent(nt,{bubbles:!0}))}handleStorageChange(){let t=this.closest("merch-card")?.offerSelect.cloneNode(!0);t&&this.dispatchEvent(new CustomEvent(U,{detail:{offerSelect:t},bubbles:!0}))}get dynamicPrice(){return this.querySelector('[slot="price"]')}selectMerchOffer(t){if(t===this.merchOffer)return;this.merchOffer=t;let e=this.dynamicPrice;if(t.price&&e){let a=t.price.cloneNode(!0);e.onceSettled?e.onceSettled().then(()=>{e.replaceWith(a)}):e.replaceWith(a)}}};customElements.define(i,c);

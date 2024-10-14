@@ -38,7 +38,7 @@ export class MasCommerceService extends HTMLElement {
             }
         });
         //commerce parameters
-        ['checkoutWorkflowStep', 'forceTaxExclusive'].forEach((attribute) => {
+        ['checkoutWorkflowStep', 'forceTaxExclusive', 'checkoutClientId'].forEach((attribute) => {
             const value = this.getAttribute(attribute);
             if (value) {
                 config.commerce[attribute] = value;
@@ -83,7 +83,7 @@ export class MasCommerceService extends HTMLElement {
         };
         const startup = { literals, providers, settings };
         // Extend web component object with service API
-        MasCommerceService.instance = Object.defineProperties(
+        Object.defineProperties(
             this,
             Object.getOwnPropertyDescriptors({
                 // Activate modules and expose their API as combined flat object
@@ -126,7 +126,7 @@ export class MasCommerceService extends HTMLElement {
             const event = new CustomEvent(EVENT_TYPE_READY, {
                 bubbles: true,
                 cancelable: false,
-                detail: MasCommerceService.instance,
+                detail: this,
             });
             this.dispatchEvent(event);
         });
@@ -134,17 +134,15 @@ export class MasCommerceService extends HTMLElement {
     }
 
     connectedCallback() {
-        if (this.promise) {
-            return this.promise;
-        }
-        MasCommerceService.instance = this;
+      if (!this.promise) {
         this.promise = new Promise((resolve) => {
-            this.activate(resolve);
+          this.activate(resolve);
         });
+      }
     }
 
     disconnectedCallback() {
-        MasCommerceService.instance = null;
+        this.promise = null;
     }
 
     flushWcsCache() {

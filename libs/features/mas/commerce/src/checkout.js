@@ -16,8 +16,6 @@ import { toOfferSelectorIds, toQuantity } from './utilities.js';
  * generate Checkout configuration
  */
 export function Checkout({ providers, settings }) {
-    const log = Log.module('checkout');
-
     function collectCheckoutOptions(overrides, placeholder) {
         const {
             checkoutClientId,
@@ -84,27 +82,6 @@ export function Checkout({ providers, settings }) {
     }
 
     /**
-     * will build a checkoutAction out of passed offers & options
-     *
-     * @param {*} offers
-     * @param {*} options
-     * @returns
-     */
-    async function buildCheckoutAction(offers, options) {
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        const instance = useService();
-        const checkoutAction = await dataProviders.getCheckoutAction?.(
-            offers,
-            options,
-            instance.imsSignedInPromise,
-        );
-        if (checkoutAction) {
-            return checkoutAction;
-        }
-        return null;
-    }
-
-    /**
      * @param {*} offers
      * @param {*} options
      * @returns a checkout URL
@@ -153,6 +130,7 @@ export function Checkout({ providers, settings }) {
                     : { id: offerId, quantity: quantity[0] },
             );
         } else {
+            /* c8 ignore next 4 */
             data.items.push(
                 ...offers.map(({ offerId }, index) => ({
                     id: offerId,

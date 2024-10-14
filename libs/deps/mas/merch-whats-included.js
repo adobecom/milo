@@ -1,7 +1,4 @@
-// src/merch-whats-included.js
-import { html, css, LitElement } from "../lit-all.min.js";
-var MerchWhatsIncluded = class extends LitElement {
-  static styles = css`
+import{html as e,css as o,LitElement as l}from"../lit-all.min.js";var t=class extends l{static styles=o`
         :host {
             display: inline-grid;
             place-items: end start;
@@ -38,53 +35,8 @@ var MerchWhatsIncluded = class extends LitElement {
             color: var(--link-color-dark);
             margin-top: 16px;
         }
-    `;
-  static properties = {
-    heading: { type: String, attribute: true },
-    mobileRows: { type: Number, attribute: true }
-  };
-  updated() {
-    this.hideSeeMoreEls();
-  }
-  hideSeeMoreEls() {
-    if (this.isMobile) {
-      this.rows.forEach((node, index) => {
-        if (index >= 5) {
-          node.style.display = this.showAll ? "flex" : "none";
-        }
-      });
-    }
-  }
-  constructor() {
-    super();
-    this.showAll = false;
-    this.mobileRows = this.mobileRows === void 0 ? 5 : this.mobileRows;
-  }
-  toggle() {
-    this.showAll = !this.showAll;
-    this.dispatchEvent(
-      new CustomEvent("hide-see-more-elements", {
-        bubbles: true,
-        composed: true
-      })
-    );
-    this.requestUpdate();
-  }
-  render() {
-    return html`<slot name="heading"></slot>
+    `;static properties={heading:{type:String,attribute:!0},mobileRows:{type:Number,attribute:!0}};updated(){this.hideSeeMoreEls()}hideSeeMoreEls(){this.isMobile&&this.rows.forEach((s,i)=>{i>=5&&(s.style.display=this.showAll?"flex":"none")})}constructor(){super(),this.showAll=!1,this.mobileRows=this.mobileRows===void 0?5:this.mobileRows}toggle(){this.showAll=!this.showAll,this.dispatchEvent(new CustomEvent("hide-see-more-elements",{bubbles:!0,composed:!0})),this.requestUpdate()}render(){return e`<slot name="heading"></slot>
             <slot name="content"></slot>
-            ${this.isMobile && this.rows.length > this.mobileRows ? html`<div @click=${this.toggle} class="see-more">
-                      ${this.showAll ? "- See less" : "+ See more"}
-                  </div>` : html``}`;
-  }
-  get isMobile() {
-    return window.matchMedia("(max-width: 767px)").matches;
-  }
-  get rows() {
-    return this.querySelectorAll("merch-mnemonic-list");
-  }
-};
-customElements.define("merch-whats-included", MerchWhatsIncluded);
-export {
-  MerchWhatsIncluded
-};
+            ${this.isMobile&&this.rows.length>this.mobileRows?e`<div @click=${this.toggle} class="see-more">
+                      ${this.showAll?"- See less":"+ See more"}
+                  </div>`:e``}`}get isMobile(){return window.matchMedia("(max-width: 767px)").matches}get rows(){return this.querySelectorAll("merch-mnemonic-list")}};customElements.define("merch-whats-included",t);export{t as MerchWhatsIncluded};
