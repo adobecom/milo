@@ -100,17 +100,18 @@ function handleHeading(table, headingCols) {
 function handleAddOnContent(table) {
   const addOnKey = 'ADDON';
   const addOns = [...table.querySelectorAll('.section-row-title')]
-    .filter((row) => row.innerText.includes(addOnKey));
+    .filter((row) => row.innerText.toUpperCase().includes(addOnKey));
   if (!addOns.length) return;
   table.classList.add('has-addon');
   addOns.forEach((addOn) => {
     const addOnRow = addOn.parentElement;
     addOnRow.remove();
-    const [position, order, style] = addOn.innerText.split('_')
-      .filter((key) => key !== addOnKey).map((key) => key.toLowerCase());
+    const [position, order, style] = addOn.innerText.split('-')
+      .filter((key) => key.toUpperCase() !== addOnKey).map((key) => key.toLowerCase());
     if (!position || !order) return;
     const indexAttr = 'data-col-index';
     [...table.querySelector('.row-heading').children].forEach((headCol) => {
+      headCol.querySelector('.heading-content')?.classList.add('content');
       const colIndex = headCol.getAttribute(indexAttr);
       if (colIndex <= 1) return; // skip the key column
       const tagName = `${position}-${order}`;
