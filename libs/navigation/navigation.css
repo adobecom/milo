@@ -43,6 +43,10 @@ header.global-navigation, header.global-navigation.feds--dark {
     color: var(--navigation-link-color--hover);
   }
 
+  .feds--no-border .feds-topnav-wrapper {
+    border-bottom: none;
+  }
+
   .feds--full-width .feds-topnav {
     max-width: none;
     padding: 0 15px;
