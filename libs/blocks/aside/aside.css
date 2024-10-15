@@ -298,6 +298,7 @@
 }
 
 .aside.rounded-corners .foreground .image img,
+.aside.rounded-corners .foreground .image:not(:has(.video-container)) .pause-play-wrapper,
 .aside.rounded-corners .foreground .image video {
   border-radius: 16px;
 }
@@ -1072,6 +1073,10 @@
   .aside.split .split-image img,
   .aside.split .split-image video {
     max-width: 1396px;
+  }
+
+  .aside.split .video-container .pause-play-wrapper img.accessibility-control {
+    width: auto;
   }
 
   .aside.split .desktop-wide img,
