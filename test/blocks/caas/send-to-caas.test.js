@@ -46,10 +46,6 @@ describe('checkUrl function', () => {
     expect(JSON.stringify(resultEmptyKeyVal)).to.equal('[{"key3":"value3"}]');
   });
 
-  beforeEach(() => {
-    window.location = { pathname: '/test-page.html' };
-  });
-
   it('should return URL without .html if useHtml is not checked', () => {
     document.body.innerHTML = '<input type="checkbox" id="usehtml" />';
     expect(getProdUrlWithHtmlExtension('https://milo.adobe.com/test-page')).to.equal('https://milo.adobe.com/test-page');
