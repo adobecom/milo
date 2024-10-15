@@ -1,3 +1,4 @@
+/* eslint-disable */
 (function () {
   const MSG_LIMIT = 2000;
 
