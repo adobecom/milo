@@ -470,6 +470,7 @@ export async function loadBlock(block) {
   }
   const { name, blockPath, hasStyles } = getBlockData(block);
   block.dataset.blockName = name;
+  block.classList.add('block');
   const styleLoaded = hasStyles && new Promise((resolve) => {
     loadStyle(`${blockPath}.css`, resolve);
   });
