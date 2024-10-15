@@ -4,9 +4,8 @@ const PUBLISH_BTN = '.publish.plugin button';
 const PROFILE = '.profile-email';
 const CONFIRM_MESSAGE = 'Are you sure? This will publish to production.';
 
-export default function stylePublish(sk) {
+function styleHelixPublish(sk) {
   const setupPublishBtn = async (page, btn) => {
-    console.log('setupPublishBtn');
     const { canPublish, message } = await userCanPublishPage(page, false);
     if (canPublish) {
       btn.removeAttribute('disabled');
@@ -81,22 +80,18 @@ export default function stylePublish(sk) {
     }
   `);
 
-  const isHelixSk = sk.nodeName === 'HELIX-SIDEKICK';
-  if (isHelixSk) sk.shadowRoot.adoptedStyleSheets = [style];
+  sk.shadowRoot.adoptedStyleSheets = [style];
 
   sk.addEventListener('statusfetched', async (event) => {
-    console.log('statusfetched');
     const page = event?.detail?.data;
-    const btn = isHelixSk ? event?.target?.shadowRoot?.querySelector(PUBLISH_BTN) : event?.target?.shadowRoot?.querySelector('plugin-action-bar')?.shadowRoot?.querySelector('sk-action-button.publish');
+    const btn = event?.target?.shadowRoot?.querySelector(PUBLISH_BTN);
     if (page && btn) {
       setupPublishBtn(page, btn);
     }
   });
 
   setTimeout(async () => {
-    console.log('timeout');
-    const btn = isHelixSk ? sk.shadowRoot.querySelector(PUBLISH_BTN) : sk.shadowRoot.querySelector('plugin-action-bar').shadowRoot.querySelector('sk-action-button.publish');
-    console.log(sk.shadowRoot.querySelector('plugin-action-bar').shadowRoot);
+    const btn = sk.shadowRoot.querySelector(PUBLISH_BTN);
     btn?.setAttribute('disabled', true);
     const message = btn?.querySelector('span');
     if (btn && !message) {
@@ -108,4 +103,69 @@ export default function stylePublish(sk) {
       setupPublishBtn(page, btn);
     }
   }, 500);
+}
+
+async function checkAuthorization(page, btn) {
+  const { canPublish, message } = await userCanPublishPage(page, false);
+  if (canPublish) {
+    btn.removeAttribute('disabled');
+    return;
+  }
+
+  btn.setAttribute('disabled', true);
+  btn.insertAdjacentHTML('beforeend', `<span>${message}</span>`);
+  setTimeout(() => btn.querySelector('span').remove(), 4000);
+}
+
+export default function stylePublish(sk) {
+  if (sk.nodeName === 'HELIX-SIDEKICK') {
+    styleHelixPublish(sk);
+    return;
+  }
+
+  const style = new CSSStyleSheet();
+  style.replaceSync(`
+    sk-action-button.publish {
+      position: relative;
+    }
+    sk-action-button.publish > span {
+      display: none;
+      background: #777;
+      border-radius: 4px;
+      line-height: 1.2rem;
+      padding: 8px 12px;
+      position: absolute;
+      bottom: 34px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 150px;
+      white-space: pre-wrap;
+      color: black;
+    }
+    sk-action-button.publish[disabled] > span {
+      display: block;
+    }
+    sk-action-button.publish > span:before {
+      content: '';
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-top: 6px solid #777;
+      position: absolute;
+      text-align: center;
+      bottom: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+  `);
+
+  const pluginActionBarSR = sk.shadowRoot.querySelector('plugin-action-bar').shadowRoot;
+  pluginActionBarSR.adoptedStyleSheets ??= [];
+  pluginActionBarSR.adoptedStyleSheets.push(style);
+
+  sk.addEventListener('status-fetched', ({ target, detail }) => {
+    setTimeout(async () => {
+      const btn = target.shadowRoot.querySelector('plugin-action-bar').shadowRoot.querySelector('sk-action-button.publish');
+      if (detail && btn) await checkAuthorization(detail, btn);
+    }, 0);
+  });
 }
