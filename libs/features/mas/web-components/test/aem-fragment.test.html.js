@@ -6,7 +6,7 @@ import sinon from 'sinon';
 import { mockFetch } from './mocks/fetch.js';
 import { withWcs } from './mocks/wcs.js';
 import { withAem } from './mocks/aem.js';
-import { getTemplateContent } from './utils.js';
+import { delay, getTemplateContent } from './utils.js';
 import mas from './mas.js';
 import '../src/merch-card.js';
 import '../src/aem-fragment.js';
@@ -103,8 +103,10 @@ runTests(async () => {
                 masErrorTriggered = true;
             });
             spTheme.append(cardWithWrongOsis);
-            expect(cardWithWrongOsis.querySelector('aem-fragment').updateComplete
-          );
+            await expect(
+              cardWithWrongOsis.querySelector('aem-fragment').updateComplete
+            );
+            await delay(100);          
             expect(masErrorTriggered).to.true;
         });
 
