@@ -99,7 +99,7 @@ build({
 });
 
 mods.forEach((mod) => {
-  if (mod === 'lit.js' || mod === 'polyfills' || mod === 'themes') return;
+  if (['lit.js', 'polyfills', 'themes'].includes(mod)) return;
   build({
     define: DEFINE,
     bundle: true,
