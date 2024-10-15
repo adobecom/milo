@@ -97,6 +97,23 @@ function handleHeading(table, headingCols) {
   });
 }
 
+function handleEqualHeight(table, tag) {
+  const height = [];
+  const element = table.querySelector(tag);
+  const columns = [...element.children];
+  columns.forEach(({ children }) => {
+    [...children].forEach((row, i) => {
+      row.style.height = 'auto';
+      if (!height[i] || row.offsetHeight > height[i]) height[i] = row.offsetHeight;
+    });
+  });
+  columns.forEach(({ children }) => {
+    [...children].forEach((row, i) => {
+      row.style.height = height[i] > 0 ? `${height[i]}px` : 'auto';
+    });
+  });
+}
+
 function handleAddOnContent(table) {
   const addOnKey = 'ADDON';
   const addOns = [...table.querySelectorAll('.section-row-title')]
@@ -124,6 +141,8 @@ function handleAddOnContent(table) {
       el?.insertAdjacentElement(order === 'before' ? 'beforebegin' : 'afterend', tag);
     });
   });
+  window.addEventListener('resize', () => handleEqualHeight(table, '.row-heading'));
+  setTimeout(() => handleEqualHeight(table, '.row-heading'), 0);
 }
 
 function handleHighlight(table) {

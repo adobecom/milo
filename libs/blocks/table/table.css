@@ -461,8 +461,12 @@
   flex-direction: column;
   justify-content: space-between;
   gap: var(--spacing-xxs);
-  flex: 1 1 0;
   padding: var(--spacing-xs);
+}
+
+.table.has-addon .row-heading .col.col-heading:not(.col-1) .buttons-wrapper {
+  align-items: flex-end;
+  height: 100%;
 }
 
 .table.has-addon p.body {
@@ -472,22 +476,28 @@
 }
 
 .table.has-addon .addon-label {
-  background-color: var(--color-gray-300);
   font-size: var(--type-body-xs-size);
   line-height: var(--type-body-xs-lh);
   border-radius: 4px;
   display: flex;
-  align-items: center;
+  align-items: start;
   flex-direction: row;
   text-align: start;
   font-style: normal;
   font-weight: 400;
   gap: var(--spacing-xxs);
   color: black;
+  padding: 10px;
+  box-sizing: border-box;
 }
 
 .table.has-addon .addon-label:not(:empty) {
-  padding: 2px 10px;
+  background-color: var(--color-gray-300);
+}
+
+.table.has-addon .addon-label :first-child {
+  display: flex;
+  align-self: center;
 }
 
 .table.has-addon .addon-label .icon,
