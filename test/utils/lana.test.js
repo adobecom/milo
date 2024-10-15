@@ -170,4 +170,28 @@ describe('LANA', () => {
       'https://www.stage.adobe.com/lana/ll?m=only%20the%20clientId%20set%20in%20window.lana.options&c=blah&s=100&t=e',
     );
   });
+
+  it('The lana-sample query param overrides existing sampleRate', () => {
+    window.lana.options = {
+      clientId: 'blah',
+      sampleRate: 100,
+      implicitSampleRate: 100,
+    };
+    const originalUrl = window.location.href;
+
+    // create a new url based on the current url that adds a query param for lana-sample
+    const newUrl = new URL(window.location.href);
+    newUrl.searchParams.set('lana-sample', '33');
+
+    window.history.pushState({ path: newUrl.toString() }, '', newUrl.toString());
+
+    window.lana.log('lana-sample query param');
+    expect(xhrRequests.length).to.equal(1);
+    expect(xhrRequests[0].method).to.equal('GET');
+    expect(xhrRequests[0].url).to.equal(
+      'https://www.stage.adobe.com/lana/ll?m=lana-sample%20query%20param&c=blah&s=33&t=e',
+    );
+
+    window.history.pushState({ path: originalUrl }, '', originalUrl);
+  });
 });

@@ -65,7 +65,8 @@
       return;
     }
 
-    const sampleRate = o.errorType === 'i' ? o.implicitSampleRate : o.sampleRate;
+    const sampleRateParam = parseInt(new URL(window.location).searchParams.get('lana-sample'), 10);
+    const sampleRate = sampleRateParam || (o.errorType === 'i' ? o.implicitSampleRate : o.sampleRate);
 
     if (!w.lana.debug && !w.lana.localhost && sampleRate <= Math.random() * 100) return;
 
