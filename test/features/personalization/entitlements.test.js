@@ -1,6 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import { getConfig } from '../../../libs/utils/utils.js';
-import getEntitlements from '../../../libs/features/personalization/entitlements.js';
+import getEntitlements from '../../../libs/features/personalization/personalization.js';
 
 describe('entitlements', () => {
   it('Should return any entitlements that match the id', async () => {
