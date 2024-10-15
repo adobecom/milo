@@ -225,7 +225,10 @@ export default async function init(el) {
   if (assetRow) el.classList.add('asset-left');
   const lockupClass = [...el.classList].find((c) => c.endsWith('-lockup'));
   if (lockupClass) el.classList.remove(lockupClass);
-  const mainCopy = createTag('div', { class: `main-copy ${lockupClass || 'l-lockup'}` });
+  const buttonClass = [...el.classList].find((c) => c.endsWith('-button'));
+  if (buttonClass) el.classList.remove(buttonClass);
+  const classes = `main-copy ${lockupClass || 'l-lockup'} ${buttonClass || 'l-button'}`;
+  const mainCopy = createTag('div', { class: classes });
   while (copy.childNodes.length > 0) {
     mainCopy.appendChild(copy.childNodes[0]);
   }
