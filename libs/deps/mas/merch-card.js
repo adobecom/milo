@@ -1388,7 +1388,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a:not(.con-button) {
             font-weight: 400;
             line-height: var(--consonant-merch-card-body-xxs-line-height);
             text-decoration-line: underline;
-            color: var(--merch-color-grey-80);
+            color: var(--spectrum-gray-800, --merch-color-grey-80);
         }
 
         :host([variant='ccd-slice']) ::slotted([slot='image']) {
@@ -1547,7 +1547,7 @@ merch-card span[is=inline-price] {
 }
 
 merch-card [slot='heading-xs'] {
-    color: var(--spectrum-gray-800, #2c2c2c);
+    color: var(--spectrum-gray-800, --merch-color-grey-80);
     font-size: var(--consonant-merch-card-heading-xs-font-size);
     line-height: var(--consonant-merch-card-heading-xs-line-height);
     margin: 0;
@@ -1576,14 +1576,14 @@ merch-card [slot='heading-s'] {
     font-size: var(--consonant-merch-card-heading-s-font-size);
     line-height: var(--consonant-merch-card-heading-s-line-height);
     margin: 0;
-    color: var(--spectrum-gray-800, #2c2c2c);
+    color: var(--spectrum-gray-800, var(--merch-color-grey-80);
 }
 
 merch-card [slot='heading-m'] {
     font-size: var(--consonant-merch-card-heading-m-font-size);
     line-height: var(--consonant-merch-card-heading-m-line-height);
     margin: 0;
-    color: var(--spectrum-gray-800, #2c2c2c);
+    color: var(--spectrum-gray-800, var(--merch-color-grey-80);
     font-weight: 700;
 }
 
@@ -1604,14 +1604,14 @@ merch-card [slot='heading-l'] {
     font-size: var(--consonant-merch-card-heading-l-font-size);
     line-height: var(--consonant-merch-card-heading-l-line-height);
     margin: 0;
-    color: var(--spectrum-gray-800, #2c2c2c);
+    color: var(--spectrum-gray-800, var(--merch-color-grey-80);
 }
 
 merch-card [slot='heading-xl'] {
     font-size: var(--consonant-merch-card-heading-xl-font-size);
     line-height: var(--consonant-merch-card-heading-xl-line-height);
     margin: 0;
-    color: var(--spectrum-gray-800, #2c2c2c);
+    color: var(--spectrum-gray-800, var(--merch-color-grey-80);
 }
 
 merch-card [slot='callout-content'] {
@@ -1664,36 +1664,36 @@ merch-card [slot="body-xxs"] {
     line-height: var(--consonant-merch-card-body-xxs-line-height);
     font-weight: normal;
     letter-spacing: var(--consonant-merch-card-body-xxs-letter-spacing);
-    color: var(--spectrum-gray-800, #2c2c2c);
+    color: var(--spectrum-gray-800, var(--merch-color-grey-80);
     margin: 0;
 }
 
 merch-card [slot="body-xs"] {
     font-size: var(--consonant-merch-card-body-xs-font-size);
     line-height: var(--consonant-merch-card-body-xs-line-height);
-    color: var(--spectrum-gray-800, #2c2c2c);
+    color: var(--spectrum-gray-800, var(--merch-color-grey-80);
 }
 
 merch-card [slot="body-m"] {
     font-size: var(--consonant-merch-card-body-m-font-size);
     line-height: var(--consonant-merch-card-body-m-line-height);
-    color: var(--spectrum-gray-800, #2c2c2c);
+    color: var(--spectrum-gray-800, var(--merch-color-grey-80);
 }
 
 merch-card [slot="body-l"] {
     font-size: var(--consonant-merch-card-body-l-font-size);
     line-height: var(--consonant-merch-card-body-l-line-height);
-    color: var(--spectrum-gray-800, #2c2c2c);
+    color: var(--spectrum-gray-800, var(--merch-color-grey-80);
 }
 
 merch-card [slot="body-s"] {
-    color: var(--spectrum-gray-800, #2c2c2c);
+    color: var(--spectrum-gray-800, var(--merch-color-grey-80);
 }
 
 merch-card [slot="body-xl"] {
     font-size: var(--consonant-merch-card-body-xl-font-size);
     line-height: var(--consonant-merch-card-body-xl-line-height);
-    color: var(--spectrum-gray-800, #2c2c2c);
+    color: var(--spectrum-gray-800, var(--merch-color-grey-80);
 }
 
 [slot="cci-footer"] p,
