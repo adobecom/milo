@@ -5,9 +5,9 @@ import { CSS } from './ccd-suggested.css.js';
 const AEM_FRAGMENT_MAPPING = {
   name: { tag: 'h4', slot: 'detail-m' },
   title: { tag: 'h3', slot: 'heading-xs' },
-  price: { tag: 'p', slot: 'price' },
+  prices: { tag: 'p', slot: 'price' },
   description: { tag: 'div', slot: 'body-xs' },
-  cta: { slot: 'cta', size: 's' },
+  ctas: { slot: 'cta', size: 's' },
 };
 
 export class CCDSuggested extends VariantLayout {
