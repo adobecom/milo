@@ -135,7 +135,7 @@ export default function init(el) {
   if (mainVideo) {
     const videoClass = `how-to-media${isLargeMedia ? ' how-to-media-large video' : ''}`;
     el.append(createTag('div', { class: videoClass }, mainVideo));
-    const src = mainVideo?.getAttribute('data-video-source');
+    const src = mainVideo.getAttribute('data-video-source');
     if (src) {
       createIntersectionObserver({
         el: mainVideo,
