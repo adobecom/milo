@@ -40,7 +40,7 @@ export function decorateDefaultLinkAnalytics(block, config) {
     let analyticsSelector = `${headerSelector}, .tracking-header`;
     const headers = block.querySelectorAll(analyticsSelector);
     if (!headers.length) analyticsSelector = `${analyticsSelector}, b, strong`;
-    block.querySelectorAll(`${analyticsSelector}, a:not(.video.link-block), button`).forEach((item) => {
+    block.querySelectorAll(`${analyticsSelector}, a:not(.video.link-block, .no-track), button:not(.no-track)`).forEach((item) => {
       if (item.nodeName === 'A' || item.nodeName === 'BUTTON') {
         if (item.classList.contains('tracking-header')) {
           header = processTrackingLabels(item.textContent, config, headerCharLimit);
