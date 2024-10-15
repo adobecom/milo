@@ -2,7 +2,6 @@
 /* eslint-disable no-console */
 
 import { createTag, getConfig, loadLink, loadScript, localizeLink } from '../../utils/utils.js';
-import { getEntitlementMap } from './entitlements.js';
 
 /* c8 ignore start */
 const PHONE_SIZE = window.screen.width < 550 || window.screen.height < 550;
@@ -63,6 +62,14 @@ export const normalizePath = (p, localize = true) => {
   let path = p;
 
   if (!path?.includes('/')) {
+    return path;
+  }
+
+  if (path.includes('main--federal--adobecom')) {
+    const { origin } = new URL(window.location);
+    if (origin.includes('.hlx.live')) path = path.replace('.hlx.live', '.hlx.page');
+    else if (origin.includes('stage.adobe.com')) path = path.replace('main--federal--adobecom.hlx.page', 'www.stage.adobe.com');
+    else if (origin.includes('adobe.com')) path = path.replace('main--federal--adobecom.hlx.page', 'www.adobe.com');
     return path;
   }
 
@@ -701,6 +708,36 @@ export function buildVariantInfo(variantNames) {
     return acc;
   }, { allNames: [] });
 }
+
+export const getEntitlementMap = async () => {
+  const config = getConfig();
+  if (config.mep?.entitlementMap) return config.mep.entitlementMap;
+  const sheet = config.env?.name === 'prod' ? 'prod' : 'stage';
+  const entitlementUrl = `https://main--federal--adobecom.hlx.page/federal/assets/data/mep-entitlement-tags.json?sheet=${sheet}`;
+  const fetchedData = await fetchData(entitlementUrl, DATA_TYPE.JSON);
+  if (!fetchedData) return config.consumerEntitlements || {};
+  const entitlements = {};
+  fetchedData?.data?.forEach((ent) => {
+    const { id, tagname } = ent;
+    entitlements[id] = tagname;
+  });
+  config.mep ??= {};
+  config.mep.entitlementMap = { ...config.consumerEntitlements, ...entitlements };
+  return config.mep.entitlementMap;
+};
+
+export const getEntitlements = async (data) => {
+  const entitlementMap = await getEntitlementMap();
+
+  return data.flatMap((destination) => {
+    const ents = destination.segments?.flatMap((segment) => {
+      const entMatch = entitlementMap[segment.id];
+      return entMatch ? [entMatch] : [];
+    });
+
+    return ents || [];
+  });
+};
 
 async function getPersonalizationVariant(manifestPath, variantNames = [], variantLabel = null) {
   const config = getConfig();
