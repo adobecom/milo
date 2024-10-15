@@ -66,10 +66,12 @@ export const normalizePath = (p, localize = true) => {
   }
 
   if (path.includes('main--federal--adobecom')) {
-    const { origin } = new URL(window.location);
-    if (origin.includes('.hlx.live')) path = path.replace('.hlx.live', '.hlx.page');
-    else if (origin.includes('stage.adobe.com')) path = path.replace('main--federal--adobecom.hlx.page', 'www.stage.adobe.com');
-    else if (origin.includes('adobe.com')) path = path.replace('main--federal--adobecom.hlx.page', 'www.adobe.com');
+    const subDomains = ['www', 'milo', 'blog', 'business'];
+    const prodDomains = subDomains.map((sub) => `${sub}.adobe.com`);
+    const stageDomains = subDomains.map((sub) => `${sub}.stage.adobe.com`);
+    const { hostname } = new URL(window.location);
+    if (prodDomains.includes(hostname)) path = path.replace('main--federal--adobecom.hlx.page', 'www.adobe.com');
+    else if (stageDomains.includes(hostname)) path = path.replace('main--federal--adobecom.hlx.page', 'www.stage.adobe.com');
     return path;
   }
 
