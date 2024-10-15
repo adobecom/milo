@@ -990,7 +990,7 @@ merch-card[variant="plans"] [slot="quantity-select"] {
           <slot name="callout-content"></slot>
           <slot name="body-lower"></slot>
       </div>
-      ${this.secureLabelFooter}`}connectedCallbackHook(){super.connectedCallbackHook(),window.addEventListener("resize",this.postCardUpdateHook.bind(this))}postCardUpdateHook(){Dr()||this.adjustProductBodySlots()}};x(De,"variantStyle",N`
+      ${this.secureLabelFooter}`}connectedCallbackHook(){super.connectedCallbackHook(),window.addEventListener("resize",this.postCardUpdateHook.bind(this))}postCardUpdateHook(){Dr()||this.adjustProductBodySlots(),this.adjustTitleWidth()}};x(De,"variantStyle",N`
     :host([variant='product']) > slot:not([name='icons']) {
         display: block;
     }
@@ -1013,6 +1013,10 @@ merch-card[variant="plans"] [slot="quantity-select"] {
     :host([variant='product']) slot[name='callout-content'] {
         min-height: var(--consonant-merch-card-product-callout-content-height);
         display: block;
+    }
+      
+    :host([variant='product']) ::slotted([slot='heading-xs']) {
+      max-width: var(--consonant-merch-card-heading-xs-max-width, 100%);
     }
   `);var Ba=`
 :root {
