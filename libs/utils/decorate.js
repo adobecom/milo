@@ -200,7 +200,7 @@ export function getImgSrc(pic) {
   const doc = parser.parseFromString(pic, 'text/html');
   if (defineDeviceByScreenSize() === 'mobile') source = doc.querySelector('source[type="image/webp"]:not([media])');
   else source = doc.querySelector('source[type="image/webp"][media]');
-  return source?.srcset ? `poster='${source.srcset}'` : '';
+  return source?.srcset ? source.srcset : '';
 }
 
 function getVideoAttrs(hash, dataset) {
@@ -208,11 +208,10 @@ function getVideoAttrs(hash, dataset) {
   const isAutoplayOnce = hash?.includes('autoplay1');
   const playOnHover = hash?.includes('hoverplay');
   const playInViewport = hash?.includes('viewportplay');
-  const poster = getImgSrc(dataset.videoPoster);
+  const poster = `poster='${getImgSrc(dataset.videoPoster)}'`;
   const globalAttrs = `playsinline ${poster}`;
   const autoPlayAttrs = 'autoplay muted';
   const playInViewportAttrs = playInViewport ? 'data-play-viewport' : '';
-
   if (isAutoplay && !isAutoplayOnce) {
     return `${globalAttrs} ${autoPlayAttrs} loop ${playInViewportAttrs}`;
   }
@@ -325,21 +324,34 @@ export async function loadCDT(el, classList) {
   }
 }
 
-export function decorateAnchorVideo({ src = '', anchorTag }) {
+async function checkDisabled(src) {
+  try {
+    const response = await fetch(src, { method: 'HEAD' });
+    return response.ok; // Returns true if status is 200-299
+  } catch (error) {
+    return false;
+  }
+}
+
+export async function decorateAnchorVideo({ src = '', anchorTag }) {
   if (!src.length || !(anchorTag instanceof HTMLElement)) return;
   if (anchorTag.closest('.marquee, .aside, .hero-marquee, .quiz-marquee') && !anchorTag.hash) anchorTag.hash = '#autoplay';
   const { dataset, parentElement } = anchorTag;
+  const isValidURL = await checkDisabled(src);
   const video = `<video ${getVideoAttrs(anchorTag.hash, dataset)} data-video-source=${src}></video>`;
-  anchorTag.insertAdjacentHTML('afterend', video);
+  const usedAsset = isValidURL ? video : `<picture><img src="${getImgSrc(dataset.videoPoster)}" /></picture>`;
+  anchorTag.insertAdjacentHTML('afterend', usedAsset);
   const videoEl = parentElement.querySelector('video');
-  createIntersectionObserver({
-    el: parentElement,
-    options: { rootMargin: '1000px' },
-    callback: () => {
-      videoEl?.appendChild(createTag('source', { src, type: 'video/mp4' }));
-    },
-  });
-  applyHoverPlay(videoEl);
-  applyInViewPortPlay(videoEl);
-  anchorTag.remove();
+  if (isValidURL && videoEl) {
+    createIntersectionObserver({
+      el: parentElement,
+      options: { rootMargin: '1000px' },
+      callback: () => {
+        videoEl?.appendChild(createTag('source', { src, type: 'video/mp4' }));
+      },
+    });
+    applyHoverPlay(videoEl, src);
+    applyInViewPortPlay(videoEl);
+    anchorTag.remove();
+  }
 }
