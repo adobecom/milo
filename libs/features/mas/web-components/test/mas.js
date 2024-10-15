@@ -1,4 +1,4 @@
-import '@adobe/mas-commerce';
+import '../../../../deps/mas/commerce.js';
 import '../../src/merch-card.js';
 import '../../src/merch-icon.js';
 import '../../src/aem-fragment.js';
