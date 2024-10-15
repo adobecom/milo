@@ -345,34 +345,21 @@ describe('matchGlob function', () => {
     const result = matchGlob('/products/special-offers**', '/products/special-offers/free-download');
     expect(result).to.be.true;
   });
-});
-
-describe('matchGlob function', () => {
-  it('should match page', async () => {
-    const result = matchGlob('/products/special-offers', '/products/special-offers');
-    expect(result).to.be.true;
-  });
-
-  it('should match page with HTML extension', async () => {
-    const result = matchGlob('/products/special-offers', '/products/special-offers.html');
-    expect(result).to.be.true;
-  });
-
-  it('should not match child page', async () => {
-    const result = matchGlob('/products/special-offers', '/products/special-offers/free-download');
-    expect(result).to.be.false;
-  });
-
-  it('should match child page', async () => {
-    const result = matchGlob('/products/special-offers**', '/products/special-offers/free-download');
-    expect(result).to.be.true;
-  });
 
   it('should hide the wrapping <p> for the delayed modal anchor', async () => {
     const parent = document.createElement('div');
     const el = document.createElement('div');
     parent.appendChild(el);
-    const wrapper = createContent(el, '/fragments/promos/path-to-promo/#modal-hash:delay=1');
+    const wrapper = createContent(
+      el,
+      {
+        content: '/fragments/promos/path-to-promo/#modal-hash:delay=1',
+        manifestId: 'manifest',
+        targetManifestId: '',
+        action: 'insertAfter',
+        modifiers: [],
+      },
+    );
     expect(wrapper.tagName).to.equal('P');
     expect(wrapper.classList.contains('hide-block')).to.be.true;
   });

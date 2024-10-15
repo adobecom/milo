@@ -327,7 +327,7 @@ export async function loadCDT(el, classList) {
 
 export function decorateAnchorVideo({ src = '', anchorTag }) {
   if (!src.length || !(anchorTag instanceof HTMLElement)) return;
-  if (anchorTag.closest('.marquee, .aside, .hero-marquee') && !anchorTag.hash) anchorTag.hash = '#autoplay';
+  if (anchorTag.closest('.marquee, .aside, .hero-marquee, .quiz-marquee') && !anchorTag.hash) anchorTag.hash = '#autoplay';
   const { dataset, parentElement } = anchorTag;
   const video = `<video ${getVideoAttrs(anchorTag.hash, dataset)} data-video-source=${src}></video>`;
   anchorTag.insertAdjacentHTML('afterend', video);

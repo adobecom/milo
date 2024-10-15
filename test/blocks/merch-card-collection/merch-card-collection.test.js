@@ -171,12 +171,12 @@ describe('Merch Cards', async () => {
               {
                 action: 'replace',
                 manifestId: 'promo1.json',
-                target: '/override-photoshop',
+                content: '/override-photoshop',
               },
               {
                 action: 'replace',
                 manifestId: 'promo2.json',
-                target: '/override-express',
+                content: '/override-express',
               },
             ],
           },

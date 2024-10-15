@@ -25,6 +25,7 @@ export class VariantLayout {
     }
 
     updateCardElementMinHeight(el, name) {
+        if (!el) return;
         const elMinHeightPropertyName = `--consonant-merch-card-${this.card.variant}-${name}-height`;
         const height = Math.max(
             0,

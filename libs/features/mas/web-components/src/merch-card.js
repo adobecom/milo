@@ -10,12 +10,17 @@ import {
     EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
     EVENT_MERCH_STORAGE_CHANGE,
     EVENT_MAS_READY,
+    EVENT_AEM_ERROR,
+    EVENT_MAS_ERROR,
 } from './constants.js';
 import { VariantLayout } from './variants/variant-layout.js';
 import { hydrate } from './hydrate.js';
 
 export const MERCH_CARD_NODE_NAME = 'MERCH-CARD';
 export const MERCH_CARD = 'merch-card';
+
+// if merch cards does not initialise in 2s, it will dispatch mas:error event
+const MERCH_CARD_LOAD_TIMEOUT = 2000;
 
 export class MerchCard extends LitElement {
     static properties = {
@@ -96,12 +101,14 @@ export class MerchCard extends LitElement {
      */
     variantLayout;
 
+    #ready = false;
+
     constructor() {
         super();
         this.filters = {};
         this.types = '';
         this.selected = false;
-        this.handleLoadEvent = this.handleLoadEvent.bind(this);
+        this.handleAemFragmentEvents = this.handleAemFragmentEvents.bind(this);
     }
 
     firstUpdated() {
@@ -130,7 +137,7 @@ export class MerchCard extends LitElement {
     }
 
     get theme() {
-      return this.closest('sp-theme');
+        return this.closest('sp-theme');
     }
 
     get prices() {
@@ -275,7 +282,10 @@ export class MerchCard extends LitElement {
         );
 
         // aem-fragment logic
-        this.addEventListener(EVENT_AEM_LOAD, this.handleLoadEvent);
+        this.addEventListener(EVENT_AEM_ERROR, this.handleAemFragmentEvents);
+        this.addEventListener(EVENT_AEM_LOAD, this.handleAemFragmentEvents);
+
+        if (!this.aemFragment) this.checkReady();
     }
 
     disconnectedCallback() {
@@ -290,22 +300,60 @@ export class MerchCard extends LitElement {
             EVENT_MERCH_STORAGE_CHANGE,
             this.handleStorageChange,
         );
-        this.removeEventListener(EVENT_AEM_LOAD, this.handleLoadEvent);
+        this.removeEventListener(EVENT_AEM_ERROR, this.handleAemFragmentEvents);
+        this.removeEventListener(EVENT_AEM_LOAD, this.handleAemFragmentEvents);
     }
 
     // custom methods
-    handleLoadEvent(e) {
-        if (e.target.nodeName === 'AEM-FRAGMENT') {
-            const fragment = e.detail;
-            if (!fragment) return;
-            hydrate(fragment, this);
+    async handleAemFragmentEvents(e) {
+        if (e.type === EVENT_AEM_ERROR) {
+            this.#fail('AEM fragment cannot be loaded');
+        }
+        if (e.type === EVENT_AEM_LOAD) {
+            if (e.target.nodeName === 'AEM-FRAGMENT') {
+                const fragment = e.detail;
+                await hydrate(fragment, this);
+                this.checkReady();
+            }
+        }
+    }
+
+    #fail(error) {
+        this.dispatchEvent(
+            new CustomEvent(EVENT_MAS_ERROR, {
+                detail: error,
+                bubbles: true,
+                composed: true,
+            }),
+        );
+    }
+
+    async checkReady() {
+        const successPromise = Promise.all(
+            [
+                ...this.querySelectorAll(
+                    'span[is="inline-price"][data-wcs-osi],a[is="checkout-link"][data-wcs-osi]',
+                ),
+            ].map((element) => element.onceSettled().catch(() => element)),
+        ).then((elements) =>
+            elements.every((el) =>
+                el.classList.contains('placeholder-resolved'),
+            ),
+        );
+        const timeoutPromise = new Promise((resolve) =>
+            setTimeout(() => resolve(false), MERCH_CARD_LOAD_TIMEOUT),
+        );
+        const success = await Promise.race([successPromise, timeoutPromise]);
+        if (success === true) {
             this.dispatchEvent(
                 new CustomEvent(EVENT_MAS_READY, {
                     bubbles: true,
                     composed: true,
                 }),
             );
+            return;
         }
+        this.#fail('Contains unresolved offers');
     }
 
     get aemFragment() {
