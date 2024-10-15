@@ -7,6 +7,7 @@ import { mockFetch } from './mocks/fetch.js';
 import { withWcs } from './mocks/wcs.js';
 import { withAem } from './mocks/aem.js';
 import { getTemplateContent } from './utils.js';
+import mas from './mas.js';
 import '../src/merch-card.js';
 import '../src/aem-fragment.js';
 
@@ -14,7 +15,7 @@ chai.use(chaiAsPromised);
 const expect = chai.expect;
 
 runTests(async () => {
-    await document.querySelector('mas-commerce-service').activate();
+    await mas();
     const [cc, photoshop] = await fetch(
         'mocks/sites/cf/fragments/search/authorPayload.json',
     )
