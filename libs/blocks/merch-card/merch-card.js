@@ -230,6 +230,9 @@ const parseContent = async (el, merchCard) => {
       if (slotName) {
         if (['H2', 'H3', 'H4', 'H5'].includes(tagName)) {
           element.classList.add('card-heading');
+          if (merchCard.badgeText) {
+            element.closest('div[role="tabpanel"')?.classList.add('badge-merch-cards');
+          }
           if (HEADING_MAP[merchCard.variant]?.[tagName]) {
             tagName = HEADING_MAP[merchCard.variant][tagName];
           } else {
@@ -241,12 +244,6 @@ const parseContent = async (el, merchCard) => {
             }
             tagName = `H${headingSize}`;
             headingSize += 1;
-          }
-          if (merchCard.badgeText) {
-            element.closest('div[role="tabpanel"')?.classList.add('badge-merch-cards');
-            if (tagName === 'H3') {
-              element.classList.add('badge-heading');
-            }
           }
         }
         element.setAttribute('slot', slotName);

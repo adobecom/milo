@@ -145,10 +145,6 @@ merch-card [slot='heading-xs'] {
     text-decoration: none;
 }
 
-merch-card .badge-heading {
-    max-width: 70%;
-}
-
 merch-card.dc-pricing [slot='heading-xs'] {
     margin-bottom: var(--consonant-merch-spacing-xxs);
 }
