@@ -92,12 +92,12 @@ export const setPreferences = (formData) => {
   Object.entries(formData).forEach(([key, value]) => setPreference(key, value));
 };
 
-function showSuccessSection(formData) {
+function showSuccessSection(formData, scroll = true) {
   try {
     const section = formData[SUCCESS_SECTION].toLowerCase().replaceAll(' ', '-');
     const success = document.querySelector(`.section.${section}`);
     success.classList.remove('hide-block');
-    success.scrollIntoView({ behavior: 'smooth' });
+    if (scroll) success.scrollIntoView({ behavior: 'smooth' });
     setPreference(SUCCESS_TYPE, 'message');
   } catch (e) {
     /* c8 ignore next 2 */
@@ -205,7 +205,7 @@ export default function init(el) {
   const ungated = searchParams.get(FORM_PARAM) === 'off';
 
   if (ungated) {
-    showSuccessSection(formData);
+    showSuccessSection(formData, false);
     el.classList.add('hide-block');
     return;
   }
