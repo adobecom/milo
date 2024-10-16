@@ -100,7 +100,6 @@ html {
 .marquee-anchors .links .anchor-link:focus,
 .marquee-anchors .links .anchor-link:active {
   border-color: var(--link-color);
-  text-decoration: none;
 }
 
 .marquee-anchors .links .anchor-link > div {
