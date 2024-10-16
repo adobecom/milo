@@ -97,9 +97,6 @@ export class MasCommerceService extends HTMLElement {
                 get defaults() {
                     return Defaults;
                 },
-                get literals() {
-                    return literals;
-                },
                 get log() {
                     return Log;
                 },

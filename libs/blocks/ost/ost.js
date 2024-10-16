@@ -171,6 +171,7 @@ export async function loadOstEnv() {
       const json = await res.json();
       url = new URL(json.preview.url);
       const locale = getLocale(locales, url.pathname);
+      /* c8 ignore next 1 */
       ({ country, language } = getMiloLocaleSettings(locale));
     } catch (error) {
       log.error('Unable to fetch page status:', error);

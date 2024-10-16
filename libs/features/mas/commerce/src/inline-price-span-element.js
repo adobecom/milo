@@ -129,7 +129,6 @@ export class InlinePriceSpanElement extends HTMLSpanElement {
 
     constructor() {
         super();
-        this.handleClick = this.handleClick.bind(this);
     }
 
     get isInlinePrice() {
@@ -144,19 +143,10 @@ export class InlinePriceSpanElement extends HTMLSpanElement {
 
     connectedCallback() {
         this.masElement.connectedCallback();
-        this.addEventListener('click', this.handleClick);
     }
 
     disconnectedCallback() {
         this.masElement.disconnectedCallback();
-        this.removeEventListener('click', this.handleClick.bind(this));
-    }
-
-    handleClick(event) {
-        if (event.target === this) return;
-        // re-dispatch click event from the price element
-        event.stopImmediatePropagation();
-        this.dispatchEvent(new CustomEvent('click', { bubbles: true }));
     }
 
     onceSettled() {

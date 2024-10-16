@@ -631,10 +631,10 @@ describe('commerce service', () => {
           const inlinePrice1 = mockInlinePrice('abm');
           const options = collectPriceOptions({}, inlinePrice1);
           expect(options).not.to.be.empty;
-          buildPriceHTML({template: 'discount', priceDetails:{}}, options);
-          buildPriceHTML({template: 'strikethrough', priceDetails:{}}, options);
-          buildPriceHTML({template: 'optical', priceDetails:{}}, options);
-          buildPriceHTML({template: 'annual', priceDetails:{}}, options);
+          buildPriceHTML({ priceDetails:{} }, { template: 'discount', ...options } );
+          buildPriceHTML({ priceDetails:{} }, { template: 'strikethrough', ...options });
+          buildPriceHTML({ priceDetails:{} }, { template: 'optical', ...options });
+          buildPriceHTML({ priceDetails:{} }, { template: 'annual', ...options });
       });
   });
 });
