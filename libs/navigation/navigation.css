@@ -42,3 +42,7 @@ header.global-navigation, header.global-navigation.feds--dark {
     padding: 0 15px;
   }
 }
+
+.feds-client-search {
+  margin-left: auto;
+}
