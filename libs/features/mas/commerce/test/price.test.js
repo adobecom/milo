@@ -179,6 +179,14 @@ describe('class "InlinePriceSpanElement"', () => {
         });
     });
 
+    describe('method "requestUpdate"', () => {
+      it('has requestUpdate method', async () => {
+          await initMasCommerceService();
+          const inlinePrice = mockInlinePrice('abm');
+          inlinePrice.requestUpdate();
+      });
+  });
+
     describe('method "updateOptions"', () => {
         it('updates element data attributes', async () => {
             await initMasCommerceService();

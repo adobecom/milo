@@ -65,7 +65,6 @@ runTests(async () => {
             const before = ccCard.innerHTML;
             ccCard.footerSlot.test = true;
             await aemFragment.refresh(true);
-            await aemFragment.refresh(true); // for extra coverage
             await aemFragment.updateComplete;
             const after = ccCard.innerHTML;
             expect(before).to.equal(after);

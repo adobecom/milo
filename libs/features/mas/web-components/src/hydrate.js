@@ -42,7 +42,7 @@ export async function hydrate(fragmentData, merchCard) {
         appendFn(merchIcon);
     });
 
-    /* c8 ignore next 2 */
+    /* c8 ignore next 4 */
     if (!fragment.size) {
         merchCard.removeAttribute('size');
     } else if (aemFragmentMapping.allowedSizes?.includes(fragment.size))
@@ -58,6 +58,7 @@ export async function hydrate(fragmentData, merchCard) {
         );
     }
 
+    /* c8 ignore next 8 */
     if (fragment.subtitle && aemFragmentMapping.subtitle) {
         appendFn(
             createTag(

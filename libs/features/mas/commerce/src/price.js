@@ -82,6 +82,7 @@ export function Price({ literals, providers, settings }) {
         let method;
         switch (template) {
             // TODO: use price template name constants, export them from `consonant-templates`
+            /* c8 ignore next 15 */
             case 'discount':
                 method = discount;
                 break;

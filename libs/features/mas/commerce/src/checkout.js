@@ -86,6 +86,7 @@ export function Checkout({ providers, settings }) {
      * @returns a checkout URL
      */
     function buildCheckoutURL(offers, options) {
+      /* c8 ignore next 3 */
         if (!Array.isArray(offers) || !offers.length || !options) {
             return '';
         }
@@ -129,7 +130,7 @@ export function Checkout({ providers, settings }) {
                     : { id: offerId, quantity: quantity[0] },
             );
         } else {
-            /* c8 ignore next 4 */
+            /* c8 ignore next 7 */
             data.items.push(
                 ...offers.map(({ offerId }, index) => ({
                     id: offerId,

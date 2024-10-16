@@ -282,9 +282,8 @@ describe('class "CheckoutLink"', () => {
     describe('logged-in features', () => {
         it('renders download link', async () => {
             mockIms('US');
-            await initMasCommerceService();
-            const service = await useService();
-            service.registerCheckoutAction(() => { return {
+            await initMasCommerceService();            
+            useService()?.registerCheckoutAction(() => { return {
                 "text": 'Download',
                 "className": CLASS_NAME_DOWNLOAD,
                 "url": 'https://helpx.adobe.com/download-install.html',
@@ -326,6 +325,7 @@ describe('class "CheckoutLink"', () => {
             expect(checkoutLink.getAttribute('href')).to.equal(
                 'https://commerce.adobe.com/store/email?items%5B0%5D%5Bid%5D=632B3ADD940A7FBB7864AA5AD19B8D28&cli=adobe_com&ctx=fp&co=US&lang=en',
             );
+            checkoutLink.requestUpdate();
         });
     });
 });
