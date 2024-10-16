@@ -130,7 +130,7 @@ class PromoteStatusModal extends Component {
     const paramsFg = await getParamsFg(config);
     const env = heading.value.env;
     const { url } = config[env].milofg.promotestatus;
-    let params = { spToken: accessToken, fgShareUrl: paramsFg.fgShareUrl, batchFiles: batchNumber };
+    let params = { spToken: accessToken, adminPageUri: paramsFg.adminPageUri, batchFiles: batchNumber };
     const batchFilesData = await postData(url, params);
     return batchFilesData.batchFiles;
   };
@@ -140,7 +140,7 @@ class PromoteStatusModal extends Component {
     const paramsFg = await getParamsFg(config);
     const env = heading.value.env;
     const { url } = config[env].milofg.promotestatus;
-    let params = { spToken: accessToken, fgShareUrl: paramsFg.fgShareUrl, promoteStatus: true };
+    let params = { spToken: accessToken, adminPageUri: paramsFg.adminPageUri, promoteStatus: true };
     const promoteStatus = await postData(url, params);
     return promoteStatus.promoteStatus.batchesInfo;
   };
@@ -150,7 +150,7 @@ class PromoteStatusModal extends Component {
     const paramsFg = await getParamsFg(config);
     const env = heading.value.env;
     const { url } = config[env].milofg.promotestatus;
-    let params = { spToken: accessToken, fgShareUrl: paramsFg.fgShareUrl, promoteResults: true };
+    let params = { spToken: accessToken, adminPageUri: paramsFg.adminPageUri, promoteResults: true };
     const overallStatus = await postData(url, params);
     const { failedPromotes, failedPreviews, failedPublishes } = overallStatus.promoteResults;
 
