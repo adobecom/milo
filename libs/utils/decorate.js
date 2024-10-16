@@ -203,29 +203,32 @@ export function getImgSrc(pic) {
   return source?.srcset ? `poster='${source.srcset}'` : '';
 }
 
-function getVideoAttrs(hash, dataset) {
-  const isAutoplay = hash?.includes('autoplay');
-  const isAutoplayOnce = hash?.includes('autoplay1');
-  const playOnHover = hash?.includes('hoverplay');
-  const playInViewport = hash?.includes('viewportplay');
+function getVideoAttrs(hash = '', dataset = {}) {
+  const isAutoplay = hash.includes('autoplay');
+  const isAutoplayOnce = hash.includes('autoplay1');
+  const playOnHover = hash.includes('hoverplay');
+  const playInViewport = hash.includes('viewportplay');
   const poster = getImgSrc(dataset.videoPoster);
-  const globalAttrs = `playsinline ${poster}`;
-  const autoPlayAttrs = 'autoplay muted';
-  const playInViewportAttrs = playInViewport ? 'data-play-viewport' : '';
-
-  if (isAutoplay && !isAutoplayOnce) {
-    return `${globalAttrs} ${autoPlayAttrs} loop ${playInViewportAttrs}`;
+  const attrs = ['playsinline'];
+  if (poster) {
+    attrs.push(`poster="${poster}"`);
   }
-  if (playOnHover && isAutoplayOnce) {
-    return `${globalAttrs} ${autoPlayAttrs} data-hoverplay`;
+  if (isAutoplay) {
+    attrs.push('autoplay', 'muted');
+    if (!isAutoplayOnce) {
+      attrs.push('loop');
+    }
   }
   if (playOnHover) {
-    return `${globalAttrs} muted data-hoverplay`;
+    attrs.push('data-hoverplay');
   }
-  if (isAutoplayOnce) {
-    return `${globalAttrs} ${autoPlayAttrs} ${playInViewportAttrs}`;
+  if (playInViewport) {
+    attrs.push('data-play-viewport');
   }
-  return `${globalAttrs} controls`;
+  if (!isAutoplay && !isAutoplayOnce) {
+    attrs.push('controls');
+  }
+  return attrs.join(' ');
 }
 
 export function applyHoverPlay(video) {
@@ -328,26 +331,19 @@ export async function loadCDT(el, classList) {
 export function decorateAnchorVideo({ src = '', anchorTag }) {
   if (!src.length || !(anchorTag instanceof HTMLElement)) return;
   if (anchorTag.closest('.marquee, .aside, .hero-marquee, .quiz-marquee') && !anchorTag.hash) anchorTag.hash = '#autoplay';
-  const { dataset } = anchorTag;
-  const videoAttrsString = getVideoAttrs(anchorTag.hash, dataset);
-  const videoAttrsArray = videoAttrsString.split(' ').filter((attr) => attr);
-  const videoAttrs = videoAttrsArray.reduce((attrs, attr) => {
-    const [key, value] = attr.includes('=') ? attr.split('=') : [attr, true];
-    attrs[key] = value;
-    return attrs;
-  }, {});
-  videoAttrs['data-video-source'] = src;
-  const videoElement = createTag('video', videoAttrs);
-  const sourceElement = createTag('source', { src, type: 'video/mp4' });
-  anchorTag.insertAdjacentElement('afterend', videoElement);
+  const { dataset, parentElement } = anchorTag;
+  const videoAttrs = getVideoAttrs(anchorTag.hash, dataset);
+  const videoHTML = `<video ${videoAttrs} data-video-source="${src}"></video>`;
+  anchorTag.insertAdjacentHTML('afterend', videoHTML);
+  const videoEl = parentElement.querySelector('video');
   createIntersectionObserver({
-    el: videoElement,
+    el: videoEl,
     options: { rootMargin: '1000px' },
     callback: () => {
-      videoElement.appendChild(sourceElement);
+      videoEl.appendChild(createTag('source', { src, type: 'video/mp4' }));
     },
   });
-  applyHoverPlay(videoElement);
-  applyInViewPortPlay(videoElement);
+  applyHoverPlay(videoEl);
+  applyInViewPortPlay(videoEl);
   anchorTag.remove();
 }
