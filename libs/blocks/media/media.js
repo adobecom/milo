@@ -114,6 +114,7 @@ export default async function init(el) {
   decorateTextOverrides(el);
 
   if (el.classList.contains('countdown-timer')) {
-    await loadCDT(container, el.classList);
+    const textBlock = container.querySelector('.text');
+    if (textBlock) await loadCDT(textBlock, el.classList);
   }
 }

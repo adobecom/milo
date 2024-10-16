@@ -1,14 +1,26 @@
 
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>Custom Element Documentation</title>
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <meta charset="UTF-8">
+    <title>M@S Web Components</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script type="module" src="../../../deps/custom-elements.js"></script>
+  
+  <script>
+    if (/localhost/.test(window.location.host)) {
+      const meta = document.createElement('meta');
+      meta.name = 'aem-base-url';
+      meta.content = 'http://localhost:8080'; // local AEM proxy URL
+      document.head.appendChild(meta);
+      }
+  </script>
   <!-- Include your custom element script as an ES6 module -->
   <script src="../../../features/spectrum-web-components/dist/theme.js" type="module"></script>
   <script src="../../../features/spectrum-web-components/dist/button.js" type="module"></script>
   
   <!-- Include Highlight.js stylesheet for syntax highlighting -->
+  <link rel="stylesheet" href="../../../styles/styles.css">
   <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
   <!-- Include any additional stylesheets -->
   <link rel="stylesheet" href="styles.css">
@@ -16,8 +28,8 @@
 <body>
 <main>
 <sp-theme color="light" scale="medium">
-<h1 id="mas.js" tabindex="-1"><a class="header-anchor" href="#mas.js">mas.js</a></h1>
-<h2 id="introduction" tabindex="-1"><a class="header-anchor" href="#introduction">Introduction</a></h2>
+<h1 id="mas.js" tabindex="-1">mas.js <a class="header-anchor" href="#mas.js" href="#mas.js" title="Permalink to this heading">#</a></h1>
+<h2 id="introduction" tabindex="-1">Introduction <a class="header-anchor" href="#introduction" href="#introduction" title="Permalink to this heading">#</a></h2>
 <p>This is a javasript library that enables M@S on any web surface.</p>
 <p>mas.js includes the followings custom elements:</p>
 <ul>
@@ -25,23 +37,23 @@
 <li><a href="/libs/features/mas/docs/checkout-link.html">checkout-link</a></li>
 <li><a href="/libs/features/mas/docs/merch-card.html">merch-card</a></li>
 </ul>
-<h2 id="enablement" tabindex="-1"><a class="header-anchor" href="#enablement">Enablement</a></h2>
+<h2 id="enablement" tabindex="-1">Enablement <a class="header-anchor" href="#enablement" href="#enablement" title="Permalink to this heading">#</a></h2>
 <p>Add the following script in your document <code>head</code> element.</p>
 <pre><code class="hljs language-html"><span class="hljs-comment">&lt;!-- for US english --&gt;</span>
 <span class="hljs-tag">&lt;<span class="hljs-name">script</span>
-    <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;https://ccd-checkout-link--milo--yesil.hlx.page/libs/deps/mas/mas.js&quot;</span>
+    <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;https://ccd--milo--adobecom.hlx.page/libs/deps/mas/mas.js&quot;</span>
     <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;module&quot;</span>
 &gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
 
 <span class="hljs-comment">&lt;!-- for other locales, pass locale parameter from the table below --&gt;</span>
 <span class="hljs-tag">&lt;<span class="hljs-name">script</span>
-    <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;https://ccd-checkout-link--milo--yesil.hlx.page/libs/deps/mas/mas.js?locale=CA_en&quot;</span>
+    <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;https://ccd--milo--adobecom.hlx.page/libs/deps/mas/mas.js?locale=CA_en&quot;</span>
     <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;module&quot;</span>
 &gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
 </code></pre>
 <p>Behind the scene, once MAS isitialized in the page, a custom element (<code>wcms-commerce</code>) is added to the document head.<br>
 It is programmatically added by mas.js and its tag name can be changed later.</p>
-<h3 id="example%3A" tabindex="-1"><a class="header-anchor" href="#example%3A">Example:</a></h3>
+<h3 id="example%3A" tabindex="-1">Example: <a class="header-anchor" href="#example%3A" href="#example%3A" title="Permalink to this heading">#</a></h3>
 <p class="example">
   Plans starting at
   <span
@@ -59,7 +71,7 @@ It is programmatically added by mas.js and its tag name can be changed later.</p
 </p>
 <script type="module">
   const params = new URLSearchParams(document.location.search);
-  let masJs = 'https://ccd-checkout-link--milo--yesil.hlx.page/libs/deps/mas/mas.js';
+  let masJs = 'https://ccd--milo--adobecom.hlx.page/libs/deps/mas/mas.js';
   const locale = params.get('locale');
   if (locale) {
     masJs = `${masJs}?locale=${locale}`;
@@ -69,7 +81,7 @@ It is programmatically added by mas.js and its tag name can be changed later.</p
   script.src = masJs;
   document.head.append(script);
 </script>
-<h2 id="supported-locales" tabindex="-1"><a class="header-anchor" href="#supported-locales">Supported locales</a></h2>
+<h2 id="supported-locales" tabindex="-1">Supported locales <a class="header-anchor" href="#supported-locales" href="#supported-locales" title="Permalink to this heading">#</a></h2>
 <table>
 <thead>
 <tr>
@@ -479,5 +491,21 @@ It is programmatically added by mas.js and its tag name can be changed later.</p
 
 </sp-theme>
 </main>
+<script type="module">
+  document.querySelectorAll('code.demo').forEach(el => {
+      const targetContainer = document.createElement('div');
+      targetContainer.classList.toggle('light', el.classList.contains('light'));
+      targetContainer.innerHTML = `<h4>Demo: </h4><div class="demo-container">${el.textContent}</div>`;
+      el.parentElement.after(targetContainer);
+      // Extract and evaluate <script> tags
+      const scriptTags = targetContainer.getElementsByTagName('script');
+      for (let i = 0; i < scriptTags.length; i++) {
+          const script = document.createElement('script');
+          script.text = scriptTags[i].text;
+          document.body.appendChild(script); // Appends to the document to execute
+          scriptTags[i].remove(); // Remove the script tag
+      }
+  });
+</script>
 </body>
 </html>

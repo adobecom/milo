@@ -1,9 +1,11 @@
 main {
   display: flex;
   justify-content: center;
+  margin: 0 16px;
 }
 
 sp-theme {
+  width: 100%;
   max-width: 1100px;
   font-family:
     var(
@@ -62,7 +64,8 @@ tr:nth-child(even) {
   margin: 0;
 }
 
-.price-unit-type::before {
+.price-unit-type::before,
+.price-tax-inclusivity::before {
   content: " ";
 }
 
@@ -79,4 +82,29 @@ tr:nth-child(even) {
 
 .placeholder-failed::after {
   content: "failed";
+}
+
+merch-card:not([variant]) {
+  display: none;
+}
+
+pre {
+  max-height: 500px;
+  overflow: scroll;
+  background-color: var(--spectrum-global-color-gray-300);
+}
+
+.demo-container {
+  display: flex;
+  padding: 16px;
+  flex-direction: column;
+  background-color: var(--spectrum-global-color-gray-300);
+}
+
+.light .demo-container {
+  background-color: var(--spectrum-global-color-gray-100);
+}
+
+#log {
+  display: block;
 }
