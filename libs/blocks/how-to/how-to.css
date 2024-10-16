@@ -128,7 +128,7 @@ html[dir="rtl"] .how-to ol > li::before {
     grid-auto-rows: min-content;
     grid-template-areas:
       "heading heading"
-      "list image";
+      "list image"
   }
 
   .how-to-media.how-to-media-large.video {
