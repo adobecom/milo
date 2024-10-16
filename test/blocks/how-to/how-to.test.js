@@ -115,7 +115,7 @@ describe('How To', () => {
     const howTo = document.getElementById('test5');
     adobetv(howTo.querySelector('a'));
     init(howTo);
-    const video = howTo.querySelector('iframe');
+    const video = howTo.querySelector('.milo-video');
     expect(video).to.exist;
   });
 });

@@ -328,18 +328,26 @@ export async function loadCDT(el, classList) {
 export function decorateAnchorVideo({ src = '', anchorTag }) {
   if (!src.length || !(anchorTag instanceof HTMLElement)) return;
   if (anchorTag.closest('.marquee, .aside, .hero-marquee, .quiz-marquee') && !anchorTag.hash) anchorTag.hash = '#autoplay';
-  const { dataset, parentElement } = anchorTag;
-  const video = `<video ${getVideoAttrs(anchorTag.hash, dataset)} data-video-source=${src}></video>`;
-  anchorTag.insertAdjacentHTML('afterend', video);
-  const videoEl = parentElement.querySelector('video');
+  const { dataset } = anchorTag;
+  const videoAttrsString = getVideoAttrs(anchorTag.hash, dataset);
+  const videoAttrsArray = videoAttrsString.split(' ').filter((attr) => attr);
+  const videoAttrs = videoAttrsArray.reduce((attrs, attr) => {
+    const [key, value] = attr.includes('=') ? attr.split('=') : [attr, true];
+    attrs[key] = value;
+    return attrs;
+  }, {});
+  videoAttrs['data-video-source'] = src;
+  const videoElement = createTag('video', videoAttrs);
+  const sourceElement = createTag('source', { src, type: 'video/mp4' });
+  anchorTag.insertAdjacentElement('afterend', videoElement);
   createIntersectionObserver({
-    el: parentElement,
+    el: videoElement,
     options: { rootMargin: '1000px' },
     callback: () => {
-      videoEl?.appendChild(createTag('source', { src, type: 'video/mp4' }));
+      videoElement.appendChild(sourceElement);
     },
   });
-  applyHoverPlay(videoEl);
-  applyInViewPortPlay(videoEl);
+  applyHoverPlay(videoElement);
+  applyInViewPortPlay(videoElement);
   anchorTag.remove();
 }
