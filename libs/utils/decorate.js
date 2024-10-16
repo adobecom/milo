@@ -241,14 +241,14 @@ export const syncPausePlayIcon = (video) => {
   }
 }
 
-export const addAccessibilityControl = (videoString, videoAttributes) => {
+export const addAccessibilityControl = (videoString, videoAttributes, tabIndex = 0) => {
   if (accessibilityEnabled && !videoAttributes.includes('controls')) {
     if (videoAttributes.includes('hoverplay')) {
-      return `<a class='pause-play-wrapper' tabindex=0 alt='play/pause motion' aria-label='play/pause motion' >${videoString}
+      return `<a class='pause-play-wrapper' tabindex=${tabIndex} alt='play/pause motion' aria-label='play/pause motion' >${videoString}
     </a>`;
     } else {
       return `<div class='video-container'>${videoString}
-  <a class='pause-play-wrapper' role='button' tabindex=0 alt='play/pause motion' aria-label='play/pause motion'>
+  <a class='pause-play-wrapper' role='button' tabindex=${tabIndex} alt='play/pause motion' aria-label='play/pause motion'>
     <img class='accessibility-control pause-icon ${videoAttributes.includes('autoplay') ? '' : 'hidden'}' src='https://main--federal--adobecom.hlx.page/federal/assets/svgs/accessibility-pause.svg'/>
     <img class='accessibility-control play-icon ${videoAttributes.includes('autoplay') ? 'hidden' : ''}' src='https://main--federal--adobecom.hlx.page/federal/assets/svgs/accessibility-play.svg'/>
   </a>
@@ -383,8 +383,10 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
   if (anchorTag.closest('.marquee, .aside, .hero-marquee, .quiz-marquee') && !anchorTag.hash) anchorTag.hash = '#autoplay';
   const { dataset, parentElement } = anchorTag;
   const attrs = getVideoAttrs(anchorTag.hash, dataset);
-  let video = `<video ${attrs} data-video-source=${src}></video>`;
-  video = addAccessibilityControl(video, attrs);
+  const tabIndex = anchorTag.tabIndex || 0;
+  const videoIndex = (tabIndex===-1)?"tabindex=-1":'';
+  let video = `<video ${attrs} data-video-source=${src} ${videoIndex}></video>`;
+  video = addAccessibilityControl(video, attrs, tabIndex);
   anchorTag.insertAdjacentHTML('afterend', video);
   const videoEl = parentElement.querySelector('video');
   createIntersectionObserver({
