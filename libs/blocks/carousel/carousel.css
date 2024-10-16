@@ -412,6 +412,27 @@ html[dir="rtl"] .carousel-slides .section.carousel-slide {
 .carousel.container .carousel-slide.xxxl-spacing > div,
 .carousel.container .carousel-slide .xxxl-spacing { padding: var(--spacing-xxxl); }
 
+@media (max-width: 600px) {
+  .carousel.hinting-mobile .carousel-slides {
+    left: -80%;
+    transform: translateX(80%);
+    gap: var(--spacing-xs);
+  }
+  
+  .carousel.hinting-mobile .carousel-slides.is-reversing {
+    transform: translateX(-80%);
+  }
+
+  .carousel.hinting-mobile .carousel-slide {
+    flex-basis: 80%;
+  }
+
+  .carousel.hinting-mobile .carousel-slides.is-ready,
+  .carousel.hinting-mobile .carousel-slides.is-ready.is-reversing {
+    transform: translateX(calc((var(--spacing-xs) - 1px) * -1));
+  }
+}
+
 @media (min-width: 900px) {
   .carousel.lightbox-active.container .carousel-wrapper {
     width: 80.3333%;
