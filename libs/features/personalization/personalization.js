@@ -65,17 +65,14 @@ export const normalizePath = (p, localize = true) => {
     return path;
   }
 
-  if (path.includes('main--federal--adobecom')) {
-    const subDomains = ['www', 'milo', 'blog', 'business'];
-    const prodDomains = subDomains.map((sub) => `${sub}.adobe.com`);
-    const stageDomains = subDomains.map((sub) => `${sub}.stage.adobe.com`);
-    const { hostname } = new URL(window.location);
-    if (prodDomains.includes(hostname)) path = path.replace('main--federal--adobecom.hlx.page', 'www.adobe.com');
-    else if (stageDomains.includes(hostname)) path = path.replace('main--federal--adobecom.hlx.page', 'www.stage.adobe.com');
-    return path;
-  }
-
   const config = getConfig();
+  if (path.startsWith('https://www.adobe.com/federal/')) {
+    const { hostname } = new URL(window.location);
+    if (config.env?.name === 'prod') {
+      return path.replace('www.adobe.com', hostname);
+    }
+    return path.replace('www.adobe.com', 'www.stage.adobe.com');
+  }
 
   if (path.startsWith(config.codeRoot)
     || path.includes('.hlx.')
@@ -715,7 +712,7 @@ export const getEntitlementMap = async () => {
   const config = getConfig();
   if (config.mep?.entitlementMap) return config.mep.entitlementMap;
   const sheet = config.env?.name === 'prod' ? 'prod' : 'stage';
-  const entitlementUrl = `https://main--federal--adobecom.hlx.page/federal/assets/data/mep-entitlement-tags.json?sheet=${sheet}`;
+  const entitlementUrl = `https://www.adobe.com/federal/assets/data/mep-entitlement-tags.json?sheet=${sheet}`;
   const fetchedData = await fetchData(entitlementUrl, DATA_TYPE.JSON);
   if (!fetchedData) return config.consumerEntitlements || {};
   const entitlements = {};
