@@ -9,7 +9,7 @@ import { selectOffers, useService } from './utilities.js';
 export const CLASS_NAME_DOWNLOAD = 'download';
 export const CLASS_NAME_UPGRADE = 'upgrade';
 
-export class CheckoutLink extends HTMLAnchorElement {
+export class CheckoutLinkAnchorElement extends HTMLAnchorElement {
     static is = 'checkout-link';
     static tag = 'a';
 
@@ -81,7 +81,7 @@ export class CheckoutLink extends HTMLAnchorElement {
             extraOptions,
         } = service.collectCheckoutOptions(options);
 
-        const element = createMasElement(CheckoutLink, {
+        const element = createMasElement(CheckoutLinkAnchorElement, {
             checkoutMarketSegment,
             checkoutWorkflow,
             checkoutWorkflowStep,
@@ -234,8 +234,8 @@ export class CheckoutLink extends HTMLAnchorElement {
 }
 
 // Define custom DOM element
-if (!window.customElements.get(CheckoutLink.is)) {
-    window.customElements.define(CheckoutLink.is, CheckoutLink, {
-        extends: CheckoutLink.tag,
+if (!window.customElements.get(CheckoutLinkAnchorElement.is)) {
+    window.customElements.define(CheckoutLinkAnchorElement.is, CheckoutLinkAnchorElement, {
+        extends: CheckoutLinkAnchorElement.tag,
     });
 }

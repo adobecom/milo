@@ -10,7 +10,7 @@ import {
     discount,
     computePromoStatus,
 } from './external.js';
-import { InlinePrice } from './inline-price.js';
+import { InlinePriceSpanElement } from './inline-price-span-element.js';
 import { toOfferSelectorIds, toQuantity } from './utilities.js';
 
 /**
@@ -109,10 +109,10 @@ export function Price({ literals, providers, settings }) {
         return method(context, offer);
     }
 
-    const { createInlinePrice } = InlinePrice;
+    const { createInlinePrice } = InlinePriceSpanElement;
 
     return {
-        InlinePrice,
+        InlinePriceSpanElement,
         buildPriceHTML,
         collectPriceOptions,
         // TODO: remove after update of Milo merch block

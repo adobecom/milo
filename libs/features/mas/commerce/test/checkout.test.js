@@ -1,8 +1,8 @@
 import {
-    CheckoutLink,
+    CheckoutLinkAnchorElement,
     CLASS_NAME_DOWNLOAD,
     CLASS_NAME_UPGRADE,
-} from '../src/checkout-link.js';
+} from '../src/checkout-link-anchor-element.js';
 import {
   Checkout
 } from '../src/checkout.js';
@@ -35,7 +35,7 @@ const HREF = 'https://test.org/';
  * @returns {Commerce.Checkout.Placeholder}
  */
 function mockCheckoutLink(wcsOsi, options = {}, append = true) {
-    const element = CheckoutLink.createCheckoutLink(
+    const element = CheckoutLinkAnchorElement.createCheckoutLink(
         { wcsOsi, ...options },
         `Buy now: ${wcsOsi}`,
     );
@@ -244,7 +244,7 @@ describe('class "CheckoutLink"', () => {
     describe('method "updateOptions"', () => {
         it('updates element data attributes', async () => {
             await initMasCommerceService();;
-            const link = CheckoutLink.createCheckoutLink({
+            const link = CheckoutLinkAnchorElement.createCheckoutLink({
                 quantity: ['1'],
                 wcsOsi: 'abm',
                 upgrade: 'true',

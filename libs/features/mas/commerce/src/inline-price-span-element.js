@@ -79,7 +79,7 @@ const DISPLAY_TAX_MAP = {
     TEAM_EDU: ['SG_en', 'KR_ko'],
 };
 
-export class InlinePrice extends HTMLSpanElement {
+export class InlinePriceSpanElement extends HTMLSpanElement {
     static is = 'inline-price';
     static tag = 'span';
     static get observedAttributes() {
@@ -112,7 +112,7 @@ export class InlinePrice extends HTMLSpanElement {
             template,
             wcsOsi,
         } = service.collectPriceOptions(options);
-        const element = createMasElement(InlinePrice, {
+        const element = createMasElement(InlinePriceSpanElement, {
             displayOldPrice,
             displayPerUnit,
             displayRecurrence,
@@ -328,8 +328,8 @@ export class InlinePrice extends HTMLSpanElement {
 }
 
 // Define custom DOM element
-if (!window.customElements.get(InlinePrice.is)) {
-    window.customElements.define(InlinePrice.is, InlinePrice, {
-        extends: InlinePrice.tag,
+if (!window.customElements.get(InlinePriceSpanElement.is)) {
+    window.customElements.define(InlinePriceSpanElement.is, InlinePriceSpanElement, {
+        extends: InlinePriceSpanElement.tag,
     });
 }
