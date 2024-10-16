@@ -289,7 +289,10 @@ export class MerchCardCollection extends LitElement {
                 selects="single"
                 value="${alphabetical
                     ? SORT_ORDER.alphabetical
-                    : SORT_ORDER.authored}"
+                    : SORT_ORDER.authored}
+                aria-activedescendant="${alphabetical 
+                    ? 'sp-menu-item-alphabetical' 
+                    : 'sp-menu-item-authored'}"
             >
                 <span slot="label-only"
                     >${sortText}:

@@ -134,7 +134,8 @@ import{html as l,LitElement as N}from"../lit-all.min.js";var m=class{constructor
                 size="m"
                 @change="${this.sortChanged}"
                 selects="single"
-                value="${i?n.alphabetical:n.authored}"
+                value="${i?n.alphabetical:n.authored}
+                aria-activedescendant="${i?"sp-menu-item-alphabetical":"sp-menu-item-authored"}"
             >
                 <span slot="label-only"
                     >${e}:
