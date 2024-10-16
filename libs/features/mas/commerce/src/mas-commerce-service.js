@@ -143,6 +143,7 @@ export class MasCommerceService extends HTMLElement {
     }
 
     flushWcsCache() {
+        /* c8 ignore next 2 */
         this.flushWcsCache();
         this.log.debug('Flushed WCS cache');
     }
