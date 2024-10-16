@@ -35,6 +35,11 @@ var MerchIcon = class extends LitElement {
             --img-height: 24px;
         }
 
+        :host([size='m']) {
+            --img-width: 30px;
+            --img-height: 30px;
+        }
+
         :host([size='l']) {
             --img-width: 40px;
             --img-height: 40px;
@@ -1928,6 +1933,8 @@ merch-card[variant="ccd-suggested"] [slot="heading-xs"] {
 }
 
 merch-card[variant="ccd-suggested"] [slot="cta"] a {
+  font-size: var(--consonant-merch-card-body-xs-font-size);
+  line-height: normal;
   text-decoration: none;
   color: var(--spectrum-gray-800);
   font-weight: 700;
@@ -1987,19 +1994,26 @@ var CCDSuggested = class extends VariantLayout {
       display: flex;
       flex-flow: wrap;
       place-self: flex-start;
+      flex-wrap: nowrap;
     }
 
     :host([variant='ccd-suggested']) .headings {
       padding-inline-start: var(--consonant-merch-spacing-xxs);
+      display: flex;
+      flex-direction: column;
     }
 
     :host([variant='ccd-suggested']) ::slotted([slot='icons']) {
-      place-self: flex-start;
+      place-self: center;
     }
 
     :host([variant='ccd-suggested']) ::slotted([slot='heading-xs']) {
       font-size: var(--merch-card-heading-xxs-font-size);
       line-height: var(--merch-card-heading-xxs-line-height);
+    }
+    
+    :host([variant='ccd-suggested']) ::slotted([slot='detail-m']) {
+      line-height: var(--consonant-merch-card-detail-m-line-height);
     }
     
     :host([variant='ccd-suggested'][strip-size='wide']) ::slotted([slot='body-xs']) {
@@ -2014,6 +2028,8 @@ var CCDSuggested = class extends VariantLayout {
       display: flex;
       align-items: center;
       color: var(--spectrum-gray-800, #F8F8F8);
+      font-size: var(--consonant-merch-card-body-xs-font-size);
+      line-height: var(--consonant-merch-card-body-xs-line-height);
     }
 
     :host([variant='ccd-suggested']) ::slotted([slot='cta']) {
@@ -2051,7 +2067,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a:not(.con-button) {
     font-weight: 400;
     line-height: var(--consonant-merch-card-body-xxs-line-height);
     text-decoration-line: underline;
-    color: var(--spectrum-blue-800, #147AF3);
+    color: var(--spectrum-gray-800, var(--merch-color-grey-80;
   }
 
   merch-card[variant="ccd-slice"] [slot='image'] img {

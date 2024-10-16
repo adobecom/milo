@@ -59,19 +59,26 @@ export class CCDSuggested extends VariantLayout {
       display: flex;
       flex-flow: wrap;
       place-self: flex-start;
+      flex-wrap: nowrap;
     }
 
     :host([variant='ccd-suggested']) .headings {
       padding-inline-start: var(--consonant-merch-spacing-xxs);
+      display: flex;
+      flex-direction: column;
     }
 
     :host([variant='ccd-suggested']) ::slotted([slot='icons']) {
-      place-self: flex-start;
+      place-self: center;
     }
 
     :host([variant='ccd-suggested']) ::slotted([slot='heading-xs']) {
       font-size: var(--merch-card-heading-xxs-font-size);
       line-height: var(--merch-card-heading-xxs-line-height);
+    }
+    
+    :host([variant='ccd-suggested']) ::slotted([slot='detail-m']) {
+      line-height: var(--consonant-merch-card-detail-m-line-height);
     }
     
     :host([variant='ccd-suggested'][strip-size='wide']) ::slotted([slot='body-xs']) {
@@ -86,6 +93,8 @@ export class CCDSuggested extends VariantLayout {
       display: flex;
       align-items: center;
       color: var(--spectrum-gray-800, #F8F8F8);
+      font-size: var(--consonant-merch-card-body-xs-font-size);
+      line-height: var(--consonant-merch-card-body-xs-line-height);
     }
 
     :host([variant='ccd-suggested']) ::slotted([slot='cta']) {
