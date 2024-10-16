@@ -134,15 +134,15 @@ export class MasCommerceService extends HTMLElement {
     }
 
     connectedCallback() {
-      if (!this.promise) {
-        this.promise = new Promise((resolve) => {
+      if (!this.readyPromise) {
+        this.readyPromise = new Promise((resolve) => {
           this.activate(resolve);
         });
       }
     }
 
     disconnectedCallback() {
-        this.promise = null;
+        this.readyPromise = null;
     }
 
     flushWcsCache() {

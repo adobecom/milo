@@ -529,7 +529,7 @@ export async function initService(force = false, attributes = {}) {
       service = createTag('mas-commerce-service', { env: commerce?.env?.name, locale, language, ...attributes, ...commerce });
       service.registerCheckoutAction(getCheckoutAction);
       document.head.append(service);
-      await service.promise;
+      await service.readyPromise;
       service.imsSignedInPromise?.then((isSignedIn) => {
         if (isSignedIn) {
           fetchEntitlements();
