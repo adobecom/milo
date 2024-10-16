@@ -98,8 +98,8 @@ const getGrayboxConfig = async (context) => {
 const getSharepointData = async (context) => {
   const liveOrigin = context.previewUrl.origin.replace('-graybox', '').replace('.hlx.page', '.hlx.live');
   const { sharepoint } = await getServiceConfig(liveOrigin);
-  context.setup.rootFolder = `/${sharepoint.rootMapping}`;
-  context.setup.gbRootFolder = `/${sharepoint.rootMapping}-graybox`;
+  context.setup.rootFolder = `/${sharepoint.rootMapping.replace('-graybox', '')}`;
+  context.setup.gbRootFolder = `/${sharepoint.rootMapping}`;
   context.setup.driveId = sharepoint.driveId;
 };
 
