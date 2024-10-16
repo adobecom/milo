@@ -174,14 +174,17 @@ describe('LANA', () => {
   it('The lana-sample query param overrides existing sampleRate', () => {
     window.lana.options = {
       clientId: 'blah',
-      sampleRate: 100,
-      implicitSampleRate: 100,
+      sampleRate: 0,
+      implicitSampleRate: 0,
     };
     const originalUrl = window.location.href;
 
+    window.lana.log('Sample rate is zero so should not be logged');
+    expect(xhrRequests.length).to.equal(0);
+
     // create a new url based on the current url that adds a query param for lana-sample
     const newUrl = new URL(window.location.href);
-    newUrl.searchParams.set('lana-sample', '33');
+    newUrl.searchParams.set('lana-sample', '100');
 
     window.history.pushState({ path: newUrl.toString() }, '', newUrl.toString());
 
@@ -189,7 +192,7 @@ describe('LANA', () => {
     expect(xhrRequests.length).to.equal(1);
     expect(xhrRequests[0].method).to.equal('GET');
     expect(xhrRequests[0].url).to.equal(
-      'https://www.stage.adobe.com/lana/ll?m=lana-sample%20query%20param&c=blah&s=33&t=e',
+      'https://www.stage.adobe.com/lana/ll?m=lana-sample%20query%20param&c=blah&s=100&t=e',
     );
 
     window.history.pushState({ path: originalUrl }, '', originalUrl);
