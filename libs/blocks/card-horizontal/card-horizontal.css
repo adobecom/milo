@@ -16,10 +16,6 @@
   outline: none;
 }
 
-.card-horizontal a:hover {
-  text-decoration: none;
-}
-
 .card-horizontal a::after {
   content: '';
   position: absolute;

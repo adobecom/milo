@@ -185,11 +185,12 @@
 
 .brick.click a.foreground .first-link:not([class*="button"]) {
   color: var(--link-color);
-  text-decoration: none;
+  text-decoration: underline;
 }
 
 .brick.click:hover a.foreground .first-link:not([class*="button"]) {
   text-decoration: underline;
+  text-decoration-style: double;
   color: var(--link-hover-color);
 }
 
@@ -198,7 +199,6 @@
 .brick.static-links.click a.foreground .first-link:not([class*="button"]),
 .brick.static-links.click a.foreground a:not([class*="button"]) {
   color: inherit;
-  text-decoration: underline;
 }
 
 .brick.click:hover .first-link.con-button,
@@ -210,6 +210,7 @@
   background-color: var(--color-white);
   color: var(--color-black);
   text-decoration: none;
+  text-decoration-style: double;
 }
 
 .brick.light.click:hover .first-link.con-button,
