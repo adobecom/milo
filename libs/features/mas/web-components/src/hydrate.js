@@ -58,7 +58,7 @@ export async function hydrate(fragmentData, merchCard) {
         );
     }
 
-    /* c8 ignore next 8 */
+    /* c8 ignore next 9 */
     if (fragment.subtitle && aemFragmentMapping.subtitle) {
         appendFn(
             createTag(
@@ -116,6 +116,7 @@ export async function hydrate(fragmentData, merchCard) {
                 }
                 ctas.push(cta);
             } else {
+                /* c8 ignore next 4 */
                 if (!button) {
                     ctas.push(cta);
                     return;

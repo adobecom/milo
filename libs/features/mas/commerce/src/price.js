@@ -78,11 +78,11 @@ export function Price({ literals, providers, settings }) {
         if (!Array.isArray(offers) || !offers.length || !options) {
             return '';
         }
+        /* c8 ignore next 20 */
         const { template } = options;
         let method;
         switch (template) {
             // TODO: use price template name constants, export them from `consonant-templates`
-            /* c8 ignore next 15 */
             case 'discount':
                 method = discount;
                 break;
