@@ -68,7 +68,7 @@ export class CCDSlice extends VariantLayout {
             font-weight: 400;
             line-height: var(--consonant-merch-card-body-xxs-line-height);
             text-decoration-line: underline;
-            color: var(--spectrum-gray-800, var(--merch-color-grey-80, #2C2C2C));
+            color: var(--spectrum-gray-800, var(--merch-color-grey-80);
         }
 
         :host([variant='ccd-slice']) ::slotted([slot='image']) {
