@@ -293,10 +293,10 @@ const buildComplexQuery = (andLogicTags, orLogicTags, notLogicTags) => {
 const getSortOptions = (state, strs) => {
   const sortVals = {
     featured: 'Featured',
-    dateAsc: 'Date: (Oldest to Newest)',
     dateDesc: 'Date: (Newest to Oldest)',
-    modifiedDesc: 'Date: (Last Modified, Newest to Oldest)',
-    modifiedAsc: 'Date (Last Modified, Oldest to Newest)',
+    dateAsc: 'Date: (Oldest to Newest)',
+    modifiedDesc: 'Modified Date: (Newest to Oldest)',
+    modifiedAsc: 'Modified Date: (Oldest to Newest)',
     eventSort: 'Events: (Live, Upcoming, OnDemand)',
     titleAsc: 'Title A-Z',
     titleDesc: 'Title Z-A',
