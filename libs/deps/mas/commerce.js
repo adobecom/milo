@@ -3385,6 +3385,9 @@ var _CheckoutLink = class _CheckoutLink extends HTMLAnchorElement {
   get value() {
     return this.masElement.value;
   }
+  requestUpdate(force = false) {
+    return this.masElement.requestUpdate(force);
+  }
   static get observedAttributes() {
     return [
       "data-checkout-workflow",
@@ -4231,6 +4234,9 @@ var _InlinePrice = class _InlinePrice extends HTMLSpanElement {
   }
   get value() {
     return this.masElement.value;
+  }
+  requestUpdate(force = false) {
+    return this.masElement.requestUpdate(force);
   }
   /**
    * Resolves default value of displayTax property, based on provided geo info and segments.

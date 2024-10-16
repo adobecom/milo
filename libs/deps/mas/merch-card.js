@@ -2579,23 +2579,27 @@ async function hydrate(fragmentData, merchCard) {
   if (!variant)
     return;
   fragment.model = fragment.model;
-  merchCard.variantLayout?.refs?.forEach((ref) => ref.remove());
+  merchCard.querySelectorAll("[slot]").forEach((el) => {
+    el.remove();
+  });
   merchCard.variant = variant;
   await merchCard.updateComplete;
-  merchCard.variantLayout.refs ??= [];
   const { aemFragmentMapping } = merchCard.variantLayout;
   if (!aemFragmentMapping)
     return;
   const appendFn = (el) => {
-    merchCard.variantLayout.refs.push(el);
     merchCard.append(el);
   };
-  fragment.mnemonicIcon?.forEach((icon, idx) => {
-    const href = fragment.mnemonicLink?.length > idx ? fragment.mnemonicLink[idx] : "";
-    const alt = fragment.mnemonicAlt?.length > idx ? fragment.mnemonicAlt[idx] : "";
+  const mnemonics = fragment.mnemonicIcon?.map((icon, index) => ({
+    icon,
+    alt: fragment.mnemonicAlt[index] ?? "",
+    link: fragment.mnemonicLink[index] ?? ""
+  }));
+  fragmentData.computed = { mnemonics };
+  mnemonics.forEach(({ icon: src, alt, link: href }) => {
     const merchIcon = createTag("merch-icon", {
       slot: "icons",
-      src: icon,
+      src,
       alt,
       href,
       size: "l"
@@ -2969,7 +2973,6 @@ var MerchCard = class extends LitElement2 {
       (resolve) => setTimeout(() => resolve(false), MERCH_CARD_LOAD_TIMEOUT)
     );
     const success = await Promise.race([successPromise, timeoutPromise]);
-    console.log(successPromise, timeoutPromise, success);
     if (success === true) {
       this.dispatchEvent(
         new CustomEvent(EVENT_MAS_READY, {
