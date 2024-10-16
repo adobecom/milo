@@ -38,6 +38,9 @@ import {
   darkIcons,
   setDisableAEDState,
   getDisableAEDState,
+  newNavEnabled,
+  animateInSequence,
+  transformTemplateToMobile,
 } from './utilities/utilities.js';
 
 import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
@@ -681,9 +684,23 @@ class Gnav {
 
   isToggleExpanded = () => this.elements.mobileToggle?.getAttribute('aria-expanded') === 'true';
 
+  isLocalNav = () => this
+    .elements
+    .navWrapper
+    .querySelectorAll('.feds-nav > section.feds-navItem')
+    ?.length === 1;
+
   toggleMenuMobile = () => {
     const toggle = this.elements.mobileToggle;
     const isExpanded = this.isToggleExpanded();
+    if (!isExpanded && newNavEnabled) {
+      const sections = document.querySelectorAll('header.new-nav .feds-nav > section.feds-navItem > button.feds-navLink');
+      animateInSequence(sections, 0.075);
+      if (this.isLocalNav()) {
+        const section = sections[0];
+        queueMicrotask(() => section.click());
+      }
+    }
     toggle?.setAttribute('aria-expanded', !isExpanded);
     document.body.classList.toggle('disable-scroll', !isExpanded);
     this.elements.navWrapper?.classList?.toggle('feds-nav-wrapper--expanded', !isExpanded);
@@ -906,10 +923,24 @@ class Gnav {
 
         const menuLogic = await loadDecorateMenu();
 
-        menuLogic.decorateMenu({
+        await menuLogic.decorateMenu({
           item,
           template,
           type: itemType,
+        });
+        const popup = template.querySelector('.feds-popup');
+        let originalContent = popup.innerHTML;
+
+        if (!isDesktop.matches && newNavEnabled && popup) {
+          originalContent = transformTemplateToMobile(popup, item);
+          popup.querySelector('.close-icon')?.addEventListener('click', this.toggleMenuMobile);
+        }
+        isDesktop.addEventListener('change', () => {
+          if (isDesktop.matches) popup.innerHTML = originalContent;
+          else {
+            originalContent = transformTemplateToMobile(popup, item);
+            popup.querySelector('.close-icon')?.addEventListener('click', this.toggleMenuMobile);
+          }
         });
       }, 'Decorate dropdown failed', 'errorType=info,module=gnav');
 
@@ -940,6 +971,12 @@ class Gnav {
 
         // Toggle trigger's dropdown on click
         dropdownTrigger.addEventListener('click', (e) => {
+          if (!isDesktop.matches && newNavEnabled && isSectionMenu) {
+            const popup = dropdownTrigger.nextElementSibling;
+            if (!popup?.querySelector('.tabs [aria-selected="true"]')) {
+              setTimeout(() => popup?.querySelector('.tab')?.click(), 100);
+            }
+          }
           trigger({ element: dropdownTrigger, event: e });
           setActiveDropdown(dropdownTrigger);
         });
@@ -1080,6 +1117,7 @@ export default async function init(block) {
     content,
     block,
   });
+  if (newNavEnabled) block.classList.add('new-nav');
   await gnav.init();
   block.setAttribute('daa-im', 'true');
   const mepMartech = mep?.martech || '';
