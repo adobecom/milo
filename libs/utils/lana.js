@@ -1,5 +1,6 @@
-/* eslint-disable */
-(function () {
+/* eslint-disable no-param-reassign */
+/* eslint-disable no-console */
+(function iife() {
   const MSG_LIMIT = 2000;
 
   const defaultOptions = {
@@ -50,10 +51,6 @@
     }, {});
   }
 
-  function sendUnhandledError(e) {
-    log(e.reason || e.error || e.message, { errorType: 'i' });
-  }
-
   function log(msg, options) {
     msg = msg && msg.stack ? msg.stack : (msg || '');
     if (msg.length > MSG_LIMIT) {
@@ -97,8 +94,13 @@
       }
       xhr.open('GET', `${endpoint}?${queryParams.join('&')}`);
       xhr.send();
+      // eslint-disable-next-line consistent-return
       return xhr;
     }
+  }
+
+  function sendUnhandledError(e) {
+    log(e.reason || e.error || e.message, { errorType: 'i' });
   }
 
   function hasDebugParam() {
