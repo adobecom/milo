@@ -50,13 +50,9 @@ export async function getParamsFg(config) {
   const path = resourcePath.replace(/\.[^/.]+$/, '');
   const projectPath = `${path}.xlsx`;
   const adminPageUri = window.location.href;
-  const { fgShareUrl } = config.sharepoint.site;
-  const fgShareUrlColor = fgShareUrl.replace(/<fgColor>/g, heading.value.fgColor);
   const params = {
     adminPageUri,
     projectExcelPath: projectPath,
-    shareUrl: config.sharepoint.site.shareUrl,
-    fgShareUrl: fgShareUrlColor,
   };
   return params;
 }
@@ -127,13 +123,13 @@ export async function fetchStatusAction() {
   const paramsFg = await getParamsFg(config);
   const excelPath = paramsFg.projectExcelPath;
   const env = heading.value.env;
-  let params = { type: 'copy', projectExcelPath: excelPath, fgShareUrl: paramsFg.fgShareUrl, fgColor: heading.value.fgColor};
+  let params = { type: 'copy', projectExcelPath: excelPath, adminPageUri: paramsFg.adminPageUri };
   const copyStatus = await postData(config[env].milofg.status.url, params);
   // fetch promote status
-  params = { type: 'promote', fgShareUrl: paramsFg.fgShareUrl, fgColor: heading.value.fgColor };
+  params = { type: 'promote', adminPageUri: paramsFg.adminPageUri, fgColor: heading.value.fgColor };
   const promoteStatus = await postData(config[env].milofg.status.url, params);
   // fetch delete status
-  params = { type: 'delete', fgShareUrl: paramsFg.fgShareUrl, fgColor: heading.value.fgColor };
+  params = { type: 'delete', adminPageUri: paramsFg.adminPageUri, fgColor: heading.value.fgColor };
   const deleteStatus = await postData(config[env].milofg.status.url, params);
   return ({ copyStatus, promoteStatus, deleteStatus });
 }
