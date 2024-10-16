@@ -31,11 +31,13 @@ const CLASS_EL_REPLACE = 'p13n-replaced';
 const COLUMN_NOT_OPERATOR = 'not ';
 const TARGET_EXP_PREFIX = 'target-';
 const INLINE_HASH = '_inline';
+const MARTECH_RETURNED_EVENT = 'martechReturned';
 const PAGE_URL = new URL(window.location.href);
 const FLAGS = {
   all: 'all',
   includeFragments: 'include-fragments',
 };
+let isPostLCP = false;
 
 export const TRACKED_MANIFEST_TYPE = 'personalization';
 
@@ -489,6 +491,7 @@ export const updateFragDataProps = (a, inline, sections, fragment) => {
 };
 
 export function handleCommands(commands, rootEl, forceInline = false, forceRootEl = false) {
+  const section1 = document.querySelector('main > div');
   commands.forEach((cmd) => {
     const { action, content, selector } = cmd;
     cmd.content = forceInline ? addHash(content, INLINE_HASH) : content;
@@ -501,8 +504,10 @@ export function handleCommands(commands, rootEl, forceInline = false, forceRootE
     cmd.modifiers = modifiers;
 
     els?.forEach((el) => {
-      if (!el || (!(action in COMMANDS) && !(action in CREATE_CMDS))
-        || (rootEl && !rootEl.contains(el))) return;
+      if (!el
+        || (!(action in COMMANDS) && !(action in CREATE_CMDS))
+        || (rootEl && !rootEl.contains(el))
+        || (isPostLCP && section1?.contains(el))) return;
 
       if (action in COMMANDS) {
         COMMANDS[action](el, cmd);
@@ -969,7 +974,7 @@ export function parseNestedPlaceholders({ placeholders }) {
   });
 }
 
-export async function applyPers(manifests, postLCP = false) {
+export async function applyPers(manifests) {
   if (!manifests?.length) return;
   let experiments = manifests;
   const config = getConfig();
@@ -994,13 +999,13 @@ export async function applyPers(manifests, postLCP = false) {
   config.mep.commands = consolidateArray(results, 'commands', config.mep.commands);
 
   const main = document.querySelector('main');
-  if (config.mep.replacepage && !postLCP && main) {
+  if (config.mep.replacepage && !isPostLCP && main) {
     await replaceInner(config.mep.replacepage.val, main);
     const { manifestId, targetManifestId } = config.mep.replacepage;
     addIds(main, manifestId, targetManifestId);
   }
 
-  if (!postLCP) config.mep.commands = handleCommands(config.mep.commands);
+  config.mep.commands = handleCommands(config.mep.commands);
   deleteMarkedEls();
 
   const pznList = results.filter((r) => (r.experiment?.manifestType === TRACKED_MANIFEST_TYPE));
@@ -1054,13 +1059,33 @@ export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => 
   return persManifests;
 };
 
+async function callMartech(config) {
+  const { getTargetPersonalization } = await import('../../martech/martech.js');
+  const { targetManifests, targetPropositions } = await getTargetPersonalization();
+  config.mep.targetManifests = targetManifests;
+  if (targetPropositions?.length && window._satellite) {
+    window._satellite.track('propositionDisplay', targetPropositions);
+  }
+  if (config.mep.targetEnabled === 'postlcp') {
+    const event = new CustomEvent(MARTECH_RETURNED_EVENT, { detail: 'Martech returned' });
+    window.dispatchEvent(event);
+  }
+  return targetManifests;
+}
+const awaitMartech = () => new Promise((resolve) => {
+  const listener = (event) => resolve(event.detail);
+  window.addEventListener(MARTECH_RETURNED_EVENT, listener, { once: true });
+});
+
 export async function init(enablements = {}) {
   let manifests = [];
   const {
     mepParam, mepHighlight, mepButton, pzn, promo, target, postLCP,
   } = enablements;
   const config = getConfig();
-  if (!postLCP) {
+  if (postLCP) {
+    isPostLCP = true;
+  } else {
     config.mep = {
       updateFragDataProps,
       preview: (mepButton !== 'off'
@@ -1079,16 +1104,15 @@ export async function init(enablements = {}) {
     });
   }
 
-  if (target === true || (target === 'gnav' && postLCP)) {
-    const { getTargetPersonalization } = await import('../../martech/martech.js');
-    const { targetManifests, targetPropositions } = await getTargetPersonalization();
-    manifests = manifests.concat(targetManifests);
-    if (targetPropositions?.length && window._satellite) {
-      window._satellite.track('propositionDisplay', targetPropositions);
-    }
+  if (target === true) manifests = manifests.concat(await callMartech(config));
+  if (target === 'postlcp') callMartech(config);
+  if (postLCP) {
+    if (!config.mep.targetManifests) await awaitMartech();
+    manifests = config.mep.targetManifests;
   }
+  if (!manifests || !manifests.length) return;
   try {
-    await applyPers(manifests, postLCP);
+    await applyPers(manifests);
   } catch (e) {
     log(`MEP Error: ${e.toString()}`);
     window.lana?.log(`MEP Error: ${e.toString()}`);
