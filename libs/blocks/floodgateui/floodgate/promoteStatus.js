@@ -130,7 +130,7 @@ class PromoteStatusModal extends Component {
     const paramsFg = await getParamsFg(config);
     const env = heading.value.env;
     const { url } = config[env].milofg.promotestatus;
-    let params = { spToken: accessToken, adminPageUri: paramsFg.adminPageUri, batchFiles: batchNumber };
+    let params = { adminPageUri: paramsFg.adminPageUri, batchFiles: batchNumber };
     const batchFilesData = await postData(url, params);
     return batchFilesData.batchFiles;
   };
@@ -140,7 +140,7 @@ class PromoteStatusModal extends Component {
     const paramsFg = await getParamsFg(config);
     const env = heading.value.env;
     const { url } = config[env].milofg.promotestatus;
-    let params = { spToken: accessToken, adminPageUri: paramsFg.adminPageUri, promoteStatus: true };
+    let params = { adminPageUri: paramsFg.adminPageUri, promoteStatus: true };
     const promoteStatus = await postData(url, params);
     return promoteStatus.promoteStatus.batchesInfo;
   };
@@ -150,7 +150,7 @@ class PromoteStatusModal extends Component {
     const paramsFg = await getParamsFg(config);
     const env = heading.value.env;
     const { url } = config[env].milofg.promotestatus;
-    let params = { spToken: accessToken, adminPageUri: paramsFg.adminPageUri, promoteResults: true };
+    let params = { adminPageUri: paramsFg.adminPageUri, promoteResults: true };
     const overallStatus = await postData(url, params);
     const { failedPromotes, failedPreviews, failedPublishes } = overallStatus.promoteResults;
 
@@ -181,7 +181,7 @@ class PromoteStatusModal extends Component {
     const paramsFg = await getParamsFg(config);
     const env = heading.value.env;
     const { url } = config[env].milofg.promotestatus;
-    let params = { spToken: accessToken, fgShareUrl: paramsFg.fgShareUrl, batchResults: batchNumber };
+    let params = { adminPageUri: paramsFg.adminPageUri, batchResults: batchNumber };
     const failedPagesData = await postData(url, params);
     const { failedPromotes, failedPreviews, failedPublishes } = failedPagesData.batchResults;
 
