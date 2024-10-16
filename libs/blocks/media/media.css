@@ -394,7 +394,7 @@ div[class*="-up"] .media .foreground > .media-row {
     margin: 0 auto;
   }
 
-  .media.large > .foreground .media-row .image { min-width: fit-content; }
+  .media.large > .foreground .media-row .image { min-width: 700px; }
 
   .media[class*="-up"].large > .foreground .media-row .image,
   div[class*="-up"] .media.large > .foreground .media-row .image { min-width: 100%; }

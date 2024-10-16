@@ -34,8 +34,10 @@ function decorateVideo(clone, figEl) {
     applyHoverPlay(videoTag);
     figEl.prepend(videoContainer);
     const pausePlayWrapper = videoContainer.querySelector('.pause-play-wrapper') || videoContainer
-    pausePlayWrapper?.addEventListener('click', handlePause);
-    pausePlayWrapper?.addEventListener('keydown', handlePause)
+    if (pausePlayWrapper?.querySelector('.accessibility-control')) {
+      pausePlayWrapper?.addEventListener('click', handlePause);
+      pausePlayWrapper?.addEventListener('keydown', handlePause);
+    }
   }
 }
 

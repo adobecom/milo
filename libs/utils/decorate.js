@@ -2,7 +2,6 @@ import { createTag, loadStyle, getConfig, createIntersectionObserver } from './u
 
 const { miloLibs, codeRoot } = getConfig();
 
-const accessibilityEnabled = true;
 export function decorateButtons(el, size) {
   const buttons = el.querySelectorAll('em a, strong a, p > a strong');
   if (buttons.length === 0) return;
@@ -242,7 +241,7 @@ export const syncPausePlayIcon = (video) => {
 }
 
 export const addAccessibilityControl = (videoString, videoAttributes, tabIndex = 0) => {
-  if (accessibilityEnabled && !videoAttributes.includes('controls')) {
+  if (!videoAttributes.includes('controls')) {
     if (videoAttributes.includes('hoverplay')) {
       return `<a class='pause-play-wrapper' tabindex=${tabIndex} alt='play/pause motion' aria-label='play/pause motion' >${videoString}
     </a>`;
@@ -287,6 +286,17 @@ export function applyHoverPlay(video) {
       video.addEventListener('ended', () => { syncPausePlayIcon(video); });
       video.setAttribute('data-mouseevent', true);
     }
+  }
+}
+
+export function applyAccessibiltyEvents(videoEl, attrs) {
+  const pausePlayWrapper = videoEl.parentElement.querySelector('.pause-play-wrapper') || videoEl.closest('.pause-play-wrapper');
+  if (pausePlayWrapper?.querySelector('.accessibility-control')) {
+    pausePlayWrapper?.addEventListener('click', handlePause);
+    pausePlayWrapper?.addEventListener('keydown', handlePause);
+  }
+  if (attrs.includes('autoplay')) {
+    videoEl.addEventListener('ended', () => { syncPausePlayIcon(videoEl); });
   }
 }
 
@@ -379,14 +389,17 @@ export async function loadCDT(el, classList) {
 }
 
 export function decorateAnchorVideo({ src = '', anchorTag }) {
+  const accessibilityEnabled = isAccessible(anchorTag);
   if (!src.length || !(anchorTag instanceof HTMLElement)) return;
   if (anchorTag.closest('.marquee, .aside, .hero-marquee, .quiz-marquee') && !anchorTag.hash) anchorTag.hash = '#autoplay';
   const { dataset, parentElement } = anchorTag;
   const attrs = getVideoAttrs(anchorTag.hash, dataset);
   const tabIndex = anchorTag.tabIndex || 0;
-  const videoIndex = (tabIndex===-1)?"tabindex=-1":'';
+  const videoIndex = (tabIndex === -1) ? "tabindex=-1" : '';
   let video = `<video ${attrs} data-video-source=${src} ${videoIndex}></video>`;
-  video = addAccessibilityControl(video, attrs, tabIndex);
+  if (accessibilityEnabled) {
+    video = addAccessibilityControl(video, attrs, tabIndex);
+  }
   anchorTag.insertAdjacentHTML('afterend', video);
   const videoEl = parentElement.querySelector('video');
   createIntersectionObserver({
@@ -396,14 +409,14 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
       videoEl?.appendChild(createTag('source', { src, type: 'video/mp4' }));
     },
   });
-
-  const pausePlayWrapper = anchorTag.nextElementSibling.querySelector('.pause-play-wrapper');
-  pausePlayWrapper?.addEventListener('click', handlePause);
-  pausePlayWrapper?.addEventListener('keydown', handlePause);
-  if (attrs.includes('autoplay')) {
-    videoEl.addEventListener('ended', () => { syncPausePlayIcon(videoEl); });
-  }
+  accessibilityEnabled && applyAccessibiltyEvents(videoEl, attrs);
   applyHoverPlay(videoEl);
   applyInViewPortPlay(videoEl);
   anchorTag.remove();
+}
+
+export function isAccessible(anchorTag) {
+  let section = anchorTag.closest('div[class="section"]');
+  let block = Array.from(section.children).filter(block => block.contains(anchorTag))[0];
+  return !block.classList.contains('hide-controls');
 }
