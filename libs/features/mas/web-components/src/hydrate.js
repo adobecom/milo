@@ -1,5 +1,7 @@
 import { createTag } from './utils.js';
 
+const DEFAULT_BADGE_COLOR = '#000000';
+const DEFAULT_BADGE_BACKGROUND_COLOR = '#F8D904';
 export async function hydrate(fragmentData, merchCard) {
     const fragment = fragmentData.fields.reduce(
         (acc, { name, multiple, values }) => {
@@ -10,7 +12,6 @@ export async function hydrate(fragmentData, merchCard) {
     );
     const { variant } = fragment;
     if (!variant) return;
-    fragment.model = fragment.model;
 
     merchCard.variantLayout?.refs?.forEach((ref) => ref.remove());
     merchCard.variant = variant;
@@ -41,6 +42,12 @@ export async function hydrate(fragmentData, merchCard) {
         });
         appendFn(merchIcon);
     });
+
+    if (fragment.badge) {
+      merchCard.setAttribute('badge-text', fragment.badge);
+      merchCard.setAttribute('badge-color', fragment.badgeColor || DEFAULT_BADGE_COLOR);
+      merchCard.setAttribute('badge-background-color', fragment.badgeBackgroundColor || DEFAULT_BADGE_BACKGROUND_COLOR);
+    }
 
     /* c8 ignore next 2 */
     if (!fragment.size) {

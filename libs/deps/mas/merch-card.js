@@ -2077,7 +2077,10 @@ var CCDSlice = class extends VariantLayout {
   }
   renderLayout() {
     return html14` <div class="content">
-                <slot name="icons"></slot> ${this.badge}
+                <div class="top-section">
+                  <slot name="icons"></slot> 
+                  ${this.badge}
+                </div>  
                 <slot name="body-s"></slot>
                 <slot name="footer"></slot>
             </div>
@@ -2143,6 +2146,15 @@ var CCDSlice = class extends VariantLayout {
             border-radius: 50%;
             width: inherit;
             height: inherit;
+        }
+
+        :host([variant='ccd-slice']) div[class$='-badge'] {
+            position: static;
+            border-radius: 4px;
+        }
+
+        :host([variant='ccd-slice']) .top-section {
+            align-items: center;
         }
     `;
 };
@@ -2567,6 +2579,8 @@ body.merch-modal {
 document.head.appendChild(styles2);
 
 // src/hydrate.js
+var DEFAULT_BADGE_COLOR = "#000000";
+var DEFAULT_BADGE_BACKGROUND_COLOR = "#F8D904";
 async function hydrate(fragmentData, merchCard) {
   const fragment = fragmentData.fields.reduce(
     (acc, { name, multiple, values }) => {
@@ -2578,7 +2592,6 @@ async function hydrate(fragmentData, merchCard) {
   const { variant } = fragment;
   if (!variant)
     return;
-  fragment.model = fragment.model;
   merchCard.variantLayout?.refs?.forEach((ref) => ref.remove());
   merchCard.variant = variant;
   await merchCard.updateComplete;
@@ -2602,6 +2615,11 @@ async function hydrate(fragmentData, merchCard) {
     });
     appendFn(merchIcon);
   });
+  if (fragment.badge) {
+    merchCard.setAttribute("badge-text", fragment.badge);
+    merchCard.setAttribute("badge-color", fragment.badgeColor || DEFAULT_BADGE_COLOR);
+    merchCard.setAttribute("badge-background-color", fragment.badgeBackgroundColor || DEFAULT_BADGE_BACKGROUND_COLOR);
+  }
   if (!fragment.size) {
     merchCard.removeAttribute("size");
   } else if (aemFragmentMapping.allowedSizes?.includes(fragment.size))
@@ -2809,7 +2827,7 @@ var MerchCard = class extends LitElement2 {
     return this.variantLayout.renderLayout();
   }
   get computedBorderStyle() {
-    if (this.variant !== "twp") {
+    if (!["twp", "ccd-slice"].includes(this.variant)) {
       return `1px solid ${this.borderColor ? this.borderColor : this.badgeBackgroundColor}`;
     }
     return "";
@@ -2969,7 +2987,6 @@ var MerchCard = class extends LitElement2 {
       (resolve) => setTimeout(() => resolve(false), MERCH_CARD_LOAD_TIMEOUT)
     );
     const success = await Promise.race([successPromise, timeoutPromise]);
-    console.log(successPromise, timeoutPromise, success);
     if (success === true) {
       this.dispatchEvent(
         new CustomEvent(EVENT_MAS_READY, {

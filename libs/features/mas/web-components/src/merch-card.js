@@ -157,7 +157,7 @@ export class MerchCard extends LitElement {
     }
 
     get computedBorderStyle() {
-        if (this.variant !== 'twp') {
+        if (!['twp', 'ccd-slice'].includes(this.variant)) {
             return `1px solid ${
                 this.borderColor ? this.borderColor : this.badgeBackgroundColor
             }`;

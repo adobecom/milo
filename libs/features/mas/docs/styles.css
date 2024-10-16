@@ -128,6 +128,12 @@ button {
   margin: 0 auto;
 }
 
+.gallery-grid-1 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
 .vpn-banner {
   background-color: #f8d7da; /* Light red */
   color: #721c24; /* Dark red text */
