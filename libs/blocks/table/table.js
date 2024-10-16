@@ -1,6 +1,7 @@
 /* eslint-disable no-plusplus */
 import { createTag, MILO_EVENTS } from '../../utils/utils.js';
 import { decorateButtons } from '../../utils/decorate.js';
+import { debounce } from '../../utils/action.js';
 
 const DESKTOP_SIZE = 900;
 const MOBILE_SIZE = 768;
@@ -104,7 +105,9 @@ function handleEqualHeight(table, tag) {
   columns.forEach(({ children }) => {
     [...children].forEach((row, i) => {
       row.style.height = 'auto';
-      if (!height[i] || row.offsetHeight > height[i]) height[i] = row.offsetHeight;
+      if (!height[i] || row.offsetHeight > height[i]) {
+        height[i] = row.offsetHeight;
+      }
     });
   });
   columns.forEach(({ children }) => {
@@ -141,7 +144,6 @@ function handleAddOnContent(table) {
       el?.insertAdjacentElement(order === 'before' ? 'beforebegin' : 'afterend', tag);
     });
   });
-  window.addEventListener('resize', () => handleEqualHeight(table, '.row-heading'));
   setTimeout(() => handleEqualHeight(table, '.row-heading'), 0);
 }
 
@@ -583,6 +585,9 @@ export default function init(el) {
 
     let deviceBySize = defineDeviceByScreenSize();
     window.addEventListener('resize', () => {
+      if (el.classList.contains('has-addon')) {
+        debounce(handleEqualHeight(el, '.row-heading'), 300);
+      }
       if (deviceBySize === defineDeviceByScreenSize()) return;
       deviceBySize = defineDeviceByScreenSize();
       handleResize();
