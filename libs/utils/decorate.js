@@ -203,32 +203,29 @@ export function getImgSrc(pic) {
   return source?.srcset ? `poster='${source.srcset}'` : '';
 }
 
-function getVideoAttrs(hash = '', dataset = {}) {
-  const isAutoplay = hash.includes('autoplay');
-  const isAutoplayOnce = hash.includes('autoplay1');
-  const playOnHover = hash.includes('hoverplay');
-  const playInViewport = hash.includes('viewportplay');
+function getVideoAttrs(hash, dataset) {
+  const isAutoplay = hash?.includes('autoplay');
+  const isAutoplayOnce = hash?.includes('autoplay1');
+  const playOnHover = hash?.includes('hoverplay');
+  const playInViewport = hash?.includes('viewportplay');
   const poster = getImgSrc(dataset.videoPoster);
-  const attrs = ['playsinline'];
-  if (poster) {
-    attrs.push(`poster="${poster}"`);
+  const globalAttrs = `playsinline ${poster}`;
+  const autoPlayAttrs = 'autoplay muted';
+  const playInViewportAttrs = playInViewport ? 'data-play-viewport' : '';
+
+  if (isAutoplay && !isAutoplayOnce) {
+    return `${globalAttrs} ${autoPlayAttrs} loop ${playInViewportAttrs}`;
   }
-  if (isAutoplay) {
-    attrs.push('autoplay', 'muted');
-    if (!isAutoplayOnce) {
-      attrs.push('loop');
-    }
+  if (playOnHover && isAutoplayOnce) {
+    return `${globalAttrs} ${autoPlayAttrs} data-hoverplay`;
   }
   if (playOnHover) {
-    attrs.push('data-hoverplay');
+    return `${globalAttrs} muted data-hoverplay`;
   }
-  if (playInViewport) {
-    attrs.push('data-play-viewport');
+  if (isAutoplayOnce) {
+    return `${globalAttrs} ${autoPlayAttrs} ${playInViewportAttrs}`;
   }
-  if (!isAutoplay && !isAutoplayOnce) {
-    attrs.push('controls');
-  }
-  return attrs.join(' ');
+  return `${globalAttrs} controls`;
 }
 
 export function applyHoverPlay(video) {
@@ -332,15 +329,14 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
   if (!src.length || !(anchorTag instanceof HTMLElement)) return;
   if (anchorTag.closest('.marquee, .aside, .hero-marquee, .quiz-marquee') && !anchorTag.hash) anchorTag.hash = '#autoplay';
   const { dataset, parentElement } = anchorTag;
-  const videoAttrs = getVideoAttrs(anchorTag.hash, dataset);
-  const videoHTML = `<video ${videoAttrs} data-video-source="${src}"></video>`;
-  anchorTag.insertAdjacentHTML('afterend', videoHTML);
+  const video = `<video ${getVideoAttrs(anchorTag.hash, dataset)} data-video-source=${src}></video>`;
+  anchorTag.insertAdjacentHTML('afterend', video);
   const videoEl = parentElement.querySelector('video');
   createIntersectionObserver({
-    el: videoEl,
+    el: parentElement,
     options: { rootMargin: '1000px' },
     callback: () => {
-      videoEl.appendChild(createTag('source', { src, type: 'video/mp4' }));
+      videoEl?.appendChild(createTag('source', { src, type: 'video/mp4' }));
     },
   });
   applyHoverPlay(videoEl);
