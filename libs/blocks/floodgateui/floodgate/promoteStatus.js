@@ -1,5 +1,4 @@
 import { html, Component } from '../../../deps/htm-preact.js';
-import { accessToken } from '../../../tools/sharepoint/state.js';
 import { getServiceConfigFg, getParamsFg, postData } from '../utils/miloc.js';
 import { origin } from '../../locui/utils/franklin.js';
 import { heading } from '../utils/state.js';
