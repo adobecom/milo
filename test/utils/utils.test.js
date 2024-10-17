@@ -518,8 +518,10 @@ describe('Utils', () => {
       expect(block).to.be.null;
       expect(document.querySelector('.quote.hide-block')).to.be.null;
     });
+  });
 
-    it('should convert links on stage when stageDomainsMap provided', async () => {
+  describe('stageDomainsMap', () => {
+    it('should convert links when stageDomainsMap provided', async () => {
       const stageConfig = {
         ...config,
         env: { name: 'stage' },
@@ -545,7 +547,7 @@ describe('Utils', () => {
       });
     });
 
-    it('should not convert links on stage when no stageDomainsMap provided', async () => {
+    it('should not convert links when no stageDomainsMap provided', async () => {
       const stageConfig = {
         ...config,
         env: { name: 'stage' },
@@ -562,6 +564,33 @@ describe('Utils', () => {
         });
 
         [...anchors, ...externalAnchors].forEach((a) => expect(a.href).to.equal(a.href));
+      });
+    });
+
+    it('should remove extensions upon conversion', async () => {
+      const stageConfig = {
+        ...config,
+        env: { name: 'stage' },
+        stageDomainsMap,
+      };
+
+      Object.entries(stageDomainsMap).forEach(([hostname, domainsMap]) => {
+        const extension = '.html';
+        const anchors = Object.keys(domainsMap).map((d) => utils.createTag('a', { href: `https://${d}/abc${extension}` }));
+
+        utils.convertStageLinks({
+          anchors: [...anchors],
+          config: stageConfig,
+          hostname,
+        });
+
+        anchors.forEach((a) => {
+          if (/\.page|\.live/.test(a.href)) {
+            expect(a.href).to.not.contain(extension);
+          } else {
+            expect(a.href).to.contain(extension);
+          }
+        });
       });
     });
 

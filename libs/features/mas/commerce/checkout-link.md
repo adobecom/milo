@@ -3,8 +3,8 @@
 ## Introduction {#introduction}
 
 This custom element renders a checkout link supporting most of the features documented at https://wiki.corp.adobe.com/pages/viewpage.action?spaceKey=businessservices&title=UCv3+Link+Creation+Guide.<br>
-Sometimes a checkout-link can be also referred as checkout-link as it can be used as an inline link resolving at runtime.<br>
-The term checkout-link will be deprecated and it is recommended to refer as **checkout-link custom element** going forward.
+Sometimes a checkout-link can be also referred as placeholder, as it can be used as an inline link resolving at runtime.<br>
+The term placeholder will be deprecated and it is recommended to refer as **checkout-link custom element** going forward.
 
 Behind the scene, it uses https://git.corp.adobe.com/PandoraUI/commerce-core to generate the checkout url.
 
@@ -93,11 +93,12 @@ Two photoshop and three acrobat pro single apps (TEAMS):
 
 ## Properties {#properties}
 
-| Property      | Description                                                                                                                                                     |
-| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `onceSettled` | promise that resolves when the custom-element either resolves or fails to resolve the offer                                                                     |
-| `options`     | JSON object with the complete set of properties used to resolve the offer                                                                                       |
-| `value`       | The actual offer that is used to render the checkout link. In some cases WCS can return multiple offers but only one will be picked to render for a single app. |
+| Property         | Description                                                                                                                                                     |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `isCheckoutLink` | on checkout link elements, it will return `true`                                                                                                                |
+| `onceSettled`    | promise that resolves when the custom-element either resolves or fails to resolve the offer                                                                     |
+| `options`        | JSON object with the complete set of properties used to resolve the offer                                                                                       |
+| `value`          | The actual offer that is used to render the checkout link. In some cases WCS can return multiple offers but only one will be picked to render for a single app. |
 
 ### Example
 
@@ -143,26 +144,22 @@ Two photoshop and three acrobat pro single apps (TEAMS):
 
 ## Methods {#methods}
 
-| Property                     | Description                                 |
-| ---------------------------- | ------------------------------------------- |
-| `requestUpdate(true\|false)` | causes a re-render using the actual options |
+| Property                       | Description                                                                                                    |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------- |
+| `requestUpdate(true \| false)` | Causes a re-render using the actual options, force = false by default, meaning if no change is found will skip |
 
 ## Events {#events}
 
-| Event                       | Description                                        |
-| --------------------------- | -------------------------------------------------- |
-| `wcms:placeholder:pending`  | fires when checkout link starts loading            |
-| `wcms:placeholder:resolved` | fires when the offer is successfully resolved      |
-| `wcms:placeholder:failed`   | fires when the offer could not be found or fetched |
-| `click`                     | native click event on the `a` element              |
+| Event          | Description                                        |
+| -------------- | -------------------------------------------------- |
+| `mas:pending`  | fires when checkout link starts loading            |
+| `mas:resolved` | fires when the offer is successfully resolved      |
+| `mas:failed`   | fires when the offer could not be found or fetched |
+| `click`        | native click event on the `a` element              |
 
 <br>
 
 For each event except `click`, the following css classes are toggled on the element: `placeholder-pending`, `placeholder-resolved`, `placeholder-failed`.
-
-::: warning
-**Note**: Event names with `wcms:placeholder` prefix can be subject to change.
-:::
 
 ### Example
 
@@ -174,26 +171,23 @@ For each event except `click`, the following css classes are toggled on the elem
     data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M"
     >Buy now (click me)</a
 >
+<button id="btnRefresh">Refresh</button>
 <script type="module">
     const log = document.getElementById('log');
     const logger = (...messages) =>
         (log.innerHTML = `${messages.join(' ')}<br>${log.innerHTML}`);
     const a = document.getElementById('co2');
-    a.addEventListener('wcms:placeholder:pending', () =>
-        logger('checkout-link pending'),
-    );
-    a.addEventListener('wcms:placeholder:resolved', () =>
-        logger('checkout-link resolved'),
-    );
-    a.addEventListener('wcms:placeholder:failed', () =>
-        logger('checkout-link failed'),
-    );
+    a.addEventListener('mas:pending', () => logger('checkout-link pending'));
+    a.addEventListener('mas:resolved', () => logger('checkout-link resolved'));
+    a.addEventListener('mas:failed', () => logger('checkout-link failed'));
     a.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
         logger('checkout link is clicked: ', e.target.href);
     });
-    a.addEvent;
+    document.getElementById('btnRefresh').addEventListener('click', () => {
+        a.requestUpdate(true);
+    });
 </script>
 ```
 

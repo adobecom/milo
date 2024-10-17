@@ -16,6 +16,20 @@ const config = {
   contentRoot: `${window.location.origin}${getLocale(locales).prefix}`,
   decorateArea,
   locales,
+  mep: {
+    commands: [
+      {
+        action: 'remove',
+        selector: 'aside.large p:nth-child(1):has(picture) #_include-fragments',
+        pageFilter: '',
+        content: 'true',
+        selectorType: 'other',
+        manifestId: 'manifest.json',
+        targetManifestId: false,
+        modifiers: ['include-fragments'],
+      },
+    ],
+  },
 };
 setConfig(config);
 

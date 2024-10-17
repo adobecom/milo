@@ -1,5 +1,7 @@
 import { createTag } from './utils.js';
 
+const DEFAULT_BADGE_COLOR = '#000000';
+const DEFAULT_BADGE_BACKGROUND_COLOR = '#F8D904';
 export async function hydrate(fragmentData, merchCard) {
     const fragment = fragmentData.fields.reduce(
         (acc, { name, multiple, values }) => {
@@ -10,16 +12,15 @@ export async function hydrate(fragmentData, merchCard) {
     );
     const { variant } = fragment;
     if (!variant) return;
-    fragment.model = fragment.model;
 
+    merchCard.variantLayout?.refs?.forEach((ref) => ref.remove());
     merchCard.variant = variant;
     await merchCard.updateComplete;
+    merchCard.variantLayout.refs ??= [];
     const { aemFragmentMapping } = merchCard.variantLayout;
 
     if (!aemFragmentMapping) return;
 
-    merchCard.variantLayout.refs ??= [];
-    merchCard.variantLayout.refs.forEach((ref) => ref.remove());
     const appendFn = (el) => {
         merchCard.variantLayout.refs.push(el);
         merchCard.append(el);
@@ -42,10 +43,17 @@ export async function hydrate(fragmentData, merchCard) {
         appendFn(merchIcon);
     });
 
-    /* c8 ignore next 3 */
-    if (fragment.size && aemFragmentMapping.allowedSizes?.includes(fragment.size)) {
-        merchCard.setAttribute('size', fragment.size);
+    if (fragment.badge) {
+      merchCard.setAttribute('badge-text', fragment.badge);
+      merchCard.setAttribute('badge-color', fragment.badgeColor || DEFAULT_BADGE_COLOR);
+      merchCard.setAttribute('badge-background-color', fragment.badgeBackgroundColor || DEFAULT_BADGE_BACKGROUND_COLOR);
     }
+
+    /* c8 ignore next 2 */
+    if (!fragment.size) {
+        merchCard.removeAttribute('size');
+    } else if (aemFragmentMapping.allowedSizes?.includes(fragment.size))
+        merchCard.setAttribute('size', fragment.size);
 
     if (fragment.cardTitle && aemFragmentMapping.title) {
         appendFn(
@@ -53,6 +61,16 @@ export async function hydrate(fragmentData, merchCard) {
                 aemFragmentMapping.title.tag,
                 { slot: aemFragmentMapping.title.slot },
                 fragment.cardTitle,
+            ),
+        );
+    }
+
+    if (fragment.subtitle && aemFragmentMapping.subtitle) {
+        appendFn(
+            createTag(
+                aemFragmentMapping.subtitle.tag,
+                { slot: aemFragmentMapping.subtitle.slot },
+                fragment.subtitle,
             ),
         );
     }
@@ -88,7 +106,12 @@ export async function hydrate(fragmentData, merchCard) {
     }
 
     if (fragment.ctas) {
-        const footer = createTag('div', { slot: 'footer' }, fragment.ctas);
+        const { slot, button = true } = aemFragmentMapping.ctas;
+        const footer = createTag(
+            'div',
+            { slot: slot ?? 'footer' },
+            fragment.ctas,
+        );
         const ctas = [];
         [...footer.querySelectorAll('a')].forEach((cta) => {
             const strong = cta.parentElement.tagName === 'STRONG';
@@ -99,6 +122,10 @@ export async function hydrate(fragmentData, merchCard) {
                 }
                 ctas.push(cta);
             } else {
+                if (!button) {
+                    ctas.push(cta);
+                    return;
+                }
                 const treatment = strong ? 'fill' : 'outline';
                 const variant = strong ? 'accent' : 'primary';
                 const spectrumCta = createTag(

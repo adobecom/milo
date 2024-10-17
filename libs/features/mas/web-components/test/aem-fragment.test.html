@@ -35,10 +35,12 @@
             src="http://localhost:2023/__wds-outside-root__/3/features/spectrum-web-components/dist/button.js"
             type="module"
         ></script>
+        <script type="module" src="/__wds-outside-root__/3/deps/mas/commerce.js"></script>
+        <mas-commerce-service></mas-commerce-service>
+        <script type="module" src="./aem-fragment.test.html.js"></script>
     </head>
 
     <body>
-        <script type="module" src="./aem-fragment.test.html.js"></script>
         <main>
             <sp-theme color="light" scale="medium"></sp-theme>
         </main>
@@ -75,6 +77,17 @@
               >
               </aem-fragment>
           </merch-card>
+          <merch-card>
+            <aem-fragment
+                fragment="with-wrong-price-and-checkout-osis"
+            >
+            </aem-fragment>
+        </merch-card>
+
+        <merch-card title="CCD Slice Wide with Badge">
+          <aem-fragment 
+              fragment="31205553-b453-4c9e-a2ef-7b6aa7bfdc72"></aem-fragment>
+        </merch-card>
         </template>
     </body>
 </html>

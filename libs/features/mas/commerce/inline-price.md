@@ -27,17 +27,17 @@ See [MAS](mas.html#terminology) to learn more.
 | `data-perpetual`          | Whether this is a perpetual offer                                                           | `false`       | `false`  |
 | `data-promotion-code`     | Flex promotion code to apply, if applicable                                                 |               | `false`  |
 | `data-tax-exclusive`      | Whether to force tax exclusive price, if `false`, it's automatic, driven by country service | `false`       | `false`  |
-| `data-template`           | One of price, discount, optical, strikethrough, priceAnnual                  | price         | `false`  |
+| `data-template`           | One of price, discount, optical, strikethrough, priceAnnual                                 | price         | `false`  |
 
 ### data-template values
 
-| Name                 | Description                                                     |
-| -------------------- | --------------------------------------------------------------- |
-| `price`              | The default price of the offer                                  |
+| Name            | Description                                                     |
+| --------------- | --------------------------------------------------------------- |
+| `price`         | The default price of the offer                                  |
 | `discount`      | Displays the promo price in percentage, e.g:, 19%               |
 | `optical`       | For **paid upfront offers**(PUF), renders the monthly price     |
 | `annual`        | For **annual, billed monthly** offers, renders the yearly price |
-| `strikethrough` | render the price as strikethrough.                               |
+| `strikethrough` | render the price as strikethrough.                              |
 
 ### Examples {#examples}
 
@@ -61,7 +61,7 @@ See [MAS](mas.html#terminology) to learn more.
     data-display-per-unit="true"
     data-display-tax="true"
 ></span>
- vs 
+vs
 <span
     is="inline-price"
     data-wcs-osi="1ZyMOJpSngx9IU5AjEDyp7oRBz843zNlbbtPKbIb1gM"
@@ -80,7 +80,7 @@ See [MAS](mas.html#terminology) to learn more.
     data-display-per-unit="true"
     data-display-tax="true"
 ></span>
- vs 
+vs
 <span
     is="inline-price"
     data-wcs-osi="Mutn1LYoGojkrcMdCLO7LQlx1FyTHw27ETsfLv0h8DQ"
@@ -90,16 +90,14 @@ See [MAS](mas.html#terminology) to learn more.
 ></span>
 ```
 
-
-
-
 ## Properties {#properties}
 
-| Property      | Description                                                                                  |
-| ------------- | -------------------------------------------------------------------------------------------- |
-| `onceSettled` | Promise that resolves when the custom-element either resolves or fails to retrieve the price |
-| `options`     | JSON object with the complete set of properties used to resolve the price                    |
-| `value`       | The actual price data that is used to render the inline price.                               |
+| Property         | Description                                                                                  |
+| ---------------- | -------------------------------------------------------------------------------------------- |
+| `isInlinePrice` | on inline price elements, it will return `true`                                                     |
+| `onceSettled`    | Promise that resolves when the custom-element either resolves or fails to retrieve the price |
+| `options`        | JSON object with the complete set of properties used to resolve the price                    |
+| `value`          | The actual price data that is used to render the inline price.                               |
 
 ### Example
 
@@ -142,17 +140,17 @@ See [MAS](mas.html#terminology) to learn more.
 
 ## Methods {#methods}
 
-| Property                     | Description                                 |
-| ---------------------------- | ------------------------------------------- |
-| `requestUpdate(true\|false)` | Causes a re-render using the actual options |
+| Property                       | Description                                                                                                    |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------- |
+| `requestUpdate(true \| false)` | Causes a re-render using the actual options, force = false by default, meaning if no change is found will skip |
 
 ## Events {#events}
 
-| Event                       | Description                                        |
-| --------------------------- | -------------------------------------------------- |
-| `wcms:placeholder:pending`  | Fires when inline price starts loading             |
-| `wcms:placeholder:resolved` | Fires when the price is successfully resolved      |
-| `wcms:placeholder:failed`   | Fires when the price could not be found or fetched |
+| Event          | Description                                        |
+| -------------- | -------------------------------------------------- |
+| `mas:pending`  | Fires when inline price starts loading             |
+| `mas:resolved` | Fires when the price is successfully resolved      |
+| `mas:failed`   | Fires when the price could not be found or fetched |
 
 For each event, the following CSS classes are toggled on the element: `placeholder-pending`, `placeholder-resolved`, `placeholder-failed`.
 
@@ -168,20 +166,20 @@ For each event, the following CSS classes are toggled on the element: `placehold
     is="inline-price"
     data-wcs-osi="r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8"
 ></span>
+<button id="btnRefresh">Refresh</button>
 <script type="module">
     const log = document.getElementById('log');
     const logger = (...messages) =>
         (log.innerHTML = `${messages.join(' ')}<br>${log.innerHTML}`);
     const span = document.getElementById('ip2');
-    span.addEventListener('wcms:placeholder:pending', () =>
-        logger('inline-price pending'),
-    );
-    span.addEventListener('wcms:placeholder:resolved', () =>
+    span.addEventListener('mas:pending', () => logger('inline-price pending'));
+    span.addEventListener('mas:resolved', () =>
         logger('inline-price resolved'),
     );
-    span.addEventListener('wcms:placeholder:failed', () =>
-        logger('inline-price failed'),
-    );
+    span.addEventListener('mas:failed', () => logger('inline-price failed'));
+    document.getElementById('btnRefresh').addEventListener('click', () => {
+        span.requestUpdate(true);
+    });
 </script>
 ```
 

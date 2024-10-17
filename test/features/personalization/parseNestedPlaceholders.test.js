@@ -1,5 +1,5 @@
 import { expect } from '@esm-bundle/chai';
-import { parseNestedPlaceholders, createContent } from '../../../libs/features/personalization/personalization.js';
+import { parseNestedPlaceholders, createContent, replacePlaceholders } from '../../../libs/features/personalization/personalization.js';
 import { getConfig } from '../../../libs/utils/utils.js';
 
 const config = getConfig();
@@ -20,12 +20,36 @@ describe('test different values for parseNestedPlaceholders', () => {
 describe('test createContent', () => {
   const el = document.createElement('div');
   it('append action', () => {
-    const newContent = createContent(el, '{{promo-discount}}', false, false, 'append', []);
+    const newContent = createContent(el, {
+      content: '{{promo-discount}}',
+      manifestId: false,
+      targetManifestId: false,
+      action: 'append',
+      modifiers: [],
+    });
     expect(newContent.innerHTML).to.equal('50');
   });
   it('replace action', () => {
     el.innerHTML = 'Hello World';
-    const newContent = createContent(el, '{{promo-discount}}', false, false, 'replace', []);
+    const newContent = createContent(el, {
+      content: '{{promo-discount}}',
+      manifestId: false,
+      targetManifestId: false,
+      action: 'replace',
+      modifiers: [],
+    });
     expect(newContent.innerHTML).to.equal('50');
+  });
+});
+describe('replacePlaceholders()', () => {
+  it('should replace placeholders', () => {
+    const str = 'Buy now and save {{promo-discount}}% off {{promo-product-name}}.';
+    const newStr = replacePlaceholders(str, config.placeholders);
+    expect(newStr).to.equal('Buy now and save 50% off CC All Apps.');
+  });
+  it('should not break when there are no placeholders available', () => {
+    const str = 'For just {{promo-price}}, get 20+...';
+    const newStr = replacePlaceholders(str, null);
+    expect(newStr).to.equal(str);
   });
 });

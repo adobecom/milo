@@ -4,7 +4,6 @@ import { expect } from '@esm-bundle/chai';
 
 import { mockLana } from '/test/mocks/lana.js';
 import { mockFetch } from '/test/mocks/fetch.js';
-import { mockConfig } from '/test/mocks/config.js';
 import mas from './mas.js';
 
 import '../src/merch-mnemonic-list.js';

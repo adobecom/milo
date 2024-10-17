@@ -6,7 +6,7 @@ const outfolder = '../../../../libs/deps/mas';
 const defaults = {
     bundle: true,
     format: 'esm',
-    minify: true,
+    minify: false,
     // sourcemap: true,
     platform: 'browser',
 };

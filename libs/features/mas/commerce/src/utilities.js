@@ -1,4 +1,4 @@
-import { EVENT_TYPE_READY, TAG_NAME_SERVICE } from './constants.js';
+import { EVENT_TYPE_READY } from './constants.js';
 import {
     forceTaxExclusivePrice,
     isNotEmptyString,
@@ -6,6 +6,7 @@ import {
     toPositiveFiniteInteger,
 } from './external.js';
 
+const MAS_COMMERCE_SERVICE = 'mas-commerce-service';
 /**
  * Calls given `getConfig` every time new instance of the commerce service is activated,
  * passing new instance as the only argument.
@@ -18,7 +19,7 @@ export function discoverService(getConfig, { once = false } = {}) {
     let latest = null;
     function discover() {
         /** @type { Commerce.Instance } */
-        const current = document.querySelector(TAG_NAME_SERVICE);
+        const current = document.querySelector(MAS_COMMERCE_SERVICE);
         if (current === latest) return;
         latest = current;
         if (current) getConfig(current);
@@ -81,10 +82,8 @@ export function toOfferSelectorIds(value) {
  * This function expects an active instance of commerce service
  * to exist in the current DOM.
  * If commerce service has not been yet activated or was resetted, `null`.
- * @type {Commerce.useService}
- * @returns {Commerce.Instance | null}
+ * @returns 
  */
 export function useService() {
-    // @ts-ignore
-    return window.customElements.get(TAG_NAME_SERVICE)?.instance;
+    return document.getElementsByTagName(MAS_COMMERCE_SERVICE)?.[0];
 }

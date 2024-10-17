@@ -7,7 +7,6 @@ const content = document.getElementById('content');
 const sidenav = document.getElementById('sidenav');
 
 sidenav.addEventListener('click', (e) => {
-    // @ts-ignore
     applyTemplate(e.target.dataset.template);
 });
 

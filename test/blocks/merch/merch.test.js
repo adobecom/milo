@@ -21,6 +21,7 @@ import merch, {
   PRICE_TEMPLATE_REGULAR,
   getMasBase,
   appendTabName,
+  getMiloLocaleSettings,
 } from '../../../libs/blocks/merch/merch.js';
 
 import { mockFetch, unmockFetch, readMockText } from './mocks/fetch.js';
@@ -98,9 +99,7 @@ const updateSearch = ({ maslibs } = {}) => {
  * <expected attribute value, UNDEF if should be undefined>}
  */
 const validatePriceSpan = async (selector, expectedAttributes) => {
-  const el = await merch(document.querySelector(
-    selector,
-  ));
+  const el = await merch(document.querySelector(selector));
   const { nodeName, dataset } = await el.onceSettled();
   expect(nodeName).to.equal('SPAN');
   Object.keys(expectedAttributes).forEach((key) => {
@@ -787,6 +786,22 @@ describe('Merch Block', () => {
         await el.onceSettled();
         expect(el.getAttribute('href')).to.match(new RegExp(`https://commerce.adobe.com/.*${mappedKey}=${value}`));
         el.remove();
+      });
+    });
+  });
+
+  describe('locale settings', () => {
+    it('should map correct commerce locale', async () => {
+      [
+        { prefix: '/ar', expectedLocale: 'es_AR' },
+        { prefix: '/africa', expectedLocale: 'en_MU' },
+        { prefix: '', expectedLocale: 'en_US' },
+        { prefix: '/ae_ar', expectedLocale: 'ar_AE' },
+      ].forEach(({ prefix, expectedLocale }) => {
+        it(`returns correct locale for "${prefix}"`, () => {
+          const wcsLocale = getMiloLocaleSettings({ locale: { prefix } }).locale;
+          expect(wcsLocale).to.be.equal(expectedLocale);
+        });
       });
     });
   });

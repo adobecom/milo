@@ -106,7 +106,7 @@ class MerchOffer extends LitElement {
         this.dispatchEvent(
             new CustomEvent(EVENT_MERCH_OFFER_READY, { bubbles: true }),
         );
-    }
+    }tr
 }
 
 customElements.define(TAG_NAME, MerchOffer);
