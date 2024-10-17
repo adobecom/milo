@@ -261,6 +261,14 @@ export function isInTextNode(node) {
   return node.parentElement.firstChild.nodeType === Node.TEXT_NODE;
 }
 
+export function elementHasText(el) {
+  return !![...el.childNodes].filter((node) => {
+    const { nodeType, textContent, innerText } = node;
+    if (nodeType === Node.ELEMENT_NODE) return innerText.trim() !== '';
+    return nodeType === Node.TEXT_NODE && textContent.trim() !== '';
+  }).length;
+}
+
 export function createTag(tag, attributes, html, options = {}) {
   const el = document.createElement(tag);
   if (html) {
