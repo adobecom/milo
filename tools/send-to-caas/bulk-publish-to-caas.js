@@ -381,8 +381,8 @@ helpButtons.forEach((btn) => {
 
       } else if (el === 'publish-to-prod') {   
         showAlert(`<p><b>Publish to Prod</b></p>
-          <p>By default the content is sent to the <b>LIVE</b> container.<p>
-          <p>When this checkbox is checked, the content will be send to the <b>PROD</b> container.</p>`);
+          <p>By default the content is sent to the <b>DRAFT</b> container.<p>
+          <p>When this checkbox is checked, the content will be send to the <b>LIVE</b> container.</p>`);
           
       } else if (el === 'floodgate') {   
         showAlert(`<p><b>FloodGate</b></p>
