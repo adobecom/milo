@@ -80,7 +80,7 @@ tr:nth-child(even) {
   padding: 0 10px;
 }
 
-.placeholder-failed::after {
+span.placeholder-failed::after {
   content: "failed";
 }
 
@@ -105,6 +105,12 @@ pre {
   background-color: var(--spectrum-global-color-gray-100);
 }
 
-#log {
+#log,
+#log2,
+#log3 {
   display: block;
+}
+
+button {
+  margin-top: 16px;
 }

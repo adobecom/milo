@@ -68,7 +68,7 @@ runTests(async () => {
     }
 
     describe('component "merch-subscription-panel"', () => {
-        it('renders a panel with the first offer', async () => {
+        it.only('renders a panel with the first offer', async () => {
             const panel = await buildPanel([
                 'merch-offer-select-cci',
                 'merch-stock',

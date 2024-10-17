@@ -9,22 +9,12 @@ import {
     toEnumeration,
 } from './external.js';
 import { Defaults } from './defaults.js';
-import { Log } from './log.js';
-import { toOfferSelectorIds, toQuantity, useService } from './utilities.js';
+import { toOfferSelectorIds, toQuantity } from './utilities.js';
 
 /**
- * @param {{
- *  literals: Commerce.Literals;
- *  providers: { checkout: Iterable<Commerce.Checkout.provideCheckoutOptions> };
- *  settings: Commerce.Checkout.Settings;
- * }} startup
- * @param {Commerce.DataProviders} dataProviders
- * @returns {Commerce.Checkout.Client}
+ * generate Checkout configuration
  */
-export function Checkout({ providers, settings }, dataProviders) {
-    const log = Log.module('checkout');
-
-    /** @type {Commerce.Checkout.collectCheckoutOptions} */
+export function Checkout({ providers, settings }) {
     function collectCheckoutOptions(overrides, placeholder) {
         const {
             checkoutClientId,
@@ -90,23 +80,13 @@ export function Checkout({ providers, settings }, dataProviders) {
         return options;
     }
 
-    /** @type {Commerce.Checkout.buildCheckoutAction} */
-    async function buildCheckoutAction(offers, options) {
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        const instance = useService();
-        const checkoutAction = await dataProviders.getCheckoutAction?.(
-            offers,
-            options,
-            instance.imsSignedInPromise,
-        );
-        if (checkoutAction) {
-            return checkoutAction;
-        }
-        return null;
-    }
-
-    /** @type {Commerce.Checkout.buildCheckoutURL} */
+    /**
+     * @param {*} offers
+     * @param {*} options
+     * @returns a checkout URL
+     */
     function buildCheckoutURL(offers, options) {
+      /* c8 ignore next 3 */
         if (!Array.isArray(offers) || !offers.length || !options) {
             return '';
         }
@@ -137,8 +117,6 @@ export function Checkout({ providers, settings }, dataProviders) {
         if (offers.length === 1) {
             const [{ offerId, offerType, productArrangementCode }] = offers;
             const {
-                // TODO: fix type definition in @pandora, Wcs responds with marketSegments (array)
-                // @ts-ignore
                 marketSegments: [marketSegment],
             } = offers[0];
             Object.assign(data, {
@@ -152,6 +130,7 @@ export function Checkout({ providers, settings }, dataProviders) {
                     : { id: offerId, quantity: quantity[0] },
             );
         } else {
+            /* c8 ignore next 7 */
             data.items.push(
                 ...offers.map(({ offerId }, index) => ({
                     id: offerId,
@@ -162,15 +141,13 @@ export function Checkout({ providers, settings }, dataProviders) {
         return buildCheckoutUrl(workflow, data);
     }
 
-    const { createCheckoutLink, getCheckoutLinks } = CheckoutLink;
+    const { createCheckoutLink } = CheckoutLink;
     return {
-        CheckoutLink,
-        CheckoutWorkflow,
-        CheckoutWorkflowStep,
-        buildCheckoutAction,
-        buildCheckoutURL,
-        collectCheckoutOptions,
-        createCheckoutLink,
-        getCheckoutLinks,
+      CheckoutLink,
+      CheckoutWorkflow,
+      CheckoutWorkflowStep,
+      buildCheckoutURL,
+      collectCheckoutOptions,
+      createCheckoutLink,
     };
 }

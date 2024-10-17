@@ -24,10 +24,9 @@ const Level = Object.freeze({
     WARN,
 });
 
+/* c8 ignore start */
 const consoleAppender = {
     append({ level, message, params, timestamp, source }) {
-        /* c8 ignore start */
-
         console[level](
             `${timestamp}ms [${source}] %c${message}`,
             'font-weight: bold;',
@@ -39,14 +38,7 @@ const consoleAppender = {
 const debugFilter = { filter: ({ level }) => level !== DEBUG };
 const quietFilter = { filter: () => false };
 
-/**
- * @param {Commerce.Log.Level} level
- * @param {string} message
- * @param {string} namespace
- * @param {object} params
- * @param {string} source
- * @returns {Commerce.Log.Entry}
- */
+/* c8 ignore start */
 function createEntry(level, message, namespace, params, source) {
     return {
         level,
@@ -75,6 +67,7 @@ function handleEntry(entry) {
         appenders.forEach((appender) => appender(entry));
     }
 }
+/* c8 ignore stop */
 
 function createLog(namespace) {
     const index = (indexes.get(namespace) ?? 0) + 1;

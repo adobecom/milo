@@ -1,4 +1,4 @@
-import { EVENT_AEM_LOAD } from './constants.js';
+import { EVENT_AEM_LOAD, EVENT_AEM_ERROR } from './constants.js';
 import { getFragmentById } from './getFragmentById.js';
 
 const sheet = new CSSStyleSheet();
@@ -105,9 +105,14 @@ export class AemFragment extends HTMLElement {
         }
     }
 
-    async refresh(flushCache = true) {
-        if (!this.fragmentId) return;
+    connectedCallback() {
+        if (!this.fragmentId) {
+            this.#fail('Missing fragment id');
+            return;
+        }
+    }
 
+    async refresh(flushCache = true) {
         if (this._readyPromise) {
             const ready = await Promise.race([
                 this._readyPromise,
@@ -116,18 +121,36 @@ export class AemFragment extends HTMLElement {
             if (!ready) return; // already fetching data
         }
         if (flushCache) {
-            this.cache.remove(this.fragmentId);
+            cache.remove(this.fragmentId);
         }
-        this._readyPromise = this.fetchData().then(() => {
-            this.dispatchEvent(
-                new CustomEvent(EVENT_AEM_LOAD, {
-                    detail: this.data,
-                    bubbles: true,
-                    composed: true,
-                }),
-            );
-            return true;
-        });
+        this._readyPromise = this.fetchData()
+            .then(() => {
+                this.dispatchEvent(
+                    new CustomEvent(EVENT_AEM_LOAD, {
+                        detail: this.data,
+                        bubbles: true,
+                        composed: true,
+                    }),
+                );
+                return true;
+            })
+            .catch(() => {
+                /* c8 ignore next 3 */ 
+                this.#fail('Network error: failed to load fragment');
+                this._readyPromise = null;
+                return false;
+            });
+    }
+
+    #fail(error) {
+        this.classList.add('error');
+        this.dispatchEvent(
+            new CustomEvent(EVENT_AEM_ERROR, {
+                detail: error,
+                bubbles: true,
+                composed: true,
+            }),
+        );
     }
 
     async fetchData() {

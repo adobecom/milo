@@ -6,13 +6,13 @@ export const ERROR_MESSAGE_BAD_REQUEST = 'Bad WCS request';
 export const ERROR_MESSAGE_OFFER_NOT_FOUND = 'Commerce offer not found';
 export const ERROR_MESSAGE_MISSING_LITERALS_URL = 'Literals URL not provided';
 
-export const EVENT_TYPE_ERROR = 'wcms:commerce:error';
-export const EVENT_TYPE_FAILED = 'wcms:placeholder:failed';
-export const EVENT_TYPE_PENDING = 'wcms:placeholder:pending';
-export const EVENT_TYPE_READY = 'wcms:commerce:ready';
-export const EVENT_TYPE_RESOLVED = 'wcms:placeholder:resolved';
+export const EVENT_TYPE_ERROR = 'mas:error';
+export const EVENT_TYPE_FAILED = 'mas:failed';
+export const EVENT_TYPE_PENDING = 'mas:pending';
+export const EVENT_TYPE_READY = 'mas:ready';
+export const EVENT_TYPE_RESOLVED = 'mas:resolved';
 
-export const LOG_NAMESPACE = 'wcms/commerce';
+export const LOG_NAMESPACE = 'mas/commerce';
 
 export const PARAM_ENV = 'commerce.env';
 export const PARAM_LANDSCAPE = 'commerce.landscape';
@@ -25,8 +25,6 @@ export const WCS_STAGE_URL = 'https://www.stage.adobe.com/web_commerce_artifact_
 export const STATE_FAILED = 'failed';
 export const STATE_PENDING = 'pending';
 export const STATE_RESOLVED = 'resolved';
-
-export const TAG_NAME_SERVICE = 'wcms-commerce';
 
 export const Landscape = {
   DRAFT: "DRAFT",

@@ -1,5 +1,5 @@
 {
-    "name": "@adobe/mas-platform",
+    "name": "@adobecom/mas-platform",
     "version": "0.0.1",
     "type": "module",
     "main": "libs/mas.js",
@@ -45,6 +45,7 @@
         "@spectrum-web-components/shared": "^0.46.0",
         "@spectrum-web-components/sidenav": "^0.46.0",
         "@spectrum-web-components/split-button": "^0.46.0",
+        "@spectrum-web-components/styles": "^0.46.0",
         "@spectrum-web-components/tabs": "^0.46.0",
         "@spectrum-web-components/textfield": "^0.46.0",
         "@spectrum-web-components/theme": "^0.46.0",

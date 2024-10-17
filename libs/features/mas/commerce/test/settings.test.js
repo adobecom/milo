@@ -97,7 +97,7 @@ describe('getSettings', () => {
             getSettings({
                 commerce,
                 env: { name: 'stage' },
-                locale: { prefix: '/no' },
+                locale: 'nb_NO',
             }),
         ).to.deep.equal({
             ...Defaults,
@@ -164,19 +164,5 @@ describe('getSettings', () => {
         expect(settings.wcsURL).to.equal(WCS_PROD_URL);
         expect(settings.landscape).to.equal(Landscape.PUBLISHED);
         expect(settings.env).to.equal(Env.PRODUCTION);
-    });
-
-    [
-        { prefix: '/ar', expectedLocale: 'es_AR' },
-        { prefix: '/africa', expectedLocale: 'en_MU' },
-        { prefix: '', expectedLocale: 'en_US' },
-        { prefix: '/ae_ar', expectedLocale: 'ar_AE' },
-    ].forEach(({ prefix, expectedLocale }) => {
-        it(`returns correct locale for "${prefix}"`, () => {
-            const wcsLocale = getSettings({
-                locale: { prefix },
-            }).locale;
-            expect(wcsLocale).to.be.equal(expectedLocale);
-        });
     });
 });

@@ -5,7 +5,6 @@ import { expect } from './utilities.js';
 describe('function "selectWcsOffers"', () => {
     it('returns second offer for perpetual if first is MULT', () => {
         const offers = selectOffers(
-            // @ts-ignore
             [{ language: 'MULT' }, { language: 'DE' }],
             { perpetual: true },
         );
@@ -16,7 +15,6 @@ describe('function "selectWcsOffers"', () => {
         const offers = selectOffers(
             [
                 {
-                    // @ts-ignore
                     priceDetails: {
                         price: 2,
                         priceWithoutTax: 1,
