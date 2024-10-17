@@ -562,6 +562,21 @@ merch-card[variant="ccd-action"] .price-strikethrough {
     min-height: 30px;
     min-width: 1px;
   }
+  
+  merch-card[variant="mini-compare-chart"] .card-heading [is="inline-price"] .price-annual-prefix:before {
+    content: '\\A';
+    white-space: pre;
+  }
+  
+  merch-card[variant="mini-compare-chart"] .card-heading [is="inline-price"] .price-annual-prefix,
+  merch-card[variant="mini-compare-chart"] .card-heading [is="inline-price"] .price.price-annual,
+  merch-card[variant="mini-compare-chart"] .card-heading [is="inline-price"] .price-annual-suffix {
+    font-size: var(--consonant-merch-card-body-s-font-size);
+    line-height: var(--consonant-merch-card-body-s-font-size);
+    font-weight: 400;
+    position: relative;
+    left: -4px;
+  }
 
   merch-card[variant="mini-compare-chart"] [slot='callout-content'] {
     padding: var(--consonant-merch-spacing-xs) var(--consonant-merch-spacing-s) 0px;
