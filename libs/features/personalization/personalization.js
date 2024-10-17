@@ -67,11 +67,13 @@ export const normalizePath = (p, localize = true) => {
 
   const config = getConfig();
   if (path.startsWith('https://www.adobe.com/federal/')) {
+    const subDomains = ['www', 'milo', 'business', 'blog'];
+    const stageDomains = subDomains.map((sub) => `${sub}.stage.adobe.com`);
     const { hostname } = new URL(window.location);
-    if (config.env?.name === 'prod') {
+    if (config.env?.name === 'prod' || stageDomains.includes(hostname)) {
       return path.replace('www.adobe.com', hostname);
     }
-    return path.replace('www.adobe.com', 'www.stage.adobe.com');
+    return path.replace('www.adobe.com', 'main--federal--adobecom.hlx.page');
   }
 
   if (path.startsWith(config.codeRoot)
