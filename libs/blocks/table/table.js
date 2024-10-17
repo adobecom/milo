@@ -1,5 +1,5 @@
 /* eslint-disable no-plusplus */
-import { createTag, getConfig, MILO_EVENTS } from '../../utils/utils.js';
+import { createTag, MILO_EVENTS } from '../../utils/utils.js';
 import { decorateButtons } from '../../utils/decorate.js';
 
 const DESKTOP_SIZE = 900;
@@ -46,10 +46,6 @@ function handleHeading(table, headingCols) {
 
       if (pricingElem) {
         pricingElem.classList.add('pricing');
-
-        if (getConfig().locale?.prefix === '/au') {
-          pricingElem.classList.add('pricing-au');
-        }
       }
       if (bodyElem) {
         bodyElem.classList.add('body');

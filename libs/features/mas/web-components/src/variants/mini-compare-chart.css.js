@@ -21,6 +21,11 @@ export const CSS = `
     min-width: 1px;
   }
   
+  html[lang="en-AU"] merch-card[variant="mini-compare-chart"] [slot="heading-m-price"] {
+    display: flex;
+    flex-direction: column;
+  }
+  
   merch-card[variant="mini-compare-chart"] .card-heading [is="inline-price"] .price-annual-prefix:before {
     content: '\\A';
     white-space: pre;

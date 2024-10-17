@@ -247,7 +247,7 @@
   padding: var(--spacing-xxs) 0;
 }
 
-.table .row-heading .col-heading .pricing.pricing-au {
+html[lang="en-AU"] .table .row-heading .col-heading .pricing {
   display: flex;
   flex-direction: column;
 }
