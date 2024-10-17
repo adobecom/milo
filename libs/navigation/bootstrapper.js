@@ -74,7 +74,6 @@ export default async function bootstrapBlock(miloLibs, blockConfig) {
   };
 
   const addDomEvents = () => {
-    console.log(document);
     document.addEventListener('click', (event) => {
       if (!event.target.closest('[href*="#open-jarvis-chat"]')) return;
       event.preventDefault();
