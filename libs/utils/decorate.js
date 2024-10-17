@@ -228,12 +228,72 @@ function getVideoAttrs(hash, dataset) {
   return `${globalAttrs} controls`;
 }
 
+export function syncPausePlayIcon(video) {
+  const playIcon = video.nextElementSibling?.querySelector('.play-icon');
+  const pauseIcon = video.nextElementSibling?.querySelector('.pause-icon');
+  if (video.paused || video.ended) {
+    playIcon?.classList.remove('hidden');
+    pauseIcon?.classList.add('hidden');
+  } else {
+    pauseIcon?.classList.remove('hidden');
+    playIcon?.classList.add('hidden');
+  }
+}
+
+export function addAccessibilityControl(videoString, videoAttributes, tabIndex = 0) {
+  if (!videoAttributes.includes('controls')) {
+    if (videoAttributes.includes('hoverplay')) {
+      return `<a class='pause-play-wrapper' tabindex=${tabIndex} alt='play/pause motion' aria-label='play/pause motion' >${videoString}
+    </a>`;
+    }
+    return `<div class='video-container'>${videoString}
+  <a class='pause-play-wrapper' role='button' tabindex=${tabIndex} alt='play/pause motion' aria-label='play/pause motion'>
+    <img class='accessibility-control pause-icon ${videoAttributes.includes('autoplay') ? '' : 'hidden'}' alt='pause icon' src='https://main--federal--adobecom.hlx.page/federal/assets/svgs/accessibility-pause.svg'/>
+    <img class='accessibility-control play-icon ${videoAttributes.includes('autoplay') ? 'hidden' : ''}' alt='play icon' src='https://main--federal--adobecom.hlx.page/federal/assets/svgs/accessibility-play.svg'/>
+  </a>
+  </div>`;
+  }
+  return videoString;
+}
+
+export function handlePause(event) {
+  if (event.code !== 'Enter' && event.code !== 'Space' && !['focus', 'click', 'blur'].includes(event.type)) {
+    return;
+  }
+  event.preventDefault();
+  const video = event.target.parentElement.parentElement.querySelector('video');
+  if (event.type === 'blur') {
+    video.pause();
+  } else if (video.paused || video.ended || event.type === 'focus') {
+    video.play();
+  } else {
+    video.pause();
+  }
+  syncPausePlayIcon(video);
+}
+
 export function applyHoverPlay(video) {
   if (!video) return;
-  if (video.hasAttribute('data-hoverplay') && !video.hasAttribute('data-mouseevent')) {
-    video.addEventListener('mouseenter', () => { video.play(); });
-    video.addEventListener('mouseleave', () => { video.pause(); });
-    video.setAttribute('data-mouseevent', true);
+  if (video.hasAttribute('data-hoverplay')) {
+    video.parentElement.addEventListener('focus', handlePause);
+    video.parentElement.addEventListener('blur', handlePause);
+    if (!video.hasAttribute('data-mouseevent')) {
+      video.addEventListener('mouseenter', () => { video.play(); });
+      video.addEventListener('mouseleave', () => { video.pause(); });
+      video.addEventListener('ended', () => { syncPausePlayIcon(video); });
+      video.setAttribute('data-mouseevent', true);
+    }
+  }
+}
+
+export function applyAccessibiltyEvents(videoEl) {
+  const pausePlayWrapper = videoEl.parentElement.querySelector('.pause-play-wrapper') || videoEl.closest('.pause-play-wrapper');
+  if (pausePlayWrapper?.querySelector('.accessibility-control')) {
+    pausePlayWrapper?.addEventListener('click', handlePause);
+    pausePlayWrapper?.addEventListener('keydown', handlePause);
+  }
+  if (videoEl.hasAttribute('autoplay')) {
+    videoEl.addEventListener('ended', () => { syncPausePlayIcon(videoEl); });
   }
 }
 
@@ -269,7 +329,7 @@ function getVideoIntersectionObserver() {
         const isHaveLoopAttr = video.getAttributeNames().includes('loop');
         const { playedOnce = false } = video.dataset;
         const isPlaying = video.currentTime > 0 && !video.paused && !video.ended
-        && video.readyState > video.HAVE_CURRENT_DATA;
+          && video.readyState > video.HAVE_CURRENT_DATA;
 
         if (intersectionRatio <= 0.8) {
           video.pause();
@@ -325,11 +385,27 @@ export async function loadCDT(el, classList) {
   }
 }
 
+export function isAccessible(anchorTag) {
+  const section = anchorTag.closest('div[class="section"]');
+  if (section) {
+    const [block] = Array.from(section.children).filter((element) => element.contains(anchorTag));
+    return !block.classList.contains('hide-controls');
+  }
+  return true;
+}
+
 export function decorateAnchorVideo({ src = '', anchorTag }) {
   if (!src.length || !(anchorTag instanceof HTMLElement)) return;
   if (anchorTag.closest('.marquee, .aside, .hero-marquee, .quiz-marquee') && !anchorTag.hash) anchorTag.hash = '#autoplay';
+  const accessibilityEnabled = isAccessible(anchorTag);
   const { dataset, parentElement } = anchorTag;
-  const video = `<video ${getVideoAttrs(anchorTag.hash, dataset)} data-video-source=${src}></video>`;
+  const attrs = getVideoAttrs(anchorTag.hash, dataset);
+  const tabIndex = anchorTag.tabIndex || 0;
+  const videoIndex = (tabIndex === -1) ? 'tabindex=-1' : '';
+  let video = `<video ${attrs} data-video-source=${src} ${videoIndex}></video>`;
+  if (accessibilityEnabled) {
+    video = addAccessibilityControl(video, attrs, tabIndex);
+  }
   anchorTag.insertAdjacentHTML('afterend', video);
   const videoEl = parentElement.querySelector('video');
   createIntersectionObserver({
@@ -339,6 +415,7 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
       videoEl?.appendChild(createTag('source', { src, type: 'video/mp4' }));
     },
   });
+  if (accessibilityEnabled) applyAccessibiltyEvents(videoEl);
   applyHoverPlay(videoEl);
   applyInViewPortPlay(videoEl);
   anchorTag.remove();
