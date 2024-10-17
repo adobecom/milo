@@ -2,6 +2,7 @@
 /* eslint-disable no-console */
 
 import { createTag, getConfig, loadLink, loadScript, localizeLink } from '../../utils/utils.js';
+import { getFederatedUrl } from '../../utils/federated.js';
 
 /* c8 ignore start */
 const PHONE_SIZE = window.screen.width < 550 || window.screen.height < 550;
@@ -67,10 +68,7 @@ export const normalizePath = (p, localize = true) => {
 
   const config = getConfig();
   if (path.startsWith('https://www.adobe.com/federal/')) {
-    import('../../utils/federated.js').then(({ getFederatedUrl }) => {
-      path = getFederatedUrl(path);
-    });
-    return path;
+    return getFederatedUrl(path);
   }
 
   if (path.startsWith(config.codeRoot)
