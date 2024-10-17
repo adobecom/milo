@@ -354,6 +354,7 @@ class Gnav {
           ${this.decorateBrand()}
         </div>
         ${this.elements.navWrapper}
+        ${getConfig().searchEnabled === 'on' ? toFragment`<div class="feds-client-search"></div>` : ''}
         ${this.useUniversalNav ? this.blocks.universalNav : ''}
         ${(!this.useUniversalNav && this.blocks.profile.rawElem) ? this.blocks.profile.decoratedElem : ''}
         ${this.decorateLogo()}
@@ -838,7 +839,6 @@ class Gnav {
         ${isDesktop.matches ? '' : this.decorateSearch()}
         ${this.elements.mainNav}
         ${isDesktop.matches ? this.decorateSearch() : ''}
-        ${getConfig().searchEnabled === 'on' ? toFragment`<div class="feds-client-search"></div>` : ''}
       </div>
     `;
 
@@ -967,17 +967,10 @@ class Gnav {
         let customLinkModifier = '';
         let removeCustomLink = false;
         const linkElem = item.querySelector('a');
+        const customLinksSection = item.closest('.link-group');
         linkElem.className = 'feds-navLink';
         linkElem.setAttribute('daa-ll', getAnalyticsValue(linkElem.textContent, index + 1));
-        if (itemHasActiveLink) {
-          linkElem.removeAttribute('href');
-          linkElem.setAttribute('role', 'link');
-          linkElem.setAttribute('aria-disabled', 'true');
-          linkElem.setAttribute('aria-current', 'page');
-          linkElem.setAttribute('tabindex', 0);
-        }
-
-        const customLinksSection = item.closest('.link-group');
+        
         if (customLinksSection) {
           const removeLink = () => {
             const url = new URL(linkElem.href);
@@ -989,6 +982,14 @@ class Gnav {
             customLinkModifier = ` feds-navItem--${className}`;
           });
           removeCustomLink = removeLink();
+        }
+
+        if (itemHasActiveLink) {
+          linkElem.removeAttribute('href');
+          linkElem.setAttribute('role', 'link');
+          linkElem.setAttribute('aria-disabled', 'true');
+          linkElem.setAttribute('aria-current', 'page');
+          linkElem.setAttribute('tabindex', 0);
         }
 
         const linkTemplate = toFragment`
