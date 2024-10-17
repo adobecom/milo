@@ -17,11 +17,11 @@ import {
 import comEnterpriseToCaasTagMap from './comEnterpriseToCaasTagMap.js';
 
 const LS_KEY = 'bulk-publish-caas';
-const FIELDS = ['preset', 'host', 'repo', 'owner', 'excelFile', 'caasEnv', 'urls', 'contentType', 'publishToFloodgate'];
-const FIELDS_CB = ['draftOnly', 'usePreview', 'useHtml'];
+const FIELDS = ['preset', 'host', 'repo', 'owner', 'excelFile', 'urls', 'contentType', 'publishToFloodgate'];
+const FIELDS_CB = ['publishToProd', 'usePreview', 'useHtml'];
 const DEFAULT_VALUES = {
   preset: 'default',
-  caasEnv: 'Prod',
+  caasEnv: 'prod',
   contentType: 'caas:content-type/article',
   excelFile: '',
   host: 'business.adobe.com',
@@ -31,7 +31,7 @@ const DEFAULT_VALUES = {
   publishToFloodgate: 'default',
 };
 const DEFAULT_VALUES_CB = {
-  draftOnly: false,
+  publishToProd: false,
   usePreview: false,
   useHtml: true,
 };
@@ -58,7 +58,6 @@ const checkIms = async (prompt = true) => {
     }
     return false;
   }
-  // console.log('accessToken', accessToken);
   return accessToken;
 };
 
@@ -94,6 +93,7 @@ const updateTagsFromSheetData = (tags, sheetTagsStr) => {
 };
 
 const processData = async (data, accessToken) => {
+  console.log('Process Data', data);
   const errorArr = [];
   const successArr = [];
   let index = 0;
@@ -102,7 +102,7 @@ const processData = async (data, accessToken) => {
   const statusModal = showAlert('', { btnText: 'Cancel', onClose: () => { keepGoing = false; } });
   const {
     caasEnv,
-    draftOnly,
+    publishToProd,
     host,
     owner,
     repo,
@@ -173,7 +173,7 @@ const processData = async (data, accessToken) => {
         accessToken,
         caasEnv: caasEnv?.toLowerCase(),
         caasProps,
-        draftOnly,
+        publishToProd,
       });
 
       if (response.success) {
@@ -214,6 +214,8 @@ function resetStatusTables() {
 }
 
 function showSuccessTable(successArr) {
+  const env = getConfig().caasEnv === 'prod' ? '' : `-${getConfig().caasEnv}`;
+  const chimeraEndpoint = `https://14257-chimera${env}.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection?debug=1&featuredCards=`;
   const successTable = document.querySelector('.success-table');
   const tableBody = successTable.querySelector('tbody');
   successTable.style.display = 'block';
@@ -221,11 +223,26 @@ function showSuccessTable(successArr) {
     tableBody.innerHTML += `<tr>
       <td class="ok">OK</td>
       <td><a href="${pageUrl}">${pageUrl}</a></td>
-      <td class="entityid"><a target="_blank" href="https://14257-chimera.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection?debug=1&featuredCards=${response}">${response}</a></td>
+      <td class="entityid"><a target="_blank" href="${chimeraEndpoint}${response}">${response}</a></td>
+      <!-- td class="entityid" data-entity-id="${response}">${response}</td -->
     </tr>`;
-
   });
+  // IN PROGRESS - need to fix CORRS issue to render the json in an iframe
+  // successTable.querySelectorAll('.entityid').forEach((el) => {
+  //   el.addEventListener('click', (e) => {
+  //     showModal(e.target.dataset.entityId);
+  //   });
+  // });
 }
+// IN PROGRESS - need to fix CORRS issue to render the json in an iframe
+// function showModal(entityId) {
+//   const chimeraEndpoint = 'https://14257-chimera.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection?debug=1&featuredCards=';
+//   const modalDiv = document.querySelector('.modal');
+//   const iframe = modalDiv.querySelector('iframe');
+//   modalDiv.style.display = 'block';
+//   iframe.src = `${chimeraEndpoint}${entityId}`;
+// }
+
 
 function showErrorTable(errorArr) {
   const errorTable = document.querySelector('.error-table');
@@ -276,75 +293,26 @@ const loadFromLS = () => {
   } catch (e) { /* do nothing */ }
 };
 
-const PRESETS = {
-  default: {
-    preset: 'default',
-    host: '',
-    owner: '',
-    repo: '',
-    contentType: ''
-  },
-  advanced: {
-    preset: 'advanced',
-    host: '',
-    owner: '',
-    repo: '',
-    contentType: ''
-  },
-  blog: {
-    preset: 'blog',
-    host: 'blog.adobe.com',
-    owner: 'adobecom',
-    repo: 'blog',
-    contentType: 'caas:content-type/blog'
-  },
-  bacom: {
-    preset: 'bacom',
-    host: 'business.adobe.com',
-    owner: 'adobecom',
-    repo: 'bacom',
-    contentType: 'caas:content-type/article'
-  },
-  express: {
-    preset: 'express',
-    host: 'express.adobe.com',
-    owner: 'adobecom',
-    repo: 'express',
-    contentType: 'caas:content-type/article'
-  },
-  news: {
-    preset: 'news',
-    host: 'news.adobe.com',
-    owner: 'adobecom',
-    repo: 'news',
-    contentType: 'caas:content-type/article'
-  },
-  cc: {
-    preset: 'cc',
-    host: 'cc.adobe.com',
-    owner: 'adobecom',
-    repo: 'dc',
-    contentType: 'caas:content-type/article'
-  },
-  dc: {
-    preset: 'dc',
-    host: 'acrobat.adobe.com',
-    owner: 'adobecom',
-    repo: 'dc',
-    contentType: 'caas:content-type/article'
-  },
-  milo: {
-    preset: 'milo',
-    host: 'milo.adobe.com',
-    owner: 'adobecom',
-    repo: 'milo',
-    contentType: 'caas:content-type/article'
-  }
-}
+const separator = document.querySelector('.separator');
+const parent = separator.parentElement;
 
-const preset = document.querySelector('#preset');
+const presetsJsonPath = 'https://milo.adobe.com/drafts/caas/bppresets.json';
+
+let presetsData = {};
+
+const PRESETS = fetchExcelJson(presetsJsonPath).then((presets) => {
+    presetsData = presets;
+    presets.forEach((preset) => {
+      const option = document.createElement('option');
+      option.value = preset.repo;
+      option.text = `${preset.name} (${preset.repo})`;
+      parent.insertBefore(option, separator);
+    });
+  });
+
 preset.addEventListener('change', () => {
   const { value } = preset;
+  const selectedPreset = presetsData.find(item => item.id === value) || {};
   document.body.classList = '';
   
   if (value === 'advanced') {
@@ -355,13 +323,14 @@ preset.addEventListener('change', () => {
   } else {
     document.body.classList.add('preset');
   }
+
   const ls = localStorage.getItem(LS_KEY);
   const config = ls ? JSON.parse(ls) : {};
-  config.preset = PRESETS[value].preset;
-  config.host = PRESETS[value].host;
-  config.owner = PRESETS[value].owner;
-  config.repo = PRESETS[value].repo;
-  config.contentType = PRESETS[value].contentType;
+  config.preset = selectedPreset.id || 'default';
+  config.host = selectedPreset.host || '';
+  config.owner = selectedPreset.owner || '';
+  config.repo = selectedPreset.repo || '';
+  config.contentType = selectedPreset.contentType;
   setConfig(config);
   window.localStorage.setItem(LS_KEY, JSON.stringify(getConfig()));
   loadFromLS();
@@ -399,17 +368,35 @@ helpButtons.forEach((btn) => {
          <tt>&nbsp; business.adobe.com</tt>.</p>`);
 
       } else if (el === 'repo') {
-        showAlert(`<p><b>Repo</b>
+        showAlert(`<p><b>Repo</b></p>
           <p>The <b>Repo</b> is the name of the repository where the content will be published.</p>
           <p>For example:</p>
-          <p><tt>https://main--<b>{repo}</b>--{owner}.hlx.live</tt>`)
+          <p><tt>https://main--<b>{repo}</b>--{owner}.hlx.live</tt>`);
 
       } else if (el === 'owner') {
-        showAlert(`<p><b>Repo Owner</b>
+        showAlert(`<p><b>Repo Owner</b></p>
           <p>The <b>Repo Owner</b> is the owner of the repository where the content will be published. For example:</p>
           <p>For example:</p>
-          <p><tt>https://main--{repo}--<b>{owner}</b>.hlx.live</tt>`)
-                
+          <p><tt>https://main--{repo}--<b>{owner}</b>.hlx.live</tt>`);
+
+      } else if (el === 'publish-to-prod') {   
+        showAlert(`<p><b>Publish to Prod</b></p>
+          <p>By default the content is sent to the <b>LIVE</b> container.<p>
+          <p>When this checkbox is checked, the content will be send to the <b>PROD</b> container.</p>`);
+          
+      } else if (el === 'floodgate') {   
+        showAlert(`<p><b>FloodGate</b></p>
+          <p>Use this option to select the <b>FloodGate</b> color for the content.</p>`);
+
+      } else if (el === 'use-html') {
+        showAlert(`<p><b>Add HTML to Links</b></p>
+          <p>When this option is checked, the bulkpublisher will add the <b>.html</b> extension to the CTA links.</p>`);
+
+      } else if (el === 'content-type-fallback') {   
+        showAlert(`<p><b>ContentType Fallback</b></p>
+          <p>This is the <b>content-type</b> tag that will be applied to all cards that do not have 
+          a specific <b>content-type</b> tag included in their metadata.</p>`);
+
     } else {
         showAlert(`<p><b>Help</b><p>Help for "${el}" is on its way! Stay tuned.</p>`);
     }
@@ -447,13 +434,13 @@ const init = async () => {
       host: document.getElementById('host').value,
       project: '',
       branch: 'main',
-      caasEnv: document.getElementById('caasEnv').value,
+      caasEnv: 'prod',
       contentType: document.getElementById('contentType').value,
       repo: document.getElementById('repo').value,
       owner: document.getElementById('owner').value,
       urls: document.getElementById('urls').value,
       publishToFloodgate: document.getElementById('publishToFloodgate').value,
-      draftOnly: document.getElementById('draftOnly').checked,
+      publishToProd: document.getElementById('publishToProd').checked,
       useHtml: document.getElementById('useHtml').checked,
       usePreview: document.getElementById('usePreview').checked,
     });

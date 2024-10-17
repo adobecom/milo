@@ -15,7 +15,6 @@
 dd.content .field label {
   margin-bottom: 8px;
   font-size: 15px;
-  margin-bottom: 10px;
   color: #aaa;
 }
 
@@ -39,11 +38,15 @@ dd.content .field {
 
 .options-panel {
   min-width: 400px;
-  background: #1D1D1D;
+  background: linear-gradient(45deg, #000, #404040);
 }
+.options-panel dd.content {
+  background-color: transparent;
+}
+ 
 .options-panel h4 {
   margin: 20px 20px -10px;
-  font-size: 16px;
+  font-size: 20px;
   font-weight: 500;
 }
 
@@ -96,19 +99,55 @@ body {
 
 select#preset {
   border: solid 1px #b9ce84;
+  border-radius: 8px;
+  padding: 10px 4px;
 }
 
-.advanced-settings {
+.advanced-settings .advanced-preset,
+.advanced-settings .advanced-options {
   /* display: none; */
   height: 0;
   overflow: hidden;
   transition: height .5s;
 }
 
-body.advanced .advanced-settings {
+body.preset .advanced-settings {
+  position: relative;
+}
+
+body.preset .advanced-settings .advanced-preset {
   /* display: block; */
   height: 380px;
+  height: 105px;
+  transition: height .5s;
+
+  border: solid 1px #666;
+  margin: 20px;
+  border-radius: 10px;
+  padding: 10px 0;
+}
+
+body.preset dd.content .advanced-settings .field {
+  display: flex;
+  align-items: baseline;
+  margin: 0;
+}
+
+body.preset .advanced-settings .advanced-preset .help {
+  display: none;
+}
+
+body.advanced .advanced-settings .advanced-preset,
+body.advanced .advanced-settings .advanced-options {
+  /* display: block; */
+  height: 380px;
+  height: auto;
   /* transition: height .5s; */
+}
+
+body.preset dd.content .advanced-settings .advanced-preset .field input[type="text"] {
+  background: transparent;
+  color: #666;
 }
 
 .page-title {
@@ -137,6 +176,8 @@ dd.content.is-expanded {
 
 .content-panel h2 {
   margin-bottom: 0;
+  font-size: 22px;
+  font-weight: 300;  
 }
 
 .urls,
@@ -172,6 +213,7 @@ textarea#errors{
   padding: 8px 30px;
   border-radius: 12px;
   color: white;
+  cursor: pointer;
 }
 
 .config-msg {
@@ -283,10 +325,10 @@ table.success-table td {
   padding: 4px 0;
 }
 
-table.success-table td.entityid a {
+table.success-table td.entityid {
   font-family: monospace;
   font-size: 14px;
-  text-decoration: none;
+  cursor: pointer;
 }
 
 td.error {
@@ -345,4 +387,42 @@ tbody tr:hover {
 }
 .content-panel.dark table td:not(.error) {
   color: #ccc;
+}
+.content-panel.dark table.success-table td.ok {
+  color: #99d600;
+}
+
+
+.preset-settings {
+  color: gray;
+  margin: 20px;
+}
+
+/* Modal */
+.modal {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #000000cc;
+  display: flex;
+  justify-content: center;
+  display: none;
+}
+.modal-content {
+  background: white;
+  width: 80%;
+  height: 80%;
+  max-width: 960px;
+  align-self: center;
+  position: relative;
+}
+.modal-content .close {
+  position: absolute;
+  right: 0px;
+  top: -12px;
+  font-size: 40px;
+  cursor: pointer;
+  color: #666;
 }
