@@ -1947,7 +1947,7 @@ var AEM_FRAGMENT_MAPPING4 = {
   title: { tag: "h3", slot: "heading-xs" },
   prices: { tag: "p", slot: "price" },
   description: { tag: "div", slot: "body-xs" },
-  ctas: { slot: "cta", size: "s" }
+  ctas: { slot: "cta", size: "s", button: false }
 };
 var CCDSuggested = class extends VariantLayout {
   getGlobalCSS() {
