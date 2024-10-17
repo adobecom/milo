@@ -228,7 +228,7 @@ function getVideoAttrs(hash, dataset) {
   return `${globalAttrs} controls`;
 }
 
-export const syncPausePlayIcon = (video) => {
+export function syncPausePlayIcon(video) {
   const playIcon = video.nextElementSibling?.querySelector('.play-icon');
   const pauseIcon = video.nextElementSibling?.querySelector('.pause-icon');
   if (video.paused || video.ended) {
@@ -240,26 +240,23 @@ export const syncPausePlayIcon = (video) => {
   }
 }
 
-export const addAccessibilityControl = (videoString, videoAttributes, tabIndex = 0) => {
+export function addAccessibilityControl(videoString, videoAttributes, tabIndex = 0) {
   if (!videoAttributes.includes('controls')) {
     if (videoAttributes.includes('hoverplay')) {
       return `<a class='pause-play-wrapper' tabindex=${tabIndex} alt='play/pause motion' aria-label='play/pause motion' >${videoString}
     </a>`;
-    } else {
-      return `<div class='video-container'>${videoString}
+    }
+    return `<div class='video-container'>${videoString}
   <a class='pause-play-wrapper' role='button' tabindex=${tabIndex} alt='play/pause motion' aria-label='play/pause motion'>
     <img class='accessibility-control pause-icon ${videoAttributes.includes('autoplay') ? '' : 'hidden'}' src='https://main--federal--adobecom.hlx.page/federal/assets/svgs/accessibility-pause.svg'/>
     <img class='accessibility-control play-icon ${videoAttributes.includes('autoplay') ? 'hidden' : ''}' src='https://main--federal--adobecom.hlx.page/federal/assets/svgs/accessibility-play.svg'/>
   </a>
   </div>`;
-    }
-  } else {
-    return videoString;
   }
-
+  return videoString;
 }
 
-export const handlePause = (event) => {
+export function handlePause(event) {
   if (event.code !== 'Enter' && event.code !== 'Space' && !['focus', 'click', 'blur'].includes(event.type)) {
     return;
   }
@@ -289,13 +286,13 @@ export function applyHoverPlay(video) {
   }
 }
 
-export function applyAccessibiltyEvents(videoEl, attrs) {
+export function applyAccessibiltyEvents(videoEl) {
   const pausePlayWrapper = videoEl.parentElement.querySelector('.pause-play-wrapper') || videoEl.closest('.pause-play-wrapper');
   if (pausePlayWrapper?.querySelector('.accessibility-control')) {
     pausePlayWrapper?.addEventListener('click', handlePause);
     pausePlayWrapper?.addEventListener('keydown', handlePause);
   }
-  if (attrs.includes('autoplay')) {
+  if (videoEl.hasAttribute('autoplay')) {
     videoEl.addEventListener('ended', () => { syncPausePlayIcon(videoEl); });
   }
 }
@@ -388,6 +385,12 @@ export async function loadCDT(el, classList) {
   }
 }
 
+export function isAccessible(anchorTag) {
+  const section = anchorTag.closest('div[class="section"]');
+  const [block] = Array.from(section.children).filter((element) => element.contains(anchorTag));
+  return !block.classList.contains('hide-controls');
+}
+
 export function decorateAnchorVideo({ src = '', anchorTag }) {
   const accessibilityEnabled = isAccessible(anchorTag);
   if (!src.length || !(anchorTag instanceof HTMLElement)) return;
@@ -395,7 +398,7 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
   const { dataset, parentElement } = anchorTag;
   const attrs = getVideoAttrs(anchorTag.hash, dataset);
   const tabIndex = anchorTag.tabIndex || 0;
-  const videoIndex = (tabIndex === -1) ? "tabindex=-1" : '';
+  const videoIndex = (tabIndex === -1) ? 'tabindex=-1' : '';
   let video = `<video ${attrs} data-video-source=${src} ${videoIndex}></video>`;
   if (accessibilityEnabled) {
     video = addAccessibilityControl(video, attrs, tabIndex);
@@ -409,14 +412,8 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
       videoEl?.appendChild(createTag('source', { src, type: 'video/mp4' }));
     },
   });
-  accessibilityEnabled && applyAccessibiltyEvents(videoEl, attrs);
+  if (accessibilityEnabled) applyAccessibiltyEvents(videoEl);
   applyHoverPlay(videoEl);
   applyInViewPortPlay(videoEl);
   anchorTag.remove();
-}
-
-export function isAccessible(anchorTag) {
-  let section = anchorTag.closest('div[class="section"]');
-  let block = Array.from(section.children).filter(block => block.contains(anchorTag))[0];
-  return !block.classList.contains('hide-controls');
 }

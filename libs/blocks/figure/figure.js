@@ -1,4 +1,4 @@
-import { applyHoverPlay, decorateAnchorVideo, handlePause } from '../../utils/decorate.js';
+import { applyHoverPlay, decorateAnchorVideo, applyAccessibiltyEvents } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
 
 function buildCaption(pEl) {
@@ -32,12 +32,8 @@ function decorateVideo(clone, figEl) {
       );
     }
     applyHoverPlay(videoTag);
+    applyAccessibiltyEvents(videoTag);
     figEl.prepend(videoContainer);
-    const pausePlayWrapper = videoContainer.querySelector('.pause-play-wrapper') || videoContainer
-    if (pausePlayWrapper?.querySelector('.accessibility-control')) {
-      pausePlayWrapper?.addEventListener('click', handlePause);
-      pausePlayWrapper?.addEventListener('keydown', handlePause);
-    }
   }
 }
 
