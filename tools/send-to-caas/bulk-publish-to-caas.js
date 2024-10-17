@@ -112,7 +112,7 @@ const processData = async (data, accessToken) => {
   } = getConfig();
 
   if (!repo) {
-    showAlert('You must enter a repo when choosing publish content to caas floodgate', { error: true });
+    showAlert('You must select a Preset, or use the Advanced option to enter the necessary information.', { error: true });
     if (statusModal.modal) statusModal.close();
     return;
   }
