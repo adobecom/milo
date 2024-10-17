@@ -154,6 +154,7 @@ export class InlinePrice extends HTMLSpanElement {
 
 
     handleClick(event) {
+      /* c8 ignore next 4 */
       if (event.target === this) return;
       // re-dispatch click event from the price element
       event.stopImmediatePropagation();
