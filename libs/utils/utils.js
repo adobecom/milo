@@ -395,7 +395,7 @@ export function appendHtmlToLink(link) {
   }
 }
 
-export const loadScript = (url, type, mode) => new Promise((resolve, reject) => {
+export const loadScript = (url, type, { mode } = {}) => new Promise((resolve, reject) => {
   let script = document.querySelector(`head > script[src="${url}"]`);
   if (!script) {
     const { head } = document;
