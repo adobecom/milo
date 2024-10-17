@@ -253,18 +253,6 @@ export function createMasElement(Class, dataset = {}) {
 }
 
 /**
- * Returns function selecting placeholders of given `Class`
- * located inside interesting `container` element.
- * @param {Commerce.PlaceholderConstructor} Class
- * @param {Element} container
- */
-export function selectMasElement(Class, container = document.body) {
-    return Array.from(
-        container?.querySelectorAll(`${Class.tag}[is="${Class.is}"]`) ?? [],
-    );
-}
-
-/**
  * Updates element dataset from `dataset` object,
  * omits empty values (false, '', null, undefined).
  * @param {HTMLElement} element

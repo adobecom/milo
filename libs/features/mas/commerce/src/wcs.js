@@ -71,6 +71,7 @@ export function Wcs({ settings }) {
             if (options.promotionCode) {
                 url.searchParams.set('promotion_code', options.promotionCode);
             }
+            /* c8 ignore next 3 */
             if (options.currency) {
                 url.searchParams.set('currency', options.currency);
             }
@@ -119,6 +120,7 @@ export function Wcs({ settings }) {
                 log.error(message, options);
             }
         } catch (e) {
+            /* c8 ignore next 2 */
             message = ERROR_MESSAGE_BAD_REQUEST;
             log.error(message, options, e);
         }

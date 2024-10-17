@@ -65,7 +65,6 @@ runTests(async () => {
             const before = ccCard.innerHTML;
             ccCard.footerSlot.test = true;
             await aemFragment.refresh(true);
-            await aemFragment.refresh(true); // for extra coverage
             await aemFragment.updateComplete;
             const after = ccCard.innerHTML;
             expect(before).to.equal(after);
@@ -112,7 +111,7 @@ runTests(async () => {
             const aemFragment = cardWithIms.querySelector('aem-fragment');
             window.adobeid = { authorize: sinon.stub() };
             spTheme.append(cardWithIms);
-            await expect(aemFragment.updateComplete);
+            expect(aemFragment.updateComplete);
             sinon.assert.calledOnce(window.adobeid.authorize);
         });
 

@@ -1,29 +1,4 @@
-// src/merch-subscription-panel.js
-import { html, LitElement } from "../lit-all.min.js";
-
-// ../node_modules/@spectrum-web-components/reactive-controllers/src/MatchMedia.js
-var MatchMediaController = class {
-  constructor(e, t) {
-    this.key = Symbol("match-media-key");
-    this.matches = false;
-    this.host = e, this.host.addController(this), this.media = window.matchMedia(t), this.matches = this.media.matches, this.onChange = this.onChange.bind(this), e.addController(this);
-  }
-  hostConnected() {
-    var e;
-    (e = this.media) == null || e.addEventListener("change", this.onChange);
-  }
-  hostDisconnected() {
-    var e;
-    (e = this.media) == null || e.removeEventListener("change", this.onChange);
-  }
-  onChange(e) {
-    this.matches !== e.matches && (this.matches = e.matches, this.host.requestUpdate(this.key, !this.matches));
-  }
-};
-
-// src/merch-subscription-panel.css.js
-import { css } from "../lit-all.min.js";
-var styles = css`
+import{html as i,LitElement as m}from"../lit-all.min.js";var s=class{constructor(e,o){this.key=Symbol("match-media-key"),this.matches=!1,this.host=e,this.host.addController(this),this.media=window.matchMedia(o),this.matches=this.media.matches,this.onChange=this.onChange.bind(this),e.addController(this)}hostConnected(){var e;(e=this.media)==null||e.addEventListener("change",this.onChange)}hostDisconnected(){var e;(e=this.media)==null||e.removeEventListener("change",this.onChange)}onChange(e){this.matches!==e.matches&&(this.matches=e.matches,this.host.requestUpdate(this.key,!this.matches))}};import{css as u}from"../lit-all.min.js";var f=u`
     :host {
         --merch-focused-outline: var(--merch-color-focus-ring) auto 1px;
         background-color: #f5f5f5;
@@ -137,36 +112,7 @@ var styles = css`
     a[is='checkout-link'] {
         display: none;
     }
-`;
-
-// src/constants.js
-var EVENT_MERCH_OFFER_SELECT_READY = "merch-offer-select:ready";
-var EVENT_OFFER_SELECTED = "merch-offer:selected";
-var EVENT_MERCH_STOCK_CHANGE = "merch-stock:change";
-var EVENT_MERCH_QUANTITY_SELECTOR_CHANGE = "merch-quantity-selector:change";
-
-// src/media.js
-var TABLET_DOWN = "(max-width: 1199px)";
-
-// src/merch-subscription-panel.js
-var MerchSubscriptionPanel = class extends LitElement {
-  static styles = [styles];
-  static properties = {
-    continueText: { type: String, attribute: "continue-text" },
-    quantity: { type: Number },
-    ready: { type: Boolean, attribute: "ready", reflect: true }
-  };
-  continueText = "Continue";
-  #mobileAndTablet = new MatchMediaController(this, TABLET_DOWN);
-  constructor() {
-    super();
-    this.ready = false;
-  }
-  /**
-   * Renders subscription layout when connected to a card and has prices.
-   */
-  get listLayout() {
-    return html`
+`;var n="merch-offer-select:ready";var c="merch-offer:selected",a="merch-stock:change";var h="merch-quantity-selector:change";var p="(max-width: 1199px)";var l=class extends m{static styles=[f];static properties={continueText:{type:String,attribute:"continue-text"},quantity:{type:Number},ready:{type:Boolean,attribute:"ready",reflect:!0}};continueText="Continue";#e=new s(this,p);constructor(){super(),this.ready=!1}get listLayout(){return i`
             <slot name="header"></slot>
             <slot name="offers"></slot>
             <div id="footer">
@@ -181,167 +127,15 @@ var MerchSubscriptionPanel = class extends LitElement {
             </div>
             ${this.checkoutLink}
             <slot @slotchange=${this.handleSlotChange}></slot>
-        `;
-  }
-  /**
-   * Renders loading spinner when disconnected from a card or waits for prices to resolve.
-   */
-  get waitLayout() {
-    return html`
+        `}get waitLayout(){return i`
             <div id="spinner">
                 <sp-progress-circle indeterminate size="l" />
             </div>
             <slot @slotchange=${this.handleSlotChange}></slot>
-        `;
-  }
-  render() {
-    return this.offerSelect ? this.listLayout : this.waitLayout;
-  }
-  connectedCallback() {
-    super.connectedCallback();
-    if (this.#mobileAndTablet.matches) {
-      this.setAttribute("layout", "mobile");
-    } else {
-      this.setAttribute("layout", "desktop");
-    }
-    this.addEventListener(
-      EVENT_MERCH_OFFER_SELECT_READY,
-      this.handleOfferSelectReady
-    );
-    this.checkOfferSelectReady();
-    this.addEventListener(EVENT_OFFER_SELECTED, this.handleOfferSelect);
-    this.addEventListener(EVENT_MERCH_STOCK_CHANGE, this.handleStockChange);
-    this.addEventListener(
-      EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
-      this.handleQuantitySelectChange
-    );
-  }
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    this.removeEventListener(
-      EVENT_MERCH_OFFER_SELECT_READY,
-      this.handleOfferSelectReady
-    );
-    this.removeEventListener(EVENT_OFFER_SELECTED, this.handleOfferSelect);
-    this.removeEventListener(
-      EVENT_MERCH_STOCK_CHANGE,
-      this.handleStockChange
-    );
-    this.removeEventListener(
-      EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
-      this.handleQuantitySelectChange
-    );
-  }
-  handleSlotChange() {
-    this.initOfferSelect();
-    this.initQuantitySelect();
-    this.initStock();
-    this.secureTransaction?.setAttribute("slot", "footer");
-  }
-  /** if merch-offer-select was already ready before the this is connected to DOM */
-  async checkOfferSelectReady() {
-    if (!this.offerSelect)
-      return;
-    await this.offerSelect.updateComplete;
-    if (this.offerSelect.planType) {
-      this.handleOfferSelectReady();
-    }
-  }
-  handleOfferSelectReady() {
-    this.ready = true;
-    this.initStock();
-    this.requestUpdate();
-  }
-  handleOfferSelect(event) {
-    if (this.offerSelect?.stock) {
-      this.stock.planType = event.detail.planType;
-    }
-    this.requestUpdate();
-  }
-  handleQuantitySelectChange(event) {
-    this.quantity = event.detail.option;
-  }
-  handleStockChange() {
-    this.requestUpdate();
-  }
-  handleContinue() {
-    this.shadowRoot.getElementById("checkoutLink").click();
-  }
-  async initOfferSelect() {
-    if (!this.offerSelect)
-      return;
-    this.offerSelect.querySelectorAll("merch-offer").forEach((el) => el.type = "subscription-option");
-    this.ready = !!this.offerSelect.planType;
-    this.offerSelect.setAttribute("slot", "offers");
-    await this.offerSelect.selectOffer(
-      this.offerSelect.querySelector("merch-offer[aria-selected]")
-    );
-    await this.offerSelect.selectedOffer.price.onceSettled();
-    this.requestUpdate();
-  }
-  initStock() {
-    if (!this.stock)
-      return;
-    this.stock.setAttribute("slot", "footer");
-    if (this.offerSelect?.stock) {
-      this.stock.planType = this.offerSelect.planType;
-    } else {
-      this.stock.planType = null;
-    }
-  }
-  initQuantitySelect() {
-    if (!this.quantitySelect)
-      return;
-    this.quantitySelect.setAttribute("slot", "footer");
-  }
-  get offerSelect() {
-    return this.querySelector("merch-offer-select");
-  }
-  get quantitySelect() {
-    return this.querySelector("merch-quantity-select");
-  }
-  get stock() {
-    return this.querySelector("merch-stock");
-  }
-  get secureTransaction() {
-    return this.querySelector("merch-secure-transaction");
-  }
-  get checkoutLink() {
-    if (!this.offerSelect?.selectedOffer?.price?.value)
-      return;
-    const [
-      {
-        offerSelectorIds: [osi]
-      }
-    ] = this.offerSelect.selectedOffer.price?.value;
-    if (!osi)
-      return;
-    const osis = [osi];
-    if (this.stock) {
-      const stockOsi = this.stock.osi;
-      if (stockOsi)
-        osis.push(stockOsi);
-    }
-    const osisString = osis.join(",");
-    const cta = this.offerSelect.selectedOffer.cta;
-    if (cta && cta.value) {
-      const node = cta?.cloneNode(true);
-      node.setAttribute("id", "checkoutLink");
-      node.setAttribute("data-wcs-osi", osisString);
-      node.setAttribute("data-quantity", this.quantity);
-      node.removeAttribute("target");
-      return html`${node}`;
-    }
-    return html`<a
+        `}render(){return this.offerSelect?this.listLayout:this.waitLayout}connectedCallback(){super.connectedCallback(),this.#e.matches?this.setAttribute("layout","mobile"):this.setAttribute("layout","desktop"),this.addEventListener(n,this.handleOfferSelectReady),this.checkOfferSelectReady(),this.addEventListener(c,this.handleOfferSelect),this.addEventListener(a,this.handleStockChange),this.addEventListener(h,this.handleQuantitySelectChange)}disconnectedCallback(){super.disconnectedCallback(),this.removeEventListener(n,this.handleOfferSelectReady),this.removeEventListener(c,this.handleOfferSelect),this.removeEventListener(a,this.handleStockChange),this.removeEventListener(h,this.handleQuantitySelectChange)}handleSlotChange(){this.initOfferSelect(),this.initQuantitySelect(),this.initStock(),this.secureTransaction?.setAttribute("slot","footer")}async checkOfferSelectReady(){this.offerSelect&&(await this.offerSelect.updateComplete,this.offerSelect.planType&&this.handleOfferSelectReady())}handleOfferSelectReady(){this.ready=!0,this.initStock(),this.requestUpdate()}handleOfferSelect(e){this.offerSelect?.stock&&(this.stock.planType=e.detail.planType),this.requestUpdate()}handleQuantitySelectChange(e){this.quantity=e.detail.option}handleStockChange(){this.requestUpdate()}handleContinue(){this.shadowRoot.getElementById("checkoutLink").click()}async initOfferSelect(){this.offerSelect&&(this.offerSelect.querySelectorAll("merch-offer").forEach(e=>e.type="subscription-option"),this.ready=!!this.offerSelect.planType,this.offerSelect.setAttribute("slot","offers"),await this.offerSelect.selectOffer(this.offerSelect.querySelector("merch-offer[aria-selected]")),await this.offerSelect.selectedOffer.price.onceSettled(),this.requestUpdate())}initStock(){this.stock&&(this.stock.setAttribute("slot","footer"),this.offerSelect?.stock?this.stock.planType=this.offerSelect.planType:this.stock.planType=null)}initQuantitySelect(){this.quantitySelect&&this.quantitySelect.setAttribute("slot","footer")}get offerSelect(){return this.querySelector("merch-offer-select")}get quantitySelect(){return this.querySelector("merch-quantity-select")}get stock(){return this.querySelector("merch-stock")}get secureTransaction(){return this.querySelector("merch-secure-transaction")}get checkoutLink(){if(!this.offerSelect?.selectedOffer?.price?.value)return;let[{offerSelectorIds:[e]}]=this.offerSelect.selectedOffer.price?.value;if(!e)return;let o=[e];if(this.stock){let t=this.stock.osi;t&&o.push(t)}let d=o.join(","),r=this.offerSelect.selectedOffer.cta;if(r&&r.value){let t=r?.cloneNode(!0);return t.setAttribute("id","checkoutLink"),t.setAttribute("data-wcs-osi",d),t.setAttribute("data-quantity",this.quantity),t.removeAttribute("target"),i`${t}`}return i`<a
             id="checkoutLink"
             is="checkout-link"
-            data-wcs-osi="${osisString}"
+            data-wcs-osi="${d}"
             data-quantity="${this.quantity}"
             href="#"
-        ></a>`;
-  }
-};
-window.customElements.define(
-  "merch-subscription-panel",
-  MerchSubscriptionPanel
-);
+        ></a>`}};window.customElements.define("merch-subscription-panel",l);

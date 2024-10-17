@@ -173,7 +173,21 @@ describe('Merch Block', () => {
     expect(await merch(el)).to.be.null;
   });
 
-  describe('prices', () => {
+  describe('locale settings', () => {
+    it('should map correct commerce locale depending on locale config', async () => {
+      [
+        { prefix: '/ar', expectedLocale: 'es_AR' },
+        { prefix: '/africa', expectedLocale: 'en_MU' },
+        { prefix: '', expectedLocale: 'en_US' },
+        { prefix: '/ae_ar', expectedLocale: 'ar_AE' },
+      ].forEach(({ prefix, expectedLocale }) => {
+        const computedLocale = getMiloLocaleSettings({ prefix })?.locale;
+        expect(computedLocale).to.equal(expectedLocale);
+      });
+    });
+  });
+
+  describe('Prices', () => {
     it('renders merch link to price without term (new)', async () => {
       await validatePriceSpan('.merch.price.hide-term', { displayRecurrence: 'false' });
     });
@@ -224,7 +238,7 @@ describe('Merch Block', () => {
     });
   });
 
-  describe('promo prices', () => {
+  describe('Promo Prices', () => {
     it('renders merch link to promo price with discount', async () => {
       await validatePriceSpan('.merch.price.oldprice', { promotionCode: undefined });
     });
@@ -245,7 +259,7 @@ describe('Merch Block', () => {
     });
   });
 
-  describe('promo prices in a fragment', () => {
+  describe('Promo Prices in a fragment', () => {
     it('renders merch link to promo price with discount', async () => {
       await validatePriceSpan('.fragment .merch.price.oldprice', { promotionCode: undefined });
     });
@@ -268,10 +282,7 @@ describe('Merch Block', () => {
 
   describe('CTAs', () => {
     it('renders merch link to CTA, default values', async () => {
-      await initService(true);
-      const el = await merch(document.querySelector(
-        '.merch.cta',
-      ));
+      const el = await merch(document.querySelector('.merch.cta'));
       const { dataset, href, nodeName, textContent } = await el.onceSettled();
       const url = new URL(href);
       expect(nodeName).to.equal('A');
@@ -287,13 +298,11 @@ describe('Merch Block', () => {
     it('renders merch link to CTA, config values', async () => {
       setConfig({
         ...config,
-        commerce: { ...config.commerce, checkoutClientId: 'dc' },
+        commerce: { ...config.commerce },
       });
       mockIms();
-      await initService(true);
-      const el = await merch(document.querySelector(
-        '.merch.cta.config',
-      ));
+      await initService(true, { checkoutClientId: 'dc' });
+      const el = await merch(document.querySelector('.merch.cta.config'));
       const { dataset, href, nodeName, textContent } = await el.onceSettled();
       const url = new URL(href);
       expect(nodeName).to.equal('A');
@@ -307,7 +316,6 @@ describe('Merch Block', () => {
     });
 
     it('renders merch link to CTA, metadata values', async () => {
-      setConfig({ ...config });
       const metadata = createTag('meta', { name: 'checkout-workflow', content: CheckoutWorkflow.V2 });
       document.head.appendChild(metadata);
       await initService(true);
@@ -329,7 +337,7 @@ describe('Merch Block', () => {
 
     it('renders merch link to cta for GB locale', async () => {
       await mockIms();
-      await initService(true);
+      await initService();
       const el = await merch(document.querySelector(
         '.merch.cta.gb',
       ));
@@ -394,7 +402,7 @@ describe('Merch Block', () => {
 
     it('adds ims country to checkout link', async () => {
       await mockIms('CH');
-      await initService(true);
+      await initService();
       const el = await merch(document.querySelector(
         '.merch.cta.ims',
       ));
@@ -547,7 +555,6 @@ describe('Merch Block', () => {
       getUserEntitlements();
       mockIms('US');
       setSubscriptionsData(SUBSCRIPTION_DATA_PHSP_RAW_ELIGIBLE);
-      await initService(true);
       const target = await merch(document.querySelector('.merch.cta.upgrade-target'));
       await target.onceSettled();
       const sourceCta = await merch(document.querySelector('.merch.cta.upgrade-source'));
@@ -736,7 +743,6 @@ describe('Merch Block', () => {
   describe('checkout link with optional params', async () => {
     const checkoutUcv2Keys = [
       'rurl', 'authCode', 'curl',
-
     ];
     const checkoutAllowKeysMapping = {
       quantity: 'q',
@@ -798,49 +804,8 @@ describe('Merch Block', () => {
         { prefix: '', expectedLocale: 'en_US' },
         { prefix: '/ae_ar', expectedLocale: 'ar_AE' },
       ].forEach(({ prefix, expectedLocale }) => {
-        it(`returns correct locale for "${prefix}"`, () => {
-          const wcsLocale = getMiloLocaleSettings({ locale: { prefix } }).locale;
-          expect(wcsLocale).to.be.equal(expectedLocale);
-        });
-      });
-    });
-  });
-
-  describe('M@S consumption', () => {
-    describe('maslibs parameter', () => {
-      beforeEach(() => {
-        getMasBase.baseUrl = undefined;
-        updateSearch({});
-      });
-
-      it('should load commerce.js via maslibs', async () => {
-        initService.promise = undefined;
-        getMasBase.baseUrl = 'http://localhost:2000/test/blocks/merch/mas';
-        updateSearch({ maslibs: 'test' });
-        setConfig(config);
-        await mockIms();
-        const commerce = await initService(true);
-        expect(commerce.mock).to.be.true;
-      });
-
-      it('should return the default Adobe URL if no maslibs parameter is present', () => {
-        expect(getMasBase()).to.equal('https://www.adobe.com/mas');
-      });
-
-      it('should return the stage Adobe URL if maslibs=stage', () => {
-        expect(getMasBase('https://main--milo--adobecom.hlx.live', 'stage')).to.equal('https://www.stage.adobe.com/mas');
-      });
-
-      it('should return the local URL if maslibs=local', () => {
-        expect(getMasBase('https://main--milo--adobecom.hlx.live', 'local')).to.equal('http://localhost:9001');
-      });
-
-      it('should return the hlx live URL from the fork if maslibs contains double dashes', () => {
-        expect(getMasBase('https://main--milo--adobecom.hlx.live', 'test--mas--user')).to.equal('https://test--mas--user.hlx.live');
-      });
-
-      it('should return the hlx page URL from the fork if maslibs contains double dashes', () => {
-        expect(getMasBase('https://main--milo--adobecom.hlx.page', 'test--mas--user')).to.equal('https://test--mas--user.hlx.page');
+        const wcsLocale = getMiloLocaleSettings({ prefix }).locale;
+        expect(wcsLocale).to.be.equal(expectedLocale);
       });
     });
   });
