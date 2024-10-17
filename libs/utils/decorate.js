@@ -248,8 +248,8 @@ export function addAccessibilityControl(videoString, videoAttributes, tabIndex =
     }
     return `<div class='video-container'>${videoString}
   <a class='pause-play-wrapper' role='button' tabindex=${tabIndex} alt='play/pause motion' aria-label='play/pause motion'>
-    <img class='accessibility-control pause-icon ${videoAttributes.includes('autoplay') ? '' : 'hidden'}' src='https://main--federal--adobecom.hlx.page/federal/assets/svgs/accessibility-pause.svg'/>
-    <img class='accessibility-control play-icon ${videoAttributes.includes('autoplay') ? 'hidden' : ''}' src='https://main--federal--adobecom.hlx.page/federal/assets/svgs/accessibility-play.svg'/>
+    <img class='accessibility-control pause-icon ${videoAttributes.includes('autoplay') ? '' : 'hidden'}' alt='pause icon' src='https://main--federal--adobecom.hlx.page/federal/assets/svgs/accessibility-pause.svg'/>
+    <img class='accessibility-control play-icon ${videoAttributes.includes('autoplay') ? 'hidden' : ''}' alt='play icon' src='https://main--federal--adobecom.hlx.page/federal/assets/svgs/accessibility-play.svg'/>
   </a>
   </div>`;
   }
@@ -387,14 +387,17 @@ export async function loadCDT(el, classList) {
 
 export function isAccessible(anchorTag) {
   const section = anchorTag.closest('div[class="section"]');
-  const [block] = Array.from(section.children).filter((element) => element.contains(anchorTag));
-  return !block.classList.contains('hide-controls');
+  if (section) {
+    const [block] = Array.from(section.children).filter((element) => element.contains(anchorTag));
+    return !block.classList.contains('hide-controls');
+  }
+  return true;
 }
 
 export function decorateAnchorVideo({ src = '', anchorTag }) {
-  const accessibilityEnabled = isAccessible(anchorTag);
   if (!src.length || !(anchorTag instanceof HTMLElement)) return;
   if (anchorTag.closest('.marquee, .aside, .hero-marquee, .quiz-marquee') && !anchorTag.hash) anchorTag.hash = '#autoplay';
+  const accessibilityEnabled = isAccessible(anchorTag);
   const { dataset, parentElement } = anchorTag;
   const attrs = getVideoAttrs(anchorTag.hash, dataset);
   const tabIndex = anchorTag.tabIndex || 0;
