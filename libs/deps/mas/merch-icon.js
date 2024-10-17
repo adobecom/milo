@@ -14,6 +14,11 @@ import{LitElement as r,html as e,css as s}from"../lit-all.min.js";var t=class ex
             --img-height: 24px;
         }
 
+        :host([size='m']) {
+            --img-width: 30px;
+            --img-height: 30px;
+        }
+
         :host([size='l']) {
             --img-width: 40px;
             --img-height: 40px;

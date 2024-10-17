@@ -14,6 +14,11 @@ import{LitElement as Yt}from"../lit-all.min.js";import{LitElement as zt,html as 
             --img-height: 24px;
         }
 
+        :host([size='m']) {
+            --img-width: 30px;
+            --img-height: 30px;
+        }
+
         :host([size='l']) {
             --img-width: 40px;
             --img-height: 40px;
@@ -1345,6 +1350,8 @@ merch-card[variant="ccd-suggested"] [slot="heading-xs"] {
 }
 
 merch-card[variant="ccd-suggested"] [slot="cta"] a {
+  font-size: var(--consonant-merch-card-body-xs-font-size);
+  line-height: normal;
   text-decoration: none;
   color: var(--spectrum-gray-800);
   font-weight: 700;
@@ -1383,19 +1390,26 @@ merch-card[variant="ccd-suggested"] [slot="cta"] a {
       display: flex;
       flex-flow: wrap;
       place-self: flex-start;
+      flex-wrap: nowrap;
     }
 
     :host([variant='ccd-suggested']) .headings {
       padding-inline-start: var(--consonant-merch-spacing-xxs);
+      display: flex;
+      flex-direction: column;
     }
 
     :host([variant='ccd-suggested']) ::slotted([slot='icons']) {
-      place-self: flex-start;
+      place-self: center;
     }
 
     :host([variant='ccd-suggested']) ::slotted([slot='heading-xs']) {
       font-size: var(--merch-card-heading-xxs-font-size);
       line-height: var(--merch-card-heading-xxs-line-height);
+    }
+    
+    :host([variant='ccd-suggested']) ::slotted([slot='detail-m']) {
+      line-height: var(--consonant-merch-card-detail-m-line-height);
     }
     
     :host([variant='ccd-suggested'][strip-size='wide']) ::slotted([slot='body-xs']) {
@@ -1410,6 +1424,8 @@ merch-card[variant="ccd-suggested"] [slot="cta"] a {
       display: flex;
       align-items: center;
       color: var(--spectrum-gray-800, #F8F8F8);
+      font-size: var(--consonant-merch-card-body-xs-font-size);
+      line-height: var(--consonant-merch-card-body-xs-line-height);
     }
 
     :host([variant='ccd-suggested']) ::slotted([slot='cta']) {
@@ -1440,7 +1456,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a:not(.con-button) {
     font-weight: 400;
     line-height: var(--consonant-merch-card-body-xxs-line-height);
     text-decoration-line: underline;
-    color: var(--spectrum-blue-800, #147AF3);
+    color: var(--spectrum-gray-800, var(--merch-color-grey-80);
   }
 
   merch-card[variant="ccd-slice"] [slot='image'] img {
@@ -1495,7 +1511,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a:not(.con-button) {
             font-weight: 400;
             line-height: var(--consonant-merch-card-body-xxs-line-height);
             text-decoration-line: underline;
-            color: var(--merch-color-grey-80);
+            color: var(--spectrum-gray-800, var(--merch-color-grey-80);
         }
 
         :host([variant='ccd-slice']) ::slotted([slot='image']) {
@@ -1666,7 +1682,7 @@ merch-card span[is=inline-price] {
 }
 
 merch-card [slot='heading-xs'] {
-    color: var(--spectrum-gray-800, #2c2c2c);
+    color: var(--spectrum-gray-800, var(--merch-color-grey-80);
     font-size: var(--consonant-merch-card-heading-xs-font-size);
     line-height: var(--consonant-merch-card-heading-xs-line-height);
     margin: 0;
@@ -1695,14 +1711,14 @@ merch-card [slot='heading-s'] {
     font-size: var(--consonant-merch-card-heading-s-font-size);
     line-height: var(--consonant-merch-card-heading-s-line-height);
     margin: 0;
-    color: var(--spectrum-gray-800, #2c2c2c);
+    color: var(--spectrum-gray-800, var(--merch-color-grey-80);
 }
 
 merch-card [slot='heading-m'] {
     font-size: var(--consonant-merch-card-heading-m-font-size);
     line-height: var(--consonant-merch-card-heading-m-line-height);
     margin: 0;
-    color: var(--spectrum-gray-800, #2c2c2c);
+    color: var(--spectrum-gray-800, var(--merch-color-grey-80);
     font-weight: 700;
 }
 
@@ -1723,14 +1739,14 @@ merch-card [slot='heading-l'] {
     font-size: var(--consonant-merch-card-heading-l-font-size);
     line-height: var(--consonant-merch-card-heading-l-line-height);
     margin: 0;
-    color: var(--spectrum-gray-800, #2c2c2c);
+    color: var(--spectrum-gray-800, var(--merch-color-grey-80);
 }
 
 merch-card [slot='heading-xl'] {
     font-size: var(--consonant-merch-card-heading-xl-font-size);
     line-height: var(--consonant-merch-card-heading-xl-line-height);
     margin: 0;
-    color: var(--spectrum-gray-800, #2c2c2c);
+    color: var(--spectrum-gray-800, var(--merch-color-grey-80);
 }
 
 merch-card [slot='callout-content'] {
@@ -1785,36 +1801,36 @@ merch-card [slot="body-xxs"] {
     line-height: var(--consonant-merch-card-body-xxs-line-height);
     font-weight: normal;
     letter-spacing: var(--consonant-merch-card-body-xxs-letter-spacing);
-    color: var(--spectrum-gray-800, #2c2c2c);
+    color: var(--spectrum-gray-800, var(--merch-color-grey-80);
     margin: 0;
 }
 
 merch-card [slot="body-xs"] {
     font-size: var(--consonant-merch-card-body-xs-font-size);
     line-height: var(--consonant-merch-card-body-xs-line-height);
-    color: var(--spectrum-gray-800, #2c2c2c);
+    color: var(--spectrum-gray-800, var(--merch-color-grey-80);
 }
 
 merch-card [slot="body-m"] {
     font-size: var(--consonant-merch-card-body-m-font-size);
     line-height: var(--consonant-merch-card-body-m-line-height);
-    color: var(--spectrum-gray-800, #2c2c2c);
+    color: var(--spectrum-gray-800, var(--merch-color-grey-80);
 }
 
 merch-card [slot="body-l"] {
     font-size: var(--consonant-merch-card-body-l-font-size);
     line-height: var(--consonant-merch-card-body-l-line-height);
-    color: var(--spectrum-gray-800, #2c2c2c);
+    color: var(--spectrum-gray-800, var(--merch-color-grey-80);
 }
 
 merch-card [slot="body-s"] {
-    color: var(--spectrum-gray-800, #2c2c2c);
+    color: var(--spectrum-gray-800, var(--merch-color-grey-80);
 }
 
 merch-card [slot="body-xl"] {
     font-size: var(--consonant-merch-card-body-xl-font-size);
     line-height: var(--consonant-merch-card-body-xl-line-height);
-    color: var(--spectrum-gray-800, #2c2c2c);
+    color: var(--spectrum-gray-800, var(--merch-color-grey-80);
 }
 
 [slot="cci-footer"] p,
