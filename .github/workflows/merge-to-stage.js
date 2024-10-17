@@ -9,6 +9,8 @@ const {
 const PR_TITLE = '[Release] Stage to Main';
 const SEEN = {};
 const REQUIRED_APPROVALS = process.env.REQUIRED_APPROVALS || 2;
+const MAX_MERGES = process.env.MAX_PRS_PER_BATCH || 8;
+let existingPRCount = 0
 const STAGE = 'stage';
 const PROD = 'main';
 const LABELS = {
@@ -130,6 +132,7 @@ const merge = async ({ prs, type }) => {
 
   for await (const { number, files, html_url, title } of prs) {
     try {
+      if (mergeLimitExceeded()) return
       const fileOverlap = files.find((file) => SEEN[file]);
       if (fileOverlap) {
         commentOnPR(
@@ -150,6 +153,7 @@ const merge = async ({ prs, type }) => {
           merge_method: 'squash',
         });
       }
+      existingPRCount++
       const prefix = type === LABELS.zeroImpact ? ' [ZERO IMPACT]' : '';
       body = `-${prefix} ${html_url}\n${body}`;
       await slackNotification(
@@ -231,6 +235,8 @@ const openStageToMainPR = async () => {
   }
 };
 
+const mergeLimitExceeded = () => (MAX_MERGES - existingPRCount) < 0
+
 const main = async (params) => {
   github = params.github;
   owner = params.context.repo.owner;
@@ -241,6 +247,11 @@ const main = async (params) => {
     const stageToMainPR = await getStageToMainPR();
     console.log('has Stage to Main PR:', !!stageToMainPR);
     if (stageToMainPR) body = stageToMainPR.body;
+    existingPRCount = body.match(/https:\/\/github\.com\/adobecom\/milo\/pull\/\d+/g).length
+    console.log(`Number of PRs already in the batch: ${existingPRCount}`);
+
+    if (mergeLimitExceeded()) return console.log('Maximum number of PRs already merged. Stopping execution');
+
     const { zeroImpactPRs, highImpactPRs, normalPRs } = await getPRs();
     await merge({ prs: zeroImpactPRs, type: LABELS.zeroImpact });
     if (stageToMainPR?.labels.some((label) => label.includes(LABELS.SOTPrefix)))
