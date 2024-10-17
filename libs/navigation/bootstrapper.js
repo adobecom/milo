@@ -52,18 +52,20 @@ export default async function bootstrapBlock(miloLibs, blockConfig) {
 
   const redirectToSupport = () => window.location.assign('https://helpx.adobe.com');
 
-  const isChatOpen = (client) =>
-    client?.isAdobeMessagingClientInitialized() && client?.getMessagingExperienceState()?.windowState !== 'hidden';
+  const isChatOpen = (client) => isChatInitialized(client) && client?.getMessagingExperienceState()?.windowState !== 'hidden';
 
   const openChat = (event) => {
     const client = window.AdobeMessagingExperienceClient;
 
     if (!isChatInitialized(client)) {
-      return redirectToSupport();
+      redirectToSupport();
+      return;
     }
 
     const open = client?.openMessagingWindow;
-    if (typeof open !== 'function' || isChatOpen(client)) return;
+    if (typeof open !== 'function' || isChatOpen(client)) {
+      return;
+    }
 
     const sourceType = event?.target.tagName?.toLowerCase();
     const sourceText = sourceType === 'img' ? event.target.alt?.trim() : event.target.innerText?.trim();
@@ -72,6 +74,7 @@ export default async function bootstrapBlock(miloLibs, blockConfig) {
   };
 
   const addDomEvents = () => {
+    console.log(document);
     document.addEventListener('click', (event) => {
       if (!event.target.closest('[href*="#open-jarvis-chat"]')) return;
       event.preventDefault();
