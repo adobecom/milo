@@ -1947,7 +1947,7 @@ var AEM_FRAGMENT_MAPPING4 = {
   title: { tag: "h3", slot: "heading-xs" },
   prices: { tag: "p", slot: "price" },
   description: { tag: "div", slot: "body-xs" },
-  ctas: { slot: "cta", size: "s", button: false }
+  ctas: { slot: "cta", size: "s" }
 };
 var CCDSuggested = class extends VariantLayout {
   getGlobalCSS() {
@@ -2067,7 +2067,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a:not(.con-button) {
     font-weight: 400;
     line-height: var(--consonant-merch-card-body-xxs-line-height);
     text-decoration-line: underline;
-    color: var(--spectrum-gray-800, var(--merch-color-grey-80;
+    color: var(--spectrum-gray-800, var(--merch-color-grey-80);
   }
 
   merch-card[variant="ccd-slice"] [slot='image'] img {
