@@ -247,6 +247,26 @@
   padding: var(--spacing-xxs) 0;
 }
 
+.table .row-heading .col-heading .pricing {
+  display: flex;
+  flex-direction: column;
+}
+
+.table .row-heading .col-heading .pricing .price-annual-prefix:before {
+  content: '\A';
+  white-space: pre;
+}
+
+.table .row-heading .col-heading .pricing .price-annual-prefix,
+.table .row-heading .col-heading .pricing .price.price-annual,
+.table .row-heading .col-heading .pricing .price-annual-suffix {
+  font-size: var(--type-heading-xxs-size);
+  line-height: var(--type-heading-xxs-size);
+  font-weight: 400;
+  position: relative;
+  left: -3px;
+}
+
 .table .row-heading .col-heading .pricing .price-strikethrough {
   display: inline-block;
   font-size: var(--type-body-s-size);
