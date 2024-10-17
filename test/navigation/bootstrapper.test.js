@@ -1,6 +1,6 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import { stub, useFakeTimers, restore } from 'sinon';
+import { stub, useFakeTimers, restore, spy } from 'sinon';
 import loadBlock from '../../libs/navigation/bootstrapper.js';
 import fetchedFooter from '../blocks/global-footer/mocks/fetched-footer.js';
 import placeholders from '../blocks/global-navigation/mocks/placeholders.js';
@@ -26,6 +26,7 @@ const blockConfig = {
 const miloLibs = 'http://localhost:2000/libs';
 
 describe('Bootstrapper', async () => {
+  let openMessagingWindowSpy;
   beforeEach(async () => {
     stub(window, 'fetch').callsFake(async (url) => {
       if (url.includes('/footer')) {
@@ -41,6 +42,15 @@ describe('Bootstrapper', async () => {
 
       return null;
     });
+    window.AdobeMessagingExperienceClient = window.AdobeMessagingExperienceClient
+      || {
+        openMessagingWindow: () => {},
+        isAdobeMessagingClientInitialized: () => {},
+        getMessagingExperienceState: () => {},
+      };
+    openMessagingWindowSpy = spy(window.AdobeMessagingExperienceClient, 'openMessagingWindow');
+    stub(window.AdobeMessagingExperienceClient, 'isAdobeMessagingClientInitialized').returns(true);
+    stub(window.AdobeMessagingExperienceClient, 'getMessagingExperienceState').returns({ windowState: 'hidden' });
     setConfig({ miloLibs, contentRoot: '/federal/dev' });
   });
 
@@ -63,5 +73,13 @@ describe('Bootstrapper', async () => {
     await loadBlock(miloLibs, blockConfig.header);
     const el = document.getElementsByTagName('header');
     expect(el).to.exist;
+  });
+
+  it('should call openMessagingWindow when click on jarvis enabled button', async () => {
+    await loadBlock(miloLibs, blockConfig.header);
+    const el = document.querySelector('.feds-cta[href*="#open-jarvis-chat"]');
+    const event = new CustomEvent('click', { bubbles: true });
+    el.dispatchEvent(event);
+    expect(openMessagingWindowSpy.called).to.be.true;
   });
 });
