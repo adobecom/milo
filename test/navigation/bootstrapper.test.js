@@ -26,10 +26,7 @@ const blockConfig = {
 const miloLibs = 'http://localhost:2000/libs';
 
 describe('Bootstrapper', async () => {
-  let initializeSpy;
   let openMessagingWindowSpy;
-  let isAdobeMessagingClientInitializedStub;
-  let getMessagingExperienceStateStub;
   beforeEach(async () => {
     stub(window, 'fetch').callsFake(async (url) => {
       if (url.includes('/footer')) {
@@ -47,15 +44,13 @@ describe('Bootstrapper', async () => {
     });
     window.AdobeMessagingExperienceClient = window.AdobeMessagingExperienceClient
       || {
-        initialize: () => {},
         openMessagingWindow: () => {},
         isAdobeMessagingClientInitialized: () => {},
         getMessagingExperienceState: () => {},
       };
-    initializeSpy = spy(window.AdobeMessagingExperienceClient, 'initialize');
     openMessagingWindowSpy = spy(window.AdobeMessagingExperienceClient, 'openMessagingWindow');
-    isAdobeMessagingClientInitializedStub = stub(window.AdobeMessagingExperienceClient, 'isAdobeMessagingClientInitialized').returns(true);
-    getMessagingExperienceStateStub = stub(window.AdobeMessagingExperienceClient, 'getMessagingExperienceState').returns({ windowState: 'hidden' });
+    stub(window.AdobeMessagingExperienceClient, 'isAdobeMessagingClientInitialized').returns(true);
+    stub(window.AdobeMessagingExperienceClient, 'getMessagingExperienceState').returns({ windowState: 'hidden' });
     setConfig({ miloLibs, contentRoot: '/federal/dev' });
   });
 
