@@ -404,9 +404,7 @@ export const loadScript = (url, type, { mode } = {}) => new Promise((resolve, re
     if (type) {
       script.setAttribute('type', type);
     }
-    if (mode) {
-      script.setAttribute(mode, true);
-    }
+    if (['async', 'defer'].includes(mode)) script.setAttribute(mode, true);
     head.append(script);
   }
 
