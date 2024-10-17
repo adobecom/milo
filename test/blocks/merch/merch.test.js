@@ -301,7 +301,7 @@ describe('Merch Block', () => {
         commerce: { ...config.commerce },
       });
       mockIms();
-      await initService(true, { checkoutClientId: 'dc' });
+      await initService(true, { 'checkout-client-id': 'dc' });
       const el = await merch(document.querySelector('.merch.cta.config'));
       const { dataset, href, nodeName, textContent } = await el.onceSettled();
       const url = new URL(href);

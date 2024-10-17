@@ -21,30 +21,35 @@ export class MasCommerceService extends HTMLElement {
     promise = null;
 
     get config() {
-        const { searchParams } = new URL(import.meta.url);
-        const env = this.getAttribute('env') || searchParams.get('env');
-        const isStage = env?.toLowerCase() === 'stage';
-        const envName = isStage ? 'stage' : 'prod';
-        const commerceEnv = isStage ? 'STAGE' : 'PROD';
-        const config = {
-            env: { name: envName },
-            commerce: { 'commerce.env': commerceEnv },
-        };
-        //root parameters
-        ['locale', 'country', 'language'].forEach((attribute) => {
-            const value = this.getAttribute(attribute);
-            if (value) {
-                config[attribute] = value;
-            }
-        });
-        //commerce parameters
-        ['checkoutWorkflowStep', 'forceTaxExclusive', 'checkoutClientId'].forEach((attribute) => {
-            const value = this.getAttribute(attribute);
-            if (value) {
-                config.commerce[attribute] = value;
-            }
-        });
-        return config;
+      const { searchParams } = new URL(import.meta.url);
+      const env = this.getAttribute('env') || searchParams.get('env');
+      const isStage = env?.toLowerCase() === 'stage';
+      const envName = isStage ? 'stage' : 'prod';
+      const commerceEnv = isStage ? 'STAGE' : 'PROD';
+      const config = {
+        env: { name: envName },
+        commerce: { 'commerce.env': commerceEnv },
+      };
+      //root parameters
+      ['locale', 'country', 'language'].forEach((attribute) => {
+        const value = this.getAttribute(attribute);
+        if (value) {
+          config[attribute] = value;
+        }
+      });
+      //commerce parameters
+      [
+        'checkout-workflow-step',
+        'force-tax-exclusive',
+        'checkout-client-id'
+      ].forEach((attribute) => {
+        const value = this.getAttribute(attribute);
+        if (value) {
+          const camelCaseAttribute = attribute.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+          config.commerce[camelCaseAttribute] = value;
+        }
+      });
+      return config;
     }
 
     async registerCheckoutAction(action) {

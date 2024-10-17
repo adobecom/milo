@@ -7,4 +7,5 @@ import '../../src/aem-fragment.js';
 export default async () => {
   const el = document.createElement('mas-commerce-service');
   document.head.appendChild(el);
+  await el.readyPromise;
 };

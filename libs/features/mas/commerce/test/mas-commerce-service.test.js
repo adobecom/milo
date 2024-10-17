@@ -85,9 +85,9 @@ describe('commerce service', () => {
                     locale: 'fr_CA',
                     language: 'es',
                     country: 'CA',
-                    checkoutClientId: 'foobar',
-                    checkoutWorkflowStep: 'stepone',
-                    forceTaxExclusive: true,                    
+                    'checkout-client-id': 'foobar',
+                    'checkout-workflow-step': 'stepone',
+                    'force-tax-exclusive': true,                    
                 });
                 expect(el?.config).to.not.be.empty;
                 expect(el.config).to.deep.equal({

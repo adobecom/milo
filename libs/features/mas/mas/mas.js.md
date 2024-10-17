@@ -22,11 +22,11 @@ You do need to have mas.js on your page / application, including it can be done 
 
 | Name       | Description                                                                                         | Default Value                | Required |
 | ---------- | --------------------------------------------------------------------------------------------------- | ---------------------------- | -------- |
-|  `checkoutClientId`     | checkout client id     |  `false`                      |  `false` |
-| `checkoutWorkflowStep`  | default checkout workflow step         |  `CheckoutWorkflowStep.EMAIL` | `false`  |
+| `checkout-client-id`     | checkout client id     |  `false`                      |  `false` |
+| `checkout-workflow-step`  | default checkout workflow step         |  `CheckoutWorkflowStep.EMAIL` | `false`  |
 | `country`  | country of the offers to retrieve from WCS, determines the currency, price format, etc.             | US or locale country if set | `false`  |
-|  `env`     | commerce environment you want this page to use, either `stage` or `prod`                            |  `prod`                      |  `false` |
-|  `forceTaxExclusive`     | force all price display to be tax exclusive      |  `false`                      |  `false` |
+| `env`     | commerce environment you want this page to use, either `stage` or `prod`                            |  `prod`                      |  `false` |
+| `force-tax-exclusive`     | force all price display to be tax exclusive      |  `false`                      |  `false` |
 | `locale`   | currency & price locale you need, must belong to one of the [supported locales](#supported-locales) | `en_US`                      | `false`  |
 | `language` | language of the price literal, e.g: per license                                                     | en or locale langauge if set | `false`  |
 
