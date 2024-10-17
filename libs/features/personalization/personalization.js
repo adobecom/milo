@@ -710,11 +710,15 @@ export function buildVariantInfo(variantNames) {
   }, { allNames: [] });
 }
 
+const getXLGListURL = (config) => {
+  const sheet = config.env?.name === 'prod' ? 'prod' : 'stage';
+  return `https://www.adobe.com/federal/assets/data/mep-entitlement-tags.json?sheet=${sheet}`;
+};
+
 export const getEntitlementMap = async () => {
   const config = getConfig();
   if (config.mep?.entitlementMap) return config.mep.entitlementMap;
-  const sheet = config.env?.name === 'prod' ? 'prod' : 'stage';
-  const entitlementUrl = `https://www.adobe.com/federal/assets/data/mep-entitlement-tags.json?sheet=${sheet}`;
+  const entitlementUrl = getXLGListURL(config);
   const fetchedData = await fetchData(entitlementUrl, DATA_TYPE.JSON);
   if (!fetchedData) return config.consumerEntitlements || {};
   const entitlements = {};
@@ -1140,6 +1144,7 @@ export async function init(enablements = {}) {
       const normalizedURL = normalizePath(manifest.manifestPath);
       loadLink(normalizedURL, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
     });
+    if (pzn) loadLink(getXLGListURL(config), { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
   }
 
   if (target === true) manifests = manifests.concat(await callMartech(config));
