@@ -8,8 +8,8 @@ const {
 // Run from the root of the project for local testing: node --env-file=.env .github/workflows/merge-to-stage.js
 const PR_TITLE = '[Release] Stage to Main';
 const SEEN = {};
-const REQUIRED_APPROVALS = process.env.REQUIRED_APPROVALS || 2;
-const MAX_MERGES = process.env.MAX_PRS_PER_BATCH || 8;
+const REQUIRED_APPROVALS = process.env.REQUIRED_APPROVALS ? Number(process.env.REQUIRED_APPROVALS) : 2;
+const MAX_MERGES = process.env.MAX_PRS_PER_BATCH ? Number(process.env.MAX_PRS_PER_BATCH) : 8;
 let existingPRCount = 0;
 const STAGE = 'stage';
 const PROD = 'main';
@@ -147,6 +147,7 @@ const merge = async ({ prs, type }) => {
         });
       }
       existingPRCount++;
+      console.log(`Current number of PRs merged: ${existingPRCount}`);
       const prefix = type === LABELS.zeroImpact ? ' [ZERO IMPACT]' : '';
       body = `-${prefix} ${html_url}\n${body}`;
       await slackNotification(
