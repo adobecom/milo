@@ -10,6 +10,8 @@ const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
 const conf = { locales };
 setConfig(conf);
 
+const heroMarquee = await import('../../../libs/blocks/hero-marquee/hero-marquee.js');
+
 describe('Hero Marquee', () => {
   before(async () => {
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });
@@ -34,5 +36,14 @@ describe('Hero Marquee', () => {
   it('supports authorable horizontal rules', async () => {
     const hr = await waitForElement('.has-divider');
     expect(hr).to.exist;
+  });
+
+  it('support AU ABM prices', async () => {
+    const testPriceEl = await waitForElement('.test-price');
+    const loc = {
+      prefix: '/au'
+    };
+    await heroMarquee.checkIfStPriceAddedForAu(testPriceEl, loc);
+    expect(testPriceEl).to.exist;
   });
 });

@@ -169,7 +169,7 @@ function loadBreakpointThemes() {
  *
  * @param element row wrapper element
  */
-async function checkIfStPriceAddedForAu(element) {
+export async function checkIfStPriceAddedForAu(element, locale) {
   if (locale.prefix !== '/au') return;
 
   const prices = element.querySelectorAll('[data-wcs-osi]');
@@ -270,7 +270,7 @@ export default async function init(el) {
       firstCol.parentElement.classList.add(`row-${parsed.key}`, 'con-block');
       firstCol.remove();
       cols[1].classList.add('row-wrapper');
-      checkIfStPriceAddedForAu(cols[1]);
+      checkIfStPriceAddedForAu(cols[1], locale);
       if (contentTypes.includes(parsed.key)) {
         promiseArr.push(loadContentType(row, parsed.key, parsed.classes));
       }
