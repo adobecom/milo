@@ -7,8 +7,6 @@ import placeholders from '../blocks/global-navigation/mocks/placeholders.js';
 import { setConfig } from '../../libs/utils/utils.js';
 import { mockRes } from '../blocks/global-navigation/test-utilities.js';
 
-document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-
 const blockConfig = {
   footer: {
     name: 'global-footer',
@@ -28,6 +26,7 @@ const miloLibs = 'http://localhost:2000/libs';
 describe('Bootstrapper', async () => {
   let openMessagingWindowSpy;
   beforeEach(async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/body.html' });
     stub(window, 'fetch').callsFake(async (url) => {
       if (url.includes('/footer')) {
         return mockRes({
@@ -49,12 +48,11 @@ describe('Bootstrapper', async () => {
         getMessagingExperienceState: () => {},
       };
     openMessagingWindowSpy = spy(window.AdobeMessagingExperienceClient, 'openMessagingWindow');
-    stub(window.AdobeMessagingExperienceClient, 'isAdobeMessagingClientInitialized').returns(true);
-    stub(window.AdobeMessagingExperienceClient, 'getMessagingExperienceState').returns({ windowState: 'hidden' });
     setConfig({ miloLibs, contentRoot: '/federal/dev' });
   });
 
   afterEach(() => {
+    document.body.innerHTML = '';
     restore();
   });
 
@@ -76,10 +74,22 @@ describe('Bootstrapper', async () => {
   });
 
   it('should call openMessagingWindow when click on jarvis enabled button', async () => {
+    stub(window.AdobeMessagingExperienceClient, 'isAdobeMessagingClientInitialized').returns(true);
+    stub(window.AdobeMessagingExperienceClient, 'getMessagingExperienceState').returns({ windowState: 'hidden' });
     await loadBlock(miloLibs, blockConfig.header);
     const el = document.querySelector('.feds-cta[href*="#open-jarvis-chat"]');
     const event = new CustomEvent('click', { bubbles: true });
     el.dispatchEvent(event);
     expect(openMessagingWindowSpy.called).to.be.true;
+  });
+
+  it('should not call openMessagingWindow when chat dialog is already open', async () => {
+    stub(window.AdobeMessagingExperienceClient, 'isAdobeMessagingClientInitialized').returns(true);
+    stub(window.AdobeMessagingExperienceClient, 'getMessagingExperienceState').returns({ windowState: 'docked' });
+    await loadBlock(miloLibs, blockConfig.header);
+    const el = document.querySelector('.feds-cta[href*="#open-jarvis-chat"]');
+    const event = new CustomEvent('click', { bubbles: true });
+    el.dispatchEvent(event);
+    expect(openMessagingWindowSpy.called).to.be.false;
   });
 });

@@ -41,7 +41,7 @@ export default async function bootstrapBlock(miloLibs, blockConfig) {
 
   const redirectToSupport = () => window.location.assign('https://helpx.adobe.com');
 
-  const isChatOpen = (client) => client?.isAdobeMessagingClientInitialized() && client?.getMessagingExperienceState()?.windowState !== 'hidden';
+  const isChatOpen = (client) => isChatInitialized(client) && client?.getMessagingExperienceState()?.windowState !== 'hidden';
 
   const openChat = (event) => {
     const client = window.AdobeMessagingExperienceClient;
