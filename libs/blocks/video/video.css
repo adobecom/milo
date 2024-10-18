@@ -45,10 +45,20 @@ video {
   right: 2%;
   bottom: 2%;
   margin: 0;
+  background:#242424;
   border-radius: 50%;
-  outline-color: var(--color-accent-focus-ring);
   z-index: 2;
   cursor: pointer;
+}
+
+.video-container .pause-play-wrapper:hover {
+  background:#0000;
+}
+
+.video-container .pause-play-wrapper:focus-visible {
+  background:#0000;
+  border: 3px solid var(--color-white);
+  outline: var(--color-accent-focus-ring) solid 2px;
 }
 
 .editorial-card .video-container,
