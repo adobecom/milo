@@ -341,6 +341,11 @@ span.preflight-time {
   animation: spin 2s linear infinite;
 }
 
+.result-icon.empty {
+  background: url('./img/empty.svg');
+  background-size: 60px;
+}
+
 @keyframes spin { 
   100% { 
     -webkit-transform: rotate(360deg); 
@@ -625,4 +630,38 @@ img[data-alt-check]::after {
 
 .dialog-modal#preflight table td h3 {
   font-size: 16px;
+}
+
+.performance-guidelines {
+  color: #fff;
+  text-decoration: underline;
+}
+
+.performance-element-preview {
+  position: relative;
+  display: inline-block;
+  color: #fff;
+  text-decoration: underline;
+}
+
+.performance-element-preview:hover {
+  text-decoration: none;
+}
+
+/* styles.css */
+.lcp-tooltip-modal {
+  width: 0;
+  height: 0;
+  position: fixed;
+  border: 2px solid red;
+  background-color: white;
+  z-index: 103;
+  overflow: hidden;
+  pointer-events: none;
+  display: block;
+  visibility: hidden;
+}
+
+.lcp-tooltip-modal.show {
+  visibility: visible;
 }

@@ -809,6 +809,7 @@ async function decoratePlaceholders(area, config) {
   if (!area) return;
   const nodes = findReplaceableNodes(area);
   if (!nodes.length) return;
+  area.dataset.placeholdersDecorated = 'true';
   const placeholderPath = `${config.locale?.contentRoot}/placeholders.json`;
   placeholderRequest = placeholderRequest
   || customFetch({ resource: placeholderPath, withCacheRules: true })
