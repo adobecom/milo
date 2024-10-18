@@ -174,7 +174,7 @@ body.preset .advanced-settings .advanced-preset {
   transition: height .5s;
 
 
-  border: solid 1px #666;
+  border: solid 1px #aaa;
   border-radius: 10px;
   margin: 20px;
   padding: 10px 0;
@@ -184,6 +184,10 @@ body.preset dd.content .advanced-settings .field {
   display: flex;
   align-items: baseline;
   margin: 0;
+}
+
+body.preset dd.content .advanced-preset .field label {
+  width: 90px;
 }
 
 body.preset .advanced-settings .advanced-preset .help {
@@ -198,7 +202,7 @@ body.advanced .advanced-settings .advanced-options {
   border-width: 1px;
   /* transition: height .5s; */
 
-  border: solid 1px #bcbcbc;
+  border: solid 1px #aaa;
   border-radius: 10px;
   margin: 20px;
   /* padding: 10px 0; */
@@ -435,6 +439,7 @@ tbody tr:hover {
 .bulk-publisher.dark .content-panel textarea#urls {
   background: #666;
   color: white;
+  border-color: #999;
 }
 
 .bulk-publisher.dark .content-panel textarea#urls::placeholder {
