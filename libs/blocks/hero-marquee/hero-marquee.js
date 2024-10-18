@@ -164,7 +164,8 @@ function loadBreakpointThemes() {
 
 /**
  * ABM prices for Australia are displayed with annual price next to them.
- * If strikethrough price is also displayed then the annual price should be displayed in the next line.
+ * If strikethrough price is also displayed then the annual price should
+ * be displayed in the next line.
  *
  * @param element row wrapper element
  */
