@@ -190,6 +190,7 @@ import{LitElement as Dt}from"../lit-all.min.js";import{LitElement as wt,html as 
         align-items: center;
         flex: 1;
         line-height: normal;
+        align-self: center;
     }
 
     .secure-transaction-label::before {
