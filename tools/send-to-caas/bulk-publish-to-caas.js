@@ -36,6 +36,14 @@ const DEFAULT_VALUES_CB = {
   useHtml: true,
 };
 
+const theme =  localStorage.getItem('bp-theme');
+if (theme === 'dark') {
+  document.querySelector('.bulk-publisher').classList.add('dark');
+  document.querySelector('#option-dark').checked = true;
+} else {
+  document.querySelector('#option-light').checked = true;
+}
+
 const fetchExcelJson = async (url) => {
   const resp = await fetch(url);
   if (resp.ok) {
@@ -381,8 +389,8 @@ helpButtons.forEach((btn) => {
 
       } else if (el === 'publish-to-prod') {   
         showAlert(`<p><b>Publish to Prod</b></p>
-          <p>By default the content is sent to the <b>DRAFT</b> container.<p>
-          <p>When this checkbox is checked, the content will be send to the <b>LIVE</b> container.</p>`);
+          <p>By default the content is sent to the CaaS <b>DRAFT</b> container.<p>
+          <p>When this checkbox is checked, the content will be send to the CaaS <b>LIVE</b> container.</p>`);
           
       } else if (el === 'floodgate') {   
         showAlert(`<p><b>FloodGate</b></p>
@@ -407,7 +415,16 @@ helpButtons.forEach((btn) => {
 const themeOptions = document.querySelectorAll('.theme-options');
 themeOptions.forEach((btn) => {
   btn.addEventListener('click', (e) => {
-    document.querySelector('.content-panel').classList.toggle('dark');
+    // document.querySelector('.bulk-publisher').classList.toggle('dark');
+    console.log(e.target.value);
+    if (e.target.value === "dark") {
+      document.querySelector('.bulk-publisher').classList.add('dark');
+      localStorage.setItem('bp-theme', 'dark');
+
+    } else {
+      document.querySelector('.bulk-publisher').classList.remove('dark');
+      localStorage.setItem('bp-theme', 'light');
+    }
   });
 });
 

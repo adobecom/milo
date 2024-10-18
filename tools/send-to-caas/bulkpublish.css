@@ -20,7 +20,7 @@ dd.content .field label {
 
 dd.content .field {
   padding: 0 20px;
-  margin: 20px 0
+  margin: 16px 0
 }
 
 .results {
@@ -38,16 +38,60 @@ dd.content .field {
 
 .options-panel {
   min-width: 400px;
+  /* background: linear-gradient(45deg, #999, #ddd); */
+  background: linear-gradient(45deg, #aaa, #eee);
+}
+.bulk-publisher.dark .options-panel {
   background: linear-gradient(45deg, #000, #404040);
 }
 .options-panel dd.content {
   background-color: transparent;
 }
+
+.bulk-publisher dd.content {
+  color: #000;
+}
+.bulk-publisher.dark dd.content {
+  color: #EFEFEF;
+}
  
 .options-panel h4 {
   margin: 20px 20px -10px;
   font-size: 20px;
-  font-weight: 500;
+  /* font-weight: 500; */
+}
+
+dd.content .field select, 
+dd.content .field input {
+  border: none;
+  background: #eaeaea;
+  color: #202020;
+}
+
+.bulk-publisher.dark dd.content .field select, 
+.bulk-publisher.dark  dd.content .field input {
+  border: none;
+  background: #3C3C3C;
+  color: #EFEFEF;
+}
+
+dd.content .field label {
+  color: #202020;
+}
+.bulk-publisher.dark dd.content .field label {
+  color: #aaa;
+}
+
+.divider {
+  border-top: solid 1px #999;
+}
+
+.bulk-publisher.dark .divider {
+  border-color: #161616;
+}
+
+div#caas-draft-cb {
+  margin-top: 15px;
 }
 
 .urls {
@@ -62,7 +106,7 @@ dd.content .field {
   font-size: 16px;
   font-family: system-ui;
   border-radius: 16px;
-  padding: 10px;
+  padding: 15px 20px;
 }
 
 .urls-label {
@@ -105,15 +149,23 @@ select#preset {
 
 .advanced-settings .advanced-preset,
 .advanced-settings .advanced-options {
-  /* display: none; */
   height: 0;
+  margin: 0;
+  padding: 0;
   overflow: hidden;
   transition: height .5s;
+
+  border: solid 1px #666;
+  /* margin: 20px; */
+  border-radius: 10px;
+  /* padding: 10px 0; */
+  border-width: 0;
 }
 
 body.preset .advanced-settings {
   position: relative;
 }
+
 
 body.preset .advanced-settings .advanced-preset {
   /* display: block; */
@@ -121,9 +173,10 @@ body.preset .advanced-settings .advanced-preset {
   height: 105px;
   transition: height .5s;
 
+
   border: solid 1px #666;
-  margin: 20px;
   border-radius: 10px;
+  margin: 20px;
   padding: 10px 0;
 }
 
@@ -142,7 +195,22 @@ body.advanced .advanced-settings .advanced-options {
   /* display: block; */
   height: 380px;
   height: auto;
+  border-width: 1px;
   /* transition: height .5s; */
+
+  border: solid 1px #bcbcbc;
+  border-radius: 10px;
+  margin: 20px;
+  /* padding: 10px 0; */
+
+  background: linear-gradient(45deg, #eeeeee66, transparent);
+  
+}
+
+body.advanced .bulk-publisher.dark .advanced-settings .advanced-preset,
+body.advanced .bulk-publisher.dark .advanced-settings .advanced-options {
+  background: linear-gradient(45deg, #20202066, transparent);
+  border-color: #666;
 }
 
 body.preset dd.content .advanced-settings .advanced-preset .field input[type="text"] {
@@ -359,36 +427,36 @@ tbody tr:hover {
   font-size: 15px;
 }
 
-.content-panel.dark {
+.bulk-publisher.dark .content-panel {
   background: #444;
   color: #fafafa;
 }
 
-.content-panel.dark textarea#urls {
+.bulk-publisher.dark .content-panel textarea#urls {
   background: #666;
   color: white;
 }
 
-.content-panel.dark textarea#urls::placeholder {
+.bulk-publisher.dark .content-panel textarea#urls::placeholder {
   color: #b0b0b0;
 }
 
-.content-panel.dark thead tr {
+.bulk-publisher.dark .content-panel thead tr {
   background: #333;
   color: white;
 }
-.content-panel.dark  tbody tr:hover {
+.bulk-publisher.dark .content-panel  tbody tr:hover {
   background: #505050;
 }
 
-.content-panel.dark a,
-.content-panel.dark table.error-table a{
+.bulk-publisher.dark .content-panel a,
+.bulk-publisher.dark .content-panel table.error-table a{
   color: #ccc;
 }
-.content-panel.dark table td:not(.error) {
+.bulk-publisher.dark .content-panel table td:not(.error) {
   color: #ccc;
 }
-.content-panel.dark table.success-table td.ok {
+.bulk-publisher.dark .content-panel table.success-table td.ok {
   color: #99d600;
 }
 
