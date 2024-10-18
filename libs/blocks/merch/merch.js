@@ -532,9 +532,7 @@ export async function initService(force = false, attributes = {}) {
       document.head.append(service);
       await service.readyPromise;
       service.imsSignedInPromise?.then((isSignedIn) => {
-        if (isSignedIn) {
-          fetchEntitlements();
-        }
+        if (isSignedIn) fetchEntitlements();
       });
     }
     return service;
