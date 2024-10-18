@@ -1806,7 +1806,7 @@ merch-card [slot='detail-s'] {
     letter-spacing: 0.66px;
     font-weight: 700;
     text-transform: uppercase;
-    color: var(--spectrum-gray-100, var(--merch-color-grey-10));
+    color: var(--spectrum-gray-600, var(--merch-color-grey-600));
 }
 
 merch-card [slot='detail-m'] {
