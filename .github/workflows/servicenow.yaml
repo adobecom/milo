@@ -56,19 +56,66 @@ jobs:
             str="${str//$'\r'/"\r"}"
             str="${str//$'\n'/"\n"}"
             str="${str//$'\t'/"\t"}"
+            str="${str//$'\b'/"\b"}"
             str="${str//\\//}"
             str="${str////"\/"}"
 
             echo "$str"
           }
 
-          release_title=$(sanitizeStr "${{ github.event.pull_request.title }}")
+          release_title=$(sanitizeStr "${{ github.event.pull_request.title }}") >> $GITHUB_ENV
           release_details=$(sanitizeStr "${{ github.event.pull_request.body }}")
-          release=Release_Title--"${release_title}"--Release_Details--"${release_details}"--Pull_Request_Number--"${{ github.event.pull_request.number }}"--Pull_Request_Created_At--"${{ github.event.pull_request.created_at }}"--Pull_Request_Merged_At--"${{ github.event.pull_request.merged_at }}"
+          release=Release_Details--"${release_details}"--Pull_Request_Number--"${{ github.event.pull_request.number }}"--Pull_Request_Created_At--"${{ github.event.pull_request.created_at }}"--Pull_Request_Merged_At--"${{ github.event.pull_request.merged_at }}"
 
           echo "release_summary<<RS_EOF" >> $GITHUB_ENV
           echo "$release" >> $GITHUB_ENV
           echo "RS_EOF" >> $GITHUB_ENV
+
+      - name: Get IMS Token
+        run: |
+          DEFAULT_IMS_URL=''
+
+          function ims_request() {
+            local client_id=$1
+            local client_secret=$2
+            local scope=$3
+            local url=$4
+
+            if [ -z "$client_id" ]; then
+              echo "First parameter missing, must be IMS client ID"
+              return 1
+            fi
+
+            if [ -z "$client_secret" ]; then
+              echo "Second parameter missing, must be IMS client secret"
+              return 1
+            fi
+
+            if [ -z "$scope" ]; then
+              echo "Third parameter missing, must be IMS scope"
+              return 1
+            fi
+
+            if [ -z "$url" ]; then
+              url=$DEFAULT_IMS_URL
+            fi
+
+            local params="{\"_username\":\"${username}\",\"_passkey\":\"${passkey}\",\"_object\":\"${object}\",\"_method\": \"${method}\"}"
+            params=$(echo "$params $method_params" | jq -s add)
+
+            local response=$(curl --write-out "%{http_code}" --silent --output response.txt https://${url}/ims/token/v1 --data-urlencode "client_id=${client_id}" --data-urlencode "client_secret=${client_secret}" --data-urlencode "scope=${scope}" --data-urlencode "grant_type=client_credentials")
+
+            if [ $response != "200" ]; then
+              echo "CURL call returned HTTP status code: $response"
+              exit 1
+            elif grep -q "\"error\"" response.txt; then
+              echo "IMS token request failed with response: "
+              cat response.txt
+              exit 1
+            else
+              echo "IMS token request was successful"
+            fi
+          }
 
       - name: Create CMR in ServiceNow
         run: |
@@ -124,6 +171,65 @@ jobs:
               exit 1
             else
               echo "CMR creation was successful"
+            fi
+          }
+
+          servicenow_request '${{ secrets.SKMS_USER }}' '${{ secrets.SKMS_PASS }}' CmrDao createCmrFromPreapprovedChangeModel '{"change_executor":"${{ secrets.SKMS_CHANGE_EXECUTOR }}","maintenance_window_end_time":"${{ env.end_time }}","maintenance_window_start_time":"${{ env.start_time }}","preapproved_change_model_id":"${{ secrets.SKMS_CHANGE_MODEL_ID }}","summary":"${{ env.release_summary }}"}'
+
+      - name: Close CMR in ServiceNow
+        run: |
+          DEFAULT_SERVICENOW_URL=''
+
+          function servicenow_request() {
+            local username=$1
+            local passkey=$2
+            local object=$3
+            local method=$4
+            local method_params=$5
+            local url=$6
+
+            if [ -z "$username" ]; then
+              echo "First parameter missing, must be SKMS username"
+              return 1
+            fi
+
+            if [ -z "$passkey" ]; then
+              echo "Second parameter missing, must be SKMS passkey"
+              return 1
+            fi
+
+            if [ -z "$object" ]; then
+              echo "Third parameter missing, must be an SKMS dao object"
+              return 1
+            fi
+
+            if [ -z "$method" ]; then
+              echo "Fourth parameter missing, must be SKMS dao method"
+              return 1
+            fi
+
+            if [ -z "$method_params" ]; then
+              method_params='{}'
+            fi
+
+            if [ -z "$url" ]; then
+              url=$DEFAULT_SERVICENOW_URL
+            fi
+
+            local params="{\"_username\":\"${username}\",\"_passkey\":\"${passkey}\",\"_object\":\"${object}\",\"_method\": \"${method}\"}"
+            params=$(echo "$params $method_params" | jq -s add)
+
+            local response=$(curl --write-out "%{http_code}" --silent --output response.txt https://${url}/web_api --data-urlencode "_parameters=${params}")
+
+            if [ $response != "200" ]; then
+              echo "CURL call returned HTTP status code: $response"
+              exit 1
+            elif grep -q "\"status\":\"error\"" response.txt; then
+              echo "CMR closure failed with response: "
+              cat response.txt
+              exit 1
+            else
+              echo "CMR closure was successful"
             fi
           }
 
