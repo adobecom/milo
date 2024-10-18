@@ -20,7 +20,7 @@ merch-card[variant="ccd-suggested"] [slot="cta"] a {
   font-size: var(--consonant-merch-card-body-xs-font-size);
   line-height: normal;
   text-decoration: none;
-  color: var(--spectrum-gray-800);
+  color: var(--spectrum-gray-800, var(--merch-color-grey-80));
   font-weight: 700;
 }
 `;
