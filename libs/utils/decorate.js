@@ -1,4 +1,4 @@
-import { createTag, loadStyle, getConfig, createIntersectionObserver, elementHasText } from './utils.js';
+import { createTag, loadStyle, getConfig, createIntersectionObserver, elContainsText } from './utils.js';
 
 const { miloLibs, codeRoot } = getConfig();
 
@@ -80,8 +80,8 @@ export function decorateBlockText(el, config = ['m', 's', 'm'], type = null) {
     const bodyStyle = `body-${config[1]}`;
     const emptyEls = el.querySelectorAll('p:not([class]), ul:not([class]), ol:not([class], div:not([class]))');
     if (emptyEls.length) {
-      [...emptyEls].filter(elementHasText).forEach((e) => e.classList.add(bodyStyle));
-    } else if (!el.classList.length && elementHasText(el)) {
+      [...emptyEls].filter(elContainsText).forEach((e) => e.classList.add(bodyStyle));
+    } else if (!el.classList.length && elContainsText(el)) {
       el.classList.add(bodyStyle);
     }
   }
