@@ -21,6 +21,7 @@ import merch, {
   PRICE_TEMPLATE_REGULAR,
   getMasBase,
   appendTabName,
+  appendExtraOptions,
 } from '../../../libs/blocks/merch/merch.js';
 
 import { mockFetch, unmockFetch, readMockText } from './mocks/fetch.js';
@@ -731,6 +732,20 @@ describe('Merch Block', () => {
         expect(resultUrl).to.equal(modalUrl.urlWithPlan);
         document.querySelector('meta[name="preselect-plan"]').remove();
       });
+    });
+
+    it('appends extra options to URL', () => {
+      const url = 'https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/all-apps/master.modal.html';
+      const resultUrl = appendExtraOptions(url, JSON.stringify({ promoid: 'test' }));
+      expect(resultUrl).to.equal('https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/all-apps/master.modal.html?promoid=test');
+    });
+
+    it('does not append extra options to URL if invalid URL or params not provided', () => {
+      const invalidUrl = 'invalid-url';
+      const resultUrl = appendExtraOptions(invalidUrl, JSON.stringify({ promoid: 'test' }));
+      expect(resultUrl).to.equal(invalidUrl);
+      const resultUrl2 = appendExtraOptions(invalidUrl);
+      expect(resultUrl2).to.equal(invalidUrl);
     });
   });
 
