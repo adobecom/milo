@@ -1795,6 +1795,7 @@ merch-card [slot='detail-s'] {
     letter-spacing: 0.66px;
     font-weight: 700;
     text-transform: uppercase;
+    color: var(--spectrum-gray-600, var(--merch-color-grey-60));
 }
 
 merch-card [slot='detail-m'] {
