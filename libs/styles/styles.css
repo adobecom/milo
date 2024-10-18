@@ -359,18 +359,19 @@
   padding: 10px 24px 8px;
 }
 
-.con-button.button-justified {
-  display: block;
-  text-align: center;
-  width: 100%;
-}
-
-.xxl-button .con-button {
+.xxl-button .con-button,
+.con-button.button-xxl {
   border-radius: 30px;
   font-size: 22px;
   line-height: 27px;
   min-height: 27px;
   padding: 14px 30px 15px;
+}
+
+.con-button.button-justified {
+  display: block;
+  text-align: center;
+  width: 100%;
 }
 
 .dark .con-button {
