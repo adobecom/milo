@@ -223,16 +223,24 @@ export function closeActionModal() {
   document.querySelector('.dialog-modal').dispatchEvent(new Event('closeModal'));
 }
 
+let isSyncing = false;
 export async function syncFragsLangstore() {
+  if (isSyncing) return;
+  isSyncing = true;
   closeActionModal();
   if (syncFragments.value?.length) {
     await syncToExcel(syncFragments.value);
     syncFragments.value = [];
   }
   await syncToLangstore();
+  isSyncing = false;
 }
 
+let isSending = false;
 export async function sendForLoc() {
+  if (isSending) return;
+  isSending = true;
+
   // stop polling for updates until request is made
   polling.value = false;
 
@@ -263,6 +271,7 @@ export async function sendForLoc() {
   setStatus('service');
   // Start polling for updates since this has not been kicked off.
   getServiceUpdates();
+  isSending = false;
 }
 
 export function showRollout() {
