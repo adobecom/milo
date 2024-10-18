@@ -83,7 +83,7 @@ const setPreference = (key = '', value = '') => {
   const formDataObject = keyParts.reduce((obj, part) => {
     obj[part] = obj[part] || {};
     return obj[part];
-  }, window.mcz_marketoForm_pref);
+  }, window.mcz_marketoForm_pref || {});
   formDataObject[lastKey] = value;
 };
 
@@ -92,19 +92,34 @@ export const setPreferences = (formData) => {
   Object.entries(formData).forEach(([key, value]) => setPreference(key, value));
 };
 
-function showSuccessSection(formData, scroll = true) {
+const showSuccessSection = (formData, scroll = true) => {
   try {
+    const show = (el) => {
+      el.classList.remove('hide-block');
+      if (scroll) el.scrollIntoView({ behavior: 'smooth' });
+    };
     const section = formData[SUCCESS_SECTION].toLowerCase().replaceAll(' ', '-');
     const success = document.querySelector(`.section.${section}`);
-    console.log(success);
-    success.classList.remove('hide-block');
-    if (scroll) success.scrollIntoView({ behavior: 'smooth' });
-    setPreference(SUCCESS_TYPE, 'message');
+    if (success) {
+      show(success);
+      return;
+    }
+    // For Marquee use case
+    let count = 0;
+    const interval = setInterval(() => {
+      const el = document.querySelector(`.section.${section}`);
+      if (el) {
+        clearInterval(interval);
+        show(el);
+      }
+      count += 1;
+      if (count > 6) clearInterval(interval);
+    }, 500);
   } catch (e) {
     /* c8 ignore next 2 */
     window.lana?.log('Error showing Marketo success section', { tags: 'warn,marketo' });
   }
-}
+};
 
 export const formSuccess = (formEl, formData) => {
   const el = formEl.closest('.marketo');
@@ -124,6 +139,7 @@ export const formSuccess = (formEl, formData) => {
 
   if (formData?.[SUCCESS_TYPE] !== 'section') return true;
   showSuccessSection(formData);
+  setPreference(SUCCESS_TYPE, 'message');
   return false;
 };
 
