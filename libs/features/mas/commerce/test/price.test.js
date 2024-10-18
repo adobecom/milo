@@ -684,5 +684,36 @@ describe('commerce service', () => {
             const { buildPriceHTML } = await initService(mockConfig(), true);
             expect(buildPriceHTML([])).to.be.empty;
         });
+
+        const offers = [
+          {
+            priceDetails: {
+              price: 32.98,
+              priceWithoutTax: 29.99,
+              usePrecision: true,
+              formatString: "'A$'#,##0.00",
+              taxDisplay: 'TAX_INCLUSIVE_DETAILS',
+              taxTerm: 'GST',
+            },
+            planType: 'ABM'
+          }
+        ];
+
+        it('returns empty string if no orders provided - AU with promo', async () => {
+          const { buildPriceHTML } = await initService(mockConfig(), true);
+          const options = {
+            country: 'AU',
+            promotionCode: 'promo'
+          };
+          expect(buildPriceHTML(offers, options)).to.be.html(snapshots.auAbmAnnual);
+        });
+
+        it('returns empty string if no orders provided - AU no promo', async () => {
+          const { buildPriceHTML } = await initService(mockConfig(), true);
+          const options = {
+            country: 'AU'
+          };
+          expect(buildPriceHTML(offers, options)).to.be.html(snapshots.auAbmAnnual);
+        });
     });
 });

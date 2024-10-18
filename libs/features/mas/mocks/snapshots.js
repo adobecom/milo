@@ -129,6 +129,31 @@ const taxExclusive = `
 const discount = `<span class="discount">20%</span>`;
 const noDiscount = `<span class="no-discount"></span>`;
 
+const auAbmAnnual = `
+<span class="price" aria-label="A$32.98">
+  <span class="price-currency-symbol">A$</span>
+  <span class="price-currency-space disabled"></span>
+  <span class="price-integer">32</span>
+  <span class="price-decimals-delimiter">.</span>
+  <span class="price-decimals">98</span>
+  <span class="price-recurrence disabled"></span>
+  <span class="price-unit-type disabled"></span>
+  <span class="price-tax-inclusivity disabled"></span>
+</span>
+<span class="price-annual-prefix">&nbsp;(</span>
+<span class="price price-annual" aria-label="A$32.98">
+  <span class="price-currency-symbol">A$</span>
+  <span class="price-currency-space disabled"></span>
+  <span class="price-integer">32</span>
+  <span class="price-decimals-delimiter">.</span>
+  <span class="price-decimals">98</span>
+  <span class="price-recurrence disabled"></span>
+  <span class="price-unit-type disabled"></span>
+  <span class="price-tax-inclusivity disabled"></span>
+</span>
+<span class="price-annual-suffix">)</span>
+`;
+
 export default {
     customLiterals,
     optical,
@@ -140,4 +165,5 @@ export default {
     taxExclusive,
     discount,
     noDiscount,
+    auAbmAnnual,
 };
