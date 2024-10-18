@@ -193,7 +193,8 @@ export const createPerformanceItem = ({
 
 let clonedLcpSection;
 function highlightElement(event) {
-  const lcpSection = config.lcp.element.closest('.section');
+  if (!config.lcp) return;
+  const lcpSection = config.lcp?.element.closest('.section');
   const tooltip = document.querySelector('.lcp-tooltip-modal');
   const { offsetHeight, offsetWidth } = lcpSection;
   const scaleFactor = Math.min(500 / offsetWidth, 500 / offsetHeight);
@@ -221,11 +222,15 @@ function observePerfMetrics() {
   const lcpObserver = new PerformanceObserver((entryList) => {
     const entries = entryList.getEntries();
     const lastEntry = entries[entries.length - 1];
-    if (lastEntry && !lastEntry.url.includes('preflight')) {
-      config.lcp = lastEntry;
-    }
+    if (lastEntry) config.lcp = lastEntry;
     const hasValidLcp = checkLCP();
-    if (!hasValidLcp) return;
+    if (!hasValidLcp) {
+      Object.values(text).forEach(({ key }) => {
+        if (key === 'lcpEl') return;
+        updateItem({ key, description: 'No LCP element found.' });
+      });
+      return;
+    }
     checkFragments();
     checkForPersonalization();
     checkVideosWithoutPosterAttribute();
