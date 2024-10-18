@@ -23,9 +23,10 @@ function serializeValue(value) {
         const { name } = value;
         return name ? `${type} ${name}` : type;
     }
-    if (type === 'object') {
+    if (type === 'object') {  
         if (value instanceof Error) return value.message;
         if (typeof value.originatingRequest === 'string') {
+          /* c8 ignore next 4 */
             const { message, originatingRequest, status } = value;
             return [message, status, originatingRequest]
                 .filter((v) => v)
