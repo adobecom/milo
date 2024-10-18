@@ -169,8 +169,8 @@ function loadBreakpointThemes() {
  *
  * @param element row wrapper element
  */
-export async function checkIfStPriceAddedForAu(element, locale) {
-  if (locale.prefix !== '/au') return;
+export async function checkIfStPriceAddedForAu(element, loc) {
+  if (loc.prefix !== '/au') return;
 
   const prices = element.querySelectorAll('[data-wcs-osi]');
   await Promise.all([...prices].map((price) => price.onceSettled()));

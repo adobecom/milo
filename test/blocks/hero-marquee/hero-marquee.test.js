@@ -40,9 +40,7 @@ describe('Hero Marquee', () => {
 
   it('support AU ABM prices', async () => {
     const testPriceEl = await waitForElement('.test-price');
-    const loc = {
-      prefix: '/au'
-    };
+    const loc = { prefix: '/au' };
     await heroMarquee.checkIfStPriceAddedForAu(testPriceEl, loc);
     expect(testPriceEl).to.exist;
   });
