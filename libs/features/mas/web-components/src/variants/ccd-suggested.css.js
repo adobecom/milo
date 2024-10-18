@@ -18,6 +18,7 @@ merch-card[variant="ccd-suggested"] [slot="heading-xs"] {
 merch-card[variant="ccd-suggested"] [slot="body-xs"] a {
   font-size: var(--consonant-merch-card-body-xxs-font-size);
   line-height: var(--consonant-merch-card-body-xxs-line-height);
+  text-decoration: underline;
 }
 
 merch-card[variant="ccd-suggested"] [slot="cta"] a {
