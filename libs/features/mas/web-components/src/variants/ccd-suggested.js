@@ -62,6 +62,11 @@ export class CCDSuggested extends VariantLayout {
       flex-wrap: nowrap;
     }
 
+    :host([variant='ccd-suggested']) span.placeholder-resolved[data-template="strikethrough"], 
+    :host([variant='ccd-suggested']) span.price.price-strikethrough {
+      text-decoration: line-through;
+    }
+
     :host([variant='ccd-suggested']) .headings {
       padding-inline-start: var(--consonant-merch-spacing-xxs);
       display: flex;

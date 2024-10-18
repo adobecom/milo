@@ -1374,6 +1374,11 @@ merch-card[variant="ccd-suggested"] [slot="cta"] a {
       flex-wrap: nowrap;
     }
 
+    :host([variant='ccd-suggested']) span.placeholder-resolved[data-template="strikethrough"], 
+    :host([variant='ccd-suggested']) span.price.price-strikethrough {
+      text-decoration: line-through;
+    }
+
     :host([variant='ccd-suggested']) .headings {
       padding-inline-start: var(--consonant-merch-spacing-xxs);
       display: flex;
@@ -1590,7 +1595,8 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a:not(.con-button) {
     --consonant-merch-card-border-color: #eaeaea;
     --color-accent: #1473E6;
     --merch-color-focus-ring: #1473E6;
-    --merch-color-grey-60: var(--spectrum-global-color-gray-600, #6D6D6D);
+    --merch-color-grey-10: #f6f6f6;
+    --merch-color-grey-60: #6D6D6D;
     --merch-color-grey-80: #2c2c2c;
     --merch-color-green-promo: #2D9D78;
 
@@ -1776,7 +1782,7 @@ merch-card [slot='detail-s'] {
     letter-spacing: 0.66px;
     font-weight: 700;
     text-transform: uppercase;
-    color: var(--spectrum-gray-600, var(--merch-color-grey-60));
+    color: var(--spectrum-gray-100, var(--merch-color-grey-10));
 }
 
 merch-card [slot='detail-m'] {
