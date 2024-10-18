@@ -1327,9 +1327,6 @@ merch-card[variant="ccd-suggested"] [slot="heading-xs"] {
 merch-card[variant="ccd-suggested"] [slot="body-xs"] a {
   font-size: var(--consonant-merch-card-body-xxs-font-size);
   line-height: var(--consonant-merch-card-body-xxs-line-height);
-  text-decoration: none;
-  color: var(--spectrum-gray-800, var(--merch-color-grey-80));
-  font-weight: 700;
 }
 
 merch-card[variant="ccd-suggested"] [slot="cta"] a {
