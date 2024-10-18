@@ -251,6 +251,9 @@ merch-card [slot='callout-content'] img {
 merch-card [slot='detail-s'] {
     font-size: var(--merch-card-detail-s-font-size);
     line-height: var(--merch-card-detail-s-line-height);
+    letter-spacing: 0.66px;
+    font-weight: 700;
+    text-transform: uppercase;
 }
 
 merch-card [slot='detail-m'] {
