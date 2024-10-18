@@ -643,13 +643,13 @@ describe('global navigation', () => {
   describe('Client search feature in global navigation', () => {
     it('should append the feds-client-search div when search is enabled', async () => {
       await createFullGlobalNavigation({ customConfig: { searchEnabled: 'on' } });
-      expect(document.querySelector(selectors.topNavWrapper).classList.contains('feds-client-search')).to.exist;
+      expect(document.querySelector(selectors.topNav).classList.contains('feds-client-search')).to.exist;
     });
   });
 
   describe('Custom Links for mobile hamburger menu', () => {
     it('Add custom links through Link Group block in parallel to large menu\'s', async () => {
-      const customLinks = 'home,learn';
+      const customLinks = 'home,apps,learn';
       await createFullGlobalNavigation({
         viewport: 'mobile',
         globalNavigation: navigationWithCustomLinks,
