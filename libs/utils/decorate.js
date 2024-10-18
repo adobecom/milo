@@ -257,6 +257,7 @@ export function addAccessibilityControl(videoString, videoAttributes, tabIndex =
 }
 
 export function handlePause(event) {
+  event.stopPropagation();
   if (event.code !== 'Enter' && event.code !== 'Space' && !['focus', 'click', 'blur'].includes(event.type)) {
     return;
   }
