@@ -10,10 +10,15 @@
 
 .card-horizontal a {
   color: var(--text-color);
+  text-decoration: none;
 }
 
 .card-horizontal a:focus {
   outline: none;
+}
+
+.card-horizontal a:hover {
+  text-decoration: none;
 }
 
 .card-horizontal a::after {

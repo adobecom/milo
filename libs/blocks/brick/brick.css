@@ -185,7 +185,7 @@
 
 .brick.click a.foreground .first-link:not([class*="button"]) {
   color: var(--link-color);
-  text-decoration: underline;
+  text-decoration: none;
 }
 
 .brick.click:hover a.foreground .first-link:not([class*="button"]) {
@@ -198,6 +198,7 @@
 .brick.static-links.click a.foreground .first-link:not([class*="button"]),
 .brick.static-links.click a.foreground a:not([class*="button"]) {
   color: inherit;
+  text-decoration: underline;
 }
 
 .brick.click:hover .first-link.con-button,
