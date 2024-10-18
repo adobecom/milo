@@ -1,13 +1,11 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import { stub, useFakeTimers, restore } from 'sinon';
+import { stub, useFakeTimers, restore, spy } from 'sinon';
 import loadBlock from '../../libs/navigation/bootstrapper.js';
 import fetchedFooter from '../blocks/global-footer/mocks/fetched-footer.js';
 import placeholders from '../blocks/global-navigation/mocks/placeholders.js';
 import { setConfig } from '../../libs/utils/utils.js';
 import { mockRes } from '../blocks/global-navigation/test-utilities.js';
-
-document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 
 const blockConfig = {
   footer: {
@@ -26,7 +24,9 @@ const blockConfig = {
 const miloLibs = 'http://localhost:2000/libs';
 
 describe('Bootstrapper', async () => {
+  let openMessagingWindowSpy;
   beforeEach(async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/body.html' });
     stub(window, 'fetch').callsFake(async (url) => {
       if (url.includes('/footer')) {
         return mockRes({
@@ -41,10 +41,20 @@ describe('Bootstrapper', async () => {
 
       return null;
     });
+    window.AdobeMessagingExperienceClient = window.AdobeMessagingExperienceClient || {
+      openMessagingWindow: () => { },
+      isAdobeMessagingClientInitialized: () => { },
+      getMessagingExperienceState: () => { },
+    };
+    openMessagingWindowSpy = spy(
+      window.AdobeMessagingExperienceClient,
+      'openMessagingWindow',
+    );
     setConfig({ miloLibs, contentRoot: '/federal/dev' });
   });
 
   afterEach(() => {
+    document.body.innerHTML = '';
     restore();
   });
 
@@ -77,5 +87,25 @@ describe('Bootstrapper', async () => {
     await loadBlock(miloLibs, blockConfig.header);
     const el = document.querySelector('header');
     expect(el.classList.contains('feds--no-border')).to.be.true;
+  });
+
+  it('should call openMessagingWindow when click on jarvis enabled button', async () => {
+    stub(window.AdobeMessagingExperienceClient, 'isAdobeMessagingClientInitialized').returns(true);
+    stub(window.AdobeMessagingExperienceClient, 'getMessagingExperienceState').returns({ windowState: 'hidden' });
+    await loadBlock(miloLibs, blockConfig.header);
+    const el = document.querySelector('.feds-cta[href*="#open-jarvis-chat"]');
+    const event = new CustomEvent('click', { bubbles: true });
+    el.dispatchEvent(event);
+    expect(openMessagingWindowSpy.called).to.be.true;
+  });
+
+  it('should not call openMessagingWindow when chat dialog is already open', async () => {
+    stub(window.AdobeMessagingExperienceClient, 'isAdobeMessagingClientInitialized').returns(true);
+    stub(window.AdobeMessagingExperienceClient, 'getMessagingExperienceState').returns({ windowState: 'docked' });
+    await loadBlock(miloLibs, blockConfig.header);
+    const el = document.querySelector('.feds-cta[href*="#open-jarvis-chat"]');
+    const event = new CustomEvent('click', { bubbles: true });
+    el.dispatchEvent(event);
+    expect(openMessagingWindowSpy.called).to.be.false;
   });
 });

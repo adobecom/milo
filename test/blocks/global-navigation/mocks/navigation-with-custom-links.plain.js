@@ -46,7 +46,7 @@ export default `<body><div>
   <div>
     <div>
       <h2 id="home"><a href="https://www.google.com/#_home">Home</a></h2>
-      <h2 id="apps"><a href="https://www.google.com/#_apps">Apps</a></h2>
+      <h2 id="apps"><a href="/#_apps">Apps</a></h2>
       <h2 id="learn"><a href="https://www.google.com/#_learn">Learn</a></h2>
     </div>
   </div>
