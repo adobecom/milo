@@ -3,7 +3,7 @@ import { VariantLayout } from './variant-layout';
 import { CSS } from './ccd-suggested.css.js';
 
 const AEM_FRAGMENT_MAPPING = {
-  subtitle: { tag: 'h4', slot: 'detail-m' },
+  subtitle: { tag: 'h4', slot: 'detail-s' },
   title: { tag: 'h3', slot: 'heading-xs' },
   prices: { tag: 'p', slot: 'price' },
   description: { tag: 'div', slot: 'body-xs' },
@@ -27,7 +27,7 @@ export class CCDSuggested extends VariantLayout {
               <div class="header">
                 <slot name="icons"></slot>
                 <div class="headings">
-                  <slot name="detail-m"></slot>
+                  <slot name="detail-s"></slot>
                   <slot name="heading-xs"></slot>
                 </div>
               </div>

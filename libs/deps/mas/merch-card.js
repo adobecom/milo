@@ -1356,12 +1356,12 @@ merch-card[variant="ccd-suggested"] [slot="cta"] a {
   color: var(--spectrum-gray-800, var(--merch-color-grey-80));
   font-weight: 700;
 }
-`;var Ut={subtitle:{tag:"h4",slot:"detail-m"},title:{tag:"h3",slot:"heading-xs"},prices:{tag:"p",slot:"price"},description:{tag:"div",slot:"body-xs"},ctas:{slot:"cta",size:"s",button:!1}},T=class extends d{getGlobalCSS(){return wt}get aemFragmentMapping(){return Ut}renderLayout(){return Gt`
+`;var Ut={subtitle:{tag:"h4",slot:"detail-s"},title:{tag:"h3",slot:"heading-xs"},prices:{tag:"p",slot:"price"},description:{tag:"div",slot:"body-xs"},ctas:{slot:"cta",size:"s",button:!1}},T=class extends d{getGlobalCSS(){return wt}get aemFragmentMapping(){return Ut}renderLayout(){return Gt`
           <div style="${this.stripStyle}" class="body">
               <div class="header">
                 <slot name="icons"></slot>
                 <div class="headings">
-                  <slot name="detail-m"></slot>
+                  <slot name="detail-s"></slot>
                   <slot name="heading-xs"></slot>
                 </div>
               </div>
@@ -1579,6 +1579,8 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a:not(.con-button) {
     --consonant-merch-card-heading-xl-line-height: 45px;
 
     /* detail */
+    --merch-card-detail-s-font-size: 11px;
+    --merch-card-detail-s-line-height: 14px;
     --consonant-merch-card-detail-m-font-size: 12px;
     --consonant-merch-card-detail-m-line-height: 15px;
     --consonant-merch-card-detail-m-font-weight: 700;
@@ -1785,6 +1787,11 @@ merch-card [slot='callout-content'] img {
     margin-inline-end: 2.5px;
     margin-inline-start: 9px;
     margin-block-start: 2.5px;
+}
+
+merch-card [slot='detail-s'] {
+    font-size: var(--merch-card-detail-s-font-size);
+    line-height: var(--merch-card-detail-s-line-height);
 }
 
 merch-card [slot='detail-m'] {

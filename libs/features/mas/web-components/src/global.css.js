@@ -38,6 +38,8 @@ styles.innerHTML = `
     --consonant-merch-card-heading-xl-line-height: 45px;
 
     /* detail */
+    --merch-card-detail-s-font-size: 11px;
+    --merch-card-detail-s-line-height: 14px;
     --consonant-merch-card-detail-m-font-size: 12px;
     --consonant-merch-card-detail-m-line-height: 15px;
     --consonant-merch-card-detail-m-font-weight: 700;
@@ -244,6 +246,11 @@ merch-card [slot='callout-content'] img {
     margin-inline-end: 2.5px;
     margin-inline-start: 9px;
     margin-block-start: 2.5px;
+}
+
+merch-card [slot='detail-s'] {
+    font-size: var(--merch-card-detail-s-font-size);
+    line-height: var(--merch-card-detail-s-line-height);
 }
 
 merch-card [slot='detail-m'] {
