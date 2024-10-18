@@ -14,7 +14,7 @@ const rowTypeKeyword = 'con-block-row-';
 const breakpointThemeClasses = ['dark-mobile', 'light-mobile', 'dark-tablet', 'light-tablet', 'dark-desktop', 'light-desktop'];
 const textDefault = ['xxl', 'm', 'l']; // heading, body, detail
 
-const { miloLibs, codeRoot } = getConfig();
+const { miloLibs, codeRoot, locale } = getConfig();
 const base = miloLibs || codeRoot;
 
 function distillClasses(el, classes) {
@@ -162,6 +162,25 @@ function loadBreakpointThemes() {
   loadStyle(`${base}/styles/breakpoint-theme.css`);
 }
 
+/**
+ * ABM prices for Australia are displayed with annual price next to them.
+ * If strikethrough price is also displayed then the annual price should be displayed in the next line.
+ *
+ * @param element row wrapper element
+ */
+async function checkIfStPriceAddedForAu(element) {
+  if (locale.prefix !== '/au') return;
+
+  const prices = element.querySelectorAll('[data-wcs-osi]');
+  await Promise.all([...prices].map((price) => price.onceSettled()));
+
+  const stPrice = element.querySelector('.price-strikethrough');
+  const auAnnualPrice = element.querySelector('.price-annual-prefix');
+  if (stPrice && auAnnualPrice) {
+    element.classList.add('has-st-annual-price');
+  }
+}
+
 export default async function init(el) {
   el.classList.add('con-block');
   let rows = el.querySelectorAll(':scope > div');
@@ -250,6 +269,7 @@ export default async function init(el) {
       firstCol.parentElement.classList.add(`row-${parsed.key}`, 'con-block');
       firstCol.remove();
       cols[1].classList.add('row-wrapper');
+      checkIfStPriceAddedForAu(cols[1]);
       if (contentTypes.includes(parsed.key)) {
         promiseArr.push(loadContentType(row, parsed.key, parsed.classes));
       }
