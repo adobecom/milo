@@ -1,9 +1,4 @@
-// src/merch-secure-transaction.js
-import { LitElement, html } from "../lit-all.min.js";
-
-// src/merch-secure-transaction.css.js
-import { css } from "../lit-all.min.js";
-var styles = css`
+import{LitElement as p,html as n}from"../lit-all.min.js";import{css as l}from"../lit-all.min.js";var i=l`
     #label {
         align-items: center;
         cursor: pointer;
@@ -23,40 +18,15 @@ var styles = css`
         height: 1em;
         width: 1em;
     }
-`;
-
-// src/merch-secure-transaction.js
-var TAG_NAME = "merch-secure-transaction";
-var MerchSecureTransaction = class extends LitElement {
-  static properties = {
-    labelText: { attribute: "label", type: String },
-    showIcon: { attribute: "icon", type: Boolean },
-    tooltipText: { attribute: "tooltip", type: String }
-  };
-  static styles = [styles];
-  labelText = "";
-  showIcon = true;
-  tooltipText = "";
-  render() {
-    const { labelText, showIcon, tooltipText } = this;
-    const label = html`
-            <div class="${showIcon ? "icon" : ""}" id="label" slot="trigger">
-                ${labelText}
+`;var a="merch-secure-transaction",t=class extends p{static properties={labelText:{attribute:"label",type:String},showIcon:{attribute:"icon",type:Boolean},tooltipText:{attribute:"tooltip",type:String}};static styles=[i];labelText="";showIcon=!0;tooltipText="";render(){let{labelText:r,showIcon:s,tooltipText:e}=this,o=n`
+            <div class="${s?"icon":""}" id="label" slot="trigger">
+                ${r}
             </div>
-        `;
-    if (!tooltipText)
-      return label;
-    return html`
+        `;return e?n`
             <overlay-trigger placement="top-start" offset="4">
-                ${label}
+                ${o}
                 <sp-tooltip id="tooltip" slot="hover-content" delayed
-                    >${tooltipText}</sp-tooltip
+                    >${e}</sp-tooltip
                 >
             </overlay-trigger>
-        `;
-  }
-};
-window.customElements.define(TAG_NAME, MerchSecureTransaction);
-export {
-  MerchSecureTransaction as default
-};
+        `:o}};window.customElements.define(a,t);export{t as default};

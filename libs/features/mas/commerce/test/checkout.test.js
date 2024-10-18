@@ -1,8 +1,8 @@
 import {
-    CheckoutLink,
+    CheckoutLinkAnchorElement,
     CLASS_NAME_DOWNLOAD,
     CLASS_NAME_UPGRADE,
-} from '../src/checkout-link.js';
+} from '../src/checkout-link-anchor-element.js';
 import {
   Checkout
 } from '../src/checkout.js';
@@ -35,7 +35,7 @@ const HREF = 'https://test.org/';
  * @returns {Commerce.Checkout.Placeholder}
  */
 function mockCheckoutLink(wcsOsi, options = {}, append = true) {
-    const element = CheckoutLink.createCheckoutLink(
+    const element = CheckoutLinkAnchorElement.createCheckoutLink(
         { wcsOsi, ...options },
         `Buy now: ${wcsOsi}`,
     );
@@ -244,7 +244,7 @@ describe('class "CheckoutLink"', () => {
     describe('method "updateOptions"', () => {
         it('updates element data attributes', async () => {
             await initMasCommerceService();;
-            const link = CheckoutLink.createCheckoutLink({
+            const link = CheckoutLinkAnchorElement.createCheckoutLink({
                 quantity: ['1'],
                 wcsOsi: 'abm',
                 upgrade: 'true',
@@ -282,9 +282,8 @@ describe('class "CheckoutLink"', () => {
     describe('logged-in features', () => {
         it('renders download link', async () => {
             mockIms('US');
-            await initMasCommerceService();
-            const service = await useService();
-            service.registerCheckoutAction(() => { return {
+            await initMasCommerceService();            
+            useService()?.registerCheckoutAction(() => { return {
                 "text": 'Download',
                 "className": CLASS_NAME_DOWNLOAD,
                 "url": 'https://helpx.adobe.com/download-install.html',
@@ -326,6 +325,7 @@ describe('class "CheckoutLink"', () => {
             expect(checkoutLink.getAttribute('href')).to.equal(
                 'https://commerce.adobe.com/store/email?items%5B0%5D%5Bid%5D=632B3ADD940A7FBB7864AA5AD19B8D28&cli=adobe_com&ctx=fp&co=US&lang=en',
             );
+            checkoutLink.requestUpdate();
         });
     });
 });

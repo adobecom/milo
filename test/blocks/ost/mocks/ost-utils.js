@@ -3,6 +3,16 @@ import sinon from 'sinon';
 const ogFetch = window.fetch;
 const ogUrl = window.location.href;
 
+const getConfig = () => ({
+  env: { name: 'local' },
+  locales: {
+    '': { prefix: '', ietf: 'en-US', tk: 'hah7vzn.css' },
+    ch_de: { prefix: '/ch_de', ietf: 'de-CH', tk: 'vin7zsi.css' },
+  },
+});
+
+const getLocale = (locales, pathname) => locales[pathname.split('/', 2)[1]?.toLowerCase()] || locales[''];
+
 function getMetadata(name, doc = document) {
   const attr = name && name.includes(':') ? 'property' : 'name';
   const meta = doc.head.querySelector(`meta[${attr}="${name}"]`);
@@ -12,6 +22,13 @@ function getMetadata(name, doc = document) {
 const loadScript = () => Promise.resolve();
 
 const loadStyle = () => Promise.resolve();
+
+const createTag = () => Promise.resolve();
+
+const loadArea = () => Promise.resolve();
+
+const localizeLink = () => Promise.resolve();
+
 const mockRes = ({ payload, status = 200 } = {}) => new Promise((resolve) => {
   resolve({
     status,
@@ -91,9 +108,14 @@ function unmockOstDeps() {
 const customFetch = window.fetch;
 
 export {
+  createTag,
+  getConfig,
+  getLocale,
   getMetadata,
+  loadArea,
   loadScript,
   loadStyle,
+  localizeLink,
   mockOstDeps,
   unmockOstDeps,
   mockRes,

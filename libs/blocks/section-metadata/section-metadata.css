@@ -205,7 +205,7 @@
 
 .section.sticky-bottom.promo-sticky-section {
   background: none;
-  z-index: 40000;
+  z-index: 4; 
 }
 
 .section.sticky-bottom.popup {

@@ -41,7 +41,7 @@ const initMasCommerceService = async (attributes) => {
     })
   }
   document.head.appendChild(el);
-  await el.promise;
+  await el.readyPromise;
   return el;
 }
 

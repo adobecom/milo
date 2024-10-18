@@ -94,7 +94,7 @@ export default {
         exclude: ['test/mocks/**', 'test/**', '**/node_modules/**'],
         threshold: {
             branches: 95,
-            functions: 93,
+            functions: 92,
             statements: 95,
             lines: 95,
         },

@@ -9,6 +9,7 @@ import {
     disableMasCommerceService,
 } from './utilities.js';
 import { withWcs } from './mocks/wcs.js';
+import { useService } from '../src/utilities.js';
 
 describe('commerce service', () => {
     before(async () => {
@@ -46,7 +47,13 @@ describe('commerce service', () => {
                 /* nop for now */
             });
             expect(el.buildCheckoutAction).to.be.not.undefined;
-            el.buildCheckoutAction([{}], {});
+            const nop = await el.buildCheckoutAction([{}], {});
+            expect(nop).to.be.null;
+            el.registerCheckoutAction((offers, options, imsPromise) => {
+              return () => Promise.resolve();
+            });
+            const action = await el.buildCheckoutAction([{}], {});
+            expect(action).to.be.not.undefined;
         });
 
         it('allows to flush WCS cache', async () => {
@@ -63,11 +70,12 @@ describe('commerce service', () => {
             //TODO: add more assertions
         });
 
-        it('allows to refresh aem fragments', async () => {
+        it('allows to refresh aem fragments & prices', async () => {
             const el = await initMasCommerceService();
             expect(el.refreshFragments).to.be.a('function');
             el.refreshFragments();
-            //TODO: add more assertions
+            expect(el.flushWcsCache).to.be.a('function');
+            el.flushWcsCache();
         });
 
         describe('property "config"', () => {
@@ -77,6 +85,9 @@ describe('commerce service', () => {
                     locale: 'fr_CA',
                     language: 'es',
                     country: 'CA',
+                    checkoutClientId: 'foobar',
+                    checkoutWorkflowStep: 'stepone',
+                    forceTaxExclusive: true,                    
                 });
                 expect(el?.config).to.not.be.empty;
                 expect(el.config).to.deep.equal({
@@ -84,7 +95,12 @@ describe('commerce service', () => {
                     language: 'es',
                     country: 'CA',
                     env: { name: 'stage' },
-                    commerce: { 'commerce.env': 'STAGE' },
+                    commerce: { 
+                      'commerce.env': 'STAGE', 
+                      checkoutClientId: 'foobar', 
+                      checkoutWorkflowStep: 'stepone', 
+                      forceTaxExclusive: "true",
+                    },
                 });
             });
 

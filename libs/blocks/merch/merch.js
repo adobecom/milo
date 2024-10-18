@@ -3,7 +3,7 @@ import {
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
-export const CHECKOUT_LINK_CONFIG_PATH = '/commerce/checkout-link.json'; // relative to libs.
+export const CHECKOUT_LINK_CONFIG_PATH = '/commerce/checkout-link-anchor-element.json'; // relative to libs.
 
 export const PRICE_TEMPLATE_DISCOUNT = 'discount';
 export const PRICE_TEMPLATE_OPTICAL = 'optical';
@@ -138,6 +138,7 @@ export function getMiloLocaleSettings(locale) {
 
   return {
     language,
+    country,
     locale: `${language}_${country}`,
   };
 }
@@ -512,32 +513,23 @@ export async function getCheckoutAction(offers, options, imsSignedInPromise) {
 /**
  * Activates commerce service and returns a promise resolving to its ready-to-use instance.
  */
-export async function initService(force = false) {
+export async function initService(force = false, attributes = {}) {
   if (force) {
     initService.promise = undefined;
+    document.head.querySelector('mas-commerce-service')?.remove();
     fetchEntitlements.promise = undefined;
     fetchCheckoutLinkConfigs.promise = undefined;
   }
-  const { env, locale: miloLocale } = getConfig();
+  const { commerce, locale: miloLocale } = getConfig();
   initService.promise = initService.promise ?? polyfills().then(async () => {
-    const { hostname, searchParams } = new URL(window.location.href);
-    let commerceLibPath = '../../deps/mas/commerce.js';
-    if (/hlx\.(page|live)$|localhost$|www\.stage\.adobe\.com$/.test(hostname)) {
-      const maslibs = searchParams.get('maslibs');
-      if (maslibs) {
-        commerceLibPath = `${getMasBase(hostname, maslibs)}/libs/commerce.js`;
-      }
-    }
-    await import(commerceLibPath);
+    await import('../../deps/mas/commerce.js');
     const { language, locale } = getMiloLocaleSettings(miloLocale);
-    let service = document.querySelector('mas-commerce-service');
-    if (service && force) {
-      service.remove();
-    }
+    let service = document.head.querySelector('mas-commerce-service');
     if (!service) {
-      service = createTag('mas-commerce-service', { env: env?.name, locale, language });
+      service = createTag('mas-commerce-service', { env: commerce?.env?.name, locale, language, ...attributes, ...commerce });
+      service.registerCheckoutAction(getCheckoutAction);
       document.head.append(service);
-      await service.promise;
+      await service.readyPromise;
       service.imsSignedInPromise?.then((isSignedIn) => {
         if (isSignedIn) {
           fetchEntitlements();

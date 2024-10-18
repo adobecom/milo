@@ -1,8 +1,9 @@
+import { keyDown } from '../../web-components/test/utils.js';
 import {
     ERROR_MESSAGE_BAD_REQUEST,
     ERROR_MESSAGE_OFFER_NOT_FOUND,
 } from '../src/constants.js';
-import { InlinePrice } from '../src/inline-price.js';
+import { InlinePriceSpanElement } from '../src/inline-price-span-element.js';
 import { Price } from '../src/price.js';
 import { getSettings } from '../src/settings.js';
 
@@ -18,7 +19,7 @@ import { initMasCommerceService, expect, disableMasCommerceService } from './uti
  * @returns {Commerce.Price.Placeholder}
  */
 function mockInlinePrice(wcsOsi = '', options = {}, append = true) {
-    const element = InlinePrice.createInlinePrice({ ...options, wcsOsi });
+    const element = InlinePriceSpanElement.createInlinePrice({ ...options, wcsOsi });
     if (append) document.body.append(element, document.createElement('br'));
     return element;
 }
@@ -34,7 +35,7 @@ beforeEach(async () => {
     mockLana();
 });
 
-describe('class "InlinePrice"', () => {
+describe('class "InlinePriceSpanElement"', () => {
     it('renders price', async () => {
         await initMasCommerceService();
         const inlinePrice = mockInlinePrice('puf');
@@ -174,14 +175,22 @@ describe('class "InlinePrice"', () => {
             await initMasCommerceService();
             const inlinePrice = mockInlinePrice('abm');
             inlinePrice.renderOffers([], {}, inlinePrice.masElement.togglePending());
-            expect(inlinePrice.state).to.equal(InlinePrice.STATE_FAILED);
+            expect(inlinePrice.state).to.equal(InlinePriceSpanElement.STATE_FAILED);
         });
     });
+
+    describe('method "requestUpdate"', () => {
+      it('has requestUpdate method', async () => {
+          await initMasCommerceService();
+          const inlinePrice = mockInlinePrice('abm');
+          inlinePrice.requestUpdate();
+      });
+  });
 
     describe('method "updateOptions"', () => {
         it('updates element data attributes', async () => {
             await initMasCommerceService();
-            const inlinePrice = InlinePrice.createInlinePrice({
+            const inlinePrice = InlinePriceSpanElement.createInlinePrice({
                 template: 'price',
                 wcsOsi: 'abm',
             });
@@ -630,10 +639,10 @@ describe('commerce service', () => {
           const inlinePrice1 = mockInlinePrice('abm');
           const options = collectPriceOptions({}, inlinePrice1);
           expect(options).not.to.be.empty;
-          buildPriceHTML({template: 'discount', priceDetails:{}}, options);
-          buildPriceHTML({template: 'strikethrough', priceDetails:{}}, options);
-          buildPriceHTML({template: 'optical', priceDetails:{}}, options);
-          buildPriceHTML({template: 'annual', priceDetails:{}}, options);
+          buildPriceHTML({ priceDetails:{} }, { template: 'discount', ...options } );
+          buildPriceHTML({ priceDetails:{} }, { template: 'strikethrough', ...options });
+          buildPriceHTML({ priceDetails:{} }, { template: 'optical', ...options });
+          buildPriceHTML({ priceDetails:{} }, { template: 'annual', ...options });
       });
   });
 });

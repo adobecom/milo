@@ -63,21 +63,39 @@
 </thead>
 <tbody>
 <tr>
-<td><code>env</code></td>
-<td>commerce environment you want this page to use, either <code>stage</code> or <code>prod</code></td>
-<td><code>prod</code></td>
+<td><code>checkoutClientId</code></td>
+<td>checkout client id</td>
+<td><code>false</code></td>
 <td><code>false</code></td>
 </tr>
 <tr>
-<td><code>locale</code></td>
-<td>currency &amp; price locale you need, must belong to one of the <a href="#supported-locales">supported locales</a></td>
-<td><code>en_US</code></td>
+<td><code>checkoutWorkflowStep</code></td>
+<td>default checkout workflow step</td>
+<td><code>CheckoutWorkflowStep.EMAIL</code></td>
 <td><code>false</code></td>
 </tr>
 <tr>
 <td><code>country</code></td>
 <td>country of the offers to retrieve from WCS, determines the currency, price format, etc.</td>
 <td>US or locale country if set</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>env</code></td>
+<td>commerce environment you want this page to use, either <code>stage</code> or <code>prod</code></td>
+<td><code>prod</code></td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>forceTaxExclusive</code></td>
+<td>force all price display to be tax exclusive</td>
+<td><code>false</code></td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>locale</code></td>
+<td>currency &amp; price locale you need, must belong to one of the <a href="#supported-locales">supported locales</a></td>
+<td><code>en_US</code></td>
 <td><code>false</code></td>
 </tr>
 <tr>

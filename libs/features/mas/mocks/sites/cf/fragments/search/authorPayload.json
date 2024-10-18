@@ -149,6 +149,13 @@
                     "multiple": false,
                     "locked": false,
                     "values": []
+                },
+                {
+                    "name": "size",
+                    "type": "text",
+                    "multiple": false,
+                    "locked": false,
+                    "values": []
                 }
             ],
             "variations": [],
@@ -306,6 +313,13 @@
                 },
                 {
                     "name": "promoCode",
+                    "type": "text",
+                    "multiple": false,
+                    "locked": false,
+                    "values": []
+                },
+                {
+                    "name": "size",
                     "type": "text",
                     "multiple": false,
                     "locked": false,
@@ -480,6 +494,13 @@
                     "multiple": false,
                     "locked": false,
                     "values": []
+                },
+                {
+                    "name": "size",
+                    "type": "text",
+                    "multiple": false,
+                    "locked": false,
+                    "values": []
                 }
             ],
             "variations": [],
@@ -644,6 +665,13 @@
                 },
                 {
                     "name": "promoCode",
+                    "type": "text",
+                    "multiple": false,
+                    "locked": false,
+                    "values": []
+                },
+                {
+                    "name": "size",
                     "type": "text",
                     "multiple": false,
                     "locked": false,

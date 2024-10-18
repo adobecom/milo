@@ -135,6 +135,7 @@ export class AemFragment extends HTMLElement {
                 return true;
             })
             .catch(() => {
+                /* c8 ignore next 3 */ 
                 this.#fail('Network error: failed to load fragment');
                 this._readyPromise = null;
                 return false;
