@@ -2587,9 +2587,6 @@ async function hydrate(fragmentData, merchCard) {
   const { aemFragmentMapping } = merchCard.variantLayout;
   if (!aemFragmentMapping)
     return;
-  const appendFn = (el) => {
-    merchCard.append(el);
-  };
   const mnemonics = fragment.mnemonicIcon?.map((icon, index) => ({
     icon,
     alt: fragment.mnemonicAlt[index] ?? "",
@@ -2597,6 +2594,13 @@ async function hydrate(fragmentData, merchCard) {
   }));
   fragmentData.computed = { mnemonics };
   mnemonics.forEach(({ icon: src, alt, link: href }) => {
+    if (!/^https?:/.test(href)) {
+      try {
+        href = new URL(`https://${href}`).href.toString();
+      } catch (e) {
+        href = "#";
+      }
+    }
     const merchIcon = createTag("merch-icon", {
       slot: "icons",
       src,
@@ -2604,14 +2608,14 @@ async function hydrate(fragmentData, merchCard) {
       href,
       size: "l"
     });
-    appendFn(merchIcon);
+    merchCard.append(merchIcon);
   });
   if (!fragment.size) {
     merchCard.removeAttribute("size");
   } else if (aemFragmentMapping.allowedSizes?.includes(fragment.size))
     merchCard.setAttribute("size", fragment.size);
   if (fragment.cardTitle && aemFragmentMapping.title) {
-    appendFn(
+    merchCard.append(
       createTag(
         aemFragmentMapping.title.tag,
         { slot: aemFragmentMapping.title.slot },
@@ -2620,7 +2624,7 @@ async function hydrate(fragmentData, merchCard) {
     );
   }
   if (fragment.subtitle && aemFragmentMapping.subtitle) {
-    appendFn(
+    merchCard.append(
       createTag(
         aemFragmentMapping.subtitle.tag,
         { slot: aemFragmentMapping.subtitle.slot },
@@ -2629,7 +2633,7 @@ async function hydrate(fragmentData, merchCard) {
     );
   }
   if (fragment.backgroundImage && aemFragmentMapping.backgroundImage) {
-    appendFn(
+    merchCard.append(
       createTag(
         aemFragmentMapping.backgroundImage.tag,
         { slot: aemFragmentMapping.backgroundImage.slot },
@@ -2644,7 +2648,7 @@ async function hydrate(fragmentData, merchCard) {
       { slot: aemFragmentMapping.prices.slot },
       prices
     );
-    appendFn(headingM);
+    merchCard.append(headingM);
   }
   if (fragment.description && aemFragmentMapping.description) {
     const body = createTag(
@@ -2652,7 +2656,7 @@ async function hydrate(fragmentData, merchCard) {
       { slot: aemFragmentMapping.description.slot },
       fragment.description
     );
-    appendFn(body);
+    merchCard.append(body);
   }
   if (fragment.ctas) {
     const { slot, button = true } = aemFragmentMapping.ctas;
@@ -2693,7 +2697,7 @@ async function hydrate(fragmentData, merchCard) {
     });
     footer.innerHTML = "";
     footer.append(...ctas);
-    appendFn(footer);
+    merchCard.append(footer);
   }
 }
 

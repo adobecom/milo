@@ -23,10 +23,6 @@ export async function hydrate(fragmentData, merchCard) {
 
     if (!aemFragmentMapping) return;
 
-    const appendFn = (el) => {
-        merchCard.append(el);
-    };
-
     const mnemonics = fragment.mnemonicIcon?.map((icon, index) => ({
         icon,
         alt: fragment.mnemonicAlt[index] ?? '',
@@ -36,6 +32,14 @@ export async function hydrate(fragmentData, merchCard) {
     fragmentData.computed = { mnemonics };
 
     mnemonics.forEach(({ icon: src, alt, link: href }) => {
+        if (!/^https?:/.test(href)) {
+          // add https
+          try {
+            href = new URL(`https://${href}`).href.toString();
+          } catch (e) {
+            href = '#';
+          }
+        }
         const merchIcon = createTag('merch-icon', {
             slot: 'icons',
             src,
@@ -43,7 +47,7 @@ export async function hydrate(fragmentData, merchCard) {
             href,
             size: 'l',
         });
-        appendFn(merchIcon);
+        merchCard.append(merchIcon);
     });
 
     /* c8 ignore next 2 */
@@ -53,7 +57,7 @@ export async function hydrate(fragmentData, merchCard) {
         merchCard.setAttribute('size', fragment.size);
 
     if (fragment.cardTitle && aemFragmentMapping.title) {
-        appendFn(
+        merchCard.append(
             createTag(
                 aemFragmentMapping.title.tag,
                 { slot: aemFragmentMapping.title.slot },
@@ -63,7 +67,7 @@ export async function hydrate(fragmentData, merchCard) {
     }
 
     if (fragment.subtitle && aemFragmentMapping.subtitle) {
-        appendFn(
+        merchCard.append(
             createTag(
                 aemFragmentMapping.subtitle.tag,
                 { slot: aemFragmentMapping.subtitle.slot },
@@ -74,7 +78,7 @@ export async function hydrate(fragmentData, merchCard) {
 
     if (fragment.backgroundImage && aemFragmentMapping.backgroundImage) {
         // TODO improve image logic
-        appendFn(
+        merchCard.append(
             createTag(
                 aemFragmentMapping.backgroundImage.tag,
                 { slot: aemFragmentMapping.backgroundImage.slot },
@@ -90,7 +94,7 @@ export async function hydrate(fragmentData, merchCard) {
             { slot: aemFragmentMapping.prices.slot },
             prices,
         );
-        appendFn(headingM);
+        merchCard.append(headingM);
     }
 
     if (fragment.description && aemFragmentMapping.description) {
@@ -99,7 +103,7 @@ export async function hydrate(fragmentData, merchCard) {
             { slot: aemFragmentMapping.description.slot },
             fragment.description,
         );
-        appendFn(body);
+        merchCard.append(body);
     }
 
     if (fragment.ctas) {
@@ -142,6 +146,6 @@ export async function hydrate(fragmentData, merchCard) {
         });
         footer.innerHTML = '';
         footer.append(...ctas);
-        appendFn(footer);
+        merchCard.append(footer);
     }
 }
