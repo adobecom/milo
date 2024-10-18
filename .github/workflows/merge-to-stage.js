@@ -239,7 +239,7 @@ const main = async (params) => {
     existingPRCount = body.match(/https:\/\/github\.com\/adobecom\/milo\/pull\/\d+/g).length;
     console.log(`Number of PRs already in the batch: ${existingPRCount}`);
 
-    if (mergeLimitExceeded()) return console.log('Maximum number of PRs already merged. Stopping execution');
+    if (mergeLimitExceeded()) return console.log(`Maximum number of '${MAX_MERGES}' PRs already merged. Stopping execution`);
 
     const { zeroImpactPRs, highImpactPRs, normalPRs } = await getPRs();
     await merge({ prs: zeroImpactPRs, type: LABELS.zeroImpact });
