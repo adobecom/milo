@@ -301,8 +301,8 @@ body.advanced .config-msg {
 span.help {
   color: black;
   background: #666;
-  padding: 0 3px;
-  margin-left: 0;
+  padding: 1px;
+  margin-left: 2px;
   border-radius: 10px;
   cursor: pointer;
   background: transparent;

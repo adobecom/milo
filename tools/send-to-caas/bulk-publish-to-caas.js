@@ -36,8 +36,13 @@ const DEFAULT_VALUES_CB = {
   useHtml: true,
 };
 
-const theme =  localStorage.getItem('bp-theme');
-if (theme === 'dark') {
+const useDarkTheme = localStorage.getItem('bp-theme') === 'dark'
+  ? true
+  : localStorage.getItem('bp-theme') === 'light' 
+    ? false
+    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+if (useDarkTheme) {
   document.querySelector('.bulk-publisher').classList.add('dark');
   document.querySelector('#option-dark').checked = true;
 } else {
