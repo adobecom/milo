@@ -1,5 +1,6 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
+import sinon from 'sinon';
 import { delay } from '../../helpers/waitfor.js';
 import { setConfig } from '../../../libs/utils/utils.js';
 import init, { setPreferences, decorateURL, FORM_PARAM } from '../../../libs/blocks/marketo/marketo.js';
@@ -112,7 +113,7 @@ describe('Marketo one page experience', () => {
     document.body.innerHTML = onePage;
   });
 
-  it('shows success section if ungated', async () => {
+  it('shows success section if ungated', () => {
     const url = new URL(window.location);
     url.searchParams.set(FORM_PARAM, 'off');
     window.history.pushState({}, '', url);
@@ -122,5 +123,23 @@ describe('Marketo one page experience', () => {
 
     url.searchParams.delete(FORM_PARAM);
     window.history.pushState({}, '', url);
+  });
+
+  it('shows success section that appears after marketo if ungated', () => {
+    const url = new URL(window.location);
+    url.searchParams.set(FORM_PARAM, 'off');
+    window.history.pushState({}, '', url);
+    document.querySelector('#success-section').classList.remove('form-success');
+    const clock = sinon.useFakeTimers();
+
+    init(document.querySelector('.marketo'));
+    expect(document.querySelector('#success-section').classList.contains('hide-block')).to.be.true;
+    document.querySelector('#success-section').classList.add('form-success');
+    clock.tick(500);
+    expect(document.querySelector('#success-section').classList.contains('hide-block')).to.be.false;
+
+    url.searchParams.delete(FORM_PARAM);
+    window.history.pushState({}, '', url);
+    clock.restore();
   });
 });
