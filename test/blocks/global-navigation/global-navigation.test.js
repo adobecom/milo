@@ -20,6 +20,7 @@ import longNav from './mocks/global-navigation-long.plain.js';
 import darkNav from './mocks/dark-global-navigation.plain.js';
 import navigationWithCustomLinks from './mocks/navigation-with-custom-links.plain.js';
 import globalNavigationMock from './mocks/global-navigation.plain.js';
+import noDropdownNav from './mocks/global-navigation-no-dropdown.plain.js';
 import { getConfig } from '../../../tools/send-to-caas/send-utils.js';
 
 // TODO
@@ -71,6 +72,23 @@ describe('global navigation', () => {
         globalNavigation: mockWithWrongSignInHref,
       });
       expect(window.lana.log.getCalls().find((c) => c.args[0].includes('Sign in link not found in dropdown.'))).to.exist;
+    });
+
+    it('should render backup signInElem if no dropdown div is found', async () => {
+      const ogIms = window.adobeIMS;
+      const gnav = await createFullGlobalNavigation({
+        signedIn: false,
+        globalNavigation: noDropdownNav,
+      });
+      const signInElem = document.querySelector(selectors.imsSignIn);
+      expect(isElementVisible(signInElem)).to.equal(true);
+
+      let signInClicked = false;
+      window.adobeIMS = { signIn: () => { signInClicked = true; }, isSignedInUser: () => false };
+      await gnav.imsReady();
+      signInElem.click();
+      expect(signInClicked).to.be.true;
+      window.adobeIMS = ogIms;
     });
 
     it("should log when there's issues within onReady", async () => {
@@ -643,7 +661,7 @@ describe('global navigation', () => {
   describe('Client search feature in global navigation', () => {
     it('should append the feds-client-search div when search is enabled', async () => {
       await createFullGlobalNavigation({ customConfig: { searchEnabled: 'on' } });
-      expect(document.querySelector(selectors.topNavWrapper).classList.contains('feds-client-search')).to.exist;
+      expect(document.querySelector(selectors.topNav).classList.contains('feds-client-search')).to.exist;
     });
   });
 
