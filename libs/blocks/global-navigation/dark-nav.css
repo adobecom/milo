@@ -1,8 +1,8 @@
 :root {
   --text-color: #F2F2F2;
   --background-color: #111;
-  --link-color: #1473e6;
-  --link-hover-color: #1473e6;
+  --link-color: #1473E6;
+  --link-hover-color: #1473E6;
   /* Top navigation - backgrounds */
   --feds-background-popup: #111;
   --feds-background-nav: #222;
@@ -11,6 +11,7 @@
   --feds-borderColor: #303030;
   --feds-borderColor-menu: #4B4B4B;
   --feds-borderColor-navLink: #DBDBDB;
+  --feds-background-promo: #1D1D1D;
   /* Top navigation - colors */
   --feds-color-adobeBrand: #FFF;
   --feds-color-headline--mobile: #F2F2F2;
@@ -24,8 +25,8 @@
   --feds-color-link: #F2F2F2;
   /* --feds-color-link--mobile: #F2F2F2; */
   --feds-color-link--desktop: #DBDBDB;
-  --feds-color-link--hover: #1473e6;
-  --feds-color-blue-link: #5eaaf7;
+  --feds-color-link--hover: #1473E6;
+  --feds-color-blue-link: #5EAAF7;
   --feds-color-navLink-description: #B0B0B0;
   --feds-color-link-breadcrumbs: #B0B0B0;
   --feds-background-link--hover: #1B1B1B;
@@ -166,7 +167,7 @@
 @media (min-width: 900px) {
   .feds--dark .feds-promo {
     border: 1px solid var(--feds-borderColor);
-    background: #1D1D1D;
+    background: var(--feds-background-promo);
   }
   
   .feds--dark .feds-promo--dark,
