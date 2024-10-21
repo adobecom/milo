@@ -2,7 +2,7 @@ name: RCP Notifier
 
 on:
   schedule:
-    - cron: '0 9 * * *' # Run every day at 9am UTC
+    - cron: '43 9 * * *' # 9.43am UTC
 
 env:
   STAGE_RCP_OFFSET_DAYS: ${{ secrets.STAGE_RCP_OFFSET_DAYS }}
@@ -10,6 +10,7 @@ env:
 
 jobs:
   rcp-notification:
+    if: github.repository_owner == 'adobecom'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
