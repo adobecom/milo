@@ -68,7 +68,7 @@ var styles = css2`
         background-color: var(--merch-card-background-color);
         grid-template-columns: repeat(auto-fit, minmax(300px, max-content));
         background-color: var(--merch-card-background-color);
-        font-family: var(--body-font-family, 'Adobe Clean');
+        font-family: var(--merch-body-font-family, 'Adobe Clean');
         border-radius: var(--consonant-merch-spacing-xs);
         border: 1px solid var(--consonant-merch-card-border-color);
         box-sizing: border-box;
@@ -133,7 +133,7 @@ var styles = css2`
     }
 
     hr {
-        background-color: var(--color-gray-200);
+        background-color: var(--merch-color-gray-200);
         border: none;
         height: 1px;
         width: auto;
@@ -191,7 +191,7 @@ var styles = css2`
     .secure-transaction-label {
         font-size: var(--consonant-merch-card-body-xxs-font-size);
         line-height: 1.3;
-        color: var(--color-gray-600);
+        color: var(--merch-color-gray-600);
     }
 
     #stock-checkbox {
@@ -2220,6 +2220,9 @@ styles2.innerHTML = `
     --consonant-merch-card-body-line-height: 21px;
     --consonant-merch-card-promo-text-height: var(--consonant-merch-card-body-font-size);
 
+      /* Fonts */
+    --merch-body-font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
+
     /* spacing */
     --consonant-merch-spacing-xxxs: 4px;
     --consonant-merch-spacing-xxs: 8px;
@@ -2275,6 +2278,9 @@ styles2.innerHTML = `
     --merch-color-focus-ring: #1473E6;
     --merch-color-grey-60: var(--spectrum-global-color-gray-600, #6D6D6D);
     --merch-color-grey-80: #2c2c2c;
+    /* beware, 'gray' not 'grey'*/
+    --merch-color-gray-200: #E8E8E8;
+    --merch-color-gray-600: #E8E8E8;
     --merch-color-green-promo: #2D9D78;
 
     /* merch card generic */

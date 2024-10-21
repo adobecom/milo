@@ -25,7 +25,10 @@ export class CCDSuggested extends VariantLayout {
       return html`
           <div style="${this.stripStyle}" class="body">
               <div class="header">
-                <slot name="icons"></slot>
+                <div class="top-section">
+                  <slot name="icons"></slot> 
+                  ${this.badge}
+                </div>
                 <div class="headings">
                   <slot name="detail-m"></slot>
                   <slot name="heading-xs"></slot>
@@ -93,12 +96,20 @@ export class CCDSuggested extends VariantLayout {
       align-items: center;
     }
 
-
     :host([variant='ccd-suggested']) .footer {
       display: flex;
       justify-content: space-between;
       flex-grow: 0;
       margin-top: auto;
+      align-items: center;
+    }
+
+    :host([variant='ccd-suggested']) div[class$='-badge'] {
+      position: static;
+      border-radius: 4px;
+    }
+
+    :host([variant='ccd-suggested']).top-section {
       align-items: center;
     }
   `;

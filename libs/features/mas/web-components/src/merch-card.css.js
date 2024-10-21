@@ -10,7 +10,7 @@ export const styles = css`
         background-color: var(--merch-card-background-color);
         grid-template-columns: repeat(auto-fit, minmax(300px, max-content));
         background-color: var(--merch-card-background-color);
-        font-family: var(--body-font-family, 'Adobe Clean');
+        font-family: var(--merch-body-font-family, 'Adobe Clean');
         border-radius: var(--consonant-merch-spacing-xs);
         border: 1px solid var(--consonant-merch-card-border-color);
         box-sizing: border-box;
@@ -75,7 +75,7 @@ export const styles = css`
     }
 
     hr {
-        background-color: var(--color-gray-200);
+        background-color: var(--merch-color-gray-200);
         border: none;
         height: 1px;
         width: auto;
@@ -133,7 +133,7 @@ export const styles = css`
     .secure-transaction-label {
         font-size: var(--consonant-merch-card-body-xxs-font-size);
         line-height: 1.3;
-        color: var(--color-gray-600);
+        color: var(--merch-color-gray-600);
     }
 
     #stock-checkbox {
