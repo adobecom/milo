@@ -49,11 +49,12 @@ export class MasCommerceService extends HTMLElement {
 
     async registerCheckoutAction(action) {
         if (typeof action != 'function') return;
-        this.buildCheckoutAction = async (offers, options) => {
+        this.buildCheckoutAction = async (offers, options, el) => {
             const checkoutAction = await action?.(
                 offers,
                 options,
                 this.imsSignedInPromise,
+                el,
             );
             if (checkoutAction) {
                 return checkoutAction;

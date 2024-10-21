@@ -16,7 +16,6 @@ import {
     CheckoutWorkflowStep,
     delay,
 } from '../src/external.js';
-import { useService } from '../src/utilities.js';
 import { mockFetch } from './mocks/fetch.js';
 import { mockIms, unmockIms } from './mocks/ims.js';
 import { mockLana, unmockLana } from './mocks/lana.js';
