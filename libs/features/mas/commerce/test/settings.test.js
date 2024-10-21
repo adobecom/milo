@@ -54,7 +54,7 @@ describe('getSettings', () => {
       url.searchParams.set('wcsApiKey', 'testapikey');
       window.history.replaceState({}, '', url.toString());
      
-      const config = { commerce: {}, env: { name: 'stage' }, };
+      const config = { commerce: { allowOverride: '' }, };
       expect(
           getSettings(config),
       ).to.deep.equal({
@@ -91,12 +91,12 @@ describe('getSettings', () => {
         const commerce = {
             forceTaxExclusive: true,
             promotionCode: 'promo1',
+            allowOverride: 'true',
             'commerce.landscape': 'DRAFT',
         };
         expect(
             getSettings({
                 commerce,
-                env: { name: 'stage' },
                 locale: 'nb_NO',
             }),
         ).to.deep.equal({
@@ -136,20 +136,10 @@ describe('getSettings', () => {
       expect(settings.env).to.equal(Env.PRODUCTION);
     });
 
-    it('host env "local" - override landscape and WCS origin (_stage)', () => {
-        window.sessionStorage.setItem(PARAM_ENV, 'stage');
-        window.sessionStorage.setItem(PARAM_LANDSCAPE, 'DRAFT');
-        const config = { commerce: {}, env: { name: 'local' }, };
-        const settings = getSettings(config);
-        expect(settings.wcsURL).to.equal(WCS_STAGE_URL);
-        expect(settings.landscape).to.equal(Landscape.DRAFT);
-        expect(settings.env).to.equal(Env.STAGE);
-    });
-
     it('host env "stage" - override landscape and WCS origin (_stage)', () => {
       window.sessionStorage.setItem(PARAM_ENV, 'stage');
       window.sessionStorage.setItem(PARAM_LANDSCAPE, 'DRAFT');
-      const config = { commerce: {}, env: { name: 'stage' }, };
+      const config = { commerce: { allowOverride: 'true' } };
       const settings = getSettings(config);
       expect(settings.wcsURL).to.equal(WCS_STAGE_URL);
       expect(settings.landscape).to.equal(Landscape.DRAFT);
@@ -159,7 +149,7 @@ describe('getSettings', () => {
     it('if host env is "prod" - cant override landscape or WCS origin', () => {
         window.sessionStorage.setItem(PARAM_ENV, 'stage');
         window.sessionStorage.setItem(PARAM_LANDSCAPE, 'DRAFT');
-        const config = { commerce: {}, env: { name: 'prod' }, };
+        const config = { commerce: {} };
         const settings = getSettings(config);
         expect(settings.wcsURL).to.equal(WCS_PROD_URL);
         expect(settings.landscape).to.equal(Landscape.PUBLISHED);

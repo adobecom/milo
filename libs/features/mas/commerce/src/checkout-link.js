@@ -127,7 +127,7 @@ export class CheckoutLink extends HTMLAnchorElement {
         try {
             extraOptions = JSON.parse(options.extraOptions ?? '{}');
         } catch (e) {
-            /* c8 ignore next 1 */          
+            /* c8 ignore next 2 */
             this.masElement.log?.error('cannot parse exta checkout options', e);
         }
         const version = this.masElement.togglePending(options);

@@ -31,17 +31,10 @@ function getSettings(config = {}) {
     // See https://github.com/adobecom/milo/pull/923
     // TODO: add alias names for meta, search and storage
     // See https://git.corp.adobe.com/wcms/tacocat.js/pull/348#discussion_r6557570
-    const { commerce = {}, locale = undefined } = config;
+    const { commerce = {} } = config;
     let env = Env.PRODUCTION;
     let wcsURL = WCS_PROD_URL;
 
-    const lowHostEnv = ['local', 'stage'].includes(config.env?.name);
-    const forceWcsStage = getParameter(PARAM_ENV, commerce, { metadata: false })?.toLowerCase() === 'stage';
-    if (lowHostEnv && forceWcsStage) {
-      env = Env.STAGE;
-      wcsURL = WCS_STAGE_URL;
-    }
-    
     const checkoutClientId =
         getParameter('checkoutClientId', commerce) ?? Defaults.checkoutClientId;
     const checkoutWorkflow = toEnumeration(
@@ -86,14 +79,27 @@ function getSettings(config = {}) {
         getParameter('promotionCode', commerce) ?? Defaults.promotionCode;
     const quantity = toQuantity(getParameter('quantity', commerce));
     const wcsApiKey = getParameter('wcsApiKey', commerce) ?? Defaults.wcsApiKey;
-    const landscape =
-        config.env?.name === HostEnv.PROD
-            ? Landscape.PUBLISHED
-            : toEnumeration(
-                  getParameter(PARAM_LANDSCAPE, commerce),
-                  Landscape,
-                  Defaults.landscape,
-              );
+  
+    let isStage = commerce?.env === 'stage';
+    let landscape = Landscape.PUBLISHED;
+    const allowOverride = ['true', ''].includes(commerce.allowOverride);
+    if (allowOverride) {
+        isStage =
+            (getParameter(PARAM_ENV, commerce, {
+                metadata: false,
+            })?.toLowerCase() ?? commerce?.env) === 'stage';
+        landscape = toEnumeration(
+            getParameter(PARAM_LANDSCAPE, commerce),
+            Landscape,
+            landscape,
+        );
+    }
+
+    if (isStage) {
+        env = Env.STAGE;
+        wcsURL = WCS_STAGE_URL;
+    }
+
     let wcsBufferDelay = toPositiveFiniteInteger(
         getParameter('wcsBufferDelay', commerce),
         Defaults.wcsBufferDelay,

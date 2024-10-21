@@ -20,15 +20,9 @@ export class MasCommerceService extends HTMLElement {
     static instance;
     promise = null;
 
-    get config() {
-      const { searchParams } = new URL(import.meta.url);
-      const env = this.getAttribute('env') || searchParams.get('env');
-      const isStage = env?.toLowerCase() === 'stage';
-      const envName = isStage ? 'stage' : 'prod';
-      const commerceEnv = isStage ? 'STAGE' : 'PROD';
+    get #config() {
       const config = {
-        env: { name: envName },
-        commerce: { 'commerce.env': commerceEnv },
+        commerce: { 'env': this.getAttribute('env') },
       };
       //root parameters
       ['locale', 'country', 'language'].forEach((attribute) => {
@@ -41,10 +35,11 @@ export class MasCommerceService extends HTMLElement {
       [
         'checkout-workflow-step',
         'force-tax-exclusive',
-        'checkout-client-id'
+        'checkout-client-id',
+        'allow-override',
       ].forEach((attribute) => {
         const value = this.getAttribute(attribute);
-        if (value) {
+        if (value != null) {
           const camelCaseAttribute = attribute.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
           config.commerce[camelCaseAttribute] = value;
         }
@@ -67,8 +62,8 @@ export class MasCommerceService extends HTMLElement {
         };
     }
 
-    async activate(resolve) {
-        const config = this.config;
+    async activate() {
+        const config = this.#config;
         // Load settings and literals
         const log = Log.init(config.env).module('service');
         log.debug('Activating:', config);
@@ -132,14 +127,11 @@ export class MasCommerceService extends HTMLElement {
             });
             this.dispatchEvent(event);
         });
-        resolve(this);
     }
 
     connectedCallback() {
       if (!this.readyPromise) {
-        this.readyPromise = new Promise((resolve) => {
-          this.activate(resolve);
-        });
+        this.readyPromise = this.activate();
       }
     }
 
