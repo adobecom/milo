@@ -83,7 +83,7 @@ const setPreference = (key = '', value = '') => {
   const formDataObject = keyParts.reduce((obj, part) => {
     obj[part] = obj[part] || {};
     return obj[part];
-  }, window.mcz_marketoForm_pref || {});
+  }, window.mcz_marketoForm_pref);
   formDataObject[lastKey] = value;
 };
 
