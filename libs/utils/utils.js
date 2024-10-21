@@ -643,19 +643,22 @@ const decorateCopyLink = (a, evt) => {
   });
 };
 
-export function convertStageLinks({ anchors, config, hostname }) {
+export function convertStageLinks({ anchors, config, hostname, href }) {
   if (config.env?.name === 'prod' || !config.stageDomainsMap) return;
   const matchedRules = Object.entries(config.stageDomainsMap)
-    .find(([domain]) => hostname.includes(domain));
+    .find(([domain]) => (new RegExp(domain)).test(href));
   if (!matchedRules) return;
   const [, domainsMap] = matchedRules;
   [...anchors].forEach((a) => {
     const matchedDomain = Object.keys(domainsMap)
-      .find((domain) => a.href.includes(domain));
+      .find((domain) => (new RegExp(domain)).test(a.href));
     if (!matchedDomain) return;
-    a.href = a.href.replace(a.hostname, domainsMap[matchedDomain] === 'origin'
-      ? hostname
-      : domainsMap[matchedDomain]);
+    a.href = a.href.replace(
+      new RegExp(matchedDomain),
+      domainsMap[matchedDomain] === 'origin'
+        ? hostname
+        : domainsMap[matchedDomain],
+    );
     if (/(\.page|\.live).*\.html(?=[?#]|$)/.test(a.href)) a.href = a.href.replace(/\.html(?=[?#]|$)/, '');
   });
 }
@@ -664,7 +667,7 @@ export function decorateLinks(el) {
   const config = getConfig();
   decorateImageLinks(el);
   const anchors = el.getElementsByTagName('a');
-  const { hostname } = window.location;
+  const { hostname, href } = window.location;
   const links = [...anchors].reduce((rdx, a) => {
     appendHtmlToLink(a);
     a.href = localizeLink(a.href);
@@ -700,7 +703,7 @@ export function decorateLinks(el) {
     }
     return rdx;
   }, []);
-  convertStageLinks({ anchors, config, hostname });
+  convertStageLinks({ anchors, config, hostname, href });
   return links;
 }
 

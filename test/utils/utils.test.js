@@ -536,6 +536,7 @@ describe('Utils', () => {
           anchors: [...anchors, ...externalAnchors],
           config: stageConfig,
           hostname,
+          href: `https://${hostname}`,
         });
 
         anchors.forEach((a, index) => {
