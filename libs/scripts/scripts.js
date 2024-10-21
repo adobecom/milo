@@ -38,8 +38,8 @@ const stageDomainsMap = {
   // TODO: remove after QE approval
   '^https://.*--milo--robert-bogos.hlx.page': {
     '^https://www.adobe.com/acrobat': 'https://main--dc--adobecom.hlx.page',
+    '^https://business.adobe.com(?!/blog)': 'https://business.stage.adobe.com',
     '^https://business.adobe.com/blog': 'https://main--bacom-blog--adobecom.hlx.page',
-    '^https://business.adobe.com': 'https://business.stage.adobe.com',
     '^https://www.adobe.com': 'origin',
   },
 };
