@@ -1,4 +1,5 @@
 import { expect } from '@esm-bundle/chai';
+import sinon from 'sinon';
 import { delay } from '../../helpers/waitfor.js';
 
 import { CheckoutWorkflow, CheckoutWorkflowStep, Defaults, Log } from '../../../libs/deps/mas/commerce.js';
@@ -22,6 +23,9 @@ import merch, {
   getMasBase,
   appendTabName,
   appendExtraOptions,
+  reopenModal,
+  setCtaHash,
+  openModal,
 } from '../../../libs/blocks/merch/merch.js';
 
 import { mockFetch, unmockFetch, readMockText } from './mocks/fetch.js';
@@ -133,6 +137,14 @@ const PROD_DOMAINS = [
   'www.stage.adobe.com',
   'helpx.adobe.com',
 ];
+
+const createCtaInMerchCard = () => {
+  const merchCard = document.createElement('merch-card');
+  merchCard.setAttribute('name', 'photoshop');
+  const el = document.createElement('a');
+  merchCard.appendChild(el);
+  return el;
+};
 
 describe('Merch Block', () => {
   let setCheckoutLinkConfigs;
@@ -450,6 +462,33 @@ describe('Merch Block', () => {
       const params = new URLSearchParams();
       expect(await buildCta(el, params)).to.be.null;
     });
+
+    describe('reopenModal', () => {
+      it('clicks the CTA if hashes match', async () => {
+        const prevHash = window.location.hash;
+        window.location.hash = '#try-photoshop';
+        const cta = document.createElement('a');
+        cta.setAttribute('data-modal-id', 'try-photoshop');
+        const clickSpy = sinon.spy(cta, 'click');
+        reopenModal(cta);
+        expect(clickSpy.called).to.be.true;
+        window.location.hash = prevHash;
+      });
+    });
+
+    describe('openModal', () => {
+      it('sets the new hash and event listener to restore the hash on close', async () => {
+        const prevHash = window.location.hash;
+        const event = new CustomEvent('dummy');
+        await openModal(event, 'https://www.adobe.com/mini-plans/creativecloud.html?mid=ft&web=1', 'TRIAL', 'try-photoshop');
+        expect(window.location.hash).to.equal('#try-photoshop');
+        const modalCloseEvent = new CustomEvent('milo:modal:closed');
+        window.dispatchEvent(modalCloseEvent);
+        expect(window.location.hash).to.equal(prevHash);
+        document.body.querySelector('.dialog-modal').remove();
+        window.location.hash = prevHash;
+      });
+    });
   });
 
   describe('Download flow', () => {
@@ -667,6 +706,16 @@ describe('Merch Block', () => {
       setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
       const action = await getModalAction([{ productArrangement: { productFamily: 'XZY' } }], { modal: true });
       expect(action).to.be.undefined;
+    });
+
+    it('setCtaHash: sets authored hash', async () => {
+      const el = createCtaInMerchCard();
+      const hash = setCtaHash(el, { FREE_TRIAL_HASH: 'try-photoshop-authored' }, 'TRIAL');
+      expect(hash).to.equal('try-photoshop-authored');
+    });
+
+    it('setCtaHash: does nothing with invalid params', async () => {
+      expect(setCtaHash()).to.be.undefined;
     });
 
     const MODAL_URLS = [
