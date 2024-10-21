@@ -13,8 +13,18 @@ function isGradient(str) {
 function isColorOrGradient(str) {
   return isColor(str) || isGradient(str);
 }
+function hasSegmentClass(el) {
+  const regex = /^segment-timeline-span-[3-9]/;
+  let hasSegment = false;
+  el.classList.forEach((cls) => {
+    if (regex.test(cls)) hasSegment = true;
+  });
+  return hasSegment;
+}
 
-function getColWidth(text, colWidths) {
+function getColWidth(text, colWidths, hasSegment) {
+  if (hasSegment) return;
+  if (colWidths.length === 2) return;
   const numRegex = /\b\d{1,3}\b/;
   colWidths.push((text.match(numRegex) || [])[0]);
 }
@@ -109,20 +119,22 @@ function setColors(colors, fragment, el) {
 function colWidthsNotValid(colWidths) {
   return (colWidths.length !== 2 || colWidths.some((value) => Number.isNaN(value)));
 }
-function updateColWidths(colWidths, fragment) {
-  if (colWidthsNotValid(colWidths)) return;
+function updateColWidths(colWidths, fragment, hasSegment) {
+  if (colWidthsNotValid(colWidths) || hasSegment) return;
   const total = Number(colWidths[0]) + Number(colWidths[1]);
   const right = Math.floor((Number(colWidths[1]) / total) * 10000) / 100;
-  const colString = `1fr minmax(${String(right)}%, 150px)`;
+  const colString = `1fr minmax(${String(right)}%, 150px)`; // need to fix if this stays
   fragment.querySelectorAll('.row').forEach((row) => {
     row.style.gridTemplateColumns = colString;
   });
 }
 export default function init(el) {
+  // document.querySelector('html').setAttribute('dir', 'rtl');
   const fragment = document.createDocumentFragment();
   const [textRow, left, right] = createRow();
   const rows = el.querySelectorAll(':scope > div > div');
   const colors = []; const periodText = []; const colWidths = [];
+  const hasSegment = hasSegmentClass(el);
   rows.forEach((row, index) => {
     const side = index === 0 ? left : right;
     const color = row.firstElementChild?.textContent?.trim();
@@ -131,7 +143,7 @@ export default function init(el) {
       const [text, period] = p.textContent.trim().split('|');
       if (period) {
         periodText.push(period.trim());
-        getColWidth(period, colWidths);
+        getColWidth(period, colWidths, hasSegment);
       }
       if (text) {
         p.textContent = text.trim();
@@ -143,11 +155,17 @@ export default function init(el) {
       row.firstElementChild.remove();
     }
     row.parentElement.remove();
+    if (index === 1 && hasSegment) {
+      const mobileCenterLeft = row.cloneNode(true);
+      mobileCenterLeft.classList.add('left-center');
+      left.append(mobileCenterLeft);
+      row.classList.add('right-center');
+    }
     side.append(row);
   });
   textRow.append(left, right);
   [textRow, addBarRow(), addBottomRow(periodText)].forEach((row) => fragment.append(row));
-  updateColWidths(colWidths, fragment, el);
+  updateColWidths(colWidths, fragment, el, hasSegment);
   setColors(colors, fragment, el);
   el.append(fragment);
 }
