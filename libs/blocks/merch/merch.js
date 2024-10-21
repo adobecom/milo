@@ -115,6 +115,8 @@ const NAME_LOCALE = 'LOCALE';
 const NAME_PRODUCT_FAMILY = 'PRODUCT_FAMILY';
 const FREE_TRIAL_PATH = 'FREE_TRIAL_PATH';
 const BUY_NOW_PATH = 'BUY_NOW_PATH';
+const FREE_TRIAL_HASH = 'FREE_TRIAL_HASH';
+const BUY_NOW_HASH = 'BUY_NOW_HASH';
 const OFFER_TYPE_TRIAL = 'TRIAL';
 const LOADING_ENTITLEMENTS = 'loading-entitlements';
 
@@ -357,13 +359,20 @@ async function openExternalModal(url, getModal) {
 
 const isInternalModal = (url) => /\/fragments\//.test(url);
 
-export async function openModal(e, url, offerType) {
+export async function openModal(e, url, offerType, hash) {
   e.preventDefault();
   e.stopImmediatePropagation();
   const { getModal } = await import('../modal/modal.js');
   await import('../modal/modal.merch.js');
   const offerTypeClass = offerType === OFFER_TYPE_TRIAL ? 'twp' : 'crm';
   let modal;
+  if (hash) {
+    const prevHash = window.location.hash.replace('#', '') === hash ? '' : window.location.hash;
+    window.location.hash = hash;
+    window.addEventListener('milo:modal:closed', () => {
+      window.location.hash = prevHash;
+    }, { once: true });
+  }
   if (isInternalModal(url)) {
     const fragmentPath = url.split(/hlx.(page|live)/).pop();
     modal = await openFragmentModal(fragmentPath, getModal);
@@ -375,7 +384,16 @@ export async function openModal(e, url, offerType) {
   }
 }
 
-export async function getModalAction(offers, options) {
+export function setCtaHash(el, checkoutLinkConfig, offerType) {
+  if (!(el && checkoutLinkConfig && offerType)) return undefined;
+  const hash = checkoutLinkConfig[`${(offerType === OFFER_TYPE_TRIAL) ? FREE_TRIAL_HASH : BUY_NOW_HASH}`];
+  if (hash) {
+    el.setAttribute('data-modal-id', hash);
+  }
+  return hash;
+}
+
+export async function getModalAction(offers, options, el) {
   const [{
     offerType,
     productArrangementCode,
@@ -389,20 +407,21 @@ export async function getModalAction(offers, options) {
   );
   if (!checkoutLinkConfig) return undefined;
   const columnName = (offerType === OFFER_TYPE_TRIAL) ? FREE_TRIAL_PATH : BUY_NOW_PATH;
+  const hash = setCtaHash(el, checkoutLinkConfig, offerType);
   let url = checkoutLinkConfig[columnName];
   if (!url) return undefined;
   url = isInternalModal(url)
     ? localizeLink(checkoutLinkConfig[columnName]) : checkoutLinkConfig[columnName];
-  return { url, handler: (e) => openModal(e, url, offerType) };
+  return { url, handler: (e) => openModal(e, url, offerType, hash) };
 }
 
-export async function getCheckoutAction(offers, options, imsSignedInPromise) {
+export async function getCheckoutAction(offers, options, imsSignedInPromise, el) {
   try {
     await imsSignedInPromise;
     const [downloadAction, upgradeAction, modalAction] = await Promise.all([
       getDownloadAction(options, imsSignedInPromise, offers),
       getUpgradeAction(options, imsSignedInPromise, offers),
-      getModalAction(offers, options),
+      getModalAction(offers, options, el),
     ]);
     return downloadAction || upgradeAction || modalAction;
   } catch (e) {
@@ -521,6 +540,12 @@ export async function getPriceContext(el, params) {
   };
 }
 
+export function reopenModal(cta) {
+  if (cta && cta.getAttribute('data-modal-id') === window.location.hash.replace('#', '')) {
+    cta.click();
+  }
+}
+
 export async function buildCta(el, params) {
   const large = !!el.closest('.marquee');
   const strong = el.firstElementChild?.tagName === 'STRONG' || el.parentElement?.tagName === 'STRONG';
@@ -541,7 +566,11 @@ export async function buildCta(el, params) {
   }
   if (context.entitlement !== 'false') {
     cta.classList.add(LOADING_ENTITLEMENTS);
-    cta.onceSettled().finally(() => cta.classList.remove(LOADING_ENTITLEMENTS));
+    cta.onceSettled().finally(() => {
+      cta.classList.remove(LOADING_ENTITLEMENTS);
+      // after opening a modal, navigating to another page and back we need to reopen the modal
+      reopenModal(cta);
+    });
   }
   return cta;
 }
