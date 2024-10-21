@@ -33,11 +33,11 @@ dd.content .field {
 
 .main {
   display: flex;
-  min-height: calc(100% - 90px);
+  min-height: calc(100% - 126px);
 }
 
 .options-panel {
-  min-width: 400px;
+  min-width: 350px;
   /* background: linear-gradient(45deg, #999, #ddd); */
   background: linear-gradient(45deg, #aaa, #eee);
   border-right: solid 1px #aaa;
@@ -57,15 +57,19 @@ dd.content .field {
 }
  
 .options-panel h4 {
-  margin: 20px 20px -10px;
+  margin: 5px 20px 10px;
   font-size: 20px;
 }
 
-body:not(.preset) dd.content .field select, 
-body:not(.preset) dd.content .field input {
+dd.content .field select, 
+dd.content .field input[type="text"] {
   border: none;
   background: #eaeaea;
   color: #202020;
+  width: 100%;
+}
+
+body:not(.preset) dd.content .field input {
   border: solid 1px #bababa;
 }
 
@@ -143,13 +147,14 @@ body {
 }
 
 select#preset {
-  border: solid 1px #b9ce84;
+  border: solid 1px #6f9b00;
   border-radius: 8px;
   padding: 10px 4px;
+  margin-bottom: 10px;
 }
 
-.advanced-settings .advanced-preset,
-.advanced-settings .advanced-options {
+ .preset-options,
+ .advanced-options {
   height: 0;
   margin: 0;
   padding: 0;
@@ -162,44 +167,68 @@ select#preset {
   /* padding: 10px 0; */
   border-width: 0;
 }
+.preset-options {
+  height: 200px;
+}
+dd.content .preset-options .field:not(:first-of-type) {
+  display: none;
+}
+body.preset dd.content .preset-options .field {
+  display: flex;
+  align-items: baseline;
+  margin: 0;
+}
 
-body.preset .advanced-settings {
+body.advanced dd.content .preset-options .field {
+    display: block;
+}
+
+body.preset  {
   position: relative;
 }
 
+h5.basic-settings {
+  display: none;
+  margin: 0 20px;
+  font-size: 16px;
+  font-weight: 400;
+}
 
-body.preset .advanced-settings .advanced-preset {
-  /* display: block; */
-  height: 380px;
-  height: 105px;
+body.advanced h5.basic-settings {
+  display: flex;
+  justify-content: space-between;
+}
+
+.preset-options {
+  height: 110px;
   transition: height .5s;
-
-
   border: solid 1px #aaa;
   border-radius: 10px;
   margin: 20px;
   padding: 10px 0;
 }
 
-body.preset dd.content .advanced-settings .field {
-  display: flex;
-  align-items: baseline;
-  margin: 0;
+.advanced-options {
+  padding: 10px 0;
 }
 
-body.preset dd.content .advanced-preset .field label {
+body.preset  .preset-options {
+  height: 196px;
+}
+
+
+body.preset dd.content .preset-options .field label {
   width: 90px;
 }
 
-body.preset .advanced-settings .advanced-preset .help {
+body.preset  .preset-options .help {
   display: none;
 }
 
-body.advanced .advanced-settings .advanced-preset,
-body.advanced .advanced-settings .advanced-options {
+body.advanced  .preset-options,
+body.advanced  .advanced-options {
   /* display: block; */
   height: 380px;
-  height: auto;
   border-width: 1px;
   /* transition: height .5s; */
 
@@ -212,13 +241,13 @@ body.advanced .advanced-settings .advanced-options {
   
 }
 
-body.advanced .bulk-publisher.dark .advanced-settings .advanced-preset,
-body.advanced .bulk-publisher.dark .advanced-settings .advanced-options {
+body.advanced .bulk-publisher.dark  .preset-options,
+body.advanced .bulk-publisher.dark  .advanced-options {
   background: linear-gradient(45deg, #20202066, transparent);
   border-color: #666;
 }
 
-body.preset dd.content .advanced-settings .advanced-preset .field input[type="text"] {
+body.preset dd.content  .preset-options .field input[type="text"] {
   background: transparent;
   color: #666;
 }
@@ -243,7 +272,7 @@ dd.content.is-expanded {
 .content-panel {
   padding: 0 50px;
   width: 100%;
-  background: #f0f0f0;
+  background: #f6f6f6;
   position: relative;
 }
 
@@ -361,19 +390,19 @@ span.help:hover {
 p.status-signed-in i,
 p.status-signed-out i {
   font-size: 24px;
-  padding-right: 10px;
+  padding: 0 5px;
   font-weight: 600;
   vertical-align: -2px;
   margin-right: 8px;
-
-}
-p.status-signed-in i {
   border: solid 1px #aaa;
   border-radius: 15px;
+}
+p.status-signed-in i {
   color: #6e9b00;
 }
 
 p.status-signed-out i {
+  font-style: normal;
   color: red;
 }
 
