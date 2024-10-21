@@ -208,10 +208,6 @@ body.advanced h5.basic-settings {
   padding: 10px 0;
 }
 
-.advanced-options {
-  padding: 10px 0;
-}
-
 body.preset  .preset-options {
   height: 196px;
 }
@@ -227,18 +223,16 @@ body.preset  .preset-options .help {
 
 body.advanced  .preset-options,
 body.advanced  .advanced-options {
-  /* display: block; */
   height: 380px;
   border-width: 1px;
-  /* transition: height .5s; */
-
   border: solid 1px #aaa;
   border-radius: 10px;
   margin: 20px;
-  /* padding: 10px 0; */
-
   background: linear-gradient(45deg, #eeeeee66, transparent);
-  
+}
+
+body.advanced .advanced-options {
+  padding: 10px 0;
 }
 
 body.advanced .bulk-publisher.dark  .preset-options,
