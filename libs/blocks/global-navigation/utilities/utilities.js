@@ -338,7 +338,6 @@ export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true
   if (mepFragment?.targetManifestId) body.dataset.adobeTargetTestid = mepFragment.targetManifestId;
   const commands = mepGnav?.commands;
   if (commands?.length) {
-    /* c8 ignore next 4 */
     const { handleCommands, deleteMarkedEls } = await import('../../../features/personalization/personalization.js');
     handleCommands(commands, body, true, true);
     deleteMarkedEls(body);
