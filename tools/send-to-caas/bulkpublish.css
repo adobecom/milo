@@ -3,7 +3,7 @@
 } */
 
 .bulk-publisher {
-  /* font-family: "Adobe Clean", adobe-clean, "Trebuchet MS", sans-serif; */
+  font-family: "Adobe Clean", adobe-clean, "Trebuchet MS", sans-serif;
   margin: 32px;
   margin: 0;
 }
@@ -40,6 +40,7 @@ dd.content .field {
   min-width: 400px;
   /* background: linear-gradient(45deg, #999, #ddd); */
   background: linear-gradient(45deg, #aaa, #eee);
+  border-right: solid 1px #aaa;
 }
 .bulk-publisher.dark .options-panel {
   background: linear-gradient(45deg, #000, #404040);
@@ -58,14 +59,14 @@ dd.content .field {
 .options-panel h4 {
   margin: 20px 20px -10px;
   font-size: 20px;
-  /* font-weight: 500; */
 }
 
-dd.content .field select, 
-dd.content .field input {
+body:not(.preset) dd.content .field select, 
+body:not(.preset) dd.content .field input {
   border: none;
   background: #eaeaea;
   color: #202020;
+  border: solid 1px #bababa;
 }
 
 .bulk-publisher.dark dd.content .field select, 
@@ -361,9 +362,15 @@ p.status-signed-in i,
 p.status-signed-out i {
   font-size: 24px;
   padding-right: 10px;
-  color: green;
   font-weight: 600;
   vertical-align: -2px;
+  margin-right: 8px;
+
+}
+p.status-signed-in i {
+  border: solid 1px #aaa;
+  border-radius: 15px;
+  color: #6e9b00;
 }
 
 p.status-signed-out i {
