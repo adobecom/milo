@@ -540,7 +540,7 @@ export async function initService(force = false, attributes = {}) {
     fetchEntitlements.promise = undefined;
     fetchCheckoutLinkConfigs.promise = undefined;
   }
-  const { commerce, env, locale: miloLocale } = getConfig();
+  const { commerce, env: miloEnv, locale: miloLocale } = getConfig();
   initService.promise = initService.promise ?? polyfills().then(async () => {
     await import('../../deps/mas/commerce.js');
     const { language, locale } = getMiloLocaleSettings(miloLocale);
@@ -552,7 +552,7 @@ export async function initService(force = false, attributes = {}) {
         ...attributes,
         ...commerce,
       });
-      if (env?.name !== 'prod') {
+      if (miloEnv?.name !== 'prod') {
         service.setAttribute('allow-override', '');
       }
       service.registerCheckoutAction(getCheckoutAction);
