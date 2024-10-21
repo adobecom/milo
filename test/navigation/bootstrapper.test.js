@@ -90,9 +90,7 @@ describe('Bootstrapper', async () => {
   });
 
   it('should call openMessagingWindow when click on jarvis enabled button', async () => {
-    blockConfig.header.jarvis = {
-      id: '1.1',
-    };
+    blockConfig.header.jarvis = { id: '1.1' };
     stub(window.AdobeMessagingExperienceClient, 'isAdobeMessagingClientInitialized').returns(true);
     stub(window.AdobeMessagingExperienceClient, 'getMessagingExperienceState').returns({ windowState: 'hidden' });
     await loadBlock(miloLibs, blockConfig.header);
