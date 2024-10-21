@@ -452,7 +452,7 @@ function getSelectedElements(sel, rootEl, forceRootEl) {
       );
       return { els: fragments, modifiers: [FLAGS.all, FLAGS.includeFragments] };
     } catch (e) {
-      /* c8 ignore next */
+      /* c8 ignore next 2 */
       return { els: [], modifiers: [] };
     }
   }
