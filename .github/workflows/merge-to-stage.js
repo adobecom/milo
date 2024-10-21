@@ -236,7 +236,8 @@ const main = async (params) => {
     const stageToMainPR = await getStageToMainPR();
     console.log('has Stage to Main PR:', !!stageToMainPR);
     if (stageToMainPR) body = stageToMainPR.body;
-    existingPRCount = body.match(/https:\/\/github\.com\/adobecom\/milo\/pull\/\d+/g).length;
+    console.log('Current PR body:', body);
+    existingPRCount = body.match(/https:\/\/github\.com\/adobecom\/milo\/pull\/\d+/g)?.length || 0;
     console.log(`Number of PRs already in the batch: ${existingPRCount}`);
 
     if (mergeLimitExceeded()) return console.log(`Maximum number of '${MAX_MERGES}' PRs already merged. Stopping execution`);
