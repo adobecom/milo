@@ -9,7 +9,7 @@ import { selectOffers, useService } from './utilities.js';
 export const CLASS_NAME_DOWNLOAD = 'download';
 export const CLASS_NAME_UPGRADE = 'upgrade';
 
-export class CheckoutLinkAnchorElement extends HTMLAnchorElement {
+export class CheckoutLink extends HTMLAnchorElement {
     static is = 'checkout-link';
     static tag = 'a';
 
@@ -81,7 +81,7 @@ export class CheckoutLinkAnchorElement extends HTMLAnchorElement {
             extraOptions,
         } = service.collectCheckoutOptions(options);
 
-        const element = createMasElement(CheckoutLinkAnchorElement, {
+        const element = createMasElement(CheckoutLink, {
             checkoutMarketSegment,
             checkoutWorkflow,
             checkoutWorkflowStep,
@@ -108,7 +108,7 @@ export class CheckoutLinkAnchorElement extends HTMLAnchorElement {
      * @param {*} event
      */
     clickHandler(event) {
-        this.#checkoutActionHandler?.(event);
+      this.#checkoutActionHandler?.(event);
     }
 
     async render(overrides = {}) {
@@ -127,7 +127,7 @@ export class CheckoutLinkAnchorElement extends HTMLAnchorElement {
         try {
             extraOptions = JSON.parse(options.extraOptions ?? '{}');
         } catch (e) {
-            /* c8 ignore next 1 */          
+            /* c8 ignore next 2 */
             this.masElement.log?.error('cannot parse exta checkout options', e);
         }
         const version = this.masElement.togglePending(options);
@@ -139,6 +139,7 @@ export class CheckoutLinkAnchorElement extends HTMLAnchorElement {
         const checkoutAction = await service.buildCheckoutAction?.(
             offers.flat(),
             { ...extraOptions, ...options },
+            this
         );
         return this.renderOffers(
             offers.flat(),
@@ -182,8 +183,8 @@ export class CheckoutLinkAnchorElement extends HTMLAnchorElement {
             if (text) this.firstElementChild.innerHTML = text;
             if (className) this.classList.add(...className.split(' '));
             if (handler) {
-                this.setAttribute('href', '#');
-                this.#checkoutActionHandler = handler.bind(this);
+              this.setAttribute('href', '#');
+              this.#checkoutActionHandler = handler.bind(this);
             }
             return true;
         } else if (offers.length) {
@@ -235,8 +236,8 @@ export class CheckoutLinkAnchorElement extends HTMLAnchorElement {
 }
 
 // Define custom DOM element
-if (!window.customElements.get(CheckoutLinkAnchorElement.is)) {
-    window.customElements.define(CheckoutLinkAnchorElement.is, CheckoutLinkAnchorElement, {
-        extends: CheckoutLinkAnchorElement.tag,
+if (!window.customElements.get(CheckoutLink.is)) {
+    window.customElements.define(CheckoutLink.is, CheckoutLink, {
+        extends: CheckoutLink.tag,
     });
 }

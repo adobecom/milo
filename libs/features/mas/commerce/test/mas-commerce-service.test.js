@@ -9,7 +9,6 @@ import {
     disableMasCommerceService,
 } from './utilities.js';
 import { withWcs } from './mocks/wcs.js';
-import { useService } from '../src/utilities.js';
 
 describe('commerce service', () => {
     before(async () => {
@@ -50,7 +49,7 @@ describe('commerce service', () => {
             const nop = await el.buildCheckoutAction([{}], {});
             expect(nop).to.be.null;
             el.registerCheckoutAction((offers, options, imsPromise) => {
-              return () => Promise.resolve();
+                return () => Promise.resolve();
             });
             const action = await el.buildCheckoutAction([{}], {});
             expect(action).to.be.not.undefined;
@@ -79,37 +78,52 @@ describe('commerce service', () => {
         });
 
         describe('property "config"', () => {
-            it('generates config from attributes', async () => {
+            it('generates settings from attributes', async () => {
                 const el = await initMasCommerceService({
                     env: 'stage',
                     locale: 'fr_CA',
                     language: 'es',
                     country: 'CA',
-                    checkoutClientId: 'foobar',
-                    checkoutWorkflowStep: 'stepone',
-                    forceTaxExclusive: true,                    
+                    'checkout-client-id': 'foobar',
+                    'checkout-workflow-step': 'stepone',
+                    'force-tax-exclusive': true,
                 });
-                expect(el?.config).to.not.be.empty;
-                expect(el.config).to.deep.equal({
+                expect(el.settings).to.deep.contains({
                     locale: 'fr_CA',
                     language: 'es',
                     country: 'CA',
-                    env: { name: 'stage' },
-                    commerce: { 
-                      'commerce.env': 'STAGE', 
-                      checkoutClientId: 'foobar', 
-                      checkoutWorkflowStep: 'stepone', 
-                      forceTaxExclusive: "true",
-                    },
+                    env: 'STAGE',
+                    checkoutClientId: 'foobar',
+                    checkoutWorkflowStep: 'email', // rejects invalid value
+                    forceTaxExclusive: true,
                 });
             });
 
             it('generates some default with no attributes', async () => {
                 const el = await initMasCommerceService({});
-                expect(el?.config).to.not.be.empty;
-                expect(el.config).to.deep.equal({
-                    env: { name: 'prod' },
-                    commerce: { 'commerce.env': 'PROD' },
+                expect(el.settings).to.deep.equal({
+                    checkoutClientId: 'adobe_com',
+                    checkoutWorkflow: 'UCv3',
+                    checkoutWorkflowStep: 'email',
+                    country: 'US',
+                    displayOldPrice: true,
+                    displayPerUnit: false,
+                    displayRecurrence: true,
+                    displayTax: false,
+                    entitlement: false,
+                    env: 'PRODUCTION',
+                    extraOptions: {},
+                    forceTaxExclusive: false,
+                    landscape: 'PUBLISHED',
+                    language: 'en',
+                    locale: 'en_US',
+                    modal: false,
+                    promotionCode: '',
+                    quantity: [1],
+                    wcsApiKey: 'wcms-commerce-ims-ro-user-milo',
+                    wcsBufferDelay: 1,
+                    wcsBufferLimit: 1,
+                    wcsURL: 'https://www.adobe.com/web_commerce_artifact',
                 });
             });
         });

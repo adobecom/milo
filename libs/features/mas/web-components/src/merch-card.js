@@ -285,7 +285,9 @@ export class MerchCard extends LitElement {
         this.addEventListener(EVENT_AEM_ERROR, this.handleAemFragmentEvents);
         this.addEventListener(EVENT_AEM_LOAD, this.handleAemFragmentEvents);
 
-        if (!this.aemFragment) this.checkReady();
+        if (!this.aemFragment) {
+          setTimeout(() => this.checkReady(), 0);
+        }
     }
 
     disconnectedCallback() {

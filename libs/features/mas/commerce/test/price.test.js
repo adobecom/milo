@@ -3,7 +3,7 @@ import {
     ERROR_MESSAGE_BAD_REQUEST,
     ERROR_MESSAGE_OFFER_NOT_FOUND,
 } from '../src/constants.js';
-import { InlinePriceSpanElement } from '../src/inline-price-span-element.js';
+import { InlinePrice } from '../src/inline-price.js';
 import { Price } from '../src/price.js';
 import { getSettings } from '../src/settings.js';
 
@@ -19,7 +19,7 @@ import { initMasCommerceService, expect, disableMasCommerceService } from './uti
  * @returns {Commerce.Price.Placeholder}
  */
 function mockInlinePrice(wcsOsi = '', options = {}, append = true) {
-    const element = InlinePriceSpanElement.createInlinePrice({ ...options, wcsOsi });
+    const element = InlinePrice.createInlinePrice({ ...options, wcsOsi });
     if (append) document.body.append(element, document.createElement('br'));
     return element;
 }
@@ -35,7 +35,7 @@ beforeEach(async () => {
     mockLana();
 });
 
-describe('class "InlinePriceSpanElement"', () => {
+describe('class "InlinePrice"', () => {
     it('renders price', async () => {
         await initMasCommerceService();
         const inlinePrice = mockInlinePrice('puf');
@@ -139,7 +139,7 @@ describe('class "InlinePriceSpanElement"', () => {
     });
 
     it('renders tax exclusive price', async () => {
-        await initMasCommerceService({ forceTaxExclusive: true });
+        await initMasCommerceService({ 'force-tax-exclusive': true });
         const inlinePrice = mockInlinePrice('tax-exclusive');
         inlinePrice.dataset.promotionCode = 'nicopromo';
         await inlinePrice.onceSettled();
@@ -175,7 +175,7 @@ describe('class "InlinePriceSpanElement"', () => {
             await initMasCommerceService();
             const inlinePrice = mockInlinePrice('abm');
             inlinePrice.renderOffers([], {}, inlinePrice.masElement.togglePending());
-            expect(inlinePrice.state).to.equal(InlinePriceSpanElement.STATE_FAILED);
+            expect(inlinePrice.state).to.equal(InlinePrice.STATE_FAILED);
         });
     });
 
@@ -190,7 +190,7 @@ describe('class "InlinePriceSpanElement"', () => {
     describe('method "updateOptions"', () => {
         it('updates element data attributes', async () => {
             await initMasCommerceService();
-            const inlinePrice = InlinePriceSpanElement.createInlinePrice({
+            const inlinePrice = InlinePrice.createInlinePrice({
                 template: 'price',
                 wcsOsi: 'abm',
             });

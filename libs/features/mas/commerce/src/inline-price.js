@@ -79,7 +79,7 @@ const DISPLAY_TAX_MAP = {
     TEAM_EDU: ['SG_en', 'KR_ko'],
 };
 
-export class InlinePriceSpanElement extends HTMLSpanElement {
+export class InlinePrice extends HTMLSpanElement {
     static is = 'inline-price';
     static tag = 'span';
     static get observedAttributes() {
@@ -112,7 +112,7 @@ export class InlinePriceSpanElement extends HTMLSpanElement {
             template,
             wcsOsi,
         } = service.collectPriceOptions(options);
-        const element = createMasElement(InlinePriceSpanElement, {
+        const element = createMasElement(InlinePrice, {
             displayOldPrice,
             displayPerUnit,
             displayRecurrence,
@@ -129,6 +129,7 @@ export class InlinePriceSpanElement extends HTMLSpanElement {
 
     constructor() {
         super();
+        this.handleClick = this.handleClick.bind(this);
     }
 
     get isInlinePrice() {
@@ -143,11 +144,22 @@ export class InlinePriceSpanElement extends HTMLSpanElement {
 
     connectedCallback() {
         this.masElement.connectedCallback();
+        this.addEventListener('click', this.handleClick);
     }
 
     disconnectedCallback() {
         this.masElement.disconnectedCallback();
+        this.removeEventListener('click', this.handleClick.bind(this));
     }
+
+
+    handleClick(event) {
+      /* c8 ignore next 4 */
+      if (event.target === this) return;
+      // re-dispatch click event from the price element
+      event.stopImmediatePropagation();
+      this.dispatchEvent(new CustomEvent('click', { bubbles: true }));
+  }
 
     onceSettled() {
         return this.masElement.onceSettled();
@@ -318,8 +330,8 @@ export class InlinePriceSpanElement extends HTMLSpanElement {
 }
 
 // Define custom DOM element
-if (!window.customElements.get(InlinePriceSpanElement.is)) {
-    window.customElements.define(InlinePriceSpanElement.is, InlinePriceSpanElement, {
-        extends: InlinePriceSpanElement.tag,
+if (!window.customElements.get(InlinePrice.is)) {
+    window.customElements.define(InlinePrice.is, InlinePrice, {
+        extends: InlinePrice.tag,
     });
 }

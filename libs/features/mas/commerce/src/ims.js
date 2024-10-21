@@ -36,6 +36,7 @@ export function imsCountry(imsSignedInPromise) {
                 return countryCode;
             },
             (error) => {
+                /* c8 ignore next 2 */
                 log.error('Unable to get user country:', error);
                 return undefined;
             },

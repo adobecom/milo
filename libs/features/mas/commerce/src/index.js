@@ -1,4 +1,4 @@
-import { CheckoutLinkAnchorElement } from './checkout-link-anchor-element.js';
+import { CheckoutLink } from './checkout-link.js';
 import { Landscape } from './constants.js';
 import { Defaults } from './defaults.js';
 import { TAG_NAME_SERVICE } from './mas-commerce-service.js';
@@ -10,17 +10,17 @@ import {
     WcsPlanType,
     applyPlanType,
 } from './external.js';
-import { InlinePriceSpanElement } from './inline-price-span-element.js';
+import { InlinePrice } from './inline-price.js';
 import { Log } from './log.js';
 import { getSettings } from './settings.js';
 
 export {
     TAG_NAME_SERVICE,
-    CheckoutLinkAnchorElement,
+    CheckoutLink,
     CheckoutWorkflow,
     CheckoutWorkflowStep,
     Defaults,
-    InlinePriceSpanElement,
+    InlinePrice,
     Log,
     WcsCommitment,
     Landscape,

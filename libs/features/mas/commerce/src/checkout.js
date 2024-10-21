@@ -1,4 +1,4 @@
-import { CheckoutLinkAnchorElement } from './checkout-link-anchor-element.js';
+import { CheckoutLink } from './checkout-link.js';
 import {
     CheckoutWorkflow,
     CheckoutWorkflowStep,
@@ -141,13 +141,13 @@ export function Checkout({ providers, settings }) {
         return buildCheckoutUrl(workflow, data);
     }
 
-    const { createCheckoutLink } = CheckoutLinkAnchorElement;
+    const { createCheckoutLink } = CheckoutLink;
     return {
-        CheckoutLinkAnchorElement,
-        CheckoutWorkflow,
-        CheckoutWorkflowStep,
-        buildCheckoutURL,
-        collectCheckoutOptions,
-        createCheckoutLink,
+      CheckoutLink,
+      CheckoutWorkflow,
+      CheckoutWorkflowStep,
+      buildCheckoutURL,
+      collectCheckoutOptions,
+      createCheckoutLink,
     };
 }

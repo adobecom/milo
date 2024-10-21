@@ -33,12 +33,15 @@ use((chai) => {
     });
 });
 
-const initMasCommerceService = async (attributes) => {
+const initMasCommerceService = async (attributes, checkoutAction) => {
   const el = document.createElement(TAG_NAME_SERVICE);
   if (attributes) {
     Object.keys(attributes).forEach((key) => {
       el.setAttribute(key, attributes[key]);
     })
+  }
+  if (checkoutAction) {
+    el.registerCheckoutAction(checkoutAction);
   }
   document.head.appendChild(el);
   await el.readyPromise;

@@ -9,7 +9,7 @@ styles.innerHTML = `
     --consonant-merch-card-heading-font-size: 18px;
     --consonant-merch-card-heading-line-height: 22.5px;
     --consonant-merch-card-heading-secondary-font-size: 14px;
-    --consonant-merch-card-body-font-size: 14px;
+    --consonant-merch-card-body-font-size: 14px;  
     --consonant-merch-card-body-line-height: 21px;
     --consonant-merch-card-promo-text-height: var(--consonant-merch-card-body-font-size);
 
@@ -118,6 +118,7 @@ merch-card-collection > div[slot] p {
     display: grid;
     justify-content: center;
     justify-items: stretch;
+    align-items: normal;
     gap: var(--consonant-merch-spacing-m);
     padding: var(--spacing-m);
 }

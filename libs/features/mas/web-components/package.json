@@ -12,7 +12,8 @@
         "src/**/*"
     ],
     "scripts": {
-        "build": "npm run test:ci && node build.mjs",
+        "build": "npm run test:ci && npm run build:bundle",
+        "build:bundle": "node ./build.mjs",
         "test": "wtr --config ./web-test-runner.config.mjs --coverage --watch --debug",
         "test:ci": "wtr --config ./web-test-runner.config.mjs --coverage"
     },
