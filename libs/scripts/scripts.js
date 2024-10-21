@@ -35,6 +35,11 @@ const stageDomainsMap = {
     'business.adobe.com': 'main--bacom--adobecom.hlx.page',
   },
   '.business-graybox.adobe.com': { 'business.adobe.com': 'origin' },
+  // TODO: remove after QE approval
+  '--milo--robert-bogos.hlx.page': {
+    'www.adobe.com': 'main--dc--adobecom.hlx.page',
+    'business.adobe.com': 'business.stage.adobe.com',
+  },
 };
 
 const config = {
