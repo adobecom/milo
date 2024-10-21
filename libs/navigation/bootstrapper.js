@@ -1,5 +1,5 @@
 export default async function bootstrapBlock(miloLibs, blockConfig) {
-  const { name, targetEl } = blockConfig;
+  const { name, targetEl, jarvis } = blockConfig;
   const { getConfig, createTag, loadLink, loadScript } = await import(`${miloLibs}/utils/utils.js`);
   const { default: initBlock } = await import(`${miloLibs}/blocks/${name}/${name}.js`);
 
@@ -37,39 +37,41 @@ export default async function bootstrapBlock(miloLibs, blockConfig) {
   }
 
   /** Jarvis Chat */
-  const isChatInitialized = (client) => !!client?.isAdobeMessagingClientInitialized();
+  if (jarvis?.id) {
+    const isChatInitialized = (client) => !!client?.isAdobeMessagingClientInitialized();
 
-  const redirectToSupport = () => window.location.assign('https://helpx.adobe.com');
+    const redirectToSupport = () => window.location.assign('https://helpx.adobe.com');
 
-  const isChatOpen = (client) => isChatInitialized(client) && client?.getMessagingExperienceState()?.windowState !== 'hidden';
+    const isChatOpen = (client) => isChatInitialized(client) && client?.getMessagingExperienceState()?.windowState !== 'hidden';
 
-  const openChat = (event) => {
-    const client = window.AdobeMessagingExperienceClient;
+    const openChat = (event) => {
+      const client = window.AdobeMessagingExperienceClient;
 
-    if (!isChatInitialized(client)) {
-      redirectToSupport();
-      return;
-    }
+      if (!isChatInitialized(client)) {
+        redirectToSupport();
+        return;
+      }
 
-    const open = client?.openMessagingWindow;
-    if (typeof open !== 'function' || isChatOpen(client)) {
-      return;
-    }
+      const open = client?.openMessagingWindow;
+      if (typeof open !== 'function' || isChatOpen(client)) {
+        return;
+      }
 
-    const sourceType = event?.target.tagName?.toLowerCase();
-    const sourceText = sourceType === 'img' ? event.target.alt?.trim() : event.target.innerText?.trim();
+      const sourceType = event?.target.tagName?.toLowerCase();
+      const sourceText = sourceType === 'img' ? event.target.alt?.trim() : event.target.innerText?.trim();
 
-    open(event ? { sourceType, sourceText } : {});
-  };
+      open(event ? { sourceType, sourceText } : {});
+    };
 
-  const addDomEvents = () => {
-    document.addEventListener('click', (event) => {
-      if (!event.target.closest('[href*="#open-jarvis-chat"]')) return;
-      event.preventDefault();
-      openChat(event);
-    });
-  };
+    const addDomEvents = () => {
+      document.addEventListener('click', (event) => {
+        if (!event.target.closest('[href*="#open-jarvis-chat"]')) return;
+        event.preventDefault();
+        openChat(event);
+      });
+    };
 
-  // Attach DOM events
-  addDomEvents();
+    // Attach DOM events
+    addDomEvents();
+  }
 }

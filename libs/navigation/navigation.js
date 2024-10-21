@@ -74,7 +74,11 @@ export default async function loadBlock(configs, customLib) {
       if (configBlock) {
         await bootstrapBlock(`${miloLibs}/libs`, {
           ...block,
-          ...(block.key === 'header' && { unavComponents: configBlock.unav?.unavComponents, redirect: configBlock.redirect }),
+          ...(block.key === 'header' && {
+            unavComponents: configBlock.unav?.unavComponents,
+            redirect: configBlock.redirect,
+            jarvis: configBlock.jarvis,
+          }),
         });
         configBlock.onReady?.();
       }
