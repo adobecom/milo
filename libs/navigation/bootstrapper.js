@@ -1,5 +1,5 @@
 export default async function bootstrapBlock(miloLibs, blockConfig) {
-  const { name, targetEl, layout, noBorder } = blockConfig;
+  const { name, targetEl, layout, noBorder, jarvis } = blockConfig;
   const { getConfig, createTag, loadLink, loadScript } = await import(`${miloLibs}/utils/utils.js`);
   const { default: initBlock } = await import(`${miloLibs}/blocks/${name}/${name}.js`);
 
@@ -45,5 +45,43 @@ export default async function bootstrapBlock(miloLibs, blockConfig) {
     setTimeout(() => {
       loadPrivacy(getConfig, loadScript);
     }, blockConfig.delay);
+  }
+
+  /** Jarvis Chat */
+  if (jarvis?.id) {
+    const isChatInitialized = (client) => !!client?.isAdobeMessagingClientInitialized();
+
+    const isChatOpen = (client) => isChatInitialized(client) && client?.getMessagingExperienceState()?.windowState !== 'hidden';
+
+    const openChat = (event) => {
+      const client = window.AdobeMessagingExperienceClient;
+
+      /* c8 ignore next 4 */
+      if (!isChatInitialized(client)) {
+        window.location.assign('https://helpx.adobe.com');
+        return;
+      }
+
+      const open = client?.openMessagingWindow;
+      if (typeof open !== 'function' || isChatOpen(client)) {
+        return;
+      }
+
+      const sourceType = event?.target.tagName?.toLowerCase();
+      const sourceText = sourceType === 'img' ? event.target.alt?.trim() : event.target.innerText?.trim();
+
+      open(event ? { sourceType, sourceText } : {});
+    };
+
+    const addDomEvents = () => {
+      document.addEventListener('click', (event) => {
+        if (!event.target.closest('[href*="#open-jarvis-chat"]')) return;
+        event.preventDefault();
+        openChat(event);
+      });
+    };
+
+    // Attach DOM events
+    addDomEvents();
   }
 }

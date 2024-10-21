@@ -79,6 +79,7 @@ export default async function loadBlock(configs, customLib) {
             redirect: configBlock.redirect,
             layout: configBlock.layout,
             noBorder: configBlock.noBorder,
+            jarvis: configBlock.jarvis,
           }),
         });
         configBlock.onReady?.();
