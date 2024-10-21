@@ -656,7 +656,7 @@ export function convertStageLinks({ anchors, config, hostname, href }) {
     a.href = a.href.replace(
       new RegExp(matchedDomain),
       domainsMap[matchedDomain] === 'origin'
-        ? hostname
+        ? `https://${hostname}`
         : domainsMap[matchedDomain],
     );
     if (/(\.page|\.live).*\.html(?=[?#]|$)/.test(a.href)) a.href = a.href.replace(/\.html(?=[?#]|$)/, '');
