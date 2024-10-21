@@ -4,7 +4,6 @@ import {
 import { replaceKey } from '../../features/placeholders.js';
 
 export const CHECKOUT_LINK_CONFIG_PATH = '/commerce/checkout-link.json'; // relative to libs.
-
 export const PRICE_TEMPLATE_DISCOUNT = 'discount';
 export const PRICE_TEMPLATE_OPTICAL = 'optical';
 export const PRICE_TEMPLATE_REGULAR = 'price';
@@ -441,14 +440,7 @@ export async function initService(force = false) {
   }
   const { env, commerce = {}, locale } = getConfig();
   initService.promise = initService.promise ?? polyfills().then(async () => {
-    const { hostname, searchParams } = new URL(window.location.href);
-    let commerceLibPath = '../../deps/mas/commerce.js';
-    if (/hlx\.(page|live)$|localhost$|www\.stage\.adobe\.com$/.test(hostname)) {
-      const maslibs = searchParams.get('maslibs');
-      if (maslibs) {
-        commerceLibPath = `${getMasBase(hostname, maslibs)}/libs/commerce.js`;
-      }
-    }
+    const commerceLibPath = '../../deps/mas/commerce.js';
     const commerceLib = await import(commerceLibPath);
     const service = await commerceLib.init(() => ({
       env,
@@ -585,11 +577,11 @@ async function buildPrice(el, params) {
 
 export default async function init(el) {
   if (!el?.classList?.contains('merch')) return undefined;
+  const service = await initService();
+  log = service.Log.module('merch');
   const { searchParams } = new URL(el.href);
   const isCta = searchParams.get('type') === 'checkoutUrl';
   const merch = await (isCta ? buildCta : buildPrice)(el, searchParams);
-  const service = await initService();
-  log = service.Log.module('merch');
   if (merch) {
     log.debug('Rendering:', { options: { ...merch.dataset }, merch, el });
     el.replaceWith(merch);
