@@ -76,7 +76,7 @@ function isFragmentFromMep(fragPath, mep) {
   });
 }
 
-const boolStr = (val) => (val ? 'true' : 'false');
+const boolStr = (val) => `${!!val}`;
 
 function observeLCP(lanaData, delay, mep) {
   const sectionOne = document.querySelector('main > div');
