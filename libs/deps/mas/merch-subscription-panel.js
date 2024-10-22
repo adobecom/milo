@@ -112,7 +112,7 @@ import{html as i,LitElement as m}from"../lit-all.min.js";var s=class{constructor
     a[is='checkout-link'] {
         display: none;
     }
-`;var n="merch-offer-select:ready";var c="merch-offer:selected",a="merch-stock:change";var h="merch-quantity-selector:change";var p="(max-width: 1199px)";var l=class extends m{static styles=[f];static properties={continueText:{type:String,attribute:"continue-text"},quantity:{type:Number},ready:{type:Boolean,attribute:"ready",reflect:!0}};continueText="Continue";#t=new s(this,p);constructor(){super(),this.ready=!1}get listLayout(){return i`
+`;var n="merch-offer-select:ready";var c="merch-offer:selected",a="merch-stock:change";var h="merch-quantity-selector:change";var E="(max-width: 1199px)";var l=class extends m{static styles=[f];static properties={continueText:{type:String,attribute:"continue-text"},quantity:{type:Number},ready:{type:Boolean,attribute:"ready",reflect:!0}};continueText="Continue";#t=new s(this,E);constructor(){super(),this.ready=!1}get listLayout(){return i`
             <slot name="header"></slot>
             <slot name="offers"></slot>
             <div id="footer">

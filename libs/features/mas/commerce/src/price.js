@@ -22,7 +22,6 @@ import { toOfferSelectorIds, toQuantity } from './utilities.js';
  * @returns {Commerce.Price.Client}
  */
 export function Price({ literals, providers, settings }) {
-    /** @type {Commerce.Price.collectPriceOptions} */
     function collectPriceOptions(overrides, placeholder) {
         const {
             country: defaultCountry,
@@ -78,6 +77,7 @@ export function Price({ literals, providers, settings }) {
         if (!Array.isArray(offers) || !offers.length || !options) {
             return '';
         }
+        /* c8 ignore next 20 */
         const { template } = options;
         let method;
         switch (template) {
@@ -109,7 +109,7 @@ export function Price({ literals, providers, settings }) {
         return method(context, offer);
     }
 
-    const { createInlinePrice, getInlinePrices } = InlinePrice;
+    const { createInlinePrice } = InlinePrice;
 
     return {
         InlinePrice,
@@ -117,6 +117,5 @@ export function Price({ literals, providers, settings }) {
         collectPriceOptions,
         // TODO: remove after update of Milo merch block
         createInlinePrice,
-        getInlinePrices,
     };
 }

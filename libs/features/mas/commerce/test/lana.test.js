@@ -16,6 +16,7 @@ describe('lana', () => {
     });
 
     it('calls `window.lana.log` with params', () => {
+      Log.reset();
         const { clientId, sampleRate, tags } = Defaults;
         const { href } = window.location;
         window.history.replaceState({}, '', '/test/page');

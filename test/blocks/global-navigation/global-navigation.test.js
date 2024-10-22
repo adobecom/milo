@@ -667,7 +667,7 @@ describe('global navigation', () => {
 
   describe('Custom Links for mobile hamburger menu', () => {
     it('Add custom links through Link Group block in parallel to large menu\'s', async () => {
-      const customLinks = 'home,learn';
+      const customLinks = 'home,apps,learn';
       await createFullGlobalNavigation({
         viewport: 'mobile',
         globalNavigation: navigationWithCustomLinks,
