@@ -224,7 +224,7 @@ export default function init(el) {
   const searchParams = new URLSearchParams(window.location.search);
   const ungated = searchParams.get(FORM_PARAM) === 'off';
 
-  if (formData.[SUCCESS_TYPE] === 'section' && ungated) {
+  if (formData[SUCCESS_TYPE] === 'section' && ungated) {
     el.classList.add('hide-block');
     showSuccessSection(formData, false);
     return;
