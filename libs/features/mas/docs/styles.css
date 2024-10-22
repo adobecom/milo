@@ -81,7 +81,6 @@ tr:nth-child(even) {
 }
 
 span.placeholder-failed::after {
-span.placeholder-failed::after {
   content: "failed";
 }
 
@@ -106,9 +105,6 @@ pre {
   background-color: var(--spectrum-global-color-gray-100);
 }
 
-#log,
-#log2,
-#log3 {
 #log,
 #log2,
 #log3 {
