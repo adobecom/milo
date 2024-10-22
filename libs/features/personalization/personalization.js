@@ -644,7 +644,7 @@ export async function createMartechMetadata(placeholders, config, column) {
 }
 
 /* c8 ignore start */
-function parsePlaceholders(placeholders, config, selectedVariantName = '') {
+export function parsePlaceholders(placeholders, config, selectedVariantName = '') {
   if (!placeholders?.length || selectedVariantName === 'default') return config;
   const valueNames = [
     selectedVariantName.toLowerCase(),
@@ -655,17 +655,19 @@ function parsePlaceholders(placeholders, config, selectedVariantName = '') {
     'value',
     'other',
   ];
-  const [val] = Object.entries(placeholders[0])
-    .find(([key]) => valueNames.includes(key.toLowerCase()));
-  if (val) {
+  const keys = placeholders?.length ? Object.entries(placeholders[0]) : [];
+  const keyVal = keys.find(([key]) => valueNames.includes(key.toLowerCase()));
+  const key = keyVal?.[0];
+
+  if (key) {
     const results = placeholders.reduce((res, item) => {
-      res[item.key] = item[val];
+      res[item.key] = item[key];
       return res;
     }, {});
     config.placeholders = { ...(config.placeholders || {}), ...results };
   }
 
-  createMartechMetadata(placeholders, config, val);
+  createMartechMetadata(placeholders, config, key);
 
   return config;
 }
