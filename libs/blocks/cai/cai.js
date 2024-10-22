@@ -1,5 +1,5 @@
 import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
-import { createC2pa, selectFormattedGenerator, selectEditsAndActivity, createL2ManifestStore, selectGenerativeInfo, generateVerifyUrl } from '../../deps/cai-tools.min.js';
+import { createC2pa, selectFormattedGenerator, selectEditsAndActivity, selectGenerativeInfo, generateVerifyUrl } from '../../deps/cai-tools.min.js';
 
 const miloLibs = getConfig().miloLibs ?? '/libs';
 loadStyle(`${miloLibs}/blocks/cai/cai.css`);
@@ -38,7 +38,7 @@ const extractMetadata = async (img) => {
   const parseGenerativeInfo = (xs) => {
     // the only two options at this point are compositeWithTrainedAlgorithmicMedia
     // and trainedAlgorithmic media, and the former overrides the latter
-    const aiTool = [...new Set(xs.map(({ softwareAgent }) => softwareAgent))].join(', ') ?? 'None';
+    const aiTool = [...new Set(xs.map(({ softwareAgent }) => softwareAgent))].join(', ') || 'None';
     const composite = xs.find(({ type }) => type === 'compositeWithTrainedAlgorithmicMedia');
     if (composite) {
       return {

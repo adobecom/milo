@@ -1049,8 +1049,8 @@ async function checkForPageMods() {
   });
 }
 
-async function loadPostLCP(config) {
-  const caiImgs = [...document.querySelectorAll('img[alt]')] // no video support (for now)
+async function decorateCAI(section = document) {
+  const caiImgs = [...section.querySelectorAll('img[alt]')] // no video support (for now)
     .map((img) => {
       if (!img) return null;
 
@@ -1090,6 +1090,9 @@ async function loadPostLCP(config) {
     const { default: initCAI } = await import('../blocks/cai/cai.js');
     caiImgs.forEach(initCAI);
   }
+}
+
+async function loadPostLCP(config) {
   await decoratePlaceholders(document.body.querySelector('header'), config);
   if (config.mep?.targetEnabled === 'gnav') {
     /* c8 ignore next 2 */
@@ -1316,6 +1319,7 @@ async function processSection(section, config, isDoc) {
   delete section.el.dataset.status;
   if (isDoc && firstSection) await loadPostLCP(config);
   delete section.el.dataset.idx;
+  decorateCAI(section.el);
   return section.blocks;
 }
 
