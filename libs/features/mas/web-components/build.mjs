@@ -64,7 +64,6 @@ Promise.all([
     buildLitComponent('merch-twp-d2p'),
     buildLitComponent('merch-whats-included'),
     buildLitComponent('merch-mnemonic-list'),
-    buildLitComponent('merch-datasource'),
 ]).catch(() => process.exit(1));
 
 function rewriteImports() {
