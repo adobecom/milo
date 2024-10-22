@@ -13,7 +13,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a:not(.con-button) {
     font-weight: 400;
     line-height: var(--consonant-merch-card-body-xxs-line-height);
     text-decoration-line: underline;
-    color: var(--merch-color-grey-80);
+    color: var(--spectrum-blue-800, #147AF3);
   }
 
   merch-card[variant="ccd-slice"] [slot='image'] img {

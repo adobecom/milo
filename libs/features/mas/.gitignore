@@ -1,4 +1,5 @@
+coverage
 mas.json
 stats.json
 *.tgz
-
+*.js.map
