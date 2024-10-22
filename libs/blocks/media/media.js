@@ -38,8 +38,10 @@ function decorateQr(el) {
   qrImage.classList.add('qr-code-img');
   appStore.classList.add('app-store');
   appStore.textContent = '';
+  appStore.setAttribute('aria-label', 'Apple App Store');
   googlePlay.classList.add('google-play');
   googlePlay.textContent = '';
+  googlePlay.setAttribute('aria-label', 'Google Play Store');
 }
 
 export default async function init(el) {
