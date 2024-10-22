@@ -470,6 +470,7 @@ export async function loadBlock(block) {
     return null;
   }
   const { name, blockPath, hasStyles } = getBlockData(block);
+  block.dataset.blockName = name;
   const styleLoaded = hasStyles && new Promise((resolve) => {
     loadStyle(`${blockPath}.css`, resolve);
   });
@@ -1120,8 +1121,6 @@ export async function loadDeferred(area, blocks, config) {
 
   import('./samplerum.js').then(({ sampleRUM }) => {
     sampleRUM('lazy');
-    sampleRUM.observe(blocks);
-    sampleRUM.observe(area.querySelectorAll('picture > img'));
   });
 
   if (getMetadata('pageperf') === 'on') {
@@ -1181,8 +1180,8 @@ function decorateDocumentExtras() {
   decorateMeta();
   decorateHeader();
 
-  import('./samplerum.js').then(({ addRumListeners }) => {
-    addRumListeners();
+  import('./samplerum.js').then(({ sampleRUM }) => {
+    sampleRUM();
   });
 }
 
