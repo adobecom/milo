@@ -333,7 +333,7 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
   anchorTag.insertAdjacentHTML('afterend', video);
   const videoEl = parentElement.querySelector('video');
   createIntersectionObserver({
-    el: parentElement,
+    el: videoEl,
     options: { rootMargin: '1000px' },
     callback: () => {
       videoEl?.appendChild(createTag('source', { src, type: 'video/mp4' }));
