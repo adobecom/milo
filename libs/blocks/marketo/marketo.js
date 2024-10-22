@@ -93,32 +93,35 @@ export const setPreferences = (formData) => {
 };
 
 const showSuccessSection = (formData, scroll = true) => {
-  try {
-    const show = (el) => {
-      el.classList.remove('hide-block');
-      if (scroll) el.scrollIntoView({ behavior: 'smooth' });
-    };
-    const section = formData[SUCCESS_SECTION].toLowerCase().replaceAll(' ', '-');
-    const success = document.querySelector(`.section.${section}`);
-    if (success) {
-      show(success);
-      return;
-    }
-    // For Marquee use case
-    let count = 0;
-    const interval = setInterval(() => {
-      const el = document.querySelector(`.section.${section}`);
-      if (el) {
-        clearInterval(interval);
-        show(el);
-      }
-      count += 1;
-      if (count > 6) clearInterval(interval);
-    }, 500);
-  } catch (e) {
-    /* c8 ignore next 2 */
+  const show = (el) => {
+    el.classList.remove('hide-block');
+    if (scroll) el.scrollIntoView({ behavior: 'smooth' });
+  };
+  const successClass = formData[SUCCESS_SECTION]?.toLowerCase().replaceAll(' ', '-');
+  if (!successClass) {
     window.lana?.log('Error showing Marketo success section', { tags: 'warn,marketo' });
+    return;
   }
+  const section = document.querySelector(`.section.${successClass}`);
+  if (section) {
+    show(section);
+    return;
+  }
+  // For Marquee use case
+  const maxIntervals = 6;
+  let count = 0;
+  const interval = setInterval(() => {
+    const el = document.querySelector(`.section.${successClass}`);
+    if (el) {
+      clearInterval(interval);
+      show(el);
+    }
+    count += 1;
+    if (count > maxIntervals) {
+      clearInterval(interval);
+      window.lana?.log('Error showing Marketo success section', { tags: 'warn,marketo' });
+    }
+  }, 500);
 };
 
 export const formSuccess = (formEl, formData) => {
