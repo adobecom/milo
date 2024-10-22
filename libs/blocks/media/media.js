@@ -34,7 +34,9 @@ function decorateQr(el) {
   const googlePlay = text.children[(text.children.length - 2)]?.querySelector('a');
   const qrImage = text.children[(text.children.length - 3)];
   if (!qrImage || !appStore || !googlePlay) return;
-  [appStore, googlePlay].forEach(({ parentElement }) => parentElement.classList.add('qr-button-container'));
+  [appStore, googlePlay].forEach(({ parentElement }) => {
+    parentElement.classList.add('qr-button-container');
+  });
   qrImage.classList.add('qr-code-img');
   appStore.classList.add('app-store');
   appStore.textContent = '';
