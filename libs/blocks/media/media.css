@@ -166,7 +166,6 @@ div[class*="-up"] .media .foreground > .media-row {
 
 .media.qr-code .qr-button-container {
   display: inline;
-  margin-right: var(--spacing-s);
 }
 
 .media.qr-code .google-play,
