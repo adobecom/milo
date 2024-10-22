@@ -290,6 +290,10 @@ input.sk-library-search-input:focus {
   padding: 0 12px;
 }
 
+.sk-library li.icon-item img.icon-fed {
+  filter: invert(100%);
+}
+
 .sk-library li.template {
   display: flex;
   align-items: stretch;
