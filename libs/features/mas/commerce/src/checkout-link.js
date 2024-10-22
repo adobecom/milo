@@ -106,7 +106,7 @@ export class HTMLCheckoutAnchorElement extends HTMLAnchorElement {
      * @param {*} event
      */
     clickHandler(event) {
-        this.#checkoutActionHandler?.(event);
+      this.#checkoutActionHandler?.(event);
     }
 
     async render(overrides = {}) {
@@ -140,6 +140,7 @@ export class HTMLCheckoutAnchorElement extends HTMLAnchorElement {
         const checkoutAction = await service.buildCheckoutAction(
             offers.flat(),
             { ...extraOptions, ...options },
+            this
         );
         return this.renderOffers(
             offers.flat(),
@@ -185,8 +186,8 @@ export class HTMLCheckoutAnchorElement extends HTMLAnchorElement {
             if (text) this.firstElementChild.innerHTML = text;
             if (className) this.classList.add(...className.split(' '));
             if (handler) {
-                this.setAttribute('href', '#');
-                this.#checkoutActionHandler = handler.bind(this);
+              this.setAttribute('href', '#');
+              this.#checkoutActionHandler = handler.bind(this);
             }
             return true;
         } else if (offers.length) {
