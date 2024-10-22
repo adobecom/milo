@@ -389,6 +389,11 @@ html[dir="rtl"] .carousel-slides .section.carousel-slide {
   overflow: hidden;
 }
 
+.carousel .carousel-slide > div p > video {
+  width: 100%;
+  height: auto;
+}
+
 .carousel[class*='rounded-corners'] .carousel-slide > div p:has(> video),
 .carousel[class*='rounded-corners'] .carousel-slide > div p:has(> picture) {
   margin-top: 0;
