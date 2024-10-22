@@ -17,8 +17,8 @@ import {
 import comEnterpriseToCaasTagMap from './comEnterpriseToCaasTagMap.js';
 
 const LS_KEY = 'bulk-publish-caas';
-const FIELDS = ['preset', 'host', 'repo', 'owner', 'excelFile', 'urls', 'contentType', 'publishToFloodgate'];
-const FIELDS_CB = ['publishToProd', 'usePreview', 'useHtml'];
+const FIELDS = ['preset', 'host', 'repo', 'owner', 'caasEnv', 'urls', 'contentType', 'publishToFloodgate'];
+const FIELDS_CB = ['usePreview', 'useHtml'];
 const DEFAULT_VALUES = {
   preset: 'default',
   caasEnv: 'prod',
@@ -31,7 +31,7 @@ const DEFAULT_VALUES = {
   publishToFloodgate: 'default',
 };
 const DEFAULT_VALUES_CB = {
-  publishToProd: false,
+  publishToLive: true,
   usePreview: false,
   useHtml: true,
 };
@@ -115,7 +115,7 @@ const processData = async (data, accessToken) => {
   const statusModal = showAlert('', { btnText: 'Cancel', onClose: () => { keepGoing = false; } });
   const {
     caasEnv,
-    publishToProd,
+    publishToLive,
     host,
     owner,
     repo,
@@ -186,7 +186,7 @@ const processData = async (data, accessToken) => {
         accessToken,
         caasEnv: caasEnv?.toLowerCase(),
         caasProps,
-        publishToProd,
+        publishToLive,
       });
 
       if (response.success) {
@@ -240,21 +240,8 @@ function showSuccessTable(successArr) {
       <!-- td class="entityid" data-entity-id="${response}">${response}</td -->
     </tr>`;
   });
-  // IN PROGRESS - need to fix CORRS issue to render the json in an iframe
-  // successTable.querySelectorAll('.entityid').forEach((el) => {
-  //   el.addEventListener('click', (e) => {
-  //     showModal(e.target.dataset.entityId);
-  //   });
-  // });
 }
-// IN PROGRESS - need to fix CORRS issue to render the json in an iframe
-// function showModal(entityId) {
-//   const chimeraEndpoint = 'https://14257-chimera.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection?debug=1&featuredCards=';
-//   const modalDiv = document.querySelector('.modal');
-//   const iframe = modalDiv.querySelector('iframe');
-//   modalDiv.style.display = 'block';
-//   iframe.src = `${chimeraEndpoint}${entityId}`;
-// }
+
 
 
 function showErrorTable(errorArr) {
@@ -304,6 +291,11 @@ const loadFromLS = () => {
 
     /* c8 ignore next */
   } catch (e) { /* do nothing */ }
+ 
+  if (caasEnv.value === 'prod') {
+    console.log('Loaded from LS', caasEnv.value);
+    publishWarning.style.height = '25px';
+  }
 };
 
 const separator = document.querySelector('.separator');
@@ -347,6 +339,16 @@ preset.addEventListener('change', () => {
   setConfig(config);
   window.localStorage.setItem(LS_KEY, JSON.stringify(getConfig()));
   loadFromLS();
+});
+
+const publishWarning =  document.querySelector('.publish-warning');
+caasEnv.addEventListener('change', () => {
+  const { value } = caasEnv;
+  if (value === 'prod') {
+    publishWarning.style.height = '25px';
+  } else {
+    publishWarning.style.height = '0';
+  }
 });
 
 const checkUserStatus = async () => {
@@ -456,13 +458,13 @@ const init = async () => {
       host: document.getElementById('host').value,
       project: '',
       branch: 'main',
-      caasEnv: 'prod',
+      caasEnv: document.getElementById('caasEnv').value || 'prod',
       contentType: document.getElementById('contentType').value,
       repo: document.getElementById('repo').value,
       owner: document.getElementById('owner').value,
       urls: document.getElementById('urls').value,
       publishToFloodgate: document.getElementById('publishToFloodgate').value,
-      publishToProd: document.getElementById('publishToProd').checked,
+      publishToLive: document.getElementById('publishToLive')?.checked || true,
       useHtml: document.getElementById('useHtml').checked,
       usePreview: document.getElementById('usePreview').checked,
     });

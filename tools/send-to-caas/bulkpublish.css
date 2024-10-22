@@ -4,6 +4,8 @@
 
 .bulk-publisher {
   font-family: "Adobe Clean", adobe-clean, "Trebuchet MS", sans-serif;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-weight: 300;
   margin: 32px;
   margin: 0;
 }
@@ -20,7 +22,7 @@ dd.content .field label {
 
 dd.content .field {
   padding: 0 20px;
-  margin: 16px 0
+  margin: 14px 0
 }
 
 .results {
@@ -33,7 +35,7 @@ dd.content .field {
 
 .main {
   display: flex;
-  min-height: calc(100% - 126px);
+  height: calc(100% - 126px);
 }
 
 .options-panel {
@@ -41,6 +43,8 @@ dd.content .field {
   /* background: linear-gradient(45deg, #999, #ddd); */
   background: linear-gradient(45deg, #aaa, #eee);
   border-right: solid 1px #aaa;
+  overflow-y: scroll;
+  height: 100%;
 }
 .bulk-publisher.dark .options-panel {
   background: linear-gradient(45deg, #000, #404040);
@@ -59,6 +63,7 @@ dd.content .field {
 .options-panel h4 {
   margin: 5px 20px 10px;
   font-size: 20px;
+  font-weight: 500;
 }
 
 dd.content .field select, 
@@ -223,7 +228,7 @@ body.preset  .preset-options .help {
 
 body.advanced  .preset-options,
 body.advanced  .advanced-options {
-  height: 380px;
+  height: 360px;
   border-width: 1px;
   border: solid 1px #aaa;
   border-radius: 10px;
@@ -273,7 +278,11 @@ dd.content.is-expanded {
 .content-panel h2 {
   margin-bottom: 0;
   font-size: 22px;
-  font-weight: 300;  
+  font-weight: 500;  
+}
+
+.content-panel b {
+  font-weight: 500;
 }
 
 .urls,
@@ -301,8 +310,15 @@ textarea#errors{
   text-align: center;
 }
 
+.publish-warning {
+  margin-bottom: 0;
+  height: 0;
+  overflow: hidden;
+  transition: height .3s;
+}
+
 #bulkpublish {
-  margin: 20px 0;
+  margin: 20px 0 20px;
   font-size: 18px;
   background: #6e9b00;
   border: solid 1px lightgreen;

@@ -49,6 +49,15 @@
                 <h4>Advanced Options</h4>
 
                 <div class="field">
+                  <label for="caasEnv">CaaS Enviroment<span class="help caas-env" title="Help about this functionality">(?)</span></label>
+                  <select name="caasEnv" id="caasEnv">
+                    <option value="dev">Dev</option>
+                    <option value="stage">Stage</option>
+                    <option value="prod" selected>Production</option>
+                  </select>
+                </div>
+
+                <div class="field">
                   <label for="contentType">ContentType Fallback: <span class="help content-type-fallback" title="Help about this functionality">(?)</span></label>
                   <select name="contentType" id="contentType">
                     <option value="">Auto Detect</option>
@@ -119,19 +128,22 @@
                   <input type="checkbox" id="useHtml" name="useHtml" />
                   <label for="useHtml">Use .html extension on links <span class="help use-html" title="Help about this functionality">(?)</span></label>
                 </div>
-
+              <!--
                 <div class="field">
                   <label for="excelFile">Path to Excel File (optional) <span class="help excel-file" title="Help about this functionality">(?)</span></label>
                   <input id="excelFile" name="excelFile" type="text" />
                 </div>
+              -->
               </div>
 
-            <hr width="90%" class="divider">
+            <!-- <hr width="90%" class="divider"> -->
 
+            <!--
             <div id="caas-draft-cb" class="field checkbox">
-              <input type="checkbox" id="publishToProd" name="publishToProd" />
-              <label for="publishToProd">Publish to CaaS LIVE <span class="help publish-to-prod" title="Help about this option">(?)</span></label>
-            </div>  
+              <input type="checkbox" id="publishToLive" name="publishToLive" />
+              <label for="publishToLive">Publish to CaaS LIVE <span class="help publish-to-prod" title="Help about this option">(?)</span></label>
+            </div>
+            -->
 
           </dd>
         </div>
@@ -156,6 +168,10 @@
               rows="10"
               placeholder="Enter URLs to publish here..."></textarea>
 
+            <p class="publish-warning">
+              <b>Warning</b>: You are publishing content to CaaS <b class="env">Production</b> Environment. 
+              Use the <i>Advanced Settings</i> to change it.
+            </p>
             <div class="button-container">
               <button id="bulkpublish" href="#">Publish</button>
               <span class="config-msg" > &nbsp; * Please Select a Preset or Custom Settings</span>
@@ -206,15 +222,6 @@
       </div>
     </div>
 
-    <div class="modal">
-      <div class="modal-content">
-        <span class="close">&times;</span>
-        
-        <iframe id="iframe" src="" frameborder="0"></iframe>
-        
-      </div>
-
-    </div>
     <script type="module">
       import init from './bulk-publish-to-caas.js';
       init();
