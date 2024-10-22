@@ -148,6 +148,7 @@ export class MerchSideNav extends LitElement {
             );
             overlay.addEventListener('close', () => {
                 this.modal = false;
+                document.body.classList.remove('merch-modal');
                 enableBodyScroll(this.dialog);
             });
             this.shadowRoot.querySelector('sp-theme').append(overlay);

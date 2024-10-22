@@ -153,6 +153,10 @@ function getEnv(conf) {
   const query = PAGE_URL.searchParams.get('env');
 
   if (query) return { ...ENVS[query], consumer: conf[query] };
+
+  const { clientEnv } = conf;
+  if (clientEnv) return { ...ENVS[clientEnv], consumer: conf[clientEnv] };
+
   if (host.includes('localhost')) return { ...ENVS.local, consumer: conf.local };
   /* c8 ignore start */
   if (host.includes(`${SLD}.page`)
@@ -225,6 +229,7 @@ export const [setConfig, updateConfig, getConfig] = (() => {
       config.base = config.miloLibs || config.codeRoot;
       config.locale = pathname ? getLocale(conf.locales, pathname) : getLocale(conf.locales);
       config.autoBlocks = conf.autoBlocks ? [...AUTO_BLOCKS, ...conf.autoBlocks] : AUTO_BLOCKS;
+      config.signInContext = conf.signInContext || {};
       config.doNotInline = conf.doNotInline
         ? [...DO_NOT_INLINE, ...conf.doNotInline]
         : DO_NOT_INLINE;
@@ -652,6 +657,7 @@ export function convertStageLinks({ anchors, config, hostname }) {
     a.href = a.href.replace(a.hostname, domainsMap[matchedDomain] === 'origin'
       ? hostname
       : domainsMap[matchedDomain]);
+    if (/(\.page|\.live).*\.html(?=[?#]|$)/.test(a.href)) a.href = a.href.replace(/\.html(?=[?#]|$)/, '');
   });
 }
 
@@ -686,7 +692,8 @@ export function decorateLinks(el) {
       a.href = a.href.replace(loginEvent, '');
       a.addEventListener('click', (e) => {
         e.preventDefault();
-        window.adobeIMS?.signIn();
+        const { signInContext } = config;
+        window.adobeIMS?.signIn(signInContext);
       });
     }
     const copyEvent = '#_evt-copy';
@@ -1131,8 +1138,7 @@ export function scrollToHashedElement(hash) {
 }
 
 export async function loadDeferred(area, blocks, config) {
-  const event = new Event(MILO_EVENTS.DEFERRED);
-  area.dispatchEvent(event);
+  area.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
 
   if (area !== document) {
     return;
@@ -1190,7 +1196,7 @@ function decorateMeta() {
   const { origin } = window.location;
   const contents = document.head.querySelectorAll(`[content*=".${SLD}."]`);
   contents.forEach((meta) => {
-    if (meta.getAttribute('property') === 'hlx:proxyUrl') return;
+    if (meta.getAttribute('property') === 'hlx:proxyUrl' || meta.getAttribute('name')?.endsWith('schedule')) return;
     try {
       const url = new URL(meta.content);
       const localizedLink = localizeLink(`${origin}${url.pathname}`);

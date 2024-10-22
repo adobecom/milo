@@ -4,6 +4,7 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { delay, waitForElement, waitForRemoval } from '../../helpers/waitfor.js';
 import { mockFetch } from '../../helpers/generalHelpers.js';
+import { getConfig } from '../../../libs/utils/utils.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 
@@ -249,6 +250,13 @@ describe('Modals', () => {
     close.click();
     expect(window.location.hash).to.equal('#category=pdf-esignatures&search=acro&types=desktop%2Cmobile');
     window.location.hash = '';
+  });
+
+  it('never create modal when removed by MEP', async () => {
+    const config = getConfig();
+    config.mep = { fragments: { '/milo': { action: 'remove' } } };
+    const modal = init(document.getElementById('milo-modal-link'));
+    expect(modal).to.be.null;
   });
 });
 
