@@ -32,6 +32,8 @@ export class CCDSlice extends VariantLayout {
     static variantStyle = css`
         :host([variant='ccd-slice']) {
             width: var(--consonant-merch-card-ccd-slice-single-width);
+            background-color: var(
+              --spectrum-gray-50, #fff);
             border-radius: 4px;
             display: flex;
             flex-flow: wrap;

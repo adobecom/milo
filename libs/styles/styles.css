@@ -51,6 +51,7 @@
   --spacing-xxxl: 80px;
 
   /* Static Spacing */
+  --spacing-l-static: 48px;
   --spacing-xl-static: 56px;
   --spacing-xxl-static: 80px;
   --spacing-xxxl-static: 104px;
