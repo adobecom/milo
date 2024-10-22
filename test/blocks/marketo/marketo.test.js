@@ -142,8 +142,7 @@ describe('Marketo ungated one page experience', () => {
   });
 
   it('logs error if success section is not provided', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/one-page-error.html' });
-
+    document.querySelector('#success-data').remove();
     init(document.querySelector('.marketo'));
     expect(window.lana.log.args[0][0]).to.equal('Error showing Marketo success section');
   });
