@@ -54,7 +54,7 @@ test.describe('Milo Figure Block test suite', () => {
     });
 
     await test.step('step-3: Verify the accessibility test on the Figure block', async () => {
-       // The accessibility test for the Figure block is failing, so skipping it.
+      // The accessibility test for the Figure block is failing, so skipping it.
       await runAccessibilityTest({ page, testScope: figureBlock.figure, skipA11yTest: true });
     });
   });

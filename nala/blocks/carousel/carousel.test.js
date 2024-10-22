@@ -53,9 +53,8 @@ test.describe('Milo Carousel Block test suite', () => {
 
     await test.step('step-4: Verify the accessibility test on the carousel block', async () => {
       // The accessibility test for the carousel container is failing, so skipping the test step
-      await runAccessibilityTest({ page: page, testScope: carousel.carouselContainer, skipA11yTest: true });
+      await runAccessibilityTest({ page, testScope: carousel.carouselContainer, skipA11yTest: true });
     });
- 
   });
 
   test(`${features[1].name},${features[1].tags}`, async ({ page, baseURL }) => {
@@ -91,8 +90,8 @@ test.describe('Milo Carousel Block test suite', () => {
     });
 
     await test.step('step-3: Verify the accessibility test on the carousel lightbox block', async () => {
-      await runAccessibilityTest({ page: page, testScope: carousel.carouselLightbox });
-    });      
+      await runAccessibilityTest({ page, testScope: carousel.carouselLightbox });
+    });
   });
 
   test(`${features[2].name},${features[2].tags}`, async ({ page, baseURL }) => {
@@ -124,7 +123,7 @@ test.describe('Milo Carousel Block test suite', () => {
     });
 
     await test.step('step-3: Verify the accessibility test on the carousel show-2 container block', async () => {
-      await runAccessibilityTest({ page: page, testScope: carousel.carouselContainerShow2 });
-    });     
+      await runAccessibilityTest({ page, testScope: carousel.carouselContainerShow2 });
+    });
   });
 });
