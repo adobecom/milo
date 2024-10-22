@@ -35,8 +35,8 @@ const PAGE_URL = new URL(window.location.href);
 
 export const TRACKED_MANIFEST_TYPE = 'personalization';
 
-// Replace any non-alpha chars except comma, space, ampersand and hyphen
-const RE_KEY_REPLACE = /[^a-z0-9\- _,&=]/g;
+// Replace any non-alpha chars except comma, space, ampersand, colon, and hyphen
+const RE_KEY_REPLACE = /[^a-z0-9\- _,&=:]/g;
 
 const MANIFEST_KEYS = [
   'action',
@@ -521,7 +521,7 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
   if (!config.mep?.preview) manifestId = false;
   const { origin } = PAGE_URL;
   variantNames.forEach((vn) => {
-    const targetManifestId = vn.startsWith(TARGET_EXP_PREFIX) ? targetId : false;
+    const targetManifestId = vn.includes(TARGET_EXP_PREFIX) ? targetId : false;
     if (!line[vn] || line[vn].toLowerCase() === 'false') return;
 
     const variantInfo = {
@@ -702,6 +702,7 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
   };
 
   const matchVariant = (name) => {
+    // split before checks
     if (name.startsWith(TARGET_EXP_PREFIX)) return hasMatch(name);
     const processedList = name.split('&').map((condition) => {
       const reverse = condition.trim().startsWith(COLUMN_NOT_OPERATOR);
@@ -877,7 +878,7 @@ function compareExecutionOrder(a, b) {
   return a.executionOrder > b.executionOrder ? 1 : -1;
 }
 
-export function cleanAndSortManifestList(manifests) {
+export function cleanAndSortManifestList(manifests) { 
   const config = getConfig();
   const manifestObj = {};
   let allManifests = manifests;
@@ -987,14 +988,16 @@ export async function applyPers(manifests, postLCP = false) {
   if (!pznList.length) return;
 
   const pznVariants = pznList.map((r) => {
-    const val = r.experiment.selectedVariantName.replace(TARGET_EXP_PREFIX, '').trim().slice(0, 15);
+    // accounts for target prefix, but not the nickname character :
+    let val = r.experiment.selectedVariantName.replace(TARGET_EXP_PREFIX, '').trim().slice(0, 15);
+    if (val.includes(':')) val = val.split(':')[0].trim();
     return val === 'default' ? 'nopzn' : val;
   });
   const pznManifests = pznList.map((r) => {
     const val = r.experiment?.manifestOverrideName || r.experiment?.manifest;
     return getFileName(val).replace('.json', '').trim().slice(0, 15);
   });
-  config.mep.martech = `|${pznVariants.join('--')}|${pznManifests.join('--')}`;
+  if (pznVariants.length) config.mep.martech = `|${pznVariants.join('--')}|${pznManifests.join('--')}`;
 }
 
 export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => {
