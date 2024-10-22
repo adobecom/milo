@@ -147,7 +147,7 @@ html[dir="rtl"] .carousel-slides .section.carousel-slide {
   direction: rtl;
 }
 
-.none .carousel-slide {
+.carousel.none .carousel-slide {
   opacity: 1;
   transition: opacity;
 }
@@ -162,24 +162,16 @@ html[dir="rtl"] .carousel-slides .section.carousel-slide {
 
 .carousel-slides.is-ready,
 .carousel-slides.is-ready.is-reversing,
-.show-2 .carousel-slides.is-ready,
-.show-2 .carousel-slides.is-ready.is-reversing,
-.show-3 .carousel-slides.is-ready,
-.show-3 .carousel-slides.is-ready.is-reversing,
-.show-4 .carousel-slides.is-ready,
-.show-4 .carousel-slides.is-ready.is-reversing,
-.show-5 .carousel-slides.is-ready,
-.show-5 .carousel-slides.is-ready.is-reversing,
-.show-6 .carousel-slides.is-ready,
-.show-6 .carousel-slides.is-ready.is-reversing {
+.carousel[class*='show-'] .carousel-slides.is-ready,
+.carousel[class*='show-'] .carousel-slides.is-ready.is-reversing {
   transform: none;
   transition: transform .6s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-.none .carousel-slides.is-ready,
-.none .carousel-slides.is-ready.is-reversing,
-.fade .carousel-slides.is-ready,
-.fade .carousel-slides.is-ready.is-reversing {
+.carousel.none .carousel-slides.is-ready,
+.carousel.none .carousel-slides.is-ready.is-reversing,
+.carousel.fade .carousel-slides.is-ready,
+.carousel.fade .carousel-slides.is-ready.is-reversing {
   transition: transform;
 }
 
@@ -366,11 +358,7 @@ html[dir="rtl"] .carousel-slides .section.carousel-slide {
 }
 
 /* Multiple slides reset for nested blocks foreground */
-.carousel.show-2 .carousel-slide .foreground,
-.carousel.show-3 .carousel-slide .foreground,
-.carousel.show-4 .carousel-slide .foreground,
-.carousel.show-5 .carousel-slide .foreground,
-.carousel.show-6 .carousel-slide .foreground { width: auto; }
+.carousel[class*='show-'] .carousel-slide .foreground { width: auto; }
 
 .carousel.container .carousel-slide .foreground:not(.icon-block .foreground) {
   max-width: unset;
@@ -379,6 +367,33 @@ html[dir="rtl"] .carousel-slides .section.carousel-slide {
 
 .carousel.container .carousel-slide .container {
   width: unset;
+}
+
+.carousel.rounded-corners .carousel-slide {
+  border-radius: var(--m-rounded-corners);
+}
+
+.carousel.l-rounded-corners .carousel-slide {
+  border-radius: var(--l-rounded-corners);
+}
+
+.carousel.s-rounded-corners .carousel-slide {
+  border-radius: var(--s-rounded-corners);
+}
+
+.carousel.full-rounded-corners .carousel-slide {
+  border-radius: var(--full-rounded-corners);
+}
+
+.carousel[class*='rounded-corners'] .carousel-slide {
+  overflow: hidden;
+}
+
+.carousel[class*='rounded-corners'] .carousel-slide > div p:has(> video),
+.carousel[class*='rounded-corners'] .carousel-slide > div p:has(> picture) {
+  margin-top: 0;
+  margin-bottom: 0;
+  line-height: 0;
 }
 
 /* Zero out spacing token on carousel-slide */
@@ -414,7 +429,7 @@ html[dir="rtl"] .carousel-slides .section.carousel-slide {
 
 @media (max-width: 600px) {
   .carousel.container.hinting-mobile,
-  .carousel.container.hinting-mobile-center {
+  .carousel.container.hinting-center-mobile {
     width: 100%;
   }
 
@@ -423,28 +438,31 @@ html[dir="rtl"] .carousel-slides .section.carousel-slide {
   }
 
   .container.hinting-mobile .carousel-previous,
-  .container.hinting-mobile-center .carousel-previous {
+  .container.hinting-center-mobile .carousel-previous {
     left: 1rem;
   }
 
   .container.hinting-mobile .carousel-next,
-  .container.hinting-mobile-center .carousel-next {
+  .container.hinting-center-mobile .carousel-next {
     right: 1rem;
   }
 
   .carousel.hinting-mobile .carousel-previous,
   .carousel.hinting-mobile .carousel-next,
-  .carousel.hinting-mobile-center .carousel-previous,
-  .carousel.hinting-mobile-center .carousel-next {
+  .carousel.hinting-center-mobile .carousel-previous,
+  .carousel.hinting-center-mobile .carousel-next {
     height: var(--carousel-slide-button-height-desktop);
     width: var(--carousel-slide-button-width-desktop);
     top: calc(45% - var(--carousel-slide-button-height-desktop) / 2);
   }
 
+  .carousel[class*='hinting'] .carousel-slides {
+    gap: var(--spacing-xs);
+  }
+
   .carousel.hinting-mobile .carousel-slides {
     left: -80%;
     transform: translateX(80%);
-    gap: var(--spacing-xs);
   }
   
   .carousel.hinting-mobile .carousel-slides.is-reversing {
@@ -456,18 +474,17 @@ html[dir="rtl"] .carousel-slides .section.carousel-slide {
     min-width: 276px;
   }
 
-  .carousel.hinting-mobile-center .carousel-slides {
+  .carousel.hinting-center-mobile .carousel-slides {
     left: -65%;
     transform: translateX(65%);
   }
 
-  .carousel.hinting-mobile-center .carousel-slide {
+  .carousel.hinting-center-mobile .carousel-slide {
     flex-basis: 75%;
-    padding: 0 calc(var(--spacing-xs) / 2);
     min-width: 276px;
   }
 
-  .carousel.hinting-mobile-center .carousel-slides.is-reversing {
+  .carousel.hinting-center-mobile .carousel-slides.is-reversing {
     transform: translateX(-75%);
   }
 
@@ -476,9 +493,9 @@ html[dir="rtl"] .carousel-slides .section.carousel-slide {
     transform: translateX(calc((var(--spacing-xs) - 1px) * -1));
   }
 
-  .carousel.hinting-mobile-center .carousel-slides.is-ready,
-  .carousel.hinting-mobile-center .carousel-slides.is-ready.is-reversing {
-    transform: translateX(calc((0.9rem) * -1));
+  .carousel.hinting-center-mobile .carousel-slides.is-ready,
+  .carousel.hinting-center-mobile .carousel-slides.is-ready.is-reversing {
+    transform: translateX(calc((0.3rem) * -1));
   }
 }
 
@@ -560,155 +577,136 @@ html[dir="rtl"] .carousel-slides .section.carousel-slide {
     flex-basis: 100%;
   }
 
-  .show-2 .carousel-slides {
+  .carousel[class*='show-'] .carousel-slide { opacity: 1; }
+
+  .carousel.show-2 .carousel-slides {
     left: -50%;
     transform: translateX(50%);
   }
 
-  .show-2 .carousel-slides.is-reversing {
+  .carousel.show-2 .carousel-slides.is-reversing {
     transform: translateX(-50%);
   }
 
-  .show-2 .carousel-slide {
+  .carousel.show-2 .carousel-slide {
     flex-basis: 50%;
   }
 
-  .show-3 .carousel-slides {
+  .carousel.show-3 .carousel-slides {
     left: -33.3333%;
     transform: translateX(33.3333%);
   }
 
-  .show-3 .carousel-slides.is-reversing {
+  .carousel.show-3 .carousel-slides.is-reversing {
     transform: translateX(-33.3333%);
   }
 
-  .show-3 .carousel-slide {
+  .carousel.show-3 .carousel-slide {
     flex-basis: 33.3333%;
   }
 
-  .show-4 .carousel-slides {
+  .carousel.show-4 .carousel-slides {
     left: -25%;
     transform: translateX(25%);
   }
 
-  .show-4 .carousel-slides.is-reversing {
+  .carousel.show-4 .carousel-slides.is-reversing {
     transform: translateX(-25%);
   }
 
-  .show-4 .carousel-slide {
+  .carousel.show-4 .carousel-slide {
     flex-basis: 25%;
   }
 
-  .show-5 .carousel-slides {
+  .carousel.show-5 .carousel-slides {
     left: -20%;
     transform: translateX(20%);
   }
 
-  .show-5 .carousel-slides.is-reversing {
+  .carousel.show-5 .carousel-slides.is-reversing {
     transform: translateX(-20%);
   }
 
-  .show-5 .carousel-slide {
+  .carousel.show-5 .carousel-slide {
     flex-basis: 20%;
   }
 
-  .show-6 .carousel-slides {
+  .carousel.show-6 .carousel-slides {
     left: -16.6667%;
     transform: translateX(16.6667%);
   }
 
-  .show-6 .carousel-slides.is-reversing {
+  .carousel.show-6 .carousel-slides.is-reversing {
     transform: translateX(-16.6667%);
   }
 
-  .show-6 .carousel-slide {
+  .carousel.show-6 .carousel-slide {
     flex-basis: 16.6667%;
   }
 
-  .show-2.m-gap .carousel-slide {
+  .carousel.show-2.m-gap .carousel-slide {
     --slides: 2;
   }
 
-  .show-3.m-gap .carousel-slide {
+  .carousel.show-3.m-gap .carousel-slide {
     --slides: 3;
   }
 
-  .show-4.m-gap .carousel-slide {
+  .carousel.show-4.m-gap .carousel-slide {
     --slides: 4;
   }
 
-  .show-5.m-gap .carousel-slide {
+  .carousel.show-5.m-gap .carousel-slide {
     --slides: 5;
   }
 
-  .show-6.m-gap .carousel-slide {
+  .carousel.show-6.m-gap .carousel-slide {
     --slides: 6;
   }
 
-  .show-2.m-gap .carousel-slide,
-  .show-3.m-gap .carousel-slide,
-  .show-4.m-gap .carousel-slide,
-  .show-5.m-gap .carousel-slide,
-  .show-6.m-gap .carousel-slide {
+  .carousel[class*='show-'].m-gap .carousel-slide {
     flex-basis: calc((100% / var(--slides)) - round(up, (((var(--slides) - 1) / var(--slides)) * var(--spacing-m)), 1px));
   }
 
-  .carousel.show-2 .carousel-slide,
-  .carousel.show-3 .carousel-slide,
-  .carousel.show-4 .carousel-slide,
-  .carousel.show-5 .carousel-slide,
-  .carousel.show-6 .carousel-slide {
-    opacity: 1;
-  }
-  
-  .carousel.show-2 .carousel-indicators,
-  .carousel.show-3 .carousel-indicators,
-  .carousel.show-4 .carousel-indicators,
-  .carousel.show-5 .carousel-indicators,
-  .carousel.show-6 .carousel-indicators {
-    display: none;
-  }
+  .carousel[class*='show-'] .carousel-indicators { display: none; }
 
   .carousel.m-gap .carousel-slides {
     gap: var(--spacing-m);
   }
 
   /* Corrects translateX when using gap */
-  .show-2.m-gap .carousel-slides.is-ready,
-  .show-2.m-gap .carousel-slides.is-ready.is-reversing {
+  .carousel.m-gap .carousel-slides.is-ready,
+  .carousel.m-gap .carousel-slides.is-ready.is-reversing {
+    transform: translateX(calc(var(--spacing-m) * -1));
+  }
+
+  .carousel.show-2.m-gap .carousel-slides.is-ready,
+  .carousel.show-2.m-gap .carousel-slides.is-ready.is-reversing {
     --slides: 2;
   }
 
-  .show-3.m-gap .carousel-slides.is-ready,
-  .show-3.m-gap .carousel-slides.is-ready.is-reversing {
+  .carousel.show-3.m-gap .carousel-slides.is-ready,
+  .carousel.show-3.m-gap .carousel-slides.is-ready.is-reversing {
     --slides: 3;
   }
 
-  .show-4.m-gap .carousel-slides.is-ready,
-  .show-4.m-gap .carousel-slides.is-ready.is-reversing {
+  .carousel.show-4.m-gap .carousel-slides.is-ready,
+  .carousel.show-4.m-gap .carousel-slides.is-ready.is-reversing {
     --slides: 4;
   }
 
-  .show-5.m-gap .carousel-slides.is-ready,
-  .show-5.m-gap .carousel-slides.is-ready.is-reversing {
+  .carousel.show-5.m-gap .carousel-slides.is-ready,
+  .carousel.show-5.m-gap .carousel-slides.is-ready.is-reversing {
     --slides: 5;
   }
 
-  .show-6.m-gap .carousel-slides.is-ready,
-  .show-6.m-gap .carousel-slides.is-ready.is-reversing {
+  .carousel.show-6.m-gap .carousel-slides.is-ready,
+  .carousel.show-6.m-gap .carousel-slides.is-ready.is-reversing {
     --slides: 6;
   }
 
-  .show-2.m-gap .carousel-slides.is-ready,
-  .show-2.m-gap .carousel-slides.is-ready.is-reversing,
-  .show-3.m-gap .carousel-slides.is-ready,
-  .show-3.m-gap .carousel-slides.is-ready.is-reversing,
-  .show-4.m-gap .carousel-slides.is-ready,
-  .show-4.m-gap .carousel-slides.is-ready.is-reversing,
-  .show-5.m-gap .carousel-slides.is-ready,
-  .show-5.m-gap .carousel-slides.is-ready.is-reversing,
-  .show-6.m-gap .carousel-slides.is-ready,
-  .show-6.m-gap .carousel-slides.is-ready.is-reversing {
+  .carousel[class*='show-'].m-gap .carousel-slides.is-ready,
+  .carousel[class*='show-'].m-gap .carousel-slides.is-ready.is-reversing {
     --offset: calc(round(up, (((var(--slides) - 1) / var(--slides)) * var(--spacing-m)), 1px));
 
     transform: translateX(calc(round(down, (var(--offset) / (var(--slides) - 1)), 2px) * -1));
