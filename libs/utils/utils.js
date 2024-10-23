@@ -950,7 +950,7 @@ let imsLoaded;
 export async function loadIms() {
   imsLoaded = imsLoaded || new Promise((resolve, reject) => {
     const {
-      locale, imsClientId, imsScope, env, base, adobeid,
+      locale, imsClientId, imsScope, env, base, adobeid, imsTimeout,
     } = getConfig();
     if (!imsClientId) {
       reject(new Error('Missing IMS Client ID'));
@@ -958,7 +958,7 @@ export async function loadIms() {
     }
     const [unavMeta, ahomeMeta] = [getMetadata('universal-nav')?.trim(), getMetadata('adobe-home-redirect')];
     const defaultScope = `AdobeID,openid,gnav${unavMeta && unavMeta !== 'off' ? ',pps.read,firefly_api,additional_info.roles,read_organizations' : ''}`;
-    const timeout = setTimeout(() => reject(new Error('IMS timeout')), 5000);
+    const timeout = setTimeout(() => reject(new Error('IMS timeout')), imsTimeout || 5000);
     window.adobeid = {
       client_id: imsClientId,
       scope: imsScope || defaultScope,
