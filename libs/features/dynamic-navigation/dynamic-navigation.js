@@ -1,19 +1,21 @@
-import { getMetadata } from '../utils/utils.js';
+import { getMetadata } from '../../utils/utils.js';
 
-function isDynamicNavDisabled() {
+export function foundDisableValues() {
   const dynamicNavDisableValues = getMetadata('dynamic-nav-disable');
   if (!dynamicNavDisableValues) return false;
 
   const metadataPairsMap = dynamicNavDisableValues.split(',').map((pair) => pair.split(';'));
-  return metadataPairsMap.some(([metadataKey, metadataContent]) => {
+  const foundValues = metadataPairsMap.filter(([metadataKey, metadataContent]) => {
     const metaTagContent = getMetadata(metadataKey.toLowerCase());
     return (metaTagContent
         && metaTagContent.toLowerCase() === metadataContent.toLowerCase());
   });
+
+  return foundValues.length ? foundValues : false;
 }
 
 export default function dynamicNav(url, key) {
-  if (isDynamicNavDisabled()) return url;
+  if (foundDisableValues()) return url;
   const metadataContent = getMetadata('dynamic-nav');
 
   if (metadataContent === 'entry') {
