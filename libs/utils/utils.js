@@ -712,6 +712,37 @@ export function decorateLinks(el) {
     if (a.href.includes(copyEvent)) {
       decorateCopyLink(a, copyEvent);
     }
+
+    // Pattern: "Link Text | Aria Label"
+    if (/\s\|\s/.test(a.textContent)) {
+      const ogContent = a.textContent;
+      const split = ogContent.split(/\s\|\s/);
+      const ariaLabel = split[split.length - 1];
+      const text = ogContent.replace(` | ${ariaLabel}`, '');
+      a.textContent = text;
+      a.setAttribute('aria-label', ariaLabel);
+    }
+
+    // Pattern: "Link Text <Aria Label>"
+    if (/<.+>/.test(a.textContent)) {
+      const ogContent = a.textContent;
+      const text = ogContent.replace(/<.+>/, '');
+      const ariaLabel = ogContent.match(/<.+>/)[0].replace(/[<>]/g, '');
+      a.textContent = text;
+      a.setAttribute('aria-label', ariaLabel);
+    }
+
+    // Pattern: "Link Text <code>Aria Label</code>"
+    const codeInAnchor = a.querySelector('code');
+    if (codeInAnchor) {
+      const ogContent = a.textContent;
+      const ariaLabel = codeInAnchor.textContent;
+      codeInAnchor.remove();
+      const text = ogContent.replace(ariaLabel, '');
+      a.textContent = text.trim();
+      a.setAttribute('aria-label', ariaLabel);
+    }
+
     return rdx;
   }, []);
   convertStageLinks({ anchors, config, hostname, href });
