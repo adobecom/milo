@@ -49,6 +49,37 @@ runTests(async () => {
             expect(actionMenuContent).to.exist;
         });
 
+        it('action menu and card focus for catalog variant', async () => {
+            const catalogCard = document.querySelector(
+              'merch-card[variant="catalog"]',
+            );
+            const mouseoverEvent = new MouseEvent('mouseover', { bubbles: true });
+            const mouseleaveEvent = new MouseEvent('mouseleave', { bubbles: true });
+            const enterEvent = new KeyboardEvent('enter', { bubbles: true });
+            const tabEvent = new KeyboardEvent('tab', { bubbles: true });
+            const focusoutEvent = new Event('focusout');
+            catalogCard.dispatchEvent(mouseleaveEvent);
+            await delay(100);
+            const shadowRoot = catalogCard.shadowRoot;
+            const actionMenu = shadowRoot.querySelector('.action-menu');
+            const actionMenuContent = shadowRoot.querySelector(
+                '.action-menu-content',
+            );
+            actionMenu.click();
+            await delay(100);
+            catalogCard.focus();
+            await delay(100);
+            expect(actionMenu.classList.contains('invisible')).to.be.true;
+            expect(actionMenuContent.classList.contains('hidden')).to.be.false;
+            expect(actionMenu).to.exist;
+            expect(actionMenuContent).to.exist;
+            actionMenuContent.dispatchEvent(focusoutEvent);
+            catalogCard.dispatchEvent(mouseoverEvent);
+            catalogCard.dispatchEvent(focusoutEvent);
+            await delay(100);
+            expect(actionMenuContent.classList.contains('hidden')).to.be.true;
+        });
+
         it('should display some content when action is clicked for catalog variant', async () => {
             const catalogCard = document.querySelector(
                 'merch-card[variant="catalog"]',
