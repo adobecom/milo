@@ -152,10 +152,16 @@ body {
 }
 
 select#preset {
-  border: solid 1px #6f9b00;
+  border: solid 2px #6f9b00;
+  border: solid 2px #c00;
   border-radius: 8px;
   padding: 10px 4px;
   margin-bottom: 10px;
+}
+
+body.preset select#preset,
+body.advanced select#preset {
+  border: solid 1px #6f9b00;
 }
 
  .preset-options,

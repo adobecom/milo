@@ -106,7 +106,6 @@ const updateTagsFromSheetData = (tags, sheetTagsStr) => {
 };
 
 const processData = async (data, accessToken) => {
-  console.log('Process Data', data);
   const errorArr = [];
   const successArr = [];
   let index = 0;
@@ -249,7 +248,8 @@ function showErrorTable(errorArr) {
   const tableBody = errorTable.querySelector('tbody');
   errorTable.style.display = 'block';
   errorArr.forEach(([pageUrl, response]) => {
-    tableBody.innerHTML += `<tr><td class="error">Failed</td><td><a href="${pageUrl}">${pageUrl}</a></td><td>${response}</td></tr>`;
+    const message = response.error ? response.error.replace(/:.*/, '') : response;
+    tableBody.innerHTML += `<tr><td class="error">Failed</td><td><a href="${pageUrl}">${pageUrl}</a></td><td>${message}</td></tr>`;
   });
 }
 
@@ -293,7 +293,6 @@ const loadFromLS = () => {
   } catch (e) { /* do nothing */ }
  
   if (caasEnv.value === 'prod') {
-    console.log('Loaded from LS', caasEnv.value);
     publishWarning.style.height = '25px';
   }
 };
@@ -422,8 +421,6 @@ helpButtons.forEach((btn) => {
 const themeOptions = document.querySelectorAll('.theme-options');
 themeOptions.forEach((btn) => {
   btn.addEventListener('click', (e) => {
-    // document.querySelector('.bulk-publisher').classList.toggle('dark');
-    console.log(e.target.value);
     if (e.target.value === "dark") {
       document.querySelector('.bulk-publisher').classList.add('dark');
       localStorage.setItem('bp-theme', 'dark');
