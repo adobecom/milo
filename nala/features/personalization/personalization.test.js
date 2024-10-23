@@ -18,7 +18,7 @@ test.describe('Milo Personalization feature test suite', () => {
     webUtil = new WebUtil(page);
   });
 
-  test.beforeAll(async ({ browserName, baseURL }) => {
+  test.beforeAll(async ({ baseURL }) => {
     /*
     if (browserName === 'chromium') {
       test.skip('Skipping tests for Chromium browser');
