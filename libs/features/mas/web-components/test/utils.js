@@ -53,26 +53,20 @@ window.toggleRTL = () => {
 };
 
 export const appendMiloStyles = () => {
-    const params = new URLSearchParams(window.location.search);
-    let milolibs =
-        params.get('milolibs') ?? 'https://main--milo--adobecom.hlx.live';
-    if (milolibs === 'local') {
-        milolibs = 'http://localhost:6456';
-    }
     const customStyles = document.querySelector('style');
     let style = document.createElement('link');
     style.rel = 'stylesheet';
-    style.href = `${milolibs}/libs/styles/styles.css`;
+    style.href = `/__wds-outside-root__/3/styles/styles.css`;
     document.head.insertBefore(style, customStyles);
 
     style = document.createElement('link');
     style.rel = 'stylesheet';
-    style.href = `${milolibs}/libs/blocks/merch/merch.css`;
+    style.href = `/__wds-outside-root__/3/blocks/merch/merch.css`;
 
     style = document.createElement('link');
     style.rel = 'stylesheet';
-    style.href = `${milolibs}/libs/blocks/merch-card/merch-card.css`;
-    document.head.insertBefore(style, customStyles);
+    style.href = `/__wds-outside-root__/3/blocks/merch-card/merch-card.css`;
+    document.head.append(style, customStyles);
 };
 
 /**
@@ -104,7 +98,6 @@ export const resetState = async () => {
 
 export const getTemplateContent = (template) => {
   const templateEl = document.getElementById(template);
-  // @ts-ignore
   const templateContent = templateEl.content.cloneNode(true);
   return [...templateContent.children];
 };

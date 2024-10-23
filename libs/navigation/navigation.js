@@ -21,6 +21,18 @@ const envMap = {
   qa: 'https://gnav--milo--adobecom.hlx.page',
 };
 
+const stageDomainsMap = {
+  'www.stage.adobe.com': {
+    'www.adobe.com': 'origin',
+    'helpx.adobe.com': 'helpx.stage.adobe.com',
+  },
+  // Test app
+  'adobecom.github.io': {
+    'www.adobe.com': 'www.stage.adobe.com',
+    'helpx.adobe.com': 'helpx.stage.adobe.com',
+  },
+};
+
 function getParamsConfigs(configs) {
   return blockConfig.reduce((acc, block) => {
     block.params.forEach((param) => {
@@ -66,6 +78,7 @@ export default async function loadBlock(configs, customLib) {
     contentRoot: authoringPath || footer.authoringPath,
     theme,
     ...paramConfigs,
+    stageDomainsMap,
   };
   setConfig(clientConfig);
   for await (const block of blockConfig) {
@@ -74,7 +87,13 @@ export default async function loadBlock(configs, customLib) {
       if (configBlock) {
         await bootstrapBlock(`${miloLibs}/libs`, {
           ...block,
-          ...(block.key === 'header' && { unavComponents: configBlock.unav?.unavComponents, redirect: configBlock.redirect }),
+          ...(block.key === 'header' && {
+            unavComponents: configBlock.unav?.unavComponents,
+            redirect: configBlock.redirect,
+            layout: configBlock.layout,
+            noBorder: configBlock.noBorder,
+            jarvis: configBlock.jarvis,
+          }),
         });
         configBlock.onReady?.();
       }
