@@ -1119,10 +1119,6 @@ export async function loadDeferred(area, blocks, config) {
     });
   }
 
-  import('./samplerum.js').then(({ sampleRUM }) => {
-    sampleRUM('lazy');
-  });
-
   if (getMetadata('pageperf') === 'on') {
     import('./logWebVitals.js')
       .then((mod) => mod.default(getConfig().mep, {
@@ -1179,10 +1175,6 @@ function decorateMeta() {
 function decorateDocumentExtras() {
   decorateMeta();
   decorateHeader();
-
-  import('./samplerum.js').then(({ sampleRUM }) => {
-    sampleRUM();
-  });
 }
 
 async function documentPostSectionLoading(config) {
