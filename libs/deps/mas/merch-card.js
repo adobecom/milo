@@ -1551,6 +1551,7 @@ merch-card [slot='heading-xs'] {
     line-height: var(--consonant-merch-card-heading-xs-line-height);
     margin: 0;
     text-decoration: none;
+    font-weight: 700;
 }
 
 merch-card.dc-pricing [slot='heading-xs'] {
@@ -1576,6 +1577,7 @@ merch-card [slot='heading-s'] {
     line-height: var(--consonant-merch-card-heading-s-line-height);
     margin: 0;
     color: var(--merch-color-grey-80);
+    font-weight: 700;
 }
 
 merch-card [slot='heading-m'] {
@@ -1604,6 +1606,7 @@ merch-card [slot='heading-l'] {
     line-height: var(--consonant-merch-card-heading-l-line-height);
     margin: 0;
     color: var(--merch-color-grey-80);
+    font-weight: 700;
 }
 
 merch-card [slot='heading-xl'] {

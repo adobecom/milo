@@ -247,7 +247,7 @@ const parseContent = async (el, merchCard) => {
           }
         }
         element.setAttribute('slot', slotName);
-        const newElement = createTag(tagName);
+        const newElement = createTag('p');
         Array.from(element.attributes).forEach((attr) => {
           newElement.setAttribute(attr.name, attr.value);
         });
