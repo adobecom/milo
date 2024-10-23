@@ -26,7 +26,6 @@ const getCopyBtn = (tagName) => {
     setTimeout(() => { e.target.classList.remove('copied'); }, 3000);
     const blob = new Blob([tagName], { type: 'text/plain' });
     createCopy(blob);
-    window.hlx?.rum.sampleRUM('click', { source: e.target });
   });
   return copy;
 };
