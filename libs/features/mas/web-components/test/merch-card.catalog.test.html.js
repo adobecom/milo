@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { runTests } from '@web/test-runner-mocha';
+import { sendKeys } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 
 import { mockLana } from './mocks/lana.js';
@@ -55,8 +56,6 @@ runTests(async () => {
             );
             const mouseoverEvent = new MouseEvent('mouseover', { bubbles: true });
             const mouseleaveEvent = new MouseEvent('mouseleave', { bubbles: true });
-            const enterEvent = new KeyboardEvent('enter', { bubbles: true });
-            const tabEvent = new KeyboardEvent('tab', { bubbles: true });
             const focusoutEvent = new Event('focusout');
             catalogCard.dispatchEvent(mouseleaveEvent);
             await delay(100);
@@ -74,10 +73,17 @@ runTests(async () => {
             expect(actionMenu).to.exist;
             expect(actionMenuContent).to.exist;
             actionMenuContent.dispatchEvent(focusoutEvent);
-            catalogCard.dispatchEvent(mouseoverEvent);
-            catalogCard.dispatchEvent(focusoutEvent);
+            await sendKeys({
+                press: 'Enter',
+            });
             await delay(100);
             expect(actionMenuContent.classList.contains('hidden')).to.be.true;
+            Array.from(document.querySelector('merch-card').querySelectorAll('a')).at(-1).focus();
+            await delay(100);
+            await sendKeys({
+                press: 'Tab',
+            });
+            expect(actionMenu.classList.contains('invisible')).to.be.true;
         });
 
         it('should display some content when action is clicked for catalog variant', async () => {
