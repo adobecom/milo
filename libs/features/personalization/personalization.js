@@ -343,6 +343,8 @@ function registerInBlockActions(command) {
     blockSelector = blockAndSelector.slice(1).join(' ');
     command.selector = blockSelector;
     if (getSelectorType(blockSelector) === 'fragment') {
+      if (blockSelector.includes('/federal/')) blockSelector = getFederatedUrl(blockSelector);
+      if (command.content.includes('/federal/')) command.content = getFederatedUrl(command.content);
       config.mep.inBlock[blockName].fragments ??= {};
       const { fragments } = config.mep.inBlock[blockName];
       delete command.selector;
@@ -450,7 +452,7 @@ function getSelectedElements(sel, rootEl, forceRootEl) {
       );
       return { els: fragments, modifiers: [FLAGS.all, FLAGS.includeFragments] };
     } catch (e) {
-      /* c8 ignore next */
+      /* c8 ignore next 2 */
       return { els: [], modifiers: [] };
     }
   }
