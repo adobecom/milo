@@ -510,7 +510,8 @@ class Gnav {
     }
     signInEl.addEventListener('click', (e) => {
       e.preventDefault();
-      window.adobeIMS.signIn();
+      const { signInContext } = getConfig();
+      window.adobeIMS.signIn(signInContext);
     });
     profileEl.append(signIn);
   };
