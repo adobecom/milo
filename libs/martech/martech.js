@@ -152,8 +152,8 @@ export const getTargetPersonalization = async () => {
 
 const setupEntitlementCallback = () => {
   const setEntitlements = async (destinations) => {
-    const { default: parseEntitlements } = await import('../features/personalization/entitlements.js');
-    return parseEntitlements(destinations);
+    const { getEntitlements } = await import('../features/personalization/personalization.js');
+    return getEntitlements(destinations);
   };
 
   const getEntitlements = (resolve) => {
@@ -173,7 +173,7 @@ const setupEntitlementCallback = () => {
   getEntitlements(resolveEnt);
 
   loadLink(
-    `${miloLibs || codeRoot}/features/personalization/entitlements.js`,
+    `${miloLibs || codeRoot}/features/personalization/personalization.js`,
     { as: 'script', rel: 'modulepreload' },
   );
 };

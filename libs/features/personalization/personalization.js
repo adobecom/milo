@@ -2,7 +2,7 @@
 /* eslint-disable no-console */
 
 import { createTag, getConfig, loadLink, loadScript, localizeLink } from '../../utils/utils.js';
-import { getEntitlementMap } from './entitlements.js';
+import { getFederatedUrl } from '../../utils/federated.js';
 
 /* c8 ignore start */
 const PHONE_SIZE = window.screen.width < 550 || window.screen.height < 550;
@@ -67,6 +67,9 @@ export const normalizePath = (p, localize = true) => {
   }
 
   const config = getConfig();
+  if (path.startsWith('https://www.adobe.com/federal/')) {
+    return getFederatedUrl(path);
+  }
 
   if (path.startsWith(config.codeRoot)
     || path.includes('.hlx.')
@@ -340,6 +343,8 @@ function registerInBlockActions(command) {
     blockSelector = blockAndSelector.slice(1).join(' ');
     command.selector = blockSelector;
     if (getSelectorType(blockSelector) === 'fragment') {
+      if (blockSelector.includes('/federal/')) blockSelector = getFederatedUrl(blockSelector);
+      if (command.content.includes('/federal/')) command.content = getFederatedUrl(command.content);
       config.mep.inBlock[blockName].fragments ??= {};
       const { fragments } = config.mep.inBlock[blockName];
       delete command.selector;
@@ -447,7 +452,7 @@ function getSelectedElements(sel, rootEl, forceRootEl) {
       );
       return { els: fragments, modifiers: [FLAGS.all, FLAGS.includeFragments] };
     } catch (e) {
-      /* c8 ignore next */
+      /* c8 ignore next 2 */
       return { els: [], modifiers: [] };
     }
   }
@@ -701,6 +706,40 @@ export function buildVariantInfo(variantNames) {
     return acc;
   }, { allNames: [] });
 }
+
+const getXLGListURL = (config) => {
+  const sheet = config.env?.name === 'prod' ? 'prod' : 'stage';
+  return `https://www.adobe.com/federal/assets/data/mep-entitlement-tags.json?sheet=${sheet}`;
+};
+
+export const getEntitlementMap = async () => {
+  const config = getConfig();
+  if (config.mep?.entitlementMap) return config.mep.entitlementMap;
+  const entitlementUrl = getXLGListURL(config);
+  const fetchedData = await fetchData(entitlementUrl, DATA_TYPE.JSON);
+  if (!fetchedData) return config.consumerEntitlements || {};
+  const entitlements = {};
+  fetchedData?.data?.forEach((ent) => {
+    const { id, tagname } = ent;
+    entitlements[id] = tagname;
+  });
+  config.mep ??= {};
+  config.mep.entitlementMap = { ...config.consumerEntitlements, ...entitlements };
+  return config.mep.entitlementMap;
+};
+
+export const getEntitlements = async (data) => {
+  const entitlementMap = await getEntitlementMap();
+
+  return data.flatMap((destination) => {
+    const ents = destination.segments?.flatMap((segment) => {
+      const entMatch = entitlementMap[segment.id];
+      return entMatch ? [entMatch] : [];
+    });
+
+    return ents || [];
+  });
+};
 
 async function getPersonalizationVariant(manifestPath, variantNames = [], variantLabel = null) {
   const config = getConfig();
@@ -1102,6 +1141,7 @@ export async function init(enablements = {}) {
       const normalizedURL = normalizePath(manifest.manifestPath);
       loadLink(normalizedURL, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
     });
+    if (pzn) loadLink(getXLGListURL(config), { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
   }
 
   if (target === true) manifests = manifests.concat(await callMartech(config));
