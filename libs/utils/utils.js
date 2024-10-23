@@ -1098,8 +1098,7 @@ export function scrollToHashedElement(hash) {
 }
 
 export async function loadDeferred(area, blocks, config) {
-  const event = new Event(MILO_EVENTS.DEFERRED);
-  area.dispatchEvent(event);
+  area.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
 
   if (area !== document) {
     return;

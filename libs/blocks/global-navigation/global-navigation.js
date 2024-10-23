@@ -15,6 +15,7 @@ import {
   getExperienceName,
   getFedsPlaceholderConfig,
   hasActiveLink,
+  isActiveLink,
   icons,
   isDesktop,
   isTangentToViewport,
@@ -968,21 +969,17 @@ class Gnav {
         let customLinkModifier = '';
         let removeCustomLink = false;
         const linkElem = item.querySelector('a');
+        const customLinksSection = item.closest('.link-group');
         linkElem.className = 'feds-navLink';
         linkElem.setAttribute('daa-ll', getAnalyticsValue(linkElem.textContent, index + 1));
-        if (itemHasActiveLink) {
-          linkElem.removeAttribute('href');
-          linkElem.setAttribute('role', 'link');
-          linkElem.setAttribute('aria-disabled', 'true');
-          linkElem.setAttribute('aria-current', 'page');
-          linkElem.setAttribute('tabindex', 0);
-        }
 
-        const customLinksSection = item.closest('.link-group');
         if (customLinksSection) {
           const removeLink = () => {
             const url = new URL(linkElem.href);
             linkElem.setAttribute('href', `${url.origin}${url.pathname}${url.search}`);
+            if (isActiveLink(linkElem)) {
+              linkElem.removeAttribute('href');
+            }
             const linkHash = url.hash.slice(2);
             return !this.customLinks.includes(linkHash);
           };
@@ -990,6 +987,12 @@ class Gnav {
             customLinkModifier = ` feds-navItem--${className}`;
           });
           removeCustomLink = removeLink();
+        } else if (itemHasActiveLink) {
+          linkElem.removeAttribute('href');
+          linkElem.setAttribute('role', 'link');
+          linkElem.setAttribute('aria-disabled', 'true');
+          linkElem.setAttribute('aria-current', 'page');
+          linkElem.setAttribute('tabindex', 0);
         }
 
         const linkTemplate = toFragment`
