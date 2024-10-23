@@ -19,11 +19,6 @@ test.describe('Milo Personalization feature test suite', () => {
   });
 
   test.beforeAll(async ({ baseURL }) => {
-    /*
-    if (browserName === 'chromium') {
-      test.skip('Skipping tests for Chromium browser');
-    }
-    */
     const skipOn = ['bacom', 'business'];
 
     skipOn.some((skip) => {
