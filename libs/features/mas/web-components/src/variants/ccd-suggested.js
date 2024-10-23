@@ -109,7 +109,7 @@ export class CCDSuggested extends VariantLayout {
       border-radius: 4px;
     }
 
-    :host([variant='ccd-suggested']).top-section {
+    :host([variant='ccd-suggested']) .top-section {
       align-items: center;
     }
   `;

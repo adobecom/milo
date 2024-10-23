@@ -1954,7 +1954,10 @@ var CCDSuggested = class extends VariantLayout {
     return html13`
           <div style="${this.stripStyle}" class="body">
               <div class="header">
-                <slot name="icons"></slot>
+                <div class="top-section">
+                  <slot name="icons"></slot> 
+                  ${this.badge}
+                </div>
                 <div class="headings">
                   <slot name="detail-m"></slot>
                   <slot name="heading-xs"></slot>
@@ -2021,12 +2024,20 @@ var CCDSuggested = class extends VariantLayout {
       align-items: center;
     }
 
-
     :host([variant='ccd-suggested']) .footer {
       display: flex;
       justify-content: space-between;
       flex-grow: 0;
       margin-top: auto;
+      align-items: center;
+    }
+
+    :host([variant='ccd-suggested']) div[class$='-badge'] {
+      position: static;
+      border-radius: 4px;
+    }
+
+    :host([variant='ccd-suggested']) .top-section {
       align-items: center;
     }
   `;
@@ -2833,7 +2844,7 @@ var MerchCard = class extends LitElement2 {
     return this.variantLayout.renderLayout();
   }
   get computedBorderStyle() {
-    if (!["twp", "ccd-slice"].includes(this.variant)) {
+    if (!["twp", "ccd-slice", "ccd-suggested"].includes(this.variant)) {
       return `1px solid ${this.borderColor ? this.borderColor : this.badgeBackgroundColor}`;
     }
     return "";
