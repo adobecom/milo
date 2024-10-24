@@ -312,21 +312,21 @@ span.preflight-time {
 }
 
 /* SEO */
-.seo-columns {
+.preflight-columns {
   margin: 24px 48px 0;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 48px;
 }
 
-.seo-item {
+.preflight-item {
   margin-bottom: 48px;
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 12px;
 }
 
-.seo-item:last-child {
+.preflight-item:last-child {
   margin-bottom: 0;
 }
 
@@ -372,14 +372,14 @@ span.preflight-time {
   background-size: 60px;
 }
 
-.seo-item-title {
+.preflight-item-title {
   margin: 0;
   font-weight: 700;
   font-size: 32px;
   line-height: 1;
 }
 
-.seo-item-description {
+.preflight-item-description {
   margin: 0;
 }
 

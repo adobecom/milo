@@ -83,26 +83,12 @@ export const updateItem = ({ key, ...updates }) => {
 };
 
 export function conditionalItemUpdate({ emptyWhen, failsWhen, key }) {
-  if (emptyWhen) {
-    updateItem({
-      key,
-      icon: icons.empty,
-      description: text[key].empty.description,
-    });
-    return;
-  }
-  if (failsWhen) {
-    updateItem({
-      key,
-      icon: icons.fail,
-      description: text[key].failed.description,
-    });
-    return;
-  }
+  const icon = (emptyWhen && icons.empty) || (failsWhen && icons.fail) || icons.pass;
+  const descriptionKey = (emptyWhen && 'empty') || (failsWhen && 'failed') || 'passed';
   updateItem({
     key,
-    icon: icons.pass,
-    description: text[key].passed.description,
+    icon,
+    description: text[key][descriptionKey].description,
   });
 }
 
@@ -117,7 +103,7 @@ export async function checkImageSize() {
   let isSizeValid;
   if (hasValidImage) {
     blob = await fetch(lcp.url).then((res) => res.blob());
-    isSizeValid = blob.size / 1000 <= 100;
+    isSizeValid = blob.size / 1024 <= 100;
   }
 
   conditionalItemUpdate({
@@ -129,8 +115,8 @@ export async function checkImageSize() {
 
 export function checkLCP() {
   const { lcp } = config;
-  const mainSection = document.querySelector('main > div.section');
-  const validLcp = lcp && lcp.element && lcp.url && mainSection?.contains(lcp.element);
+  const firstSection = document.querySelector('main > div.section');
+  const validLcp = lcp?.element && lcp?.url && firstSection?.contains(lcp.element);
   conditionalItemUpdate({
     failsWhen: !validLcp,
     key: text.lcpEl.key,
@@ -145,17 +131,17 @@ export const checkFragments = () => conditionalItemUpdate({
   key: text.fragments.key,
 });
 
-export const checkPlaceholders = async () => conditionalItemUpdate({
-  failsWhen: config.lcp.element.closest('.section').dataset.placeholdersDecorated === 'true',
+export const checkPlaceholders = () => conditionalItemUpdate({
+  failsWhen: config.lcp.element.closest('.section').dataset.hasPlaceholders === 'true',
   key: text.placeholders.key,
 });
 
-export const checkForPersonalization = async () => conditionalItemUpdate({
+export const checkForPersonalization = () => conditionalItemUpdate({
   failsWhen: getMetadata('personalization') || getMetadata('target') === 'on',
   key: text.personalization.key,
 });
 
-export const checkVideosWithoutPosterAttribute = async () => conditionalItemUpdate({
+export const checkVideosWithoutPosterAttribute = () => conditionalItemUpdate({
   failsWhen: !config.lcp.element.poster,
   emptyWhen: !config.lcp.url.match('media_.*.mp4'),
   key: text.videoPoster.key,
@@ -167,11 +153,11 @@ export const checkIcons = () => conditionalItemUpdate({
 });
 
 export function PerformanceItem({ icon, title, description }) {
-  return html` <div class="seo-item">
+  return html` <div class="preflight-item">
     <div class="result-icon ${icon}"></div>
-    <div class="seo-item-text">
-      <p class="seo-item-title">${title}</p>
-      <p class="seo-item-description">${description}</p>
+    <div class="preflight-item-text">
+      <p class="preflight-item-title">${title}</p>
+      <p class="preflight-item-description">${description}</p>
     </div>
   </div>`;
 }
@@ -236,7 +222,8 @@ function observePerfMetrics() {
     checkVideosWithoutPosterAttribute();
     checkIcons();
     checkForSingleBlock();
-    Promise.all([checkImageSize(), checkPlaceholders()]);
+    checkPlaceholders();
+    Promise.all([checkImageSize()]);
   });
   lcpObserver.observe({ type: 'largest-contentful-paint', buffered: true });
 
@@ -250,7 +237,6 @@ function observePerfMetrics() {
     });
     if (config.cls > 0) {
       // TODO - Lana log? We should not have any CLS.
-      // console.log('CLS:', cls);
     }
   });
   clsObserver.observe({ type: 'layout-shift', buffered: true });
@@ -260,9 +246,9 @@ export function Panel() {
   useEffect(() => observePerfMetrics(), []);
 
   return html`
-    <div class="seo-columns">
-      <div class="seo-column">${config.items.value.slice(0, 4).map((item) => createPerformanceItem(item))}</div>
-      <div class="seo-column">${config.items.value.slice(4, 8).map((item) => createPerformanceItem(item))}</div>
+    <div class="preflight-columns">
+      <div class="preflight-column">${config.items.value.slice(0, 4).map((item) => createPerformanceItem(item))}</div>
+      <div class="preflight-column">${config.items.value.slice(4, 8).map((item) => createPerformanceItem(item))}</div>
       <div>Unsure on how to get this page fully into the green? Check out the <a class="performance-guidelines" href="https://milo.adobe.com/docs/authoring/performance/" target="_blank">Milo Performance Guidelines</a>.</div>
       <div> 
         <span class="performance-element-preview" onMouseEnter=${highlightElement} onMouseLeave=${removeHighlight}>

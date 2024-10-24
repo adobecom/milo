@@ -173,7 +173,7 @@ describe('Preflight performance', () => {
     });
 
     it('fails if there are placeholders', async () => {
-      document.body.innerHTML = '<main><div class="section" data-placeholders-decorated="true"></div></main>';
+      document.body.innerHTML = '<main><div class="section" data-has-placeholders="true"></div></main>';
       config.lcp = { element: document.querySelector('.section') };
       checkPlaceholders();
       expect(findItem('placeholders').icon).to.equal(icons.fail);
@@ -250,11 +250,11 @@ describe('Preflight performance', () => {
     it('renders an item', () => {
       const item = html`<${PerformanceItem} icon="foo-icon" title="foo-title" description="foo-desc" />`;
       render(item, document.body);
-      const itemElement = document.querySelector('.seo-item');
+      const itemElement = document.querySelector('.preflight-item');
       expect(itemElement).to.exist;
       expect(itemElement.querySelector('.result-icon').classList.contains('foo-icon')).to.be.true;
-      expect(itemElement.querySelector('.seo-item-title').textContent).to.equal('foo-title');
-      expect(itemElement.querySelector('.seo-item-description').textContent).to.equal('foo-desc');
+      expect(itemElement.querySelector('.preflight-item-title').textContent).to.equal('foo-title');
+      expect(itemElement.querySelector('.preflight-item-description').textContent).to.equal('foo-desc');
     });
   });
 
@@ -262,11 +262,11 @@ describe('Preflight performance', () => {
     it('creates an item', () => {
       const item = createPerformanceItem({ icon: 'foo-icon', title: 'foo-title', description: 'foo-desc' });
       render(item, document.body);
-      const itemElement = document.querySelector('.seo-item');
+      const itemElement = document.querySelector('.preflight-item');
       expect(itemElement).to.exist;
       expect(itemElement.querySelector('.result-icon').classList.contains('foo-icon')).to.be.true;
-      expect(itemElement.querySelector('.seo-item-title').textContent).to.equal('foo-title');
-      expect(itemElement.querySelector('.seo-item-description').textContent).to.equal('foo-desc');
+      expect(itemElement.querySelector('.preflight-item-title').textContent).to.equal('foo-title');
+      expect(itemElement.querySelector('.preflight-item-description').textContent).to.equal('foo-desc');
     });
   });
 
@@ -274,7 +274,7 @@ describe('Preflight performance', () => {
     it('renders a panel with all the items', () => {
       const panel = html`<${Panel} />`;
       render(panel, document.body);
-      const panelItems = document.querySelectorAll('.seo-item');
+      const panelItems = document.querySelectorAll('.preflight-item');
       expect(panelItems.length).to.equal(config.items.value.length);
     });
   });
