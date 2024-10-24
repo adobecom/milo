@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { features } from './merchcard.spec.js';
 import MerchCard from './merchcard.pages.js';
+import { runAccessibilityTest } from '../../libs/accessibility.js';
 
 let merchCard;
 
@@ -15,7 +16,7 @@ test.describe('Milo Merchcard block test suite', () => {
   });
 
   // Test 0 : Merch Card (Segment)
-  test(`${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
+  test(`[Test Id - ${features[0].tcid}] ${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
     console.info(`[Test Page]: ${baseURL}${features[0].path}${miloLibs}`);
     const { data } = features[0];
 
@@ -40,10 +41,14 @@ test.describe('Milo Merchcard block test suite', () => {
       await expect(await merchCard.footerBlueButton).toBeVisible();
       await expect(await merchCard.footerBlueButton).toContainText(data.footerBlueButtonText);
     });
+
+    await test.step('step-4: Verify the accessibility test on the Merch Card (Segment) block', async () => {
+      await runAccessibilityTest({ page, testScope: merchCard.segment });
+    });
   });
 
   // Test 1 : Merch Card (Segment) with Badge
-  test(`${features[1].name},${features[1].tags}`, async ({ page, baseURL }) => {
+  test(`[Test Id - ${features[1].tcid}] ${features[1].name},${features[1].tags}`, async ({ page, baseURL }) => {
     console.info(`[Test Page]: ${baseURL}${features[1].path}${miloLibs}`);
     const { data } = features[1];
 
@@ -78,10 +83,14 @@ test.describe('Milo Merchcard block test suite', () => {
     await test.step('step-3: Verify Merch Card attributes', async () => {
       await expect(await merchCard.segmentRibbon).toHaveAttribute('style', merchCard.attributes.segmentRibbon.style);
     });
+
+    await test.step('step-4: Verify the accessibility test on the Merch Card (Segment) with Badge block', async () => {
+      await runAccessibilityTest({ page, testScope: merchCard.segment });
+    });
   });
 
   // Test 2 : Merch Card (Special Offers)
-  test(`${features[2].name},${features[2].tags}`, async ({ page, baseURL }) => {
+  test(`[Test Id - ${features[2].tcid}] ${features[2].name},${features[2].tags}`, async ({ page, baseURL }) => {
     console.info(`[Test Page]: ${baseURL}${features[2].path}${miloLibs}`);
     const { data } = features[2];
 
@@ -106,10 +115,14 @@ test.describe('Milo Merchcard block test suite', () => {
       await expect(await merchCard.footerBlueButton).toBeVisible();
       await expect(await merchCard.footerBlueButton).toContainText(data.footerBlueButtonText);
     });
+
+    await test.step('step-4: Verify the accessibility test on the Merch Card (Special Offers) block', async () => {
+      await runAccessibilityTest({ page, testScope:merchCard.sepcialOffers });
+    });
   });
 
   // Test 3 : Merch Card (Special Offers) with badge
-  test(`${features[3].name},${features[3].tags}`, async ({ page, baseURL }) => {
+  test(`[Test Id - ${features[3].tcid}] ${features[3].name},${features[3].tags}`, async ({ page, baseURL }) => {
     console.info(`[Test Page]: ${baseURL}${features[3].path}${miloLibs}`);
     const { data } = features[3];
 
@@ -149,7 +162,7 @@ test.describe('Milo Merchcard block test suite', () => {
   });
 
   // Test 4 : Merch Card (plans)
-  test(`${features[4].name},${features[4].tags}`, async ({ page, baseURL }) => {
+  test(`[Test Id - ${features[4].tcid}] ${features[4].name},${features[4].tags}`, async ({ page, baseURL }) => {
     console.info(`[Test Page]: ${baseURL}${features[4].path}${miloLibs}`);
     const { data } = features[4];
 
@@ -178,7 +191,7 @@ test.describe('Milo Merchcard block test suite', () => {
   });
 
   // Test 5 : Merch Card (plans) with badge
-  test(`${features[5].name},${features[5].tags}`, async ({ page, baseURL }) => {
+  test(`[Test Id - ${features[5].tcid}] ${features[5].name},${features[5].tags}`, async ({ page, baseURL }) => {
     console.info(`[Test Page]: ${baseURL}${features[5].path}${miloLibs}`);
     const { data } = features[5];
 
@@ -207,10 +220,14 @@ test.describe('Milo Merchcard block test suite', () => {
       await expect(await merchCard.footerBlueButton).toBeVisible();
       await expect(await merchCard.footerBlueButton).toContainText(data.footerBlueButtonText);
     });
+
+    await test.step('step-4: Verify the accessibility test on the Merch Card (plans) with badge block', async () => {
+      await runAccessibilityTest({ page, testScope:merchCard.plans });
+    });
   });
 
   // Test 6 : Merch Card (plans) with secure
-  test(`${features[6].name},${features[6].tags}`, async ({ page, baseURL }) => {
+  test(`[Test Id - ${features[6].tcid}] ${features[6].name},${features[6].tags}`, async ({ page, baseURL }) => {
     console.info(`[Test Page]: ${baseURL}${features[6].path}${miloLibs}`);
     const { data } = features[6];
 
@@ -241,7 +258,7 @@ test.describe('Milo Merchcard block test suite', () => {
   });
 
   // Test 7 : Merch Card (plans, secure) with badge
-  test(`${features[7].name},${features[7].tags}`, async ({ page, baseURL }) => {
+  test(`[Test Id - ${features[7].tcid}] ${features[7].name},${features[7].tags}`, async ({ page, baseURL }) => {
     console.info(`[Test Page]: ${baseURL}${features[7].path}${miloLibs}`);
     const { data } = features[7];
 
@@ -274,7 +291,7 @@ test.describe('Milo Merchcard block test suite', () => {
   });
 
   // Test 8 : Merch Card (catalog)
-  test(`${features[8].name},${features[8].tags}`, async ({ page, baseURL }) => {
+  test(`[Test Id - ${features[8].tcid}] ${features[8].name},${features[8].tags}`, async ({ page, baseURL }) => {
     console.info(`[Test Page]: ${baseURL}${features[8].path}${miloLibs}`);
     const { data } = features[8];
 
@@ -306,7 +323,7 @@ test.describe('Milo Merchcard block test suite', () => {
   });
 
   // Test 9 : Merch Card (catalog) with badge
-  test(`${features[9].name},${features[9].tags}`, async ({ page, baseURL }) => {
+  test(`[Test Id - ${features[9].tcid}] ${features[9].name},${features[9].tags}`, async ({ page, baseURL }) => {
     console.info(`[Test Page]: ${baseURL}${features[9].path}${miloLibs}`);
     const { data } = features[9];
 
@@ -340,10 +357,14 @@ test.describe('Milo Merchcard block test suite', () => {
       await expect(await merchCard.footerOutlineButton).toBeVisible();
       await expect(await merchCard.footerOutlineButton).toContainText(data.footerOutlineButtonText);
     });
+
+    await test.step('step-4: Verify the accessibility test on the Merch Card (catalog) with badge block', async () => {
+      await runAccessibilityTest({ page, testScope:merchCard.catalog });
+    });
   });
 
   // Test 10 : Merch Card (catalog) with more info and badge
-  test(`${features[10].name},${features[10].tags}`, async ({ page, baseURL }) => {
+  test(`[Test Id - ${features[10].tcid}] ${features[10].name},${features[10].tags}`, async ({ page, baseURL }) => {
     console.info(`[Test Page]: ${baseURL}${features[10].path}${miloLibs}`);
     const { data } = features[10];
 
@@ -387,6 +408,10 @@ test.describe('Milo Merchcard block test suite', () => {
       await expect(await merchCard.catalogActionMenuPText1).toContainText(data.actionMenuText1);
       await expect(await merchCard.catalogActionMenuPText2).toContainText(data.actionMenuText2);
       await expect(await merchCard.catalogActionMenuPText3).toContainText(data.actionMenuText3);
+    });
+
+    await test.step('step-4: Verify the accessibility test on the Merch Card (catalog) with more info and badge block', async () => {
+      await runAccessibilityTest({ page, testScope:merchCard.catalog });
     });
   });
 });
