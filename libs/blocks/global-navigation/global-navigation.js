@@ -397,6 +397,7 @@ class Gnav {
       this.elements.aside,
       this.elements.topnavWrapper,
     );
+    this.decorateLocalNav();
   };
 
   addChangeEventListeners = () => {
@@ -938,6 +939,12 @@ class Gnav {
       && getActiveLink(item.closest('div')) instanceof HTMLElement;
     const activeModifier = itemHasActiveLink ? ` ${selectors.activeNavItem.slice(1)}` : '';
 
+    const makeTabActive = (popup) => {
+      if (!popup?.querySelector('.tabs [aria-selected="true"]')) {
+        setTimeout(() => popup?.querySelector('.tab')?.click(), 100);
+      }
+    };
+
     // All dropdown decoration is delayed
     const delayDropdownDecoration = ({ template } = {}) => {
       let decorationTimeout;
@@ -957,13 +964,14 @@ class Gnav {
         let originalContent = popup.innerHTML;
 
         if (!isDesktop.matches && newNavEnabled && popup) {
-          originalContent = transformTemplateToMobile(popup, item);
+          originalContent = transformTemplateToMobile(popup, item, this.isLocalNav());
           popup.querySelector('.close-icon')?.addEventListener('click', this.toggleMenuMobile);
+          makeTabActive(popup);
         }
         isDesktop.addEventListener('change', () => {
           if (isDesktop.matches) popup.innerHTML = originalContent;
           else {
-            originalContent = transformTemplateToMobile(popup, item);
+            originalContent = transformTemplateToMobile(popup, item, this.isLocalNav());
             popup.querySelector('.close-icon')?.addEventListener('click', this.toggleMenuMobile);
           }
         });
@@ -998,9 +1006,7 @@ class Gnav {
         dropdownTrigger.addEventListener('click', (e) => {
           if (!isDesktop.matches && newNavEnabled && isSectionMenu) {
             const popup = dropdownTrigger.nextElementSibling;
-            if (!popup?.querySelector('.tabs [aria-selected="true"]')) {
-              setTimeout(() => popup?.querySelector('.tab')?.click(), 100);
-            }
+            makeTabActive(popup);
           }
           trigger({ element: dropdownTrigger, event: e });
           setActiveDropdown(dropdownTrigger);
