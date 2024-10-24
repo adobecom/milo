@@ -26,6 +26,7 @@ export class MerchSideNav extends LitElement {
         css`
             :host {
                 display: block;
+                z-index: 2;
             }
 
             :host(:not([modal])) {
@@ -148,6 +149,7 @@ export class MerchSideNav extends LitElement {
             );
             overlay.addEventListener('close', () => {
                 this.modal = false;
+                document.body.classList.remove('merch-modal');
                 enableBodyScroll(this.dialog);
             });
             this.shadowRoot.querySelector('sp-theme').append(overlay);

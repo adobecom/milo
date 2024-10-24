@@ -12,14 +12,14 @@ export async function hydrate(fragmentData, merchCard) {
     if (!variant) return;
     fragment.model = fragment.model;
 
+    merchCard.variantLayout?.refs?.forEach((ref) => ref.remove());
     merchCard.variant = variant;
     await merchCard.updateComplete;
+    merchCard.variantLayout.refs ??= [];
     const { aemFragmentMapping } = merchCard.variantLayout;
 
     if (!aemFragmentMapping) return;
 
-    merchCard.variantLayout.refs ??= [];
-    merchCard.variantLayout.refs.forEach((ref) => ref.remove());
     const appendFn = (el) => {
         merchCard.variantLayout.refs.push(el);
         merchCard.append(el);
@@ -42,10 +42,11 @@ export async function hydrate(fragmentData, merchCard) {
         appendFn(merchIcon);
     });
 
-    /* c8 ignore next 3 */
-    if (fragment.size && aemFragmentMapping.allowedSizes?.includes(fragment.size)) {
+    /* c8 ignore next 4 */
+    if (!fragment.size) {
+        merchCard.removeAttribute('size');
+    } else if (aemFragmentMapping.allowedSizes?.includes(fragment.size))
         merchCard.setAttribute('size', fragment.size);
-    }
 
     if (fragment.cardTitle && aemFragmentMapping.title) {
         appendFn(
@@ -53,6 +54,17 @@ export async function hydrate(fragmentData, merchCard) {
                 aemFragmentMapping.title.tag,
                 { slot: aemFragmentMapping.title.slot },
                 fragment.cardTitle,
+            ),
+        );
+    }
+
+    /* c8 ignore next 9 */
+    if (fragment.subtitle && aemFragmentMapping.subtitle) {
+        appendFn(
+            createTag(
+                aemFragmentMapping.subtitle.tag,
+                { slot: aemFragmentMapping.subtitle.slot },
+                fragment.subtitle,
             ),
         );
     }
@@ -88,7 +100,12 @@ export async function hydrate(fragmentData, merchCard) {
     }
 
     if (fragment.ctas) {
-        const footer = createTag('div', { slot: 'footer' }, fragment.ctas);
+        const { slot, button = true } = aemFragmentMapping.ctas;
+        const footer = createTag(
+            'div',
+            { slot: slot ?? 'footer' },
+            fragment.ctas,
+        );
         const ctas = [];
         [...footer.querySelectorAll('a')].forEach((cta) => {
             const strong = cta.parentElement.tagName === 'STRONG';
@@ -99,6 +116,11 @@ export async function hydrate(fragmentData, merchCard) {
                 }
                 ctas.push(cta);
             } else {
+                /* c8 ignore next 4 */
+                if (!button) {
+                    ctas.push(cta);
+                    return;
+                }
                 const treatment = strong ? 'fill' : 'outline';
                 const variant = strong ? 'accent' : 'primary';
                 const spectrumCta = createTag(
