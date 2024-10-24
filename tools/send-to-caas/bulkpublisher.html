@@ -120,13 +120,17 @@
                   </select>
                 </div>
 
-                <div id="use-preview-cb" class="field checkbox">
-                  <input type="checkbox" id="usePreview" name="usePreview" />
-                  <label for="usePreview">Use Preview Content <span class="help use-preview" title="Help about this functionality">(?)</span></label>
+                <div id="caas-draft-cb" class="field checkbox">
+                  <input type="checkbox" id="publishToDraft" name="publishToDraft" />
+                  <label for="publishToDraft">Publish to CaaS DRAFT only <span class="help publish-to-draft" title="Help about this option">(?)</span></label>
                 </div>
                 <div id="use-html-cb" class="field checkbox">
                   <input type="checkbox" id="useHtml" name="useHtml" />
                   <label for="useHtml">Use .html extension on links <span class="help use-html" title="Help about this functionality">(?)</span></label>
+                </div>
+                <div id="use-preview-cb" class="field checkbox">
+                  <input type="checkbox" id="usePreview" name="usePreview" />
+                  <label for="usePreview">Use Preview Content <span class="help use-preview" title="Help about this functionality">(?)</span></label>
                 </div>
               <!--
                 <div class="field">
@@ -138,12 +142,8 @@
 
             <!-- <hr width="90%" class="divider"> -->
 
-            <!--
-            <div id="caas-draft-cb" class="field checkbox">
-              <input type="checkbox" id="publishToLive" name="publishToLive" />
-              <label for="publishToLive">Publish to CaaS LIVE <span class="help publish-to-prod" title="Help about this option">(?)</span></label>
-            </div>
-            -->
+
+           
 
           </dd>
         </div>
@@ -169,8 +169,8 @@
               placeholder="Enter URLs to publish here..."></textarea>
 
             <p class="publish-warning">
-              <b>Warning</b>: You are publishing content to CaaS <b class="env">Production</b> Environment. 
-              Use the <i>Advanced Settings</i> to change it.
+              <span class="warning-icon">&#9888;</span> <b>Warning</b>: You are publishing content to <b>CaaS Production/LIVE</b> environment. 
+              Use the <i>Advanced Options</i> to change the settings.
             </p>
             <div class="button-container">
               <button id="bulkpublish" href="#">Publish</button>

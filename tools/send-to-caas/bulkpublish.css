@@ -15,14 +15,14 @@
 }
 
 dd.content .field label {
-  margin-bottom: 8px;
+  margin-bottom: 4px;
   font-size: 15px;
   color: #aaa;
 }
 
 dd.content .field {
   padding: 0 20px;
-  margin: 14px 0
+  margin: 12px 0
 }
 
 .results {
@@ -200,7 +200,7 @@ body.preset  {
 
 h5.basic-settings {
   display: none;
-  margin: 0 20px;
+  margin: 15px 20px;
   font-size: 16px;
   font-weight: 400;
 }
@@ -323,6 +323,11 @@ textarea#errors{
   transition: height .3s;
 }
 
+span.warning-icon {
+  color: orange;
+  font-size: 24px;
+}
+
 #bulkpublish {
   margin: 20px 0 20px;
   font-size: 18px;
@@ -441,6 +446,7 @@ table.success-table {
 table.error-table th,
 table.success-table th {
   text-align: left;
+  padding: 6px 0;
 }
 
 table.error-table td,
