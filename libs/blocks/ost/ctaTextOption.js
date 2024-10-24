@@ -3,6 +3,7 @@ const ctaTextOption = {
     { id: 'buy-now', name: 'Buy now' },
     { id: 'free-trial', name: 'Free trial' },
     { id: 'start-free-trial', name: 'Start free trial' },
+    { id: 'save-now', name: 'Save now' },
     { id: 'get-started', name: 'Get started' },
     { id: 'choose-a-plan', name: 'Choose a plan' },
     { id: 'learn-more', name: 'Learn more' },
