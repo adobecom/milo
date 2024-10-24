@@ -105,26 +105,11 @@ export class VariantLayout {
         return '[slot="heading-xs"]';
     }
 
-    get strip() {
-      if (this.card.stripSize && this.card.backgroundImage) {
-        switch (this.card.stripSize) {
-            case 'wide':
-                return '44px';
-            case 'small':
-                return '4px';
-            /* c8 ignore next 2 */
-            default:
-                return '0';
-        }
-      }
-      return '';
-    }
-
     get stripStyle() {
-      if (this.strip && this.card.backgroundImage) {
+      if (this.card.backgroundImage) {
         return `
           background: url("${this.card.backgroundImage}");
-          background-size: ${this.strip} 100%;
+          background-size: auto 100%;
           background-repeat: no-repeat;
           background-position: ${this.card.theme.dir === 'ltr' ? 'left' : 'right'};
         `;
