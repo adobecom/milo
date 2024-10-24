@@ -387,18 +387,14 @@ export async function loadCDT(el, classList) {
 }
 
 export function isAccessible(anchorTag) {
-  const section = anchorTag.closest('div[class="section"]');
-  if (section) {
-    const [block] = Array.from(section.children).filter((element) => element.contains(anchorTag));
-    return !block.classList.contains('hide-controls');
-  }
-  return true;
+  return !anchorTag.hash.includes('hide-controls');
 }
 
 export function decorateAnchorVideo({ src = '', anchorTag }) {
   if (!src.length || !(anchorTag instanceof HTMLElement)) return;
-  if (anchorTag.closest('.marquee, .aside, .hero-marquee, .quiz-marquee') && !anchorTag.hash) anchorTag.hash = '#autoplay';
   const accessibilityEnabled = isAccessible(anchorTag);
+  anchorTag.hash = anchorTag.hash.replace('#hide-controls', '');
+  if (anchorTag.closest('.marquee, .aside, .hero-marquee, .quiz-marquee') && !anchorTag.hash) anchorTag.hash = '#autoplay';
   const { dataset, parentElement } = anchorTag;
   const attrs = getVideoAttrs(anchorTag.hash, dataset);
   const tabIndex = anchorTag.tabIndex || 0;
