@@ -5,6 +5,7 @@ a[href*='.mp4'].hide-video {
 video {
   max-width: 100%;
   height: auto;
+  object-fit: cover;
 }
 
 :is(.marquee, .aside.split) .pause-play-wrapper img.accessibility-control {
@@ -104,7 +105,8 @@ video {
     right: auto;
   }
 
-  .section[class*="-up"] .media .foreground .image:first-child .video-container .pause-play-wrapper {
+  :is(.section[class*="-up"] .media .foreground .image:first-child, .aside .foreground .image:nth-last-child(1)) 
+  .video-container .pause-play-wrapper {
     left: auto;
     right: 2%;
   }
