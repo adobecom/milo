@@ -34,7 +34,7 @@ export class MerchCard extends LitElement {
             attribute: 'badge-background-color',
         },
         stripSize: { type: String, attribute: 'strip-size' },
-        stripBackground: { type: String, attribute: 'strip-background' },
+        backgroundImage: { type: String, attribute: 'image-background' },
         badgeText: { type: String, attribute: 'badge-text' },
         actionMenu: { type: Boolean, attribute: 'action-menu' },
         customHr: { type: Boolean, attribute: 'custom-hr' },
@@ -157,7 +157,7 @@ export class MerchCard extends LitElement {
     }
 
     get computedBorderStyle() {
-        if (this.variant !== 'twp') {
+        if (!['twp', 'ccd-slice'].includes(this.variant)) {
             return `1px solid ${
                 this.borderColor ? this.borderColor : this.badgeBackgroundColor
             }`;

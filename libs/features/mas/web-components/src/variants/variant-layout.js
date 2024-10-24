@@ -106,7 +106,7 @@ export class VariantLayout {
     }
 
     get strip() {
-      if (this.card.stripSize && this.card.stripBackground) {
+      if (this.card.stripSize && this.card.backgroundImage) {
         switch (this.card.stripSize) {
             case 'wide':
                 return '44px';
@@ -121,9 +121,9 @@ export class VariantLayout {
     }
 
     get stripStyle() {
-      if (this.strip && this.card.stripBackground) {
+      if (this.strip && this.card.backgroundImage) {
         return `
-          background: ${this.card.stripBackground.startsWith('url') ? this.card.stripBackground : `url("${this.card.stripBackground}")`};
+          background: url("${this.card.backgroundImage}");
           background-size: ${this.strip} 100%;
           background-repeat: no-repeat;
           background-position: ${this.card.theme.dir === 'ltr' ? 'left' : 'right'};

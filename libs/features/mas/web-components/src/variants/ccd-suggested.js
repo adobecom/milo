@@ -3,7 +3,7 @@ import { VariantLayout } from './variant-layout';
 import { CSS } from './ccd-suggested.css.js';
 
 const AEM_FRAGMENT_MAPPING = {
-  subtitle: { tag: 'h4', slot: 'detail-m' },
+  subtitle: { tag: 'h4', slot: 'detail-s' },
   title: { tag: 'h3', slot: 'heading-xs' },
   prices: { tag: 'p', slot: 'price' },
   description: { tag: 'div', slot: 'body-xs' },
@@ -27,7 +27,7 @@ export class CCDSuggested extends VariantLayout {
               <div class="header">
                 <slot name="icons"></slot>
                 <div class="headings">
-                  <slot name="detail-m"></slot>
+                  <slot name="detail-s"></slot>
                   <slot name="heading-xs"></slot>
                 </div>
               </div>
@@ -59,19 +59,26 @@ export class CCDSuggested extends VariantLayout {
       display: flex;
       flex-flow: wrap;
       place-self: flex-start;
+      flex-wrap: nowrap;
     }
 
     :host([variant='ccd-suggested']) .headings {
       padding-inline-start: var(--consonant-merch-spacing-xxs);
+      display: flex;
+      flex-direction: column;
     }
 
     :host([variant='ccd-suggested']) ::slotted([slot='icons']) {
-      place-self: flex-start;
+      place-self: center;
     }
 
     :host([variant='ccd-suggested']) ::slotted([slot='heading-xs']) {
       font-size: var(--merch-card-heading-xxs-font-size);
       line-height: var(--merch-card-heading-xxs-line-height);
+    }
+    
+    :host([variant='ccd-suggested']) ::slotted([slot='detail-m']) {
+      line-height: var(--consonant-merch-card-detail-m-line-height);
     }
     
     :host([variant='ccd-suggested'][strip-size='wide']) ::slotted([slot='body-xs']) {
@@ -86,13 +93,18 @@ export class CCDSuggested extends VariantLayout {
       display: flex;
       align-items: center;
       color: var(--spectrum-gray-800, #F8F8F8);
+      font-size: var(--consonant-merch-card-body-xs-font-size);
+      line-height: var(--consonant-merch-card-body-xs-line-height);
+    }
+    
+    :host([variant='ccd-suggested']) ::slotted([slot='price']) span.placeholder-resolved[data-template="priceStrikethrough"] {
+      text-decoration: line-through;
     }
 
     :host([variant='ccd-suggested']) ::slotted([slot='cta']) {
       display: flex;
       align-items: center;
     }
-
 
     :host([variant='ccd-suggested']) .footer {
       display: flex;
