@@ -178,6 +178,11 @@ merch-card [slot='heading-m'] {
     font-weight: 700;
 }
 
+merch-card [slot='heading-m'] [is="inline-price"] .price-annual-prefix:before {
+    content: '\\A';
+    white-space: pre;
+}
+
 merch-card [slot='heading-m'] [is="inline-price"] .price-annual-prefix,
 merch-card [slot='heading-m'] [is="inline-price"] .price-annual-prefix + .price-annual,
 merch-card [slot='heading-m'] [is="inline-price"] .price-annual-suffix {
