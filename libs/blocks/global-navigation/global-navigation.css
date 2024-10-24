@@ -720,13 +720,24 @@ header.global-navigation {
 /* mobile gnav redesign */
 
 @media (max-width:900px) {
+  /* new mobile gnav is not sticky when localnav */
+  header.new-nav.local-nav {
+    position: relative;
+  }
+
+  /* main-menu screen */
+
   header.new-nav .feds-nav-wrapper {
     width: 100%;
     background-color: black;
     translate: -200vw 0;
     opacity: 0;
-    transition: translate 0.3s ease-out, opacity 0.3s ease;
+    transition: translate 0.4s ease-out, opacity 0.4s ease;
     display: flex;
+  }
+
+  header.new-nav.local-nav .feds-nav-wrapper {
+    visibility: hidden;
   }
 
   header.new-nav .feds-nav-wrapper--expanded {
@@ -764,14 +775,18 @@ header.global-navigation {
     border-color: white;
   }
 
+  /* Mega Menu */
+
   header.new-nav .feds-nav > section.feds-navItem > .feds-popup {
     position: fixed;
+    visibility: visible;
+    opacity: 1;
     top: calc(-1 * var(--feds-height-nav));
     left: 0;
     width: 100%;
-    height:calc(var(--feds-height-nav) + 100%);
+    height: calc(var(--feds-height-nav) + 100%);
     background-color: var(--feds-background-nav);
-    animation: totheleft 0.4s ease-out, fadeout 0.4s ease;
+    animation: totheleft 0.3s ease-out, fadeout 0.3s ease;
     animation-fill-mode: forwards;
     z-index: 2;
 
@@ -786,7 +801,7 @@ header.global-navigation {
   }
 
   header.new-nav .feds-nav > section.feds-navItem.feds-dropdown--active > .feds-popup {
-    animation: fromtheleft 0.4s ease;
+    animation: fromtheleft 0.3s ease;
     animation-fill-mode: forwards;
   }
 
@@ -889,6 +904,54 @@ header.global-navigation {
 
   header.new-nav .feds-nav > section.feds-navItem.feds-dropdown--active > .feds-popup .sticky-cta a {
     width: 320px;
+  }
+
+  /* local-nav */
+
+  .feds-localnav {
+    position: sticky;
+    top: 0;
+    width: 100%;
+    background: #fff;
+    left: 0;
+    z-index: 2;
+  }
+
+  .feds-localnav-title {
+    width: 100%;
+    height: 80px;
+    font-size: 22px;
+    font-weight: 600;
+    border: 0;
+    padding: 12px;
+    text-align: justify;
+    border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+    background-color: #fff;
+  }
+
+  .feds-localnav-items {
+    background-color: #fff;
+    border-bottom: 1px solid #eee;
+    display: none;
+  }
+
+  .feds-localnav-items .feds-navLink {
+    border: 0;
+  }
+
+  .feds-localnav.active .feds-localnav-items {
+    display: block;
+  }
+
+  .feds-localnav .feds-localnav-items .feds-navLink {
+    border-bottom: 0;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .feds-localnav.active .feds-localnav-title::after {
+    transform: rotateZ(-135deg);
   }
 }
 

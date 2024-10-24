@@ -364,14 +364,39 @@ class Gnav {
     `;
   };
 
+  decorateLocalNav = () => {
+    if (!newNavEnabled || !this.isLocalNav()) return;
+    const localNav = toFragment`<div class="feds-localnav"><button class="feds-navLink--hoverCaret feds-localnav-title"></button><div class="feds-localnav-items"></div></div>`;
+    const localNavitems = this.elements.navWrapper.querySelector('.feds-nav').querySelectorAll('.feds-navItem:not(.feds-navItem--section)');
+    const itemWrapper = localNav.querySelector('.feds-localnav-items');
+    localNavitems.forEach((elem, idx) => {
+      if (idx === 0) {
+        localNav.querySelector('.feds-localnav-title').innerText = elem.textContent.trim();
+        return;
+      }
+      itemWrapper.appendChild(elem.cloneNode(true));
+    });
+    localNav.querySelector('.feds-localnav-title').addEventListener('click', () => {
+      if (localNav.classList.contains('active')) localNav.classList.remove('active');
+      else localNav.classList.add('active');
+    });
+    this.elements.localNav = localNav;
+    this.block.after(localNav);
+  };
+
   decorateTopnavWrapper = async () => {
     const breadcrumbs = isDesktop.matches ? await this.decorateBreadcrumbs() : '';
     this.elements.topnavWrapper = toFragment`<div class="feds-topnav-wrapper">
         ${this.elements.topnav}
         ${breadcrumbs}
-      </div>`;
+      </div>
+      `;
 
-    this.block.append(this.elements.curtain, this.elements.aside, this.elements.topnavWrapper);
+    this.block.append(
+      this.elements.curtain,
+      this.elements.aside,
+      this.elements.topnavWrapper,
+    );
   };
 
   addChangeEventListeners = () => {
@@ -687,7 +712,7 @@ class Gnav {
   isLocalNav = () => this
     .elements
     .navWrapper
-    .querySelectorAll('.feds-nav > section.feds-navItem')
+    ?.querySelectorAll('.feds-nav > section.feds-navItem')
     ?.length === 1;
 
   toggleMenuMobile = () => {
@@ -1119,6 +1144,7 @@ export default async function init(block) {
   });
   if (newNavEnabled) block.classList.add('new-nav');
   await gnav.init();
+  if (gnav.isLocalNav()) block.classList.add('local-nav');
   block.setAttribute('daa-im', 'true');
   const mepMartech = mep?.martech || '';
   block.setAttribute('daa-lh', `gnav|${getExperienceName()}${mepMartech}`);
