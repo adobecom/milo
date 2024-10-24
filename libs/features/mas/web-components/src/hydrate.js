@@ -84,16 +84,18 @@ export async function hydrate(fragmentData, merchCard) {
         );
     }
 
-    if (fragment.backgroundImage && aemFragmentMapping.backgroundImage) {
+    if (fragment.backgroundImage) {
         switch (variant) {
             case 'ccd-slice':
+              if (aemFragmentMapping.backgroundImage) {
                 merchCard.append(
-                createTag(
-                  aemFragmentMapping.backgroundImage.tag,
-                  { slot: aemFragmentMapping.backgroundImage.slot },
-                  `<img loading="lazy" src="${fragment.backgroundImage}" />`
-                )
-              );
+                  createTag(
+                    aemFragmentMapping.backgroundImage.tag,
+                    { slot: aemFragmentMapping.backgroundImage.slot },
+                    `<img loading="lazy" src="${fragment.backgroundImage}" />`
+                  )
+                );
+              }
             break;
             case 'ccd-suggested':
               merchCard.setAttribute('background-image', fragment.backgroundImage);
