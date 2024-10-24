@@ -29,6 +29,7 @@ runTests(async () => {
       it('should have strip with size wide for the ccd-suggested wide card', async () => {
           const ccdSliceWideCard = document.querySelector('merch-card[variant="ccd-suggested"][background-image]');
           expect(ccdSliceWideCard.getAttribute('variant')).to.equal('ccd-suggested');
+          expect(ccdSliceWideCard.getAttribute('background-image')).to.exist;
       });
 
      it('should have dark theme', async () => {

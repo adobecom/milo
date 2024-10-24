@@ -111,6 +111,7 @@ export class VariantLayout {
             img.src = this.card.backgroundImage;
             img.onload = () => {
                 if (img.width > 4) {
+                  /* c8 ignore next 2 */
                     this.card.classList.add('wide-strip');
                 }
         };

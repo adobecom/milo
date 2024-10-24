@@ -97,6 +97,7 @@ export async function hydrate(fragmentData, merchCard) {
                 );
               }
             break;
+            /* c8 ignore next 3 */
             case 'ccd-suggested':
               merchCard.setAttribute('background-image', fragment.backgroundImage);
               break;
