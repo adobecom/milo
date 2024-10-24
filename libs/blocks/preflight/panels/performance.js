@@ -98,12 +98,16 @@ export function conditionalItemUpdate({ emptyWhen, failsWhen, key }) {
 // in bytes is >= candidate’s element's effective visual size * 0.004
 export async function checkImageSize() {
   const { lcp } = config;
-  const hasValidImage = lcp?.url && !lcp.url.match('media_.*.mp4');
+  let hasValidImage = lcp?.url && !lcp.url.match('media_.*.mp4');
   let blob;
   let isSizeValid;
   if (hasValidImage) {
-    blob = await fetch(lcp.url).then((res) => res.blob());
-    isSizeValid = blob.size / 1024 <= 100;
+    try {
+      blob = await fetch(lcp.url).then((res) => res.blob());
+      isSizeValid = blob.size / 1024 <= 100;
+    } catch (error) {
+      hasValidImage = false;
+    }
   }
 
   conditionalItemUpdate({
@@ -120,7 +124,6 @@ export function checkLCP() {
   conditionalItemUpdate({
     failsWhen: !validLcp,
     key: text.lcpEl.key,
-    icon: icons.pass,
     description: text.lcpEl.passed.description,
   });
   return validLcp;
