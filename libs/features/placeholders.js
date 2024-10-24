@@ -135,8 +135,10 @@ export async function decoratePlaceholderArea({
     if (nodeEl.nodeType === Node.TEXT_NODE) {
       nodeEl.nodeValue = await replaceText(nodeEl.nodeValue, config);
     } else if (nodeEl.nodeType === Node.ELEMENT_NODE) {
-      const hrefVal = await replaceText(nodeEl.getAttribute('href'), config);
-      nodeEl.setAttribute('href', hrefVal);
+      for (const attr of nodeEl.attributes) {
+        const attrVal = await replaceText(attr.value, config);
+        nodeEl.setAttribute(attr.name, attrVal);
+      }
     }
   });
   await Promise.all(replaceNodes);
