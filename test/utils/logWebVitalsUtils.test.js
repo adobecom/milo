@@ -43,6 +43,8 @@ describe('Log Web Vitals Utils', () => {
         expect(parseInt(vitals.lcp, 10)).to.be.greaterThan(1);
         expect(vitals.lcpEl).to.be.equal('/test/utils/mocks/media_.png');
         expect(vitals.lcpElType).to.be.equal('img');
+        expect(vitals.lcpSectionOne).to.be.equal('true');
+
         expect(vitals.loggedIn).to.equal('false');
         expect(vitals.os).to.be.oneOf(['mac', 'win', 'android', 'linux', '']);
         expect(vitals.url).to.equal('localhost:2000/');
