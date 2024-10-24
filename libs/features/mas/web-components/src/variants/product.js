@@ -56,6 +56,7 @@ export class Product extends VariantLayout {
     if (!isMobile()) {
       this.adjustProductBodySlots();
     }
+    this.adjustTitleWidth();
   }
 
   static variantStyle = css`
@@ -81,6 +82,10 @@ export class Product extends VariantLayout {
     :host([variant='product']) slot[name='callout-content'] {
         min-height: var(--consonant-merch-card-product-callout-content-height);
         display: block;
+    }
+      
+    :host([variant='product']) ::slotted([slot='heading-xs']) {
+      max-width: var(--consonant-merch-card-heading-xs-max-width, 100%);
     }
   `;
 }
