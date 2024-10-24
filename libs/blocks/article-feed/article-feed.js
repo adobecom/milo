@@ -342,7 +342,6 @@ async function buildFilter(type, tax, block, config) {
   applyBtn.classList.add('button', 'small', 'apply');
   applyBtn.textContent = await replacePlaceholder('apply');
   applyBtn.addEventListener('click', () => {
-    // sampleRUM('apply-topic-filter');
     delete config.selectedProducts;
     delete config.selectedIndustries;
     closeCurtain();
