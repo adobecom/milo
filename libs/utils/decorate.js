@@ -1,4 +1,4 @@
-import { createTag, loadStyle, getConfig, createIntersectionObserver } from './utils.js';
+import { createTag, loadStyle, getConfig, createIntersectionObserver, elContainsText } from './utils.js';
 
 const { miloLibs, codeRoot } = getConfig();
 
@@ -77,13 +77,12 @@ export function decorateBlockText(el, config = ['m', 's', 'm'], type = null) {
         decorateIconArea(el);
       }
     }
-    const emptyEls = el.querySelectorAll('p:not([class]), ul:not([class]), ol:not([class])');
+    const bodyStyle = `body-${config[1]}`;
+    const emptyEls = el.querySelectorAll('p:not([class]), ul:not([class]), ol:not([class], div:not([class]))');
     if (emptyEls.length) {
-      emptyEls.forEach((p) => p.classList.add(`body-${config[1]}`));
-    } else {
-      [...el.querySelectorAll('div:not([class])')]
-        .filter((emptyDivs) => emptyDivs.textContent.trim() !== '')
-        .forEach((text) => text.classList.add(`body-${config[1]}`));
+      [...emptyEls].filter(elContainsText).forEach((e) => e.classList.add(bodyStyle));
+    } else if (!el.classList.length && elContainsText(el)) {
+      el.classList.add(bodyStyle);
     }
   }
   const buttonSize = config.length > 3 ? `button-${config[3]}` : '';
