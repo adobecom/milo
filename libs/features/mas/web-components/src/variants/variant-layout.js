@@ -106,7 +106,14 @@ export class VariantLayout {
     }
 
     get stripStyle() {
-      if (this.card.backgroundImage) {
+        if (this.card.backgroundImage) {
+            const img = new Image();
+            img.src = this.card.backgroundImage;
+            img.onload = () => {
+                if (img.width > 4) {
+                    this.card.classList.add('wide-strip');
+                }
+        };
         return `
           background: url("${this.card.backgroundImage}");
           background-size: auto 100%;

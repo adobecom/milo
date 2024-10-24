@@ -81,11 +81,11 @@ export class CCDSuggested extends VariantLayout {
       line-height: var(--consonant-merch-card-detail-m-line-height);
     }
     
-    :host([variant='ccd-suggested'][background-image]) ::slotted([slot='body-xs']) {
+    :host([variant='ccd-suggested'].wide-strip) ::slotted([slot='body-xs']) {
       padding-inline-start: 48px;
     }
 
-    :host([variant='ccd-suggested'][background-image]) ::slotted([slot='price']) {
+    :host([variant='ccd-suggested'].wide-strip) ::slotted([slot='price']) {
       padding-inline-start: 48px;
     }
 
