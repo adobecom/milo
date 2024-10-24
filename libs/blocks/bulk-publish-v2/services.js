@@ -63,7 +63,7 @@ const setUserData = (event) => {
 
 const isPushedDown = async () => {
   const callback = () => {
-    const sidekick = document.querySelector('helix-sidekick');
+    const sidekick = document.querySelector('aem-sidekick, helix-sidekick');
     const pushdown = sidekick?.getAttribute('pushdown');
     const bulkPub = document.querySelector('.bulk-publish-v2');
     if (pushdown && !bulkPub.classList.contains('pushdown')) {
@@ -81,13 +81,13 @@ const isPushedDown = async () => {
 const authenticate = async (tool = null) => {
   isPushedDown();
   const setUser = (event) => { tool.user = setUserData(event); };
-  const openSideKick = document.querySelector('helix-sidekick');
+  const openSideKick = document.querySelector('aem-sidekick, helix-sidekick');
   if (openSideKick) {
     openSideKick.addEventListener('statusfetched', setUser);
     /* c8 ignore next 6 */
   } else {
     document.addEventListener('sidekick-ready', () => {
-      const sidekick = document.querySelector('helix-sidekick');
+      const sidekick = document.querySelector('aem-sidekick, helix-sidekick');
       sidekick.addEventListener('statusfetched', setUser);
     }, { once: true });
   }
