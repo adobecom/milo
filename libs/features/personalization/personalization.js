@@ -1186,10 +1186,10 @@ export async function init(enablements = {}) {
     });
   }
   const pznCookie = getPZNCookie();
-  if (!pznCookie.length && target === true) {
+  if (target === true || (!pznCookie?.length && target === 'cached')) {
     manifests = manifests.concat(await callMartech(config));
   }
-  if (pznCookie?.length || target === 'postlcp') callMartech(config);
+  if (target === 'postlcp' || (pznCookie?.length && target === 'cached')) callMartech(config);
   if (postLCP) {
     if (!config.mep.targetManifests) await awaitMartech();
     manifests = config.mep.targetManifests;
