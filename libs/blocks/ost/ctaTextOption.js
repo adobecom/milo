@@ -12,6 +12,7 @@ const ctaTextOption = {
     { id: 'take-the-quiz', name: 'Take the quiz' },
     { id: 'see-more', name: 'See more' },
     { id: 'upgrade-now', name: 'Upgrade now' },
+    { id: 'save-now', name: 'Save now' },
   ],
 
   getDefaultText() {
