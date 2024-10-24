@@ -7,20 +7,19 @@ video {
   height: auto;
 }
 
-
-.pause-play-wrapper img {
-  min-height:40px !important;
+:is(.marquee, .aside.split) .pause-play-wrapper img.accessibility-control {
+  min-height: 40px;
 }
 
 .video-container{
   display: flex;
   position: relative;
-  height:100%;
+  height: 100%;
   width: fit-content;
   margin: auto;
 }
 
-.aside .video-container,.marquee .video-container,.quiz-marquee .video-container {
+:is(.aside, .marquee, .quiz-marquee) .video-container {
   width: auto;
 }
 
@@ -30,7 +29,6 @@ video {
   border-radius: inherit;
 }
 
-
 .pause-play-wrapper {
   display: flex;
   width: fit-content;
@@ -38,33 +36,31 @@ video {
 }
 
 .video-container .pause-play-wrapper {
-  width: 40px;
-  height: 40px;
+  width: 40px !important;
+  height: 40px !important;
   display: flex;
   position: absolute;
-  right: 2%;
   bottom: 2%;
+  right: 2%;
   margin: 0;
-  background:#242424;
+  background: #242424;
   border-radius: 50%;
   z-index: 2;
   cursor: pointer;
 }
 
 .video-container .pause-play-wrapper:hover {
-  background:#0000;
+  background: #000;
 }
 
 .video-container .pause-play-wrapper:focus-visible {
-  background:#0000;
+  background: #000;
   border: 3px solid var(--color-white);
   outline: var(--color-accent-focus-ring) solid 2px;
 }
 
-.editorial-card .video-container,
-.editorial-card:not(:has(.video-container)) .pause-play-wrapper,
-.hero-marquee:not(:has(.video-container)) .pause-play-wrapper,
-.marquee.split:not(:has(.video-container)) .pause-play-wrapper {
+:is(.editorial-card, .hero-marquee, .marquee):not(:has(.video-container)) .pause-play-wrapper,
+.editorial-card .video-container {
   width: auto;
   height: 100%;
 }
@@ -86,7 +82,7 @@ video {
   width: auto;
 }
 
-.video-container .pause-play-wrapper img.hidden{
+.video-container .pause-play-wrapper img.hidden {
   display: none;
 }
 
@@ -95,9 +91,21 @@ video {
 }
 
 @media (min-width: 900px) {
-.media:not(.media-reverse-mobile, .media-reversed) .pause-play-wrapper,
-.aside:not(.split-left) .pause-play-wrapper,
-.hero-marquee.asset-left .pause-play-wrapper {
-  left: 2%;
-}
+  .media:not(.media-reverse-mobile, .media-reversed) .video-container .pause-play-wrapper,
+  .hero-marquee.asset-left .video-container .pause-play-wrapper,
+  .aside:not(.split) .video-container .pause-play-wrapper {
+    left: 2%;
+  }
+
+  [dir="rtl"] :is(.marquee.split, .media:is(.media-reverse-mobile, .media-reversed),
+  .hero-marquee:not(.asset-left) .foreground-media, .aside.split,
+  .aside .foreground .image:nth-last-child(1), .brick.media-right) .video-container .pause-play-wrapper {
+    left: 2%;
+    right: auto;
+  }
+
+  .section[class*="-up"] .media .foreground .image:first-child .video-container .pause-play-wrapper {
+    left: auto;
+    right: 2%;
+  }
 }

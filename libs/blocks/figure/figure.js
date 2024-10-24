@@ -21,7 +21,7 @@ function decorateVideo(clone, figEl) {
   if (anchorTag && !anchorTag.hash) anchorTag.hash = '#autoplay';
   if (anchorTag) decorateAnchorVideo({ src: anchorTag.href, anchorTag });
   if (videoTag) {
-    const videoContainer = clone.querySelector('.video-container') || clone.querySelector('.pause-play-wrapper') || clone.querySelector('video');
+    const videoContainer = clone.querySelector('.video-container, .pause-play-wrapper, video');
     videoTag.removeAttribute('data-mouseevent');
     if (videoTag.dataset?.videoSource) {
       videoTag.appendChild(
