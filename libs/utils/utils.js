@@ -470,7 +470,6 @@ export async function loadBlock(block) {
     return null;
   }
   const { name, blockPath, hasStyles } = getBlockData(block);
-  block.dataset.blockName = name;
   const styleLoaded = hasStyles && new Promise((resolve) => {
     loadStyle(`${blockPath}.css`, resolve);
   });
@@ -479,6 +478,7 @@ export async function loadBlock(block) {
       try {
         const { default: init } = await import(`${blockPath}.js`);
         await init(block);
+        block.dataset.blockStatus = 'loaded';
       } catch (err) {
         console.log(`Failed loading ${name}`, err);
         const config = getConfig();
