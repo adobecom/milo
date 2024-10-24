@@ -187,30 +187,32 @@ function highlightElement(event) {
   if (!clonedLcpSection) {
     clonedLcpSection = lcpSection.cloneNode(true);
     clonedLcpSection.classList.add('lcp-clone');
-    clonedLcpSection.style.width = `${lcpSection.offsetWidth}px`;
-    clonedLcpSection.style.height = `${lcpSection.offsetHeight}px`;
-    clonedLcpSection.style.transform = `scale(${scaleFactor})`;
-    clonedLcpSection.style.transformOrigin = 'top left';
   }
+  Object.assign(clonedLcpSection.style, {
+    width: `${lcpSection.offsetWidth}px`,
+    height: `${lcpSection.offsetHeight}px`,
+    transform: `scale(${scaleFactor})`,
+    transformOrigin: 'top left',
+  });
   if (!tooltip.children.length) tooltip.appendChild(clonedLcpSection);
   const { top, left } = event.currentTarget.getBoundingClientRect();
-  tooltip.style.width = `${offsetWidth * scaleFactor}px`;
-  tooltip.style.height = `${offsetHeight * scaleFactor}px`;
-  tooltip.style.top = `${top + window.scrollY - offsetHeight * scaleFactor - 10}px`;
-  tooltip.style.left = `${left + window.scrollX}px`;
+  Object.assign(tooltip.style, {
+    width: `${offsetWidth * scaleFactor}px`,
+    height: `${offsetHeight * scaleFactor}px`,
+    top: `${top + window.scrollY - offsetHeight * scaleFactor - 10}px`,
+    left: `${left + window.scrollX}px`,
+  });
   document.querySelector('.lcp-tooltip-modal').classList.add('show');
 }
 
 const removeHighlight = () => { document.querySelector('.lcp-tooltip-modal').classList.remove('show'); };
 
 function observePerfMetrics() {
-  // Observe LCP
-  const lcpObserver = new PerformanceObserver((entryList) => {
+  new PerformanceObserver((entryList) => {
     const entries = entryList.getEntries();
     const lastEntry = entries[entries.length - 1];
     if (lastEntry) config.lcp = lastEntry;
-    const hasValidLcp = checkLCP();
-    if (!hasValidLcp) {
+    if (!checkLCP()) {
       Object.values(text).forEach(({ key }) => {
         if (key === 'lcpEl') return;
         updateItem({ key, description: 'No LCP element found.' });
@@ -224,11 +226,9 @@ function observePerfMetrics() {
     checkForSingleBlock();
     checkPlaceholders();
     Promise.all([checkImageSize()]);
-  });
-  lcpObserver.observe({ type: 'largest-contentful-paint', buffered: true });
+  }).observe({ type: 'largest-contentful-paint', buffered: true });
 
-  // Observe CLS
-  const clsObserver = new PerformanceObserver((entryList) => {
+  new PerformanceObserver((entryList) => {
     const entries = entryList.getEntries();
     entries.forEach((entry) => {
       if (!entry.hadRecentInput) {
@@ -238,8 +238,7 @@ function observePerfMetrics() {
     if (config.cls > 0) {
       // TODO - Lana log? We should not have any CLS.
     }
-  });
-  clsObserver.observe({ type: 'layout-shift', buffered: true });
+  }).observe({ type: 'layout-shift', buffered: true });
 }
 
 export function Panel() {
