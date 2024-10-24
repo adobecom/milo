@@ -85,14 +85,20 @@ export async function hydrate(fragmentData, merchCard) {
     }
 
     if (fragment.backgroundImage && aemFragmentMapping.backgroundImage) {
-        // TODO improve image logic
-        merchCard.append(
-            createTag(
-                aemFragmentMapping.backgroundImage.tag,
-                { slot: aemFragmentMapping.backgroundImage.slot },
-                `<img loading="lazy" src="${fragment.backgroundImage}" />`,
-            ),
-        );
+        switch (merchCard.variant) {
+            case 'ccd-slice':
+                merchCard.append(
+                createTag(
+                  aemFragmentMapping.backgroundImage.tag,
+                  { slot: aemFragmentMapping.backgroundImage.slot },
+                  `<img loading="lazy" src="${fragment.backgroundImage}" />`
+                )
+              );
+            break;
+            case 'ccd-suggested':
+              merchCard.setAttribute('background-image', fragment.backgroundImage);
+              break;
+        }
     }
 
     if (fragment.prices && aemFragmentMapping.prices) {
