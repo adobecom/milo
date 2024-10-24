@@ -1,4 +1,4 @@
-import { applyHoverPlay, decorateAnchorVideo } from '../../utils/decorate.js';
+import { applyHoverPlay, decorateAnchorVideo, applyAccessibiltyEvents } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
 
 function buildCaption(pEl) {
@@ -21,6 +21,7 @@ function decorateVideo(clone, figEl) {
   if (anchorTag && !anchorTag.hash) anchorTag.hash = '#autoplay';
   if (anchorTag) decorateAnchorVideo({ src: anchorTag.href, anchorTag });
   if (videoTag) {
+    const videoContainer = clone.querySelector('.video-container, .pause-play-wrapper, video');
     videoTag.removeAttribute('data-mouseevent');
     if (videoTag.dataset?.videoSource) {
       videoTag.appendChild(
@@ -31,7 +32,8 @@ function decorateVideo(clone, figEl) {
       );
     }
     applyHoverPlay(videoTag);
-    figEl.prepend(videoTag);
+    applyAccessibiltyEvents(videoTag);
+    figEl.prepend(videoContainer);
   }
 }
 
@@ -68,7 +70,7 @@ export function buildFigure(blockEl) {
       const link = clone.querySelector('a');
       if (link) {
         const img = figEl.querySelector('picture') || figEl.querySelector('video');
-        if (img) {
+        if (img && !link.classList.contains('pause-play-wrapper')) {
           // wrap picture or video in A tag
           link.textContent = '';
           link.append(img);

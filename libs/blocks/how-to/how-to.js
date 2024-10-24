@@ -47,7 +47,9 @@ const setJsonLd = (heading, description, mainImage, stepsLd) => {
 };
 
 const getImage = (el) => el.querySelector('picture') || el.querySelector('a[href$=".svg"');
-const getVideo = (el) => el.querySelector('video') || el.querySelector('.milo-video');
+const getVideo = (el) =>{
+  return el.querySelector('.video-container, .pause-play-wrapper, video, .milo-video');
+}
 
 const getHowToInfo = (el) => {
   const infoDiv = el.querySelector(':scope > div > div');
