@@ -3,7 +3,7 @@ import { readFile } from '@web/test-runner-commands';
 import { stub } from 'sinon';
 import { getConfig, loadBlock } from '../../../libs/utils/utils.js';
 import initFragments from '../../../libs/blocks/fragment/fragment.js';
-import { init, handleFragmentCommand } from '../../../libs/features/personalization/personalization.js';
+import { init, handleCommands } from '../../../libs/features/personalization/personalization.js';
 import mepSettings from './mepSettings.js';
 
 document.head.innerHTML = await readFile({ path: './mocks/metadata.html' });
@@ -151,7 +151,6 @@ describe('prependToSection action', async () => {
 
 describe('appendToSection action', async () => {
   it('appendToSection should add fragment to end of section', async () => {
-    config.mep = { handleFragmentCommand };
     let manifestJson = await readFile({ path: './mocks/actions/manifestAppendToSection.json' });
 
     manifestJson = JSON.parse(manifestJson);
@@ -164,6 +163,24 @@ describe('appendToSection action', async () => {
 
     const fragment = document.querySelector('main > div:nth-child(2) > div:last-child a[href="/test/features/personalization/mocks/fragments/appendToSection"]');
     expect(fragment).to.not.be.null;
+  });
+});
+
+describe('addHash', async () => {
+  it('if forceInline is true, addHash is called', async () => {
+    config.mep.commands = [{
+      action: 'replace',
+      content: '/new-fragment',
+      selector: 'h1',
+    }];
+    const rootEl = document.createElement('div');
+    handleCommands(config.mep.commands, rootEl, true, true);
+    console.log(config.mep.commands[0].content);
+    expect(config.mep.commands[0].content).to.equal('/new-fragment#_inline');
+    config.mep.commands[0].content = 'https://main--cc--adobecom.hlx.page/cc/fragments/new-fragment';
+    handleCommands(config.mep.commands, rootEl, true, true);
+    console.log(config.mep.commands[0].content);
+    expect(config.mep.commands[0].content).to.equal('https://main--cc--adobecom.hlx.page/cc/fragments/new-fragment#_inline');
   });
 });
 
@@ -219,20 +236,25 @@ describe('remove action', () => {
     let manifestJson = await readFile({ path: './mocks/actions/manifestRemove.json' });
     manifestJson = JSON.parse(manifestJson);
     setFetchResponse(manifestJson);
+    delete config.mep;
 
-    setTimeout(async () => {
-      expect(document.querySelector('.z-pattern')).to.not.be.null;
-      mepSettings.mepButton = false;
-      await init(mepSettings);
+    expect(document.querySelector('.z-pattern')).to.not.be.null;
+    await init({
+      mepParam: '',
+      mepHighlight: false,
+      mepButton: false,
+      pzn: '/path/to/manifest.json',
+      promo: false,
+      target: false,
+    });
 
-      expect(document.querySelector('.z-pattern')).to.not.be.null;
-      expect(document.querySelector('.z-pattern').dataset.removedManifestId).to.not.be.null;
+    expect(document.querySelector('.z-pattern')).to.not.be.null;
+    expect(document.querySelector('.z-pattern').dataset.removedManifestId).to.equal('manifest.json');
 
-      const removeMeFrag = document.querySelector('a[href="/fragments/removeme"]');
-      await initFragments(removeMeFrag);
-      expect(document.querySelector('a[href="/fragments/removeme"]')).to.not.be.null;
-      expect(document.querySelector('a[href="/fragments/removeme"]').dataset.removedManifestId).to.not.be.null;
-    }, 50);
+    const removeMeFrag = document.querySelector('a[href="/fragments/removeme"]');
+    await initFragments(removeMeFrag);
+    expect(document.querySelector('a[href="/fragments/removeme"]')).to.not.be.null;
+    expect(document.querySelector('a[href="/fragments/removeme"]').dataset.removedManifestId).to.not.be.null;
   });
 });
 
@@ -321,6 +343,14 @@ describe('custom actions', async () => {
             targetManifestId: false,
             pageFilter: '',
             selectorType: 'in-block:',
+          },
+          'https://main--federal--adobecom.hlx.page/federal/fragments/new-sub-menu': {
+            action: 'replace',
+            pageFilter: '',
+            content: 'https://main--federal--adobecom.hlx.page/federal/fragments/even-more-new-sub-menu',
+            selectorType: 'in-block:',
+            manifestId: false,
+            targetManifestId: false,
           },
         },
       },
