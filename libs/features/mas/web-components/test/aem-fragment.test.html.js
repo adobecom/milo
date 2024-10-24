@@ -102,10 +102,9 @@ runTests(async () => {
                 masErrorTriggered = true;
             });
             spTheme.append(cardWithWrongOsis);
-            await expect(
-              cardWithWrongOsis.querySelector('aem-fragment').updateComplete
-            );
-            await delay(100);          
+            await cardWithWrongOsis.querySelector('aem-fragment')
+                .updateComplete;
+            await delay(100);
             expect(masErrorTriggered).to.true;
         });
 

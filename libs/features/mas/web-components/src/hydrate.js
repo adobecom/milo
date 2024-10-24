@@ -12,29 +12,33 @@ export async function hydrate(fragmentData, merchCard) {
     if (!variant) return;
     fragment.model = fragment.model;
 
-    merchCard.variantLayout?.refs?.forEach((ref) => ref.remove());
+    // remove all previous slotted content except the default slot
+    merchCard.querySelectorAll('[slot]').forEach((el) => {
+        el.remove();
+    });
     merchCard.variant = variant;
     await merchCard.updateComplete;
-    merchCard.variantLayout.refs ??= [];
+
     const { aemFragmentMapping } = merchCard.variantLayout;
 
     if (!aemFragmentMapping) return;
 
     const appendFn = (el) => {
-        merchCard.variantLayout.refs.push(el);
         merchCard.append(el);
     };
 
-    fragment.mnemonicIcon?.forEach((icon, idx) => {
-        const href =
-            fragment.mnemonicLink?.length > idx
-                ? fragment.mnemonicLink[idx]
-                : '';
-        const alt =
-            fragment.mnemonicAlt?.length > idx ? fragment.mnemonicAlt[idx] : '';
+    const mnemonics = fragment.mnemonicIcon?.map((icon, index) => ({
+        icon,
+        alt: fragment.mnemonicAlt[index] ?? '',
+        link: fragment.mnemonicLink[index] ?? '',
+    }));
+
+    fragmentData.computed = { mnemonics };
+
+    mnemonics.forEach(({ icon: src, alt, link: href }) => {
         const merchIcon = createTag('merch-icon', {
             slot: 'icons',
-            src: icon,
+            src,
             alt,
             href,
             size: 'l',
