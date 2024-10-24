@@ -34,11 +34,16 @@ function decorateQr(el) {
   const googlePlay = text.children[(text.children.length - 2)]?.querySelector('a');
   const qrImage = text.children[(text.children.length - 3)];
   if (!qrImage || !appStore || !googlePlay) return;
+  [appStore, googlePlay].forEach(({ parentElement }) => {
+    parentElement.classList.add('qr-button-container');
+  });
   qrImage.classList.add('qr-code-img');
   appStore.classList.add('app-store');
   appStore.textContent = '';
+  appStore.setAttribute('aria-label', 'Apple App Store');
   googlePlay.classList.add('google-play');
   googlePlay.textContent = '';
+  googlePlay.setAttribute('aria-label', 'Google Play Store');
 }
 
 export default async function init(el) {
