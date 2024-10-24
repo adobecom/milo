@@ -168,6 +168,7 @@ export const styles = css`
         align-items: center;
         flex: 1;
         line-height: normal;
+        align-self: center;
     }
 
     .secure-transaction-label::before {

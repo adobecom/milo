@@ -149,4 +149,5 @@ module.exports = {
   slackNotification,
   pulls: { addLabels, addFiles, getChecks, getReviews },
   isWithinRCP,
+  RCPDates,
 };

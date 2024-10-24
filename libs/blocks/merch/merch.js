@@ -437,12 +437,31 @@ export function appendTabName(url) {
   return urlWithPlan.href;
 }
 
-async function openExternalModal(url, getModal) {
+export function appendExtraOptions(url, extraOptions) {
+  if (!extraOptions) return url;
+  const extraOptionsObj = JSON.parse(extraOptions);
+  let urlWithExtraOptions;
+  try {
+    urlWithExtraOptions = new URL(url);
+  } catch (err) {
+    window.lana?.log(`Invalid URL ${url} : ${err}`);
+    return url;
+  }
+  Object.keys(extraOptionsObj).forEach((key) => {
+    if (CHECKOUT_ALLOWED_KEYS.includes(key)) {
+      urlWithExtraOptions.searchParams.set(key, extraOptionsObj[key]);
+    }
+  });
+  return urlWithExtraOptions.href;
+}
+
+async function openExternalModal(url, getModal, extraOptions) {
   await loadStyle(`${getConfig().base}/blocks/iframe/iframe.css`);
   const root = createTag('div', { class: 'milo-iframe' });
   const urlWithTabName = appendTabName(url);
+  const urlWithExtraOptions = appendExtraOptions(urlWithTabName, extraOptions);
   createTag('iframe', {
-    src: urlWithTabName,
+    src: urlWithExtraOptions,
     frameborder: '0',
     marginwidth: '0',
     marginheight: '0',
@@ -459,7 +478,7 @@ async function openExternalModal(url, getModal) {
 
 const isInternalModal = (url) => /\/fragments\//.test(url);
 
-export async function openModal(e, url, offerType, hash) {
+export async function openModal(e, url, offerType, hash, extraOptions) {
   e.preventDefault();
   e.stopImmediatePropagation();
   const { getModal } = await import('../modal/modal.js');
@@ -477,7 +496,7 @@ export async function openModal(e, url, offerType, hash) {
     const fragmentPath = url.split(/hlx.(page|live)/).pop();
     modal = await openFragmentModal(fragmentPath, getModal);
   } else {
-    modal = await openExternalModal(url, getModal);
+    modal = await openExternalModal(url, getModal, extraOptions);
   }
   if (modal) {
     modal.classList.add(offerTypeClass);
@@ -512,7 +531,7 @@ export async function getModalAction(offers, options, el) {
   if (!url) return undefined;
   url = isInternalModal(url)
     ? localizeLink(checkoutLinkConfig[columnName]) : checkoutLinkConfig[columnName];
-  return { url, handler: (e) => openModal(e, url, offerType, hash) };
+  return { url, handler: (e) => openModal(e, url, offerType, hash, options.extraOptions) };
 }
 
 export async function getCheckoutAction(offers, options, imsSignedInPromise, el) {

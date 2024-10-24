@@ -9,6 +9,7 @@ mas.js includes the followings custom elements:
 -   [inline-price](/libs/features/mas/docs/inline-price.html)
 -   [checkout-link](/libs/features/mas/docs/checkout-link.html)
 -   [merch-card](/libs/features/mas/docs/merch-card.html)
+-   [CCD Gallery](/libs/features/mas/docs/ccd.html)
 
 ## Enablement `mas-commerce-service`
 

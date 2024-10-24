@@ -203,9 +203,10 @@ describe('Utils', () => {
     });
 
     it('Loads a script', async () => {
-      const script = await utils.loadScript('/test/utils/mocks/script.js', 'module');
+      const script = await utils.loadScript('/test/utils/mocks/script.js', 'module', { mode: 'async' });
       expect(script).to.exist;
       expect(script.type).to.equal('module');
+      expect(script.async).to.equal(true);
       await utils.loadScript('/test/utils/mocks/script.js', 'module');
       expect(script).to.exist;
     });

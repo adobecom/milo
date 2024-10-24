@@ -171,6 +171,7 @@ Try polyfilling it using "@formatjs/intl-pluralrules"
         align-items: center;
         flex: 1;
         line-height: normal;
+        align-self: center;
     }
 
     .secure-transaction-label::before {
