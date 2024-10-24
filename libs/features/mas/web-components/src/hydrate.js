@@ -85,7 +85,7 @@ export async function hydrate(fragmentData, merchCard) {
     }
 
     if (fragment.backgroundImage && aemFragmentMapping.backgroundImage) {
-        switch (merchCard.variant) {
+        switch (variant) {
             case 'ccd-slice':
                 merchCard.append(
                 createTag(
