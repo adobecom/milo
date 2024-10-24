@@ -245,14 +245,12 @@ const getBlockProps = (fVal, miloLibs, origin) => {
   if (!val?.startsWith('/')) val = `/${val}`;
   const blockSelector = val?.split('/').pop();
 
+  if (!miloLibs) return { blockSelector, blockTarget: val };
   if (val.startsWith('/libs/')) {
     /* c8 ignore next 1 */
-    val = `${miloLibs}${val.replace('/libs', '')}`;
-  } else {
-    val = `${origin}${val}`;
+    return { blockSelector, blockTarget: `${miloLibs}${val.replace('/libs', '')}` };
   }
-
-  return { blockSelector, blockTarget: val };
+  return { blockSelector, blockTarget: `${origin}${val}` };
 };
 
 const consolidateArray = (arr, prop, existing = []) => arr
