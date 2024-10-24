@@ -3,7 +3,7 @@ import { defaultReporter, summaryReporter } from '@web/test-runner';
 import { playwrightLauncher } from '@web/test-runner-playwright';
 
 const GITHUB_ACTIONS = process.env.GITHUB_ACTIONS === 'true';
-
+console.log({ GITHUB_ACTIONS });
 function customReporter() {
   return {
     async reportTestFileResults({ logger, sessionsForTestFile }) {
