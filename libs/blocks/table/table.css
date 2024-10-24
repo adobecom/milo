@@ -258,7 +258,7 @@ html[lang="en-AU"] .table .row-heading .col-heading .pricing {
 }
 
 .table .row-heading .col-heading .pricing .price-annual-prefix,
-.table .row-heading .col-heading .pricing .price.price-annual,
+.table .row-heading .col-heading .pricing .price-annual-prefix + .price-annual,
 .table .row-heading .col-heading .pricing .price-annual-suffix {
   font-size: var(--type-heading-xxs-size);
   line-height: var(--type-heading-xxs-size);

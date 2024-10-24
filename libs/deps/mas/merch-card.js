@@ -574,7 +574,7 @@ merch-card[variant="ccd-action"] .price-strikethrough {
   }
   
   merch-card[variant="mini-compare-chart"] .card-heading [is="inline-price"] .price-annual-prefix,
-  merch-card[variant="mini-compare-chart"] .card-heading [is="inline-price"] .price.price-annual,
+  merch-card[variant="mini-compare-chart"] .card-heading [is="inline-price"] .price-annual-prefix + .price-annual,
   merch-card[variant="mini-compare-chart"] .card-heading [is="inline-price"] .price-annual-suffix {
     font-size: var(--consonant-merch-card-body-s-font-size);
     line-height: var(--consonant-merch-card-body-s-font-size);
@@ -1603,6 +1603,16 @@ merch-card [slot='heading-m'] {
     margin: 0;
     color: var(--merch-color-grey-80);
     font-weight: 700;
+}
+
+merch-card [slot='heading-m'] [is="inline-price"] .price-annual-prefix,
+merch-card [slot='heading-m'] [is="inline-price"] .price-annual-prefix + .price-annual,
+merch-card [slot='heading-m'] [is="inline-price"] .price-annual-suffix {
+    font-size: var(--consonant-merch-card-body-s-font-size);
+    line-height: var(--consonant-merch-card-body-s-font-size);
+    font-weight: 400;
+    position: relative;
+    left: -6px;
 }
 
 merch-card [slot='heading-m-price'] {
