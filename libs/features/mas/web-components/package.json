@@ -1,5 +1,5 @@
 {
-    "name": "@adobe/mas-web-components",
+    "name": "@adobecom/mas-web-components",
     "version": "0.0.1",
     "files": [
         "lib",
@@ -12,7 +12,8 @@
         "src/**/*"
     ],
     "scripts": {
-        "build": "node build.mjs",
+        "build": "npm run test:ci && npm run build:bundle",
+        "build:bundle": "node ./build.mjs",
         "test": "wtr --config ./web-test-runner.config.mjs --coverage --watch --debug",
         "test:ci": "wtr --config ./web-test-runner.config.mjs --coverage"
     },
