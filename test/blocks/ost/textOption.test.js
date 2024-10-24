@@ -12,6 +12,7 @@ describe('test ctaTextOption', () => {
     const EXPECTED_TEXTS = [{ id: 'buy-now', name: 'Buy now' },
       { id: 'free-trial', name: 'Free trial' },
       { id: 'start-free-trial', name: 'Start free trial' },
+      { id: 'save-now', name: 'Save now' },
       { id: 'get-started', name: 'Get started' },
       { id: 'choose-a-plan', name: 'Choose a plan' },
       { id: 'learn-more', name: 'Learn more' },
@@ -20,8 +21,7 @@ describe('test ctaTextOption', () => {
       { id: 'change-plan-team-payment', name: 'Change Plan Team Payment' },
       { id: 'take-the-quiz', name: 'Take the quiz' },
       { id: 'see-more', name: 'See more' },
-      { id: 'upgrade-now', name: 'Upgrade now' },
-      { id: 'save-now', name: 'Save now' }];
+      { id: 'upgrade-now', name: 'Upgrade now' }];
     const texts = ctaTextOption.getTexts();
     expect(EXPECTED_TEXTS).to.deep.equal(texts);
   });
