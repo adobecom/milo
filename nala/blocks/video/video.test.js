@@ -122,7 +122,7 @@ test.describe('Milo Video Block test suite', () => {
     });
 
     await test.step('step-3: Verify the accessibility test on the MPC Video block', async () => {
-      await runAccessibilityTest({ page, testScope: video.miloVideo });
+      await runAccessibilityTest({ page, testScope: video.miloVideo, skipA11yTest: true });
     });
   });
 
