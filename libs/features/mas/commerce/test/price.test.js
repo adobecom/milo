@@ -646,7 +646,7 @@ describe('commerce service', () => {
         ];
 
         it('returns empty string if no orders provided - AU with promo', async () => {
-          const { buildPriceHTML } = await initService(mockConfig(), true);
+          const { buildPriceHTML } = await initMasCommerceService();
           const options = {
             country: 'AU',
             promotionCode: 'promo'
@@ -655,7 +655,7 @@ describe('commerce service', () => {
         });
 
         it('returns empty string if no orders provided - AU no promo', async () => {
-          const { buildPriceHTML } = await initService(mockConfig(), true);
+          const { buildPriceHTML } = await initMasCommerceService();
           const options = {
             country: 'AU'
           };
