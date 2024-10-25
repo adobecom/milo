@@ -11,7 +11,7 @@ const AxeBuilder = require('@axe-core/playwright').default;
  * @param {string} [testScope='body'] - Optional scope for the accessibility test. Default is the entire page ('body').
  * @param {string[]} [includeTags=['wcag2a', 'wcag2aa']] - Optional tags to include in the accessibility test. Default is WCAG 2.0/2.1 A & AA.
  * @param {number} [maxViolations=0] - Optional maximum number of allowed violations before the test fails. Default is 0 (any violation fails the test).
- * @param {boolean} [skipTest=false] - If true, the test step is logged and skipped.
+ * @param {boolean} [skipA11yTest=false] - If true, the test step is logged and skipped.
  */
 async function runAccessibilityTest({
   page,
