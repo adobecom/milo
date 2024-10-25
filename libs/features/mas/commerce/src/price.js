@@ -97,9 +97,10 @@ export function Price({ literals, providers, settings }) {
                 method = priceAnnual;
                 break;
             default:
-                method = options.promotionCode ? pricePromo : price;
                 if (options.country === 'AU' && offers[0].planType === 'ABM') {
                     method = options.promotionCode ? pricePromoWithAnnual : priceWithAnnual;
+                } else {
+                    method = options.promotionCode ? pricePromo : price;
                 }
         }
 
