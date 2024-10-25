@@ -43,7 +43,7 @@ test.describe('Milo Media Block test suite', () => {
       await expect(await media.mediaSmall).toHaveAttribute('daa-lh', await webUtil.getBlockDaalh('media', 1));
       await expect(await media.blueButton).toHaveAttribute('daa-ll', await webUtil.getLinkDaall(data.blueButtonText, 1, data.h2Text));
     });
-  
+
     await test.step('step-4: Verify the accessibility test on the Media (small) block', async () => {
       await runAccessibilityTest({ page, testScope: media.mediaSmall });
     });

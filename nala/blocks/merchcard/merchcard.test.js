@@ -117,7 +117,7 @@ test.describe('Milo Merchcard block test suite', () => {
     });
 
     await test.step('step-4: Verify the accessibility test on the Merch Card (Special Offers) block', async () => {
-      await runAccessibilityTest({ page, testScope:merchCard.sepcialOffers });
+      await runAccessibilityTest({ page, testScope: merchCard.sepcialOffers });
     });
   });
 
@@ -222,7 +222,7 @@ test.describe('Milo Merchcard block test suite', () => {
     });
 
     await test.step('step-4: Verify the accessibility test on the Merch Card (plans) with badge block', async () => {
-      await runAccessibilityTest({ page, testScope:merchCard.plans });
+      await runAccessibilityTest({ page, testScope: merchCard.plans });
     });
   });
 
@@ -359,7 +359,7 @@ test.describe('Milo Merchcard block test suite', () => {
     });
 
     await test.step('step-4: Verify the accessibility test on the Merch Card (catalog) with badge block', async () => {
-      await runAccessibilityTest({ page, testScope:merchCard.catalog });
+      await runAccessibilityTest({ page, testScope: merchCard.catalog });
     });
   });
 
@@ -411,7 +411,7 @@ test.describe('Milo Merchcard block test suite', () => {
     });
 
     await test.step('step-4: Verify the accessibility test on the Merch Card (catalog) with more info and badge block', async () => {
-      await runAccessibilityTest({ page, testScope:merchCard.catalog });
+      await runAccessibilityTest({ page, testScope: merchCard.catalog });
     });
   });
 });
