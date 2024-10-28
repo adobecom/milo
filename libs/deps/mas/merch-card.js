@@ -1044,8 +1044,9 @@ merch-card[variant="plans"] [slot="quantity-select"] {
         min-height: var(--consonant-merch-card-product-callout-content-height);
         display: block;
     }
+      
     :host([variant='product']) ::slotted([slot='heading-xs']) {
-        max-width: var(--consonant-merch-card-heading-xs-max-width, 100%);
+      max-width: var(--consonant-merch-card-heading-xs-max-width, 100%);
     }
   `};import{html as W,css as Nt}from"../lit-all.min.js";var vt=`
 :root {
