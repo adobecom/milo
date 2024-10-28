@@ -485,7 +485,6 @@
   text-align: start;
   font-style: normal;
   font-weight: 400;
-  gap: var(--spacing-xxs);
   color: black;
   padding: 5px 10px;
   box-sizing: border-box;
@@ -495,7 +494,7 @@
   background-color: var(--color-gray-300);
 }
 
-.table.has-addon .addon-label :first-child {
+.table.has-addon .addon-label .icon {
   display: flex;
   align-self: center;
 }
