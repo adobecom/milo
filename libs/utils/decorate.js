@@ -86,7 +86,7 @@ export function decorateBlockText(el, config = ['m', 's', 'm'], type = null) {
       }
     }
     const bodyStyle = `body-${config[1]}`;
-    const emptyEls = el.querySelectorAll('p:not([class]), ul:not([class]), ol:not([class], div:not([class]))');
+    const emptyEls = el.querySelectorAll(':is(p, ul, ol, div):not([class])');
     if (emptyEls.length) {
       [...emptyEls].filter(elContainsText).forEach((e) => e.classList.add(bodyStyle));
     } else if (!el.classList.length && elContainsText(el)) {
