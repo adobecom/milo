@@ -273,20 +273,22 @@ export const [setDisableAEDState, getDisableAEDState] = (() => {
   ];
 })();
 
-export const [hasActiveLink, setActiveLink, getActiveLink] = (() => {
+export const [hasActiveLink, setActiveLink, isActiveLink, getActiveLink] = (() => {
   let activeLinkFound;
+  const { origin, pathname } = window.location;
+  const url = `${origin}${pathname}`;
 
   return [
     () => activeLinkFound,
     (val) => { activeLinkFound = !!val; },
+    (el) => (el.href === url || el.href.startsWith(`${url}?`) || el.href.startsWith(`${url}#`)),
     (area) => {
-      const disableAED = getDisableAEDState();
+      const isCustomLinks = area.closest('.link-group')?.classList.contains('mobile-only');
+      const disableAED = getDisableAEDState() || isCustomLinks;
       if (disableAED || hasActiveLink() || !(area instanceof HTMLElement)) return null;
-      const { origin, pathname } = window.location;
-      const url = `${origin}${pathname}`;
       const activeLink = [
         ...area.querySelectorAll('a:not([data-modal-hash])'),
-      ].find((el) => (el.href === url || el.href.startsWith(`${url}?`) || el.href.startsWith(`${url}#`)));
+      ].find(isActiveLink);
 
       if (!activeLink) return null;
 
@@ -345,7 +347,6 @@ export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true
   if (mepFragment?.targetManifestId) body.dataset.adobeTargetTestid = mepFragment.targetManifestId;
   const commands = mepGnav?.commands;
   if (commands?.length) {
-    /* c8 ignore next 4 */
     const { handleCommands, deleteMarkedEls } = await import('../../../features/personalization/personalization.js');
     handleCommands(commands, body, true, true);
     deleteMarkedEls(body);
