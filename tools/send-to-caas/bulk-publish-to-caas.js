@@ -18,7 +18,7 @@ import comEnterpriseToCaasTagMap from './comEnterpriseToCaasTagMap.js';
 
 const LS_KEY = 'bulk-publish-caas';
 const FIELDS = ['preset', 'host', 'repo', 'owner', 'caasEnv', 'urls', 'contentType', 'publishToFloodgate'];
-const FIELDS_CB = ['usePreview', 'useHtml'];
+const FIELDS_CB = ['publishToDraft', 'useHtml', 'usePreview'];
 const DEFAULT_VALUES = {
   preset: 'default',
   caasEnv: 'prod',
@@ -31,7 +31,7 @@ const DEFAULT_VALUES = {
   publishToFloodgate: 'default',
 };
 const DEFAULT_VALUES_CB = {
-  publishToLive: true,
+  publishToDraft: true,
   usePreview: false,
   useHtml: true,
 };
@@ -114,7 +114,7 @@ const processData = async (data, accessToken) => {
   const statusModal = showAlert('', { btnText: 'Cancel', onClose: () => { keepGoing = false; } });
   const {
     caasEnv,
-    publishToLive,
+    publishToDraft,
     host,
     owner,
     repo,
@@ -185,7 +185,7 @@ const processData = async (data, accessToken) => {
         accessToken,
         caasEnv: caasEnv?.toLowerCase(),
         caasProps,
-        publishToLive,
+        publishToDraft,
       });
 
       if (response.success) {
@@ -292,7 +292,7 @@ const loadFromLS = () => {
     /* c8 ignore next */
   } catch (e) { /* do nothing */ }
  
-  if (caasEnv.value === 'prod') {
+  if (caasEnv.value === 'prod' && !publishToDraft.checked) {
     publishWarning.style.height = '25px';
   }
 };
@@ -350,6 +350,15 @@ caasEnv.addEventListener('change', () => {
   }
 });
 
+publishToDraft.addEventListener('change', () => {
+  const { checked } = publishToDraft;
+  if (caasEnv.value === 'prod' && !checked) {
+    publishWarning.style.height = '25px';
+  } else {
+    publishWarning.style.height = '0';
+  }
+});
+
 const checkUserStatus = async () => {
   const accessToken = await checkIms(false);
   if (accessToken) {
@@ -393,10 +402,10 @@ helpButtons.forEach((btn) => {
           <p>For example:</p>
           <p><tt>https://main--{repo}--<b>{owner}</b>.hlx.live</tt>`);
 
-      } else if (el === 'publish-to-prod') {   
-        showAlert(`<p><b>Publish to Prod</b></p>
-          <p>By default the content is sent to the CaaS <b>DRAFT</b> container.<p>
-          <p>When this checkbox is checked, the content will be send to the CaaS <b>LIVE</b> container.</p>`);
+      } else if (el === 'publish-to-draft') {   
+        showAlert(`<p><b>Publish to CaaS DRAFT only</b></p>
+          <p>When this is option checked, the content will be sent to the CaaS <b>DRAFT</b> container <i>only</i>. </p>
+          <p>With this option unchecked, the content is sent to both, the CaaS <b>LIVE</b> and <b>DRAFT</b> containers.</p>`);
           
       } else if (el === 'floodgate') {   
         showAlert(`<p><b>FloodGate</b></p>
@@ -461,7 +470,7 @@ const init = async () => {
       owner: document.getElementById('owner').value,
       urls: document.getElementById('urls').value,
       publishToFloodgate: document.getElementById('publishToFloodgate').value,
-      publishToLive: document.getElementById('publishToLive')?.checked || true,
+      publishToDraft: document.getElementById('publishToDraft').checked,
       useHtml: document.getElementById('useHtml').checked,
       usePreview: document.getElementById('usePreview').checked,
     });
