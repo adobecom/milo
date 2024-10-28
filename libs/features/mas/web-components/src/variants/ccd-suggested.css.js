@@ -24,7 +24,7 @@ merch-card[variant="ccd-suggested"] [slot="body-xs"] a {
 
 merch-card[variant="ccd-suggested"] [slot="price"] span.placeholder-resolved[data-template="priceStrikethrough"] {
   text-decoration: line-through;
-  color: var(--spectrum-gray-600, var(--merch-color-grey-60));
+  color: var(--spectrum-blue-800, var(--color-accent));
 }
 
 merch-card[variant="ccd-suggested"] [slot="cta"] a {
