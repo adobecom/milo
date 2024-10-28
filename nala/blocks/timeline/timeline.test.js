@@ -4,10 +4,11 @@
 import { expect, test } from '@playwright/test';
 import { features } from './timeline.spec.js';
 import TimelineBlock from './timeline.page.js';
+import { runAccessibilityTest } from '../../libs/accessibility.js';
 
 const miloLibs = process.env.MILO_LIBS || '';
 
-// verify the text in the timeline block
+// Test 0: verify the text in the timeline block
 test(`${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
   const timeline = new TimelineBlock(page);
   const URL = `${baseURL}${features[0].path}${miloLibs}`;
@@ -24,7 +25,7 @@ test(`${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
   await expect(timeline.banner2).toHaveText('14-day full refund period');
 });
 
-// verify the CSS style and the analytic
+// Test 1: verify the CSS style and the analytic
 test(`${features[1].name},${features[1].tags}`, async ({ page, baseURL }) => {
   const timeline = new TimelineBlock(page);
   const URL = `${baseURL}${features[1].path}${miloLibs}`;
@@ -42,4 +43,13 @@ test(`${features[1].name},${features[1].tags}`, async ({ page, baseURL }) => {
 
   await expect(timeline.timelineBlock).toHaveAttribute('daa-lh', 'b2|timeline');
   await expect(timeline.timelineBlock).toBeVisible();
+});
+
+// Test 2: run Accessibility tests
+test(`${features[2].name},${features[2].tags}`, async ({ page, baseURL }) => {
+  const timeline = new TimelineBlock(page);
+  const URL = `${baseURL}${features[1].path}${miloLibs}`;
+  console.info(`[Test Page]: ${URL}`);
+  await page.goto(URL);
+  await runAccessibilityTest({ page, testScope: timeline.timelineBlock }); 
 });

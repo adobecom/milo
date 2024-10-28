@@ -6,10 +6,17 @@ module.exports = {
       name: '@Verify text in timeline block',
       path: '/drafts/nala/blocks/timeline/timeline',
       data: {},
-      tags: '@timeline @timeline1 @smoke @regression @milo',
+      tags: '@timeline @timeline0 @smoke @regression @milo',
     },
     {
       tcid: '1',
+      name: '@Verify CSS in timeline block',
+      path: '/drafts/nala/blocks/timeline/timeline',
+      data: {},
+      tags: '@timeline @timeline1 @smoke @regression @milo',
+    },
+    {
+      tcid: '2',
       name: '@Verify CSS in timeline block',
       path: '/drafts/nala/blocks/timeline/timeline',
       data: {},
