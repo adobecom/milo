@@ -17,7 +17,7 @@ module.exports = {
     },
     {
       tcid: '2',
-      name: '@Verify CSS in timeline block',
+      name: '@Accessibility tests in timeline block',
       path: '/drafts/nala/blocks/timeline/timeline',
       data: {},
       tags: '@timeline @timeline2 @smoke @regression @milo',
