@@ -260,14 +260,6 @@ export function isInTextNode(node) {
   return node.parentElement.firstChild.nodeType === Node.TEXT_NODE;
 }
 
-export function elContainsText(el) {
-  return !![...el.childNodes].filter((childNode) => {
-    const { innerText, nodeType, textContent } = childNode;
-    if (nodeType === Node.ELEMENT_NODE) return innerText.trim() !== '';
-    return nodeType === Node.TEXT_NODE && textContent.trim() !== '';
-  }).length;
-}
-
 export function createTag(tag, attributes, html, options = {}) {
   const el = document.createElement(tag);
   if (html) {

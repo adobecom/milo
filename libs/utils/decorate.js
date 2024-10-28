@@ -1,4 +1,4 @@
-import { createTag, loadStyle, getConfig, createIntersectionObserver, elContainsText } from './utils.js';
+import { createTag, loadStyle, getConfig, createIntersectionObserver } from './utils.js';
 
 const { miloLibs, codeRoot } = getConfig();
 
@@ -63,6 +63,14 @@ export function decorateIconArea(el) {
     icon.parentElement.classList.add('icon-area');
     if (icon.textContent.includes('persona')) icon.parentElement.classList.add('persona-area');
   });
+}
+
+function elContainsText(el) {
+  return !![...el.childNodes].filter((childNode) => {
+    const { innerText, nodeType, textContent } = childNode;
+    if (nodeType === Node.ELEMENT_NODE) return innerText.trim() !== '';
+    return nodeType === Node.TEXT_NODE && textContent.trim() !== '';
+  }).length;
 }
 
 export function decorateBlockText(el, config = ['m', 's', 'm'], type = null) {
