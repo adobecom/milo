@@ -51,5 +51,5 @@ test(`${features[2].name},${features[2].tags}`, async ({ page, baseURL }) => {
   const URL = `${baseURL}${features[1].path}${miloLibs}`;
   console.info(`[Test Page]: ${URL}`);
   await page.goto(URL);
-  await runAccessibilityTest({ page, testScope: timeline.timelineBlock }); 
+  await runAccessibilityTest({ page, testScope: timeline.timelineBlock });
 });
