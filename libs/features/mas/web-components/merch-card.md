@@ -114,7 +114,7 @@ Designs:
 
 | Name             | Description                                                      |
 | ---------------- | ---------------------------------------------------------------- |
-| `updateComplete` | a promise that resolves when the `merch-card` finishes to execute render method. Doesn't mean that card is ready, for that use 'mas:ready' or 'mas:error' event. |
+| `updateComplete` | a promise that resolves when the `merch-card` finishes to execute execute render method. Doesn't mean that card is ready, for that use 'mas:ready' or 'mas:error' event. method. Doesn’t mean that card is ready, for that use ‘mas:ready’ or ‘mas:error’ event. |
 
 ### Events
 

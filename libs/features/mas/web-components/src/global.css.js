@@ -13,6 +13,9 @@ styles.innerHTML = `
     --consonant-merch-card-body-line-height: 21px;
     --consonant-merch-card-promo-text-height: var(--consonant-merch-card-body-font-size);
 
+    * Fonts */
+    --merch-body-font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
+
     /* spacing */
     --consonant-merch-spacing-xxxs: 4px;
     --consonant-merch-spacing-xxs: 8px;
@@ -71,6 +74,9 @@ styles.innerHTML = `
     --merch-color-grey-10: #f6f6f6;
     --merch-color-grey-60: #6D6D6D;
     --merch-color-grey-80: #2c2c2c;
+    /* beware, 'gray' not 'grey'*/
+    --merch-color-gray-200: #E8E8E8;
+    --merch-color-gray-600: #E8E8E8;
     --merch-color-green-promo: #2D9D78;
 
     /* merch card generic */
