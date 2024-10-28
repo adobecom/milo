@@ -15,6 +15,7 @@ import {
   getExperienceName,
   getFedsPlaceholderConfig,
   hasActiveLink,
+  isActiveLink,
   icons,
   isDesktop,
   isTangentToViewport,
@@ -41,6 +42,8 @@ import {
 } from './utilities/utilities.js';
 
 import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
+
+const SIGNIN_CONTEXT = getConfig()?.signInContext;
 
 function getHelpChildren() {
   const { unav } = getConfig();
@@ -94,8 +97,8 @@ export const CONFIG = {
             },
           },
           callbacks: {
-            onSignIn: () => { window.adobeIMS?.signIn(); },
-            onSignUp: () => { window.adobeIMS?.signIn(); },
+            onSignIn: () => { window.adobeIMS?.signIn(SIGNIN_CONTEXT); },
+            onSignUp: () => { window.adobeIMS?.signIn(SIGNIN_CONTEXT); },
           },
         },
       },
@@ -147,13 +150,12 @@ export const LANGMAP = {
 };
 
 // signIn, decorateSignIn and decorateProfileTrigger can be removed if IMS takes over the profile
-const signIn = () => {
+const signIn = (options = {}) => {
   if (typeof window.adobeIMS?.signIn !== 'function') {
     lanaLog({ message: 'IMS signIn method not available', tags: 'errorType=warn,module=gnav' });
     return;
   }
-
-  window.adobeIMS.signIn();
+  window.adobeIMS.signIn(options);
 };
 
 const decorateSignIn = async ({ rawElem, decoratedElem }) => {
@@ -166,7 +168,7 @@ const decorateSignIn = async ({ rawElem, decoratedElem }) => {
 
     signInElem.addEventListener('click', (e) => {
       e.preventDefault();
-      signIn();
+      signIn(SIGNIN_CONTEXT);
     });
   } else {
     signInElem = toFragment`<button daa-ll="${signInLabel}" class="feds-signIn" aria-expanded="false" aria-haspopup="true">${signInLabel}</button>`;
@@ -183,7 +185,7 @@ const decorateSignIn = async ({ rawElem, decoratedElem }) => {
       dropdownSignInAnchor.replaceWith(dropdownSignInButton);
       dropdownSignInButton.addEventListener('click', (e) => {
         e.preventDefault();
-        signIn();
+        signIn(SIGNIN_CONTEXT);
       });
     } else {
       lanaLog({ message: 'Sign in link not found in dropdown.', tags: 'errorType=warn,module=gnav' });
@@ -354,6 +356,7 @@ class Gnav {
           ${this.decorateBrand()}
         </div>
         ${this.elements.navWrapper}
+        ${getConfig().searchEnabled === 'on' ? toFragment`<div class="feds-client-search"></div>` : ''}
         ${this.useUniversalNav ? this.blocks.universalNav : ''}
         ${(!this.useUniversalNav && this.blocks.profile.rawElem) ? this.blocks.profile.decoratedElem : ''}
         ${this.decorateLogo()}
@@ -838,7 +841,6 @@ class Gnav {
         ${isDesktop.matches ? '' : this.decorateSearch()}
         ${this.elements.mainNav}
         ${isDesktop.matches ? this.decorateSearch() : ''}
-        ${getConfig().searchEnabled === 'on' ? toFragment`<div class="feds-client-search"></div>` : ''}
       </div>
     `;
 
@@ -967,21 +969,17 @@ class Gnav {
         let customLinkModifier = '';
         let removeCustomLink = false;
         const linkElem = item.querySelector('a');
+        const customLinksSection = item.closest('.link-group');
         linkElem.className = 'feds-navLink';
         linkElem.setAttribute('daa-ll', getAnalyticsValue(linkElem.textContent, index + 1));
-        if (itemHasActiveLink) {
-          linkElem.removeAttribute('href');
-          linkElem.setAttribute('role', 'link');
-          linkElem.setAttribute('aria-disabled', 'true');
-          linkElem.setAttribute('aria-current', 'page');
-          linkElem.setAttribute('tabindex', 0);
-        }
 
-        const customLinksSection = item.closest('.link-group');
         if (customLinksSection) {
           const removeLink = () => {
             const url = new URL(linkElem.href);
             linkElem.setAttribute('href', `${url.origin}${url.pathname}${url.search}`);
+            if (isActiveLink(linkElem)) {
+              linkElem.removeAttribute('href');
+            }
             const linkHash = url.hash.slice(2);
             return !this.customLinks.includes(linkHash);
           };
@@ -989,6 +987,12 @@ class Gnav {
             customLinkModifier = ` feds-navItem--${className}`;
           });
           removeCustomLink = removeLink();
+        } else if (itemHasActiveLink) {
+          linkElem.removeAttribute('href');
+          linkElem.setAttribute('role', 'link');
+          linkElem.setAttribute('aria-disabled', 'true');
+          linkElem.setAttribute('aria-current', 'page');
+          linkElem.setAttribute('tabindex', 0);
         }
 
         const linkTemplate = toFragment`
@@ -1055,7 +1059,7 @@ const getSource = async () => {
   const { locale, dynamicNavKey } = getConfig();
   let url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
   if (dynamicNavKey) {
-    const { default: dynamicNav } = await import('../../features/dynamic-navigation.js');
+    const { default: dynamicNav } = await import('../../features/dynamic-navigation/dynamic-navigation.js');
     url = dynamicNav(url, dynamicNavKey);
   }
   return url;

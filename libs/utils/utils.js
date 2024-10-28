@@ -229,6 +229,7 @@ export const [setConfig, updateConfig, getConfig] = (() => {
       config.base = config.miloLibs || config.codeRoot;
       config.locale = pathname ? getLocale(conf.locales, pathname) : getLocale(conf.locales);
       config.autoBlocks = conf.autoBlocks ? [...AUTO_BLOCKS, ...conf.autoBlocks] : AUTO_BLOCKS;
+      config.signInContext = conf.signInContext || {};
       config.doNotInline = conf.doNotInline
         ? [...DO_NOT_INLINE, ...conf.doNotInline]
         : DO_NOT_INLINE;
@@ -395,7 +396,7 @@ export function appendHtmlToLink(link) {
   }
 }
 
-export const loadScript = (url, type) => new Promise((resolve, reject) => {
+export const loadScript = (url, type, { mode } = {}) => new Promise((resolve, reject) => {
   let script = document.querySelector(`head > script[src="${url}"]`);
   if (!script) {
     const { head } = document;
@@ -404,6 +405,7 @@ export const loadScript = (url, type) => new Promise((resolve, reject) => {
     if (type) {
       script.setAttribute('type', type);
     }
+    if (['async', 'defer'].includes(mode)) script.setAttribute(mode, true);
     head.append(script);
   }
 
@@ -691,7 +693,8 @@ export function decorateLinks(el) {
       a.href = a.href.replace(loginEvent, '');
       a.addEventListener('click', (e) => {
         e.preventDefault();
-        window.adobeIMS?.signIn();
+        const { signInContext } = config;
+        window.adobeIMS?.signIn(signInContext);
       });
     }
     const copyEvent = '#_evt-copy';
@@ -1096,8 +1099,7 @@ export function scrollToHashedElement(hash) {
 }
 
 export async function loadDeferred(area, blocks, config) {
-  const event = new Event(MILO_EVENTS.DEFERRED);
-  area.dispatchEvent(event);
+  area.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
 
   if (area !== document) {
     return;
@@ -1133,6 +1135,12 @@ export async function loadDeferred(area, blocks, config) {
   if (config.mep?.preview) {
     import('../features/personalization/preview.js')
       .then(({ default: decoratePreviewMode }) => decoratePreviewMode());
+  }
+  if (config?.dynamicNavKey && config?.env?.name !== 'prod') {
+    const { miloLibs } = config;
+    loadStyle(`${miloLibs}/features/dynamic-navigation/status.css`);
+    const { default: loadDNStatus } = await import('../features/dynamic-navigation/status.js');
+    loadDNStatus();
   }
 }
 
