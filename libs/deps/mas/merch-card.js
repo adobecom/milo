@@ -1357,12 +1357,12 @@ merch-card[variant="ccd-suggested"] [slot="body-xs"] a {
   font-size: var(--consonant-merch-card-body-xxs-font-size);
   line-height: var(--consonant-merch-card-body-xxs-line-height);
   text-decoration: underline;
-  color: var(--spectrum-gray-800, var(--merch-color-grey-80));
+  color: var(--spectrum-blue-800, var(--color-accent));
 }
 
 merch-card[variant="ccd-suggested"] [slot="price"] span.placeholder-resolved[data-template="priceStrikethrough"] {
   text-decoration: line-through;
-  color: var(--spectrum-blue-800, var(--color-accent));
+  color: var(--spectrum-gray-600, var(--merch-color-grey-60));
 }
 
 merch-card[variant="ccd-suggested"] [slot="cta"] a {
@@ -1475,7 +1475,6 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a:not(.con-button) {
     font-weight: 400;
     line-height: var(--consonant-merch-card-body-xxs-line-height);
     text-decoration-line: underline;
-    color: var(--spectrum-blue-800, var(--color-accent));
     color: var(--spectrum-gray-600, var(--merch-color-grey-60));
   }
 
