@@ -10,7 +10,7 @@
 }
 
 .graybox {
-  display: none;
+  display: none !important;
 }
 
 .gb-graybox-body {
