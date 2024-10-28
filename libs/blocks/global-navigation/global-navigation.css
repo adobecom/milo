@@ -914,8 +914,9 @@ header.global-navigation {
 
   /* local-nav */
 
-  .feds-localnav {
+  header + .feds-localnav {
     position: sticky;
+    display: block;
     top: 0;
     width: 100%;
     background: #fff;
@@ -959,6 +960,10 @@ header.global-navigation {
   .feds-localnav.active .feds-localnav-title::after {
     transform: rotateZ(-135deg);
   }
+}
+
+.feds-localnav {
+  display: none;
 }
 
 @keyframes fromtheleft {
