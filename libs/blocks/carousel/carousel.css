@@ -394,8 +394,7 @@ html[dir="rtl"] .carousel-slides .section.carousel-slide {
   height: auto;
 }
 
-.carousel[class*='rounded-corners'] .carousel-slide > div p:has(> video),
-.carousel[class*='rounded-corners'] .carousel-slide > div p:has(> picture) {
+.carousel[class*='rounded-corners'] .carousel-slide > div :is(p):has(> video, > picture, > .milo-video, > .modal-img-link) {
   margin-top: 0;
   margin-bottom: 0;
   line-height: 0;
