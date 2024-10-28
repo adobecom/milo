@@ -1291,9 +1291,7 @@ export async function loadArea(area = document) {
 
   if (isDoc) {
     const sk = document.querySelector('helix-sidekick');
-    if (sk) {
-      import('./sidekick-decorate.js').then((mod) => { mod.default(sk); });
-    }
+    if (sk) import('./sidekick-decorate.js').then((mod) => { mod.default(sk); });
     await checkForPageMods();
     appendHtmlToCanonicalUrl();
   }
