@@ -22,7 +22,7 @@ dd.content .field label {
 
 dd.content .field {
   padding: 0 20px;
-  margin: 14px 0
+  margin: 12px 0
 }
 
 .results {
@@ -206,8 +206,8 @@ h5.basic-settings {
 }
 
 body.advanced h5.basic-settings {
-  display: flex;
-  justify-content: space-between;
+  display: block;
+  margin-bottom: -5px;
 }
 
 .preset-options {

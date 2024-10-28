@@ -273,7 +273,7 @@ const bulkPublish = async () => {
 const loadFromLS = () => {
   document.body.classList = '';
   const ls = localStorage.getItem(LS_KEY);
-  if (!ls) return;
+  if (!ls || !ls.includes('preset')) return;
   try {
     setConfig(JSON.parse(ls));
     const config = getConfig();
