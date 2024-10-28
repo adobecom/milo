@@ -1,4 +1,4 @@
-//give a one-second delay to allow the DOM structure to exist
+// give a one-second delay to allow the DOM structure to exist
 
 setTimeout(function() {
   document.querySelector("body").style.color="orange";
