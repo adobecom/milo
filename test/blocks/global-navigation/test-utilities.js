@@ -38,6 +38,7 @@ export const selectors = {
   promo: '.feds-promo',
   promoImage: '.feds-promo-image',
   topNavWrapper: '.feds-topnav-wrapper',
+  topNav: '.feds-topnav',
   breadcrumbsWrapper: '.feds-breadcrumbs-wrapper',
   mainNav: '.feds-nav',
   imsSignIn: '.feds-signIn',

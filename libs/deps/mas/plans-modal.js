@@ -5006,7 +5006,7 @@ styles.innerHTML = `
     --consonant-merch-card-detail-font-size: 12px;
     --consonant-merch-card-detail-font-weight: 500;
     --consonant-merch-card-detail-letter-spacing: 0.8px;
-    --consonant-merch-card-background-color: #fff;
+    --merch-card-background-color: #fff;
 
     --consonant-merch-card-heading-font-size: 18px;
     --consonant-merch-card-heading-line-height: 22.5px;
