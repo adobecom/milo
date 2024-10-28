@@ -16,7 +16,8 @@ export const PERSONALIZATION_TAGS = {
   ios: () => /iPad|iPhone|iPod/.test(navigator.userAgent),
   windows: () => navigator.userAgent.includes('Windows'),
   mac: () => navigator.userAgent.includes('Macintosh'),
-  'mobile-device': () => /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i.test(navigator.userAgent),
+  'mobile-device': () => /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i.test(navigator.userAgent) || 
+  (navigator.userAgent.includes('Macintosh') && navigator?.maxTouchPoints > 1),
   phone: () => PERSONALIZATION_TAGS['mobile-device']() && PHONE_SIZE,
   tablet: () => PERSONALIZATION_TAGS['mobile-device']() && !PHONE_SIZE,
   desktop: () => !PERSONALIZATION_TAGS['mobile-device'](),
