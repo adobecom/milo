@@ -239,18 +239,20 @@ const fetchData = async (url, type = DATA_TYPE.JSON) => {
   return null;
 };
 
-const getBlockProps = (fVal, miloLibs, origin) => {
+const getBlockProps = (fVal, config, origin) => {
   let val = fVal;
   if (val?.includes('\\')) val = val?.split('\\').join('/');
   if (!val?.startsWith('/')) val = `/${val}`;
   const blockSelector = val?.split('/').pop();
 
-  if (!miloLibs) return { blockSelector, blockTarget: val };
   if (val.startsWith('/libs/')) {
     /* c8 ignore next 1 */
-    return { blockSelector, blockTarget: `${miloLibs}${val.replace('/libs', '')}` };
+    val = `${config.miloLibs || config.codeRoot}${val.replace('/libs', '')}`;
+  } else {
+    val = `${origin}${val}`;
   }
-  return { blockSelector, blockTarget: `${origin}${val}` };
+
+  return { blockSelector, blockTarget: val };
 };
 
 const consolidateArray = (arr, prop, existing = []) => arr
@@ -577,7 +579,7 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
       variants[vn][action] = variants[vn][action] || [];
 
       if (action === 'useblockcode') {
-        const { blockSelector, blockTarget } = getBlockProps(line[vn], config.miloLibs, origin);
+        const { blockSelector, blockTarget } = getBlockProps(line[vn], config, origin);
         variants[vn][action].push({
           selector: blockSelector,
           val: blockTarget,
