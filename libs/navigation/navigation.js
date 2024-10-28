@@ -25,11 +25,13 @@ const stageDomainsMap = {
   'www.stage.adobe.com': {
     'www.adobe.com': 'origin',
     'helpx.adobe.com': 'helpx.stage.adobe.com',
+    'creativecloud.adobe.com': 'stage.creativecloud.adobe.com',
   },
   // Test app
   'adobecom.github.io': {
     'www.adobe.com': 'www.stage.adobe.com',
     'helpx.adobe.com': 'helpx.stage.adobe.com',
+    'creativecloud.adobe.com': 'stage.creativecloud.adobe.com',
   },
 };
 
