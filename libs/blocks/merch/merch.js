@@ -646,7 +646,7 @@ export async function getCheckoutContext(el, params) {
 
   return {
     ...context,
-    'checkout-client-id': checkoutClientId,
+    checkoutClientId,
     checkoutWorkflow,
     checkoutWorkflowStep,
     checkoutMarketSegment,
