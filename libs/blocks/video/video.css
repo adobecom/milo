@@ -12,7 +12,7 @@ video {
   min-height: 40px;
 }
 
-.video-container{
+.video-container {
   display: flex;
   position: relative;
   height: 100%;
@@ -37,26 +37,42 @@ video {
 }
 
 .video-container .pause-play-wrapper {
-  width: 40px !important;
-  height: 40px !important;
-  display: flex;
+  width: 45px !important;
+  height: 45px !important;
   position: absolute;
   bottom: 2%;
   right: 2%;
   margin: 0;
-  background: #242424;
+  justify-content: center;
+  align-items: center;
   border-radius: 50%;
   z-index: 2;
   cursor: pointer;
 }
 
-.video-container .pause-play-wrapper:hover {
+.video-container .pause-play-wrapper .offset-filler {  
+  display: inherit;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius:inherit;
+  background: #242424;
+  border: 2px solid white;
+  outline: 1px solid white;
+}
+
+.dark .video-container .pause-play-wrapper:focus .offset-filler {
+  outline: 1px solid #000;
+}
+
+.video-container .pause-play-wrapper .offset-filler:hover {
   background: #000;
+  outline: var(--color-accent-focus-ring) solid 2px;
 }
 
 .video-container .pause-play-wrapper:focus-visible {
   background: #000;
-  border: 3px solid var(--color-white);
   outline: var(--color-accent-focus-ring) solid 2px;
 }
 
@@ -93,7 +109,7 @@ video {
 
 @media (min-width: 900px) {
   .media:not(.media-reverse-mobile, .media-reversed) .video-container .pause-play-wrapper,
-  .hero-marquee.asset-left .video-container .pause-play-wrapper,
+  :is(.marquee.row-reversed .asset, .hero-marquee.asset-left) .video-container .pause-play-wrapper,
   .aside:not(.split) .video-container .pause-play-wrapper {
     left: 2%;
   }
