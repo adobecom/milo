@@ -709,7 +709,7 @@ export function buildVariantInfo(variantNames) {
 
 const getXLGListURL = (config) => {
   const sheet = config.env?.name === 'prod' ? 'prod' : 'stage';
-  return `https://www.adobe.com/federal/assets/data/mep-entitlement-tags.json?sheet=${sheet}`;
+  return `https://www.adobe.com/federal/assets/data/mep-xlg-tags.json?sheet=${sheet}`;
 };
 
 export const getEntitlementMap = async () => {
