@@ -249,7 +249,7 @@ const parseContent = async (el, merchCard) => {
           }
         }
         element.setAttribute('slot', slotName);
-        if ((tagName === 'h3' && headingXsCount === 1) || (tagName === 'h2' && headingMCount === 1)) {
+        if (headingXsCount === 1 || headingMCount === 1) {
           tagName = 'h3';
         } else {
           tagName = 'p';
