@@ -75,7 +75,7 @@ export const styles = css`
     }
 
     hr {
-        background-color: var(--merch-color-gray-200);
+        background-color: var(--merch-color-grey-200);
         border: none;
         height: 1px;
         width: auto;
@@ -133,7 +133,7 @@ export const styles = css`
     .secure-transaction-label {
         font-size: var(--consonant-merch-card-body-xxs-font-size);
         line-height: 1.3;
-        color: var(--merch-color-gray-600);
+        color: var(--merch-color-grey-600);
     }
 
     #stock-checkbox {
