@@ -1052,6 +1052,8 @@ async function checkForPageMods() {
 
 async function loadPostLCP(config) {
   await decoratePlaceholders(document.body.querySelector('header'), config);
+  const sk = document.querySelector('helix-sidekick');
+  if (sk) import('./sidekick-decorate.js').then((mod) => { mod.default(sk); });
   if (config.mep?.targetEnabled === 'gnav') {
     /* c8 ignore next 2 */
     const { init } = await import('../features/personalization/personalization.js');
@@ -1290,8 +1292,6 @@ export async function loadArea(area = document) {
   const isDoc = area === document;
 
   if (isDoc) {
-    const sk = document.querySelector('helix-sidekick');
-    if (sk) import('./sidekick-decorate.js').then((mod) => { mod.default(sk); });
     await checkForPageMods();
     appendHtmlToCanonicalUrl();
   }
