@@ -251,7 +251,7 @@ const parseContent = async (el, merchCard) => {
         element.setAttribute('slot', slotName);
         if (headingXsCount === 1 && tagName === 'H3') {
           tagName = 'h3';
-        } else if (merchCard.variant === MINI_COMPARE_CHART && headingMCount === 1 && tagName === 'H2') {
+        } else if (merchCard.variant === MINI_COMPARE_CHART && slotName === 'heading-m') {
           tagName = 'h3';
         } else {
           tagName = 'p';
