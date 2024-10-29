@@ -714,12 +714,22 @@ export function decorateLinks(el) {
     }
 
     // Pattern: "Link Text | Aria Label"
-    if (/\s\|\s/.test(a.textContent)) {
-      const ogContent = a.textContent;
-      const split = ogContent.split(/\s\|\s/);
+    // If an icon is defined just before the pipe, there is no space before the pipe
+    const pipeRegex = /\|\s/;
+    if (pipeRegex.test(a.textContent)) {
+      // the anchor may already have elements inside, fetching the matching child nodes
+      const nodes = [...a.childNodes].filter((node) => pipeRegex.test(node.textContent));
+      // get the last matching text node with pipe character(s)
+      const node = nodes[nodes.length - 1];
+      // get its text content
+      const ogContent = node.textContent;
+      // get the last occurrence of the pipe character
+      const split = ogContent.split(pipeRegex);
       const ariaLabel = split[split.length - 1];
-      const text = ogContent.replace(` | ${ariaLabel}`, '');
-      a.textContent = text;
+      // Delete the aria label value from the original text
+      const text = ogContent.replace(new RegExp(`\\s?\\|\\s?${ariaLabel}`), '');
+      node.textContent = text;
+      // Set the aria label
       a.setAttribute('aria-label', ariaLabel);
     }
 
