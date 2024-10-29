@@ -437,17 +437,17 @@ html[dir="rtl"] .carousel-slides .section.carousel-slide {
     width: 100%;
   }
 
-  .carousel.container.hinting-mobile .carousel-wrapper {
+  .carousel.hinting-mobile .carousel-wrapper {
     margin-left: 2rem;
   }
 
-  .container.hinting-mobile .carousel-previous,
-  .container.hinting-center-mobile .carousel-previous {
+  .carousel.hinting-mobile .carousel-previous,
+  .carousel.hinting-center-mobile .carousel-previous {
     left: 1rem;
   }
 
-  .container.hinting-mobile .carousel-next,
-  .container.hinting-center-mobile .carousel-next {
+  .carousel.hinting-mobile .carousel-next,
+  .carousel.hinting-center-mobile .carousel-next {
     right: 1rem;
   }
 
