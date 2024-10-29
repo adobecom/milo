@@ -330,6 +330,19 @@ function handleChangingSlides(carouselElements) {
   mobileSwipeDetect(carouselElements);
 }
 
+function readySlides(slides, slideContainer) {
+  slideContainer.classList.add('is-ready');
+  slides.forEach((slide, idx) => {
+    // Set last slide to be first in order and make reference.
+    if (slides.length - 1 === idx) {
+      slide.style.order = 1;
+      slide.classList.add('reference-slide');
+    } else {
+      slide.style.order = idx + 2;
+    }
+  });
+}
+
 export default function init(el) {
   const carouselSection = el.closest('.section');
   if (!carouselSection) return;
@@ -372,6 +385,14 @@ export default function init(el) {
     handleLightboxButtons(lightboxBtns, el, slideWrapper);
   } else {
     slideWrapper.append(slideContainer);
+  }
+
+  /*
+   * Hinting center variant - Set slides order
+   * before moveSlides is called for centering to work.
+  */
+  if (el.classList.contains('hinting-center-mobile')) {
+    readySlides(slides, slideContainer);
   }
 
   el.textContent = '';
