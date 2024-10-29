@@ -240,7 +240,7 @@ import{LitElement as Yt}from"../lit-all.min.js";import{LitElement as zt,html as 
         display: flex;
         gap: 8px;
     }
-`,ot=()=>[et`
+`,rt=()=>[tt`
         /* Tablet */
         @media screen and ${X(m)} {
             :host([size='wide']),
@@ -251,7 +251,7 @@ import{LitElement as Yt}from"../lit-all.min.js";import{LitElement as zt,html as 
         }
 
         /* Laptop */
-        @media screen and ${tt(h)} {
+        @media screen and ${X(h)} {
             :host([size='wide']) {
                 grid-column: span 2;
             }
@@ -366,7 +366,7 @@ merch-card[variant="catalog"] .payment-details {
                     <slot name="icons"></slot> ${this.badge}
                     <div
                         class="action-menu
-                ${at()&&this.card.actionMenu?"always-visible":""}
+                ${ot()&&this.card.actionMenu?"always-visible":""}
                 ${this.card.actionMenu?"invisible":"hidden"}"
                         @click="${this.toggleActionMenu}"
                     ></div>
@@ -380,10 +380,10 @@ merch-card[variant="catalog"] .payment-details {
                 <slot name="heading-xs"></slot>
                 <slot name="heading-m"></slot>
                 <slot name="body-xxs"></slot>
-                ${this.promoBottom?"":j`<slot name="promo-text"></slot
+                ${this.promoBottom?"":q`<slot name="promo-text"></slot
                           ><slot name="callout-content"></slot>`}
                 <slot name="body-xs"></slot>
-                ${this.promoBottom?j`<slot name="promo-text"></slot
+                ${this.promoBottom?q`<slot name="promo-text"></slot
                           ><slot name="callout-content"></slot>`:""}
             </div>
             ${this.secureLabelFooter}
@@ -442,12 +442,12 @@ merch-card[variant="ccd-action"] .price-strikethrough {
       grid-template-columns: repeat(4, var(--consonant-merch-card-ccd-action-width));
   }
 }
-`;var $t={title:{tag:"h3",slot:"heading-xs"},prices:{tag:"h3",slot:"heading-xs"},description:{tag:"div",slot:"body-xs"},ctas:{size:"l"}},C=class extends d{constructor(t){super(t)}getGlobalCSS(){return mt}get aemFragmentMapping(){return $t}renderLayout(){return K` <div class="body">
+`;var Mt={title:{tag:"h3",slot:"heading-xs"},prices:{tag:"h3",slot:"heading-xs"},description:{tag:"div",slot:"body-xs"},ctas:{size:"l"}},S=class extends d{constructor(t){super(t)}getGlobalCSS(){return ht}get aemFragmentMapping(){return Mt}renderLayout(){return j` <div class="body">
             <slot name="icons"></slot> ${this.badge}
             <slot name="heading-xs"></slot>
             <slot name="heading-m"></slot>
-            ${this.promoBottom?K`<slot name="body-xs"></slot
-                      ><slot name="promo-text"></slot>`:K`<slot name="promo-text"></slot
+            ${this.promoBottom?j`<slot name="body-xs"></slot
+                      ><slot name="promo-text"></slot>`:j`<slot name="promo-text"></slot
                       ><slot name="body-xs"></slot>`}
             <footer><slot name="footer"></slot></footer>
             <slot></slot>
@@ -508,7 +508,7 @@ merch-card[variant="ccd-action"] .price-strikethrough {
           `:k`
               <hr />
               ${this.secureLabelFooter}
-          `}`}};import{html as gt}from"../lit-all.min.js";var pt=`
+          `}`}};import{html as pt}from"../lit-all.min.js";var lt=`
 :root {
   --consonant-merch-card-inline-heading-width: 300px;
 }
@@ -843,7 +843,7 @@ merch-card .footer-row-cell:nth-child(8) {
         }
     }
 
-    @media screen and ${xt(h)} {
+    @media screen and ${ut(h)} {
         :host([variant='mini-compare-chart']) footer {
             padding: var(--consonant-merch-spacing-xs)
                 var(--consonant-merch-spacing-s)
@@ -891,7 +891,7 @@ merch-card .footer-row-cell:nth-child(8) {
             --consonant-merch-card-mini-compare-chart-callout-content-height
         );
     }
-  `};import{html as G,css as Pt}from"../lit-all.min.js";var ft=`
+  `};import{html as F,css as Ot}from"../lit-all.min.js";var xt=`
 :root {
   --consonant-merch-card-plans-width: 300px;
   --consonant-merch-card-plans-icon-size: 40px;
@@ -945,23 +945,23 @@ merch-card[variant="plans"] [slot="quantity-select"] {
         grid-template-columns: repeat(4, var(--consonant-merch-card-plans-width));
     }
 }
-`;var _=class extends d{constructor(t){super(t)}getGlobalCSS(){return ft}postCardUpdateHook(){this.adjustTitleWidth()}get stockCheckbox(){return this.card.checkboxLabel?G`<label id="stock-checkbox">
+`;var z=class extends d{constructor(t){super(t)}getGlobalCSS(){return xt}postCardUpdateHook(){this.adjustTitleWidth()}get stockCheckbox(){return this.card.checkboxLabel?F`<label id="stock-checkbox">
                 <input type="checkbox" @change=${this.card.toggleStockOffer}></input>
                 <span></span>
                 ${this.card.checkboxLabel}
-            </label>`:""}renderLayout(){return G` ${this.badge}
+            </label>`:""}renderLayout(){return F` ${this.badge}
         <div class="body">
             <slot name="icons"></slot>
             <slot name="heading-xs"></slot>
             <slot name="heading-m"></slot>
             <slot name="body-xxs"></slot>
-            ${this.promoBottom?"":G`<slot name="promo-text"></slot><slot name="callout-content"></slot> `}
+            ${this.promoBottom?"":F`<slot name="promo-text"></slot><slot name="callout-content"></slot> `}
             <slot name="body-xs"></slot>
-            ${this.promoBottom?G`<slot name="promo-text"></slot><slot name="callout-content"></slot> `:""}  
+            ${this.promoBottom?F`<slot name="promo-text"></slot><slot name="callout-content"></slot> `:""}  
             ${this.stockCheckbox}
         </div>
         <slot name="quantity-select"></slot>
-        ${this.secureLabelFooter}`}static variantStyle=Pt`
+        ${this.secureLabelFooter}`}static variantStyle=Ot`
     :host([variant='plans']) {
       min-height: 348px;
     }
@@ -969,7 +969,7 @@ merch-card[variant="plans"] [slot="quantity-select"] {
     :host([variant='plans']) ::slotted([slot='heading-xs']) {
       max-width: var(--consonant-merch-card-heading-xs-max-width, 100%);
     }
-  `};import{html as W,css as Nt}from"../lit-all.min.js";var vt=`
+  `};import{html as K,css as Pt}from"../lit-all.min.js";var ft=`
 :root {
   --consonant-merch-card-product-width: 300px;
 }
@@ -1009,18 +1009,18 @@ merch-card[variant="plans"] [slot="quantity-select"] {
       grid-template-columns: repeat(4, var(--consonant-merch-card-product-width));
   }
 }
-`;var E=class extends d{constructor(t){super(t)}getGlobalCSS(){return vt}adjustProductBodySlots(){if(this.card.getBoundingClientRect().width===0)return;["heading-xs","body-xxs","body-xs","promo-text","callout-content","body-lower"].forEach(e=>this.updateCardElementMinHeight(this.card.shadowRoot.querySelector(`slot[name="${e}"]`),e))}renderLayout(){return W` ${this.badge}
+`;var w=class extends d{constructor(t){super(t)}getGlobalCSS(){return ft}adjustProductBodySlots(){if(this.card.getBoundingClientRect().width===0)return;["heading-xs","body-xxs","body-xs","promo-text","callout-content","body-lower"].forEach(e=>this.updateCardElementMinHeight(this.card.shadowRoot.querySelector(`slot[name="${e}"]`),e))}renderLayout(){return K` ${this.badge}
       <div class="body">
           <slot name="icons"></slot>
           <slot name="heading-xs"></slot>
           <slot name="body-xxs"></slot>
-          ${this.promoBottom?"":W`<slot name="promo-text"></slot>`}
+          ${this.promoBottom?"":K`<slot name="promo-text"></slot>`}
           <slot name="body-xs"></slot>
-          ${this.promoBottom?W`<slot name="promo-text"></slot>`:""}
+          ${this.promoBottom?K`<slot name="promo-text"></slot>`:""}
           <slot name="callout-content"></slot>
           <slot name="body-lower"></slot>
       </div>
-      ${this.secureLabelFooter}`}connectedCallbackHook(){super.connectedCallbackHook(),window.addEventListener("resize",this.postCardUpdateHook.bind(this))}postCardUpdateHook(){P()||this.adjustProductBodySlots(),this.adjustTitleWidth()}static variantStyle=Nt`
+      ${this.secureLabelFooter}`}connectedCallbackHook(){super.connectedCallbackHook(),window.addEventListener("resize",this.postCardUpdateHook.bind(this))}postCardUpdateHook(){O()||this.adjustProductBodySlots(),this.adjustTitleWidth()}static variantStyle=Pt`
     :host([variant='product']) > slot:not([name='icons']) {
         display: block;
     }
@@ -1048,7 +1048,7 @@ merch-card[variant="plans"] [slot="quantity-select"] {
     :host([variant='product']) ::slotted([slot='heading-xs']) {
       max-width: var(--consonant-merch-card-heading-xs-max-width, 100%);
     }
-  `};import{html as Y,css as Ht}from"../lit-all.min.js";var bt=`
+  `};import{html as W,css as Nt}from"../lit-all.min.js";var vt=`
 :root {
   --consonant-merch-card-segment-width: 378px;
 }
@@ -1098,19 +1098,19 @@ merch-card[variant="plans"] [slot="quantity-select"] {
     <div class="body">
         <slot name="heading-xs"></slot>
         <slot name="body-xxs"></slot>
-        ${this.promoBottom?"":Y`<slot name="promo-text"></slot><slot name="callout-content"></slot>`}
+        ${this.promoBottom?"":W`<slot name="promo-text"></slot><slot name="callout-content"></slot>`}
         <slot name="body-xs"></slot>
-        ${this.promoBottom?Y`<slot name="promo-text"></slot><slot name="callout-content"></slot>`:""}
+        ${this.promoBottom?W`<slot name="promo-text"></slot><slot name="callout-content"></slot>`:""}
     </div>
     <hr />
-    ${this.secureLabelFooter}`}static variantStyle=Ht`
+    ${this.secureLabelFooter}`}static variantStyle=Nt`
     :host([variant='segment']) {
       min-height: 214px;
     }
     :host([variant='segment']) ::slotted([slot='heading-xs']) {
       max-width: var(--consonant-merch-card-heading-xs-max-width, 100%);
     }
-  `};import{html as Q,css as Bt}from"../lit-all.min.js";var yt=`
+  `};import{html as Y,css as Ht}from"../lit-all.min.js";var bt=`
 :root {
   --consonant-merch-card-special-offers-width: 378px;
 }
@@ -1164,18 +1164,18 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
                 <slot name="heading-xs"></slot>
                 <slot name="body-xs"></slot>
             </div>
-            ${this.evergreen?Q`
+            ${this.evergreen?Y`
                       <div
                           class="detail-bg-container"
                           style="background: ${this.card.detailBg}"
                       >
                           <slot name="detail-bg"></slot>
                       </div>
-                  `:Q`
+                  `:Y`
                       <hr />
                       ${this.secureLabelFooter}
                   `}
-            <slot></slot>`}static variantStyle=Bt`
+            <slot></slot>`}static variantStyle=Ht`
         :host([variant='special-offers']) {
             min-height: 439px;
         }
@@ -1297,7 +1297,7 @@ merch-card[variant='twp'] merch-offer-select {
       <div class="body">
           <slot name="body-xs"></slot>
       </div>
-      <footer><slot name="footer"></slot></footer>`}static variantStyle=Gt`
+      <footer><slot name="footer"></slot></footer>`}static variantStyle=Ft`
     :host([variant='twp']) {
       padding: 4px 10px 5px 10px;
     }
@@ -1336,7 +1336,7 @@ merch-card[variant='twp'] merch-offer-select {
       flex-direction: column;
       align-self: flex-start;
     }
-  `};import{html as Vt,css as Ut}from"../lit-all.min.js";var Et=`
+  `};import{html as Gt,css as Vt}from"../lit-all.min.js";var wt=`
 :root {
   --merch-card-ccd-suggested-width: 304px;
   --merch-card-ccd-suggested-height: 205px;
@@ -1387,7 +1387,7 @@ merch-card[variant="ccd-suggested"] [slot="cta"] a {
                 <slot name="cta"></slot>
               </div>
           </div>
-                <slot></slot>`}static variantStyle=Ut`
+                <slot></slot>`}static variantStyle=Vt`
     :host([variant='ccd-suggested']) {
       background-color: var(
         --spectrum-gray-50, #fff);
@@ -1460,7 +1460,7 @@ merch-card[variant="ccd-suggested"] [slot="cta"] a {
       margin-top: auto;
       align-items: center;
     }
-  `};import{html as qt,css as jt}from"../lit-all.min.js";var St=`
+  `};import{html as It,css as qt}from"../lit-all.min.js";var Et=`
 :root {
   --consonant-merch-card-ccd-slice-single-width: 322px;
   --consonant-merch-card-ccd-slice-icon-size: 30px;
@@ -1491,7 +1491,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a:not(.con-button) {
                 <slot name="footer"></slot>
             </div>
             <slot name="image"></slot>
-            <slot></slot>`}static variantStyle=jt`
+            <slot></slot>`}static variantStyle=qt`
         :host([variant='ccd-slice']) {
             width: var(--consonant-merch-card-ccd-slice-single-width);
             background-color: var(
