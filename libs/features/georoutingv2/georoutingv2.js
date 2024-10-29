@@ -251,14 +251,16 @@ async function showModal(details) {
   const { miloLibs, codeRoot } = config;
 
   const tabs = details.querySelector('.tabs');
+  const sectionMetaPath = `${miloLibs || codeRoot}/blocks/section-metadata/section-metadata.css`;
+  const georoutingPath = `${miloLibs || codeRoot}/features/georoutingv2/georoutingv2.css`;
   const promises = [
     tabs ? loadBlock(tabs) : null,
-    tabs ? loadStyle(`${miloLibs || codeRoot}/blocks/section-metadata/section-metadata.css`) : null,
-    new Promise((resolve) => { loadStyle(`${miloLibs || codeRoot}/features/georoutingv2/georoutingv2.css`, resolve); }),
+    tabs ? new Promise((resolve) => { loadStyle(sectionMetaPath, resolve); }) : null,
+    new Promise((resolve) => { loadStyle(georoutingPath, resolve); }),
+    import('../../blocks/modal/modal.js'),
   ];
-  await Promise.all(promises);
-  // eslint-disable-next-line import/no-cycle
-  const { getModal, sendAnalytics } = await import('../../blocks/modal/modal.js');
+  const result = await Promise.all(promises);
+  const { getModal, sendAnalytics } = result[3];
   sendAnalyticsFunc = sendAnalytics;
   return getModal(null, { class: 'locale-modal-v2', id: 'locale-modal-v2', content: details, closeEvent: 'closeModal' });
 }
