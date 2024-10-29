@@ -204,6 +204,7 @@ const appendCalloutContent = (element, merchCard) => {
 const parseContent = async (el, merchCard) => {
   let bodySlotName = `body-${merchCard.variant !== MINI_COMPARE_CHART ? 'xs' : 'm'}`;
   let headingMCount = 0;
+  let headingXsCount = 0;
 
   if (merchCard.variant === MINI_COMPARE_CHART) {
     bodySlotName = 'body-m';
@@ -229,6 +230,7 @@ const parseContent = async (el, merchCard) => {
       let slotName = SLOT_MAP[merchCard.variant]?.[tagName] || SLOT_MAP_DEFAULT[tagName];
       if (slotName) {
         if (['H2', 'H3', 'H4', 'H5'].includes(tagName)) {
+          if (tagName === 'h3') headingXsCount += 1;
           element.classList.add('card-heading');
           if (merchCard.badgeText) {
             element.closest('div[role="tabpanel"')?.classList.add('badge-merch-cards');
@@ -247,7 +249,12 @@ const parseContent = async (el, merchCard) => {
           }
         }
         element.setAttribute('slot', slotName);
-        const newElement = createTag('p');
+        if ((tagName === 'h3' && headingXsCount === 1) || (tagName === 'h2' && headingMCount === 1)) {
+          tagName = 'h3';
+        } else {
+          tagName = 'p';
+        }
+        const newElement = createTag(tagName);
         Array.from(element.attributes).forEach((attr) => {
           newElement.setAttribute(attr.name, attr.value);
         });
