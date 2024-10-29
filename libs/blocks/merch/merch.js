@@ -10,6 +10,7 @@ export const PRICE_TEMPLATE_OPTICAL = 'optical';
 export const PRICE_TEMPLATE_REGULAR = 'price';
 export const PRICE_TEMPLATE_STRIKETHROUGH = 'strikethrough';
 export const PRICE_TEMPLATE_ANNUAL = 'annual';
+
 const PRICE_TEMPLATE_MAPPING = new Map([
   ['priceDiscount', PRICE_TEMPLATE_DISCOUNT],
   [PRICE_TEMPLATE_DISCOUNT, PRICE_TEMPLATE_DISCOUNT],
@@ -43,6 +44,105 @@ export const CC_SINGLE_APPS = [
   ['RUSH'],
   ['XD'],
 ];
+
+const GeoMap = {
+  ar: 'AR_es',
+  be_en: 'BE_en',
+  be_fr: 'BE_fr',
+  be_nl: 'BE_nl',
+  br: 'BR_pt',
+  ca: 'CA_en',
+  ch_de: 'CH_de',
+  ch_fr: 'CH_fr',
+  ch_it: 'CH_it',
+  cl: 'CL_es',
+  co: 'CO_es',
+  la: 'DO_es',
+  mx: 'MX_es',
+  pe: 'PE_es',
+  africa: 'MU_en',
+  dk: 'DK_da',
+  de: 'DE_de',
+  ee: 'EE_et',
+  eg_ar: 'EG_ar',
+  eg_en: 'EG_en',
+  es: 'ES_es',
+  fr: 'FR_fr',
+  gr_el: 'GR_el',
+  gr_en: 'GR_en',
+  ie: 'IE_en',
+  il_he: 'IL_iw',
+  it: 'IT_it',
+  lv: 'LV_lv',
+  lt: 'LT_lt',
+  lu_de: 'LU_de',
+  lu_en: 'LU_en',
+  lu_fr: 'LU_fr',
+  my_en: 'MY_en',
+  my_ms: 'MY_ms',
+  hu: 'HU_hu',
+  mt: 'MT_en',
+  mena_en: 'DZ_en',
+  mena_ar: 'DZ_ar',
+  nl: 'NL_nl',
+  no: 'NO_nb',
+  pl: 'PL_pl',
+  pt: 'PT_pt',
+  ro: 'RO_ro',
+  si: 'SI_sl',
+  sk: 'SK_sk',
+  fi: 'FI_fi',
+  se: 'SE_sv',
+  tr: 'TR_tr',
+  uk: 'GB_en',
+  at: 'AT_de',
+  cz: 'CZ_cs',
+  bg: 'BG_bg',
+  ru: 'RU_ru',
+  ua: 'UA_uk',
+  au: 'AU_en',
+  in_en: 'IN_en',
+  in_hi: 'IN_hi',
+  id_en: 'ID_en',
+  id_id: 'ID_in',
+  nz: 'NZ_en',
+  sa_ar: 'SA_ar',
+  sa_en: 'SA_en',
+  sg: 'SG_en',
+  cn: 'CN_zh-Hans',
+  tw: 'TW_zh-Hant',
+  hk_zh: 'HK_zh-hant',
+  jp: 'JP_ja',
+  kr: 'KR_ko',
+  za: 'ZA_en',
+  ng: 'NG_en',
+  cr: 'CR_es',
+  ec: 'EC_es',
+  pr: 'US_es', // not a typo, should be US
+  gt: 'GT_es',
+  cis_en: 'AZ_en',
+  cis_ru: 'AZ_ru',
+  sea: 'SG_en',
+  th_en: 'TH_en',
+  th_th: 'TH_th',
+};
+
+export function getMiloLocaleSettings(locale) {
+  const localePrefix = locale?.prefix || 'US_en';
+  const geo = localePrefix.replace('/', '') ?? '';
+  let [country = 'US', language = 'en'] = (
+    GeoMap[geo] ?? geo
+  ).split('_', 2);
+
+  country = country.toUpperCase();
+  language = language.toLowerCase();
+
+  return {
+    language,
+    country,
+    locale: `${language}_${country}`,
+  };
+}
 
 /* Optional checkout link params that are appended to checkout urls as is */
 export const CHECKOUT_ALLOWED_KEYS = [
@@ -337,12 +437,31 @@ export function appendTabName(url) {
   return urlWithPlan.href;
 }
 
-async function openExternalModal(url, getModal) {
+export function appendExtraOptions(url, extraOptions) {
+  if (!extraOptions) return url;
+  const extraOptionsObj = JSON.parse(extraOptions);
+  let urlWithExtraOptions;
+  try {
+    urlWithExtraOptions = new URL(url);
+  } catch (err) {
+    window.lana?.log(`Invalid URL ${url} : ${err}`);
+    return url;
+  }
+  Object.keys(extraOptionsObj).forEach((key) => {
+    if (CHECKOUT_ALLOWED_KEYS.includes(key)) {
+      urlWithExtraOptions.searchParams.set(key, extraOptionsObj[key]);
+    }
+  });
+  return urlWithExtraOptions.href;
+}
+
+async function openExternalModal(url, getModal, extraOptions) {
   await loadStyle(`${getConfig().base}/blocks/iframe/iframe.css`);
   const root = createTag('div', { class: 'milo-iframe' });
   const urlWithTabName = appendTabName(url);
+  const urlWithExtraOptions = appendExtraOptions(urlWithTabName, extraOptions);
   createTag('iframe', {
-    src: urlWithTabName,
+    src: urlWithExtraOptions,
     frameborder: '0',
     marginwidth: '0',
     marginheight: '0',
@@ -359,7 +478,7 @@ async function openExternalModal(url, getModal) {
 
 const isInternalModal = (url) => /\/fragments\//.test(url);
 
-export async function openModal(e, url, offerType, hash) {
+export async function openModal(e, url, offerType, hash, extraOptions) {
   e.preventDefault();
   e.stopImmediatePropagation();
   const { getModal } = await import('../modal/modal.js');
@@ -377,7 +496,7 @@ export async function openModal(e, url, offerType, hash) {
     const fragmentPath = url.split(/hlx.(page|live)/).pop();
     modal = await openFragmentModal(fragmentPath, getModal);
   } else {
-    modal = await openExternalModal(url, getModal);
+    modal = await openExternalModal(url, getModal, extraOptions);
   }
   if (modal) {
     modal.classList.add(offerTypeClass);
@@ -412,7 +531,7 @@ export async function getModalAction(offers, options, el) {
   if (!url) return undefined;
   url = isInternalModal(url)
     ? localizeLink(checkoutLinkConfig[columnName]) : checkoutLinkConfig[columnName];
-  return { url, handler: (e) => openModal(e, url, offerType, hash) };
+  return { url, handler: (e) => openModal(e, url, offerType, hash, options.extraOptions) };
 }
 
 export async function getCheckoutAction(offers, options, imsSignedInPromise, el) {
@@ -433,33 +552,35 @@ export async function getCheckoutAction(offers, options, imsSignedInPromise, el)
 /**
  * Activates commerce service and returns a promise resolving to its ready-to-use instance.
  */
-export async function initService(force = false) {
+export async function initService(force = false, attributes = {}) {
   if (force) {
     initService.promise = undefined;
+    document.head.querySelector('mas-commerce-service')?.remove();
     fetchEntitlements.promise = undefined;
     fetchCheckoutLinkConfigs.promise = undefined;
   }
-  const { env, commerce = {}, locale } = getConfig();
+  const { commerce, env: miloEnv, locale: miloLocale } = getConfig();
   initService.promise = initService.promise ?? polyfills().then(async () => {
-    const { hostname, searchParams } = new URL(window.location.href);
-    let commerceLibPath = '../../deps/mas/commerce.js';
-    if (/hlx\.(page|live)$|localhost$|www\.stage\.adobe\.com$/.test(hostname)) {
-      const maslibs = searchParams.get('maslibs');
-      if (maslibs) {
-        commerceLibPath = `${getMasBase(hostname, maslibs)}/libs/commerce.js`;
+    await import('../../deps/mas/commerce.js');
+    const { language, locale } = getMiloLocaleSettings(miloLocale);
+    let service = document.head.querySelector('mas-commerce-service');
+    if (!service) {
+      service = createTag('mas-commerce-service', {
+        locale,
+        language,
+        ...attributes,
+        ...commerce,
+      });
+      if (miloEnv?.name !== 'prod') {
+        service.setAttribute('allow-override', '');
       }
+      service.registerCheckoutAction(getCheckoutAction);
+      document.head.append(service);
+      await service.readyPromise;
+      service.imsSignedInPromise?.then((isSignedIn) => {
+        if (isSignedIn) fetchEntitlements();
+      });
     }
-    const commerceLib = await import(commerceLibPath);
-    const service = await commerceLib.init(() => ({
-      env,
-      commerce,
-      locale,
-    }), () => ({ getCheckoutAction, force }));
-    service.imsSignedInPromise.then((isSignedIn) => {
-      if (isSignedIn) {
-        fetchEntitlements();
-      }
-    });
     return service;
   });
   return initService.promise;

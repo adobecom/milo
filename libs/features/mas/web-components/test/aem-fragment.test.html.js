@@ -6,20 +6,23 @@ import sinon from 'sinon';
 import { mockFetch } from './mocks/fetch.js';
 import { withWcs } from './mocks/wcs.js';
 import { withAem } from './mocks/aem.js';
+import { delay, getTemplateContent } from './utils.js';
 import mas from './mas.js';
-import { getTemplateContent } from './utils.js';
+import '../src/merch-card.js';
+import '../src/aem-fragment.js';
+import { EVENT_MAS_ERROR } from '../src/constants.js';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
 runTests(async () => {
+    await mas();
     const [cc, photoshop] = await fetch(
         'mocks/sites/cf/fragments/search/authorPayload.json',
     )
         .then((res) => res.json())
         .then(({ items }) => items);
 
-    await mas();
     await customElements.whenDefined('aem-fragment');
     const { cache } = document.createElement('aem-fragment');
 
@@ -62,7 +65,6 @@ runTests(async () => {
             const before = ccCard.innerHTML;
             ccCard.footerSlot.test = true;
             await aemFragment.refresh(true);
-            await aemFragment.refresh(true); // for extra coverage
             await aemFragment.updateComplete;
             const after = ccCard.innerHTML;
             expect(before).to.equal(after);
@@ -72,13 +74,36 @@ runTests(async () => {
 
         it('ignores incomplete markup', async () => {
             const [, , , cardWithMissingPath] = getTemplateContent('cards');
+
+            let masErrorTriggered = false;
+            cardWithMissingPath.addEventListener('mas:error', () => {
+                masErrorTriggered = true;
+            });
             const aemFragment =
                 cardWithMissingPath.querySelector('aem-fragment');
+            let aemErrorTriggered = false;
+            aemFragment.addEventListener('aem:error', () => {
+                aemErrorTriggered = true;
+            });
 
             spTheme.append(cardWithMissingPath);
             await expect(aemFragment.updateComplete).to.be.rejectedWith(
                 'AEM fragment cannot be loaded',
             );
+            expect(masErrorTriggered).to.true;
+            expect(aemErrorTriggered).to.true;
+        });
+
+        it('merch-card fails when aem-fragment contains incorrect merch data', async () => {
+          const [, , , , , cardWithWrongOsis] = getTemplateContent('cards');
+
+          let masErrorTriggered = false;
+          cardWithWrongOsis.addEventListener(EVENT_MAS_ERROR, () => {
+              masErrorTriggered = true;
+          });
+          spTheme.append(cardWithWrongOsis);
+          await delay(100);          
+          expect(masErrorTriggered).to.true;
         });
 
         it('uses ims token to retrieve a fragment', async () => {
@@ -86,8 +111,22 @@ runTests(async () => {
             const aemFragment = cardWithIms.querySelector('aem-fragment');
             window.adobeid = { authorize: sinon.stub() };
             spTheme.append(cardWithIms);
-            await expect(aemFragment.updateComplete);
+            expect(aemFragment.updateComplete);
             sinon.assert.calledOnce(window.adobeid.authorize);
+        });
+
+
+        it('renders ccd slice card', async () => {
+          const [, , , , , , sliceCard] = getTemplateContent('cards');
+          spTheme.append(sliceCard);
+          await delay(100);   
+          expect(sliceCard.querySelector('merch-icon')).to.exist;
+          expect(sliceCard.querySelector('div[slot="image"]')).to.exist;
+          expect(sliceCard.querySelector('div[slot="body-s"]')).to.exist;
+          expect(sliceCard.querySelector('div[slot="footer"]')).to.exist;
+          const badge = sliceCard.shadowRoot?.querySelector('div#badge');
+          expect(badge).to.exist;
+          
         });
     });
 });
