@@ -249,13 +249,8 @@ const parseContent = async (el, merchCard) => {
           }
         }
         element.setAttribute('slot', slotName);
-        if (headingXsCount === 1 && tagName === 'H3') {
-          tagName = 'h3';
-        } else if (merchCard.variant === MINI_COMPARE_CHART && slotName === 'heading-m') {
-          tagName = 'h3';
-        } else {
-          tagName = 'p';
-        }
+        tagName = (headingXsCount === 1 && tagName === 'H3')
+        || (merchCard.variant === MINI_COMPARE_CHART && slotName === 'heading-m') ? 'h3' : 'p';
         const newElement = createTag(tagName);
         Array.from(element.attributes).forEach((attr) => {
           newElement.setAttribute(attr.name, attr.value);
