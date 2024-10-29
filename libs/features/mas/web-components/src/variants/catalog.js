@@ -93,7 +93,11 @@ export class Catalog extends VariantLayout {
     toggleActionMenuFromCard = (e) => {
         //beware this is an event on card, so this points to the card, not the layout
         const retract = e?.type === 'mouseleave' ? true : undefined;
-        const actionMenuContentSlot = this.card.shadowRoot.querySelector(
+        const shadowRoot = this.card.shadowRoot;
+        const actionMenu = shadowRoot.querySelector('.action-menu');
+        this.card.blur();
+        actionMenu?.classList.remove('always-visible');
+        const actionMenuContentSlot = shadowRoot.querySelector(
             'slot[name="action-menu-content"]',
         );
         if (!actionMenuContentSlot) return;
@@ -122,9 +126,6 @@ export class Catalog extends VariantLayout {
 
     connectedCallbackHook() {
         this.card.addEventListener('mouseleave', this.toggleActionMenuFromCard);
-        const actionMenuContentSlot = this.card.shadowRoot.querySelector(
-          'slot[name="action-menu-content"]',
-        );
         this.card.addEventListener('focusout', this.focusEventHandler);
     }
 
