@@ -137,12 +137,10 @@ function handleAddOnContent(table) {
       const tagName = `${position}-${order}`;
       const column = [...addOnRow.children].find((el) => el.getAttribute(dataIndex) === colIndex);
       let content = column.childNodes;
-      if (style === 'label' && column.querySelector('.icon')) {
-        const textContent = [...content].filter((node) => !node.classList?.contains('icon'));
-        content = [
-          createTag('span', null, textContent.map((node) => node)),
-          column.querySelector('.icon'),
-        ];
+      const icon = column.querySelector('.icon');
+      if (style === 'label' && icon) {
+        const text = [...content].filter((node) => !node.classList?.contains('icon'));
+        content = [createTag('span', null, text), icon];
       }
       const tag = createTag('div', { class: tagName }, [...content].map((node) => node));
       if (style) tag.classList.add(`addon-${style}`);
