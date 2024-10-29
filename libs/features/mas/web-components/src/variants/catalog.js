@@ -35,7 +35,6 @@ export class Catalog extends VariantLayout {
                         @click="${this.toggleActionMenu}"
                         @keypress="${this.toggleActionMenu}"
                         tabindex="0"
-                        aria-label="Action menu"
                     ></div>
                 </div>
                 <slot
