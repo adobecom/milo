@@ -263,7 +263,6 @@ export class MerchCard extends LitElement {
 
     connectedCallback() {
         super.connectedCallback();
-        this.setAttribute('tabindex', this.getAttribute('tabindex') ?? '0');
         this.addEventListener(
             EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
             this.handleQuantitySelection,
