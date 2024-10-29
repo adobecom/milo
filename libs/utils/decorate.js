@@ -66,11 +66,10 @@ export function decorateIconArea(el) {
 }
 
 function elContainsText(el) {
-  return !![...el.childNodes].filter((childNode) => {
-    const { innerText, nodeType, textContent } = childNode;
-    if (nodeType === Node.ELEMENT_NODE) return innerText.trim() !== '';
-    return nodeType === Node.TEXT_NODE && textContent.trim() !== '';
-  }).length;
+  return [...el.childNodes].some(({ nodeType, innerText, textContent }) => (
+    (nodeType === Node.ELEMENT_NODE && innerText.trim() !== '')
+    || (nodeType === Node.TEXT_NODE && textContent.trim() !== '')
+  ));
 }
 
 export function decorateBlockText(el, config = ['m', 's', 'm'], type = null) {
