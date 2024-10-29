@@ -6,7 +6,7 @@ sheet.replaceSync(':host { display: contents; }');
 
 const baseUrl =
     document.querySelector('meta[name="aem-base-url"]')?.content ??
-    'https://publish-p22655-e155390.adobeaemcloud.com';
+    'https://odin.adobe.com';
 
 const ATTRIBUTE_FRAGMENT = 'fragment';
 const ATTRIBUTE_IMS = 'ims';
