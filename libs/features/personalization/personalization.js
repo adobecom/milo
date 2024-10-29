@@ -495,7 +495,17 @@ export const updateFragDataProps = (a, inline, sections, fragment) => {
   }
 };
 
-export function handleCommands(commands, rootEl, forceInline = false, forceRootEl = false) {
+export const deleteMarkedEls = (rootEl = document) => {
+  [...rootEl.querySelectorAll(`.${CLASS_EL_DELETE}`)]
+    .forEach((el) => el.remove());
+};
+
+export function handleCommands(
+  commands,
+  rootEl = document,
+  forceInline = false,
+  forceRootEl = false,
+) {
   const section1 = document.querySelector('main > div');
   commands.forEach((cmd) => {
     const { action, content, selector } = cmd;
@@ -529,6 +539,7 @@ export function handleCommands(commands, rootEl, forceInline = false, forceRootE
       cmd.completed = true;
     }
   });
+  deleteMarkedEls(rootEl);
   return commands.filter((cmd) => !cmd.completed
     && cmd.selectorType !== IN_BLOCK_SELECTOR_PREFIX);
 }
@@ -885,11 +896,6 @@ export async function getManifestConfig(info = {}, variantOverride = false) {
   return manifestConfig;
 }
 
-export const deleteMarkedEls = (rootEl = document) => {
-  [...rootEl.querySelectorAll(`.${CLASS_EL_DELETE}`)]
-    .forEach((el) => el.remove());
-};
-
 const normalizeFragPaths = ({ selector, val, action, manifestId, targetManifestId }) => ({
   selector: normalizePath(selector),
   val: normalizePath(val),
@@ -1045,7 +1051,6 @@ export async function applyPers(manifests) {
   }
 
   config.mep.commands = handleCommands(config.mep.commands);
-  deleteMarkedEls();
 
   const pznList = results.filter((r) => (r.experiment?.manifestType === TRACKED_MANIFEST_TYPE));
   if (!pznList.length) return;
