@@ -571,7 +571,7 @@ export async function initService(force = false, attributes = {}) {
   extraAttrs.forEach((attr) => {
     const camelCaseAttr = attr.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
     // eslint-disable-next-line no-prototype-builtins
-    if (commerce.hasOwnProperty(camelCaseAttr)) {
+    if (commerce?.hasOwnProperty(camelCaseAttr)) {
       const value = commerce[camelCaseAttr];
       delete commerce[camelCaseAttr];
       commerce[attr] = value;
