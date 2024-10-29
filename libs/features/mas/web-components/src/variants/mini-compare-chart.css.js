@@ -61,7 +61,6 @@ export const CSS = `
     display: flex;
     place-items: center;
   }
-    
 
   merch-card[variant="mini-compare-chart"] .footer-row-icon img {
     max-width: initial;
