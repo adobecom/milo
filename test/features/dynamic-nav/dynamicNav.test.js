@@ -1,7 +1,7 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { setConfig } from '../../../libs/utils/utils.js';
-import dynamicNav from '../../../libs/features/dynamic-navigation.js';
+import dynamicNav from '../../../libs/features/dynamic-navigation/dynamic-navigation.js';
 
 describe('Dynamic nav', () => {
   beforeEach(() => {
