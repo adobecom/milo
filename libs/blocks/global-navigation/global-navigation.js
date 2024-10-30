@@ -230,7 +230,7 @@ const setupKeyboardNav = async () => {
 
 const getBrandImage = (image, brandImageOnly) => {
   // Return the default Adobe logo if an image is not available
-  if (!image) return brandImageOnly ? CONFIG.icons.brand: CONFIG.icons.company;
+  if (!image) return brandImageOnly ? CONFIG.icons.brand : CONFIG.icons.company;
 
   // Try to decorate image as PNG, JPG or JPEG
   const imgText = image?.textContent || '';
@@ -242,7 +242,7 @@ const getBrandImage = (image, brandImageOnly) => {
   }
 
   // Return the default Adobe logo if the image could not be decorated
-  return brandImageOnly ? CONFIG.icons.brand: CONFIG.icons.company;
+  return brandImageOnly ? CONFIG.icons.brand : CONFIG.icons.company;
 };
 
 const closeOnClickOutside = (e) => {
@@ -784,7 +784,7 @@ class Gnav {
       return getBrandImage(image, isBrandImage);
     };
 
-    const brandImageClass = isBrandImage ? ' brand-image-only': '';
+    const brandImageClass = isBrandImage ? ' brand-image-only' : '';
     const imageEl = renderImage
       ? toFragment`<span class="${classPrefix}-image${brandImageClass}">${getImageEl()}</span>`
       : '';
