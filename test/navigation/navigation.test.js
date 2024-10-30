@@ -25,7 +25,7 @@ describe('Navigation component', async () => {
   });
 
   it('Renders the footer block', async () => {
-    await loadBlock({ authoringPath: '/federal/dev', footer: { privacyId: '12343' }, env: 'qa' }, 'http://localhost:2000');
+    await loadBlock({ authoringPath: '/federal/dev', footer: { privacyId: '12343' }, env: 'qa' }, miloLibs);
     const el = document.getElementsByTagName('footer');
     expect(el).to.exist;
   });
@@ -33,7 +33,7 @@ describe('Navigation component', async () => {
   it('Renders the footer block should not load when config is not passed', async () => {
     try {
       const onError = stub();
-      await loadBlock({ authoringPath: '/federal/dev-new', env: 'qa', footer: { privacyId: '12343' }, header: { onError } }, 'http://localhost:2000');
+      await loadBlock({ authoringPath: '/federal/dev-new', env: 'qa', footer: { privacyId: '12343' }, header: { onError } }, miloLibs);
       const el = document.getElementsByTagName('footer');
       expect(el).to.not.exist;
       expect(onError.called).to.be.true;
@@ -44,7 +44,7 @@ describe('Navigation component', async () => {
 
   it('Renders the header block', async () => {
     const onReady = stub();
-    await loadBlock({ authoringPath: '/federal/dev', header: { imsClientId: 'fedsmilo', onReady }, env: 'prod' }, 'http://localhost:2000');
+    await loadBlock({ authoringPath: '/federal/dev', header: { imsClientId: 'fedsmilo', onReady }, env: 'prod' }, miloLibs);
     const el = document.getElementsByTagName('header');
     expect(el).to.exist;
     expect(onReady.called).to.be.true;
@@ -52,7 +52,7 @@ describe('Navigation component', async () => {
 
   it('Does not render either header or footer if not found in configs', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-    await loadBlock({ authoringPath: '/federal/dev', env: 'qa' }, 'http://localhost:2000');
+    await loadBlock({ authoringPath: '/federal/dev', env: 'qa' }, miloLibs);
     const header = document.getElementsByTagName('header');
     const footer = document.getElementsByTagName('footer');
     expect(header).to.be.empty;
@@ -69,7 +69,7 @@ describe('Navigation component', async () => {
   });
 
   it('Renders the footer block with authoringpath passed in footer', async () => {
-    await loadBlock({ footer: { privacyId: '12343', authoringPath: '/federal/dev' }, env: 'qa' }, 'http://localhost:2000');
+    await loadBlock({ footer: { privacyId: '12343', authoringPath: '/federal/dev' }, env: 'qa' }, miloLibs);
     const el = document.getElementsByTagName('footer');
     expect(el).to.exist;
   });
