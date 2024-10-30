@@ -248,10 +248,10 @@ export function addAccessibilityControl(videoString, videoAttributes, tabIndex =
   }
   if (!videoAttributes.includes('controls')) {
     if (videoAttributes.includes('hoverplay')) {
-      return `<a class='pause-play-wrapper' tabindex=${tabIndex} aria-label='${labels.accessibilityLabel}' >${videoString}
+      return `<a class='pause-play-wrapper video-holder' tabindex=${tabIndex} aria-label='${labels.accessibilityLabel}' >${videoString}
     </a>`;
     }
-    return `<div class='video-container'>${videoString}
+    return `<div class='video-container video-holder'>${videoString}
     <a class='pause-play-wrapper' role='button' tabindex=${tabIndex} aria-label=' ${labels.accessibilityLabel}'>
       <div class='offset-filler'>  
         <img class='accessibility-control pause-icon ${videoAttributes.includes('autoplay') ? '' : 'hidden'}' alt='${labels.pauseLabel}' src='https://main--federal--adobecom.hlx.page/federal/assets/svgs/accessibility-pause.svg'/>
@@ -269,7 +269,7 @@ export function handlePause(event) {
     return;
   }
   event.preventDefault();
-  const video = event.target.parentElement.parentElement.querySelector('video');
+  const video = event.target.closest('.video-holder').parentElement.querySelector('video');
   if (event.type === 'blur') {
     video.pause();
   } else if (video.paused || video.ended || event.type === 'focus') {
