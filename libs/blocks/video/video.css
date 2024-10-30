@@ -58,17 +58,24 @@ video {
   height: 40px;
   border-radius:inherit;
   background: #242424;
-  border: 2px solid white;
-  outline: 1px solid white;
 }
 
-.dark .video-container .pause-play-wrapper:focus .offset-filler {
+:is(.marquee:not(.light), .dark) .video-container .pause-play-wrapper .offset-filler {
+  border: 2px solid white;
+}
+
+:is(.marquee:not(.light), .dark) .video-container .pause-play-wrapper:focus .offset-filler {
   outline: 1px solid #000;
 }
 
 .video-container .pause-play-wrapper .offset-filler:hover {
   background: #000;
   outline: var(--color-accent-focus-ring) solid 2px;
+}
+
+.video-container .pause-play-wrapper:focus .offset-filler {
+  border: 2px solid white;
+  outline: 1px solid white;
 }
 
 .video-container .pause-play-wrapper:focus-visible {
@@ -109,21 +116,21 @@ video {
 
 @media (min-width: 900px) {
   .media:not(.media-reverse-mobile, .media-reversed) .video-container .pause-play-wrapper,
-  :is(.marquee.row-reversed .asset, .hero-marquee.asset-left) .video-container .pause-play-wrapper,
+  :is(.marquee.row-reversed .asset, .marquee-anchors, .hero-marquee.asset-left) .video-container .pause-play-wrapper,
   .aside:not(.split) .video-container .pause-play-wrapper {
     left: 2%;
-  }
-
-  [dir="rtl"] :is(.marquee.split, .media:is(.media-reverse-mobile, .media-reversed),
-  .hero-marquee:not(.asset-left) .foreground-media, .aside.split,
-  .aside .foreground .image:nth-last-child(1), .brick.media-right) .video-container .pause-play-wrapper {
-    left: 2%;
-    right: auto;
   }
 
   :is(.section[class*="-up"] .media .foreground .image:first-child, .aside .foreground .image:nth-last-child(1)) 
   .video-container .pause-play-wrapper {
     left: auto;
     right: 2%;
+  }
+
+  [dir="rtl"] :is(.marquee.split:not(.row-reversed), .media:is(.media-reverse-mobile, .media-reversed),
+  .hero-marquee:not(.asset-left) :is([class*="foreground"]), .aside.split,
+  .aside .foreground.container .image:nth-last-child(1), .brick.media-right, .how-to) .video-container .pause-play-wrapper {
+    left: 2%;
+    right: auto;
   }
 }
