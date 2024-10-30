@@ -140,7 +140,10 @@ function processDescription(fragment, merchCard, descriptionConfig) {
     }
 }
 
-function createSpectrumButton(cta, strong, aemFragmentMapping) {
+function createSpectrumButton(cta, strong, aemFragmentMapping, cardVariant) {
+    if (cardVariant === 'ccd-suggested' && !cta.className) {
+        cta.className = 'primary-link'; //workaround for existing ccd-suggested cards
+    }
     const checkoutLinkStyle =
         CHECKOUT_LINK_STYLE_PATTERN.exec(cta.className)?.[0] ?? 'accent';
     const isAccent = checkoutLinkStyle.includes('accent');
@@ -197,7 +200,7 @@ function processConsonantButton(cta, strong) {
     return cta;
 }
 
-export function processCTAs(fragment, merchCard, aemFragmentMapping) {
+export function processCTAs(fragment, merchCard, aemFragmentMapping, variant) {
     if (fragment.ctas) {
         const { slot } = aemFragmentMapping.ctas;
         const footer = createTag('div', { slot }, fragment.ctas);
@@ -206,7 +209,12 @@ export function processCTAs(fragment, merchCard, aemFragmentMapping) {
             const strong = cta.parentElement.tagName === 'STRONG';
             return merchCard.consonant
                 ? processConsonantButton(cta, strong)
-                : createSpectrumButton(cta, strong, aemFragmentMapping);
+                : createSpectrumButton(
+                      cta,
+                      strong,
+                      aemFragmentMapping,
+                      variant,
+                  );
         });
 
         footer.innerHTML = '';
@@ -246,5 +254,5 @@ export async function hydrate(fragmentData, merchCard) {
     );
     processPrices(fragment, merchCard, aemFragmentMapping.prices);
     processDescription(fragment, merchCard, aemFragmentMapping.description);
-    processCTAs(fragment, merchCard, aemFragmentMapping);
+    processCTAs(fragment, merchCard, aemFragmentMapping, variant);
 }
