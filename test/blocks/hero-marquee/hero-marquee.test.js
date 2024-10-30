@@ -6,8 +6,11 @@ import { setConfig } from '../../../libs/utils/utils.js';
 
 window.lana = { log: stub() };
 
-const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
-const conf = { locales };
+const conf = {
+  pathname: '/au/test.html',
+  locales: { au: { ietf: 'en-AU', tk: 'hah7vzn.css', prefix: '/au' } },
+  locale: { prefix: '/au' },
+};
 setConfig(conf);
 
 describe('Hero Marquee', () => {
