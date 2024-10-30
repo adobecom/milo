@@ -19,7 +19,7 @@ class PromoteStatusModal extends Component {
     };
   }
 
-  getCategoryRowStyle(category) {
+  getCategoryRowStyle = (category) => {
     if (category === 'failedPromotes' || category === 'failedPreviews' || category === 'failedPublishes') {
       return 'background-color: #f1f1f1;'; // Light gray background for rows with failed actions
     }
@@ -40,10 +40,7 @@ class PromoteStatusModal extends Component {
         loading: false,
       });
     } catch (error) {
-      console.error(error);
-      this.setState({
-        loading: false,
-      });
+      this.setState({ loading: false, });
     }
   };
 
@@ -59,19 +56,13 @@ class PromoteStatusModal extends Component {
   };
 
   handleBatchErrorClick = async (batch) => {
-    this.setState({
-      selectedBatch: batch,
-    });
-
+    this.setState({ selectedBatch: batch, });
     // Fetch failed pages
     await this.fetchFailedPages(batch.batchNumber);
   };
 
   handleBatchClick = async (batch) => {
-    this.setState({
-      selectedBatch: batch,
-    });
-
+    this.setState({ selectedBatch: batch, });
     await this.fetchBatchFiles(batch.batchNumber);
   };
 
@@ -86,7 +77,6 @@ class PromoteStatusModal extends Component {
         showBatchFiles: true,
       });
     } catch (error) {
-      console.error(error);
       this.setState({
         loading: false,
         showBatchFiles: false,
@@ -111,7 +101,6 @@ class PromoteStatusModal extends Component {
         loading: false,
       });
     } catch (error) {
-      console.error(error);
       // Handle error if needed
     }
   };
@@ -127,7 +116,7 @@ class PromoteStatusModal extends Component {
   batchFiles = async (batchNumber) => {
     const config = await getServiceConfigFg(origin);
     const paramsFg = await getParamsFg(config);
-    const env = heading.value.env;
+    const { env } = heading.value;
     const { url } = config[env].milofg.promotestatus;
     let params = { adminPageUri: paramsFg.adminPageUri, batchFiles: batchNumber };
     const batchFilesData = await postData(url, params);
@@ -167,7 +156,6 @@ class PromoteStatusModal extends Component {
         showFailedPagesModal: true,
       });
     } catch (error) {
-      console.error(error);
       this.setState({
         loading: false,
         showFailedPagesModal: false,
@@ -218,7 +206,6 @@ refreshModalContent = async () => {
       loading: false,
     });
   } catch (error) {
-    console.error(error);
     this.setState({
       loading: false,
     });
