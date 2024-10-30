@@ -2,6 +2,7 @@ import {
   createTag, getConfig, loadArea, loadScript, loadStyle, localizeLink,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
+import '../../deps/mas/commerce.js';
 
 export const CHECKOUT_LINK_CONFIG_PATH = '/commerce/checkout-link.json'; // relative to libs.
 
@@ -578,7 +579,6 @@ export async function initService(force = false, attributes = {}) {
     }
   });
   initService.promise = initService.promise ?? polyfills().then(async () => {
-    await import('../../deps/mas/commerce.js');
     const { language, locale } = getMiloLocaleSettings(miloLocale);
     let service = document.head.querySelector('mas-commerce-service');
     if (!service) {
