@@ -155,7 +155,7 @@ const parseTwpContent = async (el, merchCard) => {
 };
 
 const appendPaymentDetails = (element, merchCard) => {
-  if (element.firstChild.nodeType !== Node.TEXT_NODE) return;
+  if (element.firstChild?.nodeType !== Node.TEXT_NODE) return;
   const paymentDetails = createTag('div', { class: 'payment-details' }, element.innerHTML);
   const headingM = merchCard.querySelector('h4[slot="heading-m"]');
   headingM?.append(paymentDetails);
