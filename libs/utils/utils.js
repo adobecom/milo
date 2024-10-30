@@ -1144,26 +1144,9 @@ export async function loadDeferred(area, blocks, config) {
     import('../features/personalization/preview.js')
       .then(({ default: decoratePreviewMode }) => decoratePreviewMode());
   }
-<<<<<<< HEAD
-<<<<<<< HEAD
   if (config?.dynamicNavKey && config?.env?.name !== 'prod') {
-<<<<<<< HEAD
-<<<<<<< HEAD
     const { miloLibs } = config;
     loadStyle(`${miloLibs}/features/dynamic-navigation/status.css`);
-=======
-  if (config?.dynamicNavKey) {
->>>>>>> 2b4175db3 (Adding a dynamic nav status button into the global nav to aid content QA in understanding which nav is active)
-=======
-  if (config?.dynamicNavKey && config?.env?.name !== 'prod') {
->>>>>>> 2294df8a2 (Code review comments: cleaned css and added prod check in loadDeferred to disable status. Updated tests)
-=======
-    const { miloLibs } = getConfig();
-=======
-    const { miloLibs } = config;
->>>>>>> 11ba48fc3 (Change for clarity in utils)
-    loadStyle(`${miloLibs}/features/dynamic-navigation/status.css`);
->>>>>>> d04034194 (Moving styles into utils, as loading within module caused CLS)
     const { default: loadDNStatus } = await import('../features/dynamic-navigation/status.js');
     loadDNStatus();
   }
