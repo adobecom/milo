@@ -184,6 +184,7 @@ function createSpectrumButton(cta, strong, aemFragmentMapping, cardVariant) {
 
     spectrumCta.addEventListener('click', (e) => {
         if (e.target !== cta) {
+            /* c8 ignore next 3 */
             e.stopPropagation();
             cta.click();
         }

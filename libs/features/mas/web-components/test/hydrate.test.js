@@ -137,10 +137,11 @@ describe('processCTAs', async () => {
 
     it('should handle link-style CTAs', async () => {
         const fragment = {
-            ctas: '<a is="checkout-link" data-wcs-osi="abm" class="primary-link">Link Style</a>',
+            ctas: `<a is="checkout-link" data-wcs-osi="abm" class="primary-link">Link Style</a>
+            <a is="checkout-link" data-wcs-osi="abm">Link Style</a>`,
         };
 
-        processCTAs(fragment, merchCard, aemFragmentMapping);
+        processCTAs(fragment, merchCard, aemFragmentMapping, 'ccd-suggested');
 
         const footer = merchCard.append.firstCall.args[0];
         const link = footer.firstChild;
