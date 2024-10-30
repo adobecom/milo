@@ -1,4 +1,4 @@
-html[lang="en-AU"] .table .row-heading .col-heading .pricing {
+.table .row-heading .col-heading .pricing {
   display: flex;
   flex-direction: column;
 }
@@ -32,7 +32,7 @@ merch-card [slot='heading-m'] [is="inline-price"] .price-annual-suffix {
   left: -6px;
 }
 
-html[lang="en-AU"] merch-card[variant="mini-compare-chart"] [slot="heading-m-price"] {
+merch-card[variant="mini-compare-chart"] [slot="heading-m-price"] {
   display: flex;
   flex-direction: column;
 }
