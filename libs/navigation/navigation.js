@@ -65,16 +65,16 @@ export default async function loadBlock(configs, customLib) {
   }
   // Relative path can't be used, as the script will run on consumer's app
   const [{ default: bootstrapBlock }, { default: locales }, { setConfig }] = await Promise.all([
-    import(`${miloLibs}/libs/navigation/bootstrapper.js`),
-    import(`${miloLibs}/libs/utils/locales.js`),
-    import(`${miloLibs}/libs/utils/utils.js`),
+    import(`${miloLibs}/feds-gnav/navigation/bootstrapper.js`),
+    import(`${miloLibs}/feds-gnav/utils/locales.js`),
+    import(`${miloLibs}/feds-gnav/utils/utils.js`),
   ]);
 
   const paramConfigs = getParamsConfigs(configs, miloLibs);
   const clientConfig = {
     clientEnv: env,
     origin: `https://main--federal--adobecom.hlx.${env === 'prod' ? 'live' : 'page'}`,
-    miloLibs: `${miloLibs}/libs`,
+    miloLibs: `${miloLibs}/feds-gnav`,
     pathname: `/${locale}`,
     locales: configs.locales || locales,
     contentRoot: authoringPath || footer.authoringPath,
@@ -87,7 +87,7 @@ export default async function loadBlock(configs, customLib) {
     const configBlock = configs[block.key];
     try {
       if (configBlock) {
-        await bootstrapBlock(`${miloLibs}/libs`, {
+        await bootstrapBlock(`${miloLibs}/feds-gnav`, {
           ...block,
           ...(block.key === 'header' && {
             unavComponents: configBlock.unav?.unavComponents,
