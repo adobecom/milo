@@ -144,7 +144,7 @@ export const MILO_EVENTS = { DEFERRED: 'milo:deferred' };
 const LANGSTORE = 'langstore';
 const PREVIEW = 'target-preview';
 const PAGE_URL = new URL(window.location.href);
-const SLD = PAGE_URL.hostname.includes('.aem.') ? 'aem' : 'hlx';
+export const SLD = PAGE_URL.hostname.includes('.aem.') ? 'aem' : 'hlx';
 
 const PROMO_PARAM = 'promo';
 

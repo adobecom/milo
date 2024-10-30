@@ -1,7 +1,9 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-console */
 
-import { createTag, getConfig, loadLink, loadScript, localizeLink } from '../../utils/utils.js';
+import {
+  createTag, getConfig, loadLink, loadScript, localizeLink, SLD,
+} from '../../utils/utils.js';
 import { getFederatedUrl } from '../../utils/federated.js';
 
 /* c8 ignore start */
@@ -75,7 +77,7 @@ export const normalizePath = (p, localize = true) => {
   }
 
   if (path.startsWith(config.codeRoot)
-    || path.includes('.hlx.')
+    || path.includes(`.${SLD}.`)
     || path.includes('.adobe.')) {
     try {
       const url = new URL(path);
