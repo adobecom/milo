@@ -113,18 +113,6 @@ export async function decorateIcons(area, icons, config) {
   });
 }
 
-export function setIconsIndexClass(icons) {
-  [...icons].forEach((icon) => {
-    const parent = icon.parentNode;
-    const children = parent.childNodes;
-    const nodeIndex = [...children].indexOf.call(children, icon);
-    let indexClass = (nodeIndex === children.length - 1) ? 'last' : 'middle';
-    if (nodeIndex === 0) indexClass = 'first';
-    if (children.length === 1) indexClass = 'only';
-    icon.classList.add(`node-index-${indexClass}`);
-  });
-}
-
 export default async function loadIcons(icons) {
   const fedRoot = getFederatedContentRoot();
   const iconRequests = [];
