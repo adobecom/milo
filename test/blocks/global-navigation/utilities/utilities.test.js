@@ -19,7 +19,7 @@ import { setConfig, getConfig } from '../../../../libs/utils/utils.js';
 import { createFullGlobalNavigation, config } from '../test-utilities.js';
 import mepInBlock from '../mocks/mep-config.js';
 
-const baseHost = 'https://main--federal--adobecom.hlx.page';
+const baseHost = 'https://main--federal--adobecom.aem.page';
 describe('global navigation utilities', () => {
   beforeEach(() => {
     document.body.innerHTML = '';

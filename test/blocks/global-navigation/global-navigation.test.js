@@ -546,7 +546,7 @@ describe('global navigation', () => {
       document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
       await initGnav(document.body.querySelector('header'));
       expect(
-        fetchStub.calledOnceWith('https://main--federal--adobecom.hlx.page/federal/path/to/gnav.plain.html'),
+        fetchStub.calledOnceWith('https://main--federal--adobecom.aem.page/federal/path/to/gnav.plain.html'),
       ).to.be.true;
     });
 
@@ -556,7 +556,7 @@ describe('global navigation', () => {
       document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
       await initGnav(document.body.querySelector('header'));
       expect(
-        fetchStub.calledOnceWith('https://main--federal--adobecom.hlx.page/federal/path/to/gnav.plain.html'),
+        fetchStub.calledOnceWith('https://main--federal--adobecom.aem.page/federal/path/to/gnav.plain.html'),
       ).to.be.true;
     });
 

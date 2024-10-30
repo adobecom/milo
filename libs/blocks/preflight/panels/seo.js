@@ -227,6 +227,7 @@ async function checkLinks() {
         && !knownBadUrls.some((url) => url === link.hostname) // Is not a known bad url
       ) {
         link.liveHref = link.href.replace('hlx.page', 'hlx.live');
+        link.liveHref = link.href.replace('aem.page', 'aem.live');
         return true;
       }
       return false;
@@ -278,7 +279,7 @@ export async function sendResults() {
   };
 
   await fetch(
-    'https://main--milo--adobecom.hlx.page/seo/preflight',
+    'https://main--milo--adobecom.aem.page/seo/preflight',
     {
       method: 'POST',
       credentials: 'same-origin',
