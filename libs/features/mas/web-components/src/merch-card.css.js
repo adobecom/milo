@@ -127,6 +127,7 @@ export const styles = css`
         background-repeat: no-repeat;
         background-position: center;
         background-size: 16px 16px;
+        font-size: 0;
     }
     .hidden {
         visibility: hidden;
