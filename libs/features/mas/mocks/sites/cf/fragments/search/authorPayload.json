@@ -689,6 +689,199 @@
                 "description": "content for adobe.com merch-card web component."
             },
             "fieldTags": []
-        }
+        },
+        {
+          "path": "/content/dam/mas/nala/ccd/slice-cc-allapps31211221",
+          "title": "CCD Suggested CC All Apps",
+          "description": "",
+          "id": "31205553-b453-4c9e-a2ef-7b6aa7bfdc72",
+          "created": {
+              "at": "2024-10-15T15:04:32.956Z",
+              "by": "sling-distribution-importer",
+              "fullName": "sling-distribution-importer"
+          },
+          "modified": {
+              "at": "2024-10-15T14:56:59.693Z",
+              "by": "lukianet@adobe.com",
+              "fullName": "lukianet@adobe.com"
+          },
+          "status": "DRAFT",
+          "fields": [
+              {
+                  "name": "variant",
+                  "type": "text",
+                  "multiple": false,
+                  "locked": false,
+                  "values": [
+                      "ccd-slice"
+                  ]
+              },
+              {
+                  "name": "osi",
+                  "type": "text",
+                  "multiple": false,
+                  "locked": false,
+                  "values": []
+              },
+              {
+                  "name": "size",
+                  "type": "text",
+                  "multiple": false,
+                  "locked": false,
+                  "values": [
+                      "wide"
+                  ]
+              },
+              {
+                  "name": "mnemonicIcon",
+                  "type": "text",
+                  "multiple": true,
+                  "locked": false,
+                  "values": [
+                      "https://www.adobe.com/cc-shared/assets/img/product-icons/svg/photoshop.svg"
+                  ]
+              },
+              {
+                  "name": "mnemonicAlt",
+                  "type": "text",
+                  "multiple": true,
+                  "locked": false,
+                  "values": []
+              },
+              {
+                  "name": "mnemonicLink",
+                  "type": "text",
+                  "multiple": true,
+                  "locked": false,
+                  "values": []
+              },
+              {
+                  "name": "badge",
+                  "type": "long-text",
+                  "multiple": false,
+                  "locked": false,
+                  "mimeType": "text/html",
+                  "values": [
+                      "High savings"
+                  ]
+              },
+              {
+                  "name": "backgroundImage",
+                  "type": "text",
+                  "multiple": false,
+                  "locked": false,
+                  "values": [
+                      "https://milo.adobe.com/assets/img/commerce/media_10bef5ec21c22fd7fe201cb02735082df13bf4960.jpeg"
+                  ]
+              },
+              {
+                  "name": "cardTitle",
+                  "type": "text",
+                  "multiple": false,
+                  "locked": false,
+                  "values": []
+              },
+              {
+                  "name": "cardTitleLink",
+                  "type": "text",
+                  "multiple": false,
+                  "locked": false,
+                  "values": []
+              },
+              {
+                  "name": "subtitle",
+                  "type": "text",
+                  "multiple": false,
+                  "locked": false,
+                  "values": []
+              },
+              {
+                  "name": "prices",
+                  "type": "long-text",
+                  "multiple": false,
+                  "locked": false,
+                  "mimeType": "text/html",
+                  "values": []
+              },
+              {
+                  "name": "shortDescription",
+                  "type": "long-text",
+                  "multiple": false,
+                  "locked": false,
+                  "mimeType": "text/html",
+                  "values": []
+              },
+              {
+                  "name": "description",
+                  "type": "long-text",
+                  "multiple": false,
+                  "locked": false,
+                  "mimeType": "text/html",
+                  "values": [
+                      "<p><strong>Save 25% on Photoshop next month.</strong><strong>.</strong></p><p><a href=\"https://www.adobe.com/creativecloud/plans.html\">See terms</a></p>"
+                  ]
+              },
+              {
+                  "name": "ctas",
+                  "type": "long-text",
+                  "multiple": false,
+                  "locked": false,
+                  "mimeType": "text/html",
+                  "values": [
+                      "<p><strong><a is=\"checkout-link\" data-checkout-workflow=\"UCv3\" data-checkout-workflow-step=\"email\" data-promotion-code=\"\" data-quantity=\"1\" data-wcs-osi=\"Mutn1LYoGojkrcMdCLO7LQlx1FyTHw27ETsfLv0h8DQ\" href=\"\">Buy now</a></strong></p>"
+                  ]
+              },
+              {
+                  "name": "parent",
+                  "type": "content-fragment",
+                  "multiple": false,
+                  "locked": false,
+                  "values": []
+              },
+              {
+                  "name": "product",
+                  "type": "content-reference",
+                  "multiple": false,
+                  "locked": false,
+                  "values": []
+              },
+              {
+                  "name": "stockOffer",
+                  "type": "long-text",
+                  "multiple": false,
+                  "locked": false,
+                  "mimeType": "text/html",
+                  "values": []
+              },
+              {
+                  "name": "secure",
+                  "type": "boolean",
+                  "multiple": false,
+                  "locked": false,
+                  "values": [
+                      false
+                  ]
+              },
+              {
+                  "name": "promoCode",
+                  "type": "text",
+                  "multiple": false,
+                  "locked": false,
+                  "values": []
+              }
+          ],
+          "variations": [],
+          "tags": [],
+          "references": [],
+          "model": {
+              "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NhcmQ",
+              "path": "/conf/mas/settings/dam/cfm/models/card",
+              "name": "Card",
+              "title": "Card",
+              "description": "universal m@s card model"
+          },
+          "validationStatus": [],
+          "fieldTags": []
+      }
     ]
 }
