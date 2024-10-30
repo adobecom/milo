@@ -66,14 +66,6 @@ export const normalizePath = (p, localize = true) => {
     return path;
   }
 
-  if (path.includes('main--federal--adobecom')) {
-    const { origin } = new URL(window.location);
-    if (origin.includes('.hlx.live')) path = path.replace('.hlx.live', '.hlx.page');
-    else if (origin.includes('stage.adobe.com')) path = path.replace('main--federal--adobecom.hlx.page', 'www.stage.adobe.com');
-    else if (origin.includes('adobe.com')) path = path.replace('main--federal--adobecom.hlx.page', 'www.adobe.com');
-    return path;
-  }
-
   const config = getConfig();
   if (path.startsWith('https://www.adobe.com/federal/')) {
     return getFederatedUrl(path);
