@@ -909,7 +909,7 @@ export async function decorateFooterPromo(doc = document) {
 }
 
 const getMepValue = (val) => {
-  const valMap = { on: true, off: false, gnav: 'gnav' };
+  const valMap = { on: true, off: false, postLCP: 'postlcp' };
   const finalVal = val?.toLowerCase().trim();
   if (finalVal in valMap) return valMap[finalVal];
   return finalVal;
@@ -1057,7 +1057,7 @@ async function checkForPageMods() {
 
 async function loadPostLCP(config) {
   await decoratePlaceholders(document.body.querySelector('header'), config);
-  if (config.mep?.targetEnabled === 'gnav') {
+  if (config.mep?.targetEnabled === 'postlcp') {
     /* c8 ignore next 2 */
     const { init } = await import('../features/personalization/personalization.js');
     await init({ postLCP: true });
