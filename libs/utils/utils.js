@@ -311,7 +311,7 @@ export function localizeLink(
     const isLocalizedLink = path.startsWith(`/${LANGSTORE}`)
       || path.startsWith(`/${PREVIEW}`)
       || Object.keys(locales).some((loc) => loc !== '' && (path.startsWith(`/${loc}/`)
-      || path.endsWith(`/${loc}`)));
+        || path.endsWith(`/${loc}`)));
     if (isLocalizedLink) return processedHref;
     const urlPath = `${locale.prefix}${path}${url.search}${hash}`;
     return relative ? urlPath : `${url.origin}${urlPath}`;
@@ -764,7 +764,7 @@ function decorateHeader() {
   }
   header.className = headerMeta || 'global-navigation';
   const metadataConfig = getMetadata('breadcrumbs')?.toLowerCase()
-  || getConfig().breadcrumbs;
+    || getConfig().breadcrumbs;
   if (metadataConfig === 'off') return;
   const baseBreadcrumbs = getMetadata('breadcrumbs-base')?.length;
 
@@ -816,8 +816,8 @@ async function decoratePlaceholders(area, config) {
   area.dataset.hasPlaceholders = 'true';
   const placeholderPath = `${config.locale?.contentRoot}/placeholders.json`;
   placeholderRequest = placeholderRequest
-  || customFetch({ resource: placeholderPath, withCacheRules: true })
-    .catch(() => ({}));
+    || customFetch({ resource: placeholderPath, withCacheRules: true })
+      .catch(() => ({}));
   const { decoratePlaceholderArea } = await import('../features/placeholders.js');
   await decoratePlaceholderArea({ placeholderPath, placeholderRequest, nodes });
 }
@@ -1252,6 +1252,18 @@ async function resolveInlineFrags(section) {
   section.preloadLinks = newlyDecoratedSection.preloadLinks;
 }
 
+function setIconsIndexClass(icons) {
+  [...icons].forEach((icon) => {
+    const parent = icon.parentNode;
+    const children = parent.childNodes;
+    const nodeIndex = [...children].indexOf.call(children, icon);
+    let indexClass = (nodeIndex === children.length - 1) ? 'last' : 'middle';
+    if (nodeIndex === 0) indexClass = 'first';
+    if (children.length === 1) indexClass = 'only';
+    icon.classList.add(`node-index-${indexClass}`);
+  });
+}
+
 async function processSection(section, config, isDoc) {
   await resolveInlineFrags(section);
   const firstSection = section.el.dataset.idx === '0';
@@ -1293,7 +1305,6 @@ export async function loadArea(area = document) {
 
   const allIcons = area.querySelectorAll('span.icon');
   if (allIcons.length) {
-    const { setIconsIndexClass } = await import('../features/icons/icons.js');
     setIconsIndexClass(allIcons);
   }
 
