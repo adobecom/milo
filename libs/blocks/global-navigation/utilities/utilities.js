@@ -266,20 +266,22 @@ export const [setDisableAEDState, getDisableAEDState] = (() => {
   ];
 })();
 
-export const [hasActiveLink, setActiveLink, getActiveLink] = (() => {
+export const [hasActiveLink, setActiveLink, isActiveLink, getActiveLink] = (() => {
   let activeLinkFound;
+  const { origin, pathname } = window.location;
+  const url = `${origin}${pathname}`;
 
   return [
     () => activeLinkFound,
     (val) => { activeLinkFound = !!val; },
+    (el) => (el.href === url || el.href.startsWith(`${url}?`) || el.href.startsWith(`${url}#`)),
     (area) => {
-      const disableAED = getDisableAEDState();
+      const isCustomLinks = area.closest('.link-group')?.classList.contains('mobile-only');
+      const disableAED = getDisableAEDState() || isCustomLinks;
       if (disableAED || hasActiveLink() || !(area instanceof HTMLElement)) return null;
-      const { origin, pathname } = window.location;
-      const url = `${origin}${pathname}`;
       const activeLink = [
         ...area.querySelectorAll('a:not([data-modal-hash])'),
-      ].find((el) => (el.href === url || el.href.startsWith(`${url}?`) || el.href.startsWith(`${url}#`)));
+      ].find(isActiveLink);
 
       if (!activeLink) return null;
 
@@ -321,7 +323,7 @@ export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true
   const mepGnav = getConfig()?.mep?.inBlock?.['global-navigation'];
   const mepFragment = mepGnav?.fragments?.[path];
   if (mepFragment && mepFragment.action === 'replace') {
-    path = mepFragment.target;
+    path = mepFragment.content;
   }
   const res = await fetch(path.replace(/(\.html$|$)/, '.plain.html'));
   if (res.status !== 200) {
@@ -339,7 +341,7 @@ export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true
   const commands = mepGnav?.commands;
   if (commands?.length) {
     const { handleCommands, deleteMarkedEls } = await import('../../../features/personalization/personalization.js');
-    handleCommands(commands, body, true);
+    handleCommands(commands, body, true, true);
     deleteMarkedEls(body);
   }
   const inlineFrags = [...body.querySelectorAll('a[href*="#_inline"]')];

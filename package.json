@@ -9,6 +9,7 @@
     "test:file": "npx playwright install && wtr --config ./web-test-runner.config.mjs --node-resolve --port=2000 --coverage",
     "test:file:watch": "npx playwright install && wtr --config ./web-test-runner.config.mjs --node-resolve --port=2000 --coverage --watch",
     "nala": "node nala/utils/nala.run.js",
+    "a11y": "node nala/utils/nala.cli.js a11y",
     "libs": "aem up --port=6456",
     "lint": "npm run lint:js && npm run lint:css",
     "lint:js": "eslint .",
@@ -34,6 +35,7 @@
     "preact": "^10.11.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.10.0",
     "@babel/core": "7.17.7",
     "@babel/eslint-parser": "7.17.0",
     "@esm-bundle/chai": "4.3.4-fix.0",
@@ -43,8 +45,11 @@
     "@web/test-runner": "^0.18.2",
     "@web/test-runner-commands": "^0.9.0",
     "@web/test-runner-playwright": "^0.11.0",
+    "axe-html-reporter": "^2.2.11",
     "axios": "^1.7.5",
     "chai": "^5.1.1",
+    "chalk": "^4.1.2",
+    "commander": "^12.1.0",
     "eslint": "8.11.0",
     "eslint-config-airbnb-base": "15.0.0",
     "eslint-nibble": "^8.1.0",
