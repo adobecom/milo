@@ -80,7 +80,7 @@ describe('Plans Card', () => {
     const merchCard = await init(document.querySelector('.merch-card.plans.icons.secure'));
     expectToValidateHTMLAssertions(merchCard, {
       elements: [
-        { selector: 'p[slot="heading-m"]' }, { selector: 'p[slot="heading-xs"]' },
+        { selector: 'p[slot="heading-m"]' }, { selector: 'h3[slot="heading-xs"]' },
         { selector: 'div[slot="body-xs"]', textContent: 'Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna. Nunc viverra imperdiet enim.MaecenasSee terms about lorem ipsum' },
         { selector: 'p[slot="promo-text"]', textContent: 'this promo is great see terms' },
         { attribute: { name: 'variant', value: 'plans' } },
@@ -99,7 +99,7 @@ describe('Plans Card', () => {
     expectToValidateHTMLAssertions(merchCard, {
       elements: [
         { selector: 'p[slot="heading-m"]' },
-        { selector: 'p[slot="heading-xs"]' },
+        { selector: 'h3[slot="heading-xs"]' },
         { selector: 'strong span' },
         { selector: 'div[slot="body-xs"]', textContent: 'Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna. Nunc viverra imperdiet enim.MaecenasSee terms about lorem ipsum' },
         { attribute: { name: 'variant', value: 'plans' } },
@@ -118,7 +118,7 @@ describe('Plans Card', () => {
     expectToValidateHTMLAssertions(merchCard, {
       elements: [
         { selector: 'p[slot="heading-m"]' },
-        { selector: 'p[slot="heading-xs"]' },
+        { selector: 'h3[slot="heading-xs"]' },
         { selector: 'div[slot="body-xs"]', textContent: 'Maecenas porttitor congue massa. Fusce posuere, magna sed pulvinar ultricies, purus lectus malesuada libero, sit amet commodo magna eros quis urna. Nunc viverra imperdiet enim.See terms about lorem ipsum' },
         { attribute: { name: 'variant', value: 'plans' } },
       ],
@@ -153,7 +153,7 @@ describe('Catalog Card', () => {
     expectToValidateHTMLAssertions(merchCard, {
       elements: [
         { selector: 'p[slot="heading-m"]' },
-        { selector: 'p[slot="heading-xs"]' },
+        { selector: 'h3[slot="heading-xs"]' },
         { selector: 'p[slot="promo-text"]', textContent: 'this promo is great see terms' },
         { selector: 'div[slot="body-xs"]', textContent: 'Create gorgeous images, rich graphics, and incredible art. Save 10% for the first year. Ends Mar 20.See terms' },
         { attribute: { name: 'variant', value: 'catalog' } },
@@ -172,7 +172,7 @@ describe('Catalog Card', () => {
     expectToValidateHTMLAssertions(merchCard, {
       elements: [
         { selector: 'p[slot="heading-m"]' },
-        { selector: 'p[slot="heading-xs"]' },
+        { selector: 'h3[slot="heading-xs"]' },
         { selector: 'div[slot="body-xs"]', textContent: 'Create gorgeous images, rich graphics, and incredible art. Save 10% for the first year. Ends Mar 20.See terms' },
         { attribute: { name: 'variant', value: 'catalog' } },
         { attribute: { name: 'action-menu', value: 'true' } },
@@ -188,7 +188,7 @@ describe('Catalog Card', () => {
     expectToValidateHTMLAssertions(merchCard, {
       elements: [
         { selector: 'p[slot="heading-m"]' },
-        { selector: 'p[slot="heading-xs"]' },
+        { selector: 'h3[slot="heading-xs"]' },
         { selector: 'div[slot="body-xs"]', textContent: 'Create gorgeous images, rich graphics, and incredible art. Save 10% for the first year. Ends Mar 20.See terms' },
         { attribute: { name: 'variant', value: 'catalog' } },
       ],
@@ -205,7 +205,7 @@ describe('Catalog Card', () => {
     expectToValidateHTMLAssertions(merchCard, {
       elements: [
         { selector: 'p[slot="heading-m"]' },
-        { selector: 'p[slot="heading-xs"]' },
+        { selector: 'h3[slot="heading-xs"]' },
         { selector: 'div[slot="body-xs"]', textContent: 'Create gorgeous images, rich graphics, and incredible art. Save 10% for the first year. Ends Mar 20.See terms' },
         { attribute: { name: 'variant', value: 'catalog' } },
         { attribute: { name: 'badge-background-color', value: '#EDCC2D' } },
