@@ -96,4 +96,4 @@ export default {
   cis_en: { ietf: 'en', tk: 'rks2kng.css' },
   cis_ru: { ietf: 'ru', tk: 'qxw8hzm.css' },
   sea: { ietf: 'en', tk: 'hah7vzn.css' },
-};
+}; 
