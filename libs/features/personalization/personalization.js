@@ -742,7 +742,7 @@ export const getEntitlements = async (data) => {
 };
 
 async function getPersonalizationVariant(
-  pznCookie,
+  mepTargetCookie,
   manifestPath,
   variantNames = [],
   variantLabel = null,
@@ -766,7 +766,7 @@ async function getPersonalizationVariant(
     if (name === '') return true;
     if (name === variantLabel?.toLowerCase()) return true;
     if (name.startsWith('param-')) return checkForParamMatch(name);
-    if (pznCookie.includes(name)) return true;
+    if (mepTargetCookie.includes(name)) return true;
     if (userEntitlements?.includes(name)) return true;
     return PERSONALIZATION_KEYS.includes(name) && PERSONALIZATION_TAGS[name]();
   };
@@ -813,7 +813,7 @@ export const addMepAnalytics = (config, header) => {
     }
   });
 };
-export async function getManifestConfig(pznCookie, info = {}, variantOverride = false) {
+export async function getManifestConfig(mepTargetCookie, info = {}, variantOverride = false) {
   const {
     name,
     manifestData,
@@ -877,7 +877,7 @@ export async function getManifestConfig(pznCookie, info = {}, variantOverride = 
 
   manifestConfig.manifestPath = normalizePath(manifestPath);
   manifestConfig.selectedVariantName = await getPersonalizationVariant(
-    pznCookie,
+    mepTargetCookie,
     manifestConfig.manifestPath,
     manifestConfig.variantNames,
     variantLabel,
@@ -1020,13 +1020,13 @@ export function parseNestedPlaceholders({ placeholders }) {
   });
 }
 
-export async function applyPers(manifests, pznCookie) {
+export async function applyPers(manifests, mepTargetCookie) {
   if (!manifests?.length) return;
   let experiments = manifests;
   const config = getConfig();
   for (let i = 0; i < experiments.length; i += 1) {
     experiments[i] = await getManifestConfig(
-      pznCookie,
+      mepTargetCookie,
       experiments[i],
       config.mep?.variantOverride,
     );
@@ -1114,30 +1114,30 @@ const getVariantLabels = (manifests) => {
   return varientLabels;
 };
 
-const getPZNCookie = () => {
+const getCookie = (name) => {
   const cookies = document.cookie.split(';');
   const cookieValue = cookies.find((cookie) => {
     const c = cookie.trim();
-    return c.indexOf('pzn') === 0;
+    return c.indexOf(name) === 0;
   });
   if (cookieValue) {
-    return JSON.parse(cookieValue.substring(5, cookieValue.length));
+    return JSON.parse(cookieValue.substring(11, cookieValue.length));
   }
   return [];
 };
 
-const setCookie = (value) => {
+const setCookie = (name, value) => {
   const date = new Date();
   date.setTime(date.getTime() + (10 * 24 * 60 * 60 * 1000));
   const expires = `expires=${date.toUTCString()}`;
-  document.cookie = `pzn=${value};${expires};path=/`;
+  document.cookie = `${name}=${value};${expires};path=/`;
 };
-const addToCookieArray = (items) => {
-  let cookieArray = getPZNCookie();
+const addToCookieArray = (name, items) => {
+  let cookieArray = getCookie(name);
   if (!items.every((item) => cookieArray.includes(item))) {
     cookieArray = items;
   }
-  setCookie(JSON.stringify(cookieArray));
+  setCookie(name, JSON.stringify(cookieArray));
 };
 
 async function callMartech(config) {
@@ -1145,7 +1145,7 @@ async function callMartech(config) {
   const { targetManifests, targetPropositions } = await getTargetPersonalization();
   config.mep.targetManifests = targetManifests;
   if (targetManifests?.length) {
-    addToCookieArray(getVariantLabels(targetManifests));
+    addToCookieArray('mepTarget', getVariantLabels(targetManifests));
   }
   if (targetPropositions?.length && window._satellite) {
     window._satellite.track('propositionDisplay', targetPropositions);
@@ -1188,11 +1188,11 @@ export async function init(enablements = {}) {
     });
     if (pzn) loadLink(getXLGListURL(config), { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
   }
-  const pznCookie = getPZNCookie();
-  if (target === true || (!pznCookie?.length && target === 'cached')) {
+  const mepTargetCookie = getCookie('mepTarget');
+  if (target === true || (!mepTargetCookie?.length && target === 'cached')) {
     manifests = manifests.concat(await callMartech(config));
   }
-  if (target === 'postlcp' || (pznCookie?.length && target === 'cached')) callMartech(config);
+  if (target === 'postlcp' || (mepTargetCookie?.length && target === 'cached')) callMartech(config);
   if (postLCP) {
     if (!config.mep.targetManifests) await awaitMartech();
     manifests = config.mep.targetManifests;
@@ -1200,7 +1200,7 @@ export async function init(enablements = {}) {
   if (!manifests || !manifests.length) return;
 
   try {
-    await applyPers(manifests, pznCookie);
+    await applyPers(manifests, mepTargetCookie);
   } catch (e) {
     log(`MEP Error: ${e.toString()}`);
     window.lana?.log(`MEP Error: ${e.toString()}`);
