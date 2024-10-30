@@ -12,7 +12,7 @@ const defaults = {
     platform: 'browser',
     target: ['es2020'],
     external: [],
-    sourcemap: true,
+    sourcemap: false,
 };
 
 let { metafile } = await build({
