@@ -135,10 +135,14 @@ export async function decoratePlaceholderArea({
     if (nodeEl.nodeType === Node.TEXT_NODE) {
       nodeEl.nodeValue = await replaceText(nodeEl.nodeValue, config);
     } else if (nodeEl.nodeType === Node.ELEMENT_NODE) {
-      for (const attr of nodeEl.attributes) {
+      const attrPromises = [...nodeEl.attributes].map(async (attr) => {
         const attrVal = await replaceText(attr.value, config);
-        nodeEl.setAttribute(attr.name, attrVal);
-      }
+        return { name: attr.name, value: attrVal };
+      });
+      const results = await Promise.all(attrPromises);
+      results.forEach(({ name, value }) => {
+        nodeEl.setAttribute(name, value);
+      });
     }
   });
   await Promise.all(replaceNodes);
