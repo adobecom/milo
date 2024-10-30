@@ -1,0 +1,85 @@
+.hero-marquee .row-text .row-wrapper.has-st-annual-price .price-annual-prefix:before {
+  content: '\A';
+  white-space: pre;
+}
+
+.hero-marquee .row-text .row-wrapper.has-st-annual-price span[data-wcs-osi] {
+  display: inline;
+}
+
+.hero-marquee .row-text .row-wrapper.has-st-annual-price [is="inline-price"][data-display-old-price="true"],
+.hero-marquee .row-text .row-wrapper.has-st-annual-price .price {
+  font-size: var(--type-heading-m-size);
+}
+
+.hero-marquee .row-text .row-wrapper.has-st-annual-price .price:not(.price-strikethrough) span.price-tax-inclusivity,
+.hero-marquee .row-text .row-wrapper.has-st-annual-price .price:not(.price-strikethrough) span.price-unit-type,
+.hero-marquee .row-text .row-wrapper.has-st-annual-price .price:not(.price-strikethrough) span.price-recurrence {
+  font-size: var(--type-heading-xs-size);
+}
+
+.hero-marquee .row-text .row-wrapper.has-st-annual-price .price-annual-prefix,
+.hero-marquee .row-text .row-wrapper.has-st-annual-price .price.price-annual,
+.hero-marquee .row-text .row-wrapper.has-st-annual-price .price-annual-suffix {
+  font-size: var(--type-heading-xxs-size);
+  position: relative;
+  left: -3px;
+}
+
+.hero-marquee .row-text .row-wrapper.has-st-annual-price .price.price-annual span.price-recurrence {
+  font-size: var(--type-heading-xxs-size);
+}
+
+html[lang="en-AU"] .table .row-heading .col-heading .pricing {
+  display: flex;
+  flex-direction: column;
+}
+
+.table .row-heading .col-heading .pricing .price-annual-prefix:before {
+  content: '\A';
+  white-space: pre;
+}
+
+.table .row-heading .col-heading .pricing .price-annual-prefix,
+.table .row-heading .col-heading .pricing .price-annual-prefix + .price-annual,
+.table .row-heading .col-heading .pricing .price-annual-suffix {
+  font-size: var(--type-heading-xxs-size);
+  line-height: var(--type-heading-xxs-size);
+  font-weight: 400;
+  position: relative;
+  left: -3px;
+}
+
+merch-card [slot='heading-m'] [is="inline-price"] .price-annual-prefix:before {
+  content: '\A';
+  white-space: pre;
+}
+merch-card [slot='heading-m'] [is="inline-price"] .price-annual-prefix,
+merch-card [slot='heading-m'] [is="inline-price"] .price-annual-prefix + .price-annual,
+merch-card [slot='heading-m'] [is="inline-price"] .price-annual-suffix {
+  font-size: 16px;
+  line-height: 16px;
+  font-weight: 400;
+  position: relative;
+  left: -6px;
+}
+
+html[lang="en-AU"] merch-card[variant="mini-compare-chart"] [slot="heading-m-price"] {
+  display: flex;
+  flex-direction: column;
+}
+
+merch-card[variant="mini-compare-chart"] .card-heading [is="inline-price"] .price-annual-prefix:before {
+  content: '\A';
+  white-space: pre;
+}
+
+merch-card[variant="mini-compare-chart"] .card-heading [is="inline-price"] .price-annual-prefix,
+merch-card[variant="mini-compare-chart"] .card-heading [is="inline-price"] .price-annual-prefix + .price-annual,
+merch-card[variant="mini-compare-chart"] .card-heading [is="inline-price"] .price-annual-suffix {
+  font-size: 16px;
+  line-height: 16px;
+  font-weight: 400;
+  position: relative;
+  left: -4px;
+}

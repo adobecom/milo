@@ -35,4 +35,10 @@ describe('Hero Marquee', () => {
     const hr = await waitForElement('.has-divider');
     expect(hr).to.exist;
   });
+  it('support AU ABM prices', async () => {
+    const testPriceEl = await waitForElement('.test-price');
+    const { checkIfStPriceAddedForAu } = await import('../../../libs/blocks/merch/au-merch.js');
+    await checkIfStPriceAddedForAu(testPriceEl);
+    expect(testPriceEl).to.exist;
+  });
 });
