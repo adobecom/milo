@@ -760,7 +760,7 @@ class Gnav {
     if (!link) return '';
 
     // Check which elements should be rendered
-    const isBrandImage = rawBlock.matches('.brand-image');
+    const isBrandImage = rawBlock.matches(selectors.brandImageOnly);
     const renderImage = !rawBlock.matches('.no-logo');
     const renderLabel = !isBrandImage && includeLabel && !rawBlock.matches('.image-only');
 
@@ -784,7 +784,7 @@ class Gnav {
       return getBrandImage(image, isBrandImage);
     };
 
-    const brandImageClass = isBrandImage ? ' brand-image-only' : '';
+    const brandImageClass = isBrandImage ? ` ${selectors.brandImageOnly.slice(1)}` : '';
     const imageEl = renderImage
       ? toFragment`<span class="${classPrefix}-image${brandImageClass}">${getImageEl()}</span>`
       : '';

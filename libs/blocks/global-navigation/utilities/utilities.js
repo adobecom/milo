@@ -22,6 +22,7 @@ export const selectors = {
   menuColumn: '.feds-menu-column',
   gnavPromo: '.gnav-promo',
   columnBreak: '.column-break',
+  brandImageOnly: '.brand-image-only',
 };
 
 export const icons = {
