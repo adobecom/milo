@@ -14,7 +14,7 @@ const rowTypeKeyword = 'con-block-row-';
 const breakpointThemeClasses = ['dark-mobile', 'light-mobile', 'dark-tablet', 'light-tablet', 'dark-desktop', 'light-desktop'];
 const textDefault = ['xxl', 'm', 'l']; // heading, body, detail
 
-const { miloLibs, codeRoot, locale } = getConfig();
+const { miloLibs, codeRoot } = getConfig();
 const base = miloLibs || codeRoot;
 
 function distillClasses(el, classes) {
@@ -258,10 +258,6 @@ export default async function init(el) {
       firstCol.parentElement.classList.add(`row-${parsed.key}`, 'con-block');
       firstCol.remove();
       cols[1].classList.add('row-wrapper');
-      if (locale.prefix === '/au') {
-        const { checkIfStPriceAddedForAu } = await import('../merch/au-merch.js');
-        checkIfStPriceAddedForAu(cols[1]);
-      }
       if (contentTypes.includes(parsed.key)) {
         promiseArr.push(loadContentType(row, parsed.key, parsed.classes));
       }

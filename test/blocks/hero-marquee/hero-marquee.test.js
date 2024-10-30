@@ -6,11 +6,8 @@ import { setConfig } from '../../../libs/utils/utils.js';
 
 window.lana = { log: stub() };
 
-const conf = {
-  pathname: '/au/test.html',
-  locales: { au: { ietf: 'en-AU', tk: 'hah7vzn.css', prefix: '/au' } },
-  locale: { prefix: '/au' },
-};
+const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
+const conf = { locales };
 setConfig(conf);
 
 describe('Hero Marquee', () => {
@@ -37,11 +34,5 @@ describe('Hero Marquee', () => {
   it('supports authorable horizontal rules', async () => {
     const hr = await waitForElement('.has-divider');
     expect(hr).to.exist;
-  });
-  it('support AU ABM prices', async () => {
-    const testPriceEl = await waitForElement('.test-price');
-    const { checkIfStPriceAddedForAu } = await import('../../../libs/blocks/merch/au-merch.js');
-    await checkIfStPriceAddedForAu(testPriceEl);
-    expect(testPriceEl).to.exist;
   });
 });
