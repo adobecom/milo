@@ -1243,7 +1243,7 @@ async function resolveInlineFrags(section) {
   section.preloadLinks = newlyDecoratedSection.preloadLinks;
 }
 
-function setIconsIndexClass(icons) {
+export function setIconsIndexClass(icons) {
   [...icons].forEach((icon) => {
     const parent = icon.parentNode;
     const children = parent.childNodes;
