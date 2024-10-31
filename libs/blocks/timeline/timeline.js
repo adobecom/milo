@@ -14,7 +14,7 @@ function isColorOrGradient(str) {
   return isColor(str) || isGradient(str);
 }
 function hasSegmentClass(el) {
-  const regex = /^segment-timeline-span-[3-9]/;
+  const regex = /^segment-timeline-[3-9]-[3-9]/;
   let hasSegment = false;
   el.classList.forEach((cls) => {
     if (regex.test(cls)) hasSegment = true;
