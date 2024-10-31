@@ -209,7 +209,7 @@ test.describe('Milo Merchcard block test suite', () => {
       await expect(await merchCard.plansRibbon).toContainText(data.badgeText);
 
       await expect(await merchCard.plansCardTitleHeadingXS).toContainText(data.titleH3);
-      await expect(await merchCard.plansCardTitleH4).toContainText(data.titleH4);
+      await expect(await merchCard.plansCardTitlePromoText).toContainText(data.titleH4);
 
       // await expect(await merchCard.price).toContainText(data.price);
       await expect(await merchCard.plansCardDescription2).toContainText(data.description);

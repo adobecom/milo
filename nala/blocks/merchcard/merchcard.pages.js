@@ -53,7 +53,7 @@ export default class Merchcard {
     this.productIcon = this.plans.locator('img');
     this.plansRibbon = this.plans.locator('.plans-badge');
     this.plansCardTitleHeadingXS = this.plans.locator('h3[slot="heading-xs"]');
-    this.plansCardTitlePromoText = this.plans.locator('p[slot="body-xxs"]');
+    this.plansCardTitlePromoText = this.plans.locator('p[slot="promo-text"]');
     this.plansCardDescription1 = this.plans.locator('div[slot="body-xs"] p').nth(1);
     this.plansCardDescription2 = this.plans.locator('div[slot="body-xs"] p').nth(2);
     this.plansCardDescription3 = this.plans.locator('div[slot="body-xs"] p').nth(3);
