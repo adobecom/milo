@@ -293,7 +293,7 @@ const loadFromLS = () => {
   } catch (e) { /* do nothing */ }
  
   if (caasEnv.value === 'prod' && !publishToDraft.checked) {
-    publishWarning.style.height = '25px';
+    publishWarning.style.height = '30px';
   }
 };
 
@@ -344,7 +344,7 @@ const publishWarning =  document.querySelector('.publish-warning');
 caasEnv.addEventListener('change', () => {
   const { value } = caasEnv;
   if (value === 'prod') {
-    publishWarning.style.height = '25px';
+    publishWarning.style.height = '30px';
   } else {
     publishWarning.style.height = '0';
   }
@@ -353,7 +353,7 @@ caasEnv.addEventListener('change', () => {
 publishToDraft.addEventListener('change', () => {
   const { checked } = publishToDraft;
   if (caasEnv.value === 'prod' && !checked) {
-    publishWarning.style.height = '25px';
+    publishWarning.style.height = '30px';
   } else {
     publishWarning.style.height = '0';
   }
