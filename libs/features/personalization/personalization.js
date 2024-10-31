@@ -6,6 +6,7 @@ import { getFederatedUrl } from '../../utils/federated.js';
 
 /* c8 ignore start */
 const PHONE_SIZE = window.screen.width < 550 || window.screen.height < 550;
+const safariIpad = navigator.userAgent.includes('Macintosh') && navigator.maxTouchPoints > 1;
 export const PERSONALIZATION_TAGS = {
   all: () => true,
   chrome: () => navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Edg'),
@@ -13,10 +14,12 @@ export const PERSONALIZATION_TAGS = {
   safari: () => navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome'),
   edge: () => navigator.userAgent.includes('Edg'),
   android: () => navigator.userAgent.includes('Android'),
-  ios: () => /iPad|iPhone|iPod/.test(navigator.userAgent),
+  ios: () => /iPad|iPhone|iPod/.test(navigator.userAgent) || safariIpad,
   windows: () => navigator.userAgent.includes('Windows'),
-  mac: () => navigator.userAgent.includes('Macintosh'),
-  'mobile-device': () => /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i.test(navigator.userAgent),
+  mac: () => navigator.userAgent.includes('Macintosh') && !safariIpad,
+  'mobile-device': () => safariIpad
+    || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i
+      .test(navigator.userAgent),
   phone: () => PERSONALIZATION_TAGS['mobile-device']() && PHONE_SIZE,
   tablet: () => PERSONALIZATION_TAGS['mobile-device']() && !PHONE_SIZE,
   desktop: () => !PERSONALIZATION_TAGS['mobile-device'](),
