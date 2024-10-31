@@ -79,7 +79,7 @@
   grid-template-columns: minmax(110px, 1fr) 1fr;
 }
 
-.timeline[class*="segment-timeline-span-"] .left-center {
+.timeline[class*="segment-timeline-"] .left-center {
   display: none;
 }
 @media screen and (max-width: 599.99px) {
