@@ -202,7 +202,7 @@ function createPreviewPill(manifests) {
   });
   const config = getConfig();
   let targetOnText = config.mep.targetEnabled ? 'on' : 'off';
-  if (config.mep.targetEnabled === 'gnav') targetOnText = 'on for gnav only';
+  if (config.mep.targetEnabled === 'postlcp') targetOnText = 'on post LCP';
   const personalizationOn = getMetadata('personalization');
   const personalizationOnText = personalizationOn && personalizationOn !== '' ? 'on' : 'off';
   const simulateHref = new URL(window.location.href);
