@@ -15,6 +15,10 @@
   --carousel-indicator-active-background-color: #4b4b4b;
   --carousel-expand-background-color: rgb(255 255 255 / 75%);
   --carousel-expand-border-color: rgb(116 116 116 / 30%);
+  --s-rounded-corners: 4px;
+  --m-rounded-corners: 8px;
+  --l-rounded-corners: 16px;
+  --full-rounded-corners: 50%;
 
   position: relative;
   margin-bottom: 1.8rem;

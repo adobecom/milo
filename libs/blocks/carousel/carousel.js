@@ -1,4 +1,5 @@
 import { createTag, getConfig, MILO_EVENTS } from '../../utils/utils.js';
+import { decorateAnchorVideo } from '../../utils/decorate.js';
 
 const { miloLibs, codeRoot } = getConfig();
 const base = miloLibs || codeRoot;
@@ -330,6 +331,19 @@ function handleChangingSlides(carouselElements) {
   mobileSwipeDetect(carouselElements);
 }
 
+function convertMpcMp4(slides) {
+  slides.forEach((slide) => {
+    const a = slide.querySelector('a');
+    if (!a) return;
+    if (a.href.includes('images-tv.adobe')) {
+      decorateAnchorVideo({
+        src: a.href,
+        anchorTag: a,
+      });
+    }
+  });
+}
+
 function readySlides(slides, slideContainer) {
   slideContainer.classList.add('is-ready');
   slides.forEach((slide, idx) => {
@@ -366,6 +380,7 @@ export default function init(el) {
   const slideIndicators = decorateSlideIndicators(slides);
   const controlsContainer = createTag('div', { class: 'carousel-controls is-delayed' });
 
+  convertMpcMp4(slides);
   fragment.append(...slides);
   const slideWrapper = createTag('div', { class: 'carousel-wrapper' });
   const slideContainer = createTag('div', { class: 'carousel-slides' }, fragment);
