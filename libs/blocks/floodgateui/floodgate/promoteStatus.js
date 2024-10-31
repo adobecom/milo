@@ -19,7 +19,7 @@ class PromoteStatusModal extends Component {
     };
   }
 
-  getCategoryRowStyle = (category) => {
+  getCategoryRowStyle(category) {
     if (category === 'failedPromotes' || category === 'failedPreviews' || category === 'failedPublishes') {
       return 'background-color: #f1f1f1;'; // Light gray background for rows with failed actions
     }
@@ -40,7 +40,7 @@ class PromoteStatusModal extends Component {
         loading: false,
       });
     } catch (error) {
-      this.setState({ loading: false, });
+      this.setState({ loading: false });
     }
   };
 
@@ -56,13 +56,13 @@ class PromoteStatusModal extends Component {
   };
 
   handleBatchErrorClick = async (batch) => {
-    this.setState({ selectedBatch: batch, });
+    this.setState({ selectedBatch: batch });
     // Fetch failed pages
     await this.fetchFailedPages(batch.batchNumber);
   };
 
   handleBatchClick = async (batch) => {
-    this.setState({ selectedBatch: batch, });
+    this.setState({ selectedBatch: batch });
     await this.fetchBatchFiles(batch.batchNumber);
   };
 
