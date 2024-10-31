@@ -72,7 +72,7 @@ export class AemFragment extends HTMLElement {
     /**
      * Internal promise to track the readiness of the web-component to render.
      */
-    _readyPromise;
+    #readyPromise;
 
     static get observedAttributes() {
         return [ATTRIBUTE_FRAGMENT];
@@ -113,9 +113,9 @@ export class AemFragment extends HTMLElement {
     }
 
     async refresh(flushCache = true) {
-        if (this._readyPromise) {
+        if (this.#readyPromise) {
             const ready = await Promise.race([
-                this._readyPromise,
+                this.#readyPromise,
                 Promise.resolve(false),
             ]);
             if (!ready) return; // already fetching data
@@ -123,7 +123,7 @@ export class AemFragment extends HTMLElement {
         if (flushCache) {
             cache.remove(this.fragmentId);
         }
-        this._readyPromise = this.fetchData()
+        this.#readyPromise = this.fetchData()
             .then(() => {
                 this.dispatchEvent(
                     new CustomEvent(EVENT_AEM_LOAD, {
@@ -137,9 +137,10 @@ export class AemFragment extends HTMLElement {
             .catch(() => {
                 /* c8 ignore next 3 */ 
                 this.#fail('Network error: failed to load fragment');
-                this._readyPromise = null;
+                this.#readyPromise = null;
                 return false;
             });
+        this.#readyPromise;
     }
 
     #fail(error) {
@@ -168,7 +169,7 @@ export class AemFragment extends HTMLElement {
 
     get updateComplete() {
         return (
-            this._readyPromise ??
+            this.#readyPromise ??
             Promise.reject(new Error('AEM fragment cannot be loaded'))
         );
     }
