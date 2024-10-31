@@ -3,7 +3,8 @@ import { expect } from '@esm-bundle/chai';
 import sinon, { stub } from 'sinon';
 import { waitForElement } from '../../helpers/waitfor.js';
 
-const { default: loadIcons, getIconData, setIconsIndexClass } = await import('../../../libs/features/icons/icons.js');
+const { default: loadIcons, getIconData } = await import('../../../libs/features/icons/icons.js');
+const { setIconsIndexClass } = await import('../../../libs/utils/utils.js');
 const mockRes = ({ payload, status = 200, ok = true } = {}) => new Promise((resolve) => {
   resolve({
     status,
