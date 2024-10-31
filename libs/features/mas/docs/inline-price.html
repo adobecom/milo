@@ -19,6 +19,16 @@
   <script src="../../../features/spectrum-web-components/dist/theme.js" type="module"></script>
   <script src="../../../features/spectrum-web-components/dist/button.js" type="module"></script>
   <script type="module" src="../../../deps/mas/mas.js"></script>
+
+  <script type="module">
+    const params = new URLSearchParams(document.location.search);
+    const masCommerceService = document.createElement('mas-commerce-service');
+    ['locale','language','env'].forEach((attribute) => {
+      const value = params.get(attribute);
+      if (value) masCommerceService.setAttribute(attribute, value);
+    });
+    document.head.appendChild(masCommerceService);
+  </script>
   <!-- Include Highlight.js stylesheet for syntax highlighting -->
   <link rel="stylesheet" href="../../../styles/styles.css">
   <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
@@ -152,7 +162,7 @@
     <span class="hljs-attr">data-display-per-unit</span>=<span class="hljs-string">&quot;true&quot;</span>
     <span class="hljs-attr">data-display-tax</span>=<span class="hljs-string">&quot;true&quot;</span>
 &gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
- vs 
+vs
 <span class="hljs-tag">&lt;<span class="hljs-name">span</span>
     <span class="hljs-attr">is</span>=<span class="hljs-string">&quot;inline-price&quot;</span>
     <span class="hljs-attr">data-wcs-osi</span>=<span class="hljs-string">&quot;1ZyMOJpSngx9IU5AjEDyp7oRBz843zNlbbtPKbIb1gM&quot;</span>
@@ -168,7 +178,7 @@
     <span class="hljs-attr">data-display-per-unit</span>=<span class="hljs-string">&quot;true&quot;</span>
     <span class="hljs-attr">data-display-tax</span>=<span class="hljs-string">&quot;true&quot;</span>
 &gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
- vs 
+vs
 <span class="hljs-tag">&lt;<span class="hljs-name">span</span>
     <span class="hljs-attr">is</span>=<span class="hljs-string">&quot;inline-price&quot;</span>
     <span class="hljs-attr">data-wcs-osi</span>=<span class="hljs-string">&quot;Mutn1LYoGojkrcMdCLO7LQlx1FyTHw27ETsfLv0h8DQ&quot;</span>
@@ -186,6 +196,10 @@
 </tr>
 </thead>
 <tbody>
+<tr>
+<td><code>isInlinePrice</code></td>
+<td>on inline price elements, it will return <code>true</code></td>
+</tr>
 <tr>
 <td><code>onceSettled</code></td>
 <td>Promise that resolves when the custom-element either resolves or fails to retrieve the price</td>
@@ -240,8 +254,8 @@
 </thead>
 <tbody>
 <tr>
-<td><code>requestUpdate(true|false)</code></td>
-<td>Causes a re-render using the actual options</td>
+<td><code>requestUpdate(true | false)</code></td>
+<td>Causes a re-render using the actual options, force = false by default, meaning if no change is found will skip</td>
 </tr>
 </tbody>
 </table>
@@ -255,15 +269,15 @@
 </thead>
 <tbody>
 <tr>
-<td><code>wcms:placeholder:pending</code></td>
+<td><code>mas:pending</code></td>
 <td>Fires when inline price starts loading</td>
 </tr>
 <tr>
-<td><code>wcms:placeholder:resolved</code></td>
+<td><code>mas:resolved</code></td>
 <td>Fires when the price is successfully resolved</td>
 </tr>
 <tr>
-<td><code>wcms:placeholder:failed</code></td>
+<td><code>mas:failed</code></td>
 <td>Fires when the price could not be found or fetched</td>
 </tr>
 </tbody>
@@ -278,20 +292,20 @@
     <span class="hljs-attr">is</span>=<span class="hljs-string">&quot;inline-price&quot;</span>
     <span class="hljs-attr">data-wcs-osi</span>=<span class="hljs-string">&quot;r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8&quot;</span>
 &gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;btnRefresh&quot;</span>&gt;</span>Refresh<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
 <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;module&quot;</span>&gt;</span><span class="language-javascript">
     <span class="hljs-keyword">const</span> log = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;log&#x27;</span>);
     <span class="hljs-keyword">const</span> <span class="hljs-title function_">logger</span> = (<span class="hljs-params">...messages</span>) =&gt;
         (log.<span class="hljs-property">innerHTML</span> = <span class="hljs-string">`<span class="hljs-subst">${messages.join(<span class="hljs-string">&#x27; &#x27;</span>)}</span>&lt;br&gt;<span class="hljs-subst">${log.innerHTML}</span>`</span>);
     <span class="hljs-keyword">const</span> span = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;ip2&#x27;</span>);
-    span.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;wcms:placeholder:pending&#x27;</span>, <span class="hljs-function">() =&gt;</span>
-        <span class="hljs-title function_">logger</span>(<span class="hljs-string">&#x27;inline-price pending&#x27;</span>),
-    );
-    span.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;wcms:placeholder:resolved&#x27;</span>, <span class="hljs-function">() =&gt;</span>
+    span.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;mas:pending&#x27;</span>, <span class="hljs-function">() =&gt;</span> <span class="hljs-title function_">logger</span>(<span class="hljs-string">&#x27;inline-price pending&#x27;</span>));
+    span.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;mas:resolved&#x27;</span>, <span class="hljs-function">() =&gt;</span>
         <span class="hljs-title function_">logger</span>(<span class="hljs-string">&#x27;inline-price resolved&#x27;</span>),
     );
-    span.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;wcms:placeholder:failed&#x27;</span>, <span class="hljs-function">() =&gt;</span>
-        <span class="hljs-title function_">logger</span>(<span class="hljs-string">&#x27;inline-price failed&#x27;</span>),
-    );
+    span.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;mas:failed&#x27;</span>, <span class="hljs-function">() =&gt;</span> <span class="hljs-title function_">logger</span>(<span class="hljs-string">&#x27;inline-price failed&#x27;</span>));
+    <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;btnRefresh&#x27;</span>).<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;click&#x27;</span>, <span class="hljs-function">() =&gt;</span> {
+        span.<span class="hljs-title function_">requestUpdate</span>(<span class="hljs-literal">true</span>);
+    });
 </span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
 </code></pre>
 <h4 id="logs" tabindex="-1">Logs <a class="header-anchor" href="#logs" href="#logs" title="Permalink to this heading">#</a></h4>
