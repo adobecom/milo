@@ -104,8 +104,8 @@ test.describe('Milo Merchcard block test suite', () => {
       await expect(await merchCard.specialOffers).toBeVisible();
       await expect(await merchCard.specialOffersImage).toBeVisible();
 
-      await expect(await merchCard.specialOffersBodyXXS).toBeVisible();
-      await expect(await merchCard.specialOffersBodyXXS).toContainText(data.titleH4);
+      await expect(await merchCard.specialOffersDetailM).toBeVisible();
+      await expect(await merchCard.specialOffersDetailM).toContainText(data.titleH4);
       await expect(await merchCard.specialOffersTitleHeading).toContainText(data.titleH3);
 
       await expect(await merchCard.specialOffersDescription1).toContainText(data.description1);
@@ -140,7 +140,7 @@ test.describe('Milo Merchcard block test suite', () => {
       await expect(await merchCard.specialOffersRibbon).toContainText(data.badgeText);
 
       await expect(await merchCard.specialOffersTitleHeading).toContainText(data.titleH3);
-      await expect(await merchCard.specialOffersBodyXXS).toContainText(data.titleH4);
+      await expect(await merchCard.specialOffersDetailM).toContainText(data.titleH4);
 
       await expect(await merchCard.specialOffersDescription1).toContainText(data.description);
       await expect(await merchCard.seeTermsTextLink).toContainText(data.link1Text);

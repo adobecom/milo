@@ -38,7 +38,7 @@ export default class Merchcard {
     // merch-card special offers
     this.specialOffersImage = this.specialOffers.locator('div[slot="bg-image"] img');
     this.specialOffersRibbon = this.merchCard.locator('.special-offers-badge');
-    this.plansCardDetailM = this.specialOffers.locator('p[slot="detail-m"]').nth(0);
+    this.specialOffersDetailM = this.specialOffers.locator('p[slot="detail-m"]').nth(0);
     this.specialOffersTitlePromoText = this.specialOffers.locator('p[slot="body-xxs"]');
     this.specialOffersTitleHeading = this.specialOffers.locator('h3[slot="heading-xs"]').nth(0);
 
