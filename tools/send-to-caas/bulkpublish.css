@@ -146,9 +146,7 @@ body {
 }
 
 .content.is-expanded input[type=checkbox] {
-  /* align-self: baseline; */
-  margin-top: -4px;
-  
+  align-self: center;
 }
 
 select#preset {
@@ -234,7 +232,7 @@ body.preset  .preset-options .help {
 
 body.advanced  .preset-options,
 body.advanced  .advanced-options {
-  height: 360px;
+  height: 368px;
   border-width: 1px;
   border: solid 1px #aaa;
   border-radius: 10px;
