@@ -82,8 +82,9 @@ export function decorateDefaultLinkAnalytics(block, config) {
 }
 
 export async function decorateSectionAnalytics(section, idx, config) {
+  const id = Number.isNaN(idx) ? `s${idx + 1}` : idx;
   document.querySelector('main')?.setAttribute('daa-im', 'true');
-  section.setAttribute('daa-lh', `s${idx + 1}`);
+  section.setAttribute('daa-lh', id);
   section.querySelectorAll('[data-block] [data-block]').forEach((block) => {
     block.removeAttribute('data-block');
   });
