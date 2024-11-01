@@ -133,9 +133,11 @@ function jumpToDirection(activeSlideIndex, jumpToIndex, slideContainer) {
 
 function checkSlideForVideo(activeSlide) {
   const video = activeSlide.querySelector('video');
+  /* c8 ignore start */
   if (video && video.played.length > 0) {
     video.pause();
   }
+  /* c8 ignore end */
 }
 
 function moveSlides(event, carouselElements, jumpToIndex) {
