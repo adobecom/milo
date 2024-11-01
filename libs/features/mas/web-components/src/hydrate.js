@@ -84,24 +84,24 @@ export async function hydrate(fragmentData, merchCard) {
         );
     }
 
-    if (fragment.backgroundImage) {
-        switch (variant) {
-            case 'ccd-slice':
-              if (aemFragmentMapping.backgroundImage) {
-                merchCard.append(
-                  createTag(
-                    aemFragmentMapping.backgroundImage.tag,
-                    { slot: aemFragmentMapping.backgroundImage.slot },
-                    `<img loading="lazy" src="${fragment.backgroundImage}" />`
-                  )
-                );
-              }
+    switch (variant) {
+        case 'ccd-slice':
+            if (!fragment.backgroundImage) break;
+            if (aemFragmentMapping.backgroundImage) {
+            merchCard.append(
+                createTag(
+                aemFragmentMapping.backgroundImage.tag,
+                { slot: aemFragmentMapping.backgroundImage.slot },
+                `<img loading="lazy" src="${fragment.backgroundImage}" />`
+                )
+            );
+            }
             break;
-            /* c8 ignore next 3 */
-            case 'ccd-suggested':
-              merchCard.setAttribute('background-image', fragment.backgroundImage);
-              break;
-        }
+        /* c8 ignore next 3 */
+        case 'ccd-suggested':
+            if (!fragment.backgroundImage) merchCard.removeAttribute('background-image');
+            else merchCard.setAttribute('background-image', fragment.backgroundImage);
+            break;
     }
 
     if (fragment.prices && aemFragmentMapping.prices) {
