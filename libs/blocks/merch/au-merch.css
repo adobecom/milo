@@ -65,3 +65,7 @@ merch-card[variant="mini-compare-chart"] .card-heading [is="inline-price"] .pric
   position: relative;
   left: -4px;
 }
+
+merch-card[variant="mini-compare-chart"] .card-heading [is="inline-price"][data-template="price"] {
+  display: inline;
+}
