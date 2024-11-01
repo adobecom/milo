@@ -32,7 +32,8 @@ div[class*="-merch-card"] > div,
 
 .merch-card .merch-card-price {
   font-weight: 700;
-  margin: 0;
+  margin-top: 8px;
+  margin-bottom: 16px;
   font-size: 18px;
   line-height: 22.5px;
 }
