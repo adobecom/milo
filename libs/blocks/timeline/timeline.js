@@ -13,13 +13,16 @@ function isGradient(str) {
 function isColorOrGradient(str) {
   return isColor(str) || isGradient(str);
 }
+
 function hasSegmentClass(el) {
-  const regex = /^segment-timeline-[3-9]-[3-9]/;
-  let hasSegment = false;
-  el.classList.forEach((cls) => {
-    if (regex.test(cls)) hasSegment = true;
-  });
-  return hasSegment;
+  const segmentClassRegex = /^segment-timeline-(3-9|4-8|5-7|6-6|7-5|8-4|9-3)$/;
+  const startsWithSegmentTimelineRegex = /^segment-timeline-/;
+  const hasValidSegmentClass = Array.from(el.classList).some((cls) => segmentClassRegex.test(cls));
+  if (!hasValidSegmentClass
+    && Array.from(el.classList).some((cls) => startsWithSegmentTimelineRegex.test(cls))) {
+    el.classList.add('segment-timeline-6-6');
+  }
+  return hasValidSegmentClass;
 }
 
 function getColWidth(text, colWidths, hasSegment) {
@@ -129,7 +132,7 @@ function updateColWidths(colWidths, fragment, hasSegment) {
   });
 }
 export default function init(el) {
-  // document.querySelector('html').setAttribute('dir', 'rtl');
+  document.querySelector('html').setAttribute('dir', 'rtl');
   const fragment = document.createDocumentFragment();
   const [textRow, left, right] = createRow();
   const rows = el.querySelectorAll(':scope > div > div');
@@ -165,7 +168,7 @@ export default function init(el) {
   });
   textRow.append(left, right);
   [textRow, addBarRow(), addBottomRow(periodText)].forEach((row) => fragment.append(row));
-  updateColWidths(colWidths, fragment, el, hasSegment);
+  updateColWidths(colWidths, fragment, hasSegment);
   setColors(colors, fragment, el);
   el.append(fragment);
 }

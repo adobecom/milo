@@ -57,7 +57,7 @@
 
 .timeline .row:nth-of-type(1)>.left>div>* {
   max-width: 100px;
-  padding-right: var(--spacing-m);
+  padding-right: var(--spacing-xs);
 }
 
 .dark .timeline .row:nth-child(3)>div *,
@@ -76,12 +76,19 @@
 }
 
 .timeline .row:nth-of-type(1)>.right {
-  grid-template-columns: minmax(110px, 1fr) 1fr;
+  grid-template-columns: 1fr 1fr;
 }
 
-.timeline[class*="segment-timeline-3"] .left-center,
-.timeline[class*="segment-timeline-4"] .left-center,
-.timeline[class*="segment-timeline-5"] .left-center {
+@media screen and (min-width: 315px) {
+  .timeline .row:nth-of-type(1)>.right {
+    grid-template-columns: minmax(110px, 1fr) 1fr;
+  }
+}
+
+.timeline.segment-timeline-3-9 .left-center,
+.timeline.segment-timeline-4-8 .left-center,
+.timeline.segment-timeline-5-7 .left-center,
+.timeline.segment-timeline-6-6 .left-center {
   display: none;
 }
 @media screen and (max-width: 599.99px) {
@@ -94,9 +101,10 @@
   .timeline.segment-timeline-7-5 .row:nth-of-type(1)>.left,
   .timeline.segment-timeline-8-4 .row:nth-of-type(1)>.left,
   .timeline.segment-timeline-9-3 .row:nth-of-type(1)>.left {
-    grid-template-columns: 1fr 1fr; 
+    grid-template-columns: 1fr 2fr; 
     display: grid;
     justify-content: space-between;
+    grid-gap:8px;
   }
 
   .timeline.segment-timeline-7-5 .right-center,
@@ -113,14 +121,20 @@
     flex-direction: column;
     align-items: flex-end;
   }
+  
+  [dir="rtl"] .timeline.segment-timeline-7-5 .left-center,
+  [dir="rtl"] .timeline.segment-timeline-8-4 .left-center,
+  [dir="rtl"] .timeline.segment-timeline-9-3 .left-center {
+    text-align: left;
+  }
 
-  .timeline .row:nth-of-type(1)>.left>.left-center>* {
+  .timeline .row:nth-of-type(1)>.left .left-center>* {
     padding-right: 0;
   }
 }
 
 @media screen and (min-width: 600px) {
-  .timeline.segment-timelinen-7-5 .left-center,
+  .timeline.segment-timeline-7-5 .left-center,
   .timeline.segment-timeline-8-4 .left-center,
   .timeline.segment-timeline-9-3 .left-center {
     display: none;
@@ -168,8 +182,15 @@
 }
 
 [dir="rtl"] .timeline .row:nth-of-type(1)>.left>div>* {
-  padding: 0 0 0 var(--spacing-m);
+  padding: 0;
   text-align: right;
+}
+
+[dir="rtl"] .timeline.timeline.segment-timeline-7-5 .row:nth-of-type(1)>.left>.left-center>*,
+[dir="rtl"] .timeline.timeline.segment-timeline-8-4 .row:nth-of-type(1)>.left>.left-center>*,
+[dir="rtl"] .timeline.timeline.segment-timeline-9-3 .row:nth-of-type(1)>.left>.left-center>* {
+  padding: 0;
+  text-align: left;
 }
 
 [dir="rtl"] .timeline .row:nth-of-type(1)>.right>div+div {
