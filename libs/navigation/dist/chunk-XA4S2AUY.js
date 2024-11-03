@@ -1,0 +1,1 @@
+var s="milo_ims",i="https://auth.services.adobe.com/imslib/imslib.min.js";var t={},c=async e=>(window.adobeid={client_id:s,environment:"prod",scope:"AdobeID,openid"},window.adobeIMS||await e(i),window.adobeIMS?.getAccessToken()?.token);var a=async e=>{if(t[e]!==void 0)return t[e];let n=null,o=await fetch(e);return o.ok&&(n=await o.json()),t[e]=n,t[e]};export{c as a,a as b};

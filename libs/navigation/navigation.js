@@ -47,6 +47,7 @@ function getParamsConfigs(configs) {
   }, {});
 }
 
+/* eslint import/no-relative-packages: 0 */
 export default async function loadBlock(configs, customLib) {
   const {
     header,
@@ -56,47 +57,53 @@ export default async function loadBlock(configs, customLib) {
     locale = '',
     theme,
   } = configs || {};
-  const branch = new URLSearchParams(window.location.search).get('navbranch');
-  const miloLibs = branch ? `https://${branch}--milo--adobecom.hlx.page` : customLib || envMap[env];
   if (!header && !footer) {
     // eslint-disable-next-line no-console
     console.error('Global navigation Error: header and footer configurations are missing.');
     return;
   }
-  // Relative path can't be used, as the script will run on consumer's app
+  const branch = new URLSearchParams(window.location.search).get('navbranch');
+  const miloLibs = branch ? `https://${branch}--milo--adobecom.hlx.page` : customLib || envMap[env];
+
+  // Relative paths work just fine since they exist in the context of this file's origin
   const [{ default: bootstrapBlock }, { default: locales }, { setConfig }] = await Promise.all([
-    import(`${miloLibs}/libs/navigation/bootstrapper.js`),
-    import(`${miloLibs}/libs/utils/locales.js`),
-    import(`${miloLibs}/libs/utils/utils.js`),
+    import('./bootstrapper.js'),
+    import('../utils/locales.js'),
+    import('../utils/utils.js'),
   ]);
 
-  const paramConfigs = getParamsConfigs(configs, miloLibs);
+  const paramConfigs = getParamsConfigs(configs);
   const clientConfig = {
     clientEnv: env,
     origin: `https://main--federal--adobecom.hlx.${env === 'prod' ? 'live' : 'page'}`,
-    miloLibs: `${miloLibs}/libs`,
     pathname: `/${locale}`,
+    miloLibs: `${miloLibs}/libs`,
     locales: configs.locales || locales,
     contentRoot: authoringPath || footer.authoringPath,
     theme,
     ...paramConfigs,
     stageDomainsMap,
+    standaloneGnav: true,
   };
   setConfig(clientConfig);
   for await (const block of blockConfig) {
     const configBlock = configs[block.key];
     try {
       if (configBlock) {
-        await bootstrapBlock(`${miloLibs}/libs`, {
-          ...block,
-          ...(block.key === 'header' && {
+        if (block.key === 'header') {
+          const { default: init } = await import('../blocks/global-navigation/global-navigation.js');
+          await bootstrapBlock(init, {
+            ...block,
             unavComponents: configBlock.unav?.unavComponents,
             redirect: configBlock.redirect,
             layout: configBlock.layout,
             noBorder: configBlock.noBorder,
             jarvis: configBlock.jarvis,
-          }),
-        });
+          });
+        } else if (block.key === 'footer') {
+          const { default: init } = await import('../blocks/global-footer/global-footer.js');
+          await bootstrapBlock(init, { ...block });
+        }
         configBlock.onReady?.();
       }
     } catch (e) {

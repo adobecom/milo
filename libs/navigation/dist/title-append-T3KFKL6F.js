@@ -1,0 +1,1 @@
+import"./chunk-YBWLHNHN.js";function o(t){if(!t)return;document.title=`${document.title} ${t}`;let e=document.querySelector('meta[property="og:title"]');e&&e.setAttribute("content",document.title);let i=document.querySelector('meta[name="twitter:title"]');i&&i.setAttribute("content",document.title)}export{o as default};

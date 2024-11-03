@@ -1,3 +1,4 @@
+/* eslint import/no-relative-packages: 0 */
 import {
   getConfig, getMetadata, loadStyle, loadLana, decorateLinks, localizeLink,
 } from '../../../utils/utils.js';
@@ -149,7 +150,9 @@ export function rootPath(path) {
   return url;
 }
 
-export function loadStyles(url) {
+export function loadStyles(url, override = false) {
+  const { standaloneGnav } = getConfig();
+  if (standaloneGnav && !override) return;
   loadStyle(url, (e) => {
     if (e === 'error') {
       lanaLog({
@@ -170,17 +173,14 @@ export function isDarkMode() {
 // since they can be independent of each other.
 // CSS imports were not used due to duplication of file include
 export async function loadBaseStyles() {
+  const { standaloneGnav } = getConfig();
+  if (standaloneGnav) return;
   if (isDarkMode()) {
-    new Promise((resolve) => { loadStyle(rootPath('base.css'), resolve); })
-      .then(() => loadStyles(rootPath('dark-nav.css')));
+    new Promise((resolve) => { loadStyle('./base.css', resolve); })
+      .then(() => loadStyles('./dark-nav.css'));
   } else {
-    const url = rootPath('base.css');
-    await loadStyles(url);
+    await loadStyles('./base.css');
   }
-}
-
-export function loadBlock(path) {
-  return import(path).then((module) => module.default);
 }
 
 let cachedDecorateMenu;
@@ -192,15 +192,12 @@ export async function loadDecorateMenu() {
     resolve = _resolve;
   });
 
-  const [{ decorateMenu, decorateLinkGroup }] = await Promise.all([
-    loadBlock('./menu/menu.js'),
+  const [menu] = await Promise.all([
+    import('./menu/menu.js'),
     loadStyles(rootPath('utilities/menu/menu.css')),
   ]);
 
-  resolve({
-    decorateMenu,
-    decorateLinkGroup,
-  });
+  resolve(menu.default);
   return cachedDecorateMenu;
 }
 

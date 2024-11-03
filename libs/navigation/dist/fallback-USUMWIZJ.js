@@ -1,0 +1,1 @@
+import"./chunk-YBWLHNHN.js";var o=["adobe-logo","breadcrumbs","column-break","cross-cloud-menu","gnav-brand","gnav-promo","large-menu","library-metadata","link-group","profile","region-selector","search","social"];function n(a,e){[...a.classList].some(r=>o.includes(r))||(a.dataset.failed="true",a.dataset.reason=`Failed loading ${e||""} block.`)}export{n as showError};

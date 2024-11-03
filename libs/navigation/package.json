@@ -1,0 +1,14 @@
+{
+  "name": "navigation",
+  "version": "1.0.0",
+  "description": "",
+  "main": "navigation.js",
+  "scripts": {
+    "build": "node ./build.mjs"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "esbuild": "0.24.0"
+  }
+}

@@ -4,7 +4,6 @@ import {
   decorateLinks,
   getMetadata,
   getConfig,
-  loadBlock,
   localizeLink,
 } from '../../utils/utils.js';
 
@@ -204,6 +203,9 @@ class Footer {
       return this.elements.regionPicker;
     }
 
+    // initialize initmodal in advance
+    const initModalPromise = import('../modal/modal.js');
+
     const regionPickerClass = 'feds-regionPicker';
     const regionPickerTextElem = toFragment`<span class="feds-regionPicker-text">${regionSelector.textContent}</span>`;
     const regionPickerElem = toFragment`
@@ -218,6 +220,10 @@ class Footer {
         </svg>
         ${regionPickerTextElem}
       </a>`;
+    regionPickerElem.classList.add('modal', 'link-block');
+    regionPickerElem.dataset.modalPath = url.pathname;
+    regionPickerElem.dataset.modalHash = url.hash;
+    regionPickerElem.href = url.hash;
     const regionPickerWrapperClass = 'feds-regionPicker-wrapper';
     this.elements.regionPicker = toFragment`<div class="${regionPickerWrapperClass}">
         ${regionPickerElem}
@@ -229,7 +235,7 @@ class Footer {
     // in the future we'll need to update this for non-Milo consumers
     if (url.hash !== '') {
       // Hash -> region selector opens a modal
-      decorateAutoBlock(regionPickerElem); // add modal-specific attributes
+      // decorateAutoBlock(regionPickerElem); // add modal-specific attributes
       // TODO remove logs after finding the root cause for the region picker 404s -> MWPW-143627
       if (regionPickerElem.classList[0] !== 'modal') {
         lanaLog({
@@ -237,15 +243,14 @@ class Footer {
           tags: 'errorType=warn,module=global-footer',
         });
       }
-      await loadBlock(regionPickerElem); // load modal logic and styles
+      const { default: initModal } = await initModalPromise;
+      await initModal(regionPickerElem); // load modal logic and styles
       if (regionPickerElem.classList[0] !== 'modal') {
         lanaLog({
           message: `Modal block class missing from region picker post loading the block; locale: ${locale}; regionPickerElem: ${regionPickerElem.outerHTML}`,
           tags: 'errorType=warn,module=global-footer',
         });
       }
-      // 'decorateAutoBlock' logic replaces class name entirely, need to add it back
-      regionPickerElem.classList.add(regionPickerClass);
       regionPickerElem.addEventListener('click', () => {
         if (!isRegionPickerExpanded()) {
           regionPickerElem.setAttribute('aria-expanded', 'true');
@@ -261,12 +266,14 @@ class Footer {
       // No hash -> region selector expands a dropdown
       regionPickerElem.href = '#'; // reset href value to not get treated as a fragment
       regionSelector.href = localizeLink(regionSelector.href);
-      decorateAutoBlock(regionSelector); // add fragment-specific class(es)
       this.elements.regionPicker.append(regionSelector); // add fragment after regionPickerElem
-      await loadBlock(regionSelector); // load fragment and replace original link
+      const { default: initModal } = await initModalPromise;
+      await initModal(regionSelector); // load fragment and replace original link
       // Update aria-expanded on click
       regionPickerElem.addEventListener('click', (e) => {
         e.preventDefault();
+        // preload region picker block for bundling purposes
+        import('../region-nav/region-nav.js');
         const isDialogActive = regionPickerElem.getAttribute('aria-expanded') === 'true';
         regionPickerElem.setAttribute('aria-expanded', !isDialogActive);
       });

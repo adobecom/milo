@@ -116,7 +116,7 @@
   align-items: center;
 }
 
-header.global-navigation {
+header.global-navigation.ready {
   visibility: visible;
 }
 
