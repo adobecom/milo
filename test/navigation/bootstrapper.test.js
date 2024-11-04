@@ -1,3 +1,4 @@
+/* eslint import/no-relative-packages: 0 */
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { stub, useFakeTimers, restore, spy } from 'sinon';
