@@ -1704,12 +1704,12 @@ merch-card span[is=inline-price] {
     display: inline-block;
 }
 
-merch-card [slot='heading-*'] {
+merch-card [slot^='heading-'] {
     color: var(--spectrum-gray-800, var(--merch-color-grey-80));
     font-weight: 700;
 }
 
-merch-card [slot='body-*'] {
+merch-card [slot^='body-'] {
     color: var(--spectrum-gray-800, var(--merch-color-grey-80));
     font-weight: 500;
 }
