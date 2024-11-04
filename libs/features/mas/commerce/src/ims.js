@@ -1,12 +1,11 @@
 import { Log } from './log.js';
 
-/** @type {Commerce.Ims.imsReady} */
 export function imsReady({ interval = 200, maxAttempts = 25 } = {}) {
     const log = Log.module('ims');
     return new Promise((resolve) => {
         log.debug('Waing for IMS to be ready');
         let count = 0;
-
+        /* c8 ignore next 10 */
         function poll() {
             if (window.adobeIMS?.initialized) {
                 resolve();
@@ -21,14 +20,12 @@ export function imsReady({ interval = 200, maxAttempts = 25 } = {}) {
     });
 }
 
-/** @type {Commerce.Ims.imsSignedIn} */
 export function imsSignedIn(imsReadyPromise) {
     return imsReadyPromise.then(
         () => window.adobeIMS?.isSignedInUser() ?? false,
     );
 }
 
-/** @type {Commerce.Ims.imsCountry} */
 export function imsCountry(imsSignedInPromise) {
     const log = Log.module('ims');
     return imsSignedInPromise.then((signedIn) => {
@@ -39,6 +36,7 @@ export function imsCountry(imsSignedInPromise) {
                 return countryCode;
             },
             (error) => {
+                /* c8 ignore next 2 */
                 log.error('Unable to get user country:', error);
                 return undefined;
             },
@@ -46,9 +44,6 @@ export function imsCountry(imsSignedInPromise) {
     });
 }
 
-/**
- * @returns {Commerce.Ims.Client}
- */
 export function Ims({}) {
     const imsReadyPromise = imsReady();
     const imsSignedInPromise = imsSignedIn(imsReadyPromise);

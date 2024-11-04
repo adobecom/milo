@@ -1,177 +1,176 @@
 {
     "items": [
         {
-          "path": "/content/dam/sandbox/mas/creative-cloud",
-          "title": "Creative Cloud All Apps",
-          "description": "",
-          "id": "f4aafcef-d410-4092-9f77-a72b9234c224",
-          "created": {
-            "at": "2024-09-11T07:36:46.63Z",
-            "by": "johndoe@adobe.com",
-            "fullName": "John Doe"
-          },
-          "modified": {
-            "at": "2024-09-11T08:41:22.433Z",
-            "by": "johndoe@adobe.com",
-            "fullName": "John Doe"
-          },
-          "published": {
-            "at": "2024-09-11T08:27:19.117Z",
-            "by": "johndoe@adobe.com",
-            "fullName": "John Doe"
-          },
-          "status": "MODIFIED",
-          "fields": [
-            {
-              "name": "mnemonicIcon",
-              "type": "text",
-              "multiple": true,
-              "locked": false,
-              "values": [
-                "/test/mocks/img/creative-cloud.svg"
-              ]
+            "path": "/content/dam/sandbox/mas/creative-cloud",
+            "title": "Creative Cloud All Apps",
+            "description": "",
+            "id": "f4aafcef-d410-4092-9f77-a72b9234c224",
+            "created": {
+                "at": "2024-09-11T07:36:46.63Z",
+                "by": "johndoe@adobe.com",
+                "fullName": "John Doe"
             },
-            {
-              "name": "mnemonicAlt",
-              "type": "text",
-              "multiple": true,
-              "locked": false,
-              "values": [
-                "Creative Cloud Product Icon"
-              ]
+            "modified": {
+                "at": "2024-09-11T08:41:22.433Z",
+                "by": "johndoe@adobe.com",
+                "fullName": "John Doe"
             },
-            {
-              "name": "mnemonicLink",
-              "type": "text",
-              "multiple": true,
-              "locked": false,
-              "values": [
-                "https://www.adobe.com/creativecloud/all-apps.html"
-              ]
+            "published": {
+                "at": "2024-09-11T08:27:19.117Z",
+                "by": "johndoe@adobe.com",
+                "fullName": "John Doe"
             },
-            {
-              "name": "badge",
-              "type": "long-text",
-              "multiple": false,
-              "locked": false,
-              "mimeType": "text/html",
-              "values": []
+            "status": "MODIFIED",
+            "fields": [
+                {
+                    "name": "mnemonicIcon",
+                    "type": "text",
+                    "multiple": true,
+                    "locked": false,
+                    "values": ["/test/mocks/img/creative-cloud.svg"]
+                },
+                {
+                    "name": "mnemonicAlt",
+                    "type": "text",
+                    "multiple": true,
+                    "locked": false,
+                    "values": ["Creative Cloud Product Icon"]
+                },
+                {
+                    "name": "mnemonicLink",
+                    "type": "text",
+                    "multiple": true,
+                    "locked": false,
+                    "values": [
+                        "https://www.adobe.com/creativecloud/all-apps.html"
+                    ]
+                },
+                {
+                    "name": "badge",
+                    "type": "long-text",
+                    "multiple": false,
+                    "locked": false,
+                    "mimeType": "text/html",
+                    "values": []
+                },
+                {
+                    "name": "cardTitle",
+                    "type": "text",
+                    "multiple": false,
+                    "locked": false,
+                    "values": ["Creative Cloud All Apps"]
+                },
+                {
+                    "name": "cardTitleLink",
+                    "type": "text",
+                    "multiple": false,
+                    "locked": false,
+                    "values": [
+                        "https://www.adobe.com/creativecloud/all-apps.html"
+                    ]
+                },
+                {
+                    "name": "prices",
+                    "type": "long-text",
+                    "multiple": false,
+                    "locked": false,
+                    "mimeType": "text/html",
+                    "values": [
+                        "<span is='inline-price' data-display-old-price='true' data-display-per-unit='false' data-promotion-code='CCI2AAUSQ22440CH' data-quantity='1' data-template='price' data-wcs-osi='r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8'></span>"
+                    ]
+                },
+                {
+                    "name": "shortDescription",
+                    "type": "long-text",
+                    "multiple": false,
+                    "locked": false,
+                    "mimeType": "text/html",
+                    "values": []
+                },
+                {
+                    "name": "description",
+                    "type": "long-text",
+                    "multiple": false,
+                    "locked": false,
+                    "mimeType": "text/html",
+                    "values": [
+                        "<p>Get 25 apps and games plus fonts, storage, templates, and tutorials for less than the price of Acrobat Pro, Photoshop, and Premiere Pro sold separately. (Substance 3D apps not included.)</p>"
+                    ]
+                },
+                {
+                    "name": "ctas",
+                    "type": "long-text",
+                    "multiple": false,
+                    "locked": false,
+                    "mimeType": "text/html",
+                    "values": [
+                        "<a is='checkout-link' data-checkout-workflow='UCv3' data-checkout-workflow-step='segmentation' data-promotion-code='CCI2AAUSQ22440CH' data-quantity='1' data-wcs-osi='r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8' data-extra-options='{}' href='#'><span>Buy now</span></a><a is='checkout-link' data-checkout-workflow='UCv3' data-checkout-workflow-step='email' data-quantity='1'data-wcs-osi='MV-_1XzZ6JAft_2wXu3a-z28noWUucHMdMtyIYcodak' data-extra-options='{}' href='#'><span>Free trial</span></a>"
+                    ]
+                },
+                {
+                    "name": "variant",
+                    "type": "text",
+                    "multiple": false,
+                    "locked": false,
+                    "values": ["ccd-action"]
+                },
+                {
+                    "name": "parent",
+                    "type": "content-fragment",
+                    "multiple": false,
+                    "locked": false,
+                    "values": []
+                },
+                {
+                    "name": "product",
+                    "type": "content-reference",
+                    "multiple": false,
+                    "locked": false,
+                    "values": []
+                },
+                {
+                    "name": "stockOffer",
+                    "type": "long-text",
+                    "multiple": false,
+                    "locked": false,
+                    "mimeType": "text/html",
+                    "values": []
+                },
+                {
+                    "name": "secure",
+                    "type": "boolean",
+                    "multiple": false,
+                    "locked": false,
+                    "values": [false]
+                },
+                {
+                    "name": "promoCode",
+                    "type": "text",
+                    "multiple": false,
+                    "locked": false,
+                    "values": []
+                },
+                {
+                    "name": "size",
+                    "type": "text",
+                    "multiple": false,
+                    "locked": false,
+                    "values": []
+                }
+            ],
+            "variations": [],
+            "tags": [],
+            "references": [],
+            "model": {
+                "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NhcmQ",
+                "path": "/conf/mas/settings/dam/cfm/models/card",
+                "name": "Card",
+                "title": "Card",
+                "description": "universal m@s card model"
             },
-            {
-              "name": "cardTitle",
-              "type": "text",
-              "multiple": false,
-              "locked": false,
-              "values": [
-                "Creative Cloud All Apps"
-              ]
-            },
-            {
-              "name": "cardTitleLink",
-              "type": "text",
-              "multiple": false,
-              "locked": false,
-              "values": [
-                "https://www.adobe.com/creativecloud/all-apps.html"
-              ]
-            },
-            {
-              "name": "prices",
-              "type": "long-text",
-              "multiple": false,
-              "locked": false,
-              "mimeType": "text/html",
-              "values": [
-                  "<span is='inline-price' data-display-old-price='true' data-display-per-unit='false' data-promotion-code='CCI2AAUSQ22440CH' data-quantity='1' data-template='price' data-wcs-osi='r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8'></span>"
-              ]
-            },
-            {
-              "name": "shortDescription",
-              "type": "long-text",
-              "multiple": false,
-              "locked": false,
-              "mimeType": "text/html",
-              "values": []
-            },
-            {
-              "name": "description",
-              "type": "long-text",
-              "multiple": false,
-              "locked": false,
-              "mimeType": "text/html",
-              "values": [
-                  "<p>Get 25 apps and games plus fonts, storage, templates, and tutorials for less than the price of Acrobat Pro, Photoshop, and Premiere Pro sold separately. (Substance 3D apps not included.)</p>"
-              ]
-            },
-            {
-              "name": "ctas",
-              "type": "long-text",
-              "multiple": false,
-              "locked": false,
-              "mimeType": "text/html",
-              "values": [
-                  "<a is='checkout-link' data-checkout-workflow='UCv3' data-checkout-workflow-step='segmentation' data-promotion-code='CCI2AAUSQ22440CH' data-quantity='1' data-wcs-osi='r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8' data-extra-options='{}' href='#'><span>Buy now</span></a><a is='checkout-link' data-checkout-workflow='UCv3' data-checkout-workflow-step='email' data-quantity='1'data-wcs-osi='MV-_1XzZ6JAft_2wXu3a-z28noWUucHMdMtyIYcodak' data-extra-options='{}' href='#'><span>Free trial</span></a>"
-              ]
-            },
-            {
-              "name": "variant",
-              "type": "text",
-              "multiple": false,
-              "locked": false,
-              "values": [
-                "ccd-action"
-              ]
-            },
-            {
-              "name": "parent",
-              "type": "content-fragment",
-              "multiple": false,
-              "locked": false,
-              "values": []
-            },
-            {
-              "name": "product",
-              "type": "content-reference",
-              "multiple": false,
-              "locked": false,
-              "values": []
-            },
-            {
-              "name": "stockOffer",
-              "type": "long-text",
-              "multiple": false,
-              "locked": false,
-              "mimeType": "text/html",
-              "values": []
-            },
-            {
-              "name": "secure",
-              "type": "boolean",
-              "multiple": false,
-              "locked": false,
-              "values": [false]
-            },
-            {
-              "name": "promoCode",
-              "type": "text",
-              "multiple": false,
-              "locked": false,
-              "values": []
-            }
-          ],
-          "variations": [],
-          "tags": [],
-          "references": [],
-          "model": {
-            "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NhcmQ",
-            "path": "/conf/mas/settings/dam/cfm/models/card",
-            "name": "Card",
-            "title": "Card",
-            "description": "universal m@s card model"
-          },
-          "validationStatus": [],
-          "fieldTags": [],
-          "etag": "\"18d6aa75a4d2d0d594ee363257f808f4\""
+            "validationStatus": [],
+            "fieldTags": [],
+            "etag": "\"18d6aa75a4d2d0d594ee363257f808f4\""
         },
         {
             "path": "/content/dam/sandbox/mas/photoshop",
@@ -195,143 +194,138 @@
             },
             "status": "PUBLISHED",
             "fields": [
-            {
-              "name": "mnemonicIcon",
-              "type": "text",
-              "multiple": true,
-              "locked": false,
-              "values": [
-                "/test/mocks/img/photoshop.svg"
-              ]
-            },
-            {
-              "name": "mnemonicAlt",
-              "type": "text",
-              "multiple": true,
-              "locked": false,
-              "values": [
-                "Photoshop Icon"
-              ]
-            },
-            {
-              "name": "mnemonicLink",
-              "type": "text",
-              "multiple": true,
-              "locked": false,
-              "values": [
-                "https://www.adobe.com/products/photoshop.html"
-              ]
-            },
-            {
-              "name": "badge",
-              "type": "long-text",
-              "multiple": false,
-              "locked": false,
-              "mimeType": "text/html",
-              "values": []
-            },
-            {
-              "name": "cardTitle",
-              "type": "text",
-              "multiple": false,
-              "locked": false,
-              "values": [
-                "Photoshop"
-              ]
-            },
-            {
-              "name": "cardTitleLink",
-              "type": "text",
-              "multiple": false,
-              "locked": false,
-              "values": [
-                "https://www.adobe.com/products/photoshop.html"
-              ]
-            },
-            {
-              "name": "prices",
-              "type": "long-text",
-              "multiple": false,
-              "locked": false,
-              "mimeType": "text/html",
-              "values": [
-                  "<span is='inline-price' data-display-per-unit='false' data-quantity='1' data-template='price' data-wcs-osi='A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M'></span>"
-              ]
-            },
-            {
-              "name": "shortDescription",
-              "type": "long-text",
-              "multiple": false,
-              "locked": false,
-              "mimeType": "text/html",
-              "values": []
-            },
-            {
-              "name": "description",
-              "type": "long-text",
-              "multiple": false,
-              "locked": false,
-              "mimeType": "text/html",
-              "values": [
-                  "<p>Edit, composite, and create beautiful images, graphics, and art on desktop and iPad.</p>"
-              ]
-            },
-            {
-              "name": "ctas",
-              "type": "long-text",
-              "multiple": false,
-              "locked": false,
-              "mimeType": "text/html",
-              "values": [
-                  "<a is='checkout-link' data-checkout-workflow='UCv3' data-checkout-workflow-step='segmentation' data-promotion-code='CCI2AAUSQ22440CH' data-quantity='1' data-wcs-osi='r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8' data-extra-options='{}' href='#'><span>Buy now</span></a><a is='checkout-link' data-checkout-workflow='UCv3' data-checkout-workflow-step='email' data-quantity='1'data-wcs-osi='MV-_1XzZ6JAft_2wXu3a-z28noWUucHMdMtyIYcodak' data-extra-options='{}' href='#'><span>Free trial</span></a>"
-              ]
-            },
-            {
-              "name": "variant",
-              "type": "text",
-              "multiple": false,
-              "locked": false,
-              "values": [
-                "ccd-action"
-              ]
-            },
-            {
-              "name": "parent",
-              "type": "content-fragment",
-              "multiple": false,
-              "locked": false,
-              "values": []
-            },
-            {
-              "name": "product",
-              "type": "content-reference",
-              "multiple": false,
-              "locked": false,
-              "values": []
-            },
-            {
-              "name": "stockOffer",
-              "type": "long-text",
-              "multiple": false,
-              "locked": false,
-              "mimeType": "text/html",
-              "values": []
-            },
-            {
-              "name": "secure",
-              "type": "boolean",
-              "multiple": false,
-              "locked": false,
-              "values": [false]
-            },
-            {
-              "name": "promoCode",
-              "type": "text",
-              "multiple": false,
-              "locked": false,
-              "values": []
-            }
-          ],
+                {
+                    "name": "mnemonicIcon",
+                    "type": "text",
+                    "multiple": true,
+                    "locked": false,
+                    "values": ["/test/mocks/img/photoshop.svg"]
+                },
+                {
+                    "name": "mnemonicAlt",
+                    "type": "text",
+                    "multiple": true,
+                    "locked": false,
+                    "values": ["Photoshop Icon"]
+                },
+                {
+                    "name": "mnemonicLink",
+                    "type": "text",
+                    "multiple": true,
+                    "locked": false,
+                    "values": ["https://www.adobe.com/products/photoshop.html"]
+                },
+                {
+                    "name": "badge",
+                    "type": "long-text",
+                    "multiple": false,
+                    "locked": false,
+                    "mimeType": "text/html",
+                    "values": []
+                },
+                {
+                    "name": "cardTitle",
+                    "type": "text",
+                    "multiple": false,
+                    "locked": false,
+                    "values": ["Photoshop"]
+                },
+                {
+                    "name": "cardTitleLink",
+                    "type": "text",
+                    "multiple": false,
+                    "locked": false,
+                    "values": ["https://www.adobe.com/products/photoshop.html"]
+                },
+                {
+                    "name": "prices",
+                    "type": "long-text",
+                    "multiple": false,
+                    "locked": false,
+                    "mimeType": "text/html",
+                    "values": [
+                        "<span is='inline-price' data-display-per-unit='false' data-quantity='1' data-template='price' data-wcs-osi='A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M'></span>"
+                    ]
+                },
+                {
+                    "name": "shortDescription",
+                    "type": "long-text",
+                    "multiple": false,
+                    "locked": false,
+                    "mimeType": "text/html",
+                    "values": []
+                },
+                {
+                    "name": "description",
+                    "type": "long-text",
+                    "multiple": false,
+                    "locked": false,
+                    "mimeType": "text/html",
+                    "values": [
+                        "<p>Edit, composite, and create beautiful images, graphics, and art on desktop and iPad.</p>"
+                    ]
+                },
+                {
+                    "name": "ctas",
+                    "type": "long-text",
+                    "multiple": false,
+                    "locked": false,
+                    "mimeType": "text/html",
+                    "values": [
+                        "<a is='checkout-link' data-checkout-workflow='UCv3' data-checkout-workflow-step='segmentation' data-promotion-code='CCI2AAUSQ22440CH' data-quantity='1' data-wcs-osi='r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8' data-extra-options='{}' href='#'><span>Buy now</span></a><a is='checkout-link' data-checkout-workflow='UCv3' data-checkout-workflow-step='email' data-quantity='1'data-wcs-osi='MV-_1XzZ6JAft_2wXu3a-z28noWUucHMdMtyIYcodak' data-extra-options='{}' href='#'><span>Free trial</span></a>"
+                    ]
+                },
+                {
+                    "name": "variant",
+                    "type": "text",
+                    "multiple": false,
+                    "locked": false,
+                    "values": ["ccd-action"]
+                },
+                {
+                    "name": "parent",
+                    "type": "content-fragment",
+                    "multiple": false,
+                    "locked": false,
+                    "values": []
+                },
+                {
+                    "name": "product",
+                    "type": "content-reference",
+                    "multiple": false,
+                    "locked": false,
+                    "values": []
+                },
+                {
+                    "name": "stockOffer",
+                    "type": "long-text",
+                    "multiple": false,
+                    "locked": false,
+                    "mimeType": "text/html",
+                    "values": []
+                },
+                {
+                    "name": "secure",
+                    "type": "boolean",
+                    "multiple": false,
+                    "locked": false,
+                    "values": [false]
+                },
+                {
+                    "name": "promoCode",
+                    "type": "text",
+                    "multiple": false,
+                    "locked": false,
+                    "values": []
+                },
+                {
+                    "name": "size",
+                    "type": "text",
+                    "multiple": false,
+                    "locked": false,
+                    "values": []
+                }
+            ],
             "variations": [],
             "tags": [],
             "references": [],
@@ -368,149 +362,147 @@
             },
             "status": "MODIFIED",
             "fields": [
-            {
-              "name": "mnemonicIcon",
-              "type": "text",
-              "multiple": true,
-              "locked": false,
-              "values": [
-              ]
-            },
-            {
-              "name": "mnemonicAlt",
-              "type": "text",
-              "multiple": true,
-              "locked": false,
-              "values": [
-              ]
-            },
-            {
-              "name": "mnemonicLink",
-              "type": "text",
-              "multiple": true,
-              "locked": false,
-              "values": [
-              ]
-            },
-            {
-              "name": "badge",
-              "type": "long-text",
-              "multiple": false,
-              "locked": false,
-              "mimeType": "text/html",
-              "values": []
-            },
-            {
-              "name": "backgroundImage",
-              "type": "text",
-              "multiple": false,
-              "locked": false,
-              "values": [
-                  "/test/img/special-offers-img2.png"
-              ]
-            },
-            {
-              "name": "cardTitle",
-              "type": "text",
-              "multiple": false,
-              "locked": false,
-              "values": [
-                "Save over 30% on Creative Cloud All Apps."
-              ]
-            },
-            {
-              "name": "cardTitleLink",
-              "type": "text",
-              "multiple": false,
-              "locked": false,
-              "values": [
-                "https://www.adobe.com/products/special-offers.html"
-              ]
-            },
-            {
-              "name": "prices",
-              "type": "long-text",
-              "multiple": false,
-              "locked": false,
-              "mimeType": "text/html",
-              "values": [
-                  "<span is='inline-price' data-display-old-price='true' data-display-per-unit='false' data-promotion-code='CCI2AAUSQ22440CH' data-quantity='1' data-template='price' data-wcs-osi='r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8'></span>"
-              ]
-            },
-            {
-              "name": "shortDescription",
-              "type": "long-text",
-              "multiple": false,
-              "locked": false,
-              "mimeType": "text/html",
-              "values": []
-            },
-            {
-              "name": "description",
-              "type": "long-text",
-              "multiple": false,
-              "locked": false,
-              "mimeType": "text/html",
-              "values": [
-                  "<p>Join us for the creative event of the year Oct 14-16. Register by August 31 and save US$200 on a full conference pass.</p><p><a class=\"modal link-block \" href=\"https://www.adobe.com/products/special-offers.html#max-modal-advanced\" data-modal-path=\"/cc-shared/fragments/modals/max-conference/terms-advanced-pricing\" data-modal-hash=\"#max-modal-advanced\">See terms﻿</a></p>"
-              ]
-            },
-            {
-              "name": "ctas",
-              "type": "long-text",
-              "multiple": false,
-              "locked": false,
-              "mimeType": "text/html",
-              "values": [
-                  "<p><strong><a href=\"\" data-checkout-workflow=\"UCv3\" data-checkout-workflow-step=\"email\" data-promotion-code=\"\" data-quantity=\"1\" data-wcs-osi=\"r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8\" is=\"checkout-link\" data-ims-country=\"CH\">Buy now</a>﻿</strong></p>"
-              ]
-            },
-            {
-              "name": "variant",
-              "type": "text",
-              "multiple": false,
-              "locked": false,
-              "values": [
-                "special-offers"
-              ]
-            },
-            {
-              "name": "parent",
-              "type": "content-fragment",
-              "multiple": false,
-              "locked": false,
-              "values": []
-            },
-            {
-              "name": "product",
-              "type": "content-reference",
-              "multiple": false,
-              "locked": false,
-              "values": []
-            },
-            {
-              "name": "stockOffer",
-              "type": "long-text",
-              "multiple": false,
-              "locked": false,
-              "mimeType": "text/html",
-              "values": []
-            },
-            {
-              "name": "secure",
-              "type": "boolean",
-              "multiple": false,
-              "locked": false,
-              "values": [false]
-            },
-            {
-              "name": "promoCode",
-              "type": "text",
-              "multiple": false,
-              "locked": false,
-              "values": []
-            }
-          ],
+                {
+                    "name": "mnemonicIcon",
+                    "type": "text",
+                    "multiple": true,
+                    "locked": false,
+                    "values": []
+                },
+                {
+                    "name": "mnemonicAlt",
+                    "type": "text",
+                    "multiple": true,
+                    "locked": false,
+                    "values": []
+                },
+                {
+                    "name": "mnemonicLink",
+                    "type": "text",
+                    "multiple": true,
+                    "locked": false,
+                    "values": []
+                },
+                {
+                    "name": "badge",
+                    "type": "long-text",
+                    "multiple": false,
+                    "locked": false,
+                    "mimeType": "text/html",
+                    "values": []
+                },
+                {
+                    "name": "backgroundImage",
+                    "type": "text",
+                    "multiple": false,
+                    "locked": false,
+                    "values": ["/test/img/special-offers-img2.png"]
+                },
+                {
+                    "name": "cardTitle",
+                    "type": "text",
+                    "multiple": false,
+                    "locked": false,
+                    "values": ["Save over 30% on Creative Cloud All Apps."]
+                },
+                {
+                    "name": "cardTitleLink",
+                    "type": "text",
+                    "multiple": false,
+                    "locked": false,
+                    "values": [
+                        "https://www.adobe.com/products/special-offers.html"
+                    ]
+                },
+                {
+                    "name": "prices",
+                    "type": "long-text",
+                    "multiple": false,
+                    "locked": false,
+                    "mimeType": "text/html",
+                    "values": [
+                        "<span is='inline-price' data-display-old-price='true' data-display-per-unit='false' data-promotion-code='CCI2AAUSQ22440CH' data-quantity='1' data-template='price' data-wcs-osi='r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8'></span>"
+                    ]
+                },
+                {
+                    "name": "shortDescription",
+                    "type": "long-text",
+                    "multiple": false,
+                    "locked": false,
+                    "mimeType": "text/html",
+                    "values": []
+                },
+                {
+                    "name": "description",
+                    "type": "long-text",
+                    "multiple": false,
+                    "locked": false,
+                    "mimeType": "text/html",
+                    "values": [
+                        "<p>Join us for the creative event of the year Oct 14-16. Register by August 31 and save US$200 on a full conference pass.</p><p><a class=\"modal link-block \" href=\"https://www.adobe.com/products/special-offers.html#max-modal-advanced\" data-modal-path=\"/cc-shared/fragments/modals/max-conference/terms-advanced-pricing\" data-modal-hash=\"#max-modal-advanced\">See terms﻿</a></p>"
+                    ]
+                },
+                {
+                    "name": "ctas",
+                    "type": "long-text",
+                    "multiple": false,
+                    "locked": false,
+                    "mimeType": "text/html",
+                    "values": [
+                        "<p><strong><a href=\"\" data-checkout-workflow=\"UCv3\" data-checkout-workflow-step=\"email\" data-promotion-code=\"\" data-quantity=\"1\" data-wcs-osi=\"r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8\" is=\"checkout-link\" data-ims-country=\"CH\">Buy now</a>﻿</strong></p>"
+                    ]
+                },
+                {
+                    "name": "variant",
+                    "type": "text",
+                    "multiple": false,
+                    "locked": false,
+                    "values": ["special-offers"]
+                },
+                {
+                    "name": "parent",
+                    "type": "content-fragment",
+                    "multiple": false,
+                    "locked": false,
+                    "values": []
+                },
+                {
+                    "name": "product",
+                    "type": "content-reference",
+                    "multiple": false,
+                    "locked": false,
+                    "values": []
+                },
+                {
+                    "name": "stockOffer",
+                    "type": "long-text",
+                    "multiple": false,
+                    "locked": false,
+                    "mimeType": "text/html",
+                    "values": []
+                },
+                {
+                    "name": "secure",
+                    "type": "boolean",
+                    "multiple": false,
+                    "locked": false,
+                    "values": [false]
+                },
+                {
+                    "name": "promoCode",
+                    "type": "text",
+                    "multiple": false,
+                    "locked": false,
+                    "values": []
+                },
+                {
+                    "name": "size",
+                    "type": "text",
+                    "multiple": false,
+                    "locked": false,
+                    "values": []
+                }
+            ],
             "variations": [],
             "tags": [],
             "references": [],
@@ -521,17 +513,375 @@
                 "title": "Merch Card",
                 "description": "content for adobe.com merch-card web component."
             },
-            "validationStatus": [
+            "fieldTags": []
+        },
+        {
+            "path": "/content/dam/sandbox/mas/with-wrong-price-and-checkout-osis",
+            "title": "with wrong price and checkout osis",
+            "description": "",
+            "id": "with-wrong-price-and-checkout-osis",
+            "created": {
+                "at": "2024-08-15T21:48:42.597Z",
+                "by": "johndoe@adobe.com",
+                "fullName": "John Doe"
+            },
+            "modified": {
+                "at": "2024-08-27T11:58:39.08Z",
+                "by": "johndoe@adobe.com",
+                "fullName": "John Doe"
+            },
+            "published": {
+                "at": "2024-08-26T09:22:58.047Z",
+                "by": "johndoe@adobe.com",
+                "fullName": "John Doe"
+            },
+            "status": "MODIFIED",
+            "fields": [
                 {
-                    "property": "fields.description.values[0].<list element>",
-                    "message": "has unsafe html content"
+                    "name": "mnemonicIcon",
+                    "type": "text",
+                    "multiple": true,
+                    "locked": false,
+                    "values": []
                 },
                 {
-                    "property": "fields.ctas.values[0].<list element>",
-                    "message": "has unsafe html content"
+                    "name": "mnemonicAlt",
+                    "type": "text",
+                    "multiple": true,
+                    "locked": false,
+                    "values": []
+                },
+                {
+                    "name": "mnemonicLink",
+                    "type": "text",
+                    "multiple": true,
+                    "locked": false,
+                    "values": []
+                },
+                {
+                    "name": "badge",
+                    "type": "long-text",
+                    "multiple": false,
+                    "locked": false,
+                    "mimeType": "text/html",
+                    "values": []
+                },
+                {
+                    "name": "backgroundImage",
+                    "type": "text",
+                    "multiple": false,
+                    "locked": false,
+                    "values": ["/test/img/special-offers-img2.png"]
+                },
+                {
+                    "name": "cardTitle",
+                    "type": "text",
+                    "multiple": false,
+                    "locked": false,
+                    "values": ["Save over 30% on Creative Cloud All Apps."]
+                },
+                {
+                    "name": "cardTitleLink",
+                    "type": "text",
+                    "multiple": false,
+                    "locked": false,
+                    "values": [
+                        "https://www.adobe.com/products/special-offers.html"
+                    ]
+                },
+                {
+                    "name": "prices",
+                    "type": "long-text",
+                    "multiple": false,
+                    "locked": false,
+                    "mimeType": "text/html",
+                    "values": [
+                        "<span is='inline-price' data-display-old-price='true' data-display-per-unit='false' data-promotion-code='CCI2AAUSQ22440CH' data-quantity='1' data-template='price' data-wcs-osi='wrongosi'></span>"
+                    ]
+                },
+                {
+                    "name": "shortDescription",
+                    "type": "long-text",
+                    "multiple": false,
+                    "locked": false,
+                    "mimeType": "text/html",
+                    "values": []
+                },
+                {
+                    "name": "description",
+                    "type": "long-text",
+                    "multiple": false,
+                    "locked": false,
+                    "mimeType": "text/html",
+                    "values": [
+                        "<p>Join us for the creative event of the year Oct 14-16. Register by August 31 and save US$200 on a full conference pass.</p><p><a class=\"modal link-block \" href=\"https://www.adobe.com/products/special-offers.html#max-modal-advanced\" data-modal-path=\"/cc-shared/fragments/modals/max-conference/terms-advanced-pricing\" data-modal-hash=\"#max-modal-advanced\">See terms﻿</a></p>"
+                    ]
+                },
+                {
+                    "name": "ctas",
+                    "type": "long-text",
+                    "multiple": false,
+                    "locked": false,
+                    "mimeType": "text/html",
+                    "values": [
+                        "<p><strong><a href=\"\" data-checkout-workflow=\"UCv3\" data-checkout-workflow-step=\"email\" data-promotion-code=\"\" data-quantity=\"1\" data-wcs-osi=\"wrongosi\" is=\"checkout-link\" data-ims-country=\"CH\">Buy now</a></strong></p>"
+                    ]
+                },
+                {
+                    "name": "variant",
+                    "type": "text",
+                    "multiple": false,
+                    "locked": false,
+                    "values": ["special-offers"]
+                },
+                {
+                    "name": "parent",
+                    "type": "content-fragment",
+                    "multiple": false,
+                    "locked": false,
+                    "values": []
+                },
+                {
+                    "name": "product",
+                    "type": "content-reference",
+                    "multiple": false,
+                    "locked": false,
+                    "values": []
+                },
+                {
+                    "name": "stockOffer",
+                    "type": "long-text",
+                    "multiple": false,
+                    "locked": false,
+                    "mimeType": "text/html",
+                    "values": []
+                },
+                {
+                    "name": "secure",
+                    "type": "boolean",
+                    "multiple": false,
+                    "locked": false,
+                    "values": [false]
+                },
+                {
+                    "name": "promoCode",
+                    "type": "text",
+                    "multiple": false,
+                    "locked": false,
+                    "values": []
+                },
+                {
+                    "name": "size",
+                    "type": "text",
+                    "multiple": false,
+                    "locked": false,
+                    "values": []
                 }
             ],
+            "variations": [],
+            "tags": [],
+            "references": [],
+            "model": {
+                "id": "L2NvbmYvc2FuZGJveC9zZXR0aW5ncy9kYW0vY2ZtL21vZGVscy9tZXJjaC1jYXJk",
+                "path": "/conf/sandbox/settings/dam/cfm/models/merch-card",
+                "name": "Merch Card",
+                "title": "Merch Card",
+                "description": "content for adobe.com merch-card web component."
+            },
             "fieldTags": []
-        }
+        },
+        {
+          "path": "/content/dam/mas/nala/ccd/slice-cc-allapps31211221",
+          "title": "CCD Suggested CC All Apps",
+          "description": "",
+          "id": "31205553-b453-4c9e-a2ef-7b6aa7bfdc72",
+          "created": {
+              "at": "2024-10-15T15:04:32.956Z",
+              "by": "sling-distribution-importer",
+              "fullName": "sling-distribution-importer"
+          },
+          "modified": {
+              "at": "2024-10-15T14:56:59.693Z",
+              "by": "lukianet@adobe.com",
+              "fullName": "lukianet@adobe.com"
+          },
+          "status": "DRAFT",
+          "fields": [
+              {
+                  "name": "variant",
+                  "type": "text",
+                  "multiple": false,
+                  "locked": false,
+                  "values": [
+                      "ccd-slice"
+                  ]
+              },
+              {
+                  "name": "osi",
+                  "type": "text",
+                  "multiple": false,
+                  "locked": false,
+                  "values": []
+              },
+              {
+                  "name": "size",
+                  "type": "text",
+                  "multiple": false,
+                  "locked": false,
+                  "values": [
+                      "wide"
+                  ]
+              },
+              {
+                  "name": "mnemonicIcon",
+                  "type": "text",
+                  "multiple": true,
+                  "locked": false,
+                  "values": [
+                      "https://www.adobe.com/cc-shared/assets/img/product-icons/svg/photoshop.svg"
+                  ]
+              },
+              {
+                  "name": "mnemonicAlt",
+                  "type": "text",
+                  "multiple": true,
+                  "locked": false,
+                  "values": []
+              },
+              {
+                  "name": "mnemonicLink",
+                  "type": "text",
+                  "multiple": true,
+                  "locked": false,
+                  "values": []
+              },
+              {
+                  "name": "badge",
+                  "type": "long-text",
+                  "multiple": false,
+                  "locked": false,
+                  "mimeType": "text/html",
+                  "values": [
+                      "High savings"
+                  ]
+              },
+              {
+                  "name": "backgroundImage",
+                  "type": "text",
+                  "multiple": false,
+                  "locked": false,
+                  "values": [
+                      "https://milo.adobe.com/assets/img/commerce/media_10bef5ec21c22fd7fe201cb02735082df13bf4960.jpeg"
+                  ]
+              },
+              {
+                  "name": "cardTitle",
+                  "type": "text",
+                  "multiple": false,
+                  "locked": false,
+                  "values": []
+              },
+              {
+                  "name": "cardTitleLink",
+                  "type": "text",
+                  "multiple": false,
+                  "locked": false,
+                  "values": []
+              },
+              {
+                  "name": "subtitle",
+                  "type": "text",
+                  "multiple": false,
+                  "locked": false,
+                  "values": []
+              },
+              {
+                  "name": "prices",
+                  "type": "long-text",
+                  "multiple": false,
+                  "locked": false,
+                  "mimeType": "text/html",
+                  "values": []
+              },
+              {
+                  "name": "shortDescription",
+                  "type": "long-text",
+                  "multiple": false,
+                  "locked": false,
+                  "mimeType": "text/html",
+                  "values": []
+              },
+              {
+                  "name": "description",
+                  "type": "long-text",
+                  "multiple": false,
+                  "locked": false,
+                  "mimeType": "text/html",
+                  "values": [
+                      "<p><strong>Save 25% on Photoshop next month.</strong><strong>.</strong></p><p><a href=\"https://www.adobe.com/creativecloud/plans.html\">See terms</a></p>"
+                  ]
+              },
+              {
+                  "name": "ctas",
+                  "type": "long-text",
+                  "multiple": false,
+                  "locked": false,
+                  "mimeType": "text/html",
+                  "values": [
+                      "<p><strong><a is=\"checkout-link\" data-checkout-workflow=\"UCv3\" data-checkout-workflow-step=\"email\" data-promotion-code=\"\" data-quantity=\"1\" data-wcs-osi=\"Mutn1LYoGojkrcMdCLO7LQlx1FyTHw27ETsfLv0h8DQ\" href=\"\">Buy now</a></strong></p>"
+                  ]
+              },
+              {
+                  "name": "parent",
+                  "type": "content-fragment",
+                  "multiple": false,
+                  "locked": false,
+                  "values": []
+              },
+              {
+                  "name": "product",
+                  "type": "content-reference",
+                  "multiple": false,
+                  "locked": false,
+                  "values": []
+              },
+              {
+                  "name": "stockOffer",
+                  "type": "long-text",
+                  "multiple": false,
+                  "locked": false,
+                  "mimeType": "text/html",
+                  "values": []
+              },
+              {
+                  "name": "secure",
+                  "type": "boolean",
+                  "multiple": false,
+                  "locked": false,
+                  "values": [
+                      false
+                  ]
+              },
+              {
+                  "name": "promoCode",
+                  "type": "text",
+                  "multiple": false,
+                  "locked": false,
+                  "values": []
+              }
+          ],
+          "variations": [],
+          "tags": [],
+          "references": [],
+          "model": {
+              "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NhcmQ",
+              "path": "/conf/mas/settings/dam/cfm/models/card",
+              "name": "Card",
+              "title": "Card",
+              "description": "universal m@s card model"
+          },
+          "validationStatus": [],
+          "fieldTags": []
+      }
     ]
 }
