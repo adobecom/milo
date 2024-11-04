@@ -13,7 +13,7 @@ await esbuild.build({
 });
 
 await esbuild.build({
-  entryPoints: ['navigation.css', 'footer.css'],
+  entryPoints: ['navigation.css', 'footer.css', 'dark-nav.css', 'base.css'],
   bundle: true,
   minify: true,
   outdir: './dist/',

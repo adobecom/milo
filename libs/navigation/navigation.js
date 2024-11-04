@@ -1,3 +1,5 @@
+import { loadStyle } from '../utils/utils.js';
+
 const blockConfig = [
   {
     key: 'header',
@@ -65,12 +67,19 @@ export default async function loadBlock(configs, customLib) {
   const branch = new URLSearchParams(window.location.search).get('navbranch');
   const miloLibs = branch ? `https://${branch}--milo--adobecom.hlx.page` : customLib || envMap[env];
 
+  if (theme === 'dark') {
+    loadStyle(`${miloLibs}/libs/navigation/dist/base.css`, () => loadStyle(`${miloLibs}/libs/navigation/dist/dark-nav.css`));
+  } else {
+    loadStyle(`${miloLibs}/libs/navigation/dist/base.css`);
+  }
+
   // Relative paths work just fine since they exist in the context of this file's origin
   const [{ default: bootstrapBlock }, { default: locales }, { setConfig }] = await Promise.all([
     import('./bootstrapper.js'),
     import('../utils/locales.js'),
     import('../utils/utils.js'),
   ]);
+  loadStyle(`${miloLibs}/libs/navigation/dist/navigation.css`);
 
   const paramConfigs = getParamsConfigs(configs);
   const clientConfig = {
@@ -101,6 +110,7 @@ export default async function loadBlock(configs, customLib) {
             jarvis: configBlock.jarvis,
           });
         } else if (block.key === 'footer') {
+          loadStyle(`${miloLibs}/libs/navigation/dist/footer.css`);
           const { default: init } = await import('../blocks/global-footer/global-footer.js');
           await bootstrapBlock(init, { ...block });
         }
