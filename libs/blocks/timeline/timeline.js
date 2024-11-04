@@ -132,7 +132,6 @@ function updateColWidths(colWidths, fragment, hasSegment) {
   });
 }
 export default function init(el) {
-  document.querySelector('html').setAttribute('dir', 'rtl');
   const fragment = document.createDocumentFragment();
   const [textRow, left, right] = createRow();
   const rows = el.querySelectorAll(':scope > div > div');
