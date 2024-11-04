@@ -262,9 +262,7 @@ export default function init(el) {
   const details = findDetails(window.location.hash, el);
   const config = getConfig();
 
-  import('../../martech/attributes.js').then((analytics) => {
-    el.forEach((section, idx) => analytics.decorateSectionAnalytics(section, idx, config));
-  });
+  el.forEach((section, idx) => decorateSectionAnalytics(section, idx, config));
 
   return details ? getModal(details) : null;
 }
