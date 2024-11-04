@@ -1,6 +1,6 @@
 /* eslint import/no-relative-packages: 0 */
 import {
-  getConfig, getMetadata, loadStyle, loadLana, decorateLinks, localizeLink,
+  getConfig, getMetadata, loadStyle, loadLana, decorateLinks, localizeLink, decoratePlaceholders,
 } from '../../../utils/utils.js';
 import { getFederatedContentRoot, getFederatedUrl } from '../../../utils/federated.js';
 import { processTrackingLabels } from '../../../martech/attributes.js';
@@ -169,6 +169,55 @@ export function isDarkMode() {
   return theme === 'dark';
 }
 
+export const initModal = async (el, onClose) => {
+  const { modalHash, modalPath } = el.dataset;
+
+  const path = modalPath.includes('/federal/') ? getFederatedUrl(modalPath) : modalPath;
+  const content = toFragment`<a href="${path}#_inline"></a>`;
+  const { CLOSE_ICON } = await import('../../modal/modal.js');
+  const closeButton = toFragment`
+    <button class="dialog-close" aria-label="Close" daa-ll="${modalHash}:modalClose:buttonClose" autofocus>
+      ${CLOSE_ICON ?? ''}
+    </button>`;
+
+  const modal = toFragment`<dialog class="feds-dialog"></dialog>`;
+  modal.append(closeButton);
+  modal.append(content);
+
+  const { default: getFragment } = await import('../../fragment/fragment.js');
+  const loadFragmentPromise = getFragment(content);
+
+  closeButton.addEventListener('click', () => {
+    modal.close();
+    onClose();
+  });
+
+  modal.addEventListener('click', (event) => {
+    event.preventDefault();
+    const rect = event.target.getBoundingClientRect();
+    if (rect.left > event.clientX
+      || rect.right < event.clientX
+      || rect.top > event.clientY
+      || rect.bottom < event.clientY
+    ) {
+      modal.close();
+      onClose();
+    }
+  });
+
+  modal.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      modal.close();
+      onClose();
+    }
+  });
+
+  await loadFragmentPromise;
+  await decoratePlaceholders(modal, getConfig());
+  document.body.append(modal);
+  return modal;
+};
+
 // Base styles are shared between top navigation and footer,
 // since they can be independent of each other.
 // CSS imports were not used due to duplication of file include
@@ -176,10 +225,11 @@ export async function loadBaseStyles() {
   const { standaloneGnav } = getConfig();
   if (standaloneGnav) return;
   if (isDarkMode()) {
-    new Promise((resolve) => { loadStyle('./base.css', resolve); })
-      .then(() => loadStyles('./dark-nav.css'));
+    new Promise((resolve) => { loadStyle(rootPath('base.css'), resolve); })
+      .then(() => loadStyles(rootPath('dark-nav.css')));
   } else {
-    await loadStyles('./base.css');
+    const url = rootPath('base.css');
+    await loadStyles(url);
   }
 }
 

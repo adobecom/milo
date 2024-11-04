@@ -117,7 +117,7 @@
 }
 
 header.global-navigation.ready {
-  visibility: visible;
+  visibility: visible !important;
 }
 
 /* Desktop styles */

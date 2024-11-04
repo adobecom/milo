@@ -5,6 +5,7 @@ import {
   getMetadata,
   getConfig,
   localizeLink,
+  loadStyle,
 } from '../../utils/utils.js';
 
 import {
@@ -20,6 +21,7 @@ import {
   toFragment,
   federatePictureSources,
   isDarkMode,
+  initModal,
 } from '../global-navigation/utilities/utilities.js';
 
 import { getFederatedUrl } from '../../utils/federated.js';
@@ -203,14 +205,11 @@ class Footer {
       return this.elements.regionPicker;
     }
 
-    // initialize initmodal in advance
-    const initModalPromise = import('../modal/modal.js');
-
     const regionPickerClass = 'feds-regionPicker';
     const regionPickerTextElem = toFragment`<span class="feds-regionPicker-text">${regionSelector.textContent}</span>`;
     const regionPickerElem = toFragment`
       <a
-        href="${regionSelector.href}"
+        href=""
         class="${regionPickerClass}"
         aria-expanded="false"
         aria-haspopup="true"
@@ -223,7 +222,6 @@ class Footer {
     regionPickerElem.classList.add('modal', 'link-block');
     regionPickerElem.dataset.modalPath = url.pathname;
     regionPickerElem.dataset.modalHash = url.hash;
-    regionPickerElem.href = url.hash;
     const regionPickerWrapperClass = 'feds-regionPicker-wrapper';
     this.elements.regionPicker = toFragment`<div class="${regionPickerWrapperClass}">
         ${regionPickerElem}
@@ -233,6 +231,7 @@ class Footer {
 
     // Note: the region picker currently works only with Milo modals/fragments;
     // in the future we'll need to update this for non-Milo consumers
+    // Update (11/24): a footer specific modal has been created to support non-milo consumers
     if (url.hash !== '') {
       // Hash -> region selector opens a modal
       // decorateAutoBlock(regionPickerElem); // add modal-specific attributes
@@ -243,42 +242,50 @@ class Footer {
           tags: 'errorType=warn,module=global-footer',
         });
       }
-      const { default: initModal } = await initModalPromise;
-      await initModal(regionPickerElem); // load modal logic and styles
+      const regionPickerModal = await initModal(regionPickerElem, () => {
+        if (isRegionPickerExpanded()) {
+          regionPickerElem.setAttribute('aria-expanded', 'false');
+        }
+      });
+
+      const block = regionPickerModal.querySelector('.region-nav');
+      if (block) {
+        loadStyle(`${base}/blocks/region-nav/region-nav.css`);
+        const { default: loadRegionNav } = await import('../region-nav/region-nav.js');
+        loadRegionNav(block);
+      }
+
       if (regionPickerElem.classList[0] !== 'modal') {
         lanaLog({
           message: `Modal block class missing from region picker post loading the block; locale: ${locale}; regionPickerElem: ${regionPickerElem.outerHTML}`,
           tags: 'errorType=warn,module=global-footer',
         });
       }
-      regionPickerElem.addEventListener('click', () => {
+      regionPickerElem.addEventListener('click', (event) => {
+        event.preventDefault();
         if (!isRegionPickerExpanded()) {
           regionPickerElem.setAttribute('aria-expanded', 'true');
-        }
-      });
-      // Set aria-expanded to false when region modal is closed
-      window.addEventListener('milo:modal:closed', () => {
-        if (isRegionPickerExpanded()) {
-          regionPickerElem.setAttribute('aria-expanded', 'false');
+          regionPickerModal.showModal();
         }
       });
     } else {
       // No hash -> region selector expands a dropdown
       regionPickerElem.href = '#'; // reset href value to not get treated as a fragment
       regionSelector.href = localizeLink(regionSelector.href);
+      decorateAutoBlock(regionSelector); // add fragment-specific class(es)
       this.elements.regionPicker.append(regionSelector); // add fragment after regionPickerElem
-      const { default: initModal } = await initModalPromise;
-      await initModal(regionSelector); // load fragment and replace original link
+      const { default: loadRegionSelector } = await import('../region-nav/region-nav.js');
+      loadStyle(`${base}/blocks/region-nav/region-nav.css`);
+      loadRegionSelector(regionSelector); // load fragment and replace original link
       // Update aria-expanded on click
       regionPickerElem.addEventListener('click', (e) => {
         e.preventDefault();
-        // preload region picker block for bundling purposes
-        import('../region-nav/region-nav.js');
         const isDialogActive = regionPickerElem.getAttribute('aria-expanded') === 'true';
         regionPickerElem.setAttribute('aria-expanded', !isDialogActive);
       });
       // Close region picker dropdown on outside click
       document.addEventListener('click', (e) => {
+        e.preventDefault();
         if (isRegionPickerExpanded()
           && !e.target.closest(`.${regionPickerWrapperClass}`)) {
           regionPickerElem.setAttribute('aria-expanded', false);
