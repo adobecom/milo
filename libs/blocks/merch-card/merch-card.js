@@ -546,7 +546,7 @@ export default async function init(el) {
     merchCard.append(
       createTag(
         'div',
-        { slot: 'action-menu-content' },
+        { slot: 'action-menu-content', tabindex: '0' },
         actionMenuContent.innerHTML,
       ),
     );
