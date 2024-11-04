@@ -734,7 +734,6 @@ header.global-navigation.has-promo {
 }
 
 header.global-navigation a {
-  color: initial;
   text-decoration: unset;
 }
 
@@ -809,8 +808,8 @@ a {
   text-decoration: underline;
 }
 
-a:hover, 
-a:focus, 
+a:hover,
+a:focus,
 a:active {
   color: var(--link-hover-color);
 }
