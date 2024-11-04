@@ -25,8 +25,6 @@ if (!targetFile) {
     process.exit(1);
 }
 
-const skipMas = process.argv.includes('--skip-mas');
-
 // Initialize markdown-it with desired plugins
 const md = markdownIt({
     html: true,
@@ -76,14 +74,16 @@ const htmlTemplate = `
   </script>
   <!-- Include your custom element script as an ES6 module -->
   <script src="../../../features/spectrum-web-components/dist/theme.js" type="module"></script>
+  <script src="../../../features/spectrum-web-components/dist/action-button.js" type="module"></script>
   <script src="../../../features/spectrum-web-components/dist/button.js" type="module"></script>
   <script type="module" src="../../../deps/mas/mas.js"></script>
 
   <script type="module">
     const params = new URLSearchParams(document.location.search);
     const masCommerceService = document.createElement('mas-commerce-service');
-    ['locale','language','env'].forEach((attribute) => {
-      const value = params.get(attribute);
+    ['locale','language','env','cli'].forEach((attribute) => {
+      let value = params.get(attribute);
+      if (value === 'cli') attribute = 'checkout-client-id';
       if (value) masCommerceService.setAttribute(attribute, value);
     });
     document.head.appendChild(masCommerceService);

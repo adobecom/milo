@@ -164,36 +164,43 @@ For each event except `click`, the following css classes are toggled on the elem
 ### Example
 
 ```html {.demo}
-<a
-    id="co2"
-    href="#"
-    is="checkout-link"
-    data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M"
-    >Buy now (click me)</a
->
-<a
-    id="co3"
-    href="#"
-    is="checkout-link"
-    data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M"
-    ><span>Span + <strong>Buy now<strong></span></a
->
+<div id="eventsDemo">
+    <a
+        is="checkout-link"
+        data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M"
+        >Buy now (click me)</a
+    >
+    <br />
+    <a
+        is="checkout-link"
+        data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M"
+        ><span>Span + <strong>Strong + Buy now</strong></span></a
+    >
+</div>
 <button id="btnRefresh">Refresh</button>
 <script type="module">
     const log = document.getElementById('log');
     const logger = (...messages) =>
         (log.innerHTML = `${messages.join(' ')}<br>${log.innerHTML}`);
-    const a = document.getElementById('co2');
-    a.addEventListener('mas:pending', () => logger('checkout-link pending'));
-    a.addEventListener('mas:resolved', () => logger('checkout-link resolved'));
-    a.addEventListener('mas:failed', () => logger('checkout-link failed'));
-    a.addEventListener('click', (e) => {
+    const eventsDemo = document.getElementById('eventsDemo');
+    eventsDemo.addEventListener('mas:pending', () =>
+        logger('checkout-link pending'),
+    );
+    eventsDemo.addEventListener('mas:resolved', (e) =>
+        logger('checkout-link resolved'),
+    );
+    eventsDemo.addEventListener('mas:failed', () =>
+        logger('checkout-link failed'),
+    );
+    eventsDemo.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
         logger('checkout link is clicked: ', e.target.href);
     });
     document.getElementById('btnRefresh').addEventListener('click', () => {
-        a.requestUpdate(true);
+        [...eventsDemo.querySelectorAll('a')].forEach((a) =>
+            a.requestUpdate(true),
+        );
     });
 </script>
 ```
