@@ -51,7 +51,6 @@ export class CheckoutLink extends HTMLAnchorElement {
             'data-checkout-workflow',
             'data-checkout-workflow-step',
             'data-extra-options',
-            'data-ims-country',
             'data-perpetual',
             'data-promotion-code',
             'data-quantity',
@@ -121,6 +120,7 @@ export class CheckoutLink extends HTMLAnchorElement {
                 if (countryCode) this.dataset.imsCountry = countryCode;
             }, ignore);
         }
+        overrides.imsCountry = null;
         const options = service.collectCheckoutOptions(overrides, this);
         if (!options.wcsOsi.length) return false;
         let extraOptions;
