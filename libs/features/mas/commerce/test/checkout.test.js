@@ -88,7 +88,7 @@ describe('class "CheckoutLink"', () => {
         );
     });
 
-    it('renders link with ims country', async () => {
+    it('renders link with page country, not ims country', async () => {
         mockIms('CH');
         const service = await initMasCommerceService();
         const checkoutLink = mockCheckoutLink('abm');
