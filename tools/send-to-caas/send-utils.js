@@ -92,7 +92,8 @@ const findTag = (tags, searchStr, ignore = []) => {
       tag.name,
       tag.path,
       tag.path.replace('/content/cq:tags/', ''),
-      tag.tagID,
+      /* c8 ignore next */
+      tag.tagID.toLowerCase(),
     ];
 
     if (tagMatches.includes(searchStr.toLowerCase())) return true;
