@@ -182,7 +182,7 @@
 }
 
 [dir="rtl"] .timeline .row:nth-of-type(1)>.left>div>* {
-  padding: 0;
+  padding: 0 0 0 var(--spacing-m);
   text-align: right;
 }
 
