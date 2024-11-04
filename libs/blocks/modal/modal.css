@@ -323,6 +323,12 @@
   }
 }
 
+@media (min-width: 1500px) {
+  .dialog-modal.dynamic-height .milo-iframe {
+    min-width: 1200px;
+  }
+}
+
 .disable-scroll {
   overflow: hidden;
 }
