@@ -1,12 +1,14 @@
 import { html, useState, useEffect } from '../../deps/htm-preact.js';
 import { getSwipeDistance, getSwipeDirection } from '../carousel/carousel.js';
+import { createTag } from '../../utils/utils.js';
+import { removeLeftToRightMark } from '../quiz/utils.js';
 
 export const OptionCard = ({
   text, title, image, icon, iconTablet, iconDesktop, options,
   disabled, selected, background, onClick,
 }) => {
   const getOptionClass = () => {
-    let className = '';
+    let className = 'no-track ';
     if (icon || iconTablet || iconDesktop) className += 'has-icon ';
     if (image) className += 'has-image ';
     if (background) className += 'has-background ';
@@ -17,13 +19,13 @@ export const OptionCard = ({
 
   const getIconHtml = () => html`<div class="quiz-option-icon">
     <picture>
-      ${iconDesktop && html`<source media="(min-width: 1024px)" srcset="${iconDesktop}" />`}
-      ${iconTablet && html`<source media="(min-width: 600px)" srcset="${iconTablet}" />`}
-      <img src="${icon}" alt="" loading="lazy" />
+      ${iconDesktop && html`<source media="(min-width: 1024px)" srcset="${removeLeftToRightMark(iconDesktop)}" />`}
+      ${iconTablet && html`<source media="(min-width: 600px)" srcset="${removeLeftToRightMark(iconTablet)}" />`}
+      <img src="${removeLeftToRightMark(icon)}" alt="" loading="lazy" />
     </picture>
   </div>`;
 
-  const imageHtml = image ? html`<div class="quiz-option-image" style="background-image: url('${image}'); background-size: cover" loading="lazy"></div>` : null;
+  const imageHtml = image ? html`<div class="quiz-option-image" style="background-image: url('${removeLeftToRightMark(image)}'); background-size: cover" loading="lazy"></div>` : null;
   const titleHtml = title ? html`<p class="quiz-option-title">${title}</p>` : null;
   const textHtml = text ? html`<p class="quiz-option-text">${text}</p>` : null;
 
@@ -51,15 +53,30 @@ export const GetQuizOption = ({
 
   const isRTL = document.documentElement.getAttribute('dir') === 'rtl';
 
+  /**
+ * Resets focus to the top of the quiz-entry options for accessibility.
+ * To ensure that the next keyboard tab after carousel navigation
+ * will focus the first avaiable quiz option.
+ */
+  const resetFocus = () => {
+    const quiz = document.querySelector('.quiz-options-container');
+    const focuser = createTag('button', { tabindex: 0 });
+    quiz.prepend(focuser);
+    focuser.focus();
+    quiz.removeChild(focuser);
+  };
+
   const next = async () => {
     if (index + visibleCount < options.data.length) {
       setIndex(index + 1);
+      resetFocus();
     }
   };
 
   const prev = () => {
     if (index > 0) {
       setIndex(index - 1);
+      resetFocus();
     }
   };
 
@@ -144,24 +161,24 @@ export const GetQuizOption = ({
 
   return html`
   <div class="quiz-options-container" role="group" aria-labelledby="question" tabindex="0" onkeydown=${handleKey}>
-  ${index > 0 && html`<button onClick=${prev} class="carousel-arrow arrow-prev ${isRTL ? 'rtl' : ''}" aria-label="Previous"></button>`}
-  <div class="carousel-slides ${index > 0 ? 'align-right' : ''}">
-    ${options.data.slice(index + 1, index + visibleCount).map((option, idx) => html`
-      <${OptionCard} 
-        key=${idx}
-        text=${option.text}
-        title=${option.title} 
-        icon=${getOptionsValue(option.options, 'icon')}
-        iconTablet=${getOptionsValue(option.options, 'icon-tablet')}
-        iconDesktop=${getOptionsValue(option.options, 'icon-desktop')}
-        image=${getOptionsValue(option.options, 'image')}
-        background=${background}
-        options=${option.options}
-        selected=${selectedCards[option.options] ? 'selected' : ''}
-        disabled=${(countSelectedCards > 0 && !selectedCards[option.options] && countSelectedCards >= maxSelections) || mlInputUsed ? 'disabled' : ''}
-        onClick=${onOptionClick(option)}
-        />`)}
-  </div>
-  ${(index + visibleCount < options.data.length) && html`<button onClick=${next} class="carousel-arrow arrow-next ${isRTL ? 'rtl' : ''}" aria-label="Next"></button>`}
+    ${index > 0 && html`<button onClick=${prev} class="carousel-arrow arrow-prev ${isRTL ? 'rtl' : ''}" aria-label="Previous"></button>`}
+    <div class="carousel-slides ${index > 0 ? 'align-right' : ''}">
+      ${options.data.slice(index + 1, index + visibleCount).map((option, idx) => html`
+        <${OptionCard} 
+          key=${idx}
+          text=${option.text}
+          title=${option.title} 
+          icon=${getOptionsValue(option.options, 'icon')}
+          iconTablet=${getOptionsValue(option.options, 'icon-tablet')}
+          iconDesktop=${getOptionsValue(option.options, 'icon-desktop')}
+          image=${getOptionsValue(option.options, 'image')}
+          background=${background}
+          options=${option.options}
+          selected=${selectedCards[option.options] ? 'selected' : ''}
+          disabled=${(countSelectedCards > 0 && !selectedCards[option.options] && countSelectedCards >= maxSelections) || mlInputUsed ? 'disabled' : ''}
+          onClick=${onOptionClick(option)}
+          />`)}
+    </div>
+    ${(index + visibleCount < options.data.length) && html`<button onClick=${next} class="carousel-arrow arrow-next ${isRTL ? 'rtl' : ''}" aria-label="Next"></button>`}
   </div>`;
 };

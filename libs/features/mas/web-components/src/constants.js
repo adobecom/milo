@@ -18,7 +18,7 @@ export const EVENT_TYPE_READY = 'wcms:commerce:ready';
  * Tag name of the commerce service component.
  * Should be in sync with `packages/commerce/src/constants.js`.
  */
-export const TAG_NAME_SERVICE = 'wcms-commerce';
+export const TAG_NAME_SERVICE = 'mas-commerce-service';
 
 /** Event to dispatch when a merch-offer is ready */
 export const EVENT_MERCH_OFFER_READY = 'merch-offer:ready';
@@ -38,14 +38,20 @@ export const EVENT_MERCH_STOCK_CHANGE = 'merch-stock:change';
 
 export const EVENT_MERCH_STORAGE_CHANGE = 'merch-storage:change';
 
+
 export const EVENT_MERCH_QUANTITY_SELECTOR_CHANGE =
-    'merch-quantity-selector:change';
+'merch-quantity-selector:change';
 
 export const EVENT_MERCH_SEARCH_CHANGE = 'merch-search:change';
 
 export const EVENT_MERCH_CARD_COLLECTION_SORT = 'merch-card-collection:sort';
 
 export const EVENT_MERCH_CARD_COLLECTION_SHOWMORE =
-    'merch-card-collection:showmore';
+'merch-card-collection:showmore';
 
 export const EVENT_MERCH_SIDENAV_SELECT = 'merch-sidenav:select';
+
+export const EVENT_AEM_LOAD = 'aem:load';
+export const EVENT_AEM_ERROR = 'aem:error';
+export const EVENT_MAS_READY = 'mas:ready';
+export const EVENT_MAS_ERROR = 'mas:error';

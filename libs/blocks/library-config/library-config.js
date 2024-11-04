@@ -2,14 +2,14 @@ import { createTag } from '../../utils/utils.js';
 
 const LIBRARY_PATH = '/docs/library/library.json';
 
-async function loadBlocks(content, list, query) {
+async function loadBlocks({ content, list, query, type }) {
   const { default: blocks } = await import('./lists/blocks.js');
-  blocks(content, list, query);
+  blocks(content, list, query, type);
 }
 
-async function loadTemplates(content, list) {
+async function loadTemplates({ content, list, query, type }) {
   const { default: templates } = await import('./lists/templates.js');
-  templates(content, list);
+  templates(content, list, query, type);
 }
 
 async function loadPlaceholders(content, list) {
@@ -32,7 +32,7 @@ async function loadPersonalization(content, list) {
   personalization(content, list);
 }
 
-function addSearch(content, list) {
+function addSearch({ content, list, type }) {
   const skLibrary = list.closest('.sk-library');
   const header = skLibrary.querySelector('.sk-library-header');
   let search = skLibrary.querySelector('.sk-library-search');
@@ -40,6 +40,7 @@ function addSearch(content, list) {
     search = createTag('div', { class: 'sk-library-search' });
     const searchInput = createTag('input', { class: 'sk-library-search-input', placeholder: 'Search...' });
     const clear = createTag('div', { class: 'sk-library-search-clear is-hidden' });
+
     searchInput.addEventListener('input', (e) => {
       const query = e.target.value;
       if (query === '') {
@@ -47,12 +48,31 @@ function addSearch(content, list) {
       } else {
         clear.classList.remove('is-hidden');
       }
-      loadBlocks(content, list, query);
+
+      switch (type) {
+        case 'blocks':
+          loadBlocks({ content, list, query, type });
+          break;
+        case 'templates':
+          loadTemplates({ content, list, query, type });
+          break;
+        default:
+      }
     });
     clear.addEventListener('click', (e) => {
       e.target.classList.add('is-hidden');
       e.target.closest('.sk-library-search').querySelector('.sk-library-search-input').value = '';
-      loadBlocks(content, list);
+      const query = e.target.value;
+
+      switch (type) {
+        case 'blocks':
+          loadBlocks({ content, list, query, type });
+          break;
+        case 'templates':
+          loadTemplates({ content, list, query, type });
+          break;
+        default:
+      }
     });
     search.append(searchInput);
     search.append(clear);
@@ -67,11 +87,12 @@ async function loadList(type, content, list) {
   const query = list.closest('.sk-library').querySelector('.sk-library-search-input')?.value;
   switch (type) {
     case 'blocks':
-      addSearch(content, list);
-      loadBlocks(content, list, query);
+      addSearch({ content, list, type });
+      loadBlocks({ content, list, query, type });
       break;
     case 'templates':
-      loadTemplates(content, list);
+      addSearch({ content, list, type });
+      loadTemplates({ content, list, query, type });
       break;
     case 'placeholders':
       loadPlaceholders(content, list);
@@ -82,7 +103,7 @@ async function loadList(type, content, list) {
     case 'assets':
       loadAssets(content, list);
       break;
-    case 'personalization_tags':
+    case 'MEP_personalization':
       loadPersonalization(content, list);
       break;
     default:
@@ -132,7 +153,7 @@ async function combineLibraries(base, supplied) {
     blocks: base.blocks.data,
     templates: base.templates?.data,
     icons: base.icons?.data,
-    personalization_tags: base.personalization?.data,
+    MEP_personalization: base.personalization?.data,
     placeholders: base.placeholders?.data,
   };
 
@@ -176,7 +197,6 @@ function createList(libraries) {
       list.classList.add('inset');
       skLibrary.classList.add('allow-back');
       loadList(type, libraries[type], list);
-      window.hlx?.rum.sampleRUM('click', { source: e.target });
     });
   });
 
@@ -198,6 +218,10 @@ function createHeader() {
       el.classList.remove('inset');
     });
     skLibrary.classList.remove('allow-back');
+
+    // Remove library search if it's been added
+    const search = skLibrary.querySelector('.sk-library-search');
+    if (search) search.remove();
   });
   return header;
 }

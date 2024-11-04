@@ -38,10 +38,12 @@ export const selectors = {
   promo: '.feds-promo',
   promoImage: '.feds-promo-image',
   topNavWrapper: '.feds-topnav-wrapper',
+  topNav: '.feds-topnav',
   breadcrumbsWrapper: '.feds-breadcrumbs-wrapper',
   mainNav: '.feds-nav',
   imsSignIn: '.feds-signIn',
   crossCloudMenuWrapper: '.feds-crossCloudMenu-wrapper',
+  customMobileLink: '.feds-navItem--mobile-only',
 };
 
 export const viewports = {
@@ -214,9 +216,12 @@ export const createFullGlobalNavigation = async ({
     ),
   ]);
 
-  const instance = await initGnav(document.body.querySelector('header'));
-  instance.imsReady();
-  await clock.runAllAsync();
+  const instancePromise = initGnav(document.body.querySelector('header'));
+
+  await clock.runToLastAsync();
+  const instance = await instancePromise;
+  const imsPromise = instance.imsReady();
+  await clock.runToLastAsync();
   // We restore the clock here, because waitForElement uses setTimeout
   clock.restore();
 
@@ -241,6 +246,7 @@ export const createFullGlobalNavigation = async ({
     waitForElements.push(waitForElement(selectors.breadcrumbsWrapper, document.body));
   }
   await Promise.all(waitForElements);
+  await imsPromise;
 
   window.fetch = ogFetch;
   window.adobeIMS = undefined;

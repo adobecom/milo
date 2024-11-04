@@ -161,6 +161,10 @@ describe('getConfig', () => {
     expect(config).to.be.eql({
       collection: {
         mode: 'lightest',
+        partialLoadWithBackgroundFetch: {
+          enabled: false,
+          partialLoadCount: 100,
+        },
         layout: { type: '4up', gutter: '4x', container: '1200MaxWidth' },
         button: { style: 'primary' },
         collectionButtonStyle: 'primary',
@@ -397,6 +401,7 @@ describe('getConfig', () => {
       },
       language: 'en',
       country: 'us',
+      linkTransformer: {},
       customCard: [
         'card',
         'return ``',
@@ -425,6 +430,10 @@ describe('getConfig', () => {
     expect(config).to.be.eql({
       collection: {
         mode: 'lightest',
+        partialLoadWithBackgroundFetch: {
+          enabled: false,
+          partialLoadCount: 100,
+        },
         layout: { type: '4up', gutter: '4x', container: '1200MaxWidth' },
         button: { style: 'primary' },
         collectionButtonStyle: 'primary',
@@ -670,6 +679,7 @@ describe('getConfig', () => {
         enabled: true,
         lastViewedSession: '',
       },
+      linkTransformer: {},
     });
   });
 });
@@ -738,6 +748,21 @@ describe('getCountryAndLang', () => {
       locales: '',
     });
   });
+
+  it('should include partial load settings in the config', async () => {
+    const state = {
+      ...defaultState,
+      partialLoadEnabled: true,
+      partialLoadCount: 75,
+    };
+
+    const config = await getConfig(state, strings);
+
+    expect(config.collection.partialLoadWithBackgroundFetch).to.deep.equal({
+      enabled: true,
+      partialLoadCount: 75,
+    });
+  });
 });
 
 describe('getFloodgateCaasConfig', () => {
@@ -750,6 +775,10 @@ describe('getFloodgateCaasConfig', () => {
     expect(caasFgConfig).to.be.eql({
       collection: {
         mode: 'lightest',
+        partialLoadWithBackgroundFetch: {
+          enabled: false,
+          partialLoadCount: 100,
+        },
         layout: { type: '4up', gutter: '4x', container: '1200MaxWidth' },
         button: { style: 'primary' },
         collectionButtonStyle: 'primary',
@@ -995,6 +1024,7 @@ describe('getFloodgateCaasConfig', () => {
         enabled: true,
         lastViewedSession: '',
       },
+      linkTransformer: {},
     });
   });
 });

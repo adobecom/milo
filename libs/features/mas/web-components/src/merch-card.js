@@ -2,33 +2,43 @@ import { LitElement } from 'lit';
 import { sizeStyles, styles } from './merch-card.css.js';
 import { getVariantLayout, getVariantStyles } from './variants/variants.js';
 
-
 import './global.css.js';
 import {
+    EVENT_AEM_LOAD,
     EVENT_MERCH_CARD_READY,
     EVENT_MERCH_OFFER_SELECT_READY,
     EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
     EVENT_MERCH_STORAGE_CHANGE,
+    EVENT_MAS_READY,
+    EVENT_AEM_ERROR,
+    EVENT_MAS_ERROR,
 } from './constants.js';
+import { VariantLayout } from './variants/variant-layout.js';
+import { hydrate } from './hydrate.js';
 
 export const MERCH_CARD_NODE_NAME = 'MERCH-CARD';
 export const MERCH_CARD = 'merch-card';
+
+// if merch cards does not initialise in 2s, it will dispatch mas:error event
+const MERCH_CARD_LOAD_TIMEOUT = 2000;
 
 export class MerchCard extends LitElement {
     static properties = {
         name: { type: String, attribute: 'name', reflect: true },
         variant: { type: String, reflect: true },
         size: { type: String, attribute: 'size', reflect: true },
-        badgeColor: { type: String, attribute: 'badge-color' },
-        borderColor: { type: String, attribute: 'border-color' },
+        badgeColor: { type: String, attribute: 'badge-color', reflect: true },
+        borderColor: { type: String, attribute: 'border-color', reflect: true },
         badgeBackgroundColor: {
             type: String,
             attribute: 'badge-background-color',
+            reflect: true,
         },
+        backgroundImage: { type: String, attribute: 'background-image', reflect: true },
         badgeText: { type: String, attribute: 'badge-text' },
         actionMenu: { type: Boolean, attribute: 'action-menu' },
-        actionMenuContent: { type: String, attribute: 'action-menu-content' },
         customHr: { type: Boolean, attribute: 'custom-hr' },
+        consonant: { type: Boolean, attribute: 'consonant' },
         detailBg: { type: String, attribute: 'detail-bg' },
         secureLabel: { type: String, attribute: 'secure-label' },
         checkboxLabel: { type: String, attribute: 'checkbox-label' },
@@ -86,13 +96,34 @@ export class MerchCard extends LitElement {
 
     customerSegment;
     marketSegment;
-    variantLayout; 
+    /**
+     * @type {VariantLayout>}
+     */
+    variantLayout;
+
+    #ready = false;
 
     constructor() {
         super();
         this.filters = {};
         this.types = '';
         this.selected = false;
+        this.handleAemFragmentEvents = this.handleAemFragmentEvents.bind(this);
+    }
+
+    firstUpdated() {
+        this.variantLayout = getVariantLayout(this, false);
+        this.variantLayout?.connectedCallbackHook();
+        this.aemFragment?.updateComplete.catch(() => {
+            this.style.display = 'none';
+        });
+    }
+
+    willUpdate(changedProperties) {
+        if (changedProperties.has('variant') || !this.variantLayout) {
+            this.variantLayout = getVariantLayout(this);
+            this.variantLayout.connectedCallbackHook();
+        }
     }
 
     updated(changedProperties) {
@@ -102,26 +133,31 @@ export class MerchCard extends LitElement {
         ) {
             this.style.border = this.computedBorderStyle;
         }
-        this.updateComplete.then(async () => {
-            const allPrices = Array.from(
-              this.querySelectorAll('span[is="inline-price"][data-wcs-osi]'),
-            );
-            // Filter out prices within the callout-content slot
-            const prices = allPrices.filter(
-                (price) => !price.closest('[slot="callout-content"]'),
-            );
-            await Promise.all(prices.map((price) => price.onceSettled()));
-            this.variantLayout.postCardUpdateHook(this);
-        });
+        this.variantLayout?.postCardUpdateHook(this);
+    }
+
+    get theme() {
+        return this.closest('sp-theme');
+    }
+
+    get prices() {
+        return Array.from(
+            this.querySelectorAll('span[is="inline-price"][data-wcs-osi]'),
+        );
     }
 
     render() {
-      if (!this.isConnected || this.style.display === 'none') return;
-      return this.variantLayout.renderLayout();
+        if (
+            !this.isConnected ||
+            !this.variantLayout ||
+            this.style.display === 'none'
+        )
+            return;
+        return this.variantLayout.renderLayout();
     }
 
     get computedBorderStyle() {
-        if (this.variant !== 'twp') {
+        if (!['twp', 'ccd-slice'].includes(this.variant)) {
             return `1px solid ${
                 this.borderColor ? this.borderColor : this.badgeBackgroundColor
             }`;
@@ -184,14 +220,17 @@ export class MerchCard extends LitElement {
         }
     }
 
-    get titleElement() {        
-        return this.querySelector(this.variantLayout?.headingSelector || '.card-heading');
+    get titleElement() {
+        return this.querySelector(
+            this.variantLayout?.headingSelector || '.card-heading',
+        );
     }
 
     get title() {
         return this.titleElement?.textContent?.trim();
     }
 
+    /* c8 ignore next 3 */
     get description() {
         return this.querySelector('[slot="body-xs"]')?.textContent?.trim();
     }
@@ -217,18 +256,13 @@ export class MerchCard extends LitElement {
         this.filters = newFilters;
     }
 
+    /* c8 ignore next 3 */
     includes(text) {
         return this.textContent.match(new RegExp(text, 'i')) !== null;
     }
 
-    get startingAt() {
-      return this.classList.contains('starting-at');
-    }
-
     connectedCallback() {
         super.connectedCallback();
-        this.variantLayout = getVariantLayout(this);
-        this.variantLayout.connectedCallbackHook();
         this.setAttribute('tabindex', this.getAttribute('tabindex') ?? '0');
         this.addEventListener(
             EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
@@ -246,6 +280,14 @@ export class MerchCard extends LitElement {
             'change',
             this.handleStorageChange,
         );
+
+        // aem-fragment logic
+        this.addEventListener(EVENT_AEM_ERROR, this.handleAemFragmentEvents);
+        this.addEventListener(EVENT_AEM_LOAD, this.handleAemFragmentEvents);
+
+        if (!this.aemFragment) {
+          setTimeout(() => this.checkReady(), 0);
+        }
     }
 
     disconnectedCallback() {
@@ -260,13 +302,71 @@ export class MerchCard extends LitElement {
             EVENT_MERCH_STORAGE_CHANGE,
             this.handleStorageChange,
         );
+        this.removeEventListener(EVENT_AEM_ERROR, this.handleAemFragmentEvents);
+        this.removeEventListener(EVENT_AEM_LOAD, this.handleAemFragmentEvents);
     }
+
     // custom methods
+    async handleAemFragmentEvents(e) {
+        if (e.type === EVENT_AEM_ERROR) {
+            this.#fail('AEM fragment cannot be loaded');
+        }
+        if (e.type === EVENT_AEM_LOAD) {
+            if (e.target.nodeName === 'AEM-FRAGMENT') {
+                const fragment = e.detail;
+                await hydrate(fragment, this);
+                this.checkReady();
+            }
+        }
+    }
+
+    #fail(error) {
+        this.dispatchEvent(
+            new CustomEvent(EVENT_MAS_ERROR, {
+                detail: error,
+                bubbles: true,
+                composed: true,
+            }),
+        );
+    }
+
+    async checkReady() {
+        const successPromise = Promise.all(
+            [
+                ...this.querySelectorAll(
+                    'span[is="inline-price"][data-wcs-osi],a[is="checkout-link"][data-wcs-osi]',
+                ),
+            ].map((element) => element.onceSettled().catch(() => element)),
+        ).then((elements) =>
+            elements.every((el) =>
+                el.classList.contains('placeholder-resolved'),
+            ),
+        );
+        const timeoutPromise = new Promise((resolve) =>
+            setTimeout(() => resolve(false), MERCH_CARD_LOAD_TIMEOUT),
+        );
+        const success = await Promise.race([successPromise, timeoutPromise]);
+        if (success === true) {
+            this.dispatchEvent(
+                new CustomEvent(EVENT_MAS_READY, {
+                    bubbles: true,
+                    composed: true,
+                }),
+            );
+            return;
+        }
+        this.#fail('Contains unresolved offers');
+    }
+
+    get aemFragment() {
+        return this.querySelector('aem-fragment');
+    }
 
     get storageOptions() {
         return this.querySelector('sp-radio-group#storage');
     }
 
+    /* c8 ignore next 9 */
     get storageSpecificOfferSelect() {
         const storageOption = this.storageOptions?.selected;
         if (storageOption) {
@@ -284,6 +384,7 @@ export class MerchCard extends LitElement {
             : this.querySelector('merch-offer-select');
     }
 
+    /* c8 ignore next 3 */
     get quantitySelect() {
         return this.querySelector('merch-quantity-select');
     }
@@ -310,6 +411,7 @@ export class MerchCard extends LitElement {
         );
     }
 
+    /* c8 ignore next 3 */
     get dynamicPrice() {
         return this.querySelector('[slot="price"]');
     }

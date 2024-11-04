@@ -34,10 +34,7 @@ const getKeyValPairs = (s) => {
     .filter((v) => isKeyValPair.test(v))
     .map((v) => {
       const [key, ...value] = v.split(':');
-      return {
-        key: key.trim(),
-        value: value.join(':').trim(),
-      };
+      return { [key.trim()]: value.join(':').trim() };
     });
 };
 
@@ -352,7 +349,7 @@ function checkCtaUrl(s, options, i) {
  * funcs that return an object with { error: string } will report the error
  */
 const props = {
-  arbitrary: (s) => getKeyValPairs(s).map((pair) => ({ key: pair.key, value: pair.value })),
+  arbitrary: (s) => getKeyValPairs(s).map((pair) => (pair)),
   badgeimage: () => getImagePathMd('badgeimage'),
   badgetext: 0,
   bookmarkaction: 0,
@@ -579,6 +576,7 @@ export {
   getCardMetadata,
   getCaasProps,
   getConfig,
+  getKeyValPairs,
   isPagePublished,
   loadCaasTags,
   postDataToCaaS,

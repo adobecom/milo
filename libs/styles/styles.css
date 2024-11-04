@@ -51,6 +51,7 @@
   --spacing-xxxl: 80px;
 
   /* Static Spacing */
+  --spacing-l-static: 48px;
   --spacing-xl-static: 56px;
   --spacing-xxl-static: 80px;
   --spacing-xxxl-static: 104px;
@@ -359,18 +360,19 @@
   padding: 10px 24px 8px;
 }
 
-.con-button.button-justified {
-  display: block;
-  text-align: center;
-  width: 100%;
-}
-
-.xxl-button .con-button {
+.xxl-button .con-button,
+.con-button.button-xxl {
   border-radius: 30px;
   font-size: 22px;
   line-height: 27px;
   min-height: 27px;
   padding: 14px 30px 15px;
+}
+
+.con-button.button-justified {
+  display: block;
+  text-align: center;
+  width: 100%;
 }
 
 .dark .con-button {
@@ -730,6 +732,10 @@ header.global-navigation.has-promo {
 
 .hide-block {
   display: none !important;
+}
+
+.disable-scroll {
+  overflow: hidden;
 }
 
 h1, h2, h3, h4, h5, h6 {

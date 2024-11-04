@@ -4,13 +4,12 @@ import { expect } from '@esm-bundle/chai';
 
 import { mockLana } from './mocks/lana.js';
 import { mockFetch } from './mocks/fetch.js';
-import { mockConfig } from './mocks/config.js';
 
 import '../src/merch-offer.js';
 import '../src/merch-offer-select.js';
 import '../src/merch-quantity-select.js';
 
-import { appendMiloStyles, delay } from './utils.js';
+import { delay } from './utils.js';
 import { mockIms } from './mocks/ims.js';
 import { withWcs } from './mocks/wcs.js';
 import mas from './mas.js';
@@ -22,10 +21,6 @@ runTests(async () => {
     mockLana();
     await mockFetch(withWcs);
     await mas();
-    if (skipTests !== null) {
-        appendMiloStyles();
-        return;
-    }
     describe('merch-card web component', () => {
         it('should exist in the HTML document', async () => {
             expect(document.querySelector('merch-card')).to.exist;
@@ -100,7 +95,9 @@ runTests(async () => {
     });
 
     it('should have custom border color for segment card', async () => {
-        const segmentCard = document.querySelector('merch-card[variant="segment"].custom-border-color');
+        const segmentCard = document.querySelector(
+            'merch-card[variant="segment"].custom-border-color',
+        );
         const borderColor = segmentCard.getAttribute('border-color');
         expect(borderColor).to.exist;
         expect(borderColor).to.not.equal('');

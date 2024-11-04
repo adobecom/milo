@@ -1,6 +1,6 @@
 import { html, LitElement } from 'lit';
-import { debounce } from './utils';
-import { EVENT_MERCH_SEARCH_CHANGE } from './constants';
+import { debounce } from './utils.js';
+import { EVENT_MERCH_SEARCH_CHANGE } from './constants.js';
 import {
     deeplink,
     pushStateFromComponent,

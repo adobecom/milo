@@ -1,7 +1,7 @@
 import './job-process.js';
-import { LitElement, html } from '../../../deps/lit-all.min.js';
+import { LitElement, html, nothing } from '../../../deps/lit-all.min.js';
 import { getSheet } from '../../../../tools/utils/utils.js';
-import { authenticate, startJob } from '../services.js';
+import { authenticate, startJob, stopJob, getSharedJob, getPublishable } from '../services.js';
 import { getConfig } from '../../../utils/utils.js';
 import {
   delay,
@@ -36,6 +36,8 @@ class BulkPublish2 extends LitElement {
     openJobs: { state: true },
     jobErrors: { state: true },
     user: { state: true },
+    share: { state: true },
+    errorShare: { state: true },
   };
 
   constructor() {
@@ -50,16 +52,18 @@ class BulkPublish2 extends LitElement {
     this.openJobs = false;
     this.jobErrors = false;
     this.user = null;
+    this.share = null;
+    this.errorShare = null;
   }
 
   async connectedCallback() {
     super.connectedCallback();
-    authenticate(this);
     this.renderRoot.adoptedStyleSheets = [styleSheet, loaderSheet];
+    authenticate(this);
     const resumes = sticky().get('resume');
-    /* c8 ignore next 6 */
+    /* c8 ignore next 9 */
     if (resumes.length) {
-      this.jobs = resumes;
+      this.jobs = [...resumes];
       await delay(1000);
       this.openJobs = true;
       this.processing = 'resumed';
@@ -80,6 +84,15 @@ class BulkPublish2 extends LitElement {
     if (this.urls.length && textarea?.value === '') {
       textarea.value = this.urls.join('\r\n');
     }
+    if (this.user?.profile?.email && !this.share) {
+      this.share = await getSharedJob();
+      if (this.share.error) {
+        /* c8 ignore next 1 */
+        this.errorShare = this.share;
+      } else if (this.share.length) {
+        this.jobs = [...this.jobs, ...this.share];
+      }
+    }
   }
 
   setProcess(event) {
@@ -95,7 +108,8 @@ class BulkPublish2 extends LitElement {
     this.validateUrls();
   }
 
-  setJobErrors(errors) {
+  setJobErrors(jobErrors, authErrors) {
+    const errors = [...jobErrors, ...authErrors];
     const urls = [];
     errors.forEach((error) => {
       const matched = this.urls.filter((url) => {
@@ -294,6 +308,17 @@ class BulkPublish2 extends LitElement {
     if (this.mode === 'full') this.openJobs = false;
   };
 
+  async cancelJob(job) {
+    /* c8 ignore next 3 */
+    if (!job.status?.stopTime) {
+      await stopJob(job);
+    }
+    const { name } = job.result.job;
+    this.jobs = this.jobs.filter(({ result }) => result.job.name !== name);
+    this.requestUpdate();
+    if (this.mode === 'full' && !this.jobs.length) this.openJobs = false;
+  }
+
   /* c8 ignore next 14 */
   async reworkErrors(job) {
     if (this.mode === 'full') {
@@ -323,7 +348,8 @@ class BulkPublish2 extends LitElement {
         class="panel-title"
         @click=${handleToggle}>
         <span class="title">
-          Job Results
+          ${this.jobs.length ? html`<strong>${this.jobs.length}</strong>` : ''}
+          Job Result${this.jobs.length > 1 ? 's' : ''}
         </span>
         <div class="jobs-tools${showList}">
           <div 
@@ -351,6 +377,7 @@ class BulkPublish2 extends LitElement {
             <job-process 
               .job=${job}
               .reworkErrors=${(errors) => this.reworkErrors(errors)}
+              .cancelJob=${() => this.cancelJob(job)}
               @progress="${this.setJobProgress}"
               @stopped="${this.setJobStopped}">
             </job-process>
@@ -380,16 +407,17 @@ class BulkPublish2 extends LitElement {
   async submit() {
     if (!this.isDisabled()) {
       this.processing = 'started';
+      const { authorized, unauthorized } = await getPublishable(this);
       const job = await startJob({
-        urls: this.urls,
+        urls: authorized,
         process: this.process.toLowerCase(),
         useBulk: this.user.permissions[this.process]?.useBulk ?? false,
       });
       const { complete, error } = processJobResult(job);
       this.jobs = [...this.jobs, ...complete];
       this.processing = complete.length ? 'job' : false;
-      if (error.length) {
-        this.setJobErrors(error);
+      if (error.length || unauthorized.length) {
+        this.setJobErrors(error, unauthorized);
       } else {
         if (this.mode === 'full') this.openJobs = true;
         this.reset();
@@ -407,6 +435,7 @@ class BulkPublish2 extends LitElement {
 
   renderPromptLoader() {
     setTimeout(() => {
+      /* c8 ignore next 4 */
       const loader = this.renderRoot.querySelector('.load-indicator');
       const message = this.renderRoot.querySelector('.message');
       loader?.classList.add('hide');
@@ -427,6 +456,7 @@ class BulkPublish2 extends LitElement {
         const canUse = Object.values(this.user.permissions).filter((perms) => perms.canUse);
         if (canUse.length) return html``;
         message = 'Current user is not authorized to use Bulk Publishing Tool';
+      /* c8 ignore next 3 */
       } else {
         message = 'Please sign in to AEM sidekick to continue';
       }
@@ -443,10 +473,27 @@ class BulkPublish2 extends LitElement {
     `;
   }
 
+  /* c8 ignore next 14 */
+  renderErrorShare() {
+    if (!this.user?.profile || !this.errorShare) return nothing;
+    return html`
+      <div class="login-prompt">
+        <div class="prompt">
+          <div class="message share">
+            <span>Sorry, shared job ( ${this.errorShare.share} )</span>
+            <strong>${this.errorShare.error.message}</strong>
+            <div class="close" @click=${() => { this.errorShare = null; }}>X</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
   render() {
     const { full, half, toggleMode } = this.getModeState();
     return html`
       ${this.renderLoginPrompt()}
+      ${this.renderErrorShare()}
       <header id="Header">
         <h1>Bulk Publishing</h1>
         <div class="mode-switcher">

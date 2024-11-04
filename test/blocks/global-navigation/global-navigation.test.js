@@ -13,16 +13,26 @@ import {
   unavVersion,
 } from './test-utilities.js';
 import { setConfig, getLocale } from '../../../libs/utils/utils.js';
-import initGnav, { getUniversalNavLocale, osMap } from '../../../libs/blocks/global-navigation/global-navigation.js';
+import initNav, { getUniversalNavLocale, osMap } from '../../../libs/blocks/global-navigation/global-navigation.js';
 import { isDesktop, isTangentToViewport, toFragment } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
 import logoOnlyNav from './mocks/global-navigation-only-logo.plain.js';
 import longNav from './mocks/global-navigation-long.plain.js';
 import darkNav from './mocks/dark-global-navigation.plain.js';
+import navigationWithCustomLinks from './mocks/navigation-with-custom-links.plain.js';
 import globalNavigationMock from './mocks/global-navigation.plain.js';
+import noDropdownNav from './mocks/global-navigation-no-dropdown.plain.js';
 import { getConfig } from '../../../tools/send-to-caas/send-utils.js';
 
 // TODO
 // - test localization
+
+async function initGnav(block) {
+  try {
+    await initNav(block);
+  } catch (e) {
+    // should throw error
+  }
+}
 
 describe('global navigation', () => {
   before(() => {
@@ -62,6 +72,23 @@ describe('global navigation', () => {
         globalNavigation: mockWithWrongSignInHref,
       });
       expect(window.lana.log.getCalls().find((c) => c.args[0].includes('Sign in link not found in dropdown.'))).to.exist;
+    });
+
+    it('should render backup signInElem if no dropdown div is found', async () => {
+      const ogIms = window.adobeIMS;
+      const gnav = await createFullGlobalNavigation({
+        signedIn: false,
+        globalNavigation: noDropdownNav,
+      });
+      const signInElem = document.querySelector(selectors.imsSignIn);
+      expect(isElementVisible(signInElem)).to.equal(true);
+
+      let signInClicked = false;
+      window.adobeIMS = { signIn: () => { signInClicked = true; }, isSignedInUser: () => false };
+      await gnav.imsReady();
+      signInElem.click();
+      expect(signInClicked).to.be.true;
+      window.adobeIMS = ogIms;
     });
 
     it("should log when there's issues within onReady", async () => {
@@ -557,6 +584,15 @@ describe('global navigation', () => {
         fetchStub.calledOnceWith('http://localhost:2000/gnav.plain.html'),
       ).to.be.true;
     });
+
+    it('disable AED(Active Element Detetction) if gnav-souce used with hash "#_noActiveItem" modifier', async () => {
+      const gnavMeta = toFragment`<meta name="gnav-source" content="https://adobe.com/federal${customPath}#_noActiveItem">`;
+      document.head.append(gnavMeta);
+      document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
+      await initGnav(document.body.querySelector('header'));
+      const isActiveElement = !!document.querySelector('.global-navigation .feds-navItem--active');
+      expect(isActiveElement).to.be.false;
+    });
   });
 
   describe('Dynamic nav', () => {
@@ -625,7 +661,21 @@ describe('global navigation', () => {
   describe('Client search feature in global navigation', () => {
     it('should append the feds-client-search div when search is enabled', async () => {
       await createFullGlobalNavigation({ customConfig: { searchEnabled: 'on' } });
-      expect(document.querySelector(selectors.topNavWrapper).classList.contains('feds-client-search')).to.exist;
+      expect(document.querySelector(selectors.topNav).classList.contains('feds-client-search')).to.exist;
+    });
+  });
+
+  describe('Custom Links for mobile hamburger menu', () => {
+    it('Add custom links through Link Group block in parallel to large menu\'s', async () => {
+      const customLinks = 'home,apps,learn';
+      await createFullGlobalNavigation({
+        viewport: 'mobile',
+        globalNavigation: navigationWithCustomLinks,
+        customConfig: { customLinks },
+      });
+      expect(
+        document.querySelectorAll(selectors.customMobileLink).length,
+      ).to.equal(customLinks.split(',').length);
     });
   });
 });

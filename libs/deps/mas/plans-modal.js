@@ -5006,7 +5006,7 @@ styles.innerHTML = `
     --consonant-merch-card-detail-font-size: 12px;
     --consonant-merch-card-detail-font-weight: 500;
     --consonant-merch-card-detail-letter-spacing: 0.8px;
-    --consonant-merch-card-background-color: #fff;
+    --merch-card-background-color: #fff;
 
     --consonant-merch-card-heading-font-size: 18px;
     --consonant-merch-card-heading-line-height: 22.5px;
@@ -5231,7 +5231,7 @@ merch-card [slot='callout-content'] > div > div {
 
 merch-card [slot='callout-content'] > div > div > div {
     display: inline-block;
-    text-align: left;
+    text-align: start;
     font: normal normal normal var(--consonant-merch-card-callout-font-size)/var(--consonant-merch-card-callout-line-height) var(--body-font-family, 'Adobe Clean');
     letter-spacing: var(--consonant-merch-card-callout-letter-spacing);
     color: var(--consonant-merch-card-callout-font-color);
@@ -5240,7 +5240,9 @@ merch-card [slot='callout-content'] > div > div > div {
 merch-card [slot='callout-content'] img {
     width: var(--consonant-merch-card-callout-icon-size);
     height: var(--consonant-merch-card-callout-icon-size);
-    margin: 2.5px 0px 0px 9px;
+    margin-inline-end: 2.5px;
+    margin-inline-start: 9px;
+    margin-block-start: 2.5px;
 }
 
 merch-card [slot='detail-m'] {

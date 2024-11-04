@@ -67,7 +67,8 @@ const checkIms = async (prompt = true) => {
       'You must be logged in with an Adobe ID in order to publish to CaaS.\nDo you want to log in?',
     );
     if (shouldLogIn) {
-      window.adobeIMS.signIn();
+      const { signInContext } = getConfig();
+      window.adobeIMS.signIn(signInContext);
     }
     return false;
   }

@@ -1,5 +1,5 @@
 import { css, unsafeCSS } from 'lit';
-import { DESKTOP_UP, LARGE_DESKTOP, TABLET_UP, } from './media.js';
+import { DESKTOP_UP, TABLET_UP } from './media.js';
 
 export const styles = css`
     :host {
@@ -7,9 +7,9 @@ export const styles = css`
         display: flex;
         flex-direction: column;
         text-align: start;
-        background-color: var(--consonant-merch-card-background-color);
+        background-color: var(--merch-card-background-color);
         grid-template-columns: repeat(auto-fit, minmax(300px, max-content));
-        background-color: var(--consonant-merch-card-background-color);
+        background-color: var(--merch-card-background-color);
         font-family: var(--body-font-family, 'Adobe Clean');
         border-radius: var(--consonant-merch-spacing-xs);
         border: 1px solid var(--consonant-merch-card-border-color);
@@ -30,7 +30,9 @@ export const styles = css`
         visibility: hidden;
     }
 
-    :host(:hover) .invisible {
+    :host(:hover) .invisible,
+    :host(:active) .invisible,
+    :host(:focus) .invisible {
         visibility: visible;
         background-image: var(--ellipsis-icon);
         cursor: pointer;
@@ -39,6 +41,7 @@ export const styles = css`
     .action-menu.always-visible {
         visibility: visible;
         background-image: var(--ellipsis-icon);
+        cursor: pointer;
     }
 
     .top-section {
@@ -124,6 +127,7 @@ export const styles = css`
         background-repeat: no-repeat;
         background-position: center;
         background-size: 16px 16px;
+        font-size: 0;
     }
     .hidden {
         visibility: hidden;
@@ -168,6 +172,7 @@ export const styles = css`
         align-items: center;
         flex: 1;
         line-height: normal;
+        align-self: center;
     }
 
     .secure-transaction-label::before {
@@ -221,28 +226,18 @@ export const sizeStyles = () => {
         @media screen and ${unsafeCSS(TABLET_UP)} {
             :host([size='wide']),
             :host([size='super-wide']) {
-                grid-column: span 3;
                 width: 100%;
-                max-width: var(--consonant-merch-card-tablet-wide-width);
-                margin: 0 auto;
+                grid-column: 1 / -1;
             }
         }
 
         /* Laptop */
         @media screen and ${unsafeCSS(DESKTOP_UP)} {
-            :host([size='super-wide']) {
-                grid-column: span 3;
+            :host([size='wide']) {
+                grid-column: span 2;
             }
         `,
     ];
 
-    styles.push(css`
-        /* Large desktop */
-        @media screen and ${unsafeCSS(LARGE_DESKTOP)} {
-            :host([size='super-wide']) {
-                grid-column: span 4;
-            }
-        }
-    `);
     return styles;
 };

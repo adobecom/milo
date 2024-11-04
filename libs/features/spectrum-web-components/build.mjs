@@ -7,8 +7,15 @@ const BANNER = `/* eslint-disable */
 `;
 
 const ICONS = [
-  'asterisk', 'chevron', 'checkmark', 'dash', 'cross', 'corner-triangle',
+  'asterisk',
+  'chevron',
+  'checkmark',
+  'dash',
+  'cross',
+  'corner-triangle',
 ];
+
+const THEMES = ['dark', 'light'];
 
 /**
  * Mapping of modules that contain multiple components (e.g: sp-clear-button is included in button.js)
@@ -16,11 +23,11 @@ const ICONS = [
 const MODULE_MAPPING = {
   'clear-button': 'button',
   'close-button': 'button',
-}
+};
 
 const LIT_PATH_PATTERN = /^lit(\/.*)?$/;
-const ICON_PATH_PATTERN = /^@spectrum-web-components\/icon\/src\/spectrum-icon-(.*).css.js/;
-const SWC_BASE_PATH = '/libs/features/spectrum-web-components';
+const ICON_PATH_PATTERN =
+  /^@spectrum-web-components\/icon\/src\/spectrum-icon-(.*).css.js/;
 
 const IGNORE_PATHS = [
   '@spectrum-web-components/modal/src/modal-wrapper.css.js',
@@ -31,7 +38,7 @@ const TARGET = 'es2021';
 
 const DEFINE = { 'process.env.NODE_ENV': '"development"' };
 
-function rewriteImports() {
+function rewriteImports(libsDir = '../../..') {
   return {
     name: 'rewrite-imports',
     // eslint-disable-next-line no-shadow
@@ -41,28 +48,32 @@ function rewriteImports() {
         /* Spectrum Web Components */
         // if path is for another module, rewrite it as external
         let [entry] = build.initialOptions.entryPoints;
-        ([entry] = entry.replace('./src/', '').split('.'));
+        [entry] = entry.replace('./src/', '').split('.');
 
         if (LIT_PATH_PATTERN.test(args.path)) {
           return {
-            path: '/libs/deps/lit-all.min.js',
+            path: `${libsDir}/deps/lit-all.min.js`,
             external: true,
           };
         }
         if (ICON_PATH_PATTERN.test(args.path)) {
           const iconName = args.path.match(ICON_PATH_PATTERN)[1];
           return {
-            path: `${SWC_BASE_PATH}/dist/icons/${iconName}.js`,
+            path: `./icons/${iconName}.js`,
             external: true,
           };
         }
-        if (/@spectrum-web-components/.test(args.path) && args.path.indexOf(`@spectrum-web-components/${entry}`) < 0 && !IGNORE_PATHS.includes(args.path)) {
+        if (
+          /@spectrum-web-components/.test(args.path) &&
+          args.path.indexOf(`@spectrum-web-components/${entry}`) < 0 &&
+          !IGNORE_PATHS.includes(args.path)
+        ) {
           // get the first folder after @spectrum-web-components
           let [, module] = args.path.split('/');
           module = MODULE_MAPPING[module] || module;
           if (module === entry) return undefined;
           return {
-            path: `${SWC_BASE_PATH}/dist/${module}.js`,
+            path: `./${module}.js`,
             external: true,
           };
         }
@@ -88,8 +99,7 @@ build({
 });
 
 mods.forEach((mod) => {
-  if (mod === 'lit.js') return;
-  if (mod === 'polyfills') return;
+  if (mod === 'lit.js' || mod === 'polyfills' || mod === 'themes') return;
   build({
     define: DEFINE,
     bundle: true,
@@ -111,14 +121,33 @@ ICONS.forEach((icon) => {
     define: DEFINE,
     bundle: true,
     banner: { js: BANNER },
-    entryPoints: [`./node_modules/@spectrum-web-components/icon/src/spectrum-icon-${icon}.css.js/`],
+    entryPoints: [
+      `./node_modules/@spectrum-web-components/icon/src/spectrum-icon-${icon}.css.js/`,
+    ],
     platform: 'browser',
     format: 'esm',
     sourcemap: false,
     legalComments: 'none',
     target: TARGET,
     minify: true,
-    plugins: [rewriteImports()],
+    plugins: [rewriteImports('../../../..')],
     outfile: `./dist/icons/${icon}.js`,
+  });
+});
+
+THEMES.forEach((theme) => {
+  console.log(`./src/themes/${theme}.js`);
+  build({
+    define: DEFINE,
+    bundle: true,
+    banner: { js: BANNER },
+    entryPoints: [`./src/themes/${theme}.js`],
+    platform: 'browser',
+    format: 'esm',
+    sourcemap: false,
+    legalComments: 'none',
+    target: TARGET,
+    minify: true,
+    outfile: `./dist/themes/${theme}.js`,
   });
 });
