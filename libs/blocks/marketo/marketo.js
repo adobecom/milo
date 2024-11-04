@@ -152,11 +152,10 @@ export const formSuccess = (formEl, formData) => {
 
 export function setProductOfInterest(formData, search = window.location.search) {
   const productOfInterest = new URLSearchParams(search).get(QUERY_POI);
+  if (!productOfInterest) return;
 
-  if (productOfInterest) {
-    formData[PROGRAM_POI] = productOfInterest;
-    formData[POI_FILTER] = 'hidden';
-  }
+  formData[PROGRAM_POI] = productOfInterest;
+  formData[POI_FILTER] = 'hidden';
 }
 
 const readyForm = (form, formData) => {
