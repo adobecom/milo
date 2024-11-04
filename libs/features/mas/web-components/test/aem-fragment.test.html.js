@@ -95,15 +95,15 @@ runTests(async () => {
         });
 
         it('merch-card fails when aem-fragment contains incorrect merch data', async () => {
-          const [, , , , , cardWithWrongOsis] = getTemplateContent('cards');
+            const [, , , , , cardWithWrongOsis] = getTemplateContent('cards');
 
-          let masErrorTriggered = false;
-          cardWithWrongOsis.addEventListener(EVENT_MAS_ERROR, () => {
-              masErrorTriggered = true;
-          });
-          spTheme.append(cardWithWrongOsis);
-          await delay(100);          
-          expect(masErrorTriggered).to.true;
+            let masErrorTriggered = false;
+            cardWithWrongOsis.addEventListener(EVENT_MAS_ERROR, () => {
+                masErrorTriggered = true;
+            });
+            spTheme.append(cardWithWrongOsis);
+            await delay(100);
+            expect(masErrorTriggered).to.true;
         });
 
         it('uses ims token to retrieve a fragment', async () => {
@@ -115,18 +115,16 @@ runTests(async () => {
             sinon.assert.calledOnce(window.adobeid.authorize);
         });
 
-
         it('renders ccd slice card', async () => {
-          const [, , , , , , sliceCard] = getTemplateContent('cards');
-          spTheme.append(sliceCard);
-          await delay(100);   
-          expect(sliceCard.querySelector('merch-icon')).to.exist;
-          expect(sliceCard.querySelector('div[slot="image"]')).to.exist;
-          expect(sliceCard.querySelector('div[slot="body-s"]')).to.exist;
-          expect(sliceCard.querySelector('div[slot="footer"]')).to.exist;
-          const badge = sliceCard.shadowRoot?.querySelector('div#badge');
-          expect(badge).to.exist;
-          
+            const [, , , , , , sliceCard] = getTemplateContent('cards');
+            spTheme.append(sliceCard);
+            await delay(100);
+            expect(sliceCard.querySelector('merch-icon')).to.exist;
+            expect(sliceCard.querySelector('div[slot="image"]')).to.exist;
+            expect(sliceCard.querySelector('div[slot="body-s"]')).to.exist;
+            expect(sliceCard.querySelector('div[slot="footer"]')).to.exist;
+            const badge = sliceCard.shadowRoot?.querySelector('div#badge');
+            expect(badge).to.exist;
         });
     });
 });
