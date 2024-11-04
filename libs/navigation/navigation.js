@@ -34,6 +34,7 @@ const getStageDomainsMap = stageDomainsMap => (
       'www.adobe.com': 'www.stage.adobe.com',
       'helpx.adobe.com': 'helpx.stage.adobe.com',
       'creativecloud.adobe.com': 'stage.creativecloud.adobe.com',
+      ...stageDomainsMap,
     }
   }
 );
