@@ -373,19 +373,23 @@ html[dir="rtl"] .carousel-slides .section.carousel-slide {
   width: unset;
 }
 
-.carousel.rounded-corners .carousel-slide {
+.carousel.rounded-corners .carousel-slide,
+.carousel.rounded-corners .carousel-slide > div :is(p):has(> picture) img {
   border-radius: var(--m-rounded-corners);
 }
 
-.carousel.l-rounded-corners .carousel-slide {
+.carousel.l-rounded-corners .carousel-slide,
+.carousel.l-rounded-corners .carousel-slide > div :is(p):has(> picture) img {
   border-radius: var(--l-rounded-corners);
 }
 
-.carousel.s-rounded-corners .carousel-slide {
+.carousel.s-rounded-corners .carousel-slide,
+.carousel.s-rounded-corners .carousel-slide > div :is(p):has(> picture) img {
   border-radius: var(--s-rounded-corners);
 }
 
-.carousel.full-rounded-corners .carousel-slide {
+.carousel.full-rounded-corners .carousel-slide,
+.carousel.full-rounded-corners .carousel-slide > div :is(p):has(> picture) img {
   border-radius: var(--full-rounded-corners);
 }
 
