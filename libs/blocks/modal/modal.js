@@ -260,7 +260,6 @@ export default function init(el) {
   if (delayedModal(el) || window.location.hash !== modalHash || document.querySelector(`div.dialog-modal${modalHash}`)) return null;
   if (dialogLoadingSet.has(modalHash?.replace('#', ''))) return null; // prevent duplicate modal loading
   const details = findDetails(window.location.hash, el);
-
   return details ? getModal(details) : null;
 }
 
