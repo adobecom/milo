@@ -216,7 +216,7 @@ export async function getModal(details, custom) {
       iframe.style.height = '100%';
     }
   }
-  
+
   return dialog;
 }
 
