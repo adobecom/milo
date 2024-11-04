@@ -56,7 +56,7 @@ video {
   align-items: center;
   width: 40px;
   height: 40px;
-  border-radius:inherit;
+  border-radius: inherit;
   background: #242424;
 }
 
@@ -73,7 +73,7 @@ video {
   outline: var(--color-accent-focus-ring) solid 2px;
 }
 
-.video-container .pause-play-wrapper:focus .offset-filler {
+.video-container .pause-play-wrapper:focus-visible .offset-filler {
   border: 2px solid white;
   outline: 1px solid white;
 }
@@ -81,6 +81,11 @@ video {
 .video-container .pause-play-wrapper:focus-visible {
   background: #000;
   outline: var(--color-accent-focus-ring) solid 2px;
+}
+
+.video-container .pause-play-wrapper .offset-filler.is-playing .play-icon,
+.video-container .pause-play-wrapper .offset-filler:not(.is-playing) .pause-icon {
+  display: none;
 }
 
 :is(.editorial-card, .hero-marquee, .marquee):not(:has(.video-container)) .pause-play-wrapper,
