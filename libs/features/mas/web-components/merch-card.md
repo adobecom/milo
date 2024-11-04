@@ -12,6 +12,9 @@ Designs:
 
 **CCD**: https://www.figma.com/proto/7tUtNgFelfMjgPoJ5QcE1k/Merch%40Scale-Frameworks?node-id=2077-63597&t=cWfdzWlga79eyjyI-1
 
+**CCD Gallery**: [/libs/features/mas/docs/ccd.html](/libs/features/mas/docs/ccd.html)
+CCD Gallery provides a comprehensive list of all supported card variants in CCD.
+
 ## Examples
 
 ### With an Odin/AEM Fragment (VPN required)

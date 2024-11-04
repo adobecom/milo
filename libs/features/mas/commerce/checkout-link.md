@@ -171,6 +171,13 @@ For each event except `click`, the following css classes are toggled on the elem
     data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M"
     >Buy now (click me)</a
 >
+<a
+    id="co3"
+    href="#"
+    is="checkout-link"
+    data-wcs-osi="A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M"
+    ><span>Span + <strong>Buy now<strong></span></a
+>
 <button id="btnRefresh">Refresh</button>
 <script type="module">
     const log = document.getElementById('log');
