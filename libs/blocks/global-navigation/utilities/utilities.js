@@ -174,7 +174,7 @@ export const initModal = async (el, onClose) => {
 
   const path = modalPath.includes('/federal/') ? getFederatedUrl(modalPath) : modalPath;
   const content = toFragment`<a href="${path}#_inline"></a>`;
-  const { CLOSE_ICON } = await import('../../modal/modal.js');
+  const { CLOSE_ICON, FOCUSABLES, isElementInView } = await import('../../modal/modal.js');
   const closeButton = toFragment`
     <button class="dialog-close" aria-label="Close" daa-ll="${modalHash}:modalClose:buttonClose" autofocus>
       ${CLOSE_ICON ?? ''}
@@ -209,6 +209,36 @@ export const initModal = async (el, onClose) => {
     if (event.key === 'Escape') {
       modal.close();
       onClose();
+    }
+  });
+
+  const focusVisible = { focusVisible: true };
+  const focusablesOnLoad = [...modal.querySelectorAll(FOCUSABLES)];
+  const titleOnLoad = modal.querySelector('h1, h2, h3, h4, h5');
+  let firstFocusable;
+
+  if (focusablesOnLoad.length && isElementInView(focusablesOnLoad[0])) {
+    firstFocusable = focusablesOnLoad[0]; // eslint-disable-line prefer-destructuring
+  } else if (titleOnLoad) {
+    titleOnLoad.setAttribute('tabIndex', 0);
+    firstFocusable = titleOnLoad;
+  } else {
+    firstFocusable = closeButton;
+  }
+
+  modal.addEventListener('keydown', (event) => {
+    const isShiftKey = event.shiftKey;
+    const isTab = event.key === 'Tab';
+    const isCloseActive = document.activeElement === closeButton;
+
+    if (!isShiftKey && isTab && isCloseActive) {
+      event.preventDefault();
+      firstFocusable.focus(focusVisible);
+    }
+
+    if (isTab && isShiftKey && document.activeElement === firstFocusable) {
+      event.preventDefault();
+      closeButton.focus(focusVisible);
     }
   });
 
