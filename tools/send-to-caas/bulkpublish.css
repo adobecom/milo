@@ -1,7 +1,3 @@
-/* #bulkpublish {
-  margin: 20px;
-} */
-
 .bulk-publisher {
   font-family: "Adobe Clean", adobe-clean, "Trebuchet MS", sans-serif;
   font-family: ui-sans-serif, system-ui, sans-serif;
@@ -14,10 +10,14 @@
   grid-template-columns: 1fr;
 }
 
+.urls-label label {
+  margin-left: 12px;
+}
+
 dd.content .field label {
   margin-bottom: 4px;
   font-size: 15px;
-  color: #aaa;
+  color: #202020;
 }
 
 dd.content .field {
@@ -40,15 +40,16 @@ dd.content .field {
 
 .options-panel {
   min-width: 350px;
-  /* background: linear-gradient(45deg, #999, #ddd); */
   background: linear-gradient(45deg, #aaa, #eee);
   border-right: solid 1px #aaa;
-  overflow-y: scroll;
+  overflow-y: auto;
   height: 100%;
 }
+
 .bulk-publisher.dark .options-panel {
   background: linear-gradient(45deg, #000, #404040);
 }
+
 .options-panel dd.content {
   background-color: transparent;
 }
@@ -56,6 +57,7 @@ dd.content .field {
 .bulk-publisher dd.content {
   color: #000;
 }
+
 .bulk-publisher.dark dd.content {
   color: #EFEFEF;
 }
@@ -85,9 +87,6 @@ body:not(.preset) dd.content .field input {
   color: #EFEFEF;
 }
 
-dd.content .field label {
-  color: #202020;
-}
 .bulk-publisher.dark dd.content .field label {
   color: #aaa;
 }
@@ -128,11 +127,6 @@ div#caas-draft-cb {
   align-items: center;
 }
 
-.urls-label label {
-  margin-left: 12px;
-}
-
-
 /* override the default styles */
 body {
   padding: 0;
@@ -169,19 +163,24 @@ body.advanced select#preset {
   padding: 0;
   overflow: hidden;
   transition: height .5s;
-
   border: solid 1px #666;
-  /* margin: 20px; */
   border-radius: 10px;
-  /* padding: 10px 0; */
   border-width: 0;
 }
+
 .preset-options {
-  height: 200px;
+  height: 110px;
+  transition: height .5s;
+  border: solid 1px #aaa;
+  border-radius: 10px;
+  margin: 20px;
+  padding: 10px 0;
 }
+
 dd.content .preset-options .field:not(:first-of-type) {
   display: none;
 }
+
 body.preset dd.content .preset-options .field {
   display: flex;
   align-items: baseline;
@@ -208,15 +207,6 @@ body.advanced h5.basic-settings {
   margin-bottom: -5px;
 }
 
-.preset-options {
-  height: 110px;
-  transition: height .5s;
-  border: solid 1px #aaa;
-  border-radius: 10px;
-  margin: 20px;
-  padding: 10px 0;
-}
-
 body.preset  .preset-options {
   height: 196px;
 }
@@ -237,7 +227,7 @@ body.advanced  .advanced-options {
   border: solid 1px #aaa;
   border-radius: 10px;
   margin: 20px;
-  background: linear-gradient(45deg, #eeeeee66, transparent);
+  background: linear-gradient(45deg, #eee6, transparent);
 }
 
 body.advanced .advanced-options {
@@ -327,7 +317,7 @@ span.warning-icon {
 }
 
 #bulkpublish {
-  margin: 20px 0 20px;
+  margin: 20px 0;
   font-size: 18px;
   background: #6e9b00;
   border: solid 1px lightgreen;
@@ -348,8 +338,6 @@ body.advanced .config-msg {
 }
 
 span.help {
-  color: black;
-  background: #666;
   padding: 1px;
   margin-left: 2px;
   border-radius: 10px;
@@ -362,7 +350,7 @@ span.help {
 }
 
 span.help:hover {
-  background: darkred;
+  background: #999;
   color: #fff;
 }
 
@@ -374,7 +362,7 @@ span.help:hover {
 .success label, 
 .errors label {
   font-size: 18px;
-  margin: 16px 0 0 0;
+  margin: 16px 0 0;
   display: block;
 }
 
@@ -401,7 +389,6 @@ span.help:hover {
   right: -12px;
 }
 
-
 .hidden {
   display: none;
 }
@@ -416,6 +403,7 @@ p.status-signed-out i {
   border: solid 1px #aaa;
   border-radius: 15px;
 }
+
 p.status-signed-in i {
   color: #6e9b00;
 }
@@ -432,10 +420,10 @@ table.success-table {
   margin-top: 20px;
 }
 
-table.error-table th,
+/* table.error-table th,
 table.success-table th {
   font-weight: 500;
-}
+} */
 
 table.success-table {
   border-top: solid 1px green;
@@ -443,6 +431,7 @@ table.success-table {
 
 table.error-table th,
 table.success-table th {
+  font-weight: 500;
   text-align: left;
   padding: 6px 0;
 }
@@ -460,7 +449,7 @@ table.success-table td.entityid {
 }
 
 td.error {
-  color: #ee0000;
+  color: #e00;
   font-weight: bold;
   text-align: center;
 }
@@ -506,6 +495,7 @@ tbody tr:hover {
   background: #333;
   color: white;
 }
+
 .bulk-publisher.dark .content-panel  tbody tr:hover {
   background: #505050;
 }
@@ -514,13 +504,14 @@ tbody tr:hover {
 .bulk-publisher.dark .content-panel table.error-table a{
   color: #ccc;
 }
+
 .bulk-publisher.dark .content-panel table td:not(.error) {
   color: #ccc;
 }
+
 .bulk-publisher.dark .content-panel table.success-table td.ok {
   color: #99d600;
 }
-
 
 .preset-settings {
   color: gray;
@@ -534,11 +525,11 @@ tbody tr:hover {
   left: 0;
   right: 0;
   bottom: 0;
-  background: #000000cc;
-  display: flex;
+  background: #000c;
   justify-content: center;
   display: none;
 }
+
 .modal-content {
   background: white;
   width: 80%;
@@ -547,9 +538,10 @@ tbody tr:hover {
   align-self: center;
   position: relative;
 }
+
 .modal-content .close {
   position: absolute;
-  right: 0px;
+  right: 0;
   top: -12px;
   font-size: 40px;
   cursor: pointer;
