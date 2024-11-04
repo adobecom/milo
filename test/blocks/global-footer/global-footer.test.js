@@ -188,10 +188,18 @@ describe('global footer', () => {
         const regionPickerElem = document.querySelector(allSelectors.regionPicker);
         regionPickerElem.dispatchEvent(new Event('click'));
 
-        expect(regionPickerElem.getAttribute('href') === '#langnav').to.equal(true);
         expect(regionPickerElem.getAttribute('aria-expanded')).to.equal('true');
 
-        window.dispatchEvent(new Event('milo:modal:closed'));
+        const event = new MouseEvent('click', {
+          view: window,
+          bubbles: true,
+          cancelable: true,
+          screenX: 0,
+          screenY: 0,
+        });
+
+        const element = document.elementFromPoint(0, 0);
+        element.dispatchEvent(event);
         expect(regionPickerElem.getAttribute('aria-expanded')).to.equal('false');
       });
 
