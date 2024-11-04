@@ -21,7 +21,7 @@ const envMap = {
   qa: 'https://gnav--milo--adobecom.hlx.page',
 };
 
-const getStageDomainsMap = stageDomainsMap => (
+const getStageDomainsMap = (stageDomainsMap) => (
   {
     'www.stage.adobe.com': {
       'www.adobe.com': 'origin',
@@ -35,7 +35,7 @@ const getStageDomainsMap = stageDomainsMap => (
       'helpx.adobe.com': 'helpx.stage.adobe.com',
       'creativecloud.adobe.com': 'stage.creativecloud.adobe.com',
       ...stageDomainsMap,
-    }
+    },
   }
 );
 
