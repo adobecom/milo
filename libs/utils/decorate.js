@@ -73,6 +73,7 @@ function elContainsText(el) {
 }
 
 export function decorateBlockText(el, config = ['m', 's', 'm'], type = null) {
+  if (!el) return;
   let headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
   if (!el.classList.contains('default')) {
     if (headings) {
