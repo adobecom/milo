@@ -145,6 +145,10 @@
   line-height: 0;
 }
 
+.editorial-card.no-foreground { 
+  border: none;
+}
+
 .editorial-card.no-foreground .media-area > div {
   height: 100%;
 }
