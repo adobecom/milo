@@ -249,10 +249,12 @@ class Footer {
       const loadRegionNav = async () => {
         const block = document.querySelector('.region-nav');
         if (block) {
+          block.classList.add('hide');
           loadStyle(`${base}/blocks/region-nav/region-nav.css`);
           const { default: initRegionNav } = await import('../region-nav/region-nav.js');
           initRegionNav(block);
           decoratePlaceholders(block, getConfig());
+          block.classList.remove('hide');
         }
       };
 

@@ -108,7 +108,7 @@ async function loadBlock(configs, customLib) {
           });
         } else if (block.key === "footer") {
           loadStyle(`${miloLibs}/libs/navigation/dist/footer.css`);
-          const { default: init } = await import("./global-footer-6IHTNCFR.js");
+          const { default: init } = await import("./global-footer-ZICWU2XE.js");
           await bootstrapBlock(init, { ...block });
         }
         configBlock.onReady?.();

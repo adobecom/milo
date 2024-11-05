@@ -193,10 +193,12 @@ var Footer = class {
       const loadRegionNav = async () => {
         const block = document.querySelector(".region-nav");
         if (block) {
+          block.classList.add("hide");
           loadStyle(`${base}/blocks/region-nav/region-nav.css`);
           const { default: initRegionNav } = await import("./region-nav-R4VABW4G.js");
           initRegionNav(block);
           decoratePlaceholders(block, getConfig());
+          block.classList.remove("hide");
         }
       };
       await loadRegionNav();
@@ -318,4 +320,4 @@ function init(block) {
 export {
   init as default
 };
-//# sourceMappingURL=global-footer-6IHTNCFR.js.map
+//# sourceMappingURL=global-footer-ZICWU2XE.js.map
