@@ -655,45 +655,58 @@ describe('class "InlinePrice"', () => {
 });
 
 describe('commerce service', () => {
+    const offers = [
+        {
+            priceDetails: {
+                price: 32.98,
+                priceWithoutTax: 29.99,
+                usePrecision: true,
+                formatString: "'A$'#,##0.00",
+                taxDisplay: 'TAX_INCLUSIVE_DETAILS',
+                taxTerm: 'GST',
+            },
+            planType: 'ABM'
+        }
+    ];
     describe('function "buildPriceHTML"', () => {
         it('returns empty string if no orders provided', async () => {
             const { buildPriceHTML } = await initMasCommerceService();
             expect(buildPriceHTML([])).to.be.empty;
         });
-    });
-    describe('function "direct price calls"', () => {
-        it('works as expected', async () => {
-            const service = await initMasCommerceService();
-            const { collectPriceOptions, buildPriceHTML } = new Price({
-                literals: { price: {} },
-                providers: {
-                    price: [
-                        (p, o) => {
-                            /*nop*/
-                        },
-                    ],
-                },
-                settings: getSettings(service.config),
-            });
-            const inlinePrice1 = mockInlinePrice('abm');
-            const options = collectPriceOptions({}, inlinePrice1);
-            expect(options).not.to.be.empty;
-            buildPriceHTML(
-                { priceDetails: {} },
-                { template: 'discount', ...options },
-            );
-            buildPriceHTML(
-                { priceDetails: {} },
-                { template: 'strikethrough', ...options },
-            );
-            buildPriceHTML(
-                { priceDetails: {} },
-                { template: 'optical', ...options },
-            );
-            buildPriceHTML(
-                { priceDetails: {} },
-                { template: 'annual', ...options },
-            );
+
+        it('returns empty string if no orders provided - AU with promo', async () => {
+            const { buildPriceHTML } = await initMasCommerceService();
+            const options = {
+                country: 'AU',
+                promotionCode: 'promo'
+            };
+            expect(buildPriceHTML(offers, options)).to.be.html(snapshots.auAbmAnnual);
+        });
+
+        it('returns empty string if no orders provided - AU no promo', async () => {
+            const { buildPriceHTML } = await initMasCommerceService();
+            const options = {
+                country: 'AU'
+            };
+            expect(buildPriceHTML(offers, options)).to.be.html(snapshots.auAbmAnnual);
         });
     });
+    describe('function "direct price calls"', () => {
+      it('works as expected', async () => {
+          const service = await initMasCommerceService();
+          const { collectPriceOptions, buildPriceHTML } = new Price({
+            literals: { price: {} }, providers: { price: [(p,o) => {/*nop*/} ]}, settings: getSettings(service.config)});
+          const inlinePrice1 = mockInlinePrice('abm');
+          const options = collectPriceOptions({}, inlinePrice1);
+          expect(options).not.to.be.empty;
+          buildPriceHTML({ priceDetails:{} }, { template: 'discount', ...options } );
+          buildPriceHTML({ priceDetails:{} }, { template: 'strikethrough', ...options });
+          buildPriceHTML({ priceDetails:{} }, { template: 'optical', ...options });
+          buildPriceHTML({ priceDetails:{} }, { template: 'annual', ...options });
+          buildPriceHTML(offers, { country: 'US' });
+          buildPriceHTML(offers, { country: 'US', promotionCode: 'promo' });
+          buildPriceHTML(offers, { country: 'AU' });
+          buildPriceHTML(offers, { country: 'AU', promotionCode: 'promo' });
+      });
+  });
 });

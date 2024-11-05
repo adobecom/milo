@@ -8,6 +8,7 @@ sp-theme {
   width: 100%;
   max-width: 1200px;
   font-family:
+    adobe-clean,
     var(
       --mod-body-sans-serif-font-family,
       var(--spectrum-body-sans-serif-font-family)
@@ -139,16 +140,4 @@ button {
   display: grid;
   grid-template-columns: 1fr;
   gap: 20px;
-}
-
-.vpn-banner {
-  background-color: #f8d7da; /* Light red */
-  color: #721c24; /* Dark red text */
-  padding: 15px;
-  text-align: center;
-  border: 1px solid #f5c6cb;
-  border-radius: 5px;
-  font-family: Arial, sans-serif;
-  font-size: 18px;
-  margin-bottom: 20px;
 }
