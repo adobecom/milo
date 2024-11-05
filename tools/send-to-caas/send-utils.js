@@ -1,5 +1,5 @@
 import getUuid from '../../libs/utils/getUuid.js';
-import { getMetadata, SLD } from '../../libs/utils/utils.js';
+import { getMetadata } from '../../libs/utils/utils.js';
 import { LOCALES } from '../../libs/blocks/caas/utils.js';
 
 const CAAS_TAG_URL = 'https://www.adobe.com/chimera-api/tags';
@@ -196,7 +196,7 @@ export const getOrigin = (fgColor) => {
     return originLC;
   }
 
-  if (window.location.hostname.endsWith(`.${SLD}.page`)) {
+  if (window.location.hostname.endsWith('.page')) {
     const [, singlePageRepo] = window.location.hostname.split('.')[0].split('--');
     return processRepoForFloodgate(singlePageRepo, fgColor);
   }
@@ -275,7 +275,7 @@ const getBadges = (p) => {
 const isPagePublished = async () => {
   let { branch, repo, owner } = getConfig();
   if (!(branch || repo || owner)
-    && window.location.hostname.endsWith(`.${SLD}.page`)) {
+    && window.location.hostname.endsWith('.page')) {
     [branch, repo, owner] = window.location.hostname.split('.')[0].split('--');
   }
 

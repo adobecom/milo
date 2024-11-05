@@ -206,7 +206,7 @@ describe('global navigation utilities', () => {
     });
   });
 
-  // No tests for using the the live url and .hlx. urls
+  // No tests for using the the live url and .aem. urls
   // as mocking window.location.origin is not possible
   describe('getFedsPlaceholderConfig', () => {
     it('should return contentRoot for localhost', () => {
