@@ -55,12 +55,8 @@ export async function hydrate(fragmentData, merchCard) {
       merchCard.setAttribute('badge-text', fragment.badge);
       merchCard.setAttribute('badge-color', fragment.badgeColor || DEFAULT_BADGE_COLOR);
       merchCard.setAttribute('badge-background-color', fragment.badgeBackgroundColor || DEFAULT_BADGE_BACKGROUND_COLOR);
-    } else {
-      merchCard.removeAttribute('badge-text');
-      merchCard.removeAttribute('badge-color');
-      merchCard.removeAttribute('badge-background-color');
     }
-
+    
     /* c8 ignore next 2 */
     if (!fragment.size) {
         merchCard.removeAttribute('size');
