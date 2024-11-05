@@ -625,10 +625,40 @@ describe('class "InlinePrice"', () => {
 });
 
 describe('commerce service', () => {
+    const offers = [
+        {
+            priceDetails: {
+                price: 32.98,
+                priceWithoutTax: 29.99,
+                usePrecision: true,
+                formatString: "'A$'#,##0.00",
+                taxDisplay: 'TAX_INCLUSIVE_DETAILS',
+                taxTerm: 'GST',
+            },
+            planType: 'ABM'
+        }
+    ];
     describe('function "buildPriceHTML"', () => {
         it('returns empty string if no orders provided', async () => {
             const { buildPriceHTML } = await initMasCommerceService();
             expect(buildPriceHTML([])).to.be.empty;
+        });
+
+        it('returns empty string if no orders provided - AU with promo', async () => {
+            const { buildPriceHTML } = await initMasCommerceService();
+            const options = {
+                country: 'AU',
+                promotionCode: 'promo'
+            };
+            expect(buildPriceHTML(offers, options)).to.be.html(snapshots.auAbmAnnual);
+        });
+
+        it('returns empty string if no orders provided - AU no promo', async () => {
+            const { buildPriceHTML } = await initMasCommerceService();
+            const options = {
+                country: 'AU'
+            };
+            expect(buildPriceHTML(offers, options)).to.be.html(snapshots.auAbmAnnual);
         });
     });
     describe('function "direct price calls"', () => {
@@ -643,6 +673,10 @@ describe('commerce service', () => {
           buildPriceHTML({ priceDetails:{} }, { template: 'strikethrough', ...options });
           buildPriceHTML({ priceDetails:{} }, { template: 'optical', ...options });
           buildPriceHTML({ priceDetails:{} }, { template: 'annual', ...options });
+          buildPriceHTML(offers, { country: 'US' });
+          buildPriceHTML(offers, { country: 'US', promotionCode: 'promo' });
+          buildPriceHTML(offers, { country: 'AU' });
+          buildPriceHTML(offers, { country: 'AU', promotionCode: 'promo' });
       });
   });
 });
