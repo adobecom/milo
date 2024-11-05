@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../utils/action.js"],
+  "sourcesContent": ["export function debounce(callback, time = 300) {\n  if (typeof callback !== 'function') return undefined;\n\n  let timer = null;\n\n  return (...args) => {\n    clearTimeout(timer);\n    timer = setTimeout(() => callback(...args), time);\n  };\n}\n\nexport default { debounce };\n"],
+  "mappings": ";AAAO,SAAS,SAAS,UAAU,OAAO,KAAK;AAC7C,MAAI,OAAO,aAAa,WAAY,QAAO;AAE3C,MAAI,QAAQ;AAEZ,SAAO,IAAI,SAAS;AAClB,iBAAa,KAAK;AAClB,YAAQ,WAAW,MAAM,SAAS,GAAG,IAAI,GAAG,IAAI;AAAA,EAClD;AACF;",
+  "names": []
+}

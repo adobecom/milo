@@ -8,7 +8,7 @@ await esbuild.build({
   bundle: true,
   splitting: true,
   format: 'esm',
-  minify: true,
+  sourcemap: true,
   outdir: './dist/',
 });
 

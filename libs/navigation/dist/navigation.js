@@ -1,1 +1,125 @@
-import{k as t}from"./chunk-VP5VJMKQ.js";import"./chunk-YBWLHNHN.js";var b=[{key:"header",name:"global-navigation",targetEl:"header",appendType:"prepend",params:["imsClientId","searchEnabled","unav","customLinks","jarvis"]},{key:"footer",name:"global-footer",targetEl:"footer",appendType:"appendChild",params:["privacyId","privacyLoadDelay"]}],C={prod:"https://www.adobe.com",stage:"https://www.stage.adobe.com",qa:"https://gnav--milo--adobecom.hlx.page"},$=a=>({"www.stage.adobe.com":{"www.adobe.com":"origin","helpx.adobe.com":"helpx.stage.adobe.com","creativecloud.adobe.com":"stage.creativecloud.adobe.com",...a},"adobecom.github.io":{"www.adobe.com":"www.stage.adobe.com","helpx.adobe.com":"helpx.stage.adobe.com","creativecloud.adobe.com":"stage.creativecloud.adobe.com",...a}});function x(a){return b.reduce((s,c)=>(c.params.forEach(i=>{let l=a[c.key]?.[i];l!==void 0&&(s[i]=l)}),s),{})}async function h(a,s){let{header:c,footer:i,authoringPath:l,env:d="prod",locale:v="",theme:m,stageDomainsMap:f={}}=a||{};if(!c&&!i){console.error("Global navigation Error: header and footer configurations are missing.");return}let p=new URLSearchParams(window.location.search).get("navbranch"),e=p?`https://${p}--milo--adobecom.hlx.page`:s||C[d];m==="dark"?t(`${e}/libs/navigation/dist/base.css`,()=>t(`${e}/libs/navigation/dist/dark-nav.css`)):t(`${e}/libs/navigation/dist/base.css`);let[{default:g},{default:u},{setConfig:w}]=await Promise.all([import("./bootstrapper-R7WAVEOL.js"),import("./locales-B55ON6DW.js"),import("./utils-57TVUEB7.js")]);t(`${e}/libs/navigation/dist/navigation.css`);let y=x(a),k={clientEnv:d,origin:`https://main--federal--adobecom.hlx.${d==="prod"?"live":"page"}`,pathname:`/${v}`,miloLibs:`${e}/libs`,locales:a.locales||u,contentRoot:l||i.authoringPath,theme:m,...y,standaloneGnav:!0,stageDomainsMap:$(f)};w(k);for await(let n of b){let o=a[n.key];try{if(o){if(n.key==="header"){let{default:r}=await import("./global-navigation-MXCO3KV7.js");await g(r,{...n,unavComponents:o.unav?.unavComponents,redirect:o.redirect,layout:o.layout,noBorder:o.noBorder,jarvis:o.jarvis})}else if(n.key==="footer"){t(`${e}/libs/navigation/dist/footer.css`);let{default:r}=await import("./global-footer-FPT672UO.js");await g(r,{...n})}o.onReady?.()}}catch(r){o.onError?.(r)}}}window.loadNavigation=h;export{h as default};
+import {
+  loadStyle
+} from "./chunk-G4SXHKM5.js";
+import "./chunk-NE6SFPCS.js";
+
+// navigation.js
+var blockConfig = [
+  {
+    key: "header",
+    name: "global-navigation",
+    targetEl: "header",
+    appendType: "prepend",
+    params: ["imsClientId", "searchEnabled", "unav", "customLinks", "jarvis"]
+  },
+  {
+    key: "footer",
+    name: "global-footer",
+    targetEl: "footer",
+    appendType: "appendChild",
+    params: ["privacyId", "privacyLoadDelay"]
+  }
+];
+var envMap = {
+  prod: "https://www.adobe.com",
+  stage: "https://www.stage.adobe.com",
+  qa: "https://gnav--milo--adobecom.hlx.page"
+};
+var getStageDomainsMap = (stageDomainsMap) => ({
+  "www.stage.adobe.com": {
+    "www.adobe.com": "origin",
+    "helpx.adobe.com": "helpx.stage.adobe.com",
+    "creativecloud.adobe.com": "stage.creativecloud.adobe.com",
+    ...stageDomainsMap
+  },
+  // Test app
+  "adobecom.github.io": {
+    "www.adobe.com": "www.stage.adobe.com",
+    "helpx.adobe.com": "helpx.stage.adobe.com",
+    "creativecloud.adobe.com": "stage.creativecloud.adobe.com",
+    ...stageDomainsMap
+  }
+});
+function getParamsConfigs(configs) {
+  return blockConfig.reduce((acc, block) => {
+    block.params.forEach((param) => {
+      const value = configs[block.key]?.[param];
+      if (value !== void 0) {
+        acc[param] = value;
+      }
+    });
+    return acc;
+  }, {});
+}
+async function loadBlock(configs, customLib) {
+  const {
+    header,
+    footer,
+    authoringPath,
+    env = "prod",
+    locale = "",
+    theme,
+    stageDomainsMap = {}
+  } = configs || {};
+  if (!header && !footer) {
+    console.error("Global navigation Error: header and footer configurations are missing.");
+    return;
+  }
+  const branch = new URLSearchParams(window.location.search).get("navbranch");
+  const miloLibs = branch ? `https://${branch}--milo--adobecom.hlx.page` : customLib || envMap[env];
+  if (theme === "dark") {
+    loadStyle(`${miloLibs}/libs/navigation/dist/base.css`, () => loadStyle(`${miloLibs}/libs/navigation/dist/dark-nav.css`));
+  } else {
+    loadStyle(`${miloLibs}/libs/navigation/dist/base.css`);
+  }
+  const [{ default: bootstrapBlock }, { default: locales }, { setConfig }] = await Promise.all([
+    import("./bootstrapper-CNJ2SXG6.js"),
+    import("./locales-PE6ERXTI.js"),
+    import("./utils-5PPNVIT6.js")
+  ]);
+  loadStyle(`${miloLibs}/libs/navigation/dist/navigation.css`);
+  const paramConfigs = getParamsConfigs(configs);
+  const clientConfig = {
+    clientEnv: env,
+    origin: `https://main--federal--adobecom.hlx.${env === "prod" ? "live" : "page"}`,
+    pathname: `/${locale}`,
+    miloLibs: `${miloLibs}/libs`,
+    locales: configs.locales || locales,
+    contentRoot: authoringPath || footer.authoringPath,
+    theme,
+    ...paramConfigs,
+    standaloneGnav: true,
+    stageDomainsMap: getStageDomainsMap(stageDomainsMap)
+  };
+  setConfig(clientConfig);
+  for await (const block of blockConfig) {
+    const configBlock = configs[block.key];
+    try {
+      if (configBlock) {
+        if (block.key === "header") {
+          const { default: init } = await import("./global-navigation-HE6AFK52.js");
+          await bootstrapBlock(init, {
+            ...block,
+            unavComponents: configBlock.unav?.unavComponents,
+            redirect: configBlock.redirect,
+            layout: configBlock.layout,
+            noBorder: configBlock.noBorder,
+            jarvis: configBlock.jarvis
+          });
+        } else if (block.key === "footer") {
+          loadStyle(`${miloLibs}/libs/navigation/dist/footer.css`);
+          const { default: init } = await import("./global-footer-6IHTNCFR.js");
+          await bootstrapBlock(init, { ...block });
+        }
+        configBlock.onReady?.();
+      }
+    } catch (e) {
+      configBlock.onError?.(e);
+    }
+  }
+}
+window.loadNavigation = loadBlock;
+export {
+  loadBlock as default
+};
+//# sourceMappingURL=navigation.js.map

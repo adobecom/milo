@@ -1,9 +1,7 @@
-@import '../blocks/global-navigation/base.css';
 @import '../blocks/global-navigation/global-navigation.css';
 @import '../blocks/global-navigation/features/profile/dropdown.css';
 @import '../blocks/global-navigation/features/search/gnav-search.css';
 @import '../blocks/global-navigation/utilities/menu/menu.css';
-@import '../styles/styles.css';
 
  /* Extracting the essential styles required for rendering the component independently */
  .global-navigation, .global-footer, .dialog-modal {
