@@ -390,28 +390,13 @@ const getMiniCompareChartFooterRows = (el) => {
 const decorateFooterRows = (merchCard, footerRows) => {
   if (footerRows) {
     const footerRowsSlot = createTag('div', { slot: 'footer-rows' });
-    if (merchCard.classList.contains('checkmark')) {
-      const firstRow = footerRows[0];
-      const bgStyle = firstRow.querySelector('div > div:first-child').innerHTML;
-      const hrElem = createTag('hr', { style: `background: ${bgStyle};` });
-      footerRowsSlot.appendChild(hrElem);
-      merchCard.classList.add('has-divider');
-      const firstRowText = firstRow.querySelector('div > div:last-child').innerHTML;
-      const firstRowTextParagraph = createTag('div', { class: 'footer-rows-title' }, firstRowText);
-      footerRowsSlot.appendChild(firstRowTextParagraph);
-      footerRows.splice(0, 1);
-    }
     footerRows.forEach((row) => {
       const rowIcon = row.firstElementChild.querySelector('picture');
       const rowText = row.querySelector('div > div:nth-child(2)').innerHTML;
       const rowTextParagraph = createTag('div', { class: 'footer-row-cell-description' }, rowText);
       const footerRowCell = createTag('div', { class: 'footer-row-cell' });
       if (rowIcon) {
-        if (merchCard.classList.contains('checkmark')) {
-          rowIcon.classList.add('footer-row-icon-checkmark');
-        } else {
-          rowIcon.classList.add('footer-row-icon');
-        }
+        rowIcon.classList.add('footer-row-icon');
         footerRowCell.appendChild(rowIcon);
       }
       footerRowCell.appendChild(rowTextParagraph);

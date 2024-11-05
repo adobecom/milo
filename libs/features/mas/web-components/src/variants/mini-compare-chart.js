@@ -45,7 +45,6 @@ export class MiniCompareChart extends VariantLayout {
         'offers',
         'promo-text',
         'callout-content',
-        'footer-rows',
     ];
   
     slots.forEach((slot) =>
@@ -200,10 +199,6 @@ export class MiniCompareChart extends VariantLayout {
         min-height: var(
             --consonant-merch-card-mini-compare-chart-callout-content-height
         );
-    }
-    :host([variant='mini-compare-chart']) slot[name='footer-rows'] {
-        min-height: var(--consonant-merch-card-mini-compare-chart-footer-rows-height);
-        justify-content: flex-start;
     }
   `;
 };
