@@ -134,7 +134,7 @@ function jumpToDirection(activeSlideIndex, jumpToIndex, slideContainer) {
 function checkSlideForVideo(activeSlide) {
   const video = activeSlide.querySelector('video');
   /* c8 ignore start */
-  if (video && video.played.length > 0) {
+  if (video?.played.length > 0) {
     video.pause();
   }
   /* c8 ignore end */
@@ -336,8 +336,7 @@ function handleChangingSlides(carouselElements) {
 function convertMpcMp4(slides) {
   slides.forEach((slide) => {
     const a = slide.querySelector('a');
-    if (!a) return;
-    if (a.href.includes('images-tv.adobe')) {
+    if (a?.href.includes('images-tv.adobe')) {
       decorateAnchorVideo({
         src: a.href,
         anchorTag: a,
