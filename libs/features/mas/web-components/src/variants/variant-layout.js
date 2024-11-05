@@ -51,6 +51,10 @@ export class VariantLayout {
         this.insertVariantStyle();
     }
 
+    get badgeElement() {
+        return this.card.querySelector(`${this.card.variant}-badge`);
+    }
+
     get badge() {
         let additionalStyles;
         if (
@@ -58,6 +62,7 @@ export class VariantLayout {
             !this.card.badgeColor ||
             !this.card.badgeText
         ) {
+            this.badgeElement?.remove();
             return;
         }
         if (this.evergreen) {
