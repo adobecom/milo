@@ -466,7 +466,6 @@
 
 .table.has-addon .row-heading .col.col-heading:not(.col-1) .buttons-wrapper {
   align-items: flex-end;
-  height: 100%;
 }
 
 .table.has-addon p.body {
