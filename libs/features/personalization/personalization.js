@@ -758,15 +758,16 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
   }
 
   const hasMatch = (name) => {
-    if (name === '') return true;
+    if (!name) return true;
     if (name === variantLabel?.toLowerCase()) return true;
     if (name.startsWith('param-')) return checkForParamMatch(name);
     if (userEntitlements?.includes(name)) return true;
     return PERSONALIZATION_KEYS.includes(name) && PERSONALIZATION_TAGS[name]();
   };
 
-  const matchVariant = (name) => {
+  const matchVariant = (n) => {
     // split before checks
+    const name = n.includes(':') ? n.split(':')[1] : n;
     if (name.startsWith(TARGET_EXP_PREFIX)) return hasMatch(name);
     const processedList = name.split('&').map((condition) => {
       const reverse = condition.trim().startsWith(COLUMN_NOT_OPERATOR);
@@ -942,7 +943,7 @@ function compareExecutionOrder(a, b) {
   return a.executionOrder > b.executionOrder ? 1 : -1;
 }
 
-export function cleanAndSortManifestList(manifests) { 
+export function cleanAndSortManifestList(manifests) {
   const config = getConfig();
   const manifestObj = {};
   let allManifests = manifests;
@@ -1052,11 +1053,15 @@ export async function applyPers(manifests) {
   if (!pznList.length) return;
 
   const pznVariants = pznList.map((r) => {
-    // accounts for target prefix, but not the nickname character :
-    let val = r.experiment.selectedVariantName.replace(TARGET_EXP_PREFIX, '').trim().slice(0, 15);
-    if (val.includes(':')) val = val.split(':')[0].trim();
-    return val === 'default' ? 'nopzn' : val;
+    const val = r.experiment.selectedVariantName.replace(TARGET_EXP_PREFIX, '').trim().slice(0, 15);
+    const arr = val.split(':');
+    if (arr.length > 2 || arr[0]?.trim() === '' || arr[1]?.trim() === '') {
+      log('MEP Error: When using (optional) column nicknames, please use the following syntax: "<nickname>: <original audience>"');
+    }
+    if (!val.includes(':') || val.startsWith(':')) return val === 'default' ? 'nopzn' : val;
+    return arr[0].trim();
   });
+
   const pznManifests = pznList.map((r) => {
     const val = r.experiment?.manifestOverrideName || r.experiment?.manifest;
     return getFileName(val).replace('.json', '').trim().slice(0, 15);
