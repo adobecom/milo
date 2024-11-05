@@ -327,6 +327,10 @@ merch-card [slot="promo-text"] {
     padding: 0;
 }
 
+merch-card [slot="footer-rows"] {
+    min-height: var(--consonant-merch-card-footer-rows-height);
+}
+
 div[slot="footer"] {
     display: contents;
 }
