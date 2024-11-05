@@ -180,11 +180,7 @@ export async function getModal(details, custom) {
       closeModal(dialog);
     }
   });
-
-  const config = getConfig();
-
-  decorateSectionAnalytics(dialog, `${id}-modal`, config);
-
+  decorateSectionAnalytics(dialog, `${id}-modal`, getConfig());
   dialog.append(close);
   document.body.append(dialog);
   dialogLoadingSet.delete(id);
