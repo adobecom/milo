@@ -75,9 +75,9 @@ const checkIms = async (prompt = true) => {
   return accessToken;
 };
 
-const getPageDom = async (url) => {
+const getPageDom = async (url, now) => {
   try {
-    const resp = await fetch(url);
+    const resp = await fetch(`${url}?date=${now.getTime()}`);
     if (!resp.ok) return { error: `${resp.status}: ${resp.statusText}` };
     const html = await resp.text();
     const dp = new DOMParser();
@@ -111,6 +111,7 @@ const processData = async (data, accessToken) => {
   const successArr = [];
   let index = 0;
   let keepGoing = true;
+  const now  = new Date();
 
   const statusModal = showAlert('', { btnText: 'Cancel', onClose: () => { keepGoing = false; } });
   const {
@@ -152,7 +153,7 @@ const processData = async (data, accessToken) => {
 
       if (pageUrl === 'stop') break; // debug, stop on empty line
 
-      const { dom, error, lastModified } = await getPageDom(pageUrl);
+      const { dom, error, lastModified } = await getPageDom(pageUrl, now);
       if (error) {
         errorArr.push([pageUrl, error]);
         continue;
@@ -241,8 +242,6 @@ function showSuccessTable(successArr) {
     </tr>`;
   });
 }
-
-
 
 function showErrorTable(errorArr) {
   const errorTable = document.querySelector('.error-table');
