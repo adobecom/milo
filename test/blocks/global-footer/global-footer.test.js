@@ -187,6 +187,11 @@ describe('global footer', () => {
 
         const regionPickerElem = document.querySelector(allSelectors.regionPicker);
         regionPickerElem.dispatchEvent(new Event('click'));
+        const regionNavModal = document.createElement('div');
+        regionNavModal.classList.add('region-nav'); // pretend that the modal was added to the body
+        // since clicking on the regionpicker elem apparently doesnt set the hash
+        document.body.append(regionNavModal);
+        window.dispatchEvent(new Event('milo:modal:loaded'));
 
         expect(regionPickerElem.getAttribute('href') === '#langnav').to.equal(true);
         expect(regionPickerElem.getAttribute('aria-expanded')).to.equal('true');
