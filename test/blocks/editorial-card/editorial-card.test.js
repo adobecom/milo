@@ -45,7 +45,6 @@ describe('editorial-card', () => {
 
   it('media takes full height if no foreground', () => {
     const editorialCardWithMediaOnly = editorialCards[8];
-    // expect that editorialCardWithMediaOnly has 'no-foreground' class
     expect(editorialCardWithMediaOnly.classList.contains('no-foreground')).to.be.true;
   });
 });
