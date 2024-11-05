@@ -2,7 +2,7 @@ name: Feds File Watch
 
 on:
   pull_request_target:
-    types: [opened, edited, reopened]
+    types: [labeled]
 
 env:
   FEDS_WATCH_HOOK: ${{ secrets.FEDS_WATCH_HOOK }}
