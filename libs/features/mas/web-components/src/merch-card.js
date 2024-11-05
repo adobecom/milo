@@ -35,7 +35,7 @@ export class MerchCard extends LitElement {
             reflect: true,
         },
         backgroundImage: { type: String, attribute: 'background-image', reflect: true },
-        badgeText: { type: String, attribute: 'badge-text', reflect: true },
+        badgeText: { type: String, attribute: 'badge-text' },
         actionMenu: { type: Boolean, attribute: 'action-menu' },
         customHr: { type: Boolean, attribute: 'custom-hr' },
         consonant: { type: Boolean, attribute: 'consonant' },
