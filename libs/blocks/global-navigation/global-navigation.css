@@ -66,6 +66,7 @@ header.global-navigation {
   background-color: var(--feds-background-nav);
 }
 
+
 [dir = "rtl"] .feds-nav-wrapper {
   left: 20px;
   right: 0;
@@ -711,7 +712,328 @@ header.global-navigation {
     min-width: var(--feds-minWidth-menu);
   }
 
-  .feds-navItem--megaMenu .feds-popup {
+.feds-navItem--megaMenu .feds-popup {
     align-items: center;
+  }
+}
+
+/* mobile gnav redesign */
+
+@media (max-width:900px) {
+  /* new mobile gnav is not sticky when localnav */
+  header.new-nav.local-nav {
+    position: relative;
+  }
+
+  /* Don't blur the background when opening the mega menu on a local nav page */
+  header.new-nav.local-nav .feds-curtain--open {
+    display: none;
+  }
+
+  /* main-menu screen */
+
+  header.new-nav .feds-nav-wrapper {
+    width: 100%;
+    background-color: black;
+    translate: -200vw 0;
+    opacity: 0;
+    transition: translate 0.4s ease-out, opacity 0.4s ease;
+    display: flex;
+  }
+
+  header.new-nav.local-nav .feds-nav-wrapper {
+    transition-duration: 0s;
+    visibility: hidden; /* we don't want to see the main menu on a local nav page */
+  }
+
+  header.new-nav .feds-nav-wrapper--expanded {
+    translate: 0;
+    opacity: 1;
+  }
+
+  header.new-nav .feds-nav-wrapper .feds-nav {
+    gap: 30px;
+    margin: 40px 20px 0 20px;
+  }
+
+  header.new-nav .feds-nav-wrapper--expanded .feds-nav > section.feds-navItem > button.feds-navLink {
+    color: white;
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 25px;
+    border: none;
+    opacity:0;
+    transfrom: 12px 0;
+    animation: slideleft 0.3s ease, fadein 0.3s ease;
+    animation-fill-mode: forwards;
+  }
+
+  header.new-nav .feds-nav > section.feds-navItem > button.feds-navLink {
+    animation: slideright 0.3s ease, fadeout 0.3s ease;
+    animation-fill-mode: forwards;
+  }
+
+  header.new-nav .feds-nav > section.feds-navItem > button.feds-navLink::after {
+    content: url('<svg xmlns="http://www.w3.org/2000/svg" width="9" height="16" viewBox="0 0 9 16" fill="none"><path d="M1.44434 1.55566L7.89259 8.00392C7.93148 8.04281 7.93166 8.10582 7.89299 8.14493L1.50983 14.6017" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>');
+    width: 9.271px;
+    height: 9.179px;
+    transform: rotate(-45deg);
+    border-color: white;
+  }
+
+  /* Mega Menu */
+
+  header.new-nav .feds-nav > section.feds-navItem > .feds-popup {
+    position: fixed;
+    visibility: visible;
+    opacity: 1;
+    top: calc(-1 * var(--feds-height-nav));
+    left: 0;
+    width: 100%;
+    height: calc(var(--feds-height-nav) + 100%);
+    background-color: var(--feds-background-nav);
+    animation: totheleft 0.3s ease-out, fadeout 0.3s ease;
+    animation-fill-mode: forwards;
+    z-index: 2;
+
+    display: grid;
+    grid-template-rows: 56px max-content auto 80px;
+    grid-template-columns: 120px 1fr;
+    grid-template-areas:
+      "top-bar top-bar"
+      "title title"
+      "tabs tab-panel"
+      "cta cta";
+  }
+
+  header.new-nav .feds-nav > section.feds-navItem.feds-dropdown--active > .feds-popup {
+    animation: fromtheleft 0.3s ease;
+    animation-fill-mode: forwards;
+  }
+
+  header.new-nav .feds-nav > section.feds-navItem > .feds-popup .top-bar {
+    grid-area: top-bar;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #EAEAEA;
+    padding-left: 20px;
+  }
+
+  header.new-nav .feds-nav > section.feds-navItem > .feds-popup .top-bar .main-menu {
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 16px;
+    cursor: pointer;
+  }
+
+  header.new-nav .feds-nav > section.feds-navItem > .feds-popup .title {
+    grid-area: title;
+    display: flex;
+    flex-direction: column;
+    border-bottom: 1px solid #EAEAEA;
+    padding-left:20px;
+  }
+  header.new-nav .feds-nav > section.feds-navItem > .feds-popup .title .breadcrumbs {
+    display: block; /* even if the actual breadcrumbs are display none, we need the space to visible for the mobile gnav */
+    height: 23px;
+    padding-top: 8px;
+  }
+  header.new-nav .feds-nav > section.feds-navItem > .feds-popup .title h7 {
+    height: 25px;
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 25px;
+    padding-bottom: 24px;
+  }
+
+  header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tabs {
+    grid-area: tabs;
+    display: flex;
+    flex-direction: column;
+    padding-top: 16px;
+  }
+
+  header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button {
+    min-height:48px;
+    width: 120px;
+    border: none;
+    padding: 8px 20px;
+    white-space: normal;
+    font-weight: 700;
+    text-align: left;
+  }
+
+  header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button[aria-selected="true"] {
+    background-color: black;
+    color: white;
+  }
+
+  header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content {
+    background-color: #f3f3f3;
+    padding: 24px 0 0 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    font-size:14px;
+    line-height: 16px;
+    overflow-y: scroll;
+  }
+
+  header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content a {
+    translate: 0 12px;
+    opacity: 0;
+    animation: slideup 0.3s ease, fadein 0.3s ease;
+    animation-fill-mode: forwards;
+    font-weight: 700;
+  }
+
+  header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds-navLink-title {
+    font-weight: 700;
+    white-space: break-spaces;
+  }
+
+  header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds-navLink-description {
+    display: inline-block;
+    font-weight: 400;
+    white-space: break-spaces;
+  }
+
+  header.new-nav .feds-nav > section.feds-navItem > .feds-popup .sticky-cta {
+    grid-area: cta;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;;
+    position:sticky;
+  }
+
+  header.new-nav .feds-nav > section.feds-navItem.feds-dropdown--active > .feds-popup .sticky-cta a {
+    width: 320px;
+  }
+
+  /* local-nav */
+
+  header + .feds-localnav {
+    position: sticky;
+    display: block;
+    top: 0;
+    width: 100%;
+    background: #fff;
+    left: 0;
+    z-index: 2;
+  }
+
+  .feds-localnav-title {
+    width: 100%;
+    height: 80px;
+    font-size: 22px;
+    font-weight: 600;
+    border: 0;
+    padding: 12px;
+    text-align: justify;
+    border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+    background-color: #fff;
+  }
+
+  .feds-localnav-items {
+    background-color: #fff;
+    border-bottom: 1px solid #eee;
+    display: none;
+  }
+
+  .feds-localnav-items .feds-navLink {
+    border: 0;
+  }
+
+  .feds-localnav.active .feds-localnav-items {
+    display: block;
+  }
+
+  .feds-localnav .feds-localnav-items .feds-navLink {
+    border-bottom: 0;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .feds-localnav.active .feds-localnav-title::after {
+    transform: rotateZ(-135deg);
+  }
+}
+
+.feds-localnav {
+  display: none;
+}
+
+@keyframes fromtheleft {
+  from {
+    translate: -200vw 0;
+  }
+  to {
+    translate: 0 0;
+  }
+}
+
+@keyframes totheleft {
+  from {
+    translate: 0 0;
+  }
+  to {
+    translate: -200vw 0;
+  }
+}
+
+@keyframes slideright {
+  from {
+    translate: 0 0;
+  }
+  to {
+    translate: 12px 0;
+  }
+}
+
+@keyframes slideleft {
+  from {
+    translate: 12px 0;
+  }
+  to {
+    translate: 0 0;
+  }
+}
+
+@keyframes slideup {
+  from {
+    translate: 0 12px;
+  }
+  to {
+    translate: 0 0;
+  }
+}
+
+@keyframes slidedown {
+  from {
+    translate: 0 0px;
+  }
+  to {
+    translate: 0 12px;
+  }
+}
+
+@keyframes fadein {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeout {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
   }
 }

@@ -39,6 +39,9 @@ import {
   darkIcons,
   setDisableAEDState,
   getDisableAEDState,
+  newNavEnabled,
+  animateInSequence,
+  transformTemplateToMobile,
 } from './utilities/utilities.js';
 
 import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
@@ -364,14 +367,40 @@ class Gnav {
     `;
   };
 
+  decorateLocalNav = () => {
+    if (!newNavEnabled || !this.isLocalNav()) return;
+    const localNav = toFragment`<div class="feds-localnav"><button class="feds-navLink--hoverCaret feds-localnav-title"></button><div class="feds-localnav-items"></div></div>`;
+    const localNavitems = this.elements.navWrapper.querySelector('.feds-nav').querySelectorAll('.feds-navItem:not(.feds-navItem--section)');
+    const itemWrapper = localNav.querySelector('.feds-localnav-items');
+    localNavitems.forEach((elem, idx) => {
+      if (idx === 0) {
+        localNav.querySelector('.feds-localnav-title').innerText = elem.textContent.trim();
+        return;
+      }
+      itemWrapper.appendChild(elem.cloneNode(true));
+    });
+    localNav.querySelector('.feds-localnav-title').addEventListener('click', () => {
+      if (localNav.classList.contains('active')) localNav.classList.remove('active');
+      else localNav.classList.add('active');
+    });
+    this.elements.localNav = localNav;
+    this.block.after(localNav);
+  };
+
   decorateTopnavWrapper = async () => {
     const breadcrumbs = isDesktop.matches ? await this.decorateBreadcrumbs() : '';
     this.elements.topnavWrapper = toFragment`<div class="feds-topnav-wrapper">
         ${this.elements.topnav}
         ${breadcrumbs}
-      </div>`;
+      </div>
+      `;
 
-    this.block.append(this.elements.curtain, this.elements.aside, this.elements.topnavWrapper);
+    this.block.append(
+      this.elements.curtain,
+      this.elements.aside,
+      this.elements.topnavWrapper,
+    );
+    this.decorateLocalNav();
   };
 
   addChangeEventListeners = () => {
@@ -684,9 +713,23 @@ class Gnav {
 
   isToggleExpanded = () => this.elements.mobileToggle?.getAttribute('aria-expanded') === 'true';
 
+  isLocalNav = () => this
+    .elements
+    .navWrapper
+    ?.querySelectorAll('.feds-nav > section.feds-navItem')
+    ?.length === 1;
+
   toggleMenuMobile = () => {
     const toggle = this.elements.mobileToggle;
     const isExpanded = this.isToggleExpanded();
+    if (!isExpanded && newNavEnabled) {
+      const sections = document.querySelectorAll('header.new-nav .feds-nav > section.feds-navItem > button.feds-navLink');
+      animateInSequence(sections, 0.075);
+      if (this.isLocalNav()) {
+        const section = sections[0];
+        queueMicrotask(() => section.click());
+      }
+    }
     toggle?.setAttribute('aria-expanded', !isExpanded);
     document.body.classList.toggle('disable-scroll', !isExpanded);
     this.elements.navWrapper?.classList?.toggle('feds-nav-wrapper--expanded', !isExpanded);
@@ -898,6 +941,12 @@ class Gnav {
       && getActiveLink(item.closest('div')) instanceof HTMLElement;
     const activeModifier = itemHasActiveLink ? ` ${selectors.activeNavItem.slice(1)}` : '';
 
+    const makeTabActive = (popup) => {
+      if (!popup?.querySelector('.tabs [aria-selected="true"]')) {
+        setTimeout(() => popup?.querySelector('.tab')?.click(), 100);
+      }
+    };
+
     // All dropdown decoration is delayed
     const delayDropdownDecoration = ({ template } = {}) => {
       let decorationTimeout;
@@ -908,10 +957,25 @@ class Gnav {
 
         const menuLogic = await loadDecorateMenu();
 
-        menuLogic.decorateMenu({
+        await menuLogic.decorateMenu({
           item,
           template,
           type: itemType,
+        });
+        const popup = template.querySelector('.feds-popup');
+        let originalContent = popup.innerHTML;
+
+        if (!isDesktop.matches && newNavEnabled && popup) {
+          originalContent = transformTemplateToMobile(popup, item, this.isLocalNav());
+          popup.querySelector('.close-icon')?.addEventListener('click', this.toggleMenuMobile);
+          makeTabActive(popup);
+        }
+        isDesktop.addEventListener('change', () => {
+          if (isDesktop.matches) popup.innerHTML = originalContent;
+          else {
+            originalContent = transformTemplateToMobile(popup, item, this.isLocalNav());
+            popup.querySelector('.close-icon')?.addEventListener('click', this.toggleMenuMobile);
+          }
         });
       }, 'Decorate dropdown failed', 'errorType=info,module=gnav');
 
@@ -942,6 +1006,10 @@ class Gnav {
 
         // Toggle trigger's dropdown on click
         dropdownTrigger.addEventListener('click', (e) => {
+          if (!isDesktop.matches && newNavEnabled && isSectionMenu) {
+            const popup = dropdownTrigger.nextElementSibling;
+            makeTabActive(popup);
+          }
           trigger({ element: dropdownTrigger, event: e });
           setActiveDropdown(dropdownTrigger);
         });
@@ -1084,7 +1152,9 @@ export default async function init(block) {
     content,
     block,
   });
+  if (newNavEnabled) block.classList.add('new-nav');
   await gnav.init();
+  if (gnav.isLocalNav()) block.classList.add('local-nav');
   block.setAttribute('daa-im', 'true');
   const mepMartech = mep?.martech || '';
   block.setAttribute('daa-lh', `gnav|${getExperienceName()}${mepMartech}`);

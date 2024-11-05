@@ -227,6 +227,7 @@ export function setCurtainState(state) {
 
 export const isDesktop = window.matchMedia('(min-width: 900px)');
 export const isTangentToViewport = window.matchMedia('(min-width: 900px) and (max-width: 1440px)');
+export const newNavEnabled = new URL(window.location.href).searchParams.get('newNav') === 'true';
 
 export function setActiveDropdown(elem) {
   const activeClass = selectors.activeDropdown.replace('.', '');
@@ -256,6 +257,12 @@ export function setActiveDropdown(elem) {
     return false;
   });
 }
+
+export const animateInSequence = (xs, gap) => {
+  for (let i = 0; i < xs.length; i += 1) {
+    xs[i].style = `animation-delay: ${(i + 1) * gap}s`;
+  }
+};
 
 // Disable AED(Active Element Detection)
 export const [setDisableAEDState, getDisableAEDState] = (() => {
@@ -402,3 +409,82 @@ export const [setUserProfile, getUserProfile] = (() => {
     () => profilePromise,
   ];
 })();
+
+export const transformTemplateToMobile = (popup, item, localnav = false) => {
+  const originalContent = popup.innerHTML;
+  const tabs = [...popup.querySelectorAll('.feds-menu-section')]
+    .filter((section) => !section.querySelector('.feds-promo') && section.textContent)
+    .map((section) => {
+      const name = section.querySelector('.feds-menu-headline')?.textContent ?? 'Shop For';
+      const content = section.querySelector('.feds-menu-items') ?? section;
+      const links = [...content.querySelectorAll('a.feds-navLink')].map((x) => x.outerHTML).join('');
+      return { name, links };
+    });
+  const CTA = popup.querySelector('.feds-cta')?.outerHTML ?? '';
+  const mainmenu = `
+      <span class="main-menu">
+        <svg xmlns="http://www.w3.org/2000/svg" style="translate:0 3px" width="7" height="12" viewBox="0 0 7 12" fill="none"><path d="M5.55579 1L1.09618 5.45961C1.05728 5.4985 1.0571 5.56151 1.09577 5.60062L5.51027 10.0661" stroke="black" stroke-width="2" stroke-linecap="round"/></svg>
+        {{main-menu}}
+      </span>
+  `;
+  const brand = document.querySelector('.feds-brand').outerHTML;
+  popup.innerHTML = `
+    <div class="top-bar">
+      ${localnav ? brand : mainmenu}
+      <span class="close-icon" style="width:11.5px;height:11.5px;padding:12px;cursor:pointer">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M1.5 1L13 12.5" stroke="black" stroke-width="1.7037" stroke-linecap="round"/>
+          <path d="M13 1L1.5 12.5" stroke="black" stroke-width="1.7037" stroke-linecap="round"/>
+        </svg>
+      </span>
+    </div>
+    <div class="title">
+      <div class="breadcrumbs"></div>
+      <h7>${item.textContent.trim()}</h7>
+    </div>
+    <div class="tabs" role="tablist">
+      ${tabs.map(({ name }, i) => `
+        <button
+          role="tab"
+          class="tab"
+          aria-selected="false"
+          aria-controls="${i}"
+        >${name}</button>
+      `).join('')}
+    </div>
+    <div class="tab-content">
+    ${tabs.map(({ links }, i) => `
+        <div
+          id="${i}"
+          role="tabpanel"
+          aria-labelledby="${i}"
+          hidden
+        >
+      ${links}
+      </div>`).join('')}
+    </div>
+    <div class="sticky-cta">
+      ${CTA}
+    </div>
+    `;
+
+  popup.querySelector('.close-icon')?.addEventListener('click', closeAllDropdowns);
+  popup.querySelector('.main-menu')?.addEventListener('click', closeAllDropdowns);
+  const tabbuttons = document.querySelectorAll('.tabs button');
+  const tabpanels = document.querySelectorAll('.tab-content [role="tabpanel"]');
+
+  tabpanels.forEach((panel) => {
+    animateInSequence(panel.querySelectorAll('a'), 0.02);
+  });
+
+  tabbuttons.forEach((tab, i) => {
+    tab.addEventListener('click', () => {
+      tabpanels.forEach((t) => t.setAttribute('hidden', 'true'));
+      tabpanels?.[i]?.removeAttribute('hidden');
+
+      tabbuttons.forEach((t) => t.setAttribute('aria-selected', 'false'));
+      tab.setAttribute('aria-selected', 'true');
+    });
+  });
+  return originalContent;
+};
