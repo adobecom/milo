@@ -438,10 +438,11 @@ table.success-table th {
   padding: 6px 0;
 }
 
-table.error-table td,
-table.success-table td {
+table.error-table td:not(.error),
+table.success-table td:not(.ok) {
   font-size: 15px;
   padding: 4px 0;
+  font-weight: 200;
 }
 
 table.success-table td.entityid {

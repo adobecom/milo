@@ -235,8 +235,8 @@ function showSuccessTable(successArr) {
   successArr.forEach(([pageUrl, response]) => {
     tableBody.innerHTML += `<tr>
       <td class="ok">OK</td>
-      <td><a href="${pageUrl}">${pageUrl}</a></td>
-      <td class="entityid"><a target="_blank" href="${chimeraEndpoint}${response}">${response}</a></td>
+      <td><a href="${pageUrl}" title="View page">${pageUrl}</a></td>
+      <td class="entityid"><a target="_blank" href="${chimeraEndpoint}${response}" title="View Card JSON">${response}</a></td>
       <!-- td class="entityid" data-entity-id="${response}">${response}</td -->
     </tr>`;
   });
