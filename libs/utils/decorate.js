@@ -73,9 +73,8 @@ function elContainsText(el) {
 }
 
 export function decorateBlockText(el, config = ['m', 's', 'm'], type = null) {
-  if (!el) return;
-  let headings = el.querySelectorAll('h1, h2, h3, h4, h5, h6');
   if (!el.classList.contains('default')) {
+    let headings = el?.querySelectorAll('h1, h2, h3, h4, h5, h6');
     if (headings) {
       if (type === 'hasDetailHeading' && headings.length > 1) headings = [...headings].splice(1);
       headings.forEach((h) => h.classList.add(`heading-${config[0]}`));
@@ -86,7 +85,7 @@ export function decorateBlockText(el, config = ['m', 's', 'm'], type = null) {
       }
     }
     const bodyStyle = `body-${config[1]}`;
-    const emptyEls = el.querySelectorAll(':is(p, ul, ol, div):not([class])');
+    const emptyEls = el?.querySelectorAll(':is(p, ul, ol, div):not([class])');
     if (emptyEls.length) {
       [...emptyEls].filter(elContainsText).forEach((e) => e.classList.add(bodyStyle));
     } else if (!el.classList.length && elContainsText(el)) {

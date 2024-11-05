@@ -78,7 +78,7 @@ export default function init(el) {
   const emptyLinkRows = links.querySelectorAll(':scope > div:not([class])');
   if (emptyLinkRows[0]) emptyLinkRows[0].classList.add('links-header');
   if (emptyLinkRows[1]) emptyLinkRows[1].classList.add('links-footer', 'body-s');
-  decorateBlockText(emptyLinkRows[0], blockTypeSizes.default.xsmall);
+  if (emptyLinkRows[0]) decorateBlockText(emptyLinkRows[0], blockTypeSizes.default.xsmall);
 
   const anchors = el.querySelectorAll('.anchor-link');
   if (anchors.length) decorateAnchors(anchors);
