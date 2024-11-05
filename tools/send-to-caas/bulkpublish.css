@@ -74,6 +74,7 @@ dd.content .field input[type="text"] {
   background: #eaeaea;
   color: #202020;
   width: 100%;
+  font-weight: 200;
 }
 
 body:not(.preset) dd.content .field input {
@@ -114,6 +115,7 @@ div#caas-draft-cb {
   margin-top: 6px;
   font-size: 16px;
   font-family: system-ui;
+  font-weight: 200;
   border-radius: 16px;
   padding: 15px 20px;
 }
@@ -482,7 +484,7 @@ tbody tr:hover {
 }
 
 .bulk-publisher.dark .content-panel textarea#urls {
-  background: #666;
+  background: #505050;
   color: white;
   border-color: #999;
 }
