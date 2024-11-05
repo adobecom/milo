@@ -13,6 +13,8 @@ import {
     priceStrikethrough,
     priceAnnual,
     discount,
+    priceWithAnnual,
+    pricePromoWithAnnual,
 } from '@dexter/tacocat-consonant-templates';
 import {
     computePromoStatus,
@@ -76,6 +78,8 @@ export {
     priceOptical,
     priceStrikethrough,
     priceAnnual,
+    priceWithAnnual,
+    pricePromoWithAnnual,
     discount,
     toBoolean,
     toEnumeration,

@@ -343,9 +343,9 @@ export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true
   if (mepFragment?.targetManifestId) body.dataset.adobeTargetTestid = mepFragment.targetManifestId;
   const commands = mepGnav?.commands;
   if (commands?.length) {
-    const { handleCommands, deleteMarkedEls } = await import('../../../features/personalization/personalization.js');
+    /* c8 ignore next 3 */
+    const { handleCommands } = await import('../../../features/personalization/personalization.js');
     handleCommands(commands, body, true, true);
-    deleteMarkedEls(body);
   }
   const inlineFrags = [...body.querySelectorAll('a[href*="#_inline"]')];
   if (inlineFrags.length) {
