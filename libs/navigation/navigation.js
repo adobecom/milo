@@ -23,19 +23,23 @@ const envMap = {
   qa: 'https://gnav--milo--adobecom.hlx.page',
 };
 
-const stageDomainsMap = {
-  'www.stage.adobe.com': {
-    'www.adobe.com': 'origin',
-    'helpx.adobe.com': 'helpx.stage.adobe.com',
-    'creativecloud.adobe.com': 'stage.creativecloud.adobe.com',
-  },
-  // Test app
-  'adobecom.github.io': {
-    'www.adobe.com': 'www.stage.adobe.com',
-    'helpx.adobe.com': 'helpx.stage.adobe.com',
-    'creativecloud.adobe.com': 'stage.creativecloud.adobe.com',
-  },
-};
+const getStageDomainsMap = (stageDomainsMap) => (
+  {
+    'www.stage.adobe.com': {
+      'www.adobe.com': 'origin',
+      'helpx.adobe.com': 'helpx.stage.adobe.com',
+      'creativecloud.adobe.com': 'stage.creativecloud.adobe.com',
+      ...stageDomainsMap,
+    },
+    // Test app
+    'adobecom.github.io': {
+      'www.adobe.com': 'www.stage.adobe.com',
+      'helpx.adobe.com': 'helpx.stage.adobe.com',
+      'creativecloud.adobe.com': 'stage.creativecloud.adobe.com',
+      ...stageDomainsMap,
+    },
+  }
+);
 
 function getParamsConfigs(configs) {
   return blockConfig.reduce((acc, block) => {
@@ -58,6 +62,7 @@ export default async function loadBlock(configs, customLib) {
     env = 'prod',
     locale = '',
     theme,
+    stageDomainsMap = {},
   } = configs || {};
   if (!header && !footer) {
     // eslint-disable-next-line no-console
@@ -91,8 +96,8 @@ export default async function loadBlock(configs, customLib) {
     contentRoot: authoringPath || footer.authoringPath,
     theme,
     ...paramConfigs,
-    stageDomainsMap,
     standaloneGnav: true,
+    stageDomainsMap: getStageDomainsMap(stageDomainsMap),
   };
   setConfig(clientConfig);
   for await (const block of blockConfig) {
