@@ -15,6 +15,7 @@ styles.innerHTML = `
 
     /* Fonts */
     --merch-body-font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
+    --merch-badge-font-size: 14px;
 
     /* spacing */
     --consonant-merch-spacing-xxxs: 4px;
@@ -39,6 +40,7 @@ styles.innerHTML = `
     --consonant-merch-card-heading-l-line-height: 30px;
     --consonant-merch-card-heading-xl-font-size: 36px;
     --consonant-merch-card-heading-xl-line-height: 45px;
+    --merch-type-heading-xxs-size: 14px;
 
     /* detail */
     --merch-card-detail-s-font-size: 11px;

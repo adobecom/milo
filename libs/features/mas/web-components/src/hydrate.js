@@ -46,7 +46,7 @@ export async function hydrate(fragmentData, merchCard) {
             src,
             alt,
             href,
-            size: 'l',
+            size: aemFragmentMapping.mnemonics?.size || 'l',
         });
         merchCard.append(merchIcon);
     });

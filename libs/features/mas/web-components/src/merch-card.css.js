@@ -73,7 +73,6 @@ export const styles = css`
         width: 100%;
         flex-flow: wrap;
         gap: var(--consonant-merch-spacing-xs);
-
         padding: var(--consonant-merch-spacing-xs);
     }
 
@@ -92,7 +91,7 @@ export const styles = css`
         position: absolute;
         top: 16px;
         right: 0;
-        font-size: var(--type-heading-xxs-size);
+        font-size: var(--merch-badge-font-size);
         font-weight: 500;
         max-width: 180px;
         line-height: 16px;

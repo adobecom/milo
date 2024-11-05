@@ -7,6 +7,7 @@ const AEM_FRAGMENT_MAPPING = {
     description: { tag: 'div', slot: 'body-s' },
     ctas: { size: 's' },
     allowedSizes: ['wide'],
+    mnemonics: { size: 'm' },
 };
 
 export class CCDSlice extends VariantLayout {
@@ -96,10 +97,13 @@ export class CCDSlice extends VariantLayout {
         :host([variant='ccd-slice']) div[class$='-badge'] {
             position: static;
             border-radius: 4px;
+            font-size: 12px;
+            padding: 4px 9px;
         }
 
         :host([variant='ccd-slice']) .top-section {
             align-items: center;
+            gap: 8px;
         }
     `;
 }

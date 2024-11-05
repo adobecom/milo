@@ -58,3 +58,7 @@ merch-card a[is="checkout-link"].upgrade:not(:first-of-type) {
     font-size: var(--consonant-merch-card-mini-compare-mobile-cta-font-size);
   }
 }
+
+merch-card {
+  --merch-badge-font-size: var(--type-heading-xxs-size);
+}
