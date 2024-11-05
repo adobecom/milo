@@ -235,12 +235,12 @@ function getVideoAttrs(hash, dataset) {
 
 export function syncPausePlayIcon(video) {
   const offsetFiller = video.closest('.video-holder').querySelector('.offset-filler');
-  const anchorTag = video.closest('.video-holder').querySelector('a')
+  const anchorTag = video.closest('.video-holder').querySelector('a');
   offsetFiller?.classList.toggle('is-playing');
   const isPlaying = offsetFiller?.classList.contains('is-playing');
   const ariaLabel = isPlaying ? labels.pauseMotion : labels.playMotion;
-  anchorTag.setAttribute('aria-label', ariaLabel + " " + anchorTag.getAttribute('video-index'));
-  anchorTag.setAttribute('aria-pressed', isPlaying ? "true" : "false");
+  anchorTag?.setAttribute('aria-label', ariaLabel + " " + anchorTag.getAttribute('video-index'));
+  anchorTag?.setAttribute('aria-pressed', isPlaying ? "true" : "false");
 }
 
 export async function addAccessibilityControl(videoString, videoAttributes, tabIndex = 0, indexOfVideo) {
@@ -252,7 +252,7 @@ export async function addAccessibilityControl(videoString, videoAttributes, tabI
   let ariaLabel = videoAttributes.includes('autoplay') ? labels.pauseMotion : labels.playMotion;
   if (!videoAttributes.includes('controls')) {
     if (videoAttributes.includes('hoverplay')) {
-      return `<a class='pause-play-wrapper video-holder' tabindex=${tabIndex} aria-label='${ariaLabel}'>${videoString}
+      return `<a class='pause-play-wrapper video-holder' role='button' tabindex=${tabIndex} aria-label='${labels.playMotion}' aria-pressed=true video-index=${indexOfVideo}>${videoString}
     </a>`;
     }
     return `<div class='video-container video-holder'>${videoString}
