@@ -510,7 +510,7 @@ export function decorateSVG(a) {
       ? new URL(`${window.location.origin}${a.href}`)
       : new URL(a.href);
 
-    const src = (authoredUrl.hostname.includes('.hlx.') || authoredUrl.hostname.includes('.aem.')) 
+    const src = (authoredUrl.hostname.includes('.hlx.') || authoredUrl.hostname.includes('.aem.'))
       ? authoredUrl.pathname
       : authoredUrl;
 
