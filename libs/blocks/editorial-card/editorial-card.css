@@ -63,6 +63,7 @@
 .editorial-card .foreground picture {
   line-height: 0;
   display: block;
+  height: 100%;
 }
 
 .editorial-card .media-area img,
@@ -72,6 +73,16 @@
   width: 100%;
   height: 100%;
   max-height: var(--card-height-default);
+}
+
+.editorial-card.no-foreground,
+.editorial-card.no-foreground .media-area {
+  height: 100%;
+}
+
+.editorial-card.no-foreground .media-area img,
+.editorial-card.no-foreground .media-area video {
+  max-height: unset;
 }
 
 .editorial-card .media-area .modal-img-link {
@@ -132,6 +143,10 @@
 
 .editorial-card .media-area > div {
   line-height: 0;
+}
+
+.editorial-card.no-foreground .media-area > div {
+  height: 100%;
 }
 
 .editorial-card.footer-align-left .card-footer > div { text-align: start; }
