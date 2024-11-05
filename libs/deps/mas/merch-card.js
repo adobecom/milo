@@ -674,6 +674,18 @@ merch-card[variant="ccd-action"] .price-strikethrough {
     color: var(--color-accent);
     text-decoration: solid;
   }
+
+  merch-card[variant="mini-compare-chart"] .chevron-icon {
+    margin-left: 8px;
+  }
+
+  merch-card[variant="mini-compare-chart"] .checkmark-copy-container {
+    display: none;
+  }
+
+  merch-card[variant="mini-compare-chart"] .checkmark-copy-container.open {
+    display: block;
+  }
   
 .one-merch-card.mini-compare-chart {
   grid-template-columns: var(--consonant-merch-card-mini-compare-chart-wide-width);
