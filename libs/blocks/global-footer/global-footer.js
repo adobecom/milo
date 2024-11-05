@@ -6,6 +6,7 @@ import {
   getConfig,
   localizeLink,
   loadStyle,
+  decoratePlaceholders,
 } from '../../utils/utils.js';
 
 import {
@@ -21,7 +22,6 @@ import {
   toFragment,
   federatePictureSources,
   isDarkMode,
-  initModal,
 } from '../global-navigation/utilities/utilities.js';
 
 import { getFederatedUrl } from '../../utils/federated.js';
@@ -209,7 +209,7 @@ class Footer {
     const regionPickerTextElem = toFragment`<span class="feds-regionPicker-text">${regionSelector.textContent}</span>`;
     const regionPickerElem = toFragment`
       <a
-        href=""
+        href="${regionSelector.href}"
         class="${regionPickerClass}"
         aria-expanded="false"
         aria-haspopup="true"
@@ -220,7 +220,7 @@ class Footer {
         ${regionPickerTextElem}
       </a>`;
     regionPickerElem.classList.add('modal', 'link-block');
-    regionPickerElem.dataset.modalPath = url.pathname;
+    regionPickerElem.dataset.modalPath = `${url.pathname}#_inline`;
     regionPickerElem.dataset.modalHash = url.hash;
     const regionPickerWrapperClass = 'feds-regionPicker-wrapper';
     this.elements.regionPicker = toFragment`<div class="${regionPickerWrapperClass}">
@@ -236,24 +236,27 @@ class Footer {
       // Hash -> region selector opens a modal
       // decorateAutoBlock(regionPickerElem); // add modal-specific attributes
       // TODO remove logs after finding the root cause for the region picker 404s -> MWPW-143627
+      regionPickerElem.href = url.hash;
       if (regionPickerElem.classList[0] !== 'modal') {
         lanaLog({
           message: `Modal block class missing from region picker pre loading the block; locale: ${locale}; regionPickerElem: ${regionPickerElem.outerHTML}`,
           tags: 'errorType=warn,module=global-footer',
         });
       }
-      const regionPickerModal = await initModal(regionPickerElem, () => {
-        if (isRegionPickerExpanded()) {
-          regionPickerElem.setAttribute('aria-expanded', 'false');
-        }
-      });
+      const { default: initModal } = await import('../modal/modal.js');
+      await initModal(regionPickerElem);
 
-      const block = regionPickerModal.querySelector('.region-nav');
-      if (block) {
-        loadStyle(`${base}/blocks/region-nav/region-nav.css`);
-        const { default: loadRegionNav } = await import('../region-nav/region-nav.js');
-        loadRegionNav(block);
-      }
+      const loadRegionNav = async () => {
+        const block = document.querySelector('.region-nav');
+        if (block) {
+          loadStyle(`${base}/blocks/region-nav/region-nav.css`);
+          const { default: initRegionNav } = await import('../region-nav/region-nav.js');
+          initRegionNav(block);
+          decoratePlaceholders(block, getConfig());
+        }
+      };
+
+      await loadRegionNav(); // just in case the modal is already open
 
       if (regionPickerElem.classList[0] !== 'modal') {
         lanaLog({
@@ -261,11 +264,17 @@ class Footer {
           tags: 'errorType=warn,module=global-footer',
         });
       }
-      regionPickerElem.addEventListener('click', (event) => {
-        event.preventDefault();
+      regionPickerElem.addEventListener('click', () => {
         if (!isRegionPickerExpanded()) {
           regionPickerElem.setAttribute('aria-expanded', 'true');
-          regionPickerModal.showModal();
+          // wait for the modal to load before we load the region nav
+          window.addEventListener('milo:modal:loaded', loadRegionNav, { once: true });
+        }
+      });
+      // Set aria-expanded to false when region modal is closed
+      window.addEventListener('milo:modal:closed', () => {
+        if (isRegionPickerExpanded()) {
+          regionPickerElem.setAttribute('aria-expanded', 'false');
         }
       });
     } else {
