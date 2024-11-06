@@ -776,7 +776,8 @@ header.new-nav .feds-nav-wrapper--expanded .feds-nav > section.feds-navItem:firs
 }
 
 header.new-nav .feds-nav-wrapper--expanded .feds-nav > .feds-navItem.feds-navItem--mobile-only:last-child {
-  padding-bottom: 9px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #fff;
 }
 
 header.new-nav .feds-nav-wrapper--expanded .feds-nav > section.feds-navItem > button.feds-navLink {
@@ -806,7 +807,7 @@ header.new-nav .feds-nav > section.feds-navItem > button.feds-navLink::after {
 }
 
 header.new-nav .feds-nav > .feds-navItem:not(:last-child) > .feds-navLink {
-  border-bottom: 1px solid var(#2c2c2c);
+  border-bottom: 1px solid #2c2c2c;
 }
 
 /* 
