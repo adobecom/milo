@@ -980,10 +980,13 @@ class Gnav {
           makeTabActive(popup);
         }
         isDesktop.addEventListener('change', () => {
-          if (isDesktop.matches) popup.innerHTML = originalContent;
-          else {
+          if (isDesktop.matches) {
+            popup.innerHTML = originalContent;
+            this.block.classList.remove('new-nav');
+          } else {
             originalContent = transformTemplateToMobile(popup, item, this.isLocalNav());
             popup.querySelector('.close-icon')?.addEventListener('click', this.toggleMenuMobile);
+            this.block.classList.add('new-nav');
           }
         });
       }, 'Decorate dropdown failed', 'errorType=info,module=gnav');
@@ -1161,7 +1164,7 @@ export default async function init(block) {
     content,
     block,
   });
-  if (newNavEnabled) block.classList.add('new-nav');
+  if (newNavEnabled && !isDesktop.matches) block.classList.add('new-nav');
   await gnav.init();
   if (gnav.isLocalNav()) block.classList.add('local-nav');
   block.setAttribute('daa-im', 'true');
