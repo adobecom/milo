@@ -239,25 +239,25 @@ export function syncPausePlayIcon(video) {
   offsetFiller?.classList.toggle('is-playing');
   const isPlaying = offsetFiller?.classList.contains('is-playing');
   const ariaLabel = isPlaying ? labels.pauseMotion : labels.playMotion;
-  anchorTag?.setAttribute('aria-label', ariaLabel + " " + anchorTag.getAttribute('video-index'));
-  anchorTag?.setAttribute('aria-pressed', isPlaying ? "true" : "false");
+  anchorTag?.setAttribute('aria-label', `${ariaLabel} ${anchorTag.getAttribute('video-index')}`);
+  anchorTag?.setAttribute('aria-pressed', isPlaying ? 'true' : 'false');
 }
 
-export async function addAccessibilityControl(videoString, videoAttributes, tabIndex = 0, indexOfVideo) {
+export async function addAccessibilityControl(videoString, videoAttrs, indexOfVideo, tabIndex = 0) {
   const [pauseMotion, playMotion, pauseIcon, playIcon] = await replaceKeyArray(
     ['pause-motion', 'play-motion', 'pause-icon', 'play-icon'],
     getFedsPlaceholderConfig(),
   );
-  labels = { playMotion, pauseMotion, pauseIcon, playIcon }
-  let ariaLabel = videoAttributes.includes('autoplay') ? labels.pauseMotion : labels.playMotion;
-  if (!videoAttributes.includes('controls')) {
-    if (videoAttributes.includes('hoverplay')) {
-      return `<a class='pause-play-wrapper video-holder' role='button' tabindex=${tabIndex} aria-label='${labels.playMotion}' aria-pressed=true video-index=${indexOfVideo}>${videoString}
-    </a>`;
+  labels = { playMotion, pauseMotion, pauseIcon, playIcon };
+  const ariaLabel = videoAttrs.includes('autoplay') ? labels.pauseMotion : labels.playMotion;
+  if (!videoAttrs.includes('controls')) {
+    if (videoAttrs.includes('hoverplay')) {
+      return `<a class='pause-play-wrapper video-holder' role='button' tabindex=${tabIndex} aria-label='${labels.playMotion}' 
+      aria-pressed=true video-index=${indexOfVideo}>${videoString} </a>`;
     }
     return `<div class='video-container video-holder'>${videoString}
     <a class='pause-play-wrapper' role='button' tabindex=${tabIndex} aria-label='${ariaLabel} ${indexOfVideo}' aria-pressed=true video-index=${indexOfVideo}>
-      <div class='offset-filler ${videoAttributes.includes('autoplay') ? 'is-playing' : ''}'>  
+      <div class='offset-filler ${videoAttrs.includes('autoplay') ? 'is-playing' : ''}'>  
         <img class='accessibility-control pause-icon' alt='${labels.pauseIcon}' src='https://main--federal--adobecom.hlx.page/federal/assets/svgs/accessibility-pause.svg'/>
         <img class='accessibility-control play-icon' alt='${labels.playIcon}' src='https://main--federal--adobecom.hlx.page/federal/assets/svgs/accessibility-play.svg'/>
       </div>
@@ -270,7 +270,7 @@ export async function addAccessibilityControl(videoString, videoAttributes, tabI
 function getVideoIndex(anchorTag) {
   const index = allVideos.findIndex((video) => video === anchorTag);
   if (index === 0 && allVideos.length === 1) {
-    return "";
+    return '';
   }
   return index + 1;
 }
@@ -421,7 +421,7 @@ export async function decorateAnchorVideo({ src = '', anchorTag }) {
   let video = `<video ${attrs} data-video-source=${src} ${videoIndex}></video>`;
   const indexOfVideo = getVideoIndex(anchorTag);
   if (accessibilityEnabled) {
-    video = await addAccessibilityControl(video, attrs, tabIndex, indexOfVideo);
+    video = await addAccessibilityControl(video, attrs, indexOfVideo, tabIndex);
   }
   anchorTag.insertAdjacentHTML('afterend', video);
   const videoEl = parentElement.querySelector('video');
