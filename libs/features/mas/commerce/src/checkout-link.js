@@ -137,6 +137,7 @@ export class CheckoutLink extends HTMLAnchorElement {
         let offers = await Promise.all(promises);
         // offer is expected to contain one or two offers at max (en, mult)
         offers = offers.map((offer) => selectOffers(offer, options));
+        options.country = this.dataset.imsCountry || options.country;
         const checkoutAction = await service.buildCheckoutAction?.(
             offers.flat(),
             { ...extraOptions, ...options },

@@ -88,7 +88,7 @@ describe('class "CheckoutLink"', () => {
         );
     });
 
-    it('renders link with page country, not ims country', async () => {
+    it('renders link with ims country', async () => {
         mockIms('CH');
         const service = await initMasCommerceService();
         const checkoutLink = mockCheckoutLink('abm');
@@ -96,7 +96,7 @@ describe('class "CheckoutLink"', () => {
         await delay(1);
         await checkoutLink.onceSettled();
         expect(checkoutLink.href).to.equal(
-            'https://commerce.adobe.com/store/email?items%5B0%5D%5Bid%5D=632B3ADD940A7FBB7864AA5AD19B8D28&cli=adobe_com&ctx=fp&co=US&lang=en',
+            'https://commerce.adobe.com/store/email?items%5B0%5D%5Bid%5D=632B3ADD940A7FBB7864AA5AD19B8D28&cli=adobe_com&ctx=fp&co=CH&lang=en',
         );
     });
 
