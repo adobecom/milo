@@ -6,6 +6,7 @@ import { getFederatedUrl } from '../../utils/federated.js';
 
 /* c8 ignore start */
 const PHONE_SIZE = window.screen.width < 550 || window.screen.height < 550;
+const safariIpad = navigator.userAgent.includes('Macintosh') && navigator.maxTouchPoints > 1;
 export const PERSONALIZATION_TAGS = {
   all: () => true,
   chrome: () => navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Edg'),
@@ -13,10 +14,12 @@ export const PERSONALIZATION_TAGS = {
   safari: () => navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome'),
   edge: () => navigator.userAgent.includes('Edg'),
   android: () => navigator.userAgent.includes('Android'),
-  ios: () => /iPad|iPhone|iPod/.test(navigator.userAgent),
+  ios: () => /iPad|iPhone|iPod/.test(navigator.userAgent) || safariIpad,
   windows: () => navigator.userAgent.includes('Windows'),
-  mac: () => navigator.userAgent.includes('Macintosh'),
-  'mobile-device': () => /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i.test(navigator.userAgent),
+  mac: () => navigator.userAgent.includes('Macintosh') && !safariIpad,
+  'mobile-device': () => safariIpad
+    || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i
+      .test(navigator.userAgent),
   phone: () => PERSONALIZATION_TAGS['mobile-device']() && PHONE_SIZE,
   tablet: () => PERSONALIZATION_TAGS['mobile-device']() && !PHONE_SIZE,
   desktop: () => !PERSONALIZATION_TAGS['mobile-device'](),
@@ -495,7 +498,17 @@ export const updateFragDataProps = (a, inline, sections, fragment) => {
   }
 };
 
-export function handleCommands(commands, rootEl, forceInline = false, forceRootEl = false) {
+export const deleteMarkedEls = (rootEl = document) => {
+  [...rootEl.querySelectorAll(`.${CLASS_EL_DELETE}`)]
+    .forEach((el) => el.remove());
+};
+
+export function handleCommands(
+  commands,
+  rootEl = document,
+  forceInline = false,
+  forceRootEl = false,
+) {
   const section1 = document.querySelector('main > div');
   commands.forEach((cmd) => {
     const { action, content, selector } = cmd;
@@ -529,6 +542,7 @@ export function handleCommands(commands, rootEl, forceInline = false, forceRootE
       cmd.completed = true;
     }
   });
+  deleteMarkedEls(rootEl);
   return commands.filter((cmd) => !cmd.completed
     && cmd.selectorType !== IN_BLOCK_SELECTOR_PREFIX);
 }
@@ -654,7 +668,7 @@ export async function createMartechMetadata(placeholders, config, column) {
 }
 
 /* c8 ignore start */
-function parsePlaceholders(placeholders, config, selectedVariantName = '') {
+export function parsePlaceholders(placeholders, config, selectedVariantName = '') {
   if (!placeholders?.length || selectedVariantName === 'default') return config;
   const valueNames = [
     selectedVariantName.toLowerCase(),
@@ -665,17 +679,19 @@ function parsePlaceholders(placeholders, config, selectedVariantName = '') {
     'value',
     'other',
   ];
-  const [val] = Object.entries(placeholders[0])
-    .find(([key]) => valueNames.includes(key.toLowerCase()));
-  if (val) {
+  const keys = placeholders?.length ? Object.entries(placeholders[0]) : [];
+  const keyVal = keys.find(([key]) => valueNames.includes(key.toLowerCase()));
+  const key = keyVal?.[0];
+
+  if (key) {
     const results = placeholders.reduce((res, item) => {
-      res[item.key] = item[val];
+      res[item.key] = item[key];
       return res;
     }, {});
     config.placeholders = { ...(config.placeholders || {}), ...results };
   }
 
-  createMartechMetadata(placeholders, config, val);
+  createMartechMetadata(placeholders, config, key);
 
   return config;
 }
@@ -892,11 +908,6 @@ export async function getManifestConfig(mepTargetCookie, info = {}, variantOverr
   return manifestConfig;
 }
 
-export const deleteMarkedEls = (rootEl = document) => {
-  [...rootEl.querySelectorAll(`.${CLASS_EL_DELETE}`)]
-    .forEach((el) => el.remove());
-};
-
 const normalizeFragPaths = ({ selector, val, action, manifestId, targetManifestId }) => ({
   selector: normalizePath(selector),
   val: normalizePath(val),
@@ -1056,7 +1067,6 @@ export async function applyPers(manifests, mepTargetCookie) {
   }
 
   config.mep.commands = handleCommands(config.mep.commands);
-  deleteMarkedEls();
 
   const pznList = results.filter((r) => (r.experiment?.manifestType === TRACKED_MANIFEST_TYPE));
   if (!pznList.length) return;

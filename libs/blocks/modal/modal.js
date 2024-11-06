@@ -1,6 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable import/no-cycle */
 import { createTag, getMetadata, localizeLink, loadStyle, getConfig } from '../../utils/utils.js';
+import { decorateSectionAnalytics } from '../../martech/attributes.js';
 
 const FOCUSABLES = 'a:not(.hide-video), button, input, textarea, select, details, [tabindex]:not([tabindex="-1"]';
 const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
@@ -179,7 +180,7 @@ export async function getModal(details, custom) {
       closeModal(dialog);
     }
   });
-
+  decorateSectionAnalytics(dialog, `${id}-modal`, getConfig());
   dialog.append(close);
   document.body.append(dialog);
   dialogLoadingSet.delete(id);
@@ -250,7 +251,8 @@ export function delayedModal(el) {
 
 // Deep link-based
 export default function init(el) {
-  const { modalHash } = el.dataset;
+  const { modalHash, modalPath } = el.dataset;
+  if (getConfig().mep?.fragments?.[modalPath]?.action === 'remove') return null;
   if (delayedModal(el) || window.location.hash !== modalHash || document.querySelector(`div.dialog-modal${modalHash}`)) return null;
   if (dialogLoadingSet.has(modalHash?.replace('#', ''))) return null; // prevent duplicate modal loading
   const details = findDetails(window.location.hash, el);

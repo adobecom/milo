@@ -44,6 +44,10 @@
   box-shadow: 0 3px 6px 0  rgba(0 0 0 / 16%);
 }
 
+.editorial-card .action-area a:not([class*="button"]) {
+  font-size: var(--type-body-s-size);
+}
+
 .editorial-card.static-links-copy .foreground a:not([class*="button"]) {
   color: inherit;
   text-decoration: underline;

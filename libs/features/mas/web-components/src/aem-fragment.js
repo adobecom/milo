@@ -1,4 +1,4 @@
-import { EVENT_AEM_LOAD } from './constants.js';
+import { EVENT_AEM_LOAD, EVENT_AEM_ERROR } from './constants.js';
 import { getFragmentById } from './getFragmentById.js';
 
 const sheet = new CSSStyleSheet();
@@ -6,7 +6,7 @@ sheet.replaceSync(':host { display: contents; }');
 
 const baseUrl =
     document.querySelector('meta[name="aem-base-url"]')?.content ??
-    'https://publish-p22655-e155390.adobeaemcloud.com';
+    'https://odin.adobe.com';
 
 const ATTRIBUTE_FRAGMENT = 'fragment';
 const ATTRIBUTE_IMS = 'ims';
@@ -72,7 +72,7 @@ export class AemFragment extends HTMLElement {
     /**
      * Internal promise to track the readiness of the web-component to render.
      */
-    _readyPromise;
+    #readyPromise;
 
     static get observedAttributes() {
         return [ATTRIBUTE_FRAGMENT];
@@ -105,29 +105,53 @@ export class AemFragment extends HTMLElement {
         }
     }
 
-    async refresh(flushCache = true) {
-        if (!this.fragmentId) return;
+    connectedCallback() {
+        if (!this.fragmentId) {
+            this.#fail('Missing fragment id');
+            return;
+        }
+    }
 
-        if (this._readyPromise) {
+    async refresh(flushCache = true) {
+        if (this.#readyPromise) {
             const ready = await Promise.race([
-                this._readyPromise,
+                this.#readyPromise,
                 Promise.resolve(false),
             ]);
             if (!ready) return; // already fetching data
         }
         if (flushCache) {
-            this.cache.remove(this.fragmentId);
+            cache.remove(this.fragmentId);
         }
-        this._readyPromise = this.fetchData().then(() => {
-            this.dispatchEvent(
-                new CustomEvent(EVENT_AEM_LOAD, {
-                    detail: this.data,
-                    bubbles: true,
-                    composed: true,
-                }),
-            );
-            return true;
-        });
+        this.#readyPromise = this.fetchData()
+            .then(() => {
+                this.dispatchEvent(
+                    new CustomEvent(EVENT_AEM_LOAD, {
+                        detail: this.data,
+                        bubbles: true,
+                        composed: true,
+                    }),
+                );
+                return true;
+            })
+            .catch(() => {
+                /* c8 ignore next 3 */ 
+                this.#fail('Network error: failed to load fragment');
+                this.#readyPromise = null;
+                return false;
+            });
+        this.#readyPromise;
+    }
+
+    #fail(error) {
+        this.classList.add('error');
+        this.dispatchEvent(
+            new CustomEvent(EVENT_AEM_ERROR, {
+                detail: error,
+                bubbles: true,
+                composed: true,
+            }),
+        );
     }
 
     async fetchData() {
@@ -145,7 +169,7 @@ export class AemFragment extends HTMLElement {
 
     get updateComplete() {
         return (
-            this._readyPromise ??
+            this.#readyPromise ??
             Promise.reject(new Error('AEM fragment cannot be loaded'))
         );
     }

@@ -1,10 +1,10 @@
 // @ts-nocheck
 import { runTests } from '@web/test-runner-mocha';
+import { sendKeys } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 
 import { mockLana } from './mocks/lana.js';
 import { mockFetch } from './mocks/fetch.js';
-import { mockConfig } from './mocks/config.js';
 
 import '../src/merch-offer.js';
 import '../src/merch-offer-select.js';
@@ -48,6 +48,42 @@ runTests(async () => {
             expect(actionMenuContent.classList.contains('hidden')).to.be.true;
             expect(actionMenu).to.exist;
             expect(actionMenuContent).to.exist;
+        });
+
+        it('action menu and card focus for catalog variant', async () => {
+            const catalogCard = document.querySelector(
+              'merch-card[variant="catalog"]',
+            );
+            const mouseoverEvent = new MouseEvent('mouseover', { bubbles: true });
+            const mouseleaveEvent = new MouseEvent('mouseleave', { bubbles: true });
+            const focusoutEvent = new Event('focusout');
+            catalogCard.dispatchEvent(mouseleaveEvent);
+            await delay(100);
+            const shadowRoot = catalogCard.shadowRoot;
+            const actionMenu = shadowRoot.querySelector('.action-menu');
+            const actionMenuContent = shadowRoot.querySelector(
+                '.action-menu-content',
+            );
+            actionMenu.click();
+            await delay(100);
+            catalogCard.focus();
+            await delay(100);
+            expect(actionMenu.classList.contains('invisible')).to.be.true;
+            expect(actionMenuContent.classList.contains('hidden')).to.be.false;
+            expect(actionMenu).to.exist;
+            expect(actionMenuContent).to.exist;
+            actionMenuContent.dispatchEvent(focusoutEvent);
+            await sendKeys({
+                press: 'Enter',
+            });
+            await delay(100);
+            expect(actionMenuContent.classList.contains('hidden')).to.be.true;
+            Array.from(document.querySelector('merch-card').querySelectorAll('a')).at(-1).focus();
+            await delay(100);
+            await sendKeys({
+                press: 'Tab',
+            });
+            expect(actionMenu.classList.contains('invisible')).to.be.true;
         });
 
         it('should display some content when action is clicked for catalog variant', async () => {
