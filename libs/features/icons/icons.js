@@ -67,7 +67,6 @@ function preloadInViewIconResources(config) {
   const { base } = config;
   loadStyle(`${base}/features/icons/icons.css`);
   loadLink(`${base}/utils/federated.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
-  loadLink(`${base}/features/icons/icons.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
 }
 
 const preloadInViewIcons = async (icons = []) => icons.forEach((icon) => {
