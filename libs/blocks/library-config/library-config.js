@@ -103,7 +103,7 @@ async function loadList(type, content, list) {
     case 'assets':
       loadAssets(content, list);
       break;
-    case 'personalization_tags':
+    case 'MEP_personalization':
       loadPersonalization(content, list);
       break;
     default:
@@ -153,7 +153,7 @@ async function combineLibraries(base, supplied) {
     blocks: base.blocks.data,
     templates: base.templates?.data,
     icons: base.icons?.data,
-    personalization_tags: base.personalization?.data,
+    MEP_personalization: base.personalization?.data,
     placeholders: base.placeholders?.data,
   };
 
@@ -197,7 +197,6 @@ function createList(libraries) {
       list.classList.add('inset');
       skLibrary.classList.add('allow-back');
       loadList(type, libraries[type], list);
-      window.hlx?.rum.sampleRUM('click', { source: e.target });
     });
   });
 

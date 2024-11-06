@@ -137,10 +137,20 @@ header.global-navigation {
   flex-shrink: 0;
 }
 
+.feds-brand-image.brand-image-only {
+  height: 36px;
+  width: auto;
+}
+
 .feds-brand-image picture, .feds-brand-image img, .feds-brand-image svg,
 .feds-logo-image picture, .feds-logo-image img, .feds-logo-image svg {
   width: 100%;
   display: block;
+}
+
+.feds-brand-image.brand-image-only picture, .feds-brand-image.brand-image-only img, .feds-brand-image.brand-image-only svg {
+  width: auto;
+  height: 100%;
 }
 
 .feds-brand-label,

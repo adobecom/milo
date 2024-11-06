@@ -560,9 +560,26 @@ export async function initService(force = false, attributes = {}) {
     fetchCheckoutLinkConfigs.promise = undefined;
   }
   const { commerce, env: miloEnv, locale: miloLocale } = getConfig();
+
+  const extraAttrs = [
+    'checkout-workflow-step',
+    'force-tax-exclusive',
+    'checkout-client-id',
+    'allow-override',
+  ];
+
+  extraAttrs.forEach((attr) => {
+    const camelCaseAttr = attr.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+    // eslint-disable-next-line no-prototype-builtins
+    if (commerce?.hasOwnProperty(camelCaseAttr)) {
+      const value = commerce[camelCaseAttr];
+      delete commerce[camelCaseAttr];
+      commerce[attr] = value;
+    }
+  });
   initService.promise = initService.promise ?? polyfills().then(async () => {
     await import('../../deps/mas/commerce.js');
-    const { language, locale } = getMiloLocaleSettings(miloLocale);
+    const { language, locale, country } = getMiloLocaleSettings(miloLocale);
     let service = document.head.querySelector('mas-commerce-service');
     if (!service) {
       service = createTag('mas-commerce-service', {
@@ -580,6 +597,9 @@ export async function initService(force = false, attributes = {}) {
       service.imsSignedInPromise?.then((isSignedIn) => {
         if (isSignedIn) fetchEntitlements();
       });
+    }
+    if (country === 'AU') {
+      await loadStyle(`${getConfig().base}/blocks/merch/au-merch.css`);
     }
     return service;
   });

@@ -77,7 +77,7 @@ async function setContent() {
   };
 
   getStatuses();
-  const sk = document.querySelector('helix-sidekick');
+  const sk = document.querySelector('aem-sidekick, helix-sidekick');
   sk?.addEventListener('statusfetched', async () => {
     getStatuses();
   });
