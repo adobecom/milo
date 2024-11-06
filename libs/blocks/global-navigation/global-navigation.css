@@ -771,9 +771,8 @@ header.new-nav .feds-nav-wrapper--expanded {
   z-index: 2;
 }
 
-header.new-nav .feds-nav-wrapper .feds-nav {
-  gap: 30px;
-  margin-top: 40px;
+header.new-nav .feds-nav-wrapper--expanded .feds-nav > section.feds-navItem:first-child {
+  padding-top: 25px;
 }
 
 header.new-nav .feds-nav-wrapper--expanded .feds-nav > section.feds-navItem > button.feds-navLink {
@@ -786,7 +785,7 @@ header.new-nav .feds-nav-wrapper--expanded .feds-nav > section.feds-navItem > bu
   transform: 12px 0;
   animation: slideleft 0.3s ease, fadein 0.3s ease;
   animation-fill-mode: forwards;
-  margin: 0 20px 0 20px;
+  margin: 3px 20px 3px 20px;
 }
 
 header.new-nav .feds-nav > section.feds-navItem > button.feds-navLink {
