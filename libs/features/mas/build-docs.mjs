@@ -76,7 +76,7 @@ const htmlTemplate = `
   <script src="../../../features/spectrum-web-components/dist/theme.js" type="module"></script>
   <script src="../../../features/spectrum-web-components/dist/action-button.js" type="module"></script>
   <script src="../../../features/spectrum-web-components/dist/button.js" type="module"></script>
-  <script type="module" src="../../../deps/mas/mas.js"></script>
+  <script type="module" src="../mas/dist/mas.js"></script>
 
   <script type="module">
     const params = new URLSearchParams(document.location.search);

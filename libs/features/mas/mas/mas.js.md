@@ -15,7 +15,7 @@ mas.js includes the followings custom elements:
 You do need to have mas.js on your page / application, including it can be done like the following
 
 ```html
-<script src="/libs/deps/mas/mas.js" type="module"></script>
+<script src="https://www.adobe.com/libs/features/mas/mas/dist/mas.js" type="module"></script>
 ```
 
 ### Attributes

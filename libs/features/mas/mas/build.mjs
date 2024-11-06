@@ -15,13 +15,7 @@ const defaults = {
     sourcemap: false,
 };
 
-let { metafile } = await build({
-    ...defaults,
-    entryPoints: ['./src/mas.js'],
-    outfile: '../../../deps/mas/mas.js',
-});
-
-await build({
+const { metafile } = await build({
     ...defaults,
     entryPoints: ['./src/mas.js'],
     outfile: './dist/mas.js',
