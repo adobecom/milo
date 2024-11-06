@@ -310,7 +310,11 @@ The term placeholder will be deprecated and it is recommended to refer as <stron
     eventsDemo.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;click&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">e</span>) =&gt;</span> {
         e.<span class="hljs-title function_">preventDefault</span>();
         e.<span class="hljs-title function_">stopPropagation</span>();
-        <span class="hljs-title function_">logger</span>(<span class="hljs-string">&#x27;checkout link is clicked: &#x27;</span>, e.<span class="hljs-property">target</span>.<span class="hljs-property">href</span>);
+        <span class="hljs-keyword">if</span> (e.<span class="hljs-property">target</span>.<span class="hljs-property">isCheckoutLink</span>) {
+            <span class="hljs-title function_">logger</span>(<span class="hljs-string">&#x27;checkout link is clicked: &#x27;</span>, e.<span class="hljs-property">target</span>.<span class="hljs-property">href</span>);
+        } <span class="hljs-keyword">else</span> {
+            <span class="hljs-title function_">logger</span>(<span class="hljs-string">&#x27;element clicked: &#x27;</span>, e.<span class="hljs-property">target</span>);
+        }
     });
     <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;btnRefresh&#x27;</span>).<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;click&#x27;</span>, <span class="hljs-function">() =&gt;</span> {
         [...eventsDemo.<span class="hljs-title function_">querySelectorAll</span>(<span class="hljs-string">&#x27;a&#x27;</span>)].<span class="hljs-title function_">forEach</span>(<span class="hljs-function">(<span class="hljs-params">a</span>) =&gt;</span>

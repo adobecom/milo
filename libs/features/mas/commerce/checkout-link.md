@@ -195,7 +195,11 @@ For each event except `click`, the following css classes are toggled on the elem
     eventsDemo.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
-        logger('checkout link is clicked: ', e.target.href);
+        if (e.target.isCheckoutLink) {
+            logger('checkout link is clicked: ', e.target.href);
+        } else {
+            logger('element clicked: ', e.target);
+        }
     });
     document.getElementById('btnRefresh').addEventListener('click', () => {
         [...eventsDemo.querySelectorAll('a')].forEach((a) =>
