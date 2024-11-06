@@ -806,6 +806,8 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup {
   width: 100%;
   height: calc(var(--feds-height-nav) + 100%);
   background-color: var(--feds-background-nav);
+
+  translate: -200vw 0;
   animation: totheleft 0.3s ease-out, fadeout 0.3s ease;
   animation-fill-mode: forwards;
   z-index: 2;
@@ -821,6 +823,7 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup {
 }
 
 header.new-nav .feds-nav > section.feds-navItem.feds-dropdown--active > .feds-popup {
+  translate: 0 0;
   animation: fromtheleft 0.3s ease;
   animation-fill-mode: forwards;
 }
