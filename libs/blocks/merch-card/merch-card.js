@@ -423,7 +423,7 @@ const decorateFooterRows = (merchCard, footerRows) => {
 
       footerRows.splice(0, 1);
       footerRowsSlot.style.padding = '0px var(--consonant-merch-spacing-s)';
-      footerRowsSlot.style.margin-block-end = 'var(--consonant-merch-spacing-xs)';
+      footerRowsSlot.style.marginBlockEnd = 'var(--consonant-merch-spacing-xs)';
     }
 
     footerRows.forEach((row) => {
