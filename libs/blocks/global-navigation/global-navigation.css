@@ -731,7 +731,13 @@ header.global-navigation {
   }
 }
 
-/* mobile gnav redesign */
+/*
+ *
+ *
+ * mobile gnav redesign
+ *
+ *
+ */
 
 /* new mobile gnav is not sticky when localnav */
 header.new-nav.local-nav {
@@ -767,7 +773,7 @@ header.new-nav .feds-nav-wrapper--expanded {
 
 header.new-nav .feds-nav-wrapper .feds-nav {
   gap: 30px;
-  margin: 40px 20px 0 20px;
+  margin-top: 40px;
 }
 
 header.new-nav .feds-nav-wrapper--expanded .feds-nav > section.feds-navItem > button.feds-navLink {
@@ -777,9 +783,10 @@ header.new-nav .feds-nav-wrapper--expanded .feds-nav > section.feds-navItem > bu
   line-height: 25px;
   border: none;
   opacity:0;
-  transfrom: 12px 0;
+  transform: 12px 0;
   animation: slideleft 0.3s ease, fadein 0.3s ease;
   animation-fill-mode: forwards;
+  margin: 0 20px 0 20px;
 }
 
 header.new-nav .feds-nav > section.feds-navItem > button.feds-navLink {
@@ -795,6 +802,12 @@ header.new-nav .feds-nav > section.feds-navItem > button.feds-navLink::after {
   border-color: white;
 }
 
+header.new-nav .feds-nav > .feds-navItem:not(:last-child) > .feds-navLink {
+  border-bottom: 1px solid var(#2c2c2c);
+}
+
+/* 
+
 /* Mega Menu */
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup {
@@ -806,6 +819,11 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup {
   height: calc(var(--feds-height-nav) + 100%);
   background-color: var(--feds-background-nav);
   /*animation: totheleft 0.3s ease-out, fadeout 0.3s ease;*/
+  /* we need to use transitions instead to avoid an issue on
+   * adobe home wherein if we click on the hamburger icon
+   * right after loading in, we see some feds-popups appear on the
+   * screen and fadeaway
+   */
   transition: translate 0.3s ease-out, opacity 0.3s ease;
   translate: -200vw 0;
   /* animation-fill-mode: forwards; */
