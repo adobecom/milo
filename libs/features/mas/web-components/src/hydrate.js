@@ -58,9 +58,7 @@ function processBadge(fragment, merchCard) {
 }
 
 function processSize(fragment, merchCard, allowedSizes) {
-    if (!fragment.size) {
-        merchCard.removeAttribute('size');
-    } else if (allowedSizes?.includes(fragment.size)) {
+    if (allowedSizes?.includes(fragment.size)) {
         merchCard.setAttribute('size', fragment.size);
     }
 }
@@ -233,6 +231,12 @@ export async function hydrate(fragmentData, merchCard) {
     merchCard.querySelectorAll('[slot]').forEach((el) => {
         el.remove();
     });
+
+    merchCard.removeAttribute('background-image');
+    merchCard.removeAttribute('badge-background-color');
+    merchCard.removeAttribute('badge-color');
+    merchCard.removeAttribute('badge-text');
+    merchCard.removeAttribute('size');
 
     merchCard.variant = variant;
     await merchCard.updateComplete;

@@ -1,7 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
-import { setConfig, getConfig } from '../../../libs/utils/utils.js';
-import { replaceText, replaceKey, replaceKeyArray } from '../../../libs/features/placeholders.js';
+import { setConfig, getConfig, customFetch } from '../../../libs/utils/utils.js';
+import { replaceText, replaceKey, replaceKeyArray, decoratePlaceholderArea } from '../../../libs/features/placeholders.js';
 
 const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
 const conf = { locales };
@@ -56,5 +56,20 @@ describe('Placeholders', () => {
   it('Does show an empty value', async () => {
     const text = await replaceKey('empty-value', config);
     expect(text).to.equal('');
+  });
+
+  it('Replaces attributes with placeholders', async () => {
+    const placeholderPath = 'https://main--cc--adobecom.hlx.page/cc-shared/placeholders.json';
+    const placeholderRequest = customFetch({ resource: placeholderPath, withCacheRules: true })
+      .catch(() => ({}));
+
+    const tag = document.createElement('a');
+    tag.setAttribute('href', '/modal/%7B%7Bphone-number%7D%7D');
+    tag.setAttribute('data-attr', '/modal/%7B%7Bphone-number%7D%7D');
+
+    await decoratePlaceholderArea({ placeholderPath, placeholderRequest, nodes: [tag] });
+
+    expect(tag.getAttribute('href')).to.equal('/modal/800 12345 6789');
+    expect(tag.getAttribute('data-attr')).to.equal('/modal/800 12345 6789');
   });
 });

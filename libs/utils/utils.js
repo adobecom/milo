@@ -512,8 +512,7 @@ export function decorateSVG(a) {
 
     const src = textUrl.hostname.includes(`.${SLD}.`) ? textUrl.pathname : textUrl;
 
-    const img = createTag('img', { loading: 'lazy', src });
-    if (altText) img.alt = altText;
+    const img = createTag('img', { loading: 'lazy', src, alt: altText || '' });
     const pic = createTag('picture', null, img);
 
     if (textUrl.pathname === hrefUrl.pathname) {
@@ -1057,6 +1056,8 @@ async function checkForPageMods() {
 
 async function loadPostLCP(config) {
   await decoratePlaceholders(document.body.querySelector('header'), config);
+  const sk = document.querySelector('helix-sidekick');
+  if (sk) import('./sidekick-decorate.js').then((mod) => { mod.default(sk); });
   if (config.mep?.targetEnabled === 'postlcp') {
     /* c8 ignore next 2 */
     const { init } = await import('../features/personalization/personalization.js');
