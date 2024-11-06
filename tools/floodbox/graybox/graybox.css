@@ -1,0 +1,59 @@
+:host {
+  display: block;
+  max-width: var(--grid-container-width);
+  margin: var(--spacing-500);
+}
+
+body {
+  background-color: #fff;
+  margin: 0 var(--spacing-1000);
+}
+
+.info-box {
+  background: var(--s2-gray-75);
+  border-radius: var(--s2-radius-100);
+  padding: var(--spacing-100) var(--spacing-400);
+  margin-top: var(--spacing-400);
+}
+
+.info-box p {
+  margin-top: var(--spacing-50);
+  margin-bottom: var(--spacing-50);
+}
+
+.hide {
+  display: none;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+input.path {
+  border: 2px solid var(--s2-gray-200);
+  border-radius: var(--s2-radius-100);
+  padding: 0 8px;
+  height: 32px;
+  margin: 0;
+  box-sizing: border-box;
+  width: 80%;
+}
+
+.input-row {
+  font-family: var(--body-font-family);
+  flex: 2;
+  display: block;
+  gap: var(--spacing-200);
+}
+
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-200);
+  margin-top: var(--spacing-100);
+}
+
+.input-row button {
+  margin-left: 10px;
+}

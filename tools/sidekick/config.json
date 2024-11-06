@@ -166,5 +166,19 @@
       "isPalette": false,
       "includePaths": [ "**.docx**"]
     }
+  ],
+  "apps": [
+    {
+      "title": "Floodgate",
+      "description": "Admin tools for Milo Floodgate",
+      "image": "https://publish-p133406-e1301188.adobeaemcloud.com/content/dam/drafts/sukamat/chuck-norris.png",
+      "url": "https://da.live/app/adobecom/milo/tools/floodgate"
+    },
+    {
+      "title": "Graybox",
+      "description": "Admin tools for Milo Graybox",
+      "image": "https://publish-p133406-e1301188.adobeaemcloud.com/content/dam/drafts/sukamat/chuck-norris.png",
+      "url": "https://da.live/app/adobecom/milo/tools/graybox"
+    }
   ]
 }
