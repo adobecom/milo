@@ -579,7 +579,7 @@ export async function initService(force = false, attributes = {}) {
   });
   initService.promise = initService.promise ?? polyfills().then(async () => {
     await import('../../deps/mas/commerce.js');
-    const { language, locale } = getMiloLocaleSettings(miloLocale);
+    const { language, locale, country } = getMiloLocaleSettings(miloLocale);
     let service = document.head.querySelector('mas-commerce-service');
     if (!service) {
       service = createTag('mas-commerce-service', {
@@ -597,6 +597,9 @@ export async function initService(force = false, attributes = {}) {
       service.imsSignedInPromise?.then((isSignedIn) => {
         if (isSignedIn) fetchEntitlements();
       });
+    }
+    if (country === 'AU') {
+      await loadStyle(`${getConfig().base}/blocks/merch/au-merch.css`);
     }
     return service;
   });
