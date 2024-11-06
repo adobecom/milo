@@ -806,7 +806,7 @@ header.new-nav .feds-nav > section.feds-navItem > button.feds-navLink::after {
   border-color: white;
 }
 
-header.new-nav .feds-nav > .feds-navItem > .feds-navLink {
+header.new-nav .feds-nav > .feds-navItem > .feds-navLink.feds-navItem--mobile-only {
   border-bottom: 1px solid #2c2c2c;
   padding: 20px;
   font-size: 20px;
