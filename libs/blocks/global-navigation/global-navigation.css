@@ -800,14 +800,15 @@ header.new-nav .feds-nav > section.feds-navItem > button.feds-navLink::after {
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup {
   position: fixed;
   visibility: visible;
-  opacity: 1;
   top: calc(-1 * var(--feds-height-nav));
   left: 0;
   width: 100%;
   height: calc(var(--feds-height-nav) + 100%);
   background-color: var(--feds-background-nav);
-  animation: totheleft 0.3s ease-out, fadeout 0.3s ease;
-  animation-fill-mode: forwards;
+  /*animation: totheleft 0.3s ease-out, fadeout 0.3s ease;*/
+  transition: translate 0.3s ease-out, opacity 0.3s ease;
+  translate: -200vw 0;
+  /* animation-fill-mode: forwards; */
   z-index: 2;
 
   display: grid;
@@ -821,8 +822,8 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup {
 }
 
 header.new-nav .feds-nav > section.feds-navItem.feds-dropdown--active > .feds-popup {
-  animation: fromtheleft 0.3s ease;
-  animation-fill-mode: forwards;
+  translate: 0;
+  opacity: 1;
 }
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .top-bar {
