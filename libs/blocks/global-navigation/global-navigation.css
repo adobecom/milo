@@ -775,6 +775,10 @@ header.new-nav .feds-nav-wrapper--expanded .feds-nav > section.feds-navItem:firs
   padding-top: 25px;
 }
 
+header.new-nav .feds-nav-wrapper--expanded .feds-nav > .feds-navItem.feds-navItem--mobile-only + header.new-nav .feds-nav-wrapper--expanded .feds-nav > section.feds-navItem {
+  padding-top: 9px;
+}
+
 header.new-nav .feds-nav-wrapper--expanded .feds-nav > section.feds-navItem > button.feds-navLink {
   color: white;
   font-size: 20px;
