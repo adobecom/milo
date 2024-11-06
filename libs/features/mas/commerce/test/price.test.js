@@ -46,6 +46,7 @@ describe('class "InlinePrice"', () => {
         await inlinePrice.onceSettled();
         expect(inlinePrice.innerHTML).to.be.html(snapshots.price);
         expect(inlinePrice.value).to.be.not.empty;
+        expect(inlinePrice.options).to.be.not.empty;
     });
 
     it('re-dispatches click event', async () => {
