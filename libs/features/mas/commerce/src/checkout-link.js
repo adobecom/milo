@@ -51,6 +51,7 @@ export class CheckoutLink extends HTMLAnchorElement {
             'data-checkout-workflow',
             'data-checkout-workflow-step',
             'data-extra-options',
+            'data-ims-country',
             'data-perpetual',
             'data-promotion-code',
             'data-quantity',
