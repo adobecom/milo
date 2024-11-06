@@ -2,10 +2,11 @@
 /* eslint-disable no-console */
 
 import { createTag, getConfig, loadLink, loadScript, localizeLink } from '../../utils/utils.js';
-import { getEntitlementMap } from './entitlements.js';
+import { getFederatedUrl } from '../../utils/federated.js';
 
 /* c8 ignore start */
 const PHONE_SIZE = window.screen.width < 550 || window.screen.height < 550;
+const safariIpad = navigator.userAgent.includes('Macintosh') && navigator.maxTouchPoints > 1;
 export const PERSONALIZATION_TAGS = {
   all: () => true,
   chrome: () => navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Edg'),
@@ -13,10 +14,12 @@ export const PERSONALIZATION_TAGS = {
   safari: () => navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome'),
   edge: () => navigator.userAgent.includes('Edg'),
   android: () => navigator.userAgent.includes('Android'),
-  ios: () => /iPad|iPhone|iPod/.test(navigator.userAgent),
+  ios: () => /iPad|iPhone|iPod/.test(navigator.userAgent) || safariIpad,
   windows: () => navigator.userAgent.includes('Windows'),
-  mac: () => navigator.userAgent.includes('Macintosh'),
-  'mobile-device': () => /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i.test(navigator.userAgent),
+  mac: () => navigator.userAgent.includes('Macintosh') && !safariIpad,
+  'mobile-device': () => safariIpad
+    || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i
+      .test(navigator.userAgent),
   phone: () => PERSONALIZATION_TAGS['mobile-device']() && PHONE_SIZE,
   tablet: () => PERSONALIZATION_TAGS['mobile-device']() && !PHONE_SIZE,
   desktop: () => !PERSONALIZATION_TAGS['mobile-device'](),
@@ -31,11 +34,13 @@ const CLASS_EL_REPLACE = 'p13n-replaced';
 const COLUMN_NOT_OPERATOR = 'not ';
 const TARGET_EXP_PREFIX = 'target-';
 const INLINE_HASH = '_inline';
+const MARTECH_RETURNED_EVENT = 'martechReturned';
 const PAGE_URL = new URL(window.location.href);
 const FLAGS = {
   all: 'all',
   includeFragments: 'include-fragments',
 };
+let isPostLCP = false;
 
 export const TRACKED_MANIFEST_TYPE = 'personalization';
 
@@ -65,6 +70,9 @@ export const normalizePath = (p, localize = true) => {
   }
 
   const config = getConfig();
+  if (path.startsWith('https://www.adobe.com/federal/')) {
+    return getFederatedUrl(path);
+  }
 
   if (path.startsWith(config.codeRoot)
     || path.includes('.hlx.')
@@ -338,6 +346,8 @@ function registerInBlockActions(command) {
     blockSelector = blockAndSelector.slice(1).join(' ');
     command.selector = blockSelector;
     if (getSelectorType(blockSelector) === 'fragment') {
+      if (blockSelector.includes('/federal/')) blockSelector = getFederatedUrl(blockSelector);
+      if (command.content.includes('/federal/')) command.content = getFederatedUrl(command.content);
       config.mep.inBlock[blockName].fragments ??= {};
       const { fragments } = config.mep.inBlock[blockName];
       delete command.selector;
@@ -445,7 +455,7 @@ function getSelectedElements(sel, rootEl, forceRootEl) {
       );
       return { els: fragments, modifiers: [FLAGS.all, FLAGS.includeFragments] };
     } catch (e) {
-      /* c8 ignore next */
+      /* c8 ignore next 2 */
       return { els: [], modifiers: [] };
     }
   }
@@ -488,7 +498,18 @@ export const updateFragDataProps = (a, inline, sections, fragment) => {
   }
 };
 
-export function handleCommands(commands, rootEl, forceInline = false, forceRootEl = false) {
+export const deleteMarkedEls = (rootEl = document) => {
+  [...rootEl.querySelectorAll(`.${CLASS_EL_DELETE}`)]
+    .forEach((el) => el.remove());
+};
+
+export function handleCommands(
+  commands,
+  rootEl = document,
+  forceInline = false,
+  forceRootEl = false,
+) {
+  const section1 = document.querySelector('main > div');
   commands.forEach((cmd) => {
     const { action, content, selector } = cmd;
     cmd.content = forceInline ? addHash(content, INLINE_HASH) : content;
@@ -501,8 +522,10 @@ export function handleCommands(commands, rootEl, forceInline = false, forceRootE
     cmd.modifiers = modifiers;
 
     els?.forEach((el) => {
-      if (!el || (!(action in COMMANDS) && !(action in CREATE_CMDS))
-        || (rootEl && !rootEl.contains(el))) return;
+      if (!el
+        || (!(action in COMMANDS) && !(action in CREATE_CMDS))
+        || (rootEl && !rootEl.contains(el))
+        || (isPostLCP && section1?.contains(el))) return;
 
       if (action in COMMANDS) {
         COMMANDS[action](el, cmd);
@@ -519,6 +542,7 @@ export function handleCommands(commands, rootEl, forceInline = false, forceRootE
       cmd.completed = true;
     }
   });
+  deleteMarkedEls(rootEl);
   return commands.filter((cmd) => !cmd.completed
     && cmd.selectorType !== IN_BLOCK_SELECTOR_PREFIX);
 }
@@ -699,6 +723,40 @@ export function buildVariantInfo(variantNames) {
   }, { allNames: [] });
 }
 
+const getXLGListURL = (config) => {
+  const sheet = config.env?.name === 'prod' ? 'prod' : 'stage';
+  return `https://www.adobe.com/federal/assets/data/mep-xlg-tags.json?sheet=${sheet}`;
+};
+
+export const getEntitlementMap = async () => {
+  const config = getConfig();
+  if (config.mep?.entitlementMap) return config.mep.entitlementMap;
+  const entitlementUrl = getXLGListURL(config);
+  const fetchedData = await fetchData(entitlementUrl, DATA_TYPE.JSON);
+  if (!fetchedData) return config.consumerEntitlements || {};
+  const entitlements = {};
+  fetchedData?.data?.forEach((ent) => {
+    const { id, tagname } = ent;
+    entitlements[id] = tagname;
+  });
+  config.mep ??= {};
+  config.mep.entitlementMap = { ...config.consumerEntitlements, ...entitlements };
+  return config.mep.entitlementMap;
+};
+
+export const getEntitlements = async (data) => {
+  const entitlementMap = await getEntitlementMap();
+
+  return data.flatMap((destination) => {
+    const ents = destination.segments?.flatMap((segment) => {
+      const entMatch = entitlementMap[segment.id];
+      return entMatch ? [entMatch] : [];
+    });
+
+    return ents || [];
+  });
+};
+
 async function getPersonalizationVariant(manifestPath, variantNames = [], variantLabel = null) {
   const config = getConfig();
   if (config.mep?.variantOverride?.[manifestPath]) {
@@ -843,11 +901,6 @@ export async function getManifestConfig(info = {}, variantOverride = false) {
   return manifestConfig;
 }
 
-export const deleteMarkedEls = (rootEl = document) => {
-  [...rootEl.querySelectorAll(`.${CLASS_EL_DELETE}`)]
-    .forEach((el) => el.remove());
-};
-
 const normalizeFragPaths = ({ selector, val, action, manifestId, targetManifestId }) => ({
   selector: normalizePath(selector),
   val: normalizePath(val),
@@ -971,7 +1024,7 @@ export function parseNestedPlaceholders({ placeholders }) {
   });
 }
 
-export async function applyPers(manifests, postLCP = false) {
+export async function applyPers(manifests) {
   if (!manifests?.length) return;
   let experiments = manifests;
   const config = getConfig();
@@ -996,14 +1049,13 @@ export async function applyPers(manifests, postLCP = false) {
   config.mep.commands = consolidateArray(results, 'commands', config.mep.commands);
 
   const main = document.querySelector('main');
-  if (config.mep.replacepage && !postLCP && main) {
+  if (config.mep.replacepage && !isPostLCP && main) {
     await replaceInner(config.mep.replacepage.val, main);
     const { manifestId, targetManifestId } = config.mep.replacepage;
     addIds(main, manifestId, targetManifestId);
   }
 
-  if (!postLCP) config.mep.commands = handleCommands(config.mep.commands);
-  deleteMarkedEls();
+  config.mep.commands = handleCommands(config.mep.commands);
 
   const pznList = results.filter((r) => (r.experiment?.manifestType === TRACKED_MANIFEST_TYPE));
   if (!pznList.length) return;
@@ -1056,13 +1108,33 @@ export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => 
   return persManifests;
 };
 
+async function callMartech(config) {
+  const { getTargetPersonalization } = await import('../../martech/martech.js');
+  const { targetManifests, targetPropositions } = await getTargetPersonalization();
+  config.mep.targetManifests = targetManifests;
+  if (targetPropositions?.length && window._satellite) {
+    window._satellite.track('propositionDisplay', targetPropositions);
+  }
+  if (config.mep.targetEnabled === 'postlcp') {
+    const event = new CustomEvent(MARTECH_RETURNED_EVENT, { detail: 'Martech returned' });
+    window.dispatchEvent(event);
+  }
+  return targetManifests;
+}
+const awaitMartech = () => new Promise((resolve) => {
+  const listener = (event) => resolve(event.detail);
+  window.addEventListener(MARTECH_RETURNED_EVENT, listener, { once: true });
+});
+
 export async function init(enablements = {}) {
   let manifests = [];
   const {
     mepParam, mepHighlight, mepButton, pzn, promo, target, postLCP,
   } = enablements;
   const config = getConfig();
-  if (!postLCP) {
+  if (postLCP) {
+    isPostLCP = true;
+  } else {
     config.mep = {
       updateFragDataProps,
       preview: (mepButton !== 'off'
@@ -1079,18 +1151,18 @@ export async function init(enablements = {}) {
       const normalizedURL = normalizePath(manifest.manifestPath);
       loadLink(normalizedURL, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
     });
+    if (pzn) loadLink(getXLGListURL(config), { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
   }
 
-  if (target === true || (target === 'gnav' && postLCP)) {
-    const { getTargetPersonalization } = await import('../../martech/martech.js');
-    const { targetManifests, targetPropositions } = await getTargetPersonalization();
-    manifests = manifests.concat(targetManifests);
-    if (targetPropositions?.length && window._satellite) {
-      window._satellite.track('propositionDisplay', targetPropositions);
-    }
+  if (target === true) manifests = manifests.concat(await callMartech(config));
+  if (target === 'postlcp') callMartech(config);
+  if (postLCP) {
+    if (!config.mep.targetManifests) await awaitMartech();
+    manifests = config.mep.targetManifests;
   }
+  if (!manifests || !manifests.length) return;
   try {
-    await applyPers(manifests, postLCP);
+    await applyPers(manifests);
   } catch (e) {
     log(`MEP Error: ${e.toString()}`);
     window.lana?.log(`MEP Error: ${e.toString()}`);

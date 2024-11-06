@@ -32,7 +32,7 @@ describe('getSettings', () => {
     });
 
     it('overrides with search parameters', () => {
-      const checkoutClientId = 'adobecom';
+      const checkoutClientId = 'adobe_com';
       const checkoutWorkflowStep = 'segmentation';
       const promotionCode = 'nicopromo';
 
