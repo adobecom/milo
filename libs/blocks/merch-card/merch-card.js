@@ -388,65 +388,79 @@ const getMiniCompareChartFooterRows = (el) => {
   return footerRows;
 };
 
-const decorateFooterRows = (merchCard, footerRows) => {
-  if (footerRows) {
-    const footerRowsSlot = createTag('div', { slot: 'footer-rows' });
+const createFirstRow = (firstRow, isMobile, checkmarkCopyContainer) => {
+  const firstRowText = firstRow.querySelector('div > div:last-child').innerHTML;
+  let firstRowTextParagraph;
 
-    if (merchCard.classList.contains('checkmark')) {
-      const firstRow = footerRows[0];
-      const bgStyle = firstRow.querySelector('div > div:first-child').innerHTML;
-      const hrElem = createTag('hr', { style: `background: ${bgStyle};` });
-      footerRowsSlot.appendChild(hrElem);
-      merchCard.classList.add('has-divider');
-      const firstRowText = firstRow.querySelector('div > div:last-child').innerHTML;
+  if (isMobile) {
+    const chevronIcon = createTag('span', { class: 'chevron-icon' }, chevronDownSVG);
+    firstRowTextParagraph = createTag('div', { class: 'footer-rows-title' }, firstRowText);
+    firstRowTextParagraph.appendChild(chevronIcon);
 
-      let firstRowTextParagraph;
-      const checkmarkCopyContainer = createTag('div', { class: 'checkmark-copy-container' });
-
-      const isMobile = window.matchMedia('(max-width: 1199px)').matches;
-      if (isMobile) {
-        const chevronIcon = createTag('span', { class: 'chevron-icon' }, chevronDownSVG);
-        firstRowTextParagraph = createTag('div', { class: 'footer-rows-title' }, firstRowText);
-        firstRowTextParagraph.appendChild(chevronIcon);
-
-        firstRowTextParagraph.addEventListener('click', () => {
-          const isOpen = checkmarkCopyContainer.classList.toggle('open');
-          chevronIcon.innerHTML = isOpen ? chevronUpSVG : chevronDownSVG;
-        });
-      } else {
-        firstRowTextParagraph = createTag('div', { class: 'footer-rows-title' }, firstRowText);
-        checkmarkCopyContainer.classList.add('open'); // Ensure the list is visible on non-mobile devices
-      }
-
-      footerRowsSlot.appendChild(firstRowTextParagraph);
-      footerRowsSlot.appendChild(checkmarkCopyContainer);
-
-      footerRows.splice(0, 1);
-      footerRowsSlot.style.padding = '0px var(--consonant-merch-spacing-s)';
-      footerRowsSlot.style.marginBlockEnd = 'var(--consonant-merch-spacing-xs)';
-    }
-
-    footerRows.forEach((row) => {
-      const rowIcon = row.firstElementChild.querySelector('picture');
-      const rowText = row.querySelector('div > div:nth-child(2)').innerHTML;
-      const footerRowCellDescStyle = merchCard.classList.contains('checkmark') ? 'footer-row-cell-description-checkmark' : 'footer-row-cell-description';
-      const footerRowCellClass = merchCard.classList.contains('checkmark') ? 'footer-row-cell-checkmark' : 'footer-row-cell';
-      const footerRowIconClass = merchCard.classList.contains('checkmark') ? 'footer-row-icon-checkmark' : 'footer-row-icon';
-      const rowTextParagraph = createTag('div', { class: footerRowCellDescStyle }, rowText);
-      const footerRowCell = createTag('div', { class: footerRowCellClass });
-      if (rowIcon) {
-        rowIcon.classList.add(footerRowIconClass);
-        footerRowCell.appendChild(rowIcon);
-      }
-      footerRowCell.appendChild(rowTextParagraph);
-      if (merchCard.classList.contains('checkmark')) {
-        footerRowsSlot.querySelector('.checkmark-copy-container').appendChild(footerRowCell);
-      } else {
-        footerRowsSlot.appendChild(footerRowCell);
-      }
+    firstRowTextParagraph.addEventListener('click', () => {
+      const isOpen = checkmarkCopyContainer.classList.toggle('open');
+      chevronIcon.innerHTML = isOpen ? chevronUpSVG : chevronDownSVG;
     });
-    merchCard.appendChild(footerRowsSlot);
+  } else {
+    firstRowTextParagraph = createTag('div', { class: 'footer-rows-title' }, firstRowText);
+    checkmarkCopyContainer.classList.add('open');
   }
+
+  return firstRowTextParagraph;
+};
+
+const createFooterRowCell = (row, isCheckmark) => {
+  const rowIcon = row.firstElementChild.querySelector('picture');
+  const rowText = row.querySelector('div > div:nth-child(2)').innerHTML;
+  const rowTextParagraph = createTag('div', { class: 'footer-row-cell-description' }, rowText);
+  const footerRowCellClass = isCheckmark ? 'footer-row-cell-checkmark' : 'footer-row-cell';
+  const footerRowIconClass = isCheckmark ? 'footer-row-icon-checkmark' : 'footer-row-icon';
+  const footerRowCell = createTag('div', { class: footerRowCellClass });
+
+  if (rowIcon) {
+    rowIcon.classList.add(footerRowIconClass);
+    footerRowCell.appendChild(rowIcon);
+  }
+  footerRowCell.appendChild(rowTextParagraph);
+
+  return footerRowCell;
+};
+
+const decorateFooterRows = (merchCard, footerRows) => {
+  if (!footerRows) return;
+
+  const footerRowsSlot = createTag('div', { slot: 'footer-rows' });
+  const isCheckmark = merchCard.classList.contains('checkmark');
+  const isMobile = window.matchMedia('(max-width: 1199px)').matches;
+
+  if (isCheckmark) {
+    const firstRow = footerRows[0];
+    const bgStyle = firstRow.querySelector('div > div:first-child').innerHTML;
+    const hrElem = createTag('hr', { style: `background: ${bgStyle};` });
+    footerRowsSlot.appendChild(hrElem);
+    merchCard.classList.add('has-divider');
+
+    const checkmarkCopyContainer = createTag('div', { class: 'checkmark-copy-container' });
+    const firstRowTextParagraph = createFirstRow(firstRow, isMobile, checkmarkCopyContainer);
+
+    footerRowsSlot.appendChild(firstRowTextParagraph);
+    footerRowsSlot.appendChild(checkmarkCopyContainer);
+
+    footerRows.splice(0, 1);
+    footerRowsSlot.style.padding = '0px var(--consonant-merch-spacing-s)';
+    footerRowsSlot.style.marginBlockEnd = 'var(--consonant-merch-spacing-xs)';
+  }
+
+  footerRows.forEach((row) => {
+    const footerRowCell = createFooterRowCell(row, isCheckmark);
+    if (isCheckmark) {
+      footerRowsSlot.querySelector('.checkmark-copy-container').appendChild(footerRowCell);
+    } else {
+      footerRowsSlot.appendChild(footerRowCell);
+    }
+  });
+
+  merchCard.appendChild(footerRowsSlot);
 };
 
 const setMiniCompareOfferSlot = (merchCard, offers) => {
