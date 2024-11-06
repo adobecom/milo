@@ -620,10 +620,13 @@ merch-card[variant="ccd-action"] .price-strikethrough {
 
   merch-card[variant="mini-compare-chart"] .footer-row-icon {
     display: flex;
-    align-self: flex-start;
-    height: 24px;
-    width: 24px;
-    align-items: center;
+    place-items: center;
+  }
+
+  merch-card[variant="mini-compare-chart"] .footer-row-icon img {
+    max-width: initial;
+    width: var(--consonant-merch-card-mini-compare-chart-icon-size);
+    height: var(--consonant-merch-card-mini-compare-chart-icon-size);
   }
 
   merch-card[variant="mini-compare-chart"] .footer-rows-title {
@@ -633,14 +636,13 @@ merch-card[variant="ccd-action"] .price-strikethrough {
     padding: var(--consonant-merch-spacing-xxs) 0px;
   }
 
-  merch-card[variant="mini-compare-chart"] [slot="footer-rows"] {
-    padding: 0px var(--consonant-merch-spacing-s);
-  }
-
-  merch-card[variant="mini-compare-chart"] .footer-row-icon img {
-    max-width: initial;
-    width: var(--consonant-merch-card-mini-compare-chart-icon-size);
-    height: var(--consonant-merch-card-mini-compare-chart-icon-size);
+  merch-card[variant="mini-compare-chart"] .footer-row-cell {
+    border-top: 1px solid var(--consonant-merch-card-border-color);
+    display: flex;
+    gap: var(--consonant-merch-spacing-xs);
+    justify-content: start;
+    place-items: center;
+    padding: var(--consonant-merch-spacing-xs) var(--consonant-merch-spacing-s);
   }
 
   merch-card[variant="mini-compare-chart"] .footer-row-icon-checkmark img {
@@ -653,7 +655,7 @@ merch-card[variant="ccd-action"] .price-strikethrough {
     height: 24px;
   }
 
-  merch-card[variant="mini-compare-chart"] .footer-row-cell {
+  merch-card[variant="mini-compare-chart"] .footer-row-cell-checkmark {
     display: flex;
     gap: var(--consonant-merch-spacing-xs);
     justify-content: start;
@@ -849,7 +851,7 @@ merch-card .footer-row-cell:nth-child(8) {
               <span class="secure-transaction-label"
                   >${this.card.secureLabel}</span
               ></slot
-          >`:B`<slot name="secure-transaction-label"></slot>`;return B`<footer>${t}<slot name="footer"></slot></footer>`};adjustMiniCompareBodySlots(){if(this.card.getBoundingClientRect().width<=2)return;this.updateCardElementMinHeight(this.card.shadowRoot.querySelector(".top-section"),"top-section"),["heading-m","body-m","heading-m-price","body-xxs","price-commitment","offers","promo-text","callout-content","footer-rows"].forEach(a=>this.updateCardElementMinHeight(this.card.shadowRoot.querySelector(`slot[name="${a}"]`),a)),this.updateCardElementMinHeight(this.card.shadowRoot.querySelector("footer"),"footer");let e=this.card.shadowRoot.querySelector(".mini-compare-chart-badge");e&&e.textContent!==""&&this.getContainer().style.setProperty("--consonant-merch-card-mini-compare-chart-top-section-mobile-height","32px")}adjustMiniCompareFooterRows(){if(this.card.getBoundingClientRect().width===0)return;[...this.card.querySelector('[slot="footer-rows"]')?.children].forEach((e,a)=>{let o=Math.max($t,parseFloat(window.getComputedStyle(e).height)||0),l=parseFloat(this.getContainer().style.getPropertyValue(this.getRowMinHeightPropertyName(a+1)))||0;o>l&&this.getContainer().style.setProperty(this.getRowMinHeightPropertyName(a+1),`${o}px`)})}removeEmptyRows(){this.card.querySelectorAll(".footer-row-cell").forEach(e=>{let a=e.querySelector(".footer-row-cell-description");a&&!a.textContent.trim()&&e.remove()})}renderLayout(){return B` <div class="top-section${this.badge?" badge":""}">
+          >`:B`<slot name="secure-transaction-label"></slot>`;return B`<footer>${t}<slot name="footer"></slot></footer>`};adjustMiniCompareBodySlots(){if(this.card.getBoundingClientRect().width<=2)return;this.updateCardElementMinHeight(this.card.shadowRoot.querySelector(".top-section"),"top-section");let t=["heading-m","body-m","heading-m-price","body-xxs","price-commitment","offers","promo-text","callout-content"];this.card.classList.contains("checkmark")&&t.push("footer-rows"),t.forEach(a=>this.updateCardElementMinHeight(this.card.shadowRoot.querySelector(`slot[name="${a}"]`),a)),this.updateCardElementMinHeight(this.card.shadowRoot.querySelector("footer"),"footer");let e=this.card.shadowRoot.querySelector(".mini-compare-chart-badge");e&&e.textContent!==""&&this.getContainer().style.setProperty("--consonant-merch-card-mini-compare-chart-top-section-mobile-height","32px")}adjustMiniCompareFooterRows(){if(this.card.getBoundingClientRect().width===0)return;[...this.card.querySelector('[slot="footer-rows"]')?.children].forEach((e,a)=>{let o=Math.max($t,parseFloat(window.getComputedStyle(e).height)||0),l=parseFloat(this.getContainer().style.getPropertyValue(this.getRowMinHeightPropertyName(a+1)))||0;o>l&&this.getContainer().style.setProperty(this.getRowMinHeightPropertyName(a+1),`${o}px`)})}removeEmptyRows(){this.card.querySelectorAll(".footer-row-cell").forEach(e=>{let a=e.querySelector(".footer-row-cell-description");a&&!a.textContent.trim()&&e.remove()})}renderLayout(){return B` <div class="top-section${this.badge?" badge":""}">
             <slot name="icons"></slot> ${this.badge}
         </div>
         <slot name="heading-m"></slot>

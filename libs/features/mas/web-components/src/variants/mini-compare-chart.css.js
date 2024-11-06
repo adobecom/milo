@@ -59,10 +59,13 @@ export const CSS = `
 
   merch-card[variant="mini-compare-chart"] .footer-row-icon {
     display: flex;
-    align-self: flex-start;
-    height: 24px;
-    width: 24px;
-    align-items: center;
+    place-items: center;
+  }
+
+  merch-card[variant="mini-compare-chart"] .footer-row-icon img {
+    max-width: initial;
+    width: var(--consonant-merch-card-mini-compare-chart-icon-size);
+    height: var(--consonant-merch-card-mini-compare-chart-icon-size);
   }
 
   merch-card[variant="mini-compare-chart"] .footer-rows-title {
@@ -72,14 +75,13 @@ export const CSS = `
     padding: var(--consonant-merch-spacing-xxs) 0px;
   }
 
-  merch-card[variant="mini-compare-chart"] [slot="footer-rows"] {
-    padding: 0px var(--consonant-merch-spacing-s);
-  }
-
-  merch-card[variant="mini-compare-chart"] .footer-row-icon img {
-    max-width: initial;
-    width: var(--consonant-merch-card-mini-compare-chart-icon-size);
-    height: var(--consonant-merch-card-mini-compare-chart-icon-size);
+  merch-card[variant="mini-compare-chart"] .footer-row-cell {
+    border-top: 1px solid var(--consonant-merch-card-border-color);
+    display: flex;
+    gap: var(--consonant-merch-spacing-xs);
+    justify-content: start;
+    place-items: center;
+    padding: var(--consonant-merch-spacing-xs) var(--consonant-merch-spacing-s);
   }
 
   merch-card[variant="mini-compare-chart"] .footer-row-icon-checkmark img {
@@ -92,7 +94,7 @@ export const CSS = `
     height: 24px;
   }
 
-  merch-card[variant="mini-compare-chart"] .footer-row-cell {
+  merch-card[variant="mini-compare-chart"] .footer-row-cell-checkmark {
     display: flex;
     gap: var(--consonant-merch-spacing-xs);
     justify-content: start;

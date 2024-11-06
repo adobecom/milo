@@ -36,7 +36,7 @@ export class MiniCompareChart extends VariantLayout {
         'top-section',
     );
   
-    const slots = [
+    let slots = [
         'heading-m',
         'body-m',
         'heading-m-price',
@@ -45,8 +45,10 @@ export class MiniCompareChart extends VariantLayout {
         'offers',
         'promo-text',
         'callout-content',
-        'footer-rows',
     ];
+    if (this.card.classList.contains('checkmark')) {
+        slots.push('footer-rows');
+    }
   
     slots.forEach((slot) =>
         this.updateCardElementMinHeight(
