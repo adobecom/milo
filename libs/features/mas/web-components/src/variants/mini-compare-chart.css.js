@@ -69,10 +69,11 @@ export const CSS = `
   }
 
   merch-card[variant="mini-compare-chart"] .footer-rows-title {
-    color: var(--Text-text, #2C2C2C); */
-    font-family: var(--Font-adobe-clean, "Adobe Clean");
+    font-color: #2C2C2C;
     font-weight: 700;
-    padding: var(--consonant-merch-spacing-xxs) 0px;
+    padding-block-end: var(--consonant-merch-spacing-xxs);
+    line-height: var(--consonant-merch-card-body-xs-line-height);
+    font-size: var(--consonant-merch-card-body-xs-font-size);
   }
 
   merch-card[variant="mini-compare-chart"] .footer-row-cell {
@@ -91,7 +92,7 @@ export const CSS = `
   merch-card[variant="mini-compare-chart"] .footer-row-icon-checkmark {
     display: flex;
     align-items: center;
-    height: 24px;
+    height: 20px;
   }
 
   merch-card[variant="mini-compare-chart"] .footer-row-cell-checkmark {
@@ -99,6 +100,12 @@ export const CSS = `
     gap: var(--consonant-merch-spacing-xs);
     justify-content: start;
     align-items: flex-start;
+  }
+
+  merch-card[variant="mini-compare-chart"] .footer-row-cell-description-checkmark {
+    font-size: var(--consonant-merch-card-body-xs-font-size);
+    font-weight: 400;
+    line-height: var(--consonant-merch-card-body-xs-line-height);
   }
 
   merch-card[variant="mini-compare-chart"] .footer-row-cell-description {

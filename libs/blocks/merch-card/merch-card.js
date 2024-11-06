@@ -429,9 +429,10 @@ const decorateFooterRows = (merchCard, footerRows) => {
     footerRows.forEach((row) => {
       const rowIcon = row.firstElementChild.querySelector('picture');
       const rowText = row.querySelector('div > div:nth-child(2)').innerHTML;
-      const rowTextParagraph = createTag('div', { class: 'footer-row-cell-description' }, rowText);
+      const footerRowCellDescStyle = merchCard.classList.contains('checkmark') ? 'footer-row-cell-description-checkmark' : 'footer-row-cell-description';
       const footerRowCellClass = merchCard.classList.contains('checkmark') ? 'footer-row-cell-checkmark' : 'footer-row-cell';
       const footerRowIconClass = merchCard.classList.contains('checkmark') ? 'footer-row-icon-checkmark' : 'footer-row-icon';
+      const rowTextParagraph = createTag('div', { class: footerRowCellDescStyle }, rowText);
       const footerRowCell = createTag('div', { class: footerRowCellClass });
       if (rowIcon) {
         rowIcon.classList.add(footerRowIconClass);
