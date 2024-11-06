@@ -27,14 +27,14 @@ export class MerchCard extends LitElement {
         name: { type: String, attribute: 'name', reflect: true },
         variant: { type: String, reflect: true },
         size: { type: String, attribute: 'size', reflect: true },
-        badgeColor: { type: String, attribute: 'badge-color' },
-        borderColor: { type: String, attribute: 'border-color' },
+        badgeColor: { type: String, attribute: 'badge-color', reflect: true },
+        borderColor: { type: String, attribute: 'border-color', reflect: true },
         badgeBackgroundColor: {
             type: String,
             attribute: 'badge-background-color',
+            reflect: true,
         },
-        stripSize: { type: String, attribute: 'strip-size' },
-        stripBackground: { type: String, attribute: 'strip-background' },
+        backgroundImage: { type: String, attribute: 'background-image', reflect: true },
         badgeText: { type: String, attribute: 'badge-text' },
         actionMenu: { type: Boolean, attribute: 'action-menu' },
         customHr: { type: Boolean, attribute: 'custom-hr' },
@@ -157,7 +157,7 @@ export class MerchCard extends LitElement {
     }
 
     get computedBorderStyle() {
-        if (this.variant !== 'twp') {
+        if (!['twp', 'ccd-slice', 'ccd-suggested'].includes(this.variant)) {
             return `1px solid ${
                 this.borderColor ? this.borderColor : this.badgeBackgroundColor
             }`;
