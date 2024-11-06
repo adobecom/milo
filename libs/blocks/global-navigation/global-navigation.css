@@ -775,7 +775,7 @@ header.new-nav .feds-nav-wrapper--expanded .feds-nav > section.feds-navItem:firs
   padding-top: 25px;
 }
 
-header.new-nav .feds-nav-wrapper--expanded .feds-nav > .feds-navItem.feds-navItem--mobile-only:last-child {
+header.new-nav .feds-nav-wrapper--expanded .feds-nav > .feds-navItem.feds-navItem--mobile-only:last-of-type {
   padding-bottom: 10px;
   border-bottom: 2px solid #fff;
 }
@@ -806,7 +806,7 @@ header.new-nav .feds-nav > section.feds-navItem > button.feds-navLink::after {
   border-color: white;
 }
 
-header.new-nav .feds-nav > .feds-navItem:not(:last-child) > .feds-navLink {
+header.new-nav .feds-nav > .feds-navItem:not(:last-of-type) > .feds-navLink {
   border-bottom: 1px solid #2c2c2c;
 }
 
