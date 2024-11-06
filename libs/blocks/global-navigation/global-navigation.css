@@ -776,7 +776,7 @@ header.new-nav .feds-nav-wrapper--expanded .feds-nav > section.feds-navItem:firs
 }
 
 header.new-nav .feds-nav-wrapper--expanded .feds-nav > .feds-navItem.feds-navItem--mobile-only:last-of-type {
-  padding-bottom: 10px;
+  margin-bottom: 10px;
   border-bottom: 2px solid #fff;
 }
 
