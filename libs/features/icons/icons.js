@@ -75,16 +75,6 @@ const preloadInViewIcons = async (icons = []) => icons.forEach((icon) => {
   loadLink(path, { rel: 'preload', as: 'fetch', crossorigin: 'anonymous' });
 });
 
-function isElementInView(e) {
-  const rect = e.getBoundingClientRect();
-  return (
-    rect.top >= 0
-    && rect.left >= 0
-    && rect.bottom <= (window.innerHeight || document.documentElement.clientHeight)
-    && rect.right <= (window.innerWidth || document.documentElement.clientWidth)
-  );
-}
-
 function filterDuplicatedIcons(icons) {
   if (!icons.length) return [];
   const uniqueIconKeys = new Set();
@@ -101,8 +91,7 @@ function filterDuplicatedIcons(icons) {
 
 export async function decorateIcons(area, icons, config) {
   if (!icons.length) return;
-  const iconsATF = [...icons].filter((icon) => isElementInView(icon));
-  const uniqueIcons = filterDuplicatedIcons(iconsATF);
+  const uniqueIcons = filterDuplicatedIcons(icons);
   if (!uniqueIcons.length) return;
   preloadInViewIcons(uniqueIcons);
   preloadInViewIconResources(config);
