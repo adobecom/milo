@@ -411,7 +411,7 @@ export const transformTemplateToMobile = (popup, item, localnav = false) => {
       </span>
   `;
   const brand = document.querySelector('.feds-brand').outerHTML;
-  const breadCrumbs = document.querySelector('.feds-breadcrumbs')?.outerHTML || '';
+  const breadCrumbs = document.querySelector('.feds-breadcrumbs')?.outerHTML;
   popup.innerHTML = `
     <div class="top-bar">
       ${localnav ? brand : mainmenu}
@@ -423,7 +423,7 @@ export const transformTemplateToMobile = (popup, item, localnav = false) => {
       </span>
     </div>
     <div class="title">
-      ${breadCrumbs}
+      ${breadCrumbs ? breadCrumbs : `<div class="breadcrumbs"></div>`}
       <h7>${item.textContent.trim()}</h7>
     </div>
     <div class="tabs" role="tablist">
