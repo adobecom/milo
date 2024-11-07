@@ -4,7 +4,8 @@ import { getFedsPlaceholderConfig } from '../blocks/global-navigation/utilities/
 
 const { miloLibs, codeRoot } = getConfig();
 const HIDE_CONTROLS = '_hide-controls';
-const allVideos = [...document.querySelectorAll('a.video')];
+let firstVideo = null;
+let maxVideo = 0;
 let labels = {};
 
 export function decorateButtons(el, size) {
@@ -249,14 +250,14 @@ export async function addAccessibilityControl(videoString, videoAttrs, indexOfVi
     getFedsPlaceholderConfig(),
   );
   labels = { playMotion, pauseMotion, pauseIcon, playIcon };
-  const ariaLabel = videoAttrs.includes('autoplay') ? labels.pauseMotion : labels.playMotion;
+  const ariaLabel = `${videoAttrs.includes('autoplay') ? labels.pauseMotion : labels.playMotion} ${indexOfVideo === '1' ? '' : indexOfVideo}`.trim();
   if (!videoAttrs.includes('controls')) {
     if (videoAttrs.includes('hoverplay')) {
-      return `<a class='pause-play-wrapper video-holder' role='button' tabindex=${tabIndex} aria-label='${labels.playMotion}' 
+      return `<a class='pause-play-wrapper video-holder' role='button' tabindex=${tabIndex} aria-label='${labels.playMotion} ${indexOfVideo === '1' ? '' : indexOfVideo}' 
       aria-pressed=true video-index=${indexOfVideo}>${videoString} </a>`;
     }
     return `<div class='video-container video-holder'>${videoString}
-    <a class='pause-play-wrapper' role='button' tabindex=${tabIndex} aria-label='${ariaLabel} ${indexOfVideo}' aria-pressed=true video-index=${indexOfVideo}>
+    <a class='pause-play-wrapper' role='button' tabindex=${tabIndex} aria-label='${ariaLabel}' aria-pressed=true video-index=${indexOfVideo}>
       <div class='offset-filler ${videoAttrs.includes('autoplay') ? 'is-playing' : ''}'>  
         <img class='accessibility-control pause-icon' alt='${labels.pauseIcon}' src='https://main--federal--adobecom.hlx.page/federal/assets/svgs/accessibility-pause.svg'/>
         <img class='accessibility-control play-icon' alt='${labels.playIcon}' src='https://main--federal--adobecom.hlx.page/federal/assets/svgs/accessibility-play.svg'/>
@@ -265,14 +266,6 @@ export async function addAccessibilityControl(videoString, videoAttrs, indexOfVi
   </div>`;
   }
   return videoString;
-}
-
-function getVideoIndex(anchorTag) {
-  const index = allVideos.findIndex((video) => video === anchorTag);
-  if (index === 0 && allVideos.length === 1) {
-    return '';
-  }
-  return index + 1;
 }
 
 export function handlePause(event) {
@@ -409,7 +402,19 @@ export function isAccessible(anchorTag) {
   return !anchorTag.hash.includes(HIDE_CONTROLS);
 }
 
-export async function decorateAnchorVideo({ src = '', anchorTag }) {
+function updateFirstVideo() {
+  if (firstVideo != null && firstVideo?.controls === false && maxVideo > 1) {
+    let videoHolder = firstVideo.closest('.video-holder');
+    if (videoHolder.nodeName !== 'A') {
+      videoHolder = videoHolder.querySelector('a.pause-play-wrapper');
+    }
+    const firstVideoLabel = videoHolder.getAttribute('aria-label');
+    videoHolder.setAttribute('aria-label', `${firstVideoLabel} 1`);
+    firstVideo = null;
+  }
+}
+
+export async function decorateAnchorVideo({ src = '', anchorTag, indexOfVideo }) {
   if (!src.length || !(anchorTag instanceof HTMLElement)) return;
   const accessibilityEnabled = isAccessible(anchorTag);
   anchorTag.hash = anchorTag.hash.replace(`#${HIDE_CONTROLS}`, '');
@@ -419,12 +424,18 @@ export async function decorateAnchorVideo({ src = '', anchorTag }) {
   const tabIndex = anchorTag.tabIndex || 0;
   const videoIndex = (tabIndex === -1) ? 'tabindex=-1' : '';
   let video = `<video ${attrs} data-video-source=${src} ${videoIndex}></video>`;
-  const indexOfVideo = getVideoIndex(anchorTag);
   if (accessibilityEnabled) {
     video = await addAccessibilityControl(video, attrs, indexOfVideo, tabIndex);
   }
   anchorTag.insertAdjacentHTML('afterend', video);
+  if (indexOfVideo > maxVideo) {
+    maxVideo = indexOfVideo;
+  }
   const videoEl = parentElement.querySelector('video');
+  if (indexOfVideo === '1') {
+    firstVideo = videoEl;
+  }
+  updateFirstVideo();
   createIntersectionObserver({
     el: videoEl,
     options: { rootMargin: '1000px' },

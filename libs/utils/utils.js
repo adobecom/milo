@@ -113,6 +113,7 @@ const DO_NOT_INLINE = [
   'columns',
   'z-pattern',
 ];
+let videoBlockCounter = 0;
 
 const ENVS = {
   stage: {
@@ -1265,7 +1266,13 @@ async function processSection(section, config, isDoc) {
   const loadBlocks = [...stylePromises];
   if (section.preloadLinks.length) {
     const [modals, blocks] = partition(section.preloadLinks, (block) => block.classList.contains('modal'));
-    await Promise.all(blocks.map((block) => loadBlock(block)));
+    await Promise.all(blocks.map((block) => {
+      if (block.innerHTML.includes('mp4')) {
+        videoBlockCounter += 1;
+        block.setAttribute('indexOfBlock', videoBlockCounter);
+      }
+      return loadBlock(block);
+    }));
     modals.forEach((block) => loadBlock(block));
   }
 

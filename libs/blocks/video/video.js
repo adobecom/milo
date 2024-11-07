@@ -20,5 +20,6 @@ export default async function init(a) {
   await decorateAnchorVideo({
     src: videoPath,
     anchorTag: a,
+    indexOfVideo: a.getAttribute('indexOfBlock'),
   });
 }

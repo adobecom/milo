@@ -126,6 +126,11 @@ video {
     left: 2%;
   }
 
+  [dir="rtl"] .brick .brick-media:not(:has(.video-container)) .pause-play-wrapper {
+    border-top-left-radius: inherit;
+    border-bottom-left-radius: inherit;
+  }
+
   :is(.section[class*="-up"] .media .foreground .image:first-child, .aside .foreground .image:nth-last-child(1)) 
   .video-container .pause-play-wrapper {
     left: auto;
