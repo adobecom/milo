@@ -226,7 +226,7 @@ export default class MiloGraybox extends LitElement {
       <h1>Graybox</h1>
       <form @submit=${this.handleSubmit}>
         <div class="input-row">          
-          <input class="path" name="path" value="/sukamat/da-milo-college-graybox/bulk-2" @input=${this.validateInput} />
+          <input class="path" name="path" value="/sukamat/da-bacom-graybox/summit25" @input=${this.validateInput} />
           <button class="accent" .disabled=${!this._canPromote}>Promote</button>
           <button class="primary" @click=${this.handleCancel}>Cancel</button> 
         </div>       
