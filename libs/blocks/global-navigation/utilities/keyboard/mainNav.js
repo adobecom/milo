@@ -52,6 +52,8 @@ class MainNavItem {
           }
           case 'Escape': {
             closeAllDropdowns();
+            const activePopup = document.querySelector(selectors.activePopup);
+            if (newNav && !activePopup) document.querySelector('header.new-nav .feds-toggle').click();
             break;
           }
           case 'ArrowLeft': {
