@@ -116,6 +116,10 @@ header .gnav-wrapper a.gnav-brand {
   font-weight: 700;
 }
 
+header .gnav-wrapper a.gnav-brand.brand-image-only {
+  width: auto;
+}
+
 header .gnav-wrapper a.gnav-brand.light {
   color: #000;
 }
@@ -123,6 +127,12 @@ header .gnav-wrapper a.gnav-brand.light {
 header a.gnav-brand svg,
 header a.gnav-brand img {
   width: 27px;
+}
+
+header a.gnav-brand.brand-image-only svg,
+header a.gnav-brand.brand-image-only img {
+  width: auto;
+  height: 36px;
 }
 
 header span.gnav-brand-title {
