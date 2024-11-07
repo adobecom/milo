@@ -443,7 +443,7 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
       </span>
     </div>
     <div class="title">
-      ${breadCrumbs ? breadCrumbs : `<div class="breadcrumbs"></div>`}
+      ${breadCrumbs || `<div class="breadcrumbs"></div>`}
       <h7>${item.textContent.trim()}</h7>
     </div>
     <div class="tabs" role="tablist">
