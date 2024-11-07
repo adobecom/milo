@@ -24,6 +24,7 @@ export default class MiloGraybox extends LitElement {
     this._startPromote = false;
     this._startPreviewPublish = false;
     this._filesCount = 0;
+    this._promoteIgnorePaths = [];
     this._promotedFiles = [];
     this._promotedFilesCount = 0;
     this._promoteErrorCount = 0;
@@ -139,11 +140,28 @@ export default class MiloGraybox extends LitElement {
     this.requestUpdate();
   }
 
+
+  readPromoteIgnorePaths() {
+    const promoteIgnoreCheckbox = this.shadowRoot.querySelector('input[name="promoteIgnore"]');
+    if (!promoteIgnoreCheckbox || !promoteIgnoreCheckbox.checked) {
+      return;
+    }
+    const promoteIgnoreTextArea = this.shadowRoot.querySelector('textarea[name="additionalInfo"]');
+    if (promoteIgnoreTextArea) {
+      this._promoteIgnorePaths = promoteIgnoreTextArea.value
+        .split('\n')
+        .map(path => path.trim())
+        .filter(path => path.length > 0);
+    }
+  }
+
   async handleSubmit(event) {
     event.preventDefault();
     if (!this._canPromote) {
       return;
     }
+    this.readPromoteIgnorePaths();
+    
     // #1 - Start crawling
     this._startCrawl = true;
     await this.startCrawl(this._gbExpPath);
@@ -173,6 +191,12 @@ export default class MiloGraybox extends LitElement {
     this._canPromote = regex.test(this._gbExpPath);
     this.requestUpdate();
   }
+
+  toggleTextArea(event) {
+    const promoteIgnoreTextArea = this.shadowRoot.querySelector('.promote-ignore');
+    promoteIgnoreTextArea.style.display = event.target.checked ? 'block' : 'none';
+    this.requestUpdate();
+  }  
 
   renderDone() {
     return html`
@@ -229,8 +253,14 @@ export default class MiloGraybox extends LitElement {
           <input class="path" name="path" value="/sukamat/da-bacom-graybox/summit25" @input=${this.validateInput} />
           <button class="accent" .disabled=${!this._canPromote}>Promote</button>
           <button class="primary" @click=${this.handleCancel}>Cancel</button> 
-        </div>       
+        </div>
+        <div class="input-row promote-ignore" style="display: none;">
+          <textarea name="additionalInfo" rows="3" 
+            placeholder="Enter paths to ignore from promote, separated by line-break. \nEg: /<org>/<site>/<exp>/<path-to-file>"></textarea>
+        </div>
         <div class="checkbox-container">
+          <input type="checkbox" id="promoteIgnore" name="promoteIgnore" @change=${this.toggleTextArea}>
+          <label for="promoteIgnore">Paths to ignore from promote?</label>
           <input type="checkbox" id="publish" name="publish" disabled>
           <label for="publish">Publish files after promote?</label>
         </div>

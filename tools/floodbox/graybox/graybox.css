@@ -57,3 +57,16 @@ input.path {
 .input-row button {
   margin-left: 10px;
 }
+
+.promote-ignore {
+  width: 80%;
+  margin: var(--spacing-100) 0;
+}
+
+.promote-ignore textarea {
+  width: 100%;
+  padding: 8px;
+  border: 2px solid var(--s2-gray-200);
+  border-radius: var(--s2-radius-100);
+  resize: vertical;
+} 
