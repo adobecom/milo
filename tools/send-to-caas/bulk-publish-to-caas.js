@@ -77,7 +77,7 @@ const checkIms = async (prompt = true) => {
 
 const getPageDom = async (url, now) => {
   try {
-    const resp = await fetch(`${url}?date=${now.getTime()}`);
+    const resp = await fetch(`${url}?timestamp=${now.getTime()}`);
     if (!resp.ok) return { error: `${resp.status}: ${resp.statusText}` };
     const html = await resp.text();
     const dp = new DOMParser();
@@ -238,7 +238,6 @@ function showSuccessTable(successArr) {
       <td class="ok">OK</td>
       <td><a href="${pageUrl}" title="View page">${pageUrl}</a></td>
       <td class="entityid"><a target="_blank" href="${chimeraEndpoint}${response}" title="View Card JSON">${response}</a></td>
-      <!-- td class="entityid" data-entity-id="${response}">${response}</td -->
     </tr>`;
   });
 }
@@ -301,7 +300,6 @@ const separator = document.querySelector('.separator');
 const parent = separator.parentElement;
 
 const presetsJsonPath = 'https://milo.adobe.com/drafts/caas/bppresets.json';
-
 let presetsData = {};
 
 const PRESETS = fetchExcelJson(presetsJsonPath).then((presets) => {
@@ -376,56 +374,68 @@ helpButtons.forEach((btn) => {
   btn.addEventListener('click', (e) => {
     e.preventDefault();
     const el = e.target.classList[1]
-
-    if (el === 'use-preview') {
-      showAlert(`<p><b>Use Preview Content</b>
-        <p>When this option is checked, the tool will publish content from:
-        <p><tt>https://main--{repo}--{owner}.hlx.live</tt>
-        <p>This can be useful for testing before publishing to production.</p>`);
-
-    } else if (el === 'host') {
-      showAlert(`<p><b>Host</b><p>Enter the host of the site you are publishing content to.</p>
-        <p>
-         <tt>&nbsp; milo.adobe.com</tt> <br>
-         <tt>&nbsp; blog.adobe.com</tt> <br>
-         <tt>&nbsp; business.adobe.com</tt>.</p>`);
-
-      } else if (el === 'repo') {
+    switch (el) {
+      case 'host':
+        showAlert(`<p><b>Host</b><p>Enter the host of the site you are publishing content to.</p>
+          <p>
+           <tt>&nbsp; milo.adobe.com</tt> <br>
+           <tt>&nbsp; blog.adobe.com</tt> <br>
+           <tt>&nbsp; business.adobe.com</tt>.</p>`);
+        break;
+    
+      case 'repo':
         showAlert(`<p><b>Repo</b></p>
           <p>The <b>Repo</b> is the name of the repository where the content will be published.</p>
           <p>For example:</p>
           <p><tt>https://main--<b>{repo}</b>--{owner}.hlx.live</tt>`);
-
-      } else if (el === 'owner') {
+        break;
+    
+      case 'owner':
         showAlert(`<p><b>Repo Owner</b></p>
           <p>The <b>Repo Owner</b> is the owner of the repository where the content will be published. For example:</p>
-          <p>For example:</p>
           <p><tt>https://main--{repo}--<b>{owner}</b>.hlx.live</tt>`);
-
-      } else if (el === 'publish-to-draft') {   
-        showAlert(`<p><b>Publish to CaaS DRAFT only</b></p>
-          <p>When this is option checked, the content will be sent to the CaaS <b>DRAFT</b> container <i>only</i>. </p>
-          <p>With this option unchecked, the content is sent to both, the CaaS <b>LIVE</b> and <b>DRAFT</b> containers.</p>`);
-          
-      } else if (el === 'floodgate') {   
-        showAlert(`<p><b>FloodGate</b></p>
-          <p>Use this option to select the <b>FloodGate</b> color for the content.</p>`);
-
-      } else if (el === 'use-html') {
-        showAlert(`<p><b>Add HTML to Links</b></p>
-          <p>When this option is checked, the bulkpublisher will add the <b>.html</b> extension to the CTA links.</p>`);
-
-      } else if (el === 'content-type-fallback') {   
+        break;
+           
+      case 'content-type-fallback':
         showAlert(`<p><b>ContentType Fallback</b></p>
           <p>This is the <b>content-type</b> tag that will be applied to all cards that do not have 
           a specific <b>content-type</b> tag included in their metadata.</p>`);
+        break;
 
-    } else {
+      case 'caas-env':
+        showAlert(`<p><b>CaaS Enviroment</b></p>
+          <p>This is the CaaS environment where the content will be published.</p>`);
+        break;
+        
+      case 'floodgate':
+        showAlert(`<p><b>FloodGate</b></p>
+          <p>Use this option to select the <b>FloodGate</b> color for the content.</p>`);
+        break;
+  
+      case 'publish-to-draft':
+        showAlert(`<p><b>Publish to CaaS DRAFT only</b></p>
+          <p>When this is option checked, the content will be sent to the CaaS <b>DRAFT</b> container <i>only</i>. </p>
+          <p>With this option unchecked, the content is sent to both, the CaaS <b>LIVE</b> and <b>DRAFT</b> containers.</p>`);
+        break;
+        
+      case 'use-html':
+        showAlert(`<p><b>Add HTML to Links</b></p>
+          <p>When this option is checked, the bulkpublisher will add the <b>.html</b> extension to the CTA links.</p>`);
+         break;
+        
+      case 'use-preview':
+        showAlert(`<p><b>Use Preview Content</b>
+          <p>When this option is checked, the tool will publish content from:
+          <p><tt>https://main--{repo}--{owner}.hlx.live</tt>
+          <p>This can be useful for testing before publishing to production.</p>`);
+        break;
+        
+      default:
         showAlert(`<p><b>Help</b><p>Help for "${el}" is on its way! Stay tuned.</p>`);
+        break;
     }
   });
-}
-);
+});
 
 const themeOptions = document.querySelectorAll('.theme-options');
 themeOptions.forEach((btn) => {
@@ -433,7 +443,6 @@ themeOptions.forEach((btn) => {
     if (e.target.value === "dark") {
       document.querySelector('.bulk-publisher').classList.add('dark');
       localStorage.setItem('bp-theme', 'dark');
-
     } else {
       document.querySelector('.bulk-publisher').classList.remove('dark');
       localStorage.setItem('bp-theme', 'light');
