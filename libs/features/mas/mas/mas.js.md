@@ -9,29 +9,64 @@ mas.js includes the followings custom elements:
 -   [inline-price](/libs/features/mas/docs/inline-price.html)
 -   [checkout-link](/libs/features/mas/docs/checkout-link.html)
 -   [merch-card](/libs/features/mas/docs/merch-card.html)
+-   [CCD Gallery](/libs/features/mas/docs/ccd.html)
 
-## Enablement
+## Enablement `mas-commerce-service`
 
-Add the following script in your document `head` element.
+You do need to have mas.js on your page / application, including it can be done like the following
 
 ```html
-<!-- for US english -->
-<script
-    src="https://ccd-checkout-link--milo--yesil.hlx.page/libs/deps/mas/mas.js"
-    type="module"
-></script>
-
-<!-- for other locales, pass locale parameter from the table below -->
-<script
-    src="https://ccd-checkout-link--milo--yesil.hlx.page/libs/deps/mas/mas.js?locale=CA_en"
-    type="module"
-></script>
+<script src="/libs/deps/mas/mas.js" type="module"></script>
 ```
 
-Behind the scene, once MAS isitialized in the page, a custom element (`wcms-commerce`) is added to the document head.<br>
-It is programmatically added by mas.js and its tag name can be changed later.
+### Attributes
 
-### Example:
+| Name                     | Description                                                                                         | Default Value                | Required |
+| ------------------------ | --------------------------------------------------------------------------------------------------- | ---------------------------- | -------- |
+| `allow-override`         | enables override of commerce env/landscape via query parameters(commerce.env/commerce.landscape)    |  `false`                     |  `false` |
+| `checkout-client-id`     | checkout client id                                                                                  |  `false`                     |  `false` |
+| `checkout-workflow-step` | default checkout workflow step                                                                      | `CheckoutWorkflowStep.EMAIL` | `false`  |
+| `country`                | country of the offers to retrieve from WCS, determines the currency, price format, etc.             | US or locale country if set  | `false`  |
+|  `env`                   | commerce environment you want this page to use, either `stage` or `prod`                            |  `prod`                      |  `false` |
+|  `force-tax-exclusive`   | force all price display to be tax exclusive                                                         |  `false`                     |  `false` |
+| `locale`                 | currency & price locale you need, must belong to one of the [supported locales](#supported-locales) | `en_US`                      | `false`  |
+| `language`               | language of the price literal, e.g: per license                                                     | en or locale langauge if set | `false`  |
+
+### Methods
+
+| Name                               | Description                                                                                            |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------ |
+|  `registerCheckoutAction (action)` |  registers an action, that must have signature (offers, options, imsSignedInPromise)                   |
+|  `flushWcsCache()`                 |  flush the payload cache for WCS calls                                                                 |
+|  `refreshOffers()`                 | `flushWcsCache` + refresh prices + checkout links                                                      |
+|  `refreshFragments()`              |  `flushWcsCache` + refresh fragment content from Odin. This results in card content update with offers |
+
+### Examples
+
+```html
+<!-- for US english production-->
+<mas-commerce-service></mas-commerce-service>
+
+<!-- for US english stage-->
+<mas-commerce-service env="stage"></mas-commerce-service>
+
+<!-- for other country & language -->
+<mas-commerce-service country="CA" language="fr"></mas-commerce-service>
+
+<!-- for other locales, pass locale parameter from the table below -->
+<mas-commerce-service locale="en_CA"></mas-commerce-service>
+
+<!-- for other language -->
+<mas-commerce-service language="es"></mas-commerce-service>
+
+<!-- for other locale, with different language -->
+<mas-commerce-service locale="en_CA" language="es"></mas-commerce-service>
+
+<!-- or with a country and language -->
+<mas-commerce-service country="JP" language="en"></mas-commerce-service>
+```
+
+you can play around with below price, either adding locale, language or env as parameters that will be injected to `mas-commerce-service` as attributes, and then it will be activated.
 
 <p class="example">
   Plans starting at
@@ -49,100 +84,100 @@ It is programmatically added by mas.js and its tag name can be changed later.
   >.
 </p>
 
+#### refreshOffers
 
+Toggle the network tab and click on `Refresh` button below
+
+```html {.demo}
+<button id="btnRefresh">Refresh</button>
 <script type="module">
-  const params = new URLSearchParams(document.location.search);
-  let masJs = 'https://ccd-checkout-link--milo--yesil.hlx.page/libs/deps/mas/mas.js';
-  const locale = params.get('locale');
-  if (locale) {
-    masJs = `${masJs}?locale=${locale}`;
-  }
-  const script = document.createElement('script');
-  script.type = 'module';
-  script.src = masJs;
-  document.head.append(script);
+    document.getElementById('btnRefresh').addEventListener('click', () => {
+        document.querySelector('mas-commerce-service').refreshOffers();
+    });
 </script>
+```
 
-## Supported locales
+### Supported locales
 
-| Locale     | Description                     | Try                       |
-| ---------- | ------------------------------- | ------------------------- |
-| US_en      | English (United States)         | [Try](/libs/features/mas/docs/mas.js.html)      |
-| AR_es      | Spanish (Argentina)             | [Try](?locale=AR_es)      |
-| AT_de      | German (Austria)                | [Try](?locale=AT_de)      |
-| AU_en      | English (Australia)             | [Try](?locale=AU_en)      |
-| AZ_en      | English (Azerbaijan)            | [Try](?locale=AZ_en)      |
-| AZ_ru      | Russian (Azerbaijan)            | [Try](?locale=AZ_ru)      |
-| BE_en      | English (Belgium)               | [Try](?locale=BE_en)      |
-| BE_fr      | French (Belgium)                | [Try](?locale=BE_fr)      |
-| BE_nl      | Dutch (Belgium)                 | [Try](?locale=BE_nl)      |
-| BG_bg      | Bulgarian (Bulgaria)            | [Try](?locale=BG_bg)      |
-| BR_pt      | Portuguese (Brazil)             | [Try](?locale=BR_pt)      |
-| CA_en      | English (Canada)                | [Try](?locale=CA_en)      |
-| CH_de      | German (Switzerland)            | [Try](?locale=CH_de)      |
-| CH_fr      | French (Switzerland)            | [Try](?locale=CH_fr)      |
-| CH_it      | Italian (Switzerland)           | [Try](?locale=CH_it)      |
-| CL_es      | Spanish (Chile)                 | [Try](?locale=CL_es)      |
-| CN_zh-Hans | Simplified Chinese (China)      | [Try](?locale=CN_zh-Hans) |
-| CO_es      | Spanish (Colombia)              | [Try](?locale=CO_es)      |
-| CR_es      | Spanish (Costa Rica)            | [Try](?locale=CR_es)      |
-| CZ_cs      | Czech (Czech Republic)          | [Try](?locale=CZ_cs)      |
-| DE_de      | German (Germany)                | [Try](?locale=DE_de)      |
-| DK_da      | Danish (Denmark)                | [Try](?locale=DK_da)      |
-| DO_es      | Spanish (Dominican Republic)    | [Try](?locale=DO_es)      |
-| DZ_ar      | Arabic (Algeria)                | [Try](?locale=DZ_ar)      |
-| DZ_en      | English (Algeria)               | [Try](?locale=DZ_en)      |
-| EC_es      | Spanish (Ecuador)               | [Try](?locale=EC_es)      |
-| EE_et      | Estonian (Estonia)              | [Try](?locale=EE_et)      |
-| EG_ar      | Arabic (Egypt)                  | [Try](?locale=EG_ar)      |
-| EG_en      | English (Egypt)                 | [Try](?locale=EG_en)      |
-| ES_es      | Spanish (Spain)                 | [Try](?locale=ES_es)      |
-| FI_fi      | Finnish (Finland)               | [Try](?locale=FI_fi)      |
-| FR_fr      | French (France)                 | [Try](?locale=FR_fr)      |
-| GB_en      | English (United Kingdom)        | [Try](?locale=GB_en)      |
-| GR_el      | Greek (Greece)                  | [Try](?locale=GR_el)      |
-| GR_en      | English (Greece)                | [Try](?locale=GR_en)      |
-| GT_es      | Spanish (Guatemala)             | [Try](?locale=GT_es)      |
-| HK_zh-hant | Traditional Chinese (Hong Kong) | [Try](?locale=HK_zh-hant) |
-| HU_hu      | Hungarian (Hungary)             | [Try](?locale=HU_hu)      |
-| ID_en      | English (Indonesia)             | [Try](?locale=ID_en)      |
-| ID_in      | Indonesian (Indonesia)          | [Try](?locale=ID_in)      |
-| IE_en      | English (Ireland)               | [Try](?locale=IE_en)      |
-| IL_iw      | Hebrew (Israel)                 | [Try](?locale=IL_iw)      |
-| IN_en      | English (India)                 | [Try](?locale=IN_en)      |
-| IN_hi      | Hindi (India)                   | [Try](?locale=IN_hi)      |
-| IT_it      | Italian (Italy)                 | [Try](?locale=IT_it)      |
-| JP_ja      | Japanese (Japan)                | [Try](?locale=JP_ja)      |
-| KR_ko      | Korean (South Korea)            | [Try](?locale=KR_ko)      |
-| LT_lt      | Lithuanian (Lithuania)          | [Try](?locale=LT_lt)      |
-| LU_de      | German (Luxembourg)             | [Try](?locale=LU_de)      |
-| LU_en      | English (Luxembourg)            | [Try](?locale=LU_en)      |
-| LU_fr      | French (Luxembourg)             | [Try](?locale=LU_fr)      |
-| LV_lv      | Latvian (Latvia)                | [Try](?locale=LV_lv)      |
-| MT_en      | English (Malta)                 | [Try](?locale=MT_en)      |
-| MU_en      | English (Mauritius)             | [Try](?locale=MU_en)      |
-| MX_es      | Spanish (Mexico)                | [Try](?locale=MX_es)      |
-| MY_en      | English (Malaysia)              | [Try](?locale=MY_en)      |
-| MY_ms      | Malay (Malaysia)                | [Try](?locale=MY_ms)      |
-| NG_en      | English (Nigeria)               | [Try](?locale=NG_en)      |
-| NL_nl      | Dutch (Netherlands)             | [Try](?locale=NL_nl)      |
-| NO_nb      | Norwegian Bokmål (Norway)       | [Try](?locale=NO_nb)      |
-| NZ_en      | English (New Zealand)           | [Try](?locale=NZ_en)      |
-| PE_es      | Spanish (Peru)                  | [Try](?locale=PE_es)      |
-| PL_pl      | Polish (Poland)                 | [Try](?locale=PL_pl)      |
-| PT_pt      | Portuguese (Portugal)           | [Try](?locale=PT_pt)      |
-| RO_ro      | Romanian (Romania)              | [Try](?locale=RO_ro)      |
-| RU_ru      | Russian (Russia)                | [Try](?locale=RU_ru)      |
-| SA_ar      | Arabic (Saudi Arabia)           | [Try](?locale=SA_ar)      |
-| SA_en      | English (Saudi Arabia)          | [Try](?locale=SA_en)      |
-| SE_sv      | Swedish (Sweden)                | [Try](?locale=SE_sv)      |
-| SG_en      | English (Singapore)             | [Try](?locale=SG_en)      |
-| SI_sl      | Slovenian (Slovenia)            | [Try](?locale=SI_sl)      |
-| SK_sk      | Slovak (Slovakia)               | [Try](?locale=SK_sk)      |
-| TH_en      | English (Thailand)              | [Try](?locale=TH_en)      |
-| TH_th      | Thai (Thailand)                 | [Try](?locale=TH_th)      |
-| TR_tr      | Turkish (Turkey)                | [Try](?locale=TR_tr)      |
-| TW_zh-Hant | Traditional Chinese (Taiwan)    | [Try](?locale=TW_zh-Hant) |
-| UA_uk      | Ukrainian (Ukraine)             | [Try](?locale=UA_uk)      |
-| US_es      | Spanish (United States)         | [Try](?locale=US_es)      |
-| ZA_en      | English (South Africa)          | [Try](?locale=ZA_en)      |
+| Locale     | Description                     | Try                                        |
+| ---------- | ------------------------------- | ------------------------------------------ |
+| en_US      | English (United States)         | [Try](/libs/features/mas/docs/mas.js.html) |
+|            |                                 |                                            |
+| ar_DZ      | Arabic (Algeria)                | [Try](?locale=ar_DZ)                       |
+| ar_EG      | Arabic (Egypt)                  | [Try](?locale=ar_EG)                       |
+| ar_SA      | Arabic (Saudi Arabia)           | [Try](?locale=ar_SA)                       |
+| bg_BG      | Bulgarian (Bulgaria)            | [Try](?locale=bg_BG)                       |
+| cs_CZ      | Czech (Czech Republic)          | [Try](?locale=cs_CZ)                       |
+| da_DK      | Danish (Denmark)                | [Try](?locale=da_DK)                       |
+| de_AT      | German (Austria)                | [Try](?locale=de_AT)                       |
+| de_CH      | German (Switzerland)            | [Try](?locale=de_CH)                       |
+| de_DE      | German (Germany)                | [Try](?locale=de_DE)                       |
+| de_LU      | German (Luxembourg)             | [Try](?locale=de_LU)                       |
+| el_GR      | Greek (Greece)                  | [Try](?locale=el_GR)                       |
+| en_AU      | English (Australia)             | [Try](?locale=en_AU)                       |
+| en_AZ      | English (Azerbaijan)            | [Try](?locale=en_AZ)                       |
+| en_BE      | English (Belgium)               | [Try](?locale=en_BE)                       |
+| en_CA      | English (Canada)                | [Try](?locale=en_CA)                       |
+| en_DZ      | English (Algeria)               | [Try](?locale=en_DZ)                       |
+| en_EG      | English (Egypt)                 | [Try](?locale=en_EG)                       |
+| en_GB      | English (United Kingdom)        | [Try](?locale=en_GB)                       |
+| en_GR      | English (Greece)                | [Try](?locale=en_GR)                       |
+| en_ID      | English (Indonesia)             | [Try](?locale=en_ID)                       |
+| en_IE      | English (Ireland)               | [Try](?locale=en_IE)                       |
+| en_IN      | English (India)                 | [Try](?locale=en_IN)                       |
+| en_LU      | English (Luxembourg)            | [Try](?locale=en_LU)                       |
+| en_MT      | English (Malta)                 | [Try](?locale=en_MT)                       |
+| en_MU      | English (Mauritius)             | [Try](?locale=en_MU)                       |
+| en_MY      | English (Malaysia)              | [Try](?locale=en_MY)                       |
+| en_NG      | English (Nigeria)               | [Try](?locale=en_NG)                       |
+| en_NZ      | English (New Zealand)           | [Try](?locale=en_NZ)                       |
+| en_SA      | English (Saudi Arabia)          | [Try](?locale=en_SA)                       |
+| en_SG      | English (Singapore)             | [Try](?locale=en_SG)                       |
+| en_TH      | English (Thailand)              | [Try](?locale=en_TH)                       |
+| en_ZA      | English (South Africa)          | [Try](?locale=en_ZA)                       |
+| es_AR      | Spanish (Argentina)             | [Try](?locale=es_AR)                       |
+| es_CL      | Spanish (Chile)                 | [Try](?locale=es_CL)                       |
+| es_CO      | Spanish (Colombia)              | [Try](?locale=es_CO)                       |
+| es_CR      | Spanish (Costa Rica)            | [Try](?locale=es_CR)                       |
+| es_DO      | Spanish (Dominican Republic)    | [Try](?locale=es_DO)                       |
+| es_EC      | Spanish (Ecuador)               | [Try](?locale=es_EC)                       |
+| es_ES      | Spanish (Spain)                 | [Try](?locale=es_ES)                       |
+| es_GT      | Spanish (Guatemala)             | [Try](?locale=es_GT)                       |
+| es_MX      | Spanish (Mexico)                | [Try](?locale=es_MX)                       |
+| es_PE      | Spanish (Peru)                  | [Try](?locale=es_PE)                       |
+| es_US      | Spanish (United States)         | [Try](?locale=es_US)                       |
+| et_EE      | Estonian (Estonia)              | [Try](?locale=et_EE)                       |
+| fi_FI      | Finnish (Finland)               | [Try](?locale=fi_FI)                       |
+| fr_BE      | French (Belgium)                | [Try](?locale=fr_BE)                       |
+| fr_CH      | French (Switzerland)            | [Try](?locale=fr_CH)                       |
+| fr_FR      | French (France)                 | [Try](?locale=fr_FR)                       |
+| fr_LU      | French (Luxembourg)             | [Try](?locale=fr_LU)                       |
+| hi_IN      | Hindi (India)                   | [Try](?locale=hi_IN)                       |
+| hu_HU      | Hungarian (Hungary)             | [Try](?locale=hu_HU)                       |
+| in_ID      | Indonesian (Indonesia)          | [Try](?locale=in_ID)                       |
+| it_CH      | Italian (Switzerland)           | [Try](?locale=it_CH)                       |
+| it_IT      | Italian (Italy)                 | [Try](?locale=it_IT)                       |
+| iw_IL      | Hebrew (Israel)                 | [Try](?locale=iw_IL)                       |
+| ja_JP      | Japanese (Japan)                | [Try](?locale=ja_JP)                       |
+| ko_KR      | Korean (South Korea)            | [Try](?locale=ko_KR)                       |
+| lt_LT      | Lithuanian (Lithuania)          | [Try](?locale=lt_LT)                       |
+| lv_LV      | Latvian (Latvia)                | [Try](?locale=lv_LV)                       |
+| ms_MY      | Malay (Malaysia)                | [Try](?locale=ms_MY)                       |
+| nb_NO      | Norwegian Bokmål (Norway)       | [Try](?locale=nb_NO)                       |
+| nl_BE      | Dutch (Belgium)                 | [Try](?locale=nl_BE)                       |
+| nl_NL      | Dutch (Netherlands)             | [Try](?locale=nl_NL)                       |
+| pl_PL      | Polish (Poland)                 | [Try](?locale=pl_PL)                       |
+| pt_BR      | Portuguese (Brazil)             | [Try](?locale=pt_BR)                       |
+| pt_PT      | Portuguese (Portugal)           | [Try](?locale=pt_PT)                       |
+| ro_RO      | Romanian (Romania)              | [Try](?locale=ro_RO)                       |
+| ru_AZ      | Russian (Azerbaijan)            | [Try](?locale=ru_AZ)                       |
+| ru_RU      | Russian (Russia)                | [Try](?locale=ru_RU)                       |
+| sk_SK      | Slovak (Slovakia)               | [Try](?locale=sk_SK)                       |
+| sl_SI      | Slovenian (Slovenia)            | [Try](?locale=sl_SI)                       |
+| sv_SE      | Swedish (Sweden)                | [Try](?locale=sv_SE)                       |
+| th_TH      | Thai (Thailand)                 | [Try](?locale=th_TH)                       |
+| tr_TR      | Turkish (Turkey)                | [Try](?locale=tr_TR)                       |
+| uk_UA      | Ukrainian (Ukraine)             | [Try](?locale=uk_UA)                       |
+| zh-Hans_CN | Simplified Chinese (China)      | [Try](?locale=zh-Hans_CN)                  |
+| zh-Hant_HK | Traditional Chinese (Hong Kong) | [Try](?locale=zh-Hant_HK)                  |
+| zh-Hant_TW | Traditional Chinese (Taiwan)    | [Try](?locale=zh-Hant_TW)                  |

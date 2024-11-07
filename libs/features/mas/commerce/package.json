@@ -1,5 +1,5 @@
 {
-    "name": "@adobe/mas-commerce",
+    "name": "@adobecom/mas-commerce",
     "version": "2.0.0",
     "files": [
         "lib",
@@ -8,18 +8,15 @@
     ],
     "main": "src/index.js",
     "type": "module",
-    "types": "src/index.d.ts",
-    "sideEffects": false,
     "scripts": {
-        "build": "npm run test:ci && npm run build:bundle && npm run build:types",
+        "build": "npm run test:ci && npm run build:bundle",
         "build:bundle": "node ./build.mjs",
-        "build:types": "cp ./src/index.d.ts ./libs/commerce.d.ts",
         "build:watch": "npm run build:bundle --watch",
         "test": "wtr --config ./web-test-runner.config.mjs --coverage --watch",
         "test:ci": "wtr --config ./web-test-runner.config.mjs --coverage"
     },
     "dependencies": {
-        "@dexter/tacocat-consonant-templates": "file:./internal/tacocat-consonant-templates-1.13.0.tgz",
+        "@dexter/tacocat-consonant-templates": "file:./internal/tacocat-consonant-templates-1.14.0.tgz",
         "@dexter/tacocat-core": "file:./internal/tacocat-core-1.13.0.tgz",
         "@pandora/commerce-checkout-url-builder": "file:./internal/commerce-checkout-url-builder-1.6.0.tgz",
         "@pandora/data-models-odm": "file:./internal/data-models-odm-0.5.4.tgz",

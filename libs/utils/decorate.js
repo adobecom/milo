@@ -1,4 +1,4 @@
-import { createTag, loadStyle, getConfig } from './utils.js';
+import { createTag, loadStyle, getConfig, createIntersectionObserver } from './utils.js';
 
 const { miloLibs, codeRoot } = getConfig();
 
@@ -118,8 +118,6 @@ export async function decorateBlockBg(block, node, { useHandleFocalpoint = false
     const allVP = [['mobile-only'], ['tablet-only'], ['desktop-only']];
     const viewports = childCount === 2 ? binaryVP : allVP;
     [...node.children].forEach((child, i) => {
-      const videoLink = child.querySelector('a[href*=".mp4"]');
-      if (videoLink && !videoLink.hash) videoLink.hash = 'autoplay';
       if (childCount > 1) child.classList.add(...viewports[i]);
       const pic = child.querySelector('picture');
       if (useHandleFocalpoint && pic
@@ -205,7 +203,7 @@ export function getImgSrc(pic) {
   return source?.srcset ? `poster='${source.srcset}'` : '';
 }
 
-export function getVideoAttrs(hash, dataset) {
+function getVideoAttrs(hash, dataset) {
   const isAutoplay = hash?.includes('autoplay');
   const isAutoplayOnce = hash?.includes('autoplay1');
   const playOnHover = hash?.includes('hoverplay');
@@ -263,7 +261,7 @@ export function handleObjectFit(bgRow) {
   });
 }
 
-export function getVideoIntersectionObserver() {
+function getVideoIntersectionObserver() {
   if (!window?.videoIntersectionObs) {
     window.videoIntersectionObs = new window.IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -284,7 +282,7 @@ export function getVideoIntersectionObserver() {
   return window.videoIntersectionObs;
 }
 
-export function applyInViewPortPlay(video) {
+function applyInViewPortPlay(video) {
   if (!video) return;
   if (video.hasAttribute('data-play-viewport')) {
     const observer = getVideoIntersectionObserver();
@@ -296,18 +294,18 @@ export function applyInViewPortPlay(video) {
 }
 
 export function decorateMultiViewport(el) {
-  const viewports = [
-    '(max-width: 599px)',
-    '(min-width: 600px) and (max-width: 1199px)',
-    '(min-width: 1200px)',
-  ];
   const foreground = el.querySelector('.foreground');
-  if (foreground.childElementCount === 2 || foreground.childElementCount === 3) {
+  const cols = foreground.childElementCount;
+  if (cols === 2 || cols === 3) {
+    const viewports = [
+      '(max-width: 599px)',
+      '(min-width: 600px) and (max-width: 1199px)',
+      '(min-width: 1200px)',
+      '(min-width: 600px)',
+    ].filter((v, i) => (cols === 2 ? [0, 3].includes(i) : i !== 3));
     [...foreground.children].forEach((child, index) => {
       const mq = window.matchMedia(viewports[index]);
-      const setContent = () => {
-        if (mq.matches) foreground.replaceChildren(child);
-      };
+      const setContent = () => mq.matches && foreground.replaceChildren(child);
       setContent();
       mq.addEventListener('change', setContent);
     });
@@ -323,6 +321,25 @@ export async function loadCDT(el, classList) {
         .then(({ default: initCDT }) => initCDT(el, classList)),
     ]);
   } catch (error) {
-    window.lana?.log(`Failed to load countdown timer module: ${error}`, { tags: 'countdown-timer' });
+    window.lana?.log(`WARN: Failed to load countdown timer: ${error}`, { tags: 'errorType=warn,module=countdown-timer' });
   }
+}
+
+export function decorateAnchorVideo({ src = '', anchorTag }) {
+  if (!src.length || !(anchorTag instanceof HTMLElement)) return;
+  if (anchorTag.closest('.marquee, .aside, .hero-marquee, .quiz-marquee') && !anchorTag.hash) anchorTag.hash = '#autoplay';
+  const { dataset, parentElement } = anchorTag;
+  const video = `<video ${getVideoAttrs(anchorTag.hash, dataset)} data-video-source=${src}></video>`;
+  anchorTag.insertAdjacentHTML('afterend', video);
+  const videoEl = parentElement.querySelector('video');
+  createIntersectionObserver({
+    el: videoEl,
+    options: { rootMargin: '1000px' },
+    callback: () => {
+      videoEl?.appendChild(createTag('source', { src, type: 'video/mp4' }));
+    },
+  });
+  applyHoverPlay(videoEl);
+  applyInViewPortPlay(videoEl);
+  anchorTag.remove();
 }

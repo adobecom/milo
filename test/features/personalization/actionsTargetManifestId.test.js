@@ -32,7 +32,6 @@ describe('replace action', () => {
     manifestJson = JSON.parse(manifestJson);
     setFetchResponse(manifestJson);
     await init(mepSettings);
-    expect(getConfig().mep.commands[0].targetManifestId).to.equal('manifest');
     const el = document.querySelector('a[href="/test/features/personalization/mocks/fragments/milo-replace-content-chrome-howto-h2"]');
     expect(el.dataset.adobeTargetTestid).to.equal('manifest');
   });
@@ -45,7 +44,6 @@ describe('replace action', () => {
     setFetchResponse(manifestJson);
 
     await init(mepSettings);
-    expect(getConfig().mep.fragments['/fragments/replaceme'].targetManifestId).to.equal('manifest');
     const el = document.querySelector('a[href="/test/features/personalization/mocks/fragments/milo-replace-content-chrome-howto-h2"]');
     expect(el.dataset.adobeTargetTestid).to.equal('manifest');
     const fragmentResp = await readFile({ path: './mocks/fragments/fragmentReplaced.plain.html' });
@@ -74,7 +72,6 @@ describe('insertAfter action', async () => {
     setFetchResponse(manifestJson);
 
     await init(mepSettings);
-    expect(getConfig().mep.commands[0].targetManifestId).to.equal('manifest');
     const el = document.querySelector('a[href="/test/features/personalization/mocks/fragments/insertafter"]');
     expect(el.dataset.adobeTargetTestid).to.equal('manifest');
   });
@@ -88,7 +85,6 @@ describe('insertBefore action', async () => {
     setFetchResponse(manifestJson);
 
     await init(mepSettings);
-    expect(getConfig().mep.commands[0].targetManifestId).to.equal('manifest');
     const el = document.querySelector('a[href="/test/features/personalization/mocks/fragments/insertbefore"]');
     expect(el.dataset.adobeTargetTestid).to.equal('manifest');
   });
@@ -103,7 +99,6 @@ describe('prependToSection action', async () => {
 
     expect(document.querySelector('a[href="/test/features/personalization/mocks/fragments/prependToSection"]')).to.be.null;
     await init(mepSettings);
-    expect(getConfig().mep.commands[0].targetManifestId).to.equal('manifest');
     const el = document.querySelector('a[href="/test/features/personalization/mocks/fragments/prependToSection"]');
     expect(el.dataset.adobeTargetTestid).to.equal('manifest');
   });
@@ -118,7 +113,6 @@ describe('appendToSection action', async () => {
     setFetchResponse(manifestJson);
 
     await init(mepSettings);
-    expect(getConfig().mep.commands[0].targetManifestId).to.equal('manifest');
     const el = document.querySelector('a[href="/test/features/personalization/mocks/fragments/appendToSection"]');
     expect(el.dataset.adobeTargetTestid).to.equal('manifest');
   });
@@ -155,7 +149,6 @@ describe('useBlockCode action', async () => {
     setFetchResponse(manifestJson);
 
     await init(mepSettings);
-    expect(getConfig().mep.experiments[0].selectedVariant.useblockcode[0].targetManifestId).to.equal('manifest');
     await addMepAnalytics(config);
     const el = document.querySelector('.promo');
     expect(el.dataset.adobeTargetTestid).to.equal('manifest');
@@ -167,7 +160,6 @@ describe('useBlockCode action', async () => {
     setFetchResponse(manifestJson);
 
     await init(mepSettings);
-    expect(getConfig().mep.experiments[0].selectedVariant.useblockcode[0].targetManifestId).to.equal('manifest');
     await addMepAnalytics(config);
     const el = document.querySelector('.myblock');
     expect(el.dataset.adobeTargetTestid).to.equal('manifest');

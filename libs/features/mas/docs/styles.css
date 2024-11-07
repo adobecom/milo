@@ -1,11 +1,14 @@
 main {
   display: flex;
   justify-content: center;
+  margin: 0 16px;
 }
 
 sp-theme {
-  max-width: 1100px;
+  width: 100%;
+  max-width: 1200px;
   font-family:
+    adobe-clean,
     var(
       --mod-body-sans-serif-font-family,
       var(--spectrum-body-sans-serif-font-family)
@@ -62,7 +65,8 @@ tr:nth-child(even) {
   margin: 0;
 }
 
-.price-unit-type::before {
+.price-unit-type::before,
+.price-tax-inclusivity::before {
   content: " ";
 }
 
@@ -77,6 +81,63 @@ tr:nth-child(even) {
   padding: 0 10px;
 }
 
-.placeholder-failed::after {
+span.placeholder-failed::after {
   content: "failed";
+}
+
+merch-card:not([variant]) {
+  display: none;
+}
+
+pre {
+  max-height: 500px;
+  overflow: scroll;
+  background-color: var(--spectrum-global-color-gray-300);
+}
+
+.demo-container {
+  display: flex;
+  padding: 16px;
+  flex-direction: column;
+  background-color: var(--spectrum-global-color-gray-300);
+}
+
+.light .demo-container {
+  background-color: var(--spectrum-global-color-gray-100);
+}
+
+#log,
+#log2,
+#log3 {
+  display: block;
+}
+
+button {
+  margin-top: 16px;
+}
+
+.gallery-content {
+  background-color: var(--spectrum-gray-100);
+  color: var(--spectrum-gray-800);
+  padding: 30px;
+}
+
+.gallery-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 cards per row */
+  gap: 20px;
+  margin: 0 auto;
+}
+
+.gallery-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 3 cards per row */
+  gap: 20px;
+  margin: 0 auto;
+}
+
+.gallery-grid-1 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
 }

@@ -32,7 +32,7 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
     sendToCaaS({ host, project, branch, repo, owner }, loadScript, loadStyle);
   });
 
-  const sk = document.querySelector('helix-sidekick');
+  const sk = document.querySelector('aem-sidekick, helix-sidekick');
 
   // Add plugin listeners here
   sk.addEventListener('custom:send-to-caas', sendToCaasListener);
@@ -40,5 +40,5 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
   sk.addEventListener('custom:preflight', preflightListener);
 
   // Color code publish button
-  stylePublish(sk);
+  if (sk.nodeName === 'HELIX-SIDEKICK') stylePublish(sk);
 }

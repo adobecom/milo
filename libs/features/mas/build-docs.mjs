@@ -35,7 +35,13 @@ const md = markdownIt({
 })
     .use(markdownItAttrs)
     .use(markdownItAnchor, {
-        permalink: markdownItAnchor.permalink.headerLink(),
+        permalink: markdownItAnchor.permalink.linkInsideHeader({
+            symbol: '#',
+            renderAttrs: (slug, state) => ({
+                href: `#${slug}`,
+                title: 'Permalink to this heading',
+            }),
+        }),
     })
     .use(markdownItContainer, 'warning')
     .use(markdownItHighlightjs);
@@ -50,22 +56,41 @@ const inputContent = fs.readFileSync(inputPath, 'utf8');
 // Render Markdown to HTML
 const htmlContent = md.render(inputContent);
 
-const masJs = skipMas
-    ? ''
-    : '<script type="module" src="../../../deps/mas/mas.js"></script>';
-
 // HTML template with your custom element script
 const htmlTemplate = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>Custom Element Documentation</title>
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <meta charset="UTF-8">
+    <title>M@S Web Components</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script type="module" src="../../../deps/custom-elements.js"></script>
+  
+  <script>
+    if (/localhost/.test(window.location.host)) {
+      const meta = document.createElement('meta');
+      meta.name = 'aem-base-url';
+      meta.content = 'http://localhost:8080'; // local AEM proxy URL
+      document.head.appendChild(meta);
+      }
+  </script>
   <!-- Include your custom element script as an ES6 module -->
   <script src="../../../features/spectrum-web-components/dist/theme.js" type="module"></script>
   <script src="../../../features/spectrum-web-components/dist/button.js" type="module"></script>
-  ${masJs}
+  <script type="module" src="../../../deps/mas/mas.js"></script>
+
+  <script type="module">
+    const params = new URLSearchParams(document.location.search);
+    const masCommerceService = document.createElement('mas-commerce-service');
+    ['locale','language','env'].forEach((attribute) => {
+      const value = params.get(attribute);
+      if (value) masCommerceService.setAttribute(attribute, value);
+    });
+    document.head.appendChild(masCommerceService);
+  </script>
+  <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
   <!-- Include Highlight.js stylesheet for syntax highlighting -->
+  <link rel="stylesheet" href="../../../styles/styles.css">
   <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
   <!-- Include any additional stylesheets -->
   <link rel="stylesheet" href="styles.css">
@@ -76,6 +101,22 @@ const htmlTemplate = `
 ${htmlContent}
 </sp-theme>
 </main>
+<script type="module">
+  document.querySelectorAll('code.demo').forEach(el => {
+      const targetContainer = document.createElement('div');
+      targetContainer.classList.toggle('light', el.classList.contains('light'));
+      targetContainer.innerHTML = \`<h4>Demo: </h4><div class="demo-container">\${el.textContent}</div>\`;
+      el.parentElement.after(targetContainer);
+      // Extract and evaluate <script> tags
+      const scriptTags = targetContainer.getElementsByTagName('script');
+      for (let i = 0; i < scriptTags.length; i++) {
+          const script = document.createElement('script');
+          script.text = scriptTags[i].text;
+          document.body.appendChild(script); // Appends to the document to execute
+          scriptTags[i].remove(); // Remove the script tag
+      }
+  });
+</script>
 </body>
 </html>
 `;

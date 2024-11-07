@@ -51,6 +51,7 @@
   --spacing-xxxl: 80px;
 
   /* Static Spacing */
+  --spacing-l-static: 48px;
   --spacing-xl-static: 56px;
   --spacing-xxl-static: 80px;
   --spacing-xxxl-static: 104px;
@@ -359,18 +360,19 @@
   padding: 10px 24px 8px;
 }
 
-.con-button.button-justified {
-  display: block;
-  text-align: center;
-  width: 100%;
-}
-
-.xxl-button .con-button {
+.xxl-button .con-button,
+.con-button.button-xxl {
   border-radius: 30px;
   font-size: 22px;
   line-height: 27px;
   min-height: 27px;
   padding: 14px 30px 15px;
+}
+
+.con-button.button-justified {
+  display: block;
+  text-align: center;
+  width: 100%;
 }
 
 .dark .con-button {
@@ -678,7 +680,7 @@ body {
   opacity: 1 !important; /* Fix Target hiding */
 }
 
-header:not(.global-navigation) {
+header.gnav {
   height: 57px;
   position: fixed;
   top: 0;
@@ -690,11 +692,11 @@ header:not(.global-navigation) {
   box-sizing: border-box;
 }
 
-header:not(.global-navigation) nav {
+header.gnav nav {
   display: none;
 }
 
-header:not(.global-navigation) ~ main {
+header.gnav ~ main {
   margin-top: 57px;
 }
 
@@ -702,7 +704,7 @@ header:not(.global-navigation) ~ main {
   After switching from the Milo nav to the FEDS one,
   only the styles with 'header.global-navigation' need to be kept;
   the 'global-navigation' class should also be removed from the 'header' selector
-  all of the ':not(.global-navigation)' rules can be entirely removed.
+  all of the 'header.gnav' rules can be entirely removed.
  */
 header.global-navigation, header.global-navigation.feds--dark {
   height: var(--global-height-nav);
@@ -891,25 +893,25 @@ a.static:hover {
 
 /* tablet large up */
 @media (min-width: 900px) {
-  header:not(.global-navigation) {
+  header.gnav {
     min-height: var(--global-height-nav);
     border-bottom: 1px solid #EAEAEA;
     overflow: unset;
   }
 
-  header:not(.global-navigation) ~ main {
+  header.gnav ~ main {
     margin-top: 64px;
   }
 
-  header:not(.global-navigation).has-breadcrumbs {
+  header.gnav.has-breadcrumbs {
     min-height: 97px;
   }
 
-  header:not(.global-navigation) nav {
+  header.gnav nav {
     display: unset;
   }
 
-  header:not(.global-navigation).has-breadcrumbs + main {
+  header.gnav.has-breadcrumbs + main {
     margin-top: 97px;
   }
 }
