@@ -393,7 +393,7 @@ export const [setUserProfile, getUserProfile] = (() => {
   ];
 })();
 
-export const transformTemplateToMobile = (popup, item, localnav = false) => {
+export const transformTemplateToMobile = async (popup, item, localnav = false) => {
   const originalContent = popup.innerHTML;
   const tabs = [...popup.querySelectorAll('.feds-menu-section')]
     .filter((section) => !section.querySelector('.feds-promo') && section.textContent)
@@ -404,7 +404,7 @@ export const transformTemplateToMobile = (popup, item, localnav = false) => {
       return { name, links };
     });
   const CTA = popup.querySelector('.feds-cta')?.outerHTML ?? '';
-  const mainmenu = `
+  const mainMenu = `
       <span class="main-menu">
         <svg xmlns="http://www.w3.org/2000/svg" style="translate:0 3px" width="7" height="12" viewBox="0 0 7 12" fill="none"><path d="M5.55579 1L1.09618 5.45961C1.05728 5.4985 1.0571 5.56151 1.09577 5.60062L5.51027 10.0661" stroke="black" stroke-width="2" stroke-linecap="round"/></svg>
         {{main-menu}}
@@ -414,7 +414,7 @@ export const transformTemplateToMobile = (popup, item, localnav = false) => {
   const breadCrumbs = document.querySelector('.feds-breadcrumbs')?.outerHTML;
   popup.innerHTML = `
     <div class="top-bar">
-      ${localnav ? brand : mainmenu}
+      ${localnav ? brand : await replaceText(mainMenu, getFedsPlaceholderConfig())}
       <span class="close-icon" style="width:11.5px;height:11.5px;padding:12px;cursor:pointer">
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14" fill="none">
           <path d="M1.5 1L13 12.5" stroke="black" stroke-width="1.7037" stroke-linecap="round"/>
@@ -423,7 +423,7 @@ export const transformTemplateToMobile = (popup, item, localnav = false) => {
       </span>
     </div>
     <div class="title">
-      ${breadCrumbs ? breadCrumbs : `<div class="breadcrumbs"></div>`}
+      ${breadCrumbs || `<div class="breadcrumbs"></div>`}
       <h7>${item.textContent.trim()}</h7>
     </div>
     <div class="tabs" role="tablist">
