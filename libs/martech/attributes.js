@@ -40,7 +40,7 @@ export function decorateDefaultLinkAnalytics(block, config) {
     let analyticsSelector = `${headerSelector}, .tracking-header`;
     const headers = block.querySelectorAll(analyticsSelector);
     if (!headers.length) analyticsSelector = `${analyticsSelector}, b, strong`;
-    block.querySelectorAll(`${analyticsSelector}, a:not(.video.link-block), button`).forEach((item) => {
+    block.querySelectorAll(`${analyticsSelector}, a:not(.video.link-block, .no-track), button:not(.no-track)`).forEach((item) => {
       if (item.nodeName === 'A' || item.nodeName === 'BUTTON') {
         if (item.classList.contains('tracking-header')) {
           header = processTrackingLabels(item.textContent, config, headerCharLimit);
@@ -82,8 +82,9 @@ export function decorateDefaultLinkAnalytics(block, config) {
 }
 
 export async function decorateSectionAnalytics(section, idx, config) {
+  const id = Number.isInteger(idx) ? `s${idx + 1}` : idx;
   document.querySelector('main')?.setAttribute('daa-im', 'true');
-  section.setAttribute('daa-lh', `s${idx + 1}`);
+  section.setAttribute('daa-lh', id);
   section.querySelectorAll('[data-block] [data-block]').forEach((block) => {
     block.removeAttribute('data-block');
   });

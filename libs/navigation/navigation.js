@@ -21,6 +21,24 @@ const envMap = {
   qa: 'https://gnav--milo--adobecom.hlx.page',
 };
 
+const getStageDomainsMap = (stageDomainsMap) => (
+  {
+    'www.stage.adobe.com': {
+      'www.adobe.com': 'origin',
+      'helpx.adobe.com': 'helpx.stage.adobe.com',
+      'creativecloud.adobe.com': 'stage.creativecloud.adobe.com',
+      ...stageDomainsMap,
+    },
+    // Test app
+    'adobecom.github.io': {
+      'www.adobe.com': 'www.stage.adobe.com',
+      'helpx.adobe.com': 'helpx.stage.adobe.com',
+      'creativecloud.adobe.com': 'stage.creativecloud.adobe.com',
+      ...stageDomainsMap,
+    },
+  }
+);
+
 function getParamsConfigs(configs) {
   return blockConfig.reduce((acc, block) => {
     block.params.forEach((param) => {
@@ -41,6 +59,7 @@ export default async function loadBlock(configs, customLib) {
     env = 'prod',
     locale = '',
     theme,
+    stageDomainsMap = {},
   } = configs || {};
   const branch = new URLSearchParams(window.location.search).get('navbranch');
   const miloLibs = branch ? `https://${branch}--milo--adobecom.hlx.page` : customLib || envMap[env];
@@ -66,6 +85,7 @@ export default async function loadBlock(configs, customLib) {
     contentRoot: authoringPath || footer.authoringPath,
     theme,
     ...paramConfigs,
+    stageDomainsMap: getStageDomainsMap(stageDomainsMap),
   };
   setConfig(clientConfig);
   for await (const block of blockConfig) {
@@ -74,7 +94,13 @@ export default async function loadBlock(configs, customLib) {
       if (configBlock) {
         await bootstrapBlock(`${miloLibs}/libs`, {
           ...block,
-          ...(block.key === 'header' && { unavComponents: configBlock.unav?.unavComponents, redirect: configBlock.redirect }),
+          ...(block.key === 'header' && {
+            unavComponents: configBlock.unav?.unavComponents,
+            redirect: configBlock.redirect,
+            layout: configBlock.layout,
+            noBorder: configBlock.noBorder,
+            jarvis: configBlock.jarvis,
+          }),
         });
         configBlock.onReady?.();
       }

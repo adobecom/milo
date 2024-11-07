@@ -112,9 +112,7 @@ async function loadList(type, content, list) {
   }
 }
 
-async function fetchLibrary(domain) {
-  const { searchParams } = new URL(window.location.href);
-  const suppliedLibrary = searchParams.get('library');
+async function fetchLibrary(domain, suppliedLibrary) {
   const library = suppliedLibrary || `${domain}${LIBRARY_PATH}`;
   try {
     const resp = await fetch(library);
@@ -129,8 +127,9 @@ async function getSuppliedLibrary() {
   const { searchParams } = new URL(window.location.href);
   const repo = searchParams.get('repo');
   const owner = searchParams.get('owner');
+  const library = searchParams.get('library');
   if (!repo || !owner) return null;
-  return fetchLibrary(`https://main--${repo}--${owner}.hlx.live`);
+  return fetchLibrary(`https://main--${repo}--${owner}.hlx.live`, library);
 }
 
 async function fetchAssetsData(path) {
@@ -197,7 +196,6 @@ function createList(libraries) {
       list.classList.add('inset');
       skLibrary.classList.add('allow-back');
       loadList(type, libraries[type], list);
-      window.hlx?.rum.sampleRUM('click', { source: e.target });
     });
   });
 
