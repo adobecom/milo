@@ -142,6 +142,13 @@ export default async function init(a) {
   } else {
     a.parentElement.replaceChild(fragment, a);
     if (handleMepCommands) handleMepCommands(mep?.commands, fragment);
+
+    const config = getConfig();
+    if (config.placeholders) {
+      const { replacePlaceholders } = await import('../../features/personalization/personalization.js');
+      fragment.innerHTML = replacePlaceholders(fragment.innerHTML, config.placeholders);
+    }
+
     await loadArea(fragment);
   }
 }
