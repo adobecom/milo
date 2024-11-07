@@ -398,7 +398,7 @@ const decorateFooterRows = (merchCard, footerRows) => {
       const rowIcon = row.firstElementChild.querySelector('picture');
       const rowText = row.querySelector('div > div:nth-child(2)').innerHTML;
       const rowTextParagraph = createTag('div', { class: 'footer-row-cell-description' }, rowText);
-      const footerRowCell = createTag('div', { class: 'footer-row-cell' });
+      const footerRowCell = createTag('ul', { class: 'footer-row-cell' });
       if (rowIcon) {
         rowIcon.classList.add('footer-row-icon');
         footerRowCell.appendChild(rowIcon);
