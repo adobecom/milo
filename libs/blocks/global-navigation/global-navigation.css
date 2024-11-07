@@ -958,7 +958,7 @@ header.new-nav .feds-breadcrumbs-wrapper {
 }
 
 header.new-nav .feds-navItem--section {
-  display: block;
+  display: flex;
 }
 
 header.new-nav .feds-breadcrumbs {
