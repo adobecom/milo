@@ -23,7 +23,7 @@ export default class MiloGraybox extends LitElement {
     this._startCrawl = false;
     this._startPromote = false;
     this._startPreviewPublish = false;
-    this._filesCount = 0;
+    this._filesToPromote = [];
     this._promoteIgnorePaths = [];
     this._promotedFiles = [];
     this._promotedFilesCount = 0;
@@ -66,13 +66,13 @@ export default class MiloGraybox extends LitElement {
     const { results, getDuration } = crawl({
       path: experiencePath,
       callback: () => {
-        this._filesCount++;
         this.requestUpdate();
       },
       throttle: 10
     });
     this._crawledFiles = await results;
-    this._filesCount = this._crawledFiles.length;
+    // Remove files to be ignored from promote
+    this._filesToPromote = this._crawledFiles.filter(file => !this._promoteIgnorePaths.some(ignorePath => file.path.startsWith(ignorePath)));
     this._crawlDuration = getDuration();
     this._startPromote = true;
     this.requestUpdate();
@@ -88,7 +88,7 @@ export default class MiloGraybox extends LitElement {
         repo,
         expName: exp,
         promoteType: 'graybox',
-        files: this._crawledFiles,
+        files: this._filesToPromote,
         callback: (status) => {
           console.log(`${status.statusCode} :: ${status.destinationFilePath}`);
           this._promotedFiles.push(status.destinationFilePath);
@@ -225,7 +225,7 @@ export default class MiloGraybox extends LitElement {
       <div class="promote-info info-box">
         <h3>Step 2: Promote Graybox Experience</h3>
         <p>Promoting "${this._gbExpPath}"... </p>
-        <p>Files to promote: ${this._filesCount}</p>
+        <p>Files to promote: ${this._filesToPromote.length} | Files ignored: ${this._crawledFiles.length - this._filesToPromote.length}</p>
         <p>Files promoted: ${this._promotedFilesCount} | Promote errors: ${this._promoteErrorCount}</p>
         <p class="${this._promoteDuration === 0 ? 'hide' : ''}">Duration: ~${this._promoteDuration} seconds</p>
       </div>
@@ -238,7 +238,7 @@ export default class MiloGraybox extends LitElement {
       <div class="crawl-info info-box">
         <h3>Step 1: Crawl Graybox Experience</h3>
         <p>Crawling "${this._gbExpPath}" to promote... </p>
-        <p>Files crawled: ${this._filesCount}</p>
+        <p>Files crawled: ${this._crawledFiles.length}</p>
         <p>Duration: ~${this._crawlDuration} seconds</p>
       </div>
       ${this._startPromote ? this.renderPromoteInfo() : nothing}
