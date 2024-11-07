@@ -727,4 +727,27 @@ html[dir="rtl"] .carousel-slides .section.carousel-slide {
 
     transform: translateX(calc(round(down, (var(--offset) / (var(--slides) - 1)), 2px) * -1));
   }
+
+  .carousel.grid .carousel-slides {
+    flex-wrap: wrap;
+  }
+
+  .carousel.grid .carousel-slides,
+  .carousel[class*='show-'].grid .carousel-slides.is-ready,
+  .carousel[class*='show-'].grid .carousel-slides.is-ready.is-reversing {
+    transform: none;
+  }
+
+  .carousel[class*='show-'].grid .carousel-slides {
+    left: initial;
+  }
+
+  .carousel.grid .carousel-button {
+    display: none;
+  }
+
+  .carousel[class*='show-'].m-gap.grid .carousel-slide {
+    flex-basis: calc((100% / var(--slides)) - round(up, (((var(--slides) - 1) / var(--slides)) * var(--spacing-m)), 1px));
+    flex-grow: unset;
+  }
 }

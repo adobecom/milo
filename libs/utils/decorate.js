@@ -203,13 +203,19 @@ export function getImgSrc(pic) {
   return source?.srcset ? `poster='${source.srcset}'` : '';
 }
 
+function getVideoHover(hash) {
+  const hasVideoHover = hash?.includes('videohover') ? 'data-videohover' : '';
+  return hasVideoHover;
+}
+
 function getVideoAttrs(hash, dataset) {
   const isAutoplay = hash?.includes('autoplay');
   const isAutoplayOnce = hash?.includes('autoplay1');
   const playOnHover = hash?.includes('hoverplay');
   const playInViewport = hash?.includes('viewportplay');
+  const videoHover = getVideoHover(hash);
   const poster = getImgSrc(dataset.videoPoster);
-  const globalAttrs = `playsinline ${poster}`;
+  const globalAttrs = `playsinline ${poster} ${videoHover}`;
   const autoPlayAttrs = 'autoplay muted';
   const playInViewportAttrs = playInViewport ? 'data-play-viewport' : '';
 
@@ -234,6 +240,19 @@ export function applyHoverPlay(video) {
     video.addEventListener('mouseenter', () => { video.play(); });
     video.addEventListener('mouseleave', () => { video.pause(); });
     video.setAttribute('data-mouseevent', true);
+  }
+}
+
+export function applyVideoHover(video) {
+  if (!video) return;
+  const mediaQuery = window.matchMedia('(min-width: 601px)');
+  if (mediaQuery.matches) {
+    if (video.hasAttribute('data-videohover') && !video.hasAttribute('data-mouseevent')) {
+      video.removeAttribute('controls');
+      video.addEventListener('mouseenter', () => { video.setAttribute('controls', ''); });
+      video.addEventListener('mouseleave', () => { video.removeAttribute('controls'); });
+      video.setAttribute('data-mouseevent', true);
+    }
   }
 }
 
@@ -341,5 +360,6 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
   });
   applyHoverPlay(videoEl);
   applyInViewPortPlay(videoEl);
+  applyVideoHover(videoEl);
   anchorTag.remove();
 }
