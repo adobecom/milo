@@ -413,7 +413,7 @@ export const [setUserProfile, getUserProfile] = (() => {
   ];
 })();
 
-export const transformTemplateToMobile = (popup, item, localnav = false) => {
+export const transformTemplateToMobile = async (popup, item, localnav = false) => {
   const originalContent = popup.innerHTML;
   const tabs = [...popup.querySelectorAll('.feds-menu-section')]
     .filter((section) => !section.querySelector('.feds-promo') && section.textContent)
@@ -430,11 +430,12 @@ export const transformTemplateToMobile = (popup, item, localnav = false) => {
         {{main-menu}}
       </span>
   `;
+  const mainMenuLocalized = await replaceText(mainmenu, getFedsPlaceholderConfig());
   const brand = document.querySelector('.feds-brand').outerHTML;
   const breadCrumbs = document.querySelector('.feds-breadcrumbs')?.outerHTML;
   popup.innerHTML = `
     <div class="top-bar">
-      ${localnav ? brand : mainmenu}
+      ${localnav ? brand : mainMenuLocalized}
       <span class="close-icon" style="width:11.5px;height:11.5px;padding:12px;cursor:pointer">
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14" fill="none">
           <path d="M1.5 1L13 12.5" stroke="black" stroke-width="1.7037" stroke-linecap="round"/>
