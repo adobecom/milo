@@ -953,9 +953,13 @@ header.new-nav .feds-nav > section.feds-navItem.feds-dropdown--active > .feds-po
 }
 
 /* breadcrumbs new nav*/
-/* header.new-nav .feds-breadcrumbs-wrapper {
+header.new-nav .feds-breadcrumbs-wrapper {
   display: none;
-} */
+}
+
+header.new-nav .feds-navItem--section {
+  display: block;
+}
 
 header.new-nav .feds-breadcrumbs {
   padding: 10px 0;
