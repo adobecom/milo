@@ -2,7 +2,6 @@ import { decorateButtons, decorateBlockHrs } from '../../utils/decorate.js';
 import { getConfig, createTag, loadStyle } from '../../utils/utils.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
 import { processTrackingLabels } from '../../martech/attributes.js';
-import { chevronDownSVG, chevronUpSVG } from './img/chevron.js';
 import '../../deps/mas/merch-card.js';
 import '../../deps/lit-all.min.js';
 
@@ -388,11 +387,12 @@ const getMiniCompareChartFooterRows = (el) => {
   return footerRows;
 };
 
-const createFirstRow = (firstRow, isMobile, checkmarkCopyContainer) => {
+const createFirstRow = async (firstRow, isMobile, checkmarkCopyContainer) => {
   const firstRowText = firstRow.querySelector('div > div:last-child').innerHTML;
   let firstRowTextParagraph;
 
   if (isMobile) {
+    const { chevronDownSVG, chevronUpSVG } = await import('./img/chevron.js');
     const chevronIcon = createTag('span', { class: 'chevron-icon' }, chevronDownSVG);
     firstRowTextParagraph = createTag('div', { class: 'footer-rows-title' }, firstRowText);
     firstRowTextParagraph.appendChild(chevronIcon);
@@ -426,7 +426,7 @@ const createFooterRowCell = (row, isCheckmark) => {
   return footerRowCell;
 };
 
-const decorateFooterRows = (merchCard, footerRows) => {
+const decorateFooterRows = async (merchCard, footerRows) => {
   if (!footerRows) return;
 
   const footerRowsSlot = createTag('div', { slot: 'footer-rows' });
@@ -441,7 +441,7 @@ const decorateFooterRows = (merchCard, footerRows) => {
     merchCard.classList.add('has-divider');
 
     const checkmarkCopyContainer = createTag('div', { class: 'checkmark-copy-container' });
-    const firstRowTextParagraph = createFirstRow(firstRow, isMobile, checkmarkCopyContainer);
+    const firstRowTextParagraph = await createFirstRow(firstRow, isMobile, checkmarkCopyContainer);
 
     footerRowsSlot.appendChild(firstRowTextParagraph);
     footerRowsSlot.appendChild(checkmarkCopyContainer);
@@ -677,7 +677,7 @@ export default async function init(el) {
     decorateBlockHrs(merchCard);
     simplifyHrs(merchCard);
     if (merchCard.classList.contains('has-divider')) merchCard.setAttribute('custom-hr', true);
-    decorateFooterRows(merchCard, footerRows);
+    await decorateFooterRows(merchCard, footerRows);
   } else {
     parseTwpContent(el, merchCard);
   }
