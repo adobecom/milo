@@ -492,3 +492,18 @@ export const transformTemplateToMobile = (popup, item, localnav = false) => {
   });
   return originalContent;
 };
+
+export const takeWhile = (xs, f) => {
+  const r = [];
+  for (let i = 0; i < xs.length; i += 1) {
+    if (!f(xs[i])) return r;
+    r.push(xs[i]);
+  }
+  return r;
+};
+
+export const dropWhile = (xs, f) => {
+  if (!xs.length) return xs;
+  if (f(xs[0])) return dropWhile(xs.slice(1), f);
+  return xs;
+};
