@@ -952,6 +952,30 @@ header.new-nav .feds-nav > section.feds-navItem.feds-dropdown--active > .feds-po
   width: 320px;
 }
 
+/* breadcrumbs new nav*/
+/* header.new-nav .feds-breadcrumbs-wrapper {
+  display: none;
+} */
+
+header.new-nav .feds-breadcrumbs {
+  padding: 10px 0;
+}
+
+header.new-nav .feds-breadcrumbs ul {
+  font-weight: 700;
+}
+
+header.new-nav .feds-breadcrumbs li:not(:first-of-type)::before {
+  padding: 0 4px;
+  color: var(--feds-color-link-breadcrumbs);
+}
+
+header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after {
+  content: '/ …';
+  padding: 0 0 0 4px;
+  color: var(--feds-color-link-breadcrumbs);
+}
+
 /* local-nav */
 
 header + .feds-localnav {
