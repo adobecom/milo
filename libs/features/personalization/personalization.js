@@ -4,8 +4,6 @@
 import { createTag, getConfig, loadLink, loadScript, localizeLink } from '../../utils/utils.js';
 import { getFederatedUrl } from '../../utils/federated.js';
 
-const entitlementsPromise = import('./entitlements.js');
-
 /* c8 ignore start */
 const PHONE_SIZE = window.screen.width < 550 || window.screen.height < 550;
 const safariIpad = navigator.userAgent.includes('Macintosh') && navigator.maxTouchPoints > 1;
@@ -767,7 +765,6 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
 
   const variantInfo = buildVariantInfo(variantNames);
 
-  const { getEntitlementMap } = await entitlementsPromise;
   const entitlementKeys = Object.values(await getEntitlementMap());
   const hasEntitlementTag = entitlementKeys.some((tag) => variantInfo.allNames.includes(tag));
 
