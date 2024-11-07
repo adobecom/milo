@@ -431,7 +431,7 @@ export const transformTemplateToMobile = (popup, item, localnav = false) => {
       </span>
   `;
   const brand = document.querySelector('.feds-brand').outerHTML;
-  const breadCrumbs = document.querySelector('.feds-breadcrumbs').outerHTML;
+  const breadCrumbs = document.querySelector('.feds-breadcrumbs')?.outerHTML || '';
   popup.innerHTML = `
     <div class="top-bar">
       ${localnav ? brand : mainmenu}
