@@ -313,15 +313,19 @@ async function getResults() {
   const icons = [h1, title, canon, desc, body, lorem, links];
 
   const red = icons.find((icon) => icon === 'red');
-  if (red) {
-    const sk = document.querySelector('aem-sidekick, helix-sidekick');
-    if (sk) {
-      const publishBtn = sk.shadowRoot.querySelector('div.publish.plugin button');
-      publishBtn.addEventListener('click', () => {
-        sendResults();
-      });
-    }
-  }
+  if (!red) return;
+
+  const aemSk = document.querySelector('aem-sidekick');
+  const hlxSk = document.querySelector('helix-sidekick');
+  if (!aemSk && !hlxSk) return;
+
+  const publishBtn = aemSk
+    ? aemSk.shadowRoot.querySelector('plugin-action-bar').shadowRoot.querySelector('sk-action-button.publish')
+    : hlxSk.shadowRoot.querySelector('div.publish.plugin button');
+
+  publishBtn.addEventListener('click', () => {
+    sendResults();
+  });
 }
 
 export default function Panel() {
