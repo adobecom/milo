@@ -1,4 +1,5 @@
-import { getMetadata, getConfig, createTag } from '../../utils/utils.js';
+import { getMetadata, getConfig, createTag, getMepEnablement } from '../../utils/utils.js';
+import getPromoManifests from '../personalization/promo-utils.js';
 import { replaceKey } from '../placeholders.js';
 
 function loadCountdownTimer(
@@ -89,15 +90,23 @@ function isMobile() {
   return window.matchMedia('(max-width: 767px)').matches;
 }
 
-export default async function initCDT(el, classList) {
-  const placeholders = ['cdt-ends-in', 'cdt-days', 'cdt-hours', 'cdt-mins'];
-  const [cdtLabel, cdtDays, cdtHours, cdtMins] = await Promise.all(
-    placeholders.map((placeholder) => replaceKey(placeholder, getConfig())),
-  );
+function getCDTTimeRange() {
+  const promoEnabled = getMepEnablement('manifestnames', 'promo');
+  const PAGE_URL = new URL(window.location.href);
+  const persManifests = getPromoManifests(promoEnabled, PAGE_URL.searchParams);
+  let cdtMetadata = null;
+  persManifests?.forEach((manifest) => {
+    if (manifest.disabled) return;
+    if (!manifest.event.cdt) return;
 
-  const cdtMetadata = getMetadata('countdown-timer');
-  if (cdtMetadata === null) {
-    throw new Error('Metadata for countdown-timer is not available');
+    cdtMetadata = manifest.event.cdt;
+  });
+
+  if (!cdtMetadata) {
+    cdtMetadata = getMetadata('countdown-timer');
+    if (cdtMetadata === null) {
+      throw new Error('Metadata for countdown-timer is not available');
+    }
   }
 
   const cdtRange = cdtMetadata.split(',');
@@ -114,6 +123,16 @@ export default async function initCDT(el, classList) {
     throw new Error('Invalid format for countdown timer range');
   }
 
+  return timeRangesEpoch;
+}
+
+export default async function initCDT(el, classList) {
+  const placeholders = ['cdt-ends-in', 'cdt-days', 'cdt-hours', 'cdt-mins'];
+  const [cdtLabel, cdtDays, cdtHours, cdtMins] = await Promise.all(
+    placeholders.map((placeholder) => replaceKey(placeholder, getConfig())),
+  );
+
+  const timeRangesEpoch = getCDTTimeRange();
   const cdtDiv = createTag('div', { class: 'countdown-timer' }, null, { parent: el });
   cdtDiv.classList.add(isMobile() ? 'vertical' : 'horizontal');
   if (classList.contains('dark')) cdtDiv.classList.add('dark');
