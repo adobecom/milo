@@ -71,6 +71,28 @@ describe('class "InlinePrice"', () => {
         expect(targetIsInlinePrice).to.be.true;
     });
 
+    it('re-dispatches click event', async () => {
+        await initMasCommerceService();
+        const inlinePrice = mockInlinePrice('puf');
+        let targetIsInlinePrice = false;
+        inlinePrice.addEventListener(
+            'click',
+            (event) => {
+                targetIsInlinePrice = event.target === inlinePrice;
+            },
+            { once: true },
+        );
+        await inlinePrice.onceSettled();
+        inlinePrice.firstElementChild.dispatchEvent(
+            new MouseEvent('click', {
+                bubbles: true,
+                cancelable: true,
+                view: window,
+            }),
+        );
+        expect(targetIsInlinePrice).to.be.true;
+    });
+
     it('renders strikethrough price', async () => {
         await initMasCommerceService();
         const inlinePrice = mockInlinePrice('puf');
