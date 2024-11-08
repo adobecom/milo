@@ -163,7 +163,7 @@ class Gnav {
         brand.insertAdjacentHTML('afterbegin', DEFAULT_IMAGE);
       }
     }
-    !isBrandImage && brand.append(title);
+    if (!isBrandImage) brand.append(title);
     return brand;
   };
 
