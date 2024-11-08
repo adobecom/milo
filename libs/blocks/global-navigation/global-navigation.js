@@ -938,8 +938,6 @@ class Gnav {
     return 'link';
   };
 
-
-
   decorateMainNavItem = (item, index) => {
     const itemType = this.getMainNavItemType(item);
 
@@ -954,29 +952,27 @@ class Gnav {
     };
 
     // Copying dropdown contents to localNav items
-    const decorateLocalNavItems = (item, template) => {
-      const elements = [...document.querySelectorAll(".feds-localnav .feds-navItem")].find(
-        (el) => el.textContent.trim() === item.textContent
+    const decorateLocalNavItems = (navItem, template) => {
+      const elements = [...document.querySelectorAll('.feds-localnav .feds-navItem')].find(
+        (el) => el.textContent.trim() === navItem.textContent,
       );
-  
       if (elements) {
         elements.innerHTML = template.innerHTML;
-  
-        // Reattach the click event listener to the title, as cloned elements do not retain existing event listeners.
+        // Reattach click events, as cloned elem don't retain event listeners
         elements.querySelector('button')?.addEventListener('click', (e) => {
           trigger({ element: e.currentTarget, event: e, type: 'localNavTitle' });
           setActiveDropdown(e.currentTarget);
         });
-  
-        elements.querySelectorAll('.feds-menu-headline').forEach(elem => {
+
+        elements.querySelectorAll('.feds-menu-headline').forEach((elem) => {
           // Reattach click event listener to headlines
-          elem?.addEventListener('click', (e) => {    
+          elem?.addEventListener('click', (e) => {
             trigger({ element: e.currentTarget, event: e, type: 'headline' });
             setActiveDropdown(e.currentTarget);
           });
-        })
+        });
       }
-    }
+    };
 
     // All dropdown decoration is delayed
     const delayDropdownDecoration = ({ template } = {}) => {
@@ -993,9 +989,9 @@ class Gnav {
           template,
           type: itemType,
         });
-        
+
         if (this.isLocalNav() && newNavEnabled) {
-          decorateLocalNavItems(item, template)
+          decorateLocalNavItems(item, template);
         }
 
         const popup = template.querySelector('.feds-popup');
