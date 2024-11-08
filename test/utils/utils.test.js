@@ -537,16 +537,18 @@ describe('Utils', () => {
     it('should convert links when stageDomainsMap provided without regex', async () => {
       const stageConfig = {
         ...config,
+        locale: { prefix: '/ae_ar' },
         env: { name: 'stage' },
         stageDomainsMap,
       };
 
       Object.entries(stageDomainsMap).forEach(([hostname, domainsMap]) => {
         const anchors = Object.keys(domainsMap).map((d) => utils.createTag('a', { href: `https://${d}` }));
+        const localizedAnchors = Object.keys(domainsMap).map((d) => utils.createTag('a', { href: `https://${d}/ae_ar` }));
         const externalAnchors = externalDomains.map((url) => utils.createTag('a', { href: url }));
 
         utils.convertStageLinks({
-          anchors: [...anchors, ...externalAnchors],
+          anchors: [...anchors, ...localizedAnchors, ...externalAnchors],
           config: stageConfig,
           hostname,
           href: `https://${hostname}`,
@@ -565,16 +567,22 @@ describe('Utils', () => {
       const { hostname, map } = stageDomainsMapWRegex;
       const stageConfigWRegex = {
         ...config,
+        locale: { prefix: '/de' },
         env: { name: 'stage' },
         stageDomainsMap: map,
       };
 
       Object.entries(map).forEach(([, domainsMap]) => {
         const anchors = Object.keys(domainsMap).map((d) => utils.createTag('a', { href: d.replace('^', '') }));
+        const localizedAnchors = Object.keys(domainsMap).map((d) => {
+          const convertedUrl = new URL(d.replace('^', ''));
+          convertedUrl.pathname = `de/${convertedUrl.pathname}`;
+          return utils.createTag('a', { href: convertedUrl.toString() });
+        });
         const externalAnchors = externalDomains.map((url) => utils.createTag('a', { href: url }));
 
         utils.convertStageLinks({
-          anchors: [...anchors, ...externalAnchors],
+          anchors: [...anchors, ...localizedAnchors, ...externalAnchors],
           config: stageConfigWRegex,
           hostname,
           href: `https://${hostname}`,

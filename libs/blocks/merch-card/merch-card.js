@@ -155,7 +155,7 @@ const parseTwpContent = async (el, merchCard) => {
 };
 
 const appendPaymentDetails = (element, merchCard) => {
-  if (element.firstChild.nodeType !== Node.TEXT_NODE) return;
+  if (element.firstChild?.nodeType !== Node.TEXT_NODE) return;
   const paymentDetails = createTag('div', { class: 'payment-details' }, element.innerHTML);
   const headingM = merchCard.querySelector('h4[slot="heading-m"]');
   headingM?.append(paymentDetails);
@@ -204,6 +204,7 @@ const appendCalloutContent = (element, merchCard) => {
 const parseContent = async (el, merchCard) => {
   let bodySlotName = `body-${merchCard.variant !== MINI_COMPARE_CHART ? 'xs' : 'm'}`;
   let headingMCount = 0;
+  let headingXsCount = 0;
 
   if (merchCard.variant === MINI_COMPARE_CHART) {
     bodySlotName = 'body-m';
@@ -229,6 +230,7 @@ const parseContent = async (el, merchCard) => {
       let slotName = SLOT_MAP[merchCard.variant]?.[tagName] || SLOT_MAP_DEFAULT[tagName];
       if (slotName) {
         if (['H2', 'H3', 'H4', 'H5'].includes(tagName)) {
+          if (tagName === 'H3') headingXsCount += 1;
           element.classList.add('card-heading');
           if (merchCard.badgeText) {
             element.closest('div[role="tabpanel"')?.classList.add('badge-merch-cards');
@@ -247,6 +249,8 @@ const parseContent = async (el, merchCard) => {
           }
         }
         element.setAttribute('slot', slotName);
+        tagName = (headingXsCount === 1 && tagName === 'H3')
+        || (merchCard.variant === MINI_COMPARE_CHART && slotName === 'heading-m') ? 'h3' : 'p';
         const newElement = createTag(tagName);
         Array.from(element.attributes).forEach((attr) => {
           newElement.setAttribute(attr.name, attr.value);
@@ -394,7 +398,7 @@ const decorateFooterRows = (merchCard, footerRows) => {
       const rowIcon = row.firstElementChild.querySelector('picture');
       const rowText = row.querySelector('div > div:nth-child(2)').innerHTML;
       const rowTextParagraph = createTag('div', { class: 'footer-row-cell-description' }, rowText);
-      const footerRowCell = createTag('div', { class: 'footer-row-cell' });
+      const footerRowCell = createTag('ul', { class: 'footer-row-cell' });
       if (rowIcon) {
         rowIcon.classList.add('footer-row-icon');
         footerRowCell.appendChild(rowIcon);
