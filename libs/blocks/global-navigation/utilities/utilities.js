@@ -443,7 +443,7 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
       </span>
     </div>
     <div class="title">
-      ${breadCrumbs || `<div class="breadcrumbs"></div>`}
+      ${breadCrumbs || '<div class="breadcrumbs"></div>'}
       <h7>${item.textContent.trim()}</h7>
     </div>
     <div class="tabs" role="tablist">
@@ -491,4 +491,19 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
     });
   });
   return originalContent;
+};
+
+export const takeWhile = (xs, f) => {
+  const r = [];
+  for (let i = 0; i < xs.length; i += 1) {
+    if (!f(xs[i])) return r;
+    r.push(xs[i]);
+  }
+  return r;
+};
+
+export const dropWhile = (xs, f) => {
+  if (!xs.length) return xs;
+  if (f(xs[0])) return dropWhile(xs.slice(1), f);
+  return xs;
 };
