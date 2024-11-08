@@ -6,6 +6,17 @@ export const CSS = `
   --consonant-merch-card-ccd-slice-single-height: 154px;
   --consonant-merch-card-ccd-slice-background-img-size: 119px;
 }
+sp-theme[color='light'] merch-card[variant="ccd-slice"] {
+  background-color: var(--ccd-color-light, #F8F8F8);
+  color: var(--ccd-color-dark, #222);
+  border: 1px solid var(--ccd-border-color-light, #E6E6E6)
+}
+  
+sp-theme[color='dark'] merch-card[variant="ccd-slice"] {
+  background-color: var(--ccd-color-dark, #222);
+  color: var(--ccd-color-light, #F8F8F8);
+  border: 1px solid var(--ccd-border-color-dark, #464646);
+}
 
 merch-card[variant="ccd-slice"] [slot='body-s'] a:not(.con-button) {
     font-size: var(--consonant-merch-card-body-xxs-font-size);

@@ -78,6 +78,14 @@ styles.innerHTML = `
     --merch-color-grey-600: #686868;
     --merch-color-green-promo: #2D9D78;
 
+    /* ccd colors */
+    --ccd-color-light: #F8F8F8;
+    --ccd-border-color-light: #E6E6E6;
+    --ccd-color-dark: #222;
+    --ccd-border-color-dark: #464646;
+    
+    
+
     /* merch card generic */
     --consonant-merch-card-max-width: 300px;
     --transition: cmax-height 0.3s linear, opacity 0.3s linear;
