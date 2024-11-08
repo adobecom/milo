@@ -8,7 +8,7 @@ const AEM_FRAGMENT_MAPPING = {
     backgroundImage: { tag: 'div', slot: 'bg-image' },
     prices: { tag: 'h3', slot: 'heading-xs' },
     description: { tag: 'div', slot: 'body-xs' },
-    ctas: { size: 'l' },
+    ctas: { slot: 'footer', size: 'l' },
 };
 
 export class SpecialOffer extends VariantLayout {
