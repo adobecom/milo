@@ -64,6 +64,31 @@ describe('class "CheckoutLink"', () => {
             'https://commerce.adobe.com/store/email?items%5B0%5D%5Bid%5D=632B3ADD940A7FBB7864AA5AD19B8D28&cli=adobe_com&ctx=fp&co=US&lang=en',
         );
         expect(checkoutLink.value).to.be.not.empty;
+        expect(checkoutLink.options).to.be.not.empty;
+    });
+
+    it('re-dispatches click event', async () => {
+        await initMasCommerceService();
+        const checkoutLink = mockCheckoutLink('abm');
+        let targetIsCheckoutlink = false;
+        checkoutLink.addEventListener(
+            'click',
+            (event) => {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                targetIsCheckoutlink = event.target === checkoutLink;
+            },
+            { once: true },
+        );
+        await checkoutLink.onceSettled();
+        checkoutLink.firstElementChild.dispatchEvent(
+            new MouseEvent('click', {
+                bubbles: true,
+                cancelable: true,
+                view: window,
+            }),
+        );
+        expect(targetIsCheckoutlink).to.be.true;
     });
 
     it('renders link with workflow step from settings', async () => {

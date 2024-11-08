@@ -149,17 +149,22 @@ export class InlinePrice extends HTMLSpanElement {
 
     disconnectedCallback() {
         this.masElement.disconnectedCallback();
-        this.removeEventListener('click', this.handleClick.bind(this));
+        this.removeEventListener('click', this.handleClick);
     }
 
-
     handleClick(event) {
-      /* c8 ignore next 4 */
-      if (event.target === this) return;
-      // re-dispatch click event from the price element
-      event.stopImmediatePropagation();
-      this.dispatchEvent(new CustomEvent('click', { bubbles: true }));
-  }
+        /* c8 ignore next 4 */
+        if (event.target === this) return;
+        // re-dispatch click event from the price element
+        event.stopImmediatePropagation();
+        this.dispatchEvent(
+            new MouseEvent('click', {
+                bubbles: true,
+                cancelable: true,
+                view: window,
+            }),
+        );
+    }
 
     onceSettled() {
         return this.masElement.onceSettled();
