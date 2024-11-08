@@ -152,7 +152,7 @@ body {
 }
 
 .locui-header-logo {
-  background: url('./components//assets/logo.svg');
+  background: url('./components/assets/logo.svg');
   width: 40px;
   text-indent: -1000px;
   overflow: hidden;
