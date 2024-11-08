@@ -814,6 +814,9 @@ a:active {
   color: var(--link-hover-color);
 }
 
+a:has(sub:only-child) { text-decoration: unset; }
+a sub:only-child { text-decoration: underline; }
+
 /* Links Quiet */
 a.quiet,
 a.quiet:hover,
