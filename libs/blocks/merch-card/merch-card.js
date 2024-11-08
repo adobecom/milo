@@ -387,7 +387,7 @@ const getMiniCompareChartFooterRows = (el) => {
   return footerRows;
 };
 
-const createFirstRow = async (firstRow, isMobile, checkmarkCopyContainer) => {
+const createFirstRow = async (firstRow, isMobile, checkmarkCopyContainer, defaultChevronState) => {
   const firstRowText = firstRow.querySelector('div > div:last-child').innerHTML;
   let firstRowTextParagraph;
 
@@ -396,6 +396,10 @@ const createFirstRow = async (firstRow, isMobile, checkmarkCopyContainer) => {
     const chevronIcon = createTag('span', { class: 'chevron-icon' }, chevronDownSVG);
     firstRowTextParagraph = createTag('div', { class: 'footer-rows-title' }, firstRowText);
     firstRowTextParagraph.appendChild(chevronIcon);
+
+    if (defaultChevronState === 'open') {
+      checkmarkCopyContainer.classList.add('open');
+    }
 
     firstRowTextParagraph.addEventListener('click', () => {
       const isOpen = checkmarkCopyContainer.classList.toggle('open');
@@ -430,18 +434,35 @@ const decorateFooterRows = async (merchCard, footerRows) => {
   if (!footerRows) return;
 
   const footerRowsSlot = createTag('div', { slot: 'footer-rows' });
-  const isCheckmark = merchCard.classList.contains('checkmark');
+  const isCheckmark = merchCard.classList.contains('feature-list-item');
   const isMobile = window.matchMedia('(max-width: 1199px)').matches;
 
   if (isCheckmark) {
     const firstRow = footerRows[0];
-    const bgStyle = firstRow.querySelector('div > div:first-child').innerHTML;
+    const firstRowContent = firstRow.querySelector('div > div:first-child').innerHTML.split(',');
+    let bgStyle = '#E8E8E8';
+    let defaultChevronState = 'close';
+
+    firstRowContent.forEach((item) => {
+      const trimmedItem = item.trim();
+      if (trimmedItem.startsWith('#')) {
+        bgStyle = trimmedItem;
+      } else if (trimmedItem === 'open' || trimmedItem === 'close') {
+        defaultChevronState = trimmedItem;
+      }
+    });
+
     const hrElem = createTag('hr', { style: `background: ${bgStyle};` });
     footerRowsSlot.appendChild(hrElem);
     merchCard.classList.add('has-divider');
 
     const checkmarkCopyContainer = createTag('div', { class: 'checkmark-copy-container' });
-    const firstRowTextParagraph = await createFirstRow(firstRow, isMobile, checkmarkCopyContainer);
+    const firstRowTextParagraph = await createFirstRow(
+      firstRow,
+      isMobile,
+      checkmarkCopyContainer,
+      defaultChevronState
+    );
 
     footerRowsSlot.appendChild(firstRowTextParagraph);
     footerRowsSlot.appendChild(checkmarkCopyContainer);
