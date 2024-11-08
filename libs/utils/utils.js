@@ -1243,7 +1243,7 @@ export function partition(arr, fn) {
 const preloadBlockResources = (blocks = []) => blocks.map((block) => {
   if (block.classList.contains('hide-block')) return null;
   const { blockPath, hasStyles, name } = getBlockData(block);
-  if (['marquee', 'hero-marquee'].includes(name)) {
+  if (['marquee', 'hero-marquee', 'mep-marqee'].includes(name)) {
     loadLink(`${getConfig().base}/utils/decorate.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
   }
   loadLink(`${blockPath}.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
