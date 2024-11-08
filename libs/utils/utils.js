@@ -49,6 +49,7 @@ const MILO_BLOCKS = [
   'marquee-anchors',
   'martech-metadata',
   'media',
+  'mep-marquee',
   'merch',
   'merch-card',
   'merch-card-collection',
