@@ -539,6 +539,22 @@ const getCardsString = async (cards = []) => {
   return uuids.filter(Boolean).join('%2C');
 };
 
+const getStageMapTransformations = (config) => {
+  if (config.env?.name === 'prod' || !config.stageDomainsMap) return {};
+  const { href, hostname } = window.location;
+  const matchedRules = Object.entries(config.stageDomainsMap)
+    .find(([domain]) => new RegExp(domain).test(href));
+  if (!matchedRules) return {};
+  const [, domainsMap] = matchedRules;
+  return {
+    enabled: true,
+    hostnameTransforms: Object.keys(domainsMap).map((d) => ({
+      from: d,
+      to: domainsMap[d] === 'origin' ? `${d.includes('https') ? 'https://' : ''}${hostname}` : domainsMap[d],
+    })),
+  };
+};
+
 export const getConfig = async (originalState, strs = {}) => {
   const state = addMissingStateProps(originalState);
   const originSelection = Array.isArray(state.source) ? state.source.join(',') : state.source;
@@ -742,7 +758,7 @@ export const getConfig = async (originalState, strs = {}) => {
       lastViewedSession: state.lastViewedSession || '',
     },
     customCard: ['card', `return \`${state.customCard}\``],
-    linkTransformer: pageConfig.caasLinkTransformer || {},
+    linkTransformer: pageConfig.caasLinkTransformer || getStageMapTransformations(pageConfig),
     headers: caasRequestHeaders,
   };
 
