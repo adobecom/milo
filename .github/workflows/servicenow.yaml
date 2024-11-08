@@ -73,26 +73,26 @@ jobs:
 
       - name: Get IMS Token
         run: |
-          DEFAULT_IMS_URL=''
+          DEFAULT_IMS_URL='https://ims-na1-stg1.adobelogin.com/ims/token'
 
           function ims_request() {
-            local client_id=$1
-            local client_secret=$2
-            local scope=$3
-            local url=$4
+            local client_id=${{ secrets.IMSACCESS_CLIENT_ID }}
+            local client_secret=${{ secrets.IMSACCESS_CLIENT_SECRET_STAGE }}
+            local ims_code=${{ secrets.IMSACCESS_AUTH_CODE_STAGE }}
+            local url=$1
 
             if [ -z "$client_id" ]; then
-              echo "First parameter missing, must be IMS client ID"
+              echo "Missing IMS client ID"
               return 1
             fi
 
             if [ -z "$client_secret" ]; then
-              echo "Second parameter missing, must be IMS client secret"
+              echo "Missing IMS client secret"
               return 1
             fi
 
-            if [ -z "$scope" ]; then
-              echo "Third parameter missing, must be IMS scope"
+            if [ -z "$ims_code" ]; then
+              echo "Missing IMS Code"
               return 1
             fi
 
@@ -100,10 +100,7 @@ jobs:
               url=$DEFAULT_IMS_URL
             fi
 
-            local params="{\"_username\":\"${username}\",\"_passkey\":\"${passkey}\",\"_object\":\"${object}\",\"_method\": \"${method}\"}"
-            params=$(echo "$params $method_params" | jq -s add)
-
-            local response=$(curl --write-out "%{http_code}" --silent --output response.txt https://${url}/ims/token/v1 --data-urlencode "client_id=${client_id}" --data-urlencode "client_secret=${client_secret}" --data-urlencode "scope=${scope}" --data-urlencode "grant_type=client_credentials")
+            local response=$(curl --request POST --write-out "%{http_code}" --silent --output response.txt --url "${url}" --header 'content-type: multipart/form-data' --form client_id=${client_id} --form client_secret=${client_secret} --form grant_type=authorization_code --form code=${ims_code})
 
             if [ $response != "200" ]; then
               echo "CURL call returned HTTP status code: $response"
@@ -114,53 +111,36 @@ jobs:
               exit 1
             else
               echo "IMS token request was successful"
+              token=$(jq -r '.access_token' response.txt) >> GITHUB_ENV
             fi
           }
 
+          ims_request
+
       - name: Create CMR in ServiceNow
         run: |
-          DEFAULT_SERVICENOW_URL=''
+          DEFAULT_SERVICENOW_URL='https://ipaasapi-stage.adobe-services.com/change_management/changes'
 
-          function servicenow_request() {
-            local username=$1
-            local passkey=$2
-            local object=$3
-            local method=$4
-            local method_params=$5
-            local url=$6
+          function servicenow_create_cmr() {
+            local api_key=${{ secrets.IPAAS_KEY_STAGE }}
+            local access_token=${{ env.token }}
+            local url=$1
 
-            if [ -z "$username" ]; then
-              echo "First parameter missing, must be SKMS username"
+            if [ -z "$api_key" ]; then
+              echo "Missing ServiceNow API key"
               return 1
             fi
 
-            if [ -z "$passkey" ]; then
-              echo "Second parameter missing, must be SKMS passkey"
+            if [ -z "$access_token" ]; then
+              echo "Missing IMS access token"
               return 1
-            fi
-
-            if [ -z "$object" ]; then
-              echo "Third parameter missing, must be an SKMS dao object"
-              return 1
-            fi
-
-            if [ -z "$method" ]; then
-              echo "Fourth parameter missing, must be SKMS dao method"
-              return 1
-            fi
-
-            if [ -z "$method_params" ]; then
-              method_params='{}'
             fi
 
             if [ -z "$url" ]; then
               url=$DEFAULT_SERVICENOW_URL
             fi
 
-            local params="{\"_username\":\"${username}\",\"_passkey\":\"${passkey}\",\"_object\":\"${object}\",\"_method\": \"${method}\"}"
-            params=$(echo "$params $method_params" | jq -s add)
-
-            local response=$(curl --write-out "%{http_code}" --silent --output response.txt https://${url}/web_api --data-urlencode "_parameters=${params}")
+            local response=$(curl --request POST --write-out "%{http_code}" --silent --output response.txt --url "${url}" --header "api_key: ${api_key}" --header "Authorization: ${access_token}" -d '{"title": "${{ env.release_title }}", "description": "${{ env.release_summary }}", "instanceIds": [ 537445 ], "plannedStartDate": ${{ env.start_time }}, "plannedEndDate": ${{ env.end_time }}, "coordinator": "narcis@adobe.com", "executor": "mauchley@adobe.com", "customerImpact": "No Impact", "changeReason": [ "New Features", "Bug Fixes", "Enhancement", "Maintenance", "Security" ], "risk": "Straight Forward", "preProductionTestingType": [ "End-to-End", "Functional", "Integrations", "QA", "Regression", "UAT", "Unit Test" ], "backoutPlanType": "Roll back", "approvedBy": [ "osahin@adobe.com", "cpeyer@adobe.com" ], "testPlan": "Test plan is documented in the PR link in the Milo repository above. See the PR's merge checks to see Unit and Nala testing.", "implementationPlan": "The change will be realeased as part of the continuous deployment of Milo's production branch, i.e., \"main\"", "backoutPlan": "Revert merge to the Milo production branch by creating a revert commit.", "testResults": "Changes are tested and validated successfully in staging environment. Please see the link of the PR in the description for the test results and/or the \"#nala-test-results\" slack channel."}')
 
             if [ $response != "200" ]; then
               echo "CURL call returned HTTP status code: $response"
@@ -171,55 +151,76 @@ jobs:
               exit 1
             else
               echo "CMR creation was successful"
+              transaction_id=$(jq -r '.id' response.txt) >> GITHUB_ENV
             fi
           }
 
-          servicenow_request '${{ secrets.SKMS_USER }}' '${{ secrets.SKMS_PASS }}' CmrDao createCmrFromPreapprovedChangeModel '{"change_executor":"${{ secrets.SKMS_CHANGE_EXECUTOR }}","maintenance_window_end_time":"${{ env.end_time }}","maintenance_window_start_time":"${{ env.start_time }}","preapproved_change_model_id":"${{ secrets.SKMS_CHANGE_MODEL_ID }}","summary":"${{ env.release_summary }}"}'
+          servicenow_create_cmr
 
-      - name: Close CMR in ServiceNow
+      - name: Retrieve CMR ID in ServiceNow
         run: |
-          DEFAULT_SERVICENOW_URL=''
+          DEFAULT_SERVICENOW_URL='https://ipaasapi-stage.adobe-services.com/change_management/transactions/${{ env.transaction_id }}'
 
-          function servicenow_request() {
-            local username=$1
-            local passkey=$2
-            local object=$3
-            local method=$4
-            local method_params=$5
-            local url=$6
+          function servicenow_request_cmr() {
+            local api_key=${{ secrets.IPAAS_KEY_STAGE }}
+            local access_token=${{ env.token }}
+            local url=$1
 
-            if [ -z "$username" ]; then
-              echo "First parameter missing, must be SKMS username"
+            if [ -z "$api_key" ]; then
+              echo "Missing ServiceNow API key"
               return 1
             fi
 
-            if [ -z "$passkey" ]; then
-              echo "Second parameter missing, must be SKMS passkey"
+            if [ -z "$access_token" ]; then
+              echo "Missing IMS access token"
               return 1
-            fi
-
-            if [ -z "$object" ]; then
-              echo "Third parameter missing, must be an SKMS dao object"
-              return 1
-            fi
-
-            if [ -z "$method" ]; then
-              echo "Fourth parameter missing, must be SKMS dao method"
-              return 1
-            fi
-
-            if [ -z "$method_params" ]; then
-              method_params='{}'
             fi
 
             if [ -z "$url" ]; then
               url=$DEFAULT_SERVICENOW_URL
             fi
 
-            local params="{\"_username\":\"${username}\",\"_passkey\":\"${passkey}\",\"_object\":\"${object}\",\"_method\": \"${method}\"}"
-            params=$(echo "$params $method_params" | jq -s add)
+            local response=$(curl --request GET --write-out "%{http_code}" --silent --output response.txt --url "${url}" --header "api_key: ${api_key}" --header "Authorization: ${access_token}")
 
-            local response=$(curl --write-out "%{http_code}" --silent --output response.txt https://${url}/web_api --data-urlencode "_parameters=${params}")
+            if [ $response != "200" ]; then
+              echo "CURL call returned HTTP status code: $response"
+              exit 1
+            elif grep -q "\"status\":\"error\"" response.txt; then
+              echo "CMR ID retrieval failed with response: "
+              cat response.txt
+              exit 1
+            else
+              echo "CMR ID retrieval was successful"
+              cmr_id=$(jq -r '.changeId' response.txt) >> GITHUB_ENV
+            fi
+          }
+
+          servicenow_request_cmr
+
+      - name: Close CMR in ServiceNow
+        run: |
+          DEFAULT_SERVICENOW_URL='https://ipaasapi-stage.adobe-services.com/change_management/changes/${{ env.cmr_id }}'
+
+          function servicenow_close_cmr() {
+            local api_key=${{ secrets.IPAAS_KEY_STAGE }}
+            local access_token=${{ env.token }}
+            local url=$1
+
+            if [ -z "$api_key" ]; then
+              echo "Missing ServiceNow API key"
+              return 1
+            fi
+
+            if [ -z "$access_token" ]; then
+              echo "Missing IMS access token"
+              return 1
+            fi
+
+            if [ -z "$url" ]; then
+              url=$DEFAULT_SERVICENOW_URL
+            fi
+
+            local response=$(curl --request POST --write-out "%{http_code}" --silent --output response.txt --url "${url}" --header "api_key: ${api_key}" --header "Authorization: ${access_token}" -d '{"actualStartDate": ${{ env.start_time }}, "actualEndDate": ${{ env.end_time }}, "state": "Closed", "closeCode": "Successful", "notes": "The change request is closed as the change was released successfully"}')
 
             if [ $response != "200" ]; then
               echo "CURL call returned HTTP status code: $response"
@@ -233,4 +234,4 @@ jobs:
             fi
           }
 
-          servicenow_request '${{ secrets.SKMS_USER }}' '${{ secrets.SKMS_PASS }}' CmrDao createCmrFromPreapprovedChangeModel '{"change_executor":"${{ secrets.SKMS_CHANGE_EXECUTOR }}","maintenance_window_end_time":"${{ env.end_time }}","maintenance_window_start_time":"${{ env.start_time }}","preapproved_change_model_id":"${{ secrets.SKMS_CHANGE_MODEL_ID }}","summary":"${{ env.release_summary }}"}'
+          servicenow_close_cmr
