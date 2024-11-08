@@ -30,6 +30,14 @@ const selectors = {
   socialLink: '.feds-social-link',
   privacyLink: '.feds-footer-privacyLink',
   menuContent: '.feds-menu-content',
+  /* mobile redesign popup selectors */
+  mainMenuItems: 'header.new-nav section.feds-navItem > button',
+  mainMenuLinks: ' header.new-nav feds-navItem > a',
+  activePopup: 'header.new-nav section.feds-dropdown--active > .feds-popup',
+  tab: 'button[role="tab"]',
+  activeTabpanel: '.tab-content [role="tabpanel"]',
+  activeLinks: '.tab-content [role="tabpanel"]:not([hidden="true"]) a',
+  stickyCta: 'header.new-nav .feds-popup .sticky-cta a',
 };
 
 selectors.profileDropdown = `
