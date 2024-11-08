@@ -97,9 +97,9 @@ function getCDTTimeRange() {
   let cdtMetadata = null;
   persManifests?.forEach((manifest) => {
     if (manifest.disabled) return;
-    if (!manifest.event.cdt) return;
+    if (!manifest.event.cdtStart || !manifest.event.cdtEnd) return;
 
-    cdtMetadata = manifest.event.cdt;
+    cdtMetadata = `${manifest.event.cdtStart},${manifest.event.cdtEnd}`;
   });
 
   if (!cdtMetadata) {
