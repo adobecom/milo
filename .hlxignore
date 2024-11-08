@@ -8,6 +8,9 @@ build/*
 LICENSE
 web-test-runner.config.mjs
 codecov.yaml
-libs/features/mas/*
-!libs/features/mas/docs
-!libs/features/mas/mas/dist
+
+# MAS feature
+libs/features/mas/**
+!libs/features/mas/docs/
+!libs/features/mas/mas/dist/
+!libs/features/mas/mas/dist/mas.js
