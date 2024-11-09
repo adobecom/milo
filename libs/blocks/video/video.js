@@ -1,7 +1,7 @@
 import { getConfig } from '../../utils/utils.js';
 import { decorateAnchorVideo } from '../../utils/decorate.js';
 
-export default async function init(a) {
+export default function init(a) {
   a.classList.add('hide-video');
   if (!a.parentNode) {
     a.remove();
@@ -17,9 +17,8 @@ export default async function init(a) {
     const mediaFilename = pathname.split('/').pop();
     videoPath = `${root}${mediaFilename}`;
   }
-  await decorateAnchorVideo({
+  decorateAnchorVideo({
     src: videoPath,
     anchorTag: a,
-    indexOfVideo: a.getAttribute('indexOfBlock'),
   });
 }

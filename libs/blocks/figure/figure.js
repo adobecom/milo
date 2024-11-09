@@ -1,4 +1,4 @@
-import { applyHoverPlay, decorateAnchorVideo, applyAccessibiltyEvents } from '../../utils/decorate.js';
+import { applyHoverPlay, decorateAnchorVideo, applyAccessibiltyEvents, decoratePausePlayWrapper } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
 
 function buildCaption(pEl) {
@@ -32,7 +32,10 @@ function decorateVideo(clone, figEl) {
       );
     }
     applyHoverPlay(videoTag);
-    applyAccessibiltyEvents(videoTag);
+    if (!videoTag.controls) {
+      applyAccessibiltyEvents(videoTag);
+      decoratePausePlayWrapper(videoTag, 'autoplay');
+    }
     figEl.prepend(videoContainer);
   }
 }

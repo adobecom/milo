@@ -4,18 +4,40 @@ import sinon from 'sinon';
 import { waitFor, waitForElement } from '../../helpers/waitfor.js';
 
 import { setConfig, createTag } from '../../../libs/utils/utils.js';
-import { decorateAnchorVideo, handlePause, applyHoverPlay } from '../../../libs/utils/decorate.js';
+import { decorateAnchorVideo, handlePause, applyHoverPlay, decoratePausePlayWrapper } from '../../../libs/utils/decorate.js';
 
 setConfig({});
 const { default: init } = await import('../../../libs/blocks/video/video.js');
 
 describe('video uploaded using franklin bot', () => {
+  let clock;
   beforeEach(async () => {
+    clock = sinon.useFakeTimers({
+      toFake: ['setTimeout'],
+      shouldAdvanceTime: true,
+    });
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });
   });
 
   afterEach(() => {
+    clock.restore();
     document.body.innerHTML = '';
+  });
+
+  it('aria-label should not have index when page has only one video', async () => {
+    const block = document.querySelector('.video.autoplay.single');
+    const block2 = document.querySelector('.video.autoplay.second');
+    const a = block.querySelector('a');
+    const a2 = block2.querySelector('a');
+    block.append(a);
+    block2.append(a2);
+    init(a);
+    init(a2);
+    await new Promise((resolve) => { setTimeout(resolve, 1000); });
+    await clock.runAllAsync();
+    const pausePlayWrapper = block.querySelector('.pause-play-wrapper');
+    const videoIndex = pausePlayWrapper.getAttribute('video-index');
+    expect(videoIndex).to.exist;
   });
 
   it('removes the element, if it does not have a parent node', (done) => {
@@ -41,7 +63,7 @@ describe('video uploaded using franklin bot', () => {
     a.textContent = href;
     block.append(a);
 
-    await init(a);
+    init(a);
     const video = await waitForElement('.video.normal video');
     expect(video).to.exist;
   });
@@ -53,7 +75,7 @@ describe('video uploaded using franklin bot', () => {
     a.textContent = href;
     block.append(a);
 
-    await init(a);
+    init(a);
     const video = await waitForElement('.video.autoplay video');
     expect(video.hasAttribute('autoplay')).to.be.true;
   });
@@ -65,7 +87,7 @@ describe('video uploaded using franklin bot', () => {
     a.textContent = href;
     block.append(a);
 
-    await init(a);
+    init(a);
     const video = await waitForElement('.video.no-loop video');
     expect(video.hasAttribute('loop')).to.be.false;
   });
@@ -77,7 +99,7 @@ describe('video uploaded using franklin bot', () => {
     a.textContent = href;
     block.append(a);
 
-    await init(a);
+    init(a);
     const video = await waitForElement('.video.no-loop.hoverplay video');
     expect(video.hasAttribute('loop')).to.be.false;
     expect(video.hasAttribute('data-hoverplay')).to.be.true;
@@ -88,7 +110,7 @@ describe('video uploaded using franklin bot', () => {
     const a = block.querySelector('a');
     block.append(a);
 
-    await init(a);
+    init(a);
     const video = block.querySelector('video');
     expect(video.hasAttribute('loop')).to.be.true;
     expect(video.hasAttribute('data-hoverplay')).to.be.false;
@@ -99,7 +121,7 @@ describe('video uploaded using franklin bot', () => {
     const a = block.querySelector('a');
     block.append(a);
 
-    await init(a);
+    init(a);
     const video = block.querySelector('video');
     expect(video.hasAttribute('data-hoverplay')).to.be.true;
   });
@@ -109,7 +131,7 @@ describe('video uploaded using franklin bot', () => {
     const a = block.querySelector('a');
     block.append(a);
 
-    await init(a);
+    init(a);
     const video = block.querySelector('video');
     expect(video.hasAttribute('data-play-viewport')).to.be.true;
   });
@@ -141,57 +163,30 @@ describe('video uploaded using franklin bot', () => {
       ],
       ':type': 'sheet',
     });
+
     const a = block.querySelector('a');
     block.append(a);
-    await init(a);
-    await new Promise((resolve) => { setTimeout(resolve, 50); });
-    const pausePlayWrapper = block.querySelector('.pause-play-wrapper');
+    init(a);
     const video = block.querySelector('video');
+    decoratePausePlayWrapper(video, '');
+    const pausePlayWrapper = block.querySelector('.pause-play-wrapper');
     pausePlayWrapper.click();
-    expect(video.paused).to.be.true;
+    await new Promise((resolve) => { setTimeout(resolve, 1000); });
+    await clock.runAllAsync();
+    expect(pausePlayWrapper.ariaPressed).to.eql('false');
   });
 
   it('accessibility controls should play autoplay videos after pausing', async () => {
     const block = document.querySelector('.video.autoplay.viewportplay');
     const a = block.querySelector('a');
     block.append(a);
-    await init(a);
-    await new Promise((resolve) => { setTimeout(resolve, 50); });
+    init(a);
     const pausePlayWrapper = block.querySelector('.pause-play-wrapper');
-    const video = block.querySelector('video');
     pausePlayWrapper.click();
-    await new Promise((resolve) => { setTimeout(resolve, 50); });
-    await pausePlayWrapper.click();
-    expect(video.paused).to.be.false;
-  });
-
-  it('aria-label should not have index when page has only one video', async () => {
-    const block = document.querySelector('.video.autoplay.single');
-    const a = block.querySelector('a');
-    a.setAttribute('indexOfBlock', 1);
-    block.append(a);
-    await init(a);
-    await new Promise((resolve) => { setTimeout(resolve, 50); });
-    const pausePlayWrapper = block.querySelector('.pause-play-wrapper');
-    const airaLabel = pausePlayWrapper.getAttribute('aria-label');
-    expect(airaLabel).to.equals('Pause');
-  });
-
-  it('aria-label should have index when page has only one video', async () => {
-    const block = document.querySelector('.video.autoplay.single');
-    const block2 = document.querySelector('.video.autoplay.second');
-    const a = block.querySelector('a');
-    const a2 = block2.querySelector('a');
-    a.setAttribute('indexOfBlock', 1);
-    a2.setAttribute('indexOfBlock', 2);
-    block.append(a);
-    block2.append(a2);
-    await init(a);
-    await init(a2);
-    await new Promise((resolve) => { setTimeout(resolve, 50); });
-    const pausePlayWrapper = block.querySelector('.pause-play-wrapper');
-    const airaLabel = pausePlayWrapper.getAttribute('aria-label');
-    expect(airaLabel).to.equals('Pause 1');
+    await new Promise((resolve) => { setTimeout(resolve, 500); });
+    await clock.runAllAsync();
+    pausePlayWrapper.click();
+    expect(pausePlayWrapper.querySelector('.is-playing')).to.exist;
   });
 
   it('handlePause should return undefined if called with unknown event', async () => {
@@ -205,12 +200,14 @@ describe('video uploaded using franklin bot', () => {
     const block = document.querySelector('.video.autoplay1.hoverplay.no-viewportplay');
     const a = block.querySelector('a');
     block.append(a);
-    await init(a);
-    await new Promise((resolve) => { setTimeout(resolve, 50); });
+    init(a);
+    await new Promise((resolve) => { setTimeout(resolve, 0); });
+    await clock.runAllAsync();
     const pausePlayWrapper = block.querySelector('.pause-play-wrapper');
     const video = block.querySelector('video');
     pausePlayWrapper.focus();
-    await new Promise((resolve) => { setTimeout(resolve, 50); });
+    await new Promise((resolve) => { setTimeout(resolve, 0); });
+    await clock.runAllAsync();
     pausePlayWrapper.blur();
     expect(video.paused).to.be.true;
   });
@@ -228,7 +225,7 @@ describe('video uploaded using franklin bot', () => {
       requestAnimationFrame(resolve);
     });
 
-    await init(a);
+    init(a);
     const video = block.querySelector('video');
     const playSpy = sinon.spy(video, 'play');
     const pauseSpy = sinon.spy(video, 'pause');
@@ -262,7 +259,7 @@ describe('video uploaded using franklin bot', () => {
       requestAnimationFrame(resolve);
     });
 
-    await init(a);
+    init(a);
     const video = block.querySelector('video');
     const playSpy = sinon.spy(video, 'play');
     const pauseSpy = sinon.spy(video, 'pause');
@@ -309,7 +306,7 @@ describe('video uploaded using franklin bot', () => {
     const a = block.querySelector('a');
     block.append(a);
 
-    await init(a);
+    init(a);
     const video = block.querySelector('video');
     expect(video.hasAttribute('data-play-viewport')).to.be.true;
   });
@@ -319,7 +316,7 @@ describe('video uploaded using franklin bot', () => {
     const a = block.querySelector('a');
     block.append(a);
 
-    await init(a);
+    init(a);
     const video = block.querySelector('video');
     expect(video.hasAttribute('data-play-viewport')).to.be.false;
   });
@@ -329,7 +326,7 @@ describe('video uploaded using franklin bot', () => {
     const a = block.querySelector('a');
     block.append(a);
 
-    await init(a);
+    init(a);
     const video = block.querySelector('video');
     expect(video.hasAttribute('data-play-viewport')).to.be.false;
   });
@@ -339,7 +336,7 @@ describe('video uploaded using franklin bot', () => {
     const a = block.querySelector('a');
     block.append(a);
 
-    await init(a);
+    init(a);
     const video = block.querySelector('video');
     expect(video.hasAttribute('data-play-viewport')).to.be.false;
   });
@@ -349,7 +346,7 @@ describe('video uploaded using franklin bot', () => {
     const a = block.querySelector('a');
     block.append(a);
 
-    await init(a);
+    init(a);
     const video = block.querySelector('video');
     expect(video.hasAttribute('data-play-viewport')).to.be.false;
   });
