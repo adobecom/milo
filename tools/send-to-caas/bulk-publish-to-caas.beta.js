@@ -405,6 +405,14 @@ const checkUserStatus = async () => {
   return true;
 }
 
+const feecbackButton = document.querySelector('.feedback');
+feecbackButton.addEventListener('click', () => {
+  showAlert(`<p><b>Feedback and Comments</b></p>
+    <p>Feedback for this tool is always welcome.</p>
+    <p>To report any issues or send your comments, please use the Slack channel <b>#javelin-friends</b></p>
+    <p><i>The Javelin Team</i></p>`);
+  });
+
 const helpButtons = document.querySelectorAll('.help');
 helpButtons.forEach((btn) => {
   btn.addEventListener('click', (e) => {
