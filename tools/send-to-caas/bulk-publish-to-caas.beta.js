@@ -17,6 +17,9 @@ import {
 import comEnterpriseToCaasTagMap from './comEnterpriseToCaasTagMap.js';
 
 const BODY = document.body;
+const SIGNEDIN = BODY.querySelector('.status-signed-in')
+const SIGNEDOUT = BODY.querySelector('.status-signed-out')
+
 const LS_KEY = 'bulk-publish-caas';
 const FIELDS = ['preset', 'host', 'repo', 'owner', 'caasEnv', 'urls', 'contentType', 'publishToFloodgate'];
 const FIELDS_CB = ['draftOnly', 'useHtml', 'usePreview'];
@@ -94,7 +97,12 @@ const updateTagsFromSheetData = (tags, sheetTagsStr) => {
   return [...tagSet].map((t) => ({ id: t }));
 };
 
-const resetStatusTables = () => {
+const showClearResultsTables = () => {
+  const clearResultsButton = document.querySelector('.clear-results');
+  clearResultsButton.style.display = 'block';
+}
+
+const resetResultsTables = () => {
   const successTable = document.querySelector('.success-table');
   const successTBody = successTable.querySelector('tbody');
   successTBody.innerHTML = '';
@@ -106,6 +114,7 @@ const resetStatusTables = () => {
 }
 
 const showSuccessTable = (successArr) => {
+  showClearResultsTables();
   const env = getConfig().caasEnv === 'prod' ? '' : `-${getConfig().caasEnv}`;
   const chimeraEndpoint = `https://14257-chimera${env}.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection?debug=1&featuredCards=`;
   const successTable = document.querySelector('.success-table');
@@ -123,6 +132,7 @@ const showSuccessTable = (successArr) => {
 }
 
 const showErrorTable = (errorArr) => {
+  showClearResultsTables();
   const errorTable = document.querySelector('.error-table');
   const tableBody = errorTable.querySelector('tbody');
   errorTable.style.display = 'block';
@@ -239,9 +249,9 @@ const processData = async (data, accessToken) => {
 
   if (statusModal.modal) statusModal.close();
 
-  document.querySelector('.status-signed-in').style.display = 'none';
-  document.querySelector('.status-signed-out').style.display = 'none';
-  resetStatusTables()
+  SIGNEDIN.style.display = 'none';
+  SIGNEDOUT.style.display = 'none';
+  resetResultsTables()
   if (successArr.length) {
     showSuccessTable(successArr);
   }
@@ -367,6 +377,13 @@ preset.addEventListener('change', () => {
   checkCaasEnv();
 });
 
+const clearResultsButton = document.querySelector('.clear-results');
+clearResultsButton.addEventListener('click', () => {
+  resetResultsTables();
+  clearResultsButton.style.display = 'none';
+  SIGNEDIN.style.display = 'block';
+});
+
 // const publishWarning =  document.querySelector('.publish-warning');
 caasEnv.addEventListener('change', () => {
   checkCaasEnv();
@@ -380,10 +397,10 @@ const checkUserStatus = async () => {
   const accessToken = await checkIms(false);
   if (accessToken) {
     document.querySelector('.status-checking').style.display = 'none';
-    document.querySelector('.status-signed-in').style.display = 'block';
+    SIGNEDIN.style.display = 'block';
   } else {
     document.querySelector('.status-checking').style.display = 'none';
-    document.querySelector('.status-signed-out').style.display = 'block';
+    SIGNEDOUT.style.display = 'block';
   }
   return true;
 }

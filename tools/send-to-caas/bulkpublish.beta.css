@@ -426,6 +426,23 @@ p.status-signed-out i {
   color: red;
 }
 
+.status {
+  position: relative;
+}
+
+.status button.clear-results {
+  position: absolute;
+  right: 20px;
+  background: transparent;
+  border: solid 1px #bababa;
+  padding: 6px 16px;
+  border-radius: 6px;
+}
+
+.status button.clear-results:hover {
+  background: linear-gradient(0deg, #ddd, transparent);
+}
+
 table.error-table,
 table.success-table {
   width: 100%;
