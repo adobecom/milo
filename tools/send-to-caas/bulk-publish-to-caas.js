@@ -31,23 +31,23 @@ const DEFAULT_VALUES = {
   publishToFloodgate: 'default',
 };
 const DEFAULT_VALUES_CB = {
-  publishToDraft: true,
+  publishToDraft: false,
   usePreview: false,
-  useHtml: true,
+  useHtml: false,
 };
 
-const useDarkTheme = localStorage.getItem('bp-theme') === 'dark'
-  ? true
-  : localStorage.getItem('bp-theme') === 'light' 
-    ? false
-    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+// const useDarkTheme = localStorage.getItem('bp-theme') === 'dark'
+//   ? true
+//   : localStorage.getItem('bp-theme') === 'light' 
+//     ? false
+//     : window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-if (useDarkTheme) {
-  document.querySelector('.bulk-publisher').classList.add('dark');
-  document.querySelector('#option-dark').checked = true;
-} else {
-  document.querySelector('#option-light').checked = true;
-}
+// if (useDarkTheme) {
+//   document.querySelector('.bulk-publisher').classList.add('dark');
+//   document.querySelector('#option-dark').checked = true;
+// } else {
+//   document.querySelector('#option-light').checked = true;
+// }
 
 const fetchExcelJson = async (url) => {
   const resp = await fetch(url);
@@ -105,6 +105,42 @@ const updateTagsFromSheetData = (tags, sheetTagsStr) => {
 
   return [...tagSet].map((t) => ({ id: t }));
 };
+
+const resetStatusTables = () => {
+  const successTable = document.querySelector('.success-table');
+  const successTBody = successTable.querySelector('tbody');
+  successTBody.innerHTML = '';
+  successTable.style.display = 'none';
+  const errorTable = document.querySelector('.error-table');
+  const errorTBody = errorTable.querySelector('tbody');
+  errorTBody.innerHTML = '';
+  errorTable.style.display = 'none';
+}
+
+const showSuccessTable = (successArr) => {
+  const env = getConfig().caasEnv === 'prod' ? '' : `-${getConfig().caasEnv}`;
+  const chimeraEndpoint = `https://14257-chimera${env}.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection?debug=1&featuredCards=`;
+  const successTable = document.querySelector('.success-table');
+  const tableBody = successTable.querySelector('tbody');
+  successTable.style.display = 'block';
+  successArr.forEach(([pageUrl, response]) => {
+    tableBody.innerHTML += `<tr>
+      <td class="ok">OK</td>
+      <td><a href="${pageUrl}" title="View page">${pageUrl}</a></td>
+      <td class="entityid"><a target="_blank" href="${chimeraEndpoint}${response}" title="View Card JSON">${response}</a></td>
+    </tr>`;
+  });
+}
+
+const showErrorTable = (errorArr) => {
+  const errorTable = document.querySelector('.error-table');
+  const tableBody = errorTable.querySelector('tbody');
+  errorTable.style.display = 'block';
+  errorArr.forEach(([pageUrl, response]) => {
+    const message = response.error ? response.error.replace(/:.*/, '') : response;
+    tableBody.innerHTML += `<tr><td class="error">Failed</td><td><a href="${pageUrl}">${pageUrl}</a></td><td>${message}</td></tr>`;
+  });
+}
 
 const processData = async (data, accessToken) => {
   const errorArr = [];
@@ -216,42 +252,6 @@ const processData = async (data, accessToken) => {
   showAlert(`Successfully published ${successArr.length} pages. \n\n Failed to publish ${errorArr.length} pages.`);
 };
 
-function resetStatusTables() {
-  const successTable = document.querySelector('.success-table');
-  const successTBody = successTable.querySelector('tbody');
-  successTBody.innerHTML = '';
-  successTable.style.display = 'none';
-  const errorTable = document.querySelector('.error-table');
-  const errorTBody = errorTable.querySelector('tbody');
-  errorTBody.innerHTML = '';
-  errorTable.style.display = 'none';
-}
-
-function showSuccessTable(successArr) {
-  const env = getConfig().caasEnv === 'prod' ? '' : `-${getConfig().caasEnv}`;
-  const chimeraEndpoint = `https://14257-chimera${env}.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection?debug=1&featuredCards=`;
-  const successTable = document.querySelector('.success-table');
-  const tableBody = successTable.querySelector('tbody');
-  successTable.style.display = 'block';
-  successArr.forEach(([pageUrl, response]) => {
-    tableBody.innerHTML += `<tr>
-      <td class="ok">OK</td>
-      <td><a href="${pageUrl}" title="View page">${pageUrl}</a></td>
-      <td class="entityid"><a target="_blank" href="${chimeraEndpoint}${response}" title="View Card JSON">${response}</a></td>
-    </tr>`;
-  });
-}
-
-function showErrorTable(errorArr) {
-  const errorTable = document.querySelector('.error-table');
-  const tableBody = errorTable.querySelector('tbody');
-  errorTable.style.display = 'block';
-  errorArr.forEach(([pageUrl, response]) => {
-    const message = response.error ? response.error.replace(/:.*/, '') : response;
-    tableBody.innerHTML += `<tr><td class="error">Failed</td><td><a href="${pageUrl}">${pageUrl}</a></td><td>${message}</td></tr>`;
-  });
-}
-
 const bulkPublish = async () => {
   const accessToken = await checkIms();
   if (!accessToken) return;
@@ -296,27 +296,52 @@ const loadFromLS = () => {
   }
 };
 
-const separator = document.querySelector('.separator');
-const parent = separator.parentElement;
+const publishWarning =  document.querySelector('.publish-warning');
+const checkCaasEnv = () => {
+  const { value } = caasEnv;
+  if (value === 'prod' && !publishToDraft.checked) {
+    publishWarning.style.height = '30px';
+  } else {
+    publishWarning.style.height = '0';
+  }
+};
 
+// preset options
 const presetsJsonPath = 'https://milo.adobe.com/drafts/caas/bppresets.json';
 let presetsData = {};
 
-const PRESETS = fetchExcelJson(presetsJsonPath).then((presets) => {
-    presetsData = presets;
-    presets.forEach((preset) => {
-      const option = document.createElement('option');
-      option.value = preset.repo;
-      option.text = `${preset.name} (${preset.repo})`;
-      parent.insertBefore(option, separator);
-    });
+// const separator = document.querySelector('.separator');
+// const parent = separator.parentElement;
+fetchExcelJson(presetsJsonPath).then((presets) => {
+  const separator = document.querySelector('.separator');
+  const parent = separator.parentElement;
+  presetsData = presets;
+  presets.forEach((preset) => {
+    const option = document.createElement('option');
+    option.value = preset.repo;
+    option.text = `${preset.name} (${preset.repo})`;
+    parent.insertBefore(option, separator);
   });
+});
+
+const useDarkTheme = localStorage.getItem('bp-theme') === 'dark'
+  ? true
+  : localStorage.getItem('bp-theme') === 'light' 
+    ? false
+    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+if (useDarkTheme) {
+  document.querySelector('.bulk-publisher').classList.add('dark');
+  document.querySelector('#option-dark').checked = true;
+} else {
+  document.querySelector('#option-light').checked = true;
+}
 
 preset.addEventListener('change', () => {
   const { value } = preset;
   const selectedPreset = presetsData.find(item => item.id === value) || {};
   document.body.classList = '';
-  
+ 
   if (value === 'advanced') {
     document.body.classList.add('advanced');
     return;
@@ -336,25 +361,15 @@ preset.addEventListener('change', () => {
   setConfig(config);
   window.localStorage.setItem(LS_KEY, JSON.stringify(getConfig()));
   loadFromLS();
+  checkCaasEnv();
 });
 
-const publishWarning =  document.querySelector('.publish-warning');
 caasEnv.addEventListener('change', () => {
-  const { value } = caasEnv;
-  if (value === 'prod') {
-    publishWarning.style.height = '30px';
-  } else {
-    publishWarning.style.height = '0';
-  }
+  checkCaasEnv();
 });
 
 publishToDraft.addEventListener('change', () => {
-  const { checked } = publishToDraft;
-  if (caasEnv.value === 'prod' && !checked) {
-    publishWarning.style.height = '30px';
-  } else {
-    publishWarning.style.height = '0';
-  }
+  checkCaasEnv();
 });
 
 const checkUserStatus = async () => {

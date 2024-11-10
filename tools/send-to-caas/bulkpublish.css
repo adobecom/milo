@@ -550,3 +550,10 @@ tbody tr:hover {
   cursor: pointer;
   color: #666;
 }
+
+span.beta {
+  text-transform: uppercase;
+  color: #fff;
+  font-weight: 300;
+  font-size: 20px;
+}
