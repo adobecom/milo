@@ -180,9 +180,9 @@ function createSpectrumButton(cta, strong, aemFragmentMapping, cardVariant) {
         cta,
     );
 
-    const label = spectrumCta.querySelector('#label');
-    if (label) {
-        label.setAttribute('tabindex', '-1');
+    const commerceLinks = spectrumCta.querySelector('a[is]');
+    if (commerceLinks) {
+      commerceLinks.setAttribute('tabindex', '-1');
     }
 
     spectrumCta.addEventListener('click', (e) => {
