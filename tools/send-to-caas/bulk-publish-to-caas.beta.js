@@ -269,7 +269,7 @@ const bulkPublish = async () => {
   const { urls } = getConfig();
 
   if (!urls) {
-    await showAlert('Please enter a URL, or list of URLs separated by new lines, to send to caas.', { error: true });
+    await showAlert('Enter a URL or list of URLs, each on a separate line, to be sent to CaaS.', { error: true });
   }
 
   const data = urls
@@ -304,8 +304,7 @@ const loadFromLS = () => {
 
 const publishWarning =  document.querySelector('.publish-warning');
 const checkCaasEnv = () => {
-  const { value } = caasEnv;
-  if (value === 'prod' && !draftOnly.checked) {
+  if (caasEnv.value === 'prod' && !draftOnly.checked) {
     publishWarning.style.height = '30px';
   } else {
     publishWarning.style.height = '0';
@@ -409,7 +408,7 @@ const feecbackButton = document.querySelector('.feedback');
 feecbackButton.addEventListener('click', () => {
   showAlert(`<p><b>Feedback and Comments</b></p>
     <p>Feedback for this tool is always welcome.</p>
-    <p>To report any issues or send your comments, please use the Slack channel <b>#javelin-friends</b></p>
+    <p>For reporting issues or sharing comments, please use the <b>#javelin-friends</b> channel on Slack</p>
     <p><i>The Javelin Team</i></p>`);
   });
 

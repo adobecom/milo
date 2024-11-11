@@ -146,22 +146,24 @@ body {
 }
 
 .feedback {
+  font-family: ui-sans-serif, system-ui, "Adobe Clean", adobe-clean, sans-serif;
   display: inline-block;
   position: absolute;
   right: 0;
   bottom: 0;
-  font-size: 18px;
-  font-weight: 300;
+  font-size: 16px;
+  font-weight: 200;
   cursor: pointer;
   background: transparent;
   border: solid 1px #ccc;
   color: #fff;
-  text-shadow: 1px 1px 1px #000;
+  text-shadow: 1px 1px 0 #000;
   padding: 6px 12px;
   border-radius: 13px;
 }
 .feedback:hover {
-  color: #d0deb6;
+  /* color: dce6c9; */
+  background: #6f9b00;
 }
 
 
