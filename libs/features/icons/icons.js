@@ -70,10 +70,10 @@ function filterDuplicatedIcons(icons) {
   return uniqueIcons;
 }
 
-function handleLegacyToolTip(icons) {
+export function handleLegacyToolTip(icons, iconClass = 'icon-info-outline') {
   const tooltips = [...icons].filter((icon) => icon.classList.contains('icon-tooltip'));
   if (!tooltips.length) return;
-  tooltips.forEach((icon) => icon.classList.replace('icon-tooltip', 'icon-info-outline'));
+  tooltips.forEach((icon) => icon.classList.replace('icon-tooltip', iconClass));
 }
 
 export async function decorateIcons(icons, config) {
