@@ -180,7 +180,7 @@ function createSpectrumButton(cta, strong, aemFragmentMapping, cardVariant) {
         cta,
     );
 
-    const label = spectrumCta.querySelector('label');
+    const label = spectrumCta.querySelector('#label');
     if (label) {
         label.setAttribute('tabindex', '-1');
     }
