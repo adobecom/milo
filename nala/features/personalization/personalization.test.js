@@ -134,4 +134,47 @@ test.describe('Milo Personalization feature test suite', () => {
       await expect(await text.text).toHaveAttribute('daa-lh', textBlockDll);
     });
   });
+  // Test 3 : Personalization (replaceFragment)
+  test(`${features[3].name},${features[3].tags}`, async ({ page, baseURL }) => {
+    text = new TextBlock(page);
+    marquee = new MarqueeBlock(page);
+    const { data } = features[3];
+    const pznURL = `${baseURL}${features[3].path}${miloLibs}`;
+    const defaultURL = `${baseURL}${data.defaultURLpath}&${miloLibs}`;
+
+    await test.step('step-1: Navigate to default page and verify content/specs', async () => {
+      console.info(`[Test Page]: ${defaultURL}`);
+      await page.goto(defaultURL);
+      await expect(text.introHeadlineAlt).toContainText('This text block will be replaced');
+      await expect(marquee.marquee).toHaveCount(0);
+    });
+
+    await test.step('step-2: Navigate to personalized page and verify content/specs', async () => {
+      console.info(`[Test Page]: ${pznURL}`);
+      await page.goto(pznURL);
+      await expect(text.introHeadlineAlt).toHaveCount(0);
+      await expect(marquee.marquee).toContainText('This is a new marquee, replacing the text block');
+    });
+  });
+
+  // Test 4 : Personalization (remove content)
+  test(`${features[4].name},${features[4].tags}`, async ({ page, baseURL }) => {
+    howto = new Howto(page);
+    const { data } = features[4];
+    const pznURL = `${baseURL}${features[4].path}${miloLibs}`;
+    const defaultURL = `${baseURL}${data.defaultURLpath}&${miloLibs}`;
+
+    await test.step('step-1: Navigate to default page and verify content/specs', async () => {
+      console.info(`[Test Page]: ${defaultURL}`);
+      await page.goto(defaultURL);
+      await expect(howto.heading).toContainText('THIS HEADING WILL BE REMOVED');
+      await expect(howto.heading).toBeVisible();
+    });
+
+    await test.step('step-2: Navigate to personalized page and verify content/specs', async () => {
+      console.info(`[Test Page]: ${pznURL}`);
+      await page.goto(pznURL);
+      await expect(howto.heading).not.toBeVisible();
+    });
+  });
 });
