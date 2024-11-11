@@ -1,3 +1,9 @@
+body {
+  padding: 0;
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, "Adobe Clean", adobe-clean, sans-serif;
+}
+
 .bulk-publisher {
   font-family: ui-sans-serif, system-ui, "Adobe Clean", adobe-clean, sans-serif;
   font-weight: 300;
@@ -45,9 +51,9 @@ dd.content .field {
   height: 100%;
 }
 
-.bulk-publisher.dark .options-panel {
+/* .bulk-publisher.dark .options-panel {
   background: linear-gradient(45deg, #000, #404040);
-}
+} */
 
 .options-panel dd.content {
   background-color: transparent;
@@ -57,9 +63,9 @@ dd.content .field {
   color: #000;
 }
 
-.bulk-publisher.dark dd.content {
+/* .bulk-publisher.dark dd.content {
   color: #EFEFEF;
-}
+} */
  
 .options-panel h4 {
   margin: 5px 20px 10px;
@@ -80,7 +86,7 @@ body:not(.preset) dd.content .field input {
   border: solid 1px #bababa;
 }
 
-.bulk-publisher.dark dd.content .field select, 
+/* .bulk-publisher.dark dd.content .field select, 
 .bulk-publisher.dark  dd.content .field input {
   border: none;
   background: #3C3C3C;
@@ -89,7 +95,7 @@ body:not(.preset) dd.content .field input {
 
 .bulk-publisher.dark dd.content .field label {
   color: #aaa;
-}
+} */
 
 .divider {
   border-top: solid 1px #999;
@@ -112,8 +118,8 @@ div#caas-draft-cb {
   height: 520px;
   height: 250px;
   margin-top: 6px;
+  font-family: system-ui;
   font-size: 16px;
-  /* font-family: system-ui; */
   font-weight: 200;
   border-radius: 16px;
   padding: 15px 20px;
@@ -132,6 +138,7 @@ div#caas-draft-cb {
 body {
   padding: 0;
   margin: 0;
+  font-family: ui-sans-serif, system-ui, "Adobe Clean", adobe-clean, sans-serif;
 }
 
 .content.is-expanded .field.checkbox {
@@ -161,6 +168,7 @@ body {
   padding: 6px 12px;
   border-radius: 13px;
 }
+
 .feedback:hover {
   /* color: dce6c9; */
   background: #6f9b00;
@@ -530,7 +538,7 @@ tbody tr:hover {
   background: #f0f0ff;
 }
 
-/* themes */
+/* ************************* themes **************************** */
 .theme-options {
   position: absolute;
   right: 30px;
@@ -538,9 +546,28 @@ tbody tr:hover {
   font-size: 15px;
 }
 
+.bulk-publisher.dark .options-panel {
+  background: linear-gradient(45deg, #000, #404040);
+}
+
+.bulk-publisher.dark dd.content {
+  color: #EFEFEF;
+}
+
 .bulk-publisher.dark .content-panel {
   background: #444;
   color: #fafafa;
+}
+
+.bulk-publisher.dark dd.content .field label {
+  color: #aaa;
+}
+
+.bulk-publisher.dark dd.content .field select, 
+.bulk-publisher.dark  dd.content .field input {
+  border: none;
+  background: #3C3C3C;
+  color: #EFEFEF;
 }
 
 .bulk-publisher.dark .content-panel textarea#urls {
