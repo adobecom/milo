@@ -72,4 +72,27 @@ describe('Placeholders', () => {
     expect(tag.getAttribute('href')).to.equal('/modal/800 12345 6789');
     expect(tag.getAttribute('data-attr')).to.equal('/modal/800 12345 6789');
   });
+
+  it('Replaces geo-specific placeholders when disable-geo-placeholders meta content is "off" or meta tag not defined', async () => {
+    config.locale.contentRoot = '/test/features/placeholders/bg';
+    const regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
+    let text = '{{add-to-cart}}. {{adobe-apps}}';
+    text = await replaceText(text, config, regex);
+    expect(text).to.equal('Добавяне в количката. Приложения на Adobe');
+  });
+
+  it('Replaces default placeholders when disable-geo-placeholders meta content is "on"', async () => {
+    const meta = document.createElement('meta');
+    meta.name = 'disable-geo-placeholders';
+    meta.content = 'on';
+    document.head.appendChild(meta);
+
+    config.locale.contentRoot = '/test/features/placeholders/bg';
+    config.locale.prefix = '/bg';
+    const regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
+    let text = '{{add-to-cart}}. {{adobe-apps}}';
+    text = await replaceText(text, config, regex);
+    document.head.removeChild(meta);
+    expect(text).to.equal('Add to cart. Adobe Apps');
+  });
 });
