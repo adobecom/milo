@@ -417,13 +417,13 @@ const createFirstRow = async (firstRow, isMobile, checkmarkCopyContainer, defaul
   return firstRowTextParagraph;
 };
 
-const createFooterRowCell = (row, isCheckmark) => {
+const createFooterRowCell = (row, isCheckmark) => { 
   const rowIcon = row.firstElementChild.querySelector('picture');
   const rowText = row.querySelector('div > div:nth-child(2)').innerHTML;
   const rowTextParagraph = createTag('div', { class: 'footer-row-cell-description' }, rowText);
   const footerRowCellClass = isCheckmark ? 'footer-row-cell-checkmark' : 'footer-row-cell';
   const footerRowIconClass = isCheckmark ? 'footer-row-icon-checkmark' : 'footer-row-icon';
-  const footerRowCell = createTag('div', { class: footerRowCellClass });
+  const footerRowCell = createTag('ul', { class: footerRowCellClass });
 
   if (rowIcon) {
     rowIcon.classList.add(footerRowIconClass);
