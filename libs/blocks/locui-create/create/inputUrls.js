@@ -1,7 +1,7 @@
 import { html, useState } from '../../../deps/htm-preact.js';
 import { nextStep, project, setProject } from './state.js';
 import StepControls from './stepControls.js';
-import { showFragments } from '../components/fragment-modal/index.js';
+import showFragments from '../components/fragment-modal/index.js';
 
 export default function InputUrls() {
   const [formData, setFormData] = useState(
@@ -11,11 +11,11 @@ export default function InputUrls() {
       editBehavior: 'skip',
       urls: '',
       includeFragments: false,
-    }
+    },
   );
-  const [fragmentTextarea, setFragmentTextarea] = useState(false)
-  const [fragments, setFragments] = useState('')
-  const errorPresent = false
+  const [fragmentTextarea, setFragmentTextarea] = useState(false);
+  const [fragments, setFragments] = useState('');
+  const errorPresent = false;
 
   function handleFormInput(event) {
     const { name, value } = event.target;
@@ -24,24 +24,23 @@ export default function InputUrls() {
   }
 
   function handleFragmentInput(event) {
-    const { name, value } = event.target;
-    // console.log('formInput', name, value); 
-    setFragments(value)
+    const { value } = event.target;
+    // console.log('formInput', name, value);
+    setFragments(value);
   }
 
   function handleFormToggle(event) {
     const { name } = event.target;
     // console.log('formToggle', name);
     setFormData({ ...formData, [name]: !formData[name] });
-    setFragmentTextarea(!fragmentTextarea)
+    setFragmentTextarea(!fragmentTextarea);
   }
 
-  function handleNext(errorPresent) {
-    if(errorPresent) return;
-    else {
-      setProject(formData);
-      nextStep();
-    }
+  function handleNext(error) {
+    if (error) return;
+
+    setProject(formData);
+    nextStep();
   }
 
   return html`
@@ -105,7 +104,7 @@ export default function InputUrls() {
 
       <div class="field-col">
         ${fragmentTextarea && (
-        html`
+    html`
         <textarea
             class="locui-textarea"
             rows="10"
@@ -115,7 +114,7 @@ export default function InputUrls() {
         />
         <p>Invalid fragments <a href="#" onClick=${() => showFragments()}>view details</a></p>
         `
-        )}
+  )}
         
       </div>
  

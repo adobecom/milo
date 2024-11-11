@@ -3,9 +3,9 @@ import { nextStep, prevStep, project } from './state.js';
 import StepControls from './stepControls.js';
 
 export default function InputLocales() {
-  const errorPresent = false
+  const errorPresent = false;
   function handleNext() {
-    if(errorPresent) return
+    if (errorPresent) return;
     nextStep();
   }
 

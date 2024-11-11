@@ -26,12 +26,9 @@ export default function Sidenav() {
             <p class="nav-label">${label}</p>
           </li>
         `
-        ))}
+  ))}
       </ul>
     </nav> 
   </a>
   `;
 }
-
-
- 
