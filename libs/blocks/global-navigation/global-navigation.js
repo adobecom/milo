@@ -368,24 +368,36 @@ class Gnav {
   };
 
   decorateLocalNav = () => {
-    if (!newNavEnabled || !this.isLocalNav()) return;
-    const localNav = toFragment`<div class="feds-localnav"><button class="feds-navLink--hoverCaret feds-localnav-title"></button><div class="feds-localnav-items"></div></div>`;
-    const localNavitems = this.elements.navWrapper.querySelector('.feds-nav').querySelectorAll('.feds-navItem:not(.feds-navItem--section)');
-    const itemWrapper = localNav.querySelector('.feds-localnav-items');
-    localNavitems.forEach((elem, idx) => {
-      if (idx === 0) {
-        localNav.querySelector('.feds-localnav-title').innerText = elem.textContent.trim();
-        return;
-      }
-      itemWrapper.appendChild(elem.cloneNode(true));
-    });
+    const localNavItems = this.elements.navWrapper.querySelector('.feds-nav').querySelectorAll('.feds-navItem:not(.feds-navItem--section)');
+    const [title, navTitle = ''] = localNavItems[0].querySelector('a').textContent.split('|');
+    if (this.elements.localNav || !newNavEnabled || !this.isLocalNav() || isDesktop.matches) {
+      localNavItems[0].querySelector('a').textContent = title.trim();
+    } else {
+      const localNav = toFragment`
+      <div class="feds-localnav">
+        <button class="feds-navLink--hoverCaret feds-localnav-title"></button>
+        <div class="feds-localnav-items"></div>
+      </div>`;
 
-    localNav.querySelector('.feds-localnav-title').addEventListener('click', () => {
-      if (localNav.classList.contains('active')) localNav.classList.remove('active');
-      else localNav.classList.add('active');
-    });
-    this.elements.localNav = localNav;
-    this.block.after(localNav);
+      const itemWrapper = localNav.querySelector('.feds-localnav-items');
+      localNavItems.forEach((elem, idx) => {
+        const clonedItem = elem.cloneNode(true);
+        const link = clonedItem.querySelector('a');
+
+        if (idx === 0) {
+          localNav.querySelector('.feds-localnav-title').innerText = title.trim();
+          link.textContent = navTitle.trim() || title.trim();
+        }
+
+        itemWrapper.appendChild(clonedItem);
+      });
+
+      localNav.querySelector('.feds-localnav-title').addEventListener('click', () => {
+        localNav.classList.toggle('active');
+      });
+      this.elements.localNav = localNav;
+      this.block.after(localNav);
+    }
   };
 
   decorateTopnavWrapper = async () => {
@@ -433,6 +445,7 @@ class Gnav {
           this.elements.navWrapper.prepend(this.elements.breadcrumbsWrapper);
         }
       }
+      this.decorateLocalNav();
     });
 
     // Add a modifier when the nav is tangent to the viewport and content is partly hidden
