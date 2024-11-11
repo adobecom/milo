@@ -539,7 +539,7 @@ const getCardsString = async (cards = []) => {
   return uuids.filter(Boolean).join('%2C');
 };
 
-const getStageMapTransformations = (config) => {
+export const stageMapToCaasTransforms = (config) => {
   if (config.env?.name === 'prod' || !config.stageDomainsMap) return {};
   const { href, hostname } = window.location;
   const matchedRules = Object.entries(config.stageDomainsMap)
@@ -758,7 +758,7 @@ export const getConfig = async (originalState, strs = {}) => {
       lastViewedSession: state.lastViewedSession || '',
     },
     customCard: ['card', `return \`${state.customCard}\``],
-    linkTransformer: pageConfig.caasLinkTransformer || getStageMapTransformations(pageConfig),
+    linkTransformer: pageConfig.caasLinkTransformer || stageMapToCaasTransforms(pageConfig),
     headers: caasRequestHeaders,
   };
 
