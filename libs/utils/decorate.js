@@ -240,9 +240,13 @@ export function syncPausePlayIcon(video) {
     offsetFiller?.classList.toggle('is-playing');
     const isPlaying = offsetFiller?.classList.contains('is-playing');
     const indexOfVideo = (anchorTag.getAttribute('video-index') === '1' && videoCounter === 1) ? '' : anchorTag.getAttribute('video-index');
-    const ariaLabel = `${isPlaying ? labels?.pauseMotion : labels?.playMotion} ${indexOfVideo}`.trim();
+    const changedLabel = `${isPlaying ? labels?.pauseMotion : labels?.playMotion}`;
+    const oldLabel = `${!isPlaying ? labels?.pauseMotion : labels?.playMotion}`;
+    const ariaLabel = `${changedLabel} ${indexOfVideo}`.trim();
     anchorTag?.setAttribute('aria-label', `${ariaLabel} `);
     anchorTag?.setAttribute('aria-pressed', isPlaying ? 'true' : 'false');
+    const daaLL = anchorTag.getAttribute('daa-ll');
+    daaLL && anchorTag.setAttribute('daa-ll', daaLL.replace(oldLabel, changedLabel));
   }
 }
 
