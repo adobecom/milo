@@ -83,6 +83,7 @@ export const CSS = `
     justify-content: start;
     place-items: center;
     padding: var(--consonant-merch-spacing-xs) var(--consonant-merch-spacing-s);
+    margin-block: 0px;
   }
 
   merch-card[variant="mini-compare-chart"] .footer-row-icon-checkmark img {
