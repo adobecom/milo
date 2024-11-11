@@ -368,23 +368,36 @@ class Gnav {
   };
 
   decorateLocalNav = () => {
-    if (!newNavEnabled || !this.isLocalNav()) return;
-    const localNav = toFragment`<div class="feds-localnav"><button class="feds-navLink--hoverCaret feds-localnav-title"></button><div class="feds-localnav-items"></div></div>`;
-    const localNavitems = this.elements.navWrapper.querySelector('.feds-nav').querySelectorAll('.feds-navItem:not(.feds-navItem--section)');
-    const itemWrapper = localNav.querySelector('.feds-localnav-items');
-    localNavitems.forEach((elem, idx) => {
-      if (idx === 0) {
-        localNav.querySelector('.feds-localnav-title').innerText = elem.textContent.trim();
-        return;
-      }
-      itemWrapper.appendChild(elem.cloneNode(true));
-    });
-    localNav.querySelector('.feds-localnav-title').addEventListener('click', () => {
-      if (localNav.classList.contains('active')) localNav.classList.remove('active');
-      else localNav.classList.add('active');
-    });
-    this.elements.localNav = localNav;
-    this.block.after(localNav);
+    const localNavItems = this.elements.navWrapper.querySelector('.feds-nav').querySelectorAll('.feds-navItem:not(.feds-navItem--section)');
+    const [title, navTitle = ''] = localNavItems[0].querySelector('a').textContent.split('|');
+    if (this.elements.localNav || !newNavEnabled || !this.isLocalNav() || isDesktop.matches) {
+      localNavItems[0].querySelector('a').textContent = title.trim();
+    } else {
+      const localNav = toFragment`
+      <div class="feds-localnav">
+        <button class="feds-navLink--hoverCaret feds-localnav-title"></button>
+        <div class="feds-localnav-items"></div>
+      </div>`;
+
+      const itemWrapper = localNav.querySelector('.feds-localnav-items');
+      localNavItems.forEach((elem, idx) => {
+        const clonedItem = elem.cloneNode(true);
+        const link = clonedItem.querySelector('a');
+
+        if (idx === 0) {
+          localNav.querySelector('.feds-localnav-title').innerText = title.trim();
+          link.textContent = navTitle.trim() || title.trim();
+        }
+
+        itemWrapper.appendChild(clonedItem);
+      });
+
+      localNav.querySelector('.feds-localnav-title').addEventListener('click', () => {
+        localNav.classList.toggle('active');
+      });
+      this.elements.localNav = localNav;
+      this.block.after(localNav);
+    }
   };
 
   decorateTopnavWrapper = async () => {
@@ -400,6 +413,7 @@ class Gnav {
       this.elements.aside,
       this.elements.topnavWrapper,
     );
+
     this.decorateLocalNav();
   };
 
@@ -431,6 +445,7 @@ class Gnav {
           this.elements.navWrapper.prepend(this.elements.breadcrumbsWrapper);
         }
       }
+      this.decorateLocalNav();
     });
 
     // Add a modifier when the nav is tangent to the viewport and content is partly hidden
@@ -949,6 +964,29 @@ class Gnav {
       }
     };
 
+    // Copying dropdown contents to localNav items
+    const decorateLocalNavItems = (navItem, template) => {
+      const elements = [...document.querySelectorAll('.feds-localnav .feds-navItem')].find(
+        (el) => el.textContent.trim() === navItem.textContent,
+      );
+      if (elements) {
+        elements.innerHTML = template.innerHTML;
+        // Reattach click events, as cloned elem don't retain event listeners
+        elements.querySelector('button')?.addEventListener('click', (e) => {
+          trigger({ element: e.currentTarget, event: e, type: 'localNavTitle' });
+          setActiveDropdown(e.currentTarget);
+        });
+
+        elements.querySelectorAll('.feds-menu-headline').forEach((elem) => {
+          // Reattach click event listener to headlines
+          elem?.addEventListener('click', (e) => {
+            trigger({ element: e.currentTarget, event: e, type: 'headline' });
+            setActiveDropdown(e.currentTarget);
+          });
+        });
+      }
+    };
+
     // All dropdown decoration is delayed
     const delayDropdownDecoration = ({ template } = {}) => {
       let decorationTimeout;
@@ -964,6 +1002,11 @@ class Gnav {
           template,
           type: itemType,
         });
+
+        if (this.isLocalNav() && newNavEnabled) {
+          decorateLocalNavItems(item, template);
+        }
+
         const popup = template.querySelector('.feds-popup');
         let originalContent = popup.innerHTML;
 
