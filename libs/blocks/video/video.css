@@ -57,7 +57,7 @@ video {
   width: 40px;
   height: 40px;
   border-radius: inherit;
-  background: #242424;
+  background: var(--color-gray-800);
 }
 
 :is(.marquee:not(.light), .dark) .video-container .pause-play-wrapper .offset-filler {
@@ -103,6 +103,11 @@ video {
   margin: 0;
 }
 
+[dir="rtl"] .brick .brick-media:not(:has(.video-container)) .pause-play-wrapper {
+  border-top-left-radius: inherit;
+  border-bottom-left-radius: inherit;
+}
+
 .hero-marquee .background .video-container {
   position: inherit;
 }
@@ -124,11 +129,6 @@ video {
   :is(.marquee.row-reversed .asset, .marquee-anchors, .hero-marquee.asset-left) .video-container .pause-play-wrapper,
   .aside:not(.split) .video-container .pause-play-wrapper {
     left: 2%;
-  }
-
-  [dir="rtl"] .brick .brick-media:not(:has(.video-container)) .pause-play-wrapper {
-    border-top-left-radius: inherit;
-    border-bottom-left-radius: inherit;
   }
 
   :is(.section[class*="-up"] .media .foreground .image:first-child, .aside .foreground .image:nth-last-child(1)) 

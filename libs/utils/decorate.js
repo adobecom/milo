@@ -1,12 +1,17 @@
 import { createTag, loadStyle, getConfig, createIntersectionObserver } from './utils.js';
-import { replaceKeyArray } from '../features/placeholders.js';
-import { getFedsPlaceholderConfig } from '../blocks/global-navigation/utilities/utilities.js';
 
 const { miloLibs, codeRoot } = getConfig();
 const HIDE_CONTROLS = '_hide-controls';
 let firstVideo = null;
-let labels = null;
+let videoLabels = {
+  playMotion: 'Play',
+  pauseMotion: 'Pause',
+  pauseIcon: 'Pause icon',
+  playIcon: 'Play icon',
+  hasFetched: false,
+};
 let videoCounter = 0;
+
 export function decorateButtons(el, size) {
   const buttons = el.querySelectorAll('em a, strong a, p > a strong');
   if (buttons.length === 0) return;
@@ -234,35 +239,37 @@ export function getVideoAttrs(hash, dataset) {
 }
 
 export function syncPausePlayIcon(video) {
-  if (!video.getAttributeNames().join().includes('hoverplay')) {
+  if (!video.getAttributeNames().includes('data-hoverplay')) {
     const offsetFiller = video.closest('.video-holder').querySelector('.offset-filler');
     const anchorTag = video.closest('.video-holder').querySelector('a');
     offsetFiller?.classList.toggle('is-playing');
     const isPlaying = offsetFiller?.classList.contains('is-playing');
     const indexOfVideo = (anchorTag.getAttribute('video-index') === '1' && videoCounter === 1) ? '' : anchorTag.getAttribute('video-index');
-    const changedLabel = `${isPlaying ? labels?.pauseMotion : labels?.playMotion}`;
-    const oldLabel = `${!isPlaying ? labels?.pauseMotion : labels?.playMotion}`;
+    const changedLabel = `${isPlaying ? videoLabels?.pauseMotion : videoLabels?.playMotion}`;
+    const oldLabel = `${!isPlaying ? videoLabels?.pauseMotion : videoLabels?.playMotion}`;
     const ariaLabel = `${changedLabel} ${indexOfVideo}`.trim();
     anchorTag?.setAttribute('aria-label', `${ariaLabel} `);
     anchorTag?.setAttribute('aria-pressed', isPlaying ? 'true' : 'false');
     const daaLL = anchorTag.getAttribute('daa-ll');
-    daaLL && anchorTag.setAttribute('daa-ll', daaLL.replace(oldLabel, changedLabel));
+    if (daaLL) {
+      anchorTag.setAttribute('daa-ll', daaLL.replace(oldLabel, changedLabel));
+    }
   }
 }
 
 export function addAccessibilityControl(videoString, videoAttrs, indexOfVideo, tabIndex = 0) {
   if (!videoAttrs.includes('controls')) {
     if (videoAttrs.includes('hoverplay')) {
-      return `<a class='pause-play-wrapper video-holder' tabindex=${tabIndex}>${videoString} </a>`;
+      return `<a class='pause-play-wrapper video-holder' tabindex=${tabIndex}>${videoString}</a>`;
     }
     return `<div class='video-container video-holder'>${videoString}
     <a class='pause-play-wrapper' role='button' tabindex=${tabIndex} aria-pressed=true video-index=${indexOfVideo}>
-      <div class='offset-filler ${videoAttrs.includes('autoplay') ? 'is-playing' : ''}'>  
-        <img class='accessibility-control pause-icon' src='https://main--federal--adobecom.hlx.page/federal/assets/svgs/accessibility-pause.svg'/>
-        <img class='accessibility-control play-icon' src='https://main--federal--adobecom.hlx.page/federal/assets/svgs/accessibility-play.svg'/>
-      </div>
-    </a>
-  </div>`;
+    <div class='offset-filler ${videoAttrs.includes('autoplay') ? 'is-playing' : ''}'>  
+      <img class='accessibility-control pause-icon' src='https://main--federal--adobecom.hlx.page/federal/assets/svgs/accessibility-pause.svg'/>
+      <img class='accessibility-control play-icon' src='https://main--federal--adobecom.hlx.page/federal/assets/svgs/accessibility-play.svg'/>
+    </div>
+  </a>
+</div>`;
   }
   return videoString;
 }
@@ -414,22 +421,29 @@ function updateFirstVideo() {
 }
 
 function updateAriaLabel(videoEl, videoAttrs) {
-  if (!videoEl.getAttributeNames().join().includes('hoverplay')) {
+  if (!videoEl.getAttributeNames().includes('data-hoverplay')) {
     const pausePlayWrapper = videoEl.parentElement.querySelector('.pause-play-wrapper') || videoEl.closest('.pause-play-wrapper');
+    const pauseIcon = pausePlayWrapper.querySelector('.pause-icon');
+    const playIcon = pausePlayWrapper.querySelector('.play-icon');
     const indexOfVideo = pausePlayWrapper.getAttribute('video-index');
-    const ariaLabel = `${videoAttrs.includes('autoplay') ? labels.pauseMotion : labels.playMotion} ${indexOfVideo === '1' && videoCounter === 1 ? '' : indexOfVideo}`.trim();
+    const ariaLabel = `${videoAttrs.includes('autoplay') ? videoLabels.pauseMotion : videoLabels.playMotion} ${indexOfVideo === '1' && videoCounter === 1 ? '' : indexOfVideo}`.trim();
     pausePlayWrapper.setAttribute('aria-label', ariaLabel);
+    pauseIcon.setAttribute('alt', videoLabels.pauseMotion);
+    playIcon.setAttribute('alt', videoLabels.playMotion);
     updateFirstVideo();
   }
 }
 
 export function decoratePausePlayWrapper(videoEl, videoAttrs) {
-  if (labels === null) {
-    replaceKeyArray(['pause-motion', 'play-motion', 'pause-icon', 'play-icon'], getFedsPlaceholderConfig())
-      .then(([pauseMotion, playMotion, pauseIcon, playIcon]) => {
-        labels = { playMotion, pauseMotion, pauseIcon, playIcon };
-        updateAriaLabel(videoEl, videoAttrs);
-      });
+  if (!videoLabels.hasFetched) {
+    Promise.all([import('../features/placeholders.js'), import('../blocks/global-navigation/utilities/utilities.js')]).then(([{ replaceKeyArray }, { getFedsPlaceholderConfig }]) => {
+      replaceKeyArray(['pause-motion', 'play-motion', 'pause-icon', 'play-icon'], getFedsPlaceholderConfig())
+        .then(([pauseMotion, playMotion, pauseIcon, playIcon]) => {
+          videoLabels = { playMotion, pauseMotion, pauseIcon, playIcon };
+          videoLabels.hasFetched = true;
+          updateAriaLabel(videoEl, videoAttrs);
+        });
+    });
   } else {
     updateAriaLabel(videoEl, videoAttrs);
   }
