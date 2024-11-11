@@ -1250,8 +1250,15 @@ async function resolveInlineFrags(section) {
   section.preloadLinks = newlyDecoratedSection.preloadLinks;
 }
 
-export function setIconsIndexClass(icons) {
+export function setIconAttrs(icons) {
   [...icons].forEach((icon) => {
+    const em = icon.closest('em');
+    const conf = em?.textContent.split('|');
+    if (em && conf.length) {
+      icon.dataset.tooltip = conf?.pop()?.trim();
+      icon.dataset.tooltipdir = conf?.pop()?.trim().toLowerCase() || 'right';
+      em.parentElement.replaceChild(icon, em);
+    }
     const parent = icon.parentNode;
     const children = parent.childNodes;
     const nodeIndex = [...children].indexOf.call(children, icon);
@@ -1303,7 +1310,7 @@ export async function loadArea(area = document) {
 
   const allIcons = area.querySelectorAll('span.icon');
   if (allIcons.length) {
-    setIconsIndexClass(allIcons);
+    setIconAttrs(allIcons);
   }
 
   const sections = decorateSections(area, isDoc);
@@ -1320,7 +1327,7 @@ export async function loadArea(area = document) {
 
   if (allIcons.length) {
     const { default: loadIcons, decorateIcons } = await import('../features/icons/icons.js');
-    await decorateIcons(area, allIcons, config);
+    await decorateIcons(allIcons, config);
     await loadIcons(allIcons);
   }
 

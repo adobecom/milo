@@ -39,23 +39,6 @@ export const fetchIcons = (config) => new Promise(async (resolve) => {
   resolve(fetchedIcons);
 });
 
-async function decorateToolTip(icon) {
-  const wrapper = icon.closest('em');
-  if (!wrapper) return;
-  wrapper.className = 'tooltip-wrapper';
-  const conf = wrapper.textContent.split('|');
-  // Text is the last part of a tooltip
-  const content = conf.pop().trim();
-  if (!content) return;
-  icon.dataset.tooltip = content;
-  // Position is the next to last part of a tooltip
-  const place = conf.pop()?.trim().toLowerCase() || 'right';
-  const defaultIcon = 'info-outline';
-  icon.className = `icon icon-${defaultIcon} milo-tooltip ${place}`;
-  icon.dataset.name = defaultIcon;
-  wrapper.parentElement.replaceChild(icon, wrapper);
-}
-
 export function getIconData(icon) {
   const fedRoot = getFederatedContentRoot();
   const name = [...icon.classList].find((c) => c.startsWith('icon-'))?.substring(5);
@@ -87,8 +70,15 @@ function filterDuplicatedIcons(icons) {
   return uniqueIcons;
 }
 
-export async function decorateIcons(area, icons, config) {
+function handleLegacyToolTip(icons) {
+  const legacies = [...icons].filter((icon) => icon.classList.contains('icon-tooltip'));
+  if (!legacies.length) return;
+  icons.forEach((icon) => icon.classList.replace('icon-tooltip', 'icon-info-outline'));
+}
+
+export async function decorateIcons(icons, config) {
   if (!icons.length) return;
+  handleLegacyToolTip(icons);
   const uniqueIcons = filterDuplicatedIcons(icons);
   if (!uniqueIcons.length) return;
   preloadInViewIcons(uniqueIcons);
@@ -106,8 +96,9 @@ export default async function loadIcons(icons) {
   const iconsToFetch = new Map();
 
   icons.forEach(async (icon) => {
-    const isToolTip = icon.classList.contains('icon-tooltip');
-    if (isToolTip) decorateToolTip(icon);
+    if (icon.dataset.tooltip) {
+      icon.classList.add('milo-tooltip', icon.dataset.tooltipdir);
+    }
     const iconName = icon.dataset.name;
     if (icon.dataset.svgInjected || !iconName) return;
     if (!federalIcons[iconName] && !iconsToFetch.has(iconName)) {
