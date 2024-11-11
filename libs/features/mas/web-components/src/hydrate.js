@@ -174,7 +174,7 @@ function createSpectrumButton(cta, strong, aemFragmentMapping, cardVariant) {
         {
             treatment,
             variant,
-            tabIndex: -1,
+            tabIndex: 0,
             size: aemFragmentMapping.ctas.size ?? 'm',
         },
         cta,
