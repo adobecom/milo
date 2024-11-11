@@ -319,7 +319,7 @@ describe('Mini Compare Chart Merch Card', () => {
 
   it('Supports Mini Compare Chart with checkmarks footer rows', async () => {
     document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/mini-compare-chart-featured-list.html');
-    const merchCards = document.querySelectorAll('.merch-card.mini-compare-chart') 
+    const merchCards = document.querySelectorAll('.merch-card.mini-compare-chart');
     const merchCardChevonClose = await init(merchCards[0]);
     expectToValidateHTMLAssertions(merchCardChevonClose, {
       elements: [
@@ -335,7 +335,7 @@ describe('Mini Compare Chart Merch Card', () => {
     expect(footerRowsTitle).to.exist;
     const footerRowCellCheckmark = merchCardChevonClose.querySelectorAll('.footer-row-cell-checkmark');
     expect(footerRowCellCheckmark).to.exist;
-    for (let i = 0; i < footerRowCellCheckmark.length; i++) {
+    for (let i = 0; i < footerRowCellCheckmark.length; i += 1) {
       expect(footerRowCellCheckmark[i].querySelector('.footer-row-icon-checkmark')).to.exist;
     }
 

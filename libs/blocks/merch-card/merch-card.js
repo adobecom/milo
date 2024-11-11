@@ -417,7 +417,7 @@ const createFirstRow = async (firstRow, isMobile, checkmarkCopyContainer, defaul
   return firstRowTextParagraph;
 };
 
-const createFooterRowCell = (row, isCheckmark) => { 
+const createFooterRowCell = (row, isCheckmark) => {
   const rowIcon = row.firstElementChild.querySelector('picture');
   const rowText = row.querySelector('div > div:nth-child(2)').innerHTML;
   const rowTextParagraph = createTag('div', { class: 'footer-row-cell-description' }, rowText);
@@ -465,7 +465,7 @@ const decorateFooterRows = async (merchCard, footerRows) => {
       firstRow,
       isMobile,
       checkmarkCopyContainer,
-      defaultChevronState
+      defaultChevronState,
     );
 
     footerRowsSlot.appendChild(firstRowTextParagraph);
