@@ -71,9 +71,9 @@ function filterDuplicatedIcons(icons) {
 }
 
 function handleLegacyToolTip(icons) {
-  const legacies = [...icons].filter((icon) => icon.classList.contains('icon-tooltip'));
-  if (!legacies.length) return;
-  icons.forEach((icon) => icon.classList.replace('icon-tooltip', 'icon-info-outline'));
+  const tooltips = [...icons].filter((icon) => icon.classList.contains('icon-tooltip'));
+  if (!tooltips.length) return;
+  tooltips.forEach((icon) => icon.classList.replace('icon-tooltip', 'icon-info-outline'));
 }
 
 export async function decorateIcons(icons, config) {
