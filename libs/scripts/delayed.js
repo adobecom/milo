@@ -27,8 +27,10 @@ export const loadJarvisChat = async (getConfig, getMetadata, loadScript, loadSty
 export const loadPrivacy = async (getConfig, loadScript) => {
   const acom = '7a5eb705-95ed-4cc4-a11d-0cc5760e93db';
   const ids = {
-    '.page': '3a6a37fe-9e07-4aa9-8640-8f358a623271-test',
-    '.live': '926b16ce-cc88-4c6a-af45-21749f3167f3-test',
+    'hlx.page': '3a6a37fe-9e07-4aa9-8640-8f358a623271-test',
+    'hlx.live': '926b16ce-cc88-4c6a-af45-21749f3167f3-test',
+    'aem.page': '01930689-3b6a-7d5f-9797-8df2c3901a05-test',
+    'aem.live': '01930691-c4e5-75ba-aa0e-721e1213c139-test',
   };
 
   const otDomainId = ids?.[Object.keys(ids)
