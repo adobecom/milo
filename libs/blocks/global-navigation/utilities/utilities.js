@@ -10,6 +10,11 @@ loadLana();
 
 const FEDERAL_PATH_KEY = 'federal';
 
+const selectorMap = {
+  headline: '.feds-menu-headline[aria-expanded="true"]',
+  localNavTitle: '.feds-navLink[aria-expanded="true"]',
+};
+
 export const selectors = {
   globalNav: '.global-navigation',
   curtain: '.feds-curtain',
@@ -282,9 +287,8 @@ export const [hasActiveLink, setActiveLink, isActiveLink, getActiveLink] = (() =
 })();
 
 export function closeAllDropdowns({ type } = {}) {
-  const selector = type === 'headline'
-    ? '.feds-menu-headline[aria-expanded="true"]'
-    : `${selectors.globalNav} [aria-expanded='true']`;
+  const selector = selectorMap[type] || `${selectors.globalNav} [aria-expanded='true']`;
+
   const openElements = document.querySelectorAll(selector);
   if (!openElements) return;
   [...openElements].forEach((el) => {
@@ -394,6 +398,9 @@ export const [setUserProfile, getUserProfile] = (() => {
 })();
 
 export const transformTemplateToMobile = async (popup, item, localnav = false) => {
+  const notMegaMenu = popup.parentElement.tagName === 'DIV';
+  if (notMegaMenu) return;
+
   const originalContent = popup.innerHTML;
   const tabs = [...popup.querySelectorAll('.feds-menu-section')]
     .filter((section) => !section.querySelector('.feds-promo') && section.textContent)
