@@ -1,9 +1,8 @@
-
 import { getModal } from '../../../modal/modal.js';
 import Modal from './modal.js';
 import { createTag } from '../../../../utils/utils.js';
 
-export function showFragments() {
+export default function showFragments() {
   const div = createTag('div');
   const content = Modal(div);
   const modalOpts = {

@@ -12,7 +12,7 @@ export function prevStep() {
 }
 
 export function setProject(_project) {
-  console.log('setting project:', _project)
+  // console.log('setting project:', _project)
   project.value = {
     ...project.value,
     ..._project,
