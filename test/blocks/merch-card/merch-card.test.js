@@ -316,6 +316,38 @@ describe('Mini Compare Chart Merch Card', () => {
       merchCard.style.visibility = 'visible';
     }, 500);
   });
+
+  it('Supports Mini Compare Chart with checkmarks footer rows', async () => {
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/mini-compare-chart-featured-list.html');
+    const merchCards = document.querySelectorAll('.merch-card.mini-compare-chart') 
+    const merchCardChevonClose = await init(merchCards[0]);
+    expectToValidateHTMLAssertions(merchCardChevonClose, {
+      elements: [
+        { selector: 'div[slot="footer-rows"] picture.footer-row-icon-checkmark' },
+        { selector: 'div[slot="footer-rows"] .footer-row-cell-description' },
+      ],
+    });
+    const hr = merchCardChevonClose.querySelector('hr');
+    expect(hr).to.exist;
+    expect(hr.style.backgroundColor).to.be.equals('rgb(232, 232, 232)');
+    expect(merchCardChevonClose.querySelector('.checkmark-copy-container').classList.contains('close'));
+    const footerRowsTitle = merchCardChevonClose.querySelectorAll('.footer-rows-title');
+    expect(footerRowsTitle).to.exist;
+    const footerRowCellCheckmark = merchCardChevonClose.querySelectorAll('.footer-row-cell-checkmark');
+    expect(footerRowCellCheckmark).to.exist;
+    for (let i = 0; i < footerRowCellCheckmark.length; i++) {
+      expect(footerRowCellCheckmark[i].querySelector('.footer-row-icon-checkmark')).to.exist;
+    }
+
+    const merchCardChevonOpen = await init(merchCards[1]);
+    expectToValidateHTMLAssertions(merchCardChevonOpen, {
+      elements: [
+        { selector: 'div[slot="footer-rows"] picture.footer-row-icon-checkmark' },
+        { selector: 'div[slot="footer-rows"] .footer-row-cell-description' },
+      ],
+    });
+    expect(merchCardChevonClose.querySelector('.checkmark-copy-container').classList.contains('open'));
+  });
 });
 
 describe('TWP Merch Card', () => {
