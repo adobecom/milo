@@ -809,7 +809,7 @@ const createDefaultExperiment = (manifest) => ({
 });
 
 export const addMepAnalytics = (config, header) => {
-  config.mep.experiments.forEach((experiment) => {
+  config.mep?.experiments?.forEach((experiment) => {
     experiment?.selectedVariant?.useblockcode?.forEach(({ selector, targetManifestId }) => {
       if (selector && targetManifestId) {
         document.querySelectorAll(`.${selector}`)
