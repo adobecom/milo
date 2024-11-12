@@ -334,7 +334,7 @@ const resetAdvancedOptions = () => {
   useHtml.checked = false;
   usePreview.checked = false;
   publishToFloodgate.value = 'default';
-    /* eslint-enable no-undef */
+  /* eslint-enable no-undef */
 };
 
 /* eslint-disable no-nested-ternary */
@@ -352,7 +352,7 @@ if (useDarkTheme) {
   document.querySelector('#option-light').checked = true;
 }
 
-/* eslint-disable-next-line no-undef */
+// eslint-disable-next-line no-undef
 preset.addEventListener('change', () => {
   const { value } = preset;
   const selectedPreset = presetsData.find((item) => item.id === value) || {};
@@ -362,7 +362,7 @@ preset.addEventListener('change', () => {
   if (value === 'advanced') {
     BODY.classList.add('advanced');
     return;
-  } 
+  }
   if (value === 'default') {
     BODY.classList = '';
   } else {
@@ -389,10 +389,12 @@ clearResultsButton.addEventListener('click', () => {
   SIGNEDIN.style.display = 'block';
 });
 
+// eslint-disable-next-line no-undef
 caasEnv.addEventListener('change', () => {
   checkCaasEnv();
 });
 
+// eslint-disable-next-line no-undef
 draftOnly.addEventListener('change', () => {
   checkCaasEnv();
 });
