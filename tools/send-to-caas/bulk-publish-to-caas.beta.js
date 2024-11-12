@@ -409,7 +409,7 @@ const checkUserStatus = async () => {
     SIGNEDOUT.style.display = 'block';
   }
   return true;
-}
+};
 
 const feecbackButton = document.querySelector('.feedback');
 feecbackButton.addEventListener('click', () => {
@@ -417,13 +417,13 @@ feecbackButton.addEventListener('click', () => {
     <p>Feedback for this tool is always welcome.</p>
     <p>For reporting issues or sharing comments, please use the <b>#javelin-friends</b> channel on Slack</p>
     <p><i>The Javelin Team</i></p>`);
-  });
+});
 
 const helpButtons = document.querySelectorAll('.help');
 helpButtons.forEach((btn) => {
   btn.addEventListener('click', (e) => {
     e.preventDefault();
-    const el = e.target.classList[1]
+    const el = e.target.classList[1];
     switch (el) {
       case 'host':
         showAlert(`<p><b>Host</b><p>Enter the host of the site you are publishing content to.</p>
@@ -432,20 +432,20 @@ helpButtons.forEach((btn) => {
            <tt>&nbsp; blog.adobe.com</tt> <br>
            <tt>&nbsp; business.adobe.com</tt>.</p>`);
         break;
-    
+
       case 'repo':
         showAlert(`<p><b>Repo</b></p>
           <p>The <b>Repo</b> is the name of the repository where the content will be published.</p>
           <p>For example:</p>
           <p><tt>https://main--<b>{repo}</b>--{owner}.hlx.live</tt>`);
         break;
-    
+
       case 'owner':
         showAlert(`<p><b>Repo Owner</b></p>
           <p>The <b>Repo Owner</b> is the owner of the repository where the content will be published. For example:</p>
           <p><tt>https://main--{repo}--<b>{owner}</b>.hlx.live</tt>`);
         break;
-           
+
       case 'content-type-fallback':
         showAlert(`<p><b>ContentType Fallback</b></p>
           <p>This is the <b>content-type</b> tag that will be applied to all cards that do not have 
@@ -456,30 +456,30 @@ helpButtons.forEach((btn) => {
         showAlert(`<p><b>CaaS Enviroment</b></p>
           <p>This is the CaaS environment where the content will be published.</p>`);
         break;
-        
+
       case 'floodgate':
         showAlert(`<p><b>FloodGate</b></p>
           <p>Use this option to select the <b>FloodGate</b> color for the content.</p>`);
         break;
-  
+
       case 'publish-to-draft':
         showAlert(`<p><b>Publish to CaaS DRAFT only</b></p>
           <p>When this is option checked, the content will be sent to the CaaS <b>DRAFT</b> container <i>only</i>. </p>
           <p>With this option unchecked, the content is sent to both, the CaaS <b>LIVE</b> and <b>DRAFT</b> containers.</p>`);
         break;
-        
+
       case 'use-html':
         showAlert(`<p><b>Add HTML to Links</b></p>
           <p>When this option is checked, the bulkpublisher will add the <b>.html</b> extension to the CTA links.</p>`);
-         break;
-        
+        break;
+
       case 'use-preview':
         showAlert(`<p><b>Use Preview Content</b>
           <p>When this option is checked, the tool will publish content from:
           <p><tt>https://main--{repo}--{owner}.hlx.<b>page</b></tt>
           <p>This can be useful for testing before publishing to production.</p>`);
         break;
-        
+
       default:
         showAlert(`<p><b>Help</b><p>Help for "${el}" is on its way! Stay tuned.</p>`);
         break;
@@ -490,7 +490,7 @@ helpButtons.forEach((btn) => {
 const themeOptions = document.querySelectorAll('.theme-options');
 themeOptions.forEach((btn) => {
   btn.addEventListener('click', (e) => {
-    if (e.target.value === "dark") {
+    if (e.target.value === 'dark') {
       document.querySelector('.bulk-publisher').classList.add('dark');
       localStorage.setItem('bp-theme', 'dark');
     } else {
@@ -499,7 +499,6 @@ themeOptions.forEach((btn) => {
     }
   });
 });
-
 
 const init = async () => {
   await loadTingleModalFiles(loadScript, loadStyle);
