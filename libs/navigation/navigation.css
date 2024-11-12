@@ -6,6 +6,12 @@
    word-wrap: break-word;
    -webkit-font-smoothing: antialiased;
 }
+
+.global-navigation .feds-toggle,
+.global-navigation .feds-toggle:before {
+  line-height: normal;
+  font-family: none;
+}
   
 .global-navigation a, .global-footer a, .dialog-modal a {
   text-decoration: none;
