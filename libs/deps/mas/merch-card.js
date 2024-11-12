@@ -1524,7 +1524,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a:not(.con-button) {
 }
 
 merch-card[variant="ccd-slice"] [slot="body-s"] span.placeholder-resolved[data-template="priceStrikethrough"],
-merch-card[variant="ccd-slice"] [slot="body-s"] span.placeholder-resolved[data-template="strikethrough"] { {
+merch-card[variant="ccd-slice"] [slot="body-s"] span.placeholder-resolved[data-template="strikethrough"] {
   text-decoration: line-through;
   color: var(--ccd-color-grey-600, var(--merch-color-grey-60));
 }
