@@ -30,7 +30,7 @@
     import { runTests } from '@web/test-runner-mocha';
     import { expect } from '@esm-bundle/chai';
     import { stub } from 'sinon';
-    import { default as init, cloneObj, updateObj, getHashConfig } from '../../../libs/blocks/caas-config/caas-config.js';
+    import { default as init, cloneObj, updateObj, getHashConfig, addIdOverlays } from '../../../libs/blocks/caas-config/caas-config.js';
     import {
       findByLabel,
       tagSelectorDropdownChoose,
@@ -114,11 +114,11 @@
         enableAdvancedTags.checked = true;
         enableAdvancedTags.dispatchEvent(new Event('change'));
         await delay(50);
-    
+
         await tagSelectorDropdownChoose('Secondary Source', 'Bacom');
         await tagSelectorDropdownChoose('Secondary Content Type Tags', 'Customer Story');
 
-        expectedConfig.collection.endpoint = 
+        expectedConfig.collection.endpoint =
           'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&secondSource=bacom&secondaryTags=caas:content-type/customer-story&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10';
         expect(config).to.eql(expectedConfig);
       });
@@ -307,21 +307,17 @@
         await delay(50);
         const copyTextArea = document.querySelector('.copy-text');
 
-        // Windows/Linux encodes the hash very slightly differently than OSX
+        // Windows/OSX/Linux encode the hash very slightly differently
         // This is due to different header values in the zip output
-        // Note the start of each hash:
-        // Win: ~~H4sIAAAAAAAAA3
-        // Osx: ~~H4sIAAAAAAAAE3
+        // The header is the part before the first / in the hash
+        // Due to this we only compare the characters after the header value
 
-        // This does not affect the decoded hash value,
-        // so either of these are valid hashes for the same content
+        const hashWithoutHeader = 'Dv6ajAgAAAA==';
 
-        const windowsHash = '~~H4sIAAAAAAAACnVVTY/bNhD9Lzw7Wafb9qDb2ruLGPBm3diLHoqgGJMjiTDFUcmhvUrR/16Q+nacm/TecIbz5oP/ClBKsyYL5iv+E9DzDhxUXmR/fVsIsGAa1tKvyRiU0e4LVCgyISbkwYE8baraofearMhyMB6jgdpSoeUBit5fYFpTsOyaLdhisDwSnSpwp40ku8cYqQ0xxd+snzASnNpzY+JdSjD5hxJ1UXLHHDQbfJAyXuiojeZmi2c0Ivt9IeSQyopt76J2ugLXiCk9ZjpiyfE1uNffB8wyaItOZOLTL8vlC7z/qRWXHYWWD02Nox6y1UJkQgL4rPu9Cz4eCJ6pWoNTnW+GhxROZOJvjyYXC6HoC/EWvjdbAjWoqbSHo8EVWIvOj7CDnB+Pwz9aVZO2UdDL5fIRFB3xo6TqTpa6QgcfoNZ3Y5YinjhrR7ZC21UB36UJClW8ZZdSB4055mDMEeTpaQwnFiJH4OBmJ3NtGN3TefDeAqugjdqBjeVLDVQBaznQW5LQqWIw5wleaCkyQW6AZnH8Ouk7g/YlXZ6qmptBoyIwp2r++i4WokRQg5tSK1wzbNT8f0xc2yslDNgiQIF9ufv/O4ziGmgopP6I4UIdIQL1Qg5vNqolvpousqaJKay6qRnU7ZIhd3WghkLbpN6D1VX6GOJAgUpMTZ5sbKqxy0bmjwCWNafY9gbf5dQBqSAj+ebxUGKF9+NBAxJLMgrdmzNtKzj0wbDfodslAX9bCI/gZPms0fQV8CjJKnDNmOEA7Sk4iT3IUZgVOTWdD1/S5ZmI0T3qs1ax7BOmF9U/p165zb3aueLJZd97E2xzZbNPucygA3FcySntkSDHj8D44OUP2CPeAF9I6VxPqpYIzCGYOGSqP9cSbYl3VId6dqDFv4JVVO2hqo2e7O5kEId2T45n6HM34zOwv9F1Cj3+Qxpt2DmEHt2ZtNsRGZF9Wi6XV0S6JYrsvsXb9+DKcQKvwnVNIkq4nLz4thAMhW+78Oc7MtqIaOoK5LijzzquEDFg16PDseHjwopPFvq4tBQyaOMP+M6vdbfPVFenheB41c8IStuie8lEeR+J2CWp5w4Uxy+KsRDB4za6jt6GoMHj6xmdgWar7Wnsqcl7GJjpxqYJHt3G5hSn57//AaZjTZUyCAAA';
-        const osxHash = '~~H4sIAAAAAAAAA3VVTY/bNhD9Lzw7Wafb9qDb2ruLGPBm3diLHoqgGJMjiTDFUcmhvUrR/16Q+nacm/TecIbz5oP/ClBKsyYL5iv+E9DzDhxUXmR/fVsIsGAa1tKvyRiU0e4LVCgyISbkwYE8baraofearMhyMB6jgdpSoeUBit5fYFpTsOyaLdhisDwSnSpwp40ku8cYqQ0xxd+snzASnNpzY+JdSjD5hxJ1UXLHHDQbfJAyXuiojeZmi2c0Ivt9IeSQyopt76J2ugLXiCk9ZjpiyfE1uNffB8wyaItOZOLTL8vlC7z/qRWXHYWWD02Nox6y1UJkQgL4rPu9Cz4eCJ6pWoNTnW+GhxROZOJvjyYXC6HoC/EWvjdbAjWoqbSHo8EVWIvOj7CDnB+Pwz9aVZO2UdDL5fIRFB3xo6TqTpa6QgcfoNZ3Y5YinjhrR7ZC21UB36UJClW8ZZdSB4055mDMEeTpaQwnFiJH4OBmJ3NtGN3TefDeAqugjdqBjeVLDVQBaznQW5LQqWIw5wleaCkyQW6AZnH8Ouk7g/YlXZ6qmptBoyIwp2r++i4WokRQg5tSK1wzbNT8f0xc2yslDNgiQIF9ufv/O4ziGmgopP6I4UIdIQL1Qg5vNqolvpousqaJKay6qRnU7ZIhd3WghkLbpN6D1VX6GOJAgUpMTZ5sbKqxy0bmjwCWNafY9gbf5dQBqSAj+ebxUGKF9+NBAxJLMgrdmzNtKzj0wbDfodslAX9bCI/gZPms0fQV8CjJKnDNmOEA7Sk4iT3IUZgVOTWdD1/S5ZmI0T3qs1ax7BOmF9U/p165zb3aueLJZd97E2xzZbNPucygA3FcySntkSDHj8D44OUP2CPeAF9I6VxPqpYIzCGYOGSqP9cSbYl3VId6dqDFv4JVVO2hqo2e7O5kEId2T45n6HM34zOwv9F1Cj3+Qxpt2DmEHt2ZtNsRGZF9Wi6XV0S6JYrsvsXb9+DKcQKvwnVNIkq4nLz4thAMhW+78Oc7MtqIaOoK5LijzzquEDFg16PDseHjwopPFvq4tBQyaOMP+M6vdbfPVFenheB41c8IStuie8lEeR+J2CWp5w4Uxy+KsRDB4za6jt6GoMHj6xmdgWar7Wnsqcl7GJjpxqYJHt3G5hSn57//AaZjTZUyCAAA';
-        const hash = copyTextArea.value.split('#')[1].trim();        
-        let isCorrectHash = false;
-        let osHash = navigator.platform.startsWith('Win') ? windowsHash : osxHash;
-        expect(hash).to.equal(osHash);
+        const hash = copyTextArea.value.split('#')[1].trim();
+
+        // remove the header from the hash, which is the first 21 characters
+        expect(hash.slice(21)).to.equal(hashWithoutHeader);
       });
 
       it('Clones an object', () => {
@@ -354,6 +350,28 @@
         // v2 getHashConfig is async
         const hashConfig = await getHashConfig();
         expect(hashConfig.cardStyle).to.equal('full-card');
+      });
+
+      it('adds a button with a title attribute that shows hover message', async () => {
+        // Simulate a caas-config element with a .consonant-Card element
+        const cardElement = document.createElement('div');
+        cardElement.classList.add('consonant-Card');
+        cardElement.id = 'test-card-id';
+        document.body.appendChild(cardElement);
+
+        // Call the addIdOverlays function to add the button
+        addIdOverlays();
+
+        // Find the newly created button
+        const idButton = cardElement.querySelector('.cardid');
+
+        // Verify the button exists and the title is correctly set
+        expect(idButton).to.not.be.null;
+        expect(idButton.innerText).to.equal('test-card-id');
+        expect(idButton.title).to.equal('Click to copy this ID');
+
+        // Clean up after the test
+        document.body.removeChild(cardElement);
       });
 
     });

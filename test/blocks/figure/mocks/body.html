@@ -51,17 +51,7 @@
         <div>
           <p>
             <video>
-              <source type="image/webp"
-                srcset=""
-                media="(min-width: 400px)">
-              <source type="image/webp"
-                srcset="">
-              <source type="image/jpeg"
-                srcset=""
-                media="(min-width: 400px)">
-              <img loading="lazy" alt="" type="image/jpeg"
-                src=""
-                width="2000" height="876">
+
             </video>
           </p>
           <p><em>caption</em></p>
@@ -114,9 +104,7 @@
       <div>
         <div>
           <p>
-            <video width="320" height="240" controls>
-              <source src="movie.mp4" type="video/mp4">
-              <source src="movie.ogg" type="video/ogg">
+            <video width="320" height="240" controls data-video-source="movie.mp4">
             </video>
           </p>
           <p><a href="https://blog.adobe.com/en/publish/2022/12/07/kah-milah-ledgester-breathes-life-into-award-winning-art-with-adobe-creative-cloud">https://blog.adobe.com/en/publish/2022/12/07/kah-milah-ledgester-breathes-life-into-award-winning-art-with-adobe-creative-cloud</a></p>
@@ -157,7 +145,12 @@
       <!-- video poster link -->
       <div>
         <div>
-          <a href="link-to-video.mp4" data-video-poster="link-to-poster-image" class="video link-block hide-video">https://main--milo--adobecom.hlx.page/media_1e798d01c6ddc7e7eadc8f134d69e4f8d7193fdbb.mp4</a>
+          <a href="link-to-video.mp4" data-video-poster="<picture>
+            <source type=&quot;image/webp&quot; srcset=&quot;./media_1570a87786799913a62c9987d0f837e22db8cac7f.jpeg?width=2000&amp;amp;format=webply&amp;amp;optimize=medium&quot; media=&quot;(min-width: 600px)&quot;>
+            <source type=&quot;image/webp&quot; srcset=&quot;./media_1570a87786799913a62c9987d0f837e22db8cac7f.jpeg?width=750&amp;amp;format=webply&amp;amp;optimize=medium&quot;>
+            <source type=&quot;image/jpeg&quot; srcset=&quot;./media_1570a87786799913a62c9987d0f837e22db8cac7f.jpeg?width=2000&amp;amp;format=jpeg&amp;amp;optimize=medium&quot; media=&quot;(min-width: 600px)&quot;>
+            <img loading=&quot;lazy&quot; alt=&quot;generate&quot; src=&quot;./media_1570a87786799913a62c9987d0f837e22db8cac7f.jpeg?width=750&amp;amp;format=jpeg&amp;amp;optimize=medium&quot; width=&quot;1536&quot; height=&quot;518&quot;>
+          </picture>" class="video link-block">https://main--milo--adobecom.hlx.page/assets/video/media_1d716842793f4cea9b3b91827eaa8cc118ef1c1b6.mp4</a>
         </div>
       </div>
     </div>

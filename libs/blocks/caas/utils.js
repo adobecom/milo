@@ -293,10 +293,10 @@ const buildComplexQuery = (andLogicTags, orLogicTags, notLogicTags) => {
 const getSortOptions = (state, strs) => {
   const sortVals = {
     featured: 'Featured',
-    dateAsc: 'Date: (Oldest to Newest)',
     dateDesc: 'Date: (Newest to Oldest)',
-    modifiedDesc: 'Date: (Last Modified, Newest to Oldest)',
-    modifiedAsc: 'Date (Last Modified, Oldest to Newest)',
+    dateAsc: 'Date: (Oldest to Newest)',
+    modifiedDesc: 'Modified Date: (Newest to Oldest)',
+    modifiedAsc: 'Modified Date: (Oldest to Newest)',
     eventSort: 'Events: (Live, Upcoming, OnDemand)',
     titleAsc: 'Title A-Z',
     titleDesc: 'Title Z-A',
@@ -551,7 +551,9 @@ export const getConfig = async (originalState, strs = {}) => {
   && state.targetActivity ? `/${encodeURIComponent(state.targetActivity)}.json` : '';
   const flatFile = targetActivity ? '&flatFile=false' : '';
   const localesQueryParam = locales ? `&locales=${locales}` : '';
-  const debug = state.showIds && document.location.pathname.includes('/tools/caas') ? '&debug=true' : '';
+  const debug = (state.showIds && document.location.pathname.includes('/tools/caas'))
+    || state.container === 'categories'
+    ? '&debug=true' : '';
   const collectionTags = state.includeTags ? state.includeTags.join(',') : '';
   const excludeContentWithTags = state.excludeTags ? state.excludeTags.join(',') : '';
 
@@ -580,6 +582,7 @@ export const getConfig = async (originalState, strs = {}) => {
       }&size=${state.collectionSize || state.totalCardsToShow}${localesQueryParam}${debug}${flatFile}`,
       fallbackEndpoint: state.fallbackEndpoint,
       totalCardsToShow: state.totalCardsToShow,
+      showCardBadges: state.showCardBadges,
       cardStyle: state.cardStyle,
       showTotalResults: state.showTotalResults,
       i18n: {
@@ -595,9 +598,15 @@ export const getConfig = async (originalState, strs = {}) => {
         lastModified: strs.lastModified || 'Last modified {date}',
       },
       detailsTextOption: state.detailsTextOption,
+      hideDateInterval: state.hideDateInterval,
+      dynamicCTAForLiveEvents: state.dynamicCTAForLiveEvents,
       setCardBorders: state.setCardBorders,
       showFooterDivider: state.showFooterDivider,
       useOverlayLinks: state.useOverlayLinks,
+      partialLoadWithBackgroundFetch: {
+        enabled: state.partialLoadEnabled,
+        partialLoadCount: state.partialLoadCount,
+      },
       collectionButtonStyle: state.collectionBtnStyle,
       banner: {
         register: {
@@ -733,8 +742,10 @@ export const getConfig = async (originalState, strs = {}) => {
       lastViewedSession: state.lastViewedSession || '',
     },
     customCard: ['card', `return \`${state.customCard}\``],
+    linkTransformer: pageConfig.caasLinkTransformer || {},
     headers: caasRequestHeaders,
   };
+
   return config;
 };
 
@@ -760,6 +771,7 @@ export const initCaas = async (state, caasStrs, el) => {
 
 export const defaultState = {
   additionalRequestParams: [],
+  dynamicCTAForLiveEvents: false,
   analyticsCollectionName: '',
   analyticsTrackImpression: false,
   andLogicTags: [],
@@ -798,6 +810,7 @@ export const defaultState = {
   headers: [],
   hideCtaIds: [],
   hideCtaTags: [],
+  hideDateInterval: false,
   includeTags: [],
   language: 'caas:language/en',
   layoutType: '4up',
@@ -810,12 +823,15 @@ export const defaultState = {
   paginationQuantityShown: false,
   paginationType: 'paginator',
   paginationUseTheme3: false,
+  partialLoadEnabled: false,
+  partialLoadCount: 100,
   placeholderUrl: '',
   resultsPerPage: 5,
   searchFields: [],
   secondaryTags: [],
   secondarySource: [],
   setCardBorders: false,
+  showCardBadges: false,
   showFooterDivider: false,
   showBookmarksFilter: false,
   showBookmarksOnCards: false,

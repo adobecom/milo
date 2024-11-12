@@ -161,6 +161,10 @@ describe('getConfig', () => {
     expect(config).to.be.eql({
       collection: {
         mode: 'lightest',
+        partialLoadWithBackgroundFetch: {
+          enabled: false,
+          partialLoadCount: 100,
+        },
         layout: { type: '4up', gutter: '4x', container: '1200MaxWidth' },
         button: { style: 'primary' },
         collectionButtonStyle: 'primary',
@@ -168,6 +172,7 @@ describe('getConfig', () => {
         endpoint:
           'https://www.adobe.com/chimera-api/collection/myTargetActivity.json?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=((%22caas%3Aproducts%2Findesign%22%2BAND%2B%22caas%3Aproducts%2Freader%22)%2BAND%2B(%22caas%3Acountry%2Fbr%22%2BOR%2B%22caas%3Acountry%2Fca%22))%2BAND%2B((%22caas%3Acontent-type%2Fvideo%22%2BAND%2B%22caas%3Acontent-type%2Fblog%22))&excludeIds=&currentEntityId=&featuredCards=c94ec235-50c2-595e-9fa8-0b4602c08712%2Ce9d71f5e-e7c9-5d6d-89e9-2ffdad17b8bd&environment=&draft=true&size=10&flatFile=false',
         fallbackEndpoint: '',
+        hideDateInterval: false,
         totalCardsToShow: 10,
         cardStyle: 'half-height',
         ctaAction: '_self',
@@ -185,9 +190,11 @@ describe('getConfig', () => {
           titleHeadingLevel: 'h3',
         },
         setCardBorders: false,
+        showCardBadges: false,
         showFooterDivider: false,
         useOverlayLinks: false,
         additionalRequestParams: {},
+        dynamicCTAForLiveEvents: false,
         banner: {
           register: { description: 'Sign Up', url: '#registration' },
           upcoming: { description: 'Upcoming' },
@@ -394,6 +401,7 @@ describe('getConfig', () => {
       },
       language: 'en',
       country: 'us',
+      linkTransformer: {},
       customCard: [
         'card',
         'return ``',
@@ -422,6 +430,10 @@ describe('getConfig', () => {
     expect(config).to.be.eql({
       collection: {
         mode: 'lightest',
+        partialLoadWithBackgroundFetch: {
+          enabled: false,
+          partialLoadCount: 100,
+        },
         layout: { type: '4up', gutter: '4x', container: '1200MaxWidth' },
         button: { style: 'primary' },
         collectionButtonStyle: 'primary',
@@ -429,6 +441,7 @@ describe('getConfig', () => {
         endpoint:
           'https://www.adobe.com/chimera-api/collection/myTargetActivity.json?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=fr&country=be&complexQuery=((%22caas%3Aproducts%2Findesign%22%2BAND%2B%22caas%3Aproducts%2Freader%22)%2BAND%2B(%22caas%3Acountry%2Fbr%22%2BOR%2B%22caas%3Acountry%2Fca%22))%2BAND%2B((%22caas%3Acontent-type%2Fvideo%22%2BAND%2B%22caas%3Acontent-type%2Fblog%22))&excludeIds=&currentEntityId=&featuredCards=b6aa23a7-f6bf-51f4-a2b6-0a93fc31bd16%2Ce9d71f5e-e7c9-5d6d-89e9-2ffdad17b8bd&environment=&draft=true&size=10&flatFile=false',
         fallbackEndpoint: '',
+        hideDateInterval: false,
         totalCardsToShow: 10,
         cardStyle: 'half-height',
         ctaAction: '_self',
@@ -446,9 +459,11 @@ describe('getConfig', () => {
           titleHeadingLevel: 'h3',
         },
         setCardBorders: false,
+        showCardBadges: false,
         showFooterDivider: false,
         useOverlayLinks: false,
         additionalRequestParams: {},
+        dynamicCTAForLiveEvents: false,
         banner: {
           register: { description: 'Sign Up', url: '#registration' },
           upcoming: { description: 'Upcoming' },
@@ -664,6 +679,7 @@ describe('getConfig', () => {
         enabled: true,
         lastViewedSession: '',
       },
+      linkTransformer: {},
     });
   });
 });
@@ -732,6 +748,21 @@ describe('getCountryAndLang', () => {
       locales: '',
     });
   });
+
+  it('should include partial load settings in the config', async () => {
+    const state = {
+      ...defaultState,
+      partialLoadEnabled: true,
+      partialLoadCount: 75,
+    };
+
+    const config = await getConfig(state, strings);
+
+    expect(config.collection.partialLoadWithBackgroundFetch).to.deep.equal({
+      enabled: true,
+      partialLoadCount: 75,
+    });
+  });
 });
 
 describe('getFloodgateCaasConfig', () => {
@@ -744,6 +775,10 @@ describe('getFloodgateCaasConfig', () => {
     expect(caasFgConfig).to.be.eql({
       collection: {
         mode: 'lightest',
+        partialLoadWithBackgroundFetch: {
+          enabled: false,
+          partialLoadCount: 100,
+        },
         layout: { type: '4up', gutter: '4x', container: '1200MaxWidth' },
         button: { style: 'primary' },
         collectionButtonStyle: 'primary',
@@ -751,6 +786,7 @@ describe('getFloodgateCaasConfig', () => {
         endpoint:
           'https://www.adobe.com/chimera-api/collection/myTargetActivity.json?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=((%22caas%3Aproducts%2Findesign%22%2BAND%2B%22caas%3Aproducts%2Freader%22)%2BAND%2B(%22caas%3Acountry%2Fbr%22%2BOR%2B%22caas%3Acountry%2Fca%22))%2BAND%2B((%22caas%3Acontent-type%2Fvideo%22%2BAND%2B%22caas%3Acontent-type%2Fblog%22))&excludeIds=&currentEntityId=&featuredCards=c94ec235-50c2-595e-9fa8-0b4602c08712%2Ce9d71f5e-e7c9-5d6d-89e9-2ffdad17b8bd&environment=&draft=true&size=10&flatFile=false',
         fallbackEndpoint: '',
+        hideDateInterval: false,
         totalCardsToShow: 10,
         cardStyle: 'half-height',
         ctaAction: '_self',
@@ -768,9 +804,11 @@ describe('getFloodgateCaasConfig', () => {
           titleHeadingLevel: 'h3',
         },
         setCardBorders: false,
+        showCardBadges: false,
         showFooterDivider: false,
         useOverlayLinks: false,
         additionalRequestParams: {},
+        dynamicCTAForLiveEvents: false,
         banner: {
           register: { description: 'Sign Up', url: '#registration' },
           upcoming: { description: 'Upcoming' },
@@ -986,6 +1024,7 @@ describe('getFloodgateCaasConfig', () => {
         enabled: true,
         lastViewedSession: '',
       },
+      linkTransformer: {},
     });
   });
 });

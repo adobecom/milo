@@ -63,7 +63,7 @@ function buildUi(el, path) {
 async function setup(el) {
   await login({ scopes: SCOPES, telemetry: TELEMETRY });
   if (!account.value.username) {
-    window.lana.log('Could not login to MS Graph', { tags: 'errorType=info,module=path-finder' });
+    window.lana.log('Could not login to MS Graph', { tags: 'path-finder', errorType: 'i' });
     return;
   }
   el.innerHTML = '';

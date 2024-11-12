@@ -1,11 +1,13 @@
 /* eslint-disable no-plusplus */
 import { createTag, MILO_EVENTS } from '../../utils/utils.js';
 import { decorateButtons } from '../../utils/decorate.js';
+import { debounce } from '../../utils/action.js';
 
 const DESKTOP_SIZE = 900;
 const MOBILE_SIZE = 768;
 const tableHighlightLoadedEvent = new Event('milo:table:highlight:loaded');
-
+let tableIndex = 0;
+const isMobileLandscape = () => (window.matchMedia('(orientation: landscape)').matches && window.innerHeight <= MOBILE_SIZE);
 function defineDeviceByScreenSize() {
   const screenWidth = window.innerWidth;
   if (screenWidth >= DESKTOP_SIZE) {
@@ -17,18 +19,17 @@ function defineDeviceByScreenSize() {
   return 'TABLET';
 }
 
+function isStickyHeader(el) {
+  return el.classList.contains('sticky')
+    || (el.classList.contains('sticky-desktop-up') && defineDeviceByScreenSize() === 'DESKTOP')
+    || (el.classList.contains('sticky-tablet-up') && defineDeviceByScreenSize() !== 'MOBILE' && !isMobileLandscape());
+}
+
 function handleHeading(table, headingCols) {
   const isPriceBottom = table.classList.contains('pricing-bottom');
   headingCols.forEach((col, i) => {
     col.classList.add('col-heading');
-    if (!col.innerHTML) {
-      col.classList.add('hidden');
-      return;
-    }
-
-    if (!col.classList.contains('no-rounded') && headingCols[i - 1] && !headingCols[i - 1].innerText) {
-      col.classList.add('top-left-rounded');
-    }
+    if (!col.innerHTML) return;
 
     const elements = col.children;
     if (!elements.length) {
@@ -42,17 +43,10 @@ function handleHeading(table, headingCols) {
       }
       elements[textStartIndex]?.classList.add('tracking-header');
       const pricingElem = elements[textStartIndex + 1];
-      let bodyElem = elements[textStartIndex + 2];
+      const bodyElem = elements[textStartIndex + 2];
 
       if (pricingElem) {
         pricingElem.classList.add('pricing');
-        if (isPriceBottom) {
-          pricingElem.parentNode.insertBefore(
-            elements[textStartIndex + 2],
-            elements[textStartIndex + 1],
-          );
-          bodyElem = elements[textStartIndex + 1];
-        }
       }
       if (bodyElem) {
         bodyElem.classList.add('body');
@@ -68,17 +62,94 @@ function handleHeading(table, headingCols) {
         buttonsWrapper.append(btnWrapper);
       });
 
-      const row1 = createTag('div', { class: 'table-heading-content' });
-      const row2 = createTag('div', { class: 'table-heading-button' });
-      const row1LastIdx = isPriceBottom ? 3 : 4;
-      [...elements].forEach((e, idx) => {
-        if (idx < row1LastIdx) row1.appendChild(e);
-        else row2.appendChild(e);
+      const headingContent = createTag('div', { class: 'heading-content' });
+      const headingButton = createTag('div', { class: 'heading-button' });
+
+      [...elements].forEach((e) => {
+        if (e.classList.contains('pricing') && isPriceBottom) headingButton.appendChild(e);
+        else headingContent.appendChild(e);
       });
-      col.innerHTML = '';
-      col.append(row1, row2);
+
+      headingButton.appendChild(buttonsWrapper);
+      col.append(headingContent, headingButton);
     }
+
+    const trackingHeader = col.querySelector('.tracking-header');
+    const nodeToApplyRoleScope = trackingHeader ?? col;
+
+    if (trackingHeader) {
+      const trackingHeaderID = `t${tableIndex + 1}-c${i + 1}-header`;
+      trackingHeader.setAttribute('id', trackingHeaderID);
+
+      const headerBody = col.querySelector('.body:not(.action-area)');
+      headerBody?.setAttribute('id', `${trackingHeaderID}-body`);
+
+      const headerPricing = col.querySelector('.pricing');
+      headerPricing?.setAttribute('id', `${trackingHeaderID}-pricing`);
+
+      const describedBy = `${headerBody?.id ?? ''} ${headerPricing?.id ?? ''}`.trim();
+      trackingHeader.setAttribute('aria-describedby', describedBy);
+
+      col.removeAttribute('role');
+    }
+
+    nodeToApplyRoleScope.setAttribute('role', 'columnheader');
+    nodeToApplyRoleScope.setAttribute('scope', 'col');
   });
+}
+
+function handleEqualHeight(table, tag) {
+  const height = [];
+  const element = table.querySelector(tag);
+  const columns = [...element.children];
+  columns.forEach(({ children }) => {
+    [...children].forEach((row, i) => {
+      row.style.height = 'auto';
+      if (!height[i] || row.offsetHeight > height[i]) {
+        height[i] = row.offsetHeight;
+      }
+    });
+  });
+  columns.forEach(({ children }) => {
+    [...children].forEach((row, i) => {
+      row.style.height = height[i] > 0 ? `${height[i]}px` : 'auto';
+    });
+  });
+}
+
+function handleAddOnContent(table) {
+  const addOnKey = 'ADDON';
+  const addOns = [...table.querySelectorAll('.section-row-title')]
+    .filter((row) => row.innerText.toUpperCase().includes(addOnKey));
+  if (!addOns.length) return;
+  table.classList.add('has-addon');
+  addOns.forEach((addOn) => {
+    const addOnRow = addOn.parentElement;
+    addOnRow.remove();
+    const [position, order, style] = addOn.innerText.split('-')
+      .filter((key) => key.toUpperCase() !== addOnKey).map((key) => key.toLowerCase());
+    if (!position || !order) return;
+    const dataIndex = 'data-col-index';
+    [...table.querySelector('.row-heading').children].forEach((headCol) => {
+      headCol.querySelector('.heading-content')?.classList.add('content');
+      const colIndex = headCol.getAttribute(dataIndex);
+      if (colIndex <= 1) return; // skip the key column
+      const tagName = `${position}-${order}`;
+      const column = [...addOnRow.children].find((el) => el.getAttribute(dataIndex) === colIndex);
+      let content = column.childNodes;
+      const icon = column.querySelector('.icon');
+      if (style === 'label' && icon) {
+        const text = [...content].filter((node) => !node.classList?.contains('icon'));
+        content = [createTag('span', null, text), icon];
+      }
+      const tag = createTag('div', { class: tagName }, [...content].map((node) => node));
+      if (style) tag.classList.add(`addon-${style}`);
+      const el = headCol.querySelector(`.${position}`);
+      el?.classList.add(`has-${tagName}`);
+      el?.insertAdjacentElement(order === 'before' ? 'beforebegin' : 'afterend', tag);
+    });
+  });
+  setTimeout(() => handleEqualHeight(table, '.row-heading'), 0);
 }
 
 function handleHighlight(table) {
@@ -97,17 +168,10 @@ function handleHighlight(table) {
 
     firstRowCols.forEach((col, i) => {
       col.classList.add('col-highlight');
-      const hasText = col.innerText;
-      if (hasText) {
+      if (col.innerText) {
         headingCols[i]?.classList.add('no-rounded');
-      } else if (!headingCols[i]?.innerText) {
-        col.classList.add('hidden');
-        headingCols[i]?.classList.add('hidden');
       } else {
         col.classList.add('hidden');
-        if (!headingCols[i - 1]?.innerText) {
-          headingCols[i]?.classList.add('top-left-rounded');
-        }
       }
     });
   } else {
@@ -116,6 +180,7 @@ function handleHighlight(table) {
   }
 
   handleHeading(table, headingCols);
+  handleAddOnContent(table);
   table.dispatchEvent(tableHighlightLoadedEvent);
 }
 
@@ -210,6 +275,8 @@ function handleSection(sectionParams) {
     if (!isMerch) {
       const sectionRowTitle = nextRowCols?.[0];
       sectionRowTitle.classList.add('section-row-title');
+      sectionRowTitle.setAttribute('role', 'rowheader');
+      sectionRowTitle.setAttribute('scope', 'row');
     }
   } else if (!row.classList.contains('row-1') && (!isHighlightTable || !row.classList.contains('row-2'))) {
     row.classList.add('section-row');
@@ -236,6 +303,8 @@ function handleSection(sectionParams) {
       const sectionRowTitle = rowCols[0];
       handleTitleText(sectionRowTitle);
       sectionRowTitle.classList.add('section-row-title');
+      sectionRowTitle.setAttribute('role', 'rowheader');
+      sectionRowTitle.setAttribute('scope', 'row');
     }
   }
   return expandSection;
@@ -316,16 +385,16 @@ function handleScrollEffect(table) {
   } else {
     headingRow.classList.add('top-border-transparent');
   }
-  headingRow.style.top = `${gnavHeight + (highlightRow ? highlightRow.offsetHeight : 0)}px`;
+  const topOffset = gnavHeight + (highlightRow ? highlightRow.offsetHeight : 0);
+  headingRow.style.top = `${topOffset}px`;
 
   const intercept = table.querySelector('.intercept') || createTag('div', { class: 'intercept' });
   intercept.setAttribute('data-observer-intercept', '');
-  table.append(intercept);
   headingRow.insertAdjacentElement('beforebegin', intercept);
 
   const observer = new IntersectionObserver(([entry]) => {
     headingRow.classList.toggle('active', !entry.isIntersecting);
-  });
+  }, { rootMargin: `-${topOffset}px` });
   observer.observe(intercept);
 }
 
@@ -355,6 +424,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
     tableEl.querySelectorAll('.icon.expand').forEach((icon) => {
       icon.parentElement.classList.add('point-cursor');
       icon.parentElement.addEventListener('click', () => handleExpand(icon));
+      icon.parentElement.setAttribute('tabindex', 0);
       icon.parentElement.addEventListener('keydown', (e) => {
         e.preventDefault();
         if (e.key === 'Enter' || e.key === ' ') handleExpand(icon);
@@ -375,13 +445,12 @@ function applyStylesBasedOnScreenSize(table, originTable) {
     }
 
     if ((!isMerch && !table.querySelector('.col-3'))
-    || (isMerch && !table.querySelector('.col-2'))) return;
+      || (isMerch && !table.querySelector('.col-2'))) return;
 
     const filterChangeEvent = () => {
       table.innerHTML = originTable.innerHTML;
       reAssignEvents(table);
       const filters = Array.from(table.parentElement.querySelectorAll('.filter')).map((f) => parseInt(f.value, 10));
-      const highlights = table.querySelectorAll('.row-highlight .col');
       const rows = table.querySelectorAll('.row');
 
       if (isMerch) {
@@ -392,13 +461,11 @@ function applyStylesBasedOnScreenSize(table, originTable) {
 
       if (filters[0] > filters[1]) {
         if (isMerch) {
-          rows.forEach((row) => {
-            row.querySelector('.col:not(.section-row-title)').style.order = 1;
-          });
+          rows.forEach((row) => row.querySelector('.col:not(.section-row-title)')
+            .classList.add('force-last'));
         } else {
-          rows.forEach((row) => {
-            row.querySelector('.col:not(.section-row-title, .col-1)').style.order = 1;
-          });
+          rows.forEach((row) => row.querySelector('.col:not(.section-row-title, .col-1)')
+            .classList.add('force-last'));
         }
       } else if (filters[0] === filters[1]) {
         rows.forEach((row) => {
@@ -406,14 +473,9 @@ function applyStylesBasedOnScreenSize(table, originTable) {
         });
       }
 
-      highlights.forEach((highlight, index) => {
-        if (!highlight.innerHTML && !headings[index + 1]?.classList.contains('hidden')) {
-          table.querySelector('.row-heading').querySelectorAll(`.col-${index + 1}`).forEach((heading) => {
-            heading.classList.add('top-left-rounded', 'top-right-rounded');
-          });
-        }
-      });
       setRowStyle();
+
+      if (table.matches('.sticky')) handleScrollEffect(table);
     };
 
     // Remove filter if table there are only 2 columns
@@ -444,6 +506,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
       filter2.addEventListener('change', filterChangeEvent);
       table.parentElement.insertBefore(filters, table);
       table.parentElement.classList.add(`table-${table.classList.contains('merch') ? 'merch-' : ''}section`);
+      filterChangeEvent();
     }
   };
 
@@ -496,20 +559,18 @@ export default function init(el) {
       col.dataset.colIndex = cdx + 1;
       col.classList.add('col', `col-${cdx + 1}`);
       col.setAttribute('role', 'cell');
-      if (col.innerHTML) {
-        col.tabIndex = 0;
-      }
     });
 
     expandSection = handleSection(sectionParams);
   });
 
-  const isStickyHeader = el.classList.contains('sticky');
-
   handleHighlight(el);
   if (isMerch) formatMerchTable(el);
 
+  let isDecorated = false;
+
   const handleTable = () => {
+    if (isDecorated) return;
     let originTable;
     let visibleHeadingsSelector = '.col-heading:not(.hidden, .col-1)';
     if (isMerch) {
@@ -523,19 +584,35 @@ export default function init(el) {
 
     const handleResize = () => {
       applyStylesBasedOnScreenSize(el, originTable);
-      if (isStickyHeader) handleScrollEffect(el);
+      if (isStickyHeader(el)) handleScrollEffect(el);
     };
     handleResize();
 
     let deviceBySize = defineDeviceByScreenSize();
     window.addEventListener('resize', () => {
+      if (el.classList.contains('has-addon')) {
+        debounce(handleEqualHeight(el, '.row-heading'), 300);
+      }
       if (deviceBySize === defineDeviceByScreenSize()) return;
       deviceBySize = defineDeviceByScreenSize();
       handleResize();
     });
+
+    isDecorated = true;
   };
 
   window.addEventListener(MILO_EVENTS.DEFERRED, () => {
     handleTable();
   }, true);
+
+  const observer = new window.IntersectionObserver((entries) => {
+    if (entries.some((entry) => entry.isIntersecting)) {
+      observer.disconnect();
+      handleTable();
+    }
+  });
+
+  observer.observe(el);
+
+  tableIndex++;
 }

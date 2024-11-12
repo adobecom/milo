@@ -1,4 +1,4 @@
-import { loadScript, getConfig, createTag } from '../../utils/utils.js';
+import { loadScript, getConfig, createTag, customFetch } from '../../utils/utils.js';
 import {
   throttle,
   parseValue,
@@ -122,7 +122,6 @@ export function processMarkData(series, xUnit) {
 }
 
 export async function fetchData(link) {
-  const { customFetch } = await import('../../utils/helpers.js');
   const resp = await customFetch({ resource: link.href.toLowerCase(), withCacheRules: true })
     .catch(() => ({}));
 
@@ -164,7 +163,7 @@ export const donutTooltipFormatter = ({
   name,
   percent,
 } = {}, unit = '') => (
-  `${marker} ${name}<br />${data[value[0]]}${unit} ${percent}%<i class="tooltip-icon"></i>`
+  `${marker} ${name}<br />${data[value[0]]}${unit}${unit !== '%' ? ` ${percent}%` : ''}<i class="tooltip-icon"></i>`
 );
 
 export const pieTooltipFormatter = ({

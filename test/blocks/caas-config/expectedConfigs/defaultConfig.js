@@ -1,6 +1,10 @@
 const defaultConfig = {
   collection: {
     mode: 'lightest',
+    partialLoadWithBackgroundFetch: {
+      enabled: false,
+      partialLoadCount: 100,
+    },
     layout: { type: '4up', gutter: '4x', container: '1200MaxWidth' },
     button: { style: 'primary' },
     collectionButtonStyle: 'primary',
@@ -8,6 +12,7 @@ const defaultConfig = {
     endpoint:
       'https://www.adobe.com/chimera-api/collection?originSelection=hawks&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=us&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=10',
     fallbackEndpoint: '',
+    hideDateInterval: false,
     totalCardsToShow: 10,
     cardStyle: 'half-height',
     cardHoverEffect: 'default',
@@ -25,6 +30,7 @@ const defaultConfig = {
     },
     detailsTextOption: 'default',
     setCardBorders: false,
+    showCardBadges: false,
     showFooterDivider: false,
     useOverlayLinks: false,
     banner: {
@@ -38,6 +44,7 @@ const defaultConfig = {
     reservoir: { sample: 3, pool: 1000 },
     ctaAction: '_self',
     additionalRequestParams: {},
+    dynamicCTAForLiveEvents: false,
   },
   headers: [],
   hideCtaIds: [
@@ -201,6 +208,7 @@ const defaultConfig = {
     enabled: '',
     lastViewedSession: '',
   },
+  linkTransformer: {},
   customCard: ['card', 'return ``'],
 };
 

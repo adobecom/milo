@@ -16,6 +16,10 @@ div[class*="-merch-card"] > div,
   display: none;
  }
 
+ merch-card .body-lower > hr {
+  width: 100%
+ }
+
  .merch-card-price {
   margin-top: 8px;
   margin-bottom: 16px;
@@ -26,9 +30,12 @@ div[class*="-merch-card"] > div,
   color: var(--text-color);
 }
 
-.twp.merch-card .merch-card-price {
+.merch-card .merch-card-price {
   font-weight: 700;
-  margin: 0;
+  margin-top: 8px;
+  margin-bottom: 16px;
+  font-size: 18px;
+  line-height: 22.5px;
 }
 
 merch-card.special-offers del span[is="inline-price"] {
@@ -52,6 +59,5 @@ merch-card a[is="checkout-link"].upgrade:not(:first-of-type) {
     min-width: 66px; /* same as merch links */
     padding: 4px 18px 5px 21px;
     font-size: var(--consonant-merch-card-mini-compare-mobile-cta-font-size);
-
   }
 }

@@ -1,6 +1,7 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import { combineMepSources, getMepEnablement } from '../../libs/utils/utils.js';
+import { getMepEnablement } from '../../libs/utils/utils.js';
+import { combineMepSources } from '../../libs/features/personalization/personalization.js';
 
 describe('MEP Utils', () => {
   describe('combineMepSources', async () => {
@@ -42,10 +43,10 @@ describe('MEP Utils', () => {
       const targetEnabled = getMepEnablement('target');
       expect(targetEnabled).to.equal(false);
     });
-    it('checks target metadata set to gnav', async () => {
-      document.head.innerHTML = await readFile({ path: './mocks/mep/head-target-gnav.html' });
+    it('checks target metadata set to postlcp', async () => {
+      document.head.innerHTML = await readFile({ path: './mocks/mep/head-target-postlcp.html' });
       const targetEnabled = getMepEnablement('target');
-      expect(targetEnabled).to.equal('gnav');
+      expect(targetEnabled).to.equal('postlcp');
     });
     it('checks from just metadata with no target metadata', async () => {
       document.head.innerHTML = await readFile({ path: './mocks/mep/head-promo.html' });
@@ -59,6 +60,11 @@ describe('MEP Utils', () => {
       });
       expect(persEnabled).to.equal('https://main--milo--adobecom.hlx.page/products/special-offers-manifest.json');
       expect(targetEnabled).to.equal(false);
+    });
+    it('checks xlg metadata', async () => {
+      document.head.innerHTML = await readFile({ path: './mocks/mep/head-xlg.html' });
+      const xlgEnabled = getMepEnablement('xlg');
+      expect(xlgEnabled).to.equal('loggedout');
     });
   });
 });

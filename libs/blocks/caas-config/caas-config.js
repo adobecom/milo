@@ -1,6 +1,6 @@
 /* eslint-disable compat/compat */
 /* eslint-disable react-hooks/exhaustive-deps */
-/* global ClipboardItem */
+
 import {
   createContext,
   html,
@@ -60,7 +60,7 @@ const caasFilesLoaded = loadCaasFiles();
 const ConfiguratorContext = createContext();
 
 const defaultOptions = {
-  accessibilityLevel: {
+  cardTitleAccessibilityLevel: {
     2: '2',
     3: '3',
     4: '4',
@@ -175,8 +175,8 @@ const defaultOptions = {
     featured: 'Featured',
     dateDesc: 'Date: (Newest to Oldest)',
     dateAsc: 'Date: (Oldest to Newest)',
-    modifiedDesc: 'Date: (Last Modified, Newest to Oldest)',
-    modifiedAsc: 'Date (Last Modified, Oldest to Newest)',
+    modifiedDesc: 'Modified Date: (Newest to Oldest)',
+    modifiedAsc: 'Modified Date: (Oldest to Newest)',
     eventSort: 'Events: (Live, Upcoming, OnDemand)',
     titleAsc: 'Title: (A - Z)',
     titleDesc: 'Title: (Z - A)',
@@ -212,11 +212,16 @@ const defaultOptions = {
   },
   detailsTextOption: {
     default: 'Default',
+    createdDate: 'Created Date',
     modifiedDate: 'Modified Date',
   },
   cardHoverEffect: {
     default: 'Default',
     grow: 'Grow',
+  },
+  partialLoadEnabled: {
+    true: 'Enabled',
+    false: 'Disabled',
   },
 };
 
@@ -343,6 +348,9 @@ const BasicsPanel = ({ tagsData }) => {
     <${Select} options=${countryTags} prop="country" label="Country" sort />
     <${Select} options=${languageTags} prop="language" label="Language" sort />`;
 
+  const partialLoadOptions = html`
+    <${Input} label="Partial Load Count" prop="partialLoadCount" type="number" />`;
+
   return html`
   <${Input} label="Collection Name" placeholder="Only used in the author link" prop="collectionName" type="text" />
   <${Input} label="Collection Title" prop="collectionTitle" type="text" title="Enter a title, {placeholder}, or leave empty "/>
@@ -352,7 +360,8 @@ const BasicsPanel = ({ tagsData }) => {
     <${Input} label="Total Cards to Show" prop="totalCardsToShow" type="number" />
     <${Input} label="Auto detect country & lang" prop="autoCountryLang" type="checkbox" />
     ${!state.autoCountryLang && countryLangOptions}
-
+  <${Input} label="Partial Load Enabled" prop="partialLoadEnabled" options="${defaultOptions.partialLoadEnabled}" type="checkbox"  />
+    ${state.partialLoadEnabled && partialLoadOptions}
   `;
 };
 
@@ -363,8 +372,11 @@ const UiPanel = () => html`
   <${Input} label="Use Light Text" prop="useLightText" type="checkbox" />
   <${Input} label="Use Overlay Links" prop="useOverlayLinks" type="checkbox" />
   <${Input} label="Show total card count at top" prop="showTotalResults" type="checkbox" />
+  <${Input} label="Hide date for on-demand content" prop="hideDateInterval" type="checkbox" />
+  <${Input} label="Enable showing card badges (by default hidden)" prop="showCardBadges" type="checkbox" />
+  <${Input} label="Show a different CTA for live events" prop="dynamicCTAForLiveEvents" type="checkbox" />
   <${Select} label="Card Style" prop="cardStyle" options=${defaultOptions.cardStyle} />
-  <${Select} options=${defaultOptions.accessibilityLevel} prop="accessibilityLevel" label="Card Accessibility Title Level" />
+  <${Select} options=${defaultOptions.cardTitleAccessibilityLevel} prop="cardTitleAccessibilityLevel" label="Card Accessibility Title Level" />
   <${Select} label="Layout" prop="container" options=${defaultOptions.container} />
   <${Select} label="Layout Type" prop="layoutType" options=${defaultOptions.layoutType} />
   <${Select} label="Grid Gap (Gutter)" prop="gutter" options=${defaultOptions.gutter} />
@@ -534,10 +546,10 @@ const SortPanel = () => {
     <div>Sort options to display:</div>
     <div class="sort-options">
       <${Input} label="Featured Sort" prop="sortFeatured" type="checkbox" />
-      <${Input} label="Date: (Oldest to Newest)" prop="sortDateAsc" type="checkbox" />
       <${Input} label="Date: (Newest to Oldest)" prop="sortDateDesc" type="checkbox" />
-      <${Input} label="Date (Last Modified, Oldest to Newest)" prop="sortModifiedAsc" type="checkbox" />
-      <${Input} label="Date: (Last Modified, Newest to Oldest)" prop="sortModifiedDesc" type="checkbox" />
+      <${Input} label="Date: (Oldest to Newest)" prop="sortDateAsc" type="checkbox" />
+      <${Input} label="Modified Date: (Oldest to Newest)" prop="sortModifiedAsc" type="checkbox" />
+      <${Input} label="Modified Date: (Newest to Oldest)" prop="sortModifiedDesc" type="checkbox" />
       <${Input} label="Events" prop="sortEventSort" type="checkbox" />
       <${Input} label="Title A-Z" prop="sortTitleAsc" type="checkbox" />
       <${Input} label="Title Z-A" prop="sortTitleDesc" type="checkbox" />
@@ -656,7 +668,7 @@ const PaginationPanel = () => {
       options=${defaultOptions.paginationType}
     />
     <${Select}
-      label="Animation Style"
+      label="Carousel Animation Style"
       prop="paginationAnimationStyle"
       options=${defaultOptions.paginationAnimationStyle}
     />
@@ -823,10 +835,21 @@ const CopyBtn = () => {
     }, 2000);
   };
 
+  const removeDefaultsFromState = (fullState) => {
+    const reducedState = {};
+    Object.keys(fullState).forEach((key) => {
+      if (JSON.stringify(fullState[key]) !== JSON.stringify(defaultState[key])) {
+        reducedState[key] = fullState[key];
+      }
+    });
+    return reducedState;
+  };
+
   const getUrl = async () => {
     const url = new URL(window.location.href);
     url.search = '';
-    const hashStr = await getEncodedObject(state, fgKeyReplacer);
+    const reducedState = removeDefaultsFromState(state);
+    const hashStr = await getEncodedObject(reducedState, fgKeyReplacer);
     // starts with ~~ to differentiate from old hash format
     url.hash = `~~${hashStr}`;
     return url.href;
@@ -852,7 +875,7 @@ const CopyBtn = () => {
       hour12: false,
     });
     const collectionName = state.collectionName ? `- ${state.collectionName} ` : '';
-    link.textContent = `Content as a Service v2 ${collectionName}- ${dateStr}${state.doNotLazyLoad ? ' (no-lazy)' : ''}`;
+    link.textContent = `Content as a Service v3 ${collectionName}- ${dateStr}${state.doNotLazyLoad ? ' (no-lazy)' : ''}`;
 
     const blob = new Blob([link.outerHTML], { type: 'text/html' });
     const data = [new ClipboardItem({ [blob.type]: blob })];
@@ -943,12 +966,14 @@ const getPanels = (tagsData) => [
 ];
 
 /* c8 ignore next 15 */
-const addIdOverlays = () => {
+export const addIdOverlays = () => {
   document.querySelectorAll('.consonant-Card').forEach((card) => {
     if (!card.querySelector('.cardid')) {
       const idBtn = document.createElement('button');
       idBtn.classList.add('cardid');
       idBtn.innerText = card.id;
+
+      idBtn.title = 'Click to copy this ID';
 
       idBtn.addEventListener('click', (e) => {
         const id = e.target.textContent;

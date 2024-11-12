@@ -1,5 +1,6 @@
-/* eslint-disable no-underscore-dangle */
-import { getConfig, getMetadata, loadIms, loadLink, loadScript } from '../utils/utils.js';
+import {
+  getConfig, getMetadata, loadIms, loadLink, loadScript, getMepEnablement,
+} from '../utils/utils.js';
 
 const ALLOY_SEND_EVENT = 'alloy_sendEvent';
 const ALLOY_SEND_EVENT_ERROR = 'alloy_sendEvent_error';
@@ -47,16 +48,6 @@ const waitForEventOrTimeout = (eventName, timeout, returnValIfTimeout) => new Pr
   window.addEventListener(ALLOY_SEND_EVENT_ERROR, errorListener, { once: true });
 });
 
-const getExpFromParam = (expParam) => {
-  const lastSlash = expParam.lastIndexOf('/');
-  return {
-    experiments: [{
-      experimentPath: expParam.substring(0, lastSlash),
-      variantLabel: expParam.substring(lastSlash + 1),
-    }],
-  };
-};
-
 const handleAlloyResponse = (response) => {
   const items = (
     (response.propositions?.length && response.propositions)
@@ -100,7 +91,8 @@ function sendTargetResponseAnalytics(failure, responseStart, timeout, message) {
   const timeoutTime = roundToQuarter(timeout);
   let val = `target response time ${responseTime}:timed out ${failure}:timeout ${timeoutTime}`;
   if (message) val += `:${message}`;
-  window.alloy('sendEvent', {
+  // eslint-disable-next-line no-underscore-dangle
+  window._satellite?.track?.('event', {
     documentUnloading: true,
     xdm: {
       eventType: 'web.webinteraction.linkClicks',
@@ -116,11 +108,8 @@ function sendTargetResponseAnalytics(failure, responseStart, timeout, message) {
   });
 }
 
-const getTargetPersonalization = async () => {
+export const getTargetPersonalization = async () => {
   const params = new URL(window.location.href).searchParams;
-
-  const experimentParam = params.get('experiment');
-  if (experimentParam) return getExpFromParam(experimentParam);
 
   const timeout = parseInt(params.get('target-timeout'), 10)
     || parseInt(getMetadata('target-timeout'), 10)
@@ -129,43 +118,42 @@ const getTargetPersonalization = async () => {
   const responseStart = Date.now();
   window.addEventListener(ALLOY_SEND_EVENT, () => {
     const responseTime = calculateResponseTime(responseStart);
-    window.lana.log(`target response time: ${responseTime}`, { tags: 'errorType=info,module=martech' });
+    try {
+      window.lana.log(`target response time: ${responseTime}`, { tags: 'martech', errorType: 'i' });
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error('Error logging target response time:', e);
+    }
   }, { once: true });
 
-  let manifests = [];
-  let propositions = [];
+  let targetManifests = [];
+  let targetPropositions = [];
   const response = await waitForEventOrTimeout(ALLOY_SEND_EVENT, timeout);
   if (response.error) {
-    window.lana.log('target response time: ad blocker', { tags: 'errorType=info,module=martech' });
-    return [];
+    try {
+      window.lana.log('target response time: ad blocker', { tags: 'martech', errorType: 'i' });
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error('Error logging target response time for ad blocker:', e);
+    }
+    return { targetManifests, targetPropositions };
   }
   if (response.timeout) {
     waitForEventOrTimeout(ALLOY_SEND_EVENT, 5100 - timeout)
       .then(() => sendTargetResponseAnalytics(true, responseStart, timeout));
   } else {
     sendTargetResponseAnalytics(false, responseStart, timeout);
-    manifests = handleAlloyResponse(response.result);
-    propositions = response.result?.propositions || [];
+    targetManifests = handleAlloyResponse(response.result);
+    targetPropositions = response.result?.propositions || [];
   }
 
-  return {
-    targetManifests: manifests,
-    targetPropositions: propositions,
-  };
+  return { targetManifests, targetPropositions };
 };
-
-const getDtmLib = (env) => ({
-  edgeConfigId: env.consumer?.edgeConfigId || env.edgeConfigId,
-  url:
-    env.name === 'prod'
-      ? env.consumer?.marTechUrl || 'https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/launch-5dd5dd2177e6.min.js'
-      : env.consumer?.marTechUrl || 'https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/launch-a27b33fc2dc0-development.min.js',
-});
 
 const setupEntitlementCallback = () => {
   const setEntitlements = async (destinations) => {
-    const { default: parseEntitlements } = await import('../features/personalization/entitlements.js');
-    return parseEntitlements(destinations);
+    const { getEntitlements } = await import('../features/personalization/personalization.js');
+    return getEntitlements(destinations);
   };
 
   const getEntitlements = (resolve) => {
@@ -185,42 +173,83 @@ const setupEntitlementCallback = () => {
   getEntitlements(resolveEnt);
 
   loadLink(
-    `${miloLibs || codeRoot}/features/personalization/entitlements.js`,
+    `${miloLibs || codeRoot}/features/personalization/personalization.js`,
     { as: 'script', rel: 'modulepreload' },
   );
 };
 
+function isProxied() {
+  return /^(www|milo|business|blog)(\.stage)?\.adobe\.com$/.test(window.location.hostname);
+}
+
 let filesLoadedPromise = false;
-const loadMartechFiles = async (config, url, edgeConfigId) => {
+const loadMartechFiles = async (config) => {
   if (filesLoadedPromise) return filesLoadedPromise;
 
   filesLoadedPromise = async () => {
-    loadIms()
-      .then(() => {
-        if (window.adobeIMS.isSignedInUser()) setupEntitlementCallback();
-      })
-      .catch(() => {});
+    if (getMepEnablement('xlg') === 'loggedout') {
+      setupEntitlementCallback();
+    } else {
+      loadIms()
+        .then(() => {
+          if (window.adobeIMS.isSignedInUser()) setupEntitlementCallback();
+        })
+        .catch(() => {});
+    }
 
     setDeep(
       window,
       'alloy_all.data._adobe_corpnew.digitalData.page.pageInfo.language',
-      config.locale.ietf,
+      { locale: config.locale.prefix.replace('/', ''), langCode: config.locale.ietf },
     );
     setDeep(window, 'digitalData.diagnostic.franklin.implementation', 'milo');
 
+    const launchUrl = config.env.consumer?.marTechUrl || (
+      isProxied()
+        ? '/marketingtech'
+        : 'https://assets.adobedtm.com'
+    ) + (
+      config.env.name === 'prod'
+        ? '/d4d114c60e50/a0e989131fd5/launch-5dd5dd2177e6.min.js'
+        : '/d4d114c60e50/a0e989131fd5/launch-2c94beadc94f-development.min.js'
+    );
+    loadLink(launchUrl, { as: 'script', rel: 'preload' });
+
     window.marketingtech = {
       adobe: {
-        launch: { url, controlPageLoad: true },
-        alloy: { edgeConfigId },
+        launch: {
+          url: launchUrl,
+          controlPageLoad: true,
+        },
+        alloy: {
+          edgeConfigId: config.env.consumer?.edgeConfigId || config.env.edgeConfigId,
+          edgeDomain: (
+            isProxied()
+              ? window.location.hostname
+              : 'sstats.adobe.com'
+          ),
+          edgeBasePath: (
+            isProxied()
+              ? 'experienceedge'
+              : 'ee'
+          ),
+        },
         target: false,
       },
       milo: true,
     };
-    window.edgeConfigId = edgeConfigId;
+    window.edgeConfigId = config.env.edgeConfigId;
 
-    const env = ['stage', 'local'].includes(config.env.name) ? '.qa' : '';
-    const martechPath = `martech.main.standard${env}.min.js`;
-    await loadScript(`${config.miloLibs || config.codeRoot}/deps/${martechPath}`);
+    await loadScript((
+      isProxied()
+        ? ''
+        : 'https://www.adobe.com'
+    ) + (
+      config.env.name === 'prod'
+        ? '/marketingtech/main.standard.min.js'
+        : '/marketingtech/main.standard.qa.min.js'
+    ));
+    // eslint-disable-next-line no-underscore-dangle
     window._satellite.track('pageload');
   };
 
@@ -228,34 +257,8 @@ const loadMartechFiles = async (config, url, edgeConfigId) => {
   return filesLoadedPromise;
 };
 
-export default async function init({
-  persEnabled = false,
-  persManifests = [],
-  postLCP = false,
-}) {
+export default async function init() {
   const config = getConfig();
-
-  const { url, edgeConfigId } = getDtmLib(config.env);
-  loadLink(url, { as: 'script', rel: 'preload' });
-
-  const martechPromise = loadMartechFiles(config, url, edgeConfigId);
-
-  if (persEnabled) {
-    loadLink(
-      `${config.miloLibs || config.codeRoot}/features/personalization/personalization.js`,
-      { as: 'script', rel: 'modulepreload' },
-    );
-
-    const { targetManifests, targetPropositions } = await getTargetPersonalization();
-    if (targetManifests?.length || persManifests?.length) {
-      const { preloadManifests, applyPers } = await import('../features/personalization/personalization.js');
-      const manifests = preloadManifests({ targetManifests, persManifests });
-      await applyPers(manifests, postLCP);
-      if (targetPropositions?.length && window._satellite) {
-        window._satellite.track('propositionDisplay', targetPropositions);
-      }
-    }
-  }
-
+  const martechPromise = loadMartechFiles(config);
   return martechPromise;
 }

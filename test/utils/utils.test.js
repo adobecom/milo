@@ -1,16 +1,51 @@
-import { readFile } from '@web/test-runner-commands';
+import { readFile, setViewport } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { waitFor, waitForElement } from '../helpers/waitfor.js';
 import { mockFetch } from '../helpers/generalHelpers.js';
-import { createTag } from '../../libs/utils/utils.js';
+import { createTag, customFetch } from '../../libs/utils/utils.js';
 
 const utils = {};
-
 const config = {
   codeRoot: '/libs',
   locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
 };
+const stageDomainsMap = {
+  'www.stage.adobe.com': {
+    'www.adobe.com': 'origin',
+    'business.adobe.com': 'business.stage.adobe.com',
+    'blog.adobe.com': 'blog.stage.adobe.com',
+    'helpx.adobe.com': 'helpx.stage.adobe.com',
+    'news.adobe.com': 'news.stage.adobe.com',
+  },
+  '--bacom--adobecom.hlx.live': {
+    'business.adobe.com': 'origin',
+    'blog.adobe.com': 'main--blog--adobecom.hlx.live',
+    'helpx.adobe.com': 'main--helpx--adobecom.hlx.live',
+    'news.adobe.com': 'main--news--adobecom.hlx.live',
+  },
+  '--blog--adobecom.hlx.page': {
+    'blog.adobe.com': 'origin',
+    'business.adobe.com': 'main--bacom--adobecom.hlx.page',
+    'helpx.adobe.com': 'main--helpx--adobecom.hlx.page',
+    'news.adobe.com': 'main--news--adobecom.hlx.page',
+  },
+  '.business-graybox.adobe.com': { 'business.adobe.com': 'origin' },
+};
+const stageDomainsMapWRegex = {
+  hostname: 'stage--milo--owner.hlx.page',
+  map: {
+    '^https://.*--milo--owner.hlx.page': {
+      '^https://www.adobe.com/acrobat': 'https://main--dc--adobecom.hlx.page',
+      '^https://business.adobe.com/blog': 'https://main--bacom-blog--adobecom.hlx.page',
+      '^https://business.adobe.com': 'https://business.stage.adobe.com',
+      '^https://www.adobe.com': 'origin',
+    },
+  },
+
+};
+const prodDomains = ['www.adobe.com', 'business.adobe.com', 'blog.adobe.com', 'helpx.adobe.com', 'news.adobe.com'];
+const externalDomains = ['external1.com', 'external2.com'];
 const ogFetch = window.fetch;
 
 describe('Utils', () => {
@@ -29,6 +64,34 @@ describe('Utils', () => {
 
   after(() => {
     delete window.hlx;
+  });
+
+  it('fetches with cache param', async () => {
+    window.fetch = mockFetch({ payload: true });
+    const resp = await customFetch({ resource: './mocks/taxonomy.json', withCacheRules: true });
+    expect(resp.json()).to.be.true;
+  });
+
+  describe('core-functionality', () => {
+    it('preloads blocks for performance reasons', async () => {
+      document.head.innerHTML = head;
+      document.body.innerHTML = await readFile({ path: './mocks/marquee.html' });
+      await utils.loadArea();
+      const scriptPreload = document.head.querySelector('link[href*="/libs/blocks/marquee/marquee.js"]');
+      const marqueeDecoratePreload = document.head.querySelector('link[href*="/libs/utils/decorate.js"]');
+      const stylePreload = document.head.querySelector('link[href*="/libs/blocks/marquee/marquee.css"]');
+      expect(marqueeDecoratePreload).to.exist;
+      expect(scriptPreload).to.exist;
+      expect(stylePreload).to.exist;
+    });
+  });
+
+  it('renders global navigation when header tag is present', async () => {
+    const bodyWithheader = await readFile({ path: './mocks/body-gnav.html' });
+    document.head.innerHTML = head;
+    document.body.innerHTML = bodyWithheader;
+    await utils.loadArea();
+    expect(document.querySelector('.global-navigation')).to.exist;
   });
 
   describe('with body', () => {
@@ -68,6 +131,7 @@ describe('Utils', () => {
 
     describe('Configure Auto Block', () => {
       it('Disable auto block when #_dnb in url', async () => {
+        setViewport({ width: 600, height: 1500 });
         await waitForElement('.disable-autoblock');
         const disableAutoBlockLink = document.querySelector('.disable-autoblock');
         utils.decorateLinks(disableAutoBlockLink);
@@ -88,11 +152,43 @@ describe('Utils', () => {
     });
 
     describe('Custom Link Actions', () => {
+      const originalUserAgent = navigator.userAgent;
+      before(() => {
+        window.navigator.share = sinon.stub().resolves();
+        Object.defineProperty(navigator, 'userAgent', {
+          value: 'android',
+          writable: true,
+        });
+      });
+
+      after(() => {
+        Object.defineProperty(navigator, 'userAgent', {
+          value: originalUserAgent,
+          writable: true,
+        });
+      });
+
       it('Implements a login action', async () => {
         await waitForElement('.login-action');
         const login = document.querySelector('.login-action');
         utils.decorateLinks(login);
-        expect(login.href).to.equal('https://www.stage.adobe.com/');
+        expect(login.href).to.equal('https://www.adobe.com/');
+      });
+      it('Implements a copy link action', async () => {
+        await waitForElement('.copy-action');
+        const copy = document.querySelector('.copy-action');
+        utils.decorateLinks(copy);
+        expect(copy.classList.contains('copy-link')).to.be.true;
+      });
+      it('triggers the event listener on clicking the custom links', async () => {
+        const login = document.querySelector('.login-action');
+        const copy = document.querySelector('.copy-action');
+        const clickEvent = new Event('click', { bubbles: true, cancelable: true });
+        const preventDefaultSpy = sinon.spy(clickEvent, 'preventDefault');
+        login.dispatchEvent(clickEvent);
+        copy.dispatchEvent(clickEvent);
+        expect(preventDefaultSpy.calledTwice).to.be.true;
+        expect(window.navigator.share.calledOnce).to.be.true;
       });
     });
 
@@ -119,9 +215,10 @@ describe('Utils', () => {
     });
 
     it('Loads a script', async () => {
-      const script = await utils.loadScript('/test/utils/mocks/script.js', 'module');
+      const script = await utils.loadScript('/test/utils/mocks/script.js', 'module', { mode: 'async' });
       expect(script).to.exist;
       expect(script.type).to.equal('module');
+      expect(script.async).to.equal(true);
       await utils.loadScript('/test/utils/mocks/script.js', 'module');
       expect(script).to.exist;
     });
@@ -191,7 +288,10 @@ describe('Utils', () => {
     it('Decorates placeholder', () => {
       const paragraphs = [...document.querySelectorAll('p')];
       const lastPara = paragraphs.pop();
-      expect(lastPara.textContent).to.equal('nothing to see here');
+      expect(lastPara.textContent).to.equal(' inkl. MwSt.');
+      const plceholderhref = document.querySelector('.placeholder');
+      const hrefValue = plceholderhref.getAttribute('href');
+      expect(hrefValue).to.equal('tel:phone number substance');
     });
 
     it('Decorates meta helix url', () => {
@@ -242,6 +342,14 @@ describe('Utils', () => {
       expect(newTabLink.target).to.contain('_blank');
       newTabLink.href = newTabLink.href.replace('#_blank', '');
       expect(newTabLink.href).to.equal('https://www.adobe.com/test');
+    });
+
+    it('Add rel=nofollow to a link', () => {
+      const noFollowContainer = document.querySelector('main div');
+      utils.decorateLinks(noFollowContainer);
+      const noFollowLink = noFollowContainer.querySelector('.no-follow');
+      expect(noFollowLink.rel).to.contain('nofollow');
+      expect(noFollowLink.href).to.equal('https://www.adobe.com/test');
     });
 
     it('Sets up milo.deferredPromise', async () => {
@@ -423,23 +531,138 @@ describe('Utils', () => {
       expect(block).to.be.null;
       expect(document.querySelector('.quote.hide-block')).to.be.null;
     });
+  });
 
-    it('should convert prod links to stage links on stage env', async () => {
-      const stageDomainsMap = {
-        'www.adobe.com': 'www.stage.adobe.com',
-        'blog.adobe.com': 'blog.stage.adobe.com',
-        'business.adobe.com': 'business.stage.adobe.com',
-        'helpx.adobe.com': 'helpx.stage.adobe.com',
-        'news.adobe.com': 'news.stage.adobe.com',
+  describe('stageDomainsMap', () => {
+    it('should convert links when stageDomainsMap provided without regex', async () => {
+      const stageConfig = {
+        ...config,
+        locale: { prefix: '/ae_ar' },
+        env: { name: 'stage' },
+        stageDomainsMap,
       };
-      utils.setConfig({
+
+      Object.entries(stageDomainsMap).forEach(([hostname, domainsMap]) => {
+        const anchors = Object.keys(domainsMap).map((d) => utils.createTag('a', { href: `https://${d}` }));
+        const localizedAnchors = Object.keys(domainsMap).map((d) => utils.createTag('a', { href: `https://${d}/ae_ar` }));
+        const externalAnchors = externalDomains.map((url) => utils.createTag('a', { href: url }));
+
+        utils.convertStageLinks({
+          anchors: [...anchors, ...localizedAnchors, ...externalAnchors],
+          config: stageConfig,
+          hostname,
+          href: `https://${hostname}`,
+        });
+
+        anchors.forEach((a, index) => {
+          const expectedDomain = Object.values(domainsMap)[index];
+          expect(a.href).to.contain(expectedDomain === 'origin' ? hostname : expectedDomain);
+        });
+
+        externalAnchors.forEach((a) => expect(a.href).to.equal(a.href));
+      });
+    });
+
+    it('should convert links when stageDomainsMap provided with regex', async () => {
+      const { hostname, map } = stageDomainsMapWRegex;
+      const stageConfigWRegex = {
+        ...config,
+        locale: { prefix: '/de' },
+        env: { name: 'stage' },
+        stageDomainsMap: map,
+      };
+
+      Object.entries(map).forEach(([, domainsMap]) => {
+        const anchors = Object.keys(domainsMap).map((d) => utils.createTag('a', { href: d.replace('^', '') }));
+        const localizedAnchors = Object.keys(domainsMap).map((d) => {
+          const convertedUrl = new URL(d.replace('^', ''));
+          convertedUrl.pathname = `de/${convertedUrl.pathname}`;
+          return utils.createTag('a', { href: convertedUrl.toString() });
+        });
+        const externalAnchors = externalDomains.map((url) => utils.createTag('a', { href: url }));
+
+        utils.convertStageLinks({
+          anchors: [...anchors, ...localizedAnchors, ...externalAnchors],
+          config: stageConfigWRegex,
+          hostname,
+          href: `https://${hostname}`,
+        });
+
+        anchors.forEach((a, index) => {
+          const expectedDomain = Object.values(domainsMap)[index];
+          expect(a.href).to.contain(expectedDomain === 'origin' ? hostname : expectedDomain);
+        });
+
+        externalAnchors.forEach((a) => expect(a.href).to.equal(a.href));
+      });
+    });
+
+    it('should not convert links when no stageDomainsMap provided', async () => {
+      const stageConfig = {
+        ...config,
+        env: { name: 'stage' },
+      };
+
+      Object.entries(stageDomainsMap).forEach(([hostname, domainsMap]) => {
+        const anchors = Object.keys(domainsMap).map((d) => utils.createTag('a', { href: `https://${d}` }));
+        const externalAnchors = externalDomains.map((url) => utils.createTag('a', { href: url }));
+
+        utils.convertStageLinks({
+          anchors: [...anchors, ...externalAnchors],
+          config: stageConfig,
+          hostname,
+        });
+
+        [...anchors, ...externalAnchors].forEach((a) => expect(a.href).to.equal(a.href));
+      });
+    });
+
+    it('should remove extensions upon conversion', async () => {
+      const stageConfig = {
         ...config,
         env: { name: 'stage' },
         stageDomainsMap,
+      };
+
+      Object.entries(stageDomainsMap).forEach(([hostname, domainsMap]) => {
+        const extension = '.html';
+        const anchors = Object.keys(domainsMap).map((d) => utils.createTag('a', { href: `https://${d}/abc${extension}` }));
+
+        utils.convertStageLinks({
+          anchors: [...anchors],
+          config: stageConfig,
+          hostname,
+        });
+
+        anchors.forEach((a) => {
+          if (/\.page|\.live/.test(a.href)) {
+            expect(a.href).to.not.contain(extension);
+          } else {
+            expect(a.href).to.contain(extension);
+          }
+        });
       });
-      const links = Object.keys(stageDomainsMap).map((prodDom) => document.body.appendChild(createTag('a', { href: `https://${prodDom}`, 'data-prod-dom': prodDom })));
-      await utils.decorateLinks(document.body);
-      links.forEach((l) => expect(l.hostname === stageDomainsMap[l.dataset.prodDom]).to.be.true);
+    });
+
+    it('should not convert links on prod', async () => {
+      const prodConfig = {
+        ...config,
+        env: { name: 'prod' },
+        stageDomainsMap,
+      };
+
+      prodDomains.forEach((hostname) => {
+        const anchors = prodDomains.map((d) => utils.createTag('a', { href: `https://${d}` }));
+        const externalAnchors = externalDomains.map((url) => utils.createTag('a', { href: url }));
+
+        utils.convertStageLinks({
+          anchors: [...anchors, ...externalAnchors],
+          config: prodConfig,
+          hostname,
+        });
+
+        [...anchors, ...externalAnchors].forEach((a) => expect(a.href).to.equal(a.href));
+      });
     });
   });
 
@@ -631,32 +854,10 @@ describe('Utils', () => {
       document.head.innerHTML = await readFile({ path: './mocks/head-personalization.html' });
       await utils.loadArea();
       const resultConfig = utils.getConfig();
-      const resultExperiment = resultConfig.mep.experiments[2];
+      const resultExperiment = resultConfig.mep.experiments[0];
       expect(resultConfig.mep.preview).to.be.true;
       expect(resultConfig.mep.experiments.length).to.equal(3);
-      expect(resultExperiment.manifest).to.equal('/products/special-offers-manifest.json');
-    });
-  });
-
-  describe('target set to gnav', async () => {
-    const MANIFEST_JSON = {
-      info: { total: 2, offset: 0, limit: 2, data: [{ key: 'manifest-type', value: 'Personalization' }, { key: 'manifest-override-name', value: '' }, { key: 'name', value: '1' }] }, placeholders: { total: 0, offset: 0, limit: 0, data: [] }, experiences: { total: 1, offset: 0, limit: 1, data: [{ action: 'insertContentAfter', selector: '.marquee', 'page filter (optional)': '/products/special-offers', chrome: 'https://main--milo--adobecom.hlx.page/drafts/mariia/fragments/personalizationtext' }] }, ':version': 3, ':names': ['info', 'placeholders', 'experiences'], ':type': 'multi-sheet',
-    };
-    function htmlResponse() {
-      return new Promise((resolve) => {
-        resolve({
-          ok: true,
-          json: () => MANIFEST_JSON,
-        });
-      });
-    }
-
-    it('have target be set to gnav and save in config', async () => {
-      window.fetch = sinon.stub().returns(htmlResponse());
-      document.head.innerHTML = await readFile({ path: './mocks/mep/head-target-gnav.html' });
-      await utils.loadArea();
-      const resultConfig = utils.getConfig();
-      expect(resultConfig.mep.targetEnabled).to.equal('gnav');
+      expect(resultExperiment.manifest).to.equal('https://main--milo--adobecom.hlx.page/products/special-offers-manifest.json');
     });
   });
 

@@ -2,8 +2,8 @@ import { decorateButtons, decorateBlockHrs } from '../../utils/decorate.js';
 import { getConfig, createTag, loadStyle } from '../../utils/utils.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
 import { processTrackingLabels } from '../../martech/attributes.js';
-import { replaceKey } from '../../features/placeholders.js';
-import '../../deps/merch-card.js';
+import '../../deps/mas/merch-card.js';
+import '../../deps/lit-all.min.js';
 
 const TAG_PATTERN = /^[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-].*$/;
 
@@ -44,7 +44,7 @@ const HEADING_MAP = {
   },
 };
 
-const INNER_ELEMENTS_SELECTOR = 'h2, h3, h4, h5, p, ul, em';
+const INNER_ELEMENTS_SELECTOR = 'h2, h3, h4, h5, h6, p, ul, em';
 
 const MULTI_OFFER_CARDS = [PLANS, PRODUCT, MINI_COMPARE_CHART, TWP];
 // Force cards to refresh once they become visible so that the footer rows are properly aligned.
@@ -102,7 +102,7 @@ function extractQuantitySelect(el) {
     .map((value) => (value === '' ? undefined : Number(value)));
   quantitySelectConfig.remove();
   if (![3, 4, 5].includes(values.length)) return null;
-  import('../../deps/merch-quantity-select.js');
+  import('../../deps/mas/merch-quantity-select.js');
   [attributes.min, attributes.max, attributes.step, attributes['default-value'], attributes['max-input']] = values;
   const quantitySelect = createTag('merch-quantity-select', attributes);
   return quantitySelect;
@@ -135,6 +135,11 @@ const parseTwpContent = async (el, merchCard) => {
       const content = group.filter((e) => e.tagName.toLowerCase() === 'p' || e.tagName.toLowerCase() === 'ul');
       const bodySlot = createTag('div', { slot: 'body-xs' }, content);
       merchCard.append(bodySlot);
+
+      const whatsIncludedLink = bodySlot.querySelector('a[href*="merch-whats-included"]');
+      if (whatsIncludedLink) {
+        whatsIncludedLink.classList.add('merch-whats-included');
+      }
     } else if (index === 2) { // Footer section
       const footerContent = group.filter((e) => ['h5', 'p'].includes(e.tagName.toLowerCase()));
       const footer = createTag('div', { slot: 'footer' }, footerContent);
@@ -149,14 +154,64 @@ const parseTwpContent = async (el, merchCard) => {
   }
 };
 
+const appendPaymentDetails = (element, merchCard) => {
+  if (element.firstChild?.nodeType !== Node.TEXT_NODE) return;
+  const paymentDetails = createTag('div', { class: 'payment-details' }, element.innerHTML);
+  const headingM = merchCard.querySelector('h4[slot="heading-m"]');
+  headingM?.append(paymentDetails);
+};
+
+const appendCalloutContent = (element, merchCard) => {
+  if (element.firstElementChild?.tagName !== 'EM') return;
+  let calloutSlot = merchCard.querySelector('div[slot="callout-content"]');
+  let calloutContainer = calloutSlot?.querySelector('div');
+  if (!calloutContainer) {
+    calloutSlot = createTag('div', { slot: 'callout-content' });
+    calloutContainer = createTag('div');
+    calloutSlot.appendChild(calloutContainer);
+    merchCard.appendChild(calloutSlot);
+  }
+
+  const calloutContentWrapper = createTag('div');
+  const calloutContent = createTag('div');
+  const emElement = element.firstElementChild;
+  const fragment = document.createDocumentFragment();
+  let imgElement = null;
+
+  emElement.childNodes.forEach((child) => {
+    if (child.nodeType === Node.ELEMENT_NODE && child.tagName === 'A' && child.innerText.trim().toLowerCase() === '#icon') {
+      const [imgSrc, tooltipText] = child.getAttribute('href')?.split('#') || [];
+      imgElement = createTag('img', {
+        src: imgSrc,
+        title: decodeURIComponent(tooltipText),
+        class: 'callout-icon',
+      });
+    } else {
+      const clone = child.cloneNode(true);
+      fragment.appendChild(clone);
+    }
+  });
+
+  calloutContent.appendChild(fragment);
+  calloutContentWrapper.appendChild(calloutContent);
+
+  if (imgElement) {
+    calloutContentWrapper.appendChild(imgElement);
+  }
+  calloutContainer.appendChild(calloutContentWrapper);
+};
+
 const parseContent = async (el, merchCard) => {
   let bodySlotName = `body-${merchCard.variant !== MINI_COMPARE_CHART ? 'xs' : 'm'}`;
   let headingMCount = 0;
+  let headingXsCount = 0;
 
   if (merchCard.variant === MINI_COMPARE_CHART) {
     bodySlotName = 'body-m';
     const priceSmallType = el.querySelectorAll('h6');
-    appendSlot(priceSmallType, 'price-commitment', merchCard);
+    // Filter out any h6 elements that contain an <em> tag
+    const filteredPriceSmallType = Array.from(priceSmallType).filter((h6) => !h6.querySelector('em'));
+    if (filteredPriceSmallType.length > 0) appendSlot(filteredPriceSmallType, 'price-commitment', merchCard);
   }
 
   let headingSize = 3;
@@ -168,12 +223,14 @@ const parseContent = async (el, merchCard) => {
   const innerElements = [
     ...el.querySelectorAll(INNER_ELEMENTS_SELECTOR),
   ];
+
   innerElements.forEach((element) => {
     let { tagName } = element;
     if (isHeadingTag(tagName)) {
       let slotName = SLOT_MAP[merchCard.variant]?.[tagName] || SLOT_MAP_DEFAULT[tagName];
       if (slotName) {
         if (['H2', 'H3', 'H4', 'H5'].includes(tagName)) {
+          if (tagName === 'H3') headingXsCount += 1;
           element.classList.add('card-heading');
           if (merchCard.badgeText) {
             element.closest('div[role="tabpanel"')?.classList.add('badge-merch-cards');
@@ -192,6 +249,8 @@ const parseContent = async (el, merchCard) => {
           }
         }
         element.setAttribute('slot', slotName);
+        tagName = (headingXsCount === 1 && tagName === 'H3')
+        || (merchCard.variant === MINI_COMPARE_CHART && slotName === 'heading-m') ? 'h3' : 'p';
         const newElement = createTag(tagName);
         Array.from(element.attributes).forEach((attr) => {
           newElement.setAttribute(attr.name, attr.value);
@@ -200,6 +259,10 @@ const parseContent = async (el, merchCard) => {
         merchCard.append(newElement);
       }
       return;
+    }
+    if (tagName === 'H6') {
+      appendPaymentDetails(element, merchCard);
+      appendCalloutContent(element, merchCard);
     }
     if (isParagraphTag(tagName)) {
       bodySlot.append(element);
@@ -214,15 +277,17 @@ const parseContent = async (el, merchCard) => {
 };
 
 const getBadgeStyle = (badgeMetadata) => {
-  const badgeStyleRegex = /^#[0-9a-fA-F]+, #[0-9a-fA-F]+$/;
+  const badgeStyleRegex = /^#[0-9a-fA-F]+, #[0-9a-fA-F]+(, #[0-9a-fA-F]+)?$/;
   if (!badgeStyleRegex.test(badgeMetadata[0]?.innerText)) return null;
-  const style = badgeMetadata[0].innerText;
-  const badgeBackgroundColor = style.split(',')[0].trim();
-  const badgeColor = style.split(',')[1].trim();
+  const style = badgeMetadata[0].innerText.split(',').map((s) => s.trim());
+  if (style.length < 2) return null;
+  const badgeBackgroundColor = style[0];
+  const badgeColor = style[1];
+  const borderColor = style[2] !== 'none' ? style[2] : null;
   const badgeWrapper = badgeMetadata[0].parentNode;
   const badgeText = badgeMetadata[1].innerText;
   badgeWrapper.remove();
-  return { badgeBackgroundColor, badgeColor, badgeText };
+  return { badgeBackgroundColor, badgeColor, badgeText, borderColor };
 };
 
 const getActionMenuContent = (el) => {
@@ -298,6 +363,22 @@ const simplifyHrs = (el) => {
       hr.parentElement.replaceWith(hr);
     }
   });
+  if (el.variant === PRODUCT) {
+    const calloutContent = el.querySelector('div[slot="callout-content"]');
+    const bodySlot = el.querySelector('div[slot="body-xs"]');
+    if (calloutContent && bodySlot) {
+      const bodyLowerContent = createTag('div', { slot: 'body-lower' });
+      const elements = [...bodySlot.children];
+      elements.forEach((element) => {
+        if (element.tagName !== 'P') {
+          bodyLowerContent.append(element);
+        }
+      });
+      if (bodyLowerContent.childNodes.length > 0) {
+        calloutContent.parentElement.appendChild(bodyLowerContent);
+      }
+    }
+  }
 };
 
 const getMiniCompareChartFooterRows = (el) => {
@@ -317,7 +398,7 @@ const decorateFooterRows = (merchCard, footerRows) => {
       const rowIcon = row.firstElementChild.querySelector('picture');
       const rowText = row.querySelector('div > div:nth-child(2)').innerHTML;
       const rowTextParagraph = createTag('div', { class: 'footer-row-cell-description' }, rowText);
-      const footerRowCell = createTag('div', { class: 'footer-row-cell' });
+      const footerRowCell = createTag('ul', { class: 'footer-row-cell' });
       if (rowIcon) {
         rowIcon.classList.add('footer-row-icon');
         footerRowCell.appendChild(rowIcon);
@@ -338,6 +419,34 @@ const setMiniCompareOfferSlot = (merchCard, offers) => {
     miniCompareOffers.appendChild(createTag('p'));
   }
   merchCard.appendChild(miniCompareOffers);
+};
+
+const updateBigPrices = (merchCard) => {
+  const prices = merchCard.querySelectorAll('strong > em > span[is="inline-price"]');
+  const isMobile = window.matchMedia('(max-width: 1199px)').matches;
+  prices.forEach((span) => {
+    const strongTag = span.parentNode.parentNode;
+    const emTag = span.parentNode;
+    strongTag.replaceChild(span, emTag);
+    if (!isMobile) {
+      span.style.cssText = 'font-size: 24px; line-height: 22.5px;';
+    } else {
+      span.style.cssText = 'font-size: 16px; line-height: 24px;';
+    }
+  });
+};
+
+const addStartingAt = async (styles, merchCard) => {
+  if (styles.includes('starting-at')) {
+    const { replaceKey } = await import('../../features/placeholders.js');
+    await replaceKey('starting-at', getConfig()).then((key) => {
+      const startingAt = createTag('div', { class: 'starting-at' }, key);
+      const price = merchCard.querySelector('span[is="inline-price"]');
+      if (price) {
+        price.parentNode.prepend(startingAt);
+      }
+    });
+  }
 };
 
 export default async function init(el) {
@@ -398,12 +507,16 @@ export default async function init(el) {
         );
         merchCard.setAttribute('badge-color', badge.badgeColor);
         merchCard.setAttribute('badge-text', badge.badgeText);
+        if (badge.borderColor) merchCard.setAttribute('border-color', badge.borderColor);
         merchCard.classList.add('badge-card');
+      } else if (badgeMetadata.children.length === 1) {
+        const borderColor = badgeMetadata.children[0].innerText.trim();
+        if (borderColor.startsWith('#')) merchCard.setAttribute('border-color', borderColor);
       }
     }
   }
   let footerRows;
-  if ([MINI_COMPARE_CHART, PLANS, SEGMENT].includes(cardType)) {
+  if ([MINI_COMPARE_CHART, PLANS, SEGMENT, PRODUCT].includes(cardType)) {
     intersectionObserver.observe(merchCard);
   }
   if (cardType === MINI_COMPARE_CHART) {
@@ -433,7 +546,7 @@ export default async function init(el) {
     merchCard.append(
       createTag(
         'div',
-        { slot: 'action-menu-content' },
+        { slot: 'action-menu-content', tabindex: '0' },
         actionMenuContent.innerHTML,
       ),
     );
@@ -468,6 +581,7 @@ export default async function init(el) {
 
   addStock(merchCard, styles);
   if (styles.includes('secure')) {
+    const { replaceKey } = await import('../../features/placeholders.js');
     await replaceKey('secure-transaction', getConfig()).then((key) => merchCard.setAttribute('secure-label', key));
   }
   merchCard.setAttribute('filters', categories.join(','));
@@ -505,6 +619,8 @@ export default async function init(el) {
       }
     }
 
+    updateBigPrices(merchCard);
+    await addStartingAt(styles, merchCard);
     decorateBlockHrs(merchCard);
     simplifyHrs(merchCard);
     if (merchCard.classList.contains('has-divider')) merchCard.setAttribute('custom-hr', true);

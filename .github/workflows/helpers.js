@@ -26,8 +26,8 @@ const RCPDates = [
     end: new Date('2024-09-12T14:00:00-07:00'),
   },
   {
-    start: new Date('2024-10-14T00:00:00-07:00'),
-    end: new Date('2024-11-18T17:00:00-08:00'),
+    start: new Date('2024-10-07T00:00:00-07:00'),
+    end: new Date('2024-10-18T17:00:00-07:00'),
   },
   {
     start: new Date('2024-11-17T00:00:00-08:00'),
@@ -149,4 +149,5 @@ module.exports = {
   slackNotification,
   pulls: { addLabels, addFiles, getChecks, getReviews },
   isWithinRCP,
+  RCPDates,
 };

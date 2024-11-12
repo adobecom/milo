@@ -3,6 +3,7 @@ import { getQuizEntryData, handleNext, handleSelections } from './utils.js';
 import { mlField, getMLResults } from './mlField.js';
 import { GetQuizOption } from './quizoption.js';
 import { quizPopover, getSuggestions } from './quizPopover.js';
+import { getConfig } from '../../utils/utils.js';
 
 export const locationWrapper = {
   redirect: (url) => {
@@ -212,7 +213,7 @@ const App = ({
         }
         if (fiResults.errors) error = fiResults.errors[0].title;
         if (fiResults.error_code) error = fiResults.message;
-        window.lana.log(`ML results error - ${error}`, { tags: 'errorType=info,module=quiz-entry' });
+        window.lana.log(`ML results error - ${error}`, { tags: 'quiz-entry', errorType: 'i' });
         sendMLFieldAnalytics(fallback, false);
       }
 
@@ -343,10 +344,11 @@ const App = ({
 
   if (!dataLoaded || !selectedQuestion) return null;
 
-  return html`<div class="quiz-container">
+  const { locale } = getConfig();
+  return html`<div class="quiz-container${locale?.ietf === 'ja-JP' ? ' jpwordwrap-disabled' : ''}">
     <div class="quiz-heading-container">
-      <div id="question" class="quiz-title">${quizLists.strings[selectedQuestion.questions].heading}</div>
-      <div class="quiz-subtitle">${quizLists.strings[selectedQuestion.questions]['sub-head']}</div>
+      <h2 id="question" class="quiz-title">${quizLists.strings[selectedQuestion.questions].heading}</h2>
+      <p class="quiz-subtitle">${quizLists.strings[selectedQuestion.questions]['sub-head']}</p>
     </div>
     <div class="quiz-question-container">
       <div class="quiz-input-container">

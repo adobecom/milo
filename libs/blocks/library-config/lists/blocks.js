@@ -1,5 +1,5 @@
 import { createTag } from '../../../utils/utils.js';
-import createCopy from '../library-utils.js';
+import createCopy, { isMatching } from '../library-utils.js';
 import { getMetadata } from '../../section-metadata/section-metadata.js';
 
 const LIBRARY_METADATA = 'library-metadata';
@@ -132,13 +132,6 @@ export function getSearchTags(container) {
   return containerName;
 }
 
-export function isMatching(container, query) {
-  const tagsString = getSearchTags(container);
-  if (!query || !tagsString) return false;
-  const searchTokens = query.split(' ');
-  return searchTokens.every((token) => tagsString.toLowerCase().includes(token.toLowerCase()));
-}
-
 function getBlockType(subSection, withinContainer) {
   if (subSection.className === LIBRARY_CONTAINER_START) return CONTAINER_START_BLOCK;
   if (subSection.className === LIBRARY_CONTAINER_END) return CONTAINER_END_BLOCK;
@@ -247,7 +240,7 @@ export function getContainers(doc) {
   return containers;
 }
 
-export default async function loadBlocks(blocks, list, query) {
+export default async function loadBlocks(blocks, list, query, type) {
   list.textContent = '';
   blocks.forEach(async (block) => {
     const titleText = createTag('p', { class: 'item-title' }, block.name);
@@ -277,7 +270,6 @@ export default async function loadBlocks(blocks, list, query) {
     const html = await resp.text();
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
-
     const containers = getContainers(doc);
     let matchingContainerFound = false;
 
@@ -293,12 +285,11 @@ export default async function loadBlocks(blocks, list, query) {
         setTimeout(() => { e.target.classList.remove('copied'); }, 3000);
         const blob = new Blob([`${BLOCK_SPACING}${containerHtml}${BLOCK_SPACING}`], { type: 'text/html' });
         createCopy(blob);
-        window.hlx?.rum.sampleRUM('click', { source: e.target });
       });
       item.append(name, copy);
 
       if (query) {
-        if (isMatching(container, query)) {
+        if (isMatching(container, query, type)) {
           matchingContainerFound = true;
         } else {
           item.classList.add('is-hidden');

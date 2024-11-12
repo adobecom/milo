@@ -4,7 +4,7 @@
   --global-height-nav: 64px;
   --global-height-breadcrumbs: 33px;
   /* stylelint-disable-next-line custom-property-pattern */
-  --global-height-navPromo: 65px;
+  --global-height-navPromo: 72px;
   --feds-totalheight-nav: calc(var(--feds-height-nav, --global-height-nav) + var(--feds-height-breadcrumbs, --global-height-breadcrumbs));
 
   /* Colors */
@@ -51,6 +51,7 @@
   --spacing-xxxl: 80px;
 
   /* Static Spacing */
+  --spacing-l-static: 48px;
   --spacing-xl-static: 56px;
   --spacing-xxl-static: 80px;
   --spacing-xxxl-static: 104px;
@@ -108,7 +109,7 @@
   /* grid sizes */
   --grid-container-width: 83.4%;
   --grid-column-width: calc(var(--grid-container-width) / 12);
-  --grid-margins-width: calc((100vw - var(--grid-container-width)) / 2);
+  --grid-margins-width: calc((100% - var(--grid-container-width)) / 2);
   --grid-margins-width-10: calc((100vw - (var(--grid-column-width) * 10)) / 2);
   --grid-margins-width-8: calc((100vw - (var(--grid-column-width) * 8)) / 2);
   --grid-margins-width-6: calc((100vw - (var(--grid-column-width) * 6)) / 2);
@@ -117,6 +118,7 @@
   --aspect-ratio-square: 1/1;
   --aspect-ratio-standard: 4/3;
   --aspect-ratio-wide: 16/9;
+  --aspect-ratio-tall: 9/16;
 
   /* icon sizes */
   --icon-size-xxl: 80px;
@@ -126,6 +128,7 @@
   --icon-size-s: 32px;
   --icon-size-xs: 24px;
   --icon-size-xxs: 16px;
+  --icon-spacing: 8px;
 
   /* z-index */
   --above-all: 9000; /* Used for page tools that overlay page content */
@@ -210,7 +213,8 @@
 .detail-xl,
 .detail-l,
 .detail-m,
-.detail-s {
+.detail-s,
+.detail-xs {
   margin: 0;
 }
 
@@ -346,6 +350,7 @@
   line-height: 20px;
   min-height: 21px;
   padding: 7px 18px 8px;
+  --icon-spacing: 12px;
 }
 
 .xl-button .con-button,
@@ -355,20 +360,32 @@
   line-height: 24px;
   min-height: 28px;
   padding: 10px 24px 8px;
+  --icon-spacing: 14px;
+}
+
+.xxl-button .con-button,
+.con-button.button-xxl {
+  border-radius: 30px;
+  font-size: 22px;
+  line-height: 27px;
+  min-height: 27px;
+  padding: 14px 30px 15px;
+  --icon-spacing: 14px;
+}
+
+.xxl-button .con-button,
+.con-button.button-xxl {
+  border-radius: 30px;
+  font-size: 22px;
+  line-height: 27px;
+  min-height: 27px;
+  padding: 14px 30px 15px;
 }
 
 .con-button.button-justified {
   display: block;
   text-align: center;
   width: 100%;
-}
-
-.xxl-button .con-button {
-  border-radius: 30px;
-  font-size: 22px;
-  line-height: 27px;
-  min-height: 27px;
-  padding: 14px 30px 15px;
 }
 
 .dark .con-button {
@@ -473,8 +490,6 @@ picture.bg-img img {
   width: 100%;
 }
 
-
-
 /* progressive section appearance */
 main > div,
 main .section[data-status='decorated'] {
@@ -553,19 +568,23 @@ div[data-failed="true"]::before {
   color: var(--color-gray-300);
 }
 
-span.icon.margin-right { margin-right: 8px; }
+span.icon {
+  width: 1em;
+  display: inline-block;
+  margin-inline: var(--icon-spacing);
+}
 
-span.icon.margin-left { margin-left: 8px; }
+span.icon.node-index-first { margin-inline-start: unset; }
+span.icon.node-index-middle { margin-inline: var(--icon-spacing); }
+span.icon.node-index-last { margin-inline-end: unset; }
+span.icon.node-index-only { margin-inline: unset; }
 
-span.icon.margin-inline-end { margin-inline-end: 8px; }
-
-span.icon.margin-inline-start { margin-inline-start: 8px; }
-
-.button-l .con-button span.icon.margin-left,
-.con-button.button-l span.icon.margin-left { margin-left: 12px; }
-
-.button-xl .con-button span.icon.margin-left,
-.con-button.button-xl span.icon.margin-left { margin-left: 14px; }
+span.icon svg {
+  height: 1em;
+  position: relative;
+  top: .1em;
+  width: auto;
+}
 
 /* Con Block Utils */
 .con-block.xs-spacing { padding: var(--spacing-xs) 0; }
@@ -678,7 +697,7 @@ body {
   opacity: 1 !important; /* Fix Target hiding */
 }
 
-header:not(.global-navigation) {
+header.gnav {
   height: 57px;
   position: fixed;
   top: 0;
@@ -690,11 +709,11 @@ header:not(.global-navigation) {
   box-sizing: border-box;
 }
 
-header:not(.global-navigation) nav {
+header.gnav nav {
   display: none;
 }
 
-header:not(.global-navigation) ~ main {
+header.gnav ~ main {
   margin-top: 57px;
 }
 
@@ -702,20 +721,19 @@ header:not(.global-navigation) ~ main {
   After switching from the Milo nav to the FEDS one,
   only the styles with 'header.global-navigation' need to be kept;
   the 'global-navigation' class should also be removed from the 'header' selector
-  all of the ':not(.global-navigation)' rules can be entirely removed.
+  all of the 'header.gnav' rules can be entirely removed.
  */
-header.global-navigation {
+header.global-navigation, header.global-navigation.feds--dark {
   height: var(--global-height-nav);
   visibility: hidden;
 }
 
-@media (min-width: 900px) {
-  header.global-navigation.has-promo {
-    height: auto;
-    /* stylelint-disable-next-line custom-property-pattern */
-    min-height: calc(var(--global-height-nav) + var(--global-height-navPromo));
-  }
+header.global-navigation.has-promo {
+  height: auto;
+  min-height: calc(var(--global-height-nav) + var(--global-height-navPromo));
+}
 
+@media (min-width: 900px) {
   header.global-navigation.has-breadcrumbs {
     padding-bottom: var(--global-height-breadcrumbs);
   }
@@ -731,6 +749,10 @@ header.global-navigation {
 
 .hide-block {
   display: none !important;
+}
+
+.disable-scroll {
+  overflow: hidden;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -765,6 +787,10 @@ h5 {
 h6 {
   font-size: var(--type-heading-xs-size);
   line-height: var(--type-heading-xs-lh);
+}
+
+:is(h1, h2, h3, h4, h5, h6, p):lang(ja) {
+  line-break: strict;
 }
 
 /* Links */
@@ -804,6 +830,10 @@ a.static:hover {
 .static-links a:not([class*="button"]) {
   color: inherit;
   text-decoration: underline;
+}
+
+.copy-link {
+  font-weight: 700;
 }
 
 /* Tooltip */
@@ -880,25 +910,25 @@ a.static:hover {
 
 /* tablet large up */
 @media (min-width: 900px) {
-  header:not(.global-navigation) {
+  header.gnav {
     min-height: var(--global-height-nav);
     border-bottom: 1px solid #EAEAEA;
     overflow: unset;
   }
 
-  header:not(.global-navigation) ~ main {
+  header.gnav ~ main {
     margin-top: 64px;
   }
 
-  header:not(.global-navigation).has-breadcrumbs {
+  header.gnav.has-breadcrumbs {
     min-height: 97px;
   }
 
-  header:not(.global-navigation) nav {
+  header.gnav nav {
     display: unset;
   }
 
-  header:not(.global-navigation).has-breadcrumbs + main {
+  header.gnav.has-breadcrumbs + main {
     margin-top: 97px;
   }
 }
@@ -948,6 +978,10 @@ a.static:hover {
   .con-block.xl-spacing-static-bottom-desktop { padding-bottom: var(--spacing-xl-static); }
   .con-block.xxl-spacing-static-bottom-desktop { padding-bottom: var(--spacing-xxl-static); }
   .con-block.xxxl-spacing-static-bottom-desktop { padding-bottom: var(--spacing-xxxl-static); }
+
+  /* margin */
+  .con-block.margin-top-desktop { margin-top: var(--spacing-s); }
+  .con-block.margin-bottom-desktop { margin-bottom: var(--spacing-s); }
 }
 
 /* desktop large < 1440 */

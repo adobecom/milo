@@ -1,0 +1,48 @@
+name: Run Nala Tests
+
+on:
+  push:
+    branches:
+      - stage
+      - main
+  pull_request:
+    branches:
+      - stage
+      - main
+    types: [opened, synchronize, reopened]
+
+jobs:
+  run-nala-tests:
+    name: Running Nala E2E UI Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.x]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Set execute permission for nalarun.sh
+        run: chmod +x ./nala/utils/pr.run.sh
+
+      - name: Run Nala Tests via pr.run.sh
+        run: ./nala/utils/pr.run.sh
+        env:
+          labels: ${{ join(github.event.pull_request.labels.*.name, ' ') }}
+          branch: ${{ github.event.pull_request.head.ref }}
+          repoName: ${{ github.repository }}
+          prUrl: ${{ github.event.pull_request.head.repo.html_url }}
+          prOrg: ${{ github.event.pull_request.head.repo.owner.login }}
+          prRepo: ${{ github.event.pull_request.head.repo.name }}
+          prBranch: ${{ github.event.pull_request.head.ref }}
+          prBaseBranch: ${{ github.event.pull_request.base.ref }}
+          GITHUB_ACTION_PATH: ${{ github.workspace }}
+          IMS_EMAIL: ${{ secrets.IMS_EMAIL }}
+          IMS_PASS: ${{ secrets.IMS_PASS }}

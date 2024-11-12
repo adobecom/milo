@@ -1,7 +1,8 @@
 import { expect } from '@esm-bundle/chai';
+import sinon from 'sinon';
 import { delay } from '../../helpers/waitfor.js';
 
-import { CheckoutWorkflow, CheckoutWorkflowStep, Defaults, Log } from '../../../libs/deps/commerce.js';
+import { CheckoutWorkflow, CheckoutWorkflowStep, Defaults, Log } from '../../../libs/deps/mas/commerce.js';
 
 import merch, {
   PRICE_TEMPLATE_DISCOUNT,
@@ -12,15 +13,20 @@ import merch, {
   buildCta,
   getCheckoutContext,
   initService,
-  fetchLiterals,
   fetchCheckoutLinkConfigs,
   getCheckoutLinkConfig,
   getDownloadAction,
   fetchEntitlements,
   getModalAction,
   getCheckoutAction,
-  PRICE_LITERALS_URL,
   PRICE_TEMPLATE_REGULAR,
+  getMasBase,
+  appendTabName,
+  appendExtraOptions,
+  getMiloLocaleSettings,
+  reopenModal,
+  setCtaHash,
+  openModal,
 } from '../../../libs/blocks/merch/merch.js';
 
 import { mockFetch, unmockFetch, readMockText } from './mocks/fetch.js';
@@ -62,6 +68,14 @@ const CHECKOUT_LINK_CONFIGS = {
     BUY_NOW_PATH: '',
     LOCALE: '',
   },
+  {
+    PRODUCT_FAMILY: 'testPaCode',
+    DOWNLOAD_TEXT: 'paCode',
+  },
+  {
+    PRODUCT_FAMILY: 'testProductCode',
+    DOWNLOAD_TEXT: 'productCode',
+  },
   ],
 };
 
@@ -72,6 +86,16 @@ const config = {
   placeholders: { 'upgrade-now': 'Upgrade Now', download: 'Download' },
 };
 
+const updateSearch = ({ maslibs } = {}) => {
+  const url = new URL(window.location);
+  if (!maslibs) {
+    url.searchParams.delete('maslibs');
+  } else {
+    url.searchParams.set('maslibs', maslibs);
+  }
+  window.history.pushState({}, '', url);
+};
+
 /**
  * utility function that tests Price spans against mock HTML
  *
@@ -80,9 +104,7 @@ const config = {
  * <expected attribute value, UNDEF if should be undefined>}
  */
 const validatePriceSpan = async (selector, expectedAttributes) => {
-  const el = await merch(document.querySelector(
-    selector,
-  ));
+  const el = await merch(document.querySelector(selector));
   const { nodeName, dataset } = await el.onceSettled();
   expect(nodeName).to.equal('SPAN');
   Object.keys(expectedAttributes).forEach((key) => {
@@ -115,6 +137,14 @@ const PROD_DOMAINS = [
   'helpx.adobe.com',
 ];
 
+const createCtaInMerchCard = () => {
+  const merchCard = document.createElement('merch-card');
+  merchCard.setAttribute('name', 'photoshop');
+  const el = document.createElement('a');
+  merchCard.appendChild(el);
+  return el;
+};
+
 describe('Merch Block', () => {
   let setCheckoutLinkConfigs;
   let setSubscriptionsData;
@@ -131,7 +161,6 @@ describe('Merch Block', () => {
     document.head.innerHTML = await readMockText('/test/blocks/merch/mocks/head.html');
     document.body.innerHTML = await readMockText('/test/blocks/merch/mocks/body.html');
     ({ setCheckoutLinkConfigs, setSubscriptionsData } = await mockFetch());
-    config.commerce = { priceLiteralsPromise: fetchLiterals(PRICE_LITERALS_URL) };
     setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
   });
 
@@ -147,6 +176,7 @@ describe('Merch Block', () => {
 
   afterEach(() => {
     setSubscriptionsData();
+    updateSearch();
   });
 
   it('does not decorate merch with bad content', async () => {
@@ -156,7 +186,21 @@ describe('Merch Block', () => {
     expect(await merch(el)).to.be.null;
   });
 
-  describe('prices', () => {
+  describe('locale settings', () => {
+    it('should map correct commerce locale depending on locale config', async () => {
+      [
+        { prefix: '/ar', expectedLocale: 'es_AR' },
+        { prefix: '/africa', expectedLocale: 'en_MU' },
+        { prefix: '', expectedLocale: 'en_US' },
+        { prefix: '/ae_ar', expectedLocale: 'ar_AE' },
+      ].forEach(({ prefix, expectedLocale }) => {
+        const computedLocale = getMiloLocaleSettings({ prefix })?.locale;
+        expect(computedLocale).to.equal(expectedLocale);
+      });
+    });
+  });
+
+  describe('Prices', () => {
     it('renders merch link to price without term (new)', async () => {
       await validatePriceSpan('.merch.price.hide-term', { displayRecurrence: 'false' });
     });
@@ -207,7 +251,7 @@ describe('Merch Block', () => {
     });
   });
 
-  describe('promo prices', () => {
+  describe('Promo Prices', () => {
     it('renders merch link to promo price with discount', async () => {
       await validatePriceSpan('.merch.price.oldprice', { promotionCode: undefined });
     });
@@ -228,7 +272,7 @@ describe('Merch Block', () => {
     });
   });
 
-  describe('promo prices in a fragment', () => {
+  describe('Promo Prices in a fragment', () => {
     it('renders merch link to promo price with discount', async () => {
       await validatePriceSpan('.fragment .merch.price.oldprice', { promotionCode: undefined });
     });
@@ -251,10 +295,7 @@ describe('Merch Block', () => {
 
   describe('CTAs', () => {
     it('renders merch link to CTA, default values', async () => {
-      await initService(true);
-      const el = await merch(document.querySelector(
-        '.merch.cta',
-      ));
+      const el = await merch(document.querySelector('.merch.cta'));
       const { dataset, href, nodeName, textContent } = await el.onceSettled();
       const url = new URL(href);
       expect(nodeName).to.equal('A');
@@ -274,9 +315,7 @@ describe('Merch Block', () => {
       });
       mockIms();
       await initService(true);
-      const el = await merch(document.querySelector(
-        '.merch.cta.config',
-      ));
+      const el = await merch(document.querySelector('.merch.cta.config'));
       const { dataset, href, nodeName, textContent } = await el.onceSettled();
       const url = new URL(href);
       expect(nodeName).to.equal('A');
@@ -290,7 +329,6 @@ describe('Merch Block', () => {
     });
 
     it('renders merch link to CTA, metadata values', async () => {
-      setConfig({ ...config });
       const metadata = createTag('meta', { name: 'checkout-workflow', content: CheckoutWorkflow.V2 });
       document.head.appendChild(metadata);
       await initService(true);
@@ -312,7 +350,7 @@ describe('Merch Block', () => {
 
     it('renders merch link to cta for GB locale', async () => {
       await mockIms();
-      await initService(true);
+      await initService();
       const el = await merch(document.querySelector(
         '.merch.cta.gb',
       ));
@@ -377,7 +415,7 @@ describe('Merch Block', () => {
 
     it('adds ims country to checkout link', async () => {
       await mockIms('CH');
-      await initService(true);
+      await initService();
       const el = await merch(document.querySelector(
         '.merch.cta.ims',
       ));
@@ -431,6 +469,33 @@ describe('Merch Block', () => {
       const params = new URLSearchParams();
       expect(await buildCta(el, params)).to.be.null;
     });
+
+    describe('reopenModal', () => {
+      it('clicks the CTA if hashes match', async () => {
+        const prevHash = window.location.hash;
+        window.location.hash = '#try-photoshop';
+        const cta = document.createElement('a');
+        cta.setAttribute('data-modal-id', 'try-photoshop');
+        const clickSpy = sinon.spy(cta, 'click');
+        reopenModal(cta);
+        expect(clickSpy.called).to.be.true;
+        window.location.hash = prevHash;
+      });
+    });
+
+    describe('openModal', () => {
+      it('sets the new hash and event listener to restore the hash on close', async () => {
+        const prevHash = window.location.hash;
+        const event = new CustomEvent('dummy');
+        await openModal(event, 'https://www.adobe.com/mini-plans/creativecloud.html?mid=ft&web=1', 'TRIAL', 'try-photoshop');
+        expect(window.location.hash).to.equal('#try-photoshop');
+        const modalCloseEvent = new CustomEvent('milo:modal:closed');
+        window.dispatchEvent(modalCloseEvent);
+        expect(window.location.hash).to.equal(prevHash);
+        document.body.querySelector('.dialog-modal').remove();
+        window.location.hash = prevHash;
+      });
+    });
   });
 
   describe('Download flow', () => {
@@ -476,8 +541,7 @@ describe('Merch Block', () => {
       fetchCheckoutLinkConfigs.promise = undefined;
       setCheckoutLinkConfigs(null);
       const mappings = await fetchCheckoutLinkConfigs('http://localhost:2000/libs');
-      expect(mappings).to.be.undefined;
-      setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
+      expect(mappings.data).to.empty;
       fetchCheckoutLinkConfigs.promise = undefined;
     });
 
@@ -509,40 +573,28 @@ describe('Merch Block', () => {
       expect(url).to.equal('https://creativecloud.adobe.com/apps/download');
     });
 
-    it('getModalAction: returns undefined if checkout-link config is not found', async () => {
-      fetchCheckoutLinkConfigs.promise = undefined;
-      setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
-      const action = await getModalAction([{ productArrangement: { productFamily: 'XZY' } }], { modal: true });
-      expect(action).to.be.undefined;
-    });
-
-    it('getModalAction: returns undefined if modal path is cancelled', async () => {
-      setConfig({
-        ...config,
-        pathname: '/fr/test.html',
-        locales: { fr: { ietf: 'fr-FR' } },
-        prodDomains: PROD_DOMAINS,
-        placeholders: { download: 'Télécharger' },
-      });
-      fetchCheckoutLinkConfigs.promise = undefined;
-      setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
-      const action = await getModalAction([{ productArrangement: { productFamily: 'PHOTOSHOP' } }], { modal: true });
-      expect(action).to.be.undefined;
-    });
-
     it('getCheckoutAction: handles errors gracefully', async () => {
-      const action = await getCheckoutAction([{ productArrangement: {} }], {}, Promise.reject(new Error('error')));
-      expect(action).to.be.undefined;
+      const imsSignedInPromise = new Promise((resolve, reject) => {
+        setTimeout(() => {
+          reject(new Error('error'));
+        }, 1);
+      });
+      const action = await getCheckoutAction([{ productArrangement: {} }], {}, imsSignedInPromise);
+      expect(action).to.be.empty;
     });
   });
 
   describe('Upgrade Flow', () => {
+    beforeEach(() => {
+      getMasBase.baseUrl = undefined;
+      updateSearch({});
+    });
+
     it('updates CTA text to Upgrade Now', async () => {
       mockIms();
       getUserEntitlements();
       mockIms('US');
       setSubscriptionsData(SUBSCRIPTION_DATA_PHSP_RAW_ELIGIBLE);
-      await initService(true);
       const target = await merch(document.querySelector('.merch.cta.upgrade-target'));
       await target.onceSettled();
       const sourceCta = await merch(document.querySelector('.merch.cta.upgrade-source'));
@@ -610,12 +662,151 @@ describe('Merch Block', () => {
       expect(modal).to.exist;
       document.querySelector('.modal-curtain').click();
     });
+
+    it('renders TWP modal with preselected plan', async () => {
+      mockIms();
+      const meta = document.createElement('meta');
+      meta.setAttribute('name', 'preselect-plan');
+      meta.setAttribute('content', 'edu');
+      document.getElementsByTagName('head')[0].appendChild(meta);
+      const el = document.querySelector('.merch.cta.twp.preselected-plan');
+      const cta = await merch(el);
+      const { nodeName } = await cta.onceSettled();
+      expect(nodeName).to.equal('A');
+      cta.click();
+      await delay(100);
+      expect(document.querySelector('iframe').src).to.equal('https://www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1&plan=edu');
+      document.querySelector('meta[name="preselect-plan"]').remove();
+    });
+
+    it('getCheckoutLinkConfig: finds using paCode', async () => {
+      let checkoutLinkConfig = await getCheckoutLinkConfig(undefined, undefined, 'testPaCode');
+      expect(checkoutLinkConfig.DOWNLOAD_TEXT).to.equal('paCode');
+      checkoutLinkConfig = await getCheckoutLinkConfig('', '', 'testPaCode');
+      expect(checkoutLinkConfig.DOWNLOAD_TEXT).to.equal('paCode');
+    });
+
+    it('getCheckoutLinkConfig: finds using productCode', async () => {
+      let checkoutLinkConfig = await getCheckoutLinkConfig(undefined, 'testProductCode', undefined);
+      expect(checkoutLinkConfig.DOWNLOAD_TEXT).to.equal('productCode');
+      checkoutLinkConfig = await getCheckoutLinkConfig('', 'testProductCode', '');
+      expect(checkoutLinkConfig.DOWNLOAD_TEXT).to.equal('productCode');
+    });
+
+    it('getModalAction: returns undefined if modal path is cancelled', async () => {
+      setConfig({
+        ...config,
+        pathname: '/fr/test.html',
+        locales: { fr: { ietf: 'fr-FR' } },
+        prodDomains: PROD_DOMAINS,
+        placeholders: { download: 'Télécharger' },
+      });
+      fetchCheckoutLinkConfigs.promise = undefined;
+      setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
+      const action = await getModalAction([{ productArrangement: { productFamily: 'PHOTOSHOP' } }], { modal: true });
+      expect(action).to.be.undefined;
+    });
+
+    it('getModalAction: returns undefined if checkout-link config is not found', async () => {
+      fetchCheckoutLinkConfigs.promise = undefined;
+      setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
+      const action = await getModalAction([{ productArrangement: { productFamily: 'XZY' } }], { modal: true });
+      expect(action).to.be.undefined;
+    });
+
+    it('setCtaHash: sets authored hash', async () => {
+      const el = createCtaInMerchCard();
+      const hash = setCtaHash(el, { FREE_TRIAL_HASH: 'try-photoshop-authored' }, 'TRIAL');
+      expect(hash).to.equal('try-photoshop-authored');
+    });
+
+    it('setCtaHash: does nothing with invalid params', async () => {
+      expect(setCtaHash()).to.be.undefined;
+    });
+
+    const MODAL_URLS = [
+      {
+        url: 'https://www.adobe.com/mini-plans/illustrator1.html?mid=ft&web=1',
+        plan: 'edu',
+        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator1.html?mid=ft&web=1&plan=edu',
+      },
+      {
+        url: 'https://www.adobe.com/mini-plans/illustrator2.html?mid=ft&web=1&plan=abc',
+        plan: 'edu',
+        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator2.html?mid=ft&web=1&plan=edu',
+      },
+      {
+        url: 'https://www.adobe.com/mini-plans/illustrator3.html?mid=ft&web=1#thisishash',
+        plan: 'edu',
+        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator3.html?mid=ft&web=1&plan=edu#thisishash',
+      },
+      {
+        url: 'https://www.adobe.com/mini-plans/illustrator4.html',
+        plan: 'edu',
+        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator4.html?plan=edu',
+      },
+      {
+        url: 'https://www.adobe.com/mini-plans/illustrator5.html#thisishash',
+        plan: 'edu',
+        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator5.html?plan=edu#thisishash',
+      },
+      {
+        url: 'https://www.adobe.com/mini-plans/illustrator6.html?mid=ft&web=1',
+        plan: 'team',
+        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator6.html?mid=ft&web=1&plan=team',
+      },
+      {
+        url: 'https://www.adobe.com/mini-plans/illustrator7.html?mid=ft&web=1',
+        plan: '',
+        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator7.html?mid=ft&web=1',
+      },
+      {
+        url: 'https://www.adobe.com/mini-plans/illustrator8.selector.html/resource?mid=ft&web=1#thisishash',
+        plan: 'team',
+        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator8.selector.html/resource?mid=ft&web=1&plan=team#thisishash',
+      },
+      {
+        url: 'https://www.adobe.com/mini-plans/illustrator9.sel1.sel2.html/resource#thisishash',
+        plan: 'team',
+        urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator9.sel1.sel2.html/resource?plan=team#thisishash',
+      },
+      {
+        url: 'www.adobe.com/mini-plans/illustrator10.html?mid=ft&web=1', // invalid URL, protocol is missing
+        plan: 'edu',
+        urlWithPlan: 'www.adobe.com/mini-plans/illustrator10.html?mid=ft&web=1',
+      },
+    ];
+    MODAL_URLS.forEach((modalUrl) => {
+      it(`appends preselected plan ${modalUrl.plan} to modal URL ${modalUrl.url}`, async () => {
+        const meta = document.createElement('meta');
+        meta.setAttribute('name', 'preselect-plan');
+        meta.setAttribute('content', modalUrl.plan);
+        document.getElementsByTagName('head')[0].appendChild(meta);
+
+        const resultUrl = appendTabName(modalUrl.url);
+        expect(resultUrl).to.equal(modalUrl.urlWithPlan);
+        document.querySelector('meta[name="preselect-plan"]').remove();
+      });
+    });
+
+    it('appends extra options to URL', () => {
+      const url = 'https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/all-apps/master.modal.html';
+      const resultUrl = appendExtraOptions(url, JSON.stringify({ promoid: 'test' }));
+      expect(resultUrl).to.equal('https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/all-apps/master.modal.html?promoid=test');
+    });
+
+    it('does not append extra options to URL if invalid URL or params not provided', () => {
+      const invalidUrl = 'invalid-url';
+      const resultUrl = appendExtraOptions(invalidUrl, JSON.stringify({ promoid: 'test' }));
+      expect(resultUrl).to.equal(invalidUrl);
+      const resultUrl2 = appendExtraOptions(invalidUrl);
+      expect(resultUrl2).to.equal(invalidUrl);
+    });
   });
 
   describe('checkout link with optional params', async () => {
     const checkoutUcv2Keys = [
       'rurl', 'authCode', 'curl',
-
     ];
     const checkoutAllowKeysMapping = {
       quantity: 'q',
@@ -666,6 +857,35 @@ describe('Merch Block', () => {
         expect(el.getAttribute('href')).to.match(new RegExp(`https://commerce.adobe.com/.*${mappedKey}=${value}`));
         el.remove();
       });
+    });
+  });
+
+  describe('locale settings', () => {
+    it('should map correct commerce locale', async () => {
+      [
+        { prefix: '/ar', expectedLocale: 'es_AR' },
+        { prefix: '/africa', expectedLocale: 'en_MU' },
+        { prefix: '', expectedLocale: 'en_US' },
+        { prefix: '/ae_ar', expectedLocale: 'ar_AE' },
+      ].forEach(({ prefix, expectedLocale }) => {
+        const wcsLocale = getMiloLocaleSettings({ prefix }).locale;
+        expect(wcsLocale).to.be.equal(expectedLocale);
+      });
+    });
+  });
+
+  describe('AU resources', () => {
+    it('Load AU styles', async () => {
+      setConfig({
+        ...config,
+        pathname: '/au/test.html',
+        locales: { au: { ietf: 'en-AU' } },
+        prodDomains: PROD_DOMAINS,
+        placeholders: { download: 'Download' },
+        locale: { prefix: '/au' },
+      });
+      await mockIms('AU');
+      await initService(true);
     });
   });
 });

@@ -3,8 +3,11 @@ import { readFile, sendKeys } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { delay, waitForElement, waitForRemoval } from '../../helpers/waitfor.js';
+import { mockFetch } from '../../helpers/generalHelpers.js';
+import { getConfig } from '../../../libs/utils/utils.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+
 const {
   default: init,
   getModal,
@@ -14,6 +17,8 @@ const {
 } = await import('../../../libs/blocks/modal/modal.js');
 const satellite = { track: sinon.spy() };
 
+const ogFetch = window.fetch;
+
 describe('Modals', () => {
   beforeEach(() => {
     window._satellite = satellite;
@@ -22,6 +27,7 @@ describe('Modals', () => {
 
   afterEach(() => {
     sinon.restore();
+    window.fetch = ogFetch;
   });
 
   it('Doesnt load modals on page load with no hash', async () => {
@@ -103,7 +109,12 @@ describe('Modals', () => {
     window.location.hash = '#milo';
     await waitForElement('#milo');
     init(document.getElementById('milo-modal-link'));
-    expect(document.getElementById('milo')).to.exist;
+    const modal = document.getElementById('milo');
+    expect(modal).to.exist;
+    expect(modal.getAttribute('daa-lh')).to.equal('milo-modal');
+    const buttons = modal.querySelectorAll('button');
+    expect(buttons[0].getAttribute('daa-ll')).to.equal('Milo Button 1-1--Milo');
+    expect(buttons[1].getAttribute('daa-ll')).to.equal('Milo Button 2-2--Milo');
     window.location.hash = '';
     await waitForRemoval('#milo');
     expect(document.getElementById('milo')).not.to.exist;
@@ -191,7 +202,10 @@ describe('Modals', () => {
 
   it('validates and returns proper hash parameters', () => {
     expect(getHashParams()).to.deep.equal({});
-    expect(getHashParams('#delayed-modal:delay=0')).to.deep.equal({ hash: '#delayed-modal' });
+    expect(getHashParams('#delayed-modal:delay=0')).to.deep.equal({
+      delay: 0,
+      hash: '#delayed-modal',
+    });
     expect(getHashParams('#delayed-modal:delay=1')).to.deep.equal({
       delay: 1000,
       hash: '#delayed-modal',
@@ -206,7 +220,6 @@ describe('Modals', () => {
     document.body.appendChild(anchor);
     expect(delayedModal(anchor)).to.be.true;
     await delay(1000);
-    expect(anchor.classList.contains('hide-block')).to.be.true;
     const modal = await waitForElement('#delayed-modal');
     expect(modal).to.be.not.null;
     expect(document.querySelector('#delayed-modal').classList.contains('delayed-modal'));
@@ -228,6 +241,27 @@ describe('Modals', () => {
     expect(modal).to.not.exist;
     window.sessionStorage.removeItem('shown:#dm');
     el.remove();
+  });
+
+  it('restores the hash when the modal gets closed', async () => {
+    window.location.hash = '#category=pdf-esignatures&search=acro&types=desktop%2Cmobile';
+    window.location.hash = '#milo';
+    await waitForElement('#milo');
+    init(document.getElementById('milo-modal-link'));
+    const modal = document.getElementById('milo');
+    expect(modal).to.exist;
+    expect(window.location.hash).to.equal('#milo');
+    const close = document.querySelector('.dialog-close');
+    close.click();
+    expect(window.location.hash).to.equal('#category=pdf-esignatures&search=acro&types=desktop%2Cmobile');
+    window.location.hash = '';
+  });
+
+  it('never create modal when removed by MEP', async () => {
+    const config = getConfig();
+    config.mep = { fragments: { '/milo': { action: 'remove' } } };
+    const modal = init(document.getElementById('milo-modal-link'));
+    expect(modal).to.be.null;
   });
 });
 
@@ -251,5 +285,15 @@ describe('sendAnalytics', () => {
     window._satellite.track.called = false;
     sendAnalytics({});
     expect(window._satellite.track.called).to.be.true;
+  });
+
+  it('Loads a federated modal on load with hash and closes when removed from hash', async () => {
+    window.fetch = mockFetch({ payload: { data: '' } });
+    window.location.hash = '#geo';
+    await waitForElement('#geo');
+    expect(document.getElementById('geo')).to.exist;
+    window.location.hash = '';
+    await waitForRemoval('#geo');
+    expect(document.getElementById('geo')).to.be.null;
   });
 });

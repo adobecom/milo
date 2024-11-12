@@ -15,6 +15,7 @@ import {
   getExperienceName,
   getFedsPlaceholderConfig,
   hasActiveLink,
+  isActiveLink,
   icons,
   isDesktop,
   isTangentToViewport,
@@ -33,13 +34,27 @@ import {
   toFragment,
   trigger,
   yieldToMain,
-  addMepHighlight,
+  addMepHighlightAndTargetId,
+  isDarkMode,
+  darkIcons,
+  setDisableAEDState,
+  getDisableAEDState,
 } from './utilities/utilities.js';
 
 import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
 
+const SIGNIN_CONTEXT = getConfig()?.signInContext;
+
+function getHelpChildren() {
+  const { unav } = getConfig();
+  return unav?.unavHelpChildren || [
+    { type: 'Support' },
+    { type: 'Community' },
+  ];
+}
+
 export const CONFIG = {
-  icons,
+  icons: isDarkMode() ? darkIcons : icons,
   delays: {
     mainNavDropdowns: 800,
     loadDelayed: 3000,
@@ -78,27 +93,29 @@ export const CONFIG = {
                   error: (e) => lanaLog({ message: 'Profile Menu error', e, tags: 'errorType=error,module=universalnav' }),
                 },
               },
+              ...getConfig().unav?.profile?.config,
             },
           },
           callbacks: {
-            onSignIn: () => { window.adobeIMS?.signIn(); },
-            onSignUp: () => { window.adobeIMS?.signIn(); },
+            onSignIn: () => { window.adobeIMS?.signIn(SIGNIN_CONTEXT); },
+            onSignUp: () => { window.adobeIMS?.signIn(SIGNIN_CONTEXT); },
           },
         },
       },
       appswitcher: { name: 'app-switcher' },
       notifications: {
         name: 'notifications',
-        attributes: { notificationsConfig: { applicationContext: { appID: 'adobecom' } } },
+        attributes: { notificationsConfig: { applicationContext: { appID: getConfig().unav?.uncAppId || 'adobecom' } } },
       },
       help: {
         name: 'help',
+        attributes: { children: getHelpChildren() },
+      },
+      jarvis: {
+        name: 'jarvis',
         attributes: {
-          children: [
-            { type: 'Support' },
-            { type: 'Community' },
-            // { type: 'Jarvis', appid: window.adobeid?.client_id },
-          ],
+          appid: getConfig().jarvis?.id,
+          callbacks: getConfig().jarvis?.callbacks,
         },
       },
     },
@@ -133,13 +150,12 @@ export const LANGMAP = {
 };
 
 // signIn, decorateSignIn and decorateProfileTrigger can be removed if IMS takes over the profile
-const signIn = () => {
+const signIn = (options = {}) => {
   if (typeof window.adobeIMS?.signIn !== 'function') {
     lanaLog({ message: 'IMS signIn method not available', tags: 'errorType=warn,module=gnav' });
     return;
   }
-
-  window.adobeIMS.signIn();
+  window.adobeIMS.signIn(options);
 };
 
 const decorateSignIn = async ({ rawElem, decoratedElem }) => {
@@ -152,7 +168,7 @@ const decorateSignIn = async ({ rawElem, decoratedElem }) => {
 
     signInElem.addEventListener('click', (e) => {
       e.preventDefault();
-      signIn();
+      signIn(SIGNIN_CONTEXT);
     });
   } else {
     signInElem = toFragment`<button daa-ll="${signInLabel}" class="feds-signIn" aria-expanded="false" aria-haspopup="true">${signInLabel}</button>`;
@@ -169,7 +185,7 @@ const decorateSignIn = async ({ rawElem, decoratedElem }) => {
       dropdownSignInAnchor.replaceWith(dropdownSignInButton);
       dropdownSignInButton.addEventListener('click', (e) => {
         e.preventDefault();
-        signIn();
+        signIn(SIGNIN_CONTEXT);
       });
     } else {
       lanaLog({ message: 'Sign in link not found in dropdown.', tags: 'errorType=warn,module=gnav' });
@@ -212,9 +228,9 @@ const setupKeyboardNav = async () => {
   });
 };
 
-const getBrandImage = (image) => {
+const getBrandImage = (image, brandImageOnly) => {
   // Return the default Adobe logo if an image is not available
-  if (!image) return CONFIG.icons.company;
+  if (!image) return brandImageOnly ? CONFIG.icons.brand : CONFIG.icons.company;
 
   // Try to decorate image as PNG, JPG or JPEG
   const imgText = image?.textContent || '';
@@ -226,7 +242,7 @@ const getBrandImage = (image) => {
   }
 
   // Return the default Adobe logo if the image could not be decorated
-  return CONFIG.icons.company;
+  return brandImageOnly ? CONFIG.icons.brand : CONFIG.icons.company;
 };
 
 const closeOnClickOutside = (e) => {
@@ -265,6 +281,7 @@ class Gnav {
   constructor({ content, block } = {}) {
     this.content = content;
     this.block = block;
+    this.customLinks = getConfig()?.customLinks?.split(',') || [];
 
     this.blocks = {
       profile: {
@@ -299,11 +316,11 @@ class Gnav {
     // Order is important, decorateTopnavWrapper will render the nav
     // Ensure any critical task is executed before it
     const tasks = [
-      loadBaseStyles,
       this.decorateMainNav,
       this.decorateTopNav,
       this.decorateAside,
       this.decorateTopnavWrapper,
+      loadBaseStyles,
       this.ims,
       this.addChangeEventListeners,
     ];
@@ -320,7 +337,7 @@ class Gnav {
     isDesktop.addEventListener('change', closeAllDropdowns);
   }, 'Error in global navigation init', 'errorType=error,module=gnav');
 
-  ims = async () => loadIms()
+  ims = async () => (window.adobeIMS?.initialized ? this.imsReady() : loadIms()
     .then(() => this.imsReady())
     .catch((e) => {
       if (e?.message === 'IMS timeout') {
@@ -328,7 +345,7 @@ class Gnav {
         return;
       }
       lanaLog({ message: 'GNAV: Error with IMS', e, tags: 'errorType=info,module=gnav' });
-    });
+    }));
 
   decorateTopNav = () => {
     this.elements.mobileToggle = this.decorateToggle();
@@ -339,6 +356,7 @@ class Gnav {
           ${this.decorateBrand()}
         </div>
         ${this.elements.navWrapper}
+        ${getConfig().searchEnabled === 'on' ? toFragment`<div class="feds-client-search"></div>` : ''}
         ${this.useUniversalNav ? this.blocks.universalNav : ''}
         ${(!this.useUniversalNav && this.blocks.profile.rawElem) ? this.blocks.profile.decoratedElem : ''}
         ${this.decorateLogo()}
@@ -405,13 +423,15 @@ class Gnav {
       try {
         this.block.removeEventListener('click', this.loadDelayed);
         this.block.removeEventListener('keydown', this.loadDelayed);
-        const [
-          Search,
-        ] = await Promise.all([
-          loadBlock('../features/search/gnav-search.js'),
-          loadStyles(rootPath('features/search/gnav-search.css')),
-        ]);
-        this.Search = Search;
+        if (this.searchPresent()) {
+          const [
+            Search,
+          ] = await Promise.all([
+            loadBlock('../features/search/gnav-search.js'),
+            loadStyles(rootPath('features/search/gnav-search.css')),
+          ]);
+          this.Search = Search;
+        }
 
         if (!this.useUniversalNav) {
           const [ProfileDropdown] = await Promise.all([
@@ -517,7 +537,7 @@ class Gnav {
       return 'linux';
     };
 
-    const unavVersion = new URLSearchParams(window.location.search).get('unavVersion') || '1.1';
+    const unavVersion = new URLSearchParams(window.location.search).get('unavVersion') || '1.3';
     await Promise.all([
       loadScript(`https://${environment}.adobeccstatic.com/unav/${unavVersion}/UniversalNav.js`),
       loadStyles(`https://${environment}.adobeccstatic.com/unav/${unavVersion}/UniversalNav.css`),
@@ -603,10 +623,7 @@ class Gnav {
       env: environment,
       locale,
       imsClientId: window.adobeid?.client_id,
-      theme: 'light',
-      onReady: () => {
-        this.decorateAppPrompt({ getAnchorState: () => window.UniversalNav.getComponent?.('app-switcher') });
-      },
+      theme: isDarkMode() ? 'dark' : 'light',
       analyticsContext: {
         consumer: {
           name: 'adobecom',
@@ -619,12 +636,15 @@ class Gnav {
         onAnalyticsEvent,
       },
       children: getChildren(),
+      isSectionDividerRequired: getConfig()?.unav?.showSectionDivider,
     });
 
-    window.UniversalNav(getConfiguration());
-
+    // Exposing UNAV config for consumers
+    CONFIG.universalNav.universalNavConfig = getConfiguration();
+    await window.UniversalNav(CONFIG.universalNav.universalNavConfig);
+    this.decorateAppPrompt({ getAnchorState: () => window.UniversalNav.getComponent?.('app-switcher') });
     isDesktop.addEventListener('change', () => {
-      window.UniversalNav.reload(getConfiguration());
+      window.UniversalNav.reload(CONFIG.universalNav.universalNavConfig);
     });
   };
 
@@ -632,9 +652,12 @@ class Gnav {
     const state = getMetadata('app-prompt')?.toLowerCase();
     const entName = getMetadata('app-prompt-entitlement')?.toLowerCase();
     const promptPath = getMetadata('app-prompt-path')?.toLowerCase();
+    const hasMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i.test(navigator.userAgent);
+
     if (state === 'off'
       || !window.adobeIMS?.isSignedInUser()
       || !isDesktop.matches
+      || hasMobileUA
       || !entName?.length
       || !promptPath?.length) return;
 
@@ -650,7 +673,9 @@ class Gnav {
   };
 
   loadSearch = () => {
-    if (this.blocks?.search?.instance) return null;
+    const instanceAlreadyExists = !!this.blocks?.search?.instance;
+    const searchNotInContent = !this.searchPresent();
+    if (instanceAlreadyExists || searchNotInContent) return null;
 
     return this.loadDelayed().then(() => {
       this.blocks.search.instance = new this.Search(this.blocks.search.config);
@@ -663,6 +688,7 @@ class Gnav {
     const toggle = this.elements.mobileToggle;
     const isExpanded = this.isToggleExpanded();
     toggle?.setAttribute('aria-expanded', !isExpanded);
+    document.body.classList.toggle('disable-scroll', !isExpanded);
     this.elements.navWrapper?.classList?.toggle('feds-nav-wrapper--expanded', !isExpanded);
     closeAllDropdowns();
     setCurtainState(!isExpanded);
@@ -687,7 +713,7 @@ class Gnav {
         this.elements.mainNav.style.removeProperty('padding-bottom');
       } else {
         const offset = Math.ceil(this.elements.topnavWrapper.getBoundingClientRect().bottom);
-        this.elements.mainNav.style.setProperty('padding-bottom', `${offset}px`);
+        this.elements.mainNav.style.setProperty('padding-bottom', `${2 * offset}px`);
       }
     };
 
@@ -709,6 +735,7 @@ class Gnav {
       if (isDesktop.matches) {
         toggle.setAttribute('aria-expanded', false);
         this.elements.navWrapper.classList.remove('feds-nav-wrapper--expanded');
+        document.body.classList.remove('disable-scroll');
         setCurtainState(false);
         closeAllDropdowns();
         this.blocks?.search?.instance?.clearSearchForm();
@@ -733,23 +760,33 @@ class Gnav {
     if (!link) return '';
 
     // Check which elements should be rendered
+    const isBrandImage = rawBlock.matches(selectors.brandImageOnly);
     const renderImage = !rawBlock.matches('.no-logo');
-    const renderLabel = includeLabel && !rawBlock.matches('.image-only');
+    const renderLabel = !isBrandImage && includeLabel && !rawBlock.matches('.image-only');
 
     if (!renderImage && !renderLabel) return '';
 
     // Create image element
     const getImageEl = () => {
+      if (isDarkMode()) {
+        const allSvgImgs = rawBlock.querySelectorAll('picture img[src$=".svg"]');
+        if (allSvgImgs.length === 2) return allSvgImgs[1];
+
+        const images = blockLinks.filter((blockLink) => imgRegex.test(blockLink.href)
+        || imgRegex.test(blockLink.textContent));
+        if (images.length === 2) return getBrandImage(images[1], isBrandImage);
+      }
       const svgImg = rawBlock.querySelector('picture img[src$=".svg"]');
       if (svgImg) return svgImg;
 
       const image = blockLinks.find((blockLink) => imgRegex.test(blockLink.href)
         || imgRegex.test(blockLink.textContent));
-      return getBrandImage(image);
+      return getBrandImage(image, isBrandImage);
     };
 
+    const brandImageClass = isBrandImage ? ` ${selectors.brandImageOnly.slice(1)}` : '';
     const imageEl = renderImage
-      ? toFragment`<span class="${classPrefix}-image">${getImageEl()}</span>`
+      ? toFragment`<span class="${classPrefix}-image${brandImageClass}">${getImageEl()}</span>`
       : '';
 
     // Create label element
@@ -773,7 +810,7 @@ class Gnav {
   decorateAside = async () => {
     this.elements.aside = '';
     const promoPath = getMetadata('gnav-promo-source');
-    if (!isDesktop.matches || !promoPath) {
+    if (!promoPath) {
       this.block.classList.remove('has-promo');
       return this.elements.aside;
     }
@@ -818,13 +855,17 @@ class Gnav {
 
     for await (const [index, item] of items.entries()) {
       await yieldToMain();
-      this.elements.mainNav.appendChild(this.decorateMainNavItem(item, index));
+      const mainNavItem = this.decorateMainNavItem(item, index);
+      if (mainNavItem) {
+        this.elements.mainNav.appendChild(mainNavItem);
+      }
     }
 
     if (!hasActiveLink()) {
       const sections = this.elements.mainNav.querySelectorAll('.feds-navItem--section');
+      const disableAED = getDisableAEDState();
 
-      if (sections.length === 1) {
+      if (!disableAED && sections.length === 1) {
         sections[0].classList.add(selectors.activeNavItem.slice(1));
         setActiveLink(true);
       }
@@ -836,8 +877,9 @@ class Gnav {
   // eslint-disable-next-line class-methods-use-this
   getMainNavItemType = (item) => {
     const itemTopParent = item.closest('div');
+    const isLinkGroup = !!item.closest('.link-group');
     const hasSyncDropdown = itemTopParent instanceof HTMLElement
-      && itemTopParent.childElementCount > 1;
+      && !isLinkGroup && itemTopParent.childElementCount > 1;
     if (hasSyncDropdown) return 'syncDropdownTrigger';
     const hasAsyncDropdown = itemTopParent instanceof HTMLElement
       && itemTopParent.closest('.large-menu') instanceof HTMLElement;
@@ -915,21 +957,39 @@ class Gnav {
         observer.observe(dropdownTrigger, { attributeFilter: ['aria-expanded'] });
 
         delayDropdownDecoration({ template: triggerTemplate });
-        return addMepHighlight(triggerTemplate, item);
+        return addMepHighlightAndTargetId(triggerTemplate, item);
       }
       case 'primaryCta':
       case 'secondaryCta':
         // Remove its 'em' or 'strong' wrapper
         item.parentElement.replaceWith(item);
 
-        return addMepHighlight(toFragment`<div class="feds-navItem feds-navItem--centered">
+        return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered">
             ${decorateCta({ elem: item, type: itemType, index: index + 1 })}
           </div>`, item);
       case 'link': {
+        let customLinkModifier = '';
+        let removeCustomLink = false;
         const linkElem = item.querySelector('a');
+        const customLinksSection = item.closest('.link-group');
         linkElem.className = 'feds-navLink';
         linkElem.setAttribute('daa-ll', getAnalyticsValue(linkElem.textContent, index + 1));
-        if (itemHasActiveLink) {
+
+        if (customLinksSection) {
+          const removeLink = () => {
+            const url = new URL(linkElem.href);
+            linkElem.setAttribute('href', `${url.origin}${url.pathname}${url.search}`);
+            if (isActiveLink(linkElem)) {
+              linkElem.removeAttribute('href');
+            }
+            const linkHash = url.hash.slice(2);
+            return !this.customLinks.includes(linkHash);
+          };
+          [...customLinksSection.classList].splice(1).forEach((className) => {
+            customLinkModifier = ` feds-navItem--${className}`;
+          });
+          removeCustomLink = removeLink();
+        } else if (itemHasActiveLink) {
           linkElem.removeAttribute('href');
           linkElem.setAttribute('role', 'link');
           linkElem.setAttribute('aria-disabled', 'true');
@@ -938,18 +998,18 @@ class Gnav {
         }
 
         const linkTemplate = toFragment`
-          <div class="feds-navItem${activeModifier}">
+          <div class="feds-navItem${activeModifier}${customLinkModifier}">
             ${linkElem}
           </div>`;
-        return addMepHighlight(linkTemplate, item);
+        return removeCustomLink ? '' : addMepHighlightAndTargetId(linkTemplate, item);
       }
       case 'text':
-        return addMepHighlight(toFragment`<div class="feds-navItem feds-navItem--centered">
+        return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered">
             ${item.textContent}
           </div>`, item);
       default:
         /* c8 ignore next 3 */
-        return addMepHighlight(toFragment`<div class="feds-navItem feds-navItem--centered">
+        return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered">
             ${item}
           </div>`, item);
     }
@@ -966,10 +1026,10 @@ class Gnav {
     return this.elements.breadcrumbsWrapper;
   };
 
-  decorateSearch = () => {
-    const searchBlock = this.content.querySelector('.search');
+  searchPresent = () => !!this.content.querySelector('.search');
 
-    if (!searchBlock) return null;
+  decorateSearch = () => {
+    if (!this.searchPresent()) return null;
 
     this.blocks.search.config.trigger = toFragment`
       <button class="feds-search-trigger" aria-label="Search" aria-expanded="false" aria-controls="feds-search-bar" daa-ll="Search">
@@ -1001,29 +1061,35 @@ const getSource = async () => {
   const { locale, dynamicNavKey } = getConfig();
   let url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
   if (dynamicNavKey) {
-    const { default: dynamicNav } = await import('../../features/dynamic-navigation.js');
+    const { default: dynamicNav } = await import('../../features/dynamic-navigation/dynamic-navigation.js');
     url = dynamicNav(url, dynamicNavKey);
   }
   return url;
 };
 
 export default async function init(block) {
-  try {
-    const { mep } = getConfig();
-    const url = await getSource();
-    const content = await fetchAndProcessPlainHtml({ url });
-    if (!content) return null;
-    const gnav = new Gnav({
-      content,
-      block,
-    });
-    gnav.init();
-    block.setAttribute('daa-im', 'true');
-    const mepMartech = mep?.martech || '';
-    block.setAttribute('daa-lh', `gnav|${getExperienceName()}${mepMartech}`);
-    return gnav;
-  } catch (e) {
-    lanaLog({ message: 'Could not create global navigation.', e, tags: 'errorType=error,module=gnav' });
-    return null;
+  const { mep } = getConfig();
+  const sourceUrl = await getSource();
+  const [url, hash = ''] = sourceUrl.split('#');
+  if (hash === '_noActiveItem') {
+    setDisableAEDState();
   }
+  const content = await fetchAndProcessPlainHtml({ url });
+  if (!content) {
+    const error = new Error('Could not create global navigation. Content not found!');
+    error.tags = 'errorType=error,module=gnav';
+    error.url = url;
+    lanaLog({ message: error.message, error, tags: 'errorType=error,module=gnav' });
+    throw error;
+  }
+  const gnav = new Gnav({
+    content,
+    block,
+  });
+  await gnav.init();
+  block.setAttribute('daa-im', 'true');
+  const mepMartech = mep?.martech || '';
+  block.setAttribute('daa-lh', `gnav|${getExperienceName()}${mepMartech}`);
+  if (isDarkMode()) block.classList.add('feds--dark');
+  return gnav;
 }

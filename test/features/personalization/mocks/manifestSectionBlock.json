@@ -5,21 +5,14 @@
   "data": [
     {
       "action": "removeContent",
-      "selector": "section2 block2",
+      "selector": ".custom-block-1",
       "page filter (optional)": "",
       "param-newoffer=123": "",
       "all": "on"
     },
     {
       "action": "removeContent",
-      "selector": "custom-block2",
-      "page filter (optional)": "",
-      "param-newoffer=123": "",
-      "all": "on"
-    },
-    {
-      "action": "removeContent",
-      "selector": "section5 custom-block",
+      "selector": "section2 .custom-block",
       "page filter (optional)": "",
       "param-newoffer=123": "",
       "all": "on"

@@ -1,6 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable import/no-cycle */
 import { createTag, getMetadata, localizeLink, loadStyle, getConfig } from '../../utils/utils.js';
+import { decorateSectionAnalytics } from '../../martech/attributes.js';
 
 const FOCUSABLES = 'a:not(.hide-video), button, input, textarea, select, details, [tabindex]:not([tabindex="-1"]';
 const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
@@ -12,6 +13,8 @@ const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="2
 </svg>`;
 
 let isDelayedModal = false;
+let prevHash = '';
+const dialogLoadingSet = new Set();
 
 export function findDetails(hash, el) {
   const id = hash.replace('#', '');
@@ -65,6 +68,10 @@ export function closeModal(modal) {
   const hashId = window.location.hash.replace('#', '');
   if (hashId === modal.id) window.history.pushState('', document.title, `${window.location.pathname}${window.location.search}`);
   isDelayedModal = false;
+  if (prevHash) {
+    window.location.hash = prevHash;
+    prevHash = '';
+  }
 }
 
 function isElementInView(element) {
@@ -91,7 +98,12 @@ function getCustomModal(custom, dialog) {
 }
 
 async function getPathModal(path, dialog) {
-  const block = createTag('a', { href: path });
+  let href = path;
+  if (path.includes('/federal/')) {
+    const { getFederatedUrl } = await import('../../utils/federated.js');
+    href = getFederatedUrl(path);
+  }
+  const block = createTag('a', { href });
   dialog.append(block);
 
   // eslint-disable-next-line import/no-cycle
@@ -103,6 +115,7 @@ export async function getModal(details, custom) {
   if (!(details?.path || custom)) return null;
   const { id } = details || custom;
 
+  dialogLoadingSet.add(id);
   const dialog = createTag('div', { class: 'dialog-modal', id });
   const loadedEvent = new Event('milo:modal:loaded');
 
@@ -167,15 +180,19 @@ export async function getModal(details, custom) {
       closeModal(dialog);
     }
   });
-
+  decorateSectionAnalytics(dialog, `${id}-modal`, getConfig());
   dialog.append(close);
   document.body.append(dialog);
+  dialogLoadingSet.delete(id);
   firstFocusable.focus({ preventScroll: true, ...focusVisible });
   window.dispatchEvent(loadedEvent);
 
   if (!dialog.classList.contains('curtain-off')) {
     document.body.classList.add('disable-scroll');
-    const curtain = createTag('div', { class: 'modal-curtain is-open' });
+    const curtain = createTag('div', {
+      class: 'modal-curtain is-open',
+      'daa-ll': `${analyticsEventName}:modalClose:curtainClose`,
+    });
     curtain.addEventListener('click', (e) => {
       if (e.target === curtain) closeModal(dialog);
     });
@@ -206,7 +223,7 @@ export function getHashParams(hashStr) {
       params.hash = part;
     } else {
       const [key, val] = part.split('=');
-      if (key === 'delay' && parseInt(val, 10) > 0) {
+      if (key === 'delay') {
         params.delay = parseInt(val, 10) * 1000;
       }
     }
@@ -216,9 +233,8 @@ export function getHashParams(hashStr) {
 
 export function delayedModal(el) {
   const { hash, delay } = getHashParams(el?.dataset.modalHash);
-  if (!delay || !hash) return false;
+  if (delay === undefined || !hash) return false;
   isDelayedModal = true;
-  el.classList.add('hide-block');
   const modalOpenEvent = new Event(`${hash}:modalOpen`);
   const pagesModalWasShownOn = window.sessionStorage.getItem(`shown:${hash}`);
   el.dataset.modalHash = hash;
@@ -235,8 +251,10 @@ export function delayedModal(el) {
 
 // Deep link-based
 export default function init(el) {
-  const { modalHash } = el.dataset;
+  const { modalHash, modalPath } = el.dataset;
+  if (getConfig().mep?.fragments?.[modalPath]?.action === 'remove') return null;
   if (delayedModal(el) || window.location.hash !== modalHash || document.querySelector(`div.dialog-modal${modalHash}`)) return null;
+  if (dialogLoadingSet.has(modalHash?.replace('#', ''))) return null; // prevent duplicate modal loading
   const details = findDetails(window.location.hash, el);
   return details ? getModal(details) : null;
 }
@@ -254,5 +272,8 @@ window.addEventListener('hashchange', (e) => {
   } else {
     const details = findDetails(window.location.hash, null);
     if (details) getModal(details);
+    if (e.oldURL?.includes('#')) {
+      prevHash = new URL(e.oldURL).hash;
+    }
   }
 });
