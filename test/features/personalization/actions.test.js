@@ -201,8 +201,10 @@ describe('replace action with html/text instead of fragment', () => {
     expect(primaryCTA.href).to.not.equal('updated text');
     expect(secondaryCTA.innerText).to.not.equal('updated text');
     expect(actionArea.innerHTML).to.not.equal('<p>updated text</p>');
+    config.placeholders = { 'marquee-href': 'https://test.com/updated_href' };
 
     await init(mepSettings);
+    config.placeholders = null;
 
     expect(header.innerText).to.equal('updated text');
     expect(primaryCTA.innerText).to.equal('updated text');
