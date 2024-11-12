@@ -50,7 +50,7 @@ const fetchExcelJson = async (url) => {
 };
 
 const checkIms = async (prompt = true) => {
-    const accessToken = await getImsToken(loadScript);
+  const accessToken = await getImsToken(loadScript);
   if (!accessToken && prompt) {
     const shouldLogIn = await showConfirm(
       'You must be logged in with an Adobe ID in order to publish to CaaS.\nDo you want to log in?',
@@ -328,18 +328,22 @@ fetchExcelJson(presetsJsonPath).then((presets) => {
 });
 
 const resetAdvancedOptions = () => {
+  /* eslint-disable no-undef */
   caasEnv.value = 'prod';
   draftOnly.checked = false;
   useHtml.checked = false;
   usePreview.checked = false;
   publishToFloodgate.value = 'default';
+    /* eslint-enable no-undef */
 };
 
+/* eslint-disable no-nested-ternary */
 const useDarkTheme = localStorage.getItem('bp-theme') === 'dark'
   ? true
-  : localStorage.getItem('bp-theme') === 'light' 
+  : localStorage.getItem('bp-theme') === 'light'
     ? false
     : window.matchMedia('(prefers-color-scheme: dark)').matches;
+/* eslint-enable no-nested-ternary */
 
 if (useDarkTheme) {
   document.querySelector('.bulk-publisher').classList.add('dark');
@@ -348,16 +352,18 @@ if (useDarkTheme) {
   document.querySelector('#option-light').checked = true;
 }
 
+/* eslint-disable-next-line no-undef */
 preset.addEventListener('change', () => {
   const { value } = preset;
-  const selectedPreset = presetsData.find(item => item.id === value) || {};
+  const selectedPreset = presetsData.find((item) => item.id === value) || {};
   BODY.classList = '';
   resetAdvancedOptions();
-  
+
   if (value === 'advanced') {
     BODY.classList.add('advanced');
     return;
-  } else if (value === 'default') {
+  } 
+  if (value === 'default') {
     BODY.classList = '';
   } else {
     BODY.classList.add('preset');
@@ -383,7 +389,6 @@ clearResultsButton.addEventListener('click', () => {
   SIGNEDIN.style.display = 'block';
 });
 
-// const publishWarning =  document.querySelector('.publish-warning');
 caasEnv.addEventListener('change', () => {
   checkCaasEnv();
 });
