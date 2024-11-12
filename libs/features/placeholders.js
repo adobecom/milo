@@ -72,10 +72,7 @@ async function getPlaceholder(key, config, sheet) {
   if (geoLocDisabled === 'on') {
     placeholders = await getDefaultPlaceholders();
   } else {
-    placeholders = await fetchPlaceholders({ config, sheet }).catch(async () => {
-      const defaultPlaceholders = await getDefaultPlaceholders();
-      return defaultPlaceholders;
-    });
+    placeholders = await fetchPlaceholders({ config, sheet });
   }
 
   if (typeof placeholders?.[key] === 'string') return placeholders[key];
