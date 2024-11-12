@@ -7,8 +7,8 @@ export const CSS = `
 
 sp-theme[color='light'] merch-card[variant="ccd-suggested"] {
   background-color: var(--ccd-gray-100-light, #F8F8F8);
-  color: var(--ccd-gray-800-dark, #222);
-  border: 1px solid var(--ccd-gray-200-light, #E6E6E6)
+  color: var(--ccd-gray-700-dark, #464646);
+  border: 1px solid var(--ccd-gray-200-light, #E6E6E6);
 }
   
 sp-theme[color='dark'] merch-card[variant="ccd-suggested"] {

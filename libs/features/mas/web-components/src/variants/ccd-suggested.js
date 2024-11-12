@@ -57,7 +57,7 @@ export class CCDSuggested extends VariantLayout {
 
     :host([variant='ccd-suggested']) .body {
       height: auto;
-      padding: 20px 19px 20px 20px;
+      padding: 20px 20px 20px 28px;
     }
 
     :host([variant='ccd-suggested']) .header {
@@ -84,6 +84,10 @@ export class CCDSuggested extends VariantLayout {
     
     :host([variant='ccd-suggested']) ::slotted([slot='detail-m']) {
       line-height: var(--consonant-merch-card-detail-m-line-height);
+    }
+
+    :host([variant='ccd-suggested']) ::slotted([slot='body-xs']) {
+      color: var(--ccd-gray-700-dark, #464646);
     }
     
     :host([variant='ccd-suggested'].wide-strip) ::slotted([slot='body-xs']) {

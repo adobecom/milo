@@ -1330,8 +1330,8 @@ merch-card[variant='twp'] merch-offer-select {
 
 sp-theme[color='light'] merch-card[variant="ccd-suggested"] {
   background-color: var(--ccd-gray-100-light, #F8F8F8);
-  color: var(--ccd-gray-800-dark, #222);
-  border: 1px solid var(--ccd-gray-200-light, #E6E6E6)
+  color: var(--ccd-gray-700-dark, #464646);
+  border: 1px solid var(--ccd-gray-200-light, #E6E6E6);
 }
   
 sp-theme[color='dark'] merch-card[variant="ccd-suggested"] {
@@ -1401,7 +1401,7 @@ merch-card[variant="ccd-suggested"] [slot="cta"] a {
 
     :host([variant='ccd-suggested']) .body {
       height: auto;
-      padding: 20px 19px 20px 20px;
+      padding: 20px 20px 20px 28px;
     }
 
     :host([variant='ccd-suggested']) .header {
@@ -1428,6 +1428,10 @@ merch-card[variant="ccd-suggested"] [slot="cta"] a {
     
     :host([variant='ccd-suggested']) ::slotted([slot='detail-m']) {
       line-height: var(--consonant-merch-card-detail-m-line-height);
+    }
+
+    :host([variant='ccd-suggested']) ::slotted([slot='body-xs']) {
+      color: var(--ccd-gray-700-dark, #464646);
     }
     
     :host([variant='ccd-suggested'].wide-strip) ::slotted([slot='body-xs']) {
@@ -1688,6 +1692,7 @@ merch-card[variant="ccd-slice"] [slot='image'] img {
     --ccd-gray-200-dark: #3F3F3F;
     
     
+    
 
     /* merch card generic */
     --consonant-merch-card-max-width: 300px;
@@ -1763,11 +1768,6 @@ merch-card span[is=inline-price] {
 merch-card [slot^='heading-'] {
     color: var(--spectrum-gray-800, var(--merch-color-grey-80));
     font-weight: 700;
-}
-
-merch-card [slot^='body-'] {
-    color: var(--spectrum-gray-800, var(--merch-color-grey-80));
-    font-weight: 500;
 }
 
 merch-card [slot='heading-xs'] {

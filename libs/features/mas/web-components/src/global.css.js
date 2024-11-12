@@ -87,6 +87,7 @@ styles.innerHTML = `
     --ccd-gray-200-dark: #3F3F3F;
     
     
+    
 
     /* merch card generic */
     --consonant-merch-card-max-width: 300px;
@@ -162,11 +163,6 @@ merch-card span[is=inline-price] {
 merch-card [slot^='heading-'] {
     color: var(--spectrum-gray-800, var(--merch-color-grey-80));
     font-weight: 700;
-}
-
-merch-card [slot^='body-'] {
-    color: var(--spectrum-gray-800, var(--merch-color-grey-80));
-    font-weight: 500;
 }
 
 merch-card [slot='heading-xs'] {
