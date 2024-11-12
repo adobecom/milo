@@ -1547,7 +1547,7 @@ merch-card[variant="ccd-slice"] [slot='image'] img {
         :host([variant='ccd-slice']) .content {
             display: flex;
             gap: var(--consonant-merch-spacing-xxs);
-            padding: var(--consonant-merch-spacing-xs);
+            padding: 15px;
             padding-inline-end: 0;
             width: 154px;
             flex-direction: column;
@@ -1575,7 +1575,7 @@ merch-card[variant="ccd-slice"] [slot='image'] img {
             height: var(--consonant-merch-card-ccd-slice-background-img-size);
             overflow: hidden;
             border-radius: 50%;
-            padding: var(--consonant-merch-spacing-xs);
+            padding: 15px;
             align-self: center;
             padding-inline-start: 0;
         }
