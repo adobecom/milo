@@ -248,7 +248,7 @@ Try polyfilling it using "@formatjs/intl-pluralrules"
         `}get cardImage(){return g` <div class="image">
             <slot name="bg-image"></slot>
             ${this.badge}
-        </div>`}getGlobalCSS(){return""}get theme(){return document.querySelector("sp-theme")}get evergreen(){return this.card.classList.contains("intro-pricing")}get promoBottom(){return this.card.classList.contains("promo-bottom")}get headingSelector(){return'[slot="heading-xs"]'}get stripStyle(){if(this.card.backgroundImage){let t=new Image;return t.src=this.card.backgroundImage,t.onload=()=>{t.width>8&&this.card.classList.add("wide-strip")},`
+        </div>`}getGlobalCSS(){return""}get theme(){return document.querySelector("sp-theme")}get evergreen(){return this.card.classList.contains("intro-pricing")}get promoBottom(){return this.card.classList.contains("promo-bottom")}get headingSelector(){return'[slot="heading-xs"]'}get stripStyle(){if(this.card.backgroundImage){let t=new Image;return t.src=this.card.backgroundImage,t.onload=()=>{t.width>8?this.card.classList.add("wide-strip"):t.width===4&&this.card.classList.add("thin-strip")},`
           background: url("${this.card.backgroundImage}");
           background-size: auto 100%;
           background-repeat: no-repeat;
@@ -1401,6 +1401,10 @@ merch-card[variant="ccd-suggested"] [slot="cta"] a {
 
     :host([variant='ccd-suggested']) .body {
       height: auto;
+      padding: 20px 19px 20px 20px;
+    }
+
+    :host([variant='ccd-suggested'].thin-strip) .body {
       padding: 20px 20px 20px 28px;
     }
 
