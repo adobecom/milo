@@ -303,6 +303,10 @@ merch-card [slot="body-xl"] {
     line-height: var(--consonant-merch-card-body-xl-line-height);
 }
 
+merch-card a.primary-link {
+    color: var(--spectrum-global-color-blue-700);
+}
+
 [slot="cci-footer"] p,
 [slot="cct-footer"] p,
 [slot="cce-footer"] p {
