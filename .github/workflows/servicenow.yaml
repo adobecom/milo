@@ -34,7 +34,7 @@ jobs:
 
           echo "Dependencies check was successful"
 
-      - name: Set Maintenance Time Windows for CMR
+      - name: Set Planned Maintenance Time Windows for CMR
         run: |
           echo "start_time=$(date -d "+60 minutes" '+%Y-%m-%d %H:%M')" >> $GITHUB_ENV
           echo "end_time=$(date -d "+90 minutes" '+%Y-%m-%d %H:%M')" >> $GITHUB_ENV
@@ -76,10 +76,10 @@ jobs:
           DEFAULT_IMS_URL='https://ims-na1-stg1.adobelogin.com/ims/token'
 
           function ims_request() {
-            local client_id=${{ secrets.IMSACCESS_CLIENT_ID }}
-            local client_secret=${{ secrets.IMSACCESS_CLIENT_SECRET_STAGE }}
-            local ims_code=${{ secrets.IMSACCESS_AUTH_CODE_STAGE }}
-            local url=$1
+            local client_id=$1
+            local client_secret=$2
+            local ims_code=$3
+            local url=$4
 
             if [ -z "$client_id" ]; then
               echo "Missing IMS client ID"
@@ -115,16 +115,20 @@ jobs:
             fi
           }
 
-          ims_request
+          ims_request ${{ secrets.IMSACCESS_CLIENT_ID }} ${{ secrets.IMSACCESS_CLIENT_SECRET_STAGE }} ${{ secrets.IMSACCESS_AUTH_CODE_STAGE }}
 
       - name: Create CMR in ServiceNow
         run: |
           DEFAULT_SERVICENOW_URL='https://ipaasapi-stage.adobe-services.com/change_management/changes'
 
           function servicenow_create_cmr() {
-            local api_key=${{ secrets.IPAAS_KEY_STAGE }}
-            local access_token=${{ env.token }}
-            local url=$1
+            local api_key=$1
+            local access_token=$2
+            local title=$3
+            local description=$4
+            local start_time=$5
+            local end_time=$6
+            local url=$7
 
             if [ -z "$api_key" ]; then
               echo "Missing ServiceNow API key"
@@ -136,11 +140,31 @@ jobs:
               return 1
             fi
 
+            if [ -z "$title" ]; then
+              echo "Missing title"
+              return 1
+            fi
+
+            if [ -z "$description" ]; then
+              echo "Missing description"
+              return 1
+            fi
+
+            if [ -z "$start_time" ]; then
+              echo "Missing start time"
+              return 1
+            fi
+
+            if [ -z "$end_time" ]; then
+              echo "Missing end time"
+              return 1
+            fi
+
             if [ -z "$url" ]; then
               url=$DEFAULT_SERVICENOW_URL
             fi
 
-            local response=$(curl --request POST --write-out "%{http_code}" --silent --output response.txt --url "${url}" --header "api_key: ${api_key}" --header "Authorization: ${access_token}" -d '{"title": "${{ env.release_title }}", "description": "${{ env.release_summary }}", "instanceIds": [ 537445 ], "plannedStartDate": ${{ env.start_time }}, "plannedEndDate": ${{ env.end_time }}, "coordinator": "narcis@adobe.com", "executor": "mauchley@adobe.com", "customerImpact": "No Impact", "changeReason": [ "New Features", "Bug Fixes", "Enhancement", "Maintenance", "Security" ], "risk": "Straight Forward", "preProductionTestingType": [ "End-to-End", "Functional", "Integrations", "QA", "Regression", "UAT", "Unit Test" ], "backoutPlanType": "Roll back", "approvedBy": [ "osahin@adobe.com", "cpeyer@adobe.com" ], "testPlan": "Test plan is documented in the PR link in the Milo repository above. See the PR's merge checks to see Unit and Nala testing.", "implementationPlan": "The change will be realeased as part of the continuous deployment of Milo's production branch, i.e., \"main\"", "backoutPlan": "Revert merge to the Milo production branch by creating a revert commit.", "testResults": "Changes are tested and validated successfully in staging environment. Please see the link of the PR in the description for the test results and/or the \"#nala-test-results\" slack channel."}')
+            local response=$(curl --request POST --write-out "%{http_code}" --silent --output response.txt --url "${url}" --header "api_key: ${api_key}" --header "Authorization: ${access_token}" -d '{"title": "${title}", "description": "${description}", "instanceIds": [ 537445 ], "plannedStartDate": ${start_time}, "plannedEndDate": ${end_time}, "coordinator": "narcis@adobe.com", "executor": "mauchley@adobe.com", "customerImpact": "No Impact", "changeReason": [ "New Features", "Bug Fixes", "Enhancement", "Maintenance", "Security" ], "risk": "Straight Forward", "preProductionTestingType": [ "End-to-End", "Functional", "Integrations", "QA", "Regression", "UAT", "Unit Test" ], "backoutPlanType": "Roll back", "approvedBy": [ "osahin@adobe.com" ], "testPlan": "Test plan is documented in the PR link in the Milo repository above. See the PR's merge checks to see Unit and Nala testing.", "implementationPlan": "The change will be realeased as part of the continuous deployment of Milo's production branch, i.e., \"main\"", "backoutPlan": "Revert merge to the Milo production branch by creating a revert commit.", "testResults": "Changes are tested and validated successfully in staging environment. Please see the link of the PR in the description for the test results and/or the \"#nala-test-results\" slack channel."}')
 
             if [ $response != "200" ]; then
               echo "CURL call returned HTTP status code: $response"
@@ -155,16 +179,17 @@ jobs:
             fi
           }
 
-          servicenow_create_cmr
+          servicenow_create_cmr ${{ secrets.IPAAS_KEY_STAGE }} ${{ env.token }} ${{ env.release_title }} ${{ env.release_summary }} ${{ env.start_time }} ${{ env.end_time }}
 
       - name: Retrieve CMR ID in ServiceNow
         run: |
-          DEFAULT_SERVICENOW_URL='https://ipaasapi-stage.adobe-services.com/change_management/transactions/${{ env.transaction_id }}'
+          DEFAULT_SERVICENOW_URL='https://ipaasapi-stage.adobe-services.com/change_management/transactions'
 
           function servicenow_request_cmr() {
-            local api_key=${{ secrets.IPAAS_KEY_STAGE }}
-            local access_token=${{ env.token }}
-            local url=$1
+            local api_key=$1
+            local access_token=$2
+            local transaction_id=$3
+            local url=$4
 
             if [ -z "$api_key" ]; then
               echo "Missing ServiceNow API key"
@@ -176,8 +201,14 @@ jobs:
               return 1
             fi
 
+            if [ -z "$transaction_id" ]; then
+              echo "Missing transaction ID"
+              return 1
+            fi
+
             if [ -z "$url" ]; then
               url=$DEFAULT_SERVICENOW_URL
+              url+="/${transaction_id}"
             fi
 
             local response=$(curl --request GET --write-out "%{http_code}" --silent --output response.txt --url "${url}" --header "api_key: ${api_key}" --header "Authorization: ${access_token}")
@@ -195,16 +226,24 @@ jobs:
             fi
           }
 
-          servicenow_request_cmr
+          servicenow_request_cmr ${{ secrets.IPAAS_KEY_STAGE }} ${{ env.token }} ${{ env.transaction_id }}
+
+      - name: Set Actual Maintenance Time Windows for CMR
+        run: |
+          echo "actual_start_time=$(date -d '+%Y-%m-%d %H:%M')" >> $GITHUB_ENV
+          echo "actual_end_time=$(date -d "+5 minutes" '+%Y-%m-%d %H:%M')" >> $GITHUB_ENV
 
       - name: Close CMR in ServiceNow
         run: |
-          DEFAULT_SERVICENOW_URL='https://ipaasapi-stage.adobe-services.com/change_management/changes/${{ env.cmr_id }}'
+          DEFAULT_SERVICENOW_URL='https://ipaasapi-stage.adobe-services.com/change_management/changes'
 
           function servicenow_close_cmr() {
-            local api_key=${{ secrets.IPAAS_KEY_STAGE }}
-            local access_token=${{ env.token }}
-            local url=$1
+            local api_key=$1
+            local access_token=$2
+            local actual_start_time=$3
+            local actual_end_time=$4
+            local cmr_id=$5
+            local url=$6
 
             if [ -z "$api_key" ]; then
               echo "Missing ServiceNow API key"
@@ -216,11 +255,27 @@ jobs:
               return 1
             fi
 
-            if [ -z "$url" ]; then
-              url=$DEFAULT_SERVICENOW_URL
+            if [ -z "$actual_start_time" ]; then
+              echo "Missing actual start time"
+              return 1
             fi
 
-            local response=$(curl --request POST --write-out "%{http_code}" --silent --output response.txt --url "${url}" --header "api_key: ${api_key}" --header "Authorization: ${access_token}" -d '{"actualStartDate": ${{ env.start_time }}, "actualEndDate": ${{ env.end_time }}, "state": "Closed", "closeCode": "Successful", "notes": "The change request is closed as the change was released successfully"}')
+            if [ -z "$actual_end_time" ]; then
+              echo "Missing actual end time"
+              return 1
+            fi
+
+            if [ -z "$cmr_id" ]; then
+              echo "Missing change management request ID"
+              return 1
+            fi
+
+            if [ -z "$url" ]; then
+              url=$DEFAULT_SERVICENOW_URL
+              url+="/${cmr_id}"
+            fi
+
+            local response=$(curl --request POST --write-out "%{http_code}" --silent --output response.txt --url "${url}" --header "api_key: ${api_key}" --header "Authorization: ${access_token}" -d '{"actualStartDate": ${actual_start_time}, "actualEndDate": ${actual_end_time}, "state": "Closed", "closeCode": "Successful", "notes": "The change request is closed as the change was released successfully"}')
 
             if [ $response != "200" ]; then
               echo "CURL call returned HTTP status code: $response"
@@ -234,4 +289,4 @@ jobs:
             fi
           }
 
-          servicenow_close_cmr
+          servicenow_close_cmr ${{ secrets.IPAAS_KEY_STAGE }} ${{ env.token }} ${{ env.actual_start_time }} ${{ env.actual_end_time }} ${{ env.cmr_id }}
