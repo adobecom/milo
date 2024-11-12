@@ -1514,18 +1514,23 @@ sp-theme[color='dark'] merch-card[variant="ccd-slice"] {
 }
 
 merch-card[variant="ccd-slice"] [slot='body-s'] a:not(.con-button) {
-    font-size: var(--consonant-merch-card-body-xxs-font-size);
-    font-style: normal;
-    font-weight: 400;
-    line-height: var(--consonant-merch-card-body-xxs-line-height);
-    text-decoration-line: underline;
-    color: var(--spectrum-gray-800, var(--merch-color-grey-80));
-  }
+  font-size: var(--consonant-merch-card-body-xxs-font-size);
+  font-style: normal;
+  font-weight: 400;
+  line-height: var(--consonant-merch-card-body-xxs-line-height);
+  text-decoration-line: underline;
+  color: var(--spectrum-gray-800, var(--merch-color-grey-80));
+}
 
-  merch-card[variant="ccd-slice"] [slot='image'] img {
-    overflow: hidden;
-    border-radius: 50%;
-  }
+merch-card[variant="ccd-slice"] [slot="body-s"] span.placeholder-resolved[data-template="priceStrikethrough"] {
+  text-decoration: line-through;
+  color: var(--ccd-color-grey-600, var(--merch-color-grey-60));
+}
+
+merch-card[variant="ccd-slice"] [slot='image'] img {
+  overflow: hidden;
+  border-radius: 50%;
+}
 `;var qe={mnemonics:{size:"m"},backgroundImage:{tag:"div",slot:"image"},description:{tag:"div",slot:"body-s"},ctas:{slot:"footer",size:"s"},allowedSizes:["wide"]},T=class extends h{getGlobalCSS(){return we}get aemFragmentMapping(){return qe}renderLayout(){return Ue` <div class="content">
                 <div class="top-section">
                   <slot name="icons"></slot> 
