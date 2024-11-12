@@ -570,7 +570,7 @@ test.describe('Milo Marquee Block test suite', () => {
       await expect(await marquee.headingXXL).toContainText(data.h2Text);
       await expect(await marquee.bodyXL).toContainText(data.bodyText);
       await expect(await marquee.blueButtonXL).toContainText(data.blueButtonText);
-      await expect(await marquee.actionLink2).toContainText(data.linkText);
+      await expect(await marquee.actionLink3).toContainText(data.linkText);
 
       await expect(await marquee.backgroundVideoDesktop).toBeVisible();
       expect(await webUtil.verifyAttributes(marquee.backgroundVideoDesktop, marquee.attributes['backgroundVideo.inline'])).toBeTruthy();
