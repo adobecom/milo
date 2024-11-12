@@ -32,12 +32,15 @@ describe('video uploaded using franklin bot', () => {
     block.append(a);
     block2.append(a2);
     init(a);
-    init(a2);
-    await new Promise((resolve) => { setTimeout(resolve, 1000); });
+    await new Promise((resolve) => { setTimeout(resolve, 600); });
     await clock.runAllAsync();
     const pausePlayWrapper = block.querySelector('.pause-play-wrapper');
+    pausePlayWrapper.removeAttribute('video-index');
+    init(a2);
+    await new Promise((resolve) => { setTimeout(resolve, 500); });
+    await clock.runAllAsync();
     const videoIndex = pausePlayWrapper.getAttribute('video-index');
-    expect(videoIndex).to.exist;
+    expect(videoIndex).to.be.null;
   });
 
   it('removes the element, if it does not have a parent node', (done) => {
@@ -183,6 +186,7 @@ describe('video uploaded using franklin bot', () => {
     init(a);
     const pausePlayWrapper = block.querySelector('.pause-play-wrapper');
     pausePlayWrapper.click();
+    pausePlayWrapper.setAttribute('daa-ll', 'pause-motion');
     await new Promise((resolve) => { setTimeout(resolve, 500); });
     await clock.runAllAsync();
     pausePlayWrapper.click();
