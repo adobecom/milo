@@ -48,7 +48,7 @@ export class CCDSuggested extends VariantLayout {
     :host([variant='ccd-suggested']) {
       width: var(--merch-card-ccd-suggested-width);
       max-width: var(--merch-card-ccd-suggested-width);
-      min-height: var(--merch-card-ccd-suggested-height);
+      max-height: var(--merch-card-ccd-suggested-height);
       border-radius: 4px;
       display: flex;
       flex-flow: wrap;

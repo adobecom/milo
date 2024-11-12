@@ -1392,7 +1392,7 @@ merch-card[variant="ccd-suggested"] [slot="cta"] a {
     :host([variant='ccd-suggested']) {
       width: var(--merch-card-ccd-suggested-width);
       max-width: var(--merch-card-ccd-suggested-width);
-      min-height: var(--merch-card-ccd-suggested-height);
+      max-height: var(--merch-card-ccd-suggested-height);
       border-radius: 4px;
       display: flex;
       flex-flow: wrap;
@@ -1521,8 +1521,8 @@ merch-card[variant="ccd-slice"] [slot='image'] img {
             <slot name="image"></slot>
             <slot></slot>`}};p(ft,"variantStyle",w`
         :host([variant='ccd-slice']) {
-            width: var(--consonant-merch-card-ccd-slice-single-width);
             max-width: var(--consonant-merch-card-ccd-slice-single-width);
+            max-height: var(--consonant-merch-card-ccd-slice-single-height);
             border: 1px solid var(--spectrum-gray-700);
             border-radius: 4px;
             display: flex;
