@@ -21,7 +21,7 @@ const SIGNEDIN = BODY.querySelector('.status-signed-in');
 const SIGNEDOUT = BODY.querySelector('.status-signed-out');
 
 const LS_KEY = 'bulk-publish-caas';
-const FIELDS = ['preset', 'host', 'repo', 'owner', 'caasEnv', 'urls', 'contentType', 'publishToFloodgate'];
+const FIELDS = ['presetSelector', 'host', 'repo', 'owner', 'caasEnvSelector', 'urls', 'contentType', 'publishToFloodgate'];
 const FIELDS_CB = ['draftOnly', 'useHtml', 'usePreview'];
 const DEFAULT_VALUES = {
   preset: 'default',
@@ -281,15 +281,15 @@ const bulkPublish = async () => {
 const loadFromLS = () => {
   BODY.classList = '';
   const ls = localStorage.getItem(LS_KEY);
-  if (!ls || !ls.includes('preset')) return;
+  if (!ls || !ls.includes('presetSelector')) return;
   try {
     setConfig(JSON.parse(ls));
     const config = getConfig();
     FIELDS.forEach((field) => {
       document.getElementById(field).value = config[field] ?? DEFAULT_VALUES[field];
-      if (field === 'preset' && config[field] === 'advanced') {
+      if (field === 'presetSelector' && config[field] === 'advanced') {
         BODY.classList = 'advanced';
-      } else if (field === 'preset' && config[field] !== 'default') {
+      } else if (field === 'presetSelector' && config[field] !== 'default') {
         BODY.classList = 'preset';
       }
     });
@@ -303,8 +303,8 @@ const loadFromLS = () => {
 
 const publishWarning = document.querySelector('.publish-warning');
 const checkCaasEnv = () => {
-  const { caasEnv, draftOnly } = getConfig();
-  if (caasEnv === 'prod' && !draftOnly.checked) {
+  const caasEnvValue = caasEnvSelector.value || 'prod';
+  if (caasEnvValue === 'prod' && !draftOnly.checked) {
     publishWarning.style.height = '30px';
   } else {
     publishWarning.style.height = '0';
@@ -328,8 +328,9 @@ fetchExcelJson(presetsJsonPath).then((presets) => {
 });
 
 const resetAdvancedOptions = () => {
+  console.log('resetAdvancedOptions');
   /* eslint-disable no-undef */
-  caasEnv.value = 'prod';
+  caasEnvSelector.value = 'prod';
   draftOnly.checked = false;
   useHtml.checked = false;
   usePreview.checked = false;
@@ -353,8 +354,8 @@ if (useDarkTheme) {
 }
 
 // eslint-disable-next-line no-undef
-preset.addEventListener('change', () => {
-  const { value } = preset;
+presetSelector.addEventListener('change', () => {
+  const { value } = presetSelector;
   const selectedPreset = presetsData.find((item) => item.id === value) || {};
   BODY.classList = '';
   resetAdvancedOptions();
@@ -371,7 +372,7 @@ preset.addEventListener('change', () => {
 
   const ls = localStorage.getItem(LS_KEY);
   const config = ls ? JSON.parse(ls) : {};
-  config.preset = selectedPreset.id || 'default';
+  config.presetSelector = selectedPreset.id || 'default';
   config.host = selectedPreset.host || '';
   config.owner = selectedPreset.owner || '';
   config.repo = selectedPreset.repo || '';
@@ -390,7 +391,7 @@ clearResultsButton.addEventListener('click', () => {
 });
 
 // eslint-disable-next-line no-undef
-caasEnv.addEventListener('change', () => {
+caasEnvSelector.addEventListener('change', () => {
   checkCaasEnv();
 });
 
@@ -523,7 +524,7 @@ const init = async () => {
       host: document.getElementById('host').value,
       project: '',
       branch: 'main',
-      caasEnv: document.getElementById('caasEnv').value || 'prod',
+      caasEnv: document.getElementById('caasEnvSelector').value || 'prod',
       contentType: document.getElementById('contentType').value,
       repo: document.getElementById('repo').value,
       owner: document.getElementById('owner').value,
