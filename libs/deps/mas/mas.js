@@ -1524,6 +1524,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a:not(.con-button) {
         :host([variant='ccd-slice']) ::slotted([slot='body-s']) {
             font-size: var(--consonant-merch-card-body-xs-font-size);
             line-height: var(--consonant-merch-card-body-xxs-line-height);
+            max-width: 154px;
         }
 
         :host([variant='ccd-slice'][size='wide']) {
@@ -1564,6 +1565,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a:not(.con-button) {
             border-radius: 50%;
             padding: var(--consonant-merch-spacing-xs);
             align-self: center;
+            padding-inline-start: 0;
         }
 
         :host([variant='ccd-slice']) ::slotted([slot='image']) img {

@@ -46,6 +46,7 @@ export class CCDSlice extends VariantLayout {
         :host([variant='ccd-slice']) ::slotted([slot='body-s']) {
             font-size: var(--consonant-merch-card-body-xs-font-size);
             line-height: var(--consonant-merch-card-body-xxs-line-height);
+            max-width: 154px;
         }
 
         :host([variant='ccd-slice'][size='wide']) {
@@ -86,6 +87,7 @@ export class CCDSlice extends VariantLayout {
             border-radius: 50%;
             padding: var(--consonant-merch-spacing-xs);
             align-self: center;
+            padding-inline-start: 0;
         }
 
         :host([variant='ccd-slice']) ::slotted([slot='image']) img {
