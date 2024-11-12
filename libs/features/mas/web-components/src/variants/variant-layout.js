@@ -113,7 +113,7 @@ export class VariantLayout {
                 if (img.width > 8) {
                   /* c8 ignore next 2 */
                     this.card.classList.add('wide-strip');
-                } else if (img.width === 4) {
+                } else if (img.width === 8) {
                     this.card.classList.add('thin-strip');
                 }
         };
