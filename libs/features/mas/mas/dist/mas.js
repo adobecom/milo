@@ -1359,7 +1359,7 @@ merch-card[variant="ccd-suggested"] [slot="body-xs"] a {
 
 merch-card[variant="ccd-suggested"] [slot="price"] span.placeholder-resolved[data-template="priceStrikethrough"] {
   text-decoration: line-through;
-  color: var(--spectrum-gray-600, var(--merch-color-grey-60));
+  color: var(--ccd-color-grey-600, var(--merch-color-grey-60));
 }
 
 merch-card[variant="ccd-suggested"] [slot="cta"] a {
@@ -1676,6 +1676,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a:not(.con-button) {
     --ccd-border-color-light: #E6E6E6;
     --ccd-color-dark: #222;
     --ccd-border-color-dark: #464646;
+    --ccd-color-grey-600: #6D6D6D;
     
     
 

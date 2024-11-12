@@ -83,6 +83,7 @@ styles.innerHTML = `
     --ccd-border-color-light: #E6E6E6;
     --ccd-color-dark: #222;
     --ccd-border-color-dark: #464646;
+    --ccd-color-grey-600: #6D6D6D;
     
     
 
