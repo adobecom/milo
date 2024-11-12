@@ -41,7 +41,7 @@ const updateFragMap = (fragment, a, href) => {
   }
 };
 
-const insertInlineFrag = (sections, a, relHref, mep, handleMepCommands) => {
+const insertInlineFrag = (sections, a, relHref) => {
   // Inline fragments only support one section, other sections are ignored
   const fragChildren = [...sections[0].children];
   if (a.parentElement.nodeName === 'DIV' && !a.parentElement.attributes.length) {
@@ -49,10 +49,7 @@ const insertInlineFrag = (sections, a, relHref, mep, handleMepCommands) => {
   } else {
     a.replaceWith(...fragChildren);
   }
-  fragChildren.forEach((child) => {
-    child.setAttribute('data-path', relHref);
-    if (handleMepCommands) mep.commands = handleMepCommands(mep.commands, child);
-  });
+  fragChildren.forEach((child) => child.setAttribute('data-path', relHref));
 };
 
 function replaceDotMedia(path, doc) {
@@ -132,16 +129,14 @@ export default async function init(a) {
     const { updateFragDataProps } = await import('../../features/personalization/personalization.js');
     updateFragDataProps(a, inline, sections, fragment);
   }
-  let handleMepCommands = false;
   if (mep?.commands?.length) {
     const { handleCommands } = await import('../../features/personalization/personalization.js');
-    handleMepCommands = handleCommands;
+    handleCommands(mep?.commands, fragment, false, true);
   }
   if (inline) {
-    insertInlineFrag(sections, a, relHref, mep, handleMepCommands);
+    insertInlineFrag(sections, a, relHref, mep);
   } else {
     a.parentElement.replaceChild(fragment, a);
-    if (handleMepCommands) handleMepCommands(mep?.commands, fragment);
     await loadArea(fragment);
   }
 }
