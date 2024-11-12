@@ -5,13 +5,17 @@ import {
 } from '../src/constants.js';
 import { InlinePrice } from '../src/inline-price.js';
 import { Price } from '../src/price.js';
-import { getSettings } from '../src/settings.js';
+import { getSettings } from '../src/settings.js';
 
 import { mockFetch } from './mocks/fetch.js';
 import { mockLana, unmockLana } from './mocks/lana.js';
 import snapshots from './mocks/snapshots.js';
 import { withWcs } from './mocks/wcs.js';
-import { initMasCommerceService, expect, disableMasCommerceService } from './utilities.js';
+import {
+    initMasCommerceService,
+    expect,
+    disableMasCommerceService,
+} from './utilities.js';
 
 /**
  * @param {string} wcsOsi
@@ -42,6 +46,28 @@ describe('class "InlinePrice"', () => {
         await inlinePrice.onceSettled();
         expect(inlinePrice.innerHTML).to.be.html(snapshots.price);
         expect(inlinePrice.value).to.be.not.empty;
+    });
+
+    it('re-dispatches click event', async () => {
+        await initMasCommerceService();
+        const inlinePrice = mockInlinePrice('puf');
+        let targetIsInlinePrice = false;
+        inlinePrice.addEventListener(
+            'click',
+            (event) => {
+                targetIsInlinePrice = event.target === inlinePrice;
+            },
+            { once: true },
+        );
+        await inlinePrice.onceSettled();
+        inlinePrice.firstElementChild.dispatchEvent(
+            new MouseEvent('click', {
+                bubbles: true,
+                cancelable: true,
+                view: window,
+            }),
+        );
+        expect(targetIsInlinePrice).to.be.true;
     });
 
     it('renders strikethrough price', async () => {
@@ -174,18 +200,22 @@ describe('class "InlinePrice"', () => {
         it('fails placeholder if "orders" array is empty', async () => {
             await initMasCommerceService();
             const inlinePrice = mockInlinePrice('abm');
-            inlinePrice.renderOffers([], {}, inlinePrice.masElement.togglePending());
+            inlinePrice.renderOffers(
+                [],
+                {},
+                inlinePrice.masElement.togglePending(),
+            );
             expect(inlinePrice.state).to.equal(InlinePrice.STATE_FAILED);
         });
     });
 
     describe('method "requestUpdate"', () => {
-      it('has requestUpdate method', async () => {
-          await initMasCommerceService();
-          const inlinePrice = mockInlinePrice('abm');
-          inlinePrice.requestUpdate();
-      });
-  });
+        it('has requestUpdate method', async () => {
+            await initMasCommerceService();
+            const inlinePrice = mockInlinePrice('abm');
+            inlinePrice.requestUpdate();
+        });
+    });
 
     describe('method "updateOptions"', () => {
         it('updates element data attributes', async () => {

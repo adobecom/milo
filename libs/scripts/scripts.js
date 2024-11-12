@@ -19,7 +19,7 @@ import {
 import locales from '../utils/locales.js';
 
 // Production Domain
-const prodDomains = ['milo.adobe.com'];
+const prodDomains = ['milo.adobe.com', 'business.adobe.com', 'www.adobe.com'];
 
 const stageDomainsMap = {
   'www.stage.adobe.com': {
