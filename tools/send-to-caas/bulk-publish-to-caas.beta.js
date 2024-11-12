@@ -1,4 +1,3 @@
-
 /* eslint-disable no-continue */
 import { loadScript, loadStyle } from '../../libs/utils/utils.js';
 import { getImsToken } from '../utils/utils.js';
@@ -18,8 +17,8 @@ import {
 import comEnterpriseToCaasTagMap from './comEnterpriseToCaasTagMap.js';
 
 const BODY = document.body;
-const SIGNEDIN = BODY.querySelector('.status-signed-in')
-const SIGNEDOUT = BODY.querySelector('.status-signed-out')
+const SIGNEDIN = BODY.querySelector('.status-signed-in');
+const SIGNEDOUT = BODY.querySelector('.status-signed-out');
 
 const LS_KEY = 'bulk-publish-caas';
 const FIELDS = ['preset', 'host', 'repo', 'owner', 'caasEnv', 'urls', 'contentType', 'publishToFloodgate'];
@@ -51,9 +50,7 @@ const fetchExcelJson = async (url) => {
 };
 
 const checkIms = async (prompt = true) => {
-  if (location.search.includes('mode=dev')) return 'fake-token';
-  
-  const accessToken = await getImsToken(loadScript);
+    const accessToken = await getImsToken(loadScript);
   if (!accessToken && prompt) {
     const shouldLogIn = await showConfirm(
       'You must be logged in with an Adobe ID in order to publish to CaaS.\nDo you want to log in?',
@@ -101,7 +98,7 @@ const updateTagsFromSheetData = (tags, sheetTagsStr) => {
 const showClearResultsTables = () => {
   const clearResultsButton = document.querySelector('.clear-results');
   clearResultsButton.style.display = 'block';
-}
+};
 
 const resetResultsTables = () => {
   const successTable = document.querySelector('.success-table');
@@ -112,7 +109,7 @@ const resetResultsTables = () => {
   const errorTBody = errorTable.querySelector('tbody');
   errorTBody.innerHTML = '';
   errorTable.style.display = 'none';
-}
+};
 
 const showSuccessTable = (successArr) => {
   showClearResultsTables();
@@ -130,7 +127,7 @@ const showSuccessTable = (successArr) => {
       <td class="entityid"><a target="_blank" href="${chimeraEndpoint}${response}" title="View Card JSON">${response}</a></td>
     </tr>`;
   });
-}
+};
 
 const showErrorTable = (errorArr) => {
   showClearResultsTables();
@@ -148,14 +145,14 @@ const showErrorTable = (errorArr) => {
       <td>${message}</td>
     </tr>`;
   });
-}
+};
 
 const processData = async (data, accessToken) => {
   const errorArr = [];
   const successArr = [];
   let index = 0;
   let keepGoing = true;
-  const now  = new Date();
+  const now = new Date();
 
   const statusModal = showAlert('', { btnText: 'Cancel', onClose: () => { keepGoing = false; } });
   const {
@@ -177,9 +174,8 @@ const processData = async (data, accessToken) => {
 
   let domain = `https://${host}`;
 
-  // if (usePreview || publishToFloodgate !== 'default') {
   if (usePreview) {
-    domain = `https://stage--${repo}--${owner}.hlx.page`;	
+    domain = `https://stage--${repo}--${owner}.hlx.page`;
   } else if (publishToFloodgate !== 'default') {
     domain = `https://main--${repo}--${owner}.hlx.live`;
   }
@@ -252,7 +248,7 @@ const processData = async (data, accessToken) => {
 
   SIGNEDIN.style.display = 'none';
   SIGNEDOUT.style.display = 'none';
-  resetResultsTables()
+  resetResultsTables();
   if (successArr.length) {
     showSuccessTable(successArr);
   }
@@ -273,9 +269,7 @@ const bulkPublish = async () => {
     await showAlert('Enter a URL or list of URLs, each on a separate line, to be sent to CaaS.', { error: true });
   }
 
-  const data = urls
-    ? urls.split('\n')
-    : await fetchExcelJson(excelFile);
+  const data = urls ? urls.split('\n') : '';
 
   await processData(data, accessToken);
 };
@@ -303,9 +297,10 @@ const loadFromLS = () => {
   } catch (e) { /* do nothing */ }
 };
 
-const publishWarning =  document.querySelector('.publish-warning');
+const publishWarning = document.querySelector('.publish-warning');
 const checkCaasEnv = () => {
-  if (caasEnv.value === 'prod' && !draftOnly.checked) {
+  const { caasEnv, draftOnly } = getConfig();
+  if (caasEnv === 'prod' && !draftOnly.checked) {
     publishWarning.style.height = '30px';
   } else {
     publishWarning.style.height = '0';
@@ -317,16 +312,16 @@ const presetsJsonPath = 'https://milo.adobe.com/drafts/caas/bppresets.json';
 let presetsData = {};
 
 fetchExcelJson(presetsJsonPath).then((presets) => {
-    const separator = document.querySelector('.separator');
-    const parent = separator.parentElement;
-    presetsData = presets;
-    presets.forEach((preset) => {
-      const option = document.createElement('option');
-      option.value = preset.repo;
-      option.text = `${preset.name} (${preset.repo})`;
-      parent.insertBefore(option, separator);
-    });
+  const separator = document.querySelector('.separator');
+  const parent = separator.parentElement;
+  presetsData = presets;
+  presets.forEach((preset) => {
+    const option = document.createElement('option');
+    option.value = preset.repo;
+    option.text = `${preset.name} (${preset.repo})`;
+    parent.insertBefore(option, separator);
   });
+});
 
 const resetAdvancedOptions = () => {
   caasEnv.value = 'prod';
