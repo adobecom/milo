@@ -303,7 +303,9 @@ const loadFromLS = () => {
 
 const publishWarning = document.querySelector('.publish-warning');
 const checkCaasEnv = () => {
+  // eslint-disable-next-line no-undef
   const caasEnvValue = caasEnvSelector.value || 'prod';
+  // eslint-disable-next-line no-undef
   if (caasEnvValue === 'prod' && !draftOnly.checked) {
     publishWarning.style.height = '30px';
   } else {
@@ -328,7 +330,6 @@ fetchExcelJson(presetsJsonPath).then((presets) => {
 });
 
 const resetAdvancedOptions = () => {
-  console.log('resetAdvancedOptions');
   /* eslint-disable no-undef */
   caasEnvSelector.value = 'prod';
   draftOnly.checked = false;
@@ -355,6 +356,7 @@ if (useDarkTheme) {
 
 // eslint-disable-next-line no-undef
 presetSelector.addEventListener('change', () => {
+  // eslint-disable-next-line no-undef
   const { value } = presetSelector;
   const selectedPreset = presetsData.find((item) => item.id === value) || {};
   BODY.classList = '';
