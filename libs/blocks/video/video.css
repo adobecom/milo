@@ -112,7 +112,7 @@ video {
   position: inherit;
 }
 
-.video-container .pause-play-wrapper img.accessibility-control {
+:is(.video-container .pause-play-wrapper, .aside.split.split-left .split-image) img.accessibility-control {
   width: auto;
 }
 
@@ -124,7 +124,7 @@ video {
   display: contents;
 }
 
-@media (min-width: 900px) {
+@media (min-width: 600px) {
   .media:not(.media-reverse-mobile, .media-reversed) .video-container .pause-play-wrapper,
   :is(.marquee.row-reversed .asset, .marquee-anchors, .hero-marquee.asset-left) .video-container .pause-play-wrapper,
   .aside:not(.split) .video-container .pause-play-wrapper {
