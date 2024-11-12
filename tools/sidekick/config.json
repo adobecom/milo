@@ -174,7 +174,7 @@
       "containerId": "tools",
       "id": "rollout",
       "title": "Rollout",
-      "environments": [ "edit", "preview", "dev" ],
+      "environments": [ "preview" ],
       "isPalette": true,
       "passReferrer": true,
       "passConfig": true,
