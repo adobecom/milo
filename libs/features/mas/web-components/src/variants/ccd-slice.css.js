@@ -27,7 +27,8 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a:not(.con-button) {
   color: var(--spectrum-gray-800, var(--merch-color-grey-80));
 }
 
-merch-card[variant="ccd-slice"] [slot="body-s"] span.placeholder-resolved[data-template="priceStrikethrough"] {
+merch-card[variant="ccd-slice"] [slot="body-s"] span.placeholder-resolved[data-template="priceStrikethrough"],
+merch-card[variant="ccd-slice"] [slot="body-s"] span.placeholder-resolved[data-template="strikethrough"] { {
   text-decoration: line-through;
   color: var(--ccd-color-grey-600, var(--merch-color-grey-60));
 }
