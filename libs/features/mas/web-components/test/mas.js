@@ -5,7 +5,7 @@ import '../../src/aem-fragment.js';
 
 /** in tests, eagerly initialisation breaks mocks */
 export default async () => {
-  const el = document.createElement('mas-commerce-service');
-  document.head.appendChild(el);
-  await el.readyPromise;
+    const el = document.createElement('mas-commerce-service');
+    document.head.appendChild(el);
+    await el.readyPromise;
 };
