@@ -1,7 +1,7 @@
 import DA_SDK from 'https://da.live/nx/utils/sdk.js';
 import { LitElement, html, nothing } from 'https://da.live/deps/lit/dist/index.js';
 import getStyle from 'https://da.live/nx/utils/styles.js';
-import { crawl } from 'https://da.live/nx/public/utils/tree.js';
+import { crawl } from '../crawl-tree.js';
 import promoteFiles from '../promote.js';
 import previewOrPublishPaths from '../bulk-action.js';
 import { SUCCESS_CODES } from '../constants.js';
@@ -68,7 +68,9 @@ export default class MiloGraybox extends LitElement {
       callback: () => {
         this.requestUpdate();
       },
-      throttle: 10
+      throttle: 10,
+      accessToken: this.token,
+      crawlType: 'graybox',
     });
     this._crawledFiles = await results;
     // Remove files to be ignored from promote
