@@ -737,6 +737,10 @@ header.global-navigation.has-promo {
   min-height: calc(var(--global-height-nav) + var(--global-height-navPromo));
 }
 
+header.global-navigation a {
+  text-decoration: unset;
+}
+
 @media (min-width: 900px) {
   header.global-navigation.has-breadcrumbs {
     padding-bottom: var(--global-height-breadcrumbs);
@@ -805,25 +809,46 @@ a.fragment {
 
 a {
   color: var(--link-color);
-  text-decoration: none;
+  text-decoration: underline;
 }
 
-a:hover {
-  text-decoration: underline;
+a:hover,
+a:focus,
+a:active {
   color: var(--link-hover-color);
+}
+
+a:has(> sub:only-child) { text-decoration: unset; }
+a > sub:only-child { text-decoration: underline; }
+
+/* Links Quiet */
+a.quiet,
+a.quiet:hover,
+a.quiet:focus,
+a.quiet:active {
+  text-decoration: none;
 }
 
 /* Links Static */
 a.static,
-a.static:hover {
+a.static:hover,
+a.static:focus,
+a.static:active  {
   color: var(--text-color);
-  text-decoration: underline;
 }
 
 .dark a.static,
-.dark a.static:hover {
+.dark a.static:hover,
+.dark a.static:focus,
+.dark a.static:active {
   color: var(--color-white);
-  text-decoration: underline;
+}
+
+:is(h1, h2, h3, h4, h5, h6) a,
+:is(h1, h2, h3, h4, h5, h6) a:hover,
+:is(h1, h2, h3, h4, h5, h6) a:focus,
+:is(h1, h2, h3, h4, h5, h6) a:active {
+  color: currentColor;
 }
 
 /* Buttons */
@@ -833,7 +858,6 @@ a.static:hover {
 
 .static-links a:not([class*="button"]) {
   color: inherit;
-  text-decoration: underline;
 }
 
 .copy-link {
