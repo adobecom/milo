@@ -7,15 +7,15 @@ export const CSS = `
   --consonant-merch-card-ccd-slice-background-img-size: 119px;
 }
 sp-theme[color='light'] merch-card[variant="ccd-slice"] {
-  background-color: var(--ccd-color-light, #F8F8F8);
-  color: var(--ccd-color-dark, #222);
-  border: 1px solid var(--ccd-border-color-light, #E6E6E6)
+  background-color: var(--ccd-gray-100-light, #F8F8F8);
+  color: var(--ccd-gray-800-dark, #222);
+  border: 1px solid var(--ccd-gray-200-light, #E6E6E6)
 }
   
 sp-theme[color='dark'] merch-card[variant="ccd-slice"] {
-  background-color: var(--ccd-color-dark, #222);
-  color: var(--ccd-color-light, #F8F8F8);
-  border: 1px solid var(--ccd-border-color-dark, #464646);
+  background-color: var(--ccd-gray-800-dark, #222);
+  color: var(--ccd-gray-100-light, #F8F8F8);
+  border: 1px solid var(--ccd-gray-700-dark, #464646);
 }
 
 merch-card[variant="ccd-slice"] [slot='body-s'] a:not(.con-button) {
@@ -30,7 +30,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a:not(.con-button) {
 merch-card[variant="ccd-slice"] [slot="body-s"] span.placeholder-resolved[data-template="priceStrikethrough"],
 merch-card[variant="ccd-slice"] [slot="body-s"] span.placeholder-resolved[data-template="strikethrough"] {
   text-decoration: line-through;
-  color: var(--ccd-color-grey-600, var(--merch-color-grey-60));
+  color: var(--ccd-gray-600-light, var(--merch-color-grey-60));
 }
 
 merch-card[variant="ccd-slice"] [slot='image'] img {

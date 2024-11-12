@@ -79,11 +79,12 @@ styles.innerHTML = `
     --merch-color-green-promo: #2D9D78;
 
     /* ccd colors */
-    --ccd-color-light: #F8F8F8;
-    --ccd-border-color-light: #E6E6E6;
-    --ccd-color-dark: #222;
-    --ccd-border-color-dark: #464646;
-    --ccd-color-grey-600: #6D6D6D;
+    --ccd-gray-100-light: #F8F8F8;
+    --ccd-gray-200-light: #E6E6E6;
+    --ccd-gray-800-dark: #222;
+    --ccd-gray-700-dark: #464646;
+    --ccd-gray-600-light: #6D6D6D;
+    --ccd-gray-200-dark: #3F3F3F;
     
     
 
