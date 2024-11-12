@@ -24,6 +24,7 @@ const MILO_BLOCKS = [
   'card-horizontal',
   'card-metadata',
   'carousel',
+  'catalog-marquee',
   'chart',
   'columns',
   'editorial-card',
