@@ -49,6 +49,10 @@ export class CCDSlice extends VariantLayout {
             max-width: 154px;
         }
 
+        :host([variant='ccd-slice'][size='wide']) ::slotted([slot='body-s']) {
+          max-width: 425px;
+        }
+
         :host([variant='ccd-slice'][size='wide']) {
             width: var(--consonant-merch-card-ccd-slice-wide-width);
             max-width: var(--consonant-merch-card-ccd-slice-wide-width);
