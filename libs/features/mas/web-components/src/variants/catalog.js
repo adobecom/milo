@@ -8,7 +8,7 @@ const AEM_FRAGMENT_MAPPING = {
     title: { tag: 'h3', slot: 'heading-xs' },
     prices: { tag: 'h3', slot: 'heading-xs' },
     description: { tag: 'div', slot: 'body-xs' },
-    ctas: { size: 'l' },
+    ctas: { slot: 'footer', size: 'm' },
     allowedSizes: ['wide', 'super-wide'],
 };
 
@@ -33,14 +33,18 @@ export class Catalog extends VariantLayout {
                             : ''}
                 ${!this.card.actionMenu ? 'hidden' : 'invisible'}"
                         @click="${this.toggleActionMenu}"
-                    ></div>
+                        @keypress="${this.toggleActionMenu}"
+                        tabindex="0"
+                        role="button"
+                    >Action Menu</div>
                 </div>
                 <slot
                     name="action-menu-content"
                     class="action-menu-content
             ${!this.card.actionMenuContent ? 'hidden' : ''}"
-                    >${this.card.actionMenuContent}</slot
-                >
+                    @focusout="${this.hideActionMenu}"
+                    >${this.card.actionMenuContent}
+                </slot>
                 <slot name="heading-xs"></slot>
                 <slot name="heading-m"></slot>
                 <slot name="body-xxs"></slot>
@@ -62,34 +66,74 @@ export class Catalog extends VariantLayout {
         return CSS;
     }
 
+    dispatchActionMenuToggle = () => {
+      this.card.dispatchEvent(
+        new CustomEvent(EVENT_MERCH_CARD_ACTION_MENU_TOGGLE, {
+            bubbles: true,
+            composed: true,
+            detail: {
+                card: this.card.name,
+                type: 'action-menu',
+            },
+        }),
+      );
+    };
+
     toggleActionMenu = (e) => {
+      const actionMenuContentSlot = this.card.shadowRoot.querySelector(
+          'slot[name="action-menu-content"]',
+      );
+      if (!actionMenuContentSlot || !e || (e.type !== 'click' && e.code !== 'Space' && e.code !== 'Enter')) return;
+
+      e.preventDefault();
+      actionMenuContentSlot.classList.toggle('hidden');
+      if (!actionMenuContentSlot.classList.contains('hidden')) this.dispatchActionMenuToggle();
+    };
+    
+    toggleActionMenuFromCard = (e) => {
         //beware this is an event on card, so this points to the card, not the layout
         const retract = e?.type === 'mouseleave' ? true : undefined;
-        const actionMenuContentSlot = this.card.shadowRoot.querySelector(
+        const shadowRoot = this.card.shadowRoot;
+        const actionMenu = shadowRoot.querySelector('.action-menu');
+        this.card.blur();
+        actionMenu?.classList.remove('always-visible');
+        const actionMenuContentSlot = shadowRoot.querySelector(
             'slot[name="action-menu-content"]',
         );
         if (!actionMenuContentSlot) return;
-        if (!retract) {
-            this.card.dispatchEvent(
-                new CustomEvent(EVENT_MERCH_CARD_ACTION_MENU_TOGGLE, {
-                    bubbles: true,
-                    composed: true,
-                    detail: {
-                        card: this.card.name,
-                        type: 'action-menu',
-                    },
-                }),
-            );
-        }
+
+        if (!retract) this.dispatchActionMenuToggle();
         actionMenuContentSlot.classList.toggle('hidden', retract);
+    };
+    
+    hideActionMenu = (e) => {
+      const actionMenuContentSlot = this.card.shadowRoot.querySelector(
+        'slot[name="action-menu-content"]',
+      );
+      actionMenuContentSlot?.classList.add('hidden');
+    }
+    
+    focusEventHandler = (e) => {
+        const actionMenu = this.card.shadowRoot.querySelector('.action-menu');
+        if (!actionMenu) return;
+        
+        actionMenu.classList.add('always-visible');
+        if (e.relatedTarget?.nodeName === 'MERCH-CARD-COLLECTION'
+            || (e.relatedTarget?.nodeName === 'MERCH-CARD' && e.target.nodeName !== 'MERCH-ICON')) {
+            actionMenu.classList.remove('always-visible');
+        }
     };
 
     connectedCallbackHook() {
-        this.card.addEventListener('mouseleave', this.toggleActionMenu);
+        this.card.addEventListener('mouseleave', this.toggleActionMenuFromCard);
+        this.card.addEventListener('focusout', this.focusEventHandler);
     }
+
     disconnectedCallbackHook() {
-        this.card.removeEventListener('mouseleave', this.toggleActionMenu);
+        this.card.removeEventListener('mouseleave', this.toggleActionMenuFromCard);
+        this.card.removeEventListener('focusout', this.focusEventHandler);
     }
+
     static variantStyle = css`
         :host([variant='catalog']) {
             min-height: 330px;

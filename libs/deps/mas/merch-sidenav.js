@@ -69,6 +69,7 @@ import{html as k,css as H,LitElement as P}from"/libs/deps/lit-all.min.js";var r=
         </div>`}};customElements.define("merch-sidenav-checkbox-group",u);var y="(max-width: 700px)";var S="(max-width: 1199px)";var _=/iP(ad|hone|od)/.test(window?.navigator?.platform)||window?.navigator?.platform==="MacIntel"&&window.navigator.maxTouchPoints>1,E=!1,h,T=s=>{s&&(_?(document.body.style.position="fixed",s.ontouchmove=e=>{e.targetTouches.length===1&&e.stopPropagation()},E||(document.addEventListener("touchmove",e=>e.preventDefault()),E=!0)):(h=document.body.style.overflow,document.body.style.overflow="hidden"))},w=s=>{s&&(_?(s.ontouchstart=null,s.ontouchmove=null,document.body.style.position="",document.removeEventListener("touchmove",e=>e.preventDefault()),E=!1):h!==void 0&&(document.body.style.overflow=h,h=void 0))};var f=class extends P{static properties={sidenavTitle:{type:String},closeText:{type:String,attribute:"close-text"},modal:{type:Boolean,attribute:"modal",reflect:!0}};#e;constructor(){super(),this.modal=!1}static styles=[H`
             :host {
                 display: block;
+                z-index: 2;
             }
 
             :host(:not([modal])) {

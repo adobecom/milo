@@ -22,6 +22,7 @@ import merch, {
   PRICE_TEMPLATE_REGULAR,
   getMasBase,
   appendTabName,
+  appendExtraOptions,
   getMiloLocaleSettings,
   reopenModal,
   setCtaHash,
@@ -310,10 +311,10 @@ describe('Merch Block', () => {
     it('renders merch link to CTA, config values', async () => {
       setConfig({
         ...config,
-        commerce: { ...config.commerce },
+        commerce: { ...config.commerce, checkoutClientId: 'dc' },
       });
       mockIms();
-      await initService(true, { 'checkout-client-id': 'dc' });
+      await initService(true);
       const el = await merch(document.querySelector('.merch.cta.config'));
       const { dataset, href, nodeName, textContent } = await el.onceSettled();
       const url = new URL(href);
@@ -787,6 +788,20 @@ describe('Merch Block', () => {
         document.querySelector('meta[name="preselect-plan"]').remove();
       });
     });
+
+    it('appends extra options to URL', () => {
+      const url = 'https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/all-apps/master.modal.html';
+      const resultUrl = appendExtraOptions(url, JSON.stringify({ promoid: 'test' }));
+      expect(resultUrl).to.equal('https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/all-apps/master.modal.html?promoid=test');
+    });
+
+    it('does not append extra options to URL if invalid URL or params not provided', () => {
+      const invalidUrl = 'invalid-url';
+      const resultUrl = appendExtraOptions(invalidUrl, JSON.stringify({ promoid: 'test' }));
+      expect(resultUrl).to.equal(invalidUrl);
+      const resultUrl2 = appendExtraOptions(invalidUrl);
+      expect(resultUrl2).to.equal(invalidUrl);
+    });
   });
 
   describe('checkout link with optional params', async () => {
@@ -856,6 +871,21 @@ describe('Merch Block', () => {
         const wcsLocale = getMiloLocaleSettings({ prefix }).locale;
         expect(wcsLocale).to.be.equal(expectedLocale);
       });
+    });
+  });
+
+  describe('AU resources', () => {
+    it('Load AU styles', async () => {
+      setConfig({
+        ...config,
+        pathname: '/au/test.html',
+        locales: { au: { ietf: 'en-AU' } },
+        prodDomains: PROD_DOMAINS,
+        placeholders: { download: 'Download' },
+        locale: { prefix: '/au' },
+      });
+      await mockIms('AU');
+      await initService(true);
     });
   });
 });

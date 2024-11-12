@@ -103,7 +103,7 @@ class KeyboardNavigation {
             }
             case 'Enter':
             case 'Space': {
-              if (e.target.closest(selectors.searchField)) return;
+              if (e.target.closest(selectors.searchField) || e.target.closest('.feds-client-search')) return;
               e.stopPropagation();
               e.preventDefault();
               e.target.click();
