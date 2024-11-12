@@ -119,6 +119,7 @@ const showSuccessTable = (successArr) => {
   const tableBody = successTable.querySelector('tbody');
   successTable.style.display = 'block';
   let index = 0;
+  /* eslint-disable no-plusplus */
   successArr.forEach(([pageUrl, response]) => {
     tableBody.innerHTML += `<tr>
       <td>${++index}</td>
@@ -127,6 +128,7 @@ const showSuccessTable = (successArr) => {
       <td class="entityid"><a target="_blank" href="${chimeraEndpoint}${response}" title="View Card JSON">${response}</a></td>
     </tr>`;
   });
+  /* eslint-enable no-plusplus */
 };
 
 const showErrorTable = (errorArr) => {
@@ -135,6 +137,7 @@ const showErrorTable = (errorArr) => {
   const tableBody = errorTable.querySelector('tbody');
   errorTable.style.display = 'block';
   let index = 0;
+  /* eslint-disable no-plusplus */
   errorArr.forEach(([pageUrl, response]) => {
     index += 1;
     const message = response.error ? response.error.replace(/:.*/, '') : response;
@@ -145,6 +148,7 @@ const showErrorTable = (errorArr) => {
       <td>${message}</td>
     </tr>`;
   });
+  /* eslint-enable no-plusplus */
 };
 
 const processData = async (data, accessToken) => {
@@ -179,7 +183,7 @@ const processData = async (data, accessToken) => {
   } else if (publishToFloodgate !== 'default') {
     domain = `https://main--${repo}--${owner}.hlx.live`;
   }
-  
+
   for (const page of data) {
     if (!keepGoing) break;
 
@@ -329,7 +333,7 @@ const resetAdvancedOptions = () => {
   useHtml.checked = false;
   usePreview.checked = false;
   publishToFloodgate.value = 'default';
-};  
+};
 
 const useDarkTheme = localStorage.getItem('bp-theme') === 'dark'
   ? true
