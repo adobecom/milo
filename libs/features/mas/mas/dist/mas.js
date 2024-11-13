@@ -1379,7 +1379,7 @@ merch-card[variant="ccd-suggested"] [slot="cta"] a {
   font-weight: 700;
 }
 
-sp-theme[color='dark'] merch-card[variant="ccd-suggested"] [slot="cta"] {
+sp-theme[color='dark'] merch-card[variant="ccd-suggested"] [slot="cta"] sp-button[treatment="outline"] {
   color: var(--ccd-gray-200-light, #E6E6E6);
   border: 2px solid var(--ccd-gray-200-light, #E6E6E6);
 }
