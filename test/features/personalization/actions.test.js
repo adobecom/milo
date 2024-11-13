@@ -346,10 +346,10 @@ describe('custom actions', async () => {
             pageFilter: '',
             selectorType: 'in-block:',
           },
-          'https://main--federal--adobecom.hlx.page/federal/fragments/new-sub-menu': {
+          'https://main--federal--adobecom.aem.page/federal/fragments/new-sub-menu': {
             action: 'replace',
             pageFilter: '',
-            content: 'https://main--federal--adobecom.hlx.page/federal/fragments/even-more-new-sub-menu',
+            content: 'https://main--federal--adobecom.aem.page/federal/fragments/even-more-new-sub-menu',
             selectorType: 'in-block:',
             manifestId: false,
             targetManifestId: false,
