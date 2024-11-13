@@ -1433,7 +1433,7 @@ merch-card[variant="ccd-suggested"] [slot="cta"] a {
 
     :host([variant='ccd-suggested']) .body {
       height: auto;
-      padding: 20px 19px 20px 20px;
+      padding: 20px;
     }
 
     :host([variant='ccd-suggested'].thin-strip) .body {
