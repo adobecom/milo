@@ -37,8 +37,8 @@ video {
 }
 
 .video-container .pause-play-wrapper {
-  width: 45px !important;
-  height: 45px !important;
+  width: 45px;
+  height: 45px;
   position: absolute;
   bottom: 2%;
   right: 2%;
@@ -61,7 +61,7 @@ video {
 }
 
 :is(.marquee:not(.light), .dark) .video-container .pause-play-wrapper .offset-filler {
-  border: 2px solid white;
+  border: 2px solid #fff;
 }
 
 :is(.marquee:not(.light), .dark) .video-container .pause-play-wrapper:focus .offset-filler {
@@ -74,8 +74,8 @@ video {
 }
 
 .video-container .pause-play-wrapper:focus-visible .offset-filler {
-  border: 2px solid white;
-  outline: 1px solid white;
+  border: 2px solid #fff;
+  outline: 1px solid #fff;
 }
 
 .video-container .pause-play-wrapper:focus-visible {

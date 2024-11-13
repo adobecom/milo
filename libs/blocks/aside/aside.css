@@ -1075,10 +1075,6 @@
     max-width: 1396px;
   }
 
-  .aside.split .video-container .pause-play-wrapper img.accessibility-control {
-    width: auto;
-  }
-
   .aside.split .desktop-wide img,
   .aside.split .desktop-wide video {
     aspect-ratio: var(--aspect-ratio-wide);

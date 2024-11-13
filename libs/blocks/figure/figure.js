@@ -1,4 +1,4 @@
-import { applyHoverPlay, decorateAnchorVideo, applyAccessibiltyEvents, decoratePausePlayWrapper } from '../../utils/decorate.js';
+import { applyHoverPlay, decorateAnchorVideo, applyAccessibilityEvents, decoratePausePlayWrapper, isAccessible } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
 
 function buildCaption(pEl) {
@@ -21,7 +21,6 @@ function decorateVideo(clone, figEl) {
   if (anchorTag && !anchorTag.hash) anchorTag.hash = '#autoplay';
   if (anchorTag) decorateAnchorVideo({ src: anchorTag.href, anchorTag });
   if (videoTag) {
-    const videoContainer = clone.querySelector('.video-container, .pause-play-wrapper, video');
     videoTag.removeAttribute('data-mouseevent');
     if (videoTag.dataset?.videoSource) {
       videoTag.appendChild(
@@ -32,11 +31,11 @@ function decorateVideo(clone, figEl) {
       );
     }
     applyHoverPlay(videoTag);
-    if (!videoTag.controls) {
-      applyAccessibiltyEvents(videoTag);
+    if (!videoTag.controls && isAccessible(anchorTag)) {
+      applyAccessibilityEvents(videoTag);
       decoratePausePlayWrapper(videoTag, 'autoplay');
     }
-    figEl.prepend(videoContainer);
+    figEl.prepend(clone.querySelector('.video-container, .pause-play-wrapper, video'));
   }
 }
 

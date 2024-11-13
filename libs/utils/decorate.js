@@ -1,4 +1,5 @@
 import { createTag, loadStyle, getConfig, createIntersectionObserver } from './utils.js';
+import { getFederatedContentRoot, getFedsPlaceholderConfig } from "./federated.js"
 
 const { miloLibs, codeRoot } = getConfig();
 const HIDE_CONTROLS = '_hide-controls';
@@ -257,27 +258,24 @@ export function syncPausePlayIcon(video) {
     anchorTag?.setAttribute('aria-label', `${ariaLabel} `);
     anchorTag?.setAttribute('aria-pressed', isPlaying ? 'true' : 'false');
     const daaLL = anchorTag.getAttribute('daa-ll');
-    if (daaLL) {
-      anchorTag.setAttribute('daa-ll', daaLL.replace(oldLabel, changedLabel));
-    }
+    if (daaLL) anchorTag.setAttribute('daa-ll', daaLL.replace(oldLabel, changedLabel));
   }
 }
 
 export function addAccessibilityControl(videoString, videoAttrs, indexOfVideo, tabIndex = 0) {
-  if (!videoAttrs.includes('controls')) {
-    if (videoAttrs.includes('hoverplay')) {
-      return `<a class='pause-play-wrapper video-holder' tabindex=${tabIndex}>${videoString}</a>`;
-    }
-    return `<div class='video-container video-holder'>${videoString}
+  if (videoAttrs.includes('controls')) return videoString;
+  const fedRoot = getFederatedContentRoot();
+  if (videoAttrs.includes('hoverplay')) {
+    return `<a class='pause-play-wrapper video-holder' tabindex=${tabIndex}>${videoString}</a>`;
+  }
+  return `<div class='video-container video-holder'>${videoString}
     <a class='pause-play-wrapper' role='button' tabindex=${tabIndex} aria-pressed=true video-index=${indexOfVideo}>
     <div class='offset-filler ${videoAttrs.includes('autoplay') ? 'is-playing' : ''}'>  
-      <img class='accessibility-control pause-icon' src='https://main--federal--adobecom.hlx.page/federal/assets/svgs/accessibility-pause.svg'/>
-      <img class='accessibility-control play-icon' src='https://main--federal--adobecom.hlx.page/federal/assets/svgs/accessibility-play.svg'/>
+      <img class='accessibility-control pause-icon' src='${fedRoot}/federal/assets/svgs/accessibility-pause.svg'/>
+      <img class='accessibility-control play-icon' src='${fedRoot}/federal/assets/svgs/accessibility-play.svg'/>
     </div>
   </a>
 </div>`;
-  }
-  return videoString;
 }
 
 export function handlePause(event) {
@@ -311,7 +309,7 @@ export function applyHoverPlay(video) {
   }
 }
 
-export function applyAccessibiltyEvents(videoEl) {
+export function applyAccessibilityEvents(videoEl) {
   const pausePlayWrapper = videoEl.parentElement.querySelector('.pause-play-wrapper') || videoEl.closest('.pause-play-wrapper');
   if (pausePlayWrapper?.querySelector('.accessibility-control')) {
     pausePlayWrapper.addEventListener('click', handlePause);
@@ -411,15 +409,13 @@ export async function loadCDT(el, classList) {
 }
 
 export function isAccessible(anchorTag) {
-  return !anchorTag.hash.includes(HIDE_CONTROLS);
+  return !anchorTag?.hash.includes(HIDE_CONTROLS);
 }
 
 function updateFirstVideo() {
   if (firstVideo != null && firstVideo?.controls === false && videoCounter > 1) {
     let videoHolder = document.querySelector('[video-index="1"]') || firstVideo.closest('.video-holder');
-    if (videoHolder.nodeName !== 'A') {
-      videoHolder = videoHolder.querySelector('a.pause-play-wrapper');
-    }
+    if (videoHolder.nodeName !== 'A') videoHolder = videoHolder.querySelector('a.pause-play-wrapper');
     const firstVideoLabel = videoHolder.getAttribute('aria-label');
     videoHolder.setAttribute('aria-label', `${firstVideoLabel} 1`);
     firstVideo = null;
@@ -432,7 +428,8 @@ function updateAriaLabel(videoEl, videoAttrs) {
     const pauseIcon = pausePlayWrapper.querySelector('.pause-icon');
     const playIcon = pausePlayWrapper.querySelector('.play-icon');
     const indexOfVideo = pausePlayWrapper.getAttribute('video-index');
-    const ariaLabel = `${videoAttrs.includes('autoplay') ? videoLabels.pauseMotion : videoLabels.playMotion} ${indexOfVideo === '1' && videoCounter === 1 ? '' : indexOfVideo}`.trim();
+    let ariaLabel = `${videoAttrs.includes('autoplay') ? videoLabels.pauseMotion : videoLabels.playMotion}`;
+    ariaLabel = ariaLabel.concat(`${indexOfVideo === '1' && videoCounter === 1 ? '' : indexOfVideo}`);
     pausePlayWrapper.setAttribute('aria-label', ariaLabel);
     pauseIcon.setAttribute('alt', videoLabels.pauseMotion);
     playIcon.setAttribute('alt', videoLabels.playMotion);
@@ -442,7 +439,7 @@ function updateAriaLabel(videoEl, videoAttrs) {
 
 export function decoratePausePlayWrapper(videoEl, videoAttrs) {
   if (!videoLabels.hasFetched) {
-    Promise.all([import('../features/placeholders.js'), import('../blocks/global-navigation/utilities/utilities.js')]).then(([{ replaceKeyArray }, { getFedsPlaceholderConfig }]) => {
+    import('../features/placeholders.js').then(({ replaceKeyArray }) => {
       replaceKeyArray(['pause-motion', 'play-motion', 'pause-icon', 'play-icon'], getFedsPlaceholderConfig())
         .then(([pauseMotion, playMotion, pauseIcon, playIcon]) => {
           videoLabels = { playMotion, pauseMotion, pauseIcon, playIcon };
@@ -483,7 +480,7 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
     },
   });
   if (accessibilityEnabled) {
-    applyAccessibiltyEvents(videoEl);
+    applyAccessibilityEvents(videoEl);
     if (!videoEl.controls) {
       decoratePausePlayWrapper(videoEl, attrs);
     }

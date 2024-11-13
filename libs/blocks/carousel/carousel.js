@@ -168,7 +168,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   referenceSlide.classList.remove('reference-slide');
   referenceSlide.style.order = null;
   activeSlide.classList.remove('active');
-  activeSlide.querySelectorAll('a,video').forEach((focusableElement) => { focusableElement.setAttribute('tabindex', -1); });
+  activeSlide.querySelectorAll('a, video').forEach((focusableElement) => focusableElement.setAttribute('tabindex', -1));
   activeSlideIndicator.classList.remove('active');
   activeSlideIndicator.setAttribute('tabindex', -1);
 
@@ -230,10 +230,10 @@ function moveSlides(event, carouselElements, jumpToIndex) {
       if (index < show) {
         tabIndex = 0;
       }
-      slide.querySelectorAll('a,:not(.video-container,.pause-play-wrapper) > video').forEach((focusableElement) => { focusableElement.setAttribute('tabindex', tabIndex); });
+      slide.querySelectorAll('a,:not(.video-container, .pause-play-wrapper) > video').forEach((focusableElement) => { focusableElement.setAttribute('tabindex', tabIndex); });
     });
   } else {
-    activeSlide.querySelectorAll('a,:not(.video-container,.pause-play-wrapper) > video').forEach((focusableElement) => { focusableElement.setAttribute('tabindex', 0); });
+    activeSlide.querySelectorAll('a,:not(.video-container, .pause-play-wrapper) > video').forEach((focusableElement) => { focusableElement.setAttribute('tabindex', 0); });
   }
   activeSlideIndicator.classList.add('active');
   activeSlideIndicator.setAttribute('tabindex', 0);

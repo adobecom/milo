@@ -13,7 +13,6 @@ import {
   getActiveLink,
   getAnalyticsValue,
   getExperienceName,
-  getFedsPlaceholderConfig,
   hasActiveLink,
   isActiveLink,
   icons,
@@ -40,6 +39,7 @@ import {
   setDisableAEDState,
   getDisableAEDState,
 } from './utilities/utilities.js';
+import { getFedsPlaceholderConfig } from '../../utils/federated.js';
 
 import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
 
@@ -679,7 +679,7 @@ class Gnav {
 
     return this.loadDelayed().then(() => {
       this.blocks.search.instance = new this.Search(this.blocks.search.config);
-    }).catch(() => {});
+    }).catch(() => { });
   };
 
   isToggleExpanded = () => this.elements.mobileToggle?.getAttribute('aria-expanded') === 'true';
@@ -773,7 +773,7 @@ class Gnav {
         if (allSvgImgs.length === 2) return allSvgImgs[1];
 
         const images = blockLinks.filter((blockLink) => imgRegex.test(blockLink.href)
-        || imgRegex.test(blockLink.textContent));
+          || imgRegex.test(blockLink.textContent));
         if (images.length === 2) return getBrandImage(images[1], isBrandImage);
       }
       const svgImg = rawBlock.querySelector('picture img[src$=".svg"]');

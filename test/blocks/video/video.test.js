@@ -29,8 +29,6 @@ describe('video uploaded using franklin bot', () => {
     const block2 = document.querySelector('.video.autoplay.second');
     const a = block.querySelector('a');
     const a2 = block2.querySelector('a');
-    block.append(a);
-    block2.append(a2);
     init(a);
     await new Promise((resolve) => { setTimeout(resolve, 600); });
     await clock.runAllAsync();
@@ -168,13 +166,12 @@ describe('video uploaded using franklin bot', () => {
     });
 
     const a = block.querySelector('a');
-    block.append(a);
     init(a);
     const video = block.querySelector('video');
     decoratePausePlayWrapper(video, '');
     const pausePlayWrapper = block.querySelector('.pause-play-wrapper');
     pausePlayWrapper.click();
-    await new Promise((resolve) => { setTimeout(resolve, 1000); });
+    await new Promise((resolve) => { setTimeout(resolve, 500); });
     await clock.runAllAsync();
     expect(pausePlayWrapper.ariaPressed).to.eql('false');
   });
@@ -182,7 +179,6 @@ describe('video uploaded using franklin bot', () => {
   it('accessibility controls should play autoplay videos after pausing', async () => {
     const block = document.querySelector('.video.autoplay.viewportplay');
     const a = block.querySelector('a');
-    block.append(a);
     init(a);
     const pausePlayWrapper = block.querySelector('.pause-play-wrapper');
     pausePlayWrapper.click();
@@ -203,7 +199,6 @@ describe('video uploaded using franklin bot', () => {
   it('video should be paused on focus out or blur', async () => {
     const block = document.querySelector('.video.autoplay1.hoverplay.no-viewportplay');
     const a = block.querySelector('a');
-    block.append(a);
     init(a);
     await new Promise((resolve) => { setTimeout(resolve, 0); });
     await clock.runAllAsync();
