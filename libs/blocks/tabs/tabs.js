@@ -295,6 +295,7 @@ const init = (block) => {
         assocTabItem = rootElem.querySelector(`#tab-panel-${id}-${val}`);
       }
       if (assocTabItem) {
+        assocTabItem.setAttribute('daa-lh', `#tab-panel-${id}-${val}`);
         const section = sectionMetadata.closest('.section');
         assocTabItem.append(section);
       }
