@@ -5,4 +5,142 @@ a[href*='.mp4'].hide-video {
 video {
   max-width: 100%;
   height: auto;
+  object-fit: cover;
+}
+
+:is(.marquee, .aside.split) .pause-play-wrapper img.accessibility-control {
+  min-height: 40px;
+}
+
+.video-container {
+  display: flex;
+  position: relative;
+  height: 100%;
+  width: fit-content;
+  margin: auto;
+}
+
+:is(.aside, .marquee, .quiz-marquee) .video-container {
+  width: auto;
+}
+
+.brick-media .video-container {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+}
+
+.pause-play-wrapper {
+  display: flex;
+  width: fit-content;
+  margin: auto;
+}
+
+.video-container .pause-play-wrapper {
+  width: 45px;
+  height: 45px;
+  position: absolute;
+  bottom: 2%;
+  right: 2%;
+  margin: 0;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  z-index: 2;
+  cursor: pointer;
+}
+
+.video-container .pause-play-wrapper .offset-filler {  
+  display: inherit;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: inherit;
+  background: var(--color-gray-800);
+}
+
+:is(.marquee:not(.light), .dark) .video-container .pause-play-wrapper .offset-filler {
+  border: 2px solid #fff;
+}
+
+:is(.marquee:not(.light), .dark) .video-container .pause-play-wrapper:focus .offset-filler {
+  outline: 1px solid #000;
+}
+
+.video-container .pause-play-wrapper .offset-filler:hover {
+  background: #000;
+  outline: var(--color-accent-focus-ring) solid 2px;
+}
+
+.video-container .pause-play-wrapper:focus-visible .offset-filler {
+  border: 2px solid #fff;
+  outline: 1px solid #fff;
+}
+
+.video-container .pause-play-wrapper:focus-visible {
+  background: #000;
+  outline: var(--color-accent-focus-ring) solid 2px;
+}
+
+.video-container .pause-play-wrapper .offset-filler.is-playing .play-icon,
+.video-container .pause-play-wrapper .offset-filler:not(.is-playing) .pause-icon {
+  display: none;
+}
+
+:is(.editorial-card, .hero-marquee, .marquee):not(:has(.video-container)) .pause-play-wrapper,
+.editorial-card .video-container {
+  width: auto;
+  height: 100%;
+}
+
+.brick .brick-media:not(:has(.video-container)) .pause-play-wrapper {
+  border-radius: 0;
+  border-top-right-radius: inherit;
+  border-bottom-right-radius: inherit;
+  width: auto;
+  height: 100%;
+  margin: 0;
+}
+
+[dir="rtl"] .brick .brick-media:not(:has(.video-container)) .pause-play-wrapper {
+  border-top-left-radius: inherit;
+  border-bottom-left-radius: inherit;
+}
+
+.hero-marquee .background .video-container {
+  position: inherit;
+}
+
+:is(.video-container .pause-play-wrapper, .aside.split.split-left .split-image) img.accessibility-control {
+  width: auto;
+}
+
+.video-container .pause-play-wrapper img.hidden {
+  display: none;
+}
+
+.marquee .background .video-container {
+  display: contents;
+}
+
+@media (min-width: 600px) {
+  .media:not(.media-reverse-mobile, .media-reversed) .video-container .pause-play-wrapper,
+  :is(.marquee.row-reversed .asset, .marquee-anchors, .hero-marquee.asset-left) .video-container .pause-play-wrapper,
+  .aside:not(.split) .video-container .pause-play-wrapper {
+    left: 2%;
+  }
+
+  :is(.section[class*="-up"] .media .foreground .image:first-child, .aside .foreground .image:nth-last-child(1)) 
+  .video-container .pause-play-wrapper {
+    left: auto;
+    right: 2%;
+  }
+
+  [dir="rtl"] :is(.marquee.split:not(.row-reversed), .media:is(.media-reverse-mobile, .media-reversed),
+  .hero-marquee:not(.asset-left) :is([class*="foreground"]), .aside.split,
+  .aside .foreground.container .image:nth-last-child(1), .brick.media-right, .how-to) .video-container .pause-play-wrapper {
+    left: 2%;
+    right: auto;
+  }
 }

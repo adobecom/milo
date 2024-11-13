@@ -4,18 +4,41 @@ import sinon from 'sinon';
 import { waitFor, waitForElement } from '../../helpers/waitfor.js';
 
 import { setConfig, createTag } from '../../../libs/utils/utils.js';
-import { decorateAnchorVideo } from '../../../libs/utils/decorate.js';
+import { decorateAnchorVideo, handlePause, applyHoverPlay, decoratePausePlayWrapper } from '../../../libs/utils/decorate.js';
 
 setConfig({});
 const { default: init } = await import('../../../libs/blocks/video/video.js');
 
 describe('video uploaded using franklin bot', () => {
+  let clock;
   beforeEach(async () => {
+    clock = sinon.useFakeTimers({
+      toFake: ['setTimeout'],
+      shouldAdvanceTime: true,
+    });
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });
   });
 
   afterEach(() => {
+    clock.restore();
     document.body.innerHTML = '';
+  });
+
+  it('aria-label should not have index when page has only one video', async () => {
+    const block = document.querySelector('.video.autoplay.single');
+    const block2 = document.querySelector('.video.autoplay.second');
+    const a = block.querySelector('a');
+    const a2 = block2.querySelector('a');
+    init(a);
+    await new Promise((resolve) => { setTimeout(resolve, 600); });
+    await clock.runAllAsync();
+    const pausePlayWrapper = block.querySelector('.pause-play-wrapper');
+    pausePlayWrapper.removeAttribute('video-index');
+    init(a2);
+    await new Promise((resolve) => { setTimeout(resolve, 500); });
+    await clock.runAllAsync();
+    const videoIndex = pausePlayWrapper.getAttribute('video-index');
+    expect(videoIndex).to.be.null;
   });
 
   it('removes the element, if it does not have a parent node', (done) => {
@@ -114,6 +137,85 @@ describe('video uploaded using franklin bot', () => {
     expect(video.hasAttribute('data-play-viewport')).to.be.true;
   });
 
+  it('accessibility controls should pause autoplay videos', async () => {
+    const block = document.querySelector('.video.autoplay.viewportplay');
+    const fetchStub = sinon.stub(window, 'fetch');
+    fetchStub.resolves({
+      total: 19,
+      offset: 0,
+      limit: 19,
+      data: [
+        {
+          key: 'play-motion',
+          value: 'Play',
+        },
+        {
+          key: 'pause-motion',
+          value: 'Pause',
+        },
+        {
+          key: 'play-icon',
+          value: 'play icon',
+        },
+        {
+          key: 'pause-icon',
+          value: 'pause icon',
+        },
+      ],
+      ':type': 'sheet',
+    });
+
+    const a = block.querySelector('a');
+    init(a);
+    const video = block.querySelector('video');
+    decoratePausePlayWrapper(video, '');
+    const pausePlayWrapper = block.querySelector('.pause-play-wrapper');
+    pausePlayWrapper.click();
+    await new Promise((resolve) => { setTimeout(resolve, 500); });
+    await clock.runAllAsync();
+    expect(pausePlayWrapper.ariaPressed).to.eql('false');
+  });
+
+  it('accessibility controls should play autoplay videos after pausing', async () => {
+    const block = document.querySelector('.video.autoplay.viewportplay');
+    const a = block.querySelector('a');
+    init(a);
+    const pausePlayWrapper = block.querySelector('.pause-play-wrapper');
+    pausePlayWrapper.click();
+    pausePlayWrapper.setAttribute('daa-ll', 'pause-motion');
+    await new Promise((resolve) => { setTimeout(resolve, 500); });
+    await clock.runAllAsync();
+    pausePlayWrapper.click();
+    expect(pausePlayWrapper.querySelector('.is-playing')).to.exist;
+  });
+
+  it('handlePause should return undefined if called with unknown event', async () => {
+    const event = {};
+    event.stopPropagation = sinon.stub();
+    const x = handlePause(event);
+    expect(x).to.be.undefined;
+  });
+
+  it('video should be paused on focus out or blur', async () => {
+    const block = document.querySelector('.video.autoplay1.hoverplay.no-viewportplay');
+    const a = block.querySelector('a');
+    init(a);
+    await new Promise((resolve) => { setTimeout(resolve, 0); });
+    await clock.runAllAsync();
+    const pausePlayWrapper = block.querySelector('.pause-play-wrapper');
+    const video = block.querySelector('video');
+    pausePlayWrapper.focus();
+    await new Promise((resolve) => { setTimeout(resolve, 0); });
+    await clock.runAllAsync();
+    pausePlayWrapper.blur();
+    expect(video.paused).to.be.true;
+  });
+
+  it('should return undefined if video is not present', async () => {
+    const returnValue = applyHoverPlay();
+    expect(returnValue).to.be.undefined;
+  });
+
   it('play video when element reached 80% viewport', async () => {
     const block = document.querySelector('.video.autoplay.viewportplay.scrolled-80');
     const a = block.querySelector('a');
@@ -179,7 +281,7 @@ describe('video uploaded using franklin bot', () => {
 
     await nextFrame();
     await new Promise((resolve) => {
-      setTimeout(resolve, 100);
+      setTimeout(resolve, 200);
     });
     assert.isTrue(pauseSpy.calledOnce);
     video.dispatchEvent(new Event('ended'));
