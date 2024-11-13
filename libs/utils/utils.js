@@ -1242,18 +1242,6 @@ async function resolveInlineFrags(section) {
   section.preloadLinks = newlyDecoratedSection.preloadLinks;
 }
 
-export function setIconsIndexClass(icons) {
-  [...icons].forEach((icon) => {
-    const parent = icon.parentNode;
-    const children = parent.childNodes;
-    const nodeIndex = [...children].indexOf.call(children, icon);
-    let indexClass = (nodeIndex === children.length - 1) ? 'last' : 'middle';
-    if (nodeIndex === 0) indexClass = 'first';
-    if (children.length === 1) indexClass = 'only';
-    icon.classList.add(`node-index-${indexClass}`);
-  });
-}
-
 async function processSection(section, config, isDoc) {
   await resolveInlineFrags(section);
   const firstSection = section.el.dataset.idx === '0';
@@ -1295,7 +1283,8 @@ export async function loadArea(area = document) {
 
   const allIcons = area.querySelectorAll('span.icon');
   if (allIcons.length) {
-    setIconsIndexClass(allIcons);
+    const { default: decorateIcons } = await import('../features/icons/icons.js');
+    await decorateIcons(allIcons, config);
   }
 
   const sections = decorateSections(area, isDoc);
@@ -1308,12 +1297,6 @@ export async function loadArea(area = document) {
     areaBlocks.forEach((block) => {
       if (!block.className.includes('metadata')) block.dataset.block = '';
     });
-  }
-
-  if (allIcons.length) {
-    const { default: loadIcons, decorateIcons } = await import('../features/icons/icons.js');
-    await decorateIcons(area, allIcons, config);
-    await loadIcons(allIcons);
   }
 
   const currentHash = window.location.hash;
