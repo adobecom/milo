@@ -74,7 +74,6 @@ html {
   cursor: pointer;
   position: relative;
   color: var(--text-color);
-  text-decoration: none;
 }
 
 .marquee-anchors .links .anchor-link .heading-xs {
