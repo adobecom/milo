@@ -15,7 +15,7 @@ sp-theme[color='light'] merch-card[variant="ccd-suggested"] [slot="body-xs"] {
   color: var(--ccd-gray-700-dark, #464646);
 }
 
-sp-theme[color='light'] merch-card[variant="ccd-suggested"] [slot="body-xs"] {
+sp-theme[color='dark'] merch-card[variant="ccd-suggested"] [slot="body-xs"] {
   color: var(--ccd-gray-100-light, #F8F8F8);
 }
 
