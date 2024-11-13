@@ -1,5 +1,5 @@
 import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
-import { createC2pa, selectFormattedGenerator, selectEditsAndActivity, selectGenerativeInfo, generateVerifyUrl } from '../../deps/cai-tools.min.js';
+import { createC2pa, selectFormattedGenerator, selectGenerativeInfo } from '../../deps/cai-tools.min.js';
 
 const miloLibs = getConfig().miloLibs ?? '/libs';
 loadStyle(`${miloLibs}/blocks/cai/cai.css`);
@@ -61,7 +61,7 @@ const extractMetadata = async (img) => {
 
   try {
     // Read in our sample image and get a manifest store
-    const [src] = img.src.split('?');
+    const [src] = img.src.split('?'); // just in case we haven't overwritten the source already for whatever reason
     const { manifestStore } = await c2pa.read(src);
 
     // Get the active manifest
@@ -69,22 +69,13 @@ const extractMetadata = async (img) => {
     const { issuer, time } = activeManifest.signatureInfo;
     const date = new Date(time).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
     const app = selectFormattedGenerator(activeManifest);
-    console.log(await selectEditsAndActivity(activeManifest));
     const generativeInfo = await selectGenerativeInfo(activeManifest);
     const { info, aiTool } = parseGenerativeInfo(generativeInfo);
     return { issuer, date, info, app, aiTool };
-  } catch (err) {
-    console.error('Error reading image:', err);
+  } catch (error) {
+    console.error('Error reading image:', error);
+    return { error };
   }
-  return new Promise((resolve) => {
-    setTimeout(() => resolve({
-      issuer: 'Adobe inc.',
-      date: 'Oct 1, 2024',
-      info: 'This image combines multiple pieces of content. At least one was generated with an AI tool.',
-      app: 'Adobe Photoshop',
-      aiTool: 'Adobe Firefly',
-    }), 3000);
-  });
 };
 
 export default ({ img, container, caiIcon }) => {
@@ -94,7 +85,7 @@ export default ({ img, container, caiIcon }) => {
   tooltip.classList.add('hide');
   tooltip.classList.add('cai-tooltip');
   container.appendChild(tooltip);
-  caiIcon.addEventListener('pointerover', () => {
+  container.addEventListener('pointerover', () => {
     metadataPromise = metadataPromise ?? extractMetadata(img); // preload on hover
   }, { once: true });
   caiIcon.addEventListener('click', async () => {
@@ -105,6 +96,7 @@ export default ({ img, container, caiIcon }) => {
       metadata = await (metadataPromise ?? extractMetadata(img));
       tooltip.classList.remove('loading');
     }
+    if (metadata.error) tooltip.innerHTML = '<span>Error reading image metadata</span>';
     tooltip.innerHTML = tooltipContent(metadata);
   });
   tooltip.addEventListener('pointerleave', () => {

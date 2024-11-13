@@ -1055,6 +1055,15 @@ async function decorateCAI(section = document) {
     .map((img) => {
       if (!img) return null;
 
+      img.addEventListener('pointerover', () => {
+        const [src] = img.src.split('?');
+        // make sure if people right click and save the
+        // image the content credentials will still be there
+        // note: the images are already visible at this point
+        // but changing the source like this doesn't cause a flicker
+        img.src = src;
+      }, { once: true });
+
       const xs = img.alt.split('|').map((x) => x.trim());
       if (!xs.length) return null;
 
