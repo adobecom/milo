@@ -58,7 +58,7 @@ function getRepo() {
   const [, repo] = new URL(window.location.href).hostname.split('--');
   if (repo) return repo;
   try {
-    const sidekick = document.querySelector('helix-sidekick');
+    const sidekick = document.querySelector('aem-sidekick, helix-sidekick');
     if (sidekick) {
       const [, sidekickRepo] = new URL(JSON.parse(sidekick.getAttribute('status'))?.live.url).hostname.split('--');
       return sidekickRepo;
@@ -202,7 +202,7 @@ function createPreviewPill(manifests) {
   });
   const config = getConfig();
   let targetOnText = config.mep.targetEnabled ? 'on' : 'off';
-  if (config.mep.targetEnabled === 'gnav') targetOnText = 'on for gnav only';
+  if (config.mep.targetEnabled === 'postlcp') targetOnText = 'on post LCP';
   const personalizationOn = getMetadata('personalization');
   const personalizationOnText = personalizationOn && personalizationOn !== '' ? 'on' : 'off';
   const simulateHref = new URL(window.location.href);

@@ -254,7 +254,6 @@ const init = (block) => {
         id: `tab-panel-${tabId}-${tabName}`,
         role: 'tabpanel',
         class: 'tabpanel',
-        tabindex: '0',
         'aria-labelledby': `tab-${tabId}-${tabName}`,
         'data-block-id': `tabs-${tabId}`,
       };

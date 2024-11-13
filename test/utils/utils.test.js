@@ -32,6 +32,18 @@ const stageDomainsMap = {
   },
   '.business-graybox.adobe.com': { 'business.adobe.com': 'origin' },
 };
+const stageDomainsMapWRegex = {
+  hostname: 'stage--milo--owner.hlx.page',
+  map: {
+    '^https://.*--milo--owner.hlx.page': {
+      '^https://www.adobe.com/acrobat': 'https://main--dc--adobecom.hlx.page',
+      '^https://business.adobe.com/blog': 'https://main--bacom-blog--adobecom.hlx.page',
+      '^https://business.adobe.com': 'https://business.stage.adobe.com',
+      '^https://www.adobe.com': 'origin',
+    },
+  },
+
+};
 const prodDomains = ['www.adobe.com', 'business.adobe.com', 'blog.adobe.com', 'helpx.adobe.com', 'news.adobe.com'];
 const externalDomains = ['external1.com', 'external2.com'];
 const ogFetch = window.fetch;
@@ -522,21 +534,58 @@ describe('Utils', () => {
   });
 
   describe('stageDomainsMap', () => {
-    it('should convert links when stageDomainsMap provided', async () => {
+    it('should convert links when stageDomainsMap provided without regex', async () => {
       const stageConfig = {
         ...config,
+        locale: { prefix: '/ae_ar' },
         env: { name: 'stage' },
         stageDomainsMap,
       };
 
       Object.entries(stageDomainsMap).forEach(([hostname, domainsMap]) => {
         const anchors = Object.keys(domainsMap).map((d) => utils.createTag('a', { href: `https://${d}` }));
+        const localizedAnchors = Object.keys(domainsMap).map((d) => utils.createTag('a', { href: `https://${d}/ae_ar` }));
         const externalAnchors = externalDomains.map((url) => utils.createTag('a', { href: url }));
 
         utils.convertStageLinks({
-          anchors: [...anchors, ...externalAnchors],
+          anchors: [...anchors, ...localizedAnchors, ...externalAnchors],
           config: stageConfig,
           hostname,
+          href: `https://${hostname}`,
+        });
+
+        anchors.forEach((a, index) => {
+          const expectedDomain = Object.values(domainsMap)[index];
+          expect(a.href).to.contain(expectedDomain === 'origin' ? hostname : expectedDomain);
+        });
+
+        externalAnchors.forEach((a) => expect(a.href).to.equal(a.href));
+      });
+    });
+
+    it('should convert links when stageDomainsMap provided with regex', async () => {
+      const { hostname, map } = stageDomainsMapWRegex;
+      const stageConfigWRegex = {
+        ...config,
+        locale: { prefix: '/de' },
+        env: { name: 'stage' },
+        stageDomainsMap: map,
+      };
+
+      Object.entries(map).forEach(([, domainsMap]) => {
+        const anchors = Object.keys(domainsMap).map((d) => utils.createTag('a', { href: d.replace('^', '') }));
+        const localizedAnchors = Object.keys(domainsMap).map((d) => {
+          const convertedUrl = new URL(d.replace('^', ''));
+          convertedUrl.pathname = `de/${convertedUrl.pathname}`;
+          return utils.createTag('a', { href: convertedUrl.toString() });
+        });
+        const externalAnchors = externalDomains.map((url) => utils.createTag('a', { href: url }));
+
+        utils.convertStageLinks({
+          anchors: [...anchors, ...localizedAnchors, ...externalAnchors],
+          config: stageConfigWRegex,
+          hostname,
+          href: `https://${hostname}`,
         });
 
         anchors.forEach((a, index) => {

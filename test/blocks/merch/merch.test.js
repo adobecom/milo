@@ -311,10 +311,10 @@ describe('Merch Block', () => {
     it('renders merch link to CTA, config values', async () => {
       setConfig({
         ...config,
-        commerce: { ...config.commerce },
+        commerce: { ...config.commerce, checkoutClientId: 'dc' },
       });
       mockIms();
-      await initService(true, { 'checkout-client-id': 'dc' });
+      await initService(true);
       const el = await merch(document.querySelector('.merch.cta.config'));
       const { dataset, href, nodeName, textContent } = await el.onceSettled();
       const url = new URL(href);
@@ -871,6 +871,21 @@ describe('Merch Block', () => {
         const wcsLocale = getMiloLocaleSettings({ prefix }).locale;
         expect(wcsLocale).to.be.equal(expectedLocale);
       });
+    });
+  });
+
+  describe('AU resources', () => {
+    it('Load AU styles', async () => {
+      setConfig({
+        ...config,
+        pathname: '/au/test.html',
+        locales: { au: { ietf: 'en-AU' } },
+        prodDomains: PROD_DOMAINS,
+        placeholders: { download: 'Download' },
+        locale: { prefix: '/au' },
+      });
+      await mockIms('AU');
+      await initService(true);
     });
   });
 });
