@@ -78,6 +78,7 @@ function setIconAttrs(icon, iconKey) {
   if (em && content) {
     icon.dataset.tooltip = content.pop().trim();
     const place = content.pop()?.trim().toLowerCase() || 'right';
+    // support legacy tooltip authoring
     const iconName = iconKey === 'tooltip' ? 'info-outline' : iconKey;
     icon.dataset.name = iconName;
     icon.className = `icon icon-${iconName} milo-tooltip ${place}`;
