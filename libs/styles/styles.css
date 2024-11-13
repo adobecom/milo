@@ -716,6 +716,10 @@ header.global-navigation.has-promo {
   min-height: calc(var(--global-height-nav) + var(--global-height-navPromo));
 }
 
+.feds-localnav {
+  height: 53px;
+}
+
 @media (min-width: 900px) {
   header.global-navigation.has-breadcrumbs {
     padding-bottom: var(--global-height-breadcrumbs);
