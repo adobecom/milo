@@ -757,8 +757,48 @@ export const getEntitlements = async (data) => {
   });
 };
 
+const getCookie = (name) => {
+  const cookies = document.cookie.split(';');
+  const cookieValue = cookies.find((cookie) => {
+    const c = cookie.trim();
+    return c.indexOf(name) === 0;
+  });
+  if (cookieValue) {
+    return JSON.parse(cookieValue.substring(name.length + 2, cookieValue.length));
+  }
+  return [];
+};
+
+const setCookie = (name, value) => {
+  const date = new Date();
+  date.setTime(date.getTime() + (10 * 24 * 60 * 60 * 1000));
+  const expires = `expires=${date.toUTCString()}`;
+  document.cookie = `${name}=${value};${expires};path=/`;
+};
+const addToCookieArray = (name, items) => {
+  let cookieArray = getCookie(name);
+  if (!items.every((item) => cookieArray.includes(item))) {
+    cookieArray = items;
+    // if not every new target item is in the cookie, replace the cookie with the new items
+  }
+  setCookie(name, JSON.stringify(cookieArray));
+};
+
+async function updateXLGCookie(config) {
+  try {
+    const userEntitlements = await config.entitlements();
+    if (userEntitlements?.length) {
+      setCookie('mepXLG', JSON.stringify(userEntitlements));
+    }
+  } catch (error) {
+    console.error('Error updating entitlement cookie', error);
+  }
+}
+
 async function getPersonalizationVariant(
   mepTargetCookie,
+  mepXLGCookie,
+  xlg,
   manifestPath,
   variantNames = [],
   variantLabel = null,
@@ -775,13 +815,21 @@ async function getPersonalizationVariant(
 
   let userEntitlements = [];
   if (hasEntitlementTag) {
-    userEntitlements = await config.entitlements();
+    if (xlg === 'cached' && mepXLGCookie?.length) {
+      console.log('updating cookie without martech because cached and mepXLGCookie available');
+      updateXLGCookie(config);
+    } else {
+      userEntitlements = await config.entitlements();
+      addToCookieArray('mepXLG', userEntitlements);
+      console.log('adding to cookie after calling martech because cookie because cached');
+    }
   }
 
   const hasMatch = (name) => {
     if (name === '') return true;
     if (name === variantLabel?.toLowerCase()) return true;
     if (name.startsWith('param-')) return checkForParamMatch(name);
+    if (mepXLGCookie.includes(name)) return true;
     if (mepTargetCookie.includes(name)) return true;
     if (userEntitlements?.includes(name)) return true;
     return PERSONALIZATION_KEYS.includes(name) && PERSONALIZATION_TAGS[name]();
@@ -829,7 +877,13 @@ export const addMepAnalytics = (config, header) => {
     }
   });
 };
-export async function getManifestConfig(mepTargetCookie, info = {}, variantOverride = false) {
+export async function getManifestConfig(
+  mepTargetCookie,
+  mepXLGCookie,
+  xlg,
+  info = {},
+  variantOverride = false,
+) {
   const {
     name,
     manifestData,
@@ -894,6 +948,8 @@ export async function getManifestConfig(mepTargetCookie, info = {}, variantOverr
   manifestConfig.manifestPath = normalizePath(manifestPath);
   manifestConfig.selectedVariantName = await getPersonalizationVariant(
     mepTargetCookie,
+    mepXLGCookie,
+    xlg,
     manifestConfig.manifestPath,
     manifestConfig.variantNames,
     variantLabel,
@@ -1031,13 +1087,15 @@ export function parseNestedPlaceholders({ placeholders }) {
   });
 }
 
-export async function applyPers(manifests, mepTargetCookie) {
+export async function applyPers(manifests, mepTargetCookie, mepXLGCookie, xlg) {
   if (!manifests?.length) return;
   let experiments = manifests;
   const config = getConfig();
   for (let i = 0; i < experiments.length; i += 1) {
     experiments[i] = await getManifestConfig(
       mepTargetCookie,
+      mepXLGCookie,
+      xlg,
       experiments[i],
       config.mep?.variantOverride,
     );
@@ -1120,34 +1178,8 @@ export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => 
 };
 
 const getVariantLabels = (manifests) => {
-  const varientLabels = manifests.filter((m) => m.variantLabel.includes('target-') && !m.variantLabel.includes('target-default')).map((m) => m.variantLabel);
+  const varientLabels = manifests.filter((m) => m.variantLabel.includes('target-') && !m.variantLabel.toLowerCase().includes('target-default') && !m.variantLabel.trim().toLowerCase().includes('target-control')).map((m) => m.variantLabel);
   return varientLabels;
-};
-
-const getCookie = (name) => {
-  const cookies = document.cookie.split(';');
-  const cookieValue = cookies.find((cookie) => {
-    const c = cookie.trim();
-    return c.indexOf(name) === 0;
-  });
-  if (cookieValue) {
-    return JSON.parse(cookieValue.substring(11, cookieValue.length));
-  }
-  return [];
-};
-
-const setCookie = (name, value) => {
-  const date = new Date();
-  date.setTime(date.getTime() + (10 * 24 * 60 * 60 * 1000));
-  const expires = `expires=${date.toUTCString()}`;
-  document.cookie = `${name}=${value};${expires};path=/`;
-};
-const addToCookieArray = (name, items) => {
-  let cookieArray = getCookie(name);
-  if (!items.every((item) => cookieArray.includes(item))) {
-    cookieArray = items;
-  }
-  setCookie(name, JSON.stringify(cookieArray));
 };
 
 async function callMartech(config) {
@@ -1174,7 +1206,7 @@ const awaitMartech = () => new Promise((resolve) => {
 export async function init(enablements = {}) {
   let manifests = [];
   const {
-    mepParam, mepHighlight, mepButton, pzn, promo, target, postLCP,
+    mepParam, mepHighlight, mepButton, pzn, promo, target, postLCP, xlg,
   } = enablements;
   const config = getConfig();
   if (postLCP) {
@@ -1199,6 +1231,7 @@ export async function init(enablements = {}) {
     if (pzn) loadLink(getXLGListURL(config), { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
   }
   const mepTargetCookie = getCookie('mepTarget');
+  const mepXLGCookie = getCookie('mepXLG');
   if (target === true || (!mepTargetCookie?.length && target === 'cached')) {
     manifests = manifests.concat(await callMartech(config));
   }
@@ -1210,7 +1243,7 @@ export async function init(enablements = {}) {
   if (!manifests || !manifests.length) return;
 
   try {
-    await applyPers(manifests, mepTargetCookie);
+    await applyPers(manifests, mepTargetCookie, mepXLGCookie, xlg);
   } catch (e) {
     log(`MEP Error: ${e.toString()}`);
     window.lana?.log(`MEP Error: ${e.toString()}`);
