@@ -1,5 +1,5 @@
 import { createTag, loadStyle, getConfig, createIntersectionObserver } from './utils.js';
-import { getFederatedContentRoot, getFedsPlaceholderConfig } from "./federated.js"
+import { getFederatedContentRoot, getFedsPlaceholderConfig } from './federated.js';
 
 const { miloLibs, codeRoot } = getConfig();
 const HIDE_CONTROLS = '_hide-controls';
