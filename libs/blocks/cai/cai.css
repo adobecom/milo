@@ -21,7 +21,7 @@
   pointer-events: none;
   width: 0;
   max-height: 0;
-  animation: closeloader 0.3s ease-in-out, close 0.3s ease-in-out;
+  transition: width 0.3s ease-in-out, max-height 0.3s ease-in-out;
   overflow: hidden;
 }
 
@@ -51,7 +51,6 @@
   width: 100px;
   height: 100px;
   max-height: 100px;
-  animation: openloader 0.3s ease-in-out;
 }
 #cai-img-container .cai-tooltip .loader {
   width: 50px;
@@ -69,36 +68,5 @@
           mask-composite: subtract;
   animation: l3 1s infinite linear;
 }
+
 @keyframes l3 {to{transform: rotate(1turn)}}
-
-
-@keyframes close {
-  from { 
-    width: 400px;
-    max-height: 400px;
-  }
-  to {
-    width: 0;
-    max-height: 0;
-  }
-}
-@keyframes closeloader {
-  from { 
-    width: 100px;
-    max-height: 100px;
-  }
-  to {
-    width: 0;
-    max-height: 0;
-  }
-}
-@keyframes openloader {
-  from { 
-    width: 0;
-    max-height: 0;
-  }
-  to {
-    width: 100px;
-    max-height: 100px;
-  }
-}
