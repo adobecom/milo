@@ -772,6 +772,11 @@ function decorateHeader() {
   const dynamicNavActive = getMetadata('dynamic-nav') === 'on'
     && window.sessionStorage.getItem('gnavSource') !== null;
   if (!dynamicNavActive && (baseBreadcrumbs || breadcrumbs || autoBreadcrumbs)) header.classList.add('has-breadcrumbs');
+  if (getMetadata('is-localnav') === 'true') {
+    // Preserving space to avoid CLS issue
+    const localNavWrapper = createTag('div', { class: 'feds-localnav' });
+    header.after(localNavWrapper);
+  }
   if (breadcrumbs) header.append(breadcrumbs);
   const promo = getMetadata('gnav-promo-source');
   if (promo?.length) header.classList.add('has-promo');

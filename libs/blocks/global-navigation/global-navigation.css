@@ -1011,6 +1011,10 @@ header + .feds-localnav {
   box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
 }
 
+.feds-localnav-items .feds-navItem:first-child {
+  font-weight: 600;
+}
+
 .feds-localnav-items .feds-navLink {
   border: 0;
 }

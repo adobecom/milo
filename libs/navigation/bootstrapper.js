@@ -37,6 +37,10 @@ export default async function bootstrapBlock(miloLibs, blockConfig) {
         document.head.append(metaTag);
       }
     });
+    if (blockConfig.isLocalNav) {
+      const localNavWrapper = createTag('div', { class: 'feds-localnav' });
+      document.querySelector('header').after(localNavWrapper);
+    }
   }
 
   await initBlock(document.querySelector(targetEl));

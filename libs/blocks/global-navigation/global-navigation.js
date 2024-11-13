@@ -299,6 +299,9 @@ class Gnav {
     this.elements = {};
   }
 
+  // eslint-disable-next-line no-return-assign
+  getOriginalTitle = (localNavItems) => this.originalTitle ||= localNavItems[0].querySelector('a').textContent.split('|');
+
   setupUniversalNav = () => {
     const meta = getMetadata('universal-nav')?.toLowerCase();
     this.universalNavComponents = meta?.split(',').map((option) => option.trim())
@@ -369,15 +372,13 @@ class Gnav {
 
   decorateLocalNav = () => {
     const localNavItems = this.elements.navWrapper.querySelector('.feds-nav').querySelectorAll('.feds-navItem:not(.feds-navItem--section)');
-    const [title, navTitle = ''] = localNavItems[0].querySelector('a').textContent.split('|');
+    const [title, navTitle = ''] = this.getOriginalTitle(localNavItems);
+
     if (this.elements.localNav || !newNavEnabled || !this.isLocalNav() || isDesktop.matches) {
       localNavItems[0].querySelector('a').textContent = title.trim();
     } else {
-      const localNav = toFragment`
-      <div class="feds-localnav">
-        <button class="feds-navLink--hoverCaret feds-localnav-title"></button>
-        <div class="feds-localnav-items"></div>
-      </div>`;
+      const localNav = document.querySelector('.feds-localnav');
+      localNav.append(toFragment`<button class="feds-navLink--hoverCaret feds-localnav-title"></button>`, toFragment` <div class="feds-localnav-items"></div>`);
 
       const itemWrapper = localNav.querySelector('.feds-localnav-items');
       localNavItems.forEach((elem, idx) => {
@@ -396,7 +397,6 @@ class Gnav {
         localNav.classList.toggle('active');
       });
       this.elements.localNav = localNav;
-      this.block.after(localNav);
     }
   };
 
