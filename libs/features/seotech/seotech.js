@@ -1,6 +1,9 @@
 export const SEOTECH_API_URL_PROD = 'https://14257-seotech.adobeioruntime.net';
 export const SEOTECH_API_URL_STAGE = 'https://14257-seotech-stage.adobeioruntime.net';
 
+export const REGEX_ADOBETV = /(?:https?:\/\/)?(?:stage-)?video.tv.adobe.com\/v\/([\d]+)/;
+export const REGEX_YOUTUBE = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=)?([a-zA-Z0-9_-]+)/;
+
 export function logError(msg) {
   window.lana?.log(`SEOTECH: ${msg}`, {
     debug: false,

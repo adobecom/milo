@@ -6,7 +6,71 @@ import { getConfig, createTag } from '../../../libs/utils/utils.js';
 import {
   appendScriptTag,
   sha256,
+  REGEX_ADOBETV,
+  REGEX_YOUTUBE,
 } from '../../../libs/features/seotech/seotech.js';
+
+describe('REGEX_ADOBETV', () => {
+  const testCases = [
+    {
+      url: 'https://video.tv.adobe.com/v/26535',
+      expected: '26535',
+    },
+    {
+      url: 'https://video.tv.adobe.com/v/26535/',
+      expected: '26535',
+    },
+    {
+      url: 'https://stage-video.tv.adobe.com/v/26535',
+      expected: '26535',
+    },
+    {
+      url: 'https://blah.com/26535',
+      expected: null,
+    },
+  ];
+  testCases.forEach(({ url, expected }) => {
+    it(`should ${expected ? 'parse' : 'not parse'} adobetv url: ${url}`, () => {
+      const match = url.match(REGEX_ADOBETV);
+      if (expected) {
+        expect(match[1]).to.equal(expected);
+      } else {
+        expect(match).to.be.null;
+      }
+    });
+  });
+});
+
+describe('REGEX_YOUTUBE', () => {
+  const testCases = [
+    {
+      url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+      expected: 'dQw4w9WgXcQ',
+    },
+    {
+      url: 'https://youtube.com/watch?v=dQw4w9WgXcQ',
+      expected: 'dQw4w9WgXcQ',
+    },
+    {
+      url: 'https://youtu.be/dQw4w9WgXcQ',
+      expected: 'dQw4w9WgXcQ',
+    },
+    {
+      url: 'https://www.example.com/watch?v=dQw4w9WgXcQ',
+      expected: null,
+    },
+  ];
+  testCases.forEach(({ url, expected }) => {
+    it(`should ${expected ? 'parse' : 'not parse'} youtube url: ${url}`, () => {
+      const match = url.match(REGEX_YOUTUBE);
+      if (expected) {
+        expect(match[1]).to.equal(expected);
+      } else {
+        expect(match).to.be.null;
+      }
+    });
+  });
+});
 
 describe('sha256', () => {
   it('should return a hash', async () => {
@@ -15,6 +79,7 @@ describe('sha256', () => {
     expect(hash).to.equal('2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824');
   });
 });
+
 
 describe('seotech', () => {
   describe('appendScriptTag + seotech-structured-data', () => {
