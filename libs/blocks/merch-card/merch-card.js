@@ -423,7 +423,7 @@ const createFooterRowCell = (row, isCheckmark) => {
   const rowTextParagraph = createTag('div', { class: 'footer-row-cell-description' }, rowText);
   const footerRowCellClass = isCheckmark ? 'footer-row-cell-checkmark' : 'footer-row-cell';
   const footerRowIconClass = isCheckmark ? 'footer-row-icon-checkmark' : 'footer-row-icon';
-  const footerRowCell = createTag('ul', { class: footerRowCellClass });
+  const footerRowCell = createTag('li', { class: footerRowCellClass });
 
   if (rowIcon) {
     rowIcon.classList.add(footerRowIconClass);
@@ -460,7 +460,7 @@ const decorateFooterRows = async (merchCard, footerRows) => {
     footerRowsSlot.appendChild(hrElem);
     merchCard.classList.add('has-divider');
 
-    const checkmarkCopyContainer = createTag('div', { class: 'checkmark-copy-container' });
+    const checkmarkCopyContainer = createTag('ul', { class: 'checkmark-copy-container' });
     const firstRowTextParagraph = await createFirstRow(
       firstRow,
       isMobile,

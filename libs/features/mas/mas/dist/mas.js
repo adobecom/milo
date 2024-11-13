@@ -608,7 +608,7 @@ merch-card[variant="ccd-action"] .price-strikethrough {
   merch-card[variant="mini-compare-chart"] .footer-rows-title {
     font-color: var(--merch-color-grey-80);
     font-weight: 700;
-    padding-block-end: var(--consonant-merch-spacing-xxs);
+    padding-block-end: var(--consonant-merch-spacing-xxxs);
     line-height: var(--consonant-merch-card-body-xs-line-height);
     font-size: var(--consonant-merch-card-body-xs-font-size);
   }
@@ -638,6 +638,7 @@ merch-card[variant="ccd-action"] .price-strikethrough {
     gap: var(--consonant-merch-spacing-xs);
     justify-content: start;
     align-items: flex-start;
+    margin-block: var(--consonant-merch-spacing-xxxs);
   }
 
   merch-card[variant="mini-compare-chart"] .footer-row-cell-description-checkmark {
@@ -667,6 +668,9 @@ merch-card[variant="ccd-action"] .price-strikethrough {
 
   merch-card[variant="mini-compare-chart"] .checkmark-copy-container {
     display: none;
+    margin-block-start: 0px;
+    margin-block-end: 0px;
+    padding-inline-start: 0px;
   }
 
   merch-card[variant="mini-compare-chart"] .checkmark-copy-container.open {
