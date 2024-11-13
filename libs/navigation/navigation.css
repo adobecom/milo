@@ -1,10 +1,21 @@
  /* Extracting the essential styles required for rendering the component independently */
- .global-navigation, .global-footer, .dialog-modal {
+:root {
+  --navigation-link-color: #035FE6;
+  --navigation-link-color--hover: #136FF6;
+}
+
+.global-navigation, .global-footer, .dialog-modal {
    font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
    line-height: 27px;
    color: #2c2c2c;
    word-wrap: break-word;
    -webkit-font-smoothing: antialiased;
+}
+
+.global-navigation .feds-toggle,
+.global-navigation .feds-toggle:before {
+  line-height: normal;
+  font-family: none;
 }
   
 .global-navigation a, .global-footer a, .dialog-modal a {
@@ -12,7 +23,7 @@
 }
   
 .dialog-modal a {
-  color: #035FE6;
+  color: var(--navigation-link-color);
 }
   
 .global-navigation img, .global-footer img {
@@ -31,9 +42,23 @@ header.global-navigation, header.global-navigation.feds--dark {
 
 @media (min-width: 900px) {
   .feds-promo-link {
-    color: #035FE6;
+    color: var(--navigation-link-color);
   }
+
   .feds-promo-link:hover {
-    color: #136FF6;
+    color: var(--navigation-link-color--hover);
   }
+  
+  .feds--no-border .feds-topnav-wrapper {
+    border-bottom: none;
+  }
+
+  .feds--full-width .feds-topnav {
+    max-width: none;
+    padding: 0 15px;
+  }
+}
+
+.feds-client-search {
+  margin-left: auto;
 }

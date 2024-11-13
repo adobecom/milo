@@ -5,7 +5,7 @@ import { CSS } from './ccd-slice.css.js';
 const AEM_FRAGMENT_MAPPING = {
     backgroundImage: { tag: 'div', slot: 'image' },
     description: { tag: 'div', slot: 'body-s' },
-    ctas: { size: 's' },
+    ctas: { slot: 'footer', size: 's' },
     allowedSizes: ['wide'],
 };
 
@@ -21,7 +21,10 @@ export class CCDSlice extends VariantLayout {
 
     renderLayout() {
         return html` <div class="content">
-                <slot name="icons"></slot> ${this.badge}
+                <div class="top-section">
+                  <slot name="icons"></slot> 
+                  ${this.badge}
+                </div>  
                 <slot name="body-s"></slot>
                 <slot name="footer"></slot>
             </div>
@@ -32,6 +35,8 @@ export class CCDSlice extends VariantLayout {
     static variantStyle = css`
         :host([variant='ccd-slice']) {
             width: var(--consonant-merch-card-ccd-slice-single-width);
+            background-color: var(
+              --spectrum-gray-50, #fff);
             border-radius: 4px;
             display: flex;
             flex-flow: wrap;
@@ -66,7 +71,7 @@ export class CCDSlice extends VariantLayout {
             font-weight: 400;
             line-height: var(--consonant-merch-card-body-xxs-line-height);
             text-decoration-line: underline;
-            color: var(--merch-color-grey-80);
+            color: var(--spectrum-gray-800, var(--merch-color-grey-80));
         }
 
         :host([variant='ccd-slice']) ::slotted([slot='image']) {
@@ -86,6 +91,15 @@ export class CCDSlice extends VariantLayout {
             border-radius: 50%;
             width: inherit;
             height: inherit;
+        }
+
+        :host([variant='ccd-slice']) div[class$='-badge'] {
+            position: static;
+            border-radius: 4px;
+        }
+
+        :host([variant='ccd-slice']) .top-section {
+            align-items: center;
         }
     `;
 }

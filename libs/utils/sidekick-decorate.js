@@ -3,8 +3,11 @@ import userCanPublishPage from '../tools/utils/publish.js';
 const PUBLISH_BTN = '.publish.plugin button';
 const PROFILE = '.profile-email';
 const CONFIRM_MESSAGE = 'Are you sure? This will publish to production.';
+let stylePublishCalled = false;
 
 export default function stylePublish(sk) {
+  if (stylePublishCalled) return;
+  stylePublishCalled = true;
   const setupPublishBtn = async (page, btn) => {
     const { canPublish, message } = await userCanPublishPage(page, false);
     if (canPublish) {

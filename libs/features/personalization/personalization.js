@@ -2,10 +2,11 @@
 /* eslint-disable no-console */
 
 import { createTag, getConfig, loadLink, loadScript, localizeLink } from '../../utils/utils.js';
-import { getEntitlementMap } from './entitlements.js';
+import { getFederatedUrl } from '../../utils/federated.js';
 
 /* c8 ignore start */
 const PHONE_SIZE = window.screen.width < 550 || window.screen.height < 550;
+const safariIpad = navigator.userAgent.includes('Macintosh') && navigator.maxTouchPoints > 1;
 export const PERSONALIZATION_TAGS = {
   all: () => true,
   chrome: () => navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Edg'),
@@ -13,10 +14,12 @@ export const PERSONALIZATION_TAGS = {
   safari: () => navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome'),
   edge: () => navigator.userAgent.includes('Edg'),
   android: () => navigator.userAgent.includes('Android'),
-  ios: () => /iPad|iPhone|iPod/.test(navigator.userAgent),
+  ios: () => /iPad|iPhone|iPod/.test(navigator.userAgent) || safariIpad,
   windows: () => navigator.userAgent.includes('Windows'),
-  mac: () => navigator.userAgent.includes('Macintosh'),
-  'mobile-device': () => /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i.test(navigator.userAgent),
+  mac: () => navigator.userAgent.includes('Macintosh') && !safariIpad,
+  'mobile-device': () => safariIpad
+    || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i
+      .test(navigator.userAgent),
   phone: () => PERSONALIZATION_TAGS['mobile-device']() && PHONE_SIZE,
   tablet: () => PERSONALIZATION_TAGS['mobile-device']() && !PHONE_SIZE,
   desktop: () => !PERSONALIZATION_TAGS['mobile-device'](),
@@ -31,7 +34,13 @@ const CLASS_EL_REPLACE = 'p13n-replaced';
 const COLUMN_NOT_OPERATOR = 'not ';
 const TARGET_EXP_PREFIX = 'target-';
 const INLINE_HASH = '_inline';
+const MARTECH_RETURNED_EVENT = 'martechReturned';
 const PAGE_URL = new URL(window.location.href);
+const FLAGS = {
+  all: 'all',
+  includeFragments: 'include-fragments',
+};
+let isPostLCP = false;
 
 export const TRACKED_MANIFEST_TYPE = 'personalization';
 
@@ -61,6 +70,9 @@ export const normalizePath = (p, localize = true) => {
   }
 
   const config = getConfig();
+  if (path.startsWith('https://www.adobe.com/federal/')) {
+    return getFederatedUrl(path);
+  }
 
   if (path.startsWith(config.codeRoot)
     || path.includes('.hlx.')
@@ -121,11 +133,25 @@ function getSelectorType(selector) {
   return 'other';
 }
 
+export function replacePlaceholders(value, ph) {
+  const placeholders = ph || getConfig().placeholders;
+  if (!placeholders) return value;
+  let val = value;
+  const matches = val.match(/{{(.*?)}}/g);
+  if (!matches) return val;
+  matches.forEach((match) => {
+    const key = match.replace(/{{|}}/g, '').trim();
+    if (placeholders[key]) val = val.replace(match, placeholders[key]);
+  });
+  return val;
+}
+
 const getUpdatedHref = (el, content, action) => {
   const href = el.getAttribute('href');
-  if (action === 'insertafter' || action === 'append') return `${href}${content}`;
-  if (action === 'insertbefore' || action === 'prepend') return `${content}${href}`;
-  return content;
+  const newContent = replacePlaceholders(content);
+  if (action === 'insertafter' || action === 'append') return `${href}${newContent}`;
+  if (action === 'insertbefore' || action === 'prepend') return `${newContent}${href}`;
+  return newContent;
 };
 
 const createFrag = (el, action, content, manifestId, targetManifestId) => {
@@ -148,18 +174,7 @@ const createFrag = (el, action, content, manifestId, targetManifestId) => {
   return frag;
 };
 
-export function replacePlaceholders(value, placeholders) {
-  let val = value;
-  const matches = val.match(/{{(.*?)}}/g);
-  if (!matches) return val;
-  matches.forEach((match) => {
-    const key = match.replace(/{{|}}/g, '').trim();
-    if (placeholders[key]) val = val.replace(match, placeholders[key]);
-  });
-  return val;
-}
-
-export const createContent = (el, content, manifestId, targetManifestId, action, modifiers) => {
+export const createContent = (el, { content, manifestId, targetManifestId, action, modifiers }) => {
   if (action === 'replace') {
     addIds(el, manifestId, targetManifestId);
   }
@@ -169,8 +184,7 @@ export const createContent = (el, content, manifestId, targetManifestId, action,
     return el;
   }
   if (getSelectorType(content) !== 'fragment') {
-    const config = getConfig();
-    const newContent = replacePlaceholders(content, config.placeholders);
+    const newContent = replacePlaceholders(content);
 
     if (action === 'replace') {
       el.innerHTML = newContent;
@@ -190,19 +204,19 @@ export const createContent = (el, content, manifestId, targetManifestId, action,
 };
 
 const COMMANDS = {
-  [COMMANDS_KEYS.remove]: ({ el, target, manifestId }) => {
-    if (target === 'false') return;
+  [COMMANDS_KEYS.remove]: (el, { content, manifestId }) => {
+    if (content === 'false') return;
     if (manifestId) {
       el.dataset.removedManifestId = manifestId;
       return;
     }
     el.classList.add(CLASS_EL_DELETE);
   },
-  [COMMANDS_KEYS.replace]: ({ el, target, modifiers, manifestId, targetManifestId }) => {
+  [COMMANDS_KEYS.replace]: (el, cmd) => {
     if (!el || el.classList.contains(CLASS_EL_REPLACE)) return;
     el.insertAdjacentElement(
       'beforebegin',
-      createContent(el, target, manifestId, targetManifestId, 'replace', modifiers),
+      createContent(el, cmd),
     );
   },
 };
@@ -230,7 +244,7 @@ const fetchData = async (url, type = DATA_TYPE.JSON) => {
   return null;
 };
 
-const getBlockProps = (fVal, miloLibs, origin) => {
+const getBlockProps = (fVal, config, origin) => {
   let val = fVal;
   if (val?.includes('\\')) val = val?.split('\\').join('/');
   if (!val?.startsWith('/')) val = `/${val}`;
@@ -238,7 +252,7 @@ const getBlockProps = (fVal, miloLibs, origin) => {
 
   if (val.startsWith('/libs/')) {
     /* c8 ignore next 1 */
-    val = `${miloLibs}${val.replace('/libs', '')}`;
+    val = `${config.miloLibs || config.codeRoot}${val.replace('/libs', '')}`;
   } else {
     val = `${origin}${val}`;
   }
@@ -319,20 +333,9 @@ function normalizeKeys(obj) {
   }, {});
 }
 
-const querySelector = (el, selector, all = false) => {
-  try {
-    return all ? el.querySelectorAll(selector) : el.querySelector(selector);
-  } catch (e) {
-    /* eslint-disable-next-line no-console */
-    log('Invalid selector: ', selector);
-    return null;
-  }
-};
-function registerInBlockActions(cmd, manifestId, targetManifestId) {
-  const { action, target, selector } = cmd;
-  const command = { action, target, manifestId, targetManifestId };
-
-  const blockAndSelector = selector.substring(IN_BLOCK_SELECTOR_PREFIX.length).trim().split(/\s+/);
+function registerInBlockActions(command) {
+  const blockAndSelector = command.selector.substring(IN_BLOCK_SELECTOR_PREFIX.length)
+    .trim().split(/\s+/);
   const [blockName] = blockAndSelector;
 
   const config = getConfig();
@@ -340,10 +343,13 @@ function registerInBlockActions(cmd, manifestId, targetManifestId) {
   config.mep.inBlock[blockName] ??= {};
 
   let blockSelector;
+  if (blockAndSelector.length === 1) delete command.selector;
   if (blockAndSelector.length > 1) {
     blockSelector = blockAndSelector.slice(1).join(' ');
     command.selector = blockSelector;
     if (getSelectorType(blockSelector) === 'fragment') {
+      if (blockSelector.includes('/federal/')) blockSelector = getFederatedUrl(blockSelector);
+      if (command.content.includes('/federal/')) command.content = getFederatedUrl(command.content);
       config.mep.inBlock[blockName].fragments ??= {};
       const { fragments } = config.mep.inBlock[blockName];
       delete command.selector;
@@ -351,14 +357,14 @@ function registerInBlockActions(cmd, manifestId, targetManifestId) {
 
       // eslint-disable-next-line no-restricted-syntax
       for (const key in fragments) {
-        if (fragments[key].target === blockSelector) fragments[key] = command;
+        if (fragments[key].content === blockSelector) fragments[key] = command;
       }
       fragments[blockSelector] = command;
 
       blockSelector = normalizePath(blockSelector);
       // eslint-disable-next-line no-restricted-syntax
       for (const key in fragments) {
-        if (fragments[key].target === blockSelector) fragments[key] = command;
+        if (fragments[key].content === blockSelector) fragments[key] = command;
       }
       fragments[blockSelector] = command;
       return;
@@ -439,24 +445,34 @@ export function modifyNonFragmentSelector(selector) {
   };
 }
 
-function getSelectedElement({ selector: sel, rootEl }) {
+function getSelectedElements(sel, rootEl, forceRootEl) {
+  const root = forceRootEl ? rootEl : document;
   const selector = sel.trim();
   if (!selector) return {};
 
   if (getSelectorType(selector) === 'fragment') {
     try {
-      const fragment = document.querySelector(
+      const fragments = root.querySelectorAll(
         `a[href*="${normalizePath(selector, false)}"], a[href*="${normalizePath(selector, true)}"]`,
       );
-      if (fragment) return { el: fragment.parentNode };
-      return {};
+      return { els: fragments, modifiers: [FLAGS.all, FLAGS.includeFragments] };
     } catch (e) {
-      /* c8 ignore next */
-      return {};
+      /* c8 ignore next 2 */
+      return { els: [], modifiers: [] };
     }
   }
   const { modifiedSelector, modifiers } = modifyNonFragmentSelector(selector);
-  return { el: querySelector(rootEl || document, modifiedSelector), modifiers };
+  let els;
+  try {
+    els = root.querySelectorAll(modifiedSelector);
+  } catch (e) {
+  /* eslint-disable-next-line no-console */
+    log('Invalid selector: ', selector);
+    return null;
+  }
+  if (modifiers.includes(FLAGS.all) || !els.length) return { els, modifiers };
+  els = [els[0]];
+  return { els, modifiers };
 }
 const addHash = (url, newHash) => {
   if (!newHash) return url;
@@ -484,29 +500,53 @@ export const updateFragDataProps = (a, inline, sections, fragment) => {
   }
 };
 
-export function handleCommands(commands, rootEl = document, forceInline = false) {
+export const deleteMarkedEls = (rootEl = document) => {
+  [...rootEl.querySelectorAll(`.${CLASS_EL_DELETE}`)]
+    .forEach((el) => el.remove());
+};
+
+export function handleCommands(
+  commands,
+  rootEl = document,
+  forceInline = false,
+  forceRootEl = false,
+) {
+  const section1 = document.querySelector('main > div');
   commands.forEach((cmd) => {
-    const { manifestId, targetManifestId, action, selector, target: trgt } = cmd;
-    const target = forceInline ? addHash(trgt, INLINE_HASH) : trgt;
+    const { action, content, selector } = cmd;
+    cmd.content = forceInline ? addHash(content, INLINE_HASH) : content;
     if (selector.startsWith(IN_BLOCK_SELECTOR_PREFIX)) {
-      registerInBlockActions(cmd, manifestId, targetManifestId);
+      registerInBlockActions(cmd);
+      cmd.selectorType = IN_BLOCK_SELECTOR_PREFIX;
       return;
     }
-    const { el, modifiers } = getSelectedElement({ selector, rootEl });
+    const { els, modifiers } = getSelectedElements(selector, rootEl, forceRootEl);
+    cmd.modifiers = modifiers;
 
-    if (!el || (!(action in COMMANDS) && !(action in CREATE_CMDS))) return;
+    els?.forEach((el) => {
+      if (!el
+        || (!(action in COMMANDS) && !(action in CREATE_CMDS))
+        || (rootEl && !rootEl.contains(el))
+        || (isPostLCP && section1?.contains(el))) return;
 
-    if (action in COMMANDS) {
-      COMMANDS[action]({
-        el, target, manifestId, targetManifestId, action, modifiers,
-      });
-      return;
+      if (action in COMMANDS) {
+        COMMANDS[action](el, cmd);
+        return;
+      }
+      const insertAnchor = getSelectorType(selector) === 'fragment' ? el.parentElement : el;
+      insertAnchor?.insertAdjacentElement(
+        CREATE_CMDS[action],
+        createContent(el, cmd),
+      );
+    });
+    if ((els.length && !cmd.modifiers.includes(FLAGS.all))
+      || !cmd.modifiers.includes(FLAGS.includeFragments)) {
+      cmd.completed = true;
     }
-    el?.insertAdjacentElement(
-      CREATE_CMDS[action],
-      createContent(el, target, manifestId, targetManifestId, action, modifiers),
-    );
   });
+  deleteMarkedEls(rootEl);
+  return commands.filter((cmd) => !cmd.completed
+    && cmd.selectorType !== IN_BLOCK_SELECTOR_PREFIX);
 }
 
 const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) => {
@@ -537,7 +577,7 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
       action,
       selector,
       pageFilter,
-      target: line[vn],
+      content: line[vn],
       selectorType: getSelectorType(selector),
       manifestId,
       targetManifestId,
@@ -555,7 +595,7 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
       variants[vn][action] = variants[vn][action] || [];
 
       if (action === 'useblockcode') {
-        const { blockSelector, blockTarget } = getBlockProps(line[vn], config.miloLibs, origin);
+        const { blockSelector, blockTarget } = getBlockProps(line[vn], config, origin);
         variants[vn][action].push({
           selector: blockSelector,
           val: blockTarget,
@@ -630,7 +670,7 @@ export async function createMartechMetadata(placeholders, config, column) {
 }
 
 /* c8 ignore start */
-function parsePlaceholders(placeholders, config, selectedVariantName = '') {
+export function parsePlaceholders(placeholders, config, selectedVariantName = '') {
   if (!placeholders?.length || selectedVariantName === 'default') return config;
   const valueNames = [
     selectedVariantName.toLowerCase(),
@@ -641,17 +681,19 @@ function parsePlaceholders(placeholders, config, selectedVariantName = '') {
     'value',
     'other',
   ];
-  const [val] = Object.entries(placeholders[0])
-    .find(([key]) => valueNames.includes(key.toLowerCase()));
-  if (val) {
+  const keys = placeholders?.length ? Object.entries(placeholders[0]) : [];
+  const keyVal = keys.find(([key]) => valueNames.includes(key.toLowerCase()));
+  const key = keyVal?.[0];
+
+  if (key) {
     const results = placeholders.reduce((res, item) => {
-      res[item.key] = item[val];
+      res[item.key] = item[key];
       return res;
     }, {});
     config.placeholders = { ...(config.placeholders || {}), ...results };
   }
 
-  createMartechMetadata(placeholders, config, val);
+  createMartechMetadata(placeholders, config, key);
 
   return config;
 }
@@ -682,6 +724,40 @@ export function buildVariantInfo(variantNames) {
     return acc;
   }, { allNames: [] });
 }
+
+const getXLGListURL = (config) => {
+  const sheet = config.env?.name === 'prod' ? 'prod' : 'stage';
+  return `https://www.adobe.com/federal/assets/data/mep-xlg-tags.json?sheet=${sheet}`;
+};
+
+export const getEntitlementMap = async () => {
+  const config = getConfig();
+  if (config.mep?.entitlementMap) return config.mep.entitlementMap;
+  const entitlementUrl = getXLGListURL(config);
+  const fetchedData = await fetchData(entitlementUrl, DATA_TYPE.JSON);
+  if (!fetchedData) return config.consumerEntitlements || {};
+  const entitlements = {};
+  fetchedData?.data?.forEach((ent) => {
+    const { id, tagname } = ent;
+    entitlements[id] = tagname;
+  });
+  config.mep ??= {};
+  config.mep.entitlementMap = { ...config.consumerEntitlements, ...entitlements };
+  return config.mep.entitlementMap;
+};
+
+export const getEntitlements = async (data) => {
+  const entitlementMap = await getEntitlementMap();
+
+  return data.flatMap((destination) => {
+    const ents = destination.segments?.flatMap((segment) => {
+      const entMatch = entitlementMap[segment.id];
+      return entMatch ? [entMatch] : [];
+    });
+
+    return ents || [];
+  });
+};
 
 async function getPersonalizationVariant(manifestPath, variantNames = [], variantLabel = null) {
   const config = getConfig();
@@ -733,7 +809,7 @@ const createDefaultExperiment = (manifest) => ({
 });
 
 export const addMepAnalytics = (config, header) => {
-  config.mep.experiments.forEach((experiment) => {
+  config.mep?.experiments?.forEach((experiment) => {
     experiment?.selectedVariant?.useblockcode?.forEach(({ selector, targetManifestId }) => {
       if (selector && targetManifestId) {
         document.querySelectorAll(`.${selector}`)
@@ -826,11 +902,6 @@ export async function getManifestConfig(info = {}, variantOverride = false) {
   manifestConfig.event = event;
   return manifestConfig;
 }
-
-export const deleteMarkedEls = (rootEl = document) => {
-  [...rootEl.querySelectorAll(`.${CLASS_EL_DELETE}`)]
-    .forEach((el) => el.remove());
-};
 
 const normalizeFragPaths = ({ selector, val, action, manifestId, targetManifestId }) => ({
   selector: normalizePath(selector),
@@ -955,7 +1026,7 @@ export function parseNestedPlaceholders({ placeholders }) {
   });
 }
 
-export async function applyPers(manifests, postLCP = false) {
+export async function applyPers(manifests) {
   if (!manifests?.length) return;
   let experiments = manifests;
   const config = getConfig();
@@ -980,14 +1051,13 @@ export async function applyPers(manifests, postLCP = false) {
   config.mep.commands = consolidateArray(results, 'commands', config.mep.commands);
 
   const main = document.querySelector('main');
-  if (config.mep.replacepage && !postLCP && main) {
+  if (config.mep.replacepage && !isPostLCP && main) {
     await replaceInner(config.mep.replacepage.val, main);
     const { manifestId, targetManifestId } = config.mep.replacepage;
     addIds(main, manifestId, targetManifestId);
   }
 
-  if (!postLCP) handleCommands(config.mep.commands);
-  deleteMarkedEls();
+  config.mep.commands = handleCommands(config.mep.commands);
 
   const pznList = results.filter((r) => (r.experiment?.manifestType === TRACKED_MANIFEST_TYPE));
   if (!pznList.length) return;
@@ -1040,15 +1110,34 @@ export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => 
   return persManifests;
 };
 
+async function callMartech(config) {
+  const { getTargetPersonalization } = await import('../../martech/martech.js');
+  const { targetManifests, targetPropositions } = await getTargetPersonalization();
+  config.mep.targetManifests = targetManifests;
+  if (targetPropositions?.length && window._satellite) {
+    window._satellite.track('propositionDisplay', targetPropositions);
+  }
+  if (config.mep.targetEnabled === 'postlcp') {
+    const event = new CustomEvent(MARTECH_RETURNED_EVENT, { detail: 'Martech returned' });
+    window.dispatchEvent(event);
+  }
+  return targetManifests;
+}
+const awaitMartech = () => new Promise((resolve) => {
+  const listener = (event) => resolve(event.detail);
+  window.addEventListener(MARTECH_RETURNED_EVENT, listener, { once: true });
+});
+
 export async function init(enablements = {}) {
   let manifests = [];
   const {
     mepParam, mepHighlight, mepButton, pzn, promo, target, postLCP,
   } = enablements;
   const config = getConfig();
-  if (!postLCP) {
+  if (postLCP) {
+    isPostLCP = true;
+  } else {
     config.mep = {
-      handleFragmentCommand,
       updateFragDataProps,
       preview: (mepButton !== 'off'
         && (config.env?.name !== 'prod' || mepParam || mepParam === '' || mepButton)),
@@ -1064,18 +1153,18 @@ export async function init(enablements = {}) {
       const normalizedURL = normalizePath(manifest.manifestPath);
       loadLink(normalizedURL, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
     });
+    if (pzn) loadLink(getXLGListURL(config), { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
   }
 
-  if (target === true || (target === 'gnav' && postLCP)) {
-    const { getTargetPersonalization } = await import('../../martech/martech.js');
-    const { targetManifests, targetPropositions } = await getTargetPersonalization();
-    manifests = manifests.concat(targetManifests);
-    if (targetPropositions?.length && window._satellite) {
-      window._satellite.track('propositionDisplay', targetPropositions);
-    }
+  if (target === true) manifests = manifests.concat(await callMartech(config));
+  if (target === 'postlcp') callMartech(config);
+  if (postLCP) {
+    if (!config.mep.targetManifests) await awaitMartech();
+    manifests = config.mep.targetManifests;
   }
+  if (!manifests || !manifests.length) return;
   try {
-    await applyPers(manifests, postLCP);
+    await applyPers(manifests);
   } catch (e) {
     log(`MEP Error: ${e.toString()}`);
     window.lana?.log(`MEP Error: ${e.toString()}`);

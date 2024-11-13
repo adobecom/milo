@@ -293,10 +293,10 @@ const buildComplexQuery = (andLogicTags, orLogicTags, notLogicTags) => {
 const getSortOptions = (state, strs) => {
   const sortVals = {
     featured: 'Featured',
-    dateAsc: 'Date: (Oldest to Newest)',
     dateDesc: 'Date: (Newest to Oldest)',
-    modifiedDesc: 'Date: (Last Modified, Newest to Oldest)',
-    modifiedAsc: 'Date (Last Modified, Oldest to Newest)',
+    dateAsc: 'Date: (Oldest to Newest)',
+    modifiedDesc: 'Modified Date: (Newest to Oldest)',
+    modifiedAsc: 'Modified Date: (Oldest to Newest)',
     eventSort: 'Events: (Live, Upcoming, OnDemand)',
     titleAsc: 'Title A-Z',
     titleDesc: 'Title Z-A',
@@ -539,6 +539,22 @@ const getCardsString = async (cards = []) => {
   return uuids.filter(Boolean).join('%2C');
 };
 
+export const stageMapToCaasTransforms = (config) => {
+  if (config.env?.name === 'prod' || !config.stageDomainsMap) return {};
+  const { href, hostname } = window.location;
+  const matchedRules = Object.entries(config.stageDomainsMap)
+    .find(([domain]) => new RegExp(domain).test(href));
+  if (!matchedRules) return {};
+  const [, domainsMap] = matchedRules;
+  return {
+    enabled: true,
+    hostnameTransforms: Object.keys(domainsMap).map((d) => ({
+      from: d,
+      to: domainsMap[d] === 'origin' ? `${d.includes('https') ? 'https://' : ''}${hostname}` : domainsMap[d],
+    })),
+  };
+};
+
 export const getConfig = async (originalState, strs = {}) => {
   const state = addMissingStateProps(originalState);
   const originSelection = Array.isArray(state.source) ? state.source.join(',') : state.source;
@@ -603,6 +619,10 @@ export const getConfig = async (originalState, strs = {}) => {
       setCardBorders: state.setCardBorders,
       showFooterDivider: state.showFooterDivider,
       useOverlayLinks: state.useOverlayLinks,
+      partialLoadWithBackgroundFetch: {
+        enabled: state.partialLoadEnabled,
+        partialLoadCount: state.partialLoadCount,
+      },
       collectionButtonStyle: state.collectionBtnStyle,
       banner: {
         register: {
@@ -738,7 +758,7 @@ export const getConfig = async (originalState, strs = {}) => {
       lastViewedSession: state.lastViewedSession || '',
     },
     customCard: ['card', `return \`${state.customCard}\``],
-    linkTransformer: pageConfig.caasLinkTransformer || {},
+    linkTransformer: pageConfig.caasLinkTransformer || stageMapToCaasTransforms(pageConfig),
     headers: caasRequestHeaders,
   };
 
@@ -819,6 +839,8 @@ export const defaultState = {
   paginationQuantityShown: false,
   paginationType: 'paginator',
   paginationUseTheme3: false,
+  partialLoadEnabled: false,
+  partialLoadCount: 100,
   placeholderUrl: '',
   resultsPerPage: 5,
   searchFields: [],

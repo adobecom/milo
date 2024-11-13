@@ -19,6 +19,17 @@
   <script src="../../../features/spectrum-web-components/dist/theme.js" type="module"></script>
   <script src="../../../features/spectrum-web-components/dist/button.js" type="module"></script>
   <script type="module" src="../../../deps/mas/mas.js"></script>
+
+  <script type="module">
+    const params = new URLSearchParams(document.location.search);
+    const masCommerceService = document.createElement('mas-commerce-service');
+    ['locale','language','env'].forEach((attribute) => {
+      const value = params.get(attribute);
+      if (value) masCommerceService.setAttribute(attribute, value);
+    });
+    document.head.appendChild(masCommerceService);
+  </script>
+  <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
   <!-- Include Highlight.js stylesheet for syntax highlighting -->
   <link rel="stylesheet" href="../../../styles/styles.css">
   <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">

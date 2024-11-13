@@ -15,6 +15,7 @@ import {
   getExperienceName,
   getFedsPlaceholderConfig,
   hasActiveLink,
+  isActiveLink,
   icons,
   isDesktop,
   isTangentToViewport,
@@ -41,6 +42,8 @@ import {
 } from './utilities/utilities.js';
 
 import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
+
+const SIGNIN_CONTEXT = getConfig()?.signInContext;
 
 function getHelpChildren() {
   const { unav } = getConfig();
@@ -94,8 +97,8 @@ export const CONFIG = {
             },
           },
           callbacks: {
-            onSignIn: () => { window.adobeIMS?.signIn(); },
-            onSignUp: () => { window.adobeIMS?.signIn(); },
+            onSignIn: () => { window.adobeIMS?.signIn(SIGNIN_CONTEXT); },
+            onSignUp: () => { window.adobeIMS?.signIn(SIGNIN_CONTEXT); },
           },
         },
       },
@@ -147,13 +150,12 @@ export const LANGMAP = {
 };
 
 // signIn, decorateSignIn and decorateProfileTrigger can be removed if IMS takes over the profile
-const signIn = () => {
+const signIn = (options = {}) => {
   if (typeof window.adobeIMS?.signIn !== 'function') {
     lanaLog({ message: 'IMS signIn method not available', tags: 'errorType=warn,module=gnav' });
     return;
   }
-
-  window.adobeIMS.signIn();
+  window.adobeIMS.signIn(options);
 };
 
 const decorateSignIn = async ({ rawElem, decoratedElem }) => {
@@ -166,7 +168,7 @@ const decorateSignIn = async ({ rawElem, decoratedElem }) => {
 
     signInElem.addEventListener('click', (e) => {
       e.preventDefault();
-      signIn();
+      signIn(SIGNIN_CONTEXT);
     });
   } else {
     signInElem = toFragment`<button daa-ll="${signInLabel}" class="feds-signIn" aria-expanded="false" aria-haspopup="true">${signInLabel}</button>`;
@@ -183,7 +185,7 @@ const decorateSignIn = async ({ rawElem, decoratedElem }) => {
       dropdownSignInAnchor.replaceWith(dropdownSignInButton);
       dropdownSignInButton.addEventListener('click', (e) => {
         e.preventDefault();
-        signIn();
+        signIn(SIGNIN_CONTEXT);
       });
     } else {
       lanaLog({ message: 'Sign in link not found in dropdown.', tags: 'errorType=warn,module=gnav' });
@@ -226,9 +228,9 @@ const setupKeyboardNav = async () => {
   });
 };
 
-const getBrandImage = (image) => {
+const getBrandImage = (image, brandImageOnly) => {
   // Return the default Adobe logo if an image is not available
-  if (!image) return CONFIG.icons.company;
+  if (!image) return brandImageOnly ? CONFIG.icons.brand : CONFIG.icons.company;
 
   // Try to decorate image as PNG, JPG or JPEG
   const imgText = image?.textContent || '';
@@ -240,7 +242,7 @@ const getBrandImage = (image) => {
   }
 
   // Return the default Adobe logo if the image could not be decorated
-  return CONFIG.icons.company;
+  return brandImageOnly ? CONFIG.icons.brand : CONFIG.icons.company;
 };
 
 const closeOnClickOutside = (e) => {
@@ -279,7 +281,7 @@ class Gnav {
   constructor({ content, block } = {}) {
     this.content = content;
     this.block = block;
-    this.customLinks = getConfig()?.customLinks ? getConfig().customLinks.split(',') : [];
+    this.customLinks = getConfig()?.customLinks?.split(',') || [];
 
     this.blocks = {
       profile: {
@@ -354,6 +356,7 @@ class Gnav {
           ${this.decorateBrand()}
         </div>
         ${this.elements.navWrapper}
+        ${getConfig().searchEnabled === 'on' ? toFragment`<div class="feds-client-search"></div>` : ''}
         ${this.useUniversalNav ? this.blocks.universalNav : ''}
         ${(!this.useUniversalNav && this.blocks.profile.rawElem) ? this.blocks.profile.decoratedElem : ''}
         ${this.decorateLogo()}
@@ -685,11 +688,7 @@ class Gnav {
     const toggle = this.elements.mobileToggle;
     const isExpanded = this.isToggleExpanded();
     toggle?.setAttribute('aria-expanded', !isExpanded);
-    if (!isExpanded) {
-      document.body.classList.add('disable-scroll');
-    } else {
-      document.body.classList.remove('disable-scroll');
-    }
+    document.body.classList.toggle('disable-scroll', !isExpanded);
     this.elements.navWrapper?.classList?.toggle('feds-nav-wrapper--expanded', !isExpanded);
     closeAllDropdowns();
     setCurtainState(!isExpanded);
@@ -761,8 +760,9 @@ class Gnav {
     if (!link) return '';
 
     // Check which elements should be rendered
+    const isBrandImage = rawBlock.matches(selectors.brandImageOnly);
     const renderImage = !rawBlock.matches('.no-logo');
-    const renderLabel = includeLabel && !rawBlock.matches('.image-only');
+    const renderLabel = !isBrandImage && includeLabel && !rawBlock.matches('.image-only');
 
     if (!renderImage && !renderLabel) return '';
 
@@ -774,18 +774,19 @@ class Gnav {
 
         const images = blockLinks.filter((blockLink) => imgRegex.test(blockLink.href)
         || imgRegex.test(blockLink.textContent));
-        if (images.length === 2) return getBrandImage(images[1]);
+        if (images.length === 2) return getBrandImage(images[1], isBrandImage);
       }
       const svgImg = rawBlock.querySelector('picture img[src$=".svg"]');
       if (svgImg) return svgImg;
 
       const image = blockLinks.find((blockLink) => imgRegex.test(blockLink.href)
         || imgRegex.test(blockLink.textContent));
-      return getBrandImage(image);
+      return getBrandImage(image, isBrandImage);
     };
 
+    const brandImageClass = isBrandImage ? ` ${selectors.brandImageOnly.slice(1)}` : '';
     const imageEl = renderImage
-      ? toFragment`<span class="${classPrefix}-image">${getImageEl()}</span>`
+      ? toFragment`<span class="${classPrefix}-image${brandImageClass}">${getImageEl()}</span>`
       : '';
 
     // Create label element
@@ -842,7 +843,6 @@ class Gnav {
         ${isDesktop.matches ? '' : this.decorateSearch()}
         ${this.elements.mainNav}
         ${isDesktop.matches ? this.decorateSearch() : ''}
-        ${getConfig().searchEnabled === 'on' ? toFragment`<div class="feds-client-search"></div>` : ''}
       </div>
     `;
 
@@ -971,21 +971,17 @@ class Gnav {
         let customLinkModifier = '';
         let removeCustomLink = false;
         const linkElem = item.querySelector('a');
+        const customLinksSection = item.closest('.link-group');
         linkElem.className = 'feds-navLink';
         linkElem.setAttribute('daa-ll', getAnalyticsValue(linkElem.textContent, index + 1));
-        if (itemHasActiveLink) {
-          linkElem.removeAttribute('href');
-          linkElem.setAttribute('role', 'link');
-          linkElem.setAttribute('aria-disabled', 'true');
-          linkElem.setAttribute('aria-current', 'page');
-          linkElem.setAttribute('tabindex', 0);
-        }
 
-        const customLinksSection = item.closest('.link-group');
         if (customLinksSection) {
           const removeLink = () => {
             const url = new URL(linkElem.href);
             linkElem.setAttribute('href', `${url.origin}${url.pathname}${url.search}`);
+            if (isActiveLink(linkElem)) {
+              linkElem.removeAttribute('href');
+            }
             const linkHash = url.hash.slice(2);
             return !this.customLinks.includes(linkHash);
           };
@@ -993,13 +989,19 @@ class Gnav {
             customLinkModifier = ` feds-navItem--${className}`;
           });
           removeCustomLink = removeLink();
+        } else if (itemHasActiveLink) {
+          linkElem.removeAttribute('href');
+          linkElem.setAttribute('role', 'link');
+          linkElem.setAttribute('aria-disabled', 'true');
+          linkElem.setAttribute('aria-current', 'page');
+          linkElem.setAttribute('tabindex', 0);
         }
 
         const linkTemplate = toFragment`
           <div class="feds-navItem${activeModifier}${customLinkModifier}">
             ${linkElem}
           </div>`;
-        return removeCustomLink ? null : addMepHighlightAndTargetId(linkTemplate, item);
+        return removeCustomLink ? '' : addMepHighlightAndTargetId(linkTemplate, item);
       }
       case 'text':
         return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered">
@@ -1059,7 +1061,7 @@ const getSource = async () => {
   const { locale, dynamicNavKey } = getConfig();
   let url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
   if (dynamicNavKey) {
-    const { default: dynamicNav } = await import('../../features/dynamic-navigation.js');
+    const { default: dynamicNav } = await import('../../features/dynamic-navigation/dynamic-navigation.js');
     url = dynamicNav(url, dynamicNavKey);
   }
   return url;

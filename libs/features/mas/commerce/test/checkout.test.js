@@ -3,6 +3,9 @@ import {
     CLASS_NAME_DOWNLOAD,
     CLASS_NAME_UPGRADE,
 } from '../src/checkout-link.js';
+import { Checkout } from '../src/checkout.js';
+import { getSettings } from '../src/settings.js';
+
 import {
     CLASS_NAME_FAILED,
     ERROR_MESSAGE_BAD_REQUEST,
@@ -13,15 +16,16 @@ import {
     CheckoutWorkflowStep,
     delay,
 } from '../src/external.js';
-import { initService, resetService } from '../src/service.js';
-
-import { mockConfig } from './mocks/config.js';
 import { mockFetch } from './mocks/fetch.js';
 import { mockIms, unmockIms } from './mocks/ims.js';
 import { mockLana, unmockLana } from './mocks/lana.js';
-import { mockProviders } from './mocks/providers.js';
 import { withWcs } from './mocks/wcs.js';
-import { expect, sinon } from './utilities.js';
+import {
+    expect,
+    sinon,
+    initMasCommerceService,
+    disableMasCommerceService,
+} from './utilities.js';
 
 const HREF = 'https://test.org/';
 
@@ -41,7 +45,7 @@ function mockCheckoutLink(wcsOsi, options = {}, append = true) {
 
 afterEach(() => {
     document.body.innerHTML = '';
-    resetService();
+    disableMasCommerceService();
     unmockIms();
     unmockLana();
 });
@@ -53,21 +57,44 @@ beforeEach(async () => {
 
 describe('class "CheckoutLink"', () => {
     it('renders link', async () => {
-        await initService(mockConfig(), mockProviders());
+        await initMasCommerceService();
         const checkoutLink = mockCheckoutLink('abm');
         await checkoutLink.onceSettled();
         expect(checkoutLink.href).to.equal(
             'https://commerce.adobe.com/store/email?items%5B0%5D%5Bid%5D=632B3ADD940A7FBB7864AA5AD19B8D28&cli=adobe_com&ctx=fp&co=US&lang=en',
         );
+        expect(checkoutLink.value).to.be.not.empty;
+        expect(checkoutLink.options).to.be.not.empty;
+    });
+
+    it('re-dispatches click event', async () => {
+        await initMasCommerceService();
+        const checkoutLink = mockCheckoutLink('abm');
+        let targetIsCheckoutlink = false;
+        checkoutLink.addEventListener(
+            'click',
+            (event) => {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                targetIsCheckoutlink = event.target === checkoutLink;
+            },
+            { once: true },
+        );
+        await checkoutLink.onceSettled();
+        checkoutLink.firstElementChild.dispatchEvent(
+            new MouseEvent('click', {
+                bubbles: true,
+                cancelable: true,
+                view: window,
+            }),
+        );
+        expect(targetIsCheckoutlink).to.be.true;
     });
 
     it('renders link with workflow step from settings', async () => {
-        const commerce = await initService(
-            mockConfig({
-                checkoutWorkflowStep: CheckoutWorkflowStep.SEGMENTATION,
-            }),
-            mockProviders(),
-        );
+        await initMasCommerceService({
+            'checkout-workflow-step': CheckoutWorkflowStep.SEGMENTATION,
+        });
         const checkoutLink = mockCheckoutLink('abm');
         await checkoutLink.onceSettled();
         expect(checkoutLink.href).to.equal(
@@ -76,7 +103,7 @@ describe('class "CheckoutLink"', () => {
     });
 
     it('renders link with workflow step from dataset', async () => {
-        await initService(mockConfig(), mockProviders());
+        await initMasCommerceService();
         const checkoutLink = mockCheckoutLink('abm', {
             checkoutWorkflowStep: CheckoutWorkflowStep.SEGMENTATION,
         });
@@ -88,7 +115,7 @@ describe('class "CheckoutLink"', () => {
 
     it('renders link with ims country', async () => {
         mockIms('CH');
-        const service = await initService(mockConfig(), mockProviders());
+        const service = await initMasCommerceService();
         const checkoutLink = mockCheckoutLink('abm');
         await service.imsCountryPromise;
         await delay(1);
@@ -99,7 +126,7 @@ describe('class "CheckoutLink"', () => {
     });
 
     it('renders link with promo from dataset', async () => {
-        await initService(mockConfig(), mockProviders());
+        await initMasCommerceService();
         const checkoutLink = mockCheckoutLink('abm-promo', {
             promotionCode: 'nicopromo',
         });
@@ -115,7 +142,7 @@ describe('class "CheckoutLink"', () => {
     });
 
     it('renders multiple checkout links', async () => {
-        await initService(mockConfig(), mockProviders());
+        await initMasCommerceService();
         const abm = mockCheckoutLink('abm');
         const puf = mockCheckoutLink('puf');
         const m2m = mockCheckoutLink('m2m');
@@ -132,7 +159,7 @@ describe('class "CheckoutLink"', () => {
     });
 
     it('render link with multiple OSIs', async () => {
-        await initService(mockConfig(), mockProviders());
+        await initMasCommerceService();
         const checkoutLink = mockCheckoutLink('abm,stock-abm', {
             quantity: '2,2',
         });
@@ -143,7 +170,7 @@ describe('class "CheckoutLink"', () => {
     });
 
     it('fails with missing offer', async () => {
-        await initService(mockConfig(), mockProviders());
+        await initMasCommerceService();
         const checkoutLink = mockCheckoutLink('no-offer');
         await expect(checkoutLink.onceSettled()).eventually.be.rejectedWith(
             ERROR_MESSAGE_OFFER_NOT_FOUND,
@@ -151,7 +178,7 @@ describe('class "CheckoutLink"', () => {
     });
 
     it('fails with bad request', async () => {
-        await initService(mockConfig(), mockProviders());
+        await initMasCommerceService();
         const checkoutLink = mockCheckoutLink('xyz');
         await expect(checkoutLink.onceSettled()).eventually.be.rejectedWith(
             ERROR_MESSAGE_BAD_REQUEST,
@@ -159,7 +186,7 @@ describe('class "CheckoutLink"', () => {
     });
 
     it('renders link for perpetual offers', async () => {
-        await initService(mockConfig(), mockProviders());
+        await initMasCommerceService();
         const checkoutLink = mockCheckoutLink('perpetual', {
             perpetual: 'true',
         });
@@ -179,7 +206,7 @@ describe('class "CheckoutLink"', () => {
     });
 
     it('renders link with extra options and cleans up once unset', async () => {
-        await initService(mockConfig(), mockProviders());
+        await initMasCommerceService();
         const checkoutLink = mockCheckoutLink('abm', {
             extraOptions: '{"mv":1, "mv2":2, "promoid": "abc"}',
         });
@@ -196,7 +223,7 @@ describe('class "CheckoutLink"', () => {
 
     describe('property "isCheckoutLink"', () => {
         it('returns true', async () => {
-            await initService(mockConfig(), mockProviders());
+            await initMasCommerceService();
             const checkoutLink = mockCheckoutLink('abm');
             expect(checkoutLink.isCheckoutLink).to.be.true;
         });
@@ -204,7 +231,7 @@ describe('class "CheckoutLink"', () => {
 
     describe('method "render"', () => {
         it('returns false if element is not connected to DOM', async () => {
-            await initService(mockConfig(), mockProviders());
+            await initMasCommerceService();
             const checkoutLink = mockCheckoutLink('no-offer', {}, false);
             expect(await checkoutLink.render()).to.be.false;
         });
@@ -212,7 +239,7 @@ describe('class "CheckoutLink"', () => {
 
     describe('method "renderOffers"', () => {
         it('returns false and does not render href if element is not connected to DOM', async () => {
-            await initService(mockConfig(), mockProviders());
+            await initMasCommerceService();
             const checkoutLink = mockCheckoutLink('no-offer', {}, false);
             checkoutLink.href = HREF;
             expect(await checkoutLink.renderOffers([])).to.be.false;
@@ -220,7 +247,7 @@ describe('class "CheckoutLink"', () => {
         });
 
         it('returns false and renders failed placeholder if offers array is empty', async () => {
-            await initService(mockConfig(), mockProviders());
+            await initMasCommerceService();
             const checkoutLink = mockCheckoutLink('no-offer', {});
             checkoutLink.href = HREF;
             expect(await checkoutLink.renderOffers([])).to.be.true;
@@ -230,11 +257,11 @@ describe('class "CheckoutLink"', () => {
         });
 
         it('skips rendering if version has changed', async () => {
-            await initService(mockConfig(), mockProviders());
+            await initMasCommerceService();
             const checkoutLink = mockCheckoutLink('no-offer', {}, false);
             checkoutLink.href = HREF;
-            const version = checkoutLink.togglePending();
-            checkoutLink.togglePending();
+            const version = checkoutLink.masElement.togglePending();
+            checkoutLink.masElement.togglePending();
             expect(await checkoutLink.renderOffers([], {}, version)).to.be
                 .false;
             expect(checkoutLink.href).to.equal(HREF);
@@ -243,7 +270,7 @@ describe('class "CheckoutLink"', () => {
 
     describe('method "updateOptions"', () => {
         it('updates element data attributes', async () => {
-            await initService(mockConfig(), mockProviders());
+            await initMasCommerceService();
             const link = CheckoutLink.createCheckoutLink({
                 quantity: ['1'],
                 wcsOsi: 'abm',
@@ -279,31 +306,16 @@ describe('class "CheckoutLink"', () => {
         });
     });
 
-    describe('static method "selectCheckoutLinks"', () => {
-        it('returns list of found links', async () => {
-            await initService(mockConfig(), mockProviders());
-            const checkoutLink1 = mockCheckoutLink('abm');
-            const checkoutLink2 = mockCheckoutLink('m2m');
-            expect(CheckoutLink.getCheckoutLinks()).to.deep.equal([
-                checkoutLink1,
-                checkoutLink2,
-            ]);
-        });
-    });
-
     describe('logged-in features', () => {
         it('renders download link', async () => {
             mockIms('US');
-            await initService(
-                mockConfig(),
-                mockProviders({
-                    checkoutAction: {
-                        text: 'Download',
-                        className: CLASS_NAME_DOWNLOAD,
-                        url: 'https://helpx.adobe.com/download-install.html',
-                    },
-                }),
-            );
+            await initMasCommerceService({}, () => {
+                return {
+                    text: 'Download',
+                    className: CLASS_NAME_DOWNLOAD,
+                    url: 'https://helpx.adobe.com/download-install.html',
+                };
+            });
             const checkoutLink = mockCheckoutLink('abm');
             await checkoutLink.onceSettled();
             expect(checkoutLink.textContent.trim()).to.equal('Download');
@@ -316,16 +328,13 @@ describe('class "CheckoutLink"', () => {
         it('renders upgrade button', async () => {
             mockIms('US');
             const handler = sinon.stub();
-            await initService(
-                mockConfig(),
-                mockProviders({
-                    checkoutAction: {
-                        text: 'Upgrade',
-                        className: CLASS_NAME_UPGRADE,
-                        handler,
-                    },
-                }),
-            );
+            await initMasCommerceService({}, () => {
+                return {
+                    text: 'Upgrade',
+                    className: CLASS_NAME_UPGRADE,
+                    handler,
+                };
+            });
             const checkoutLink = mockCheckoutLink('abm');
             await checkoutLink.onceSettled();
             expect(checkoutLink.classList.contains('upgrade')).to.be.true;
@@ -336,7 +345,7 @@ describe('class "CheckoutLink"', () => {
         });
 
         it('skips entitlements check', async () => {
-            await initService(mockConfig(), mockProviders());
+            await initMasCommerceService();
             const checkoutLink = mockCheckoutLink('abm');
             checkoutLink.dataset.entitlement = 'false';
             await checkoutLink.onceSettled();
@@ -344,6 +353,7 @@ describe('class "CheckoutLink"', () => {
             expect(checkoutLink.getAttribute('href')).to.equal(
                 'https://commerce.adobe.com/store/email?items%5B0%5D%5Bid%5D=632B3ADD940A7FBB7864AA5AD19B8D28&cli=adobe_com&ctx=fp&co=US&lang=en',
             );
+            checkoutLink.requestUpdate();
         });
     });
 });
@@ -351,11 +361,31 @@ describe('class "CheckoutLink"', () => {
 describe('commerce service', () => {
     describe('function "buildCheckoutURL"', () => {
         it('returns empty string if no offers provided', async () => {
-            const { buildCheckoutURL } = await initService(
-                mockConfig(),
-                mockProviders(),
+            const service = await initMasCommerceService();
+            expect(service.buildCheckoutURL([])).to.be.empty;
+        });
+    });
+    describe('function "direct checkout calls"', () => {
+        it('works as expected', async () => {
+            const service = await initMasCommerceService();
+            const { collectCheckoutOptions, buildCheckoutURL } = new Checkout({
+                literals: { price: {} },
+                providers: {
+                    checkout: [
+                        (p, o) => {
+                            /*nop*/
+                        },
+                    ],
+                },
+                settings: getSettings(service.config),
+            });
+            const checkoutLink1 = mockCheckoutLink('abm');
+            const options = collectCheckoutOptions({}, checkoutLink1);
+            expect(options).not.to.be.empty;
+            buildCheckoutURL(
+                [{ offerid: 'a', marketSegments: ['COM'], priceDetails: {} }],
+                options,
             );
-            expect(buildCheckoutURL([])).to.be.empty;
         });
     });
 });

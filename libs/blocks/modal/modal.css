@@ -21,6 +21,11 @@
   z-index: 102;
 }
 
+#locale-modal-v2 .dialog-close,
+#locale-modal-v2 .georouting-wrapper {
+  display: block;
+}
+
 .dialog-modal.commerce-frame {
   z-index: 103;
 }
