@@ -92,6 +92,8 @@ function setIconAttrs(icon) {
 }
 
 export default async function decorateAllIcons(icons, config) {
+  console.log(config.base);
+  
   if (!icons.length) return;
   const root = getFederatedContentRoot();
   loadStyle(`${config.base}/features/icons/icons.css`);
