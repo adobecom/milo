@@ -1445,7 +1445,7 @@ merch-card[variant="ccd-suggested"] [slot="cta"] a {
 
     :host([variant='ccd-suggested']) ::slotted([slot='body-xs']) {
       color: var(--ccd-gray-700-dark, #464646);
-      padding-top: 8px;
+      padding-top: 6px;
     }
     
     :host([variant='ccd-suggested'].wide-strip) ::slotted([slot='body-xs']) {
