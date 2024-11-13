@@ -1486,6 +1486,7 @@ merch-card[variant="ccd-suggested"] [slot="cta"] a {
       color: var(--spectrum-gray-800, #F8F8F8);
       font-size: var(--consonant-merch-card-body-xs-font-size);
       line-height: var(--consonant-merch-card-body-xs-line-height);
+      min-width: fit-content;
     }
     
     :host([variant='ccd-suggested']) ::slotted([slot='price']) span.placeholder-resolved[data-template="priceStrikethrough"] {
