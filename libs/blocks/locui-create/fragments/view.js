@@ -1,5 +1,5 @@
 import { findFragments, showFragments } from './index.js';
-import { useEffect, html, useState } from '../../../deps/htm-preact.js';
+import { useEffect, useCallback, html, useState } from '../../../deps/htm-preact.js';
 import { getUrls } from '../../locui/loc/index.js';
 
 function Loader() {
@@ -14,19 +14,24 @@ export default function FragmentsSection({ fragments, setFragments, urls }) {
   const [errorFragments, setErrorFragments] = useState([]);
   const [isLoading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const fetchFragments = useCallback(async () => {
     const inputUrls = urls.split(/[,\r\n]/g).map((url) => new URL(url));
-    async function fetchFragments() {
-      setLoading(true);
-      const found = await findFragments(getUrls(inputUrls));
-      setValidFragments(found.filter((frag) => !frag?.valid));
-      setFragments(found.filter((frag) => !frag?.valid).map(({ pathname }) => pathname));
-      const invalid = found.filter((frag) => typeof frag?.valid === 'string');
-      setErrorFragments(invalid);
-      setLoading(false);
-    }
+    setLoading(true);
+    const found = await findFragments(getUrls(inputUrls));
+    setValidFragments(found.filter((frag) => !frag?.valid));
+    setFragments(found.filter((frag) => !frag?.valid).map(({ pathname }) => pathname));
+    const invalid = found.filter((frag) => typeof frag?.valid === 'string');
+    setErrorFragments(invalid);
+    setLoading(false);
+  }, [setFragments, urls]);
+
+  useEffect(() => {
     fetchFragments();
   }, []);
+
+  const handleRefresh = () => {
+    fetchFragments();
+  };
 
   const handleClick = (event) => {
     const pathname = event.target?.value;
@@ -55,7 +60,9 @@ export default function FragmentsSection({ fragments, setFragments, urls }) {
   return html`
   <div class='locui-create-fragments-container'>
   ${isLoading ? html`<${Loader} />`
-    : html`<ul class='locui-create-fragments-list'>
+    : html`
+    <button class="locui-create-refresh-button" onClick=${handleRefresh}/>
+    <ul class='locui-create-fragments-list'>
    ${validFragments && validFragments.length > 0 && validFragments.map((fragment) => locFragment(fragment))}
    </ul>`
 }

@@ -306,3 +306,18 @@ body {
   accent-color: rgb(0,0,0);
   border-radius: 0.25rem;
 }
+
+.locui-create-refresh-button{
+  background: url(../locui/img/spectrum-refresh.svg);
+  width: 26px;
+  text-indent: -1000px;
+  overflow: hidden;
+  display: block;
+  background-repeat: no-repeat;
+  border: none;
+  background-position: 50%;
+  background-color: rgb(0, 0, 0);
+  height: 26px;
+  border-radius: 50px;
+  cursor: pointer;
+}
