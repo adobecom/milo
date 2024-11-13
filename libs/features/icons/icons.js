@@ -44,9 +44,9 @@ async function fetchIcon(root, name) {
     (async () => {
       try {
         const url = `${root}/federal/assets/icons/svgs/${name}.svg`;
-        const icon = await fetch(url);
-        if (!icon.ok) throw new Error(`Failed to fetch SVG: ${icon.statusText}`);
-        const text = await icon.text();
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`Failed to fetch SVG: ${res.statusText}`);
+        const text = await res.text();
         const parser = new DOMParser();
         const doc = parser.parseFromString(text, 'image/svg+xml');
         const svg = doc.querySelector('svg');
@@ -91,7 +91,7 @@ function setIconAttrs(icon) {
   icon.classList.add(`node-index-${indexClass}`);
 }
 
-export default async function decorateAllIcons(icons, config) {
+export default async function decorateIcons(icons, config) {
   if (!icons.length) return;
   const root = getFederatedContentRoot();
   loadStyle(`${config.base}/features/icons/icons.css`);

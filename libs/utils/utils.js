@@ -1281,10 +1281,10 @@ export async function loadArea(area = document) {
     decorateDocumentExtras();
   }
 
-  const allIcons = area.querySelectorAll('span.icon');
-  if (allIcons.length) {
+  const icons = area.querySelectorAll('span.icon');
+  if (icons.length) {
     const { default: decorateIcons } = await import('../features/icons/icons.js');
-    await decorateIcons(allIcons, config);
+    await decorateIcons(icons, config);
   }
 
   const sections = decorateSections(area, isDoc);
