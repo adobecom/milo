@@ -311,7 +311,7 @@ export function localizeLink(
     const isLocalizedLink = path.startsWith(`/${LANGSTORE}`)
       || path.startsWith(`/${PREVIEW}`)
       || Object.keys(locales).some((loc) => loc !== '' && (path.startsWith(`/${loc}/`)
-        || path.endsWith(`/${loc}`)));
+      || path.endsWith(`/${loc}`)));
     if (isLocalizedLink) return processedHref;
     const urlPath = `${locale.prefix}${path}${url.search}${hash}`;
     return relative ? urlPath : `${url.origin}${urlPath}`;
@@ -756,7 +756,7 @@ function decorateHeader() {
   }
   header.className = headerMeta || 'global-navigation';
   const metadataConfig = getMetadata('breadcrumbs')?.toLowerCase()
-    || getConfig().breadcrumbs;
+  || getConfig().breadcrumbs;
   if (metadataConfig === 'off') return;
   const baseBreadcrumbs = getMetadata('breadcrumbs-base')?.length;
 
@@ -808,8 +808,8 @@ async function decoratePlaceholders(area, config) {
   area.dataset.hasPlaceholders = 'true';
   const placeholderPath = `${config.locale?.contentRoot}/placeholders.json`;
   placeholderRequest = placeholderRequest
-    || customFetch({ resource: placeholderPath, withCacheRules: true })
-      .catch(() => ({}));
+  || customFetch({ resource: placeholderPath, withCacheRules: true })
+    .catch(() => ({}));
   const { decoratePlaceholderArea } = await import('../features/placeholders.js');
   await decoratePlaceholderArea({ placeholderPath, placeholderRequest, nodes });
 }
