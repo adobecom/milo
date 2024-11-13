@@ -2,9 +2,9 @@ import { html, render } from '../../../deps/htm-preact.js';
 
 function Modal({ errFrag }) {
   return html`
-  <div class="locui-fragment-modal">
+  <div class="locui-create-fragment-modal">
    ${errFrag && Object.keys(errFrag).length > 0 && Object.keys(errFrag).map((errKey) => html`<div class=locui-create-error>
-    <h2>${errKey}</h2>
+    <h3>${errKey}</h3>
     <div class='locui-create-error-frag-list'>
     ${errFrag[errKey].map((errFragPath) => html`<div>${errFragPath}</div>`)}
     </div>

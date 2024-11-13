@@ -97,6 +97,7 @@ export default function InputUrls() {
         <input
           type="checkbox"
           name="includeFragments"
+          disabled=${!(formData.urls.length > 0)}
           onClick=${handleFormToggle}
         />
         <span class="field-label pl-8">Include Fragments</span>

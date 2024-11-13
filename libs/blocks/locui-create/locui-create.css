@@ -221,9 +221,20 @@ body {
 /* Fragment modal */
 
 .locui-create-fragment-modal {
-  padding: 0 10px;
-  width: 300px;
-  height: 200px;
+  padding: 0 20px 20px;
+  width: 50vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  
+}
+
+.locui-create-fragment-modal h3 {
+  text-transform: uppercase;
+  color: rgb(211, 21, 16);
+  font-size: 1.5rem;
+  margin: 1rem 0;
+  font-weight: 500;
 }
 
 .locui-create-fragments-container {

@@ -37,7 +37,7 @@ export function showFragments(errorFragments) {
   }, {});
   const content = Modal(div, errFragDict);
   const modalOpts = {
-    class: 'locui-create-fragment-modal',
+    class: '',
     id: 'locui-create-fragment-modal',
     content,
     closeEvent: 'closeModal',

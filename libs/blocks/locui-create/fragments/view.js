@@ -15,7 +15,7 @@ export default function FragmentsSection({ fragments, setFragments, urls }) {
   const [isLoading, setLoading] = useState(true);
 
   useEffect(() => {
-    const inputUrls = urls.split(/,\r\n/g).map((url) => new URL(url));
+    const inputUrls = urls.split(/[,\r\n]/g).map((url) => new URL(url));
     async function fetchFragments() {
       setLoading(true);
       const found = await findFragments(getUrls(inputUrls));
@@ -26,7 +26,7 @@ export default function FragmentsSection({ fragments, setFragments, urls }) {
       setLoading(false);
     }
     fetchFragments();
-  }, [urls]);
+  }, []);
 
   const handleClick = (event) => {
     const pathname = event.target?.value;
