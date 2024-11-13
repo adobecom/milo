@@ -1425,6 +1425,7 @@ merch-card[variant="ccd-suggested"] [slot="cta"] a {
       padding-inline-start: var(--consonant-merch-spacing-xxs);
       display: flex;
       flex-direction: column;
+      gap: 2px;
     }
 
     :host([variant='ccd-suggested']) ::slotted([slot='icons']) {

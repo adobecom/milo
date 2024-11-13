@@ -69,6 +69,7 @@ export class CCDSuggested extends VariantLayout {
       padding-inline-start: var(--consonant-merch-spacing-xxs);
       display: flex;
       flex-direction: column;
+      gap: 2px;
     }
 
     :host([variant='ccd-suggested']) ::slotted([slot='icons']) {
