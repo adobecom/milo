@@ -575,10 +575,10 @@ span.icon {
   margin-inline: var(--icon-spacing);
 }
 
-span.icon.node-index-first { margin-inline-start: unset; }
-span.icon.node-index-middle { margin-inline: var(--icon-spacing); }
-span.icon.node-index-last { margin-inline-end: unset; }
-span.icon.node-index-only { margin-inline: unset; }
+span.icon[data-nodeindex='first'], .node-index-first { margin-inline-start: unset; }
+span.icon[data-nodeindex='middle'] { margin-inline: var(--icon-spacing); }
+span.icon[data-nodeindex='last'] { margin-inline-end: unset; }
+span.icon[data-nodeindex='only'] { margin-inline: unset; }
 
 span.icon svg {
   height: 1em;

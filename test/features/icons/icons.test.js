@@ -38,9 +38,9 @@ describe('Icon Suppprt', () => {
     expect(selector).to.exist;
   });
 
-  it('Sets icon index class', async () => {
+  it('Sets icon index attribute', async () => {
     icons = document.querySelectorAll('span.icon');
-    const secondIconHasIndexClass = icons[2].classList.contains('node-index-last');
+    const secondIconHasIndexClass = icons[2].getAttribute('data-nodeindex') === 'last';
     expect(secondIconHasIndexClass).to.be.true;
   });
 

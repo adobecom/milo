@@ -3,7 +3,10 @@ import { loadLink, loadStyle } from '../../utils/utils.js';
 
 let fetchedIcons;
 let fetched = false;
-const iconsSVG = {};
+
+const fedRoot = getFederatedContentRoot();
+const iconKeys = new Set();
+const iconSvgs = {};
 
 async function getSVGsfromFile(path) {
   /* c8 ignore next */
@@ -39,21 +42,38 @@ export const fetchIcons = (config) => new Promise(async (resolve) => {
   resolve(fetchedIcons);
 });
 
-async function fetchIcon(root, name) {
+function preloadIcon(icon) {
+  if (iconKeys.has(icon)) return;
+  iconKeys.add(icon);
+  loadLink(
+    `${fedRoot}/federal/assets/icons/svgs/${icon}.svg`,
+    { rel: 'preload', as: 'fetch', crossorigin: 'anonymous' },
+  );
+}
+
+function setLegacyToolTip(icon, key) {
+  // support for legacy tooltip
+  icon.dataset.name = 'info-outline';
+  icon.classList.replace(`icon-${key}`, 'icon-info-outline');
+}
+
+async function fetchIconSvg(icon) {
   return new Promise((resolve) => {
     (async () => {
+      const { name, svginjected } = icon.dataset;
+      if (svginjected || !name) resolve();
       try {
-        const url = `${root}/federal/assets/icons/svgs/${name}.svg`;
+        const url = `${fedRoot}/federal/assets/icons/svgs/${name}.svg`;
         const res = await fetch(url);
         if (!res.ok) throw new Error(`Failed to fetch SVG: ${res.statusText}`);
         const text = await res.text();
         const parser = new DOMParser();
         const doc = parser.parseFromString(text, 'image/svg+xml');
-        const svg = doc.querySelector('svg');
-        if (!svg) throw new Error('Missing SVG Content');
-        const asset = svg.cloneNode(true);
-        asset.classList.add('icon-milo', `icon-milo-${name}`);
-        iconsSVG[name] = asset;
+        const svgEl = doc.querySelector('svg');
+        if (!svgEl) throw new Error('Missing SVG Content');
+        const svg = svgEl.cloneNode(true);
+        svg.classList.add('icon-milo', `icon-milo-${name}`);
+        iconSvgs[name] = svg;
         resolve();
       } catch (error) {
         window.lana?.log(`Error fetching SVG for ${name}:`, error);
@@ -63,59 +83,45 @@ async function fetchIcon(root, name) {
   });
 }
 
-async function injectSVG(icon) {
-  if (!icon.dataset.name) return;
-  if (iconsSVG[icon.dataset.name] && !icon.dataset.svgInjected) {
-    icon.appendChild(iconsSVG[icon.dataset.name].cloneNode(true));
-    icon.dataset.svgInjected = true;
+async function decorate(icon) {
+  const { name, tooltip, tooltipdir, svginjected } = icon.dataset;
+  if (!name) return;
+  if (iconSvgs[name] && !svginjected) {
+    icon.appendChild(iconSvgs[name].cloneNode(true));
+    icon.dataset.svginjected = true;
   }
+  if (tooltip) icon.classList.add('milo-tooltip', tooltipdir);
+  const listItem = icon.parentElement.closest('li');
+  listItem?.classList.add('icon-list-item');
 }
 
-function setIconAttrs(icon, iconKey) {
-  icon.dataset.name = iconKey;
+function setIconData(icon, name) {
+  icon.dataset.name = name;
   const em = icon.closest('em');
   const content = em?.textContent.split('|');
   if (em && content) {
     icon.dataset.tooltip = content.pop().trim();
-    const place = content.pop()?.trim().toLowerCase() || 'right';
-    // support legacy tooltip authoring
-    const iconName = iconKey === 'tooltip' ? 'info-outline' : iconKey;
-    icon.dataset.name = iconName;
-    icon.className = `icon icon-${iconName} milo-tooltip ${place}`;
+    icon.dataset.tooltipdir = content.pop()?.trim().toLowerCase() || 'right';
+    if (name === 'tooltip') setLegacyToolTip(icon, name);
     em.parentElement.replaceChild(icon, em);
   }
-  const parent = icon.parentNode;
-  const children = parent.childNodes;
-  const nodeIndex = [...children].indexOf.call(children, icon);
-  let indexClass = (nodeIndex === children.length - 1) ? 'last' : 'middle';
-  if (nodeIndex === 0) indexClass = 'first';
-  if (children.length === 1) indexClass = 'only';
-  icon.classList.add(`node-index-${indexClass}`);
+  const nodes = [...icon.parentNode.childNodes];
+  icon.dataset.nodeindex = nodes.length > 1 ? {
+    0: 'first',
+    [nodes.length - 1]: 'last',
+  }[nodes.indexOf.call(nodes, icon)] ?? 'middle' : 'only';
 }
 
 export default async function decorateIcons(icons, config) {
   if (!icons.length) return;
-  const root = getFederatedContentRoot();
   loadStyle(`${config.base}/features/icons/icons.css`);
-  const keys = new Set();
-  const assets = {};
-  const requests = [];
-  icons.forEach((icon) => {
-    const iconName = [...icon.classList].find((c) => c.startsWith('icon-'))?.substring(5);
-    if (!iconName) return;
-    setIconAttrs(icon, iconName);
-    // preload icons above the fold
-    if (!keys.has(icon.dataset.name)) {
-      keys.add(icon.dataset.name);
-      const path = `${root}/federal/assets/icons/svgs/${icon.dataset.name}.svg`;
-      loadLink(path, { rel: 'preload', as: 'fetch', crossorigin: 'anonymous' });
+  await Promise.all([...icons].map((icon) => {
+    const name = [...icon.classList].find((c) => c.startsWith('icon-'))?.substring(5);
+    if (name) {
+      setIconData(icon, name);
+      preloadIcon(icon.dataset.name);
     }
-    if (assets[icon.dataset.name] && icon.dataset.svgInjected) return;
-    assets[icon.dataset.name] = fetchIcon(root, icon.dataset.name);
-    requests.push(assets[icon.dataset.name]);
-    const listItem = icon.parentElement.closest('li');
-    listItem?.classList.add('icon-list-item');
-  });
-  await Promise.all(requests);
-  icons.forEach((icon) => injectSVG(icon));
+    return fetchIconSvg(icon);
+  }));
+  icons.forEach((icon) => decorate(icon));
 }
