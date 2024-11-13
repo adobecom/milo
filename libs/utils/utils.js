@@ -144,7 +144,7 @@ export const MILO_EVENTS = { DEFERRED: 'milo:deferred' };
 const LANGSTORE = 'langstore';
 const PREVIEW = 'target-preview';
 const PAGE_URL = new URL(window.location.href);
-const SLD = PAGE_URL.hostname.includes('.aem.') ? 'aem' : 'hlx';
+export const SLD = PAGE_URL.hostname.includes('.aem.') ? 'aem' : 'hlx';
 
 const PROMO_PARAM = 'promo';
 
@@ -502,7 +502,7 @@ export function decorateSVG(a) {
   try {
     // Mine for URL and alt text
     const splitText = textContent.split('|');
-    const textUrl = new URL(splitText.shift().trim());
+    const authoredUrl = new URL(splitText.shift().trim());
     const altText = splitText.join('|').trim();
 
     // Relative link checking
@@ -510,12 +510,14 @@ export function decorateSVG(a) {
       ? new URL(`${window.location.origin}${a.href}`)
       : new URL(a.href);
 
-    const src = textUrl.hostname.includes(`.${SLD}.`) ? textUrl.pathname : textUrl;
+    const src = (authoredUrl.hostname.includes('.hlx.') || authoredUrl.hostname.includes('.aem.'))
+      ? authoredUrl.pathname
+      : authoredUrl;
 
     const img = createTag('img', { loading: 'lazy', src, alt: altText || '' });
     const pic = createTag('picture', null, img);
 
-    if (textUrl.pathname === hrefUrl.pathname) {
+    if (authoredUrl.pathname === hrefUrl.pathname) {
       a.parentElement.replaceChild(pic, a);
       return pic;
     }
@@ -1167,7 +1169,7 @@ function initSidekick() {
 
 function decorateMeta() {
   const { origin } = window.location;
-  const contents = document.head.querySelectorAll(`[content*=".${SLD}."]`);
+  const contents = document.head.querySelectorAll('[content*=".hlx."], [content*=".aem."]');
   contents.forEach((meta) => {
     if (meta.getAttribute('property') === 'hlx:proxyUrl' || meta.getAttribute('name')?.endsWith('schedule')) return;
     try {

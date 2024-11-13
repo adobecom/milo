@@ -76,6 +76,7 @@ export const normalizePath = (p, localize = true) => {
 
   if (path.startsWith(config.codeRoot)
     || path.includes('.hlx.')
+    || path.includes('.aem.')
     || path.includes('.adobe.')) {
     try {
       const url = new URL(path);
