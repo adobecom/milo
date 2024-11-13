@@ -47,8 +47,8 @@ export class CCDSuggested extends VariantLayout {
   static variantStyle = css`
     :host([variant='ccd-suggested']) {
       width: var(--merch-card-ccd-suggested-width);
-      max-width: var(--merch-card-ccd-suggested-width);
-      max-height: var(--merch-card-ccd-suggested-height);
+      min-width: var(--merch-card-ccd-suggested-width);
+      min-height: var(--merch-card-ccd-suggested-height);
       border-radius: 4px;
       display: flex;
       flex-flow: wrap;
@@ -58,6 +58,7 @@ export class CCDSuggested extends VariantLayout {
     :host([variant='ccd-suggested']) .body {
       height: auto;
       padding: 20px;
+      gap: 0;
     }
 
     :host([variant='ccd-suggested'].thin-strip) .body {
@@ -92,6 +93,7 @@ export class CCDSuggested extends VariantLayout {
 
     :host([variant='ccd-suggested']) ::slotted([slot='body-xs']) {
       color: var(--ccd-gray-700-dark, #464646);
+      padding-top: 8px;
     }
     
     :host([variant='ccd-suggested'].wide-strip) ::slotted([slot='body-xs']) {
@@ -117,6 +119,7 @@ export class CCDSuggested extends VariantLayout {
     :host([variant='ccd-suggested']) ::slotted([slot='cta']) {
       display: flex;
       align-items: center;
+      min-width: fit-content;
     }
 
     :host([variant='ccd-suggested']) .footer {

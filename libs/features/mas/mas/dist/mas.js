@@ -1399,8 +1399,8 @@ merch-card[variant="ccd-suggested"] [slot="cta"] a {
                 <slot></slot>`}};p(pt,"variantStyle",w`
     :host([variant='ccd-suggested']) {
       width: var(--merch-card-ccd-suggested-width);
-      max-width: var(--merch-card-ccd-suggested-width);
-      max-height: var(--merch-card-ccd-suggested-height);
+      min-width: var(--merch-card-ccd-suggested-width);
+      min-height: var(--merch-card-ccd-suggested-height);
       border-radius: 4px;
       display: flex;
       flex-flow: wrap;
@@ -1410,6 +1410,7 @@ merch-card[variant="ccd-suggested"] [slot="cta"] a {
     :host([variant='ccd-suggested']) .body {
       height: auto;
       padding: 20px;
+      gap: 0;
     }
 
     :host([variant='ccd-suggested'].thin-strip) .body {
@@ -1444,6 +1445,7 @@ merch-card[variant="ccd-suggested"] [slot="cta"] a {
 
     :host([variant='ccd-suggested']) ::slotted([slot='body-xs']) {
       color: var(--ccd-gray-700-dark, #464646);
+      padding-top: 8px;
     }
     
     :host([variant='ccd-suggested'].wide-strip) ::slotted([slot='body-xs']) {
@@ -1469,6 +1471,7 @@ merch-card[variant="ccd-suggested"] [slot="cta"] a {
     :host([variant='ccd-suggested']) ::slotted([slot='cta']) {
       display: flex;
       align-items: center;
+      min-width: fit-content;
     }
 
     :host([variant='ccd-suggested']) .footer {
@@ -1537,8 +1540,8 @@ merch-card[variant="ccd-slice"] [slot='image'] img {
             <slot name="image"></slot>
             <slot></slot>`}};p(ft,"variantStyle",w`
         :host([variant='ccd-slice']) {
-            max-width: var(--consonant-merch-card-ccd-slice-single-width);
-            max-height: var(--consonant-merch-card-ccd-slice-single-height);
+            min-width: var(--consonant-merch-card-ccd-slice-single-width);
+            min-height: var(--consonant-merch-card-ccd-slice-single-height);
             border: 1px solid var(--spectrum-gray-700);
             border-radius: 4px;
             display: flex;
