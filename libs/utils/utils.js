@@ -144,7 +144,7 @@ export const MILO_EVENTS = { DEFERRED: 'milo:deferred' };
 const LANGSTORE = 'langstore';
 const PREVIEW = 'target-preview';
 const PAGE_URL = new URL(window.location.href);
-const SLD = PAGE_URL.hostname.includes('.aem.') ? 'aem' : 'hlx';
+export const SLD = PAGE_URL.hostname.includes('.aem.') ? 'aem' : 'hlx';
 
 const PROMO_PARAM = 'promo';
 
@@ -502,7 +502,7 @@ export function decorateSVG(a) {
   try {
     // Mine for URL and alt text
     const splitText = textContent.split('|');
-    const textUrl = new URL(splitText.shift().trim());
+    const authoredUrl = new URL(splitText.shift().trim());
     const altText = splitText.join('|').trim();
 
     // Relative link checking
@@ -510,12 +510,14 @@ export function decorateSVG(a) {
       ? new URL(`${window.location.origin}${a.href}`)
       : new URL(a.href);
 
-    const src = textUrl.hostname.includes(`.${SLD}.`) ? textUrl.pathname : textUrl;
+    const src = (authoredUrl.hostname.includes('.hlx.') || authoredUrl.hostname.includes('.aem.'))
+      ? authoredUrl.pathname
+      : authoredUrl;
 
     const img = createTag('img', { loading: 'lazy', src, alt: altText || '' });
     const pic = createTag('picture', null, img);
 
-    if (textUrl.pathname === hrefUrl.pathname) {
+    if (authoredUrl.pathname === hrefUrl.pathname) {
       a.parentElement.replaceChild(pic, a);
       return pic;
     }
@@ -646,21 +648,27 @@ const decorateCopyLink = (a, evt) => {
 };
 
 export function convertStageLinks({ anchors, config, hostname, href }) {
-  if (config.env?.name === 'prod' || !config.stageDomainsMap) return;
-  const matchedRules = Object.entries(config.stageDomainsMap)
+  const { env, stageDomainsMap, locale } = config;
+  if (env?.name === 'prod' || !stageDomainsMap) return;
+  const matchedRules = Object.entries(stageDomainsMap)
     .find(([domain]) => (new RegExp(domain)).test(href));
   if (!matchedRules) return;
   const [, domainsMap] = matchedRules;
   [...anchors].forEach((a) => {
+    const hasLocalePrefix = a.pathname.startsWith(locale.prefix);
+    const noLocaleLink = hasLocalePrefix ? a.href.replace(locale.prefix, '') : a.href;
     const matchedDomain = Object.keys(domainsMap)
-      .find((domain) => (new RegExp(domain)).test(a.href));
+      .find((domain) => (new RegExp(domain)).test(noLocaleLink));
     if (!matchedDomain) return;
-    a.href = a.href.replace(
+    const convertedLink = noLocaleLink.replace(
       new RegExp(matchedDomain),
       domainsMap[matchedDomain] === 'origin'
         ? `${matchedDomain.includes('https') ? 'https://' : ''}${hostname}`
         : domainsMap[matchedDomain],
     );
+    const convertedUrl = new URL(convertedLink);
+    convertedUrl.pathname = `${hasLocalePrefix ? locale.prefix : ''}${convertedUrl.pathname}`;
+    a.href = convertedUrl.toString();
     if (/(\.page|\.live).*\.html(?=[?#]|$)/.test(a.href)) a.href = a.href.replace(/\.html(?=[?#]|$)/, '');
   });
 }
@@ -1056,6 +1064,8 @@ async function checkForPageMods() {
 
 async function loadPostLCP(config) {
   await decoratePlaceholders(document.body.querySelector('header'), config);
+  const sk = document.querySelector('helix-sidekick');
+  if (sk) import('./sidekick-decorate.js').then((mod) => { mod.default(sk); });
   if (config.mep?.targetEnabled === 'postlcp') {
     /* c8 ignore next 2 */
     const { init } = await import('../features/personalization/personalization.js');
@@ -1159,7 +1169,7 @@ function initSidekick() {
 
 function decorateMeta() {
   const { origin } = window.location;
-  const contents = document.head.querySelectorAll(`[content*=".${SLD}."]`);
+  const contents = document.head.querySelectorAll('[content*=".hlx."], [content*=".aem."]');
   contents.forEach((meta) => {
     if (meta.getAttribute('property') === 'hlx:proxyUrl' || meta.getAttribute('name')?.endsWith('schedule')) return;
     try {

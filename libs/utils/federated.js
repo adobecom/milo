@@ -1,4 +1,4 @@
-import { getConfig } from './utils.js';
+import { getConfig, SLD } from './utils.js';
 
 let federatedContentRoot;
 /* eslint-disable import/prefer-default-export */
@@ -19,8 +19,8 @@ export const getFederatedContentRoot = () => {
     ? origin
     : 'https://www.adobe.com';
 
-  if (origin.includes('localhost') || origin.includes('.hlx.')) {
-    federatedContentRoot = `https://main--federal--adobecom.hlx.${origin.endsWith('.live') ? 'live' : 'page'}`;
+  if (origin.includes('localhost') || origin.includes(`.${SLD}.`)) {
+    federatedContentRoot = `https://main--federal--adobecom.aem.${origin.endsWith('.live') ? 'live' : 'page'}`;
   }
 
   return federatedContentRoot;

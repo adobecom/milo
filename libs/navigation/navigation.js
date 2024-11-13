@@ -18,7 +18,7 @@ const blockConfig = [
 const envMap = {
   prod: 'https://www.adobe.com',
   stage: 'https://www.stage.adobe.com',
-  qa: 'https://gnav--milo--adobecom.hlx.page',
+  qa: 'https://gnav--milo--adobecom.aem.page',
 };
 
 const getStageDomainsMap = (stageDomainsMap) => (
@@ -62,7 +62,7 @@ export default async function loadBlock(configs, customLib) {
     stageDomainsMap = {},
   } = configs || {};
   const branch = new URLSearchParams(window.location.search).get('navbranch');
-  const miloLibs = branch ? `https://${branch}--milo--adobecom.hlx.page` : customLib || envMap[env];
+  const miloLibs = branch ? `https://${branch}--milo--adobecom.aem.page` : customLib || envMap[env];
   if (!header && !footer) {
     // eslint-disable-next-line no-console
     console.error('Global navigation Error: header and footer configurations are missing.');
@@ -78,7 +78,7 @@ export default async function loadBlock(configs, customLib) {
   const paramConfigs = getParamsConfigs(configs, miloLibs);
   const clientConfig = {
     clientEnv: env,
-    origin: `https://main--federal--adobecom.hlx.${env === 'prod' ? 'live' : 'page'}`,
+    origin: `https://main--federal--adobecom.aem.${env === 'prod' ? 'live' : 'page'}`,
     miloLibs: `${miloLibs}/libs`,
     pathname: `/${locale}`,
     locales: configs.locales || locales,

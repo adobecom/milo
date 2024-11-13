@@ -41,7 +41,7 @@ const updateFragMap = (fragment, a, href) => {
   }
 };
 
-const insertInlineFrag = (sections, a, relHref, mep, handleMepCommands) => {
+const insertInlineFrag = (sections, a, relHref) => {
   // Inline fragments only support one section, other sections are ignored
   const fragChildren = [...sections[0].children];
   if (a.parentElement.nodeName === 'DIV' && !a.parentElement.attributes.length) {
@@ -49,10 +49,7 @@ const insertInlineFrag = (sections, a, relHref, mep, handleMepCommands) => {
   } else {
     a.replaceWith(...fragChildren);
   }
-  fragChildren.forEach((child) => {
-    child.setAttribute('data-path', relHref);
-    if (handleMepCommands) mep.commands = handleMepCommands(mep.commands, child);
-  });
+  fragChildren.forEach((child) => child.setAttribute('data-path', relHref));
 };
 
 function replaceDotMedia(path, doc) {
@@ -66,7 +63,7 @@ function replaceDotMedia(path, doc) {
 }
 
 export default async function init(a) {
-  const { decorateArea, mep } = getConfig();
+  const { decorateArea, mep, placeholders } = getConfig();
   let relHref = localizeLink(a.href);
   let inline = false;
 
@@ -128,27 +125,21 @@ export default async function init(a) {
   }
 
   updateFragMap(fragment, a, relHref);
-  if (a.dataset.manifestId || a.dataset.adobeTargetTestid) {
-    const { updateFragDataProps } = await import('../../features/personalization/personalization.js');
-    updateFragDataProps(a, inline, sections, fragment);
-  }
-  let handleMepCommands = false;
-  if (mep?.commands?.length) {
-    const { handleCommands } = await import('../../features/personalization/personalization.js');
-    handleMepCommands = handleCommands;
+  if (a.dataset.manifestId
+    || a.dataset.adobeTargetTestid
+    || mep?.commands?.length
+    || placeholders) {
+    const { updateFragDataProps, handleCommands, replacePlaceholders } = await import('../../features/personalization/personalization.js');
+    if (a.dataset.manifestId || a.dataset.adobeTargetTestid) {
+      updateFragDataProps(a, inline, sections, fragment);
+    }
+    if (mep?.commands?.length) handleCommands(mep?.commands, fragment, false, true);
+    if (placeholders) fragment.innerHTML = replacePlaceholders(fragment.innerHTML, placeholders);
   }
   if (inline) {
-    insertInlineFrag(sections, a, relHref, mep, handleMepCommands);
+    insertInlineFrag(sections, a, relHref, mep);
   } else {
     a.parentElement.replaceChild(fragment, a);
-    if (handleMepCommands) handleMepCommands(mep?.commands, fragment);
-
-    const config = getConfig();
-    if (config.placeholders) {
-      const { replacePlaceholders } = await import('../../features/personalization/personalization.js');
-      fragment.innerHTML = replacePlaceholders(fragment.innerHTML, config.placeholders);
-    }
-
     await loadArea(fragment);
   }
 }
