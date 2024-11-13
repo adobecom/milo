@@ -1268,6 +1268,29 @@ async function processSection(section, config, isDoc) {
   return section.blocks;
 }
 
+export function setIconData(icon) {
+  const name = [...icon.classList].find((c) => c.startsWith('icon-'))?.substring(5);
+  if (!name) return;
+  icon.dataset.name = name;
+  const em = icon.closest('em');
+  const content = em?.textContent.split('|');
+  if (em && content) {
+    icon.dataset.tooltip = content.pop().trim();
+    icon.dataset.tooltipdir = content.pop()?.trim().toLowerCase() || 'right';
+    if (name === 'tooltip') {
+      // support for legacy tooltip
+      icon.dataset.name = 'info-outline';
+      icon.classList.replace(`icon-${name}`, 'icon-info-outline');
+    }
+    em.parentElement.replaceChild(icon, em);
+  }
+  const nodes = [...icon.parentNode.childNodes];
+  icon.dataset.nodeindex = nodes.length > 1 ? {
+    0: 'first',
+    [nodes.length - 1]: 'last',
+  }[nodes.indexOf.call(nodes, icon)] ?? 'middle' : 'only';
+}
+
 export async function loadArea(area = document) {
   const isDoc = area === document;
 
@@ -1281,10 +1304,9 @@ export async function loadArea(area = document) {
     decorateDocumentExtras();
   }
 
-  const icons = area.querySelectorAll('span.icon');
-  if (icons.length) {
-    const { default: decorateIcons } = await import('../features/icons/icons.js');
-    decorateIcons(icons, config);
+  const initIcons = area.querySelectorAll('span.icon');
+  if (initIcons.length) {
+    initIcons.forEach((icon) => setIconData(icon));
   }
 
   const sections = decorateSections(area, isDoc);
@@ -1297,6 +1319,12 @@ export async function loadArea(area = document) {
     areaBlocks.forEach((block) => {
       if (!block.className.includes('metadata')) block.dataset.block = '';
     });
+  }
+
+  const allIcons = area.querySelectorAll('span.icon');
+  if (allIcons.length) {
+    const { default: decorateIcons } = await import('../features/icons/icons.js');
+    decorateIcons(allIcons, config);
   }
 
   const currentHash = window.location.hash;

@@ -2,6 +2,7 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
 import { waitForElement } from '../../helpers/waitfor.js';
+import { setIconData } from '../../../libs/utils/utils.js';
 
 const { default: decorateIcons } = await import('../../../libs/features/icons/icons.js');
 const mockRes = ({ payload, status = 200, ok = true } = {}) => new Promise((resolve) => {
@@ -33,6 +34,7 @@ describe('Icon Suppprt', () => {
 
   it('Replaces span.icon', async () => {
     icons = document.querySelectorAll('span.icon');
+    icons.forEach((icon) => setIconData(icon));
     await decorateIcons(icons, { base: 'http://localhost:2000/libs' });
     const selector = await waitForElement('span.icon svg');
     expect(selector).to.exist;

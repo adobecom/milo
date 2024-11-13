@@ -51,12 +51,6 @@ function preloadIcon(icon) {
   );
 }
 
-function setLegacyToolTip(icon, key) {
-  // support for legacy tooltip
-  icon.dataset.name = 'info-outline';
-  icon.classList.replace(`icon-${key}`, 'icon-info-outline');
-}
-
 async function fetchIconSvg(icon) {
   return new Promise((resolve) => {
     (async () => {
@@ -95,32 +89,11 @@ async function decorate(icon) {
   listItem?.classList.add('icon-list-item');
 }
 
-function setIconData(icon, name) {
-  icon.dataset.name = name;
-  const em = icon.closest('em');
-  const content = em?.textContent.split('|');
-  if (em && content) {
-    icon.dataset.tooltip = content.pop().trim();
-    icon.dataset.tooltipdir = content.pop()?.trim().toLowerCase() || 'right';
-    if (name === 'tooltip') setLegacyToolTip(icon, name);
-    em.parentElement.replaceChild(icon, em);
-  }
-  const nodes = [...icon.parentNode.childNodes];
-  icon.dataset.nodeindex = nodes.length > 1 ? {
-    0: 'first',
-    [nodes.length - 1]: 'last',
-  }[nodes.indexOf.call(nodes, icon)] ?? 'middle' : 'only';
-}
-
 export default async function decorateIcons(icons, config) {
   if (!icons.length) return;
   loadStyle(`${config.base}/features/icons/icons.css`);
   await Promise.all([...icons].map((icon) => {
-    const name = [...icon.classList].find((c) => c.startsWith('icon-'))?.substring(5);
-    if (name) {
-      setIconData(icon, name);
-      preloadIcon(icon.dataset.name);
-    }
+    preloadIcon(icon.dataset.name);
     return fetchIconSvg(icon);
   }));
   icons.forEach((icon) => decorate(icon));
