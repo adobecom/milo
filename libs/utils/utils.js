@@ -1296,9 +1296,6 @@ export async function loadArea(area = document) {
   const allIcons = area.querySelectorAll('span.icon');
   if (allIcons.length) {
     setIconsIndexClass(allIcons);
-    const { default: loadIcons, decorateIcons } = await import('../features/icons/icons.js');
-    await decorateIcons(area, allIcons, config);
-    await loadIcons(allIcons);
   }
 
   const sections = decorateSections(area, isDoc);
@@ -1311,6 +1308,13 @@ export async function loadArea(area = document) {
     areaBlocks.forEach((block) => {
       if (!block.className.includes('metadata')) block.dataset.block = '';
     });
+  }
+
+  const icons = area.querySelectorAll('span.icon');
+  if (icons.length) {
+    const { default: loadIcons, decorateIcons } = await import('../features/icons/icons.js');
+    await decorateIcons(area, icons, config);
+    await loadIcons(icons);
   }
 
   const currentHash = window.location.hash;
