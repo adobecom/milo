@@ -9,6 +9,7 @@ config.placeholders = {
   'promo-discount': '50',
   'promo-description': 'For just {{promo-price}}, get 20+...',
   'promo-price': 'US$49.99',
+  'promo-href': 'https://www.adobe.com/',
 };
 config.locale = { region: 'US', ietf: 'en-US' };
 describe('test different values for parseNestedPlaceholders', () => {
@@ -50,6 +51,7 @@ describe('replacePlaceholders()', () => {
   });
   it('should not break when there are no placeholders available', () => {
     const str = 'For just {{promo-price}}, get 20+...';
+    config.placeholders = null;
     const newStr = replacePlaceholders(str, null);
     expect(newStr).to.equal(str);
   });
