@@ -46,7 +46,7 @@ export class MiniCompareChart extends VariantLayout {
         'promo-text',
         'callout-content',
     ];
-    if (this.card.classList.contains('checkmark')) {
+    if (this.card.classList.contains('feature-list-item')) {
         slots.push('footer-rows');
     }
   
