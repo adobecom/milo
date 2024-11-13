@@ -787,9 +787,9 @@ const findReplaceableNodes = (area) => {
     let matchFound = false;
     if (node.nodeType === Node.TEXT_NODE) {
       matchFound = regex.test(node.nodeValue);
-    } else if (node.nodeType === Node.ELEMENT_NODE && node.hasAttribute('href')) {
-      const hrefValue = node.getAttribute('href');
-      matchFound = regex.test(hrefValue);
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+      const attr = node.getAttribute('href') || node.getAttribute('data-tooltip');
+      if (attr) matchFound = regex.test(attr);
     }
     if (matchFound) {
       nodes.push(node);
