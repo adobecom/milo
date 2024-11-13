@@ -1378,6 +1378,11 @@ merch-card[variant="ccd-suggested"] [slot="cta"] a {
   color: var(--spectrum-gray-800, var(--merch-color-grey-80));
   font-weight: 700;
 }
+
+sp-theme[color='dark'] merch-card[variant="ccd-suggested"] [slot="cta"] {
+  color: var(--ccd-gray-200-light, #E6E6E6);
+  border: 2px solid var(--ccd-gray-200-light, #E6E6E6);
+}
 `;var Cl={mnemonics:{size:"l"},subtitle:{tag:"h4",slot:"detail-s"},title:{tag:"h3",slot:"heading-xs"},prices:{tag:"p",slot:"price"},description:{tag:"div",slot:"body-xs"},ctas:{slot:"cta",size:"m"}},pt=class extends P{getGlobalCSS(){return Qa}get aemFragmentMapping(){return Cl}renderLayout(){return g`
           <div style="${this.stripStyle}" class="body">
               <div class="header">

@@ -55,4 +55,9 @@ merch-card[variant="ccd-suggested"] [slot="cta"] a {
   color: var(--spectrum-gray-800, var(--merch-color-grey-80));
   font-weight: 700;
 }
+
+sp-theme[color='dark'] merch-card[variant="ccd-suggested"] [slot="cta"] {
+  color: var(--ccd-gray-200-light, #E6E6E6);
+  border: 2px solid var(--ccd-gray-200-light, #E6E6E6);
+}
 `;
