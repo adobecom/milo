@@ -1347,7 +1347,7 @@ merch-card[variant='twp'] merch-offer-select {
     }
   `};import{html as Bt,css as Gt}from"../lit-all.min.js";var yt=`
 :root {
-  --merch-card-ccd-suggested-width: 302px;
+  --merch-card-ccd-suggested-width: 305px;
   --merch-card-ccd-suggested-height: 205px;
   --merch-card-ccd-suggested-background-img-size: 119px;
 }

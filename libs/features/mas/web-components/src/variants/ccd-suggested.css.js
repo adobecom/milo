@@ -1,6 +1,6 @@
 export const CSS = `
 :root {
-  --merch-card-ccd-suggested-width: 302px;
+  --merch-card-ccd-suggested-width: 305px;
   --merch-card-ccd-suggested-height: 205px;
   --merch-card-ccd-suggested-background-img-size: 119px;
 }
