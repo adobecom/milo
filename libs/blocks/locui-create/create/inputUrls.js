@@ -1,7 +1,7 @@
 import { html, useState } from '../../../deps/htm-preact.js';
 import { nextStep, project, setProject } from './state.js';
 import StepControls from './stepControls.js';
-import showFragments from '../components/fragment-modal/index.js';
+import FragmentsSection from '../fragments/view.js';
 
 export default function InputUrls() {
   const [formData, setFormData] = useState(
@@ -14,7 +14,7 @@ export default function InputUrls() {
     },
   );
   const [fragmentTextarea, setFragmentTextarea] = useState(false);
-  const [fragments, setFragments] = useState('');
+  const [fragments, setFragments] = useState([]);
   const errorPresent = false;
 
   function handleFormInput(event) {
@@ -23,11 +23,11 @@ export default function InputUrls() {
     setFormData({ ...formData, [name]: value });
   }
 
-  function handleFragmentInput(event) {
-    const { value } = event.target;
-    // console.log('formInput', name, value);
-    setFragments(value);
-  }
+  // function handleFragmentInput(event) {
+  //   const { value } = event.target;
+  //   // console.log('formInput', name, value);
+  //   setFragments(value);
+  // }
 
   function handleFormToggle(event) {
     const { name } = event.target;
@@ -105,14 +105,7 @@ export default function InputUrls() {
       <div class="field-col">
         ${fragmentTextarea && (
     html`
-        <textarea
-            class="locui-textarea"
-            rows="10"
-            name="fragments"
-            value=${fragments}
-            onInput=${handleFragmentInput}
-        />
-        <p>Invalid fragments <a href="#" onClick=${() => showFragments()}>view details</a></p>
+        <${FragmentsSection} urls=${formData.urls} fragments=${fragments} setFragments=${setFragments}  />
         `
   )}
         
