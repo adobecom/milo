@@ -1284,7 +1284,7 @@ export async function loadArea(area = document) {
   const icons = area.querySelectorAll('span.icon');
   if (icons.length) {
     const { default: decorateIcons } = await import('../features/icons/icons.js');
-    await decorateIcons(icons, config);
+    decorateIcons(icons, config);
   }
 
   const sections = decorateSections(area, isDoc);
