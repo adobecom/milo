@@ -568,6 +568,7 @@ div[data-failed="true"]::before {
   color: var(--color-gray-300);
 }
 
+/* icon styles */
 span.icon {
   width: 1em;
   display: inline-block;
