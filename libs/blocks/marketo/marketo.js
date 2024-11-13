@@ -20,6 +20,7 @@ import {
   localizeLink,
   createTag,
   createIntersectionObserver,
+  SLD,
 } from '../../utils/utils.js';
 
 const ROOT_MARGIN = 50;
@@ -56,7 +57,7 @@ export const decorateURL = (destination, baseURL = window.location) => {
       throw new Error('URL does not have a valid host');
     }
 
-    if (destinationUrl.hostname.includes('.hlx.')) {
+    if (destinationUrl.hostname.includes(`.${SLD}.`)) {
       destinationUrl = new URL(`${pathname}${search}${hash}`, baseURL.origin);
     }
 
