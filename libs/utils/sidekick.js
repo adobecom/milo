@@ -40,5 +40,5 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
   sk.addEventListener('custom:preflight', preflightListener);
 
   // Color code publish button
-  if (sk.nodeName === 'HELIX-SIDEKICK') stylePublish(sk);
+  stylePublish(sk);
 }
