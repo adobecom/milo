@@ -1051,6 +1051,7 @@ header + .feds-localnav {
   font-size: 14px;
   padding: 12px 20px;
   background: #F3F3F3;
+  text-decoration: none;
 }
 
 .feds-localnav .feds-localnav-items .feds-menu-headline {
