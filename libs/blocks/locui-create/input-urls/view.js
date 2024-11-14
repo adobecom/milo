@@ -1,7 +1,7 @@
 import { html, useState } from '../../../deps/htm-preact.js';
+import FragmentsSection from '../fragments/view.js';
 import { nextStep, project, setProject } from '../store.js';
 import StepControls from '../components/stepControls.js';
-import showFragments from './index.js';
 
 export default function InputUrls() {
   const [formData, setFormData] = useState(
@@ -14,24 +14,16 @@ export default function InputUrls() {
     },
   );
   const [fragmentTextarea, setFragmentTextarea] = useState(false);
-  const [fragments, setFragments] = useState('');
+  const [fragments, setFragments] = useState([]);
   const errorPresent = false;
 
   function handleFormInput(event) {
     const { name, value } = event.target;
-    // console.log('formInput', name, value);
     setFormData({ ...formData, [name]: value });
-  }
-
-  function handleFragmentInput(event) {
-    const { value } = event.target;
-    // console.log('formInput', name, value);
-    setFragments(value);
   }
 
   function handleFormToggle(event) {
     const { name } = event.target;
-    // console.log('formToggle', name);
     setFormData({ ...formData, [name]: !formData[name] });
     if (name === 'includeFragments') {
       setFragmentTextarea(!fragmentTextarea);
@@ -99,6 +91,7 @@ export default function InputUrls() {
         <input
           type="checkbox"
           name="includeFragments"
+          disabled=${!(formData.urls.length > 0)}
           onClick=${handleFormToggle}
         />
         <span class="field-label pl-8">Include Fragments</span>
@@ -107,14 +100,7 @@ export default function InputUrls() {
       <div class="field-col">
         ${fragmentTextarea && (
     html`
-        <textarea
-            class="locui-textarea"
-            rows="10"
-            name="fragments"
-            value=${fragments}
-            onInput=${handleFragmentInput}
-        />
-        <p>Invalid fragments <a href="#" onClick=${() => showFragments()}>view details</a></p>
+        <${FragmentsSection} urls=${formData.urls} fragments=${fragments} setFragments=${setFragments}  />
         `
   )}
         
