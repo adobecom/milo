@@ -62,13 +62,13 @@ export default function FragmentsSection({ fragments, setFragments, urls }) {
   ${isLoading ? html`<${Loader} />`
     : html`
     <button class="locui-create-refresh-button" onClick=${handleRefresh}/>
-    <ul class='locui-create-fragments-list'>
+    <ul class=${`locui-create-fragments-list ${validFragments.length > 0 && fragments.length < 1 && 'error'}`}>
    ${validFragments && validFragments.length > 0 && validFragments.map((fragment) => locFragment(fragment))}
    </ul>`
 }
    <div>
-    ${errorFragments && errorFragments.length > 0 && html`<p class='locui-create-error-text'>Invalid fragments <a href="#" onClick=${() => showFragments(errorFragments)}>view details</a></p>`}
-    ${validFragments.length > 0 && fragments.length < 1 && html`<p class='locui-create-error-text'>Select atleast one fragment to proceed further</p>`}
+    ${errorFragments && errorFragments.length > 0 && html`<div class='form-field-error'>Invalid fragments <a href="#" onClick=${() => showFragments(errorFragments)}>view details</a></div>`}
+    ${validFragments.length > 0 && fragments.length < 1 && html`<div class='form-field-error'>Select atleast one fragment to proceed further</div>`}
    </div>
   </div>`;
 }
