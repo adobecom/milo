@@ -1,3 +1,10 @@
+/**
+ * Search and replace content based on the search type (floodgate or graybox).
+ * 
+ * This is specifically created to be used as part of the PROMOTE operations
+ * performed for Floodgate and Graybox content.
+ */
+
 class SearchReplace {
   constructor({ searchType, org, repo, expName }) {
     this.searchType = searchType; // 'floodgate' or 'graybox'
