@@ -80,7 +80,6 @@ describe('sha256', () => {
   });
 });
 
-
 describe('seotech', () => {
   describe('appendScriptTag + seotech-structured-data', () => {
     beforeEach(async () => {
@@ -153,13 +152,13 @@ describe('seotech', () => {
       await appendScriptTag(
         { locationUrl: window.location.href, getMetadata, getConfig, createTag },
       );
-      expect(lanaStub.calledOnceWith('SEOTECH: Failed to construct \'URL\': Invalid URL')).to.be.true;
+      expect(lanaStub.calledOnceWith('SEOTECH: Invalid video url: fake')).to.be.true;
     });
 
     it('should not append JSON-LD if url not found', async () => {
       const lanaStub = stub(window.lana, 'log');
       const getMetadata = stub().returns(null);
-      getMetadata.withArgs('seotech-video-url').returns('http://fake');
+      getMetadata.withArgs('seotech-video-url').returns('https://youtu.be/fake');
       const fetchStub = stub(window, 'fetch');
       fetchStub.returns(Promise.resolve(Response.json(
         { error: 'ERROR!' },
@@ -169,7 +168,7 @@ describe('seotech', () => {
         { locationUrl: window.location.href, getMetadata, getConfig, createTag },
       );
       expect(fetchStub.calledOnceWith(
-        'https://14257-seotech-stage.adobeioruntime.net/api/v1/web/seotech/getVideoObject?url=http://fake/',
+        'https://www.adobe.com/seotech/api/json-ld/types/video-object/providers/youtube/fake',
       )).to.be.true;
       expect(lanaStub.calledOnceWith('SEOTECH: Failed to fetch video: ERROR!')).to.be.true;
     });
@@ -178,7 +177,7 @@ describe('seotech', () => {
       const lanaStub = stub(window.lana, 'log');
       const fetchStub = stub(window, 'fetch');
       const getMetadata = stub().returns(null);
-      getMetadata.withArgs('seotech-video-url').returns('http://fake');
+      getMetadata.withArgs('seotech-video-url').returns('https://youtu.be/dQw4w9WgXcQ');
       const expectedVideoObject = {
         '@context': 'http://schema.org',
         '@type': 'VideoObject',
@@ -192,7 +191,7 @@ describe('seotech', () => {
         { locationUrl: window.location.href, getMetadata, getConfig, createTag },
       );
       expect(fetchStub.calledOnceWith(
-        'https://14257-seotech-stage.adobeioruntime.net/api/v1/web/seotech/getVideoObject?url=http://fake/',
+        'https://www.adobe.com/seotech/api/json-ld/types/video-object/providers/youtube/dQw4w9WgXcQ',
       )).to.be.true;
       const el = await waitForElement('script[type="application/ld+json"]');
       const obj = JSON.parse(el.text);
