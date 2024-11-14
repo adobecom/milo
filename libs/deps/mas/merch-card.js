@@ -618,6 +618,12 @@ merch-card[variant="ccd-action"] .price-strikethrough {
     text-decoration: underline;
   }
 
+  merch-card[variant="mini-compare-chart"] [slot="footer-rows"] ul {
+    margin-block-start: 0px;
+    margin-block-end: 0px;
+    padding-inline-start: 0px;
+  }
+
   merch-card[variant="mini-compare-chart"] .footer-row-icon {
     display: flex;
     place-items: center;
@@ -692,9 +698,6 @@ merch-card[variant="ccd-action"] .price-strikethrough {
 
   merch-card[variant="mini-compare-chart"] .checkmark-copy-container {
     display: none;
-    margin-block-start: 0px;
-    margin-block-end: 0px;
-    padding-inline-start: 0px;
   }
 
   merch-card[variant="mini-compare-chart"] .checkmark-copy-container.open {
@@ -863,7 +866,7 @@ merch-card .footer-row-cell:nth-child(8) {
               <span class="secure-transaction-label"
                   >${this.card.secureLabel}</span
               ></slot
-          >`:D`<slot name="secure-transaction-label"></slot>`;return D`<footer>${t}<slot name="footer"></slot></footer>`};adjustMiniCompareBodySlots(){if(this.card.getBoundingClientRect().width<=2)return;this.updateCardElementMinHeight(this.card.shadowRoot.querySelector(".top-section"),"top-section");let t=["heading-m","body-m","heading-m-price","body-xxs","price-commitment","offers","promo-text","callout-content"];this.card.classList.contains("feature-list-item")&&t.push("footer-rows"),t.forEach(o=>this.updateCardElementMinHeight(this.card.shadowRoot.querySelector(`slot[name="${o}"]`),o)),this.updateCardElementMinHeight(this.card.shadowRoot.querySelector("footer"),"footer");let e=this.card.shadowRoot.querySelector(".mini-compare-chart-badge");e&&e.textContent!==""&&this.getContainer().style.setProperty("--consonant-merch-card-mini-compare-chart-top-section-mobile-height","32px")}adjustMiniCompareFooterRows(){if(this.card.getBoundingClientRect().width===0)return;[...this.card.querySelector('[slot="footer-rows"]')?.children].forEach((e,o)=>{let a=Math.max(Rt,parseFloat(window.getComputedStyle(e).height)||0),s=parseFloat(this.getContainer().style.getPropertyValue(this.getRowMinHeightPropertyName(o+1)))||0;a>s&&this.getContainer().style.setProperty(this.getRowMinHeightPropertyName(o+1),`${a}px`)})}removeEmptyRows(){this.card.querySelectorAll(".footer-row-cell").forEach(e=>{let o=e.querySelector(".footer-row-cell-description");o&&!o.textContent.trim()&&e.remove()})}renderLayout(){return D` <div class="top-section${this.badge?" badge":""}">
+          >`:D`<slot name="secure-transaction-label"></slot>`;return D`<footer>${t}<slot name="footer"></slot></footer>`};adjustMiniCompareBodySlots(){if(this.card.getBoundingClientRect().width<=2)return;this.updateCardElementMinHeight(this.card.shadowRoot.querySelector(".top-section"),"top-section");let t=["heading-m","body-m","heading-m-price","body-xxs","price-commitment","offers","promo-text","callout-content"];this.card.classList.contains("feature-list-item")&&t.push("footer-rows"),t.forEach(o=>this.updateCardElementMinHeight(this.card.shadowRoot.querySelector(`slot[name="${o}"]`),o)),this.updateCardElementMinHeight(this.card.shadowRoot.querySelector("footer"),"footer");let e=this.card.shadowRoot.querySelector(".mini-compare-chart-badge");e&&e.textContent!==""&&this.getContainer().style.setProperty("--consonant-merch-card-mini-compare-chart-top-section-mobile-height","32px")}adjustMiniCompareFooterRows(){if(this.card.getBoundingClientRect().width===0)return;[...this.card.querySelector('[slot="footer-rows"] ul')?.children].forEach((e,o)=>{let a=Math.max(Rt,parseFloat(window.getComputedStyle(e).height)||0),s=parseFloat(this.getContainer().style.getPropertyValue(this.getRowMinHeightPropertyName(o+1)))||0;a>s&&this.getContainer().style.setProperty(this.getRowMinHeightPropertyName(o+1),`${a}px`)})}removeEmptyRows(){this.card.querySelectorAll(".footer-row-cell").forEach(e=>{let o=e.querySelector(".footer-row-cell-description");o&&!o.textContent.trim()&&e.remove()})}renderLayout(){return D` <div class="top-section${this.badge?" badge":""}">
             <slot name="icons"></slot> ${this.badge}
         </div>
         <slot name="heading-m"></slot>

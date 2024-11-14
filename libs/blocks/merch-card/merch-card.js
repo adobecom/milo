@@ -441,6 +441,7 @@ const decorateFooterRows = async (merchCard, footerRows) => {
   const isCheckmark = merchCard.classList.contains('feature-list-item');
   const isMobile = window.matchMedia('(max-width: 1199px)').matches;
 
+  const ulContainer = createTag('ul');
   if (isCheckmark) {
     const firstRow = footerRows[0];
     const firstRowContent = firstRow.querySelector('div > div:first-child').innerHTML.split(',');
@@ -460,29 +461,26 @@ const decorateFooterRows = async (merchCard, footerRows) => {
     footerRowsSlot.appendChild(hrElem);
     merchCard.classList.add('has-divider');
 
-    const checkmarkCopyContainer = createTag('ul', { class: 'checkmark-copy-container' });
+    ulContainer.classList.add('checkmark-copy-container');
     const firstRowTextParagraph = await createFirstRow(
       firstRow,
       isMobile,
-      checkmarkCopyContainer,
+      ulContainer,
       defaultChevronState,
     );
 
     footerRowsSlot.appendChild(firstRowTextParagraph);
-    footerRowsSlot.appendChild(checkmarkCopyContainer);
 
     footerRows.splice(0, 1);
     footerRowsSlot.style.padding = '0px var(--consonant-merch-spacing-s)';
     footerRowsSlot.style.marginBlockEnd = 'var(--consonant-merch-spacing-xs)';
   }
+  footerRowsSlot.appendChild(ulContainer);
+
 
   footerRows.forEach((row) => {
     const footerRowCell = createFooterRowCell(row, isCheckmark);
-    if (isCheckmark) {
-      footerRowsSlot.querySelector('.checkmark-copy-container').appendChild(footerRowCell);
-    } else {
-      footerRowsSlot.appendChild(footerRowCell);
-    }
+    ulContainer.appendChild(footerRowCell);
   });
 
   merchCard.appendChild(footerRowsSlot);

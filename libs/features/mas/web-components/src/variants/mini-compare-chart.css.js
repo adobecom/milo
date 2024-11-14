@@ -57,6 +57,12 @@ export const CSS = `
     text-decoration: underline;
   }
 
+  merch-card[variant="mini-compare-chart"] [slot="footer-rows"] ul {
+    margin-block-start: 0px;
+    margin-block-end: 0px;
+    padding-inline-start: 0px;
+  }
+
   merch-card[variant="mini-compare-chart"] .footer-row-icon {
     display: flex;
     place-items: center;
@@ -131,9 +137,6 @@ export const CSS = `
 
   merch-card[variant="mini-compare-chart"] .checkmark-copy-container {
     display: none;
-    margin-block-start: 0px;
-    margin-block-end: 0px;
-    padding-inline-start: 0px;
   }
 
   merch-card[variant="mini-compare-chart"] .checkmark-copy-container.open {
