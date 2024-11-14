@@ -22,7 +22,8 @@ export default class MiloGraybox extends LitElement {
     this._canPromote = true;
     this._gbExpPath = '';
     this._gbExpPromoted = false;
-    this._startCrawl = false;
+    this._startCrawlExp = false;
+    this._startCrawlPaths = false;
     this._startPromote = false;
     this._startPromotePaths = false;
     this._invalidInput = false;
@@ -170,7 +171,7 @@ export default class MiloGraybox extends LitElement {
     this.readPromoteIgnorePaths();
     
     // #1 - Start crawling
-    this._startCrawl = true;
+    this._startCrawlExp = true;
     await this.startCrawl(this._gbExpPath);
 
     // #2 - Start promoting
@@ -197,13 +198,17 @@ export default class MiloGraybox extends LitElement {
     }    
 
     // #2 - Get files to promote from paths
+    this._startCrawlPaths = true;
     const files = await getFilesToPromote({ accessToken: this.token, org, repo, expName, paths });
     console.log('Files to Promote:', files);
-    this._filesToPromote = files;
+    this._filesToPromote = files;    
+    this.requestUpdate();
+
+    // #3 - Start promoting
     this._startPromotePaths = true;
     await this.startPromote(org, repo, expName);
 
-    // #3 - Preview promoted files
+    // #4 - Preview promoted files
     this._startPreviewPublish = true;
     await this.startPreviewPublish(org, repo);
   }
@@ -278,6 +283,18 @@ export default class MiloGraybox extends LitElement {
       </div>
       ${this._startPreviewPublish ? this.renderPreviewPublishInfo() : nothing}
     `;
+  }  
+
+  renderCrawlInfo() {
+    return html`
+      <div class="crawl-info info-box">
+        <h3>Crawl Graybox Experience</h3>
+        <p>Crawling "${this._gbExpPath}" to promote... </p>
+        <p>Files crawled: ${this._crawledFiles.length}</p>
+        <p>Duration: ~${this._crawlDuration} seconds</p>
+      </div>
+      ${this._startPromote ? this.renderPromoteInfo() : nothing}
+      `;
   }
 
   renderPromotePathsInfo() {
@@ -292,16 +309,15 @@ export default class MiloGraybox extends LitElement {
     `;
   }
 
-  renderCrawlInfo() {
+  renderCrawlPathsInfo() {
     return html`
-      <div class="crawl-info info-box">
-        <h3>Crawl Graybox Experience</h3>
-        <p>Crawling "${this._gbExpPath}" to promote... </p>
-        <p>Files crawled: ${this._crawledFiles.length}</p>
-        <p>Duration: ~${this._crawlDuration} seconds</p>
+      <div class="crawl-paths-info info-box">
+        <h3>Crawl Graybox Paths</h3>
+        <p>Finding all files to promote... </p>
+        <p>Files found: ${this._filesToPromote.length}</p>
       </div>
-      ${this._startPromote ? this.renderPromoteInfo() : nothing}
-      `;
+      ${this._startPromotePaths ? this.renderPromotePathsInfo() : nothing}
+    `;
   }
 
   render() {
@@ -349,8 +365,8 @@ export default class MiloGraybox extends LitElement {
         ` : nothing}
       </form>
       ${this._invalidInput ? this.renderError() : nothing}
-      ${this._startCrawl ? this.renderCrawlInfo() : nothing}
-      ${this._startPromotePaths ? this.renderPromotePathsInfo() : nothing}
+      ${this._startCrawlExp ? this.renderCrawlInfo() : nothing}
+      ${this._startCrawlPaths ? this.renderCrawlPathsInfo() : nothing}
     `;
   }
 }
