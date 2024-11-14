@@ -65,7 +65,7 @@ jobs:
 
           release_title=$(sanitizeStr "${{ github.event.pull_request.title }}") >> $GITHUB_ENV
           release_details=$(sanitizeStr "${{ github.event.pull_request.body }}")
-          release=Release_Details--"${release_details}"--Pull_Request_Number--"${{ github.event.pull_request.number }}"--Pull_Request_Created_At--"${{ github.event.pull_request.created_at }}"--Pull_Request_Merged_At--"${{ github.event.pull_request.merged_at }}"
+          release=Release_Title--"${release_title}"--Release_Details--"${release_details}"--Pull_Request_Number--"${{ github.event.pull_request.number }}"--Pull_Request_Created_At--"${{ github.event.pull_request.created_at }}"--Pull_Request_Merged_At--"${{ github.event.pull_request.merged_at }}"
 
           echo "release_summary<<RS_EOF" >> $GITHUB_ENV
           echo "$release" >> $GITHUB_ENV
@@ -112,6 +112,7 @@ jobs:
             else
               echo "IMS token request was successful"
               token=$(jq -r '.access_token' response.txt) >> GITHUB_ENV
+              echo "${token}"
             fi
           }
 
@@ -176,10 +177,11 @@ jobs:
             else
               echo "CMR creation was successful"
               transaction_id=$(jq -r '.id' response.txt) >> GITHUB_ENV
+              echo "${transaction_id}"
             fi
           }
 
-          servicenow_create_cmr ${{ secrets.IPAAS_KEY_STAGE }} ${{ env.token }} ${{ env.release_title }} ${{ env.release_summary }} ${{ env.start_time }} ${{ env.end_time }}
+          servicenow_create_cmr ${{ secrets.IPAAS_KEY_STAGE }} ${{ env.token }} "${{ env.release_title }}" "${{ env.release_summary }}" ${{ env.start_time }} ${{ env.end_time }}
 
       - name: Retrieve CMR ID in ServiceNow
         run: |
@@ -223,6 +225,7 @@ jobs:
             else
               echo "CMR ID retrieval was successful"
               cmr_id=$(jq -r '.changeId' response.txt) >> GITHUB_ENV
+              echo "${cmr_id}"
             fi
           }
 
