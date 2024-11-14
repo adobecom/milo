@@ -20,7 +20,7 @@ const blockConfig = [
 const envMap = {
   prod: 'https://www.adobe.com',
   stage: 'https://www.stage.adobe.com',
-  qa: 'https://gnav--milo--adobecom.hlx.page',
+  qa: 'https://gnav--milo--adobecom.aem.page',
 };
 
 const getStageDomainsMap = (stageDomainsMap) => (
@@ -70,7 +70,7 @@ export default async function loadBlock(configs, customLib) {
     return;
   }
   const branch = new URLSearchParams(window.location.search).get('navbranch');
-  const miloLibs = branch ? `https://${branch}--milo--adobecom.hlx.page` : customLib || envMap[env];
+  const miloLibs = branch ? `https://${branch}--milo--adobecom.aem.page` : customLib || envMap[env];
 
   if (theme === 'dark') {
     loadStyle(`${miloLibs}/libs/navigation/dist/base.css`, () => loadStyle(`${miloLibs}/libs/navigation/dist/dark-nav.css`));
@@ -89,9 +89,9 @@ export default async function loadBlock(configs, customLib) {
   const paramConfigs = getParamsConfigs(configs);
   const clientConfig = {
     clientEnv: env,
-    origin: `https://main--federal--adobecom.hlx.${env === 'prod' ? 'live' : 'page'}`,
-    pathname: `/${locale}`,
+    origin: `https://main--federal--adobecom.aem.${env === 'prod' ? 'live' : 'page'}`,
     miloLibs: `${miloLibs}/libs`,
+    pathname: `/${locale}`,
     locales: configs.locales || locales,
     contentRoot: authoringPath || footer.authoringPath,
     theme,

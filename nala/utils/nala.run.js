@@ -99,14 +99,14 @@ function getLocalTestLiveUrl(env, milolibs, owner = 'adobecom') {
     } if (env === 'libs') {
       return 'http://127.0.0.1:6456';
     }
-    return `https://${env}--milo--${owner}.hlx.live`;
+    return `https://${env}--milo--${owner}.aem.live`;
   }
   if (env === 'local') {
     return 'http://127.0.0.1:3000';
   } if (env === 'libs') {
     return 'http://127.0.0.1:6456';
   }
-  return `https://${env}--milo--${owner}.hlx.live`;
+  return `https://${env}--milo--${owner}.aem.live`;
 }
 
 function buildPlaywrightCommand(parsedParams, localTestLiveUrl) {
