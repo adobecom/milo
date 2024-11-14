@@ -351,7 +351,7 @@ span[is="inline-price"][data-template='strikethrough'] {
     text-decoration: line-through;
 }
 
-span[data-display-per-unit='true'] .price-recurrence::after {
+span[is="inline-price"][data-display-per-unit='true'] span.price-recurrence::after {
     content: ' ';
 }
 
