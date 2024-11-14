@@ -1,7 +1,7 @@
 import { html, useState } from '../../../deps/htm-preact.js';
-import { nextStep, project, setProject } from './state.js';
-import StepControls from './stepControls.js';
-import showFragments from '../components/fragment-modal/index.js';
+import { nextStep, project, setProject } from '../store.js';
+import StepControls from '../components/stepControls.js';
+import showFragments from './index.js';
 
 export default function InputUrls() {
   const [formData, setFormData] = useState(
@@ -33,7 +33,9 @@ export default function InputUrls() {
     const { name } = event.target;
     // console.log('formToggle', name);
     setFormData({ ...formData, [name]: !formData[name] });
-    setFragmentTextarea(!fragmentTextarea);
+    if (name === 'includeFragments') {
+      setFragmentTextarea(!fragmentTextarea);
+    }
   }
 
   function handleNext(error) {

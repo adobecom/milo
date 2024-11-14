@@ -1,6 +1,6 @@
 import { html } from '../../../deps/htm-preact.js';
-import { nextStep, prevStep, project } from './state.js';
-import StepControls from './stepControls.js';
+import { nextStep, prevStep, project } from '../store.js';
+import StepControls from '../components/stepControls.js';
 
 export default function InputLocales() {
   const errorPresent = false;

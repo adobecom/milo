@@ -5,7 +5,7 @@ export default function StepControls({
   backLabel = 'Back',
   onNext,
   onBack,
-  enable,
+  enable = true,
 }) {
   return html`
     <div class="locui-step-controls">

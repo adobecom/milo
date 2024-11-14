@@ -152,7 +152,7 @@ body {
 }
 
 .locui-header-logo {
-  background: url('./components/assets/logo.svg');
+  background: url('./img/logo.svg');
   width: 40px;
   text-indent: -1000px;
   overflow: hidden;
@@ -201,15 +201,15 @@ body {
 }
 
 .nav-icon-home {
-  background: url('./components/assets/home-icon.svg') center 14px / 20px no-repeat;
+  background: url('./img/home-icon.svg') center 14px / 20px no-repeat;
 }
 
 .nav-icon-plugins {
-  background: url('./components/assets/plugins-icon.svg') center 14px / 20px no-repeat;
+  background: url('./img/plugins-icon.svg') center 14px / 20px no-repeat;
 }
 
 .nav-icon-analytics {
-  background: url('./components/assets/analytics-icon.svg') center 14px / 20px no-repeat;
+  background: url('./img/analytics-icon.svg') center 14px / 20px no-repeat;
 }
 
 .nav-label {
@@ -226,3 +226,86 @@ body {
   height: 200px;
 }
 
+/* Input Actions Screen */
+
+.locui-table {
+  margin: 10px;
+}
+
+.table-wrapper {
+  max-height: 400px; 
+  overflow-y: auto;
+  margin: 10px 0 ;
+}
+
+.locui-table table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #ccc;
+}
+
+.locui-table th {
+  background-color: #E9E9E9;
+  padding: 12px;
+  text-align: left;
+  font-weight: bold;
+  border-bottom: 1px solid #ccc;
+  position: sticky;  
+  top: 0;            
+  z-index: 1;        
+}
+
+.locui-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.locui-table tr:hover {
+  background-color: #f9f9f9;
+}
+
+.locui-table select {
+  width: 80%;
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #fff;
+  font-size: 14px;
+}
+
+.locui-table p {
+  font-size: 16px;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.locui-table td, .locui-table th {
+  text-align: left;
+  vertical-align: middle;
+}
+
+@media (max-width: 768px) {
+  .locui-table table {
+    width: 100%;
+    display: block;
+    overflow-x: auto;
+  }
+
+  .locui-table th, .locui-table td {
+    padding: 10px;
+    display: block;
+    text-align: left;
+  }
+
+  .locui-table td {
+    border-bottom: 1px solid #ddd;
+  }
+}
+
+.locui-project-created-modal {
+  width: 400px;
+  height: 150px;
+  line-height: 150px;
+  text-align: center;
+}

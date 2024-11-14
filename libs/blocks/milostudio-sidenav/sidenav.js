@@ -1,4 +1,4 @@
-import { html } from '../../../deps/htm-preact.js';
+import { html } from '../../deps/htm-preact.js';
 
 const Tabs = [
   {

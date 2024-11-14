@@ -1,4 +1,4 @@
-import { html, render } from '../../../../deps/htm-preact.js';
+import { html, render } from '../../../deps/htm-preact.js';
 
 function Modal() {
   return html`
