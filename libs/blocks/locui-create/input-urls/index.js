@@ -1,5 +1,5 @@
 export function validateProjectName(name) {
-  if (name && !/^[a-zA-Z0-9\-]+$/.test(name)) {
+  if (name && !/^[a-zA-Z0-9-]+$/.test(name)) {
     return 'Invalid Project Name. Please enter letters, alphabets and hyphens only';
   }
   return '';
