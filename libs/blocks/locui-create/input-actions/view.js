@@ -38,7 +38,6 @@ const tableEntries = [
 ];
 
 export default function InputActions() {
-  const handleCreateProject = () => {};
   return html`
   <div class="locui-table">
     <p>Project Name: <strong>${project.value.name || 'n/a'}</strong></p>
