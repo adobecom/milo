@@ -1,0 +1,10 @@
+:host {
+  display: block;
+  max-width: var(--grid-container-width);
+  margin: var(--spacing-500);
+}
+
+body {
+  background-color: #fff;
+  margin: 0 var(--spacing-1000);
+}

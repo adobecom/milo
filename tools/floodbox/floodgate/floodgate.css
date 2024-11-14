@@ -1,0 +1,8 @@
+.fg-copy textarea {
+  border: 2px solid var(--s2-gray-200);
+  border-radius: var(--s2-radius-100);
+  padding: 8px;
+  resize: vertical;
+  width: 100%;
+  height: 100px;
+}
