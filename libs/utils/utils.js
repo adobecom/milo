@@ -1310,9 +1310,9 @@ export async function loadArea(area = document) {
     });
   }
 
-  const allIcons = area.querySelectorAll('span.icon');
-  if (allIcons.length) {
+  if (initIcons.length) {
     const { default: loadIcons, decorateIcons } = await import('../features/icons/icons.js');
+    const allIcons = area.querySelectorAll('span.icon');
     await decorateIcons(area, allIcons, config);
     await loadIcons(allIcons);
   }
