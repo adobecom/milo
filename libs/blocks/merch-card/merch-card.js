@@ -477,7 +477,6 @@ const decorateFooterRows = async (merchCard, footerRows) => {
   }
   footerRowsSlot.appendChild(ulContainer);
 
-
   footerRows.forEach((row) => {
     const footerRowCell = createFooterRowCell(row, isCheckmark);
     ulContainer.appendChild(footerRowCell);
