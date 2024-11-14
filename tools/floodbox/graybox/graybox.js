@@ -6,7 +6,7 @@ import promoteFiles from '../promote.js';
 import previewOrPublishPaths from '../bulk-action.js';
 import { SUCCESS_CODES } from '../constants.js';
 import getFilesToPromote from './promote-paths.js';
-import { validatePaths } from '../utils.js';
+import { validatePaths } from '../graybox/utils.js';
 
 const buttons = await getStyle(`https://da.live/nx/styles/buttons.css`);
 const style = await getStyle(import.meta.url);
