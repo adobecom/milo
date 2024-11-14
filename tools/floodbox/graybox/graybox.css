@@ -37,7 +37,7 @@ input.path {
   height: 32px;
   margin: 0;
   box-sizing: border-box;
-  width: 80%;
+  width: 100%;
 }
 
 .input-row {
@@ -45,6 +45,7 @@ input.path {
   flex: 2;
   display: block;
   gap: var(--spacing-200);
+  margin-top: var(--spacing-200);
 }
 
 .checkbox-container {
@@ -55,12 +56,20 @@ input.path {
 }
 
 .input-row button {
-  margin-left: 10px;
+  margin-top: var(--spacing-200);
+}
+
+.input-row textarea {
+  border: 2px solid var(--s2-gray-200);
+  border-radius: var(--s2-radius-100);
+  padding: 8px;
+  resize: vertical;
+  width: 100%;
 }
 
 .promote-ignore {
-  width: 80%;
-  margin: var(--spacing-100) 0;
+  width: 100%;
+  margin-top: var(--spacing-100);
 }
 
 .promote-ignore textarea {
@@ -69,4 +78,23 @@ input.path {
   border: 2px solid var(--s2-gray-200);
   border-radius: var(--s2-radius-100);
   resize: vertical;
-} 
+}
+
+.action-select {
+  margin-top: var(--spacing-200);
+  border: 2px solid var(--s2-gray-200);
+  border-radius: var(--s2-radius-100);
+  padding: 2px 8px;
+}
+
+.button-row {
+  margin-top: var(--spacing-200);
+}
+
+h1 {
+  margin-bottom: 1px;
+}
+h3 {
+  margin-top: 1px;
+  color: var(--s2-gray-700);
+}
