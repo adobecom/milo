@@ -47,7 +47,7 @@
   justify-content: center;
 }
 
-.table .section-row.valign-top .col {
+.table.top .section-row .col {
   align-items: start;
 }
 

@@ -398,14 +398,6 @@ function handleScrollEffect(table) {
   observer.observe(intercept);
 }
 
-function handleTopVariant(table, row, rowIndex) {
-  if (![...table.classList].some((style) => style.includes('top'))) return;
-  const topClass = [...table.classList].find((style) => style.includes('top'));
-  const rows = topClass.split('-').filter((i) => i !== 'top').map((i) => parseInt(i, 10) - 1);
-  if (rows.length && !rows.includes(rowIndex)) return;
-  row.classList.add('valign-top');
-}
-
 function applyStylesBasedOnScreenSize(table, originTable) {
   const isMerch = table.classList.contains('merch');
   const deviceBySize = defineDeviceByScreenSize();
@@ -417,8 +409,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
       const colsForTablet = sectionRow[0].children.length - 1;
       const percentage = 100 / colsForTablet;
       const templateColumnsValue = `repeat(auto-fit, ${percentage}%)`;
-      sectionRow.forEach((row, index) => {
-        handleTopVariant(table, row, index);
+      sectionRow.forEach((row) => {
         if (deviceBySize === 'TABLET' || (deviceBySize === 'MOBILE' && !row.querySelector('.col-3'))) {
           row.style.gridTemplateColumns = templateColumnsValue;
         } else {
