@@ -19,19 +19,11 @@ export default function InputUrls() {
 
   function handleFormInput(event) {
     const { name, value } = event.target;
-    // console.log('formInput', name, value);
     setFormData({ ...formData, [name]: value });
   }
 
-  // function handleFragmentInput(event) {
-  //   const { value } = event.target;
-  //   // console.log('formInput', name, value);
-  //   setFragments(value);
-  // }
-
   function handleFormToggle(event) {
     const { name } = event.target;
-    // console.log('formToggle', name);
     setFormData({ ...formData, [name]: !formData[name] });
     if (name === 'includeFragments') {
       setFragmentTextarea(!fragmentTextarea);
