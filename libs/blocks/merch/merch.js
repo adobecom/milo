@@ -1,5 +1,5 @@
 import {
-  createTag, getConfig, loadArea, loadScript, loadStyle, localizeLink,
+  createTag, getConfig, loadArea, loadScript, loadStyle, localizeLink, SLD,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
@@ -240,7 +240,7 @@ export function getMasBase(hostname, maslibs) {
       baseUrl = 'http://localhost:9001';
     } else if (maslibs) {
       const extension = /.page$/.test(hostname) ? 'page' : 'live';
-      baseUrl = `https://${maslibs}.hlx.${extension}`;
+      baseUrl = `https://${maslibs}.${SLD}.${extension}`;
     } else {
       baseUrl = 'https://www.adobe.com/mas';
     }
@@ -493,7 +493,7 @@ export async function openModal(e, url, offerType, hash, extraOptions) {
     }, { once: true });
   }
   if (isInternalModal(url)) {
-    const fragmentPath = url.split(/hlx.(page|live)/).pop();
+    const fragmentPath = url.split(/(hlx|aem).(page|live)/).pop();
     modal = await openFragmentModal(fragmentPath, getModal);
   } else {
     modal = await openExternalModal(url, getModal, extraOptions);
@@ -579,7 +579,7 @@ export async function initService(force = false, attributes = {}) {
   });
   initService.promise = initService.promise ?? polyfills().then(async () => {
     await import('../../deps/mas/commerce.js');
-    const { language, locale } = getMiloLocaleSettings(miloLocale);
+    const { language, locale, country } = getMiloLocaleSettings(miloLocale);
     let service = document.head.querySelector('mas-commerce-service');
     if (!service) {
       service = createTag('mas-commerce-service', {
@@ -597,6 +597,9 @@ export async function initService(force = false, attributes = {}) {
       service.imsSignedInPromise?.then((isSignedIn) => {
         if (isSignedIn) fetchEntitlements();
       });
+    }
+    if (country === 'AU') {
+      await loadStyle(`${getConfig().base}/blocks/merch/au-merch.css`);
     }
     return service;
   });

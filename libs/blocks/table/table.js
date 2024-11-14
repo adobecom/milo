@@ -129,14 +129,19 @@ function handleAddOnContent(table) {
     const [position, order, style] = addOn.innerText.split('-')
       .filter((key) => key.toUpperCase() !== addOnKey).map((key) => key.toLowerCase());
     if (!position || !order) return;
-    const indexAttr = 'data-col-index';
+    const dataIndex = 'data-col-index';
     [...table.querySelector('.row-heading').children].forEach((headCol) => {
       headCol.querySelector('.heading-content')?.classList.add('content');
-      const colIndex = headCol.getAttribute(indexAttr);
+      const colIndex = headCol.getAttribute(dataIndex);
       if (colIndex <= 1) return; // skip the key column
       const tagName = `${position}-${order}`;
-      const content = [...addOnRow.children]
-        .find((col) => col.getAttribute(indexAttr) === colIndex).childNodes;
+      const column = [...addOnRow.children].find((el) => el.getAttribute(dataIndex) === colIndex);
+      let content = column.childNodes;
+      const icon = column.querySelector('.icon');
+      if (style === 'label' && icon) {
+        const text = [...content].filter((node) => !node.classList?.contains('icon'));
+        content = [createTag('span', null, text), icon];
+      }
       const tag = createTag('div', { class: tagName }, [...content].map((node) => node));
       if (style) tag.classList.add(`addon-${style}`);
       const el = headCol.querySelector(`.${position}`);
