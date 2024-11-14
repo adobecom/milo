@@ -19,7 +19,7 @@ import { setConfig, getConfig } from '../../../../libs/utils/utils.js';
 import { createFullGlobalNavigation, config } from '../test-utilities.js';
 import mepInBlock from '../mocks/mep-config.js';
 
-const baseHost = 'https://main--federal--adobecom.hlx.page';
+const baseHost = 'https://main--federal--adobecom.aem.page';
 describe('global navigation utilities', () => {
   beforeEach(() => {
     document.body.innerHTML = '';
@@ -206,7 +206,7 @@ describe('global navigation utilities', () => {
     });
   });
 
-  // No tests for using the the live url and .hlx. urls
+  // No tests for using the the live url and .aem. urls
   // as mocking window.location.origin is not possible
   describe('getFedsPlaceholderConfig', () => {
     it('should return contentRoot for localhost', () => {
