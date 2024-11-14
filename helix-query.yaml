@@ -88,6 +88,10 @@ indices:
         select: head > meta[property="article:tag"]
         values: |
           attribute(el, 'content')
+      category:
+        select: head > meta[property="category"]
+        values: |
+          attribute(el, 'content')
       robots:
         select: head > meta[name="robots"]
         value: |
