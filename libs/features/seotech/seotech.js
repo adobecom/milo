@@ -1,4 +1,4 @@
-export const BASE_URL = 'https://www.adobe.com/seotech/api';
+export const PROD_BASE_URL = 'https://www.adobe.com/seotech/api';
 
 export const REGEX_ADOBETV = /(?:https?:\/\/)?(?:stage-)?video.tv.adobe.com\/v\/([\d]+)/;
 export const REGEX_YOUTUBE = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=)?([a-zA-Z0-9_-]+)/;
@@ -26,8 +26,7 @@ export function parseVideoUrl(url, providers = VIDEO_OBJECT_PROVIDERS) {
   return null;
 }
 
-export async function getVideoObject(url, options) {
-  const { baseUrl } = options;
+export async function getVideoObject(url, { baseUrl = PROD_BASE_URL } = {}) {
   const parsedUrl = parseVideoUrl(url);
   if (!parsedUrl) {
     throw new Error(`Invalid video url: ${url}`);
@@ -61,9 +60,8 @@ export async function sha256(message) {
   return hashHex;
 }
 
-export async function getStructuredData(bucket, id, options) {
+export async function getStructuredData(bucket, id, { baseUrl = PROD_BASE_URL } = {}) {
   if (!bucket || !id) throw new Error('bucket and id are required');
-  const { baseUrl } = options;
   const url = `${baseUrl}/structured-data/${bucket}/${id}`;
   const resp = await fetch(url);
   if (!resp || !resp.ok) return null;
@@ -74,7 +72,7 @@ export async function getStructuredData(bucket, id, options) {
 export async function appendScriptTag({ locationUrl, getMetadata, createTag, getConfig }) {
   const url = new URL(locationUrl);
   const params = new URLSearchParams(url.search);
-  const baseUrl = params.get('seotech-api-base-url') || BASE_URL;
+  const baseUrl = params.get('seotech-api-base-url') || undefined;
   const append = (obj, className) => {
     if (!obj) return;
     const attributes = { type: 'application/ld+json' };
@@ -91,8 +89,9 @@ export async function appendScriptTag({ locationUrl, getMetadata, createTag, get
       .then((obj) => append(obj, 'seotech-structured-data'))
       .catch((e) => logError(e.message)));
   }
-  if (getMetadata('seotech-video-url')) {
-    promises.push(getVideoObject(getMetadata('seotech-video-url'), { baseUrl })
+  const videoUrl = getMetadata('seotech-video-url');
+  if (videoUrl) {
+    promises.push(getVideoObject(videoUrl, { baseUrl })
       .then((videoObject) => append(videoObject, 'seotech-video-url'))
       .catch((e) => logError(e.message)));
   }
