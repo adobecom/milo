@@ -1908,6 +1908,10 @@ span[is="inline-price"][data-template='strikethrough'] {
     text-decoration: line-through;
 }
 
+span[is="inline-price"][data-display-per-unit='true'] span.price-recurrence::after {
+    content: ' ';
+}
+
 merch-card sp-button a {
   text-decoration: none;
     color: var(
