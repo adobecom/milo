@@ -1293,9 +1293,9 @@ export async function loadArea(area = document) {
     decorateDocumentExtras();
   }
 
-  const allIcons = area.querySelectorAll('span.icon');
-  if (allIcons.length) {
-    setIconsIndexClass(allIcons);
+  const initIcons = area.querySelectorAll('span.icon');
+  if (initIcons.length) {
+    setIconsIndexClass(initIcons);
   }
 
   const sections = decorateSections(area, isDoc);
@@ -1310,11 +1310,11 @@ export async function loadArea(area = document) {
     });
   }
 
-  const icons = area.querySelectorAll('span.icon');
-  if (icons.length) {
+  const allIcons = area.querySelectorAll('span.icon');
+  if (allIcons.length) {
     const { default: loadIcons, decorateIcons } = await import('../features/icons/icons.js');
-    await decorateIcons(area, icons, config);
-    await loadIcons(icons);
+    await decorateIcons(area, allIcons, config);
+    await loadIcons(allIcons);
   }
 
   const currentHash = window.location.hash;
