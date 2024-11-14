@@ -100,6 +100,7 @@ export default async function loadBlock(configs, customLib) {
             layout: configBlock.layout,
             noBorder: configBlock.noBorder,
             jarvis: configBlock.jarvis,
+            isLocalNav: configBlock.isLocalNav,
           }),
         });
         configBlock.onReady?.();
