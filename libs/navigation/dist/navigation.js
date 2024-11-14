@@ -1,6 +1,6 @@
 import {
   loadStyle
-} from "./chunk-G4SXHKM5.js";
+} from "./chunk-ZEVYWJU7.js";
 import "./chunk-NE6SFPCS.js";
 
 // navigation.js
@@ -23,7 +23,7 @@ var blockConfig = [
 var envMap = {
   prod: "https://www.adobe.com",
   stage: "https://www.stage.adobe.com",
-  qa: "https://gnav--milo--adobecom.hlx.page"
+  qa: "https://gnav--milo--adobecom.aem.page"
 };
 var getStageDomainsMap = (stageDomainsMap) => ({
   "www.stage.adobe.com": {
@@ -66,24 +66,24 @@ async function loadBlock(configs, customLib) {
     return;
   }
   const branch = new URLSearchParams(window.location.search).get("navbranch");
-  const miloLibs = branch ? `https://${branch}--milo--adobecom.hlx.page` : customLib || envMap[env];
+  const miloLibs = branch ? `https://${branch}--milo--adobecom.aem.page` : customLib || envMap[env];
   if (theme === "dark") {
     loadStyle(`${miloLibs}/libs/navigation/dist/base.css`, () => loadStyle(`${miloLibs}/libs/navigation/dist/dark-nav.css`));
   } else {
     loadStyle(`${miloLibs}/libs/navigation/dist/base.css`);
   }
   const [{ default: bootstrapBlock }, { default: locales }, { setConfig }] = await Promise.all([
-    import("./bootstrapper-CNJ2SXG6.js"),
+    import("./bootstrapper-OPTZNGC6.js"),
     import("./locales-PE6ERXTI.js"),
-    import("./utils-5PPNVIT6.js")
+    import("./utils-IERWOBZX.js")
   ]);
   loadStyle(`${miloLibs}/libs/navigation/dist/navigation.css`);
   const paramConfigs = getParamsConfigs(configs);
   const clientConfig = {
     clientEnv: env,
-    origin: `https://main--federal--adobecom.hlx.${env === "prod" ? "live" : "page"}`,
-    pathname: `/${locale}`,
+    origin: `https://main--federal--adobecom.aem.${env === "prod" ? "live" : "page"}`,
     miloLibs: `${miloLibs}/libs`,
+    pathname: `/${locale}`,
     locales: configs.locales || locales,
     contentRoot: authoringPath || footer.authoringPath,
     theme,
@@ -97,7 +97,7 @@ async function loadBlock(configs, customLib) {
     try {
       if (configBlock) {
         if (block.key === "header") {
-          const { default: init } = await import("./global-navigation-HE6AFK52.js");
+          const { default: init } = await import("./global-navigation-UWTEC37Q.js");
           await bootstrapBlock(init, {
             ...block,
             unavComponents: configBlock.unav?.unavComponents,
@@ -108,7 +108,7 @@ async function loadBlock(configs, customLib) {
           });
         } else if (block.key === "footer") {
           loadStyle(`${miloLibs}/libs/navigation/dist/footer.css`);
-          const { default: init } = await import("./global-footer-ZICWU2XE.js");
+          const { default: init } = await import("./global-footer-RKXQBHDV.js");
           await bootstrapBlock(init, { ...block });
         }
         configBlock.onReady?.();
