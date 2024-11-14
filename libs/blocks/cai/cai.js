@@ -97,7 +97,7 @@ export default ({ img, container, caiIcon }) => {
       tooltip.classList.remove('loading');
     }
     if (metadata.error) tooltip.innerHTML = '<span>Error reading image metadata</span>';
-    tooltip.innerHTML = tooltipContent(metadata);
+    else tooltip.innerHTML = tooltipContent(metadata);
   });
   tooltip.addEventListener('pointerleave', () => {
     tooltip.classList.add('hide');

@@ -1050,7 +1050,7 @@ async function checkForPageMods() {
   });
 }
 
-async function decorateCAI(section = document) {
+export async function decorateCAI(section = document) {
   const caiImgs = [...section.querySelectorAll('img[alt]')] // no video support (for now)
     .map((img) => {
       if (!img) return null;

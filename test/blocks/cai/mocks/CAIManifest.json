@@ -1,0 +1,282 @@
+{
+    "manifestStore": {
+      "activeManifest": {
+        "title": "3-cr.png",
+        "format": "image/png",
+        "vendor": null,
+        "claimGenerator": "Adobe Photoshop/25.12.0 adobe_c2pa/0.12.2 c2pa-rs/0.32.5",
+        "claimGeneratorHints": null,
+        "instanceId": "xmp:iid:547e3c38-5ba0-47ec-95bd-f084dafa058e",
+        "signatureInfo": {
+          "issuer": "Adobe Inc.",
+          "cert_serial_number": "170070846584959589660171603557559082654",
+          "time": "2024-09-30T03:09:40+00:00"
+        },
+        "credentials": [
+          {
+            "@context": [
+              "https://www.w3.org/2018/credentials/v1"
+            ],
+            "credentialSubject": {
+              "id": "did:adobe:fb606a771ef757027fd67b2254886bf8918163d809c85adf834b2db0436014877",
+              "name": "Jens Singler"
+            },
+            "proof": {
+              "created": "2024-09-24T15:31:47.817025398Z",
+              "jws": "f78dac93425dd68ed7d42c3637318b4264216024d50080c3890395aa270102c6b6e10010935f5af38d6c469aeb7953596febe738b2f7bd0e2f354adc7e2348000",
+              "proofPurpose": "assertionMethod",
+              "type": "Ed25519Signature2018",
+              "verificationMethod": "did:adobe:fb606a771ef757027fd67b2254886bf8918163d809c85adf834b2db0436014877"
+            },
+            "type": [
+              "VerifiableCredential"
+            ]
+          }
+        ],
+        "ingredients": [
+          {
+            "title": "3.png",
+            "format": "image/png",
+            "documentId": "xmp:iid:af886e1f-5b07-4d00-bd39-16ed6a446ed1",
+            "instanceId": "xmp:iid:af886e1f-5b07-4d00-bd39-16ed6a446ed1",
+            "provenance": null,
+            "hash": null,
+            "isParent": false,
+            "validationStatus": [],
+            "metadata": {
+              "dateTime": "2024-09-30T03:09:17.655Z"
+            },
+            "manifest": null,
+            "thumbnail": {
+              "blob": {},
+              "contentType": "image/png"
+            }
+          }
+        ],
+        "redactions": [],
+        "parent": null,
+        "thumbnail": {
+          "blob": {},
+          "contentType": "image/png"
+        },
+        "assertions": {
+          "data": [
+            {
+              "label": "stds.schema-org.CreativeWork",
+              "data": {
+                "@context": "https://schema.org",
+                "@type": "CreativeWork",
+                "author": [
+                  {
+                    "@type": "Person",
+                    "credential": [
+                      {
+                        "alg": "sha256",
+                        "hash": [
+                          184,
+                          150,
+                          249,
+                          213,
+                          175,
+                          218,
+                          150,
+                          74,
+                          121,
+                          12,
+                          91,
+                          169,
+                          150,
+                          69,
+                          49,
+                          251,
+                          190,
+                          1,
+                          160,
+                          35,
+                          66,
+                          244,
+                          86,
+                          142,
+                          69,
+                          176,
+                          49,
+                          183,
+                          155,
+                          136,
+                          11,
+                          8
+                        ],
+                        "url": "self#jumbf=/c2pa/adobe:urn:uuid:f51b3f05-5fd1-4608-845f-f37dc4ca19a0/c2pa.credentials/did:adobe:fb606a771ef757027fd67b2254886bf8918163d809c85adf834b2db0436014877"
+                      }
+                    ],
+                    "identifier": "did:adobe:fb606a771ef757027fd67b2254886bf8918163d809c85adf834b2db0436014877",
+                    "name": "Jens Singler"
+                  }
+                ]
+              },
+              "kind": "Json"
+            },
+            {
+              "label": "c2pa.actions",
+              "data": {
+                "actions": [
+                  {
+                    "action": "c2pa.opened",
+                    "parameters": {
+                      "com.adobe.icon": "https://cai-assertions.adobe.com/icons/import-dark.svg",
+                      "com.adobe.tool": "open",
+                      "description": "Opened a pre-existing file",
+                      "instanceId": "xmp:iid:af886e1f-5b07-4d00-bd39-16ed6a446ed1"
+                    }
+                  }
+                ],
+                "metadata": {
+                  "dateTime": "2024-09-30T03:09:14.785Z",
+                  "localizations": [],
+                  "reviewRatings": []
+                }
+              }
+            }
+          ]
+        }
+      },
+      "title": "3-cr.png",
+        "format": "image/png",
+        "vendor": null,
+        "claimGenerator": "Adobe Photoshop/25.12.0 adobe_c2pa/0.12.2 c2pa-rs/0.32.5",
+        "claimGeneratorHints": null,
+        "instanceId": "xmp:iid:547e3c38-5ba0-47ec-95bd-f084dafa058e",
+        "signatureInfo": {
+          "issuer": "Adobe Inc.",
+          "cert_serial_number": "170070846584959589660171603557559082654",
+          "time": "2024-09-30T03:09:40+00:00"
+        },
+        "credentials": [
+          {
+            "@context": [
+              "https://www.w3.org/2018/credentials/v1"
+            ],
+            "credentialSubject": {
+              "id": "did:adobe:fb606a771ef757027fd67b2254886bf8918163d809c85adf834b2db0436014877",
+              "name": "Jens Singler"
+            },
+            "proof": {
+              "created": "2024-09-24T15:31:47.817025398Z",
+              "jws": "f78dac93425dd68ed7d42c3637318b4264216024d50080c3890395aa270102c6b6e10010935f5af38d6c469aeb7953596febe738b2f7bd0e2f354adc7e2348000",
+              "proofPurpose": "assertionMethod",
+              "type": "Ed25519Signature2018",
+              "verificationMethod": "did:adobe:fb606a771ef757027fd67b2254886bf8918163d809c85adf834b2db0436014877"
+            },
+            "type": [
+              "VerifiableCredential"
+            ]
+          }
+        ],
+        "ingredients": [
+          {
+            "title": "3.png",
+            "format": "image/png",
+            "documentId": "xmp:iid:af886e1f-5b07-4d00-bd39-16ed6a446ed1",
+            "instanceId": "xmp:iid:af886e1f-5b07-4d00-bd39-16ed6a446ed1",
+            "provenance": null,
+            "hash": null,
+            "isParent": false,
+            "validationStatus": [],
+            "metadata": {
+              "dateTime": "2024-09-30T03:09:17.655Z"
+            },
+            "manifest": null,
+            "thumbnail": {
+              "blob": {},
+              "contentType": "image/png"
+            }
+          }
+        ],
+        "redactions": [],
+        "parent": null,
+        "thumbnail": {
+          "blob": {},
+          "contentType": "image/png"
+        },
+        "assertions": {
+          "data": [
+            {
+              "label": "stds.schema-org.CreativeWork",
+              "data": {
+                "@context": "https://schema.org",
+                "@type": "CreativeWork",
+                "author": [
+                  {
+                    "@type": "Person",
+                    "credential": [
+                      {
+                        "alg": "sha256",
+                        "hash": [
+                          184,
+                          150,
+                          249,
+                          213,
+                          175,
+                          218,
+                          150,
+                          74,
+                          121,
+                          12,
+                          91,
+                          169,
+                          150,
+                          69,
+                          49,
+                          251,
+                          190,
+                          1,
+                          160,
+                          35,
+                          66,
+                          244,
+                          86,
+                          142,
+                          69,
+                          176,
+                          49,
+                          183,
+                          155,
+                          136,
+                          11,
+                          8
+                        ],
+                        "url": "self#jumbf=/c2pa/adobe:urn:uuid:f51b3f05-5fd1-4608-845f-f37dc4ca19a0/c2pa.credentials/did:adobe:fb606a771ef757027fd67b2254886bf8918163d809c85adf834b2db0436014877"
+                      }
+                    ],
+                    "identifier": "did:adobe:fb606a771ef757027fd67b2254886bf8918163d809c85adf834b2db0436014877",
+                    "name": "Jens Singler"
+                  }
+                ]
+              },
+              "kind": "Json"
+            },
+            {
+              "label": "c2pa.actions",
+              "data": {
+                "actions": [
+                  {
+                    "action": "c2pa.opened",
+                    "parameters": {
+                      "com.adobe.icon": "https://cai-assertions.adobe.com/icons/import-dark.svg",
+                      "com.adobe.tool": "open",
+                      "description": "Opened a pre-existing file",
+                      "instanceId": "xmp:iid:af886e1f-5b07-4d00-bd39-16ed6a446ed1"
+                    }
+                  }
+                ],
+                "metadata": {
+                  "dateTime": "2024-09-30T03:09:14.785Z",
+                  "localizations": [],
+                  "reviewRatings": []
+                }
+              }
+            }
+          ]
+        }
+    }
+  }
