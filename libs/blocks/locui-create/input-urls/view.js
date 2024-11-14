@@ -1,113 +1,177 @@
-import { html, useState } from '../../../deps/htm-preact.js';
+import { html, useEffect, useState } from '../../../deps/htm-preact.js';
 import FragmentsSection from '../fragments/view.js';
 import { nextStep, project, setProject } from '../store.js';
 import StepControls from '../components/stepControls.js';
+import {
+  checkForErrors,
+  validateForm,
+  validateProjectName,
+  validateUrls,
+} from './index.js';
 
 export default function InputUrls() {
-  const [formData, setFormData] = useState(
-    project.value || {
-      name: '',
-      localisationFlow: false,
-      editBehavior: 'skip',
-      urls: '',
-      includeFragments: false,
-    },
-  );
-  const [fragmentTextarea, setFragmentTextarea] = useState(false);
+  const [name, setName] = useState('');
+  const [htmlFlow, setHtmlFlow] = useState(false);
+  const [editBehavior, setEditBehavior] = useState('');
+  const [urlsStr, setUrlsStr] = useState('');
+  const [fragmentsEnabled, setFragmentsEnabled] = useState(false);
   const [fragments, setFragments] = useState([]);
-  const errorPresent = false;
+  const [errors, setErrors] = useState({
+    name: '',
+    editBehavior: '',
+    urlsStr: '',
+    fragments: '',
+  });
 
-  function handleFormInput(event) {
-    const { name, value } = event.target;
-    setFormData({ ...formData, [name]: value });
+  const errorPresent = checkForErrors(errors);
+
+  function handleNameChange(ev) {
+    const text = ev.target.value;
+    const error = validateProjectName(text);
+    setName(text);
+    setErrors({ ...errors, name: error });
   }
 
-  function handleFormToggle(event) {
-    const { name } = event.target;
-    setFormData({ ...formData, [name]: !formData[name] });
-    if (name === 'includeFragments') {
-      setFragmentTextarea(!fragmentTextarea);
+  function handleeditBehaviorChange(ev) {
+    setEditBehavior(ev.target.value);
+    setErrors({ ...errors, editBehavior: '' });
+  }
+
+  function handleUrlsChange(ev) {
+    const text = ev.target.value;
+    const error = validateUrls(text);
+    setUrlsStr(text);
+    setErrors({ ...errors, urlsStr: error });
+  }
+
+  function handleFragmentsToggle() {
+    setFragmentsEnabled(!fragmentsEnabled);
+  }
+
+  function handleFragmentsChange(_fragments) {
+    setFragments(_fragments);
+    setErrors({
+      ...errors,
+      fragments: fragmentsEnabled && _fragments.length === 0,
+    });
+  }
+
+  function handleNext() {
+    const errors = validateForm({
+      name,
+      editBehavior,
+      urlsStr,
+      fragmentsEnabled,
+      fragments,
+    });
+    setErrors(errors);
+    if (checkForErrors(errors)) {
+      return;
     }
-  }
 
-  function handleNext(error) {
-    if (error) return;
-
-    setProject(formData);
+    setProject({
+      name,
+      htmlFlow,
+      editBehavior,
+      urls: urlsStr.split(/,|\n/),
+      fragments,
+    });
     nextStep();
   }
+
+  useEffect(() => {
+    setName(project.value?.name || '');
+    setHtmlFlow(project.value?.htmlFlow || false);
+    setEditBehavior(project.value?.editBehavior || '');
+    setUrlsStr(project.value?.urls?.join('\n') || '');
+    setFragmentsEnabled(project.value?.fragments?.length > 0);
+    setFragments(project.value?.fragments || []);
+  }, []);
 
   return html`
     <div>
       <div class="locui-title-bar">Localization</div>
 
-      <div class="field-row">
-        <span class="field-label">Enter Project Name</span>
-        <input name="name" value=${formData.name} onInput=${handleFormInput} />
-      </div>
-
-      <div class="field-row">
-        <span class="field-label">HTML Localization Flow</span>
-        <input
-          type="checkbox"
-          name="localisationFlow"
-          checked=${formData.localisationFlow}
-          onClick=${handleFormToggle}
-        />
-      </div>
-
-      <div class="field-row">
-        <span class="field-label">Regional Edit Behavior</span>
-        <select
-          name="editBehavior"
-          value=${formData.editBehavior}
-          onChange=${handleFormInput}
-        >
-          <option value="skip">Skip</option>
-          <option value="merge">Merge</option>
-          <option value="override">Override</option>
-        </select>
-      </div>
-
-      <div class="field-col">
-        <div class="row">
-          <span class="field-label">Enter the URL's</span>
-          <span class="field-desc"
-            >(For multile URLs, enter each one on new line. Maximum number of
-            URLs can be entered is 150)</span
-          >
+      <div class="form-field">
+        <div class="form-field-label">Enter Project Name</div>
+        <div>
+          <input
+            class=${`form-field-input ${errors.name && 'error'}`}
+            value=${name}
+            onInput=${handleNameChange}
+          />
+          ${errors.name &&
+          html`<div class="form-field-error">${errors.name}</div>`}
         </div>
+      </div>
 
-        <textarea
-          class="locui-textarea"
-          rows="10"
-          name="urls"
-          value=${formData.urls}
-          onInput=${handleFormInput}
+      <div class="form-field">
+        <div class="form-field-label">HTML Localization Flow</div>
+        <input
+          class="form-field-checkbox"
+          type="checkbox"
+          checked=${htmlFlow}
+          onclick=${() => setHtmlFlow(!htmlFlow)}
         />
       </div>
 
-      <div class="field-row">
+      <div class="form-field">
+        <div class="form-field-label">Regional Edit Behavior</div>
+        <div>
+          <select
+            value=${editBehavior}
+            class=${`form-field-select ${errors.editBehavior && 'error'}`}
+            onChange=${handleeditBehaviorChange}
+          >
+            <option value="" disabled selected hidden>Select</option>
+            <option value="skip">Skip</option>
+            <option value="merge">Merge</option>
+            <option value="override">Override</option>
+          </select>
+          ${errors.editBehavior &&
+          html`<div class="form-field-error">${errors.editBehavior}</div>`}
+        </div>
+      </div>
+
+      <div class="form-field">
+        <div class="form-field-label">Enter the URLs</div>
+        <div class="form-field-desc">
+          (For multiple URLs, enter each on a new line)
+        </div>
+      </div>
+      <textarea
+        class=${`form-field-textarea ${errors.urlsStr && 'error'}`}
+        rows="10"
+        value=${urlsStr}
+        onInput=${handleUrlsChange}
+      />
+      ${errors.urlsStr &&
+      html`<div class="form-field-error">${errors.urlsStr}</div>`}
+
+      <div class="form-field">
         <input
+          class="form-field-checkbox"
           type="checkbox"
           name="includeFragments"
-          disabled=${!(formData.urls.length > 0)}
-          onClick=${handleFormToggle}
+          checked=${fragmentsEnabled}
+          disabled=${urlsStr.length === 0}
+          onClick=${handleFragmentsToggle}
         />
-        <span class="field-label pl-8">Include Fragments</span>
+        <span class="form-field-label">Include Fragments</span>
       </div>
 
       <div class="field-col">
-        ${fragmentTextarea && (
-    html`
-        <${FragmentsSection} urls=${formData.urls} fragments=${fragments} setFragments=${setFragments}  />
-        `
-  )}
-        
+        ${fragmentsEnabled &&
+        html`
+          <${FragmentsSection}
+            urls=${urlsStr}
+            fragments=${fragments}
+            setFragments=${handleFragmentsChange}
+          />
+        `}
       </div>
- 
-      <!-- set enable based on the errors present -->
-      <${StepControls} enable=${!errorPresent} onNext=${() => handleNext(errorPresent)} />
+
+      <${StepControls} nextDisabled=${errorPresent} onNext=${handleNext} />
     </div>
   `;
 }
