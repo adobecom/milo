@@ -1322,8 +1322,9 @@ export async function loadArea(area = document) {
 
   if (allIcons.length) {
     const { default: loadIcons, decorateIcons } = await import('../features/icons/icons.js');
-    await decorateIcons(area, allIcons, config);
-    await loadIcons(allIcons);
+    const areaIcons = area.querySelectorAll('span.icon');
+    await decorateIcons(area, areaIcons, config);
+    await loadIcons(areaIcons);
   }
 
   const currentHash = window.location.hash;
