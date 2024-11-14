@@ -1,4 +1,4 @@
-import { signal } from '../../../deps/htm-preact.js';
+import { signal } from '../../deps/htm-preact.js';
 
 export const currentStep = signal(1);
 export const project = signal(null);

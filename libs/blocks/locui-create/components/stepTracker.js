@@ -1,5 +1,5 @@
 import { html } from '../../../deps/htm-preact.js';
-import { currentStep } from './state.js';
+import { currentStep } from '../store.js';
 
 const STEPS = ['Enter URL(s)', 'Select Language(s)', 'Action'];
 
