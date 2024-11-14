@@ -11,6 +11,7 @@ const { default: init } = await import('../../../libs/blocks/video/video.js');
 
 describe('video uploaded using franklin bot', () => {
   let clock;
+  const callback = sinon.spy();
   beforeEach(async () => {
     clock = sinon.useFakeTimers({
       toFake: ['setTimeout'],
@@ -30,12 +31,12 @@ describe('video uploaded using franklin bot', () => {
     const a = block.querySelector('a');
     const a2 = block2.querySelector('a');
     init(a);
-    await new Promise((resolve) => { setTimeout(resolve, 600); });
+    setTimeout(callback, 600);
     await clock.runAllAsync();
     const pausePlayWrapper = block.querySelector('.pause-play-wrapper');
     pausePlayWrapper.removeAttribute('video-index');
     init(a2);
-    await new Promise((resolve) => { setTimeout(resolve, 500); });
+    setTimeout(callback, 500);
     await clock.runAllAsync();
     const videoIndex = pausePlayWrapper.getAttribute('video-index');
     expect(videoIndex).to.be.null;
@@ -171,7 +172,7 @@ describe('video uploaded using franklin bot', () => {
     decoratePausePlayWrapper(video, '');
     const pausePlayWrapper = block.querySelector('.pause-play-wrapper');
     pausePlayWrapper.click();
-    await new Promise((resolve) => { setTimeout(resolve, 500); });
+    setTimeout(callback, 500);
     await clock.runAllAsync();
     expect(pausePlayWrapper.ariaPressed).to.eql('false');
   });
@@ -183,7 +184,7 @@ describe('video uploaded using franklin bot', () => {
     const pausePlayWrapper = block.querySelector('.pause-play-wrapper');
     pausePlayWrapper.click();
     pausePlayWrapper.setAttribute('daa-ll', 'pause-motion');
-    await new Promise((resolve) => { setTimeout(resolve, 500); });
+    setTimeout(callback, 500);
     await clock.runAllAsync();
     pausePlayWrapper.click();
     expect(pausePlayWrapper.querySelector('.is-playing')).to.exist;
@@ -200,12 +201,12 @@ describe('video uploaded using franklin bot', () => {
     const block = document.querySelector('.video.autoplay1.hoverplay.no-viewportplay');
     const a = block.querySelector('a');
     init(a);
-    await new Promise((resolve) => { setTimeout(resolve, 0); });
+    setTimeout(callback, 0);
     await clock.runAllAsync();
     const pausePlayWrapper = block.querySelector('.pause-play-wrapper');
     const video = block.querySelector('video');
     pausePlayWrapper.focus();
-    await new Promise((resolve) => { setTimeout(resolve, 0); });
+    setTimeout(callback, 0);
     await clock.runAllAsync();
     pausePlayWrapper.blur();
     expect(video.paused).to.be.true;
@@ -232,9 +233,8 @@ describe('video uploaded using franklin bot', () => {
     await waitFor(intersectionObserverAddsSource);
     video.scrollIntoView();
     await nextFrame();
-    await new Promise((resolve) => {
-      setTimeout(resolve, 100);
-    });
+    setTimeout(callback, 100);
+    await clock.runAllAsync();
     assert.isTrue(playSpy.calledOnce);
 
     // push the video out of the viewport
@@ -243,9 +243,8 @@ describe('video uploaded using franklin bot', () => {
     video.parentNode.insertBefore(div, video);
 
     await nextFrame();
-    await new Promise((resolve) => {
-      setTimeout(resolve, 100);
-    });
+    setTimeout(callback, 100);
+    await clock.runAllAsync();
     assert.isTrue(pauseSpy.calledOnce);
     expect(video.hasAttribute('data-play-viewport')).to.be.true;
   });
@@ -269,9 +268,8 @@ describe('video uploaded using franklin bot', () => {
     video.addEventListener('ended', endedSpy);
     video.scrollIntoView();
     await nextFrame();
-    await new Promise((resolve) => {
-      setTimeout(resolve, 100);
-    });
+    setTimeout(callback, 100);
+    await clock.runAllAsync();
     assert.isTrue(playSpy.calledOnce);
 
     // push the video out of the viewport
@@ -280,21 +278,18 @@ describe('video uploaded using franklin bot', () => {
     video.parentNode.insertBefore(div, video);
 
     await nextFrame();
-    await new Promise((resolve) => {
-      setTimeout(resolve, 200);
-    });
+    setTimeout(callback, 200);
+    await clock.runAllAsync();
     assert.isTrue(pauseSpy.calledOnce);
     video.dispatchEvent(new Event('ended'));
     await nextFrame();
-    await new Promise((resolve) => {
-      setTimeout(resolve, 100);
-    });
+    setTimeout(callback, 100);
+    await clock.runAllAsync();
 
     video.scrollIntoView();
     await nextFrame();
-    await new Promise((resolve) => {
-      setTimeout(resolve, 100);
-    });
+    setTimeout(callback, 100);
+    await clock.runAllAsync();
 
     expect(playSpy.callCount).to.equal(1);
     expect(video.hasAttribute('data-play-viewport')).to.be.true;
