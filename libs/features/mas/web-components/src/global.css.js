@@ -351,6 +351,10 @@ span[is="inline-price"][data-template='strikethrough'] {
     text-decoration: line-through;
 }
 
+span[data-display-per-unit='true'] .price-recurrence::after {
+    content: ' ';
+}
+
 merch-card sp-button a {
   text-decoration: none;
     color: var(
