@@ -123,6 +123,10 @@ video {
   display: contents;
 }
 
+.how-to .how-to-media .video-container {
+  height: fit-content;
+}
+
 @media (min-width: 600px) {
   .media:not(.media-reverse-mobile, .media-reversed) .video-container .pause-play-wrapper,
   :is(.marquee.row-reversed .asset, .marquee-anchors, .hero-marquee.asset-left) .video-container .pause-play-wrapper,

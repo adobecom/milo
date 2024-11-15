@@ -1,4 +1,4 @@
-import { applyHoverPlay, decorateAnchorVideo, applyAccessibilityEvents, decoratePausePlayWrapper, isAccessible } from '../../utils/decorate.js';
+import { applyHoverPlay, decorateAnchorVideo, applyAccessibilityEvents, decoratePausePlayWrapper, isVideoAccessible } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
 
 function buildCaption(pEl) {
@@ -31,7 +31,7 @@ function decorateVideo(clone, figEl) {
       );
     }
     applyHoverPlay(videoTag);
-    if (!videoTag.controls && isAccessible(anchorTag)) {
+    if (!videoTag.controls && isVideoAccessible(anchorTag)) {
       applyAccessibilityEvents(videoTag);
       decoratePausePlayWrapper(videoTag, 'autoplay');
     }

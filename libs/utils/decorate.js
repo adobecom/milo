@@ -408,7 +408,7 @@ export async function loadCDT(el, classList) {
   }
 }
 
-export function isAccessible(anchorTag) {
+export function isVideoAccessible(anchorTag) {
   return !anchorTag?.hash.includes(HIDE_CONTROLS);
 }
 
@@ -429,7 +429,7 @@ function updateAriaLabel(videoEl, videoAttrs) {
     const playIcon = pausePlayWrapper.querySelector('.play-icon');
     const indexOfVideo = pausePlayWrapper.getAttribute('video-index');
     let ariaLabel = `${videoAttrs.includes('autoplay') ? videoLabels.pauseMotion : videoLabels.playMotion}`;
-    ariaLabel = ariaLabel.concat(`${indexOfVideo === '1' && videoCounter === 1 ? '' : indexOfVideo}`);
+    ariaLabel = ariaLabel.concat(` ${indexOfVideo === '1' && videoCounter === 1 ? '' : indexOfVideo}`);
     pausePlayWrapper.setAttribute('aria-label', ariaLabel);
     pauseIcon.setAttribute('alt', videoLabels.pauseMotion);
     playIcon.setAttribute('alt', videoLabels.playMotion);
@@ -454,7 +454,7 @@ export function decoratePausePlayWrapper(videoEl, videoAttrs) {
 
 export function decorateAnchorVideo({ src = '', anchorTag }) {
   if (!src.length || !(anchorTag instanceof HTMLElement)) return;
-  const accessibilityEnabled = isAccessible(anchorTag);
+  const accessibilityEnabled = isVideoAccessible(anchorTag);
   anchorTag.hash = anchorTag.hash.replace(`#${HIDE_CONTROLS}`, '');
   if (anchorTag.closest('.marquee, .aside, .hero-marquee, .quiz-marquee') && !anchorTag.hash) anchorTag.hash = '#autoplay';
   const { dataset, parentElement } = anchorTag;
