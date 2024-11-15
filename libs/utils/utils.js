@@ -137,6 +137,7 @@ export const MILO_EVENTS = { DEFERRED: 'milo:deferred' };
 
 const LANGSTORE = 'langstore';
 const PAGE_URL = new URL(window.location.href);
+export const SLD = PAGE_URL.hostname.includes('.aem.') ? 'aem' : 'hlx';
 
 function getEnv(conf) {
   const { host } = window.location;
@@ -145,10 +146,11 @@ function getEnv(conf) {
   if (query) return { ...ENVS[query], consumer: conf[query] };
   if (host.includes('localhost')) return { ...ENVS.local, consumer: conf.local };
   /* c8 ignore start */
-  if (host.includes('hlx.page')
-    || host.includes('hlx.live')
-    || host.includes('stage.adobe')
-    || host.includes('corp.adobe')) {
+  if (host.includes(`${SLD}.page`)
+        || host.includes(`${SLD}.live`)
+        || host.includes('stage.adobe')
+        || host.includes('corp.adobe')
+        || host.includes('graybox.adobe')) {
     return { ...ENVS.stage, consumer: conf.stage };
   }
   return { ...ENVS.prod, consumer: conf.prod };
