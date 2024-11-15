@@ -37,7 +37,7 @@ video {
 }
 
 .video-container .pause-play-wrapper {
-  width: 45px;
+  width: 45.2px;
   height: 45px;
   position: absolute;
   bottom: 2%;
@@ -145,5 +145,12 @@ video {
   .aside .foreground.container .image:nth-last-child(1), .brick.media-right, .how-to) .video-container .pause-play-wrapper {
     left: 2%;
     right: auto;
+  }
+}
+
+@media (min-width: 600px) and (max-width: 1199px) {
+  .hero-marquee.asset-left .video-container.video-holder .pause-play-wrapper {
+    left: auto;
+    right: 2%;
   }
 }

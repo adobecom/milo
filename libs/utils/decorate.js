@@ -462,7 +462,9 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
   const tabIndex = anchorTag.tabIndex || 0;
   const videoIndex = (tabIndex === -1) ? 'tabindex=-1' : '';
   let video = `<video ${attrs} data-video-source=${src} ${videoIndex}></video>`;
-  videoCounter += 1;
+  if (!attrs.includes('controls') && !attrs.includes('hoverplay') && accessibilityEnabled) {
+    videoCounter += 1;
+  }
   const indexOfVideo = videoCounter;
   if (accessibilityEnabled) {
     video = addAccessibilityControl(video, attrs, indexOfVideo, tabIndex);
