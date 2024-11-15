@@ -16,6 +16,7 @@ export default function InputUrls() {
   const [urlsStr, setUrlsStr] = useState('');
   const [fragmentsEnabled, setFragmentsEnabled] = useState(false);
   const [fragments, setFragments] = useState([]);
+  const [noOfValidFrag, setNoOfValidfragments] = useState(0);
   const [errors, setErrors] = useState({
     name: '',
     editBehavior: '',
@@ -52,7 +53,7 @@ export default function InputUrls() {
     setFragments(_fragments);
     setErrors({
       ...errors,
-      fragments: fragmentsEnabled && _fragments.length === 0,
+      fragments: fragmentsEnabled && noOfValidFrag > 0 && _fragments.length === 0,
     });
   }
 
@@ -63,6 +64,7 @@ export default function InputUrls() {
       urlsStr,
       fragmentsEnabled,
       fragments,
+      noOfValidFrag,
     });
     setErrors(formErrors);
     if (checkForErrors(formErrors)) {
@@ -168,6 +170,7 @@ export default function InputUrls() {
               urls=${urlsStr}
               fragments=${fragments}
               setFragments=${handleFragmentsChange}
+              setNoOfValidfragments=${setNoOfValidfragments}
             />
           `}
         </div>

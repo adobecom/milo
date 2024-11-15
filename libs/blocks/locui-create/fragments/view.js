@@ -9,7 +9,7 @@ function Loader() {
   </div>`;
 }
 
-export default function FragmentsSection({ fragments, setFragments, urls }) {
+export default function FragmentsSection({ fragments, setFragments, urls, setNoOfValidfragments }) {
   const [validFragments, setValidFragments] = useState([]);
   const [errorFragments, setErrorFragments] = useState([]);
   const [isLoading, setLoading] = useState(true);
@@ -18,8 +18,11 @@ export default function FragmentsSection({ fragments, setFragments, urls }) {
     const inputUrls = urls.split(/[,\r\n]/g).map((url) => new URL(url));
     setLoading(true);
     const found = await findFragments(getUrls(inputUrls));
-    setValidFragments(found.filter((frag) => !frag?.valid));
-    setFragments(found.filter((frag) => !frag?.valid).map(({ pathname }) => pathname));
+    const validFrag = found.filter((frag) => !frag?.valid);
+    setValidFragments(validFrag);
+    setNoOfValidfragments(validFrag.length);
+    const selectedFragments = validFrag.map(({ pathname }) => pathname);
+    setFragments(selectedFragments);
     const invalid = found.filter((frag) => typeof frag?.valid === 'string');
     setErrorFragments(invalid);
     setLoading(false);
@@ -64,7 +67,7 @@ export default function FragmentsSection({ fragments, setFragments, urls }) {
     : html`
     <button class="locui-create-refresh-button" onClick=${handleRefresh}/>
     <ul class=${`locui-create-fragments-list ${validFragments.length > 0 && fragments.length < 1 && 'error'}`}>
-   ${validFragments && validFragments.length > 0 && validFragments.map((fragment) => locFragment(fragment))}
+   ${validFragments && validFragments.length > 0 ? validFragments.map((fragment) => locFragment(fragment)) : html`<p>No Valid fragments</p>`}
    </ul>`
 }
    <div>
