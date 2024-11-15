@@ -112,7 +112,7 @@ async function findPageFragments(path) {
   return fragmentUrls;
 }
 
-async function findDeepFragments(path) {
+export async function findDeepFragments(path) {
   const searched = [];
   const fragments = await findPageFragments(path);
   if (!fragments) return [];
