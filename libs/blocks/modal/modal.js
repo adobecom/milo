@@ -203,12 +203,13 @@ export async function getModal(details, custom) {
 
   const iframe = dialog.querySelector('iframe');
   if (iframe) {
-    if (dialog.classList.contains('commerce-frame')) {
+    if (dialog.classList.contains('commerce-frame') || dialog.classList.contains('dynamic-height')) {
       const { default: enableCommerceFrameFeatures } = await import('./modal.merch.js');
       await enableCommerceFrameFeatures({ dialog, iframe });
     } else {
       /* Initially iframe height is set to 0% in CSS for the height auto adjustment feature.
-      For modals without the 'commerce-frame' class height auto adjustment is not applicable */
+      The height auto adjustment feature is applicable only to dialogs
+      with the `commerce-frame` or `dynamic-height` classes */
       iframe.style.height = '100%';
     }
   }
