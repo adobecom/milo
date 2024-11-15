@@ -28,6 +28,7 @@ export function validateForm({
   urlsStr,
   fragmentsEnabled,
   fragments,
+  noOfValidFrag,
 }) {
   const errors = { name: '', editBehavior: '', urlsStr: '', fragments: '' };
   if (name === '') {
@@ -39,7 +40,7 @@ export function validateForm({
   if (urlsStr === '') {
     errors.urlsStr = 'URLs are required';
   }
-  if (fragmentsEnabled && fragments.length === 0) {
+  if (fragmentsEnabled && noOfValidFrag > 0 && fragments.length === 0) {
     errors.fragments = 'Select atleast one fragment to proceed further';
   }
   return errors;
