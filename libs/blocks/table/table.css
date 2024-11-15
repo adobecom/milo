@@ -351,6 +351,7 @@
   width: 15px;
   height: 15px;
   cursor: pointer;
+  margin-inline: unset;
 }
 
 .table .section-head-title:hover .icon.expand {
