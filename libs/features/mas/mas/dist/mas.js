@@ -1735,8 +1735,12 @@ merch-card p, merch-card h3, merch-card h4 {
     margin: 0;
 }
 
-merch-card span[is=inline-price] {
+merch-card span[is='inline-price'] {
     display: inline-block;
+}
+
+sp-button a[is='checkout-link'] {
+    pointer-events: auto;
 }
 
 merch-card [slot^='heading-'] {
