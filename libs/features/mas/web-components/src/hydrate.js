@@ -15,7 +15,7 @@ function processFragment(fragmentData) {
     );
 }
 
-function processMnemonics(fragment, merchCard, ctasConfig) {
+function processMnemonics(fragment, merchCard, aemFragmentMapping) {
     const mnemonics = fragment.mnemonicIcon?.map((icon, index) => ({
         icon,
         alt: fragment.mnemonicAlt[index] ?? '',
@@ -35,7 +35,7 @@ function processMnemonics(fragment, merchCard, ctasConfig) {
             src,
             alt,
             href,
-            size: ctasConfig?.size ?? 'l',
+            size: aemFragmentMapping.mnemonics?.size ?? 'l',
         });
         merchCard.append(merchIcon);
     });
@@ -169,12 +169,13 @@ function createSpectrumButton(cta, strong, aemFragmentMapping, cardVariant) {
         treatment = 'outline';
     }
 
+    cta.tabIndex = -1;
     const spectrumCta = createTag(
         'sp-button',
         {
             treatment,
             variant,
-            tabIndex: -1,
+            tabIndex: 0,
             size: aemFragmentMapping.ctas.size ?? 'm',
         },
         cta,
@@ -244,7 +245,7 @@ export async function hydrate(fragmentData, merchCard) {
     const { aemFragmentMapping } = merchCard.variantLayout;
     if (!aemFragmentMapping) return;
 
-    const mnemonics = processMnemonics(fragment, merchCard, aemFragmentMapping.ctas);
+    const mnemonics = processMnemonics(fragment, merchCard, aemFragmentMapping);
     fragmentData.computed = { mnemonics };
 
     processBadge(fragment, merchCard);

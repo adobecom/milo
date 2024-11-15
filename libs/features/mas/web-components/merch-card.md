@@ -102,7 +102,6 @@ CCD Gallery provides a comprehensive list of all supported card variants in CCD.
 #### Active variants:
 
 -   `catalog`
--   `ccd-action`
 -   `image`
 -   `inline-heading`
 -   `mini-compare-chart`
@@ -112,6 +111,7 @@ CCD Gallery provides a comprehensive list of all supported card variants in CCD.
 -   `special-offers`
 -   `twp`
 -   `ccd-slice`
+-   `ccd-suggested`
 
 ### Properties
 
