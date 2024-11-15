@@ -32,9 +32,8 @@ describe('Placeholders', () => {
 
   it('Replaces text & links', async () => {
     config.locale.contentRoot = '/test/features/placeholders';
-    const regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
     let text = 'Hello world {{recommended-for-you}} and {{no-results}}. Call tel: %7B%7Bphone-number%7D%7D';
-    text = await replaceText(text, config, regex);
+    text = await replaceText(text, config);
     expect(text).to.equal('Hello world Recommended for you and No results found. Call tel: 800 12345 6789');
   });
 
@@ -75,9 +74,8 @@ describe('Placeholders', () => {
 
   it('Replaces geo-specific placeholders when disable-geo-placeholders meta content is "off" or meta tag not defined', async () => {
     config.locale.contentRoot = '/test/features/placeholders/bg';
-    const regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
     let text = '{{add-to-cart}}. {{adobe-apps}}';
-    text = await replaceText(text, config, regex);
+    text = await replaceText(text, config);
     expect(text).to.equal('Добавяне в количката. Приложения на Adobe');
   });
 
@@ -89,9 +87,8 @@ describe('Placeholders', () => {
 
     config.locale.contentRoot = '/test/features/placeholders/bg';
     config.locale.prefix = '/bg';
-    const regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
     let text = '{{add-to-cart}}. {{adobe-apps}}';
-    text = await replaceText(text, config, regex);
+    text = await replaceText(text, config);
     document.head.removeChild(meta);
     expect(text).to.equal('Add to cart. Adobe Apps');
   });
