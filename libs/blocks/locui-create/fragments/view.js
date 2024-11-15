@@ -21,7 +21,7 @@ export default function FragmentsSection({ fragments, setFragments, urls, setNoO
     const validFrag = found.filter((frag) => !frag?.valid);
     setValidFragments(validFrag);
     setNoOfValidfragments(validFrag.length);
-    const selectedFragments = found.filter((frag) => !frag?.valid).map(({ pathname }) => pathname);
+    const selectedFragments = validFrag.map(({ pathname }) => pathname);
     setFragments(selectedFragments);
     const invalid = found.filter((frag) => typeof frag?.valid === 'string');
     setErrorFragments(invalid);
