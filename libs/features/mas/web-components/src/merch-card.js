@@ -90,6 +90,7 @@ export class MerchCard extends LitElement {
             reflect: true,
         },
         merchOffer: { type: Object },
+        analyticsId: { type: String, attribute: 'daa-lh', reflect: true },
     };
 
     static styles = [styles, getVariantStyles(), ...sizeStyles()];
