@@ -37,7 +37,7 @@ export function validateForm({
     errors.editBehavior = 'Edit behavior is required';
   }
   if (urlsStr === '') {
-    errors.urlsStr = 'Urls are required';
+    errors.urlsStr = 'URLs are required';
   }
   if (fragmentsEnabled && fragments.length === 0) {
     errors.fragments = 'Select atleast one fragment to proceed further';

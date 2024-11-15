@@ -89,89 +89,93 @@ export default function InputUrls() {
   }, []);
 
   return html`
-    <div>
-      <div class="locui-title-bar">Localization</div>
+    <div class="locui-form-container">
+      <div class="locui-input-url-area">
+        <div class="locui-title-bar">Localization</div>
 
-      <div class="form-field">
-        <div class="form-field-label">Enter Project Name</div>
-        <div>
+        <div class="form-field">
+          <div class="form-field-label">* Enter Project Name</div>
+          <div>
+            <input
+              class=${`form-field-input ${errors.name && 'error'}`}
+              value=${name}
+              onInput=${handleNameChange}
+            />
+            ${errors.name
+            && html`<div class="form-field-error">${errors.name}</div>`}
+          </div>
+        </div>
+
+        <div class="form-field">
+          <div class="form-field-label">HTML Localization Flow</div>
           <input
-            class=${`form-field-input ${errors.name && 'error'}`}
-            value=${name}
-            onInput=${handleNameChange}
+            class="form-field-checkbox"
+            type="checkbox"
+            checked=${htmlFlow}
+            onclick=${() => setHtmlFlow(!htmlFlow)}
           />
-          ${errors.name
-          && html`<div class="form-field-error">${errors.name}</div>`}
         </div>
-      </div>
 
-      <div class="form-field">
-        <div class="form-field-label">HTML Localization Flow</div>
-        <input
-          class="form-field-checkbox"
-          type="checkbox"
-          checked=${htmlFlow}
-          onclick=${() => setHtmlFlow(!htmlFlow)}
+        <div class="form-field">
+          <div class="form-field-label">* Regional Edit Behavior</div>
+          <div>
+            <select
+              value=${editBehavior}
+              class=${`form-field-select ${errors.editBehavior && 'error'}`}
+              onChange=${handleeditBehaviorChange}
+            >
+              <option value="" disabled selected hidden>Select</option>
+              <option value="skip">Skip</option>
+              <option value="merge">Merge</option>
+              <option value="override">Override</option>
+            </select>
+            ${errors.editBehavior
+            && html`<div class="form-field-error">${errors.editBehavior}</div>`}
+          </div>
+        </div>
+
+        <div class="form-field">
+          <div class="form-field-label">* Enter the URLs</div>
+          <div class="form-field-desc">
+            (For multiple URLs, enter each on a new line)
+          </div>
+        </div>
+        <textarea
+          class=${`form-field-textarea ${errors.urlsStr && 'error'}`}
+          rows="10"
+          value=${urlsStr}
+          onInput=${handleUrlsChange}
         />
-      </div>
+        ${errors.urlsStr
+        && html`<div class="form-field-error">${errors.urlsStr}</div>`}
 
-      <div class="form-field">
-        <div class="form-field-label">Regional Edit Behavior</div>
-        <div>
-          <select
-            value=${editBehavior}
-            class=${`form-field-select ${errors.editBehavior && 'error'}`}
-            onChange=${handleeditBehaviorChange}
-          >
-            <option value="" disabled selected hidden>Select</option>
-            <option value="skip">Skip</option>
-            <option value="merge">Merge</option>
-            <option value="override">Override</option>
-          </select>
-          ${errors.editBehavior
-          && html`<div class="form-field-error">${errors.editBehavior}</div>`}
-        </div>
-      </div>
-
-      <div class="form-field">
-        <div class="form-field-label">Enter the URLs</div>
-        <div class="form-field-desc">
-          (For multiple URLs, enter each on a new line)
-        </div>
-      </div>
-      <textarea
-        class=${`form-field-textarea ${errors.urlsStr && 'error'}`}
-        rows="10"
-        value=${urlsStr}
-        onInput=${handleUrlsChange}
-      />
-      ${errors.urlsStr
-      && html`<div class="form-field-error">${errors.urlsStr}</div>`}
-
-      <div class="form-field">
-        <input
-          class="form-field-checkbox"
-          type="checkbox"
-          name="includeFragments"
-          checked=${fragmentsEnabled}
-          disabled=${urlsStr.length === 0}
-          onClick=${handleFragmentsToggle}
-        />
-        <span class="form-field-label">Include Fragments</span>
-      </div>
-
-      <div class="field-col">
-        ${fragmentsEnabled
-        && html`
-          <${FragmentsSection}
-            urls=${urlsStr}
-            fragments=${fragments}
-            setFragments=${handleFragmentsChange}
+        <div class="form-field">
+          <input
+            class="form-field-checkbox"
+            type="checkbox"
+            name="includeFragments"
+            checked=${fragmentsEnabled}
+            disabled=${urlsStr.length === 0}
+            onClick=${handleFragmentsToggle}
           />
-        `}
+          <span class="form-field-label">Include Fragments</span>
+        </div>
+
+        <div class="field-col">
+          ${fragmentsEnabled
+          && html`
+            <${FragmentsSection}
+              urls=${urlsStr}
+              fragments=${fragments}
+              setFragments=${handleFragmentsChange}
+            />
+          `}
+        </div>
       </div>
 
-      <${StepControls} nextDisabled=${errorPresent} onNext=${handleNext} />
+      <div>
+        <${StepControls} nextDisabled=${errorPresent} onNext=${handleNext} />
+      </div>
     </div>
   `;
 }

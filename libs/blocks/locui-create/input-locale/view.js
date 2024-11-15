@@ -14,7 +14,7 @@ export default function InputLocales() {
   }
 
   return html`
-    <div>
+    <div class="locui-form-container">
       <span>Project Name: ${project.value.name || 'n/a'}</span>
       <!-- set enable based on the errors present -->
       <${StepControls} enable=${!errorPresent} onNext=${handleNext} onBack=${handleBack} />
