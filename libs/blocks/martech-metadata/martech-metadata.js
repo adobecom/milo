@@ -13,7 +13,7 @@ export const getMetadata = (el, config) => [...el.childNodes].reduce((rdx, row) 
 export default function init(el) {
   const config = getConfig();
   const { locale, ietf = locale?.ietf, analyticLocalization } = config;
-  if (ietf !== 'en-US') {
+  if (ietf !== 'en-US' || el.classList.contains('always-process')) {
     config.analyticLocalization = {
       ...analyticLocalization,
       ...getMetadata(el, config),
