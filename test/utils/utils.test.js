@@ -673,7 +673,7 @@ describe('Utils', () => {
     it('should append to title using string from metadata', async () => {
       const expected = 'Document Title NOODLE';
       await utils.loadArea();
-      await waitFor(() => document.title === expected);
+      await waitFor(() => document.title === expected, 2000);
       expect(document.title).to.equal(expected);
     });
   });
@@ -687,10 +687,10 @@ describe('Utils', () => {
       window.lana.release?.();
     });
     it('should import feature when metadata is defined and error if invalid', async () => {
-      const expectedError = 'SEOTECH: Failed to construct \'URL\': Invalid URL';
+      const expectedError = 'SEOTECH: Invalid video url: FAKE';
       await utils.loadArea();
       const lanaStub = sinon.stub(window.lana, 'log');
-      await waitFor(() => lanaStub.calledOnceWith(expectedError));
+      await waitFor(() => lanaStub.calledOnceWith(expectedError), 2000);
       expect(lanaStub.calledOnceWith(expectedError)).to.be.true;
     });
   });

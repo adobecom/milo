@@ -63,7 +63,7 @@ function replaceDotMedia(path, doc) {
 }
 
 export default async function init(a) {
-  const { decorateArea, mep } = getConfig();
+  const { decorateArea, mep, placeholders } = getConfig();
   let relHref = localizeLink(a.href);
   let inline = false;
 
@@ -125,13 +125,16 @@ export default async function init(a) {
   }
 
   updateFragMap(fragment, a, relHref);
-  if (a.dataset.manifestId || a.dataset.adobeTargetTestid) {
-    const { updateFragDataProps } = await import('../../features/personalization/personalization.js');
-    updateFragDataProps(a, inline, sections, fragment);
-  }
-  if (mep?.commands?.length) {
-    const { handleCommands } = await import('../../features/personalization/personalization.js');
-    handleCommands(mep?.commands, fragment, false, true);
+  if (a.dataset.manifestId
+    || a.dataset.adobeTargetTestid
+    || mep?.commands?.length
+    || placeholders) {
+    const { updateFragDataProps, handleCommands, replacePlaceholders } = await import('../../features/personalization/personalization.js');
+    if (a.dataset.manifestId || a.dataset.adobeTargetTestid) {
+      updateFragDataProps(a, inline, sections, fragment);
+    }
+    if (mep?.commands?.length) handleCommands(mep?.commands, fragment, false, true);
+    if (placeholders) fragment.innerHTML = replacePlaceholders(fragment.innerHTML, placeholders);
   }
   if (inline) {
     insertInlineFrag(sections, a, relHref, mep);

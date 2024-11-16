@@ -307,3 +307,11 @@
 
   .editorial-card .vp-media .desktop-only { display: block; }
 }
+
+/* mobile only */
+@media screen and (max-width: 700px) {
+  .section.two-up-mobile:has(.editorial-card) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-xs);
+  }
+}
