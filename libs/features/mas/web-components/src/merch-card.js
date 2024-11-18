@@ -157,7 +157,7 @@ export class MerchCard extends LitElement {
     }
 
     get computedBorderStyle() {
-        if (!['twp', 'ccd-slice'].includes(this.variant)) {
+        if (!['twp', 'ccd-slice', 'ccd-suggested'].includes(this.variant)) {
             return `1px solid ${
                 this.borderColor ? this.borderColor : this.badgeBackgroundColor
             }`;
@@ -263,7 +263,6 @@ export class MerchCard extends LitElement {
 
     connectedCallback() {
         super.connectedCallback();
-        this.setAttribute('tabindex', this.getAttribute('tabindex') ?? '0');
         this.addEventListener(
             EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
             this.handleQuantitySelection,

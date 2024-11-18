@@ -92,7 +92,8 @@ const findTag = (tags, searchStr, ignore = []) => {
       tag.name,
       tag.path,
       tag.path.replace('/content/cq:tags/', ''),
-      tag.tagID,
+      /* c8 ignore next */
+      tag.tagID.toLowerCase(),
     ];
 
     if (tagMatches.includes(searchStr.toLowerCase())) return true;
@@ -195,7 +196,7 @@ export const getOrigin = (fgColor) => {
     return originLC;
   }
 
-  if (window.location.hostname.endsWith('.hlx.page')) {
+  if (window.location.hostname.endsWith('.page')) {
     const [, singlePageRepo] = window.location.hostname.split('.')[0].split('--');
     return processRepoForFloodgate(singlePageRepo, fgColor);
   }
@@ -274,7 +275,7 @@ const getBadges = (p) => {
 const isPagePublished = async () => {
   let { branch, repo, owner } = getConfig();
   if (!(branch || repo || owner)
-    && window.location.hostname.endsWith('.hlx.page')) {
+    && window.location.hostname.endsWith('.page')) {
     [branch, repo, owner] = window.location.hostname.split('.')[0].split('--');
   }
 
