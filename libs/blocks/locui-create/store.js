@@ -1,6 +1,7 @@
 import { signal } from '../../deps/htm-preact.js';
 import { LOCALES, LOCALE_GROUPS } from './utils/constant.js';
 import { processLocaleData, getTenantName } from './utils/utils.js';
+
 export const currentStep = signal(1);
 export const project = signal(null);
 export const locales = signal([]);
@@ -42,7 +43,7 @@ export async function fetchLocaleDetails() {
       return;
     }
     const response = await fetch(
-      `https://main--${tenantName}--adobecom.hlx.page/.milo/config.json?sheet=${LOCALES}&sheet=${LOCALE_GROUPS}`
+      `https://main--${tenantName}--adobecom.hlx.page/.milo/config.json?sheet=${LOCALES}&sheet=${LOCALE_GROUPS}`,
     );
 
     if (!response.ok) {
@@ -52,8 +53,7 @@ export async function fetchLocaleDetails() {
     }
 
     const localeData = await response.json();
-    const { locales: processedLocales, localeRegion: processedLocaleRegion } =
-      processLocaleData(localeData);
+    const { locales: processedLocales, localeRegion: processedLocaleRegion } = processLocaleData(localeData);
 
     locales.value = processedLocales;
     localeRegion.value = processedLocaleRegion;

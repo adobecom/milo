@@ -12,22 +12,20 @@ import {
 
 export function inputLocale() {
   const [selectedRegion, setSelectedRegion] = useState(
-    locSelected.value?.selectedRegion || {}
+    locSelected.value?.selectedRegion || {},
   );
   const [selectedLocale, setSelectedLocale] = useState(
-    locSelected.value?.selectedLocale || []
+    locSelected.value?.selectedLocale || [],
   );
   const [activeLocales, setActiveLocales] = useState(
-    locSelected.value?.activeLocales || {}
+    locSelected.value?.activeLocales || {},
   );
 
   const updateRegionStates = (localeList) => {
     const updatedRegionStates = {};
     localeRegion.value.forEach((region) => {
       const regionLocales = region.value.split(',');
-      const isRegionActive = regionLocales.every((locale) =>
-        localeList.includes(locale)
-      );
+      const isRegionActive = regionLocales.every((locale) => localeList.includes(locale));
       updatedRegionStates[region.key] = isRegionActive;
     });
     return updatedRegionStates;
@@ -89,17 +87,13 @@ export function inputLocale() {
       const { [regionKey]: _, ...rest } = prev;
       return rest;
     });
-    setSelectedLocale((prev) =>
-      prev.filter((locale) => !regionCountryCodes.includes(locale))
-    );
+    setSelectedLocale((prev) => prev.filter((locale) => !regionCountryCodes.includes(locale)));
     removeLocalesFromActive(regionCountryCodes);
   };
 
   const selectLanguage = (lang) => {
     const languageCodes = lang.livecopies.split(',');
-    const isDeselecting = languageCodes.some((code) =>
-      selectedLocale.includes(code)
-    );
+    const isDeselecting = languageCodes.some((code) => selectedLocale.includes(code));
 
     const updatedLocale = isDeselecting
       ? selectedLocale.filter((locale) => !languageCodes.includes(locale))
@@ -122,8 +116,7 @@ export function inputLocale() {
     });
   };
 
-  const findLanguageForLocale = (locale) =>
-    locales.value.find((lang) => lang.livecopies.split(',').includes(locale));
+  const findLanguageForLocale = (locale) => locales.value.find((lang) => lang.livecopies.split(',').includes(locale));
 
   const updateActiveLocales = (localesToUpdate, isDeselecting = false) => {
     setActiveLocales((prev) => {

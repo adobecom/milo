@@ -81,7 +81,7 @@ export default function InputActions() {
           </thead>
           <tbody>
             ${project.value.locale.map(
-              (entry) => html`
+    (entry) => html`
                 <tr>
                   <td>${entry.languages}</td>
                   <td>${entry.locales.join(', ')}</td>
@@ -100,8 +100,8 @@ export default function InputActions() {
                     </select>
                   </td>
                 </tr>
-              `
-            )}
+              `,
+  )}
           </tbody>
         </table>
       </div>
