@@ -176,6 +176,7 @@ export const loadMarketo = (el, formData) => {
   const formID = formData[FORM_ID];
   const { base } = getConfig();
 
+  // change for git only
   loadScript(`${base}/deps/forms2.min.js`)
     .then(() => {
       const { MktoForms2 } = window;
