@@ -1,5 +1,6 @@
 import crawl from '../crawl-tree.js';
 import RequestHandler from '../request-handler.js';
+import { getFileName } from '../utils.js';
 
 class PromotePaths {
   constructor(accessToken, org, repo, expName, paths) {
@@ -33,9 +34,9 @@ class PromotePaths {
           }
         }
       } else if (path.endsWith('.json')) {
-        this.filesToPromote.push({ path, ext: 'json', name: path.split('/').pop() });
+        this.filesToPromote.push({ path, name: getFileName(path), ext: 'json' });
       } else {
-        this.filesToPromote.push({ path: `${path}.html`, ext: 'html', name: path.split('/').pop() });
+        this.filesToPromote.push({ path: `${path}.html`, name: getFileName(path), ext: 'html' });
       }
     }
   }

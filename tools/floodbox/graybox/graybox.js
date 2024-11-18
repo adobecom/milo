@@ -20,7 +20,8 @@ export default class MiloGraybox extends LitElement {
 
   constructor() {
     super();
-    this._canPromote = true;
+    this._canPromote = false;
+    this._canPromotePaths = false;
     this._gbExpPath = '';
     this._gbExpPromoted = false;
     this._startCrawlExp = false;
@@ -242,6 +243,14 @@ export default class MiloGraybox extends LitElement {
     this.requestUpdate();
   }
 
+  validateInputPaths(event) {
+    const textarea = event.target;
+    const paths = textarea.value.split('\n').map((path) => path.trim());
+    const { valid } = validatePaths(paths);
+    this._canPromotePaths = valid;
+    this.requestUpdate();
+  }
+
   toggleTextArea(event) {
     const promoteIgnoreTextArea = this.shadowRoot.querySelector('.promote-ignore');
     promoteIgnoreTextArea.style.display = event.target.checked ? 'block' : 'none';
@@ -370,8 +379,8 @@ export default class MiloGraybox extends LitElement {
         <!-- Option #2: Promote Graybox Paths -->
         ${this.selectedOption === 'promotePaths' ? html`
           <div class="input-row">
-            <textarea name="promotePaths" rows="3" placeholder="Enter graybox paths to promote, separated by line-break"></textarea>
-            <button class="accent" @click=${this.handlePromotePaths}>Promote</button>
+            <textarea name="promotePaths" rows="3" placeholder="Enter graybox paths to promote, separated by line-break" @input=${this.validateInputPaths}></textarea>
+            <button class="accent" .disabled=${!this._canPromotePaths} @click=${this.handlePromotePaths}>Promote</button>
             <button class="primary" @click=${this.handleCancel}>Cancel</button>
           </div>          
         ` : nothing}
