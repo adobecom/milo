@@ -53,7 +53,8 @@ export default function InputUrls() {
     setFragments(_fragments);
     setErrors({
       ...errors,
-      fragments: fragmentsEnabled && noOfValidFrag > 0 && _fragments.length === 0,
+      fragments:
+        fragmentsEnabled && noOfValidFrag > 0 && _fragments.length === 0,
     });
   }
 
@@ -81,7 +82,7 @@ export default function InputUrls() {
     nextStep();
   }
 
-  useEffect(() => {
+  useEffect(async () => {
     setName(project.value?.name || '');
     setHtmlFlow(project.value?.htmlFlow || false);
     setEditBehavior(project.value?.editBehavior || '');
@@ -103,8 +104,8 @@ export default function InputUrls() {
               value=${name}
               onInput=${handleNameChange}
             />
-            ${errors.name
-            && html`<div class="form-field-error">${errors.name}</div>`}
+            ${errors.name &&
+            html`<div class="form-field-error">${errors.name}</div>`}
           </div>
         </div>
 
@@ -131,8 +132,8 @@ export default function InputUrls() {
               <option value="merge">Merge</option>
               <option value="override">Override</option>
             </select>
-            ${errors.editBehavior
-            && html`<div class="form-field-error">${errors.editBehavior}</div>`}
+            ${errors.editBehavior &&
+            html`<div class="form-field-error">${errors.editBehavior}</div>`}
           </div>
         </div>
 
@@ -148,8 +149,8 @@ export default function InputUrls() {
           value=${urlsStr}
           onInput=${handleUrlsChange}
         />
-        ${errors.urlsStr
-        && html`<div class="form-field-error">${errors.urlsStr}</div>`}
+        ${errors.urlsStr &&
+        html`<div class="form-field-error">${errors.urlsStr}</div>`}
 
         <div class="form-field">
           <input
@@ -164,8 +165,8 @@ export default function InputUrls() {
         </div>
 
         <div class="field-col">
-          ${fragmentsEnabled
-          && html`
+          ${fragmentsEnabled &&
+          html`
             <${FragmentsSection}
               urls=${urlsStr}
               fragments=${fragments}

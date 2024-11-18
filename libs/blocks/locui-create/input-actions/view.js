@@ -52,6 +52,7 @@ const tableEntries = [
 ];
 
 export default function InputActions() {
+  console.log('project', project.value);
   const handleActionSelect = (ev, entry) => {
     // console.log("Action", ev.target.value, entry)
     entry.action = ev.target.value;
@@ -69,67 +70,46 @@ export default function InputActions() {
   };
 
   return html`
-  <div class="locui-form-container">
     <div class="locui-table">
       <p>Project Name: <strong>${project.value.name || 'n/a'}</strong></p>
       <div class="table-wrapper">
         <table>
           <thead>
             <tr>
-              ${tabelHeaders.map((heading) => (html`
-                <th>${heading}</th>
-              `))}
+              ${tabelHeaders.map((heading) => html` <th>${heading}</th> `)}
             </tr>
           </thead>
           <tbody>
-            ${tableEntries.map((entry) => (html`
-              <tr>
-                <td>${entry.languages}</td>
-                <td>
-                  ${entry.locales.map((locale) => html`
-                    <button class="locale-list-item">${locale}</button>
-                  `)}
-                </td>
-                <td>
-                  <select 
-                    value=${entry.action}
-                    class="form-field-select" 
-                    onChange=${(e) => handleActionSelect(e, entry)}
-                    name="actions" 
-                    id="actions"
-                  >
-                    <option value="" disabled selected hidden>Select</option>
-                    <option value="English Copy">English Copy</option>
-                    <option value="Rollout">Rollout</option>
-                    <option value="Translate">Translate</option>
-                  </select>
-                </td>
-                <td>
-                  <select 
-                    value=${entry.workflow}
-                    class="form-field-select" 
-                    onChange=${(e) => handleWorkflowSelect(e, entry)}
-                    name="wf-type" 
-                    id="wf-type"
-                  >
-                    <option value="" disabled selected hidden>Select</option>
-                    <option value="HybridMT">HybridMT</option>
-                    <option value="Standard">Standard</option>
-                  </select>  
-                </td>
-              </tr>  
-            `))}
+            ${project.value.locale.map(
+              (entry) => html`
+                <tr>
+                  <td>${entry.languages}</td>
+                  <td>${entry.locales.join(', ')}</td>
+                  <td>
+                    <select name="actions" id="actions">
+                      <option value="english-copy">English Copy</option>
+                      <option value="rollout">Rollout</option>
+                      <option value="translate">Translate</option>
+                    </select>
+                  </td>
+                  <td>
+                    <select name="wf-type" id="wf-type">
+                      <option value="default">Default</option>
+                      <option value="hybrid">Hybrid MT</option>
+                      <option value="standard">Standard</option>
+                    </select>
+                  </td>
+                </tr>
+              `
+            )}
           </tbody>
         </table>
       </div>
-    </div>
-    <div>
-      <${StepControls} 
-        onBack=${prevStep} 
+      <${StepControls}
+        onBack=${prevStep}
         nextLabel=${'Create Project'}
-        onNext=${handleNext}
+        onNext=${projectCreatedModal}
       />
     </div>
-  </div>
-`;
+  `;
 }
