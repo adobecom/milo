@@ -123,7 +123,7 @@ export default function InputActions() {
         </table>
       </div>
     </div>
-    <div>
+    <div class="step-controls">
       <${StepControls} 
         onBack=${prevStep} 
         nextLabel=${'Create Project'}

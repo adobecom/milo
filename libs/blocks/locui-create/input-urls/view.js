@@ -53,7 +53,8 @@ export default function InputUrls() {
     setFragments(_fragments);
     setErrors({
       ...errors,
-      fragments: fragmentsEnabled && noOfValidFrag > 0 && _fragments.length === 0,
+      fragments:
+        fragmentsEnabled && noOfValidFrag > 0 && _fragments.length === 0,
     });
   }
 
