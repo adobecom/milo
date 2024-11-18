@@ -23,7 +23,7 @@ function StepIndicator({
         className = 'future';
     }
     return html`<div class="quiz-step ${className}"
-      aria-current="${index === currentStep || totalSteps < currentStep ? 'step' : null}"
+      aria-current="${index === currentStep ? 'step' : null}"
       aria-label="${index === currentStep ? `Step ${step} of ${totalSteps}` : null}"></div>`;
   })}
     </div>
