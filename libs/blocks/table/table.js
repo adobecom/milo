@@ -254,8 +254,10 @@ function handleSection(sectionParams) {
     }
 
     if (isCollapseTable) {
-      if (sectionHeadTitle.querySelector('.icon.expand')) return;
       const iconTag = createTag('span', { class: 'icon expand' });
+      if (!sectionHeadTitle.querySelector('.icon.expand')) {
+        sectionHeadTitle.insertBefore(iconTag, sectionHeadTitle.firstChild);
+      }
       if (expandSection) {
         iconTag.setAttribute('aria-expanded', 'true');
         expandSection = false;
@@ -268,7 +270,6 @@ function handleSection(sectionParams) {
           nextElement = nextElement.nextElementSibling;
         }
       }
-      sectionHeadTitle.insertBefore(iconTag, sectionHeadTitle.firstChild);
     }
   } else if (previousRow?.querySelector('hr') && nextRow) {
     nextRow.classList.add('section-row');
