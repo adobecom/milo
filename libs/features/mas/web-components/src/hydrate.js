@@ -4,9 +4,9 @@ const DEFAULT_BADGE_COLOR = '#000000';
 const DEFAULT_BADGE_BACKGROUND_COLOR = '#F8D904';
 const CHECKOUT_LINK_STYLE_PATTERN =
     /(accent|primary|secondary)(-(outline|link))?/;
-const ANALYTICS_TAG = 'mas:product_code/';
-const ANALYTICS_LINK_ATTR = 'daa-ll';
-const ANALYTICS_SECTION_ATTR = 'daa-lh';
+export const ANALYTICS_TAG = 'mas:product_code/';
+export const ANALYTICS_LINK_ATTR = 'daa-ll';
+export const ANALYTICS_SECTION_ATTR = 'daa-lh';
 
 function processFragment(fragmentData) {
     return fragmentData.fields.reduce(
@@ -225,13 +225,13 @@ export function processCTAs(fragment, merchCard, aemFragmentMapping, variant) {
     }
 }
 
-function processAnalytics(fragment, merchCard) {
+export function processAnalytics(fragment, merchCard) {
   const { tags } = fragment;
   const cardAnalyticsId = tags?.find(tag => tag.startsWith(ANALYTICS_TAG))?.split('/').pop();
     if(cardAnalyticsId) {
       merchCard.setAttribute(ANALYTICS_SECTION_ATTR, cardAnalyticsId);
-      merchCard.querySelectorAll(`a[data-analytics-id]`).forEach((link) => {
-        link.setAttribute(ANALYTICS_LINK_ATTR, `${link.dataset.analyticsId}--${cardAnalyticsId}`);
+      merchCard.querySelectorAll(`a[data-analytics-id]`).forEach((link, index) => {
+        link.setAttribute(ANALYTICS_LINK_ATTR, `${link.dataset.analyticsId}-${index + 1}`);
       });
     }
 }
@@ -251,7 +251,7 @@ export async function hydrate(fragmentData, merchCard) {
     merchCard.removeAttribute('badge-color');
     merchCard.removeAttribute('badge-text');
     merchCard.removeAttribute('size');
-    merchCard.removeAttribute('daa-ll');
+    merchCard.removeAttribute(ANALYTICS_SECTION_ATTR);
 
     merchCard.variant = variant;
     await merchCard.updateComplete;

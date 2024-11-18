@@ -14,7 +14,7 @@ import {
     EVENT_MAS_ERROR,
 } from './constants.js';
 import { VariantLayout } from './variants/variant-layout.js';
-import { hydrate } from './hydrate.js';
+import { hydrate, ANALYTICS_SECTION_ATTR } from './hydrate.js';
 
 export const MERCH_CARD_NODE_NAME = 'MERCH-CARD';
 export const MERCH_CARD = 'merch-card';
@@ -90,7 +90,7 @@ export class MerchCard extends LitElement {
             reflect: true,
         },
         merchOffer: { type: Object },
-        analyticsId: { type: String, attribute: 'daa-lh', reflect: true },
+        analyticsId: { type: String, attribute: ANALYTICS_SECTION_ATTR, reflect: true },
     };
 
     static styles = [styles, getVariantStyles(), ...sizeStyles()];
