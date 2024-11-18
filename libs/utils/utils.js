@@ -1067,7 +1067,11 @@ export async function decorateCAI(section = document) {
     .map((img) => {
       if (!img) return null;
 
-      img.addEventListener('pointerover', () => {
+      const brick = img.closest('.homepage-brick');
+      // since homepage bricks have an anchor sibling element
+      // that covers the whole image, we need some special logic to
+      // handle that
+      (brick ?? img).addEventListener('pointerover', () => {
         const [src] = img.src.split('?');
         // make sure if people right click and save the
         // image the content credentials will still be there

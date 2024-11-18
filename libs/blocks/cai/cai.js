@@ -85,7 +85,11 @@ export default ({ img, container, caiIcon }) => {
   tooltip.classList.add('hide');
   tooltip.classList.add('cai-tooltip');
   container.appendChild(tooltip);
-  container.addEventListener('pointerover', () => {
+  const brick = container.closest('.homepage-brick');
+  // since homepage bricks have an anchor sibling element
+  // that covers the whole image, we need some special logic to
+  // handle that
+  (brick ?? container).addEventListener('pointerover', () => {
     metadataPromise = metadataPromise ?? extractMetadata(img); // preload on hover
   }, { once: true });
   caiIcon.addEventListener('click', async () => {
