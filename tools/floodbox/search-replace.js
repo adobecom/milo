@@ -1,6 +1,6 @@
 /**
  * Search and replace content based on the search type (floodgate or graybox).
- * 
+ *
  * This is specifically created to be used as part of the PROMOTE operations
  * performed for Floodgate and Graybox content.
  */
@@ -16,19 +16,21 @@ class SearchReplace {
   }
 
   searchAndReplace(content) {
+    let updatedContent = '';
     if (this.searchType === 'floodgate') {
-      content = this.adjustUrlDomains(content);
+      updatedContent = this.adjustUrlDomains(content);
     } else if (this.searchType === 'graybox') {
-      content = this.adjustUrlDomains(content);
+      updatedContent = this.adjustUrlDomains(content);
       const parser = new DOMParser();
-      const doc = parser.parseFromString(content, 'text/html');
-      this.removeGrayboxStyles(doc); // Remove styles starting with 'gb-'
-      this.removeGrayboxBlock(doc); // Remove graybox block
-      content = doc.body.outerHTML;
+      const doc = parser.parseFromString(updatedContent, 'text/html');
+      SearchReplace.removeGrayboxStyles(doc); // Remove styles starting with 'gb-'
+      SearchReplace.removeGrayboxBlock(doc); // Remove graybox block
+      updatedContent = doc.body.outerHTML;
     } else {
+      // eslint-disable-next-line no-console
       console.error(`Unknown search type: ${this.searchType}`);
     }
-    return content;
+    return updatedContent;
   }
 
   adjustUrlDomains(content) {
@@ -37,28 +39,28 @@ class SearchReplace {
     const updatedContent = content.replaceAll(searchValue, replaceValue);
     if (this.searchType === 'floodgate') {
       return updatedContent;
-    }    
-    return updatedContent.replaceAll(`.page/${this.expName}`, `.page`);    
+    }
+    return updatedContent.replaceAll(`.page/${this.expName}`, '.page');
   }
 
-  removeGrayboxStyles(doc) {
+  static removeGrayboxStyles(doc) {
     const elements = doc.querySelectorAll('[class*="gb-"]');
     elements.forEach((element) => {
       const classes = element.className.split(' ');
       const filteredClasses = classes.filter(
-        (className) => !className.startsWith('gb-')
+        (className) => !className.startsWith('gb-'),
       );
       element.className = filteredClasses.join(' ');
     });
   }
 
-  removeGrayboxBlock(doc) {
+  static removeGrayboxBlock(doc) {
     const elements = doc.querySelectorAll('div.graybox');
     elements.forEach((element) => element.remove());
   }
 }
 
-function searchAndReplace({content, searchType, org, repo, expName}) {
+function searchAndReplace({ content, searchType, org, repo, expName }) {
   const searchReplace = new SearchReplace({ searchType, org, repo, expName });
   return searchReplace.searchAndReplace(content);
 }

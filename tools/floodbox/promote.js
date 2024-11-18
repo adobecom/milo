@@ -25,16 +25,23 @@ class Promote {
     const response = await this.requestHandler.daFetch(`${DA_ORIGIN}/source${file.path}`);
     if (response.ok) {
       let content = isEditableFile(file.ext) ? await response.text() : await response.blob();
-      if (file.ext === 'html') {        
-        content = searchAndReplace({ content, searchType: this.promoteType, org: this.org, repo: this.repo, expName: this.expName });
+      if (file.ext === 'html') {
+        content = searchAndReplace({
+          content,
+          searchType: this.promoteType,
+          org: this.org,
+          repo: this.repo,
+          expName: this.expName,
+        });
       }
       let destFilePath = file.path.replace(this.srcSitePath, this.destSitePath);
       if (this.promoteType === 'graybox') {
         destFilePath = destFilePath.replace(`/${this.expName}`, '');
       }
       const status = await this.requestHandler.uploadContent(destFilePath, content, file.ext);
-      this.callback(status);      
+      this.callback(status);
     } else {
+      // eslint-disable-next-line no-console
       console.error(`Failed to fetch : ${response.status} :: ${file.path}`);
       const status = { statusCode: response.status, filePath: file.path, errorMsg: 'Failed to fetch' };
       this.callback(status);
@@ -48,13 +55,16 @@ class Promote {
     }
   }
 
-  async promoteFiles() {    
+  async promoteFiles() {
+    // eslint-disable-next-line no-console
     console.log(`Promoting files from ${this.srcSitePath} to ${this.destSitePath}`);
     await this.promoteFilesInBatches(this.filesToPromote);
   }
 }
 
-async function promoteFiles({ accessToken, org, repo, expName, promoteType, files, callback }) {
+async function promoteFiles({
+  accessToken, org, repo, expName, promoteType, files, callback,
+}) {
   const promoter = new Promote(accessToken, org, repo, expName, promoteType, files, callback);
   await promoter.promoteFiles();
 }

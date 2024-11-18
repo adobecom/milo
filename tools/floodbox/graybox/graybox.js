@@ -1,14 +1,15 @@
+/* eslint-disable import/no-unresolved, no-underscore-dangle, class-methods-use-this */
 import DA_SDK from 'https://da.live/nx/utils/sdk.js';
 import { LitElement, html, nothing } from 'https://da.live/deps/lit/dist/index.js';
 import getStyle from 'https://da.live/nx/utils/styles.js';
-import { crawl } from '../crawl-tree.js';
+import crawl from '../crawl-tree.js';
 import promoteFiles from '../promote.js';
 import previewOrPublishPaths from '../bulk-action.js';
 import { SUCCESS_CODES } from '../constants.js';
 import getFilesToPromote from './promote-paths.js';
-import { validatePaths } from '../graybox/utils.js';
+import validatePaths from './utils.js';
 
-const buttons = await getStyle(`https://da.live/nx/styles/buttons.css`);
+const buttons = await getStyle('https://da.live/nx/styles/buttons.css');
 const style = await getStyle(import.meta.url);
 
 export default class MiloGraybox extends LitElement {
@@ -41,7 +42,6 @@ export default class MiloGraybox extends LitElement {
     this._crawlDuration = 0;
     this._promoteDuration = 0;
     this._previewPublishDuration = 0;
-    this._accessToken = '';
     this.selectedOption = 'promoteEntireExp';
   }
 
@@ -56,7 +56,7 @@ export default class MiloGraybox extends LitElement {
       this._gbExpPath = input.value;
     }
     const select = this.shadowRoot.querySelector('.action-select');
-    select.value = this.selectedOption;    
+    select.value = this.selectedOption;
   }
 
   getOrgRepoExp() {
@@ -82,13 +82,15 @@ export default class MiloGraybox extends LitElement {
     });
     this._crawledFiles = await results;
     // Remove files to be ignored from promote
-    this._filesToPromote = this._crawledFiles.filter(file => !this._promoteIgnorePaths.some(ignorePath => file.path.startsWith(ignorePath)));
+    this._filesToPromote = this._crawledFiles.filter(
+      (file) => !this._promoteIgnorePaths.some((ignorePath) => file.path.startsWith(ignorePath)),
+    );
     this._crawlDuration = getDuration();
     this._startPromote = true;
     this.requestUpdate();
   }
 
-  async startPromote(org, repo, exp) {        
+  async startPromote(org, repo, exp) {
     if (org && repo && exp && repo.endsWith('-graybox')) {
       const startTime = Date.now();
       await promoteFiles({
@@ -99,11 +101,14 @@ export default class MiloGraybox extends LitElement {
         promoteType: 'graybox',
         files: this._filesToPromote,
         callback: (status) => {
+          // eslint-disable-next-line no-console
           console.log(`${status.statusCode} :: ${status.destinationFilePath}`);
           this._promotedFiles.push(status.destinationFilePath);
-          SUCCESS_CODES.includes(status.statusCode) ? this._promotedFilesCount++ : this._promoteErrorCount++;            
+          // eslint-disable-next-line chai-friendly/no-unused-expressions
+          SUCCESS_CODES.includes(status.statusCode) ? this._promotedFilesCount += 1
+            : this._promoteErrorCount += 1;
           this.requestUpdate();
-        }
+        },
       });
       this._promoteDuration = (Date.now() - startTime) / 1000;
       this._startPreviewPublish = true;
@@ -121,11 +126,14 @@ export default class MiloGraybox extends LitElement {
       paths,
       action: 'preview',
       callback: (status) => {
+        // eslint-disable-next-line no-console
         console.log(`${status.statusCode} :: ${status.aemUrl}`);
-        SUCCESS_CODES.includes(status.statusCode) ? this._previewedFilesCount++ : this._previewErrorCount++;
+        // eslint-disable-next-line chai-friendly/no-unused-expressions
+        SUCCESS_CODES.includes(status.statusCode) ? this._previewedFilesCount += 1
+          : this._previewErrorCount += 1;
         this.requestUpdate();
-      }
-    });    
+      },
+    });
     this.requestUpdate();
 
     // Publish files if checked
@@ -137,17 +145,19 @@ export default class MiloGraybox extends LitElement {
         paths,
         action: 'publish',
         callback: (status) => {
+          // eslint-disable-next-line no-console
           console.log(`${status.statusCode} :: ${status.aemUrl}`);
-          SUCCESS_CODES.includes(status.statusCode) ? this._publishedFilesCount++ : this._publishErrorCount++;
+          // eslint-disable-next-line chai-friendly/no-unused-expressions
+          SUCCESS_CODES.includes(status.statusCode) ? this._publishedFilesCount += 1
+            : this._publishErrorCount += 1;
           this.requestUpdate();
-        }
-      });      
+        },
+      });
     }
     this._previewPublishDuration = (Date.now() - startTime) / 1000;
     this._gbExpPromoted = true;
     this.requestUpdate();
   }
-
 
   readPromoteIgnorePaths() {
     const promoteIgnoreCheckbox = this.shadowRoot.querySelector('input[name="promoteIgnore"]');
@@ -158,8 +168,8 @@ export default class MiloGraybox extends LitElement {
     if (promoteIgnoreTextArea) {
       this._promoteIgnorePaths = promoteIgnoreTextArea.value
         .split('\n')
-        .map(path => path.trim())
-        .filter(path => path.length > 0);
+        .map((path) => path.trim())
+        .filter((path) => path.length > 0);
     }
   }
 
@@ -169,7 +179,7 @@ export default class MiloGraybox extends LitElement {
       return;
     }
     this.readPromoteIgnorePaths();
-    
+
     // #1 - Start crawling
     this._startCrawlExp = true;
     await this.startCrawl(this._gbExpPath);
@@ -180,14 +190,14 @@ export default class MiloGraybox extends LitElement {
     await this.startPromote(org, repo, exp);
 
     // #3 - Preview promoted files
-    this._startPreviewPublish = true;        
+    this._startPreviewPublish = true;
     await this.startPreviewPublish(org, repo);
   }
 
   async handlePromotePaths(event) {
     event.preventDefault();
     let paths = this.shadowRoot.querySelector('textarea[name="promotePaths"]').value;
-    paths = paths.split('\n').map(path => path.trim());
+    paths = paths.split('\n').map((path) => path.trim());
 
     // #1 - Validate paths
     const { valid, org, repo, expName } = validatePaths(paths);
@@ -195,13 +205,14 @@ export default class MiloGraybox extends LitElement {
       this._invalidInput = true;
       this.requestUpdate();
       return;
-    }    
+    }
 
     // #2 - Get files to promote from paths
     this._startCrawlPaths = true;
     const files = await getFilesToPromote({ accessToken: this.token, org, repo, expName, paths });
+    // eslint-disable-next-line no-console
     console.log('Files to Promote:', files);
-    this._filesToPromote = files;    
+    this._filesToPromote = files;
     this.requestUpdate();
 
     // #3 - Start promoting
@@ -224,6 +235,7 @@ export default class MiloGraybox extends LitElement {
 
   validateInput(event) {
     const input = event.target;
+    // eslint-disable-next-line no-useless-escape
     const regex = /^\/[^\/]+\/[^\/]+-graybox\/[^\/]+$/;
     this._gbExpPath = input.value.trim();
     this._canPromote = regex.test(this._gbExpPath);
@@ -240,7 +252,7 @@ export default class MiloGraybox extends LitElement {
     this.selectedOption = event.target.value;
     this.requestUpdate();
   }
-  
+
   renderError() {
     return html`
       <div class="error info-box">
@@ -283,7 +295,7 @@ export default class MiloGraybox extends LitElement {
       </div>
       ${this._startPreviewPublish ? this.renderPreviewPublishInfo() : nothing}
     `;
-  }  
+  }
 
   renderCrawlInfo() {
     return html`
@@ -374,7 +386,7 @@ export default class MiloGraybox extends LitElement {
 customElements.define('milo-graybox', MiloGraybox);
 
 (async function init() {
-  const { context, token, actions } = await DA_SDK;
+  const { context, token } = await DA_SDK;
   const cmp = document.createElement('milo-graybox');
   cmp.repo = context.repo;
   cmp.token = token;

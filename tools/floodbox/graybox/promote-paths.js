@@ -1,4 +1,4 @@
-import { crawl } from '../crawl-tree.js';
+import crawl from '../crawl-tree.js';
 import RequestHandler from '../request-handler.js';
 
 class PromotePaths {
@@ -9,20 +9,24 @@ class PromotePaths {
     this.expName = expName;
     this.paths = paths;
     this.filesToPromote = [];
-    this.requestHandler = new RequestHandler(accessToken);    
+    this.requestHandler = new RequestHandler(accessToken);
   }
-  
+
   async getFilesToPromote() {
-    for (let path of this.paths) {
+    for (const path of this.paths) {
       if (path.endsWith('/')) {
         const resp = await this.requestHandler.daFetch(`https://admin.da.live/list${path}`);
         if (resp.ok) {
           const json = await resp.json();
-          for (let child of json) {
+          for (const child of json) {
             if (child.ext) {
               this.filesToPromote.push(child);
             } else {
-              const { results } = crawl({ path: child.path, throttle: 10, accessToken: this.accessToken });
+              const { results } = crawl({
+                path: child.path,
+                throttle: 10,
+                accessToken: this.accessToken,
+              });
               const crawledFiles = await results;
               this.filesToPromote.push(...crawledFiles);
             }
@@ -37,7 +41,7 @@ class PromotePaths {
   }
 }
 
-async function getFilesToPromote({accessToken, org, repo, expName, paths}) {
+async function getFilesToPromote({ accessToken, org, repo, expName, paths }) {
   const promoter = new PromotePaths(accessToken, org, repo, expName, paths);
   await promoter.getFilesToPromote();
   return promoter.filesToPromote;

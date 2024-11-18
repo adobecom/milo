@@ -1,5 +1,4 @@
 const DA_ORIGIN = 'https://admin.da.live';
-const DA_ORIGIN_LOCAL = 'http://localhost:8787';
 const AEM_ORIGIN = 'https://admin.hlx.page';
 
 const SUPPORTED_FILES = {
@@ -18,7 +17,6 @@ const SUCCESS_CODES = [200, 201, 204];
 
 export {
   DA_ORIGIN,
-  DA_ORIGIN_LOCAL,
   AEM_ORIGIN,
   SUPPORTED_FILES,
   SUCCESS_CODES,

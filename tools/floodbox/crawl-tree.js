@@ -1,14 +1,14 @@
-/** 
- * Initial crawl code from https://github.com/da-sites/nexter/blob/main/nx/public/utils/tree.js 
+/**
+ * Initial crawl code from https://github.com/da-sites/nexter/blob/main/nx/public/utils/tree.js
  * Modified to cater Graybox use-case where the crawl is done at the experience folder level
- * across all regions. 
+ * across all regions.
  * Eg: /org/repo/exp1, /org/repo/<locale>/exp1 etc.
 */
 
 import RequestHandler from './request-handler.js';
 
 class CrawlTree {
-  constructor(callback, maxConcurrent = 500, accessToken, crawlType = 'default', expName = '') {
+  constructor(callback, accessToken, maxConcurrent = 500, crawlType = 'default', expName = '') {
     this.queue = [];
     this.activeCount = 0;
     this.maxConcurrent = maxConcurrent;
@@ -16,7 +16,8 @@ class CrawlTree {
     this.accessToken = accessToken;
     this.crawlType = crawlType;
     this.expName = expName;
-    this.requestHandler = new RequestHandler(this.accessToken);    
+    this.requestHandler = new RequestHandler(this.accessToken);
+    // eslint-disable-next-line no-useless-escape
     this.grayboxPathPattern = new RegExp(`^\/[^\/]+\/[^\/]+\/(?:[^\/]+\/)?${expName}(?:\/|$)`);
 
     this.push = this.push.bind(this);
@@ -49,7 +50,7 @@ class CrawlTree {
   async getChildren(path) {
     const files = [];
     const folders = [];
-    
+
     const resp = await this.requestHandler.daFetch(`https://admin.da.live/list${path}`);
     if (resp.ok) {
       const json = await resp.json();
@@ -72,7 +73,7 @@ function calculateCrawlTime(startTime) {
 
 /**
  * Crawl a path and run a callback on each file found.
- * 
+ *
  * @param {Object} options - The crawl options.
  * @param {string} options.path - The parent path to crawl.
  * @param {function} options.callback - The callback to run when a file is found.
@@ -80,21 +81,24 @@ function calculateCrawlTime(startTime) {
  * @param {number} options.throttle - How much to throttle the crawl.
  * @param {string} options.crawlType - The type of crawl ('graybox' or other).
  */
-function crawl({ path, callback, concurrent, throttle = 100, accessToken, crawlType = 'default' }) {
+function crawl({
+  path, callback, concurrent, throttle = 100, accessToken, crawlType = 'default',
+}) {
   let expName = '';
+  let sitePath = path;
   if (crawlType === 'graybox') {
-    const parts = path.split('/');
-    path = `/${parts[1]}/${parts[2]}`;
-    expName = parts[3];
+    const [, org, repo, exp] = path.split('/');
+    sitePath = `/${org}/${repo}`;
+    expName = exp;
   }
 
   let time;
   let isCanceled = false;
   const files = [];
-  const folders = [path];
+  const folders = [sitePath];
   const inProgress = [];
   const startTime = Date.now();
-  const queue = new CrawlTree(callback, concurrent, accessToken, crawlType, expName);
+  const queue = new CrawlTree(callback, accessToken, concurrent, crawlType, expName);
 
   const results = new Promise((resolve) => {
     const interval = setInterval(async () => {
@@ -128,4 +132,4 @@ function crawl({ path, callback, concurrent, throttle = 100, accessToken, crawlT
   return { results, getDuration, cancelCrawl };
 }
 
-export { crawl };
+export default crawl;
