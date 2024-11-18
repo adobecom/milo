@@ -37,8 +37,6 @@ video {
 }
 
 .video-container .pause-play-wrapper {
-  width: 45.2px;
-  height: 45px;
   position: absolute;
   bottom: 2%;
   right: 2%;
@@ -47,6 +45,7 @@ video {
   align-items: center;
   border-radius: 50%;
   z-index: 2;
+  padding: 3px;
   cursor: pointer;
 }
 
@@ -60,25 +59,27 @@ video {
   background: var(--color-gray-800);
 }
 
+:is(.marquee:not(.light), .dark) .video-container .pause-play-wrapper {
+  padding: 1px;
+}
+
+:is(.marquee:not(.light), .dark) .video-container .pause-play-wrapper:focus {
+  background: #000;
+}
+
 :is(.marquee:not(.light), .dark) .video-container .pause-play-wrapper .offset-filler {
   border: 2px solid #fff;
 }
 
-:is(.marquee:not(.light), .dark) .video-container .pause-play-wrapper:focus-visible .offset-filler {
-  outline: 1px solid #000;
+.video-container .pause-play-wrapper:focus {
+  background: #fff;
 }
 
 .video-container .pause-play-wrapper .offset-filler:hover {
   background: #000;
 }
 
-.video-container .pause-play-wrapper:focus-visible .offset-filler {
-  border: 2px solid #fff;
-  outline: 1px solid #fff;
-}
-
 .video-container .pause-play-wrapper:focus-visible {
-  background: #000;
   outline: var(--color-accent-focus-ring) solid 2px;
 }
 
