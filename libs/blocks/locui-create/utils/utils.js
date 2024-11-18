@@ -3,16 +3,14 @@ export function getTenantName() {
     const url = window.location.href;
     const regex = /--([^--]+)--/;
     const match = url.match(regex);
-
     if (match?.[1]) {
-      console.log('Tenant name extracted:', match[1]);
+      // console.log('Tenant name extracted:', match[1]);
       return match[1];
     }
-
-    console.warn('No tenant name found in URL. Defaulting to "milo".');
+    // console.warn('No tenant name found in URL. Defaulting to "milo".');
     return 'milo';
   } catch (error) {
-    console.error('Error extracting tenant name:', error);
+    // console.error('Error extracting tenant name:', error);
     return 'milo';
   }
 }

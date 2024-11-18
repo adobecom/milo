@@ -10,7 +10,7 @@ import {
   setLocale,
 } from '../store.js';
 
-export function inputLocale() {
+export default function useInputLocale() {
   const [selectedRegion, setSelectedRegion] = useState(
     locSelected.value?.selectedRegion || {},
   );
@@ -20,7 +20,69 @@ export function inputLocale() {
   const [activeLocales, setActiveLocales] = useState(
     locSelected.value?.activeLocales || {},
   );
+  const findLanguageForLocale = (locale) => locales.value.find((lang) => lang.livecopies.split(',').includes(locale));
+  const transformActiveLocales = () => {
+    const groupedLocales = {};
+    Object.entries(activeLocales).forEach(([locale, language]) => {
+      if (!groupedLocales[language]) {
+        groupedLocales[language] = [];
+      }
+      groupedLocales[language].push(locale);
+    });
+    return Object.entries(groupedLocales).map(([language, localeList]) => ({
+      languages: language,
+      localeList,
+      action: '',
+      workflow: '',
+    }));
+  };
+  const updateActiveLocales = (localesToUpdate, isDeselecting = false) => {
+    setActiveLocales((prev) => {
+      const updatedActiveLocales = { ...prev };
+      localesToUpdate.forEach((locale) => {
+        if (isDeselecting) {
+          delete updatedActiveLocales[locale];
+        } else {
+          const language = findLanguageForLocale(locale);
+          if (language) updatedActiveLocales[locale] = language.language;
+        }
+      });
+      return updatedActiveLocales;
+    });
+  };
 
+  const removeLocalesFromActive = (localesToRemove) => {
+    setActiveLocales((prev) => {
+      const updatedActiveLocales = { ...prev };
+      localesToRemove.forEach((locale) => {
+        delete updatedActiveLocales[locale];
+      });
+      return updatedActiveLocales;
+    });
+  };
+  const selectRegion = (regionKey, regionCountryCodes) => {
+    setSelectedRegion((prev) => ({
+      ...prev,
+      [regionKey]: regionCountryCodes.reduce((acc, locale) => {
+        acc[locale] = true;
+        return acc;
+      }, {}),
+    }));
+    setSelectedLocale((prev) => [
+      ...prev,
+      ...regionCountryCodes.filter((code) => !prev.includes(code)),
+    ]);
+    updateActiveLocales(regionCountryCodes);
+  };
+
+  const deselectRegion = (regionKey, regionCountryCodes) => {
+    setSelectedRegion((prev) => {
+      const { [regionKey]: _, ...rest } = prev;
+      return rest;
+    });
+    setSelectedLocale((prev) => prev.filter((locale) => !regionCountryCodes.includes(locale)));
+    removeLocalesFromActive(regionCountryCodes);
+  };
   const updateRegionStates = (localeList) => {
     const updatedRegionStates = {};
     localeRegion.value.forEach((region) => {
@@ -66,31 +128,6 @@ export function inputLocale() {
       selectRegion(region.key, regionCountryCodes);
     }
   };
-
-  const selectRegion = (regionKey, regionCountryCodes) => {
-    setSelectedRegion((prev) => ({
-      ...prev,
-      [regionKey]: regionCountryCodes.reduce((acc, locale) => {
-        acc[locale] = true;
-        return acc;
-      }, {}),
-    }));
-    setSelectedLocale((prev) => [
-      ...prev,
-      ...regionCountryCodes.filter((code) => !prev.includes(code)),
-    ]);
-    updateActiveLocales(regionCountryCodes);
-  };
-
-  const deselectRegion = (regionKey, regionCountryCodes) => {
-    setSelectedRegion((prev) => {
-      const { [regionKey]: _, ...rest } = prev;
-      return rest;
-    });
-    setSelectedLocale((prev) => prev.filter((locale) => !regionCountryCodes.includes(locale)));
-    removeLocalesFromActive(regionCountryCodes);
-  };
-
   const selectLanguage = (lang) => {
     const languageCodes = lang.livecopies.split(',');
     const isDeselecting = languageCodes.some((code) => selectedLocale.includes(code));
@@ -102,7 +139,6 @@ export function inputLocale() {
     setSelectedLocale(updatedLocale);
     updateActiveLocales(languageCodes, isDeselecting);
   };
-
   const toggleLocale = (locale) => {
     setActiveLocales((prev) => {
       const updatedActiveLocales = { ...prev };
@@ -115,50 +151,6 @@ export function inputLocale() {
       return updatedActiveLocales;
     });
   };
-
-  const findLanguageForLocale = (locale) => locales.value.find((lang) => lang.livecopies.split(',').includes(locale));
-
-  const updateActiveLocales = (localesToUpdate, isDeselecting = false) => {
-    setActiveLocales((prev) => {
-      const updatedActiveLocales = { ...prev };
-      localesToUpdate.forEach((locale) => {
-        if (isDeselecting) {
-          delete updatedActiveLocales[locale];
-        } else {
-          const language = findLanguageForLocale(locale);
-          if (language) updatedActiveLocales[locale] = language.language;
-        }
-      });
-      return updatedActiveLocales;
-    });
-  };
-
-  const removeLocalesFromActive = (localesToRemove) => {
-    setActiveLocales((prev) => {
-      const updatedActiveLocales = { ...prev };
-      localesToRemove.forEach((locale) => {
-        delete updatedActiveLocales[locale];
-      });
-      return updatedActiveLocales;
-    });
-  };
-
-  const transformActiveLocales = () => {
-    const groupedLocales = {};
-    Object.entries(activeLocales).forEach(([locale, language]) => {
-      if (!groupedLocales[language]) {
-        groupedLocales[language] = [];
-      }
-      groupedLocales[language].push(locale);
-    });
-    return Object.entries(groupedLocales).map(([language, locales]) => ({
-      languages: language,
-      locales,
-      action: '',
-      workflow: '',
-    }));
-  };
-
   return {
     selectedRegion,
     selectedLocale,

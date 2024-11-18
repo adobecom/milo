@@ -1,5 +1,5 @@
 import { html } from '../../../deps/htm-preact.js';
-import { inputLocale } from './index.js';
+import useInputLocale from './index.js';
 import StepControls from '../components/stepControls.js';
 
 export default function InputLocales() {
@@ -17,7 +17,7 @@ export default function InputLocales() {
     toggleRegion,
     selectLanguage,
     toggleLocale,
-  } = inputLocale();
+  } = useInputLocale();
 
   const RenderRegion = () => html`
     <div class="region-grid">

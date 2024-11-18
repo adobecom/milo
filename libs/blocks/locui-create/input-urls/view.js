@@ -82,7 +82,7 @@ export default function InputUrls() {
     nextStep();
   }
 
-  useEffect(async () => {
+  useEffect(() => {
     setName(project.value?.name || '');
     setHtmlFlow(project.value?.htmlFlow || false);
     setEditBehavior(project.value?.editBehavior || '');

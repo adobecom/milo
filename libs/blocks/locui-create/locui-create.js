@@ -13,7 +13,7 @@ function Create() {
       try {
         await fetchLocaleDetails();
       } catch (error) {
-        console.error('Error fetching locale details:', error);
+        // console.error('Error fetching locale details:', error);
       }
     };
 

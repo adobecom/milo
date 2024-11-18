@@ -39,7 +39,7 @@ export async function fetchLocaleDetails() {
   try {
     const tenantName = getTenantName();
     if (!tenantName) {
-      console.warn('Tenant name is missing, skipping fetchLocaleDetails.');
+      // console.warn('Tenant name is missing, skipping fetchLocaleDetails.');
       return;
     }
     const response = await fetch(
@@ -47,13 +47,17 @@ export async function fetchLocaleDetails() {
     );
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`Failed to fetch locale details: ${errorText}`);
+      // const errorText = await response.text();
+      // console.error(`Failed to fetch locale details: ${errorText}`);
       throw new Error(`Server Error: ${response.status}`);
     }
 
     const localeData = await response.json();
-    const { locales: processedLocales, localeRegion: processedLocaleRegion } = processLocaleData(localeData);
+    const
+      {
+        locales: processedLocales,
+        localeRegion: processedLocaleRegion,
+      } = processLocaleData(localeData);
 
     locales.value = processedLocales;
     localeRegion.value = processedLocaleRegion;
