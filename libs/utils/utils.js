@@ -145,6 +145,7 @@ const TARGET_TIMEOUT_MS = 4000;
 const LANGSTORE = 'langstore';
 const PREVIEW = 'target-preview';
 const PAGE_URL = new URL(window.location.href);
+// this should export
 export const SLD = PAGE_URL.hostname.includes('.aem.') ? 'aem' : 'hlx';
 
 const PROMO_PARAM = 'promo';
