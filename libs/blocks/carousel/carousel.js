@@ -1,4 +1,5 @@
 import { createTag, getConfig, MILO_EVENTS } from '../../utils/utils.js';
+import { decorateAnchorVideo } from '../../utils/decorate.js';
 
 const { miloLibs, codeRoot } = getConfig();
 const base = miloLibs || codeRoot;
@@ -130,6 +131,15 @@ function jumpToDirection(activeSlideIndex, jumpToIndex, slideContainer) {
   }
 }
 
+function checkSlideForVideo(activeSlide) {
+  const video = activeSlide.querySelector('video');
+  /* c8 ignore start */
+  if (video?.played.length > 0) {
+    video.pause();
+  }
+  /* c8 ignore end */
+}
+
 function moveSlides(event, carouselElements, jumpToIndex) {
   const {
     slideContainer,
@@ -144,6 +154,8 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   let activeSlide = slideContainer.querySelector('.active');
   let activeSlideIndicator = controlsContainer.querySelector('.active');
   const activeSlideIndex = activeSlideIndicator.dataset.index;
+
+  checkSlideForVideo(activeSlide);
 
   // Track reference slide - last slide initially
   if (!referenceSlide) {
@@ -321,6 +333,31 @@ function handleChangingSlides(carouselElements) {
   mobileSwipeDetect(carouselElements);
 }
 
+function convertMpcMp4(slides) {
+  slides.forEach((slide) => {
+    const a = slide.querySelector('a');
+    if (a?.href.includes('images-tv.adobe')) {
+      decorateAnchorVideo({
+        src: a.href,
+        anchorTag: a,
+      });
+    }
+  });
+}
+
+function readySlides(slides, slideContainer) {
+  slideContainer.classList.add('is-ready');
+  slides.forEach((slide, idx) => {
+    // Set last slide to be first in order and make reference.
+    if (slides.length - 1 === idx) {
+      slide.style.order = 1;
+      slide.classList.add('reference-slide');
+    } else {
+      slide.style.order = idx + 2;
+    }
+  });
+}
+
 export default function init(el) {
   const carouselSection = el.closest('.section');
   if (!carouselSection) return;
@@ -344,6 +381,7 @@ export default function init(el) {
   const slideIndicators = decorateSlideIndicators(slides);
   const controlsContainer = createTag('div', { class: 'carousel-controls is-delayed' });
 
+  convertMpcMp4(slides);
   fragment.append(...slides);
   const slideWrapper = createTag('div', { class: 'carousel-wrapper' });
   const slideContainer = createTag('div', { class: 'carousel-slides' }, fragment);
@@ -363,6 +401,14 @@ export default function init(el) {
     handleLightboxButtons(lightboxBtns, el, slideWrapper);
   } else {
     slideWrapper.append(slideContainer);
+  }
+
+  /*
+   * Hinting center variant - Set slides order
+   * before moveSlides is called for centering to work.
+  */
+  if (el.classList.contains('hinting-center-mobile')) {
+    readySlides(slides, slideContainer);
   }
 
   el.textContent = '';

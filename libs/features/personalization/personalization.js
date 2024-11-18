@@ -6,6 +6,7 @@ import { getFederatedUrl } from '../../utils/federated.js';
 
 /* c8 ignore start */
 const PHONE_SIZE = window.screen.width < 550 || window.screen.height < 550;
+const safariIpad = navigator.userAgent.includes('Macintosh') && navigator.maxTouchPoints > 1;
 export const PERSONALIZATION_TAGS = {
   all: () => true,
   chrome: () => navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Edg'),
@@ -13,10 +14,12 @@ export const PERSONALIZATION_TAGS = {
   safari: () => navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome'),
   edge: () => navigator.userAgent.includes('Edg'),
   android: () => navigator.userAgent.includes('Android'),
-  ios: () => /iPad|iPhone|iPod/.test(navigator.userAgent),
+  ios: () => /iPad|iPhone|iPod/.test(navigator.userAgent) || safariIpad,
   windows: () => navigator.userAgent.includes('Windows'),
-  mac: () => navigator.userAgent.includes('Macintosh'),
-  'mobile-device': () => /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i.test(navigator.userAgent),
+  mac: () => navigator.userAgent.includes('Macintosh') && !safariIpad,
+  'mobile-device': () => safariIpad
+    || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i
+      .test(navigator.userAgent),
   phone: () => PERSONALIZATION_TAGS['mobile-device']() && PHONE_SIZE,
   tablet: () => PERSONALIZATION_TAGS['mobile-device']() && !PHONE_SIZE,
   desktop: () => !PERSONALIZATION_TAGS['mobile-device'](),
@@ -73,6 +76,7 @@ export const normalizePath = (p, localize = true) => {
 
   if (path.startsWith(config.codeRoot)
     || path.includes('.hlx.')
+    || path.includes('.aem.')
     || path.includes('.adobe.')) {
     try {
       const url = new URL(path);
@@ -130,11 +134,25 @@ function getSelectorType(selector) {
   return 'other';
 }
 
+export function replacePlaceholders(value, ph) {
+  const placeholders = ph || getConfig().placeholders;
+  if (!placeholders) return value;
+  let val = value;
+  const matches = val.match(/{{(.*?)}}/g);
+  if (!matches) return val;
+  matches.forEach((match) => {
+    const key = match.replace(/{{|}}/g, '').trim();
+    if (placeholders[key]) val = val.replace(match, placeholders[key]);
+  });
+  return val;
+}
+
 const getUpdatedHref = (el, content, action) => {
   const href = el.getAttribute('href');
-  if (action === 'insertafter' || action === 'append') return `${href}${content}`;
-  if (action === 'insertbefore' || action === 'prepend') return `${content}${href}`;
-  return content;
+  const newContent = replacePlaceholders(content);
+  if (action === 'insertafter' || action === 'append') return `${href}${newContent}`;
+  if (action === 'insertbefore' || action === 'prepend') return `${newContent}${href}`;
+  return newContent;
 };
 
 const createFrag = (el, action, content, manifestId, targetManifestId) => {
@@ -157,17 +175,6 @@ const createFrag = (el, action, content, manifestId, targetManifestId) => {
   return frag;
 };
 
-export function replacePlaceholders(value, placeholders) {
-  let val = value;
-  const matches = val.match(/{{(.*?)}}/g);
-  if (!matches) return val;
-  matches.forEach((match) => {
-    const key = match.replace(/{{|}}/g, '').trim();
-    if (placeholders?.[key]) val = val.replace(match, placeholders[key]);
-  });
-  return val;
-}
-
 export const createContent = (el, { content, manifestId, targetManifestId, action, modifiers }) => {
   if (action === 'replace') {
     addIds(el, manifestId, targetManifestId);
@@ -178,8 +185,7 @@ export const createContent = (el, { content, manifestId, targetManifestId, actio
     return el;
   }
   if (getSelectorType(content) !== 'fragment') {
-    const config = getConfig();
-    const newContent = replacePlaceholders(content, config.placeholders);
+    const newContent = replacePlaceholders(content);
 
     if (action === 'replace') {
       el.innerHTML = newContent;
@@ -239,7 +245,7 @@ const fetchData = async (url, type = DATA_TYPE.JSON) => {
   return null;
 };
 
-const getBlockProps = (fVal, miloLibs, origin) => {
+const getBlockProps = (fVal, config, origin) => {
   let val = fVal;
   if (val?.includes('\\')) val = val?.split('\\').join('/');
   if (!val?.startsWith('/')) val = `/${val}`;
@@ -247,7 +253,7 @@ const getBlockProps = (fVal, miloLibs, origin) => {
 
   if (val.startsWith('/libs/')) {
     /* c8 ignore next 1 */
-    val = `${miloLibs}${val.replace('/libs', '')}`;
+    val = `${config.miloLibs || config.codeRoot}${val.replace('/libs', '')}`;
   } else {
     val = `${origin}${val}`;
   }
@@ -452,7 +458,7 @@ function getSelectedElements(sel, rootEl, forceRootEl) {
       );
       return { els: fragments, modifiers: [FLAGS.all, FLAGS.includeFragments] };
     } catch (e) {
-      /* c8 ignore next */
+      /* c8 ignore next 2 */
       return { els: [], modifiers: [] };
     }
   }
@@ -495,7 +501,17 @@ export const updateFragDataProps = (a, inline, sections, fragment) => {
   }
 };
 
-export function handleCommands(commands, rootEl, forceInline = false, forceRootEl = false) {
+export const deleteMarkedEls = (rootEl = document) => {
+  [...rootEl.querySelectorAll(`.${CLASS_EL_DELETE}`)]
+    .forEach((el) => el.remove());
+};
+
+export function handleCommands(
+  commands,
+  rootEl = document,
+  forceInline = false,
+  forceRootEl = false,
+) {
   const section1 = document.querySelector('main > div');
   commands.forEach((cmd) => {
     const { action, content, selector } = cmd;
@@ -529,6 +545,7 @@ export function handleCommands(commands, rootEl, forceInline = false, forceRootE
       cmd.completed = true;
     }
   });
+  deleteMarkedEls(rootEl);
   return commands.filter((cmd) => !cmd.completed
     && cmd.selectorType !== IN_BLOCK_SELECTOR_PREFIX);
 }
@@ -579,7 +596,7 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
       variants[vn][action] = variants[vn][action] || [];
 
       if (action === 'useblockcode') {
-        const { blockSelector, blockTarget } = getBlockProps(line[vn], config.miloLibs, origin);
+        const { blockSelector, blockTarget } = getBlockProps(line[vn], config, origin);
         variants[vn][action].push({
           selector: blockSelector,
           val: blockTarget,
@@ -654,7 +671,7 @@ export async function createMartechMetadata(placeholders, config, column) {
 }
 
 /* c8 ignore start */
-function parsePlaceholders(placeholders, config, selectedVariantName = '') {
+export function parsePlaceholders(placeholders, config, selectedVariantName = '') {
   if (!placeholders?.length || selectedVariantName === 'default') return config;
   const valueNames = [
     selectedVariantName.toLowerCase(),
@@ -665,17 +682,19 @@ function parsePlaceholders(placeholders, config, selectedVariantName = '') {
     'value',
     'other',
   ];
-  const [val] = Object.entries(placeholders[0])
-    .find(([key]) => valueNames.includes(key.toLowerCase()));
-  if (val) {
+  const keys = placeholders?.length ? Object.entries(placeholders[0]) : [];
+  const keyVal = keys.find(([key]) => valueNames.includes(key.toLowerCase()));
+  const key = keyVal?.[0];
+
+  if (key) {
     const results = placeholders.reduce((res, item) => {
-      res[item.key] = item[val];
+      res[item.key] = item[key];
       return res;
     }, {});
     config.placeholders = { ...(config.placeholders || {}), ...results };
   }
 
-  createMartechMetadata(placeholders, config, val);
+  createMartechMetadata(placeholders, config, key);
 
   return config;
 }
@@ -709,7 +728,7 @@ export function buildVariantInfo(variantNames) {
 
 const getXLGListURL = (config) => {
   const sheet = config.env?.name === 'prod' ? 'prod' : 'stage';
-  return `https://www.adobe.com/federal/assets/data/mep-entitlement-tags.json?sheet=${sheet}`;
+  return `https://www.adobe.com/federal/assets/data/mep-xlg-tags.json?sheet=${sheet}`;
 };
 
 export const getEntitlementMap = async () => {
@@ -793,7 +812,7 @@ const createDefaultExperiment = (manifest) => ({
 });
 
 export const addMepAnalytics = (config, header) => {
-  config.mep.experiments.forEach((experiment) => {
+  config.mep?.experiments?.forEach((experiment) => {
     experiment?.selectedVariant?.useblockcode?.forEach(({ selector, targetManifestId }) => {
       if (selector && targetManifestId) {
         document.querySelectorAll(`.${selector}`)
@@ -886,11 +905,6 @@ export async function getManifestConfig(info = {}, variantOverride = false) {
   manifestConfig.event = event;
   return manifestConfig;
 }
-
-export const deleteMarkedEls = (rootEl = document) => {
-  [...rootEl.querySelectorAll(`.${CLASS_EL_DELETE}`)]
-    .forEach((el) => el.remove());
-};
 
 const normalizeFragPaths = ({ selector, val, action, manifestId, targetManifestId }) => ({
   selector: normalizePath(selector),
@@ -1047,7 +1061,6 @@ export async function applyPers(manifests) {
   }
 
   config.mep.commands = handleCommands(config.mep.commands);
-  deleteMarkedEls();
 
   const pznList = results.filter((r) => (r.experiment?.manifestType === TRACKED_MANIFEST_TYPE));
   if (!pznList.length) return;

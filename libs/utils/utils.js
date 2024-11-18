@@ -144,7 +144,7 @@ export const MILO_EVENTS = { DEFERRED: 'milo:deferred' };
 const LANGSTORE = 'langstore';
 const PREVIEW = 'target-preview';
 const PAGE_URL = new URL(window.location.href);
-const SLD = PAGE_URL.hostname.includes('.aem.') ? 'aem' : 'hlx';
+export const SLD = PAGE_URL.hostname.includes('.aem.') ? 'aem' : 'hlx';
 
 const PROMO_PARAM = 'promo';
 
@@ -229,6 +229,7 @@ export const [setConfig, updateConfig, getConfig] = (() => {
       config.base = config.miloLibs || config.codeRoot;
       config.locale = pathname ? getLocale(conf.locales, pathname) : getLocale(conf.locales);
       config.autoBlocks = conf.autoBlocks ? [...AUTO_BLOCKS, ...conf.autoBlocks] : AUTO_BLOCKS;
+      config.signInContext = conf.signInContext || {};
       config.doNotInline = conf.doNotInline
         ? [...DO_NOT_INLINE, ...conf.doNotInline]
         : DO_NOT_INLINE;
@@ -395,7 +396,7 @@ export function appendHtmlToLink(link) {
   }
 }
 
-export const loadScript = (url, type) => new Promise((resolve, reject) => {
+export const loadScript = (url, type, { mode } = {}) => new Promise((resolve, reject) => {
   let script = document.querySelector(`head > script[src="${url}"]`);
   if (!script) {
     const { head } = document;
@@ -404,6 +405,7 @@ export const loadScript = (url, type) => new Promise((resolve, reject) => {
     if (type) {
       script.setAttribute('type', type);
     }
+    if (['async', 'defer'].includes(mode)) script.setAttribute(mode, true);
     head.append(script);
   }
 
@@ -477,6 +479,7 @@ export async function loadBlock(block) {
       try {
         const { default: init } = await import(`${blockPath}.js`);
         await init(block);
+        block.dataset.blockStatus = 'loaded';
       } catch (err) {
         console.log(`Failed loading ${name}`, err);
         const config = getConfig();
@@ -499,7 +502,7 @@ export function decorateSVG(a) {
   try {
     // Mine for URL and alt text
     const splitText = textContent.split('|');
-    const textUrl = new URL(splitText.shift().trim());
+    const authoredUrl = new URL(splitText.shift().trim());
     const altText = splitText.join('|').trim();
 
     // Relative link checking
@@ -507,13 +510,14 @@ export function decorateSVG(a) {
       ? new URL(`${window.location.origin}${a.href}`)
       : new URL(a.href);
 
-    const src = textUrl.hostname.includes(`.${SLD}.`) ? textUrl.pathname : textUrl;
+    const src = (authoredUrl.hostname.includes('.hlx.') || authoredUrl.hostname.includes('.aem.'))
+      ? authoredUrl.pathname
+      : authoredUrl;
 
-    const img = createTag('img', { loading: 'lazy', src });
-    if (altText) img.alt = altText;
+    const img = createTag('img', { loading: 'lazy', src, alt: altText || '' });
     const pic = createTag('picture', null, img);
 
-    if (textUrl.pathname === hrefUrl.pathname) {
+    if (authoredUrl.pathname === hrefUrl.pathname) {
       a.parentElement.replaceChild(pic, a);
       return pic;
     }
@@ -643,19 +647,28 @@ const decorateCopyLink = (a, evt) => {
   });
 };
 
-export function convertStageLinks({ anchors, config, hostname }) {
-  if (config.env?.name === 'prod' || !config.stageDomainsMap) return;
-  const matchedRules = Object.entries(config.stageDomainsMap)
-    .find(([domain]) => hostname.includes(domain));
+export function convertStageLinks({ anchors, config, hostname, href }) {
+  const { env, stageDomainsMap, locale } = config;
+  if (env?.name === 'prod' || !stageDomainsMap) return;
+  const matchedRules = Object.entries(stageDomainsMap)
+    .find(([domain]) => (new RegExp(domain)).test(href));
   if (!matchedRules) return;
   const [, domainsMap] = matchedRules;
   [...anchors].forEach((a) => {
+    const hasLocalePrefix = a.pathname.startsWith(locale.prefix);
+    const noLocaleLink = hasLocalePrefix ? a.href.replace(locale.prefix, '') : a.href;
     const matchedDomain = Object.keys(domainsMap)
-      .find((domain) => a.href.includes(domain));
+      .find((domain) => (new RegExp(domain)).test(noLocaleLink));
     if (!matchedDomain) return;
-    a.href = a.href.replace(a.hostname, domainsMap[matchedDomain] === 'origin'
-      ? hostname
-      : domainsMap[matchedDomain]);
+    const convertedLink = noLocaleLink.replace(
+      new RegExp(matchedDomain),
+      domainsMap[matchedDomain] === 'origin'
+        ? `${matchedDomain.includes('https') ? 'https://' : ''}${hostname}`
+        : domainsMap[matchedDomain],
+    );
+    const convertedUrl = new URL(convertedLink);
+    convertedUrl.pathname = `${hasLocalePrefix ? locale.prefix : ''}${convertedUrl.pathname}`;
+    a.href = convertedUrl.toString();
     if (/(\.page|\.live).*\.html(?=[?#]|$)/.test(a.href)) a.href = a.href.replace(/\.html(?=[?#]|$)/, '');
   });
 }
@@ -664,7 +677,7 @@ export function decorateLinks(el) {
   const config = getConfig();
   decorateImageLinks(el);
   const anchors = el.getElementsByTagName('a');
-  const { hostname } = window.location;
+  const { hostname, href } = window.location;
   const links = [...anchors].reduce((rdx, a) => {
     appendHtmlToLink(a);
     a.href = localizeLink(a.href);
@@ -691,7 +704,8 @@ export function decorateLinks(el) {
       a.href = a.href.replace(loginEvent, '');
       a.addEventListener('click', (e) => {
         e.preventDefault();
-        window.adobeIMS?.signIn();
+        const { signInContext } = config;
+        window.adobeIMS?.signIn(signInContext);
       });
     }
     const copyEvent = '#_evt-copy';
@@ -700,7 +714,7 @@ export function decorateLinks(el) {
     }
     return rdx;
   }, []);
-  convertStageLinks({ anchors, config, hostname });
+  convertStageLinks({ anchors, config, hostname, href });
   return links;
 }
 
@@ -809,6 +823,7 @@ async function decoratePlaceholders(area, config) {
   if (!area) return;
   const nodes = findReplaceableNodes(area);
   if (!nodes.length) return;
+  area.dataset.hasPlaceholders = 'true';
   const placeholderPath = `${config.locale?.contentRoot}/placeholders.json`;
   placeholderRequest = placeholderRequest
   || customFetch({ resource: placeholderPath, withCacheRules: true })
@@ -902,6 +917,7 @@ export async function decorateFooterPromo(doc = document) {
 
 const getMepValue = (val) => {
   const valMap = { on: true, off: false, postLCP: 'postlcp' };
+  const valMap = { on: true, off: false, postLCP: 'postlcp' };
   const finalVal = val?.toLowerCase().trim();
   if (finalVal in valMap) return valMap[finalVal];
   return finalVal;
@@ -947,7 +963,7 @@ let imsLoaded;
 export async function loadIms() {
   imsLoaded = imsLoaded || new Promise((resolve, reject) => {
     const {
-      locale, imsClientId, imsScope, env, base, adobeid,
+      locale, imsClientId, imsScope, env, base, adobeid, imsTimeout,
     } = getConfig();
     if (!imsClientId) {
       reject(new Error('Missing IMS Client ID'));
@@ -955,7 +971,7 @@ export async function loadIms() {
     }
     const [unavMeta, ahomeMeta] = [getMetadata('universal-nav')?.trim(), getMetadata('adobe-home-redirect')];
     const defaultScope = `AdobeID,openid,gnav${unavMeta && unavMeta !== 'off' ? ',pps.read,firefly_api,additional_info.roles,read_organizations' : ''}`;
-    const timeout = setTimeout(() => reject(new Error('IMS timeout')), 5000);
+    const timeout = setTimeout(() => reject(new Error('IMS timeout')), imsTimeout || 5000);
     window.adobeid = {
       client_id: imsClientId,
       scope: imsScope || defaultScope,
@@ -1049,6 +1065,8 @@ async function checkForPageMods() {
 
 async function loadPostLCP(config) {
   await decoratePlaceholders(document.body.querySelector('header'), config);
+  const sk = document.querySelector('helix-sidekick');
+  if (sk) import('./sidekick-decorate.js').then((mod) => { mod.default(sk); });
   if (config.mep?.targetEnabled === 'postlcp') {
     /* c8 ignore next 2 */
     const { init } = await import('../features/personalization/personalization.js');
@@ -1096,8 +1114,7 @@ export function scrollToHashedElement(hash) {
 }
 
 export async function loadDeferred(area, blocks, config) {
-  const event = new Event(MILO_EVENTS.DEFERRED);
-  area.dispatchEvent(event);
+  area.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
 
   if (area !== document) {
     return;
@@ -1117,12 +1134,6 @@ export async function loadDeferred(area, blocks, config) {
     });
   }
 
-  import('./samplerum.js').then(({ sampleRUM }) => {
-    sampleRUM('lazy');
-    sampleRUM.observe(blocks);
-    sampleRUM.observe(area.querySelectorAll('picture > img'));
-  });
-
   if (getMetadata('pageperf') === 'on') {
     import('./logWebVitals.js')
       .then((mod) => mod.default(getConfig().mep, {
@@ -1134,6 +1145,12 @@ export async function loadDeferred(area, blocks, config) {
     import('../features/personalization/preview.js')
       .then(({ default: decoratePreviewMode }) => decoratePreviewMode());
   }
+  if (config?.dynamicNavKey && config?.env?.name !== 'prod') {
+    const { miloLibs } = config;
+    loadStyle(`${miloLibs}/features/dynamic-navigation/status.css`);
+    const { default: loadDNStatus } = await import('../features/dynamic-navigation/status.js');
+    loadDNStatus();
+  }
 }
 
 function initSidekick() {
@@ -1142,7 +1159,7 @@ function initSidekick() {
     init({ createTag, loadBlock, loadScript, loadStyle });
   };
 
-  if (document.querySelector('helix-sidekick')) {
+  if (document.querySelector('aem-sidekick, helix-sidekick')) {
     initPlugins();
   } else {
     document.addEventListener('sidekick-ready', () => {
@@ -1153,7 +1170,7 @@ function initSidekick() {
 
 function decorateMeta() {
   const { origin } = window.location;
-  const contents = document.head.querySelectorAll(`[content*=".${SLD}."]`);
+  const contents = document.head.querySelectorAll('[content*=".hlx."], [content*=".aem."]');
   contents.forEach((meta) => {
     if (meta.getAttribute('property') === 'hlx:proxyUrl' || meta.getAttribute('name')?.endsWith('schedule')) return;
     try {
@@ -1179,10 +1196,6 @@ function decorateMeta() {
 function decorateDocumentExtras() {
   decorateMeta();
   decorateHeader();
-
-  import('./samplerum.js').then(({ addRumListeners }) => {
-    addRumListeners();
-  });
 }
 
 async function documentPostSectionLoading(config) {

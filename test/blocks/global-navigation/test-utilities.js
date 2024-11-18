@@ -38,6 +38,7 @@ export const selectors = {
   promo: '.feds-promo',
   promoImage: '.feds-promo-image',
   topNavWrapper: '.feds-topnav-wrapper',
+  topNav: '.feds-topnav',
   breadcrumbsWrapper: '.feds-breadcrumbs-wrapper',
   mainNav: '.feds-nav',
   imsSignIn: '.feds-signIn',
@@ -179,7 +180,7 @@ export const createFullGlobalNavigation = async ({
     if (url.endsWith('large-menu-cross-cloud.plain.html')) { return mockRes({ payload: largeMenuCrossCloud }); }
     if (url.endsWith('large-menu-active.plain.html')) { return mockRes({ payload: largeMenuActiveMock }); }
     if (url.endsWith('large-menu-wide-column.plain.html')) { return mockRes({ payload: largeMenuWideColumnMock }); }
-    if (url.includes('https://main--federal--adobecom.hlx.page')
+    if (url.includes('https://main--federal--adobecom.aem.page')
       && url.endsWith('feds-menu.plain.html')) { return mockRes({ payload: largeMenuMock }); }
     if (url.includes('gnav')) { return mockRes({ payload: globalNavigation || globalNavigationMock }); }
     if (url.includes('correct-promo-fragment')) { return mockRes({ payload: correctPromoFragmentMock }); }
