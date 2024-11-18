@@ -1,5 +1,4 @@
 import { Catalog } from './catalog.js';
-import { CCDAction } from './ccd-action.js';
 import { Image } from './image.js';
 import { InlineHeading } from './inline-heading.js';
 import { MiniCompareChart } from './mini-compare-chart.js';
@@ -15,8 +14,6 @@ const getVariantLayout = (card, mustMatch = false) => {
     switch (card.variant) {
         case 'catalog':
             return new Catalog(card);
-        case 'ccd-action':
-            return new CCDAction(card);
         case 'image':
             return new Image(card);
         case 'inline-heading':
@@ -45,7 +42,6 @@ const getVariantLayout = (card, mustMatch = false) => {
 const getVariantStyles = () => {
     const styles = [];
     styles.push(Catalog.variantStyle);
-    styles.push(CCDAction.variantStyle);
     styles.push(MiniCompareChart.variantStyle);
     styles.push(Product.variantStyle);
     styles.push(Plans.variantStyle);

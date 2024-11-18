@@ -169,12 +169,13 @@ function createSpectrumButton(cta, strong, aemFragmentMapping, cardVariant) {
         treatment = 'outline';
     }
 
+    cta.tabIndex = -1;
     const spectrumCta = createTag(
         'sp-button',
         {
             treatment,
             variant,
-            tabIndex: -1,
+            tabIndex: 0,
             size: aemFragmentMapping.ctas.size ?? 'm',
         },
         cta,
