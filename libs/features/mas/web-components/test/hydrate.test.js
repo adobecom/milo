@@ -372,6 +372,6 @@ describe('processAnalytics', () => {
       expect(seeTerms.getAttribute(ANALYTICS_LINK_ATTR)).to.equal('see-terms-1');
       expect(buyNow.getAttribute(ANALYTICS_LINK_ATTR)).to.equal('buy-now-2');
       // should handle only links with data-analytics-id attribute
-      expect(merchCard.querySelectorAll(`a${ANALYTICS_LINK_ATTR}`).length).to.equal(2);
+      expect(merchCard.querySelectorAll(`a[${ANALYTICS_LINK_ATTR}]`).length).to.equal(2);
   });
 });
