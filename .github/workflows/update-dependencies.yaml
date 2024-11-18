@@ -34,7 +34,7 @@ jobs:
           updateDependency({
             github, 
             context, 
-            title: '[AUTOMATED-PR] Update froms2.min.js dependency', 
+            title: '[AUTOMATED-PR] Update forms2.min.js dependency', 
             path: 'https://engage.adobe.com/js/forms2/js/forms2.min.js',
             branch: 'update-forms2',
             scriptPath: './libs/deps/forms2.min.js'
