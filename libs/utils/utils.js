@@ -535,6 +535,7 @@ export function decorateImageLinks(el) {
   if (!images.length) return;
   [...images].forEach((img) => {
     const [source, alt, icon] = img.alt.split('|');
+    if (source.trim() === 'CAI') return; // videos are currently not supported for CAI on adobecom
     try {
       const url = new URL(source.trim());
       const href = url.hostname.includes(`.${SLD}.`) ? `${url.pathname}${url.hash}` : url.href;
