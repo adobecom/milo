@@ -366,7 +366,8 @@ span[is="inline-price"][data-template='strikethrough'] {
     text-decoration: line-through;
 }
 
-merch-card sp-button a {
+merch-card sp-button a,
+merch-card sp-button a:hover {
   text-decoration: none;
     color: var(
         --highcontrast-button-content-color-default,

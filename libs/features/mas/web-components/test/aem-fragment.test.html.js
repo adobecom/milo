@@ -1,7 +1,7 @@
 import { runTests } from '@web/test-runner-mocha';
-import chai from '@esm-bundle/chai';
 import chaiAsPromised from '@esm-bundle/chai-as-promised';
 import sinon from 'sinon';
+import chai, { expect } from '@esm-bundle/chai';
 
 import { mockFetch } from './mocks/fetch.js';
 import { withWcs } from './mocks/wcs.js';
@@ -11,17 +11,20 @@ import mas from './mas.js';
 import '../src/merch-card.js';
 import '../src/aem-fragment.js';
 import { EVENT_MAS_ERROR } from '../src/constants.js';
+import { getFragmentById } from '../src/aem-fragment.js';
 
 chai.use(chaiAsPromised);
-const expect = chai.expect;
 
 runTests(async () => {
     await mas();
-    const [cc, photoshop] = await fetch(
-        'mocks/sites/cf/fragments/search/authorPayload.json',
-    )
-        .then((res) => res.json())
-        .then(({ items }) => items);
+    const [cc, photoshop] = await Promise.all([
+        fetch('mocks/sites/cf/fragments/fragment-cc-all-apps.json').then(
+            (res) => res.json(),
+        ),
+        fetch('mocks/sites/cf/fragments/fragment-photoshop.json').then((res) =>
+            res.json(),
+        ),
+    ]);
 
     await customElements.whenDefined('aem-fragment');
     const { cache } = document.createElement('aem-fragment');
@@ -56,10 +59,9 @@ runTests(async () => {
         });
 
         it('re-renders a card after clearing the cache', async () => {
-            const [, , ccCard] = getTemplateContent('cards'); //special offers students-and-teachers.
-            const aemFragment = ccCard.querySelector('aem-fragment');
-
+            const [, , ccCard] = getTemplateContent('cards');
             spTheme.append(ccCard);
+            const aemFragment = ccCard.querySelector('aem-fragment');
             await aemFragment.updateComplete;
             await ccCard.updateComplete;
             const before = ccCard.innerHTML;
@@ -118,13 +120,51 @@ runTests(async () => {
         it('renders ccd slice card', async () => {
             const [, , , , , , sliceCard] = getTemplateContent('cards');
             spTheme.append(sliceCard);
-            await delay(100);
+            await delay(200);
             expect(sliceCard.querySelector('merch-icon')).to.exist;
             expect(sliceCard.querySelector('div[slot="image"]')).to.exist;
             expect(sliceCard.querySelector('div[slot="body-s"]')).to.exist;
             expect(sliceCard.querySelector('div[slot="footer"]')).to.exist;
             const badge = sliceCard.shadowRoot?.querySelector('div#badge');
             expect(badge).to.exist;
+        });
+    });
+
+    describe('getFragmentById', async () => {
+        beforeEach(async () => {
+            await mockFetch(withAem);
+            cache.clear();
+        });
+
+        it('throws an error if response is not ok', async () => {
+            const promise = getFragmentById(
+                'http://localhost:2023',
+                'testid',
+                false,
+            );
+            await expect(promise).to.be.rejectedWith('Not Found');
+        });
+
+        it('fetches fragment from author endpoint', async () => {
+            const promise = getFragmentById(
+                'http://localhost:2023',
+                'fragment-cc-all-apps',
+                true,
+            );
+            expect(fetch.lastCall.firstArg).to.equal(
+                'http://localhost:2023/adobe/sites/cf/fragments/fragment-cc-all-apps',
+            );
+        });
+
+        it('fetches fragment from freyja on publish', async () => {
+            const promise = getFragmentById(
+                'http://localhost:2023',
+                'fragment-cc-all-apps',
+                false,
+            );
+            expect(fetch.lastCall.firstArg).to.equal(
+                'http://localhost:2023/adobe/experimental/fragmentdelivery-expires-20250330/sites/fragments/fragment-cc-all-apps',
+            );
         });
     });
 });

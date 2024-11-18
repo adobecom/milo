@@ -1,29 +1,19 @@
 export async function withAem(originalFetch) {
     return async ({ pathname }) => {
-        if (/cf\/fragments\//.test(pathname)) {
+        const isPublish = /\/sites\/fragments\//.test(pathname);
+        const isAuthor = /cf\/fragments\//.test(pathname);
+        if (isPublish || isAuthor) {
             const fragmentId = pathname.split('/').pop();
-            const item = await originalFetch(
-                '/test/mocks/sites/cf/fragments/search/authorPayload.json',
-            )
-                .then((res) => res.json())
-                .then(({ items }) =>
-                    items.find((item) => item.id === fragmentId),
+            return await originalFetch(
+                isAuthor
+                    ? `/test/mocks/sites/cf/fragments/${fragmentId}.json`
+                    : `/test/mocks/sites/fragments/${fragmentId}.json`,
+            ).then((res) => {
+                if (res.ok) return res;
+                throw new Error(
+                    `Failed to get fragment: ${res.status} ${res.statusText}`,
                 );
-            if (item) {
-                return Promise.resolve({
-                    ok: true,
-                    status: 200,
-                    headers: { get: () => ({}) },
-                    json: () => Promise.resolve(item),
-                });
-            } else {
-                return Promise.resolve({
-                    ok: false,
-                    status: 404,
-                    headers: { get: () => ({}) },
-                    json: () => Promise.reject('Not found'),
-                });
-            }
+            });
         }
         return false;
     };

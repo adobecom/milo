@@ -1,5 +1,4 @@
 import { EVENT_AEM_LOAD, EVENT_AEM_ERROR } from './constants.js';
-import { getFragmentById } from './getFragmentById.js';
 
 const sheet = new CSSStyleSheet();
 sheet.replaceSync(':host { display: contents; }');
@@ -9,7 +8,33 @@ const baseUrl =
     'https://odin.adobe.com';
 
 const ATTRIBUTE_FRAGMENT = 'fragment';
+const ATTRIBUTE_AUTHOR = 'author';
 const ATTRIBUTE_IMS = 'ims';
+
+/**
+ * Get fragment by ID
+ * @param {string} baseUrl the aem base url
+ * @param {string} id fragment id
+ * @param {string} author should the fragment be fetched from author endpoint
+ * @param {Object} headers optional request headers
+ * @returns {Promise<Object>} the raw fragment item
+ */
+export async function getFragmentById(baseUrl, id, author, headers) {
+    const endpoint = author
+        ? `${baseUrl}/adobe/sites/cf/fragments/${id}`
+        : `${baseUrl}/adobe/experimental/fragmentdelivery-expires-20250330/sites/fragments/${id}`;
+    const response = await fetch(endpoint, {
+        cache: 'default',
+        credentials: 'omit',
+        headers,
+    });
+    if (!response.ok) {
+        throw new Error(
+            `Failed to get fragment: ${response.status} ${response.statusText}`,
+        );
+    }
+    return response.json();
+}
 
 let headers;
 
@@ -52,30 +77,28 @@ const cache = new FragmentCache();
 export class AemFragment extends HTMLElement {
     cache = cache;
 
-    data;
+    #rawData;
+    #data;
 
     /**
      * @type {string} fragment id
      */
-    fragmentId;
-
-    /**
-     * Consonant styling for CTAs.
-     */
-    consonant = false;
+    #fragmentId;
 
     /**
      * @type {boolean} whether an access token should be used via IMS.
      */
-    ims = false;
+    #ims = false;
 
     /**
      * Internal promise to track the readiness of the web-component to render.
      */
     #readyPromise;
 
+    #author = false;
+
     static get observedAttributes() {
-        return [ATTRIBUTE_FRAGMENT];
+        return [ATTRIBUTE_FRAGMENT, ATTRIBUTE_AUTHOR];
     }
 
     constructor() {
@@ -85,12 +108,10 @@ export class AemFragment extends HTMLElement {
 
         const ims = this.getAttribute(ATTRIBUTE_IMS);
         if (['', true, 'true'].includes(ims)) {
-            this.ims = true;
+            this.#ims = true;
             if (!headers) {
                 headers = {
                     Authorization: `Bearer ${window.adobeid?.authorize?.()}`,
-                    pragma: 'no-cache',
-                    'cache-control': 'no-cache',
                 };
             }
         }
@@ -98,13 +119,17 @@ export class AemFragment extends HTMLElement {
 
     attributeChangedCallback(name, oldValue, newValue) {
         if (name === ATTRIBUTE_FRAGMENT) {
-            this.fragmentId = newValue;
+            this.#fragmentId = newValue;
             this.refresh(false);
+        }
+
+        if (name === ATTRIBUTE_AUTHOR) {
+            this.#author = ['', 'true'].includes(newValue);
         }
     }
 
     connectedCallback() {
-        if (!this.fragmentId) {
+        if (!this.#fragmentId) {
             this.#fail('Missing fragment id');
             return;
         }
@@ -119,7 +144,7 @@ export class AemFragment extends HTMLElement {
             if (!ready) return; // already fetching data
         }
         if (flushCache) {
-            cache.remove(this.fragmentId);
+            cache.remove(this.#fragmentId);
         }
         this.#readyPromise = this.fetchData()
             .then(() => {
@@ -132,7 +157,7 @@ export class AemFragment extends HTMLElement {
                 );
                 return true;
             })
-            .catch(() => {
+            .catch((e) => {
                 /* c8 ignore next 3 */
                 this.#fail('Network error: failed to load fragment');
                 this.#readyPromise = null;
@@ -153,22 +178,57 @@ export class AemFragment extends HTMLElement {
     }
 
     async fetchData() {
-        let fragment = cache.get(this.fragmentId);
+        this.#rawData = null;
+        this.#data = null;
+        let fragment = cache.get(this.#fragmentId);
         if (!fragment) {
             fragment = await getFragmentById(
                 baseUrl,
-                this.fragmentId,
-                this.ims ? headers : undefined,
+                this.#fragmentId,
+                this.#author,
+                this.#ims ? headers : undefined,
             );
             cache.add(fragment);
         }
-        this.data = fragment;
+        this.#rawData = fragment;
     }
 
     get updateComplete() {
         return (
             this.#readyPromise ??
             Promise.reject(new Error('AEM fragment cannot be loaded'))
+        );
+    }
+
+    get data() {
+        if (this.#data) return this.#data;
+        if (this.#author) {
+            this.#transformAuthorData();
+        } else {
+            this.#transformPublishData();
+        }
+        return this.#data;
+    }
+
+    #transformAuthorData() {
+        const { id, tags, fields } = this.#rawData;
+        this.#data = fields.reduce(
+            (acc, { name, multiple, values }) => {
+                acc.fields[name] = multiple ? values : values[0];
+                return acc;
+            },
+            { id, tags, fields: {} },
+        );
+    }
+
+    #transformPublishData() {
+        const { id, tags, fields } = this.#rawData;
+        this.#data = Object.entries(fields).reduce(
+            (acc, [key, value]) => {
+                acc.fields[key] = value?.mimeType ? value.value : (value ?? '');
+                return acc;
+            },
+            { id, tags, fields: {} },
         );
     }
 }
