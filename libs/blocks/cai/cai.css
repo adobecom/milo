@@ -1,91 +1,99 @@
-#cai-img-container .cai-tooltip {
-  position: absolute;
-  left: 10px;
-  bottom: 10px;
-  z-index: 4;
-
-  width: 256px;
-  aspect-ratio: 1.28;
-  border-radius: 16px;
-
-  background: white;
-  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
-  transition: width 0.3s ease-in-out, height 0.3s ease-in-out;
+@media(min-width: 900px) {
+  #cai-img-container .cai-tooltip {
+    display: block;
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    z-index: 4;
   
-  overflow: auto;
-  font-family: "Adobe Clean";
+    width: 256px;
+    aspect-ratio: 1.28;
+    border-radius: 16px;
+  
+    background: white;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+    transition: width 0.3s ease-in-out, height 0.3s ease-in-out;
+    
+    overflow: auto;
+    font-family: "Adobe Clean";
+  }
+  
+  #cai-img-container .cai-tooltip hr {
+    margin: 0;
+  }
+  
+  #cai-img-container .cai-tooltip.hide, 
+  #cai-img-container .cai-tooltip.loading.hide { 
+    pointer-events: none;
+    width: 0;
+    transition: width 0.3s ease-in-out, height 0.3s ease-in-out;
+    overflow: hidden;
+  }
+  
+  #cai-img-container .cai-tooltip .title {
+    display: flex;
+    padding: 10px 20px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 5px;
+    align-self: stretch;
+  }
+  
+  #cai-img-container .cai-tooltip .title h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 20px;
+  }
+  
+  #cai-img-container .cai-tooltip .title #cai-subtitle {
+    color: var(--color-gray-500);
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 18px;
+    margin: 0;
+  }
+  
+  #cai-img-container .cai-tooltip .content {
+    margin-left: 20px;
+    margin-right: 20px;
+    font-size: 12px;
+    line-height: 18px;
+  }
+  
+  #cai-img-container .cai-tooltip .content p {
+    margin-top: 10px;
+    margin-bottom: 10px;
+  }
+  
+  #cai-img-container .cai-tooltip.loading {
+    display: grid;
+    align-items: center;
+    width: 100px;
+    height: 100px;
+    max-height: 100px;
+  }
+  #cai-img-container .cai-tooltip .loader {
+    width: 50px;
+    padding: 4px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    margin: 0 auto;
+    background: var(--color-accent);
+    --_m: 
+      conic-gradient(#0000 10%,#000),
+      linear-gradient(#000 0 0) content-box;
+    -webkit-mask: var(--_m);
+            mask: var(--_m);
+    -webkit-mask-composite: source-out;
+            mask-composite: subtract;
+    animation: l3 1s infinite linear;
+  }
 }
 
-#cai-img-container .cai-tooltip hr {
-  margin: 0;
-}
-
-#cai-img-container .cai-tooltip.hide, 
-#cai-img-container .cai-tooltip.loading.hide { 
-  pointer-events: none;
-  width: 0;
-  transition: width 0.3s ease-in-out, height 0.3s ease-in-out;
-  overflow: hidden;
-}
-
-#cai-img-container .cai-tooltip .title {
-  display: flex;
-  padding: 10px 20px;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 5px;
-  align-self: stretch;
-}
-
-#cai-img-container .cai-tooltip .title h3 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 700;
-  line-height: 20px;
-}
-
-#cai-img-container .cai-tooltip .title #cai-subtitle {
-  color: var(--color-gray-500);
-  font-size: 12px;
-  font-weight: 400;
-  line-height: 18px;
-  margin: 0;
-}
-
-#cai-img-container .cai-tooltip .content {
-  margin-left: 20px;
-  margin-right: 20px;
-  font-size: 12px;
-  line-height: 18px;
-}
-#cai-img-container .cai-tooltip .content p {
-  margin-top: 10px;
-  margin-bottom: 10px;
-}
-
-#cai-img-container .cai-tooltip.loading {
-  display: grid;
-  align-items: center;
-  width: 100px;
-  height: 100px;
-  max-height: 100px;
-}
-#cai-img-container .cai-tooltip .loader {
-  width: 50px;
-  padding: 4px;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  margin: 0 auto;
-  background: var(--color-accent);
-  --_m: 
-    conic-gradient(#0000 10%,#000),
-    linear-gradient(#000 0 0) content-box;
-  -webkit-mask: var(--_m);
-          mask: var(--_m);
-  -webkit-mask-composite: source-out;
-          mask-composite: subtract;
-  animation: l3 1s infinite linear;
+.cai-tooltip {
+  display: none;
 }
 
 @keyframes l3 {to{transform: rotate(1turn)}}
