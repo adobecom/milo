@@ -1,13 +1,25 @@
-import { html, render } from '../../deps/htm-preact.js';
+import { html, render, useEffect } from '../../deps/htm-preact.js';
 import InputLocales from './input-locale/view.js';
 import InputUrls from './input-urls/view.js';
-import { currentStep } from './store.js';
+import { currentStep, fetchLocaleDetails } from './store.js';
 import StepTracker from './components/stepTracker.js';
 import InputActions from './input-actions/view.js';
 import Header from '../milostudio-header/header.js';
 import Sidenav from '../milostudio-sidenav/sidenav.js';
 
 function Create() {
+  useEffect(() => {
+    const fetchLocaleDetailsAsync = async () => {
+      try {
+        await fetchLocaleDetails();
+      } catch (error) {
+        // console.error('Error fetching locale details:', error);
+      }
+    };
+
+    fetchLocaleDetailsAsync();
+  }, []);
+
   return html`
     <div class="locui-create-container">
       <div class="header">
