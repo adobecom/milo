@@ -44,7 +44,8 @@ export default class MiloGraybox extends LitElement {
     this._crawlDuration = 0;
     this._promoteDuration = 0;
     this._previewPublishDuration = 0;
-    this._selectedOption = 'promoteEntireExp';
+    this._selectedOption = 'promoteExp';
+    this._promoteIgnore = false;
     this._grayboxConfig = {};
   }
 
@@ -202,8 +203,8 @@ export default class MiloGraybox extends LitElement {
     await this.startPromote(org, repo, exp);
 
     // #3 - Preview promoted files
-    // this._startPreviewPublish = true;
-    // await this.startPreviewPublish(org, repo);
+    this._startPreviewPublish = true;
+    await this.startPreviewPublish(org, repo);
   }
 
   async handlePromotePaths(event) {
@@ -236,10 +237,10 @@ export default class MiloGraybox extends LitElement {
     await this.startPreviewPublish(org, repo);
   }
 
-  handleCancel(event) {
+  handleClear(event) {
     event.preventDefault();
-    const input = this.shadowRoot.querySelector('input[name="path"]');
-    input.value = '';
+    const field = event.target.previousElementSibling;
+    field.value = '';
     this._canPromote = false;
     this._gbExpPath = '';
     this.requestUpdate();
@@ -284,9 +285,8 @@ export default class MiloGraybox extends LitElement {
     this.requestUpdate();
   }
 
-  toggleTextArea(event) {
-    const promoteIgnoreTextArea = this.shadowRoot.querySelector('.promote-ignore');
-    promoteIgnoreTextArea.style.display = event.target.checked ? 'block' : 'none';
+  togglePromoteIgnore(event) {
+    this.promoteIgnore = event.target.checked;
     this.requestUpdate();
   }
 
@@ -379,43 +379,42 @@ export default class MiloGraybox extends LitElement {
       <h1>Graybox</h1>
       <h3>Promote Graybox experiences and paths to the source site.</h3>
       <form>
-        <!-- Dropdown for Options -->
-        <div class="input-row">
-          <label for="actionSelect">Select Action:</label>
+        <div class="input-row promote-type">
+          <label for="actionSelect">Promote Type:</label>
           <select id="actionSelect" class="action-select" @change=${this.handleOptionChange}>
-            <option value="promoteEntireExp">Promote Graybox Experience</option>
+            <option value="promoteExp">Promote Graybox Experience</option>
             <option value="promotePaths">Promote Graybox Paths</option>            
           </select>
         </div>
-        
-        <!-- Option #1: Promote Graybox Experience -->
-        ${this._selectedOption === 'promoteEntireExp' ? html`
+        ${this.selectedOption === 'promoteExp' ? html`
           <div class="input-row">
-            <input class="path" name="path" placeholder="Enter Experience Path" value="/sukamat/da-bacom-graybox/summit25" @input=${this.validateInput} />            
+            <input type="text" class="path-input" name="path" placeholder="Enter Experience Path" value="/sukamat/da-bacom-graybox/summit25" @input=${this.validateInput} />
+            <button class="primary" @click=${this.handleClear}>Clear</button>
           </div>
-          <div class="input-row promote-ignore" style="display: none;">
-            <textarea name="additionalInfo" rows="3" 
-              placeholder="Enter paths to ignore from promote, separated by line-break. \nEg: /<org>/<site>/<exp>/<path-to-file>"></textarea>
-          </div>
-          <div class="checkbox-container">
-            <input type="checkbox" id="promoteIgnore" name="promoteIgnore" @change=${this.toggleTextArea}>
+          <div class="input-row">
+            <input type="checkbox" id="promoteIgnore" name="promoteIgnore" @change=${this.togglePromoteIgnore}>
             <label for="promoteIgnore">Paths to ignore from promote?</label>
             <input type="checkbox" id="publish" name="publish" disabled>
-            <label for="publish">Publish files after promote?</label>            
+            <label for="publish">Publish files after promote?</label>
           </div>
-          <div class="button-row">
-            <button class="accent" .disabled=${!this._canPromote} @click=${this.handlePromoteExperience}>Promote</button>
-            <button class="primary" @click=${this.handleCancel}>Cancel</button>
-          </div>          
-        ` : nothing}
-
-        <!-- Option #2: Promote Graybox Paths -->
-        ${this._selectedOption === 'promotePaths' ? html`
+          ${this.promoteIgnore === true ? html`
+            <div class="input-row promote-ignore">
+              <textarea class="path-list" name="additionalInfo" rows="3" 
+                placeholder="Enter paths to ignore from promote, separated by line-break. Eg:/<org>/<site>/<exp>/<path-to-file>"></textarea>
+              <button class="primary" @click=${this.handleClear}>Clear</button>
+            </div>` : nothing}
+            <div class="button-row">
+              <button class="accent" .disabled=${!this._canPromote} @click=${this.handlePromoteExperience}>Promote</button>
+            </div>          
+          ` : nothing}
+        ${this.selectedOption === 'promotePaths' ? html`
           <div class="input-row">
             <textarea name="promotePaths" rows="3" placeholder="Enter graybox paths to promote, separated by line-break" @input=${this.validateInputPaths}></textarea>
+            <button class="primary" @click=${this.handleClear}>Clear</button>
+          </div>
+          <div class="button-row">
             <button class="accent" .disabled=${!this._canPromotePaths} @click=${this.handlePromotePaths}>Promote</button>
-            <button class="primary" @click=${this.handleCancel}>Cancel</button>
-          </div>          
+          </div>
         ` : nothing}
       </form>
       ${this._invalidInput ? this.renderError() : nothing}
