@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <title>CCD Gallery</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    
+    <script src="../../../features/spectrum-web-components/dist/shared.js" type="module"></script>
+    <script src="../../../features/spectrum-web-components/dist/button.js" type="module"></script>
+    <script src="../../../features/spectrum-web-components/dist/base.js" type="module"></script>
+
     <script>
       const params = new URLSearchParams(document.location.search);
       let baseUrl;
@@ -20,8 +23,6 @@
         document.head.appendChild(meta);
       }
     </script>
-    <!-- Include your custom element script as an ES6 module -->
-    <script src="../../../features/spectrum-web-components/dist/button.js" type="module"></script>
     <script type="module" src="../mas/dist/mas.js"></script>
 
     <script type="module">
