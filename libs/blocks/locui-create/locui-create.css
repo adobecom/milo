@@ -66,9 +66,9 @@ body {
 /* Step Tracker */
 
 .locui-step-tracker {
-  width: 100%;
   background: #fff;
-  padding: 8px;
+  padding: 0 0 8px 30px;
+  border-bottom: 1.5px solid rgba(0, 0, 0, 0.1);
 }
 
 .locui-step-tracker > div {
@@ -86,7 +86,7 @@ body {
 .locui-step-controls {
   display: flex;
   justify-content: space-between;
-  padding: 8px;
+  padding: 10px;
 }
 
 .locui-title-bar {
@@ -141,7 +141,7 @@ body {
 
 .form-field-textarea {
   display: block;
-  width: 99%;
+  width: 98%;
   resize: none;
   padding: 8px;
   font-size: 14px;
@@ -187,6 +187,10 @@ body {
 
 /* Main Content */
 
+.side-nav {
+  background-color:rgb(248, 248, 248);
+}
+
 .locui-create-container {
   display: grid;
   width: 100%;
@@ -201,13 +205,15 @@ body {
   background-color: white;
   border-top-left-radius: 1rem;
   border-top-right-radius: 1rem;
-  width: 95.5%;
+  width: 99.5%;
+  height: 100%;
   box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.1);
-  padding: 0px 30px 20px;
+  margin-right: 30px;
+  overflow-y: hidden;
 }
 
 .main-content h3 {
-  padding: 0 0 10px 10px;
+  padding: 0 0 10px 30px;
   border-bottom: 0.5px solid rgb(185, 185, 185);
   margin-bottom: 10px;
 }
@@ -216,8 +222,19 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  height: 80%;
+  height: 85%;
+  /* overflow: hidden; */
 }
+
+.locui-form-container > div:last-child {
+  position: sticky;
+  bottom: 0;
+  background-color: #fff; 
+  padding: 4px 16px;
+  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1); 
+  z-index: 10; 
+}
+
 
 /* Header */
 
@@ -326,6 +343,7 @@ body {
 
 .locui-create-fragments-list {
   height: 14rem;
+  width: 99%;
   overflow-y: auto;
   border-color: rgb(213, 213, 213);
   border-radius: 0.5rem;
@@ -410,13 +428,21 @@ body {
 }
 
 .locui-input-url-area {
-  margin: 10px;
+  padding: 0 30px;
+  flex: 1; 
+  overflow-y: auto;
+  /* box-sizing: border-box; */
+  padding-bottom: 15px;
 }
 
 /* Input Actions Screen */
 
 .locui-table {
-  margin: 10px;
+  padding-top: 10px;
+  flex: 1; 
+  overflow-y: auto;
+  box-sizing: border-box;
+  margin: 0 30px;
 }
 
 .table-wrapper {
@@ -451,24 +477,6 @@ body {
 
 .locui-table tr:hover {
   background-color: #f9f9f9;
-}
-
-.locui-table select {
-  min-width: 70%;
-  background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/PjwhRE9DVFlQRSBzdmcgIFBVQkxJQyAnLS8vVzNDLy9EVEQgU1ZHIDEuMS8vRU4nICAnaHR0cDovL3d3dy53My5vcmcvR3JhcGhpY3MvU1ZHLzEuMS9EVEQvc3ZnMTEuZHRkJz48c3ZnIGVuYWJsZS1iYWNrZ3JvdW5kPSJuZXcgMCAwIDUwIDUwIiBoZWlnaHQ9IjUwcHgiIGlkPSJMYXllcl8xIiB2ZXJzaW9uPSIxLjEiIHZpZXdCb3g9IjAgMCA1MCA1MCIgd2lkdGg9IjUwcHgiIHhtbDpzcGFjZT0icHJlc2VydmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiPjxyZWN0IGZpbGw9Im5vbmUiIGhlaWdodD0iNTAiIHdpZHRoPSI1MCIvPjxwb2x5Z29uIHBvaW50cz0iNDcuMjUsMTUgNDUuMTY0LDEyLjkxNCAyNSwzMy4wNzggNC44MzYsMTIuOTE0IDIuNzUsMTUgMjUsMzcuMjUgIi8+PC9zdmc+');
-  background-position: right 8px center;
-  background-repeat: no-repeat;
-  background-size: auto 36%;
-  border-radius: 2px;
-  border: none;
-  outline: none;
-  -moz-appearance: none;
-  -webkit-appearance: none;
-  appearance: none;
-  font-size: 14px;
-  padding: 10px 24px 10px 8px;
-  border: 2px solid #ddd;
-  border-radius: 8px;
 }
 
 .locui-table p {
