@@ -31,14 +31,18 @@ export default function InputUrls() {
 
   const errorPresent = checkForErrors(errors);
 
-  const fetchFragments = async () => {
-    if (urlsStr && !errors.urlsStr) {
-      const inputUrls = urlsStr.split(URL_SEPARATOR_PATTERN)
+  const fetchFragments = async (urls, selectAll = false) => {
+    if (urls && !errors.urlsStr) {
+      const inputUrls = urls.split(URL_SEPARATOR_PATTERN)
         .filter((url) => url).map((url) => new URL(url));
       setFragmentsLoading(true);
       const found = await findFragments(getUrls(inputUrls));
       setAllFragments(found || []);
+      const validFrags = found?.filter((frag) => !frag?.valid);
       setNoOfValidFragments((found?.filter((frag) => !frag?.valid) ?? []).length);
+      if (selectAll) {
+        setFragments(validFrags.map(({ pathname }) => pathname));
+      }
       setFragmentsLoading(false);
     }
   };
@@ -65,7 +69,7 @@ export default function InputUrls() {
   function handleFragmentsToggle() {
     setFragmentsEnabled(!fragmentsEnabled);
     if (!fragmentsEnabled && !errors.urlsStr) {
-      fetchFragments();
+      fetchFragments(urlsStr, true);
     }
   }
 
@@ -108,11 +112,15 @@ export default function InputUrls() {
     setUrlsStr(project.value?.urls?.join('\n') || '');
     setFragmentsEnabled(project.value?.fragments?.length > 0);
     setFragments(project.value?.fragments || []);
+    if (project.value?.fragments?.length > 0 && project.value?.urls.length > 0) {
+      fetchFragments(project.value?.urls?.join('\n'));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleUrlsBlur = () => {
     if (!errors.urlsStr && fragmentsEnabled) {
-      fetchFragments();
+      fetchFragments(urlsStr, true);
     }
   };
 

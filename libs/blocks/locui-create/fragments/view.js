@@ -18,12 +18,10 @@ export default function FragmentsSection({
   const [errorFragments, setErrorFragments] = useState([]);
 
   useEffect(() => {
-    const validFrag = allFragments.filter((frag) => !frag?.valid);
-    setValidFragments(validFrag);
-    setSelectedFragments(validFrag.map(({ pathname }) => pathname));
+    setValidFragments(allFragments.filter((frag) => !frag?.valid));
     const invalid = allFragments.filter((frag) => typeof frag?.valid === 'string');
     setErrorFragments(invalid);
-  }, [allFragments, setSelectedFragments]);
+  }, [allFragments]);
 
   const handleClick = (event) => {
     const pathname = event.target?.value;
