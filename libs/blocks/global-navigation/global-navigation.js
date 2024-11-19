@@ -39,7 +39,6 @@ import {
   darkIcons,
   setDisableAEDState,
   getDisableAEDState,
-  newNavEnabled,
   animateInSequence,
   transformTemplateToMobile,
 } from './utilities/utilities.js';
@@ -281,7 +280,7 @@ const convertToPascalCase = (str) => str
   .join(' ');
 
 class Gnav {
-  constructor({ content, block } = {}) {
+  constructor({ content, block, newMobileNav } = {}) {
     this.content = content;
     this.block = block;
     this.customLinks = getConfig()?.customLinks?.split(',') || [];
@@ -297,6 +296,7 @@ class Gnav {
 
     this.setupUniversalNav();
     this.elements = {};
+    this.newMobileNav = newMobileNav;
   }
 
   // eslint-disable-next-line no-return-assign
@@ -374,14 +374,14 @@ class Gnav {
     const localNavItems = this.elements.navWrapper.querySelector('.feds-nav').querySelectorAll('.feds-navItem:not(.feds-navItem--section)');
     const [title, navTitle = ''] = this.getOriginalTitle(localNavItems);
 
-    if (this.elements.localNav || !newNavEnabled || !this.isLocalNav() || isDesktop.matches) {
+    if (this.elements.localNav || !this.newMobileNav || !this.isLocalNav() || isDesktop.matches) {
       localNavItems[0].querySelector('a').textContent = title.trim();
     } else {
       const localNav = document.querySelector('.feds-localnav');
       localNav.append(toFragment`<button class="feds-navLink--hoverCaret feds-localnav-title"></button>`, toFragment` <div class="feds-localnav-items"></div>`);
 
       const itemWrapper = localNav.querySelector('.feds-localnav-items');
-      const titleLabel = await replaceKey('overview', getFedsPlaceholderConfig())
+      const titleLabel = await replaceKey('overview', getFedsPlaceholderConfig());
 
       localNavItems.forEach((elem, idx) => {
         const clonedItem = elem.cloneNode(true);
@@ -739,7 +739,7 @@ class Gnav {
   toggleMenuMobile = () => {
     const toggle = this.elements.mobileToggle;
     const isExpanded = this.isToggleExpanded();
-    if (!isExpanded && newNavEnabled) {
+    if (!isExpanded && this.newMobileNav) {
       const sections = document.querySelectorAll('header.new-nav .feds-nav > section.feds-navItem > button.feds-navLink');
       animateInSequence(sections, 0.075);
       if (this.isLocalNav()) {
@@ -1005,14 +1005,14 @@ class Gnav {
           type: itemType,
         });
 
-        if (this.isLocalNav() && newNavEnabled) {
+        if (this.isLocalNav() && this.newMobileNav) {
           decorateLocalNavItems(item, template);
         }
 
         const popup = template.querySelector('.feds-popup');
         let originalContent = popup.innerHTML;
 
-        if (!isDesktop.matches && newNavEnabled && popup) {
+        if (!isDesktop.matches && this.newMobileNav && popup) {
           originalContent = transformTemplateToMobile(popup, item, this.isLocalNav());
           popup.querySelector('.close-icon')?.addEventListener('click', this.toggleMenuMobile);
           makeTabActive(popup);
@@ -1056,7 +1056,7 @@ class Gnav {
 
         // Toggle trigger's dropdown on click
         dropdownTrigger.addEventListener('click', (e) => {
-          if (!isDesktop.matches && newNavEnabled && isSectionMenu) {
+          if (!isDesktop.matches && this.newMobileNav && isSectionMenu) {
             const popup = dropdownTrigger.nextElementSibling;
             makeTabActive(popup);
           }
@@ -1186,6 +1186,7 @@ const getSource = async () => {
 export default async function init(block) {
   const { mep } = getConfig();
   const sourceUrl = await getSource();
+  const newMobileNav = getMetadata('mobile-gnav-v2') !== 'false';
   const [url, hash = ''] = sourceUrl.split('#');
   if (hash === '_noActiveItem') {
     setDisableAEDState();
@@ -1201,8 +1202,9 @@ export default async function init(block) {
   const gnav = new Gnav({
     content,
     block,
+    newMobileNav,
   });
-  if (newNavEnabled && !isDesktop.matches) block.classList.add('new-nav');
+  if (newMobileNav && !isDesktop.matches) block.classList.add('new-nav');
   await gnav.init();
   if (gnav.isLocalNav()) block.classList.add('local-nav');
   block.setAttribute('daa-im', 'true');
