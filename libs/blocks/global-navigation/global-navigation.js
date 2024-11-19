@@ -280,7 +280,7 @@ const convertToPascalCase = (str) => str
   .join(' ');
 
 class Gnav {
-  constructor({ content, block } = {}) {
+  constructor({ content, block, newMobileNav } = {}) {
     this.content = content;
     this.block = block;
     this.customLinks = getConfig()?.customLinks?.split(',') || [];
@@ -296,7 +296,7 @@ class Gnav {
 
     this.setupUniversalNav();
     this.elements = {};
-    this.newMobileNav = getMetadata('mobile-gnav-v2') !== 'false';
+    this.newMobileNav = newMobileNav;
   }
 
   // eslint-disable-next-line no-return-assign
@@ -1186,6 +1186,7 @@ const getSource = async () => {
 export default async function init(block) {
   const { mep } = getConfig();
   const sourceUrl = await getSource();
+  const newMobileNav = getMetadata('mobile-gnav-v2') !== 'false';
   const [url, hash = ''] = sourceUrl.split('#');
   if (hash === '_noActiveItem') {
     setDisableAEDState();
@@ -1201,8 +1202,9 @@ export default async function init(block) {
   const gnav = new Gnav({
     content,
     block,
+    newMobileNav,
   });
-  if (this.newMobileNav && !isDesktop.matches) block.classList.add('new-nav');
+  if (newMobileNav && !isDesktop.matches) block.classList.add('new-nav');
   await gnav.init();
   if (gnav.isLocalNav()) block.classList.add('local-nav');
   block.setAttribute('daa-im', 'true');
