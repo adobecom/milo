@@ -66,13 +66,9 @@ export default function InputUrls() {
       fetchFragments();
     }
   }
-  useEffect(() => {
-    console.log('saurabh', errors);
-  }, [errors]);
 
   const handleFragmentsChange = useCallback((_fragments) => {
     setFragments(_fragments);
-    console.log('saurabh', noOfValidFrag);
     setErrors((prev) => ({
       ...prev,
       fragments: fragmentsEnabled && noOfValidFrag > 0 && _fragments.length === 0,
