@@ -1081,10 +1081,8 @@ export const combineMepSources = async (persEnabled, promoEnabled, promoUtilsPro
       .split(/,|(\s+)|(\\n)/g)
       .filter((path) => path?.trim())
       .map((manifestPath) => ({ manifestPath }));
-    initialPersManifestsPromises = initialPersManifests.map(({ manifestPath }) => {
-      const normalizedURL = normalizePath(manifestPath);
-      return fetch(normalizedURL, { mode: 'same-origin' });
-    });
+    initialPersManifestsPromises = initialPersManifests
+      .map(({ manifestPath }) => fetch(normalizePath(manifestPath), { mode: 'same-origin' }));
   }
 
   if (promoEnabled) {
@@ -1164,6 +1162,7 @@ export async function init(enablements = {}) {
       .concat(await combineMepSources(pzn, promo, promoUtilsPromise, mepParam));
 
     manifestPromises = manifestPromises.map((mPromise) => mPromise.then(async (resp) => {
+      if (pzn) loadLink(getXLGListURL(config), { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
       try {
         if (!resp.ok) {
           /* c8 ignore next 5 */
@@ -1178,7 +1177,6 @@ export async function init(enablements = {}) {
         /* c8 ignore next 3 */
         console.log(`Error loading content: ${resp.url}`, e.message || e);
       }
-      if (pzn) loadLink(getXLGListURL(config), { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
       return null;
     }));
   }
