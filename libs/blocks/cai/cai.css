@@ -20,6 +20,7 @@
   
   #cai-img-container .cai-tooltip hr {
     margin: 0;
+    border: 1px solid #e6e6e6;
   }
   
   #cai-img-container .cai-tooltip.hide, 
