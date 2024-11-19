@@ -1945,8 +1945,9 @@ span[is="inline-price"][data-template='strikethrough'] {
     text-decoration: line-through;
 }
 
-span[is="inline-price"][data-display-per-unit='true'] span.price-recurrence::after {
-    content: ' ';
+.price-unit-type:not(.disabled)::before,
+.price-tax-inclusivity:not(.disabled)::before {
+  content: "\\00a0";
 }
 
 merch-card sp-button a {
