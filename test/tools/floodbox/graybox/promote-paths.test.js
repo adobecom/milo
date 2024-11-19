@@ -5,7 +5,6 @@ import RequestHandler from '../../../../tools/floodbox/request-handler.js';
 
 describe('getFilesToPromote', () => {
   let requestHandlerStub;
-  let crawlMock;
 
   beforeEach(() => {
     requestHandlerStub = sinon.stub(RequestHandler.prototype, 'daFetch');
