@@ -84,7 +84,7 @@ export class AemFragment extends HTMLElement {
         this.shadowRoot.adoptedStyleSheets = [sheet];
 
         const ims = this.getAttribute(ATTRIBUTE_IMS);
-        if (['', true].includes(ims)) {
+        if (['', true, 'true'].includes(ims)) {
             this.ims = true;
             if (!headers) {
                 headers = {
@@ -93,8 +93,6 @@ export class AemFragment extends HTMLElement {
                     'cache-control': 'no-cache',
                 };
             }
-        } else {
-            this.ims = false;
         }
     }
 
@@ -135,7 +133,7 @@ export class AemFragment extends HTMLElement {
                 return true;
             })
             .catch(() => {
-                /* c8 ignore next 3 */ 
+                /* c8 ignore next 3 */
                 this.#fail('Network error: failed to load fragment');
                 this.#readyPromise = null;
                 return false;

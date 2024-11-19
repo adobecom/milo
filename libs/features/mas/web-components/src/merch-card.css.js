@@ -12,7 +12,7 @@ export const styles = css`
         background-color: var(--merch-card-background-color);
         font-family: var(--merch-body-font-family, 'Adobe Clean');
         border-radius: var(--consonant-merch-spacing-xs);
-        border: 1px solid var(--consonant-merch-card-border-color);
+        border: 1px solid var(--spectrum-gray-200, var(--consonant-merch-card-border-color));
         box-sizing: border-box;
     }
 
