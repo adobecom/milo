@@ -6,10 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     
     <script>
-      if (/localhost/.test(window.location.host)) {
-        const meta = document.createElement('meta');
-        meta.name = 'aem-base-url';
-        meta.content = 'http://localhost:8080'; // local AEM proxy URL
+      const params = new URLSearchParams(document.location.search);
+      let baseUrl;
+      if (params.get('aem.env') === "qa") {
+        baseUrl = "https://qa-odin.adobe.com"; // Odin QA Env
+      } else if (/localhost/.test(document.location.host)) {
+        baseUrl = "http://localhost:8080"; // local AEM proxy URL
+      }
+      if (baseUrl) {
+        const meta = document.createElement("meta");
+        meta.name = "aem-base-url";
+        meta.content = baseUrl;
         document.head.appendChild(meta);
       }
     </script>
@@ -18,7 +25,6 @@
     <script type="module" src="../mas/dist/mas.js"></script>
 
     <script type="module">
-      const params = new URLSearchParams(document.location.search);
       // theme
       const darkTheme = params?.get('theme')?.toLowerCase() === 'dark';
       const theme = document.createElement('script');
