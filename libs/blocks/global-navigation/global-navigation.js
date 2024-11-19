@@ -370,7 +370,7 @@ class Gnav {
     `;
   };
 
-  decorateLocalNav = () => {
+  decorateLocalNav = async () => {
     const localNavItems = this.elements.navWrapper.querySelector('.feds-nav').querySelectorAll('.feds-navItem:not(.feds-navItem--section)');
     const [title, navTitle = ''] = this.getOriginalTitle(localNavItems);
 
@@ -381,13 +381,15 @@ class Gnav {
       localNav.append(toFragment`<button class="feds-navLink--hoverCaret feds-localnav-title"></button>`, toFragment` <div class="feds-localnav-items"></div>`);
 
       const itemWrapper = localNav.querySelector('.feds-localnav-items');
+      const titleLabel = await replaceKey('overview', getFedsPlaceholderConfig())
+
       localNavItems.forEach((elem, idx) => {
         const clonedItem = elem.cloneNode(true);
         const link = clonedItem.querySelector('a');
 
         if (idx === 0) {
           localNav.querySelector('.feds-localnav-title').innerText = title.trim();
-          link.textContent = navTitle.trim() || title.trim();
+          link.textContent = navTitle.trim() || titleLabel;
         }
 
         itemWrapper.appendChild(clonedItem);
