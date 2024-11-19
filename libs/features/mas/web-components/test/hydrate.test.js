@@ -2,6 +2,10 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import mas from './mas.js';
 import {
+    processMnemonics,
+    processTitle,
+    processSize,
+    processPrices,
     processBackgroundImage,
     processCTAs,
     processSubtitle,
@@ -19,6 +23,57 @@ const mockMerchCard = () => {
     });
     return merchCard;
 };
+
+describe('processMnemonics', async () => {
+    it('should process mnemonics', async () => {
+        const fields = {
+            mnemonicIcon: ['www.adobe.com/icons/photoshop.svg'],
+            mnemonicAlt: [],
+            mnemonicLink: ['www.adobe.com'],
+        };
+        const merchCard = mockMerchCard();
+        const mnemonicsConfig = { size: 'm' };
+        processMnemonics(fields, merchCard, mnemonicsConfig);
+        expect(merchCard.outerHTML).to.equal(
+            '<div><merch-icon slot="icons" src="www.adobe.com/icons/photoshop.svg" size="m" href="https://www.adobe.com/"></merch-icon></div>',
+        );
+    });
+});
+
+describe('processTitle', async () => {
+    it('should process use tag and slot metadata', async () => {
+        const fields = { cardTitle: 'Photoshop' };
+        const merchCard = mockMerchCard();
+        const titleConfig = { tag: 'h2', slot: 'title' };
+        processTitle(fields, merchCard, titleConfig);
+        expect(merchCard.outerHTML).to.equal(
+            '<div><h2 slot="title">Photoshop</h2></div>',
+        );
+    });
+});
+
+describe('processSize', async () => {
+    it('should apply size', async () => {
+        const fields = { size: 'wide' };
+        const merchCard = mockMerchCard();
+        processSize(fields, merchCard, ['wide']);
+        expect(merchCard.outerHTML).to.equal('<div size="wide"></div>');
+    });
+});
+
+describe('processPrices', async () => {
+    it('should process prices', async () => {
+        const fields = {
+            prices: '<span>$9.99</span>',
+        };
+        const merchCard = mockMerchCard();
+        const pricesConfig = { tag: 'p', slot: 'prices' };
+        processPrices(fields, merchCard, pricesConfig);
+        expect(merchCard.outerHTML).to.equal(
+            '<div><p slot="prices"><span>$9.99</span></p></div>',
+        );
+    });
+});
 
 describe('processCTAs', async () => {
     let merchCard;

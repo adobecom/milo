@@ -4,6 +4,13 @@ export async function withAem(originalFetch) {
         const isAuthor = /cf\/fragments\//.test(pathname);
         if (isPublish || isAuthor) {
             const fragmentId = pathname.split('/').pop();
+            if (fragmentId === 'notfound') {
+                return Promise.resolve({
+                    ok: false,
+                    status: 404,
+                    statusText: 'Fragment not found',
+                });
+            }
             return await originalFetch(
                 isAuthor
                     ? `/test/mocks/sites/cf/fragments/${fragmentId}.json`

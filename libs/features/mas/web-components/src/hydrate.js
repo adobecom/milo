@@ -5,7 +5,7 @@ const DEFAULT_BADGE_BACKGROUND_COLOR = '#F8D904';
 const CHECKOUT_LINK_STYLE_PATTERN =
     /(accent|primary|secondary)(-(outline|link))?/;
 
-function processMnemonics(fields, merchCard, aemFragmentMapping) {
+export function processMnemonics(fields, merchCard, mnemonicsConfig) {
     const mnemonics = fields.mnemonicIcon?.map((icon, index) => ({
         icon,
         alt: fields.mnemonicAlt[index] ?? '',
@@ -17,6 +17,7 @@ function processMnemonics(fields, merchCard, aemFragmentMapping) {
             try {
                 href = new URL(`https://${href}`).href.toString();
             } catch (e) {
+                /* c8 ignore next 2 */
                 href = '#';
             }
         }
@@ -24,7 +25,7 @@ function processMnemonics(fields, merchCard, aemFragmentMapping) {
         const attrs = {
             slot: 'icons',
             src,
-            size: aemFragmentMapping.mnemonics?.size ?? 'l',
+            size: mnemonicsConfig?.size ?? 'l',
         };
         if (alt) attrs.alt = alt;
         if (href) attrs.href = href;
@@ -47,13 +48,13 @@ function processBadge(fields, merchCard) {
     }
 }
 
-function processSize(fields, merchCard, allowedSizes) {
+export function processSize(fields, merchCard, allowedSizes) {
     if (allowedSizes?.includes(fields.size)) {
         merchCard.setAttribute('size', fields.size);
     }
 }
 
-function processTitle(fields, merchCard, titleConfig) {
+export function processTitle(fields, merchCard, titleConfig) {
     if (fields.cardTitle && titleConfig) {
         merchCard.append(
             createTag(
@@ -106,7 +107,7 @@ export function processBackgroundImage(
     }
 }
 
-function processPrices(fields, merchCard, pricesConfig) {
+export function processPrices(fields, merchCard, pricesConfig) {
     if (fields.prices && pricesConfig) {
         const headingM = createTag(
             pricesConfig.tag,
@@ -235,7 +236,7 @@ export async function hydrate(fragment, merchCard) {
     const { aemFragmentMapping } = merchCard.variantLayout;
     if (!aemFragmentMapping) return;
 
-    processMnemonics(fields, merchCard, aemFragmentMapping);
+    processMnemonics(fields, merchCard, aemFragmentMapping.mnemonics);
 
     processBadge(fields, merchCard);
     processSize(fields, merchCard, aemFragmentMapping.allowedSizes);

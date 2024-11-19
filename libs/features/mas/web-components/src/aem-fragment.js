@@ -11,6 +11,10 @@ const ATTRIBUTE_FRAGMENT = 'fragment';
 const ATTRIBUTE_AUTHOR = 'author';
 const ATTRIBUTE_IMS = 'ims';
 
+const fail = (message) => {
+    throw new Error(`Failed to get fragment: ${message}`);
+};
+
 /**
  * Get fragment by ID
  * @param {string} baseUrl the aem base url
@@ -22,16 +26,14 @@ const ATTRIBUTE_IMS = 'ims';
 export async function getFragmentById(baseUrl, id, author, headers) {
     const endpoint = author
         ? `${baseUrl}/adobe/sites/cf/fragments/${id}`
-        : `${baseUrl}/adobe/experimental/fragmentdelivery-expires-20250330/sites/fragments/${id}`;
+        : `${baseUrl}/adobe/sites/fragments/${id}`;
     const response = await fetch(endpoint, {
         cache: 'default',
         credentials: 'omit',
         headers,
-    });
-    if (!response.ok) {
-        throw new Error(
-            `Failed to get fragment: ${response.status} ${response.statusText}`,
-        );
+    }).catch((e) => fail(e.message));
+    if (!response?.ok) {
+        fail(`${response.status} ${response.statusText}`);
     }
     return response.json();
 }

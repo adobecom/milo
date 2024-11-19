@@ -139,10 +139,10 @@ runTests(async () => {
         it('throws an error if response is not ok', async () => {
             const promise = getFragmentById(
                 'http://localhost:2023',
-                'testid',
+                'notfound',
                 false,
             );
-            await expect(promise).to.be.rejectedWith('Not Found');
+            await expect(promise).to.be.rejectedWith('Failed to get fragment: 404 Fragment not found');
         });
 
         it('fetches fragment from author endpoint', async () => {
@@ -163,7 +163,7 @@ runTests(async () => {
                 false,
             );
             expect(fetch.lastCall.firstArg).to.equal(
-                'http://localhost:2023/adobe/experimental/fragmentdelivery-expires-20250330/sites/fragments/fragment-cc-all-apps',
+                'http://localhost:2023/adobe/sites/fragments/fragment-cc-all-apps',
             );
         });
     });
