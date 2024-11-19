@@ -15,16 +15,16 @@ const defaults = {
     sourcemap: false,
 };
 
-let { metafile } = await build({
+const { metafile } = await build({
     ...defaults,
     entryPoints: ['./src/mas.js'],
-    outfile: '../../../deps/mas/mas.js',
+    outfile: './dist/mas.js',
 });
 
 await build({
     ...defaults,
     entryPoints: ['./src/mas.js'],
-    outfile: './dist/mas.js',
+    outfile: '../../../deps/mas/mas.js',
 });
 
 fs.writeFileSync('mas.json', JSON.stringify(metafile));

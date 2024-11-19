@@ -18,7 +18,7 @@ export const getSlotText = (element, name) =>
  * @param {*} content
  * @returns {HTMLElement}
  */
-export function createTag(tag, attributes = {}, content) {
+export function createTag(tag, attributes = {}, content = '') {
     const element = document.createElement(tag);
     if (content instanceof HTMLElement) {
         element.appendChild(content);

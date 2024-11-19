@@ -34,7 +34,11 @@ export class MerchCard extends LitElement {
             attribute: 'badge-background-color',
             reflect: true,
         },
-        backgroundImage: { type: String, attribute: 'background-image', reflect: true },
+        backgroundImage: {
+            type: String,
+            attribute: 'background-image',
+            reflect: true,
+        },
         badgeText: { type: String, attribute: 'badge-text' },
         actionMenu: { type: Boolean, attribute: 'action-menu' },
         customHr: { type: Boolean, attribute: 'custom-hr' },
@@ -139,6 +143,10 @@ export class MerchCard extends LitElement {
 
     get theme() {
         return this.closest('sp-theme');
+    }
+
+    get dir() {
+        return this.closest('[dir]')?.getAttribute('dir') ?? 'ltr';
     }
 
     get prices() {
@@ -286,7 +294,7 @@ export class MerchCard extends LitElement {
         this.addEventListener(EVENT_AEM_LOAD, this.handleAemFragmentEvents);
 
         if (!this.aemFragment) {
-          setTimeout(() => this.checkReady(), 0);
+            setTimeout(() => this.checkReady(), 0);
         }
     }
 

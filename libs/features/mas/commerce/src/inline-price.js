@@ -174,6 +174,10 @@ export class InlinePrice extends HTMLSpanElement {
         return this.masElement.value;
     }
 
+    get options() {
+        return this.masElement.options;
+    }
+
     requestUpdate(force = false) {
         return this.masElement.requestUpdate(force);
     }
