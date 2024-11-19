@@ -18,7 +18,7 @@ export default function InputUrls() {
   const [urlsStr, setUrlsStr] = useState('');
   const [fragmentsEnabled, setFragmentsEnabled] = useState(false);
   const [fragments, setFragments] = useState([]);
-  const [noOfValidFrag, setNoOfValidfragments] = useState(0);
+  const [noOfValidFrag, setNoOfValidFragments] = useState(0);
   const [allFragments, setAllFragments] = useState([]);
   const [isFragmentsLoading, setFragmentsLoading] = useState(false);
   const [errors, setErrors] = useState({
@@ -35,8 +35,8 @@ export default function InputUrls() {
       const inputUrls = urlsStr.split(/[,\r\n]/g).filter((url) => url).map((url) => new URL(url));
       setFragmentsLoading(true);
       const found = await findFragments(getUrls(inputUrls));
-      setAllFragments(found);
-      setNoOfValidfragments(found.filter((frag) => !frag?.valid));
+      setAllFragments(found || []);
+      setNoOfValidFragments((found?.filter((frag) => !frag?.valid) ?? []).length);
       setFragmentsLoading(false);
     }
   };
@@ -66,9 +66,13 @@ export default function InputUrls() {
       fetchFragments();
     }
   }
+  useEffect(() => {
+    console.log('saurabh', errors);
+  }, [errors]);
 
   const handleFragmentsChange = useCallback((_fragments) => {
     setFragments(_fragments);
+    console.log('saurabh', noOfValidFrag);
     setErrors((prev) => ({
       ...prev,
       fragments: fragmentsEnabled && noOfValidFrag > 0 && _fragments.length === 0,
