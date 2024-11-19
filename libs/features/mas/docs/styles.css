@@ -141,3 +141,7 @@ button {
   grid-template-columns: 1fr;
   gap: 20px;
 }
+
+merch-card:has(+ merch-card) {
+  margin-bottom: 20px;
+}

@@ -17,14 +17,16 @@
   </script>
   <!-- Include your custom element script as an ES6 module -->
   <script src="../../../features/spectrum-web-components/dist/theme.js" type="module"></script>
+  <script src="../../../features/spectrum-web-components/dist/action-button.js" type="module"></script>
   <script src="../../../features/spectrum-web-components/dist/button.js" type="module"></script>
-  <script type="module" src="../../../deps/mas/mas.js"></script>
+  <script type="module" src="../mas/dist/mas.js"></script>
 
   <script type="module">
     const params = new URLSearchParams(document.location.search);
     const masCommerceService = document.createElement('mas-commerce-service');
-    ['locale','language','env'].forEach((attribute) => {
-      const value = params.get(attribute);
+    ['locale','language','env','cli'].forEach((attribute) => {
+      let value = params.get(attribute);
+      if (value === 'cli') attribute = 'checkout-client-id';
       if (value) masCommerceService.setAttribute(attribute, value);
     });
     document.head.appendChild(masCommerceService);
@@ -47,11 +49,10 @@
 <li><a href="/libs/features/mas/docs/inline-price.html">inline-price</a></li>
 <li><a href="/libs/features/mas/docs/checkout-link.html">checkout-link</a></li>
 <li><a href="/libs/features/mas/docs/merch-card.html">merch-card</a></li>
-<li><a href="/libs/features/mas/docs/ccd.html">CCD Gallery</a></li>
 </ul>
 <h2 id="enablement-mas-commerce-service" tabindex="-1">Enablement <code>mas-commerce-service</code> <a class="header-anchor" href="#enablement-mas-commerce-service" href="#enablement-mas-commerce-service" title="Permalink to this heading">#</a></h2>
 <p>You do need to have mas.js on your page / application, including it can be done like the following</p>
-<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;/libs/deps/mas/mas.js&quot;</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;module&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;https://www.adobe.com/libs/features/mas/mas/dist/mas.js&quot;</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;module&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
 </code></pre>
 <h3 id="attributes" tabindex="-1">Attributes <a class="header-anchor" href="#attributes" href="#attributes" title="Permalink to this heading">#</a></h3>
 <table>

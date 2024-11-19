@@ -16,6 +16,13 @@ export async function withAem(originalFetch) {
                     headers: { get: () => ({}) },
                     json: () => Promise.resolve(item),
                 });
+            } else {
+                return Promise.resolve({
+                    ok: false,
+                    status: 404,
+                    headers: { get: () => ({}) },
+                    json: () => Promise.reject('Not found'),
+                });
             }
         }
         return false;

@@ -121,7 +121,7 @@ export class VariantLayout {
           background: url("${this.card.backgroundImage}");
           background-size: auto 100%;
           background-repeat: no-repeat;
-          background-position: ${this.card.theme.dir === 'ltr' ? 'left' : 'right'};
+          background-position: ${this.card.dir === 'ltr' ? 'left' : 'right'};
         `;
       }
       return '';

@@ -12,6 +12,9 @@ Designs:
 
 **CCD**: https://www.figma.com/proto/7tUtNgFelfMjgPoJ5QcE1k/Merch%40Scale-Frameworks?node-id=2077-63597&t=cWfdzWlga79eyjyI-1
 
+**CCD Gallery**: [/libs/features/mas/docs/ccd.html](/libs/features/mas/docs/ccd.html)
+CCD Gallery provides a comprehensive list of all supported card variants in CCD.
+
 ## Examples
 
 ### With an Odin/AEM Fragment (VPN required)
@@ -99,7 +102,6 @@ Designs:
 #### Active variants:
 
 -   `catalog`
--   `ccd-action`
 -   `image`
 -   `inline-heading`
 -   `mini-compare-chart`
@@ -109,12 +111,13 @@ Designs:
 -   `special-offers`
 -   `twp`
 -   `ccd-slice`
+-   `ccd-suggested`
 
 ### Properties
 
-| Name             | Description                                                      |
-| ---------------- | ---------------------------------------------------------------- |
-| `updateComplete` | a promise that resolves when the `merch-card` finishes to execute render method. Doesn't mean that card is ready, for that use 'mas:ready' or 'mas:error' event. method. Doesn’t mean that card is ready, for that use ‘mas:ready’ or ‘mas:error’ event. |
+| Name             | Description                                                                                                                                                      |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `updateComplete` | a promise that resolves when the `merch-card` finishes to execute render method. Doesn't mean that card is ready, for that use 'mas:ready' or 'mas:error' event. |
 
 ### Events
 
@@ -173,10 +176,12 @@ Designs:
                 log(target, `${e.target.nodeName}: ${e.detail}`),
             );
 
-            card.addEventListener('mas:ready', () =>
-                card.classList.add('ready'),
-            );
+            card.addEventListener('mas:ready', () => {
+                card.classList.add('ready');
+                card.classList.remove('error');
+            });
             card.addEventListener('mas:error', (e) => {
+                card.classList.remove('ready');
                 card.classList.add('error');
                 log(target, `${e.target.nodeName}: ${e.detail}`);
             });
@@ -243,7 +248,10 @@ Designs:
             log(target, 'merch-card is ready: ', e.target.variant);
         });
         const aemFragment = psCard.querySelector('aem-fragment');
-        aemFragment.addEventListener('aem:load', (e) => log(target, e.detail));
+        aemFragment.addEventListener('aem:load', (e) => {
+            log(target, JSON.stringify(e.detail));
+            log(target, 'aem-fragment has loaded');
+        });
         document.getElementById('btnRefresh').addEventListener('click', () => {
             aemFragment.refresh();
         });
@@ -253,4 +261,43 @@ Designs:
 
 ```html {#log3}
 
+```
+
+## Extending merch-card
+
+The `merch-card` custom element renders content in its default slot, allowing consumers to seamlessly extend it with additional UI capabilities.
+
+### Example
+In the demo below, the `aem-fragment` custom element is headless and does not render any content.
+The `sp-action-button` custom element renders into the default slot as no explicit slot is provided.
+
+```html {.demo .light}
+<style>
+    merch-card sp-action-button {
+        position: absolute;
+        display: none;
+        top: 4px;
+        right: 4px;
+    }
+
+    merch-card:hover sp-action-button {
+        display: block;
+    }
+</style>
+<merch-card>
+    <aem-fragment
+        fragment="d8008cac-010f-4607-bacc-a7a327da1312"
+    ></aem-fragment>
+    <sp-action-button id="ctxBtn"> ... </sp-action-button>
+</merch-card>
+<script type="module">
+    document
+        .getElementById('ctxBtn')
+        .addEventListener(
+            'click',
+            (e) =>
+                (e.target.parentElement.style.backgroundColor =
+                    'var(--spectrum-blue-300)'),
+        );
+</script>
 ```

@@ -9,14 +9,13 @@ mas.js includes the followings custom elements:
 -   [inline-price](/libs/features/mas/docs/inline-price.html)
 -   [checkout-link](/libs/features/mas/docs/checkout-link.html)
 -   [merch-card](/libs/features/mas/docs/merch-card.html)
--   [CCD Gallery](/libs/features/mas/docs/ccd.html)
 
 ## Enablement `mas-commerce-service`
 
 You do need to have mas.js on your page / application, including it can be done like the following
 
 ```html
-<script src="/libs/deps/mas/mas.js" type="module"></script>
+<script src="https://www.adobe.com/libs/features/mas/mas/dist/mas.js" type="module"></script>
 ```
 
 ### Attributes

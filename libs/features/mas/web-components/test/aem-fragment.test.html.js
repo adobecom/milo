@@ -52,7 +52,7 @@ runTests(async () => {
             const ccdDataSource = ccCard.querySelector('aem-fragment');
             await ccdDataSource.updateComplete;
             await ccCard.updateComplete;
-            expect(ccCard.querySelectorAll('[slot]')).to.have.length(5);
+            expect(ccCard.querySelectorAll('[slot]')).to.have.length(4);
         });
 
         it('re-renders a card after clearing the cache', async () => {
