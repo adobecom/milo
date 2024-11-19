@@ -6,6 +6,7 @@ function validatePaths(paths) {
 
   let org; let repo; let expName;
   for (const path of paths) {
+    if (!path.startsWith('/')) return retData;
     const parts = path.split('/').filter(Boolean);
 
     // Check that path has more than 3 parts
