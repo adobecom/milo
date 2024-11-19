@@ -10,6 +10,7 @@ import {
   findFragments,
 } from './index.js';
 import { getUrls } from '../../locui/loc/index.js';
+import { URL_SEPARATOR_PATTERN } from '../utils/constant.js';
 
 export default function InputUrls() {
   const [name, setName] = useState('');
@@ -32,7 +33,8 @@ export default function InputUrls() {
 
   const fetchFragments = async () => {
     if (urlsStr && !errors.urlsStr) {
-      const inputUrls = urlsStr.split(/[,\r\n]/g).filter((url) => url).map((url) => new URL(url));
+      const inputUrls = urlsStr.split(URL_SEPARATOR_PATTERN)
+        .filter((url) => url).map((url) => new URL(url));
       setFragmentsLoading(true);
       const found = await findFragments(getUrls(inputUrls));
       setAllFragments(found || []);
@@ -183,7 +185,7 @@ export default function InputUrls() {
             id="includeFragments"
             name="includeFragments"
             checked=${fragmentsEnabled}
-            disabled=${urlsStr.length === 0 || errors.urlsStr.length > 0}
+            disabled=${urlsStr.length === 0 || errors?.urlsStr?.length > 0}
             onClick=${handleFragmentsToggle}
           />
           <label class="form-field-switch-label" for="includeFragments"></label>

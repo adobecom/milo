@@ -59,7 +59,7 @@ export function checkForErrors(errors) {
 export async function findFragments(urls) {
   const fragmentUrls = urls.map((url) => findDeepFragments(url.pathname));
   const pageFragments = await Promise.all(fragmentUrls);
-  const foundFragmentsDict = pageFragments.reduce((acc, fragments, index) => {
+  const fragmentsByPathname = pageFragments.reduce((acc, fragments, index) => {
     if (fragments.length > 0) {
       fragments.forEach((fragment) => {
         if (acc[fragment.pathname]) {
@@ -73,6 +73,6 @@ export async function findFragments(urls) {
     }
     return acc;
   }, {});
-  const foundFragments = Object.values(foundFragmentsDict);
+  const foundFragments = Object.values(fragmentsByPathname);
   return validateUrlsFormat(foundFragments, true);
 }
