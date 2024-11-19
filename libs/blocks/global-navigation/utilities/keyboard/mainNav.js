@@ -2,7 +2,7 @@
 import { selectors, getNextVisibleItemPosition, getPreviousVisibleItemPosition } from './utils.js';
 import Popup from './popup.js';
 import MobilePopup from './mobilePopup.js';
-import { closeAllDropdowns, trigger, logErrorFor } from '../utilities.js';
+import { closeAllDropdowns, trigger, logErrorFor, newMobileNav } from '../utilities.js';
 
 class MainNavItem {
   constructor() {
@@ -19,11 +19,9 @@ class MainNavItem {
           return;
         }
 
-        const newNav = !!document.querySelector('header.new-nav');
-
         switch (e.code) {
           case 'Tab': {
-            if (newNav) {
+            if (newMobileNav) {
               const activePopup = document.querySelector(selectors.activePopup);
               if (!activePopup) e.preventDefault();
               const items = [...document.querySelectorAll(`${selectors.mainMenuItems}, ${selectors.mainMenuLinks}`)];
@@ -53,11 +51,11 @@ class MainNavItem {
           case 'Escape': {
             closeAllDropdowns();
             const activePopup = document.querySelector(selectors.activePopup);
-            if (newNav && !activePopup) document.querySelector('header.new-nav .feds-toggle').click();
+            if (newMobileNav && !activePopup) document.querySelector('header.new-nav .feds-toggle').click();
             break;
           }
           case 'ArrowLeft': {
-            if (newNav) break;
+            if (newMobileNav) break;
             const { next, prev } = this.getState();
             if (document.dir !== 'rtl') {
               if (prev === -1) break;
@@ -69,14 +67,14 @@ class MainNavItem {
             break;
           }
           case 'ArrowUp': {
-            if (newNav) break;
+            if (newMobileNav) break;
             e.preventDefault();
             e.stopPropagation();
             this.focusPrev({ focus: 'last' });
             break;
           }
           case 'ArrowRight': {
-            if (newNav) break;
+            if (newMobileNav) break;
             const { next, prev, openTrigger } = this.getState();
             if (document.dir !== 'rtl') {
               if (next === -1) break;
@@ -91,7 +89,7 @@ class MainNavItem {
             break;
           }
           case 'ArrowDown': {
-            if (newNav) break;
+            if (newMobileNav) break;
             e.stopPropagation();
             e.preventDefault();
             const { items, curr } = this.getState();

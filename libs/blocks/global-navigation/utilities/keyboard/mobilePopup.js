@@ -83,11 +83,11 @@ class Popup {
     setActiveDropdown(focus === 'first' ? popupItems[first] : popupItems[last]);
   }
 
-  mobileArrowUp = ({ prev, curr, element, isFooter, newNav }) => {
+  mobileArrowUp = ({ prev, curr, element, isFooter, newMobileNav }) => {
     // Case 1:  Move focus to the previous item
     const state = getState(element);
     const { currentSection } = state;
-    const popupItems = newNav ? this.popupItems() : state.popupItems;
+    const popupItems = newMobileNav ? this.popupItems() : state.popupItems;
     if (prev !== -1 && curr - 1 === prev) {
       popupItems[prev].focus();
       if (currentSection !== getState(element).currentSection) closeHeadlines();
@@ -96,21 +96,21 @@ class Popup {
 
     // Case 2: No headline + no previous item, move to the main nav
     const { prevHeadline } = getState(element);
-    if (!prevHeadline && !newNav) {
+    if (!prevHeadline && !newMobileNav) {
       this.focusMainNav(isFooter);
       return;
     }
 
     // Case 3: Open the previous headline
-    if (newNav) popupItems?.[popupItems.length - 1]?.focus();
+    if (newMobileNav) popupItems?.[popupItems.length - 1]?.focus();
     else openHeadline({ headline: prevHeadline, focus: 'last' });
   };
 
-  mobileArrowDown = ({ next, element, isFooter, newNav }) => {
+  mobileArrowDown = ({ next, element, isFooter, newMobileNav }) => {
     // Case 1: Move focus to the next item
     const state = getState(element);
     const { currentSection } = state;
-    const popupItems = newNav ? this.popupItems() : state.popupItems;
+    const popupItems = newMobileNav ? this.popupItems() : state.popupItems;
     if (next !== -1) {
       popupItems[next].focus();
       if (currentSection !== getState(element).currentSection) closeHeadlines();
@@ -118,14 +118,14 @@ class Popup {
     }
     // Case 2: No headline + no next item, move to the main nav
     const { nextHeadline } = getState(element);
-    if (!nextHeadline && !newNav) {
+    if (!nextHeadline && !newMobileNav) {
       closeHeadlines();
       this.focusMainNavNext(isFooter);
       return;
     }
 
     // Case 3: Open the next headline
-    if (newNav) popupItems?.[0]?.focus();
+    if (newMobileNav) popupItems?.[0]?.focus();
     else openHeadline({ headline: nextHeadline, focus: 'first' });
   };
 
@@ -159,8 +159,8 @@ class Popup {
   };
 
   handleKeyDown = ({ e, element, isFooter }) => {
-    const newNav = !!document.querySelector('header.new-nav');
-    const popupItems = newNav
+    const newMobileNav = !!document.querySelector('header.new-nav');
+    const popupItems = newMobileNav
       ? this.popupItems()
       : [...element.querySelectorAll(selectors.popupItems)];
     const curr = popupItems.findIndex((el) => el === e.target);
@@ -173,9 +173,9 @@ class Popup {
     switch (e.code) {
       case 'Tab': {
         if (e.shiftKey) {
-          this.mobileArrowUp({ prev, curr, element, isFooter, newNav });
+          this.mobileArrowUp({ prev, curr, element, isFooter, newMobileNav });
         } else {
-          this.mobileArrowDown({ curr, next, element, isFooter, newNav });
+          this.mobileArrowDown({ curr, next, element, isFooter, newMobileNav });
         }
         break;
       }
@@ -185,7 +185,7 @@ class Popup {
         break;
       }
       case 'ArrowLeft': {
-        if (newNav) break;
+        if (newMobileNav) break;
         const { prevHeadline, nextHeadline } = getState(element);
         const headline = document.dir !== 'rtl' ? prevHeadline : nextHeadline;
         if (!headline) {
@@ -201,12 +201,12 @@ class Popup {
         break;
       }
       case 'ArrowUp': {
-        if (newNav) break;
+        if (newMobileNav) break;
         this.mobileArrowUp({ prev, curr, element, isFooter });
         break;
       }
       case 'ArrowRight': {
-        if (newNav) break;
+        if (newMobileNav) break;
         const { prevHeadline, nextHeadline } = getState(element);
         const headline = document.dir !== 'rtl' ? nextHeadline : prevHeadline;
         if (!headline) {
@@ -222,7 +222,7 @@ class Popup {
         break;
       }
       case 'ArrowDown': {
-        if (newNav) break;
+        if (newMobileNav) break;
         this.mobileArrowDown({ next, element, isFooter });
         break;
       }
