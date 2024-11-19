@@ -2,7 +2,7 @@
 import { selectors, getNextVisibleItemPosition, getPreviousVisibleItemPosition } from './utils.js';
 import Popup from './popup.js';
 import MobilePopup from './mobilePopup.js';
-import { closeAllDropdowns, trigger, logErrorFor, newMobileNav } from '../utilities.js';
+import { closeAllDropdowns, trigger, logErrorFor } from '../utilities.js';
 
 class MainNavItem {
   constructor() {
@@ -18,6 +18,7 @@ class MainNavItem {
         if (!e.target.closest(selectors.fedsNav) || e.target.closest(selectors.popup)) {
           return;
         }
+        const newMobileNav = getMetadata('mobile-gnav-v2') !== 'false';
 
         switch (e.code) {
           case 'Tab': {

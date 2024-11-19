@@ -39,7 +39,6 @@ import {
   darkIcons,
   setDisableAEDState,
   getDisableAEDState,
-  newMobileNav,
   animateInSequence,
   transformTemplateToMobile,
 } from './utilities/utilities.js';
@@ -47,6 +46,8 @@ import {
 import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
 
 const SIGNIN_CONTEXT = getConfig()?.signInContext;
+
+const newMobileNav = getMetadata('mobile-gnav-v2') !== 'false';
 
 function getHelpChildren() {
   const { unav } = getConfig();

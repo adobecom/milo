@@ -159,7 +159,7 @@ class Popup {
   };
 
   handleKeyDown = ({ e, element, isFooter }) => {
-    const newMobileNav = !!document.querySelector('header.new-nav');
+    const newMobileNav = getMetadata('mobile-gnav-v2') !== 'false';
     const popupItems = newMobileNav
       ? this.popupItems()
       : [...element.querySelectorAll(selectors.popupItems)];
