@@ -286,7 +286,7 @@ export default class MiloGraybox extends LitElement {
   }
 
   togglePromoteIgnore(event) {
-    this.promoteIgnore = event.target.checked;
+    this._promoteIgnore = event.target.checked;
     this.requestUpdate();
   }
 
@@ -386,7 +386,7 @@ export default class MiloGraybox extends LitElement {
             <option value="promotePaths">Promote Graybox Paths</option>            
           </select>
         </div>
-        ${this.selectedOption === 'promoteExp' ? html`
+        ${this._selectedOption === 'promoteExp' ? html`
           <div class="input-row">
             <input type="text" class="path-input" name="path" placeholder="Enter Experience Path" value="/sukamat/da-bacom-graybox/summit25" @input=${this.validateInput} />
             <button class="primary" @click=${this.handleClear}>Clear</button>
@@ -397,7 +397,7 @@ export default class MiloGraybox extends LitElement {
             <input type="checkbox" id="publish" name="publish" disabled>
             <label for="publish">Publish files after promote?</label>
           </div>
-          ${this.promoteIgnore === true ? html`
+          ${this._promoteIgnore === true ? html`
             <div class="input-row promote-ignore">
               <textarea class="path-list" name="additionalInfo" rows="3" 
                 placeholder="Enter paths to ignore from promote, separated by line-break. Eg:/<org>/<site>/<exp>/<path-to-file>"></textarea>
@@ -407,7 +407,7 @@ export default class MiloGraybox extends LitElement {
               <button class="accent" .disabled=${!this._canPromote} @click=${this.handlePromoteExperience}>Promote</button>
             </div>          
           ` : nothing}
-        ${this.selectedOption === 'promotePaths' ? html`
+        ${this._selectedOption === 'promotePaths' ? html`
           <div class="input-row">
             <textarea name="promotePaths" rows="3" placeholder="Enter graybox paths to promote, separated by line-break" @input=${this.validateInputPaths}></textarea>
             <button class="primary" @click=${this.handleClear}>Clear</button>
