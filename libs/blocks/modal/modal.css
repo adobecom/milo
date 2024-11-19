@@ -1,5 +1,7 @@
 :root {
   --modal-focus-color: #109cde;
+  --spacing-xl: 56px;
+  --aspect-ratio-tall: 9/16;
 }
 
 .dialog-modal {
@@ -220,10 +222,31 @@
   overflow: hidden;
 }
 
+.dialog-modal.tall-video {
+  line-height: 0;
+  width: fit-content;
+}
+
+.dialog-modal.tall-video .milo-video {
+  aspect-ratio: var(--aspect-ratio-tall);
+  height: auto;
+  padding-bottom: 0;
+}
+
 @media (min-width: 600px) {
   .dialog-modal {
     max-width: 80vw;
     width: fit-content;
+  }
+
+  .dialog-modal.tall-video {
+    max-width: 45vw;
+    padding: var(--spacing-xl);
+  }
+
+  .dialog-modal.tall-video .milo-video {
+    min-width: 45vw;
+    aspect-ratio: var(--aspect-ratio-tall);
   }
 
   .region-selector .content {
@@ -314,6 +337,37 @@
     max-width: 1100px;
     overflow: hidden;
     width: 80%;
+  }
+
+  .dialog-modal.tall-video {
+    max-width: 35vw;
+  }
+
+  .dialog-modal.tall-video .milo-video {
+    min-width: 35vw;
+  }
+}
+
+@media (min-width: 1400px) {
+  .dialog-modal.tall-video {
+    max-width: 25vw;
+    max-height: 1200px;
+  }
+
+  .dialog-modal.tall-video .milo-video {
+    min-width: 25vw;
+    max-height: 1200px;
+    height: 100%;
+  }
+}
+
+@media (min-width: 2000px) {
+  .dialog-modal.tall-video {
+    max-width: 22vw;
+  }
+
+  .dialog-modal.tall-video .milo-video {
+    min-width: 22vw;
   }
 }
 
