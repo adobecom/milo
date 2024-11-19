@@ -1,4 +1,4 @@
-import { html, useEffect, useState } from '../../../deps/htm-preact.js';
+import { html, useCallback, useEffect, useState } from '../../../deps/htm-preact.js';
 import FragmentsSection from '../fragments/view.js';
 import { nextStep, project, setProject } from '../store.js';
 import StepControls from '../components/stepControls.js';
@@ -7,7 +7,9 @@ import {
   validateForm,
   validateProjectName,
   validateUrls,
+  findFragments,
 } from './index.js';
+import { getUrls } from '../../locui/loc/index.js';
 
 export default function InputUrls() {
   const [name, setName] = useState('');
@@ -17,6 +19,8 @@ export default function InputUrls() {
   const [fragmentsEnabled, setFragmentsEnabled] = useState(false);
   const [fragments, setFragments] = useState([]);
   const [noOfValidFrag, setNoOfValidfragments] = useState(0);
+  const [allFragments, setAllFragments] = useState([]);
+  const [isFragmentsLoading, setFragmentsLoading] = useState(false);
   const [errors, setErrors] = useState({
     name: '',
     editBehavior: '',
@@ -25,6 +29,17 @@ export default function InputUrls() {
   });
 
   const errorPresent = checkForErrors(errors);
+
+  const fetchFragments = async () => {
+    if (urlsStr && !errors.urlsStr) {
+      const inputUrls = urlsStr.split(/[,\r\n]/g).filter((url) => url).map((url) => new URL(url));
+      setFragmentsLoading(true);
+      const found = await findFragments(getUrls(inputUrls));
+      setAllFragments(found);
+      setNoOfValidfragments(found.filter((frag) => !frag?.valid));
+      setFragmentsLoading(false);
+    }
+  };
 
   function handleNameChange(ev) {
     const text = ev.target.value;
@@ -47,15 +62,18 @@ export default function InputUrls() {
 
   function handleFragmentsToggle() {
     setFragmentsEnabled(!fragmentsEnabled);
+    if (!fragmentsEnabled && !errors.urlsStr) {
+      fetchFragments();
+    }
   }
 
-  function handleFragmentsChange(_fragments) {
+  const handleFragmentsChange = useCallback((_fragments) => {
     setFragments(_fragments);
-    setErrors({
-      ...errors,
+    setErrors((prev) => ({
+      ...prev,
       fragments: fragmentsEnabled && noOfValidFrag > 0 && _fragments.length === 0,
-    });
-  }
+    }));
+  }, [fragmentsEnabled, noOfValidFrag]);
 
   function handleNext() {
     const formErrors = validateForm({
@@ -89,6 +107,12 @@ export default function InputUrls() {
     setFragmentsEnabled(project.value?.fragments?.length > 0);
     setFragments(project.value?.fragments || []);
   }, []);
+
+  const handleUrlsBlur = () => {
+    if (!errors.urlsStr && fragmentsEnabled) {
+      fetchFragments();
+    }
+  };
 
   return html`
     <div class="locui-form-container">
@@ -147,19 +171,22 @@ export default function InputUrls() {
           rows="10"
           value=${urlsStr}
           onInput=${handleUrlsChange}
+          onBlur=${handleUrlsBlur}
         />
         ${errors.urlsStr
         && html`<div class="form-field-error">${errors.urlsStr}</div>`}
 
         <div class="form-field">
           <input
-            class="form-field-checkbox"
+            class="form-field-switch"
             type="checkbox"
+            id="includeFragments"
             name="includeFragments"
             checked=${fragmentsEnabled}
-            disabled=${urlsStr.length === 0}
+            disabled=${urlsStr.length === 0 || errors.urlsStr.length > 0}
             onClick=${handleFragmentsToggle}
           />
+          <label class="form-field-switch-label" for="includeFragments"></label>
           <span class="form-field-label">Include Fragments</span>
         </div>
 
@@ -167,10 +194,10 @@ export default function InputUrls() {
           ${fragmentsEnabled
           && html`
             <${FragmentsSection}
-              urls=${urlsStr}
-              fragments=${fragments}
-              setFragments=${handleFragmentsChange}
-              setNoOfValidfragments=${setNoOfValidfragments}
+              allFragments=${allFragments}
+              selectedFragments=${fragments}
+              setSelectedFragments=${handleFragmentsChange}
+              isLoading=${isFragmentsLoading}
             />
           `}
         </div>
