@@ -3,7 +3,7 @@ import {
 } from '../../../utils/utils.js';
 import { getFederatedContentRoot, getFederatedUrl } from '../../../utils/federated.js';
 import { processTrackingLabels } from '../../../martech/attributes.js';
-import { replaceKey, replaceText } from '../../../features/placeholders.js';
+import { replaceText } from '../../../features/placeholders.js';
 
 loadLana();
 
