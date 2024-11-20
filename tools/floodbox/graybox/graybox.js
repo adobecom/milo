@@ -206,7 +206,7 @@ export default class MiloGraybox extends LitElement {
   async handlePromotePaths(event) {
     event.preventDefault();
     let paths = this.shadowRoot.querySelector('textarea[name="promotePaths"]').value;
-    paths = paths.split('\n').map((path) => path.trim());
+    paths = paths.split('\n').map((path) => path.trim()).filter((path) => path.length > 0);
 
     // #1 - Validate paths
     const { valid, org, repo, expName } = validatePaths(paths);
@@ -281,7 +281,7 @@ export default class MiloGraybox extends LitElement {
 
   async validateInputPaths(event) {
     const textarea = event.target;
-    const paths = textarea.value.split('\n').map((path) => path.trim());
+    const paths = textarea.value.split('\n').map((path) => path.trim()).filter((path) => path.length > 0);
     const { valid, org, repo, expName } = validatePaths(paths);
     if (valid) {
       this._grayboxConfig = new GrayboxConfig(org, repo, this.token);
