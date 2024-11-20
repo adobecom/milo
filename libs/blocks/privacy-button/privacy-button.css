@@ -1,0 +1,102 @@
+/* .privacy-button-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  margin-bottom: 40px;
+  padding-top: 20px;
+  border-radius: 4px;
+  background-color: #F5F5F5;
+  padding-bottom: 20px;
+  position: relative;
+} */
+.privacy-button-text {
+  margin: 0;
+  color: var(--text-color);
+  font-size: var(--type-body-s-size);
+  line-height: var(--type-body-s-lh);
+}
+.privacy-button-success{
+  color: var(--color-red-600);
+  font-size: var(--type-body-s-size);
+  line-height: var(--type-body-s-lh);
+}
+.privacy-button {
+  padding: var(--spacing-m) 0;
+  width: fit-content;
+  /* padding: 40px 86px; */
+  /* font-size: var(--type-body-xs-size);
+  cursor: pointer;
+  transition: background-color 0.2s ease; */
+}
+.privacy-button-xyz {
+  background-color: #1473E6; /* Spectrum blue */
+  color: #fff; /* White text */
+  border-color: #1473E6;
+  border-radius: 16px;
+  border-style: solid;
+  border-width: 2px;
+  font-size: 14px;
+  font-weight: 700;
+  height: auto;
+  min-height: 32px;
+  min-width: 72px;
+  padding: 3px 14px 5px;
+  transition: box-shadow 0.2s ease;
+}
+.privacy-button-xyz:hover {
+  background-color: #0D66D0;
+}
+.privacy-button-xyz:disabled {
+  background-color: var(--color-gray-500);
+  cursor: default;
+}
+.privacy-tracking-image {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+@media (max-width: 768px) {
+  .privacy-button-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-xs);
+  }
+  .privacy-button-text {
+    margin-bottom: var(--spacing-xs);
+  }
+}
+/* Dark theme */
+.dark .privacy-button-container {
+  background-color: var(--color-gray-700);
+}
+.dark .privacy-button-text {
+  color: var(--color-white);
+}
+.dark .privacy-button {
+  background-color: var(--color-blue-400);
+}
+.dark .privacy-button:hover {
+  background-color: var(--color-blue-500);
+}
+.dark .privacy-button:disabled {
+  background-color: var(--color-gray-600);
+}
+.dark .privacy-button-success {
+  color: var(--color-red-400);
+}
+.section.privatebutton-section {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 16px;
+  margin: 0 auto;
+  background-color: #F5F5F5 ;
+  width: 700px;
+}
+
