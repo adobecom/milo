@@ -88,7 +88,8 @@ export class MerchSidenavList extends LitElement {
             );
             if (!element) return;
             this.updateComplete.then(() => {
-                if (element.firstElementChild?.tagName === 'SP-SIDENAV-ITEM') {
+                const sideNavItemTagName = 'SP-SIDENAV-ITEM';
+                if (element.firstElementChild?.tagName === sideNavItemTagName) {
                   element.expanded = true;
                 }
                 this.selectElement(element);
