@@ -21,14 +21,14 @@ const tooltipContent = ({ issuer, date, info, app, aiTool }) => `
 
 const loader = '<div class="loader"></div>';
 
-const extractMetadata = async (img) => {
-  const c2pa = await createC2pa({
-    wasmSrc:
+const c2paPromise = createC2pa({
+  wasmSrc:
       `${miloLibs}/deps/cai-toolkit.wasm`,
-    workerSrc:
+  workerSrc:
       `${miloLibs}/deps/cai-worker.min.js`,
-  });
+});
 
+const extractMetadata = async (img) => {
   const generativeInfoTypes = {
     compositeWithTrainedAlgorithmicMedia: 'This image has been augmented, corrected or enhanced using a Generative AI model, such as with inpainting or outpainting operations',
     trainedAlgorithmicMedia: 'This image has been created algorithmically using an Artificial Intellgence model trained on captured content',
@@ -61,6 +61,7 @@ const extractMetadata = async (img) => {
 
   try {
     // Read in our sample image and get a manifest store
+    const c2pa = await c2paPromise;
     const [src] = img.src.split('?'); // just in case we haven't overwritten the source already for whatever reason
     const { manifestStore } = await c2pa.read(src);
 
