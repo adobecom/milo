@@ -202,9 +202,12 @@ function createPreviewPill(manifests) {
   });
   const config = getConfig();
   let targetOnText = config.mep.targetEnabled ? 'on' : 'off';
+  let xlgCachedText = '';
   if (config.mep.targetEnabled === 'postlcp') targetOnText = 'on post LCP';
+  if (config.mep.targetEnabled === 'cached') targetOnText = 'on cached';
+  if (config.mep.xlgEnabled === 'cached') xlgCachedText = ' cached';
   const personalizationOn = getMetadata('personalization');
-  const personalizationOnText = personalizationOn && personalizationOn !== '' ? 'on' : 'off';
+  const personalizationOnText = personalizationOn && personalizationOn !== '' ? `on${xlgCachedText}` : 'off';
   const simulateHref = new URL(window.location.href);
   simulateHref.searchParams.set('mep', manifestParameter.join('---'));
 

@@ -780,9 +780,14 @@ const setCookie = (name, value) => {
 };
 const addToCookieArray = (name, items) => {
   let cookieArray = getCookie(name);
-  if (!items.every((item) => cookieArray.includes(item))) {
+  if (cookieArray.length > 50) {
     cookieArray = items;
-    // if not every new target item is in the cookie, replace the cookie with the new items
+  } else {
+    for (let i = 0; i < items.length; i += 1) {
+      if (!cookieArray.includes(items[i].trim())) {
+        cookieArray.push(items[i].trim());
+      }
+    }
   }
   setCookie(name, JSON.stringify(cookieArray));
 };
@@ -791,7 +796,7 @@ async function updateXLGCookie(config) {
   try {
     const userEntitlements = await config.entitlements();
     if (userEntitlements?.length) {
-      setCookie('mepXLG', JSON.stringify(userEntitlements));
+      addToCookieArray('mepXLG', userEntitlements);
     }
   } catch (error) {
     console.error('Error updating entitlement cookie', error);
@@ -819,12 +824,10 @@ async function getPersonalizationVariant(
   let userEntitlements = [];
   if (hasEntitlementTag) {
     if (xlg === 'cached' && mepXLGCookie?.length) {
-      console.log('updating cookie without martech because cached and mepXLGCookie available');
       updateXLGCookie(config);
     } else {
       userEntitlements = await config.entitlements();
       addToCookieArray('mepXLG', userEntitlements);
-      console.log('adding to cookie after calling martech because cookie because cached');
     }
   }
 
@@ -1222,6 +1225,7 @@ export async function init(enablements = {}) {
       variantOverride: parseMepParam(mepParam),
       highlight: (mepHighlight !== undefined && mepHighlight !== 'false'),
       targetEnabled: target,
+      xlgEnabled: xlg,
       experiments: [],
       geoPrefix: config.locale?.prefix.split('/')[1]?.toLowerCase() || 'en-us',
     };
