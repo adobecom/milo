@@ -5,7 +5,7 @@ import { features } from './any-marquee-section.spec.js';
 
 const miloLibs = process.env.MILO_LIBS || '';
 
-// Test 0: verify the selector "any-marquee-selector"
+// Test 0: verify the selector "any-marquee-section"
 test(`${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
   const defaultURL = `${baseURL}${features[0].data.defaultURL}${miloLibs}`;
   const pznURL = `${baseURL}${features[0].path}${miloLibs}`;
