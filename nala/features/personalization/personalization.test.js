@@ -159,7 +159,7 @@ test.describe('Milo Personalization feature test suite', () => {
 
   // Test 4 : Personalization (remove content)
   test(`${features[4].name},${features[4].tags}`, async ({ page, baseURL }) => {
-    howto = new Howto(page);
+    text = new TextBlock(page);
     const { data } = features[4];
     const pznURL = `${baseURL}${features[4].path}${miloLibs}`;
     const defaultURL = `${baseURL}${data.defaultURLpath}&${miloLibs}`;
@@ -167,14 +167,14 @@ test.describe('Milo Personalization feature test suite', () => {
     await test.step('step-1: Navigate to default page and verify content/specs', async () => {
       console.info(`[Test Page]: ${defaultURL}`);
       await page.goto(defaultURL);
-      await expect(howto.heading).toContainText('THIS HEADING WILL BE REMOVED');
-      await expect(howto.heading).toBeVisible();
+      await expect(text.introHeadlineAlt).toContainText('This heading will be removed in the personalization');
+      await expect(text.introHeadlineAlt).toBeVisible();
     });
 
     await test.step('step-2: Navigate to personalized page and verify content/specs', async () => {
       console.info(`[Test Page]: ${pznURL}`);
       await page.goto(pznURL);
-      await expect(howto.heading).not.toBeVisible();
+      await expect(text.introHeadlineAlt).not.toBeVisible();
     });
   });
 });
