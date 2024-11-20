@@ -732,6 +732,10 @@ header.global-navigation a {
   text-decoration: unset;
 }
 
+.feds-localnav {
+  height: 53px;
+}
+
 @media (min-width: 900px) {
   header.global-navigation.has-breadcrumbs {
     padding-bottom: var(--global-height-breadcrumbs);
