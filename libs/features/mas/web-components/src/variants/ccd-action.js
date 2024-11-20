@@ -6,7 +6,7 @@ const AEM_FRAGMENT_MAPPING = {
     title: { tag: 'h3', slot: 'heading-xs' },
     prices: { tag: 'h3', slot: 'heading-xs' },
     description: { tag: 'div', slot: 'body-xs' },
-    ctas: { size: 'l' },
+    ctas: { slot: 'footer', size: 'l' },
 };
 
 export class CCDAction extends VariantLayout {

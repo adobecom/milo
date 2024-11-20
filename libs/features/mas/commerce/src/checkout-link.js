@@ -13,6 +13,7 @@ export class CheckoutLink extends HTMLAnchorElement {
     static is = 'checkout-link';
     static tag = 'a';
 
+    /* c8 ignore next 1 */
     #checkoutActionHandler;
 
     masElement = new MasElement(this);
@@ -23,10 +24,12 @@ export class CheckoutLink extends HTMLAnchorElement {
 
     connectedCallback() {
         this.masElement.connectedCallback();
+        this.addEventListener('click', this.handleClick);
     }
 
     disconnectedCallback() {
         this.masElement.disconnectedCallback();
+        this.removeEventListener('click', this.handleClick);
     }
 
     onceSettled() {
@@ -37,13 +40,17 @@ export class CheckoutLink extends HTMLAnchorElement {
         return this.masElement.value;
     }
 
+    get options() {
+        return this.masElement.options;
+    }
+
     requestUpdate(force = false) {
         return this.masElement.requestUpdate(force);
     }
 
     constructor() {
         super();
-        this.addEventListener('click', this.clickHandler);
+        this.handleClick = this.handleClick.bind(this);
     }
 
     static get observedAttributes() {
@@ -107,8 +114,20 @@ export class CheckoutLink extends HTMLAnchorElement {
      * Triggers checkout action handler, if provided.
      * @param {*} event
      */
-    clickHandler(event) {
-      this.#checkoutActionHandler?.(event);
+    handleClick(event) {
+        if (event.target !== this) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            this.dispatchEvent(
+                new MouseEvent('click', {
+                    bubbles: true,
+                    cancelable: true,
+                    view: window,
+                }),
+            );
+            return;
+        }
+        this.#checkoutActionHandler?.(event);
     }
 
     async render(overrides = {}) {
@@ -121,13 +140,14 @@ export class CheckoutLink extends HTMLAnchorElement {
                 if (countryCode) this.dataset.imsCountry = countryCode;
             }, ignore);
         }
+        overrides.imsCountry = null;
         const options = service.collectCheckoutOptions(overrides, this);
         if (!options.wcsOsi.length) return false;
         let extraOptions;
         try {
             extraOptions = JSON.parse(options.extraOptions ?? '{}');
+            /* c8 ignore next 3 */
         } catch (e) {
-            /* c8 ignore next 2 */
             this.masElement.log?.error('cannot parse exta checkout options', e);
         }
         const version = this.masElement.togglePending(options);
@@ -136,10 +156,11 @@ export class CheckoutLink extends HTMLAnchorElement {
         let offers = await Promise.all(promises);
         // offer is expected to contain one or two offers at max (en, mult)
         offers = offers.map((offer) => selectOffers(offer, options));
+        options.country = this.dataset.imsCountry || options.country;
         const checkoutAction = await service.buildCheckoutAction?.(
             offers.flat(),
             { ...extraOptions, ...options },
-            this
+            this,
         );
         return this.renderOffers(
             offers.flat(),
@@ -173,6 +194,7 @@ export class CheckoutLink extends HTMLAnchorElement {
         options = { ...extraOptions, ...options, ...overrides };
         version ??= this.masElement.togglePending(options);
         if (this.#checkoutActionHandler) {
+            /* c8 ignore next 2 */
             this.#checkoutActionHandler = undefined;
         }
         if (checkoutAction) {
@@ -183,8 +205,8 @@ export class CheckoutLink extends HTMLAnchorElement {
             if (text) this.firstElementChild.innerHTML = text;
             if (className) this.classList.add(...className.split(' '));
             if (handler) {
-              this.setAttribute('href', '#');
-              this.#checkoutActionHandler = handler.bind(this);
+                this.setAttribute('href', '#');
+                this.#checkoutActionHandler = handler.bind(this);
             }
             return true;
         } else if (offers.length) {
@@ -200,7 +222,6 @@ export class CheckoutLink extends HTMLAnchorElement {
                 return true;
             }
         }
-        return false;
     }
 
     updateOptions(options = {}) {

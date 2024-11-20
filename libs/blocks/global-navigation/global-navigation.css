@@ -260,15 +260,15 @@ header.global-navigation {
 }
 
 .feds-cta--primary {
-  background-color: rgb(20, 115, 230);
-  border-color: rgb(20, 115, 230);
+  background-color: rgb(59, 99, 251);
+  border-color: rgb(59, 99, 251);
   color: rgb(255, 255, 255);
 }
 
 .feds-cta--primary:hover,
 .feds-cta--primary:focus {
-  background-color: rgb(13, 102, 208);
-  border-color: rgb(13, 102, 208);
+  background-color: rgb(39, 77, 234);
+  border-color: rgb(39, 77, 234);
   color: rgb(255, 255, 255);
 }
 
@@ -675,7 +675,7 @@ header.global-navigation {
     right: 0;
     justify-content: center;
     border-bottom: unset;
-    box-shadow: 0 3px 2px rgb(142 142 142 / 30%);
+    border-bottom: 1px solid var(--feds-borderColor);
     background: var(--feds-background-nav);
     transform: translate3d(0,0,0); /* Fix Safari issues w/ position: sticky */
   }
