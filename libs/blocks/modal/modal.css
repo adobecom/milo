@@ -289,18 +289,24 @@
     height: 100%;
   }
 
-  .dialog-modal.commerce-frame .milo-iframe {
+  .dialog-modal.dynamic-height > .fragment,
+  .dialog-modal.dynamic-height > .section,
+  .dialog-modal.dynamic-height > .fragment > .section {
+    height: 100%;
+  }
+
+  .dialog-modal.commerce-frame .milo-iframe, .dialog-modal.dynamic-height .milo-iframe  {
     padding-bottom: 0;
     height: 100%;
   }
 
-  .dialog-modal.commerce-frame.height-fit-content {
+  .dialog-modal.commerce-frame.height-fit-content, .dialog-modal.dynamic-height.height-fit-content {
     height: auto;
     max-height: 850px;
     min-width: 1000px;
   }
 
-  .dialog-modal.commerce-frame.height-fit-content .milo-iframe {
+  .dialog-modal.commerce-frame.height-fit-content .milo-iframe, .dialog-modal.dynamic-height.height-fit-content .milo-iframe {
     height: 100%;
     max-height: 845px;
   }
@@ -314,6 +320,12 @@
     max-width: 1100px;
     overflow: hidden;
     width: 80%;
+  }
+}
+
+@media (min-width: 1500px) {
+  .dialog-modal.dynamic-height .milo-iframe {
+    min-width: 1200px;
   }
 }
 
