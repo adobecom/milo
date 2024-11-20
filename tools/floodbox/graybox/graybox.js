@@ -8,6 +8,7 @@ import previewOrPublishPaths from '../bulk-action.js';
 import { SUCCESS_CODES } from '../constants.js';
 import getFilesToPromote from './promote-paths.js';
 import validatePaths from './utils.js';
+import GrayboxConfig from './graybox-config.js';
 
 const buttons = await getStyle('https://da.live/nx/styles/buttons.css');
 const style = await getStyle(import.meta.url);
@@ -43,8 +44,9 @@ export default class MiloGraybox extends LitElement {
     this._crawlDuration = 0;
     this._promoteDuration = 0;
     this._previewPublishDuration = 0;
-    this.selectedOption = 'promoteExp';
-    this.promoteIgnore = false;
+    this._selectedOption = 'promoteExp';
+    this._promoteIgnore = false;
+    this._grayboxConfig = {};
   }
 
   connectedCallback() {
@@ -58,7 +60,7 @@ export default class MiloGraybox extends LitElement {
       this._gbExpPath = input.value;
     }
     const select = this.shadowRoot.querySelector('.action-select');
-    select.value = this.selectedOption;
+    select.value = this._selectedOption;
   }
 
   getOrgRepoExp() {
@@ -83,10 +85,7 @@ export default class MiloGraybox extends LitElement {
       crawlType: 'graybox',
     });
     this._crawledFiles = await results;
-    // Remove files to be ignored from promote
-    this._filesToPromote = this._crawledFiles.filter(
-      (file) => !this._promoteIgnorePaths.some((ignorePath) => file.path.startsWith(ignorePath)),
-    );
+    this.cleanUpIgnoreFilesFromPromote(this._crawledFiles);
     this._crawlDuration = getDuration();
     this._startPromote = true;
     this.requestUpdate();
@@ -162,17 +161,25 @@ export default class MiloGraybox extends LitElement {
   }
 
   readPromoteIgnorePaths() {
+    // add global promote ignore paths
+    this._promoteIgnorePaths.push(...this._grayboxConfig.getGlobalPromoteIgnorePaths());
+    // add additional paths from textarea
     const promoteIgnoreCheckbox = this.shadowRoot.querySelector('input[name="promoteIgnore"]');
-    if (!promoteIgnoreCheckbox || !promoteIgnoreCheckbox.checked) {
-      return;
+    if (promoteIgnoreCheckbox?.checked) {
+      const promoteIgnoreTextArea = this.shadowRoot.querySelector('textarea[name="additionalInfo"]');
+      if (promoteIgnoreTextArea) {
+        this._promoteIgnorePaths.push(...promoteIgnoreTextArea.value
+          .split('\n')
+          .map((path) => path.trim())
+          .filter((path) => path.length > 0));
+      }
     }
-    const promoteIgnoreTextArea = this.shadowRoot.querySelector('textarea[name="additionalInfo"]');
-    if (promoteIgnoreTextArea) {
-      this._promoteIgnorePaths = promoteIgnoreTextArea.value
-        .split('\n')
-        .map((path) => path.trim())
-        .filter((path) => path.length > 0);
-    }
+    this._promoteIgnorePaths = this._promoteIgnorePaths.map((path) => {
+      if (path.endsWith('/') || path.includes('.')) {
+        return path;
+      }
+      return `${path}.html`;
+    });
   }
 
   async handlePromoteExperience(event) {
@@ -199,7 +206,7 @@ export default class MiloGraybox extends LitElement {
   async handlePromotePaths(event) {
     event.preventDefault();
     let paths = this.shadowRoot.querySelector('textarea[name="promotePaths"]').value;
-    paths = paths.split('\n').map((path) => path.trim());
+    paths = paths.split('\n').map((path) => path.trim()).filter((path) => path.length > 0);
 
     // #1 - Validate paths
     const { valid, org, repo, expName } = validatePaths(paths);
@@ -208,13 +215,20 @@ export default class MiloGraybox extends LitElement {
       this.requestUpdate();
       return;
     }
+    this.readPromoteIgnorePaths();
 
     // #2 - Get files to promote from paths
     this._startCrawlPaths = true;
-    const files = await getFilesToPromote({ accessToken: this.token, org, repo, expName, paths });
+    this._crawledFiles = await getFilesToPromote({
+      accessToken: this.token,
+      org,
+      repo,
+      expName,
+      paths,
+    });
+    this.cleanUpIgnoreFilesFromPromote(this._crawledFiles);
     // eslint-disable-next-line no-console
-    console.log('Files to Promote:', files);
-    this._filesToPromote = files;
+    console.log('Files to Promote:', this._filesToPromote);
     this.requestUpdate();
 
     // #3 - Start promoting
@@ -226,6 +240,15 @@ export default class MiloGraybox extends LitElement {
     await this.startPreviewPublish(org, repo);
   }
 
+  cleanUpIgnoreFilesFromPromote(files) {
+    this._filesToPromote = files.filter((file) => !this._promoteIgnorePaths.some((ignorePath) => {
+      if (ignorePath.endsWith('/')) {
+        return file.path.includes(ignorePath);
+      }
+      return file.path.endsWith(ignorePath);
+    }));
+  }
+
   handleClear(event) {
     event.preventDefault();
     const field = event.target.previousElementSibling;
@@ -235,30 +258,52 @@ export default class MiloGraybox extends LitElement {
     this.requestUpdate();
   }
 
-  validateInput(event) {
+  async validateInput(event) {
     const input = event.target;
     // eslint-disable-next-line no-useless-escape
     const regex = /^\/[^\/]+\/[^\/]+-graybox\/[^\/]+$/;
     this._gbExpPath = input.value.trim();
-    this._canPromote = regex.test(this._gbExpPath);
+    const valid = regex.test(this._gbExpPath);
+    if (valid) {
+      const { org, repo, exp } = this.getOrgRepoExp();
+      this._grayboxConfig = new GrayboxConfig(org, repo, this.token);
+      await this._grayboxConfig.getConfig();
+      if (this._grayboxConfig.isPromoteEnabled(exp)) {
+        this._canPromote = true;
+      } else {
+        this._canPromote = false;
+        // eslint-disable-next-line no-console
+        console.log('Promote is not enabled for this experience.');
+      }
+    }
     this.requestUpdate();
   }
 
-  validateInputPaths(event) {
+  async validateInputPaths(event) {
     const textarea = event.target;
-    const paths = textarea.value.split('\n').map((path) => path.trim());
-    const { valid } = validatePaths(paths);
-    this._canPromotePaths = valid;
+    const paths = textarea.value.split('\n').map((path) => path.trim()).filter((path) => path.length > 0);
+    const { valid, org, repo, expName } = validatePaths(paths);
+    if (valid) {
+      this._grayboxConfig = new GrayboxConfig(org, repo, this.token);
+      await this._grayboxConfig.getConfig();
+      if (this._grayboxConfig.isPromoteEnabled(expName)) {
+        this._canPromotePaths = true;
+      } else {
+        this._canPromotePaths = false;
+        // eslint-disable-next-line no-console
+        console.log('Promote is not enabled for this experience.');
+      }
+    }
     this.requestUpdate();
   }
 
   togglePromoteIgnore(event) {
-    this.promoteIgnore = event.target.checked;
+    this._promoteIgnore = event.target.checked;
     this.requestUpdate();
   }
 
   handleOptionChange(event) {
-    this.selectedOption = event.target.value;
+    this._selectedOption = event.target.value;
     this.requestUpdate();
   }
 
@@ -322,7 +367,7 @@ export default class MiloGraybox extends LitElement {
     return html`
       <div class="promote-paths-info info-box">
         <h3>Promote Graybox Paths</h3>        
-        <p>Files to promote: ${this._filesToPromote.length}</p>
+        <p>Files to promote: ${this._filesToPromote.length} | Files ignored: ${this._crawledFiles.length - this._filesToPromote.length}</p>
         <p>Files promoted: ${this._promotedFilesCount} | Promote errors: ${this._promoteErrorCount}</p>
         <p class="${this._promoteDuration === 0 ? 'hide' : ''}">Duration: ~${this._promoteDuration} seconds</p>
       </div>
@@ -353,7 +398,7 @@ export default class MiloGraybox extends LitElement {
             <option value="promotePaths">Promote Graybox Paths</option>            
           </select>
         </div>
-        ${this.selectedOption === 'promoteExp' ? html`
+        ${this._selectedOption === 'promoteExp' ? html`
           <div class="input-row">
             <input type="text" class="path-input" name="path" placeholder="Enter Experience Path" value="/sukamat/da-bacom-graybox/summit25" @input=${this.validateInput} />
             <button class="primary" @click=${this.handleClear}>Clear</button>
@@ -364,7 +409,7 @@ export default class MiloGraybox extends LitElement {
             <input type="checkbox" id="publish" name="publish" disabled>
             <label for="publish">Publish files after promote?</label>
           </div>
-          ${this.promoteIgnore === true ? html`
+          ${this._promoteIgnore === true ? html`
             <div class="input-row promote-ignore">
               <textarea class="path-list" name="additionalInfo" rows="3" 
                 placeholder="Enter paths to ignore from promote, separated by line-break. Eg:/<org>/<site>/<exp>/<path-to-file>"></textarea>
@@ -374,7 +419,7 @@ export default class MiloGraybox extends LitElement {
               <button class="accent" .disabled=${!this._canPromote} @click=${this.handlePromoteExperience}>Promote</button>
             </div>          
           ` : nothing}
-        ${this.selectedOption === 'promotePaths' ? html`
+        ${this._selectedOption === 'promotePaths' ? html`
           <div class="input-row">
             <textarea name="promotePaths" rows="3" placeholder="Enter graybox paths to promote, separated by line-break" @input=${this.validateInputPaths}></textarea>
             <button class="primary" @click=${this.handleClear}>Clear</button>
