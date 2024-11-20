@@ -85,10 +85,7 @@ export default class MiloGraybox extends LitElement {
       crawlType: 'graybox',
     });
     this._crawledFiles = await results;
-    // Remove files to be ignored from promote
-    this._filesToPromote = this._crawledFiles.filter(
-      (file) => !this._promoteIgnorePaths.some((ignorePath) => file.path.endsWith(ignorePath)),
-    );
+    this.cleanUpIgnoreFilesFromPromote(this._crawledFiles);
     this._crawlDuration = getDuration();
     this._startPromote = true;
     this.requestUpdate();
@@ -168,15 +165,14 @@ export default class MiloGraybox extends LitElement {
     this._promoteIgnorePaths.push(...this._grayboxConfig.getGlobalPromoteIgnorePaths());
     // add additional paths from textarea
     const promoteIgnoreCheckbox = this.shadowRoot.querySelector('input[name="promoteIgnore"]');
-    if (!promoteIgnoreCheckbox || !promoteIgnoreCheckbox.checked) {
-      return;
-    }
-    const promoteIgnoreTextArea = this.shadowRoot.querySelector('textarea[name="additionalInfo"]');
-    if (promoteIgnoreTextArea) {
-      this._promoteIgnorePaths.push(...promoteIgnoreTextArea.value
-        .split('\n')
-        .map((path) => path.trim())
-        .filter((path) => path.length > 0));
+    if (promoteIgnoreCheckbox?.checked) {
+      const promoteIgnoreTextArea = this.shadowRoot.querySelector('textarea[name="additionalInfo"]');
+      if (promoteIgnoreTextArea) {
+        this._promoteIgnorePaths.push(...promoteIgnoreTextArea.value
+          .split('\n')
+          .map((path) => path.trim())
+          .filter((path) => path.length > 0));
+      }
     }
     this._promoteIgnorePaths = this._promoteIgnorePaths.map((path) => {
       if (path.endsWith('/') || path.includes('.')) {
@@ -219,13 +215,20 @@ export default class MiloGraybox extends LitElement {
       this.requestUpdate();
       return;
     }
+    this.readPromoteIgnorePaths();
 
     // #2 - Get files to promote from paths
     this._startCrawlPaths = true;
-    const files = await getFilesToPromote({ accessToken: this.token, org, repo, expName, paths });
+    this._crawledFiles = await getFilesToPromote({
+      accessToken: this.token,
+      org,
+      repo,
+      expName,
+      paths,
+    });
+    this.cleanUpIgnoreFilesFromPromote(this._crawledFiles);
     // eslint-disable-next-line no-console
-    console.log('Files to Promote:', files);
-    this._filesToPromote = files;
+    console.log('Files to Promote:', this._filesToPromote);
     this.requestUpdate();
 
     // #3 - Start promoting
@@ -235,6 +238,15 @@ export default class MiloGraybox extends LitElement {
     // #4 - Preview promoted files
     this._startPreviewPublish = true;
     await this.startPreviewPublish(org, repo);
+  }
+
+  cleanUpIgnoreFilesFromPromote(files) {
+    this._filesToPromote = files.filter((file) => !this._promoteIgnorePaths.some((ignorePath) => {
+      if (ignorePath.endsWith('/')) {
+        return file.path.includes(ignorePath);
+      }
+      return file.path.endsWith(ignorePath);
+    }));
   }
 
   handleClear(event) {
@@ -355,7 +367,7 @@ export default class MiloGraybox extends LitElement {
     return html`
       <div class="promote-paths-info info-box">
         <h3>Promote Graybox Paths</h3>        
-        <p>Files to promote: ${this._filesToPromote.length}</p>
+        <p>Files to promote: ${this._filesToPromote.length} | Files ignored: ${this._crawledFiles.length - this._filesToPromote.length}</p>
         <p>Files promoted: ${this._promotedFilesCount} | Promote errors: ${this._promoteErrorCount}</p>
         <p class="${this._promoteDuration === 0 ? 'hide' : ''}">Duration: ~${this._promoteDuration} seconds</p>
       </div>
