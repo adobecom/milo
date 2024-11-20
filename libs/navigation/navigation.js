@@ -60,6 +60,7 @@ export default async function loadBlock(configs, customLib) {
     locale = '',
     theme,
     stageDomainsMap = {},
+    allowedOrigins = [],
   } = configs || {};
   const branch = new URLSearchParams(window.location.search).get('navbranch');
   const miloLibs = branch ? `https://${branch}--milo--adobecom.aem.page` : customLib || envMap[env];
@@ -77,14 +78,15 @@ export default async function loadBlock(configs, customLib) {
 
   const paramConfigs = getParamsConfigs(configs, miloLibs);
   const clientConfig = {
+    theme,
+    allowedOrigins,
     clientEnv: env,
+    ...paramConfigs,
     origin: `https://main--federal--adobecom.aem.${env === 'prod' ? 'live' : 'page'}`,
     miloLibs: `${miloLibs}/libs`,
     pathname: `/${locale}`,
     locales: configs.locales || locales,
     contentRoot: authoringPath || footer.authoringPath,
-    theme,
-    ...paramConfigs,
     stageDomainsMap: getStageDomainsMap(stageDomainsMap),
   };
   setConfig(clientConfig);
@@ -100,6 +102,8 @@ export default async function loadBlock(configs, customLib) {
             layout: configBlock.layout,
             noBorder: configBlock.noBorder,
             jarvis: configBlock.jarvis,
+            isLocalNav: configBlock.isLocalNav,
+            useNewMobileNav: configBlock.useNewMobileNav,
           }),
         });
         configBlock.onReady?.();

@@ -235,7 +235,6 @@ export function setCurtainState(state) {
 
 export const isDesktop = window.matchMedia('(min-width: 900px)');
 export const isTangentToViewport = window.matchMedia('(min-width: 900px) and (max-width: 1440px)');
-export const newNavEnabled = new URL(window.location.href).searchParams.get('newNav') === 'true';
 
 export function setActiveDropdown(elem) {
   const activeClass = selectors.activeDropdown.replace('.', '');

@@ -26,6 +26,7 @@ export default async function bootstrapBlock(miloLibs, blockConfig) {
     const metaTags = [
       { key: 'unavComponents', name: 'universal-nav' },
       { key: 'redirect', name: 'adobe-home-redirect' },
+      { key: 'useNewMobileNav', name: 'mobile-gnav-v2' },
     ];
     metaTags.forEach((tag) => {
       const { key } = tag;
@@ -37,6 +38,10 @@ export default async function bootstrapBlock(miloLibs, blockConfig) {
         document.head.append(metaTag);
       }
     });
+    if (blockConfig.isLocalNav) {
+      const localNavWrapper = createTag('div', { class: 'feds-localnav' });
+      document.querySelector('header').after(localNavWrapper);
+    }
   }
 
   await initBlock(document.querySelector(targetEl));
