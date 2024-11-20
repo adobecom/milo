@@ -63,6 +63,10 @@ body {
   background: #e9e9e9;
 }
 
+.items-center {
+  align-items: center;
+}
+
 /* Step Tracker */
 
 .locui-step-tracker {
@@ -411,6 +415,18 @@ body {
 .locui-create-error-text {
   font-size: 13px;
   color: rgb(211, 21, 16);
+}
+
+.locui-invalid-fragments-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #069; 
+  cursor: pointer;
+}
+
+.locui-invalid-fragments-btn:hover {
+  text-decoration: underline;
 }
 
 .locui-create-fragment-label {

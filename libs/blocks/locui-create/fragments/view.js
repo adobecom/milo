@@ -56,7 +56,9 @@ export default function FragmentsSection({
    </ul>`
 }
    <div>
-    ${errorFragments && errorFragments.length > 0 && html`<div class='form-field-error'>Invalid fragments <a href="#" onClick=${() => showFragments(errorFragments)}>view details</a></div>`}
+    ${errorFragments && errorFragments.length > 0 && html`<div class='form-field-error'>Invalid fragments <button class='locui-invalid-fragments-btn' onClick=${() => {
+    showFragments(errorFragments);
+  }}>view details</button></div>`}
     ${validFragments.length > 0 && selectedFragments.length < 1 && html`<div class='form-field-error'>Select atleast one fragment to proceed further</div>`}
    </div>
   </div>`;
