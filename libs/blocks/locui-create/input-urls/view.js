@@ -186,7 +186,7 @@ export default function InputUrls() {
         ${errors.urlsStr
         && html`<div class="form-field-error">${errors.urlsStr}</div>`}
 
-        <div class="form-field">
+        <div class="form-field flex-items-center">
           <input
             class="form-field-switch"
             type="checkbox"
