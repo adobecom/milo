@@ -6,7 +6,7 @@ const checkedIcon = `${base}/blocks/bulk-publish-v2/img/checked.svg`;
 const crossedIcon = `${base}/blocks/bulk-publish-v2/img/crossed.svg`;
 const indicatorIcon = `${base}/blocks/bulk-publish-v2/img/indicator.svg`;
 
-const getHost = (host) => (host === 'localhost' ? 'main--milo--adobecom.hlx.page' : host);
+const getHost = (host) => (host === 'localhost' ? 'main--milo--adobecom.aem.page' : host);
 
 const getStatusIcon = (status) => {
   switch (status) {

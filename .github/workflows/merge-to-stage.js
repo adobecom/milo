@@ -44,8 +44,8 @@ let body = `
 **Acrobat:** https://www.stage.adobe.com/acrobat/online/sign-pdf.html
 
 **Milo:**
-- Before: https://main--milo--adobecom.hlx.live/?martech=off
-- After: https://stage--milo--adobecom.hlx.live/?martech=off
+- Before: https://main--milo--adobecom.aem.live/?martech=off
+- After: https://stage--milo--adobecom.aem.live/?martech=off
 `;
 
 const isHighPrio = (labels) => labels.includes(LABELS.highPriority);

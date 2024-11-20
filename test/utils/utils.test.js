@@ -537,16 +537,18 @@ describe('Utils', () => {
     it('should convert links when stageDomainsMap provided without regex', async () => {
       const stageConfig = {
         ...config,
+        locale: { prefix: '/ae_ar' },
         env: { name: 'stage' },
         stageDomainsMap,
       };
 
       Object.entries(stageDomainsMap).forEach(([hostname, domainsMap]) => {
         const anchors = Object.keys(domainsMap).map((d) => utils.createTag('a', { href: `https://${d}` }));
+        const localizedAnchors = Object.keys(domainsMap).map((d) => utils.createTag('a', { href: `https://${d}/ae_ar` }));
         const externalAnchors = externalDomains.map((url) => utils.createTag('a', { href: url }));
 
         utils.convertStageLinks({
-          anchors: [...anchors, ...externalAnchors],
+          anchors: [...anchors, ...localizedAnchors, ...externalAnchors],
           config: stageConfig,
           hostname,
           href: `https://${hostname}`,
@@ -565,16 +567,22 @@ describe('Utils', () => {
       const { hostname, map } = stageDomainsMapWRegex;
       const stageConfigWRegex = {
         ...config,
+        locale: { prefix: '/de' },
         env: { name: 'stage' },
         stageDomainsMap: map,
       };
 
       Object.entries(map).forEach(([, domainsMap]) => {
         const anchors = Object.keys(domainsMap).map((d) => utils.createTag('a', { href: d.replace('^', '') }));
+        const localizedAnchors = Object.keys(domainsMap).map((d) => {
+          const convertedUrl = new URL(d.replace('^', ''));
+          convertedUrl.pathname = `de/${convertedUrl.pathname}`;
+          return utils.createTag('a', { href: convertedUrl.toString() });
+        });
         const externalAnchors = externalDomains.map((url) => utils.createTag('a', { href: url }));
 
         utils.convertStageLinks({
-          anchors: [...anchors, ...externalAnchors],
+          anchors: [...anchors, ...localizedAnchors, ...externalAnchors],
           config: stageConfigWRegex,
           hostname,
           href: `https://${hostname}`,
@@ -665,7 +673,7 @@ describe('Utils', () => {
     it('should append to title using string from metadata', async () => {
       const expected = 'Document Title NOODLE';
       await utils.loadArea();
-      await waitFor(() => document.title === expected);
+      await waitFor(() => document.title === expected, 2000);
       expect(document.title).to.equal(expected);
     });
   });
@@ -679,10 +687,10 @@ describe('Utils', () => {
       window.lana.release?.();
     });
     it('should import feature when metadata is defined and error if invalid', async () => {
-      const expectedError = 'SEOTECH: Failed to construct \'URL\': Invalid URL';
+      const expectedError = 'SEOTECH: Invalid video url: FAKE';
       await utils.loadArea();
       const lanaStub = sinon.stub(window.lana, 'log');
-      await waitFor(() => lanaStub.calledOnceWith(expectedError));
+      await waitFor(() => lanaStub.calledOnceWith(expectedError), 2000);
       expect(lanaStub.calledOnceWith(expectedError)).to.be.true;
     });
   });

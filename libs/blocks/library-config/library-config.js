@@ -1,4 +1,4 @@
-import { createTag } from '../../utils/utils.js';
+import { createTag, SLD } from '../../utils/utils.js';
 
 const LIBRARY_PATH = '/docs/library/library.json';
 
@@ -112,9 +112,7 @@ async function loadList(type, content, list) {
   }
 }
 
-async function fetchLibrary(domain) {
-  const { searchParams } = new URL(window.location.href);
-  const suppliedLibrary = searchParams.get('library');
+async function fetchLibrary(domain, suppliedLibrary) {
   const library = suppliedLibrary || `${domain}${LIBRARY_PATH}`;
   try {
     const resp = await fetch(library);
@@ -129,8 +127,9 @@ async function getSuppliedLibrary() {
   const { searchParams } = new URL(window.location.href);
   const repo = searchParams.get('repo');
   const owner = searchParams.get('owner');
+  const library = searchParams.get('library');
   if (!repo || !owner) return null;
-  return fetchLibrary(`https://main--${repo}--${owner}.hlx.live`);
+  return fetchLibrary(`https://main--${repo}--${owner}.${SLD}.live`, library);
 }
 
 async function fetchAssetsData(path) {
