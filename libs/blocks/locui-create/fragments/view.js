@@ -52,11 +52,11 @@ export default function FragmentsSection({
   ${isLoading ? html`<${Loader} />`
     : html`
     <ul class=${`locui-create-fragments-list ${validFragments.length > 0 && selectedFragments.length < 1 && 'error'}`}>
-   ${validFragments && validFragments.length > 0 ? validFragments.map((fragment) => locFragment(fragment)) : html`<p>No Valid fragments</p>`}
+   ${validFragments?.length > 0 ? validFragments.map((fragment) => locFragment(fragment)) : html`<p>No Valid fragments</p>`}
    </ul>`
 }
    <div>
-    ${errorFragments && errorFragments.length > 0 && html`<div class='form-field-error'>Invalid fragments <button class='locui-invalid-fragments-btn' onClick=${() => {
+    ${errorFragments?.length > 0 && html`<div class='form-field-error'>Invalid fragments <button class='locui-invalid-fragments-btn' onClick=${() => {
     showFragments(errorFragments);
   }}>view details</button></div>`}
     ${validFragments.length > 0 && selectedFragments.length < 1 && html`<div class='form-field-error'>Select atleast one fragment to proceed further</div>`}
