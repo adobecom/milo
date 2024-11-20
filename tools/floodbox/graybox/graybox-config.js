@@ -2,6 +2,7 @@ import RequestHandler from '../request-handler.js';
 import { DA_ORIGIN } from '../constants.js';
 
 const GRAYBOX_CONFIG_FILE = '/.milo/graybox/config.json';
+
 /**
  * GrayboxConfig provides the configuration setup for the graybox app.
  * If the global config is not defined, it will default to the experience config.
