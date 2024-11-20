@@ -1,3 +1,5 @@
+// to run the test: npm run nala stage any-marquee-section.test.js
+
 import { expect, test } from '@playwright/test';
 import { features } from './any-marquee-section.spec.js';
 
