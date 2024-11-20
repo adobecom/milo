@@ -53,7 +53,8 @@ export default function InputUrls() {
     setFragments(_fragments);
     setErrors({
       ...errors,
-      fragments: fragmentsEnabled && noOfValidFrag > 0 && _fragments.length === 0,
+      fragments:
+        fragmentsEnabled && noOfValidFrag > 0 && _fragments.length === 0,
     });
   }
 
@@ -92,7 +93,7 @@ export default function InputUrls() {
 
   return html`
     <div class="locui-form-container">
-      <div class="locui-input-url-area">
+      <div class="locui-input-form-area">
         <div class="locui-title-bar">Localization</div>
 
         <div class="form-field">
