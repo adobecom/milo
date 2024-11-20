@@ -587,15 +587,24 @@ export const getConfig = async (originalState, strs = {}) => {
       },
       button: { style: state.collectionBtnStyle },
       resultsPerPage: state.resultsPerPage,
-      endpoint: `https://${
-        state.endpoint
-      }${targetActivity}?originSelection=${originSelection}&contentTypeTags=${state.contentTypeTags.join(
-        ',',
-      )}&secondSource=${state.showSecondarySource ? state.secondarySource.join(',') : []}&secondaryTags=${state.showSecondarySource ? state.secondaryTags.join(
-        ',',
-      ) : []}&collectionTags=${collectionTags}&excludeContentWithTags=${excludeContentWithTags}&language=${language}&country=${country}&complexQuery=${complexQuery}&excludeIds=${excludedCards}&currentEntityId=&featuredCards=${featuredCards}&environment=&draft=${
-        state.draftDb
-      }&size=${state.collectionSize || state.totalCardsToShow}${localesQueryParam}${debug}${flatFile}`,
+      endpoint: `https://${state.endpoint
+        }${targetActivity
+        }?originSelection=${originSelection
+        }&contentTypeTags=${state.contentTypeTags.join().toLowerCase()
+        }&secondSource=${state.showSecondarySource ? state.secondarySource.join(',') : []
+        }&secondaryTags=${state.showSecondarySource ? state.secondaryTags.join(',').toLowerCase() : []
+        }&collectionTags=${collectionTags.toLowerCase()
+        }&excludeContentWithTags=${excludeContentWithTags.toLowerCase()
+        }&language=${language
+        }&country=${country
+        }&complexQuery=${complexQuery
+        }&excludeIds=${excludedCards
+        }&currentEntityId=&featuredCards=${featuredCards
+        }&environment=&draft=${state.draftDb
+        }&size=${state.collectionSize || state.totalCardsToShow
+        }${localesQueryParam
+        }${debug
+        }${flatFile}`,
       fallbackEndpoint: state.fallbackEndpoint,
       totalCardsToShow: state.totalCardsToShow,
       showCardBadges: state.showCardBadges,
