@@ -162,6 +162,40 @@ body {
   border-color: #d73220;
 }
 
+.form-field-switch {
+ display: none;
+}
+
+.form-field-switch-label {
+  display: inline-block;;
+  width: 2.5rem;
+  height: 1.25rem;
+  background-color: #ccc;
+  border-radius: 0.625rem;
+  position: relative;
+  cursor: pointer;
+}
+
+.form-field-switch-label::before{
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 1rem;
+  height: 1rem;
+  background-color: #fff;
+  border-radius: 50%;
+  transition: transform 0.3s;
+}
+
+.form-field-switch:checked + .form-field-switch-label {
+  background-color: #000;
+} 
+
+.form-field-switch:checked + .form-field-switch-label::before {
+  transform: translateX(1.25rem);
+}
+
 .form-field-checkbox {
   width: 16px;
   accent-color: #111;
@@ -188,6 +222,8 @@ body {
 .form-field-select.error {
   border-color: #d73220;
 }
+
+
 
 /* Main Content */
 
@@ -577,27 +613,29 @@ body {
 .language-button,
 .locale-button,
 .reset-button {
-  background-color: #fff;
+  background-color: #e9e9e9;
   border: 1px solid #d5d9d9;
-  border-radius: 8px;
-  font-size: 13px;
-  line-height: 20px;
+  border-radius: 12px;
   cursor: pointer;
-  transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s ease;
   display: inline-block;
   color: #0f1111;
   user-select: none;
-  font-weight: 400;
   text-align: center;
-  width: 120px;
+  width: 150px;
   height: 40px;
   box-sizing: border-box;
-  padding: 5px 2px;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+  font-family: inherit;
+}
+
+.language-button {
+  width: 100%;
 }
 
 .reset-button {
-  background-color: #d9534f;
-  color: #fff;
   margin-left: auto;
 }
 
@@ -606,30 +644,20 @@ body {
 .language-button:hover,
 .locale-button:hover,
 .reset-button:hover {
-  background-color: #f4f4f4;
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.reset-button:hover {
-  background-color: #c82828;
+  background-color: #e1e1e1;
 }
 
 .region-button.active,
-.language-button.active {
-  background-color: #4a90e2;
-  color: #fff;
-  border-color: #4a90e2;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
+.language-button.active,
 .locale-button.active {
-  border-color: #4a90e2;
+  background-color: #292929;
+  color:#fff;
 }
 
 .language-locale-container {
   display: flex;
   flex-wrap: wrap;
+  gap:10px;
 }
 .language-grid,
 .locale-grid {
@@ -668,7 +696,7 @@ body {
 
 .language-buttons {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 10px;
   padding: 10px;
   border: 1px solid #ccc;
@@ -681,7 +709,7 @@ body {
 .locale-container {
   height: 350px;
   overflow-y: scroll;
-  padding: 10px 10px 0;
+  padding: 10px;
   border: 1px solid #ccc;
   border-radius: 8px;
 }
