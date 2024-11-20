@@ -29,7 +29,7 @@ function Create() {
         <${Sidenav} />
       </div>
       <div class="main-content">
-        <h3>Create New Project</h2>
+        <h3>Create New Project</h3>
         <${StepTracker} />
         ${currentStep.value === 1 && html`<${InputUrls} />`}
         ${currentStep.value === 2 && html`<${InputLocales} />`}

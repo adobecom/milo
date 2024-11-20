@@ -1,55 +1,9 @@
 import { html } from '../../../deps/htm-preact.js';
-import { prevStep, project, setProject } from '../store.js';
+import { prevStep, project } from '../store.js';
 import StepControls from '../components/stepControls.js';
 import projectCreatedModal from './index.js';
 
 const tabelHeaders = ['Languages', 'Locales', 'Action', 'Workflow type'];
-
-// replaced by project.value data
-const tableEntries = [
-  {
-    languages: 'Chinese',
-    locales: ['cn'],
-    action: '',
-    workflow: '',
-  },
-  {
-    languages: 'English',
-    locales: ['it_en', 'ae_en'],
-    action: '',
-    workflow: '',
-  },
-  {
-    languages: 'French',
-    locales: ['fr', 'be_fr'],
-    action: '',
-    workflow: '',
-  },
-  {
-    languages: 'German',
-    locales: ['de'],
-    action: '',
-    workflow: '',
-  },
-  {
-    languages: 'Italian',
-    locales: ['ch_it'],
-    action: '',
-    workflow: '',
-  },
-  {
-    languages: 'Japanese',
-    locales: ['jp'],
-    action: '',
-    workflow: '',
-  },
-  {
-    languages: 'Japanese',
-    locales: ['jp'],
-    action: '',
-    workflow: '',
-  },
-];
 
 export default function InputActions() {
   const handleActionSelect = (ev, entry) => {
@@ -63,15 +17,13 @@ export default function InputActions() {
   };
 
   const handleNext = () => {
-    // console.log(tableEntries)
-    setProject({ tableEntries });
     projectCreatedModal();
   };
 
   return html`
   <div class="locui-form-container">
     <div class="locui-table">
-      <p>Project Name: <strong>${project.value.name || 'n/a'}</strong></p>
+      <p class="locui-project-name">Project Name: <strong>${project.value.name || 'n/a'}</strong></p>
       <div class="table-wrapper">
         <table>
           <thead>
@@ -82,13 +34,14 @@ export default function InputActions() {
             </tr>
           </thead>
           <tbody>
-            ${tableEntries.map((entry) => (html`
+            ${project.value.locale.map((entry) => (html`
               <tr>
                 <td>${entry.languages}</td>
                 <td>
-                  ${entry.locales.map((locale) => html`
+                  <!-- ${entry.localeList.map((locale) => html`
                     <button class="locale-list-item">${locale}</button>
-                  `)}
+                  `)} -->
+                  ${entry.localeList.join(', ')}
                 </td>
                 <td>
                   <select 
