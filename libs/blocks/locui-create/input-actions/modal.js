@@ -4,7 +4,11 @@ import { project } from '../store.js';
 function Modal() {
   return html`
   <div class="locui-project-created-modal">
-    <strong>Project "${project.value.name || 'n/a'}" Succesfully Created</strong>
+    <div class="modal-header">
+      <a class="check-mark-logo">tick</a>
+      <strong>Project "${project.value.name || 'n/a'}" Successfully Created</strong>
+    </div>
+    <button class="s2-btn accent">View</button>
   </div>
   `;
 }

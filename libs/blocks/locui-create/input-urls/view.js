@@ -126,7 +126,7 @@ export default function InputUrls() {
 
   return html`
     <div class="locui-form-container">
-      <div class="locui-input-url-area">
+      <div class="locui-input-form-area">
         <div class="locui-title-bar">Localization</div>
 
         <div class="form-field">
