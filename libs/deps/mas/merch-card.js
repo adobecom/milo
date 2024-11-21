@@ -1969,6 +1969,11 @@ merch-card span[is="inline-price"][data-template='strikethrough'] {
     text-decoration: line-through;
 }
 
+.price-unit-type:not(.disabled)::before,
+.price-tax-inclusivity:not(.disabled)::before {
+  content: "\\00a0";
+}
+
 merch-card sp-button a,
 merch-card sp-button a:hover {
   text-decoration: none;
