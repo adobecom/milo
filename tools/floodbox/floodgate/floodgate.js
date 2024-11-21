@@ -167,7 +167,8 @@ export default class MiloFloodgate extends LitElement {
     if (promoteIgnoreCheckbox?.checked) {
       const promoteIgnoreTextArea = this.shadowRoot.querySelector('textarea[name="promote-ignore-paths"]');
       if (promoteIgnoreTextArea) {
-        this._promoteIgnorePaths.push(...promoteIgnoreTextArea.value.split('\n').map((path) => path.trim()).filter((path) => path.length > 0));
+        this._promoteIgnorePaths.push(...promoteIgnoreTextArea.value
+          .split('\n').map((path) => path.trim()).filter((path) => path.length > 0));
       }
     }
     this._promoteIgnorePaths = this._promoteIgnorePaths.map((path) => {
