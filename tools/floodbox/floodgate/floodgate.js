@@ -7,7 +7,7 @@ import promoteFiles from '../promote.js';
 import { SUCCESS_CODES } from '../constants.js';
 import previewOrPublishPaths from '../bulk-action.js';
 
-const buttons = await getStyle(`https://da.live/nx/styles/buttons.css`);
+const buttons = await getStyle('https://da.live/nx/styles/buttons.css');
 const style = await getStyle(import.meta.url);
 
 export default class MiloFloodgate extends LitElement {
