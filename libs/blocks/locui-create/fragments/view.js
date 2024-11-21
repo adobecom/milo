@@ -35,6 +35,7 @@ export default function FragmentsSection({
 
   const locFragment = (fragment) => {
     const checked = selectedFragments.find((pathname) => pathname === fragment.pathname);
+    const parentPages = fragment?.parentPages?.filter((page) => page) ?? [];
     return html`
     <li class="locui-create-fragment">
     <div class="locui-create-fragment-input-container">
@@ -42,7 +43,7 @@ export default function FragmentsSection({
      <label class='locui-create-fragment-label' for=${fragment.pathname}>${fragment.pathname}</label>
      </div>
      <ul class='locui-create-fragment-parent'>
-      ${fragment.parentPages && fragment.parentPages.length > 0 && fragment.parentPages.map((parentPage) => html`<li>${parentPage}</li>`)}
+      ${parentPages.map((parentPage) => html`<li>${parentPage}</li>`)}
      </ul>
     </div>`;
   };
