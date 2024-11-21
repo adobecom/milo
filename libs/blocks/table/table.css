@@ -554,11 +554,6 @@
   text-decoration: underline;
 }
 
-/* scroll */
-/* header.global-navigation {
-  z-index: 2;
-} */
-
 .table .row-highlight,
 .table .row-heading {
   position: sticky;
