@@ -160,7 +160,7 @@ merch-card span[is='inline-price'] {
     display: inline-block;
 }
 
-sp-button a[is='checkout-link'] {
+merch-card sp-button a[is='checkout-link'] {
     pointer-events: auto;
 }
 
@@ -322,9 +322,9 @@ merch-card a.primary-link {
     color: var(--spectrum-global-color-blue-700);
 }
 
-[slot="cci-footer"] p,
-[slot="cct-footer"] p,
-[slot="cce-footer"] p {
+merch-card [slot="cci-footer"] p,
+merch-card [slot="cct-footer"] p,
+merch-card [slot="cce-footer"] p {
     margin: 0;
 }
 
@@ -338,21 +338,21 @@ merch-card [slot="promo-text"] {
     padding: 0;
 }
 
-div[slot="footer"] {
+merch-card div[slot="footer"] {
     display: contents;
 }
 
-[slot="footer"] a {
+merch-card [slot="footer"] a {
     word-wrap: break-word;
     text-align: center;
 }
 
-[slot="footer"] a:not([class]) {
+merch-card [slot="footer"] a:not([class]) {
     font-weight: 700;
     font-size: var(--consonant-merch-card-cta-font-size);
 }
 
-div[slot='bg-image'] img {
+merch-card div[slot='bg-image'] img {
     position: relative;
     width: 100%;
     min-height: var(--consonant-merch-card-bg-img-height);
@@ -362,7 +362,7 @@ div[slot='bg-image'] img {
     border-top-right-radius: 16px;
 }
 
-span[is="inline-price"][data-template='strikethrough'] {
+merch-card span[is="inline-price"][data-template='strikethrough'] {
     text-decoration: line-through;
 }
 
@@ -371,7 +371,8 @@ span[is="inline-price"][data-template='strikethrough'] {
   content: "\\00a0";
 }
 
-merch-card sp-button a {
+merch-card sp-button a,
+merch-card sp-button a:hover {
   text-decoration: none;
     color: var(
         --highcontrast-button-content-color-default,
