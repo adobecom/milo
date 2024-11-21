@@ -1014,16 +1014,16 @@ class Gnav {
         let originalContent = popup.innerHTML;
 
         if (!isDesktop.matches && this.newMobileNav && popup) {
-          originalContent = transformTemplateToMobile(popup, item, this.isLocalNav());
+          originalContent = await transformTemplateToMobile(popup, item, this.isLocalNav());
           popup.querySelector('.close-icon')?.addEventListener('click', this.toggleMenuMobile);
           makeTabActive(popup);
         }
-        isDesktop.addEventListener('change', () => {
+        isDesktop.addEventListener('change', async () => {
           if (isDesktop.matches) {
             popup.innerHTML = originalContent;
             this.block.classList.remove('new-nav');
           } else {
-            originalContent = transformTemplateToMobile(popup, item, this.isLocalNav());
+            originalContent = await transformTemplateToMobile(popup, item, this.isLocalNav());
             popup.querySelector('.close-icon')?.addEventListener('click', this.toggleMenuMobile);
             this.block.classList.add('new-nav');
           }
