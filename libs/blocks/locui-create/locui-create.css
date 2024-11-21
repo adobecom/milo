@@ -653,6 +653,9 @@ body {
 
 .reset-button {
   margin-left: auto;
+  color: #fff;
+  background-color: #292929;
+  border-color: #292929;
 }
 
 .button:hover,
@@ -661,6 +664,10 @@ body {
 .locale-button:hover,
 .reset-button:hover {
   background-color: #e1e1e1;
+}
+
+.reset-button:hover {
+  background-color: #131313;
 }
 
 .region-button.active,
