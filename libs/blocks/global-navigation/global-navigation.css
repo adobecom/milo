@@ -858,7 +858,7 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup {
    * right after loading in, we see some feds-popups appear on the
    * screen and fadeaway
    */
-  transition: translate 0.8s ease-out, opacity 0.6s ease;
+  transition: translate 0.4s ease-out, opacity 0.2s ease;
   translate: 300vw 0;
   /* animation-fill-mode: forwards; */
 
