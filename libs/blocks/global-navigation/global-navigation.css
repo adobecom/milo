@@ -756,7 +756,7 @@ header.new-nav .feds-nav-wrapper {
   background-color: black;
   translate: -200vw 0;
   opacity: 0;
-  transition: translate 0.8s ease-out, opacity 0.8s ease;
+  transition: translate 0.4s ease-out, opacity 0.4s ease;
   display: flex;
 }
 
@@ -796,26 +796,26 @@ header.new-nav .feds-nav-wrapper--expanded .feds-nav > section.feds-navItem > bu
   border: none;
   opacity:0;
   translate: -100px 0;
-  animation: slideleft 0.8s ease, fadein 0.6s ease;
+  animation: slideleft 0.4s ease, fadein 0.2s ease;
   animation-fill-mode: forwards;
   padding: 15px 20px;
 }
 
 [dir = "rtl"] header.new-nav .feds-nav-wrapper--expanded .feds-nav > section.feds-navItem > button.feds-navLink {
   translate: 100px 0;
-  animation: rtlslideleft 0.8s ease, fadein 0.6s ease;
+  animation: rtlslideleft 0.4s ease, fadein 0.2s ease;
   animation-fill-mode: forwards;
 }
 
 header.new-nav .feds-nav > section.feds-navItem > button.feds-navLink {
   opacity: 0;
   border: none;
-  animation: slideright 0.8s ease, fadeout 0.6s ease;
+  animation: slideright 0.4s ease, fadeout 0.2s ease;
   animation-fill-mode: forwards;
 }
 
 [dir = "rtl"] header.new-nav .feds-nav > section.feds-navItem > button.feds-navLink {
-  animation: rtlslideright 0.8s ease, fadeout 0.6s ease;
+  animation: rtlslideright 0.4s ease, fadeout 0.2s ease;
   animation-fill-mode: forwards;
 }
 
