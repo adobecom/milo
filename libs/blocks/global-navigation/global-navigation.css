@@ -756,8 +756,12 @@ header.new-nav .feds-nav-wrapper {
   background-color: black;
   translate: -200vw 0;
   opacity: 0;
-  transition: translate 0.4s ease-out, opacity 0.4s ease;
+  transition: translate 0.8s ease-out, opacity 0.8s ease;
   display: flex;
+}
+
+[dir = "rtl"] header.new-nav .feds-nav-wrapper {
+  translate: 200vw 0;
 }
 
 header.new-nav.local-nav .feds-nav-wrapper {
@@ -769,6 +773,10 @@ header.new-nav .feds-nav-wrapper--expanded {
   translate: 0;
   opacity: 1;
   z-index: 2;
+}
+
+[dir = "rtl"] header.new-nav .feds-nav-wrapper--expanded {
+  translate: 0;
 }
 
 header.new-nav .feds-nav-wrapper--expanded .feds-nav > section.feds-navItem:first-child {
@@ -787,14 +795,27 @@ header.new-nav .feds-nav-wrapper--expanded .feds-nav > section.feds-navItem > bu
   line-height: 25px;
   border: none;
   opacity:0;
-  transform: 12px 0;
-  animation: slideleft 0.3s ease, fadein 0.3s ease;
+  translate: -100px 0;
+  animation: slideleft 0.8s ease, fadein 0.6s ease;
   animation-fill-mode: forwards;
-  margin: 3px 20px 3px 8px;
+  padding: 15px 20px;
+}
+
+[dir = "rtl"] header.new-nav .feds-nav-wrapper--expanded .feds-nav > section.feds-navItem > button.feds-navLink {
+  translate: 100px 0;
+  animation: rtlslideleft 0.8s ease, fadein 0.6s ease;
+  animation-fill-mode: forwards;
 }
 
 header.new-nav .feds-nav > section.feds-navItem > button.feds-navLink {
-  animation: slideright 0.3s ease, fadeout 0.3s ease;
+  opacity: 0;
+  border: none;
+  animation: slideright 0.8s ease, fadeout 0.6s ease;
+  animation-fill-mode: forwards;
+}
+
+[dir = "rtl"] header.new-nav .feds-nav > section.feds-navItem > button.feds-navLink {
+  animation: rtlslideright 0.8s ease, fadeout 0.6s ease;
   animation-fill-mode: forwards;
 }
 
@@ -804,6 +825,13 @@ header.new-nav .feds-nav > section.feds-navItem > button.feds-navLink::after {
   height: 9.179px;
   transform: rotate(-45deg);
   border-color: white;
+  right: 20px;
+}
+
+[dir = "rtl"] header.new-nav .feds-nav > section.feds-navItem > button.feds-navLink::after {
+  transform: rotate(135deg);
+  right: unset;
+  left: 20px;
 }
 
 header.new-nav .feds-nav > .feds-navItem > a.feds-navLink {
@@ -819,9 +847,8 @@ header.new-nav .feds-nav > .feds-navItem > a.feds-navLink {
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup {
   position: fixed;
-  visibility: visible;
   top: calc(-1 * var(--feds-height-nav));
-  left: 0;
+  visibility: visible;
   width: 100%;
   height: calc(var(--feds-height-nav) + 100%);
   background-color: var(--feds-background-nav);
@@ -831,10 +858,9 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup {
    * right after loading in, we see some feds-popups appear on the
    * screen and fadeaway
    */
-  transition: translate 0.3s ease-out, opacity 0.3s ease;
-  translate: -200vw 0;
+  transition: translate 0.8s ease-out, opacity 0.6s ease;
+  translate: 300vw 0;
   /* animation-fill-mode: forwards; */
-  z-index: 2;
 
   display: grid;
   grid-template-rows: 56px max-content auto 80px;
@@ -846,9 +872,26 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup {
     "cta cta";
 }
 
+[dir = "rtl"] header.new-nav .feds-nav > section.feds-navItem > .feds-popup {
+  translate: -300vw 0;
+}
+
+header.new-nav.local-nav .feds-nav > section.feds-navItem > .feds-popup {
+  translate: -300vw 0;
+}
+
+[dir = "rtl"] header.new-nav.local-nav .feds-nav > section.feds-navItem > .feds-popup {
+  translate: 300vw 0;
+}
+
 header.new-nav .feds-nav > section.feds-navItem.feds-dropdown--active > .feds-popup {
   translate: 0;
   opacity: 1;
+  z-index: 2;
+}
+
+[dir = "rtl"] header.new-nav .feds-nav > section.feds-navItem.feds-dropdown--active > .feds-popup {
+  translate: 0;
 }
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .top-bar {
@@ -857,7 +900,13 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .top-bar {
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid #EAEAEA;
-  padding-left: 20px;
+  padding: 0 20px;
+}
+
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup .top-bar .close-icon {
+  width:14px;
+  height:14px;
+  cursor:pointer;
 }
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .top-bar .main-menu {
@@ -867,24 +916,35 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .top-bar .main-men
   cursor: pointer;
 }
 
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup .top-bar .main-menu svg {
+  translate: 0 2px;
+  margin-right: 7px;
+}
+
+[dir = "rtl"] header.new-nav .feds-nav > section.feds-navItem > .feds-popup .top-bar .main-menu svg {
+  transform: rotate(180deg);
+  margin-right: unset;
+  margin-left: 7px;
+}
+
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .title {
   grid-area: title;
   display: flex;
   flex-direction: column;
   border-bottom: 1px solid #EAEAEA;
-  padding-left:20px;
+  padding: 0 20px;
 }
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .title .breadcrumbs {
   display: block; /* even if the actual breadcrumbs are display none, we need the space to visible for the mobile gnav */
   height: 23px;
-  padding-top: 8px;
+  padding-top: 12px;
 }
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .title h7 {
   height: 25px;
   font-size: 28px;
   font-weight: 700;
   line-height: 25px;
-  padding-bottom: 24px;
+  padding-bottom: 29px;
 }
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tabs {
@@ -901,7 +961,7 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button {
   padding: 8px 20px;
   white-space: normal;
   font-weight: 700;
-  text-align: left;
+  text-align: unset;
 }
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button[aria-selected="true"] {
@@ -911,7 +971,7 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button[aria-
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content {
   background-color: #f3f3f3;
-  padding: 24px 0 0 24px;
+  padding: 10px 13px 25px;
   display: flex;
   flex-direction: column;
   gap: 28px;
@@ -923,7 +983,7 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content {
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content a {
   translate: 0 12px;
   opacity: 0;
-  animation: slideup 0.3s ease, fadein 0.3s ease;
+  animation: slideup 0.6s ease, fadein 0.8s ease;
   animation-fill-mode: forwards;
   font-weight: 700;
 }
@@ -1099,13 +1159,31 @@ header + .feds-localnav {
     translate: 0 0;
   }
   to {
-    translate: 12px 0;
+    translate: -100px 0;
+  }
+}
+
+@keyframes rtlslideright {
+  from {
+    translate: 0 0;
+  }
+  to {
+    translate: 100px 0;
   }
 }
 
 @keyframes slideleft {
   from {
-    translate: 12px 0;
+    translate: -100px 0;
+  }
+  to {
+    translate: 0 0;
+  }
+}
+
+@keyframes rtlslideleft {
+  from {
+    translate: 100px 0;
   }
   to {
     translate: 0 0;
@@ -1114,19 +1192,10 @@ header + .feds-localnav {
 
 @keyframes slideup {
   from {
-    translate: 0 12px;
+    translate: 0 40px;
   }
   to {
     translate: 0 0;
-  }
-}
-
-@keyframes slidedown {
-  from {
-    translate: 0 0px;
-  }
-  to {
-    translate: 0 12px;
   }
 }
 
