@@ -371,10 +371,11 @@ class Gnav {
   };
 
   decorateLocalNav = async () => {
+    if (!this.isLocalNav()) return;
     const localNavItems = this.elements.navWrapper.querySelector('.feds-nav').querySelectorAll('.feds-navItem:not(.feds-navItem--section)');
     const [title, navTitle = ''] = this.getOriginalTitle(localNavItems);
 
-    if (this.elements.localNav || !this.newMobileNav || !this.isLocalNav() || isDesktop.matches) {
+    if (this.elements.localNav || !this.newMobileNav || isDesktop.matches) {
       localNavItems[0].querySelector('a').textContent = title.trim();
     } else {
       const localNav = document.querySelector('.feds-localnav');
