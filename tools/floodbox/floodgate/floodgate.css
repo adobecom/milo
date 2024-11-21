@@ -1,8 +1,37 @@
-.fg-copy textarea {
+.info-box {
+  background: var(--s2-gray-75);
+  border-radius: var(--s2-radius-100);
+  padding: var(--spacing-100) var(--spacing-400);
+  margin-top: var(--spacing-400);
+}
+
+.info-box p {
+  margin-top: var(--spacing-50);
+  margin-bottom: var(--spacing-50);
+}
+
+.input-row {
+  align-items: center;
+  display: flex;
+  font-family: var(--body-font-family);
+  gap: var(--spacing-200);
+  margin: var(--spacing-200) 0;
+}
+
+.input-row input[type='text'] {
+  border: 2px solid var(--s2-gray-200);
+  border-radius: var(--s2-radius-100);
+  padding: 0 8px;
+  height: 32px;
+  margin: 0;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.input-row textarea {
   border: 2px solid var(--s2-gray-200);
   border-radius: var(--s2-radius-100);
   padding: 8px;
   resize: vertical;
   width: 100%;
-  height: 100px;
 }
