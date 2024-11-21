@@ -760,46 +760,31 @@ export const getEntitlements = async (data) => {
   });
 };
 
-const getCookie = (name) => {
-  const cookies = document.cookie.split(';');
-  const cookieValue = cookies.find((cookie) => {
-    const c = cookie.trim();
-    return c.indexOf(name) === 0;
-  });
-  if (cookieValue) {
-    return JSON.parse(cookieValue.substring(name.length + 2, cookieValue.length));
-  }
-  return [];
+export const getCookie = (name) => {
+  const cookie = document.cookie.split('; ').find((row) => row.startsWith(`${name}=`))?.split('=')[1];
+  return cookie?.trim().length ? JSON.parse(cookie) : [];
 };
 
-const setCookie = (name, value) => {
+const setCookie = (name, value, days) => {
   const date = new Date();
-  date.setTime(date.getTime() + (10 * 24 * 60 * 60 * 1000));
+  date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
   const expires = `expires=${date.toUTCString()}`;
   document.cookie = `${name}=${value};${expires};path=/`;
 };
-const addToCookieArray = (name, items) => {
-  let cookieArray = getCookie(name);
-  if (cookieArray.length > 50) {
-    cookieArray = items;
-  } else {
-    for (let i = 0; i < items.length; i += 1) {
-      if (!cookieArray.includes(items[i].trim())) {
-        cookieArray.push(items[i].trim());
-      }
+const addToCookieArray = (name, items, days = 10) => {
+  const cookieArray = getCookie(name);
+  for (let i = 0; i < items.length; i += 1) {
+    if (!cookieArray.includes(items[i].trim())) {
+      cookieArray.push(items[i].trim());
     }
   }
-  setCookie(name, JSON.stringify(cookieArray));
+  setCookie(name, JSON.stringify(cookieArray), days);
 };
 
 async function updateXLGCookie(config) {
-  try {
-    const userEntitlements = await config.entitlements();
-    if (userEntitlements?.length) {
-      addToCookieArray('mepXLG', userEntitlements);
-    }
-  } catch (error) {
-    console.error('Error updating entitlement cookie', error);
+  const userEntitlements = await config.entitlements();
+  if (userEntitlements?.length) {
+    addToCookieArray('mepXLG', userEntitlements, 7);
   }
 }
 
@@ -827,7 +812,7 @@ async function getPersonalizationVariant(
       updateXLGCookie(config);
     } else {
       userEntitlements = await config.entitlements();
-      addToCookieArray('mepXLG', userEntitlements);
+      addToCookieArray('mepXLG', userEntitlements, 7);
     }
   }
 
@@ -1193,7 +1178,7 @@ async function callMartech(config) {
   const { targetManifests, targetPropositions } = await getTargetPersonalization();
   config.mep.targetManifests = targetManifests;
   if (targetManifests?.length) {
-    addToCookieArray('mepTarget', getVariantLabels(targetManifests));
+    addToCookieArray('mepTarget', getVariantLabels(targetManifests), 2);
   }
   if (targetPropositions?.length && window._satellite) {
     window._satellite.track('propositionDisplay', targetPropositions);
