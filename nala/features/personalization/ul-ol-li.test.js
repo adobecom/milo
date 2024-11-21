@@ -4,7 +4,7 @@ import { features } from './ul-ol-li.spec.js';
 const miloLibs = process.env.MILO_LIBS || '';
 
 // Test 0 : check ul selectors (skipping ol selectors)
-test(`${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
+test(`[Test Id - ${features[0].tcid}] ${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
   const pznUrl = `${baseURL}${features[0].path}${miloLibs}`;
   const defaultUrl = `${baseURL}${features[0].data.defaultURL}${miloLibs}`;
   const pznUpdateLocator = '[data-manifest-id="ul-selector.json"]';
@@ -31,7 +31,7 @@ test(`${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
 });
 
 // Test 1 : check li selectors
-test(`${features[1].name},${features[1].tags}`, async ({ page, baseURL }) => {
+test(`[Test Id - ${features[1].tcid}] ${features[1].name},${features[1].tags}`, async ({ page, baseURL }) => {
   const pznUrl = `${baseURL}${features[1].path}${miloLibs}`;
   const defaultUrl = `${baseURL}${features[1].data.defaultURL}${miloLibs}`;
   const pznUpdateLocator = 'li[data-manifest-id="li-selectors.json"]';
