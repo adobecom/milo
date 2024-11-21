@@ -1,0 +1,72 @@
+<html>
+  <head>
+      <script type="importmap">
+        {
+          "imports": {
+            "../../../libs/deps/cai-tools.min.js": "./mocks/cai-tools-mocks-error.js"
+          }
+        }
+      </script>
+    </head>
+  <body>
+    <div class="section">
+      <picture>
+        <source type="image/webp" srcset="./media_1fec174a33af5d67c61c3d2f9790b2a12ba2be8a3.jpeg?width=2000&amp;format=webply&amp;optimize=medium" media="(min-width: 600px)">
+        <source type="image/webp" srcset="./media_1fec174a33af5d67c61c3d2f9790b2a12ba2be8a3.jpeg?width=750&amp;format=webply&amp;optimize=medium">
+        <source type="image/jpeg" srcset="./media_1fec174a33af5d67c61c3d2f9790b2a12ba2be8a3.jpeg?width=2000&amp;format=jpeg&amp;optimize=medium" media="(min-width: 600px)">
+        <img loading="lazy" alt="CAI | Here's some Alt text" src="./media_1fec174a33af5d67c61c3d2f9790b2a12ba2be8a3.jpeg?width=750&amp;format=jpeg&amp;optimize=medium" width="1136" height="639">
+      </picture>
+    </div>
+  </body>
+  <script type="module">
+  import { readFile } from '@web/test-runner-commands';
+  import { expect } from '@esm-bundle/chai';
+  import { assert } from 'sinon';
+  import { decorateCAI } from '../../../libs/utils/utils.js';
+  import { runTests } from '@web/test-runner-mocha';
+  import { createC2pa } from '../../../libs/deps/cai-tools.min.js';
+  
+  
+  runTests(() => {
+    describe('CAI Error State', () => {
+      
+      before(async () => {
+        const section = document.querySelector('.section');
+        await decorateCAI(section);
+      });
+
+      it('adds the CAI pin on the image', () => {
+        const caiImgContainer = document.querySelector('#cai-img-container');
+        const caiImg = caiImgContainer?.querySelector('img');
+        expect(caiImgContainer).to.not.be.null;
+        const icon = caiImgContainer.querySelector('.cai-icon > svg');
+        expect(icon).to.not.be.null;
+      });
+
+      it('removes the query params from the img src', () => {
+        const caiImgContainer = document.querySelector('#cai-img-container');
+        const caiImg = caiImgContainer?.querySelector('img');
+        caiImg.dispatchEvent(new Event('pointerover'));
+        expect(caiImg.src.split('?').length).to.equal(1);
+      });
+  
+      it('starts loading metadata on hover of the image', () => {
+        const caiImgContainer = document.querySelector('#cai-img-container');
+        caiImgContainer.dispatchEvent(new Event('pointerover'));
+        assert.calledOnce(createC2pa);
+        const icon = document.querySelector('.cai-icon');
+        icon.click();
+      });
+      
+      
+      it('displays the content after the metadata is recieved', async () => {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        const tooltip = document.querySelector('.cai-tooltip');
+        
+        expect(tooltip.textContent).to.equal('Error reading image metadata');
+      });
+    });
+  });
+  </script>
+</html>
+
