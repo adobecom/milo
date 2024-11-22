@@ -48,6 +48,11 @@
 }
 
 .table.top .section-row .col {
+  flex-direction: column;
+  justify-content: start;
+}
+
+.table.top.left .section-row .col {
   align-items: start;
 }
 
