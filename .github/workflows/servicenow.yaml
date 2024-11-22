@@ -63,9 +63,9 @@ jobs:
             echo "$str"
           }
 
-          release_title=$(sanitizeStr "${{ github.event.pull_request.title }}") >> $GITHUB_ENV
+          echo "release_title=$(sanitizeStr '${{ github.event.pull_request.title }}')" >> $GITHUB_ENV
           release_details=$(sanitizeStr "${{ github.event.pull_request.body }}")
-          release=Release_Title--"${release_title}"--Release_Details--"${release_details}"--Pull_Request_Number--"${{ github.event.pull_request.number }}"--Pull_Request_Created_At--"${{ github.event.pull_request.created_at }}"--Pull_Request_Merged_At--"${{ github.event.pull_request.merged_at }}"
+          release=Release_Details--"${release_details}"--Pull_Request_Number--"${{ github.event.pull_request.number }}"--Pull_Request_Created_At--"${{ github.event.pull_request.created_at }}"--Pull_Request_Merged_At--"${{ github.event.pull_request.merged_at }}"
 
           echo "release_summary<<RS_EOF" >> $GITHUB_ENV
           echo "$release" >> $GITHUB_ENV
@@ -112,8 +112,7 @@ jobs:
               exit 1
             else
               echo "IMS token request was successful"
-              token=$(jq -r '.access_token' response.txt) >> GITHUB_ENV
-              echo "${token}"
+              echo "token=$(jq -r '.access_token' response.txt)" >> GITHUB_ENV
             fi
           }
 
@@ -177,8 +176,7 @@ jobs:
               exit 1
             else
               echo "CMR creation was successful"
-              transaction_id=$(jq -r '.id' response.txt) >> GITHUB_ENV
-              echo "${transaction_id}"
+              echo "transaction_id=$(jq -r '.id' response.txt)" >> GITHUB_ENV
             fi
           }
 
@@ -225,8 +223,7 @@ jobs:
               exit 1
             else
               echo "CMR ID retrieval was successful"
-              cmr_id=$(jq -r '.changeId' response.txt) >> GITHUB_ENV
-              echo "${cmr_id}"
+              echo "cmr_id=$(jq -r '.changeId' response.txt)" >> GITHUB_ENV
             fi
           }
 
