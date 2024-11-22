@@ -772,7 +772,11 @@ function decorateHeader() {
   const dynamicNavActive = getMetadata('dynamic-nav') === 'on'
     && window.sessionStorage.getItem('gnavSource') !== null;
   if (!dynamicNavActive && (baseBreadcrumbs || breadcrumbs || autoBreadcrumbs)) header.classList.add('has-breadcrumbs');
-  if (getMetadata('is-localnav') === 'true' && getMetadata('mobile-gnav-v2') !== 'false') {
+  const gnavSource = getMetadata('gnav-source');
+  const gnavUrl = gnavSource.split('/');
+  const gnavName = gnavUrl[gnavUrl.length - 1];
+  
+  if (gnavName.match('localnav') && getMetadata('mobile-gnav-v2') !== 'false') {
     // Preserving space to avoid CLS issue
     const localNavWrapper = createTag('div', { class: 'feds-localnav' });
     header.after(localNavWrapper);
