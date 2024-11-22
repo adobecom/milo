@@ -79,7 +79,7 @@ export const analyticsTestData = {
   'unc|click|markUnread': 'Mark Notification as unread',
 };
 
-export const unavVersion = '1.3';
+export const unavVersion = '1.4';
 
 export const unavLocalesTestData = Object.entries(LANGMAP).reduce((acc, curr) => {
   const result = [];

@@ -74,9 +74,26 @@ export const CONFIG = {
         name: 'profile',
         attributes: {
           isSignUpRequired: false,
+          messageEventListener: (event) => {
+            const { name, payload, executeDefaultAction } = event.detail;
+            if (name === 'System' && payload.subType === 'AppInitiated') {
+              window.adobeProfile?.getUserProfile()
+                .then((data) => { setUserProfile(data); })
+                .catch(() => { setUserProfile({}); });
+            }
+            if (name === 'System' && payload.subType === 'SignOut') {
+              executeDefaultAction();
+            }
+            if (name === 'System' && payload.subtype === 'ProfileSwitch') {
+              executeDefaultAction.then((profile) => {
+                if (profile) window.location.reload();
+              });
+            }
+          },
           componentLoaderConfig: {
             config: {
               enableLocalSection: true,
+              enableProfileSwitcher: true,
               miniAppContext: {
                 onMessage: (name, payload) => {
                   if (name === 'System' && payload.subType === 'AppInitiated') {
@@ -118,6 +135,7 @@ export const CONFIG = {
           callbacks: getConfig().jarvis?.callbacks,
         },
       },
+      cart: { name: 'cart' },
     },
   },
 };
@@ -537,7 +555,7 @@ class Gnav {
       return 'linux';
     };
 
-    const unavVersion = new URLSearchParams(window.location.search).get('unavVersion') || '1.3';
+    const unavVersion = new URLSearchParams(window.location.search).get('unavVersion') || '1.4';
     await Promise.all([
       loadScript(`https://${environment}.adobeccstatic.com/unav/${unavVersion}/UniversalNav.js`),
       loadStyles(`https://${environment}.adobeccstatic.com/unav/${unavVersion}/UniversalNav.css`),
