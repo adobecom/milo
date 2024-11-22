@@ -201,8 +201,8 @@ export default class MiloFloodgate extends LitElement {
     await this.startPromote(org, repo);
 
     // #3 - Preview/Publish Promoted files
-    // this._startPreviewPublish = true;
-    // await this.startPreviewPublish(org, repo);
+    this._startPreviewPublish = true;
+    await this.startPreviewPublish(org, repo);
   }
 
   togglePromoteIgnore(event) {
