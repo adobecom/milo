@@ -14,9 +14,9 @@ class FloodgateConfig {
     this.requestHandler = new RequestHandler(accessToken);
 
     // config
-    this.isPromoteEnabled = null;
-    this.isDeleteEnabled = null;
-    this.isPromoteDraftsOnly = null;
+    this.isPromoteEnabled = false;
+    this.isDeleteEnabled = false;
+    this.isPromoteDraftsOnly = false;
 
     // promote ignore paths
     this.promoteIgnorePaths = [];
