@@ -38,7 +38,9 @@ const extractMetadata = async (img) => {
   const parseGenerativeInfo = (xs) => {
     // the only two options at this point are compositeWithTrainedAlgorithmicMedia
     // and trainedAlgorithmic media, and the former overrides the latter
-    const aiTool = [...new Set(xs.map(({ softwareAgent }) => softwareAgent))].join(', ') || 'None';
+    const aiTool = [...new Set(xs.map(({ softwareAgent }) => softwareAgent))]
+      .filter(Boolean)
+      .join(', ') || 'None';
     const composite = xs.find(({ type }) => type === 'compositeWithTrainedAlgorithmicMedia');
     if (composite) {
       return {
