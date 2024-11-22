@@ -2,9 +2,17 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import mas from './mas.js';
 import {
+    processMnemonics,
+    processTitle,
+    processSize,
+    processPrices,
     processBackgroundImage,
     processCTAs,
     processSubtitle,
+    processAnalytics,
+    ANALYTICS_TAG,
+    ANALYTICS_LINK_ATTR,
+    ANALYTICS_SECTION_ATTR
 } from '../src/hydrate.js';
 
 import { mockFetch } from './mocks/fetch.js';
@@ -19,6 +27,57 @@ const mockMerchCard = () => {
     });
     return merchCard;
 };
+
+describe('processMnemonics', async () => {
+    it('should process mnemonics', async () => {
+        const fields = {
+            mnemonicIcon: ['www.adobe.com/icons/photoshop.svg'],
+            mnemonicAlt: [],
+            mnemonicLink: ['www.adobe.com'],
+        };
+        const merchCard = mockMerchCard();
+        const mnemonicsConfig = { size: 'm' };
+        processMnemonics(fields, merchCard, mnemonicsConfig);
+        expect(merchCard.outerHTML).to.equal(
+            '<div><merch-icon slot="icons" src="www.adobe.com/icons/photoshop.svg" size="m" href="https://www.adobe.com/"></merch-icon></div>',
+        );
+    });
+});
+
+describe('processTitle', async () => {
+    it('should process use tag and slot metadata', async () => {
+        const fields = { cardTitle: 'Photoshop' };
+        const merchCard = mockMerchCard();
+        const titleConfig = { tag: 'h2', slot: 'title' };
+        processTitle(fields, merchCard, titleConfig);
+        expect(merchCard.outerHTML).to.equal(
+            '<div><h2 slot="title">Photoshop</h2></div>',
+        );
+    });
+});
+
+describe('processSize', async () => {
+    it('should apply size', async () => {
+        const fields = { size: 'wide' };
+        const merchCard = mockMerchCard();
+        processSize(fields, merchCard, ['wide']);
+        expect(merchCard.outerHTML).to.equal('<div size="wide"></div>');
+    });
+});
+
+describe('processPrices', async () => {
+    it('should process prices', async () => {
+        const fields = {
+            prices: '<span>$9.99</span>',
+        };
+        const merchCard = mockMerchCard();
+        const pricesConfig = { tag: 'p', slot: 'prices' };
+        processPrices(fields, merchCard, pricesConfig);
+        expect(merchCard.outerHTML).to.equal(
+            '<div><p slot="prices"><span>$9.99</span></p></div>',
+        );
+    });
+});
 
 describe('processCTAs', async () => {
     let merchCard;
@@ -317,4 +376,57 @@ describe('processBackgroundImage', () => {
         expect(merchCard.append.called).to.be.false;
         expect(merchCard.outerHTML).to.equal('<div></div>');
     });
+});
+
+describe('processAnalytics', () => {
+  let merchCard;
+
+  beforeEach(() => {
+      merchCard = mockMerchCard();
+      //merchCard.innerHTML = '<a href="/see-terms.html" data-analytics-id="see-terms">See terms</a>'
+  });
+
+  afterEach(() => {
+      sinon.restore();
+  });
+
+  it('should not set analytics attributes if no fragment.tags', () => {
+      const fragment = {};
+      processAnalytics(fragment, merchCard);
+      expect(merchCard.hasAttribute(ANALYTICS_SECTION_ATTR)).to.be.false;
+      expect(merchCard.querySelectorAll(`a[${ANALYTICS_LINK_ATTR}]`).length).to.equal(0);
+  });
+
+  it(`should not set analytics attributes when no tags start with ${ANALYTICS_TAG}`, () => {
+      const fragment = { tags: ['mas:term/montly'] };
+      processAnalytics(fragment, merchCard);
+      expect(merchCard.hasAttribute(ANALYTICS_SECTION_ATTR)).to.be.false;
+      expect(merchCard.querySelectorAll(`a[${ANALYTICS_LINK_ATTR}]`).length).to.equal(0);
+  });
+
+  it('should set analytics-section attribute on merchCard', () => {
+      const fragment = { tags: ['mas:product_code/phsp'] };
+      processAnalytics(fragment, merchCard);
+      expect(merchCard.getAttribute(ANALYTICS_SECTION_ATTR)).to.equal('phsp');
+  });
+
+  it('should set analytics-link attributes on links inside merchCard', () => {
+      const fragment = { tags: ['mas:term/montly', 'mas:product_code/ccsn'] };
+
+      const seeTerms = document.createElement('a');
+      seeTerms.setAttribute('data-analytics-id', 'see-terms');
+      const buyNow = document.createElement('a');
+      buyNow.setAttribute('data-analytics-id', 'buy-now');
+      const noAnalytics = document.createElement('a');
+      merchCard.appendChild(seeTerms);
+      merchCard.appendChild(buyNow);
+      merchCard.appendChild(noAnalytics);
+
+      processAnalytics(fragment, merchCard);
+      expect(merchCard.getAttribute(ANALYTICS_SECTION_ATTR)).to.equal('ccsn');
+      expect(seeTerms.getAttribute(ANALYTICS_LINK_ATTR)).to.equal('see-terms-1');
+      expect(buyNow.getAttribute(ANALYTICS_LINK_ATTR)).to.equal('buy-now-2');
+      // should handle only links with data-analytics-id attribute
+      expect(merchCard.querySelectorAll(`a[${ANALYTICS_LINK_ATTR}]`).length).to.equal(2);
+  });
 });
