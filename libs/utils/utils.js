@@ -1068,19 +1068,6 @@ export async function decorateCAI(section = document) {
     .map((img) => {
       if (!img) return null;
 
-      const brick = img.closest('.homepage-brick');
-      // since homepage bricks have an anchor sibling element
-      // that covers the whole image, we need some special logic to
-      // handle that
-      (brick ?? img).addEventListener('pointerover', () => {
-        const [src] = img.src.split('?');
-        // make sure if people right click and save the
-        // image the content credentials will still be there
-        // note: the images are already visible at this point
-        // but changing the source like this doesn't cause a flicker
-        img.src = src;
-      }, { once: true });
-
       const xs = img.alt.split('|').map((x) => x.trim());
       if (!xs.length) return null;
 
@@ -1088,6 +1075,13 @@ export async function decorateCAI(section = document) {
       img.alt = rest.join('|');
 
       if (cai !== 'CAI') return null;
+
+      const [src] = img.src.split('?');
+      // make sure if people right click and save the
+      // image the content credentials will still be there
+      // note: the images are already visible at this point
+      // but changing the source like this doesn't cause a flicker
+      img.src = src;
 
       const container = createTag('div');
       container.id = 'cai-img-container';
