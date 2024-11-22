@@ -64,6 +64,9 @@ You do need to have mas.js on your page / application, including it can be done 
 
 <!-- or with a country and language -->
 <mas-commerce-service country="JP" language="en"></mas-commerce-service>
+
+<!-- with custom api key & checkout clientid -->
+<mas-commerce-service wcs-api-key="custom-api-key" checkout-client-id="custom-client-id"></mas-commerce-service>
 ```
 
 you can play around with below price, either adding locale, language or env as parameters that will be injected to `mas-commerce-service` as attributes, and then it will be activated.
