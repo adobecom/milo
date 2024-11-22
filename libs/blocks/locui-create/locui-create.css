@@ -520,12 +520,12 @@ body {
   max-height: 63vh;
   overflow-y: auto;
   margin: 10px 0;
+  border: 1px solid #ccc;
 }
 
 .locui-table table {
   width: 100%;
   border-collapse: collapse;
-  border: 1px solid #ccc;
 }
 
 .locui-table th {
@@ -589,6 +589,13 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+.create-project-view {
+  display: flex;
+  justify-content: end;
+  align-items: end;
+  width: 270px;
 }
 
 .locui-project-created-modal button {
