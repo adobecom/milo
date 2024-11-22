@@ -70,10 +70,10 @@ const loadCaas = async (a) => {
 
   // Support for the events platform
   if (host.includes('--events')) {
-    if (host.includes('--dev')) {
+    if (host.includes('dev--')) {
       chimeraEndpoint = D_CAAS_AIO;
       state.environment = 'dev';
-    } else if (host.includes('--stage')) {
+    } else if (host.includes('stage--')) {
       chimeraEndpoint = S_CAAS_AIO;
       state.environment = 'stage';
     } else {
