@@ -209,6 +209,7 @@ const TagSelect = ({
         <span class="tagselect-tag-text">${path.replace('&amp;', '&')}</span>
         <div class="tagselect-tag-delete" role="button" onClick=${(e) => onTagDelete(e, option)}>
           <svg
+            aria-hidden="true"
             height="14"
             width="14"
             viewBox="0 0 20 20"

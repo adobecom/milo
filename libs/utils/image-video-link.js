@@ -1,6 +1,6 @@
 import { getConfig, loadStyle, createTag } from './utils.js';
 
-const PLAY_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="32" viewBox="0 0 24 32" fill="none" class="play-icon">
+const PLAY_ICON_SVG = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="32" viewBox="0 0 24 32" fill="none" class="play-icon">
                         <path d="M24 16.0005L0 32L1.39876e-06 0L24 16.0005Z" fill="white"/>
                       </svg>`;
 
