@@ -1,7 +1,5 @@
 :root {
   --modal-focus-color: #109cde;
-  --spacing-xl: 56px;
-  --aspect-ratio-tall: 9/16;
 }
 
 .dialog-modal {
@@ -231,6 +229,7 @@
   aspect-ratio: var(--aspect-ratio-tall);
   height: auto;
   padding-bottom: 0;
+  min-width: 90vw;
 }
 
 @media (min-width: 600px) {
@@ -240,13 +239,16 @@
   }
 
   .dialog-modal.tall-video {
-    max-width: 45vw;
+    --modal-width-var: 50vw;
+
+    max-width: var(--modal-width-var);
     padding: var(--spacing-xl);
   }
 
   .dialog-modal.tall-video .milo-video {
-    min-width: 45vw;
-    aspect-ratio: var(--aspect-ratio-tall);
+    --modal-width-var: 50vw;
+
+    min-width: var(--modal-width-var);
   }
 
   .region-selector .content {
@@ -255,6 +257,13 @@
 
   .upgrade-flow-modal .upgrade-flow-iframe {
     padding: 0 0 10px;
+  }
+}
+
+@media (min-width: 600px) and (orientation: landscape) {
+  .dialog-modal.tall-video,
+  .dialog-modal.tall-video .milo-video {
+    --modal-width-var: 25vw;
   }
 }
 
@@ -339,35 +348,43 @@
     width: 80%;
   }
 
-  .dialog-modal.tall-video {
-    max-width: 35vw;
-  }
-
+  .dialog-modal.tall-video,
   .dialog-modal.tall-video .milo-video {
-    min-width: 35vw;
+    --modal-width-var: 35vw;
+  }
+}
+
+@media (min-width: 1200px) and (orientation: landscape) {
+  .dialog-modal.tall-video,
+  .dialog-modal.tall-video .milo-video {
+    --modal-width-var: 25vw;
   }
 }
 
 @media (min-width: 1400px) {
-  .dialog-modal.tall-video {
-    max-width: 25vw;
+  .dialog-modal.tall-video,
+  .dialog-modal.tall-video .milo-video {
+    --modal-width-var: 25vw;
+
     max-height: 1200px;
   }
 
   .dialog-modal.tall-video .milo-video {
-    min-width: 25vw;
-    max-height: 1200px;
     height: 100%;
   }
 }
 
-@media (min-width: 2000px) {
-  .dialog-modal.tall-video {
-    max-width: 22vw;
-  }
-
+@media (min-width: 1400px) and (orientation: landscape) {
+  .dialog-modal.tall-video,
   .dialog-modal.tall-video .milo-video {
-    min-width: 22vw;
+    --modal-width-var: 20vw;
+  }
+}
+
+@media (min-width: 2000px) {
+  .dialog-modal.tall-video,
+  .dialog-modal.tall-video .milo-video {
+    --modal-width-var: 22vw;
   }
 }
 
