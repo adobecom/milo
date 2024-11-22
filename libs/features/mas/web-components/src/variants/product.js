@@ -6,6 +6,7 @@ import { CSS } from './product.css.js';
 export class Product extends VariantLayout {
   constructor(card) {
     super(card);
+    this.postCardUpdateHook = this.postCardUpdateHook.bind(this);
   }
 
   getGlobalCSS() {
@@ -48,11 +49,15 @@ export class Product extends VariantLayout {
   }
 
   connectedCallbackHook() {
-    super.connectedCallbackHook();
-    window.addEventListener('resize', this.postCardUpdateHook.bind(this));
+    window.addEventListener('resize', this.postCardUpdateHook);
+  }
+
+  disconnectedCallbackHook() {
+    window.removeEventListener('resize', this.postCardUpdateHook);
   }
 
   postCardUpdateHook() {
+    if (!this.isConnected) return;
     if (!isMobile()) {
       this.adjustProductBodySlots();
     }
