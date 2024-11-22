@@ -100,10 +100,11 @@ jobs:
               url=$DEFAULT_IMS_URL
             fi
 
-            curl --request POST --silent --url "${url}" --header 'content-type: multipart/form-data' --form client_id=${client_id} --form client_secret=${client_secret} --form grant_type=authorization_code --form code=${ims_code} > response.txt
+            local response=$(curl --request POST --silent --url "${url}" --header 'content-type: multipart/form-data' --form client_id=${client_id} --form client_secret=${client_secret} --form grant_type=authorization_code --form code=${ims_code}) > response.txt
 
             if [ -s response.txt ]; then
               echo "CURL call failed, returned response copied to response.txt was empty."
+              echo $response
               exit 1
             elif grep -q "\"error\"" response.txt; then
               echo "IMS token request failed with response: "
