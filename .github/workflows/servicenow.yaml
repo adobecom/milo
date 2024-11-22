@@ -100,10 +100,10 @@ jobs:
               url=$DEFAULT_IMS_URL
             fi
 
-            local response=$(curl --request POST --write-out "%{http_code}" --silent --output response.txt --url "${url}" --header 'content-type: multipart/form-data' --form client_id=${client_id} --form client_secret=${client_secret} --form grant_type=authorization_code --form code=${ims_code})
+            curl --request POST --silent --url "${url}" --header 'content-type: multipart/form-data' --form client_id=${client_id} --form client_secret=${client_secret} --form grant_type=authorization_code --form code=${ims_code} > response.txt
 
-            if [ $response != "200" ]; then
-              echo "CURL call returned HTTP status code: $response"
+            if [ -s response.txt ]; then
+              echo "CURL call failed, returned response copied to response.txt was empty."
               exit 1
             elif grep -q "\"error\"" response.txt; then
               echo "IMS token request failed with response: "
@@ -165,12 +165,12 @@ jobs:
               url=$DEFAULT_SERVICENOW_URL
             fi
 
-            local response=$(curl --request POST --write-out "%{http_code}" --silent --output response.txt --url "${url}" --header "api_key: ${api_key}" --header "Authorization: ${access_token}" -d '{"title": "${title}", "description": "${description}", "instanceIds": [ 537445 ], "plannedStartDate": ${start_time}, "plannedEndDate": ${end_time}, "coordinator": "narcis@adobe.com", "executor": "mauchley@adobe.com", "customerImpact": "No Impact", "changeReason": [ "New Features", "Bug Fixes", "Enhancement", "Maintenance", "Security" ], "risk": "Straight Forward", "preProductionTestingType": [ "End-to-End", "Functional", "Integrations", "QA", "Regression", "UAT", "Unit Test" ], "backoutPlanType": "Roll back", "approvedBy": [ "osahin@adobe.com" ], "testPlan": "Test plan is documented in the PR link in the Milo repository above. See the PR's merge checks to see Unit and Nala testing.", "implementationPlan": "The change will be realeased as part of the continuous deployment of Milo's production branch, i.e., \"main\"", "backoutPlan": "Revert merge to the Milo production branch by creating a revert commit.", "testResults": "Changes are tested and validated successfully in staging environment. Please see the link of the PR in the description for the test results and/or the \"#nala-test-results\" slack channel."}')
+            curl --request POST --silent --url "${url}" --header "api_key: ${api_key}" --header "Authorization: ${access_token}" -d '{"title": "${title}", "description": "${description}", "instanceIds": [ 537445 ], "plannedStartDate": ${start_time}, "plannedEndDate": ${end_time}, "coordinator": "narcis@adobe.com", "executor": "mauchley@adobe.com", "customerImpact": "No Impact", "changeReason": [ "New Features", "Bug Fixes", "Enhancement", "Maintenance", "Security" ], "risk": "Straight Forward", "preProductionTestingType": [ "End-to-End", "Functional", "Integrations", "QA", "Regression", "UAT", "Unit Test" ], "backoutPlanType": "Roll back", "approvedBy": [ "osahin@adobe.com" ], "testPlan": "Test plan is documented in the PR link in the Milo repository above. See the PR's merge checks to see Unit and Nala testing.", "implementationPlan": "The change will be realeased as part of the continuous deployment of Milo's production branch, i.e., \"main\"", "backoutPlan": "Revert merge to the Milo production branch by creating a revert commit.", "testResults": "Changes are tested and validated successfully in staging environment. Please see the link of the PR in the description for the test results and/or the \"#nala-test-results\" slack channel."}' > response.txt
 
-            if [ $response != "200" ]; then
-              echo "CURL call returned HTTP status code: $response"
+            if [ -s response.txt ]; then
+              echo "CURL call failed, returned response copied to response.txt was empty."
               exit 1
-            elif grep -q "\"status\":\"error\"" response.txt; then
+            elif grep -q "\"error\"" response.txt; then
               echo "CMR creation failed with response: "
               cat response.txt
               exit 1
@@ -213,12 +213,12 @@ jobs:
               url+="/${transaction_id}"
             fi
 
-            local response=$(curl --request GET --write-out "%{http_code}" --silent --output response.txt --url "${url}" --header "api_key: ${api_key}" --header "Authorization: ${access_token}")
+            curl --request GET --silent --url "${url}" --header "api_key: ${api_key}" --header "Authorization: ${access_token}" > response.txt
 
-            if [ $response != "200" ]; then
-              echo "CURL call returned HTTP status code: $response"
+            if [ -s response.txt ]; then
+              echo "CURL call failed, returned response copied to response.txt was empty."
               exit 1
-            elif grep -q "\"status\":\"error\"" response.txt; then
+            elif grep -q "\"error\"" response.txt; then
               echo "CMR ID retrieval failed with response: "
               cat response.txt
               exit 1
@@ -278,12 +278,12 @@ jobs:
               url+="/${cmr_id}"
             fi
 
-            local response=$(curl --request POST --write-out "%{http_code}" --silent --output response.txt --url "${url}" --header "api_key: ${api_key}" --header "Authorization: ${access_token}" -d '{"actualStartDate": ${actual_start_time}, "actualEndDate": ${actual_end_time}, "state": "Closed", "closeCode": "Successful", "notes": "The change request is closed as the change was released successfully"}')
+            curl --request POST --silent --url "${url}" --header "api_key: ${api_key}" --header "Authorization: ${access_token}" -d '{"actualStartDate": ${actual_start_time}, "actualEndDate": ${actual_end_time}, "state": "Closed", "closeCode": "Successful", "notes": "The change request is closed as the change was released successfully"}' > response.txt
 
-            if [ $response != "200" ]; then
-              echo "CURL call returned HTTP status code: $response"
+            if [ -s response.txt ]; then
+              echo "CURL call failed, returned response copied to response.txt was empty."
               exit 1
-            elif grep -q "\"status\":\"error\"" response.txt; then
+            elif grep -q "\"error\"" response.txt; then
               echo "CMR closure failed with response: "
               cat response.txt
               exit 1
