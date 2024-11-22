@@ -62,6 +62,12 @@ const loadCaas = async (a) => {
 
   let chimeraEndpoint = 'www.adobe.com/chimera-api/collection';
 
+  if (host.includes('stage.adobe') || env?.name === 'local' || caasEndpoint === 'stage') {
+    chimeraEndpoint = S_CAAS_AIO;
+  } else if (host.includes(`.${SLD}.`) || caasEndpoint === 'prod') {
+    chimeraEndpoint = P_CAAS_AIO;
+  }
+
   // Support for the events platform
   if (host.includes('--events')) {
     if (host.includes('--dev')) {
@@ -73,12 +79,6 @@ const loadCaas = async (a) => {
     } else {
       state.environment = '';
     }
-  }
-
-  if (host.includes('stage.adobe') || env?.name === 'local' || caasEndpoint === 'stage') {
-    chimeraEndpoint = S_CAAS_AIO;
-  } else if (host.includes(`.${SLD}.`) || caasEndpoint === 'prod') {
-    chimeraEndpoint = P_CAAS_AIO;
   }
 
   if (host.includes(`${SLD}.page`) || env?.name === 'local' || caasContainer === 'draft') {
