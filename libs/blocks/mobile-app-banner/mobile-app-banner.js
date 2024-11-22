@@ -13,7 +13,7 @@ async function getKey(product) {
   return keyMatch[0]?.key;
 }
 
-async function getECID() {
+export async function getECID() {
   let ecid = null;
   if (window.alloy) {
     await window.alloy('getIdentity').then((data) => {
