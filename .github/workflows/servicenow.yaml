@@ -104,7 +104,7 @@ jobs:
 
             if [ -s response.txt ]; then
               echo "CURL call failed, returned response copied to response.txt was empty."
-              echo $response
+              cat $response
               exit 1
             elif grep -q "\"error\"" response.txt; then
               echo "IMS token request failed with response: "
@@ -113,6 +113,7 @@ jobs:
             else
               echo "IMS token request was successful"
               echo "token=$(jq -r '.access_token' response.txt)" >> GITHUB_ENV
+              cat $token
             fi
           }
 
@@ -165,10 +166,11 @@ jobs:
               url=$DEFAULT_SERVICENOW_URL
             fi
 
-            curl --request POST --silent --url "${url}" --header "api_key: ${api_key}" --header "Authorization: ${access_token}" -d '{"title": "${title}", "description": "${description}", "instanceIds": [ 537445 ], "plannedStartDate": ${start_time}, "plannedEndDate": ${end_time}, "coordinator": "narcis@adobe.com", "executor": "mauchley@adobe.com", "customerImpact": "No Impact", "changeReason": [ "New Features", "Bug Fixes", "Enhancement", "Maintenance", "Security" ], "risk": "Straight Forward", "preProductionTestingType": [ "End-to-End", "Functional", "Integrations", "QA", "Regression", "UAT", "Unit Test" ], "backoutPlanType": "Roll back", "approvedBy": [ "osahin@adobe.com" ], "testPlan": "Test plan is documented in the PR link in the Milo repository above. See the PR's merge checks to see Unit and Nala testing.", "implementationPlan": "The change will be realeased as part of the continuous deployment of Milo's production branch, i.e., \"main\"", "backoutPlan": "Revert merge to the Milo production branch by creating a revert commit.", "testResults": "Changes are tested and validated successfully in staging environment. Please see the link of the PR in the description for the test results and/or the \"#nala-test-results\" slack channel."}' > response.txt
+            local response=$(curl --request POST --silent --url "${url}" --header "api_key: ${api_key}" --header "Authorization: ${access_token}" -d '{"title": "${title}", "description": "${description}", "instanceIds": [ 537445 ], "plannedStartDate": ${start_time}, "plannedEndDate": ${end_time}, "coordinator": "narcis@adobe.com", "executor": "mauchley@adobe.com", "customerImpact": "No Impact", "changeReason": [ "New Features", "Bug Fixes", "Enhancement", "Maintenance", "Security" ], "risk": "Straight Forward", "preProductionTestingType": [ "End-to-End", "Functional", "Integrations", "QA", "Regression", "UAT", "Unit Test" ], "backoutPlanType": "Roll back", "approvedBy": [ "osahin@adobe.com" ], "testPlan": "Test plan is documented in the PR link in the Milo repository above. See the PR's merge checks to see Unit and Nala testing.", "implementationPlan": "The change will be realeased as part of the continuous deployment of Milo's production branch, i.e., \"main\"", "backoutPlan": "Revert merge to the Milo production branch by creating a revert commit.", "testResults": "Changes are tested and validated successfully in staging environment. Please see the link of the PR in the description for the test results and/or the \"#nala-test-results\" slack channel."}') > response.txt
 
             if [ -s response.txt ]; then
               echo "CURL call failed, returned response copied to response.txt was empty."
+              cat $response
               exit 1
             elif grep -q "\"error\"" response.txt; then
               echo "CMR creation failed with response: "
@@ -177,6 +179,7 @@ jobs:
             else
               echo "CMR creation was successful"
               echo "transaction_id=$(jq -r '.id' response.txt)" >> GITHUB_ENV
+              cat $response
             fi
           }
 
@@ -212,10 +215,11 @@ jobs:
               url+="/${transaction_id}"
             fi
 
-            curl --request GET --silent --url "${url}" --header "api_key: ${api_key}" --header "Authorization: ${access_token}" > response.txt
+            local response=$(curl --request GET --silent --url "${url}" --header "api_key: ${api_key}" --header "Authorization: ${access_token}") > response.txt
 
             if [ -s response.txt ]; then
               echo "CURL call failed, returned response copied to response.txt was empty."
+              cat $response
               exit 1
             elif grep -q "\"error\"" response.txt; then
               echo "CMR ID retrieval failed with response: "
@@ -224,6 +228,7 @@ jobs:
             else
               echo "CMR ID retrieval was successful"
               echo "cmr_id=$(jq -r '.changeId' response.txt)" >> GITHUB_ENV
+              cat $response
             fi
           }
 
@@ -276,10 +281,11 @@ jobs:
               url+="/${cmr_id}"
             fi
 
-            curl --request POST --silent --url "${url}" --header "api_key: ${api_key}" --header "Authorization: ${access_token}" -d '{"actualStartDate": ${actual_start_time}, "actualEndDate": ${actual_end_time}, "state": "Closed", "closeCode": "Successful", "notes": "The change request is closed as the change was released successfully"}' > response.txt
+            local response=$(curl --request POST --silent --url "${url}" --header "api_key: ${api_key}" --header "Authorization: ${access_token}" -d '{"actualStartDate": ${actual_start_time}, "actualEndDate": ${actual_end_time}, "state": "Closed", "closeCode": "Successful", "notes": "The change request is closed as the change was released successfully"}') > response.txt
 
             if [ -s response.txt ]; then
               echo "CURL call failed, returned response copied to response.txt was empty."
+              cat $response
               exit 1
             elif grep -q "\"error\"" response.txt; then
               echo "CMR closure failed with response: "
@@ -287,6 +293,7 @@ jobs:
               exit 1
             else
               echo "CMR closure was successful"
+              cat $response
             fi
           }
 
