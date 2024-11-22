@@ -4232,7 +4232,6 @@ var setCustomTemplateLiteralTag = (e16) => {
 
 // ../node_modules/@spectrum-web-components/icons-ui/src/icons/Cross200.js
 var Cross200Icon = ({ width: t13 = 24, height: e16 = 24, title: r9 = "Cross200" } = {}) => tag`<svg
-    aria-hidden="true"
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 10 10"
     aria-hidden="true"
@@ -4263,7 +4262,6 @@ init_src();
 
 // ../node_modules/@spectrum-web-components/icons-ui/src/icons/Cross300.js
 var Cross300Icon = ({ width: t13 = 24, height: e16 = 24, title: r9 = "Cross300" } = {}) => tag`<svg
-    aria-hidden="true"
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 12 12"
     aria-hidden="true"
@@ -4294,7 +4292,6 @@ init_src();
 
 // ../node_modules/@spectrum-web-components/icons-ui/src/icons/Cross400.js
 var Cross400Icon = ({ width: t13 = 24, height: e16 = 24, title: r9 = "Cross400" } = {}) => tag`<svg
-    aria-hidden="true"
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 12 12"
     aria-hidden="true"
@@ -4325,7 +4322,6 @@ init_src();
 
 // ../node_modules/@spectrum-web-components/icons-ui/src/icons/Cross500.js
 var Cross500Icon = ({ width: t13 = 24, height: e16 = 24, title: r9 = "Cross500" } = {}) => tag`<svg
-    aria-hidden="true"
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 14 14"
     aria-hidden="true"
