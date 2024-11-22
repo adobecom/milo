@@ -630,5 +630,7 @@ export default async function init(el) {
   }
   el.replaceWith(merchCard);
   decorateMerchCardLinkAnalytics(merchCard);
+  const event = new CustomEvent('merchCardInitialized', { detail: { merchCard } });
+  document.dispatchEvent(event);
   return merchCard;
 }
