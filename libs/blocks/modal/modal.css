@@ -263,7 +263,7 @@
 @media (min-width: 600px) and (orientation: landscape) {
   .dialog-modal.tall-video,
   .dialog-modal.tall-video .milo-video {
-    --modal-width-var: 25vw;
+    --modal-width-var: 19vw;
   }
 }
 
