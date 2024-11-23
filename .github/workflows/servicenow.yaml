@@ -179,7 +179,7 @@ jobs:
             fi
           }
 
-          servicenow_create_cmr ${{ secrets.IPAAS_KEY_STAGE }} ${{ env.token }} ${{ env.start_time }} ${{ env.end_time }} "${{ env.release_title }}" "${{ env.release_summary }}"
+          servicenow_create_cmr ${{ secrets.IPAAS_KEY_STAGE }} ${{ env.token }} ${{ env.start_time }} ${{ env.end_time }} "${{ env.release_title }}" "${{ env.release_summary }}" "https://ipaasapi-stage.adobe-services.com/"
 
       - name: Retrieve CMR ID in ServiceNow
         run: |
