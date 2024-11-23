@@ -152,11 +152,15 @@ jobs:
 
             if [ -z "$start_time" ]; then
               echo "Missing start time"
+              echo "Start Time set =>"
+              echo $start_time
               return 1
             fi
 
             if [ -z "$end_time" ]; then
               echo "Missing end time"
+              echo "End Time set =>"
+              echo $end_time
               return 1
             fi
 
