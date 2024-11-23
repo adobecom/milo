@@ -40,6 +40,9 @@ const DEFAULT_VALUES_CB = {
   useHtml: false,
 };
 
+// Hold the selected preset data
+let selectedPreset = {};
+
 const fetchExcelJson = async (url) => {
   const resp = await fetch(url);
   if (resp.ok) {
@@ -332,10 +335,12 @@ fetchExcelJson(presetsJsonPath).then((presets) => {
 const resetAdvancedOptions = () => {
   /* eslint-disable no-undef */
   caasEnvSelector.value = 'prod';
+  contentType.value = 'auto';
   draftOnly.checked = false;
   useHtml.checked = false;
   usePreview.checked = false;
   publishToFloodgate.value = 'default';
+  // selectedPreset.contentType = ''
   /* eslint-enable no-undef */
 };
 
@@ -358,9 +363,8 @@ if (useDarkTheme) {
 presetSelector.addEventListener('change', () => {
   // eslint-disable-next-line no-undef
   const { value } = presetSelector;
-  const selectedPreset = presetsData.find((item) => item.id === value) || {};
+  selectedPreset = presetsData.find((item) => item.id === value) || {};
   BODY.classList = '';
-  resetAdvancedOptions();
 
   if (value === 'advanced') {
     BODY.classList.add('advanced');
@@ -372,15 +376,25 @@ presetSelector.addEventListener('change', () => {
     BODY.classList.add('preset');
   }
 
+  resetAdvancedOptions();
   const ls = localStorage.getItem(LS_KEY);
   const config = ls ? JSON.parse(ls) : {};
   config.presetSelector = selectedPreset.id || 'default';
   config.host = selectedPreset.host || '';
   config.owner = selectedPreset.owner || '';
   config.repo = selectedPreset.repo || '';
-  config.contentType = selectedPreset.contentType;
+  config.useHtml = selectedPreset.useHtml === 'true';
+  console.log('selectedPreset.contentType', selectedPreset);
+  if (selectedPreset.contentType === '' || selectedPreset.contentType?.toLowerCase() === 'auto') {
+    config.contentType = "auto";
+  } else {
+    config.contentType = selectedPreset.contentType;
+  }
+  console.log('setting content type', config.contentType);
+
   setConfig(config);
   window.localStorage.setItem(LS_KEY, JSON.stringify(getConfig()));
+
   loadFromLS();
   checkCaasEnv();
 });
@@ -451,7 +465,7 @@ helpButtons.forEach((btn) => {
 
       case 'content-type-fallback':
         showAlert(`<p><b>ContentType Fallback</b></p>
-          <p>This is the <b>content-type</b> tag that will be applied to all cards that do not have 
+          <p>This is the <b>content-type</b> tag that will be applied to all cards that do not have
           a specific <b>content-type</b> tag included in their metadata.</p>`);
         break;
 
@@ -520,7 +534,7 @@ const init = async () => {
     window.localStorage.setItem(LS_KEY, JSON.stringify(getConfig()));
   });
 
-  const bulkPublishBtn = document.querySelector('#bulkpublish');
+  const bulkPublishBtn = document.querySelector('#bulkpublish'); 
   bulkPublishBtn.addEventListener('click', () => {
     setConfig({
       host: document.getElementById('host').value,
