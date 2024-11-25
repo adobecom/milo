@@ -37,7 +37,9 @@ export class CCDSuggested extends VariantLayout {
               </div>
               <slot name="body-xs"></slot>
               <div class="footer">
-                <slot name="price"></slot>
+                <p class="prices>
+                  <slot name="price"></slot>
+                </p>
                 <slot name="cta"></slot>
               </div>
           </div>
@@ -103,6 +105,11 @@ export class CCDSuggested extends VariantLayout {
 
     :host([variant='ccd-suggested'].wide-strip) ::slotted([slot='price']) {
       padding-inline-start: 48px;
+    }
+
+    :host([variant='ccd-suggested']) .prices {
+      display: inline-block;
+      white-space: pre-wrap;
     }
 
     :host([variant='ccd-suggested']) ::slotted([slot='price']) {
