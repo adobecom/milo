@@ -1,6 +1,6 @@
 name: Create a Release for Standalone Feds GlobalNav and Footer
 on:
-  workflow_call:
+  workflow_dispatch:
     inputs:
       version:
         description: 'Version'
