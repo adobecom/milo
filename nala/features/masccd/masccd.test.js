@@ -10,7 +10,7 @@ const miloLibs = process.env.MILO_LIBS || '';
 
 test.describe('CCD Merchcard feature test suite', () => {
   test.beforeEach(async ({ page, browserName }) => {
-    test.skip(browserName !== 'chromium', "Not supported to run on multiple browsers.");
+    test.skip(browserName !== 'chromium', 'Not supported to run on multiple browsers.');
 
     CCD = new MerchCCD(page);
     webUtil = new WebUtil(page);
@@ -34,31 +34,31 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-2: Verify CCD Merch Card content', async () => {
-      await expect(await CCD.getCard(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardIcon(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardIcon(data.id, "suggested")).toHaveAttribute('src', /content\/dam/);
-      await expect(await CCD.getCardTitle(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardTitle(data.id, "suggested")).toContainText(data.title);
-      await expect(await CCD.getCardEyebrow(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardEyebrow(data.id, "suggested")).toContainText(data.eyebrow);
-      await expect(await CCD.getCardDescription(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardDescription(data.id, "suggested")).toContainText(data.description);
-      await expect(await CCD.getCardLegalLink(data.id, "suggested")).not.toBeVisible();
-      await expect(await CCD.getCardPrice(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardPrice(data.id, "suggested")).toContainText(data.price);
-      await expect(await CCD.getCardCTA(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardCTALink(data.id, "suggested")).toHaveAttribute('href', new RegExp(`${data.offerid}`));
-      await expect(await CCD.getCardCTA(data.id, "suggested")).toContainText(data.cta);
+      await expect(await CCD.getCard(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardIcon(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardIcon(data.id, 'suggested')).toHaveAttribute('src', /content\/dam/);
+      await expect(await CCD.getCardTitle(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardTitle(data.id, 'suggested')).toContainText(data.title);
+      await expect(await CCD.getCardEyebrow(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardEyebrow(data.id, 'suggested')).toContainText(data.eyebrow);
+      await expect(await CCD.getCardDescription(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardDescription(data.id, 'suggested')).toContainText(data.description);
+      await expect(await CCD.getCardLegalLink(data.id, 'suggested')).not.toBeVisible();
+      await expect(await CCD.getCardPrice(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText(data.price);
+      await expect(await CCD.getCardCTA(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardCTALink(data.id, 'suggested')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
+      await expect(await CCD.getCardCTA(data.id, 'suggested')).toContainText(data.cta);
     });
 
     await test.step('step-3: Verify CCD Merch Card spec', async () => {
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "suggested"), CCD.suggestedCssProp.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, "suggested"), CCD.suggestedCssProp.icon)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardEyebrow(data.id, "suggested"), CCD.suggestedCssProp.eyebrow.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardTitle(data.id, "suggested"), CCD.suggestedCssProp.title.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, "suggested"), CCD.suggestedCssProp.description.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, "suggested"), CCD.suggestedCssProp.price.light)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, "suggested"), CCD.suggestedCssProp.cta.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'suggested'), CCD.suggestedCssProp.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, 'suggested'), CCD.suggestedCssProp.icon)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardEyebrow(data.id, 'suggested'), CCD.suggestedCssProp.eyebrow.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardTitle(data.id, 'suggested'), CCD.suggestedCssProp.title.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'suggested'), CCD.suggestedCssProp.description.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, 'suggested'), CCD.suggestedCssProp.price.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'suggested'), CCD.suggestedCssProp.cta.light)).toBeTruthy();
     });
 
     await test.step('step-4: Go to CCD Merch Card feature test page in dark mode', async () => {
@@ -69,14 +69,14 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-5: Verify CCD Merch Card spec', async () => {
-      await expect(await CCD.getCard(data.id, "suggested")).toBeVisible();
-      // expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "suggested"), CCD.suggestedCssProp.dark)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, "suggested"), CCD.suggestedCssProp.icon)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardEyebrow(data.id, "suggested"), CCD.suggestedCssProp.eyebrow.dark)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardTitle(data.id, "suggested"), CCD.suggestedCssProp.title.dark)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, "suggested"), CCD.suggestedCssProp.description.dark)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, "suggested"), CCD.suggestedCssProp.price.dark)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, "suggested"), CCD.suggestedCssProp.cta.dark)).toBeTruthy();
+      await expect(await CCD.getCard(data.id, 'suggested')).toBeVisible();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'suggested'), CCD.suggestedCssProp.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, 'suggested'), CCD.suggestedCssProp.icon)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardEyebrow(data.id, 'suggested'), CCD.suggestedCssProp.eyebrow.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardTitle(data.id, 'suggested'), CCD.suggestedCssProp.title.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'suggested'), CCD.suggestedCssProp.description.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, 'suggested'), CCD.suggestedCssProp.price.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'suggested'), CCD.suggestedCssProp.cta.dark)).toBeTruthy();
     });
   });
 
@@ -93,35 +93,35 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-2: Verify CCD Merch Card content', async () => {
-      await expect(await CCD.getCard(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardIcon(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardIcon(data.id, "suggested")).toHaveAttribute('src', /content\/dam/);
-      await expect(await CCD.getCardTitle(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardTitle(data.id, "suggested")).toContainText(data.title);
-      await expect(await CCD.getCardEyebrow(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardEyebrow(data.id, "suggested")).toContainText(data.eyebrow);
-      await expect(await CCD.getCardDescription(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardDescription(data.id, "suggested")).toContainText(data.description);
-      await expect(await CCD.getCardLegalLink(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardLegalLink(data.id, "suggested")).toContainText(data.linkText);
-      await expect(await CCD.getCardPrice(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardPrice(data.id, "suggested")).toContainText(data.price);
-      await expect(await CCD.getCardPrice(data.id, "suggested")).toContainText(data.strikethroughPrice);
-      await expect(await CCD.getCardCTA(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardCTALink(data.id, "suggested")).toHaveAttribute('href', new RegExp(`${data.offerid}`));
-      await expect(await CCD.getCardCTA(data.id, "suggested")).toContainText(data.cta);
+      await expect(await CCD.getCard(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardIcon(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardIcon(data.id, 'suggested')).toHaveAttribute('src', /content\/dam/);
+      await expect(await CCD.getCardTitle(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardTitle(data.id, 'suggested')).toContainText(data.title);
+      await expect(await CCD.getCardEyebrow(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardEyebrow(data.id, 'suggested')).toContainText(data.eyebrow);
+      await expect(await CCD.getCardDescription(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardDescription(data.id, 'suggested')).toContainText(data.description);
+      await expect(await CCD.getCardLegalLink(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardLegalLink(data.id, 'suggested')).toContainText(data.linkText);
+      await expect(await CCD.getCardPrice(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText(data.price);
+      await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText(data.strikethroughPrice);
+      await expect(await CCD.getCardCTA(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardCTALink(data.id, 'suggested')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
+      await expect(await CCD.getCardCTA(data.id, 'suggested')).toContainText(data.cta);
     });
 
     await test.step('step-3: Verify CCD Merch Card spec', async () => {
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "suggested"), CCD.suggestedCssProp.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, "suggested"), CCD.suggestedCssProp.icon)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardEyebrow(data.id, "suggested"), CCD.suggestedCssProp.eyebrow.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardTitle(data.id, "suggested"), CCD.suggestedCssProp.title.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, "suggested"), CCD.suggestedCssProp.description.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, "suggested"), CCD.suggestedCssProp.legalLink)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, "suggested"), CCD.suggestedCssProp.price.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardPriceStrikethrough(data.id, "suggested"), CCD.suggestedCssProp.strikethroughPrice)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, "suggested"), CCD.suggestedCssProp.cta.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'suggested'), CCD.suggestedCssProp.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, 'suggested'), CCD.suggestedCssProp.icon)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardEyebrow(data.id, 'suggested'), CCD.suggestedCssProp.eyebrow.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardTitle(data.id, 'suggested'), CCD.suggestedCssProp.title.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'suggested'), CCD.suggestedCssProp.description.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, 'suggested'), CCD.suggestedCssProp.legalLink)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, 'suggested'), CCD.suggestedCssProp.price.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardPriceStrikethrough(data.id, 'suggested'), CCD.suggestedCssProp.strikethroughPrice)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'suggested'), CCD.suggestedCssProp.cta.light)).toBeTruthy();
     });
 
     await test.step('step-4: Go to CCD Merch Card feature test page in dark mode', async () => {
@@ -132,16 +132,16 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-5: Verify CCD Merch Card spec', async () => {
-      await expect(await CCD.getCard(data.id, "suggested")).toBeVisible();
-      // expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "suggested"), CCD.suggestedCssProp.dark)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, "suggested"), CCD.suggestedCssProp.icon)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardEyebrow(data.id, "suggested"), CCD.suggestedCssProp.eyebrow.dark)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardTitle(data.id, "suggested"), CCD.suggestedCssProp.title.dark)).toBeTruthy();
+      await expect(await CCD.getCard(data.id, 'suggested')).toBeVisible();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'suggested'), CCD.suggestedCssProp.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, 'suggested'), CCD.suggestedCssProp.icon)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardEyebrow(data.id, 'suggested'), CCD.suggestedCssProp.eyebrow.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardTitle(data.id, 'suggested'), CCD.suggestedCssProp.title.dark)).toBeTruthy();
       // expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, "suggested"), CCD.suggestedCssProp.legalLink)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, "suggested"), CCD.suggestedCssProp.description.dark)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, "suggested"), CCD.suggestedCssProp.price.dark)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardPriceStrikethrough(data.id, "suggested"), CCD.suggestedCssProp.strikethroughPrice)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, "suggested"), CCD.suggestedCssProp.cta.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'suggested'), CCD.suggestedCssProp.description.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, 'suggested'), CCD.suggestedCssProp.price.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardPriceStrikethrough(data.id, 'suggested'), CCD.suggestedCssProp.strikethroughPrice)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'suggested'), CCD.suggestedCssProp.cta.dark)).toBeTruthy();
     });
   });
 
@@ -158,31 +158,31 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-2: Verify CCD Merch Card content', async () => {
-      await expect(await CCD.getCard(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardIcon(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardIcon(data.id, "suggested")).toHaveAttribute('src', /content\/dam/);
-      await expect(await CCD.getCardTitle(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardTitle(data.id, "suggested")).toContainText(data.title);
-      await expect(await CCD.getCardEyebrow(data.id, "suggested")).not.toBeVisible();
-      await expect(await CCD.getCardDescription(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardDescription(data.id, "suggested")).toContainText(data.description);
-      await expect(await CCD.getCardLegalLink(data.id, "suggested")).not.toBeVisible();
-      await expect(await CCD.getCardPrice(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardPrice(data.id, "suggested")).toContainText(data.price);
-      expect(await (await CCD.getCardPrice(data.id, "suggested")).locator('.price-unit-type').innerText()).not.toBe('');
-      await expect(await CCD.getCardCTA(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardCTALink(data.id, "suggested")).toHaveAttribute('href', new RegExp(`${data.offerid}`));
-      await expect(await CCD.getCardCTA(data.id, "suggested")).toContainText(data.cta);
+      await expect(await CCD.getCard(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardIcon(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardIcon(data.id, 'suggested')).toHaveAttribute('src', /content\/dam/);
+      await expect(await CCD.getCardTitle(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardTitle(data.id, 'suggested')).toContainText(data.title);
+      await expect(await CCD.getCardEyebrow(data.id, 'suggested')).not.toBeVisible();
+      await expect(await CCD.getCardDescription(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardDescription(data.id, 'suggested')).toContainText(data.description);
+      await expect(await CCD.getCardLegalLink(data.id, 'suggested')).not.toBeVisible();
+      await expect(await CCD.getCardPrice(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText(data.price);
+      expect(await (await CCD.getCardPrice(data.id, 'suggested')).locator('.price-unit-type').innerText()).not.toBe('');
+      await expect(await CCD.getCardCTA(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardCTALink(data.id, 'suggested')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
+      await expect(await CCD.getCardCTA(data.id, 'suggested')).toContainText(data.cta);
     });
 
     await test.step('step-3: Verify CCD Merch Card spec', async () => {
-      await expect(await CCD.getCard(data.id, "suggested")).toBeVisible();
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "suggested"), CCD.suggestedCssProp.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, "suggested"), CCD.suggestedCssProp.icon)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardTitle(data.id, "suggested"), CCD.suggestedCssProp.title.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, "suggested"), CCD.suggestedCssProp.description.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, "suggested"), CCD.suggestedCssProp.price.light)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, "suggested"), CCD.suggestedCssProp.cta.light)).toBeTruthy();
+      await expect(await CCD.getCard(data.id, 'suggested')).toBeVisible();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'suggested'), CCD.suggestedCssProp.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, 'suggested'), CCD.suggestedCssProp.icon)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardTitle(data.id, 'suggested'), CCD.suggestedCssProp.title.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'suggested'), CCD.suggestedCssProp.description.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, 'suggested'), CCD.suggestedCssProp.price.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'suggested'), CCD.suggestedCssProp.cta.light)).toBeTruthy();
     });
 
     await test.step('step-4: Go to CCD Merch Card feature test page in dark mode', async () => {
@@ -193,13 +193,13 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-5: Verify CCD Merch Card spec', async () => {
-      await expect(await CCD.getCard(data.id, "suggested")).toBeVisible();
-      // expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "suggested"), CCD.suggestedCssProp.dark)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, "suggested"), CCD.suggestedCssProp.icon)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardTitle(data.id, "suggested"), CCD.suggestedCssProp.title.dark)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, "suggested"), CCD.suggestedCssProp.description.dark)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, "suggested"), CCD.suggestedCssProp.price.dark)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, "suggested"), CCD.suggestedCssProp.cta.dark)).toBeTruthy();
+      await expect(await CCD.getCard(data.id, 'suggested')).toBeVisible();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'suggested'), CCD.suggestedCssProp.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, 'suggested'), CCD.suggestedCssProp.icon)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardTitle(data.id, 'suggested'), CCD.suggestedCssProp.title.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'suggested'), CCD.suggestedCssProp.description.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, 'suggested'), CCD.suggestedCssProp.price.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'suggested'), CCD.suggestedCssProp.cta.dark)).toBeTruthy();
     });
   });
 
@@ -216,32 +216,32 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-2: Verify CCD Merch Card content/specs', async () => {
-      await expect(await CCD.getCard(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardIcon(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardIcon(data.id, "suggested")).toHaveAttribute('src', /assets\/img/);
-      await expect(await CCD.getCardTitle(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardTitle(data.id, "suggested")).toContainText(data.title);
-      await expect(await CCD.getCardEyebrow(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardEyebrow(data.id, "suggested")).toContainText(data.eyebrow);
-      await expect(await CCD.getCardDescription(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardDescription(data.id, "suggested")).toContainText(data.description);
-      await expect(await CCD.getCardLegalLink(data.id, "suggested")).not.toBeVisible();
-      await expect(await CCD.getCardPrice(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardPrice(data.id, "suggested")).toContainText(data.price);
-      await expect(await CCD.getCardCTA(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardCTALink(data.id, "suggested")).toHaveAttribute('href', new RegExp(`${data.offerid}`));
-      await expect(await CCD.getCardCTA(data.id, "suggested")).toContainText(data.cta);
-      await expect(await CCD.getCard(data.id, "suggested")).toHaveAttribute('background-image', new RegExp(data.background));
+      await expect(await CCD.getCard(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardIcon(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardIcon(data.id, 'suggested')).toHaveAttribute('src', /assets\/img/);
+      await expect(await CCD.getCardTitle(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardTitle(data.id, 'suggested')).toContainText(data.title);
+      await expect(await CCD.getCardEyebrow(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardEyebrow(data.id, 'suggested')).toContainText(data.eyebrow);
+      await expect(await CCD.getCardDescription(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardDescription(data.id, 'suggested')).toContainText(data.description);
+      await expect(await CCD.getCardLegalLink(data.id, 'suggested')).not.toBeVisible();
+      await expect(await CCD.getCardPrice(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText(data.price);
+      await expect(await CCD.getCardCTA(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardCTALink(data.id, 'suggested')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
+      await expect(await CCD.getCardCTA(data.id, 'suggested')).toContainText(data.cta);
+      await expect(await CCD.getCard(data.id, 'suggested')).toHaveAttribute('background-image', new RegExp(data.background));
     });
 
     await test.step('step-3: Verify CCD Merch Card spec', async () => {
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "suggested"), CCD.suggestedCssProp.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, "suggested"), CCD.suggestedCssProp.icon)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardEyebrow(data.id, "suggested"), CCD.suggestedCssProp.eyebrow.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardTitle(data.id, "suggested"), CCD.suggestedCssProp.title.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, "suggested"), CCD.suggestedCssProp.description.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, "suggested"), CCD.suggestedCssProp.price.light)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, "suggested"), CCD.suggestedCssProp.cta.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'suggested'), CCD.suggestedCssProp.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, 'suggested'), CCD.suggestedCssProp.icon)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardEyebrow(data.id, 'suggested'), CCD.suggestedCssProp.eyebrow.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardTitle(data.id, 'suggested'), CCD.suggestedCssProp.title.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'suggested'), CCD.suggestedCssProp.description.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, 'suggested'), CCD.suggestedCssProp.price.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'suggested'), CCD.suggestedCssProp.cta.light)).toBeTruthy();
     });
 
     await test.step('step-4: Go to CCD Merch Card feature test page in dark mode', async () => {
@@ -252,14 +252,14 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-5: Verify CCD Merch Card spec', async () => {
-      await expect(await CCD.getCard(data.id, "suggested")).toBeVisible();
-      // expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "suggested"), CCD.suggestedCssProp.dark)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, "suggested"), CCD.suggestedCssProp.icon)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardEyebrow(data.id, "suggested"), CCD.suggestedCssProp.eyebrow.dark)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardTitle(data.id, "suggested"), CCD.suggestedCssProp.title.dark)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, "suggested"), CCD.suggestedCssProp.description.dark)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, "suggested"), CCD.suggestedCssProp.price.dark)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, "suggested"), CCD.suggestedCssProp.cta.dark)).toBeTruthy();
+      await expect(await CCD.getCard(data.id, 'suggested')).toBeVisible();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'suggested'), CCD.suggestedCssProp.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, 'suggested'), CCD.suggestedCssProp.icon)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardEyebrow(data.id, 'suggested'), CCD.suggestedCssProp.eyebrow.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardTitle(data.id, 'suggested'), CCD.suggestedCssProp.title.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'suggested'), CCD.suggestedCssProp.description.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, 'suggested'), CCD.suggestedCssProp.price.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'suggested'), CCD.suggestedCssProp.cta.dark)).toBeTruthy();
     });
   });
 
@@ -276,35 +276,35 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-2: Verify CCD Merch Card content/specs', async () => {
-      await expect(await CCD.getCard(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardIcon(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardIcon(data.id, "suggested")).toHaveAttribute('src', /assets\/img/);
-      await expect(await CCD.getCardTitle(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardTitle(data.id, "suggested")).toContainText(data.title);
-      await expect(await CCD.getCardEyebrow(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardEyebrow(data.id, "suggested")).toContainText(data.eyebrow);
-      await expect(await CCD.getCardDescription(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardDescription(data.id, "suggested")).toContainText(data.description);
-      await expect(await CCD.getCardLegalLink(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardLegalLink(data.id, "suggested")).toContainText(data.linkText);
-      await expect(await CCD.getCardPrice(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardPrice(data.id, "suggested")).toContainText(data.price);
-      await expect(await CCD.getCardPrice(data.id, "suggested")).toContainText('Starting at');
-      await expect(await CCD.getCardCTA(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardCTALink(data.id, "suggested")).toHaveAttribute('href', new RegExp(`${data.offerid}`));
-      await expect(await CCD.getCardCTA(data.id, "suggested")).toContainText(data.cta);
-      await expect(await CCD.getCard(data.id, "suggested")).toHaveAttribute('background-image', new RegExp(data.background));
+      await expect(await CCD.getCard(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardIcon(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardIcon(data.id, 'suggested')).toHaveAttribute('src', /assets\/img/);
+      await expect(await CCD.getCardTitle(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardTitle(data.id, 'suggested')).toContainText(data.title);
+      await expect(await CCD.getCardEyebrow(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardEyebrow(data.id, 'suggested')).toContainText(data.eyebrow);
+      await expect(await CCD.getCardDescription(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardDescription(data.id, 'suggested')).toContainText(data.description);
+      await expect(await CCD.getCardLegalLink(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardLegalLink(data.id, 'suggested')).toContainText(data.linkText);
+      await expect(await CCD.getCardPrice(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText(data.price);
+      await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText('Starting at');
+      await expect(await CCD.getCardCTA(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardCTALink(data.id, 'suggested')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
+      await expect(await CCD.getCardCTA(data.id, 'suggested')).toContainText(data.cta);
+      await expect(await CCD.getCard(data.id, 'suggested')).toHaveAttribute('background-image', new RegExp(data.background));
     });
 
     await test.step('step-3: Verify CCD Merch Card spec', async () => {
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "suggested"), CCD.suggestedCssProp.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, "suggested"), CCD.suggestedCssProp.icon)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardEyebrow(data.id, "suggested"), CCD.suggestedCssProp.eyebrow.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardTitle(data.id, "suggested"), CCD.suggestedCssProp.title.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, "suggested"), CCD.suggestedCssProp.description.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, "suggested"), CCD.suggestedCssProp.legalLink)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, "suggested"), CCD.suggestedCssProp.price.light)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, "suggested"), CCD.suggestedCssProp.cta.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'suggested'), CCD.suggestedCssProp.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, 'suggested'), CCD.suggestedCssProp.icon)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardEyebrow(data.id, 'suggested'), CCD.suggestedCssProp.eyebrow.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardTitle(data.id, 'suggested'), CCD.suggestedCssProp.title.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'suggested'), CCD.suggestedCssProp.description.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, 'suggested'), CCD.suggestedCssProp.legalLink)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, 'suggested'), CCD.suggestedCssProp.price.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'suggested'), CCD.suggestedCssProp.cta.light)).toBeTruthy();
     });
 
     await test.step('step-4: Go to CCD Merch Card feature test page in dark mode', async () => {
@@ -315,15 +315,15 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-5: Verify CCD Merch Card spec', async () => {
-      await expect(await CCD.getCard(data.id, "suggested")).toBeVisible();
-      // expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "suggested"), CCD.suggestedCssProp.dark)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, "suggested"), CCD.suggestedCssProp.icon)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardEyebrow(data.id, "suggested"), CCD.suggestedCssProp.eyebrow.dark)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardTitle(data.id, "suggested"), CCD.suggestedCssProp.title.dark)).toBeTruthy();
+      await expect(await CCD.getCard(data.id, 'suggested')).toBeVisible();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'suggested'), CCD.suggestedCssProp.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, 'suggested'), CCD.suggestedCssProp.icon)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardEyebrow(data.id, 'suggested'), CCD.suggestedCssProp.eyebrow.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardTitle(data.id, 'suggested'), CCD.suggestedCssProp.title.dark)).toBeTruthy();
       // expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, "suggested"), CCD.suggestedCssProp.legalLink)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, "suggested"), CCD.suggestedCssProp.description.dark)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, "suggested"), CCD.suggestedCssProp.price.dark)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, "suggested"), CCD.suggestedCssProp.cta.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'suggested'), CCD.suggestedCssProp.description.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, 'suggested'), CCD.suggestedCssProp.price.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'suggested'), CCD.suggestedCssProp.cta.dark)).toBeTruthy();
     });
   });
 
@@ -340,31 +340,31 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-2: Verify CCD Merch Card content/specs', async () => {
-      await expect(await CCD.getCard(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardIcon(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardIcon(data.id, "suggested")).toHaveAttribute('src', /assets\/img/);
-      await expect(await CCD.getCardTitle(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardTitle(data.id, "suggested")).toContainText(data.title);
-      await expect(await CCD.getCardEyebrow(data.id, "suggested")).not.toBeVisible();
-      await expect(await CCD.getCardDescription(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardDescription(data.id, "suggested")).toContainText(data.description);
-      await expect(await CCD.getCardLegalLink(data.id, "suggested")).not.toBeVisible();
-      await expect(await CCD.getCardPrice(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardPrice(data.id, "suggested")).toContainText(data.price);
-      expect(await (await CCD.getCardPrice(data.id, "suggested")).locator('.price-unit-type').innerText()).not.toBe('');
-      await expect(await CCD.getCardCTA(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardCTALink(data.id, "suggested")).toHaveAttribute('href', new RegExp(`${data.offerid}`));
-      await expect(await CCD.getCardCTA(data.id, "suggested")).toContainText(data.cta);
-      await expect(await CCD.getCard(data.id, "suggested")).toHaveAttribute('background-image', new RegExp(data.background));
+      await expect(await CCD.getCard(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardIcon(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardIcon(data.id, 'suggested')).toHaveAttribute('src', /assets\/img/);
+      await expect(await CCD.getCardTitle(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardTitle(data.id, 'suggested')).toContainText(data.title);
+      await expect(await CCD.getCardEyebrow(data.id, 'suggested')).not.toBeVisible();
+      await expect(await CCD.getCardDescription(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardDescription(data.id, 'suggested')).toContainText(data.description);
+      await expect(await CCD.getCardLegalLink(data.id, 'suggested')).not.toBeVisible();
+      await expect(await CCD.getCardPrice(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText(data.price);
+      expect(await (await CCD.getCardPrice(data.id, 'suggested')).locator('.price-unit-type').innerText()).not.toBe('');
+      await expect(await CCD.getCardCTA(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardCTALink(data.id, 'suggested')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
+      await expect(await CCD.getCardCTA(data.id, 'suggested')).toContainText(data.cta);
+      await expect(await CCD.getCard(data.id, 'suggested')).toHaveAttribute('background-image', new RegExp(data.background));
     });
 
     await test.step('step-3: Verify CCD Merch Card spec', async () => {
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "suggested"), CCD.suggestedCssProp.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, "suggested"), CCD.suggestedCssProp.icon)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardTitle(data.id, "suggested"), CCD.suggestedCssProp.title.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, "suggested"), CCD.suggestedCssProp.description.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, "suggested"), CCD.suggestedCssProp.price.light)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, "suggested"), CCD.suggestedCssProp.cta.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'suggested'), CCD.suggestedCssProp.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, 'suggested'), CCD.suggestedCssProp.icon)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardTitle(data.id, 'suggested'), CCD.suggestedCssProp.title.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'suggested'), CCD.suggestedCssProp.description.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, 'suggested'), CCD.suggestedCssProp.price.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'suggested'), CCD.suggestedCssProp.cta.light)).toBeTruthy();
     });
 
     await test.step('step-4: Go to CCD Merch Card feature test page in dark mode', async () => {
@@ -375,13 +375,13 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-5: Verify CCD Merch Card spec', async () => {
-      await expect(await CCD.getCard(data.id, "suggested")).toBeVisible();
-      // expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "suggested"), CCD.suggestedCssProp.dark)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, "suggested"), CCD.suggestedCssProp.icon)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardTitle(data.id, "suggested"), CCD.suggestedCssProp.title.dark)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, "suggested"), CCD.suggestedCssProp.description.dark)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, "suggested"), CCD.suggestedCssProp.price.dark)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, "suggested"), CCD.suggestedCssProp.cta.dark)).toBeTruthy();
+      await expect(await CCD.getCard(data.id, 'suggested')).toBeVisible();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'suggested'), CCD.suggestedCssProp.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, 'suggested'), CCD.suggestedCssProp.icon)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardTitle(data.id, 'suggested'), CCD.suggestedCssProp.title.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'suggested'), CCD.suggestedCssProp.description.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, 'suggested'), CCD.suggestedCssProp.price.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'suggested'), CCD.suggestedCssProp.cta.dark)).toBeTruthy();
     });
   });
 
@@ -398,34 +398,34 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-2: Verify CCD Merch Card content/specs', async () => {
-      await expect(await CCD.getCard(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardIcon(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardIcon(data.id, "suggested")).toHaveAttribute('src', /assets\/img/);
-      await expect(await CCD.getCardTitle(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardTitle(data.id, "suggested")).toContainText(data.title);
-      await expect(await CCD.getCardEyebrow(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardEyebrow(data.id, "suggested")).toContainText(data.eyebrow);
-      await expect(await CCD.getCardDescription(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardDescription(data.id, "suggested")).toContainText(data.description);
-      await expect(await CCD.getCardLegalLink(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardLegalLink(data.id, "suggested")).toContainText(data.linkText);
-      await expect(await CCD.getCardPrice(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardPrice(data.id, "suggested")).toContainText(data.price);
-      await expect(await CCD.getCardCTA(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardCTALink(data.id, "suggested")).toHaveAttribute('href', new RegExp(`${data.offerid}`));
-      await expect(await CCD.getCardCTA(data.id, "suggested")).toContainText(data.cta);
-      await expect(await CCD.getCard(data.id, "suggested")).toHaveAttribute('background-image', new RegExp(data.background));
+      await expect(await CCD.getCard(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardIcon(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardIcon(data.id, 'suggested')).toHaveAttribute('src', /assets\/img/);
+      await expect(await CCD.getCardTitle(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardTitle(data.id, 'suggested')).toContainText(data.title);
+      await expect(await CCD.getCardEyebrow(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardEyebrow(data.id, 'suggested')).toContainText(data.eyebrow);
+      await expect(await CCD.getCardDescription(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardDescription(data.id, 'suggested')).toContainText(data.description);
+      await expect(await CCD.getCardLegalLink(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardLegalLink(data.id, 'suggested')).toContainText(data.linkText);
+      await expect(await CCD.getCardPrice(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText(data.price);
+      await expect(await CCD.getCardCTA(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardCTALink(data.id, 'suggested')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
+      await expect(await CCD.getCardCTA(data.id, 'suggested')).toContainText(data.cta);
+      await expect(await CCD.getCard(data.id, 'suggested')).toHaveAttribute('background-image', new RegExp(data.background));
     });
 
     await test.step('step-3: Verify CCD Merch Card spec', async () => {
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "suggested"), CCD.suggestedCssProp.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, "suggested"), CCD.suggestedCssProp.icon)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardEyebrow(data.id, "suggested"), CCD.suggestedCssProp.eyebrow.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardTitle(data.id, "suggested"), CCD.suggestedCssProp.title.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, "suggested"), CCD.suggestedCssProp.description.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, "suggested"), CCD.suggestedCssProp.legalLink)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, "suggested"), CCD.suggestedCssProp.price.light)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, "suggested"), CCD.suggestedCssProp.cta.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'suggested'), CCD.suggestedCssProp.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, 'suggested'), CCD.suggestedCssProp.icon)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardEyebrow(data.id, 'suggested'), CCD.suggestedCssProp.eyebrow.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardTitle(data.id, 'suggested'), CCD.suggestedCssProp.title.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'suggested'), CCD.suggestedCssProp.description.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, 'suggested'), CCD.suggestedCssProp.legalLink)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, 'suggested'), CCD.suggestedCssProp.price.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'suggested'), CCD.suggestedCssProp.cta.light)).toBeTruthy();
     });
 
     await test.step('step-4: Go to CCD Merch Card feature test page in dark mode', async () => {
@@ -436,15 +436,15 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-5: Verify CCD Merch Card spec', async () => {
-      await expect(await CCD.getCard(data.id, "suggested")).toBeVisible();
-      // expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "suggested"), CCD.suggestedCssProp.dark)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, "suggested"), CCD.suggestedCssProp.icon)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardEyebrow(data.id, "suggested"), CCD.suggestedCssProp.eyebrow.dark)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardTitle(data.id, "suggested"), CCD.suggestedCssProp.title.dark)).toBeTruthy();
+      await expect(await CCD.getCard(data.id, 'suggested')).toBeVisible();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'suggested'), CCD.suggestedCssProp.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, 'suggested'), CCD.suggestedCssProp.icon)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardEyebrow(data.id, 'suggested'), CCD.suggestedCssProp.eyebrow.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardTitle(data.id, 'suggested'), CCD.suggestedCssProp.title.dark)).toBeTruthy();
       // expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, "suggested"), CCD.suggestedCssProp.legalLink)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, "suggested"), CCD.suggestedCssProp.description.dark)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, "suggested"), CCD.suggestedCssProp.price.dark)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, "suggested"), CCD.suggestedCssProp.cta.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'suggested'), CCD.suggestedCssProp.description.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, 'suggested'), CCD.suggestedCssProp.price.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'suggested'), CCD.suggestedCssProp.cta.dark)).toBeTruthy();
     });
   });
 
@@ -462,31 +462,31 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-2: Verify CCD Merch Card content/specs', async () => {
-      await expect(await CCD.getCard(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardIcon(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardIcon(data.id, "suggested")).toHaveAttribute('src', /assets\/img/);
-      await expect(await CCD.getCardTitle(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardTitle(data.id, "suggested")).toContainText(data.title);
-      await expect(await CCD.getCardEyebrow(data.id, "suggested")).not.toBeVisible();
-      await expect(await CCD.getCardDescription(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardDescription(data.id, "suggested")).toContainText(data.description);
-      await expect(await CCD.getCardLegalLink(data.id, "suggested")).not.toBeVisible();
-      await expect(await CCD.getCardPrice(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardPrice(data.id, "suggested")).toContainText(data.price);
-      expect(await (await CCD.getCardPrice(data.id, "suggested")).locator('.price-unit-type').innerText()).not.toBe('');
-      await expect(await CCD.getCardCTA(data.id, "suggested")).toBeVisible();
-      await expect(await CCD.getCardCTALink(data.id, "suggested")).toHaveAttribute('href', new RegExp(`${data.offerid}`));
-      await expect(await CCD.getCardCTA(data.id, "suggested")).toContainText(data.cta);
-      await expect(await CCD.getCard(data.id, "suggested")).toHaveAttribute('background-image', new RegExp(data.background));
+      await expect(await CCD.getCard(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardIcon(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardIcon(data.id, 'suggested')).toHaveAttribute('src', /assets\/img/);
+      await expect(await CCD.getCardTitle(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardTitle(data.id, 'suggested')).toContainText(data.title);
+      await expect(await CCD.getCardEyebrow(data.id, 'suggested')).not.toBeVisible();
+      await expect(await CCD.getCardDescription(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardDescription(data.id, 'suggested')).toContainText(data.description);
+      await expect(await CCD.getCardLegalLink(data.id, 'suggested')).not.toBeVisible();
+      await expect(await CCD.getCardPrice(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText(data.price);
+      expect(await (await CCD.getCardPrice(data.id, 'suggested')).locator('.price-unit-type').innerText()).not.toBe('');
+      await expect(await CCD.getCardCTA(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCardCTALink(data.id, 'suggested')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
+      await expect(await CCD.getCardCTA(data.id, 'suggested')).toContainText(data.cta);
+      await expect(await CCD.getCard(data.id, 'suggested')).toHaveAttribute('background-image', new RegExp(data.background));
     });
 
     await test.step('step-3: Verify CCD Merch Card spec', async () => {
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "suggested"), CCD.suggestedCssProp.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, "suggested"), CCD.suggestedCssProp.icon)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardTitle(data.id, "suggested"), CCD.suggestedCssProp.title.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, "suggested"), CCD.suggestedCssProp.description.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, "suggested"), CCD.suggestedCssProp.price.light)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, "suggested"), CCD.suggestedCssProp.cta.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'suggested'), CCD.suggestedCssProp.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, 'suggested'), CCD.suggestedCssProp.icon)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardTitle(data.id, 'suggested'), CCD.suggestedCssProp.title.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'suggested'), CCD.suggestedCssProp.description.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, 'suggested'), CCD.suggestedCssProp.price.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'suggested'), CCD.suggestedCssProp.cta.light)).toBeTruthy();
     });
 
     await test.step('step-4: Go to CCD Merch Card feature test page in dark mode', async () => {
@@ -497,13 +497,13 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-5: Verify CCD Merch Card spec', async () => {
-      await expect(await CCD.getCard(data.id, "suggested")).toBeVisible();
-      // expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "suggested"), CCD.suggestedCssProp.dark)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, "suggested"), CCD.suggestedCssProp.icon)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardTitle(data.id, "suggested"), CCD.suggestedCssProp.title.dark)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, "suggested"), CCD.suggestedCssProp.description.dark)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, "suggested"), CCD.suggestedCssProp.price.dark)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, "suggested"), CCD.suggestedCssProp.cta.dark)).toBeTruthy();
+      await expect(await CCD.getCard(data.id, 'suggested')).toBeVisible();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'suggested'), CCD.suggestedCssProp.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, 'suggested'), CCD.suggestedCssProp.icon)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardTitle(data.id, 'suggested'), CCD.suggestedCssProp.title.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'suggested'), CCD.suggestedCssProp.description.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, 'suggested'), CCD.suggestedCssProp.price.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'suggested'), CCD.suggestedCssProp.cta.dark)).toBeTruthy();
     });
   });
 
@@ -522,28 +522,28 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-2: Verify CCD Merch Card content', async () => {
-      await expect(await CCD.getCard(data.id, "slice")).toBeVisible();
-      await expect(await CCD.getCardIcon(data.id, "slice")).toBeVisible();
-      await expect(await CCD.getCardIcon(data.id, "slice")).toHaveAttribute('src', /assets\/img/);
-      await expect(await CCD.getCardBadge(data.id, "slice")).not.toBeVisible();
-      await expect(await CCD.getCardImage(data.id, "slice")).toBeVisible();
-      await expect(await CCD.getCardImage(data.id, "slice")).toHaveAttribute('src', new RegExp(data.background));
-      await expect(await CCD.getCardDescription(data.id, "slice")).toBeVisible();
-      await expect(await CCD.getCardDescription(data.id, "slice")).toContainText(data.description);
-      await expect(await CCD.getCardDescription(data.id, "slice")).toContainText(data.percentage);
-      await expect(await CCD.getCardLegalLink(data.id, "slice")).not.toBeVisible();
-      await expect(await CCD.getCardPrice(data.id, "slice")).not.toBeVisible();
-      await expect(await CCD.getCardCTA(data.id, "slice")).toBeVisible();
-      await expect(await CCD.getCardCTALink(data.id, "slice")).toHaveAttribute('href', new RegExp(`${data.offerid}`));
-      await expect(await CCD.getCardCTA(data.id, "slice")).toContainText(data.cta);
+      await expect(await CCD.getCard(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCardIcon(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCardIcon(data.id, 'slice')).toHaveAttribute('src', /assets\/img/);
+      await expect(await CCD.getCardBadge(data.id, 'slice')).not.toBeVisible();
+      await expect(await CCD.getCardImage(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCardImage(data.id, 'slice')).toHaveAttribute('src', new RegExp(data.background));
+      await expect(await CCD.getCardDescription(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCardDescription(data.id, 'slice')).toContainText(data.description);
+      await expect(await CCD.getCardDescription(data.id, 'slice')).toContainText(data.percentage);
+      await expect(await CCD.getCardLegalLink(data.id, 'slice')).not.toBeVisible();
+      await expect(await CCD.getCardPrice(data.id, 'slice')).not.toBeVisible();
+      await expect(await CCD.getCardCTA(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCardCTALink(data.id, 'slice')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
+      await expect(await CCD.getCardCTA(data.id, 'slice')).toContainText(data.cta);
     });
 
     await test.step('step-3: Verify CCD Merch Card spec', async () => {
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "slice"), CCD.sliceCssProp.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "slice"), CCD.sliceCssProp.singleSize)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, "slice"), CCD.sliceCssProp.icon)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, "slice"), CCD.sliceCssProp.description.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, "slice"), CCD.sliceCssProp.cta.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice'), CCD.sliceCssProp.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice'), CCD.sliceCssProp.singleSize)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, 'slice'), CCD.sliceCssProp.icon)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'slice'), CCD.sliceCssProp.description.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'slice'), CCD.sliceCssProp.cta.light)).toBeTruthy();
     });
 
     await test.step('step-4: Go to CCD Merch Card feature test page in dark mode', async () => {
@@ -554,12 +554,12 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-5: Verify CCD Merch Card spec', async () => {
-      await expect(await CCD.getCard(data.id, "slice")).toBeVisible();
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "slice"), CCD.sliceCssProp.dark)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "slice"), CCD.sliceCssProp.singleSize)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, "slice"), CCD.sliceCssProp.icon)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, "slice"), CCD.sliceCssProp.description.dark)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, "slice"), CCD.sliceCssProp.cta.dark)).toBeTruthy();
+      await expect(await CCD.getCard(data.id, 'slice')).toBeVisible();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice'), CCD.sliceCssProp.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice'), CCD.sliceCssProp.singleSize)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, 'slice'), CCD.sliceCssProp.icon)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'slice'), CCD.sliceCssProp.description.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'slice'), CCD.sliceCssProp.cta.dark)).toBeTruthy();
     });
   });
 
@@ -576,35 +576,35 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-2: Verify CCD Merch Card content', async () => {
-      await expect(await CCD.getCard(data.id, "slice")).toBeVisible();
-      expect(await (await CCD.getCardIcon(data.id, "slice")).count()).toBe(2);
+      await expect(await CCD.getCard(data.id, 'slice')).toBeVisible();
+      expect(await (await CCD.getCardIcon(data.id, 'slice')).count()).toBe(2);
       // // await expect(await CCD.getCardIcon(data.id, "slice")[0]).toBeVisible();
       // expect(await (await CCD.getCardIcon(data.id, "slice"))[0]).toHaveAttribute('src', /assets\/img/);
       // expect(await (await CCD.getCardIcon(data.id, "slice"))[0]).toHaveAttribute('href', data.iconLink1);
       // // await expect(await CCD.getCardIcon(data.id, "slice")[1]).toBeVisible();
       // expect(await (await CCD.getCardIcon(data.id, "slice"))[1]).toHaveAttribute('src', /assets\/img/);
       // expect(await (await CCD.getCardIcon(data.id, "slice"))[1]).toHaveAttribute('href', data.iconLink2);
-      await expect(await CCD.getCardBadge(data.id, "slice")).not.toBeVisible();
-      await expect(await CCD.getCardImage(data.id, "slice")).toBeVisible();
-      await expect(await CCD.getCardImage(data.id, "slice")).toHaveAttribute('src', new RegExp(data.background));
-      await expect(await CCD.getCardDescription(data.id, "slice")).toBeVisible();
-      await expect(await CCD.getCardDescription(data.id, "slice")).toContainText(data.description);
-      await expect(await CCD.getCardLegalLink(data.id, "slice")).not.toBeVisible();
-      await expect(await CCD.getCardPrice(data.id, "slice")).toBeVisible();
-      await expect(await CCD.getCardPrice(data.id, "slice")).toContainText(data.price);
-      await expect(await CCD.getCardCTA(data.id, "slice")).toBeVisible();
-      await expect(await CCD.getCardCTALink(data.id, "slice")).toHaveAttribute('href', new RegExp(`${data.offerid}`));
-      await expect(await CCD.getCardCTA(data.id, "slice")).toContainText(data.cta);
+      await expect(await CCD.getCardBadge(data.id, 'slice')).not.toBeVisible();
+      await expect(await CCD.getCardImage(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCardImage(data.id, 'slice')).toHaveAttribute('src', new RegExp(data.background));
+      await expect(await CCD.getCardDescription(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCardDescription(data.id, 'slice')).toContainText(data.description);
+      await expect(await CCD.getCardLegalLink(data.id, 'slice')).not.toBeVisible();
+      await expect(await CCD.getCardPrice(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCardPrice(data.id, 'slice')).toContainText(data.price);
+      await expect(await CCD.getCardCTA(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCardCTALink(data.id, 'slice')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
+      await expect(await CCD.getCardCTA(data.id, 'slice')).toContainText(data.cta);
     });
 
     await test.step('step-3: Verify CCD Merch Card spec', async () => {
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "slice"), CCD.sliceCssProp.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "slice"), CCD.sliceCssProp.singleSize)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice'), CCD.sliceCssProp.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice'), CCD.sliceCssProp.singleSize)).toBeTruthy();
       // expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, "slice")[0], CCD.sliceCssProp.icon)).toBeTruthy();
       // expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, "slice")[1], CCD.sliceCssProp.icon)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, "slice"), CCD.sliceCssProp.description.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, "slice"), CCD.sliceCssProp.price.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, "slice"), CCD.sliceCssProp.cta.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'slice'), CCD.sliceCssProp.description.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, 'slice'), CCD.sliceCssProp.price.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'slice'), CCD.sliceCssProp.cta.light)).toBeTruthy();
     });
 
     await test.step('step-4: Go to CCD Merch Card feature test page in dark mode', async () => {
@@ -615,14 +615,14 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-5: Verify CCD Merch Card spec', async () => {
-      await expect(await CCD.getCard(data.id, "slice")).toBeVisible();
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "slice"), CCD.sliceCssProp.dark)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "slice"), CCD.sliceCssProp.singleSize)).toBeTruthy();
+      await expect(await CCD.getCard(data.id, 'slice')).toBeVisible();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice'), CCD.sliceCssProp.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice'), CCD.sliceCssProp.singleSize)).toBeTruthy();
       // expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, "slice")[0], CCD.sliceCssProp.icon)).toBeTruthy();
       // expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, "slice")[1], CCD.sliceCssProp.icon)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, "slice"), CCD.sliceCssProp.description.dark)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, "slice"), CCD.sliceCssProp.price.dark)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, "slice"), CCD.sliceCssProp.cta.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'slice'), CCD.sliceCssProp.description.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, 'slice'), CCD.sliceCssProp.price.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'slice'), CCD.sliceCssProp.cta.dark)).toBeTruthy();
     });
   });
 
@@ -639,31 +639,31 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-2: Verify CCD Merch Card content', async () => {
-      await expect(await CCD.getCard(data.id, "slice")).toBeVisible();
-      await expect(await CCD.getCardIcon(data.id, "slice")).toBeVisible();
-      await expect(await CCD.getCardIcon(data.id, "slice")).toHaveAttribute('src', /assets\/img/);
-      await expect(await CCD.getCardBadge(data.id, "slice")).not.toBeVisible();
-      await expect(await CCD.getCardImage(data.id, "slice")).toBeVisible();
-      await expect(await CCD.getCardImage(data.id, "slice")).toHaveAttribute('src', new RegExp(data.background));
-      await expect(await CCD.getCardDescription(data.id, "slice")).toBeVisible();
-      await expect(await CCD.getCardDescription(data.id, "slice")).toContainText(data.description);
-      await expect(await CCD.getCardLegalLink(data.id, "slice")).toBeVisible();
-      await expect(await CCD.getCardLegalLink(data.id, "slice")).toContainText(data.linkText);
-      await expect(await CCD.getCardPrice(data.id, "slice")).toBeVisible();
-      await expect(await CCD.getCardPrice(data.id, "slice")).toContainText(data.price);
-      await expect(await CCD.getCardCTA(data.id, "slice")).toBeVisible();
-      await expect(await CCD.getCardCTALink(data.id, "slice")).toHaveAttribute('href', new RegExp(`${data.offerid}`));
-      await expect(await CCD.getCardCTA(data.id, "slice")).toContainText(data.cta);
+      await expect(await CCD.getCard(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCardIcon(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCardIcon(data.id, 'slice')).toHaveAttribute('src', /assets\/img/);
+      await expect(await CCD.getCardBadge(data.id, 'slice')).not.toBeVisible();
+      await expect(await CCD.getCardImage(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCardImage(data.id, 'slice')).toHaveAttribute('src', new RegExp(data.background));
+      await expect(await CCD.getCardDescription(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCardDescription(data.id, 'slice')).toContainText(data.description);
+      await expect(await CCD.getCardLegalLink(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCardLegalLink(data.id, 'slice')).toContainText(data.linkText);
+      await expect(await CCD.getCardPrice(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCardPrice(data.id, 'slice')).toContainText(data.price);
+      await expect(await CCD.getCardCTA(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCardCTALink(data.id, 'slice')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
+      await expect(await CCD.getCardCTA(data.id, 'slice')).toContainText(data.cta);
     });
 
     await test.step('step-3: Verify CCD Merch Card spec', async () => {
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "slice"), CCD.sliceCssProp.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "slice"), CCD.sliceCssProp.singleSize)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, "slice"), CCD.sliceCssProp.icon)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, "slice"), CCD.sliceCssProp.description.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, "slice"), CCD.sliceCssProp.legalLink.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, "slice"), CCD.sliceCssProp.price.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, "slice"), CCD.sliceCssProp.cta.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice'), CCD.sliceCssProp.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice'), CCD.sliceCssProp.singleSize)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, 'slice'), CCD.sliceCssProp.icon)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'slice'), CCD.sliceCssProp.description.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, 'slice'), CCD.sliceCssProp.legalLink.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, 'slice'), CCD.sliceCssProp.price.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'slice'), CCD.sliceCssProp.cta.light)).toBeTruthy();
     });
 
     await test.step('step-4: Go to CCD Merch Card feature test page in dark mode', async () => {
@@ -674,14 +674,14 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-5: Verify CCD Merch Card spec', async () => {
-      await expect(await CCD.getCard(data.id, "slice")).toBeVisible();
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "slice"), CCD.sliceCssProp.dark)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "slice"), CCD.sliceCssProp.singleSize)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, "slice"), CCD.sliceCssProp.icon)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, "slice"), CCD.sliceCssProp.legalLink.dark)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, "slice"), CCD.sliceCssProp.description.dark)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, "slice"), CCD.sliceCssProp.price.dark)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, "slice"), CCD.sliceCssProp.cta.dark)).toBeTruthy();
+      await expect(await CCD.getCard(data.id, 'slice')).toBeVisible();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice'), CCD.sliceCssProp.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice'), CCD.sliceCssProp.singleSize)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, 'slice'), CCD.sliceCssProp.icon)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, 'slice'), CCD.sliceCssProp.legalLink.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'slice'), CCD.sliceCssProp.description.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, 'slice'), CCD.sliceCssProp.price.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'slice'), CCD.sliceCssProp.cta.dark)).toBeTruthy();
     });
   });
 
@@ -698,30 +698,30 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-2: Verify CCD Merch Card content', async () => {
-      await expect(await CCD.getCard(data.id, "slice")).toBeVisible();
-      await expect(await CCD.getCardIcon(data.id, "slice")).toBeVisible();
-      await expect(await CCD.getCardIcon(data.id, "slice")).toHaveAttribute('src', /assets\/img/);
-      await expect(await CCD.getCardBadge(data.id, "slice")).not.toBeVisible();
-      await expect(await CCD.getCardImage(data.id, "slice")).toBeVisible();
-      await expect(await CCD.getCardImage(data.id, "slice")).toHaveAttribute('src', new RegExp(data.background));
-      await expect(await CCD.getCardDescription(data.id, "slice")).toBeVisible();
-      await expect(await CCD.getCardDescription(data.id, "slice")).toContainText(data.description);
-      await expect(await CCD.getCardDescription(data.id, "slice")).toContainText(data.percentage);
-      await expect(await CCD.getCardLegalLink(data.id, "slice")).toBeVisible();
-      await expect(await CCD.getCardLegalLink(data.id, "slice")).toContainText(data.linkText);
-      await expect(await CCD.getCardPrice(data.id, "slice")).not.toBeVisible();
-      await expect(await CCD.getCardCTA(data.id, "slice")).toBeVisible();
-      await expect(await CCD.getCardCTALink(data.id, "slice")).toHaveAttribute('href', new RegExp(`${data.offerid}`));
-      await expect(await CCD.getCardCTA(data.id, "slice")).toContainText(data.cta);
+      await expect(await CCD.getCard(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCardIcon(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCardIcon(data.id, 'slice')).toHaveAttribute('src', /assets\/img/);
+      await expect(await CCD.getCardBadge(data.id, 'slice')).not.toBeVisible();
+      await expect(await CCD.getCardImage(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCardImage(data.id, 'slice')).toHaveAttribute('src', new RegExp(data.background));
+      await expect(await CCD.getCardDescription(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCardDescription(data.id, 'slice')).toContainText(data.description);
+      await expect(await CCD.getCardDescription(data.id, 'slice')).toContainText(data.percentage);
+      await expect(await CCD.getCardLegalLink(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCardLegalLink(data.id, 'slice')).toContainText(data.linkText);
+      await expect(await CCD.getCardPrice(data.id, 'slice')).not.toBeVisible();
+      await expect(await CCD.getCardCTA(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCardCTALink(data.id, 'slice')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
+      await expect(await CCD.getCardCTA(data.id, 'slice')).toContainText(data.cta);
     });
 
     await test.step('step-3: Verify CCD Merch Card spec', async () => {
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "slice"), CCD.sliceCssProp.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "slice"), CCD.sliceCssProp.singleSize)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, "slice"), CCD.sliceCssProp.icon)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, "slice"), CCD.sliceCssProp.description.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, "slice"), CCD.sliceCssProp.legalLink.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, "slice"), CCD.sliceCssProp.cta.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice'), CCD.sliceCssProp.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice'), CCD.sliceCssProp.singleSize)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, 'slice'), CCD.sliceCssProp.icon)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'slice'), CCD.sliceCssProp.description.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, 'slice'), CCD.sliceCssProp.legalLink.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'slice'), CCD.sliceCssProp.cta.light)).toBeTruthy();
     });
 
     await test.step('step-4: Go to CCD Merch Card feature test page in dark mode', async () => {
@@ -732,13 +732,13 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-5: Verify CCD Merch Card spec', async () => {
-      await expect(await CCD.getCard(data.id, "slice")).toBeVisible();
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "slice"), CCD.sliceCssProp.dark)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "slice"), CCD.sliceCssProp.singleSize)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, "slice"), CCD.sliceCssProp.icon)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, "slice"), CCD.sliceCssProp.legalLink.dark)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, "slice"), CCD.sliceCssProp.description.dark)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, "slice"), CCD.sliceCssProp.cta.dark)).toBeTruthy();
+      await expect(await CCD.getCard(data.id, 'slice')).toBeVisible();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice'), CCD.sliceCssProp.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice'), CCD.sliceCssProp.singleSize)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, 'slice'), CCD.sliceCssProp.icon)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, 'slice'), CCD.sliceCssProp.legalLink.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'slice'), CCD.sliceCssProp.description.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'slice'), CCD.sliceCssProp.cta.dark)).toBeTruthy();
     });
   });
 
@@ -755,27 +755,27 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-2: Verify CCD Merch Card content', async () => {
-      await expect(await CCD.getCard(data.id, "slice")).toBeVisible();
-      await expect(await CCD.getCardIcon(data.id, "slice")).not.toBeVisible();
-      await expect(await CCD.getCardBadge(data.id, "slice")).not.toBeVisible();
-      await expect(await CCD.getCardImage(data.id, "slice")).toBeVisible();
-      await expect(await CCD.getCardImage(data.id, "slice")).toHaveAttribute('src', new RegExp(data.background));
-      await expect(await CCD.getCardDescription(data.id, "slice")).toBeVisible();
-      await expect(await CCD.getCardDescription(data.id, "slice")).toContainText(data.description);
-      await expect(await CCD.getCardLegalLink(data.id, "slice")).toBeVisible();
-      await expect(await CCD.getCardLegalLink(data.id, "slice")).toContainText(data.linkText);
-      await expect(await CCD.getCardPrice(data.id, "slice")).not.toBeVisible();
-      await expect(await CCD.getCardCTA(data.id, "slice")).toBeVisible();
-      await expect(await CCD.getCardCTALink(data.id, "slice")).toHaveAttribute('href', new RegExp(`${data.offerid}`));
-      await expect(await CCD.getCardCTA(data.id, "slice")).toContainText(data.cta);
+      await expect(await CCD.getCard(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCardIcon(data.id, 'slice')).not.toBeVisible();
+      await expect(await CCD.getCardBadge(data.id, 'slice')).not.toBeVisible();
+      await expect(await CCD.getCardImage(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCardImage(data.id, 'slice')).toHaveAttribute('src', new RegExp(data.background));
+      await expect(await CCD.getCardDescription(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCardDescription(data.id, 'slice')).toContainText(data.description);
+      await expect(await CCD.getCardLegalLink(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCardLegalLink(data.id, 'slice')).toContainText(data.linkText);
+      await expect(await CCD.getCardPrice(data.id, 'slice')).not.toBeVisible();
+      await expect(await CCD.getCardCTA(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCardCTALink(data.id, 'slice')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
+      await expect(await CCD.getCardCTA(data.id, 'slice')).toContainText(data.cta);
     });
 
     await test.step('step-3: Verify CCD Merch Card spec', async () => {
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "slice"), CCD.sliceCssProp.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "slice"), CCD.sliceCssProp.singleSize)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, "slice"), CCD.sliceCssProp.description.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, "slice"), CCD.sliceCssProp.legalLink.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, "slice"), CCD.sliceCssProp.cta.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice'), CCD.sliceCssProp.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice'), CCD.sliceCssProp.singleSize)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'slice'), CCD.sliceCssProp.description.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, 'slice'), CCD.sliceCssProp.legalLink.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'slice'), CCD.sliceCssProp.cta.light)).toBeTruthy();
     });
 
     await test.step('step-4: Go to CCD Merch Card feature test page in dark mode', async () => {
@@ -786,12 +786,12 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-5: Verify CCD Merch Card spec', async () => {
-      await expect(await CCD.getCard(data.id, "slice")).toBeVisible();
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "slice"), CCD.sliceCssProp.dark)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "slice"), CCD.sliceCssProp.singleSize)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, "slice"), CCD.sliceCssProp.legalLink.dark)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, "slice"), CCD.sliceCssProp.description.dark)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, "slice"), CCD.sliceCssProp.cta.dark)).toBeTruthy();
+      await expect(await CCD.getCard(data.id, 'slice')).toBeVisible();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice'), CCD.sliceCssProp.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice'), CCD.sliceCssProp.singleSize)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, 'slice'), CCD.sliceCssProp.legalLink.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'slice'), CCD.sliceCssProp.description.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'slice'), CCD.sliceCssProp.cta.dark)).toBeTruthy();
     });
   });
 
@@ -808,35 +808,35 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-2: Verify CCD Merch Card content', async () => {
-      await expect(await CCD.getCard(data.id, "slice")).toBeVisible();
-      await expect(await CCD.getCardIcon(data.id, "slice")).toBeVisible();
-      await expect(await CCD.getCardIcon(data.id, "slice")).toHaveAttribute('src', /assets\/img/);
-      await expect(await CCD.getCardBadge(data.id, "slice")).toBeVisible();
-      await expect(await CCD.getCardBadge(data.id, "slice")).toContainText(data.badge);
-      await expect(await CCD.getCardImage(data.id, "slice")).toBeVisible();
-      await expect(await CCD.getCardImage(data.id, "slice")).toHaveAttribute('src', new RegExp(data.background));
-      await expect(await CCD.getCardDescription(data.id, "slice")).toBeVisible();
-      await expect(await CCD.getCardDescription(data.id, "slice")).toContainText(data.description);
-      await expect(await CCD.getCardLegalLink(data.id, "slice")).not.toBeVisible();
+      await expect(await CCD.getCard(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCardIcon(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCardIcon(data.id, 'slice')).toHaveAttribute('src', /assets\/img/);
+      await expect(await CCD.getCardBadge(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCardBadge(data.id, 'slice')).toContainText(data.badge);
+      await expect(await CCD.getCardImage(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCardImage(data.id, 'slice')).toHaveAttribute('src', new RegExp(data.background));
+      await expect(await CCD.getCardDescription(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCardDescription(data.id, 'slice')).toContainText(data.description);
+      await expect(await CCD.getCardLegalLink(data.id, 'slice')).not.toBeVisible();
       // await expect(await CCD.getCardLegalLink(data.id, "slice")).toContainText(data.linkText);
-      await expect(await CCD.getCardPrice(data.id, "slice")).toBeVisible();
-      await expect(await CCD.getCardPrice(data.id, "slice")).toContainText(data.price);
+      await expect(await CCD.getCardPrice(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCardPrice(data.id, 'slice')).toContainText(data.price);
       // await expect(await CCD.getCardPrice(data.id, "slice")).toContainText(data.strikethroughPrice);
-      await expect(await CCD.getCardCTA(data.id, "slice")).toBeVisible();
-      await expect(await CCD.getCardCTALink(data.id, "slice")).toHaveAttribute('href', new RegExp(`${data.offerid}`));
-      await expect(await CCD.getCardCTA(data.id, "slice")).toContainText(data.cta);
+      await expect(await CCD.getCardCTA(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCardCTALink(data.id, 'slice')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
+      await expect(await CCD.getCardCTA(data.id, 'slice')).toContainText(data.cta);
     });
 
     await test.step('step-3: Verify CCD Merch Card spec', async () => {
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "slice"), CCD.sliceCssProp.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "slice"), CCD.sliceCssProp.singleSize)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, "slice"), CCD.sliceCssProp.icon)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardBadge(data.id, "slice"), CCD.sliceCssProp.badge)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, "slice"), CCD.sliceCssProp.description.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice'), CCD.sliceCssProp.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice'), CCD.sliceCssProp.singleSize)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, 'slice'), CCD.sliceCssProp.icon)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardBadge(data.id, 'slice'), CCD.sliceCssProp.badge)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'slice'), CCD.sliceCssProp.description.light)).toBeTruthy();
       // expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, "slice"), CCD.sliceCssProp.legalLink.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, "slice"), CCD.sliceCssProp.price.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, 'slice'), CCD.sliceCssProp.price.light)).toBeTruthy();
       // expect(await webUtil.verifyCSS(await CCD.getCardPriceStrikethrough(data.id, "slice"), CCD.sliceCssProp.strikethroughPrice)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, "slice"), CCD.sliceCssProp.cta.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'slice'), CCD.sliceCssProp.cta.light)).toBeTruthy();
     });
 
     await test.step('step-4: Go to CCD Merch Card feature test page in dark mode', async () => {
@@ -847,20 +847,18 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-5: Verify CCD Merch Card spec', async () => {
-      await expect(await CCD.getCard(data.id, "slice")).toBeVisible();
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "slice"), CCD.sliceCssProp.dark)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "slice"), CCD.sliceCssProp.singleSize)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, "slice"), CCD.sliceCssProp.icon)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardBadge(data.id, "slice"), CCD.sliceCssProp.badge)).toBeTruthy();
+      await expect(await CCD.getCard(data.id, 'slice')).toBeVisible();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice'), CCD.sliceCssProp.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice'), CCD.sliceCssProp.singleSize)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, 'slice'), CCD.sliceCssProp.icon)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardBadge(data.id, 'slice'), CCD.sliceCssProp.badge)).toBeTruthy();
       // expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, "slice"), CCD.sliceCssProp.legalLink.dark)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, "slice"), CCD.sliceCssProp.description.dark)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, "slice"), CCD.sliceCssProp.price.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'slice'), CCD.sliceCssProp.description.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, 'slice'), CCD.sliceCssProp.price.dark)).toBeTruthy();
       // expect(await webUtil.verifyCSS(await CCD.getCardPriceStrikethrough(data.id, "slice"), CCD.sliceCssProp.strikethroughPrice)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, "slice"), CCD.sliceCssProp.cta.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'slice'), CCD.sliceCssProp.cta.dark)).toBeTruthy();
     });
   });
-
-
 
   // *** SLICE WIDE (DOUBLE) CARDS: ***
 
@@ -877,29 +875,29 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-2: Verify CCD Merch Card content', async () => {
-      await expect(await CCD.getCard(data.id, "slice-wide")).toBeVisible();
-      await expect(await CCD.getCardIcon(data.id, "slice-wide")).toBeVisible();
-      await expect(await CCD.getCardIcon(data.id, "slice-wide")).toHaveAttribute('src', /assets\/img/);
-      await expect(await CCD.getCardBadge(data.id, "slice-wide")).not.toBeVisible();
-      await expect(await CCD.getCardImage(data.id, "slice-wide")).toBeVisible();
-      await expect(await CCD.getCardImage(data.id, "slice-wide")).toHaveAttribute('src', new RegExp(data.background));
-      await expect(await CCD.getCardDescription(data.id, "slice-wide")).toBeVisible();
-      await expect(await CCD.getCardDescription(data.id, "slice-wide")).toContainText(data.description);
-      await expect(await CCD.getCardPrice(data.id, "slice-wide")).not.toBeVisible();
-      await expect(await CCD.getCardLegalLink(data.id, "slice-wide")).toBeVisible();
-      await expect(await CCD.getCardLegalLink(data.id, "slice-wide")).toContainText(data.linkText);
-      await expect(await CCD.getCardCTA(data.id, "slice-wide")).toBeVisible();
+      await expect(await CCD.getCard(data.id, 'slice-wide')).toBeVisible();
+      await expect(await CCD.getCardIcon(data.id, 'slice-wide')).toBeVisible();
+      await expect(await CCD.getCardIcon(data.id, 'slice-wide')).toHaveAttribute('src', /assets\/img/);
+      await expect(await CCD.getCardBadge(data.id, 'slice-wide')).not.toBeVisible();
+      await expect(await CCD.getCardImage(data.id, 'slice-wide')).toBeVisible();
+      await expect(await CCD.getCardImage(data.id, 'slice-wide')).toHaveAttribute('src', new RegExp(data.background));
+      await expect(await CCD.getCardDescription(data.id, 'slice-wide')).toBeVisible();
+      await expect(await CCD.getCardDescription(data.id, 'slice-wide')).toContainText(data.description);
+      await expect(await CCD.getCardPrice(data.id, 'slice-wide')).not.toBeVisible();
+      await expect(await CCD.getCardLegalLink(data.id, 'slice-wide')).toBeVisible();
+      await expect(await CCD.getCardLegalLink(data.id, 'slice-wide')).toContainText(data.linkText);
+      await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toBeVisible();
       // await expect(await CCD.getCardCTALink(data.id, "slice-wide")).toHaveAttribute('href', new RegExp(`${data.offerid}`));
-      await expect(await CCD.getCardCTA(data.id, "slice-wide")).toContainText(data.cta);
+      await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toContainText(data.cta);
     });
 
     await test.step('step-3: Verify CCD Merch Card spec', async () => {
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "slice-wide"), CCD.sliceCssProp.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "slice-wide"), CCD.sliceCssProp.doubleSize)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, "slice-wide"), CCD.sliceCssProp.icon)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, "slice-wide"), CCD.sliceCssProp.description.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, "slice-wide"), CCD.sliceCssProp.legalLink.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, "slice-wide"), CCD.sliceCssProp.cta.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice-wide'), CCD.sliceCssProp.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice-wide'), CCD.sliceCssProp.doubleSize)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, 'slice-wide'), CCD.sliceCssProp.icon)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'slice-wide'), CCD.sliceCssProp.description.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, 'slice-wide'), CCD.sliceCssProp.legalLink.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'slice-wide'), CCD.sliceCssProp.cta.light)).toBeTruthy();
     });
 
     await test.step('step-4: Go to CCD Merch Card feature test page in dark mode', async () => {
@@ -910,13 +908,13 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-5: Verify CCD Merch Card spec', async () => {
-      await expect(await CCD.getCard(data.id, "slice-wide")).toBeVisible();
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "slice-wide"), CCD.sliceCssProp.dark)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "slice-wide"), CCD.sliceCssProp.doubleSize)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, "slice-wide"), CCD.sliceCssProp.icon)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, "slice-wide"), CCD.sliceCssProp.legalLink.dark)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, "slice-wide"), CCD.sliceCssProp.description.dark)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, "slice-wide"), CCD.sliceCssProp.cta.dark)).toBeTruthy();
+      await expect(await CCD.getCard(data.id, 'slice-wide')).toBeVisible();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice-wide'), CCD.sliceCssProp.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice-wide'), CCD.sliceCssProp.doubleSize)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, 'slice-wide'), CCD.sliceCssProp.icon)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, 'slice-wide'), CCD.sliceCssProp.legalLink.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'slice-wide'), CCD.sliceCssProp.description.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'slice-wide'), CCD.sliceCssProp.cta.dark)).toBeTruthy();
     });
   });
 
@@ -933,35 +931,35 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-2: Verify CCD Merch Card content', async () => {
-      await expect(await CCD.getCard(data.id, "slice-wide")).toBeVisible();
-      await expect(await CCD.getCardIcon(data.id, "slice-wide")).toBeVisible();
-      await expect(await CCD.getCardIcon(data.id, "slice-wide")).toHaveAttribute('src', /assets\/img/);
-      await expect(await CCD.getCardBadge(data.id, "slice-wide")).toBeVisible();
-      await expect(await CCD.getCardBadge(data.id, "slice-wide")).toContainText(data.badge);
-      await expect(await CCD.getCardImage(data.id, "slice-wide")).toBeVisible();
-      await expect(await CCD.getCardImage(data.id, "slice-wide")).toHaveAttribute('src', new RegExp(data.background));
-      await expect(await CCD.getCardDescription(data.id, "slice-wide")).toBeVisible();
-      await expect(await CCD.getCardDescription(data.id, "slice-wide")).toContainText(data.description);
-      await expect(await CCD.getCardLegalLink(data.id, "slice-wide")).toBeVisible();
-      await expect(await CCD.getCardLegalLink(data.id, "slice-wide")).toContainText(data.linkText);
-      await expect(await CCD.getCardPrice(data.id, "slice-wide")).not.toBeVisible();
+      await expect(await CCD.getCard(data.id, 'slice-wide')).toBeVisible();
+      await expect(await CCD.getCardIcon(data.id, 'slice-wide')).toBeVisible();
+      await expect(await CCD.getCardIcon(data.id, 'slice-wide')).toHaveAttribute('src', /assets\/img/);
+      await expect(await CCD.getCardBadge(data.id, 'slice-wide')).toBeVisible();
+      await expect(await CCD.getCardBadge(data.id, 'slice-wide')).toContainText(data.badge);
+      await expect(await CCD.getCardImage(data.id, 'slice-wide')).toBeVisible();
+      await expect(await CCD.getCardImage(data.id, 'slice-wide')).toHaveAttribute('src', new RegExp(data.background));
+      await expect(await CCD.getCardDescription(data.id, 'slice-wide')).toBeVisible();
+      await expect(await CCD.getCardDescription(data.id, 'slice-wide')).toContainText(data.description);
+      await expect(await CCD.getCardLegalLink(data.id, 'slice-wide')).toBeVisible();
+      await expect(await CCD.getCardLegalLink(data.id, 'slice-wide')).toContainText(data.linkText);
+      await expect(await CCD.getCardPrice(data.id, 'slice-wide')).not.toBeVisible();
       // await expect(await CCD.getCardPrice(data.id, "slice-wide")).toContainText(data.price);
       // await expect(await CCD.getCardPrice(data.id, "slice-wide")).toContainText(data.strikethroughPrice);
-      await expect(await CCD.getCardCTA(data.id, "slice-wide")).toBeVisible();
-      await expect(await CCD.getCardCTALink(data.id, "slice-wide")).toHaveAttribute('href', new RegExp(`${data.offerid}`));
-      await expect(await CCD.getCardCTA(data.id, "slice-wide")).toContainText(data.cta);
+      await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toBeVisible();
+      await expect(await CCD.getCardCTALink(data.id, 'slice-wide')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
+      await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toContainText(data.cta);
     });
 
     await test.step('step-3: Verify CCD Merch Card spec', async () => {
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "slice-wide"), CCD.sliceCssProp.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "slice-wide"), CCD.sliceCssProp.doubleSize)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, "slice-wide"), CCD.sliceCssProp.icon)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardBadge(data.id, "slice-wide"), CCD.sliceCssProp.badge)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, "slice-wide"), CCD.sliceCssProp.description.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, "slice-wide"), CCD.sliceCssProp.legalLink.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice-wide'), CCD.sliceCssProp.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice-wide'), CCD.sliceCssProp.doubleSize)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, 'slice-wide'), CCD.sliceCssProp.icon)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardBadge(data.id, 'slice-wide'), CCD.sliceCssProp.badge)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'slice-wide'), CCD.sliceCssProp.description.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, 'slice-wide'), CCD.sliceCssProp.legalLink.light)).toBeTruthy();
       // expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, "slice-wide"), CCD.sliceCssProp.price.light)).toBeTruthy();
       // expect(await webUtil.verifyCSS(await CCD.getCardPriceStrikethrough(data.id, "slice-wide"), CCD.sliceCssProp.strikethroughPrice)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, "slice-wide"), CCD.sliceCssProp.cta.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'slice-wide'), CCD.sliceCssProp.cta.light)).toBeTruthy();
     });
 
     await test.step('step-4: Go to CCD Merch Card feature test page in dark mode', async () => {
@@ -972,16 +970,16 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-5: Verify CCD Merch Card spec', async () => {
-      await expect(await CCD.getCard(data.id, "slice-wide")).toBeVisible();
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "slice-wide"), CCD.sliceCssProp.dark)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "slice-wide"), CCD.sliceCssProp.doubleSize)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, "slice-wide"), CCD.sliceCssProp.icon)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardBadge(data.id, "slice-wide"), CCD.sliceCssProp.badge)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, "slice-wide"), CCD.sliceCssProp.legalLink.dark)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, "slice-wide"), CCD.sliceCssProp.description.dark)).toBeTruthy();
+      await expect(await CCD.getCard(data.id, 'slice-wide')).toBeVisible();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice-wide'), CCD.sliceCssProp.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice-wide'), CCD.sliceCssProp.doubleSize)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, 'slice-wide'), CCD.sliceCssProp.icon)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardBadge(data.id, 'slice-wide'), CCD.sliceCssProp.badge)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, 'slice-wide'), CCD.sliceCssProp.legalLink.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'slice-wide'), CCD.sliceCssProp.description.dark)).toBeTruthy();
       // expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, "slice-wide"), CCD.sliceCssProp.price.dark)).toBeTruthy();
       // expect(await webUtil.verifyCSS(await CCD.getCardPriceStrikethrough(data.id, "slice-wide"), CCD.sliceCssProp.strikethroughPrice)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, "slice-wide"), CCD.sliceCssProp.cta.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'slice-wide'), CCD.sliceCssProp.cta.dark)).toBeTruthy();
     });
   });
 
@@ -998,32 +996,32 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-2: Verify CCD Merch Card content', async () => {
-      await expect(await CCD.getCard(data.id, "slice-wide")).toBeVisible();
-      await expect(await CCD.getCardIcon(data.id, "slice-wide")).toBeVisible();
-      await expect(await CCD.getCardIcon(data.id, "slice-wide")).toHaveAttribute('src', /assets\/img/);
-      await expect(await CCD.getCardBadge(data.id, "slice-wide")).not.toBeVisible();
-      await expect(await CCD.getCardImage(data.id, "slice-wide")).toBeVisible();
-      await expect(await CCD.getCardImage(data.id, "slice-wide")).toHaveAttribute('src', new RegExp(data.background));
-      await expect(await CCD.getCardDescription(data.id, "slice-wide")).toBeVisible();
-      await expect(await CCD.getCardDescription(data.id, "slice-wide")).toContainText(data.description);
-      await expect(await CCD.getCardLegalLink(data.id, "slice-wide")).toBeVisible();
-      await expect(await CCD.getCardLegalLink(data.id, "slice-wide")).toContainText(data.linkText);
-      await expect(await CCD.getCardPrice(data.id, "slice-wide")).toBeVisible();
-      await expect(await CCD.getCardPrice(data.id, "slice-wide")).toContainText(data.price);
+      await expect(await CCD.getCard(data.id, 'slice-wide')).toBeVisible();
+      await expect(await CCD.getCardIcon(data.id, 'slice-wide')).toBeVisible();
+      await expect(await CCD.getCardIcon(data.id, 'slice-wide')).toHaveAttribute('src', /assets\/img/);
+      await expect(await CCD.getCardBadge(data.id, 'slice-wide')).not.toBeVisible();
+      await expect(await CCD.getCardImage(data.id, 'slice-wide')).toBeVisible();
+      await expect(await CCD.getCardImage(data.id, 'slice-wide')).toHaveAttribute('src', new RegExp(data.background));
+      await expect(await CCD.getCardDescription(data.id, 'slice-wide')).toBeVisible();
+      await expect(await CCD.getCardDescription(data.id, 'slice-wide')).toContainText(data.description);
+      await expect(await CCD.getCardLegalLink(data.id, 'slice-wide')).toBeVisible();
+      await expect(await CCD.getCardLegalLink(data.id, 'slice-wide')).toContainText(data.linkText);
+      await expect(await CCD.getCardPrice(data.id, 'slice-wide')).toBeVisible();
+      await expect(await CCD.getCardPrice(data.id, 'slice-wide')).toContainText(data.price);
       // await expect(await CCD.getCardPrice(data.id, "slice-wide")).toContainText(data.strikethroughPrice);
-      await expect(await CCD.getCardCTA(data.id, "slice-wide")).toBeVisible();
-      await expect(await CCD.getCardCTALink(data.id, "slice-wide")).toHaveAttribute('href', new RegExp(`${data.offerid}`));
-      await expect(await CCD.getCardCTA(data.id, "slice-wide")).toContainText(data.cta);
+      await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toBeVisible();
+      await expect(await CCD.getCardCTALink(data.id, 'slice-wide')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
+      await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toContainText(data.cta);
     });
 
     await test.step('step-3: Verify CCD Merch Card spec', async () => {
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "slice-wide"), CCD.sliceCssProp.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "slice-wide"), CCD.sliceCssProp.doubleSize)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, "slice-wide"), CCD.sliceCssProp.icon)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, "slice-wide"), CCD.sliceCssProp.description.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, "slice-wide"), CCD.sliceCssProp.legalLink.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, "slice-wide"), CCD.sliceCssProp.price.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, "slice-wide"), CCD.sliceCssProp.cta.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice-wide'), CCD.sliceCssProp.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice-wide'), CCD.sliceCssProp.doubleSize)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, 'slice-wide'), CCD.sliceCssProp.icon)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'slice-wide'), CCD.sliceCssProp.description.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, 'slice-wide'), CCD.sliceCssProp.legalLink.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, 'slice-wide'), CCD.sliceCssProp.price.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'slice-wide'), CCD.sliceCssProp.cta.light)).toBeTruthy();
     });
 
     await test.step('step-4: Go to CCD Merch Card feature test page in dark mode', async () => {
@@ -1034,14 +1032,14 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-5: Verify CCD Merch Card spec', async () => {
-      await expect(await CCD.getCard(data.id, "slice-wide")).toBeVisible();
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "slice-wide"), CCD.sliceCssProp.dark)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "slice-wide"), CCD.sliceCssProp.doubleSize)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, "slice-wide"), CCD.sliceCssProp.icon)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, "slice-wide"), CCD.sliceCssProp.legalLink.dark)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, "slice-wide"), CCD.sliceCssProp.description.dark)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, "slice-wide"), CCD.sliceCssProp.price.dark)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, "slice-wide"), CCD.sliceCssProp.cta.dark)).toBeTruthy();
+      await expect(await CCD.getCard(data.id, 'slice-wide')).toBeVisible();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice-wide'), CCD.sliceCssProp.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice-wide'), CCD.sliceCssProp.doubleSize)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, 'slice-wide'), CCD.sliceCssProp.icon)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, 'slice-wide'), CCD.sliceCssProp.legalLink.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'slice-wide'), CCD.sliceCssProp.description.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, 'slice-wide'), CCD.sliceCssProp.price.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'slice-wide'), CCD.sliceCssProp.cta.dark)).toBeTruthy();
     });
   });
 
@@ -1058,34 +1056,34 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-2: Verify CCD Merch Card content', async () => {
-      await expect(await CCD.getCard(data.id, "slice-wide")).toBeVisible();
-      await expect(await CCD.getCardIcon(data.id, "slice-wide")).toBeVisible();
-      await expect(await CCD.getCardIcon(data.id, "slice-wide")).toHaveAttribute('src', /assets\/img/);
-      await expect(await CCD.getCardBadge(data.id, "slice-wide")).not.toBeVisible();
-      await expect(await CCD.getCardImage(data.id, "slice-wide")).toBeVisible();
-      await expect(await CCD.getCardImage(data.id, "slice-wide")).toHaveAttribute('src', new RegExp(data.background));
-      await expect(await CCD.getCardDescription(data.id, "slice-wide")).toBeVisible();
-      await expect(await CCD.getCardDescription(data.id, "slice-wide")).toContainText(data.description);
-      await expect(await CCD.getCardLegalLink(data.id, "slice-wide")).toBeVisible();
-      await expect(await CCD.getCardLegalLink(data.id, "slice-wide")).toContainText(data.linkText);
-      await expect(await CCD.getCardPrice(data.id, "slice-wide")).toBeVisible();
-      await expect(await CCD.getCardPrice(data.id, "slice-wide")).toContainText(data.price);
-      await expect(await CCD.getCardPriceStrikethrough(data.id, "slice-wide")).toBeVisible();
-      await expect(await CCD.getCardPriceStrikethrough(data.id, "slice-wide")).toContainText(data.strikethroughPrice);
-      await expect(await CCD.getCardCTA(data.id, "slice-wide")).toBeVisible();
-      await expect(await CCD.getCardCTALink(data.id, "slice-wide")).toHaveAttribute('href', new RegExp(`${data.offerid}`));
-      await expect(await CCD.getCardCTA(data.id, "slice-wide")).toContainText(data.cta);
+      await expect(await CCD.getCard(data.id, 'slice-wide')).toBeVisible();
+      await expect(await CCD.getCardIcon(data.id, 'slice-wide')).toBeVisible();
+      await expect(await CCD.getCardIcon(data.id, 'slice-wide')).toHaveAttribute('src', /assets\/img/);
+      await expect(await CCD.getCardBadge(data.id, 'slice-wide')).not.toBeVisible();
+      await expect(await CCD.getCardImage(data.id, 'slice-wide')).toBeVisible();
+      await expect(await CCD.getCardImage(data.id, 'slice-wide')).toHaveAttribute('src', new RegExp(data.background));
+      await expect(await CCD.getCardDescription(data.id, 'slice-wide')).toBeVisible();
+      await expect(await CCD.getCardDescription(data.id, 'slice-wide')).toContainText(data.description);
+      await expect(await CCD.getCardLegalLink(data.id, 'slice-wide')).toBeVisible();
+      await expect(await CCD.getCardLegalLink(data.id, 'slice-wide')).toContainText(data.linkText);
+      await expect(await CCD.getCardPrice(data.id, 'slice-wide')).toBeVisible();
+      await expect(await CCD.getCardPrice(data.id, 'slice-wide')).toContainText(data.price);
+      await expect(await CCD.getCardPriceStrikethrough(data.id, 'slice-wide')).toBeVisible();
+      await expect(await CCD.getCardPriceStrikethrough(data.id, 'slice-wide')).toContainText(data.strikethroughPrice);
+      await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toBeVisible();
+      await expect(await CCD.getCardCTALink(data.id, 'slice-wide')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
+      await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toContainText(data.cta);
     });
 
     await test.step('step-3: Verify CCD Merch Card spec', async () => {
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "slice-wide"), CCD.sliceCssProp.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "slice-wide"), CCD.sliceCssProp.doubleSize)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, "slice-wide"), CCD.sliceCssProp.icon)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, "slice-wide"), CCD.sliceCssProp.description.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, "slice-wide"), CCD.sliceCssProp.legalLink.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, "slice-wide"), CCD.sliceCssProp.price.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardPriceStrikethrough(data.id, "slice-wide"), CCD.sliceCssProp.strikethroughPrice)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, "slice-wide"), CCD.sliceCssProp.cta.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice-wide'), CCD.sliceCssProp.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice-wide'), CCD.sliceCssProp.doubleSize)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, 'slice-wide'), CCD.sliceCssProp.icon)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'slice-wide'), CCD.sliceCssProp.description.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, 'slice-wide'), CCD.sliceCssProp.legalLink.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, 'slice-wide'), CCD.sliceCssProp.price.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardPriceStrikethrough(data.id, 'slice-wide'), CCD.sliceCssProp.strikethroughPrice)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'slice-wide'), CCD.sliceCssProp.cta.light)).toBeTruthy();
     });
 
     await test.step('step-4: Go to CCD Merch Card feature test page in dark mode', async () => {
@@ -1096,15 +1094,15 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-5: Verify CCD Merch Card spec', async () => {
-      await expect(await CCD.getCard(data.id, "slice-wide")).toBeVisible();
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "slice-wide"), CCD.sliceCssProp.dark)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "slice-wide"), CCD.sliceCssProp.doubleSize)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, "slice-wide"), CCD.sliceCssProp.icon)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, "slice-wide"), CCD.sliceCssProp.legalLink.dark)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, "slice-wide"), CCD.sliceCssProp.description.dark)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, "slice-wide"), CCD.sliceCssProp.price.dark)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardPriceStrikethrough(data.id, "slice-wide"), CCD.sliceCssProp.strikethroughPrice)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, "slice-wide"), CCD.sliceCssProp.cta.dark)).toBeTruthy();
+      await expect(await CCD.getCard(data.id, 'slice-wide')).toBeVisible();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice-wide'), CCD.sliceCssProp.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice-wide'), CCD.sliceCssProp.doubleSize)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, 'slice-wide'), CCD.sliceCssProp.icon)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, 'slice-wide'), CCD.sliceCssProp.legalLink.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'slice-wide'), CCD.sliceCssProp.description.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, 'slice-wide'), CCD.sliceCssProp.price.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardPriceStrikethrough(data.id, 'slice-wide'), CCD.sliceCssProp.strikethroughPrice)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'slice-wide'), CCD.sliceCssProp.cta.dark)).toBeTruthy();
     });
   });
 
@@ -1121,29 +1119,29 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-2: Verify CCD Merch Card content', async () => {
-      await expect(await CCD.getCard(data.id, "slice-wide")).toBeVisible();
-      await expect(await CCD.getCardIcon(data.id, "slice-wide")).not.toBeVisible();
-      await expect(await CCD.getCardBadge(data.id, "slice-wide")).not.toBeVisible();
-      await expect(await CCD.getCardImage(data.id, "slice-wide")).toBeVisible();
-      await expect(await CCD.getCardImage(data.id, "slice-wide")).toHaveAttribute('src', new RegExp(data.background));
-      await expect(await CCD.getCardDescription(data.id, "slice-wide")).toBeVisible();
-      await expect(await CCD.getCardDescription(data.id, "slice-wide")).toContainText(data.description);
-      await expect(await CCD.getCardLegalLink(data.id, "slice-wide")).toBeVisible();
-      await expect(await CCD.getCardLegalLink(data.id, "slice-wide")).toContainText(data.linkText);
-      await expect(await CCD.getCardPrice(data.id, "slice-wide")).toBeVisible();
-      await expect(await CCD.getCardPrice(data.id, "slice-wide")).toContainText(data.price);
-      await expect(await CCD.getCardCTA(data.id, "slice-wide")).toBeVisible();
-      await expect(await CCD.getCardCTALink(data.id, "slice-wide")).toHaveAttribute('href', new RegExp(`${data.offerid}`));
-      await expect(await CCD.getCardCTA(data.id, "slice-wide")).toContainText(data.cta);
+      await expect(await CCD.getCard(data.id, 'slice-wide')).toBeVisible();
+      await expect(await CCD.getCardIcon(data.id, 'slice-wide')).not.toBeVisible();
+      await expect(await CCD.getCardBadge(data.id, 'slice-wide')).not.toBeVisible();
+      await expect(await CCD.getCardImage(data.id, 'slice-wide')).toBeVisible();
+      await expect(await CCD.getCardImage(data.id, 'slice-wide')).toHaveAttribute('src', new RegExp(data.background));
+      await expect(await CCD.getCardDescription(data.id, 'slice-wide')).toBeVisible();
+      await expect(await CCD.getCardDescription(data.id, 'slice-wide')).toContainText(data.description);
+      await expect(await CCD.getCardLegalLink(data.id, 'slice-wide')).toBeVisible();
+      await expect(await CCD.getCardLegalLink(data.id, 'slice-wide')).toContainText(data.linkText);
+      await expect(await CCD.getCardPrice(data.id, 'slice-wide')).toBeVisible();
+      await expect(await CCD.getCardPrice(data.id, 'slice-wide')).toContainText(data.price);
+      await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toBeVisible();
+      await expect(await CCD.getCardCTALink(data.id, 'slice-wide')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
+      await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toContainText(data.cta);
     });
 
     await test.step('step-3: Verify CCD Merch Card spec', async () => {
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "slice-wide"), CCD.sliceCssProp.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "slice-wide"), CCD.sliceCssProp.doubleSize)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, "slice-wide"), CCD.sliceCssProp.description.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, "slice-wide"), CCD.sliceCssProp.legalLink.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, "slice-wide"), CCD.sliceCssProp.price.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, "slice-wide"), CCD.sliceCssProp.cta.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice-wide'), CCD.sliceCssProp.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice-wide'), CCD.sliceCssProp.doubleSize)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'slice-wide'), CCD.sliceCssProp.description.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, 'slice-wide'), CCD.sliceCssProp.legalLink.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, 'slice-wide'), CCD.sliceCssProp.price.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'slice-wide'), CCD.sliceCssProp.cta.light)).toBeTruthy();
     });
 
     await test.step('step-4: Go to CCD Merch Card feature test page in dark mode', async () => {
@@ -1154,14 +1152,13 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-5: Verify CCD Merch Card spec', async () => {
-      await expect(await CCD.getCard(data.id, "slice-wide")).toBeVisible();
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "slice-wide"), CCD.sliceCssProp.dark)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, "slice-wide"), CCD.sliceCssProp.doubleSize)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, "slice-wide"), CCD.sliceCssProp.legalLink.dark)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, "slice-wide"), CCD.sliceCssProp.description.dark)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, "slice-wide"), CCD.sliceCssProp.price.dark)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, "slice-wide"), CCD.sliceCssProp.cta.dark)).toBeTruthy();
+      await expect(await CCD.getCard(data.id, 'slice-wide')).toBeVisible();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice-wide'), CCD.sliceCssProp.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice-wide'), CCD.sliceCssProp.doubleSize)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, 'slice-wide'), CCD.sliceCssProp.legalLink.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'slice-wide'), CCD.sliceCssProp.description.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, 'slice-wide'), CCD.sliceCssProp.price.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'slice-wide'), CCD.sliceCssProp.cta.dark)).toBeTruthy();
     });
   });
-  
 });

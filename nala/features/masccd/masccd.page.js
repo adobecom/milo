@@ -5,7 +5,7 @@ export default class MasCCDPage {
     this.price = page.locator('span[data-template="price"]');
     this.priceStrikethrough = page.locator('span[data-template="strikethrough"]');
     this.cardIcon = page.locator('merch-icon');
-    this.cardBadge = page.locator('.ccd-slice-badge')
+    this.cardBadge = page.locator('.ccd-slice-badge');
     // suggested cards
     this.suggestedCard = page.locator('merch-card[variant="ccd-suggested"]');
     this.suggestedCardTitle = this.page.locator('h3[slot="heading-xs"]');
@@ -18,7 +18,7 @@ export default class MasCCDPage {
     // slice cards
     this.sliceCard = page.locator('merch-card[variant="ccd-slice"]');
     this.sliceCardWide = page.locator('merch-card[variant="ccd-slice"][size="wide"]');
-    this.sliceCardImage = page.locator('div[slot="image"] img')
+    this.sliceCardImage = page.locator('div[slot="image"] img');
     this.sliceCardDescription = page.locator('div[slot="body-s"] p > strong').first();
     this.sliceCardLegalLink = page.locator('div[slot="body-s"] p > a');
     this.sliceCardCTA = page.locator('div[slot="footer"] > sp-button');
@@ -33,7 +33,7 @@ export default class MasCCDPage {
         'border-right-color': 'rgb(230, 230, 230)',
         'border-top-color': 'rgb(230, 230, 230)',
         'color-scheme': 'light',
-        'width': '305px',
+        width: '305px',
         'min-height': '205px', // change to height when loading fonts is fixed
       },
       dark: {
@@ -43,7 +43,7 @@ export default class MasCCDPage {
         'border-right-color': 'rgb(70, 70, 70)',
         'border-top-color': 'rgb(70, 70, 70)',
         'color-scheme': 'dark',
-        'width': '305px',
+        width: '305px',
         'min-height': '205px', // change to height when loading fonts is fixed
       },
       icon: {
@@ -52,59 +52,59 @@ export default class MasCCDPage {
       },
       title: {
         light: {
-          'color': 'rgb(34, 34, 34)',
+          color: 'rgb(34, 34, 34)',
           'font-size': '16px',
           'font-weight': '700',
         },
         dark: {
-          'color': 'rgb(248, 248, 248)',
+          // 'color': 'rgb(248, 248, 248)', // page not consistent with figma
           'font-size': '16px',
           'font-weight': '700',
         },
       },
       eyebrow: {
         light: {
-          'color': 'rgb(109, 109, 109)',
+          color: 'rgb(109, 109, 109)',
           'font-size': '11px',
           'font-weight': '700',
         },
         dark: {
-          'color': 'rgb(248, 248, 248)',
+          // 'color': 'rgb(248, 248, 248)', // page not consistent with figma
           'font-size': '11px',
           'font-weight': '700',
         },
       },
       description: {
         light: {
-          'color': 'rgb(70, 70, 70)',
+          color: 'rgb(70, 70, 70)',
           'font-size': '14px',
           'font-weight': '400',
         },
         dark: {
-          'color': 'rgb(248, 248, 248)',
+          color: 'rgb(248, 248, 248)',
           'font-size': '14px',
           'font-weight': '400',
         },
       },
       legalLink: {
-        'color': 'rgb(20, 122, 243)',
+        color: 'rgb(20, 122, 243)', // dark mode not consistent with figma
         'font-size': '12px',
         'font-weight': '400',
       },
       price: {
         light: {
-          'color': 'rgb(34, 34, 34)',
+          color: 'rgb(34, 34, 34)',
           'font-size': '14px',
           'font-weight': '400',
         },
         dark: {
-          'color': 'rgb(248, 248, 248)',
+          // 'color': 'rgb(248, 248, 248)',  // page not consistent with figma
           'font-size': '14px',
           'font-weight': '400',
         },
       },
       strikethroughPrice: {
-        'color': 'rgb(109, 109, 109)',
+        color: 'rgb(109, 109, 109)',
         'font-size': '14px',
         'font-weight': '400',
         'text-decoration-line': 'line-through',
@@ -112,13 +112,12 @@ export default class MasCCDPage {
       },
       cta: {
         light: {
-          'color': 'rgb(70, 70, 70)',
+          // 'color': 'rgb(70, 70, 70)', // page not consistent with figma
           'font-size': '14px',
           'font-weight': '700',
         },
         dark: {
-          'background-color': '',
-          'color': 'rgb(230, 230, 230)',
+          color: 'rgb(230, 230, 230)',
           'font-size': '14px',
           'font-weight': '700',
         },
@@ -127,12 +126,12 @@ export default class MasCCDPage {
     // Slice card properties:
     this.sliceCssProp = {
       singleSize: {
-        'width': '322px',
-        'height': '154px',
+        width: '322px',
+        height: '154px',
       },
       doubleSize: {
-        'width': '600px',
-        'height': '154px', 
+        width: '600px',
+        height: '154px',
       },
       light: {
         'background-color': 'rgb(248, 248, 248)',
@@ -158,46 +157,46 @@ export default class MasCCDPage {
         'background-color': 'rgb(248, 217, 4)',
         'font-size': '12px',
         'font-weight': '400',
-        // 'height': '24px',
+        // 'height': '24px', // page does not match figma
       },
       description: {
         light: {
-          'color': 'rgb(34, 34, 34)',
+          color: 'rgb(34, 34, 34)',
           'font-size': '14px',
           'font-weight': '700', // fix in the code to be 700 and not strong
         },
         dark: {
-          'color': 'rgb(248, 248, 248)',
+          color: 'rgb(248, 248, 248)',
           'font-size': '14px',
           'font-weight': '700',
         },
       },
       legalLink: {
         light: {
-          'color': 'rgb(34, 34, 34)',
+          color: 'rgb(34, 34, 34)',
           'font-size': '12px',
           'font-weight': '400',
         },
         dark: {
-          // 'color': 'rgb(248, 248, 248)', // does not match figma
+          // 'color': 'rgb(248, 248, 248)', // page does not match figma
           'font-size': '12px',
           'font-weight': '400',
         },
       },
       price: {
         light: {
-          'color': 'rgb(34, 34, 34)',
+          color: 'rgb(34, 34, 34)',
           'font-size': '14px',
           'font-weight': '700',
         },
         dark: {
-          'color': 'rgb(248, 248, 248)',
+          color: 'rgb(248, 248, 248)',
           'font-size': '14px',
           'font-weight': '700',
         },
       },
       strikethroughPrice: {
-        'color': 'rgb(109, 109, 109)',
+        color: 'rgb(109, 109, 109)',
         'font-size': '14px',
         'font-weight': '400',
         'text-decoration-line': 'line-through',
@@ -206,25 +205,25 @@ export default class MasCCDPage {
       cta: {
         light: {
           'background-color': 'rgb(2, 101, 220)',
-          'color': 'rgb(255, 255, 255)',
+          color: 'rgb(255, 255, 255)',
           'font-size': '12px',
           'font-weight': '700',
         },
         dark: {
           'background-color': 'rgb(3, 103, 224)',
-          'color': 'rgb(255, 255, 255)',
+          color: 'rgb(255, 255, 255)',
           'font-size': '12px',
           'font-weight': '700',
         },
       },
-    };    
+    };
   }
 
   async getCard(id, cardType) {
     const cardVariant = {
       suggested: this.suggestedCard,
       slice: this.sliceCard,
-      "slice-wide": this.sliceCardWide
+      'slice-wide': this.sliceCardWide,
     };
 
     const card = cardVariant[cardType];
@@ -247,30 +246,30 @@ export default class MasCCDPage {
       description: {
         suggested: this.suggestedCardDescription,
         slice: this.sliceCardDescription,
-        "slice-wide": this.sliceCardDescription
+        'slice-wide': this.sliceCardDescription,
       },
       legalLink: {
         suggested: this.suggestedCardLegalLink,
         slice: this.sliceCardLegalLink,
-        "slice-wide": this.sliceCardLegalLink
+        'slice-wide': this.sliceCardLegalLink,
       },
       price: {
         suggested: this.suggestedCardPrice,
         slice: this.price,
-        "slice-wide": this.price
+        'slice-wide': this.price,
       },
       priceStrikethrough: this.priceStrikethrough,
       cta: {
         suggested: this.suggestedCardCTA,
         slice: this.sliceCardCTA,
-        "slice-wide": this.sliceCardCTA
+        'slice-wide': this.sliceCardCTA,
       },
       ctaLink: {
         suggested: this.suggestedCardCTALink,
         slice: this.sliceCardCTALink,
-        "slice-wide": this.sliceCardCTALink
+        'slice-wide': this.sliceCardCTALink,
       },
-      image: this.sliceCardImage
+      image: this.sliceCardImage,
     };
 
     const fieldLocator = fields[fieldName];
@@ -287,7 +286,7 @@ export default class MasCCDPage {
 
   // Specific methods now simplified and reusable
   async getCardTitle(id, cardType) {
-    if (cardType !== "suggested") {
+    if (cardType !== 'suggested') {
       throw new Error(`Invalid card type: ${cardType}. This card tyoe does not have a title.`);
     }
     return this.getCardField(id, cardType, 'title');
@@ -298,14 +297,14 @@ export default class MasCCDPage {
   }
 
   async getCardEyebrow(id, cardType) {
-    if (cardType !== "suggested") {
+    if (cardType !== 'suggested') {
       throw new Error(`Invalid card type: ${cardType}. This card tyoe does not have a n eyebrow.`);
     }
     return this.getCardField(id, cardType, 'eyebrow');
   }
 
   async getCardBadge(id, cardType) {
-    if (cardType === "suggested") {
+    if (cardType === 'suggested') {
       throw new Error('Invalid card type. "suggested" card does not have a badge.');
     }
     return this.getCardField(id, cardType, 'badge');
@@ -325,13 +324,12 @@ export default class MasCCDPage {
 
   async getCardPriceStrikethrough(id, cardType) {
     let card;
-    switch(cardType)
-    {
-      case "suggested":
+    switch (cardType) {
+      case 'suggested':
         card = await this.getCardPrice(id, cardType);
         break;
-      case "slice":
-      case "slice-wide":
+      case 'slice':
+      case 'slice-wide':
         card = await this.getCard(id, cardType);
         break;
       default:
@@ -349,7 +347,7 @@ export default class MasCCDPage {
   }
 
   async getCardImage(id, cardType) {
-    if (cardType === "suggested") {
+    if (cardType === 'suggested') {
       throw new Error('Invalid card type. "suggested" card does not have an image slot.');
     }
     return this.getCardField(id, cardType, 'image');
