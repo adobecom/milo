@@ -7,7 +7,6 @@ import {
   localizeLink,
   loadStyle,
   decoratePlaceholders,
-  loadBlock,
 } from '../../utils/utils.js';
 
 import {
