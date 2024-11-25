@@ -8,7 +8,9 @@ function Modal() {
       <a class="check-mark-logo">tick</a>
       <strong>Project "${project.value.name || 'n/a'}" Successfully Created</strong>
     </div>
-    <button class="s2-btn accent">View</button>
+    <div class="create-project-view">
+     <button class="s2-btn accent">View</button>
+    </div>
   </div>
   `;
 }
