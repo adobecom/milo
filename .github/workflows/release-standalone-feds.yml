@@ -52,5 +52,5 @@ jobs:
 
     - name: Upload Files to Release
       run: gh release upload \ 
-        "feds-standalone-v${{ inputs.version }}"\ 
+        "feds-standalone-v${{ inputs.version }}" \ 
         "adobecom-standalone-feds-${{ inputs.version }}.tgz"
