@@ -586,13 +586,14 @@ test.describe('CCD Merchcard feature test suite', () => {
 
     await test.step('step-2: Verify CCD Merch Card content', async () => {
       await expect(await CCD.getCard(data.id, 'slice')).toBeVisible();
-      expect(await (await CCD.getCardIcon(data.id, 'slice')).count()).toBe(2);
-      // // await expect(await CCD.getCardIcon(data.id, "slice")[0]).toBeVisible();
-      // expect(await (await CCD.getCardIcon(data.id, "slice"))[0]).toHaveAttribute('src', /assets\/img/);
-      // expect(await (await CCD.getCardIcon(data.id, "slice"))[0]).toHaveAttribute('href', data.iconLink1);
-      // // await expect(await CCD.getCardIcon(data.id, "slice")[1]).toBeVisible();
-      // expect(await (await CCD.getCardIcon(data.id, "slice"))[1]).toHaveAttribute('src', /assets\/img/);
-      // expect(await (await CCD.getCardIcon(data.id, "slice"))[1]).toHaveAttribute('href', data.iconLink2);
+      let cardIcons = await CCD.getCardIcon(data.id, 'slice');
+      expect(await cardIcons.count()).toBe(2);
+      expect(await cardIcons.nth(0)).toBeVisible();
+      expect(await cardIcons.nth(0)).toHaveAttribute('src', /assets\/img/);
+      expect(await cardIcons.nth(0)).toHaveAttribute('href', data.iconLink1);
+      expect(await cardIcons.nth(1)).toBeVisible();
+      expect(await cardIcons.nth(1)).toHaveAttribute('src', /assets\/img/);
+      expect(await cardIcons.nth(1)).toHaveAttribute('href', data.iconLink2);
       await expect(await CCD.getCardBadge(data.id, 'slice')).not.toBeVisible();
       await expect(await CCD.getCardImage(data.id, 'slice')).toBeVisible();
       await expect(await CCD.getCardImage(data.id, 'slice')).toHaveAttribute('src', new RegExp(data.background));
@@ -608,10 +609,11 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-3: Verify CCD Merch Card spec', async () => {
+      let cardIcons = await CCD.getCardIcon(data.id, 'slice');
       expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice'), CCD.sliceCssProp.light)).toBeTruthy();
       expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice'), CCD.sliceCssProp.singleSize)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, "slice")[0], CCD.sliceCssProp.icon)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, "slice")[1], CCD.sliceCssProp.icon)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await cardIcons.nth(0), CCD.sliceCssProp.icon)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await cardIcons.nth(1), CCD.sliceCssProp.icon)).toBeTruthy();
       expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'slice'), CCD.sliceCssProp.description.light)).toBeTruthy();
       expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, 'slice'), CCD.sliceCssProp.price.light)).toBeTruthy();
       expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'slice'), CCD.sliceCssProp.cta.light)).toBeTruthy();
@@ -625,11 +627,12 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-5: Verify CCD Merch Card spec', async () => {
+      let cardIcons = await CCD.getCardIcon(data.id, 'slice');
       await expect(await CCD.getCard(data.id, 'slice')).toBeVisible();
       expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice'), CCD.sliceCssProp.dark)).toBeTruthy();
       expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice'), CCD.sliceCssProp.singleSize)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, "slice")[0], CCD.sliceCssProp.icon)).toBeTruthy();
-      // expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, "slice")[1], CCD.sliceCssProp.icon)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await cardIcons.nth(0), CCD.sliceCssProp.icon)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await cardIcons.nth(1), CCD.sliceCssProp.icon)).toBeTruthy();
       expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'slice'), CCD.sliceCssProp.description.dark)).toBeTruthy();
       expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, 'slice'), CCD.sliceCssProp.price.dark)).toBeTruthy();
       expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'slice'), CCD.sliceCssProp.cta.dark)).toBeTruthy();
