@@ -124,10 +124,10 @@ jobs:
           function servicenow_create_cmr() {
             local api_key=$1
             local access_token=$2
-            local start_time=$3
-            local end_time=$4
-            local title=$5
-            local description=$6
+            local title=$3
+            local description=$4
+            local start_time=$5
+            local end_time=$6
             local url=$7
 
             if [ -z "$api_key" ]; then
