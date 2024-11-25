@@ -122,18 +122,28 @@ button {
   padding: 30px;
 }
 
-.gallery-grid-3 {
+.gallery-grid-3,
+.gallery-grid-2 {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 3 cards per row */
   gap: 20px;
   margin: 0 auto;
 }
 
+.gallery-grid-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
 .gallery-grid-2 {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr); /* 3 cards per row */
-  gap: 20px;
-  margin: 0 auto;
+  grid-template-columns: repeat(2, 1fr);
+}
+
+/* Media query for mobile and tablet devices */
+@media (max-width: 1199px) {
+  .gallery-grid-3,
+  .gallery-grid-2 {
+    grid-template-columns: 1fr; /* Single column */
+    justify-items: center; /* Center items horizontally */
+  }
 }
 
 .gallery-grid-1 {
