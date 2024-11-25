@@ -95,13 +95,6 @@ export const CONFIG = {
               enableLocalSection: true,
               enableProfileSwitcher: true,
               miniAppContext: {
-                onMessage: (name, payload) => {
-                  if (name === 'System' && payload.subType === 'AppInitiated') {
-                    window.adobeProfile?.getUserProfile()
-                      .then((data) => { setUserProfile(data); })
-                      .catch(() => { setUserProfile({}); });
-                  }
-                },
                 logger: {
                   trace: () => {},
                   debug: () => {},
@@ -655,6 +648,7 @@ class Gnav {
       },
       children: getChildren(),
       isSectionDividerRequired: getConfig()?.unav?.showSectionDivider,
+      showTrayExperience: (!isDesktop.matches),
     });
 
     // Exposing UNAV config for consumers
