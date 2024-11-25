@@ -119,8 +119,13 @@ export default function InputUrls() {
   }, []);
 
   const handleUrlsBlur = () => {
-    if (!errors.urlsStr && fragmentsEnabled) {
-      fetchFragments(urlsStr, true);
+    if (!errors.urlsStr) {
+      const splittedUrls = urlsStr.split(URL_SEPARATOR_PATTERN).filter((url) => url);
+      const uniqueUrls = Array.from(new Set(splittedUrls)).join('\n');
+      setUrlsStr(uniqueUrls);
+      if (fragmentsEnabled) {
+        fetchFragments(uniqueUrls, true);
+      }
     }
   };
 
