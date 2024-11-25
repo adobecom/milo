@@ -111,7 +111,7 @@ jobs:
               exit 1
             else
               echo "IMS token request was successful"
-              echo "token=$(jq -r '.access_token' response.txt)" >> GITHUB_ENV
+              echo "token=$(jq -r '.access_token' response.txt)" >> $GITHUB_ENV
             fi
           }
 
@@ -176,7 +176,7 @@ jobs:
               exit 1
             else
               echo "CMR creation was successful"
-              echo "transaction_id=$(jq -r '.id' response.txt)" >> GITHUB_ENV
+              echo "transaction_id=$(jq -r '.id' response.txt)" >> $GITHUB_ENV
             fi
           }
 
@@ -223,7 +223,7 @@ jobs:
               exit 1
             else
               echo "CMR ID retrieval was successful"
-              echo "cmr_id=$(jq -r '.changeId' response.txt)" >> GITHUB_ENV
+              echo "cmr_id=$(jq -r '.changeId' response.txt)" >> $GITHUB_ENV
             fi
           }
 
