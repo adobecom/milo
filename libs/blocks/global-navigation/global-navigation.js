@@ -5,6 +5,7 @@ import {
   loadIms,
   decorateLinks,
   loadScript,
+  getGnavSource,
 } from '../../utils/utils.js';
 import {
   closeAllDropdowns,
@@ -1174,19 +1175,9 @@ class Gnav {
   };
 }
 
-const getSource = async () => {
-  const { locale, dynamicNavKey } = getConfig();
-  let url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
-  if (dynamicNavKey) {
-    const { default: dynamicNav } = await import('../../features/dynamic-navigation/dynamic-navigation.js');
-    url = dynamicNav(url, dynamicNavKey);
-  }
-  return url;
-};
-
 export default async function init(block) {
   const { mep } = getConfig();
-  const sourceUrl = await getSource();
+  const sourceUrl = await getGnavSource();
   const newMobileNav = getMetadata('mobile-gnav-v2') !== 'false';
   const [url, hash = ''] = sourceUrl.split('#');
   if (hash === '_noActiveItem') {

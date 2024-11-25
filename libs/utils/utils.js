@@ -751,6 +751,16 @@ function decorateDefaults(el) {
   });
 }
 
+export async function getGnavSource() {
+  const { locale, dynamicNavKey } = getConfig();
+  let url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
+  if (dynamicNavKey) {
+    const { default: dynamicNav } = await import('../features/dynamic-navigation/dynamic-navigation.js');
+    url = dynamicNav(url, dynamicNavKey);
+  }
+  return url;
+};
+
 function decorateHeader() {
   const breadcrumbs = document.querySelector('.breadcrumbs');
   breadcrumbs?.remove();
@@ -772,9 +782,8 @@ function decorateHeader() {
   const dynamicNavActive = getMetadata('dynamic-nav') === 'on'
     && window.sessionStorage.getItem('gnavSource') !== null;
   if (!dynamicNavActive && (baseBreadcrumbs || breadcrumbs || autoBreadcrumbs)) header.classList.add('has-breadcrumbs');
-  const gnavSource = getMetadata('gnav-source');
-  const gnavUrl = gnavSource.split('/');
-  const gnavName = gnavUrl[gnavUrl.length - 1];
+  const gnavSource = getGnavSource();
+  const gnavName = gnavSource.split('/').pop();
   
   if (gnavName.match('localnav') && getMetadata('mobile-gnav-v2') !== 'false') {
     // Preserving space to avoid CLS issue
