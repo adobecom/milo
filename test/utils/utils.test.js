@@ -192,6 +192,33 @@ describe('Utils', () => {
       });
     });
 
+    describe('Aria label appendment', () => {
+      const theText = 'Text';
+      const theAriaLabel = 'Aria label';
+
+      const noAriaLabelElem = document.querySelector('.aria-label-none');
+      expect(noAriaLabelElem.getAttribute('aria-label')).to.be.null;
+      expect(noAriaLabelElem.innerText).to.be(theText);
+
+      const simpleAriaLabelElem = document.querySelector('.aria-label-simple');
+      expect(simpleAriaLabelElem.getAttribute('aria-label')).to.be(theAriaLabel);
+      expect(simpleAriaLabelElem.innerText).to.be(theText);
+
+      const pipedAriaLabelElem = document.querySelector('.aria-label-piped');
+      expect(pipedAriaLabelElem.getAttribute('aria-label')).to.be(theAriaLabel);
+      expect(pipedAriaLabelElem.innerText).to.be(`${theText} | Other text`);
+
+      const iconNoAriaLabelElem = document.querySelector('.aria-label-icon-none');
+      expect(iconNoAriaLabelElem.getAttribute('aria-label')).to.be.null;
+      expect(iconNoAriaLabelElem.querySelector('.icon')).to.exist;
+      expect(iconNoAriaLabelElem.innerText).to.be(theText);
+
+      const iconAriaLabelElem = document.querySelector('.aria-label-icon-simple');
+      expect(iconAriaLabelElem.getAttribute('aria-label')).to.be(theAriaLabel);
+      expect(iconAriaLabelElem.querySelector('.icon')).to.exist;
+      expect(iconAriaLabelElem.innerText).to.be(theText);
+    });
+
     describe('Fragments', () => {
       it('fully unwraps a fragment', () => {
         const fragments = document.querySelectorAll('.link-block.fragment');

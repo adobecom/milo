@@ -712,44 +712,14 @@ export function decorateLinks(el) {
     if (a.href.includes(copyEvent)) {
       decorateCopyLink(a, copyEvent);
     }
-
-    // Pattern: "Link Text | Aria Label"
-    // If an icon is defined just before the pipe, there is no space before the pipe
-    const pipeRegex = /\|\s/;
+    // Append aria-label
+    const pipeRegex = /\s?\|\s?/;
     if (pipeRegex.test(a.textContent)) {
-      // the anchor may already have elements inside, fetching the matching child nodes
-      const nodes = [...a.childNodes].filter((node) => pipeRegex.test(node.textContent));
-      // get the last matching text node with pipe character(s)
-      const node = nodes[nodes.length - 1];
-      // get its text content
-      const ogContent = node.textContent;
-      // get the last occurrence of the pipe character
-      const split = ogContent.split(pipeRegex);
-      const ariaLabel = split[split.length - 1];
-      // Delete the aria label value from the original text
-      const text = ogContent.replace(new RegExp(`\\s?\\|\\s?${ariaLabel}`), '');
-      node.textContent = text;
-      // Set the aria label
-      a.setAttribute('aria-label', ariaLabel);
-    }
-
-    // Pattern: "Link Text <Aria Label>"
-    if (/<.+>/.test(a.textContent)) {
-      const ogContent = a.textContent;
-      const text = ogContent.replace(/<.+>/, '');
-      const ariaLabel = ogContent.match(/<.+>/)[0].replace(/[<>]/g, '');
-      a.textContent = text;
-      a.setAttribute('aria-label', ariaLabel);
-    }
-
-    // Pattern: "Link Text <code>Aria Label</code>"
-    const codeInAnchor = a.querySelector('code');
-    if (codeInAnchor) {
-      const ogContent = a.textContent;
-      const ariaLabel = codeInAnchor.textContent;
-      codeInAnchor.remove();
-      const text = ogContent.replace(ariaLabel, '');
-      a.textContent = text.trim();
+      const node = [...a.childNodes].reverse()
+        .find((child) => pipeRegex.test(child.textContent));
+      const ariaLabel = node.textContent.split(pipeRegex).pop();
+      node.textContent = node.textContent
+        .replace(new RegExp(`${pipeRegex.source}${ariaLabel}`), '');
       a.setAttribute('aria-label', ariaLabel);
     }
 
