@@ -1347,9 +1347,7 @@ sp-theme[color='dark'] merch-card[variant="ccd-suggested"] [slot="cta"] sp-butto
               </div>
               <slot name="body-xs"></slot>
               <div class="footer">
-                <p class="prices">
-                  <slot name="price"></slot>
-                </p>
+                <slot name="price"></slot>
                 <slot name="cta"></slot>
               </div>
           </div>
@@ -1412,11 +1410,6 @@ sp-theme[color='dark'] merch-card[variant="ccd-suggested"] [slot="cta"] sp-butto
 
     :host([variant='ccd-suggested'].wide-strip) ::slotted([slot='price']) {
       padding-inline-start: 48px;
-    }
-
-    :host([variant='ccd-suggested']) .prices {
-      display: inline-block;
-      white-space: pre-wrap;
     }
 
     :host([variant='ccd-suggested']) ::slotted([slot='price']) {
