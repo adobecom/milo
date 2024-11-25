@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../features/title-append/title-append.js"],
-  "sourcesContent": ["export default function titleAppend(appendage) {\n  if (!appendage) return;\n  document.title = `${document.title} ${appendage}`;\n  const ogTitleEl = document.querySelector('meta[property=\"og:title\"]');\n  if (ogTitleEl) ogTitleEl.setAttribute('content', document.title);\n  const twitterTitleEl = document.querySelector('meta[name=\"twitter:title\"]');\n  if (twitterTitleEl) twitterTitleEl.setAttribute('content', document.title);\n}\n"],
-  "mappings": ";;;AAAe,SAAR,YAA6B,WAAW;AAC7C,MAAI,CAAC,UAAW;AAChB,WAAS,QAAQ,GAAG,SAAS,KAAK,IAAI,SAAS;AAC/C,QAAM,YAAY,SAAS,cAAc,2BAA2B;AACpE,MAAI,UAAW,WAAU,aAAa,WAAW,SAAS,KAAK;AAC/D,QAAM,iBAAiB,SAAS,cAAc,4BAA4B;AAC1E,MAAI,eAAgB,gBAAe,aAAa,WAAW,SAAS,KAAK;AAC3E;",
-  "names": []
-}

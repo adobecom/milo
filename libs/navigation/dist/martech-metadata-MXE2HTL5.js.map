@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../blocks/martech-metadata/martech-metadata.js"],
-  "sourcesContent": ["import { getConfig } from '../../utils/utils.js';\nimport { processTrackingLabels } from '../../martech/attributes.js';\n\nexport const getMetadata = (el, config) => [...el.childNodes].reduce((rdx, row) => {\n  if (row.children?.length > 1) {\n    const key = processTrackingLabels(row.children[0].textContent, config);\n    const value = processTrackingLabels(row.children[1].textContent, config);\n    if (key && value) rdx[key] = value;\n  }\n  return rdx;\n}, {});\n\nexport default function init(el) {\n  const config = getConfig();\n  const { locale, ietf = locale?.ietf, analyticLocalization } = config;\n  if (ietf !== 'en-US') {\n    config.analyticLocalization = {\n      ...analyticLocalization,\n      ...getMetadata(el, config),\n    };\n  }\n  el.remove();\n  return config;\n}\n"],
-  "mappings": ";;;;;;;;;AAGO,IAAM,cAAc,CAAC,IAAI,WAAW,CAAC,GAAG,GAAG,UAAU,EAAE,OAAO,CAAC,KAAK,QAAQ;AACjF,MAAI,IAAI,UAAU,SAAS,GAAG;AAC5B,UAAM,MAAM,sBAAsB,IAAI,SAAS,CAAC,EAAE,aAAa,MAAM;AACrE,UAAM,QAAQ,sBAAsB,IAAI,SAAS,CAAC,EAAE,aAAa,MAAM;AACvE,QAAI,OAAO,MAAO,KAAI,GAAG,IAAI;AAAA,EAC/B;AACA,SAAO;AACT,GAAG,CAAC,CAAC;AAEU,SAAR,KAAsB,IAAI;AAC/B,QAAM,SAAS,UAAU;AACzB,QAAM,EAAE,QAAQ,OAAO,QAAQ,MAAM,qBAAqB,IAAI;AAC9D,MAAI,SAAS,SAAS;AACpB,WAAO,uBAAuB;AAAA,MAC5B,GAAG;AAAA,MACH,GAAG,YAAY,IAAI,MAAM;AAAA,IAC3B;AAAA,EACF;AACA,KAAG,OAAO;AACV,SAAO;AACT;",
-  "names": []
-}

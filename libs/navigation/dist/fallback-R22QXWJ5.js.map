@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../blocks/fallback/fallback.js"],
-  "sourcesContent": ["/**\n * Some blocks are not meant to be loaded out of the\n * blocks folder. They are typically used in\n * larger blocks only to help add context to content.\n */\nconst SYNTHETIC_BLOCKS = [\n  'adobe-logo',\n  'breadcrumbs',\n  'column-break',\n  'cross-cloud-menu',\n  'gnav-brand',\n  'gnav-promo',\n  'large-menu',\n  'library-metadata',\n  'link-group',\n  'profile',\n  'region-selector',\n  'search',\n  'social',\n];\n\n// eslint-disable-next-line import/prefer-default-export\nexport function showError(block, name) {\n  const isSynth = [...block.classList].some((className) => SYNTHETIC_BLOCKS.includes(className));\n  if (isSynth) return;\n  block.dataset.failed = 'true';\n  block.dataset.reason = `Failed loading ${name || ''} block.`;\n}\n"],
-  "mappings": ";;;AAKA,IAAM,mBAAmB;AAAA,EACvB;AAAA,EACA;AAAA,EACA;AAAA,EACA;AAAA,EACA;AAAA,EACA;AAAA,EACA;AAAA,EACA;AAAA,EACA;AAAA,EACA;AAAA,EACA;AAAA,EACA;AAAA,EACA;AACF;AAGO,SAAS,UAAU,OAAO,MAAM;AACrC,QAAM,UAAU,CAAC,GAAG,MAAM,SAAS,EAAE,KAAK,CAAC,cAAc,iBAAiB,SAAS,SAAS,CAAC;AAC7F,MAAI,QAAS;AACb,QAAM,QAAQ,SAAS;AACvB,QAAM,QAAQ,SAAS,kBAAkB,QAAQ,EAAE;AACrD;",
-  "names": []
-}

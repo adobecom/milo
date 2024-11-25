@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../utils/favicon.js"],
-  "sourcesContent": ["export default function loadFavicon(createTag, config, getMetadata) {\n  const { codeRoot } = config;\n  const name = getMetadata('favicon') || 'favicon';\n  const favBase = `${codeRoot}/img/favicons/${name}`;\n\n  const favicon = document.head.querySelector('link[rel=\"icon\"]');\n  const tags = `<link rel=\"apple-touch-icon\" href=\"${favBase}-180.png\">\n                <link rel=\"manifest\" href=\"${favBase}.webmanifest\">`;\n  favicon.insertAdjacentHTML('afterend', tags);\n  favicon.href = `${favBase}.ico`;\n}\n"],
-  "mappings": ";;;AAAe,SAAR,YAA6B,WAAW,QAAQ,aAAa;AAClE,QAAM,EAAE,SAAS,IAAI;AACrB,QAAM,OAAO,YAAY,SAAS,KAAK;AACvC,QAAM,UAAU,GAAG,QAAQ,iBAAiB,IAAI;AAEhD,QAAM,UAAU,SAAS,KAAK,cAAc,kBAAkB;AAC9D,QAAM,OAAO,sCAAsC,OAAO;AAAA,6CACf,OAAO;AAClD,UAAQ,mBAAmB,YAAY,IAAI;AAC3C,UAAQ,OAAO,GAAG,OAAO;AAC3B;",
-  "names": []
-}
