@@ -25,6 +25,7 @@ import {
   decoratePlaceholders,
   getConfig,
   getMetadata,
+  loadBlock,
   loadStyle,
   localizeLink
 } from "./chunk-DIP3NAMX.js";
@@ -172,7 +173,7 @@ var Footer = class {
         </svg>
         ${regionPickerTextElem}
       </a>`;
-    regionPickerElem.classList.add("modal", "link-block");
+    regionPickerElem.classList.add("link-block");
     regionPickerElem.dataset.modalPath = `${url.pathname}#_inline`;
     regionPickerElem.dataset.modalHash = url.hash;
     const regionPickerWrapperClass = "feds-regionPicker-wrapper";
@@ -181,6 +182,7 @@ var Footer = class {
       </div>`;
     const isRegionPickerExpanded = () => regionPickerElem.getAttribute("aria-expanded") === "true";
     if (url.hash !== "") {
+      regionPickerElem.classList.add("modal");
       regionPickerElem.href = url.hash;
       if (regionPickerElem.classList[0] !== "modal") {
         lanaLog({
@@ -224,9 +226,8 @@ var Footer = class {
       regionSelector.href = localizeLink(regionSelector.href);
       decorateAutoBlock(regionSelector);
       this.elements.regionPicker.append(regionSelector);
-      const { default: loadRegionSelector } = await import("./region-nav-6PIYNDK5.js");
-      loadStyle(`${base}/blocks/region-nav/region-nav.css`);
-      loadRegionSelector(regionSelector);
+      console.log(regionSelector.innerHTML);
+      await loadBlock(regionSelector);
       regionPickerElem.addEventListener("click", (e) => {
         e.preventDefault();
         const isDialogActive = regionPickerElem.getAttribute("aria-expanded") === "true";
@@ -239,7 +240,7 @@ var Footer = class {
         }
       });
     }
-    return this.regionPicker;
+    return this.elements.regionPicker;
   };
   decorateSocial = () => {
     this.elements.social = "";
@@ -320,4 +321,4 @@ function init(block) {
 export {
   init as default
 };
-//# sourceMappingURL=global-footer-SQBVH7OI.js.map
+//# sourceMappingURL=global-footer-2IJ2L6TA.js.map

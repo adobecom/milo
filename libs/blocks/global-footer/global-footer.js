@@ -7,6 +7,7 @@ import {
   localizeLink,
   loadStyle,
   decoratePlaceholders,
+  loadBlock,
 } from '../../utils/utils.js';
 
 import {
@@ -219,7 +220,7 @@ class Footer {
         </svg>
         ${regionPickerTextElem}
       </a>`;
-    regionPickerElem.classList.add('modal', 'link-block');
+    regionPickerElem.classList.add('link-block');
     regionPickerElem.dataset.modalPath = `${url.pathname}#_inline`;
     regionPickerElem.dataset.modalHash = url.hash;
     const regionPickerWrapperClass = 'feds-regionPicker-wrapper';
@@ -235,6 +236,7 @@ class Footer {
     if (url.hash !== '') {
       // Hash -> region selector opens a modal
       // decorateAutoBlock(regionPickerElem); // add modal-specific attributes
+      regionPickerElem.classList.add('modal');
       // TODO remove logs after finding the root cause for the region picker 404s -> MWPW-143627
       regionPickerElem.href = url.hash;
       if (regionPickerElem.classList[0] !== 'modal') {
@@ -285,9 +287,7 @@ class Footer {
       regionSelector.href = localizeLink(regionSelector.href);
       decorateAutoBlock(regionSelector); // add fragment-specific class(es)
       this.elements.regionPicker.append(regionSelector); // add fragment after regionPickerElem
-      const { default: loadRegionSelector } = await import('../region-nav/region-nav.js');
-      loadStyle(`${base}/blocks/region-nav/region-nav.css`);
-      loadRegionSelector(regionSelector); // load fragment and replace original link
+      await loadBlock(regionSelector); // load fragment and replace original link
       // Update aria-expanded on click
       regionPickerElem.addEventListener('click', (e) => {
         e.preventDefault();
@@ -304,7 +304,7 @@ class Footer {
       });
     }
 
-    return this.regionPicker;
+    return this.elements.regionPicker;
   };
 
   decorateSocial = () => {

@@ -68,17 +68,18 @@ async function loadBlock(configs, customLib) {
   const branch = new URLSearchParams(window.location.search).get("navbranch");
   const miloLibs = branch ? `https://${branch}--milo--adobecom.aem.page` : customLib || envMap[env];
   try {
-    import("./base-BZB6QFX6.js");
+    await import("./base-BZB6QFX6.js");
     if (theme === "dark") {
-      import("./dark-nav-MIY36TFO.js");
+      await import("./dark-nav-MIY36TFO.js");
     }
-    import("./navigation-ISAZ5Y5C.js");
+    await import("./navigation-ISAZ5Y5C.js");
   } catch (e) {
     if (theme === "dark") {
       loadStyle(`${miloLibs}/libs/navigation/dist/base.css`, () => loadStyle(`${miloLibs}/libs/navigation/dist/dark-nav.css`));
     } else {
-      loadStyle(`${miloLibs}/libs/navigation/dist/navigation.css`);
+      loadStyle(`${miloLibs}/libs/navigation/dist/base.css`);
     }
+    loadStyle(`${miloLibs}/libs/navigation/dist/navigation.css`);
   }
   const [{ default: bootstrapBlock }, { default: locales }, { setConfig }] = await Promise.all([
     import("./bootstrapper-NLAKHTYJ.js"),
@@ -114,8 +115,12 @@ async function loadBlock(configs, customLib) {
             jarvis: configBlock.jarvis
           });
         } else if (block.key === "footer") {
-          import("./footer-VCRTDGTZ.js");
-          const { default: init } = await import("./global-footer-SQBVH7OI.js");
+          try {
+            await import("./footer-VCRTDGTZ.js");
+          } catch (e) {
+            loadStyle(`${miloLibs}/libs/navigation/dist/footer.css`);
+          }
+          const { default: init } = await import("./global-footer-2IJ2L6TA.js");
           await bootstrapBlock(init, { ...block });
         }
         configBlock.onReady?.();
