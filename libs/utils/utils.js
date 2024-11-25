@@ -761,7 +761,7 @@ export async function getGnavSource() {
   return url;
 };
 
-function decorateHeader() {
+async function decorateHeader() {
   const breadcrumbs = document.querySelector('.breadcrumbs');
   breadcrumbs?.remove();
   const header = document.querySelector('header');
@@ -782,7 +782,7 @@ function decorateHeader() {
   const dynamicNavActive = getMetadata('dynamic-nav') === 'on'
     && window.sessionStorage.getItem('gnavSource') !== null;
   if (!dynamicNavActive && (baseBreadcrumbs || breadcrumbs || autoBreadcrumbs)) header.classList.add('has-breadcrumbs');
-  const gnavSource = getGnavSource();
+  const gnavSource = await getGnavSource();
   const gnavName = gnavSource.split('/').pop();
   
   if (gnavName.match('localnav') && getMetadata('mobile-gnav-v2') !== 'false') {
