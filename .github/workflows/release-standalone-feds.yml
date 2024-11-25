@@ -29,7 +29,7 @@ jobs:
         node-version: ${{ matrix.node-version }}
 
     - name: Go to folder
-      run: cd libs/navigation
+      run: cd ./libs/navigation
 
     - name: Install dependencies
       run: npm install
