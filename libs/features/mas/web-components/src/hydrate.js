@@ -16,31 +16,39 @@ function processFragment(fragmentData) {
 }
 
 function processMnemonics(fragment, merchCard, aemFragmentMapping) {
-    const mnemonics = fragment.mnemonicIcon?.map((icon, index) => ({
-        icon,
-        alt: fragment.mnemonicAlt[index] ?? '',
-        link: fragment.mnemonicLink[index] ?? '',
-    }));
+  const mnemonics = fragment.mnemonicIcon?.map((icon, index) => ({
+      icon,
+      alt: fragment.mnemonicAlt[index] ?? '',
+      link: fragment.mnemonicLink[index] ?? '',
+  }));
 
-    mnemonics?.forEach(({ icon: src, alt, link: href }) => {
-        if (!/^https?:/.test(href)) {
-            try {
-                href = new URL(`https://${href}`).href.toString();
-            } catch (e) {
-                href = '#';
-            }
-        }
-        const merchIcon = createTag('merch-icon', {
-            slot: 'icons',
-            src,
-            alt,
-            href,
-            size: aemFragmentMapping.mnemonics?.size ?? 'l',
-        });
-        merchCard.append(merchIcon);
-    });
+  mnemonics?.forEach(({ icon: src, alt, link: href }) => {
+      if (href && !/^https?:/.test(href)) {
+          try {
+              href = new URL(`https://${href}`).href.toString();
+          } catch (e) {
+              href = '';
+          }
+      }
 
-    return mnemonics;
+      // Build attributes object
+      const attributes = {
+          slot: 'icons',
+          src,
+          alt,
+          size: aemFragmentMapping.mnemonics?.size ?? 'l',
+      };
+
+      // Conditionally add 'href' if it has a value
+      if (href) {
+          attributes.href = href;
+      }
+
+      const merchIcon = createTag('merch-icon', attributes);
+      merchCard.append(merchIcon);
+  });
+
+  return mnemonics;
 }
 
 function processBadge(fragment, merchCard) {
