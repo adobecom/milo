@@ -124,10 +124,10 @@ jobs:
           function servicenow_create_cmr() {
             local api_key=$1
             local access_token=$2
-            local start_time=$3
-            local end_time=$4
-            local title=$5
-            local description=$6
+            local title=$3
+            local description=$4
+            local planned_start_time=$5
+            local planned_end_time=$6
             local url=$7
 
             if [ -z "$api_key" ]; then
@@ -150,13 +150,14 @@ jobs:
               return 1
             fi
 
-            if [ -z "$start_time" ]; then
+            if [ -z "$planned_start_time" ]; then
               echo "Missing start time"
               return 1
             fi
 
-            if [ -z "$end_time" ]; then
-              echo "Missing end time"
+            if [ -z "$planned_end_time" ]; then
+              echo "Missing end time: ${planned_end_time}"
+              echo "Number of parameters: $#"
               return 1
             fi
 
@@ -164,7 +165,7 @@ jobs:
               url=$DEFAULT_SERVICENOW_URL
             fi
 
-            curl --request POST --silent --url "${url}" --header 'Accept: application/json' --header 'Authorization: ${access_token}' --header 'Content-Type: application/json' --header 'api_key: ${api_key}' --data '{"title": "${title}", "description": "${description}", "instanceIds": [ 537445 ], "plannedStartDate": ${start_time}, "plannedEndDate": ${end_time},"coordinator": "narcis@adobe.com", "executor": "mauchley@adobe.com", "customerImpact": "No Impact", "changeReason": [ "New Features", "Bug Fixes", "Enhancement", "Maintenance", "Security" ], "risk": "Straight Forward", "preProductionTestingType": [ "End-to-End", "Functional", "Integrations", "QA", "Regression", "UAT", "Unit Test" ], "backoutPlanType": "Roll back", "approvedBy": [ "osahin@adobe.com" ], "testPlan": "Test plan is documented in the PR link in the Milo repository above. See the PR'\''s merge checks to see Unit and Nala testing.", "implementationPlan": "The change will be realeased as part of the continuous deployment of Milo'\''s production branch, i.e., \"main\"", "backoutPlan": "Revert merge to the Milo production branch by creating a revert commit.", "testResults": "Changes are tested and validated successfully in staging environment. Please see the link of the PR in the description for the test results and/or the \"#nala-test-results\" slack channel."}' > response.txt
+            curl --request POST --silent --url "${url}" --header 'Accept: application/json' --header 'Authorization: ${access_token}' --header 'Content-Type: application/json' --header 'api_key: ${api_key}' --data '{"title": "${title}", "description": "${description}", "instanceIds": [ 537445 ], "plannedStartDate": ${planned_start_time}, "plannedEndDate": ${planned_end_time},"coordinator": "narcis@adobe.com", "executor": "mauchley@adobe.com", "customerImpact": "No Impact", "changeReason": [ "New Features", "Bug Fixes", "Enhancement", "Maintenance", "Security" ], "risk": "Straight Forward", "preProductionTestingType": [ "End-to-End", "Functional", "Integrations", "QA", "Regression", "UAT", "Unit Test" ], "backoutPlanType": "Roll back", "approvedBy": [ "osahin@adobe.com" ], "testPlan": "Test plan is documented in the PR link in the Milo repository above. See the PR'\''s merge checks to see Unit and Nala testing.", "implementationPlan": "The change will be realeased as part of the continuous deployment of Milo'\''s production branch, i.e., \"main\"", "backoutPlan": "Revert merge to the Milo production branch by creating a revert commit.", "testResults": "Changes are tested and validated successfully in staging environment. Please see the link of the PR in the description for the test results and/or the \"#nala-test-results\" slack channel."}' > response.txt
 
             if [[ -f response.txt && ! -s response.txt ]]; then
               echo "CURL call failed, returned response copied to response.txt was empty."
@@ -179,7 +180,7 @@ jobs:
             fi
           }
 
-          servicenow_create_cmr ${{ secrets.IPAAS_KEY_STAGE }} ${{ env.token }} ${{ env.start_time }} ${{ env.end_time }} "${{ env.release_title }}" "${{ env.release_summary }}"
+          servicenow_create_cmr ${{ secrets.IPAAS_KEY_STAGE }} $token "$release_title" "$release_summary" $start_time $end_time
 
       - name: Retrieve CMR ID in ServiceNow
         run: |
@@ -188,7 +189,7 @@ jobs:
           function servicenow_request_cmr() {
             local api_key=$1
             local access_token=$2
-            local transaction_id=$3
+            local transactionId=$3
             local url=$4
 
             if [ -z "$api_key" ]; then
@@ -208,7 +209,7 @@ jobs:
 
             if [ -z "$url" ]; then
               url=$DEFAULT_SERVICENOW_URL
-              url+="/${transaction_id}"
+              url+="/${transactionId}"
             fi
 
             curl --request GET --silent --url "${url}" --header 'Accept: application/json' --header 'Authorization: ${access_token}' --header 'api_key: ${api_key}' > response.txt
@@ -226,7 +227,7 @@ jobs:
             fi
           }
 
-          servicenow_request_cmr ${{ secrets.IPAAS_KEY_STAGE }} ${{ env.token }} ${{ env.transaction_id }}
+          servicenow_request_cmr ${{ secrets.IPAAS_KEY_STAGE }} $token $transaction_id
 
       - name: Set Actual Maintenance Time Windows for CMR
         run: |
@@ -240,9 +241,9 @@ jobs:
           function servicenow_close_cmr() {
             local api_key=$1
             local access_token=$2
-            local actual_start_time=$3
-            local actual_end_time=$4
-            local cmr_id=$5
+            local actualStart_time=$3
+            local actualEnd_time=$4
+            local cmrId=$5
             local url=$6
 
             if [ -z "$api_key" ]; then
@@ -274,7 +275,7 @@ jobs:
               url=$DEFAULT_SERVICENOW_URL
             fi
 
-            curl --request POST --silent --url "${url}" --header 'Accept: application/json' --header 'Authorization: ${access_token}' --header 'Content-Type: application/json' --header 'api_key: ${api_key}' --data '{"id": "${cmr_id}", "actualStartDate": ${actual_start_time}, "actualEndDate": ${actual_end_time}, "state": "Closed", "closeCode": "Successful", "notes": "The change request is closed as the change was released successfully"}' > response.txt
+            curl --request POST --silent --url "${url}" --header 'Accept: application/json' --header 'Authorization: ${access_token}' --header 'Content-Type: application/json' --header 'api_key: ${api_key}' --data '{"id": "${cmrId}", "actualStartDate": ${actualStart_time}, "actualEndDate": ${actualEnd_time}, "state": "Closed", "closeCode": "Successful", "notes": "The change request is closed as the change was released successfully"}' > response.txt
 
             if [[ -f response.txt && ! -s response.txt ]]; then
               echo "CURL call failed, returned response copied to response.txt was empty."
@@ -288,4 +289,4 @@ jobs:
             fi
           }
 
-          servicenow_close_cmr ${{ secrets.IPAAS_KEY_STAGE }} ${{ env.token }} ${{ env.actual_start_time }} ${{ env.actual_end_time }} ${{ env.cmr_id }}
+          servicenow_close_cmr ${{ secrets.IPAAS_KEY_STAGE }} $token $actual_start_time $actual_end_time $cmr_id
