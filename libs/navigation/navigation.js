@@ -59,6 +59,7 @@ export default async function loadBlock(configs, customLib) {
     env = 'prod',
     locale = '',
     theme,
+    allowedOrigins,
     stageDomainsMap = {},
   } = configs || {};
   const branch = new URLSearchParams(window.location.search).get('navbranch');
@@ -77,6 +78,7 @@ export default async function loadBlock(configs, customLib) {
 
   const paramConfigs = getParamsConfigs(configs, miloLibs);
   const clientConfig = {
+    allowedOrigins,
     clientEnv: env,
     origin: `https://main--federal--adobecom.aem.${env === 'prod' ? 'live' : 'page'}`,
     miloLibs: `${miloLibs}/libs`,
