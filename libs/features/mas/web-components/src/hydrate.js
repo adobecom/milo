@@ -38,7 +38,7 @@ function processMnemonics(fragment, merchCard, aemFragmentMapping) {
           size: aemFragmentMapping.mnemonics?.size ?? 'l',
       };
 
-      if (href) {
+      if (href !== '') {
           attributes.href = href;
       }
 
