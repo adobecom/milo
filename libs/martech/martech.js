@@ -179,7 +179,7 @@ const setupEntitlementCallback = () => {
 };
 
 function isProxied() {
-  return /^(www|milo|business|blog)(\.stage)?\.adobe\.com$/.test(window.location.hostname);
+  return /^(www|milo|business|blog|news)(\.stage)?\.adobe\.com$/.test(window.location.hostname);
 }
 
 let filesLoadedPromise = false;
