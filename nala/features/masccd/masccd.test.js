@@ -586,7 +586,7 @@ test.describe('CCD Merchcard feature test suite', () => {
 
     await test.step('step-2: Verify CCD Merch Card content', async () => {
       await expect(await CCD.getCard(data.id, 'slice')).toBeVisible();
-      let cardIcons = await CCD.getCardIcon(data.id, 'slice');
+      const cardIcons = await CCD.getCardIcon(data.id, 'slice');
       expect(await cardIcons.count()).toBe(2);
       expect(await cardIcons.nth(0)).toBeVisible();
       expect(await cardIcons.nth(0)).toHaveAttribute('src', /assets\/img/);
@@ -609,7 +609,7 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-3: Verify CCD Merch Card spec', async () => {
-      let cardIcons = await CCD.getCardIcon(data.id, 'slice');
+      const cardIcons = await CCD.getCardIcon(data.id, 'slice');
       expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice'), CCD.sliceCssProp.light)).toBeTruthy();
       expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice'), CCD.sliceCssProp.singleSize)).toBeTruthy();
       expect(await webUtil.verifyCSS(await cardIcons.nth(0), CCD.sliceCssProp.icon)).toBeTruthy();
@@ -627,7 +627,7 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-5: Verify CCD Merch Card spec', async () => {
-      let cardIcons = await CCD.getCardIcon(data.id, 'slice');
+      const cardIcons = await CCD.getCardIcon(data.id, 'slice');
       await expect(await CCD.getCard(data.id, 'slice')).toBeVisible();
       expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice'), CCD.sliceCssProp.dark)).toBeTruthy();
       expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice'), CCD.sliceCssProp.singleSize)).toBeTruthy();
