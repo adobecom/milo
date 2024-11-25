@@ -31,7 +31,6 @@ function processMnemonics(fragment, merchCard, aemFragmentMapping) {
           }
       }
 
-      // Build attributes object
       const attributes = {
           slot: 'icons',
           src,
@@ -39,7 +38,6 @@ function processMnemonics(fragment, merchCard, aemFragmentMapping) {
           size: aemFragmentMapping.mnemonics?.size ?? 'l',
       };
 
-      // Conditionally add 'href' if it has a value
       if (href) {
           attributes.href = href;
       }
