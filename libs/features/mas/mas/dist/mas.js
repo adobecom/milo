@@ -1347,7 +1347,7 @@ sp-theme[color='dark'] merch-card[variant="ccd-suggested"] [slot="cta"] sp-butto
               </div>
               <slot name="body-xs"></slot>
               <div class="footer">
-                <p class="prices>
+                <p class="prices">
                   <slot name="price"></slot>
                 </p>
                 <slot name="cta"></slot>

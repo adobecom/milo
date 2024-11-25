@@ -37,7 +37,7 @@ export class CCDSuggested extends VariantLayout {
               </div>
               <slot name="body-xs"></slot>
               <div class="footer">
-                <p class="prices>
+                <p class="prices">
                   <slot name="price"></slot>
                 </p>
                 <slot name="cta"></slot>
