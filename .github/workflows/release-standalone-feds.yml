@@ -51,6 +51,8 @@ jobs:
               --generate-notes
 
     - name: Upload Files to Release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: gh release upload \ 
         "feds-standalone-v${{ inputs.version }}" \ 
         "adobecom-standalone-feds-${{ inputs.version }}.tgz"
