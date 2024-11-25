@@ -1333,7 +1333,7 @@ sp-theme[color='dark'] merch-card[variant="ccd-suggested"] [slot="cta"] sp-butto
   color: var(--ccd-gray-200-light, #E6E6E6);
   border: 2px solid var(--ccd-gray-200-light, #E6E6E6);
 }
-`;var Vl={mnemonics:{size:"l"},subtitle:{tag:"h4",slot:"detail-s"},title:{tag:"h3",slot:"heading-xs"},prices:{tag:"p",slot:"price"},description:{tag:"div",slot:"body-xs"},ctas:{slot:"cta",size:"m"}},xt=class extends I{getGlobalCSS(){return ns}get aemFragmentMapping(){return Vl}renderLayout(){return x`
+`;var Vl={mnemonics:{size:"l"},subtitle:{tag:"h4",slot:"detail-s"},title:{tag:"h3",slot:"heading-xs"},prices:{tag:"div",slot:"price"},description:{tag:"div",slot:"body-xs"},ctas:{slot:"cta",size:"m"}},xt=class extends I{getGlobalCSS(){return ns}get aemFragmentMapping(){return Vl}renderLayout(){return x`
           <div style="${this.stripStyle}" class="body">
               <div class="header">
                 <div class="top-section">

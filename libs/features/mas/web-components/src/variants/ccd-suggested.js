@@ -6,7 +6,7 @@ const AEM_FRAGMENT_MAPPING = {
   mnemonics: { size: 'l' },
   subtitle: { tag: 'h4', slot: 'detail-s' },
   title: { tag: 'h3', slot: 'heading-xs' },
-  prices: { tag: 'p', slot: 'price' },
+  prices: { tag: 'div', slot: 'price' },
   description: { tag: 'div', slot: 'body-xs' },
   ctas: { slot: 'cta', size: 'm' },
 };
