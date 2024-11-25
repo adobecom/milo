@@ -5,7 +5,7 @@ on:
     types:
       - closed
     branches:
-      - servicenow-cmr-test-2
+      - servicenow-cmr-test
 
 jobs:
   create-cmr:
@@ -179,7 +179,7 @@ jobs:
             fi
           }
 
-          servicenow_create_cmr ${{ secrets.IPAAS_KEY_STAGE }} ${{ env.token }} ${{ env.start_time }} ${{ env.end_time }} "${{ env.release_title }}" "${{ env.release_summary }}" "https://ipaasapi-stage.adobe-services.com/change_management/changes"
+          servicenow_create_cmr ${{ secrets.IPAAS_KEY_STAGE }} ${{ env.token }} "${{ env.release_title }}" "${{ env.release_summary }}" ${{ env.start_time }} ${{ env.end_time }}
 
       - name: Retrieve CMR ID in ServiceNow
         run: |
