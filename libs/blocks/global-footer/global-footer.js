@@ -287,7 +287,8 @@ class Footer {
       regionSelector.href = localizeLink(regionSelector.href);
       decorateAutoBlock(regionSelector); // add fragment-specific class(es)
       this.elements.regionPicker.append(regionSelector); // add fragment after regionPickerElem
-      await loadBlock(regionSelector); // load fragment and replace original link
+      const { default: initFragment } = await import('../fragment/fragment.js');
+      await initFragment(regionSelector); // load fragment and replace original link
       // Update aria-expanded on click
       regionPickerElem.addEventListener('click', (e) => {
         e.preventDefault();

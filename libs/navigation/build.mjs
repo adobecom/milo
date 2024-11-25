@@ -31,7 +31,6 @@ const StyleLoader = {
         .appendChild(document.createTextNode(${JSON.stringify(css)}))`;
     onLoad({ filter: /\.css$/ }, async (args) => {
       const { path } = args;
-      console.log(split(path.split('/'), 'navigation'));
       const [before, after] = split(path.split('/'), 'navigation');
       const newPath = before
         .concat(['navigation', 'dist'])
