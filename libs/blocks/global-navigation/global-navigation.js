@@ -379,7 +379,12 @@ class Gnav {
     if (this.elements.localNav || !this.newMobileNav || isDesktop.matches) {
       localNavItems[0].querySelector('a').textContent = title.trim();
     } else {
-      const localNav = document.querySelector('.feds-localnav');
+      let localNav = document.querySelector('.feds-localnav');
+      if (!localNav) {
+        lanaLog({ message: `GNAV: Localnav does not include 'localnav' in its name.`, tags: 'errorType=info,module=gnav' });
+        localNav = toFragment`<div class="feds-localnav"/>`;
+        this.block.after(localNav);
+      }
       localNav.append(toFragment`<button class="feds-navLink--hoverCaret feds-localnav-title"></button>`, toFragment` <div class="feds-localnav-items"></div>`);
 
       const itemWrapper = localNav.querySelector('.feds-localnav-items');
