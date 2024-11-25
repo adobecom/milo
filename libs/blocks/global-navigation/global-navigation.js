@@ -381,7 +381,7 @@ class Gnav {
     } else {
       let localNav = document.querySelector('.feds-localnav');
       if (!localNav) {
-        lanaLog({ message: `GNAV: Localnav does not include 'localnav' in its name.`, tags: 'errorType=info,module=gnav' });
+        lanaLog({ message: 'GNAV: Localnav does not include \'localnav\' in its name.', tags: 'errorType=info,module=gnav' });
         localNav = toFragment`<div class="feds-localnav"/>`;
         this.block.after(localNav);
       }
