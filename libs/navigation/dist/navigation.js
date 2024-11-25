@@ -1,6 +1,6 @@
 import {
   loadStyle
-} from "./chunk-ZEVYWJU7.js";
+} from "./chunk-DIP3NAMX.js";
 import "./chunk-NE6SFPCS.js";
 
 // navigation.js
@@ -67,17 +67,24 @@ async function loadBlock(configs, customLib) {
   }
   const branch = new URLSearchParams(window.location.search).get("navbranch");
   const miloLibs = branch ? `https://${branch}--milo--adobecom.aem.page` : customLib || envMap[env];
-  if (theme === "dark") {
-    loadStyle(`${miloLibs}/libs/navigation/dist/base.css`, () => loadStyle(`${miloLibs}/libs/navigation/dist/dark-nav.css`));
-  } else {
-    loadStyle(`${miloLibs}/libs/navigation/dist/base.css`);
+  try {
+    import("./base-BZB6QFX6.js");
+    if (theme === "dark") {
+      import("./dark-nav-MIY36TFO.js");
+    }
+    import("./navigation-ISAZ5Y5C.js");
+  } catch (e) {
+    if (theme === "dark") {
+      loadStyle(`${miloLibs}/libs/navigation/dist/base.css`, () => loadStyle(`${miloLibs}/libs/navigation/dist/dark-nav.css`));
+    } else {
+      loadStyle(`${miloLibs}/libs/navigation/dist/navigation.css`);
+    }
   }
   const [{ default: bootstrapBlock }, { default: locales }, { setConfig }] = await Promise.all([
-    import("./bootstrapper-OPTZNGC6.js"),
+    import("./bootstrapper-NLAKHTYJ.js"),
     import("./locales-PE6ERXTI.js"),
-    import("./utils-IERWOBZX.js")
+    import("./utils-3EGP4VF4.js")
   ]);
-  loadStyle(`${miloLibs}/libs/navigation/dist/navigation.css`);
   const paramConfigs = getParamsConfigs(configs);
   const clientConfig = {
     clientEnv: env,
@@ -97,7 +104,7 @@ async function loadBlock(configs, customLib) {
     try {
       if (configBlock) {
         if (block.key === "header") {
-          const { default: init } = await import("./global-navigation-UWTEC37Q.js");
+          const { default: init } = await import("./global-navigation-ADQGWSOX.js");
           await bootstrapBlock(init, {
             ...block,
             unavComponents: configBlock.unav?.unavComponents,
@@ -107,8 +114,8 @@ async function loadBlock(configs, customLib) {
             jarvis: configBlock.jarvis
           });
         } else if (block.key === "footer") {
-          loadStyle(`${miloLibs}/libs/navigation/dist/footer.css`);
-          const { default: init } = await import("./global-footer-RKXQBHDV.js");
+          import("./footer-VCRTDGTZ.js");
+          const { default: init } = await import("./global-footer-SQBVH7OI.js");
           await bootstrapBlock(init, { ...block });
         }
         configBlock.onReady?.();

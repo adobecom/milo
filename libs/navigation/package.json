@@ -1,8 +1,9 @@
 {
-  "name": "navigation",
-  "version": "1.0.0",
+  "name": "@adobecom/standalone-feds",
+  "version": "0.0.1",
   "description": "",
   "main": "dist/navigation.js",
+  "type": "module",
   "scripts": {
     "build": "node ./build.mjs"
   },
