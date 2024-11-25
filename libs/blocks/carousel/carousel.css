@@ -373,33 +373,48 @@ html[dir="rtl"] .carousel-slides .section.carousel-slide {
   width: unset;
 }
 
-.carousel.rounded-corners .carousel-slide,
-.carousel.rounded-corners .carousel-slide > div :is(p):has(> picture) img {
-  border-radius: var(--m-rounded-corners);
-}
-
-.carousel.l-rounded-corners .carousel-slide,
-.carousel.l-rounded-corners .carousel-slide > div :is(p):has(> picture) img {
-  border-radius: var(--l-rounded-corners);
+.carousel.video-fill .carousel-slide > div p > video,
+.carousel .carousel-slide.video-fill > div p > video {
+  width: 100%;
+  height: auto;
 }
 
 .carousel.s-rounded-corners .carousel-slide,
-.carousel.s-rounded-corners .carousel-slide > div :is(p):has(> picture) img {
+.carousel.s-rounded-corners .carousel-slide > div :is(p):has(> picture) img,
+.carousel.s-rounded-corners .carousel-slide > div :is(p):has(> video) video,
+.carousel.s-rounded-corners .carousel-slide > div :is(p):has(.milo-video) .milo-video {
   border-radius: var(--s-rounded-corners);
 }
 
+.carousel.l-rounded-corners .carousel-slide,
+.carousel.l-rounded-corners .carousel-slide > div :is(p):has(> picture) img,
+.carousel.l-rounded-corners .carousel-slide > div :is(p):has(> video) video,
+.carousel.l-rounded-corners .carousel-slide > div :is(p):has(.milo-video) .milo-video {
+  border-radius: var(--l-rounded-corners);
+}
+
 .carousel.full-rounded-corners .carousel-slide,
-.carousel.full-rounded-corners .carousel-slide > div :is(p):has(> picture) img {
+.carousel.full-rounded-corners .carousel-slide > div :is(p):has(> picture) img,
+.carousel.full-rounded-corners .carousel-slide > div :is(p):has(> video) video,
+.carousel.full-rounded-corners .carousel-slide > div :is(p):has(.milo-video) .milo-video {
   border-radius: var(--full-rounded-corners);
 }
 
-.carousel[class*='rounded-corners'] .carousel-slide {
-  overflow: hidden;
+.carousel.rounded-corners .carousel-slide,
+.carousel.m-rounded-corners .carousel-slide,
+.carousel.rounded-corners .carousel-slide > div :is(p):has(> picture) img,
+.carousel.m-rounded-corners .carousel-slide > div :is(p):has(> picture) img,
+.carousel.rounded-corners .carousel-slide > div :is(p):has(> video) video,
+.carousel.m-rounded-corners .carousel-slide > div :is(p):has(> video) video,
+.carousel.rounded-corners .carousel-slide > div :is(p):has(.milo-video) .milo-video,
+.carousel.m-rounded-corners .carousel-slide > div :is(p):has(.milo-video) .milo-video {
+  border-radius: var(--m-rounded-corners);
 }
 
-.carousel .carousel-slide > div p > video {
-  width: 100%;
-  height: auto;
+.carousel[class*='rounded-corners'] .carousel-slide,
+.carousel[class*='rounded-corners'] .carousel-slide > div :is(p):has(> video) video,
+.carousel[class*='rounded-corners'] .carousel-slide > div :is(p):has(.milo-video) .milo-video {
+  overflow: hidden;
 }
 
 .carousel[class*='rounded-corners'] .carousel-slide > div :is(p):has(> video, > picture, > .milo-video, > .modal-img-link) {
