@@ -5,7 +5,7 @@ on:
     types:
       - closed
     branches:
-      - servicenow-cmr-test
+      - servicenow-cmr-test-2
 
 jobs:
   create-cmr:
