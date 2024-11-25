@@ -16,7 +16,9 @@ export function foundDisableValues() {
 
 function dynamicNavGroupMatches(groupMetaData) {
   const storedGroup = window.sessionStorage.getItem('dynamicNavGroup');
-  if (groupMetaData && storedGroup) return storedGroup === groupMetaData;
+  if (groupMetaData && storedGroup) {
+    return storedGroup.toLowerCase() === groupMetaData.toLowerCase();
+  }
   return false;
 }
 

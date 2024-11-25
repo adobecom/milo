@@ -81,7 +81,7 @@ const createStatusWidget = (dynamicNavKey) => {
   const dynamicNavDisableValues = getMetadata('dynamic-nav-disable');
   const foundValues = foundDisableValues();
   const groupMetaSetting = getMetadata('dynamic-nav-group') || 'Group not set';
-  const groupsMatch = groupMetaSetting === window.sessionStorage.getItem('dynamicNavGroup');
+  const groupsMatch = groupMetaSetting.toLowerCase() === window.sessionStorage.getItem('dynamicNavGroup').toLowerCase();
   const groupsMatchMessage = groupsMatch ? 'Yes' : 'No';
   const isDisabled = foundValues.length >= 1 || (!groupsMatch && groupMetaSetting !== 'Group not set');
   const status = getStatus(dynamicNavSetting, isDisabled, storedSource);
