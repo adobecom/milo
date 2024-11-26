@@ -35,6 +35,7 @@ test.describe('CCD Merchcard feature test suite', () => {
 
     await test.step('step-2: Verify CCD Merch Card content', async () => {
       await expect(await CCD.getCard(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCard(data.id, 'suggested')).toHaveAttribute('daa-lh', /.*/);
       await expect(await CCD.getCardIcon(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCardIcon(data.id, 'suggested')).toHaveAttribute('src', /content\/dam/);
       await expect(await CCD.getCardTitle(data.id, 'suggested')).toBeVisible();
@@ -48,8 +49,9 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText(data.price);
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toHaveAttribute('variant', 'primary');
-      await expect(await CCD.getCardCTALink(data.id, 'suggested')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toContainText(data.cta);
+      await expect(await CCD.getCardCTALink(data.id, 'suggested')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
+      await expect(await CCD.getCardCTALink(data.id, 'suggested')).toHaveAttribute('data-analytics-id', /.*/);
     });
 
     await test.step('step-3: Verify CCD Merch Card spec', async () => {
@@ -95,6 +97,7 @@ test.describe('CCD Merchcard feature test suite', () => {
 
     await test.step('step-2: Verify CCD Merch Card content', async () => {
       await expect(await CCD.getCard(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCard(data.id, 'suggested')).toHaveAttribute('daa-lh', /.*/);
       await expect(await CCD.getCardIcon(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCardIcon(data.id, 'suggested')).toHaveAttribute('src', /content\/dam/);
       await expect(await CCD.getCardTitle(data.id, 'suggested')).toBeVisible();
@@ -105,13 +108,15 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardDescription(data.id, 'suggested')).toContainText(data.description);
       await expect(await CCD.getCardLegalLink(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCardLegalLink(data.id, 'suggested')).toContainText(data.linkText);
+      await expect(await CCD.getCardLegalLink(data.id, 'suggested')).toHaveAttribute('data-analytics-id', /.*/);
       await expect(await CCD.getCardPrice(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText(data.price);
       await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText(data.strikethroughPrice);
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toHaveAttribute('variant', 'primary');
-      await expect(await CCD.getCardCTALink(data.id, 'suggested')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toContainText(data.cta);
+      await expect(await CCD.getCardCTALink(data.id, 'suggested')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
+      await expect(await CCD.getCardCTALink(data.id, 'suggested')).toHaveAttribute('data-analytics-id', /.*/);
     });
 
     await test.step('step-3: Verify CCD Merch Card spec', async () => {
@@ -161,6 +166,7 @@ test.describe('CCD Merchcard feature test suite', () => {
 
     await test.step('step-2: Verify CCD Merch Card content', async () => {
       await expect(await CCD.getCard(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCard(data.id, 'suggested')).toHaveAttribute('daa-lh', /.*/);
       await expect(await CCD.getCardIcon(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCardIcon(data.id, 'suggested')).toHaveAttribute('src', /content\/dam/);
       await expect(await CCD.getCardTitle(data.id, 'suggested')).toBeVisible();
@@ -174,8 +180,9 @@ test.describe('CCD Merchcard feature test suite', () => {
       expect(await (await CCD.getCardPrice(data.id, 'suggested')).locator('.price-unit-type').innerText()).not.toBe('');
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toHaveAttribute('variant', 'primary');
-      await expect(await CCD.getCardCTALink(data.id, 'suggested')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toContainText(data.cta);
+      await expect(await CCD.getCardCTALink(data.id, 'suggested')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
+      await expect(await CCD.getCardCTALink(data.id, 'suggested')).toHaveAttribute('data-analytics-id', /.*/);
     });
 
     await test.step('step-3: Verify CCD Merch Card spec', async () => {
@@ -220,6 +227,7 @@ test.describe('CCD Merchcard feature test suite', () => {
 
     await test.step('step-2: Verify CCD Merch Card content/specs', async () => {
       await expect(await CCD.getCard(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCard(data.id, 'suggested')).toHaveAttribute('daa-lh', /.*/);
       await expect(await CCD.getCardIcon(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCardIcon(data.id, 'suggested')).toHaveAttribute('src', /assets\/img/);
       await expect(await CCD.getCardTitle(data.id, 'suggested')).toBeVisible();
@@ -233,8 +241,9 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText(data.price);
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toHaveAttribute('variant', 'primary');
-      await expect(await CCD.getCardCTALink(data.id, 'suggested')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toContainText(data.cta);
+      await expect(await CCD.getCardCTALink(data.id, 'suggested')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
+      await expect(await CCD.getCardCTALink(data.id, 'suggested')).toHaveAttribute('data-analytics-id', /.*/);
       await expect(await CCD.getCard(data.id, 'suggested')).toHaveAttribute('background-image', new RegExp(data.background));
     });
 
@@ -281,6 +290,7 @@ test.describe('CCD Merchcard feature test suite', () => {
 
     await test.step('step-2: Verify CCD Merch Card content/specs', async () => {
       await expect(await CCD.getCard(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCard(data.id, 'suggested')).toHaveAttribute('daa-lh', /.*/);
       await expect(await CCD.getCardIcon(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCardIcon(data.id, 'suggested')).toHaveAttribute('src', /assets\/img/);
       await expect(await CCD.getCardTitle(data.id, 'suggested')).toBeVisible();
@@ -291,13 +301,15 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardDescription(data.id, 'suggested')).toContainText(data.description);
       await expect(await CCD.getCardLegalLink(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCardLegalLink(data.id, 'suggested')).toContainText(data.linkText);
+      await expect(await CCD.getCardLegalLink(data.id, 'suggested')).toHaveAttribute('data-analytics-id', /.*/);
       await expect(await CCD.getCardPrice(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText(data.price);
       await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText('Starting at');
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toHaveAttribute('variant', 'primary');
-      await expect(await CCD.getCardCTALink(data.id, 'suggested')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toContainText(data.cta);
+      await expect(await CCD.getCardCTALink(data.id, 'suggested')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
+      await expect(await CCD.getCardCTALink(data.id, 'suggested')).toHaveAttribute('data-analytics-id', /.*/);
       await expect(await CCD.getCard(data.id, 'suggested')).toHaveAttribute('background-image', new RegExp(data.background));
     });
 
@@ -346,6 +358,7 @@ test.describe('CCD Merchcard feature test suite', () => {
 
     await test.step('step-2: Verify CCD Merch Card content/specs', async () => {
       await expect(await CCD.getCard(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCard(data.id, 'suggested')).toHaveAttribute('daa-lh', /.*/);
       await expect(await CCD.getCardIcon(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCardIcon(data.id, 'suggested')).toHaveAttribute('src', /assets\/img/);
       await expect(await CCD.getCardTitle(data.id, 'suggested')).toBeVisible();
@@ -359,8 +372,9 @@ test.describe('CCD Merchcard feature test suite', () => {
       expect(await (await CCD.getCardPrice(data.id, 'suggested')).locator('.price-unit-type').innerText()).not.toBe('');
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toHaveAttribute('variant', 'primary');
-      await expect(await CCD.getCardCTALink(data.id, 'suggested')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toContainText(data.cta);
+      await expect(await CCD.getCardCTALink(data.id, 'suggested')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
+      await expect(await CCD.getCardCTALink(data.id, 'suggested')).toHaveAttribute('data-analytics-id', /.*/);
       await expect(await CCD.getCard(data.id, 'suggested')).toHaveAttribute('background-image', new RegExp(data.background));
     });
 
@@ -405,6 +419,7 @@ test.describe('CCD Merchcard feature test suite', () => {
 
     await test.step('step-2: Verify CCD Merch Card content/specs', async () => {
       await expect(await CCD.getCard(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCard(data.id, 'suggested')).toHaveAttribute('daa-lh', /.*/);
       await expect(await CCD.getCardIcon(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCardIcon(data.id, 'suggested')).toHaveAttribute('src', /assets\/img/);
       await expect(await CCD.getCardTitle(data.id, 'suggested')).toBeVisible();
@@ -415,12 +430,14 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardDescription(data.id, 'suggested')).toContainText(data.description);
       await expect(await CCD.getCardLegalLink(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCardLegalLink(data.id, 'suggested')).toContainText(data.linkText);
+      await expect(await CCD.getCardLegalLink(data.id, 'suggested')).toHaveAttribute('data-analytics-id', /.*/);
       await expect(await CCD.getCardPrice(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText(data.price);
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toHaveAttribute('variant', 'primary');
-      await expect(await CCD.getCardCTALink(data.id, 'suggested')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toContainText(data.cta);
+      await expect(await CCD.getCardCTALink(data.id, 'suggested')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
+      await expect(await CCD.getCardCTALink(data.id, 'suggested')).toHaveAttribute('data-analytics-id', /.*/);
       await expect(await CCD.getCard(data.id, 'suggested')).toHaveAttribute('background-image', new RegExp(data.background));
     });
 
@@ -470,6 +487,7 @@ test.describe('CCD Merchcard feature test suite', () => {
 
     await test.step('step-2: Verify CCD Merch Card content/specs', async () => {
       await expect(await CCD.getCard(data.id, 'suggested')).toBeVisible();
+      await expect(await CCD.getCard(data.id, 'suggested')).toHaveAttribute('daa-lh', /.*/);
       await expect(await CCD.getCardIcon(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCardIcon(data.id, 'suggested')).toHaveAttribute('src', /assets\/img/);
       await expect(await CCD.getCardTitle(data.id, 'suggested')).toBeVisible();
@@ -483,8 +501,9 @@ test.describe('CCD Merchcard feature test suite', () => {
       expect(await (await CCD.getCardPrice(data.id, 'suggested')).locator('.price-unit-type').innerText()).not.toBe('');
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toHaveAttribute('variant', 'primary');
-      await expect(await CCD.getCardCTALink(data.id, 'suggested')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toContainText(data.cta);
+      await expect(await CCD.getCardCTALink(data.id, 'suggested')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
+      await expect(await CCD.getCardCTALink(data.id, 'suggested')).toHaveAttribute('data-analytics-id', /.*/);
       await expect(await CCD.getCard(data.id, 'suggested')).toHaveAttribute('background-image', new RegExp(data.background));
     });
 
@@ -531,6 +550,7 @@ test.describe('CCD Merchcard feature test suite', () => {
 
     await test.step('step-2: Verify CCD Merch Card content', async () => {
       await expect(await CCD.getCard(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCard(data.id, 'slice')).toHaveAttribute('daa-lh', /.*/);
       await expect(await CCD.getCardIcon(data.id, 'slice')).toBeVisible();
       await expect(await CCD.getCardIcon(data.id, 'slice')).toHaveAttribute('src', /assets\/img/);
       await expect(await CCD.getCardBadge(data.id, 'slice')).not.toBeVisible();
@@ -543,8 +563,9 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardPrice(data.id, 'slice')).not.toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'slice')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'slice')).toHaveAttribute('variant', 'accent');
-      await expect(await CCD.getCardCTALink(data.id, 'slice')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
       await expect(await CCD.getCardCTA(data.id, 'slice')).toContainText(data.cta);
+      await expect(await CCD.getCardCTALink(data.id, 'slice')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
+      await expect(await CCD.getCardCTALink(data.id, 'slice')).toHaveAttribute('data-analytics-id', /.*/);
     });
 
     await test.step('step-3: Verify CCD Merch Card spec', async () => {
@@ -586,6 +607,7 @@ test.describe('CCD Merchcard feature test suite', () => {
 
     await test.step('step-2: Verify CCD Merch Card content', async () => {
       await expect(await CCD.getCard(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCard(data.id, 'slice')).toHaveAttribute('daa-lh', /.*/);
       const cardIcons = await CCD.getCardIcon(data.id, 'slice');
       expect(await cardIcons.count()).toBe(2);
       expect(await cardIcons.nth(0)).toBeVisible();
@@ -604,8 +626,9 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardPrice(data.id, 'slice')).toContainText(data.price);
       await expect(await CCD.getCardCTA(data.id, 'slice')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'slice')).toHaveAttribute('variant', 'accent');
-      await expect(await CCD.getCardCTALink(data.id, 'slice')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
       await expect(await CCD.getCardCTA(data.id, 'slice')).toContainText(data.cta);
+      await expect(await CCD.getCardCTALink(data.id, 'slice')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
+      await expect(await CCD.getCardCTALink(data.id, 'slice')).toHaveAttribute('data-analytics-id', /.*/);
     });
 
     await test.step('step-3: Verify CCD Merch Card spec', async () => {
@@ -653,6 +676,7 @@ test.describe('CCD Merchcard feature test suite', () => {
 
     await test.step('step-2: Verify CCD Merch Card content', async () => {
       await expect(await CCD.getCard(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCard(data.id, 'slice')).toHaveAttribute('daa-lh', /.*/);
       await expect(await CCD.getCardIcon(data.id, 'slice')).toBeVisible();
       await expect(await CCD.getCardIcon(data.id, 'slice')).toHaveAttribute('src', /assets\/img/);
       await expect(await CCD.getCardBadge(data.id, 'slice')).not.toBeVisible();
@@ -662,12 +686,14 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardDescription(data.id, 'slice')).toContainText(data.description);
       await expect(await CCD.getCardLegalLink(data.id, 'slice')).toBeVisible();
       await expect(await CCD.getCardLegalLink(data.id, 'slice')).toContainText(data.linkText);
+      await expect(await CCD.getCardLegalLink(data.id, 'slice')).toHaveAttribute('data-analytics-id', /.*/);
       await expect(await CCD.getCardPrice(data.id, 'slice')).toBeVisible();
       await expect(await CCD.getCardPrice(data.id, 'slice')).toContainText(data.price);
       await expect(await CCD.getCardCTA(data.id, 'slice')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'slice')).toHaveAttribute('variant', 'accent');
-      await expect(await CCD.getCardCTALink(data.id, 'slice')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
       await expect(await CCD.getCardCTA(data.id, 'slice')).toContainText(data.cta);
+      await expect(await CCD.getCardCTALink(data.id, 'slice')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
+      await expect(await CCD.getCardCTALink(data.id, 'slice')).toHaveAttribute('data-analytics-id', /.*/);
     });
 
     await test.step('step-3: Verify CCD Merch Card spec', async () => {
@@ -713,6 +739,7 @@ test.describe('CCD Merchcard feature test suite', () => {
 
     await test.step('step-2: Verify CCD Merch Card content', async () => {
       await expect(await CCD.getCard(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCard(data.id, 'slice')).toHaveAttribute('daa-lh', /.*/);
       await expect(await CCD.getCardIcon(data.id, 'slice')).toBeVisible();
       await expect(await CCD.getCardIcon(data.id, 'slice')).toHaveAttribute('src', /assets\/img/);
       await expect(await CCD.getCardBadge(data.id, 'slice')).not.toBeVisible();
@@ -723,11 +750,13 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardDescription(data.id, 'slice')).toContainText(data.percentage);
       await expect(await CCD.getCardLegalLink(data.id, 'slice')).toBeVisible();
       await expect(await CCD.getCardLegalLink(data.id, 'slice')).toContainText(data.linkText);
+      await expect(await CCD.getCardLegalLink(data.id, 'slice')).toHaveAttribute('data-analytics-id', /.*/);
       await expect(await CCD.getCardPrice(data.id, 'slice')).not.toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'slice')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'slice')).toHaveAttribute('variant', 'accent');
-      await expect(await CCD.getCardCTALink(data.id, 'slice')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
       await expect(await CCD.getCardCTA(data.id, 'slice')).toContainText(data.cta);
+      await expect(await CCD.getCardCTALink(data.id, 'slice')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
+      await expect(await CCD.getCardCTALink(data.id, 'slice')).toHaveAttribute('data-analytics-id', /.*/);
     });
 
     await test.step('step-3: Verify CCD Merch Card spec', async () => {
@@ -771,6 +800,7 @@ test.describe('CCD Merchcard feature test suite', () => {
 
     await test.step('step-2: Verify CCD Merch Card content', async () => {
       await expect(await CCD.getCard(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCard(data.id, 'slice')).toHaveAttribute('daa-lh', /.*/);
       await expect(await CCD.getCardIcon(data.id, 'slice')).not.toBeVisible();
       await expect(await CCD.getCardBadge(data.id, 'slice')).not.toBeVisible();
       await expect(await CCD.getCardImage(data.id, 'slice')).toBeVisible();
@@ -779,11 +809,13 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardDescription(data.id, 'slice')).toContainText(data.description);
       await expect(await CCD.getCardLegalLink(data.id, 'slice')).toBeVisible();
       await expect(await CCD.getCardLegalLink(data.id, 'slice')).toContainText(data.linkText);
+      await expect(await CCD.getCardLegalLink(data.id, 'slice')).toHaveAttribute('data-analytics-id', /.*/);
       await expect(await CCD.getCardPrice(data.id, 'slice')).not.toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'slice')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'slice')).toHaveAttribute('variant', 'accent');
-      await expect(await CCD.getCardCTALink(data.id, 'slice')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
       await expect(await CCD.getCardCTA(data.id, 'slice')).toContainText(data.cta);
+      await expect(await CCD.getCardCTALink(data.id, 'slice')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
+      await expect(await CCD.getCardCTALink(data.id, 'slice')).toHaveAttribute('data-analytics-id', /.*/);
     });
 
     await test.step('step-3: Verify CCD Merch Card spec', async () => {
@@ -825,6 +857,7 @@ test.describe('CCD Merchcard feature test suite', () => {
 
     await test.step('step-2: Verify CCD Merch Card content', async () => {
       await expect(await CCD.getCard(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCard(data.id, 'slice')).toHaveAttribute('daa-lh', /.*/);
       await expect(await CCD.getCardIcon(data.id, 'slice')).toBeVisible();
       await expect(await CCD.getCardIcon(data.id, 'slice')).toHaveAttribute('src', /assets\/img/);
       await expect(await CCD.getCardBadge(data.id, 'slice')).toBeVisible();
@@ -838,8 +871,9 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardPrice(data.id, 'slice')).toContainText(data.price);
       await expect(await CCD.getCardCTA(data.id, 'slice')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'slice')).toHaveAttribute('variant', 'accent');
-      await expect(await CCD.getCardCTALink(data.id, 'slice')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
       await expect(await CCD.getCardCTA(data.id, 'slice')).toContainText(data.cta);
+      await expect(await CCD.getCardCTALink(data.id, 'slice')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
+      await expect(await CCD.getCardCTALink(data.id, 'slice')).toHaveAttribute('data-analytics-id', /.*/);
     });
 
     await test.step('step-3: Verify CCD Merch Card spec', async () => {
@@ -887,6 +921,7 @@ test.describe('CCD Merchcard feature test suite', () => {
 
     await test.step('step-2: Verify CCD Merch Card content', async () => {
       await expect(await CCD.getCard(data.id, 'slice-wide')).toBeVisible();
+      await expect(await CCD.getCard(data.id, 'slice-wide')).toHaveAttribute('daa-lh', /.*/);
       await expect(await CCD.getCardIcon(data.id, 'slice-wide')).toBeVisible();
       await expect(await CCD.getCardIcon(data.id, 'slice-wide')).toHaveAttribute('src', /assets\/img/);
       await expect(await CCD.getCardBadge(data.id, 'slice-wide')).not.toBeVisible();
@@ -897,10 +932,12 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardPrice(data.id, 'slice-wide')).not.toBeVisible();
       await expect(await CCD.getCardLegalLink(data.id, 'slice-wide')).toBeVisible();
       await expect(await CCD.getCardLegalLink(data.id, 'slice-wide')).toContainText(data.linkText);
+      await expect(await CCD.getCardLegalLink(data.id, 'slice-wide')).toHaveAttribute('data-analytics-id', /.*/);
       await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toHaveAttribute('variant', 'accent');
-      // await expect(await CCD.getCardCTALink(data.id, "slice-wide")).toHaveAttribute('href', new RegExp(`${data.offerid}`));
       await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toContainText(data.cta);
+      // await expect(await CCD.getCardCTALink(data.id, "slice-wide")).toHaveAttribute('href', new RegExp(`${data.offerid}`));
+      // await expect(await CCD.getCardCTALink(data.id, 'slice-wide')).toHaveAttribute('data-analytics-id', /.*/);
     });
 
     await test.step('step-3: Verify CCD Merch Card spec', async () => {
@@ -944,6 +981,7 @@ test.describe('CCD Merchcard feature test suite', () => {
 
     await test.step('step-2: Verify CCD Merch Card content', async () => {
       await expect(await CCD.getCard(data.id, 'slice-wide')).toBeVisible();
+      await expect(await CCD.getCard(data.id, 'slice-wide')).toHaveAttribute('daa-lh', /.*/);
       await expect(await CCD.getCardIcon(data.id, 'slice-wide')).toBeVisible();
       await expect(await CCD.getCardIcon(data.id, 'slice-wide')).toHaveAttribute('src', /assets\/img/);
       await expect(await CCD.getCardBadge(data.id, 'slice-wide')).toBeVisible();
@@ -954,11 +992,13 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardDescription(data.id, 'slice-wide')).toContainText(data.description);
       await expect(await CCD.getCardLegalLink(data.id, 'slice-wide')).toBeVisible();
       await expect(await CCD.getCardLegalLink(data.id, 'slice-wide')).toContainText(data.linkText);
+      await expect(await CCD.getCardLegalLink(data.id, 'slice-wide')).toHaveAttribute('data-analytics-id', /.*/);
       await expect(await CCD.getCardPrice(data.id, 'slice-wide')).not.toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toHaveAttribute('variant', 'accent');
-      await expect(await CCD.getCardCTALink(data.id, 'slice-wide')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
       await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toContainText(data.cta);
+      await expect(await CCD.getCardCTALink(data.id, 'slice-wide')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
+      await expect(await CCD.getCardCTALink(data.id, 'slice-wide')).toHaveAttribute('data-analytics-id', /.*/);
     });
 
     await test.step('step-3: Verify CCD Merch Card spec', async () => {
@@ -1004,6 +1044,7 @@ test.describe('CCD Merchcard feature test suite', () => {
 
     await test.step('step-2: Verify CCD Merch Card content', async () => {
       await expect(await CCD.getCard(data.id, 'slice-wide')).toBeVisible();
+      await expect(await CCD.getCard(data.id, 'slice-wide')).toHaveAttribute('daa-lh', /.*/);
       await expect(await CCD.getCardIcon(data.id, 'slice-wide')).toBeVisible();
       await expect(await CCD.getCardIcon(data.id, 'slice-wide')).toHaveAttribute('src', /assets\/img/);
       await expect(await CCD.getCardBadge(data.id, 'slice-wide')).not.toBeVisible();
@@ -1013,12 +1054,14 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardDescription(data.id, 'slice-wide')).toContainText(data.description);
       await expect(await CCD.getCardLegalLink(data.id, 'slice-wide')).toBeVisible();
       await expect(await CCD.getCardLegalLink(data.id, 'slice-wide')).toContainText(data.linkText);
+      await expect(await CCD.getCardLegalLink(data.id, 'slice-wide')).toHaveAttribute('data-analytics-id', /.*/);
       await expect(await CCD.getCardPrice(data.id, 'slice-wide')).toBeVisible();
       await expect(await CCD.getCardPrice(data.id, 'slice-wide')).toContainText(data.price);
       await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toHaveAttribute('variant', 'accent');
-      await expect(await CCD.getCardCTALink(data.id, 'slice-wide')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
       await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toContainText(data.cta);
+      await expect(await CCD.getCardCTALink(data.id, 'slice-wide')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
+      await expect(await CCD.getCardCTALink(data.id, 'slice-wide')).toHaveAttribute('data-analytics-id', /.*/);
     });
 
     await test.step('step-3: Verify CCD Merch Card spec', async () => {
@@ -1064,6 +1107,7 @@ test.describe('CCD Merchcard feature test suite', () => {
 
     await test.step('step-2: Verify CCD Merch Card content', async () => {
       await expect(await CCD.getCard(data.id, 'slice-wide')).toBeVisible();
+      await expect(await CCD.getCard(data.id, 'slice-wide')).toHaveAttribute('daa-lh', /.*/);
       await expect(await CCD.getCardIcon(data.id, 'slice-wide')).toBeVisible();
       await expect(await CCD.getCardIcon(data.id, 'slice-wide')).toHaveAttribute('src', /assets\/img/);
       await expect(await CCD.getCardBadge(data.id, 'slice-wide')).not.toBeVisible();
@@ -1073,14 +1117,16 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardDescription(data.id, 'slice-wide')).toContainText(data.description);
       await expect(await CCD.getCardLegalLink(data.id, 'slice-wide')).toBeVisible();
       await expect(await CCD.getCardLegalLink(data.id, 'slice-wide')).toContainText(data.linkText);
+      await expect(await CCD.getCardLegalLink(data.id, 'slice-wide')).toHaveAttribute('data-analytics-id', /.*/);
       await expect(await CCD.getCardPrice(data.id, 'slice-wide')).toBeVisible();
       await expect(await CCD.getCardPrice(data.id, 'slice-wide')).toContainText(data.price);
       await expect(await CCD.getCardPriceStrikethrough(data.id, 'slice-wide')).toBeVisible();
       await expect(await CCD.getCardPriceStrikethrough(data.id, 'slice-wide')).toContainText(data.strikethroughPrice);
       await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toHaveAttribute('variant', 'accent');
-      await expect(await CCD.getCardCTALink(data.id, 'slice-wide')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
       await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toContainText(data.cta);
+      await expect(await CCD.getCardCTALink(data.id, 'slice-wide')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
+      await expect(await CCD.getCardCTALink(data.id, 'slice-wide')).toHaveAttribute('data-analytics-id', /.*/);
     });
 
     await test.step('step-3: Verify CCD Merch Card spec', async () => {
@@ -1128,6 +1174,7 @@ test.describe('CCD Merchcard feature test suite', () => {
 
     await test.step('step-2: Verify CCD Merch Card content', async () => {
       await expect(await CCD.getCard(data.id, 'slice-wide')).toBeVisible();
+      await expect(await CCD.getCard(data.id, 'slice-wide')).toHaveAttribute('daa-lh', /.*/);
       await expect(await CCD.getCardIcon(data.id, 'slice-wide')).not.toBeVisible();
       await expect(await CCD.getCardBadge(data.id, 'slice-wide')).not.toBeVisible();
       await expect(await CCD.getCardImage(data.id, 'slice-wide')).toBeVisible();
@@ -1136,12 +1183,14 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardDescription(data.id, 'slice-wide')).toContainText(data.description);
       await expect(await CCD.getCardLegalLink(data.id, 'slice-wide')).toBeVisible();
       await expect(await CCD.getCardLegalLink(data.id, 'slice-wide')).toContainText(data.linkText);
+      await expect(await CCD.getCardLegalLink(data.id, 'slice-wide')).toHaveAttribute('data-analytics-id', /.*/);
       await expect(await CCD.getCardPrice(data.id, 'slice-wide')).toBeVisible();
       await expect(await CCD.getCardPrice(data.id, 'slice-wide')).toContainText(data.price);
       await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toHaveAttribute('variant', 'accent');
-      await expect(await CCD.getCardCTALink(data.id, 'slice-wide')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
       await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toContainText(data.cta);
+      await expect(await CCD.getCardCTALink(data.id, 'slice-wide')).toHaveAttribute('href', new RegExp(`${data.offerid}`));
+      await expect(await CCD.getCardCTALink(data.id, 'slice-wide')).toHaveAttribute('data-analytics-id', /.*/);
     });
 
     await test.step('step-3: Verify CCD Merch Card spec', async () => {
