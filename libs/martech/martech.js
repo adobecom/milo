@@ -130,10 +130,17 @@ export const getTargetPersonalization = async (targetInteractionPromise) => {
 
   if (enablePersonalizationV2() && targetInteractionPromise) {
     sendTargetResponseAnalytics(false, responseStart, timeout);
-    const targetInteractionData = await targetInteractionPromise
+    try{
+      const targetInteractionData = await targetInteractionPromise
+      targetManifests = handleAlloyResponse(targetInteractionData.result)
+      targetPropositions = targetInteractionData.result?.propositions || []
+    } catch (err){
+      console.log('Oops!! Interact Call didnt go through', err);
+    }
+
     return {
-      targetManifests: handleAlloyResponse(targetInteractionData.result),
-      targetPropositions: targetInteractionData.result?.propositions || []
+      targetManifests,
+      targetPropositions
     };
   }
 
