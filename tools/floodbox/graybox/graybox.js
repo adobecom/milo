@@ -2,6 +2,7 @@
 import DA_SDK from 'https://da.live/nx/utils/sdk.js';
 import { LitElement, html, nothing } from 'https://da.live/deps/lit/dist/index.js';
 import getStyle from 'https://da.live/nx/utils/styles.js';
+import getSvg from 'https://da.live/nx/public/utils/svg.js';
 import crawl from '../crawl-tree.js';
 import promoteFiles from '../promote.js';
 import previewOrPublishPaths from '../bulk-action.js';
@@ -9,9 +10,16 @@ import { SUCCESS_CODES } from '../constants.js';
 import getFilesToPromote from './promote-paths.js';
 import validatePaths from './utils.js';
 import GrayboxConfig from './graybox-config.js';
+import * as floodbox from '../floodbox.js';
+
+const ICONS = [
+  'https://da.live/nx/public/icons/Smock_Close_18_N.svg',
+  'https://da.live/nx/public/icons/Smock_ChevronDown_18_N.svg',
+];
 
 const buttons = await getStyle('https://da.live/nx/styles/buttons.css');
 const style = await getStyle(import.meta.url);
+const floodboxCss = await getStyle('/tools/floodbox/floodbox.css');
 
 export default class MiloGraybox extends LitElement {
   static properties = {
@@ -23,8 +31,9 @@ export default class MiloGraybox extends LitElement {
     super();
     this._canPromote = false;
     this._canPromotePaths = false;
+    this._tabUiStart = false;
     this._gbExpPath = '';
-    this._gbExpPromoted = false;
+    this._gbPromoted = false;
     this._startCrawlExp = false;
     this._startCrawlPaths = false;
     this._startPromote = false;
@@ -35,6 +44,7 @@ export default class MiloGraybox extends LitElement {
     this._promoteIgnorePaths = [];
     this._promotedFiles = [];
     this._promotedFilesCount = 0;
+    this._promoteIgnoreCount = 0;
     this._promoteErrorCount = 0;
     this._previewedFilesCount = 0;
     this._previewErrorCount = 0;
@@ -47,11 +57,19 @@ export default class MiloGraybox extends LitElement {
     this._selectedOption = 'promoteExp';
     this._promoteIgnore = false;
     this._grayboxConfig = {};
+
+    this.tabUiSteps = [
+      { id: 'crawl', title: 'Crawl' },
+      { id: 'promote', title: 'Promote' },
+      { id: 'preview', title: 'Preview' },
+      { id: 'done', title: 'Done' },
+    ];
   }
 
   connectedCallback() {
     super.connectedCallback();
-    this.shadowRoot.adoptedStyleSheets = [buttons, style];
+    this.shadowRoot.adoptedStyleSheets = [buttons, style, floodboxCss];
+    getSvg({ parent: this.shadowRoot, paths: ICONS });
   }
 
   firstUpdated() {
@@ -138,27 +156,8 @@ export default class MiloGraybox extends LitElement {
       },
     });
     this.requestUpdate();
-
-    // Publish files if checked
-    const publish = this.shadowRoot.querySelector('input[name="publish"]');
-    if (publish?.checked) {
-      await previewOrPublishPaths({
-        org,
-        repo: repoToPrevPub,
-        paths,
-        action: 'publish',
-        callback: (status) => {
-          // eslint-disable-next-line no-console
-          console.log(`${status.statusCode} :: ${status.aemUrl}`);
-          // eslint-disable-next-line chai-friendly/no-unused-expressions
-          SUCCESS_CODES.includes(status.statusCode) ? this._publishedFilesCount += 1
-            : this._publishErrorCount += 1;
-          this.requestUpdate();
-        },
-      });
-    }
     this._previewPublishDuration = (Date.now() - startTime) / 1000;
-    this._gbExpPromoted = true;
+    this._gbPromoted = true;
     this.requestUpdate();
   }
 
@@ -189,20 +188,27 @@ export default class MiloGraybox extends LitElement {
     if (!this._canPromote) {
       return;
     }
-    this.readPromoteIgnorePaths();
+    this._tabUiStart = true;
+    this.requestUpdate();
+    await this.readPromoteIgnorePaths();
 
     // #1 - Start crawling
     const { org, repo, exp } = this.getOrgRepoExp();
     this._startCrawlExp = true;
+    this.updateTabUi('crawl');
     await this.startCrawl(this._gbExpPath, exp);
 
     // #2 - Start promoting
     this._startPromote = true;
+    this.updateTabUi('promote');
     await this.startPromote(org, repo, exp);
 
     // #3 - Preview promoted files
     this._startPreviewPublish = true;
+    this.updateTabUi('preview');
     await this.startPreviewPublish(org, repo);
+
+    this.updateTabUi('done');
   }
 
   async handlePromotePaths(event) {
@@ -217,7 +223,9 @@ export default class MiloGraybox extends LitElement {
       this.requestUpdate();
       return;
     }
-    this.readPromoteIgnorePaths();
+    this._tabUiStart = true;
+    this.requestUpdate();
+    await this.readPromoteIgnorePaths();
 
     // #2 - Get files to promote from paths
     this._startCrawlPaths = true;
@@ -231,15 +239,20 @@ export default class MiloGraybox extends LitElement {
     this.cleanUpIgnoreFilesFromPromote(this._crawledFiles);
     // eslint-disable-next-line no-console
     console.log('Files to Promote:', this._filesToPromote);
+    this.updateTabUi('crawl');
     this.requestUpdate();
 
     // #3 - Start promoting
     this._startPromotePaths = true;
+    this.updateTabUi('promote');
     await this.startPromote(org, repo, expName);
 
     // #4 - Preview promoted files
     this._startPreviewPublish = true;
+    this.updateTabUi('preview');
     await this.startPreviewPublish(org, repo);
+
+    this.updateTabUi('done');
   }
 
   cleanUpIgnoreFilesFromPromote(files) {
@@ -249,15 +262,7 @@ export default class MiloGraybox extends LitElement {
       }
       return file.path.endsWith(ignorePath);
     }));
-  }
-
-  handleClear(event) {
-    event.preventDefault();
-    const field = event.target.previousElementSibling;
-    field.value = '';
-    this._canPromote = false;
-    this._gbExpPath = '';
-    this.requestUpdate();
+    this._promoteIgnoreCount = files.length - this._filesToPromote.length;
   }
 
   async validateInput(event) {
@@ -306,7 +311,19 @@ export default class MiloGraybox extends LitElement {
 
   handleOptionChange(event) {
     this._selectedOption = event.target.value;
+    this._promoteIgnore = false;
     this.requestUpdate();
+  }
+
+  updateTabUi(target) {
+    const tabNav = this.shadowRoot.querySelectorAll('.tab-nav li');
+    const tabs = this.shadowRoot.querySelectorAll('.tab-step');
+    const activeNav = this.shadowRoot.querySelector(`.tab-nav li[data-target='${target}']`);
+    const activeTab = this.shadowRoot.querySelector(`.tab-step[data-id='${target}']`);
+    [...tabs, ...tabNav].forEach((el) => { el.classList.remove('active'); });
+    if (activeNav) activeNav.querySelector('button').removeAttribute('disabled');
+    if (activeNav) activeNav.classList.add('active');
+    if (activeTab) activeTab.classList.add('active');
   }
 
   renderError() {
@@ -320,72 +337,89 @@ export default class MiloGraybox extends LitElement {
 
   renderDone() {
     return html`
-      <div class="done info-box">
+      <div class="tab-step" data-id="done">
         <h3>Done</h3>
-        <p>Graybox experience files have been promoted and previewed/published.</p>
+        <p>Graybox experience files have been promoted and previewed.</p>
       </div>
     `;
   }
 
   renderPreviewPublishInfo() {
     return html`
-      <div class="preview-publish-info info-box">
-        <h3>Preview/Publish Graybox Experience</h3>
+      <div class="tab-step" data-id="preview">
+        <h3>Graybox Preview</h3>
         <p>Previewing and Publishing promoted files"... </p>
-        <p>Files previewed: ${this._previewedFilesCount} | Preview errors: ${this._previewErrorCount}</p>
-        <p>Files published: ${this._publishedFilesCount} | Publish errors: ${this._publishErrorCount}</p>
+        <div class="detail-cards preview-cards">
+          ${floodbox.renderBadge('Remaining', this._promotedFilesCount - this._previewedFilesCount - this._previewErrorCount)}
+          ${floodbox.renderBadge('Errors', this._previewErrorCount)}
+          ${floodbox.renderBadge('Success', this._previewedFilesCount)}
+          ${floodbox.renderBadge('Total', this._previewedFilesCount + this._previewErrorCount)}
+        </div>
         <p class="${this._previewPublishDuration === 0 ? 'hide' : ''}">Duration: ~${this._previewPublishDuration} seconds</p>
       </div>
-      ${this._gbExpPromoted ? this.renderDone() : nothing}
     `;
   }
 
   renderPromoteInfo() {
     return html`
-      <div class="promote-info info-box">
+      <div class="tab-step" data-id="promote">
+      ${this._selectedOption === 'promoteExp' ? html`
         <h3>Promote Graybox Experience</h3>
         <p>Promoting "${this._gbExpPath}"... </p>
-        <p>Files to promote: ${this._filesToPromote.length} | Files ignored: ${this._crawledFiles.length - this._filesToPromote.length}</p>
-        <p>Files promoted: ${this._promotedFilesCount} | Promote errors: ${this._promoteErrorCount}</p>
+      ` : nothing}
+      ${this._selectedOption === 'promotePaths' ? html`
+        <h3>Promote Graybox Paths</h3> 
+      ` : nothing}
+        <div class="detail-cards promote-cards">
+          ${floodbox.renderBadge('Remaining', this._filesToPromote.length - this._promotedFilesCount)}
+          ${floodbox.renderBadge('Ignored Paths', this._crawledFiles.length - this._filesToPromote.length)}
+          ${floodbox.renderBadge('Errors', this._promoteErrorCount)}
+          ${floodbox.renderBadge('Success', this._promotedFilesCount)}
+          ${floodbox.renderBadge('Total', this._promotedFilesCount + this._promoteErrorCount + this._promoteIgnoreCount)}
+        </div>
         <p class="${this._promoteDuration === 0 ? 'hide' : ''}">Duration: ~${this._promoteDuration} seconds</p>
       </div>
-      ${this._startPreviewPublish ? this.renderPreviewPublishInfo() : nothing}
     `;
   }
 
   renderCrawlInfo() {
     return html`
-      <div class="crawl-info info-box">
+      <div class="tab-step" data-id="crawl">
+      ${this._selectedOption === 'promoteExp' ? html`
         <h3>Crawl Graybox Experience</h3>
         <p>Crawling "${this._gbExpPath}" to promote... </p>
-        <p>Files crawled: ${this._crawledFiles.length}</p>
+        <div class="detail-cards crawl-cards">
+          ${floodbox.renderBadge('Files', this._crawledFiles.length)}
+        </div>
+      ` : nothing}
+      ${this._selectedOption === 'promotePaths' ? html`
+        <h3>Crawl Graybox Paths</h3>
+        <p>Finding all files to promote... </p>
+        <div class="detail-cards crawl-cards">
+          ${floodbox.renderBadge('Files', this._filesToPromote.length)}
+        </div>
+      ` : nothing}
         <p>Duration: ~${this._crawlDuration} seconds</p>
       </div>
-      ${this._startPromote ? this.renderPromoteInfo() : nothing}
       `;
   }
 
-  renderPromotePathsInfo() {
+  renderTabUi(config) {
     return html`
-      <div class="promote-paths-info info-box">
-        <h3>Promote Graybox Paths</h3>        
-        <p>Files to promote: ${this._filesToPromote.length} | Files ignored: ${this._crawledFiles.length - this._filesToPromote.length}</p>
-        <p>Files promoted: ${this._promotedFilesCount} | Promote errors: ${this._promoteErrorCount}</p>
-        <p class="${this._promoteDuration === 0 ? 'hide' : ''}">Duration: ~${this._promoteDuration} seconds</p>
+      <ul class="tab-nav">
+        ${config.map((step) => html`
+          <li data-target="${step.id}">
+            <button disabled class="accent" @click=${() => this.updateTabUi(step.id)}>${step.title}</button>
+          </li>
+        `)}
+      </ul>
+      <div class="tabs">
+        ${this._startCrawlExp || this._startCrawlPaths ? this.renderCrawlInfo() : nothing}
+        ${this._startPromote || this._startPromotePaths ? this.renderPromoteInfo() : nothing}
+        ${this._startPreviewPublish ? this.renderPreviewPublishInfo() : nothing}
+        ${this._gbPromoted ? this.renderDone() : nothing}
       </div>
-      ${this._startPreviewPublish ? this.renderPreviewPublishInfo() : nothing}      
-    `;
-  }
-
-  renderCrawlPathsInfo() {
-    return html`
-      <div class="crawl-paths-info info-box">
-        <h3>Crawl Graybox Paths</h3>
-        <p>Finding all files to promote... </p>
-        <p>Files found: ${this._filesToPromote.length}</p>
-      </div>
-      ${this._startPromotePaths ? this.renderPromotePathsInfo() : nothing}
-    `;
+  `;
   }
 
   render() {
@@ -393,47 +427,45 @@ export default class MiloGraybox extends LitElement {
       <h1>Graybox</h1>
       <h3>Promote Graybox experiences and paths to the source site.</h3>
       <form>
-        <div class="input-row promote-type">
-          <label for="actionSelect">Promote Type:</label>
-          <select id="actionSelect" class="action-select" @change=${this.handleOptionChange}>
-            <option value="promoteExp">Promote Graybox Experience</option>
-            <option value="promotePaths">Promote Graybox Paths</option>            
-          </select>
-        </div>
         ${this._selectedOption === 'promoteExp' ? html`
           <div class="input-row">
-            <input type="text" class="path-input" name="path" placeholder="Enter Experience Path" value="/sukamat/da-bacom-graybox/summit25" @input=${this.validateInput} />
-            <button class="primary" @click=${this.handleClear}>Clear</button>
-          </div>
-          <div class="input-row">
-            <input type="checkbox" id="promoteIgnore" name="promoteIgnore" @change=${this.togglePromoteIgnore}>
-            <label for="promoteIgnore">Paths to ignore from promote?</label>
-            <input type="checkbox" id="publish" name="publish" disabled>
-            <label for="publish">Publish files after promote?</label>
+            <input type="text" class="path-input" name="path" placeholder="Enter Experience Path" value="" @input=${this.validateInput} />
+            ${floodbox.renderClearButton()}
           </div>
           ${this._promoteIgnore === true ? html`
             <div class="input-row promote-ignore">
               <textarea class="path-list" name="additionalInfo" rows="3" 
                 placeholder="Enter paths to ignore from promote, separated by line-break. Eg:/<org>/<site>/<exp>/<path-to-file>"></textarea>
-              <button class="primary" @click=${this.handleClear}>Clear</button>
+              ${floodbox.renderClearButton()}
             </div>` : nothing}
-            <div class="button-row">
-              <button class="accent" .disabled=${!this._canPromote} @click=${this.handlePromoteExperience}>Promote</button>
-            </div>          
           ` : nothing}
         ${this._selectedOption === 'promotePaths' ? html`
           <div class="input-row">
             <textarea name="promotePaths" rows="3" placeholder="Enter graybox paths to promote, separated by line-break" @input=${this.validateInputPaths}></textarea>
-            <button class="primary" @click=${this.handleClear}>Clear</button>
-          </div>
-          <div class="button-row">
-            <button class="accent" .disabled=${!this._canPromotePaths} @click=${this.handlePromotePaths}>Promote</button>
+            ${floodbox.renderClearButton()}
           </div>
         ` : nothing}
+        <div class="button-row">
+          <select id="actionSelect" class="action-select" @change=${this.handleOptionChange}>
+            <option value="promoteExp">Promote Experience</option>
+            <option value="promotePaths">Promote Paths</option>
+          </select>
+          ${this._selectedOption === 'promoteExp' ? html`
+            <div class="button-toggle">
+              <input type="checkbox" id="promoteIgnore" name="promoteIgnore" @change=${this.togglePromoteIgnore}>
+              <label for="promoteIgnore">Ignore Paths?</label>
+            </div>
+            <button class="accent" .disabled=${!this._canPromote} @click=${this.handlePromoteExperience}>Promote</button>
+          ` : nothing}
+          ${this._selectedOption === 'promotePaths' ? html`
+            <button class="accent" .disabled=${!this._canPromotePaths} @click=${this.handlePromotePaths}>Promote</button>
+          ` : nothing}
+        </div>
       </form>
+      <div class="tab-ui">
+        ${this._tabUiStart ? this.renderTabUi(this.tabUiSteps) : nothing}
+      </div>
       ${this._invalidInput ? this.renderError() : nothing}
-      ${this._startCrawlExp ? this.renderCrawlInfo() : nothing}
-      ${this._startCrawlPaths ? this.renderCrawlPathsInfo() : nothing}
     `;
   }
 }
