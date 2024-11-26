@@ -54,6 +54,10 @@ dl.mmm {
   margin: 0;
 }
 
+.mmm dt .mmm-heading h5 {
+  margin: 0;
+}
+
 .mmm-icon {
   position: absolute;
   right: var(--spacing-xs);

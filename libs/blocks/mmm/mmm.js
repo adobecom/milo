@@ -818,7 +818,7 @@ function createItem(mmm, id, heading, num) {
   const triggerId = `${id}-trigger-${num}`;
   const panelId = `${id}-content-${num}`;
   const icon = createTag('span', { class: 'mmm-icon' });
-  const hTag = createTag('h3', false, heading);
+  const hTag = createTag('h5', false, heading);
   const button = createTag('button', {
     type: 'button',
     id: triggerId,
@@ -856,7 +856,7 @@ export default function init(el) {
   el.className = `mmm-container ${el.className}`;
   el.classList.remove('mmm');
   const maxWidthClass = Array.from(el.classList).find((style) => style.startsWith('max-width-'));
-  el.classList.add('con-block', maxWidthClass || 'max-width-10-desktop');
+  el.classList.add('con-block', maxWidthClass || 'max-width-12-desktop');
   mmm.classList.add('foreground');
   el.append(mmm);
 }
