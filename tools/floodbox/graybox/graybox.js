@@ -427,7 +427,7 @@ export default class MiloGraybox extends LitElement {
       <form>
         ${this._selectedOption === 'promoteExp' ? html`
           <div class="input-row">
-            <input type="text" class="path-input" name="path" placeholder="Enter Experience Path" value="/colloyd/da-bacom-graybox/graybox-test" @input=${this.validateInput} />
+            <input type="text" class="path-input" name="path" placeholder="Enter Experience Path" value="" @input=${this.validateInput} />
             ${floodbox.renderClearButton()}
           </div>
           ${this._promoteIgnore === true ? html`
@@ -439,7 +439,7 @@ export default class MiloGraybox extends LitElement {
           ` : nothing}
         ${this._selectedOption === 'promotePaths' ? html`
           <div class="input-row">
-            <textarea name="promotePaths" rows="3" placeholder="Enter graybox paths to promote, separated by line-break" @input=${this.validateInputPaths}>/colloyd/da-bacom-graybox/graybox-test/200-files/hello-world-007</textarea>
+            <textarea name="promotePaths" rows="3" placeholder="Enter graybox paths to promote, separated by line-break" @input=${this.validateInputPaths}></textarea>
             ${floodbox.renderClearButton()}
           </div>
         ` : nothing}
