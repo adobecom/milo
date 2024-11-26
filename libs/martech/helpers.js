@@ -1,101 +1,9 @@
-const TARGET_TIMEOUT_MS = 4000;
-const params = new URL(window.location.href).searchParams;
-const timeout = parseInt(params.get('target-timeout'), 10)
-  || parseInt(getMetadata('target-timeout'), 10)
-  || TARGET_TIMEOUT_MS;
-
-function getMetadata(name, doc = document) {
-  const attr = name && name.includes(':') ? 'property' : 'name';
-  const meta = doc.head.querySelector(`meta[${attr}="${name}"]`);
-  return meta && meta.content;
-}
-
-function getEnv(conf) {
-  const PAGE_URL = new URL(window.location.href);
-  const SLD = PAGE_URL.hostname.includes('.aem.') ? 'aem' : 'hlx';
-  const ENVS = {
-    stage: {
-      name: 'stage',
-      ims: 'stg1',
-      adobeIO: 'cc-collab-stage.adobe.io',
-      adminconsole: 'stage.adminconsole.adobe.com',
-      account: 'stage.account.adobe.com',
-      edgeConfigId: '8d2805dd-85bf-4748-82eb-f99fdad117a6',
-      pdfViewerClientId: '600a4521c23d4c7eb9c7b039bee534a0',
-    },
-    prod: {
-      name: 'prod',
-      ims: 'prod',
-      adobeIO: 'cc-collab.adobe.io',
-      adminconsole: 'adminconsole.adobe.com',
-      account: 'account.adobe.com',
-      edgeConfigId: '2cba807b-7430-41ae-9aac-db2b0da742d5',
-      pdfViewerClientId: '3c0a5ddf2cc04d3198d9e48efc390fa9',
-    },
-  };
-  ENVS.local = {
-    ...ENVS.stage,
-    name: 'local',
-  };
-
-  const { host } = window.location;
-  const query = PAGE_URL.searchParams.get('env');
-
-  if (query) return { ...ENVS[query], consumer: conf[query] };
-
-  const { clientEnv } = conf;
-  if (clientEnv) return { ...ENVS[clientEnv], consumer: conf[clientEnv] };
-
-  if (host.includes('localhost')) return { ...ENVS.local, consumer: conf.local };
-  /* c8 ignore start */
-  if (host.includes(`${SLD}.page`)
-    || host.includes(`${SLD}.live`)
-    || host.includes('stage.adobe')
-    || host.includes('corp.adobe')
-    || host.includes('graybox.adobe')) {
-    return { ...ENVS.stage, consumer: conf.stage };
-  }
-  return { ...ENVS.prod, consumer: conf.prod };
-  /* c8 ignore stop */
-}
 
 /**
- * Checks if the user is signed out based on the server timing and navigation performance.
+ * Generates a unique UUID-like string based on timestamp and random values.
+ * Follows a variation of the UUIDv4 pattern using time-based and random values.
  * 
- * @returns {boolean} True if the user is signed out, otherwise false.
- */
-function isSignedOut() {
-  let w = window, perf = w.performance, serverTiming = {};
-
-  if (perf && perf.getEntriesByType) {
-    serverTiming = Object.fromEntries(
-      perf.getEntriesByType("navigation")?.[0]?.serverTiming?.map?.(
-        ({ name, description }) => ([name, description])
-      ) ?? []
-    );
-  }
-
-  const isSignedOutOnStagingOrProd = serverTiming && serverTiming.sis === '0';
-
-  // Return true if it's a dev environment or signed out on staging/prod
-  return !Object.keys(serverTiming || {}).length || isSignedOutOnStagingOrProd;
-}
-
-/**
- * Enables personalization (V2) for the page.
- * 
- * @returns {boolean} True if personalization is enabled, otherwise false.
- */
-function enablePersonalizationV2() {
-  const enablePersV2 = document.head.querySelector(`meta[name="personalization-v2"]`);
-  return enablePersV2 && isSignedOut();
-}
-
-/**
- * Generates a unique UUID based on timestamp and random values.
- * Follows the UUIDv4 pattern.
- * 
- * @returns {string} A UUID string in the format 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.
+ * @returns {string} A UUID-like string in the format 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.
  */
 function generateUUID() {
   let timestamp = new Date().getTime(); // Timestamp
@@ -121,11 +29,11 @@ function generateUUID() {
 /**
  * Determines the Adobe Target property value based on the page's region.
  * 
+ * @param {string} env - The environment (e.g., 'prod' for production, 'dev' for development).
  * @returns {string} Adobe Target property value.
  */
-function getTargetPropertyBasedOnPageRegion() {
+function getTargetPropertyBasedOnPageRegion(env) {
   const { pathname } = window.location;
-  const env = getEnv({})?.name;
 
   if (env !== 'prod') return 'bc8dfa27-29cc-625c-22ea-f7ccebfc6231'; // Default for non-prod environments
 
@@ -168,11 +76,11 @@ function getDeviceInfo() {
 }
 
 /**
-   * Retrieves the value of a specific cookie by its key.
-   * 
-   * @param {string} key - The cookie key.
-   * @returns {string|null} The cookie value or null if the cookie doesn't exist.
-   */
+ * Retrieves the value of a specific cookie by its key.
+ * 
+ * @param {string} key - The cookie key.
+ * @returns {string|null} The cookie value, or null if the cookie doesn't exist.
+ */
 function getCookie(key) {
   const cookie = document.cookie.split(';')
     .map(x => x.trim().split('='))
@@ -185,7 +93,7 @@ function getCookie(key) {
  * 
  * @param {string} key - The cookie key.
  * @param {string} value - The cookie value.
- * @param {Object} [options={}] - Optional settings for cookie properties.
+ * @param {Object} [options={}] - Optional settings for cookie properties. Defaults to an expiration of 730 days.
  */
 function setCookie(key, value, options = {}) {
   // Default expiration (24 months)
@@ -201,7 +109,6 @@ function setCookie(key, value, options = {}) {
  * Retrieves the ECID (Experience Cloud ID) from the browser's cookies or generates a new FPID (First Party ID)
  * if the ECID is not found. Returns the ID in a structured object, depending on which ID is available.
  *
- * @function
  * @returns {Object} An object containing either the ECID or FPID.
  *   - If ECID is found, the object will be:
  *     { ECID: [{ id: string, authenticatedState: string, primary: boolean }] }
@@ -240,7 +147,7 @@ function getOrGenerateUserId() {
  * Retrieves the page name for analytics, modified for the current locale.
  * 
  * @param {Object} params - The parameters.
- * @param {string} params.locale - The locale object containing prefix info.
+ * @param {Object} params.locale - The locale object containing language/region info (e.g., { ietf: 'en-US', prefix: 'us' }).
  * @returns {string} The modified page name.
  */
 function getPageNameForAnalytics({ locale }) {
@@ -250,7 +157,7 @@ function getPageNameForAnalytics({ locale }) {
 }
 
 /**
- * Creates the updated context for the request payload.
+ * Creates the updated context for the request payload for analytics or personalization requests.
  * 
  * @param {number} screenWidth - Screen width.
  * @param {number} screenHeight - Screen height.
@@ -285,10 +192,10 @@ function getUpdatedContext({
 }
 
 /**
-   * Retrieves specific MarTech cookies by their keys.
-   * 
-   * @returns {Array} List of MarTech cookies with key and value.
-   */
+ * Retrieves specific MarTech cookies by their keys.
+ * 
+ * @returns {Array<Object>} List of MarTech cookies with each object containing 'key' and 'value' properties.
+ */
 const getMarctechCookies = () => {
   const KNDCTR_COOKIE_KEYS = [
     'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_identity',
@@ -304,13 +211,17 @@ const getMarctechCookies = () => {
  * Creates the request payload for Adobe Analytics and Target.
  * 
  * @param {Object} params - Parameters required to create the payload.
- * @returns {Object} The request payload.
+ * @param {Object} params.updatedContext - The updated context for the request.
+ * @param {string} params.pageName - The page name for the analytics request.
+ * @param {Object} params.locale - The locale object containing language/region info.
+ * @param {string} params.env - The environment (e.g., 'prod' for production).
+ * @returns {Object} The request payload for Adobe Analytics and Target.
  */
 function createRequestPayload({ updatedContext, pageName, locale, env }) {
   const prevPageName = getCookie('gpv');
 
   const REPORT_SUITES_ID = env === 'prod' ? ['adbadobenonacdcprod'] : ['adbadobenonacdcqa'];
-  let AT_PROPERTY_VAL = getTargetPropertyBasedOnPageRegion();
+  let AT_PROPERTY_VAL = getTargetPropertyBasedOnPageRegion(env);
 
   return {
     event: {
@@ -380,7 +291,7 @@ function createRequestPayload({ updatedContext, pageName, locale, env }) {
 }
 
 /**
- * Extracts the ECID (Experience Cloud ID) from the API response.
+ * Extracts the ECID (Experience Cloud ID) from the API response data.
  * 
  * @param {Object} data - The response data from the API.
  * @returns {string|null} The ECID value, or null if not found.
@@ -409,21 +320,18 @@ function updateAMCVCookie(ECID) {
  * Loads analytics and interaction data based on the user and page context.
  * Sends the data to Adobe Analytics and Adobe Target for personalization.
  * 
- * This function gathers data such as device details, user authentication state, and page information.
- * It sends the data to Adobe's marketing solutions to enable personalized content and tracking.
- * 
  * @param {Object} params - The parameters for the function.
- * @param {string} params.locale - The locale object containing language/region info.
+ * @param {Object} params.locale - The locale object containing language/region info.
+ * @param {string} params.env - The environment (e.g., 'prod' for production).
+ * @param {string} [params.timeoutMeta] - Optional timeout value for the request in milliseconds.
  * 
  * @returns {Promise<Object>} A promise that resolves to the personalization propositions fetched from Adobe Target.
  */
-async function loadAnalyticsAndInteractionData({ locale }) {
+export const loadAnalyticsAndInteractionData = async ({ locale, env, timeoutMeta }) => {
 
   if (getCookie('kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent') === 'general%3Dout') {
     return Promise.reject('Consent Cookie doesnt allow interact');
   }
-
-  const env = getEnv({})?.name;  // Get the current environment (prod, dev, etc.)
 
   // Define constants based on environment
   const DATA_STREAM_ID = env === 'prod' ? '5856abb0-95d8-4f9a-bb92-37f99d2bd492' : '87f9b644-5fd3-4015-81d5-f68ad81c3561';
@@ -452,6 +360,12 @@ async function loadAnalyticsAndInteractionData({ locale }) {
   });
 
   try {
+    const TARGET_TIMEOUT_MS = 4000;
+    const params = new URL(window.location.href).searchParams;
+    const timeout = parseInt(params.get('target-timeout'), 10)
+      || parseInt(timeoutMeta, 10)
+      || TARGET_TIMEOUT_MS;
+
     const targetResp = await Promise.race([
       fetch(`${TARGET_API_URL}?dataStreamId=${DATA_STREAM_ID}`, {
         method: 'POST',
@@ -490,5 +404,3 @@ async function loadAnalyticsAndInteractionData({ locale }) {
     return Promise.reject(err);
   }
 }
-
-export { loadAnalyticsAndInteractionData, isSignedOut, enablePersonalizationV2, timeout, getMetadata, getEnv }

@@ -1,11 +1,16 @@
 import {
-  getConfig, getMetadata, loadIms, loadLink, loadScript, getMepEnablement,
+  getConfig, loadIms, loadLink, loadScript, getMepEnablement, enablePersonalizationV2, getMetadata
 } from '../utils/utils.js';
-import { enablePersonalizationV2, timeout } from './helpers.js';
 
 const ALLOY_SEND_EVENT = 'alloy_sendEvent';
 const ALLOY_SEND_EVENT_ERROR = 'alloy_sendEvent_error';
 const ENTITLEMENT_TIMEOUT = 3000;
+
+const TARGET_TIMEOUT_MS = 4000;
+const params = new URL(window.location.href).searchParams;
+const timeout = parseInt(params.get('target-timeout'), 10)
+  || parseInt(getMetadata('target-timeout'), 10)
+  || TARGET_TIMEOUT_MS;
 
 const setDeep = (obj, path, value) => {
   const pathArr = path.split('.');
@@ -108,7 +113,7 @@ function sendTargetResponseAnalytics(failure, responseStart, timeout, message) {
   });
 }
 
-export const getTargetPersonalization = async (targetInteractionData) => {
+export const getTargetPersonalization = async (targetInteractionPromise) => {
   const responseStart = Date.now();
   window.addEventListener(ALLOY_SEND_EVENT, () => {
     const responseTime = calculateResponseTime(responseStart);
@@ -123,8 +128,9 @@ export const getTargetPersonalization = async (targetInteractionData) => {
   let targetManifests = [];
   let targetPropositions = [];
 
-  if (enablePersonalizationV2() && targetInteractionData) {
+  if (enablePersonalizationV2() && targetInteractionPromise) {
     sendTargetResponseAnalytics(false, responseStart, timeout);
+    const targetInteractionData = await targetInteractionPromise
     return {
       targetManifests: handleAlloyResponse(targetInteractionData.result),
       targetPropositions: targetInteractionData.result?.propositions || []
