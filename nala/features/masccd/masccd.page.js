@@ -284,7 +284,6 @@ export default class MasCCDPage {
     return card.locator(fieldLocator);
   }
 
-  // Specific methods now simplified and reusable
   async getCardTitle(id, cardType) {
     if (cardType !== 'suggested') {
       throw new Error(`Invalid card type: ${cardType}. This card tyoe does not have a title.`);
