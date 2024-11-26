@@ -5,6 +5,7 @@ import {
   loadIms,
   decorateLinks,
   loadScript,
+  getGnavSource,
 } from '../../utils/utils.js';
 import {
   closeAllDropdowns,
@@ -378,7 +379,12 @@ class Gnav {
     if (this.elements.localNav || !this.newMobileNav || isDesktop.matches) {
       localNavItems[0].querySelector('a').textContent = title.trim();
     } else {
-      const localNav = document.querySelector('.feds-localnav');
+      let localNav = document.querySelector('.feds-localnav');
+      if (!localNav) {
+        lanaLog({ message: 'GNAV: Localnav does not include \'localnav\' in its name.', tags: 'errorType=info,module=gnav' });
+        localNav = toFragment`<div class="feds-localnav"/>`;
+        this.block.after(localNav);
+      }
       localNav.append(toFragment`<button class="feds-navLink--hoverCaret feds-localnav-title"></button>`, toFragment` <div class="feds-localnav-items"></div>`);
 
       const itemWrapper = localNav.querySelector('.feds-localnav-items');
@@ -1174,19 +1180,9 @@ class Gnav {
   };
 }
 
-const getSource = async () => {
-  const { locale, dynamicNavKey } = getConfig();
-  let url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
-  if (dynamicNavKey) {
-    const { default: dynamicNav } = await import('../../features/dynamic-navigation/dynamic-navigation.js');
-    url = dynamicNav(url, dynamicNavKey);
-  }
-  return url;
-};
-
 export default async function init(block) {
   const { mep } = getConfig();
-  const sourceUrl = await getSource();
+  const sourceUrl = await getGnavSource();
   const newMobileNav = getMetadata('mobile-gnav-v2') !== 'false';
   const [url, hash = ''] = sourceUrl.split('#');
   if (hash === '_noActiveItem') {
