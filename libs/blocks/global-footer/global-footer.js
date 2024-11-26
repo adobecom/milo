@@ -219,7 +219,6 @@ class Footer {
         </svg>
         ${regionPickerTextElem}
       </a>`;
-    regionPickerElem.classList.add('link-block');
     regionPickerElem.dataset.modalPath = `${url.pathname}#_inline`;
     regionPickerElem.dataset.modalHash = url.hash;
     const regionPickerWrapperClass = 'feds-regionPicker-wrapper';
@@ -234,8 +233,7 @@ class Footer {
     // Update (11/24): a footer specific modal has been created to support non-milo consumers
     if (url.hash !== '') {
       // Hash -> region selector opens a modal
-      // decorateAutoBlock(regionPickerElem); // add modal-specific attributes
-      regionPickerElem.classList.add('modal', regionPickerClass);
+      decorateAutoBlock(regionPickerElem); // add modal-specific attributes
       // TODO remove logs after finding the root cause for the region picker 404s -> MWPW-143627
       regionPickerElem.href = url.hash;
       if (regionPickerElem.classList[0] !== 'modal') {
@@ -244,8 +242,9 @@ class Footer {
           tags: 'errorType=warn,module=global-footer',
         });
       }
+      loadStyle(`${base}/blocks/modal/modal.css`);
       const { default: initModal } = await import('../modal/modal.js');
-      await initModal(regionPickerElem);
+      const modal = await initModal(regionPickerElem);
 
       const loadRegionNav = async () => {
         const block = document.querySelector('.region-nav');
@@ -254,12 +253,12 @@ class Footer {
           loadStyle(`${base}/blocks/region-nav/region-nav.css`);
           const { default: initRegionNav } = await import('../region-nav/region-nav.js');
           initRegionNav(block);
-          decoratePlaceholders(block, getConfig());
+          // decoratePlaceholders(block, getConfig());
           block.classList.remove('hide');
         }
       };
 
-      await loadRegionNav(); // just in case the modal is already open
+      if (modal) await loadRegionNav(); // just in case the modal is already open
 
       if (regionPickerElem.classList[0] !== 'modal') {
         lanaLog({
