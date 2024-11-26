@@ -6,7 +6,6 @@ import {
   getConfig,
   localizeLink,
   loadStyle,
-  decoratePlaceholders,
 } from '../../utils/utils.js';
 
 import {
