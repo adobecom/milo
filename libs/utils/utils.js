@@ -917,7 +917,6 @@ export async function decorateFooterPromo(doc = document) {
 
 const getMepValue = (val) => {
   const valMap = { on: true, off: false, postLCP: 'postlcp' };
-  const valMap = { on: true, off: false, postLCP: 'postlcp' };
   const finalVal = val?.toLowerCase().trim();
   if (finalVal in valMap) return valMap[finalVal];
   return finalVal;
