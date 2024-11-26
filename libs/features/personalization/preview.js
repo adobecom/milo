@@ -126,6 +126,9 @@ function addPillEventListeners(div) {
   });
 }
 
+export function createPanelContents(url) {
+  return `<div>Hello World: ${url}</div>`;
+}
 function createPreviewPill(manifests) {
   const overlay = createTag('div', { class: 'mep-preview-overlay static-links', style: 'display: none;' });
   document.body.append(overlay);
