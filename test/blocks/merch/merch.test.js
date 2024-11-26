@@ -873,19 +873,4 @@ describe('Merch Block', () => {
       });
     });
   });
-
-  describe('AU resources', () => {
-    it('Load AU styles', async () => {
-      setConfig({
-        ...config,
-        pathname: '/au/test.html',
-        locales: { au: { ietf: 'en-AU' } },
-        prodDomains: PROD_DOMAINS,
-        placeholders: { download: 'Download' },
-        locale: { prefix: '/au' },
-      });
-      await mockIms('AU');
-      await initService(true);
-    });
-  });
 });

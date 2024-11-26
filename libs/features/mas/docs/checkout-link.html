@@ -6,6 +6,7 @@
     <title>M@S Web Components</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script type="module" src="../../../deps/custom-elements.js"></script>
+    <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
   
   <script>
     if (/localhost/.test(window.location.host)) {
@@ -16,22 +17,22 @@
       }
   </script>
   <!-- Include your custom element script as an ES6 module -->
-  <script src="../../../features/spectrum-web-components/dist/theme.js" type="module"></script>
-  <script src="../../../features/spectrum-web-components/dist/button.js" type="module"></script>
-  <script type="module" src="../../../deps/mas/mas.js"></script>
+  <script src="../../spectrum-web-components/dist/theme.js" type="module"></script>
+  <script src="../../spectrum-web-components/dist/action-button.js" type="module"></script>
+  <script src="../../spectrum-web-components/dist/button.js" type="module"></script>
+  <script type="module" src="../dist/mas.js"></script>
 
   <script type="module">
     const params = new URLSearchParams(document.location.search);
     const masCommerceService = document.createElement('mas-commerce-service');
-    ['locale','language','env'].forEach((attribute) => {
-      const value = params.get(attribute);
+    ['locale','language','env','cli'].forEach((attribute) => {
+      let value = params.get(attribute);
+      if (value === 'cli') attribute = 'checkout-client-id';
       if (value) masCommerceService.setAttribute(attribute, value);
     });
     document.head.appendChild(masCommerceService);
   </script>
-  <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
   <!-- Include Highlight.js stylesheet for syntax highlighting -->
-  <link rel="stylesheet" href="../../../styles/styles.css">
   <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
   <!-- Include any additional stylesheets -->
   <link rel="stylesheet" href="styles.css">
@@ -277,29 +278,47 @@ The term placeholder will be deprecated and it is recommended to refer as <stron
 <br>
 <p>For each event except <code>click</code>, the following css classes are toggled on the element: <code>placeholder-pending</code>, <code>placeholder-resolved</code>, <code>placeholder-failed</code>.</p>
 <h3 id="example-2" tabindex="-1">Example <a class="header-anchor" href="#example-2" href="#example-2" title="Permalink to this heading">#</a></h3>
-<pre><code class="hljs demo language-html"><span class="hljs-tag">&lt;<span class="hljs-name">a</span>
-    <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;co2&quot;</span>
-    <span class="hljs-attr">href</span>=<span class="hljs-string">&quot;#&quot;</span>
-    <span class="hljs-attr">is</span>=<span class="hljs-string">&quot;checkout-link&quot;</span>
-    <span class="hljs-attr">data-wcs-osi</span>=<span class="hljs-string">&quot;A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M&quot;</span>
-    &gt;</span>Buy now (click me)&lt;/a
-&gt;
+<pre><code class="hljs demo language-html"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;eventsDemo&quot;</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">a</span>
+        <span class="hljs-attr">is</span>=<span class="hljs-string">&quot;checkout-link&quot;</span>
+        <span class="hljs-attr">data-wcs-osi</span>=<span class="hljs-string">&quot;A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M&quot;</span>
+        &gt;</span>Buy now (click me)&lt;/a
+    &gt;
+    <span class="hljs-tag">&lt;<span class="hljs-name">br</span> /&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">a</span>
+        <span class="hljs-attr">is</span>=<span class="hljs-string">&quot;checkout-link&quot;</span>
+        <span class="hljs-attr">data-wcs-osi</span>=<span class="hljs-string">&quot;A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M&quot;</span>
+        &gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">span</span>&gt;</span>Span + <span class="hljs-tag">&lt;<span class="hljs-name">strong</span>&gt;</span>Strong + Buy now<span class="hljs-tag">&lt;/<span class="hljs-name">strong</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>&lt;/a
+    &gt;
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
 <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;btnRefresh&quot;</span>&gt;</span>Refresh<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
 <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;module&quot;</span>&gt;</span><span class="language-javascript">
     <span class="hljs-keyword">const</span> log = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;log&#x27;</span>);
     <span class="hljs-keyword">const</span> <span class="hljs-title function_">logger</span> = (<span class="hljs-params">...messages</span>) =&gt;
         (log.<span class="hljs-property">innerHTML</span> = <span class="hljs-string">`<span class="hljs-subst">${messages.join(<span class="hljs-string">&#x27; &#x27;</span>)}</span>&lt;br&gt;<span class="hljs-subst">${log.innerHTML}</span>`</span>);
-    <span class="hljs-keyword">const</span> a = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;co2&#x27;</span>);
-    a.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;mas:pending&#x27;</span>, <span class="hljs-function">() =&gt;</span> <span class="hljs-title function_">logger</span>(<span class="hljs-string">&#x27;checkout-link pending&#x27;</span>));
-    a.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;mas:resolved&#x27;</span>, <span class="hljs-function">() =&gt;</span> <span class="hljs-title function_">logger</span>(<span class="hljs-string">&#x27;checkout-link resolved&#x27;</span>));
-    a.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;mas:failed&#x27;</span>, <span class="hljs-function">() =&gt;</span> <span class="hljs-title function_">logger</span>(<span class="hljs-string">&#x27;checkout-link failed&#x27;</span>));
-    a.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;click&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">e</span>) =&gt;</span> {
+    <span class="hljs-keyword">const</span> eventsDemo = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;eventsDemo&#x27;</span>);
+    eventsDemo.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;mas:pending&#x27;</span>, <span class="hljs-function">() =&gt;</span>
+        <span class="hljs-title function_">logger</span>(<span class="hljs-string">&#x27;checkout-link pending&#x27;</span>),
+    );
+    eventsDemo.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;mas:resolved&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">e</span>) =&gt;</span>
+        <span class="hljs-title function_">logger</span>(<span class="hljs-string">&#x27;checkout-link resolved&#x27;</span>),
+    );
+    eventsDemo.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;mas:failed&#x27;</span>, <span class="hljs-function">() =&gt;</span>
+        <span class="hljs-title function_">logger</span>(<span class="hljs-string">&#x27;checkout-link failed&#x27;</span>),
+    );
+    eventsDemo.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;click&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">e</span>) =&gt;</span> {
         e.<span class="hljs-title function_">preventDefault</span>();
         e.<span class="hljs-title function_">stopPropagation</span>();
-        <span class="hljs-title function_">logger</span>(<span class="hljs-string">&#x27;checkout link is clicked: &#x27;</span>, e.<span class="hljs-property">target</span>.<span class="hljs-property">href</span>);
+        <span class="hljs-keyword">if</span> (e.<span class="hljs-property">target</span>.<span class="hljs-property">isCheckoutLink</span>) {
+            <span class="hljs-title function_">logger</span>(<span class="hljs-string">&#x27;checkout link is clicked: &#x27;</span>, e.<span class="hljs-property">target</span>.<span class="hljs-property">href</span>);
+        } <span class="hljs-keyword">else</span> {
+            <span class="hljs-title function_">logger</span>(<span class="hljs-string">&#x27;element clicked: &#x27;</span>, e.<span class="hljs-property">target</span>);
+        }
     });
     <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;btnRefresh&#x27;</span>).<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;click&#x27;</span>, <span class="hljs-function">() =&gt;</span> {
-        a.<span class="hljs-title function_">requestUpdate</span>(<span class="hljs-literal">true</span>);
+        [...eventsDemo.<span class="hljs-title function_">querySelectorAll</span>(<span class="hljs-string">&#x27;a&#x27;</span>)].<span class="hljs-title function_">forEach</span>(<span class="hljs-function">(<span class="hljs-params">a</span>) =&gt;</span>
+            a.<span class="hljs-title function_">requestUpdate</span>(<span class="hljs-literal">true</span>),
+        );
     });
 </span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
 </code></pre>
