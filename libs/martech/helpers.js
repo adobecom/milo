@@ -1,16 +1,16 @@
 const TARGET_TIMEOUT_MS = 4000;
 const params = new URL(window.location.href).searchParams;
-export const timeout = parseInt(params.get('target-timeout'), 10)
-    || parseInt(getMetadata('target-timeout'), 10)
-    || TARGET_TIMEOUT_MS;
+const timeout = parseInt(params.get('target-timeout'), 10)
+  || parseInt(getMetadata('target-timeout'), 10)
+  || TARGET_TIMEOUT_MS;
 
-export function getMetadata(name, doc = document) {
+function getMetadata(name, doc = document) {
   const attr = name && name.includes(':') ? 'property' : 'name';
   const meta = doc.head.querySelector(`meta[${attr}="${name}"]`);
   return meta && meta.content;
 }
 
-export function getEnv(conf) {
+function getEnv(conf) {
   const PAGE_URL = new URL(window.location.href);
   const SLD = PAGE_URL.hostname.includes('.aem.') ? 'aem' : 'hlx';
   const ENVS = {
@@ -60,12 +60,44 @@ export function getEnv(conf) {
 }
 
 /**
+ * Checks if the user is signed out based on the server timing and navigation performance.
+ * 
+ * @returns {boolean} True if the user is signed out, otherwise false.
+ */
+function isSignedOut() {
+  let w = window, perf = w.performance, serverTiming = {};
+
+  if (perf && perf.getEntriesByType) {
+    serverTiming = Object.fromEntries(
+      perf.getEntriesByType("navigation")?.[0]?.serverTiming?.map?.(
+        ({ name, description }) => ([name, description])
+      ) ?? []
+    );
+  }
+
+  const isSignedOutOnStagingOrProd = serverTiming && serverTiming.sis === '0';
+
+  // Return true if it's a dev environment or signed out on staging/prod
+  return !Object.keys(serverTiming || {}).length || isSignedOutOnStagingOrProd;
+}
+
+/**
+ * Enables personalization (V2) for the page.
+ * 
+ * @returns {boolean} True if personalization is enabled, otherwise false.
+ */
+function enablePersonalizationV2() {
+  const enablePersV2 = document.head.querySelector(`meta[name="personalization-v2"]`);
+  return enablePersV2 && isSignedOut();
+}
+
+/**
  * Generates a unique UUID based on timestamp and random values.
  * Follows the UUIDv4 pattern.
  * 
  * @returns {string} A UUID string in the format 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.
  */
-export function generateUUID() {
+function generateUUID() {
   let timestamp = new Date().getTime(); // Timestamp
   let microseconds = (typeof performance !== 'undefined' && performance.now)
     ? performance.now() * 1000
@@ -166,18 +198,43 @@ function setCookie(key, value, options = {}) {
 }
 
 /**
- * Checks for the presence of the FPID cookie, or generates and sets a new one.
- * 
- * @returns {string} The FPID cookie value.
+ * Retrieves the ECID (Experience Cloud ID) from the browser's cookies or generates a new FPID (First Party ID)
+ * if the ECID is not found. Returns the ID in a structured object, depending on which ID is available.
+ *
+ * @function
+ * @returns {Object} An object containing either the ECID or FPID.
+ *   - If ECID is found, the object will be:
+ *     { ECID: [{ id: string, authenticatedState: string, primary: boolean }] }
+ *   - If ECID is not found, the object will be:
+ *     { FPID: [{ id: string, authenticatedState: string, primary: boolean }] }
  */
-function getOrCreateFPIDCookie() {
-  let fpidCookie = getCookie('FPID');
-  if (!fpidCookie) {
-    fpidCookie = generateUUID();
-    setCookie('FPID', fpidCookie);
+function getOrGenerateUserId() {
+  const experienceCloudCookieName = 'AMCV_9E1005A551ED61CA0A490D45%40AdobeOrg';
+  const amcvCookieValue = getCookie(experienceCloudCookieName);
+
+  // If ECID is not found, generate and return FPID
+  if (!amcvCookieValue) {
+    const fpidValue = generateUUID();
+    return {
+      FPID: [{
+        id: fpidValue,
+        authenticatedState: "ambiguous",
+        primary: true,
+      }],
+    };
   }
-  return fpidCookie;
+
+  // ECID found, return structured ECID object
+  const extractedEcid = amcvCookieValue.substring(6);  // Extract the ECID value from the cookie
+  return {
+    ECID: [{
+      id: extractedEcid,
+      authenticatedState: "ambiguous",
+      primary: true,
+    }],
+  };
 }
+
 
 /**
  * Retrieves the page name for analytics, modified for the current locale.
@@ -249,7 +306,7 @@ const getMarctechCookies = () => {
  * @param {Object} params - Parameters required to create the payload.
  * @returns {Object} The request payload.
  */
-function createRequestPayload({ updatedContext, fpidCookie, pageName, locale, env }) {
+function createRequestPayload({ updatedContext, pageName, locale, env }) {
   const prevPageName = getCookie('gpv');
 
   const REPORT_SUITES_ID = env === 'prod' ? ['adbadobenonacdcprod'] : ['adbadobenonacdcqa'];
@@ -259,13 +316,7 @@ function createRequestPayload({ updatedContext, fpidCookie, pageName, locale, en
     event: {
       xdm: {
         ...updatedContext,
-        identityMap: {
-          FPID: [{
-            id: fpidCookie,
-            authenticatedState: "ambiguous",
-            primary: true,
-          }],
-        },
+        identityMap: getOrGenerateUserId(),
         web: {
           webPageDetails: {
             URL: window.location.href,
@@ -287,11 +338,11 @@ function createRequestPayload({ updatedContext, fpidCookie, pageName, locale, en
         eventType: "decisioning.propositionFetch",
       },
       data: {
+        __adobe: {
+          target: { is404: false, authState: "loggedOut", hitType: "propositionFetch", isMilo: true, adobeLocale: locale.ietf, hasGnav: true },
+        },
         _adobe_corpnew: {
           marketingtech: { adobe: { alloy: { approach: "martech-API" } } },
-          __adobe: {
-            target: { is404: false, authState: "loggedOut", hitType: "propositionFetch", isMilo: true },
-          },
           digitalData: {
             page: { pageInfo: { language: locale.ietf } },
             diagnostic: { franklin: { implementation: "milo" } },
@@ -315,6 +366,9 @@ function createRequestPayload({ updatedContext, fpidCookie, pageName, locale, en
       },
     },
     meta: {
+      target: {
+        migration: true,
+      },
       configOverrides: { com_adobe_analytics: { reportSuites: REPORT_SUITES_ID }, com_adobe_target: { propertyToken: AT_PROPERTY_VAL } },
       state: {
         domain: "localhost",
@@ -351,8 +405,6 @@ function updateAMCVCookie(ECID) {
   }
 }
 
-
-
 /**
  * Loads analytics and interaction data based on the user and page context.
  * Sends the data to Adobe Analytics and Adobe Target for personalization.
@@ -365,7 +417,12 @@ function updateAMCVCookie(ECID) {
  * 
  * @returns {Promise<Object>} A promise that resolves to the personalization propositions fetched from Adobe Target.
  */
-export async function loadAnalyticsAndInteractionData({ locale}) {
+async function loadAnalyticsAndInteractionData({ locale }) {
+
+  if (getCookie('kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent') === 'general%3Dout') {
+    return Promise.reject('Consent Cookie doesnt allow interact');
+  }
+
   const env = getEnv({})?.name;  // Get the current environment (prod, dev, etc.)
 
   // Define constants based on environment
@@ -380,7 +437,6 @@ export async function loadAnalyticsAndInteractionData({ locale}) {
   const LOCAL_TIME = CURRENT_DATE.toISOString();
   const LOCAL_TIMEZONE_OFFSET = CURRENT_DATE.getTimezoneOffset();
 
-  const fpidCookie = getOrCreateFPIDCookie();
   const pageName = getPageNameForAnalytics({ locale });
 
   const updatedContext = getUpdatedContext({
@@ -390,7 +446,6 @@ export async function loadAnalyticsAndInteractionData({ locale}) {
   // Prepare the body for the request
   const requestBody = createRequestPayload({
     updatedContext,
-    fpidCookie,
     pageName,
     locale,
     env,
@@ -407,7 +462,7 @@ export async function loadAnalyticsAndInteractionData({ locale}) {
       ),
     ]);
 
-    if(!targetResp.ok){
+    if (!targetResp.ok) {
       throw new Error('Failed to fetch interact call');
     }
     const targetRespJson = await targetResp.json();
@@ -436,34 +491,4 @@ export async function loadAnalyticsAndInteractionData({ locale}) {
   }
 }
 
-/**
- * Checks if the user is signed out based on the server timing and navigation performance.
- * 
- * @returns {boolean} True if the user is signed out, otherwise false.
- */
-export function isSignedOut() {
-  let w = window, perf = w.performance, serverTiming = {};
-
-  if (perf && perf.getEntriesByType) {
-    serverTiming = Object.fromEntries(
-      perf.getEntriesByType("navigation")?.[0]?.serverTiming?.map?.(
-        ({ name, description }) => ([name, description])
-      ) ?? []
-    );
-  }
-
-  const isSignedOutOnStagingOrProd = serverTiming && serverTiming.sis === '0';
-
-  // Return true if it's a dev environment or signed out on staging/prod
-  return !Object.keys(serverTiming || {}).length || isSignedOutOnStagingOrProd;
-}
-
-/**
- * Enables personalization (V2) for the page.
- * 
- * @returns {boolean} True if personalization is enabled, otherwise false.
- */
-export function enablePersonalizationV2() {
-  const enablePersV2 = document.head.querySelector(`meta[name="personalization-v2"]`);
-  return enablePersV2 && isSignedOut();
-}
+export { loadAnalyticsAndInteractionData, isSignedOut, enablePersonalizationV2, timeout, getMetadata, getEnv }
