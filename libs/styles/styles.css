@@ -725,7 +725,7 @@ header.global-navigation a {
 }
 
 .feds-localnav {
-  height: 53px;
+  height: 40px;
 }
 
 @media (min-width: 900px) {
