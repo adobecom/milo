@@ -293,6 +293,9 @@ export default async function init(el) {
       literalEl.remove();
       if (slot) {
         slot.setAttribute('slot', LITERAL_SLOTS[index]);
+        if (LITERAL_SLOTS[index].toLowerCase().includes('result')) {
+          slot.setAttribute('role', 'status');
+        }
         index += 1;
       }
       literalSlots.push(slot);
