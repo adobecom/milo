@@ -4,9 +4,17 @@
     <meta charset="UTF-8">
     <title>CCD Gallery</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <script src="../../../features/spectrum-web-components/dist/shared.js" type="module"></script>
-    <script src="../../../features/spectrum-web-components/dist/button.js" type="module"></script>
-    <script src="../../../features/spectrum-web-components/dist/base.js" type="module"></script>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://p.typekit.net/p.css?s=1&k=hah7vzn&ht=tk&f=7180.7181.7182.7183.22474.22749.22750.22751.22753&a=8634977&app=typekit&e=css">
+    <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
+    <script src="../../spectrum-web-components/dist/shared.js" type="module"></script>
+    <script src="../../spectrum-web-components/dist/button.js" type="module"></script>
+    <script src="../../spectrum-web-components/dist/base.js" type="module"></script>
+    <script src="../../spectrum-web-components/dist/icons-ui.js" type="module"></script>
+    <script src="../../spectrum-web-components/dist/icon.js" type="module"></script>
+    <script src="../../spectrum-web-components/dist/icons/cross.js" type="module"></script>
+    <script src="../../spectrum-web-components/dist/icons/checkmark.js" type="module"></script>
+    <script src="/libs/deps/lit-all.min.js" type="module"></script>
 
     <script>
       const ENVS = {
@@ -29,14 +37,14 @@
       meta.content = baseUrl;
       document.head.appendChild(meta);
     </script>
-    <script type="module" src="../mas/dist/mas.js"></script>
+    <script type="module" src="../dist/mas.js"></script>
 
     <script type="module">
       // theme
       const params = new URLSearchParams(document.location.search);
       const darkTheme = params?.get('theme')?.toLowerCase() === 'dark';
       const theme = document.createElement('script');
-      theme.setAttribute('src', `../../../features/spectrum-web-components/dist/themes/${darkTheme ? 'dark' : 'light'}.js`);
+      theme.setAttribute('src', `../../spectrum-web-components/dist/themes/${darkTheme ? 'dark' : 'light'}.js`);
       theme.setAttribute('type', `module`);
       document.head.appendChild(theme);
       // mas-commerce-service
@@ -47,10 +55,6 @@
       });
       document.head.appendChild(masCommerceService);
     </script>
-    <!-- Fonts -->
-    <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
-    <!-- Include any additional stylesheets -->
-    <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
@@ -134,7 +138,7 @@
     </sp-theme>
     <script type="module">
       if (new URLSearchParams(document.location.search)?.get('theme')?.toLowerCase() === 'dark') {
-        document.querySelectorAll('sp-theme').forEach((theme) => theme.setAttribute('color', 'dark'));
+        document.querySelector('sp-theme').setAttribute('color', 'dark');
       }
     </script>
   </main>
