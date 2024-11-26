@@ -656,7 +656,7 @@ class Gnav {
     await window.UniversalNav(CONFIG.universalNav.universalNavConfig);
     this.decorateAppPrompt({ getAnchorState: () => window.UniversalNav.getComponent?.('app-switcher') });
     isDesktop.addEventListener('change', () => {
-      window.UniversalNav.reload(CONFIG.universalNav.universalNavConfig);
+      window.UniversalNav.reload(getConfiguration());
     });
   };
 
