@@ -1,5 +1,9 @@
 /* eslint-disable no-console */
 
+import { enablePersonalizationV2, loadAnalyticsAndInteractionData, getEnv, getMetadata } from '../martech/helpers.js';
+
+export { getMetadata };
+
 const MILO_TEMPLATES = [
   '404',
   'featured-story',
@@ -114,31 +118,6 @@ const DO_NOT_INLINE = [
   'z-pattern',
 ];
 
-const ENVS = {
-  stage: {
-    name: 'stage',
-    ims: 'stg1',
-    adobeIO: 'cc-collab-stage.adobe.io',
-    adminconsole: 'stage.adminconsole.adobe.com',
-    account: 'stage.account.adobe.com',
-    edgeConfigId: '8d2805dd-85bf-4748-82eb-f99fdad117a6',
-    pdfViewerClientId: '600a4521c23d4c7eb9c7b039bee534a0',
-  },
-  prod: {
-    name: 'prod',
-    ims: 'prod',
-    adobeIO: 'cc-collab.adobe.io',
-    adminconsole: 'adminconsole.adobe.com',
-    account: 'account.adobe.com',
-    edgeConfigId: '2cba807b-7430-41ae-9aac-db2b0da742d5',
-    pdfViewerClientId: '3c0a5ddf2cc04d3198d9e48efc390fa9',
-  },
-};
-ENVS.local = {
-  ...ENVS.stage,
-  name: 'local',
-};
-
 export const MILO_EVENTS = { DEFERRED: 'milo:deferred' };
 
 const LANGSTORE = 'langstore';
@@ -147,28 +126,7 @@ const PAGE_URL = new URL(window.location.href);
 export const SLD = PAGE_URL.hostname.includes('.aem.') ? 'aem' : 'hlx';
 
 const PROMO_PARAM = 'promo';
-
-function getEnv(conf) {
-  const { host } = window.location;
-  const query = PAGE_URL.searchParams.get('env');
-
-  if (query) return { ...ENVS[query], consumer: conf[query] };
-
-  const { clientEnv } = conf;
-  if (clientEnv) return { ...ENVS[clientEnv], consumer: conf[clientEnv] };
-
-  if (host.includes('localhost')) return { ...ENVS.local, consumer: conf.local };
-  /* c8 ignore start */
-  if (host.includes(`${SLD}.page`)
-    || host.includes(`${SLD}.live`)
-    || host.includes('stage.adobe')
-    || host.includes('corp.adobe')
-    || host.includes('graybox.adobe')) {
-    return { ...ENVS.stage, consumer: conf.stage };
-  }
-  return { ...ENVS.prod, consumer: conf.prod };
-  /* c8 ignore stop */
-}
+let delayedMartech = false;
 
 export function getLocale(locales, pathname = window.location.pathname) {
   if (!locales) {
@@ -189,15 +147,9 @@ export function getLocale(locales, pathname = window.location.pathname) {
   return locale;
 }
 
-export function getMetadata(name, doc = document) {
-  const attr = name && name.includes(':') ? 'property' : 'name';
-  const meta = doc.head.querySelector(`meta[${attr}="${name}"]`);
-  return meta && meta.content;
-}
-
 const handleEntitlements = (() => {
   const { martech } = Object.fromEntries(PAGE_URL.searchParams);
-  if (martech === 'off') return () => {};
+  if (martech === 'off') return () => { };
   let entResolve;
   const entPromise = new Promise((resolve) => {
     entResolve = resolve;
@@ -311,7 +263,7 @@ export function localizeLink(
     const isLocalizedLink = path.startsWith(`/${LANGSTORE}`)
       || path.startsWith(`/${PREVIEW}`)
       || Object.keys(locales).some((loc) => loc !== '' && (path.startsWith(`/${loc}/`)
-      || path.endsWith(`/${loc}`)));
+        || path.endsWith(`/${loc}`)));
     if (isLocalizedLink) return processedHref;
     const urlPath = `${locale.prefix}${path}${url.search}${hash}`;
     return relative ? urlPath : `${url.origin}${urlPath}`;
@@ -764,7 +716,7 @@ function decorateHeader() {
   }
   header.className = headerMeta || 'global-navigation';
   const metadataConfig = getMetadata('breadcrumbs')?.toLowerCase()
-  || getConfig().breadcrumbs;
+    || getConfig().breadcrumbs;
   if (metadataConfig === 'off') return;
   const baseBreadcrumbs = getMetadata('breadcrumbs-base')?.length;
 
@@ -826,8 +778,8 @@ async function decoratePlaceholders(area, config) {
   area.dataset.hasPlaceholders = 'true';
   const placeholderPath = `${config.locale?.contentRoot}/placeholders.json`;
   placeholderRequest = placeholderRequest
-  || customFetch({ resource: placeholderPath, withCacheRules: true })
-    .catch(() => ({}));
+    || customFetch({ resource: placeholderPath, withCacheRules: true })
+      .catch(() => ({}));
   const { decoratePlaceholderArea } = await import('../features/placeholders.js');
   await decoratePlaceholderArea({ placeholderPath, placeholderRequest, nodes });
 }
@@ -1038,14 +990,26 @@ async function checkForPageMods() {
     mepButton,
     martech,
   } = Object.fromEntries(PAGE_URL.searchParams);
+  let targetInteractionData = null;
   if (mepParam === 'off') return;
   const pzn = getMepEnablement('personalization');
   const promo = getMepEnablement('manifestnames', PROMO_PARAM);
   const target = martech === 'off' ? false : getMepEnablement('target');
   const xlg = martech === 'off' ? false : getMepEnablement('xlg');
+  const enablePersV2 = enablePersonalizationV2();
+
   if (!(pzn || target || promo || mepParam
     || mepHighlight || mepButton || mepParam === '' || xlg)) return;
-  if (target || xlg) {
+
+  if (martech !== 'off' && (target || xlg || pzn) && enablePersV2) {
+    const { locale } = getConfig();
+    try{
+      targetInteractionData = await loadAnalyticsAndInteractionData({ locale });
+    } catch (err){
+      console.log('Interact Call didnt go through', err);
+    }
+    delayedMartech = true;
+  } else if (target || xlg) {
     loadMartech();
   } else if (pzn && martech !== 'off') {
     loadIms()
@@ -1059,10 +1023,14 @@ async function checkForPageMods() {
   const { init } = await import('../features/personalization/personalization.js');
   await init({
     mepParam, mepHighlight, mepButton, pzn, promo, target,
-  });
+  }, targetInteractionData);
 }
 
 async function loadPostLCP(config) {
+  const enablePersV2 = enablePersonalizationV2();
+  if(enablePersV2 && delayedMartech){
+    await loadMartech();
+  }
   await decoratePlaceholders(document.body.querySelector('header'), config);
   const sk = document.querySelector('aem-sidekick, helix-sidekick');
   if (sk) import('./sidekick-decorate.js').then((mod) => { mod.default(sk); });
@@ -1071,8 +1039,11 @@ async function loadPostLCP(config) {
     const { init } = await import('../features/personalization/personalization.js');
     await init({ postLCP: true });
   } else {
-    loadMartech();
+    if(!enablePersV2) {
+      loadMartech();
+    }
   }
+
   const georouting = getMetadata('georouting') || config.geoRouting;
   if (georouting === 'on') {
     const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');

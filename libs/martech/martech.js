@@ -1,10 +1,10 @@
 import {
   getConfig, getMetadata, loadIms, loadLink, loadScript, getMepEnablement,
 } from '../utils/utils.js';
+import { enablePersonalizationV2, timeout } from './helpers.js';
 
 const ALLOY_SEND_EVENT = 'alloy_sendEvent';
 const ALLOY_SEND_EVENT_ERROR = 'alloy_sendEvent_error';
-const TARGET_TIMEOUT_MS = 4000;
 const ENTITLEMENT_TIMEOUT = 3000;
 
 const setDeep = (obj, path, value) => {
@@ -108,13 +108,7 @@ function sendTargetResponseAnalytics(failure, responseStart, timeout, message) {
   });
 }
 
-export const getTargetPersonalization = async () => {
-  const params = new URL(window.location.href).searchParams;
-
-  const timeout = parseInt(params.get('target-timeout'), 10)
-    || parseInt(getMetadata('target-timeout'), 10)
-    || TARGET_TIMEOUT_MS;
-
+export const getTargetPersonalization = async (targetInteractionData) => {
   const responseStart = Date.now();
   window.addEventListener(ALLOY_SEND_EVENT, () => {
     const responseTime = calculateResponseTime(responseStart);
@@ -128,6 +122,15 @@ export const getTargetPersonalization = async () => {
 
   let targetManifests = [];
   let targetPropositions = [];
+
+  if (enablePersonalizationV2() && targetInteractionData) {
+    sendTargetResponseAnalytics(false, responseStart, timeout);
+    return {
+      targetManifests: handleAlloyResponse(targetInteractionData.result),
+      targetPropositions: targetInteractionData.result?.propositions || []
+    };
+  }
+
   const response = await waitForEventOrTimeout(ALLOY_SEND_EVENT, timeout);
   if (response.error) {
     try {
@@ -194,7 +197,7 @@ const loadMartechFiles = async (config) => {
         .then(() => {
           if (window.adobeIMS.isSignedInUser()) setupEntitlementCallback();
         })
-        .catch(() => {});
+        .catch(() => { });
     }
 
     setDeep(
@@ -209,10 +212,10 @@ const loadMartechFiles = async (config) => {
         ? '/marketingtech'
         : 'https://assets.adobedtm.com'
     ) + (
-      config.env.name === 'prod'
-        ? '/d4d114c60e50/a0e989131fd5/launch-5dd5dd2177e6.min.js'
-        : '/d4d114c60e50/a0e989131fd5/launch-2c94beadc94f-development.min.js'
-    );
+        config.env.name === 'prod'
+          ? '/d4d114c60e50/a0e989131fd5/launch-5dd5dd2177e6.min.js'
+          : '/d4d114c60e50/a0e989131fd5/launch-2c94beadc94f-development.min.js'
+      );
     loadLink(launchUrl, { as: 'script', rel: 'preload' });
 
     window.marketingtech = {
@@ -245,10 +248,10 @@ const loadMartechFiles = async (config) => {
         ? ''
         : 'https://www.adobe.com'
     ) + (
-      config.env.name === 'prod'
-        ? '/marketingtech/main.standard.min.js'
-        : '/marketingtech/main.standard.qa.min.js'
-    ));
+        config.env.name === 'prod'
+          ? '/marketingtech/main.standard.min.js'
+          : '/marketingtech/main.standard.qa.min.js'
+      ));
     // eslint-disable-next-line no-underscore-dangle
     window._satellite.track('pageload');
   };
