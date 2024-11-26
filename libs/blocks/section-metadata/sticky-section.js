@@ -2,7 +2,7 @@ import { createTag } from '../../utils/utils.js';
 import { getMetadata, getDelayTime } from './section-metadata.js';
 
 function handleTopHeight(section) {
-  const headerHeight = document.querySelector('header').offsetHeight;
+  const headerHeight = document.querySelector('header')?.offsetHeight ?? 0;
   section.style.top = `${headerHeight}px`;
 }
 
