@@ -10,7 +10,11 @@ await esbuild.build({
   outdir: './dist/',
 });
 
-const split = (xs, y) => {
+// This function behaves slightly different
+// than the built in split function in
+// that it only splits the array xs into two arrays
+// on the first occurence of y only
+const splitAt = (xs, y) => {
   if (!xs.length) return null;
   const splitInternal = (before, after) => {
     if (!after.length) return [before, []];
@@ -31,7 +35,7 @@ const StyleLoader = {
         .appendChild(document.createTextNode(${JSON.stringify(css)}))`;
     onLoad({ filter: /\.css$/ }, async (args) => {
       const { path } = args;
-      const [before, after] = split(path.split('/'), 'navigation');
+      const [before, after] = splitAt(path.split('/'), 'navigation');
       const newPath = before
         .concat(['navigation', 'dist'])
         .concat(after)
