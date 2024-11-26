@@ -60,6 +60,7 @@ export default class MiloFloodgate extends LitElement {
       path: this._pinkSitePath,
       accessToken: this.token,
       crawlType: 'floodgate',
+      isDraftsOnly: this._floodgateConfig.isPromoteDraftsOnly,
       callback: () => {
         this.requestUpdate();
       },
