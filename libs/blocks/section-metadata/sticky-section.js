@@ -51,6 +51,7 @@ export default async function handleStickySection(sticky, section) {
     case 'sticky-top': {
       const { debounce } = await import('../../utils/action.js');
       window.addEventListener('resize', debounce(() => handleTopHeight(section)));
+      handleTopHeight(section);
       main.prepend(section);
       break;
     }
