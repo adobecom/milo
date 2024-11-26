@@ -8,7 +8,7 @@
 import RequestHandler from './request-handler.js';
 
 class CrawlTree {
-  constructor(callback, accessToken, maxConcurrent = 500, crawlType = 'default', expName = '') {
+  constructor(callback, accessToken, maxConcurrent = 500, crawlType = 'default', expName = '', isDraftsOnly = false) {
     this.queue = [];
     this.activeCount = 0;
     this.maxConcurrent = maxConcurrent;
@@ -16,9 +16,14 @@ class CrawlTree {
     this.accessToken = accessToken;
     this.crawlType = crawlType;
     this.expName = expName;
+    this.isDraftsOnly = isDraftsOnly;
     this.requestHandler = new RequestHandler(this.accessToken);
     // eslint-disable-next-line no-useless-escape
     this.grayboxPathPattern = new RegExp(`^\/[^\/]+\/[^\/]+\/(?:[^\/]+\/)?${expName}(?:\/|$)`);
+    if (this.isDraftsOnly && this.crawlType === 'graybox') {
+      // eslint-disable-next-line no-useless-escape
+      this.grayboxPathPattern = new RegExp(`^\/[^\/]+\/[^\/]+\/(?:[^\/]+\/)?${expName}\/drafts(?:\/|$)`);
+    }
 
     this.push = this.push.bind(this);
     this.processQueue = this.processQueue.bind(this);
@@ -57,8 +62,15 @@ class CrawlTree {
       json.forEach((child) => {
         if (!child.ext) {
           folders.push(child.path);
-        } else if (this.crawlType !== 'graybox' || this.grayboxPathPattern.test(child.path)) {
-          files.push(child);
+        } else {
+          // Filter out files based on crawlType, grayboxPathPattern and isDraftsOnly flag
+          // eslint-disable-next-line no-lonely-if
+          if ((this.crawlType !== 'graybox' && this.crawlType !== 'floodgate')
+            || (this.crawlType === 'graybox' && this.grayboxPathPattern.test(child.path))
+            || (this.crawlType === 'floodgate' && (!this.isDraftsOnly || child.path.includes('/drafts/')))
+          ) {
+            files.push(child);
+          }
         }
       });
     }
@@ -82,7 +94,7 @@ function calculateCrawlTime(startTime) {
  * @param {string} options.crawlType - The type of crawl ('graybox' or other).
  */
 function crawl({
-  path, callback, concurrent, throttle = 100, accessToken, crawlType = 'default',
+  path, callback, concurrent, throttle = 100, accessToken, crawlType = 'default', isDraftsOnly = false,
 }) {
   let expName = '';
   let sitePath = path;
@@ -98,7 +110,7 @@ function crawl({
   const folders = [sitePath];
   const inProgress = [];
   const startTime = Date.now();
-  const queue = new CrawlTree(callback, accessToken, concurrent, crawlType, expName);
+  const queue = new CrawlTree(callback, accessToken, concurrent, crawlType, expName, isDraftsOnly);
 
   const results = new Promise((resolve) => {
     const interval = setInterval(async () => {
