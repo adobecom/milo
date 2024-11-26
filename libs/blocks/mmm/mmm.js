@@ -815,8 +815,8 @@ function handleClick(el, dd) {
 }
 
 function createItem(mmm, id, heading, num) {
-  const triggerId = `mmm-${id}-trigger-${num}`;
-  const panelId = `mmm-${id}-content-${num}`;
+  const triggerId = `${id}-trigger-${num}`;
+  const panelId = `${id}-content-${num}`;
   const icon = createTag('span', { class: 'mmm-icon' });
   const hTag = createTag('h3', false, heading);
   const button = createTag('button', {
