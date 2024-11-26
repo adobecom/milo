@@ -289,11 +289,29 @@ const consolidateObjects = (arr, prop, existing = {}) => arr.reduce((propMap, it
   });
   return { ...existing, ...propMap };
 }, {});
-
 export const matchGlob = (searchStr, inputStr) => {
-  const pattern = searchStr.replace(/\*\*/g, '.*');
-  const reg = new RegExp(`^${pattern}(\\.html)?$`, 'i'); // devtool bug needs this backtick: `
-  return reg.test(inputStr);
+  const globToRegExp = (pattern) => {
+    const escapedPattern = pattern.replace(/\*\*/g, '.*');
+    return new RegExp(`^${escapedPattern}(\\.html)?$`, 'i');
+  };
+
+  const evaluatePattern = (pattern) => {
+    if (pattern.includes(',')) {
+      const orPatterns = pattern.split(',').map((orPattern) => orPattern.trim());
+      return orPatterns.some(evaluatePattern);
+    }
+    if (pattern.includes('&')) {
+      const andPatterns = pattern.split('&').map((andPattern) => andPattern.trim());
+      return andPatterns.every(evaluatePattern);
+    }
+    const isNegated = pattern.startsWith('not ');
+    const actualPattern = isNegated ? pattern.slice(4).trim() : pattern;
+    const reg = globToRegExp(actualPattern);
+    const matches = reg.test(inputStr);
+    return isNegated ? !matches : matches;
+  };
+
+  return evaluatePattern(searchStr);
 };
 
 export async function replaceInner(path, element) {
