@@ -6,6 +6,7 @@ import crawl from '../crawl-tree.js';
 import promoteFiles from '../promote.js';
 import { SUCCESS_CODES } from '../constants.js';
 import previewOrPublishPaths from '../bulk-action.js';
+import FloodgateConfig from './floodgate-config.js';
 
 const buttons = await getStyle('https://da.live/nx/styles/buttons.css');
 const style = await getStyle(import.meta.url);
@@ -41,6 +42,7 @@ export default class MiloFloodgate extends LitElement {
     this._promoteDuration = 0;
     this._previewPublishDuration = 0;
     this._selectedOption = 'fgPromote';
+    this._floodgateConfig = {};
   }
 
   connectedCallback() {
@@ -58,6 +60,7 @@ export default class MiloFloodgate extends LitElement {
       path: this._pinkSitePath,
       accessToken: this.token,
       crawlType: 'floodgate',
+      isDraftsOnly: this._floodgateConfig.isPromoteDraftsOnly,
       callback: () => {
         this.requestUpdate();
       },
@@ -163,6 +166,9 @@ export default class MiloFloodgate extends LitElement {
   }
 
   readPromoteIgnorePaths() {
+    // add global promote ignore paths
+    this._promoteIgnorePaths.push(...this._floodgateConfig.getPromoteIgnorePaths());
+    // add user input promote ignore paths
     const promoteIgnoreCheckbox = this.shadowRoot.querySelector('input[name="promoteIgnore"]');
     if (promoteIgnoreCheckbox?.checked) {
       const promoteIgnoreTextArea = this.shadowRoot.querySelector('textarea[name="promote-ignore-paths"]');
@@ -217,20 +223,25 @@ export default class MiloFloodgate extends LitElement {
     this._canCopyPaths = false;
     this._canPromote = false;
     this._promoteIgnore = false;
+    this._pinkSitePath = '';
     this.requestUpdate();
   }
 
-  validatePromotePath(event) {
+  async validatePromotePath(event) {
     const path = event.target.value.trim();
     // eslint-disable-next-line no-useless-escape
     const pathRegex = /^\/[^\/]+\/[^\/]+-pink$/;
     const valid = pathRegex.test(path);
+    this._canPromote = false;
+    this._pinkSitePath = '';
     if (valid) {
-      this._canPromote = true;
-      this._pinkSitePath = path;
-    } else {
-      this._canPromote = false;
-      this._pinkSitePath = '';
+      const { org, repo } = this.getOrgRepo();
+      this._floodgateConfig = new FloodgateConfig(org, repo, this.token);
+      await this._floodgateConfig.getConfig();
+      if (this._floodgateConfig.isPromoteEnabled === true) {
+        this._canPromote = true;
+        this._pinkSitePath = path;
+      }
     }
     this.requestUpdate();
   }

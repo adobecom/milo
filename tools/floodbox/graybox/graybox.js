@@ -92,7 +92,7 @@ export default class MiloGraybox extends LitElement {
     };
   }
 
-  async startCrawl(experiencePath) {
+  async startCrawl(experiencePath, expName) {
     const { results, getDuration } = crawl({
       path: experiencePath,
       callback: () => {
@@ -101,6 +101,7 @@ export default class MiloGraybox extends LitElement {
       throttle: 10,
       accessToken: this.token,
       crawlType: 'graybox',
+      isDraftsOnly: this._grayboxConfig.isDraftsOnly(expName),
     });
     this._crawledFiles = await results;
     this.cleanUpIgnoreFilesFromPromote(this._crawledFiles);
@@ -118,6 +119,7 @@ export default class MiloGraybox extends LitElement {
         repo,
         expName: exp,
         promoteType: 'graybox',
+        isDraftOnly: this._grayboxConfig.isDraftsOnly(exp),
         files: this._filesToPromote,
         callback: (status) => {
           // eslint-disable-next-line no-console
@@ -191,12 +193,12 @@ export default class MiloGraybox extends LitElement {
     await this.readPromoteIgnorePaths();
 
     // #1 - Start crawling
+    const { org, repo, exp } = this.getOrgRepoExp();
     this._startCrawlExp = true;
     this.updateTabUi('crawl');
-    await this.startCrawl(this._gbExpPath);
+    await this.startCrawl(this._gbExpPath, exp);
 
     // #2 - Start promoting
-    const { org, repo, exp } = this.getOrgRepoExp();
     this._startPromote = true;
     this.updateTabUi('promote');
     await this.startPromote(org, repo, exp);
