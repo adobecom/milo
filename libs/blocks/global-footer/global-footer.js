@@ -235,7 +235,7 @@ class Footer {
     if (url.hash !== '') {
       // Hash -> region selector opens a modal
       // decorateAutoBlock(regionPickerElem); // add modal-specific attributes
-      regionPickerElem.classList.add('modal');
+      regionPickerElem.classList.add('modal', regionPickerClass);
       // TODO remove logs after finding the root cause for the region picker 404s -> MWPW-143627
       regionPickerElem.href = url.hash;
       if (regionPickerElem.classList[0] !== 'modal') {
