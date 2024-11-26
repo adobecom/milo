@@ -123,6 +123,7 @@ CCD Gallery provides a comprehensive list of all supported card variants in CCD.
 <th>Description</th>
 <th>Default Value</th>
 <th>Required</th>
+<th>Provider</th>
 </tr>
 </thead>
 <tbody>
@@ -131,18 +132,28 @@ CCD Gallery provides a comprehensive list of all supported card variants in CCD.
 <td>Variant in terms design. Not required when used with an <code>aem-fragment</code></td>
 <td></td>
 <td><code>false</code></td>
+<td>mas.js</td>
 </tr>
 <tr>
 <td><code>consonant</code></td>
 <td>Whether to use consonant styles without sp-button decorator around the footer CTAs.</td>
 <td><code>true</code> if <code>aem-fragment</code> is not used</td>
 <td><code>false</code></td>
+<td>mas.js</td>
 </tr>
 <tr>
 <td><code>size</code></td>
 <td>card width; a card can span over 2 columns or entire row on a css grid <code>wide|super-wide</code></td>
 <td></td>
 <td><code>false</code></td>
+<td>mas.js</td>
+</tr>
+<tr>
+<td><code>daa-lh</code></td>
+<td>Analytics identifier of a card. Value is coming from the ‘PRODUCT_CODE’ tag set on the card (for now manual authoring required, later will be tagged automatically). Sample values: ‘ccsn’ or ‘phlt’.</td>
+<td></td>
+<td><code>false</code></td>
+<td>mas.js</td>
 </tr>
 </tbody>
 </table>
@@ -274,6 +285,7 @@ CCD Gallery provides a comprehensive list of all supported card variants in CCD.
 <th>Description</th>
 <th>Default Value</th>
 <th>Required</th>
+<th>Provider</th>
 </tr>
 </thead>
 <tbody>
@@ -282,18 +294,21 @@ CCD Gallery provides a comprehensive list of all supported card variants in CCD.
 <td>Fragment id. The copy/use feature in M@S Studio will copy the id/markup to the clipboard</td>
 <td></td>
 <td><code>true</code></td>
+<td>consumer code</td>
 </tr>
 <tr>
 <td><code>title</code></td>
 <td>Informative title</td>
 <td></td>
 <td><code>false</code></td>
+<td>consumer code</td>
 </tr>
 <tr>
 <td><code>ims</code></td>
 <td>attempts to use an IMS access token via <code>window.adobeid.authorize()</code> to fetch a fragment</td>
 <td></td>
 <td><code>false</code></td>
+<td>mas.js</td>
 </tr>
 </tbody>
 </table>
