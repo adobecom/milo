@@ -12,7 +12,10 @@ import {
 } from './external.js';
 import { InlinePrice } from './inline-price.js';
 import { Log } from './log.js';
+import { updateConfig } from './lana.js';
 import { getSettings } from './settings.js';
+
+updateConfig({ sampleRate: 30 });
 
 export {
     TAG_NAME_SERVICE,

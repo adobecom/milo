@@ -9,10 +9,13 @@ import {
     disableMasCommerceService,
 } from './utilities.js';
 import { withWcs } from './mocks/wcs.js';
+import { mockLana } from './mocks/lana.js';
 
 describe('commerce service', () => {
+    let lana;
     before(async () => {
         await mockFetch(withWcs);
+        lana = mockLana();
     });
 
     afterEach(() => {
@@ -124,6 +127,19 @@ describe('commerce service', () => {
                     wcsBufferDelay: 1,
                     wcsBufferLimit: 1,
                     wcsURL: 'https://www.adobe.com/web_commerce_artifact',
+                });
+            });
+
+            it('enables lana with custom tags', async () => {
+                const el = await initMasCommerceService({
+                    'data-lana-tags': 'consumer=ccd',
+                });
+                el.log.error('test error');
+                expect(/test error/.test(lana.log.lastCall.args[0])).to.true;
+                expect(lana.log.lastCall.args[1]).to.deep.equal({
+                    clientId: 'merch-at-scale',
+                    sampleRate: 30,
+                    tags: 'consumer=ccd',
                 });
             });
         });

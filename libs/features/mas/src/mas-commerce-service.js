@@ -9,6 +9,7 @@ import { Price } from './price.js';
 import { getSettings } from './settings.js';
 import { Wcs } from './wcs.js';
 import { setImmediate } from './utilities.js';
+import { updateConfig } from './lana.js';
 
 export const TAG_NAME_SERVICE = 'mas-commerce-service';
 
@@ -21,30 +22,39 @@ export class MasCommerceService extends HTMLElement {
     promise = null;
 
     get #config() {
-      const config = {
-        commerce: { 'env': this.getAttribute('env') },
-      };
-      //root parameters
-      ['locale', 'country', 'language'].forEach((attribute) => {
-        const value = this.getAttribute(attribute);
-        if (value) {
-          config[attribute] = value;
+        const config = {
+            commerce: { env: this.getAttribute('env') },
+            lana: {
+                tags: this.dataset.lanaTags,
+                sampleRate: parseInt(this.dataset.lanaSampleRate, 10),
+            },
+        };
+        if (config.lana.tags) {
+            config.env = { name: 'prod' };
         }
-      });
-      //commerce parameters
-      [
-        'checkout-workflow-step',
-        'force-tax-exclusive',
-        'checkout-client-id',
-        'allow-override',
-      ].forEach((attribute) => {
-        const value = this.getAttribute(attribute);
-        if (value != null) {
-          const camelCaseAttribute = attribute.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
-          config.commerce[camelCaseAttribute] = value;
-        }
-      });
-      return config;
+        //root parameters
+        ['locale', 'country', 'language'].forEach((attribute) => {
+            const value = this.getAttribute(attribute);
+            if (value) {
+                config[attribute] = value;
+            }
+        });
+        //commerce parameters
+        [
+            'checkout-workflow-step',
+            'force-tax-exclusive',
+            'checkout-client-id',
+            'allow-override',
+        ].forEach((attribute) => {
+            const value = this.getAttribute(attribute);
+            if (value != null) {
+                const camelCaseAttribute = attribute.replace(/-([a-z])/g, (g) =>
+                    g[1].toUpperCase(),
+                );
+                config.commerce[camelCaseAttribute] = value;
+            }
+        });
+        return config;
     }
 
     async registerCheckoutAction(action) {
@@ -66,9 +76,11 @@ export class MasCommerceService extends HTMLElement {
     async activate() {
         const config = this.#config;
         // Load settings and literals
+        const settings = Object.freeze(getSettings(config));
+        updateConfig(config.lana);
         const log = Log.init(config.env).module('service');
         log.debug('Activating:', config);
-        const settings = Object.freeze(getSettings(config));
+
         // Fetch price literals
         const literals = { price: {} };
         try {
@@ -131,9 +143,9 @@ export class MasCommerceService extends HTMLElement {
     }
 
     connectedCallback() {
-      if (!this.readyPromise) {
-        this.readyPromise = this.activate();
-      }
+        if (!this.readyPromise) {
+            this.readyPromise = this.activate();
+        }
     }
 
     disconnectedCallback() {
@@ -156,9 +168,7 @@ export class MasCommerceService extends HTMLElement {
 
     refreshFragments() {
         this.flushWcsCache();
-        document
-            .querySelectorAll('aem-fragment')
-            .forEach((el) => el.refresh());
+        document.querySelectorAll('aem-fragment').forEach((el) => el.refresh());
         this.log.debug('Refreshed AEM fragments');
     }
 }
