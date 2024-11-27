@@ -21,17 +21,33 @@ class RequestHandler {
     return resp;
   }
 
-  static getFileType(type) {
+  /**
+   * Uploads the file to the destination path
+   * @param {*} filePath Destination file path
+   * @param {*} content File blob or text content
+   * @param {*} fileExt File extension
+   */
+    async uploadContent(filePath, content, fileExt) {
+      let status = {};
+      if (isEditableFile(fileExt)) {
+        status = await this.#createVersionAndUpload(filePath, content, fileExt);
+      } else {
+        status = await this.#uploadFile(filePath, content, fileExt);
+      }
+      return status;
+    }
+
+  static #getFileType(type) {
     return SUPPORTED_FILES[type] || 'application/octet-stream';
   }
 
-  static getFileBlob(content, fileExt) {
+  static #getFileBlob(content, fileExt) {
     return isEditableFile(fileExt)
-      ? new Blob([content], { type: RequestHandler.getFileType(fileExt) })
+      ? new Blob([content], { type: RequestHandler.#getFileType(fileExt) })
       : content;
   }
 
-  async createVersion(destinationFilePath) {
+  async #createVersion(destinationFilePath) {
     const opts = {
       method: 'POST',
       body: JSON.stringify({ label: 'Auto created version by FloodBox App' }),
@@ -42,45 +58,28 @@ class RequestHandler {
     );
   }
 
-  async uploadFile(filePath, content, fileExt) {
-    const fileBlob = RequestHandler.getFileBlob(content, fileExt);
+  async #uploadFile(filePath, content, fileExt) {
+    const fileBlob = RequestHandler.#getFileBlob(content, fileExt);
     const body = new FormData();
     body.set('data', fileBlob);
     const opts = { body, method: 'POST' };
     const path = `${DA_ORIGIN}/source${filePath}`;
-    return this.daFetch(path, opts);
+    const resp = await this.daFetch(path, opts);
+    if (!resp.ok) {
+      console.error(`Failed to upload content for ${filePath} :: ${resp.status}`);
+      return { statusCode: resp.status, filePath, errorMsg: 'Failed to upload file' };      
+    }
+    return { statusCode: resp.status, filePath };
   }
 
-  async createVersionAndUpload(destinationFilePath, content, fileExt) {
-    let resp = await this.createVersion(destinationFilePath);
+  async #createVersionAndUpload(destinationFilePath, content, fileExt) {
+    let resp = await this.#createVersion(destinationFilePath);
     if (!resp.ok) {
       // eslint-disable-next-line no-console
       console.error(`Failed to create version for ${destinationFilePath} :: ${resp.status}`);
       return { statusCode: resp.status, filePath: destinationFilePath, errorMsg: 'Failed to create version' };
     }
-    resp = await this.uploadFile(destinationFilePath, content, fileExt);
-    if (!resp.ok) {
-      // eslint-disable-next-line no-console
-      console.error(`Failed to upload content for ${destinationFilePath} :: ${resp.status}`);
-      return { statusCode: resp.status, filePath: destinationFilePath, errorMsg: 'Failed to upload file' };
-    }
-    return { statusCode: resp.status, destinationFilePath };
-  }
-
-  /**
-   * Uploads the file to the destination path
-   * @param {*} filePath Destination file path
-   * @param {*} content File blob or text content
-   * @param {*} fileExt File extension
-   */
-  async uploadContent(filePath, content, fileExt) {
-    let status = {};
-    if (isEditableFile(fileExt)) {
-      status = await this.createVersionAndUpload(filePath, content, fileExt);
-    } else {
-      status = await this.uploadFile(filePath, content, fileExt);
-    }
-    return status;
+    return await this.#uploadFile(destinationFilePath, content, fileExt);
   }
 }
 
