@@ -1,34 +1,50 @@
-
 /**
- * Generates a unique UUID-like string based on timestamp and random values.
- * Follows a variation of the UUIDv4 pattern using time-based and random values.
- * 
- * @returns {string} A UUID-like string in the format 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.
+ * Generates a Version 4 (UUIDv4) UUID.
+ * UUIDv4 is generated using random values and follows the RFC 4122 standard.
+ * The format of the UUID is `xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx` where:
+ * - The version is always 4 (the '4' in the third group).
+ * - The variant is always in the range [8, 9, A, B] for the 'y' in the fourth group.
+ *
+ * @returns {string} The generated UUID.
  */
 function generateUUID() {
-  let timestamp = new Date().getTime(); // Timestamp
-  let microseconds = (typeof performance !== 'undefined' && performance.now)
-    ? performance.now() * 1000
-    : 0; // Microseconds since page load or 0 if unsupported
+  // Create a cryptographically secure random value array of length 16
+  const randomValues = new Uint8Array(16);
+  crypto.getRandomValues(randomValues);
 
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    let randomVal = Math.random() * 16;
+  // Initialize UUID string with the random values
+  let uuid = '';
 
-    if (timestamp > 0) { // Use timestamp until depleted
-      randomVal = (timestamp + randomVal) % 16 | 0;
-      timestamp = Math.floor(timestamp / 16);
-    } else { // Use microseconds since page-load if supported
-      randomVal = (microseconds + randomVal) % 16 | 0;
-      microseconds = Math.floor(microseconds / 16);
+  // Loop over each byte and build the UUID
+  for (let i = 0; i < 16; i += 1) {
+    let hex = randomValues[i].toString(16).padStart(2, '0'); // Convert each byte to a 2-digit hex string
+
+    // Force the version to '4' in the 7th byte (index 6)
+    if (i === 6) {
+      hex = `4${hex.slice(1)}`; // Ensure the 4th group starts with '4'
     }
 
-    return (c === 'x' ? randomVal : (randomVal & 0x3 | 0x8)).toString(16);
-  });
+    // Force the variant to be in the [8, 9, A, B] range in the 9th byte (index 8)
+    if (i === 8) {
+      // Ensure the variant is in the range [8, 9, A, B]
+      const variant = (randomValues[i] % 4) + 8; // This ensures the variant is within [8, 9, A, B]
+      hex = variant.toString(16); // Convert the value to hex
+    }
+
+    // Append the hex value to the UUID string
+    uuid += hex;
+  }
+
+  // Format the string to match the UUIDv4 format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
+  return uuid.replace(
+    /(.{8})(.{4})(.{4})(.{4})(.{12})/,
+    '$1-$2-$3-$4-$5', // Insert dashes in the correct places
+  );
 }
 
 /**
  * Determines the Adobe Target property value based on the page's region.
- * 
+ *
  * @param {string} env - The environment (e.g., 'prod' for production, 'dev' for development).
  * @returns {string} Adobe Target property value.
  */
@@ -37,24 +53,24 @@ function getTargetPropertyBasedOnPageRegion(env) {
 
   if (env !== 'prod') return 'bc8dfa27-29cc-625c-22ea-f7ccebfc6231'; // Default for non-prod environments
 
-  //EMEA & LATAM
+  // EMEA & LATAM
   if (
     pathname.search(
-      /(\/africa\/|\/be_en\/|\/be_fr\/|\/be_nl\/|\/cis_en\/|\/cy_en\/|\/dk\/|\/de\/|\/ee\/|\/es\/|\/fr\/|\/gr_en\/|\/ie\/|\/il_en\/|\/it\/|\/lv\/|\/lu_de\/|\/lu_en\/|\/lu_fr\/|\/hu\/|\/mt\/|\/mena_en\/|\/nl\/|\/no\/|\/pl\/|\/pt\/|\/ro\/|\/ch_de\/|\/si\/|\/sk\/|\/ch_fr\/|\/fi\/|\/se\/|\/ch_it\/|\/tr\/|\/uk\/|\/at\/|\/cz\/|\/bg\/|\/ru\/|\/cis_ru\/|\/ua\/|\/il_he\/|\/mena_ar\/|\/lt\/|\/sa_en\/|\/ae_en\/|\/ae_ar\/|\/sa_ar\/|\/ng\/|\/za\/|\/qa_ar\/|\/eg_en\/|\/eg_ar\/|\/kw_ar\/|\/eg_ar\/|\/qa_en\/|\/kw_en\/|\/gr_el\/|\/br\/|\/cl\/|\/la\/|\/mx\/|\/co\/|\/ar\/|\/pe\/|\/gt\/|\/pr\/|\/ec\/|\/cr\/)/
+      /(\/africa\/|\/be_en\/|\/be_fr\/|\/be_nl\/|\/cis_en\/|\/cy_en\/|\/dk\/|\/de\/|\/ee\/|\/es\/|\/fr\/|\/gr_en\/|\/ie\/|\/il_en\/|\/it\/|\/lv\/|\/lu_de\/|\/lu_en\/|\/lu_fr\/|\/hu\/|\/mt\/|\/mena_en\/|\/nl\/|\/no\/|\/pl\/|\/pt\/|\/ro\/|\/ch_de\/|\/si\/|\/sk\/|\/ch_fr\/|\/fi\/|\/se\/|\/ch_it\/|\/tr\/|\/uk\/|\/at\/|\/cz\/|\/bg\/|\/ru\/|\/cis_ru\/|\/ua\/|\/il_he\/|\/mena_ar\/|\/lt\/|\/sa_en\/|\/ae_en\/|\/ae_ar\/|\/sa_ar\/|\/ng\/|\/za\/|\/qa_ar\/|\/eg_en\/|\/eg_ar\/|\/kw_ar\/|\/eg_ar\/|\/qa_en\/|\/kw_en\/|\/gr_el\/|\/br\/|\/cl\/|\/la\/|\/mx\/|\/co\/|\/ar\/|\/pe\/|\/gt\/|\/pr\/|\/ec\/|\/cr\/)/,
     ) !== -1
   ) {
-    return "488edf5f-3cbe-f410-0953-8c0c5c323772";
+    return '488edf5f-3cbe-f410-0953-8c0c5c323772';
   }
-  else if (  //APAC
+  if ( // APAC
     pathname.search(
-      /(\/au\/|\/hk_en\/|\/in\/|\/nz\/|\/sea\/|\/cn\/|\/hk_zh\/|\/tw\/|\/kr\/|\/sg\/|\/th_en\/|\/th_th\/|\/my_en\/|\/my_ms\/|\/ph_en\/|\/ph_fil\/|\/vn_en\/|\/vn_vi\/|\/in_hi\/|\/id_id\/|\/id_en\/)/
+      /(\/au\/|\/hk_en\/|\/in\/|\/nz\/|\/sea\/|\/cn\/|\/hk_zh\/|\/tw\/|\/kr\/|\/sg\/|\/th_en\/|\/th_th\/|\/my_en\/|\/my_ms\/|\/ph_en\/|\/ph_fil\/|\/vn_en\/|\/vn_vi\/|\/in_hi\/|\/id_id\/|\/id_en\/)/,
     ) !== -1
   ) {
-    return "3de509ee-bbc7-58a3-0851-600d1c2e2918";
+    return '3de509ee-bbc7-58a3-0851-600d1c2e2918';
   }
-  //JP
-  else if (pathname.indexOf("/jp/") !== -1) {
-    return "ba5bc9e8-8fb4-037a-12c8-682384720007";
+  // JP
+  if (pathname.indexOf('/jp/') !== -1) {
+    return 'ba5bc9e8-8fb4-037a-12c8-682384720007';
   }
 
   return 'bc8dfa27-29cc-625c-22ea-f7ccebfc6231'; // Default
@@ -62,14 +78,14 @@ function getTargetPropertyBasedOnPageRegion(env) {
 
 /**
  * Retrieves device-related information such as screen and viewport dimensions.
- * 
+ *
  * @returns {Object} Object containing device and viewport information.
  */
 function getDeviceInfo() {
   return {
     screenWidth: window.screen.width,
     screenHeight: window.screen.height,
-    screenOrientation: window.innerWidth > window.innerHeight ? "landscape" : "portrait",
+    screenOrientation: window.innerWidth > window.innerHeight ? 'landscape' : 'portrait',
     viewportWidth: window.innerWidth,
     viewportHeight: window.innerHeight,
   };
@@ -77,23 +93,24 @@ function getDeviceInfo() {
 
 /**
  * Retrieves the value of a specific cookie by its key.
- * 
+ *
  * @param {string} key - The cookie key.
  * @returns {string|null} The cookie value, or null if the cookie doesn't exist.
  */
 function getCookie(key) {
   const cookie = document.cookie.split(';')
-    .map(x => x.trim().split('='))
+    .map((x) => x.trim().split('='))
     .find(([k]) => k === key);
   return cookie ? cookie[1] : null;
 }
 
 /**
  * Sets a cookie with a specified expiration time (default 730 days).
- * 
+ *
  * @param {string} key - The cookie key.
  * @param {string} value - The cookie value.
- * @param {Object} [options={}] - Optional settings for cookie properties. Defaults to an expiration of 730 days.
+ * @param {Object} [options={}] - Optional settings for cookie properties.
+ * Defaults to an expiration of 730 days.
  */
 function setCookie(key, value, options = {}) {
   // Default expiration (24 months)
@@ -106,8 +123,9 @@ function setCookie(key, value, options = {}) {
 }
 
 /**
- * Retrieves the ECID (Experience Cloud ID) from the browser's cookies or generates a new FPID (First Party ID)
- * if the ECID is not found. Returns the ID in a structured object, depending on which ID is available.
+ * Retrieves the ECID (Experience Cloud ID) from the browser's cookies or
+ * generates a new FPID (First Party ID) if the ECID is not found. Returns
+ * the ID in a structured object, depending on which ID is available.
  *
  * @returns {Object} An object containing either the ECID or FPID.
  *   - If ECID is found, the object will be:
@@ -125,40 +143,40 @@ function getOrGenerateUserId() {
     return {
       FPID: [{
         id: fpidValue,
-        authenticatedState: "ambiguous",
+        authenticatedState: 'ambiguous',
         primary: true,
       }],
     };
   }
 
   // ECID found, return structured ECID object
-  const extractedEcid = amcvCookieValue.substring(6);  // Extract the ECID value from the cookie
+  const extractedEcid = amcvCookieValue.substring(6); // Extract the ECID value from the cookie
   return {
     ECID: [{
       id: extractedEcid,
-      authenticatedState: "ambiguous",
+      authenticatedState: 'ambiguous',
       primary: true,
     }],
   };
 }
 
-
 /**
  * Retrieves the page name for analytics, modified for the current locale.
- * 
+ *
  * @param {Object} params - The parameters.
- * @param {Object} params.locale - The locale object containing language/region info (e.g., { ietf: 'en-US', prefix: 'us' }).
+ * @param {Object} params.locale - The locale object containing
+ * language/region info (e.g., { ietf: 'en-US', prefix: 'us' }).
  * @returns {string} The modified page name.
  */
 function getPageNameForAnalytics({ locale }) {
   const { host, pathname } = new URL(window.location.href);
-  const [modifiedPath] = pathname.split('/').filter(x => x !== locale.prefix).join(':').split('.');
-  return host.replace('www.', '') + ':' + modifiedPath;
+  const [modifiedPath] = pathname.split('/').filter((x) => x !== locale.prefix).join(':').split('.');
+  return `${host.replace('www.', '')}:${modifiedPath}`;
 }
 
 /**
  * Creates the updated context for the request payload for analytics or personalization requests.
- * 
+ *
  * @param {number} screenWidth - Screen width.
  * @param {number} screenHeight - Screen height.
  * @param {string} screenOrientation - Orientation of the screen.
@@ -169,7 +187,8 @@ function getPageNameForAnalytics({ locale }) {
  * @returns {Object} The updated context for the request payload.
  */
 function getUpdatedContext({
-  screenWidth, screenHeight, screenOrientation, viewportWidth, viewportHeight, localTime, timezoneOffset
+  screenWidth, screenHeight, screenOrientation,
+  viewportWidth, viewportHeight, localTime, timezoneOffset,
 }) {
   return {
     device: {
@@ -178,7 +197,7 @@ function getUpdatedContext({
       screenOrientation,
     },
     environment: {
-      type: "browser",
+      type: 'browser',
       browserDetails: {
         viewportWidth,
         viewportHeight,
@@ -193,8 +212,9 @@ function getUpdatedContext({
 
 /**
  * Retrieves specific MarTech cookies by their keys.
- * 
- * @returns {Array<Object>} List of MarTech cookies with each object containing 'key' and 'value' properties.
+ *
+ * @returns {Array<Object>} List of MarTech cookies with each
+ * object containing 'key' and 'value' properties.
  */
 const getMarctechCookies = () => {
   const KNDCTR_COOKIE_KEYS = [
@@ -202,14 +222,14 @@ const getMarctechCookies = () => {
     'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_cluster',
   ];
   return document.cookie.split(';')
-    .map(x => x.trim().split('='))
+    .map((x) => x.trim().split('='))
     .filter(([key]) => KNDCTR_COOKIE_KEYS.includes(key))
     .map(([key, value]) => ({ key, value }));
 };
 
 /**
  * Creates the request payload for Adobe Analytics and Target.
- * 
+ *
  * @param {Object} params - Parameters required to create the payload.
  * @param {Object} params.updatedContext - The updated context for the request.
  * @param {string} params.pageName - The page name for the analytics request.
@@ -221,7 +241,7 @@ function createRequestPayload({ updatedContext, pageName, locale, env }) {
   const prevPageName = getCookie('gpv');
 
   const REPORT_SUITES_ID = env === 'prod' ? ['adbadobenonacdcprod'] : ['adbadobenonacdcqa'];
-  let AT_PROPERTY_VAL = getTargetPropertyBasedOnPageRegion(env);
+  const AT_PROPERTY_VAL = getTargetPropertyBasedOnPageRegion(env);
 
   return {
     event: {
@@ -231,58 +251,61 @@ function createRequestPayload({ updatedContext, pageName, locale, env }) {
         web: {
           webPageDetails: {
             URL: window.location.href,
-            siteSection: "www.adobe.com",
-            server: "www.adobe.com",
+            siteSection: 'www.adobe.com',
+            server: 'www.adobe.com',
             isErrorPage: false,
             isHomePage: false,
             name: pageName,
             pageViews: { value: 0 },
           },
           webInteraction: {
-            name: "Martech-API",
-            type: "other",
+            name: 'Martech-API',
+            type: 'other',
             linkClicks: { value: 1 },
           },
           webReferrer: { URL: document.referrer },
         },
         timestamp: new Date().toISOString(),
-        eventType: "decisioning.propositionFetch",
+        eventType: 'decisioning.propositionFetch',
       },
       data: {
         __adobe: {
-          target: { is404: false, authState: "loggedOut", hitType: "propositionFetch", isMilo: true, adobeLocale: locale.ietf, hasGnav: true },
+          target: {
+            is404: false, authState: 'loggedOut', hitType: 'propositionFetch', isMilo: true, adobeLocale: locale.ietf, hasGnav: true,
+          },
         },
         _adobe_corpnew: {
-          marketingtech: { adobe: { alloy: { approach: "martech-API" } } },
+          marketingtech: { adobe: { alloy: { approach: 'martech-API' } } },
           digitalData: {
             page: { pageInfo: { language: locale.ietf } },
-            diagnostic: { franklin: { implementation: "milo" } },
+            diagnostic: { franklin: { implementation: 'milo' } },
             previousPage: { pageInfo: { pageName: prevPageName } },
-            primaryUser: { primaryProfile: { profileInfo: { authState: "loggedOut", returningStatus: "Repeat" } } },
+            primaryUser: { primaryProfile: { profileInfo: { authState: 'loggedOut', returningStatus: 'Repeat' } } },
           },
         },
       },
     },
     query: {
-      identity: { fetch: ["ECID"] },
+      identity: { fetch: ['ECID'] },
       personalization: {
         schemas: [
-          "https://ns.adobe.com/personalization/default-content-item",
-          "https://ns.adobe.com/personalization/html-content-item",
-          "https://ns.adobe.com/personalization/json-content-item",
-          "https://ns.adobe.com/personalization/redirect-item",
-          "https://ns.adobe.com/personalization/dom-action",
+          'https://ns.adobe.com/personalization/default-content-item',
+          'https://ns.adobe.com/personalization/html-content-item',
+          'https://ns.adobe.com/personalization/json-content-item',
+          'https://ns.adobe.com/personalization/redirect-item',
+          'https://ns.adobe.com/personalization/dom-action',
         ],
-        decisionScopes: ["__view__"],
+        decisionScopes: ['__view__'],
       },
     },
     meta: {
-      target: {
-        migration: true,
+      target: { migration: true },
+      configOverrides: {
+        com_adobe_analytics: { reportSuites: REPORT_SUITES_ID },
+        com_adobe_target: { propertyToken: AT_PROPERTY_VAL },
       },
-      configOverrides: { com_adobe_analytics: { reportSuites: REPORT_SUITES_ID }, com_adobe_target: { propertyToken: AT_PROPERTY_VAL } },
       state: {
-        domain: "localhost",
+        domain: 'localhost',
         cookiesEnabled: true,
         entries: getMarctechCookies(),
       },
@@ -292,19 +315,19 @@ function createRequestPayload({ updatedContext, pageName, locale, env }) {
 
 /**
  * Extracts the ECID (Experience Cloud ID) from the API response data.
- * 
+ *
  * @param {Object} data - The response data from the API.
  * @returns {string|null} The ECID value, or null if not found.
  */
 function extractECID(data) {
   return data.handle
-    .flatMap(item => item.payload)
-    .find(p => p.namespace?.code === "ECID")?.id || null;
+    .flatMap((item) => item.payload)
+    .find((p) => p.namespace?.code === 'ECID')?.id || null;
 }
 
 /**
  * Updates the AMCV cookie with the new ECID.
- * 
+ *
  * @param {string} ECID - The Experience Cloud ID (ECID).
  */
 function updateAMCVCookie(ECID) {
@@ -319,18 +342,18 @@ function updateAMCVCookie(ECID) {
 /**
  * Loads analytics and interaction data based on the user and page context.
  * Sends the data to Adobe Analytics and Adobe Target for personalization.
- * 
+ *
  * @param {Object} params - The parameters for the function.
  * @param {Object} params.locale - The locale object containing language/region info.
  * @param {string} params.env - The environment (e.g., 'prod' for production).
  * @param {string} [params.timeoutMeta] - Optional timeout value for the request in milliseconds.
- * 
- * @returns {Promise<Object>} A promise that resolves to the personalization propositions fetched from Adobe Target.
+ *
+ * @returns {Promise<Object>} A promise that resolves to the
+ * personalization propositions fetched from Adobe Target.
  */
 export const loadAnalyticsAndInteractionData = async ({ locale, env, timeoutMeta }) => {
-
   if (getCookie('kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent') === 'general%3Dout') {
-    return Promise.reject('Consent Cookie doesnt allow interact');
+    return Promise.reject(new Error('Consent Cookie doesnt allow interact'));
   }
 
   // Define constants based on environment
@@ -338,7 +361,10 @@ export const loadAnalyticsAndInteractionData = async ({ locale, env, timeoutMeta
   const TARGET_API_URL = 'https://edge.adobedc.net/ee/v2/interact';
 
   // Device and viewport information
-  const { screenWidth, screenHeight, screenOrientation, viewportWidth, viewportHeight } = getDeviceInfo();
+  const {
+    screenWidth, screenHeight,
+    screenOrientation, viewportWidth, viewportHeight,
+  } = getDeviceInfo();
 
   // Date and Time Constants
   const CURRENT_DATE = new Date();
@@ -348,7 +374,13 @@ export const loadAnalyticsAndInteractionData = async ({ locale, env, timeoutMeta
   const pageName = getPageNameForAnalytics({ locale });
 
   const updatedContext = getUpdatedContext({
-    screenWidth, screenHeight, screenOrientation, viewportWidth, viewportHeight, LOCAL_TIME, LOCAL_TIMEZONE_OFFSET
+    screenWidth,
+    screenHeight,
+    screenOrientation,
+    viewportWidth,
+    viewportHeight,
+    LOCAL_TIME,
+    LOCAL_TIMEZONE_OFFSET,
   });
 
   // Prepare the body for the request
@@ -371,9 +403,7 @@ export const loadAnalyticsAndInteractionData = async ({ locale, env, timeoutMeta
         method: 'POST',
         body: JSON.stringify(requestBody),
       }),
-      new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Request timed out')), timeout)
-      ),
+      new Promise((_, reject) => { setTimeout(() => reject(new Error('Request timed out')), timeout); }),
     ]);
 
     if (!targetResp.ok) {
@@ -386,21 +416,21 @@ export const loadAnalyticsAndInteractionData = async ({ locale, env, timeoutMeta
     updateAMCVCookie(ECID);
 
     // Resolve or reject based on propositions
-    const resultPayload = targetRespJson?.handle?.find(d => d.type === 'personalization:decisions')?.payload;
+    const resultPayload = targetRespJson?.handle?.find((d) => d.type === 'personalization:decisions')?.payload;
 
     return new Promise((resolve, reject) => {
       if (resultPayload.length > 0) {
         resolve({
           type: 'propositionFetch',
-          result: {
-            propositions: resultPayload,
-          },
+          result: { propositions: resultPayload },
         });
       } else {
-        reject('No propositions found');
+        reject(new Error('No propositions found'));
       }
     });
   } catch (err) {
     return Promise.reject(err);
   }
-}
+};
+
+export default { loadAnalyticsAndInteractionData };

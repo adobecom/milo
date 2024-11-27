@@ -1,5 +1,5 @@
 import {
-  getConfig, loadIms, loadLink, loadScript, getMepEnablement, enablePersonalizationV2, getMetadata
+  getConfig, loadIms, loadLink, loadScript, getMepEnablement, enablePersonalizationV2, getMetadata,
 } from '../utils/utils.js';
 
 const ALLOY_SEND_EVENT = 'alloy_sendEvent';
@@ -27,7 +27,7 @@ const setDeep = (obj, path, value) => {
 };
 
 // eslint-disable-next-line max-len
-const waitForEventOrTimeout = (eventName, timeout, returnValIfTimeout) => new Promise((resolve) => {
+const waitForEventOrTimeout = (eventName, timeoutLocal, returnValIfTimeout) => new Promise((resolve) => {
   const listener = (event) => {
     // eslint-disable-next-line no-use-before-define
     clearTimeout(timer);
@@ -47,7 +47,7 @@ const waitForEventOrTimeout = (eventName, timeout, returnValIfTimeout) => new Pr
     } else {
       resolve({ timeout: true });
     }
-  }, timeout);
+  }, timeoutLocal);
 
   window.addEventListener(eventName, listener, { once: true });
   window.addEventListener(ALLOY_SEND_EVENT_ERROR, errorListener, { once: true });
@@ -90,10 +90,10 @@ function calculateResponseTime(responseStart) {
   return roundToQuarter(responseTime);
 }
 
-function sendTargetResponseAnalytics(failure, responseStart, timeout, message) {
+function sendTargetResponseAnalytics(failure, responseStart, timeoutLocal, message) {
   // temporary solution until we can decide on a better timeout value
   const responseTime = calculateResponseTime(responseStart);
-  const timeoutTime = roundToQuarter(timeout);
+  const timeoutTime = roundToQuarter(timeoutLocal);
   let val = `target response time ${responseTime}:timed out ${failure}:timeout ${timeoutTime}`;
   if (message) val += `:${message}`;
   // eslint-disable-next-line no-underscore-dangle
@@ -130,17 +130,17 @@ export const getTargetPersonalization = async (targetInteractionPromise) => {
 
   if (enablePersonalizationV2() && targetInteractionPromise) {
     sendTargetResponseAnalytics(false, responseStart, timeout);
-    try{
-      const targetInteractionData = await targetInteractionPromise
-      targetManifests = handleAlloyResponse(targetInteractionData.result)
-      targetPropositions = targetInteractionData.result?.propositions || []
-    } catch (err){
+    try {
+      const targetInteractionData = await targetInteractionPromise;
+      targetManifests = handleAlloyResponse(targetInteractionData.result);
+      targetPropositions = targetInteractionData.result?.propositions || [];
+    } catch (err) {
       console.log('Oops!! Interact Call didnt go through', err);
     }
 
     return {
       targetManifests,
-      targetPropositions
+      targetPropositions,
     };
   }
 
@@ -225,10 +225,10 @@ const loadMartechFiles = async (config) => {
         ? '/marketingtech'
         : 'https://assets.adobedtm.com'
     ) + (
-        config.env.name === 'prod'
-          ? '/d4d114c60e50/a0e989131fd5/launch-5dd5dd2177e6.min.js'
-          : '/d4d114c60e50/a0e989131fd5/launch-2c94beadc94f-development.min.js'
-      );
+      config.env.name === 'prod'
+        ? '/d4d114c60e50/a0e989131fd5/launch-5dd5dd2177e6.min.js'
+        : '/d4d114c60e50/a0e989131fd5/launch-2c94beadc94f-development.min.js'
+    );
     loadLink(launchUrl, { as: 'script', rel: 'preload' });
 
     window.marketingtech = {
@@ -261,10 +261,10 @@ const loadMartechFiles = async (config) => {
         ? ''
         : 'https://www.adobe.com'
     ) + (
-        config.env.name === 'prod'
-          ? '/marketingtech/main.standard.min.js'
-          : '/marketingtech/main.standard.qa.min.js'
-      ));
+      config.env.name === 'prod'
+        ? '/marketingtech/main.standard.min.js'
+        : '/marketingtech/main.standard.qa.min.js'
+    ));
     // eslint-disable-next-line no-underscore-dangle
     window._satellite.track('pageload');
   };

@@ -1,7 +1,9 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-console */
 
-import { createTag, getConfig, loadLink, loadScript, localizeLink, enablePersonalizationV2 } from '../../utils/utils.js';
+import {
+  createTag, getConfig, loadLink, loadScript, localizeLink, enablePersonalizationV2,
+} from '../../utils/utils.js';
 import { getFederatedUrl } from '../../utils/federated.js';
 
 /* c8 ignore start */
@@ -773,7 +775,7 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
 
   let userEntitlements = [];
   if (hasEntitlementTag) {
-    if(enablePersonalizationV2()){
+    if (enablePersonalizationV2()) {
       userEntitlements = [];
     } else {
       userEntitlements = await config.entitlements();
@@ -1117,7 +1119,10 @@ export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => 
 
 async function callMartech(config, targetInteractionPromise = null) {
   const { getTargetPersonalization } = await import('../../martech/martech.js');
-  const { targetManifests, targetPropositions } = await getTargetPersonalization(targetInteractionPromise);
+  const {
+    targetManifests,
+    targetPropositions,
+  } = await getTargetPersonalization(targetInteractionPromise);
   config.mep.targetManifests = targetManifests;
   if (targetPropositions?.length && window._satellite) {
     window._satellite.track('propositionDisplay', targetPropositions);
@@ -1134,7 +1139,7 @@ const awaitMartech = () => new Promise((resolve) => {
   window.addEventListener(MARTECH_RETURNED_EVENT, listener, { once: true });
 });
 
-export async function init(enablements = {}, targetInteractionPromise) {
+export async function init(enablements = {}, targetInteractionPromise = null) {
   let manifests = [];
   const {
     mepParam, mepHighlight, mepButton, pzn, promo, target, postLCP,
@@ -1164,7 +1169,7 @@ export async function init(enablements = {}, targetInteractionPromise) {
 
   if (target === true) {
     let localManifests = [];
-    if(enablePersonalizationV2()){
+    if (enablePersonalizationV2()) {
       localManifests = await callMartech(config, targetInteractionPromise);
     } else {
       localManifests = await callMartech(config);
@@ -1173,7 +1178,7 @@ export async function init(enablements = {}, targetInteractionPromise) {
   }
 
   if (target === 'postlcp') {
-    if(enablePersonalizationV2()){
+    if (enablePersonalizationV2()) {
       await callMartech(config, targetInteractionPromise);
     } else {
       callMartech(config);
