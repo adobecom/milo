@@ -837,6 +837,8 @@ export async function getManifestConfig(info = {}, variantOverride = false) {
     variantLabel,
     disabled,
     event,
+    shown,
+    source,
   } = info;
   if (disabled && (!variantOverride || !Object.keys(variantOverride).length)) {
     return createDefaultExperiment(info);
@@ -901,6 +903,8 @@ export async function getManifestConfig(info = {}, variantOverride = false) {
   manifestConfig.manifestUrl = manifestUrl;
   manifestConfig.disabled = disabled;
   manifestConfig.event = event;
+  if (shown) manifestConfig.shown = shown;
+  if (source?.length) manifestConfig.source = source;
   return manifestConfig;
 }
 
@@ -971,6 +975,8 @@ export function cleanAndSortManifestList(manifests) {
           fullManifest = manifest;
           freshManifest = manifestObj[manifest.manifestPath];
         }
+        if (Number.isInteger(freshManifest?.shown)) freshManifest.shown += 1;
+        freshManifest.source.concat(fullManifest.source);
         freshManifest.name = fullManifest.name;
         freshManifest.selectedVariantName = fullManifest.selectedVariantName;
         freshManifest.selectedVariant = freshManifest.variants[freshManifest.selectedVariantName];
@@ -1081,7 +1087,7 @@ export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => 
     persManifests = persEnabled.toLowerCase()
       .split(/,|(\s+)|(\\n)/g)
       .filter((path) => path?.trim())
-      .map((manifestPath) => ({ manifestPath }));
+      .map((manifestPath) => ({ manifestPath, shown: 1, source: ['pzn'] }));
   }
 
   if (promoEnabled) {
@@ -1114,6 +1120,9 @@ export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => 
 async function callMartech(config) {
   const { getTargetPersonalization } = await import('../../martech/martech.js');
   const { targetManifests, targetPropositions } = await getTargetPersonalization();
+  targetManifests.forEach((manifest) => {
+    manifest.source = ['target'];
+  });
   config.mep.targetManifests = targetManifests;
   if (targetPropositions?.length && window._satellite) {
     window._satellite.track('propositionDisplay', targetPropositions);
