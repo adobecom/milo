@@ -346,12 +346,12 @@ function updateAMCVCookie(ECID) {
  * @param {Object} params - The parameters for the function.
  * @param {Object} params.locale - The locale object containing language/region info.
  * @param {string} params.env - The environment (e.g., 'prod' for production).
- * @param {string} [params.timeoutMeta] - Optional timeout value for the request in milliseconds.
+ * @param {string} [params.calculatedTimeout] - timeout value for the request in milliseconds.
  *
  * @returns {Promise<Object>} A promise that resolves to the
  * personalization propositions fetched from Adobe Target.
  */
-export const loadAnalyticsAndInteractionData = async ({ locale, env, timeoutMeta }) => {
+export const loadAnalyticsAndInteractionData = async ({ locale, env, calculatedTimeout }) => {
   if (getCookie('kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent') === 'general%3Dout') {
     return Promise.reject(new Error('Consent Cookie doesnt allow interact'));
   }
@@ -392,18 +392,12 @@ export const loadAnalyticsAndInteractionData = async ({ locale, env, timeoutMeta
   });
 
   try {
-    const TARGET_TIMEOUT_MS = 4000;
-    const params = new URL(window.location.href).searchParams;
-    const timeout = parseInt(params.get('target-timeout'), 10)
-      || parseInt(timeoutMeta, 10)
-      || TARGET_TIMEOUT_MS;
-
     const targetResp = await Promise.race([
       fetch(`${TARGET_API_URL}?dataStreamId=${DATA_STREAM_ID}`, {
         method: 'POST',
         body: JSON.stringify(requestBody),
       }),
-      new Promise((_, reject) => { setTimeout(() => reject(new Error('Request timed out')), timeout); }),
+      new Promise((_, reject) => { setTimeout(() => reject(new Error('Request timed out')), calculatedTimeout); }),
     ]);
 
     if (!targetResp.ok) {

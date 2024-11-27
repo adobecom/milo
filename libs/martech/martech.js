@@ -1,5 +1,5 @@
 import {
-  getConfig, loadIms, loadLink, loadScript, getMepEnablement, enablePersonalizationV2, getMetadata,
+  getConfig, loadIms, loadLink, loadScript, getMepEnablement, getMetadata,
 } from '../utils/utils.js';
 
 const ALLOY_SEND_EVENT = 'alloy_sendEvent';
@@ -53,34 +53,6 @@ const waitForEventOrTimeout = (eventName, timeoutLocal, returnValIfTimeout) => n
   window.addEventListener(ALLOY_SEND_EVENT_ERROR, errorListener, { once: true });
 });
 
-const handleAlloyResponse = (response) => {
-  const items = (
-    (response.propositions?.length && response.propositions)
-    || (response.decisions?.length && response.decisions)
-    || []
-  ).map((i) => i.items).flat();
-
-  if (!items?.length) return [];
-
-  return items
-    .map((item) => {
-      const content = item?.data?.content;
-      if (!content || !(content.manifestLocation || content.manifestContent)) return null;
-
-      return {
-        manifestPath: content.manifestLocation || content.manifestPath,
-        manifestUrl: content.manifestLocation,
-        manifestData: content.manifestContent?.experiences?.data || content.manifestContent?.data,
-        manifestPlaceholders: content.manifestContent?.placeholders?.data,
-        manifestInfo: content.manifestContent?.info.data,
-        name: item.meta['activity.name'],
-        variantLabel: item.meta['experience.name'] && `target-${item.meta['experience.name']}`,
-        meta: item.meta,
-      };
-    })
-    .filter(Boolean);
-};
-
 function roundToQuarter(num) {
   return Math.ceil(num / 250) / 4;
 }
@@ -90,30 +62,9 @@ function calculateResponseTime(responseStart) {
   return roundToQuarter(responseTime);
 }
 
-function sendTargetResponseAnalytics(failure, responseStart, timeoutLocal, message) {
-  // temporary solution until we can decide on a better timeout value
-  const responseTime = calculateResponseTime(responseStart);
-  const timeoutTime = roundToQuarter(timeoutLocal);
-  let val = `target response time ${responseTime}:timed out ${failure}:timeout ${timeoutTime}`;
-  if (message) val += `:${message}`;
-  // eslint-disable-next-line no-underscore-dangle
-  window._satellite?.track?.('event', {
-    documentUnloading: true,
-    xdm: {
-      eventType: 'web.webinteraction.linkClicks',
-      web: {
-        webInteraction: {
-          linkClicks: { value: 1 },
-          type: 'other',
-          name: val,
-        },
-      },
-    },
-    data: { _adobe_corpnew: { digitalData: { primaryEvent: { eventInfo: { eventName: val } } } } },
-  });
-}
-
-export const getTargetPersonalization = async (targetInteractionPromise) => {
+export const getTargetPersonalization = async (
+  { handleAlloyResponse, sendTargetResponseAnalytics },
+) => {
   const responseStart = Date.now();
   window.addEventListener(ALLOY_SEND_EVENT, () => {
     const responseTime = calculateResponseTime(responseStart);
@@ -127,22 +78,6 @@ export const getTargetPersonalization = async (targetInteractionPromise) => {
 
   let targetManifests = [];
   let targetPropositions = [];
-
-  if (enablePersonalizationV2() && targetInteractionPromise) {
-    sendTargetResponseAnalytics(false, responseStart, timeout);
-    try {
-      const targetInteractionData = await targetInteractionPromise;
-      targetManifests = handleAlloyResponse(targetInteractionData.result);
-      targetPropositions = targetInteractionData.result?.propositions || [];
-    } catch (err) {
-      console.log('Oops!! Interact Call didnt go through', err);
-    }
-
-    return {
-      targetManifests,
-      targetPropositions,
-    };
-  }
 
   const response = await waitForEventOrTimeout(ALLOY_SEND_EVENT, timeout);
   if (response.error) {

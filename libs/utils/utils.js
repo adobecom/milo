@@ -140,6 +140,7 @@ ENVS.local = {
 };
 
 export const MILO_EVENTS = { DEFERRED: 'milo:deferred' };
+const TARGET_TIMEOUT_MS = 4000;
 
 const LANGSTORE = 'langstore';
 const PREVIEW = 'target-preview';
@@ -169,8 +170,6 @@ export function getEnv(conf) {
   return { ...ENVS.prod, consumer: conf.prod };
   /* c8 ignore stop */
 }
-
-let delayedMartech = false;
 
 export function getLocale(locales, pathname = window.location.pathname) {
   if (!locales) {
@@ -1039,21 +1038,12 @@ export async function loadMartech({
  * @returns {boolean} True if the user is signed out, otherwise false.
  */
 function isSignedOut() {
-  const w = window; const perf = w.performance; let
-    serverTiming = {};
+  const serverTiming = window.performance?.getEntriesByType('navigation')?.[0]?.serverTiming?.reduce(
+    (acc, { name, description }) => ({ ...acc, [name]: description }),
+    {},
+  );
 
-  if (perf && perf.getEntriesByType) {
-    serverTiming = Object.fromEntries(
-      perf.getEntriesByType('navigation')?.[0]?.serverTiming?.map?.(
-        ({ name, description }) => ([name, description]),
-      ) ?? [],
-    );
-  }
-
-  const isSignedOutOnStagingOrProd = serverTiming && serverTiming.sis === '0';
-
-  // Return true if it's a dev environment or signed out on staging/prod
-  return !Object.keys(serverTiming || {}).length || isSignedOutOnStagingOrProd;
+  return !Object.keys(serverTiming || {}).length || serverTiming?.sis === '0';
 }
 
 /**
@@ -1085,13 +1075,33 @@ async function checkForPageMods() {
 
   const enablePersV2 = enablePersonalizationV2();
   if (martech !== 'off' && (target || xlg || pzn) && enablePersV2) {
+    const params = new URL(window.location.href).searchParams;
+    const calculatedTimeout = parseInt(params.get('target-timeout'), 10)
+  || parseInt(getMetadata('target-timeout'), 10)
+  || TARGET_TIMEOUT_MS;
+
     const { locale } = getConfig();
-    const { loadAnalyticsAndInteractionData } = await import('../martech/helpers.js');
-    targetInteractionPromise = loadAnalyticsAndInteractionData(
-      { locale, env: getEnv({})?.name, timeoutMeta: getMetadata('target-timeout') },
-    );
-    delayedMartech = true;
-  } else if (target || xlg) {
+    targetInteractionPromise = new Promise((res) => {
+      import('../martech/helpers.js').then(({ loadAnalyticsAndInteractionData }) => {
+        res(loadAnalyticsAndInteractionData(
+          { locale, env: getEnv({})?.name, calculatedTimeout },
+        ));
+      });
+    });
+    const { init } = await import('../features/personalization/personalization.js');
+    await init({
+      mepParam,
+      mepHighlight,
+      mepButton,
+      pzn,
+      promo,
+      target,
+      targetInteractionPromise,
+      calculatedTimeout,
+    });
+    return;
+  }
+  if (target || xlg) {
     loadMartech();
   } else if (pzn && martech !== 'off') {
     loadIms()
@@ -1104,15 +1114,11 @@ async function checkForPageMods() {
 
   const { init } = await import('../features/personalization/personalization.js');
   await init({
-    mepParam, mepHighlight, mepButton, pzn, promo, target,
-  }, targetInteractionPromise);
+    mepParam, mepHighlight, mepButton, pzn, promo, target, targetInteractionPromise,
+  });
 }
 
 async function loadPostLCP(config) {
-  const enablePersV2 = enablePersonalizationV2();
-  if (enablePersV2 && delayedMartech) {
-    await loadMartech();
-  }
   await decoratePlaceholders(document.body.querySelector('header'), config);
   const sk = document.querySelector('aem-sidekick, helix-sidekick');
   if (sk) import('./sidekick-decorate.js').then((mod) => { mod.default(sk); });
@@ -1120,7 +1126,10 @@ async function loadPostLCP(config) {
     /* c8 ignore next 2 */
     const { init } = await import('../features/personalization/personalization.js');
     await init({ postLCP: true });
-  } else if (!enablePersV2) {
+    if (enablePersonalizationV2()) {
+      loadMartech();
+    }
+  } else {
     loadMartech();
   }
 
