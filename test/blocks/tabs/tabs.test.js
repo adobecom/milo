@@ -4,6 +4,7 @@ import { delay } from '../../helpers/waitfor.js';
 import { loadStyle } from '../../../libs/utils/utils.js';
 
 const DESKTOP_WIDTH = 1200;
+const TABLET_WIDTH = 768;
 const MOBILE_WIDTH = 375;
 const HEIGHT = 1500;
 
@@ -93,5 +94,17 @@ describe('tabs', () => {
     await delay(300);
 
     expect(tabList.scrollLeft).to.equal(0);
+  });
+
+  describe('stacked mobile variant', () => {
+    it('scrolls the window to the selected tab content', async () => {
+      setViewport({ width: MOBILE_WIDTH, height: HEIGHT });
+      window.dispatchEvent(new Event('resize'));
+      const oldPosition = window.scrollY;
+      document.querySelector('#stacked-mobile .tabs button').click();
+      await delay(50);
+      const newPosition = window.scrollY;
+      expect(newPosition).to.be.above(oldPosition);
+    });
   });
 });
