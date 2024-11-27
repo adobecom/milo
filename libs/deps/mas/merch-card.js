@@ -1302,6 +1302,14 @@ merch-card[variant='twp'] merch-offer-select {
   --merch-card-ccd-suggested-background-img-size: 119px;
 }
 
+sp-theme[color='light'] merch-card[variant="ccd-suggested"] {
+  color: var(--spectrum-gray-800);
+}
+
+sp-theme[color='darkest'] merch-card[variant="ccd-suggested"] {
+  color: var(--merch-ccd-gray-800);
+}
+
 sp-theme[color='light'] merch-card[variant="ccd-suggested"] [slot="detail-s"] {
   color: var(--spectrum-gray-600);
 }
@@ -1479,14 +1487,6 @@ sp-theme[color='light'] merch-card[variant="ccd-suggested"] [slot="cta"] a {
   --consonant-merch-card-ccd-slice-wide-width: 600px;
   --consonant-merch-card-ccd-slice-single-height: 154px;
   --consonant-merch-card-ccd-slice-background-img-size: 119px;
-}
-
-sp-theme[color='light'] merch-card[variant="ccd-slice"] {
-  color: var(--spectrum-gray-800);
-}
-
-sp-theme[color='darkest'] merch-card[variant="ccd-slice"] {
-  color: var(--spectrum-gray-100);
 }
 
 merch-card[variant="ccd-slice"] [slot='body-s'] a:not(.con-button) {

@@ -7,14 +7,6 @@ export const CSS = `
   --consonant-merch-card-ccd-slice-background-img-size: 119px;
 }
 
-sp-theme[color='light'] merch-card[variant="ccd-slice"] {
-  color: var(--spectrum-gray-800);
-}
-
-sp-theme[color='darkest'] merch-card[variant="ccd-slice"] {
-  color: var(--spectrum-gray-100);
-}
-
 merch-card[variant="ccd-slice"] [slot='body-s'] a:not(.con-button) {
   color: var(--spectrum-gray-800);
 }
