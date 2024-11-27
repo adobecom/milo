@@ -39,6 +39,8 @@ export class CCDSlice extends VariantLayout {
             max-width: var(--consonant-merch-card-ccd-slice-single-width);
             max-height: var(--consonant-merch-card-ccd-slice-single-height);
             height: var(--consonant-merch-card-ccd-slice-single-height);
+            background-color: var(--spectrum-gray-100);
+            border: 1px solid var(--spectrum-gray-200);
             border-radius: 4px;
             display: flex;
             flex-flow: wrap;

@@ -8,23 +8,15 @@ export const CSS = `
 }
 
 sp-theme[color='light'] merch-card[variant="ccd-slice"] {
-  background-color: #F8F8F8;
-  border: 1px solid #E6E6E6;
-  color: #222;
+  color: var(--spectrum-gray-800);
 }
 
 sp-theme[color='darkest'] merch-card[variant="ccd-slice"] {
-  background-color: #1D1D1D;
-  border: 1px solid #3F3F3F;
-  color: #F8F8F8;
+  color: var(--spectrum-gray-100);
 }
 
-sp-theme[color='light'] merch-card[variant="ccd-slice"] [slot='body-s'] a:not(.con-button) {
-  color: #222;
-}
-
-sp-theme[color='darkest'] merch-card[variant="ccd-slice"] [slot='body-s'] a:not(.con-button) {
-  color: #F8F8F8;
+merch-card[variant="ccd-slice"] [slot='body-s'] a:not(.con-button) {
+  color: var(--spectrum-gray-800);
 }
 
 merch-card[variant="ccd-slice"] [slot='body-s'] a:not(.con-button) {

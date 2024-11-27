@@ -50,7 +50,6 @@ export class CCDSuggested extends VariantLayout {
       min-width: var(--merch-card-ccd-suggested-width);
       min-height: var(--merch-card-ccd-suggested-height);
       background-color: var(--spectrum-gray-100);
-      color: var(--spectrum-gray-800);
       border: 1px solid var(--spectrum-gray-200);
       border-radius: 4px;
       display: flex;
