@@ -1291,7 +1291,7 @@ sp-theme[color='light'] merch-card[variant="ccd-suggested"] [slot="detail-s"] {
 }
 
 sp-theme[color='darkest'] merch-card[variant="ccd-suggested"] [slot="detail-s"] {
-  color: var(--merch-ccd-gray-100);
+  color: var(--spectrum-gray-900);
 }
 
 merch-card[variant="ccd-suggested"] [slot="heading-xs"] {
@@ -1304,7 +1304,7 @@ sp-theme[color='light'] merch-card[variant="ccd-suggested"] [slot="heading-xs"] 
 }
 
 sp-theme[color='darkest'] merch-card[variant="ccd-suggested"] [slot="heading-xs"] {
-  color: var(--merch-ccd-gray-100);
+  color: var(--spectrum-gray-900);
 }
 
 sp-theme[color='light'] merch-card[variant="ccd-suggested"] [slot="body-xs"] {
@@ -1312,7 +1312,7 @@ sp-theme[color='light'] merch-card[variant="ccd-suggested"] [slot="body-xs"] {
 }
 
 sp-theme[color='darkest'] merch-card[variant="ccd-suggested"] [slot="body-xs"] {
-  color: var(--merch-ccd-gray-100);
+  color: var(--spectrum-gray-900);
 }
 
 merch-card[variant="ccd-suggested"] [slot="body-xs"] a {
@@ -1659,9 +1659,6 @@ merch-card[variant="ccd-slice"] [slot='image'] img {
     --merch-color-grey-200: #E8E8E8;
     --merch-color-grey-600: #686868;
     --merch-color-green-promo: #2D9D78;
-
-    /* custom ccd colors that do not match with any spectrum vars */
-    --merch-ccd-gray-100: #F8F8F8;
 
     /* merch card generic */
     --consonant-merch-card-max-width: 300px;

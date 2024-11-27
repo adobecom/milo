@@ -18,7 +18,7 @@ sp-theme[color='light'] merch-card[variant="ccd-suggested"] [slot="detail-s"] {
 }
 
 sp-theme[color='darkest'] merch-card[variant="ccd-suggested"] [slot="detail-s"] {
-  color: var(--merch-ccd-gray-100);
+  color: var(--spectrum-gray-900);
 }
 
 merch-card[variant="ccd-suggested"] [slot="heading-xs"] {
@@ -31,7 +31,7 @@ sp-theme[color='light'] merch-card[variant="ccd-suggested"] [slot="heading-xs"] 
 }
 
 sp-theme[color='darkest'] merch-card[variant="ccd-suggested"] [slot="heading-xs"] {
-  color: var(--merch-ccd-gray-100);
+  color: var(--spectrum-gray-900);
 }
 
 sp-theme[color='light'] merch-card[variant="ccd-suggested"] [slot="body-xs"] {
@@ -39,7 +39,7 @@ sp-theme[color='light'] merch-card[variant="ccd-suggested"] [slot="body-xs"] {
 }
 
 sp-theme[color='darkest'] merch-card[variant="ccd-suggested"] [slot="body-xs"] {
-  color: var(--merch-ccd-gray-100);
+  color: var(--spectrum-gray-900);
 }
 
 merch-card[variant="ccd-suggested"] [slot="body-xs"] a {
