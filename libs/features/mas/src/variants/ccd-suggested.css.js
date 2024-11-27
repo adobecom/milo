@@ -5,14 +5,6 @@ export const CSS = `
   --merch-card-ccd-suggested-background-img-size: 119px;
 }
 
-sp-theme[color='light'] merch-card[variant="ccd-suggested"] {
-  color: var(--spectrum-gray-800);
-}
-
-sp-theme[color='darkest'] merch-card[variant="ccd-suggested"] {
-  color: var(--merch-ccd-gray-900);
-}
-
 sp-theme[color='light'] merch-card[variant="ccd-suggested"] [slot="detail-s"] {
   color: var(--spectrum-gray-600);
 }

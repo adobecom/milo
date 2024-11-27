@@ -1302,14 +1302,6 @@ merch-card[variant='twp'] merch-offer-select {
   --merch-card-ccd-suggested-background-img-size: 119px;
 }
 
-sp-theme[color='light'] merch-card[variant="ccd-suggested"] {
-  color: var(--spectrum-gray-800);
-}
-
-sp-theme[color='darkest'] merch-card[variant="ccd-suggested"] {
-  color: var(--merch-ccd-gray-900);
-}
-
 sp-theme[color='light'] merch-card[variant="ccd-suggested"] [slot="detail-s"] {
   color: var(--spectrum-gray-600);
 }
@@ -1392,6 +1384,7 @@ sp-theme[color='light'] merch-card[variant="ccd-suggested"] [slot="cta"] a {
       min-height: var(--merch-card-ccd-suggested-height);
       background-color: var(--spectrum-gray-100);
       border: 1px solid var(--spectrum-gray-200);
+      color: var(--spectrum-gray-800);
       border-radius: 4px;
       display: flex;
       flex-flow: wrap;
