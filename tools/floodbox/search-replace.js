@@ -16,7 +16,7 @@ class SearchReplace {
   }
 
   searchAndReplace(content) {
-    let updatedContent = '';
+    let updatedContent;
     if (this.searchType === 'floodgate') {
       updatedContent = this.adjustUrlDomains(content);
     } else if (this.searchType === 'graybox') {
@@ -29,6 +29,7 @@ class SearchReplace {
     } else {
       // eslint-disable-next-line no-console
       console.error(`Unknown search type: ${this.searchType}`);
+      updatedContent = content;
     }
     return updatedContent;
   }
