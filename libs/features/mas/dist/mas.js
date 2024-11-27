@@ -1283,7 +1283,7 @@ sp-theme[color='light'] merch-card[variant="ccd-suggested"] {
 }
 
 sp-theme[color='darkest'] merch-card[variant="ccd-suggested"] {
-  color: var(--merch-ccd-gray-100);
+  color: var(--merch-ccd-gray-900);
 }
 
 sp-theme[color='light'] merch-card[variant="ccd-suggested"] [slot="detail-s"] {
@@ -1389,6 +1389,7 @@ sp-theme[color='light'] merch-card[variant="ccd-suggested"] [slot="cta"] a {
       flex-flow: wrap;
       place-self: flex-start;
       flex-wrap: nowrap;
+      padding-bottom: 8px;
     }
 
     :host([variant='ccd-suggested']) .headings {

@@ -72,6 +72,7 @@ export class CCDSuggested extends VariantLayout {
       flex-flow: wrap;
       place-self: flex-start;
       flex-wrap: nowrap;
+      padding-bottom: 8px;
     }
 
     :host([variant='ccd-suggested']) .headings {

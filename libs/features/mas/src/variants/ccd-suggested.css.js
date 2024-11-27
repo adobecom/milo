@@ -10,7 +10,7 @@ sp-theme[color='light'] merch-card[variant="ccd-suggested"] {
 }
 
 sp-theme[color='darkest'] merch-card[variant="ccd-suggested"] {
-  color: var(--merch-ccd-gray-100);
+  color: var(--merch-ccd-gray-900);
 }
 
 sp-theme[color='light'] merch-card[variant="ccd-suggested"] [slot="detail-s"] {
