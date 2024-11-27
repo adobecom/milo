@@ -449,6 +449,7 @@ describe('global footer', () => {
       regionPickerElem.dispatchEvent(new Event('click'));
       const regionNavModal = document.createElement('div');
       regionNavModal.classList.add('region-nav'); // pretend that the modal was added to the body
+      regionNavModal.setAttribute('data-failed', 'true');
       // since clicking on the regionpicker elem apparently doesnt set the hash
       document.body.append(regionNavModal);
       window.dispatchEvent(new Event('milo:modal:loaded'));
