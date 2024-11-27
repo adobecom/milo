@@ -123,8 +123,8 @@ export default class MiloGraybox extends LitElement {
         files: this._filesToPromote,
         callback: (status) => {
           // eslint-disable-next-line no-console
-          console.log(`${status.statusCode} :: ${status.destinationFilePath}`);
-          this._promotedFiles.push(status.destinationFilePath);
+          console.log(`${status.statusCode} :: ${status.filePath}`);
+          this._promotedFiles.push(status.filePath);
           // eslint-disable-next-line chai-friendly/no-unused-expressions
           SUCCESS_CODES.includes(status.statusCode) ? this._promotedFilesCount += 1
             : this._promoteErrorCount += 1;
