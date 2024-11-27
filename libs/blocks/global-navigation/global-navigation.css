@@ -765,7 +765,7 @@ header.new-nav .feds-nav-wrapper {
 }
 
 header.new-nav.local-nav .feds-nav-wrapper {
-  transition-duration: 0s;
+  /* transition-duration: 0s; */
   visibility: hidden; /* we don't want to see the main menu on a local nav page */
 }
 
@@ -877,11 +877,7 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup {
 }
 
 header.new-nav.local-nav .feds-nav > section.feds-navItem > .feds-popup {
-  translate: -300vw 0;
-}
-
-[dir = "rtl"] header.new-nav.local-nav .feds-nav > section.feds-navItem > .feds-popup {
-  translate: 300vw 0;
+  translate: 0;
 }
 
 header.new-nav .feds-nav > section.feds-navItem.feds-dropdown--active > .feds-popup {
