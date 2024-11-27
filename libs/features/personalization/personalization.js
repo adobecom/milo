@@ -837,7 +837,6 @@ export async function getManifestConfig(info = {}, variantOverride = false) {
     variantLabel,
     disabled,
     event,
-    shown,
     source,
   } = info;
   if (disabled && (!variantOverride || !Object.keys(variantOverride).length)) {
@@ -903,7 +902,6 @@ export async function getManifestConfig(info = {}, variantOverride = false) {
   manifestConfig.manifestUrl = manifestUrl;
   manifestConfig.disabled = disabled;
   manifestConfig.event = event;
-  if (shown) manifestConfig.shown = shown;
   if (source?.length) manifestConfig.source = source;
   return manifestConfig;
 }
@@ -975,7 +973,6 @@ export function cleanAndSortManifestList(manifests) {
           fullManifest = manifest;
           freshManifest = manifestObj[manifest.manifestPath];
         }
-        if (Number.isInteger(freshManifest?.shown)) freshManifest.shown += 1;
         freshManifest.source.concat(fullManifest.source);
         freshManifest.name = fullManifest.name;
         freshManifest.selectedVariantName = fullManifest.selectedVariantName;
@@ -1087,7 +1084,7 @@ export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => 
     persManifests = persEnabled.toLowerCase()
       .split(/,|(\s+)|(\\n)/g)
       .filter((path) => path?.trim())
-      .map((manifestPath) => ({ manifestPath, shown: 1, source: ['pzn'] }));
+      .map((manifestPath) => ({ manifestPath, source: ['pzn'] }));
   }
 
   if (promoEnabled) {
