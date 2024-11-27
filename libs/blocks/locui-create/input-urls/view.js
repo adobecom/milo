@@ -8,6 +8,7 @@ import {
   validateProjectName,
   validateUrls,
   findFragments,
+  validateFragments,
 } from './index.js';
 import { getUrls } from '../../locui/loc/index.js';
 import { URL_SEPARATOR_PATTERN } from '../utils/constant.js';
@@ -68,16 +69,21 @@ export default function InputUrls() {
 
   function handleFragmentsToggle() {
     setFragmentsEnabled(!fragmentsEnabled);
-    if (!fragmentsEnabled && !errors.urlsStr) {
-      fetchFragments(urlsStr, true);
+    if (!fragmentsEnabled) {
+      if (!errors.urlsStr) {
+        fetchFragments(urlsStr, true);
+      }
+    } else {
+      setErrors({ ...errors, fragments: '' });
     }
   }
 
   const handleFragmentsChange = useCallback((_fragments) => {
     setFragments(_fragments);
+    const error = validateFragments(fragmentsEnabled, noOfValidFrag, _fragments);
     setErrors((prev) => ({
       ...prev,
-      fragments: fragmentsEnabled && noOfValidFrag > 0 && _fragments.length === 0,
+      fragments: error,
     }));
   }, [fragmentsEnabled, noOfValidFrag]);
 
@@ -213,8 +219,10 @@ export default function InputUrls() {
               selectedFragments=${fragments}
               setSelectedFragments=${handleFragmentsChange}
               isLoading=${isFragmentsLoading}
+              formErrors=${errors.fragments}
             />
           `}
+          ${errors.fragments && html`<div class='form-field-error'>${errors.fragments}</div>`}
         </div>
       </div>
 
