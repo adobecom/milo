@@ -1183,7 +1183,7 @@ class Gnav {
 export default async function init(block) {
   const { mep } = getConfig();
   const sourceUrl = await getGnavSource();
-  const newMobileNav = getMetadata('mobile-gnav-v2') !== 'false';
+  const newMobileNav = new URLSearchParams(window.location.search).get('newNav') === 'true' || getMetadata('mobile-gnav-v2') !== 'false';
   const [url, hash = ''] = sourceUrl.split('#');
   if (hash === '_noActiveItem') {
     setDisableAEDState();
