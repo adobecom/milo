@@ -112,12 +112,6 @@ export function processBackgroundImage(
                   'background-image',
                   fields.backgroundImage,
               );
-              if (fields.backgroundImageAltText) {
-                  merchCard.setAttribute(
-                      'background-image-alt-text',
-                      fields.backgroundImageAltText,
-                  );
-              }
               break;
       }
   }
