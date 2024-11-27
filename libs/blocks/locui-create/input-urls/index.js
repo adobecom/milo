@@ -26,6 +26,13 @@ export function validateUrls(urlsStr) {
   return '';
 }
 
+export function validateFragments(isFragmentEnabled, noOfValidFrag, fragmentsSelected) {
+  if (isFragmentEnabled && noOfValidFrag > 0 && fragmentsSelected.length === 0) {
+    return 'Select atleast one fragment to proceed further';
+  }
+  return '';
+}
+
 export function validateForm({
   name,
   editBehavior,
