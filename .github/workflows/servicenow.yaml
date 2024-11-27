@@ -176,6 +176,7 @@ jobs:
               exit 1
             else
               echo "CMR creation was successful"
+              cat response.txt
               echo "transaction_id=$(jq -r '.id' response.txt)" >> $GITHUB_ENV
             fi
           }
@@ -223,6 +224,7 @@ jobs:
               exit 1
             else
               echo "CMR ID retrieval was successful"
+              cat response.txt
               echo "cmr_id=$(jq -r '.changeId' response.txt)" >> $GITHUB_ENV
             fi
           }
