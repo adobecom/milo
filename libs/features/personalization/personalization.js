@@ -973,7 +973,7 @@ export function cleanAndSortManifestList(manifests) {
           fullManifest = manifest;
           freshManifest = manifestObj[manifest.manifestPath];
         }
-        freshManifest.source.concat(fullManifest.source);
+        freshManifest.source = freshManifest.source.concat(fullManifest.source);
         freshManifest.name = fullManifest.name;
         freshManifest.selectedVariantName = fullManifest.selectedVariantName;
         freshManifest.selectedVariant = freshManifest.variants[freshManifest.selectedVariantName];
