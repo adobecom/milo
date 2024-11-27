@@ -765,7 +765,6 @@ header.new-nav .feds-nav-wrapper {
 }
 
 header.new-nav.local-nav .feds-nav-wrapper {
-  /* transition-duration: 0s; */
   visibility: hidden; /* we don't want to see the main menu on a local nav page */
 }
 
