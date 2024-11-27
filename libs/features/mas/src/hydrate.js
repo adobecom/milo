@@ -82,32 +82,45 @@ export function processSubtitle(fields, merchCard, subtitleConfig) {
 }
 
 export function processBackgroundImage(
-    fields,
-    merchCard,
-    backgroundImageConfig,
-    variant,
+  fields,
+  merchCard,
+  backgroundImageConfig,
+  variant,
 ) {
-    if (fields.backgroundImage) {
-        switch (variant) {
-            case 'ccd-slice':
-                if (backgroundImageConfig) {
-                    merchCard.append(
-                        createTag(
-                            backgroundImageConfig.tag,
-                            { slot: backgroundImageConfig.slot },
-                            `<img loading="lazy" src="${fields.backgroundImage}" />`,
-                        ),
-                    );
-                }
-                break;
-            case 'ccd-suggested':
-                merchCard.setAttribute(
-                    'background-image',
-                    fields.backgroundImage,
-                );
-                break;
-        }
-    }
+  if (fields.backgroundImage) {
+      switch (variant) {
+          case 'ccd-slice':
+              if (backgroundImageConfig) {
+                  const imgAttributes = {
+                      loading: 'lazy',
+                      src: fields.backgroundImage,
+                  };
+                  if (fields.backgroundImageAltText) {
+                      imgAttributes.alt = fields.backgroundImageAltText;
+                  }
+                  merchCard.append(
+                      createTag(
+                          backgroundImageConfig.tag,
+                          { slot: backgroundImageConfig.slot },
+                          createTag('img', imgAttributes),
+                      ),
+                  );
+              }
+              break;
+          case 'ccd-suggested':
+              merchCard.setAttribute(
+                  'background-image',
+                  fields.backgroundImage,
+              );
+              if (fields.backgroundImageAltText) {
+                  merchCard.setAttribute(
+                      'background-image-alt-text',
+                      fields.backgroundImageAltText,
+                  );
+              }
+              break;
+      }
+  }
 }
 
 export function processPrices(fields, merchCard, pricesConfig) {
