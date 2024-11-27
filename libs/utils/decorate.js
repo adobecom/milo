@@ -268,14 +268,16 @@ export function addAccessibilityControl(videoString, videoAttrs, indexOfVideo, t
   if (videoAttrs.includes('hoverplay')) {
     return `<a class='pause-play-wrapper video-holder' tabindex=${tabIndex}>${videoString}</a>`;
   }
-  return `<div class='video-container video-holder'>${videoString}
-    <a class='pause-play-wrapper' role='button' tabindex=${tabIndex} aria-pressed=true video-index=${indexOfVideo}>
-    <div class='offset-filler ${videoAttrs.includes('autoplay') ? 'is-playing' : ''}'>  
-      <img class='accessibility-control pause-icon' src='${fedRoot}/federal/assets/svgs/accessibility-pause.svg'/>
-      <img class='accessibility-control play-icon' src='${fedRoot}/federal/assets/svgs/accessibility-play.svg'/>
+  return `
+    <div class='video-container video-holder'>${videoString}
+      <a class='pause-play-wrapper' role='button' tabindex=${tabIndex} aria-pressed=true video-index=${indexOfVideo}>
+        <div class='offset-filler ${videoAttrs.includes('autoplay') ? 'is-playing' : ''}'>  
+          <img class='accessibility-control pause-icon' src='${fedRoot}/federal/assets/svgs/accessibility-pause.svg'/>
+          <img class='accessibility-control play-icon' src='${fedRoot}/federal/assets/svgs/accessibility-play.svg'/>
+        </div>
+      </a>
     </div>
-  </a>
-</div>`;
+  `;
 }
 
 export function handlePause(event) {

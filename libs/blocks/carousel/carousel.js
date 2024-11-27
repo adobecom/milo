@@ -230,10 +230,12 @@ function moveSlides(event, carouselElements, jumpToIndex) {
       if (index < show) {
         tabIndex = 0;
       }
-      slide.querySelectorAll('a,:not(.video-container, .pause-play-wrapper) > video').forEach((focusableElement) => { focusableElement.setAttribute('tabindex', tabIndex); });
+      slide.querySelectorAll('a,:not(.video-container, .pause-play-wrapper) > video')
+        .forEach((focusableElement) => { focusableElement.setAttribute('tabindex', tabIndex); });
     });
   } else {
-    activeSlide.querySelectorAll('a,:not(.video-container, .pause-play-wrapper) > video').forEach((focusableElement) => { focusableElement.setAttribute('tabindex', 0); });
+    activeSlide.querySelectorAll('a,:not(.video-container, .pause-play-wrapper) > video')
+      .forEach((focusableElement) => { focusableElement.setAttribute('tabindex', 0); });
   }
   activeSlideIndicator.classList.add('active');
   activeSlideIndicator.setAttribute('tabindex', 0);
