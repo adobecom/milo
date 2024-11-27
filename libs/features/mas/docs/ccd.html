@@ -44,7 +44,7 @@
       const params = new URLSearchParams(document.location.search);
       const darkTheme = params?.get('theme')?.toLowerCase() === 'dark';
       const theme = document.createElement('script');
-      theme.setAttribute('src', `../../spectrum-web-components/dist/themes/${darkTheme ? 'dark' : 'light'}.js`);
+      theme.setAttribute('src', `../../spectrum-web-components/dist/themes/${darkTheme ? 'darkest' : 'light'}.js`);
       theme.setAttribute('type', `module`);
       document.head.appendChild(theme);
       // mas-commerce-service
@@ -138,7 +138,7 @@
     </sp-theme>
     <script type="module">
       if (new URLSearchParams(document.location.search)?.get('theme')?.toLowerCase() === 'dark') {
-        document.querySelector('sp-theme').setAttribute('color', 'dark');
+        document.querySelector('sp-theme').setAttribute('color', 'darkest');
       }
     </script>
   </main>
