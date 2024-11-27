@@ -247,7 +247,13 @@ class Footer {
 
       const loadRegionNav = async () => {
         const block = document.querySelector('.region-nav');
-        if (block) {
+        if (block && getConfig().standaloneGnav) {
+          // on standalone the region-nav will fail to load automatically through
+          // the modal calling fragment.js. In that case we will have data-failed=true
+          // and we should manually load region nav
+          // If that's not the case then we're not a standalone gnav
+          // and we mustn't load region-nav twice.
+          if (block.getAttribute('data-failed') !== 'true') return;
           block.classList.add('hide');
           loadStyle(`${base}/blocks/region-nav/region-nav.css`);
           const { default: initRegionNav } = await import('../region-nav/region-nav.js');
