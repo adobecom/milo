@@ -4459,7 +4459,6 @@ var setCustomTemplateLiteralTag2 = (e16) => {
 
 // ../node_modules/@spectrum-web-components/icons-workflow/src/icons/Alert.js
 var AlertIcon = ({ width: a10 = 24, height: t13 = 24, hidden: e16 = false, title: r9 = "Alert" } = {}) => tag2`<svg
-    aria-hidden="true"
     xmlns="http://www.w3.org/2000/svg"
     height=${t13}
     viewBox="0 0 36 36"
