@@ -1161,33 +1161,25 @@ function sendTargetResponseAnalytics(failure, responseStart, timeoutLocal, messa
   });
 }
 
-const handleAlloyResponse = (response) => {
-  const items = (
-    (response.propositions?.length && response.propositions)
-    || (response.decisions?.length && response.decisions)
-    || []
-  ).map((i) => i.items).flat();
+const handleAlloyResponse = (response) => ((response.propositions || response.decisions))
+  ?.map((i) => i.items)
+  ?.flat()
+  ?.map((item) => {
+    const content = item?.data?.content;
+    if (!content || !(content.manifestLocation || content.manifestContent)) return null;
 
-  if (!items?.length) return [];
-
-  return items
-    .map((item) => {
-      const content = item?.data?.content;
-      if (!content || !(content.manifestLocation || content.manifestContent)) return null;
-
-      return {
-        manifestPath: content.manifestLocation || content.manifestPath,
-        manifestUrl: content.manifestLocation,
-        manifestData: content.manifestContent?.experiences?.data || content.manifestContent?.data,
-        manifestPlaceholders: content.manifestContent?.placeholders?.data,
-        manifestInfo: content.manifestContent?.info.data,
-        name: item.meta['activity.name'],
-        variantLabel: item.meta['experience.name'] && `target-${item.meta['experience.name']}`,
-        meta: item.meta,
-      };
-    })
-    .filter(Boolean);
-};
+    return {
+      manifestPath: content.manifestLocation || content.manifestPath,
+      manifestUrl: content.manifestLocation,
+      manifestData: content.manifestContent?.experiences?.data || content.manifestContent?.data,
+      manifestPlaceholders: content.manifestContent?.placeholders?.data,
+      manifestInfo: content.manifestContent?.info.data,
+      name: item.meta['activity.name'],
+      variantLabel: item.meta['experience.name'] && `target-${item.meta['experience.name']}`,
+      meta: item.meta,
+    };
+  })
+  ?.filter(Boolean) ?? [];
 
 async function handleMartechTargetInteraction(
   { config, targetInteractionPromise, calculatedTimeout },
@@ -1197,10 +1189,16 @@ async function handleMartechTargetInteraction(
   let responseStart;
   if (enablePersonalizationV2() && targetInteractionPromise) {
     try {
-      responseStart = Date.now();
+      performance.mark('interaction-start');
       const targetInteractionData = await targetInteractionPromise;
       sendTargetResponseAnalytics(false, responseStart, calculatedTimeout);
-      const responseTime = calculateResponseTime(responseStart);
+      performance.mark('interaction-end');
+
+      performance.measure('total-time', 'interaction-start', 'interaction-end');
+      const measure = performance.getEntriesByName('total-time')[0];
+      const responseTime = roundToQuarter(measure);
+      performance.clearMarks();
+      performance.clearMeasures();
       try {
         window.lana.log(`target response time: ${responseTime}`, { tags: 'martech', errorType: 'i' });
       } catch (e) {

@@ -1081,13 +1081,14 @@ async function checkForPageMods() {
   || TARGET_TIMEOUT_MS;
 
     const { locale } = getConfig();
-    targetInteractionPromise = new Promise((res) => {
-      import('../martech/helpers.js').then(({ loadAnalyticsAndInteractionData }) => {
-        res(loadAnalyticsAndInteractionData(
-          { locale, env: getEnv({})?.name, calculatedTimeout },
-        ));
-      });
-    });
+    targetInteractionPromise = (async () => {
+      const { loadAnalyticsAndInteractionData } = await import('../martech/helpers.js');
+      const data = await loadAnalyticsAndInteractionData(
+        { locale, env: getEnv({})?.name, calculatedTimeout },
+      );
+      return data;
+    })();
+
     const { init } = await import('../features/personalization/personalization.js');
     await init({
       mepParam,

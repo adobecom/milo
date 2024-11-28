@@ -1,45 +1,40 @@
 /**
- * Generates a Version 4 (UUIDv4) UUID.
- * UUIDv4 is generated using random values and follows the RFC 4122 standard.
- * The format of the UUID is `xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx` where:
- * - The version is always 4 (the '4' in the third group).
- * - The variant is always in the range [8, 9, A, B] for the 'y' in the fourth group.
+ * Generates a random UUIDv4 using cryptographically secure random values.
+ * This implementation follows the RFC 4122 specification for UUIDv4.
+ * It uses the `crypto` API for secure randomness without any bitwise operators.
  *
- * @returns {string} The generated UUID.
+ * @returns {string} A random UUIDv4 string, e.g., 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
+ * where:
+ *  - 'x' is any hexadecimal digit (0-9, a-f)
+ *  - 'y' is one of 8, 9, A, or B, ensuring that the UUID conforms to version 4.
+ *
+ * @example
+ * const myUuid = generateUUIDv4();
+ * console.log(myUuid);  // Outputs: 'e8b57e2f-8cb1-4d0f-804b-e1a45bce2d90'
  */
-function generateUUID() {
-  // Create a cryptographically secure random value array of length 16
+function generateUUIDv4() {
+  // Generate an array of 16 random values using the crypto API for better randomness
   const randomValues = new Uint8Array(16);
   crypto.getRandomValues(randomValues);
 
-  // Initialize UUID string with the random values
+  // Set the version (4) at the 13th position
+  randomValues[6] = (randomValues[6] % 16) + 64; // '4' for version 4
+  // Set the variant (8, 9, A, or B) at the 17th position
+  randomValues[8] = (randomValues[8] % 16) + 128; // One of 8, 9, A, or B
+
+  // Accumulate the UUID string in a separate variable (to avoid modifying the parameter directly)
   let uuid = '';
 
-  // Loop over each byte and build the UUID
-  for (let i = 0; i < 16; i += 1) {
-    let hex = randomValues[i].toString(16).padStart(2, '0'); // Convert each byte to a 2-digit hex string
-
-    // Force the version to '4' in the 7th byte (index 6)
-    if (i === 6) {
-      hex = `4${hex.slice(1)}`; // Ensure the 4th group starts with '4'
+  // Convert the random values to a UUID string (xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx)
+  randomValues.forEach((byte, index) => {
+    const hex = byte.toString(16).padStart(2, '0'); // Convert byte to hex
+    if (index === 4 || index === 6 || index === 8 || index === 10) {
+      uuid += '-'; // Add dashes at appropriate positions
     }
-
-    // Force the variant to be in the [8, 9, A, B] range in the 9th byte (index 8)
-    if (i === 8) {
-      // Ensure the variant is in the range [8, 9, A, B]
-      const variant = (randomValues[i] % 4) + 8; // This ensures the variant is within [8, 9, A, B]
-      hex = variant.toString(16); // Convert the value to hex
-    }
-
-    // Append the hex value to the UUID string
     uuid += hex;
-  }
+  });
 
-  // Format the string to match the UUIDv4 format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
-  return uuid.replace(
-    /(.{8})(.{4})(.{4})(.{4})(.{12})/,
-    '$1-$2-$3-$4-$5', // Insert dashes in the correct places
-  );
+  return uuid;
 }
 
 /**
@@ -139,7 +134,7 @@ function getOrGenerateUserId() {
 
   // If ECID is not found, generate and return FPID
   if (!amcvCookieValue) {
-    const fpidValue = generateUUID();
+    const fpidValue = generateUUIDv4();
     return {
       FPID: [{
         id: fpidValue,
@@ -393,7 +388,7 @@ export const loadAnalyticsAndInteractionData = async ({ locale, env, calculatedT
 
   try {
     const targetResp = await Promise.race([
-      fetch(`${TARGET_API_URL}?dataStreamId=${DATA_STREAM_ID}`, {
+      fetch(`${TARGET_API_URL}?dataStreamId=${DATA_STREAM_ID}&requestId=${generateUUIDv4()}`, {
         method: 'POST',
         body: JSON.stringify(requestBody),
       }),
