@@ -518,7 +518,7 @@ const isProdModal = (url) => {
   } catch (e) {
     return false;
   }
-}
+};
 
 export async function getModalAction(offers, options, el) {
   const [{

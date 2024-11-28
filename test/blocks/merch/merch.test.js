@@ -77,12 +77,12 @@ const CHECKOUT_LINK_CONFIGS = {
     DOWNLOAD_TEXT: 'productCode',
   },
   {
-    "PRODUCT_FAMILY": "AUDITION",
-    "DOWNLOAD_TEXT": "Download",
-    "DOWNLOAD_URL": "https://creativecloud.adobe.com/apps/download/audition",
-    "FREE_TRIAL_PATH": "https://www.adobe.com/mini-plans/audition.html?mid=ft&web=1",
-    "BUY_NOW_PATH": "www.adobe.com/will/not/be/localized.html",
-    "LOCALE": "",
+    PRODUCT_FAMILY: 'AUDITION',
+    DOWNLOAD_TEXT: 'Download',
+    DOWNLOAD_URL: 'https://creativecloud.adobe.com/apps/download/audition',
+    FREE_TRIAL_PATH: 'https://www.adobe.com/mini-plans/audition.html?mid=ft&web=1',
+    BUY_NOW_PATH: 'www.adobe.com/will/not/be/localized.html',
+    LOCALE: '',
   },
   ],
 };
@@ -726,7 +726,7 @@ describe('Merch Block', () => {
       fetchCheckoutLinkConfigs.promise = undefined;
       setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
       const action = await getModalAction([{ productArrangement: { productFamily: 'ILLUSTRATOR' } }], { modal: true });
-      expect(action.url).to.equal('https://www.adobe.com/fr/plans-fragments/modals/individual/modals-content-rich/illustrator/master.modal.html')
+      expect(action.url).to.equal('https://www.adobe.com/fr/plans-fragments/modals/individual/modals-content-rich/illustrator/master.modal.html');
     });
 
     it('getModalAction: skip modal url localization if url is invalid', async () => {
@@ -740,7 +740,7 @@ describe('Merch Block', () => {
       fetchCheckoutLinkConfigs.promise = undefined;
       setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
       const action = await getModalAction([{ productArrangement: { productFamily: 'AUDITION' } }], { modal: true });
-      expect(action.url).to.equal('www.adobe.com/will/not/be/localized.html')
+      expect(action.url).to.equal('www.adobe.com/will/not/be/localized.html');
     });
 
     it('getModalAction: returns undefined if checkout-link config is not found', async () => {
