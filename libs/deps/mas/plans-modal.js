@@ -4235,7 +4235,6 @@ var Cross200Icon = ({ width: t13 = 24, height: e16 = 24, title: r9 = "Cross200" 
     aria-hidden="true"
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 10 10"
-    role="img"
     fill="currentColor"
     aria-label=${r9}
     width=${t13}
@@ -4265,7 +4264,6 @@ var Cross300Icon = ({ width: t13 = 24, height: e16 = 24, title: r9 = "Cross300" 
     aria-hidden="true"
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 12 12"
-    role="img"
     fill="currentColor"
     aria-label=${r9}
     width=${t13}
@@ -4295,7 +4293,6 @@ var Cross400Icon = ({ width: t13 = 24, height: e16 = 24, title: r9 = "Cross400" 
     aria-hidden="true"
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 12 12"
-    role="img"
     fill="currentColor"
     aria-label=${r9}
     width=${t13}
@@ -4325,7 +4322,6 @@ var Cross500Icon = ({ width: t13 = 24, height: e16 = 24, title: r9 = "Cross500" 
     aria-hidden="true"
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 14 14"
-    role="img"
     fill="currentColor"
     aria-label=${r9}
     width=${t13}
