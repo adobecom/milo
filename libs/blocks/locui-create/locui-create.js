@@ -4,8 +4,9 @@ import InputUrls from './input-urls/view.js';
 import { currentStep, fetchLocaleDetails } from './store.js';
 import StepTracker from './components/stepTracker.js';
 import InputActions from './input-actions/view.js';
-import Header from '../milostudio-header/header.js';
+import Header from '../milostudio-header/milostudio-header.js';
 import Sidenav from '../milostudio-sidenav/sidenav.js';
+import { getConfig, loadStyle } from '../../utils/utils.js';
 
 function Create() {
   useEffect(() => {
@@ -40,5 +41,8 @@ function Create() {
 }
 
 export default function init(el) {
+  const { miloLibs, codeRoot } = getConfig();
+  const base = miloLibs || codeRoot;
+  loadStyle(`${base}/blocks/milostudio-header/milostudio-header.css`);
   render(html`<${Create} />`, el);
 }

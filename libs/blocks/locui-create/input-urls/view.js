@@ -2,6 +2,7 @@ import { html, useCallback, useEffect, useState } from '../../../deps/htm-preact
 import FragmentsSection from '../fragments/view.js';
 import { nextStep, project, setProject } from '../store.js';
 import StepControls from '../components/stepControls.js';
+import { origin } from '../../locui/utils/franklin.js';
 import {
   checkForErrors,
   validateForm,
@@ -147,6 +148,7 @@ export default function InputUrls() {
               class=${`form-field-input ${errors.name && 'error'}`}
               value=${name}
               onInput=${handleNameChange}
+              placeholder='Enter letters, alphabet and hyphens only'
             />
             ${errors.name
             && html`<div class="form-field-error">${errors.name}</div>`}
@@ -184,7 +186,7 @@ export default function InputUrls() {
         <div class="form-field">
           <div class="form-field-label">* Enter the URLs</div>
           <div class="form-field-desc">
-            (For multiple URLs, enter each on a new line)
+            (for multiple URLs, enter each on a new line. Maximum number of URLs can be entered is 150 )
           </div>
         </div>
         <textarea
@@ -193,6 +195,7 @@ export default function InputUrls() {
           value=${urlsStr}
           onInput=${handleUrlsChange}
           onBlur=${handleUrlsBlur}
+          placeholder=${`Enter the full URL. E.g, ${origin}/drafts/localization/projects/raga/image-test-one`}
         />
         ${errors.urlsStr
         && html`<div class="form-field-error">${errors.urlsStr}</div>`}
