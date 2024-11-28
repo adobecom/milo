@@ -20,16 +20,17 @@ You do need to have mas.js on your page / application, including it can be done 
 
 ### Attributes
 
-| Name                     | Description                                                                                         | Default Value                | Required |
-| ------------------------ | --------------------------------------------------------------------------------------------------- | ---------------------------- | -------- |
-| `allow-override`         | enables override of commerce env/landscape via query parameters(commerce.env/commerce.landscape)    |  `false`                     |  `false` |
-| `checkout-client-id`     | checkout client id                                                                                  |  `false`                     |  `false` |
-| `checkout-workflow-step` | default checkout workflow step                                                                      | `CheckoutWorkflowStep.EMAIL` | `false`  |
-| `country`                | country of the offers to retrieve from WCS, determines the currency, price format, etc.             | US or locale country if set  | `false`  |
-|  `env`                   | commerce environment you want this page to use, either `stage` or `prod`                            |  `prod`                      |  `false` |
-|  `force-tax-exclusive`   | force all price display to be tax exclusive                                                         |  `false`                     |  `false` |
-| `locale`                 | currency & price locale you need, must belong to one of the [supported locales](#supported-locales) | `en_US`                      | `false`  |
-| `language`               | language of the price literal, e.g: per license                                                     | en or locale langauge if set | `false`  |
+| Name                     | Description                                                                                         | Default Value                   | Required |
+| ------------------------ | --------------------------------------------------------------------------------------------------- | ------------------------------- | -------- |
+| `allow-override`         | enables override of commerce env/landscape via query parameters(commerce.env/commerce.landscape)    |  `false`                        |  `false` |
+| `checkout-client-id`     | checkout client id                                                                                  |  `false`                        |  `false` |
+| `checkout-workflow-step` | default checkout workflow step                                                                      | `CheckoutWorkflowStep.EMAIL`    | `false`  |
+| `country`                | country of the offers to retrieve from WCS, determines the currency, price format, etc.             | US or locale country if set     | `false`  |
+|  `env`                   | commerce environment you want this page to use, either `stage` or `prod`                            |  `prod`                         |  `false` |
+|  `force-tax-exclusive`   | force all price display to be tax exclusive                                                         |  `false`                        |  `false` |
+| `locale`                 | currency & price locale you need, must belong to one of the [supported locales](#supported-locales) | `en_US`                         | `false`  |
+| `language`               | language of the price literal, e.g: per license                                                     | en or locale langauge if set    | `false`  |
+| `wcs-api-key`            | api key used for making WCS calls                                                                   | `wcms-commerce-ims-ro-user-milo`| `false`  |
 
 ### Methods
 
@@ -63,6 +64,9 @@ You do need to have mas.js on your page / application, including it can be done 
 
 <!-- or with a country and language -->
 <mas-commerce-service country="JP" language="en"></mas-commerce-service>
+
+<!-- with custom api key & checkout clientid -->
+<mas-commerce-service wcs-api-key="custom-api-key" checkout-client-id="custom-client-id"></mas-commerce-service>
 ```
 
 you can play around with below price, either adding locale, language or env as parameters that will be injected to `mas-commerce-service` as attributes, and then it will be activated.

@@ -187,6 +187,8 @@ CCD Gallery provides a comprehensive list of all supported card variants in CCD.
 </tbody>
 </table>
 <h3 id="events" tabindex="-1">Events <a class="header-anchor" href="#events" href="#events" title="Permalink to this heading">#</a></h3>
+<p>We recommend to listen to events on the container, so that listener is attached before the merch card is appended to DOM.
+The reason is that some merch cards are resolved very quickly and event could dispatch before event listener is attached by consumer code.</p>
 <table>
 <thead>
 <tr>
