@@ -105,20 +105,22 @@ export default function InputLocales() {
 
   return html`
   <div class="locui-form-container">
-    <div class="locui-input-form-area">
-      <div>
-        <p class="locui-project-name"><strong>Project Name:</strong> ${project.value.name || 'n/a'}</p>
-      </div>
-      <${RenderRegion} />
-      <div class="language-locale-container">
-        <${RenderLanguage} />
-        ${selectedLocale.length > 0
-        && html`
-          <div class="locale-grid">
-            <p>Selected Locales</p>
-            <div class="locale-container">${RenderLocales()}</div>
-          </div>
-        `}
+    <div class="locui-input-form-area ">
+    <div class="locui-form-body">
+        <div>
+          <p class="locui-project-name"><strong>Project Name:</strong> ${project.value.name || 'n/a'}</p>
+        </div>
+        <${RenderRegion} />
+        <div class="language-locale-container">
+          <${RenderLanguage} />
+          ${selectedLocale.length > 0
+          && html`
+            <div class="locale-grid">
+              <p>Selected Locales</p>
+              <div class="locale-container">${RenderLocales()}</div>
+            </div>
+          `}
+        </div>
       </div>
     </div>
     <div>
