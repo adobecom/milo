@@ -64,12 +64,7 @@ export default function InputUrls() {
   function handleUrlsChange(ev) {
     const text = ev.target.value;
     const error = validateUrls(text);
-    const noOfUrls = text.split(URL_SEPARATOR_PATTERN);
-    if (noOfUrls.length <= 150) {
-      setUrlsStr(text);
-    } else {
-      setUrlsStr(noOfUrls.slice(0, 150).join('\n'));
-    }
+    setUrlsStr(text);
     setErrors({ ...errors, urlsStr: error });
   }
 
@@ -200,7 +195,7 @@ export default function InputUrls() {
         <div class="form-field">
           <div class="form-field-label">* Enter the URLs</div>
           <div class="form-field-desc">
-            (for multiple URLs, enter each on a new line. Maximum number of URLs can be entered is 150 )
+            (for multiple URLs, enter each on a new line.)
           </div>
         </div>
         <textarea

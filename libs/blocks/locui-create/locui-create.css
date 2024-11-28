@@ -100,9 +100,9 @@ body {
 .locui-title-bar {
   font-size: 22px;
   font-weight: 700;
-  padding: 16px;
+  padding: 16px 16px 16px 30px;
   margin-bottom: 16px;
-  background: #eee;
+  background: #e5e5e5;
 }
 
 /* Input-urls */
@@ -152,8 +152,6 @@ body {
   width: 98%;
   resize: none;
   padding: 8px;
-  height: 15rem;
-  overflow-y: scroll;
   font-size: 14px;
   border: 2px solid #ddd;
   border-radius: 8px;
@@ -169,11 +167,11 @@ body {
 }
 
 .form-field-switch {
- display: none;
+  display: none;
 }
 
 .form-field-switch-label {
-  display: inline-block;;
+  display: inline-block;
   width: 2.5rem;
   height: 1.25rem;
   background-color: #ccc;
@@ -182,8 +180,8 @@ body {
   cursor: pointer;
 }
 
-.form-field-switch-label::before{
-  content: "";
+.form-field-switch-label::before {
+  content: '';
   position: absolute;
   top: 2px;
   left: 2px;
@@ -196,7 +194,7 @@ body {
 
 .form-field-switch:checked + .form-field-switch-label {
   background-color: #000;
-} 
+}
 
 .form-field-switch:checked + .form-field-switch-label::before {
   transform: translateX(1.25rem);
@@ -229,12 +227,10 @@ body {
   border-color: #d73220;
 }
 
-
-
 /* Main Content */
 
 .side-nav {
-  background-color:rgb(248, 248, 248);
+  background-color: rgb(248, 248, 248);
 }
 
 .locui-create-container {
@@ -247,6 +243,8 @@ body {
 }
 
 .main-content {
+  display: flex;
+  flex-direction: column;
   grid-column: 2 / 3;
   background-color: white;
   border-top-left-radius: 1rem;
@@ -256,7 +254,6 @@ body {
   box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.1);
   margin-right: 30px;
   overflow-y: hidden;
-  position: relative;
 }
 
 .main-content h3 {
@@ -270,25 +267,22 @@ body {
   font-size: 16px;
 }
 
-
 .locui-form-container {
   display: flex;
+  flex: 1;
   flex-direction: column;
   justify-content: space-between;
-  height: 79vh;
   overflow: hidden;
 }
 
 .locui-form-container > div:last-child {
   position: sticky;
   bottom: 0;
-  background-color: #fff; 
-  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1); 
-  z-index: 10; 
+  background-color: #fff;
+  /* padding: 4px 16px; */
+  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 10;
 }
-
-
-
 
 /* Header */
 
@@ -296,11 +290,30 @@ body {
   grid-column: 1 / 3;
 }
 
+.header-link:hover {
+  text-decoration: none;
+}
+
+.locui-header-container {
+  display: flex;
+  padding: 1.5rem 1rem;
+}
+
+.locui-header-logo {
+  background: url('./img/logo-4f4133ca.svg');
+  width: 40px;
+  text-indent: -1000px;
+  overflow: hidden;
+  display: block;
+  background-repeat: no-repeat;
+  margin-left: 10px;
+}
+
 .modal-header {
   display: flex;
   align-items: center;
-  justify-content: center; 
-  gap: 10px; 
+  justify-content: center;
+  gap: 10px;
 }
 
 .modal-header strong {
@@ -312,11 +325,11 @@ body {
 .check-mark-logo {
   background: url('./img/check-mark.svg');
   text-indent: -1000px;
-  width: 20px; 
+  width: 20px;
   height: 20px;
-  background-size: contain; 
+  background-size: contain;
   background-repeat: no-repeat;
-  display: inline-block; 
+  display: inline-block;
 }
 
 .locui-header-title {
@@ -457,7 +470,7 @@ body {
   background: none;
   border: none;
   padding: 0;
-  color: #069; 
+  color: #069;
   cursor: pointer;
 }
 
@@ -498,17 +511,20 @@ body {
 }
 
 .locui-input-form-area {
-  padding: 0 30px;
-  flex: 1; 
+  flex: 1;
   overflow-y: auto;
   padding-bottom: 15px;
+}
+
+.locui-form-body {
+  padding: 0 30px;
 }
 
 /* Input Actions Screen */
 
 .locui-table {
   padding-top: 10px;
-  flex: 1; 
+  flex: 1;
   overflow-y: auto;
   box-sizing: border-box;
   margin: 0 30px;
@@ -519,12 +535,12 @@ body {
   max-height: 63vh;
   overflow-y: auto;
   margin: 10px 0;
-  border: 1px solid #ccc;
 }
 
 .locui-table table {
   width: 100%;
   border-collapse: collapse;
+  border: 1px solid #ccc;
 }
 
 .locui-table th {
@@ -588,13 +604,6 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-}
-
-.create-project-view {
-  display: flex;
-  justify-content: end;
-  align-items: end;
-  width: 270px;
 }
 
 .locui-project-created-modal button {
@@ -664,14 +673,15 @@ body {
 .language-button.active,
 .locale-button.active {
   background-color: #292929;
-  color:#fff;
+  color: #fff;
 }
 
 .language-locale-container {
   display: flex;
   flex-wrap: wrap;
-  gap:10px;
+  gap: 10px;
 }
+
 .language-grid,
 .locale-grid {
   flex: 1;
