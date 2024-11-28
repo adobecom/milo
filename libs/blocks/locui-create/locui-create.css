@@ -290,24 +290,6 @@ body {
   grid-column: 1 / 3;
 }
 
-.header-link:hover {
-  text-decoration: none;
-}
-
-.locui-header-container {
-  display: flex;
-  padding: 1.5rem 1rem;
-}
-
-.locui-header-logo {
-  background: url('./img/logo-4f4133ca.svg');
-  width: 40px;
-  text-indent: -1000px;
-  overflow: hidden;
-  display: block;
-  background-repeat: no-repeat;
-  margin-left: 10px;
-}
 
 .modal-header {
   display: flex;
