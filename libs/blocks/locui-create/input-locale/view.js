@@ -105,7 +105,8 @@ export default function InputLocales() {
 
   return html`
   <div class="locui-form-container">
-    <div class="locui-input-form-area">
+    <div class="locui-input-form-area ">
+    <div class="locui-form-body">
       <div>
         <p class="locui-project-name"><strong>Project Name:</strong> ${project.value.name || 'n/a'}</p>
       </div>
@@ -120,6 +121,7 @@ export default function InputLocales() {
           </div>
         `}
       </div>
+    </div>
     </div>
     <div>
       <${StepControls}
