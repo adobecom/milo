@@ -84,8 +84,8 @@ export const CONFIG = {
             if (name === 'System' && payload.subType === 'SignOut') {
               executeDefaultAction();
             }
-            if (name === 'System' && payload.subtype === 'ProfileSwitch') {
-              executeDefaultAction.then((profile) => {
+            if (name === 'System' && payload.subType === 'ProfileSwitch') {
+              executeDefaultAction().then((profile) => {
                 if (profile) window.location.reload();
               });
             }
