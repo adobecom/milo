@@ -41,7 +41,7 @@ module.exports = {
         linkAnalyticsId: 'see-terms',
         linkDaaLL: 'see-terms-2',
         ctaAnalyticsId: 'buy-now',
-        ctaDaaLL: 'buy-now-2',
+        ctaDaaLL: 'buy-now-1',
       },
       browserParams: '?theme=dark',
       tags: '@mas-ccd @suggested-card @commerce @smoke @regression @milo',
