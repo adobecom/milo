@@ -4,8 +4,8 @@ const config = {
     delimiter: '¶',
     ignoredProperties: ['analytics', 'literals'],
     serializableTypes: ['Array', 'Object'],
-    sampleRate: 1,
-    tags: 'consumer=milo/commerce',
+    sampleRate: 30,
+    tags: 'consumer,acom,mas',
 };
 
 const seenPayloads = new Set();
@@ -50,6 +50,7 @@ function serializeParam(key, value) {
 
 const lanaAppender = {
     append(entry) {
+        if (entry.level !== 'error') return;
         const { message, params } = entry;
         const errors = [];
         const values = [];
@@ -75,11 +76,7 @@ const lanaAppender = {
 
         if (!seenPayloads.has(payload)) {
             seenPayloads.add(payload);
-            window.lana?.log(payload, {
-                sampleRate: config.sampleRate,
-                tags: config.tags,
-                clientId: config.clientId,
-            });
+            window.lana?.log(payload, config);
         }
     },
 };

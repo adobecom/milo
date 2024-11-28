@@ -1,4 +1,7 @@
-import { Defaults } from '../src/commerce.js';
+import Sinon from 'sinon';
+
+import '../../../utils/lana.js';
+import { Defaults } from '../src/mas.js';
 import { TAG_NAME_SERVICE } from '../src/mas-commerce-service.js';
 
 import { mockFetch } from './mocks/fetch.js';
@@ -9,13 +12,23 @@ import {
     disableMasCommerceService,
 } from './utilities.js';
 import { withWcs } from './mocks/wcs.js';
-import { mockLana } from './mocks/lana.js';
+
+const calls = [];
+class MockXMLHttpRequest {
+    constructor() {
+        calls.push(this);
+    }
+
+    send() {}
+
+    open = Sinon.mock();
+}
 
 describe('commerce service', () => {
-    let lana;
+    window.XMLHttpRequest = MockXMLHttpRequest;
     before(async () => {
+        window.lana.localhost = false;
         await mockFetch(withWcs);
-        lana = mockLana();
     });
 
     afterEach(() => {
@@ -132,15 +145,16 @@ describe('commerce service', () => {
 
             it('enables lana with custom tags', async () => {
                 const el = await initMasCommerceService({
-                    'data-lana-tags': 'consumer=ccd',
+                    'lana-tags': 'consumer,ccd,mas',
+                    'lana-sample-rate': '100',
                 });
                 el.log.error('test error');
-                expect(/test error/.test(lana.log.lastCall.args[0])).to.true;
-                expect(lana.log.lastCall.args[1]).to.deep.equal({
-                    clientId: 'merch-at-scale',
-                    sampleRate: 30,
-                    tags: 'consumer=ccd',
-                });
+                const [, url] = calls[0].open.lastCall.args;
+                expect(
+                    /https\:\/\/www.stage.adobe.com\/lana\/ll\?m=test%20error.*c=merch-at-scale&s=100&t=e&tags=consumer,ccd,mas/.test(
+                        url,
+                    ),
+                ).to.true;
             });
         });
     });

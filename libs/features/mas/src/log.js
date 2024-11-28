@@ -1,13 +1,13 @@
 import { LOG_NAMESPACE } from './constants.js';
 import { getParameter, isFunction, toBoolean } from './external.js';
 import { lanaAppender, updateConfig } from './lana.js';
-import { MiloEnv } from './settings.js';
+import { HostEnv } from './settings.js';
 
 const LogLevels = {
     DEBUG: 'debug',
     ERROR: 'error',
     INFO: 'info',
-    WARN: 'warn'
+    WARN: 'warn',
 };
 
 const startTime = Date.now();
@@ -18,8 +18,12 @@ const loggerIndexes = new Map();
 // Basic console logging for development
 const consoleAppender = {
     append({ level, message, params, timestamp, source }) {
-        console[level](`${timestamp}ms [${source}]`, message, ...params);
-    }
+        console[level](
+            `${timestamp}ms [${source}] %c${message}`,
+            'font-weight: bold;',
+            ...params,
+        );
+    },
 };
 
 const debugFilter = { filter: ({ level }) => level !== LogLevels.DEBUG };
@@ -38,13 +42,13 @@ function createEntry(level, message, namespace, params, source) {
             return params;
         },
         source,
-        timestamp: Date.now() - startTime
+        timestamp: Date.now() - startTime,
     };
 }
 
 function handleEntry(entry) {
-    if ([...filters].every(filter => filter(entry))) {
-        appenders.forEach(appender => appender(entry));
+    if ([...filters].every((filter) => filter(entry))) {
+        appenders.forEach((appender) => appender(entry));
     }
 }
 
@@ -61,8 +65,8 @@ function createLog(namespace) {
     };
 
     // Create logging methods for each level
-    Object.values(LogLevels).forEach(level => {
-        log[level] = (message, ...params) => 
+    Object.values(LogLevels).forEach((level) => {
+        log[level] = (message, ...params) =>
             handleEntry(createEntry(level, message, namespace, params, id));
     });
 
@@ -71,7 +75,7 @@ function createLog(namespace) {
 
 // Plugin system for adding appenders and filters
 function use(...plugins) {
-    plugins.forEach(plugin => {
+    plugins.forEach((plugin) => {
         const { append, filter } = plugin;
         if (isFunction(filter)) filters.add(filter);
         if (isFunction(append)) appenders.add(append);
@@ -82,13 +86,13 @@ function init(env = {}) {
     const { name } = env;
     const debug = toBoolean(
         getParameter('commerce.debug', { search: true, storage: true }),
-        name === MiloEnv.LOCAL
+        name === HostEnv.LOCAL,
     );
-    
+
     if (debug) use(consoleAppender);
     else use(debugFilter);
-    if (name === MiloEnv.PROD) use(lanaAppender);
-    
+    if (name === HostEnv.PROD) use(lanaAppender);
+
     return Log;
 }
 
@@ -103,5 +107,5 @@ export const Log = {
     Plugins: { consoleAppender, debugFilter, quietFilter, lanaAppender },
     init,
     reset,
-    use
+    use,
 };

@@ -51,7 +51,10 @@
 </ul>
 <h2 id="enablement-mas-commerce-service" tabindex="-1">Enablement <code>mas-commerce-service</code> <a class="header-anchor" href="#enablement-mas-commerce-service" href="#enablement-mas-commerce-service" title="Permalink to this heading">#</a></h2>
 <p>You do need to have mas.js on your page / application, including it can be done like the following</p>
-<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;https://www.adobe.com/libs/features/mas/mas/dist/mas.js&quot;</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;module&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">script</span>
+    <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;https://www.adobe.com/libs/features/mas/mas/dist/mas.js&quot;</span>
+    <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;module&quot;</span>
+&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
 </code></pre>
 <h3 id="attributes" tabindex="-1">Attributes <a class="header-anchor" href="#attributes" href="#attributes" title="Permalink to this heading">#</a></h3>
 <table>
@@ -110,6 +113,18 @@
 <td><code>language</code></td>
 <td>language of the price literal, e.g: per license</td>
 <td>en or locale langauge if set</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>lana-tags</code></td>
+<td>Enables logging via lana<a href="https://github.com/adobecom/milo/blob/stage/libs/utils/lana.js">^1</a> with the given tags. e.g:<code>consumer,ccd,mas</code>.</td>
+<td></td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>lana-sample-rate</code></td>
+<td>Sets the sampling rate, see <a href="https://wiki.corp.adobe.com/pages/viewpage.action?spaceKey=WCMSOps&amp;title=LANA+-+Log+Always+Never+Assume">^1</a> for details.</td>
+<td>1</td>
 <td><code>false</code></td>
 </tr>
 </tbody>

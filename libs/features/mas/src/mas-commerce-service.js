@@ -25,8 +25,8 @@ export class MasCommerceService extends HTMLElement {
         const config = {
             commerce: { env: this.getAttribute('env') },
             lana: {
-                tags: this.dataset.lanaTags,
-                sampleRate: parseInt(this.dataset.lanaSampleRate, 10),
+                tags: this.getAttribute('lana-tags'),
+                sampleRate: parseInt(this.getAttribute('lana-sample-rate'), 10),
             },
         };
         if (config.lana.tags) {

@@ -53,8 +53,8 @@
         const value = params.get(attribute);
         if (value) masCommerceService.setAttribute(attribute, value);
       });
-      masCommerceService.dataset.lanaTags = "consumer=ccd/mas";
-      masCommerceService.dataset.sampleRate = "30";
+      masCommerceService.setAttribute('lana-tags', 'consumer,ccd,mas');
+      masCommerceService.dataset.sampleRate = '30';
       document.head.appendChild(masCommerceService);
     </script>
 </head>

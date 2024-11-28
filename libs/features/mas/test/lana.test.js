@@ -39,7 +39,14 @@ describe('lana', () => {
 
         expect(lana.log.firstCall.args).to.deep.equal([
             'Test¶page=/test/page¶facts=[{"err":"Houston","fn":"function open","str":"test"}]',
-            { clientId, sampleRate, tags },
+            {
+                clientId: 'merch-at-scale',
+                delimiter: '¶',
+                ignoredProperties: ['analytics', 'literals'],
+                serializableTypes: ['Array', 'Object'],
+                sampleRate: 30,
+                tags: 'consumer,acom,mas',
+            },
         ]);
     });
 });
