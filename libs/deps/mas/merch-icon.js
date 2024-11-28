@@ -1,4 +1,4 @@
-var g=Object.defineProperty;var a=(i,t,s)=>t in i?g(i,t,{enumerable:!0,configurable:!0,writable:!0,value:s}):i[t]=s;var h=(i,t,s)=>(a(i,typeof t!="symbol"?t+"":t,s),s);import{LitElement as m,html as r,css as l}from"../lit-all.min.js";var e=class extends m{constructor(){super(),this.size="m",this.alt=""}render(){let{href:t}=this;return t?r`<a href="${t}">
+var g=Object.defineProperty;var a=(i,t,s)=>t in i?g(i,t,{enumerable:!0,configurable:!0,writable:!0,value:s}):i[t]=s;var h=(i,t,s)=>a(i,typeof t!="symbol"?t+"":t,s);import{LitElement as m,html as r,css as l}from"../lit-all.min.js";var e=class extends m{constructor(){super(),this.size="m",this.alt=""}render(){let{href:t}=this;return t?r`<a href="${t}">
                   <img src="${this.src}" alt="${this.alt}" loading="lazy" />
               </a>`:r` <img src="${this.src}" alt="${this.alt}" loading="lazy" />`}};h(e,"properties",{size:{type:String,attribute:!0},src:{type:String,attribute:!0},alt:{type:String,attribute:!0},href:{type:String,attribute:!0}}),h(e,"styles",l`
         :host {
