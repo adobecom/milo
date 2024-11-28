@@ -45,6 +45,7 @@ export class MasCommerceService extends HTMLElement {
             'force-tax-exclusive',
             'checkout-client-id',
             'allow-override',
+            'wcs-api-key',
         ].forEach((attribute) => {
             const value = this.getAttribute(attribute);
             if (value != null) {

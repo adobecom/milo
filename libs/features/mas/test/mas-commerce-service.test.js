@@ -103,6 +103,7 @@ describe('commerce service', () => {
                     'checkout-client-id': 'foobar',
                     'checkout-workflow-step': 'stepone',
                     'force-tax-exclusive': true,
+                    'wcs-api-key': 'wcsTest',
                 });
                 expect(el.settings).to.deep.contains({
                     locale: 'fr_CA',
@@ -112,6 +113,7 @@ describe('commerce service', () => {
                     checkoutClientId: 'foobar',
                     checkoutWorkflowStep: 'email', // rejects invalid value
                     forceTaxExclusive: true,
+                    wcsApiKey: 'wcsTest',
                 });
             });
 
