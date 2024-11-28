@@ -418,16 +418,19 @@ export const [setUserProfile, getUserProfile] = (() => {
 
 export const transformTemplateToMobile = async (popup, item, localnav = false) => {
   const notMegaMenu = popup.parentElement.tagName === 'DIV';
-  if (notMegaMenu) return;
+  if (notMegaMenu) return null;
 
   const originalContent = popup.innerHTML;
   const tabs = [...popup.querySelectorAll('.feds-menu-section')]
     .filter((section) => !section.querySelector('.feds-promo') && section.textContent)
     .map((section) => {
-      const name = section.querySelector('.feds-menu-headline')?.textContent ?? 'Shop For';
+      const headline = section.querySelector('.feds-menu-headline');
+      const name = headline?.textContent ?? 'Shop For';
+      const daallTab = headline?.getAttribute('daa-ll'); // handle null later
+      const daalhTabContent = section.querySelector('.feds-menu-items')?.getAttribute('daa-lh'); // handle null later
       const content = section.querySelector('.feds-menu-items') ?? section;
       const links = [...content.querySelectorAll('a.feds-navLink')].map((x) => x.outerHTML).join('');
-      return { name, links };
+      return { name, links, daallTab, daalhTabContent };
     });
   const CTA = popup.querySelector('.feds-cta')?.outerHTML ?? '';
   const mainMenu = `
@@ -453,21 +456,23 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
       <h7>${item.textContent.trim()}</h7>
     </div>
     <div class="tabs" role="tablist">
-      ${tabs.map(({ name }, i) => `
+      ${tabs.map(({ name, daallTab }, i) => `
         <button
           role="tab"
           class="tab"
           aria-selected="false"
           aria-controls="${i}"
+          daa-ll="${daallTab}"
         >${name}</button>
       `).join('')}
     </div>
     <div class="tab-content">
-    ${tabs.map(({ links }, i) => `
+    ${tabs.map(({ links, daalhTabContent }, i) => `
         <div
           id="${i}"
           role="tabpanel"
           aria-labelledby="${i}"
+          daa-lh="${daalhTabContent}"
           hidden
         >
       ${links}
