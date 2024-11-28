@@ -35,7 +35,7 @@ export class CCDSlice extends VariantLayout {
 
     static variantStyle = css`
         :host([variant='ccd-slice']) {
-            min-width: var(--consonant-merch-card-ccd-slice-single-width);
+            min-width: 290px;
             max-width: var(--consonant-merch-card-ccd-slice-single-width);
             max-height: var(--consonant-merch-card-ccd-slice-single-height);
             height: var(--consonant-merch-card-ccd-slice-single-height);
