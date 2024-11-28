@@ -80,7 +80,10 @@ export default function InputUrls() {
         fetchFragments(urlsStr, true);
       }
     } else {
-      setErrors({ ...errors, fragments: '' });
+      setErrors((prev) => ({ ...prev, fragments: '' }));
+      setAllFragments([]);
+      setNoOfValidFragments(0);
+      setFragments([]);
     }
   }
 
@@ -131,13 +134,19 @@ export default function InputUrls() {
   }, []);
 
   const handleUrlsBlur = () => {
-    if (!errors.urlsStr) {
+    if (urlsStr && !errors.urlsStr) {
       const splittedUrls = urlsStr.split(URL_SEPARATOR_PATTERN).filter((url) => url);
       const uniqueUrls = Array.from(new Set(splittedUrls)).join('\n');
       setUrlsStr(uniqueUrls);
       if (fragmentsEnabled) {
         fetchFragments(uniqueUrls, true);
       }
+    } else {
+      setFragmentsEnabled(false);
+      setAllFragments([]);
+      setNoOfValidFragments(0);
+      setErrors((prev) => ({ ...prev, fragments: '' }));
+      setFragments([]);
     }
   };
 
