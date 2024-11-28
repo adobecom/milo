@@ -152,6 +152,8 @@ body {
   width: 98%;
   resize: none;
   padding: 8px;
+  height: 15rem;
+  overflow-y: scroll;
   font-size: 14px;
   border: 2px solid #ddd;
   border-radius: 8px;
@@ -254,6 +256,7 @@ body {
   box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.1);
   margin-right: 30px;
   overflow-y: hidden;
+  position: relative;
 }
 
 .main-content h3 {
@@ -280,7 +283,6 @@ body {
   position: sticky;
   bottom: 0;
   background-color: #fff; 
-  /* padding: 4px 16px; */
   box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1); 
   z-index: 10; 
 }

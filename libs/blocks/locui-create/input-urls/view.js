@@ -64,7 +64,12 @@ export default function InputUrls() {
   function handleUrlsChange(ev) {
     const text = ev.target.value;
     const error = validateUrls(text);
-    setUrlsStr(text);
+    const noOfUrls = text.split(URL_SEPARATOR_PATTERN);
+    if (noOfUrls.length <= 150) {
+      setUrlsStr(text);
+    } else {
+      setUrlsStr(noOfUrls.slice(0, 150).join('\n'));
+    }
     setErrors({ ...errors, urlsStr: error });
   }
 
@@ -140,20 +145,20 @@ export default function InputUrls() {
     <div class="locui-form-container">
       <div class="locui-input-form-area">
         <div class="locui-title-bar">Localization</div>
-
-        <div class="form-field">
-          <div class="form-field-label">* Enter Project Name</div>
-          <div>
-            <input
-              class=${`form-field-input ${errors.name && 'error'}`}
-              value=${name}
-              onInput=${handleNameChange}
-              placeholder='Enter letters, alphabet and hyphens only'
-            />
-            ${errors.name
-            && html`<div class="form-field-error">${errors.name}</div>`}
-          </div>
-        </div>
+        <div class="locui-form-body">   
+         <div class="form-field">
+           <div class="form-field-label">* Enter Project Name</div>
+            <div>
+              <input
+               class=${`form-field-input ${errors.name && 'error'}`}
+               value=${name}
+               onInput=${handleNameChange}
+               placeholder='Enter letters, alphabet and hyphens only'
+             />
+             ${errors.name
+             && html`<div class="form-field-error">${errors.name}</div>`}
+           </div>
+         </div>
 
         <div class="form-field">
           <div class="form-field-label">HTML Localization Flow</div>
@@ -227,6 +232,7 @@ export default function InputUrls() {
           `}
           ${errors.fragments && html`<div class='form-field-error'>${errors.fragments}</div>`}
         </div>
+       </div>
       </div>
 
       <div>
