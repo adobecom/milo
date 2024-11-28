@@ -974,8 +974,7 @@ class Gnav {
         setTimeout(() => {
           const activeLink = [
             ...popup.querySelectorAll('a:not([data-modal-hash])'),
-          ].find((el)=> (el.href === url || el.href.startsWith(`${url}?`) || el.href.startsWith(`${url}#`)));
-          
+          ].find((el) => (el.href === url || el.href.startsWith(`${url}?`) || el.href.startsWith(`${url}#`)));
           const tabIndex = activeLink ? +activeLink.parentNode.id : 0;
           popup.querySelectorAll('.tab')[tabIndex]?.click();
         }, 100);
