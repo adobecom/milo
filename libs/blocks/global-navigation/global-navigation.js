@@ -301,7 +301,7 @@ class Gnav {
   }
 
   // eslint-disable-next-line no-return-assign
-  getOriginalTitle = (localNavItems) => this.originalTitle ||= localNavItems[0].querySelector('a').textContent.split('|');
+  getOriginalTitle = (localNavItems) => this.originalTitle ||= localNavItems[0]?.querySelector('a')?.textContent?.split('|');
 
   setupUniversalNav = () => {
     const meta = getMetadata('universal-nav')?.toLowerCase();
