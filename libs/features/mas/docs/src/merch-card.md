@@ -122,6 +122,9 @@ CCD Gallery provides a comprehensive list of all supported card variants in CCD.
 
 ### Events
 
+We recommend to listen to events on the container, so that listener is attached before the merch card is appended to DOM.
+The reason is that some merch cards are resolved very quickly and event could dispatch before event listener is attached by consumer code.
+
 | Name        | Description                                                                  |
 | ----------- | ---------------------------------------------------------------------------- |
 | `mas:ready` | fires when all the prices & checkout links are resolved & renderered         |
