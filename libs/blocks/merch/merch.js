@@ -512,6 +512,14 @@ export function setCtaHash(el, checkoutLinkConfig, offerType) {
   return hash;
 }
 
+const isProdModal = (url) => {
+  try {
+    return (new URL(url)).hostname.endsWith('adobe.com');
+  } catch (e) {
+    return false;
+  }
+}
+
 export async function getModalAction(offers, options, el) {
   const [{
     offerType,
@@ -529,7 +537,7 @@ export async function getModalAction(offers, options, el) {
   const hash = setCtaHash(el, checkoutLinkConfig, offerType);
   let url = checkoutLinkConfig[columnName];
   if (!url) return undefined;
-  url = isInternalModal(url)
+  url = isInternalModal(url) || isProdModal(url)
     ? localizeLink(checkoutLinkConfig[columnName]) : checkoutLinkConfig[columnName];
   return { url, handler: (e) => openModal(e, url, offerType, hash, options.extraOptions) };
 }
