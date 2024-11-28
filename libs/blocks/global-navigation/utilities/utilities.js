@@ -426,8 +426,8 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
     .map((section) => {
       const headline = section.querySelector('.feds-menu-headline');
       const name = headline?.textContent ?? 'Shop For';
-      const daallTab = headline?.getAttribute('daa-ll'); // handle null later
-      const daalhTabContent = section.querySelector('.feds-menu-items')?.getAttribute('daa-lh'); // handle null later
+      const daallTab = headline?.getAttribute('daa-ll');
+      const daalhTabContent = section.querySelector('.feds-menu-items')?.getAttribute('daa-lh');
       const content = section.querySelector('.feds-menu-items') ?? section;
       const links = [...content.querySelectorAll('a.feds-navLink')].map((x) => x.outerHTML).join('');
       return { name, links, daallTab, daalhTabContent };
@@ -462,7 +462,7 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
           class="tab"
           aria-selected="false"
           aria-controls="${i}"
-          daa-ll="${daallTab}"
+          ${daallTab ? `daa-ll="${daallTab}"` : ''}
         >${name}</button>
       `).join('')}
     </div>
@@ -472,7 +472,7 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
           id="${i}"
           role="tabpanel"
           aria-labelledby="${i}"
-          daa-lh="${daalhTabContent}"
+          ${daalhTabContent ? `daa-lh="${daalhTabContent}"` : ''}
           hidden
         >
       ${links}
