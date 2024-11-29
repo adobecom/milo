@@ -19,7 +19,7 @@ import { hydrate, ANALYTICS_SECTION_ATTR } from './hydrate.js';
 export const MERCH_CARD_NODE_NAME = 'MERCH-CARD';
 export const MERCH_CARD = 'merch-card';
 
-// if merch cards does not initialise in 10s, it will dispatch mas:error event
+// if merch cards does not initialise in 10 seconds, it will dispatch mas:error event
 const MERCH_CARD_LOAD_TIMEOUT = 10000;
 
 export class MerchCard extends LitElement {
