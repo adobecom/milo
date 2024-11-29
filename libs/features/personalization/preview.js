@@ -128,25 +128,34 @@ function addPillEventListeners(div) {
 
 function parseMepConfig() {
   const config = getConfig();
-  const { mep, locale } = config;
+  const { mep, locale, stageDomainsMap } = config;
   const { experiments, targetEnabled, geoPrefix } = mep;
   const activities = experiments.map((experiment) => {
     const { name, variantNames, manifest, source, selectedVariantName } = experiment;
+    const manifestUrl = new URL(manifest);
     return {
       targetActivityName: name || '',
       variantNames: variantNames.join('||'),
       selectedVariantName,
-      url: manifest,
+      url: manifestUrl.href,
+      pathname: manifestUrl.pathname,
       source: source.join(','),
     };
   });
+  const { pathname, origin } = window.location;
+  let url = `www.adobe.com${pathname}`;
+  if (origin.includes('.adobe.com')) url = `${origin.replace('.stage.', '')}${pathname}`;
+  if (origin.includes('--adobecom.hlx.') && stageDomainsMap) {
+    const domain = Object.keys(stageDomainsMap).find((key) => key.includes('.adobe.com'));
+    if (domain) url = `${domain}${pathname}`;
+  }
   return {
     page: {
-      url: window.location.href,
+      url: `https://${url}`,
+      pathname,
       target: targetEnabled ? 'on' : 'off',
       personalization: (getMetadata('personalization')) ? 'on' : 'off',
       prefix: geoPrefix === 'en-us' ? '' : geoPrefix,
-      region: locale.region,
       locale: locale.ietf,
     },
     activities,
