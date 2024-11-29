@@ -102,7 +102,7 @@ export class MerchCard extends LitElement {
     customerSegment;
     marketSegment;
     /**
-     * @type {VariantLayout>}
+     * @type {VariantLayout}
      */
     variantLayout;
 
@@ -136,7 +136,7 @@ export class MerchCard extends LitElement {
             changedProperties.has('badgeBackgroundColor') ||
             changedProperties.has('borderColor')
         ) {
-            this.style.border = this.computedBorderStyle;
+            this.style.setProperty('--merch-card-border', this.computedBorderStyle);
         }
         this.variantLayout?.postCardUpdateHook(this);
     }
