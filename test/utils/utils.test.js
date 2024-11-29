@@ -116,10 +116,6 @@ describe('Utils', () => {
     beforeEach(async () => {
       window.fetch = mockFetch({ payload: { data: '' } });
 
-      const metaTag = document.createElement('meta');
-      metaTag.setAttribute('name', 'personalization-v2');
-      head.appendChild(metaTag);
-
       document.head.innerHTML = head;
       document.body.innerHTML = body;
 
