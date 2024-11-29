@@ -969,7 +969,15 @@ class Gnav {
 
     const makeTabActive = (popup) => {
       if (!popup?.querySelector('.tabs [aria-selected="true"]')) {
-        setTimeout(() => popup?.querySelector('.tab')?.click(), 100);
+        const { origin, pathname } = window.location;
+        const url = `${origin}${pathname}`;
+        setTimeout(() => {
+          const activeLink = [
+            ...popup.querySelectorAll('a:not([data-modal-hash])'),
+          ].find((el) => (el.href === url || el.href.startsWith(`${url}?`) || el.href.startsWith(`${url}#`)));
+          const tabIndex = activeLink ? +activeLink.parentNode.id : 0;
+          popup.querySelectorAll('.tab')[tabIndex]?.click();
+        }, 100);
       }
     };
 
