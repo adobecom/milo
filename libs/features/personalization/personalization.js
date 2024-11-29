@@ -1186,21 +1186,16 @@ async function handleMartechTargetInteraction(
 ) {
   let targetManifests = [];
   let targetPropositions = [];
-  let responseStart;
   if (enablePersonalizationV2() && targetInteractionPromise) {
     try {
-      performance.mark('interaction-start');
-      const targetInteractionData = await targetInteractionPromise;
-      sendTargetResponseAnalytics(false, responseStart, calculatedTimeout);
-      performance.mark('interaction-end');
+      const { targetInteractionData, respTime, respStartTime } = await targetInteractionPromise;
+      sendTargetResponseAnalytics(false, respStartTime, calculatedTimeout);
 
-      performance.measure('total-time', 'interaction-start', 'interaction-end');
-      const measure = performance.getEntriesByName('total-time')[0];
-      const responseTime = roundToQuarter(measure);
+      const roundedResponseTime = roundToQuarter(respTime);
       performance.clearMarks();
       performance.clearMeasures();
       try {
-        window.lana.log(`target response time: ${responseTime}`, { tags: 'martech', errorType: 'i' });
+        window.lana.log(`target response time: ${roundedResponseTime}`, { tags: 'martech', errorType: 'i' });
       } catch (e) {
         // eslint-disable-next-line no-console
         console.error('Error logging target response time:', e);

@@ -76,6 +76,7 @@ describe('Utils', () => {
     it('preloads blocks for performance reasons', async () => {
       document.head.innerHTML = head;
       document.body.innerHTML = await readFile({ path: './mocks/marquee.html' });
+
       await utils.loadArea();
       const scriptPreload = document.head.querySelector('link[href*="/libs/blocks/marquee/marquee.js"]');
       const marqueeDecoratePreload = document.head.querySelector('link[href*="/libs/utils/decorate.js"]');
@@ -97,8 +98,14 @@ describe('Utils', () => {
   describe('with body', () => {
     beforeEach(async () => {
       window.fetch = mockFetch({ payload: { data: '' } });
+
+      const metaTag = document.createElement('meta');
+      metaTag.setAttribute('name', 'personalization-v2');
+      head.appendChild(metaTag);
+
       document.head.innerHTML = head;
       document.body.innerHTML = body;
+
       await utils.loadArea();
       sinon.spy(console, 'log');
     });

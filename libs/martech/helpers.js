@@ -406,19 +406,13 @@ export const loadAnalyticsAndInteractionData = async ({ locale, env, calculatedT
 
     // Resolve or reject based on propositions
     const resultPayload = targetRespJson?.handle?.find((d) => d.type === 'personalization:decisions')?.payload;
-
-    return new Promise((resolve, reject) => {
-      if (resultPayload.length > 0) {
-        resolve({
-          type: 'propositionFetch',
-          result: { propositions: resultPayload },
-        });
-      } else {
-        reject(new Error('No propositions found'));
-      }
-    });
+    if (resultPayload.length === 0) throw new Error('No propositions found');
+    return {
+      type: 'propositionFetch',
+      result: { propositions: resultPayload },
+    };
   } catch (err) {
-    return Promise.reject(err);
+    throw new Error(err);
   }
 };
 

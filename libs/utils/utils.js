@@ -1053,7 +1053,7 @@ function isSignedOut() {
  */
 export function enablePersonalizationV2() {
   const enablePersV2 = document.head.querySelector('meta[name="personalization-v2"]');
-  return enablePersV2 && isSignedOut();
+  return !!enablePersV2 && isSignedOut();
 }
 
 async function checkForPageMods() {
@@ -1077,16 +1077,22 @@ async function checkForPageMods() {
   if (martech !== 'off' && (target || xlg || pzn) && enablePersV2) {
     const params = new URL(window.location.href).searchParams;
     const calculatedTimeout = parseInt(params.get('target-timeout'), 10)
-  || parseInt(getMetadata('target-timeout'), 10)
-  || TARGET_TIMEOUT_MS;
+      || parseInt(getMetadata('target-timeout'), 10)
+      || TARGET_TIMEOUT_MS;
 
     const { locale } = getConfig();
     targetInteractionPromise = (async () => {
       const { loadAnalyticsAndInteractionData } = await import('../martech/helpers.js');
+      const now = performance.now();
+      performance.mark('interaction-start');
       const data = await loadAnalyticsAndInteractionData(
         { locale, env: getEnv({})?.name, calculatedTimeout },
       );
-      return data;
+      performance.mark('interaction-end');
+      performance.measure('total-time', 'interaction-start', 'interaction-end');
+      const respTime = performance.getEntriesByName('total-time')[0];
+
+      return { targetInteractionData: data, respTime, respStartTime: now };
     })();
 
     const { init } = await import('../features/personalization/personalization.js');
