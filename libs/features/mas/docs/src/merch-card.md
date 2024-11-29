@@ -93,11 +93,12 @@ CCD Gallery provides a comprehensive list of all supported card variants in CCD.
 
 ### Attributes
 
-| Name        | Description                                                                               | Default Value                        | Required |
-| ----------- | ----------------------------------------------------------------------------------------- | ------------------------------------ | -------- |
-| `variant`   | Variant in terms design. Not required when used with an `aem-fragment`                    |                                      | `false`  |
-| `consonant` | Whether to use consonant styles without sp-button decorator around the footer CTAs.       | `true` if `aem-fragment` is not used | `false`  |
-| `size`      | card width; a card can span over 2 columns or entire row on a css grid `wide\|super-wide` |                                      | `false`  |
+| Name        | Description                                                                               | Default Value                        | Required | Provider |
+| ----------- | ----------------------------------------------------------------------------------------- | ------------------------------------ | -------- | -------- |
+| `variant`   | Variant in terms design. Not required when used with an `aem-fragment`                    |                                      | `false`  | mas.js |
+| `consonant` | Whether to use consonant styles without sp-button decorator around the footer CTAs.       | `true` if `aem-fragment` is not used | `false`  | mas.js |
+| `size`      | card width; a card can span over 2 columns or entire row on a css grid `wide\|super-wide` |                                      | `false`  | mas.js |
+| `daa-lh`    | Analytics identifier of a card. Value is coming from the 'PRODUCT_CODE' tag set on the card (for now manual authoring required, later will be tagged automatically). Sample values: 'ccsn' or 'phlt'. |                                      | `false`  | mas.js |
 
 #### Active variants:
 
@@ -120,6 +121,9 @@ CCD Gallery provides a comprehensive list of all supported card variants in CCD.
 | `updateComplete` | a promise that resolves when the `merch-card` finishes to execute render method. Doesn't mean that card is ready, for that use 'mas:ready' or 'mas:error' event. |
 
 ### Events
+
+We recommend to listen to events on the container, so that listener is attached before the merch card is appended to DOM.
+The reason is that some merch cards are resolved very quickly and event could dispatch before event listener is attached by consumer code.
 
 | Name        | Description                                                                  |
 | ----------- | ---------------------------------------------------------------------------- |
@@ -206,11 +210,11 @@ CCD Gallery provides a comprehensive list of all supported card variants in CCD.
 
 ### Attributes
 
-| Name       | Description                                                                              | Default Value | Required |
-| ---------- | ---------------------------------------------------------------------------------------- | ------------- | -------- |
-| `fragment` | Fragment id. The copy/use feature in M@S Studio will copy the id/markup to the clipboard |               | `true`   |
-| `title`    | Informative title                                                                        |               | `false`  |
-| `ims`      | attempts to use an IMS access token via `window.adobeid.authorize()` to fetch a fragment |               | `false`  |
+| Name       | Description                                                                              | Default Value | Required | Provider |
+| ---------- | ---------------------------------------------------------------------------------------- | ------------- | -------- | -------- |
+| `fragment` | Fragment id. The copy/use feature in M@S Studio will copy the id/markup to the clipboard |               | `true`   | consumer code |
+| `title`    | Informative title                                                                        |               | `false`  | consumer code |
+| `ims`      | attempts to use an IMS access token via `window.adobeid.authorize()` to fetch a fragment |               | `false`  | mas.js |
 
 ### Properties
 
