@@ -126,6 +126,32 @@ function addPillEventListeners(div) {
   });
 }
 
+function parseMepConfig() {
+  const config = getConfig();
+  const { mep, locale } = config;
+  const { experiments, targetEnabled, geoPrefix } = mep;
+  const activities = experiments.map((experiment) => {
+    const { name, variantNames, manifest, source, selectedVariantName } = experiment;
+    return {
+      targetActivityName: name || '',
+      variantNames: variantNames.join('||'),
+      selectedVariantName,
+      url: manifest,
+      source: source.join(','),
+    };
+  });
+  return {
+    page: {
+      url: window.location.href,
+      target: targetEnabled ? 'on' : 'off',
+      personalization: (getMetadata('personalization')) ? 'on' : 'off',
+      prefix: geoPrefix === 'en-us' ? '' : geoPrefix,
+      region: locale.region,
+      locale: locale.ietf,
+    },
+    activities,
+  };
+}
 export function createPanelContents(url) {
   return `<div>Hello World: ${url}</div>`;
 }
@@ -301,6 +327,7 @@ function addHighlightData(manifests) {
 }
 
 export default async function decoratePreviewMode() {
+  console.log(parseMepConfig());
   const { miloLibs, codeRoot, mep } = getConfig();
   loadStyle(`${miloLibs || codeRoot}/features/personalization/preview.css`);
   createPreviewPill(mep?.experiments);
