@@ -2,7 +2,6 @@ import { createTag, customFetch } from '../../utils/utils.js';
 import { fetchData, DATA_TYPE } from '../../features/personalization/personalization.js';
 import { createPanelContents } from '../../features/personalization/preview.js';
 
-const BLOCK_ID = 'mmm';
 const API_URLS = {
   pageList: '/libs/blocks/mmm/pageList.json',
   pageDetails: '/libs/blocks/mmm/pageDetails.json',
@@ -45,8 +44,8 @@ function createButtonDetailsPair(mmmEl, page) {
     path = pathFolders.join('/');
   }
   page.path = path;
-  const triggerId = `${BLOCK_ID}-trigger-${pageId}`;
-  const panelId = `${BLOCK_ID}-content-${pageId}`;
+  const triggerId = `mmm-trigger-${pageId}`;
+  const panelId = `mmm-content-${pageId}`;
   const icon = createTag('span', { class: 'mmm-icon' });
   const hTag = createTag('h5', false, url);
   const button = createTag('button', {
@@ -68,7 +67,7 @@ function createButtonDetailsPair(mmmEl, page) {
     dt.dataset[key] = page[key];
     dd.dataset[key] = page[key];
   });
-  button.addEventListener('click', (e) => { handleClick(e.target, dd, pageId, BLOCK_ID); });
+  button.addEventListener('click', (e) => { handleClick(e.target, dd, pageId, 'mmm'); });
   mmmEl.append(dt, dd);
 }
 
@@ -121,10 +120,10 @@ async function createForms() {
 
 export default async function init(el) {
   createForms();
-  const mmmElContainer = createTag('div', { class: `${BLOCK_ID}-container max-width-12-desktop` });
+  const mmmElContainer = createTag('div', { class: 'mmm-container max-width-12-desktop' });
   const mmmEl = createTag('dl', {
-    class: `${BLOCK_ID} foreground`,
-    id: `${BLOCK_ID}`,
+    class: 'mmm foreground',
+    id: 'mmm',
     role: 'presentation',
   });
   mmmElContainer.append(mmmEl);
