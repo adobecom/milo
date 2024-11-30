@@ -55,7 +55,7 @@ const MANIFEST_KEYS = [
   'page filter optional',
 ];
 
-const DATA_TYPE = {
+export const DATA_TYPE = {
   JSON: 'json',
   TEXT: 'text',
 };
@@ -227,7 +227,7 @@ const log = (...msg) => {
   if (config.mep?.preview) console.log(...msg);
 };
 
-const fetchData = async (url, type = DATA_TYPE.JSON) => {
+export const fetchData = async (url, type = DATA_TYPE.JSON) => {
   try {
     const resp = await fetch(normalizePath(url));
     if (!resp.ok) {

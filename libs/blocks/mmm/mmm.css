@@ -245,3 +245,38 @@ div.media-p {
 .mmm-container .filter-hide {
   display: none;
 }
+
+.mmm-form-container {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-l);
+  margin-top: var(--spacing-m);
+  flex-wrap: wrap;
+}
+
+.mmm-form-container label {
+  margin-right: var(--spacing-xxs);
+}
+.mmm-form-container input,
+.mmm-form-container select {
+  width: 55vw;
+  padding: var(--spacing-xxs);
+  font-size: var(--type-body-s-size);
+  padding-inline-start: 12px;
+  box-sizing: border-box;
+}
+
+@media screen and (min-width: 1199px) {
+  .mmm-form-container {
+    flex-wrap: nowrap;
+  }
+
+  .mmm-form-container input,
+  .mmm-form-container select {
+    width: auto;
+  }
+  
+  .mmm-form-container input {
+    width: 300px;
+  }
+}

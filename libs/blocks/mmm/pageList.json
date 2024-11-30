@@ -1,0 +1,182 @@
+[
+    {
+        "url": "https://www.adobe.com/",
+        "pageId": 1,
+        "prefix": "us"
+    },
+    {
+        "url": "https://www.adobe.com/creativecloud.html",
+        "pageId": 2,
+        "prefix": "us"
+    },
+    {
+        "url": "https://www.adobe.com/products/illustrator.html",
+        "pageId": 3,
+        "prefix": "us"
+    },
+    {
+        "url": "https://www.adobe.com/products/photoshop.html",
+        "pageId": 4,
+        "prefix": "us"
+    },
+    {
+        "url": "https://www.adobe.com/ca/",
+        "pageId": 5,
+        "prefix": "ca"
+    },
+    {
+        "url": "https://www.adobe.com/ca/creativecloud.html",
+        "pageId": 6,
+        "prefix": "ca"
+    },
+    {
+        "url": "https://www.adobe.com/ca/products/illustrator.html",
+        "pageId": 7,
+        "prefix": "ca"
+    },
+    {
+        "url": "https://www.adobe.com/ca/products/photoshop.html",
+        "pageId": 8,
+        "prefix": "ca"
+    },
+    {
+        "url": "https://www.adobe.com/ca_fr/",
+        "pageId": 9,
+        "prefix": "ca_fr"
+    },
+    {
+        "url": "https://www.adobe.com/ca_fr/creativecloud.html",
+        "pageId": 10,
+        "prefix": "ca_fr"
+    },
+    {
+        "url": "https://www.adobe.com/ca_fr/products/illustrator.html",
+        "pageId": 11,
+        "prefix": "ca_fr"
+    },
+    {
+        "url": "https://www.adobe.com/ca_fr/products/photoshop.html",
+        "pageId": 12,
+        "prefix": "ca_fr"
+    },
+    {
+        "url": "https://www.adobe.com/au/",
+        "pageId": 13,
+        "prefix": "au"
+    },
+    {
+        "url": "https://www.adobe.com/au/creativecloud.html",
+        "pageId": 14,
+        "prefix": "au"
+    },
+    {
+        "url": "https://www.adobe.com/au/products/illustrator.html",
+        "pageId": 15,
+        "prefix": "au"
+    },
+    {
+        "url": "https://www.adobe.com/au/products/photoshop.html",
+        "pageId": 16,
+        "prefix": "au"
+    },
+    {
+        "url": "https://www.adobe.com/nz/",
+        "pageId": 17,
+        "prefix": "nz"
+    },
+    {
+        "url": "https://www.adobe.com/nz/creativecloud.html",
+        "pageId": 18,
+        "prefix": "nz"
+    },
+    {
+        "url": "https://www.adobe.com/nz/products/illustrator.html",
+        "pageId": 19,
+        "prefix": "nz"
+    },
+    {
+        "url": "https://www.adobe.com/nz/products/photoshop.html",
+        "pageId": 20,
+        "prefix": "nz"
+    },
+    {
+        "url": "https://www.adobe.com/kr/",
+        "pageId": 21,
+        "prefix": "kr"
+    },
+    {
+        "url": "https://www.adobe.com/kr/creativecloud.html",
+        "pageId": 22,
+        "prefix": "kr"
+    },
+    {
+        "url": "https://www.adobe.com/kr/products/illustrator.html",
+        "pageId": 23,
+        "prefix": "kr"
+    },
+    {
+        "url": "https://www.adobe.com/kr/products/photoshop.html",
+        "pageId": 24,
+        "prefix": "kr"
+    },
+    {
+        "url": "https://www.adobe.com/mx/",
+        "pageId": 25,
+        "prefix": "mx"
+    },
+    {
+        "url": "https://www.adobe.com/mx/creativecloud.html",
+        "pageId": 26,
+        "prefix": "mx"
+    },
+    {
+        "url": "https://www.adobe.com/mx/products/illustrator.html",
+        "pageId": 27,
+        "prefix": "mx"
+    },
+    {
+        "url": "https://www.adobe.com/mx/products/photoshop.html",
+        "pageId": 28,
+        "prefix": "mx"
+    },
+    {
+        "url": "https://www.adobe.com/br/",
+        "pageId": 29,
+        "prefix": "br"
+    },
+    {
+        "url": "https://www.adobe.com/br/creativecloud.html",
+        "pageId": 30,
+        "prefix": "br"
+    },
+    {
+        "url": "https://www.adobe.com/br/products/illustrator.html",
+        "pageId": 31,
+        "prefix": "br"
+    },
+    {
+        "url": "https://www.adobe.com/br/products/photoshop.html",
+        "pageId": 32,
+        "prefix": "br"
+    },
+    {
+        "url": "https://www.adobe.com/jp/",
+        "pageId": 33,
+        "prefix": "jp"
+    },
+    {
+        "url": "https://www.adobe.com/jp/creativecloud.html",
+        "pageId": 34,
+        "prefix": "jp"
+    },
+    {
+        "url": "https://www.adobe.com/jp/products/illustrator.html",
+        "pageId": 35,
+        "prefix": "jp"
+    },
+    {
+        "url": "https://www.adobe.com/jp/products/photoshop.html",
+        "pageId": 36,
+        "prefix": "jp"
+    }
+]
