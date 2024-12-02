@@ -6,6 +6,7 @@ const config = {
     serializableTypes: ['Array', 'Object'],
     sampleRate: 1,
     tags: 'consumer,acom,mas',
+    isProdDomain: false,
 };
 
 const seenPayloads = new Set();

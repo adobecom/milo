@@ -43,6 +43,7 @@ describe('lana', () => {
                 clientId: 'merch-at-scale',
                 delimiter: '¶',
                 ignoredProperties: ['analytics', 'literals'],
+                isProdDomain: false,
                 serializableTypes: ['Array', 'Object'],
                 sampleRate: 1,
                 tags: 'consumer,acom,mas',

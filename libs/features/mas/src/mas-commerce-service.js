@@ -9,7 +9,7 @@ import { Price } from './price.js';
 import { getSettings } from './settings.js';
 import { Wcs } from './wcs.js';
 import { setImmediate } from './utilities.js';
-import { updateConfig } from './lana.js';
+import { updateConfig as updateLanaConfig } from './lana.js';
 
 export const TAG_NAME_SERVICE = 'mas-commerce-service';
 
@@ -23,15 +23,14 @@ export class MasCommerceService extends HTMLElement {
 
     get #config() {
         const config = {
+            hostEnv: { name: this.getAttribute('host-env') ?? 'prod' },
             commerce: { env: this.getAttribute('env') },
             lana: {
                 tags: this.getAttribute('lana-tags'),
                 sampleRate: parseInt(this.getAttribute('lana-sample-rate'), 10),
+                isProdDomain: this.getAttribute('host-env') === 'prod',
             },
         };
-        if (config.lana.tags) {
-            config.env = { name: 'prod' };
-        }
         //root parameters
         ['locale', 'country', 'language'].forEach((attribute) => {
             const value = this.getAttribute(attribute);
@@ -78,8 +77,8 @@ export class MasCommerceService extends HTMLElement {
         const config = this.#config;
         // Load settings and literals
         const settings = Object.freeze(getSettings(config));
-        updateConfig(config.lana);
-        const log = Log.init(config.env).module('service');
+        updateLanaConfig(config.lana);
+        const log = Log.init(config.hostEnv).module('service');
         log.debug('Activating:', config);
 
         // Fetch price literals
