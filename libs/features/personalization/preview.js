@@ -178,7 +178,7 @@ function getManifestListDomAndParameter(manifests) {
   manifests?.forEach((manifest) => {
     const {
       variantNames,
-      manifestPath = manifest.manifest,
+      manifestPath = manifest.url,
       selectedVariantName,
       name,
       manifestType,
