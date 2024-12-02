@@ -85,36 +85,31 @@ export function processBackgroundImage(
   fields,
   merchCard,
   backgroundImageConfig,
-  variant,
 ) {
-  if (fields.backgroundImage) {
-      switch (variant) {
-          case 'ccd-slice':
-              if (backgroundImageConfig) {
-                  const imgAttributes = {
-                      loading: 'lazy',
-                      src: fields.backgroundImage,
-                  };
-                  if (fields.backgroundImageAltText) {
-                      imgAttributes.alt = fields.backgroundImageAltText;
-                  }
-                  merchCard.append(
-                      createTag(
-                          backgroundImageConfig.tag,
-                          { slot: backgroundImageConfig.slot },
-                          createTag('img', imgAttributes),
-                      ),
-                  );
-              }
-              break;
-          case 'ccd-suggested':
-              merchCard.setAttribute(
-                  'background-image',
-                  fields.backgroundImage,
-              );
-              break;
-      }
-  }
+    if (backgroundImageConfig?.tag) {
+        if (fields.backgroundImage) {
+            const imgAttributes = {
+                loading: 'lazy',
+                src: fields.backgroundImage,
+            };
+            if (fields.backgroundImageAltText) {
+                imgAttributes.alt = fields.backgroundImageAltText;
+            } else {
+                imgAttributes.role = 'none';
+            }
+            merchCard.append(
+                createTag(
+                    backgroundImageConfig.tag,
+                    { slot: backgroundImageConfig.slot },
+                    createTag('img', imgAttributes),
+                ),
+            );
+        }
+
+    }
+    if (backgroundImageConfig?.attribute) {
+        merchCard.setAttribute(backgroundImageConfig.attribute, fields.backgroundImage);
+    }
 }
 
 export function processPrices(fields, merchCard, pricesConfig) {
