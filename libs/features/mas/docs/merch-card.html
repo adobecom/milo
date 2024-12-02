@@ -397,14 +397,14 @@ The reason is that some merch cards are resolved very quickly and event could di
 <p>In the demo below, the <code>aem-fragment</code> custom element is headless and does not render any content.
 The <code>sp-action-button</code> custom element renders into the default slot as no explicit slot is provided.</p>
 <pre><code class="hljs demo light language-html"><span class="hljs-tag">&lt;<span class="hljs-name">style</span>&gt;</span><span class="language-css">
-    merch-card sp-action-<span class="hljs-selector-tag">button</span> {
+    merch-card <span class="hljs-selector-tag">button</span> {
         <span class="hljs-attribute">position</span>: absolute;
         <span class="hljs-attribute">display</span>: none;
         <span class="hljs-attribute">top</span>: <span class="hljs-number">4px</span>;
         <span class="hljs-attribute">right</span>: <span class="hljs-number">4px</span>;
     }
 
-    merch-card<span class="hljs-selector-pseudo">:hover</span> sp-action-<span class="hljs-selector-tag">button</span> {
+    merch-card<span class="hljs-selector-pseudo">:hover</span> <span class="hljs-selector-tag">button</span> {
         <span class="hljs-attribute">display</span>: block;
     }
 </span><span class="hljs-tag">&lt;/<span class="hljs-name">style</span>&gt;</span>
@@ -412,7 +412,7 @@ The <code>sp-action-button</code> custom element renders into the default slot a
     <span class="hljs-tag">&lt;<span class="hljs-name">aem-fragment</span>
         <span class="hljs-attr">fragment</span>=<span class="hljs-string">&quot;d8008cac-010f-4607-bacc-a7a327da1312&quot;</span>
     &gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">aem-fragment</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">sp-action-button</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;ctxBtn&quot;</span>&gt;</span> ... <span class="hljs-tag">&lt;/<span class="hljs-name">sp-action-button</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;ctxBtn&quot;</span>&gt;</span>...<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">merch-card</span>&gt;</span>
 <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;module&quot;</span>&gt;</span><span class="language-javascript">
     <span class="hljs-variable language_">document</span>
