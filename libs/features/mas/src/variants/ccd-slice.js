@@ -6,7 +6,7 @@ export const AEM_FRAGMENT_MAPPING = {
     mnemonics: { size: 'm' },
     backgroundImage: { tag: 'div', slot: 'image' },
     description: { tag: 'div', slot: 'body-s' },
-    ctas: { slot: 'footer', size: 's' },
+    ctas: { slot: 'footer', size: 'S' },
     allowedSizes: ['wide'],
 };
 
@@ -35,6 +35,7 @@ export class CCDSlice extends VariantLayout {
 
     static variantStyle = css`
         :host([variant='ccd-slice']) {
+            background-color: var(----spectrum-global-color-gray-100);
             min-width: 290px;
             max-width: var(--consonant-merch-card-ccd-slice-single-width);
             max-height: var(--consonant-merch-card-ccd-slice-single-height);

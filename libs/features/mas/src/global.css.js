@@ -67,12 +67,12 @@ styles.innerHTML = `
     --consonant-merch-card-heading-padding: 0;
 
     /* colors */
-    --merch-card-background-color: var(--spectrum-gray-background-color-default, #fff);
+    --merch-card-background-color: #fff;
     --consonant-merch-card-border-color: #eaeaea;
     --color-accent: #1473E6;
     --merch-color-focus-ring: #1473E6;
     --merch-color-grey-10: #f6f6f6;
-    --merch-color-grey-60: #6D6D6D;
+    --merch-color-grey-60: var(--specturm-gray-600);
     --merch-color-grey-80: #2c2c2c;
     --merch-color-grey-200: #E8E8E8;
     --merch-color-grey-600: #686868;
@@ -84,7 +84,10 @@ styles.innerHTML = `
     --ccd-gray-800-dark: #222;
     --ccd-gray-700-dark: #464646;
     --ccd-gray-600-light: #6D6D6D;
-    --ccd-gray-200-dark: #3F3F3F;
+
+    .spectrum--dark {
+        --merch-color-grey-60: 
+    }
     
     
     
@@ -160,7 +163,7 @@ merch-card span[is='inline-price'] {
     display: inline-block;
 }
 
-merch-card sp-button a[is='checkout-link'] {
+merch-card button a[is='checkout-link'] {
     pointer-events: auto;
 }
 
@@ -371,16 +374,10 @@ merch-card span[is="inline-price"][data-template='strikethrough'] {
   content: "\\00a0";
 }
 
-merch-card sp-button a,
-merch-card sp-button a:hover {
+merch-card button a,
+merch-card button a:hover {
   text-decoration: none;
-    color: var(
-        --highcontrast-button-content-color-default,
-        var(
-            --mod-button-content-color-default,
-            var(--spectrum-button-content-color-default)
-        )
-    );
+  color: var(--spectrum-button-text-color);
 }
 
 merch-card span.placeholder-resolved[data-template='strikethrough'],

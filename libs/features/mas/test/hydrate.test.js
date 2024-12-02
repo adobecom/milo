@@ -13,7 +13,7 @@ import {
     processAnalytics,
     ANALYTICS_TAG,
     ANALYTICS_LINK_ATTR,
-    ANALYTICS_SECTION_ATTR
+    ANALYTICS_SECTION_ATTR,
 } from '../src/hydrate.js';
 import { AEM_FRAGMENT_MAPPING } from '../src/variants/ccd-slice.js';
 
@@ -127,10 +127,8 @@ describe('processCTAs', async () => {
         expect(footer.getAttribute('slot')).to.equal('footer');
 
         const button = footer.firstChild;
-        expect(button.tagName.toLowerCase()).to.equal('sp-button');
-        expect(button.getAttribute('treatment')).to.equal('fill');
-        expect(button.getAttribute('variant')).to.equal('accent');
-        expect(button.getAttribute('size')).to.equal('m');
+        expect(button.tagName.toLowerCase()).to.equal('button');
+        expect(button.className).to.equal('spectrum-Button spectrum-Button--accent');
     });
 
     it('should create consonant buttons when merchCard.consonant is true', async () => {
@@ -166,9 +164,9 @@ describe('processCTAs', async () => {
         const buttons = footer.children;
         expect(buttons).to.have.lengthOf(3);
 
-        expect(buttons[0].getAttribute('variant')).to.equal('accent');
-        expect(buttons[1].getAttribute('variant')).to.equal('primary');
-        expect(buttons[2].getAttribute('variant')).to.equal('secondary');
+        expect(buttons[0].className).to.equal('spectrum-Button spectrum-Button--accent');
+        expect(buttons[1].className).to.equal('spectrum-Button spectrum-Button--primary');
+        expect(buttons[2].className).to.equal('spectrum-Button spectrum-Button--secondary');
     });
 
     it('should handle strong wrapped CTAs', async () => {
@@ -180,7 +178,7 @@ describe('processCTAs', async () => {
 
         const footer = merchCard.append.firstCall.args[0];
         const button = footer.firstChild;
-        expect(button.getAttribute('variant')).to.equal('accent');
+        expect(button.className).to.equal('spectrum-Button spectrum-Button--accent');
     });
 
     it('should handle outline CTAs', async () => {
@@ -192,8 +190,7 @@ describe('processCTAs', async () => {
 
         const footer = merchCard.append.firstCall.args[0];
         const button = footer.firstChild;
-        expect(button.getAttribute('treatment')).to.equal('outline');
-        expect(button.getAttribute('variant')).to.equal('accent');
+        expect(button.className).to.equal('spectrum-Button spectrum-Button--accent spectrum-Button--outline');
     });
 
     it('should handle link-style CTAs', async () => {
@@ -381,85 +378,96 @@ describe('processBackgroundImage', () => {
 });
 
 describe('processAnalytics', () => {
-  let merchCard;
+    let merchCard;
 
-  beforeEach(() => {
-      merchCard = mockMerchCard();
-  });
+    beforeEach(() => {
+        merchCard = mockMerchCard();
+    });
 
-  afterEach(() => {
-      sinon.restore();
-  });
+    afterEach(() => {
+        sinon.restore();
+    });
 
-  it('should not set analytics attributes if no fields.tags', () => {
-      const fields = {};
-      processAnalytics(fields, merchCard);
-      expect(merchCard.hasAttribute(ANALYTICS_SECTION_ATTR)).to.be.false;
-      expect(merchCard.querySelectorAll(`a[${ANALYTICS_LINK_ATTR}]`).length).to.equal(0);
-  });
+    it('should not set analytics attributes if no fields.tags', () => {
+        const fields = {};
+        processAnalytics(fields, merchCard);
+        expect(merchCard.hasAttribute(ANALYTICS_SECTION_ATTR)).to.be.false;
+        expect(
+            merchCard.querySelectorAll(`a[${ANALYTICS_LINK_ATTR}]`).length,
+        ).to.equal(0);
+    });
 
-  it(`should not set analytics attributes when no tags start with ${ANALYTICS_TAG}`, () => {
-      const fields = { tags: ['mas:term/montly'] };
-      processAnalytics(fields, merchCard);
-      expect(merchCard.hasAttribute(ANALYTICS_SECTION_ATTR)).to.be.false;
-      expect(merchCard.querySelectorAll(`a[${ANALYTICS_LINK_ATTR}]`).length).to.equal(0);
-  });
+    it(`should not set analytics attributes when no tags start with ${ANALYTICS_TAG}`, () => {
+        const fields = { tags: ['mas:term/montly'] };
+        processAnalytics(fields, merchCard);
+        expect(merchCard.hasAttribute(ANALYTICS_SECTION_ATTR)).to.be.false;
+        expect(
+            merchCard.querySelectorAll(`a[${ANALYTICS_LINK_ATTR}]`).length,
+        ).to.equal(0);
+    });
 
-  it('should set analytics-section attribute on merchCard', () => {
-      const fields = { tags: ['mas:product_code/phsp'] };
-      processAnalytics(fields, merchCard);
-      expect(merchCard.getAttribute(ANALYTICS_SECTION_ATTR)).to.equal('phsp');
-  });
+    it('should set analytics-section attribute on merchCard', () => {
+        const fields = { tags: ['mas:product_code/phsp'] };
+        processAnalytics(fields, merchCard);
+        expect(merchCard.getAttribute(ANALYTICS_SECTION_ATTR)).to.equal('phsp');
+    });
 
-  it('should set analytics-link attributes on links inside merchCard', () => {
-      const fields = { tags: ['mas:term/montly', 'mas:product_code/ccsn'] };
+    it('should set analytics-link attributes on links inside merchCard', () => {
+        const fields = { tags: ['mas:term/montly', 'mas:product_code/ccsn'] };
 
-      const seeTerms = document.createElement('a');
-      seeTerms.setAttribute('data-analytics-id', 'see-terms');
-      const buyNow = document.createElement('a');
-      buyNow.setAttribute('data-analytics-id', 'buy-now');
-      const noAnalytics = document.createElement('a');
-      merchCard.appendChild(seeTerms);
-      merchCard.appendChild(buyNow);
-      merchCard.appendChild(noAnalytics);
+        const seeTerms = document.createElement('a');
+        seeTerms.setAttribute('data-analytics-id', 'see-terms');
+        const buyNow = document.createElement('a');
+        buyNow.setAttribute('data-analytics-id', 'buy-now');
+        const noAnalytics = document.createElement('a');
+        merchCard.appendChild(seeTerms);
+        merchCard.appendChild(buyNow);
+        merchCard.appendChild(noAnalytics);
 
-      processAnalytics(fields, merchCard);
-      expect(merchCard.getAttribute(ANALYTICS_SECTION_ATTR)).to.equal('ccsn');
-      expect(seeTerms.getAttribute(ANALYTICS_LINK_ATTR)).to.equal('see-terms-1');
-      expect(buyNow.getAttribute(ANALYTICS_LINK_ATTR)).to.equal('buy-now-2');
-      // should handle only links with data-analytics-id attribute
-      expect(merchCard.querySelectorAll(`a[${ANALYTICS_LINK_ATTR}]`).length).to.equal(2);
-  });
+        processAnalytics(fields, merchCard);
+        expect(merchCard.getAttribute(ANALYTICS_SECTION_ATTR)).to.equal('ccsn');
+        expect(seeTerms.getAttribute(ANALYTICS_LINK_ATTR)).to.equal(
+            'see-terms-1',
+        );
+        expect(buyNow.getAttribute(ANALYTICS_LINK_ATTR)).to.equal('buy-now-2');
+        // should handle only links with data-analytics-id attribute
+        expect(
+            merchCard.querySelectorAll(`a[${ANALYTICS_LINK_ATTR}]`).length,
+        ).to.equal(2);
+    });
 });
 
 describe('hydrate', () => {
-  let merchCard;
+    let merchCard;
 
-  beforeEach(() => {
-      merchCard = mockMerchCard();
-  });
+    beforeEach(() => {
+        merchCard = mockMerchCard();
+    });
 
-  afterEach(() => {
-      sinon.restore();
-  });
+    afterEach(() => {
+        sinon.restore();
+    });
 
-  it('should hydrate a ccd-slice merch card', async () => {
-      const fragment = {
-        fields: {
-          variant: 'ccd-slice',
-          mnemonicIcon: ['www.adobe.com/icons/photoshop.svg'],
-          mnemonicAlt: [],
-          mnemonicLink: ['www.adobe.com'],
-          backgroundImage: 'test-image.jpg',
-          ctas: '<a is="checkout-link" data-wcs-osi="abm" class="accent" data-analytics-id="buy-now">Click me</a>',
-          tags: ['mas:term/montly', 'mas:product_code/ccsn'],
-        },
-      };
-      merchCard.variantLayout = { aemFragmentMapping: AEM_FRAGMENT_MAPPING };
-      await hydrate(fragment, merchCard);
+    it('should hydrate a ccd-slice merch card', async () => {
+        const fragment = {
+            fields: {
+                variant: 'ccd-slice',
+                mnemonicIcon: ['www.adobe.com/icons/photoshop.svg'],
+                mnemonicAlt: [],
+                mnemonicLink: ['www.adobe.com'],
+                backgroundImage: 'test-image.jpg',
+                ctas: '<a is="checkout-link" data-wcs-osi="abm" class="accent" data-analytics-id="buy-now">Click me</a>',
+                tags: ['mas:term/montly', 'mas:product_code/ccsn'],
+            },
+        };
+        merchCard.variantLayout = { aemFragmentMapping: AEM_FRAGMENT_MAPPING };
+        await hydrate(fragment, merchCard);
 
-      expect(merchCard.getAttribute(ANALYTICS_SECTION_ATTR)).to.equal('ccsn');
-      expect(merchCard.querySelector(`a[data-analytics-id]`).getAttribute('daa-ll')).to.equal('buy-now-1');
-  });
-
+        expect(merchCard.getAttribute(ANALYTICS_SECTION_ATTR)).to.equal('ccsn');
+        expect(
+            merchCard
+                .querySelector(`a[data-analytics-id]`)
+                .getAttribute('daa-ll'),
+        ).to.equal('buy-now-1');
+    });
 });

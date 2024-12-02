@@ -8,7 +8,7 @@ const AEM_FRAGMENT_MAPPING = {
   title: { tag: 'h3', slot: 'heading-xs' },
   prices: { tag: 'p', slot: 'price' },
   description: { tag: 'div', slot: 'body-xs' },
-  ctas: { slot: 'cta', size: 'm' },
+  ctas: { slot: 'cta', size: 'M' },
 };
 
 export class CCDSuggested extends VariantLayout {
@@ -93,7 +93,7 @@ export class CCDSuggested extends VariantLayout {
     }
 
     :host([variant='ccd-suggested']) ::slotted([slot='body-xs']) {
-      color: var(--ccd-gray-700-dark, #464646);
+      color: var(--ccd-gray-700-dark);
       padding-top: 6px;
     }
     

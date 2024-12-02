@@ -7,6 +7,7 @@ const CHECKOUT_LINK_STYLE_PATTERN =
 export const ANALYTICS_TAG = 'mas:product_code/';
 export const ANALYTICS_LINK_ATTR = 'daa-ll';
 export const ANALYTICS_SECTION_ATTR = 'daa-lh';
+const SPECTRUM_BUTTON_SIZES = ['XL', 'L', 'M', 'S'];
 
 export function processMnemonics(fields, merchCard, mnemonicsConfig) {
     const mnemonics = fields.mnemonicIcon?.map((icon, index) => ({
@@ -148,7 +149,6 @@ function createSpectrumButton(cta, strong, aemFragmentMapping, cardVariant) {
         return cta;
     }
 
-    let treatment = 'fill';
     let variant;
 
     if (isAccent || strong) {
@@ -159,18 +159,19 @@ function createSpectrumButton(cta, strong, aemFragmentMapping, cardVariant) {
         variant = 'secondary';
     }
 
-    if (isOutline) {
-        treatment = 'outline';
-    }
-
     cta.tabIndex = -1;
+    const size = aemFragmentMapping.ctas.size ?? 'M';
+    const variantClass = `spectrum-Button--${variant}`;
+    const treatmentClass = isOutline ? ' spectrum-Button--outline' : '';
+    const sizeClass = SPECTRUM_BUTTON_SIZES.includes(size)
+        ? ` spectrum-Button--size${size}`
+        : '';
+    const spectrumClass = `spectrum-Button ${variantClass}${treatmentClass}${sizeClass}`;
     const spectrumCta = createTag(
-        'sp-button',
+        'button',
         {
-            treatment,
-            variant,
+            class: spectrumClass,
             tabIndex: 0,
-            size: aemFragmentMapping.ctas.size ?? 'm',
         },
         cta,
     );
@@ -218,19 +219,27 @@ export function processCTAs(fields, merchCard, aemFragmentMapping, variant) {
 }
 
 export function processAnalytics(fields, merchCard) {
-  const { tags } = fields;
-  const cardAnalyticsId = tags?.find(tag => tag.startsWith(ANALYTICS_TAG))?.split('/').pop();
-    if(cardAnalyticsId) {
-      merchCard.setAttribute(ANALYTICS_SECTION_ATTR, cardAnalyticsId);
-      merchCard.querySelectorAll(`a[data-analytics-id]`).forEach((link, index) => {
-        link.setAttribute(ANALYTICS_LINK_ATTR, `${link.dataset.analyticsId}-${index + 1}`);
-      });
+    const { tags } = fields;
+    const cardAnalyticsId = tags
+        ?.find((tag) => tag.startsWith(ANALYTICS_TAG))
+        ?.split('/')
+        .pop();
+    if (cardAnalyticsId) {
+        merchCard.setAttribute(ANALYTICS_SECTION_ATTR, cardAnalyticsId);
+        merchCard
+            .querySelectorAll(`a[data-analytics-id]`)
+            .forEach((link, index) => {
+                link.setAttribute(
+                    ANALYTICS_LINK_ATTR,
+                    `${link.dataset.analyticsId}-${index + 1}`,
+                );
+            });
     }
 }
 
 export async function hydrate(fragment, merchCard) {
-  const { fields } = fragment;
-  const { variant } = fields;
+    const { fields } = fragment;
+    const { variant } = fields;
     if (!variant) return;
 
     // remove all previous slotted content except the default slot
@@ -251,14 +260,19 @@ export async function hydrate(fragment, merchCard) {
     const { aemFragmentMapping } = merchCard.variantLayout;
     if (!aemFragmentMapping) return;
 
-    processBackgroundImage(fields,merchCard,aemFragmentMapping.backgroundImage,variant);
-    processBadge(fields, merchCard);
-    processCTAs(fields, merchCard, aemFragmentMapping, variant);
-    processDescription(fields, merchCard, aemFragmentMapping.description);
     processMnemonics(fields, merchCard, aemFragmentMapping.mnemonics);
-    processPrices(fields, merchCard, aemFragmentMapping.prices);
+    processBadge(fields, merchCard);
     processSize(fields, merchCard, aemFragmentMapping.allowedSizes);
-    processSubtitle(fields, merchCard, aemFragmentMapping.subtitle);
     processTitle(fields, merchCard, aemFragmentMapping.title);
+    processSubtitle(fields, merchCard, aemFragmentMapping.subtitle);
+    processPrices(fields, merchCard, aemFragmentMapping.prices);
+    processBackgroundImage(
+        fields,
+        merchCard,
+        aemFragmentMapping.backgroundImage,
+        variant,
+    );
+    processDescription(fields, merchCard, aemFragmentMapping.description);
+    processCTAs(fields, merchCard, aemFragmentMapping, variant);
     processAnalytics(fields, merchCard);
 }
