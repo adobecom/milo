@@ -147,14 +147,14 @@ describe('commerce service', () => {
 
             it('enables lana with custom tags', async () => {
                 const el = await initMasCommerceService({
-                    'lana-tags': 'ccd,mas',
+                    'lana-tags': 'ccd',
                     'lana-sample-rate': '100',
                     'host-env': 'stage',
                 });
                 el.log.error('test error');
                 const [, url] = calls[0].open.lastCall.args;
                 expect(
-                    /https\:\/\/www.stage.adobe.com\/lana\/ll\?m=test%20error.*c=merch-at-scale&s=100&t=e&tags=ccd,mas/.test(
+                    /https\:\/\/www.stage.adobe.com\/lana\/ll\?m=test%20error.*c=merch-at-scale&s=100&t=e&tags=ccd/.test(
                         url,
                     ),
                 ).to.true;

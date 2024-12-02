@@ -35,7 +35,7 @@ You do need to have mas.js on your page / application, including it can be done 
 | `locale`                 | currency & price locale you need, must belong to one of the [supported locales](#supported-locales) | `en_US`                          | `false`  |
 | `language`               | language of the price literal, e.g: per license                                                     | en or locale langauge if set     | `false`  |
 | `wcs-api-key`            | api key used for making WCS calls                                                                   | `wcms-commerce-ims-ro-user-milo` | `false`  |
-| `lana-tags`              | Enables logging via lana[^1][^2] with the given tags. e.g:`consumer,ccd,mas`.                       |                                  | `false`  |
+| `lana-tags`              | Enables logging via lana[^1][^2] with the given tags. e.g:`ccd`.                       |                                  | `false`  |
 | `lana-sample-rate`       | Sets the sampling rate, see [^1] for details.                                                       | 1                                | `false`  |
 
 [^1]: https://wiki.corp.adobe.com/pages/viewpage.action?spaceKey=WCMSOps&title=LANA+-+Log+Always+Never+Assume
