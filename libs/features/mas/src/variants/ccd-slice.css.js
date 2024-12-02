@@ -24,7 +24,6 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a:not(.con-button) {
   font-weight: 400;
   line-height: var(--consonant-merch-card-body-xxs-line-height);
   text-decoration-line: underline;
-  color: var(--spectrum-gray-800, var(--merch-color-grey-80));
 }
 
 merch-card[variant="ccd-slice"] [slot="body-s"] span.placeholder-resolved[data-template="priceStrikethrough"],

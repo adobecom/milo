@@ -85,13 +85,8 @@ styles.innerHTML = `
     --ccd-gray-700-dark: #464646;
     --ccd-gray-600-light: #6D6D6D;
 
-    .spectrum--dark {
-        --merch-color-grey-60: 
-    }
     
-    
-    
-
+  
     /* merch card generic */
     --consonant-merch-card-max-width: 300px;
     --transition: cmax-height 0.3s linear, opacity 0.3s linear;
@@ -322,7 +317,11 @@ merch-card [slot="body-xl"] {
 }
 
 merch-card a.primary-link {
-    color: var(--spectrum-global-color-blue-700);
+    color: #147AF3;
+}
+
+merch-card a.secondary-link {
+    color: #222222;
 }
 
 merch-card [slot="cci-footer"] p,
@@ -401,5 +400,11 @@ body.merch-modal {
     scrollbar-gutter: stable;
     height: 100vh;
 }
+
+/* dark theme */
+.spectrum--dark  merch-card a.secondary-link {
+    color: #F8F8F8;
+}
+
 `;
 document.head.appendChild(styles);

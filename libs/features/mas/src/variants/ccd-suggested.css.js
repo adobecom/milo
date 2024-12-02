@@ -39,7 +39,6 @@ merch-card[variant="ccd-suggested"] [slot="body-xs"] a {
   font-size: var(--consonant-merch-card-body-xxs-font-size);
   line-height: var(--consonant-merch-card-body-xxs-line-height);
   text-decoration: underline;
-  color: var(--spectrum-blue-800, var(--color-accent));
 }
 
 merch-card[variant="ccd-suggested"] [slot="price"] span.placeholder-resolved[data-template="priceStrikethrough"],

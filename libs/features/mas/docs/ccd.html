@@ -31,16 +31,17 @@
       meta.content = baseUrl;
       document.head.appendChild(meta);
 
+      const params = new URLSearchParams(document.location.search);
       function toggleTheme(theme) {
         document.body.className = 'spectrum spectrum--medium';
         document.body.classList.add(`spectrum--${theme}`);
+        params.set('theme', theme);
+        history.replaceState(null, '', `${location.pathname}?${params}`);
       }
     </script>
     <script type="module" src="../dist/mas.js"></script>
 
     <script type="module">
-      // theme
-      const params = new URLSearchParams(document.location.search);
       // mas-commerce-service
       const masCommerceService = document.createElement('mas-commerce-service');
       ['locale','language','env'].forEach((attribute) => {
@@ -131,6 +132,10 @@
       </div>
       </div>
   </main>
+  <script>
+          const theme = params.get('theme');
+          if (theme) toggleTheme(theme);
+  </script>
 </body>
 
 </html>
