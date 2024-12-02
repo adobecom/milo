@@ -6,7 +6,7 @@ const AEM_FRAGMENT_MAPPING = {
   mnemonics: { size: 'l' },
   subtitle: { tag: 'h4', slot: 'detail-s' },
   title: { tag: 'h3', slot: 'heading-xs' },
-  prices: { tag: 'p', slot: 'price' },
+  prices: { tag: 'div', slot: 'price' },
   description: { tag: 'div', slot: 'body-xs' },
   ctas: { slot: 'cta', size: 'm' },
 };
@@ -106,7 +106,8 @@ export class CCDSuggested extends VariantLayout {
     }
 
     :host([variant='ccd-suggested']) ::slotted([slot='price']) {
-      display: flex;
+      display: inline-block;
+      white-space: pre-wrap;
       align-items: center;
       color: var(--spectrum-gray-800, #F8F8F8);
       font-size: var(--consonant-merch-card-body-xs-font-size);
