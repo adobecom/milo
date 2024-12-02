@@ -65,7 +65,7 @@ jobs:
 
           echo "release_title=$(sanitizeStr "${{ github.event.pull_request.title }}")" >> $GITHUB_ENV
           release_details=$(sanitizeStr "${{ github.event.pull_request.body }}")
-          release=Release_Details--"$release_details"--Pull_Request_Number--"${{ github.event.pull_request.number }}"--Pull_Request_Created_At--"${{ github.event.pull_request.created_at }}"--Pull_Request_Merged_At--"${{ github.event.pull_request.merged_at }}"
+          release=Release_Details--$release_details--Pull_Request_Number--${{ github.event.pull_request.number }}--Pull_Request_Created_At--${{ github.event.pull_request.created_at }}--Pull_Request_Merged_At--${{ github.event.pull_request.merged_at }}
 
           echo "release_summary<<RS_EOF" >> $GITHUB_ENV
           echo "$release" >> $GITHUB_ENV
@@ -100,7 +100,7 @@ jobs:
               url=$DEFAULT_IMS_URL
             fi
 
-            curl --request POST --silent --url "$url" --header 'content-type: multipart/form-data' --form client_id="$client_id" --form client_secret="$client_secret" --form grant_type=authorization_code --form code="$ims_code" > response.txt
+            curl --request POST --silent --url $url --header 'content-type: multipart/form-data' --form client_id=$client_id --form client_secret=$client_secret --form grant_type=authorization_code --form code=$ims_code > response.txt
 
             if [[ -f response.txt && ! -s response.txt ]]; then
               echo "CURL call failed, returned response copied to response.txt was empty."
@@ -115,7 +115,7 @@ jobs:
             fi
           }
 
-          ims_request "${{ secrets.IMSACCESS_CLIENT_ID }}" "${{ secrets.IMSACCESS_CLIENT_SECRET_STAGE }}" "${{ secrets.IMSACCESS_AUTH_CODE_STAGE }}"
+          ims_request ${{ secrets.IMSACCESS_CLIENT_ID }} ${{ secrets.IMSACCESS_CLIENT_SECRET_STAGE }} ${{ secrets.IMSACCESS_AUTH_CODE_STAGE }}
 
       - name: Create CMR in ServiceNow
         run: |
@@ -165,7 +165,7 @@ jobs:
               url=$DEFAULT_SERVICENOW_URL
             fi
 
-            curl --request POST --silent --url "$url" --header 'Accept: application/json' --header "Authorization: $access_token" --header 'Content-Type: application/json' --header "api_key: $api_key" --data '{"title": ""$title"", "description": ""$description"", "instanceIds": [ 537445 ], "plannedStartDate": "$planned_start_time", "plannedEndDate": "$planned_end_time", "coordinator": "narcis@adobe.com", "executor": "mauchley@adobe.com", "customerImpact": "No Impact", "changeReason": [ "New Features", "Bug Fixes", "Enhancement", "Maintenance", "Security" ], "preProductionTestingType": [ "End-to-End", "Functional", "Integrations", "QA", "Regression", "UAT", "Unit Test" ], "backoutPlanType": "Roll back", "approvedBy": [ "osahin@adobe.com" ], "testPlan": "Test plan is documented in the PR link in the Milo repository above. See the PR'\''s merge checks to see Unit and Nala testing.", "implementationPlan": "The change will be released as part of the continuous deployment of Milo'\''s production branch, i.e., \"main\"", "backoutPlan": "Revert merge to the Milo production branch by creating a revert commit.", "testResults": "Changes are tested and validated successfully in staging environment. Please see the link of the PR in the description for the test results and/or the \"#nala-test-results\" slack channel."}' > response.txt
+            curl --request POST --silent --url $url --header 'Accept: application/json' --header 'Authorization: $access_token' --header 'Content-Type: application/json' --header 'api_key: $api_key' --data '{"title": "$title", "description": "$description", "instanceIds": [ 537445 ], "plannedStartDate": $planned_start_time, "plannedEndDate": $planned_end_time, "coordinator": "narcis@adobe.com", "executor": "mauchley@adobe.com", "customerImpact": "No Impact", "changeReason": [ "New Features", "Bug Fixes", "Enhancement", "Maintenance", "Security" ], "preProductionTestingType": [ "End-to-End", "Functional", "Integrations", "QA", "Regression", "UAT", "Unit Test" ], "backoutPlanType": "Roll back", "approvedBy": [ "osahin@adobe.com" ], "testPlan": "Test plan is documented in the PR link in the Milo repository above. See the PR'\''s merge checks to see Unit and Nala testing.", "implementationPlan": "The change will be released as part of the continuous deployment of Milo'\''s production branch, i.e., \"main\"", "backoutPlan": "Revert merge to the Milo production branch by creating a revert commit.", "testResults": "Changes are tested and validated successfully in staging environment. Please see the link of the PR in the description for the test results and/or the \"#nala-test-results\" slack channel."}' > response.txt
 
             if [[ -f response.txt && ! -s response.txt ]]; then
               echo "CURL call failed, returned response copied to response.txt was empty."
@@ -181,7 +181,7 @@ jobs:
             fi
           }
 
-          servicenow_create_cmr "${{ secrets.IPAAS_KEY_STAGE }}" "$token" "$release_title" "$release_summary" "$start_time" "$end_time"
+          servicenow_create_cmr ${{ secrets.IPAAS_KEY_STAGE }} $token $release_title $release_summary $start_time $end_time
 
       - name: Wait for Transaction from Queue to ServiceNow then Retrieve CMR ID
         run: |
@@ -213,7 +213,7 @@ jobs:
               url+=""$transactionId""
             fi
 
-            curl --request GET --silent --url "$url" --header 'Accept: application/json' --header "Authorization: $access_token" --header "api_key: $api_key" > response.txt
+            curl --request GET --silent --url $url --header 'Accept: application/json' --header 'Authorization: $access_token' --header api_key: $api_key > response.txt
 
             if [[ -f response.txt && ! -s response.txt ]]; then
               echo "CURL call failed, returned response copied to response.txt was empty."
@@ -230,7 +230,7 @@ jobs:
           }
 
           sleep 10s
-          servicenow_request_cmr "${{ secrets.IPAAS_KEY_STAGE }}" "$token" "$transaction_id"
+          servicenow_request_cmr ${{ secrets.IPAAS_KEY_STAGE }} $token $transaction_id
 
       - name: Set Actual Maintenance Time Windows for CMR
         run: |
@@ -278,7 +278,7 @@ jobs:
               url=$DEFAULT_SERVICENOW_URL
             fi
 
-            curl --request POST --silent --url "$url" --header 'Accept: application/json' --header "Authorization: $access_token" --header 'Content-Type: application/json' --header "api_key: $api_key" --data '{"id": ""$transactionId"", "actualStartDate": "$actualStart_time", "actualEndDate": "$actualEnd_time", "state": "Closed", "closeCode": "Successful", "notes": "The change request is closed as the change was released successfully"}' > response.txt
+            curl --request POST --silent --url $url --header 'Accept: application/json' --header 'Authorization: $access_token' --header 'Content-Type: application/json' --header api_key: $api_key --data '{"id": $transactionId, "actualStartDate": $actualStart_time, "actualEndDate": $actualEnd_time, "state": "Closed", "closeCode": "Successful", "notes": "The change request is closed as the change was released successfully"}' > response.txt
 
             if [[ -f response.txt && ! -s response.txt ]]; then
               echo "CURL call failed, returned response copied to response.txt was empty."
@@ -292,4 +292,4 @@ jobs:
             fi
           }
 
-          servicenow_close_cmr "${{ secrets.IPAAS_KEY_STAGE }}" "$token" "$actual_start_time" "$actual_end_time" "$transaction_id"
+          servicenow_close_cmr ${{ secrets.IPAAS_KEY_STAGE }} $token $actual_start_time $actual_end_time $transaction_id
