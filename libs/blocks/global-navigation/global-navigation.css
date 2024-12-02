@@ -753,7 +753,7 @@ header.new-nav.local-nav .feds-curtain--open {
 
 header.new-nav .feds-nav-wrapper {
   width: 100%;
-  background-color: black;
+  background-color: var(--feds-background-cloudmenu-v2);
   translate: -200vw 0;
   opacity: 0;
   transition: translate 0.4s ease-out, opacity 0.4s ease;
@@ -784,11 +784,11 @@ header.new-nav .feds-nav-wrapper--expanded .feds-nav > section.feds-navItem:firs
 
 header.new-nav .feds-nav-wrapper--expanded .feds-nav > .feds-navItem.feds-navItem--mobile-only:last-of-type {
   margin-bottom: 10px;
-  border-bottom: 2px solid #fff;
+  border-bottom: 2px solid var(--feds-color-white-v2);
 }
 
 header.new-nav .feds-nav-wrapper--expanded .feds-nav > section.feds-navItem > button.feds-navLink {
-  color: white;
+  color: var(--feds-color-white-v2);
   font-size: 20px;
   font-weight: 400;
   line-height: 25px;
@@ -823,8 +823,9 @@ header.new-nav .feds-nav > section.feds-navItem > button.feds-navLink::after {
   width: 9.271px;
   height: 9.179px;
   transform: rotate(-45deg);
-  border-color: white;
+  border-color: var(--feds-color-white-v2);
   right: 20px;
+  top: calc(50% - 4px);
 }
 
 [dir = "rtl"] header.new-nav .feds-nav > section.feds-navItem > button.feds-navLink::after {
@@ -837,7 +838,7 @@ header.new-nav .feds-nav > .feds-navItem > a.feds-navLink {
   border-bottom: 1px solid #2c2c2c;
   padding: 20px;
   font-size: 20px;
-  color: white;
+  color: var(--feds-color-white-v2);
 }
 
 /* 
@@ -851,16 +852,8 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup {
   width: 100%;
   height: calc(var(--feds-height-nav) + 100%);
   background-color: var(--feds-background-nav);
-  /*animation: totheleft 0.3s ease-out, fadeout 0.3s ease;*/
-  /* we need to use transitions instead to avoid an issue on
-   * adobe home wherein if we click on the hamburger icon
-   * right after loading in, we see some feds-popups appear on the
-   * screen and fadeaway
-   */
   transition: translate 0.4s ease-out, opacity 0.2s ease;
   translate: 300vw 0;
-  /* animation-fill-mode: forwards; */
-
   display: grid;
   grid-template-rows: 56px max-content auto 80px;
   grid-template-columns: 120px 1fr;
@@ -879,6 +872,10 @@ header.new-nav.local-nav .feds-nav > section.feds-navItem > .feds-popup {
   translate: 0;
 }
 
+header.new-nav .feds-nav > section.feds-navItem.feds-dropdown--active::before {
+  width: 0;
+}
+
 header.new-nav .feds-nav > section.feds-navItem.feds-dropdown--active > .feds-popup {
   translate: 0;
   opacity: 1;
@@ -894,8 +891,12 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .top-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #EAEAEA;
+  border-bottom: 1px solid var(--feds-borderColor-link-v2);
   padding: 0 20px;
+}
+
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup .top-bar .feds-brand {
+  padding-left: 0;
 }
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .top-bar .close-icon {
@@ -926,7 +927,7 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .title {
   grid-area: title;
   display: flex;
   flex-direction: column;
-  border-bottom: 1px solid #EAEAEA;
+  border-bottom: 1px solid var(--feds-borderColor-link-v2);
   padding: 0 20px;
 }
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .title .breadcrumbs {
@@ -947,6 +948,7 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tabs {
   display: flex;
   flex-direction: column;
   padding-top: 16px;
+  background-color: var(--feds-backgroundColor-tabs-v2);
 }
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button {
@@ -960,12 +962,12 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button {
 }
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button[aria-selected="true"] {
-  background-color: black;
-  color: white;
+  background-color: var(--feds-color-black-v2);
+  color: var(--feds-color-white-v2);
 }
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content {
-  background-color: #f3f3f3;
+  background-color: var(--feds-backgroundColor-tabContent-v2);
   padding: 10px 13px 25px;
   display: flex;
   flex-direction: column;
@@ -973,6 +975,12 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content {
   font-size:14px;
   line-height: 16px;
   overflow-y: scroll;
+  border-left: 1px solid var(--feds-borderColor-link-v2);
+}
+
+[dir = "rtl"] header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content {
+  border-left: none;
+  border-right: 1px solid var(--feds-borderColor-link-v2);
 }
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content a {
@@ -999,8 +1007,9 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .sticky-cta {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;;
+  width: 100%;
   position:sticky;
+  border-top: 1px solid var(--feds-borderColor-link-v2);
 }
 
 header.new-nav .feds-nav > section.feds-navItem.feds-dropdown--active > .feds-popup .sticky-cta a {
@@ -1017,7 +1026,7 @@ header.new-nav .feds-navItem--section {
 }
 
 header.new-nav .feds-breadcrumbs {
-  padding: 10px 0;
+  padding: 2px 0 0;
 }
 
 header.new-nav .feds-breadcrumbs ul {
@@ -1058,14 +1067,14 @@ header + .feds-localnav {
   border: 0;
   padding: 0 20px;
   text-align: justify;
-  border-top: 1px solid #eee;
-  border-bottom: 1px solid #eee;
-  background-color: #F8F8F8;
+  border-top: 1px solid var(--feds-borderColor-localnav-v2);
+  border-bottom: 1px solid var(--feds-borderColor-localnav-v2);
+  background-color: var(--feds-background-nav);
 }
 
 .feds-localnav-items {
-  background: #F3F3F3;
-  border-bottom: 1px solid #eee;
+  background: var(--feds-background-popup);
+  border-bottom: 1px solid var(--feds-borderColor-localnav-v2);
   display: none;
   box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
 }
@@ -1109,11 +1118,11 @@ header + .feds-localnav {
   border-bottom: 0;
   font-size: 14px;
   padding: 12px 20px;
-  background: #F3F3F3;
+  background: var(--feds-background-popup);
 }
 
 .feds-localnav .feds-localnav-items .feds-menu-headline {
-  background: #F3F3F3;
+  background: var(--feds-background-popup);
   font-weight: 400;
   border-bottom: 0;
   padding: 12px 38px;
@@ -1129,24 +1138,6 @@ header + .feds-localnav {
 
 .feds-localnav.active .feds-localnav-title::after {
   transform: rotateZ(-135deg);
-}
-
-@keyframes fromtheleft {
-  from {
-    translate: -200vw 0;
-  }
-  to {
-    translate: 0 0;
-  }
-}
-
-@keyframes totheleft {
-  from {
-    translate: 0 0;
-  }
-  to {
-    translate: -200vw 0;
-  }
 }
 
 @keyframes slideright {
