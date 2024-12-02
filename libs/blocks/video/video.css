@@ -71,7 +71,7 @@ video {
   border: 2px solid #fff;
 }
 
-.video-container .pause-play-wrapper:focus {
+.video-container .pause-play-wrapper:focus-visible {
   background: #fff;
 }
 
