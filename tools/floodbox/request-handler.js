@@ -27,15 +27,15 @@ class RequestHandler {
    * @param {*} content File blob or text content
    * @param {*} fileExt File extension
    */
-    async uploadContent(filePath, content, fileExt) {
-      let status = {};
-      if (isEditableFile(fileExt)) {
-        status = await this.#createVersionAndUpload(filePath, content, fileExt);
-      } else {
-        status = await this.#uploadFile(filePath, content, fileExt);
-      }
-      return status;
+  async uploadContent(filePath, content, fileExt) {
+    let status;
+    if (isEditableFile(fileExt)) {
+      status = await this.#createVersionAndUpload(filePath, content, fileExt);
+    } else {
+      status = await this.#uploadFile(filePath, content, fileExt);
     }
+    return status;
+  }
 
   static #getFileType(type) {
     return SUPPORTED_FILES[type] || 'application/octet-stream';
@@ -66,20 +66,21 @@ class RequestHandler {
     const path = `${DA_ORIGIN}/source${filePath}`;
     const resp = await this.daFetch(path, opts);
     if (!resp.ok) {
+      // eslint-disable-next-line no-console
       console.error(`Failed to upload content for ${filePath} :: ${resp.status}`);
-      return { statusCode: resp.status, filePath, errorMsg: 'Failed to upload file' };      
+      return { statusCode: resp.status, filePath, errorMsg: 'Failed to upload file' };
     }
     return { statusCode: resp.status, filePath };
   }
 
   async #createVersionAndUpload(destinationFilePath, content, fileExt) {
-    let resp = await this.#createVersion(destinationFilePath);
+    const resp = await this.#createVersion(destinationFilePath);
     if (!resp.ok) {
       // eslint-disable-next-line no-console
       console.error(`Failed to create version for ${destinationFilePath} :: ${resp.status}`);
       return { statusCode: resp.status, filePath: destinationFilePath, errorMsg: 'Failed to create version' };
     }
-    return await this.#uploadFile(destinationFilePath, content, fileExt);
+    return this.#uploadFile(destinationFilePath, content, fileExt);
   }
 }
 
