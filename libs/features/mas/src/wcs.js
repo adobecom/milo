@@ -116,12 +116,12 @@ export function Wcs({ settings }) {
                     ),
                 );
             } else {
-                message = ERROR_MESSAGE_BAD_REQUEST;
+                message = ERROR_MESSAGE_BAD_REQUEST + response.status;
                 log.error(message, options);
             }
         } catch (e) {
             /* c8 ignore next 2 */
-            message = ERROR_MESSAGE_BAD_REQUEST;
+            message = ERROR_MESSAGE_BAD_REQUEST + response.status;
             log.error(message, options, e);
         }
 

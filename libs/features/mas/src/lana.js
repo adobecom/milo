@@ -4,7 +4,7 @@ const config = {
     delimiter: '¶',
     ignoredProperties: ['analytics', 'literals'],
     serializableTypes: ['Array', 'Object'],
-    sampleRate: 30,
+    sampleRate: 1,
     tags: 'consumer,acom,mas',
 };
 
