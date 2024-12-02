@@ -756,8 +756,9 @@ header.new-nav .feds-nav-wrapper {
   background-color: var(--feds-background-cloudmenu-v2);
   translate: -200vw 0;
   opacity: 0;
-  transition: translate 0.4s ease-out, opacity 0.4s ease;
+  transition: translate 0.4s ease-out, opacity 0.4s ease, visibility 0s linear 0.5s;
   display: flex;
+  visibility: hidden;
 }
 
 [dir = "rtl"] header.new-nav .feds-nav-wrapper {
@@ -772,6 +773,8 @@ header.new-nav .feds-nav-wrapper--expanded {
   translate: 0;
   opacity: 1;
   z-index: 2;
+  transition: translate 0.4s ease-out, opacity 0.4s ease, visibility 0s linear 0s;
+  visibility: visible;
 }
 
 [dir = "rtl"] header.new-nav .feds-nav-wrapper--expanded {
@@ -848,11 +851,11 @@ header.new-nav .feds-nav > .feds-navItem > a.feds-navLink {
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup {
   position: fixed;
   top: calc(-1 * var(--feds-height-nav));
-  visibility: visible;
+  visibility: hidden;
   width: 100%;
   height: calc(var(--feds-height-nav) + 100%);
   background-color: var(--feds-background-nav);
-  transition: translate 0.4s ease-out, opacity 0.2s ease;
+  transition: translate 0.4s ease-out, opacity 0.2s ease, visibility 0s linear 0.5s;
   translate: 300vw 0;
   display: grid;
   grid-template-rows: 56px max-content auto 80px;
@@ -880,6 +883,8 @@ header.new-nav .feds-nav > section.feds-navItem.feds-dropdown--active > .feds-po
   translate: 0;
   opacity: 1;
   z-index: 2;
+  transition: translate 0.4s ease-out, opacity 0.2s ease, visibility 0s linear 0s;
+  visibility: visible;
 }
 
 [dir = "rtl"] header.new-nav .feds-nav > section.feds-navItem.feds-dropdown--active > .feds-popup {
