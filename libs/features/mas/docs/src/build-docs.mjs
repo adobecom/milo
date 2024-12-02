@@ -92,7 +92,7 @@ const htmlTemplate = `
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<main class="spectrum spectrum--medium spectrum-light">
+<main class="spectrum spectrum--medium spectrum--light">
   <div class="container">
   ${htmlContent}
   </div>
