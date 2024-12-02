@@ -209,6 +209,10 @@ describe('Utils', () => {
         expect(pipedAriaLabelElem.getAttribute('aria-label')).to.equal(theAriaLabel);
         expect(pipedAriaLabelElem.innerText).to.equal(`${theText} | Other text`);
 
+        const noSpacePipedAriaLabelElem = document.querySelector('.aria-label-piped--no-space');
+        expect(noSpacePipedAriaLabelElem.getAttribute('aria-label')).to.equal(theAriaLabel);
+        expect(noSpacePipedAriaLabelElem.innerText).to.equal(`${theText}|Other text`);
+
         const iconNoAriaLabelElem = document.querySelector('.aria-label-icon-none');
         expect(iconNoAriaLabelElem.getAttribute('aria-label')).to.be.null;
         expect(iconNoAriaLabelElem.querySelector('.icon')).to.exist;
