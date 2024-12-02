@@ -6,6 +6,7 @@
     <title>M@S Web Components</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script type="module" src="../../../deps/custom-elements.js"></script>
+    <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
   
   <script>
     if (/localhost/.test(window.location.host)) {
@@ -16,10 +17,10 @@
       }
   </script>
   <!-- Include your custom element script as an ES6 module -->
-  <script src="../../../features/spectrum-web-components/dist/theme.js" type="module"></script>
-  <script src="../../../features/spectrum-web-components/dist/action-button.js" type="module"></script>
-  <script src="../../../features/spectrum-web-components/dist/button.js" type="module"></script>
-  <script type="module" src="../mas/dist/mas.js"></script>
+  <script src="../../spectrum-web-components/dist/theme.js" type="module"></script>
+  <script src="../../spectrum-web-components/dist/action-button.js" type="module"></script>
+  <script src="../../spectrum-web-components/dist/button.js" type="module"></script>
+  <script type="module" src="../dist/mas.js"></script>
 
   <script type="module">
     const params = new URLSearchParams(document.location.search);
@@ -31,9 +32,7 @@
     });
     document.head.appendChild(masCommerceService);
   </script>
-  <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
   <!-- Include Highlight.js stylesheet for syntax highlighting -->
-  <link rel="stylesheet" href="../../../styles/styles.css">
   <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
   <!-- Include any additional stylesheets -->
   <link rel="stylesheet" href="styles.css">
@@ -124,6 +123,7 @@ CCD Gallery provides a comprehensive list of all supported card variants in CCD.
 <th>Description</th>
 <th>Default Value</th>
 <th>Required</th>
+<th>Provider</th>
 </tr>
 </thead>
 <tbody>
@@ -132,18 +132,28 @@ CCD Gallery provides a comprehensive list of all supported card variants in CCD.
 <td>Variant in terms design. Not required when used with an <code>aem-fragment</code></td>
 <td></td>
 <td><code>false</code></td>
+<td>mas.js</td>
 </tr>
 <tr>
 <td><code>consonant</code></td>
 <td>Whether to use consonant styles without sp-button decorator around the footer CTAs.</td>
 <td><code>true</code> if <code>aem-fragment</code> is not used</td>
 <td><code>false</code></td>
+<td>mas.js</td>
 </tr>
 <tr>
 <td><code>size</code></td>
 <td>card width; a card can span over 2 columns or entire row on a css grid <code>wide|super-wide</code></td>
 <td></td>
 <td><code>false</code></td>
+<td>mas.js</td>
+</tr>
+<tr>
+<td><code>daa-lh</code></td>
+<td>Analytics identifier of a card. Value is coming from the ‘PRODUCT_CODE’ tag set on the card (for now manual authoring required, later will be tagged automatically). Sample values: ‘ccsn’ or ‘phlt’.</td>
+<td></td>
+<td><code>false</code></td>
+<td>mas.js</td>
 </tr>
 </tbody>
 </table>
@@ -177,6 +187,8 @@ CCD Gallery provides a comprehensive list of all supported card variants in CCD.
 </tbody>
 </table>
 <h3 id="events" tabindex="-1">Events <a class="header-anchor" href="#events" href="#events" title="Permalink to this heading">#</a></h3>
+<p>We recommend to listen to events on the container, so that listener is attached before the merch card is appended to DOM.
+The reason is that some merch cards are resolved very quickly and event could dispatch before event listener is attached by consumer code.</p>
 <table>
 <thead>
 <tr>
@@ -275,6 +287,7 @@ CCD Gallery provides a comprehensive list of all supported card variants in CCD.
 <th>Description</th>
 <th>Default Value</th>
 <th>Required</th>
+<th>Provider</th>
 </tr>
 </thead>
 <tbody>
@@ -283,18 +296,21 @@ CCD Gallery provides a comprehensive list of all supported card variants in CCD.
 <td>Fragment id. The copy/use feature in M@S Studio will copy the id/markup to the clipboard</td>
 <td></td>
 <td><code>true</code></td>
+<td>consumer code</td>
 </tr>
 <tr>
 <td><code>title</code></td>
 <td>Informative title</td>
 <td></td>
 <td><code>false</code></td>
+<td>consumer code</td>
 </tr>
 <tr>
 <td><code>ims</code></td>
 <td>attempts to use an IMS access token via <code>window.adobeid.authorize()</code> to fetch a fragment</td>
 <td></td>
 <td><code>false</code></td>
+<td>mas.js</td>
 </tr>
 </tbody>
 </table>

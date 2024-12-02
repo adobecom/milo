@@ -6,6 +6,7 @@
     <title>M@S Web Components</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script type="module" src="../../../deps/custom-elements.js"></script>
+    <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
   
   <script>
     if (/localhost/.test(window.location.host)) {
@@ -16,10 +17,10 @@
       }
   </script>
   <!-- Include your custom element script as an ES6 module -->
-  <script src="../../../features/spectrum-web-components/dist/theme.js" type="module"></script>
-  <script src="../../../features/spectrum-web-components/dist/action-button.js" type="module"></script>
-  <script src="../../../features/spectrum-web-components/dist/button.js" type="module"></script>
-  <script type="module" src="../mas/dist/mas.js"></script>
+  <script src="../../spectrum-web-components/dist/theme.js" type="module"></script>
+  <script src="../../spectrum-web-components/dist/action-button.js" type="module"></script>
+  <script src="../../spectrum-web-components/dist/button.js" type="module"></script>
+  <script type="module" src="../dist/mas.js"></script>
 
   <script type="module">
     const params = new URLSearchParams(document.location.search);
@@ -31,9 +32,7 @@
     });
     document.head.appendChild(masCommerceService);
   </script>
-  <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
   <!-- Include Highlight.js stylesheet for syntax highlighting -->
-  <link rel="stylesheet" href="../../../styles/styles.css">
   <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
   <!-- Include any additional stylesheets -->
   <link rel="stylesheet" href="styles.css">
@@ -65,6 +64,7 @@ The term placeholder will be deprecated and it is recommended to refer as <stron
 <th>Description</th>
 <th>Default Value</th>
 <th>Required</th>
+<th>Provider</th>
 </tr>
 </thead>
 <tbody>
@@ -73,66 +73,91 @@ The term placeholder will be deprecated and it is recommended to refer as <stron
 <td>Offer Selector ID, can be multiple, separeted by comma</td>
 <td></td>
 <td><code>true</code></td>
+<td>mas.js or consumer code</td>
 </tr>
 <tr>
 <td><code>data-checkout-workflow</code></td>
 <td>Target checkout workflow for the generation of checkout urls</td>
 <td>UCv3</td>
 <td><code>false</code></td>
+<td>mas.js</td>
 </tr>
 <tr>
 <td><code>data-checkout-workflow-step</code></td>
 <td><a href="https://wiki.corp.adobe.com/pages/viewpage.action?spaceKey=businessservices&amp;title=UCv3+Link+Creation+Guide#UCv3LinkCreationGuide-RegularWorkflow">workflow step</a> to land on the unified checkout page</td>
 <td>email</td>
 <td><code>false</code></td>
+<td>mas.js</td>
 </tr>
 <tr>
 <td><code>data-extra-options</code></td>
 <td>additional query params to append to the url, see: <a href="https://wiki.corp.adobe.com/pages/viewpage.action?spaceKey=businessservices&amp;title=UCv3+Link+Creation+Guide#UCv3LinkCreationGuide-Tableofpublicqueryparams">Table of public query params</a></td>
 <td>{}</td>
 <td><code>false</code></td>
+<td>mas.js</td>
 </tr>
 <tr>
 <td><code>data-ims-country</code></td>
 <td>the ims country to code of the user if signed in, overrides the locale country in the generated checkout url</td>
 <td></td>
 <td><code>false</code></td>
+<td>mas.js or consumer code</td>
 </tr>
 <tr>
 <td><code>data-perpetual</code></td>
 <td>whether this is a perpetual offer <code>true|false</code></td>
 <td></td>
 <td><code>false</code></td>
+<td>mas.js</td>
 </tr>
 <tr>
 <td><code>data-promotion-code</code></td>
 <td>Flex promotion code, if applicable</td>
 <td></td>
 <td><code>false</code></td>
+<td>mas.js</td>
 </tr>
 <tr>
 <td><code>data-quantity</code></td>
 <td>Quantity of the offer to purchase</td>
 <td>1</td>
 <td><code>false</code></td>
+<td>mas.js or consumer code</td>
 </tr>
 <tr>
 <td><code>data-entitlement</code></td>
 <td><code>entitlement</code> flag for client side interpretation</td>
 <td><code>false</code></td>
 <td><code>false</code></td>
+<td>mas.js</td>
 </tr>
 <tr>
 <td><code>data-upgrade</code></td>
 <td><code>upgrade</code> flag for client side interpretation</td>
 <td><code>false</code></td>
 <td><code>false</code></td>
+<td>mas.js</td>
 </tr>
 <tr>
 <td><code>data-modal</code></td>
 <td><code>modal</code> flag for client side interpretation</td>
 <td><code>false</code></td>
 <td><code>false</code></td>
+<td>mas.js</td>
+</tr>
+<tr>
+<td><code>data-analytics-id</code></td>
+<td>human-readable, non-translatable link id for analytics. Authored in Studio in Link Editor.</td>
+<td><code>false</code></td>
+<td><code>false</code></td>
+<td>mas.js</td>
+</tr>
+<tr>
+<td><code>daa-ll</code></td>
+<td>martech-compatible link id for analytics. Format: ‘${data-analytics-id}-${#}’, where # is the position of the link within a card. E.g. : see-terms-1,  buy-now-2</td>
+<td><code>false</code></td>
+<td><code>false</code></td>
+<td>mas.js</td>
 </tr>
 </tbody>
 </table>

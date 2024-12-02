@@ -6,6 +6,7 @@
     <title>M@S Web Components</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script type="module" src="../../../deps/custom-elements.js"></script>
+    <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
   
   <script>
     if (/localhost/.test(window.location.host)) {
@@ -16,10 +17,10 @@
       }
   </script>
   <!-- Include your custom element script as an ES6 module -->
-  <script src="../../../features/spectrum-web-components/dist/theme.js" type="module"></script>
-  <script src="../../../features/spectrum-web-components/dist/action-button.js" type="module"></script>
-  <script src="../../../features/spectrum-web-components/dist/button.js" type="module"></script>
-  <script type="module" src="../mas/dist/mas.js"></script>
+  <script src="../../spectrum-web-components/dist/theme.js" type="module"></script>
+  <script src="../../spectrum-web-components/dist/action-button.js" type="module"></script>
+  <script src="../../spectrum-web-components/dist/button.js" type="module"></script>
+  <script type="module" src="../dist/mas.js"></script>
 
   <script type="module">
     const params = new URLSearchParams(document.location.search);
@@ -31,9 +32,7 @@
     });
     document.head.appendChild(masCommerceService);
   </script>
-  <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
   <!-- Include Highlight.js stylesheet for syntax highlighting -->
-  <link rel="stylesheet" href="../../../styles/styles.css">
   <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
   <!-- Include any additional stylesheets -->
   <link rel="stylesheet" href="styles.css">
@@ -113,6 +112,12 @@
 <td>en or locale langauge if set</td>
 <td><code>false</code></td>
 </tr>
+<tr>
+<td><code>wcs-api-key</code></td>
+<td>api key used for making WCS calls</td>
+<td><code>wcms-commerce-ims-ro-user-milo</code></td>
+<td><code>false</code></td>
+</tr>
 </tbody>
 </table>
 <h3 id="methods" tabindex="-1">Methods <a class="header-anchor" href="#methods" href="#methods" title="Permalink to this heading">#</a></h3>
@@ -163,6 +168,9 @@
 
 <span class="hljs-comment">&lt;!-- or with a country and language --&gt;</span>
 <span class="hljs-tag">&lt;<span class="hljs-name">mas-commerce-service</span> <span class="hljs-attr">country</span>=<span class="hljs-string">&quot;JP&quot;</span> <span class="hljs-attr">language</span>=<span class="hljs-string">&quot;en&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">mas-commerce-service</span>&gt;</span>
+
+<span class="hljs-comment">&lt;!-- with custom api key &amp; checkout clientid --&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">mas-commerce-service</span> <span class="hljs-attr">wcs-api-key</span>=<span class="hljs-string">&quot;custom-api-key&quot;</span> <span class="hljs-attr">checkout-client-id</span>=<span class="hljs-string">&quot;custom-client-id&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">mas-commerce-service</span>&gt;</span>
 </code></pre>
 <p>you can play around with below price, either adding locale, language or env as parameters that will be injected to <code>mas-commerce-service</code> as attributes, and then it will be activated.</p>
 <p class="example">

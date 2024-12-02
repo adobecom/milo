@@ -6,6 +6,7 @@
     <title>M@S Web Components</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script type="module" src="../../../deps/custom-elements.js"></script>
+    <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
   
   <script>
     if (/localhost/.test(window.location.host)) {
@@ -16,10 +17,10 @@
       }
   </script>
   <!-- Include your custom element script as an ES6 module -->
-  <script src="../../../features/spectrum-web-components/dist/theme.js" type="module"></script>
-  <script src="../../../features/spectrum-web-components/dist/action-button.js" type="module"></script>
-  <script src="../../../features/spectrum-web-components/dist/button.js" type="module"></script>
-  <script type="module" src="../mas/dist/mas.js"></script>
+  <script src="../../spectrum-web-components/dist/theme.js" type="module"></script>
+  <script src="../../spectrum-web-components/dist/action-button.js" type="module"></script>
+  <script src="../../spectrum-web-components/dist/button.js" type="module"></script>
+  <script type="module" src="../dist/mas.js"></script>
 
   <script type="module">
     const params = new URLSearchParams(document.location.search);
@@ -31,9 +32,7 @@
     });
     document.head.appendChild(masCommerceService);
   </script>
-  <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
   <!-- Include Highlight.js stylesheet for syntax highlighting -->
-  <link rel="stylesheet" href="../../../styles/styles.css">
   <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
   <!-- Include any additional stylesheets -->
   <link rel="stylesheet" href="styles.css">
@@ -77,7 +76,7 @@
 </ul>
 </li>
 <li>
-<p><strong>mas.js</strong>: A JavaScript library to enable “4” on any page. <a href="/libs/features/mas/docs/mas.js.html" class="con-button blue">mas.js documentation</a></p>
+<p><strong>mas.js</strong>: A JavaScript library to enable “4” on any page. <a href="/libs/features/mas/docs/mas.js.html" class="con-button primary-link">mas.js documentation</a></p>
 </li>
 </ol>
 <h2 id="terminology" tabindex="-1">Terminology <a class="header-anchor" href="#terminology" href="#terminology" title="Permalink to this heading">#</a></h2>
@@ -95,6 +94,14 @@
 <li>Web Components and mas.js are used to implement the commerce functionality.</li>
 <li>WCS provides the necessary commerce data through its APIs.</li>
 </ol>
+<h2 id="analytics" tabindex="-1">Analytics <a class="header-anchor" href="#analytics" href="#analytics" title="Permalink to this heading">#</a></h2>
+<p>For analytics purposes, every <merch-card> tag can be tagged with ‘PRODUCT_CODE’ tag in Studio (manually, later it will be done automatically). When 'PRODUCT_CODE tag is present on the card, <merch-card> will reflect the tag value in ‘daa-lh’ attribute. It is a non-translatable, human-readable card id.
+To set a non-translatable, human-readable id on link open Link editor in Studio and select the value from the dropdown.
+Once value is set, every link will have 2 attributes:
+data-analytics-id - the value set in studio, without changes e.g. ‘buy-now’
+daa-ll - the value set in studio + position of the link within the card, e.g. ‘free-trial-1’, ‘buy-now-2’
+Example: if you have 5 cards with buy-now cta on your page, you can take a combination of merch-card daa-lh and link daa-ll:
+${daa-lh}–${daa-ll}: will result in ‘phlt–buy-now-2’.</p>
 
 </sp-theme>
 </main>
