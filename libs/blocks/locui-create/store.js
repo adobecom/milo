@@ -5,8 +5,8 @@ import { processLocaleData, getTenantName } from './utils/utils.js';
 export const currentStep = signal(1);
 export const project = signal(null);
 export const locales = signal([]);
-export const localeRegion = signal([]);
 export const locSelected = signal(null);
+export const projectType = signal('rollout');
 
 export function nextStep() {
   currentStep.value += 1;
@@ -39,7 +39,6 @@ export async function fetchLocaleDetails() {
   try {
     const tenantName = getTenantName();
     if (!tenantName) {
-      // console.warn('Tenant name is missing, skipping fetchLocaleDetails.');
       return;
     }
     const response = await fetch(
@@ -47,20 +46,14 @@ export async function fetchLocaleDetails() {
     );
 
     if (!response.ok) {
-      // const errorText = await response.text();
-      // console.error(`Failed to fetch locale details: ${errorText}`);
       throw new Error(`Server Error: ${response.status}`);
     }
 
     const localeData = await response.json();
     const
-      {
-        locales: processedLocales,
-        localeRegion: processedLocaleRegion,
-      } = processLocaleData(localeData);
+      { locales: processedLocales } = processLocaleData(localeData);
 
     locales.value = processedLocales;
-    localeRegion.value = processedLocaleRegion;
   } catch (error) {
     console.error('Error during fetchLocaleDetails:', error.message);
     throw error;

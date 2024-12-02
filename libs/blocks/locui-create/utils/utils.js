@@ -26,13 +26,5 @@ export function processLocaleData(localeData) {
         .join(','),
     }));
 
-  const processedLocaleRegion = localeData.localegroups.data.map((item) => ({
-    ...item,
-    value: item.value
-      .split(',')
-      .map((val) => val.trim())
-      .join(','),
-  }));
-
-  return { locales: processedLocales, localeRegion: processedLocaleRegion };
+  return { locales: processedLocales };
 }
