@@ -2,6 +2,7 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import mas from './mas.js';
 import {
+    hydrate,
     processMnemonics,
     processTitle,
     processSize,
@@ -14,6 +15,7 @@ import {
     ANALYTICS_LINK_ATTR,
     ANALYTICS_SECTION_ATTR
 } from '../src/hydrate.js';
+import { AEM_FRAGMENT_MAPPING } from '../src/variants/ccd-slice.js';
 
 import { mockFetch } from './mocks/fetch.js';
 import { withWcs } from './mocks/wcs.js';
@@ -103,20 +105,20 @@ describe('processCTAs', async () => {
         sinon.restore();
     });
 
-    it('should not process CTAs when fragment.ctas is falsy', async () => {
-        const fragment = { ctas: null };
+    it('should not process CTAs when fields.ctas is falsy', async () => {
+        const fields = { ctas: null };
 
-        processCTAs(fragment, merchCard, aemFragmentMapping);
+        processCTAs(fields, merchCard, aemFragmentMapping);
 
         expect(merchCard.append.called).to.be.false;
     });
 
     it('should create spectrum buttons when merchCard.consonant is false', async () => {
-        const fragment = {
+        const fields = {
             ctas: '<a is="checkout-link" data-wcs-osi="abm" class="accent">Click me</a>',
         };
 
-        processCTAs(fragment, merchCard, aemFragmentMapping);
+        processCTAs(fields, merchCard, aemFragmentMapping);
 
         const appendCall = merchCard.append.firstCall;
         expect(appendCall).to.exist;
@@ -132,13 +134,13 @@ describe('processCTAs', async () => {
     });
 
     it('should create consonant buttons when merchCard.consonant is true', async () => {
-        // when a merch-card with a fragment is rendered in a Milo page.
+        // when a merch-card with a fields is rendered in a Milo page.
         merchCard.consonant = true;
-        const fragment = {
+        const fields = {
             ctas: '<a is="checkout-link" data-wcs-osi="abm" class="accent">Click me</a>',
         };
 
-        processCTAs(fragment, merchCard, aemFragmentMapping);
+        processCTAs(fields, merchCard, aemFragmentMapping);
 
         const appendCall = merchCard.append.firstCall;
         expect(appendCall).to.exist;
@@ -150,7 +152,7 @@ describe('processCTAs', async () => {
     });
 
     it('should handle multiple CTAs', async () => {
-        const fragment = {
+        const fields = {
             ctas: `
                 <a is="checkout-link" data-wcs-osi="abm" class="accent">Accent</a>
                 <a is="checkout-link" data-wcs-osi="abm" class="primary">Primary</a>
@@ -158,7 +160,7 @@ describe('processCTAs', async () => {
             `,
         };
 
-        processCTAs(fragment, merchCard, aemFragmentMapping);
+        processCTAs(fields, merchCard, aemFragmentMapping);
 
         const footer = merchCard.append.firstCall.args[0];
         const buttons = footer.children;
@@ -170,11 +172,11 @@ describe('processCTAs', async () => {
     });
 
     it('should handle strong wrapped CTAs', async () => {
-        const fragment = {
+        const fields = {
             ctas: '<strong><a is="checkout-link" data-wcs-osi="abm" class="accent">Strong CTA</a></strong>',
         };
 
-        processCTAs(fragment, merchCard, aemFragmentMapping);
+        processCTAs(fields, merchCard, aemFragmentMapping);
 
         const footer = merchCard.append.firstCall.args[0];
         const button = footer.firstChild;
@@ -182,11 +184,11 @@ describe('processCTAs', async () => {
     });
 
     it('should handle outline CTAs', async () => {
-        const fragment = {
+        const fields = {
             ctas: '<a is="checkout-link" data-wcs-osi="abm" class="accent-outline">Outline CTA</a>',
         };
 
-        processCTAs(fragment, merchCard, aemFragmentMapping);
+        processCTAs(fields, merchCard, aemFragmentMapping);
 
         const footer = merchCard.append.firstCall.args[0];
         const button = footer.firstChild;
@@ -195,12 +197,12 @@ describe('processCTAs', async () => {
     });
 
     it('should handle link-style CTAs', async () => {
-        const fragment = {
+        const fields = {
             ctas: `<a is="checkout-link" data-wcs-osi="abm" class="primary-link">Link Style</a>
             <a is="checkout-link" data-wcs-osi="abm">Link Style</a>`,
         };
 
-        processCTAs(fragment, merchCard, aemFragmentMapping, 'ccd-suggested');
+        processCTAs(fields, merchCard, aemFragmentMapping, 'ccd-suggested');
 
         const footer = merchCard.append.firstCall.args[0];
         const link = footer.firstChild;
@@ -209,11 +211,11 @@ describe('processCTAs', async () => {
     });
 
     it('should handle click events on spectrum buttons', async () => {
-        const fragment = {
+        const fields = {
             ctas: '<a is="checkout-link" href="#" data-wcs-osi="abm" class="accent"><span>Click me</span></a>',
         };
 
-        processCTAs(fragment, merchCard, aemFragmentMapping);
+        processCTAs(fields, merchCard, aemFragmentMapping);
 
         const footer = merchCard.append.firstCall.args[0];
         const button = footer.firstChild;
@@ -252,31 +254,31 @@ describe('processSubtitle', () => {
         sinon.restore();
     });
 
-    it('should not append subtitle when fragment.subtitle is falsy', () => {
-        const fragment = { subtitle: null };
+    it('should not append subtitle when fields.subtitle is falsy', () => {
+        const fields = { subtitle: null };
         const subtitleConfig = { tag: 'h3', slot: 'subtitle' };
 
-        processSubtitle(fragment, merchCard, subtitleConfig);
+        processSubtitle(fields, merchCard, subtitleConfig);
 
         expect(merchCard.append.called).to.be.false;
         expect(merchCard.outerHTML).to.equal('<div></div>');
     });
 
     it('should not append subtitle when subtitleConfig is falsy', () => {
-        const fragment = { subtitle: 'Test Subtitle' };
+        const fields = { subtitle: 'Test Subtitle' };
         const subtitleConfig = null;
 
-        processSubtitle(fragment, merchCard, subtitleConfig);
+        processSubtitle(fields, merchCard, subtitleConfig);
 
         expect(merchCard.append.called).to.be.false;
         expect(merchCard.outerHTML).to.equal('<div></div>');
     });
 
     it('should append subtitle with correct tag and slot', () => {
-        const fragment = { subtitle: 'Test Subtitle' };
+        const fields = { subtitle: 'Test Subtitle' };
         const subtitleConfig = { tag: 'h3', slot: 'subtitle' };
 
-        processSubtitle(fragment, merchCard, subtitleConfig);
+        processSubtitle(fields, merchCard, subtitleConfig);
 
         expect(merchCard.outerHTML).to.equal(
             '<div><h3 slot="subtitle">Test Subtitle</h3></div>',
@@ -295,13 +297,13 @@ describe('processBackgroundImage', () => {
         sinon.restore();
     });
 
-    it('should not process background image when fragment.backgroundImage is falsy', () => {
-        const fragment = { backgroundImage: null };
+    it('should not process background image when fields.backgroundImage is falsy', () => {
+        const fields = { backgroundImage: null };
         const backgroundImageConfig = { tag: 'div', slot: 'background' };
         const variant = 'ccd-slice';
 
         processBackgroundImage(
-            fragment,
+            fields,
             merchCard,
             backgroundImageConfig,
             variant,
@@ -312,12 +314,12 @@ describe('processBackgroundImage', () => {
     });
 
     it('should append background image for ccd-slice variant', () => {
-        const fragment = { backgroundImage: 'test-image.jpg' };
+        const fields = { backgroundImage: 'test-image.jpg' };
         const backgroundImageConfig = { tag: 'div', slot: 'background' };
         const variant = 'ccd-slice';
 
         processBackgroundImage(
-            fragment,
+            fields,
             merchCard,
             backgroundImageConfig,
             variant,
@@ -329,12 +331,12 @@ describe('processBackgroundImage', () => {
     });
 
     it('should set background-image attribute for ccd-suggested variant', () => {
-        const fragment = { backgroundImage: 'test-image.jpg' };
+        const fields = { backgroundImage: 'test-image.jpg' };
         const backgroundImageConfig = { tag: 'div', slot: 'background' };
         const variant = 'ccd-suggested';
 
         processBackgroundImage(
-            fragment,
+            fields,
             merchCard,
             backgroundImageConfig,
             variant,
@@ -346,12 +348,12 @@ describe('processBackgroundImage', () => {
     });
 
     it('should not process background image for unknown variant', () => {
-        const fragment = { backgroundImage: 'test-image.jpg' };
+        const fields = { backgroundImage: 'test-image.jpg' };
         const backgroundImageConfig = { tag: 'div', slot: 'background' };
         const variant = 'unknown-variant';
 
         processBackgroundImage(
-            fragment,
+            fields,
             merchCard,
             backgroundImageConfig,
             variant,
@@ -362,12 +364,12 @@ describe('processBackgroundImage', () => {
     });
 
     it('should not append background image for ccd-slice when backgroundImageConfig is falsy', () => {
-        const fragment = { backgroundImage: 'test-image.jpg' };
+        const fields = { backgroundImage: 'test-image.jpg' };
         const backgroundImageConfig = null;
         const variant = 'ccd-slice';
 
         processBackgroundImage(
-            fragment,
+            fields,
             merchCard,
             backgroundImageConfig,
             variant,
@@ -383,35 +385,34 @@ describe('processAnalytics', () => {
 
   beforeEach(() => {
       merchCard = mockMerchCard();
-      //merchCard.innerHTML = '<a href="/see-terms.html" data-analytics-id="see-terms">See terms</a>'
   });
 
   afterEach(() => {
       sinon.restore();
   });
 
-  it('should not set analytics attributes if no fragment.tags', () => {
-      const fragment = {};
-      processAnalytics(fragment, merchCard);
+  it('should not set analytics attributes if no fields.tags', () => {
+      const fields = {};
+      processAnalytics(fields, merchCard);
       expect(merchCard.hasAttribute(ANALYTICS_SECTION_ATTR)).to.be.false;
       expect(merchCard.querySelectorAll(`a[${ANALYTICS_LINK_ATTR}]`).length).to.equal(0);
   });
 
   it(`should not set analytics attributes when no tags start with ${ANALYTICS_TAG}`, () => {
-      const fragment = { tags: ['mas:term/montly'] };
-      processAnalytics(fragment, merchCard);
+      const fields = { tags: ['mas:term/montly'] };
+      processAnalytics(fields, merchCard);
       expect(merchCard.hasAttribute(ANALYTICS_SECTION_ATTR)).to.be.false;
       expect(merchCard.querySelectorAll(`a[${ANALYTICS_LINK_ATTR}]`).length).to.equal(0);
   });
 
   it('should set analytics-section attribute on merchCard', () => {
-      const fragment = { tags: ['mas:product_code/phsp'] };
-      processAnalytics(fragment, merchCard);
+      const fields = { tags: ['mas:product_code/phsp'] };
+      processAnalytics(fields, merchCard);
       expect(merchCard.getAttribute(ANALYTICS_SECTION_ATTR)).to.equal('phsp');
   });
 
   it('should set analytics-link attributes on links inside merchCard', () => {
-      const fragment = { tags: ['mas:term/montly', 'mas:product_code/ccsn'] };
+      const fields = { tags: ['mas:term/montly', 'mas:product_code/ccsn'] };
 
       const seeTerms = document.createElement('a');
       seeTerms.setAttribute('data-analytics-id', 'see-terms');
@@ -422,11 +423,43 @@ describe('processAnalytics', () => {
       merchCard.appendChild(buyNow);
       merchCard.appendChild(noAnalytics);
 
-      processAnalytics(fragment, merchCard);
+      processAnalytics(fields, merchCard);
       expect(merchCard.getAttribute(ANALYTICS_SECTION_ATTR)).to.equal('ccsn');
       expect(seeTerms.getAttribute(ANALYTICS_LINK_ATTR)).to.equal('see-terms-1');
       expect(buyNow.getAttribute(ANALYTICS_LINK_ATTR)).to.equal('buy-now-2');
       // should handle only links with data-analytics-id attribute
       expect(merchCard.querySelectorAll(`a[${ANALYTICS_LINK_ATTR}]`).length).to.equal(2);
   });
+});
+
+describe('hydrate', () => {
+  let merchCard;
+
+  beforeEach(() => {
+      merchCard = mockMerchCard();
+  });
+
+  afterEach(() => {
+      sinon.restore();
+  });
+
+  it('should hydrate a ccd-slice merch card', async () => {
+      const fragment = {
+        fields: {
+          variant: 'ccd-slice',
+          mnemonicIcon: ['www.adobe.com/icons/photoshop.svg'],
+          mnemonicAlt: [],
+          mnemonicLink: ['www.adobe.com'],
+          backgroundImage: 'test-image.jpg',
+          ctas: '<a is="checkout-link" data-wcs-osi="abm" class="accent" data-analytics-id="buy-now">Click me</a>',
+          tags: ['mas:term/montly', 'mas:product_code/ccsn'],
+        },
+      };
+      merchCard.variantLayout = { aemFragmentMapping: AEM_FRAGMENT_MAPPING };
+      await hydrate(fragment, merchCard);
+
+      expect(merchCard.getAttribute(ANALYTICS_SECTION_ATTR)).to.equal('ccsn');
+      expect(merchCard.querySelector(`a[data-analytics-id]`).getAttribute('daa-ll')).to.equal('buy-now-1');
+  });
+
 });

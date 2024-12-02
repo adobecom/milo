@@ -3,6 +3,7 @@ import { DESKTOP_UP, TABLET_UP } from './media.js';
 
 export const styles = css`
     :host {
+        --merch-card-border: 1px solid var(--spectrum-gray-200, var(--consonant-merch-card-border-color));
         position: relative;
         display: flex;
         flex-direction: column;
@@ -12,7 +13,7 @@ export const styles = css`
         background-color: var(--merch-card-background-color);
         font-family: var(--merch-body-font-family, 'Adobe Clean');
         border-radius: var(--consonant-merch-spacing-xs);
-        border: 1px solid var(--spectrum-gray-200, var(--consonant-merch-card-border-color));
+        border: var(--merch-card-border);
         box-sizing: border-box;
     }
 

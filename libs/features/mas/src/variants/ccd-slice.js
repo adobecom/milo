@@ -2,7 +2,7 @@ import { VariantLayout } from './variant-layout.js';
 import { html, css } from 'lit';
 import { CSS } from './ccd-slice.css.js';
 
-const AEM_FRAGMENT_MAPPING = {
+export const AEM_FRAGMENT_MAPPING = {
     mnemonics: { size: 'm' },
     backgroundImage: { tag: 'div', slot: 'image' },
     description: { tag: 'div', slot: 'body-s' },
@@ -35,7 +35,7 @@ export class CCDSlice extends VariantLayout {
 
     static variantStyle = css`
         :host([variant='ccd-slice']) {
-            min-width: var(--consonant-merch-card-ccd-slice-single-width);
+            min-width: 290px;
             max-width: var(--consonant-merch-card-ccd-slice-single-width);
             max-height: var(--consonant-merch-card-ccd-slice-single-height);
             height: var(--consonant-merch-card-ccd-slice-single-height);
