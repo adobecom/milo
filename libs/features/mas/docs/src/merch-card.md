@@ -6,6 +6,8 @@ This custom element implements all the merch-card variants provided in acom and 
 
 A `merch-card` can be rendered using either static html markup or `aem-fragment` custom element to retrieve a card from Odin/AEM.
 
+The CTAs styles depend on Spectrum CSS that must be provided by the consumer.
+
 Designs:
 
 **ACOM**: https://www.figma.com/design/tiEUQLJ1hVlosqwzAATVXZ/Cards-(Merch)?node-id=1086-17994&t=LeMR0vbaBoEKaKln-1
