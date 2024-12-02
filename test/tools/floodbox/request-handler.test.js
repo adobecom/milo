@@ -5,9 +5,10 @@ import RequestHandler from '../../../tools/floodbox/request-handler.js';
 describe('RequestHandler', () => {
   let requestHandler;
   let fetchStub;
+  const accessToken = 'testToken';
 
   beforeEach(() => {
-    requestHandler = new RequestHandler('dummyAccessToken');
+    requestHandler = new RequestHandler(accessToken);
     fetchStub = sinon.stub(window, 'fetch');
   });
 
