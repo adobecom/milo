@@ -251,7 +251,6 @@ export async function hydrate(fragment, merchCard) {
     const { aemFragmentMapping } = merchCard.variantLayout;
     if (!aemFragmentMapping) return;
 
-    processAnalytics(fields, merchCard);
     processBackgroundImage(fields,merchCard,aemFragmentMapping.backgroundImage,variant);
     processBadge(fields, merchCard);
     processCTAs(fields, merchCard, aemFragmentMapping, variant);
@@ -261,4 +260,5 @@ export async function hydrate(fragment, merchCard) {
     processSize(fields, merchCard, aemFragmentMapping.allowedSizes);
     processSubtitle(fields, merchCard, aemFragmentMapping.subtitle);
     processTitle(fields, merchCard, aemFragmentMapping.title);
+    processAnalytics(fields, merchCard);
 }
