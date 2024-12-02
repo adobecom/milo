@@ -127,7 +127,7 @@ export function Wcs({ settings }) {
 
         if (reject && promises.size) {
             // reject pending promises, their offers weren't provided by WCS
-            log.debug('Missing:', { offerSelectorIds: [...promises.keys()] });
+            log.error('Missing:' + { offerSelectorIds: [...promises.keys()] }, options);
             promises.forEach((promise) => {
                 promise.reject(new Error(message));
             });
