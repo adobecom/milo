@@ -143,6 +143,6 @@ merch-card:has(+ merch-card) {
   margin-bottom: 20px;
 }
 
-.code {
+code {
   max-width: 90vw;
 }
