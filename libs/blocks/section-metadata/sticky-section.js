@@ -33,6 +33,7 @@ function handleStickyPromobar(section, delay) {
   if ((section.querySelector(':is(.promobar, .notification)').classList.contains('no-delay'))
     || (delay && section.classList.contains('popup'))) {
     hasScrollControl = true;
+    section.classList.remove('hide-sticky-section');
   }
   if (!hasScrollControl && main.children[0] !== section) {
     stickySectionEl = createTag('div', { class: 'section show-sticky-section' });
