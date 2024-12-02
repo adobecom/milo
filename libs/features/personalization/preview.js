@@ -135,15 +135,19 @@ function parseMepConfig() {
   const activities = experiments.map((experiment) => {
     const {
       name, variantNames, event, disabled, manifest, source, selectedVariantName,
+      manifestType, manifestOverrideName,
     } = experiment;
     // const manifestUrl = new URL(manifest);
     return {
-      targetActivityName: name || '',
+      name,
       variantNames,
       selectedVariantName,
       url: manifest,
       event,
       disabled,
+      manifest,
+      manifestType,
+      manifestOverrideName,
       // url: manifestUrl.href,
       // pathname: manifestUrl.pathname,
       source,
@@ -180,10 +184,10 @@ function getManifestListDomAndParameter(manifests) {
       variantNames,
       manifestPath = manifest.url,
       selectedVariantName,
-      name,
       manifestType,
       manifestUrl,
       manifestOverrideName,
+      name,
     } = manifest;
     const editUrl = manifestUrl || manifestPath;
     let radio = '';
@@ -247,9 +251,10 @@ function getManifestListDomAndParameter(manifests) {
 
 export function generateListDom(manifestList, listInfo, advancedOptions) {
   const mepManifestList = createTag('div', { class: 'mep-manifest-list' });
-  mepManifestList.innerHTML = `<div class="mep-manifest-list">${manifestList}</div>`;
+  mepManifestList.innerHTML = manifestList;
   if (listInfo) mepManifestList.prepend(listInfo);
   if (advancedOptions) mepManifestList.append(advancedOptions);
+  console.log('mepManifestList', mepManifestList);
   return mepManifestList;
 }
 
@@ -372,14 +377,12 @@ async function saveToMmm(data) {
 }
 export default async function decoratePreviewMode() {
   const mepConfig = parseMepConfig();
-  // console.log(parseMepConfig());
   const { miloLibs, codeRoot, mep } = getConfig();
-  // saveToMmm(mep);
+  // saveToMmm(mepConfig);
   loadStyle(`${miloLibs || codeRoot}/features/personalization/preview.css`);
   console.log('mep.experiments', mep.experiments);
   console.log('mepConfig.activities', mepConfig.activities);
 
   createPreviewPill(mepConfig.activities);
-  // console.log('here', getManifestListDomAndParameter(mep?.experiments));
   if (mep?.experiments) addHighlightData(mep.experiments);
 }
