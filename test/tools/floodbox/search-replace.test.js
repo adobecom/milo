@@ -28,8 +28,8 @@ describe('searchAndReplace', () => {
       expName: 'expName',
     });
     expect(result).to.not.include('gb-style');
-    expect(result).to.not.include('graybox');
-    expect(result).to.include('https://main--repo--org.aem.page/page');
+    expect(result).to.not.include('class="graybox"');
+    expect(result).to.include('https://main--repo-graybox--org.aem.page/page');
   });
 
   it('should handle unknown search type gracefully', () => {
