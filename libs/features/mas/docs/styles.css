@@ -142,3 +142,7 @@ button {
 merch-card:has(+ merch-card) {
   margin-bottom: 20px;
 }
+
+.code {
+  max-width: 90vw;
+}
