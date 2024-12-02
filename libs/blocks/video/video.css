@@ -63,7 +63,7 @@ video {
   padding: 1px;
 }
 
-:is(.marquee:not(.light), .dark) .video-container .pause-play-wrapper:focus {
+:is(.marquee:not(.light), .dark) .video-container .pause-play-wrapper:focus-visible {
   background: #000;
 }
 
