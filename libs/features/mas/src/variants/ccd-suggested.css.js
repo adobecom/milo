@@ -51,12 +51,6 @@ merch-card[variant="ccd-suggested"] [slot="cta"] a {
   font-size: var(--consonant-merch-card-body-xs-font-size);
   line-height: normal;
   text-decoration: none;
-  color: var(--spectrum-gray-800, var(--merch-color-grey-80));
   font-weight: 700;
-}
-
-.spectrum--dark merch-card[variant="ccd-suggested"] [slot="cta"] button[treatment="outline"] {
-  color: var(--ccd-gray-200-light);
-  border: 2px solid var(--ccd-gray-200-light);
 }
 `;

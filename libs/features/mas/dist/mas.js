@@ -1325,13 +1325,7 @@ merch-card[variant="ccd-suggested"] [slot="cta"] a {
   font-size: var(--consonant-merch-card-body-xs-font-size);
   line-height: normal;
   text-decoration: none;
-  color: var(--spectrum-gray-800, var(--merch-color-grey-80));
   font-weight: 700;
-}
-
-.spectrum--dark merch-card[variant="ccd-suggested"] [slot="cta"] button[treatment="outline"] {
-  color: var(--ccd-gray-200-light);
-  border: 2px solid var(--ccd-gray-200-light);
 }
 `;var Yl={mnemonics:{size:"l"},subtitle:{tag:"h4",slot:"detail-s"},title:{tag:"h3",slot:"heading-xs"},prices:{tag:"p",slot:"price"},description:{tag:"div",slot:"body-xs"},ctas:{slot:"cta",size:"M"}},xt=class extends N{getGlobalCSS(){return os}get aemFragmentMapping(){return Yl}renderLayout(){return x`
           <div style="${this.stripStyle}" class="body">
@@ -1955,7 +1949,21 @@ merch-card span[is="inline-price"][data-template='strikethrough'] {
 merch-card button a,
 merch-card button a:hover {
   text-decoration: none;
-  color: var(--spectrum-button-text-color);
+}
+
+.spectrum merch-card [slot="footer"] button.spectrum-Button > a,
+.spectrum merch-card [slot="cta"] button.spectrum-Button > a {
+  color: var(--spectrum-button-content-color-default);
+}
+
+.spectrum merch-card [slot="footer"] button.spectrum-Button:hover > a,
+.spectrum merch-card [slot="cta"] button.spectrum-Button:hover > a {
+  color: var(--spectrum-button-content-color-hover);
+}
+
+.spectrum merch-card [slot="footer"] button.spectrum-Button > a:focus,
+.spectrum merch-card [slot="cta"] button.spectrum-Button > a:focus {
+  color: var(--spectrum-button-content-color-focus);
 }
 
 merch-card span.placeholder-resolved[data-template='strikethrough'],

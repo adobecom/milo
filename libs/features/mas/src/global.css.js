@@ -376,7 +376,21 @@ merch-card span[is="inline-price"][data-template='strikethrough'] {
 merch-card button a,
 merch-card button a:hover {
   text-decoration: none;
-  color: var(--spectrum-button-text-color);
+}
+
+.spectrum merch-card [slot="footer"] button.spectrum-Button > a,
+.spectrum merch-card [slot="cta"] button.spectrum-Button > a {
+  color: var(--spectrum-button-content-color-default);
+}
+
+.spectrum merch-card [slot="footer"] button.spectrum-Button:hover > a,
+.spectrum merch-card [slot="cta"] button.spectrum-Button:hover > a {
+  color: var(--spectrum-button-content-color-hover);
+}
+
+.spectrum merch-card [slot="footer"] button.spectrum-Button > a:focus,
+.spectrum merch-card [slot="cta"] button.spectrum-Button > a:focus {
+  color: var(--spectrum-button-content-color-focus);
 }
 
 merch-card span.placeholder-resolved[data-template='strikethrough'],
