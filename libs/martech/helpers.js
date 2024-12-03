@@ -92,10 +92,14 @@ function getDeviceInfo() {
  * @param {string} key - The cookie key.
  * @returns {string|null} The cookie value, or null if the cookie doesn't exist.
  */
-function getCookie(key) {
+function getCookie(key, sendFullCookie) {
   const cookie = document.cookie.split(';')
     .map((x) => x.trim().split('='))
     .find(([k]) => k === key);
+
+  if (sendFullCookie) {
+    return cookie;
+  }
   return cookie ? cookie[1] : null;
 }
 
@@ -347,7 +351,8 @@ function updateAMCVCookie(ECID) {
  * personalization propositions fetched from Adobe Target.
  */
 export const loadAnalyticsAndInteractionData = async ({ locale, env, calculatedTimeout }) => {
-  if (getCookie('kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent') === 'general%3Dout') {
+  const value = getCookie('kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent', true);
+  if (value?.[1] === 'general' && value?.[2] === 'out') {
     return Promise.reject(new Error('Consent Cookie doesnt allow interact'));
   }
 

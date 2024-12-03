@@ -244,7 +244,7 @@ describe('loadAnalyticsAndInteractionData', () => {
     }
   });
   it('should throw error when cookie prohibits it', async () => {
-    document.cookie = 'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent=general%3Dout';
+    document.cookie = 'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent=general=out';
     window.getCookie = () => null;
 
     try {
