@@ -1,15 +1,15 @@
 import { createTag, getConfig, getMetadata, loadStyle } from '../../utils/utils.js';
 import { TRACKED_MANIFEST_TYPE, getFileName } from './personalization.js';
 
-function updatePreviewButton() {
-  const selectedInputs = document.querySelectorAll(
-    '.mep-popup input[type="radio"]:checked, .mep-popup input[type="text"]',
+function updatePreviewButton(popup) {
+  const selectedInputs = popup.querySelectorAll(
+    'input[type="radio"]:checked, .mep-popup input[type="text"]',
   );
   const manifestParameter = [];
 
   selectedInputs.forEach((selected) => {
     let { value } = selected;
-    if (selected.getAttribute('id') === 'new-manifest') {
+    if (selected.classList.contains('new-manifest')) {
       if (selected.value !== '') {
         try {
           const newManifest = new URL(value);
@@ -89,42 +89,11 @@ async function getEditManifestUrl(a, w) {
 }
 
 function addPillEventListeners(div) {
-  //For the first two, use event delegation(add a common class to these inputs) + update the updatePreviewButton functino to make updates reletive to the clicked element, rather than from document:
-  div.querySelectorAll('.mep-popup input[type="radio"], .mep-popup input[type="checkbox"]').forEach((input) => {
-    input.addEventListener('change', updatePreviewButton);
-  });
-   //For the first two, use event delegation(add a common class to these inputs) + update the updatePreviewButton functino to make updates reletive to the clicked element, rather than from document:
-  div.querySelectorAll('.mep-popup input[type="text"]').forEach((input) => {
-    input.addEventListener('keyup', updatePreviewButton);
-  });
-
   div.querySelector('.mep-manifest.mep-badge').addEventListener('click', () => {
     div.classList.toggle('mep-hidden');
   });
-
   div.querySelector('.mep-close').addEventListener('click', () => {
     document.body.removeChild(document.querySelector('.mep-preview-overlay'));
-  });
-  //can move, use event delegation and then find .mep-advanced-container relative to the clicked element:
-  div.querySelector('.mep-toggle-advanced').addEventListener('click', () => {
-    document.querySelector('.mep-advanced-container').classList.toggle('mep-advanced-open');
-  });
-
-  //can move, and use event delegation so need to add a common class to these anchors:
-  div.querySelectorAll('a[data-manifest-path]').forEach((a) => {
-    a.addEventListener('click', () => {
-      if (a.getAttribute('href')) return false;
-      const w = window.open('', '_blank');
-      w.document.write(`<html><head></head><body>
-        Please wait while we redirect you. 
-        If you are not redirected, please check that you are signed into the AEM sidekick
-        and try again.
-        </body></html>`);
-      w.document.close();
-      w.focus();
-      getEditManifestUrl(a, w);
-      return true;
-    });
   });
 }
 
@@ -248,7 +217,32 @@ function getManifestListDomAndParameter(manifests) {
   });
   return { manifestList, manifestParameter };
 }
-
+function addMepPopupListeners(popup) {
+  popup.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach((input) => {
+    input.addEventListener('change', updatePreviewButton.bind(null, popup));
+  });
+  popup.querySelectorAll('input[type="text"]').forEach((input) => {
+    input.addEventListener('keyup', updatePreviewButton.bind(null, popup));
+  });
+  popup.querySelector('.mep-toggle-advanced').addEventListener('click', () => {
+    document.querySelector('.mep-advanced-container').classList.toggle('mep-advanced-open');
+  });
+  popup.querySelectorAll('a[data-manifest-path]').forEach((a) => {
+    a.addEventListener('click', () => {
+      if (a.getAttribute('href')) return false;
+      const w = window.open('', '_blank');
+      w.document.write(`<html><head></head><body>
+          Please wait while we redirect you. 
+          If you are not redirected, please check that you are signed into the AEM sidekick
+          and try again.
+          </body></html>`);
+      w.document.close();
+      w.focus();
+      getEditManifestUrl(a, w);
+      return true;
+    });
+  });
+}
 export function getMepPopup(manifests) {
   const { manifestList, manifestParameter } = getManifestListDomAndParameter(manifests);
   const config = getConfig();
@@ -280,7 +274,7 @@ export function getMepPopup(manifests) {
         <div>Optional: new manifest location or path</div>
             <div class="mep-manifest-variants">
               <div>
-                <input type="text" name="new-manifest" id="new-manifest">
+                <input type="text" name="new-manifest" class="new-manifest">
               </div>
             </div>
           </div>
@@ -310,12 +304,12 @@ export function getMepPopup(manifests) {
   if (advancedOptions) mepManifestList.append(advancedOptions);
 
   mepPopup.append(mepPopupHeader);
-  // mepPopup.append(generateListDom(manifestList, listInfo, advancedOptions));
   mepPopup.append(mepManifestList);
   mepPopup.append(mepManifestPreviewButton);
   const previewButton = mepPopup.querySelector(`a[data-id="${PREVIEW_BUTTON_ID}"]`);
 
   if (previewButton) previewButton.href = simulateHref.href;
+  addMepPopupListeners(mepPopup);
   return mepPopup;
 }
 function createPreviewPill(manifests) {
