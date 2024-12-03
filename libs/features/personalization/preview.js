@@ -249,19 +249,7 @@ function getManifestListDomAndParameter(manifests) {
   return { manifestList, manifestParameter };
 }
 
-export function generateListDom(manifestList, listInfo, advancedOptions) {
-  const mepManifestList = createTag('div', { class: 'mep-manifest-list' });
-  mepManifestList.innerHTML = manifestList;
-  if (listInfo) mepManifestList.prepend(listInfo);
-  if (advancedOptions) mepManifestList.append(advancedOptions);
-  console.log('mepManifestList', mepManifestList);
-  return mepManifestList;
-}
-
-function createPreviewPill(manifests) {
-  const overlay = createTag('div', { class: 'mep-preview-overlay static-links', style: 'display: none;' });
-  const pill = document.createElement('div');
-  pill.classList.add('mep-hidden');
+export function getMepPopup(manifests) {
   const { manifestList, manifestParameter } = getManifestListDomAndParameter(manifests);
   const config = getConfig();
   let targetOnText = config.mep.targetEnabled ? 'on' : 'off';
@@ -276,11 +264,11 @@ function createPreviewPill(manifests) {
     document.body.dataset.mepHighlight = true;
   }
   const PREVIEW_BUTTON_ID = 'preview-button';
-  const mepBadge = createTag('div', { class: 'mep-manifest mep-badge' });
   const mepPopup = createTag('div', { class: 'mep-popup' });
   const mepPopupHeader = createTag('div', { class: 'mep-popup-header' });
   const listInfo = createTag('div', { class: 'mep-manifest-info' });
   const advancedOptions = createTag('div', { class: 'mep-advanced-container' });
+  const mepManifestList = createTag('div', { class: 'mep-manifest-list' });
 
   listInfo.innerHTML = `
     <div class="mep-manifest-variants">
@@ -306,9 +294,7 @@ function createPreviewPill(manifests) {
   const mepManifestPreviewButton = createTag('div', { class: 'dark' });
   mepManifestPreviewButton.innerHTML = `
     <a class="con-button outline button-l" data-id="${PREVIEW_BUTTON_ID}" title="Preview above choices">Preview</a>`;
-  mepBadge.innerHTML = `
-   <span class="mep-open"></span>
-      <div class="mep-manifest-count">${manifests?.length || 0} Manifest(s) served</div>`;
+
   mepPopupHeader.innerHTML = `
     <div>
       <h4>${manifests?.length || 0} Manifest(s) served</h4>
@@ -319,15 +305,29 @@ function createPreviewPill(manifests) {
         <div>Page's Prefix/Region/Locale are ${config.mep.geoPrefix} / ${config.locale.region} / ${config.locale.ietf}</div>
     </div>`;
 
+  mepManifestList.innerHTML = manifestList;
+  if (listInfo) mepManifestList.prepend(listInfo);
+  if (advancedOptions) mepManifestList.append(advancedOptions);
+
   mepPopup.append(mepPopupHeader);
-  mepPopup.append(generateListDom(manifestList, listInfo, advancedOptions));
+  // mepPopup.append(generateListDom(manifestList, listInfo, advancedOptions));
+  mepPopup.append(mepManifestList);
   mepPopup.append(mepManifestPreviewButton);
-  pill.append(mepBadge);
-  pill.append(mepPopup);
-  const previewButton = pill.querySelector(`a[data-id="${PREVIEW_BUTTON_ID}"]`);
+  const previewButton = mepPopup.querySelector(`a[data-id="${PREVIEW_BUTTON_ID}"]`);
 
   if (previewButton) previewButton.href = simulateHref.href;
-
+  return mepPopup;
+}
+function createPreviewPill(manifests) {
+  const overlay = createTag('div', { class: 'mep-preview-overlay static-links', style: 'display: none;' });
+  const pill = document.createElement('div');
+  pill.classList.add('mep-hidden');
+  const mepBadge = createTag('div', { class: 'mep-manifest mep-badge' });
+  mepBadge.innerHTML = `
+   <span class="mep-open"></span>
+      <div class="mep-manifest-count">${manifests?.length || 0} Manifest(s) served</div>`;
+  pill.append(mepBadge);
+  pill.append(getMepPopup(manifests));
   overlay.append(pill);
   document.body.append(overlay);
   addPillEventListeners(pill);
