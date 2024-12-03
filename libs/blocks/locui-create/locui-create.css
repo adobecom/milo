@@ -1,0 +1,13 @@
+.locui-create.missing-details {
+  margin: 0 auto;
+  margin-top: 10vh;
+  max-width: 60%;
+  border-radius: 10px;
+  border: 10px solid #eee;
+  padding: 10px 30px 30px;
+}
+
+.locui-create .goto-step {
+  margin-top: 0;
+  margin-bottom: 0;
+}
