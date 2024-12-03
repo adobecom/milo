@@ -387,8 +387,6 @@ async function saveToMmm(data) {
     && !page.url.includes('milo.adobe.com')) {
     page.url += '.html';
   }
-  console.log(data);
-  debugger;
   return fetch('https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-2.on.aws/save-mep-call', {
     method: 'POST',
     headers: {
