@@ -35,13 +35,16 @@ class SearchReplace {
   }
 
   adjustUrlDomains(content) {
-    const searchValue = `--${this.repo}--${this.org}`;
-    const replaceValue = `--${this.destRepo}--${this.org}`;
-    const updatedContent = content.replaceAll(searchValue, replaceValue);
     if (this.searchType === 'floodgate') {
-      return updatedContent;
+      const searchValue = `--${this.repo}--${this.org}`;
+      const replaceValue = `--${this.destRepo}--${this.org}`;
+      return content.replaceAll(searchValue, replaceValue);
     }
-    return updatedContent.replaceAll(`.page/${this.expName}`, '.page');
+    if (this.searchType === 'graybox') {
+      const updatedContent = content.replaceAll(`.page/${this.expName}`, '.page');
+      return updatedContent.replaceAll(`.live/${this.expName}`, '.live');
+    }
+    return content;
   }
 
   static removeGrayboxStyles(doc) {
