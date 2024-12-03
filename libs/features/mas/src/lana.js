@@ -90,30 +90,19 @@ const lanaAppender = {
 
 // Allow dynamic config updates
 function updateConfig(newConfig) {
-    Object.assign(
-        config,
-        Object.fromEntries(
-            Object.entries(newConfig).filter(
-                ([key, value]) =>
-                    key in config &&
-                    function updateConfig(newConfig) {
-    Object.assign(
-        config,
-        Object.fromEntries(
-            Object.entries(newConfig).filter(
-                ([key, value]) =>
-                    key in config &&
-                    value !== '' &&
-                    value !== null &&
-                    value !== undefined &&
-                    !Number.isNaN(value), // Correctly exclude NaN
-            ),
-        ),
-    );
-}
-            ),
-        ),
-    );
+  Object.assign(
+      config,
+      Object.fromEntries(
+          Object.entries(newConfig).filter(
+              ([key, value]) =>
+                  key in config &&
+                  value !== '' &&
+                  value !== null &&
+                  value !== undefined &&
+                  !Number.isNaN(value), // Correctly exclude NaN
+          ),
+      ),
+  );
 }
 
 export { config, lanaAppender, updateConfig };
