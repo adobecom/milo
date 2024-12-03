@@ -4,7 +4,6 @@ import {
     MasElement,
 } from './mas-element.js';
 import { selectOffers, useService } from './utilities.js';
-import { Log } from './log.js';
 
 // countries where tax is displayed for all segments by default
 const DISPLAY_ALL_TAX_COUNTRIES = [
@@ -279,34 +278,28 @@ export class InlinePrice extends HTMLSpanElement {
      */
     renderOffers(offers, overrides = {}, version = undefined) {
         if (!this.isConnected) return;
-        const log = Log.module('inline-price');
-        try {
-          // eslint-disable-next-line react-hooks/rules-of-hooks
-          const service = useService();
-          if (!service) return false;
-          const options = service.collectPriceOptions(
-              {
-                  ...this.dataset,
-                  ...overrides,
-              },
-              this,
-          );
-          version ??= this.masElement.togglePending(options);
-          if (offers.length) {
-              if (this.masElement.toggleResolved(version, offers, options)) {
-                  this.innerHTML = service.buildPriceHTML(offers, options);
-                  return true;
-              }
-          } else {
-              const error = new Error(`Not provided: ${options?.wcsOsi ?? '-'}`);
-              if (this.masElement.toggleFailed(version, error, options)) {
-                  this.innerHTML = '';
-                  return true;
-              }
-          }
-        } catch(e) {
-          log.error(`Failed to build price: `, e);
-          return true;
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        const service = useService();
+        if (!service) return false;
+        const options = service.collectPriceOptions(
+            {
+                ...this.dataset,
+                ...overrides,
+            },
+            this,
+        );
+        version ??= this.masElement.togglePending(options);
+        if (offers.length) {
+            if (this.masElement.toggleResolved(version, offers, options)) {
+                this.innerHTML = service.buildPriceHTML(offers, options);
+                return true;
+            }
+        } else {
+            const error = new Error(`Not provided: ${options?.wcsOsi ?? '-'}`);
+            if (this.masElement.toggleFailed(version, error, options)) {
+                this.innerHTML = '';
+                return true;
+            }
         }
         /* c8 ignore next 1 */
         return false;

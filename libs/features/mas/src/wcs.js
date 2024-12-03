@@ -120,22 +120,18 @@ export function Wcs({ settings }) {
                 );
             } else {
                 message = ERROR_MESSAGE_BAD_REQUEST;
-                log.error(detailedMessage(message, response, url), options);
             }
         } catch (e) {
             /* c8 ignore next 2 */
             message = ERROR_MESSAGE_BAD_REQUEST;
-            log.error(detailedMessage(message, response, url), options, e);
+            log.error(message, options, e);
         }
 
         if (reject && promises.size) {
-            // log 200 WCS response issues (empty response, missing formatString etc). non-200 are alreadylogged above
-            if (response?.ok) { 
-              log.error(detailedMessage(message, response, url), options);
-            }
             // reject pending promises, their offers weren't provided by WCS
+            log.debug('Missing:', { offerSelectorIds: [...promises.keys()] });
             promises.forEach((promise) => {
-                promise.reject(new Error(message));
+                promise.reject(new Error(detailedMessage(message, response, url)));
             });
         }
     }
