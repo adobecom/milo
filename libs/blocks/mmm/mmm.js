@@ -1,12 +1,13 @@
-import { createTag, customFetch } from '../../utils/utils.js';
+import { createTag, customFetch, loadStyle } from '../../utils/utils.js';
 import { fetchData, DATA_TYPE } from '../../features/personalization/personalization.js';
-import { createPanelContents } from '../../features/personalization/preview.js';
+import { getMepPopup } from '../../features/personalization/preview.js';
 
 const debugVersion = 'params'; // hash or params
 
+const API_DOMAIN = 'https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-2.on.aws';
 const API_URLS = {
-  pageList: '/libs/blocks/mmm/pageList.json',
-  pageDetails: '/libs/blocks/mmm/pageDetails.json',
+  pageList: `${API_DOMAIN}/get-pages`,
+  pageDetails: `${API_DOMAIN}/get-page?id=`,
 };
 
 // hash methods
@@ -82,7 +83,7 @@ function searchFromWindowParameters() {
   return Object.keys(newValuesToBuild).length > 1 ? newValuesToBuild : null;
 }
 
-function handleClick(el, dd) {
+async function toggleDrawer(el, dd) {
   const expanded = el.getAttribute('aria-expanded') === 'true';
   if (expanded) {
     el.setAttribute('aria-expanded', 'false');
@@ -90,8 +91,16 @@ function handleClick(el, dd) {
   } else {
     el.setAttribute('aria-expanded', 'true');
     if (!dd.classList.contains('placeholder-resolved')) {
-      const { page } = dd.dataset;
-      dd.innerHTML = createPanelContents(`from ${page}`);
+      const { pageId } = dd.dataset;
+      const pageData = await fetchData(`${API_URLS.pageDetails}${pageId}`, DATA_TYPE.JSON);
+      const { page, activities } = pageData;
+      if (!page.prefix) page.prefix = 'en-us';
+      activities.map((activity) => {
+        activity.variantNames = activity.variantNames.split('||');
+        activity.source = activity.source.split(',');
+        return activity;
+      });
+      dd.append(getMepPopup(activities, page, true));
       dd.classList.add('placeholder-resolved');
     }
     dd.removeAttribute('hidden');
@@ -142,7 +151,7 @@ function createButtonDetailsPair(mmmEl, page) {
     dt.dataset[key] = page[key];
     dd.dataset[key] = page[key];
   });
-  button.addEventListener('click', (e) => { handleClick(e.target, dd, pageId, 'mmm'); });
+  button.addEventListener('click', (e) => { toggleDrawer(e.target, dd, pageId, 'mmm'); });
   mmmEl.append(dt, dd);
 }
 
@@ -231,6 +240,7 @@ export default async function init(el) {
     if (!window.location.hash.length) return;
     searchFromWindowUrl();
   }
+  loadStyle('/libs/features/personalization/preview.css');
 }
 /*
 todo:

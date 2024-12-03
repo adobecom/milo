@@ -213,6 +213,9 @@ div.media-p {
   padding: 0;
 }
 
+dd .mep-popup-header .mep-close {
+  display: none;
+}
 @media screen and (min-width: 1200px) {
   .editorial {
     display: flex;
