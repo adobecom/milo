@@ -8,6 +8,8 @@ const config = {
     tags: 'acom',
     isProdDomain: false,
 };
+// total lana limit in /utils/lana.js is 2000
+const PAGE_LIMIT = 1000;
 
 const seenPayloads = new Set();
 
@@ -68,7 +70,11 @@ const lanaAppender = {
         }
 
         const { pathname, search } = window.location;
-        payload += `${config.delimiter}page=${pathname}${search}`;
+        let page = `${config.delimiter}page=${pathname}${search}`;
+        if (page.length > PAGE_LIMIT) {
+          page = `${page.slice(0, PAGE_LIMIT)}<trunc>`;
+        }
+        payload += page;
 
         if (values.length) {
             payload += `${config.delimiter}facts=`;

@@ -59,7 +59,7 @@ export const CLASS_NAME_FAILED = 'placeholder-failed';
 export const CLASS_NAME_PENDING = 'placeholder-pending';
 export const CLASS_NAME_RESOLVED = 'placeholder-resolved';
 
-export const ERROR_MESSAGE_BAD_REQUEST = 'Bad WCS request: ';
+export const ERROR_MESSAGE_BAD_REQUEST = 'Bad WCS request';
 export const ERROR_MESSAGE_OFFER_NOT_FOUND = 'Commerce offer not found';
 export const ERROR_MESSAGE_MISSING_LITERALS_URL = 'Literals URL not provided';
 
