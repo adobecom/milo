@@ -1,6 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable import/no-cycle */
 import { createTag, getMetadata, localizeLink, loadStyle, getConfig } from '../../utils/utils.js';
+import { decorateSectionAnalytics } from '../../martech/attributes.js';
 
 const FOCUSABLES = 'a:not(.hide-video), button, input, textarea, select, details, [tabindex]:not([tabindex="-1"]';
 const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
@@ -179,7 +180,7 @@ export async function getModal(details, custom) {
       closeModal(dialog);
     }
   });
-
+  decorateSectionAnalytics(dialog, `${id}-modal`, getConfig());
   dialog.append(close);
   document.body.append(dialog);
   dialogLoadingSet.delete(id);
@@ -202,12 +203,13 @@ export async function getModal(details, custom) {
 
   const iframe = dialog.querySelector('iframe');
   if (iframe) {
-    if (dialog.classList.contains('commerce-frame')) {
+    if (dialog.classList.contains('commerce-frame') || dialog.classList.contains('dynamic-height')) {
       const { default: enableCommerceFrameFeatures } = await import('./modal.merch.js');
       await enableCommerceFrameFeatures({ dialog, iframe });
     } else {
       /* Initially iframe height is set to 0% in CSS for the height auto adjustment feature.
-      For modals without the 'commerce-frame' class height auto adjustment is not applicable */
+      The height auto adjustment feature is applicable only to dialogs
+      with the `commerce-frame` or `dynamic-height` classes */
       iframe.style.height = '100%';
     }
   }

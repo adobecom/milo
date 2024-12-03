@@ -76,6 +76,7 @@ export const normalizePath = (p, localize = true) => {
 
   if (path.startsWith(config.codeRoot)
     || path.includes('.hlx.')
+    || path.includes('.aem.')
     || path.includes('.adobe.')) {
     try {
       const url = new URL(path);
@@ -133,11 +134,25 @@ function getSelectorType(selector) {
   return 'other';
 }
 
+export function replacePlaceholders(value, ph) {
+  const placeholders = ph || getConfig().placeholders;
+  if (!placeholders) return value;
+  let val = value;
+  const matches = val.match(/{{(.*?)}}/g);
+  if (!matches) return val;
+  matches.forEach((match) => {
+    const key = match.replace(/{{|}}/g, '').trim();
+    if (placeholders[key]) val = val.replace(match, placeholders[key]);
+  });
+  return val;
+}
+
 const getUpdatedHref = (el, content, action) => {
   const href = el.getAttribute('href');
-  if (action === 'insertafter' || action === 'append') return `${href}${content}`;
-  if (action === 'insertbefore' || action === 'prepend') return `${content}${href}`;
-  return content;
+  const newContent = replacePlaceholders(content);
+  if (action === 'insertafter' || action === 'append') return `${href}${newContent}`;
+  if (action === 'insertbefore' || action === 'prepend') return `${newContent}${href}`;
+  return newContent;
 };
 
 const createFrag = (el, action, content, manifestId, targetManifestId) => {
@@ -160,17 +175,6 @@ const createFrag = (el, action, content, manifestId, targetManifestId) => {
   return frag;
 };
 
-export function replacePlaceholders(value, placeholders) {
-  let val = value;
-  const matches = val.match(/{{(.*?)}}/g);
-  if (!matches) return val;
-  matches.forEach((match) => {
-    const key = match.replace(/{{|}}/g, '').trim();
-    if (placeholders?.[key]) val = val.replace(match, placeholders[key]);
-  });
-  return val;
-}
-
 export const createContent = (el, { content, manifestId, targetManifestId, action, modifiers }) => {
   if (action === 'replace') {
     addIds(el, manifestId, targetManifestId);
@@ -181,8 +185,7 @@ export const createContent = (el, { content, manifestId, targetManifestId, actio
     return el;
   }
   if (getSelectorType(content) !== 'fragment') {
-    const config = getConfig();
-    const newContent = replacePlaceholders(content, config.placeholders);
+    const newContent = replacePlaceholders(content);
 
     if (action === 'replace') {
       el.innerHTML = newContent;
@@ -242,7 +245,7 @@ const fetchData = async (url, type = DATA_TYPE.JSON) => {
   return null;
 };
 
-const getBlockProps = (fVal, miloLibs, origin) => {
+const getBlockProps = (fVal, config, origin) => {
   let val = fVal;
   if (val?.includes('\\')) val = val?.split('\\').join('/');
   if (!val?.startsWith('/')) val = `/${val}`;
@@ -250,7 +253,7 @@ const getBlockProps = (fVal, miloLibs, origin) => {
 
   if (val.startsWith('/libs/')) {
     /* c8 ignore next 1 */
-    val = `${miloLibs}${val.replace('/libs', '')}`;
+    val = `${config.miloLibs || config.codeRoot}${val.replace('/libs', '')}`;
   } else {
     val = `${origin}${val}`;
   }
@@ -593,7 +596,7 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
       variants[vn][action] = variants[vn][action] || [];
 
       if (action === 'useblockcode') {
-        const { blockSelector, blockTarget } = getBlockProps(line[vn], config.miloLibs, origin);
+        const { blockSelector, blockTarget } = getBlockProps(line[vn], config, origin);
         variants[vn][action].push({
           selector: blockSelector,
           val: blockTarget,
@@ -807,7 +810,7 @@ const createDefaultExperiment = (manifest) => ({
 });
 
 export const addMepAnalytics = (config, header) => {
-  config.mep.experiments.forEach((experiment) => {
+  config.mep?.experiments?.forEach((experiment) => {
     experiment?.selectedVariant?.useblockcode?.forEach(({ selector, targetManifestId }) => {
       if (selector && targetManifestId) {
         document.querySelectorAll(`.${selector}`)

@@ -466,7 +466,6 @@
 
 .table.has-addon .row-heading .col.col-heading:not(.col-1) .buttons-wrapper {
   align-items: flex-end;
-  height: 100%;
 }
 
 .table.has-addon p.body {
@@ -485,7 +484,6 @@
   text-align: start;
   font-style: normal;
   font-weight: 400;
-  gap: var(--spacing-xxs);
   color: black;
   padding: 5px 10px;
   box-sizing: border-box;
@@ -495,7 +493,7 @@
   background-color: var(--color-gray-300);
 }
 
-.table.has-addon .addon-label :first-child {
+.table.has-addon .addon-label .icon {
   display: flex;
   align-self: center;
 }
@@ -554,11 +552,6 @@
 .table.has-addon .addon-promo a {
   font-weight: 700;
   text-decoration: underline;
-}
-
-/* scroll */
-header.global-navigation {
-  z-index: 2;
 }
 
 .table .row-highlight,

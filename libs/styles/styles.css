@@ -441,6 +441,10 @@ img {
   height: auto;
 }
 
+blockquote {
+  margin: 0 0 var(--spacing-s) 0;
+}
+
 svg.icon-milo, img.icon-milo {
   height: 1em;
   position: relative;
@@ -680,7 +684,7 @@ body {
   opacity: 1 !important; /* Fix Target hiding */
 }
 
-header:not(.global-navigation) {
+header.gnav {
   height: 57px;
   position: fixed;
   top: 0;
@@ -692,11 +696,11 @@ header:not(.global-navigation) {
   box-sizing: border-box;
 }
 
-header:not(.global-navigation) nav {
+header.gnav nav {
   display: none;
 }
 
-header:not(.global-navigation) ~ main {
+header.gnav ~ main {
   margin-top: 57px;
 }
 
@@ -704,7 +708,7 @@ header:not(.global-navigation) ~ main {
   After switching from the Milo nav to the FEDS one,
   only the styles with 'header.global-navigation' need to be kept;
   the 'global-navigation' class should also be removed from the 'header' selector
-  all of the ':not(.global-navigation)' rules can be entirely removed.
+  all of the 'header.gnav' rules can be entirely removed.
  */
 header.global-navigation, header.global-navigation.feds--dark {
   height: var(--global-height-nav);
@@ -714,6 +718,10 @@ header.global-navigation, header.global-navigation.feds--dark {
 header.global-navigation.has-promo {
   height: auto;
   min-height: calc(var(--global-height-nav) + var(--global-height-navPromo));
+}
+
+header.global-navigation a {
+  text-decoration: unset;
 }
 
 @media (min-width: 900px) {
@@ -784,25 +792,44 @@ a.fragment {
 
 a {
   color: var(--link-color);
-  text-decoration: none;
+  text-decoration: underline;
 }
 
 a:hover {
-  text-decoration: underline;
   color: var(--link-hover-color);
+}
+
+a:has(> sub:only-child) { text-decoration: unset; }
+a > sub:only-child { text-decoration: underline; }
+
+/* Links Quiet */
+a.quiet,
+a.quiet:hover,
+a.quiet:focus,
+a.quiet:active {
+  text-decoration: none;
 }
 
 /* Links Static */
 a.static,
-a.static:hover {
+a.static:hover,
+a.static:focus,
+a.static:active  {
   color: var(--text-color);
-  text-decoration: underline;
 }
 
 .dark a.static,
-.dark a.static:hover {
+.dark a.static:hover,
+.dark a.static:focus,
+.dark a.static:active {
   color: var(--color-white);
-  text-decoration: underline;
+}
+
+:is(h1, h2, h3, h4, h5, h6) a,
+:is(h1, h2, h3, h4, h5, h6) a:hover,
+:is(h1, h2, h3, h4, h5, h6) a:focus,
+:is(h1, h2, h3, h4, h5, h6) a:active {
+  color: currentColor;
 }
 
 /* Buttons */
@@ -812,7 +839,6 @@ a.static:hover {
 
 .static-links a:not([class*="button"]) {
   color: inherit;
-  text-decoration: underline;
 }
 
 .copy-link {
@@ -893,25 +919,25 @@ a.static:hover {
 
 /* tablet large up */
 @media (min-width: 900px) {
-  header:not(.global-navigation) {
+  header.gnav {
     min-height: var(--global-height-nav);
     border-bottom: 1px solid #EAEAEA;
     overflow: unset;
   }
 
-  header:not(.global-navigation) ~ main {
+  header.gnav ~ main {
     margin-top: 64px;
   }
 
-  header:not(.global-navigation).has-breadcrumbs {
+  header.gnav.has-breadcrumbs {
     min-height: 97px;
   }
 
-  header:not(.global-navigation) nav {
+  header.gnav nav {
     display: unset;
   }
 
-  header:not(.global-navigation).has-breadcrumbs + main {
+  header.gnav.has-breadcrumbs + main {
     margin-top: 97px;
   }
 }

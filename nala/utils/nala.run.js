@@ -55,6 +55,7 @@ function parseArgs(args) {
     config: '',
     project: '',
     milolibs: '',
+    repo: 'milo',
     owner: 'adobecom',
   };
 
@@ -75,6 +76,9 @@ function parseArgs(args) {
       parsedParams.config = arg;
     } else if (['ui', 'debug', 'headless', 'headed'].includes(arg)) {
       parsedParams.mode = arg;
+    } else if (arg.startsWith('repo=')) {
+      const repo = arg.split('=')[1];
+      parsedParams.repo = repo || 'milo';
     } else if (arg.startsWith('owner=')) {
       const owner = arg.split('=')[1];
       parsedParams.owner = owner || 'adobecom';
@@ -91,7 +95,7 @@ function parseArgs(args) {
   return parsedParams;
 }
 
-function getLocalTestLiveUrl(env, milolibs, owner = 'adobecom') {
+function getLocalTestLiveUrl(env, milolibs, repo = 'milo', owner = 'adobecom') {
   if (milolibs) {
     process.env.MILO_LIBS = `?milolibs=${milolibs}`;
     if (env === 'local') {
@@ -99,14 +103,14 @@ function getLocalTestLiveUrl(env, milolibs, owner = 'adobecom') {
     } if (env === 'libs') {
       return 'http://127.0.0.1:6456';
     }
-    return `https://${env}--milo--${owner}.hlx.live`;
+    return `https://${env}--${repo}--${owner}.aem.live`;
   }
   if (env === 'local') {
     return 'http://127.0.0.1:3000';
   } if (env === 'libs') {
     return 'http://127.0.0.1:6456';
   }
-  return `https://${env}--milo--${owner}.hlx.live`;
+  return `https://${env}--${repo}--${owner}.aem.live`;
 }
 
 function buildPlaywrightCommand(parsedParams, localTestLiveUrl) {
@@ -158,7 +162,7 @@ function runNalaTest() {
   }
 
   const parsedParams = parseArgs(args);
-  const localTestLiveUrl = getLocalTestLiveUrl(parsedParams.env, parsedParams.milolibs, parsedParams.owner);
+  const localTestLiveUrl = getLocalTestLiveUrl(parsedParams.env, parsedParams.milolibs, parsedParams.repo, parsedParams.owner);
   const { finalCommand, envVariables } = buildPlaywrightCommand(parsedParams, localTestLiveUrl);
 
   console.log(`\n Executing nala run command: ${finalCommand}`);
