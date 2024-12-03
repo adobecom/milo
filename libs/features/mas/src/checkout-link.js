@@ -5,6 +5,7 @@ import {
     MasElement,
 } from './mas-element.js';
 import { selectOffers, useService } from './utilities.js';
+import { Log } from './log.js';
 
 export const CLASS_NAME_DOWNLOAD = 'download';
 export const CLASS_NAME_UPGRADE = 'upgrade';
@@ -187,40 +188,45 @@ export class CheckoutLink extends HTMLAnchorElement {
         version = undefined,
     ) {
         if (!this.isConnected) return false;
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        const service = useService();
-        if (!service) return false;
-        const extraOptions = JSON.parse(this.dataset.extraOptions ?? 'null');
-        options = { ...extraOptions, ...options, ...overrides };
-        version ??= this.masElement.togglePending(options);
-        if (this.#checkoutActionHandler) {
-            /* c8 ignore next 2 */
-            this.#checkoutActionHandler = undefined;
-        }
-        if (checkoutAction) {
-            this.classList.remove(CLASS_NAME_DOWNLOAD, CLASS_NAME_UPGRADE);
-            this.masElement.toggleResolved(version, offers, options);
-            const { url, text, className, handler } = checkoutAction;
-            if (url) this.href = url;
-            if (text) this.firstElementChild.innerHTML = text;
-            if (className) this.classList.add(...className.split(' '));
-            if (handler) {
-                this.setAttribute('href', '#');
-                this.#checkoutActionHandler = handler.bind(this);
-            }
-            return true;
-        } else if (offers.length) {
-            if (this.masElement.toggleResolved(version, offers, options)) {
-                const url = service.buildCheckoutURL(offers, options);
-                this.setAttribute('href', url);
-                return true;
-            }
-        } else {
-            const error = new Error(`Not provided: ${options?.wcsOsi ?? '-'}`);
-            if (this.masElement.toggleFailed(version, error, options)) {
-                this.setAttribute('href', '#');
-                return true;
-            }
+        const log = Log.module('checkout-link');
+        try {
+          // eslint-disable-next-line react-hooks/rules-of-hooks
+          const service = useService();
+          if (!service) return false;
+          const extraOptions = JSON.parse(this.dataset.extraOptions ?? 'null');
+          options = { ...extraOptions, ...options, ...overrides };
+          version ??= this.masElement.togglePending(options);
+          if (this.#checkoutActionHandler) {
+              /* c8 ignore next 2 */
+              this.#checkoutActionHandler = undefined;
+          }
+          if (checkoutAction) {
+              this.classList.remove(CLASS_NAME_DOWNLOAD, CLASS_NAME_UPGRADE);
+              this.masElement.toggleResolved(version, offers, options);
+              const { url, text, className, handler } = checkoutAction;
+              if (url) this.href = url;
+              if (text) this.firstElementChild.innerHTML = text;
+              if (className) this.classList.add(...className.split(' '));
+              if (handler) {
+                  this.setAttribute('href', '#');
+                  this.#checkoutActionHandler = handler.bind(this);
+              }
+              return true;
+          } else if (offers.length) {
+              if (this.masElement.toggleResolved(version, offers, options)) {
+                  const url = service.buildCheckoutURL(offers, options);
+                  this.setAttribute('href', url);
+                  return true;
+              }
+          } else {
+              const error = new Error(`Not provided: ${options?.wcsOsi ?? '-'}`);
+              if (this.masElement.toggleFailed(version, error, options)) {
+                  this.setAttribute('href', '#');
+                  return true;
+              }
+          }
+        } catch (e) {
+          log.error(`Failed to build checkout link: `, e);
         }
     }
 
