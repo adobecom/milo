@@ -141,9 +141,6 @@ function parseMepConfig() {
     activities,
   };
 }
-export function createPanelContents(url) {
-  return `<div>Hello World: ${url}</div>`;
-}
 
 function getManifestListDomAndParameter(manifests) {
   let manifestList = '';
@@ -243,22 +240,18 @@ function addMepPopupListeners(popup) {
     });
   });
 }
-export function getMepPopup(manifests, mmm = false) {
+
+export function getMepPopup(manifests, pageInfo = false, mmm = false) {
   const { manifestList, manifestParameter } = getManifestListDomAndParameter(manifests);
-  const config = getConfig();
-  let targetOnText = config.mep.targetEnabled ? 'on' : 'off';
-  if (config.mep.targetEnabled === 'postlcp') targetOnText = 'on post LCP';
-  const personalizationOn = getMetadata('personalization');
-  const personalizationOnText = personalizationOn && personalizationOn !== '' ? 'on' : 'off';
   const simulateHref = new URL(window.location.href);
   simulateHref.searchParams.set('mep', manifestParameter.join('---'));
   let mepHighlightChecked = '';
-  if (config.mep?.highlight) {
+  if (!mmm && pageInfo?.highlight) {
     mepHighlightChecked = 'checked="checked"';
     if (!mmm) document.body.dataset.mepHighlight = true;
   }
   const PREVIEW_BUTTON_ID = 'preview-button';
-  const mepPopup = createTag('div', { class: 'mep-popup' });
+  const mepPopup = createTag('div', { class: `mep-popup${mmm ? '' : ' in-page'}` });
   const mepPopupHeader = createTag('div', { class: 'mep-popup-header' });
   const listInfo = createTag('div', { class: 'mep-manifest-info' });
   const advancedOptions = createTag('div', { class: 'mep-advanced-container' });
@@ -285,17 +278,17 @@ export function getMepPopup(manifests, mmm = false) {
           </div>
         </div>`;
 
-  const mepManifestPreviewButton = createTag('div', { class: 'dark' });
+  const mepManifestPreviewButton = createTag('div', { class: `advanced-options${mmm ? '' : ' dark'}` });
   mepManifestPreviewButton.innerHTML = `
-    <a class="con-button outline button-l" data-id="${PREVIEW_BUTTON_ID}" title="Preview above choices">Preview</a>`;
+    <a class="con-button outline button-l" data-id="${PREVIEW_BUTTON_ID}" title="Preview above choices" ${mmm ? ' target="_blank"' : ''}>Preview</a>`;
   mepPopupHeader.innerHTML = `
     <div>
       <h4>${manifests?.length || 0} Manifest(s) served</h4>
         <span class="mep-close"></span>
         <div class="mep-manifest-page-info-title">Page Info:</div>
-        <div>Target integration feature is ${targetOnText}</div>
-        <div>Personalization feature is ${personalizationOnText}</div>
-        <div>Page's Prefix/Region/Locale are ${config.mep.geoPrefix} / ${config.locale.region} / ${config.locale.ietf}</div>
+        <div>Target integration feature is ${pageInfo.target}</div>
+        <div>Personalization feature is ${pageInfo.personalization}</div>
+        <div>Page's Prefix/Region/Locale are ${pageInfo.prefix} / ${pageInfo.region} / ${pageInfo.locale}</div>
     </div>`;
   mepManifestList.innerHTML = manifestList;
   if (listInfo) mepManifestList.prepend(listInfo);
@@ -318,7 +311,20 @@ function createPreviewPill(manifests) {
    <span class="mep-open"></span>
       <div class="mep-manifest-count">${manifests?.length || 0} Manifest(s) served</div>`;
   pill.append(mepBadge);
-  pill.append(getMepPopup(manifests));
+  const config = getConfig();
+  let targetOnText = config.mep.targetEnabled ? 'on' : 'off';
+  if (config.mep.targetEnabled === 'postlcp') targetOnText = 'on post LCP';
+  const personalizationOn = getMetadata('personalization');
+  const personalizationOnText = personalizationOn && personalizationOn !== '' ? 'on' : 'off';
+  const pageInfo = {
+    target: targetOnText,
+    personalization: personalizationOnText,
+    highlight: config.mep.highlight,
+    prefix: config.mep.geoPrefix,
+    region: config.locale.region,
+    locale: config.locale.ietf,
+  };
+  pill.append(getMepPopup(manifests, pageInfo));
   overlay.append(pill);
   document.body.append(overlay);
   addPillEventListeners(pill);
@@ -364,8 +370,8 @@ async function saveToMmm(data) {
     delete activity.selectedVariantName;
     delete activity.event;
     delete activity.disabled;
-    activity.variantNames = activity.variantNames.join('||');
-    activity.source = activity.source.join(',');
+    activity.variantNames = activity.variantNames?.join('||') || '';
+    activity.source = activity.source?.join(',') || '';
     const manifestUrl = new URL(activity.url);
     activity.pathname = manifestUrl.pathname;
     return activity;

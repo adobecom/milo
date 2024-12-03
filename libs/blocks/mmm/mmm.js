@@ -1,6 +1,6 @@
-import { createTag, customFetch } from '../../utils/utils.js';
+import { createTag, customFetch, loadStyle } from '../../utils/utils.js';
 import { fetchData, DATA_TYPE } from '../../features/personalization/personalization.js';
-import { createPanelContents } from '../../features/personalization/preview.js';
+import { getMepPopup } from '../../features/personalization/preview.js';
 
 const debugVersion = 'params'; // hash or params
 
@@ -69,7 +69,7 @@ function searchFromWindowParameters() {
   return newValuesToBuild;
 }
 
-function handleClick(el, dd) {
+async function toggleDrawer(el, dd) {
   const expanded = el.getAttribute('aria-expanded') === 'true';
   if (expanded) {
     el.setAttribute('aria-expanded', 'false');
@@ -77,8 +77,16 @@ function handleClick(el, dd) {
   } else {
     el.setAttribute('aria-expanded', 'true');
     if (!dd.classList.contains('placeholder-resolved')) {
-      const { page } = dd.dataset;
-      dd.innerHTML = createPanelContents(`from ${page}`);
+      const { pageId } = dd.dataset;
+      const pageData = await fetchData(`${API_URLS.pageDetails}${pageId}`, DATA_TYPE.JSON);
+      const { page, activities } = pageData;
+      if (!page.prefix) page.prefix = 'en-us';
+      activities.map((activity) => {
+        activity.variantNames = activity.variantNames.split('||');
+        activity.source = activity.source.split(',');
+        return activity;
+      });
+      dd.append(getMepPopup(activities, page, true));
       dd.classList.add('placeholder-resolved');
     }
     dd.removeAttribute('hidden');
@@ -129,7 +137,7 @@ function createButtonDetailsPair(mmmEl, page) {
     dt.dataset[key] = page[key];
     dd.dataset[key] = page[key];
   });
-  button.addEventListener('click', (e) => { handleClick(e.target, dd, pageId, 'mmm'); });
+  button.addEventListener('click', (e) => { toggleDrawer(e.target, dd, pageId, 'mmm'); });
   mmmEl.append(dt, dd);
 }
 
@@ -208,7 +216,6 @@ export default async function init(el) {
   });
   mmmElContainer.append(mmmEl);
   const pageList = await fetchData(API_URLS.pageList, DATA_TYPE.JSON);
-  // const pageList = await apiCall(API_URLS.page, {});
   pageList.map((page) => createButtonDetailsPair(mmmEl, page));
   el.remove();
   const section = createTag('div', { id: 'mep-section', class: 'section' });
@@ -219,8 +226,7 @@ export default async function init(el) {
     if (!window.location.hash.length) return;
     searchFromWindowUrl();
   }
-  const page1Details = await fetchData(`${API_URLS.pageDetails}1`, DATA_TYPE.JSON);
-  console.log(page1Details);
+  loadStyle('/libs/features/personalization/preview.css');
 }
 /*
 todo:
