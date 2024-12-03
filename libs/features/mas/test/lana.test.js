@@ -46,7 +46,7 @@ describe('lana', () => {
                 isProdDomain: false,
                 serializableTypes: ['Array', 'Object'],
                 sampleRate: 1,
-                tags: 'consumer,acom,mas',
+                tags: 'acom',
             },
         ]);
     });

@@ -5,7 +5,7 @@ const config = {
     ignoredProperties: ['analytics', 'literals'],
     serializableTypes: ['Array', 'Object'],
     sampleRate: 1,
-    tags: 'consumer,acom,mas',
+    tags: 'acom',
     isProdDomain: false,
 };
 
@@ -36,7 +36,7 @@ function serializeValue(value) {
         }
 
         const objectType =
-            value[Symbol.toStringTag] ||
+            value[Symbol.toStringTag] ??
             Object.getPrototypeOf(value).constructor.name;
         if (!config.serializableTypes.includes(objectType)) return objectType;
     }
