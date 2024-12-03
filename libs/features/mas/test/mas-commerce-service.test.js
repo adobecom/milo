@@ -1,4 +1,7 @@
-import { Defaults } from '../src/commerce.js';
+import Sinon from 'sinon';
+
+import '../../../utils/lana.js';
+import { Defaults } from '../src/mas.js';
 import { TAG_NAME_SERVICE } from '../src/mas-commerce-service.js';
 
 import { mockFetch } from './mocks/fetch.js';
@@ -10,8 +13,21 @@ import {
 } from './utilities.js';
 import { withWcs } from './mocks/wcs.js';
 
+const calls = [];
+class MockXMLHttpRequest {
+    constructor() {
+        calls.push(this);
+    }
+
+    send() {}
+
+    open = Sinon.mock();
+}
+
 describe('commerce service', () => {
+    window.XMLHttpRequest = MockXMLHttpRequest;
     before(async () => {
+        window.lana.localhost = false;
         await mockFetch(withWcs);
     });
 
@@ -127,6 +143,21 @@ describe('commerce service', () => {
                     wcsBufferLimit: 1,
                     wcsURL: 'https://www.adobe.com/web_commerce_artifact',
                 });
+            });
+
+            it('enables lana with custom tags', async () => {
+                const el = await initMasCommerceService({
+                    'lana-tags': 'ccd',
+                    'lana-sample-rate': '100',
+                    'host-env': 'stage',
+                });
+                el.log.error('test error');
+                const [, url] = calls[0].open.lastCall.args;
+                expect(
+                    /https\:\/\/www.stage.adobe.com\/lana\/ll\?m=test%20error.*c=merch-at-scale&s=100&t=e&tags=ccd/.test(
+                        url,
+                    ),
+                ).to.true;
             });
         });
     });

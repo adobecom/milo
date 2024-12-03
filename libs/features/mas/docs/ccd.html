@@ -28,13 +28,9 @@
         envOverride && ENVS[envOverride]
           ? ENVS[envOverride]
           : ENVS.prod;
-      const baseUrl =
-        !envOverride && href.includes('localhost')
-          ? 'http://localhost:8080'
-          : `https://${env}.adobe.com`;
       const meta = document.createElement('meta');
       meta.name = 'aem-base-url';
-      meta.content = baseUrl;
+      meta.content = `https://${env}.adobe.com`;
       document.head.appendChild(meta);
     </script>
     <script type="module" src="../dist/mas.js"></script>
@@ -53,6 +49,9 @@
         const value = params.get(attribute);
         if (value) masCommerceService.setAttribute(attribute, value);
       });
+      masCommerceService.setAttribute('host-env', 'prod');
+      masCommerceService.setAttribute('lana-tags', 'ccd');
+      masCommerceService.setAttribute('lana-sample-rate', '100'); // optional, default value is set to '1'
       document.head.appendChild(masCommerceService);
     </script>
 </head>
