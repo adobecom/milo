@@ -227,6 +227,7 @@ export class CheckoutLink extends HTMLAnchorElement {
           }
         } catch (e) {
           log.error(`Failed to build checkout link: `, e);
+          return true;
         }
     }
 

@@ -306,6 +306,7 @@ export class InlinePrice extends HTMLSpanElement {
           }
         } catch(e) {
           log.error(`Failed to build price: `, e);
+          return true;
         }
         /* c8 ignore next 1 */
         return false;
