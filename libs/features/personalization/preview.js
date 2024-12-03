@@ -364,8 +364,7 @@ async function saveToMmm(data) {
   const { page, activities } = data;
   activities.filter((activity) => {
     const { url, source } = activity;
-    if (!url.includes('/drafts/') && source.length) return true;
-    return false;
+    return (!url.includes('/drafts/') && source?.length);
   });
   if (!activities.length) return false;
   activities.map((activity) => {

@@ -807,7 +807,6 @@ const createDefaultExperiment = (manifest) => ({
   selectedVariantName: 'default',
   variantNames: ['all'],
   variants: {},
-  source: ['promo'],
 });
 
 export const addMepAnalytics = (config, header) => {
