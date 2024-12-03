@@ -243,7 +243,7 @@ function addMepPopupListeners(popup) {
     });
   });
 }
-export function getMepPopup(manifests) {
+export function getMepPopup(manifests, mmm = false) {
   const { manifestList, manifestParameter } = getManifestListDomAndParameter(manifests);
   const config = getConfig();
   let targetOnText = config.mep.targetEnabled ? 'on' : 'off';
@@ -255,7 +255,7 @@ export function getMepPopup(manifests) {
   let mepHighlightChecked = '';
   if (config.mep?.highlight) {
     mepHighlightChecked = 'checked="checked"';
-    document.body.dataset.mepHighlight = true;
+    if (!mmm) document.body.dataset.mepHighlight = true;
   }
   const PREVIEW_BUTTON_ID = 'preview-button';
   const mepPopup = createTag('div', { class: 'mep-popup' });
@@ -288,7 +288,6 @@ export function getMepPopup(manifests) {
   const mepManifestPreviewButton = createTag('div', { class: 'dark' });
   mepManifestPreviewButton.innerHTML = `
     <a class="con-button outline button-l" data-id="${PREVIEW_BUTTON_ID}" title="Preview above choices">Preview</a>`;
-
   mepPopupHeader.innerHTML = `
     <div>
       <h4>${manifests?.length || 0} Manifest(s) served</h4>
@@ -298,20 +297,18 @@ export function getMepPopup(manifests) {
         <div>Personalization feature is ${personalizationOnText}</div>
         <div>Page's Prefix/Region/Locale are ${config.mep.geoPrefix} / ${config.locale.region} / ${config.locale.ietf}</div>
     </div>`;
-
   mepManifestList.innerHTML = manifestList;
   if (listInfo) mepManifestList.prepend(listInfo);
   if (advancedOptions) mepManifestList.append(advancedOptions);
-
   mepPopup.append(mepPopupHeader);
   mepPopup.append(mepManifestList);
   mepPopup.append(mepManifestPreviewButton);
   const previewButton = mepPopup.querySelector(`a[data-id="${PREVIEW_BUTTON_ID}"]`);
-
   if (previewButton) previewButton.href = simulateHref.href;
   addMepPopupListeners(mepPopup);
   return mepPopup;
 }
+
 function createPreviewPill(manifests) {
   const overlay = createTag('div', { class: 'mep-preview-overlay static-links', style: 'display: none;' });
   const pill = document.createElement('div');
@@ -374,8 +371,6 @@ export default async function decoratePreviewMode() {
   const { miloLibs, codeRoot, mep } = getConfig();
   // saveToMmm(mepConfig);
   loadStyle(`${miloLibs || codeRoot}/features/personalization/preview.css`);
-  console.log('mep.experiments', mep.experiments);
-  console.log('mepConfig.activities', mepConfig.activities);
 
   createPreviewPill(mepConfig.activities);
   if (mep?.experiments) addHighlightData(mep.experiments);
