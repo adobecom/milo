@@ -3,11 +3,10 @@
   margin-top: 10vh;
   max-width: 60%;
   border-radius: 10px;
-  border: 10px solid #eee;
+  border: 10px solid var(--color-gray-200);
   padding: 10px 30px 30px;
 }
 
 .locui-create .goto-step {
-  margin-top: 0;
-  margin-bottom: 0;
+  margin: 0;
 }
