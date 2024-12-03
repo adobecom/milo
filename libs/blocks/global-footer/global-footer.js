@@ -302,7 +302,7 @@ class Footer {
             aria-label="${platform}"
             daa-ll="${getAnalyticsValue(platform, index + 1)}"
             target="_blank">
-            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="feds-social-icon" logo">
+            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="feds-social-icon">
               <use href="#footer-icon-${platform}" />
             </svg>
           </a>
