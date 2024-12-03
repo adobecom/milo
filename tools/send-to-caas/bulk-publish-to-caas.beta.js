@@ -21,7 +21,7 @@ const SIGNEDIN = BODY.querySelector('.status-signed-in');
 const SIGNEDOUT = BODY.querySelector('.status-signed-out');
 
 const LS_KEY = 'bulk-publish-caas';
-const FIELDS = ['presetSelector', 'host', 'repo', 'owner', 'caasEnvSelector', 'urls', 'contentType', 'publishToFloodgate'];
+const FIELDS = ['presetSelector', 'host', 'repo', 'owner', 'caasEnv', 'urls', 'contentType', 'publishToFloodgate'];
 const FIELDS_CB = ['draftOnly', 'useHtml', 'usePreview'];
 const DEFAULT_VALUES = {
   preset: 'default',
@@ -306,10 +306,7 @@ const loadFromLS = () => {
 
 const publishWarning = document.querySelector('.publish-warning');
 const checkCaasEnv = () => {
-  // eslint-disable-next-line no-undef
-  const caasEnvValue = caasEnvSelector.value || 'prod';
-  // eslint-disable-next-line no-undef
-  if (caasEnvValue === 'prod' && !draftOnly.checked) {
+  if (caasEnv.value  === 'prod' && !draftOnly.checked) {
     publishWarning.style.height = '30px';
   } else {
     publishWarning.style.height = '0';
@@ -334,7 +331,7 @@ fetchExcelJson(presetsJsonPath).then((presets) => {
 
 const resetAdvancedOptions = () => {
   /* eslint-disable no-undef */
-  caasEnvSelector.value = 'prod';
+  caasEnv.value = 'prod';
   contentType.value = 'auto';
   draftOnly.checked = false;
   useHtml.checked = false;
@@ -380,17 +377,16 @@ presetSelector.addEventListener('change', () => {
   const ls = localStorage.getItem(LS_KEY);
   const config = ls ? JSON.parse(ls) : {};
   config.presetSelector = selectedPreset.id || 'default';
+  config.caasEnv = caasEnv.value,
   config.host = selectedPreset.host || '';
   config.owner = selectedPreset.owner || '';
   config.repo = selectedPreset.repo || '';
   config.useHtml = selectedPreset.useHtml === 'true';
-  console.log('selectedPreset.contentType', selectedPreset);
   if (selectedPreset.contentType === '' || selectedPreset.contentType?.toLowerCase() === 'auto') {
     config.contentType = "auto";
   } else {
     config.contentType = selectedPreset.contentType;
   }
-  console.log('setting content type', config.contentType);
 
   setConfig(config);
   window.localStorage.setItem(LS_KEY, JSON.stringify(getConfig()));
@@ -407,7 +403,7 @@ clearResultsButton.addEventListener('click', () => {
 });
 
 // eslint-disable-next-line no-undef
-caasEnvSelector.addEventListener('change', () => {
+caasEnv.addEventListener('change', () => {
   checkCaasEnv();
 });
 
@@ -493,7 +489,7 @@ helpButtons.forEach((btn) => {
       case 'use-preview':
         showAlert(`<p><b>Use Preview Content</b>
           <p>When this option is checked, the tool will publish content from:
-          <p><tt>https://main--{repo}--{owner}.hlx.<b>page</b></tt>
+          <p><tt>https://stage--{repo}--{owner}.hlx.<b>page</b></tt>
           <p>This can be useful for testing before publishing to production.</p>`);
         break;
 
@@ -534,13 +530,13 @@ const init = async () => {
     window.localStorage.setItem(LS_KEY, JSON.stringify(getConfig()));
   });
 
-  const bulkPublishBtn = document.querySelector('#bulkpublish'); 
+  const bulkPublishBtn = document.querySelector('#bulkpublish');
   bulkPublishBtn.addEventListener('click', () => {
     setConfig({
       host: document.getElementById('host').value,
       project: '',
       branch: 'main',
-      caasEnv: document.getElementById('caasEnvSelector').value || 'prod',
+      caasEnv: document.getElementById('caasEnv').value || 'prod',
       contentType: document.getElementById('contentType').value,
       repo: document.getElementById('repo').value,
       owner: document.getElementById('owner').value,

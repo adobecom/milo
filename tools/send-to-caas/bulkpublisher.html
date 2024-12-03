@@ -9,9 +9,14 @@
         text-align: right;
         padding: 8px;
         color: white;
+        animation: slide-bg 1.5s;
       }
       .bpv2 a {
         color: white;
+      }
+      @keyframes slide-bg {
+        from {background-position: -1600px}
+        to {background-position: 0}
       }
     </style>
   </head>
@@ -19,7 +24,7 @@
   <body>
     <div class="bulk-publisher">
       <p class="bpv2">
-        Try the new <a href="./bulkpublisher.beta.html">CaaS Bulk Publisher v2 (beta)</a>
+        Try the new <a href="./bulkpublisher.beta.html">CaaS Bulk Publisher v2 (Beta)</a>
       </p>
       <div class="main">
         <div class="options-panel">
