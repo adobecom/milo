@@ -13,14 +13,6 @@ class References {
     this.requestHandler = new RequestHandler(accessToken);
   }
 
-  static isReferencedAsset(link, baseUrlOrigin) {
-    return link && link.includes(baseUrlOrigin) && (link.endsWith('.svg') || link.endsWith('.pdf'));
-  }
-
-  static isLocalFragment(link, baseUrlOrigin) {
-    return link && link.includes(baseUrlOrigin) && link.includes('/fragments/');
-  }
-
   isValidReference(link) {
     return !!(link && link.match(this.referencePattern));
   }
