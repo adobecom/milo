@@ -174,7 +174,7 @@
   margin: 0;
 }
 
-.mep-popup::before {
+.mep-popup.in-page::before {
   content: '';
   width: 0;
   height: 0;
