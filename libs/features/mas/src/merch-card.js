@@ -43,6 +43,7 @@ export class MerchCard extends LitElement {
         actionMenu: { type: Boolean, attribute: 'action-menu' },
         customHr: { type: Boolean, attribute: 'custom-hr' },
         consonant: { type: Boolean, attribute: 'consonant' },
+        spectrum: { type: String, attribute: 'spectrum' }, /* css|swc */
         detailBg: { type: String, attribute: 'detail-bg' },
         secureLabel: { type: String, attribute: 'secure-label' },
         checkboxLabel: { type: String, attribute: 'checkbox-label' },
@@ -113,6 +114,7 @@ export class MerchCard extends LitElement {
         this.filters = {};
         this.types = '';
         this.selected = false;
+        this.spectrum = 'css';
         this.handleAemFragmentEvents = this.handleAemFragmentEvents.bind(this);
     }
 

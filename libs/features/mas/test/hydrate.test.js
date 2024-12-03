@@ -1,5 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
+import '../../spectrum-web-components/dist/button.js';
 import mas from './mas.js';
 import {
     hydrate,
@@ -113,7 +114,7 @@ describe('processCTAs', async () => {
         expect(merchCard.append.called).to.be.false;
     });
 
-    it('should create spectrum buttons when merchCard.consonant is false', async () => {
+    it('should create spectrum css buttons by default', async () => {
         const fields = {
             ctas: '<a is="checkout-link" data-wcs-osi="abm" class="accent">Click me</a>',
         };
@@ -128,7 +129,30 @@ describe('processCTAs', async () => {
 
         const button = footer.firstChild;
         expect(button.tagName.toLowerCase()).to.equal('button');
-        expect(button.className).to.equal('spectrum-Button spectrum-Button--accent');
+        expect(button.className).to.equal(
+            'spectrum-Button spectrum-Button--accent',
+        );
+    });
+
+    it('should create spectrum wc buttons when merchCard.spectrum="swc"', async () => {
+        const fields = {
+            ctas: '<a is="checkout-link" data-wcs-osi="abm" class="accent">Click me</a>',
+        };
+        merchCard.spectrum = 'swc';
+        processCTAs(fields, merchCard, aemFragmentMapping);
+
+        const appendCall = merchCard.append.firstCall;
+        expect(appendCall).to.exist;
+
+        const footer = appendCall.args[0];
+        expect(footer.getAttribute('slot')).to.equal('footer');
+
+        const button = footer.firstChild;
+        expect(button.tagName.toLowerCase()).to.equal('sp-button');
+        expect(button.treatment).to.equal('fill');
+        expect(button.variant).to.equal('accent');
+        expect(button.getAttribute('tabindex')).to.equal('0');
+        expect(button.size).to.equal('m');
     });
 
     it('should create consonant buttons when merchCard.consonant is true', async () => {
@@ -164,9 +188,15 @@ describe('processCTAs', async () => {
         const buttons = footer.children;
         expect(buttons).to.have.lengthOf(3);
 
-        expect(buttons[0].className).to.equal('spectrum-Button spectrum-Button--accent');
-        expect(buttons[1].className).to.equal('spectrum-Button spectrum-Button--primary');
-        expect(buttons[2].className).to.equal('spectrum-Button spectrum-Button--secondary');
+        expect(buttons[0].className).to.equal(
+            'spectrum-Button spectrum-Button--accent',
+        );
+        expect(buttons[1].className).to.equal(
+            'spectrum-Button spectrum-Button--primary',
+        );
+        expect(buttons[2].className).to.equal(
+            'spectrum-Button spectrum-Button--secondary',
+        );
     });
 
     it('should handle strong wrapped CTAs', async () => {
@@ -178,7 +208,9 @@ describe('processCTAs', async () => {
 
         const footer = merchCard.append.firstCall.args[0];
         const button = footer.firstChild;
-        expect(button.className).to.equal('spectrum-Button spectrum-Button--accent');
+        expect(button.className).to.equal(
+            'spectrum-Button spectrum-Button--accent',
+        );
     });
 
     it('should handle outline CTAs', async () => {
@@ -190,7 +222,9 @@ describe('processCTAs', async () => {
 
         const footer = merchCard.append.firstCall.args[0];
         const button = footer.firstChild;
-        expect(button.className).to.equal('spectrum-Button spectrum-Button--accent spectrum-Button--outline');
+        expect(button.className).to.equal(
+            'spectrum-Button spectrum-Button--accent spectrum-Button--outline',
+        );
     });
 
     it('should handle link-style CTAs', async () => {

@@ -133,33 +133,7 @@ function processDescription(fields, merchCard, descriptionConfig) {
     }
 }
 
-function createSpectrumButton(cta, strong, aemFragmentMapping, cardVariant) {
-    if (cardVariant === 'ccd-suggested' && !cta.className) {
-        cta.className = 'primary-link'; //workaround for existing ccd-suggested cards
-    }
-    const checkoutLinkStyle =
-        CHECKOUT_LINK_STYLE_PATTERN.exec(cta.className)?.[0] ?? 'accent';
-    const isAccent = checkoutLinkStyle.includes('accent');
-    const isPrimary = checkoutLinkStyle.includes('primary');
-    const isSecondary = checkoutLinkStyle.includes('secondary');
-    const isOutline = checkoutLinkStyle.includes('-outline');
-    const isLink = checkoutLinkStyle.includes('-link');
-
-    if (isLink) {
-        return cta;
-    }
-
-    let variant;
-
-    if (isAccent || strong) {
-        variant = 'accent';
-    } else if (isPrimary) {
-        variant = 'primary';
-    } else if (isSecondary) {
-        variant = 'secondary';
-    }
-
-    cta.tabIndex = -1;
+function createSpectrumCssButton(cta, aemFragmentMapping, isOutline, variant) {
     const size = aemFragmentMapping.ctas.size ?? 'M';
     const variantClass = `spectrum-Button--${variant}`;
     const treatmentClass = isOutline ? ' spectrum-Button--outline' : '';
@@ -172,6 +146,34 @@ function createSpectrumButton(cta, strong, aemFragmentMapping, cardVariant) {
         {
             class: spectrumClass,
             tabIndex: 0,
+        },
+        cta,
+    );
+
+    spectrumCta.addEventListener('click', (e) => {
+        if (e.target !== cta) {
+            /* c8 ignore next 3 */
+            e.stopPropagation();
+            cta.click();
+        }
+    });
+
+    return spectrumCta;
+}
+
+function createSpectrumSwcButton(cta, aemFragmentMapping, isOutline, variant) {
+    let treatment = 'fill';
+
+    if (isOutline) {
+        treatment = 'outline';
+    }
+    const spectrumCta = createTag(
+        'sp-button',
+        {
+            treatment,
+            variant,
+            tabIndex: 0,
+            size: aemFragmentMapping.ctas.size ?? 'm',
         },
         cta,
     );
@@ -202,14 +204,40 @@ export function processCTAs(fields, merchCard, aemFragmentMapping, variant) {
 
         const ctas = [...footer.querySelectorAll('a')].map((cta) => {
             const strong = cta.parentElement.tagName === 'STRONG';
-            return merchCard.consonant
-                ? processConsonantButton(cta, strong)
-                : createSpectrumButton(
-                      cta,
-                      strong,
-                      aemFragmentMapping,
-                      variant,
-                  );
+            if (merchCard.consonant) return processConsonantButton(cta, strong);
+            const checkoutLinkStyle =
+                CHECKOUT_LINK_STYLE_PATTERN.exec(cta.className)?.[0] ??
+                'accent';
+            const isAccent = checkoutLinkStyle.includes('accent');
+            const isPrimary = checkoutLinkStyle.includes('primary');
+            const isSecondary = checkoutLinkStyle.includes('secondary');
+            const isOutline = checkoutLinkStyle.includes('-outline');
+            const isLink = checkoutLinkStyle.includes('-link');
+            if (isLink) {
+                return cta;
+            }
+            let variant;
+            if (isAccent || strong) {
+                variant = 'accent';
+            } else if (isPrimary) {
+                variant = 'primary';
+            } else if (isSecondary) {
+                variant = 'secondary';
+            }
+            cta.tabIndex = -1;
+            if (merchCard.spectrum === 'swc')
+                return createSpectrumSwcButton(
+                    cta,
+                    aemFragmentMapping,
+                    isOutline,
+                    variant,
+                );
+            return createSpectrumCssButton(
+                cta,
+                aemFragmentMapping,
+                isOutline,
+                variant,
+            );
         });
 
         footer.innerHTML = '';
