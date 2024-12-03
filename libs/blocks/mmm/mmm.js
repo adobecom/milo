@@ -39,33 +39,47 @@ function searchFromWindowUrl() {
 
 // param methods
 function buildSharableLink() {
-  const newUrlQueryParam = [];
-  const type = document.querySelector('.tab-list-container button[aria-selected="true"]').innerHTML;
-  newUrlQueryParam.push(`type=${type}`);
-  if (type === 'Dropdown') {
-    const geoValue = `&geo=${document.querySelector('select#mmm-search-geo').value}`;
-    const topPageValue = `&page=${document.querySelector('select#mmm-search-page').value}`;
-    newUrlQueryParam.push(geoValue, topPageValue);
-  } else {
-    const query = document.querySelector('#mmm-search-input').value;
-    if (query) newUrlQueryParam.push(`q=${query}`);
-  }
-  console.log(`sharable link no encoding= ?${newUrlQueryParam.join('&')}`);
-  const sharableLink = encodeURIComponent(newUrlQueryParam.join('&'));
-  console.log(`sharable link= ${sharableLink}`);
+  // runs only on button click
+
+  // const newUrlQueryParam = [];
+  // const type = document.querySelector('.tab-list-container button[aria-selected="true"]').innerHTML;
+  // newUrlQueryParam.push(`type=${type}`);
+  // if (type === 'Dropdown') {
+  //   const geoValue = `&geo=${document.querySelector('select#mmm-search-geo').value}`;
+  //   const topPageValue = `&page=${document.querySelector('select#mmm-search-page').value}`;
+  //   newUrlQueryParam.push(geoValue, topPageValue);
+  // } else {
+  //   const query = document.querySelector('#mmm-search-input').value;
+  //   if (query) newUrlQueryParam.push(`q=${query}`);
+  // }
+  // console.log(`sharable link no encoding= ?${newUrlQueryParam.join('&')}`);
+  // const sharableLink = encodeURIComponent(newUrlQueryParam.join('&'));
+  // console.log(`sharable link= ${sharableLink}`);
+
+  // OR this is prob better
+  const urlObj = window.location;
+  const newDomain = new URL(urlObj.protocol + urlObj.host + urlObj.pathname);
+  const sharableLinkParams = {};
+
+  sharableLinkParams.type = document.querySelector('.tab-list-container button[aria-selected="true"]').innerHTML;
+  if (sharableLinkParams.type === 'Dropdown') {
+    sharableLinkParams.geo = document.querySelector('select#mmm-search-geo').value;
+    sharableLinkParams.topPage = document.querySelector('select#mmm-search-page').value;
+  } else sharableLinkParams.q = document.querySelector('#mmm-search-input').value;
+
+  newDomain.search = new URLSearchParams(sharableLinkParams).toString();
+  const sharableLink = newDomain.toString();
+  console.log(`new sharable link: ${sharableLink}`);
 }
 function searchFromWindowParameters() {
   const searchParams = new URLSearchParams(decodeURIComponent(window.location.search));
   const newValuesToBuild = {};
-  if (searchParams.get('type') === 'Dropdown') {
-    newValuesToBuild.type = 'Dropdown';
+  newValuesToBuild.type = searchParams.get('type');
+  if (newValuesToBuild.type === 'Dropdown') {
     newValuesToBuild.geo = searchParams.get('geo');
     newValuesToBuild.page = searchParams.get('page');
-  } else {
-    newValuesToBuild.type = 'Search';
-    newValuesToBuild.q = searchParams.get('q');
-  }
-  return newValuesToBuild;
+  } else newValuesToBuild.q = searchParams.get('q');
+  return Object.keys(newValuesToBuild).length > 1 ? newValuesToBuild : null;
 }
 
 function handleClick(el, dd) {
@@ -193,7 +207,7 @@ async function createForms(sharedUrlSettings) {
 }
 
 export default async function init(el) {
-  if (debugVersion === 'params') {
+  if (debugVersion === 'params' && window.location.search.length !== 0) {
     const urlParamSettings = window.location.search ? searchFromWindowParameters() : null;
     console.log(urlParamSettings);
     createForms(urlParamSettings);
