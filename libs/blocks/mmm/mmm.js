@@ -4,9 +4,10 @@ import { createPanelContents } from '../../features/personalization/preview.js';
 
 const debugVersion = 'params'; // hash or params
 
+const API_DOMAIN = 'https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-2.on.aws';
 const API_URLS = {
-  pageList: '/libs/blocks/mmm/pageList.json',
-  pageDetails: '/libs/blocks/mmm/pageDetails.json',
+  pageList: `${API_DOMAIN}/get-pages`,
+  pageDetails: `${API_DOMAIN}/get-page?id=`,
 };
 
 // hash methods
@@ -207,6 +208,7 @@ export default async function init(el) {
   });
   mmmElContainer.append(mmmEl);
   const pageList = await fetchData(API_URLS.pageList, DATA_TYPE.JSON);
+  // const pageList = await apiCall(API_URLS.page, {});
   pageList.map((page) => createButtonDetailsPair(mmmEl, page));
   el.remove();
   const section = createTag('div', { id: 'mep-section', class: 'section' });
@@ -217,6 +219,8 @@ export default async function init(el) {
     if (!window.location.hash.length) return;
     searchFromWindowUrl();
   }
+  const page1Details = await fetchData(`${API_URLS.pageDetails}1`, DATA_TYPE.JSON);
+  console.log(page1Details);
 }
 /*
 todo:
