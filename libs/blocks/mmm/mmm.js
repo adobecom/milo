@@ -171,7 +171,7 @@ async function createForms(sharedUrlSettings) {
   const dropdownContainer = document.querySelector('.section-metadata.dropdowns');
   dropdownContainer.parentNode.insertBefore(doc, dropdownContainer);
   // insert default for 2 dropdowns here
-  if (sharedUrlSettings && sharedUrlSettings.type === 'Dropdown') {
+  if (sharedUrlSettings?.type === 'Dropdown') {
     document.querySelector(`#mmm-search-geo [value="${sharedUrlSettings.geo}"]`).setAttribute('selected', 'selected');
     document.querySelector(`#mmm-search-page [value="${sharedUrlSettings.page}"]`).setAttribute('selected', 'selected');
   }
@@ -182,8 +182,8 @@ async function createForms(sharedUrlSettings) {
   const searchForm = document.querySelector('#mmm-search-input-container');
   searchContainer.parentNode.insertBefore(searchForm, searchContainer);
   // insert default for q value here
-  if (sharedUrlSettings && sharedUrlSettings.type === 'Search') {
-    searchForm.value = sharedUrlSettings.q;
+  if (sharedUrlSettings?.type === 'Search') {
+    searchForm.querySelector('input').value = sharedUrlSettings.q;
   }
   searchForm.addEventListener('keyup', searchFilterByInput);
   searchForm.addEventListener('change', searchFilterByInput);
@@ -214,7 +214,7 @@ export default async function init(el) {
   section.append(mmmElContainer);
   main.append(section);
   if (debugVersion === 'hash') {
-    if (!window.location.hash) return;
+    if (!window.location.hash.length) return;
     searchFromWindowUrl();
   }
 }
