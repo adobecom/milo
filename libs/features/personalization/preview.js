@@ -351,6 +351,32 @@ function addHighlightData(manifests) {
 }
 
 async function saveToMmm(data) {
+  if (data.page.url.includes('/drafts/')) return false;
+  const { page, activities } = data;
+  activities.filter((activity) => {
+    const { url, source } = activity;
+    return (!url.includes('/drafts/') && source?.length);
+  });
+  if (!activities.length) return false;
+  activities.map((activity) => {
+    activity.eventStart = activity.event?.start ? activity.event?.start.toLocaleString() : '';
+    activity.eventEnd = activity.event?.end ? activity.event?.end.toLocaleString() : '';
+    delete activity.selectedVariantName;
+    delete activity.event;
+    delete activity.disabled;
+    activity.variantNames = activity.variantNames.join('||');
+    activity.source = activity.source.join(',');
+    const manifestUrl = new URL(activity.url);
+    activity.pathname = manifestUrl.pathname;
+    return activity;
+  });
+  page.url = page.url.replace('stage.adobe.com', 'adobe.com').replace('/homepage/index-loggedout', '/');
+  page.pathname = page.pathname.replace('/homepage/index-loggedout', '/');
+  if (page.url.includes('adobe.com')
+    && !page.url.endsWith('/')
+    && !page.url.includes('milo.adobe.com')) {
+    page.url += '.html';
+  }
   return fetch('https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-2.on.aws/save-mep-call', {
     method: 'POST',
     headers: {
@@ -369,9 +395,9 @@ async function saveToMmm(data) {
 export default async function decoratePreviewMode() {
   const mepConfig = parseMepConfig();
   const { miloLibs, codeRoot, mep } = getConfig();
-  // saveToMmm(mepConfig);
   loadStyle(`${miloLibs || codeRoot}/features/personalization/preview.css`);
 
   createPreviewPill(mepConfig.activities);
   if (mep?.experiments) addHighlightData(mep.experiments);
+  saveToMmm(mepConfig);
 }
