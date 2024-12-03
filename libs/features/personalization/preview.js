@@ -1,15 +1,15 @@
 import { createTag, getConfig, getMetadata, loadStyle } from '../../utils/utils.js';
 import { TRACKED_MANIFEST_TYPE, getFileName } from './personalization.js';
 
-function updatePreviewButton() {
-  const selectedInputs = document.querySelectorAll(
-    '.mep-popup input[type="radio"]:checked, .mep-popup input[type="text"]',
+function updatePreviewButton(popup) {
+  const selectedInputs = popup.querySelectorAll(
+    'input[type="radio"]:checked, .mep-popup input[type="text"]',
   );
   const manifestParameter = [];
 
   selectedInputs.forEach((selected) => {
     let { value } = selected;
-    if (selected.getAttribute('id') === 'new-manifest') {
+    if (selected.classList.contains('new-manifest')) {
       if (selected.value !== '') {
         try {
           const newManifest = new URL(value);
@@ -89,62 +89,74 @@ async function getEditManifestUrl(a, w) {
 }
 
 function addPillEventListeners(div) {
-  div.querySelectorAll('.mep-popup input[type="radio"], .mep-popup input[type="checkbox"]').forEach((input) => {
-    input.addEventListener('change', updatePreviewButton);
-  });
-
-  div.querySelectorAll('.mep-popup input[type="text"]').forEach((input) => {
-    input.addEventListener('keyup', updatePreviewButton);
-  });
-
   div.querySelector('.mep-manifest.mep-badge').addEventListener('click', () => {
     div.classList.toggle('mep-hidden');
   });
-
   div.querySelector('.mep-close').addEventListener('click', () => {
     document.body.removeChild(document.querySelector('.mep-preview-overlay'));
   });
-
-  div.querySelector('.mep-toggle-advanced').addEventListener('click', () => {
-    document.querySelector('.mep-advanced-container').classList.toggle('mep-advanced-open');
-  });
-
-  div.querySelectorAll('a[data-manifest-path]').forEach((a) => {
-    a.addEventListener('click', () => {
-      if (a.getAttribute('href')) return false;
-      const w = window.open('', '_blank');
-      w.document.write(`<html><head></head><body>
-        Please wait while we redirect you. 
-        If you are not redirected, please check that you are signed into the AEM sidekick
-        and try again.
-        </body></html>`);
-      w.document.close();
-      w.focus();
-      getEditManifestUrl(a, w);
-      return true;
-    });
-  });
 }
 
+function parseMepConfig() {
+  const config = getConfig();
+  const { mep, locale, stageDomainsMap } = config;
+  const { experiments, targetEnabled, geoPrefix } = mep;
+  const activities = experiments.map((experiment) => {
+    const {
+      name, variantNames, event, disabled, manifest, source, selectedVariantName,
+      manifestType, manifestOverrideName,
+    } = experiment;
+    // const manifestUrl = new URL(manifest);
+    return {
+      name,
+      variantNames,
+      selectedVariantName,
+      url: manifest,
+      event,
+      disabled,
+      manifest,
+      manifestType,
+      manifestOverrideName,
+      // url: manifestUrl.href,
+      // pathname: manifestUrl.pathname,
+      source,
+    };
+  });
+  const { pathname, origin } = window.location;
+  let url = `www.adobe.com${pathname}`;
+  if (origin.includes('.adobe.com')) url = `${origin.replace('.stage.', '')}${pathname}`;
+  if (origin.includes('--adobecom.hlx.') && stageDomainsMap) {
+    const domain = Object.keys(stageDomainsMap).find((key) => key.includes('.adobe.com'));
+    if (domain) url = `${domain}${pathname}`;
+  }
+  return {
+    page: {
+      url: `https://${url}`,
+      pathname,
+      target: targetEnabled ? 'on' : 'off',
+      personalization: (getMetadata('personalization')) ? 'on' : 'off',
+      prefix: geoPrefix === 'en-us' ? '' : geoPrefix,
+      locale: locale.ietf,
+    },
+    activities,
+  };
+}
 export function createPanelContents(url) {
   return `<div>Hello World: ${url}</div>`;
 }
-function createPreviewPill(manifests) {
-  const overlay = createTag('div', { class: 'mep-preview-overlay static-links', style: 'display: none;' });
-  document.body.append(overlay);
-  const div = document.createElement('div');
-  div.classList.add('mep-hidden');
+
+function getManifestListDomAndParameter(manifests) {
   let manifestList = '';
   const manifestParameter = [];
   manifests?.forEach((manifest) => {
     const {
       variantNames,
-      manifestPath = manifest.manifest,
+      manifestPath = manifest.url,
       selectedVariantName,
-      name,
       manifestType,
       manifestUrl,
       manifestOverrideName,
+      name,
     } = manifest;
     const editUrl = manifestUrl || manifestPath;
     let radio = '';
@@ -203,6 +215,36 @@ function createPreviewPill(manifests) {
       <div class="mep-manifest-variants">${radio}</div>
     </div>`;
   });
+  return { manifestList, manifestParameter };
+}
+function addMepPopupListeners(popup) {
+  popup.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach((input) => {
+    input.addEventListener('change', updatePreviewButton.bind(null, popup));
+  });
+  popup.querySelectorAll('input[type="text"]').forEach((input) => {
+    input.addEventListener('keyup', updatePreviewButton.bind(null, popup));
+  });
+  popup.querySelector('.mep-toggle-advanced').addEventListener('click', () => {
+    document.querySelector('.mep-advanced-container').classList.toggle('mep-advanced-open');
+  });
+  popup.querySelectorAll('a[data-manifest-path]').forEach((a) => {
+    a.addEventListener('click', () => {
+      if (a.getAttribute('href')) return false;
+      const w = window.open('', '_blank');
+      w.document.write(`<html><head></head><body>
+          Please wait while we redirect you. 
+          If you are not redirected, please check that you are signed into the AEM sidekick
+          and try again.
+          </body></html>`);
+      w.document.close();
+      w.focus();
+      getEditManifestUrl(a, w);
+      return true;
+    });
+  });
+}
+export function getMepPopup(manifests, mmm = false) {
+  const { manifestList, manifestParameter } = getManifestListDomAndParameter(manifests);
   const config = getConfig();
   let targetOnText = config.mep.targetEnabled ? 'on' : 'off';
   if (config.mep.targetEnabled === 'postlcp') targetOnText = 'on post LCP';
@@ -210,47 +252,29 @@ function createPreviewPill(manifests) {
   const personalizationOnText = personalizationOn && personalizationOn !== '' ? 'on' : 'off';
   const simulateHref = new URL(window.location.href);
   simulateHref.searchParams.set('mep', manifestParameter.join('---'));
-
   let mepHighlightChecked = '';
   if (config.mep?.highlight) {
     mepHighlightChecked = 'checked="checked"';
-    document.body.dataset.mepHighlight = true;
+    if (!mmm) document.body.dataset.mepHighlight = true;
   }
-
   const PREVIEW_BUTTON_ID = 'preview-button';
+  const mepPopup = createTag('div', { class: 'mep-popup' });
+  const mepPopupHeader = createTag('div', { class: 'mep-popup-header' });
+  const listInfo = createTag('div', { class: 'mep-manifest-info' });
+  const advancedOptions = createTag('div', { class: 'mep-advanced-container' });
+  const mepManifestList = createTag('div', { class: 'mep-manifest-list' });
 
-  div.innerHTML = `
-    <div class="mep-manifest mep-badge">
-      <span class="mep-open"></span>
-      <div class="mep-manifest-count">${manifests?.length || 0} Manifest(s) served</div>
-    </div>
-    <div class="mep-popup">
-      <div class="mep-popup-header">
-        <div>
-          <h4>${manifests?.length || 0} Manifest(s) served</h4>
-          <span class="mep-close"></span>
-          <div class="mep-manifest-page-info-title">Page Info:</div>
-          <div>Target integration feature is ${targetOnText}</div>
-          <div>Personalization feature is ${personalizationOnText}</div>
-          <div>Page's Prefix/Region/Locale are ${config.mep.geoPrefix} / ${config.locale.region} / ${config.locale.ietf}</div>
-        </div>
-      </div>
-      <div class="mep-manifest-list">
-        <div class="mep-manifest-info">
-          <div class="mep-manifest-variants">
-            <input type="checkbox" name="mepHighlight" id="mepHighlightCheckbox" ${mepHighlightChecked} value="true"> <label for="mepHighlightCheckbox">Highlight changes</label>
-          </div>
-        </div>
-        ${manifestList}
-        <div class="mep-advanced-container">
-          <div class="mep-toggle-advanced">Advanced options</div>
-          <div class="mep-manifest-info mep-advanced-options">
-            <div>
-              Optional: new manifest location or path
-            </div>
+  listInfo.innerHTML = `
+    <div class="mep-manifest-variants">
+      <input type="checkbox" name="mepHighlight" id="mepHighlightCheckbox" ${mepHighlightChecked} value="true"> <label for="mepHighlightCheckbox">Highlight changes</label>
+    </div>`;
+  advancedOptions.innerHTML = `
+    <div class="mep-toggle-advanced">Advanced options</div>
+      <div class="mep-manifest-info mep-advanced-options">
+        <div>Optional: new manifest location or path</div>
             <div class="mep-manifest-variants">
               <div>
-                <input type="text" name="new-manifest" id="new-manifest">
+                <input type="text" name="new-manifest" class="new-manifest">
               </div>
             </div>
           </div>
@@ -259,19 +283,45 @@ function createPreviewPill(manifests) {
               <input type="checkbox" name="mepPreviewButtonCheckbox" id="mepPreviewButtonCheckbox" value="off"> <label for="mepPreviewButtonCheckbox">add mepButton=off to preview link</label>
             </div>
           </div>
-        </div>
-      </div>
-      <div class="dark">
-        <a class="con-button outline button-l" data-id="${PREVIEW_BUTTON_ID}" title="Preview above choices">Preview</a>
-      </div>
+        </div>`;
+
+  const mepManifestPreviewButton = createTag('div', { class: 'dark' });
+  mepManifestPreviewButton.innerHTML = `
+    <a class="con-button outline button-l" data-id="${PREVIEW_BUTTON_ID}" title="Preview above choices">Preview</a>`;
+  mepPopupHeader.innerHTML = `
+    <div>
+      <h4>${manifests?.length || 0} Manifest(s) served</h4>
+        <span class="mep-close"></span>
+        <div class="mep-manifest-page-info-title">Page Info:</div>
+        <div>Target integration feature is ${targetOnText}</div>
+        <div>Personalization feature is ${personalizationOnText}</div>
+        <div>Page's Prefix/Region/Locale are ${config.mep.geoPrefix} / ${config.locale.region} / ${config.locale.ietf}</div>
     </div>`;
-
-  const previewButton = div.querySelector(`a[data-id="${PREVIEW_BUTTON_ID}"]`);
-
+  mepManifestList.innerHTML = manifestList;
+  if (listInfo) mepManifestList.prepend(listInfo);
+  if (advancedOptions) mepManifestList.append(advancedOptions);
+  mepPopup.append(mepPopupHeader);
+  mepPopup.append(mepManifestList);
+  mepPopup.append(mepManifestPreviewButton);
+  const previewButton = mepPopup.querySelector(`a[data-id="${PREVIEW_BUTTON_ID}"]`);
   if (previewButton) previewButton.href = simulateHref.href;
+  addMepPopupListeners(mepPopup);
+  return mepPopup;
+}
 
-  overlay.append(div);
-  addPillEventListeners(div);
+function createPreviewPill(manifests) {
+  const overlay = createTag('div', { class: 'mep-preview-overlay static-links', style: 'display: none;' });
+  const pill = document.createElement('div');
+  pill.classList.add('mep-hidden');
+  const mepBadge = createTag('div', { class: 'mep-manifest mep-badge' });
+  mepBadge.innerHTML = `
+   <span class="mep-open"></span>
+      <div class="mep-manifest-count">${manifests?.length || 0} Manifest(s) served</div>`;
+  pill.append(mepBadge);
+  pill.append(getMepPopup(manifests));
+  overlay.append(pill);
+  document.body.append(overlay);
+  addPillEventListeners(pill);
 }
 
 function addHighlightData(manifests) {
@@ -300,9 +350,54 @@ function addHighlightData(manifests) {
   });
 }
 
+async function saveToMmm(data) {
+  if (data.page.url.includes('/drafts/')) return false;
+  const { page, activities } = data;
+  activities.filter((activity) => {
+    const { url, source } = activity;
+    return (!url.includes('/drafts/') && source?.length);
+  });
+  if (!activities.length) return false;
+  activities.map((activity) => {
+    activity.eventStart = activity.event?.start ? activity.event?.start.toLocaleString() : '';
+    activity.eventEnd = activity.event?.end ? activity.event?.end.toLocaleString() : '';
+    delete activity.selectedVariantName;
+    delete activity.event;
+    delete activity.disabled;
+    activity.variantNames = activity.variantNames.join('||');
+    activity.source = activity.source.join(',');
+    const manifestUrl = new URL(activity.url);
+    activity.pathname = manifestUrl.pathname;
+    return activity;
+  });
+  page.url = page.url.replace('stage.adobe.com', 'adobe.com').replace('/homepage/index-loggedout', '/');
+  page.pathname = page.pathname.replace('/homepage/index-loggedout', '/');
+  if (page.url.includes('adobe.com')
+    && !page.url.endsWith('/')
+    && !page.url.includes('milo.adobe.com')) {
+    page.url += '.html';
+  }
+  return fetch('https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-2.on.aws/save-mep-call', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer legit',
+    },
+    body: JSON.stringify(data),
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    });
+}
 export default async function decoratePreviewMode() {
+  const mepConfig = parseMepConfig();
   const { miloLibs, codeRoot, mep } = getConfig();
   loadStyle(`${miloLibs || codeRoot}/features/personalization/preview.css`);
-  createPreviewPill(mep?.experiments);
+
+  createPreviewPill(mepConfig.activities);
   if (mep?.experiments) addHighlightData(mep.experiments);
+  saveToMmm(mepConfig);
 }
