@@ -2,10 +2,71 @@ import { createTag, customFetch } from '../../utils/utils.js';
 import { fetchData, DATA_TYPE } from '../../features/personalization/personalization.js';
 import { createPanelContents } from '../../features/personalization/preview.js';
 
+const debugVersion = 'params'; // hash or params
+
 const API_URLS = {
   pageList: '/libs/blocks/mmm/pageList.json',
   pageDetails: '/libs/blocks/mmm/pageDetails.json',
 };
+
+// hash methods
+function updateWindowUrlWithSearchHash() {
+  const newHash = [];
+  const type = document.querySelector('.tab-list-container button[aria-selected="true"]').innerHTML;
+  newHash.push(`type=${type}`);
+  if (type === 'Dropdown') {
+    const geoValue = `geo=${document.querySelector('select#mmm-search-geo').value}`;
+    const topPageValue = `page=${document.querySelector('select#mmm-search-page').value}`;
+    newHash.push(geoValue, topPageValue);
+  } else {
+    const query = document.querySelector('#mmm-search-input').value;
+    if (query) newHash.push(`q=${query}`);
+  }
+  console.log(`new hash no encoding: #${newHash.join('&')}`);
+  window.location.hash = encodeURIComponent(newHash.join('&'));
+}
+function searchFromWindowUrl() {
+  const decodedHash = decodeURIComponent(window.location.hash);
+  const hashParams = decodedHash.replace('#', '').split('&');
+  if (hashParams.length === 0) return;
+  const paramsObj = {};
+  hashParams.forEach((pair) => {
+    const currentPair = pair.split('=');
+    paramsObj[currentPair[0]] = currentPair[1];
+  });
+  console.log('windowparams: for API', paramsObj);
+}
+
+// param methods
+function buildSharableLink() {
+  const newUrlQueryParam = [];
+  const type = document.querySelector('.tab-list-container button[aria-selected="true"]').innerHTML;
+  newUrlQueryParam.push(`type=${type}`);
+  if (type === 'Dropdown') {
+    const geoValue = `&geo=${document.querySelector('select#mmm-search-geo').value}`;
+    const topPageValue = `&page=${document.querySelector('select#mmm-search-page').value}`;
+    newUrlQueryParam.push(geoValue, topPageValue);
+  } else {
+    const query = document.querySelector('#mmm-search-input').value;
+    if (query) newUrlQueryParam.push(`q=${query}`);
+  }
+  console.log(`sharable link no encoding= ?${newUrlQueryParam.join('&')}`);
+  const sharableLink = encodeURIComponent(newUrlQueryParam.join('&'));
+  console.log(`sharable link= ${sharableLink}`);
+}
+function searchFromWindowParameters() {
+  const searchParams = new URLSearchParams(decodeURIComponent(window.location.search));
+  const newValuesToBuild = {};
+  if (searchParams.get('type') === 'Dropdown') {
+    newValuesToBuild.type = 'Dropdown';
+    newValuesToBuild.geo = searchParams.get('geo');
+    newValuesToBuild.page = searchParams.get('page');
+  } else {
+    newValuesToBuild.type = 'Search';
+    newValuesToBuild.q = searchParams.get('q');
+  }
+  return newValuesToBuild;
+}
 
 function handleClick(el, dd) {
   const expanded = el.getAttribute('aria-expanded') === 'true';
@@ -88,7 +149,6 @@ function searchFilterByInput() {
       if (!url.includes(searchFieldValue)) entry.classList.add('filter-hide');
       return;
     }
-
     if (geoDropDownValue !== 'all' && !selectedGeos.some((item) => prefix === item)) {
       entry.classList.add('filter-hide');
     }
@@ -96,21 +156,35 @@ function searchFilterByInput() {
       entry.classList.add('filter-hide');
     }
   });
+
+  if (debugVersion === 'hash') {
+    updateWindowUrlWithSearchHash();
+  } else buildSharableLink();
 }
 
-async function createForms() {
+async function createForms(sharedUrlSettings) {
   const resp = await customFetch({ resource: '/libs/blocks/mmm/form.html', withCacheRules: true })
     .catch(() => ({}));
   const html = await resp.text();
   if (!html) return;
   const doc = createTag('div', false, html);
-  document.querySelector('#tab-panel-mmm-options-1')?.append(doc);
+  const dropdownContainer = document.querySelector('.section-metadata.dropdowns');
+  dropdownContainer.parentNode.insertBefore(doc, dropdownContainer);
+  // insert default for 2 dropdowns here
+  if (sharedUrlSettings && sharedUrlSettings.type === 'Dropdown') {
+    document.querySelector(`#mmm-search-geo [value="${sharedUrlSettings.geo}"]`).setAttribute('selected', 'selected');
+    document.querySelector(`#mmm-search-page [value="${sharedUrlSettings.page}"]`).setAttribute('selected', 'selected');
+  }
   doc.querySelectorAll('select').forEach((field) => {
     field.addEventListener('change', searchFilterByInput);
   });
-  document.querySelector('#tab-panel-mmm-options-2')
-    ?.append(document.querySelector('#mmm-search-input-container'));
-  const searchForm = document.querySelector('#mmm-search-input');
+  const searchContainer = document.querySelector('.section-metadata.search');
+  const searchForm = document.querySelector('#mmm-search-input-container');
+  searchContainer.parentNode.insertBefore(searchForm, searchContainer);
+  // insert default for q value here
+  if (sharedUrlSettings && sharedUrlSettings.type === 'Search') {
+    searchForm.value = sharedUrlSettings.q;
+  }
   searchForm.addEventListener('keyup', searchFilterByInput);
   searchForm.addEventListener('change', searchFilterByInput);
   document.querySelectorAll('.tab-list-container button').forEach((button) => {
@@ -119,7 +193,12 @@ async function createForms() {
 }
 
 export default async function init(el) {
-  createForms();
+  if (debugVersion === 'params') {
+    const urlParamSettings = window.location.search ? searchFromWindowParameters() : null;
+    console.log(urlParamSettings);
+    createForms(urlParamSettings);
+  } else createForms();
+
   const mmmElContainer = createTag('div', { class: 'mmm-container max-width-12-desktop' });
   const mmmEl = createTag('dl', {
     class: 'mmm foreground',
@@ -129,7 +208,15 @@ export default async function init(el) {
   mmmElContainer.append(mmmEl);
   const pageList = await fetchData(API_URLS.pageList, DATA_TYPE.JSON);
   pageList.map((page) => createButtonDetailsPair(mmmEl, page));
-  el.replaceWith(mmmElContainer);
+  el.remove();
+  const section = createTag('div', { id: 'mep-section', class: 'section' });
+  const main = document.querySelector('main');
+  section.append(mmmElContainer);
+  main.append(section);
+  if (debugVersion === 'hash') {
+    if (!window.location.hash) return;
+    searchFromWindowUrl();
+  }
 }
 /*
 todo:
@@ -152,3 +239,7 @@ no buttons just add to fire when
 2. change on dropdowns
 3. radio button change (automatically runs the function to get same results)
 */
+
+// add updateWindowUrl from within searchFilterByInput ... whereve the changes are happening in functions
+// switch to not constantly adding hash - just parse param if available (? not #) no container value, just the forms or search
+// update selected tab before render IF search value exists in url
