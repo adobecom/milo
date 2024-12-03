@@ -90,7 +90,21 @@ function updateConfig(newConfig) {
             Object.entries(newConfig).filter(
                 ([key, value]) =>
                     key in config &&
-                    !['', NaN, null, undefined].includes(value), // 0 is a valid value.
+                    function updateConfig(newConfig) {
+    Object.assign(
+        config,
+        Object.fromEntries(
+            Object.entries(newConfig).filter(
+                ([key, value]) =>
+                    key in config &&
+                    value !== '' &&
+                    value !== null &&
+                    value !== undefined &&
+                    !Number.isNaN(value), // Correctly exclude NaN
+            ),
+        ),
+    );
+}
             ),
         ),
     );
