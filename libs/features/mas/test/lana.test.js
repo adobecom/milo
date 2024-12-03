@@ -18,7 +18,6 @@ describe('lana', () => {
 
     it('calls `window.lana.log` with params', () => {
         Log.reset();
-        const { clientId, sampleRate, tags } = config;
 
         window.history.replaceState({}, '', '/test/page');
 
@@ -50,4 +49,33 @@ describe('lana', () => {
             },
         ]);
     });
+
+    it('will trim page length if longer than 1k characters', () => {
+      Log.reset();
+      const page = new Array(1001).join( 'a' );
+      window.history.replaceState({}, '', page);
+      lanaAppender.append({
+          level: Log.Level.ERROR,
+          message: 'Failed to build price, osi 123: ',
+          namespace: 'test',
+          params: [
+            new Error('Uncaught TypeError: Cannot read properties of null'),
+          ],
+          source: 'testModule',
+          timestamp: Date.now(),
+      });
+
+      expect(lana.log.firstCall.args).to.deep.equal([
+          'Failed to build price, osi 123:  Uncaught TypeError: Cannot read properties of null¶page=/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa<trunc>',
+          {
+              clientId: 'merch-at-scale',
+              delimiter: '¶',
+              ignoredProperties: ['analytics', 'literals'],
+              isProdDomain: false,
+              serializableTypes: ['Array', 'Object'],
+              sampleRate: 1,
+              tags: 'acom',
+          },
+      ]);
+  });
 });
