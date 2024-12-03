@@ -17,10 +17,11 @@ function isColorOrGradient(str) {
 function hasSegmentClass(el) {
   const segmentClassRegex = /^segment-timeline-(3-9|4-8|5-7|6-6|7-5|8-4|9-3)$/;
   const startsWithSegmentTimelineRegex = /^segment-timeline-/;
-  const hasValidSegmentClass = Array.from(el.classList).some((cls) => segmentClassRegex.test(cls));
+  let hasValidSegmentClass = Array.from(el.classList).some((cls) => segmentClassRegex.test(cls));
   if (!hasValidSegmentClass
     && Array.from(el.classList).some((cls) => startsWithSegmentTimelineRegex.test(cls))) {
     el.classList.add('segment-timeline-6-6');
+    hasValidSegmentClass = true;
   }
   return hasValidSegmentClass;
 }
