@@ -1120,9 +1120,7 @@ export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => 
   return persManifests;
 };
 
-async function updateManifestsAndPropositions(config) {
-  const { getTargetPersonalization } = await import('../../martech/martech.js');
-  const { targetManifests, targetPropositions } = await getTargetPersonalization();
+async function updateManifestsAndPropositions({ config, targetManifests, targetPropositions }) {
   targetManifests.forEach((manifest) => {
     manifest.source = ['target'];
   });
