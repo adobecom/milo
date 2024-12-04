@@ -1,3 +1,7 @@
+body.spectrum--darkest {
+  background-color: #1e1e1e;
+}
+
 main {
   display: flex;
   justify-content: center;
@@ -104,8 +108,6 @@ button {
 }
 
 .gallery-content {
-  background-color: var(--spectrum-gray-100);
-  color: var(--spectrum-gray-800);
   padding: 30px;
 }
 
@@ -145,4 +147,8 @@ merch-card:has(+ merch-card) {
 
 code {
   max-width: 90vw;
+}
+
+.spectrum--darkest .gallery-content {
+  color: #fbecec;
 }

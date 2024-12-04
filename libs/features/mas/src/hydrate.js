@@ -252,17 +252,29 @@ export function processAnalytics(fields, merchCard) {
         ?.find((tag) => tag.startsWith(ANALYTICS_TAG))
         ?.split('/')
         .pop();
-    if (cardAnalyticsId) {
-        merchCard.setAttribute(ANALYTICS_SECTION_ATTR, cardAnalyticsId);
-        merchCard
-            .querySelectorAll(`a[data-analytics-id]`)
-            .forEach((link, index) => {
-                link.setAttribute(
-                    ANALYTICS_LINK_ATTR,
-                    `${link.dataset.analyticsId}-${index + 1}`,
-                );
-            });
-    }
+    if (!cardAnalyticsId) return;
+    merchCard.setAttribute(ANALYTICS_SECTION_ATTR, cardAnalyticsId);
+    merchCard
+        .querySelectorAll(`a[data-analytics-id]`)
+        .forEach((link, index) => {
+            link.setAttribute(
+                ANALYTICS_LINK_ATTR,
+                `${link.dataset.analyticsId}-${index + 1}`,
+            );
+        });
+}
+
+function updateLinks(merchCard) {
+    [
+        ['primary-link', 'primary'],
+        ['secondary-link', 'secondary'],
+    ].forEach(([className, variant]) => {
+        merchCard.querySelectorAll(`a.${className}`).forEach((link) => {
+            link.classList.remove(className);
+            link.classList.add('spectrum-Link', `spectrum-Link--${variant}`);
+            console.log(link);
+        });
+    });
 }
 
 export async function hydrate(fragment, merchCard) {
@@ -303,4 +315,5 @@ export async function hydrate(fragment, merchCard) {
     processDescription(fields, merchCard, aemFragmentMapping.description);
     processCTAs(fields, merchCard, aemFragmentMapping, variant);
     processAnalytics(fields, merchCard);
+    updateLinks(merchCard);
 }

@@ -138,7 +138,7 @@ export class MerchCard extends LitElement {
             changedProperties.has('badgeBackgroundColor') ||
             changedProperties.has('borderColor')
         ) {
-            this.style.setProperty('--merch-card-border', this.computedBorderStyle);
+            this.style.setProperty('--consonant-merch-card-border', this.computedBorderStyle);
         }
         this.variantLayout?.postCardUpdateHook(this);
     }
