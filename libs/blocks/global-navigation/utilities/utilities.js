@@ -1,7 +1,8 @@
+/* eslint import/no-relative-packages: 0 */
 import {
   getConfig, getMetadata, loadStyle, loadLana, decorateLinks, localizeLink,
 } from '../../../utils/utils.js';
-import { getFederatedContentRoot, getFederatedUrl } from '../../../utils/federated.js';
+import { getFederatedContentRoot, getFederatedUrl, getFedsPlaceholderConfig } from '../../../utils/federated.js';
 import { processTrackingLabels } from '../../../martech/attributes.js';
 import { replaceText } from '../../../features/placeholders.js';
 
@@ -107,24 +108,6 @@ export const federatePictureSources = ({ section, forceFederate } = {}) => {
     });
 };
 
-let fedsPlaceholderConfig;
-export const getFedsPlaceholderConfig = ({ useCache = true } = {}) => {
-  if (useCache && fedsPlaceholderConfig) return fedsPlaceholderConfig;
-
-  const { locale, placeholders } = getConfig();
-  const libOrigin = getFederatedContentRoot();
-
-  fedsPlaceholderConfig = {
-    locale: {
-      ...locale,
-      contentRoot: `${libOrigin}${locale.prefix}/federal/globalnav`,
-    },
-    placeholders,
-  };
-
-  return fedsPlaceholderConfig;
-};
-
 export function getAnalyticsValue(str, index) {
   if (typeof str !== 'string' || !str.length) return str;
 
@@ -152,7 +135,9 @@ export function rootPath(path) {
   return url;
 }
 
-export function loadStyles(url) {
+export function loadStyles(url, override = false) {
+  const { standaloneGnav } = getConfig();
+  if (standaloneGnav && !override) return;
   loadStyle(url, (e) => {
     if (e === 'error') {
       lanaLog({
@@ -173,6 +158,8 @@ export function isDarkMode() {
 // since they can be independent of each other.
 // CSS imports were not used due to duplication of file include
 export async function loadBaseStyles() {
+  const { standaloneGnav } = getConfig();
+  if (standaloneGnav) return;
   if (isDarkMode()) {
     new Promise((resolve) => { loadStyle(rootPath('base.css'), resolve); })
       .then(() => loadStyles(rootPath('dark-nav.css')));
@@ -180,10 +167,6 @@ export async function loadBaseStyles() {
     const url = rootPath('base.css');
     await loadStyles(url);
   }
-}
-
-export function loadBlock(path) {
-  return import(path).then((module) => module.default);
 }
 
 let cachedDecorateMenu;
@@ -195,15 +178,12 @@ export async function loadDecorateMenu() {
     resolve = _resolve;
   });
 
-  const [{ decorateMenu, decorateLinkGroup }] = await Promise.all([
-    loadBlock('./menu/menu.js'),
+  const [menu] = await Promise.all([
+    import('./menu/menu.js'),
     loadStyles(rootPath('utilities/menu/menu.css')),
   ]);
 
-  resolve({
-    decorateMenu,
-    decorateLinkGroup,
-  });
+  resolve(menu.default);
   return cachedDecorateMenu;
 }
 

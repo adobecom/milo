@@ -47,6 +47,15 @@
   justify-content: center;
 }
 
+.table.top .section-row .col {
+  flex-direction: column;
+  justify-content: start;
+}
+
+.table.top.left .section-row .col {
+  align-items: start;
+}
+
 .table:not(.merch) .col-1:not(:only-child) {
   background-color: var(--color-gray-100);
 }
@@ -552,11 +561,6 @@
 .table.has-addon .addon-promo a {
   font-weight: 700;
   text-decoration: underline;
-}
-
-/* scroll */
-header.global-navigation {
-  z-index: 2;
 }
 
 .table .row-highlight,
