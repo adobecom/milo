@@ -84,7 +84,7 @@ export default async function loadBlock(configs, customLib) {
     await import('./navigation.css');
   } catch (e) {
     if (theme === 'dark') {
-      loadStyle(`${miloLibs}/libs/navigation/base.css`, () => loadStyle(`${miloLibs}/libs/navigation/dist/dark-nav.css`));
+      loadStyle(`${miloLibs}/libs/navigation/base.css`, () => loadStyle(`${miloLibs}/libs/navigation/dark-nav.css`));
     } else {
       loadStyle(`${miloLibs}/libs/navigation/base.css`);
     }
