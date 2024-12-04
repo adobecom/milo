@@ -283,7 +283,7 @@ export function getMepPopup(manifests, pageInfo = false, mmm = false) {
           </div>
           <div class="mep-manifest-info">
             <div class="mep-manifest-variants mep-advanced-options">
-              <input type="checkbox" name="mepPreviewButtonCheckbox" id="mepPreviewButtonCheckbox${pageId}" value="off"> <label for="mepPreviewButtonCheckbox${pageId}">add mepButton=off to preview link</label>
+              <input type="checkbox" name="mepPreviewButtonCheckbox${pageId}" id="mepPreviewButtonCheckbox${pageId}" value="off"> <label for="mepPreviewButtonCheckbox${pageId}">add mepButton=off to preview link</label>
             </div>
           </div>
         </div>`;
