@@ -47,7 +47,7 @@ export class Plans extends VariantLayout {
     }
       
     :host([variant='plans']) ::slotted([slot='heading-xs']) {
-      max-width: var(--consonant-merch-card-heading-xs-max-width, 100%);
+      max-width: var(--merch-card-heading-xs-max-width, 100%);
     }
   `;
 }

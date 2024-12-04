@@ -26,7 +26,7 @@ export class VariantLayout {
 
     updateCardElementMinHeight(el, name) {
         if (!el) return;
-        const elMinHeightPropertyName = `--consonant-merch-card-${this.card.variant}-${name}-height`;
+        const elMinHeightPropertyName = `--merch-card-${this.card.variant}-${name}-height`;
         const height = Math.max(
             0,
             parseInt(window.getComputedStyle(el).height) || 0,
@@ -142,7 +142,7 @@ export class VariantLayout {
             this.card.badgeElement?.getBoundingClientRect().width || 0;
         if (cardWidth === 0 || badgeWidth === 0) return;
         this.card.style.setProperty(
-            '--consonant-merch-card-heading-xs-max-width',
+            '--merch-card-heading-xs-max-width',
             `${Math.round(cardWidth - badgeWidth - 16)}px`, // consonant-merch-spacing-xs
         );
     }

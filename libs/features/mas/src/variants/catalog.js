@@ -137,7 +137,7 @@ export class Catalog extends VariantLayout {
     static variantStyle = css`
         :host([variant='catalog']) {
             min-height: 330px;
-            width: var(--consonant-merch-card-catalog-width);
+            width: var(--merch-card-catalog-width);
         }
 
         .body .catalog-badge {

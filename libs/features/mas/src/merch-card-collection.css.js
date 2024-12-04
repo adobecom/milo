@@ -7,7 +7,7 @@ export const styles = css`
     #footer {
         grid-column: 1 / -1;
         justify-self: stretch;
-        color: var(--merch-color-grey-80);
+        color: var(--merch-color-gray-80);
     }
 
     sp-theme {

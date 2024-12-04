@@ -113,6 +113,7 @@ export class MerchCard extends LitElement {
         this.filters = {};
         this.types = '';
         this.selected = false;
+        this.consonant = true;
         this.handleAemFragmentEvents = this.handleAemFragmentEvents.bind(this);
     }
 

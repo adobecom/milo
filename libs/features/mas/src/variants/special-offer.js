@@ -57,7 +57,7 @@ export class SpecialOffer extends VariantLayout {
         }
 
         :host([variant='special-offers']) {
-            width: var(--consonant-merch-card-special-offers-width);
+            width: var(--merch-card-special-offers-width);
         }
 
         :host([variant='special-offers'].center) {

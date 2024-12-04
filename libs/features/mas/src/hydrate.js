@@ -132,37 +132,7 @@ function processDescription(fields, merchCard, descriptionConfig) {
     }
 }
 
-function createSpectrumButton(cta, strong, aemFragmentMapping, cardVariant) {
-    if (cardVariant === 'ccd-suggested' && !cta.className) {
-        cta.className = 'primary-link'; //workaround for existing ccd-suggested cards
-    }
-    const checkoutLinkStyle =
-        CHECKOUT_LINK_STYLE_PATTERN.exec(cta.className)?.[0] ?? 'accent';
-    const isAccent = checkoutLinkStyle.includes('accent');
-    const isPrimary = checkoutLinkStyle.includes('primary');
-    const isSecondary = checkoutLinkStyle.includes('secondary');
-    const isOutline = checkoutLinkStyle.includes('-outline');
-    const isLink = checkoutLinkStyle.includes('-link');
-
-    if (isLink) {
-        return cta;
-    }
-
-    let treatment = 'fill';
-    let variant;
-
-    if (isAccent || strong) {
-        variant = 'accent';
-    } else if (isPrimary) {
-        variant = 'primary';
-    } else if (isSecondary) {
-        variant = 'secondary';
-    }
-
-    if (isOutline) {
-        treatment = 'outline';
-    }
-
+function createSpectrumButton(cta, variant, treatment, aemFragmentMapping) {
     cta.tabIndex = -1;
     const spectrumCta = createTag(
         'sp-button',
@@ -186,28 +156,67 @@ function createSpectrumButton(cta, strong, aemFragmentMapping, cardVariant) {
     return spectrumCta;
 }
 
-function processConsonantButton(cta, strong) {
+function processConsonantButton(cta, variant, treatment, aemFragmentMapping) {
     cta.classList.add('con-button');
-    if (strong) {
+    if (treatment === 'outline') {
+        cta.classList.add('outline');
+    }
+    if (variant === 'accent') {
         cta.classList.add('blue');
+    } else if (variant === 'black') {
+        cta.classList.add('fill');
+    }
+    const size = aemFragmentMapping.ctas.size ?? 'm';
+    if (size === 's') {
+      cta.classList.add('button-s');
     }
     return cta;
 }
 
-export function processCTAs(fields, merchCard, aemFragmentMapping, variant) {
+export function processCTAs(fields, merchCard, aemFragmentMapping) {
     if (fields.ctas) {
         const { slot } = aemFragmentMapping.ctas;
         const footer = createTag('div', { slot }, fields.ctas);
 
         const ctas = [...footer.querySelectorAll('a')].map((cta) => {
-            const strong = cta.parentElement.tagName === 'STRONG';
+            const checkoutLinkStyle =
+                CHECKOUT_LINK_STYLE_PATTERN.exec(cta.className)?.[0] ??
+                'accent';
+            const isLink = checkoutLinkStyle.includes('-link');
+            if (isLink) {
+                return cta;
+            }
+            const isAccent = checkoutLinkStyle.includes('accent');
+            const isPrimary = checkoutLinkStyle.includes('primary');
+            const isSecondary = checkoutLinkStyle.includes('secondary');
+            const isOutline = checkoutLinkStyle.includes('-outline');
+
+            let treatment = 'fill';
+            let variant;
+
+            if (isAccent) {
+                variant = 'accent';
+            } else if (isPrimary) {
+                variant = 'primary';
+            } else if (isSecondary) {
+                variant = 'secondary';
+            }
+
+            if (isOutline) {
+                treatment = 'outline';
+            }
             return merchCard.consonant
-                ? processConsonantButton(cta, strong)
+                ? processConsonantButton(
+                      cta,
+                      variant,
+                      treatment,
+                      aemFragmentMapping,
+                  )
                 : createSpectrumButton(
                       cta,
-                      strong,
-                      aemFragmentMapping,
                       variant,
+                      treatment,
+                      aemFragmentMapping,
                   );
         });
 
@@ -218,19 +227,27 @@ export function processCTAs(fields, merchCard, aemFragmentMapping, variant) {
 }
 
 export function processAnalytics(fields, merchCard) {
-  const { tags } = fields;
-  const cardAnalyticsId = tags?.find(tag => tag.startsWith(ANALYTICS_TAG))?.split('/').pop();
-    if(cardAnalyticsId) {
-      merchCard.setAttribute(ANALYTICS_SECTION_ATTR, cardAnalyticsId);
-      merchCard.querySelectorAll(`a[data-analytics-id]`).forEach((link, index) => {
-        link.setAttribute(ANALYTICS_LINK_ATTR, `${link.dataset.analyticsId}-${index + 1}`);
-      });
+    const { tags } = fields;
+    const cardAnalyticsId = tags
+        ?.find((tag) => tag.startsWith(ANALYTICS_TAG))
+        ?.split('/')
+        .pop();
+    if (cardAnalyticsId) {
+        merchCard.setAttribute(ANALYTICS_SECTION_ATTR, cardAnalyticsId);
+        merchCard
+            .querySelectorAll(`a[data-analytics-id]`)
+            .forEach((link, index) => {
+                link.setAttribute(
+                    ANALYTICS_LINK_ATTR,
+                    `${link.dataset.analyticsId}-${index + 1}`,
+                );
+            });
     }
 }
 
 export async function hydrate(fragment, merchCard) {
-  const { fields } = fragment;
-  const { variant } = fields;
+    const { fields } = fragment;
+    const { variant } = fields;
     if (!variant) return;
 
     // remove all previous slotted content except the default slot
@@ -251,7 +268,12 @@ export async function hydrate(fragment, merchCard) {
     const { aemFragmentMapping } = merchCard.variantLayout;
     if (!aemFragmentMapping) return;
 
-    processBackgroundImage(fields,merchCard,aemFragmentMapping.backgroundImage,variant);
+    processBackgroundImage(
+        fields,
+        merchCard,
+        aemFragmentMapping.backgroundImage,
+        variant,
+    );
     processBadge(fields, merchCard);
     processCTAs(fields, merchCard, aemFragmentMapping, variant);
     processDescription(fields, merchCard, aemFragmentMapping.description);

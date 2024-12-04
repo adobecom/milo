@@ -1,36 +1,14 @@
-main {
-  display: flex;
-  justify-content: center;
-  margin: 0 16px;
+body.dark {
+  background-color: #1b1b1b;
+  color: white;
 }
 
-sp-theme {
-  width: 100%;
+main {
   max-width: 1200px;
-  font-family:
-    adobe-clean,
-    var(
-      --mod-body-sans-serif-font-family,
-      var(--spectrum-body-sans-serif-font-family)
-    );
-  font-style:
-    var(
-      --mod-body-sans-serif-font-style,
-      var(--spectrum-body-sans-serif-font-style)
-    );
-  font-weight:
-    var(
-      --mod-body-sans-serif-font-weight,
-      var(--spectrum-body-sans-serif-font-weight)
-    );
-  font-size: var(--mod-body-font-size, var(--spectrum-body-font-size));
-  color:
-    var(
-      --highcontrast-body-font-color,
-      var(--mod-body-font-color, var(--spectrum-body-font-color))
-    );
-  line-height: var(--mod-body-line-height, var(--spectrum-body-line-height));
-  margin-block: 0;
+}
+
+main > div {
+  display: block;
 }
 
 table {
@@ -117,8 +95,6 @@ button {
 }
 
 .gallery-content {
-  background-color: var(--spectrum-gray-100);
-  color: var(--spectrum-gray-800);
   padding: 30px;
 }
 

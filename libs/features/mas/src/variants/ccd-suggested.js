@@ -89,11 +89,10 @@ export class CCDSuggested extends VariantLayout {
     }
     
     :host([variant='ccd-suggested']) ::slotted([slot='detail-m']) {
-      line-height: var(--consonant-merch-card-detail-m-line-height);
+      line-height: var(--merch-card-detail-m-line-height);
     }
 
     :host([variant='ccd-suggested']) ::slotted([slot='body-xs']) {
-      color: var(--ccd-gray-700-dark, #464646);
       padding-top: 6px;
     }
     
@@ -108,9 +107,8 @@ export class CCDSuggested extends VariantLayout {
     :host([variant='ccd-suggested']) ::slotted([slot='price']) {
       display: flex;
       align-items: center;
-      color: var(--spectrum-gray-800, #F8F8F8);
-      font-size: var(--consonant-merch-card-body-xs-font-size);
-      line-height: var(--consonant-merch-card-body-xs-line-height);
+      font-size: var(--merch-card-body-xs-font-size);
+      line-height: var(--merch-card-body-xs-line-height);
       min-width: fit-content;
     }
     
@@ -128,7 +126,7 @@ export class CCDSuggested extends VariantLayout {
       display: flex;
       justify-content: space-between;
       flex-grow: 0;
-      margin-top: auto;
+      margin-top: 6px;
       align-items: center;
     }
 

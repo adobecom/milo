@@ -4,7 +4,7 @@ var N=Object.defineProperty;var y=(s,e,t)=>e in s?N(s,e,{enumerable:!0,configura
     #footer {
         grid-column: 1 / -1;
         justify-self: stretch;
-        color: var(--merch-color-grey-80);
+        color: var(--merch-color-gray-80);
     }
 
     sp-theme {

@@ -3,18 +3,18 @@ import { DESKTOP_UP, TABLET_UP } from './media.js';
 
 export const styles = css`
     :host {
-        --merch-card-border: 1px solid var(--spectrum-gray-200, var(--consonant-merch-card-border-color));
-        position: relative;
-        display: flex;
-        flex-direction: column;
-        text-align: start;
+        --merch-card-border: 1px solid var(--merch-card-border-color);
         background-color: var(--merch-card-background-color);
-        grid-template-columns: repeat(auto-fit, minmax(300px, max-content));
-        background-color: var(--merch-card-background-color);
-        font-family: var(--merch-body-font-family, 'Adobe Clean');
         border-radius: var(--consonant-merch-spacing-xs);
         border: var(--merch-card-border);
         box-sizing: border-box;
+        color: var(--merch-card-color);
+        display: flex;
+        flex-direction: column;
+        font-family: var(--merch-body-font-family, 'Adobe Clean');
+        grid-template-columns: repeat(auto-fit, minmax(300px, max-content));
+        position: relative;
+        text-align: start;
     }
 
     :host(.placeholder) {
@@ -24,7 +24,7 @@ export const styles = css`
     :host([aria-selected]) {
         outline: none;
         box-sizing: border-box;
-        box-shadow: inset 0 0 0 2px var(--color-accent);
+        box-shadow: inset 0 0 0 2px var(--merch-color-accent);
     }
 
     .invisible {
@@ -79,7 +79,7 @@ export const styles = css`
     }
 
     hr {
-        background-color: var(--merch-color-grey-200);
+        background-color: var(--merch-color-gray-200);
         border: none;
         height: 1px;
         width: auto;
@@ -113,7 +113,7 @@ export const styles = css`
         right: 0;
         padding: var(--consonant-merch-spacing-xs);
         border-radius: 5px;
-        font-size: var(--consonant-merch-card-body-font-size);
+        font-size: var(--merch-card-body-font-size);
         margin: var(--consonant-merch-spacing-xs);
     }
 
@@ -136,9 +136,9 @@ export const styles = css`
 
     #stock-checkbox,
     .secure-transaction-label {
-        font-size: var(--consonant-merch-card-body-xxs-font-size);
+        font-size: var(--merch-card-body-xxs-font-size);
         line-height: 1.3;
-        color: var(--merch-color-grey-600);
+        color: var(--merch-color-gray-600);
     }
 
     #stock-checkbox {
@@ -162,8 +162,8 @@ export const styles = css`
     }
 
     #stock-checkbox > input:checked + span {
-        background: var(--checkmark-icon) no-repeat var(--color-accent);
-        border-color: var(--color-accent);
+        background: var(--checkmark-icon) no-repeat var(--merch-color-accent);
+        border-color: var(--merch-color-accent);
     }
 
     .secure-transaction-label {
@@ -193,9 +193,9 @@ export const styles = css`
     }
 
     .checkbox-container input[type='checkbox']:checked + .checkmark {
-        background-color: var(--color-accent);
+        background-color: var(--merch-color-accent);
         background-image: var(--checkmark-icon);
-        border-color: var(--color-accent);
+        border-color: var(--merch-color-accent);
     }
 
     .checkbox-container input[type='checkbox'] {

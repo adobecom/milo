@@ -11,7 +11,7 @@ export class MiniCompareChart extends VariantLayout {
   }
 
   getRowMinHeightPropertyName = (index) =>
-    `--consonant-merch-card-footer-row-${index}-min-height`;
+    `--merch-card-footer-row-${index}-min-height`;
 
   getGlobalCSS() {
     return CSS;
@@ -63,7 +63,7 @@ export class MiniCompareChart extends VariantLayout {
     );
     if (badge && badge.textContent !== '') {
         this.getContainer().style.setProperty(
-            '--consonant-merch-card-mini-compare-chart-top-section-mobile-height',
+            '--merch-card-mini-compare-chart-top-section-mobile-height',
             '32px',
         );
     }
@@ -133,7 +133,7 @@ export class MiniCompareChart extends VariantLayout {
         display: block;
     }
     :host([variant='mini-compare-chart']) footer {
-        min-height: var(--consonant-merch-card-mini-compare-chart-footer-height);
+        min-height: var(--merch-card-mini-compare-chart-footer-height);
         padding: var(--consonant-merch-spacing-xs);
     }
 
@@ -141,7 +141,7 @@ export class MiniCompareChart extends VariantLayout {
     :host([variant='mini-compare-chart']) .top-section {
         padding-top: var(--consonant-merch-spacing-s);
         padding-inline-start: var(--consonant-merch-spacing-s);
-        height: var(--consonant-merch-card-mini-compare-chart-top-section-height);
+        height: var(--merch-card-mini-compare-chart-top-section-height);
     }
 
     @media screen and ${unsafeCSS(TABLET_DOWN)} {
@@ -169,35 +169,35 @@ export class MiniCompareChart extends VariantLayout {
     }
     /* mini-compare card heights for the slots: heading-m, body-m, heading-m-price, price-commitment, offers, promo-text, footer */
     :host([variant='mini-compare-chart']) slot[name='heading-m'] {
-        min-height: var(--consonant-merch-card-mini-compare-chart-heading-m-height);
+        min-height: var(--merch-card-mini-compare-chart-heading-m-height);
     }
     :host([variant='mini-compare-chart']) slot[name='body-m'] {
-        min-height: var(--consonant-merch-card-mini-compare-chart-body-m-height);
+        min-height: var(--merch-card-mini-compare-chart-body-m-height);
     }
     :host([variant='mini-compare-chart']) slot[name='heading-m-price'] {
         min-height: var(
-            --consonant-merch-card-mini-compare-chart-heading-m-price-height
+            --merch-card-mini-compare-chart-heading-m-price-height
         );
     }
     :host([variant='mini-compare-chart']) slot[name='body-xxs'] {
         min-height: var(
-            --consonant-merch-card-mini-compare-chart-body-xxs-height
+            --merch-card-mini-compare-chart-body-xxs-height
         );
     }
     :host([variant='mini-compare-chart']) slot[name='price-commitment'] {
         min-height: var(
-            --consonant-merch-card-mini-compare-chart-price-commitment-height
+            --merch-card-mini-compare-chart-price-commitment-height
         );
     }
     :host([variant='mini-compare-chart']) slot[name='offers'] {
-        min-height: var(--consonant-merch-card-mini-compare-chart-offers-height);
+        min-height: var(--merch-card-mini-compare-chart-offers-height);
     }
     :host([variant='mini-compare-chart']) slot[name='promo-text'] {
-        min-height: var(--consonant-merch-card-mini-compare-chart-promo-text-height);
+        min-height: var(--merch-card-mini-compare-chart-promo-text-height);
     }
     :host([variant='mini-compare-chart']) slot[name='callout-content'] {
         min-height: var(
-            --consonant-merch-card-mini-compare-chart-callout-content-height
+            --merch-card-mini-compare-chart-callout-content-height
         );
     }
   `;

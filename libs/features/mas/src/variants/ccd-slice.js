@@ -36,18 +36,17 @@ export class CCDSlice extends VariantLayout {
     static variantStyle = css`
         :host([variant='ccd-slice']) {
             min-width: 290px;
-            max-width: var(--consonant-merch-card-ccd-slice-single-width);
-            max-height: var(--consonant-merch-card-ccd-slice-single-height);
-            height: var(--consonant-merch-card-ccd-slice-single-height);
-            border: 1px solid var(--spectrum-gray-700);
+            max-width: var(--merch-card-ccd-slice-single-width);
+            max-height: var(--merch-card-ccd-slice-single-height);
+            height: var(--merch-card-ccd-slice-single-height);
             border-radius: 4px;
             display: flex;
             flex-flow: wrap;
         }
 
         :host([variant='ccd-slice']) ::slotted([slot='body-s']) {
-            font-size: var(--consonant-merch-card-body-xs-font-size);
-            line-height: var(--consonant-merch-card-body-xxs-line-height);
+            font-size: var(--merch-card-body-xs-font-size);
+            line-height: var(--merch-card-body-xxs-line-height);
             max-width: 154px;
         }
 
@@ -56,8 +55,8 @@ export class CCDSlice extends VariantLayout {
         }
 
         :host([variant='ccd-slice'][size='wide']) {
-            width: var(--consonant-merch-card-ccd-slice-wide-width);
-            max-width: var(--consonant-merch-card-ccd-slice-wide-width);
+            width: var(--merch-card-ccd-slice-wide-width);
+            max-width: var(--merch-card-ccd-slice-wide-width);
         }
 
         :host([variant='ccd-slice']) .content {
@@ -75,20 +74,20 @@ export class CCDSlice extends VariantLayout {
         :host([variant='ccd-slice'])
             ::slotted([slot='body-s'])
             ::slotted(a:not(.con-button)) {
-            font-size: var(--consonant-merch-card-body-xxs-font-size);
+            font-size: var(--merch-card-body-xxs-font-size);
             font-style: normal;
             font-weight: 400;
-            line-height: var(--consonant-merch-card-body-xxs-line-height);
+            line-height: var(--merch-card-body-xxs-line-height);
             text-decoration-line: underline;
-            color: var(--spectrum-gray-800, var(--merch-color-grey-80));
+            color: var(--merch-color-gray-80);
         }
 
         :host([variant='ccd-slice']) ::slotted([slot='image']) {
             display: flex;
             justify-content: center;
             flex-shrink: 0;
-            width: var(--consonant-merch-card-ccd-slice-background-img-size);
-            height: var(--consonant-merch-card-ccd-slice-background-img-size);
+            width: var(--merch-card-ccd-slice-background-img-size);
+            height: var(--merch-card-ccd-slice-background-img-size);
             overflow: hidden;
             border-radius: 50%;
             padding: 15px;
@@ -104,7 +103,7 @@ export class CCDSlice extends VariantLayout {
         }
 
         :host([variant='ccd-slice']) div[class$='-badge'] {
-            font-size: var(--consonant-merch-card-body-xxs-font-size);
+            font-size: var(--merch-card-body-xxs-font-size);
             position: static;
             border-radius: 4px;
             font-style: normal;

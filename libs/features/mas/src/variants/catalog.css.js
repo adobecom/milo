@@ -2,56 +2,56 @@ import { TABLET_UP, DESKTOP_UP, LARGE_DESKTOP,} from '../media.js';
 
 export const CSS = `
 :root {
-  --consonant-merch-card-catalog-width: 276px;
-  --consonant-merch-card-catalog-icon-size: 40px;
+  --merch-card-catalog-width: 276px;
+  --merch-card-catalog-icon-size: 40px;
 }
 .one-merch-card.catalog,
 .two-merch-cards.catalog,
 .three-merch-cards.catalog,
 .four-merch-cards.catalog {
-    grid-template-columns: var(--consonant-merch-card-catalog-width);
+    grid-template-columns: var(--merch-card-catalog-width);
 }
 
 @media screen and ${TABLET_UP} {
     :root {
-      --consonant-merch-card-catalog-width: 302px;
+      --merch-card-catalog-width: 302px;
     }
 
     .two-merch-cards.catalog,
     .three-merch-cards.catalog,
     .four-merch-cards.catalog {
-        grid-template-columns: repeat(2, var(--consonant-merch-card-catalog-width));
+        grid-template-columns: repeat(2, var(--merch-card-catalog-width));
     }
 }
 
 @media screen and ${DESKTOP_UP} {
     :root {
-      --consonant-merch-card-catalog-width: 276px;
+      --merch-card-catalog-width: 276px;
     }
 
     .three-merch-cards.catalog,
     .four-merch-cards.catalog {
-        grid-template-columns: repeat(3, var(--consonant-merch-card-catalog-width));
+        grid-template-columns: repeat(3, var(--merch-card-catalog-width));
     }
 }
 
 @media screen and ${LARGE_DESKTOP} {
     .four-merch-cards.catalog {
-        grid-template-columns: repeat(4, var(--consonant-merch-card-catalog-width));
+        grid-template-columns: repeat(4, var(--merch-card-catalog-width));
     }
 }
 
 merch-card[variant="catalog"] [slot="action-menu-content"] {
   background-color: #000;
   color: var(--color-white, #fff);
-  font-size: var(--consonant-merch-card-body-xs-font-size);
+  font-size: var(--merch-card-body-xs-font-size);
   width: fit-content;
   padding: var(--consonant-merch-spacing-xs);
   border-radius: var(--consonant-merch-spacing-xxxs);
   position: absolute;
   top: 55px;
   right: 15px;
-  line-height: var(--consonant-merch-card-body-line-height);
+  line-height: var(--merch-card-body-line-height);
 }
 
 merch-card[variant="catalog"] [slot="action-menu-content"] ul {
@@ -65,7 +65,7 @@ merch-card[variant="catalog"] [slot="action-menu-content"] ul {
 
 merch-card[variant="catalog"] [slot="action-menu-content"] ul li {
   padding-left: 0;
-  line-height: var(--consonant-merch-card-body-line-height);
+  line-height: var(--merch-card-body-line-height);
 }
 
 merch-card[variant="catalog"] [slot="action-menu-content"] ::marker {
@@ -82,8 +82,8 @@ merch-card[variant="catalog"] [slot="action-menu-content"] a {
 }
 
 merch-card[variant="catalog"] .payment-details {
-  font-size: var(--consonant-merch-card-body-font-size);
+  font-size: var(--merch-card-body-font-size);
   font-style: italic;
   font-weight: 400;
-  line-height: var(--consonant-merch-card-body-line-height);
+  line-height: var(--merch-card-body-line-height);
 }`;
