@@ -8,12 +8,14 @@
         "lint": "eslint --fix",
         "build": "npm run test && npm run build:bundle",
         "build:docs": "cd ./docs/src && ./build-docs.sh",
+        "build:rsv3": "esbuild src/rsv3/rsv3.js --bundle --loader:.js=jsx --outfile=dist/rsv3.js --format=esm",
         "build:bundle": "node ./build.mjs",
         "test:watch": "wtr --config ./web-test-runner.config.mjs --coverage --watch --debug",
         "test": "wtr --config ./web-test-runner.config.mjs --coverage"
     },
     "dependencies": {},
     "devDependencies": {
+        "@adobe/react-spectrum": "^3.38.0",
         "@dexter/tacocat-core": "file:./internal/tacocat-core-1.13.0.tgz",
         "@esm-bundle/chai-as-promised": "7.1.1",
         "@esm-bundle/chai": "4.3.4-fix.0",
@@ -81,6 +83,8 @@
         "markdown-it-highlightjs": "^4.2.0",
         "markdown-it": "^14.1.0",
         "prettier": "^3.3.2",
+        "react-dom": "^18.3.1",
+        "react": "^18.3.1",
         "sinon": "13.0.1"
     }
 }

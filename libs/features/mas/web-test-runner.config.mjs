@@ -44,8 +44,10 @@ export default {
             inject: {
                 importMap: {
                     imports: {
-                        react: '/test/mocks/react.js',
-                        '@pandora/fetch': '/test/mocks/pandora-fetch.js',
+                        '@adobe/react-spectrum': '/dist/rsv3.js',
+                        react: '/dist/rsv3.js',
+                        'react-dom': '/dist/rsv3.js',
+                        'react-dom/client': '/dist/rsv3.js',
                     },
                 },
             },

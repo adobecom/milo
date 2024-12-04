@@ -4,8 +4,12 @@ main {
   margin: 0 16px;
 }
 
-a {
+a:not([is="checkout-link"]) {
   color: var(--spectrum-button-content-color-default);
+}
+
+a[is="checkout-link"] {
+  color: inherit;
 }
 
 .container {
