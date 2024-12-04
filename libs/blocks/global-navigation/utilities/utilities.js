@@ -2,7 +2,7 @@
 import {
   getConfig, getMetadata, loadStyle, loadLana, decorateLinks, localizeLink,
 } from '../../../utils/utils.js';
-import { getFederatedContentRoot, getFederatedUrl } from '../../../utils/federated.js';
+import { getFederatedContentRoot, getFederatedUrl, getFedsPlaceholderConfig } from '../../../utils/federated.js';
 import { processTrackingLabels } from '../../../martech/attributes.js';
 import { replaceText } from '../../../features/placeholders.js';
 
@@ -106,24 +106,6 @@ export const federatePictureSources = ({ section, forceFederate } = {}) => {
         source.setAttribute(type, `${getFederatedContentRoot()}${federalPrefix}${path}`);
       }
     });
-};
-
-let fedsPlaceholderConfig;
-export const getFedsPlaceholderConfig = ({ useCache = true } = {}) => {
-  if (useCache && fedsPlaceholderConfig) return fedsPlaceholderConfig;
-
-  const { locale, placeholders } = getConfig();
-  const libOrigin = getFederatedContentRoot();
-
-  fedsPlaceholderConfig = {
-    locale: {
-      ...locale,
-      contentRoot: `${libOrigin}${locale.prefix}/federal/globalnav`,
-    },
-    placeholders,
-  };
-
-  return fedsPlaceholderConfig;
 };
 
 export function getAnalyticsValue(str, index) {
