@@ -43,6 +43,7 @@
 
   /* mobile gnav redesign */
   --feds-borderColor-link-v2: #323232;
+  --feds-borderColor-localnav-v2: #323232;
 }
 
 .feds--dark .feds-navLink--hoverCaret:hover,

@@ -1072,12 +1072,15 @@ header + .feds-localnav {
   border: 0;
   padding: 0 20px;
   text-align: justify;
+  color: var(--text-color);
+  cursor: pointer;
   border-top: 1px solid var(--feds-borderColor-localnav-v2);
   border-bottom: 1px solid var(--feds-borderColor-localnav-v2);
   background-color: var(--feds-background-nav);
 }
 
 .feds-localnav-items {
+  padding: 20px 0 24px;
   background: var(--feds-background-popup);
   border-bottom: 1px solid var(--feds-borderColor-localnav-v2);
   display: none;
@@ -1134,7 +1137,7 @@ header + .feds-localnav {
 }
 
 .feds-localnav .feds-localnav-items .feds-navItem--centered {
-  padding: 12px 20px;
+  padding: 10px 20px;
 }
 
 .feds-localnav .feds-dropdown--active::before {
