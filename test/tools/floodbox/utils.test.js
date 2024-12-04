@@ -1,5 +1,5 @@
 import { expect } from '@esm-bundle/chai';
-import { isEditableFile, getFileName, findFragmentsAndAssets } from '../../../tools/floodbox/utils.js';
+import { isEditableFile, getFileName, getFileExtension } from '../../../tools/floodbox/utils.js';
 
 describe('isEditableFile', () => {
   it('should return true for html extension', () => {
@@ -49,8 +49,24 @@ describe('getFileName', () => {
   });
 });
 
-describe('findFragmentsAndAssets', () => {
-  it('should return an empty array', () => {
-    expect(findFragmentsAndAssets()).to.eql([]);
+describe('getFileExtension', () => {
+  it('should return extension for a given path', () => {
+    expect(getFileExtension('/path/to/file.html')).to.equal('html');
+  });
+
+  it('should return extension for a path with multiple dots', () => {
+    expect(getFileExtension('/path/to/file.name.with.dots.html')).to.equal('html');
+  });
+
+  it('should return null for a path ending with a slash', () => {
+    expect(getFileExtension('/path/to/')).to.be.null;
+  });
+
+  it('should return extension for a path without extension', () => {
+    expect(getFileExtension('/path/to/file')).to.be.null;
+  });
+
+  it('should return extension for a path with multiple slashes', () => {
+    expect(getFileExtension('/path/to//file.html')).to.equal('html');
   });
 });

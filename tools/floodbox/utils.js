@@ -10,12 +10,13 @@ function getFileName(path) {
   return fileNameWithExt;
 }
 
-function findFragmentsAndAssets() {
-  return [];
+function getFileExtension(path) {
+  const match = path.match(/\.([a-zA-Z0-9]+)$/);
+  return match ? match[1] : null;
 }
 
 export {
   isEditableFile,
   getFileName,
-  findFragmentsAndAssets,
+  getFileExtension,
 };
