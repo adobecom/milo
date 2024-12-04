@@ -41,6 +41,9 @@ const getStageDomainsMap = (stageDomainsMap) => (
   }
 );
 
+// Production Domain
+const prodDomains = ['milo.adobe.com', 'business.adobe.com', 'www.adobe.com', 'adobecom.github.io'];
+
 function getParamsConfigs(configs) {
   return blockConfig.reduce((acc, block) => {
     block.params.forEach((param) => {
@@ -107,6 +110,7 @@ export default async function loadBlock(configs, customLib) {
     contentRoot: authoringPath || footer.authoringPath,
     theme,
     ...paramConfigs,
+    prodDomains,
     standaloneGnav: true,
     stageDomainsMap: getStageDomainsMap(stageDomainsMap),
   };
