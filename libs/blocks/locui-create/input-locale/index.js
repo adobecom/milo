@@ -19,18 +19,25 @@ export default function useInputLocale() {
   );
 
   const findLanguageForLocale = (locale) => locales.value.find((lang) => lang.livecopies.split(',').includes(locale));
+
   const transformActiveLocales = () => {
     const groupedLocales = {};
+    const languageCodes = {};
     Object.entries(activeLocales).forEach(([locale, language]) => {
+      const langObj = findLanguageForLocale(locale);
+      if (!langObj) return;
+
       if (!groupedLocales[language]) {
         groupedLocales[language] = [];
+        languageCodes[language] = langObj.languagecode;
       }
       groupedLocales[language].push(locale);
     });
     return Object.entries(groupedLocales).map(([language, localeList]) => ({
-      languages: language,
-      localeList,
-      action: '',
+      language,
+      locales: projectType.value === 'rollout' ? localeList : [],
+      action: projectType.value,
+      languagecode: languageCodes[language],
       workflow: '',
     }));
   };
@@ -46,13 +53,16 @@ export default function useInputLocale() {
       return updated;
     }, { ...prev }));
   };
+
   const errorPresent = () => !!Object.keys(activeLocales).length;
+
   const handleNext = () => {
     if (!errorPresent()) return;
-    setProject({ locale: transformActiveLocales() });
+    setProject({ languages: transformActiveLocales() });
     setLocale({ selectedLocale, activeLocales });
     nextStep();
   };
+
   const handleBack = () => {
     setLocale({ selectedLocale, activeLocales });
     prevStep();

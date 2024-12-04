@@ -25,7 +25,6 @@ export default function InputActionsView() {
       projectCreatedModal();
     }
   };
-
   return html`
   <div class="locui-form-container">
     <div class="locui-table">
@@ -40,10 +39,10 @@ export default function InputActionsView() {
             </tr>
           </thead>
           <tbody>
-            ${project.value.locale.map((entry) => html`
+            ${project.value.languages.map((entry) => html`
               <tr>
-                <td>${entry.languages}</td>
-                <td>${entry.localeList.join(', ')}</td>
+                <td>${entry.language}</td>
+                <td>${entry.locales.join(', ')}</td>
                 <td>
                   <select
                     value=${entry.action || ''}

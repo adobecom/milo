@@ -6,7 +6,7 @@ export const currentStep = signal(1);
 export const project = signal(null);
 export const locales = signal([]);
 export const locSelected = signal(null);
-export const projectType = signal('rollout');
+export const projectType = signal('rollout'); // Need to update dynamically
 
 export function nextStep() {
   currentStep.value += 1;
