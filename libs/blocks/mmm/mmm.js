@@ -2,85 +2,37 @@ import { createTag, customFetch, loadStyle } from '../../utils/utils.js';
 import { fetchData, DATA_TYPE } from '../../features/personalization/personalization.js';
 import { getMepPopup } from '../../features/personalization/preview.js';
 
-const debugVersion = 'params'; // hash or params
-
 const API_DOMAIN = 'https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-2.on.aws';
 const API_URLS = {
   pageList: `${API_DOMAIN}/get-pages`,
   pageDetails: `${API_DOMAIN}/get-page?id=`,
 };
 
-// hash methods
-function updateWindowUrlWithSearchHash() {
-  const newHash = [];
-  const type = document.querySelector('.tab-list-container button[aria-selected="true"]').innerHTML;
-  newHash.push(`type=${type}`);
-  if (type === 'Dropdown') {
-    const geoValue = `geo=${document.querySelector('select#mmm-search-geo').value}`;
-    const topPageValue = `page=${document.querySelector('select#mmm-search-page').value}`;
-    newHash.push(geoValue, topPageValue);
+function buildShareableLink() {
+  const urlLoc = window.location;
+  const shareableLinkParams = {};
+  shareableLinkParams.type = document.querySelector('.tab-list-container button[aria-selected="true"]').innerHTML;
+  if (shareableLinkParams.type === 'Dropdown') {
+    shareableLinkParams.geo = document.querySelector('select#mmm-search-geo').value;
+    shareableLinkParams.topPage = document.querySelector('select#mmm-search-page').value;
   } else {
-    const query = document.querySelector('#mmm-search-input').value;
-    if (query) newHash.push(`q=${query}`);
+    shareableLinkParams.q = document.querySelector('#mmm-search-input').value;
+    shareableLinkParams.tab = 'mmm-options-2'; // could be dynamic based if the tabindex worked
   }
-  console.log(`new hash no encoding: #${newHash.join('&')}`);
-  window.location.hash = encodeURIComponent(newHash.join('&'));
-}
-function searchFromWindowUrl() {
-  const decodedHash = decodeURIComponent(window.location.hash);
-  const hashParams = decodedHash.replace('#', '').split('&');
-  if (hashParams.length === 0) return;
-  const paramsObj = {};
-  hashParams.forEach((pair) => {
-    const currentPair = pair.split('=');
-    paramsObj[currentPair[0]] = currentPair[1];
-  });
-  console.log('windowparams: for API', paramsObj);
-}
-
-// param methods
-function buildSharableLink() {
-  // runs only on button click
-
-  // const newUrlQueryParam = [];
-  // const type = document.querySelector('.tab-list-container button[aria-selected="true"]').innerHTML;
-  // newUrlQueryParam.push(`type=${type}`);
-  // if (type === 'Dropdown') {
-  //   const geoValue = `&geo=${document.querySelector('select#mmm-search-geo').value}`;
-  //   const topPageValue = `&page=${document.querySelector('select#mmm-search-page').value}`;
-  //   newUrlQueryParam.push(geoValue, topPageValue);
-  // } else {
-  //   const query = document.querySelector('#mmm-search-input').value;
-  //   if (query) newUrlQueryParam.push(`q=${query}`);
-  // }
-  // console.log(`sharable link no encoding= ?${newUrlQueryParam.join('&')}`);
-  // const sharableLink = encodeURIComponent(newUrlQueryParam.join('&'));
-  // console.log(`sharable link= ${sharableLink}`);
-
-  // OR this is prob better
-  const urlObj = window.location;
-  const newDomain = new URL(urlObj.protocol + urlObj.host + urlObj.pathname);
-  const sharableLinkParams = {};
-
-  sharableLinkParams.type = document.querySelector('.tab-list-container button[aria-selected="true"]').innerHTML;
-  if (sharableLinkParams.type === 'Dropdown') {
-    sharableLinkParams.geo = document.querySelector('select#mmm-search-geo').value;
-    sharableLinkParams.topPage = document.querySelector('select#mmm-search-page').value;
-  } else sharableLinkParams.q = document.querySelector('#mmm-search-input').value;
-
-  newDomain.search = new URLSearchParams(sharableLinkParams).toString();
-  const sharableLink = newDomain.toString();
-  console.log(`new sharable link: ${sharableLink}`);
+  const shareableLinkNew = new URL(window.location.pathname, urlLoc.protocol + urlLoc.host);
+  shareableLinkNew.search = new URLSearchParams(shareableLinkParams).toString();
+  console.log(`newest shareable link: ${shareableLinkNew.toString()}`);
 }
 function searchFromWindowParameters() {
   const searchParams = new URLSearchParams(decodeURIComponent(window.location.search));
   const newValuesToBuild = {};
-  newValuesToBuild.type = searchParams.get('type');
-  if (newValuesToBuild.type === 'Dropdown') {
+  if (searchParams.has('tab')) {
+    newValuesToBuild.q = searchParams.get('q');
+  } else {
     newValuesToBuild.geo = searchParams.get('geo');
-    newValuesToBuild.page = searchParams.get('page');
-  } else newValuesToBuild.q = searchParams.get('q');
-  return Object.keys(newValuesToBuild).length > 1 ? newValuesToBuild : null;
+    newValuesToBuild.topPage = searchParams.get('topPage');
+  }
+  return Object.keys(newValuesToBuild).length ? newValuesToBuild : null;
 }
 
 async function toggleDrawer(el, dd) {
@@ -148,6 +100,7 @@ function createButtonDetailsPair(mmmEl, page) {
   const dt = createTag('dt', false, dtHtml);
   const dd = createTag('dd', { id: panelId, hidden: true }, panel);
   Object.keys(page).forEach((key) => {
+    // const val = page[key] === 'en-US'
     dt.dataset[key] = page[key];
     dd.dataset[key] = page[key];
   });
@@ -166,7 +119,7 @@ function searchFilterByInput() {
 
   if (!mmmEntries) return;
   mmmEntries.forEach((entry) => {
-    const { url, path, prefix = 'us' } = entry.dataset;
+    const { url, path, prefix = 'en-US' } = entry.dataset;
     entry.classList.remove('filter-hide');
     if (filterType === 'search') {
       if (!url.includes(searchFieldValue)) entry.classList.add('filter-hide');
@@ -179,10 +132,17 @@ function searchFilterByInput() {
       entry.classList.add('filter-hide');
     }
   });
+  buildShareableLink();
+}
 
-  if (debugVersion === 'hash') {
-    updateWindowUrlWithSearchHash();
-  } else buildSharableLink();
+function createShareButtons() {
+  const shareButtonTemplate = createTag(
+    'div',
+    { id: 'mmm-shareButtonContainer' },
+    '<div class="share" data-block-status="loaded" daa-lh="b2|share"><p>Share this search</p><p class="icon-container"><button type="button" class="copy-to-clipboard" aria-label="Copy link to clipboard" data-copy-to-clipboard="Copy link to clipboard" data-copied="Copied!" daa-ll="Copy link to clipboa-6--"><svg viewBox="0 0 37 37" style="enable-background:new 0 0 37 37" xml:space="preserve" class="icon icon-clipboard"><path fill="currentColor" d="M31 0H6C2.7 0 0 2.7 0 6v25c0 3.3 2.7 6 6 6h25c3.3 0 6-2.7 6-6V6c0-3.3-2.7-6-6-6zM15.34 30.58a6.296 6.296 0 0 1-8.83 0c-2.48-2.44-2.52-6.43-.08-8.91l6.31-6.31a6.423 6.423 0 0 1 9.01-.04c.43.43.79.93 1.08 1.47l-1.52 1.51c-.11.11-.24.2-.38.28a3.68 3.68 0 0 0-3.32-2.44c-1.1-.04-2.17.37-2.96 1.13l-6.31 6.31a3.591 3.591 0 0 0 0 5.09 3.591 3.591 0 0 0 5.09 0c.19-.19 2.81-2.85 3.26-3.3 1.04.43 2.16.61 3.29.53-.96.95-4.31 4.34-4.64 4.68zm15.19-15.2-5.94 5.94c-2.54 2.57-6.63 2.73-9.38.38-.43-.43-.79-.93-1.08-1.47l1.44-1.5a2 2 0 0 1 .37-.28c.24.56.61 1.05 1.09 1.43.64.62 1.49.97 2.37.97 1.1.04 2.17-.37 2.96-1.14l6.26-6.26a3.591 3.591 0 0 0 0-5.09 3.591 3.591 0 0 0-5.09 0c-.19.19-2.87 2.83-3.32 3.29a7.267 7.267 0 0 0-3.29-.53c.96-.96 4.36-4.32 4.7-4.66a6.301 6.301 0 0 1 8.91 0l.01.01c2.46 2.47 2.46 6.46-.01 8.91z"></path></svg></button></p></div>',
+  );
+  const marqueeInnerContainer = document.querySelector('.marquee > .container');
+  marqueeInnerContainer.insertAdjacentElement('afterend', shareButtonTemplate);
 }
 
 async function createForms(sharedUrlSettings) {
@@ -194,9 +154,9 @@ async function createForms(sharedUrlSettings) {
   const dropdownContainer = document.querySelector('.section-metadata.dropdowns');
   dropdownContainer.parentNode.insertBefore(doc, dropdownContainer);
   // insert default for 2 dropdowns here
-  if (sharedUrlSettings?.type === 'Dropdown') {
+  if (sharedUrlSettings?.geo && sharedUrlSettings?.topPage) { // check this
     document.querySelector(`#mmm-search-geo [value="${sharedUrlSettings.geo}"]`).setAttribute('selected', 'selected');
-    document.querySelector(`#mmm-search-page [value="${sharedUrlSettings.page}"]`).setAttribute('selected', 'selected');
+    document.querySelector(`#mmm-search-page [value="${sharedUrlSettings.topPage}"]`).setAttribute('selected', 'selected');
   }
   doc.querySelectorAll('select').forEach((field) => {
     field.addEventListener('change', searchFilterByInput);
@@ -205,9 +165,7 @@ async function createForms(sharedUrlSettings) {
   const searchForm = document.querySelector('#mmm-search-input-container');
   searchContainer.parentNode.insertBefore(searchForm, searchContainer);
   // insert default for q value here
-  if (sharedUrlSettings?.type === 'Search') {
-    searchForm.querySelector('input').value = sharedUrlSettings.q;
-  }
+  if (sharedUrlSettings?.q) searchForm.querySelector('input').value = sharedUrlSettings.q;
   searchForm.addEventListener('keyup', searchFilterByInput);
   searchForm.addEventListener('change', searchFilterByInput);
   document.querySelectorAll('.tab-list-container button').forEach((button) => {
@@ -216,12 +174,14 @@ async function createForms(sharedUrlSettings) {
 }
 
 export default async function init(el) {
-  if (debugVersion === 'params' && window.location.search.length !== 0) {
-    const urlParamSettings = window.location.search ? searchFromWindowParameters() : null;
+  if (window.location.search.length !== 0) {
+    if (window.location.search.includes('tab=')) {
+      document.querySelector('.tabs.radio > div:nth-child(2) > div:nth-child(2)').innerHTML = '2';
+    }
+    const urlParamSettings = searchFromWindowParameters();
     console.log(urlParamSettings);
     createForms(urlParamSettings);
   } else createForms();
-
   const mmmElContainer = createTag('div', { class: 'mmm-container max-width-12-desktop' });
   const mmmEl = createTag('dl', {
     class: 'mmm foreground',
@@ -236,10 +196,7 @@ export default async function init(el) {
   const main = document.querySelector('main');
   section.append(mmmElContainer);
   main.append(section);
-  if (debugVersion === 'hash') {
-    if (!window.location.hash.length) return;
-    searchFromWindowUrl();
-  }
+  createShareButtons();
   loadStyle('/libs/features/personalization/preview.css');
 }
 /*
@@ -263,7 +220,3 @@ no buttons just add to fire when
 2. change on dropdowns
 3. radio button change (automatically runs the function to get same results)
 */
-
-// add updateWindowUrl from within searchFilterByInput ... whereve the changes are happening in functions
-// switch to not constantly adding hash - just parse param if available (? not #) no container value, just the forms or search
-// update selected tab before render IF search value exists in url

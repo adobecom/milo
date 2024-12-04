@@ -129,10 +129,8 @@
 }
 
 .mep-popup a.mep-edit-manifest {
-  position: absolute;
-  display: block;
-  right: 0;
-  top: 0;
+  position: relative; 
+  margin-left: 6px;
   cursor: pointer;
 }
 

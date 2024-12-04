@@ -21,6 +21,7 @@ dl.mmm {
   padding: var(--spacing-xs);
   font-size: var(--type-body-s-size);
   line-height: var(--type-body-s-lh);
+  background: #eee;
 }
 
 .mmm dt button {
@@ -44,6 +45,12 @@ dl.mmm {
 .mmm dt button:hover {
   cursor: pointer;
   color: var(--color-black);
+}
+
+.mmm-container dt button h5 {
+  word-wrap: break-word;
+  display: inline-block;
+  width: calc(100% - 30px);
 }
 
 .mmm-container.no-borders .mmm dt button {
