@@ -306,7 +306,8 @@ const loadFromLS = () => {
 
 const publishWarning = document.querySelector('.publish-warning');
 const checkCaasEnv = () => {
-  if (caasEnv.value  === 'prod' && !draftOnly.checked) {
+  // eslint-disable-next-line no-undef
+  if (caasEnv.value === 'prod' && !draftOnly.checked) {
     publishWarning.style.height = '30px';
   } else {
     publishWarning.style.height = '0';
@@ -337,7 +338,6 @@ const resetAdvancedOptions = () => {
   useHtml.checked = false;
   usePreview.checked = false;
   publishToFloodgate.value = 'default';
-  // selectedPreset.contentType = ''
   /* eslint-enable no-undef */
 };
 
@@ -377,13 +377,14 @@ presetSelector.addEventListener('change', () => {
   const ls = localStorage.getItem(LS_KEY);
   const config = ls ? JSON.parse(ls) : {};
   config.presetSelector = selectedPreset.id || 'default';
-  config.caasEnv = caasEnv.value,
+  // eslint-disable-next-line no-undef
+  config.caasEnv = caasEnv.value;
   config.host = selectedPreset.host || '';
   config.owner = selectedPreset.owner || '';
   config.repo = selectedPreset.repo || '';
   config.useHtml = selectedPreset.useHtml === 'true';
   if (selectedPreset.contentType === '' || selectedPreset.contentType?.toLowerCase() === 'auto') {
-    config.contentType = "auto";
+    config.contentType = 'auto';
   } else {
     config.contentType = selectedPreset.contentType;
   }
