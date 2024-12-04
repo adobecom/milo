@@ -59,4 +59,10 @@ describe('validatePaths', () => {
     const result = validatePaths(paths);
     expect(result).to.eql({ valid: false, org: '', repo: '', expName: '' });
   });
+
+  it('should return invalid when path has invalid locale', () => {
+    const paths = ['/org/repo-graybox/expName/myfile', '/org/repo-graybox/invalidLocale/expName/myfile'];
+    const result = validatePaths(paths);
+    expect(result).to.eql({ valid: false, org: '', repo: '', expName: '' });
+  });
 });
