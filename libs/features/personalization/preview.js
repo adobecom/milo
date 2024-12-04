@@ -164,7 +164,7 @@ function getManifestListDomAndParameter(manifests, pageId) {
     } = manifest;
     const editUrl = manifestUrl || manifestPath;
     // MUST FIX:
-    // editUrl BREAKS mep manifest link pencil on normal pages -- it's expecting a realtive path
+    // editUrl BREAKS mep manifest link pencil on normal pages -- it's expecting a relative path
     let radio = '';
     variantNames.forEach((variant) => {
       const checked = {
