@@ -8,7 +8,6 @@ import { getSettings } from '../src/settings.js';
 
 import {
     CLASS_NAME_FAILED,
-    ERROR_MESSAGE_BAD_REQUEST,
     ERROR_MESSAGE_OFFER_NOT_FOUND,
 } from '../src/constants.js';
 import {
@@ -181,8 +180,7 @@ describe('class "CheckoutLink"', () => {
         await initMasCommerceService();
         const checkoutLink = mockCheckoutLink('xyz');
         await expect(checkoutLink.onceSettled()).eventually.be.rejectedWith(
-            ERROR_MESSAGE_BAD_REQUEST,
-        );
+            'Bad WCS request: 404, url: https://www.adobe.com/web_commerce_artifact?offer_selector_ids=xyz&country=US&locale=en_US&landscape=PUBLISHED&api_key=wcms-commerce-ims-ro-user-milo&language=MULT');
     });
 
     it('renders link for perpetual offers', async () => {

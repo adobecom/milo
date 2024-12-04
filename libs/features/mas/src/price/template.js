@@ -166,6 +166,7 @@ const createPriceTemplate =
         } = {},
         {
             commitment,
+            offerSelectorIds,
             formatString,
             price,
             priceWithoutDiscount,
@@ -184,7 +185,7 @@ const createPriceTemplate =
         }).forEach(([key, value]) => {
             if (value == null) {
               /* c8 ignore next 2 */
-                throw new Error(`Argument "${key}" is missing`);
+                throw new Error(`Argument "${key}" is missing for osi ${offerSelectorIds?.toString()}, country ${country}, language ${language}`);
             }
         });
 

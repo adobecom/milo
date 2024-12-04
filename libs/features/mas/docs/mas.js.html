@@ -48,7 +48,10 @@
 </ul>
 <h2 id="enablement-mas-commerce-service" tabindex="-1">Enablement <code>mas-commerce-service</code> <a class="header-anchor" href="#enablement-mas-commerce-service" href="#enablement-mas-commerce-service" title="Permalink to this heading">#</a></h2>
 <p>You do need to have mas.js on your page / application, including it can be done like the following</p>
-<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;https://www.adobe.com/libs/features/mas/mas/dist/mas.js&quot;</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;module&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">script</span>
+    <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;https://www.adobe.com/libs/features/mas/mas/dist/mas.js&quot;</span>
+    <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;module&quot;</span>
+&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
 </code></pre>
 <h3 id="attributes" tabindex="-1">Attributes <a class="header-anchor" href="#attributes" href="#attributes" title="Permalink to this heading">#</a></h3>
 <table>
@@ -92,6 +95,12 @@
 <td><code>false</code></td>
 </tr>
 <tr>
+<td><code>host-env</code></td>
+<td>host environment, either <code>stage</code> or <code>prod</code></td>
+<td><code>prod</code></td>
+<td><code>false</code></td>
+</tr>
+<tr>
 <td><code>force-tax-exclusive</code></td>
 <td>force all price display to be tax exclusive</td>
 <td><code>false</code></td>
@@ -113,6 +122,18 @@
 <td><code>wcs-api-key</code></td>
 <td>api key used for making WCS calls</td>
 <td><code>wcms-commerce-ims-ro-user-milo</code></td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>lana-tags</code></td>
+<td>Enables logging via lana<a href="https://github.com/adobecom/milo/blob/stage/libs/utils/lana.js">^1</a> with the given tags. e.g:<code>ccd</code>.</td>
+<td></td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>lana-sample-rate</code></td>
+<td>Sets the sampling rate, see <a href="https://wiki.corp.adobe.com/pages/viewpage.action?spaceKey=WCMSOps&amp;title=LANA+-+Log+Always+Never+Assume">^1</a> for details.</td>
+<td>1</td>
 <td><code>false</code></td>
 </tr>
 </tbody>
@@ -167,7 +188,10 @@
 <span class="hljs-tag">&lt;<span class="hljs-name">mas-commerce-service</span> <span class="hljs-attr">country</span>=<span class="hljs-string">&quot;JP&quot;</span> <span class="hljs-attr">language</span>=<span class="hljs-string">&quot;en&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">mas-commerce-service</span>&gt;</span>
 
 <span class="hljs-comment">&lt;!-- with custom api key &amp; checkout clientid --&gt;</span>
-<span class="hljs-tag">&lt;<span class="hljs-name">mas-commerce-service</span> <span class="hljs-attr">wcs-api-key</span>=<span class="hljs-string">&quot;custom-api-key&quot;</span> <span class="hljs-attr">checkout-client-id</span>=<span class="hljs-string">&quot;custom-client-id&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">mas-commerce-service</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">mas-commerce-service</span>
+    <span class="hljs-attr">wcs-api-key</span>=<span class="hljs-string">&quot;custom-api-key&quot;</span>
+    <span class="hljs-attr">checkout-client-id</span>=<span class="hljs-string">&quot;custom-client-id&quot;</span>
+&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">mas-commerce-service</span>&gt;</span>
 </code></pre>
 <p>you can play around with below price, either adding locale, language or env as parameters that will be injected to <code>mas-commerce-service</code> as attributes, and then it will be activated.</p>
 <p class="example">
