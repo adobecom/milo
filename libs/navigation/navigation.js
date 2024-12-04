@@ -84,11 +84,11 @@ export default async function loadBlock(configs, customLib) {
     await import('./navigation.css');
   } catch (e) {
     if (theme === 'dark') {
-      loadStyle(`${miloLibs}/libs/navigation/dist/base.css`, () => loadStyle(`${miloLibs}/libs/navigation/dist/dark-nav.css`));
+      loadStyle(`${miloLibs}/libs/navigation/base.css`, () => loadStyle(`${miloLibs}/libs/navigation/dist/dark-nav.css`));
     } else {
-      loadStyle(`${miloLibs}/libs/navigation/dist/base.css`);
+      loadStyle(`${miloLibs}/libs/navigation/base.css`);
     }
-    loadStyle(`${miloLibs}/libs/navigation/dist/navigation.css`);
+    loadStyle(`${miloLibs}/libs/navigation/navigation.css`);
   }
 
   // Relative paths work just fine since they exist in the context of this file's origin
