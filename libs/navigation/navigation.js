@@ -129,7 +129,7 @@ export default async function loadBlock(configs, customLib) {
           try {
             await import('./footer.css');
           } catch (e) {
-            loadStyle(`${miloLibs}/libs/navigation/dist/footer.css`);
+            loadStyle(`${miloLibs}/libs/navigation/footer.css`);
           }
           const { default: init } = await import('../blocks/global-footer/global-footer.js');
           await bootstrapBlock(init, { ...block });
