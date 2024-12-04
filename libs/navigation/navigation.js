@@ -84,11 +84,11 @@ export default async function loadBlock(configs, customLib) {
     await import('./navigation.css');
   } catch (e) {
     if (theme === 'dark') {
-      loadStyle(`${miloLibs}/libs/navigation/dist/base.css`, () => loadStyle(`${miloLibs}/libs/navigation/dist/dark-nav.css`));
+      loadStyle(`${miloLibs}/libs/navigation/base.css`, () => loadStyle(`${miloLibs}/libs/navigation/dark-nav.css`));
     } else {
-      loadStyle(`${miloLibs}/libs/navigation/dist/base.css`);
+      loadStyle(`${miloLibs}/libs/navigation/base.css`);
     }
-    loadStyle(`${miloLibs}/libs/navigation/dist/navigation.css`);
+    loadStyle(`${miloLibs}/libs/navigation/navigation.css`);
   }
 
   // Relative paths work just fine since they exist in the context of this file's origin
@@ -129,7 +129,7 @@ export default async function loadBlock(configs, customLib) {
           try {
             await import('./footer.css');
           } catch (e) {
-            loadStyle(`${miloLibs}/libs/navigation/dist/footer.css`);
+            loadStyle(`${miloLibs}/libs/navigation/footer.css`);
           }
           const { default: init } = await import('../blocks/global-footer/global-footer.js');
           await bootstrapBlock(init, { ...block });
