@@ -65,6 +65,7 @@ export default async function loadBlock(configs, customLib) {
     env = 'prod',
     locale = '',
     theme,
+    allowedOrigins,
     stageDomainsMap = {},
   } = configs || {};
   if (!header && !footer) {
@@ -111,6 +112,7 @@ export default async function loadBlock(configs, customLib) {
     theme,
     ...paramConfigs,
     prodDomains,
+    allowedOrigins,
     standaloneGnav: true,
     stageDomainsMap: getStageDomainsMap(stageDomainsMap),
   };
