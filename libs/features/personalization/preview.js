@@ -36,7 +36,6 @@ function updatePreviewButton(popup, pageId) {
     `input[type="checkbox"]#mepHighlightCheckbox${pageId}`,
   );
 
-  // ok if this doessn't work on page open?)
   document.body.dataset.mepHighlight = mepHighlightCheckbox.checked;
   if (mepHighlightCheckbox.checked) {
     simulateHref.searchParams.set('mepHighlight', true);
