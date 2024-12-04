@@ -1,9 +1,9 @@
 import { createTag, getConfig, getMetadata, loadStyle } from '../../utils/utils.js';
 import { TRACKED_MANIFEST_TYPE, getFileName } from './personalization.js';
 
-function updatePreviewButton(popup) {
+function updatePreviewButton(popup, pageId) {
   const selectedInputs = popup.querySelectorAll(
-    'input[type="radio"]:checked, .mep-popup input[type="text"]',
+    'input[type="radio"]:checked, input[type="text"]',
   );
   const manifestParameter = [];
 
@@ -22,17 +22,21 @@ function updatePreviewButton(popup) {
         manifestParameter.push(value);
       }
     } else {
-      value = `${selected.getAttribute('name')}--${value}`;
+      value = `${selected.getAttribute('name').replace(/\.json-\d+/, '.json')}--${value}`;
       manifestParameter.push(value);
     }
   });
 
-  const simulateHref = new URL(window.location.href);
+  const isMmm = !!pageId;
+  const page = isMmm ? popup.closest('[data-url]').dataset.url : window.location.href;
+  const simulateHref = new URL(page);
   simulateHref.searchParams.set('mep', manifestParameter.join('---'));
 
-  const mepHighlightCheckbox = document.querySelector(
-    '.mep-popup input[type="checkbox"]#mepHighlightCheckbox',
+  const mepHighlightCheckbox = popup.querySelector(
+    `input[type="checkbox"]#mepHighlightCheckbox${pageId}`,
   );
+
+  // ok if this doessn't work on page open?)
   document.body.dataset.mepHighlight = mepHighlightCheckbox.checked;
   if (mepHighlightCheckbox.checked) {
     simulateHref.searchParams.set('mepHighlight', true);
@@ -40,8 +44,8 @@ function updatePreviewButton(popup) {
     simulateHref.searchParams.delete('mepHighlight');
   }
 
-  const mepPreviewButtonCheckbox = document.querySelector(
-    '.mep-popup input[type="checkbox"]#mepPreviewButtonCheckbox',
+  const mepPreviewButtonCheckbox = popup.querySelector(
+    `input[type="checkbox"]#mepPreviewButtonCheckbox${pageId}`,
   );
   if (mepPreviewButtonCheckbox.checked) {
     simulateHref.searchParams.set('mepButton', 'off');
@@ -49,8 +53,8 @@ function updatePreviewButton(popup) {
     simulateHref.searchParams.delete('mepButton');
   }
 
-  document
-    .querySelector('.mep-popup a.con-button')
+  popup
+    .querySelector('a.con-button')
     .setAttribute('href', simulateHref.href);
 }
 
@@ -76,6 +80,10 @@ async function getEditManifestUrl(a, w) {
     w.location = a.dataset.manifestPath;
     return false;
   }
+
+  // TODO: fix editUrl issue to handle this
+  // console.log('a.dataset.manifestPath', a.dataset.manifestPath);
+  // console.log(`https://admin.hlx.page/status/adobecom/${repo}/main${a.dataset.manifestPath}?editUrl=auto`);
   const response = await fetch(`https://admin.hlx.page/status/adobecom/${repo}/main${a.dataset.manifestPath}?editUrl=auto`);
   const body = await response.json();
   const editUrl = body?.edit?.url;
@@ -142,7 +150,7 @@ function parseMepConfig() {
   };
 }
 
-function getManifestListDomAndParameter(manifests) {
+function getManifestListDomAndParameter(manifests, pageId) {
   let manifestList = '';
   const manifestParameter = [];
   manifests?.forEach((manifest) => {
@@ -156,6 +164,8 @@ function getManifestListDomAndParameter(manifests) {
       name,
     } = manifest;
     const editUrl = manifestUrl || manifestPath;
+    // MUST FIX:
+    // editUrl BREAKS mep manifest link pencil on normal pages -- it's expecting a realtive path
     let radio = '';
     variantNames.forEach((variant) => {
       const checked = {
@@ -168,7 +178,7 @@ function getManifestListDomAndParameter(manifests) {
         manifestParameter.push(`${manifestPath}--${variant}`);
       }
       radio += `<div>
-        <input type="radio" name="${manifestPath}" value="${variant}" id="${manifestPath}--${variant}" ${checked.attribute}>
+        <input type="radio" name="${manifestPath}${pageId}" value="${variant}" id="${manifestPath}--${variant}" ${checked.attribute}>
         <label for="${manifestPath}--${variant}" ${checked.class}>${variant}</label>
       </div>`;
     });
@@ -182,7 +192,7 @@ function getManifestListDomAndParameter(manifests) {
       manifestParameter.push(`${manifestPath}--default`);
     }
     radio += `<div>
-      <input type="radio" name="${manifestPath}" value="default" id="${manifestPath}--default" ${checked.attribute}>
+      <input type="radio" name="${manifestPath}${pageId}" value="default" id="${manifestPath}--default" ${checked.attribute}>
       <label for="${manifestPath}--default" ${checked.class}>Default (control)</label>
     </div>`;
 
@@ -214,15 +224,15 @@ function getManifestListDomAndParameter(manifests) {
   });
   return { manifestList, manifestParameter };
 }
-function addMepPopupListeners(popup) {
+function addMepPopupListeners(popup, pageId) {
   popup.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach((input) => {
-    input.addEventListener('change', updatePreviewButton.bind(null, popup));
+    input.addEventListener('change', updatePreviewButton.bind(null, popup, pageId));
   });
   popup.querySelectorAll('input[type="text"]').forEach((input) => {
-    input.addEventListener('keyup', updatePreviewButton.bind(null, popup));
+    input.addEventListener('keyup', updatePreviewButton.bind(null, popup, pageId));
   });
-  popup.querySelector('.mep-toggle-advanced').addEventListener('click', () => {
-    document.querySelector('.mep-advanced-container').classList.toggle('mep-advanced-open');
+  popup.querySelector('.mep-toggle-advanced').addEventListener('click', (e) => {
+    e.target.closest('.mep-popup')?.querySelector('.mep-advanced-container')?.classList.toggle('mep-advanced-open');
   });
   popup.querySelectorAll('a[data-manifest-path]').forEach((a) => {
     a.addEventListener('click', () => {
@@ -242,7 +252,8 @@ function addMepPopupListeners(popup) {
 }
 
 export function getMepPopup(manifests, pageInfo = false, mmm = false) {
-  const { manifestList, manifestParameter } = getManifestListDomAndParameter(manifests);
+  const pageId = pageInfo?.pageId ? `-${pageInfo.pageId}` : '';
+  const { manifestList, manifestParameter } = getManifestListDomAndParameter(manifests, pageId);
   const simulateHref = new URL(window.location.href);
   simulateHref.searchParams.set('mep', manifestParameter.join('---'));
   let mepHighlightChecked = '';
@@ -259,7 +270,7 @@ export function getMepPopup(manifests, pageInfo = false, mmm = false) {
 
   listInfo.innerHTML = `
     <div class="mep-manifest-variants">
-      <input type="checkbox" name="mepHighlight" id="mepHighlightCheckbox" ${mepHighlightChecked} value="true"> <label for="mepHighlightCheckbox">Highlight changes</label>
+      <input type="checkbox" name="mepHighlight${pageId}" id="mepHighlightCheckbox${pageId}" ${mepHighlightChecked} value="true"> <label for="mepHighlightCheckbox${pageId}">Highlight changes</label>
     </div>`;
   advancedOptions.innerHTML = `
     <div class="mep-toggle-advanced">Advanced options</div>
@@ -267,13 +278,13 @@ export function getMepPopup(manifests, pageInfo = false, mmm = false) {
         <div>Optional: new manifest location or path</div>
             <div class="mep-manifest-variants">
               <div>
-                <input type="text" name="new-manifest" class="new-manifest">
+                <input type="text" name="new-manifest${pageId}" class="new-manifest">
               </div>
             </div>
           </div>
           <div class="mep-manifest-info">
             <div class="mep-manifest-variants mep-advanced-options">
-              <input type="checkbox" name="mepPreviewButtonCheckbox" id="mepPreviewButtonCheckbox" value="off"> <label for="mepPreviewButtonCheckbox">add mepButton=off to preview link</label>
+              <input type="checkbox" name="mepPreviewButtonCheckbox" id="mepPreviewButtonCheckbox${pageId}" value="off"> <label for="mepPreviewButtonCheckbox${pageId}">add mepButton=off to preview link</label>
             </div>
           </div>
         </div>`;
@@ -298,7 +309,7 @@ export function getMepPopup(manifests, pageInfo = false, mmm = false) {
   mepPopup.append(mepManifestPreviewButton);
   const previewButton = mepPopup.querySelector(`a[data-id="${PREVIEW_BUTTON_ID}"]`);
   if (previewButton) previewButton.href = simulateHref.href;
-  addMepPopupListeners(mepPopup);
+  addMepPopupListeners(mepPopup, pageId);
   return mepPopup;
 }
 
