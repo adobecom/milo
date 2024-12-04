@@ -1,6 +1,22 @@
+:root {
+    /* Fonts */
+    --body-font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
+    --fixed-font-family: 'Roboto Mono', menlo, consolas, 'Liberation Mono', monospace;
+  
+}
+
 body {
   display: flex;
   justify-content: center;
+  font-family: var(--body-font-family);
+  font-size: var(--type-body-m-size);
+  line-height: var(--type-body-m-lh);
+  background-color: var(--background-color);
+  color: var(--text-color);
+  margin: 0;
+  word-wrap: break-word;
+  -webkit-font-smoothing: antialiased;
+  opacity: 1 !important; /* Fix Target hiding */
 }
 
 body.dark {
@@ -10,6 +26,7 @@ body.dark {
 
 main {
   max-width: 1200px;
+  width: 100%;
 }
 
 main > div {

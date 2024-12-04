@@ -39,9 +39,7 @@ merch-card {
 }
 
 .con-button:hover {
-  background-color: var(--color-black);
-  border-color: var(--color-black);
-  color: var(--color-white);
+  background-color: var(--color-gray-300);
   text-decoration: none;
 }
 
@@ -88,14 +86,11 @@ merch-card {
 
 .light .con-button:hover,
 .light .con-button:active {
-  background-color: var(--color-black);
-  border-color: var(--color-black);
-  color: var(--color-white);
+  background-color: var(--color-gray-300);
 }
 
 .dark .con-button:hover {
   background-color: var(--color-white);
-  color: var(--color-black);
   text-decoration: none;
 }
 
@@ -167,4 +162,8 @@ merch-card {
 .dark .con-button.fill[aria-disabled="true"]:hover {
   background-color: var(--color-gray-500);
   color: var(--color-gray-300);
+}
+
+.dark {
+  --text-color: var(--color-white);
 }
