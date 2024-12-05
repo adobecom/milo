@@ -1,10 +1,11 @@
 import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
+import { setConfig } from '../../../libs/utils/utils.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const ogDocument = document.body.innerHTML;
-
 const { default: init } = await import('../../../libs/blocks/figure/figure.js');
+setConfig({});
 
 describe('init', () => {
   afterEach(() => {

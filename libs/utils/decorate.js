@@ -1,6 +1,17 @@
 import { createTag, loadStyle, getConfig, createIntersectionObserver } from './utils.js';
+import { getFederatedContentRoot, getFedsPlaceholderConfig } from './federated.js';
 
 const { miloLibs, codeRoot } = getConfig();
+const HIDE_CONTROLS = '_hide-controls';
+let firstVideo = null;
+let videoLabels = {
+  playMotion: 'Play',
+  pauseMotion: 'Pause',
+  pauseIcon: 'Pause icon',
+  playIcon: 'Play icon',
+  hasFetched: false,
+};
+let videoCounter = 0;
 
 export function decorateButtons(el, size) {
   const buttons = el.querySelectorAll('em a, strong a, p > a strong');
@@ -209,7 +220,7 @@ export function getImgSrc(pic) {
   return source?.srcset ? `poster='${source.srcset}'` : '';
 }
 
-function getVideoAttrs(hash, dataset) {
+export function getVideoAttrs(hash, dataset) {
   const isAutoplay = hash?.includes('autoplay');
   const isAutoplayOnce = hash?.includes('autoplay1');
   const playOnHover = hash?.includes('hoverplay');
@@ -234,12 +245,80 @@ function getVideoAttrs(hash, dataset) {
   return `${globalAttrs} controls`;
 }
 
+export function syncPausePlayIcon(video) {
+  if (!video.getAttributeNames().includes('data-hoverplay')) {
+    const offsetFiller = video.closest('.video-holder').querySelector('.offset-filler');
+    const anchorTag = video.closest('.video-holder').querySelector('a');
+    offsetFiller?.classList.toggle('is-playing');
+    const isPlaying = offsetFiller?.classList.contains('is-playing');
+    const indexOfVideo = (anchorTag.getAttribute('video-index') === '1' && videoCounter === 1) ? '' : anchorTag.getAttribute('video-index');
+    const changedLabel = `${isPlaying ? videoLabels?.pauseMotion : videoLabels?.playMotion}`;
+    const oldLabel = `${!isPlaying ? videoLabels?.pauseMotion : videoLabels?.playMotion}`;
+    const ariaLabel = `${changedLabel} ${indexOfVideo}`.trim();
+    anchorTag?.setAttribute('aria-label', `${ariaLabel} `);
+    anchorTag?.setAttribute('aria-pressed', isPlaying ? 'true' : 'false');
+    const daaLL = anchorTag.getAttribute('daa-ll');
+    if (daaLL) anchorTag.setAttribute('daa-ll', daaLL.replace(oldLabel, changedLabel));
+  }
+}
+
+export function addAccessibilityControl(videoString, videoAttrs, indexOfVideo, tabIndex = 0) {
+  if (videoAttrs.includes('controls')) return videoString;
+  const fedRoot = getFederatedContentRoot();
+  if (videoAttrs.includes('hoverplay')) {
+    return `<a class='pause-play-wrapper video-holder' tabindex=${tabIndex}>${videoString}</a>`;
+  }
+  return `
+    <div class='video-container video-holder'>${videoString}
+      <a class='pause-play-wrapper' role='button' tabindex=${tabIndex} aria-pressed=true video-index=${indexOfVideo}>
+        <div class='offset-filler ${videoAttrs.includes('autoplay') ? 'is-playing' : ''}'>  
+          <img class='accessibility-control pause-icon' src='${fedRoot}/federal/assets/svgs/accessibility-pause.svg'/>
+          <img class='accessibility-control play-icon' src='${fedRoot}/federal/assets/svgs/accessibility-play.svg'/>
+        </div>
+      </a>
+    </div>
+  `;
+}
+
+export function handlePause(event) {
+  event.stopPropagation();
+  if (event.code !== 'Enter' && event.code !== 'Space' && !['focus', 'click', 'blur'].includes(event.type)) {
+    return;
+  }
+  event.preventDefault();
+  const video = event.target.closest('.video-holder').parentElement.querySelector('video');
+  if (event.type === 'blur') {
+    video.pause();
+  } else if (video.paused || video.ended || event.type === 'focus') {
+    video.play();
+  } else {
+    video.pause();
+  }
+  syncPausePlayIcon(video);
+}
+
 export function applyHoverPlay(video) {
   if (!video) return;
-  if (video.hasAttribute('data-hoverplay') && !video.hasAttribute('data-mouseevent')) {
-    video.addEventListener('mouseenter', () => { video.play(); });
-    video.addEventListener('mouseleave', () => { video.pause(); });
-    video.setAttribute('data-mouseevent', true);
+  if (video.hasAttribute('data-hoverplay')) {
+    video.parentElement.addEventListener('focus', handlePause);
+    video.parentElement.addEventListener('blur', handlePause);
+    if (!video.hasAttribute('data-mouseevent')) {
+      video.addEventListener('mouseenter', () => { video.play(); });
+      video.addEventListener('mouseleave', () => { video.pause(); });
+      video.addEventListener('ended', () => { syncPausePlayIcon(video); });
+      video.setAttribute('data-mouseevent', true);
+    }
+  }
+}
+
+export function applyAccessibilityEvents(videoEl) {
+  const pausePlayWrapper = videoEl.parentElement.querySelector('.pause-play-wrapper') || videoEl.closest('.pause-play-wrapper');
+  if (pausePlayWrapper?.querySelector('.accessibility-control')) {
+    pausePlayWrapper.addEventListener('click', handlePause);
+    pausePlayWrapper.addEventListener('keydown', handlePause);
+  }
+  if (videoEl.hasAttribute('autoplay')) {
+    videoEl.addEventListener('ended', () => { syncPausePlayIcon(videoEl); });
   }
 }
 
@@ -275,7 +354,7 @@ function getVideoIntersectionObserver() {
         const isHaveLoopAttr = video.getAttributeNames().includes('loop');
         const { playedOnce = false } = video.dataset;
         const isPlaying = video.currentTime > 0 && !video.paused && !video.ended
-        && video.readyState > video.HAVE_CURRENT_DATA;
+          && video.readyState > video.HAVE_CURRENT_DATA;
 
         if (intersectionRatio <= 0.8) {
           video.pause();
@@ -331,13 +410,72 @@ export async function loadCDT(el, classList) {
   }
 }
 
+export function isVideoAccessible(anchorTag) {
+  return !anchorTag?.hash.includes(HIDE_CONTROLS);
+}
+
+function updateFirstVideo() {
+  if (firstVideo != null && firstVideo?.controls === false && videoCounter > 1) {
+    let videoHolder = document.querySelector('[video-index="1"]') || firstVideo.closest('.video-holder');
+    if (videoHolder.nodeName !== 'A') videoHolder = videoHolder.querySelector('a.pause-play-wrapper');
+    const firstVideoLabel = videoHolder.getAttribute('aria-label');
+    videoHolder.setAttribute('aria-label', `${firstVideoLabel} 1`);
+    firstVideo = null;
+  }
+}
+
+function updateAriaLabel(videoEl, videoAttrs) {
+  if (!videoEl.getAttributeNames().includes('data-hoverplay')) {
+    const pausePlayWrapper = videoEl.parentElement.querySelector('.pause-play-wrapper') || videoEl.closest('.pause-play-wrapper');
+    const pauseIcon = pausePlayWrapper.querySelector('.pause-icon');
+    const playIcon = pausePlayWrapper.querySelector('.play-icon');
+    const indexOfVideo = pausePlayWrapper.getAttribute('video-index');
+    let ariaLabel = `${videoAttrs.includes('autoplay') ? videoLabels.pauseMotion : videoLabels.playMotion}`;
+    ariaLabel = ariaLabel.concat(` ${indexOfVideo === '1' && videoCounter === 1 ? '' : indexOfVideo}`);
+    pausePlayWrapper.setAttribute('aria-label', ariaLabel);
+    pauseIcon.setAttribute('alt', videoLabels.pauseMotion);
+    playIcon.setAttribute('alt', videoLabels.playMotion);
+    updateFirstVideo();
+  }
+}
+
+export function decoratePausePlayWrapper(videoEl, videoAttrs) {
+  if (!videoLabels.hasFetched) {
+    import('../features/placeholders.js').then(({ replaceKeyArray }) => {
+      replaceKeyArray(['pause-motion', 'play-motion', 'pause-icon', 'play-icon'], getFedsPlaceholderConfig())
+        .then(([pauseMotion, playMotion, pauseIcon, playIcon]) => {
+          videoLabels = { playMotion, pauseMotion, pauseIcon, playIcon };
+          videoLabels.hasFetched = true;
+          updateAriaLabel(videoEl, videoAttrs);
+        });
+    });
+  } else {
+    updateAriaLabel(videoEl, videoAttrs);
+  }
+}
+
 export function decorateAnchorVideo({ src = '', anchorTag }) {
   if (!src.length || !(anchorTag instanceof HTMLElement)) return;
+  const accessibilityEnabled = isVideoAccessible(anchorTag);
+  anchorTag.hash = anchorTag.hash.replace(`#${HIDE_CONTROLS}`, '');
   if (anchorTag.closest('.marquee, .aside, .hero-marquee, .quiz-marquee') && !anchorTag.hash) anchorTag.hash = '#autoplay';
   const { dataset, parentElement } = anchorTag;
-  const video = `<video ${getVideoAttrs(anchorTag.hash, dataset)} data-video-source=${src}></video>`;
+  const attrs = getVideoAttrs(anchorTag.hash, dataset);
+  const tabIndex = anchorTag.tabIndex || 0;
+  const videoIndex = (tabIndex === -1) ? 'tabindex=-1' : '';
+  let video = `<video ${attrs} data-video-source=${src} ${videoIndex}></video>`;
+  if (!attrs.includes('controls') && !attrs.includes('hoverplay') && accessibilityEnabled) {
+    videoCounter += 1;
+  }
+  const indexOfVideo = videoCounter;
+  if (accessibilityEnabled) {
+    video = addAccessibilityControl(video, attrs, indexOfVideo, tabIndex);
+  }
   anchorTag.insertAdjacentHTML('afterend', video);
   const videoEl = parentElement.querySelector('video');
+  if (indexOfVideo === 1) {
+    firstVideo = videoEl;
+  }
   createIntersectionObserver({
     el: videoEl,
     options: { rootMargin: '1000px' },
@@ -345,6 +483,12 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
       videoEl?.appendChild(createTag('source', { src, type: 'video/mp4' }));
     },
   });
+  if (accessibilityEnabled) {
+    applyAccessibilityEvents(videoEl);
+    if (!videoEl.controls) {
+      decoratePausePlayWrapper(videoEl, attrs);
+    }
+  }
   applyHoverPlay(videoEl);
   applyInViewPortPlay(videoEl);
   anchorTag.remove();

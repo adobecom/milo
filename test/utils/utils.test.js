@@ -76,6 +76,7 @@ describe('Utils', () => {
     it('preloads blocks for performance reasons', async () => {
       document.head.innerHTML = head;
       document.body.innerHTML = await readFile({ path: './mocks/marquee.html' });
+
       await utils.loadArea();
       const scriptPreload = document.head.querySelector('link[href*="/libs/blocks/marquee/marquee.js"]');
       const marqueeDecoratePreload = document.head.querySelector('link[href*="/libs/utils/decorate.js"]');
@@ -94,11 +95,30 @@ describe('Utils', () => {
     expect(document.querySelector('.global-navigation')).to.exist;
   });
 
+  it('render meta performanceV2 renders the normal flow', async () => {
+    // const spyOnLoadMartech = sinon.spy(loadMartech);
+    const localHead = await readFile({ path: './mocks/mep/head-target-postlcp.html' });
+    document.head.innerHTML = localHead;
+    const metaTag = document.createElement('meta');
+    metaTag.setAttribute('name', 'personalization-v2');
+    document.head.appendChild(metaTag);
+
+    const bodyWithheader = await readFile({ path: './mocks/body-gnav.html' });
+    document.body.innerHTML = bodyWithheader;
+
+    await utils.loadArea();
+    // expect(spyOnLoadMartech.called).to.be.true;
+    // spyOnLoadMartech.resetHistory();
+    expect(document.querySelector('.global-navigation')).to.exist;
+  });
+
   describe('with body', () => {
     beforeEach(async () => {
       window.fetch = mockFetch({ payload: { data: '' } });
+
       document.head.innerHTML = head;
       document.body.innerHTML = body;
+
       await utils.loadArea();
       sinon.spy(console, 'log');
     });

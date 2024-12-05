@@ -20,19 +20,20 @@ const LABELS = {
   zeroImpact: 'zero-impact',
 };
 const TEAM_MENTIONS = [
-  '@adobecom/miq-sot',
   '@adobecom/bacom-sot',
-  '@adobecom/homepage-sot',
   '@adobecom/creative-cloud-sot',
   '@adobecom/document-cloud-sot',
+  '@adobecom/express-sot',
+  '@adobecom/homepage-sot',
+  '@adobecom/miq-sot',
 ];
 const SLACK = {
   merge: ({ html_url, number, title, prefix = '' }) => `:merged: PR merged to stage: ${prefix} <${html_url}|${number}: ${title}>.`,
   openedSyncPr: ({ html_url, number }) => `:fast_forward: Created <${html_url}|Stage to Main PR ${number}>`,
 };
 
-let github; 
-let owner; 
+let github;
+let owner;
 let repo;
 
 let body = `
