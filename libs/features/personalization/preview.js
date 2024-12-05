@@ -177,8 +177,8 @@ function getManifestListDomAndParameter(manifests, pageId) {
         manifestParameter.push(`${manifestPath}--${variant}`);
       }
       radio += `<div>
-        <input type="radio" name="${manifestPath}${pageId}" value="${variant}" id="${manifestPath}--${variant}" ${checked.attribute}>
-        <label for="${manifestPath}--${variant}" ${checked.class}>${variant}</label>
+        <input type="radio" name="${manifestPath}${pageId}" value="${variant}" id="${manifestPath}${pageId}--${variant}" ${checked.attribute}>
+        <label for="${manifestPath}${pageId}--${variant}" ${checked.class}>${variant}</label>
       </div>`;
     });
     const checked = {
@@ -191,8 +191,8 @@ function getManifestListDomAndParameter(manifests, pageId) {
       manifestParameter.push(`${manifestPath}--default`);
     }
     radio += `<div>
-      <input type="radio" name="${manifestPath}${pageId}" value="default" id="${manifestPath}--default" ${checked.attribute}>
-      <label for="${manifestPath}--default" ${checked.class}>Default (control)</label>
+      <input type="radio" name="${manifestPath}${pageId}" value="default" id="${manifestPath}${pageId}--default" ${checked.attribute}>
+      <label for="${manifestPath}${pageId}--default" ${checked.class}>Default (control)</label>
     </div>`;
 
     const manifestFileName = getFileName(manifestPath);
