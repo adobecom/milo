@@ -1148,6 +1148,14 @@ header + .feds-localnav {
   transform: rotateZ(-135deg);
 }
 
+.feds-localnav.active .feds-localnav-curtain {
+  width: 100%;
+  height: 100vh;
+  position: absolute;
+  background: var(--feds-color-black-v2);
+  opacity: 0.7;
+}
+
 @keyframes slideright {
   from {
     translate: 0 0;

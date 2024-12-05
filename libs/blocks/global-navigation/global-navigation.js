@@ -385,7 +385,7 @@ class Gnav {
         localNav = toFragment`<div class="feds-localnav"/>`;
         this.block.after(localNav);
       }
-      localNav.append(toFragment`<button class="feds-navLink--hoverCaret feds-localnav-title"></button>`, toFragment` <div class="feds-localnav-items"></div>`);
+      localNav.append(toFragment`<button class="feds-navLink--hoverCaret feds-localnav-title"></button>`,toFragment` <div class="feds-localnav-curtain"></div>`, toFragment` <div class="feds-localnav-items"></div>`);
 
       const itemWrapper = localNav.querySelector('.feds-localnav-items');
       const titleLabel = await replaceKey('overview', getFedsPlaceholderConfig());
