@@ -8,10 +8,6 @@ main {
   margin: 0 16px;
 }
 
-a {
-  color: var(--spectrum-button-content-color-default);
-}
-
 .container {
   width: 100%;
   max-width: 1200px;
@@ -76,6 +72,10 @@ span.placeholder-failed::after {
   content: "failed";
 }
 
+merch-card {
+  justify-self: stretch;
+}
+
 merch-card:not([variant]) {
   display: none;
 }
@@ -116,6 +116,7 @@ button {
   display: grid;
   gap: 20px;
   margin: 0 auto;
+  align-items: stretch;
 }
 
 .gallery-grid-3 {

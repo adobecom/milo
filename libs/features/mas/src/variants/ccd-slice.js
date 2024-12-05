@@ -36,6 +36,7 @@ export class CCDSlice extends VariantLayout {
     static variantStyle = css`
         :host([variant='ccd-slice']) {
             --consonant-merch-card-background-color: var(--spectrum-gray-100);
+            --mod-img-height: 29px;
             min-width: 290px;
             max-width: var(--consonant-merch-card-ccd-slice-single-width);
             max-height: var(--consonant-merch-card-ccd-slice-single-height);
@@ -43,6 +44,10 @@ export class CCDSlice extends VariantLayout {
             border-radius: 4px;
             display: flex;
             flex-flow: wrap;
+        }
+
+        :host(:hover) {
+          border-color: var(--spectrum-gray-300);
         }
 
         :host([variant='ccd-slice']) ::slotted([slot='body-s']) {

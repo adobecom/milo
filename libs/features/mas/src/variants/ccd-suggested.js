@@ -46,14 +46,19 @@ export class CCDSuggested extends VariantLayout {
         :host([variant='ccd-suggested']) {
             --consonant-merch-card-background-color: var(--spectrum-gray-100);
             --merch-color-inline-price-strikethrough: var(--spectrum-gray-600);
+            --mod-img-height: 38px;
 
-            width: var(--consonant-merch-card-ccd-suggested-width);
-            min-width: var(--consonant-merch-card-ccd-suggested-width);
-            min-height: var(--consonant-merch-card-ccd-suggested-height);
+            width: 305px;
+            min-width: 305px;
+            min-height: 205px;
             border-radius: 4px;
             display: flex;
             flex-flow: wrap;
             overflow: hidden;
+        }
+
+        :host(:hover) {
+          border-color: var(--spectrum-gray-300);
         }
 
         :host([variant='ccd-suggested']) .body {
@@ -75,9 +80,6 @@ export class CCDSuggested extends VariantLayout {
 
         :host([variant='ccd-suggested']) .headings {
             padding-inline-start: var(--consonant-merch-spacing-xxs);
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
         }
 
         :host([variant='ccd-suggested']) ::slotted([slot='icons']) {
@@ -97,7 +99,6 @@ export class CCDSuggested extends VariantLayout {
             color: var(--ccd-gray-700-dark);
             padding-top: 8px;
             flex-grow: 1;
-
         }
 
         :host([variant='ccd-suggested'].wide-strip)

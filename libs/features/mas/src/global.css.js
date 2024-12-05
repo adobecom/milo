@@ -80,6 +80,8 @@ styles.innerHTML = `
     --merch-color-body-xs-color: var(--spectrum-gray-100);
     --merch-color-inline-price-strikethrough: initial;
     --consonant-merch-card-detail-s-color: var(--spectrum-gray-600, var(--merch-color-grey-600));
+    --consonant-merch-card-heading-color: var(--spectrum-gray-800, var(--merch-color-grey-80));
+    --consonant-merch-card-heading-xs-color: var(--consonant-merch-card-heading-color);
 
     /* ccd colors */
     --ccd-gray-200-light: #E6E6E6;
@@ -169,13 +171,14 @@ merch-card button a[is='checkout-link'] {
 }
 
 merch-card [slot^='heading-'] {
-    color: var(--spectrum-gray-800, var(--merch-color-grey-80));
+    color: var(--consonant-merch-card-heading-color);
     font-weight: 700;
 }
 
 merch-card [slot='heading-xs'] {
     font-size: var(--consonant-merch-card-heading-xs-font-size);
     line-height: var(--consonant-merch-card-heading-xs-line-height);
+    color: var(--consonant-merch-card-heading-xs-color);
     margin: 0;
 }
 
@@ -372,24 +375,13 @@ merch-card span[is="inline-price"][data-template='strikethrough'] {
   content: "\\00a0";
 }
 
+merch-card button a {
+  color: inherit;
+}
+
 merch-card button a,
 merch-card button a:hover {
   text-decoration: none;
-}
-
-.spectrum merch-card [slot="footer"] button.spectrum-Button > a,
-.spectrum merch-card [slot="cta"] button.spectrum-Button > a {
-  color: var(--spectrum-button-content-color-default);
-}
-
-.spectrum merch-card [slot="footer"] button.spectrum-Button:hover > a,
-.spectrum merch-card [slot="cta"] button.spectrum-Button:hover > a {
-  color: var(--spectrum-button-content-color-hover);
-}
-
-.spectrum merch-card [slot="footer"] button.spectrum-Button > a:focus,
-.spectrum merch-card [slot="cta"] button.spectrum-Button > a:focus {
-  color: var(--spectrum-button-content-color-focus);
 }
 
 merch-card span.placeholder-resolved[data-template='strikethrough'],
