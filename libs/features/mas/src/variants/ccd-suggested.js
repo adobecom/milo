@@ -45,8 +45,11 @@ export class CCDSuggested extends VariantLayout {
     static variantStyle = css`
         :host([variant='ccd-suggested']) {
             --consonant-merch-card-background-color: var(--spectrum-gray-100);
+            --consonant-merch-card-body-xs-color: var(--spectrum-gray-700);
+            --consonant-merch-card-border-color: #e1e1e1;
+            --consonant-merch-card-detail-s-color: #6d6d6d;
+            --consonant-merch-card-heading-xs-color: var(--spectrum-gray-800);
             --merch-color-inline-price-strikethrough: var(--spectrum-gray-600);
-            --consonant-merch-card-border-color: var(--spectrum-gray-200);
             --mod-img-height: 38px;
 
             width: 305px;
@@ -59,7 +62,7 @@ export class CCDSuggested extends VariantLayout {
         }
 
         :host([variant='ccd-suggested']:hover) {
-          border-color: var(--spectrum-gray-300);
+            --consonant-merch-card-border-color: #cacaca;
         }
 
         :host([variant='ccd-suggested']) .body {
@@ -81,6 +84,9 @@ export class CCDSuggested extends VariantLayout {
 
         :host([variant='ccd-suggested']) .headings {
             padding-inline-start: var(--consonant-merch-spacing-xxs);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
         :host([variant='ccd-suggested']) ::slotted([slot='icons']) {
@@ -114,16 +120,9 @@ export class CCDSuggested extends VariantLayout {
         :host([variant='ccd-suggested']) ::slotted([slot='price']) {
             display: flex;
             align-items: center;
-            color: var(--spectrum-gray-800, #f8f8f8);
             font-size: var(--consonant-merch-card-body-xs-font-size);
             line-height: var(--consonant-merch-card-body-xs-line-height);
             min-width: fit-content;
-        }
-
-        :host([variant='ccd-suggested'])
-            ::slotted([slot='price'])
-            span.placeholder-resolved[data-template='priceStrikethrough'] {
-            text-decoration: line-through;
         }
 
         :host([variant='ccd-suggested']) ::slotted([slot='cta']) {

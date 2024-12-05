@@ -82,6 +82,7 @@ styles.innerHTML = `
     --consonant-merch-card-detail-s-color: var(--spectrum-gray-600, var(--merch-color-grey-600));
     --consonant-merch-card-heading-color: var(--spectrum-gray-800, var(--merch-color-grey-80));
     --consonant-merch-card-heading-xs-color: var(--consonant-merch-card-heading-color);
+    --consonant-merch-card-price-color: #222222;
 
     /* ccd colors */
     --ccd-gray-200-light: #E6E6E6;
@@ -305,6 +306,23 @@ merch-card [slot="body-s"] {
     color: var(--consonant-merch-card-body-s-color);
 }
 
+merch-card button.spectrum-Button > a {
+  color: var(--spectrum-button-content-color-default);
+  text-decoration: none;
+}
+
+merch-card button.spectrum-Button > a:hover {
+  color: var(--spectrum-button-content-color-hover);
+}
+
+merch-card button.spectrum-Button > a:active {
+  color: var(--spectrum-button-content-color-active);
+}
+
+merch-card button.spectrum-Button > a:focus {
+  color: var(--spectrum-button-content-color-focus);
+}
+
 merch-card [slot="body-xs"] {
     font-size: var(--consonant-merch-card-body-xs-font-size);
     line-height: var(--consonant-merch-card-body-xs-line-height);
@@ -377,15 +395,6 @@ merch-card span[is="inline-price"][data-template='strikethrough'] {
 .price-unit-type:not(.disabled)::before,
 .price-tax-inclusivity:not(.disabled)::before {
   content: "\\00a0";
-}
-
-merch-card button a {
-  color: inherit;
-}
-
-merch-card button a,
-merch-card button a:hover {
-  text-decoration: none;
 }
 
 merch-card span.placeholder-resolved[data-template='strikethrough'],

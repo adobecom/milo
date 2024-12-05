@@ -219,6 +219,10 @@ export const styles = css`
         display: flex;
         gap: 8px;
     }
+
+    ::slotted([slot='price']) {
+      color: var(--consonant-merch-card-price-color);
+    }
 `;
 
 export const sizeStyles = () => {
