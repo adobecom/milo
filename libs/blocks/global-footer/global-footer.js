@@ -212,7 +212,7 @@ class Footer {
         aria-expanded="false"
         aria-haspopup="true"
         role="button">
-        <svg xmlns="http://www.w3.org/2000/svg" class="feds-regionPicker-globe" focusable="false">
+        <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="feds-regionPicker-globe" focusable="false">
           <use href="#footer-icon-globe" />
         </svg>
         ${regionPickerTextElem}
@@ -329,7 +329,7 @@ class Footer {
             aria-label="${platform}"
             daa-ll="${getAnalyticsValue(platform, index + 1)}"
             target="_blank">
-            <svg xmlns="http://www.w3.org/2000/svg" class="feds-social-icon" alt="${platform} logo">
+            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="feds-social-icon">
               <use href="#footer-icon-${platform}" />
             </svg>
           </a>
@@ -359,7 +359,7 @@ class Footer {
 
     // Add Ad Choices icon
     const adChoicesElem = privacyContent.querySelector('a[href*="#interest-based-ads"]');
-    adChoicesElem?.prepend(toFragment`<svg xmlns="http://www.w3.org/2000/svg" class="feds-adChoices-icon" focusable="false">
+    adChoicesElem?.prepend(toFragment`<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="feds-adChoices-icon" focusable="false">
         <use href="#footer-icon-adchoices" />
       </svg>`);
 
