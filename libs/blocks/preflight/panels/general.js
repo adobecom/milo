@@ -19,11 +19,7 @@ function getAdminUrl(url, type) {
 }
 
 function getDAEditUrl(sourceUrl) {
-  if (!sourceUrl) {
-    return '';
-  }
-  const daEditUrl = sourceUrl.replace('markup:https://content.da.live', 'https://da.live/edit#');
-  return daEditUrl;
+  return sourceUrl?.replace('markup:https://content.da.live', 'https://da.live/edit#') || '';
 }
 
 async function getStatus(url) {
@@ -35,7 +31,10 @@ async function getStatus(url) {
   const live = json.live.lastModified || DEF_NEVER;
   const publish = await userCanPublishPage(json, false);
   let edit = json.edit.url;
-  if (!json.edit.url && json.preview.sourceLocation && json.preview.sourceLocation.includes(DA_DOMAIN)) {
+  if (
+    !json.edit.url
+    && json.preview.sourceLocation
+    && json.preview.sourceLocation.includes(DA_DOMAIN)) {
     edit = getDAEditUrl(json.preview.sourceLocation);
   }
   return { url, edit, preview, live, publish };
