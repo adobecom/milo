@@ -19,12 +19,11 @@ function buildShareableLink() {
     shareableLinkParams.q = document.querySelector('#mmm-search-input')?.value;
     shareableLinkParams.tab = 'mmm-options-2'; // could be dynamic based if the tabindex worked
   }
-  const shareableLinkNew = new URL(window.location.pathname, urlLoc.protocol + urlLoc.host);
-  shareableLinkNew.search = new URLSearchParams(shareableLinkParams).toString();
+  const shareableLink = new URL(window.location.pathname, urlLoc.protocol + urlLoc.host);
+  shareableLink.search = new URLSearchParams(shareableLinkParams).toString();
   document.querySelectorAll('button.copy-to-clipboard').forEach((button) => {
-    button.dataset.destination = shareableLinkNew.toString();
+    button.dataset.destination = shareableLink.toString();
   });
-  console.log(`newest shareable link: ${shareableLinkNew.toString()}`);
 }
 function searchFromWindowParameters() {
   const searchParams = new URLSearchParams(decodeURIComponent(window.location.search));
@@ -201,11 +200,11 @@ async function createForms(sharedUrlSettings) {
 
 export default async function init(el) {
   if (window.location.search.length !== 0) {
-    if (window.location.search.includes('tab=')) {
-      document.querySelector('.tabs.radio > div:nth-child(2) > div:nth-child(2)').innerHTML = '2';
+    if (window.location.search.includes('tab=')) { // no loop, but refactor
+      document.querySelector('button#tab-mmm-options-1').setAttribute('aria-selected', 'false');
+      document.querySelector('button#tab-mmm-options-2').setAttribute('aria-selected', 'true');
     }
     const urlParamSettings = searchFromWindowParameters();
-    console.log(urlParamSettings);
     createForms(urlParamSettings);
   } else createForms();
   const mmmElContainer = createTag('div', { class: 'mmm-container max-width-12-desktop' });
@@ -226,24 +225,3 @@ export default async function init(el) {
   buildShareableLink();
   loadStyle('/libs/features/personalization/preview.css');
 }
-/*
-todo:
-createForm(el) - inserts content in front of el
-form - type in search first, and go button. hide everything that's not applicable.
-text field for form. overcomplicate later.
-
-radio buttosn
-filter or search
-
-string search will never be with geo. it will be under 'search' always and but itself
-on filter radio button:
-
-decouple string search and geo/page filter.(need radio button).
-if value = filter, then do drop down functions.
-if search = just do the string pattern match.
-
-no buttons just add to fire when
-1. key up on search
-2. change on dropdowns
-3. radio button change (automatically runs the function to get same results)
-*/
