@@ -7,6 +7,7 @@ const NOT_FOUND = {
   preview: { lastModified: DEF_NOT_FOUND },
   live: { lastModified: DEF_NOT_FOUND },
 };
+const DA_DOMAIN = 'da.live';
 
 const content = signal({});
 
@@ -17,6 +18,14 @@ function getAdminUrl(url, type) {
   return type === 'status' ? `${base}?editUrl=auto` : base;
 }
 
+function getDAEditUrl(sourceUrl) {
+  if (!sourceUrl) {
+    return '';
+  }
+  const daEditUrl = sourceUrl.replace('markup:https://content.da.live', 'https://da.live/edit#');
+  return daEditUrl;
+}
+
 async function getStatus(url) {
   const adminUrl = getAdminUrl(url, 'status');
   const resp = await fetch(adminUrl);
@@ -25,7 +34,10 @@ async function getStatus(url) {
   const preview = json.preview.lastModified || DEF_NEVER;
   const live = json.live.lastModified || DEF_NEVER;
   const publish = await userCanPublishPage(json, false);
-  const edit = json.edit.url;
+  let edit = json.edit.url;
+  if (!json.edit.url && json.preview.sourceLocation && json.preview.sourceLocation.includes(DA_DOMAIN)) {
+    edit = getDAEditUrl(json.preview.sourceLocation);
+  }
   return { url, edit, preview, live, publish };
 }
 
@@ -165,13 +177,14 @@ function Item({ name, item, idx }) {
   const { publishText, disablePublish } = usePublishProps(item);
   const isChecked = item.checked ? ' is-checked' : '';
   const isFetching = item.edit ? '' : ' is-fetching';
+  const editIcon = item.edit && item.edit.includes(DA_DOMAIN) ? 'da-icon' : 'sharepoint-icon';
   if (!item.url) return undefined;
 
   return html`
     <div class="preflight-group-row preflight-group-detail${isChecked}${checkPublishing(item, isFetching)}"
       onClick=${(e) => handleChange(e.target, name, idx)}>
       <p><a href=${item.url.pathname} target=_blank>${prettyPath(item.url)}</a></p>
-      <p>${item.edit && html`<a href=${item.edit} class=preflight-edit target=_blank>EDIT</a>`}</p>
+      <p>${item.edit && html`<a href=${item.edit} class="preflight-edit ${editIcon}" target=_blank>EDIT</a>`}</p>
       <p class=preflight-date-wrapper>${item.action === 'preview' ? 'Previewing' : prettyDate(item.preview)}</p>
       <p class="preflight-date-wrapper">
         ${isChecked && disablePublish ? html`<span class=disabled-publish>${disablePublish}</span>` : publishText}
