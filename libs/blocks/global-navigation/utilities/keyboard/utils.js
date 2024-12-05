@@ -32,7 +32,7 @@ const selectors = {
   menuContent: '.feds-menu-content',
   /* mobile redesign popup selectors */
   mainMenuItems: 'header.new-nav section.feds-navItem > button',
-  mainMenuLinks: ' header.new-nav feds-navItem > a',
+  mainMenuLinks: ' header.new-nav .feds-navItem > a',
   activePopup: 'header.new-nav section.feds-dropdown--active > .feds-popup',
   tab: 'button[role="tab"]',
   activeTabpanel: '.tab-content [role="tabpanel"]',
