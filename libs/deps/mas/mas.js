@@ -1300,7 +1300,6 @@ merch-card[variant="ccd-suggested"] [slot="cta"] a {
 .spectrum--darkest merch-card[variant="ccd-suggested"] {
     --consonant-merch-card-detail-s-color: #f8f8f8;
     --consonant-merch-card-body-xs-color: #f8f8f8;
-    --consonant-merch-card-border-color: #303030;
     --consonant-merch-card-background-color: #222222;
 }
 `;var oc={mnemonics:{size:"l"},subtitle:{tag:"h4",slot:"detail-s"},title:{tag:"h3",slot:"heading-xs"},prices:{tag:"p",slot:"price"},description:{tag:"div",slot:"body-xs"},ctas:{slot:"cta",size:"M"}},dt=class extends I{getGlobalCSS(){return Fo}get aemFragmentMapping(){return oc}renderLayout(){return x` <div style="${this.stripStyle}" class="body">
@@ -1324,6 +1323,7 @@ merch-card[variant="ccd-suggested"] [slot="cta"] a {
         :host([variant='ccd-suggested']) {
             --consonant-merch-card-background-color: var(--spectrum-gray-100);
             --merch-color-inline-price-strikethrough: var(--spectrum-gray-600);
+            --consonant-merch-card-border-color: var(--spectrum-gray-200);
             --mod-img-height: 38px;
 
             width: 305px;
