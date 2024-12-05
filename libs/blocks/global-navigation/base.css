@@ -118,8 +118,8 @@
   align-items: center;
 }
 
-header.global-navigation.ready {
-  visibility: visible !important;
+header.global-navigation {
+  visibility: visible;
 }
 
 /* Desktop styles */

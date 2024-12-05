@@ -1,7 +1,10 @@
-/* eslint import/no-relative-packages: 0 */
-export default async function bootstrapBlock(initBlock, blockConfig) {
+export default async function bootstrapBlock(miloLibs, blockConfig) {
   const { name, targetEl, layout, noBorder, jarvis } = blockConfig;
-  const { getConfig, createTag, loadScript } = await import('../utils/utils.js');
+  const { getConfig, createTag, loadLink, loadScript } = await import(`${miloLibs}/utils/utils.js`);
+  const { default: initBlock } = await import(`${miloLibs}/blocks/${name}/${name}.js`);
+
+  const styles = [`${miloLibs}/blocks/${name}/${name}.css`, `${miloLibs}/navigation/navigation.css`];
+  styles.forEach((url) => loadLink(url, { rel: 'stylesheet' }));
 
   const setNavLayout = () => {
     const element = document.querySelector(targetEl);
@@ -38,7 +41,7 @@ export default async function bootstrapBlock(initBlock, blockConfig) {
 
   await initBlock(document.querySelector(targetEl));
   if (blockConfig.targetEl === 'footer') {
-    const { loadPrivacy } = await import('../scripts/delayed.js');
+    const { loadPrivacy } = await import(`${miloLibs}/scripts/delayed.js`);
     setTimeout(() => {
       loadPrivacy(getConfig, loadScript);
     }, blockConfig.delay);
