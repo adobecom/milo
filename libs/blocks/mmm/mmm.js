@@ -26,6 +26,7 @@ function buildShareableLink() {
   });
   console.log(`newest shareable link: ${shareableLink.toString()}`);
 }
+
 function searchFromWindowParameters() {
   const searchParams = new URLSearchParams(decodeURIComponent(window.location.search));
   const newValuesToBuild = {};
@@ -67,7 +68,7 @@ function createButtonDetailsPair(mmmEl, page) {
   const { url, pageId } = page;
   const geoOptions = [
     'jp',
-    'ca',
+    'ca,',
     'ca_fr',
     'au',
     'nz',
@@ -137,17 +138,24 @@ function searchFilterByInput() {
 
   if (!mmmEntries) return;
   mmmEntries.forEach((entry) => {
-    const { url, path, prefix = 'en-US' } = entry.dataset;
+    // const { url, path, prefix = 'en-US' } = entry.dataset;
+    const { url, path, prefix = 'us' } = entry.dataset;
     entry.classList.remove('filter-hide');
     if (filterType === 'search') {
       if (!url.includes(searchFieldValue)) entry.classList.add('filter-hide');
       return;
     }
+
     if (geoDropDownValue !== 'all' && !selectedGeos.some((item) => prefix === item)) {
       entry.classList.add('filter-hide');
     }
-    if (pageDropDownValue !== 'all' && path !== pageDropDownValue) {
+    if (pageDropDownValue !== 'all' && pageDropDownValue !== '/' && path !== pageDropDownValue) {
       entry.classList.add('filter-hide');
+    }
+    if (pageDropDownValue === '/') {
+      if (prefix !== 'us' && path !== `/${prefix}/`) {
+        entry.classList.add('filter-hide');
+      }
     }
   });
   buildShareableLink();
@@ -201,13 +209,13 @@ async function createForms(sharedUrlSettings) {
 
 export default async function init(el) {
   if (window.location.search.length !== 0) {
-    if (window.location.search.includes('tab=')) { // no loop
+    if (window.location.search.includes('tab=')) { // no loop, but refactor
       document.querySelector('button#tab-mmm-options-1').setAttribute('aria-selected', 'false');
       document.querySelector('button#tab-mmm-options-2').setAttribute('aria-selected', 'true');
     }
     const urlParamSettings = searchFromWindowParameters();
     console.log(urlParamSettings);
-    createForms(urlParamSettings);
+    createForms(urlParamSettings); // find way to not call in else
   } else createForms();
   const mmmElContainer = createTag('div', { class: 'mmm-container max-width-12-desktop' });
   const mmmEl = createTag('dl', {
@@ -227,24 +235,3 @@ export default async function init(el) {
   buildShareableLink();
   loadStyle('/libs/features/personalization/preview.css');
 }
-/*
-todo:
-createForm(el) - inserts content in front of el
-form - type in search first, and go button. hide everything that's not applicable.
-text field for form. overcomplicate later.
-
-radio buttosn
-filter or search
-
-string search will never be with geo. it will be under 'search' always and but itself
-on filter radio button:
-
-decouple string search and geo/page filter.(need radio button).
-if value = filter, then do drop down functions.
-if search = just do the string pattern match.
-
-no buttons just add to fire when
-1. key up on search
-2. change on dropdowns
-3. radio button change (automatically runs the function to get same results)
-*/
