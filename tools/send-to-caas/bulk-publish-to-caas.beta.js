@@ -246,7 +246,7 @@ const processData = async (data, accessToken) => {
         errorArr.push([pageUrl, response]);
       }
     } catch (e) {
-      errorArr.push([pageUrl, e.message]);
+      errorArr.push(['Error:', e.message]);
     }
   }
 
@@ -343,7 +343,7 @@ const resetAdvancedOptions = () => {
 
 const setTheme = () => {
   const theme = localStorage.getItem('bp-theme');
-  const useDarkTheme = theme === 'dark' 
+  const useDarkTheme = theme === 'dark'
     || (theme !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
   if (useDarkTheme) {
