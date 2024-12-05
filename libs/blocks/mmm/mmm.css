@@ -259,28 +259,48 @@ dd .mep-popup-header .mep-close {
 .mmm-form-container {
   display: flex;
   justify-content: center;
-  gap: var(--spacing-l);
-  margin-top: var(--spacing-m);
-  flex-wrap: wrap;
+  gap: var(--spacing-s);
+  margin: var(--spacing-m) auto 0;
+  width: 800px;
+  flex-flow: column wrap;
+  max-width: 80vw;
 }
-
+.mmm-form-container > div {
+  flex: 1;
+}
+#mmm-search-input-container {
+  max-width: 700px;
+}
 .mmm-form-container label {
   margin-right: var(--spacing-xxs);
+  display: block;
+  font-size: var(--type-body-xs-size);
 }
 .mmm-form-container input,
 .mmm-form-container select {
-  width: 55vw;
+  width: 100%;
   padding: var(--spacing-xxs);
-  font-size: var(--type-body-s-size);
+  font-size: var(--type-body-xs-size);
   padding-inline-start: 12px;
   box-sizing: border-box;
 }
 
+.loading {
+  width: 100px;
+  margin: 0 auto;
+}
+
 @media screen and (min-width: 1199px) {
   .mmm-form-container {
-    flex-wrap: nowrap;
+    flex-flow: row nowrap;
   }
-
+  #mmm-dropdown-container {
+    flex: 0 0 50%;
+  }
+  #mmm-search-input-container {
+    max-width: 700px;
+  }
+/* 
   .mmm-form-container input,
   .mmm-form-container select {
     width: auto;
@@ -288,5 +308,5 @@ dd .mep-popup-header .mep-close {
   
   .mmm-form-container input {
     width: 300px;
-  }
+  } */
 }

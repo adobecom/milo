@@ -111,7 +111,7 @@ function parseMepConfig() {
   const activities = experiments.map((experiment) => {
     const {
       name, variantNames, event, disabled, manifest, source, selectedVariantName,
-      manifestType, manifestOverrideName,
+      manifestType, manifestOverrideName, region,
     } = experiment;
     // const manifestUrl = new URL(manifest);
     return {
@@ -144,6 +144,7 @@ function parseMepConfig() {
       personalization: (getMetadata('personalization')) ? 'on' : 'off',
       prefix: geoPrefix === 'en-us' ? '' : geoPrefix,
       locale: locale.ietf,
+      region: locale.region,
     },
     activities,
   };
@@ -197,6 +198,12 @@ function getManifestListDomAndParameter(manifests, pageId) {
 
     const manifestFileName = getFileName(manifestPath);
     const targetTitle = name ? `${name}<br><i>${manifestFileName}</i>` : manifestFileName;
+    if (manifest.eventStart) {
+      manifest.event = {
+        start: new Date(manifest.eventStart),
+        end: new Date(manifest.eventEnd),
+      };
+    }
     const scheduled = manifest.event
       ? `<p>Scheduled - ${manifest.disabled ? 'inactive' : 'active'}</p>
          <p>On: ${manifest.event.start?.toLocaleString()} - <a target= "_blank" href="?instant=${manifest.event.start?.toISOString()}">instant</a></p>
@@ -214,8 +221,9 @@ function getManifestListDomAndParameter(manifests, pageId) {
         ${targetTitle}
         <i></i>
         <a class="mep-edit-manifest" data-manifest-url="${editUrl}" data-manifest-path="${editUrl}" target="_blank" title="Open manifest">
-          <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0,0,256,256" width="16px" height="16px" fill-rule="nonzero"><g transform=""><g fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><g transform="scale(8.53333,8.53333)"><path d="M22.82813,3c-0.51175,0 -1.02356,0.19544 -1.41406,0.58594l-2.41406,2.41406l5,5l2.41406,-2.41406c0.781,-0.781 0.781,-2.04713 0,-2.82812l-2.17187,-2.17187c-0.3905,-0.3905 -0.90231,-0.58594 -1.41406,-0.58594zM17,8l-11.74023,11.74023c0,0 0.91777,-0.08223 1.25977,0.25977c0.342,0.342 0.06047,2.58 0.48047,3c0.42,0.42 2.64389,0.12436 2.96289,0.44336c0.319,0.319 0.29688,1.29688 0.29688,1.29688l11.74023,-11.74023zM4,23l-0.94336,2.67188c-0.03709,0.10544 -0.05623,0.21635 -0.05664,0.32813c0,0.55228 0.44772,1 1,1c0.11177,-0.00041 0.22268,-0.01956 0.32813,-0.05664c0.00326,-0.00128 0.00652,-0.00259 0.00977,-0.00391l0.02539,-0.00781c0.00196,-0.0013 0.00391,-0.0026 0.00586,-0.00391l2.63086,-0.92773l-1.5,-1.5z"></path></g></g></g></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0,0,256,256" width="16px" height="16px" fill-rule="nonzero"><g transform=""><g fill="currentColor" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><g transform="scale(8.53333,8.53333)"><path d="M22.82813,3c-0.51175,0 -1.02356,0.19544 -1.41406,0.58594l-2.41406,2.41406l5,5l2.41406,-2.41406c0.781,-0.781 0.781,-2.04713 0,-2.82812l-2.17187,-2.17187c-0.3905,-0.3905 -0.90231,-0.58594 -1.41406,-0.58594zM17,8l-11.74023,11.74023c0,0 0.91777,-0.08223 1.25977,0.25977c0.342,0.342 0.06047,2.58 0.48047,3c0.42,0.42 2.64389,0.12436 2.96289,0.44336c0.319,0.319 0.29688,1.29688 0.29688,1.29688l11.74023,-11.74023zM4,23l-0.94336,2.67188c-0.03709,0.10544 -0.05623,0.21635 -0.05664,0.32813c0,0.55228 0.44772,1 1,1c0.11177,-0.00041 0.22268,-0.01956 0.32813,-0.05664c0.00326,-0.00128 0.00652,-0.00259 0.00977,-0.00391l0.02539,-0.00781c0.00196,-0.0013 0.00391,-0.0026 0.00586,-0.00391l2.63086,-0.92773l-1.5,-1.5z"></path></g></g></g></svg>
         </a>
+        ${manifest.lastSeen ? `<div>Last seen: ${new Date(manifest.lastSeen).toLocaleString()}</div>` : ''}
         ${scheduled}
       </div>
       <div class="mep-manifest-variants">${radio}</div>
@@ -250,18 +258,20 @@ function addMepPopupListeners(popup, pageId) {
   });
 }
 
-export function getMepPopup(manifests, pageInfo = false, mmm = false) {
+export function getMepPopup(manifests, pageInfo = false, isMmm = false) {
   const pageId = pageInfo?.pageId ? `-${pageInfo.pageId}` : '';
-  const { manifestList, manifestParameter } = getManifestListDomAndParameter(manifests, pageId);
-  const simulateHref = new URL(window.location.href);
-  simulateHref.searchParams.set('mep', manifestParameter.join('---'));
+  const { manifestList } = getManifestListDomAndParameter(manifests, pageId);
   let mepHighlightChecked = '';
-  if (!mmm && pageInfo?.highlight) {
+  if (!isMmm && pageInfo?.highlight) {
     mepHighlightChecked = 'checked="checked"';
-    if (!mmm) document.body.dataset.mepHighlight = true;
+    document.body.dataset.mepHighlight = true;
   }
   const PREVIEW_BUTTON_ID = 'preview-button';
-  const mepPopup = createTag('div', { class: `mep-popup${mmm ? '' : ' in-page'}` });
+  const pageUrl = isMmm ? pageInfo.url : new URL(window.location.href).href;
+  const mepPopup = createTag('div', {
+    class: `mep-popup${isMmm ? '' : ' in-page'}`,
+    'data-url': pageUrl,
+  });
   const mepPopupHeader = createTag('div', { class: 'mep-popup-header' });
   const listInfo = createTag('div', { class: 'mep-manifest-info' });
   const advancedOptions = createTag('div', { class: 'mep-advanced-container' });
@@ -288,9 +298,9 @@ export function getMepPopup(manifests, pageInfo = false, mmm = false) {
           </div>
         </div>`;
 
-  const mepManifestPreviewButton = createTag('div', { class: `advanced-options${mmm ? '' : ' dark'}` });
+  const mepManifestPreviewButton = createTag('div', { class: `advanced-options${isMmm ? '' : ' dark'}` });
   mepManifestPreviewButton.innerHTML = `
-    <a class="con-button outline button-l" data-id="${PREVIEW_BUTTON_ID}" title="Preview above choices" ${mmm ? ' target="_blank"' : ''}>Preview</a>`;
+    <a class="con-button outline button-l" data-id="${PREVIEW_BUTTON_ID}" title="Preview above choices" ${isMmm ? ' target="_blank"' : ''}>Preview</a>`;
   mepPopupHeader.innerHTML = `
     <div>
       <h4>${manifests?.length || 0} Manifest(s) served</h4>
@@ -299,6 +309,7 @@ export function getMepPopup(manifests, pageInfo = false, mmm = false) {
         <div>Target integration feature is ${pageInfo.target}</div>
         <div>Personalization feature is ${pageInfo.personalization}</div>
         <div>Page's Prefix/Region/Locale are ${pageInfo.prefix} / ${pageInfo.region} / ${pageInfo.locale}</div>
+        ${pageInfo.lastSeen ? `<div>Last seen: ${new Date(pageInfo.lastSeen).toLocaleString()}</div>` : ''}
     </div>`;
   mepManifestList.innerHTML = manifestList;
   if (listInfo) mepManifestList.prepend(listInfo);
@@ -307,7 +318,7 @@ export function getMepPopup(manifests, pageInfo = false, mmm = false) {
   mepPopup.append(mepManifestList);
   mepPopup.append(mepManifestPreviewButton);
   const previewButton = mepPopup.querySelector(`a[data-id="${PREVIEW_BUTTON_ID}"]`);
-  if (previewButton) previewButton.href = simulateHref.href;
+  if (previewButton) updatePreviewButton(mepPopup, pageId);
   addMepPopupListeners(mepPopup, pageId);
   return mepPopup;
 }
@@ -371,12 +382,12 @@ async function saveToMmm(data) {
   const { page, activities } = data;
   activities.filter((activity) => {
     const { url, source } = activity;
-    return (!url.includes('/drafts/') && source?.length);
+    return (source?.length && !url.includes('/drafts/'));
   });
   if (!activities.length) return false;
   activities.map((activity) => {
-    activity.eventStart = activity.event?.start ? activity.event?.start.toLocaleString() : '';
-    activity.eventEnd = activity.event?.end ? activity.event?.end.toLocaleString() : '';
+    activity.eventStart = activity.event?.startUtc ? activity.event?.startUtc : null;
+    activity.eventEnd = activity.event?.endUtc ? activity.event?.endUtc : null;
     delete activity.selectedVariantName;
     delete activity.event;
     delete activity.disabled;

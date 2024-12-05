@@ -42,6 +42,8 @@ const getRegionalPromoManifests = (manifestNames, region, searchParams) => {
           name,
           start: GMTStringToLocalDate(start),
           end: GMTStringToLocalDate(end),
+          startUtc: start,
+          endUtc: end,
           cdtStart,
           cdtEnd,
         };

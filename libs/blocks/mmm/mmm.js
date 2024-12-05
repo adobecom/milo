@@ -35,27 +35,28 @@ function searchFromWindowParameters() {
   return Object.keys(newValuesToBuild).length ? newValuesToBuild : null;
 }
 
-async function toggleDrawer(el, dd) {
+async function toggleDrawer(target, dd) {
+  const el = target.closest('button');
   const expanded = el.getAttribute('aria-expanded') === 'true';
   if (expanded) {
     el.setAttribute('aria-expanded', 'false');
     dd.setAttribute('hidden', '');
   } else {
     el.setAttribute('aria-expanded', 'true');
-    if (!dd.classList.contains('placeholder-resolved')) {
-      const { pageId } = dd.dataset;
-      const pageData = await fetchData(`${API_URLS.pageDetails}${pageId}`, DATA_TYPE.JSON);
-      const { page, activities } = pageData;
-      if (!page.prefix) page.prefix = 'en-us';
-      activities.map((activity) => {
-        activity.variantNames = activity.variantNames.split('||');
-        activity.source = activity.source.split(',');
-        return activity;
-      });
-      dd.append(getMepPopup(activities, page, true));
-      dd.classList.add('placeholder-resolved');
-    }
     dd.removeAttribute('hidden');
+    const loading = dd.querySelector('.loading');
+    if (dd.classList.contains('placeholder-resolved') || !loading) return;
+    const { pageId } = dd.dataset;
+    const pageData = await fetchData(`${API_URLS.pageDetails}${pageId}`, DATA_TYPE.JSON);
+    const { page, activities } = pageData;
+    if (!page.prefix) page.prefix = 'en-us';
+    activities.map((activity) => {
+      activity.variantNames = activity.variantNames.split('||');
+      activity.source = activity.source.split(',');
+      return activity;
+    });
+    loading.replaceWith(getMepPopup(activities, page, true));
+    dd.classList.add('placeholder-resolved');
   }
 }
 
@@ -93,16 +94,30 @@ function createButtonDetailsPair(mmmEl, page) {
   }, hTag);
   button.append(icon);
 
-  const panel = url.nextElementSibling?.firstElementChild;
   // const para = panel?.querySelector('p');
   // const text = para ? para.textContent : panel?.textContent;
   const dtHtml = hTag ? createTag(hTag.tagName, { class: 'mmm-heading' }, button) : button;
   const dt = createTag('dt', false, dtHtml);
-  const dd = createTag('dd', { id: panelId, hidden: true }, panel);
+  const loading = createTag(
+    'div',
+    { class: 'loading' },
+    `<svg version="1.1" id="L5" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 100 100" enable-background="new 0 0 0 0" xml:space="preserve">
+        <circle fill="currentColor" stroke="none" cx="6" cy="50" r="6">
+          <animateTransform attributeName="transform" dur="1s" type="translate" values="0 15 ; 0 -15; 0 15" repeatCount="indefinite" begin="0.1"></animateTransform>
+        </circle>
+        <circle fill="currentColor" stroke="none" cx="30" cy="50" r="6">
+          <animateTransform attributeName="transform" dur="1s" type="translate" values="0 10 ; 0 -10; 0 10" repeatCount="indefinite" begin="0.2"></animateTransform>
+        </circle>
+        <circle fill="currentColor" stroke="none" cx="54" cy="50" r="6">
+          <animateTransform attributeName="transform" dur="1s" type="translate" values="0 5 ; 0 -5; 0 5" repeatCount="indefinite" begin="0.3"></animateTransform>
+        </circle>
+      </svg>`,
+  );
+  const dd = createTag('dd', { id: panelId, hidden: true }, loading);
   Object.keys(page).forEach((key) => {
-    // const val = page[key] === 'en-US'
-    dt.dataset[key] = page[key];
-    dd.dataset[key] = page[key];
+    const val = page[key] || 'us';
+    dt.dataset[key] = val;
+    dd.dataset[key] = val;
   });
   button.addEventListener('click', (e) => { toggleDrawer(e.target, dd, pageId, 'mmm'); });
   mmmEl.append(dt, dd);

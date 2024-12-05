@@ -121,6 +121,9 @@
   font-size: 18px;
 }
 
+.mep-popup {
+  font-size: 14px;
+}
 .mep-popup.in-page {
   position: absolute;
   bottom: 64px;
@@ -136,6 +139,7 @@
   position: relative; 
   margin-left: 6px;
   cursor: pointer;
+  color: inherit;
 }
 
 .mep-popup .mep-popup-header {
