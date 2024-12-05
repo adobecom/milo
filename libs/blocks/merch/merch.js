@@ -514,7 +514,7 @@ export function setCtaHash(el, checkoutLinkConfig, offerType) {
 
 const isProdModal = (url) => {
   try {
-    return (new URL(url)).hostname.endsWith('adobe.com');
+    return (new URL(url)).hostname.endsWith('.adobe.com');
   } catch (e) {
     return false;
   }
