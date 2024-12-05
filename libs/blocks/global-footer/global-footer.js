@@ -298,7 +298,7 @@ class Footer {
       });
       // Close region picker dropdown on outside click
       document.addEventListener('click', (e) => {
-        e.preventDefault();
+        // e.preventDefault();
         if (isRegionPickerExpanded()
           && !e.target.closest(`.${regionPickerWrapperClass}`)) {
           regionPickerElem.setAttribute('aria-expanded', false);
