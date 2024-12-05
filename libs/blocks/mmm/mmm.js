@@ -12,19 +12,19 @@ function buildShareableLink() {
   const urlLoc = window.location;
   const shareableLinkParams = {};
   shareableLinkParams.type = document.querySelector('.tab-list-container button[aria-selected="true"]')?.innerHTML;
-  if (shareableLinkParams.type === 'Dropdown') {
+  if (shareableLinkParams.type === 'Dropdown') { // looks like we can destructure ???
     shareableLinkParams.geo = document.querySelector('select#mmm-search-geo')?.value;
     shareableLinkParams.topPage = document.querySelector('select#mmm-search-page')?.value;
   } else {
     shareableLinkParams.q = document.querySelector('#mmm-search-input')?.value;
     shareableLinkParams.tab = 'mmm-options-2'; // could be dynamic based if the tabindex worked
   }
-  const shareableLinkNew = new URL(window.location.pathname, urlLoc.protocol + urlLoc.host);
-  shareableLinkNew.search = new URLSearchParams(shareableLinkParams).toString();
+  const shareableLink = new URL(window.location.pathname, urlLoc.protocol + urlLoc.host);
+  shareableLink.search = new URLSearchParams(shareableLinkParams).toString();
   document.querySelectorAll('button.copy-to-clipboard').forEach((button) => {
-    button.dataset.destination = shareableLinkNew.toString();
+    button.dataset.destination = shareableLink.toString();
   });
-  console.log(`newest shareable link: ${shareableLinkNew.toString()}`);
+  console.log(`newest shareable link: ${shareableLink.toString()}`);
 }
 function searchFromWindowParameters() {
   const searchParams = new URLSearchParams(decodeURIComponent(window.location.search));
@@ -201,8 +201,9 @@ async function createForms(sharedUrlSettings) {
 
 export default async function init(el) {
   if (window.location.search.length !== 0) {
-    if (window.location.search.includes('tab=')) {
-      document.querySelector('.tabs.radio > div:nth-child(2) > div:nth-child(2)').innerHTML = '2';
+    if (window.location.search.includes('tab=')) { // no loop
+      document.querySelector('button#tab-mmm-options-1').setAttribute('aria-selected', 'false');
+      document.querySelector('button#tab-mmm-options-2').setAttribute('aria-selected', 'true');
     }
     const urlParamSettings = searchFromWindowParameters();
     console.log(urlParamSettings);
