@@ -87,7 +87,7 @@ class Popup {
     // Case 1:  Move focus to the previous item
     const state = getState(element);
     const { currentSection } = state;
-    const popupItems = newNav ? this.popupItems() : state.popupItems;
+    const popupItems = newNav && !isFooter ? this.popupItems() : state.popupItems;
     if (prev !== -1 && curr - 1 === prev) {
       popupItems[prev].focus();
       if (currentSection !== getState(element).currentSection) closeHeadlines();
@@ -102,7 +102,7 @@ class Popup {
     }
 
     // Case 3: Open the previous headline
-    if (newNav) popupItems?.[popupItems.length - 1]?.focus();
+    if (newNav && !isFooter) popupItems?.[popupItems.length - 1]?.focus();
     else openHeadline({ headline: prevHeadline, focus: 'last' });
   };
 
@@ -110,7 +110,7 @@ class Popup {
     // Case 1: Move focus to the next item
     const state = getState(element);
     const { currentSection } = state;
-    const popupItems = newNav ? this.popupItems() : state.popupItems;
+    const popupItems = newNav && !isFooter ? this.popupItems() : state.popupItems;
     if (next !== -1) {
       popupItems[next].focus();
       if (currentSection !== getState(element).currentSection) closeHeadlines();
@@ -125,7 +125,7 @@ class Popup {
     }
 
     // Case 3: Open the next headline
-    if (newNav) popupItems?.[0]?.focus();
+    if (newNav && !isFooter) popupItems?.[0]?.focus();
     else openHeadline({ headline: nextHeadline, focus: 'first' });
   };
 
@@ -160,7 +160,7 @@ class Popup {
 
   handleKeyDown = ({ e, element, isFooter }) => {
     const newNav = !!document.querySelector('header.new-nav');
-    const popupItems = newNav
+    const popupItems = newNav && !isFooter
       ? this.popupItems()
       : [...element.querySelectorAll(selectors.popupItems)];
     const curr = popupItems.findIndex((el) => el === e.target);
@@ -182,6 +182,11 @@ class Popup {
       case 'Escape': {
         closeAllDropdowns();
         this.focusMainNav(isFooter);
+        if (newNav) {
+          const toggle = document.querySelector('header.new-nav .feds-toggle');
+          toggle?.click();
+          toggle?.focus();
+        }
         break;
       }
       case 'ArrowLeft': {

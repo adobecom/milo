@@ -385,7 +385,7 @@ class Gnav {
         localNav = toFragment`<div class="feds-localnav"/>`;
         this.block.after(localNav);
       }
-      localNav.append(toFragment`<button class="feds-navLink--hoverCaret feds-localnav-title"></button>`,toFragment` <div class="feds-localnav-curtain"></div>`, toFragment` <div class="feds-localnav-items"></div>`);
+      localNav.append(toFragment`<button class="feds-navLink--hoverCaret feds-localnav-title"></button>`, toFragment` <div class="feds-localnav-curtain"></div>`, toFragment` <div class="feds-localnav-items"></div>`);
 
       const itemWrapper = localNav.querySelector('.feds-localnav-items');
       const titleLabel = await replaceKey('overview', getFedsPlaceholderConfig());
@@ -968,7 +968,8 @@ class Gnav {
     const activeModifier = itemHasActiveLink ? ` ${selectors.activeNavItem.slice(1)}` : '';
 
     const makeTabActive = (popup) => {
-      if (!popup?.querySelector('.tabs [aria-selected="true"]')) {
+      const selectedTab = popup?.querySelector('.tabs [aria-selected="true"]');
+      if (!selectedTab) {
         const { origin, pathname } = window.location;
         const url = `${origin}${pathname}`;
         setTimeout(() => {
@@ -976,7 +977,13 @@ class Gnav {
             ...popup.querySelectorAll('a:not([data-modal-hash])'),
           ].find((el) => (el.href === url || el.href.startsWith(`${url}?`) || el.href.startsWith(`${url}#`)));
           const tabIndex = activeLink ? +activeLink.parentNode.id : 0;
-          popup.querySelectorAll('.tab')[tabIndex]?.click();
+          const selectTab = popup.querySelectorAll('.tab')[tabIndex];
+          selectTab?.click();
+          selectTab?.focus();
+        }, 100);
+      } else {
+        setTimeout(() => {
+          selectedTab.focus();
         }, 100);
       }
     };
