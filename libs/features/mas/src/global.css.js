@@ -307,20 +307,20 @@ merch-card [slot="body-s"] {
 }
 
 merch-card button.spectrum-Button > a {
-  color: var(--spectrum-button-content-color-default);
+  color: inherit;
   text-decoration: none;
 }
 
 merch-card button.spectrum-Button > a:hover {
-  color: var(--spectrum-button-content-color-hover);
+  color: inherit;
 }
 
 merch-card button.spectrum-Button > a:active {
-  color: var(--spectrum-button-content-color-active);
+  color: inherit;
 }
 
 merch-card button.spectrum-Button > a:focus {
-  color: var(--spectrum-button-content-color-focus);
+  color: inherit;
 }
 
 merch-card [slot="body-xs"] {

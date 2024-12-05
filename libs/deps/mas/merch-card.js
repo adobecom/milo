@@ -1480,11 +1480,6 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
   --consonant-merch-card-border-color: #303030;
   --consonant-merch-card-detail-s-color: #f8f8f8;
 }
-
-
-.spectrum--darkest  merch-card[variant='ccd-slice']:hover {
-  --consonant-merch-card-border-color: #4b4b4b;
-}
 `;var oe={mnemonics:{size:"m"},backgroundImage:{tag:"div",slot:"image"},description:{tag:"div",slot:"body-s"},ctas:{slot:"footer",size:"S"},allowedSizes:["wide"]},z=class extends m{getGlobalCSS(){return Rt}get aemFragmentMapping(){return oe}renderLayout(){return ee` <div class="content">
                 <div class="top-section">
                   <slot name="icons"></slot> 
@@ -1507,10 +1502,6 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
             border-radius: 4px;
             display: flex;
             flex-flow: wrap;
-        }
-
-        :host([variant='ccd-slice']:hover) {
-          --consonant-merch-card-border-color: #d5d5d5;
         }
 
         :host([variant='ccd-slice']) ::slotted([slot='body-s']) {
@@ -1892,20 +1883,20 @@ merch-card [slot="body-s"] {
 }
 
 merch-card button.spectrum-Button > a {
-  color: var(--spectrum-button-content-color-default);
+  color: inherit;
   text-decoration: none;
 }
 
 merch-card button.spectrum-Button > a:hover {
-  color: var(--spectrum-button-content-color-hover);
+  color: inherit;
 }
 
 merch-card button.spectrum-Button > a:active {
-  color: var(--spectrum-button-content-color-active);
+  color: inherit;
 }
 
 merch-card button.spectrum-Button > a:focus {
-  color: var(--spectrum-button-content-color-focus);
+  color: inherit;
 }
 
 merch-card [slot="body-xs"] {

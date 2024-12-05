@@ -48,10 +48,6 @@ export class CCDSlice extends VariantLayout {
             flex-flow: wrap;
         }
 
-        :host([variant='ccd-slice']:hover) {
-          --consonant-merch-card-border-color: #d5d5d5;
-        }
-
         :host([variant='ccd-slice']) ::slotted([slot='body-s']) {
             font-size: var(--consonant-merch-card-body-xs-font-size);
             line-height: var(--consonant-merch-card-body-xxs-line-height);

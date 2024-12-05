@@ -22,9 +22,4 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
   --consonant-merch-card-border-color: #303030;
   --consonant-merch-card-detail-s-color: #f8f8f8;
 }
-
-
-.spectrum--darkest  merch-card[variant='ccd-slice']:hover {
-  --consonant-merch-card-border-color: #4b4b4b;
-}
 `;
