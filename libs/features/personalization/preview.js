@@ -27,7 +27,7 @@ function updatePreviewButton(popup, pageId) {
     }
   });
 
-  const isMmm = !!pageId;
+  const isMmm = pageId.length;
   const page = isMmm ? popup.closest('[data-url]').dataset.url : window.location.href;
   const simulateHref = new URL(page);
   simulateHref.searchParams.set('mep', manifestParameter.join('---'));
@@ -57,8 +57,8 @@ function updatePreviewButton(popup, pageId) {
     .setAttribute('href', simulateHref.href);
 }
 
-function getRepo() {
-  const [, repo] = new URL(window.location.href).hostname.split('--');
+function getRepo(url) {
+  const [, repo] = new URL(url).hostname.split('--');
   if (repo) return repo;
   try {
     const sidekick = document.querySelector('aem-sidekick, helix-sidekick');
@@ -73,17 +73,14 @@ function getRepo() {
   return false;
 }
 
-async function getEditManifestUrl(a, w) {
-  const repo = getRepo();
+async function getEditManifestUrl(a, w, isMmm) {
+  const url = isMmm ? a.dataset.manifestUrl : window.location.href;
+  const repo = getRepo(url);
   if (!repo) {
     w.location = a.dataset.manifestPath;
     return false;
   }
-
-  // TODO: fix editUrl issue to handle this
-  // console.log('a.dataset.manifestPath', a.dataset.manifestPath);
-  // console.log(`https://admin.hlx.page/status/adobecom/${repo}/main${a.dataset.manifestPath}?editUrl=auto`);
-  const response = await fetch(`https://admin.hlx.page/status/adobecom/${repo}/main${a.dataset.manifestPath}?editUrl=auto`);
+  const response = await fetch(`https://admin.hlx.page/status/adobecom/${repo}/main${new URL(a.dataset.manifestUrl).pathname}?editUrl=auto`);
   const body = await response.json();
   const editUrl = body?.edit?.url;
   if (editUrl) {
@@ -163,8 +160,6 @@ function getManifestListDomAndParameter(manifests, pageId) {
       name,
     } = manifest;
     const editUrl = manifestUrl || manifestPath;
-    // MUST FIX:
-    // editUrl BREAKS mep manifest link pencil on normal pages -- it's expecting a relative path
     let radio = '';
     variantNames.forEach((variant) => {
       const checked = {
@@ -244,7 +239,7 @@ function addMepPopupListeners(popup, pageId) {
           </body></html>`);
       w.document.close();
       w.focus();
-      getEditManifestUrl(a, w);
+      getEditManifestUrl(a, w, pageId);
       return true;
     });
   });
