@@ -11,12 +11,12 @@ const API_URLS = {
 function buildShareableLink() {
   const urlLoc = window.location;
   const shareableLinkParams = {};
-  shareableLinkParams.type = document.querySelector('.tab-list-container button[aria-selected="true"]').innerHTML;
+  shareableLinkParams.type = document.querySelector('.tab-list-container button[aria-selected="true"]')?.innerHTML;
   if (shareableLinkParams.type === 'Dropdown') {
-    shareableLinkParams.geo = document.querySelector('select#mmm-search-geo').value;
-    shareableLinkParams.topPage = document.querySelector('select#mmm-search-page').value;
+    shareableLinkParams.geo = document.querySelector('select#mmm-search-geo')?.value;
+    shareableLinkParams.topPage = document.querySelector('select#mmm-search-page')?.value;
   } else {
-    shareableLinkParams.q = document.querySelector('#mmm-search-input').value;
+    shareableLinkParams.q = document.querySelector('#mmm-search-input')?.value;
     shareableLinkParams.tab = 'mmm-options-2'; // could be dynamic based if the tabindex worked
   }
   const shareableLinkNew = new URL(window.location.pathname, urlLoc.protocol + urlLoc.host);
