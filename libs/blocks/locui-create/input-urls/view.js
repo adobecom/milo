@@ -50,7 +50,7 @@ export default function InputUrls() {
       setAllFragments(found || []);
       const validFrags = found?.filter((frag) => !frag?.valid);
       setNoOfValidFragments(
-        (found?.filter((frag) => !frag?.valid) ?? []).length
+        (found?.filter((frag) => !frag?.valid) ?? []).length,
       );
       if (selectAll) {
         setFragments(validFrags.map(({ pathname }) => pathname));
@@ -59,8 +59,8 @@ export default function InputUrls() {
     }
   };
 
-  function handleTypeChange(type) {
-    setType(type);
+  function handleTypeChange(_type) {
+    setType(_type);
     setErrors({ ...errors, editBehavior: '' });
   }
 
@@ -103,14 +103,14 @@ export default function InputUrls() {
       const error = validateFragments(
         fragmentsEnabled,
         noOfValidFrag,
-        _fragments
+        _fragments,
       );
       setErrors((prev) => ({
         ...prev,
         fragments: error,
       }));
     },
-    [fragmentsEnabled, noOfValidFrag]
+    [fragmentsEnabled, noOfValidFrag],
   );
 
   function handleNext() {
@@ -148,8 +148,8 @@ export default function InputUrls() {
     setFragmentsEnabled(project.value?.fragments?.length > 0);
     setFragments(project.value?.fragments || []);
     if (
-      project.value?.fragments?.length > 0 &&
-      project.value?.urls.length > 0
+      project.value?.fragments?.length > 0
+      && project.value?.urls.length > 0
     ) {
       fetchFragments(project.value?.urls?.join('\n'));
     }
@@ -206,13 +206,13 @@ export default function InputUrls() {
                 onInput=${handleNameChange}
                 placeholder="Enter letters, alphabet and hyphens only"
               />
-              ${errors.name &&
-              html`<div class="form-field-error">${errors.name}</div>`}
+              ${errors.name
+              && html`<div class="form-field-error">${errors.name}</div>`}
             </div>
           </div>
 
-          ${type === 'translation' &&
-          html`
+          ${type === 'translation'
+          && html`
             <div class="form-field">
               <div class="form-field-label">HTML Localization Flow</div>
               <input
@@ -223,8 +223,8 @@ export default function InputUrls() {
               />
             </div>
           `}
-          ${type === 'rollout' &&
-          html`
+          ${type === 'rollout'
+          && html`
             <div class="form-field">
               <div class="form-field-label">* Regional Edit Behavior</div>
               <div>
@@ -238,8 +238,8 @@ export default function InputUrls() {
                   <option value="merge">Merge</option>
                   <option value="override">Override</option>
                 </select>
-                ${errors.editBehavior &&
-                html`<div class="form-field-error">
+                ${errors.editBehavior
+                && html`<div class="form-field-error">
                   ${errors.editBehavior}
                 </div>`}
               </div>
@@ -260,8 +260,8 @@ export default function InputUrls() {
             onBlur=${handleUrlsBlur}
             placeholder=${`Enter the full URL. E.g, ${origin}/drafts/localization/projects/raga/image-test-one`}
           />
-          ${errors.urlsStr &&
-          html`<div class="form-field-error">${errors.urlsStr}</div>`}
+          ${errors.urlsStr
+          && html`<div class="form-field-error">${errors.urlsStr}</div>`}
 
           <div class="form-field flex-items-center">
             <input
@@ -281,8 +281,8 @@ export default function InputUrls() {
           </div>
 
           <div class="field-col">
-            ${fragmentsEnabled &&
-            html`
+            ${fragmentsEnabled
+            && html`
               <${FragmentsSection}
                 allFragments=${allFragments}
                 selectedFragments=${fragments}
@@ -291,8 +291,8 @@ export default function InputUrls() {
                 formErrors=${errors.fragments}
               />
             `}
-            ${errors.fragments &&
-            html`<div class="form-field-error">${errors.fragments}</div>`}
+            ${errors.fragments
+            && html`<div class="form-field-error">${errors.fragments}</div>`}
           </div>
         </div>
       </div>
