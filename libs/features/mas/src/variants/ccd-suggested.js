@@ -57,7 +57,7 @@ export class CCDSuggested extends VariantLayout {
             overflow: hidden;
         }
 
-        :host(:hover) {
+        :host([variant='ccd-suggested']:hover) {
           border-color: var(--spectrum-gray-300);
         }
 

@@ -1,13 +1,10 @@
 export const CSS = `
 
 merch-card[variant="ccd-suggested"] {
-  --merch-color-body-xs-color: var(--spectrum-gray-700);
+  --consonant-merch-card-detail-s-color: #6d6d6d;
+  --consonant-merch-card-body-xs-color: var(--spectrum-gray-700);
   --consonant-merch-card-heading-xs-color: var(--spectrum-gray-800);
-}
-
-.spectrum--darkest merch-card[variant="ccd-suggested"] {
-  --merch-color-body-xs-color: #F8F8F8;
-}
+  }
 
 merch-card[variant="ccd-suggested"] [slot="heading-xs"] {
   font-size: var(--consonant-merch-card-heading-xxs-font-size);
@@ -24,5 +21,11 @@ merch-card[variant="ccd-suggested"] [slot="cta"] a {
   line-height: normal;
   text-decoration: none;
   font-weight: 700;
+}
+
+.spectrum--darkest merch-card[variant="ccd-suggested"] {
+    --consonant-merch-card-detail-s-color: #f8f8f8;
+    --consonant-merch-card-body-xs-color: #f8f8f8;
+    --consonant-merch-card-border-color: #303030;
 }
 `;
