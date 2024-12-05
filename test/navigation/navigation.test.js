@@ -1,4 +1,3 @@
-/* eslint import/no-relative-packages: 0 */
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { stub, restore } from 'sinon';
@@ -61,7 +60,7 @@ describe('Navigation component', async () => {
   });
 
   it('Does not render either header or footer if configs is not passed', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/body.html' }, 'http://localhost:2000');
+    document.body.innerHTML = await readFile({ path: './mocks/body.html' });
     await loadBlock();
     const header = document.getElementsByTagName('header');
     const footer = document.getElementsByTagName('footer');
