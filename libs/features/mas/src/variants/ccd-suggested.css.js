@@ -27,5 +27,6 @@ merch-card[variant="ccd-suggested"] [slot="cta"] a {
     --consonant-merch-card-detail-s-color: #f8f8f8;
     --consonant-merch-card-body-xs-color: #f8f8f8;
     --consonant-merch-card-border-color: #303030;
+    --consonant-merch-card-background-color: #222222;
 }
 `;
