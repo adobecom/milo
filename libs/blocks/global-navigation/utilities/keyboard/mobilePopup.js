@@ -183,7 +183,7 @@ class Popup {
       case 'Escape': {
         closeAllDropdowns();
         this.focusMainNav(isFooter);
-        if (newNav && isLocalNav) {
+        if (newNav && isLocalNav && !isFooter) {
           const toggle = document.querySelector('header.new-nav .feds-toggle');
           toggle?.click();
           toggle?.focus();
