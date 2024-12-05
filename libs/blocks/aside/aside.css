@@ -298,6 +298,7 @@
 }
 
 .aside.rounded-corners .foreground .image img,
+.aside.rounded-corners .foreground .image:not(:has(.video-container)) .pause-play-wrapper,
 .aside.rounded-corners .foreground .image video {
   border-radius: 16px;
 }
