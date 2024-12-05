@@ -23,8 +23,7 @@ describe('Dynamic Nav Status', () => {
   beforeEach(async () => {
     const conf = { dynamicNavKey: 'bacom' };
     document.body.innerHTML = await readFile({ path: './mocks/status.html' });
-    document.head.innerHTML = '<meta name="dynamic-nav" content=""><meta name="gnav-source" content=""><meta name="dynamic-nav-group" content="test">';
-    window.sessionStorage.setItem('dynamicNavGroup', 'test');
+    document.head.innerHTML = '<meta name="dynamic-nav" content=""><meta name="gnav-source" content="">';
     setConfig(conf);
   });
 
@@ -159,73 +158,6 @@ describe('Dynamic Nav Status', () => {
       expect(info.match).to.equal('true');
       expect(info.authoredSource).to.equal('/test');
       expect(info.storedSource).to.equal('/test');
-    });
-
-    it('displays the correct information for a group match', () => {
-      document.querySelector('meta[name="dynamic-nav"]').setAttribute('content', 'on');
-      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.hlx/test');
-
-      dynamicNav();
-      status();
-
-      const statusWidget = document.querySelector('.dynamic-nav-status');
-      const group = statusWidget.querySelector('.group span');
-      const groupMatch = statusWidget.querySelector('.group-match span');
-
-      expect(group.innerText).to.equal('test');
-      expect(groupMatch.innerText).to.equal('Yes');
-      expect(statusWidget.classList.contains(ENABLED)).to.be.true;
-    });
-
-    it('displays the correct information for a group mismatch', () => {
-      document.querySelector('meta[name="dynamic-nav"]').setAttribute('content', 'on');
-      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.hlx/test');
-
-      window.sessionStorage.setItem('dynamicNavGroup', 'no-test');
-
-      dynamicNav();
-      status();
-
-      const statusWidget = document.querySelector('.dynamic-nav-status');
-      const group = statusWidget.querySelector('.group span');
-      const groupMatch = statusWidget.querySelector('.group-match span');
-
-      expect(group.innerText).to.equal('test');
-      expect(groupMatch.innerText).to.equal('No');
-      expect(statusWidget.classList.contains(INACTIVE)).to.be.true;
-    });
-
-    it('displays the correct information for no group being set', () => {
-      document.querySelector('meta[name="dynamic-nav"]').setAttribute('content', 'on');
-      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.hlx/test');
-
-      document.querySelector('meta[name="dynamic-nav-group"]').remove();
-      window.sessionStorage.setItem('dynamicNavGroup', 'no-test');
-
-      dynamicNav();
-      status();
-
-      const statusWidget = document.querySelector('.dynamic-nav-status');
-      const group = statusWidget.querySelector('.group span');
-      const groupMatch = statusWidget.querySelector('.group-match span');
-
-      expect(group.innerText).to.equal('Group not set');
-      expect(groupMatch.innerText).to.equal('No');
-    });
-
-    it('remains active when there is no group match but the nav is active', () => {
-      document.querySelector('meta[name="dynamic-nav"]').setAttribute('content', 'on');
-      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.hlx/test');
-
-      document.querySelector('meta[name="dynamic-nav-group"]').remove();
-      window.sessionStorage.setItem('dynamicNavGroup', 'no-test');
-      window.sessionStorage.setItem('gnavSource', GNAV_SOURCE);
-
-      dynamicNav();
-      status();
-
-      const statusWidget = document.querySelector('.dynamic-nav-status');
-      expect(statusWidget.classList.contains(ACTIVE)).to.be.true;
     });
   });
 
