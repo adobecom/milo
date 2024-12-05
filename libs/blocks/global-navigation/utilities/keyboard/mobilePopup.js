@@ -160,6 +160,7 @@ class Popup {
 
   handleKeyDown = ({ e, element, isFooter }) => {
     const newNav = !!document.querySelector('header.new-nav');
+    const isLocalNav = !!document.querySelector('header.local-nav');
     const popupItems = newNav && !isFooter
       ? this.popupItems()
       : [...element.querySelectorAll(selectors.popupItems)];
@@ -182,7 +183,7 @@ class Popup {
       case 'Escape': {
         closeAllDropdowns();
         this.focusMainNav(isFooter);
-        if (newNav) {
+        if (newNav && isLocalNav) {
           const toggle = document.querySelector('header.new-nav .feds-toggle');
           toggle?.click();
           toggle?.focus();
