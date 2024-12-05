@@ -134,7 +134,7 @@ function enableSearch(id) {
 }
 
 function disableSearch(id) {
-  const menu = document.querySelector(`[aria-labelledby='${id}']`);
+  const menu = querySelector(`[aria-labelledby='${id}']`);
   const input = menu.querySelector('input');
   input.value = '';
   const parent = input.parentElement.parentElement;

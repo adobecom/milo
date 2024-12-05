@@ -347,8 +347,18 @@ class Gnav {
       lanaLog({ message: 'GNAV: Error with IMS', e, tags: 'errorType=info,module=gnav' });
     }));
 
+  decorateCompSignIn = () => {
+    const button = this.content.querySelector('.complimentary-web-app-sign-in a');
+    const cta = decorateCta({ elem: button, type: this.getMainNavItemType(button) });
+    cta.closest('.feds-cta-wrapper').style.alignItems = 'center';
+    this.elements.navWrapper.append(cta);
+  };
+
   decorateTopNav = () => {
     this.elements.mobileToggle = this.decorateToggle();
+    if (getMetadata('complimentary-sign-in')?.toLowerCase() === 'on') {
+      this.decorateCompSignIn();
+    }
     this.elements.topnav = toFragment`
       <nav class="feds-topnav" aria-label="Main">
         <div class="feds-brand-container">
