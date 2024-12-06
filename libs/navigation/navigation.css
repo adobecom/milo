@@ -1,3 +1,8 @@
+@import '../blocks/global-navigation/global-navigation.css';
+@import '../blocks/global-navigation/features/profile/dropdown.css';
+@import '../blocks/global-navigation/features/search/gnav-search.css';
+@import '../blocks/global-navigation/utilities/menu/menu.css';
+
  /* Extracting the essential styles required for rendering the component independently */
 :root {
   --navigation-link-color: #035FE6;

@@ -352,7 +352,10 @@ function updateAMCVCookie(ECID) {
  */
 export const loadAnalyticsAndInteractionData = async ({ locale, env, calculatedTimeout }) => {
   const value = getCookie('kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent', true);
-  if (value?.[1] === 'general' && value?.[2] === 'out') {
+  const isRejectedDecodedURI = value?.[2] === undefined && decodeURIComponent(value?.[1]) === 'general=out';
+  const isRejectedURI = value?.[1] === 'general' && value?.[2] === 'out';
+
+  if (isRejectedDecodedURI || isRejectedURI) {
     return Promise.reject(new Error('Consent Cookie doesnt allow interact'));
   }
 
