@@ -9,6 +9,7 @@ import { getFederatedUrl } from '../../utils/federated.js';
 /* c8 ignore start */
 const PHONE_SIZE = window.screen.width < 550 || window.screen.height < 550;
 const safariIpad = navigator.userAgent.includes('Macintosh') && navigator.maxTouchPoints > 1;
+export const US_PREFIX = 'en-us';
 export const PERSONALIZATION_TAGS = {
   all: () => true,
   chrome: () => navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Edg'),
@@ -661,7 +662,7 @@ export async function createMartechMetadata(placeholders, config, column) {
 
     placeholders.forEach((item, i) => {
       const firstRow = placeholders[i];
-      let usValue = firstRow['en-us'] || firstRow.us || firstRow.en || firstRow.key;
+      let usValue = firstRow[US_PREFIX] || firstRow.us || firstRow.en || firstRow.key;
 
       if (!usValue) return;
 
@@ -1248,7 +1249,7 @@ export async function init(enablements = {}) {
       highlight: (mepHighlight !== undefined && mepHighlight !== 'false'),
       targetEnabled: target,
       experiments: [],
-      geoPrefix: config.locale?.prefix.split('/')[1]?.toLowerCase() || 'en-us',
+      geoPrefix: config.locale?.prefix.split('/')[1]?.toLowerCase() || US_PREFIX,
     };
     manifests = manifests.concat(await combineMepSources(pzn, promo, mepParam));
     manifests?.forEach((manifest) => {
