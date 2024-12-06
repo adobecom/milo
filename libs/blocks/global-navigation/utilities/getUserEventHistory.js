@@ -1,4 +1,3 @@
-/* eslint import/no-relative-packages: 0 */
 /* eslint-disable no-promise-executor-return, no-async-promise-executor */
 import { getConfig } from '../../../utils/utils.js';
 

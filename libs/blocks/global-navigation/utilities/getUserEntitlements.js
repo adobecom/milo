@@ -1,4 +1,3 @@
-/* eslint import/no-relative-packages: 0 */
 /* eslint-disable camelcase */
 import { getConfig } from '../../../utils/utils.js';
 

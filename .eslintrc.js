@@ -62,7 +62,6 @@ module.exports = {
     '/libs/features/mas/*',
     '/tools/loc/*',
     '/libs/features/spectrum-web-components/*',
-    '/libs/navigation/dist/*',
   ],
   plugins: [
     'chai-friendly',

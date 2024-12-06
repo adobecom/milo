@@ -831,7 +831,7 @@ const findReplaceableNodes = (area) => {
 };
 
 let placeholderRequest;
-export async function decoratePlaceholders(area, config) {
+async function decoratePlaceholders(area, config) {
   if (!area) return;
   const nodes = findReplaceableNodes(area);
   if (!nodes.length) return;
