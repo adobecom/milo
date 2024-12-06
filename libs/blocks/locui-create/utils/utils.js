@@ -17,7 +17,6 @@ export function getTenantName() {
 
 export function processLocaleData(localeData) {
   const processedLocales = localeData.locales.data
-    .filter((locItem) => locItem.workflow !== 'Transcreation')
     .map((locItem) => ({
       ...locItem,
       livecopies: locItem.livecopies
