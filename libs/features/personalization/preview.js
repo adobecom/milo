@@ -387,7 +387,6 @@ export async function saveToMmm() {
 export default async function decoratePreviewMode() {
   const { miloLibs, codeRoot, mep } = getConfig();
   loadStyle(`${miloLibs || codeRoot}/features/personalization/preview.css`);
-
   createPreviewPill();
   if (mep?.experiments) addHighlightData(mep.experiments);
 }
