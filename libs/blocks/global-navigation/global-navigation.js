@@ -385,7 +385,7 @@ class Gnav {
         localNav = toFragment`<div class="feds-localnav"/>`;
         this.block.after(localNav);
       }
-      localNav.append(toFragment`<button class="feds-navLink--hoverCaret feds-localnav-title"></button>`, toFragment` <div class="feds-localnav-curtain"></div>`, toFragment` <div class="feds-localnav-items"></div>`);
+      localNav.append(toFragment`<button class="feds-navLink--hoverCaret feds-localnav-title" aria-haspopup="true" aria-expanded="false"></button>`, toFragment` <div class="feds-localnav-curtain"></div>`, toFragment` <div class="feds-localnav-items"></div>`);
 
       const itemWrapper = localNav.querySelector('.feds-localnav-items');
       const titleLabel = await replaceKey('overview', getFedsPlaceholderConfig());
@@ -404,6 +404,8 @@ class Gnav {
 
       localNav.querySelector('.feds-localnav-title').addEventListener('click', () => {
         localNav.classList.toggle('active');
+        const isActive = localNav.classList.contains('active');
+        localNav.querySelector('.feds-localnav-title').setAttribute('aria-expanded', isActive);
       });
       this.elements.localNav = localNav;
     }
@@ -993,6 +995,18 @@ class Gnav {
       const elements = [...document.querySelectorAll('.feds-localnav .feds-navItem')].find(
         (el) => el.textContent.trim() === navItem.textContent,
       );
+      const allLocalnavLinks = [...document.querySelectorAll('.feds-localnav button, .feds-localnav a, .feds-localnav .feds-menu-headline')];
+      /** close localnav on tab press for last link of the localnav items */
+      allLocalnavLinks[allLocalnavLinks.length - 1].addEventListener('keydown', (e) => {
+        if (e.code === 'Tab' && !e.shiftKey) {
+          e.preventDefault();
+          setTimeout(() => {
+            const button = e.target.closest('.feds-localnav')?.querySelector('.feds-localnav-title');
+            button.click();
+            button.focus();
+          }, 100);
+        }
+      });
       if (elements) {
         elements.innerHTML = template.innerHTML;
         // Reattach click events, as cloned elem don't retain event listeners
@@ -1006,6 +1020,14 @@ class Gnav {
           elem?.addEventListener('click', (e) => {
             trigger({ element: e.currentTarget, event: e, type: 'headline' });
             setActiveDropdown(e.currentTarget);
+          });
+
+          elem?.addEventListener('keydown', (e) => {
+            if (e.code === 'Enter' || e.code === 'Space') { // Check for Enter or Space
+              e.preventDefault(); // Prevent default scrolling behavior for Space key
+              trigger({ element: e.currentTarget, event: e, type: 'headline' });
+              setActiveDropdown(e.currentTarget);
+            }
           });
         });
       }
