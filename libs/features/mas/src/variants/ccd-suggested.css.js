@@ -11,7 +11,7 @@ export const CSS = `
   }
 
 .spectrum--darkest merch-card[variant="ccd-suggested"] {
-  --consonant-merch-card-background-color: #222222;
+  --consonant-merch-card-background-color: #1e1e1e;
   --consonant-merch-card-heading-xs-color: #f8f8f8;
   --consonant-merch-card-body-xs-color: #f8f8f8;
   --consonant-merch-card-border-color: #393939;

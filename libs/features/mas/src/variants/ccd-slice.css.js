@@ -17,7 +17,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
 }
 
 .spectrum--darkest merch-card[variant="ccd-slice"] {
-  --consonant-merch-card-background-color: #222222;
+  --consonant-merch-card-background-color: #1d1d1d;
   --consonant-merch-card-body-s-color: #f8f8f8;
   --consonant-merch-card-border-color: #303030;
   --consonant-merch-card-detail-s-color: #f8f8f8;

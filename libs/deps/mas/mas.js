@@ -1290,7 +1290,7 @@ merch-card[variant='twp'] merch-offer-select {
   }
 
 .spectrum--darkest merch-card[variant="ccd-suggested"] {
-  --consonant-merch-card-background-color: #222222;
+  --consonant-merch-card-background-color: #1e1e1e;
   --consonant-merch-card-heading-xs-color: #f8f8f8;
   --consonant-merch-card-body-xs-color: #f8f8f8;
   --consonant-merch-card-border-color: #393939;
@@ -1443,7 +1443,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
 }
 
 .spectrum--darkest merch-card[variant="ccd-slice"] {
-  --consonant-merch-card-background-color: #222222;
+  --consonant-merch-card-background-color: #1d1d1d;
   --consonant-merch-card-body-s-color: #f8f8f8;
   --consonant-merch-card-border-color: #303030;
   --consonant-merch-card-detail-s-color: #f8f8f8;
