@@ -294,7 +294,7 @@ export default async function init(el) {
       if (slot) {
         slot.setAttribute('slot', LITERAL_SLOTS[index]);
         if (LITERAL_SLOTS[index].toLowerCase().includes('result')) {
-          slot.setAttribute('role', 'status');
+          slot.setAttribute('aria-live', 'polite');
         }
         index += 1;
       }
