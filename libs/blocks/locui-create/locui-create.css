@@ -505,7 +505,6 @@ body {
 /* Input Actions Screen */
 
 .locui-table {
-  padding-top: 1rem;
   flex: 1;
   overflow-y: auto;
   box-sizing: border-box;
@@ -517,7 +516,6 @@ body {
   font-weight: 700;
   font-size: 1.25rem;
   font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
-  padding-bottom: 1rem;
 }
 
 .table-wrapper {
@@ -532,7 +530,7 @@ body {
 }
 
 .table-wrapper.table-translate {
-  margin: 0 4rem;
+  margin: 0 7rem;
 }
 
 .locui-table table {
