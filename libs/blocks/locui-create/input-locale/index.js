@@ -46,8 +46,8 @@ export default function useInputLocale() {
     });
     return Object.entries(groupedLocales).map(([language, localeList]) => ({
       language,
-      locales: project.value.type === 'rollout' ? localeList : [],
-      action: project.value.type === LOCALIZATION_TYPES.rollout ? 'Rollout' : 'Translate',
+      locales: project.value.type === LOCALIZATION_TYPES.translation ? [] : localeList,
+      action: project.value.type === LOCALIZATION_TYPES.translation ? 'Translate' : 'Rollout',
       languagecode: languageCodes[language],
       workflow: '',
     }));
