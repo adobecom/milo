@@ -343,11 +343,10 @@ function getUrl() {
   const { host } = window.location;
   const query = PAGE_URL.searchParams.get('env');
   const url = 'https://edge.adobedc.net/ee/v2/interact';
-  const SLD = PAGE_URL.hostname.includes('.aem.') ? 'aem' : 'hlx';
 
   /* c8 ignore start */
-  if (query || host.includes('localhost') || host.includes(`${SLD}.page`)
-    || host.includes(`${SLD}.live`)) {
+  if (query || host.includes('localhost') || host.includes('.page')
+    || host.includes('.live')) {
     return url;
   }
 
