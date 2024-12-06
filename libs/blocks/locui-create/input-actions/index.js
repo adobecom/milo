@@ -41,7 +41,6 @@ export default function useInputActions() {
   };
 
   return {
-    project,
     languageCount,
     isFormValid,
     validateForm,
