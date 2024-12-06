@@ -27,8 +27,7 @@ function hasSegmentClass(el) {
 }
 
 function getColWidth(text, colWidths, hasSegment) {
-  if (hasSegment) return;
-  if (colWidths.length === 2) return;
+  if (hasSegment || colWidths.length === 2) return;
   const numRegex = /\b\d{1,3}\b/;
   colWidths.push((text.match(numRegex) || [])[0]);
 }
