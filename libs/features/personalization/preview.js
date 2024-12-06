@@ -310,7 +310,8 @@ export function getMepPopup(mepConfig, isMmm = false) {
   return mepPopup;
 }
 
-function createPreviewPill(mepConfig) {
+function createPreviewPill() {
+  const mepConfig = parseMepConfig();
   const { activities } = mepConfig;
   const overlay = createTag('div', { class: 'mep-preview-overlay static-links', style: 'display: none;' });
   const pill = document.createElement('div');
@@ -352,7 +353,8 @@ function addHighlightData(manifests) {
   });
 }
 
-async function saveToMmm(data) {
+export async function saveToMmm() {
+  const data = parseMepConfig();
   if (data.page.url.includes('/drafts/')) return false;
   const { activities, page } = data;
   activities.filter((activity) => {
@@ -386,8 +388,6 @@ export default async function decoratePreviewMode() {
   const { miloLibs, codeRoot, mep } = getConfig();
   loadStyle(`${miloLibs || codeRoot}/features/personalization/preview.css`);
 
-  const mepConfig = parseMepConfig();
-  saveToMmm(mepConfig);
-  createPreviewPill(mepConfig);
+  createPreviewPill();
   if (mep?.experiments) addHighlightData(mep.experiments);
 }

@@ -62,6 +62,9 @@ function createButtonDetailsPair(mmmEl, page) {
   mmmEl.append(dt, dd);
 }
 
+function matchesAny(str, prefix) {
+  return (!str || str.split(',').some((val) => prefix === val));
+}
 function searchFilterByInput() {
   const mmmEntries = document.querySelectorAll('div.mmm-container > dl > *');
   const shareUrl = new URL(`${window.location.origin}${window.location.pathname}`);
@@ -86,9 +89,7 @@ function searchFilterByInput() {
       if (!url.includes(searchValues.query)) entry.classList.add('filter-hide');
       return;
     }
-    if ((searchValues.page && pagePath !== searchValues.page)
-      || (searchValues.geo
-        && !searchValues.geo.split(',').some((geo) => prefix === geo))) {
+    if (!matchesAny(searchValues.geo, prefix) || !matchesAny(searchValues.page, pagePath)) {
       entry.classList.add('filter-hide');
     }
   });
