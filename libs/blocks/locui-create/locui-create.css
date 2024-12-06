@@ -16,12 +16,6 @@ body {
   flex-direction: column;
 }
 
-.pl-8 {
-  padding-left: 8px;
-}
-.m-0 {
-  margin: 0;
-}
 .flex-1 {
   flex-grow: 1;
 }
@@ -105,12 +99,48 @@ body {
   background: #e5e5e5;
 }
 
+.locui-title-bar > span {
+  font-weight: 300;
+  color: #343434;
+}
+
 /* Input-urls */
 
 .form-field {
   display: flex;
   gap: 8px;
-  padding: 8px 0;
+  padding: 12px 0;
+}
+
+.segment-ctrl {
+  display: flex;
+  font-size: 16px;
+}
+
+.segment-ctrl > div {
+  min-width: 96px;
+  text-align: center;
+  padding: 0 8px;
+  background-color: #f7f7f7;
+  border: 2px solid #ddd;
+  user-select: none;
+  transition: background-color 120ms;
+}
+
+.segment-ctrl > div.active {
+  color: #fff;
+  background-color: #131313;
+  border-color: transparent;
+}
+
+.segment-ctrl > div:first-child {
+  border-radius: 16px 0 0 16px;
+  border-right-width: 1px;
+}
+
+.segment-ctrl > div:last-child {
+  border-radius: 0 16px 16px 0;
+  border-left-width: 1px;
 }
 
 .form-field-label {
@@ -744,4 +774,20 @@ body {
   padding: 5px;
   border-radius: 8px;
   align-items: flex-start;
+}
+
+
+/* Padding and margin overrides */
+
+.pl-8 {
+  padding-left: 8px;
+}
+.pb-4 {
+  padding-bottom: 4px;
+}
+.pb-12 {
+  padding-bottom: 12px;
+}
+.m-0 {
+  margin: 0;
 }

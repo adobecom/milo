@@ -34,6 +34,7 @@ export function validateFragments(isFragmentEnabled, noOfValidFrag, fragmentsSel
 }
 
 export function validateForm({
+  type,
   name,
   editBehavior,
   urlsStr,
@@ -45,7 +46,7 @@ export function validateForm({
   if (name === '') {
     errors.name = 'Project name is required';
   }
-  if (editBehavior === '') {
+  if (type === 'rollout' && editBehavior === '') {
     errors.editBehavior = 'Edit behavior is required';
   }
   if (urlsStr === '') {
