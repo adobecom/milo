@@ -137,6 +137,7 @@ function createSpectrumCssButton(cta, aemFragmentMapping, isOutline, variant) {
     const size = aemFragmentMapping.ctas.size ?? 'M';
     const variantClass = `spectrum-Button--${variant}`;
     const treatmentClass = isOutline ? ' spectrum-Button--outline' : '';
+    cta.classList.add('spectrum-Button-label');
     const sizeClass = SPECTRUM_BUTTON_SIZES.includes(size)
         ? ` spectrum-Button--size${size}`
         : '';

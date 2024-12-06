@@ -302,7 +302,7 @@ export class MerchCard extends LitElement {
 
     disconnectedCallback() {
         super.disconnectedCallback();
-        this.variantLayout.disconnectedCallbackHook();
+        this.variantLayout?.disconnectedCallbackHook();
 
         this.removeEventListener(
             EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,

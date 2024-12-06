@@ -3,7 +3,8 @@ import { DESKTOP_UP, TABLET_UP } from './media.js';
 
 export const styles = css`
     :host {
-        --consonant-merch-card-border: 1px solid var(--consonant-merch-card-border-color, var(--spectrum-gray-200));
+        --consonant-merch-card-background-color: #fff;
+        --consonant-merch-card-border: 1px solid var(--consonant-merch-card-border-color);
         
         -webkit-font-smoothing: antialiased;
         background-color: var(--consonant-merch-card-background-color);
