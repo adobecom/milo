@@ -59,19 +59,49 @@ describe('Timeline', () => {
     const trialPeriod = timelineEl.querySelector('.row .left .period');
     expect(trialPeriod.style.background.includes('to left')).to.be.true;
   });
-  describe('Timeline', () => {
+  describe('rtl ', () => {
     beforeEach(async () => {
       document.body.innerHTML = await readFile({ path: './mocks/switchcolors.html' });
     });
     afterEach(() => {
       document.body.innerHTML = '';
     });
-    it('handles linear-gradient for either side', async () => {
+    it('updates linear-gradient for rtl', async () => {
       const timelineEl = document.querySelector('.timeline');
       init(timelineEl);
       const refundPeriod = timelineEl.querySelector('.row .right .period');
       expect(refundPeriod.textContent).to.equal('14-day full refund period');
       expect(refundPeriod.style.background.includes('to left')).to.true;
+    });
+  });
+  describe('segment classes', () => {
+    beforeEach(async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/segmentclasses.html' });
+    });
+    afterEach(() => {
+      document.body.innerHTML = '';
+    });
+    it('adds classes to handle center text alignment', async () => {
+      const timelineEl = document.querySelector('.timeline');
+      init(timelineEl);
+      const leftCenter = timelineEl.querySelector('.row .left-center');
+      const rightCenter = timelineEl.querySelector('.row .right-center');
+      expect(rightCenter).to.exist;
+      expect(leftCenter).to.exist;
+    });
+  });
+  describe('broken segment classes', () => {
+    beforeEach(async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/brokensegmentclass.html' });
+    });
+    afterEach(() => {
+      document.body.innerHTML = '';
+    });
+    it('replaces broken segment class width segment-timeline-6-6', async () => {
+      const timelineEl = document.querySelector('.timeline');
+      init(timelineEl);
+      expect(timelineEl.classList.contains('segment-timeline-6-6')).to.be.true;
+      expect(timelineEl.classList.contains('segment-timeline-9')).to.be.false;
     });
   });
 });
