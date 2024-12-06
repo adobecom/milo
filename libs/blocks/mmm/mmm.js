@@ -70,7 +70,7 @@ function searchFilterByInput() {
     const id = field.getAttribute('id').split('-').pop();
     const { value } = field;
     searchValues[id] = value;
-    if (value && value !== 'all') shareUrl.searchParams.set(id.charAt(0), value);
+    if (value && value !== 'all') shareUrl.searchParams.set(id, value);
   });
   const selectedRadio = document.querySelector('.tab-list-container button[aria-selected="true"]');
   const filterType = selectedRadio?.getAttribute('id') === 'tab-mmm-options-2' ? 'search' : 'filter';
@@ -114,6 +114,7 @@ function addShareButtonListeners() {
 
 async function createForms() {
   const urlParams = new URLSearchParams(window.location.search);
+  const sharedUrlSettings = Object.fromEntries(urlParams.entries());
   const resp = await customFetch({ resource: '/libs/blocks/mmm/form.html', withCacheRules: true })
     .catch(() => ({}));
   const html = await resp.text();
@@ -121,10 +122,9 @@ async function createForms() {
   const doc = createTag('div', false, html);
   const dropdownContainer = document.querySelector('.section-metadata.dropdowns');
   dropdownContainer.parentNode.insertBefore(doc, dropdownContainer);
-  const sharedUrlSettings = Object.fromEntries(urlParams.entries());
-  doc.querySelectorAll('select').forEach((select) => {
+  doc.querySelectorAll('.tabs select').forEach((select) => {
     select.addEventListener('change', searchFilterByInput);
-    const key = select.getAttribute('id').split('-').pop().charAt(0);
+    const key = select.getAttribute('id').split('-').pop();
     const value = sharedUrlSettings[key];
     if (!value) return;
     select.querySelector(`option[value="${value}"]`)?.setAttribute('selected', 'selected');
@@ -132,7 +132,7 @@ async function createForms() {
   const searchContainer = document.querySelector('.section-metadata.search');
   const searchForm = document.querySelector('#mmm-search-query-container');
   searchContainer.parentNode.insertBefore(searchForm, searchContainer);
-  if (sharedUrlSettings.q) searchForm.querySelector('input').value = sharedUrlSettings.q;
+  if (sharedUrlSettings.query) searchForm.querySelector('input').value = sharedUrlSettings.query;
   searchForm.addEventListener('keyup', searchFilterByInput);
   searchForm.addEventListener('change', searchFilterByInput);
   document.querySelectorAll('.tab-list-container button').forEach((button) => {
