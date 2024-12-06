@@ -21,11 +21,7 @@ async function toggleDrawer(target, dd) {
 }
 
 function createButtonDetailsPair(mmmEl, page) {
-  const { url, pageId, pathname, prefix } = page;
-  if (!pathname) {
-    const urlObj = new URL(url);
-    page.pathname = urlObj.pathname.replace(`/${prefix}/`, '/');
-  }
+  const { url, pageId } = page;
   const triggerId = `mmm-trigger-${pageId}`;
   const panelId = `mmm-content-${pageId}`;
   const icon = createTag('span', { class: 'mmm-icon' });
@@ -90,7 +86,7 @@ function searchFilterByInput() {
       if (!url.includes(searchValues.query)) entry.classList.add('filter-hide');
       return;
     }
-    if ((searchValues.page !== 'all' && pathname !== searchValues.page)
+    if ((searchValues.page !== 'all' && pathname !== searchValues.page.replace('.html', ''))
       || (searchValues.geo !== 'all'
         && !searchValues.geo.split(',').some((geo) => prefix === geo))) {
       entry.classList.add('filter-hide');
