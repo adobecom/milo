@@ -70,7 +70,7 @@ function searchFilterByInput() {
     const id = field.getAttribute('id').split('-').pop();
     const { value } = field;
     searchValues[id] = value;
-    if (value && value !== 'all') shareUrl.searchParams.set(id, value);
+    if (value) shareUrl.searchParams.set(id, value);
   });
   const selectedRadio = document.querySelector('.tab-list-container button[aria-selected="true"]');
   const filterType = selectedRadio?.getAttribute('id') === 'tab-mmm-options-2' ? 'search' : 'filter';
@@ -86,8 +86,8 @@ function searchFilterByInput() {
       if (!url.includes(searchValues.query)) entry.classList.add('filter-hide');
       return;
     }
-    if ((searchValues.page !== 'all' && pagePath !== searchValues.page)
-      || (searchValues.geo !== 'all'
+    if ((searchValues.page && pagePath !== searchValues.page)
+      || (searchValues.geo
         && !searchValues.geo.split(',').some((geo) => prefix === geo))) {
       entry.classList.add('filter-hide');
     }
