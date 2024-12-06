@@ -270,7 +270,7 @@ dd .mep-popup-header .mep-close {
 .mmm-form-container > div {
   flex: 1;
 }
-#mmm-search-input-container {
+#mmm-search-query-container {
   max-width: 700px;
 }
 .mmm-form-container label {
@@ -303,7 +303,7 @@ dd .mep-popup-header .mep-close {
   #mmm-dropdown-container {
     flex: 0 0 50%;
   }
-  #mmm-search-input-container {
+  #mmm-search-query-container {
     max-width: 700px;
   }
   #mmm-shareButtonContainer {

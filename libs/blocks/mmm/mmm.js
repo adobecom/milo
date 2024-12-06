@@ -1,42 +1,6 @@
 import { createTag, customFetch, loadStyle } from '../../utils/utils.js';
 import { fetchData, DATA_TYPE } from '../../features/personalization/personalization.js';
-import { getMepPopup } from '../../features/personalization/preview.js';
-
-const API_DOMAIN = 'https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-2.on.aws';
-const API_URLS = {
-  pageList: `${API_DOMAIN}/get-pages`,
-  pageDetails: `${API_DOMAIN}/get-page?id=`,
-};
-
-function buildShareableLink() {
-  const urlLoc = window.location;
-  const shareableLinkParams = {};
-  shareableLinkParams.type = document.querySelector('.tab-list-container button[aria-selected="true"]')?.innerHTML;
-  if (shareableLinkParams.type === 'Dropdown') {
-    shareableLinkParams.geo = document.querySelector('select#mmm-search-geo')?.value;
-    shareableLinkParams.topPage = document.querySelector('select#mmm-search-page')?.value;
-  } else {
-    shareableLinkParams.q = document.querySelector('#mmm-search-input')?.value;
-    shareableLinkParams.tab = 'mmm-options-2'; // could be dynamic based if the tabindex worked
-  }
-  const shareableLinkNew = new URL(window.location.pathname, urlLoc.protocol + urlLoc.host);
-  shareableLinkNew.search = new URLSearchParams(shareableLinkParams).toString();
-  document.querySelectorAll('button.copy-to-clipboard').forEach((button) => {
-    button.dataset.destination = shareableLinkNew.toString();
-  });
-  console.log(`newest shareable link: ${shareableLinkNew.toString()}`);
-}
-function searchFromWindowParameters() {
-  const searchParams = new URLSearchParams(decodeURIComponent(window.location.search));
-  const newValuesToBuild = {};
-  if (searchParams.has('tab')) {
-    newValuesToBuild.q = searchParams.get('q');
-  } else {
-    newValuesToBuild.geo = searchParams.get('geo');
-    newValuesToBuild.topPage = searchParams.get('topPage');
-  }
-  return Object.keys(newValuesToBuild).length ? newValuesToBuild : null;
-}
+import { getMepPopup, API_URLS } from '../../features/personalization/preview.js';
 
 async function toggleDrawer(target, dd) {
   const el = target.closest('button');
@@ -51,39 +15,13 @@ async function toggleDrawer(target, dd) {
     if (dd.classList.contains('placeholder-resolved') || !loading) return;
     const { pageId } = dd.dataset;
     const pageData = await fetchData(`${API_URLS.pageDetails}${pageId}`, DATA_TYPE.JSON);
-    const { page, activities } = pageData;
-    if (!page.prefix) page.prefix = 'en-us';
-    activities.map((activity) => {
-      activity.variantNames = activity.variantNames.split('||');
-      activity.source = activity.source.split(',');
-      return activity;
-    });
-    loading.replaceWith(getMepPopup(activities, page, true));
+    loading.replaceWith(getMepPopup(pageData, true));
     dd.classList.add('placeholder-resolved');
   }
 }
 
 function createButtonDetailsPair(mmmEl, page) {
   const { url, pageId } = page;
-  const geoOptions = [
-    'jp',
-    'ca',
-    'ca_fr',
-    'au',
-    'nz',
-    'kr',
-    'mx',
-    'br',
-  ];
-
-  const pageUrl = new URL(url);
-  let path = pageUrl.pathname;
-  const pathFolders = path.split('/');
-  if (geoOptions.includes(pathFolders[1])) {
-    pathFolders.splice(1, 1);
-    path = pathFolders.join('/');
-  }
-  page.path = path;
   const triggerId = `mmm-trigger-${pageId}`;
   const panelId = `mmm-content-${pageId}`;
   const icon = createTag('span', { class: 'mmm-icon' });
@@ -97,8 +35,6 @@ function createButtonDetailsPair(mmmEl, page) {
   }, hTag);
   button.append(icon);
 
-  // const para = panel?.querySelector('p');
-  // const text = para ? para.textContent : panel?.textContent;
   const dtHtml = hTag ? createTag(hTag.tagName, { class: 'mmm-heading' }, button) : button;
   const dt = createTag('dt', false, dtHtml);
   const loading = createTag(
@@ -126,31 +62,37 @@ function createButtonDetailsPair(mmmEl, page) {
   mmmEl.append(dt, dd);
 }
 
+function matchesAny(str, prefix) {
+  return (!str || str.split(',').some((val) => prefix === val));
+}
 function searchFilterByInput() {
-  const searchFieldValue = document.querySelector('#mmm-search-input').value;
-  const geoDropDownValue = document.querySelector('#mmm-search-geo').value;
-  const pageDropDownValue = document.querySelector('#mmm-search-page').value;
   const mmmEntries = document.querySelectorAll('div.mmm-container > dl > *');
-  const selectedGeos = geoDropDownValue.split(',');
+  const shareUrl = new URL(`${window.location.origin}${window.location.pathname}`);
+  const searchValues = {};
+  document.querySelectorAll('.tabs input, .tabs select').forEach((field) => {
+    const id = field.getAttribute('id').split('-').pop();
+    const { value } = field;
+    searchValues[id] = value;
+    if (value) shareUrl.searchParams.set(id, value);
+  });
   const selectedRadio = document.querySelector('.tab-list-container button[aria-selected="true"]');
   const filterType = selectedRadio?.getAttribute('id') === 'tab-mmm-options-2' ? 'search' : 'filter';
+  if (filterType === 'search') shareUrl.searchParams.set('tab', 'mmm-options-2');
+  document.querySelectorAll('button.copy-to-clipboard').forEach((button) => {
+    button.dataset.destination = shareUrl.href;
+  });
 
-  if (!mmmEntries) return;
   mmmEntries.forEach((entry) => {
-    const { url, path, prefix = 'en-US' } = entry.dataset;
+    const { url, pagePath, prefix } = entry.dataset;
     entry.classList.remove('filter-hide');
     if (filterType === 'search') {
-      if (!url.includes(searchFieldValue)) entry.classList.add('filter-hide');
+      if (!url.includes(searchValues.query)) entry.classList.add('filter-hide');
       return;
     }
-    if (geoDropDownValue !== 'all' && !selectedGeos.some((item) => prefix === item)) {
-      entry.classList.add('filter-hide');
-    }
-    if (pageDropDownValue !== 'all' && path !== pageDropDownValue) {
+    if (!matchesAny(searchValues.geo, prefix) || !matchesAny(searchValues.page, pagePath)) {
       entry.classList.add('filter-hide');
     }
   });
-  buildShareableLink();
 }
 
 function addShareButtonListeners() {
@@ -171,7 +113,9 @@ function addShareButtonListeners() {
   });
 }
 
-async function createForms(sharedUrlSettings) {
+async function createForms() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const sharedUrlSettings = Object.fromEntries(urlParams.entries());
   const resp = await customFetch({ resource: '/libs/blocks/mmm/form.html', withCacheRules: true })
     .catch(() => ({}));
   const html = await resp.text();
@@ -179,19 +123,17 @@ async function createForms(sharedUrlSettings) {
   const doc = createTag('div', false, html);
   const dropdownContainer = document.querySelector('.section-metadata.dropdowns');
   dropdownContainer.parentNode.insertBefore(doc, dropdownContainer);
-  // insert default for 2 dropdowns here
-  if (sharedUrlSettings?.geo && sharedUrlSettings?.topPage) { // check this
-    document.querySelector(`#mmm-search-geo [value="${sharedUrlSettings.geo}"]`).setAttribute('selected', 'selected');
-    document.querySelector(`#mmm-search-page [value="${sharedUrlSettings.topPage}"]`).setAttribute('selected', 'selected');
-  }
-  doc.querySelectorAll('select').forEach((field) => {
-    field.addEventListener('change', searchFilterByInput);
+  doc.querySelectorAll('.tabs select').forEach((select) => {
+    select.addEventListener('change', searchFilterByInput);
+    const key = select.getAttribute('id').split('-').pop();
+    const value = sharedUrlSettings[key];
+    if (!value) return;
+    select.querySelector(`option[value="${value}"]`)?.setAttribute('selected', 'selected');
   });
   const searchContainer = document.querySelector('.section-metadata.search');
-  const searchForm = document.querySelector('#mmm-search-input-container');
+  const searchForm = document.querySelector('#mmm-search-query-container');
   searchContainer.parentNode.insertBefore(searchForm, searchContainer);
-  // insert default for q value here
-  if (sharedUrlSettings?.q) searchForm.querySelector('input').value = sharedUrlSettings.q;
+  if (sharedUrlSettings.query) searchForm.querySelector('input').value = sharedUrlSettings.query;
   searchForm.addEventListener('keyup', searchFilterByInput);
   searchForm.addEventListener('change', searchFilterByInput);
   document.querySelectorAll('.tab-list-container button').forEach((button) => {
@@ -200,14 +142,7 @@ async function createForms(sharedUrlSettings) {
 }
 
 export default async function init(el) {
-  if (window.location.search.length !== 0) {
-    if (window.location.search.includes('tab=')) {
-      document.querySelector('.tabs.radio > div:nth-child(2) > div:nth-child(2)').innerHTML = '2';
-    }
-    const urlParamSettings = searchFromWindowParameters();
-    console.log(urlParamSettings);
-    createForms(urlParamSettings);
-  } else createForms();
+  createForms();
   const mmmElContainer = createTag('div', { class: 'mmm-container max-width-12-desktop' });
   const mmmEl = createTag('dl', {
     class: 'mmm foreground',
@@ -217,33 +152,11 @@ export default async function init(el) {
   mmmElContainer.append(mmmEl);
   const pageList = await fetchData(API_URLS.pageList, DATA_TYPE.JSON);
   pageList.map((page) => createButtonDetailsPair(mmmEl, page));
-  el.remove();
   const section = createTag('div', { id: 'mep-section', class: 'section' });
   const main = document.querySelector('main');
-  section.append(mmmElContainer);
+  el.replaceWith(mmmElContainer);
   main.append(section);
+  searchFilterByInput();
   addShareButtonListeners();
-  buildShareableLink();
   loadStyle('/libs/features/personalization/preview.css');
 }
-/*
-todo:
-createForm(el) - inserts content in front of el
-form - type in search first, and go button. hide everything that's not applicable.
-text field for form. overcomplicate later.
-
-radio buttosn
-filter or search
-
-string search will never be with geo. it will be under 'search' always and but itself
-on filter radio button:
-
-decouple string search and geo/page filter.(need radio button).
-if value = filter, then do drop down functions.
-if search = just do the string pattern match.
-
-no buttons just add to fire when
-1. key up on search
-2. change on dropdowns
-3. radio button change (automatically runs the function to get same results)
-*/

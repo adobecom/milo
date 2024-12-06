@@ -1,5 +1,12 @@
 import { createTag, getConfig, getMetadata, loadStyle } from '../../utils/utils.js';
-import { TRACKED_MANIFEST_TYPE, getFileName } from './personalization.js';
+import { TRACKED_MANIFEST_TYPE, getFileName, US_PREFIX } from './personalization.js';
+
+const API_DOMAIN = 'https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-2.on.aws';
+export const API_URLS = {
+  pageList: `${API_DOMAIN}/get-pages`,
+  pageDetails: `${API_DOMAIN}/get-page?id=`,
+  save: `${API_DOMAIN}/save-mep-call`,
+};
 
 function updatePreviewButton(popup, pageId) {
   const selectedInputs = popup.querySelectorAll(
@@ -57,41 +64,6 @@ function updatePreviewButton(popup, pageId) {
     .setAttribute('href', simulateHref.href);
 }
 
-function getRepo(url) {
-  const [, repo] = new URL(url).hostname.split('--');
-  if (repo) return repo;
-  try {
-    const sidekick = document.querySelector('aem-sidekick, helix-sidekick');
-    if (sidekick) {
-      const [, sidekickRepo] = new URL(JSON.parse(sidekick.getAttribute('status'))?.live.url).hostname.split('--');
-      return sidekickRepo;
-    }
-  } catch (e) {
-    // eslint-disable-next-line no-console
-    console.log('Error getting repo from sidekick', e);
-  }
-  return false;
-}
-
-async function getEditManifestUrl(a, w, isMmm) {
-  const url = isMmm ? a.dataset.manifestUrl : window.location.href;
-  const repo = getRepo(url);
-  if (!repo) {
-    w.location = a.dataset.manifestPath;
-    return false;
-  }
-  const response = await fetch(`https://admin.hlx.page/status/adobecom/${repo}/main${new URL(a.dataset.manifestUrl).pathname}?editUrl=auto`);
-  const body = await response.json();
-  const editUrl = body?.edit?.url;
-  if (editUrl) {
-    w.location = editUrl;
-    a.href = editUrl;
-    return true;
-  }
-  w.location = a.dataset.manifestUrl;
-  return false;
-}
-
 function addPillEventListeners(div) {
   div.querySelector('.mep-manifest.mep-badge').addEventListener('click', () => {
     div.classList.toggle('mep-hidden');
@@ -104,65 +76,85 @@ function addPillEventListeners(div) {
 function parseMepConfig() {
   const config = getConfig();
   const { mep, locale, stageDomainsMap } = config;
-  const { experiments, targetEnabled, geoPrefix } = mep;
+  const { experiments, targetEnabled, geoPrefix, highlight } = mep;
   const activities = experiments.map((experiment) => {
     const {
       name, variantNames, event, disabled, manifest, source, selectedVariantName,
       manifestType, manifestOverrideName, region,
     } = experiment;
-    // const manifestUrl = new URL(manifest);
+    const manifestUrl = new URL(manifest);
     return {
-      name,
+      targetActivityName: name,
       variantNames,
       selectedVariantName,
       url: manifest,
-      event,
       disabled,
       manifest,
       manifestType,
       manifestOverrideName,
-      // url: manifestUrl.href,
-      // pathname: manifestUrl.pathname,
       source,
+      region,
+      eventStart: event?.startUtc,
+      eventEnd: event?.endUtc,
+      pathname: manifestUrl.pathname,
     };
   });
   const { pathname, origin } = window.location;
-  let url = `www.adobe.com${pathname}`;
-  if (origin.includes('.adobe.com')) url = `${origin.replace('.stage.', '')}${pathname}`;
+  let pagePath = pathname;
+  let domain = origin;
   if (origin.includes('--adobecom.hlx.') && stageDomainsMap) {
-    const domain = Object.keys(stageDomainsMap).find((key) => key.includes('.adobe.com'));
-    if (domain) url = `${domain}${pathname}`;
+    const domainCheck = Object.keys(stageDomainsMap)
+      .find((key) => key.includes('.adobe.com'));
+    if (domainCheck) domain = `https://${domainCheck}`;
+    pagePath = pagePath.replace('/homepage/index-loggedout', '/');
+    if (!pagePath.endsWith('/') && !domain.includes('--milo--adobecom.hlx.')) pagePath += '.html';
   }
+  domain = domain.replace('stage.adobe.com', 'adobe.com');
+  const url = `${domain}${pagePath}`;
+  pagePath = pagePath.replace(`/${geoPrefix}/`, '/');
   return {
     page: {
-      url: `https://${url}`,
-      pathname,
+      url,
+      pagePath,
       target: targetEnabled ? 'on' : 'off',
       personalization: (getMetadata('personalization')) ? 'on' : 'off',
-      prefix: geoPrefix === 'en-us' ? '' : geoPrefix,
+      prefix: geoPrefix,
       locale: locale.ietf,
       region: locale.region,
+      highlight,
     },
     activities,
   };
 }
-
-function getManifestListDomAndParameter(manifests, pageId) {
+function formatDate(dateTime) {
+  if (!dateTime) return '';
+  const date = dateTime.toLocaleDateString(false, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+  const time = dateTime.toLocaleTimeString(false, { timeStyle: 'short' });
+  return `${date} ${time}`;
+}
+function getManifestListDomAndParameter(mepConfig) {
+  const { activities, page } = mepConfig;
+  const { pageId } = page;
   let manifestList = '';
   const manifestParameter = [];
-  manifests?.forEach((manifest) => {
+  activities?.forEach((manifest, mIdx) => {
     const {
       variantNames,
       manifestPath = manifest.url,
-      selectedVariantName,
+      selectedVariantName = manifest.selectedVariantName || 'default',
       manifestType,
       manifestUrl,
       manifestOverrideName,
-      name,
+      targetActivityName,
+      source,
     } = manifest;
     const editUrl = manifestUrl || manifestPath;
     let radio = '';
-    variantNames.forEach((variant) => {
+    variantNames.split('||').forEach((variant) => {
       const checked = {
         attribute: '',
         class: '',
@@ -191,8 +183,6 @@ function getManifestListDomAndParameter(manifests, pageId) {
       <label for="${manifestPath}${pageId}--default" ${checked.class}>Default (control)</label>
     </div>`;
 
-    const manifestFileName = getFileName(manifestPath);
-    const targetTitle = name ? `${name}<br><i>${manifestFileName}</i>` : manifestFileName;
     if (manifest.eventStart) {
       manifest.event = {
         start: new Date(manifest.eventStart),
@@ -201,15 +191,15 @@ function getManifestListDomAndParameter(manifests, pageId) {
     }
     const scheduled = manifest.event
       ? `<p>Scheduled - ${manifest.disabled ? 'inactive' : 'active'}</p>
-         <p>On: ${manifest.event.start?.toLocaleString()} - <a target= "_blank" href="?instant=${manifest.event.start?.toISOString()}">instant</a></p>
-         <p>Off: ${manifest.event.end?.toLocaleString()}</p>` : '';
+         <p>On: ${formatDate(manifest.event.start)} - <a target= "_blank" href="?instant=${manifest.event.start?.toISOString()}">instant</a></p>
+         <p>Off: ${formatDate(manifest.event.end)}</p>` : '';
     let analyticsTitle = '';
     if (manifestType !== TRACKED_MANIFEST_TYPE) {
       analyticsTitle = 'N/A for this manifest type';
     } else if (manifestOverrideName) {
       analyticsTitle = manifestOverrideName;
     } else {
-      analyticsTitle = manifestFileName.replace('.json', '').slice(0, 20);
+      analyticsTitle = manifest.manifest.replace('.json', '').slice(0, 20);
     }
     manifestList += `<div class="mep-manifest-info" title="Manifest location: ${editUrl}&#013;Analytics manifest name: ${analyticsTitle}">
       <div class="mep-manifest-title">
@@ -236,33 +226,19 @@ function addMepPopupListeners(popup, pageId) {
   popup.querySelector('.mep-toggle-advanced').addEventListener('click', (e) => {
     e.target.closest('.mep-popup')?.querySelector('.mep-advanced-container')?.classList.toggle('mep-advanced-open');
   });
-  popup.querySelectorAll('a[data-manifest-path]').forEach((a) => {
-    a.addEventListener('click', () => {
-      if (a.getAttribute('href')) return false;
-      const w = window.open('', '_blank');
-      w.document.write(`<html><head></head><body>
-          Please wait while we redirect you. 
-          If you are not redirected, please check that you are signed into the AEM sidekick
-          and try again.
-          </body></html>`);
-      w.document.close();
-      w.focus();
-      getEditManifestUrl(a, w, pageId);
-      return true;
-    });
-  });
 }
 
-export function getMepPopup(manifests, pageInfo = false, isMmm = false) {
-  const pageId = pageInfo?.pageId ? `-${pageInfo.pageId}` : '';
-  const { manifestList } = getManifestListDomAndParameter(manifests, pageId);
+export function getMepPopup(mepConfig, isMmm = false) {
+  const { activities, page } = mepConfig;
+  const pageId = page?.pageId ? `-${page.pageId}` : '';
+  const { manifestList } = getManifestListDomAndParameter(mepConfig);
   let mepHighlightChecked = '';
-  if (!isMmm && pageInfo?.highlight) {
+  if (page?.highlight) {
     mepHighlightChecked = 'checked="checked"';
     document.body.dataset.mepHighlight = true;
   }
   const PREVIEW_BUTTON_ID = 'preview-button';
-  const pageUrl = isMmm ? pageInfo.url : new URL(window.location.href).href;
+  const pageUrl = isMmm ? page.url : new URL(window.location.href).href;
   const mepPopup = createTag('div', {
     class: `mep-popup${isMmm ? '' : ' in-page'}`,
     'data-url': pageUrl,
@@ -274,7 +250,9 @@ export function getMepPopup(manifests, pageInfo = false, isMmm = false) {
 
   listInfo.innerHTML = `
     <div class="mep-manifest-variants">
-      <input type="checkbox" name="mepHighlight${pageId}" id="mepHighlightCheckbox${pageId}" ${mepHighlightChecked} value="true"> <label for="mepHighlightCheckbox${pageId}">Highlight changes</label>
+      <input type="checkbox" name="mepHighlight${pageId}"
+        id="mepHighlightCheckbox${pageId}" ${mepHighlightChecked} value="true">
+        <label for="mepHighlightCheckbox${pageId}">Highlight changes</label>
     </div>`;
   advancedOptions.innerHTML = `
     <div class="mep-toggle-advanced">Advanced options</div>
@@ -288,7 +266,9 @@ export function getMepPopup(manifests, pageInfo = false, isMmm = false) {
           </div>
           <div class="mep-manifest-info">
             <div class="mep-manifest-variants mep-advanced-options">
-              <input type="checkbox" name="mepPreviewButtonCheckbox${pageId}" id="mepPreviewButtonCheckbox${pageId}" value="off"> <label for="mepPreviewButtonCheckbox${pageId}">add mepButton=off to preview link</label>
+              <input type="checkbox" name="mepPreviewButtonCheckbox${pageId}"
+                id="mepPreviewButtonCheckbox${pageId}" value="off">
+                <label for="mepPreviewButtonCheckbox${pageId}">add mepButton=off to preview link</label>
             </div>
           </div>
         </div>`;
@@ -296,15 +276,16 @@ export function getMepPopup(manifests, pageInfo = false, isMmm = false) {
   const mepManifestPreviewButton = createTag('div', { class: `advanced-options${isMmm ? '' : ' dark'}` });
   mepManifestPreviewButton.innerHTML = `
     <a class="con-button outline button-l" data-id="${PREVIEW_BUTTON_ID}" title="Preview above choices" ${isMmm ? ' target="_blank"' : ''}>Preview</a>`;
+  const targetOnText = page.target === 'postlcp' ? 'on post LCP' : page.target;
   mepPopupHeader.innerHTML = `
     <div>
-      <h4>${manifests?.length || 0} Manifest(s) served</h4>
+      <h4>${activities?.length || 0} Manifest(s) served</h4>
         <span class="mep-close"></span>
         <div class="mep-manifest-page-info-title">Page Info:</div>
-        <div>Target integration feature is ${pageInfo.target}</div>
-        <div>Personalization feature is ${pageInfo.personalization}</div>
-        <div>Page's Prefix/Region/Locale are ${pageInfo.prefix} / ${pageInfo.region} / ${pageInfo.locale}</div>
-        ${pageInfo.lastSeen ? `<div>Last seen: ${new Date(pageInfo.lastSeen).toLocaleString()}</div>` : ''}
+        <div>Target integration feature is ${targetOnText}</div>
+        <div>Personalization feature is ${page.personalization}</div>
+        <div>Page's Prefix/Region/Locale are ${page.prefix || US_PREFIX} / ${page.region} / ${page.locale}</div>
+        ${page.lastSeen ? `<div>Last seen: ${formatDate(new Date(page.lastSeen))}</div>` : ''}
     </div>`;
   mepManifestList.innerHTML = manifestList;
   if (listInfo) mepManifestList.prepend(listInfo);
@@ -318,29 +299,18 @@ export function getMepPopup(manifests, pageInfo = false, isMmm = false) {
   return mepPopup;
 }
 
-function createPreviewPill(manifests) {
+function createPreviewPill() {
+  const mepConfig = parseMepConfig();
+  const { activities } = mepConfig;
   const overlay = createTag('div', { class: 'mep-preview-overlay static-links', style: 'display: none;' });
   const pill = document.createElement('div');
   pill.classList.add('mep-hidden');
   const mepBadge = createTag('div', { class: 'mep-manifest mep-badge' });
   mepBadge.innerHTML = `
    <span class="mep-open"></span>
-      <div class="mep-manifest-count">${manifests?.length || 0} Manifest(s) served</div>`;
+      <div class="mep-manifest-count">${activities?.length || 0} Manifest(s) served</div>`;
   pill.append(mepBadge);
-  const config = getConfig();
-  let targetOnText = config.mep.targetEnabled ? 'on' : 'off';
-  if (config.mep.targetEnabled === 'postlcp') targetOnText = 'on post LCP';
-  const personalizationOn = getMetadata('personalization');
-  const personalizationOnText = personalizationOn && personalizationOn !== '' ? 'on' : 'off';
-  const pageInfo = {
-    target: targetOnText,
-    personalization: personalizationOnText,
-    highlight: config.mep.highlight,
-    prefix: config.mep.geoPrefix,
-    region: config.locale.region,
-    locale: config.locale.ietf,
-  };
-  pill.append(getMepPopup(manifests, pageInfo));
+  pill.append(getMepPopup(mepConfig));
   overlay.append(pill);
   document.body.append(overlay);
   addPillEventListeners(pill);
@@ -372,34 +342,23 @@ function addHighlightData(manifests) {
   });
 }
 
-async function saveToMmm(data) {
+export async function saveToMmm() {
+  const data = parseMepConfig();
   if (data.page.url.includes('/drafts/')) return false;
-  const { page, activities } = data;
+  const { activities, page } = data;
   activities.filter((activity) => {
     const { url, source } = activity;
     return (source?.length && !url.includes('/drafts/'));
   });
-  if (!activities.length) return false;
   activities.map((activity) => {
-    activity.eventStart = activity.event?.startUtc ? activity.event?.startUtc : null;
-    activity.eventEnd = activity.event?.endUtc ? activity.event?.endUtc : null;
-    delete activity.selectedVariantName;
-    delete activity.event;
-    delete activity.disabled;
     activity.variantNames = activity.variantNames?.join('||') || '';
     activity.source = activity.source?.join(',') || '';
-    const manifestUrl = new URL(activity.url);
-    activity.pathname = manifestUrl.pathname;
     return activity;
   });
-  page.url = page.url.replace('stage.adobe.com', 'adobe.com').replace('/homepage/index-loggedout', '/');
-  page.pathname = page.pathname.replace('/homepage/index-loggedout', '/');
-  if (page.url.includes('adobe.com')
-    && !page.url.endsWith('/')
-    && !page.url.includes('milo.adobe.com')) {
-    page.url += '.html';
-  }
-  return fetch('https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-2.on.aws/save-mep-call', {
+  if (page.prefix === US_PREFIX) page.prefix = '';
+  page.target = getMetadata('target') || 'off';
+  delete page.highlight;
+  return fetch(API_URLS.save, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -415,11 +374,8 @@ async function saveToMmm(data) {
     });
 }
 export default async function decoratePreviewMode() {
-  const mepConfig = parseMepConfig();
   const { miloLibs, codeRoot, mep } = getConfig();
   loadStyle(`${miloLibs || codeRoot}/features/personalization/preview.css`);
-
-  createPreviewPill(mepConfig.activities);
+  createPreviewPill();
   if (mep?.experiments) addHighlightData(mep.experiments);
-  saveToMmm(mepConfig);
 }

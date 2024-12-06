@@ -6,7 +6,6 @@
   color: #eee;
   font-weight: 600;
   font-size: 24px;
-  counter-reset: preview;
   display: block !important;
 }
 
@@ -235,6 +234,10 @@
   font-weight: 500;
 }
 
+.mep-popup .target-activity-name {
+  font-style: italic;
+}
+
 label.mep-manifest-selected-variant::after {
   content: ' *';
 }
@@ -249,12 +252,7 @@ label.mep-manifest-selected-variant::after {
   padding-right: 20px;
 }
 
-.mep-manifest-title::before {
-  counter-increment: preview;
-  content: counter(preview) '. ';
-}
-
-.mep-manifest-list {
+.mep-popup.in-page .mep-manifest-list {
   max-height: calc(100vh - 300px);
   overflow-y: auto;
 }
