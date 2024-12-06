@@ -338,6 +338,28 @@ function updateAMCVCookie(ECID) {
   }
 }
 
+function getUrl() {
+  const PAGE_URL = new URL(window.location.href);
+  const { host } = window.location;
+  const query = PAGE_URL.searchParams.get('env');
+  const url = 'https://edge.adobedc.net/ee/v2/interact';
+  const SLD = PAGE_URL.hostname.includes('.aem.') ? 'aem' : 'hlx';
+  /* c8 ignore start */
+  if (query || host.includes('localhost') || host.includes(`${SLD}.page`)
+    || host.includes(`${SLD}.live`)) {
+    return url;
+  }
+  /* c8 ignore start */
+  if (host.includes('stage.adobe')
+    || host.includes('corp.adobe')
+    || host.includes('graybox.adobe')) {
+    return 'https://www.stage.adobe.com/experienceedge/ee/v2/interact';
+  }
+
+  const { origin } = window.location;
+  return `${origin}/experienceedge/ee/v2/interact`;
+}
+
 /**
  * Loads analytics and interaction data based on the user and page context.
  * Sends the data to Adobe Analytics and Adobe Target for personalization.
@@ -361,7 +383,7 @@ export const loadAnalyticsAndInteractionData = async ({ locale, env, calculatedT
 
   // Define constants based on environment
   const DATA_STREAM_ID = env === 'prod' ? '5856abb0-95d8-4f9a-bb92-37f99d2bd492' : '87f9b644-5fd3-4015-81d5-f68ad81c3561';
-  const TARGET_API_URL = 'https://edge.adobedc.net/ee/v2/interact';
+  const TARGET_API_URL = getUrl();
 
   // Device and viewport information
   const {
