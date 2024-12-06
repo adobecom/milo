@@ -513,7 +513,7 @@ body {
   font-size: 16px;
 }
 
-.locui-table .locui-project-type {
+.locui-project-type {
   font-weight: 700;
   font-size: 1.25rem;
   font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
@@ -527,8 +527,12 @@ body {
   border: 1px solid #ccc;
 }
 
-.table-wrapper.table-rollout{
+.table-wrapper.table-rollout {
   max-width: 70%;
+}
+
+.table-wrapper.table-translate {
+  margin: 0 4rem;
 }
 
 .locui-table table {

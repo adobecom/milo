@@ -8,8 +8,8 @@ import {
   locSelected,
   setProject,
   setLocale,
-  projectType,
 } from '../store.js';
+import { LOCALIZATION_TYPES } from '../utils/constant.js';
 
 export default function useInputLocale() {
   const [selectedRegion, setSelectedRegion] = useState(
@@ -23,10 +23,11 @@ export default function useInputLocale() {
   );
 
   useEffect(() => {
-    if (projectType.value === 'rollout' || projectType.value === 'translate') {
+    if (project.value.type === 'rollout' || project.value.type === 'translate') {
       locales.value = locales.value.filter((locItem) => locItem.workflow !== 'Transcreation' && locItem.livecopies !== '');
     }
-  }, [projectType]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [project.value.type]);
 
   const findLanguageForLocale = (locale) => locales.value.find((lang) => lang.livecopies.split(',').includes(locale));
 
@@ -45,8 +46,8 @@ export default function useInputLocale() {
     });
     return Object.entries(groupedLocales).map(([language, localeList]) => ({
       language,
-      locales: projectType.value === 'rollout' ? localeList : [],
-      action: projectType.value,
+      locales: project.value.type === 'rollout' ? localeList : [],
+      action: project.value.type === LOCALIZATION_TYPES.rollout ? 'Rollout' : 'Translate',
       languagecode: languageCodes[language],
       workflow: '',
     }));
@@ -202,7 +203,6 @@ export default function useInputLocale() {
     localeRegion,
     locales,
     project,
-    projectType,
     errorPresent,
     handleNext,
     handleBack,

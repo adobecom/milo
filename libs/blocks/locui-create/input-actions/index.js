@@ -17,7 +17,7 @@ export default function useInputActions() {
 
   const validateForm = () => {
     const allValid = project.value.languages.every(
-      (entry) => entry.action && entry.workflow,
+      (entry) => entry.action,
     );
     setIsFormValid(allValid);
   };

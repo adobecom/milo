@@ -8,7 +8,7 @@ function TranslateActions({ languageCount, handleActionSelect, handleWorkflowSel
   const tableHeaders = [`Languages (${languageCount})`,
     'Action',
     'Workflow type'];
-  return html` <div class="table-wrapper">
+  return html` <div class="table-wrapper table-translate">
         <table>
           <thead>
             <tr>
@@ -18,7 +18,7 @@ function TranslateActions({ languageCount, handleActionSelect, handleWorkflowSel
           <tbody>
             ${project.value.languages.map((entry) => html`
               <tr>
-                <td>${entry.languages}</td>
+                <td>${entry.language}</td>
                 <td>
                   <select
                     value=${entry.action || ''}
@@ -33,13 +33,13 @@ function TranslateActions({ languageCount, handleActionSelect, handleWorkflowSel
                 </td>
                 <td>
                   <select
-                    value=${entry.workflow || ''}
+                    value=${entry.workflow || 'default'}
                     class="form-field-select"
                     onChange=${(e) => handleWorkflowSelect(e, entry)}
                     name="wf-type"
                     id="wf-type"
                   >
-                    <option value="" disabled hidden>Select</option>
+                    <option value="default">Default</option>
                     <option value="HybridMT">HybridMT</option>
                     <option value="Standard">Standard</option>
                   </select>
@@ -61,12 +61,12 @@ function RolloutActions({ languageCount }) {
       </tr>
     </thead>
     <tbody>
-      ${project.value.locale.map((entry) => html`
+      ${project.value.languages.map((entry) => html`
         <tr>
-          <td>${entry.languages}</td>
+          <td>${entry.language}</td>
           <td>
            <div class="locale-list-container">
-            ${entry?.localeList ? entry.localeList.map((locale) => html`
+            ${entry?.locales ? entry.locales.map((locale) => html`
               <div class='locale-list-item'>${locale}</div>`) : 'No Locale found'}
            </div>
           </td>
@@ -98,7 +98,7 @@ export default function InputActionsView() {
   return html`
   <div class="locui-form-container">
     <div class="locui-table">
-      <p class="locui-project-type">${project.value.type === LOCALIZATION_TYPES.translation ? 'Translate' : 'Rollout'}</p>
+      <h2 class="locui-project-type">${project.value.type === LOCALIZATION_TYPES.translation ? 'Translate' : 'Rollout'}</p>
       <p class="locui-project-name">
         Project Name: <strong>${project.value.name || 'n/a'}</strong>
       </p>
