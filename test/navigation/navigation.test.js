@@ -44,7 +44,7 @@ describe('Navigation component', async () => {
 
   it('Renders the header block', async () => {
     const onReady = stub();
-    await loadBlock({ authoringPath: '/federal/dev', header: { imsClientId: 'fedsmilo', onReady }, env: 'prod' }, 'http://localhost:2000');
+    await loadBlock({ authoringPath: '/federal/dev', header: { imsClientId: 'fedsmilo', onReady }, env: 'prod', theme: 'dark' }, 'http://localhost:2000');
     const el = document.getElementsByTagName('header');
     expect(el).to.exist;
     expect(onReady.called).to.be.true;

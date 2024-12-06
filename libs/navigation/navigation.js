@@ -39,6 +39,9 @@ const getStageDomainsMap = (stageDomainsMap) => (
   }
 );
 
+// Production Domain
+const prodDomains = ['milo.adobe.com', 'business.adobe.com', 'www.adobe.com', 'adobecom.github.io'];
+
 function getParamsConfigs(configs) {
   return blockConfig.reduce((acc, block) => {
     block.params.forEach((param) => {
@@ -50,7 +53,6 @@ function getParamsConfigs(configs) {
     return acc;
   }, {});
 }
-
 export default async function loadBlock(configs, customLib) {
   const {
     header,
@@ -59,6 +61,7 @@ export default async function loadBlock(configs, customLib) {
     env = 'prod',
     locale = '',
     theme,
+    allowedOrigins,
     stageDomainsMap = {},
   } = configs || {};
   const branch = new URLSearchParams(window.location.search).get('navbranch');
@@ -85,6 +88,8 @@ export default async function loadBlock(configs, customLib) {
     contentRoot: authoringPath || footer.authoringPath,
     theme,
     ...paramConfigs,
+    prodDomains,
+    allowedOrigins,
     stageDomainsMap: getStageDomainsMap(stageDomainsMap),
   };
   setConfig(clientConfig);
