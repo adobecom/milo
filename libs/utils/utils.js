@@ -713,6 +713,17 @@ export function decorateLinks(el) {
     if (a.href.includes(copyEvent)) {
       decorateCopyLink(a, copyEvent);
     }
+    // Append aria-label
+    const pipeRegex = /\s?\|\s?/;
+    if (pipeRegex.test(a.textContent) && !/\.[a-z]+/i.test(a.textContent)) {
+      const node = [...a.childNodes].reverse()
+        .find((child) => pipeRegex.test(child.textContent));
+      const ariaLabel = node.textContent.split(pipeRegex).pop();
+      node.textContent = node.textContent
+        .replace(new RegExp(`${pipeRegex.source}${ariaLabel}`), '');
+      a.setAttribute('aria-label', ariaLabel.trim());
+    }
+
     return rdx;
   }, []);
   convertStageLinks({ anchors, config, hostname, href });
