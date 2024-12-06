@@ -100,24 +100,22 @@ function parseMepConfig() {
     };
   });
   const { pathname, origin } = window.location;
-  let url = `www.adobe.com${pathname}`;
-  if (origin.includes('.adobe.com')) {
-    url = `${origin}${pathname}`;
-    if (!url.endsWith('/')
-      && !url.includes('milo.adobe.com')) {
-      url += '.html';
-    }
-  } else if (origin.includes('--adobecom.hlx.') && stageDomainsMap) {
-    const domain = Object.keys(stageDomainsMap)
+  let pagePath = pathname;
+  let domain = origin;
+  if (origin.includes('--adobecom.hlx.') && stageDomainsMap) {
+    const domainCheck = Object.keys(stageDomainsMap)
       .find((key) => key.includes('.adobe.com'));
-    if (domain) url = `${domain}${pathname}`;
+    if (domainCheck) domain = `https://${domainCheck}`;
+    pagePath = pagePath.replace('/homepage/index-loggedout', '/');
+    if (!pagePath.endsWith('/') && !domain.includes('--milo--adobecom.hlx.')) pagePath += '.html';
   }
-  url = url.replace('stage.adobe.com', 'adobe.com')
-    .replace('/homepage/index-loggedout', '/');
+  domain = domain.replace('stage.adobe.com', 'adobe.com');
+  const url = `${domain}${pagePath}`;
+  pagePath = pagePath.replace(`/${geoPrefix}/`, '/');
   return {
     page: {
-      url: `https://${url}`,
-      pathname: pathname.replace('/homepage/index-loggedout', '/'),
+      url,
+      pagePath,
       target: targetEnabled ? 'on' : 'off',
       personalization: (getMetadata('personalization')) ? 'on' : 'off',
       prefix: geoPrefix,
@@ -362,13 +360,13 @@ async function saveToMmm(data) {
     return (source?.length && !url.includes('/drafts/'));
   });
   activities.map((activity) => {
-    if (activity.prefix === US_PREFIX) activity.prefix = '';
     activity.variantNames = activity.variantNames?.join('||') || '';
     activity.source = activity.source?.join(',') || '';
     return activity;
   });
   if (page.prefix === US_PREFIX) page.prefix = '';
   page.target = getMetadata('target') || 'off';
+  delete page.highlight;
   return fetch(API_URLS.save, {
     method: 'POST',
     headers: {

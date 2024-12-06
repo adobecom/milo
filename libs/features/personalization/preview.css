@@ -252,7 +252,7 @@ label.mep-manifest-selected-variant::after {
   padding-right: 20px;
 }
 
-.mep-manifest-list {
+.mep-popup.in-page .mep-manifest-list {
   max-height: calc(100vh - 300px);
   overflow-y: auto;
 }

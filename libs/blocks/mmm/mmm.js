@@ -66,7 +66,7 @@ function searchFilterByInput() {
   const mmmEntries = document.querySelectorAll('div.mmm-container > dl > *');
   const shareUrl = new URL(`${window.location.origin}${window.location.pathname}`);
   const searchValues = {};
-  document.querySelectorAll('input, select').forEach((field) => {
+  document.querySelectorAll('.tabs input, .tabs select').forEach((field) => {
     const id = field.getAttribute('id').split('-').pop();
     const { value } = field;
     searchValues[id] = value;
@@ -80,13 +80,13 @@ function searchFilterByInput() {
   });
 
   mmmEntries.forEach((entry) => {
-    const { url, pathname, prefix } = entry.dataset;
+    const { url, pagePath, prefix } = entry.dataset;
     entry.classList.remove('filter-hide');
     if (filterType === 'search') {
       if (!url.includes(searchValues.query)) entry.classList.add('filter-hide');
       return;
     }
-    if ((searchValues.page !== 'all' && pathname !== searchValues.page.replace('.html', ''))
+    if ((searchValues.page !== 'all' && pagePath !== searchValues.page)
       || (searchValues.geo !== 'all'
         && !searchValues.geo.split(',').some((geo) => prefix === geo))) {
       entry.classList.add('filter-hide');
