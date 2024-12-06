@@ -22,6 +22,7 @@ it('verify default options', () => {
     sampleRate: 1,
     tags: '',
     implicitSampleRate: 1,
+    isProdDomain: false,
     useProd: true,
   });
 });
@@ -109,6 +110,7 @@ describe('LANA', () => {
           endpointStage: 'https://www.stage.adobe.com/lana/ll',
           errorType: 'e',
           implicitSampleRate: 100,
+          isProdDomain: false,
           sampleRate: 100,
           tags: '',
           useProd: true,
@@ -132,6 +134,7 @@ describe('LANA', () => {
         endpointStage: 'https://www.stage.adobe.com/lana/ll',
         errorType: 'e',
         implicitSampleRate: 100,
+        isProdDomain: false,
         sampleRate: 100,
         tags: '',
         useProd: true,

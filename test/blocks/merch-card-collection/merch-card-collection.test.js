@@ -233,7 +233,7 @@ describe('Merch Cards', async () => {
       await init(el);
       expect(el.innerHTML).to.equal('');
       expect(window.lana.log.calledOnce).to.be.true;
-      expect(window.lana.log.calledWith('Failed to initialize merch cards: Error: No query-index endpoint provided')).to.be.true;
+      expect(window.lana.log.calledWith('Failed to initialize merch cards: No query-index endpoint provided')).to.be.true;
     });
 
     it('fails gracefully if query-index fetch fails ', async () => {
