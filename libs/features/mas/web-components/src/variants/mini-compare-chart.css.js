@@ -57,6 +57,12 @@ export const CSS = `
     text-decoration: underline;
   }
 
+  merch-card[variant="mini-compare-chart"] [slot="footer-rows"] ul {
+    margin-block-start: 0px;
+    margin-block-end: 0px;
+    padding-inline-start: 0px;
+  }
+
   merch-card[variant="mini-compare-chart"] .footer-row-icon {
     display: flex;
     place-items: center;
@@ -68,6 +74,14 @@ export const CSS = `
     height: var(--consonant-merch-card-mini-compare-chart-icon-size);
   }
 
+  merch-card[variant="mini-compare-chart"] .footer-rows-title {
+    font-color: var(--merch-color-grey-80);
+    font-weight: 700;
+    padding-block-end: var(--consonant-merch-spacing-xxxs);
+    line-height: var(--consonant-merch-card-body-xs-line-height);
+    font-size: var(--consonant-merch-card-body-xs-font-size);
+  }
+
   merch-card[variant="mini-compare-chart"] .footer-row-cell {
     border-top: 1px solid var(--consonant-merch-card-border-color);
     display: flex;
@@ -76,6 +90,30 @@ export const CSS = `
     place-items: center;
     padding: var(--consonant-merch-spacing-xs) var(--consonant-merch-spacing-s);
     margin-block: 0px;
+  }
+
+  merch-card[variant="mini-compare-chart"] .footer-row-icon-checkmark img {
+    max-width: initial;
+  }
+
+  merch-card[variant="mini-compare-chart"] .footer-row-icon-checkmark {
+    display: flex;
+    align-items: center;
+    height: 20px;
+  }
+
+  merch-card[variant="mini-compare-chart"] .footer-row-cell-checkmark {
+    display: flex;
+    gap: var(--consonant-merch-spacing-xs);
+    justify-content: start;
+    align-items: flex-start;
+    margin-block: var(--consonant-merch-spacing-xxxs);
+  }
+
+  merch-card[variant="mini-compare-chart"] .footer-row-cell-description-checkmark {
+    font-size: var(--consonant-merch-card-body-xs-font-size);
+    font-weight: 400;
+    line-height: var(--consonant-merch-card-body-xs-line-height);
   }
 
   merch-card[variant="mini-compare-chart"] .footer-row-cell-description {
@@ -91,6 +129,18 @@ export const CSS = `
   merch-card[variant="mini-compare-chart"] .footer-row-cell-description a {
     color: var(--color-accent);
     text-decoration: solid;
+  }
+
+  merch-card[variant="mini-compare-chart"] .chevron-icon {
+    margin-left: 8px;
+  }
+
+  merch-card[variant="mini-compare-chart"] .checkmark-copy-container {
+    display: none;
+  }
+
+  merch-card[variant="mini-compare-chart"] .checkmark-copy-container.open {
+    display: block;
   }
   
 .one-merch-card.mini-compare-chart {
