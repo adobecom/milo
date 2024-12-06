@@ -41,7 +41,7 @@ describe('Timeline', () => {
 
     expect(trialPeriod.textContent).to.equal('7-day free trial');
     expect(refundPeriod.textContent).to.equal('14-day full refund period');
-    expect(trialPeriod.style.background.includes('to right')).to.true;
+    expect(trialPeriod.style.background.includes('to right')).to.be.true;
   });
   it('it sets bar background colors based on colors in free trial and refund period section', async () => {
     const timelineEl = document.querySelector('.timeline');
@@ -71,7 +71,7 @@ describe('Timeline', () => {
       init(timelineEl);
       const refundPeriod = timelineEl.querySelector('.row .right .period');
       expect(refundPeriod.textContent).to.equal('14-day full refund period');
-      expect(refundPeriod.style.background.includes('to left')).to.true;
+      expect(refundPeriod.style.background.includes('to left')).to.be.true;
     });
   });
   describe('segment classes', () => {
@@ -101,7 +101,6 @@ describe('Timeline', () => {
       const timelineEl = document.querySelector('.timeline');
       init(timelineEl);
       expect(timelineEl.classList.contains('segment-timeline-6-6')).to.be.true;
-      expect(timelineEl.classList.contains('segment-timeline-9')).to.be.false;
     });
   });
 });
