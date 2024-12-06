@@ -3,7 +3,7 @@ import { LOCALES, LOCALE_GROUPS } from './utils/constant.js';
 import { processLocaleData, getTenantName } from './utils/utils.js';
 
 export const currentStep = signal(1);
-export const project = signal(null);
+export const project = signal({ type: 'translation' });
 export const locales = signal([]);
 export const localeRegion = signal([]);
 export const locSelected = signal(null);

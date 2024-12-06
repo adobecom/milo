@@ -7,7 +7,6 @@ const emptyProject = {
   urls: [],
   fragments: false,
   locales: [],
-  type: 'rollout',
 };
 
 export const currentStep = signal(1);
