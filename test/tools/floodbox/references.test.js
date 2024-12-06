@@ -18,22 +18,52 @@ describe('References', () => {
     sinon.restore();
   });
 
-  it('returns referenced fragments and assets for valid links', async () => {
+  it('returns referenced fragments and assets for valid links with different domains', async () => {
     requestHandlerStub
       .onFirstCall().resolves({
         ok: true,
-        text: async () => '<a href="https://main--test-repo--test-org.aem.page/path1">Link</a>',
+        text: async () => '<a href="https://main--test-repo--test-org.aem.page/fragments/path1">Link</a>',
       })
       .onSecondCall().resolves({
         ok: true,
-        text: async () => '<a href="https://main--test-repo--test-org.aem.page/path2">Link</a>',
+        text: async () => '<a href="https://main--test-repo--test-org.aem.page/fragments/path2">Link</a>',
       });
 
     const result = await findFragmentsAndAssets({ accessToken, htmlPaths, org, repo });
-    expect(result).to.eql(new Set(['/test-org/test-repo/path1', '/test-org/test-repo/path2']));
+    expect(result).to.eql(new Set(['/test-org/test-repo/fragments/path1', '/test-org/test-repo/fragments/path2']));
   });
 
-  it('returns an empty set when no valid links are found', async () => {
+  it('returns referenced fragments and assets for valid links with different file types', async () => {
+    requestHandlerStub
+      .onFirstCall().resolves({
+        ok: true,
+        text: async () => '<a href="https://main--test-repo--test-org.aem.page/path1.pdf">Link1</a><a href="https://main--test-repo--test-org.aem.page/path2.txt">Link2</a>',
+      })
+      .onSecondCall().resolves({
+        ok: true,
+        text: async () => '<a href="https://main--test-repo--test-org.aem.page/path3.svg">Link3</a><a href="https://main--test-repo--test-org.aem.page/path4.json">Link4</a>',
+      });
+
+    const result = await findFragmentsAndAssets({ accessToken, htmlPaths, org, repo });
+    expect(result).to.eql(new Set(['/test-org/test-repo/path1.pdf', '/test-org/test-repo/path3.svg', '/test-org/test-repo/path4.json']));
+  });
+
+  it('returns an empty set when no links are present in the HTML', async () => {
+    requestHandlerStub
+      .onFirstCall().resolves({
+        ok: true,
+        text: async () => '<html><body>No links here</body></html>',
+      })
+      .onSecondCall().resolves({
+        ok: true,
+        text: async () => '<html><body>Still no links</body></html>',
+      });
+
+    const result = await findFragmentsAndAssets({ accessToken, htmlPaths, org, repo });
+    expect(result).to.eql(new Set());
+  });
+
+  it('returns an empty set when links do not match the reference pattern', async () => {
     requestHandlerStub
       .onFirstCall().resolves({
         ok: true,
@@ -46,6 +76,21 @@ describe('References', () => {
 
     const result = await findFragmentsAndAssets({ accessToken, htmlPaths, org, repo });
     expect(result).to.eql(new Set());
+  });
+
+  it('handles mixed valid and invalid links', async () => {
+    requestHandlerStub
+      .onFirstCall().resolves({
+        ok: true,
+        text: async () => '<a href="https://main--test-repo--test-org.aem.page/fragments/path1">Valid Link</a><a href="https://example.com/invalid-link">Invalid Link</a>',
+      })
+      .onSecondCall().resolves({
+        ok: true,
+        text: async () => '<a href="https://main--test-repo--test-org.aem.page/fragments/path2">Valid Link</a>',
+      });
+
+    const result = await findFragmentsAndAssets({ accessToken, htmlPaths, org, repo });
+    expect(result).to.eql(new Set(['/test-org/test-repo/fragments/path1', '/test-org/test-repo/fragments/path2']));
   });
 
   it('handles fetch errors gracefully', async () => {

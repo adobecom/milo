@@ -9,7 +9,7 @@ class References {
     this.htmlPaths = htmlPaths;
 
     // eslint-disable-next-line no-useless-escape
-    this.referencePattern = new RegExp(`https?:\/\/[^/]*--${repo}--${org}\\.[^/]*(?:page|live)(\/.+)`);
+    this.referencePattern = new RegExp(`https?:\/\/[^/]*--${repo}--${org}\\.[^/]*(?:page|live)(\/(?:fragments\/.*|.*\\.(?:pdf|svg|json)))`);
     this.requestHandler = new RequestHandler(accessToken);
   }
 
@@ -17,23 +17,30 @@ class References {
     return !!(link && link.match(this.referencePattern));
   }
 
+  getReferencePath(link) {
+    if (this.isValidReference(link)) {
+      return link.match(this.referencePattern)[1];
+    }
+    return null;
+  }
+
   async getReferencedFragmentsAndAssets() {
     const fragmentsAndAssets = new Set();
     for (const path of this.htmlPaths) {
       const response = await this.requestHandler.daFetch(`${DA_ORIGIN}/source${path}.html`);
-      if (response.ok) {
-        const content = await response.text();
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(content, 'text/html');
-        const links = doc.querySelectorAll('a');
-        for (const link of links) {
-          const href = link.getAttribute('href');
-          if (href && this.isValidReference(href)) {
-            const relPath = href.match(this.referencePattern)[1];
-            if (relPath) {
-              fragmentsAndAssets.add(`/${this.org}/${this.repo}${relPath}`);
-            }
-          }
+      if (!response.ok) {
+        // eslint-disable-next-line no-continue
+        continue;
+      }
+      const content = await response.text();
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(content, 'text/html');
+      const { links } = doc;
+      for (const link of links) {
+        const { href } = link;
+        const refPath = this.getReferencePath(href);
+        if (refPath) {
+          fragmentsAndAssets.add(`/${this.org}/${this.repo}${refPath}`);
         }
       }
     }
