@@ -1127,6 +1127,8 @@ header + .feds-localnav {
   font-size: 14px;
   padding: 12px 20px;
   background: var(--feds-background-popup);
+  outline-offset: -1px;
+  cursor: pointer;
 }
 
 .feds-localnav .feds-localnav-items .feds-menu-headline {
@@ -1134,6 +1136,7 @@ header + .feds-localnav {
   font-weight: 400;
   border-bottom: 0;
   padding: 12px 38px;
+  outline-offset: -1px;
 }
 
 .feds-localnav .feds-localnav-items .feds-navItem--centered {
