@@ -590,8 +590,6 @@ body {
 
 .locui-project-created-modal {
   width: 400px;
-  /* height: 150px; */
-  /* line-height: 150px; */
   padding: 30px 0px;
   text-align: center;
   display: flex;
@@ -635,7 +633,7 @@ body {
   user-select: none;
   text-align: center;
   width: 150px;
-  height: 40px;
+  height: 35px;
   box-sizing: border-box;
   font-size: 14px;
   font-style: normal;
@@ -649,10 +647,7 @@ body {
 }
 
 .reset-button {
-  margin-left: auto;
-  color: #fff;
-  background-color: #292929;
-  border-color: #292929;
+  height: 30px;
 }
 
 .button:hover,
@@ -663,10 +658,6 @@ body {
   background-color: #e1e1e1;
 }
 
-.reset-button:hover {
-  background-color: #131313;
-}
-
 .region-button.active,
 .language-button.active,
 .locale-button.active {
@@ -674,12 +665,9 @@ body {
   color: #fff;
 }
 
-.language-locale-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+.region-buttons {
+  margin-bottom: 30px;
 }
-
 .language-grid,
 .locale-grid {
   flex: 1;
@@ -692,15 +680,24 @@ body {
   margin-top: 10px;
 }
 
-.region-grid p,
-.language-grid p,
-.locale-grid p {
-  font-size: 16px;
-  font-weight: bold;
-  margin-bottom: 10px;
+.region-grid {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
 }
 
-.region-buttons,
+.region-buttons,.additional-cta {
+  display: flex;
+  gap:10px
+}
+ 
+.section-header {
+  font-size: 16px;
+  font-weight: bold;
+  margin: 0 0 10px 0;
+}
+
+
 .language-buttons,
 .locale-button-container {
   display: flex;
@@ -739,6 +736,7 @@ body {
   margin: 0;
   padding: 0;
   font-weight: 400;
+  font-size: 16px;
 }
 
 .locale-container::-webkit-scrollbar,

@@ -8,6 +8,7 @@ import {
   locSelected,
   setProject,
   setLocale,
+  projectType,
 } from '../store.js';
 
 export default function useInputLocale() {
@@ -20,22 +21,37 @@ export default function useInputLocale() {
   const [activeLocales, setActiveLocales] = useState(
     locSelected.value?.activeLocales || {},
   );
+
+  useEffect(() => {
+    if (projectType.value === 'rollout' || projectType.value === 'translate') {
+      locales.value = locales.value.filter((locItem) => locItem.workflow !== 'Transcreation' && locItem.livecopies !== '');
+    }
+  }, [projectType]);
+
   const findLanguageForLocale = (locale) => locales.value.find((lang) => lang.livecopies.split(',').includes(locale));
+
   const transformActiveLocales = () => {
     const groupedLocales = {};
+    const languageCodes = {};
     Object.entries(activeLocales).forEach(([locale, language]) => {
+      const langObj = findLanguageForLocale(locale);
+      if (!langObj) return;
+
       if (!groupedLocales[language]) {
         groupedLocales[language] = [];
+        languageCodes[language] = langObj.languagecode;
       }
       groupedLocales[language].push(locale);
     });
     return Object.entries(groupedLocales).map(([language, localeList]) => ({
-      languages: language,
-      localeList,
-      action: '',
+      language,
+      locales: projectType.value === 'rollout' ? localeList : [],
+      action: projectType.value,
+      languagecode: languageCodes[language],
       workflow: '',
     }));
   };
+
   const updateActiveLocales = (localesToUpdate, isDeselecting = false) => {
     setActiveLocales((prev) => {
       const updatedActiveLocales = { ...prev };
@@ -60,6 +76,7 @@ export default function useInputLocale() {
       return updatedActiveLocales;
     });
   };
+
   const selectRegion = (regionKey, regionCountryCodes) => {
     setSelectedRegion((prev) => ({
       ...prev,
@@ -83,6 +100,7 @@ export default function useInputLocale() {
     setSelectedLocale((prev) => prev.filter((locale) => !regionCountryCodes.includes(locale)));
     removeLocalesFromActive(regionCountryCodes);
   };
+
   const updateRegionStates = (localeList) => {
     const updatedRegionStates = {};
     localeRegion.value.forEach((region) => {
@@ -91,6 +109,31 @@ export default function useInputLocale() {
       updatedRegionStates[region.key] = isRegionActive;
     });
     return updatedRegionStates;
+  };
+
+  const selectAll = () => {
+    const allRegions = {};
+    const allLocales = [];
+    const allActiveLocales = {};
+
+    localeRegion.value.forEach((region) => {
+      const regionLocales = region.value.split(',');
+      allRegions[region.key] = regionLocales.reduce((acc, locale) => {
+        acc[locale] = true;
+        return acc;
+      }, {});
+      allLocales.push(...regionLocales);
+    });
+
+    locales.value.forEach((lang) => {
+      lang.livecopies.split(',').forEach((locale) => {
+        allActiveLocales[locale] = lang.language;
+      });
+    });
+
+    setSelectedRegion(allRegions);
+    setSelectedLocale(allLocales);
+    setActiveLocales(allActiveLocales);
   };
 
   useEffect(() => {
@@ -104,7 +147,7 @@ export default function useInputLocale() {
 
   const handleNext = () => {
     if (!errorPresent()) return;
-    setProject({ locale: transformActiveLocales() });
+    setProject({ languages: transformActiveLocales() });
     setLocale({ selectedRegion, selectedLocale, activeLocales });
     nextStep();
   };
@@ -128,17 +171,17 @@ export default function useInputLocale() {
       selectRegion(region.key, regionCountryCodes);
     }
   };
+
   const selectLanguage = (lang) => {
     const languageCodes = lang.livecopies.split(',');
     const isDeselecting = languageCodes.some((code) => selectedLocale.includes(code));
-
     const updatedLocale = isDeselecting
       ? selectedLocale.filter((locale) => !languageCodes.includes(locale))
       : [...selectedLocale, ...languageCodes];
-
     setSelectedLocale(updatedLocale);
     updateActiveLocales(languageCodes, isDeselecting);
   };
+
   const toggleLocale = (locale) => {
     setActiveLocales((prev) => {
       const updatedActiveLocales = { ...prev };
@@ -151,6 +194,7 @@ export default function useInputLocale() {
       return updatedActiveLocales;
     });
   };
+
   return {
     selectedRegion,
     selectedLocale,
@@ -158,6 +202,7 @@ export default function useInputLocale() {
     localeRegion,
     locales,
     project,
+    projectType,
     errorPresent,
     handleNext,
     handleBack,
@@ -165,5 +210,6 @@ export default function useInputLocale() {
     toggleRegion,
     selectLanguage,
     toggleLocale,
+    selectAll,
   };
 }

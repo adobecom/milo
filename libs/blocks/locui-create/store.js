@@ -7,6 +7,7 @@ export const project = signal({ type: 'translation' });
 export const locales = signal([]);
 export const localeRegion = signal([]);
 export const locSelected = signal(null);
+export const projectType = signal('rollout');
 
 export function nextStep() {
   currentStep.value += 1;

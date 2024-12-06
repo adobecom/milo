@@ -16,7 +16,7 @@ function TranslateActions({ languageCount, handleActionSelect, handleWorkflowSel
             </tr>
           </thead>
           <tbody>
-            ${project.value.locale.map((entry) => html`
+            ${project.value.languages.map((entry) => html`
               <tr>
                 <td>${entry.languages}</td>
                 <td>
