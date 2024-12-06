@@ -127,7 +127,7 @@ function updateColWidths(colWidths, fragment, hasSegment) {
   if (colWidthsNotValid(colWidths) || hasSegment) return;
   const total = Number(colWidths[0]) + Number(colWidths[1]);
   const right = Math.floor((Number(colWidths[1]) / total) * 10000) / 100;
-  const colString = `1fr minmax(${String(right)}%, 150px)`; // need to fix if this stays
+  const colString = `1fr minmax(${String(right)}%, 150px)`;
   fragment.querySelectorAll('.row').forEach((row) => {
     row.style.gridTemplateColumns = colString;
   });
