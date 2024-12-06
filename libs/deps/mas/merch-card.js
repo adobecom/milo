@@ -1673,7 +1673,7 @@ merch-card[variant="ccd-slice"] [slot='image'] img {
     /* colors */
     --merch-card-background-color: var(--spectrum-gray-background-color-default, #fff);
     --consonant-merch-card-border-color: #eaeaea;
-    --color-accent: rgb(59, 99, 251);
+    --color-accent: #1473E6;
     --merch-color-focus-ring: #1473E6;
     --merch-color-grey-10: #f6f6f6;
     --merch-color-grey-60: #6D6D6D;
