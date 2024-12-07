@@ -278,7 +278,7 @@ export function getMepPopup(mepConfig, isMmm = false) {
   const targetOnText = page.target === 'postlcp' ? 'on post LCP' : page.target;
   mepPopupHeader.innerHTML = `
     <div>
-      <h4>${activities?.length || 0} Manifest(s) served</h4>
+      <h4>${activities?.length || 0} Manifest(s) found</h4>
         <span class="mep-close"></span>
         <div class="mep-manifest-page-info-title">Page Info:</div>
         <div>Target integration feature is ${targetOnText}</div>
@@ -306,7 +306,7 @@ function createPreviewPill() {
   const mepBadge = createTag('div', { class: 'mep-manifest mep-badge' });
   mepBadge.innerHTML = `
    <span class="mep-open"></span>
-      <div class="mep-manifest-count">${activities?.length || 0} Manifest(s) served</div>`;
+      <div class="mep-manifest-count">${activities?.length || 0} Manifest(s) found</div>`;
   pill.append(mepBadge);
   pill.append(getMepPopup(mepConfig));
   overlay.append(pill);
