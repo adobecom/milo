@@ -264,14 +264,11 @@ dd .mep-popup-header .mep-close {
   gap: var(--spacing-s);
   margin: var(--spacing-m) auto 0;
   width: 800px;
-  flex-flow: column wrap;
+  flex-flow: row nowrap;
   max-width: 80vw;
 }
 .mmm-form-container > div {
   flex: 1;
-}
-#mmm-search-query-container {
-  max-width: 700px;
 }
 .mmm-form-container label {
   margin-right: var(--spacing-xxs);
@@ -300,6 +297,10 @@ dd .mep-popup-header .mep-close {
   .mmm-form-container {
     flex-flow: row nowrap;
   }
+  #mmm-dropdown-container > div {
+    display: flex;
+    gap: var(--spacing-s);
+  }
   #mmm-dropdown-container {
     flex: 0 0 50%;
   }
@@ -308,6 +309,9 @@ dd .mep-popup-header .mep-close {
   }
   #mmm-shareButtonContainer {
     right: 100px;
+  }
+  #mmm-dropdown-container > div > div {
+    flex: 1;
   }
 }
 

@@ -120,7 +120,8 @@ function addShareButtonListeners() {
   });
 }
 
-async function createForms() {
+async function createForms(data) {
+  console.log('data', data);
   const urlParams = new URLSearchParams(window.location.search);
   const sharedUrlSettings = Object.fromEntries(urlParams.entries());
   const resp = await customFetch({ resource: '/libs/blocks/mmm/form.html', withCacheRules: true })
@@ -148,8 +149,32 @@ async function createForms() {
   });
 }
 
+function parseData(el) {
+  const data = {};
+  const rows = el.querySelectorAll('div');
+  let currentKey = '';
+  rows.forEach((row) => {
+    const cols = row.querySelectorAll('div');
+    if (cols.length < 2) return;
+    const val = cols[1].innerText.trim();
+    let key = cols[0].innerText.toLowerCase().replace(/\s+/g, '');
+    if (key.startsWith('menu')) {
+      key = key.split(':')[1].trim();
+      currentKey = key;
+      data[key] = {
+        label: val,
+        options: {},
+      };
+      return;
+    }
+    if (data[currentKey]) data[currentKey].options[key] = val;
+  });
+  return data;
+}
+
 export default async function init(el) {
-  createForms();
+  const blockData = parseData(el);
+  createForms(blockData);
   const mmmElContainer = createTag('div', { class: 'mmm-container max-width-12-desktop' });
   const mmmEl = createTag('dl', {
     class: 'mmm foreground',
