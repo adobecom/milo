@@ -297,7 +297,7 @@ dd .mep-popup-header .mep-close {
   .mmm-form-container {
     flex-flow: row nowrap;
   }
-  #mmm-dropdown-container > div {
+  #mmm-dropdown-sub-container {
     display: flex;
     gap: var(--spacing-s);
   }
