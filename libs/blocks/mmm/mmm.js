@@ -175,6 +175,7 @@ function createDropdowns(data, sharedUrlSettings) {
     container.append(createTag('label', { for: `mmm-dropdown-${key}` }, `${label}:`));
     const select = createTag('select', { id: `mmm-dropdown-${key}` });
     container.append(select);
+    select.append(createTag('option', { value: '' }, 'Show all'));
     Object.keys(options).forEach((option) => {
       const optionEl = createTag('option', { value: option }, options[option]);
       select.append(optionEl);
