@@ -19,7 +19,6 @@ async function toggleDrawer(target, dd) {
     dd.classList.add('placeholder-resolved');
   }
 }
-
 function createButtonDetailsPair(mmmEl, page) {
   const { url, pageId } = page;
   const triggerId = `mmm-trigger-${pageId}`;
@@ -61,8 +60,7 @@ function createButtonDetailsPair(mmmEl, page) {
   button.addEventListener('click', (e) => { toggleDrawer(e.target, dd, pageId, 'mmm'); });
   mmmEl.append(dt, dd);
 }
-
-function searchFilterByInput() {
+function filterPageList() {
   const mmmEntries = document.querySelectorAll('div.mmm-container > dl > *');
   const shareUrl = new URL(`${window.location.origin}${window.location.pathname}`);
   const searchValues = {};
@@ -101,7 +99,6 @@ function searchFilterByInput() {
     });
   });
 }
-
 function parseData(el) {
   const data = {};
   const rows = el.querySelectorAll('div');
@@ -177,10 +174,10 @@ function createDropdowns(data, sharedUrlSettings) {
       const startingVal = sharedUrlSettings[key];
       if (startingVal === option) optionEl.setAttribute('selected', 'selected');
     });
-    select.addEventListener('change', searchFilterByInput);
+    select.addEventListener('change', filterPageList);
   });
 }
-function createSearch(data, sharedUrlSettings) {
+function createSearchField(data, sharedUrlSettings) {
   const searchTab = document.querySelector('.section-metadata.search');
   const searchForm = createTag(
     'div',
@@ -194,17 +191,17 @@ function createSearch(data, sharedUrlSettings) {
   searchTab.parentNode.insertBefore(searchForm, searchTab);
   const searchField = searchForm.querySelector('input');
   if (sharedUrlSettings.query) searchField.value = sharedUrlSettings.query;
-  searchField.addEventListener('keyup', searchFilterByInput);
-  searchField.addEventListener('change', searchFilterByInput);
+  searchField.addEventListener('keyup', filterPageList);
+  searchField.addEventListener('change', filterPageList);
 }
-async function createForms(el) {
+async function createForm(el) {
   const data = parseData(el);
   const urlParams = new URLSearchParams(window.location.search);
   const sharedUrlSettings = Object.fromEntries(urlParams.entries());
-  createSearch(data, sharedUrlSettings);
+  createSearchField(data, sharedUrlSettings);
   createDropdowns(data, sharedUrlSettings);
   document.querySelectorAll('.tab-list-container button').forEach((button) => {
-    button.addEventListener('click', searchFilterByInput);
+    button.addEventListener('click', filterPageList);
   });
 }
 async function createPageList(el) {
@@ -221,10 +218,10 @@ async function createPageList(el) {
   const main = document.querySelector('main');
   el.replaceWith(mmmElContainer);
   main.append(section);
-  searchFilterByInput();
+  filterPageList();
   loadStyle('/libs/features/personalization/preview.css');
 }
 export default async function init(el) {
-  createForms(el);
+  createForm(el);
   createPageList(el);
 }
