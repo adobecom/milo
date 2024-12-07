@@ -62,17 +62,17 @@ function createButtonDetailsPair(mmmEl, page) {
   mmmEl.append(dt, dd);
 }
 
-function matchesAny(str, prefix) {
-  return (!str || str.split(',').some((val) => prefix === val));
-}
 function searchFilterByInput() {
   const mmmEntries = document.querySelectorAll('div.mmm-container > dl > *');
   const shareUrl = new URL(`${window.location.origin}${window.location.pathname}`);
   const searchValues = {};
   document.querySelectorAll('.tabs input, .tabs select').forEach((field) => {
     const id = field.getAttribute('id').split('-').pop();
-    const { value } = field;
-    searchValues[id] = value;
+    const { value, tagName } = field;
+    searchValues[id] = {
+      value,
+      tagName,
+    };
     if (value) shareUrl.searchParams.set(id, value);
   });
   const selectedRadio = document.querySelector('.tab-list-container button[aria-selected="true"]');
@@ -83,15 +83,22 @@ function searchFilterByInput() {
   });
 
   mmmEntries.forEach((entry) => {
-    const { url, pagePath, prefix } = entry.dataset;
+    const data = entry.dataset;
     entry.classList.remove('filter-hide');
     if (filterType === 'search') {
-      if (!url.includes(searchValues.query)) entry.classList.add('filter-hide');
+      if (!data.url.includes(searchValues.query.value)) entry.classList.add('filter-hide');
       return;
     }
-    if (!matchesAny(searchValues.geo, prefix) || !matchesAny(searchValues.page, pagePath)) {
-      entry.classList.add('filter-hide');
-    }
+    Object.keys(searchValues).forEach((key) => {
+      const { value, tagName } = searchValues[key];
+      if (tagName !== 'SELECT') return;
+      // const inputVal = data[key];
+      const FIELD_MAP = { page: 'pagePath', geo: 'prefix' };
+      const inputVal = data[FIELD_MAP[key]];
+      if (value && !value.split(',').some((val) => inputVal === val)) {
+        entry.classList.add('filter-hide');
+      }
+    });
   });
 }
 
