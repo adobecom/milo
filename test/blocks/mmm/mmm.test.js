@@ -102,11 +102,11 @@ describe('MMM', () => {
     const mmmPopup = firstMmmDd.querySelector('.mep-popup');
     const previewButton = mmmPopup.querySelector('a[data-id="preview-button"]');
     expect(previewButton).to.exist;
-    expect(previewButton.href).to.include('https%3A%2F%2Fmain--homepage--adobecom.hlx.page%2Fhomepage%2Ffragments%2Fmep%2Fhp-11-15-black-friday.json4--default');
+    expect(previewButton.href).to.include('https%3A%2F%2Fmain--homepage--adobecom.hlx.page%2Fhomepage%2Ffragments%2Fmep%2Fhp-11-15-black-friday.json--default');
     const radio = mmmPopup.querySelector('input[type="radio"][name="https://main--homepage--adobecom.hlx.page/homepage/fragments/mep/hp-11-15-black-friday.json4"][value="target-apro-twp-abdn"]');
     expect(radio).to.exist;
     radio.click();
-    expect(previewButton.href).to.include('https%3A%2F%2Fmain--homepage--adobecom.hlx.page%2Fhomepage%2Ffragments%2Fmep%2Fhp-11-15-black-friday.json4--target-apro-twp-abdn');
+    expect(previewButton.href).to.include('https%3A%2F%2Fmain--homepage--adobecom.hlx.page%2Fhomepage%2Ffragments%2Fmep%2Fhp-11-15-black-friday.json--target-apro-twp-abdn');
     const addHighlight = mmmPopup.querySelector('#mepHighlightCheckbox-4');
     expect(addHighlight).to.exist;
     addHighlight.click();
