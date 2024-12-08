@@ -9,21 +9,66 @@ const { setConfig, MILO_EVENTS } = await import('../../../libs/utils/utils.js');
 const config = {
   miloLibs: 'https://main--milo--adobecom.hlx.live/libs',
   codeRoot: 'https://main--homepage--adobecom.hlx.live/homepage',
+  locale: {
+    ietf: 'en-US',
+    tk: 'hah7vzn.css',
+    prefix: '',
+    region: 'us',
+    contentRoot: 'https://main--cc--adobecom.hlx.page/cc-shared',
+  },
   mep: {
     preview: true,
     override: '',
     highlight: true,
+    experiments: [],
+    targetEnabled: true,
+    geoPrefix: 'en-us',
+  },
+  stageDomainsMap: {
+    'www.stage.adobe.com': {
+      'www.adobe.com': 'origin',
+      'business.adobe.com': 'business.stage.adobe.com',
+      'helpx.adobe.com': 'helpx.stage.adobe.com',
+      'blog.adobe.com': 'blog.stage.adobe.com',
+      'developer.adobe.com': 'developer-stage.adobe.com',
+      'news.adobe.com': 'news.stage.adobe.com',
+      'firefly.adobe.com': 'firefly-stage.corp.adobe.com',
+      'creativecloud.adobe.com': 'stage.creativecloud.adobe.com',
+      'projectneo.adobe.com': 'stg.projectneo.adobe.com',
+    },
+    '--cc--adobecom.hlx.live': {
+      'www.adobe.com': 'origin',
+      'business.adobe.com': 'business.stage.adobe.com',
+      'helpx.adobe.com': 'helpx.stage.adobe.com',
+      'blog.adobe.com': 'blog.stage.adobe.com',
+      'developer.adobe.com': 'developer-stage.adobe.com',
+      'news.adobe.com': 'news.stage.adobe.com',
+      'firefly.adobe.com': 'firefly-stage.corp.adobe.com',
+      'creativecloud.adobe.com': 'stage.creativecloud.adobe.com',
+      'projectneo.adobe.com': 'stg.projectneo.adobe.com',
+    },
+    '--cc--adobecom.hlx.page': {
+      'www.adobe.com': 'origin',
+      'business.adobe.com': 'business.stage.adobe.com',
+      'helpx.adobe.com': 'helpx.stage.adobe.com',
+      'blog.adobe.com': 'blog.stage.adobe.com',
+      'developer.adobe.com': 'developer-stage.adobe.com',
+      'news.adobe.com': 'news.stage.adobe.com',
+      'firefly.adobe.com': 'firefly-stage.corp.adobe.com',
+      'creativecloud.adobe.com': 'stage.creativecloud.adobe.com',
+      'projectneo.adobe.com': 'stg.projectneo.adobe.com',
+    },
   },
 };
 setConfig(config);
 
 describe('preview feature', () => {
-  it('builds with 0 manifests', () => {
-    decoratePreviewMode();
+  it('builds with 0 manifests', async () => {
+    await decoratePreviewMode();
     const event = new Event(MILO_EVENTS.DEFERRED);
     document.dispatchEvent(event);
     expect(document.querySelectorAll('.mep-preview-overlay').length).to.equal(1);
-    expect(document.querySelector('.mep-popup-header h4').textContent).to.equal('0 Manifest(s) served');
+    expect(document.querySelector('.mep-popup-header h4').textContent).to.equal('0 Manifest(s) found');
   });
   it('expand and close panel, expand and close advance, remove button', () => {
     expect(document.querySelector('.mep-preview-overlay > div').className).to.equal('mep-hidden');
@@ -38,12 +83,12 @@ describe('preview feature', () => {
     document.querySelector('.mep-close').click();
     expect(document.querySelectorAll('.mep-preview-overlay').length).to.equal(0);
   });
-  it('builds with multiple manifests', () => {
+  it('builds with multiple manifests', async () => {
     config.mep.experiments = experiments;
     setConfig(config);
-    decoratePreviewMode();
+    await decoratePreviewMode();
     expect(document.querySelectorAll('.mep-preview-overlay').length).to.equal(1);
-    expect(document.querySelector('.mep-popup-header h4').textContent).to.equal(`${config.mep.experiments.length} Manifest(s) served`);
+    expect(document.querySelector('.mep-popup-header h4').textContent).to.equal(`${config.mep.experiments.length} Manifest(s) found`);
   });
   it('adds highlights', () => {
     expect(document.querySelector('[data-path="/fragments/fragmentreplaced"]').getAttribute('data-manifest-id')).to.equal('selected-example.json');
@@ -54,14 +99,14 @@ describe('preview feature', () => {
     expect(document.querySelector('merch-card').getAttribute('data-manifest-id')).to.equal('selected-example.json');
   });
   it('preselects form inputs', () => {
-    expect(document.querySelector('input[name="/homepage/fragments/mep/selected-example.json"][value="target-smb"]').getAttribute('checked')).to.equal('checked');
-    expect(document.querySelector('input[name="/homepage/fragments/mep/default-selected.json"][value="default"]').getAttribute('checked')).to.equal('checked');
+    expect(document.querySelector('input[name*="/homepage/fragments/mep/selected-example.json"][value="target-smb"]').getAttribute('checked')).to.equal('checked');
+    expect(document.querySelector('input[name*="/homepage/fragments/mep/default-selected.json"][value="default"]').getAttribute('checked')).to.equal('checked');
     expect(document.querySelector('input#mepHighlightCheckbox').getAttribute('checked')).to.equal('checked');
   });
   it('updates preview button', () => {
     expect(document.querySelector('a[title="Preview above choices"]').getAttribute('href')).to.contain('---');
-    document.querySelector('#new-manifest').value = 'https://main--homepage--adobecom.hlx.live/homepage/fragments/mep/new-manifest.json';
-    document.querySelector('input[name="/homepage/fragments/mep/selected-example.json"][value="default"]').click();
+    document.querySelector('.new-manifest').value = 'https://main--homepage--adobecom.hlx.live/homepage/fragments/mep/new-manifest.json';
+    document.querySelector('input[name*="/homepage/fragments/mep/selected-example.json"][value="default"]').click();
     expect(document.querySelector('a[title="Preview above choices"]').getAttribute('href')).to.contain('new-manifest.json');
     expect(document.querySelector('a[title="Preview above choices"]').getAttribute('href')).to.contain('%2Fhomepage%2Ffragments%2Fmep%2Fselected-example.json--default');
     document.querySelector('input#mepHighlightCheckbox').click();

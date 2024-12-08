@@ -29,7 +29,7 @@ function updatePreviewButton(popup, pageId) {
         manifestParameter.push(value);
       }
     } else {
-      value = `${selected.getAttribute('name').replace(/\.json-\d+/, '.json')}--${value}`;
+      value = `${selected.dataset.manifest}--${value}`;
       manifestParameter.push(value);
     }
   });
@@ -136,7 +136,7 @@ function formatDate(dateTime) {
 }
 function getManifestListDomAndParameter(mepConfig) {
   const { activities, page } = mepConfig;
-  const { pageId } = page;
+  const { pageId = 1 } = page;
   let manifestList = '';
   const manifestParameter = [];
   activities?.forEach((manifest, mIdx) => {
@@ -152,7 +152,8 @@ function getManifestListDomAndParameter(mepConfig) {
     } = manifest;
     const editUrl = manifestUrl || manifestPath;
     let radio = '';
-    variantNames.split('||').forEach((variant) => {
+    const variantNamesArray = typeof variantNames === 'string' ? variantNames.split('||') : variantNames;
+    variantNamesArray.forEach((variant) => {
       const checked = {
         attribute: '',
         class: '',
@@ -163,7 +164,8 @@ function getManifestListDomAndParameter(mepConfig) {
         manifestParameter.push(`${manifestPath}--${variant}`);
       }
       radio += `<div>
-        <input type="radio" name="${manifestPath}${pageId}" value="${variant}" id="${manifestPath}${pageId}--${variant}" ${checked.attribute}>
+        <input type="radio" name="${editUrl}${pageId}" value="${variant}" 
+        id="${editUrl}${pageId}--${variant}" data-manifest="${editUrl}" ${checked.attribute}>
         <label for="${manifestPath}${pageId}--${variant}" ${checked.class}>${variant}</label>
       </div>`;
     });
@@ -174,10 +176,11 @@ function getManifestListDomAndParameter(mepConfig) {
     if (!variantNames.includes(selectedVariantName)) {
       checked.attribute = 'checked="checked"';
       checked.class = 'class="mep-manifest-selected-variant"';
-      manifestParameter.push(`${manifestPath}--default`);
+      manifestParameter.push(`${editUrl}--default`);
     }
     radio += `<div>
-      <input type="radio" name="${manifestPath}${pageId}" value="default" id="${manifestPath}${pageId}--default" ${checked.attribute}>
+      <input type="radio" name="${editUrl}${pageId}" value="default" 
+      id="${editUrl}${pageId}--default" data-manifest="${editUrl}" ${checked.attribute}>
       <label for="${manifestPath}${pageId}--default" ${checked.class}>Default (control)</label>
     </div>`;
 
