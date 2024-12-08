@@ -222,6 +222,7 @@ function addMepPopupListeners(popup, pageId) {
   });
   popup.querySelectorAll('input[type="text"]').forEach((input) => {
     input.addEventListener('keyup', updatePreviewButton.bind(null, popup, pageId));
+    input.addEventListener('change', updatePreviewButton.bind(null, popup, pageId));
   });
   popup.querySelector('.mep-toggle-advanced').addEventListener('click', (e) => {
     e.target.closest('.mep-popup')?.querySelector('.mep-advanced-container')?.classList.toggle('mep-advanced-open');
