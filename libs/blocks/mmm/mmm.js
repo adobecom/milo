@@ -144,7 +144,7 @@ function createShareButton() {
   );
   p.append(button);
   button.addEventListener('click', (e) => {
-    /* c8 ignore next 6 */
+    /* c8 ignore start */
     e.preventDefault();
     navigator.clipboard.writeText(button.dataset.destination).then(() => {
       button.classList.add('copy-to-clipboard-copied');
@@ -154,6 +154,7 @@ function createShareButton() {
         2000,
       );
     });
+    /* c8 ignore end */
   });
   return div;
 }
