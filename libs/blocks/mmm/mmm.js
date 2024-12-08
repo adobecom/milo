@@ -149,6 +149,7 @@ function createShareButton() {
       );
     });
   });
+  return div;
 }
 function createDropdowns(data, sharedUrlSettings) {
   const dropdownTab = document.querySelector('.section-metadata.dropdowns');
