@@ -9,6 +9,12 @@ async function toggleDrawer(target, dd) {
     el.setAttribute('aria-expanded', 'false');
     dd.setAttribute('hidden', '');
   } else {
+    document.querySelectorAll('dd:not([hidden])').forEach((openDd) => {
+      openDd.setAttribute('hidden', '');
+    });
+    document.querySelectorAll('dt button[aria-expanded="true"]').forEach((openButton) => {
+      openButton.setAttribute('aria-expanded', 'false');
+    });
     el.setAttribute('aria-expanded', 'true');
     dd.removeAttribute('hidden');
     const loading = dd.querySelector('.loading');

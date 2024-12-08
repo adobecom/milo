@@ -41,19 +41,30 @@ describe('MMM', () => {
   });
 
   it('Expand collapse', async () => {
-    const firstMmmButton = document.body.querySelector('dt button');
-    expect(firstMmmButton.getAttribute('aria-expanded')).to.equal('false');
-
-    // open
     await loadJsonAndSetResponse('./mocks/get-page.json');
+    const [firstMmmButton, secondMmmButton] = document.body.querySelectorAll('dt button');
+    expect(firstMmmButton.getAttribute('aria-expanded')).to.equal('false');
+    expect(secondMmmButton.getAttribute('aria-expanded')).to.equal('false');
+
+    // open 1st
     firstMmmButton.click();
     expect(firstMmmButton.getAttribute('aria-expanded')).to.equal('true');
+    expect(secondMmmButton.getAttribute('aria-expanded')).to.equal('false');
 
-    // close
-    firstMmmButton.click();
+    // open 2nd
+    secondMmmButton.click();
     expect(firstMmmButton.getAttribute('aria-expanded')).to.equal('false');
+    expect(secondMmmButton.getAttribute('aria-expanded')).to.equal('true');
 
+    // close 2nd
+    secondMmmButton.click();
+    expect(firstMmmButton.getAttribute('aria-expanded')).to.equal('false');
+    expect(secondMmmButton.getAttribute('aria-expanded')).to.equal('false');
+
+    // re-open 1st
     firstMmmButton.click();
+    expect(firstMmmButton.getAttribute('aria-expanded')).to.equal('true');
+    expect(secondMmmButton.getAttribute('aria-expanded')).to.equal('false');
   });
 
   it('Loads page details', async () => {
