@@ -1,0 +1,37 @@
+[
+  {
+      "prefix": "",
+      "pageId": 4,
+      "pagePath": "/",
+      "locale": "en-US",
+      "url": "https://www.adobe.com/"
+  },
+  {
+      "prefix": "",
+      "pageId": 7,
+      "pagePath": "/acrobat/pricing.html",
+      "locale": "en-US",
+      "url": "https://www.adobe.com/acrobat/pricing.html"
+  },
+  {
+      "prefix": "",
+      "pageId": 3,
+      "pagePath": "/creativecloud.html",
+      "locale": "en-US",
+      "url": "https://www.adobe.com/creativecloud.html"
+  },
+  {
+      "prefix": "ca_fr",
+      "pageId": 16,
+      "pagePath": "/",
+      "locale": "fr-CA",
+      "url": "https://www.adobe.com/ca_fr/"
+  },
+  {
+      "prefix": "de",
+      "pageId": 61,
+      "pagePath": "/",
+      "locale": "de-DE",
+      "url": "https://www.adobe.com/de/"
+  }
+]
