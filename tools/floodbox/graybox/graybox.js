@@ -241,7 +241,7 @@ export default class MiloGraybox extends LitElement {
     });
     this.cleanUpIgnoreFilesFromPromote(this._crawledFiles);
     // eslint-disable-next-line no-console
-    console.log('Files to Promote:', this._filesToPromote);    
+    console.log('Files to Promote:', this._filesToPromote);
     this.requestUpdate();
 
     // #3 - Start promoting
