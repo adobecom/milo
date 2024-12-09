@@ -40,3 +40,4 @@ var r=Object.defineProperty;var n=(t,e,s)=>e in t?r(t,e,{enumerable:!0,configura
             margin-top: 16px;
         }
     `),o(i,"properties",{heading:{type:String,attribute:!0},mobileRows:{type:Number,attribute:!0}});customElements.define("merch-whats-included",i);export{i as MerchWhatsIncluded};
+//# sourceMappingURL=merch-whats-included.js.map

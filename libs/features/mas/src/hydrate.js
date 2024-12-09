@@ -273,7 +273,6 @@ function updateLinks(merchCard) {
         merchCard.querySelectorAll(`a.${className}`).forEach((link) => {
             link.classList.remove(className);
             link.classList.add('spectrum-Link', `spectrum-Link--${variant}`);
-            console.log(link);
         });
     });
 }
