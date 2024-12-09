@@ -51,6 +51,7 @@ export default class MiloGraybox extends LitElement {
     this._publishedFilesCount = 0;
     this._publishErrorCount = 0;
     this._crawledFiles = [];
+    this._crawledFilesCount = 0;
     this._crawlDuration = 0;
     this._promoteDuration = 0;
     this._previewPublishDuration = 0;
@@ -96,6 +97,7 @@ export default class MiloGraybox extends LitElement {
     const { results, getDuration } = crawl({
       path: experiencePath,
       callback: () => {
+        this._crawledFilesCount += 1;
         this.requestUpdate();
       },
       throttle: 10,
@@ -229,6 +231,7 @@ export default class MiloGraybox extends LitElement {
 
     // #2 - Get files to promote from paths
     this._startCrawlPaths = true;
+    this.updateTabUi('crawl');
     this._crawledFiles = await getFilesToPromote({
       accessToken: this.token,
       org,
@@ -239,7 +242,6 @@ export default class MiloGraybox extends LitElement {
     this.cleanUpIgnoreFilesFromPromote(this._crawledFiles);
     // eslint-disable-next-line no-console
     console.log('Files to Promote:', this._filesToPromote);
-    this.updateTabUi('crawl');
     this.requestUpdate();
 
     // #3 - Start promoting
@@ -384,12 +386,12 @@ export default class MiloGraybox extends LitElement {
 
   renderCrawlInfo() {
     return html`
-      <div class="tab-step" data-id="crawl">
+      <div class="tab-step active" data-id="crawl">
       ${this._selectedOption === 'promoteExp' ? html`
         <h3>Crawl Graybox Experience</h3>
         <p>Crawling "${this._gbExpPath}" to promote... </p>
         <div class="detail-cards crawl-cards">
-          ${floodbox.renderBadge('Files', this._crawledFiles.length)}
+          ${floodbox.renderBadge('Files', this._crawledFilesCount)}
         </div>
       ` : nothing}
       ${this._selectedOption === 'promotePaths' ? html`
@@ -407,9 +409,9 @@ export default class MiloGraybox extends LitElement {
   renderTabUi(config) {
     return html`
       <ul class="tab-nav">
-        ${config.map((step) => html`
+        ${config.map((step, index) => html`
           <li data-target="${step.id}">
-            <button disabled class="accent" @click=${() => this.updateTabUi(step.id)}>${step.title}</button>
+            <button disabled class="ribbon" @click=${() => this.updateTabUi(step.id)}>${index + 1}. ${step.title}</button>
           </li>
         `)}
       </ul>

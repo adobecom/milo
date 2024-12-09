@@ -244,31 +244,18 @@ select {
 }
 
 .tab-nav {
-  counter-reset: tab-numbering;
   display: flex;
   gap: var(--spacing-200);
   list-style-type: none;
-  margin: var(--spacing-200) 0;
-  padding: 0;
+  padding: 5px;
 }
 
 .tab-nav li button{
   opacity: 0.5;
-  counter-increment: tab-numbering;
 }
 
 .tab-nav li.active button{
   opacity: 1;
-}
-
-.tab-nav li button::before {
-  background: rgb(0 0 0 / 10%);
-  border: 1px solid rgb(255 255 255 / 60%);
-  border-radius: 50%;
-  content: counter(tab-numbering);
-  display: inline-block;
-  margin-right: 8px;
-  width: 20px;
 }
 
 .tab-nav li button[disabled]::before {
@@ -282,4 +269,24 @@ select {
 
 .tab-step.active {
   display: block;
+}
+
+.ribbon {
+  --r: .8em;
+
+  padding-inline: calc(var(--r) + .3em);
+  line-height: 1.8;
+  clip-path: polygon(0 0,90% 0,100% 50%,90% 100%,0 100%, var(--r) 50%);
+  background: #2699dc;
+  width: 180px;
+  font-size: 24px;
+  font-weight: bold;
+  color: #fff;
+  border: #fff;
+}
+
+.tabs {
+  background-color: mintcream;
+  padding: 20px;
+  border: 1px solid mediumseagreen;
 }
