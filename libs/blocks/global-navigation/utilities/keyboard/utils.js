@@ -38,6 +38,9 @@ const selectors = {
   activeTabpanel: '.tab-content [role="tabpanel"]',
   activeLinks: '.tab-content [role="tabpanel"]:not([hidden="true"]) a',
   stickyCta: 'header.new-nav .feds-popup .sticky-cta a',
+  localNav: '.feds-localnav',
+  localNavTitle: '.feds-localnav-title',
+  localNavExit: '.feds-localnav-exit',
 };
 
 selectors.profileDropdown = `

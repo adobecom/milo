@@ -230,10 +230,10 @@ const decorateProfileTrigger = async ({ avatar }) => {
 };
 
 let keyboardNav;
-const setupKeyboardNav = async () => {
+const setupKeyboardNav = async (newMobileWithLnav) => {
   keyboardNav = keyboardNav || new Promise(async (resolve) => {
     const { default: KeyboardNavigation } = await import('./utilities/keyboard/index.js');
-    const instance = new KeyboardNavigation();
+    const instance = new KeyboardNavigation(newMobileWithLnav);
     resolve(instance);
   });
 };
@@ -338,10 +338,13 @@ class Gnav {
       this.ims,
       this.addChangeEventListeners,
     ];
+    const fetchKeyboardNav = () => {
+      setupKeyboardNav(this.newMobileNav && this.isLocalNav());
+    };
     this.block.addEventListener('click', this.loadDelayed);
-    this.block.addEventListener('keydown', setupKeyboardNav);
+    this.block.addEventListener('keydown', fetchKeyboardNav);
     setTimeout(this.loadDelayed, CONFIG.delays.loadDelayed);
-    setTimeout(setupKeyboardNav, CONFIG.delays.keyboardNav);
+    setTimeout(fetchKeyboardNav, CONFIG.delays.keyboardNav);
     for await (const task of tasks) {
       await yieldToMain();
       await task();
@@ -382,38 +385,50 @@ class Gnav {
     if (!this.isLocalNav()) return;
     const localNavItems = this.elements.navWrapper.querySelector('.feds-nav').querySelectorAll('.feds-navItem:not(.feds-navItem--section)');
     const [title, navTitle = ''] = this.getOriginalTitle(localNavItems);
-
-    if (this.elements.localNav || !this.newMobileNav || isDesktop.matches) {
-      localNavItems[0].querySelector('a').textContent = title.trim();
-    } else {
-      let localNav = document.querySelector('.feds-localnav');
-      if (!localNav) {
-        lanaLog({ message: 'GNAV: Localnav does not include \'localnav\' in its name.', tags: 'errorType=info,module=gnav' });
-        localNav = toFragment`<div class="feds-localnav"/>`;
-        this.block.after(localNav);
-      }
-      localNav.append(toFragment`<button class="feds-navLink--hoverCaret feds-localnav-title"></button>`, toFragment` <div class="feds-localnav-curtain"></div>`, toFragment` <div class="feds-localnav-items"></div>`);
-
-      const itemWrapper = localNav.querySelector('.feds-localnav-items');
-      const titleLabel = await replaceKey('overview', getFedsPlaceholderConfig());
-
-      localNavItems.forEach((elem, idx) => {
-        const clonedItem = elem.cloneNode(true);
-        const link = clonedItem.querySelector('a');
-
-        if (idx === 0) {
-          localNav.querySelector('.feds-localnav-title').innerText = title.trim();
-          link.textContent = navTitle.trim() || titleLabel;
-        }
-
-        itemWrapper.appendChild(clonedItem);
-      });
-
-      localNav.querySelector('.feds-localnav-title').addEventListener('click', () => {
-        localNav.classList.toggle('active');
-      });
-      this.elements.localNav = localNav;
+    let localNav = document.querySelector('.feds-localnav');
+    if (!localNav) {
+      lanaLog({ message: 'GNAV: Localnav does not include \'localnav\' in its name.', tags: 'errorType=info,module=gnav' });
+      localNav = toFragment`<div class="feds-localnav"/>`;
+      this.block.after(localNav);
     }
+    localNav.append(toFragment`<button class="feds-navLink--hoverCaret feds-localnav-title" aria-haspopup="true" aria-expanded="false"></button>`, toFragment` <div class="feds-localnav-curtain"></div>`, toFragment` <div class="feds-localnav-items"></div>`, toFragment`<a href="#" class="feds-sr-only feds-localnav-exit">.</a>`);
+
+    const itemWrapper = localNav.querySelector('.feds-localnav-items');
+    const titleLabel = await replaceKey('overview', getFedsPlaceholderConfig());
+
+    localNavItems.forEach((elem, idx) => {
+      const clonedItem = elem.cloneNode(true);
+      const link = clonedItem.querySelector('a');
+
+      if (idx === 0) {
+        localNav.querySelector('.feds-localnav-title').innerText = title.trim();
+        link.textContent = navTitle.trim() || titleLabel;
+      }
+
+      itemWrapper.appendChild(clonedItem);
+    });
+
+    localNav.querySelector('.feds-localnav-title').addEventListener('click', () => {
+      localNav.classList.toggle('active');
+      const isActive = localNav.classList.contains('active');
+      localNav.querySelector('.feds-localnav-title').setAttribute('aria-expanded', isActive);
+    });
+    this.elements.localNav = localNav;
+    localNavItems[0].querySelector('a').textContent = title.trim();
+    const isAtTop = () => {
+      const rect = this.elements.localNav.getBoundingClientRect();
+      return rect.top === 0;
+    };
+    window.addEventListener('scroll', () => {
+      const classList = this.elements.localNav?.classList;
+      if (isAtTop()) {
+        if (!classList?.contains('is-sticky')) {
+          classList?.add('is-sticky');
+        }
+      } else {
+        classList?.remove('is-sticky');
+      }
+    });
   };
 
   decorateTopnavWrapper = async () => {
@@ -430,7 +445,9 @@ class Gnav {
       this.elements.topnavWrapper,
     );
 
-    this.decorateLocalNav();
+    if (this.newMobileNav) {
+      await this.decorateLocalNav();
+    }
   };
 
   addChangeEventListeners = () => {
@@ -461,7 +478,6 @@ class Gnav {
           this.elements.navWrapper.prepend(this.elements.breadcrumbsWrapper);
         }
       }
-      this.decorateLocalNav();
     });
 
     // Add a modifier when the nav is tangent to the viewport and content is partly hidden
@@ -1010,6 +1026,11 @@ class Gnav {
 
         elements.querySelectorAll('.feds-menu-headline').forEach((elem) => {
           // Reattach click event listener to headlines
+          elem?.setAttribute('role', 'button');
+          elem?.setAttribute('tabindex', 0);
+          elem?.removeAttribute('aria-level');
+          elem?.setAttribute('aria-haspopup', true);
+          elem?.setAttribute('aria-expanded', false);
           elem?.addEventListener('click', (e) => {
             trigger({ element: e.currentTarget, event: e, type: 'headline' });
             setActiveDropdown(e.currentTarget);
