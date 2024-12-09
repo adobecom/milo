@@ -52,7 +52,6 @@ var Dt=Object.defineProperty;var ct=r=>{throw TypeError(r)};var Bt=(r,e,t)=>e in
 
     :host([aria-selected]) {
         outline: none;
-        box-sizing: border-box;
         box-shadow: inset 0 0 0 2px var(--color-accent);
     }
 
@@ -1712,6 +1711,10 @@ merch-card-collection > div[slot] p {
     align-items: normal;
     gap: var(--consonant-merch-spacing-m);
     padding: var(--spacing-m);
+}
+
+merch-card * {
+  box-sizing: initial;
 }
 
 merch-card.background-opacity-70 {

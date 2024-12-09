@@ -25,7 +25,6 @@ export const styles = css`
 
     :host([aria-selected]) {
         outline: none;
-        box-sizing: border-box;
         box-shadow: inset 0 0 0 2px var(--color-accent);
     }
 

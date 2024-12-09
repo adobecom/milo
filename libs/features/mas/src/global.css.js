@@ -145,6 +145,10 @@ merch-card-collection > div[slot] p {
     padding: var(--spacing-m);
 }
 
+merch-card * {
+  box-sizing: initial;
+}
+
 merch-card.background-opacity-70 {
     background-color: rgba(255 255 255 / 70%);
 }
