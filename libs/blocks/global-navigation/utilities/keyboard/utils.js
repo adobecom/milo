@@ -40,7 +40,7 @@ const selectors = {
   stickyCta: 'header.new-nav .feds-popup .sticky-cta a',
   localNav: '.feds-localnav',
   localNavTitle: '.feds-localnav-title',
-  localNavExit: '.feds-localnav-exit'
+  localNavExit: '.feds-localnav-exit',
 };
 
 selectors.profileDropdown = `

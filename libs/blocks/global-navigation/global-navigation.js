@@ -333,7 +333,7 @@ class Gnav {
     ];
     const fetchKeyboardNav = () => {
       setupKeyboardNav(this.newMobileNav && this.isLocalNav());
-    }
+    };
     this.block.addEventListener('click', this.loadDelayed);
     this.block.addEventListener('keydown', fetchKeyboardNav);
     setTimeout(this.loadDelayed, CONFIG.delays.loadDelayed);
@@ -411,7 +411,7 @@ class Gnav {
     const isAtTop = () => {
       const rect = this.elements.localNav.getBoundingClientRect();
       return rect.top === 0;
-    }
+    };
     window.addEventListener('scroll', () => {
       const classList = this.elements.localNav?.classList;
       if (isAtTop()) {
@@ -421,7 +421,7 @@ class Gnav {
       } else {
         classList?.remove('is-sticky');
       }
-    })
+    });
   };
 
   decorateTopnavWrapper = async () => {

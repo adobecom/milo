@@ -87,12 +87,13 @@ class KeyboardNavigation {
   }
 
   loadLnavNavigation = async () => {
-    this.localNav = this.localNav || new Promise(async (resolve) => {
-      const lnavNavigation = await loadBlock('./keyboard/localNav.js');
-      const instance = new lnavNavigation();
-      resolve(instance);
+    this.localNav = this.localNav || new Promise((resolve) => {
+      loadBlock('./keyboard/localNav.js').then((LnavNavigation) => {
+        const instance = new LnavNavigation();
+        resolve(instance);
+      });
     });
-  }
+  };
 
   addEventListeners = () => {
     [...document.querySelectorAll(`${selectors.globalNav}, ${selectors.globalFooter}`)]
