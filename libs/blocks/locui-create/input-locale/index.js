@@ -8,9 +8,9 @@ import {
   locSelected,
   setProject,
   setLocale,
+  updateDraftProject,
 } from '../store.js';
 import { LOCALIZATION_TYPES } from '../utils/constant.js';
-import updateProject from '../utils/miloc.js';
 
 export default function useInputLocale() {
   const [selectedRegion, setSelectedRegion] = useState(
@@ -22,6 +22,8 @@ export default function useInputLocale() {
   const [activeLocales, setActiveLocales] = useState(
     locSelected.value?.activeLocales || {},
   );
+
+  const [apiError, setApiError] = useState('');
 
   useEffect(() => {
     if (project.value.type === LOCALIZATION_TYPES.rollout
@@ -155,10 +157,9 @@ export default function useInputLocale() {
       return languages.map((lang) => ({ ...lang, action: project.value.type === LOCALIZATION_TYPES.translation ? 'Translate' : 'Rollout', workflow: '' }));
     }
     let i = 0;
-    let k = 0;
     const prefilledLanguages = [];
 
-    while (i < languages.length && k < storedLanguages.length) {
+    while (i < languages.length) {
       const { action, workflow } = storedLanguages[i] ?? {};
       const prefillLanguage = {
         ...languages[i],
@@ -170,7 +171,6 @@ export default function useInputLocale() {
       }
       prefilledLanguages.push(prefillLanguage);
       i += 1;
-      k += 1;
     }
     return prefilledLanguages;
   };
@@ -181,9 +181,12 @@ export default function useInputLocale() {
     setProject({ languages: prefillActionAndWorkflow(sortedLanguages) });
     setLocale({ selectedRegion, selectedLocale, activeLocales });
 
-    const details = await updateProject(project.value);
-    console.log('saurabh', details);
-    nextStep();
+    const error = await updateDraftProject();
+    if (error) {
+      setApiError(error);
+    } else {
+      nextStep();
+    }
   };
 
   const handleBack = () => {
@@ -244,5 +247,7 @@ export default function useInputLocale() {
     selectLanguage,
     toggleLocale,
     selectAll,
+    apiError,
+    setApiError,
   };
 }

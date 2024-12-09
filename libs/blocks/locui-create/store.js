@@ -128,35 +128,34 @@ export async function createDraftProject() {
   return error;
 }
 
-export async function updateDraftProject() {
+export async function updateDraftProject(publish = false) {
   const userToken = await getUserToken();
   if (!userToken) {
     return 'Unable to login to Sharepoint.';
   }
+
   let error = 'Something went wrong. Please try again!';
   loading.value = true;
+
+  const body = {
+    ...createPayload(project),
+    projectKey: projectInfo.value.projectKey,
+    publish,
+  };
   try {
-    const response = await fetch(`${API_BASE_URL.dev}/update-draft-project`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'User-Token': userToken,
-      },
-      body: JSON.stringify({
-        ...createPayload(project),
-        projectKey: projectInfo.value.projectKey,
-      }),
-    });
-    const responseJson = await response.json();
-    if (response.ok) {
-      projectInfo.value = responseJson;
+    const opts = { method: 'POST', headers: { 'User-Token': userToken, 'Content-Type': 'application/json' }, body: JSON.stringify(body) };
+    const resp = await fetch(`${API_BASE_URL.dev}/update-draft-project`, opts);
+    const respJson = await resp.json();
+    if (resp.ok) {
+      projectInfo.value = respJson;
       error = '';
     }
-    if (responseJson.error) {
-      error = responseJson.error;
+    if (respJson.error) {
+      error = respJson.error;
     }
-  } catch (err) {
-    console.error(err);
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.error(e);
   }
   loading.value = false;
   return error;

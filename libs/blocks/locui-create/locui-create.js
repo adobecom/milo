@@ -7,18 +7,12 @@ import InputActions from './input-actions/view.js';
 import Header from '../milostudio-header/milostudio-header.js';
 import Sidenav from '../milostudio-sidenav/sidenav.js';
 import { getConfig, loadStyle } from '../../utils/utils.js';
-import login from '../../tools/sharepoint/login.js';
 
-async function loginToSharePoint() {
-  const scopes = ['files.readwrite', 'sites.readwrite.all'];
-  await login({ scopes, telemetry: { application: { appName: 'Adobe Localization' } } });
-}
 function Create() {
   useEffect(() => {
     const fetchLocaleDetailsAsync = async () => {
       try {
         await fetchLocaleDetails();
-        await loginToSharePoint();
       } catch (error) {
         // console.error('Error fetching locale details:', error);
       }

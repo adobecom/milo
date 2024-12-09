@@ -599,7 +599,7 @@ body {
 }
 
 .table-wrapper {
-  max-height: 80%;
+  max-height: 70%;
   overflow-y: auto;
   margin: 10px 0;
   border: 1px solid #ccc;
@@ -679,9 +679,13 @@ body {
   align-items: center;
 }
 
-.locui-project-created-modal button {
+.locui-project-created-modal a {
   width: 70px;
   margin-top: 20px;
+}
+
+.locui-project-created-modal a:hover {
+  text-decoration: none;
 }
 
 .locale-list-item {

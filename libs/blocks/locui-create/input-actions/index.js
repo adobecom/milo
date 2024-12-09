@@ -7,6 +7,7 @@ import { project } from '../store.js';
 export default function useInputActions() {
   const [languageCount, setLanguageCount] = useState(0);
   const [isFormValid, setIsFormValid] = useState(false);
+  const [apiError, setApiError] = useState('');
 
   const projectCreatedModal = () => {
     const div = createTag('div');
@@ -47,5 +48,7 @@ export default function useInputActions() {
     handleActionSelect,
     handleWorkflowSelect,
     projectCreatedModal,
+    apiError,
+    setApiError,
   };
 }

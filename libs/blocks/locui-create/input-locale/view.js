@@ -2,6 +2,7 @@ import { html } from '../../../deps/htm-preact.js';
 import useInputLocale from './index.js';
 import StepControls from '../components/stepControls.js';
 import { LOCALIZATION_TYPES } from '../utils/constant.js';
+import Toast from '../components/toast.js';
 
 export default function InputLocales() {
   const {
@@ -19,6 +20,8 @@ export default function InputLocales() {
     selectLanguage,
     toggleLocale,
     selectAll,
+    apiError,
+    setApiError,
   } = useInputLocale();
 
   const RenderRegion = () => html`
@@ -131,6 +134,12 @@ export default function InputLocales() {
         </div>
       </div>
     </div>
+    ${apiError
+      && html`<${Toast}
+        message=${apiError}
+        type="error"
+        onClose=${() => setApiError('')}
+      />`}
     <div>
       <${StepControls}
         backDisabled=${false}

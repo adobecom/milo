@@ -1,9 +1,9 @@
 import { html } from '../../../deps/htm-preact.js';
 import StepControls from '../components/stepControls.js';
 import useInputActions from './index.js';
-import { prevStep, project } from '../store.js';
+import { prevStep, project, updateDraftProject } from '../store.js';
 import { LOCALIZATION_TYPES } from '../utils/constant.js';
-import updateProject from '../utils/miloc.js';
+import Toast from '../components/toast.js';
 
 function TranslateActions({ languageCount, handleActionSelect, handleWorkflowSelect }) {
   const tableHeaders = [`Languages (${languageCount})`,
@@ -88,13 +88,16 @@ export default function InputActionsView() {
     handleActionSelect,
     handleWorkflowSelect,
     projectCreatedModal,
+    apiError,
+    setApiError,
   } = useInputActions();
 
   const handleNext = async () => {
     if (isFormValid) {
-      const details = await updateProject(project.value, true);
-      console.log('saurabh', details);
-      projectCreatedModal();
+      const error = await updateDraftProject(true);
+      if (error) {
+        setApiError(error);
+      } else { projectCreatedModal(); }
     }
   };
 
@@ -109,6 +112,12 @@ export default function InputActionsView() {
     : html`<${RolloutActions} languageCount=${languageCount} />`}
      
     </div>
+     ${apiError
+      && html`<${Toast}
+        message=${apiError}
+        type="error"
+        onClose=${() => setApiError('')}
+      />`}
     <div class="step-controls">
       <${StepControls}
         onBack=${prevStep}

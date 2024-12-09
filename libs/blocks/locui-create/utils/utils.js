@@ -1,4 +1,5 @@
 import { origin } from '../../locui/utils/franklin.js';
+import { LOCALIZATION_TYPES } from './constant.js';
 
 export function getTenantName() {
   try {
@@ -46,11 +47,13 @@ export const createPayload = (project) => {
       ...project.value.fragments.map((frag) => `${origin}${frag}`),
     ];
   }
+
   return {
     tenantBaseUrl: origin,
     projectName: project.value.name,
-    projectType: project.value.type,
+    projectType: project.value.type === LOCALIZATION_TYPES.rollout ? 'rollout' : 'localization',
     referrer: 'studio',
+    languages: project.value.languages,
     urls,
     settings: {
       env: 'stage',

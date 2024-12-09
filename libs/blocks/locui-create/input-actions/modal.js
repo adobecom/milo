@@ -1,5 +1,5 @@
 import { html, render } from '../../../deps/htm-preact.js';
-import { project } from '../store.js';
+import { project, projectInfo } from '../store.js';
 
 function Modal() {
   return html`
@@ -9,7 +9,7 @@ function Modal() {
       <strong>Project "${project.value.name || 'n/a'}" Successfully Created</strong>
     </div>
     <div class="create-project-view">
-     <button class="s2-btn accent">View</button>
+    ${projectInfo.value.projectLink && html`<a class="s2-btn accent" href="${projectInfo.value.projectLink}" target="_blank" rel="noreferrer noopener">View</a>`}
     </div>
   </div>
   `;
