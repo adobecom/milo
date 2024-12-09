@@ -1,3 +1,5 @@
+import { origin } from '../../locui/utils/franklin.js';
+
 export function getTenantName() {
   try {
     const url = window.location.href;
@@ -35,3 +37,25 @@ export function processLocaleData(localeData) {
 
   return { locales: processedLocales, localeRegion: processedLocaleRegion };
 }
+
+export const createPayload = (project) => {
+  let urls = [...project.value.urls];
+  if (project.value.fragments.length > 0) {
+    urls = [
+      ...urls,
+      ...project.value.fragments.map((frag) => `${origin}${frag}`),
+    ];
+  }
+  return {
+    tenantBaseUrl: origin,
+    projectName: project.value.name,
+    projectType: project.value.type,
+    referrer: 'studio',
+    urls,
+    settings: {
+      env: 'stage',
+      regionalEditBehaviour: project.value.editBehavior,
+      useHtmlFlow: project.value.htmlFlow,
+    },
+  };
+};
