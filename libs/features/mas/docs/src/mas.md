@@ -58,10 +58,11 @@ MAS integrates its components to provide a seamless commerce experience:
 4. WCS provides the necessary commerce data through its APIs.
 
 ## Analytics
-For analytics purposes, every <merch-card> tag can be tagged with 'PRODUCT_CODE' tag in Studio (manually, later it will be done automatically). When 'PRODUCT_CODE tag is present on the card, <merch-card> will reflect the tag value in 'daa-lh' attribute. It is a non-translatable, human-readable card id.
-To set a non-translatable, human-readable id on link open Link editor in Studio and select the value from the dropdown.
+For analytics purposes, every `<merch-card>` tag can be tagged with 'PRODUCT_CODE' tag in Studio. When `PRODUCT_CODE` tag is present on the card, `<merch-card>` will reflect the tag value in the 'daa-lh' attribute. It is a non-translatable, human-readable card id.
+To set a non-translatable, human-readable id on link - open Link editor in Studio and select the value from the dropdown.
 Once value is set, every link will have 2 attributes:
-data-analytics-id - the value set in studio, without changes e.g. 'buy-now'
-daa-ll - the value set in studio + position of the link within the card, e.g. 'free-trial-1', 'buy-now-2'
+* data-analytics-id - the value set in studio, without changes e.g. 'buy-now'
+* daa-ll - the value set in studio + position of the link within the card, e.g. 'free-trial-1', 'buy-now-2'
+
 Example: if you have 5 cards with buy-now cta on your page, you can take a combination of merch-card daa-lh and link daa-ll:
 ${daa-lh}--${daa-ll}: will result in 'phlt--buy-now-2'.

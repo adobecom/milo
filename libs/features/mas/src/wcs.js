@@ -50,9 +50,12 @@ export function Wcs({ settings }) {
     async function resolveWcsOffers(options, promises, reject = true) {
         let message = ERROR_MESSAGE_OFFER_NOT_FOUND;
         log.debug('Fetching:', options);
+        let url = '';
+        let response;
+        const detailedMessage = (error, response, url) => `${error}: ${response?.status}, url: ${url.toString()}`;
         try {
             options.offerSelectorIds = options.offerSelectorIds.sort();
-            const url = new URL(settings.wcsURL);
+            url = new URL(settings.wcsURL);
             url.searchParams.set(
                 'offer_selector_ids',
                 options.offerSelectorIds.join(','),
@@ -76,7 +79,7 @@ export function Wcs({ settings }) {
                 url.searchParams.set('currency', options.currency);
             }
 
-            const response = await fetch(url.toString(), {
+            response = await fetch(url.toString(), {
                 credentials: 'omit',
             });
             if (response.ok) {
@@ -117,7 +120,6 @@ export function Wcs({ settings }) {
                 );
             } else {
                 message = ERROR_MESSAGE_BAD_REQUEST;
-                log.error(message, options);
             }
         } catch (e) {
             /* c8 ignore next 2 */
@@ -129,7 +131,7 @@ export function Wcs({ settings }) {
             // reject pending promises, their offers weren't provided by WCS
             log.debug('Missing:', { offerSelectorIds: [...promises.keys()] });
             promises.forEach((promise) => {
-                promise.reject(new Error(message));
+                promise.reject(new Error(detailedMessage(message, response, url)));
             });
         }
     }

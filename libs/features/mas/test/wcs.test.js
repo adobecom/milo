@@ -1,4 +1,3 @@
-import { ERROR_MESSAGE_OFFER_NOT_FOUND } from '../src/constants.js';
 import { Defaults } from '../src/defaults.js';
 import { Wcs } from '../src/wcs.js';
 
@@ -23,14 +22,10 @@ describe('resolveOfferSelectors', () => {
         );
         expect(results[0].status).to.equal('fulfilled');
         expect(results[1].status).to.equal('rejected');
-        expect(results[1].reason.message).to.equal(
-            ERROR_MESSAGE_OFFER_NOT_FOUND,
-        );
+        expect(results[1].reason.message).to.equal('Commerce offer not found: 404, url: https://www.adobe.com/web_commerce_artifact?offer_selector_ids=abm%2Cno-offer%2Cstock-abm%2Cvoid&country=undefined&locale=undefined_undefined&landscape=PUBLISHED&api_key=wcms-commerce-ims-ro-user-milo&language=MULT');
         expect(results[2].status).to.equal('fulfilled');
         expect(results[3].status).to.equal('rejected');
-        expect(results[3].reason.message).to.equal(
-            ERROR_MESSAGE_OFFER_NOT_FOUND,
-        );
+        expect(results[3].reason.message).to.equal('Commerce offer not found: 404, url: https://www.adobe.com/web_commerce_artifact?offer_selector_ids=abm%2Cno-offer%2Cstock-abm%2Cvoid&country=undefined&locale=undefined_undefined&landscape=PUBLISHED&api_key=wcms-commerce-ims-ro-user-milo&language=MULT');
     });
 
     it('groups WCS requests by promotion code', async () => {

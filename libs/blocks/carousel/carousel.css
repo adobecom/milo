@@ -397,7 +397,7 @@ html[dir="rtl"] .carousel-slides .section.carousel-slide {
   overflow: hidden;
 }
 
-.carousel .carousel-slide > div p > video {
+.carousel .carousel-slide > div p :is(.video-holder, video) {
   width: 100%;
   height: auto;
 }

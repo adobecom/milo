@@ -1,58 +1,63 @@
-const Defaults = {
+// Default configuration for logging system
+const config = {
     clientId: 'merch-at-scale',
     delimiter: '¶',
     ignoredProperties: ['analytics', 'literals'],
     serializableTypes: ['Array', 'Object'],
-    // Sample rate is set to 100 meaning each error will get logged in Splunk
-    sampleRate: 30,
-    tags: 'consumer=milo/commerce',
+    sampleRate: 1,
+    tags: 'acom',
+    isProdDomain: false,
 };
+// total lana limit in /utils/lana.js is 2000
+const PAGE_LIMIT = 1000;
 
 const seenPayloads = new Set();
 
-const isError = (value) =>
-    value instanceof Error ||
-    // WCS error response
-    // TODO: check if still actual
-    typeof value.originatingRequest === 'string';
+function isError(value) {
+    return (
+        value instanceof Error || typeof value?.originatingRequest === 'string'
+    );
+}
 
 function serializeValue(value) {
     if (value == null) return undefined;
     const type = typeof value;
+
     if (type === 'function') {
-        const { name } = value;
-        return name ? `${type} ${name}` : type;
+        return value.name ? `function ${value.name}` : 'function';
     }
-    if (type === 'object') {  
+
+    if (type === 'object') {
         if (value instanceof Error) return value.message;
+
         if (typeof value.originatingRequest === 'string') {
-          /* c8 ignore next 4 */
             const { message, originatingRequest, status } = value;
             return [message, status, originatingRequest]
-                .filter((v) => v)
+                .filter(Boolean)
                 .join(' ');
         }
-        const name =
+
+        const objectType =
             value[Symbol.toStringTag] ??
             Object.getPrototypeOf(value).constructor.name;
-        if (!Defaults.serializableTypes.includes(name)) return name;
+        if (!config.serializableTypes.includes(objectType)) return objectType;
     }
     return value;
 }
 
+// Custom serializer that respects ignored properties
 function serializeParam(key, value) {
-    if (Defaults.ignoredProperties.includes(key)) return undefined;
+    if (config.ignoredProperties.includes(key)) return undefined;
     return serializeValue(value);
 }
 
-/** @type {Commerce.Log.Appender} */
 const lanaAppender = {
     append(entry) {
-        const { delimiter, sampleRate, tags, clientId } = Defaults;
+        if (entry.level !== 'error') return;
         const { message, params } = entry;
         const errors = [];
-        let payload = message;
         const values = [];
+        let payload = message;
 
         params.forEach((param) => {
             if (param != null) {
@@ -61,26 +66,43 @@ const lanaAppender = {
         });
 
         if (errors.length) {
-            payload += ' ';
-            payload += errors.map(serializeValue).join(' ');
+            payload += ' ' + errors.map(serializeValue).join(' ');
         }
 
-        // TODO: Lana backend extracts referer from the header sent,
-        // sometimes it includes page path and query, sometimes - not
         const { pathname, search } = window.location;
-        payload += `${delimiter}page=`;
-        payload += pathname + search;
+        let page = `${config.delimiter}page=${pathname}${search}`;
+        if (page.length > PAGE_LIMIT) {
+          page = `${page.slice(0, PAGE_LIMIT)}<trunc>`;
+        }
+        payload += page;
 
         if (values.length) {
-            payload += `${delimiter}facts=`;
+            payload += `${config.delimiter}facts=`;
             payload += JSON.stringify(values, serializeParam);
         }
 
         if (!seenPayloads.has(payload)) {
             seenPayloads.add(payload);
-            window.lana?.log(payload, { sampleRate, tags, clientId });
+            window.lana?.log(payload, config);
         }
     },
 };
 
-export { Defaults, lanaAppender };
+// Allow dynamic config updates
+function updateConfig(newConfig) {
+  Object.assign(
+      config,
+      Object.fromEntries(
+          Object.entries(newConfig).filter(
+              ([key, value]) =>
+                  key in config &&
+                  value !== '' &&
+                  value !== null &&
+                  value !== undefined &&
+                  !Number.isNaN(value), // Correctly exclude NaN
+          ),
+      ),
+  );
+}
+
+export { config, lanaAppender, updateConfig };

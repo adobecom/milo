@@ -5,7 +5,6 @@ import {
 } from './external.js';
 import { Landscape } from './constants.js';
 
-/** @type {Commerce.Defaults} */
 export const Defaults = Object.freeze({
     checkoutClientId: 'adobe_com',
     checkoutWorkflow: CheckoutWorkflow.V3,

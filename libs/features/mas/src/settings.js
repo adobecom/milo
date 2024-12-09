@@ -133,4 +133,4 @@ function getSettings(config = {}) {
     };
 }
 
-export { HostEnv as MiloEnv, getLocaleSettings, getSettings };
+export { HostEnv, getLocaleSettings, getSettings };
