@@ -1,7 +1,7 @@
 import { html, render, useEffect } from '../../deps/htm-preact.js';
 import InputLocales from './input-locale/view.js';
 import InputUrls from './input-urls/view.js';
-import { currentStep, fetchLocaleDetails } from './store.js';
+import { currentStep, fetchLocaleDetails, loading } from './store.js';
 import StepTracker from './components/stepTracker.js';
 import InputActions from './input-actions/view.js';
 import Header from '../milostudio-header/milostudio-header.js';
@@ -36,6 +36,8 @@ function Create() {
         ${currentStep.value === 2 && html`<${InputLocales} />`}
         ${currentStep.value === 3 && html`<${InputActions} />`}
       </div>
+
+      ${loading.value && html`<div class="loader"><div /></div>`}
     </div>
   `;
 }
