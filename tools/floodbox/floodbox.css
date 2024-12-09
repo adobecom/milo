@@ -14,6 +14,20 @@ body {
   margin: 0 var(--spacing-1000);
 }
 
+h1 {
+  margin-block-end: 0;
+}
+
+h3 {
+  margin-block-start: 0;
+  color: var(--s2-gray-700);
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+}
+
 input[type="text"],
 textarea,
 select {
@@ -72,6 +86,20 @@ select {
   transform: translateY(50%);
 }
 
+.input-row {
+  align-items: center;
+  display: flex;
+  font-family: var(--body-font-family);
+  gap: var(--spacing-200);
+  margin: var(--spacing-200) 0;
+}
+
+.checkbox-container {
+  display: flex;
+  gap: var(--spacing-200);
+  margin-top: var(--spacing-100);
+}
+
 .button-row {
   align-items: end;
   display: flex;
@@ -104,11 +132,17 @@ select {
   background: rgb(181 230 252);
 }
 
-.detail-card-errors {
+.detail-card-promote-errors,
+.detail-card-preview-errors,
+.url-list.url-list-promote-errors,
+.url-list.url-list-preview-errors {
   background: rgb(255 214 209);
 }
 
-.detail-card-ignored {
+.detail-card-promote-ignored,
+.detail-card-preview-ignored,
+.url-list.url-list-promote-ignored,
+.url-list.url-list-preview-ignored  {
   background: rgb(255 236 209);
 }
 
@@ -133,6 +167,18 @@ select {
 
 .detail-card p {
   font-size: var(--s2-font-size-600);
+}
+
+.detail-cards.crawl-cards {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.detail-cards.promote-cards {
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+}
+
+.detail-cards.preview-cards {
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
 }
 
 .toggle-list-icon, .icon-button {
@@ -192,10 +238,6 @@ select {
   display: block;
 }
 
-.url-list-remaining {
-  background: rgb(202 248 250);
-}
-
 .url-list-errors {
   background: rgb(255 214 209);
 }
@@ -245,13 +287,12 @@ select {
 
 .tab-nav {
   display: flex;
-  gap: var(--spacing-200);
   list-style-type: none;
   padding: 5px;
 }
 
 .tab-nav li button{
-  opacity: 0.5;
+  opacity: 0.6;
 }
 
 .tab-nav li.active button{
@@ -261,6 +302,12 @@ select {
 .tab-nav li button[disabled]::before {
   background: rgb(0 0 0 / 5%);
   border: 1px solid rgb(0 0 0 / 50%);
+}
+
+.tabs {
+  background-color: var(--s2-gray-50);
+  padding: 20px;
+  border: 1px solid var(--s2-gray-200);
 }
 
 .tab-step {
@@ -274,19 +321,28 @@ select {
 .ribbon {
   --r: .8em;
 
-  padding-inline: calc(var(--r) + .3em);
+  padding-inline: calc(var(--r) + 1.5em);
   line-height: 1.8;
   clip-path: polygon(0 0,90% 0,100% 50%,90% 100%,0 100%, var(--r) 50%);
-  background: #2699dc;
-  width: 180px;
-  font-size: 24px;
+  background: var(--s2-blue-800);
+  font-size: var(--s2-font-size-400);
   font-weight: bold;
   color: #fff;
-  border: #fff;
+  border: none;
 }
 
-.tabs {
-  background-color: mintcream;
-  padding: 20px;
-  border: 1px solid mediumseagreen;
+.ribbon:disabled {
+  color: var(--s2-gray-800);
+}
+
+.info-box {
+  background: var(--s2-gray-75);
+  border-radius: var(--s2-radius-100);
+  padding: var(--spacing-100) var(--spacing-400);
+  margin-top: var(--spacing-400);
+}
+
+.info-box p {
+  margin-top: var(--spacing-50);
+  margin-bottom: var(--spacing-50);
 }
