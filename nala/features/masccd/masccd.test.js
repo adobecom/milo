@@ -146,7 +146,7 @@ test.describe('CCD Merchcard feature test suite', () => {
       expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, 'suggested'), CCD.suggestedCssProp.icon)).toBeTruthy();
       expect(await webUtil.verifyCSS(await CCD.getCardEyebrow(data.id, 'suggested'), CCD.suggestedCssProp.eyebrow.dark)).toBeTruthy();
       expect(await webUtil.verifyCSS(await CCD.getCardTitle(data.id, 'suggested'), CCD.suggestedCssProp.title.dark)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, "suggested"), CCD.suggestedCssProp.legalLink.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, 'suggested'), CCD.suggestedCssProp.legalLink.dark)).toBeTruthy();
       expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'suggested'), CCD.suggestedCssProp.description.dark)).toBeTruthy();
       expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, 'suggested'), CCD.suggestedCssProp.price.dark)).toBeTruthy();
       expect(await webUtil.verifyCSS(await CCD.getCardPriceStrikethrough(data.id, 'suggested'), CCD.suggestedCssProp.strikethroughPrice.dark)).toBeTruthy();
@@ -339,7 +339,7 @@ test.describe('CCD Merchcard feature test suite', () => {
       expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, 'suggested'), CCD.suggestedCssProp.icon)).toBeTruthy();
       expect(await webUtil.verifyCSS(await CCD.getCardEyebrow(data.id, 'suggested'), CCD.suggestedCssProp.eyebrow.dark)).toBeTruthy();
       expect(await webUtil.verifyCSS(await CCD.getCardTitle(data.id, 'suggested'), CCD.suggestedCssProp.title.dark)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, "suggested"), CCD.suggestedCssProp.legalLink.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, 'suggested'), CCD.suggestedCssProp.legalLink.dark)).toBeTruthy();
       expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'suggested'), CCD.suggestedCssProp.description.dark)).toBeTruthy();
       expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, 'suggested'), CCD.suggestedCssProp.price.dark)).toBeTruthy();
       expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'suggested'), CCD.suggestedCssProp.cta.dark)).toBeTruthy();
@@ -467,7 +467,7 @@ test.describe('CCD Merchcard feature test suite', () => {
       expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, 'suggested'), CCD.suggestedCssProp.icon)).toBeTruthy();
       expect(await webUtil.verifyCSS(await CCD.getCardEyebrow(data.id, 'suggested'), CCD.suggestedCssProp.eyebrow.dark)).toBeTruthy();
       expect(await webUtil.verifyCSS(await CCD.getCardTitle(data.id, 'suggested'), CCD.suggestedCssProp.title.dark)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, "suggested"), CCD.suggestedCssProp.legalLink.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, 'suggested'), CCD.suggestedCssProp.legalLink.dark)).toBeTruthy();
       expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'suggested'), CCD.suggestedCssProp.description.dark)).toBeTruthy();
       expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, 'suggested'), CCD.suggestedCssProp.price.dark)).toBeTruthy();
       expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'suggested'), CCD.suggestedCssProp.cta.dark)).toBeTruthy();

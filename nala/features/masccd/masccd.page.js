@@ -56,7 +56,7 @@ export default class MasCCDPage {
           'line-height': '20px',
         },
         dark: {
-          'color': 'rgb(239, 239, 239)', 
+          color: 'rgb(239, 239, 239)',
           'font-size': '16px',
           'font-weight': '700',
           'line-height': '20px',
@@ -68,9 +68,9 @@ export default class MasCCDPage {
           'font-size': '11px',
           'font-weight': '700',
           'line-height': '14px',
-       },
+        },
         dark: {
-          'color': 'rgb(162, 162, 162)',
+          color: 'rgb(162, 162, 162)',
           'font-size': '11px',
           'font-weight': '700',
           'line-height': '14px',
@@ -112,7 +112,7 @@ export default class MasCCDPage {
           'line-height': '21px',
         },
         dark: {
-          'color': 'rgb(248, 248, 248)', 
+          color: 'rgb(248, 248, 248)',
           'font-size': '14px',
           'font-weight': '400',
           'line-height': '21px',
@@ -132,11 +132,11 @@ export default class MasCCDPage {
           'font-weight': '400',
           'text-decoration-line': 'line-through',
           'text-decoration-color': 'rgb(176, 176, 176)',
-        },        
+        },
       },
       cta: {
         light: {
-          'color': 'rgb(34, 34, 34)',
+          color: 'rgb(34, 34, 34)',
           'font-size': '14px',
           'font-weight': '700',
         },
@@ -203,7 +203,7 @@ export default class MasCCDPage {
           'line-height': '18px',
         },
         dark: {
-          'color': 'rgb(235, 235, 235)',
+          color: 'rgb(235, 235, 235)',
           'font-size': '12px',
           'font-weight': '400',
           'line-height': '18px',
