@@ -85,7 +85,7 @@ export async function decorateSectionAnalytics(section, idx, config) {
   const id = Number.isInteger(idx) ? `s${idx + 1}` : idx;
   document.querySelector('main')?.setAttribute('daa-im', 'true');
   section.setAttribute('daa-lh', id);
-  section.querySelectorAll('[data-block] [data-block]').forEach((block) => {
+  section.querySelectorAll('[data-block]:has([data-block])').forEach((block) => {
     block.removeAttribute('data-block');
   });
   const mepMartech = config?.mep?.martech || '';
@@ -95,7 +95,15 @@ export async function decorateSectionAnalytics(section, idx, config) {
       block.setAttribute('daa-lh', `${lhAtt}${mepMartech}`);
     } else {
       const blockName = block.classList[0] || '';
-      block.setAttribute('daa-lh', `b${blockIdx + 1}|${blockName.slice(0, 15)}${mepMartech}`);
+      let closest = block;
+      let nestedLH = '';
+      while (closest) {
+        closest = closest.parentNode?.closest('[data-nested-lh]');
+        if (closest) {
+          nestedLH = `${closest.getAttribute('data-nested-lh')}--${nestedLH}`;
+        }
+      }
+      block.setAttribute('daa-lh', `b${blockIdx + 1}|${nestedLH}${blockName.slice(0, 15)}${mepMartech}`);
       decorateDefaultLinkAnalytics(block, config);
     }
     block.removeAttribute('data-block');

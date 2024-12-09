@@ -39,6 +39,10 @@
   padding-left: 15px;
 }
 
+.mep-popup, .mep-badge {
+  direction: ltr;
+}
+
 @media screen and (max-width: 599px) {
   .mep-hidden .mep-badge .mep-open {
     margin-right: 0;

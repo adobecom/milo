@@ -40,6 +40,9 @@ const DEFAULT_VALUES_CB = {
   useHtml: false,
 };
 
+// Hold the selected preset data
+let selectedPreset = {};
+
 const fetchExcelJson = async (url) => {
   const resp = await fetch(url);
   if (resp.ok) {
@@ -358,9 +361,8 @@ if (useDarkTheme) {
 presetSelector.addEventListener('change', () => {
   // eslint-disable-next-line no-undef
   const { value } = presetSelector;
-  const selectedPreset = presetsData.find((item) => item.id === value) || {};
+  selectedPreset = presetsData.find((item) => item.id === value) || {};
   BODY.classList = '';
-  resetAdvancedOptions();
 
   if (value === 'advanced') {
     BODY.classList.add('advanced');
@@ -372,6 +374,7 @@ presetSelector.addEventListener('change', () => {
     BODY.classList.add('preset');
   }
 
+  resetAdvancedOptions();
   const ls = localStorage.getItem(LS_KEY);
   const config = ls ? JSON.parse(ls) : {};
   config.presetSelector = selectedPreset.id || 'default';
@@ -379,8 +382,11 @@ presetSelector.addEventListener('change', () => {
   config.owner = selectedPreset.owner || '';
   config.repo = selectedPreset.repo || '';
   config.contentType = selectedPreset.contentType;
+  config.useHtml = selectedPreset.useHtml === 'true';
+
   setConfig(config);
   window.localStorage.setItem(LS_KEY, JSON.stringify(getConfig()));
+
   loadFromLS();
   checkCaasEnv();
 });
