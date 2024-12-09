@@ -36,7 +36,7 @@ export class MiniCompareChart extends VariantLayout {
         'top-section',
     );
   
-    const slots = [
+    let slots = [
         'heading-m',
         'body-m',
         'heading-m-price',
@@ -46,6 +46,9 @@ export class MiniCompareChart extends VariantLayout {
         'promo-text',
         'callout-content',
     ];
+    if (this.card.classList.contains('feature-list-item')) {
+        slots.push('footer-rows');
+    }
   
     slots.forEach((slot) =>
         this.updateCardElementMinHeight(
@@ -70,7 +73,7 @@ export class MiniCompareChart extends VariantLayout {
   }
   adjustMiniCompareFooterRows () {
     if (this.card.getBoundingClientRect().width === 0) return;
-    const footerRows = this.card.querySelector('[slot="footer-rows"]');
+    const footerRows = this.card.querySelector('[slot="footer-rows"] ul');
     [...footerRows?.children].forEach((el, index) => {
         const height = Math.max(
             FOOTER_ROW_MIN_HEIGHT,
@@ -199,6 +202,10 @@ export class MiniCompareChart extends VariantLayout {
         min-height: var(
             --consonant-merch-card-mini-compare-chart-callout-content-height
         );
+    }
+    :host([variant='mini-compare-chart']) slot[name='footer-rows'] {
+        min-height: var(--consonant-merch-card-mini-compare-chart-footer-rows-height);
+        justify-content: flex-start;
     }
   `;
 };
