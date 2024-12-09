@@ -372,6 +372,9 @@ class Gnav {
       </div>`;
 
     this.block.append(this.elements.curtain, this.elements.aside, this.elements.topnavWrapper);
+    // TODO: Remove with mobile redesign code
+    const firstLocalNavItem = this.elements.navWrapper.querySelector('.feds-nav .feds-navItem:not(.feds-navItem--section) a');
+    if (firstLocalNavItem) [firstLocalNavItem.textContent] = firstLocalNavItem.textContent.split('|');
   };
 
   addChangeEventListeners = () => {
