@@ -22,6 +22,7 @@ import {
   validateUrls,
   findFragments,
   validateFragments,
+  getInitialName,
 } from './index.js';
 import { getUrls } from '../../locui/loc/index.js';
 import { URL_SEPARATOR_PATTERN } from '../utils/constant.js';
@@ -71,6 +72,9 @@ export default function InputUrls() {
   function handleTypeChange(_type) {
     setType(_type);
     setErrors({ ...errors, editBehavior: '' });
+    if (!projectCreated.value) {
+      setName(getInitialName(_type));
+    }
   }
 
   function handleNameChange(ev) {
@@ -160,7 +164,7 @@ export default function InputUrls() {
 
   useEffect(() => {
     setType(project.value?.type || 'translation');
-    setName(project.value?.name || '');
+    setName(project.value?.name || getInitialName('translation'));
     setHtmlFlow(project.value?.htmlFlow || false);
     setEditBehavior(project.value?.editBehavior || '');
     setUrlsStr(project.value?.urls?.join('\n') || '');

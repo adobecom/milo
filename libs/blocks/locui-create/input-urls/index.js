@@ -1,6 +1,7 @@
 import { findDeepFragments } from '../../locui/actions/index.js';
 import { validateUrlsFormat } from '../../locui/loc/index.js';
 import { origin } from '../../locui/utils/franklin.js';
+import { LOCALIZATION_TYPES } from '../utils/constant.js';
 
 export function validateProjectName(name) {
   if (name && !/^[a-zA-Z0-9-]+$/.test(name)) {
@@ -83,4 +84,13 @@ export async function findFragments(urls) {
   }, {});
   const foundFragments = Object.values(fragmentsByPathname);
   return validateUrlsFormat(foundFragments, true);
+}
+export function getInitialName(type) {
+  const preffix = type === LOCALIZATION_TYPES.rollout ? 'rollout' : 'translate';
+  let date = new Date().toISOString();
+  if (date.indexOf('.') > -1) {
+    date = date.slice(0, date.indexOf('.'));
+  }
+  const formattedDate = date.replace(/[-:]/g, '').replace(/T/g, '-');
+  return `${preffix}-${formattedDate}`;
 }

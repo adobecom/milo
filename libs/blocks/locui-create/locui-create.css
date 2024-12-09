@@ -376,12 +376,14 @@ body {
   align-items: center;
   justify-content: center;
   gap: 10px;
+  width: 80%;
 }
 
 .modal-header strong {
   font-size: 16px;
   color: #000;
   text-align: left;
+  flex: 0 0 90%;
 }
 
 .check-mark-logo {
@@ -677,16 +679,18 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 1rem;
 }
 
-.locui-project-created-modal a {
+.locui-project-created-modal .create-project-view a {
   width: 70px;
   margin-top: 20px;
 }
 
-.locui-project-created-modal a:hover {
+.locui-project-created-modal .create-project-view a:hover {
   text-decoration: none;
 }
+
 
 .locale-list-item {
   border: 2px solid #8f8e8e;
