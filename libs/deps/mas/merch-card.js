@@ -1346,11 +1346,11 @@ merch-card[variant='twp'] merch-offer-select {
             </div>
             <slot></slot>`}};c(T,"variantStyle",Jt`
         :host([variant='ccd-suggested']) {
-            --consonant-merch-card-background-color: #f5f5f5;
-            --consonant-merch-card-body-xs-color: #4b4b4b;
-            --consonant-merch-card-border-color: #e1e1e1;
-            --consonant-merch-card-detail-s-color: #6d6d6d;
-            --consonant-merch-card-heading-xs-color: var(--spectrum-gray-800);
+            --consonant-merch-card-background-color:rgb(245, 245, 245);
+            --consonant-merch-card-body-xs-color:rgb(75, 75, 75);
+            --consonant-merch-card-border-color:rgb(225, 225, 225);
+            --consonant-merch-card-detail-s-color:rgb(110, 110, 110);
+            --consonant-merch-card-heading-xs-color: rgb(44, 44, 44);
             --merch-color-inline-price-strikethrough: var(--spectrum-gray-600);
             --mod-img-height: 38px;
 
@@ -1484,9 +1484,9 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
             <slot name="image"></slot>
             <slot></slot>`}};c(z,"variantStyle",re`
         :host([variant='ccd-slice']) {
-            --consonant-merch-card-background-color: var(--spectrum-gray-100);
+            --consonant-merch-card-background-color: rgb(248, 248, 248);
             --consonant-merch-card-border-color:rgb(230, 230, 230);
-            --consonant-merch-card-body-s-color: var(--spectrum-gray-800);
+            --consonant-merch-card-body-s-color: rgb(34, 34, 34);
             --mod-img-height: 29px;
             min-width: 290px;
             max-width: 322px;
