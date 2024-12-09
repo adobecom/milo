@@ -535,7 +535,6 @@ body {
 /* Input Actions Screen */
 
 .locui-table {
-  padding-top: 10px;
   flex: 1;
   overflow-y: auto;
   box-sizing: border-box;
@@ -543,16 +542,30 @@ body {
   font-size: 16px;
 }
 
+.locui-project-type {
+  font-weight: 700;
+  font-size: 1.25rem;
+  font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
+}
+
 .table-wrapper {
-  max-height: 63vh;
+  max-height: 80%;
   overflow-y: auto;
   margin: 10px 0;
+  border: 1px solid #ccc;
+}
+
+.table-wrapper.table-rollout {
+  max-width: 70%;
+}
+
+.table-wrapper.table-translate {
+  margin: 0 7rem;
 }
 
 .locui-table table {
   width: 100%;
   border-collapse: collapse;
-  border: 1px solid #ccc;
 }
 
 .locui-table th {
@@ -622,16 +635,21 @@ body {
 }
 
 .locale-list-item {
-  border: 1px solid #8f8e8e;
-  border-radius: 10px;
+  border: 2px solid #8f8e8e;
+  border-radius: 20px;
   background-color: white;
   color: black;
-  padding: 3px 7px;
-  font-size: 16px;
-  cursor: pointer;
-  margin: 5px 10px 5px 0;
-  min-width: 60px;
-  font-size: 16px;
+  font-size: 0.8rem;
+  text-align: center;
+  min-width: 3.75rem;
+}
+
+.locale-list-container {
+  display: flex;
+  flex-flow: wrap;
+  flex-direction: row;
+  row-gap: 1rem;
+  column-gap: 1rem;
 }
 
 .region-button,
