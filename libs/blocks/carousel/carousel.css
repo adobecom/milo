@@ -373,47 +373,38 @@ html[dir="rtl"] .carousel-slides .section.carousel-slide {
   width: unset;
 }
 
-.carousel.video-fill .carousel-slide > div p > video,
-.carousel .carousel-slide.video-fill > div p > video {
-  width: 100%;
-  height: auto;
-}
-
 .carousel:is(.rounded-corners, .m-rounded-corners) .carousel-slide,
-.carousel:is(.rounded-corners, .m-rounded-corners) .carousel-slide > div :is(p > picture img, p > video, p > .milo-video) {
+.carousel:is(.rounded-corners, .m-rounded-corners) .carousel-slide > div :is(p > picture img, p > video, p > .milo-video, p > .video-holder video) {
   border-radius: var(--m-rounded-corners);
 }
 
 .carousel[class*='rounded-corners'] .carousel-slide,
-.carousel[class*='rounded-corners'] .carousel-slide > div :is(p > video, p > .milo-video) {
+.carousel[class*='rounded-corners'] .carousel-slide > div :is(p > video, p > .milo-video, p > .video-holder video) {
   overflow: hidden;
 }
 
 .carousel.s-rounded-corners .carousel-slide,
-.carousel.s-rounded-corners .carousel-slide > div :is(p > picture img, p > video, p > .milo-video) {
+.carousel.s-rounded-corners .carousel-slide > div :is(p > picture img, p > video, p > .milo-video, p > .video-holder video) {
   border-radius: var(--s-rounded-corners);
 }
 
 .carousel.l-rounded-corners .carousel-slide,
-.carousel.l-rounded-corners .carousel-slide > div :is(p > picture img, p > video, p > .milo-video) {
+.carousel.l-rounded-corners .carousel-slide > div :is(p > picture img, p > video, p > .milo-video, p > .video-holder video) {
   border-radius: var(--l-rounded-corners);
 }
 
 .carousel.full-rounded-corners .carousel-slide,
-.carousel.full-rounded-corners .carousel-slide > div :is(p > picture img, p > video, p > .milo-video) {
+.carousel.full-rounded-corners .carousel-slide > div :is(p > picture img, p > video, p > .milo-video, p > .video-holder video) {
   border-radius: var(--full-rounded-corners);
 }
 
-.carousel[class*='rounded-corners'] .carousel-slide {
-  overflow: hidden;
-}
-
-.carousel .carousel-slide > div p :is(.video-holder, video) {
+.carousel.video-fill .carousel-slide > div p :is(.video-holder, video),
+.carousel .carousel-slide.video-fill > div p :is(.video-holder, video) {
   width: 100%;
   height: auto;
 }
 
-.carousel[class*='rounded-corners'] .carousel-slide > div :is(p):has(> video, > picture, > .milo-video, > .modal-img-link) {
+.carousel[class*='rounded-corners'] .carousel-slide > div :is(p):has(> video, > picture, > .milo-video, > .modal-img-link, > .video-holder) {
   margin-top: 0;
   margin-bottom: 0;
   line-height: 0;
