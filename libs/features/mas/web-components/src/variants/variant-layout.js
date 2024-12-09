@@ -110,9 +110,11 @@ export class VariantLayout {
             const img = new Image();
             img.src = this.card.backgroundImage;
             img.onload = () => {
-                if (img.width > 4) {
-                  /* c8 ignore next 2 */
+                if (img.width > 8) {
+                  /* c8 ignore next 4 */
                     this.card.classList.add('wide-strip');
+                } else if (img.width === 8) {
+                    this.card.classList.add('thin-strip');
                 }
         };
         return `

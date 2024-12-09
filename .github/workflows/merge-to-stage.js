@@ -20,19 +20,20 @@ const LABELS = {
   zeroImpact: 'zero-impact',
 };
 const TEAM_MENTIONS = [
-  '@adobecom/miq-sot',
   '@adobecom/bacom-sot',
-  '@adobecom/homepage-sot',
   '@adobecom/creative-cloud-sot',
   '@adobecom/document-cloud-sot',
+  '@adobecom/express-sot',
+  '@adobecom/homepage-sot',
+  '@adobecom/miq-sot',
 ];
 const SLACK = {
   merge: ({ html_url, number, title, prefix = '' }) => `:merged: PR merged to stage: ${prefix} <${html_url}|${number}: ${title}>.`,
   openedSyncPr: ({ html_url, number }) => `:fast_forward: Created <${html_url}|Stage to Main PR ${number}>`,
 };
 
-let github; 
-let owner; 
+let github;
+let owner;
 let repo;
 
 let body = `
@@ -44,8 +45,8 @@ let body = `
 **Acrobat:** https://www.stage.adobe.com/acrobat/online/sign-pdf.html
 
 **Milo:**
-- Before: https://main--milo--adobecom.hlx.live/?martech=off
-- After: https://stage--milo--adobecom.hlx.live/?martech=off
+- Before: https://main--milo--adobecom.aem.live/?martech=off
+- After: https://stage--milo--adobecom.aem.live/?martech=off
 `;
 
 const isHighPrio = (labels) => labels.includes(LABELS.highPriority);
@@ -230,7 +231,7 @@ const main = async (params) => {
   github = params.github;
   owner = params.context.repo.owner;
   repo = params.context.repo.repo;
-  if (isWithinRCP(process.env.STAGE_RCP_OFFSET_DAYS || 2)) return console.log('Stopped, within RCP period.');
+  if (isWithinRCP({ offset: process.env.STAGE_RCP_OFFSET_DAYS || 2, excludeShortRCP: true })) return console.log('Stopped, within RCP period.');
 
   try {
     const stageToMainPR = await getStageToMainPR();

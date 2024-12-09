@@ -15,7 +15,7 @@ function processFragment(fragmentData) {
     );
 }
 
-function processMnemonics(fragment, merchCard) {
+function processMnemonics(fragment, merchCard, aemFragmentMapping) {
     const mnemonics = fragment.mnemonicIcon?.map((icon, index) => ({
         icon,
         alt: fragment.mnemonicAlt[index] ?? '',
@@ -35,7 +35,7 @@ function processMnemonics(fragment, merchCard) {
             src,
             alt,
             href,
-            size: 'l',
+            size: aemFragmentMapping.mnemonics?.size ?? 'l',
         });
         merchCard.append(merchIcon);
     });
@@ -244,7 +244,7 @@ export async function hydrate(fragmentData, merchCard) {
     const { aemFragmentMapping } = merchCard.variantLayout;
     if (!aemFragmentMapping) return;
 
-    const mnemonics = processMnemonics(fragment, merchCard);
+    const mnemonics = processMnemonics(fragment, merchCard, aemFragmentMapping);
     fragmentData.computed = { mnemonics };
 
     processBadge(fragment, merchCard);

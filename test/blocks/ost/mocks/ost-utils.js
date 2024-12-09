@@ -106,7 +106,8 @@ function unmockOstDeps() {
 }
 
 const customFetch = window.fetch;
-
+const PAGE_URL = new URL(window.location.href);
+const SLD = PAGE_URL.hostname.includes('.aem.') ? 'aem' : 'hlx';
 export {
   createTag,
   getConfig,
@@ -120,4 +121,5 @@ export {
   unmockOstDeps,
   mockRes,
   customFetch,
+  SLD,
 };

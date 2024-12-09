@@ -50,8 +50,8 @@ Resolves: NO TICKET - AUTOMATED CREATED PR.
 - After: https://main--blog--adobecom.hlx.page/?martech=off&milolibs=${branch}--milo--adobecom
 
 **Milo:**
-- Before: https://main--milo--adobecom.hlx.page/ch_de/drafts/ramuntea/gnav-refactor?martech=off
-- After: https://${branch}--milo--adobecom.hlx.page/ch_de/drafts/ramuntea/gnav-refactor?martech=off`;
+- Before: https://main--milo--adobecom.aem.page/ch_de/drafts/ramuntea/gnav-refactor?martech=off
+- After: https://${branch}--milo--adobecom.aem.page/ch_de/drafts/ramuntea/gnav-refactor?martech=off`;
 
 const fetchScript = (path) =>
   new Promise((resolve, reject) => {

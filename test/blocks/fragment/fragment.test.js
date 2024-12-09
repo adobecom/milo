@@ -16,6 +16,7 @@ const config = {
   contentRoot: `${window.location.origin}${getLocale(locales).prefix}`,
   decorateArea,
   locales,
+  placeholders: { placeholdercheck: 'hello world' },
   mep: {
     commands: [
       {
@@ -53,6 +54,9 @@ describe('Fragments', () => {
     await getFragment(a);
     const h1 = document.querySelector('h1');
     expect(h1).to.exist;
+    const p = document.querySelector('#placeholdercheck');
+    expect(p).to.exist;
+    expect(p.innerHTML).to.equal('hello world');
   });
 
   it('Loads a fragment with cache control', async () => {

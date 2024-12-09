@@ -4,7 +4,7 @@ Milo is a shared set of features and services to power Franklin-based websites o
 [![codecov](https://codecov.io/gh/adobecom/milo/branch/main/graph/badge.svg?token=a7ZTCbitBt)](https://codecov.io/gh/adobecom/milo)
 
 ## Environments
-[Preview](https://main--milo--adobecom.hlx.page) | [Live](https://milo.adobe.com)
+[Preview](https://main--milo--adobecom.aem.page) | [Live](https://milo.adobe.com)
 
 ## Getting started
 
@@ -51,11 +51,11 @@ You can then test any of the following:
 ```
 http://localhost:3000/?milolibs=local (local code, stage content)
 
-https://main--project--owner.hlx.page/?milolibs=local (prod code, stage content)
+https://main--project--owner.aem.page/?milolibs=local (prod code, stage content)
 
-https://main--project--owner.hlx.live/?milolibs=local (prod code, prod content)
+https://main--project--owner.aem.live/?milolibs=local (prod code, prod content)
 
-https://feat-branch--project--owner.hlx.page/?milolibs=local (feature code, stage content)
+https://feat-branch--project--owner.aem.page/?milolibs=local (feature code, stage content)
 ```
 
 ## Testing
