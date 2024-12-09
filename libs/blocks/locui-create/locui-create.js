@@ -25,7 +25,7 @@ function Create() {
     <div class="locui-create-container">
       <div class="header">
         <${Header} />
-      </div> 
+      </div>
       <div class="side-nav">
         <${Sidenav} />
       </div>
@@ -37,7 +37,10 @@ function Create() {
         ${currentStep.value === 3 && html`<${InputActions} />`}
       </div>
 
-      ${loading.value && html`<div class="loader"><div /></div>`}
+      ${loading.value
+      && html`<div class="fullscreen-loader">
+        <div class="locui-create-loader" />
+      </div>`}
     </div>
   `;
 }

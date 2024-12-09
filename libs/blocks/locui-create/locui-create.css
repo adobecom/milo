@@ -352,7 +352,7 @@ body {
   z-index: 10;
 }
 
-.loader {
+.fullscreen-loader {
   position: absolute;
   width: 100%;
   height: 100%;
@@ -362,12 +362,6 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.loader > div {
-  width: 64px;
-  height: 64px;
-  background: url('./img/circular-spinner.svg') center no-repeat;
 }
 
 /* Header */
