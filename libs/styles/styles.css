@@ -799,6 +799,10 @@ a:hover {
   color: var(--link-hover-color);
 }
 
+.dark a:hover {
+  color: var(--link-hover-color-dark);
+}
+
 a:has(> sub:only-child) { text-decoration: unset; }
 a > sub:only-child { text-decoration: underline; }
 
