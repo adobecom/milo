@@ -1,3 +1,4 @@
+/* eslint import/no-relative-packages: 0 */
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { stub, useFakeTimers, restore, spy } from 'sinon';
@@ -57,7 +58,8 @@ describe('Bootstrapper', async () => {
   });
 
   it('Renders the footer block', async () => {
-    await loadBlock(miloLibs, blockConfig.footer);
+    const { default: init } = await import('../../libs/blocks/global-footer/global-footer.js');
+    await loadBlock(init, blockConfig.footer);
     const clock = useFakeTimers({
       toFake: ['setTimeout'],
       shouldAdvanceTime: true,
@@ -68,21 +70,24 @@ describe('Bootstrapper', async () => {
   });
 
   it('Renders the header block', async () => {
-    await loadBlock(miloLibs, blockConfig.header);
+    const { default: init } = await import('../../libs/blocks/global-navigation/global-navigation.js');
+    await loadBlock(init, blockConfig.header);
     const el = document.getElementsByTagName('header');
     expect(el).to.exist;
   });
 
   it('Renders the header with full width', async () => {
     blockConfig.header.layout = 'fullWidth';
-    await loadBlock(miloLibs, blockConfig.header);
+    const { default: init } = await import('../../libs/blocks/global-navigation/global-navigation.js');
+    await loadBlock(init, blockConfig.header);
     const el = document.querySelector('header');
     expect(el.classList.contains('feds--full-width')).to.be.true;
   });
 
   it('Renders the header with no border bottom', async () => {
     blockConfig.header.noBorder = true;
-    await loadBlock(miloLibs, blockConfig.header);
+    const { default: init } = await import('../../libs/blocks/global-navigation/global-navigation.js');
+    await loadBlock(init, blockConfig.header);
     const el = document.querySelector('header');
     expect(el.classList.contains('feds--no-border')).to.be.true;
   });
@@ -91,7 +96,8 @@ describe('Bootstrapper', async () => {
     blockConfig.header.jarvis = { id: '1.1' };
     stub(window.AdobeMessagingExperienceClient, 'isAdobeMessagingClientInitialized').returns(true);
     stub(window.AdobeMessagingExperienceClient, 'getMessagingExperienceState').returns({ windowState: 'hidden' });
-    await loadBlock(miloLibs, blockConfig.header);
+    const { default: init } = await import('../../libs/blocks/global-navigation/global-navigation.js');
+    await loadBlock(init, blockConfig.header);
     const el = document.querySelector('.feds-cta[href*="#open-jarvis-chat"]');
     const event = new CustomEvent('click', { bubbles: true });
     el.dispatchEvent(event);
@@ -101,7 +107,8 @@ describe('Bootstrapper', async () => {
   it('should not call openMessagingWindow when chat dialog is already open', async () => {
     stub(window.AdobeMessagingExperienceClient, 'isAdobeMessagingClientInitialized').returns(true);
     stub(window.AdobeMessagingExperienceClient, 'getMessagingExperienceState').returns({ windowState: 'docked' });
-    await loadBlock(miloLibs, blockConfig.header);
+    const { default: init } = await import('../../libs/blocks/global-navigation/global-navigation.js');
+    await loadBlock(init, blockConfig.header);
     const el = document.querySelector('.feds-cta[href*="#open-jarvis-chat"]');
     const event = new CustomEvent('click', { bubbles: true });
     el.dispatchEvent(event);
