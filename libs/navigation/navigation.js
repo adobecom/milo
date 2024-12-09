@@ -65,7 +65,7 @@ export default async function loadBlock(configs, customLib) {
     env = 'prod',
     locale = '',
     theme,
-    allowedOrigins,
+    allowedOrigins = [],
     stageDomainsMap = {},
   } = configs || {};
   if (!header && !footer) {
