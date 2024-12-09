@@ -78,7 +78,7 @@ function parseMepConfig() {
   const activities = experiments.map((experiment) => {
     const {
       name, variantNames, event, disabled, manifest, source, selectedVariantName,
-      manifestType, manifestOverrideName, geo,
+      manifestType, manifestOverrideName,
     } = experiment;
     let manifestUrl = manifest;
     try { manifestUrl = new URL(manifest); } catch (e) { /* do nothing */ }
@@ -92,7 +92,6 @@ function parseMepConfig() {
       manifestType,
       manifestOverrideName,
       source,
-      geo,
       eventStart: event?.startUtc,
       eventEnd: event?.endUtc,
       pathname: manifestUrl.pathname,
@@ -349,7 +348,7 @@ export async function saveToMmm() {
   if (data.page.url.includes('/drafts/')) return false;
   data.activities = data.activities.filter((activity) => {
     const { url, source } = activity;
-    return (!!(source?.length && !url.includes('/drafts/')));
+    return (!!((source?.length > 2 || source?.[0] !== 'mep param') && !url.includes('/drafts/')));
   });
   data.activities = data.activities.map((activity) => {
     activity.variantNames = activity.variantNames?.join('||') || '';

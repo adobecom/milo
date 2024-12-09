@@ -1114,7 +1114,7 @@ export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => 
     mepParam.split('---').forEach((manifestPair) => {
       const manifestPath = manifestPair.trim().toLowerCase().split('--')[0];
       if (!persManifestPaths.includes(manifestPath)) {
-        persManifests.push({ manifestPath });
+        persManifests.push({ manifestPath, source: ['mep param'] });
       }
     });
   }
