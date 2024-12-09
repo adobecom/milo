@@ -112,7 +112,7 @@ export default async function loadBlock(configs, customLib) {
     theme,
     ...paramConfigs,
     prodDomains,
-    allowedOrigins,
+    allowedOrigins: [...allowedOrigins, `https://main--federal--adobecom.aem.${env === 'prod' ? 'live' : 'page'}`],
     standaloneGnav: true,
     stageDomainsMap: getStageDomainsMap(stageDomainsMap),
   };
