@@ -588,7 +588,7 @@ body {
   flex: 1;
   overflow-y: auto;
   box-sizing: border-box;
-  margin: 0 30px;
+  margin: 0 30px 10px;
   font-size: 16px;
 }
 
@@ -599,7 +599,7 @@ body {
 }
 
 .table-wrapper {
-  max-height: 70%;
+  max-height: 80%;
   overflow-y: auto;
   margin: 10px 0;
   border: 1px solid #ccc;
