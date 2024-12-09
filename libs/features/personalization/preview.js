@@ -212,7 +212,6 @@ function getManifestListDomAndParameter(mepConfig) {
         <div>Source: ${source}</div>
         ${manifest.lastSeen ? `<div>Last seen: ${formatDate(new Date(manifest.lastSeen))}</div>` : ''}
         ${scheduled}
-        ${scheduled}
       </div>
       <div class="mep-manifest-variants">${radio}</div>
     </div>`;
