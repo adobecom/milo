@@ -27,4 +27,3 @@ var _=Object.defineProperty;var E=o=>{throw TypeError(o)};var d=(o,e,t)=>e in o?
                 line-height: 15px;
             }
         `]),n(s,"properties",{checked:{type:Boolean,attribute:"checked",reflect:!0},planType:{type:String,attribute:"plan-type",reflect:!0}});window.customElements.define("merch-stock",s);export{s as MerchStock};
-//# sourceMappingURL=merch-stock.js.map

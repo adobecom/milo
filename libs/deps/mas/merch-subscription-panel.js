@@ -139,4 +139,3 @@ var y=Object.defineProperty;var u=o=>{throw TypeError(o)};var T=(o,e,t)=>e in o?
             data-quantity="${this.quantity}"
             href="#"
         ></a>`}};c=new WeakMap,h(r,"styles",[x]),h(r,"properties",{continueText:{type:String,attribute:"continue-text"},quantity:{type:Number},ready:{type:Boolean,attribute:"ready",reflect:!0}});window.customElements.define("merch-subscription-panel",r);
-//# sourceMappingURL=merch-subscription-panel.js.map
