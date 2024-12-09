@@ -357,6 +357,16 @@ export function appendHtmlToCanonicalUrl() {
   canonEl.setAttribute('href', `${canonEl.href}.html`);
 }
 
+export function appendSuffixToTitles() {
+  const appendage = getMetadata('title-append');
+  if (!appendage) return;
+  document.title = `${document.title} ${appendage}`;
+  const ogTitleEl = document.querySelector('meta[property="og:title"]');
+  if (ogTitleEl) ogTitleEl.setAttribute('content', document.title);
+  const twitterTitleEl = document.querySelector('meta[name="twitter:title"]');
+  if (twitterTitleEl) twitterTitleEl.setAttribute('content', document.title);
+}
+
 export function appendHtmlToLink(link) {
   const { useDotHtml } = getConfig();
   if (!useDotHtml) return;
@@ -1267,10 +1277,7 @@ function decorateDocumentExtras() {
 
 async function documentPostSectionLoading(area, config) {
   decorateFooterPromo();
-  const appendage = getMetadata('title-append');
-  if (appendage) {
-    import('../features/title-append/title-append.js').then((module) => module.default(appendage));
-  }
+
   if (getMetadata('seotech-structured-data') === 'on' || getMetadata('seotech-video-url')) {
     import('../features/seotech/seotech.js').then((module) => module.default(
       { locationUrl: window.location.href, getMetadata, createTag, getConfig },
@@ -1374,6 +1381,7 @@ export async function loadArea(area = document) {
   if (isDoc) {
     await checkForPageMods();
     appendHtmlToCanonicalUrl();
+    appendSuffixToTitles();
   }
   const config = getConfig();
 
