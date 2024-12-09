@@ -42,12 +42,12 @@ export default class MiloGraybox extends LitElement {
     this._startPreviewPublish = false;
     this._filesToPromote = [];
     this._promoteIgnorePaths = [];
+    this._promoteIgnoreList = [];
     this._promotedFiles = [];
     this._promotedFilesCount = 0;
-    this._promoteIgnoreCount = 0;
-    this._promoteErrorCount = 0;
+    this._promoteErrorList = [];
     this._previewedFilesCount = 0;
-    this._previewErrorCount = 0;
+    this._previewErrorList = [];
     this._publishedFilesCount = 0;
     this._publishErrorCount = 0;
     this._crawledFiles = [];
@@ -128,8 +128,11 @@ export default class MiloGraybox extends LitElement {
           console.log(`${status.statusCode} :: ${status.filePath}`);
           this._promotedFiles.push(status.filePath);
           // eslint-disable-next-line chai-friendly/no-unused-expressions
-          SUCCESS_CODES.includes(status.statusCode) ? this._promotedFilesCount += 1
-            : this._promoteErrorCount += 1;
+          if (SUCCESS_CODES.includes(status.statusCode)) {
+            this._promotedFilesCount += 1;
+          } else {
+            this._promoteErrorList.push({ href: status.filePath, status: status.statusCode });
+          }
           this.requestUpdate();
         },
       });
@@ -152,8 +155,11 @@ export default class MiloGraybox extends LitElement {
         // eslint-disable-next-line no-console
         console.log(`${status.statusCode} :: ${status.aemUrl}`);
         // eslint-disable-next-line chai-friendly/no-unused-expressions
-        SUCCESS_CODES.includes(status.statusCode) ? this._previewedFilesCount += 1
-          : this._previewErrorCount += 1;
+        if (SUCCESS_CODES.includes(status.statusCode)) {
+          this._previewedFilesCount += 1;
+        } else {
+          this._previewErrorList.push({ href: status.aemUrl, status: status.statusCode });
+        }
         this.requestUpdate();
       },
     });
@@ -191,26 +197,28 @@ export default class MiloGraybox extends LitElement {
       return;
     }
     this._tabUiStart = true;
+    this._canPromote = false;
     this.requestUpdate();
     await this.readPromoteIgnorePaths();
 
     // #1 - Start crawling
     const { org, repo, exp } = this.getOrgRepoExp();
     this._startCrawlExp = true;
-    this.updateTabUi('crawl');
+    floodbox.updateTabUi(this, 'crawl', 100);
     await this.startCrawl(this._gbExpPath, exp);
 
     // #2 - Start promoting
     this._startPromote = true;
-    this.updateTabUi('promote');
+    floodbox.updateTabUi(this, 'promote', 100);
+    this.requestUpdate();
     await this.startPromote(org, repo, exp);
 
     // #3 - Preview promoted files
     this._startPreviewPublish = true;
-    this.updateTabUi('preview');
+    floodbox.updateTabUi(this, 'preview', 100);
     await this.startPreviewPublish(org, repo);
 
-    this.updateTabUi('done');
+    floodbox.updateTabUi(this, 'done', 100);
   }
 
   async handlePromotePaths(event) {
@@ -226,12 +234,13 @@ export default class MiloGraybox extends LitElement {
       return;
     }
     this._tabUiStart = true;
+    this._canPromotePaths = false;
     this.requestUpdate();
     await this.readPromoteIgnorePaths();
 
     // #2 - Get files to promote from paths
     this._startCrawlPaths = true;
-    this.updateTabUi('crawl');
+    floodbox.updateTabUi(this, 'crawl', 100);
     this._crawledFiles = await getFilesToPromote({
       accessToken: this.token,
       org,
@@ -246,25 +255,32 @@ export default class MiloGraybox extends LitElement {
 
     // #3 - Start promoting
     this._startPromotePaths = true;
-    this.updateTabUi('promote');
+    floodbox.updateTabUi(this, 'promote', 100);
+    this.requestUpdate();
     await this.startPromote(org, repo, expName);
 
     // #4 - Preview promoted files
     this._startPreviewPublish = true;
-    this.updateTabUi('preview');
+    floodbox.updateTabUi(this, 'preview', 100);
     await this.startPreviewPublish(org, repo);
 
-    this.updateTabUi('done');
+    floodbox.updateTabUi(this, 'done', 100);
   }
 
   cleanUpIgnoreFilesFromPromote(files) {
+    files.filter((file) => this._promoteIgnorePaths.some((ignorePath) => {
+      if (file.path.endsWith(ignorePath) || file.path.includes(ignorePath)) {
+        this._promoteIgnoreList.push({ href: file.path, status: 'Ignored' });
+      }
+      return file.path.endsWith(ignorePath);
+    }));
+
     this._filesToPromote = files.filter((file) => !this._promoteIgnorePaths.some((ignorePath) => {
       if (ignorePath.endsWith('/')) {
         return file.path.includes(ignorePath);
       }
       return file.path.endsWith(ignorePath);
     }));
-    this._promoteIgnoreCount = files.length - this._filesToPromote.length;
   }
 
   async validateInput(event) {
@@ -317,15 +333,9 @@ export default class MiloGraybox extends LitElement {
     this.requestUpdate();
   }
 
-  updateTabUi(target) {
-    const tabNav = this.shadowRoot.querySelectorAll('.tab-nav li');
-    const tabs = this.shadowRoot.querySelectorAll('.tab-step');
-    const activeNav = this.shadowRoot.querySelector(`.tab-nav li[data-target='${target}']`);
-    const activeTab = this.shadowRoot.querySelector(`.tab-step[data-id='${target}']`);
-    [...tabs, ...tabNav].forEach((el) => { el.classList.remove('active'); });
-    if (activeNav) activeNav.querySelector('button').removeAttribute('disabled');
-    if (activeNav) activeNav.classList.add('active');
-    if (activeTab) activeTab.classList.add('active');
+  resetApp() {
+    const newMiloGraybox = new MiloGraybox();
+    this.replaceWith(newMiloGraybox);
   }
 
   renderError() {
@@ -342,6 +352,7 @@ export default class MiloGraybox extends LitElement {
       <div class="tab-step" data-id="done">
         <h3>Done</h3>
         <p>Graybox experience files have been promoted and previewed.</p>
+        <button class="accent" @click=${() => this.resetApp()}>Reset</button>
       </div>
     `;
   }
@@ -352,10 +363,15 @@ export default class MiloGraybox extends LitElement {
         <h3>Graybox Preview</h3>
         <p>Previewing and Publishing promoted files"... </p>
         <div class="detail-cards preview-cards">
-          ${floodbox.renderBadge('Remaining', this._promotedFilesCount - this._previewedFilesCount - this._previewErrorCount)}
-          ${floodbox.renderBadge('Errors', this._previewErrorCount)}
+          ${floodbox.renderBadge('Remaining', this._promotedFilesCount - this._previewedFilesCount)}
+          ${floodbox.renderBadge('Preview Ignored', this._promoteIgnoreList.length, true)}
+          ${floodbox.renderBadge('Preview Errors', this._previewErrorList.length, true)}
           ${floodbox.renderBadge('Success', this._previewedFilesCount)}
-          ${floodbox.renderBadge('Total', this._previewedFilesCount + this._previewErrorCount)}
+          ${floodbox.renderBadge('Total', this._previewedFilesCount + this._previewErrorList.length + this._promoteIgnoreList.length)}
+        </div>
+        <div class="detail-lists">
+          ${floodbox.renderList('Preview Ignored', this._promoteIgnoreList)}
+          ${floodbox.renderList('Preview Errors', this._previewErrorList)}
         </div>
         <p class="${this._previewPublishDuration === 0 ? 'hide' : ''}">Duration: ~${this._previewPublishDuration} seconds</p>
       </div>
@@ -373,11 +389,15 @@ export default class MiloGraybox extends LitElement {
         <h3>Promote Graybox Paths</h3> 
       ` : nothing}
         <div class="detail-cards promote-cards">
-          ${floodbox.renderBadge('Remaining', this._filesToPromote.length - this._promotedFilesCount)}
-          ${floodbox.renderBadge('Ignored Paths', this._crawledFiles.length - this._filesToPromote.length)}
-          ${floodbox.renderBadge('Errors', this._promoteErrorCount)}
+          ${floodbox.renderBadge('Remaining', this._filesToPromote.length - this._promotedFilesCount - this._promoteIgnoreList.length)}
+          ${floodbox.renderBadge('Promote Ignored', this._promoteIgnoreList.length, true)}
+          ${floodbox.renderBadge('Promote Errors', this._promoteErrorList.length, true)}
           ${floodbox.renderBadge('Success', this._promotedFilesCount)}
-          ${floodbox.renderBadge('Total', this._promotedFilesCount + this._promoteErrorCount + this._promoteIgnoreCount)}
+          ${floodbox.renderBadge('Total', this._promotedFilesCount + this._promoteErrorList.length + this._promoteIgnoreList.length)}
+        </div>
+        <div class="detail-lists">
+          ${floodbox.renderList('Promote Ignored', this._promoteIgnoreList)}
+          ${floodbox.renderList('Promote Errors', this._promoteErrorList)}
         </div>
         <p class="${this._promoteDuration === 0 ? 'hide' : ''}">Duration: ~${this._promoteDuration} seconds</p>
       </div>
@@ -406,15 +426,9 @@ export default class MiloGraybox extends LitElement {
       `;
   }
 
-  renderTabUi(config) {
+  renderTabUi() {
     return html`
-      <ul class="tab-nav">
-        ${config.map((step, index) => html`
-          <li data-target="${step.id}">
-            <button disabled class="ribbon" @click=${() => this.updateTabUi(step.id)}>${index + 1}. ${step.title}</button>
-          </li>
-        `)}
-      </ul>
+      ${floodbox.renderTabNav(this, this.tabUiSteps)}
       <div class="tabs">
         ${this._startCrawlExp || this._startCrawlPaths ? this.renderCrawlInfo() : nothing}
         ${this._startPromote || this._startPromotePaths ? this.renderPromoteInfo() : nothing}
@@ -465,7 +479,7 @@ export default class MiloGraybox extends LitElement {
         </div>
       </form>
       <div class="tab-ui">
-        ${this._tabUiStart ? this.renderTabUi(this.tabUiSteps) : nothing}
+        ${this._tabUiStart ? this.renderTabUi() : nothing}
       </div>
       ${this._invalidInput ? this.renderError() : nothing}
     `;

@@ -25,9 +25,22 @@ export function handleClear(event) {
   this.requestUpdate();
 }
 
-export function renderBadge(name, length, hasCancel, hasList = false) {
-  const lowerName = name.toLowerCase();
-  const hasExpand = length > 0 && lowerName !== 'total';
+export function updateTabUi(app, target, delay = 0) {
+  setTimeout(() => {
+    const tabNav = app.shadowRoot.querySelectorAll('.tab-nav li');
+    const tabs = app.shadowRoot.querySelectorAll('.tab-step');
+    const activeNav = app.shadowRoot.querySelector(`.tab-nav li[data-target='${target}']`);
+    const activeTab = app.shadowRoot.querySelector(`.tab-step[data-id='${target}']`);
+    [...tabs, ...tabNav].forEach((el) => { el.classList.remove('active'); });
+    if (activeNav) activeNav.querySelector('button').removeAttribute('disabled');
+    if (activeNav) activeNav.classList.add('active');
+    if (activeTab) activeTab.classList.add('active');
+  }, delay);
+}
+
+export function renderBadge(name, length, hasList = false, hasCancel = false) {
+  const lowerName = name.toLowerCase().replace(/ /g, '-');
+  const hasExpand = length > 0 && hasList;
 
   return html`
     <div class="detail-card detail-card-${lowerName}">
@@ -37,7 +50,7 @@ export function renderBadge(name, length, hasCancel, hasList = false) {
       </div>
       <div class="detail-card-actions">
         ${hasCancel ? html`<button class="cancel-button" @click=${this.handleCancel}>${this._cancelText}</button>` : nothing}
-        ${hasExpand && hasList ? html`
+        ${hasExpand ? html`
           <button class="toggle-list-icon" @click=${this.handleToggleList} data-name="${lowerName}">
             <svg class="icon"><use href="#spectrum-chevronDown"/></svg>
           </button>
@@ -47,8 +60,10 @@ export function renderBadge(name, length, hasCancel, hasList = false) {
 }
 
 export function renderList(name, urls) {
+  const lowerName = name.toLowerCase().replace(/ /g, '-');
+
   return html`
-    <div class="url-list url-list-${name.toLowerCase()}">
+    <div class="url-list url-list-${lowerName}">
       <h2>${name}</h2>
       <ul class="urls-result">
         ${urls.map((url) => html`
@@ -66,4 +81,16 @@ export function renderList(name, urls) {
 
 export function renderClearButton() {
   return html`<button class="icon-button clear-button" @click=${this.handleClear}><svg class="icon"><use href="#spectrum-close"/></svg></button>`;
+}
+
+export function renderTabNav(app, config) {
+  return html`
+    <ul class="tab-nav">
+      ${config.map((step, index) => html`
+        <li data-target="${step.id}">
+          <button disabled class="ribbon" @click=${() => this.updateTabUi(app, step.id)}>${index + 1}. ${step.title}</button>
+        </li>
+      `)}
+    </ul>
+  `;
 }
