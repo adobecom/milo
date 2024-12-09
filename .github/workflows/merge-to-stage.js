@@ -231,7 +231,7 @@ const main = async (params) => {
   github = params.github;
   owner = params.context.repo.owner;
   repo = params.context.repo.repo;
-  if (isWithinRCP(process.env.STAGE_RCP_OFFSET_DAYS || 2)) return console.log('Stopped, within RCP period.');
+  if (isWithinRCP({ offset: process.env.STAGE_RCP_OFFSET_DAYS || 2, excludeShortRCP: true })) return console.log('Stopped, within RCP period.');
 
   try {
     const stageToMainPR = await getStageToMainPR();
