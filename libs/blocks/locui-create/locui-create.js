@@ -1,7 +1,7 @@
 import { html, render, useEffect } from '../../deps/htm-preact.js';
 import InputLocales from './input-locale/view.js';
 import InputUrls from './input-urls/view.js';
-import { currentStep, fetchLocaleDetails, loading } from './store.js';
+import { currentStep, fetchLocaleDetails, getUserToken, loading } from './store.js';
 import StepTracker from './components/stepTracker.js';
 import InputActions from './input-actions/view.js';
 import Header from '../milostudio-header/milostudio-header.js';
@@ -10,15 +10,16 @@ import { getConfig, loadStyle } from '../../utils/utils.js';
 
 function Create() {
   useEffect(() => {
-    const fetchLocaleDetailsAsync = async () => {
+    const setup = async () => {
       try {
         await fetchLocaleDetails();
+        await getUserToken();
       } catch (error) {
         // console.error('Error fetching locale details:', error);
       }
     };
 
-    fetchLocaleDetailsAsync();
+    setup();
   }, []);
 
   return html`
