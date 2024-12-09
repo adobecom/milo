@@ -719,6 +719,7 @@ describe('Utils', () => {
     });
   });
 
+  // MARK: title-append
   describe('title-append', async () => {
     beforeEach(async () => {
       document.head.innerHTML = await readFile({ path: './mocks/head-title-append.html' });
@@ -731,6 +732,7 @@ describe('Utils', () => {
     });
   });
 
+  // MARK: seotech
   describe('seotech', async () => {
     beforeEach(async () => {
       window.lana = { log: (msg) => console.error(msg) };
