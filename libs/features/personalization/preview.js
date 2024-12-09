@@ -80,7 +80,8 @@ function parseMepConfig() {
       name, variantNames, event, disabled, manifest, source, selectedVariantName,
       manifestType, manifestOverrideName, geo,
     } = experiment;
-    const manifestUrl = new URL(manifest);
+    let manifestUrl = manifest;
+    try { manifestUrl = new URL(manifest); } catch (e) { /* do nothing */ }
     return {
       targetActivityName: name,
       variantNames,
@@ -346,20 +347,19 @@ function addHighlightData(manifests) {
 export async function saveToMmm() {
   const data = parseMepConfig();
   if (data.page.url.includes('/drafts/')) return false;
-  const { activities, page } = data;
-  activities.filter((activity) => {
+  data.activities = data.activities.filter((activity) => {
     const { url, source } = activity;
-    return (source?.length && !url.includes('/drafts/'));
+    return (!!(source?.length && !url.includes('/drafts/')));
   });
-  activities.map((activity) => {
+  data.activities = data.activities.map((activity) => {
     activity.variantNames = activity.variantNames?.join('||') || '';
     activity.source = activity.source?.join(',') || '';
     return activity;
   });
-  if (page.prefix === US_GEO) page.prefix = '';
-  page.target = getMetadata('target') || 'off';
-  page.geo = page.geo === US_GEO ? '' : page.geo;
-  delete page.highlight;
+  if (data.page.prefix === US_GEO) data.page.prefix = '';
+  data.page.target = getMetadata('target') || 'off';
+  data.page.geo = data.page.geo === US_GEO ? '' : data.page.geo;
+  delete data.page.highlight;
   return fetch(API_URLS.save, {
     method: 'POST',
     headers: {
