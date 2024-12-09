@@ -162,9 +162,11 @@ function getManifestListDomAndParameter(mepConfig) {
         checked.class = 'class="mep-manifest-selected-variant"';
         manifestParameter.push(`${manifestPath}--${variant}`);
       }
+      let editPath = editUrl;
+      try { editPath = new URL(editUrl).pathname; } catch (e) { /* do nothing */ }
       radio += `<div>
         <input type="radio" name="${editUrl}${pageId}" value="${variant}" 
-        id="${editUrl}${pageId}--${variant}" data-manifest="${editUrl}" ${checked.attribute}>
+        id="${editUrl}${pageId}--${variant}" data-manifest="${editPath}" ${checked.attribute}>
         <label for="${manifestPath}${pageId}--${variant}" ${checked.class}>${variant}</label>
       </div>`;
     });
