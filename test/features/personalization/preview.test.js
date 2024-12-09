@@ -22,7 +22,7 @@ const config = {
     highlight: true,
     experiments: [],
     targetEnabled: true,
-    geoPrefix: 'en-us',
+    prefix: '',
   },
   stageDomainsMap: {
     'www.stage.adobe.com': {
@@ -59,6 +59,7 @@ const config = {
       'projectneo.adobe.com': 'stg.projectneo.adobe.com',
     },
   },
+  env: { name: 'stage' },
 };
 setConfig(config);
 

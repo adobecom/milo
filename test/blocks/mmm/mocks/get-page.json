@@ -37,9 +37,9 @@
   "page": {
       "personalization": "on",
       "lastSeen": "2024-12-06T21:02:46.000Z",
-      "prefix": "",
+      "geo": "",
       "pageId": 4,
-      "pagePath": "/",
+      "page": "/",
       "locale": "en-US",
       "region": "us",
       "url": "https://www.adobe.com/",

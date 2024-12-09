@@ -9,7 +9,7 @@ import { getFederatedUrl } from '../../utils/federated.js';
 /* c8 ignore start */
 const PHONE_SIZE = window.screen.width < 550 || window.screen.height < 550;
 const safariIpad = navigator.userAgent.includes('Macintosh') && navigator.maxTouchPoints > 1;
-export const US_PREFIX = 'en-us';
+export const US_GEO = 'en-us';
 export const PERSONALIZATION_TAGS = {
   all: () => true,
   chrome: () => navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Edg'),
@@ -662,7 +662,7 @@ export async function createMartechMetadata(placeholders, config, column) {
 
     placeholders.forEach((item, i) => {
       const firstRow = placeholders[i];
-      let usValue = firstRow[US_PREFIX] || firstRow.us || firstRow.en || firstRow.key;
+      let usValue = firstRow[US_GEO] || firstRow.us || firstRow.en || firstRow.key;
 
       if (!usValue) return;
 
@@ -678,7 +678,7 @@ export function parsePlaceholders(placeholders, config, selectedVariantName = ''
   if (!placeholders?.length || selectedVariantName === 'default') return config;
   const valueNames = [
     selectedVariantName.toLowerCase(),
-    config.mep?.geoPrefix,
+    config.mep?.prefix,
     config.locale.region.toLowerCase(),
     config.locale.ietf.toLowerCase(),
     ...config.locale.ietf.toLowerCase().split('-'),
@@ -1249,7 +1249,7 @@ export async function init(enablements = {}) {
       highlight: (mepHighlight !== undefined && mepHighlight !== 'false'),
       targetEnabled: target,
       experiments: [],
-      geoPrefix: config.locale?.prefix.split('/')[1]?.toLowerCase() || US_PREFIX,
+      prefix: config.locale?.prefix.split('/')[1]?.toLowerCase() || US_GEO,
     };
     manifests = manifests.concat(await combineMepSources(pzn, promo, mepParam));
     manifests?.forEach((manifest) => {

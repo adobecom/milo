@@ -1,36 +1,36 @@
 [
   {
-      "prefix": "",
+      "geo": "",
       "pageId": 4,
-      "pagePath": "/",
+      "page": "/",
       "locale": "en-US",
       "url": "https://www.adobe.com/"
   },
   {
-      "prefix": "",
+      "geo": "",
       "pageId": 7,
-      "pagePath": "/acrobat/pricing.html",
+      "page": "/acrobat/pricing.html",
       "locale": "en-US",
       "url": "https://www.adobe.com/acrobat/pricing.html"
   },
   {
-      "prefix": "",
+      "geo": "",
       "pageId": 3,
-      "pagePath": "/creativecloud.html",
+      "page": "/creativecloud.html",
       "locale": "en-US",
       "url": "https://www.adobe.com/creativecloud.html"
   },
   {
-      "prefix": "ca_fr",
+      "geo": "ca_fr",
       "pageId": 16,
-      "pagePath": "/",
+      "page": "/",
       "locale": "fr-CA",
       "url": "https://www.adobe.com/ca_fr/"
   },
   {
-      "prefix": "de",
+      "geo": "de",
       "pageId": 61,
-      "pagePath": "/",
+      "page": "/",
       "locale": "de-DE",
       "url": "https://www.adobe.com/de/"
   }

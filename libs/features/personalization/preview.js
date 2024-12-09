@@ -1,5 +1,5 @@
 import { createTag, getConfig, getMetadata, loadStyle } from '../../utils/utils.js';
-import { TRACKED_MANIFEST_TYPE, getFileName, US_PREFIX } from './personalization.js';
+import { TRACKED_MANIFEST_TYPE, getFileName, US_GEO } from './personalization.js';
 
 const API_DOMAIN = 'https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-2.on.aws';
 export const API_URLS = {
@@ -73,12 +73,12 @@ function addPillEventListeners(div) {
 }
 function parseMepConfig() {
   const config = getConfig();
-  const { mep, locale, stageDomainsMap } = config;
-  const { experiments, targetEnabled, geoPrefix, highlight } = mep;
+  const { mep, locale, stageDomainsMap, env } = config;
+  const { experiments, targetEnabled, prefix, highlight } = mep;
   const activities = experiments.map((experiment) => {
     const {
       name, variantNames, event, disabled, manifest, source, selectedVariantName,
-      manifestType, manifestOverrideName, region,
+      manifestType, manifestOverrideName, geo,
     } = experiment;
     const manifestUrl = new URL(manifest);
     return {
@@ -91,32 +91,31 @@ function parseMepConfig() {
       manifestType,
       manifestOverrideName,
       source,
-      region,
+      geo,
       eventStart: event?.startUtc,
       eventEnd: event?.endUtc,
       pathname: manifestUrl.pathname,
     };
   });
   const { pathname, origin } = window.location;
-  let pagePath = pathname;
+  let page = pathname;
   let domain = origin;
-  if (origin.includes('--adobecom.hlx.') && stageDomainsMap) {
+  if (env?.name !== 'prod' && stageDomainsMap) {
     const domainCheck = Object.keys(stageDomainsMap)
       .find((key) => key.includes('.adobe.com'));
     if (domainCheck) domain = `https://${domainCheck}`;
-    pagePath = pagePath.replace('/homepage/index-loggedout', '/');
-    if (!pagePath.endsWith('/') && !domain.includes('--milo--adobecom.hlx.')) pagePath += '.html';
+    page = page.replace('/homepage/index-loggedout', '/');
+    if (!page.endsWith('/') && !domain.includes('--milo--adobecom.hlx.')) page += '.html';
   }
   domain = domain.replace('stage.adobe.com', 'adobe.com');
-  const url = `${domain}${pagePath}`;
-  pagePath = pagePath.replace(`/${geoPrefix}/`, '/');
+  const url = `${domain}${page}`;
   return {
     page: {
       url,
-      pagePath,
+      page,
       target: targetEnabled ? 'on' : 'off',
       personalization: (getMetadata('personalization')) ? 'on' : 'off',
-      prefix: geoPrefix,
+      geo: prefix === US_GEO ? '' : prefix,
       locale: locale.ietf,
       region: locale.region,
       highlight,
@@ -287,7 +286,7 @@ export function getMepPopup(mepConfig, isMmm = false) {
         <div class="mep-manifest-page-info-title">Page Info:</div>
         <div>Target integration feature is ${targetOnText}</div>
         <div>Personalization feature is ${page.personalization}</div>
-        <div>Page's Prefix/Region/Locale are ${page.prefix || US_PREFIX} / ${page.region} / ${page.locale}</div>
+        <div>Page's Prefix/Region/Locale are ${page.geo || US_GEO} / ${page.region} / ${page.locale}</div>
         ${page.lastSeen ? `<div>Last seen: ${formatDate(new Date(page.lastSeen))}</div>` : ''}
     </div>`;
   mepManifestList.innerHTML = manifestList;
@@ -355,8 +354,9 @@ export async function saveToMmm() {
     activity.source = activity.source?.join(',') || '';
     return activity;
   });
-  if (page.prefix === US_PREFIX) page.prefix = '';
+  if (page.prefix === US_GEO) page.prefix = '';
   page.target = getMetadata('target') || 'off';
+  page.geo = page.geo === US_GEO ? '' : page.geo;
   delete page.highlight;
   return fetch(API_URLS.save, {
     method: 'POST',
@@ -367,9 +367,8 @@ export async function saveToMmm() {
     body: JSON.stringify(data),
   })
     .then((response) => {
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
+      /* c8 ignore next 1 */
+      if (!response.ok) throw new Error('Network response was not ok');
       return response.json();
     });
 }

@@ -96,9 +96,7 @@ function filterPageList() {
     Object.keys(searchValues).forEach((key) => {
       const { value, tagName } = searchValues[key];
       if (tagName !== 'SELECT') return;
-      // const inputVal = data[key];
-      const FIELD_MAP = { page: 'pagePath', geo: 'prefix' };
-      const inputVal = data[FIELD_MAP[key]];
+      const inputVal = data[key];
       if (value && !value.split(',').some((val) => inputVal === val)) {
         entry.classList.add('filter-hide');
       }
