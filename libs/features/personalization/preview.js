@@ -1,5 +1,5 @@
 import { createTag, getConfig, getMetadata, loadStyle } from '../../utils/utils.js';
-import { TRACKED_MANIFEST_TYPE, getFileName, US_GEO } from './personalization.js';
+import { TRACKED_MANIFEST_TYPE, US_GEO, getFileName, normalizePath } from './personalization.js';
 
 const API_DOMAIN = 'https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-2.on.aws';
 export const API_URLS = {
@@ -150,6 +150,7 @@ function getManifestListDomAndParameter(mepConfig) {
       source,
     } = manifest;
     const editUrl = manifestUrl || manifestPath;
+    const editPath = normalizePath(editUrl);
     let radio = '';
     const variantNamesArray = typeof variantNames === 'string' ? variantNames.split('||') : variantNames;
     variantNamesArray.forEach((variant) => {
@@ -162,12 +163,10 @@ function getManifestListDomAndParameter(mepConfig) {
         checked.class = 'class="mep-manifest-selected-variant"';
         manifestParameter.push(`${manifestPath}--${variant}`);
       }
-      let editPath = editUrl;
-      try { editPath = new URL(editUrl).pathname; } catch (e) { /* do nothing */ }
       radio += `<div>
-        <input type="radio" name="${editUrl}${pageId}" value="${variant}" 
-        id="${editUrl}${pageId}--${variant}" data-manifest="${editPath}" ${checked.attribute}>
-        <label for="${manifestPath}${pageId}--${variant}" ${checked.class}>${variant}</label>
+        <input type="radio" name="${editPath}${pageId}" value="${variant}" 
+        id="${editPath}${pageId}--${variant}" data-manifest="${editPath}" ${checked.attribute}>
+        <label for="${editPath}${pageId}--${variant}" ${checked.class}>${variant}</label>
       </div>`;
     });
     const checked = {
@@ -180,9 +179,9 @@ function getManifestListDomAndParameter(mepConfig) {
       manifestParameter.push(`${editUrl}--default`);
     }
     radio += `<div>
-      <input type="radio" name="${editUrl}${pageId}" value="default" 
-      id="${editUrl}${pageId}--default" data-manifest="${editUrl}" ${checked.attribute}>
-      <label for="${manifestPath}${pageId}--default" ${checked.class}>Default (control)</label>
+      <input type="radio" name="${editPath}${pageId}" value="default" 
+      id="${editPath}${pageId}--default" data-manifest="${editPath}" ${checked.attribute}>
+      <label for="${editPath}${pageId}--default" ${checked.class}>Default (control)</label>
     </div>`;
 
     if (manifest.eventStart) {
