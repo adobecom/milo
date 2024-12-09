@@ -3,6 +3,7 @@ import StepControls from '../components/stepControls.js';
 import useInputActions from './index.js';
 import { prevStep, project } from '../store.js';
 import { LOCALIZATION_TYPES } from '../utils/constant.js';
+import updateProject from '../utils/miloc.js';
 
 function TranslateActions({ languageCount, handleActionSelect, handleWorkflowSelect }) {
   const tableHeaders = [`Languages (${languageCount})`,
@@ -89,8 +90,10 @@ export default function InputActionsView() {
     projectCreatedModal,
   } = useInputActions();
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (isFormValid) {
+      const details = await updateProject(project.value, true);
+      console.log('saurabh', details);
       projectCreatedModal();
     }
   };
