@@ -68,7 +68,7 @@ function getTargetPropertyBasedOnPageRegion(env) {
     return 'ba5bc9e8-8fb4-037a-12c8-682384720007';
   }
 
-  return 'bc8dfa27-29cc-625c-22ea-f7ccebfc6231'; // Default
+  return '4db35ee5-63ad-59f6-cec6-82ef8863b22d'; // Default
 }
 
 /**
