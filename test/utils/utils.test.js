@@ -727,8 +727,9 @@ describe('Utils', () => {
     it('should append to title using string from metadata', async () => {
       const expected = 'Document Title NOODLE';
       await utils.loadArea();
-      await waitFor(() => document.title === expected, 2000);
       expect(document.title).to.equal(expected);
+      expect(document.querySelector('meta[property="og:title"]')?.getAttribute('content'), expected);
+      expect(document.querySelector('meta[name="twitter:title"]')?.getAttribute('content'), expected);
     });
   });
 
