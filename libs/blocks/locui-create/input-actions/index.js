@@ -16,15 +16,15 @@ export default function useInputActions() {
   };
 
   const validateForm = () => {
-    const allValid = project.value.locale.every(
-      (entry) => entry.action && entry.workflow,
+    const allValid = project.value.languages.every(
+      (entry) => entry.action,
     );
     setIsFormValid(allValid);
   };
 
   useEffect(() => {
-    if (project.value?.locale?.length > 0) {
-      setLanguageCount(project.value?.locale?.length);
+    if (project.value?.languages?.length > 0) {
+      setLanguageCount(project.value?.languages?.length);
     }
     validateForm();
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -41,7 +41,6 @@ export default function useInputActions() {
   };
 
   return {
-    project,
     languageCount,
     isFormValid,
     validateForm,

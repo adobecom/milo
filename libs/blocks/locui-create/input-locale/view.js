@@ -1,6 +1,7 @@
 import { html } from '../../../deps/htm-preact.js';
 import useInputLocale from './index.js';
 import StepControls from '../components/stepControls.js';
+import { LOCALIZATION_TYPES } from '../utils/constant.js';
 
 export default function InputLocales() {
   const {
@@ -17,11 +18,12 @@ export default function InputLocales() {
     toggleRegion,
     selectLanguage,
     toggleLocale,
+    selectAll,
   } = useInputLocale();
 
   const RenderRegion = () => html`
+    <h5 class="section-header">Quick Select for Language/Locale</h5>
     <div class="region-grid">
-      <p>Quick Select for Language/Locale</p>
       <div class="region-buttons">
         ${localeRegion.value.map(
     (region) => html`
@@ -36,16 +38,21 @@ export default function InputLocales() {
             </button>
           `,
   )}
-        <button class="reset-button" onClick=${resetSelection}>
-          Reset All
+      </div>
+      <div class="additional-cta">
+        <button class="reset-button" onClick=${selectAll}>
+          Select All
         </button>
+        <button class="reset-button" onClick=${resetSelection}>
+            Reset All
+          </button>
       </div>
     </div>
   `;
 
   const RenderLanguage = () => html`
     <div class="language-grid">
-      <p>Select the Language(s)</p>
+      <h5 class="section-header">Select the Language(s)</h5>
       <div class="language-buttons">
         ${locales.value.map(
     (language) => language.livecopies.length > 0
@@ -108,15 +115,16 @@ export default function InputLocales() {
     <div class="locui-input-form-area ">
     <div class="locui-form-body">
         <div>
+          <h2 class="locui-project-type">${project.value.type === LOCALIZATION_TYPES.translation ? 'Translate' : 'Rollout'}</h2>
           <p class="locui-project-name"><strong>Project Name:</strong> ${project.value.name || 'n/a'}</p>
         </div>
         <${RenderRegion} />
         <div class="language-locale-container">
           <${RenderLanguage} />
-          ${selectedLocale.length > 0
+          ${project.value.type !== LOCALIZATION_TYPES.translation && selectedLocale.length > 0
           && html`
             <div class="locale-grid">
-              <p>Selected Locales</p>
+              <h5 class="section-header">Selected Locales</h5>
               <div class="locale-container">${RenderLocales()}</div>
             </div>
           `}

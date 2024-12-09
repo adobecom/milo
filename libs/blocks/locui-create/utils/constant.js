@@ -6,3 +6,7 @@ export const API_BASE_URL = {
   stage: 'https://14257-miloc-stage.adobeioruntime.net/api/v1/web/miloc-0.0.1',
   prod: 'https://14257-miloc.adobeioruntime.net/api/v1/web/miloc-0.0.1',
 };
+export const LOCALIZATION_TYPES = {
+  rollout: 'rollout',
+  translation: 'translation',
+};

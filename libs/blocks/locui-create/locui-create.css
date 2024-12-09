@@ -591,7 +591,6 @@ body {
 /* Input Actions Screen */
 
 .locui-table {
-  padding-top: 10px;
   flex: 1;
   overflow-y: auto;
   box-sizing: border-box;
@@ -599,16 +598,30 @@ body {
   font-size: 16px;
 }
 
+.locui-project-type {
+  font-weight: 700;
+  font-size: 1.25rem;
+  font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
+}
+
 .table-wrapper {
-  max-height: 63vh;
+  max-height: 80%;
   overflow-y: auto;
   margin: 10px 0;
+  border: 1px solid #ccc;
+}
+
+.table-wrapper.table-rollout {
+  max-width: 70%;
+}
+
+.table-wrapper.table-translate {
+  margin: 0 7rem;
 }
 
 .locui-table table {
   width: 100%;
   border-collapse: collapse;
-  border: 1px solid #ccc;
 }
 
 .locui-table th {
@@ -665,8 +678,6 @@ body {
 
 .locui-project-created-modal {
   width: 400px;
-  /* height: 150px; */
-  /* line-height: 150px; */
   padding: 30px 0px;
   text-align: center;
   display: flex;
@@ -680,16 +691,21 @@ body {
 }
 
 .locale-list-item {
-  border: 1px solid #8f8e8e;
-  border-radius: 10px;
+  border: 2px solid #8f8e8e;
+  border-radius: 20px;
   background-color: white;
   color: black;
-  padding: 3px 7px;
-  font-size: 16px;
-  cursor: pointer;
-  margin: 5px 10px 5px 0;
-  min-width: 60px;
-  font-size: 16px;
+  font-size: 0.8rem;
+  text-align: center;
+  min-width: 3.75rem;
+}
+
+.locale-list-container {
+  display: flex;
+  flex-flow: wrap;
+  flex-direction: row;
+  row-gap: 1rem;
+  column-gap: 1rem;
 }
 
 .region-button,
@@ -705,7 +721,7 @@ body {
   user-select: none;
   text-align: center;
   width: 150px;
-  height: 40px;
+  height: 35px;
   box-sizing: border-box;
   font-size: 14px;
   font-style: normal;
@@ -719,10 +735,7 @@ body {
 }
 
 .reset-button {
-  margin-left: auto;
-  color: #fff;
-  background-color: #292929;
-  border-color: #292929;
+  height: 30px;
 }
 
 .button:hover,
@@ -733,10 +746,6 @@ body {
   background-color: #e1e1e1;
 }
 
-.reset-button:hover {
-  background-color: #131313;
-}
-
 .region-button.active,
 .language-button.active,
 .locale-button.active {
@@ -744,12 +753,9 @@ body {
   color: #fff;
 }
 
-.language-locale-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+.region-buttons {
+  margin-bottom: 30px;
 }
-
 .language-grid,
 .locale-grid {
   flex: 1;
@@ -762,15 +768,24 @@ body {
   margin-top: 10px;
 }
 
-.region-grid p,
-.language-grid p,
-.locale-grid p {
-  font-size: 16px;
-  font-weight: bold;
-  margin-bottom: 10px;
+.region-grid {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
 }
 
-.region-buttons,
+.region-buttons,.additional-cta {
+  display: flex;
+  gap:10px
+}
+ 
+.section-header {
+  font-size: 16px;
+  font-weight: bold;
+  margin: 0 0 10px 0;
+}
+
+
 .language-buttons,
 .locale-button-container {
   display: flex;
@@ -809,6 +824,7 @@ body {
   margin: 0;
   padding: 0;
   font-weight: 400;
+  font-size: 16px;
 }
 
 .locale-container::-webkit-scrollbar,
