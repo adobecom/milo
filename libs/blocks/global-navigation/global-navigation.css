@@ -699,10 +699,6 @@ header.global-navigation {
   .feds-breadcrumbs a:hover {
     text-decoration: underline;
   }
-
-  header + div.feds-localnav {
-    display: none;
-  }
 }
 
 /* Small desktop styles */
@@ -1051,9 +1047,8 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
 
 /* local-nav */
 
-header + .feds-localnav {
+.feds-localnav {
   position: sticky;
-  display: block;
   top: 0;
   width: 100%;
   left: 0;
@@ -1099,6 +1094,7 @@ header + .feds-localnav {
   display: block;
   width: 100%;
   position: absolute;
+  overflow: auto;
 }
 
 .feds-localnav.active .feds-localnav-items .feds-menu-items {
@@ -1127,6 +1123,8 @@ header + .feds-localnav {
   font-size: 14px;
   padding: 12px 20px;
   background: var(--feds-background-popup);
+  outline-offset: -1px;
+  cursor: pointer;
 }
 
 .feds-localnav .feds-localnav-items .feds-menu-headline {
@@ -1134,13 +1132,27 @@ header + .feds-localnav {
   font-weight: 400;
   border-bottom: 0;
   padding: 12px 38px;
+  outline-offset: -1px;
 }
 
 .feds-localnav .feds-localnav-items .feds-navItem--centered {
   padding: 10px 20px;
 }
 
+.feds-localnav.active .feds-localnav-items {
+  box-sizing: border-box;
+  max-height: calc(100vh - (var(--global-height-nav) + var(--feds-localnav-height)));
+}
+
+.feds-localnav.active.is-sticky .feds-localnav-items {
+  max-height: calc(100vh - var(--feds-localnav-height));
+}
+
 .feds-localnav .feds-dropdown--active::before {
+  display: none;
+}
+
+.feds-localnav .feds-localnav-exit {
   display: none;
 }
 
@@ -1150,10 +1162,18 @@ header + .feds-localnav {
 
 .feds-localnav.active .feds-localnav-curtain {
   width: 100%;
-  height: 100vh;
+  height: calc(100vh - (var(--feds-height-nav) + var(--feds-localnav-height)));
   position: absolute;
   background: var(--feds-color-black-v2);
   opacity: 0.7;
+}
+
+.feds-localnav.active.is-sticky .feds-localnav-curtain {
+  height: calc(100vh - var(--feds-localnav-height));
+}
+
+.feds-localnav.active .feds-localnav-exit {
+  display: block;
 }
 
 @keyframes slideright {
