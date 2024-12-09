@@ -329,9 +329,9 @@ function updateAMCVCookie(ECID) {
   const cookieValue = getCookie(AMCV_COOKIE);
 
   if (!cookieValue) {
-    setCookie(AMCV_COOKIE, `MCMID|${ECID}`);
+    setCookie(encodeURIComponent(AMCV_COOKIE), `MCMID|${ECID}`);
   } else if (cookieValue.indexOf('MCMID|') === -1) {
-    setCookie(AMCV_COOKIE, `${cookieValue}|MCMID|${ECID}`);
+    setCookie(encodeURIComponent(AMCV_COOKIE), `${cookieValue}|MCMID|${ECID}`);
   }
 }
 
