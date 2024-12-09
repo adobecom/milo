@@ -2,10 +2,13 @@ const {
   slackNotification,
   getLocalConfigs,
   RCPDates,
+  isShortRCP,
 } = require('./helpers.js');
 
-const isWithin24Hours = (targetDate) =>
-  Math.abs(new Date() - targetDate) <= 24 * 60 * 60 * 1000;
+const isWithin24Hours = (targetDate) => {
+  const now = new Date();
+  return now < targetDate && new Date(now.getTime() + 24 * 60 * 60 * 1000) > targetDate;
+};
 
 const calculateDateOffset = (date, offset) => {
   const newDate = new Date(date);
@@ -19,17 +22,18 @@ const main = async () => {
   for (const rcp of RCPDates) {
     const start = new Date(rcp.start);
     const end = new Date(rcp.end);
+    const isShort = isShortRCP(start, end);
     const tenDaysBefore = calculateDateOffset(start, 10);
     const fourDaysBefore = calculateDateOffset(start, 4);
     const stageOffset = Number(process.env.STAGE_RCP_OFFSET_DAYS) || 2;
     const slackText = (days) =>
       `Reminder RCP starts in ${days} days: from ${start.toUTCString()} to ${end.toUTCString()}. Merges to stage will be disabled beginning ${calculateDateOffset(start, stageOffset).toUTCString()}.`;
-    if (isWithin24Hours(tenDaysBefore)) {
+    if (isWithin24Hours(tenDaysBefore) && !isShort) {
       console.log('Is within 24 hours of 10 days before RCP');
       await slackNotification(slackText(10), process.env.MILO_DEV_HOOK);
     }
 
-    if (isWithin24Hours(fourDaysBefore)) {
+    if (isWithin24Hours(fourDaysBefore) && !isShort) {
       console.log('Is within 24 hours of 4 days before RCP');
       await slackNotification(slackText(4), process.env.MILO_DEV_HOOK);
     }

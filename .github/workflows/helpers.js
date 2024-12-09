@@ -43,7 +43,11 @@ const RCPDates = [
   },
 ];
 
-const isWithinRCP = (offset = 0) => {
+const isShortRCP = (start, end) => {
+  return ((end - start) / (1000 * 60 * 60)) < 24;
+};
+
+const isWithinRCP = ({ offset = 0, excludeShortRCP = false } = {}) => {
   const now = new Date();
   if (now.getFullYear() !== CURRENT_YEAR) {
     console.log(`ADD NEW RCPs for ${CURRENT_YEAR + 1}`);
@@ -53,7 +57,9 @@ const isWithinRCP = (offset = 0) => {
   if (RCPDates.some(({ start, end }) => {
     const adjustedStart = new Date(start);
     adjustedStart.setDate(adjustedStart.getDate() - offset);
-    return start <= now && now <= end
+    const match = adjustedStart <= now && now <= end;
+    if (!match || (excludeShortRCP && isShortRCP(start, end))) return false;
+    return true;
   })) {
     console.log(
       'Current date is within a RCP (2 days earlier for stage, to keep stage clean & make CSO contributions during an RCP easier). Stopping execution.'
@@ -148,6 +154,7 @@ module.exports = {
   getLocalConfigs,
   slackNotification,
   pulls: { addLabels, addFiles, getChecks, getReviews },
+  isShortRCP,
   isWithinRCP,
   RCPDates,
 };
