@@ -398,9 +398,9 @@ export const [setUserProfile, getUserProfile] = (() => {
 
 export const transformTemplateToMobile = async (popup, item, localnav = false) => {
   const notMegaMenu = popup.parentElement.tagName === 'DIV';
-  if (notMegaMenu) return null;
-
   const originalContent = popup.innerHTML;
+  if (notMegaMenu) return originalContent;
+
   const tabs = [...popup.querySelectorAll('.feds-menu-section')]
     .filter((section) => !section.querySelector('.feds-promo') && section.textContent)
     .map((section) => {
