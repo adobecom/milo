@@ -346,7 +346,8 @@ export async function saveToMmm() {
   if (data.page.url.includes('/drafts/')) return false;
   data.activities = data.activities.filter((activity) => {
     const { url, source } = activity;
-    return (!!((source?.length > 2 || source?.[0] !== 'mep param') && !url.includes('/drafts/')));
+    activity.source = activity.source.filter((item) => item !== 'mep param');
+    return (!!(source?.length && !url.includes('/drafts/')));
   });
   data.activities = data.activities.map((activity) => {
     activity.variantNames = activity.variantNames?.join('||') || '';
