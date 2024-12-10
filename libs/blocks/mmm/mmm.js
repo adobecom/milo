@@ -2,6 +2,9 @@ import { createTag, loadStyle } from '../../utils/utils.js';
 import { fetchData, DATA_TYPE } from '../../features/personalization/personalization.js';
 import { getMepPopup, API_URLS } from '../../features/personalization/preview.js';
 
+export function token() {
+  return 'Bearer legit';
+}
 async function toggleDrawer(target, dd) {
   const el = target.closest('button');
   const expanded = el.getAttribute('aria-expanded') === 'true';
