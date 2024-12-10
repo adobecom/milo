@@ -257,7 +257,11 @@ label.mep-manifest-selected-variant::after {
   overflow-y: auto;
 }
 
-input.new-manifest {
+.mep-popup:not(.in-page) .promo-schedule-info {
+  display: none;
+}
+
+.mep-popup input.new-manifest {
   height: 28px;
   width: 98%;
   margin-bottom: 5px;

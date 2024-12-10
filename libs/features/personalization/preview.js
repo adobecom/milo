@@ -1,5 +1,6 @@
 import { createTag, getConfig, getMetadata, loadStyle } from '../../utils/utils.js';
 import { US_GEO, getFileName, normalizePath } from './personalization.js';
+import { isDisabled } from './promo-utils.js';
 
 const API_DOMAIN = 'https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-2.on.aws';
 export const API_URLS = {
@@ -199,7 +200,7 @@ function getManifestListDomAndParameter(mepConfig) {
       };
     }
     const scheduled = manifest.event
-      ? `<p>Scheduled - ${manifest.disabled ? 'inactive' : 'active'}</p>
+      ? `<p class="promo-schedule-info">Scheduled - ${manifest.disabled ? 'inactive' : 'active'}</p>
          <p>On: ${formatDate(manifest.event.start)} - <a target= "_blank" href="?instant=${manifest.event.start?.toISOString()}">instant</a></p>
          <p>Off: ${formatDate(manifest.event.end)}</p>` : '';
     manifestList += `<div class="mep-manifest-info" title="Manifest location: ${editUrl}&#013;Analytics manifest name: ${analyticsTitle || 'N/A for this manifest type'}">
