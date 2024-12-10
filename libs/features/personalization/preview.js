@@ -1,5 +1,5 @@
 import { createTag, getConfig, getMetadata, loadStyle } from '../../utils/utils.js';
-import { TRACKED_MANIFEST_TYPE, US_GEO, getFileName, normalizePath } from './personalization.js';
+import { US_GEO, getFileName, normalizePath } from './personalization.js';
 
 const API_DOMAIN = 'https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-2.on.aws';
 export const API_URLS = {
@@ -140,9 +140,7 @@ function getManifestListDomAndParameter(mepConfig) {
       variantNames,
       manifestPath = manifest.url,
       selectedVariantName = manifest.selectedVariantName || 'default',
-      manifestType,
       manifestUrl,
-      manifestOverrideName,
       targetActivityName,
       source,
       analyticsTitle,
