@@ -19,7 +19,7 @@ module.exports = {
         iconUrl: '',
       },
       browserParams: '?theme=dark',
-      tags: '@mas-ccd @suggested-card @commerce @smoke @regression @milo',
+      tags: '@mas-ccd @suggested-card @commerce @smoke @regression @milo @nopr',
     },
     {
       tcid: '1',
@@ -44,7 +44,7 @@ module.exports = {
         ctaDaaLL: 'buy-now-1',
       },
       browserParams: '?theme=dark',
-      tags: '@mas-ccd @suggested-card @commerce @smoke @regression @milo',
+      tags: '@mas-ccd @suggested-card @commerce @smoke @regression @milo @nopr',
     },
     {
       tcid: '2',
@@ -60,7 +60,7 @@ module.exports = {
         iconUrl: '',
       },
       browserParams: '?theme=dark',
-      tags: '@mas-ccd @suggested-card @commerce @smoke @regression @milo',
+      tags: '@mas-ccd @suggested-card @commerce @smoke @regression @milo @nopr',
     },
     {
       tcid: '3',
@@ -78,7 +78,7 @@ module.exports = {
         iconUrl: '',
       },
       browserParams: '?theme=dark',
-      tags: '@mas-ccd @suggested-card @commerce @smoke @regression @milo',
+      tags: '@mas-ccd @suggested-card @commerce @smoke @regression @milo @nopr',
     },
     {
       tcid: '4',
@@ -98,7 +98,7 @@ module.exports = {
         background: 'media_1d63dab9ee1edbf371d6f0548516c9e12b3ea3ff4.png',
       },
       browserParams: '?theme=dark',
-      tags: '@mas-ccd @suggested-card @commerce @smoke @regression @milo',
+      tags: '@mas-ccd @suggested-card @commerce @smoke @regression @milo @nopr',
     },
     {
       tcid: '5',
@@ -115,7 +115,7 @@ module.exports = {
         iconUrl: '',
       },
       browserParams: '?theme=dark',
-      tags: '@mas-ccd @suggested-card @commerce @smoke @regression @milo',
+      tags: '@mas-ccd @suggested-card @commerce @smoke @regression @milo @nopr',
     },
     {
       tcid: '6',
@@ -135,7 +135,7 @@ module.exports = {
         iconUrl: '',
       },
       browserParams: '?theme=dark',
-      tags: '@mas-ccd @suggested-card @commerce @smoke @regression @milo',
+      tags: '@mas-ccd @suggested-card @commerce @smoke @regression @milo @nopr',
     },
     {
       tcid: '7',
@@ -152,7 +152,7 @@ module.exports = {
         iconUrl: '',
       },
       browserParams: '?theme=dark',
-      tags: '@mas-ccd @suggested-card @commerce @smoke @regression @milo',
+      tags: '@mas-ccd @suggested-card @commerce @smoke @regression @milo @nopr',
     },
     // SLICE CARDS - SINGLE WIDTH
     {
@@ -172,7 +172,7 @@ module.exports = {
         ctaAnalyticsId: 'buy-now',
       },
       browserParams: '?theme=dark',
-      tags: '@mas-ccd @slice-card @slice-single @commerce @smoke @regression @milo',
+      tags: '@mas-ccd @slice-card @slice-single @commerce @smoke @regression @milo @nopr',
     },
     {
       tcid: '9',
@@ -189,7 +189,7 @@ module.exports = {
         iconLink2: 'https://www.adobe.com/products/photoshop-lightroom.html',
       },
       browserParams: '?theme=dark',
-      tags: '@mas-ccd @slice-card @slice-single @commerce @smoke @regression @milo',
+      tags: '@mas-ccd @slice-card @slice-single @commerce @smoke @regression @milo @nopr',
     },
     {
       tcid: '10',
@@ -207,7 +207,7 @@ module.exports = {
         // iconLink: '',
       },
       browserParams: '?theme=dark',
-      tags: '@mas-ccd @slice-card @slice-single @commerce @smoke @regression @milo',
+      tags: '@mas-ccd @slice-card @slice-single @commerce @smoke @regression @milo @nopr',
     },
     {
       tcid: '11',
@@ -225,7 +225,7 @@ module.exports = {
         // iconLink: '',
       },
       browserParams: '?theme=dark',
-      tags: '@mas-ccd @slice-card @slice-single @commerce @smoke @regression @milo',
+      tags: '@mas-ccd @slice-card @slice-single @commerce @smoke @regression @milo @nopr',
     },
     {
       tcid: '12',
@@ -242,7 +242,7 @@ module.exports = {
         // iconLink: '',
       },
       browserParams: '?theme=dark',
-      tags: '@mas-ccd @slice-card @slice-single @commerce @smoke @regression @milo',
+      tags: '@mas-ccd @slice-card @slice-single @commerce @smoke @regression @milo @nopr',
     },
     {
       tcid: '13',
@@ -259,7 +259,7 @@ module.exports = {
         // iconLink: '',
       },
       browserParams: '?theme=dark',
-      tags: '@mas-ccd @slice-card @slice-single @commerce @smoke @regression @milo',
+      tags: '@mas-ccd @slice-card @slice-single @commerce @smoke @regression @milo @nopr',
     },
     // SLICE CARDS - WIDE (DOUBLE) WIDTH
     {
@@ -282,7 +282,7 @@ module.exports = {
         ctaDaaLL: 'register-now-1',
       },
       browserParams: '?theme=dark',
-      tags: '@mas-ccd @slice-card @slice-wide @commerce @smoke @regression @milo',
+      tags: '@mas-ccd @slice-card @slice-wide @commerce @smoke @regression @milo @nopr',
     },
     {
       tcid: '15',
@@ -300,7 +300,7 @@ module.exports = {
         // iconLink: '',
       },
       browserParams: '?theme=dark',
-      tags: '@mas-ccd @slice-card @slice-wide @commerce @smoke @regression @milo',
+      tags: '@mas-ccd @slice-card @slice-wide @commerce @smoke @regression @milo @nopr',
     },
     {
       tcid: '16',
@@ -318,7 +318,7 @@ module.exports = {
         // iconLink: '',
       },
       browserParams: '?theme=dark',
-      tags: '@mas-ccd @slice-card @slice-wide @commerce @smoke @regression @milo',
+      tags: '@mas-ccd @slice-card @slice-wide @commerce @smoke @regression @milo @nopr',
     },
     {
       tcid: '17',
@@ -337,7 +337,7 @@ module.exports = {
         // iconLink: '',
       },
       browserParams: '?theme=dark',
-      tags: '@mas-ccd @slice-card @slice-wide @commerce @smoke @regression @milo',
+      tags: '@mas-ccd @slice-card @slice-wide @commerce @smoke @regression @milo @nopr',
     },
     {
       tcid: '18',
@@ -355,7 +355,7 @@ module.exports = {
         // iconLink: '',
       },
       browserParams: '?theme=dark',
-      tags: '@mas-ccd @slice-card @slice-wide @commerce @smoke @regression @milo',
+      tags: '@mas-ccd @slice-card @slice-wide @commerce @smoke @regression @milo @nopr',
     },
   ],
 };
