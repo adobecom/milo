@@ -1,5 +1,4 @@
 /* eslint-disable import/no-unresolved, no-underscore-dangle, class-methods-use-this */
-import DA_SDK from 'https://da.live/nx/utils/sdk.js';
 import { LitElement, html, nothing } from 'https://da.live/deps/lit/dist/index.js';
 import getStyle from 'https://da.live/nx/utils/styles.js';
 import getSvg from 'https://da.live/nx/public/utils/svg.js';
@@ -8,7 +7,7 @@ import promoteFiles from '../promote.js';
 import previewOrPublishPaths from '../bulk-action.js';
 import { SUCCESS_CODES } from '../constants.js';
 import getFilesToPromote from './promote-paths.js';
-import validatePaths from './utils.js';
+import { validatePaths, getValidGraybox } from './utils.js';
 import GrayboxConfig from './graybox-config.js';
 import * as floodbox from '../floodbox.js';
 
@@ -333,9 +332,9 @@ export default class MiloGraybox extends LitElement {
     this.requestUpdate();
   }
 
-  resetApp() {
-    const newMiloGraybox = new MiloGraybox();
-    this.replaceWith(newMiloGraybox);
+  async resetApp() {
+    const cmp = await getValidGraybox();
+    this.replaceWith(cmp);
   }
 
   renderError() {
@@ -389,7 +388,7 @@ export default class MiloGraybox extends LitElement {
         <h3>Promote Graybox Paths</h3> 
       ` : nothing}
         <div class="detail-cards promote-cards">
-          ${floodbox.renderBadge('Remaining', this._filesToPromote.length - this._promotedFilesCount - this._promoteIgnoreList.length)}
+          ${floodbox.renderBadge('Remaining', this._filesToPromote.length - this._promotedFilesCount - this._promoteErrorList.length)}
           ${floodbox.renderBadge('Promote Ignored', this._promoteIgnoreList.length, true)}
           ${floodbox.renderBadge('Promote Errors', this._promoteErrorList.length, true)}
           ${floodbox.renderBadge('Success', this._promotedFilesCount)}
@@ -489,9 +488,6 @@ export default class MiloGraybox extends LitElement {
 customElements.define('milo-graybox', MiloGraybox);
 
 (async function init() {
-  const { context, token } = await DA_SDK;
-  const cmp = document.createElement('milo-graybox');
-  cmp.repo = context.repo;
-  cmp.token = token;
+  const cmp = await getValidGraybox();
   document.body.appendChild(cmp);
 }());
