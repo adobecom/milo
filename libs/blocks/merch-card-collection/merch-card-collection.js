@@ -1,3 +1,4 @@
+import '../merch/merch.js';
 import { overrideUrlOrigin } from '../../utils/helpers.js';
 import {
   createTag, decorateLinks, getConfig, loadBlock, loadStyle, localizeLink,
@@ -131,14 +132,8 @@ export function parsePreferences(elements) {
 }
 
 /** Retrieve cards from query-index  */
-async function fetchCardsData(config, type, el) {
+async function fetchCardsData(config, endpointElement, type, el) {
   let cardsData;
-  const usePreviewIndex = config.env.name === 'stage' && !window.location.host.includes('.live');
-  const endpointElement = el.querySelector(`a[href*="${usePreviewIndex ? PREVIEW_INDEX : PROD_INDEX}"]`)
-                            ?? el.querySelector(`a[href*="${PROD_INDEX}"]`);
-  if (!endpointElement) {
-    throw new Error('No query-index endpoint provided');
-  }
   el.querySelector(`a[href*="${PROD_INDEX}"]`)?.remove();
   el.querySelector(`a[href*="${PREVIEW_INDEX}"]`)?.remove();
   let queryIndexCardPath = localizeLink(endpointElement.getAttribute('href'), config);
@@ -185,28 +180,39 @@ export default async function init(el) {
   }
   const config = getConfig();
   const type = el.classList[1];
-  const cardsDataPromise = fetchCardsData(config, type, el);
 
-  const merchCardCollectionDep = import('../../deps/mas/merch-card-collection.js');
-  const polyfills = import('../merch/merch.js');
-  await polyfills;
-  let deps = [
-    polyfills,
-    merchCardCollectionDep,
-    import('../merch-card/merch-card.js'),
-    import('../../deps/mas/merch-card.js'),
-  ];
-
-  const { base, mep } = getConfig();
-  const merchStyles = new Promise((resolve) => {
-    loadStyle(`${base}/blocks/merch/merch.css`, resolve);
-  });
-  const merchCardStyles = new Promise((resolve) => {
-    loadStyle(`${base}/blocks/merch-card/merch-card.css`, resolve);
-  });
+  const usePreviewIndex = config.env.name === 'stage' && !window.location.host.includes('.live');
+  const endpointElement = el.querySelector(`a[href*="${usePreviewIndex ? PREVIEW_INDEX : PROD_INDEX}"]`)
+                            ?? el.querySelector(`a[href*="${PROD_INDEX}"]`);
+  if (!endpointElement) {
+    return fail(el, 'No query-index endpoint provided');
+  }
 
   let cardsData;
+  let deps;
+  let base;
+  let mep;
+  let merchStyles;
+  let merchCardStyles;
+  const merchCardCollectionDep = import(
+    '../../deps/mas/merch-card-collection.js'
+  );
   try {
+    const cardsDataPromise = fetchCardsData(config, endpointElement, type, el);
+    deps = [
+      merchCardCollectionDep,
+      import('../merch-card/merch-card.js'),
+      import('../../deps/mas/merch-card.js'),
+    ];
+
+    ({ base, mep } = config);
+    merchStyles = new Promise((resolve) => {
+      loadStyle(`${base}/blocks/merch/merch.css`, resolve);
+    });
+    merchCardStyles = new Promise((resolve) => {
+      loadStyle(`${base}/blocks/merch-card/merch-card.css`, resolve);
+    });
+
     cardsData = await cardsDataPromise;
   } catch (error) {
     return fail(el, error);
