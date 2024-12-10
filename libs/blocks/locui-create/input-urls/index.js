@@ -86,11 +86,11 @@ export async function findFragments(urls) {
   return validateUrlsFormat(foundFragments, true);
 }
 export function getInitialName(type) {
-  const preffix = type === LOCALIZATION_TYPES.rollout ? 'rollout' : 'translate';
+  const prefix = type === LOCALIZATION_TYPES.rollout ? 'rollout' : 'translate';
   let date = new Date().toISOString();
   if (date.indexOf('.') > -1) {
     date = date.slice(0, date.indexOf('.'));
   }
   const formattedDate = date.replace(/[-:]/g, '').replace(/T/g, '-');
-  return `${preffix}-${formattedDate}`;
+  return `${prefix}-${formattedDate}`;
 }

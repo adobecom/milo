@@ -156,13 +156,13 @@ export default function useInputLocale() {
     if (storedLanguages.length < 1) {
       return languages.map((lang) => ({ ...lang, action: project.value.type === LOCALIZATION_TYPES.translation ? 'Translate' : 'Rollout', workflow: '' }));
     }
-    let i = 0;
+    let iteratorIndex = 0;
     const prefilledLanguages = [];
 
-    while (i < languages.length) {
-      const { action, workflow } = storedLanguages[i] ?? {};
+    while (iteratorIndex < languages.length) {
+      const { action, workflow } = storedLanguages[iteratorIndex] ?? {};
       const prefillLanguage = {
-        ...languages[i],
+        ...languages[iteratorIndex],
         action,
         workflow: workflow || '',
       };
@@ -170,7 +170,7 @@ export default function useInputLocale() {
         prefillLanguage.action = project.value.type === LOCALIZATION_TYPES.translation ? 'Translate' : 'Rollout';
       }
       prefilledLanguages.push(prefillLanguage);
-      i += 1;
+      iteratorIndex += 1;
     }
     return prefilledLanguages;
   };
