@@ -81,7 +81,8 @@ describe('MMM', () => {
     expect(h4.textContent).to.equal('3 Manifest(s) found');
     expect(mmmPopupHeader.textContent).to.include('Target integration feature is on');
     expect(mmmPopupHeader.textContent).to.include('Personalization feature is on');
-    expect(mmmPopupHeader.textContent).to.include('Page\'s Prefix/Region/Locale are en-us / us / en-US');
+    expect(mmmPopupHeader.textContent).to.include('Page\'s Geo Folder is nothing (US)');
+    expect(mmmPopupHeader.textContent).to.include('Page\'s Locale is en-us');
     expect(mmmPopupHeader.textContent).to.include('Last seen:');
     const mepManifestList = mmmPopup.querySelector('.mep-manifest-list');
     expect(mepManifestList).to.exist;
