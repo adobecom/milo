@@ -1,4 +1,6 @@
+import getServiceConfig from '../../../utils/service-config.js';
 import { origin } from '../../locui/utils/franklin.js';
+import { env } from '../store.js';
 import { LOCALIZATION_TYPES } from './constant.js';
 
 export function getTenantName() {
@@ -62,3 +64,16 @@ export const createPayload = (project) => {
     },
   };
 };
+
+export async function getMilocUrl() {
+  if (env.value === 'dev') {
+    return 'https://14257-miloc-dev.adobeioruntime.net/api/v1/web/miloc-0.0.1/';
+  }
+  const { miloc } = await getServiceConfig(origin, env.value);
+  return miloc.url;
+}
+
+export function getEnvQueryParam() {
+  const urlSearchParams = new URLSearchParams(window.location.search);
+  return urlSearchParams.get('env') ?? 'dev';
+}

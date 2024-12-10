@@ -1,11 +1,12 @@
 import { signal } from '../../deps/htm-preact.js';
 import login from '../../tools/sharepoint/login.js';
 import { accessToken } from '../../tools/sharepoint/state.js';
-import { API_BASE_URL, LOCALES, LOCALE_GROUPS } from './utils/constant.js';
+import { LOCALES, LOCALE_GROUPS } from './utils/constant.js';
 import {
   processLocaleData,
   getTenantName,
   createPayload,
+  getMilocUrl,
 } from './utils/utils.js';
 
 export const telemetry = { application: { appName: 'Adobe Localization' } };
@@ -19,6 +20,7 @@ export const locales = signal([]);
 export const localeRegion = signal([]);
 export const locSelected = signal(null);
 export const projectType = signal('rollout');
+export const env = signal('dev');
 
 export function nextStep() {
   currentStep.value += 1;
@@ -103,8 +105,10 @@ export async function createDraftProject() {
   }
   let error = 'Something went wrong. Please try again!';
   loading.value = true;
+
   try {
-    const response = await fetch(`${API_BASE_URL.dev}/create-draft-project`, {
+    const url = await getMilocUrl();
+    const response = await fetch(`${url}create-draft-project`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -143,8 +147,9 @@ export async function updateDraftProject(publish = false) {
     publish,
   };
   try {
+    const url = await getMilocUrl();
     const opts = { method: 'POST', headers: { 'User-Token': userToken, 'Content-Type': 'application/json' }, body: JSON.stringify(body) };
-    const resp = await fetch(`${API_BASE_URL.dev}/update-draft-project`, opts);
+    const resp = await fetch(`${url}update-draft-project`, opts);
     const respJson = await resp.json();
     if (resp.ok) {
       projectInfo.value = respJson;

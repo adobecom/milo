@@ -1,12 +1,13 @@
 import { html, render, useEffect } from '../../deps/htm-preact.js';
 import InputLocales from './input-locale/view.js';
 import InputUrls from './input-urls/view.js';
-import { currentStep, fetchLocaleDetails, getUserToken, loading } from './store.js';
+import { currentStep, env, fetchLocaleDetails, getUserToken, loading } from './store.js';
 import StepTracker from './components/stepTracker.js';
 import InputActions from './input-actions/view.js';
 import Header from '../milostudio-header/milostudio-header.js';
 import Sidenav from '../milostudio-sidenav/sidenav.js';
 import { getConfig, loadStyle } from '../../utils/utils.js';
+import { getEnvQueryParam } from './utils/utils.js';
 
 function Create() {
   useEffect(() => {
@@ -14,6 +15,7 @@ function Create() {
       try {
         await fetchLocaleDetails();
         await getUserToken();
+        env.value = getEnvQueryParam();
       } catch (error) {
         // console.error('Error fetching locale details:', error);
       }
