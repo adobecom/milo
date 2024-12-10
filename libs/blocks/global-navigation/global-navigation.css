@@ -1053,7 +1053,7 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
   top: 0;
   width: 100%;
   left: 0;
-  z-index: 2;
+  z-index: 10;
 }
 
 .feds-localnav a {
