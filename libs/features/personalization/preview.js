@@ -363,8 +363,6 @@ export async function saveToMmm() {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      // TODO: remove for origin check?
-      Authorization: 'Bearer legit',
     },
     body: JSON.stringify(data),
   })
