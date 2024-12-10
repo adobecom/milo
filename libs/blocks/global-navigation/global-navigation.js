@@ -1058,7 +1058,6 @@ class Gnav {
         if (!isDesktop.matches && this.newMobileNav && popup) {
           originalContent = await transformTemplateToMobile(popup, item, this.isLocalNav());
           popup.querySelector('.close-icon')?.addEventListener('click', this.toggleMenuMobile);
-          makeTabActive(popup);
         }
         isDesktop.addEventListener('change', async () => {
           if (isDesktop.matches) {
