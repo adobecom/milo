@@ -1,3 +1,8 @@
+import getServiceConfig from '../../../utils/service-config.js';
+import { origin } from '../../locui/utils/franklin.js';
+import { env } from '../store.js';
+import { LOCALIZATION_TYPES } from './constant.js';
+
 export function getTenantName() {
   try {
     const url = window.location.href;
@@ -34,4 +39,41 @@ export function processLocaleData(localeData) {
   }));
 
   return { locales: processedLocales, localeRegion: processedLocaleRegion };
+}
+
+export const createPayload = (project) => {
+  let urls = [...project.value.urls];
+  if (project.value.fragments.length > 0) {
+    urls = [
+      ...urls,
+      ...project.value.fragments.map((frag) => `${origin}${frag}`),
+    ];
+  }
+
+  return {
+    tenantBaseUrl: origin,
+    projectName: project.value.name,
+    projectType: project.value.type === LOCALIZATION_TYPES.rollout ? 'rollout' : 'localization',
+    referrer: 'studio',
+    languages: project.value.languages,
+    urls,
+    settings: {
+      env: 'stage',
+      regionalEditBehaviour: project.value.editBehavior,
+      useHtmlFlow: project.value.htmlFlow,
+    },
+  };
+};
+
+export async function getMilocUrl() {
+  if (env.value === 'dev') {
+    return 'https://14257-miloc-dev.adobeioruntime.net/api/v1/web/miloc-0.0.1/';
+  }
+  const { miloc } = await getServiceConfig(origin, env.value);
+  return miloc.url;
+}
+
+export function getEnvQueryParam() {
+  const urlSearchParams = new URLSearchParams(window.location.search);
+  return urlSearchParams.get('env') ?? 'dev';
 }

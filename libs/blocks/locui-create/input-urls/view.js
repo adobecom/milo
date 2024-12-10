@@ -5,7 +5,14 @@ import {
   useState,
 } from '../../../deps/htm-preact.js';
 import FragmentsSection from '../fragments/view.js';
-import { nextStep, project, setProject } from '../store.js';
+import {
+  createDraftProject,
+  nextStep,
+  project,
+  projectCreated,
+  setProject,
+  updateDraftProject,
+} from '../store.js';
 import StepControls from '../components/stepControls.js';
 import { origin } from '../../locui/utils/franklin.js';
 import {
@@ -15,9 +22,11 @@ import {
   validateUrls,
   findFragments,
   validateFragments,
+  getInitialName,
 } from './index.js';
 import { getUrls } from '../../locui/loc/index.js';
 import { URL_SEPARATOR_PATTERN } from '../utils/constant.js';
+import Toast from '../components/toast.js';
 
 export default function InputUrls() {
   const [type, setType] = useState('translation');
@@ -36,6 +45,7 @@ export default function InputUrls() {
     urlsStr: '',
     fragments: '',
   });
+  const [apiError, setApiError] = useState('');
 
   const errorPresent = checkForErrors(errors);
 
@@ -62,6 +72,9 @@ export default function InputUrls() {
   function handleTypeChange(_type) {
     setType(_type);
     setErrors({ ...errors, editBehavior: '' });
+    if (!projectCreated.value) {
+      setName(getInitialName(_type));
+    }
   }
 
   function handleNameChange(ev) {
@@ -113,7 +126,7 @@ export default function InputUrls() {
     [fragmentsEnabled, noOfValidFrag],
   );
 
-  function handleNext() {
+  async function handleNext() {
     const formErrors = validateForm({
       type,
       name,
@@ -136,12 +149,22 @@ export default function InputUrls() {
       urls: urlsStr.split(/,|\n/),
       fragments,
     });
+    let error = '';
+    if (!projectCreated.value) {
+      error = await createDraftProject();
+    } else {
+      error = await updateDraftProject();
+    }
+    setApiError(error);
+    if (error) {
+      return;
+    }
     nextStep();
   }
 
   useEffect(() => {
     setType(project.value?.type || 'translation');
-    setName(project.value?.name || '');
+    setName(project.value?.name || getInitialName('translation'));
     setHtmlFlow(project.value?.htmlFlow || false);
     setEditBehavior(project.value?.editBehavior || '');
     setUrlsStr(project.value?.urls?.join('\n') || '');
@@ -203,6 +226,7 @@ export default function InputUrls() {
               <input
                 class=${`form-field-input ${errors.name && 'error'}`}
                 value=${name}
+                disabled=${projectCreated.value}
                 onInput=${handleNameChange}
                 placeholder="Enter letters, alphabet and hyphens only"
               />
@@ -296,6 +320,13 @@ export default function InputUrls() {
           </div>
         </div>
       </div>
+
+      ${apiError
+      && html`<${Toast}
+        message=${apiError}
+        type="error"
+        onClose=${() => setApiError('')}
+      />`}
 
       <div>
         <${StepControls} nextDisabled=${errorPresent} onNext=${handleNext} />

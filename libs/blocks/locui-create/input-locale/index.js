@@ -8,6 +8,7 @@ import {
   locSelected,
   setProject,
   setLocale,
+  updateDraftProject,
 } from '../store.js';
 import { LOCALIZATION_TYPES } from '../utils/constant.js';
 
@@ -22,8 +23,11 @@ export default function useInputLocale() {
     locSelected.value?.activeLocales || {},
   );
 
+  const [apiError, setApiError] = useState('');
+
   useEffect(() => {
-    if (project.value.type === 'rollout' || project.value.type === 'translate') {
+    if (project.value.type === LOCALIZATION_TYPES.rollout
+      || project.value.type === LOCALIZATION_TYPES.translation) {
       locales.value = locales.value.filter((locItem) => locItem.workflow !== 'Transcreation' && locItem.livecopies !== '');
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -44,13 +48,14 @@ export default function useInputLocale() {
       }
       groupedLocales[language].push(locale);
     });
-    return Object.entries(groupedLocales).map(([language, localeList]) => ({
-      language,
-      locales: project.value.type === LOCALIZATION_TYPES.translation ? [] : localeList,
-      action: project.value.type === LOCALIZATION_TYPES.translation ? 'Translate' : 'Rollout',
-      languagecode: languageCodes[language],
-      workflow: '',
-    }));
+    return Object.entries(groupedLocales).map(([language, localeList]) => {
+      const languageItem = {
+        language,
+        locales: project.value.type === LOCALIZATION_TYPES.translation ? [] : localeList,
+        langCode: languageCodes[language],
+      };
+      return languageItem;
+    });
   };
 
   const updateActiveLocales = (localesToUpdate, isDeselecting = false) => {
@@ -146,11 +151,42 @@ export default function useInputLocale() {
 
   const errorPresent = () => Object.keys(activeLocales).length > 0;
 
-  const handleNext = () => {
+  const prefillActionAndWorkflow = (languages) => {
+    const storedLanguages = project.value?.languages ?? [];
+    if (storedLanguages.length < 1) {
+      return languages.map((lang) => ({ ...lang, action: project.value.type === LOCALIZATION_TYPES.translation ? 'Translate' : 'Rollout', workflow: '' }));
+    }
+    let iteratorIndex = 0;
+    const prefilledLanguages = [];
+
+    while (iteratorIndex < languages.length) {
+      const { action, workflow } = storedLanguages[iteratorIndex] ?? {};
+      const prefillLanguage = {
+        ...languages[iteratorIndex],
+        action,
+        workflow: workflow || '',
+      };
+      if (!action) {
+        prefillLanguage.action = project.value.type === LOCALIZATION_TYPES.translation ? 'Translate' : 'Rollout';
+      }
+      prefilledLanguages.push(prefillLanguage);
+      iteratorIndex += 1;
+    }
+    return prefilledLanguages;
+  };
+
+  const handleNext = async () => {
     if (!errorPresent()) return;
-    setProject({ languages: transformActiveLocales() });
+    const sortedLanguages = transformActiveLocales().sort((a, b) => a.language - b.language);
+    setProject({ languages: prefillActionAndWorkflow(sortedLanguages) });
     setLocale({ selectedRegion, selectedLocale, activeLocales });
-    nextStep();
+
+    const error = await updateDraftProject();
+    if (error) {
+      setApiError(error);
+    } else {
+      nextStep();
+    }
   };
 
   const handleBack = () => {
@@ -211,5 +247,7 @@ export default function useInputLocale() {
     selectLanguage,
     toggleLocale,
     selectAll,
+    apiError,
+    setApiError,
   };
 }
