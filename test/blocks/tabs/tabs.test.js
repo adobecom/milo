@@ -4,7 +4,6 @@ import { delay } from '../../helpers/waitfor.js';
 import { loadStyle } from '../../../libs/utils/utils.js';
 
 const DESKTOP_WIDTH = 1200;
-const TABLET_WIDTH = 768;
 const MOBILE_WIDTH = 375;
 const HEIGHT = 1500;
 
