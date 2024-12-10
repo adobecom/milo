@@ -145,8 +145,9 @@ merch-card-collection > div[slot] p {
     padding: var(--spacing-m);
 }
 
-merch-card[variant] * {
-  box-sizing: initial;
+merch-card[variant="ccd-suggested"] *,
+merch-card[variant="ccd-slice"] * {
+  box-sizing: border-box;
 }
 
 merch-card.background-opacity-70 {

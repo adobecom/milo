@@ -39,6 +39,8 @@ export class CCDSlice extends VariantLayout {
             --consonant-merch-card-border-color:rgb(230, 230, 230);
             --consonant-merch-card-body-s-color: rgb(34, 34, 34);
             --mod-img-height: 29px;
+            
+            box-sizing: border-box;
             min-width: 290px;
             max-width: 322px;
             max-height: 154px;
@@ -52,6 +54,8 @@ export class CCDSlice extends VariantLayout {
             font-size: var(--consonant-merch-card-body-xs-font-size);
             line-height: var(--consonant-merch-card-body-xxs-line-height);
             max-width: 154px;
+            height: 54px;
+            overflow: hidden;
         }
 
         :host([variant='ccd-slice'][size='wide']) ::slotted([slot='body-s']) {
@@ -90,8 +94,8 @@ export class CCDSlice extends VariantLayout {
             display: flex;
             justify-content: center;
             flex-shrink: 0;
-            width: 119px;
-            height: 119px;
+            width: 134px;
+            height: 149px;
             overflow: hidden;
             border-radius: 50%;
             padding: 15px;

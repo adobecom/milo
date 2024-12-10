@@ -44,7 +44,7 @@ export class CCDSuggested extends VariantLayout {
 
     static variantStyle = css`
         :host([variant='ccd-suggested']) {
-            --consonant-merch-card-background-color: rgb(75, 75, 75);
+            --consonant-merch-card-background-color:rgb(245, 245, 245);
             --consonant-merch-card-body-xs-color:rgb(75, 75, 75);
             --consonant-merch-card-border-color:rgb(225, 225, 225);
             --consonant-merch-card-detail-s-color:rgb(110, 110, 110);
@@ -52,6 +52,7 @@ export class CCDSuggested extends VariantLayout {
             --merch-color-inline-price-strikethrough: var(--spectrum-gray-600);
             --mod-img-height: 38px;
 
+            box-sizing: border-box;
             width: 305px;
             min-width: 305px;
             min-height: 205px;

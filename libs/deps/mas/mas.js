@@ -1320,7 +1320,7 @@ merch-card[variant='twp'] merch-offer-select {
             </div>
             <slot></slot>`}};p(dt,"variantStyle",C`
         :host([variant='ccd-suggested']) {
-            --consonant-merch-card-background-color: rgb(75, 75, 75);
+            --consonant-merch-card-background-color:rgb(245, 245, 245);
             --consonant-merch-card-body-xs-color:rgb(75, 75, 75);
             --consonant-merch-card-border-color:rgb(225, 225, 225);
             --consonant-merch-card-detail-s-color:rgb(110, 110, 110);
@@ -1328,6 +1328,7 @@ merch-card[variant='twp'] merch-offer-select {
             --merch-color-inline-price-strikethrough: var(--spectrum-gray-600);
             --mod-img-height: 38px;
 
+            box-sizing: border-box;
             width: 305px;
             min-width: 305px;
             min-height: 205px;
@@ -1462,6 +1463,8 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
             --consonant-merch-card-border-color:rgb(230, 230, 230);
             --consonant-merch-card-body-s-color: rgb(34, 34, 34);
             --mod-img-height: 29px;
+            
+            box-sizing: border-box;
             min-width: 290px;
             max-width: 322px;
             max-height: 154px;
@@ -1475,6 +1478,8 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
             font-size: var(--consonant-merch-card-body-xs-font-size);
             line-height: var(--consonant-merch-card-body-xxs-line-height);
             max-width: 154px;
+            height: 54px;
+            overflow: hidden;
         }
 
         :host([variant='ccd-slice'][size='wide']) ::slotted([slot='body-s']) {
@@ -1513,8 +1518,8 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
             display: flex;
             justify-content: center;
             flex-shrink: 0;
-            width: 119px;
-            height: 119px;
+            width: 134px;
+            height: 149px;
             overflow: hidden;
             border-radius: 50%;
             padding: 15px;
@@ -1688,8 +1693,9 @@ merch-card-collection > div[slot] p {
     padding: var(--spacing-m);
 }
 
-merch-card[variant] * {
-  box-sizing: initial;
+merch-card[variant="ccd-suggested"] *,
+merch-card[variant="ccd-slice"] * {
+  box-sizing: border-box;
 }
 
 merch-card.background-opacity-70 {
