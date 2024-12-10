@@ -98,11 +98,15 @@ function parseMepConfig() {
   let page = pathname;
   let domain = origin;
   if (env?.name !== 'prod' && stageDomainsMap) {
-    const allowedHosts = ['adobe.com', 'stage.adobe.com'];
+    const allowedHosts = [
+      'business.stage.adobe.com',
+      'www.stage.adobe.com',
+      'milo.stage.adobe.com',
+    ];
     const domainCheck = Object.keys(stageDomainsMap)
       .find((key) => {
         try {
-          const host = new URL(`https://${key}`).host;
+          const { host } = new URL(`https://${key}`);
           return allowedHosts.includes(host);
         } catch (e) {
           return false;
