@@ -77,24 +77,21 @@ function parseMepConfig() {
   const { experiments, targetEnabled, prefix, highlight } = mep;
   const activities = experiments.map((experiment) => {
     const {
-      name, variantNames, event, disabled, manifest, source, selectedVariantName,
-      manifestType, manifestOverrideName,
+      name, event, manifest, variantNames, selectedVariantName, disabled, analyticsTitle, source,
     } = experiment;
-    let manifestUrl = manifest;
-    try { manifestUrl = new URL(manifest); } catch (e) { /* do nothing */ }
+    let pathname = manifest;
+    try { pathname = new URL(manifest).pathname; } catch (e) { /* do nothing */ }
     return {
       targetActivityName: name,
       variantNames,
       selectedVariantName,
       url: manifest,
       disabled,
-      manifest,
-      manifestType,
-      manifestOverrideName,
       source,
       eventStart: event?.startUtc,
       eventEnd: event?.endUtc,
-      pathname: manifestUrl.pathname,
+      pathname,
+      analyticsTitle,
     };
   });
   const { pathname, origin } = window.location;
@@ -148,6 +145,7 @@ function getManifestListDomAndParameter(mepConfig) {
       manifestOverrideName,
       targetActivityName,
       source,
+      analyticsTitle,
     } = manifest;
     const editUrl = manifestUrl || manifestPath;
     const editPath = normalizePath(editUrl);
@@ -194,15 +192,7 @@ function getManifestListDomAndParameter(mepConfig) {
       ? `<p>Scheduled - ${manifest.disabled ? 'inactive' : 'active'}</p>
          <p>On: ${formatDate(manifest.event.start)} - <a target= "_blank" href="?instant=${manifest.event.start?.toISOString()}">instant</a></p>
          <p>Off: ${formatDate(manifest.event.end)}</p>` : '';
-    let analyticsTitle = '';
-    if (manifestType !== TRACKED_MANIFEST_TYPE) {
-      analyticsTitle = 'N/A for this manifest type';
-    } else if (manifestOverrideName) {
-      analyticsTitle = manifestOverrideName;
-    } else {
-      analyticsTitle = manifest.manifest.replace('.json', '').slice(0, 20);
-    }
-    manifestList += `<div class="mep-manifest-info" title="Manifest location: ${editUrl}&#013;Analytics manifest name: ${analyticsTitle}">
+    manifestList += `<div class="mep-manifest-info" title="Manifest location: ${editUrl}&#013;Analytics manifest name: ${analyticsTitle || 'N/A for this manifest type'}">
       <div class="mep-manifest-title">
         ${mIdx + 1}. ${getFileName(manifestPath)}
         <a class="mep-edit-manifest" href="${editUrl}" target="_blank" title="Open manifest">
@@ -346,17 +336,17 @@ export async function saveToMmm() {
   if (data.page.url.includes('/drafts/')) return false;
   data.activities = data.activities.filter((activity) => {
     const { url, source } = activity;
-    activity.source = activity.source.filter((item) => item !== 'mep param');
-    return (!!(source?.length && !url.includes('/drafts/')));
+    activity.source = source.filter((item) => item !== 'mep param');
+    return (!!(activity.source?.length && !url.includes('/drafts/')));
   });
   data.activities = data.activities.map((activity) => {
     activity.variantNames = activity.variantNames?.join('||') || '';
     activity.source = activity.source?.join(',') || '';
+    delete activity.selectedVariantName;
     return activity;
   });
   if (data.page.prefix === US_GEO) data.page.prefix = '';
   data.page.target = getMetadata('target') || 'off';
-  data.page.geo = data.page.geo === US_GEO ? '' : data.page.geo;
   delete data.page.highlight;
   return fetch(API_URLS.save, {
     method: 'POST',

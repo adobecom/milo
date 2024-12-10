@@ -877,8 +877,10 @@ export async function getManifestConfig(info = {}, variantOverride = false) {
   };
   if (infoTab) {
     manifestConfig.manifestType = infoObj?.['manifest-type']?.toLowerCase();
-    if (manifestOverrideName && manifestConfig.manifestType === TRACKED_MANIFEST_TYPE) {
+    if (manifestConfig.manifestType === TRACKED_MANIFEST_TYPE) {
       manifestConfig.manifestOverrideName = manifestOverrideName;
+      const analytics = manifestOverrideName || getFileName(manifestPath).replace('.json', '');
+      manifestConfig.analyticsTitle = analytics.trim().slice(0, 15);
     }
     const executionOrder = {
       'manifest-type': 1,
@@ -1077,10 +1079,7 @@ export async function applyPers(manifests) {
     const val = r.experiment.selectedVariantName.replace(TARGET_EXP_PREFIX, '').trim().slice(0, 15);
     return val === 'default' ? 'nopzn' : val;
   });
-  const pznManifests = pznList.map((r) => {
-    const val = r.experiment?.manifestOverrideName || r.experiment?.manifest;
-    return getFileName(val).replace('.json', '').trim().slice(0, 15);
-  });
+  const pznManifests = pznList.map((r) => r.experiment.analyticsTitle);
   config.mep.martech = `|${pznVariants.join('--')}|${pznManifests.join('--')}`;
 }
 
