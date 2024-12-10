@@ -276,7 +276,8 @@ export function getMepPopup(mepConfig, isMmm = false) {
         <div class="mep-manifest-page-info-title">Page Info:</div>
         <div>Target integration feature is ${targetOnText}</div>
         <div>Personalization feature is ${page.personalization}</div>
-        <div>Page's Prefix/Region/Locale are ${page.geo || US_GEO} / ${page.region} / ${page.locale}</div>
+        <div>Page's Geo Folder is ${page.geo || 'nothing (US)'}</div>
+        <div>Page's Locale is ${page.locale?.toLowerCase()}</div>
         ${page.lastSeen ? `<div>Last seen: ${formatDate(new Date(page.lastSeen))}</div>` : ''}
     </div>`;
   mepManifestList.innerHTML = manifestList;
