@@ -4,16 +4,10 @@
     <meta charset="UTF-8">
     <title>CCD Gallery</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="spectrum.css">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://p.typekit.net/p.css?s=1&k=hah7vzn&ht=tk&f=7180.7181.7182.7183.22474.22749.22750.22751.22753&a=8634977&app=typekit&e=css">
     <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
-    <script src="../../spectrum-web-components/dist/shared.js" type="module"></script>
-    <script src="../../spectrum-web-components/dist/button.js" type="module"></script>
-    <script src="../../spectrum-web-components/dist/base.js" type="module"></script>
-    <script src="../../spectrum-web-components/dist/icons-ui.js" type="module"></script>
-    <script src="../../spectrum-web-components/dist/icon.js" type="module"></script>
-    <script src="../../spectrum-web-components/dist/icons/cross.js" type="module"></script>
-    <script src="../../spectrum-web-components/dist/icons/checkmark.js" type="module"></script>
     <script src="/libs/deps/lit-all.min.js" type="module"></script>
 
     <script>
@@ -32,17 +26,18 @@
       meta.name = 'aem-base-url';
       meta.content = `https://${env}.adobe.com`;
       document.head.appendChild(meta);
+
+      const params = new URLSearchParams(document.location.search);
+      function toggleTheme(theme) {
+        document.body.className = 'spectrum spectrum--medium';
+        document.body.classList.add(`spectrum--${theme}`);
+        params.set('theme', theme);
+        history.replaceState(null, '', `${location.pathname}?${params}`);
+      }
     </script>
     <script type="module" src="../dist/mas.js"></script>
 
     <script type="module">
-      // theme
-      const params = new URLSearchParams(document.location.search);
-      const darkTheme = params?.get('theme')?.toLowerCase() === 'dark';
-      const theme = document.createElement('script');
-      theme.setAttribute('src', `../../spectrum-web-components/dist/themes/${darkTheme ? 'dark' : 'light'}.js`);
-      theme.setAttribute('type', `module`);
-      document.head.appendChild(theme);
       // mas-commerce-service
       const masCommerceService = document.createElement('mas-commerce-service');
       ['locale','language','env'].forEach((attribute) => {
@@ -64,7 +59,7 @@
         <h1 id="ccd-gallery" tabindex="-1">CCD Gallery <a class="header-anchor" href="#ccd-gallery" href="#ccd-gallery" title="Permalink to this heading">#</a></h1>
         Switch Theme: <a class="spectrum-Link pectrum-Link--secondary" href="javascript:toggleTheme('darkest');">Darkest</a> OR <a class="spectrum-Link pectrum-Link--secondary" href="javascript:toggleTheme('light');">Light</a>
 
-        <h2 id="ccd-slice-card" tabindex="-1">CCD Slice Card <a class="header-anchor" href="#ccd-slice-card" href="#ccd-slice-card" title="Permalink to this heading">#</a></h2>
+        <h2 id="ccd-slice-card" tabindex="-1">CCD Slice Card <a class="header-anchor" href="#ccd-slice-card" title="Permalink to this heading">#</a></h2>
         <div class="gallery-grid-3">
           <div>
             <h3>Percentage</h3>
@@ -134,12 +129,7 @@
           </div>
           </div>
       </div>
-    </sp-theme>
-    <script type="module">
-      if (new URLSearchParams(document.location.search)?.get('theme')?.toLowerCase() === 'dark') {
-        document.querySelector('sp-theme').setAttribute('color', 'dark');
-      }
-    </script>
+      </div>
   </main>
   <script>
           const theme = params.get('theme');
