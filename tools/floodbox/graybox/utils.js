@@ -1,3 +1,5 @@
+/* eslint-disable import/no-unresolved */
+import DA_SDK from 'https://da.live/nx/utils/sdk.js';
 import localeData from '../../../libs/utils/locales.js';
 
 function validatePaths(paths) {
@@ -51,4 +53,16 @@ function validatePaths(paths) {
   return { valid: true, org, repo, expName };
 }
 
+async function getValidGraybox() {
+  const { context, token } = await DA_SDK;
+  const cmp = document.createElement('milo-graybox');
+  cmp.repo = context.repo;
+  cmp.token = token;
+  return cmp;
+}
+
 export default validatePaths;
+export {
+  validatePaths,
+  getValidGraybox,
+};
