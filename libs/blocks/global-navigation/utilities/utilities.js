@@ -465,8 +465,8 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
 
   popup.querySelector('.close-icon')?.addEventListener('click', closeAllDropdowns);
   popup.querySelector('.main-menu')?.addEventListener('click', closeAllDropdowns);
-  const tabbuttons = document.querySelectorAll('.tabs button');
-  const tabpanels = document.querySelectorAll('.tab-content [role="tabpanel"]');
+  const tabbuttons = popup.querySelectorAll('.global-navigation .tabs button');
+  const tabpanels = popup.querySelectorAll('.global-navigation .tab-content [role="tabpanel"]');
 
   tabpanels.forEach((panel) => {
     animateInSequence(panel.querySelectorAll('a'), 0.02);
