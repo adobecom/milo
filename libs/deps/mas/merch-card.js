@@ -1345,7 +1345,7 @@ merch-card[variant='twp'] merch-offer-select {
             </div>
             <slot></slot>`}};c(T,"variantStyle",Jt`
         :host([variant='ccd-suggested']) {
-            --consonant-merch-card-background-color:rgb(245, 245, 245);
+            --consonant-merch-card-background-color: rgb(75, 75, 75);
             --consonant-merch-card-body-xs-color:rgb(75, 75, 75);
             --consonant-merch-card-border-color:rgb(225, 225, 225);
             --consonant-merch-card-detail-s-color:rgb(110, 110, 110);
@@ -1713,7 +1713,7 @@ merch-card-collection > div[slot] p {
     padding: var(--spacing-m);
 }
 
-merch-card * {
+merch-card[variant] * {
   box-sizing: initial;
 }
 

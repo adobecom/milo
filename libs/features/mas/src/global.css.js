@@ -145,7 +145,7 @@ merch-card-collection > div[slot] p {
     padding: var(--spacing-m);
 }
 
-merch-card * {
+merch-card[variant] * {
   box-sizing: initial;
 }
 
