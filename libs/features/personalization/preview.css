@@ -257,7 +257,7 @@ label.mep-manifest-selected-variant::after {
   overflow-y: auto;
 }
 
-input#new-manifest {
+input.new-manifest {
   height: 28px;
   width: 98%;
   margin-bottom: 5px;
