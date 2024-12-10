@@ -79,9 +79,7 @@ export default async function init(el) {
       decorateBlockText(text, blockTypeSizes[size], blockType);
     }
     const image = row.querySelector(':scope > div:not([class])');
-    if (image) image.classList.add('image');
-    const img = image?.querySelector(':scope img');
-    if (header && img?.alt === '') img.alt = header.textContent;
+    image?.classList.add('image');
     const imageVideo = image?.querySelector('video');
     if (imageVideo) applyHoverPlay(imageVideo);
 
