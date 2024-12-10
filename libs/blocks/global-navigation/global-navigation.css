@@ -1026,6 +1026,7 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .sticky-cta {
 
 header.new-nav .feds-nav > section.feds-navItem.feds-dropdown--active > .feds-popup .sticky-cta a {
   width: 320px;
+  height: 39px;
 }
 
 /* breadcrumbs new nav*/
@@ -1063,7 +1064,7 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
   top: 0;
   width: 100%;
   left: 0;
-  z-index: 2;
+  z-index: 10;
 }
 
 .feds-localnav a {
@@ -1123,10 +1124,6 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
 
 .feds-localnav.active .feds-localnav-items .feds-menu-items .feds-navLink {
   padding: 12px 56px;
-}
-
-.feds-localnav .feds-navLink[aria-expanded="true"] {
-  font-weight: 600;
 }
 
 .feds-localnav .feds-localnav-items .feds-navLink {
