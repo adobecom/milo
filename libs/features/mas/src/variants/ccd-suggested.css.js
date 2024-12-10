@@ -10,7 +10,7 @@ export const CSS = `
     line-height: var(--consonant-merch-card-body-xxs-line-height);
   }
   
-  merch-card[variant="ccd-suggested"] span[is='inline-price']:has(+span[is='inline-price'])  {
+  merch-card[variant="ccd-suggested"] [slot="price"] span[is='inline-price']:has(+span[is='inline-price'])  {
     margin-inline-end: 6px;
   }
 

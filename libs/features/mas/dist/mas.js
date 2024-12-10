@@ -1288,7 +1288,7 @@ merch-card[variant='twp'] merch-offer-select {
     line-height: var(--consonant-merch-card-body-xxs-line-height);
   }
   
-  merch-card[variant="ccd-suggested"] span[is='inline-price']:has(+span[is='inline-price'])  {
+  merch-card[variant="ccd-suggested"] [slot="price"] span[is='inline-price']:has(+span[is='inline-price'])  {
     margin-inline-end: 6px;
   }
 
@@ -1444,10 +1444,6 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
   font-style: normal;
   font-weight: 400;
   line-height: var(--consonant-merch-card-body-xxs-line-height);
-}
-  
-merch-card[variant="ccd-suggested"] span[is='inline-price']:has(+span[is='inline-price'])  {
-  margin-inline-end: 6px;
 }
 
 .spectrum--darkest merch-card[variant="ccd-slice"] {
