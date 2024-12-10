@@ -121,6 +121,10 @@ button {
   grid-template-columns: repeat(3, 1fr);
 }
 
+.gallery-grid-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
 .gallery-grid-2 {
   grid-template-columns: repeat(2, 1fr);
 }
