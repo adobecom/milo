@@ -98,8 +98,16 @@ function parseMepConfig() {
   let page = pathname;
   let domain = origin;
   if (env?.name !== 'prod' && stageDomainsMap) {
+    const allowedHosts = ['adobe.com', 'stage.adobe.com'];
     const domainCheck = Object.keys(stageDomainsMap)
-      .find((key) => key.includes('.adobe.com'));
+      .find((key) => {
+        try {
+          const host = new URL(`https://${key}`).host;
+          return allowedHosts.includes(host);
+        } catch (e) {
+          return false;
+        }
+      });
     if (domainCheck) domain = `https://${domainCheck}`;
     page = page.replace('/homepage/index-loggedout', '/');
     if (!page.endsWith('/') && !domain.includes('--milo--adobecom.hlx.')) page += '.html';
