@@ -6,6 +6,8 @@ This custom element implements all the merch-card variants provided in acom and 
 
 A `merch-card` can be rendered using either static html markup or `aem-fragment` custom element to retrieve a card from Odin/AEM.
 
+The CTAs styles depend on Spectrum CSS that must be provided by the consumer.
+
 Designs:
 
 **ACOM**: https://www.figma.com/design/tiEUQLJ1hVlosqwzAATVXZ/Cards-(Merch)?node-id=1086-17994&t=LeMR0vbaBoEKaKln-1
@@ -277,14 +279,14 @@ The `sp-action-button` custom element renders into the default slot as no explic
 
 ```html {.demo .light}
 <style>
-    merch-card sp-action-button {
+    merch-card button {
         position: absolute;
         display: none;
         top: 4px;
         right: 4px;
     }
 
-    merch-card:hover sp-action-button {
+    merch-card:hover button {
         display: block;
     }
 </style>
@@ -292,7 +294,7 @@ The `sp-action-button` custom element renders into the default slot as no explic
     <aem-fragment
         fragment="d8008cac-010f-4607-bacc-a7a327da1312"
     ></aem-fragment>
-    <sp-action-button id="ctxBtn"> ... </sp-action-button>
+    <button id="ctxBtn">...</button>
 </merch-card>
 <script type="module">
     document

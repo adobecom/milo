@@ -6,7 +6,7 @@ export const AEM_FRAGMENT_MAPPING = {
     mnemonics: { size: 'm' },
     backgroundImage: { tag: 'div', slot: 'image' },
     description: { tag: 'div', slot: 'body-s' },
-    ctas: { slot: 'footer', size: 's' },
+    ctas: { slot: 'footer', size: 'S' },
     allowedSizes: ['wide'],
 };
 
@@ -35,11 +35,16 @@ export class CCDSlice extends VariantLayout {
 
     static variantStyle = css`
         :host([variant='ccd-slice']) {
+            --consonant-merch-card-background-color: rgb(248, 248, 248);
+            --consonant-merch-card-border-color:rgb(230, 230, 230);
+            --consonant-merch-card-body-s-color: rgb(34, 34, 34);
+            --mod-img-height: 29px;
+            
+            box-sizing: border-box;
             min-width: 290px;
-            max-width: var(--consonant-merch-card-ccd-slice-single-width);
-            max-height: var(--consonant-merch-card-ccd-slice-single-height);
-            height: var(--consonant-merch-card-ccd-slice-single-height);
-            border: 1px solid var(--spectrum-gray-700);
+            max-width: 322px;
+            max-height: 154px;
+            height: 154px;
             border-radius: 4px;
             display: flex;
             flex-flow: wrap;
@@ -49,6 +54,8 @@ export class CCDSlice extends VariantLayout {
             font-size: var(--consonant-merch-card-body-xs-font-size);
             line-height: var(--consonant-merch-card-body-xxs-line-height);
             max-width: 154px;
+            height: 54px;
+            overflow: hidden;
         }
 
         :host([variant='ccd-slice'][size='wide']) ::slotted([slot='body-s']) {
@@ -56,8 +63,8 @@ export class CCDSlice extends VariantLayout {
         }
 
         :host([variant='ccd-slice'][size='wide']) {
-            width: var(--consonant-merch-card-ccd-slice-wide-width);
-            max-width: var(--consonant-merch-card-ccd-slice-wide-width);
+            width: 600px;
+            max-width: 600px;
         }
 
         :host([variant='ccd-slice']) .content {
@@ -87,8 +94,8 @@ export class CCDSlice extends VariantLayout {
             display: flex;
             justify-content: center;
             flex-shrink: 0;
-            width: var(--consonant-merch-card-ccd-slice-background-img-size);
-            height: var(--consonant-merch-card-ccd-slice-background-img-size);
+            width: 134px;
+            height: 149px;
             overflow: hidden;
             border-radius: 50%;
             padding: 15px;
