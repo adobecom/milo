@@ -1,6 +1,5 @@
 import { createTag, getConfig, getMetadata, loadStyle } from '../../utils/utils.js';
 import { US_GEO, getFileName, normalizePath } from './personalization.js';
-import { token } from '../../blocks/mmm/mmm.js';
 
 const API_DOMAIN = 'https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-2.on.aws';
 export const API_URLS = {
@@ -364,7 +363,8 @@ export async function saveToMmm() {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: token(),
+      // TODO: remove for origin check?
+      Authorization: 'Bearer legit',
     },
     body: JSON.stringify(data),
   })
