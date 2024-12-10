@@ -501,8 +501,7 @@
 
   .tabs.stacked-mobile div[role="tablist"] .tab-list-container {
     flex-direction: column;
-    width: 100%;
-    margin: 30px;
+    margin: 30px auto;
   }
 
   .tabs.stacked-mobile div[role="tablist"] button {
@@ -513,6 +512,11 @@
     padding: 8px;
     border-radius: 0;
     border: 0;
+    margin-bottom: 8px;
+  }
+
+  .tabs.stacked-mobile div[role="tablist"] button:last-of-type {
+    margin-bottom: 0;
   }
 
   .tabs.stacked-mobile div[role="tablist"] button[aria-selected="true"] {
