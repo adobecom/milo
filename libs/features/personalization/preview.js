@@ -361,9 +361,7 @@ export async function saveToMmm() {
   delete data.page.highlight;
   return fetch(API_URLS.save, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   })
     .then((response) => {
