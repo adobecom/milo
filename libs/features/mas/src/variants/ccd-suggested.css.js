@@ -9,6 +9,10 @@ export const CSS = `
     font-size: var(--consonant-merch-card-body-xxs-font-size);
     line-height: var(--consonant-merch-card-body-xxs-line-height);
   }
+  
+  merch-card[variant="ccd-suggested"] span[is='inline-price']:has(+span[is='inline-price'])  {
+    margin-inline-end: 6px;
+  }
 
 .spectrum--darkest merch-card[variant="ccd-suggested"] {
   --consonant-merch-card-background-color:rgb(30, 30, 30);

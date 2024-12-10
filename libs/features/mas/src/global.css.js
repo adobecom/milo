@@ -164,10 +164,6 @@ merch-card p, merch-card h3, merch-card h4 {
     margin: 0;
 }
 
-span[is='inline-price']:has(+span[is='inline-price'])  {
-  margin-inline-end: 6px;
-}
-
 merch-card span[is='inline-price'] {
     display: inline-block;
 }

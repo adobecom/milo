@@ -15,6 +15,10 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
   font-weight: 400;
   line-height: var(--consonant-merch-card-body-xxs-line-height);
 }
+  
+merch-card[variant="ccd-suggested"] span[is='inline-price']:has(+span[is='inline-price'])  {
+  margin-inline-end: 6px;
+}
 
 .spectrum--darkest merch-card[variant="ccd-slice"] {
   --consonant-merch-card-background-color:rgb(29, 29, 29);
