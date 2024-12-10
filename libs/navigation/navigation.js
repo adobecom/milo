@@ -42,7 +42,14 @@ const getStageDomainsMap = (stageDomainsMap) => (
 );
 
 // Production Domain
-const prodDomains = ['milo.adobe.com', 'business.adobe.com', 'www.adobe.com', 'adobecom.github.io'];
+const prodDomains = [
+  'milo.adobe.com',
+  'business.adobe.com',
+  'www.adobe.com',
+  'helpx.adobe.com',
+  'stock.adobe.com',
+  'adobecom.github.io',
+];
 
 function getParamsConfigs(configs) {
   return blockConfig.reduce((acc, block) => {
@@ -65,7 +72,7 @@ export default async function loadBlock(configs, customLib) {
     env = 'prod',
     locale = '',
     theme,
-    allowedOrigins,
+    allowedOrigins = [],
     stageDomainsMap = {},
   } = configs || {};
   if (!header && !footer) {
@@ -112,7 +119,7 @@ export default async function loadBlock(configs, customLib) {
     theme,
     ...paramConfigs,
     prodDomains,
-    allowedOrigins,
+    allowedOrigins: [...allowedOrigins, `https://main--federal--adobecom.aem.${env === 'prod' ? 'live' : 'page'}`],
     standaloneGnav: true,
     stageDomainsMap: getStageDomainsMap(stageDomainsMap),
   };
