@@ -9,10 +9,23 @@ import {
   getMilocUrl,
 } from './utils/utils.js';
 
+const testInfo = {
+  docId: '01TMM4TXDZ65RHIO52TRDINYMXBFI5WLQ3',
+  previewUrl:
+    'https://main--bacom--adobecom.hlx.page/drafts/localization/projects/abs86626/localization/test-fetch.json',
+  projectKey: '121fe03d2d57c905d1bdb42edd40b79e',
+  projectLink:
+    'https://main--bacom--adobecom.hlx.page/tools/loc?milolibs=locui&ref=main&repo=bacom&owner=adobecom&referrer=https%3A%2F%2Fadobe.sharepoint.com%2Fsites%2Fadobecom%2F_layouts%2F15%2FDoc.aspx%3Fsourcedoc%3D%257B7462F779-BA3B-469C-86E1-970951DB2E1B%257D%26file%3Dtest-fetch.xlsx%26action%3Ddefault%26mobileredirect%3Dtrue',
+  webUrl:
+    'https://adobe.sharepoint.com/sites/adobecom/_layouts/15/Doc.aspx?sourcedoc=%7B7462F779-BA3B-469C-86E1-970951DB2E1B%7D&file=test-fetch.xlsx&action=default&mobileredirect=true',
+};
+
 export const telemetry = { application: { appName: 'Adobe Localization' } };
 
+export const authenticated = signal(false);
 export const currentStep = signal(1);
 export const loading = signal(false);
+export const apiError = signal('');
 export const project = signal(null);
 export const projectInfo = signal(null);
 export const projectCreated = signal(false);
@@ -28,6 +41,11 @@ export function nextStep() {
 
 export function prevStep() {
   currentStep.value -= 1;
+}
+
+export function setApiError(error) {
+  apiError.value = '';
+  apiError.value = error;
 }
 
 export function setProject(_project) {
@@ -59,8 +77,10 @@ export async function getUserToken() {
   try {
     await login({ scopes, telemetry });
     userToken = accessToken.value;
+    authenticated.value = true;
   } catch {
     console.error('Sharepoint login failed. Unable to get User-Token!');
+    authenticated.value = false;
   }
   loading.value = false;
   return userToken;
@@ -126,6 +146,7 @@ export async function createDraftProject() {
       error = responseJson.error;
     }
   } catch (err) {
+    // eslint-disable-next-line no-console
     console.error(err);
   }
   loading.value = false;
@@ -148,7 +169,11 @@ export async function updateDraftProject(publish = false) {
   };
   try {
     const url = await getMilocUrl();
-    const opts = { method: 'POST', headers: { 'User-Token': userToken, 'Content-Type': 'application/json' }, body: JSON.stringify(body) };
+    const opts = {
+      method: 'POST',
+      headers: { 'User-Token': userToken, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    };
     const resp = await fetch(`${url}update-draft-project`, opts);
     const respJson = await resp.json();
     if (resp.ok) {
@@ -157,6 +182,52 @@ export async function updateDraftProject(publish = false) {
     }
     if (respJson.error) {
       error = respJson.error;
+    }
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.error(e);
+  }
+  loading.value = false;
+  return error;
+}
+
+export async function fetchDraftProject(projectKey = testInfo.projectKey) {
+  const userToken = await getUserToken();
+  if (!userToken) {
+    return 'Unable to login to Sharepoint.';
+  }
+
+  let error = 'Failed to fetch project details. Please try again!';
+  loading.value = true;
+
+  try {
+    const url = await getMilocUrl();
+    const options = {
+      method: 'POST',
+      headers: { 'User-Token': userToken, 'Content-Type': 'application/json' },
+    };
+    const response = await fetch(
+      `${url}fetch-draft-project?project=${projectKey}`,
+      options,
+    );
+    const resJson = await response.json();
+    if (response.ok) {
+      setProject({
+        type: resJson.projectType === 'rollout' ? 'rollout' : 'translation',
+        name: resJson.projectName,
+        htmlFlow: resJson.settings?.useHtmlFlow,
+        editBehavior: resJson.settings?.regionalEditBehaviour,
+        urls: resJson.urls,
+      });
+      projectInfo.value = {
+        ...projectInfo.value,
+        projectKey,
+      };
+      projectCreated.value = true;
+      error = '';
+    }
+    if (resJson.error) {
+      error = resJson.error;
     }
   } catch (e) {
     // eslint-disable-next-line no-console

@@ -6,7 +6,9 @@ import {
 } from '../../../deps/htm-preact.js';
 import FragmentsSection from '../fragments/view.js';
 import {
+  authenticated,
   createDraftProject,
+  fetchDraftProject,
   nextStep,
   project,
   projectCreated,
@@ -31,7 +33,7 @@ import Toast from '../components/toast.js';
 export default function InputUrls() {
   const [type, setType] = useState('translation');
   const [name, setName] = useState('');
-  const [htmlFlow, setHtmlFlow] = useState(false);
+  const [htmlFlow, setHtmlFlow] = useState(true);
   const [editBehavior, setEditBehavior] = useState('');
   const [urlsStr, setUrlsStr] = useState('');
   const [fragmentsEnabled, setFragmentsEnabled] = useState(false);
@@ -163,21 +165,34 @@ export default function InputUrls() {
   }
 
   useEffect(() => {
-    setType(project.value?.type || 'translation');
-    setName(project.value?.name || getInitialName('translation'));
-    setHtmlFlow(project.value?.htmlFlow || false);
-    setEditBehavior(project.value?.editBehavior || '');
-    setUrlsStr(project.value?.urls?.join('\n') || '');
-    setFragmentsEnabled(project.value?.fragments?.length > 0);
-    setFragments(project.value?.fragments || []);
-    if (
-      project.value?.fragments?.length > 0
-      && project.value?.urls.length > 0
-    ) {
-      fetchFragments(project.value?.urls?.join('\n'));
+    (async () => {
+      const searchParams = new URLSearchParams(window.location.search);
+      const projectKey = searchParams.get('projectKey');
+      if (authenticated.value && projectKey) {
+        const error = await fetchDraftProject(projectKey);
+        setApiError(error);
+      }
+    })();
+  }, [authenticated.value]);
+
+  useEffect(() => {
+    if (project.value) {
+      setType(project.value?.type);
+      setName(project.value?.name);
+      setHtmlFlow(project.value?.htmlFlow || true);
+      setEditBehavior(project.value?.editBehavior || '');
+      setUrlsStr(project.value?.urls?.join('\n'));
+      setFragmentsEnabled(project.value?.fragments?.length > 0);
+      setFragments(project.value?.fragments);
+      if (
+        project.value?.fragments?.length > 0
+        && project.value?.urls.length > 0
+      ) {
+        fetchFragments(project.value?.urls?.join('\n'));
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [project.value]);
 
   const handleUrlsBlur = () => {
     if (urlsStr && !errors.urlsStr) {
@@ -203,7 +218,9 @@ export default function InputUrls() {
       <div class="locui-input-form-area">
         <div class="locui-title-bar">
           Localization${' '}
-          <span>- ${type.substring(0, 1).toUpperCase() + type.substring(1)}</span>
+          <span
+            >- ${type.substring(0, 1).toUpperCase() + type.substring(1)}</span
+          >
         </div>
         <div class="locui-form-body">
           <div class="segment-ctrl pb-12">
@@ -329,7 +346,10 @@ export default function InputUrls() {
       />`}
 
       <div>
-        <${StepControls} nextDisabled=${errorPresent} onNext=${handleNext} />
+        <${StepControls}
+          nextDisabled=${!authenticated.value || errorPresent}
+          onNext=${handleNext}
+        />
       </div>
     </div>
   `;
