@@ -12,6 +12,7 @@
     tags: '',
     implicitSampleRate: 1,
     useProd: true,
+    isProdDomain: false,
   };
 
   const w = window;
@@ -68,7 +69,7 @@
 
     if (!w.lana.debug && !w.lana.localhost && sampleRate <= Math.random() * 100) return;
 
-    const isProdDomain = isProd();
+    const isProdDomain = isProd() || o.isProdDomain;
 
     const endpoint = (!isProdDomain || !o.useProd) ? o.endpointStage : o.endpoint;
     const queryParams = [
