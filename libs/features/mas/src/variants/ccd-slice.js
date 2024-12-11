@@ -73,6 +73,7 @@ export class CCDSlice extends VariantLayout {
             padding: 15px;
             padding-inline-end: 0;
             width: 154px;
+            height: 54px;
             flex-direction: column;
             justify-content: space-between;
             align-items: flex-start;
@@ -122,6 +123,7 @@ export class CCDSlice extends VariantLayout {
 
         :host([variant='ccd-slice']) .top-section {
             align-items: center;
+            min-height: 1px;
             gap: 8px;
         }
     `;
