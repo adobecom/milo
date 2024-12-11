@@ -92,11 +92,13 @@ class KeyboardNavigation {
         try {
           const { default: LnavNavigation } = await import('./localNav.js');
           return new LnavNavigation();
-        } catch (error) {
+        } catch (e) {
           lanaLog({ message: 'Keyboard Navigation failed to load for LNAV', e, tags: 'errorType=info,module=gnav-keyboard' });
+          return null;
         }
       })();
     }
+    return this.localNav;
   };
 
   addEventListeners = () => {

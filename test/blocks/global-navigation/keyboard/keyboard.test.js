@@ -1062,7 +1062,7 @@ describe('keyboard navigation', () => {
         keyboardNavigation = new KeyboardNavigation();
         keyboardNavigation.mainNav.popup.desktop = { matches: false };
       });
-  
+
       it('shift focus on tab for links on level 1 screen', async () => {
         await sendKeys({ press: 'Tab' });
         await sendKeys({ press: 'Tab' });
@@ -1071,7 +1071,7 @@ describe('keyboard navigation', () => {
         const allMainMenuLinks = document.querySelectorAll('.feds-nav section > button');
         expect(document.activeElement).to.equal(allMainMenuLinks[1]);
       });
-  
+
       it('shift focus on Escape to trigger element', async () => {
         await sendKeys({ press: 'Tab' });
         await sendKeys({ press: 'Tab' });
@@ -1082,7 +1082,7 @@ describe('keyboard navigation', () => {
         expect(document.activeElement).to.equal(toggle);
       });
     });
-  
+
     describe('With localnav', () => {
       beforeEach(async () => {
         setViewport({ width: 600, height: 600 });
@@ -1090,7 +1090,7 @@ describe('keyboard navigation', () => {
         keyboardNavigation = new KeyboardNavigation(true);
         keyboardNavigation.mainNav.popup.desktop = { matches: false };
       });
-  
+
       it('shift focus on tab for links on level 2 screen', async () => {
         await sendKeys({ press: 'Tab' });
         await sendKeys({ press: 'Tab' });
@@ -1098,10 +1098,10 @@ describe('keyboard navigation', () => {
         await sendKeys({ press: 'Tab' });
         await sendKeys({ press: 'Tab' });
         await sendKeys({ press: 'Tab' });
-        const allNavLinks = document.querySelectorAll('header .feds-nav section .feds-popup .tab-content > div:not([hidden="true"]) .feds-navLink')
+        const allNavLinks = document.querySelectorAll('header .feds-nav section .feds-popup .tab-content > div:not([hidden="true"]) .feds-navLink');
         expect(document.activeElement).to.equal(allNavLinks[1]);
       });
-  
+
       it('shift focus on Escape to trigger element', async () => {
         await sendKeys({ press: 'Tab' });
         await sendKeys({ press: 'Tab' });
@@ -1114,7 +1114,7 @@ describe('keyboard navigation', () => {
         expect(document.activeElement).to.equal(toggle);
       });
     });
-  
+
     describe('Local Nav keyboard navigation', () => {
       beforeEach(async () => {
         setViewport({ width: 600, height: 600 });
@@ -1122,7 +1122,7 @@ describe('keyboard navigation', () => {
         keyboardNavigation = new KeyboardNavigation(true);
         keyboardNavigation.mainNav.popup.desktop = { matches: false };
       });
-  
+
       it('Should open the section on Tab', async () => {
         await sendKeys({ press: 'Tab' });
         await sendKeys({ press: 'Tab' });
@@ -1134,7 +1134,7 @@ describe('keyboard navigation', () => {
         const headline = document.querySelector('.feds-localnav .feds-menu-headline');
         expect(document.activeElement).to.equal(headline);
       });
-  
+
       it('Should focus on localnav title when navigate to all the visible links of local nav', async () => {
         await sendKeys({ press: 'Tab' });
         await sendKeys({ press: 'Tab' });

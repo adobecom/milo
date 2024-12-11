@@ -67,4 +67,4 @@ export default `
   <p><strong><a href="https://milo.adobe.com/tools/ost?osi=jWh-iooSLW82QkvJ1ZIWqU1jF4UAlKttsWFGBPTmcmo&#x26;type=checkoutUrl&#x26;text=buy-now&#x26;workflowStep=commitment">CTA {{buy-now}}</a></strong></p>
 </div>
 <div></div>
-`
+`;

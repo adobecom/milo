@@ -14,9 +14,9 @@ import {
 } from './test-utilities.js';
 import { setConfig, getLocale } from '../../../libs/utils/utils.js';
 import initNav, { getUniversalNavLocale, osMap } from '../../../libs/blocks/global-navigation/global-navigation.js';
-import { isDesktop, isTangentToViewport, toFragment } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
+import { isDesktop, toFragment } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
 import logoOnlyNav from './mocks/global-navigation-only-logo.plain.js';
-import longNav from './mocks/global-navigation-long.plain.js';
+// import longNav from './mocks/global-navigation-long.plain.js';
 import darkNav from './mocks/dark-global-navigation.plain.js';
 import navigationWithCustomLinks from './mocks/navigation-with-custom-links.plain.js';
 import globalNavigationMock from './mocks/global-navigation.plain.js';
@@ -694,41 +694,41 @@ describe('global navigation', () => {
     afterEach(() => {
       clock.restore();
     });
-    
+
     it('should load Local Nav', async () => {
-      await createFullGlobalNavigation({globalNavigation: gnavWithlocalNav});
+      await createFullGlobalNavigation({ globalNavigation: gnavWithlocalNav });
       const localNav = document.querySelector(selectors.localNav);
       expect(!!localNav).to.be.true;
     });
 
     it('should open local nav on click of localnav title', async () => {
-      await createFullGlobalNavigation({globalNavigation: gnavWithlocalNav});
+      await createFullGlobalNavigation({ globalNavigation: gnavWithlocalNav });
       const localNavTitle = document.querySelector(selectors.localNavTitle);
-      localNavTitle.click()
+      localNavTitle.click();
       const localNav = document.querySelector(selectors.localNav);
       expect(localNav.classList.contains('active')).to.be.true;
     });
 
     it('should remove is-sticky class to localnav on scroll less than localnav placement', async () => {
-      await createFullGlobalNavigation({globalNavigation: gnavWithlocalNav});
+      await createFullGlobalNavigation({ globalNavigation: gnavWithlocalNav });
       const localNav = document.querySelector(selectors.localNav);
-      sinon.stub(localNav, 'getBoundingClientRect').returns({top: 20});
+      sinon.stub(localNav, 'getBoundingClientRect').returns({ top: 20 });
       window.dispatchEvent(new Event('scroll'));
       const localNavAfterScroll = document.querySelector(selectors.localNav);
       expect(localNavAfterScroll.classList.contains('is-sticky')).to.be.false;
     });
 
     it('should add is-sticky class to localnav on scroll greater than localnav placement', async () => {
-      await createFullGlobalNavigation({globalNavigation: gnavWithlocalNav});
+      await createFullGlobalNavigation({ globalNavigation: gnavWithlocalNav });
       const localNav = document.querySelector(selectors.localNav);
-      sinon.stub(localNav, 'getBoundingClientRect').returns({top: 0});
+      sinon.stub(localNav, 'getBoundingClientRect').returns({ top: 0 });
       window.dispatchEvent(new Event('scroll'));
       const localNavAfterScroll = document.querySelector(selectors.localNav);
       expect(localNavAfterScroll.classList.contains('is-sticky')).to.be.true;
     });
 
     it('should open both screen if localnav is present but shows only level 2 screen', async () => {
-      await createFullGlobalNavigation({globalNavigation: gnavWithlocalNav, viewport: 'mobile'});
+      await createFullGlobalNavigation({ globalNavigation: gnavWithlocalNav, viewport: 'mobile' });
       const toggle = document.querySelector(selectors.mainNavToggle);
       toggle.click();
       await clock.runAllAsync();
@@ -739,7 +739,7 @@ describe('global navigation', () => {
     });
 
     it('should expand nested dropdowm if click on headline', async () => {
-      await createFullGlobalNavigation({globalNavigation: gnavWithlocalNav, viewport: 'mobile'});
+      await createFullGlobalNavigation({ globalNavigation: gnavWithlocalNav, viewport: 'mobile' });
       const localNavTitle = document.querySelector(selectors.localNavTitle);
       localNavTitle.click();
       localNavTitle.focus();
@@ -750,6 +750,6 @@ describe('global navigation', () => {
       const headline = document.activeElement.parentElement.querySelector('.feds-menu-headline');
       headline.click();
       expect(headline.parentElement.classList.contains('feds-dropdown--active')).to.be.true;
-    })
+    });
   });
 });

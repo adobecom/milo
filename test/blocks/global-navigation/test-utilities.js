@@ -187,7 +187,7 @@ export const createFullGlobalNavigation = async ({
     if (url.includes('correct-promo-fragment')) { return mockRes({ payload: correctPromoFragmentMock }); }
     if (url.includes('wrong-promo-fragment')) { return mockRes({ payload: '<div>Non-promo content</div>' }); }
     if (url.includes('UniversalNav')) { return mockRes({ payload: {} }); }
-    if (url.includes('mock-megamenu')) {return mockRes({ payload: mockMegaMenu }); }
+    if (url.includes('mock-megamenu')) { return mockRes({ payload: mockMegaMenu }); }
     return null;
   });
   window.adobeIMS = {
