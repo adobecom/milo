@@ -1093,6 +1093,16 @@ async function decorateIcons(area, config) {
   await loadIcons(icons, config);
 }
 
+async function decorateIcons(area, config) {
+  const icons = area.querySelectorAll('span.icon');
+  if (icons.length === 0) return;
+  const { base } = config;
+  loadStyle(`${base}/features/icons/icons.css`);
+  loadLink(`${base}/img/icons/icons.svg`, { rel: 'preload', as: 'fetch', crossorigin: 'anonymous' });
+  const { default: loadIcons } = await import('../features/icons/icons.js');
+  await loadIcons(icons, config);
+}
+
 export async function customFetch({ resource, withCacheRules }) {
   const options = {};
   if (withCacheRules) {
@@ -1610,9 +1620,11 @@ function decorateDocumentExtras() {
 }
 
 async function documentPostSectionLoading(config) {
-  const injectBlock = getMetadata('injectblock');
-  if (injectBlock) {
-    import('./injectblock.js').then((module) => module.default(injectBlock));
+  decorateFooterPromo();
+
+  const appendage = getMetadata('title-append');
+  if (appendage) {
+    import('../features/title-append/title-append.js').then((module) => module.default(appendage));
   }
 
   decorateFooterPromo();
@@ -1676,7 +1688,7 @@ async function resolveInlineFrags(section) {
   section.preloadLinks = newlyDecoratedSection.preloadLinks;
 }
 
-async function processSection(section, config, isDoc, lcpSectionId) {
+async function processSection(section, config, isDoc) {
   await resolveInlineFrags(section);
   const isLcpSection = lcpSectionId === section.idx;
   const stylePromises = isLcpSection ? preloadBlockResources(section.blocks) : [];
@@ -1744,6 +1756,9 @@ export async function loadArea(area = document) {
   }
 
   if (isDoc) await documentPostSectionLoading(config);
+
+  await loadDeferred(area, areaBlocks, config);
+}
 
   await loadDeferred(area, areaBlocks, config);
 }
