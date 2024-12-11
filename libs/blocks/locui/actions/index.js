@@ -118,7 +118,7 @@ function addFragmentPrefix(fragments, prefix) {
     url.pathname = url.pathname.startsWith(prefix) ? url.pathname : `${prefix}${url.pathname}`;
     return url;
   }) : undefined;
-};
+}
 
 async function findDeepFragments(path) {
   const searched = [];

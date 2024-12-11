@@ -36,11 +36,11 @@ async function validateUrl(url) {
 }
 
 export function getLangstorePrefix(path) {
-  return path.replace(/^(\/langstore\/[^\/]+)*(\/.*)/,'$1');
+  return path.replace(/^(\/langstore\/[^/]+)*(\/.*)/, '$1');
 }
 
 export function removeLangstorePrefix(path) {
-  return path.replace(/^\/langstore\/[^\/]+/, '');
+  return path.replace(/^\/langstore\/[^/]+/, '');
 }
 
 export function validateUrlsFormat(projectUrls, removeMedia = false) {
@@ -56,7 +56,7 @@ export function validateUrlsFormat(projectUrls, removeMedia = false) {
       url.valid = 'media';
     }
     if (idx && !firstUrlLang && url.pathname.startsWith('/langstore/')) {
-        url.valid = `not US url`;
+      url.valid = 'not US url';
     } else if (idx && firstUrlLang) {
       const urlLang = getLangstorePrefix(url.pathname);
       if (firstUrlLang !== urlLang) {
@@ -93,7 +93,7 @@ export function getUrls(jsonUrls) {
   const { locales } = getConfig();
   // Assume all URLs will be the same locale as the first URL
   const locale = getLocale(locales, jsonUrls[0].pathname);
-  const lang = (locale.prefix.replace(/^\/langstore\//,'/') ?? '/en').replace('/','') || 'en';
+  const lang = (locale.prefix.replace(/^\/langstore\//, '/') ?? '/en').replace('/', '') || 'en';
   // Loop through each url to get langstore information
   return jsonUrls.map((url) => {
     url.langstore = {
