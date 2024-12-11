@@ -133,6 +133,10 @@ code {
   }
 }
 
+merch-card[variant="ccd-slice"][size="wide"] {
+  grid-column: span 2;
+}
+
 .three-merch-cards.ccd-slice {
   grid-template-columns: minmax(290px, 322px);
 }
