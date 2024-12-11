@@ -74,6 +74,7 @@ export class CCDSlice extends VariantLayout {
             padding: 15px;
             padding-inline-end: 0;
             width: 154px;
+            min-height: 123px;
             flex-direction: column;
             justify-content: space-between;
             align-items: flex-start;
