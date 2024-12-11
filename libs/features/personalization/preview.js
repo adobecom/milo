@@ -1,6 +1,5 @@
 import { createTag, getConfig, getMetadata, loadStyle } from '../../utils/utils.js';
 import { US_GEO, getFileName, normalizePath } from './personalization.js';
-import { isDisabled } from './promo-utils.js';
 
 const API_DOMAIN = 'https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-2.on.aws';
 export const API_URLS = {
@@ -365,10 +364,11 @@ export async function saveToMmm() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   })
-    .then((response) => {
+    .then(async (response) => {
+      const res = await response.json();
+      if (response.ok) return res;
       /* c8 ignore next 1 */
-      if (!response.ok) throw new Error('Network response was not ok');
-      return response.json();
+      throw new Error(res.message || 'Network response failed');
     });
 }
 export default async function decoratePreviewMode() {
