@@ -204,7 +204,6 @@ export class MiniCompareChart extends VariantLayout {
         );
     }
     :host([variant='mini-compare-chart']) slot[name='footer-rows'] {
-        min-height: var(--consonant-merch-card-mini-compare-chart-footer-rows-height);
         justify-content: flex-start;
     }
   `;

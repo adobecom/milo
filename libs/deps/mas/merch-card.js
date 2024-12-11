@@ -907,7 +907,6 @@ merch-card .footer-row-cell:nth-child(8) {
         );
     }
     :host([variant='mini-compare-chart']) slot[name='footer-rows'] {
-        min-height: var(--consonant-merch-card-mini-compare-chart-footer-rows-height);
         justify-content: flex-start;
     }
   `);import{html as U,css as Ve}from"../lit-all.min.js";var Ae=`
