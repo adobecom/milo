@@ -10,10 +10,11 @@ export default function useInputActions() {
   const [isFormValid, setIsFormValid] = useState(false);
   const [apiError, setApiError] = useState('');
 
-  const projectCreatedModal = () => {
+  const projectCreatedModal = (type) => {
     const div = createTag('div');
-    const content = Modal(div);
-    const modalOpts = { content };
+    const content = Modal(div, type);
+    const modalOpts = { id: 'projectCreate-modal', content, closeEvent: 'closeModal' };
+
     return getModal(null, modalOpts);
   };
 

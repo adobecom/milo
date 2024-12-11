@@ -10,6 +10,7 @@ function ConfirmationModal({ setApiError, projectCreatedModal }) {
     const error = await updateDraftProject(true);
     if (error) {
       setApiError(error);
+      projectCreatedModal('error');
     } else {
       projectCreatedModal();
     }
