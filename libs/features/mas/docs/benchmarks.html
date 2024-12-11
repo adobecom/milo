@@ -1,10 +1,17 @@
 
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8">
-    <title>M@S Benchmarks</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+<head>
+  <meta charset="UTF-8">
+  <title>M@S Benchmarks</title>
+  <script>
+    const start = performance.now();
+    document.addEventListener('wcms:commerce:ready', () => {
+      const end = performance.now();
+      window.initTime = end - start;
+      console.log(`Commerce loaded in ${window.initTime}ms`);
+    });
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
     <!-- Fonts -->
     <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
     <!-- Include any additional stylesheets -->
@@ -44,7 +51,18 @@
   };
   const fillContainer = async (container) => {
     const fragmentIds = container.getAttribute('data-benchmark').split(',');
-    const limit = container.getAttribute('data-benchmark-limit');
+    let limit = container.getAttribute('data-benchmark-limit');
+    const adjust = new URL(window.location.href).searchParams.get('adjust') === 'true';
+    if (adjust) {
+      const referentInitialTime = 94.0;
+      const previousLimit = limit;
+      if (window.initTime < referentInitialTime) {
+        limit = limit * window.initTime / referentInitialTime;
+        console.log(`Adjusted limit ${previousLimit} to ${limit}`);
+      } else {
+        console.log('No need to adjust limit');
+      }
+    }
     const promises = fragmentIds.map((fragmentId) => measureCardPerformances(container, fragmentId));
     const results = await Promise.allSettled(promises);
     results.forEach((result) => {
