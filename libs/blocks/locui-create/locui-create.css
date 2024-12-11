@@ -384,27 +384,24 @@ body {
   text-align: left;
 }
 
-.check-mark-logo {
-  background: url('./img/check-mark.svg');
+.check-mark-logo, .alert-icon {
   text-indent: -1000px;
   min-width: 20px;
   height: 20px;
+  display: inline-block;
+}
+
+.check-mark-logo {
+  background: url('./img/check-mark.svg');
   background-size: contain;
   background-repeat: no-repeat;
-  display: inline-block;
 }
 
 .alert-icon {
   background: url('./img/alert-icon.svg');
-  text-indent: -1000px;
-  min-width: 20px;
-  height: 20px;
   background-size: contain;
   background-repeat: no-repeat;
-  display: inline-block;
 }
-
-
 
 .locui-header-title {
   font-weight: bold;
