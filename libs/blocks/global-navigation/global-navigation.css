@@ -86,6 +86,11 @@ header.global-navigation {
   z-index: 1;
 }
 
+/* Complimentary WebApp SignIn CTA */
+.feds-complimentary-cta{
+  align-items: center;
+}
+
 /* Hamburger toggle */
 .feds-toggle {
   width: 60px;
@@ -486,6 +491,12 @@ header.global-navigation {
 [dir = "rtl"] #feds-googleLogin {
   left: 0;
   right: auto;
+}
+
+@media (max-width: 900px) {
+  .feds-complimentary-cta {
+    display: none;
+  }
 }
 
 /* Desktop styles */
