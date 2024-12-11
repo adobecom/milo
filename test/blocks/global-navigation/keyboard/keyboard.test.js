@@ -1053,4 +1053,104 @@ describe('keyboard navigation', () => {
       }
     });
   });
+
+  describe('new mobile GNAV redesign', () => {
+    describe('Without localnav', () => {
+      beforeEach(async () => {
+        setViewport({ width: 600, height: 600 });
+        document.body.innerHTML = await readFile({ path: './mocks/global-new-nav-mobile.html' });
+        keyboardNavigation = new KeyboardNavigation();
+        keyboardNavigation.mainNav.popup.desktop = { matches: false };
+      });
+  
+      it('shift focus on tab for links on level 1 screen', async () => {
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Tab' });
+        const allMainMenuLinks = document.querySelectorAll('.feds-nav section > button');
+        expect(document.activeElement).to.equal(allMainMenuLinks[1]);
+      });
+  
+      it('shift focus on Escape to trigger element', async () => {
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Escape' });
+        const toggle = document.querySelector('header.new-nav .feds-toggle');
+        expect(document.activeElement).to.equal(toggle);
+      });
+    });
+  
+    describe('With localnav', () => {
+      beforeEach(async () => {
+        setViewport({ width: 600, height: 600 });
+        document.body.innerHTML = await readFile({ path: './mocks/global-new-nav-mobile-localnav.html' });
+        keyboardNavigation = new KeyboardNavigation(true);
+        keyboardNavigation.mainNav.popup.desktop = { matches: false };
+      });
+  
+      it('shift focus on tab for links on level 2 screen', async () => {
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Tab' });
+        const allNavLinks = document.querySelectorAll('header .feds-nav section .feds-popup .tab-content > div:not([hidden="true"]) .feds-navLink')
+        expect(document.activeElement).to.equal(allNavLinks[1]);
+      });
+  
+      it('shift focus on Escape to trigger element', async () => {
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Escape' });
+        const toggle = document.querySelector('header.new-nav .feds-toggle');
+        expect(document.activeElement).to.equal(toggle);
+      });
+    });
+  
+    describe('Local Nav keyboard navigation', () => {
+      beforeEach(async () => {
+        setViewport({ width: 600, height: 600 });
+        document.body.innerHTML = await readFile({ path: './mocks/localnav-mock.html' });
+        keyboardNavigation = new KeyboardNavigation(true);
+        keyboardNavigation.mainNav.popup.desktop = { matches: false };
+      });
+  
+      it('Should open the section on Tab', async () => {
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Space' });
+        const headline = document.querySelector('.feds-localnav .feds-menu-headline');
+        expect(document.activeElement).to.equal(headline);
+      });
+  
+      it('Should focus on localnav title when navigate to all the visible links of local nav', async () => {
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Tab' });
+        const localnavTitle = document.querySelector('.feds-localnav-title');
+        expect(document.activeElement).to.equal(localnavTitle);
+      });
+    });
+  });
 });

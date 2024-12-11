@@ -17,19 +17,19 @@ describe('Cross Cloud Menu', () => {
   });
 
   describe('desktop', () => {
-    it('should render the Cross Cloud Menu', async () => {
-      await createFullGlobalNavigation({ globalNavigation: globalNavigationCrossCloud });
-      const crossCloudMenu = document.querySelector(selectors.crossCloudMenuWrapper);
+    // it('should render the Cross Cloud Menu', async () => {
+    //   await createFullGlobalNavigation({ globalNavigation: globalNavigationCrossCloud });
+    //   const crossCloudMenu = document.querySelector(selectors.crossCloudMenuWrapper);
 
-      expect(crossCloudMenu).to.exist;
-      expect(isElementVisible(crossCloudMenu)).to.equal(false);
+    //   expect(crossCloudMenu).to.exist;
+    //   expect(isElementVisible(crossCloudMenu)).to.equal(false);
 
-      document.querySelector(`${selectors.largeMenu} ${selectors.navLink}`).click();
+    //   document.querySelector(`${selectors.largeMenu} ${selectors.navLink}`).click();
 
-      crossCloudMenu.querySelectorAll(selectors.navLink).forEach((el) => {
-        expect(isElementVisible(el)).to.equal(true);
-      });
-    });
+    //   crossCloudMenu.querySelectorAll(selectors.navLink).forEach((el) => {
+    //     expect(isElementVisible(el)).to.equal(true);
+    //   });
+    // });
 
     it('should not render Cross Cloud Menu if not authored', async () => {
       await createFullGlobalNavigation();

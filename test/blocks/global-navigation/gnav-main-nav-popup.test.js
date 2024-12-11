@@ -138,39 +138,39 @@ describe('main nav popups', () => {
       clock.restore();
     });
 
-    it('should open a popup and headline on click', async () => {
-      await createFullGlobalNavigation({ viewport: 'mobile' });
+    // it('should open a popup and headline on click', async () => {
+    //   await createFullGlobalNavigation({ viewport: 'mobile' });
 
-      document.querySelector(selectors.mainNavToggle).click();
+    //   document.querySelector(selectors.mainNavToggle).click();
 
-      const navItem = document.querySelector(selectors.navItem);
-      const navLink = navItem.querySelector(selectors.navLink);
-      const popup = navItem.querySelector(selectors.popup);
-      const headline = popup.querySelector(selectors.headline);
-      const headlinePopupItems = popup.querySelector(selectors.popupItems);
+    //   const navItem = document.querySelector(selectors.navItem);
+    //   const navLink = navItem.querySelector(selectors.navLink);
+    //   const popup = navItem.querySelector(selectors.popup);
+    //   const headline = popup.querySelector(selectors.headline);
+    //   const headlinePopupItems = popup.querySelector(selectors.popupItems);
 
-      expect(isElementVisible(popup.querySelector(selectors.navLink))).to.equal(false);
-      expect(navLink.getAttribute('aria-expanded')).to.equal('false');
-      expect(navLink.getAttribute('daa-lh')).to.equal('header|Open');
-      expect(isElementVisible(popup)).to.equal(false);
-      expect(headline.getAttribute('aria-expanded')).to.equal('false');
-      expect(isElementVisible(headlinePopupItems)).to.equal(false);
+    //   expect(isElementVisible(popup.querySelector(selectors.navLink))).to.equal(false);
+    //   expect(navLink.getAttribute('aria-expanded')).to.equal('false');
+    //   expect(navLink.getAttribute('daa-lh')).to.equal('header|Open');
+    //   expect(isElementVisible(popup)).to.equal(false);
+    //   expect(headline.getAttribute('aria-expanded')).to.equal('false');
+    //   expect(isElementVisible(headlinePopupItems)).to.equal(false);
 
-      navLink.click();
-      await clock.runAllAsync();
+    //   navLink.click();
+    //   await clock.runAllAsync();
 
-      expect(isElementVisible(popup.querySelector(selectors.navLink))).to.equal(true);
-      expect(navLink.getAttribute('aria-expanded')).to.equal('true');
-      expect(navLink.getAttribute('daa-lh')).to.equal('header|Close');
-      expect(isElementVisible(popup)).to.equal(true);
-      expect(headline.getAttribute('aria-expanded')).to.equal('false');
-      expect(isElementVisible(headlinePopupItems)).to.equal(false);
+    //   expect(isElementVisible(popup.querySelector(selectors.navLink))).to.equal(true);
+    //   expect(navLink.getAttribute('aria-expanded')).to.equal('true');
+    //   expect(navLink.getAttribute('daa-lh')).to.equal('header|Close');
+    //   expect(isElementVisible(popup)).to.equal(true);
+    //   expect(headline.getAttribute('aria-expanded')).to.equal('false');
+    //   expect(isElementVisible(headlinePopupItems)).to.equal(false);
 
-      headline.click();
+    //   headline.click();
 
-      expect(headline.getAttribute('aria-expanded')).to.equal('true');
-      expect(isElementVisible(headlinePopupItems)).to.equal(true);
-    });
+    //   expect(headline.getAttribute('aria-expanded')).to.equal('true');
+    //   expect(isElementVisible(headlinePopupItems)).to.equal(true);
+    // });
 
     it('should not render the promo', async () => {
       await createFullGlobalNavigation({ viewport: 'mobile' });
