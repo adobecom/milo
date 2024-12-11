@@ -805,16 +805,6 @@ describe('keyboard navigation', () => {
     });
 
     describe('ArrowLeft', () => {
-      // it('shifts focus to the previous section', async () => {
-      //   await sendKeys({ press: 'ArrowRight' });
-      //   await sendKeys({ press: 'ArrowRight' });
-      //   expect(document.activeElement.innerText).to.equal('second-column-first-section-first-item');
-      //   await sendKeys({ press: 'ArrowLeft' });
-      //   expect(document.activeElement.innerText).to.equal('first-column-second-section-first-item');
-      //   await sendKeys({ press: 'ArrowLeft' });
-      //   expect(document.activeElement).to.equal(trigger);
-      // });
-
       it('shifts focus from the first popup item back to the trigger', async () => {
         await sendKeys({ press: 'ArrowLeft' });
         expect(document.activeElement).to.equal(trigger);
