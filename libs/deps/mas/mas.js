@@ -1329,8 +1329,9 @@ merch-card[variant='twp'] merch-offer-select {
             --mod-img-height: 38px;
 
             box-sizing: border-box;
-            width: 305px;
-            min-width: 305px;
+            width: 100%;
+            max-width: 305px;
+            min-width: 270px;
             min-height: 205px;
             border-radius: 4px;
             display: flex;
@@ -1465,6 +1466,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
             box-sizing: border-box;
             min-width: 290px;
             max-width: 322px;
+            width: 100%;
             max-height: 154px;
             height: 154px;
             border-radius: 4px;
@@ -1495,7 +1497,6 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
             padding: 15px;
             padding-inline-end: 0;
             width: 154px;
-            height: 54px;
             flex-direction: column;
             justify-content: space-between;
             align-items: flex-start;
@@ -1545,7 +1546,6 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
 
         :host([variant='ccd-slice']) .top-section {
             align-items: center;
-            min-height: 1px;
             gap: 8px;
         }
     `);var Bn=(e,t=!1)=>{switch(e.variant){case"catalog":return new ot(e);case"image":return new xr(e);case"inline-heading":return new vr(e);case"mini-compare-chart":return new at(e);case"plans":return new st(e);case"product":return new Ue(e);case"segment":return new ct(e);case"special-offers":return new lt(e);case"twp":return new ht(e);case"ccd-suggested":return new dt(e);case"ccd-slice":return new ut(e);default:return t?void 0:new Ue(e)}},jo=()=>{let e=[];return e.push(ot.variantStyle),e.push(at.variantStyle),e.push(Ue.variantStyle),e.push(st.variantStyle),e.push(ct.variantStyle),e.push(lt.variantStyle),e.push(ht.variantStyle),e.push(dt.variantStyle),e.push(ut.variantStyle),e};var Yo=document.createElement("style");Yo.innerHTML=`

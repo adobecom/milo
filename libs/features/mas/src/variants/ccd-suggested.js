@@ -53,8 +53,9 @@ export class CCDSuggested extends VariantLayout {
             --mod-img-height: 38px;
 
             box-sizing: border-box;
-            width: 305px;
-            min-width: 305px;
+            width: 100%;
+            max-width: 305px;
+            min-width: 270px;
             min-height: 205px;
             border-radius: 4px;
             display: flex;

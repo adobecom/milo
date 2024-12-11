@@ -10,7 +10,7 @@ main {
 
 .container {
   width: 100%;
-  max-width: 1200px;
+  max-width: 966px;
   font-family: adobe-clean, var(--spectrum-body-sans-serif-font-family);
   font-style: var(--spectrum-body-sans-serif-font-style);
   font-weight: var(--spectrum-body-sans-serif-font-weight);
@@ -117,18 +117,34 @@ code {
   color: #fbecec;
 }
 
-.three-merch-cards {
-  grid-template-columns: 1fr;
+.three-merch-cards.ccd-suggested {
+  grid-template-columns: minmax(270px, 305px);
 }
 
-@media screen and (min-width: 768px) {
-  .three-merch-cards {
-    grid-template-columns: repeat(2, 1fr);
+@media screen and (min-width: 644px) {
+  .three-merch-cards.ccd-suggested {
+    grid-template-columns: repeat(2, minmax(270px, 305px));
   }
 }
 
-@media screen and (min-width: 1200px) {
-  .three-merch-cards {
-    grid-template-columns: repeat(3, 1fr);
+@media screen and (min-width: 966px) {
+  .three-merch-cards.ccd-suggested {
+    grid-template-columns: repeat(3, minmax(270px, 305px));
+  }
+}
+
+.three-merch-cards.ccd-slice {
+  grid-template-columns: minmax(290px, 322px);
+}
+
+@media screen and (min-width: 644px) {
+  .three-merch-cards.ccd-slice {
+    grid-template-columns: repeat(2, minmax(290px, 322px));
+  }
+}
+
+@media screen and (min-width: 966px) {
+  .three-merch-cards.ccd-slice {
+    grid-template-columns: repeat(3, minmax(290px, 322px));
   }
 }
