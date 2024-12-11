@@ -8,7 +8,7 @@ export default function Url({ suffix, item }) {
   let hasError;
   if (item.valid === undefined) {
     // if not validated (LANGSTORE, locale) then get validation status from urls
-    const match = urls.value.find((url) => sourcePath.endsWith(url.pathname)
+    const match = urls.value.find((url) => sourcePath.endsWith(url.pagePath)
       || url.langstore.pathname.endsWith(langstorePath));
     hasError = typeof match.valid === 'string' ? match.valid : false;
   } else {

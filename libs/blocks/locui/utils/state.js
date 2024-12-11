@@ -20,6 +20,7 @@ export const allowSyncToLangstore = signal(false);
 export const allowSendForLoc = signal(false);
 export const allowRollout = signal(false);
 export const allowCancelProject = signal(false);
+export const isDraftProject = signal(false);
 export const projectCancelled = signal(false);
 export const polling = signal(false);
 export const projectStatus = signal({});

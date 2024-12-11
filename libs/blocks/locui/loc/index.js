@@ -35,8 +35,17 @@ async function validateUrl(url) {
   }
 }
 
+export function getLangstorePrefix(path) {
+  return path.replace(/^(\/langstore\/[^\/]+)*(\/.*)/,'$1');
+}
+
+export function removeLangstorePrefix(path) {
+  return path.replace(/^\/langstore\/[^\/]+/, '');
+}
+
 export function validateUrlsFormat(projectUrls, removeMedia = false) {
-  projectUrls.forEach((projectUrl) => {
+  let firstUrlLang;
+  projectUrls.forEach((projectUrl, idx) => {
     const url = getUrl(projectUrl);
     const domain = isUrl(url.alt) ?? url;
     if (domain.origin !== origin) {
@@ -45,6 +54,16 @@ export function validateUrlsFormat(projectUrls, removeMedia = false) {
     }
     if ((/\.(gif|jpg|jpeg|tiff|png|webp)$/i).test(domain.pathname)) {
       url.valid = 'media';
+    }
+    if (idx && !firstUrlLang && url.pathname.startsWith('/langstore/')) {
+        url.valid = `not US url`;
+    } else if (idx && firstUrlLang) {
+      const urlLang = getLangstorePrefix(url.pathname);
+      if (firstUrlLang !== urlLang) {
+        url.valid = `not same as first ${firstUrlLang}`;
+      }
+    } else {
+      firstUrlLang = getLangstorePrefix(url.pathname);
     }
   });
   if (removeMedia) {
@@ -74,13 +93,14 @@ export function getUrls(jsonUrls) {
   const { locales } = getConfig();
   // Assume all URLs will be the same locale as the first URL
   const locale = getLocale(locales, jsonUrls[0].pathname);
-  const langstorePrefix = locale.prefix ? `/langstore${locale.prefix}` : '/langstore/en';
+  const lang = (locale.prefix.replace(/^\/langstore\//,'/') ?? '/en').replace('/','') || 'en';
   // Loop through each url to get langstore information
   return jsonUrls.map((url) => {
     url.langstore = {
-      lang: locale.prefix ? locale.prefix.replace('/', '') : 'en',
-      pathname: url.pathname.replace(locale.prefix, langstorePrefix),
+      lang,
+      pathname: url.pathname.replace(locale.prefix, `/langstore/${lang}`),
     };
+    url.pagePath = removeLangstorePrefix(url.pathname);
     return url;
   });
 }
