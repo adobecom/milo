@@ -63,6 +63,10 @@ export class CCDSuggested extends VariantLayout {
             overflow: hidden;
         }
 
+        :host([variant='ccd-slice']) * {
+          overflow: hidden;
+        }
+
         :host([variant='ccd-suggested']:hover) {
             --consonant-merch-card-border-color: #cacaca;
         }

@@ -1364,6 +1364,10 @@ merch-card[variant='twp'] merch-offer-select {
             overflow: hidden;
         }
 
+        :host([variant='ccd-slice']) * {
+          overflow: hidden;
+        }
+
         :host([variant='ccd-suggested']:hover) {
             --consonant-merch-card-border-color: #cacaca;
         }
@@ -1499,10 +1503,15 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
             flex-flow: wrap;
         }
 
+        :host([variant='ccd-slice']) * {
+          overflow: hidden;
+        }
+
         :host([variant='ccd-slice']) ::slotted([slot='body-s']) {
             font-size: var(--consonant-merch-card-body-xs-font-size);
             line-height: var(--consonant-merch-card-body-xxs-line-height);
             max-width: 154px;
+            max-height: 54px;
             overflow: hidden;
         }
 
