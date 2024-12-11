@@ -830,6 +830,16 @@ async function decorateIcons(area, config) {
   await loadIcons(icons, config);
 }
 
+async function decorateIcons(area, config) {
+  const icons = area.querySelectorAll('span.icon');
+  if (icons.length === 0) return;
+  const { base } = config;
+  loadStyle(`${base}/features/icons/icons.css`);
+  loadLink(`${base}/img/icons/icons.svg`, { rel: 'preload', as: 'fetch', crossorigin: 'anonymous' });
+  const { default: loadIcons } = await import('../features/icons/icons.js');
+  await loadIcons(icons, config);
+}
+
 export async function customFetch({ resource, withCacheRules }) {
   const options = {};
   if (withCacheRules) {
@@ -1308,6 +1318,14 @@ function decorateDocumentExtras() {
 
 async function documentPostSectionLoading(config) {
   decorateFooterPromo();
+<<<<<<< HEAD
+=======
+
+  const appendage = getMetadata('title-append');
+  if (appendage) {
+    import('../features/title-append/title-append.js').then((module) => module.default(appendage));
+  }
+>>>>>>> 58ae3247d (Revert "MWPW-140452 - Icon authoring in milo using the federal repo a… (#3357))
   if (getMetadata('seotech-structured-data') === 'on' || getMetadata('seotech-video-url')) {
     import('../features/seotech/seotech.js').then((module) => module.default(
       { locationUrl: window.location.href, getMetadata, createTag, getConfig },
