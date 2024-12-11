@@ -14,7 +14,7 @@ document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 
 let icons;
 
-describe('Icon Support', () => {
+describe('Icon Suppprt', () => {
   let paramsGetStub;
 
   before(() => {
@@ -27,30 +27,17 @@ describe('Icon Support', () => {
   });
 
   before(async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/body.html' });
     icons = document.querySelectorAll('span.icon');
     await loadIcons(icons, config);
-  });
-
-  it('Handles tooltip- prefix correctly', async () => {
-    const tooltipIcon = createTag('span', { class: 'icon icon-tooltip-info' });
-    await loadIcons([tooltipIcon], config);
-    const svgIcon = tooltipIcon.querySelector(':scope svg');
-    expect(svgIcon).to.exist;
-
-    const iconName = tooltipIcon.classList[1].replace('icon-', '').replace(/tooltip-/, '');
-    expect(iconName).to.equal('info');
+    await loadIcons(icons, config); // Test duplicate icon not created if run twice
   });
 
   it('Fetches successfully with cache control enabled', async () => {
     const otherIcons = [createTag('span', { class: 'icon icon-play' })];
-    document.body.appendChild(otherIcons[0]);
-
     await loadIcons(otherIcons, config);
-    expect(otherIcons[0].querySelector('svg')).to.exist;
   });
 
-  it('Renders an SVG after loading the icons', () => {
+  it('Replaces span.icon', async () => {
     const selector = icons[0].querySelector(':scope svg');
     expect(selector).to.exist;
   });

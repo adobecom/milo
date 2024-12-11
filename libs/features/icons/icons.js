@@ -34,29 +34,7 @@ export const fetchIcons = (config) => new Promise(async (resolve) => {
   resolve(fetchedIcons);
 });
 
-let tooltipListenersAdded = false;
-function addTooltipListeners() {
-  tooltipListenersAdded = true;
-
-  ['keydown', 'mouseenter', 'focus', 'mouseleave', 'blur'].forEach((eventType) => {
-    document.addEventListener(eventType, (event) => {
-      const isTooltip = event.target?.matches?.('.milo-tooltip');
-      if (!isTooltip) return;
-
-      if (['mouseenter', 'focus'].includes(eventType)) {
-        event.target.classList.remove('hide-tooltip');
-      } else if (['mouseleave', 'blur'].includes(eventType)
-        || (eventType === 'keydown' && event.key === 'Escape')) {
-        event.target.classList.add('hide-tooltip');
-      }
-    }, true);
-  });
-}
-
-function decorateToolTip(icon, iconName) {
-  const hasTooltip = icon.closest('em')?.textContent.includes('|') && [...icon.classList].some((cls) => cls.includes('tooltip'));
-  if (!hasTooltip) return;
-
+function decorateToolTip(icon) {
   const wrapper = icon.closest('em');
   wrapper.className = 'tooltip-wrapper';
   if (!wrapper) return;
@@ -67,10 +45,7 @@ function decorateToolTip(icon, iconName) {
   icon.dataset.tooltip = content;
   // Position is the next to last part of a tooltip
   const place = conf.pop()?.trim().toLowerCase() || 'right';
-  icon.className = `icon icon-${iconName} milo-tooltip ${place}`;
-  icon.setAttribute('tabindex', '0');
-  icon.setAttribute('aria-label', content);
-  icon.setAttribute('role', 'button');
+  icon.className = `icon icon-info milo-tooltip ${place}`;
   wrapper.parentElement.replaceChild(icon, wrapper);
   if (!tooltipListenersAdded) addTooltipListeners();
 }
@@ -79,15 +54,13 @@ export default async function loadIcons(icons, config) {
   const iconSVGs = await fetchIcons(config);
   if (!iconSVGs) return;
   icons.forEach(async (icon) => {
-    const iconNameInitial = icon.classList[1].replace('icon-', '');
-    let iconName = iconNameInitial === 'tooltip' ? 'info' : iconNameInitial;
-    if (iconNameInitial.includes('tooltip-')) iconName = iconNameInitial.replace(/tooltip-/, '');
-    decorateToolTip(icon, iconName);
-
+    const { classList } = icon;
+    if (classList.contains('icon-tooltip')) decorateToolTip(icon);
+    const iconName = icon.classList[1].replace('icon-', '');
     const existingIcon = icon.querySelector('svg');
     if (!iconSVGs[iconName] || existingIcon) return;
     const parent = icon.parentElement;
-    if (parent?.childNodes.length > 1) {
+    if (parent.childNodes.length > 1) {
       if (parent.lastChild === icon) {
         icon.classList.add('margin-inline-start');
       } else if (parent.firstChild === icon) {
