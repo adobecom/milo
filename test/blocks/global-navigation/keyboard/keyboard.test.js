@@ -401,10 +401,11 @@ describe('keyboard navigation', () => {
     describe('ArrowRight', () => {
       it('does nothing', async () => {
         for await (const element of otherNavItems) {
-          if (!isElementVisible(element)) continue;
-          element.focus();
-          await sendKeys({ press: 'ArrowRight' });
-          expect(document.activeElement).to.equal(element);
+          if (isElementVisible(element)) {
+            element.focus();
+            await sendKeys({ press: 'ArrowRight' });
+            expect(document.activeElement).to.equal(element);
+          }
         }
       });
     });
@@ -412,10 +413,11 @@ describe('keyboard navigation', () => {
     describe('ArrowLeft', () => {
       it('does nothing', async () => {
         for await (const element of otherNavItems) {
-          if (!isElementVisible(element)) continue;
-          element.focus();
-          await sendKeys({ press: 'ArrowLeft' });
-          expect(document.activeElement).to.equal(element);
+          if (isElementVisible(element)) {
+            element.focus();
+            await sendKeys({ press: 'ArrowLeft' });
+            expect(document.activeElement).to.equal(element);
+          }
         }
       });
     });
@@ -423,10 +425,11 @@ describe('keyboard navigation', () => {
     describe('ArrowUp', () => {
       it('does nothing', async () => {
         for await (const element of otherNavItems) {
-          if (!isElementVisible(element)) continue;
-          element.focus();
-          await sendKeys({ press: 'ArrowUp' });
-          expect(document.activeElement).to.equal(element);
+          if (isElementVisible(element)) {
+            element.focus();
+            await sendKeys({ press: 'ArrowUp' });
+            expect(document.activeElement).to.equal(element);
+          }
         }
       });
     });
@@ -434,10 +437,11 @@ describe('keyboard navigation', () => {
     describe('ArrowDown', () => {
       it('nothing', async () => {
         for await (const element of otherNavItems) {
-          if (!isElementVisible(element)) continue;
-          element.focus();
-          await sendKeys({ press: 'ArrowDown' });
-          expect(document.activeElement).to.equal(element);
+          if (isElementVisible(element)) {
+            element.focus();
+            await sendKeys({ press: 'ArrowDown' });
+            expect(document.activeElement).to.equal(element);
+          }
         }
       });
     });
