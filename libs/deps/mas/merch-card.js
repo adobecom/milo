@@ -1503,7 +1503,6 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
             font-size: var(--consonant-merch-card-body-xs-font-size);
             line-height: var(--consonant-merch-card-body-xxs-line-height);
             max-width: 154px;
-            height: 54px;
             overflow: hidden;
         }
 
