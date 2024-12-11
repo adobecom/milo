@@ -76,6 +76,7 @@ describe('Utils', () => {
     it('preloads blocks for performance reasons', async () => {
       document.head.innerHTML = head;
       document.body.innerHTML = await readFile({ path: './mocks/marquee.html' });
+
       await utils.loadArea();
       const scriptPreload = document.head.querySelector('link[href*="/libs/blocks/marquee/marquee.js"]');
       const marqueeDecoratePreload = document.head.querySelector('link[href*="/libs/utils/decorate.js"]');
@@ -94,11 +95,30 @@ describe('Utils', () => {
     expect(document.querySelector('.global-navigation')).to.exist;
   });
 
+  it('render meta performanceV2 renders the normal flow', async () => {
+    // const spyOnLoadMartech = sinon.spy(loadMartech);
+    const localHead = await readFile({ path: './mocks/mep/head-target-postlcp.html' });
+    document.head.innerHTML = localHead;
+    const metaTag = document.createElement('meta');
+    metaTag.setAttribute('name', 'personalization-v2');
+    document.head.appendChild(metaTag);
+
+    const bodyWithheader = await readFile({ path: './mocks/body-gnav.html' });
+    document.body.innerHTML = bodyWithheader;
+
+    await utils.loadArea();
+    // expect(spyOnLoadMartech.called).to.be.true;
+    // spyOnLoadMartech.resetHistory();
+    expect(document.querySelector('.global-navigation')).to.exist;
+  });
+
   describe('with body', () => {
     beforeEach(async () => {
       window.fetch = mockFetch({ payload: { data: '' } });
+
       document.head.innerHTML = head;
       document.body.innerHTML = body;
+
       await utils.loadArea();
       sinon.spy(console, 'log');
     });
@@ -189,6 +209,39 @@ describe('Utils', () => {
         copy.dispatchEvent(clickEvent);
         expect(preventDefaultSpy.calledTwice).to.be.true;
         expect(window.navigator.share.calledOnce).to.be.true;
+      });
+    });
+
+    describe('Aria label appendment', () => {
+      it('appends aria label if defined', () => {
+        const theText = 'Text';
+        const theAriaLabel = 'Aria label';
+
+        const noAriaLabelElem = document.querySelector('.aria-label-none');
+        expect(noAriaLabelElem.getAttribute('aria-label')).to.be.null;
+        expect(noAriaLabelElem.innerText).to.equal(theText);
+
+        const simpleAriaLabelElem = document.querySelector('.aria-label-simple');
+        expect(simpleAriaLabelElem.getAttribute('aria-label')).to.equal(theAriaLabel);
+        expect(simpleAriaLabelElem.innerText).to.equal(theText);
+
+        const pipedAriaLabelElem = document.querySelector('.aria-label-piped');
+        expect(pipedAriaLabelElem.getAttribute('aria-label')).to.equal(theAriaLabel);
+        expect(pipedAriaLabelElem.innerText).to.equal(`${theText} | Other text`);
+
+        const noSpacePipedAriaLabelElem = document.querySelector('.aria-label-piped--no-space');
+        expect(noSpacePipedAriaLabelElem.getAttribute('aria-label')).to.equal(theAriaLabel);
+        expect(noSpacePipedAriaLabelElem.innerText).to.equal(`${theText}|Other text`);
+
+        const iconNoAriaLabelElem = document.querySelector('.aria-label-icon-none');
+        expect(iconNoAriaLabelElem.getAttribute('aria-label')).to.be.null;
+        expect(iconNoAriaLabelElem.querySelector('.icon')).to.exist;
+        expect(iconNoAriaLabelElem.innerText).to.equal(theText);
+
+        const iconAriaLabelElem = document.querySelector('.aria-label-icon-simple');
+        expect(iconAriaLabelElem.getAttribute('aria-label')).to.equal(theAriaLabel);
+        expect(iconAriaLabelElem.querySelector('.icon')).to.exist;
+        expect(iconAriaLabelElem.innerText).to.equal(theText);
       });
     });
 
