@@ -1,5 +1,5 @@
 import { html, css } from 'lit';
-import { VariantLayout } from './variant-layout';
+import { VariantLayout } from './variant-layout.js';
 import { CSS } from './ccd-suggested.css.js';
 
 const AEM_FRAGMENT_MAPPING = {

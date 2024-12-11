@@ -109,26 +109,6 @@ button {
   padding: 30px;
 }
 
-.gallery-grid-3,
-.gallery-grid-2 {
-  display: grid;
-  gap: 20px;
-  margin: 0 auto;
-  align-items: stretch;
-}
-
-.gallery-grid-3 {
-  grid-template-columns: repeat(3, 1fr);
-}
-
-.gallery-grid-3 {
-  grid-template-columns: repeat(3, 1fr);
-}
-
-.gallery-grid-2 {
-  grid-template-columns: repeat(2, 1fr);
-}
-
 /* Media query for mobile and tablet devices */
 @media (max-width: 1199px) {
   .gallery-grid-3,
@@ -136,12 +116,6 @@ button {
     grid-template-columns: 1fr; /* Single column */
     justify-items: center; /* Center items horizontally */
   }
-}
-
-.gallery-grid-1 {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 20px;
 }
 
 merch-card:has(+ merch-card) {
@@ -154,4 +128,8 @@ code {
 
 .spectrum--darkest .gallery-content {
   color: #fbecec;
+}
+
+.three-merch-cards {
+  grid-template-columns: repeat(3, 1fr);
 }
