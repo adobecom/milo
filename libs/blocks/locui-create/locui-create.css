@@ -88,7 +88,7 @@ body {
 .locui-step-controls {
   display: flex;
   justify-content: space-between;
-  padding: 16px;
+  padding: 16px 28px;
 }
 
 .locui-title-bar {
