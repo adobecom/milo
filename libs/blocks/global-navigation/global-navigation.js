@@ -252,10 +252,11 @@ const closeOnClickOutside = (e) => {
   const newMobileNav =  getMetadata('mobile-gnav-v2') !== 'false';
   if (!isDesktop.matches && !newMobileNav) return;
 
+  const isLocalNavCurtain = e.target.classList.contains('feds-localnav-curtain');
   const openElemSelector = `${selectors.globalNav} [aria-expanded = "true"], ${selectors.localNav} [aria-expanded = "true"]`;
   const isClickedElemOpen = [...document.querySelectorAll(openElemSelector)]
     .find((openItem) => {
-      if (e.target.classList.contains('feds-localnav-curtain')) return false;
+      if (isLocalNavCurtain) return false;
       return openItem.parentElement.contains(e.target);
     });
 
@@ -406,8 +407,8 @@ class Gnav {
     });
 
     localNav.querySelector('.feds-localnav-title').addEventListener('click', () => {
-      localNav.classList.toggle('feds-dropdown--active');
-      const isActive = localNav.classList.contains('feds-dropdown--active');
+      localNav.classList.toggle('feds-localnav--active');
+      const isActive = localNav.classList.contains('feds-localnav--active');
       localNav.querySelector('.feds-localnav-title').setAttribute('aria-expanded', isActive);
     });
     this.elements.localNav = localNav;

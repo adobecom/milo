@@ -218,11 +218,11 @@ export const isDesktop = window.matchMedia('(min-width: 900px)');
 export const isTangentToViewport = window.matchMedia('(min-width: 900px) and (max-width: 1440px)');
 
 export function setActiveDropdown(elem) {
-  const activeClass = selectors.activeDropdown.replace('.', '');
+  const activeClass = (".feds-localnav--active" || selectors.activeDropdown).replace('.', '');
 
   // We always need to reset all active dropdowns at first
   const resetActiveDropdown = () => {
-    [...document.querySelectorAll(selectors.activeDropdown)]
+    [...document.querySelectorAll(".feds-localnav--active, .feds-dropdown--active")]
       .forEach((activeDropdown) => activeDropdown.classList.remove(activeClass));
   };
   resetActiveDropdown();
