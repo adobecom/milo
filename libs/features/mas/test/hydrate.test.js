@@ -91,7 +91,7 @@ describe('processPrices', async () => {
             prices: 'Starting at  <span is="inline-price" data-template="price" data-wcs-osi="nTbB50pS4lLGv_x1l_UKggd-lxxo2zAJ7WYDa2mW19s"></span>',
         };
         const merchCard = mockMerchCard();
-        const pricesConfig = { tag: 'p', slot: 'prices' };
+        const pricesConfig = { tag: 'p', slot: 'price' };
         processPrices(fields, merchCard, pricesConfig);
         await merchCard.querySelector('span[is="inline-price"]').onceSettled();
         expect(merchCard.textContent).to.equal('Starting at  US$22.19/mo');
