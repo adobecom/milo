@@ -31,6 +31,11 @@ const mockMerchCard = () => {
     return merchCard;
 };
 
+await mas();
+await mockFetch(withWcs);
+
+document.head.appendChild(document.createElement('mas-commerce-service'));
+
 describe('processMnemonics', async () => {
     it('should process mnemonics', async () => {
         const fields = {
@@ -80,16 +85,22 @@ describe('processPrices', async () => {
             '<div><p slot="prices"><span>$9.99</span></p></div>',
         );
     });
+
+    it('should preserve white spaces', async () => {
+        const fields = {
+            prices: 'Starting at  <span is="inline-price" data-template="price" data-wcs-osi="nTbB50pS4lLGv_x1l_UKggd-lxxo2zAJ7WYDa2mW19s"></span>',
+        };
+        const merchCard = mockMerchCard();
+        const pricesConfig = { tag: 'p', slot: 'prices' };
+        processPrices(fields, merchCard, pricesConfig);
+        await merchCard.querySelector('span[is="inline-price"]').onceSettled();
+        expect(merchCard.textContent).to.equal('Starting at  US$22.19/mo');
+    });
 });
 
 describe('processCTAs', async () => {
     let merchCard;
     let aemFragmentMapping;
-
-    before(async () => {
-        await mas();
-        await mockFetch(withWcs);
-    });
 
     beforeEach(async () => {
         merchCard = mockMerchCard();

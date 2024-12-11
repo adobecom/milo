@@ -9,6 +9,8 @@ export const ANALYTICS_LINK_ATTR = 'daa-ll';
 export const ANALYTICS_SECTION_ATTR = 'daa-lh';
 const SPECTRUM_BUTTON_SIZES = ['XL', 'L', 'M', 'S'];
 
+const domParser = new DOMParser();
+
 export function processMnemonics(fields, merchCard, mnemonicsConfig) {
     const mnemonics = fields.mnemonicIcon?.map((icon, index) => ({
         icon,
@@ -113,12 +115,17 @@ export function processBackgroundImage(
 
 export function processPrices(fields, merchCard, pricesConfig) {
     if (fields.prices && pricesConfig) {
-        const headingM = createTag(
-            pricesConfig.tag,
-            { slot: pricesConfig.slot },
-            fields.prices,
-        );
-        merchCard.append(headingM);
+        try {
+            const html = domParser.parseFromString(fields.prices, 'text/html');
+            const headingM = createTag(
+                pricesConfig.tag,
+                { slot: pricesConfig.slot },
+            );
+            headingM.append(...html.body.childNodes);
+            merchCard.append(headingM);
+        } catch (e) {
+            return;
+        }
     }
 }
 
