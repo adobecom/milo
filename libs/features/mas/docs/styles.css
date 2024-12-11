@@ -109,19 +109,6 @@ button {
   padding: 30px;
 }
 
-/* Media query for mobile and tablet devices */
-@media (max-width: 1199px) {
-  .gallery-grid-3,
-  .gallery-grid-2 {
-    grid-template-columns: 1fr; /* Single column */
-    justify-items: center; /* Center items horizontally */
-  }
-}
-
-merch-card:has(+ merch-card) {
-  margin-bottom: 20px;
-}
-
 code {
   max-width: 90vw;
 }
