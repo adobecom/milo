@@ -29,6 +29,7 @@ export const selectors = {
   gnavPromo: '.gnav-promo',
   columnBreak: '.column-break',
   brandImageOnly: '.brand-image-only',
+  localNav: '.feds-localnav'
 };
 
 export const icons = {
@@ -286,7 +287,7 @@ export const [hasActiveLink, setActiveLink, isActiveLink, getActiveLink] = (() =
 })();
 
 export function closeAllDropdowns({ type } = {}) {
-  const selector = selectorMap[type] || `${selectors.globalNav} [aria-expanded='true']`;
+  const selector = selectorMap[type] || `${selectors.globalNav} [aria-expanded='true'], ${selectors.localNav} [aria-expanded = "true"]`;
 
   const openElements = document.querySelectorAll(selector);
   if (!openElements) return;
@@ -294,7 +295,6 @@ export function closeAllDropdowns({ type } = {}) {
     if ('fedsPreventautoclose' in el.dataset) return;
     el.setAttribute('aria-expanded', 'false');
   });
-
   setActiveDropdown();
 
   if (isDesktop.matches) setCurtainState(false);
