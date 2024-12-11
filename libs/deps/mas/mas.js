@@ -544,6 +544,11 @@ merch-card[variant="catalog"] .payment-details {
     text-decoration: underline;
   }
 
+  merch-card[variant="mini-compare-chart"] div[slot="footer"] {
+    display: flex;
+    gap: var(--consonant-merch-spacing-xs);
+  }
+
   merch-card[variant="mini-compare-chart"] [slot="footer-rows"] ul {
     margin-block-start: 0px;
     margin-block-end: 0px;
