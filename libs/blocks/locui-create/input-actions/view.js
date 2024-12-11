@@ -1,7 +1,7 @@
 import { html } from '../../../deps/htm-preact.js';
 import StepControls from '../components/stepControls.js';
 import useInputActions from './index.js';
-import { prevStep, project, updateDraftProject } from '../store.js';
+import { prevStep, project } from '../store.js';
 import { LOCALIZATION_TYPES } from '../utils/constant.js';
 import Toast from '../components/toast.js';
 
@@ -87,17 +87,14 @@ export default function InputActionsView() {
     isFormValid,
     handleActionSelect,
     handleWorkflowSelect,
-    projectCreatedModal,
     apiError,
+    projectConfirmationModal,
     setApiError,
   } = useInputActions();
 
   const handleNext = async () => {
     if (isFormValid) {
-      const error = await updateDraftProject(true);
-      if (error) {
-        setApiError(error);
-      } else { projectCreatedModal(); }
+      projectConfirmationModal();
     }
   };
 
