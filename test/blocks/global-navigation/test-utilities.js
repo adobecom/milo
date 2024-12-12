@@ -82,6 +82,13 @@ export const analyticsTestData = {
 
 export const unavVersion = '1.3';
 
+export const addMetaDataV2 = (value) => {
+  const metaTag = document.createElement('meta');
+  metaTag.name = 'mobile-gnav-v2';
+  metaTag.content = value;
+  return metaTag;
+};
+
 export const unavLocalesTestData = Object.entries(LANGMAP).reduce((acc, curr) => {
   const result = [];
   const [locale, prefixes] = curr;

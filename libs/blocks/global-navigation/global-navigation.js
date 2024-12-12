@@ -1052,23 +1052,25 @@ class Gnav {
           decorateLocalNavItems(item, template);
         }
 
-        const popup = template.querySelector('.feds-popup');
-        let originalContent = popup.innerHTML;
+        if (this.newMobileNav) {
+          const popup = template.querySelector('.feds-popup');
+          let originalContent = popup.innerHTML;
 
-        if (!isDesktop.matches && this.newMobileNav && popup) {
-          originalContent = await transformTemplateToMobile(popup, item, this.isLocalNav());
-          popup.querySelector('.close-icon')?.addEventListener('click', this.toggleMenuMobile);
-        }
-        isDesktop.addEventListener('change', async () => {
-          if (isDesktop.matches) {
-            popup.innerHTML = originalContent;
-            this.block.classList.remove('new-nav');
-          } else {
+          if (!isDesktop.matches && this.newMobileNav && popup) {
             originalContent = await transformTemplateToMobile(popup, item, this.isLocalNav());
             popup.querySelector('.close-icon')?.addEventListener('click', this.toggleMenuMobile);
-            this.block.classList.add('new-nav');
           }
-        });
+          isDesktop.addEventListener('change', async () => {
+            if (isDesktop.matches) {
+              popup.innerHTML = originalContent;
+              this.block.classList.remove('new-nav');
+            } else {
+              originalContent = await transformTemplateToMobile(popup, item, this.isLocalNav());
+              popup.querySelector('.close-icon')?.addEventListener('click', this.toggleMenuMobile);
+              this.block.classList.add('new-nav');
+            }
+          });
+        }
       }, 'Decorate dropdown failed', 'errorType=info,module=gnav');
 
       template.addEventListener('click', decorateDropdown);

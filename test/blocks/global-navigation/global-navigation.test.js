@@ -11,12 +11,13 @@ import {
   unavLocalesTestData,
   analyticsTestData,
   unavVersion,
+  addMetaDataV2,
 } from './test-utilities.js';
 import { setConfig, getLocale } from '../../../libs/utils/utils.js';
 import initNav, { getUniversalNavLocale, osMap } from '../../../libs/blocks/global-navigation/global-navigation.js';
-import { isDesktop, toFragment } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
+import { isDesktop, isTangentToViewport, toFragment } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
 import logoOnlyNav from './mocks/global-navigation-only-logo.plain.js';
-// import longNav from './mocks/global-navigation-long.plain.js';
+import longNav from './mocks/global-navigation-long.plain.js';
 import darkNav from './mocks/dark-global-navigation.plain.js';
 import navigationWithCustomLinks from './mocks/navigation-with-custom-links.plain.js';
 import globalNavigationMock from './mocks/global-navigation.plain.js';
@@ -292,50 +293,48 @@ describe('global navigation', () => {
   });
 
   describe('Viewport changes', () => {
-    // it('should render desktop -> small desktop -> mobile', async () => {
-    //   const nav = await createFullGlobalNavigation();
+    it('should render desktop -> small desktop -> mobile', async () => {
+      document.head.appendChild(addMetaDataV2('false'));
+      const nav = await createFullGlobalNavigation();
+      expect(nav).to.exist;
+      expect(isElementVisible(document.querySelector(selectors.globalNav))).to.equal(true);
+      expect(isElementVisible(document.querySelector(selectors.search))).to.equal(true);
+      expect(isElementVisible(document.querySelector(selectors.profile))).to.equal(true);
+      expect(isElementVisible(document.querySelector(selectors.logo))).to.equal(true);
+      expect(isElementVisible(document.querySelector(selectors.brandContainer))).to.equal(true);
+      expect(isElementVisible(document.querySelector(selectors.mainNavToggle))).to.equal(false);
+      expect(document.querySelectorAll(selectors.navItem).length).to.equal(9);
+      expect([...document.querySelectorAll(selectors.headline)]
+        .every((elem) => elem.getAttribute('daa-ll') === null))
+        .to.be.true;
 
-    //   expect(nav).to.exist;
-    //   expect(isElementVisible(document.querySelector(selectors.globalNav))).to.equal(true);
-    //   expect(isElementVisible(document.querySelector(selectors.search))).to.equal(true);
-    //   expect(isElementVisible(document.querySelector(selectors.profile))).to.equal(true);
-    //   expect(isElementVisible(document.querySelector(selectors.logo))).to.equal(true);
-    //   expect(isElementVisible(document.querySelector(selectors.brandContainer))).to.equal(true);
-    //   expect(isElementVisible(document.querySelector(selectors.mainNavToggle))).to.equal(false);
-    //   expect(document.querySelectorAll(selectors.navItem).length).to.equal(9);
-    //   expect([...document.querySelectorAll(selectors.headline)]
-    //     .every((elem) => elem.getAttribute('daa-ll') === null))
-    //     .to.be.true;
+      await setViewport(viewports.smallDesktop);
+      isDesktop.dispatchEvent(new Event('change'));
 
-    //   await setViewport(viewports.smallDesktop);
-    //   isDesktop.dispatchEvent(new Event('change'));
+      expect(isElementVisible(document.querySelector(selectors.globalNav))).to.equal(true);
+      expect(isElementVisible(document.querySelector(selectors.search))).to.equal(true);
+      expect(isElementVisible(document.querySelector(selectors.profile))).to.equal(true);
+      expect(isElementVisible(document.querySelector(selectors.logo))).to.equal(false);
+      expect(isElementVisible(document.querySelector(selectors.brandContainer))).to.equal(true);
+      expect(isElementVisible(document.querySelector(selectors.mainNavToggle))).to.equal(false);
+      expect(document.querySelectorAll(selectors.navItem).length).to.equal(9);
+      expect([...document.querySelectorAll(selectors.headline)]
+        .every((elem) => elem.getAttribute('daa-ll') === null))
+        .to.be.true;
 
-    //   expect(isElementVisible(document.querySelector(selectors.globalNav))).to.equal(true);
-    //   expect(isElementVisible(document.querySelector(selectors.search))).to.equal(true);
-    //   expect(isElementVisible(document.querySelector(selectors.profile))).to.equal(true);
-    //   expect(isElementVisible(document.querySelector(selectors.logo))).to.equal(false);
-    //   expect(isElementVisible(document.querySelector(selectors.brandContainer))).to.equal(true);
-    //   expect(isElementVisible(document.querySelector(selectors.mainNavToggle))).to.equal(false);
-    //   expect(document.querySelectorAll(selectors.navItem).length).to.equal(9);
-    //   console.log([...document.querySelectorAll(selectors.headline)]);
-    //   expect([...document.querySelectorAll(selectors.headline)]
-    //     .every((elem) => elem.getAttribute('daa-ll') === null))
-    //     .to.be.true;
-
-    //   await setViewport(viewports.mobile);
-    //   isDesktop.dispatchEvent(new Event('change'));
-
-    //   expect(isElementVisible(document.querySelector(selectors.globalNav))).to.equal(true);
-    //   expect(isElementVisible(document.querySelector(selectors.search))).to.equal(false);
-    //   expect(isElementVisible(document.querySelector(selectors.profile))).to.equal(true);
-    //   expect(isElementVisible(document.querySelector(selectors.logo))).to.equal(false);
-    //   expect(isElementVisible(document.querySelector(selectors.brandContainer))).to.equal(true);
-    //   expect(isElementVisible(document.querySelector(selectors.mainNavToggle))).to.equal(true);
-    //   expect(document.querySelectorAll(selectors.navItem).length).to.equal(9);
-    //   expect([...document.querySelectorAll(selectors.headline)]
-    //     .every((elem) => elem.getAttribute('daa-ll') !== null))
-    //     .to.be.true;
-    // });
+      await setViewport(viewports.mobile);
+      isDesktop.dispatchEvent(new Event('change'));
+      expect(isElementVisible(document.querySelector(selectors.globalNav))).to.equal(true);
+      expect(isElementVisible(document.querySelector(selectors.search))).to.equal(false);
+      expect(isElementVisible(document.querySelector(selectors.profile))).to.equal(true);
+      expect(isElementVisible(document.querySelector(selectors.logo))).to.equal(false);
+      expect(isElementVisible(document.querySelector(selectors.brandContainer))).to.equal(true);
+      expect(isElementVisible(document.querySelector(selectors.mainNavToggle))).to.equal(true);
+      expect(document.querySelectorAll(selectors.navItem).length).to.equal(9);
+      expect([...document.querySelectorAll(selectors.headline)]
+        .every((elem) => elem.getAttribute('daa-ll') !== null))
+        .to.be.true;
+    });
 
     it('should change the DOM order to ensure correct TAB behavior for mobile|desktop', async () => {
       await createFullGlobalNavigation();
@@ -362,30 +361,30 @@ describe('global navigation', () => {
         .to.equal(document.querySelector(selectors.breadcrumbsWrapper));
     });
 
-    // it('should add a modifier class when nav content overflows', async () => {
-    //   const getOverflowingTopnav = () => document.querySelector(selectors.overflowingTopNav);
+    it('should add a modifier class when nav content overflows', async () => {
+      const getOverflowingTopnav = () => document.querySelector(selectors.overflowingTopNav);
 
-    //   await createFullGlobalNavigation();
-    //   expect(getOverflowingTopnav()).to.equal(null);
+      await createFullGlobalNavigation();
+      expect(getOverflowingTopnav()).to.equal(null);
 
-    //   await createFullGlobalNavigation({ globalNavigation: longNav });
-    //   expect(getOverflowingTopnav() instanceof HTMLElement).to.be.true;
+      await createFullGlobalNavigation({ globalNavigation: longNav });
+      expect(getOverflowingTopnav() instanceof HTMLElement).to.be.true;
 
-    //   await setViewport(viewports.wide);
-    //   isTangentToViewport.dispatchEvent(new Event('change'));
+      await setViewport(viewports.wide);
+      isTangentToViewport.dispatchEvent(new Event('change'));
 
-    //   expect(getOverflowingTopnav()).to.equal(null);
+      expect(getOverflowingTopnav()).to.equal(null);
 
-    //   await setViewport(viewports.smallDesktop);
-    //   isTangentToViewport.dispatchEvent(new Event('change'));
+      await setViewport(viewports.smallDesktop);
+      isTangentToViewport.dispatchEvent(new Event('change'));
 
-    //   expect(getOverflowingTopnav() instanceof HTMLElement).to.be.true;
+      expect(getOverflowingTopnav() instanceof HTMLElement).to.be.true;
 
-    //   await setViewport(viewports.mobile);
-    //   isTangentToViewport.dispatchEvent(new Event('change'));
+      await setViewport(viewports.mobile);
+      isTangentToViewport.dispatchEvent(new Event('change'));
 
-    //   expect(getOverflowingTopnav()).to.equal(null);
-    // });
+      expect(getOverflowingTopnav()).to.equal(null);
+    });
   });
 
   describe('Universal navigation', () => {
