@@ -178,7 +178,7 @@ export default async function stylePublish(sk) {
 
   const pageDetail = {
     webPath: window.location.pathname,
-    profile: { email: pluginActionBarSR.querySelector('#user').shadowRoot.querySelector('.user [slot="description"]')?.innerText },
+    profile: { email: pluginActionBarSR.querySelector('#user')?.shadowRoot.querySelector('.user [slot="description"]')?.innerText },
   };
   if (pageDetail && publishBtn) await checkAuthorization(pageDetail, publishBtn);
 }
