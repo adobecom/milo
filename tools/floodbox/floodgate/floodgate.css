@@ -35,3 +35,7 @@
   resize: vertical;
   width: 100%;
 }
+
+.button-row span {
+  text-transform: uppercase;
+}

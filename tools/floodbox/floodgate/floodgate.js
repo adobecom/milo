@@ -434,7 +434,7 @@ export default class MiloFloodgate extends LitElement {
           </div>
           <div class="button-row">
             <button class="accent" .disabled=${!this._canCopyPaths} @click=${this.handleCopyPaths}>Copy</button>
-            ${this._canCopyPaths ? html`<p>Source Repo: ${this._sourceRepo}, Floodgate Repo: ${this._floodgateRepo}</p>` : nothing}
+            ${this._canCopyPaths ? html`<div>Source Repo: <span>${this._sourceRepo}</span></div><div>Floodgate Repo: <span>${this._floodgateRepo}</span></div>` : nothing}
           </div>
         ` : nothing}
         ${this._selectedOption === 'fgPromote' ? html`
@@ -456,7 +456,7 @@ export default class MiloFloodgate extends LitElement {
             </div>` : nothing}
             <div class="button-row">
               <button class="accent" .disabled=${!this._canPromote} @click=${this.handlePromote}>Promote</button>
-              ${this._canPromote ? html`<p>Source Repo: ${this._sourceRepo}, Floodgate Repo: ${this._floodgateRepo}</p>` : nothing}
+              ${this._canPromote ? html`<div>Source Repo: <span>${this._sourceRepo}</span></div><div>Floodgate Repo: <span>${this._floodgateRepo}</span></div>` : nothing}
             </div>
           ` : nothing}
       </form>
