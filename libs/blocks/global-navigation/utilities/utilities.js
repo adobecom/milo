@@ -29,6 +29,7 @@ export const selectors = {
   gnavPromo: '.gnav-promo',
   columnBreak: '.column-break',
   brandImageOnly: '.brand-image-only',
+  localNav: '.feds-localnav',
 };
 
 export const icons = {
@@ -216,13 +217,18 @@ export function setCurtainState(state) {
 export const isDesktop = window.matchMedia('(min-width: 900px)');
 export const isTangentToViewport = window.matchMedia('(min-width: 900px) and (max-width: 1440px)');
 
-export function setActiveDropdown(elem) {
+export function setActiveDropdown(elem, type) {
   const activeClass = selectors.activeDropdown.replace('.', '');
+  const activeLocalNav = '.feds-localnav--active';
 
   // We always need to reset all active dropdowns at first
   const resetActiveDropdown = () => {
     [...document.querySelectorAll(selectors.activeDropdown)]
       .forEach((activeDropdown) => activeDropdown.classList.remove(activeClass));
+    if (type !== 'localNavItem') {
+      [...document.querySelectorAll(activeLocalNav)]
+        .forEach((activeDropdown) => activeDropdown.classList.remove('feds-localnav--active'));
+    }
   };
   resetActiveDropdown();
 
@@ -286,16 +292,16 @@ export const [hasActiveLink, setActiveLink, isActiveLink, getActiveLink] = (() =
 })();
 
 export function closeAllDropdowns({ type } = {}) {
-  const selector = selectorMap[type] || `${selectors.globalNav} [aria-expanded='true']`;
+  const selector = selectorMap[type] || `${selectors.globalNav} [aria-expanded = "true"], ${selectors.localNav} [aria-expanded = "true"]`;
 
   const openElements = document.querySelectorAll(selector);
   if (!openElements) return;
   [...openElements].forEach((el) => {
-    if ('fedsPreventautoclose' in el.dataset) return;
+    if ('fedsPreventautoclose' in el.dataset || (type === 'localNavItem' && el.classList.contains('feds-localnav-title'))) return;
     el.setAttribute('aria-expanded', 'false');
   });
 
-  setActiveDropdown();
+  setActiveDropdown(undefined, type);
 
   if (isDesktop.matches) setCurtainState(false);
 }
