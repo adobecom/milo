@@ -114,10 +114,13 @@ function parseMepConfig() {
       });
     if (domainCheck) domain = `https://${domainCheck}`;
     page = page.replace('/homepage/index-loggedout', '/');
-    if (!page.endsWith('/') && !domain.includes('milo')) page += '.html';
+    if (!page.endsWith('/') && !page.endsWith('.html') && !domain.includes('milo')) {
+      page += '.html';
+    }
   }
   domain = domain.replace('stage.adobe.com', 'adobe.com');
   const url = `${domain}${page}`;
+  page = page.replace(`/${prefix}/`, '/');
   return {
     page: {
       url,
