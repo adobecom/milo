@@ -56,6 +56,15 @@ export class MerchSidenavList extends LitElement {
             this.selectElement(element.parentNode, false);
         }
         if (selected) {
+            const firstSection = document.querySelector('.section');
+            const firstSectionContainsCatalog = firstSection.querySelector('.catalog.app');
+            if (!firstSectionContainsCatalog) {
+              if (element.value === '3d-ar') {
+                firstSection.style.display = 'none';
+              } else {
+                firstSection.style.display = 'block';
+              }
+            }
             this.selectedElement = element;
             this.selectedText = element.label;
             this.selectedValue = element.value;
