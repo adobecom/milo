@@ -117,6 +117,10 @@ code {
   color: #fbecec;
 }
 
+.gallery-content .three-merch-cards {
+  justify-content: start;
+}
+
 .three-merch-cards.ccd-suggested {
   grid-template-columns: minmax(270px, 305px);
 }
@@ -151,4 +155,10 @@ merch-card[variant="ccd-slice"][size="wide"] {
   .three-merch-cards.ccd-slice {
     grid-template-columns: repeat(3, minmax(290px, 322px));
   }
+}
+
+.flex-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
 }
