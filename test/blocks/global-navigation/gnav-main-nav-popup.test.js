@@ -6,6 +6,7 @@ import {
   selectors,
   isElementVisible,
   unavVersion,
+  addMetaDataV2,
 } from './test-utilities.js';
 import { toFragment } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
 import globalNavigationMock from './mocks/global-navigation.plain.js';
@@ -139,6 +140,7 @@ describe('main nav popups', () => {
     });
 
     it('should open a popup and headline on click', async () => {
+      document.head.appendChild(addMetaDataV2('false'));
       await createFullGlobalNavigation({ viewport: 'mobile' });
 
       document.querySelector(selectors.mainNavToggle).click();
