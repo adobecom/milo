@@ -351,11 +351,11 @@ function getUrl() {
   if (host.includes('stage.adobe')
     || host.includes('corp.adobe')
     || host.includes('graybox.adobe')) {
-    return 'https://www.stage.adobe.com/experienceedge/ee/v2/interact';
+    return 'https://www.stage.adobe.com/experienceedge/v2/interact';
   }
 
   const { origin } = window.location;
-  return `${origin}/experienceedge/ee/v2/interact`;
+  return `${origin}/experienceedge/v2/interact`;
 }
 
 /**

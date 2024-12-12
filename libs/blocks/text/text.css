@@ -100,7 +100,7 @@
   position: relative;
 }
 
-.text-block .icon-list-item .icon.node-index-first {
+.text-block .icon-list-item .icon.margin-right:not(.margin-left) { /* target first node only */
   position: absolute;
   inset: 0 100% auto auto;
 }
@@ -122,6 +122,7 @@
 
 .text-block .icon-area {
   display: flex;
+  column-gap: var(--spacing-xs);
 }
 
 .text-block p.icon-area { /* NOT <a/> tags with icons in them */
@@ -215,6 +216,10 @@
 
 .section[class*='grid-width-'] .text-block .foreground {
   max-width: unset;
+}
+
+.text-block .icon-area.con-button {
+  column-gap: unset;
 }
 
 .text-block .icon-area picture {
