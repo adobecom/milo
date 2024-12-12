@@ -1,8 +1,4 @@
 export const CSS = `
-merch-card[variant="ccd-slice"] [slot="body-s"] span.placeholder-resolved[data-template="priceStrikethrough"],
-merch-card[variant="ccd-slice"] [slot="body-s"] span.placeholder-resolved[data-template="strikethrough"] {
-  color: var(--ccd-gray-600-light, var(--merch-color-grey-60));
-}
 
 merch-card[variant="ccd-slice"] [slot='image'] img {
   overflow: hidden;

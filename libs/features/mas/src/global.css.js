@@ -388,20 +388,18 @@ merch-card div[slot='bg-image'] img {
     border-top-right-radius: 16px;
 }
 
-merch-card span[is="inline-price"][data-template='strikethrough'] {
-    text-decoration: line-through;
-    color: var(--merch-color-inline-price-strikethrough);
-}
-
 .price-unit-type:not(.disabled)::before,
 .price-tax-inclusivity:not(.disabled)::before {
   content: "\\00a0";
 }
 
+merch-card span.placeholder-resolved[data-template='priceStrikethrough'],
 merch-card span.placeholder-resolved[data-template='strikethrough'],
 merch-card span.price.price-strikethrough {
   font-size: var(--consonant-merch-card-body-xs-font-size);
   font-weight: normal;
+  text-decoration: line-through;
+  color: var(--merch-color-inline-price-strikethrough);
 }
 
 /* merch-offer-select */

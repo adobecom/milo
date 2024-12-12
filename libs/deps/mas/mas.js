@@ -1428,10 +1428,6 @@ merch-card[variant='twp'] merch-offer-select {
             align-items: center;
         }
     `);var Ko=`
-merch-card[variant="ccd-slice"] [slot="body-s"] span.placeholder-resolved[data-template="priceStrikethrough"],
-merch-card[variant="ccd-slice"] [slot="body-s"] span.placeholder-resolved[data-template="strikethrough"] {
-  color: var(--ccd-gray-600-light, var(--merch-color-grey-60));
-}
 
 merch-card[variant="ccd-slice"] [slot='image'] img {
   overflow: hidden;
@@ -1465,6 +1461,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
             --consonant-merch-card-background-color: rgb(248, 248, 248);
             --consonant-merch-card-border-color:rgb(230, 230, 230);
             --consonant-merch-card-body-s-color: rgb(34, 34, 34);
+            --merch-color-inline-price-strikethrough: var(--spectrum-gray-600);
             --mod-img-height: 29px;
             
             box-sizing: border-box;
@@ -1485,7 +1482,8 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
         :host([variant='ccd-slice']) ::slotted([slot='body-s']) {
             font-size: var(--consonant-merch-card-body-xs-font-size);
             line-height: var(--consonant-merch-card-body-xxs-line-height);
-            max-width: 154px;
+            min-width: 154px;
+            max-width: 171px;
             max-height: 54px;
             overflow: hidden;
         }
@@ -1945,20 +1943,18 @@ merch-card div[slot='bg-image'] img {
     border-top-right-radius: 16px;
 }
 
-merch-card span[is="inline-price"][data-template='strikethrough'] {
-    text-decoration: line-through;
-    color: var(--merch-color-inline-price-strikethrough);
-}
-
 .price-unit-type:not(.disabled)::before,
 .price-tax-inclusivity:not(.disabled)::before {
   content: "\\00a0";
 }
 
+merch-card span.placeholder-resolved[data-template='priceStrikethrough'],
 merch-card span.placeholder-resolved[data-template='strikethrough'],
 merch-card span.price.price-strikethrough {
   font-size: var(--consonant-merch-card-body-xs-font-size);
   font-weight: normal;
+  text-decoration: line-through;
+  color: var(--merch-color-inline-price-strikethrough);
 }
 
 /* merch-offer-select */
