@@ -78,6 +78,7 @@ export async function getProjectStatus() {
       setStatus('service-error', 'error', json.projectStatusText);
     }
 
+    isDraftProject.value = false;
     if (json.projectStatus === 'draft') {
       allowSyncToLangstore.value = true;
       allowSendForLoc.value = true;
