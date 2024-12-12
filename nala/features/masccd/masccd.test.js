@@ -1139,7 +1139,7 @@ test.describe('CCD Merchcard feature test suite', () => {
       expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'slice-wide'), CCD.sliceCssProp.description.light)).toBeTruthy();
       expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, 'slice-wide'), CCD.sliceCssProp.legalLink.light)).toBeTruthy();
       expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, 'slice-wide'), CCD.sliceCssProp.price.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardPriceStrikethrough(data.id, 'slice-wide'), CCD.sliceCssProp.strikethroughPrice)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardPriceStrikethrough(data.id, 'slice-wide'), CCD.sliceCssProp.strikethroughPrice.light)).toBeTruthy();
       expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'slice-wide'), CCD.sliceCssProp.cta.light)).toBeTruthy();
     });
 
@@ -1158,7 +1158,7 @@ test.describe('CCD Merchcard feature test suite', () => {
       expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, 'slice-wide'), CCD.sliceCssProp.legalLink.dark)).toBeTruthy();
       expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'slice-wide'), CCD.sliceCssProp.description.dark)).toBeTruthy();
       expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, 'slice-wide'), CCD.sliceCssProp.price.dark)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardPriceStrikethrough(data.id, 'slice-wide'), CCD.sliceCssProp.strikethroughPrice)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardPriceStrikethrough(data.id, 'slice-wide'), CCD.sliceCssProp.strikethroughPrice.dark)).toBeTruthy();
       expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'slice-wide'), CCD.sliceCssProp.cta.dark)).toBeTruthy();
     });
   });

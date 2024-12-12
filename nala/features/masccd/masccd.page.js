@@ -224,12 +224,22 @@ export default class MasCCDPage {
         },
       },
       strikethroughPrice: {
-        color: 'rgb(109, 109, 109)',
-        'font-size': '14px',
-        'font-weight': '400',
-        'text-decoration-line': 'line-through',
-        'text-decoration-color': 'rgb(109, 109, 109)',
-        'line-height': '18px',
+        light: {
+          color: 'rgb(109, 109, 109)',
+          'font-size': '14px',
+          'font-weight': '400',
+          'line-height': '18px',
+          'text-decoration-color': 'rgb(109, 109, 109)',
+          'text-decoration-line': 'line-through',
+        },
+        dark: {
+          color: 'rgb(176, 176, 176)',
+          'font-size': '14px',
+          'font-weight': '400',
+          'line-height': '18px',
+          'text-decoration-color': 'rgb(176, 176, 176)',
+          'text-decoration-line': 'line-through',
+        },
       },
       cta: {
         light: {
