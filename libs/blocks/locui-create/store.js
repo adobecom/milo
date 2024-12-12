@@ -25,7 +25,6 @@ export const telemetry = { application: { appName: 'Adobe Localization' } };
 export const authenticated = signal(false);
 export const currentStep = signal(1);
 export const loading = signal(false);
-export const apiError = signal('');
 export const project = signal(null);
 export const projectInfo = signal(null);
 export const projectCreated = signal(false);
@@ -41,11 +40,6 @@ export function nextStep() {
 
 export function prevStep() {
   currentStep.value -= 1;
-}
-
-export function setApiError(error) {
-  apiError.value = '';
-  apiError.value = error;
 }
 
 export function setProject(_project) {
@@ -218,6 +212,7 @@ export async function fetchDraftProject(projectKey = testInfo.projectKey) {
         htmlFlow: resJson.settings?.useHtmlFlow,
         editBehavior: resJson.settings?.regionalEditBehaviour,
         urls: resJson.urls,
+        fragments: [],
       });
       projectInfo.value = {
         ...projectInfo.value,

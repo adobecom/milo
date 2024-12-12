@@ -8,7 +8,6 @@ import FragmentsSection from '../fragments/view.js';
 import {
   authenticated,
   createDraftProject,
-  fetchDraftProject,
   nextStep,
   project,
   projectCreated,
@@ -27,12 +26,12 @@ import {
   getInitialName,
 } from './index.js';
 import { getUrls } from '../../locui/loc/index.js';
-import { URL_SEPARATOR_PATTERN } from '../utils/constant.js';
+import { PROJECT_TYPES, PROJECT_TYPE_LABELS, URL_SEPARATOR_PATTERN } from '../utils/constant.js';
 import Toast from '../components/toast.js';
 
 export default function InputUrls() {
-  const [type, setType] = useState('translation');
-  const [name, setName] = useState('');
+  const [type, setType] = useState(PROJECT_TYPES.translation);
+  const [name, setName] = useState(getInitialName(type));
   const [htmlFlow, setHtmlFlow] = useState(true);
   const [editBehavior, setEditBehavior] = useState('');
   const [urlsStr, setUrlsStr] = useState('');
@@ -146,8 +145,8 @@ export default function InputUrls() {
     setProject({
       type,
       name,
-      htmlFlow: type === 'translation' ? htmlFlow : false,
-      editBehavior: type === 'rollout' ? editBehavior : '',
+      htmlFlow: type === PROJECT_TYPES.translation ? htmlFlow : false,
+      editBehavior: type === PROJECT_TYPES.rollout ? editBehavior : '',
       urls: urlsStr.split(/,|\n/),
       fragments,
     });
@@ -163,17 +162,6 @@ export default function InputUrls() {
     }
     nextStep();
   }
-
-  useEffect(() => {
-    (async () => {
-      const searchParams = new URLSearchParams(window.location.search);
-      const projectKey = searchParams.get('projectKey');
-      if (authenticated.value && projectKey) {
-        const error = await fetchDraftProject(projectKey);
-        setApiError(error);
-      }
-    })();
-  }, [authenticated.value]);
 
   useEffect(() => {
     if (project.value) {
@@ -218,25 +206,23 @@ export default function InputUrls() {
       <div class="locui-input-form-area">
         <div class="locui-title-bar">
           Localization${' '}
-          <span
-            >- ${type.substring(0, 1).toUpperCase() + type.substring(1)}</span
-          >
+          <span>- ${PROJECT_TYPE_LABELS[type]}</span>
         </div>
         <div class="locui-form-body">
-          <div class="segment-ctrl pb-12">
-            <div
-              class=${`${type === 'translation' && 'active'}`}
-              onclick=${() => handleTypeChange('translation')}
-            >
-              Translation
+          ${!projectCreated.value && html`
+            <div class="segment-ctrl pb-12">
+              ${[PROJECT_TYPES.translation, PROJECT_TYPES.rollout].map((pType) => html`
+                <div
+                  key=${pType}
+                  class=${`${type === pType && 'active'}`}
+                  onclick=${() => handleTypeChange(pType)}
+                >
+                  ${PROJECT_TYPE_LABELS[pType]}
+                </div>
+              `)}
             </div>
-            <div
-              class=${`${type === 'rollout' && 'active'}`}
-              onclick=${() => handleTypeChange('rollout')}
-            >
-              Rollout
-            </div>
-          </div>
+          `}  
+
           <div class="form-field">
             <div class="form-field-label">* Enter Project Name</div>
             <div>
@@ -252,7 +238,7 @@ export default function InputUrls() {
             </div>
           </div>
 
-          ${type === 'translation'
+          ${type === PROJECT_TYPES.translation
           && html`
             <div class="form-field">
               <div class="form-field-label">HTML Localization Flow</div>
@@ -264,7 +250,7 @@ export default function InputUrls() {
               />
             </div>
           `}
-          ${type === 'rollout'
+          ${type === PROJECT_TYPES.rollout
           && html`
             <div class="form-field">
               <div class="form-field-label">* Regional Edit Behavior</div>
