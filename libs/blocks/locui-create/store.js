@@ -9,17 +9,6 @@ import {
   getMilocUrl,
 } from './utils/utils.js';
 
-const testInfo = {
-  docId: '01TMM4TXDZ65RHIO52TRDINYMXBFI5WLQ3',
-  previewUrl:
-    'https://main--bacom--adobecom.hlx.page/drafts/localization/projects/abs86626/localization/test-fetch.json',
-  projectKey: '121fe03d2d57c905d1bdb42edd40b79e',
-  projectLink:
-    'https://main--bacom--adobecom.hlx.page/tools/loc?milolibs=locui&ref=main&repo=bacom&owner=adobecom&referrer=https%3A%2F%2Fadobe.sharepoint.com%2Fsites%2Fadobecom%2F_layouts%2F15%2FDoc.aspx%3Fsourcedoc%3D%257B7462F779-BA3B-469C-86E1-970951DB2E1B%257D%26file%3Dtest-fetch.xlsx%26action%3Ddefault%26mobileredirect%3Dtrue',
-  webUrl:
-    'https://adobe.sharepoint.com/sites/adobecom/_layouts/15/Doc.aspx?sourcedoc=%7B7462F779-BA3B-469C-86E1-970951DB2E1B%7D&file=test-fetch.xlsx&action=default&mobileredirect=true',
-};
-
 export const telemetry = { application: { appName: 'Adobe Localization' } };
 
 export const authenticated = signal(false);
@@ -185,7 +174,11 @@ export async function updateDraftProject(publish = false) {
   return error;
 }
 
-export async function fetchDraftProject(projectKey = testInfo.projectKey) {
+export async function fetchDraftProject(projectKey) {
+  if (!projectKey) {
+    return 'Project key has not been provided.';
+  }
+
   const userToken = await getUserToken();
   if (!userToken) {
     return 'Unable to login to Sharepoint.';
