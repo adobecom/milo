@@ -249,9 +249,10 @@ const getBrandImage = (image, brandImageOnly) => {
 };
 
 const closeOnClickOutside = (e) => {
-  if (!isDesktop.matches) return;
+  const newMobileNav = getMetadata('mobile-gnav-v2') !== 'false';
+  if (!isDesktop.matches && !newMobileNav) return;
 
-  const openElemSelector = `${selectors.globalNav} [aria-expanded = "true"]`;
+  const openElemSelector = `${selectors.globalNav} [aria-expanded = "true"], ${selectors.localNav} [aria-expanded = "true"]`;
   const isClickedElemOpen = [...document.querySelectorAll(openElemSelector)]
     .find((openItem) => openItem.parentElement.contains(e.target));
 
@@ -402,9 +403,13 @@ class Gnav {
     });
 
     localNav.querySelector('.feds-localnav-title').addEventListener('click', () => {
-      localNav.classList.toggle('active');
-      const isActive = localNav.classList.contains('active');
+      localNav.classList.toggle('feds-localnav--active');
+      const isActive = localNav.classList.contains('feds-localnav--active');
       localNav.querySelector('.feds-localnav-title').setAttribute('aria-expanded', isActive);
+    });
+
+    localNav.querySelector('.feds-localnav-curtain').addEventListener('click', (e) => {
+      trigger({ element: e.currentTarget, event: e });
     });
     this.elements.localNav = localNav;
     localNavItems[0].querySelector('a').textContent = title.trim();
@@ -1012,9 +1017,8 @@ class Gnav {
       if (elements) {
         elements.innerHTML = template.innerHTML;
         // Reattach click events, as cloned elem don't retain event listeners
-        elements.querySelector('button')?.addEventListener('click', (e) => {
-          trigger({ element: e.currentTarget, event: e, type: 'localNavTitle' });
-          setActiveDropdown(e.currentTarget);
+        elements.querySelector('.feds-localnav-items button')?.addEventListener('click', (e) => {
+          trigger({ element: e.currentTarget, event: e, type: 'localNavItem' });
         });
 
         elements.querySelectorAll('.feds-menu-headline').forEach((elem) => {
