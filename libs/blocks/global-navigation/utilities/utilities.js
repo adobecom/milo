@@ -419,7 +419,7 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
         {{main-menu}}
       </span>
   `;
-  const brand = document.querySelector('.feds-brand').outerHTML;
+  const brand = document.querySelector('.feds-brand')?.outerHTML;
   const breadCrumbs = document.querySelector('.feds-breadcrumbs')?.outerHTML;
   popup.innerHTML = `
     <div class="top-bar">
