@@ -4846,6 +4846,16 @@ const caasTags = {
                                   "description": "",
                                   "cq:movedTo": "",
                                   "tags": {}
+                              },
+                              "2025": {
+                                  "path": "/content/cq:tags/caas/events/year/2025",
+                                  "tagID": "caas:events/year/2025",
+                                  "name": "2025",
+                                  "tagImage": "",
+                                  "title": "2025",
+                                  "description": "",
+                                  "cq:movedTo": "",
+                                  "tags": {}
                               }
                           }
                       },
@@ -6067,6 +6077,16 @@ const caasTags = {
                                           "description": "",
                                           "cq:movedTo": "",
                                           "tags": {}
+                                      },
+                                      "team-leader": {
+                                          "path": "/content/cq:tags/caas/events/summit/area-of-expertise/team-leader",
+                                          "tagID": "caas:events/summit/area-of-expertise/team-leader",
+                                          "name": "team-leader",
+                                          "tagImage": "",
+                                          "title": "Team Leader",
+                                          "description": "",
+                                          "cq:movedTo": "",
+                                          "tags": {}
                                       }
                                   }
                               },
@@ -6415,6 +6435,26 @@ const caasTags = {
                                           "name": "planning-and-workflow",
                                           "tagImage": "",
                                           "title": "Planning and Workflow",
+                                          "description": "",
+                                          "cq:movedTo": "",
+                                          "tags": {}
+                                      },
+                                      "customer-acquisition": {
+                                          "path": "/content/cq:tags/caas/events/summit/track/customer-acquisition",
+                                          "tagID": "caas:events/summit/track/customer-acquisition",
+                                          "name": "customer-acquisition",
+                                          "tagImage": "",
+                                          "title": "Customer Acquisition",
+                                          "description": "",
+                                          "cq:movedTo": "",
+                                          "tags": {}
+                                      },
+                                      "unified-customer-experience": {
+                                          "path": "/content/cq:tags/caas/events/summit/track/unified-customer-experience",
+                                          "tagID": "caas:events/summit/track/unified-customer-experience",
+                                          "name": "unified-customer-experience",
+                                          "tagImage": "",
+                                          "title": "Unified Customer Experience",
                                           "description": "",
                                           "cq:movedTo": "",
                                           "tags": {}
@@ -6808,6 +6848,36 @@ const caasTags = {
                                           "tagImage": "",
                                           "title": "Generative AI",
                                           "description": "Delve into the critical role of Adobe Sensei GenAI — learn how it empowers marketers to work more efficiently, generate content optimized for key business objectives, and maximize ROI with the seamless delivery of personalized experiences at scale.",
+                                          "cq:movedTo": "",
+                                          "tags": {}
+                                      },
+                                      "customer-acquisition": {
+                                          "path": "/content/cq:tags/caas/events/summit/primary-track/customer-acquisition",
+                                          "tagID": "caas:events/summit/primary-track/customer-acquisition",
+                                          "name": "customer-acquisition",
+                                          "tagImage": "",
+                                          "title": "Customer Acquisition",
+                                          "description": "",
+                                          "cq:movedTo": "",
+                                          "tags": {}
+                                      },
+                                      "developers": {
+                                          "path": "/content/cq:tags/caas/events/summit/primary-track/developers",
+                                          "tagID": "caas:events/summit/primary-track/developers",
+                                          "name": "developers",
+                                          "tagImage": "",
+                                          "title": "Developers",
+                                          "description": "",
+                                          "cq:movedTo": "",
+                                          "tags": {}
+                                      },
+                                      "unified-customer-experience": {
+                                          "path": "/content/cq:tags/caas/events/summit/primary-track/unified-customer-experience",
+                                          "tagID": "caas:events/summit/primary-track/unified-customer-experience",
+                                          "name": "unified-customer-experience",
+                                          "tagImage": "",
+                                          "title": "Unified Customer Experience",
+                                          "description": "",
                                           "cq:movedTo": "",
                                           "tags": {}
                                       }
@@ -7725,6 +7795,16 @@ const caasTags = {
                                   "name": "project-program-manager",
                                   "tagImage": "",
                                   "title": "Project or Program Manager",
+                                  "description": "",
+                                  "cq:movedTo": "",
+                                  "tags": {}
+                              },
+                              "team-leader": {
+                                  "path": "/content/cq:tags/caas/events/audience-type/team-leader",
+                                  "tagID": "caas:events/audience-type/team-leader",
+                                  "name": "team-leader",
+                                  "tagImage": "",
+                                  "title": "Team Leader",
                                   "description": "",
                                   "cq:movedTo": "",
                                   "tags": {}
@@ -8715,6 +8795,56 @@ const caasTags = {
                                   "description": "",
                                   "cq:movedTo": "",
                                   "tags": {}
+                              },
+                              "adobe-content-analytics": {
+                                  "path": "/content/cq:tags/caas/events/products/adobe-content-analytics",
+                                  "tagID": "caas:events/products/adobe-content-analytics",
+                                  "name": "adobe-content-analytics",
+                                  "tagImage": "",
+                                  "title": "Adobe Content Analytics",
+                                  "description": "",
+                                  "cq:movedTo": "",
+                                  "tags": {}
+                              },
+                              "adobe-frame-io": {
+                                  "path": "/content/cq:tags/caas/events/products/adobe-frame-io",
+                                  "tagID": "caas:events/products/adobe-frame-io",
+                                  "name": "adobe-frame-io",
+                                  "tagImage": "",
+                                  "title": "Adobe Frame.io",
+                                  "description": "",
+                                  "cq:movedTo": "",
+                                  "tags": {}
+                              },
+                              "adobe-journey-optimizer-b2b-edition": {
+                                  "path": "/content/cq:tags/caas/events/products/adobe-journey-optimizer-b2b-edition",
+                                  "tagID": "caas:events/products/adobe-journey-optimizer-b2b-edition",
+                                  "name": "adobe-journey-optimizer-b2b-edition",
+                                  "tagImage": "",
+                                  "title": "Adobe Journey Optimizer B2B Edition",
+                                  "description": "",
+                                  "cq:movedTo": "",
+                                  "tags": {}
+                              },
+                              "adobe-real-time-cdp-b2b-edition": {
+                                  "path": "/content/cq:tags/caas/events/products/adobe-real-time-cdp-b2b-edition",
+                                  "tagID": "caas:events/products/adobe-real-time-cdp-b2b-edition",
+                                  "name": "adobe-real-time-cdp-b2b-edition",
+                                  "tagImage": "",
+                                  "title": "Adobe Real-Time CDP B2B Edition",
+                                  "description": "",
+                                  "cq:movedTo": "",
+                                  "tags": {}
+                              },
+                              "adobe-sensei-genai": {
+                                  "path": "/content/cq:tags/caas/events/products/adobe-sensei-genai",
+                                  "tagID": "caas:events/products/adobe-sensei-genai",
+                                  "name": "adobe-sensei-genai",
+                                  "tagImage": "",
+                                  "title": "Adobe Sensei GenAI",
+                                  "description": "",
+                                  "cq:movedTo": "",
+                                  "tags": {}
                               }
                           }
                       },
@@ -9549,7 +9679,7 @@ const caasTags = {
                                   "tagID": "caas:events/industry/advertising-publishing",
                                   "name": "advertising-publishing",
                                   "tagImage": "",
-                                  "title": "Advertising &amp; Publishing",
+                                  "title": "Advertising Publishing",
                                   "description": "",
                                   "cq:movedTo": "",
                                   "tags": {}
@@ -10281,7 +10411,7 @@ const caasTags = {
                                   "tagID": "caas:events/presentation-style/tips-tricks",
                                   "name": "tips-tricks",
                                   "tagImage": "",
-                                  "title": "Tips &amp; Tricks",
+                                  "title": "Tips and Tricks",
                                   "description": "",
                                   "cq:movedTo": "",
                                   "tags": {}
@@ -19136,6 +19266,16 @@ const caasTags = {
                                           "description": "",
                                           "cq:movedTo": "",
                                           "tags": {}
+                                      },
+                                      "korea": {
+                                          "path": "/content/cq:tags/caas/adobe-partners/cpp/region/korea",
+                                          "tagID": "caas:adobe-partners/cpp/region/korea",
+                                          "name": "korea",
+                                          "tagImage": "",
+                                          "title": "Korea",
+                                          "description": "",
+                                          "cq:movedTo": "",
+                                          "tags": {}
                                       }
                                   }
                               }
@@ -23970,6 +24110,66 @@ const caasTags = {
                                   "description": "",
                                   "cq:movedTo": "",
                                   "tags": {}
+                              },
+                              "accessibility": {
+                                  "path": "/content/cq:tags/caas/milo-documentation/block-features/accessibility",
+                                  "tagID": "caas:milo-documentation/block-features/accessibility",
+                                  "name": "accessibility",
+                                  "tagImage": "",
+                                  "title": "Accessibility ",
+                                  "description": "",
+                                  "cq:movedTo": "",
+                                  "tags": {}
+                              },
+                              "performance": {
+                                  "path": "/content/cq:tags/caas/milo-documentation/block-features/performance",
+                                  "tagID": "caas:milo-documentation/block-features/performance",
+                                  "name": "performance",
+                                  "tagImage": "",
+                                  "title": "Performance",
+                                  "description": "",
+                                  "cq:movedTo": "",
+                                  "tags": {}
+                              },
+                              "links": {
+                                  "path": "/content/cq:tags/caas/milo-documentation/block-features/links",
+                                  "tagID": "caas:milo-documentation/block-features/links",
+                                  "name": "links",
+                                  "tagImage": "",
+                                  "title": "Links",
+                                  "description": "",
+                                  "cq:movedTo": "",
+                                  "tags": {}
+                              },
+                              "videos": {
+                                  "path": "/content/cq:tags/caas/milo-documentation/block-features/videos",
+                                  "tagID": "caas:milo-documentation/block-features/videos",
+                                  "name": "videos",
+                                  "tagImage": "",
+                                  "title": "Videos",
+                                  "description": "",
+                                  "cq:movedTo": "",
+                                  "tags": {}
+                              },
+                              "aria-label": {
+                                  "path": "/content/cq:tags/caas/milo-documentation/block-features/aria-label",
+                                  "tagID": "caas:milo-documentation/block-features/aria-label",
+                                  "name": "aria-label",
+                                  "tagImage": "",
+                                  "title": "Aria Label",
+                                  "description": "",
+                                  "cq:movedTo": "",
+                                  "tags": {}
+                              },
+                              "alt-text": {
+                                  "path": "/content/cq:tags/caas/milo-documentation/block-features/alt-text",
+                                  "tagID": "caas:milo-documentation/block-features/alt-text",
+                                  "name": "alt-text",
+                                  "tagImage": "",
+                                  "title": "Alt Text",
+                                  "description": "",
+                                  "cq:movedTo": "",
+                                  "tags": {}
                               }
                           }
                       },
@@ -24082,8 +24282,139 @@ const caasTags = {
                                   "description": "",
                                   "cq:movedTo": "",
                                   "tags": {}
+                              },
+                              "properties-overview": {
+                                  "path": "/content/cq:tags/caas/milo-documentation/information-type/properties-overview",
+                                  "tagID": "caas:milo-documentation/information-type/properties-overview",
+                                  "name": "properties-overview",
+                                  "tagImage": "",
+                                  "title": "Properties Overview",
+                                  "description": "",
+                                  "cq:movedTo": "",
+                                  "tags": {}
                               }
                           }
+                      }
+                  }
+              },
+              "da-documentation": {
+                  "path": "/content/cq:tags/caas/da-documentation",
+                  "tagID": "caas:da-documentation",
+                  "name": "da-documentation",
+                  "tagImage": "",
+                  "title": "DA Documentation",
+                  "description": "",
+                  "cq:movedTo": "",
+                  "tags": {
+                      "localization": {
+                          "path": "/content/cq:tags/caas/da-documentation/localization",
+                          "tagID": "caas:da-documentation/localization",
+                          "name": "localization",
+                          "tagImage": "",
+                          "title": "Localization",
+                          "description": "",
+                          "cq:movedTo": "",
+                          "tags": {}
+                      },
+                      "caas": {
+                          "path": "/content/cq:tags/caas/da-documentation/caas",
+                          "tagID": "caas:da-documentation/caas",
+                          "name": "caas",
+                          "tagImage": "",
+                          "title": "CaaS",
+                          "description": "",
+                          "cq:movedTo": "",
+                          "tags": {}
+                      },
+                      "marketo": {
+                          "path": "/content/cq:tags/caas/da-documentation/marketo",
+                          "tagID": "caas:da-documentation/marketo",
+                          "name": "marketo",
+                          "tagImage": "",
+                          "title": "Marketo",
+                          "description": "",
+                          "cq:movedTo": "",
+                          "tags": {}
+                      },
+                      "aem-tags": {
+                          "path": "/content/cq:tags/caas/da-documentation/aem-tags",
+                          "tagID": "caas:da-documentation/aem-tags",
+                          "name": "aem-tags",
+                          "tagImage": "",
+                          "title": "AEM Tags",
+                          "description": "",
+                          "cq:movedTo": "",
+                          "tags": {}
+                      },
+                      "bulk-operations": {
+                          "path": "/content/cq:tags/caas/da-documentation/bulk-operations",
+                          "tagID": "caas:da-documentation/bulk-operations",
+                          "name": "bulk-operations",
+                          "tagImage": "",
+                          "title": "Bulk Operations",
+                          "description": "",
+                          "cq:movedTo": "",
+                          "tags": {}
+                      },
+                      "troubleshooting": {
+                          "path": "/content/cq:tags/caas/da-documentation/troubleshooting",
+                          "tagID": "caas:da-documentation/troubleshooting",
+                          "name": "troubleshooting",
+                          "tagImage": "",
+                          "title": "Troubleshooting",
+                          "description": "",
+                          "cq:movedTo": "",
+                          "tags": {}
+                      },
+                      "first-steps": {
+                          "path": "/content/cq:tags/caas/da-documentation/first-steps",
+                          "tagID": "caas:da-documentation/first-steps",
+                          "name": "first-steps",
+                          "tagImage": "",
+                          "title": "First steps",
+                          "description": "",
+                          "cq:movedTo": "",
+                          "tags": {}
+                      },
+                      "bacom": {
+                          "path": "/content/cq:tags/caas/da-documentation/bacom",
+                          "tagID": "caas:da-documentation/bacom",
+                          "name": "bacom",
+                          "tagImage": "",
+                          "title": "Bacom",
+                          "description": "",
+                          "cq:movedTo": "",
+                          "tags": {}
+                      },
+                      "basics": {
+                          "path": "/content/cq:tags/caas/da-documentation/basics",
+                          "tagID": "caas:da-documentation/basics",
+                          "name": "basics",
+                          "tagImage": "",
+                          "title": "Basics",
+                          "description": "",
+                          "cq:movedTo": "",
+                          "tags": {}
+                      },
+                      "overview": {
+                          "path": "/content/cq:tags/caas/da-documentation/overview",
+                          "tagID": "caas:da-documentation/overview",
+                          "name": "overview",
+                          "tagImage": "",
+                          "title": "Overview",
+                          "description": "",
+                          "cq:movedTo": "",
+                          "tags": {}
+                      },
+                      "how-to": {
+                          "path": "/content/cq:tags/caas/da-documentation/how-to",
+                          "tagID": "caas:da-documentation/how-to",
+                          "name": "how-to",
+                          "tagImage": "",
+                          "title": "How to",
+                          "description": "",
+                          "cq:movedTo": "",
+                          "tags": {}
                       }
                   }
               }
