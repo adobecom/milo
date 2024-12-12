@@ -7,6 +7,7 @@ import { setConfig, loadStyle } from '../../../libs/utils/utils.js';
 import defaultPlaceholders from './mocks/placeholders.js';
 import defaultProfile from './mocks/profile.js';
 import largeMenuMock from './mocks/large-menu.plain.js';
+import mockMegaMenu from './mocks/mock-megamenu.plain.js';
 import largeMenuActiveMock from './mocks/large-menu-active.plain.js';
 import largeMenuWideColumnMock from './mocks/large-menu-wide-column.plain.js';
 import largeMenuCrossCloud from './mocks/large-menu-cross-cloud.plain.js';
@@ -80,6 +81,13 @@ export const analyticsTestData = {
 };
 
 export const unavVersion = '1.3';
+
+export const addMetaDataV2 = (value) => {
+  const metaTag = document.createElement('meta');
+  metaTag.name = 'mobile-gnav-v2';
+  metaTag.content = value;
+  return metaTag;
+};
 
 export const unavLocalesTestData = Object.entries(LANGMAP).reduce((acc, curr) => {
   const result = [];
@@ -186,6 +194,7 @@ export const createFullGlobalNavigation = async ({
     if (url.includes('correct-promo-fragment')) { return mockRes({ payload: correctPromoFragmentMock }); }
     if (url.includes('wrong-promo-fragment')) { return mockRes({ payload: '<div>Non-promo content</div>' }); }
     if (url.includes('UniversalNav')) { return mockRes({ payload: {} }); }
+    if (url.includes('mock-megamenu')) { return mockRes({ payload: mockMegaMenu }); }
     return null;
   });
   window.adobeIMS = {
