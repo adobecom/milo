@@ -1280,6 +1280,10 @@ export async function init(enablements = {}) {
   if (!manifests || !manifests.length) return;
   try {
     await applyPers(manifests);
+    if (config.mep.preview) {
+      const { saveToMmm } = await import('./preview.js');
+      saveToMmm();
+    }
   } catch (e) {
     log(`MEP Error: ${e.toString()}`);
     window.lana?.log(`MEP Error: ${e.toString()}`);

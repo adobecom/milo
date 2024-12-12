@@ -790,6 +790,16 @@ function decorateHeader() {
   if (promo?.length) header.classList.add('has-promo');
 }
 
+async function decorateIcons(area, config) {
+  const icons = area.querySelectorAll('span.icon');
+  if (icons.length === 0) return;
+  const { base } = config;
+  loadStyle(`${base}/features/icons/icons.css`);
+  loadLink(`${base}/img/icons/icons.svg`, { rel: 'preload', as: 'fetch', crossorigin: 'anonymous' });
+  const { default: loadIcons } = await import('../features/icons/icons.js');
+  await loadIcons(icons, config);
+}
+
 export async function customFetch({ resource, withCacheRules }) {
   const options = {};
   if (withCacheRules) {
@@ -1266,8 +1276,9 @@ function decorateDocumentExtras() {
   decorateHeader();
 }
 
-async function documentPostSectionLoading(area, config) {
+async function documentPostSectionLoading(config) {
   decorateFooterPromo();
+
   const appendage = getMetadata('title-append');
   if (appendage) {
     import('../features/title-append/title-append.js').then((module) => module.default(appendage));
@@ -1331,18 +1342,6 @@ async function resolveInlineFrags(section) {
   section.preloadLinks = newlyDecoratedSection.preloadLinks;
 }
 
-export function setIconsIndexClass(icons) {
-  [...icons].forEach((icon) => {
-    const parent = icon.parentNode;
-    const children = parent.childNodes;
-    const nodeIndex = [...children].indexOf.call(children, icon);
-    let indexClass = (nodeIndex === children.length - 1) ? 'last' : 'middle';
-    if (nodeIndex === 0) indexClass = 'first';
-    if (children.length === 1) indexClass = 'only';
-    icon.classList.add(`node-index-${indexClass}`);
-  });
-}
-
 async function processSection(section, config, isDoc) {
   await resolveInlineFrags(section);
   const firstSection = section.el.dataset.idx === '0';
@@ -1350,6 +1349,7 @@ async function processSection(section, config, isDoc) {
   preloadBlockResources(section.preloadLinks);
   await Promise.all([
     decoratePlaceholders(section.el, config),
+    decorateIcons(section.el, config),
   ]);
   const loadBlocks = [...stylePromises];
   if (section.preloadLinks.length) {
@@ -1382,11 +1382,6 @@ export async function loadArea(area = document) {
     decorateDocumentExtras();
   }
 
-  const allIcons = area.querySelectorAll('span.icon');
-  if (allIcons.length) {
-    setIconsIndexClass(allIcons);
-  }
-
   const sections = decorateSections(area, isDoc);
 
   const areaBlocks = [];
@@ -1399,21 +1394,13 @@ export async function loadArea(area = document) {
     });
   }
 
-  if (allIcons.length) {
-    const { default: loadIcons, decorateIcons } = await import('../features/icons/icons.js');
-    const areaIcons = area.querySelectorAll('span.icon');
-    await decorateIcons(area, areaIcons, config);
-    await loadIcons(areaIcons);
-  }
-
   const currentHash = window.location.hash;
   if (currentHash) {
     scrollToHashedElement(currentHash);
   }
 
-  if (isDoc) {
-    await documentPostSectionLoading(area, config);
-  }
+  if (isDoc) await documentPostSectionLoading(config);
+
   await loadDeferred(area, areaBlocks, config);
 }
 

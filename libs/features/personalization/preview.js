@@ -121,6 +121,7 @@ function parseMepConfig() {
   domain = domain.replace('stage.adobe.com', 'adobe.com');
   const url = `${domain}${page}`;
   page = page.replace(`/${prefix}/`, '/');
+
   return {
     page: {
       url,
