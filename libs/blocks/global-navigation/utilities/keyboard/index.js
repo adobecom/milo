@@ -1,7 +1,7 @@
 /* eslint-disable class-methods-use-this */
 import { getNextVisibleItemPosition, getPreviousVisibleItemPosition, selectors } from './utils.js';
 import MainNav from './mainNav.js';
-import { closeAllDropdowns, lanaLog, logErrorFor, loadBlock } from '../utilities.js';
+import { closeAllDropdowns, lanaLog, logErrorFor } from '../utilities.js';
 
 const cycleOnOpenSearch = ({ e, isDesktop }) => {
   const withoutBreadcrumbs = [
@@ -87,12 +87,18 @@ class KeyboardNavigation {
   }
 
   loadLnavNavigation = async () => {
-    this.localNav = this.localNav || new Promise((resolve) => {
-      loadBlock('./keyboard/localNav.js').then((LnavNavigation) => {
-        const instance = new LnavNavigation();
-        resolve(instance);
-      });
-    });
+    if (!this.localNav) {
+      this.localNav = (async () => {
+        try {
+          const { default: LnavNavigation } = await import('./localNav.js');
+          return new LnavNavigation();
+        } catch (e) {
+          lanaLog({ message: 'Keyboard Navigation failed to load for LNAV', e, tags: 'errorType=info,module=gnav-keyboard' });
+          return null;
+        }
+      })();
+    }
+    return this.localNav;
   };
 
   addEventListeners = () => {
