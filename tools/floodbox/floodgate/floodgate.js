@@ -304,7 +304,9 @@ export default class MiloFloodgate extends LitElement {
 
   async validateCopyPaths(event) {
     const paths = event.target.value.split('\n').map((path) => path.trim()).filter((path) => path.length > 0);
-    const { valid } = validatePaths(paths);
+    const { valid, repo } = validatePaths(paths);
+    this._sourceRepo = `${repo}`;
+    this._floodgateRepo = `${repo}-pink`;
     this._canCopyPaths = valid;
     this.requestUpdate();
   }
@@ -323,6 +325,8 @@ export default class MiloFloodgate extends LitElement {
       if (this._floodgateConfig.isPromoteEnabled === true) {
         this._canPromote = true;
         this._pinkSitePath = path;
+        this._sourceRepo = `${repo}`.replace('-pink', '');
+        this._floodgateRepo = `${repo}`;
       }
     }
     this.requestUpdate();
@@ -430,6 +434,7 @@ export default class MiloFloodgate extends LitElement {
           </div>
           <div class="button-row">
             <button class="accent" .disabled=${!this._canCopyPaths} @click=${this.handleCopyPaths}>Copy</button>
+            ${this._canCopyPaths ? html`<div>Source Repo: <span>${this._sourceRepo}</span></div><div>Floodgate Repo: <span>${this._floodgateRepo}</span></div>` : nothing}
           </div>
         ` : nothing}
         ${this._selectedOption === 'fgPromote' ? html`
@@ -451,7 +456,8 @@ export default class MiloFloodgate extends LitElement {
             </div>` : nothing}
             <div class="button-row">
               <button class="accent" .disabled=${!this._canPromote} @click=${this.handlePromote}>Promote</button>
-            </div>          
+              ${this._canPromote ? html`<div>Source Repo: <span>${this._sourceRepo}</span></div><div>Floodgate Repo: <span>${this._floodgateRepo}</span></div>` : nothing}
+            </div>
           ` : nothing}
       </form>
       ${this._startCrawlPink ? this.renderCrawlInfo() : nothing}
