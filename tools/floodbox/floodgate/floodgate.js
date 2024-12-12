@@ -10,6 +10,7 @@ import FloodgateConfig from './floodgate-config.js';
 import copyFiles from './fg-copy.js';
 import findFragmentsAndAssets from '../references.js';
 import validatePaths from './utils.js';
+import RequestHandler from '../request-handler.js';
 
 const buttons = await getStyle('https://da.live/nx/styles/buttons.css');
 const style = await getStyle(import.meta.url);
@@ -134,7 +135,7 @@ export default class MiloFloodgate extends LitElement {
         org,
         repo: repoToPrevPub,
         paths,
-        action: 'publish',
+        action: 'live',
         callback: (status) => {
           // eslint-disable-next-line no-console
           console.log(`${status.statusCode} :: ${status.aemUrl}`);
@@ -210,6 +211,58 @@ export default class MiloFloodgate extends LitElement {
     this._startPreviewPublish = true;
     const repoToPrevPub = repo.replace('-pink', '');
     await this.startPreviewPublish(org, repoToPrevPub, this._promotedFiles);
+  }
+
+  async startCrawlPinkSiteForDelete() {
+    const { results, getDuration } = crawl({
+      path: this._pinkSitePath,
+      accessToken: this.token,
+      crawlType: 'floodgate',
+      isDraftsOnly: false,
+      callback: () => {
+        this.requestUpdate();
+      },
+    });
+    this._crawledFiles = await results;
+    this._crawlDuration = getDuration();
+    this._startUnpublish = true;
+    this.requestUpdate();
+  }
+
+  async handleDelete(event) {
+    event.preventDefault();
+    if (!this._canDelete) {
+      return;
+    }
+
+    // #1 - Start Crawl Pink Site
+    this._startCrawlPink = true;
+    await this.startCrawlPinkSiteForDelete();
+
+    const { org, repo } = this.getOrgRepo();
+    const paths = this._crawledFiles.map((file) => file.path);
+    if (repo?.endsWith('-pink')) {
+      // #2 - Unpublish Crawled files
+      await previewOrPublishPaths({
+        org,
+        repo,
+        paths,
+        action: 'live',
+        isDelete: true,
+        callback: (status) => {
+          // eslint-disable-next-line no-console
+          console.log(`${status.statusCode} :: ${status.aemUrl}`);
+        },
+      });
+
+      // #3 - Delete Pink Site
+      const reqHandler = new RequestHandler(this.token);
+      for (const path of paths) {
+        const resp = await reqHandler.deleteContent(path);
+        // eslint-disable-next-line no-console
+        console.log(`${resp.statusCode} :: ${resp.filePath}`);
+      }
+    }
   }
 
   async startCopy(org, repo) {
@@ -311,22 +364,26 @@ export default class MiloFloodgate extends LitElement {
     this.requestUpdate();
   }
 
-  async validatePromotePath(event) {
+  async validatePromoteDeletePath(event, actionType) {
     const path = event.target.value.trim();
     // eslint-disable-next-line no-useless-escape
     const pathRegex = /^\/[^\/]+\/[^\/]+-pink$/;
     const valid = pathRegex.test(path);
     this._canPromote = false;
+    this._canDelete = true;
     this._pinkSitePath = '';
     if (valid) {
       const { org, repo } = this.getOrgRepo();
       this._floodgateConfig = new FloodgateConfig(org, repo, this.token);
       await this._floodgateConfig.getConfig();
-      if (this._floodgateConfig.isPromoteEnabled === true) {
+      if (actionType === 'promote' && this._floodgateConfig.isPromoteEnabled === true) {
         this._canPromote = true;
         this._pinkSitePath = path;
         this._sourceRepo = `${repo}`.replace('-pink', '');
         this._floodgateRepo = `${repo}`;
+      } else if (actionType === 'delete' && this._floodgateConfig.isDeleteEnabled === true) {
+        this._canDelete = true;
+        this._pinkSitePath = path;
       }
     }
     this.requestUpdate();
@@ -439,7 +496,7 @@ export default class MiloFloodgate extends LitElement {
         ` : nothing}
         ${this._selectedOption === 'fgPromote' ? html`
           <div class="input-row">
-            <input type="text" class="path-input" name="path" placeholder="Enter Pink Site Path to Promote" value="/sukamat/da-bacom-pink" @input=${this.validatePromotePath} />
+            <input type="text" class="path-input" name="path" placeholder="Enter Pink Site Path to Promote" value="/sukamat/da-bacom-pink" @input=${(e) => this.validatePromoteDeletePath(e, 'promote')} />
             <button class="primary" @click=${this.handleClear}>Clear</button>
           </div>
           <div class="input-row">
@@ -459,6 +516,14 @@ export default class MiloFloodgate extends LitElement {
               ${this._canPromote ? html`<div>Source Repo: <span>${this._sourceRepo}</span></div><div>Floodgate Repo: <span>${this._floodgateRepo}</span></div>` : nothing}
             </div>
           ` : nothing}
+          ${this._selectedOption === 'fgDelete' ? html`
+          <div class="input-row">
+            <input type="text" class="path-input" name="path" placeholder="Enter Pink Site Path to Delete" value="/sukamat/da-bacom-pink" @input=${(e) => this.validatePromoteDeletePath(e, 'delete')} />
+            <button class="primary" @click=${this.handleClear}>Clear</button>
+          </div>
+          <div class="button-row">
+            <button class="accent" .disabled=${!this._canDelete} @click=${this.handleDelete}>Delete</button>
+          </div>` : nothing}
       </form>
       ${this._startCrawlPink ? this.renderCrawlInfo() : nothing}
       ${this._startFindFragmentsAssets ? this.renderReferencedFragmentsAssetsInfo() : nothing}
