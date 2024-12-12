@@ -10,7 +10,6 @@ import {
   serviceStatusDate,
   projectCancelled,
   allowCancelProject,
-  isDraftProject,
   polling,
   urls,
 } from './state.js';
@@ -78,11 +77,9 @@ export async function getProjectStatus() {
       setStatus('service-error', 'error', json.projectStatusText);
     }
 
-    isDraftProject.value = false;
     if (json.projectStatus === 'draft') {
       allowSyncToLangstore.value = true;
       allowSendForLoc.value = true;
-      isDraftProject.value = true;
     }
 
     if (json.projectStatus === 'sync') {

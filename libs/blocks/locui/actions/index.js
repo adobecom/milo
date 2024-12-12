@@ -9,7 +9,7 @@ import {
   allowRollout,
   syncFragments,
   allowCancelProject,
-  isDraftProject,
+  projectStatus,
   polling,
 } from '../utils/state.js';
 import { setExcelStatus, setStatus } from '../utils/status.js';
@@ -199,7 +199,7 @@ export async function syncToLangstore() {
   // Disable cancel project
   allowCancelProject.value = false;
 
-  if (!heading.value.projectId || isDraftProject.value) {
+  if (!heading.value.projectId || projectStatus.value.projectStatus === 'draft') {
     const status = await createProject();
     setTimeout(async () => {
       if (status === 201) {
@@ -263,7 +263,7 @@ export async function sendForLoc() {
   allowCancelProject.value = false;
 
   // If no Project ID, create project first.
-  if (!heading.value.projectId || isDraftProject.value) {
+  if (!heading.value.projectId || projectStatus.value.projectStatus === 'draft') {
     const status = await createProject();
     if (status === 201) {
       // Give the service time to digest and error check creating a project
