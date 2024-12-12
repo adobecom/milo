@@ -140,7 +140,7 @@ export class MerchCard extends LitElement {
         ) {
             this.style.setProperty('--consonant-merch-card-border', this.computedBorderStyle);
         }
-        this.variantLayout?.postCardUpdateHook(this);
+        this.variantLayout?.postCardUpdateHook(changedProperties);
     }
 
     get theme() {

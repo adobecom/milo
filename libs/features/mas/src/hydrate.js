@@ -292,6 +292,8 @@ export async function hydrate(fragment, merchCard) {
     merchCard.removeAttribute('badge-color');
     merchCard.removeAttribute('badge-text');
     merchCard.removeAttribute('size');
+    merchCard.classList.remove('wide-strip');
+    merchCard.classList.remove('thin-strip');
     merchCard.removeAttribute(ANALYTICS_SECTION_ATTR);
 
     merchCard.variant = variant;

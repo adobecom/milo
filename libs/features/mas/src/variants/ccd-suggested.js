@@ -21,6 +21,16 @@ export class CCDSuggested extends VariantLayout {
         return AEM_FRAGMENT_MAPPING;
     }
 
+    get stripStyle() {
+        if (!this.card.backgroundImage) return '';
+        return `
+            background: url("${this.card.backgroundImage}");
+        background-size: auto 100%;
+        background-repeat: no-repeat;
+        background-position: ${this.card.dir === 'ltr' ? 'left' : 'right'};
+        `;
+    }
+
     renderLayout() {
         return html` <div style="${this.stripStyle}" class="body">
                 <div class="header">
@@ -42,12 +52,35 @@ export class CCDSuggested extends VariantLayout {
             <slot></slot>`;
     }
 
+    postCardUpdateHook(changedProperties) {
+        if (changedProperties.has('backgroundImage'))
+            this.styleBackgroundImage();
+    }
+
+    styleBackgroundImage() {
+        this.card.classList.remove('thin-strip');
+        this.card.classList.remove('wide-strip');
+        if (!this.card.backgroundImage) {
+            return;
+        }
+        const img = new Image();
+        img.src = this.card.backgroundImage;
+        img.onload = () => {
+            if (img.width > 8) {
+                /* c8 ignore next 4 */
+                this.card.classList.add('wide-strip');
+            } else if (img.width === 8) {
+                this.card.classList.add('thin-strip');
+            }
+        };
+    }
+
     static variantStyle = css`
         :host([variant='ccd-suggested']) {
-            --consonant-merch-card-background-color:rgb(245, 245, 245);
-            --consonant-merch-card-body-xs-color:rgb(75, 75, 75);
-            --consonant-merch-card-border-color:rgb(225, 225, 225);
-            --consonant-merch-card-detail-s-color:rgb(110, 110, 110);
+            --consonant-merch-card-background-color: rgb(245, 245, 245);
+            --consonant-merch-card-body-xs-color: rgb(75, 75, 75);
+            --consonant-merch-card-border-color: rgb(225, 225, 225);
+            --consonant-merch-card-detail-s-color: rgb(110, 110, 110);
             --consonant-merch-card-heading-xs-color: rgb(44, 44, 44);
             --merch-color-inline-price-strikethrough: var(--spectrum-gray-600);
             --mod-img-height: 38px;
@@ -64,7 +97,7 @@ export class CCDSuggested extends VariantLayout {
         }
 
         :host([variant='ccd-slice']) * {
-          overflow: hidden;
+            overflow: hidden;
         }
 
         :host([variant='ccd-suggested']:hover) {
