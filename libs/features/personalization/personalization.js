@@ -1231,10 +1231,6 @@ const awaitMartech = () => new Promise((resolve) => {
   window.addEventListener(MARTECH_RETURNED_EVENT, listener, { once: true });
 });
 
-async function checkForSave(preview) {
-  if (!preview) return;
-  await import('./preview.js').then(({ saveToMmm }) => saveToMmm());
-}
 export async function init(enablements = {}) {
   let manifests = [];
   const {
@@ -1276,10 +1272,11 @@ export async function init(enablements = {}) {
       manifests = config.mep.targetManifests;
     }
   }
-  checkForSave(config.mep?.preview);
   if (!manifests || !manifests.length) return;
   try {
     await applyPers(manifests);
+    if (!config.mep?.preview) return;
+    await import('./preview.js').then(({ saveToMmm }) => saveToMmm());
   } catch (e) {
     log(`MEP Error: ${e.toString()}`);
     window.lana?.log(`MEP Error: ${e.toString()}`);
