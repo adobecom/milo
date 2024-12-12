@@ -1,5 +1,5 @@
 import { expect } from '@esm-bundle/chai';
-import validatePaths from '../../../../tools/floodbox/graybox/utils.js';
+import { validatePaths, getValidGraybox } from '../../../../tools/floodbox/graybox/utils.js';
 
 describe('validatePaths', () => {
   it('should return valid for correct paths with locale ', () => {
@@ -64,5 +64,21 @@ describe('validatePaths', () => {
     const paths = ['/org/repo-graybox/expName/myfile', '/org/repo-graybox/invalidLocale/expName/myfile'];
     const result = validatePaths(paths);
     expect(result).to.eql({ valid: false, org: '', repo: '', expName: '' });
+  });
+});
+
+describe('getValidGraybox', () => {
+  it('should return a milo-graybox element with correct properties', async () => {
+    // fake DA_SDK response with context and token
+    const fakeDaSdk = Promise.resolve({
+      context: { repo: 'fake-repo' },
+      token: 'fake-token',
+    });
+    const cmp = await getValidGraybox(fakeDaSdk);
+
+    expect(cmp).to.be.instanceOf(HTMLElement);
+    expect(cmp.tagName.toLowerCase()).to.equal('milo-graybox');
+    expect(cmp.repo).to.equal('fake-repo');
+    expect(cmp.token).to.equal('fake-token');
   });
 });

@@ -13,7 +13,8 @@ function validatePaths(paths) {
     if (!org && !repo) {
       org = orgPart;
       repo = repoPart;
-    } else if (orgPart !== org || repoPart !== repo || repoPart.includes('-pink')) {
+    }
+    if (orgPart !== org || repoPart !== repo || repoPart.includes('-pink')) {
       return retData;
     }
   }

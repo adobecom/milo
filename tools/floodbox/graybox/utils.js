@@ -20,7 +20,8 @@ function validatePaths(paths) {
     if (!org && !repo) {
       org = orgPart;
       repo = repoPart;
-    } else if (orgPart !== org || repoPart !== repo || !repoPart.includes('-graybox')) {
+    }
+    if (orgPart !== org || repoPart !== repo || !repoPart.includes('-graybox')) {
       return retData;
     }
 
@@ -53,15 +54,14 @@ function validatePaths(paths) {
   return { valid: true, org, repo, expName };
 }
 
-async function getValidGraybox() {
-  const { context, token } = await DA_SDK;
+async function getValidGraybox(sdk = DA_SDK) {
+  const { context, token } = await sdk;
   const cmp = document.createElement('milo-graybox');
   cmp.repo = context.repo;
   cmp.token = token;
   return cmp;
 }
 
-export default validatePaths;
 export {
   validatePaths,
   getValidGraybox,
