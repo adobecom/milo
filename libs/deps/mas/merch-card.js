@@ -569,8 +569,11 @@ merch-card[variant="catalog"] .payment-details {
     text-decoration: underline;
   }
 
-  merch-card[variant="mini-compare-chart"] div[slot="footer"] {
+  merch-card[variant="mini-compare-chart"] .action-area {
     display: flex;
+    justify-content: flex-end;
+    align-items: flex-end;
+    flex-wrap: wrap;
     gap: var(--consonant-merch-spacing-xs);
   }
 
@@ -712,11 +715,6 @@ merch-card[variant="catalog"] .payment-details {
 }
 
 @media screen and ${N} {
-  .three-merch-cards.mini-compare-chart merch-card [slot="footer"] a,
-  .four-merch-cards.mini-compare-chart merch-card [slot="footer"] a {
-    flex: 1;
-  }
-
   merch-card[variant="mini-compare-chart"] [slot='heading-m'] {
     font-size: var(--consonant-merch-card-body-s-font-size);
     line-height: var(--consonant-merch-card-body-s-line-height);
@@ -839,6 +837,7 @@ merch-card .footer-row-cell:nth-child(8) {
         display: block;
     }
     :host([variant='mini-compare-chart']) footer {
+        flex-flow: column nowrap;
         min-height: var(--consonant-merch-card-mini-compare-chart-footer-height);
         padding: var(--consonant-merch-spacing-xs);
     }
@@ -848,6 +847,11 @@ merch-card .footer-row-cell:nth-child(8) {
         padding-top: var(--consonant-merch-spacing-s);
         padding-inline-start: var(--consonant-merch-spacing-s);
         height: var(--consonant-merch-card-mini-compare-chart-top-section-height);
+    }
+
+    :host([variant='mini-compare-chart']) .secure-transaction-label {
+      align-self: flex-start;
+      flex: none;
     }
 
     @media screen and ${ke(N)} {

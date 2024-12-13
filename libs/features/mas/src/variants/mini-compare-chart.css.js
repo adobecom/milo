@@ -57,8 +57,11 @@ export const CSS = `
     text-decoration: underline;
   }
 
-  merch-card[variant="mini-compare-chart"] div[slot="footer"] {
+  merch-card[variant="mini-compare-chart"] .action-area {
     display: flex;
+    justify-content: flex-end;
+    align-items: flex-end;
+    flex-wrap: wrap;
     gap: var(--consonant-merch-spacing-xs);
   }
 
@@ -200,11 +203,6 @@ export const CSS = `
 }
 
 @media screen and ${TABLET_DOWN} {
-  .three-merch-cards.mini-compare-chart merch-card [slot="footer"] a,
-  .four-merch-cards.mini-compare-chart merch-card [slot="footer"] a {
-    flex: 1;
-  }
-
   merch-card[variant="mini-compare-chart"] [slot='heading-m'] {
     font-size: var(--consonant-merch-card-body-s-font-size);
     line-height: var(--consonant-merch-card-body-s-line-height);

@@ -136,6 +136,7 @@ export class MiniCompareChart extends VariantLayout {
         display: block;
     }
     :host([variant='mini-compare-chart']) footer {
+        flex-flow: column nowrap;
         min-height: var(--consonant-merch-card-mini-compare-chart-footer-height);
         padding: var(--consonant-merch-spacing-xs);
     }
@@ -145,6 +146,11 @@ export class MiniCompareChart extends VariantLayout {
         padding-top: var(--consonant-merch-spacing-s);
         padding-inline-start: var(--consonant-merch-spacing-s);
         height: var(--consonant-merch-card-mini-compare-chart-top-section-height);
+    }
+
+    :host([variant='mini-compare-chart']) .secure-transaction-label {
+      align-self: flex-start;
+      flex: none;
     }
 
     @media screen and ${unsafeCSS(TABLET_DOWN)} {
