@@ -11,6 +11,7 @@ import {
 
 export const telemetry = { application: { appName: 'Adobe Localization' } };
 
+export const authenticated = signal(false);
 export const currentStep = signal(1);
 export const loading = signal(false);
 export const project = signal(null);
@@ -59,8 +60,10 @@ export async function getUserToken() {
   try {
     await login({ scopes, telemetry });
     userToken = accessToken.value;
+    authenticated.value = true;
   } catch {
     console.error('Sharepoint login failed. Unable to get User-Token!');
+    authenticated.value = false;
   }
   loading.value = false;
   return userToken;
@@ -126,6 +129,7 @@ export async function createDraftProject() {
       error = responseJson.error;
     }
   } catch (err) {
+    // eslint-disable-next-line no-console
     console.error(err);
   }
   loading.value = false;
@@ -148,7 +152,11 @@ export async function updateDraftProject(publish = false) {
   };
   try {
     const url = await getMilocUrl();
-    const opts = { method: 'POST', headers: { 'User-Token': userToken, 'Content-Type': 'application/json' }, body: JSON.stringify(body) };
+    const opts = {
+      method: 'POST',
+      headers: { 'User-Token': userToken, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    };
     const resp = await fetch(`${url}update-draft-project`, opts);
     const respJson = await resp.json();
     if (resp.ok) {
@@ -157,6 +165,57 @@ export async function updateDraftProject(publish = false) {
     }
     if (respJson.error) {
       error = respJson.error;
+    }
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.error(e);
+  }
+  loading.value = false;
+  return error;
+}
+
+export async function fetchDraftProject(projectKey) {
+  if (!projectKey) {
+    return 'Project key has not been provided.';
+  }
+
+  const userToken = await getUserToken();
+  if (!userToken) {
+    return 'Unable to login to Sharepoint.';
+  }
+
+  let error = 'Failed to fetch project details. Please try again!';
+  loading.value = true;
+
+  try {
+    const url = await getMilocUrl();
+    const options = {
+      method: 'POST',
+      headers: { 'User-Token': userToken, 'Content-Type': 'application/json' },
+    };
+    const response = await fetch(
+      `${url}fetch-draft-project?project=${projectKey}`,
+      options,
+    );
+    const resJson = await response.json();
+    if (response.ok) {
+      setProject({
+        type: resJson.projectType === 'rollout' ? 'rollout' : 'translation',
+        name: resJson.projectName,
+        htmlFlow: resJson.settings?.useHtmlFlow,
+        editBehavior: resJson.settings?.regionalEditBehaviour,
+        urls: resJson.urls,
+        fragments: [],
+      });
+      projectInfo.value = {
+        ...projectInfo.value,
+        projectKey,
+      };
+      projectCreated.value = true;
+      error = '';
+    }
+    if (resJson.error) {
+      error = resJson.error;
     }
   } catch (e) {
     // eslint-disable-next-line no-console

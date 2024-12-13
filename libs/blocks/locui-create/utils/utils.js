@@ -1,7 +1,6 @@
 import getServiceConfig from '../../../utils/service-config.js';
 import { origin } from '../../locui/utils/franklin.js';
 import { env } from '../store.js';
-import { LOCALIZATION_TYPES } from './constant.js';
 
 export function getTenantName() {
   try {
@@ -53,7 +52,7 @@ export const createPayload = (project) => {
   return {
     tenantBaseUrl: origin,
     projectName: project.value.name,
-    projectType: project.value.type === LOCALIZATION_TYPES.rollout ? 'rollout' : 'localization',
+    projectType: project.value.type,
     referrer: 'studio',
     languages: project.value.languages,
     urls,

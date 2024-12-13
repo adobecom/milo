@@ -10,7 +10,7 @@ import {
   setLocale,
   updateDraftProject,
 } from '../store.js';
-import { LOCALIZATION_TYPES } from '../utils/constant.js';
+import { PROJECT_TYPES } from '../utils/constant.js';
 
 export default function useInputLocale() {
   const [selectedRegion, setSelectedRegion] = useState(
@@ -26,8 +26,8 @@ export default function useInputLocale() {
   const [apiError, setApiError] = useState('');
 
   useEffect(() => {
-    if (project.value.type === LOCALIZATION_TYPES.rollout
-      || project.value.type === LOCALIZATION_TYPES.translation) {
+    if (project.value.type === PROJECT_TYPES.rollout
+      || project.value.type === PROJECT_TYPES.translation) {
       locales.value = locales.value.filter((locItem) => locItem.workflow !== 'Transcreation' && locItem.livecopies !== '');
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -51,7 +51,7 @@ export default function useInputLocale() {
     return Object.entries(groupedLocales).map(([language, localeList]) => {
       const languageItem = {
         language,
-        locales: project.value.type === LOCALIZATION_TYPES.translation ? [] : localeList,
+        locales: project.value.type === PROJECT_TYPES.translation ? [] : localeList,
         langCode: languageCodes[language],
       };
       return languageItem;
@@ -154,7 +154,7 @@ export default function useInputLocale() {
   const prefillActionAndWorkflow = (languages) => {
     const storedLanguages = project.value?.languages ?? [];
     if (storedLanguages.length < 1) {
-      return languages.map((lang) => ({ ...lang, action: project.value.type === LOCALIZATION_TYPES.translation ? 'Translate' : 'Rollout', workflow: '' }));
+      return languages.map((lang) => ({ ...lang, action: project.value.type === PROJECT_TYPES.translation ? 'Translate' : 'Rollout', workflow: '' }));
     }
     let iteratorIndex = 0;
     const prefilledLanguages = [];
@@ -167,7 +167,7 @@ export default function useInputLocale() {
         workflow: workflow || '',
       };
       if (!action) {
-        prefillLanguage.action = project.value.type === LOCALIZATION_TYPES.translation ? 'Translate' : 'Rollout';
+        prefillLanguage.action = project.value.type === PROJECT_TYPES.translation ? 'Translate' : 'Rollout';
       }
       prefilledLanguages.push(prefillLanguage);
       iteratorIndex += 1;
