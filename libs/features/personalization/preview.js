@@ -90,6 +90,7 @@ export function parsePageAndUrl(config, windowLocation, prefix) {
         const { host } = new URL(`https://${key}`);
         return allowedHosts.includes(host);
       } catch (e) {
+        /* c8 ignore next 2 */
         return false;
       }
     });
