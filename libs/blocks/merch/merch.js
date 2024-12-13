@@ -489,7 +489,7 @@ export async function openModal(e, url, offerType, hash, extraOptions) {
     const prevHash = window.location.hash.replace('#', '') === hash ? '' : window.location.hash;
     window.location.hash = hash;
     window.addEventListener('milo:modal:closed', () => {
-      window.location.hash = prevHash;
+      window.history.replaceState({}, document.title, `#${prevHash}`);
     }, { once: true });
   }
   if (isInternalModal(url)) {
