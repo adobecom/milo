@@ -425,7 +425,7 @@ class Gnav {
     });
 
     localNav.querySelector('.feds-localnav-curtain').addEventListener('click', (e) => {
-      trigger({ element: e.currentTarget, event: e });
+      trigger({ element: e.currentTarget, event: e, type: 'localNav-curtain' });
     });
     this.elements.localNav = localNav;
     localNavItems[0].querySelector('a').textContent = title.trim();
@@ -1046,7 +1046,6 @@ class Gnav {
           elem?.setAttribute('aria-expanded', false);
           elem?.addEventListener('click', (e) => {
             trigger({ element: e.currentTarget, event: e, type: 'headline' });
-            setActiveDropdown(e.currentTarget);
           });
         });
       }
