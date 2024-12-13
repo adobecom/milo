@@ -9,6 +9,7 @@ import { getFederatedUrl } from '../../utils/federated.js';
 /* c8 ignore start */
 const PHONE_SIZE = window.screen.width < 550 || window.screen.height < 550;
 const safariIpad = navigator.userAgent.includes('Macintosh') && navigator.maxTouchPoints > 1;
+export const US_GEO = 'en-us';
 export const PERSONALIZATION_TAGS = {
   all: () => true,
   chrome: () => navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Edg'),
@@ -57,7 +58,7 @@ const MANIFEST_KEYS = [
   'page filter optional',
 ];
 
-const DATA_TYPE = {
+export const DATA_TYPE = {
   JSON: 'json',
   TEXT: 'text',
 };
@@ -229,7 +230,7 @@ const log = (...msg) => {
   if (config.mep?.preview) console.log(...msg);
 };
 
-const fetchData = async (url, type = DATA_TYPE.JSON) => {
+export const fetchData = async (url, type = DATA_TYPE.JSON) => {
   try {
     const resp = await fetch(normalizePath(url));
     if (!resp.ok) {
@@ -661,7 +662,7 @@ export async function createMartechMetadata(placeholders, config, column) {
 
     placeholders.forEach((item, i) => {
       const firstRow = placeholders[i];
-      let usValue = firstRow['en-us'] || firstRow.us || firstRow.en || firstRow.key;
+      let usValue = firstRow[US_GEO] || firstRow.us || firstRow.en || firstRow.key;
 
       if (!usValue) return;
 
@@ -677,7 +678,7 @@ export function parsePlaceholders(placeholders, config, selectedVariantName = ''
   if (!placeholders?.length || selectedVariantName === 'default') return config;
   const valueNames = [
     selectedVariantName.toLowerCase(),
-    config.mep?.geoPrefix,
+    config.mep?.prefix,
     config.locale.region.toLowerCase(),
     config.locale.ietf.toLowerCase(),
     ...config.locale.ietf.toLowerCase().split('-'),
@@ -813,6 +814,7 @@ const createDefaultExperiment = (manifest) => ({
   selectedVariantName: 'default',
   variantNames: ['all'],
   variants: {},
+  source: ['promo'],
 });
 
 export const addMepAnalytics = (config, header) => {
@@ -843,6 +845,7 @@ export async function getManifestConfig(info = {}, variantOverride = false) {
     variantLabel,
     disabled,
     event,
+    source,
   } = info;
   if (disabled && (!variantOverride || !Object.keys(variantOverride).length)) {
     return createDefaultExperiment(info);
@@ -875,8 +878,10 @@ export async function getManifestConfig(info = {}, variantOverride = false) {
   };
   if (infoTab) {
     manifestConfig.manifestType = infoObj?.['manifest-type']?.toLowerCase();
-    if (manifestOverrideName && manifestConfig.manifestType === TRACKED_MANIFEST_TYPE) {
+    if (manifestConfig.manifestType === TRACKED_MANIFEST_TYPE) {
       manifestConfig.manifestOverrideName = manifestOverrideName;
+      const analytics = manifestOverrideName || getFileName(manifestPath).replace('.json', '');
+      manifestConfig.analyticsTitle = analytics.trim().slice(0, 15);
     }
     const executionOrder = {
       'manifest-type': 1,
@@ -907,6 +912,7 @@ export async function getManifestConfig(info = {}, variantOverride = false) {
   manifestConfig.manifestUrl = manifestUrl;
   manifestConfig.disabled = disabled;
   manifestConfig.event = event;
+  if (source?.length) manifestConfig.source = source;
   return manifestConfig;
 }
 
@@ -977,6 +983,7 @@ export function cleanAndSortManifestList(manifests) {
           fullManifest = manifest;
           freshManifest = manifestObj[manifest.manifestPath];
         }
+        freshManifest.source = freshManifest.source.concat(fullManifest.source);
         freshManifest.name = fullManifest.name;
         freshManifest.selectedVariantName = fullManifest.selectedVariantName;
         freshManifest.selectedVariant = freshManifest.variants[freshManifest.selectedVariantName];
@@ -1073,10 +1080,7 @@ export async function applyPers(manifests) {
     const val = r.experiment.selectedVariantName.replace(TARGET_EXP_PREFIX, '').trim().slice(0, 15);
     return val === 'default' ? 'nopzn' : val;
   });
-  const pznManifests = pznList.map((r) => {
-    const val = r.experiment?.manifestOverrideName || r.experiment?.manifest;
-    return getFileName(val).replace('.json', '').trim().slice(0, 15);
-  });
+  const pznManifests = pznList.map((r) => r.experiment.analyticsTitle);
   config.mep.martech = `|${pznVariants.join('--')}|${pznManifests.join('--')}`;
 }
 
@@ -1087,7 +1091,7 @@ export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => 
     persManifests = persEnabled.toLowerCase()
       .split(/,|(\s+)|(\\n)/g)
       .filter((path) => path?.trim())
-      .map((manifestPath) => ({ manifestPath }));
+      .map((manifestPath) => ({ manifestPath, source: ['pzn'] }));
   }
 
   if (promoEnabled) {
@@ -1110,14 +1114,17 @@ export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => 
     mepParam.split('---').forEach((manifestPair) => {
       const manifestPath = manifestPair.trim().toLowerCase().split('--')[0];
       if (!persManifestPaths.includes(manifestPath)) {
-        persManifests.push({ manifestPath });
+        persManifests.push({ manifestPath, source: ['mep param'] });
       }
     });
   }
   return persManifests;
 };
 
-function updateManifestsAndPropositions({ config, targetManifests, targetPropositions }) {
+async function updateManifestsAndPropositions({ config, targetManifests, targetPropositions }) {
+  targetManifests.forEach((manifest) => {
+    manifest.source = ['target'];
+  });
   config.mep.targetManifests = targetManifests;
   if (targetPropositions?.length && window._satellite) {
     window._satellite.track('propositionDisplay', targetPropositions);
@@ -1242,7 +1249,7 @@ export async function init(enablements = {}) {
       highlight: (mepHighlight !== undefined && mepHighlight !== 'false'),
       targetEnabled: target,
       experiments: [],
-      geoPrefix: config.locale?.prefix.split('/')[1]?.toLowerCase() || 'en-us',
+      prefix: config.locale?.prefix.split('/')[1]?.toLowerCase() || US_GEO,
     };
     manifests = manifests.concat(await combineMepSources(pzn, promo, mepParam));
     manifests?.forEach((manifest) => {
@@ -1268,6 +1275,10 @@ export async function init(enablements = {}) {
   if (!manifests || !manifests.length) return;
   try {
     await applyPers(manifests);
+    if (config.mep.preview) {
+      const { saveToMmm } = await import('./preview.js');
+      saveToMmm();
+    }
   } catch (e) {
     log(`MEP Error: ${e.toString()}`);
     window.lana?.log(`MEP Error: ${e.toString()}`);
