@@ -260,7 +260,7 @@ export default function InputUrls() {
                   <option value="" disabled selected hidden>Select</option>
                   <option value="skip">Skip</option>
                   <option value="merge">Merge</option>
-                  <option value="override">Override</option>
+                  <option value="overwrite">Overwrite</option>
                 </select>
                 ${errors.editBehavior
                 && html`<div class="form-field-error">
