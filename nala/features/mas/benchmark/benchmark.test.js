@@ -30,6 +30,8 @@ test.describe('Benchmark feature test suite', () => {
       const benchmark = await benchmarkPage.getBenchmark(selector);
       await expect(benchmark).toBeVisible();
       const limit = await benchmark.getAttribute('data-benchmark-limit');
+      const previousLimit = await benchmark.getAttribute('data-benchmark-previous-limit');
+      const limitMessage = previousLimit ? `${limit}ms (adjusted from ${previousLimit}ms)` : `${limit}ms`;
       const masks = await benchmarkPage.getMasks(selector);
       await expect(await masks.first()).toBeVisible();
       const times = await masks.evaluateAll((nodes) => nodes.map((node) => {
@@ -41,7 +43,7 @@ test.describe('Benchmark feature test suite', () => {
       console.log(times);
       expect(times.length).toBeGreaterThan(0);
       times.forEach((time) => {
-        expect(parseFloat(time) < parseFloat(limit), `${time}ms should be less than limit ${limit}ms`).toBeTruthy();
+        expect(parseFloat(time) < parseFloat(limit), `${time}ms should be less than limit ${limitMessage}`).toBeTruthy();
       });
     });
   });

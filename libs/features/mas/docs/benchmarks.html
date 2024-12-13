@@ -61,6 +61,8 @@
       const previousLimit = limit;
       if (referentInitialTime < window.initTime) {
         limit = limit * window.initTime / referentInitialTime;
+        container.setAttribute('data-benchmark-limit', limit);
+        container.setAttribute('data-benchmark-previous-limit', previousLimit);
         console.log(`Adjusted limit ${previousLimit} to ${limit}`);
       } else {
         console.log('No need to adjust limit');
