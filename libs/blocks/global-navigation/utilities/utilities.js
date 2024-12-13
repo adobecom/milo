@@ -225,7 +225,7 @@ export function setActiveDropdown(elem, type) {
   const resetActiveDropdown = () => {
     [...document.querySelectorAll(selectors.activeDropdown)]
       .forEach((activeDropdown) => activeDropdown.classList.remove(activeClass));
-    if (type !== 'localNavItem') {
+    if (type && type !== 'localNavItem' && type !== 'headline') {
       [...document.querySelectorAll(activeLocalNav)]
         .forEach((activeDropdown) => activeDropdown.classList.remove('feds-localnav--active'));
     }
