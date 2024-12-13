@@ -1117,7 +1117,7 @@ describe('keyboard navigation', () => {
         keyboardNavigation.mainNav.popup.desktop = { matches: false };
       });
 
-      it('Should open the section on Tab', async () => {
+      it('Should open the section on Space', async () => {
         await sendKeys({ press: 'Tab' });
         await sendKeys({ press: 'Tab' });
         await sendKeys({ press: 'Tab' });
@@ -1130,6 +1130,12 @@ describe('keyboard navigation', () => {
       });
 
       it('Should focus on localnav title when navigate to all the visible links of local nav', async () => {
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Tab' });
         await sendKeys({ press: 'Tab' });
         await sendKeys({ press: 'Tab' });
         await sendKeys({ press: 'Tab' });

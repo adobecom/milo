@@ -705,7 +705,7 @@ describe('global navigation', () => {
       const localNavTitle = document.querySelector(selectors.localNavTitle);
       localNavTitle.click();
       const localNav = document.querySelector(selectors.localNav);
-      expect(localNav.classList.contains('active')).to.be.true;
+      expect(localNav.classList.contains('feds-localnav--active')).to.be.true;
     });
 
     it('should remove is-sticky class to localnav on scroll less than localnav placement', async () => {
@@ -745,7 +745,7 @@ describe('global navigation', () => {
       await sendKeys({ press: 'Tab' });
       await sendKeys({ press: 'Tab' });
       document.activeElement.click();
-      expect(document.activeElement.parentElement.classList.contains('feds-dropdown--active')).to.be.true;
+      expect(document.activeElement.getAttribute('aria-expanded')).to.equal('true');
       const headline = document.activeElement.parentElement.querySelector('.feds-menu-headline');
       headline.click();
       expect(headline.parentElement.classList.contains('feds-dropdown--active')).to.be.true;
