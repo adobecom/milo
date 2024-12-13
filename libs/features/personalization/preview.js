@@ -88,8 +88,8 @@ function parseMepConfig() {
       url: manifest,
       disabled,
       source,
-      eventStart: event?.startUtc,
-      eventEnd: event?.endUtc,
+      eventStart: event?.start,
+      eventEnd: event?.end,
       pathname,
       analyticsTitle,
     };
@@ -160,6 +160,9 @@ function getManifestListDomAndParameter(mepConfig) {
       targetActivityName,
       source,
       analyticsTitle,
+      eventStart,
+      eventEnd,
+      disabled,
     } = manifest;
     const editUrl = manifestUrl || manifestPath;
     const editPath = normalizePath(editUrl);
@@ -196,16 +199,10 @@ function getManifestListDomAndParameter(mepConfig) {
       <label for="${editPath}${pageId}--default" ${checked.class}>Default (control)</label>
     </div>`;
 
-    if (manifest.eventStart) {
-      manifest.event = {
-        start: new Date(manifest.eventStart),
-        end: new Date(manifest.eventEnd),
-      };
-    }
-    const scheduled = manifest.event
-      ? `<p class="promo-schedule-info">Scheduled - ${manifest.disabled ? 'inactive' : 'active'}</p>
-         <p>On: ${formatDate(manifest.event.start)} - <a target= "_blank" href="?instant=${manifest.event.start?.toISOString()}">instant</a></p>
-         <p>Off: ${formatDate(manifest.event.end)}</p>` : '';
+    const scheduled = eventStart && eventEnd
+      ? `<p class="promo-schedule-info">Scheduled - ${disabled ? 'inactive' : 'active'}</p>
+         <p>On: ${formatDate(eventStart)} - <a target= "_blank" href="?instant=${eventStart.toISOString()}">instant</a></p>
+         <p>Off: ${formatDate(eventEnd)}</p>` : '';
     manifestList += `<div class="mep-manifest-info" title="Manifest location: ${editUrl}&#013;Analytics manifest name: ${analyticsTitle || 'N/A for this manifest type'}">
       <div class="mep-manifest-title">
         ${mIdx + 1}. ${getFileName(manifestPath)}
