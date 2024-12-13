@@ -105,7 +105,14 @@ export const CONFIG = {
       appswitcher: { name: 'app-switcher' },
       notifications: {
         name: 'notifications',
-        attributes: { notificationsConfig: { applicationContext: { appID: getConfig().unav?.uncAppId || 'adobecom' } } },
+        attributes: { 
+          notificationsConfig: { 
+            applicationContext: { 
+              appID: getConfig().unav?.uncAppId || 'adobecom',
+              uncConfig: getConfig()?.unav?.uncConfig,
+            },
+          },
+        },
       },
       help: {
         name: 'help',
