@@ -71,9 +71,39 @@ function addPillEventListeners(div) {
     document.body.removeChild(document.querySelector('.mep-preview-overlay'));
   });
 }
+export function parsePageAndUrl(config, windowLocation, prefix) {
+  const { stageDomainsMap, env } = config;
+  const { pathname, origin } = windowLocation;
+  if (env?.name === 'prod' || !stageDomainsMap) {
+    return { page: pathname.replace(`/${prefix}/`, '/'), url: `${origin}${pathname}` };
+  }
+  let path = pathname;
+  let domain = origin;
+  const allowedHosts = [
+    'business.stage.adobe.com',
+    'www.stage.adobe.com',
+    'milo.stage.adobe.com',
+  ];
+  const domainCheck = Object.keys(stageDomainsMap)
+    .find((key) => {
+      try {
+        const { host } = new URL(`https://${key}`);
+        return allowedHosts.includes(host);
+      } catch (e) {
+        return false;
+      }
+    });
+  if (domainCheck) domain = `https://${domainCheck}`;
+  path = path.replace('/homepage/index-loggedout', '/');
+  if (!path.endsWith('/') && !path.endsWith('.html') && !domain.includes('milo')) {
+    path += '.html';
+  }
+  domain = domain.replace('stage.adobe.com', 'adobe.com');
+  return { page: path.replace(`/${prefix}/`, '/'), url: `${domain}${path}` };
+}
 function parseMepConfig() {
   const config = getConfig();
-  const { mep, locale, stageDomainsMap, env } = config;
+  const { mep, locale } = config;
   const { experiments, targetEnabled, prefix, highlight } = mep;
   const activities = experiments.map((experiment) => {
     const {
@@ -94,33 +124,7 @@ function parseMepConfig() {
       analyticsTitle,
     };
   });
-  const { pathname, origin } = window.location;
-  let page = pathname;
-  let domain = origin;
-  if (env?.name !== 'prod' && stageDomainsMap) {
-    const allowedHosts = [
-      'business.stage.adobe.com',
-      'www.stage.adobe.com',
-      'milo.stage.adobe.com',
-    ];
-    const domainCheck = Object.keys(stageDomainsMap)
-      .find((key) => {
-        try {
-          const { host } = new URL(`https://${key}`);
-          return allowedHosts.includes(host);
-        } catch (e) {
-          return false;
-        }
-      });
-    if (domainCheck) domain = `https://${domainCheck}`;
-    page = page.replace('/homepage/index-loggedout', '/');
-    if (!page.endsWith('/') && !page.endsWith('.html') && !domain.includes('milo')) {
-      page += '.html';
-    }
-  }
-  domain = domain.replace('stage.adobe.com', 'adobe.com');
-  const url = `${domain}${page}`;
-  page = page.replace(`/${prefix}/`, '/');
+  const { page, url } = parsePageAndUrl(config, window.location, prefix);
 
   return {
     page: {
