@@ -81,10 +81,6 @@ function parseMepConfig() {
     } = experiment;
     let pathname = manifest;
     try { pathname = new URL(manifest).pathname; } catch (e) { /* do nothing */ }
-    let eventStart = event?.start;
-    let eventEnd = event?.end;
-    if (typeof eventStart === 'string') eventStart = new Date(eventStart);
-    if (typeof eventEnd === 'string') eventEnd = new Date(eventEnd);
     return {
       targetActivityName: name,
       variantNames,
@@ -92,8 +88,8 @@ function parseMepConfig() {
       url: manifest,
       disabled,
       source,
-      eventStart,
-      eventEnd,
+      eventStart: event?.start,
+      eventEnd: event?.end,
       pathname,
       analyticsTitle,
     };
@@ -140,14 +136,17 @@ function parseMepConfig() {
     activities,
   };
 }
-function formatDate(dateTime) {
+function formatDate(dateTime, format = 'local') {
   if (!dateTime) return '';
-  const date = dateTime.toLocaleDateString(false, {
+  let dateObj = dateTime;
+  if (typeof dateObj === 'string') dateObj = new Date(dateObj);
+  if (format === 'iso') return dateObj.toISOString();
+  const date = dateObj.toLocaleDateString(false, {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
   });
-  const time = dateTime.toLocaleTimeString(false, { timeStyle: 'short' });
+  const time = dateObj.toLocaleTimeString(false, { timeStyle: 'short' });
   return `${date} ${time}`;
 }
 function getManifestListDomAndParameter(mepConfig) {
@@ -205,7 +204,7 @@ function getManifestListDomAndParameter(mepConfig) {
 
     const scheduled = eventStart && eventEnd
       ? `<p class="promo-schedule-info">Scheduled - ${disabled ? 'inactive' : 'active'}</p>
-         <p>On: ${formatDate(eventStart)} - <a target= "_blank" href="?instant=${eventStart.toISOString()}">instant</a></p>
+         <p>On: ${formatDate(eventStart)} - <a target= "_blank" href="?instant=${formatDate(eventStart, 'iso')}">instant</a></p>
          <p>Off: ${formatDate(eventEnd)}</p>` : '';
     manifestList += `<div class="mep-manifest-info" title="Manifest location: ${editUrl}&#013;Analytics manifest name: ${analyticsTitle || 'N/A for this manifest type'}">
       <div class="mep-manifest-title">
