@@ -18,10 +18,6 @@ function getAdminUrl(url, type) {
   return type === 'status' ? `${base}?editUrl=auto` : base;
 }
 
-function getDAEditUrl(sourceUrl) {
-  return sourceUrl?.replace('markup:https://content.da.live', 'https://da.live/edit#') || '';
-}
-
 async function getStatus(url) {
   const adminUrl = getAdminUrl(url, 'status');
   const resp = await fetch(adminUrl);
@@ -30,13 +26,10 @@ async function getStatus(url) {
   const preview = json.preview.lastModified || DEF_NEVER;
   const live = json.live.lastModified || DEF_NEVER;
   const publish = await userCanPublishPage(json, false);
-  let edit = json.edit.url;
-  if (
-    !json.edit.url
-    && json.preview.sourceLocation
-    && json.preview.sourceLocation.includes(DA_DOMAIN)) {
-    edit = getDAEditUrl(json.preview.sourceLocation);
-  }
+  const { sourceLocation } = json.preview;
+  const edit = json.edit?.url
+    || (sourceLocation?.includes(DA_DOMAIN) && sourceLocation?.replace('markup:https://content.da.live', 'https://da.live/edit#'))
+    || '';
   return { url, edit, preview, live, publish };
 }
 
