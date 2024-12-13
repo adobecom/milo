@@ -695,7 +695,7 @@ function addBarLoader(elem) {
   const progressBar = createTag("div", {class: 'progress-bar'});
 
   const label = createTag("div", {class: 'progress-label'});
-  label.textContent = " Loading...";
+  label.textContent = "Launching the app store...";
   container.append(label);
 
   const track = createTag("div", {class: 'progress-bar-value'});
