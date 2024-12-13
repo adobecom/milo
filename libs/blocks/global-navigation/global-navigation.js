@@ -109,7 +109,7 @@ export const CONFIG = {
           notificationsConfig: { 
             applicationContext: { 
               appID: getConfig().unav?.uncAppId || 'adobecom',
-              uncConfig: getConfig()?.unav?.uncConfig,
+              ...getConfig().unav?.uncConfig,
             },
           },
         },
