@@ -81,6 +81,10 @@ function parseMepConfig() {
     } = experiment;
     let pathname = manifest;
     try { pathname = new URL(manifest).pathname; } catch (e) { /* do nothing */ }
+    let eventStart = event?.start;
+    let eventEnd = event?.end;
+    if (typeof eventStart === 'string') eventStart = new Date(eventStart);
+    if (typeof eventEnd === 'string') eventEnd = new Date(eventEnd);
     return {
       targetActivityName: name,
       variantNames,
@@ -88,8 +92,8 @@ function parseMepConfig() {
       url: manifest,
       disabled,
       source,
-      eventStart: event?.start,
-      eventEnd: event?.end,
+      eventStart,
+      eventEnd,
       pathname,
       analyticsTitle,
     };
