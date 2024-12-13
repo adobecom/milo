@@ -1,3 +1,6 @@
+/* eslint-disable import/no-unresolved */
+import DA_SDK from 'https://da.live/nx/utils/sdk.js';
+
 function validatePaths(paths) {
   const retData = { valid: false, org: '', repo: '' };
   if (!Array.isArray(paths) || paths.length === 0) return retData;
@@ -21,4 +24,15 @@ function validatePaths(paths) {
   return { valid: true, org, repo };
 }
 
-export default validatePaths;
+async function getValidFloodgate() {
+  const { context, token } = await DA_SDK;
+  const cmp = document.createElement('milo-floodgate');
+  cmp.repo = context.repo;
+  cmp.token = token;
+  return cmp;
+}
+
+export {
+  validatePaths,
+  getValidFloodgate,
+};
