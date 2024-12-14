@@ -21,6 +21,7 @@ import darkNav from './mocks/dark-global-navigation.plain.js';
 import navigationWithCustomLinks from './mocks/navigation-with-custom-links.plain.js';
 import globalNavigationMock from './mocks/global-navigation.plain.js';
 import noDropdownNav from './mocks/global-navigation-no-dropdown.plain.js';
+import compSignIn from './mocks/global-navigation-complimentary-signIn.plain.js';
 import { getConfig } from '../../../tools/send-to-caas/send-utils.js';
 
 // TODO
@@ -662,6 +663,22 @@ describe('global navigation', () => {
     it('should append the feds-client-search div when search is enabled', async () => {
       await createFullGlobalNavigation({ customConfig: { searchEnabled: 'on' } });
       expect(document.querySelector(selectors.topNav).classList.contains('feds-client-search')).to.exist;
+    });
+  });
+
+  describe('Complimentary sign-in feature in global navigation', () => {
+    it('should not append the feds-complimentary-cta class when complimentary sign-in is disabled', async () => {
+      document.head.innerHTML = '<meta name="complimentary-sign-in" content="off"/>';
+      const gnav = await createFullGlobalNavigation({ globalNavigation: compSignIn });
+      gnav.decorateCompSignIn();
+      expect(document.querySelector(selectors.topNav).querySelector('.feds-cta-wrapper.feds-complimentary-cta')).to.not.exist;
+    });
+
+    it('should append the feds-complimentary-cta class when complimentary sign-in is enabled', async () => {
+      document.head.innerHTML = '<meta name="complimentary-sign-in" content="on" />';
+      const gnav = await createFullGlobalNavigation({ globalNavigation: compSignIn });
+      gnav.decorateCompSignIn();
+      expect(document.querySelector(selectors.topNav).querySelector('.feds-cta-wrapper.feds-complimentary-cta')).to.exist;
     });
   });
 
