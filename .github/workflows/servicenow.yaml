@@ -1,3 +1,6 @@
+# This workflow will install Python dependencies, run CMR creation in ServiceNow
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
 name: Create CMR in ServiceNow
 
 on:
@@ -7,289 +10,35 @@ on:
     branches:
       - servicenow-cmr-test
 
+permissions:
+  contents: read
+
+env:
+  IMSACCESS_CLIENT_ID: ${{ secrets.IMSACCESS_CLIENT_ID }}
+  IMSACCESS_CLIENT_SECRET: ${{ secrets.IMSACCESS_CLIENT_SECRET_STAGE }}
+  IMSACCESS_AUTH_CODE: ${{ secrets.IMSACCESS_AUTH_CODE_STAGE }}
+  IPAAS_KEY: ${{ secrets.IPAAS_KEY_STAGE }}
+  PR_TITLE: ${{ github.event.pull_request.title }}
+  PR_BODY: ${{ github.event.pull_request.body }}
+  PR_NUMBER: ${{ github.event.pull_request.number }}
+  PR_CREATED_AT: ${{ github.event.pull_request.created_at }}
+  PR_MERGED_AT: ${{ github.event.pull_request.merged_at }}
+
 jobs:
-  create-cmr:
+  build:
     # Only run this workflow on pull requests that have merged and not manually closed by user
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
-
-      # Runs a single command using the runners shell for shell validation
-      - name: Validate Shell
-        run: echo Starting CMR Action...
-
-      - name: Check Dependencies
-        run: |
-          if ! type "jq" >/dev/null; then
-            echo "jq is required but not installed"
-            exit 1
-          fi
-
-          if ! type "curl" >/dev/null; then
-            echo "curl is required but not installed"
-            exit 1
-          fi
-
-          echo "Dependencies check was successful"
-
-      - name: Set Planned Maintenance Time Windows for CMR
-        run: |
-          echo "start_time=$(date -d "+10 seconds" +%s)" >> $GITHUB_ENV
-          echo "end_time=$(date -d "+10 minutes" +%s)" >> $GITHUB_ENV
-
-      - name: Set Release Summary for CMR
-        run: |
-          function sanitizeStr() {
-            local str=$1
-
-            if [ -z "$str" ]; then
-              echo "First parameter missing, must be a valid string"
-              return 1
-            fi
-
-            str="${str//\"/""}"
-            str="${str//\'/""}"
-            str="${str//(/"["}"
-            str="${str//)/"]"}"
-            str="${str//$'\r'/"\r"}"
-            str="${str//$'\n'/"\n"}"
-            str="${str//$'\t'/"\t"}"
-            str="${str//$'\b'/"\b"}"
-            str="${str//\\//}"
-            str="${str////"\/"}"
-
-            echo "$str"
-          }
-
-          echo "release_title=$(sanitizeStr "${{ github.event.pull_request.title }}")" >> $GITHUB_ENV
-          release_details=$(sanitizeStr "${{ github.event.pull_request.body }}")
-          release=Release_Details--$release_details--Pull_Request_Number--${{ github.event.pull_request.number }}--Pull_Request_Created_At--${{ github.event.pull_request.created_at }}--Pull_Request_Merged_At--${{ github.event.pull_request.merged_at }}
-
-          echo "release_summary<<RS_EOF" >> $GITHUB_ENV
-          echo "$release" >> $GITHUB_ENV
-          echo "RS_EOF" >> $GITHUB_ENV
-
-      - name: Get IMS Token
-        run: |
-          DEFAULT_IMS_URL='https://ims-na1-stg1.adobelogin.com/ims/token'
-
-          function ims_request() {
-            local client_id=$1
-            local client_secret=$2
-            local ims_code=$3
-            local url=$4
-
-            if [ -z "$client_id" ]; then
-              echo "Missing IMS client ID"
-              return 1
-            fi
-
-            if [ -z "$client_secret" ]; then
-              echo "Missing IMS client secret"
-              return 1
-            fi
-
-            if [ -z "$ims_code" ]; then
-              echo "Missing IMS Code"
-              return 1
-            fi
-
-            if [ -z "$url" ]; then
-              url=$DEFAULT_IMS_URL
-            fi
-
-            curl --request POST --silent --url $url --header 'content-type: multipart/form-data' --form client_id=$client_id --form client_secret=$client_secret --form grant_type=authorization_code --form code=$ims_code > response.txt
-
-            if [[ -f response.txt && ! -s response.txt ]]; then
-              echo "CURL call failed, returned response copied to response.txt was empty."
-              exit 1
-            elif grep -q "\"error\"" response.txt; then
-              echo "IMS token request failed with response: "
-              cat response.txt
-              exit 1
-            else
-              echo "IMS token request was successful"
-              echo "token=$(jq -r '.access_token' response.txt)" >> $GITHUB_ENV
-            fi
-          }
-
-          ims_request ${{ secrets.IMSACCESS_CLIENT_ID }} ${{ secrets.IMSACCESS_CLIENT_SECRET_STAGE }} ${{ secrets.IMSACCESS_AUTH_CODE_STAGE }}
-
-      - name: Create CMR in ServiceNow
-        run: |
-          DEFAULT_SERVICENOW_URL='https://ipaasapi-stage.adobe-services.com/change_management/changes'
-
-          function servicenow_create_cmr() {
-            local api_key=$1
-            local access_token=$2
-            local title=$3
-            local description=$4
-            local planned_start_time=$5
-            local planned_end_time=$6
-            local url=$7
-
-            if [ -z "$api_key" ]; then
-              echo "Missing ServiceNow API key"
-              return 1
-            fi
-
-            if [ -z "$access_token" ]; then
-              echo "Missing IMS access token"
-              return 1
-            fi
-
-            if [ -z "$title" ]; then
-              echo "Missing title"
-              return 1
-            fi
-
-            if [ -z "$description" ]; then
-              echo "Missing description"
-              return 1
-            fi
-
-            if [ -z "$planned_start_time" ]; then
-              echo "Missing start time"
-              return 1
-            fi
-
-            if [ -z "$planned_end_time" ]; then
-              echo "Missing end time: $planned_end_time"
-              echo "Number of parameters: $#"
-              return 1
-            fi
-
-            if [ -z "$url" ]; then
-              url=$DEFAULT_SERVICENOW_URL
-            fi
-
-            curl --request POST --silent --url $url --header 'Accept: application/json' --header 'Authorization: $access_token' --header 'Content-Type: application/json' --header 'api_key: $api_key' --data '{"title": "$title", "description": "$description", "instanceIds": [ 537445 ], "plannedStartDate": $planned_start_time, "plannedEndDate": $planned_end_time, "coordinator": "narcis@adobe.com", "executor": "mauchley@adobe.com", "customerImpact": "No Impact", "changeReason": [ "New Features", "Bug Fixes", "Enhancement", "Maintenance", "Security" ], "preProductionTestingType": [ "End-to-End", "Functional", "Integrations", "QA", "Regression", "UAT", "Unit Test" ], "backoutPlanType": "Roll back", "approvedBy": [ "osahin@adobe.com" ], "testPlan": "Test plan is documented in the PR link in the Milo repository above. See the PR'\''s merge checks to see Unit and Nala testing.", "implementationPlan": "The change will be released as part of the continuous deployment of Milo'\''s production branch, i.e., \"main\"", "backoutPlan": "Revert merge to the Milo production branch by creating a revert commit.", "testResults": "Changes are tested and validated successfully in staging environment. Please see the link of the PR in the description for the test results and/or the \"#nala-test-results\" slack channel."}' > response.txt
-
-            if [[ -f response.txt && ! -s response.txt ]]; then
-              echo "CURL call failed, returned response copied to response.txt was empty."
-              exit 1
-            elif grep -q "\"error\"" response.txt; then
-              echo "CMR creation failed with response: "
-              cat response.txt
-              exit 1
-            else
-              echo "CMR creation was successful"
-              cat response.txt
-              echo "transaction_id=$(jq -r '.id' response.txt)" >> $GITHUB_ENV
-            fi
-          }
-
-          servicenow_create_cmr ${{ secrets.IPAAS_KEY_STAGE }} $token $release_title $release_summary $start_time $end_time
-
-      - name: Wait for Transaction from Queue to ServiceNow then Retrieve CMR ID
-        run: |
-          DEFAULT_SERVICENOW_URL='https://ipaasapi-stage.adobe-services.com/change_management/transactions/'
-
-          function servicenow_request_cmr() {
-            local api_key=$1
-            local access_token=$2
-            local transactionId=$3
-            local url=$4
-
-            if [ -z "$api_key" ]; then
-              echo "Missing ServiceNow API key"
-              return 1
-            fi
-
-            if [ -z "$access_token" ]; then
-              echo "Missing IMS access token"
-              return 1
-            fi
-
-            if [ -z "$transactionId" ]; then
-              echo "Missing transaction ID"
-              return 1
-            fi
-
-            if [ -z "$url" ]; then
-              url=$DEFAULT_SERVICENOW_URL
-              url+=""$transactionId""
-            fi
-
-            curl --request GET --silent --url $url --header 'Accept: application/json' --header 'Authorization: $access_token' --header api_key: $api_key > response.txt
-
-            if [[ -f response.txt && ! -s response.txt ]]; then
-              echo "CURL call failed, returned response copied to response.txt was empty."
-              exit 1
-            elif grep -q "\"error\"" response.txt; then
-              echo "CMR ID retrieval failed with response: "
-              cat response.txt
-              exit 1
-            else
-              echo "CMR ID retrieval was successful"
-              cat response.txt
-              echo "cmr_id=$(jq -r '.result.changeId' response.txt)" >> $GITHUB_ENV
-            fi
-          }
-
-          sleep 10s
-          servicenow_request_cmr ${{ secrets.IPAAS_KEY_STAGE }} $token $transaction_id
-
-      - name: Set Actual Maintenance Time Windows for CMR
-        run: |
-          echo "actual_start_time=$(date "-10 seconds" +%s)" >> $GITHUB_ENV
-          echo "actual_end_time=$(date -d +%s)" >> $GITHUB_ENV
-
-      - name: Close CMR in ServiceNow
-        run: |
-          DEFAULT_SERVICENOW_URL='https://ipaasapi-stage.adobe-services.com/change_management/changes'
-
-          function servicenow_close_cmr() {
-            local api_key=$1
-            local access_token=$2
-            local actualStart_time=$3
-            local actualEnd_time=$4
-            local transactionId=$5
-            local url=$6
-
-            if [ -z "$api_key" ]; then
-              echo "Missing ServiceNow API key"
-              return 1
-            fi
-
-            if [ -z "$access_token" ]; then
-              echo "Missing IMS access token"
-              return 1
-            fi
-
-            if [ -z "$actual_start_time" ]; then
-              echo "Missing actual start time"
-              return 1
-            fi
-
-            if [ -z "$actual_end_time" ]; then
-              echo "Missing actual end time"
-              return 1
-            fi
-
-            if [ -z "$transactionId" ]; then
-              echo "Missing transaction ID"
-              return 1
-            fi
-
-            if [ -z "$url" ]; then
-              url=$DEFAULT_SERVICENOW_URL
-            fi
-
-            curl --request POST --silent --url $url --header 'Accept: application/json' --header 'Authorization: $access_token' --header 'Content-Type: application/json' --header api_key: $api_key --data '{"id": $transactionId, "actualStartDate": $actualStart_time, "actualEndDate": $actualEnd_time, "state": "Closed", "closeCode": "Successful", "notes": "The change request is closed as the change was released successfully"}' > response.txt
-
-            if [[ -f response.txt && ! -s response.txt ]]; then
-              echo "CURL call failed, returned response copied to response.txt was empty."
-              exit 1
-            elif grep -q "\"error\"" response.txt; then
-              echo "CMR closure failed with response: "
-              cat response.txt
-              exit 1
-            else
-              echo "CMR closure was successful"
-            fi
-          }
-
-          servicenow_close_cmr ${{ secrets.IPAAS_KEY_STAGE }} $token $actual_start_time $actual_end_time $transaction_id
+    - uses: actions/checkout@v4
+    - name: Set up Python 3.x, latest minor release
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.x"
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+    - name: Execute script for creating and closing CMR
+      run: |
+        python servicenow.py
