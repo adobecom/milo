@@ -2,7 +2,7 @@ import { html } from '../../../deps/htm-preact.js';
 import StepControls from '../components/stepControls.js';
 import useInputActions from './index.js';
 import { prevStep, project } from '../store.js';
-import { LOCALIZATION_TYPES } from '../utils/constant.js';
+import { PROJECT_TYPES, PROJECT_TYPE_LABELS } from '../utils/constant.js';
 import Toast from '../components/toast.js';
 
 function TranslateActions({ languageCount, handleActionSelect, handleWorkflowSelect }) {
@@ -101,11 +101,11 @@ export default function InputActionsView() {
   return html`
   <div class="locui-form-container">
     <div class="locui-table">
-      <h2 class="locui-project-type">${project.value.type === LOCALIZATION_TYPES.translation ? 'Translate' : 'Rollout'}</p>
+      <h2 class="locui-project-type">${PROJECT_TYPE_LABELS[project.value.type]}</p>
       <p class="locui-project-name">
         Project Name: <strong>${project.value.name || 'n/a'}</strong>
       </p>
-      ${project.value.type === LOCALIZATION_TYPES.translation ? html`<${TranslateActions} languageCount=${languageCount} handleActionSelect=${handleActionSelect} handleWorkflowSelect=${handleWorkflowSelect} />`
+      ${project.value.type === PROJECT_TYPES.translation ? html`<${TranslateActions} languageCount=${languageCount} handleActionSelect=${handleActionSelect} handleWorkflowSelect=${handleWorkflowSelect} />`
     : html`<${RolloutActions} languageCount=${languageCount} />`}
      
     </div>

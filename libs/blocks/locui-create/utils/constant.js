@@ -5,3 +5,12 @@ export const LOCALIZATION_TYPES = {
   rollout: 'rollout',
   translation: 'translation',
 };
+export const PROJECT_TYPES = {
+  translation: 'localization',
+  rollout: 'rollout',
+};
+export const PROJECT_TYPE_LABELS = {
+  localization: 'Translation',
+  translation: 'Translation',
+  rollout: 'Rollout',
+};
