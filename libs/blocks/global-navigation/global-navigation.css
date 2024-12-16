@@ -961,6 +961,7 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tabs {
   flex-direction: column;
   padding-top: 16px;
   background-color: var(--feds-backgroundColor-tabs-v2);
+  overflow-y: auto;
 }
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button {
