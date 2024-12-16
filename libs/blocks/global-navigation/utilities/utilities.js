@@ -226,7 +226,7 @@ export function setActiveDropdown(elem, type) {
     [...document.querySelectorAll(selectors.activeDropdown)]
       .forEach((activeDropdown) => activeDropdown.classList.remove(activeClass));
     // Close the localnav if clicked element is not localnav item
-    if ((!type || type === 'localNav-curtain') ) {
+    if ((!type || type === 'localNav-curtain')) {
       // Remove disable-scroll set by localnav opening
       if (document.querySelector('.feds-localnav--active') && !document.querySelector('.feds-toggle[aria-expanded="true"]')) {
         document.body.classList.remove('disable-scroll');
