@@ -27,7 +27,7 @@ export function processLocaleData(localeData) {
         .split(',')
         .map((loc) => loc.trim())
         .join(','),
-    }));
+    })).sort((a, b) => a.language.localeCompare(b.language));
 
   const processedLocaleRegion = localeData.localegroups.data.map((item) => ({
     ...item,

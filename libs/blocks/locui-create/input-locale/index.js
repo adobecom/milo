@@ -177,7 +177,8 @@ export default function useInputLocale() {
 
   const handleNext = async () => {
     if (!errorPresent()) return;
-    const sortedLanguages = transformActiveLocales().sort((a, b) => a.language - b.language);
+    const sortedLanguages = transformActiveLocales()
+      .sort((a, b) => a.language.localeCompare(b.language));
     setProject({ languages: prefillActionAndWorkflow(sortedLanguages) });
     setLocale({ selectedRegion, selectedLocale, activeLocales });
 
