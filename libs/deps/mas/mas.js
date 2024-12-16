@@ -814,7 +814,7 @@ merch-card .footer-row-cell:nth-child(8) {
     :host([variant='mini-compare-chart']) footer {
         flex-flow: column nowrap;
         min-height: var(--consonant-merch-card-mini-compare-chart-footer-height);
-        padding: var(--consonant-merch-spacing-xs);
+        padding: var(--consonant-merch-spacing-xs) var(--consonant-merch-spacing-s);
     }
 
     /* mini-compare card  */

@@ -439,7 +439,7 @@ const decorateFooterRows = async (merchCard, footerRows) => {
 
   const footerRowsSlot = createTag('div', { slot: 'footer-rows' });
   const isCheckmark = merchCard.classList.contains('feature-list-item');
-  const isMobile = window.matchMedia('(max-width: 1199px)').matches;
+  const isMobile = window.matchMedia('(max-width: 767px)').matches;
 
   const ulContainer = createTag('ul');
   if (isCheckmark) {
