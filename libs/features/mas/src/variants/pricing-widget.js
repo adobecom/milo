@@ -47,7 +47,7 @@ export class PricingWidget extends VariantLayout {
         flex-direction: column;
         overflow: hidden;
         padding: 12px;
-        box-sizing: content-box;
+        box-sizing: content-box !important;
         border: none;
     }
 

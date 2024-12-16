@@ -1612,7 +1612,7 @@ merch-card[variant="pricing-widget"] [slot="price"] span[is="inline-price"] {
         flex-direction: column;
         overflow: hidden;
         padding: 12px;
-        box-sizing: content-box;
+        box-sizing: content-box !important;
         border: none;
     }
 
