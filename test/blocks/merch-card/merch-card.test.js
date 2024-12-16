@@ -320,6 +320,12 @@ describe('Mini Compare Chart Merch Card', () => {
   });
 
   it('Supports Mini Compare Chart with checkmarks footer rows', async () => {
+    // Test for mobile
+    window.matchMedia = (query) => ({
+      matches: query.includes('(max-width: 767px)'),
+      addListener: () => {},
+      removeListener: () => {},
+    });
     document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/mini-compare-chart-featured-list.html');
     const merchCards = document.querySelectorAll('.merch-card.mini-compare-chart');
     const merchCardChevonClose = await init(merchCards[0]);
