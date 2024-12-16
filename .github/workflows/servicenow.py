@@ -3,6 +3,30 @@ import time
 import datetime
 import timedelta
 import json
+import os
+
+def sanitizeStr(text):
+  """
+    Sanitizes a target string to work in a JSON object.
+
+    Args:
+        text (str): The string to sanitize.
+
+    Returns:
+        string: sanitized string value.
+    """
+
+    text.replace('"','\"')
+    text.replace("'","\'")
+    text.replace("(","[")
+    text.replace(")","]")
+    text.replace("\\\\","//")
+    text.replace("//","\/")
+    text.replace("\\r","\r")
+    text.replace("\\n","\n")
+    text.replace("\\t","\t")
+
+    return text
 
 def find_string_in_json(json_data, target_string):
     """
@@ -44,10 +68,8 @@ if __name__ == "__main__":
   end_time = (datetime.datetime.now() + datetime.timedelta(minutes = 10)).timestamp()
 
   print("Set Release Summary for CMR...")
-  release_title = process.env.PR_TITLE
-  release_title.replace('"','\"')
-  release_details = process.env.PR_BODY
-  release_details.replace('"','\"')
+  release_title = sanitizeStr(process.env.PR_TITLE)
+  release_details = sanitizeStr(process.env.PR_BODY)
   release_summary = "Release_Details: ${release_details} Pull Request Number: ${process.env.PR_NUMBER} Pull Request Created At: ${process.env.PR_CREATED_AT} Pull Request Merged At: ${process.env.PR_MERGED_AT}"
 
   print("Getting IMS Token")
