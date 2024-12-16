@@ -796,7 +796,7 @@ async function decorateHeader() {
     && window.sessionStorage.getItem('gnavSource') !== null;
   if (!dynamicNavActive && (baseBreadcrumbs || breadcrumbs || autoBreadcrumbs)) header.classList.add('has-breadcrumbs');
   const gnavSource = await getGnavSource();
-  if (gnavSource.split('/').pop().match('localnav') && getMetadata('mobile-gnav-v2') !== 'false') {
+  if (gnavSource.split('/').pop().startsWith('localnav-') && getMetadata('mobile-gnav-v2') !== 'false') {
     // Preserving space to avoid CLS issue
     const localNavWrapper = createTag('div', { class: 'feds-localnav' });
     header.after(localNavWrapper);
