@@ -1615,7 +1615,7 @@ merch-card[variant="pricing-widget"] [slot="price"] span[is="inline-price"] {
     font-size: 14px;
     line-height: 18px;
 }
-  `;var se={mnemonics:{size:"s"},title:{tag:"h3",slot:"heading-xs"},description:{tag:"div",slot:"body-xs"},prices:{tag:"p",slot:"price"},ctas:{slot:"cta",size:"s"}},E=class extends m{getGlobalCSS(){return $t}get aemFragmentMapping(){return se}renderLayout(){return ce`
+  `;var se={mnemonics:{size:"s"},title:{tag:"h3",slot:"heading-xxxs"},description:{tag:"div",slot:"body-xxs"},prices:{tag:"p",slot:"price"},ctas:{slot:"cta",size:"S"}},E=class extends m{getGlobalCSS(){return $t}get aemFragmentMapping(){return se}renderLayout(){return ce`
         <div class="header">
     		    <slot name="icons"></slot>
             <slot name="heading-xxxs"></slot>

@@ -7,7 +7,7 @@ const AEM_FRAGMENT_MAPPING = {
   title: { tag: 'h3', slot: 'heading-xxxs' },
   description: { tag: 'div', slot: 'body-xxs' },
   prices: { tag: 'p', slot: 'price' },
-  ctas: { slot: 'cta', size: 's' },
+  ctas: { slot: 'cta', size: 'S' },
 };
 
 export class PricingWidget extends VariantLayout {
