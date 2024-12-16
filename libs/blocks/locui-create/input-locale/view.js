@@ -1,7 +1,7 @@
 import { html } from '../../../deps/htm-preact.js';
 import useInputLocale from './index.js';
 import StepControls from '../components/stepControls.js';
-import { LOCALIZATION_TYPES } from '../utils/constant.js';
+import { PROJECT_TYPES } from '../utils/constant.js';
 import Toast from '../components/toast.js';
 
 export default function InputLocales() {
@@ -118,13 +118,13 @@ export default function InputLocales() {
     <div class="locui-input-form-area ">
     <div class="locui-form-body">
         <div>
-          <h2 class="locui-project-type">${project.value.type === LOCALIZATION_TYPES.translation ? 'Translate' : 'Rollout'}</h2>
-          <p class="locui-project-name">Project Name:<strong> ${project.value.name || 'n/a'}</strong></p>
+          <h2 class="locui-project-type">${project.value.type === PROJECT_TYPES.translation ? 'Translate' : 'Rollout'}</h2>
+          <p class="locui-project-name"><strong>Project Name:</strong> ${project.value.name || 'n/a'}</p>
         </div>
         <${RenderRegion} />
         <div class="language-locale-container">
           <${RenderLanguage} />
-          ${project.value.type !== LOCALIZATION_TYPES.translation && selectedLocale.length > 0
+          ${project.value.type !== PROJECT_TYPES.translation && selectedLocale.length > 0
           && html`
             <div class="locale-grid">
               <h5 class="section-header">Selected Locales</h5>
