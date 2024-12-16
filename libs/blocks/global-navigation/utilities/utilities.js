@@ -225,7 +225,12 @@ export function setActiveDropdown(elem, type) {
   const resetActiveDropdown = () => {
     [...document.querySelectorAll(selectors.activeDropdown)]
       .forEach((activeDropdown) => activeDropdown.classList.remove(activeClass));
-    if (!type || type === 'localNav-curtain') {
+    // Close the localnav if clicked element is not localnav item
+    if ((!type || type === 'localNav-curtain') ) {
+      // Remove disable-scroll set by localnav opening
+      if (document.querySelector('.feds-localnav--active') && !document.querySelector('.feds-toggle[aria-expanded="true"]')) {
+        document.body.classList.remove('disable-scroll');
+      }
       [...document.querySelectorAll(activeLocalNav)]
         .forEach((activeDropdown) => activeDropdown.classList.remove('feds-localnav--active'));
     }
