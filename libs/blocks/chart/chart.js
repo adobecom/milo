@@ -693,6 +693,7 @@ const init = (el) => {
       }
 
       const title = children[0]?.textContent.trim() || children[1]?.textContent.trim();
+      chartWrapper.setAttribute('role', 'img');
       chartWrapper.setAttribute('aria-label', `${await replaceKey(`${chartType}-chart`, config)}: ${title}`);
       /* c8 ignore next 4 */
       window.addEventListener('resize', throttle(
