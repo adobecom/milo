@@ -299,9 +299,6 @@ export default async function init(el) {
       literalEl.remove();
       if (slot) {
         slot.setAttribute('slot', LITERAL_SLOTS[index]);
-        if (LITERAL_SLOTS[index].toLowerCase().includes('result')) {
-          slot.setAttribute('aria-live', 'polite');
-        }
         index += 1;
       }
       literalSlots.push(slot);
@@ -338,5 +335,7 @@ export default async function init(el) {
     'merch-card-collection-render',
     'merch-card-collection-render:start',
   );
+
+  merchCardCollection.shadowRoot.getElementById('resultText').setAttribute('aria-live', 'polite');
   return merchCardCollection;
 }
