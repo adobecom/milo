@@ -748,7 +748,7 @@ describe('global navigation', () => {
       expect(document.activeElement.getAttribute('aria-expanded')).to.equal('true');
       const headline = document.activeElement.parentElement.querySelector('.feds-menu-headline');
       headline.click();
-      expect(headline.parentElement.classList.contains('feds-dropdown--active')).to.be.true;
+      expect(headline.getAttribute('aria-expanded')).to.equal('true');
     });
   });
 });
