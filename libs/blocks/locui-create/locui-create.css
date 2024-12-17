@@ -88,14 +88,14 @@ body {
 .locui-step-controls {
   display: flex;
   justify-content: space-between;
-  padding: 16px;
+  padding: 16px 28px;
 }
 
 .locui-title-bar {
   font-size: 22px;
   font-weight: 700;
   padding: 16px 16px 16px 30px;
-  margin-bottom: 16px;
+  margin-bottom: 2.5rem;
   background: #e5e5e5;
 }
 
@@ -146,6 +146,7 @@ body {
 .segment-ctrl {
   display: flex;
   font-size: 16px;
+  padding-bottom: 30px;
 }
 
 .segment-ctrl > div {
@@ -492,7 +493,7 @@ body {
   border-width: 2px;
   list-style: none;
   padding-bottom: 1rem;
-  padding-inline-start: 0.5rem;
+  padding-inline-start: 0.875rem;
   margin-bottom: 0;
 }
 
@@ -551,6 +552,7 @@ body {
 .locui-create-fragment-label {
   font-size: 1.125rem;
   font-weight: 700;
+  margin-left: 0.5rem;
 }
 
 .locui-create-fragment-parent {
@@ -650,7 +652,7 @@ body {
 
 .locui-table p {
   margin: 0;
-  padding-bottom: 10px;
+  padding-bottom: 1.875rem;
 }
 
 .locui-table td,
@@ -701,7 +703,6 @@ body {
 .locui-project-created-modal .create-project-view a:hover {
   text-decoration: none;
 }
-
 
 .locale-list-item {
   border: 2px solid #8f8e8e;
@@ -769,33 +770,30 @@ body {
 .region-buttons {
   margin-bottom: 30px;
 }
+
 .language-grid,
 .locale-grid {
   flex: 1;
   min-height: 200px;
-}
-
-.region-grid,
-.language-grid,
-.locale-grid {
-  margin-top: 10px;
+  margin-top: 24px;
 }
 
 .region-grid {
-  padding: 10px;
+  padding: 20px;
   border: 1px solid #ccc;
   border-radius: 8px;
+  margin-top: 10px;
 }
 
 .region-buttons,.additional-cta {
   display: flex;
-  gap:10px
+  gap:20px
 }
  
 .section-header {
   font-size: 16px;
   font-weight: bold;
-  margin: 0 0 10px 0;
+  margin: 0 0 10px;
 }
 
 
@@ -816,8 +814,8 @@ body {
 .language-buttons {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 10px;
-  padding: 10px;
+  gap: 20px;
+  padding: 20px;
   border: 1px solid #ccc;
   border-radius: 8px;
   max-height: 350px;
@@ -869,14 +867,25 @@ body {
 .pl-8 {
   padding-left: 8px;
 }
+
 .pb-4 {
   padding-bottom: 4px;
 }
+
 .pb-12 {
   padding-bottom: 12px;
 }
+
 .m-0 {
   margin: 0;
+}
+
+.pb-8 {
+  padding-bottom: 8px;
+}
+
+.pl-14 {
+  padding-left: 14px;
 }
 
 /* Confirmation Modal */
@@ -905,3 +914,4 @@ body {
 .locui-project-confirmation-modal .confirmation-buttons button {
   width: 70px;
 }
+
