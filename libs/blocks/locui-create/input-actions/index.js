@@ -1,5 +1,6 @@
 import { getModal } from '../../modal/modal.js';
 import Modal from './modal.js';
+import ConfirmationModal from './confirmationModal.js';
 import { createTag } from '../../../utils/utils.js';
 import { useState, useEffect } from '../../../deps/htm-preact.js';
 import { project } from '../store.js';
@@ -9,10 +10,18 @@ export default function useInputActions() {
   const [isFormValid, setIsFormValid] = useState(false);
   const [apiError, setApiError] = useState('');
 
-  const projectCreatedModal = () => {
+  const projectCreatedModal = (type) => {
     const div = createTag('div');
-    const content = Modal(div);
-    const modalOpts = { content };
+    const content = Modal(div, type);
+    const modalOpts = { id: 'projectCreate-modal', content, closeEvent: 'closeModal' };
+
+    return getModal(null, modalOpts);
+  };
+
+  const projectConfirmationModal = () => {
+    const div = createTag('div');
+    const content = ConfirmationModal(div, setApiError, projectCreatedModal);
+    const modalOpts = { id: 'confirmation-modal', content, closeEvent: 'closeConfirmationModal' };
     return getModal(null, modalOpts);
   };
 
@@ -50,5 +59,6 @@ export default function useInputActions() {
     projectCreatedModal,
     apiError,
     setApiError,
+    projectConfirmationModal,
   };
 }

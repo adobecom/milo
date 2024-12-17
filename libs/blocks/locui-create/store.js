@@ -200,7 +200,7 @@ export async function fetchDraftProject(projectKey) {
     const resJson = await response.json();
     if (response.ok) {
       setProject({
-        type: resJson.projectType === 'rollout' ? 'rollout' : 'translation',
+        type: resJson.projectType === 'rollout' ? 'rollout' : 'localization',
         name: resJson.projectName,
         htmlFlow: resJson.settings?.useHtmlFlow,
         editBehavior: resJson.settings?.regionalEditBehaviour,

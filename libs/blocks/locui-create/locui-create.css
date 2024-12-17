@@ -376,24 +376,31 @@ body {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  width: 80%;
 }
 
 .modal-header strong {
   font-size: 16px;
   color: #000;
   text-align: left;
-  flex: 0 0 90%;
+}
+
+.check-mark-logo, .alert-icon {
+  text-indent: -1000px;
+  min-width: 20px;
+  height: 20px;
+  display: inline-block;
 }
 
 .check-mark-logo {
   background: url('./img/check-mark.svg');
-  text-indent: -1000px;
-  width: 20px;
-  height: 20px;
   background-size: contain;
   background-repeat: no-repeat;
-  display: inline-block;
+}
+
+.alert-icon {
+  background: url('./img/alert-icon.svg');
+  background-size: contain;
+  background-repeat: no-repeat;
 }
 
 .locui-header-title {
@@ -674,14 +681,19 @@ body {
 }
 
 .locui-project-created-modal {
-  width: 400px;
-  padding: 30px 0px;
+  width: 450px;
+  padding: 30px 10px;
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1rem;
 }
+
+.locui-project-created-modal .create-project-view {
+  align-self: flex-end;
+}
+
 
 .locui-project-created-modal .create-project-view a {
   width: 70px;
@@ -875,3 +887,31 @@ body {
 .pl-14 {
   padding-left: 14px;
 }
+
+/* Confirmation Modal */
+.locui-project-confirmation-modal {
+  width: 400px;
+  padding: 30px 0;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.locui-project-confirmation-modal .confirmation-header {
+  width: 80%;
+  display: flex;
+  justify-content: end;
+}
+
+.locui-project-confirmation-modal .confirmation-buttons {
+  width: 80%;
+  display: flex;
+  justify-content: end;
+  gap: 1rem;
+}
+
+.locui-project-confirmation-modal .confirmation-buttons button {
+  width: 70px;
+}
+
