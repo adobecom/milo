@@ -264,7 +264,7 @@ export default function InputUrls() {
                   <option value="skip">Skip</option>
                   <option value="merge">Merge</option>
                   <option value="overwrite">Overwrite</option>
-                  <option value="custom-merge">Custom-merge</option>
+                  <option value="custom-merge">Custom Merge</option>
                 </select>
                 ${errors.editBehavior
                 && html`<div class="form-field-error">
