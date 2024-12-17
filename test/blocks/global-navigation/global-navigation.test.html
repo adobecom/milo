@@ -1,0 +1,191 @@
+<html>
+  <head>
+    <!-- the import map to use in our test -->
+    <script type="importmap">
+      {
+        "imports": {
+          "../../../libs/utils/utils.js": "../../blocks/merch/mocks/embed-utils.js"
+        }
+      }
+    </script>
+  </head>
+  <body>
+  </body>
+  <script type="module">
+    import { runTests } from '@web/test-runner-mocha';
+    import { expect } from '@esm-bundle/chai';
+    import sinon, { stub } from 'sinon';
+    import { reloadPage } from '../../../libs/utils/utils.js';
+    import { createFullGlobalNavigation, unavVersion } from './test-utilities.js';
+
+    runTests(() => {
+      describe('Universal navigation', () => {
+    const orgAlloy = window.alloy;
+    let clock;
+    before(() => {
+    document.head.innerHTML = `<link rel="icon" href="/libs/img/favicons/favicon.ico" size="any">
+    <script src="https://auth.services.adobe.com/imslib/imslib.min.js" type="javascript/blocked" data-loaded="true"><\/script>
+    <script src="https://stage.adobeccstatic.com/unav/${unavVersion}/UniversalNav.js" type="javascript/blocked" data-loaded="true"><\/script>
+    `;
+  });
+    beforeEach(async () => {
+      clock = sinon.useFakeTimers({
+        toFake: ['setTimeout'],
+        shouldAdvanceTime: true,
+      });
+      window.UniversalNav = sinon.spy(() => Promise.resolve());
+      window.UniversalNav.reload = sinon.spy(() => Promise.resolve());
+      window.adobeProfile = { getUserProfile: sinon.spy(() => Promise.resolve({})) };
+      // eslint-disable-next-line no-underscore-dangle
+      window._satellite = { track: sinon.spy() };
+      window.alloy = () => new Promise((resolve) => {
+        resolve({ identity: { ECID: 'dummy-ECID' } });
+      });
+    });
+
+    afterEach(() => {
+      sinon.restore();
+      window.alloy = orgAlloy;
+    });
+
+    describe('desktop', () => {
+      it('should render the Universal navigation', async () => {
+        await createFullGlobalNavigation({ unavContent: 'on' });
+        const unavFirstCallItems = window.UniversalNav.getCall(0).args[0]?.children;
+
+        expect(unavFirstCallItems[0]?.name === 'profile' && !unavFirstCallItems[1]).to.be.true;
+
+        await createFullGlobalNavigation({ unavContent: 'profile, appswitcher, notifications, help' });
+        const unavSecondCallItems = window.UniversalNav.getCall(1).args[0]?.children;
+
+        expect(unavSecondCallItems.every((c) => ['profile', 'app-switcher', 'notifications', 'help'].includes(c.name)))
+          .to.be.true;
+      });
+
+      it('should reload unav on viewport change', async () => {
+        await createFullGlobalNavigation({ unavContent: 'on' });
+        await setViewport(viewports.mobile);
+        isDesktop.dispatchEvent(new Event('change'));
+        await clock.runAllAsync();
+        expect(window.UniversalNav.reload.getCall(0)).to.exist;
+      });
+
+      it('should handle message events correctly', async () => {
+        // eslint-disable-next-line max-len
+        const mockEvent = (name, payload) => ({ detail: { name, payload, executeDefaultAction: sinon.spy(() => Promise.resolve({})) } });
+        await createFullGlobalNavigation({ unavContent: 'on' });
+        const messageEventListener = window.UniversalNav.getCall(0).args[0].children
+          .map((c) => c.attributes.messageEventListener)
+          .find((listener) => listener);
+
+        const appInitiatedEvent = mockEvent('System', { subType: 'AppInitiated' });
+        messageEventListener(appInitiatedEvent);
+        expect(window.adobeProfile.getUserProfile.called).to.be.true;
+
+        const signOutEvent = mockEvent('System', { subType: 'SignOut' });
+        messageEventListener(signOutEvent);
+        expect(signOutEvent.detail.executeDefaultAction.called).to.be.true;
+
+        const profileSwitchEvent = mockEvent('System', { subType: 'ProfileSwitch' });
+        messageEventListener(profileSwitchEvent);
+        expect(profileSwitchEvent.detail.executeDefaultAction.called).to.be.true;
+        expect(reloadPage.calledOnce).to.be.true;
+      });
+
+      it('should send the correct analytics events', async () => {
+        await createFullGlobalNavigation({ unavContent: 'on' });
+        const analyticsFn = window.UniversalNav.getCall(0)
+          .args[0].analyticsContext.onAnalyticsEvent;
+
+        for (const [eventData, interaction] of Object.entries(analyticsTestData)) {
+          const [workflow, type, subtype, name] = eventData.split('|');
+          analyticsFn({ workflow, type, subtype, content: { name } });
+
+          // eslint-disable-next-line no-underscore-dangle
+          expect(window._satellite.track.lastCall.calledWith('event', {
+            xdm: {},
+            data: { web: { webInteraction: { name: interaction } } },
+          })).to.be.true;
+        }
+
+        expect(analyticsFn(null)).to.equal(undefined);
+        expect(analyticsFn({
+          event: { type: 'not', subtype: 'matching' },
+          source: { name: 'anything' },
+          content: { name: null },
+        })).to.equal(undefined);
+      });
+
+      it('should send/not send visitor guid to unav when window.alloy is available/unavailable', async () => {
+        await createFullGlobalNavigation({ unavContent: 'on' });
+        expect(window.UniversalNav.getCall(0)
+          .args[0].analyticsContext.event.visitor_guid).to.equal('dummy-ECID');
+
+        delete window.alloy;
+        await createFullGlobalNavigation({ unavContent: 'on' });
+        expect(window.UniversalNav.getCall(1)
+          .args[0].analyticsContext.event.visitor_guid).to.equal(undefined);
+      });
+
+      it('should send the correct device type', async () => {
+        const gnav = await createFullGlobalNavigation({ unavContent: 'on' });
+        window.UniversalNav.resetHistory();
+        const map = { Test: 'linux', ...osMap };
+        for (const [os, osName] of Object.entries(map)) {
+          const userAgentStub = sinon.stub(navigator, 'userAgent').value(os !== 'Test' ? os : 'Random');
+          await gnav.decorateUniversalNav();
+          expect(window.UniversalNav.getCall(0)
+            .args[0].analyticsContext.consumer.device).to.equal(osName);
+          userAgentStub.restore();
+          window.UniversalNav.resetHistory();
+        }
+      });
+
+      it('should send the correct locale to unav', async () => {
+        for (const data of unavLocalesTestData) {
+          expect(getUniversalNavLocale({ prefix: data.prefix })).to.equal(data.expectedLocale);
+        }
+      });
+
+      it('should pass enableProfileSwitcher to the profile component configuration', async () => {
+        await createFullGlobalNavigation({ unavContent: 'on' });
+        const profileConfig = window.UniversalNav.getCall(0).args[0].children
+          .find((c) => c.name === 'profile').attributes.componentLoaderConfig.config;
+
+        expect(profileConfig.enableProfileSwitcher).to.be.true;
+      });
+    });
+
+    describe('small desktop', () => {
+      it('should render the Universal navigation', async () => {
+        await createFullGlobalNavigation({ viewport: 'smallDesktop', unavContent: 'on' });
+        const unavFirstCallItems = window.UniversalNav.getCall(0).args[0]?.children;
+
+        expect(unavFirstCallItems[0]?.name === 'profile' && !unavFirstCallItems[1]).to.be.true;
+
+        await createFullGlobalNavigation({ viewport: 'smallDesktop', unavContent: 'profile, appswitcher, notifications, help, signup' });
+        const unavSecondCallItems = window.UniversalNav.getCall(1).args[0]?.children;
+
+        expect(unavSecondCallItems.every((c) => ['profile', 'app-switcher', 'notifications', 'help', 'signup'].includes(c.name)))
+          .to.be.true;
+      });
+    });
+
+    describe('mobile', () => {
+      it('should render the Universal navigation', async () => {
+        await createFullGlobalNavigation({ viewport: 'mobile', unavContent: 'on' });
+        const unavFirstCallItems = window.UniversalNav.getCall(0).args[0]?.children;
+
+        expect(unavFirstCallItems[0]?.name === 'profile' && !unavFirstCallItems[1]).to.be.true;
+
+        await createFullGlobalNavigation({ viewport: 'mobile', unavContent: 'profile, appswitcher, notifications, help' });
+        const unavSecondCallItems = window.UniversalNav.getCall(1).args[0]?.children;
+
+        expect(unavSecondCallItems.every((c) => ['profile', 'app-switcher', 'notifications', 'help'].includes(c.name)))
+          .to.be.true;
+      });
+    });
+  });
+    });
+  </script>
+</html>

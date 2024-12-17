@@ -5,6 +5,7 @@ import {
   loadIms,
   decorateLinks,
   loadScript,
+  reloadPage,
 } from '../../utils/utils.js';
 import {
   closeAllDropdowns,
@@ -86,7 +87,7 @@ export const CONFIG = {
             }
             if (name === 'System' && payload.subType === 'ProfileSwitch') {
               executeDefaultAction().then((profile) => {
-                if (profile) window.location.reload();
+                if (profile) reloadPage();
               });
             }
           },

@@ -12,7 +12,7 @@ import {
   analyticsTestData,
   unavVersion,
 } from './test-utilities.js';
-import { setConfig, getLocale } from '../../../libs/utils/utils.js';
+import { setConfig, getLocale, reloadPage } from '../../../libs/utils/utils.js';
 import initNav, { getUniversalNavLocale, osMap } from '../../../libs/blocks/global-navigation/global-navigation.js';
 import { isDesktop, isTangentToViewport, toFragment } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
 import logoOnlyNav from './mocks/global-navigation-only-logo.plain.js';
@@ -435,8 +435,9 @@ describe('global navigation', () => {
         // eslint-disable-next-line max-len
         const mockEvent = (name, payload) => ({ detail: { name, payload, executeDefaultAction: sinon.spy(() => Promise.resolve({})) } });
         await createFullGlobalNavigation({ unavContent: 'on' });
-        const { messageEventListener } = window.UniversalNav.getCall(0).args[0].children
-          .find((c) => c.name === 'profile').attributes;
+        const messageEventListener = window.UniversalNav.getCall(0).args[0].children
+          .map((c) => c.attributes.messageEventListener)
+          .find((listener) => listener);
 
         const appInitiatedEvent = mockEvent('System', { subType: 'AppInitiated' });
         messageEventListener(appInitiatedEvent);
@@ -445,6 +446,12 @@ describe('global navigation', () => {
         const signOutEvent = mockEvent('System', { subType: 'SignOut' });
         messageEventListener(signOutEvent);
         expect(signOutEvent.detail.executeDefaultAction.called).to.be.true;
+
+        // const profileSwitchEvent = mockEvent('System', { subType: 'ProfileSwitch' });
+        // debugger;
+        // messageEventListener(profileSwitchEvent);
+        // expect(profileSwitchEvent.detail.executeDefaultAction.called).to.be.true;
+        // //expect(reloadPage.calledOnce).to.be.true;
       });
 
       it('should send the correct analytics events', async () => {

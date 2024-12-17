@@ -43,3 +43,9 @@ export const getMetadata = stub();
 export const localizeLink = stub();
 
 export const reloadPage = stub();
+
+export const decorateLinks = stub();
+
+export const loadLana = stub();
+
+export const loadIms = stub();
