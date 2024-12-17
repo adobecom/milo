@@ -273,14 +273,14 @@ export default function InputUrls() {
             </div>
           `}
 
-          <div class="form-field pb-4">
+          <div class="form-field pb-8">
             <div class="form-field-label">* Enter the URLs</div>
             <div class="form-field-desc">
               (for multiple URLs, enter each on a new line.)
             </div>
           </div>
           <textarea
-            class=${`form-field-textarea ${errors.urlsStr && 'error'}`}
+            class=${`form-field-textarea ${errors.urlsStr && 'error'} pl-14`}
             rows="10"
             value=${urlsStr}
             onInput=${handleUrlsChange}
