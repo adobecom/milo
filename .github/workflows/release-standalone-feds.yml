@@ -44,9 +44,10 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-          gh release create "feds-standalone-v${{ inputs.version }}" --target gnav-unc-test \
+          gh release create "feds-standalone-v${{ inputs.version }}" \
               --repo="$GITHUB_REPOSITORY" \
               --title="@adobecom/standalone-feds v${{ inputs.version }} Release" \
+              --target="$GITHUB_REF_NAME" \
               --generate-notes
 
     - name: Upload Files to Release
