@@ -47,7 +47,7 @@ jobs:
           gh release create "feds-standalone-v${{ inputs.version }}" \
               --repo="${{ github.repository }}" \
               --title="@adobecom/standalone-feds v${{ inputs.version }} Release" \
-              --target="${{ github.ref_name }}" \
+              --target ${{ github.ref_name }} \
               --generate-notes
 
     - name: Upload Files to Release
