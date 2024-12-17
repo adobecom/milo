@@ -433,7 +433,7 @@ describe('global navigation', () => {
 
       it('should handle message events correctly', async () => {
         // eslint-disable-next-line max-len
-        const mockEvent = (name, payload) => ({ detail: { name, payload, executeDefaultAction: sinon.spy(() => Promise.resolve({})) } });
+        const mockEvent = (name, payload) => ({ detail: { name, payload, executeDefaultAction: sinon.spy(() => Promise.resolve(null)) } });
         await createFullGlobalNavigation({ unavContent: 'on' });
         const messageEventListener = window.UniversalNav.getCall(0).args[0].children
           .map((c) => c.attributes.messageEventListener)
@@ -447,11 +447,9 @@ describe('global navigation', () => {
         messageEventListener(signOutEvent);
         expect(signOutEvent.detail.executeDefaultAction.called).to.be.true;
 
-        // const profileSwitchEvent = mockEvent('System', { subType: 'ProfileSwitch' });
-        // debugger;
-        // messageEventListener(profileSwitchEvent);
-        // expect(profileSwitchEvent.detail.executeDefaultAction.called).to.be.true;
-        // //expect(reloadPage.calledOnce).to.be.true;
+        const profileSwitchEvent = mockEvent('System', { subType: 'ProfileSwitch' });
+        messageEventListener(profileSwitchEvent);
+        expect(profileSwitchEvent.detail.executeDefaultAction.called).to.be.true;
       });
 
       it('should send the correct analytics events', async () => {
