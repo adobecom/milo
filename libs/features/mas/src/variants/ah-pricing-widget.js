@@ -8,6 +8,7 @@ const AEM_FRAGMENT_MAPPING = {
   description: { tag: 'div', slot: 'body-xxs' },
   prices: { tag: 'p', slot: 'price' },
   ctas: { slot: 'cta', size: 'S' },
+  allowedColors: ['gray'],
 };
 
 export class AHPricingWidget extends VariantLayout {
@@ -57,7 +58,7 @@ export class AHPricingWidget extends VariantLayout {
         border: none;
     }
 
-    :host([variant='ah-pricing-widget'][size='gray']) {
+    :host([variant='ah-pricing-widget'][background-color='gray']) {
         background-color: var(--merch-card-ah-pricing-widget-gray-background);
     }
 

@@ -82,6 +82,12 @@ export function processSubtitle(fields, merchCard, subtitleConfig) {
     }
 }
 
+export function processBackgroundColor(fields, merchCard, allowedColors) {
+    if (allowedColors?.includes(fields.backgroundColor)) {
+        merchCard.setAttribute('background-color', fields.backgroundColor);
+    }
+}
+
 export function processBackgroundImage(
     fields,
     merchCard,
@@ -288,6 +294,7 @@ export async function hydrate(fragment, merchCard) {
     });
 
     merchCard.removeAttribute('background-image');
+    merchCard.removeAttribute('background-color');
     merchCard.removeAttribute('badge-background-color');
     merchCard.removeAttribute('badge-color');
     merchCard.removeAttribute('badge-text');
@@ -308,6 +315,7 @@ export async function hydrate(fragment, merchCard) {
     processTitle(fields, merchCard, aemFragmentMapping.title);
     processSubtitle(fields, merchCard, aemFragmentMapping.subtitle);
     processPrices(fields, merchCard, aemFragmentMapping.prices);
+    processBackgroundColor(fields, merchCard, allowedColors);
     processBackgroundImage(
         fields,
         merchCard,
