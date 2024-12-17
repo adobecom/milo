@@ -315,7 +315,7 @@ export async function hydrate(fragment, merchCard) {
     processTitle(fields, merchCard, aemFragmentMapping.title);
     processSubtitle(fields, merchCard, aemFragmentMapping.subtitle);
     processPrices(fields, merchCard, aemFragmentMapping.prices);
-    processBackgroundColor(fields, merchCard, allowedColors);
+    processBackgroundColor(fields, merchCard, aemFragmentMapping.allowedColors);
     processBackgroundImage(
         fields,
         merchCard,
