@@ -141,7 +141,7 @@ describe('processCTAs', async () => {
         const button = footer.firstChild;
         expect(button.tagName.toLowerCase()).to.equal('button');
         expect(button.className).to.equal(
-            'spectrum-Button spectrum-Button--accent',
+            'spectrum-Button spectrum-Button--accent spectrum-Button--sizeM',
         );
     });
 
@@ -200,13 +200,13 @@ describe('processCTAs', async () => {
         expect(buttons).to.have.lengthOf(3);
 
         expect(buttons[0].className).to.equal(
-            'spectrum-Button spectrum-Button--accent',
+            'spectrum-Button spectrum-Button--accent spectrum-Button--sizeM',
         );
         expect(buttons[1].className).to.equal(
-            'spectrum-Button spectrum-Button--primary',
+            'spectrum-Button spectrum-Button--primary spectrum-Button--sizeM',
         );
         expect(buttons[2].className).to.equal(
-            'spectrum-Button spectrum-Button--secondary',
+            'spectrum-Button spectrum-Button--secondary spectrum-Button--sizeM',
         );
     });
 
@@ -220,7 +220,7 @@ describe('processCTAs', async () => {
         const footer = merchCard.append.firstCall.args[0];
         const button = footer.firstChild;
         expect(button.className).to.equal(
-            'spectrum-Button spectrum-Button--accent',
+            'spectrum-Button spectrum-Button--accent spectrum-Button--sizeM',
         );
     });
 
@@ -234,7 +234,7 @@ describe('processCTAs', async () => {
         const footer = merchCard.append.firstCall.args[0];
         const button = footer.firstChild;
         expect(button.className).to.equal(
-            'spectrum-Button spectrum-Button--accent spectrum-Button--outline',
+            'spectrum-Button spectrum-Button--accent spectrum-Button--outline spectrum-Button--sizeM',
         );
     });
 
