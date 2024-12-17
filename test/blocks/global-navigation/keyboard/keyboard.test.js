@@ -1129,7 +1129,7 @@ describe('keyboard navigation', () => {
         expect(document.activeElement).to.equal(headline);
       });
 
-      it('Should focus on localnav title when navigate to all the visible links of local nav', async () => {
+      it('Should focus back to localnav title after navigating to all the visible links of local nav', async () => {
         await sendKeys({ press: 'Tab' });
         await sendKeys({ press: 'Tab' });
         await sendKeys({ press: 'Tab' });

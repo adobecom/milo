@@ -112,10 +112,6 @@ header.new-nav.feds--dark .feds-nav > section.feds-navItem > .feds-popup .tab-co
   border-right: 1px solid var(--feds-borderColor-link-v2);
 }
 
-header.new-nav.feds--dark .feds-nav > section.feds-navItem > .feds-popup .tabs button {
-  color: var(--text-color);
-}
-
 header.new-nav.feds--dark .feds-nav > section.feds-navItem > .feds-popup .tabs button[aria-selected="true"] {
   color: var(--background-color);
   background-color: var(--feds-borderColor-navLink);
