@@ -3,7 +3,7 @@ import { features } from './docs.spec.js';
 
 const miloLibs = process.env.MILO_LIBS || '';
 
-test.describe('CCD Merchcard feature test suite', () => {
+test.describe('MAS Docs feature test suite', () => {
   test.beforeEach(async ({ page, browserName }) => {
     test.skip(browserName !== 'chromium', 'Not supported to run on multiple browsers.');
 
