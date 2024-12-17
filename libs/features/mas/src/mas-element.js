@@ -153,6 +153,8 @@ export class MasElement {
         this.state = STATE_FAILED;
         this.update();
         this.log?.error('Failed:', { element: this.wrapperElement, error });
+        // Allow calling code to perform sync updates of this element
+        // before notifying observers about state change
         setImmediate(() => this.notify());
         return true;
     }
@@ -166,7 +168,8 @@ export class MasElement {
         if (options) this.options = options;
         this.state = STATE_PENDING;
         this.update();
-        setImmediate(() => this.notify());
+        // immediately notify observers about state change
+        this.notify();
         return this.version;
     }
 
