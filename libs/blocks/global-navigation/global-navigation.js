@@ -1233,7 +1233,7 @@ export default async function init(block) {
   const { mep } = getConfig();
   const sourceUrl = await getGnavSource();
   let newMobileNav = new URLSearchParams(window.location.search).get('newNav');
-  newMobileNav = newMobileNav ? newMobileNav !== 'false' : getMetadata('mobile-gnav-v2') !== 'false';
+  newMobileNav = newMobileNav ? newMobileNav !== 'false' : getMetadata('mobile-gnav-v2') !== 'off';
   const [url, hash = ''] = sourceUrl.split('#');
   if (hash === '_noActiveItem') {
     setDisableAEDState();
