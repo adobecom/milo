@@ -42,11 +42,13 @@ const getRegionalPromoManifests = (manifestNames, region, searchParams) => {
           name,
           start: GMTStringToLocalDate(start),
           end: GMTStringToLocalDate(end),
+          startUtc: start,
+          endUtc: end,
           cdtStart,
           cdtEnd,
         };
         const disabled = isDisabled(event, searchParams);
-        return { manifestPath, disabled, event };
+        return { manifestPath, disabled, event, source: ['promo'] };
       }
       return null;
     })

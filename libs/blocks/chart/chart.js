@@ -635,7 +635,7 @@ const init = (el) => {
         const number = data?.number;
         const [fontSize, titleY, subtitleY] = getOversizedNumberSize(number?.length);
 
-        const html = `<svg viewBox="0 0 430 430">
+        const html = `<svg aria-hidden="true" viewBox="0 0 430 430">
             <circle cx="50%" cy="50%" r="50%" fill="${colorPalette[authoredColor]}" />
             <text x="50%" y="${titleY}%" class="number" font-size="${fontSize}px">${number}</text>
             <text x="50%" y="${subtitleY}%" class="subtitle">${data?.subtitle}</text>
