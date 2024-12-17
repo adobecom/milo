@@ -44,7 +44,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-          gh release create "feds-standalone-v${{ inputs.version }}" \
+          gh release create "feds-standalone-v${{ inputs.version }}" --target gnav-unc-test \
               --repo="$GITHUB_REPOSITORY" \
               --title="@adobecom/standalone-feds v${{ inputs.version }} Release" \
               --generate-notes
