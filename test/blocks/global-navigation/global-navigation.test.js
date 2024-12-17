@@ -295,7 +295,7 @@ describe('global navigation', () => {
 
   describe('Viewport changes', () => {
     it('should render desktop -> small desktop -> mobile', async () => {
-      document.head.appendChild(addMetaDataV2('false'));
+      document.head.appendChild(addMetaDataV2('off'));
       const nav = await createFullGlobalNavigation();
       expect(nav).to.exist;
       expect(isElementVisible(document.querySelector(selectors.globalNav))).to.equal(true);
