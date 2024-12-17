@@ -27,10 +27,40 @@
 </head>
 
 <body>
-    <script type="module" src="./merch-card.pricing-widget.test.html.js"></script>
+    <script type="module">
+        // @ts-nocheck
+        import { runTests } from '@web/test-runner-mocha';
+        import { expect } from '@esm-bundle/chai';
+
+        import { mockLana } from './mocks/lana.js';
+        import { mockFetch } from './mocks/fetch.js';
+
+        import './spectrum.js';
+        import '../src/merch-offer.js';
+        import '../src/merch-offer-select.js';
+        import '../src/merch-quantity-select.js';
+
+        import { mockIms } from './mocks/ims.js';
+        import { withWcs } from './mocks/wcs.js';
+        import mas from './mas.js';
+
+
+        runTests(async () => {
+            mockIms();
+            mockLana();
+            await mockFetch(withWcs);
+            await mas();
+            
+            describe('merch-card web component', () => {
+                it('should exist in the HTML document', async () => {
+                    expect(document.querySelector('merch-card[variant="ah-pricing-widget"]')).to.exist;
+                });
+            });
+        });
+    </script>
     <main>
       <sp-theme color="light" scale="medium" dir="ltr">
-          <merch-card size="gray" class="" tabindex="0" variant="pricing-widget">
+          <merch-card size="gray" class="" tabindex="0" variant="ah-pricing-widget">
             <sp-status-light size="s" variant="info" dir="ltr"></sp-status-light>
             <merch-icon
               slot="icons"
@@ -54,7 +84,7 @@
             <sp-button size="s" variant="accent">Buy</sp-button>
           </div>
           </merch-card>
-          <merch-card class="" tabindex="0" variant="pricing-widget">
+          <merch-card tabindex="0" variant="ah-pricing-widget">
             <sp-status-light size="s" variant="info" dir="ltr"></sp-status-light>
             <merch-icon
               slot="icons"
@@ -77,7 +107,7 @@
             <sp-button size="s" variant="primary">Buy</sp-button>
           </div>
           </merch-card>
-          <merch-card class="" tabindex="0" variant="pricing-widget">
+          <merch-card class="" tabindex="0" variant="ah-pricing-widget">
             <sp-status-light size="s" variant="info" dir="ltr"></sp-status-light>
             <merch-icon
               slot="icons"
@@ -102,7 +132,7 @@
           </merch-card>
       </sp-theme>
       <sp-theme  color="dark" scale="medium" dir="rtl">
-        <merch-card size="gray" class="" tabindex="0" variant="pricing-widget">
+        <merch-card size="gray" class="" tabindex="0" variant="ah-pricing-widget">
           <sp-status-light size="s" variant="info" dir="ltr"></sp-status-light>
           <merch-icon
             slot="icons"
@@ -126,7 +156,7 @@
           <sp-button size="s" variant="accent">Buy</sp-button>
         </div>
         </merch-card>
-        <merch-card class="" tabindex="0" variant="pricing-widget">
+        <merch-card class="" tabindex="0" variant="ah-pricing-widget">
           <sp-status-light size="s" variant="info" dir="ltr"></sp-status-light>
           <merch-icon
             slot="icons"
@@ -149,7 +179,7 @@
           <sp-button size="s" variant="primary">Buy</sp-button>
         </div>
         </merch-card>
-        <merch-card class="" tabindex="0" variant="pricing-widget">
+        <merch-card class="" tabindex="0" variant="ah-pricing-widget">
           <sp-status-light size="s" variant="info" dir="ltr"></sp-status-light>
           <merch-icon
             slot="icons"

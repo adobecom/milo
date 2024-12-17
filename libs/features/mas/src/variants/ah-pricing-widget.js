@@ -1,6 +1,6 @@
 import { html, css } from 'lit';
-import { VariantLayout } from './variant-layout';
-import { CSS } from './pricing-widget.css.js';
+import { VariantLayout } from './variant-layout.js';
+import { CSS } from './ah-pricing-widget.css.js';
 
 const AEM_FRAGMENT_MAPPING = {
   mnemonics: { size: 's' },
@@ -10,7 +10,7 @@ const AEM_FRAGMENT_MAPPING = {
   ctas: { slot: 'cta', size: 'S' },
 };
 
-export class PricingWidget extends VariantLayout {
+export class AHPricingWidget extends VariantLayout {
 
   getGlobalCSS() {
     return CSS;
@@ -37,11 +37,17 @@ export class PricingWidget extends VariantLayout {
   }
 
   static variantStyle = css`
-    :host([variant='pricing-widget']) {
-        width: var(--merch-card-pricing-widget-width);
-        min-height: var(--merch-card-pricing-widget-height);
-        background-color: var(--spectrum-gray-50);
-        color: var(--spectrum-gray-800);
+    :host([variant='ah-pricing-widget']) {
+        --merch-card-ah-pricing-widget-width: 132px;
+        --merch-card-ah-pricing-widget-height: 212px;
+        --merch-card-ah-pricing-widget-heading-color: rgba(44, 44, 44, 1);
+        --merch-card-ah-pricing-widget-gray-background: rgba(248, 248, 248, 1);
+        --merch-card-ah-pricing-widget-white-background: rgba(255, 255, 255, 1);
+        --merch-card-ah-pricing-widget-text-color: rgba(19, 19, 19, 1);
+        width: var(--merch-card-ah-pricing-widget-width);
+        min-height: var(--merch-card-ah-pricing-widget-height);
+        background-color: var(--merch-card-ah-pricing-widget-white-background);
+        color: var(--merch-card-ah-pricing-widget-heading-color);
         border-radius: 10px;
         display: flex;
         flex-direction: column;
@@ -51,11 +57,11 @@ export class PricingWidget extends VariantLayout {
         border: none;
     }
 
-    :host([variant='pricing-widget'][size='gray']) {
-        background-color: var(--spectrum-gray-100);
+    :host([variant='ah-pricing-widget'][size='gray']) {
+        background-color: var(--merch-card-ah-pricing-widget-gray-background);
     }
 
-    :host([variant='pricing-widget']) .header {
+    :host([variant='ah-pricing-widget']) .header {
         display: flex;
         flex-direction: row;
         align-items: center;
@@ -63,30 +69,30 @@ export class PricingWidget extends VariantLayout {
         padding-bottom: 4px;
     }
 
-    :host([variant='pricing-widget']) ::slotted([slot='heading-xxxs']) {
+    :host([variant='ah-pricing-widget']) ::slotted([slot='heading-xxxs']) {
         letter-spacing: normal;
         font-size: 12px;
         line-height: 18px;
-        color: var(--spectrum-gray-800);
+        color: var(--merch-card-ah-pricing-widget-heading-color);
     }
 
-    :host([variant='pricing-widget']) ::slotted([slot='price']) {
+    :host([variant='ah-pricing-widget']) ::slotted([slot='price']) {
         margin-left: var(--spacing-xs);
         display: flex;
         flex-direction: column;
         font-size: 12px;
         line-height: 18px;
-        color: var(--spectrum-gray-800);
+        color: var(--merch-card-ah-pricing-widget-heading-color);
     }
 
-    :host([variant='pricing-widget']) .footer {
+    :host([variant='ah-pricing-widget']) .footer {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-top: auto;
     }
 
-    :host([variant='pricing-widget']) ::slotted([slot='cta']) {
+    :host([variant='ah-pricing-widget']) ::slotted([slot='cta']) {
         display: flex;
         flex-direction: row;
         gap: 8px;
@@ -94,4 +100,4 @@ export class PricingWidget extends VariantLayout {
   `;
 }
 
-customElements.define('pricing-widget', PricingWidget);
+customElements.define('ah-pricing-widget', AHPricingWidget);
