@@ -44,10 +44,9 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-          gh release create "feds-standalone-v${{ inputs.version }}" \
+          gh release create "feds-standalone-v${{ inputs.version }}" --target ${{ github.ref_name }} \
               --repo="${{ github.repository }}" \
               --title="@adobecom/standalone-feds v${{ inputs.version }} Release" \
-              --target ${{ github.ref_name }} \
               --generate-notes
 
     - name: Upload Files to Release
