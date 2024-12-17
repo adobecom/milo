@@ -36,7 +36,7 @@ def find_string_in_json(json_data, target_string):
   return False
 
 # Execute Script logic:
-# python servicenow.py
+# python3 servicenow.py
 if __name__ == "__main__":
 
   print("Starting CMR Action...")
@@ -54,19 +54,21 @@ if __name__ == "__main__":
   ims_url = 'https://ims-na1-stg1.adobelogin.com/ims/token'
   headers = {"Content-Type":"multipart/form-data"}
   data = {
-    'client_id': f"{process.env.IMSACCESS_CLIENT_ID}",
-    'client_secret': f"{process.env.IMSACCESS_CLIENT_SECRET}",
+    'client_id': process.env.IMSACCESS_CLIENT_ID,
+    'client_secret': process.env.IMSACCESS_CLIENT_SECRET,
     'grant_type': "authorization_code",
-    'code': f"{process.env.IMSACCESS_AUTH_CODE}"
+    'code': process.env.IMSACCESS_AUTH_CODE
   }
   response = requests.post(ims_url, data=data)
   jsonParse = json.loads(response.text)
 
   if response.status_code != 200:
     print("POST failed with response code: ", response.status_code)
+    print(response.text)
     sys.exit(1)
   elif find_string_in_json(jsonParse, "error"):
-    print("IMS token request failed with response: ", response.text)
+    print("IMS token request failed with response code: ", response.status_code)
+    print(response.text)
     sys.exit(1)
   else:
     print("IMS token request was successful")
@@ -79,11 +81,11 @@ if __name__ == "__main__":
     "Accept":"application/json",
     "Authorization":token,
     "Content-Type":"application/json",
-    "api_key":f"{process.env.IPAAS_KEY}"
+    "api_key":process.env.IPAAS_KEY
   }
   data = {
-    "title":f"{release_title}",
-    "description":f"{release_summary}",
+    "title":release_title,
+    "description":release_summary,
     "instanceIds": [ 537445 ],
     "plannedStartDate": start_time,
     "plannedEndDate": end_time,
@@ -98,14 +100,16 @@ if __name__ == "__main__":
     "implementationPlan": "The change will be released as part of the continuous deployment of Milo's production branch, i.e., \"main\"",
     "backoutPlan": "Revert merge to the Milo production branch by creating a revert commit.", "testResults": "Changes are tested and validated successfully in staging environment. Please see the link of the PR in the description for the test results and/or the \"#nala-test-results\" slack channel."
   }
-  response = requests.post(servicenow_cmr_url, json=data)
+  response = requests.post(servicenow_cmr_url, headers=headers, json=data)
   jsonParse = json.loads(response.text)
 
   if response.status_code != 200:
     print("POST failed with response code: ", response.status_code)
+    print(response.text)
     sys.exit(1)
   elif find_string_in_json(jsonParse, "error"):
-    print("CMR creation failed with response: ", response.text)
+    print("CMR creation failed with response code: ", response.status_code)
+    print(response.text)
     sys.exit(1)
   else:
     print("CMR creation was successful")
@@ -117,23 +121,25 @@ if __name__ == "__main__":
   headers = {
     "Accept":"application/json",
     "Authorization":token,
-    "api_key":f"{process.env.IPAAS_KEY}"
+    "api_key":process.env.IPAAS_KEY
   }
 
   # Wait 10 seconds to provide time for the transaction to exit the queue and be saved into ServiceNow as a CMR record.
   time.sleep(10)
-  response = requests.get(servicenow_get_cmr_url)
+  response = requests.get(servicenow_get_cmr_url, headers=headers)
   jsonParse = json.loads(response.text)
 
   if response.status_code != 200:
-    print("GET failed with response code: ${response.status_code}")
+    print("GET failed with response code: ", response.status_code)
+    print(response.text)
     sys.exit(1)
   elif find_string_in_json(jsonParse, "error"):
-    print("CMR ID retrieval failed with response: ${response.text}")
+    print("CMR ID retrieval failed with response code: ", response.status_code)
+    print(response.text)
     sys.exit(1)
   else:
     print("CMR ID retrieval was successful")
-    cmr_id = jsonParse["result.changeId"]
+    cmr_id = jsonParse["changeId"]
 
   print("Setting Actual Maintenance Time Windows for CMR...")
   actual_start_time = (datetime.datetime.now() - datetime.timedelta(seconds = 10)).timestamp()
@@ -145,7 +151,7 @@ if __name__ == "__main__":
     "Accept":"application/json",
     "Authorization":token,
     "Content-Type":"application/json",
-    "api_key":f"{process.env.IPAAS_KEY}"
+    "api_key":process.env.IPAAS_KEY
   }
   data = {
     "id": transactionId,
@@ -155,14 +161,16 @@ if __name__ == "__main__":
     "closeCode": "Successful",
     "notes": "The change request is closed as the change was released successfully"
   }
-  response = requests.post(servicenow_cmr_url, json=data)
+  response = requests.post(servicenow_cmr_url, headers=headers, json=data)
   jsonParse = json.loads(response.text)
 
   if response.status_code != 200:
     print("POST failed with response code: ", response.status_code)
+    print(response.text)
     sys.exit(1)
   elif find_string_in_json(jsonParse, "error"):
-    print("CMR closure failed with response: ", response.text)
+    print("CMR closure failed with response code: ", response.status_code)
+    print(response.text)
     sys.exit(1)
   else:
     print("CMR closure was successful")
