@@ -972,6 +972,7 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button {
   white-space: normal;
   font-weight: 700;
   text-align: unset;
+  color: var(--text-color);
 }
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button[aria-selected="true"] {
