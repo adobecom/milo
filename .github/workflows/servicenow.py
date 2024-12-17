@@ -22,12 +22,12 @@ def _search_value(value, target_string):
     return False
 
 def find_string_in_json(json_data, target_string):
-    """
-    Finds a target string in a JSON object.
+  """
+  Finds a target string in a JSON object.
 
-    Args:
-        json_data (dict or list): The JSON data to search.
-        target_string (str): The string to find.
+  Args:
+      json_data (dict or list): The JSON data to search.
+      target_string (str): The string to find.
 
     Returns:
         bool: True if the string is found, False otherwise.
