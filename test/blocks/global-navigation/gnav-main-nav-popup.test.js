@@ -140,7 +140,7 @@ describe('main nav popups', () => {
     });
 
     it('should open a popup and headline on click', async () => {
-      document.head.appendChild(addMetaDataV2('false'));
+      document.head.appendChild(addMetaDataV2('off'));
       await createFullGlobalNavigation({ viewport: 'mobile' });
 
       document.querySelector(selectors.mainNavToggle).click();
