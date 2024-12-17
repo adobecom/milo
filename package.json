@@ -51,7 +51,7 @@
     "chai": "^5.1.1",
     "chalk": "^4.1.2",
     "commander": "^12.1.0",
-    "echarts": "^5.3.3",
+    "echarts": "^5.5.1",
     "eslint": "8.11.0",
     "eslint-config-airbnb-base": "15.0.0",
     "eslint-nibble": "^8.1.0",

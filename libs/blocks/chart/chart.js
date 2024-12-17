@@ -387,6 +387,10 @@ export const getChartOptions = ({
       inactiveColor: '#6C6C6C',
       type: 'scroll',
     },
+    aria: {
+      enabled: true,
+      general: { withTitle: isDonut ? 'This is a chart' : 'The chart title is {title}' },
+    },
     title: isDonut ? donutTitleOptions(source, series, yUnits[0], size) : {},
     tooltip: {
       show: true,
