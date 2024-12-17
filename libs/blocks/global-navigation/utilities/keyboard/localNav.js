@@ -17,7 +17,6 @@ class LocalNavItem {
         if (isHeadline) {
           e.preventDefault(); // Prevent default scrolling behavior for Space key
           trigger({ element: e.target, event: e, type: 'headline' });
-          setActiveDropdown(e.target);
         }
         break;
       default:
