@@ -48,7 +48,7 @@ if __name__ == "__main__":
   print("Set Release Summary for CMR...")
   release_title = process.env.PR_TITLE
   release_details = process.env.PR_BODY
-  release_summary = f"Release_Details: {release_details} Pull Request Number: {process.env.PR_NUMBER} Pull Request Created At: {process.env.PR_CREATED_AT} Pull Request Merged At: {process.env.PR_MERGED_AT}"
+  release_summary = f"Release_Details: {release_details} \n\nPull Request Number: {process.env.PR_NUMBER} \nPull Request Created At: {process.env.PR_CREATED_AT} \nPull Request Merged At: {process.env.PR_MERGED_AT}"
 
   print("Getting IMS Token")
   ims_url = 'https://ims-na1-stg1.adobelogin.com/ims/token'
@@ -139,7 +139,7 @@ if __name__ == "__main__":
     sys.exit(1)
   else:
     print("CMR ID retrieval was successful")
-    cmr_id = jsonParse["changeId"]
+    cmr_id = jsonParse["result"]["changeId"]
 
   print("Setting Actual Maintenance Time Windows for CMR...")
   actual_start_time = (datetime.datetime.now() - datetime.timedelta(seconds = 10)).timestamp()
@@ -154,7 +154,7 @@ if __name__ == "__main__":
     "api_key":process.env.IPAAS_KEY
   }
   data = {
-    "id": transactionId,
+    "id": transaction_id,
     "actualStartDate": actual_start_time,
     "actualEndDate": actual_end_time,
     "state": "Closed",
