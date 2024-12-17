@@ -1,5 +1,5 @@
 import { selectors } from './utils.js';
-import { trigger, setActiveDropdown } from '../utilities.js';
+import { trigger } from '../utilities.js';
 
 class LocalNavItem {
   constructor() {
