@@ -460,10 +460,6 @@ class Gnav {
       this.elements.aside,
       this.elements.topnavWrapper,
     );
-
-    if (this.newMobileNav) {
-      await this.decorateLocalNav();
-    }
   };
 
   addChangeEventListeners = () => {
@@ -976,7 +972,9 @@ class Gnav {
         setActiveLink(true);
       }
     }
-
+    if (this.newMobileNav) {
+      await this.decorateLocalNav();
+    }
     return this.elements.mainNav;
   };
 
@@ -1069,10 +1067,6 @@ class Gnav {
           type: itemType,
         });
 
-        if (this.isLocalNav() && this.newMobileNav) {
-          decorateLocalNavItems(item, template);
-        }
-
         if (this.newMobileNav) {
           const popup = template.querySelector('.feds-popup');
           let originalContent = popup.innerHTML;
@@ -1091,6 +1085,9 @@ class Gnav {
               this.block.classList.add('new-nav');
             }
           });
+          if (this.isLocalNav()) {
+            decorateLocalNavItems(item, template);
+          }
         }
       }, 'Decorate dropdown failed', 'errorType=info,module=gnav');
 

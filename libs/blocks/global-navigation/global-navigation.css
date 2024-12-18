@@ -1120,7 +1120,7 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
   padding: 0;
 }
 
-.feds-localnav.feds-localnav--active .feds-localnav-items .feds-menu-column > ul .feds-navLink {
+.feds-localnav.feds-localnav--active .feds-localnav-items .feds-menu-column .feds-navLink {
   padding-left: 38px;
 }
 
