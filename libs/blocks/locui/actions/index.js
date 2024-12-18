@@ -9,12 +9,13 @@ import {
   allowRollout,
   syncFragments,
   allowCancelProject,
+  projectStatus,
   polling,
 } from '../utils/state.js';
 import { setExcelStatus, setStatus } from '../utils/status.js';
 import { origin, preview } from '../utils/franklin.js';
 import { createTag, decorateSections, decorateFooterPromo } from '../../../utils/utils.js';
-import { getUrls, validateUrlsFormat } from '../loc/index.js';
+import { getUrls, validateUrlsFormat, getLangstorePrefix } from '../loc/index.js';
 import updateExcelTable from '../../../tools/sharepoint/excel.js';
 import { getItemId } from '../../../tools/sharepoint/shared.js';
 import {
@@ -112,14 +113,22 @@ async function findPageFragments(path) {
   return fragmentUrls;
 }
 
+function addFragmentPrefix(fragments, prefix) {
+  return fragments ? fragments.map((url) => {
+    url.pathname = url.pathname.startsWith(prefix) ? url.pathname : `${prefix}${url.pathname}`;
+    return url;
+  }) : undefined;
+}
+
 export async function findDeepFragments(path) {
   const searched = [];
-  const fragments = await findPageFragments(path);
+  const prefix = getLangstorePrefix(path);
+  const fragments = addFragmentPrefix(await findPageFragments(path), prefix);
   if (!fragments) return [];
   while (fragments.length !== searched.length) {
     const needsSearch = fragments.filter((fragment) => !searched.includes(fragment.pathname));
     for (const search of needsSearch) {
-      const nestedFragments = await findPageFragments(search.pathname);
+      const nestedFragments = addFragmentPrefix(await findPageFragments(search.pathname), prefix);
       if (nestedFragments === undefined) {
         search.valid = 'not found';
       } else {
@@ -190,7 +199,7 @@ export async function syncToLangstore() {
   // Disable cancel project
   allowCancelProject.value = false;
 
-  if (!heading.value.projectId) {
+  if (!heading.value.projectId || projectStatus.value.projectStatus === 'draft') {
     const status = await createProject();
     setTimeout(async () => {
       if (status === 201) {
@@ -254,7 +263,7 @@ export async function sendForLoc() {
   allowCancelProject.value = false;
 
   // If no Project ID, create project first.
-  if (!heading.value.projectId) {
+  if (!heading.value.projectId || projectStatus.value.projectStatus === 'draft') {
     const status = await createProject();
     if (status === 201) {
       // Give the service time to digest and error check creating a project

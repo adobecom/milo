@@ -7,7 +7,7 @@ import errorLinks from '../status/index.js';
 
 function Modal({ lang, prefix, type }) {
   const localeUrls = urls.value.map(
-    (url) => new URL(`${origin}/${prefix}${url.pathname}`),
+    (url) => new URL(`${origin}/${prefix}${url.pagePath}`),
   );
 
   if (type === 'error') {
