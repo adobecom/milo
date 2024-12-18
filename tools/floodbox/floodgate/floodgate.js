@@ -579,6 +579,7 @@ export default class MiloFloodgate extends LitElement {
     return html`
       <div class="tab-step active" data-id="find">
         <h3>Find Files, Referenced Fragments and Assets</h3>
+        ${this._canCopyPaths ? html`<p>Press the "Copy" button above to copy these files.</p>` : nothing}
         <div class="detail-cards find-cards">
           ${floodbox.renderBadge('Pages', this._filesToCopy.length)}
           ${floodbox.renderBadge('Fragments', this._fragmentsAssets.size)}
@@ -628,7 +629,7 @@ export default class MiloFloodgate extends LitElement {
       <form>    
         ${this._selectedOption === 'fgCopy' ? html`
           <div class="input-row">
-            <textarea name="copyPaths" rows="10" placeholder="Enter paths to copy to the pink site, separated by line-break." @input=${this.validateCopyPaths}></textarea>
+            <textarea name="copyPaths" .disabled=${this._findingPaths} rows="10" placeholder="Enter paths to copy to the pink site, separated by line-break." @input=${this.validateCopyPaths} ></textarea>
             ${floodbox.renderClearButton()}
           </div>
         ` : nothing}
