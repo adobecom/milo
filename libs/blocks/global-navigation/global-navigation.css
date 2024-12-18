@@ -1098,7 +1098,7 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
   width: 100%;
   position: absolute;
   overflow: auto;
-  top: 40px;
+  top: var(--feds-localnav-height);
 }
 
 .feds-localnav.feds-localnav--active .feds-localnav-items .feds-menu-items {
@@ -1152,7 +1152,8 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
   display: none;
 }
 
-.feds-localnav .feds-localnav-exit {
+.feds-localnav .feds-localnav-exit,
+.feds-localnav .feds-localnav-curtain {
   display: none;
 }
 
@@ -1166,7 +1167,7 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
   position: absolute;
   background: var(--feds-color-black-v2);
   opacity: 0.7;
-  top: 40px;
+  top: var(--feds-localnav-height);
 }
 
 .feds-localnav.feds-localnav--active.is-sticky .feds-localnav-curtain {
