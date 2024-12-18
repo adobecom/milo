@@ -570,6 +570,7 @@ merch-card[variant="catalog"] .payment-details {
     justify-content: flex-end;
     align-items: flex-end;
     flex-wrap: wrap;
+    width: 100%;
     gap: var(--consonant-merch-spacing-xs);
   }
 
@@ -839,7 +840,7 @@ merch-card .footer-row-cell:nth-child(8) {
     }
     :host([variant='mini-compare-chart']) footer {
         min-height: var(--consonant-merch-card-mini-compare-chart-footer-height);
-        padding: var(--consonant-merch-spacing-xs);
+        padding: var(--consonant-merch-spacing-s);
     }
 
     :host([variant='mini-compare-chart'].bullet-list) footer {

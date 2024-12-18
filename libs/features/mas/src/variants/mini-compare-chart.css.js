@@ -83,6 +83,7 @@ export const CSS = `
     justify-content: flex-end;
     align-items: flex-end;
     flex-wrap: wrap;
+    width: 100%;
     gap: var(--consonant-merch-spacing-xs);
   }
 
