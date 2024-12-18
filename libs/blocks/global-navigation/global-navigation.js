@@ -1071,7 +1071,7 @@ class Gnav {
           const popup = template.querySelector('.feds-popup');
           let originalContent = popup.innerHTML;
 
-          if (!isDesktop.matches && this.newMobileNav && popup) {
+          if (!isDesktop.matches && popup) {
             originalContent = await transformTemplateToMobile(popup, item, this.isLocalNav());
             popup.querySelector('.close-icon')?.addEventListener('click', this.toggleMenuMobile);
           }
