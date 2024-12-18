@@ -106,7 +106,7 @@ export const CSS = `
   merch-card[variant="mini-compare-chart"] .footer-rows-title {
     font-color: var(--merch-color-grey-80);
     font-weight: 700;
-    padding-block-end: var(--consonant-merch-spacing-xxxs);
+    padding-block-end: var(--consonant-merch-spacing-xxs);
     line-height: var(--consonant-merch-card-body-xs-line-height);
     font-size: var(--consonant-merch-card-body-xs-font-size);
   }
