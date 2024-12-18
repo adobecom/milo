@@ -61,7 +61,7 @@ header.global-navigation {
   right: 20px; /* hamburger menu gutter */
   display: none;
   flex-direction: column;
-  height: calc(100vh - 100% - 1px);
+  height: calc(100dvh - 100% - 1px);
   border-top: 1px solid var(--feds-borderColor);
   background-color: var(--feds-background-nav);
 }
@@ -584,13 +584,13 @@ header.global-navigation {
   .feds-navItem--megaMenu .feds-popup {
     right: 0;
     padding: 40px 0 0;
-    max-height: calc(100vh - 100%);
+    max-height: calc(100dvh - 100%);
     overflow: auto;
     box-sizing: border-box;
   }
 
   .global-navigation.has-promo .feds-navItem--megaMenu .feds-popup {
-    max-height: calc(100vh - 100% - var(--global-height-navPromo));
+    max-height: calc(100dvh - 100% - var(--global-height-navPromo));
   }
 
   [dir = "rtl"] .feds-navItem--megaMenu .feds-popup {
@@ -1141,11 +1141,11 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
 
 .feds-localnav.feds-localnav--active .feds-localnav-items {
   box-sizing: border-box;
-  max-height: calc(100vh - (var(--global-height-nav) + var(--feds-localnav-height)));
+  max-height: calc(100dvh - (var(--global-height-nav) + var(--feds-localnav-height)));
 }
 
 .feds-localnav.feds-localnav--active.is-sticky .feds-localnav-items {
-  max-height: calc(100vh - var(--feds-localnav-height));
+  max-height: calc(100dvh - var(--feds-localnav-height));
 }
 
 .feds-localnav .feds-localnav--active::before {
@@ -1162,14 +1162,15 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
 
 .feds-localnav.feds-localnav--active .feds-localnav-curtain {
   width: 100%;
-  height: calc(100vh - (var(--feds-height-nav) + var(--feds-localnav-height)));
+  height: calc(101lvh - (var(--feds-height-nav) + var(--feds-localnav-height)));
+  padding-bottom: env(safe-area-inset-bottom);
   position: absolute;
   background: var(--feds-color-black-v2);
   opacity: 0.7;
 }
 
 .feds-localnav.feds-localnav--active.is-sticky .feds-localnav-curtain {
-  height: calc(100vh - var(--feds-localnav-height));
+  height: calc(100dvh - var(--feds-localnav-height));
 }
 
 .feds-localnav.feds-localnav--active .feds-localnav-exit {
