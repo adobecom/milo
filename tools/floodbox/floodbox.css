@@ -149,7 +149,7 @@ select {
 .detail-card-copy-errors,
 .url-list.url-list-promote-errors,
 .url-list.url-list-preview-errors,
-.url-list.url-list-publish-errors
+.url-list.url-list-publish-errors,
 .url-list.url-list-copy-errors {
   background: rgb(255 214 209);
 }
