@@ -120,7 +120,7 @@ function addFragmentPrefix(fragments, prefix) {
   }) : undefined;
 }
 
-async function findDeepFragments(path) {
+export async function findDeepFragments(path) {
   const searched = [];
   const prefix = getLangstorePrefix(path);
   const fragments = addFragmentPrefix(await findPageFragments(path), prefix);
