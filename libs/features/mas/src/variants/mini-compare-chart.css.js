@@ -11,8 +11,16 @@ export const CSS = `
     padding: 0 var(--consonant-merch-spacing-s) 0;
   }
 
+  merch-card[variant="mini-compare-chart"].bullet-list [slot="heading-m"] {
+    padding: var(--consonant-merch-spacing-xxs) var(--consonant-merch-spacing-xs);
+  }
+
   merch-card[variant="mini-compare-chart"] [slot="body-m"] {
     padding: var(--consonant-merch-spacing-xs) var(--consonant-merch-spacing-s);
+  }
+
+  merch-card[variant="mini-compare-chart"].bullet-list [slot="body-m"] {
+    padding: var(--consonant-merch-spacing-xs);
   }
 
   merch-card[variant="mini-compare-chart"] [is="inline-price"] {
@@ -23,6 +31,10 @@ export const CSS = `
 
   merch-card[variant="mini-compare-chart"] [slot='callout-content'] {
     padding: var(--consonant-merch-spacing-xs) var(--consonant-merch-spacing-s) 0px;
+  }
+
+  merch-card[variant="mini-compare-chart"].bullet-list [slot='callout-content'] {
+    padding: var(--consonant-merch-spacing-xs) var(--consonant-merch-spacing-xs) 0px;
   }
 
   merch-card[variant="mini-compare-chart"] [slot='callout-content'] [is="inline-price"] {
@@ -48,9 +60,17 @@ export const CSS = `
     padding: var(--consonant-merch-spacing-xs) var(--consonant-merch-spacing-s) 0;    
   }
 
+   merch-card[variant="mini-compare-chart"].bullet-list [slot="body-xxs"] {
+    padding: var(--consonant-merch-spacing-xs) var(--consonant-merch-spacing-xs) 0;    
+  }
+
   merch-card[variant="mini-compare-chart"] [slot="promo-text"] {
     font-size: var(--consonant-merch-card-body-m-font-size);
     padding: var(--consonant-merch-spacing-xs) var(--consonant-merch-spacing-s) 0;
+  }
+
+  merch-card[variant="mini-compare-chart"].bullet-list [slot="promo-text"] {
+    padding: var(--consonant-merch-spacing-xs) var(--consonant-merch-spacing-xs) 0;
   }
 
   merch-card[variant="mini-compare-chart"] [slot="promo-text"] a {
@@ -136,7 +156,6 @@ export const CSS = `
 
   merch-card[variant="mini-compare-chart"] .footer-row-cell-description a {
     color: var(--color-accent);
-    text-decoration: solid;
   }
 
   merch-card[variant="mini-compare-chart"] .chevron-icon {
@@ -182,9 +201,18 @@ export const CSS = `
     line-height: var(--consonant-merch-card-body-s-line-height);
   }
 
+  merch-card[variant="mini-compare-chart"].bullet-list [slot='heading-m'] {
+    font-size: var(--consonant-merch-card-body-m-font-size);
+  }
+
   merch-card[variant="mini-compare-chart"] [slot='heading-m-price'] {
     font-size: var(--consonant-merch-card-body-s-font-size);
     line-height: var(--consonant-merch-card-body-s-line-height);
+  }
+
+  merch-card[variant="mini-compare-chart"].bullet-list [slot='heading-m-price'] {
+    font-size: var(--consonant-merch-card-body-xxl-font-size);
+    padding: 0 var(--consonant-merch-spacing-xs);
   }
 
   merch-card[variant="mini-compare-chart"] [slot='body-m'] {

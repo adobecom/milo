@@ -438,7 +438,7 @@ const decorateFooterRows = async (merchCard, footerRows) => {
   if (!footerRows) return;
 
   const footerRowsSlot = createTag('div', { slot: 'footer-rows' });
-  const isCheckmark = merchCard.classList.contains('feature-list-item');
+  const isCheckmark = merchCard.classList.contains('bullet-list');
   const isMobile = window.matchMedia('(max-width: 767px)').matches;
 
   const ulContainer = createTag('ul');
@@ -472,7 +472,7 @@ const decorateFooterRows = async (merchCard, footerRows) => {
     footerRowsSlot.appendChild(firstRowTextParagraph);
 
     footerRows.splice(0, 1);
-    footerRowsSlot.style.padding = '0px var(--consonant-merch-spacing-s)';
+    footerRowsSlot.style.padding = '0px var(--consonant-merch-spacing-xs)';
     footerRowsSlot.style.marginBlockEnd = 'var(--consonant-merch-spacing-xs)';
   }
   footerRowsSlot.appendChild(ulContainer);
