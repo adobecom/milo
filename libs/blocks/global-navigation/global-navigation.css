@@ -1162,7 +1162,8 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
 
 .feds-localnav.feds-localnav--active .feds-localnav-curtain {
   width: 100%;
-  height: calc(101lvh - (var(--feds-height-nav) + var(--feds-localnav-height)));
+  min-height: calc(101lvh - (var(--feds-height-nav) + var(--feds-localnav-height)));
+  min-height: -webkit-fill-available;
   padding-bottom: env(safe-area-inset-bottom);
   position: absolute;
   background: var(--feds-color-black-v2);
@@ -1170,8 +1171,9 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
 }
 
 .feds-localnav.feds-localnav--active.is-sticky .feds-localnav-curtain {
-  height: calc(101lvh - var(--feds-localnav-height));
+  min-height: calc(101lvh - var(--feds-localnav-height));
   padding-bottom: env(safe-area-inset-bottom);
+  min-height: -webkit-fill-available;
 }
 
 .feds-localnav.feds-localnav--active .feds-localnav-exit {
