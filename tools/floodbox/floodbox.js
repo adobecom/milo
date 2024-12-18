@@ -45,7 +45,7 @@ function updateTabUi(app, target, delay = 0) {
 }
 
 function renderBadge(name, length, hasList = false, hasCancel = false) {
-  const lowerName = name.toLowerCase().replace(/ /g, '-');
+  const lowerName = name.toLowerCase().replace(/\W+/g, '-');
   const hasExpand = length > 0 && hasList;
 
   return html`

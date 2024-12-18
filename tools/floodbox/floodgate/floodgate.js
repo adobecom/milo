@@ -582,7 +582,7 @@ export default class MiloFloodgate extends LitElement {
         ${this._canCopyPaths ? html`<p>Press the "Copy" button above to copy these files.</p>` : nothing}
         <div class="detail-cards find-cards">
           ${floodbox.renderBadge('Pages', this._filesToCopy.length)}
-          ${floodbox.renderBadge('Fragments', this._fragmentsAssets.size)}
+          ${floodbox.renderBadge('Fragments & Assets', this._fragmentsAssets.size)}
         </div>
         ${floodbox.renderChecklist(this, this._filesToCopy)}
       </div>
