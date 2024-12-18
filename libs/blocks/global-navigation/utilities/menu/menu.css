@@ -23,6 +23,10 @@
   padding: 12px 0;
 }
 
+.feds-menu-column li {
+  list-style: none;
+}
+
 .feds-menu-section > a:first-child {
   margin-top: 12px;
 }
