@@ -1112,6 +1112,10 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
   top: var(--feds-localnav-height);
 }
 
+.feds-localnav .feds-localnav-items li {
+  list-style: none;
+}
+
 .feds-localnav.feds-localnav--active .feds-localnav-items .feds-menu-items {
   padding: 0;
   border-bottom: 0;
