@@ -1,4 +1,4 @@
-# This workflow will install Python dependencies, run CMR creation in ServiceNow
+# Test This workflow will install Python dependencies, run CMR creation in ServiceNow
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
 
 name: Create CMR in ServiceNow
