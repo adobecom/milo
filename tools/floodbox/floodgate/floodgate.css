@@ -3,7 +3,16 @@ body {
   margin: 0 var(--spacing-1000);
 }
 
-/* CHANGE ME TO SOMETHING ELSE WHEN WE FIGURE OUT WHERE TO PUT THIS INFORMATION */
-/* .button-row span {
+.repo-row {
+  display: flex;
+  justify-content: flex-end;
+  margin: 0 var(--spacing-200) var(--spacing-400);
+}
+
+.repo-row p {
+  margin: 0;
+}
+
+.repo-row span {
   text-transform: uppercase;
-} */
+}
