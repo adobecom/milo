@@ -46,18 +46,21 @@ if __name__ == "__main__":
   end_time = (datetime.datetime.now() + datetime.timedelta(minutes = 10)).timestamp()
 
   print("Set Release Summary for CMR...")
-  release_title = process.env.PR_TITLE
-  release_details = process.env.PR_BODY
-  release_summary = f"Release_Details: {release_details} \n\nPull Request Number: {process.env.PR_NUMBER} \nPull Request Created At: {process.env.PR_CREATED_AT} \nPull Request Merged At: {process.env.PR_MERGED_AT}"
+  release_title = os.environ['PR_TITLE']
+  release_details = os.environ['PR_BODY']
+  pr_num = os.environ['PR_NUMBER']
+  pr_created = os.environ['PR_CREATED_AT']
+  pr_merged = os.environ['PR_MERGED_AT']
+  release_summary = f"Release_Details: {release_details} \n\nPull Request Number: {pr_num} \nPull Request Created At: {pr_created} \nPull Request Merged At: {pr_merged}"
 
   print("Getting IMS Token")
   ims_url = 'https://ims-na1-stg1.adobelogin.com/ims/token'
   headers = {"Content-Type":"multipart/form-data"}
   data = {
-    'client_id': process.env.IMSACCESS_CLIENT_ID,
-    'client_secret': process.env.IMSACCESS_CLIENT_SECRET,
+    'client_id': os.environ['IMSACCESS_CLIENT_ID'],
+    'client_secret': os.environ['IMSACCESS_CLIENT_SECRET'],
     'grant_type': "authorization_code",
-    'code': process.env.IMSACCESS_AUTH_CODE
+    'code': os.environ['IMSACCESS_AUTH_CODE']
   }
   response = requests.post(ims_url, data=data)
   jsonParse = json.loads(response.text)
@@ -81,7 +84,7 @@ if __name__ == "__main__":
     "Accept":"application/json",
     "Authorization":token,
     "Content-Type":"application/json",
-    "api_key":process.env.IPAAS_KEY
+    "api_key":os.environ['IPAAS_KEY']
   }
   data = {
     "title":release_title,
@@ -121,7 +124,7 @@ if __name__ == "__main__":
   headers = {
     "Accept":"application/json",
     "Authorization":token,
-    "api_key":process.env.IPAAS_KEY
+    "api_key":os.environ['IPAAS_KEY']
   }
 
   # Wait 10 seconds to provide time for the transaction to exit the queue and be saved into ServiceNow as a CMR record.
@@ -151,7 +154,7 @@ if __name__ == "__main__":
     "Accept":"application/json",
     "Authorization":token,
     "Content-Type":"application/json",
-    "api_key":process.env.IPAAS_KEY
+    "api_key":os.environ['IPAAS_KEY']
   }
   data = {
     "id": transaction_id,
