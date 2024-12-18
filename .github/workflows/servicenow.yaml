@@ -15,9 +15,9 @@ permissions:
 
 env:
   IMSACCESS_CLIENT_ID: ${{ secrets.IMSACCESS_CLIENT_ID }}
-  IMSACCESS_CLIENT_SECRET: ${{ secrets.IMSACCESS_CLIENT_SECRET_STAGE }}
-  IMSACCESS_AUTH_CODE: ${{ secrets.IMSACCESS_AUTH_CODE_STAGE }}
-  IPAAS_KEY: ${{ secrets.IPAAS_KEY_STAGE }}
+  IMSACCESS_CLIENT_SECRET: ${{ secrets.IMSACCESS_CLIENT_SECRET_PROD }}
+  IMSACCESS_AUTH_CODE: ${{ secrets.IMSACCESS_AUTH_CODE_PROD }}
+  IPAAS_KEY: ${{ secrets.IPAAS_KEY_PROD }}
   PR_TITLE: ${{ github.event.pull_request.title }}
   PR_BODY: ${{ github.event.pull_request.body }}
   PR_NUMBER: ${{ github.event.pull_request.number }}
