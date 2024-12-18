@@ -1,4 +1,5 @@
 import { findDeepFragments } from '../../locui/actions/index.js';
+import { urls as locuiUrls } from '../../locui/utils/state.js';
 import { validateUrlsFormat } from '../../locui/loc/index.js';
 import { origin } from '../../locui/utils/franklin.js';
 import { PROJECT_TYPES } from '../utils/constant.js';
@@ -66,6 +67,8 @@ export function checkForErrors(errors) {
 }
 
 export async function findFragments(urls) {
+  // Using locui state urls as it is internally used in finding fragments and check duplicates
+  locuiUrls.value = [...urls];
   const fragmentUrls = urls.map((url) => findDeepFragments(url.pathname));
   const pageFragments = await Promise.all(fragmentUrls);
   const fragmentsByPathname = pageFragments.reduce((acc, fragments, index) => {
@@ -82,9 +85,11 @@ export async function findFragments(urls) {
     }
     return acc;
   }, {});
+  locuiUrls.value = [];
   const foundFragments = Object.values(fragmentsByPathname);
   return validateUrlsFormat(foundFragments, true);
 }
+
 export function getInitialName(type) {
   const prefix = type === PROJECT_TYPES.rollout ? 'rollout' : 'translate';
   let date = new Date().toISOString();
