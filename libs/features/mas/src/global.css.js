@@ -61,6 +61,7 @@ styles.innerHTML = `
     --consonant-merch-card-body-l-font-size: 20px;
     --consonant-merch-card-body-l-line-height: 30px;
     --consonant-merch-card-body-xl-font-size: 22px;
+    --consonant-merch-card-body-xxl-font-size: 24px;
     --consonant-merch-card-body-xl-line-height: 33px;
 
 
@@ -76,6 +77,7 @@ styles.innerHTML = `
     --merch-color-grey-80: #2c2c2c;
     --merch-color-grey-200: #E8E8E8;
     --merch-color-grey-600: #686868;
+    --merch-color-grey-700: #464646;
     --merch-color-green-promo: #2D9D78;
 
     /* ccd colors */
@@ -336,6 +338,10 @@ merch-card [slot="promo-text"] {
     margin: 0;
     min-height: var(--consonant-merch-card-promo-text-height);
     padding: 0;
+}
+
+merch-card [slot="footer-rows"] {
+    min-height: var(--consonant-merch-card-footer-rows-height);
 }
 
 merch-card div[slot="footer"] {
