@@ -500,6 +500,7 @@ merch-card[variant="catalog"] .payment-details {
 
   merch-card[variant="mini-compare-chart"].bullet-list [slot="heading-m"] {
     padding: var(--consonant-merch-spacing-xxs) var(--consonant-merch-spacing-xs);
+    font-size: var(--consonant-merch-card-heading-xs-font-size);
   }
 
   merch-card[variant="mini-compare-chart"] [slot="body-m"] {
@@ -688,10 +689,6 @@ merch-card[variant="catalog"] .payment-details {
     line-height: var(--consonant-merch-card-body-s-line-height);
   }
 
-  merch-card[variant="mini-compare-chart"].bullet-list [slot='heading-m'] {
-    font-size: var(--consonant-merch-card-body-m-font-size);
-  }
-
   merch-card[variant="mini-compare-chart"] [slot='heading-m-price'] {
     font-size: var(--consonant-merch-card-body-s-font-size);
     line-height: var(--consonant-merch-card-body-s-line-height);
@@ -827,8 +824,8 @@ merch-card .footer-row-cell:nth-child(8) {
             <slot name="icons"></slot> ${this.badge}
         </div>
         <slot name="heading-m"></slot>
-        ${this.card.classList.contains("bullet-list")?`<slot name="heading-m-price"></slot>
-          <slot name="body-m"></slot>`:`<slot name="body-m"></slot>
+        ${this.card.classList.contains("bullet-list")?x`<slot name="heading-m-price"></slot>
+          <slot name="body-m"></slot>`:x`<slot name="body-m"></slot>
           <slot name="heading-m-price"></slot>`}
         <slot name="body-xxs"></slot>
         <slot name="price-commitment"></slot>

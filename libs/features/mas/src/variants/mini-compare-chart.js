@@ -114,10 +114,10 @@ export class MiniCompareChart extends VariantLayout {
         <slot name="heading-m"></slot>
         ${this.card.classList.contains('bullet-list') 
         ?
-          `<slot name="heading-m-price"></slot>
+          html`<slot name="heading-m-price"></slot>
           <slot name="body-m"></slot>`
         :
-          `<slot name="body-m"></slot>
+          html`<slot name="body-m"></slot>
           <slot name="heading-m-price"></slot>`}
         <slot name="body-xxs"></slot>
         <slot name="price-commitment"></slot>

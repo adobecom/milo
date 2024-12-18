@@ -13,6 +13,7 @@ export const CSS = `
 
   merch-card[variant="mini-compare-chart"].bullet-list [slot="heading-m"] {
     padding: var(--consonant-merch-spacing-xxs) var(--consonant-merch-spacing-xs);
+    font-size: var(--consonant-merch-card-heading-xs-font-size);
   }
 
   merch-card[variant="mini-compare-chart"] [slot="body-m"] {
@@ -199,10 +200,6 @@ export const CSS = `
   merch-card[variant="mini-compare-chart"] [slot='heading-m'] {
     font-size: var(--consonant-merch-card-body-s-font-size);
     line-height: var(--consonant-merch-card-body-s-line-height);
-  }
-
-  merch-card[variant="mini-compare-chart"].bullet-list [slot='heading-m'] {
-    font-size: var(--consonant-merch-card-body-m-font-size);
   }
 
   merch-card[variant="mini-compare-chart"] [slot='heading-m-price'] {
