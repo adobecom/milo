@@ -138,7 +138,7 @@ export default async function loadBlock(configs, customLib) {
             noBorder: configBlock.noBorder,
             jarvis: configBlock.jarvis,
             isLocalNav: configBlock.isLocalNav,
-            useNewMobileNav: configBlock.useNewMobileNav || 'on',
+            mobileGnavV2: configBlock.mobileGnavV2 || 'off',
           });
         } else if (block.key === 'footer') {
           try {
