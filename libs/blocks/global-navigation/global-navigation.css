@@ -1163,21 +1163,18 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
 .feds-localnav.feds-localnav--active .feds-localnav-curtain {
   width: 100%;
   min-height: calc(101lvh - (var(--feds-height-nav) + var(--feds-localnav-height)));
-  min-height: -webkit-fill-available;
-  padding-bottom: env(safe-area-inset-bottom);
   position: absolute;
   background: var(--feds-color-black-v2);
   opacity: 0.7;
 }
 
 .feds-localnav.feds-localnav--active.is-sticky .feds-localnav-curtain {
-  min-height: calc(101lvh - var(--feds-localnav-height));
-  padding-bottom: env(safe-area-inset-bottom);
-  min-height: -webkit-fill-available;
+  min-height: 101lvh;
 }
 
 .feds-localnav.feds-localnav--active.is-sticky .feds-localnav-curtain::after {
   width: 100%;
+  content: '';
   min-height: calc(101lvh - (var(--feds-height-nav) + var(--feds-localnav-height)));
   position: absolute;
   background: var(--feds-color-black-v2);
