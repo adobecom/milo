@@ -239,10 +239,10 @@ async function checkLinks() {
   const badResults = [];
 
   links.forEach((link) => {
-    if (link.href.includes('http://')) {
+    if (link.dataset?.httpLink) {
       const httpLink = {
         url: link.href,
-        status: 'http in link',
+        status: 'authored as http',
       };
       badResults.push(httpLink);
     }
