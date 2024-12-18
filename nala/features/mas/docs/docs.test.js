@@ -27,14 +27,14 @@ test.describe('MAS Docs feature test suite', () => {
 
     await test.step('step-2: Verify on load pending & resolved events', async () => {
       const eventsLog = page.locator('#log');
-      await expect(eventsLog).toHaveText('checkout-link resolvedcheckout-link resolvedcheckout-link pendingcheckout-link pending');
+      await expect(eventsLog).toHaveText('checkout-link resolvedcheckout-link resolved');
     });
 
     await test.step('step-3: Verify on click pending & resolved events', async () => {
       const btnRefresh = page.locator('#btnRefresh');
       const eventsLog = page.locator('#log');
       await btnRefresh.click();
-      await expect(eventsLog).toHaveText('checkout-link resolvedcheckout-link resolvedcheckout-link pendingcheckout-link pendingcheckout-link resolvedcheckout-link resolvedcheckout-link pendingcheckout-link pending');
+      await expect(eventsLog).toHaveText('checkout-link resolvedcheckout-link resolvedcheckout-link resolvedcheckout-link resolved');
     });
   });
 });

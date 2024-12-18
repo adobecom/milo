@@ -162,13 +162,15 @@ export class CheckoutLink extends HTMLAnchorElement {
             { ...extraOptions, ...options },
             this,
         );
-        return this.renderOffers(
+        const result = this.renderOffers(
             offers.flat(),
             options,
             {},
             checkoutAction,
             version,
         );
+        this.masElement.notify();
+        return result;
     }
 
     /**
