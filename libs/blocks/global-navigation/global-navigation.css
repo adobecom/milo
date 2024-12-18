@@ -1177,7 +1177,6 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
   position: absolute;
   background: var(--feds-color-black-v2);
   opacity: 0.7;
-  top: var(--feds-localnav-height);
 }
 
 .feds-localnav.feds-localnav--active.is-sticky .feds-localnav-curtain {
