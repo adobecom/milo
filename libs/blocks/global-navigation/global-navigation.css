@@ -1176,6 +1176,14 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
   min-height: -webkit-fill-available;
 }
 
+.feds-localnav.feds-localnav--active.is-sticky .feds-localnav-curtain::after {
+  width: 100%;
+  min-height: calc(101lvh - (var(--feds-height-nav) + var(--feds-localnav-height)));
+  position: absolute;
+  background: var(--feds-color-black-v2);
+  opacity: 0.7;
+}
+
 .feds-localnav.feds-localnav--active .feds-localnav-exit {
   display: block;
 }
