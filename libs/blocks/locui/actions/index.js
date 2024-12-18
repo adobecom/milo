@@ -15,7 +15,7 @@ import {
 import { setExcelStatus, setStatus } from '../utils/status.js';
 import { origin, preview } from '../utils/franklin.js';
 import { createTag, decorateSections, decorateFooterPromo } from '../../../utils/utils.js';
-import { getUrls, validateUrlsFormat, getLangstorePrefix } from '../loc/index.js';
+import { getUrls, validateUrlsFormat, getLangstorePrefix, removeLangstorePrefix } from '../loc/index.js';
 import updateExcelTable from '../../../tools/sharepoint/excel.js';
 import { getItemId } from '../../../tools/sharepoint/shared.js';
 import {
@@ -101,7 +101,8 @@ async function findPageFragments(path) {
     }
     // Find dupes across current iterator as well as original url list
     const accDupe = acc.some((url) => url.pathname === pathname);
-    const dupe = urls.value.some((url) => url.pathname === pathname);
+    // Used remove langstore prefix for langstore urls
+    const dupe = urls.value.some((url) => removeLangstorePrefix(url.pathname) === pathname);
     if (accDupe || dupe) return acc;
     const fragmentUrl = new URL(`${origin}${pathname}`);
     fragmentUrl.alt = fragment.textContent;
