@@ -93,12 +93,11 @@ if __name__ == "__main__":
     "plannedStartDate": start_time,
     "plannedEndDate": end_time,
     "coordinator": "narcis@adobe.com",
-    "executor": "mauchley@adobe.com",
     "customerImpact": "No Impact",
     "changeReason": [ "New Features", "Bug Fixes", "Enhancement", "Maintenance", "Security" ],
     "preProductionTestingType": [ "End-to-End", "Functional", "Integrations", "QA", "Regression", "UAT", "Unit Test" ],
     "backoutPlanType": "Roll back",
-    "approvedBy": [ "osahin@adobe.com" ],
+    "approvedBy": [  "casalino@adobe.com", "jmichnow@adobe.com", "mauchley@adobe.com", "bbalakrishna@adobe.com", "tuscany@adobe.com", "brahmbha@adobe.com" ],
     "testPlan": "Test plan is documented in the PR link in the Milo repository above. See the PR's merge checks to see Unit and Nala testing.",
     "implementationPlan": "The change will be released as part of the continuous deployment of Milo's production branch, i.e., \"main\"",
     "backoutPlan": "Revert merge to the Milo production branch by creating a revert commit.", "testResults": "Changes are tested and validated successfully in staging environment. Please see the link of the PR in the description for the test results and/or the \"#nala-test-results\" slack channel."
