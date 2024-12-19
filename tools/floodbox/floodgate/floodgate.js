@@ -818,7 +818,7 @@ export default class MiloFloodgate extends LitElement {
         ` : nothing}
         ${this._selectedOption === 'fgPromote' ? html`
           <div class="input-row">
-            <input type="text" class="path-input" name="path" placeholder="Enter Pink Site Path to Promote" value="/sukamat/da-bacom-pink" @input=${(e) => this.validatePromoteDeletePath(e, 'promote')} />
+            <input type="text" class="path-input" name="path" placeholder="Enter Pink Site Path to Promote" @input=${(e) => this.validatePromoteDeletePath(e, 'promote')} />
             ${floodbox.renderClearButton()}
           </div>
           ${this._promoteIgnore === true ? html`
@@ -830,14 +830,14 @@ export default class MiloFloodgate extends LitElement {
           ` : nothing}
         ${this._selectedOption === 'fgDelete' ? html`
           <div class="input-row">
-            <input type="text" class="path-input" name="path" placeholder="Enter Pink Site Root Path to Delete" value="/sukamat/da-bacom-pink" @input=${(e) => this.validatePromoteDeletePath(e, 'delete')} />
+            <input type="text" class="path-input" name="path" placeholder="Enter Pink Site Root Path to Delete" @input=${(e) => this.validatePromoteDeletePath(e, 'delete')} />
             ${floodbox.renderClearButton()}
           </div>` : nothing}
           <div class="button-row">
             <select id="actionSelect" class="action-select" @change=${this.handleOptionChange}>
               <option value="fgCopy">Copy Content To Pink Tree</option>
               <option value="fgPromote">Promote Content From Pink Tree</option>
-              <option value="fgDelete">Delete Content From Pink Tree</option>
+              <option value="fgDelete">Delete Contents in Pink Tree</option>
             </select>
             ${this._selectedOption === 'fgCopy' ? html`
               ${!this._copyReady ? html`
