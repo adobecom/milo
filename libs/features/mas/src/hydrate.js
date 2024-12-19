@@ -1,3 +1,4 @@
+import { CheckoutButton } from './checkout-button.js';
 import { createTag } from './utils.js';
 
 const DEFAULT_BADGE_COLOR = '#000000';
@@ -134,31 +135,24 @@ function processDescription(fields, merchCard, descriptionConfig) {
 }
 
 function createSpectrumCssButton(cta, aemFragmentMapping, isOutline, variant) {
+    const CheckoutButton = customElements.get('checkout-button');
+    const spectrumCta = CheckoutButton.createCheckoutButton({}, cta.innerHTML);
+    for (const attr of cta.attributes) {
+      if (['class', 'is'].includes(attr.name)) continue;
+        spectrumCta.setAttribute(attr.name, attr.value);
+    }
+    spectrumCta.firstElementChild?.classList.add('spectrum-Button-label');
     const size = aemFragmentMapping.ctas.size ?? 'M';
     const variantClass = `spectrum-Button--${variant}`;
-    const treatmentClass = isOutline ? ' spectrum-Button--outline' : '';
-    cta.classList.add('spectrum-Button-label');
     const sizeClass = SPECTRUM_BUTTON_SIZES.includes(size)
-        ? ` spectrum-Button--size${size}`
-        : ' spectrum-Button--sizeM';
-    const spectrumClass = `spectrum-Button ${variantClass}${treatmentClass}${sizeClass}`;
-    const spectrumCta = createTag(
-        'button',
-        {
-            class: spectrumClass,
-            tabIndex: 0,
-        },
-        cta,
-    );
+        ? `spectrum-Button--size${size}`
+        : 'spectrum-Button--sizeM';
+    const spectrumClass = ['spectrum-Button', variantClass, sizeClass];
+    if (isOutline) {
+        spectrumClass.push('spectrum-Button--outline');
+    }
 
-    spectrumCta.addEventListener('click', (e) => {
-        if (e.target !== cta) {
-            /* c8 ignore next 3 */
-            e.stopPropagation();
-            cta.click();
-        }
-    });
-
+    spectrumCta.classList.add(...spectrumClass);
     return spectrumCta;
 }
 
@@ -256,11 +250,11 @@ export function processAnalytics(fields, merchCard) {
     if (!cardAnalyticsId) return;
     merchCard.setAttribute(ANALYTICS_SECTION_ATTR, cardAnalyticsId);
     merchCard
-        .querySelectorAll(`a[data-analytics-id]`)
-        .forEach((link, index) => {
-            link.setAttribute(
+        .querySelectorAll(`a[data-analytics-id],button[data-analytics-id]`)
+        .forEach((el, index) => {
+          el.setAttribute(
                 ANALYTICS_LINK_ATTR,
-                `${link.dataset.analyticsId}-${index + 1}`,
+                `${el.dataset.analyticsId}-${index + 1}`,
             );
         });
 }
