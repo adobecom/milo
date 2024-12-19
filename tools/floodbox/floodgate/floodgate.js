@@ -83,6 +83,7 @@ export default class MiloFloodgate extends LitElement {
     this._repoReady = false;
     this._selectedOption = 'fgCopy';
     this._floodgateConfig = {};
+    this._showDialog = false;
 
     this.tabUiCopy = [
       { id: 'find', title: 'Find' },
@@ -459,8 +460,7 @@ export default class MiloFloodgate extends LitElement {
     this._pinkSiteDeleted = true;
   }
 
-  async handleDelete(event) {
-    event.preventDefault();
+  async handleDelete() {
     const { org, repo } = this.getOrgRepo();
     if (!this._canDelete || !repo?.endsWith('-pink')) {
       return;
@@ -486,6 +486,24 @@ export default class MiloFloodgate extends LitElement {
 
     // #4 - Done
     floodbox.updateTabUi(this, 'done', 100);
+    this.requestUpdate();
+  }
+
+  handleDeleteClick(event) {
+    event.preventDefault();
+    this._showDialog = true;
+    this.requestUpdate();
+  }
+
+  handleConfirm() {
+    this._showDialog = false;
+    this.requestUpdate();
+    this.handleDelete();
+  }
+
+  handleCancel(event) {
+    event.preventDefault();
+    this._showDialog = false;
     this.requestUpdate();
   }
 
@@ -841,7 +859,17 @@ export default class MiloFloodgate extends LitElement {
               <button class="accent" .disabled=${!this._canPromote} @click=${this.handlePromote}>Promote</button>
             ` : nothing}
             ${this._selectedOption === 'fgDelete' ? html`
-              <button class="accent" .disabled=${!this._canDelete} @click=${this.handleDelete}>Delete</button>
+              <button class="accent" .disabled=${!this._canDelete} @click="${this.handleDeleteClick}">Delete</button>
+                ${this._showDialog ? html`
+                  <div class="dialog-overlay">
+                    <div class="dialog-box">
+                      <p>Are you sure you want to delete all the files in <b>${this._floodgateRepo}</b>?</p>
+                      <div class="dialog-buttons">
+                        <button class="accent" @click="${this.handleCancel}" autofocus>Cancel</button>
+                        <button class="confirm-btn" @click="${this.handleConfirm}">Delete</button>
+                      </div>
+                    </div>
+                  </div>` : nothing}
             ` : nothing}
           </div>
           <div class="repo-row">
