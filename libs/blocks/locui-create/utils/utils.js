@@ -88,7 +88,7 @@ export function setSelectedLocalesAndRegions() {
     const { livecopies } = localeByLanguage[language] || {};
     const livecopiesArr = [];
     if (livecopies) {
-      livecopiesArr.push(...livecopies.split(''));
+      livecopiesArr.push(...livecopies.split(','));
     }
     if (locales.length > 0) {
       locales.forEach((locale) => {
