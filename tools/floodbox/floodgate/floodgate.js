@@ -510,6 +510,7 @@ export default class MiloFloodgate extends LitElement {
 
   handleOptionChange(event) {
     this._selectedOption = event.target.value;
+    this._repoReady = false;
     this.requestUpdate();
   }
 
