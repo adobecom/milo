@@ -199,13 +199,12 @@ export class MasElement {
                         // Update CSS 
                         this.update();
                     }
-                    // notify observers/listeners
-                    this.notify();
                 } catch (error) {
                     log.error(`Failed to render mas-element: `, error);
                     this.toggleFailed(this.version, error, options);
-                    this.notify();
                 }
+                // notify observers/listeners
+                this.notify();
             }
         });
     }
