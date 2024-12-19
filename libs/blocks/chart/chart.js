@@ -393,6 +393,14 @@ export const getChartOptions = ({
       enabled: true,
       label: {
         general: { withTitle: 'This is a chart' },
+        series: {
+          maxCount: 1,
+          multiple:
+          {
+            prefix: '. It consists of {seriesCount} series count ',
+            withName: `with series ${dimensions.join(', ')}. `,
+          },
+        },
         data: { separator: { middle: `${yUnits}, `, end: yUnits } },
       },
     },
