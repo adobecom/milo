@@ -1,5 +1,5 @@
 import { expect } from '@esm-bundle/chai';
-import validatePaths from '../../../../tools/floodbox/floodgate/utils.js';
+import { validatePaths } from '../../../../tools/floodbox/floodgate/utils.js';
 
 describe('validatePaths', () => {
   it('returns valid true with correct org and repo for valid paths', () => {

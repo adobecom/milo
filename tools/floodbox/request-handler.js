@@ -37,6 +37,22 @@ class RequestHandler {
     return status;
   }
 
+  /**
+   * Deletes the content at the specified path
+   * @param filePath Path of the content to be deleted
+   * @returns Object containing status code, file path and error message if any
+   */
+  async deleteContent(filePath) {
+    const opts = { method: 'DELETE' };
+    const resp = await this.daFetch(`${DA_ORIGIN}/source${filePath}`, opts);
+    if (!resp.ok) {
+      // eslint-disable-next-line no-console
+      console.error(`Failed to delete content for ${filePath} :: ${resp.status}`);
+      return { statusCode: resp.status, filePath, errorMsg: 'Failed to delete file' };
+    }
+    return { statusCode: resp.status, filePath };
+  }
+
   static #getFileType(type) {
     return SUPPORTED_FILES[type] || 'application/octet-stream';
   }

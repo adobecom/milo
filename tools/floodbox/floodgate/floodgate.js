@@ -11,6 +11,7 @@ import copyFiles from './fg-copy.js';
 import findFragmentsAndAssets from '../references.js';
 import { validatePaths, getValidFloodgate } from './utils.js';
 import * as floodbox from '../floodbox.js';
+import RequestHandler from '../request-handler.js';
 
 const ICONS = [
   'https://da.live/nx/public/icons/Smock_Close_18_N.svg',
@@ -32,13 +33,17 @@ export default class MiloFloodgate extends LitElement {
     this._pinkSitePath = '';
     this._canCopyPaths = false;
     this._canPromote = false;
+    this._canDelete = false;
     this._tabUiStart = false;
     this._promoteIgnore = false;
     this._publish = false;
     this._startCrawlPink = false;
     this._startPromote = false;
     this._startCopy = false;
+    this._startUnpublish = false;
+    this._startDelete = false;
     this._pinkContentPromoted = false;
+    this._pinkSiteDeleted = false;
     this._copiedToPink = false;
     this._invalidInput = false;
     this._startPreview = false;
@@ -63,14 +68,22 @@ export default class MiloFloodgate extends LitElement {
     this._previewErrorList = [];
     this._publishedFilesCount = 0;
     this._publishErrorList = [];
+    this._unpublishFilesCount = 0;
+    this._unpublishErrorList = [];
+    this._deleteErrorList = [];
     this._crawledFiles = [];
+    this._deletedFilesCount = 0;
+    this._crawledFilesCount = 0;
     this._crawlDuration = 0;
     this._promoteDuration = 0;
     this._previewDuration = 0;
     this._publishDuration = 0;
+    this._unpublishDuration = 0;
+    this._deleteDuration = 0;
     this._repoReady = false;
     this._selectedOption = 'fgCopy';
     this._floodgateConfig = {};
+    this._showDialog = false;
 
     this.tabUiCopy = [
       { id: 'find', title: 'Find' },
@@ -83,6 +96,13 @@ export default class MiloFloodgate extends LitElement {
       { id: 'crawl', title: 'Crawl' },
       { id: 'promote', title: 'Promote' },
       { id: 'preview', title: 'Preview' },
+      { id: 'done', title: 'Done' },
+    ];
+
+    this.tabUiDelete = [
+      { id: 'crawl', title: 'Crawl' },
+      { id: 'unpublish', title: 'Unpublish' },
+      { id: 'delete', title: 'Delete' },
       { id: 'done', title: 'Done' },
     ];
   }
@@ -105,6 +125,7 @@ export default class MiloFloodgate extends LitElement {
       crawlType: 'floodgate',
       isDraftsOnly: this._floodgateConfig.isPromoteDraftsOnly,
       callback: () => {
+        this._crawledFilesCount += 1;
         this.requestUpdate();
       },
     });
@@ -374,6 +395,124 @@ export default class MiloFloodgate extends LitElement {
     this.requestUpdate();
   }
 
+  async startCrawlPinkSiteForDelete() {
+    const { results, getDuration } = crawl({
+      path: this._pinkSitePath,
+      accessToken: this.token,
+      crawlType: 'floodgate',
+      isDraftsOnly: false,
+      callback: () => {
+        this._crawledFilesCount += 1;
+        this.requestUpdate();
+      },
+    });
+    this._crawledFiles = await results;
+    this._crawlDuration = getDuration();
+    this._startUnpublish = true;
+    this.requestUpdate();
+  }
+
+  async startUnpublish(org, repo, paths) {
+    if (!org || !repo || !repo.endsWith('-pink')) {
+      // eslint-disable-next-line no-console
+      console.log('Invalid org or repo. Stop unpublish operation.');
+      return;
+    }
+    const startTime = Date.now();
+    await previewOrPublishPaths({
+      org,
+      repo,
+      paths,
+      action: 'live',
+      isDelete: true,
+      callback: (status) => {
+        // eslint-disable-next-line no-console
+        console.log(`${status.statusCode} :: ${status.aemUrl}`);
+        // eslint-disable-next-line chai-friendly/no-unused-expressions
+        if (SUCCESS_CODES.includes(status.statusCode)) {
+          this._unpublishFilesCount += 1;
+        } else {
+          this._unpublishErrorList.push({ href: status.aemUrl, status: status.statusCode });
+        }
+        this.requestUpdate();
+      },
+    });
+    this._unpublishDuration = Math.round((Date.now() - startTime) / 1000);
+    this._startDelete = true;
+    this.requestUpdate();
+  }
+
+  async startDelete(org, repo, paths) {
+    if (!org || !repo || !repo.endsWith('-pink')) {
+      // eslint-disable-next-line no-console
+      console.log('Invalid org or repo. Stopping delete operation.');
+      return;
+    }
+    const startTime = Date.now();
+    const reqHandler = new RequestHandler(this.token);
+    for (const path of paths) {
+      const resp = await reqHandler.deleteContent(path);
+      // eslint-disable-next-line no-console
+      console.log(`${resp.statusCode} :: ${resp.filePath}`);
+      // eslint-disable-next-line chai-friendly/no-unused-expressions
+      if (SUCCESS_CODES.includes(resp.statusCode)) {
+        this._deletedFilesCount += 1;
+      } else {
+        this._deleteErrorList.push({ href: resp.filePath, status: resp.statusCode });
+      }
+      this.requestUpdate();
+    }
+    this._deleteDuration = Math.round((Date.now() - startTime) / 1000);
+    this._pinkSiteDeleted = true;
+  }
+
+  async handleDelete() {
+    const { org, repo } = this.getOrgRepo();
+    if (!this._canDelete || !repo?.endsWith('-pink')) {
+      return;
+    }
+    this._tabUiStart = true;
+    this.requestUpdate();
+
+    // #1 - Start Crawl Pink Site
+    this._startCrawlPink = true;
+    floodbox.updateTabUi(this, 'crawl', 100);
+    await this.startCrawlPinkSiteForDelete();
+
+    // #2 - Unpublish Crawled files
+    this._startUnpublish = true;
+    const paths = this._crawledFiles.map((file) => file.path);
+    floodbox.updateTabUi(this, 'unpublish', 100);
+    await this.startUnpublish(org, repo, paths);
+
+    // #3 - Delete Pink Site
+    this._startDelete = true;
+    floodbox.updateTabUi(this, 'delete', 100);
+    await this.startDelete(org, repo, paths);
+
+    // #4 - Done
+    floodbox.updateTabUi(this, 'done', 100);
+    this.requestUpdate();
+  }
+
+  handleDeleteClick(event) {
+    event.preventDefault();
+    this._showDialog = true;
+    this.requestUpdate();
+  }
+
+  handleConfirm() {
+    this._showDialog = false;
+    this.requestUpdate();
+    this.handleDelete();
+  }
+
+  handleCancel(event) {
+    event.preventDefault();
+    this._showDialog = false;
+    this.requestUpdate();
+  }
+
   togglePromoteIgnore(event) {
     this._promoteIgnore = event.target.checked;
     this.requestUpdate();
@@ -395,6 +534,7 @@ export default class MiloFloodgate extends LitElement {
 
   handleOptionChange(event) {
     this._selectedOption = event.target.value;
+    this._repoReady = false;
     this.requestUpdate();
   }
 
@@ -404,6 +544,7 @@ export default class MiloFloodgate extends LitElement {
     field.value = '';
     this._canCopyPaths = false;
     this._canPromote = false;
+    this._canDelete = false;
     this._promoteIgnore = false;
     this._pinkSitePath = '';
     this.requestUpdate();
@@ -419,22 +560,26 @@ export default class MiloFloodgate extends LitElement {
     this.requestUpdate();
   }
 
-  async validatePromotePath(event) {
+  async validatePromoteDeletePath(event, actionType) {
     const path = event.target.value.trim();
     // eslint-disable-next-line no-useless-escape
     const pathRegex = /^\/[^\/]+\/[^\/]+-pink$/;
     const valid = pathRegex.test(path);
     this._canPromote = false;
+    this._canDelete = false;
     this._pinkSitePath = '';
     if (valid) {
       const { org, repo } = this.getOrgRepo();
       this._floodgateConfig = new FloodgateConfig(org, repo, this.token);
       await this._floodgateConfig.getConfig();
-      if (this._floodgateConfig.isPromoteEnabled === true) {
+      this._sourceRepo = `${repo}`.replace('-pink', '');
+      this._floodgateRepo = `${repo}`;
+      if (actionType === 'promote' && this._floodgateConfig.isPromoteEnabled === true) {
         this._canPromote = true;
         this._pinkSitePath = path;
-        this._sourceRepo = `${repo}`.replace('-pink', '');
-        this._floodgateRepo = `${repo}`;
+      } else if (actionType === 'delete' && this._floodgateConfig.isDeleteEnabled === true) {
+        this._canDelete = true;
+        this._pinkSitePath = path;
       }
     }
     this._repoReady = valid;
@@ -455,6 +600,9 @@ export default class MiloFloodgate extends LitElement {
         ` : nothing}
         ${this._selectedOption === 'fgPromote' ? html`
           <p>Floodgated files have been promoted and previewed / published.</p>
+        ` : nothing}
+        ${this._selectedOption === 'fgDelete' ? html`
+          <p>Pink site content has been deleted.</p>
         ` : nothing}
         <button class="accent" @click=${() => this.resetApp()}>Reset</button>
       </div>
@@ -528,9 +676,9 @@ export default class MiloFloodgate extends LitElement {
     return html`
       <div class="tab-step active" data-id="crawl">
         <h3>Crawl Pink Site</h3>
-        <p>Crawling "${this._pinkSitePath}" to promote... </p>
+        <p>Crawling "${this._pinkSitePath}"... </p>
         <div class="detail-cards crawl-cards">
-          ${floodbox.renderBadge('Files', this._crawledFiles.length)}
+          ${floodbox.renderBadge('Files', this._crawledFilesCount)}
         </div>
         <p>Duration: ~${this._crawlDuration} seconds</p>
       </div>
@@ -589,6 +737,44 @@ export default class MiloFloodgate extends LitElement {
     `;
   }
 
+  renderUnpublishInfo() {
+    return html`
+      <div class="tab-step" data-id="unpublish">
+        <h3>Unpublish Pink Site Content</h3>
+        <p>Unpublishing content in "${this._pinkSitePath}"... </p>
+        <div class="detail-cards unpublish-cards">
+          ${floodbox.renderBadge('Remaining', this._crawledFiles.length - this._unpublishErrorList.length)}
+          ${floodbox.renderBadge('Unpublish Errors', this._unpublishErrorList.length, true)}
+          ${floodbox.renderBadge('Success', this._unpublishFilesCount)}
+          ${floodbox.renderBadge('Total', this._unpublishFilesCount + this._unpublishErrorList.length)}
+        </div>
+        <div class="detail-lists">
+          ${floodbox.renderList('Unpublish Errors', this._unpublishErrorList)}
+        </div>
+        <p>Duration: ~${this._unpublishDuration} seconds</p>
+      </div>
+    `;
+  }
+
+  renderDeleteInfo() {
+    return html`
+      <div class="tab-step" data-id="delete">
+        <h3>Delete Pink Site Content</h3>
+        <p>Deleting content in "${this._pinkSitePath}"... </p>
+        <div class="detail-cards delete-cards">
+          ${floodbox.renderBadge('Remaining', this._crawledFiles.length - this._deleteErrorList.length)}
+          ${floodbox.renderBadge('Delete Errors', this._deleteErrorList.length, true)}
+          ${floodbox.renderBadge('Success', this._deletedFilesCount)}
+          ${floodbox.renderBadge('Total', this._deletedFilesCount + this._deleteErrorList.length)}
+        </div>
+        <div class="detail-lists">
+          ${floodbox.renderList('Delete Errors', this._deleteErrorList)}
+        </div>
+        <p>Duration: ~${this._deleteDuration} seconds</p>
+      </div>
+    `;
+  }
+
   renderTabUi() {
     return html`
       ${this._selectedOption === 'fgCopy' ? html`
@@ -610,6 +796,15 @@ export default class MiloFloodgate extends LitElement {
           ${this._pinkContentPromoted ? this.renderDone() : nothing}
         </div>
       ` : nothing}
+      ${this._selectedOption === 'fgDelete' ? html`
+        ${floodbox.renderTabNav(this, this.tabUiDelete)}
+        <div class="tabs">
+          ${this._startCrawlPink ? this.renderCrawlInfo() : nothing}
+          ${this._startUnpublish ? this.renderUnpublishInfo() : nothing}
+          ${this._startDelete ? this.renderDeleteInfo() : nothing}
+          ${this._pinkSiteDeleted ? this.renderDone() : nothing}
+        </div>
+      ` : nothing}
   `;
   }
 
@@ -625,7 +820,7 @@ export default class MiloFloodgate extends LitElement {
   render() {
     return html`
       <h1>Floodgate</h1>
-      <h3>Provides content administration options to perform pre/post Floodgate events.</h3>
+      <h3>Provides content administration options to perform pre-/post-Floodgate events.</h3>
       <form>    
         ${this._selectedOption === 'fgCopy' ? html`
           <div class="input-row">
@@ -635,7 +830,7 @@ export default class MiloFloodgate extends LitElement {
         ` : nothing}
         ${this._selectedOption === 'fgPromote' ? html`
           <div class="input-row">
-            <input type="text" class="path-input" name="path" placeholder="Enter Pink Site Path to Promote" value="/sukamat/da-bacom-pink" @input=${this.validatePromotePath} />
+            <input type="text" class="path-input" name="path" placeholder="Enter Pink Site Path to Promote" @input=${(e) => this.validatePromoteDeletePath(e, 'promote')} />
             ${floodbox.renderClearButton()}
           </div>
           ${this._promoteIgnore === true ? html`
@@ -645,10 +840,16 @@ export default class MiloFloodgate extends LitElement {
               ${floodbox.renderClearButton()}
             </div>` : nothing}
           ` : nothing}
+        ${this._selectedOption === 'fgDelete' ? html`
+          <div class="input-row">
+            <input type="text" class="path-input" name="path" placeholder="Enter Pink Site Root Path to Delete" @input=${(e) => this.validatePromoteDeletePath(e, 'delete')} />
+            ${floodbox.renderClearButton()}
+          </div>` : nothing}
           <div class="button-row">
             <select id="actionSelect" class="action-select" @change=${this.handleOptionChange}>
               <option value="fgCopy">Copy Content To Pink Tree</option>
               <option value="fgPromote">Promote Content From Pink Tree</option>
+              <option value="fgDelete">Delete Contents in Pink Tree</option>
             </select>
             ${this._selectedOption === 'fgCopy' ? html`
               ${!this._copyReady ? html`
@@ -668,6 +869,19 @@ export default class MiloFloodgate extends LitElement {
                 <label for="publish">Publish files after promote?</label>
               </div>
               <button class="accent" .disabled=${!this._canPromote} @click=${this.handlePromote}>Promote</button>
+            ` : nothing}
+            ${this._selectedOption === 'fgDelete' ? html`
+              <button class="accent" .disabled=${!this._canDelete} @click="${this.handleDeleteClick}">Delete</button>
+                ${this._showDialog ? html`
+                  <div class="dialog-overlay">
+                    <div class="dialog-box">
+                      <p>Are you sure you want to delete all the files in <b>${this._floodgateRepo}</b>?</p>
+                      <div class="dialog-buttons">
+                        <button class="accent" @click="${this.handleCancel}" autofocus>Cancel</button>
+                        <button class="confirm-btn" @click="${this.handleConfirm}">Delete</button>
+                      </div>
+                    </div>
+                  </div>` : nothing}
             ` : nothing}
           </div>
           <div class="repo-row">

@@ -52,4 +52,19 @@ describe('RequestHandler', () => {
     const response = await requestHandler.uploadContent('/path/to/file', 'content', 'pdf');
     expect(response.statusCode).to.equal(500);
   });
+
+  it('should delete content successfully', async () => {
+    fetchStub.resolves(new Response(null, { status: 204 }));
+    const response = await requestHandler.deleteContent('/path/to/file');
+    expect(response.statusCode).to.equal(204);
+    expect(response.filePath).to.equal('/path/to/file');
+  });
+
+  it('should fail to delete content with error status', async () => {
+    fetchStub.resolves(new Response(null, { status: 500 }));
+    const response = await requestHandler.deleteContent('/path/to/file');
+    expect(response.statusCode).to.equal(500);
+    expect(response.filePath).to.equal('/path/to/file');
+    expect(response.errorMsg).to.equal('Failed to delete file');
+  });
 });
