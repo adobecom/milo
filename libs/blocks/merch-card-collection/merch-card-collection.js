@@ -336,6 +336,5 @@ export default async function init(el) {
     'merch-card-collection-render:start',
   );
 
-  merchCardCollection.shadowRoot.getElementById('resultText')?.setAttribute('aria-live', 'polite');
   return merchCardCollection;
 }
