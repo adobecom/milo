@@ -151,7 +151,7 @@ async function loadHeading() {
   const editUrl = urlParams.get('referrer') || MOCK_REFERRER;
   const json = await getStatus('', editUrl);
   resourcePath = json.resourcePath;
-  previewPath = json.preview.url;
+  previewPath = json.preview.url.replace('.hlx.', '.aem.');
   const path = resourcePath.replace(/\.[^/.]+$/, '');
   const projectName = json.edit.name.split('.').shift().replace('-', ' ');
   heading.value = { name: projectName, editUrl: json.edit.url, path };
