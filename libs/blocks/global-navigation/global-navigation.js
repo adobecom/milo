@@ -41,6 +41,7 @@ import {
   getDisableAEDState,
   animateInSequence,
   transformTemplateToMobile,
+  closeAllTabs,
 } from './utilities/utilities.js';
 import { getFedsPlaceholderConfig } from '../../utils/federated.js';
 
@@ -996,24 +997,20 @@ class Gnav {
     const activeModifier = itemHasActiveLink ? ` ${selectors.activeNavItem.slice(1)}` : '';
 
     const makeTabActive = (popup) => {
-      const selectedTab = popup?.querySelector('.tabs [aria-selected="true"]');
-      if (!selectedTab) {
-        const { origin, pathname } = window.location;
-        const url = `${origin}${pathname}`;
-        setTimeout(() => {
-          const activeLink = [
-            ...popup.querySelectorAll('a:not([data-modal-hash])'),
-          ].find((el) => (el.href === url || el.href.startsWith(`${url}?`) || el.href.startsWith(`${url}#`)));
-          const tabIndex = activeLink ? +activeLink.parentNode.id : 0;
-          const selectTab = popup.querySelectorAll('.tab')[tabIndex];
-          selectTab?.click();
-          selectTab?.focus();
-        }, 100);
-      } else {
-        setTimeout(() => {
-          selectedTab.focus();
-        }, 100);
-      }
+      const tabbuttons = popup.querySelectorAll('.global-navigation .tabs button');
+      const tabpanels = popup.querySelectorAll('.global-navigation .tab-content [role="tabpanel"]');
+      closeAllTabs(tabbuttons, tabpanels);
+      const { origin, pathname } = window.location;
+      const url = `${origin}${pathname}`;
+      setTimeout(() => {
+        const activeLink = [
+          ...popup.querySelectorAll('a:not([data-modal-hash])'),
+        ].find((el) => (el.href === url || el.href.startsWith(`${url}?`) || el.href.startsWith(`${url}#`)));
+        const tabIndex = activeLink ? +activeLink.parentNode.id : 0;
+        const selectTab = popup.querySelectorAll('.tab')[tabIndex];
+        selectTab?.click();
+        selectTab?.focus();
+      }, 100);
     };
 
     // Copying dropdown contents to localNav items
