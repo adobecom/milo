@@ -69,10 +69,10 @@ export default class MiloFloodgate extends LitElement {
     this._publishedFilesCount = 0;
     this._publishErrorList = [];
     this._unpublishFilesCount = 0;
-    this._unpublishErrorCount = 0;
+    this._unpublishErrorList = [];
+    this._deleteErrorList = [];
     this._crawledFiles = [];
     this._deletedFilesCount = 0;
-    this._deletedErrorCount = 0;
     this._crawledFilesCount = 0;
     this._crawlDuration = 0;
     this._promoteDuration = 0;
@@ -429,8 +429,11 @@ export default class MiloFloodgate extends LitElement {
         // eslint-disable-next-line no-console
         console.log(`${status.statusCode} :: ${status.aemUrl}`);
         // eslint-disable-next-line chai-friendly/no-unused-expressions
-        SUCCESS_CODES.includes(status.statusCode) ? this._unpublishFilesCount += 1
-          : this._unpublishErrorCount += 1;
+        if (SUCCESS_CODES.includes(status.statusCode)) {
+          this._unpublishFilesCount += 1;
+        } else {
+          this._unpublishErrorList.push({ href: status.aemUrl, status: status.statusCode });
+        }
         this.requestUpdate();
       },
     });
@@ -452,8 +455,11 @@ export default class MiloFloodgate extends LitElement {
       // eslint-disable-next-line no-console
       console.log(`${resp.statusCode} :: ${resp.filePath}`);
       // eslint-disable-next-line chai-friendly/no-unused-expressions
-      SUCCESS_CODES.includes(resp.statusCode) ? this._deletedFilesCount += 1
-        : this._deletedErrorCount += 1;
+      if (SUCCESS_CODES.includes(resp.statusCode)) {
+        this._deletedFilesCount += 1;
+      } else {
+        this._deleteErrorList.push({ href: resp.filePath, status: resp.statusCode });
+      }
       this.requestUpdate();
     }
     this._deleteDuration = Math.round((Date.now() - startTime) / 1000);
@@ -737,10 +743,13 @@ export default class MiloFloodgate extends LitElement {
         <h3>Unpublish Pink Site Content</h3>
         <p>Unpublishing content in "${this._pinkSitePath}"... </p>
         <div class="detail-cards unpublish-cards">
-          ${floodbox.renderBadge('Remaining', this._crawledFiles.length - this._unpublishFilesCount)}
-          ${floodbox.renderBadge('Unpublish Errors', this._unpublishErrorCount, true)}
+          ${floodbox.renderBadge('Remaining', this._crawledFiles.length - this._unpublishErrorList.length)}
+          ${floodbox.renderBadge('Unpublish Errors', this._unpublishErrorList.length, true)}
           ${floodbox.renderBadge('Success', this._unpublishFilesCount)}
-          ${floodbox.renderBadge('Total', this._unpublishFilesCount + this._unpublishErrorCount)}
+          ${floodbox.renderBadge('Total', this._unpublishFilesCount + this._unpublishErrorList.length)}
+        </div>
+        <div class="detail-lists">
+          ${floodbox.renderList('Unpublish Errors', this._unpublishErrorList)}
         </div>
         <p>Duration: ~${this._unpublishDuration} seconds</p>
       </div>
@@ -753,10 +762,13 @@ export default class MiloFloodgate extends LitElement {
         <h3>Delete Pink Site Content</h3>
         <p>Deleting content in "${this._pinkSitePath}"... </p>
         <div class="detail-cards delete-cards">
-          ${floodbox.renderBadge('Remaining', this._crawledFiles.length - this._deletedFilesCount)}
-          ${floodbox.renderBadge('Delete Errors', this._deletedErrorCount, true)}
+          ${floodbox.renderBadge('Remaining', this._crawledFiles.length - this._deleteErrorList.length)}
+          ${floodbox.renderBadge('Delete Errors', this._deleteErrorList.length, true)}
           ${floodbox.renderBadge('Success', this._deletedFilesCount)}
-          ${floodbox.renderBadge('Total', this._deletedFilesCount + this._deletedErrorCount)}
+          ${floodbox.renderBadge('Total', this._deletedFilesCount + this._deleteErrorList.length)}
+        </div>
+        <div class="detail-lists">
+          ${floodbox.renderList('Delete Errors', this._deleteErrorList)}
         </div>
         <p>Duration: ~${this._deleteDuration} seconds</p>
       </div>
