@@ -1048,6 +1048,10 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
   color: var(--feds-color-link-breadcrumbs);
 }
 
+header.new-nav .feds-navLink--blue .feds-navLink-title {
+  font-weight: 400;
+}
+
 /* local-nav */
 
 .feds-localnav {
