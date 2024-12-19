@@ -135,6 +135,7 @@ select {
 .detail-card-remaining,
 .detail-card-fragments-assets {
   background: rgb(202 248 250);
+  width: 180px;
 }
 
 .detail-card-total,
@@ -147,6 +148,8 @@ select {
 .detail-card-preview-errors,
 .detail-card-publish-errors,
 .detail-card-copy-errors,
+.detail-card-delete-errors,
+.detail-card-unpublish-errors,
 .url-list.url-list-promote-errors,
 .url-list.url-list-preview-errors,
 .url-list.url-list-publish-errors,
