@@ -1,6 +1,6 @@
 import getServiceConfig from '../../../utils/service-config.js';
 import { origin } from '../../locui/utils/franklin.js';
-import { env } from '../store.js';
+import { env, locSelected, locales as stLocales, project as stProject } from '../store.js';
 
 export function getTenantName() {
   try {
@@ -72,4 +72,31 @@ export async function getMilocUrl() {
 export function getEnvQueryParam() {
   const urlSearchParams = new URLSearchParams(window.location.search);
   return urlSearchParams.get('env') ?? 'local';
+}
+
+export function setSelectedLocalesAndRegions() {
+  const { languages } = stProject.value;
+  const localeByLanguage = stLocales.value.reduce((acc, curr) => {
+    const { language } = curr;
+    acc[language] = curr;
+    return acc;
+  }, {});
+  const selectedLocale = [];
+  const activeLocales = {};
+  languages.forEach((loc) => {
+    const { language, locales } = loc;
+    const { livecopies = '' } = localeByLanguage[language] || {};
+    if (locales.length > 0) {
+      locales.forEach((locale) => {
+        activeLocales[locale] = language;
+      });
+    } else {
+      livecopies.split(',').forEach((liveCopy) => {
+        activeLocales[liveCopy] = language;
+      });
+    }
+    selectedLocale.push(...livecopies.split(','));
+  });
+  selectedLocale.sort((a, b) => a.localeCompare(b));
+  locSelected.value = { selectedLocale, activeLocales };
 }
