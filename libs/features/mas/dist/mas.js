@@ -1571,6 +1571,11 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
         display: -webkit-box;
         -webkit-line-clamp: 3;
         -webkit-box-orient: vertical;
+        display: -moz-box;
+        -moz-box-orient: vertical;
+        line-clamp: 3;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
         margin-bottom: 12px;
         box-sizing: border-box;
         color: var(--merch-card-ah-pricing-widget-text-color);

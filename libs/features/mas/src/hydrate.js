@@ -83,9 +83,10 @@ export function processSubtitle(fields, merchCard, subtitleConfig) {
 }
 
 export function processBackgroundColor(fields, merchCard, allowedColors) {
-    if (allowedColors?.includes(fields.backgroundColor)) {
-        merchCard.setAttribute('background-color', fields.backgroundColor);
+    if (!allowedColors?.includes(fields.backgroundColor)) {
+        return;
     }
+    merchCard.setAttribute('background-color', fields.backgroundColor);
 }
 
 export function processBackgroundImage(
