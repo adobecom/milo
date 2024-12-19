@@ -458,7 +458,7 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
           class="tab"
           aria-selected="false"
           aria-controls="${i}"
-          ${daallTab ? `daa-ll="${daallTab}"` : ''}
+          ${daallTab ? `daa-ll="${daallTab}|click"` : ''}
         >${name}</button>
       `).join('')}
     </div>

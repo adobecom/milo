@@ -386,7 +386,7 @@ class Gnav {
       localNav = toFragment`<div class="feds-localnav"/>`;
       this.block.after(localNav);
     }
-    localNav.append(toFragment`<button class="feds-navLink--hoverCaret feds-localnav-title" aria-haspopup="true" aria-expanded="false" daa-ll="${title}_localNav"></button>`, toFragment` <div class="feds-localnav-curtain"></div>`, toFragment` <div class="feds-localnav-items"></div>`, toFragment`<a href="#" class="feds-sr-only feds-localnav-exit">.</a>`);
+    localNav.append(toFragment`<button class="feds-navLink--hoverCaret feds-localnav-title" aria-haspopup="true" aria-expanded="false" daa-ll="${title}_localNav|open"></button>`, toFragment` <div class="feds-localnav-curtain"></div>`, toFragment` <div class="feds-localnav-items"></div>`, toFragment`<a href="#" class="feds-sr-only feds-localnav-exit">.</a>`);
 
     const itemWrapper = localNav.querySelector('.feds-localnav-items');
     const titleLabel = await replaceKey('overview', getFedsPlaceholderConfig());
@@ -408,6 +408,7 @@ class Gnav {
       document.body.classList.toggle('disable-scroll');
       const isActive = localNav.classList.contains('feds-localnav--active');
       localNav.querySelector('.feds-localnav-title').setAttribute('aria-expanded', isActive);
+      localNav.querySelector('.feds-localnav-title').setAttribute('daa-ll', `${title}_localNav|${isActive ? 'close' : 'open'}`);
     });
 
     localNav.querySelector('.feds-localnav-curtain').addEventListener('click', (e) => {
@@ -1001,10 +1002,22 @@ class Gnav {
         ].find((el) => (el.href === url || el.href.startsWith(`${url}?`) || el.href.startsWith(`${url}#`)));
         const tabIndex = activeLink ? +activeLink.parentNode.id : 0;
         const selectTab = popup.querySelectorAll('.tab')[tabIndex];
+        const daallTab = selectTab.getAttribute('daa-ll');
+        selectTab.setAttribute('daa-ll', `${daallTab.replace('click', 'open')}`);
         selectTab?.click();
+        selectTab.setAttribute('daa-ll', `${daallTab.replace('open', 'click')}`);
         selectTab?.focus();
       }, 100);
     };
+
+    function observeDropdown(dropdownTrigger) {
+      const observer = new MutationObserver(() => {
+        const isExpanded = dropdownTrigger.getAttribute('aria-expanded') === 'true';
+        const analyticsValue = `header|${isExpanded ? 'Close' : 'Open'}`;
+        dropdownTrigger.setAttribute('daa-lh', analyticsValue);
+      });
+      observer.observe(dropdownTrigger, { attributeFilter: ['aria-expanded'] });
+    }
 
     // Copying dropdown contents to localNav items
     const decorateLocalNavItems = (navItem, template) => {
@@ -1013,10 +1026,13 @@ class Gnav {
       );
       if (elements) {
         elements.innerHTML = template.innerHTML;
-        // Reattach click events, as cloned elem don't retain event listeners
+        // Reattach click events & mutation observers, as cloned elem don't retain event listeners
         elements.querySelector('.feds-localnav-items button')?.addEventListener('click', (e) => {
           trigger({ element: e.currentTarget, event: e, type: 'localNavItem' });
         });
+
+        const dropdownTrigger = elements.querySelector('.feds-localnav-items button[aria-expanded]');
+        if (dropdownTrigger) observeDropdown(dropdownTrigger);
 
         elements.querySelectorAll('.feds-menu-headline').forEach((elem) => {
           // Reattach click event listener to headlines
@@ -1092,8 +1108,9 @@ class Gnav {
         const isSectionMenu = item.closest('.section') instanceof HTMLElement;
         const tag = isSectionMenu ? 'section' : 'div';
         const sectionModifier = isSectionMenu ? ' feds-navItem--section' : '';
+        const sectionDaaLh = isSectionMenu ? ` daa-lh='${getAnalyticsValue(item.textContent)}'` : '';
         const triggerTemplate = toFragment`
-          <${tag} class="feds-navItem${sectionModifier}${activeModifier}">
+          <${tag} class="feds-navItem${sectionModifier}${activeModifier}" ${sectionDaaLh}>
             ${dropdownTrigger}
           </${tag}>`;
 
@@ -1108,12 +1125,7 @@ class Gnav {
         });
 
         // Update analytics value when dropdown is expanded/collapsed
-        const observer = new MutationObserver(() => {
-          const isExpanded = dropdownTrigger.getAttribute('aria-expanded') === 'true';
-          const analyticsValue = `header|${isExpanded ? 'Close' : 'Open'}`;
-          dropdownTrigger.setAttribute('daa-lh', analyticsValue);
-        });
-        observer.observe(dropdownTrigger, { attributeFilter: ['aria-expanded'] });
+        observeDropdown(dropdownTrigger);
 
         delayDropdownDecoration({ template: triggerTemplate });
         return addMepHighlightAndTargetId(triggerTemplate, item);
