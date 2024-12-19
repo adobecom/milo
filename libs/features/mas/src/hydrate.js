@@ -137,6 +137,7 @@ function processDescription(fields, merchCard, descriptionConfig) {
 function createSpectrumCssButton(cta, aemFragmentMapping, isOutline, variant) {
     const CheckoutButton = customElements.get('checkout-button');
     const spectrumCta = CheckoutButton.createCheckoutButton({}, cta.innerHTML);
+    spectrumCta.setAttribute('tabindex', 0);
     for (const attr of cta.attributes) {
       if (['class', 'is'].includes(attr.name)) continue;
         spectrumCta.setAttribute(attr.name, attr.value);
