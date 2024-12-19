@@ -548,11 +548,11 @@ export default class MiloFloodgate extends LitElement {
       const { org, repo } = this.getOrgRepo();
       this._floodgateConfig = new FloodgateConfig(org, repo, this.token);
       await this._floodgateConfig.getConfig();
+      this._sourceRepo = `${repo}`.replace('-pink', '');
+      this._floodgateRepo = `${repo}`;
       if (actionType === 'promote' && this._floodgateConfig.isPromoteEnabled === true) {
         this._canPromote = true;
         this._pinkSitePath = path;
-        this._sourceRepo = `${repo}`.replace('-pink', '');
-        this._floodgateRepo = `${repo}`;
       } else if (actionType === 'delete' && this._floodgateConfig.isDeleteEnabled === true) {
         this._canDelete = true;
         this._pinkSitePath = path;
