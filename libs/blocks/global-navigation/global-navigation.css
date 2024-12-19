@@ -1010,6 +1010,10 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds
   white-space: break-spaces;
 }
 
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds-navLink--blue .feds-navLink-title {
+  font-weight: 400;
+}
+
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds-navLink-description {
   display: inline-block;
   font-weight: 400;
@@ -1029,6 +1033,7 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .sticky-cta {
 header.new-nav .feds-nav > section.feds-navItem.feds-dropdown--active > .feds-popup .sticky-cta a {
   width: 320px;
   height: 39px;
+  border-radius: 50px;
 }
 
 /* breadcrumbs new nav*/

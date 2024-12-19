@@ -407,6 +407,11 @@ export const [setUserProfile, getUserProfile] = (() => {
   ];
 })();
 
+export const closeAllTabs = (tabs, tabpanels) => {
+  tabpanels.forEach((t) => t.setAttribute('hidden', 'true'));
+  tabs.forEach((t) => t.setAttribute('aria-selected', 'false'));
+};
+
 export const transformTemplateToMobile = async (popup, item, localnav = false) => {
   const notMegaMenu = popup.parentElement.tagName === 'DIV';
   const originalContent = popup.innerHTML;
@@ -485,10 +490,8 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
 
   tabbuttons.forEach((tab, i) => {
     tab.addEventListener('click', () => {
-      tabpanels.forEach((t) => t.setAttribute('hidden', 'true'));
+      closeAllTabs(tabbuttons, tabpanels);
       tabpanels?.[i]?.removeAttribute('hidden');
-
-      tabbuttons.forEach((t) => t.setAttribute('aria-selected', 'false'));
       tab.setAttribute('aria-selected', 'true');
     });
   });
