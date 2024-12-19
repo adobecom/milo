@@ -7,6 +7,7 @@
     const start = performance.now();
     window.commercePromise = new Promise((resolve) => {
       document.addEventListener('wcms:commerce:ready', () => {
+        //we measure the time it takes to load the commerce bundle and store it in a global variable
         const end = performance.now();
         window.initTime = end - start;
         console.log(`Commerce loaded in ${window.initTime}ms`);
@@ -57,6 +58,9 @@
     let limit = parseFloat(container.getAttribute('data-benchmark-limit')); 
     const adjust = new URL(window.location.href).searchParams.get('adjust') === 'true';
     if (adjust) {
+      //if adjust is set to true, we adjust the limit based on the stored initTime and
+      //reference time of 82ms it took on a quick network. This way, we should not be
+      //affected by network speed when comparing benchmarks to limit.
       const referentInitialTime = 82.0;
       const previousLimit = limit;
       if (referentInitialTime < window.initTime) {
@@ -90,8 +94,20 @@
 </script>
 
 <body>
+  <div class="sidenav">
+    <a href="/libs/features/mas/docs/mas.html">Home</a>
+    <a href="/libs/features/mas/docs/mas.js.html">mas.js</a>
+    <a href="/libs/features/mas/docs/checkout-link.html">Checkout Link</a>
+    <a href="/libs/features/mas/docs/inline-price.html">Inline Price</a>
+    <a href="/libs/features/mas/docs/merch-card.html">Merch Card</a>
+    <a href="/libs/features/mas/docs/ccd.html">CCD Gallery</a>
+    <a href="/libs/features/mas/docs/benchmarks.html">Benchmarks</a>
+</div>
   <main>
     <sp-theme color="light" scale="medium"> 
+      <p>
+        Marked as green if below each container limit, red otherwise. If you are running this page under a slow network, <a href="/libs/features/mas/docs/benchmarks.html?adjust=true">you can adjust the limit by adding <code>?adjust=true</code> to the URL.</a>
+      </p>
       <div class="gallery-content">
         <h1 id="ccd-cards" tabindex="-1">CCD cards benchmark<a class="header-cards" href="#ccd-cards" href="#ccd-cards" title="Permalink to this heading">#</a></h1>
         <div class="gallery-grid-3 ccd-cards"         

@@ -1,7 +1,7 @@
 import '../../../deps/custom-elements.js';
-import '../../../features/spectrum-web-components/dist/theme.js';
+import '../../spectrum-web-components/dist/theme.js';
 import '../../spectrum-web-components/dist/action-button.js';
-import '../../../features/spectrum-web-components/dist/button.js';
+import '../../spectrum-web-components/dist/button.js';
 const init = () => {
   const ENVS = {
     qa: 'qa-odin',
@@ -34,7 +34,6 @@ const init = () => {
   });
   masCommerceService.setAttribute('host-env', 'prod');
   masCommerceService.setAttribute('lana-tags', 'ccd');
-  masCommerceService.setAttribute('lana-sample-rate', '100'); // optional, default value is set to '1'
   document.head.appendChild(masCommerceService);
 }
 export { init };
