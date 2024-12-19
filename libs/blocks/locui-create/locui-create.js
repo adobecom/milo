@@ -15,7 +15,7 @@ import InputActions from './input-actions/view.js';
 import Header from '../milostudio-header/milostudio-header.js';
 import Sidenav from '../milostudio-sidenav/sidenav.js';
 import { getConfig, loadStyle } from '../../utils/utils.js';
-import { getEnvQueryParam } from './utils/utils.js';
+import { getEnvQueryParam, setSelectedLocalesAndRegions } from './utils/utils.js';
 import Toast from './components/toast.js';
 
 function Create() {
@@ -40,6 +40,7 @@ function Create() {
               type: 'info',
               message: `Project ${project.value.name} fetched succesfully.`,
             });
+            setSelectedLocalesAndRegions();
           }
         }
       } catch (error) {

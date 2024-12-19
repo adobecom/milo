@@ -206,6 +206,7 @@ export async function fetchDraftProject(projectKey) {
         editBehavior: resJson.settings?.regionalEditBehaviour,
         urls: resJson.urls,
         fragments: [],
+        languages: resJson?.languages ?? [],
       });
       projectInfo.value = {
         ...projectInfo.value,

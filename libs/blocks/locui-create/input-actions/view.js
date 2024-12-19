@@ -34,13 +34,13 @@ function TranslateActions({ languageCount, handleActionSelect, handleWorkflowSel
                 </td>
                 <td>
                   <select
-                    value=${entry.workflow || 'default'}
+                    value=${entry.workflow || ''}
                     class="form-field-select"
                     onChange=${(e) => handleWorkflowSelect(e, entry)}
                     name="wf-type"
                     id="wf-type"
                   >
-                    <option value="default">Default</option>
+                    <option value="">Default</option>
                     <option value="HybridMT">HybridMT</option>
                     <option value="Standard">Standard</option>
                   </select>
