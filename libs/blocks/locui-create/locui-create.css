@@ -7,6 +7,10 @@
   padding: 10px 30px 30px;
 }
 
+.locui-create .goto-step ul {
+  list-style-type: disc;
+}
+
 .locui-create .goto-step p {
   margin: 0;
 }
