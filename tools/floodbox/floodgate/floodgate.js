@@ -49,10 +49,13 @@ export default class MiloFloodgate extends LitElement {
     this._startPreview = false;
     this._startPublish = false;
     this._filesToPromote = [];
+    this._validCopyPaths = {};
+    this._findingPaths = false;
+    this._copyReady = false;
     this._filesToCopy = [];
     this._copiedFiles = [];
     this._copiedFilesCount = 0;
-    this._copiedErrorCount = 0;
+    this._copiedErrorList = [];
     this._copyDuration = 0;
     this._fragmentsAssets = [];
     this._startFindFragmentsAssets = false;
@@ -77,6 +80,7 @@ export default class MiloFloodgate extends LitElement {
     this._publishDuration = 0;
     this._unpublishDuration = 0;
     this._deleteDuration = 0;
+    this._repoReady = false;
     this._selectedOption = 'fgCopy';
     this._floodgateConfig = {};
 
@@ -308,8 +312,11 @@ export default class MiloFloodgate extends LitElement {
         console.log(`${status.statusCode} :: ${status.filePath}`);
         this._copiedFiles.push(status.filePath);
         // eslint-disable-next-line chai-friendly/no-unused-expressions
-        SUCCESS_CODES.includes(status.statusCode) ? this._copiedFilesCount += 1
-          : this._copiedErrorCount += 1;
+        if (SUCCESS_CODES.includes(status.statusCode)) {
+          this._copiedFilesCount += 1;
+        } else {
+          this._copiedErrorList.push({ href: status.filePath, status: status.statusCode });
+        }
         this.requestUpdate();
       },
     });
@@ -341,8 +348,14 @@ export default class MiloFloodgate extends LitElement {
     let paths = this.shadowRoot.querySelector('textarea[name="copyPaths"]').value;
     paths = paths.split('\n').map((path) => path.trim()).filter((path) => path.length > 0);
 
+    this._tabUiStart = true;
+    this._canCopyPaths = false;
+    this._findingPaths = true;
+    this.requestUpdate();
+
     // #1 - Validate paths
     const { valid, org, repo } = validatePaths(paths);
+    this._validCopyPaths = { valid, org, repo };
     if (!valid) {
       this._invalidInput = true;
       this.requestUpdate();
@@ -352,16 +365,33 @@ export default class MiloFloodgate extends LitElement {
 
     // #2 - Find referenced fragments and assets
     this._startFindFragmentsAssets = true;
+    floodbox.updateTabUi(this, 'find', 100);
     await this.getReferencedFragmentsAndAssets(paths, org, repo);
+
+    this._copyReady = true;
+    this._canCopyPaths = true;
+    this.requestUpdate();
+  }
+
+  async handleCopyPreview(event) {
+    event.preventDefault();
+    const { org, repo } = this._validCopyPaths;
 
     // #3 - Copy files to pink site
     this._startCopy = true;
+    this._canCopyPaths = false;
     this._pinkSitePath = `/${org}/${repo}-pink`;
+    floodbox.updateTabUi(this, 'copy', 100);
+    this.requestUpdate();
     await this.startCopy(org, repo);
 
     // #4 - Preview copied files
     this._startPreview = true;
+    floodbox.updateTabUi(this, 'preview', 100);
     await this.startPreview(org, `${repo}-pink`, this._copiedFiles);
+
+    floodbox.updateTabUi(this, 'done', 100);
+    this.requestUpdate();
   }
 
   async startCrawlPinkSiteForDelete() {
@@ -501,6 +531,7 @@ export default class MiloFloodgate extends LitElement {
     this._sourceRepo = `${repo}`;
     this._floodgateRepo = `${repo}-pink`;
     this._canCopyPaths = valid;
+    this._repoReady = valid;
     this.requestUpdate();
   }
 
@@ -526,6 +557,7 @@ export default class MiloFloodgate extends LitElement {
         this._pinkSitePath = path;
       }
     }
+    this._repoReady = valid;
     this.requestUpdate();
   }
 
@@ -539,7 +571,7 @@ export default class MiloFloodgate extends LitElement {
       <div class="tab-step" data-id="done">
         <h3>Done</h3>
         ${this._selectedOption === 'fgCopy' ? html`
-          <p>Selected files have been copied.</p>
+          <p>The files have been copied.</p>
         ` : nothing}
         ${this._selectedOption === 'fgPromote' ? html`
           <p>Floodgated files have been promoted and previewed / published.</p>
@@ -630,36 +662,53 @@ export default class MiloFloodgate extends LitElement {
 
   renderCopyPreviewInfo() {
     return html`
-      <div class="preview-info info-box">
+      <div class="tab-step" data-id="preview">
         <h3>Preview Copied Files</h3>
         <p>Previewing copied files... </p>
-        <p>Files previewed: ${this._previewedFilesCount} | Preview errors: ${this._previewErrorList.length}</p>
+        <div class="detail-cards copy-preview-cards">
+          ${floodbox.renderBadge('Remaining', this._copiedFilesCount - this._previewedFilesCount)}
+          ${floodbox.renderBadge('Preview Errors', this._previewErrorList.length, true)}
+          ${floodbox.renderBadge('Success', this._previewedFilesCount)}
+          ${floodbox.renderBadge('Total', this._previewedFilesCount + this._previewErrorList.length)}
+        </div>
+        <div class="detail-lists">
+          ${floodbox.renderList('Preview Errors', this._previewErrorList)}
+        </div>
         <p>Duration: ~${this._previewDuration} seconds</p>
       </div>
-      ${this._copiedToPink ? this.renderDone() : nothing}
     `;
   }
 
   renderCopyInfo() {
     return html`
-      <div class="copy-info info-box">
+      <div class="tab-step" data-id="copy">
         <h3>Copy Content to Pink Site</h3>
         <p>Copying files to "${this._pinkSitePath}"... </p>
-        <p>Files to copy: ${this._filesToCopy.length} | Files copied: ${this._copiedFilesCount}</p>
-        <p>Copy errors: ${this._copiedErrorCount}</p>
+        <div class="detail-cards copy-cards">
+          ${floodbox.renderBadge('Remaining', this._filesToCopy.length - this._copiedFilesCount - this._copiedErrorList.length)}
+          ${floodbox.renderBadge('Copy Errors', this._copiedErrorList.length, true)}
+          ${floodbox.renderBadge('Success', this._copiedFilesCount)}
+          ${floodbox.renderBadge('Total', this._copiedFilesCount + this._copiedErrorList.length)}
+        </div>
+        <div class="detail-lists">
+          ${floodbox.renderList('Copy Errors', this._copiedErrorList)}
+        </div>
         <p class="${this._copyDuration === 0 ? 'hide' : ''}">Duration: ~${this._copyDuration} seconds</p>
       </div>
-      ${this._startPreview ? this.renderCopyPreviewInfo() : nothing}
     `;
   }
 
   renderReferencedFragmentsAssetsInfo() {
     return html`
-      <div class="fragments-assets-info info-box">
-        <h3>Find Referenced Fragments and Assets</h3>
-        <p>Found ${this._fragmentsAssets.size} referenced fragments and assets.</p>
+      <div class="tab-step active" data-id="find">
+        <h3>Find Files, Referenced Fragments and Assets</h3>
+        ${this._canCopyPaths ? html`<p>Press the "Copy" button above to copy these files.</p>` : nothing}
+        <div class="detail-cards find-cards">
+          ${floodbox.renderBadge('Pages', this._filesToCopy.length)}
+          ${floodbox.renderBadge('Fragments & Assets', this._fragmentsAssets.size)}
+        </div>
+        ${floodbox.renderChecklist(this, this._filesToCopy)}
       </div>
-      ${this._startCopy ? this.renderCopyInfo() : nothing}
     `;
   }
 
@@ -701,6 +750,9 @@ export default class MiloFloodgate extends LitElement {
         ${floodbox.renderTabNav(this, this.tabUiCopy)}
         <div class="tabs">
           ${this._startFindFragmentsAssets ? this.renderReferencedFragmentsAssetsInfo() : nothing}
+          ${this._startCopy ? this.renderCopyInfo() : nothing}
+          ${this._startPreview ? this.renderCopyPreviewInfo() : nothing}
+          ${this._copiedToPink ? this.renderDone() : nothing}
         </div>
       ` : nothing}
       ${this._selectedOption === 'fgPromote' ? html`
@@ -725,6 +777,15 @@ export default class MiloFloodgate extends LitElement {
   `;
   }
 
+  renderRepoInfo() {
+    return html`
+      <div class="repo-info">
+        <p>Source Repo: <span>${this._sourceRepo}</span></p>
+        <p>Floodgate Repo: <span>${this._floodgateRepo}</span></p>
+      </div>
+    `;
+  }
+
   render() {
     return html`
       <h1>Floodgate</h1>
@@ -732,7 +793,7 @@ export default class MiloFloodgate extends LitElement {
       <form>    
         ${this._selectedOption === 'fgCopy' ? html`
           <div class="input-row">
-            <textarea name="copyPaths" rows="10" placeholder="Enter paths to copy to the pink site, separated by line-break." @input=${this.validateCopyPaths}></textarea>
+            <textarea name="copyPaths" .disabled=${this._findingPaths} rows="10" placeholder="Enter paths to copy to the pink site, separated by line-break." @input=${this.validateCopyPaths} ></textarea>
             ${floodbox.renderClearButton()}
           </div>
         ` : nothing}
@@ -760,7 +821,12 @@ export default class MiloFloodgate extends LitElement {
               <option value="fgDelete">Delete Content From Pink Tree</option>
             </select>
             ${this._selectedOption === 'fgCopy' ? html`
-              <button class="accent" .disabled=${!this._canCopyPaths} @click=${this.handleCopyPaths}>Copy</button>
+              ${!this._copyReady ? html`
+                <button class="accent" .disabled=${!this._canCopyPaths || this._findingPaths} @click=${this.handleCopyPaths}>${this._findingPaths ? 'Finding...' : 'Start'}</button>
+              ` : nothing}
+              ${this._copyReady ? html`
+                <button class="accent" .disabled=${!this._canCopyPaths} @click=${this.handleCopyPreview}>Copy</button>
+              ` : nothing}
             ` : nothing}
             ${this._selectedOption === 'fgPromote' ? html`
               <div class="button-toggle">
@@ -776,20 +842,14 @@ export default class MiloFloodgate extends LitElement {
             ${this._selectedOption === 'fgDelete' ? html`
               <button class="accent" .disabled=${!this._canDelete} @click=${this.handleDelete}>Delete</button>
             ` : nothing}
-          </div>   
+          </div>
+          <div class="repo-row">
+            ${this._repoReady ? this.renderRepoInfo() : nothing}
+          </div>
       </form>
       <div class="tab-ui">
         ${this._tabUiStart ? this.renderTabUi() : nothing}
       </div>
-      ${this._startFindFragmentsAssets ? this.renderReferencedFragmentsAssetsInfo() : nothing}
-      ${this._canCopyPaths ? html`
-        <div>Source Repo: <span>${this._sourceRepo}</span></div>
-        <div>Floodgate Repo: <span>${this._floodgateRepo}</span></div
-      ` : nothing}
-      ${this._canPromote ? html`
-        <div>Source Repo: <span>${this._sourceRepo}</span></div>
-        <div>Floodgate Repo: <span>${this._floodgateRepo}</span></div>
-      ` : nothing}
     `;
   }
 }

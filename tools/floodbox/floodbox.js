@@ -1,7 +1,7 @@
 /* eslint-disable import/no-unresolved, no-underscore-dangle, class-methods-use-this */
 import { html, nothing } from 'https://da.live/deps/lit/dist/index.js';
 
-export function handleToggleList(e) {
+function handleToggleList(e) {
   const card = e.target.closest('.detail-card');
   const { name } = e.target.closest('button').dataset;
   const list = this.shadowRoot.querySelector(`.url-list-${name}`);
@@ -16,16 +16,22 @@ export function handleToggleList(e) {
   list.classList.add('is-expanded');
 }
 
-export function handleClear(event) {
+function handleClear(event) {
   event.preventDefault();
   const field = event.target.closest('button').previousElementSibling;
   field.value = '';
   this._canPromote = false;
+  this._repoReady = false;
   this._gbExpPath = '';
   this.requestUpdate();
 }
 
-export function updateTabUi(app, target, delay = 0) {
+function handleCheck(app, url) {
+  url.checked = !url.checked;
+  app.urls = [...app.urls];
+}
+
+function updateTabUi(app, target, delay = 0) {
   setTimeout(() => {
     const tabNav = app.shadowRoot.querySelectorAll('.tab-nav li');
     const tabs = app.shadowRoot.querySelectorAll('.tab-step');
@@ -38,8 +44,8 @@ export function updateTabUi(app, target, delay = 0) {
   }, delay);
 }
 
-export function renderBadge(name, length, hasList = false, hasCancel = false) {
-  const lowerName = name.toLowerCase().replace(/ /g, '-');
+function renderBadge(name, length, hasList = false, hasCancel = false) {
+  const lowerName = name.toLowerCase().replace(/\W+/g, '-');
   const hasExpand = length > 0 && hasList;
 
   return html`
@@ -59,7 +65,7 @@ export function renderBadge(name, length, hasList = false, hasCancel = false) {
     </div>`;
 }
 
-export function renderList(name, urls) {
+function renderList(name, urls) {
   const lowerName = name.toLowerCase().replace(/ /g, '-');
 
   return html`
@@ -79,11 +85,23 @@ export function renderList(name, urls) {
   `;
 }
 
-export function renderClearButton() {
+function renderChecklist(app, urls) {
+  return html`
+    <ul class="url-checklist">
+      ${urls ? urls.map((url) => html`
+        <li>
+          <div class="path">${url}</div>
+        </li>
+      `) : nothing}
+    </ul>
+  `;
+}
+
+function renderClearButton() {
   return html`<button class="icon-button clear-button" @click=${this.handleClear}><svg class="icon"><use href="#spectrum-close"/></svg></button>`;
 }
 
-export function renderTabNav(app, config) {
+function renderTabNav(app, config) {
   return html`
     <ul class="tab-nav">
       ${config.map((step, index) => html`
@@ -94,3 +112,15 @@ export function renderTabNav(app, config) {
     </ul>
   `;
 }
+
+export {
+  handleToggleList,
+  handleClear,
+  handleCheck,
+  updateTabUi,
+  renderBadge,
+  renderList,
+  renderChecklist,
+  renderClearButton,
+  renderTabNav,
+};
