@@ -284,10 +284,6 @@ The term placeholder will be deprecated and it is recommended to refer as <stron
 </thead>
 <tbody>
 <tr>
-<td><code>mas:pending</code></td>
-<td>fires when checkout link starts loading</td>
-</tr>
-<tr>
 <td><code>mas:resolved</code></td>
 <td>fires when the offer is successfully resolved</td>
 </tr>
@@ -323,9 +319,6 @@ The term placeholder will be deprecated and it is recommended to refer as <stron
     <span class="hljs-keyword">const</span> <span class="hljs-title function_">logger</span> = (<span class="hljs-params">...messages</span>) =&gt;
         (log.<span class="hljs-property">innerHTML</span> = <span class="hljs-string">`<span class="hljs-subst">${messages.join(<span class="hljs-string">&#x27; &#x27;</span>)}</span>&lt;br&gt;<span class="hljs-subst">${log.innerHTML}</span>`</span>);
     <span class="hljs-keyword">const</span> eventsDemo = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;eventsDemo&#x27;</span>);
-    eventsDemo.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;mas:pending&#x27;</span>, <span class="hljs-function">() =&gt;</span>
-        <span class="hljs-title function_">logger</span>(<span class="hljs-string">&#x27;checkout-link pending&#x27;</span>),
-    );
     eventsDemo.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;mas:resolved&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">e</span>) =&gt;</span>
         <span class="hljs-title function_">logger</span>(<span class="hljs-string">&#x27;checkout-link resolved&#x27;</span>),
     );
