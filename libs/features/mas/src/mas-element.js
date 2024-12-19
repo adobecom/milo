@@ -148,6 +148,7 @@ export class MasElement {
         if (options) this.options = options;
         this.state = STATE_PENDING;
         this.update();
+        this.log?.debug('Pending:', { element: this.wrapperElement });
         return this.version;
     }
 
@@ -195,10 +196,11 @@ export class MasElement {
                         this.state = state;
                         this.error = error;
                         this.value = value;
-                        // Update CSS and notify observers/listeners
+                        // Update CSS 
                         this.update();
-                        this.notify();
                     }
+                    // notify observers/listeners
+                    this.notify();
                 } catch (error) {
                     log.error(`Failed to render mas-element: `, error);
                     this.toggleFailed(this.version, error, options);

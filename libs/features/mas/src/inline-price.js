@@ -260,13 +260,11 @@ export class InlinePrice extends HTMLSpanElement {
         const version = this.masElement.togglePending(options);
         this.innerHTML = '';
         const [promise] = service.resolveOfferSelectors(options);
-        const result = this.renderOffers(
+        return this.renderOffers(
             selectOffers(await promise, options),
             options,
             version,
         );
-        this.masElement.notify();
-        return result;
     }
 
     // TODO: can be extended to accept array of offers and compute subtotal price
