@@ -220,7 +220,6 @@ export function processCTAs(fields, merchCard, aemFragmentMapping, variant) {
             } else if (isSecondary) {
                 variant = 'secondary';
             }
-            cta.tabIndex = -1;
             if (merchCard.spectrum === 'swc')
                 return createSpectrumSwcButton(
                     cta,
