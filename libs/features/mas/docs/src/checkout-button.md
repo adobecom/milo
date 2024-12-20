@@ -10,6 +10,9 @@ It requires an Offer Selector ID to retrieve the offer details from WCS.
 
 See [MAS](mas.html#terminology) to learn more.
 
+ℹ️ Unlike `checkout-link`, in order to prevent the default click event from redirecting to checkout url, register the click event using `{capture: true}`.
+<br>See the demo at the [end](#example-2)
+
 ### Example
 
 ```html {.demo}

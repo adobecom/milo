@@ -50,6 +50,8 @@
 <p>Behind the scene, it uses <a href="https://git.corp.adobe.com/PandoraUI/commerce-core">https://git.corp.adobe.com/PandoraUI/commerce-core</a> to generate the checkout url.</p>
 <p>It requires an Offer Selector ID to retrieve the offer details from WCS.</p>
 <p>See <a href="mas.html#terminology">MAS</a> to learn more.</p>
+<p>ℹ️ Unlike <code>checkout-link</code>, in order to prevent the default click event from redirecting to checkout url, register the click event using <code>{capture: true}</code>.
+<br>See the demo at the <a href="#example-2">end</a></p>
 <h3 id="example" tabindex="-1">Example <a class="header-anchor" href="#example" href="#example" title="Permalink to this heading">#</a></h3>
 <pre><code class="hljs demo language-html"><span class="hljs-tag">&lt;<span class="hljs-name">button</span>
     <span class="hljs-attr">is</span>=<span class="hljs-string">&quot;checkout-button&quot;</span>
