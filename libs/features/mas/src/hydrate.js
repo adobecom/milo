@@ -3,8 +3,7 @@ import { createTag } from './utils.js';
 
 const DEFAULT_BADGE_COLOR = '#000000';
 const DEFAULT_BADGE_BACKGROUND_COLOR = '#F8D904';
-const CHECKOUT_LINK_STYLE_PATTERN =
-    /(accent|primary|secondary)(-(outline|link))?/;
+const CHECKOUT_STYLE_PATTERN = /(accent|primary|secondary)(-(outline|link))?/;
 export const ANALYTICS_TAG = 'mas:product_code/';
 export const ANALYTICS_LINK_ATTR = 'daa-ll';
 export const ANALYTICS_SECTION_ATTR = 'daa-lh';
@@ -139,7 +138,7 @@ function createSpectrumCssButton(cta, aemFragmentMapping, isOutline, variant) {
     const spectrumCta = CheckoutButton.createCheckoutButton({}, cta.innerHTML);
     spectrumCta.setAttribute('tabindex', 0);
     for (const attr of cta.attributes) {
-      if (['class', 'is'].includes(attr.name)) continue;
+        if (['class', 'is'].includes(attr.name)) continue;
         spectrumCta.setAttribute(attr.name, attr.value);
     }
     spectrumCta.firstElementChild?.classList.add('spectrum-Button-label');
@@ -202,8 +201,7 @@ export function processCTAs(fields, merchCard, aemFragmentMapping, variant) {
             const strong = cta.parentElement.tagName === 'STRONG';
             if (merchCard.consonant) return processConsonantButton(cta, strong);
             const checkoutLinkStyle =
-                CHECKOUT_LINK_STYLE_PATTERN.exec(cta.className)?.[0] ??
-                'accent';
+                CHECKOUT_STYLE_PATTERN.exec(cta.className)?.[0] ?? 'accent';
             const isAccent = checkoutLinkStyle.includes('accent');
             const isPrimary = checkoutLinkStyle.includes('primary');
             const isSecondary = checkoutLinkStyle.includes('secondary');
@@ -252,7 +250,7 @@ export function processAnalytics(fields, merchCard) {
     merchCard
         .querySelectorAll(`a[data-analytics-id],button[data-analytics-id]`)
         .forEach((el, index) => {
-          el.setAttribute(
+            el.setAttribute(
                 ANALYTICS_LINK_ATTR,
                 `${el.dataset.analyticsId}-${index + 1}`,
             );
