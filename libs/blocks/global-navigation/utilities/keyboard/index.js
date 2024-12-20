@@ -73,15 +73,33 @@ const focusPrevProfileItem = ({ e }) => {
 };
 
 class KeyboardNavigation {
-  constructor() {
+  constructor(newNavWithLnav) {
     try {
       this.addEventListeners();
       this.mainNav = new MainNav();
+      if (newNavWithLnav) {
+        this.loadLnavNavigation();
+      }
       this.desktop = window.matchMedia('(min-width: 900px)');
     } catch (e) {
       lanaLog({ message: 'Keyboard Navigation failed to load', e, tags: 'errorType=error,module=gnav-keyboard' });
     }
   }
+
+  loadLnavNavigation = async () => {
+    if (!this.localNav) {
+      this.localNav = (async () => {
+        try {
+          const { default: LnavNavigation } = await import('./localNav.js');
+          return new LnavNavigation();
+        } catch (e) {
+          lanaLog({ message: 'Keyboard Navigation failed to load for LNAV', e, tags: 'errorType=info,module=gnav-keyboard' });
+          return null;
+        }
+      })();
+    }
+    return this.localNav;
+  };
 
   addEventListeners = () => {
     [...document.querySelectorAll(`${selectors.globalNav}, ${selectors.globalFooter}`)]
