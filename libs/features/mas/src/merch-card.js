@@ -107,8 +107,6 @@ export class MerchCard extends LitElement {
      */
     variantLayout;
 
-    #ready = false;
-
     constructor() {
         super();
         this.filters = {};

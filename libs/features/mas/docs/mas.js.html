@@ -10,10 +10,17 @@
     <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
   
   <script>
+      const ENVS = {
+        qa: 'qa-odin',
+        stage: 'stage-odin',
+        prod: 'odin',
+      };
     if (/localhost/.test(window.location.host)) {
       const meta = document.createElement('meta');
       meta.name = 'aem-base-url';
-      meta.content = 'http://localhost:8080'; // local AEM proxy URL
+      const envOverride = new URL(window.location.href).searchParams.get('aem.env');
+      const env = envOverride && ENVS[envOverride] ? ENVS[envOverride] : ENVS.prod;
+      meta.content = envOverride ? `https://${env}.adobe.com` : 'http://localhost:8080'; // local AEM proxy URL
       document.head.appendChild(meta);
       }
   </script>
@@ -44,6 +51,7 @@
 <ul>
 <li><a href="/libs/features/mas/docs/inline-price.html">inline-price</a></li>
 <li><a href="/libs/features/mas/docs/checkout-link.html">checkout-link</a></li>
+<li><a href="/libs/features/mas/docs/checkout-button.html">checkout-buton</a></li>
 <li><a href="/libs/features/mas/docs/merch-card.html">merch-card</a></li>
 </ul>
 <h2 id="enablement-mas-commerce-service" tabindex="-1">Enablement <code>mas-commerce-service</code> <a class="header-anchor" href="#enablement-mas-commerce-service" href="#enablement-mas-commerce-service" title="Permalink to this heading">#</a></h2>

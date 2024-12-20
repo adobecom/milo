@@ -1,9 +1,9 @@
+import { CheckoutButton } from './checkout-button.js';
 import { createTag } from './utils.js';
 
 const DEFAULT_BADGE_COLOR = '#000000';
 const DEFAULT_BADGE_BACKGROUND_COLOR = '#F8D904';
-const CHECKOUT_LINK_STYLE_PATTERN =
-    /(accent|primary|secondary)(-(outline|link))?/;
+const CHECKOUT_STYLE_PATTERN = /(accent|primary|secondary)(-(outline|link))?/;
 export const ANALYTICS_TAG = 'mas:product_code/';
 export const ANALYTICS_LINK_ATTR = 'daa-ll';
 export const ANALYTICS_SECTION_ATTR = 'daa-lh';
@@ -122,7 +122,7 @@ export function processPrices(fields, merchCard, pricesConfig) {
     }
 }
 
-function processDescription(fields, merchCard, descriptionConfig) {
+export function processDescription(fields, merchCard, descriptionConfig) {
     if (fields.description && descriptionConfig) {
         const body = createTag(
             descriptionConfig.tag,
@@ -134,31 +134,25 @@ function processDescription(fields, merchCard, descriptionConfig) {
 }
 
 function createSpectrumCssButton(cta, aemFragmentMapping, isOutline, variant) {
+    const CheckoutButton = customElements.get('checkout-button');
+    const spectrumCta = CheckoutButton.createCheckoutButton({}, cta.innerHTML);
+    spectrumCta.setAttribute('tabindex', 0);
+    for (const attr of cta.attributes) {
+        if (['class', 'is'].includes(attr.name)) continue;
+        spectrumCta.setAttribute(attr.name, attr.value);
+    }
+    spectrumCta.firstElementChild?.classList.add('spectrum-Button-label');
     const size = aemFragmentMapping.ctas.size ?? 'M';
     const variantClass = `spectrum-Button--${variant}`;
-    const treatmentClass = isOutline ? ' spectrum-Button--outline' : '';
-    cta.classList.add('spectrum-Button-label');
     const sizeClass = SPECTRUM_BUTTON_SIZES.includes(size)
-        ? ` spectrum-Button--size${size}`
-        : ' spectrum-Button--sizeM';
-    const spectrumClass = `spectrum-Button ${variantClass}${treatmentClass}${sizeClass}`;
-    const spectrumCta = createTag(
-        'button',
-        {
-            class: spectrumClass,
-            tabIndex: 0,
-        },
-        cta,
-    );
+        ? `spectrum-Button--size${size}`
+        : 'spectrum-Button--sizeM';
+    const spectrumClass = ['spectrum-Button', variantClass, sizeClass];
+    if (isOutline) {
+        spectrumClass.push('spectrum-Button--outline');
+    }
 
-    spectrumCta.addEventListener('click', (e) => {
-        if (e.target !== cta) {
-            /* c8 ignore next 3 */
-            e.stopPropagation();
-            cta.click();
-        }
-    });
-
+    spectrumCta.classList.add(...spectrumClass);
     return spectrumCta;
 }
 
@@ -207,8 +201,7 @@ export function processCTAs(fields, merchCard, aemFragmentMapping, variant) {
             const strong = cta.parentElement.tagName === 'STRONG';
             if (merchCard.consonant) return processConsonantButton(cta, strong);
             const checkoutLinkStyle =
-                CHECKOUT_LINK_STYLE_PATTERN.exec(cta.className)?.[0] ??
-                'accent';
+                CHECKOUT_STYLE_PATTERN.exec(cta.className)?.[0] ?? 'accent';
             const isAccent = checkoutLinkStyle.includes('accent');
             const isPrimary = checkoutLinkStyle.includes('primary');
             const isSecondary = checkoutLinkStyle.includes('secondary');
@@ -225,7 +218,6 @@ export function processCTAs(fields, merchCard, aemFragmentMapping, variant) {
             } else if (isSecondary) {
                 variant = 'secondary';
             }
-            cta.tabIndex = -1;
             if (merchCard.spectrum === 'swc')
                 return createSpectrumSwcButton(
                     cta,
@@ -256,16 +248,16 @@ export function processAnalytics(fields, merchCard) {
     if (!cardAnalyticsId) return;
     merchCard.setAttribute(ANALYTICS_SECTION_ATTR, cardAnalyticsId);
     merchCard
-        .querySelectorAll(`a[data-analytics-id]`)
-        .forEach((link, index) => {
-            link.setAttribute(
+        .querySelectorAll(`a[data-analytics-id],button[data-analytics-id]`)
+        .forEach((el, index) => {
+            el.setAttribute(
                 ANALYTICS_LINK_ATTR,
-                `${link.dataset.analyticsId}-${index + 1}`,
+                `${el.dataset.analyticsId}-${index + 1}`,
             );
         });
 }
 
-function updateLinks(merchCard) {
+export function updateLinks(merchCard) {
     [
         ['primary-link', 'primary'],
         ['secondary-link', 'secondary'],
