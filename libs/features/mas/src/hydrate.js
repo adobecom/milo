@@ -123,7 +123,7 @@ export function processPrices(fields, merchCard, pricesConfig) {
     }
 }
 
-function processDescription(fields, merchCard, descriptionConfig) {
+export function processDescription(fields, merchCard, descriptionConfig) {
     if (fields.description && descriptionConfig) {
         const body = createTag(
             descriptionConfig.tag,
@@ -259,7 +259,7 @@ export function processAnalytics(fields, merchCard) {
         });
 }
 
-function updateLinks(merchCard) {
+export function updateLinks(merchCard) {
     [
         ['primary-link', 'primary'],
         ['secondary-link', 'secondary'],

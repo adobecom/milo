@@ -15,6 +15,8 @@ import {
     ANALYTICS_TAG,
     ANALYTICS_LINK_ATTR,
     ANALYTICS_SECTION_ATTR,
+    processDescription,
+    updateLinks,
 } from '../src/hydrate.js';
 import { AEM_FRAGMENT_MAPPING } from '../src/variants/ccd-slice.js';
 
@@ -487,5 +489,34 @@ describe('hydrate', () => {
                 .querySelector(`button[data-analytics-id]`)
                 .getAttribute('daa-ll'),
         ).to.equal('buy-now-1');
+    });
+});
+
+describe('processDescription', async () => {
+    let merchCard;
+    let aemFragmentMapping;
+
+    beforeEach(async () => {
+        merchCard = mockMerchCard();
+
+        aemFragmentMapping = {
+            description: { tag: 'div', slot: 'body-xs' },
+        };
+    });
+
+    afterEach(() => {
+        sinon.restore();
+    });
+
+    it('should process merch links', async () => {
+        const fields = {
+            description: `Buy <a is="checkout-link" data-wcs-osi="abm" class="primary-link">Link Style</a><a is="checkout-link" data-wcs-osi="abm" class="secondary-link">Link Style</a>`,
+        };
+
+        processDescription(fields, merchCard, aemFragmentMapping.description);
+        updateLinks(merchCard);
+        expect(merchCard.innerHTML).to.equal(
+            '<div slot="body-xs">Buy <a is="checkout-link" data-wcs-osi="abm" class="spectrum-Link spectrum-Link--primary">Link Style</a><a is="checkout-link" data-wcs-osi="abm" class="spectrum-Link spectrum-Link--secondary">Link Style</a></div>',
+        );
     });
 });
