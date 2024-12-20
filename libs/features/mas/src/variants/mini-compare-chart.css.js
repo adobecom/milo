@@ -16,6 +16,11 @@ export const CSS = `
     font-size: var(--consonant-merch-card-heading-xs-font-size);
   }
 
+  merch-card[variant="mini-compare-chart"].bullet-list [slot='heading-m-price'] {
+    font-size: var(--consonant-merch-card-body-xxl-font-size);
+    padding: 0 var(--consonant-merch-spacing-xs);
+  }
+
   merch-card[variant="mini-compare-chart"] [slot="body-m"] {
     padding: var(--consonant-merch-spacing-xs) var(--consonant-merch-spacing-s);
   }
@@ -206,11 +211,6 @@ export const CSS = `
   merch-card[variant="mini-compare-chart"] [slot='heading-m-price'] {
     font-size: var(--consonant-merch-card-body-s-font-size);
     line-height: var(--consonant-merch-card-body-s-line-height);
-  }
-
-  merch-card[variant="mini-compare-chart"].bullet-list [slot='heading-m-price'] {
-    font-size: var(--consonant-merch-card-body-xxl-font-size);
-    padding: 0 var(--consonant-merch-spacing-xs);
   }
 
   merch-card[variant="mini-compare-chart"] [slot='body-m'] {
