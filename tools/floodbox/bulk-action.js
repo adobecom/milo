@@ -4,7 +4,7 @@ import RequestHandler from './request-handler.js';
 const BATCH_SIZE = 25;
 const BATCH_DELAY = 2000;
 
-class BulkAction {
+export class BulkAction {
   constructor({ org, repo, callback }) {
     this.org = org;
     this.repo = repo;
