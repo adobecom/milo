@@ -157,11 +157,10 @@ Two photoshop and three acrobat pro single apps (TEAMS):
 | `mas:pending`  | fires when checkout link starts loading            |
 | `mas:resolved` | fires when the offer is successfully resolved      |
 | `mas:failed`   | fires when the offer could not be found or fetched |
-| `click`        | native click event on the `a` element              |
 
 <br>
 
-For each event except `click`, the following css classes are toggled on the element: `placeholder-pending`, `placeholder-resolved`, `placeholder-failed`.
+For each event, the following css classes are toggled on the element: `placeholder-pending`, `placeholder-resolved`, `placeholder-failed`.
 
 ### Example
 
