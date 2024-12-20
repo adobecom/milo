@@ -1,5 +1,5 @@
 import { expect } from '@esm-bundle/chai';
-import { validatePaths } from '../../../../tools/floodbox/floodgate/utils.js';
+import { getValidFloodgate, validatePaths } from '../../../../tools/floodbox/floodgate/utils.js';
 
 describe('validatePaths', () => {
   it('returns valid true with correct org and repo for valid paths', () => {
@@ -42,5 +42,21 @@ describe('validatePaths', () => {
     const paths = ['/org1/repo1-pink/path1', '/org1/repo1-pink/path2'];
     const result = validatePaths(paths);
     expect(result).to.eql({ valid: false, org: '', repo: '' });
+  });
+});
+
+describe('getValidFloodgate', () => {
+  it('should return a milo-floodgate element with correct properties', async () => {
+    // fake DA_SDK response with context and token
+    const fakeDaSdk = Promise.resolve({
+      context: { repo: 'fake-repo' },
+      token: 'fake-token',
+    });
+    const cmp = await getValidFloodgate(fakeDaSdk);
+
+    expect(cmp).to.be.instanceOf(HTMLElement);
+    expect(cmp.tagName.toLowerCase()).to.equal('milo-floodgate');
+    expect(cmp.repo).to.equal('fake-repo');
+    expect(cmp.token).to.equal('fake-token');
   });
 });

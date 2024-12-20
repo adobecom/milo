@@ -24,8 +24,8 @@ function validatePaths(paths) {
   return { valid: true, org, repo };
 }
 
-async function getValidFloodgate() {
-  const { context, token } = await DA_SDK;
+async function getValidFloodgate(sdk = DA_SDK) {
+  const { context, token } = await sdk;
   const cmp = document.createElement('milo-floodgate');
   cmp.repo = context.repo;
   cmp.token = token;
