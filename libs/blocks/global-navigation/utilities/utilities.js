@@ -430,7 +430,7 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
     });
   const CTA = popup.querySelector('.feds-cta')?.outerHTML ?? '';
   const mainMenu = `
-      <span class="main-menu">
+      <span class="main-menu" daa-ll="Main menu_Gnav">
         <svg xmlns="http://www.w3.org/2000/svg" width="7" height="12" viewBox="0 0 7 12" fill="none"><path d="M5.55579 1L1.09618 5.45961C1.05728 5.4985 1.0571 5.56151 1.09577 5.60062L5.51027 10.0661" stroke=${isDarkMode() ? '#f2f2f2' : 'black'} stroke-width="2" stroke-linecap="round"/></svg>
         {{main-menu}}
       </span>
@@ -440,7 +440,7 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
   popup.innerHTML = `
     <div class="top-bar">
       ${localnav ? brand : await replaceText(mainMenu, getFedsPlaceholderConfig())}
-      <span class="close-icon">
+      <span class="close-icon" daa-ll="Close button_SubNav">
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14" fill="none">
           <path d="M1.5 1L13 12.5" stroke=${isDarkMode() ? '#f2f2f2' : 'black'} stroke-width="1.7037" stroke-linecap="round"/>
           <path d="M13 1L1.5 12.5" stroke=${isDarkMode() ? '#f2f2f2' : 'black'} stroke-width="1.7037" stroke-linecap="round"/>
@@ -458,7 +458,7 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
           class="tab"
           aria-selected="false"
           aria-controls="${i}"
-          ${daallTab ? `daa-ll="${daallTab}"` : ''}
+          ${daallTab ? `daa-ll="${daallTab}|click"` : ''}
         >${name}</button>
       `).join('')}
     </div>
