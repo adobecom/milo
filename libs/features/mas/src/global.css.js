@@ -147,8 +147,7 @@ merch-card.background-opacity-70 {
 }
 
 merch-card.has-divider hr {
-    margin-top: var(--consonant-merch-spacing-xs);
-    margin-bottom: var(--consonant-merch-spacing-xs);
+    margin: var(--consonant-merch-spacing-xs) 0;
     height: 1px;
     border: none;
 }
