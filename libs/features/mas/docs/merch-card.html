@@ -10,10 +10,17 @@
     <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
   
   <script>
+      const ENVS = {
+        qa: 'qa-odin',
+        stage: 'stage-odin',
+        prod: 'odin',
+      };
     if (/localhost/.test(window.location.host)) {
       const meta = document.createElement('meta');
       meta.name = 'aem-base-url';
-      meta.content = 'http://localhost:8080'; // local AEM proxy URL
+      const envOverride = new URL(window.location.href).searchParams.get('aem.env');
+      const env = envOverride && ENVS[envOverride] ? ENVS[envOverride] : ENVS.prod;
+      meta.content = envOverride ? `https://${env}.adobe.com` : 'http://localhost:8080'; // local AEM proxy URL
       document.head.appendChild(meta);
       }
   </script>
@@ -77,17 +84,21 @@ CCD Gallery provides a comprehensive list of all supported card variants in CCD.
             <span class="hljs-title function_">log</span>(target, <span class="hljs-string">&#x27;merch-card is ready: &#x27;</span>, e.<span class="hljs-property">target</span>.<span class="hljs-property">variant</span>);
         });
 
-        card1.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;click&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">e</span>) =&gt;</span> {
-            e.<span class="hljs-title function_">preventDefault</span>();
-            e.<span class="hljs-title function_">stopPropagation</span>();
-            <span class="hljs-keyword">if</span> (e.<span class="hljs-property">target</span>.<span class="hljs-property">isCheckoutLink</span>) {
-                <span class="hljs-title function_">log</span>(target, <span class="hljs-string">&#x27;merch-card checkout-link click: &#x27;</span>, e.<span class="hljs-property">target</span>);
-            } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (e.<span class="hljs-property">target</span>.<span class="hljs-property">isInlinePrice</span>) {
-                <span class="hljs-title function_">log</span>(target, <span class="hljs-string">&#x27;merch-card price click: &#x27;</span>, e.<span class="hljs-property">target</span>.<span class="hljs-property">innerText</span>);
-            } <span class="hljs-keyword">else</span> {
-                <span class="hljs-title function_">log</span>(target, <span class="hljs-string">&#x27;merch-card click: &#x27;</span>, e.<span class="hljs-property">target</span>);
-            }
-        });
+        card1.<span class="hljs-title function_">addEventListener</span>(
+            <span class="hljs-string">&#x27;click&#x27;</span>,
+            <span class="hljs-function">(<span class="hljs-params">e</span>) =&gt;</span> {
+                e.<span class="hljs-title function_">preventDefault</span>();
+                e.<span class="hljs-title function_">stopPropagation</span>();
+                <span class="hljs-keyword">if</span> (e.<span class="hljs-property">target</span>.<span class="hljs-property">isCheckoutButton</span>) {
+                    <span class="hljs-title function_">log</span>(target, <span class="hljs-string">&#x27;merch-card checkout-button click: &#x27;</span>, e.<span class="hljs-property">target</span>);
+                } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (e.<span class="hljs-property">target</span>.<span class="hljs-property">isInlinePrice</span>) {
+                    <span class="hljs-title function_">log</span>(target, <span class="hljs-string">&#x27;merch-card price click: &#x27;</span>, e.<span class="hljs-property">target</span>.<span class="hljs-property">innerText</span>);
+                } <span class="hljs-keyword">else</span> {
+                    <span class="hljs-title function_">log</span>(target, <span class="hljs-string">&#x27;merch-card click: &#x27;</span>, e.<span class="hljs-property">target</span>);
+                }
+            },
+            { <span class="hljs-attr">capture</span>: <span class="hljs-literal">true</span> },
+        );
     }
 </span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
 </code></pre>
