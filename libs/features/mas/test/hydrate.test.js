@@ -16,7 +16,7 @@ import {
     ANALYTICS_LINK_ATTR,
     ANALYTICS_SECTION_ATTR,
     processDescription,
-    updateLinks,
+    updateLinksCSS,
 } from '../src/hydrate.js';
 import { AEM_FRAGMENT_MAPPING } from '../src/variants/ccd-slice.js';
 
@@ -25,6 +25,7 @@ import { withWcs } from './mocks/wcs.js';
 
 const mockMerchCard = () => {
     const merchCard = document.createElement('div');
+    merchCard.spectrum = 'css';
     document.body.appendChild(merchCard);
     const originalAppend = merchCard.append;
     merchCard.append = sinon.spy(function () {
@@ -127,7 +128,7 @@ describe('processCTAs', async () => {
         expect(merchCard.append.called).to.be.false;
     });
 
-    it('should create spectrum css buttons by default', async () => {
+    it('should create spectrum  buttons by default', async () => {
         const fields = {
             ctas: '<a is="checkout-link" data-wcs-osi="abm" class="accent">Click me</a>',
         };
@@ -514,7 +515,7 @@ describe('processDescription', async () => {
         };
 
         processDescription(fields, merchCard, aemFragmentMapping.description);
-        updateLinks(merchCard);
+        updateLinksCSS(merchCard);
         expect(merchCard.innerHTML).to.equal(
             '<div slot="body-xs">Buy <a is="checkout-link" data-wcs-osi="abm" class="spectrum-Link spectrum-Link--primary">Link Style</a><a is="checkout-link" data-wcs-osi="abm" class="spectrum-Link spectrum-Link--secondary">Link Style</a></div>',
         );

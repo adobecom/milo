@@ -257,7 +257,8 @@ export function processAnalytics(fields, merchCard) {
         });
 }
 
-export function updateLinks(merchCard) {
+export function updateLinksCSS(merchCard) {
+    if (merchCard.spectrum !== 'css') return;
     [
         ['primary-link', 'primary'],
         ['secondary-link', 'secondary'],
@@ -309,5 +310,5 @@ export async function hydrate(fragment, merchCard) {
     processDescription(fields, merchCard, aemFragmentMapping.description);
     processCTAs(fields, merchCard, aemFragmentMapping, variant);
     processAnalytics(fields, merchCard);
-    updateLinks(merchCard);
+    updateLinksCSS(merchCard);
 }
