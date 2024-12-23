@@ -174,8 +174,8 @@
 }
 
 .marketo .mktoForm .mktoField:focus-visible {
-  outline: 0;
-  border-color: var(--link-color-dark);
+  outline: 2px solid var(--link-color-dark);
+  outline-offset: 2px;
 }
 
 .marketo .mktoForm select {
