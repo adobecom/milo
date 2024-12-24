@@ -38,7 +38,7 @@ function changeTabs(e) {
   const { target } = e;
   const parent = target.parentNode;
   const content = parent.parentNode.parentNode.querySelector('.tab-content');
-  
+
   const blockId = target.closest('.tabs').id;
   parent
     .querySelectorAll(`[aria-selected="true"][data-block-id="${blockId}"]`)
@@ -82,8 +82,8 @@ function initTabs(elm, config, rootElem) {
   const tabLists = elm.querySelectorAll('[role="tablist"]');
   let tabFocus = 0;
 
-  tabLists.forEach((tabList) => {    
-    tabList.addEventListener('keydown', (e) => {      
+  tabLists.forEach((tabList) => {
+    tabList.addEventListener('keydown', (e) => {
       if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
         if (e.key === 'ArrowRight') {
           tabFocus += 1;
@@ -95,7 +95,7 @@ function initTabs(elm, config, rootElem) {
           if (tabFocus < 0) tabFocus = tabs.length - 1;
         }
         tabs[tabFocus].setAttribute('tabindex', 0);
-        tabs[tabFocus].focus();        
+        tabs[tabFocus].focus();
       }
     });
   });
@@ -123,7 +123,7 @@ function initPaddles(tabList, left, right) {
   const firstTab = tabListItemsArray[0];
   const lastTab = tabListItemsArray[tabListItemsArray.length - 1];
 
-  left.addEventListener('click', () => {    
+  left.addEventListener('click', () => {
     const previous = tabListItemsArray.find(previousTab);
     if (previous) {
       scrollTabIntoView(previous, 'end');
@@ -133,7 +133,7 @@ function initPaddles(tabList, left, right) {
       tabList.scrollBy({ left: -(width / 2), behavior: 'smooth' });
     }
   });
-  right.addEventListener('click', () => {    
+  right.addEventListener('click', () => {
     const next = tabListItemsArray.find(nextTab);
     if (next) {
       scrollTabIntoView(next, 'start');
