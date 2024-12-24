@@ -72,6 +72,8 @@ span.placeholder-failed::after {
 
 merch-card {
   justify-self: stretch;
+  width: 100%;
+  min-height: 154px;
 }
 
 merch-card:not([variant]) {
@@ -111,10 +113,6 @@ code {
 
 .spectrum--darkest .gallery-content {
   color: #fbecec;
-}
-
-merch-card {
-  width: 100%;
 }
 
 .gallery-content .three-merch-cards {
