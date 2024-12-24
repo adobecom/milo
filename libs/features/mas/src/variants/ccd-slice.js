@@ -2,8 +2,10 @@ import { VariantLayout } from './variant-layout.js';
 import { html, css } from 'lit';
 import { CSS } from './ccd-slice.css.js';
 
-export const AEM_FRAGMENT_MAPPING = {
+export const CCD_SLICE_AEM_FRAGMENT_MAPPING = {
+    size: ['wide'],
     mnemonics: { size: 'm' },
+    badge: true,
     backgroundImage: { tag: 'div', slot: 'image' },
     description: { tag: 'div', slot: 'body-s' },
     ctas: { slot: 'footer', size: 'S' },
@@ -17,15 +19,15 @@ export class CCDSlice extends VariantLayout {
 
     /* c8 ignore next 3 */
     get aemFragmentMapping() {
-        return AEM_FRAGMENT_MAPPING;
+        return CCD_SLICE_AEM_FRAGMENT_MAPPING;
     }
 
     renderLayout() {
         return html` <div class="content">
                 <div class="top-section">
-                  <slot name="icons"></slot> 
-                  ${this.badge}
-                </div>  
+                    <slot name="icons"></slot>
+                    ${this.badge}
+                </div>
                 <slot name="body-s"></slot>
                 <slot name="footer"></slot>
             </div>
@@ -36,11 +38,11 @@ export class CCDSlice extends VariantLayout {
     static variantStyle = css`
         :host([variant='ccd-slice']) {
             --consonant-merch-card-background-color: rgb(248, 248, 248);
-            --consonant-merch-card-border-color:rgb(230, 230, 230);
+            --consonant-merch-card-border-color: rgb(230, 230, 230);
             --consonant-merch-card-body-s-color: rgb(34, 34, 34);
             --merch-color-inline-price-strikethrough: var(--spectrum-gray-600);
             --mod-img-height: 29px;
-            
+
             box-sizing: border-box;
             min-width: 290px;
             max-width: 322px;
@@ -53,7 +55,7 @@ export class CCDSlice extends VariantLayout {
         }
 
         :host([variant='ccd-slice']) * {
-          overflow: hidden;
+            overflow: hidden;
         }
 
         :host([variant='ccd-slice']) ::slotted([slot='body-s']) {
@@ -66,7 +68,7 @@ export class CCDSlice extends VariantLayout {
         }
 
         :host([variant='ccd-slice'][size='wide']) ::slotted([slot='body-s']) {
-          max-width: 425px;
+            max-width: 425px;
         }
 
         :host([variant='ccd-slice'][size='wide']) {

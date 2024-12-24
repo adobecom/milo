@@ -18,7 +18,7 @@ import {
     processDescription,
     updateLinksCSS,
 } from '../src/hydrate.js';
-import { AEM_FRAGMENT_MAPPING } from '../src/variants/ccd-slice.js';
+import { CCD_SLICE_AEM_FRAGMENT_MAPPING } from '../src/variants/ccd-slice.js';
 
 import { mockFetch } from './mocks/fetch.js';
 import { withWcs } from './mocks/wcs.js';
@@ -481,7 +481,7 @@ describe('hydrate', () => {
                 tags: ['mas:term/montly', 'mas:product_code/ccsn'],
             },
         };
-        merchCard.variantLayout = { aemFragmentMapping: AEM_FRAGMENT_MAPPING };
+        merchCard.variantLayout = { aemFragmentMapping: CCD_SLICE_AEM_FRAGMENT_MAPPING };
         await hydrate(fragment, merchCard);
 
         expect(merchCard.getAttribute(ANALYTICS_SECTION_ATTR)).to.equal('ccsn');

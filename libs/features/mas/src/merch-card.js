@@ -1,6 +1,10 @@
 import { LitElement } from 'lit';
 import { sizeStyles, styles } from './merch-card.css.js';
-import { getVariantLayout, getVariantStyles } from './variants/variants.js';
+import {
+    getVariantLayout,
+    getVariantStyles,
+    variantFragmentMappings,
+} from './variants/variants.js';
 
 import './global.css.js';
 import {
@@ -43,7 +47,7 @@ export class MerchCard extends LitElement {
         actionMenu: { type: Boolean, attribute: 'action-menu' },
         customHr: { type: Boolean, attribute: 'custom-hr' },
         consonant: { type: Boolean, attribute: 'consonant' },
-        spectrum: { type: String, attribute: 'spectrum' }, /* css|swc */
+        spectrum: { type: String, attribute: 'spectrum' } /* css|swc */,
         detailBg: { type: String, attribute: 'detail-bg' },
         secureLabel: { type: String, attribute: 'secure-label' },
         checkboxLabel: { type: String, attribute: 'checkbox-label' },
@@ -95,7 +99,11 @@ export class MerchCard extends LitElement {
             reflect: true,
         },
         merchOffer: { type: Object },
-        analyticsId: { type: String, attribute: ANALYTICS_SECTION_ATTR, reflect: true },
+        analyticsId: {
+            type: String,
+            attribute: ANALYTICS_SECTION_ATTR,
+            reflect: true,
+        },
     };
 
     static styles = [styles, getVariantStyles(), ...sizeStyles()];
@@ -114,6 +122,10 @@ export class MerchCard extends LitElement {
         this.selected = false;
         this.spectrum = 'css';
         this.handleAemFragmentEvents = this.handleAemFragmentEvents.bind(this);
+    }
+
+    static getFragmentMapping(variant) {
+        return variantFragmentMappings[variant];
     }
 
     firstUpdated() {
@@ -136,7 +148,10 @@ export class MerchCard extends LitElement {
             changedProperties.has('badgeBackgroundColor') ||
             changedProperties.has('borderColor')
         ) {
-            this.style.setProperty('--consonant-merch-card-border', this.computedBorderStyle);
+            this.style.setProperty(
+                '--consonant-merch-card-border',
+                this.computedBorderStyle,
+            );
         }
         this.variantLayout?.postCardUpdateHook(changedProperties);
     }
