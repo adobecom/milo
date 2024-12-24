@@ -104,6 +104,7 @@ export class MerchCard extends LitElement {
             attribute: ANALYTICS_SECTION_ATTR,
             reflect: true,
         },
+        loading: { type: String },
     };
 
     static styles = [styles, getVariantStyles(), ...sizeStyles()];
@@ -121,6 +122,7 @@ export class MerchCard extends LitElement {
         this.types = '';
         this.selected = false;
         this.spectrum = 'css';
+        this.loading = 'lazy';
         this.handleAemFragmentEvents = this.handleAemFragmentEvents.bind(this);
     }
 

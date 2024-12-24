@@ -29,6 +29,7 @@ export function processMnemonics(fields, merchCard, mnemonicsConfig) {
         const attrs = {
             slot: 'icons',
             src,
+            loading: merchCard.loading,
             size: mnemonicsConfig?.size ?? 'l',
         };
         if (alt) attrs.alt = alt;
@@ -96,7 +97,7 @@ export function processBackgroundImage(
                         createTag(
                             backgroundImageConfig.tag,
                             { slot: backgroundImageConfig.slot },
-                            `<img loading="lazy" src="${fields.backgroundImage}" />`,
+                            `<img loading="${merchCard.loading}" src="${fields.backgroundImage}" />`,
                         ),
                     );
                 }

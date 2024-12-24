@@ -26,6 +26,7 @@ import { withWcs } from './mocks/wcs.js';
 const mockMerchCard = () => {
     const merchCard = document.createElement('div');
     merchCard.spectrum = 'css';
+    merchCard.loading = 'lazy';
     document.body.appendChild(merchCard);
     const originalAppend = merchCard.append;
     merchCard.append = sinon.spy(function () {
@@ -50,7 +51,7 @@ describe('processMnemonics', async () => {
         const mnemonicsConfig = { size: 'm' };
         processMnemonics(fields, merchCard, mnemonicsConfig);
         expect(merchCard.outerHTML).to.equal(
-            '<div><merch-icon slot="icons" src="www.adobe.com/icons/photoshop.svg" size="m" href="https://www.adobe.com/"></merch-icon></div>',
+            '<div><merch-icon slot="icons" src="www.adobe.com/icons/photoshop.svg" loading="lazy" size="m" href="https://www.adobe.com/"></merch-icon></div>',
         );
     });
 });
