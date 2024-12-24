@@ -87,8 +87,9 @@ function configTabs(config, rootElem) {
 function initTabs(elm, config, rootElem) {
   const tabs = elm.querySelectorAll('[role="tab"]');
   const tabLists = elm.querySelectorAll('[role="tablist"]');
+  let tabFocus = 0;
+
   tabLists.forEach((tabList) => {
-    let tabFocus = 0;
     tabList.addEventListener('keydown', (e) => {
       if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
         if (e.key === 'ArrowRight') {
@@ -123,9 +124,7 @@ function nextTab(current, i, arr) {
   return (previous && isTabInTabListView(previous) && !isTabInTabListView(current));
 }
 
-function initPaddles(tabList, tabPaddles) {
-  const left = tabPaddles.firstElementChild;
-  const right = tabPaddles.lastElementChild;
+function initPaddles(tabList, left, right) {
   const tabListItems = tabList.querySelectorAll('[role="tab"]');
   const tabListItemsArray = [...tabListItems];
   const firstTab = tabListItemsArray[0];
@@ -153,7 +152,7 @@ function initPaddles(tabList, tabPaddles) {
   });
 
   tabList.addEventListener('scroll', debounce(() => {
-    tabPaddles.setAttribute(
+    tabList.setAttribute(
       'aria-valuenow',
       ((tabList.scrollLeft / (tabList.scrollWidth - tabList.clientWidth)) * 100).toFixed(0),
     );
@@ -276,12 +275,11 @@ const init = (block) => {
   }
 
   // Tab Paddles
-  const tabPaddles = createTag('div', { class: 'tab-paddles', role: 'scrollbar', 'aria-valuenow': 0 });
   const paddleLeft = createTag('button', { class: 'paddle paddle-left', disabled: '', 'aria-hidden': true, 'aria-label': 'Scroll tabs to left' }, PADDLE);
   const paddleRight = createTag('button', { class: 'paddle paddle-right', disabled: '', 'aria-hidden': true, 'aria-label': 'Scroll tabs to right' }, PADDLE);
-  tabPaddles.append(paddleLeft, paddleRight);
-  tabList.after(tabPaddles);
-  initPaddles(tabList, tabPaddles);
+  tabList.insertAdjacentElement('afterend', paddleRight);
+  block.prepend(paddleLeft);
+  initPaddles(tabList, paddleLeft, paddleRight);
 
   // Tab Sections
   const allSections = Array.from(rootElem.querySelectorAll('div.section'));
