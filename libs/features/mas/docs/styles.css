@@ -71,13 +71,14 @@ span.placeholder-failed::after {
 }
 
 merch-card {
+  display: flex;
   justify-self: stretch;
   width: 100%;
   min-height: 154px;
 }
 
 merch-card:not([variant]) {
-  display: none;
+  visibility: hidden;
 }
 
 pre {
