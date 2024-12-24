@@ -4,8 +4,10 @@ import { isMobileOrTablet } from '../utils.js';
 import { EVENT_MERCH_CARD_ACTION_MENU_TOGGLE } from '../constants.js';
 import { CSS } from './catalog.css.js';
 
-const AEM_FRAGMENT_MAPPING = {
+export const CATALOG_AEM_FRAGMENT_MAPPING = {
+    size: ['wide', 'super-wide'],
     title: { tag: 'h3', slot: 'heading-xs' },
+    badge: true,
     prices: { tag: 'h3', slot: 'heading-xs' },
     description: { tag: 'div', slot: 'body-xs' },
     ctas: { slot: 'footer', size: 'm' },
@@ -19,7 +21,7 @@ export class Catalog extends VariantLayout {
 
     /* c8 ignore next 3 */
     get aemFragmentMapping() {
-        return AEM_FRAGMENT_MAPPING;
+        return CATALOG_AEM_FRAGMENT_MAPPING;
     }
 
     renderLayout() {

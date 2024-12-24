@@ -71,11 +71,14 @@ span.placeholder-failed::after {
 }
 
 merch-card {
+  display: flex;
   justify-self: stretch;
+  width: 100%;
+  min-height: 154px;
 }
 
 merch-card:not([variant]) {
-  display: none;
+  visibility: hidden;
 }
 
 pre {
@@ -105,10 +108,6 @@ button {
   margin-top: 16px;
 }
 
-.gallery-content {
-  padding: 30px;
-}
-
 code {
   max-width: 90vw;
 }
@@ -118,7 +117,29 @@ code {
 }
 
 .gallery-content .three-merch-cards {
+  max-width: 322px;
   justify-content: start;
+  grid-auto-flow: row;
+}
+
+.three-merch-cards.ccd-slice {
+  grid-template-columns: minmax(290px, 322px);
+}
+
+@media screen and (min-width: 644px) {
+  merch-card[variant="ccd-slice"][size="wide"] {
+    grid-column: span 2;
+  }
+
+  .three-merch-cards.ccd-slice {
+    grid-template-columns: repeat(2, 322px);
+  }
+}
+
+@media screen and (min-width: 966px) {
+  .three-merch-cards.ccd-slice {
+    grid-template-columns: repeat(3, 322px);
+  }
 }
 
 .three-merch-cards.ccd-suggested {
@@ -134,26 +155,6 @@ code {
 @media screen and (min-width: 966px) {
   .three-merch-cards.ccd-suggested {
     grid-template-columns: repeat(3, minmax(270px, 305px));
-  }
-}
-
-merch-card[variant="ccd-slice"][size="wide"] {
-  grid-column: span 2;
-}
-
-.three-merch-cards.ccd-slice {
-  grid-template-columns: minmax(290px, 322px);
-}
-
-@media screen and (min-width: 644px) {
-  .three-merch-cards.ccd-slice {
-    grid-template-columns: repeat(2, minmax(290px, 322px));
-  }
-}
-
-@media screen and (min-width: 966px) {
-  .three-merch-cards.ccd-slice {
-    grid-template-columns: repeat(3, minmax(290px, 322px));
   }
 }
 

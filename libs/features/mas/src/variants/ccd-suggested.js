@@ -2,8 +2,10 @@ import { html, css } from 'lit';
 import { VariantLayout } from './variant-layout.js';
 import { CSS } from './ccd-suggested.css.js';
 
-const AEM_FRAGMENT_MAPPING = {
+export const CCD_SUGGESTED_AEM_FRAGMENT_MAPPING = {
+    size: [],
     mnemonics: { size: 'l' },
+    badge: true,
     subtitle: { tag: 'h4', slot: 'detail-s' },
     title: { tag: 'h3', slot: 'heading-xs' },
     prices: { tag: 'p', slot: 'price' },
@@ -18,7 +20,7 @@ export class CCDSuggested extends VariantLayout {
 
     /* c8 ignore next 3 */
     get aemFragmentMapping() {
-        return AEM_FRAGMENT_MAPPING;
+        return CCD_SUGGESTED_AEM_FRAGMENT_MAPPING;
     }
 
     get stripStyle() {
@@ -53,8 +55,7 @@ export class CCDSuggested extends VariantLayout {
     }
 
     postCardUpdateHook(changedProperties) {
-        if (changedProperties.has('backgroundImage'))
-            this.styleBackgroundImage();
+        if (changedProperties.has(' dImage')) this.styleBackgroundImage();
     }
 
     styleBackgroundImage() {
