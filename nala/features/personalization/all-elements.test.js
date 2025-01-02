@@ -1,3 +1,6 @@
+// resolves PR 2976 https://github.com/adobecom/milo/pull/2976
+// command to run: npm run nala stage all-elements.test.js
+
 import { expect, test } from '@playwright/test';
 import { features } from './all-elements.spec.js';
 import TextBlock from '../../blocks/text/text.page.js';
