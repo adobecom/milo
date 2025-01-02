@@ -726,13 +726,11 @@ export function decorateLinks(el) {
       decorateCopyLink(a, copyEvent);
     }
     // Append aria-label
-    const pipeRegex = /\s?\|\s?/;
+    const pipeRegex = /\s?\|([^|]*)$/;
     if (pipeRegex.test(a.textContent) && !/\.[a-z]+/i.test(a.textContent)) {
-      const node = [...a.childNodes].reverse()
-        .find((child) => pipeRegex.test(child.textContent));
-      const ariaLabel = node.textContent.split(pipeRegex).pop();
-      node.textContent = node.textContent
-        .replace(new RegExp(`${pipeRegex.source}${ariaLabel}`), '');
+      const node = [...a.childNodes].reverse()[0];
+      const ariaLabel = node.textContent.match(pipeRegex)[1];
+      node.textContent = node.textContent.replace(pipeRegex, '');
       a.setAttribute('aria-label', ariaLabel.trim());
     }
 
