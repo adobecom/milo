@@ -79,6 +79,9 @@ describe('getPromoManifests', () => {
           cdtEnd: undefined,
           cdtStart: undefined,
         },
+        source: [
+          'promo',
+        ],
       },
       {
         manifestPath: 'https://main--milo--adobecom.hlx.page/promos/2023/black-friday/pre-black-friday/manifest-global.json',
@@ -90,6 +93,9 @@ describe('getPromoManifests', () => {
           cdtEnd: undefined,
           cdtStart: undefined,
         },
+        source: [
+          'promo',
+        ],
       },
       {
         manifestPath: 'https://main--milo--adobecom.hlx.page/promos/2023/black-friday/black-friday/manifest-global.json',
@@ -101,21 +107,24 @@ describe('getPromoManifests', () => {
           cdtEnd: '2026-08-30T00:00:00',
           cdtStart: '2024-08-26T12:00:00',
         },
+        source: [
+          'promo',
+        ],
       },
     ];
     document.head.innerHTML = await readFile({ path: './mocks/head-schedule.html' });
     const manifestnames = 'pre-black-friday-global,black-friday-global,cyber-monday';
     const emea = 'bf-de';
     const americas = 'bf-us';
-    expect(getPromoManifests(
+    const manifests = getPromoManifests(
       {
         manifestnames,
         emea_manifestnames: emea,
         americas_manifestnames: americas,
       },
       new URLSearchParams(),
-    ))
-      .to.deep.eq(expectedManifests);
+    );
+    expect(manifests).to.deep.eq(expectedManifests);
   });
 
   it('should return an empty array if no schedule', async () => {
