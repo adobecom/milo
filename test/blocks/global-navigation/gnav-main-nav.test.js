@@ -8,7 +8,7 @@ import {
   isElementVisible,
   viewports,
   unavVersion,
-  addMetaDataV2
+  addMetaDataV2,
 } from './test-utilities.js';
 import { isDesktop, setActiveLink, toFragment } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
 import globalNavigationActiveMock from './mocks/global-navigation-active.plain.js';
