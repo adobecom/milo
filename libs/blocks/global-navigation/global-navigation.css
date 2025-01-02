@@ -1094,7 +1094,7 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
   border: 0;
 }
 
-.feds-localnav-items .feds-navItem--active {
+.feds-localnav-items .feds-navItem.feds-navItem--active > .feds-navLink {
   font-weight: 600;
 }
 
