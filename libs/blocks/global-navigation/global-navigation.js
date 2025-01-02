@@ -1101,6 +1101,7 @@ class Gnav {
         dropdownTrigger.addEventListener('click', (e) => {
           if (!isDesktop.matches && this.newMobileNav && isSectionMenu) {
             const popup = dropdownTrigger.nextElementSibling;
+            if (popup) popup.style = `top: calc(${window.scrollY}px - var(--feds-height-nav) - 1px)`;
             makeTabActive(popup);
           }
           trigger({ element: dropdownTrigger, event: e });
