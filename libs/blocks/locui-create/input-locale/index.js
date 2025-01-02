@@ -10,19 +10,19 @@ import {
   setLocale,
   updateDraftProject,
 } from '../store.js';
-import { PROJECT_TYPES } from '../utils/constant.js';
+import { ENG_LANG_CODE, PROJECT_TYPES } from '../utils/constant.js';
 
 function initialLanguageList() {
   if (
     project.value.type === PROJECT_TYPES.translation) {
-    return locales.value.filter((locItem) => locItem.languagecode !== 'en');
+    return locales.value.filter((locItem) => locItem.languagecode !== ENG_LANG_CODE);
   }
   return locales.value;
 }
 
 function initialRegions() {
   if (project.value.type === PROJECT_TYPES.translation) {
-    const englishLocale = locales.value.filter((locItem) => locItem.languagecode === 'en');
+    const englishLocale = locales.value.filter((locItem) => locItem.languagecode === ENG_LANG_CODE);
     const { livecopies = '' } = englishLocale[0] || {};
     return localeRegion.value.reduce((acc, curr) => {
       const { key, value } = curr;
