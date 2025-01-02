@@ -24,12 +24,11 @@ function initialRegions() {
   if (project.value.type === PROJECT_TYPES.translation) {
     const englishLocale = locales.value.filter((locItem) => locItem.languagecode === 'en');
     const { livecopies = '' } = englishLocale[0] || {};
-    const livecopiesList = livecopies.split(',');
     return localeRegion.value.reduce((acc, curr) => {
       const { key, value } = curr;
       const valueList = value.split(',');
       const valueWithoutEnglishLocale = valueList.reduce((localeList, locale) => {
-        if (!livecopiesList.includes(locale)) {
+        if (!livecopies.includes(locale)) {
           localeList.push(locale);
         }
         return localeList;
