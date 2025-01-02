@@ -167,7 +167,7 @@ export default function InputUrls() {
     if (project.value) {
       setType(project.value?.type);
       setName(project.value?.name);
-      setHtmlFlow(project.value?.htmlFlow || true);
+      setHtmlFlow(project.value?.htmlFlow ?? true);
       setEditBehavior(project.value?.editBehavior || '');
       setUrlsStr(project.value?.urls?.join('\n'));
       setFragmentsEnabled(project.value?.fragments?.length > 0);
