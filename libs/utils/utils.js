@@ -1272,12 +1272,12 @@ function decorateMeta() {
 }
 
 function decorateDocumentExtras() {
+  decorateMeta();
+  decorateHeader();
   (async () => {
     const { default: loadFavIcon } = await import('./favicon.js');
     loadFavIcon(createTag, getConfig(), getMetadata);
   })();
-  decorateMeta();
-  decorateHeader();
 }
 
 async function documentPostSectionLoading(config) {
