@@ -5,5 +5,5 @@ export default `
       <div><strong><a href="https://adobe.com/">Go To Acrobat</a></strong></div>
     </div>
   </div>
-</div>
+</div> 
 `;
