@@ -79,12 +79,9 @@ export function parsePageAndUrl(config, windowLocation, prefix) {
     'www.stage.adobe.com',
     'milo.stage.adobe.com',
   ];
-  if (env?.name === 'prod') {
-    return { page: pathname.replace(`/${prefix}/`, '/'), url: `${origin}${pathname}` };
-  }
-  if (!stageDomainsMap) {
-    const domain = allowedHosts.includes(origin.replace('https://', ''))
-      ? origin.replace('stage.adobe.com', 'adobe.com') : origin;
+  if (env?.name === 'prod' || !stageDomainsMap
+    || allowedHosts.includes(origin.replace('https://', ''))) {
+    const domain = origin.replace('stage.adobe.com', 'adobe.com');
     return { page: pathname.replace(`/${prefix}/`, '/'), url: `${domain}${pathname}` };
   }
   let path = pathname;
