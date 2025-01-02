@@ -788,6 +788,8 @@ async function decorateHeader() {
   if (breadcrumbs) header.append(breadcrumbs);
   const promo = getMetadata('gnav-promo-source');
   if (promo?.length) header.classList.add('has-promo');
+  const { default: loadFavIcon } = await import('./favicon.js');
+  loadFavIcon(createTag, getConfig(), getMetadata);
 }
 
 async function decorateIcons(area, config) {
@@ -1274,10 +1276,6 @@ function decorateMeta() {
 function decorateDocumentExtras() {
   decorateMeta();
   decorateHeader();
-  (async () => {
-    const { default: loadFavIcon } = await import('./favicon.js');
-    loadFavIcon(createTag, getConfig(), getMetadata);
-  })();
 }
 
 async function documentPostSectionLoading(config) {
