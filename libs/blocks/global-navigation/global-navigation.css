@@ -86,8 +86,8 @@ header.global-navigation {
   z-index: 1;
 }
 
-/* Complimentary WebApp SignIn CTA */
-.feds-complimentary-cta{
+/* Product Entry CTA */
+.feds-product-entry-cta{
   align-items: center;
 }
 
@@ -494,7 +494,7 @@ header.global-navigation {
 }
 
 @media (max-width: 900px) {
-  .feds-complimentary-cta {
+  .feds-product-entry-cta {
     display: none;
   }
 }

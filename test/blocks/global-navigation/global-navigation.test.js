@@ -21,7 +21,7 @@ import darkNav from './mocks/dark-global-navigation.plain.js';
 import navigationWithCustomLinks from './mocks/navigation-with-custom-links.plain.js';
 import globalNavigationMock from './mocks/global-navigation.plain.js';
 import noDropdownNav from './mocks/global-navigation-no-dropdown.plain.js';
-import compSignIn from './mocks/global-navigation-complimentary-signIn.plain.js';
+import productEntryCTA from './mocks/global-navigation-product-entry-cta.plain.js';
 import { getConfig } from '../../../tools/send-to-caas/send-utils.js';
 
 // TODO
@@ -666,19 +666,19 @@ describe('global navigation', () => {
     });
   });
 
-  describe('Complimentary sign-in feature in global navigation', () => {
-    it('should not append the feds-complimentary-cta class when complimentary sign-in is disabled', async () => {
-      document.head.innerHTML = '<meta name="complimentary-sign-in" content="off"/>';
-      const gnav = await createFullGlobalNavigation({ globalNavigation: compSignIn });
-      gnav.decorateCompSignIn();
-      expect(document.querySelector(selectors.topNav).querySelector('.feds-cta-wrapper.feds-complimentary-cta')).to.not.exist;
+  describe('Product Entry CTA feature in global navigation', () => {
+    it('should not append the feds-product-entry-cta class when product entry cta is disabled', async () => {
+      document.head.innerHTML = '<meta name="product-entry-cta" content="off"/>';
+      const gnav = await createFullGlobalNavigation({ globalNavigation: productEntryCTA });
+      gnav.decorateProductEntryCTA();
+      expect(document.querySelector(selectors.topNav).querySelector('.feds-cta-wrapper.feds-product-entry-cta')).to.not.exist;
     });
 
-    it('should append the feds-complimentary-cta class when complimentary sign-in is enabled', async () => {
-      document.head.innerHTML = '<meta name="complimentary-sign-in" content="on" />';
-      const gnav = await createFullGlobalNavigation({ globalNavigation: compSignIn });
-      gnav.decorateCompSignIn();
-      expect(document.querySelector(selectors.topNav).querySelector('.feds-cta-wrapper.feds-complimentary-cta')).to.exist;
+    it('should append the feds-product-entry-cta class when product entry cta is enabled', async () => {
+      document.head.innerHTML = '<meta name="product-entry-cta" content="on" />';
+      const gnav = await createFullGlobalNavigation({ globalNavigation: productEntryCTA });
+      gnav.decorateProductEntryCTA();
+      expect(document.querySelector(selectors.topNav).querySelector('.feds-cta-wrapper.feds-product-entry-cta')).to.exist;
     });
   });
 

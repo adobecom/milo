@@ -347,11 +347,11 @@ class Gnav {
       lanaLog({ message: 'GNAV: Error with IMS', e, tags: 'errorType=info,module=gnav' });
     }));
 
-  decorateCompSignIn = () => {
-    const button = this.content.querySelector('.complimentary-sign-in a');
+  decorateProductEntryCTA = () => {
+    const button = this.content.querySelector('.product-entry-cta a');
     if (!button) return null;
     const cta = decorateCta({ elem: button, type: this.getMainNavItemType(button) });
-    cta.closest('.feds-cta-wrapper').classList.add('feds-complimentary-cta');
+    cta.closest('.feds-cta-wrapper').classList.add('feds-product-entry-cta');
     return cta;
   };
 
@@ -364,7 +364,7 @@ class Gnav {
           ${this.decorateBrand()}
         </div>
         ${this.elements.navWrapper}
-        ${getMetadata('complimentary-sign-in')?.toLowerCase() === 'on' ? this.decorateCompSignIn() : ''}
+        ${getMetadata('product-entry-cta')?.toLowerCase() === 'on' ? this.decorateProductEntryCTA() : ''}
         ${getConfig().searchEnabled === 'on' ? toFragment`<div class="feds-client-search"></div>` : ''}
         ${this.useUniversalNav ? this.blocks.universalNav : ''}
         ${(!this.useUniversalNav && this.blocks.profile.rawElem) ? this.blocks.profile.decoratedElem : ''}

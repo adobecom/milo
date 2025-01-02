@@ -17,7 +17,7 @@ const SYNTHETIC_BLOCKS = [
   'region-selector',
   'search',
   'social',
-  'complimentary-sign-in',
+  'product-entry-cta',
 ];
 
 // eslint-disable-next-line import/prefer-default-export
