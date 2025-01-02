@@ -9,14 +9,22 @@ class LocalNavItem {
     this.addEventListeners();
   }
 
-  static handleKeyDown = (e) => {
-    const isHeadline = e.target.classList.contains(selectors.headline.slice(1));
-    switch (e.code) {
+  handleKeyDown = (e) => {
+    const { code, target } = e;
+    const isHeadline = target.classList.contains(selectors.headline.slice(1));
+    switch (code) {
       case 'Space':
       case 'Enter':
         if (isHeadline) {
           e.preventDefault(); // Prevent default scrolling behavior for Space key
-          trigger({ element: e.target, event: e, type: 'headline' });
+          trigger({ element: target, event: e, type: 'headline' });
+        }
+        break;
+      case 'Escape': // close on escape
+        e.preventDefault();
+        if (this.localNav.classList.contains(selectors.localNavActive.slice(1))) {
+          this.localNavTrigger?.click();
+          this.localNavTrigger?.focus();
         }
         break;
       default:
@@ -25,10 +33,9 @@ class LocalNavItem {
   };
 
   addEventListeners = () => {
-    this.localNav?.addEventListener('keydown', LocalNavItem.handleKeyDown);
+    this.localNav?.addEventListener('keydown', this.handleKeyDown);
     this.exitLink?.addEventListener('focus', (e) => {
       e.preventDefault();
-      this.localNavTrigger?.click();
       this.localNavTrigger?.focus();
     });
   };
