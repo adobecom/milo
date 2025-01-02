@@ -74,16 +74,18 @@ function addPillEventListeners(div) {
 export function parsePageAndUrl(config, windowLocation, prefix) {
   const { stageDomainsMap, env } = config;
   const { pathname, origin } = windowLocation;
-  if (env?.name === 'prod' || !stageDomainsMap) {
-    return { page: pathname.replace(`/${prefix}/`, '/'), url: `${origin}${pathname}` };
-  }
-  let path = pathname;
-  let domain = origin;
   const allowedHosts = [
     'business.stage.adobe.com',
     'www.stage.adobe.com',
     'milo.stage.adobe.com',
   ];
+  if (env?.name === 'prod' || !stageDomainsMap) {
+    const domain = allowedHosts.includes(origin.replace('https://', ''))
+      ? origin.replace('stage.adobe.com', 'adobe.com') : origin;
+    return { page: pathname.replace(`/${prefix}/`, '/'), url: `${domain}${pathname}` };
+  }
+  let path = pathname;
+  let domain = origin;
   const domainCheck = Object.keys(stageDomainsMap)
     .find((key) => {
       try {
