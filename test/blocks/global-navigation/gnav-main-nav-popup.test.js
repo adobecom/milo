@@ -48,6 +48,7 @@ describe('main nav popups', () => {
     });
 
     it('should render popups with wide columns', async () => {
+      document.head.appendChild(addMetaDataV2('off'));
       await createFullGlobalNavigation({ globalNavigation: globalNavigationWideColumnMock });
       expect(document.querySelector('.feds-navItem--section .feds-menu-column--group .feds-menu-column + .feds-menu-column')).to.exist;
       expect(document.querySelector('.column-break')).to.not.exist;
