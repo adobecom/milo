@@ -765,8 +765,6 @@ function decorateDefaults(el) {
 }
 
 async function decorateHeader() {
-  const { default: loadFavIcon } = await import('./favicon.js');
-  loadFavIcon(createTag, getConfig(), getMetadata);
   const breadcrumbs = document.querySelector('.breadcrumbs');
   breadcrumbs?.remove();
   const header = document.querySelector('header');
@@ -1274,6 +1272,10 @@ function decorateMeta() {
 }
 
 function decorateDocumentExtras() {
+  (async () => {
+    const { default: loadFavIcon } = await import('./favicon.js');
+    loadFavIcon(createTag, getConfig(), getMetadata);
+  })();
   decorateMeta();
   decorateHeader();
 }
