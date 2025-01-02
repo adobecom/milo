@@ -93,7 +93,7 @@ export async function fetchLocaleDetails() {
         localeRegion: processedLocaleRegion,
       } = processLocaleData(localeData);
 
-    locales.value = processedLocales;
+    locales.value = processedLocales.filter((locItem) => locItem.workflow !== 'Transcreation' && locItem.livecopies !== '');
     localeRegion.value = processedLocaleRegion;
   } catch (error) {
     console.error('Error during fetchLocaleDetails:', error.message);
