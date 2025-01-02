@@ -79,7 +79,10 @@ export function parsePageAndUrl(config, windowLocation, prefix) {
     'www.stage.adobe.com',
     'milo.stage.adobe.com',
   ];
-  if (env?.name === 'prod' || !stageDomainsMap) {
+  if (env?.name === 'prod') {
+    return { page: pathname.replace(`/${prefix}/`, '/'), url: `${origin}${pathname}` };
+  }
+  if (!stageDomainsMap) {
     const domain = allowedHosts.includes(origin.replace('https://', ''))
       ? origin.replace('stage.adobe.com', 'adobe.com') : origin;
     return { page: pathname.replace(`/${prefix}/`, '/'), url: `${domain}${pathname}` };
@@ -355,7 +358,8 @@ function addHighlightData(manifests) {
 }
 export async function saveToMmm() {
   const data = parseMepConfig();
-  if (data.page.url.includes('/drafts/')) return false;
+  const excludedStrings = ['/drafts/', '.stage.', '.page/', '.live/', '/fragments/'];
+  if (excludedStrings.some((str) => data.page.url.includes(str))) return false;
   data.activities = data.activities.filter((activity) => {
     const { url, source } = activity;
     activity.source = source.filter((item) => item !== 'mep param');
