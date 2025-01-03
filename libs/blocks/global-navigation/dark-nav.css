@@ -122,6 +122,10 @@ header.new-nav.feds--dark .feds-nav > section.feds-navItem > .feds-popup .sticky
   border-top: 1px solid var(--feds-borderColor-link-v2);
 }
 
+header.new-nav.feds--dark .feds-nav > section.feds-navItem > .feds-popup .top-bar .main-menu {
+  color: var(--text-color);
+}
+
 /* Popup */
 .feds--dark .feds-popup {
   background-color: #151515;
