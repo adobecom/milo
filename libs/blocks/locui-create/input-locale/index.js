@@ -10,7 +10,40 @@ import {
   setLocale,
   updateDraftProject,
 } from '../store.js';
-import { PROJECT_TYPES } from '../utils/constant.js';
+import { ENG_LANG_CODE, PROJECT_TYPES } from '../utils/constant.js';
+
+function initialLanguageList() {
+  if (
+    project.value.type === PROJECT_TYPES.translation) {
+    return locales.value.filter((locItem) => locItem.languagecode !== ENG_LANG_CODE);
+  }
+  return locales.value;
+}
+
+function initialRegions() {
+  if (project.value.type === PROJECT_TYPES.translation) {
+    const englishLocale = locales.value.filter((locItem) => locItem.languagecode === ENG_LANG_CODE);
+    const { livecopies = '' } = englishLocale[0] || {};
+    return localeRegion.value.reduce((acc, curr) => {
+      const { key, value } = curr;
+      const valueList = value.split(',');
+      const valueWithoutEnglishLocale = valueList.reduce((localeList, locale) => {
+        if (!livecopies.includes(locale)) {
+          localeList.push(locale);
+        }
+        return localeList;
+      }, []);
+
+      acc.push({
+        key,
+        value: valueWithoutEnglishLocale.join(','),
+      });
+
+      return acc;
+    }, []);
+  }
+  return localeRegion.value;
+}
 
 export default function useInputLocale() {
   const [selectedRegion, setSelectedRegion] = useState(
@@ -22,18 +55,13 @@ export default function useInputLocale() {
   const [activeLocales, setActiveLocales] = useState(
     locSelected.value?.activeLocales || {},
   );
+  const [languagesList] = useState(initialLanguageList);
+
+  const [localeRegionList] = useState(initialRegions);
 
   const [apiError, setApiError] = useState('');
 
-  useEffect(() => {
-    if (project.value.type === PROJECT_TYPES.rollout
-      || project.value.type === PROJECT_TYPES.translation) {
-      locales.value = locales.value.filter((locItem) => locItem.workflow !== 'Transcreation' && locItem.livecopies !== '');
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [project.value.type]);
-
-  const findLanguageForLocale = (locale) => locales.value.find((lang) => lang.livecopies.split(',').includes(locale));
+  const findLanguageForLocale = (locale) => languagesList.find((lang) => lang.livecopies.split(',').includes(locale));
 
   const transformActiveLocales = () => {
     const groupedLocales = {};
@@ -109,7 +137,7 @@ export default function useInputLocale() {
 
   const updateRegionStates = (localeList) => {
     const updatedRegionStates = {};
-    localeRegion.value.forEach((region) => {
+    localeRegionList.forEach((region) => {
       const regionLocales = region.value.split(',');
       const isRegionActive = regionLocales.every((locale) => localeList.includes(locale));
       updatedRegionStates[region.key] = isRegionActive;
@@ -122,7 +150,7 @@ export default function useInputLocale() {
     const allLocales = [];
     const allActiveLocales = {};
 
-    localeRegion.value.forEach((region) => {
+    localeRegionList.forEach((region) => {
       const regionLocales = region.value.split(',');
       allRegions[region.key] = regionLocales.reduce((acc, locale) => {
         acc[locale] = true;
@@ -131,7 +159,7 @@ export default function useInputLocale() {
       allLocales.push(...regionLocales);
     });
 
-    locales.value.forEach((lang) => {
+    languagesList.forEach((lang) => {
       lang.livecopies.split(',').forEach((locale) => {
         allActiveLocales[locale] = lang.language;
       });
@@ -237,8 +265,7 @@ export default function useInputLocale() {
     selectedRegion,
     selectedLocale,
     activeLocales,
-    localeRegion,
-    locales,
+    localeRegionList,
     project,
     errorPresent,
     handleNext,
@@ -250,5 +277,6 @@ export default function useInputLocale() {
     selectAll,
     apiError,
     setApiError,
+    languagesList,
   };
 }
