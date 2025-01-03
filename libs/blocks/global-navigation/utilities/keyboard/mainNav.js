@@ -26,7 +26,7 @@ class MainNavItem {
             if (newNav) {
               const activePopup = document.querySelector(selectors.activePopup);
               if (!activePopup) e.preventDefault();
-              const items = [...document.querySelectorAll(`${selectors.mainMenuItems}, ${selectors.mainMenuLinks}`)];
+              const items = [...document.querySelectorAll(`${selectors.mainMenuItems}, ${selectors.mainMenuLinks}, ${selectors.mainNavToggle}`)];
               const current = items.findIndex((x) => x === e.target);
               if (current > -1) {
                 const next = current < items.length - 1 ? current + 1 : 0;
