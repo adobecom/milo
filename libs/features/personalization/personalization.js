@@ -1272,13 +1272,9 @@ export async function init(enablements = {}) {
       manifests = config.mep.targetManifests;
     }
   }
-  if (!manifests || !manifests.length) return;
   try {
-    await applyPers(manifests);
-    if (config.mep.preview) {
-      const { saveToMmm } = await import('./preview.js');
-      saveToMmm();
-    }
+    if (manifests?.length) await applyPers(manifests);
+    if (config.mep?.preview) await import('./preview.js').then(({ saveToMmm }) => saveToMmm());
   } catch (e) {
     log(`MEP Error: ${e.toString()}`);
     window.lana?.log(`MEP Error: ${e.toString()}`);
