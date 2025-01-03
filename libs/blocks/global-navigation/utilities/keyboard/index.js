@@ -107,15 +107,27 @@ class KeyboardNavigation {
         el.addEventListener('keydown', (e) => logErrorFor(() => {
           switch (e.code) {
             case 'Tab': {
-              cycleOnOpenSearch({ e, isDesktop: this.desktop.matches });
-              const { items } = getProfileItems({ e });
-
-              const profileBtn = e.target.closest(`${selectors.signIn}, ${selectors.profileButton}`);
-              if (e.shiftKey && e.target === profileBtn) closeProfile();
-              if (items[items.length - 1] === e.target) {
-                e.preventDefault();
-                e.stopPropagation();
-                closeProfile();
+              const isNewNav = !!document.querySelector('header.new-nav');
+              const isOpen = document
+                .querySelector(selectors.navWrapper)
+                .classList.contains(selectors.navWrapperExpanded.slice(1));
+              if (isNewNav && isOpen) {
+                if (e.target.classList.contains(selectors.mainNavToggle.slice(1))) {
+                  e.preventDefault();
+                  document.querySelector(selectors.mainMenuItems).focus();
+                }
+              } else {
+                cycleOnOpenSearch({ e, isDesktop: this.desktop.matches });
+                const { items } = getProfileItems({ e });
+                const profileBtn = e.target.closest(
+                  `${selectors.signIn}, ${selectors.profileButton}`
+                );
+                if (e.shiftKey && e.target === profileBtn) closeProfile();
+                if (items[items.length - 1] === e.target) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  closeProfile();
+                }
               }
               break;
             }
