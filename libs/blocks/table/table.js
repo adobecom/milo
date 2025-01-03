@@ -149,7 +149,7 @@ function handleAddOnContent(table) {
       el?.insertAdjacentElement(order === 'before' ? 'beforebegin' : 'afterend', tag);
     });
   });
-  setTimeout(() => handleEqualHeight(table, '.row-heading'), 0);
+  setTimeout(() => handleEqualHeight(table, '.row-heading'), 70);
 }
 
 function handleHighlight(table) {
