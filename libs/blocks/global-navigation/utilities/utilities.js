@@ -485,7 +485,7 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
     closeAllDropdowns();
   });
   popup.querySelector('.main-menu')?.addEventListener('click', (e) => {
-    e.target.closest(selectors.activeDropdown).querySelector("button").focus();
+    e.target.closest(selectors.activeDropdown).querySelector('button').focus();
     closeAllDropdowns();
   });
   const tabbuttons = popup.querySelectorAll('.global-navigation .tabs button');

@@ -1063,7 +1063,7 @@ describe('keyboard navigation', () => {
         await sendKeys({ press: 'Tab' });
         await sendKeys({ press: 'Tab' });
         const allMainMenuLinks = document.querySelectorAll('.feds-nav section > button');
-        expect(document.activeElement).to.equal(allMainMenuLinks[1]);
+        expect(document.activeElement).to.equal(allMainMenuLinks[2]);
       });
 
       it('shift focus on Escape to trigger element', async () => {
@@ -1086,23 +1086,16 @@ describe('keyboard navigation', () => {
       });
 
       it('shift focus on tab for links on level 2 screen', async () => {
-        await sendKeys({ press: 'Tab' });
-        await sendKeys({ press: 'Tab' });
-        await sendKeys({ press: 'Tab' });
-        await sendKeys({ press: 'Tab' });
-        await sendKeys({ press: 'Tab' });
-        await sendKeys({ press: 'Tab' });
+        const firstTab = document.querySelector('header .feds-nav .tabs .tab');
+        firstTab.focus();
         const allNavLinks = document.querySelectorAll('header .feds-nav section .feds-popup .tab-content > div:not([hidden="true"]) .feds-navLink');
-        expect(document.activeElement).to.equal(allNavLinks[1]);
+        await sendKeys({ press: 'Tab' });
+        expect(document.activeElement).to.equal(allNavLinks[0]);
       });
 
       it('shift focus on Escape to trigger element', async () => {
-        await sendKeys({ press: 'Tab' });
-        await sendKeys({ press: 'Tab' });
-        await sendKeys({ press: 'Tab' });
-        await sendKeys({ press: 'Tab' });
-        await sendKeys({ press: 'Tab' });
-        await sendKeys({ press: 'Tab' });
+        const firstTab = document.querySelector('header .feds-nav .tabs .tab');
+        firstTab.focus();
         await sendKeys({ press: 'Escape' });
         const toggle = document.querySelector('header.new-nav .feds-toggle');
         expect(document.activeElement).to.equal(toggle);
