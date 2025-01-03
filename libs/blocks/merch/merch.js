@@ -753,7 +753,7 @@ export async function handleHashChange() {
   if (window.location.hash) {
     const modalId = window.location.hash.replace('#', '');
     const cta = document.querySelector(`.con-button[data-modal-id="${modalId}"]`);
-    if (cta && !modalDialog) {
+    if (!modalDialog) {
       reopenModal(cta);
     }
   } else if (modalDialog) {
