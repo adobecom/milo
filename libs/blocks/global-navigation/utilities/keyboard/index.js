@@ -119,9 +119,7 @@ class KeyboardNavigation {
               } else {
                 cycleOnOpenSearch({ e, isDesktop: this.desktop.matches });
                 const { items } = getProfileItems({ e });
-                const profileBtn = e.target.closest(
-                  `${selectors.signIn}, ${selectors.profileButton}`
-                );
+                const profileBtn = e.target.closest(`${selectors.signIn}, ${selectors.profileButton}`);
                 if (e.shiftKey && e.target === profileBtn) closeProfile();
                 if (items[items.length - 1] === e.target) {
                   e.preventDefault();
