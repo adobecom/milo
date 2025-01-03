@@ -150,6 +150,7 @@ class Popup {
     const activeLinks = [...activePopup.querySelectorAll(selectors.activeLinks)];
     const stickyCTA = activePopup.querySelector(selectors.stickyCta);
     const topBarLinks = activePopup.querySelectorAll(selectors.topBarLinks);
+    const breadcrumbLinks = activePopup.querySelectorAll(selectors.breadCrumbItems);
     return [
       ...anteActiveTab,
       activeTab,
@@ -157,6 +158,7 @@ class Popup {
       stickyCTA,
       ...postActiveTab,
       ...topBarLinks,
+      ...breadcrumbLinks,
     ].filter(Boolean);
   };
 
