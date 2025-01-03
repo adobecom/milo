@@ -30,6 +30,7 @@ export const selectors = {
   columnBreak: '.column-break',
   brandImageOnly: '.brand-image-only',
   localNav: '.feds-localnav',
+  mainNavToggle: '.feds-toggle',
 };
 
 export const icons = {
@@ -430,22 +431,22 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
     });
   const CTA = popup.querySelector('.feds-cta')?.outerHTML ?? '';
   const mainMenu = `
-      <span class="main-menu" daa-ll="Main menu_Gnav">
+      <button class="main-menu" daa-ll="Main menu_Gnav">
         <svg xmlns="http://www.w3.org/2000/svg" width="7" height="12" viewBox="0 0 7 12" fill="none"><path d="M5.55579 1L1.09618 5.45961C1.05728 5.4985 1.0571 5.56151 1.09577 5.60062L5.51027 10.0661" stroke=${isDarkMode() ? '#f2f2f2' : 'black'} stroke-width="2" stroke-linecap="round"/></svg>
         {{main-menu}}
-      </span>
+      </button>
   `;
   const brand = document.querySelector('.feds-brand')?.outerHTML;
   const breadCrumbs = document.querySelector('.feds-breadcrumbs')?.outerHTML;
   popup.innerHTML = `
     <div class="top-bar">
       ${localnav ? brand : await replaceText(mainMenu, getFedsPlaceholderConfig())}
-      <span class="close-icon" daa-ll="Close button_SubNav">
+      <button class="close-icon" daa-ll="Close button_SubNav">
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14" fill="none">
           <path d="M1.5 1L13 12.5" stroke=${isDarkMode() ? '#f2f2f2' : 'black'} stroke-width="1.7037" stroke-linecap="round"/>
           <path d="M13 1L1.5 12.5" stroke=${isDarkMode() ? '#f2f2f2' : 'black'} stroke-width="1.7037" stroke-linecap="round"/>
         </svg>
-      </span>
+      </button>
     </div>
     <div class="title">
       ${breadCrumbs || '<div class="breadcrumbs"></div>'}
@@ -479,8 +480,14 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
     </div>
     `;
 
-  popup.querySelector('.close-icon')?.addEventListener('click', closeAllDropdowns);
-  popup.querySelector('.main-menu')?.addEventListener('click', closeAllDropdowns);
+  popup.querySelector('.close-icon')?.addEventListener('click', () => {
+    document.querySelector(selectors.mainNavToggle).focus();
+    closeAllDropdowns();
+  });
+  popup.querySelector('.main-menu')?.addEventListener('click', (e) => {
+    e.target.closest(selectors.activeDropdown).querySelector("button").focus();
+    closeAllDropdowns();
+  });
   const tabbuttons = popup.querySelectorAll('.global-navigation .tabs button');
   const tabpanels = popup.querySelectorAll('.global-navigation .tab-content [role="tabpanel"]');
 

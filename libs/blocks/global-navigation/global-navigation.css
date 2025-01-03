@@ -914,14 +914,19 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .top-bar .feds-bra
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .top-bar .close-icon {
   width:14px;
   height:14px;
-  cursor:pointer;
+  padding: 0;
+  border: 0;
+  font-family: var(--body-font-family);
+  margin-top: 2px;
 }
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .top-bar .main-menu {
   font-size: 14px;
   font-weight: 700;
   line-height: 16px;
-  cursor: pointer;
+  padding: 1px 0;
+  border: 0;
+  font-family: var(--body-font-family);
 }
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .top-bar .main-menu svg {

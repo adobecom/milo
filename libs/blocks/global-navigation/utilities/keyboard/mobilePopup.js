@@ -149,11 +149,15 @@ class Popup {
     const postActiveTab = dropWhile(tabs, (tab) => tab !== activeTab).slice(1);
     const activeLinks = [...activePopup.querySelectorAll(selectors.activeLinks)];
     const stickyCTA = activePopup.querySelector(selectors.stickyCta);
+    const mainMenuLink = activePopup.querySelector(selectors.mainMenuLink);
+    const closeLink = activePopup.querySelector(selectors.closeLink);
     return [
       ...anteActiveTab,
       activeTab,
       ...activeLinks,
       stickyCTA,
+      mainMenuLink,
+      closeLink,
       ...postActiveTab,
     ].filter(Boolean);
   };
