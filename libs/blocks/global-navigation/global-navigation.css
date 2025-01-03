@@ -1080,6 +1080,9 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
   border-top: 1px solid var(--feds-borderColor-localnav-v2);
   border-bottom: 1px solid var(--feds-borderColor-localnav-v2);
   background-color: var(--feds-background-nav);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .feds-localnav-items {
