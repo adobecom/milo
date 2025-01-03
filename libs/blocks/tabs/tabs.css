@@ -100,7 +100,7 @@
   display: flex;
   width: var(--grid-container-width);
   margin: 0 auto;
-  box-sizing: content-box;
+    box-sizing: content-box;
 }
 
 /* center tabs */
@@ -161,12 +161,12 @@
   z-index: 1;
 }
 
-.tabs .tab-paddles .paddle {
+.tabs .paddle {
   position: absolute;
   cursor: pointer;
   width: 32px;
   height: 48px;
-  bottom: 0;
+  top: var(--spacing-xl);
   background: var(--tabs-active-bg-color);
   border: 0;
   border-bottom: 1px solid var(--tabs-border-color);
@@ -177,7 +177,7 @@
 
 .tabs.radio div[role="tablist"],
 .tabs.radio div[role="tablist"] button,
-.tabs.radio .tab-paddles .paddle {
+.tabs.radio .paddle {
   box-shadow: none;
   background: none;
   border: none;
@@ -303,28 +303,31 @@
   height: 24px;
 }
 
-.tabs .tab-paddles {
-  position: relative;
+.tabs .paddle-left {
   z-index: 3;
 }
 
-.tabs .tab-paddles .paddle:disabled {
+.tabs .paddle-right {
+  z-index: 3;
+}
+
+.tabs .paddle:disabled {
   cursor: default;
   box-shadow: none;
   background: var(--tabs-list-bg-gradient);
 }
 
-.tabs .tab-paddles .paddle-left {
+.tabs .paddle-left {
   box-shadow: 4px 0 4px -2px var(--tabs-paddle-bs-color);
   left: 0;
 }
 
-.tabs .tab-paddles .paddle-right {
+.tabs .paddle-right {
   box-shadow: -4px 0 4px -2px var(--tabs-paddle-bs-color);
   right: 0;
 }
 
-.tabs .tab-paddles .paddle svg {
+.tabs .paddle svg {
   opacity: 1;
   width: 8px;
   height: 14px;
@@ -333,19 +336,19 @@
   color: var(--tabs-text-color);
 }
 
-.tabs .tab-paddles .paddle-left svg {
+.tabs .paddle-left svg {
   transform: rotate(180deg);
 }
 
-.tabs .tab-paddles .paddle:hover svg {
+.tabs .paddle:hover svg {
   color: var(--tabs-active-text-color);
 }
 
-.tabs .tab-paddles .paddle:disabled svg {
+.tabs .paddle:disabled svg {
   opacity: 0;
 }
 
-.tabs[class*='pill'] .tab-paddles .paddle {
+.tabs[class*='pill'] .paddle {
   background: unset;
   border: none;
 }
@@ -358,7 +361,11 @@
   border: none;
 }
 
-.tabs.radio .tab-paddles {
+.tabs.radio .paddle-left {
+  display: none;
+}
+
+.tabs.radio .paddle-right {
   display: none;
 }
 
@@ -417,7 +424,7 @@
 .tabs-background-transparent .tabs,
 .tabs-background-transparent .tabs div[role="tablist"],
 .tabs-background-transparent .tabs div[role="tablist"] button[aria-selected="true"],
-.tabs-background-transparent .tabs .tab-paddles .paddle {
+.tabs-background-transparent .tabs .tabList .paddle {
   background: transparent;
 }
 
@@ -485,11 +492,11 @@
     padding-bottom: 18px;
   }
 
-  .tabs .tab-paddles .paddle {
+  .tabs .paddle {
     height: 62px;
   }
 
-  .tabs .tab-paddles .paddle svg {
+  .tabs .paddle svg {
     top: 24px;
   }
 }
