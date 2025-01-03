@@ -105,7 +105,7 @@ describe('How To', () => {
 
   it('Mp4 Link video', async () => {
     const howTo = document.getElementById('test6');
-    videoinit(howTo.querySelector('a'));
+    await videoinit(howTo.querySelector('a'));
     init(howTo);
     const video = howTo.querySelector('video');
     expect(video).to.exist;
