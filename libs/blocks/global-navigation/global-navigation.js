@@ -43,7 +43,6 @@ import {
   transformTemplateToMobile,
   closeAllTabs,
   enableMobileScroll,
-  disableMobileScroll,
 } from './utilities/utilities.js';
 import { getFedsPlaceholderConfig } from '../../utils/federated.js';
 
@@ -412,10 +411,12 @@ class Gnav {
       const isActive = localNav.classList.contains('feds-localnav--active');
       localNav.querySelector('.feds-localnav-title').setAttribute('aria-expanded', isActive);
       localNav.querySelector('.feds-localnav-title').setAttribute('daa-ll', `${title}_localNav|${isActive ? 'close' : 'open'}`);
+      const pred = (e) => !localNav.contains(e.target);
+      let enableScroll = () => {};
       if (isActive) {
-        disableMobileScroll();
+        enableScroll = disableMobileScroll(pred);
       } else {
-        enableMobileScroll();
+        enableScroll();
       }
     });
 
@@ -775,8 +776,10 @@ class Gnav {
   toggleMenuMobile = () => {
     const toggle = this.elements.mobileToggle;
     const isExpanded = this.isToggleExpanded();
-    if (isExpanded) disableMobileScroll();
-    else enableMobileScroll();
+    const pred = (e) => !this.block.contains(e.target);
+    let enableScroll = () => {};
+    if (isExpanded) enableScroll = disableMobileScroll(pred);
+    else enablScroll();
     if (!isExpanded && this.newMobileNav) {
       const sections = document.querySelectorAll('header.new-nav .feds-nav > section.feds-navItem > button.feds-navLink');
       animateInSequence(sections, 0.075);

@@ -520,11 +520,12 @@ export const dropWhile = (xs, f) => {
   return xs;
 };
 
-const preventDefault = (e) => e.preventDefault();
+const preventDefault = (pred) => (e) => {
+  if (pred(e)) e.preventDefault();
+};
 
-export const disableMobileScroll = () => {
-  document.body.addEventListener('touchmove', preventDefault, { passive: false }); // for iOS
+export const disableMobileScroll = (pred) => {
+  const g = preventDefault(pred)
+  document.body.addEventListener('touchmove', g, { passive: false }); // for iOS
+  return document.body.removeEventListener('touchmove', g);
 }
-export const enableMobileScroll = () => document.body.removeEventListener('touchmove', preventDefault);
-
-
