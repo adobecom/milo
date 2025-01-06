@@ -404,14 +404,11 @@ class Gnav {
       itemWrapper.appendChild(clonedItem);
     });
 
+    const preventDefault = (e) => e.preventDefault();
     const disableMobileScroll = () => {
-      const current = window.scrollY;
-      const f = (event) => {
-        event.preventDefault();
-      };
-      window.addEventListener('touchmove', f, { passive: false }); // for iOS
-      return () => { window.removeEventListener('touchmove', f); };
+      window.addEventListener('touchmove', preventDefault, { passive: false }); // for iOS
     }
+    const enableMobileScroll = () => window.removeEventListener('touchmove', preventDefault);
 
     localNav.querySelector('.feds-localnav-title').addEventListener('click', () => {
       localNav.classList.toggle('feds-localnav--active');
@@ -419,9 +416,8 @@ class Gnav {
       const isActive = localNav.classList.contains('feds-localnav--active');
       localNav.querySelector('.feds-localnav-title').setAttribute('aria-expanded', isActive);
       localNav.querySelector('.feds-localnav-title').setAttribute('daa-ll', `${title}_localNav|${isActive ? 'close' : 'open'}`);
-      let enableMobileScroll = () => {};
       if (isActive) {
-        enableMobileScroll = disableMobileScroll();
+        disableMobileScroll();
       } else {
         enableMobileScroll();
       }
