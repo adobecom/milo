@@ -422,7 +422,7 @@ class Gnav {
       const rect = this.elements.localNav.getBoundingClientRect();
       return rect.top === 0;
     };
-    window.addEventListener('scroll', () => {
+    window.addEventListener('scroll', (event) => {
       const classList = this.elements.localNav?.classList;
       if (isAtTop()) {
         if (!classList?.contains('is-sticky')) {
@@ -431,6 +431,7 @@ class Gnav {
       } else {
         classList?.remove('is-sticky');
       }
+      event.preventDefault();
     });
   };
 

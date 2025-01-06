@@ -766,8 +766,6 @@ header.global-navigation + .feds-localnav {
 
 .disable-scroll {
   overflow: hidden;
-  /* for iOS Safari */
-  position: absolute;
 }
 
 h1, h2, h3, h4, h5, h6 {
