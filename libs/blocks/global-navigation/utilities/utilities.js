@@ -521,9 +521,10 @@ export const dropWhile = (xs, f) => {
 };
 
 const preventDefault = (e) => e.preventDefault();
+
 export const disableMobileScroll = () => {
-  window.addEventListener('touchmove', preventDefault, { passive: false }); // for iOS
+  document.body.addEventListener('touchmove', preventDefault, { passive: false }); // for iOS
 }
-export const enableMobileScroll = () => window.removeEventListener('touchmove', preventDefault);
+export const enableMobileScroll = () => document.body.removeEventListener('touchmove', preventDefault);
 
 
