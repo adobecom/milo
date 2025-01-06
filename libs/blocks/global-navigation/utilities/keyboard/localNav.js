@@ -35,6 +35,7 @@ class LocalNavItem {
   addEventListeners = () => {
     this.localNav?.addEventListener('keydown', this.handleKeyDown);
     this.exitLink?.addEventListener('focus', (e) => {
+      alert('exit link focus');
       e.preventDefault();
       setTimeout(() => {
         this.localNavTrigger?.focus();
