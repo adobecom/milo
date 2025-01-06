@@ -19,7 +19,7 @@ function handleEvent({ prefix, link, callback } = {}) {
   });
 }
 
-function decorateLink(link, path) {
+export function decorateLink(link, path) {
   let hrefAdapted;
   let pathname = link.getAttribute('href');
   if (pathname.startsWith('http')) {
