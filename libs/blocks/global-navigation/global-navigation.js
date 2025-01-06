@@ -404,14 +404,13 @@ class Gnav {
       itemWrapper.appendChild(clonedItem);
     });
 
-    const disableScroll = () => {
+    const disableMobileScroll = () => {
       const current = window.scrollY;
       const f = (event) => {
         event.preventDefault();
-        window.scroll(0, current);
       };
-      window.addEventListener('scroll', f);
-      return () => { window.removeEventListener('scroll', f); };
+      window.addEventListener('touchmove', f);
+      return () => { window.removeEventListener('touchmove', f); };
     }
 
     localNav.querySelector('.feds-localnav-title').addEventListener('click', () => {
@@ -420,11 +419,11 @@ class Gnav {
       const isActive = localNav.classList.contains('feds-localnav--active');
       localNav.querySelector('.feds-localnav-title').setAttribute('aria-expanded', isActive);
       localNav.querySelector('.feds-localnav-title').setAttribute('daa-ll', `${title}_localNav|${isActive ? 'close' : 'open'}`);
-      let enableScroll = () => {};
+      let enableMobileScroll = () => {};
       if (isActive) {
-        enableScroll = disableScroll();
+        enableMobileScroll = disableMobileScroll();
       } else {
-        enableScroll();
+        enableMobileScroll();
       }
     });
 
