@@ -42,7 +42,7 @@ import {
   animateInSequence,
   transformTemplateToMobile,
   closeAllTabs,
-  enableMobileScroll,
+  disableMobileScroll,
 } from './utilities/utilities.js';
 import { getFedsPlaceholderConfig } from '../../utils/federated.js';
 
