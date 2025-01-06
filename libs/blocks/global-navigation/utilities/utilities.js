@@ -519,3 +519,11 @@ export const dropWhile = (xs, f) => {
   if (f(xs[0])) return dropWhile(xs.slice(1), f);
   return xs;
 };
+
+const preventDefault = (e) => e.preventDefault();
+export const disableMobileScroll = () => {
+  window.addEventListener('touchmove', preventDefault, { passive: false }); // for iOS
+}
+export const enableMobileScroll = () => window.removeEventListener('touchmove', preventDefault);
+
+

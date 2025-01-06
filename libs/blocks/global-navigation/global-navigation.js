@@ -42,6 +42,8 @@ import {
   animateInSequence,
   transformTemplateToMobile,
   closeAllTabs,
+  enableMobileScroll,
+  disableMobileScroll,
 } from './utilities/utilities.js';
 import { getFedsPlaceholderConfig } from '../../utils/federated.js';
 
@@ -403,12 +405,6 @@ class Gnav {
 
       itemWrapper.appendChild(clonedItem);
     });
-
-    const preventDefault = (e) => e.preventDefault();
-    const disableMobileScroll = () => {
-      window.addEventListener('touchmove', preventDefault, { passive: false }); // for iOS
-    }
-    const enableMobileScroll = () => window.removeEventListener('touchmove', preventDefault);
 
     localNav.querySelector('.feds-localnav-title').addEventListener('click', () => {
       localNav.classList.toggle('feds-localnav--active');
@@ -779,6 +775,8 @@ class Gnav {
   toggleMenuMobile = () => {
     const toggle = this.elements.mobileToggle;
     const isExpanded = this.isToggleExpanded();
+    if (isExpanded) disableMobileScroll();
+    else enableMobileScroll();
     if (!isExpanded && this.newMobileNav) {
       const sections = document.querySelectorAll('header.new-nav .feds-nav > section.feds-navItem > button.feds-navLink');
       animateInSequence(sections, 0.075);
