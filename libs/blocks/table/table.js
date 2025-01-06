@@ -63,6 +63,9 @@ function handleHeading(table, headingCols) {
       elements[textStartIndex]?.classList.add('tracking-header');
       const pricingElem = elements[textStartIndex + 1];
       const span = pricingElem.querySelector('[is=inline-price]');
+      span.onceSettled().then(() => {
+        console.log('settled');
+      });
       span.addEventListener('mas:resolved', () => {
         console.log('resolved event');
         handleEqualHeight(table, '.row-heading');
