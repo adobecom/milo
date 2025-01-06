@@ -43,6 +43,7 @@ import {
   transformTemplateToMobile,
   closeAllTabs,
   disableMobileScroll,
+  enableMobileScroll,
 } from './utilities/utilities.js';
 import { getFedsPlaceholderConfig } from '../../utils/federated.js';
 
@@ -411,18 +412,14 @@ class Gnav {
       const isActive = localNav.classList.contains('feds-localnav--active');
       localNav.querySelector('.feds-localnav-title').setAttribute('aria-expanded', isActive);
       localNav.querySelector('.feds-localnav-title').setAttribute('daa-ll', `${title}_localNav|${isActive ? 'close' : 'open'}`);
-      const pred = (e) => !localNav.contains(e.target);
-      let enableScroll = () => {};
-      if (isActive) {
-        enableScroll = disableMobileScroll(pred);
-      } else {
-        enableScroll();
-      }
+      if (isActive) disableMobileScroll();
+      else enableMobileScroll();
     });
 
     localNav.querySelector('.feds-localnav-curtain').addEventListener('click', (e) => {
       trigger({ element: e.currentTarget, event: e, type: 'localNav-curtain' });
       document.body.classList.remove('disable-scroll');
+      enableMobileScroll();
     });
     this.elements.localNav = localNav;
     localNavItems[0].querySelector('a').textContent = title.trim();
@@ -430,7 +427,7 @@ class Gnav {
       const rect = this.elements.localNav.getBoundingClientRect();
       return rect.top === 0;
     };
-    window.addEventListener('scroll', (event) => {
+    window.addEventListener('scroll', () => {
       const classList = this.elements.localNav?.classList;
       if (isAtTop()) {
         if (!classList?.contains('is-sticky')) {
@@ -776,11 +773,8 @@ class Gnav {
   toggleMenuMobile = () => {
     const toggle = this.elements.mobileToggle;
     const isExpanded = this.isToggleExpanded();
-    const pred = (e) => !this.block.contains(e.target);
-    let enableScroll = () => {};
-    if (isExpanded) enableScroll = disableMobileScroll(pred);
-    else enableScroll();
     if (!isExpanded && this.newMobileNav) {
+      disableMobileScroll();
       const sections = document.querySelectorAll('header.new-nav .feds-nav > section.feds-navItem > button.feds-navLink');
       animateInSequence(sections, 0.075);
       if (this.isLocalNav()) {
@@ -1131,7 +1125,9 @@ class Gnav {
         dropdownTrigger.addEventListener('click', (e) => {
           if (!isDesktop.matches && this.newMobileNav && isSectionMenu) {
             const popup = dropdownTrigger.nextElementSibling;
-            if (popup) popup.style = `top: calc(${window.scrollY}px - var(--feds-height-nav) - 1px)`;
+            const y = Math.abs(parseInt(document.body.style.top));
+            // document.body.style.top should always be set at this point by calling disableMobileScroll
+            if (popup) popup.style = `top: calc(${y || 0}px - var(--feds-height-nav) - 1px)`;
             makeTabActive(popup);
           }
           trigger({ element: dropdownTrigger, event: e });

@@ -483,6 +483,7 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
   popup.querySelector('.close-icon')?.addEventListener('click', () => {
     document.querySelector(selectors.mainNavToggle).focus();
     closeAllDropdowns();
+    enableMobileScroll();
   });
   popup.querySelector('.main-menu')?.addEventListener('click', (e) => {
     e.target.closest(selectors.activeDropdown).querySelector('button').focus();
@@ -520,12 +521,17 @@ export const dropWhile = (xs, f) => {
   return xs;
 };
 
-const preventDefault = (pred) => (e) => {
-  if (pred(e)) e.preventDefault();
-};
+// 
+export const disableMobileScroll = () => {
+  document.body.style.top = `-${window.scrollY}px`;
+  document.body.classList.add('disable-ios-scroll');
+}
 
-export const disableMobileScroll = (pred) => {
-  const g = preventDefault(pred)
-  document.body.addEventListener('touchmove', g, { passive: false }); // for iOS
-  return document.body.removeEventListener('touchmove', g);
+export const enableMobileScroll = () => {
+  if (!document.body.style.top) return;
+  const y = Math.abs(parseInt(document.body.style.top, 10));
+  if (y === NaN) return;
+  document.body.classList.remove('disable-ios-scroll');
+  document.body.style.removeProperty('top');
+  window.scroll(0, y || 0);
 }

@@ -1252,3 +1252,10 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
     opacity: 0;
   }
 }
+
+/* */
+
+.disable-ios-scroll {
+  overflow: hidden;
+  position: fixed;
+}
