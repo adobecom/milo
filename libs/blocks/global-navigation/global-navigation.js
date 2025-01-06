@@ -409,7 +409,7 @@ class Gnav {
       const f = (event) => {
         event.preventDefault();
       };
-      window.addEventListener('touchmove', f);
+      window.addEventListener('touchmove', f, { passive: false }); // for iOS
       return () => { window.removeEventListener('touchmove', f); };
     }
 
