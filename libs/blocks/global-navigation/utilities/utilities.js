@@ -413,6 +413,20 @@ export const closeAllTabs = (tabs, tabpanels) => {
   tabs.forEach((t) => t.setAttribute('aria-selected', 'false'));
 };
 
+export const disableMobileScroll = () => {
+  document.body.style.top = `-${window.scrollY}px`;
+  document.body.classList.add('disable-ios-scroll');
+};
+
+export const enableMobileScroll = () => {
+  if (!document.body.style.top) return;
+  const y = Math.abs(parseInt(document.body.style.top, 10));
+  if (isNaN(y)) return;
+  document.body.classList.remove('disable-ios-scroll');
+  document.body.style.removeProperty('top');
+  window.scroll(0, y || 0);
+};
+
 export const transformTemplateToMobile = async (popup, item, localnav = false) => {
   const notMegaMenu = popup.parentElement.tagName === 'DIV';
   const originalContent = popup.innerHTML;
@@ -520,18 +534,3 @@ export const dropWhile = (xs, f) => {
   if (f(xs[0])) return dropWhile(xs.slice(1), f);
   return xs;
 };
-
-// 
-export const disableMobileScroll = () => {
-  document.body.style.top = `-${window.scrollY}px`;
-  document.body.classList.add('disable-ios-scroll');
-}
-
-export const enableMobileScroll = () => {
-  if (!document.body.style.top) return;
-  const y = Math.abs(parseInt(document.body.style.top, 10));
-  if (y === NaN) return;
-  document.body.classList.remove('disable-ios-scroll');
-  document.body.style.removeProperty('top');
-  window.scroll(0, y || 0);
-}
