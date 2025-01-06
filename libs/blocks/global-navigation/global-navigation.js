@@ -404,12 +404,27 @@ class Gnav {
       itemWrapper.appendChild(clonedItem);
     });
 
+    const disableScroll = () => {
+      const current = window.scrollY;
+      const f = (event) => {
+        event.preventDefault();
+      };
+      window.addEventListener('scroll', f);
+      return () => { window.removeEventListener('scroll', f); };
+    }
+
     localNav.querySelector('.feds-localnav-title').addEventListener('click', () => {
       localNav.classList.toggle('feds-localnav--active');
       document.body.classList.toggle('disable-scroll');
       const isActive = localNav.classList.contains('feds-localnav--active');
       localNav.querySelector('.feds-localnav-title').setAttribute('aria-expanded', isActive);
       localNav.querySelector('.feds-localnav-title').setAttribute('daa-ll', `${title}_localNav|${isActive ? 'close' : 'open'}`);
+      let enableScroll = () => {};
+      if (isActive) {
+        enableScroll = disableScroll();
+      } else {
+        enableScroll();
+      }
     });
 
     localNav.querySelector('.feds-localnav-curtain').addEventListener('click', (e) => {
@@ -431,7 +446,6 @@ class Gnav {
       } else {
         classList?.remove('is-sticky');
       }
-      event.preventDefault();
     });
   };
 
