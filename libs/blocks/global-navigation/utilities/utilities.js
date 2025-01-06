@@ -421,7 +421,7 @@ export const disableMobileScroll = () => {
 export const enableMobileScroll = () => {
   if (!document.body.style.top) return;
   const y = Math.abs(parseInt(document.body.style.top, 10));
-  if (isNaN(y)) return;
+  if (Number.isNaN(y)) return;
   document.body.classList.remove('disable-ios-scroll');
   document.body.style.removeProperty('top');
   window.scroll(0, y || 0);
