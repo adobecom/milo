@@ -261,26 +261,23 @@ export const afterSubmitCallback = (e) => {
   if (faasForms.length !== 1) return;
   const faas = faasForms[0];
   const dialogModal = faas.closest('.dialog-modal');
-  if (dialogModal) {
-    const closeBtn = dialogModal.querySelector('.dialog-close');
-    const faasFormWrapper = dialogModal.querySelector('.faas-form-wrapper');
+  if (!dialogModal) return;
+  const closeBtn = dialogModal.querySelector('.dialog-close');
+  const faasFormWrapper = dialogModal.querySelector('.faas-form-wrapper');
+  if (!faasFormWrapper) return;
+  const overlay = createTag('div', { class: 'faas-form-confirm-overlay' });
+  const checkIcon = createTag('img', {
+    class: 'icon-milo checkmark-green',
+    src: `${config.miloLibs || config.codeRoot}/ui/img/checkmark-green.svg`,
+    alt: 'checkmark-green',
+  });
+  overlay.append(checkIcon);
+  faasFormWrapper.append(overlay);
 
-    if (faasFormWrapper) {
-      const overlay = createTag('div', { class: 'faas-form-confirm-overlay' });
-      const checkIcon = createTag('img', {
-        class: 'icon-milo checkmark-green',
-        src: `${config.miloLibs || config.codeRoot}/ui/img/checkmark-green.svg`,
-        alt: 'checkmark-green',
-      });
-      overlay.append(checkIcon);
-      faasFormWrapper.append(overlay);
-
-      checkIcon.addEventListener('animationend', () => {
-        if (faas.reset) faas.reset();
-        if (closeBtn) closeBtn.click();
-      }, { passive: true, once: true });
-    }
-  }
+  checkIcon.addEventListener('animationend', () => {
+    if (faas.reset) faas.reset();
+    if (closeBtn) closeBtn.click();
+  }, { passive: true, once: true });
 };
 
 export const makeFaasConfig = (targetState) => {
