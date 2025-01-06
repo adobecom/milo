@@ -53,6 +53,7 @@ const MILO_BLOCKS = [
   'merch-card',
   'merch-card-collection',
   'merch-offers',
+  'mmm',
   'mnemonic-list',
   'mobile-app-banner',
   'modal',
@@ -1085,7 +1086,7 @@ async function checkForPageMods() {
     || mepHighlight || mepButton || mepParam === '' || xlg)) return;
 
   const enablePersV2 = enablePersonalizationV2();
-  if (martech !== 'off' && (target || xlg || pzn) && enablePersV2) {
+  if ((target || xlg) && enablePersV2) {
     const params = new URL(window.location.href).searchParams;
     const calculatedTimeout = parseInt(params.get('target-timeout'), 10)
       || parseInt(getMetadata('target-timeout'), 10)
