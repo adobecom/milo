@@ -408,6 +408,7 @@ class Gnav {
       const current = window.scrollY;
       const f = (event) => {
         event.preventDefault();
+        window.scroll(0, current);
       };
       window.addEventListener('scroll', f);
       return () => { window.removeEventListener('scroll', f); };
