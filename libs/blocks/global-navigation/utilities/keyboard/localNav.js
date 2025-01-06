@@ -36,7 +36,9 @@ class LocalNavItem {
     this.localNav?.addEventListener('keydown', this.handleKeyDown);
     this.exitLink?.addEventListener('focus', (e) => {
       e.preventDefault();
-      this.localNavTrigger?.focus();
+      setTimeout(() => {
+        this.localNavTrigger?.focus();
+      }, 0);
     });
   };
 }
