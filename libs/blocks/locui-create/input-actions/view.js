@@ -28,7 +28,7 @@ function TranslateActions({ languageCount, handleActionSelect, handleWorkflowSel
                     name="actions"
                     id="actions"
                   >
-                    ${!TRANSLATE_ONLY_LANGS.include(entry.langCode) && html`<option value="English Copy">English Copy</option>`}
+                    ${!TRANSLATE_ONLY_LANGS.includes(entry.langCode) && html`<option value="English Copy">English Copy</option>`}
                     <option value="Translate">Translate</option>
                   </select>
                 </td>
