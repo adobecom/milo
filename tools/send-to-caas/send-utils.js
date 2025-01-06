@@ -306,7 +306,7 @@ const getBulkPublishLangAttr = async (options) => {
 };
 
 const getCountryAndLang = async (options) => {
-  const langStr = window.location.pathname.includes('/tools/send-to-caas/bulkpublisher.')
+  const langStr = window.location.pathname.includes('/tools/send-to-caas/bulkpublisher')
     ? await getBulkPublishLangAttr(options)
     : (LOCALES[window.location.pathname.split('/')[1]] || LOCALES['']).ietf;
   const langAttr = langStr?.toLowerCase().split('-') || [];
