@@ -779,7 +779,7 @@ class Gnav {
     const pred = (e) => !this.block.contains(e.target);
     let enableScroll = () => {};
     if (isExpanded) enableScroll = disableMobileScroll(pred);
-    else enablScroll();
+    else enableScroll();
     if (!isExpanded && this.newMobileNav) {
       const sections = document.querySelectorAll('header.new-nav .feds-nav > section.feds-navItem > button.feds-navLink');
       animateInSequence(sections, 0.075);
