@@ -975,7 +975,7 @@ class Gnav {
         setActiveLink(true);
       }
     }
-    if (this.newMobileNav) {
+    if (this.newMobileNav && !isDesktop.matches) {
       await this.decorateLocalNav();
     }
     return this.elements.mainNav;
