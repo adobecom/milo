@@ -11,4 +11,4 @@ export const PROJECT_TYPE_LABELS = {
   rollout: 'Rollout',
 };
 
-export const ENGLISH_ALT_CODE = 'en-GB';
+export const TRANSLATE_ONLY_LANGS = ['en-GB'];

@@ -2,7 +2,7 @@ import { html } from '../../../deps/htm-preact.js';
 import StepControls from '../components/stepControls.js';
 import useInputActions from './index.js';
 import { prevStep, project } from '../store.js';
-import { PROJECT_TYPES, PROJECT_TYPE_LABELS, ENGLISH_ALT_CODE } from '../utils/constant.js';
+import { PROJECT_TYPES, PROJECT_TYPE_LABELS, TRANSLATE_ONLY_LANGS } from '../utils/constant.js';
 import Toast from '../components/toast.js';
 
 function TranslateActions({ languageCount, handleActionSelect, handleWorkflowSelect }) {
@@ -28,7 +28,7 @@ function TranslateActions({ languageCount, handleActionSelect, handleWorkflowSel
                     name="actions"
                     id="actions"
                   >
-                    ${entry.langCode !== ENGLISH_ALT_CODE && html`<option value="English Copy">English Copy</option>`}
+                    ${!TRANSLATE_ONLY_LANGS.include(entry.langCode) && html`<option value="English Copy">English Copy</option>`}
                     <option value="Translate">Translate</option>
                   </select>
                 </td>
