@@ -766,6 +766,7 @@ header.global-navigation + .feds-localnav {
 
 html:has(body.disable-scroll) {
   overflow: hidden;
+  position: fixed;
 }
 
 .disable-scroll {
