@@ -9,8 +9,8 @@ export default function InputLocales() {
     selectedRegion,
     selectedLocale,
     activeLocales,
-    localeRegion,
-    locales,
+    localeRegionList,
+    languagesList,
     project,
     errorPresent,
     handleNext,
@@ -28,7 +28,7 @@ export default function InputLocales() {
     <h5 class="section-header">Quick Select for Language/Locale</h5>
     <div class="region-grid">
       <div class="region-buttons">
-        ${localeRegion.value.map(
+        ${localeRegionList.map(
     (region) => html`
             <button
               key=${region.key}
@@ -57,7 +57,7 @@ export default function InputLocales() {
     <div class="language-grid">
       <h5 class="section-header">Select the Language(s)</h5>
       <div class="language-buttons">
-        ${locales.value.map(
+        ${languagesList.map(
     (language) => language.livecopies.length > 0
             && html`
               <button
@@ -79,7 +79,7 @@ export default function InputLocales() {
 
   const RenderLocales = () => {
     const groupedLocales = selectedLocale.reduce((acc, locale) => {
-      const language = locales.value.find((lang) => lang.livecopies.split(',').includes(locale));
+      const language = languagesList.find((lang) => lang.livecopies.split(',').includes(locale));
 
       if (language) {
         if (!acc[language.language]) {

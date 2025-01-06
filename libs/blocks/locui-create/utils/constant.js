@@ -12,3 +12,5 @@ export const PROJECT_TYPE_LABELS = {
 };
 
 export const TRANSLATE_ONLY_LANGS = ['en-GB'];
+export const ENG_LANG_CODE = 'en';
+export const TRANSCREATION_WORKFLOW = 'Transcreation';
