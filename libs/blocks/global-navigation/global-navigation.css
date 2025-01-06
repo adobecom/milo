@@ -1180,7 +1180,7 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
 
 .feds-localnav.feds-localnav--active .feds-localnav-curtain {
   width: 100%;
-  height: calc(101lvh - (var(--feds-height-nav) + var(--feds-localnav-height)));
+  height: 101lvh;
   padding-bottom: env(safe-area-inset-bottom);
   background: var(--feds-color-black-v2);
   opacity: 0.7;
