@@ -110,14 +110,6 @@ export default async function init(a) {
   const doc = new DOMParser().parseFromString(html, 'text/html');
   replaceDotMedia(a.href, doc);
   if (decorateArea) decorateArea(doc, { fragmentLink: a });
-  // TODO this should be removed. It is only added as part of the test.
-  if (a.href.includes('/federal/footer/fragments/regions')) {
-    const links = doc.querySelectorAll('a');
-    links.forEach((l) => {
-      l.href += '#_dnt';
-    });
-  }
-  // End TODO
 
   const sections = doc.querySelectorAll('body > div');
 
