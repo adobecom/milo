@@ -687,9 +687,9 @@ export function convertStageLinks({ anchors, config, hostname, href }) {
 }
 
 function addCircleLoader(elem) {
-  loadStyle(`../../../../libs/styles/progress-circle.css`);
-  const overlay = createTag('div', { class: 'overlay'});
-  const loader = createTag('div', { class: 'loader'});
+  loadStyle('../../../../libs/styles/progress-circle.css');
+  const overlay = createTag('div', { class: 'overlay' });
+  const loader = createTag('div', { class: 'loader' });
   loader.style.display = 'block';
   overlay.append(loader);
   elem.prepend(overlay);
@@ -701,15 +701,15 @@ function removeCircleLoader(elem) {
 }
 
 function addBarLoader(elem) {
-  loadStyle(`../../../../libs/styles/progress-bar.css`);
-  const container = createTag('div', {class: 'progress-bar-container'});
-  const progressBar = createTag("div", {class: 'progress-bar'});
+  loadStyle('../../../../libs/styles/progress-bar.css');
+  const container = createTag('div', { class: 'progress-bar-container' });
+  const progressBar = createTag('div', { class: 'progress-bar' });
 
-  const label = createTag("div", {class: 'progress-label'});
-  label.textContent = "Launching the app store...";
+  const label = createTag('div', { class: 'progress-label' });
+  label.textContent = 'Launching the app store...';
   container.append(label);
 
-  const track = createTag("div", {class: 'progress-bar-value'});
+  const track = createTag('div', { class: 'progress-bar-value' });
   track.style.display = 'block';
   progressBar.append(track);
   container.append(progressBar);
@@ -725,8 +725,8 @@ async function decorateQuickLink(a, hasConsent) {
   if (!window.alloy) return;
   const { getECID } = await import('../blocks/mobile-app-banner/mobile-app-banner.js');
   const ecid = await getECID();
-  if(hasConsent) {
-    if(!a.href.includes('ecid')) a.href = a.href.concat(`?ecid=${ecid}`);
+  if (hasConsent) {
+    if (!a.href.includes('ecid')) a.href = a.href.concat(`?ecid=${ecid}`);
     window.location.href = a.href;
   } else {
     window.location.href = a.href;
@@ -775,7 +775,7 @@ export function decorateLinks(el) {
     const branchQuickLink = 'app.link';
     const ecidCheck = getMetadata('quick-link-ecid'); // on | off | null
     const loaderCheck = getMetadata('quick-link-loader'); // progress-circle | progress-bar | off | null
- 
+
     if (a.href.includes(branchQuickLink) && ecidCheck === 'on') {
       const getConsentStatus = () => {
         const cookieGrp = window.adobePrivacy?.activeCookieGroups();
@@ -1544,6 +1544,3 @@ export function loadLana(options = {}) {
 }
 
 export const reloadPage = () => window.location.reload();
-
-
-
