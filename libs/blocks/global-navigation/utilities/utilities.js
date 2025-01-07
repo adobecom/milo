@@ -5,6 +5,7 @@ import {
 import { getFederatedContentRoot, getFederatedUrl, getFedsPlaceholderConfig } from '../../../utils/federated.js';
 import { processTrackingLabels } from '../../../martech/attributes.js';
 import { replaceText } from '../../../features/placeholders.js';
+import { PERSONALIZATION_TAGS } from '../../../features/personalization/personalization.js';
 
 loadLana();
 
@@ -413,6 +414,22 @@ export const closeAllTabs = (tabs, tabpanels) => {
   tabs.forEach((t) => t.setAttribute('aria-selected', 'false'));
 };
 
+export const disableMobileScroll = () => {
+  if (!PERSONALIZATION_TAGS.safari()) return;
+  document.body.style.top = `-${window.scrollY}px`;
+  document.body.classList.add('disable-ios-scroll');
+};
+
+export const enableMobileScroll = () => {
+  if (!PERSONALIZATION_TAGS.safari()) return;
+  if (!document.body.style.top) return;
+  const y = Math.abs(parseInt(document.body.style.top, 10));
+  if (Number.isNaN(y)) return;
+  document.body.classList.remove('disable-ios-scroll');
+  document.body.style.removeProperty('top');
+  window.scroll(0, y || 0);
+};
+
 export const transformTemplateToMobile = async (popup, item, localnav = false) => {
   const notMegaMenu = popup.parentElement.tagName === 'DIV';
   const originalContent = popup.innerHTML;
@@ -483,13 +500,14 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
   popup.querySelector('.close-icon')?.addEventListener('click', () => {
     document.querySelector(selectors.mainNavToggle).focus();
     closeAllDropdowns();
+    enableMobileScroll();
   });
   popup.querySelector('.main-menu')?.addEventListener('click', (e) => {
     e.target.closest(selectors.activeDropdown).querySelector('button').focus();
     closeAllDropdowns();
   });
-  const tabbuttons = popup.querySelectorAll('.global-navigation .tabs button');
-  const tabpanels = popup.querySelectorAll('.global-navigation .tab-content [role="tabpanel"]');
+  const tabbuttons = popup.querySelectorAll('.tabs button');
+  const tabpanels = popup.querySelectorAll('.tab-content [role="tabpanel"]');
 
   tabpanels.forEach((panel) => {
     animateInSequence(panel.querySelectorAll('a'), 0.02);
