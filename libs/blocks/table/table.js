@@ -62,14 +62,7 @@ function handleHeading(table, headingCols) {
       }
       elements[textStartIndex]?.classList.add('tracking-header');
       const pricingElem = elements[textStartIndex + 1];
-      const interval = setInterval(() => {
-        const span = table.querySelector('[is=inline-price]');
-        if (span.classList.contains('placeholder-resolved')) {
-          handleEqualHeight(table, '.row-heading');
-          clearInterval(interval);
-        }
-      }, 100);
-      debounce(() => { clearInterval(interval); }, 2000);
+      table.addEventListener('mas:resolved', debounce(() => { handleEqualHeight(table, '.row-heading'); }));
       const bodyElem = elements[textStartIndex + 2];
 
       if (pricingElem) {
