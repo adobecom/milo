@@ -92,7 +92,7 @@ export const GetQuizOption = ({
       <div class="quiz-button-container">
         <button 
           disabled=${countSelectedCards < minSelections && 'disabled'}
-          aria-label="Next" 
+          aria-label="${btnText}" 
           class="quiz-button" 
           daa-ll="${btnAnalyticsData}"
           onClick=${() => { handleOnNextClick(); }}>
