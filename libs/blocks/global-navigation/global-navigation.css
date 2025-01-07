@@ -717,6 +717,9 @@ header.global-navigation {
   .feds-brand-image + .feds-brand-label {
     display: none;
   }
+  .feds-localnav {
+    display: none;
+  }
 }
 
 /* Desktop styles */
@@ -735,6 +738,10 @@ header.global-navigation {
 
   .feds-navItem--megaMenu .feds-popup {
     align-items: center;
+  }
+
+  .feds-localnav {
+    display: none;
   }
 }
 
