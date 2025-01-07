@@ -11,3 +11,5 @@ logs/*
 test-html-results/
 test-results/
 test-a11y-results/
+tmp
+libs/navigation/dist/

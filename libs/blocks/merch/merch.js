@@ -489,7 +489,7 @@ export async function openModal(e, url, offerType, hash, extraOptions) {
     const prevHash = window.location.hash.replace('#', '') === hash ? '' : window.location.hash;
     window.location.hash = hash;
     window.addEventListener('milo:modal:closed', () => {
-      window.location.hash = prevHash;
+      window.history.pushState({}, document.title, `#${prevHash}`);
     }, { once: true });
   }
   if (isInternalModal(url)) {
@@ -512,6 +512,14 @@ export function setCtaHash(el, checkoutLinkConfig, offerType) {
   return hash;
 }
 
+const isProdModal = (url) => {
+  try {
+    return (new URL(url)).hostname.endsWith('.adobe.com');
+  } catch (e) {
+    return false;
+  }
+};
+
 export async function getModalAction(offers, options, el) {
   const [{
     offerType,
@@ -529,7 +537,7 @@ export async function getModalAction(offers, options, el) {
   const hash = setCtaHash(el, checkoutLinkConfig, offerType);
   let url = checkoutLinkConfig[columnName];
   if (!url) return undefined;
-  url = isInternalModal(url)
+  url = isInternalModal(url) || isProdModal(url)
     ? localizeLink(checkoutLinkConfig[columnName]) : checkoutLinkConfig[columnName];
   return { url, handler: (e) => openModal(e, url, offerType, hash, options.extraOptions) };
 }
@@ -739,3 +747,19 @@ export default async function init(el) {
   log.warn('Failed to get context:', { el });
   return null;
 }
+
+export async function handleHashChange() {
+  const modalDialog = document.querySelector('.dialog-modal');
+  if (window.location.hash) {
+    const modalId = window.location.hash.replace('#', '');
+    const cta = document.querySelector(`.con-button[data-modal-id="${modalId}"]`);
+    if (!modalDialog) {
+      reopenModal(cta);
+    }
+  } else if (modalDialog) {
+    const { closeModal } = await import('../modal/modal.js');
+    closeModal(modalDialog);
+  }
+}
+
+window.addEventListener('hashchange', handleHashChange);
