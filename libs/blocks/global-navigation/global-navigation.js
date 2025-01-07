@@ -42,6 +42,8 @@ import {
   animateInSequence,
   transformTemplateToMobile,
   closeAllTabs,
+  disableMobileScroll,
+  enableMobileScroll,
 } from './utilities/utilities.js';
 import { getFedsPlaceholderConfig } from '../../utils/federated.js';
 
@@ -332,9 +334,16 @@ class Gnav {
     // Order is important, decorateTopnavWrapper will render the nav
     // Ensure any critical task is executed before it
     const tasks = [
+      // decorateAside is the only async function that fires prior to rendering
+      // (at time of writing). If there is no aside it returns sync -- no problem.
+      // But if there is, we need those functions (import + decorate) to enter the event loop
+      // before the delayed decorateDropdown function does.
+      // the rest is taken care of by the 'await' semantics
+      // We needn't worry about delays now since decorateAside
+      // needed to run anyway prior to decorateTopNavWrapper
+      this.decorateAside,
       this.decorateMainNav,
       this.decorateTopNav,
-      this.decorateAside,
       this.decorateTopnavWrapper,
       loadBaseStyles,
       this.ims,
@@ -347,7 +356,7 @@ class Gnav {
     this.block.addEventListener('keydown', fetchKeyboardNav);
     setTimeout(this.loadDelayed, CONFIG.delays.loadDelayed);
     setTimeout(fetchKeyboardNav, CONFIG.delays.keyboardNav);
-    for await (const task of tasks) {
+    for (const task of tasks) {
       await yieldToMain();
       await task();
     }
@@ -403,7 +412,10 @@ class Gnav {
     const [title, navTitle = ''] = this.getOriginalTitle(firstElem);
     let localNav = document.querySelector('.feds-localnav');
     if (!localNav) {
-      lanaLog({ message: 'GNAV: Localnav does not include \'localnav\' in its name.', tags: 'errorType=info,module=gnav' });
+      lanaLog({
+        message: 'GNAV: Localnav does not include \'localnav\' in its name.',
+        tags: 'errorType=info,module=gnav',
+      });
       localNav = toFragment`<div class="feds-localnav"/>`;
       this.block.after(localNav);
     }
@@ -431,11 +443,14 @@ class Gnav {
       const isActive = localNav.classList.contains('feds-localnav--active');
       localNav.querySelector('.feds-localnav-title').setAttribute('aria-expanded', isActive);
       localNav.querySelector('.feds-localnav-title').setAttribute('daa-ll', `${title}_localNav|${isActive ? 'close' : 'open'}`);
+      if (isActive) disableMobileScroll();
+      else enableMobileScroll();
     });
 
     localNav.querySelector('.feds-localnav-curtain').addEventListener('click', (e) => {
       trigger({ element: e.currentTarget, event: e, type: 'localNav-curtain' });
       document.body.classList.remove('disable-scroll');
+      enableMobileScroll();
     });
     this.elements.localNav = localNav;
     localNavItems[0].querySelector('a').textContent = title.trim();
@@ -790,12 +805,15 @@ class Gnav {
     const toggle = this.elements.mobileToggle;
     const isExpanded = this.isToggleExpanded();
     if (!isExpanded && this.newMobileNav) {
+      disableMobileScroll();
       const sections = document.querySelectorAll('header.new-nav .feds-nav > section.feds-navItem > button.feds-navLink');
       animateInSequence(sections, 0.075);
       if (this.isLocalNav()) {
         const section = sections[0];
         queueMicrotask(() => section.click());
       }
+    } else if (isExpanded && this.newMobileNav) {
+      enableMobileScroll();
     }
     toggle?.setAttribute('aria-expanded', !isExpanded);
     document.body.classList.toggle('disable-scroll', !isExpanded);
@@ -1095,6 +1113,7 @@ class Gnav {
             popup.querySelector('.close-icon')?.addEventListener('click', this.toggleMenuMobile);
           }
           isDesktop.addEventListener('change', async () => {
+            enableMobileScroll();
             if (isDesktop.matches) {
               popup.innerHTML = originalContent;
               this.block.classList.remove('new-nav');
@@ -1140,8 +1159,16 @@ class Gnav {
         dropdownTrigger.addEventListener('click', (e) => {
           if (!isDesktop.matches && this.newMobileNav && isSectionMenu) {
             const popup = dropdownTrigger.nextElementSibling;
-            if (popup) popup.style = `top: calc(${window.scrollY}px - var(--feds-height-nav) - 1px)`;
+            // document.body.style.top should always be set
+            // at this point by calling disableMobileScroll
+            if (popup && this.isLocalNav()) {
+              const y = Math.abs(parseInt(document.body.style.top, 10));
+              popup.style = `top: calc(${y || 0}px - var(--feds-height-nav))`;
+            }
             makeTabActive(popup);
+          } else if (isDesktop.matches && this.newMobileNav && isSectionMenu) {
+            const popup = dropdownTrigger.nextElementSibling;
+            if (popup) popup.style.removeProperty('top');
           }
           trigger({ element: dropdownTrigger, event: e });
           setActiveDropdown(dropdownTrigger);
