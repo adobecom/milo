@@ -63,6 +63,7 @@ const htmlTemplate = `
     <title>M@S Web Components</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script type="module" src="../../../deps/custom-elements.js"></script>
+    <link rel="stylesheet" href="spectrum.css">
     <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
   
   <!-- Include your custom element script as an ES6 module -->
