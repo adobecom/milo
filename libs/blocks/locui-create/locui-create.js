@@ -9,13 +9,15 @@ import {
   getUserToken,
   loading,
   project,
+  setInitByParams,
+  setProject,
 } from './store.js';
 import StepTracker from './components/stepTracker.js';
 import InputActions from './input-actions/view.js';
 import Header from '../milostudio-header/milostudio-header.js';
 import Sidenav from '../milostudio-sidenav/sidenav.js';
 import { getConfig, loadStyle } from '../../utils/utils.js';
-import { getEnvQueryParam, setSelectedLocalesAndRegions } from './utils/utils.js';
+import { getEnvQueryParam, getProjectByParams, setSelectedLocalesAndRegions } from './utils/utils.js';
 import Toast from './components/toast.js';
 
 function Create() {
@@ -24,13 +26,14 @@ function Create() {
   useEffect(() => {
     const setup = async () => {
       try {
-        await fetchLocaleDetails();
         await getUserToken();
+        await fetchLocaleDetails();
         env.value = getEnvQueryParam();
-
-        /* Fetch draft project if project key is found in url params */
         const searchParams = new URLSearchParams(window.location.search);
         const projectKey = searchParams.get('projectKey');
+        const projectInitByUrl = getProjectByParams(searchParams);
+
+        /* Fetch draft project if project key is found in url params */
         if (projectKey) {
           const error = await fetchDraftProject(projectKey);
           if (error) {
@@ -42,6 +45,10 @@ function Create() {
             });
             setSelectedLocalesAndRegions();
           }
+        } else {
+          setProject(projectInitByUrl);
+          setInitByParams(projectInitByUrl);
+          setSelectedLocalesAndRegions();
         }
       } catch (error) {
         // console.error('Error fetching locale details:', error);

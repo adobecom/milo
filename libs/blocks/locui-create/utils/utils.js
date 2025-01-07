@@ -1,5 +1,6 @@
 import getServiceConfig from '../../../utils/service-config.js';
 import { origin } from '../../locui/utils/franklin.js';
+import { getInitialName } from '../input-urls/index.js';
 import { env, locSelected, locales as stLocales, project as stProject } from '../store.js';
 
 export function getTenantName() {
@@ -103,4 +104,36 @@ export function setSelectedLocalesAndRegions() {
   });
   selectedLocale.sort((a, b) => a.localeCompare(b));
   locSelected.value = { selectedLocale, activeLocales };
+}
+
+export function getLanguageDetails(lang) {
+  const langDetails = stLocales.value?.find(({ languagecode }) => languagecode === lang) ?? {};
+  return [{
+    action: 'Rollout',
+    langCode: langDetails.languagecode,
+    language: langDetails.language,
+    locales: langDetails.livecopies.split(','),
+    workflow: '',
+  }];
+}
+
+export function getProjectByParams(searchParams) {
+  const encodedUrls = searchParams.get('encodedUrls');
+  const type = searchParams.get('type');
+  const decodedUrls = encodedUrls?.split(',')?.map((url) => decodeURI(url));
+  const language = searchParams.get('language');
+
+  const projectInfo = {};
+  if (type) {
+    projectInfo.type = type;
+    projectInfo.name = getInitialName(type);
+  }
+  if (decodedUrls?.length > 0) {
+    projectInfo.urls = decodedUrls;
+  }
+  if (language) {
+    projectInfo.languages = getLanguageDetails(language);
+  }
+
+  return projectInfo;
 }

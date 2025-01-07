@@ -22,8 +22,8 @@ function initialLanguageList() {
 
 function initialRegions() {
   if (project.value.type === PROJECT_TYPES.translation) {
-    const englishLocale = locales.value.filter((locItem) => locItem.languagecode === ENG_LANG_CODE);
-    const { livecopies = '' } = englishLocale[0] || {};
+    const englishLocale = locales.value.find((locItem) => locItem.languagecode === ENG_LANG_CODE);
+    const { livecopies = '' } = englishLocale || {};
     return localeRegion.value.reduce((acc, curr) => {
       const { key, value } = curr;
       const valueList = value.split(',');
@@ -43,6 +43,35 @@ function initialRegions() {
     }, []);
   }
   return localeRegion.value;
+}
+
+function prefillActionAndWorkflow(languages) {
+  const storedLanguages = project.value?.languages ?? [];
+  if (storedLanguages.length < 1) {
+    return languages.map((lang) => ({ ...lang, action: project.value.type === PROJECT_TYPES.translation ? 'Translate' : 'Rollout', workflow: '' }));
+  }
+
+  const languageByCode = storedLanguages.reduce((acc, curr) => {
+    const { langCode } = curr;
+    acc[langCode] = curr;
+    return acc;
+  }, {});
+
+  const prefilledLanguages = languages.map((lang) => {
+    const { langCode } = lang;
+    const { action, workflow = '' } = languageByCode[langCode] || {};
+    const prefillLanguage = {
+      ...lang,
+      action,
+      workflow,
+    };
+    if (!action) {
+      prefillLanguage.action = project.value.type === PROJECT_TYPES.translation ? 'Translate' : 'Rollout';
+    }
+    return prefillLanguage;
+  });
+
+  return prefilledLanguages;
 }
 
 export default function useInputLocale() {
@@ -178,30 +207,6 @@ export default function useInputLocale() {
   }, [selectedLocale]);
 
   const errorPresent = () => Object.keys(activeLocales).length > 0;
-
-  const prefillActionAndWorkflow = (languages) => {
-    const storedLanguages = project.value?.languages ?? [];
-    if (storedLanguages.length < 1) {
-      return languages.map((lang) => ({ ...lang, action: project.value.type === PROJECT_TYPES.translation ? 'Translate' : 'Rollout', workflow: '' }));
-    }
-    let iteratorIndex = 0;
-    const prefilledLanguages = [];
-
-    while (iteratorIndex < languages.length) {
-      const { action, workflow } = storedLanguages[iteratorIndex] ?? {};
-      const prefillLanguage = {
-        ...languages[iteratorIndex],
-        action,
-        workflow: workflow || '',
-      };
-      if (!action) {
-        prefillLanguage.action = project.value.type === PROJECT_TYPES.translation ? 'Translate' : 'Rollout';
-      }
-      prefilledLanguages.push(prefillLanguage);
-      iteratorIndex += 1;
-    }
-    return prefilledLanguages;
-  };
 
   const handleNext = async () => {
     if (!errorPresent()) return;

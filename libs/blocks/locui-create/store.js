@@ -21,6 +21,7 @@ export const locales = signal([]);
 export const localeRegion = signal([]);
 export const locSelected = signal(null);
 export const projectType = signal('rollout');
+export const initByParams = signal({});
 export const env = signal('dev');
 
 export function nextStep() {
@@ -35,6 +36,13 @@ export function setProject(_project) {
   project.value = {
     ...project.value,
     ..._project,
+  };
+}
+
+export function setInitByParams(params) {
+  initByParams.value = {
+    ...initByParams.value,
+    ...params,
   };
 }
 
@@ -71,6 +79,7 @@ export async function getUserToken() {
 
 export async function fetchLocaleDetails() {
   try {
+    loading.value = true;
     const tenantName = getTenantName();
     if (!tenantName) {
       // console.warn('Tenant name is missing, skipping fetchLocaleDetails.');
@@ -99,6 +108,7 @@ export async function fetchLocaleDetails() {
     console.error('Error during fetchLocaleDetails:', error.message);
     throw error;
   }
+  loading.value = false;
 }
 
 export async function createDraftProject() {
