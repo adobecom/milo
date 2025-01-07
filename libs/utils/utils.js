@@ -776,39 +776,38 @@ export function decorateLinks(el) {
     const ecidCheck = getMetadata('quick-link-ecid'); // on | off | null
     const loaderCheck = getMetadata('quick-link-loader'); // progress-circle | progress-bar | off | null
  
-  if (a.href.includes(branchQuickLink) && ecidCheck === 'on') {
-    const getConsentStatus = () => {
-      const cookieGrp = window.adobePrivacy?.activeCookieGroups();
-      return cookieGrp?.includes('C0002') && cookieGrp?.includes('C0004');
-    };
+    if (a.href.includes(branchQuickLink) && ecidCheck === 'on') {
+      const getConsentStatus = () => {
+        const cookieGrp = window.adobePrivacy?.activeCookieGroups();
+        return cookieGrp?.includes('C0002') && cookieGrp?.includes('C0004');
+      };
 
-    const waitForConsent = new Promise((resolve) => {
+      const waitForConsent = new Promise((resolve) => {
       // case: not first encounter
-      if (window.cookieConsent !== undefined) {
-        resolve(window.cookieConsent);
-      } else {
-        if (window.adobePrivacy) resolve(getConsentStatus());
-        window.addEventListener('adobePrivacy:PrivacyConsent', () => {
-          window.cookieConsent = getConsentStatus();
+        if (window.cookieConsent !== undefined) {
           resolve(window.cookieConsent);
-        });
-      }
-    });
+        } else {
+          if (window.adobePrivacy) resolve(getConsentStatus());
+          window.addEventListener('adobePrivacy:PrivacyConsent', () => {
+            window.cookieConsent = getConsentStatus();
+            resolve(window.cookieConsent);
+          });
+        }
+      });
 
-    a.addEventListener('click', async (e) => {
-      e.preventDefault();
-      let pb;
-      if (loaderCheck === 'progress-circle') addCircleLoader(a);
-      if (loaderCheck === 'progress-bar') pb = addBarLoader(a);
-      const hasConsent = await waitForConsent;
-      console.log('hasConsent', hasConsent);
-      if (hasConsent) {
+      a.addEventListener('click', async (e) => {
+        e.preventDefault();
+        let pb;
+        if (loaderCheck === 'progress-circle') addCircleLoader(a);
+        else if (loaderCheck === 'progress-bar') pb = addBarLoader(a);
+        const hasConsent = await waitForConsent;
+        if (hasConsent) {
           if (loaderCheck === 'progress-bar') removeBarLoader(pb, a);
-          if (loaderCheck === 'progress-circle') removeCircleLoader(a);
-      }
-      decorateQuickLink(a, hasConsent);
-    });
-  }
+          else if (loaderCheck === 'progress-circle') removeCircleLoader(a);
+        }
+        decorateQuickLink(a, hasConsent);
+      });
+    }
     // Append aria-label
     const pipeRegex = /\s?\|([^|]*)$/;
     if (pipeRegex.test(a.textContent) && !/\.[a-z]+/i.test(a.textContent)) {

@@ -212,6 +212,29 @@ describe('Utils', () => {
       });
     });
 
+    describe('Branch Quick Links', () => {
+      it('should add Progress Bar Loader', async () => {
+        window.adobePrivacy = {
+          hasUserProvidedConsent: () => true,
+          activeCookieGroups: () => ['C0002', 'C0004'],
+        };
+        window.alloy = () => {};
+        await waitForElement('a[href*="app.link"]');
+        const qL = document.querySelector('a[href*="app.link"]');
+        window.dispatchEvent(new CustomEvent('adobePrivacy:PrivacyConsent'));
+        qL.click();
+      });
+      it('should add Progress Circle Loader', async () => {
+        const localHead = await readFile({ path: './mocks/head-quick-links.html' });
+        document.head.innerHTML = localHead;
+        const qL = document.querySelector('a[href*="app.link"]');
+        await utils.loadArea();
+        window.dispatchEvent(new CustomEvent('adobePrivacy:PrivacyConsent'));
+        await qL.click();
+        document.head.innerHTML = head;
+      });
+    });
+
     describe('Aria label appendment', () => {
       it('appends aria label if defined', () => {
         const theText = 'Text';
