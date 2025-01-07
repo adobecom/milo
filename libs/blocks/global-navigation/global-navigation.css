@@ -1200,7 +1200,7 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
   display: block;
 }
 
-.feds-promo-wrapper {
+.feds-promo-aside-wrapper {
   position: sticky;
   top: 0;
   z-index: 11;

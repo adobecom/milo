@@ -946,7 +946,7 @@ class Gnav {
     const { default: decorate } = await import('./features/aside/aside.js');
     if (!decorate) return this.elements.aside;
     this.elements.aside = await decorate({ headerElem: this.block, promoPath });
-    this.block.before(toFragment`<div class="feds-promo-wrapper">${this.elements.aside}</div>`)
+    this.block.before(toFragment`<div class="feds-promo-aside-wrapper">${this.elements.aside}</div>`)
   };
 
   decorateBrand = () => this.decorateGenericLogo({
