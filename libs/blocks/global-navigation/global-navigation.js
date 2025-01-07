@@ -784,6 +784,8 @@ class Gnav {
         const section = sections[0];
         queueMicrotask(() => section.click());
       }
+    } else if (isExpanded && this.newMobileNav) {
+      enableMobileScroll();
     }
     toggle?.setAttribute('aria-expanded', !isExpanded);
     document.body.classList.toggle('disable-scroll', !isExpanded);
@@ -1128,10 +1130,12 @@ class Gnav {
         dropdownTrigger.addEventListener('click', (e) => {
           if (!isDesktop.matches && this.newMobileNav && isSectionMenu) {
             const popup = dropdownTrigger.nextElementSibling;
-            const y = Math.abs(parseInt(document.body.style.top, 10));
             // document.body.style.top should always be set
             // at this point by calling disableMobileScroll
-            if (popup) popup.style.top = `calc(${y || 0}px - var(--feds-height-nav) - 1px)`;
+            if (popup && this.isLocalNav()) {
+              const y = Math.abs(parseInt(document.body.style.top, 10));
+              popup.style.top = `calc(${y || 0}px - var(--feds-height-nav) - 1px)`;
+            }
             makeTabActive(popup);
           } else if (isDesktop.matches && this.newMobileNav && isSectionMenu) {
             const popup = dropdownTrigger.nextElementSibling;
