@@ -15,8 +15,8 @@ function handleEvent({ prefix, link, callback } = {}) {
   const existingPage = queriedPages.find((page) => page.href === link.href);
   if (existingPage) {
     callback(existingPage.resp.ok
-      ? callback(link.href)
-      : callback(`${prefix ? `/${prefix}` : ''}/`));
+      ? link.href
+      : `${prefix ? `/${prefix}` : ''}/`);
     return;
   }
   fetch(link.href, { method: 'HEAD' }).then((resp) => {
