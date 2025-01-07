@@ -967,6 +967,7 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button {
   font-weight: 700;
   text-align: unset;
   color: var(--text-color);
+  font-family: var(--body-font-family);
 }
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button[aria-selected="true"] {
@@ -1088,6 +1089,7 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-family: var(--body-font-family);
 }
 
 .feds-localnav-items {
