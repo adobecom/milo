@@ -1147,7 +1147,7 @@ class Gnav {
             // at this point by calling disableMobileScroll
             if (popup && this.isLocalNav()) {
               const y = Math.abs(parseInt(document.body.style.top, 10));
-              popup.style.top = `calc(${y || 0}px - var(--feds-height-nav) - 1px)`;
+              popup.style = `top: calc(${y || 0}px - var(--feds-height-nav))`;
             }
             makeTabActive(popup);
           } else if (isDesktop.matches && this.newMobileNav && isSectionMenu) {

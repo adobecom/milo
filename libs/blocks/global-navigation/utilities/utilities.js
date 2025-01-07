@@ -5,6 +5,7 @@ import {
 import { getFederatedContentRoot, getFederatedUrl, getFedsPlaceholderConfig } from '../../../utils/federated.js';
 import { processTrackingLabels } from '../../../martech/attributes.js';
 import { replaceText } from '../../../features/placeholders.js';
+import { PERSONALIZATION_TAGS } from '../../../features/personalization/personalization.js';
 
 loadLana();
 
@@ -414,11 +415,13 @@ export const closeAllTabs = (tabs, tabpanels) => {
 };
 
 export const disableMobileScroll = () => {
+  if (!PERSONALIZATION_TAGS.safari()) return;
   document.body.style.top = `-${window.scrollY}px`;
   document.body.classList.add('disable-ios-scroll');
 };
 
 export const enableMobileScroll = () => {
+  if (!PERSONALIZATION_TAGS.safari()) return;
   if (!document.body.style.top) return;
   const y = Math.abs(parseInt(document.body.style.top, 10));
   if (Number.isNaN(y)) return;
