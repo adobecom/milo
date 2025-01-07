@@ -1,5 +1,7 @@
 import { getConfig } from '../../utils/utils.js';
 
+const queriedPages = [];
+
 function setInternational(prefix) {
   const domain = window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com' : '';
   const maxAge = 365 * 24 * 60 * 60; // max-age in seconds for 365 days
@@ -10,13 +12,23 @@ function setInternational(prefix) {
 function handleEvent({ prefix, link, callback } = {}) {
   if (typeof callback !== 'function') return;
 
-  fetch(link.href, { method: 'HEAD' }).then((resp) => {
-    if (!resp.ok) throw new Error('request failed');
-    callback(link.href);
-  }).catch(() => {
-    const prefixUrl = prefix ? `/${prefix}` : '';
-    callback(`${prefixUrl}/`);
-  });
+  const existingPage = queriedPages.find((page) => page.href === link.href);
+  if (existingPage) {
+    if (existingPage.resp.ok) {
+      callback(link.href);
+    } else {
+      callback(`${prefix ? `/${prefix}` : ''}/`);
+    }
+  } else {
+    fetch(link.href, { method: 'HEAD' }).then((resp) => {
+      queriedPages.push({ href: link.href, resp });
+      if (!resp.ok) throw new Error('request failed');
+      callback(link.href);
+    }).catch(() => {
+      const prefixUrl = prefix ? `/${prefix}` : '';
+      callback(`${prefixUrl}/`);
+    });
+  }
 }
 
 export function decorateLink(link, path) {
