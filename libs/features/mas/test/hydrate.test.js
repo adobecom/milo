@@ -128,7 +128,7 @@ describe('processCTAs', async () => {
         expect(merchCard.append.called).to.be.false;
     });
 
-    it('should create spectrum  buttons by default', async () => {
+    it('should create spectrum css buttons by default', async () => {
         const fields = {
             ctas: '<a is="checkout-link" data-wcs-osi="abm" class="accent">Click me</a>',
         };
