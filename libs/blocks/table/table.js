@@ -25,25 +25,6 @@ function isStickyHeader(el) {
     || (el.classList.contains('sticky-tablet-up') && defineDeviceByScreenSize() !== 'MOBILE' && !isMobileLandscape());
 }
 
-function handleEqualHeight(table, tag) {
-  const height = [];
-  const element = table.querySelector(tag);
-  const columns = [...element.children];
-  columns.forEach(({ children }) => {
-    [...children].forEach((row, i) => {
-      row.style.height = 'auto';
-      if (!height[i] || row.offsetHeight > height[i]) {
-        height[i] = row.offsetHeight;
-      }
-    });
-  });
-  columns.forEach(({ children }) => {
-    [...children].forEach((row, i) => {
-      row.style.height = height[i] > 0 ? `${height[i]}px` : 'auto';
-    });
-  });
-}
-
 function handleHeading(table, headingCols) {
   const isPriceBottom = table.classList.contains('pricing-bottom');
   headingCols.forEach((col, i) => {
@@ -62,7 +43,6 @@ function handleHeading(table, headingCols) {
       }
       elements[textStartIndex]?.classList.add('tracking-header');
       const pricingElem = elements[textStartIndex + 1];
-      table.addEventListener('mas:resolved', debounce(() => { handleEqualHeight(table, '.row-heading'); }));
       const bodyElem = elements[textStartIndex + 2];
 
       if (pricingElem) {
@@ -118,6 +98,25 @@ function handleHeading(table, headingCols) {
   });
 }
 
+function handleEqualHeight(table, tag) {
+  const height = [];
+  const element = table.querySelector(tag);
+  const columns = [...element.children];
+  columns.forEach(({ children }) => {
+    [...children].forEach((row, i) => {
+      row.style.height = 'auto';
+      if (!height[i] || row.offsetHeight > height[i]) {
+        height[i] = row.offsetHeight;
+      }
+    });
+  });
+  columns.forEach(({ children }) => {
+    [...children].forEach((row, i) => {
+      row.style.height = height[i] > 0 ? `${height[i]}px` : 'auto';
+    });
+  });
+}
+
 function handleAddOnContent(table) {
   const addOnKey = 'ADDON';
   const addOns = [...table.querySelectorAll('.section-row-title')]
@@ -150,7 +149,8 @@ function handleAddOnContent(table) {
       el?.insertAdjacentElement(order === 'before' ? 'beforebegin' : 'afterend', tag);
     });
   });
-  setTimeout(() => handleEqualHeight(table, '.row-heading'), 0);
+  // setTimeout(() => handleEqualHeight(table, '.row-heading'), 0);
+  table.addEventListener('mas:resolved', debounce(() => { handleEqualHeight(table, '.row-heading'); }));
 }
 
 function handleHighlight(table) {
