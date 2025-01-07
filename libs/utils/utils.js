@@ -811,8 +811,6 @@ async function decorateHeader() {
     header.after(localNavWrapper);
   }
   if (breadcrumbs) header.append(breadcrumbs);
-  const promo = getMetadata('gnav-promo-source');
-  if (promo?.length) header.classList.add('has-promo');
 }
 
 async function decorateIcons(area, config) {

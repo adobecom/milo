@@ -716,11 +716,6 @@ header.global-navigation, header.global-navigation.feds--dark {
   visibility: hidden;
 }
 
-header.global-navigation.has-promo {
-  height: auto;
-  min-height: calc(var(--global-height-nav) + var(--global-height-navPromo));
-}
-
 header.global-navigation a {
   text-decoration: unset;
 }
