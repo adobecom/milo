@@ -26,11 +26,12 @@ async function toggleDrawer(target, dd) {
   }
 }
 function createButtonDetailsPair(mmmEl, page) {
-  const { url, pageId } = page;
+  const { url, pageId, numOfActivities } = page;
   const triggerId = `mmm-trigger-${pageId}`;
   const panelId = `mmm-content-${pageId}`;
   const icon = createTag('span', { class: 'mmm-icon' });
-  const hTag = createTag('h5', false, url);
+  const text = `${url}  (${numOfActivities})`;
+  const hTag = createTag('h5', false, text);
   const button = createTag('button', {
     type: 'button',
     id: triggerId,
