@@ -397,9 +397,9 @@ class Gnav {
     const localNavItems = this.elements.navWrapper.querySelector('.feds-nav').querySelectorAll('.feds-navItem:not(.feds-navItem--section, .feds-navItem--mobile-only)');
     const firstElem = localNavItems[0]?.querySelector('a');
     if (!firstElem) {
-      lanaLog({ message: 'GNAV: Incorrect authoring of localnav found.', tags: 'errorType=info,module=gnav' })
+      lanaLog({ message: 'GNAV: Incorrect authoring of localnav found.', tags: 'errorType=info,module=gnav' });
       return;
-    };
+    }
     const [title, navTitle = ''] = this.getOriginalTitle(firstElem);
     let localNav = document.querySelector('.feds-localnav');
     if (!localNav) {
