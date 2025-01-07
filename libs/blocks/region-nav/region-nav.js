@@ -14,21 +14,18 @@ function handleEvent({ prefix, link, callback } = {}) {
 
   const existingPage = queriedPages.find((page) => page.href === link.href);
   if (existingPage) {
-    if (existingPage.resp.ok) {
-      callback(link.href);
-    } else {
-      callback(`${prefix ? `/${prefix}` : ''}/`);
-    }
-  } else {
-    fetch(link.href, { method: 'HEAD' }).then((resp) => {
-      queriedPages.push({ href: link.href, resp });
-      if (!resp.ok) throw new Error('request failed');
-      callback(link.href);
-    }).catch(() => {
-      const prefixUrl = prefix ? `/${prefix}` : '';
-      callback(`${prefixUrl}/`);
-    });
+    callback(existingPage.resp.ok
+      ? callback(link.href)
+      : callback(`${prefix ? `/${prefix}` : ''}/`));
+    return;
   }
+  fetch(link.href, { method: 'HEAD' }).then((resp) => {
+    queriedPages.push({ href: link.href, resp });
+    if (!resp.ok) throw new Error('request failed');
+    callback(link.href);
+  }).catch(() => {
+    callback(`${prefix ? `/${prefix}` : ''}/`);
+  });
 }
 
 export function decorateLink(link, path) {
