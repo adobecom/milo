@@ -384,7 +384,10 @@ class Gnav {
     const [title, navTitle = ''] = this.getOriginalTitle(localNavItems);
     let localNav = document.querySelector('.feds-localnav');
     if (!localNav) {
-      lanaLog({ message: 'GNAV: Localnav does not include \'localnav\' in its name.', tags: 'errorType=info,module=gnav' });
+      lanaLog({
+        message: 'GNAV: Localnav does not include \'localnav\' in its name.',
+        tags: 'errorType=info,module=gnav',
+      });
       localNav = toFragment`<div class="feds-localnav"/>`;
       this.block.after(localNav);
     }
@@ -1128,8 +1131,11 @@ class Gnav {
             const y = Math.abs(parseInt(document.body.style.top, 10));
             // document.body.style.top should always be set
             // at this point by calling disableMobileScroll
-            if (popup) popup.style = `top: calc(${y || 0}px - var(--feds-height-nav) - 1px)`;
+            if (popup) popup.style.top = `calc(${y || 0}px - var(--feds-height-nav) - 1px)`;
             makeTabActive(popup);
+          } else if (isDesktop.matches && this.newMobileNav && isSectionMenu) {
+            const popup = dropdownTrigger.nextElementSibling;
+            if (popup) popup.style.removeProperty('top');
           }
           trigger({ element: dropdownTrigger, event: e });
           setActiveDropdown(dropdownTrigger);
