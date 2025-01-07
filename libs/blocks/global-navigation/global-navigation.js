@@ -327,9 +327,16 @@ class Gnav {
     // Order is important, decorateTopnavWrapper will render the nav
     // Ensure any critical task is executed before it
     const tasks = [
+      // decorateAside is the only async function that fires prior to rendering
+      // (at time of writing). If there is no aside it returns sync -- no problem.
+      // But if there is, we need those functions (import + decorate) to enter the event loop
+      // before the delayed decorateDropdown function does.
+      // the rest is taken care of by the 'await' semantics
+      // We needn't worry about delays now since decorateAside
+      // needed to run anyway prior to decorateTopNavWrapper
+      this.decorateAside,
       this.decorateMainNav,
       this.decorateTopNav,
-      this.decorateAside,
       this.decorateTopnavWrapper,
       loadBaseStyles,
       this.ims,
@@ -342,7 +349,7 @@ class Gnav {
     this.block.addEventListener('keydown', fetchKeyboardNav);
     setTimeout(this.loadDelayed, CONFIG.delays.loadDelayed);
     setTimeout(fetchKeyboardNav, CONFIG.delays.keyboardNav);
-    for await (const task of tasks) {
+    for (const task of tasks) {
       await yieldToMain();
       await task();
     }
@@ -1090,6 +1097,7 @@ class Gnav {
             popup.querySelector('.close-icon')?.addEventListener('click', this.toggleMenuMobile);
           }
           isDesktop.addEventListener('change', async () => {
+            enableMobileScroll();
             if (isDesktop.matches) {
               popup.innerHTML = originalContent;
               this.block.classList.remove('new-nav');

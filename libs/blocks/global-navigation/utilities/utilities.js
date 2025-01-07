@@ -503,8 +503,8 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
     e.target.closest(selectors.activeDropdown).querySelector('button').focus();
     closeAllDropdowns();
   });
-  const tabbuttons = popup.querySelectorAll('.global-navigation .tabs button');
-  const tabpanels = popup.querySelectorAll('.global-navigation .tab-content [role="tabpanel"]');
+  const tabbuttons = popup.querySelectorAll('.tabs button');
+  const tabpanels = popup.querySelectorAll('.tab-content [role="tabpanel"]');
 
   tabpanels.forEach((panel) => {
     animateInSequence(panel.querySelectorAll('a'), 0.02);
