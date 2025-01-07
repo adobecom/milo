@@ -135,5 +135,5 @@ export function getProjectByParams(searchParams) {
     projectInfo.languages = getLanguageDetails(language);
   }
 
-  return projectInfo;
+  return Object.keys(projectInfo).length > 0 ? projectInfo : null;
 }

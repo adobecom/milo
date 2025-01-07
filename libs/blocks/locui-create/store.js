@@ -21,7 +21,7 @@ export const locales = signal([]);
 export const localeRegion = signal([]);
 export const locSelected = signal(null);
 export const projectType = signal('rollout');
-export const initByParams = signal({});
+export const initByParams = signal(null);
 export const env = signal('dev');
 
 export function nextStep() {

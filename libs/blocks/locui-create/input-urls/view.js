@@ -210,7 +210,7 @@ export default function InputUrls() {
           <span>- ${PROJECT_TYPE_LABELS[type]}</span>
         </div>
         <div class="locui-form-body">
-          ${(!projectCreated.value && !initByParams.value.type) && html`
+          ${(!projectCreated.value && !initByParams.value?.type) && html`
             <div class="segment-ctrl pb-12">
               ${[PROJECT_TYPES.translation, PROJECT_TYPES.rollout].map((pType) => html`
                 <div
@@ -288,7 +288,7 @@ export default function InputUrls() {
             onInput=${handleUrlsChange}
             onBlur=${handleUrlsBlur}
             placeholder=${`Enter the full URL. E.g, ${origin}/drafts/localization/projects/raga/image-test-one`}
-            disabled=${initByParams.value.urls}
+            disabled=${initByParams.value?.urls}
           />
           ${errors.urlsStr
           && html`<div class="form-field-error">${errors.urlsStr}</div>`}

@@ -45,7 +45,8 @@ function Create() {
             });
             setSelectedLocalesAndRegions();
           }
-        } else {
+        }
+        if (projectInitByUrl && !projectKey) {
           setProject(projectInitByUrl);
           setInitByParams(projectInitByUrl);
           setSelectedLocalesAndRegions();

@@ -26,7 +26,7 @@ export default function InputLocales() {
   } = useInputLocale();
 
   const RenderRegion = () => {
-    if (!initByParams.value.languages) {
+    if (!initByParams.value?.languages) {
       return (html`
     <h5 class="section-header">Quick Select for Language/Locale</h5>
     <div class="region-grid">
@@ -59,7 +59,7 @@ export default function InputLocales() {
   };
 
   const RenderLanguage = () => {
-    if (!initByParams.value.languages) {
+    if (!initByParams.value?.languages) {
       return (html`
     <div class="language-grid">
       <h5 class="section-header">Select the Language(s)</h5>
