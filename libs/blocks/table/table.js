@@ -62,10 +62,14 @@ function handleHeading(table, headingCols) {
       }
       elements[textStartIndex]?.classList.add('tracking-header');
       const pricingElem = elements[textStartIndex + 1];
-      const span = pricingElem.querySelector('[is=inline-price]');
-      span.addEventListener('mas:resolved', () => {
-        handleEqualHeight(table, '.row-heading');
-      });
+      const interval = setInterval(() => {
+        const span = table.querySelector('[is=inline-price]');
+        if (span.classList.contains('placeholder-resolved')) {
+          handleEqualHeight(table, '.row-heading');
+          clearInterval(interval);
+        }
+      }, 100);
+      debounce(() => { clearInterval(interval); }, 2000);
       const bodyElem = elements[textStartIndex + 2];
 
       if (pricingElem) {
@@ -153,7 +157,7 @@ function handleAddOnContent(table) {
       el?.insertAdjacentElement(order === 'before' ? 'beforebegin' : 'afterend', tag);
     });
   });
-  setTimeout(() => handleEqualHeight(table, '.row-heading'), 70);
+  setTimeout(() => handleEqualHeight(table, '.row-heading'), 0);
 }
 
 function handleHighlight(table) {
