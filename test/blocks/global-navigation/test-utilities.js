@@ -174,10 +174,7 @@ export const createFullGlobalNavigation = async ({
   hasBreadcrumbs = true,
   unavContent = null,
 } = {}) => {
-  const clock = sinon.useFakeTimers({
-    // Intercept setTimeout and call the function immediately
-    toFake: ['setTimeout'],
-  });
+  const clock = sinon.useFakeTimers({ shouldAdvanceTime: true });
   setConfig({ ...config, ...customConfig });
   await setViewport(viewports[viewport]);
   window.lana = { log: stub() };
@@ -198,6 +195,7 @@ export const createFullGlobalNavigation = async ({
     return null;
   });
   window.adobeIMS = {
+    initialized: true,
     isSignedInUser: stub().returns(signedIn),
     getAccessToken: stub().returns('mock-access-token'),
     getProfile: stub().returns(
@@ -228,9 +226,11 @@ export const createFullGlobalNavigation = async ({
   const instancePromise = initGnav(document.body.querySelector('header'));
 
   await clock.runToLastAsync();
+  clock.tick(1000);
   const instance = await instancePromise;
   const imsPromise = instance.imsReady();
   await clock.runToLastAsync();
+  clock.tick(1000);
   // We restore the clock here, because waitForElement uses setTimeout
   clock.restore();
 
