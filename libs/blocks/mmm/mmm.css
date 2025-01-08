@@ -459,6 +459,31 @@ dd .mep-popup-header .mep-close {
   margin: 0;
 }
 
+#mmm-pagination {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  font-size: 1.25rem;
+  justify-content: center;
+  padding: 2rem 0 1rem 0;
+}
+
+#mmm-pagination a {
+  text-decoration: none;
+  cursor: pointer;
+  color: #4285f4;
+}
+#mmm-pagination .current-page {
+  font-weight: 600;
+  cursor: default;
+  color: #000;
+}
+#mmm-pagination .disabled {
+  color: #ddd;
+  cursor: default;
+  pointer-events: none;
+}
+
 main > .section > .share-mmm.inline {
   margin: 0 auto;
 }

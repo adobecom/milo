@@ -1,6 +1,8 @@
 import { createTag, loadStyle } from '../../utils/utils.js';
 import { fetchData, DATA_TYPE } from '../../features/personalization/personalization.js';
-import { getMepPopup, API_URLS } from '../../features/personalization/preview.js';
+import { getMepPopup, API_URLS, MMM_PAGINATION } from '../../features/personalization/preview.js';
+
+const SEARCH_CRITERIA_CHANGE_EVENT = 'mmm-search-change';
 
 async function toggleDrawer(target, dd) {
   const el = target.closest('button');
@@ -73,9 +75,9 @@ function createButtonDetailsPair(mmmEl, page) {
   mmmEl.append(dt, dd);
 }
 function filterPageList() {
-  const mmmEntries = document.querySelectorAll('div.mmm-container > dl > *');
   const shareUrl = new URL(`${window.location.origin}${window.location.pathname}`);
   const searchValues = {};
+
   document.querySelectorAll('.tabs input, .tabs select').forEach((field) => {
     const id = field.getAttribute('id').split('-').pop();
     const { value, tagName } = field;
@@ -85,29 +87,8 @@ function filterPageList() {
     };
     if (value) shareUrl.searchParams.set(id, value);
   });
-  const selectedRadio = document.querySelector('.tab-list-container button[aria-selected="true"]');
-  const filterType = selectedRadio?.getAttribute('id') === 'tab-mmm-options-2' ? 'search' : 'filter';
-  if (filterType === 'search') shareUrl.searchParams.set('tab', 'mmm-options-2');
-  document.querySelectorAll('button.copy-to-clipboard').forEach((button) => {
-    button.dataset.destination = shareUrl.href;
-  });
-
-  mmmEntries.forEach((entry) => {
-    const data = entry.dataset;
-    entry.classList.remove('filter-hide');
-    if (filterType === 'search') {
-      if (!data.url.includes(searchValues.query.value)) entry.classList.add('filter-hide');
-      return;
-    }
-    Object.keys(searchValues).forEach((key) => {
-      const { value, tagName } = searchValues[key];
-      if (tagName !== 'SELECT') return;
-      const inputVal = data[key];
-      if (value && !value.split(',').some((val) => inputVal === val)) {
-        entry.classList.add('filter-hide');
-      }
-    });
-  });
+  document.dispatchEvent(new CustomEvent(SEARCH_CRITERIA_CHANGE_EVENT, { detail: searchValues }));
+  // do page reload with all searchValue
 }
 function parseData(el) {
   const data = {};
@@ -222,7 +203,46 @@ async function createForm(el) {
     button.addEventListener('click', filterPageList);
   });
 }
-async function createPageList(el) {
+
+function createPaginationEl({ data, el }) {
+  const paginationEl = createTag('div', { id: 'mmm-pagination' });
+  const totalPages = Math.ceil(data.totalRecords / data.perPage);
+  const prev = data.pageNum - 1 || 1;
+  const prevEl = createTag('a', { 'data-page-num': prev }, '<');
+  const next = data.pageNum < totalPages ? data.pageNum + 1 : data.pageNum;
+  const nextEl = createTag('a', { 'data-page-num': next }, '>');
+
+  paginationEl.append(prevEl);
+  for (let i = 1; i <= totalPages; i++) {
+    const pageLink = createTag('a', {
+      class: `${i === data.pageNum ? 'current-page' : ''}`,
+      'data-page-num': i,
+    }, i);
+    paginationEl.append(pageLink);
+  }
+  paginationEl.append(nextEl);
+
+  el.append(paginationEl);
+}
+
+function getSearchParams(obj) {
+  let searchString = '';
+  Object.keys(obj).forEach((key) => {
+    searchString += `&${key}=${obj[key]}`;
+  });
+  return searchString;
+}
+
+const handlePaginationClicks = () => {
+  const paginationEl = document.querySelector('.mmm-pagination');
+  paginationEl?.querySelectorAll('a').forEach((item) => {
+    item?.addEventListener('click', () => {
+      filterPageList();
+    });
+  });
+};
+
+const createPageList = async (el, search) => {
   const mmmElContainer = createTag('div', { class: 'mmm-container max-width-12-desktop' });
   const mmmEl = createTag('dl', {
     class: 'mmm foreground',
@@ -230,16 +250,32 @@ async function createPageList(el) {
     role: 'presentation',
   });
   mmmElContainer.append(mmmEl);
-  const pageList = await fetchData(API_URLS.pageList, DATA_TYPE.JSON);
-  pageList.map((page) => createButtonDetailsPair(mmmEl, page));
+  const response = await fetchData(
+    `${API_URLS.pageList}?perPage=${MMM_PAGINATION.perPage}${search ? getSearchParams(search) : ''}`,
+    DATA_TYPE.JSON,
+  );
+  response.result.map((page) => createButtonDetailsPair(mmmEl, page));
   const section = createTag('div', { id: 'mep-section', class: 'section' });
   const main = document.querySelector('main');
   el.replaceWith(mmmElContainer);
   main.append(section);
-  filterPageList();
-  loadStyle('/libs/features/personalization/preview.css');
-}
+  // filterPageList();
+  createPaginationEl({
+    el: mmmElContainer,
+    data: response,
+  });
+  handlePaginationClicks();
+};
+
+const subscribeToSearchCriteriaChanges = () => {
+  document.addEventListener(SEARCH_CRITERIA_CHANGE_EVENT, (el) => {
+    console.log('time to call createPageList()', el.detail);
+  });
+};
+
 export default async function init(el) {
   createForm(el);
-  createPageList(el);
+  await createPageList(el);
+  subscribeToSearchCriteriaChanges();
+  loadStyle('/libs/features/personalization/preview.css');
 }
