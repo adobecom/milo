@@ -47,6 +47,11 @@ header.global-navigation, header.global-navigation.feds--dark {
   visibility: hidden;
 }
 
+header.global-navigation + .feds-localnav {
+  display: block;
+  height: var(--feds-localnav-height);
+}
+
 @media (min-width: 900px) {
   .feds-promo-link {
     color: var(--navigation-link-color);
@@ -72,9 +77,4 @@ header.global-navigation, header.global-navigation.feds--dark {
 
 .feds-client-search {
   margin-left: auto;
-}
-
-header.global-navigation + .feds-localnav {
-  display: block;
-  height: var(--feds-localnav-height);
 }
