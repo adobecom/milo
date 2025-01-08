@@ -1144,6 +1144,17 @@ describe('keyboard navigation', () => {
         const localnavTitle = document.querySelector('.feds-localnav-title');
         expect(document.activeElement).to.equal(localnavTitle);
       });
+      it('closes when escape is pressed', async () => {
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Tab' });
+        await sendKeys({ press: 'Space' });
+        await sendKeys({ press: 'Escape' });
+        expect(document.querySelector('feds-localnav--active')).to.not.exist;
+      });
     });
   });
 });
