@@ -159,6 +159,12 @@ describe('Merch Cards', async () => {
     expect(merchCards.outerHTML).to.equal(merchCards.nextElementSibling.outerHTML);
   });
 
+  it('should parse fragmented literals', async () => {
+    const merchCards = await init(document.getElementById('fragmented-literals'));
+    await delay(500);
+    expect(merchCards.outerHTML).to.equal(merchCards.nextElementSibling.outerHTML);
+  });
+
   it('should override cards when asked to', async () => {
     const el = document.getElementById('multipleFilters');
     setConfig({
@@ -233,7 +239,7 @@ describe('Merch Cards', async () => {
       await init(el);
       expect(el.innerHTML).to.equal('');
       expect(window.lana.log.calledOnce).to.be.true;
-      expect(window.lana.log.calledWith('Failed to initialize merch cards: Error: No query-index endpoint provided')).to.be.true;
+      expect(window.lana.log.calledWith('Failed to initialize merch cards: No query-index endpoint provided')).to.be.true;
     });
 
     it('fails gracefully if query-index fetch fails ', async () => {

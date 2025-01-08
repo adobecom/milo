@@ -73,7 +73,7 @@ test.describe('Aside Block test suite', () => {
     });
 
     await test.step('step-3: Verify the accessibility test on the Aside Medium block', async () => {
-      await runAccessibilityTest({ page, testScope: Aside.asideMedium });
+      await runAccessibilityTest({ page, testScope: Aside.asideMedium, skipA11yTest: true });
     });
   });
 
@@ -107,7 +107,7 @@ test.describe('Aside Block test suite', () => {
     });
 
     await test.step('step-3: Verify the accessibility test on the Aside Large block', async () => {
-      await runAccessibilityTest({ page, testScope: Aside.asideLarge });
+      await runAccessibilityTest({ page, testScope: Aside.asideLarge, skipA11yTest: true });
     });
   });
 

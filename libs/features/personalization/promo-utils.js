@@ -46,7 +46,7 @@ const getRegionalPromoManifests = (manifestNames, region, searchParams) => {
           cdtEnd,
         };
         const disabled = isDisabled(event, searchParams);
-        return { manifestPath, disabled, event };
+        return { manifestPath, disabled, event, source: ['promo'] };
       }
       return null;
     })

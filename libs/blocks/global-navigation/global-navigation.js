@@ -1,3 +1,4 @@
+/* eslint import/no-relative-packages: 0 */
 /* eslint-disable no-async-promise-executor */
 import {
   getConfig,
@@ -13,7 +14,6 @@ import {
   getActiveLink,
   getAnalyticsValue,
   getExperienceName,
-  getFedsPlaceholderConfig,
   hasActiveLink,
   isActiveLink,
   icons,
@@ -21,7 +21,6 @@ import {
   isTangentToViewport,
   lanaLog,
   loadBaseStyles,
-  loadBlock,
   loadDecorateMenu,
   rootPath,
   loadStyles,
@@ -40,6 +39,7 @@ import {
   setDisableAEDState,
   getDisableAEDState,
 } from './utilities/utilities.js';
+import { getFedsPlaceholderConfig } from '../../utils/federated.js';
 
 import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
 
@@ -105,7 +105,14 @@ export const CONFIG = {
       appswitcher: { name: 'app-switcher' },
       notifications: {
         name: 'notifications',
-        attributes: { notificationsConfig: { applicationContext: { appID: getConfig().unav?.uncAppId || 'adobecom' } } },
+        attributes: {
+          notificationsConfig: {
+            applicationContext: {
+              appID: getConfig().unav?.uncAppId || 'adobecom',
+              ...getConfig().unav?.uncConfig,
+            },
+          },
+        },
       },
       help: {
         name: 'help',
@@ -222,7 +229,7 @@ const decorateProfileTrigger = async ({ avatar }) => {
 let keyboardNav;
 const setupKeyboardNav = async () => {
   keyboardNav = keyboardNav || new Promise(async (resolve) => {
-    const KeyboardNavigation = await loadBlock('./keyboard/index.js');
+    const { default: KeyboardNavigation } = await import('./utilities/keyboard/index.js');
     const instance = new KeyboardNavigation();
     resolve(instance);
   });
@@ -372,6 +379,9 @@ class Gnav {
       </div>`;
 
     this.block.append(this.elements.curtain, this.elements.aside, this.elements.topnavWrapper);
+    // TODO: Remove with mobile redesign code
+    const firstLocalNavItem = this.elements.navWrapper.querySelector('.feds-nav .feds-navItem:not(.feds-navItem--section) a');
+    if (firstLocalNavItem) [firstLocalNavItem.textContent] = firstLocalNavItem.textContent.split('|');
   };
 
   addChangeEventListeners = () => {
@@ -425,17 +435,17 @@ class Gnav {
         this.block.removeEventListener('keydown', this.loadDelayed);
         if (this.searchPresent()) {
           const [
-            Search,
+            { default: Search },
           ] = await Promise.all([
-            loadBlock('../features/search/gnav-search.js'),
+            import('./features/search/gnav-search.js'),
             loadStyles(rootPath('features/search/gnav-search.css')),
           ]);
           this.Search = Search;
         }
 
         if (!this.useUniversalNav) {
-          const [ProfileDropdown] = await Promise.all([
-            loadBlock('../features/profile/dropdown.js'),
+          const [{ default: ProfileDropdown }] = await Promise.all([
+            import('./features/profile/dropdown.js'),
             loadStyles(rootPath('features/profile/dropdown.css')),
           ]);
           this.ProfileDropdown = ProfileDropdown;
@@ -540,7 +550,7 @@ class Gnav {
     const unavVersion = new URLSearchParams(window.location.search).get('unavVersion') || '1.3';
     await Promise.all([
       loadScript(`https://${environment}.adobeccstatic.com/unav/${unavVersion}/UniversalNav.js`),
-      loadStyles(`https://${environment}.adobeccstatic.com/unav/${unavVersion}/UniversalNav.css`),
+      loadStyles(`https://${environment}.adobeccstatic.com/unav/${unavVersion}/UniversalNav.css`, true),
     ]);
 
     const getChildren = () => {
@@ -679,7 +689,7 @@ class Gnav {
 
     return this.loadDelayed().then(() => {
       this.blocks.search.instance = new this.Search(this.blocks.search.config);
-    }).catch(() => {});
+    }).catch(() => { });
   };
 
   isToggleExpanded = () => this.elements.mobileToggle?.getAttribute('aria-expanded') === 'true';
@@ -773,7 +783,7 @@ class Gnav {
         if (allSvgImgs.length === 2) return allSvgImgs[1];
 
         const images = blockLinks.filter((blockLink) => imgRegex.test(blockLink.href)
-        || imgRegex.test(blockLink.textContent));
+          || imgRegex.test(blockLink.textContent));
         if (images.length === 2) return getBrandImage(images[1], isBrandImage);
       }
       const svgImg = rawBlock.querySelector('picture img[src$=".svg"]');
@@ -910,7 +920,7 @@ class Gnav {
 
         const menuLogic = await loadDecorateMenu();
 
-        menuLogic.decorateMenu({
+        await menuLogic.decorateMenu({
           item,
           template,
           type: itemType,
@@ -1021,7 +1031,7 @@ class Gnav {
     const breadcrumbsElem = this.block.querySelector('.breadcrumbs');
     // Breadcrumbs are not initially part of the nav, need to decorate the links
     if (breadcrumbsElem) decorateLinks(breadcrumbsElem);
-    const createBreadcrumbs = await loadBlock('../features/breadcrumbs/breadcrumbs.js');
+    const { default: createBreadcrumbs } = await import('./features/breadcrumbs/breadcrumbs.js');
     this.elements.breadcrumbsWrapper = await createBreadcrumbs(breadcrumbsElem);
     return this.elements.breadcrumbsWrapper;
   };
@@ -1091,5 +1101,6 @@ export default async function init(block) {
   const mepMartech = mep?.martech || '';
   block.setAttribute('daa-lh', `gnav|${getExperienceName()}${mepMartech}`);
   if (isDarkMode()) block.classList.add('feds--dark');
+  block.classList.add('ready');
   return gnav;
 }

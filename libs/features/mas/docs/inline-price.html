@@ -6,6 +6,8 @@
     <title>M@S Web Components</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script type="module" src="../../../deps/custom-elements.js"></script>
+    <link rel="stylesheet" href="spectrum.css">
+    <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
   
   <script>
     if (/localhost/.test(window.location.host)) {
@@ -15,31 +17,27 @@
       document.head.appendChild(meta);
       }
   </script>
-  <!-- Include your custom element script as an ES6 module -->
-  <script src="../../../features/spectrum-web-components/dist/theme.js" type="module"></script>
-  <script src="../../../features/spectrum-web-components/dist/button.js" type="module"></script>
-  <script type="module" src="../../../deps/mas/mas.js"></script>
+  <script type="module" src="../dist/mas.js"></script>
 
   <script type="module">
     const params = new URLSearchParams(document.location.search);
     const masCommerceService = document.createElement('mas-commerce-service');
-    ['locale','language','env'].forEach((attribute) => {
-      const value = params.get(attribute);
+    ['locale','language','env','cli'].forEach((attribute) => {
+      let value = params.get(attribute);
+      if (value === 'cli') attribute = 'checkout-client-id';
       if (value) masCommerceService.setAttribute(attribute, value);
     });
     document.head.appendChild(masCommerceService);
   </script>
-  <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
   <!-- Include Highlight.js stylesheet for syntax highlighting -->
-  <link rel="stylesheet" href="../../../styles/styles.css">
   <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
   <!-- Include any additional stylesheets -->
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<main>
-<sp-theme color="light" scale="medium">
-<h1 id="inline-price" tabindex="-1">inline-price <a class="header-anchor" href="#inline-price" href="#inline-price" title="Permalink to this heading">#</a></h1>
+<main class="spectrum spectrum--medium spectrum--light">
+  <div class="container">
+  <h1 id="inline-price" tabindex="-1">inline-price <a class="header-anchor" href="#inline-price" href="#inline-price" title="Permalink to this heading">#</a></h1>
 <h2 id="introduction" tabindex="-1">Introduction <a class="header-anchor" href="#introduction" href="#introduction" title="Permalink to this heading">#</a></h2>
 <p>This custom element renders an inline price supporting various display options and configurations. It retrieves pricing information from WCS based on the provided Offer Selector ID.</p>
 <p>See <a href="mas.html#terminology">MAS</a> to learn more.</p>
@@ -313,7 +311,7 @@ vs
 <pre><code id="log" class="language-html">
 </code></pre>
 
-</sp-theme>
+  </div>
 </main>
 <script type="module">
   document.querySelectorAll('code.demo').forEach(el => {
