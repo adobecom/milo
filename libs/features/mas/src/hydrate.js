@@ -87,26 +87,23 @@ export function processBackgroundImage(
     merchCard,
     backgroundImageConfig,
 ) {
-    if (backgroundImageConfig?.tag) {
-        if (fields.backgroundImage) {
-            const imgAttributes = {
-                loading: 'lazy',
-                src: fields.backgroundImage,
-            };
-            if (fields.backgroundImageAltText) {
-                imgAttributes.alt = fields.backgroundImageAltText;
-            } else {
-                imgAttributes.role = 'none';
-            }
-            merchCard.append(
-                createTag(
-                    backgroundImageConfig.tag,
-                    { slot: backgroundImageConfig.slot },
-                    createTag('img', imgAttributes),
-                ),
-            );
+    if (backgroundImageConfig?.tag && fields.backgroundImage) { 
+        const imgAttributes = {
+            loading: 'lazy',
+            src: fields.backgroundImage,
+        };
+        if (fields.backgroundImageAltText) {
+            imgAttributes.alt = fields.backgroundImageAltText;
+        } else {
+            imgAttributes.role = 'none';
         }
-
+        merchCard.append(
+            createTag(
+                backgroundImageConfig.tag,
+                { slot: backgroundImageConfig.slot },
+                createTag('img', imgAttributes),
+            ),
+        );
     }
     if (backgroundImageConfig?.attribute) {
         merchCard.setAttribute(backgroundImageConfig.attribute, fields.backgroundImage);
