@@ -590,6 +590,10 @@ header.global-navigation {
     box-sizing: border-box;
   }
 
+  .global-navigation.has-promo .feds-navItem--megaMenu .feds-popup {
+    max-height: calc(100dvh - 100% - var(--global-height-navPromo));
+  }
+
   [dir = "rtl"] .feds-navItem--megaMenu .feds-popup {
     left: 0;
   }
