@@ -750,5 +750,17 @@ describe('global navigation', () => {
       headline.click();
       expect(headline.getAttribute('aria-expanded')).to.equal('true');
     });
+
+    it('adds the correct class when on Safari', async () => {
+      Object.defineProperty(navigator, 'userAgent', { get: () => 'Safari' });
+      await createFullGlobalNavigation({ globalNavigation: gnavWithlocalNav, viewport: 'mobile' });
+      const localNavTitle = document.querySelector(selectors.localNavTitle);
+      localNavTitle.click();
+      const localNav = document.querySelector(selectors.localNav);
+      const curtain = localNav.querySelector('.feds-localnav-curtain');
+      expect(document.body.classList.contains('disable-ios-scroll')).to.equal(true);
+      curtain.click();
+      expect(document.body.classList.contains('disable-ios-scroll')).to.equal(false);
+    });
   });
 });
