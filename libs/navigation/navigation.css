@@ -64,6 +64,10 @@ header.global-navigation, header.global-navigation.feds--dark {
     max-width: none;
     padding: 0 15px;
   }
+
+  header.global-navigation + .feds-localnav {
+    display: none;
+  }
 }
 
 .feds-client-search {
