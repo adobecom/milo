@@ -149,6 +149,7 @@ function handleAddOnContent(table) {
       el?.insertAdjacentElement(order === 'before' ? 'beforebegin' : 'afterend', tag);
     });
   });
+  setTimeout(() => handleEqualHeight(table, '.row-heading'), 0);
   table.addEventListener('mas:resolved', debounce(() => { handleEqualHeight(table, '.row-heading'); }));
 }
 
