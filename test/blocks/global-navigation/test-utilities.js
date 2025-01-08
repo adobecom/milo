@@ -218,7 +218,7 @@ export const createFullGlobalNavigation = async ({
     </header>`);
 
   if (hasPromo) {
-    document.body.prepend(toFragment`<div class="fedsd-promo-aside-wrapper"></div>`);
+    document.body.prepend(toFragment`<div class="feds-promo-aside-wrapper"></div>`);
   }
 
   await Promise.all([

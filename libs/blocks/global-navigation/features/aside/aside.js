@@ -4,7 +4,7 @@ import { processTrackingLabels } from '../../../../martech/attributes.js';
 
 export default async function decorateAside({ headerElem, fedsPromoWrapper, promoPath } = {}) {
   const onError = () => {
-    fedsPromoWrapper.remove();
+    fedsPromoWrapper?.remove();
     headerElem?.classList.remove('has-promo');
     lanaLog({ message: 'Gnav Promo fragment not replaced, potential CLS' });
     return '';
