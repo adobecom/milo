@@ -941,6 +941,7 @@ class Gnav {
 
     if (!promoPath) {
       fedsPromoWrapper?.remove();
+      this.block.classList.remove('has-promo');
       return this.elements.aside;
     }
 
@@ -948,6 +949,7 @@ class Gnav {
     if (!decorate) return this.elements.aside;
     this.elements.aside = await decorate({ headerElem: this.block, fedsPromoWrapper, promoPath });
     fedsPromoWrapper.append(this.elements.aside);
+    return this.elements.aside;
   };
 
   decorateBrand = () => this.decorateGenericLogo({
