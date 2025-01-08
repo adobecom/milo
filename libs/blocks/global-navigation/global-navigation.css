@@ -753,6 +753,10 @@ header.new-nav.local-nav .feds-curtain--open {
   display: none;
 }
 
+header.new-nav.local-nav:has(.feds-curtain--open) {
+  z-index: 12;
+}
+
 /* main-menu screen */
 
 header.new-nav .feds-nav-wrapper {

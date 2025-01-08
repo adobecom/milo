@@ -1165,8 +1165,8 @@ class Gnav {
             // document.body.style.top should always be set
             // at this point by calling disableMobileScroll
             if (popup && this.isLocalNav()) {
-              const y = Math.abs(parseInt(document.body.style.top, 10));
-              popup.style = `top: calc(${y || 0}px - var(--feds-height-nav))`;
+              const y = window.scrollY;
+              popup.style = `top: calc(${y || 0}px - var(--feds-height-nav) - var(--global-height-navPromo)`;
             }
             makeTabActive(popup);
           } else if (isDesktop.matches && this.newMobileNav && isSectionMenu) {
