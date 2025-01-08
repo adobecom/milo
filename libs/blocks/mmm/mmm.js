@@ -32,7 +32,7 @@ function createButtonDetailsPair(mmmEl, page) {
   const icon = createTag('span', { class: 'mmm-icon' });
   const hTag = createTag('h5', false, url);
   const activitiesNum = createTag(
-'span', 
+'span',
 { class: 'mmm-page_item-subtext'},
     `${numOfActivities} Manifest(s) found`,
   );
