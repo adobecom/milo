@@ -1,7 +1,4 @@
 import '../../../deps/custom-elements.js';
-import '../../spectrum-web-components/dist/theme.js';
-import '../../spectrum-web-components/dist/action-button.js';
-import '../../spectrum-web-components/dist/button.js';
 const init = () => {
   const ENVS = {
     qa: 'qa-odin',

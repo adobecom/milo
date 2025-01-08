@@ -1,6 +1,6 @@
 import { Checkout } from './checkout.js';
 import * as Constants from './constants.js';
-import { EVENT_TYPE_READY } from './constants.js';
+import { EVENT_TYPE_READY, MARK_START, MARK_READY } from './constants.js';
 import { Defaults } from './defaults.js';
 import { Ims } from './ims.js';
 import { getPriceLiterals } from './literals.js';
@@ -138,12 +138,14 @@ export class MasCommerceService extends HTMLElement {
                 cancelable: false,
                 detail: this,
             });
+            performance.mark(MARK_READY);
             this.dispatchEvent(event);
         });
     }
 
     connectedCallback() {
         if (!this.readyPromise) {
+            performance.mark(MARK_START);
             this.readyPromise = this.activate();
         }
     }

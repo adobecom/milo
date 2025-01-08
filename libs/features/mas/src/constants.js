@@ -82,6 +82,11 @@ export const STATE_FAILED = 'failed';
 export const STATE_PENDING = 'pending';
 export const STATE_RESOLVED = 'resolved';
 
+export const MARK_START_SUFFIX = ':start';
+export const MARK_READY_SUFFIX = ':ready';
+export const MARK_START = `mas${MARK_START_SUFFIX}`;
+export const MARK_READY = `mas${MARK_READY_SUFFIX}`;
+
 export const Landscape = {
     DRAFT: 'DRAFT',
     PUBLISHED: 'PUBLISHED',

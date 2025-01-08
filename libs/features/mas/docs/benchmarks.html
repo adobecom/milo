@@ -4,12 +4,11 @@
   <meta charset="UTF-8">
   <title>M@S Benchmarks</title>
   <script>
-    const start = performance.now();
+    performance.mark('benchmark:start')
     window.commercePromise = new Promise((resolve) => {
       document.addEventListener('wcms:commerce:ready', () => {
         //we measure the time it takes to load the commerce bundle and store it in a global variable
-        const end = performance.now();
-        window.initTime = end - start;
+        window.initTime = performance.measure('initTime', 'benchmark:start', 'mas:ready').duration;
         console.log(`Commerce loaded in ${window.initTime}ms`);
         resolve();
       });
@@ -19,6 +18,7 @@
     <!-- Fonts -->
     <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
     <!-- Include any additional stylesheets -->
+    <link rel="stylesheet" href="spectrum.css">
     <link rel="stylesheet" href="styles.css">
     <script type="module">
       import { init } from './common.js';
@@ -37,8 +37,9 @@
       let timeoutId;
       const onReady = () => {
         clearTimeout(timeoutId);
-        result.end = performance.now();
-        console.log(`Card ${fragmentId} loaded in ${result.end - result.start}ms`);
+        const mark = (suffix) => `merch-card:${fragmentId}:${suffix}`;
+        result.duration = performance.measure(fragmentId, mark('start'), mark('ready')).duration;
+        console.log(`Card ${fragmentId} loaded in ${result.duration}ms`);
         resolve(result);
       };
       card.addEventListener('mas:ready', onReady);    
@@ -48,7 +49,6 @@
         console.log(`Card ${fragmentId} timed out`);
         reject('Timed out');
       }, 5000); // Timeout after 5 seconds
-      result.start = performance.now();
       container.appendChild(card);
       result.card = card;    
     });
@@ -75,25 +75,23 @@
     const promises = fragmentIds.map((fragmentId) => measureCardPerformances(container, fragmentId));
     const results = await Promise.allSettled(promises);
     results.forEach((result) => {
-      const { card, start, end } = result.status === 'fulfilled' ? result.value : {};
-      const length = end - start;
-      const lengthDisplay = length.toFixed(2);
+      const { card, duration } = result.status === 'fulfilled' ? result.value : {};
       const mask = document.createElement('div');
       mask.style.position = 'absolute';
       mask.style.width = card.offsetWidth + 'px';
       mask.style.height = card.offsetHeight + 'px';
       mask.style.top = card.offsetTop + 'px';
       mask.style.left = card.offsetLeft + 'px';
-      mask.textContent = '⏱️ ' + lengthDisplay + 'ms';
+      mask.textContent = '⏱️ ' + duration + 'ms';
       mask.classList.add('benchmark-mask');
-      mask.setAttribute('data-benchmark-time', lengthDisplay);
-      mask.classList.add(length > limit ? 'benchmark-mask-over-limit' : 'benchmark-mask-under-limit');
+      mask.setAttribute('data-benchmark-time', duration);
+      mask.classList.add(duration > limit ? 'benchmark-mask-over-limit' : 'benchmark-mask-under-limit');
       container.appendChild(mask);  
     });        
   }
 </script>
 
-<body>
+<body class="spectrum spectrum--medium spectrum--light">
   <div class="sidenav">
     <a href="/libs/features/mas/docs/mas.html">Home</a>
     <a href="/libs/features/mas/docs/mas.js.html">mas.js</a>
@@ -104,15 +102,12 @@
     <a href="/libs/features/mas/docs/benchmarks.html">Benchmarks</a>
 </div>
   <main>
-    <sp-theme color="light" scale="medium"> 
-      <p>
-        Marked as green if below each container limit, red otherwise. If you are running this page under a slow network, <a href="/libs/features/mas/docs/benchmarks.html?adjust=true">you can adjust the limit by adding <code>?adjust=true</code> to the URL.</a>
-      </p>
       <div class="gallery-content">
         <h1 id="ccd-cards" tabindex="-1">CCD cards benchmark<a class="header-cards" href="#ccd-cards" href="#ccd-cards" title="Permalink to this heading">#</a></h1>
-        <div class="gallery-grid-3 ccd-cards"         
+        Marked as green if below each container limit, red otherwise. If you are running this page under a slow network, <a href="/libs/features/mas/docs/benchmarks.html?adjust=true">you can adjust the limit by adding <code>?adjust=true</code> to the URL.</a>      
+        <div class="three-merch-cards ccd-slice"         
           data-benchmark="0ef2a804-e788-4959-abb8-b4d96a18b0ef,58c7906f-70a6-4e2b-bc29-257ff2ade513,51c23f28-504f-450d-9764-0e60f1e279b2,c13897c7-de77-4e45-b23b-eec9fd66cad1,bdf40d06-5914-4f1f-aa10-77c5676fe671,31205553-b453-4c9e-a2ef-7b6aa7bfdc72"
-          data-benchmark-limit="250">
+          data-benchmark-limit="400">
         </div>
       </div>
       <script>
