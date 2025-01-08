@@ -478,7 +478,9 @@ async function openExternalModal(url, getModal, extraOptions) {
 
 const isInternalModal = (url) => /\/fragments\//.test(url);
 
-export async function openModal(url, offerType, hash, extraOptions) {
+export async function openModal(e, url, offerType, hash, extraOptions) {
+  e.preventDefault();
+  e.stopImmediatePropagation();
   const { getModal } = await import('../modal/modal.js');
   await import('../modal/modal.merch.js');
   const offerTypeClass = offerType === OFFER_TYPE_TRIAL ? 'twp' : 'crm';
@@ -537,7 +539,7 @@ export async function getModalAction(offers, options, el) {
   if (!url) return undefined;
   url = isInternalModal(url) || isProdModal(url)
     ? localizeLink(checkoutLinkConfig[columnName]) : checkoutLinkConfig[columnName];
-  return { url, handler: () => openModal(url, offerType, hash, options.extraOptions) };
+  return { url, handler: (e) => openModal(e, url, offerType, hash, options.extraOptions) };
 }
 
 export async function getCheckoutAction(offers, options, imsSignedInPromise, el) {
