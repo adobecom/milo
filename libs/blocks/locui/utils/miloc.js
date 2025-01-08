@@ -77,6 +77,11 @@ export async function getProjectStatus() {
       setStatus('service-error', 'error', json.projectStatusText);
     }
 
+    if (json.projectStatus === 'draft') {
+      allowSyncToLangstore.value = true;
+      allowSendForLoc.value = true;
+    }
+
     if (json.projectStatus === 'sync') {
       allowSyncToLangstore.value = false;
     }
@@ -128,7 +133,7 @@ export async function getProjectStatus() {
 export async function startSync() {
   setStatus('service', 'info', 'Syncing documents to Langstore.');
   const url = await getMilocUrl();
-  setExcelStatus('Sync to langstore/en', '');
+  setExcelStatus(`Sync to langstore/${urls.value?.[0].langstore.lang || 'en'}`, '');
   const opts = { method: 'POST', headers: { 'User-Token': accessToken.value } };
   const resp = await fetch(`${url}start-sync?project=${heading.value.projectId}`, opts);
   if (resp.status === UNAUTHORIZED) showAuthError('start project');
