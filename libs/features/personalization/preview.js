@@ -1,8 +1,7 @@
 import { createTag, getConfig, getMetadata, loadStyle } from '../../utils/utils.js';
 import { US_GEO, getFileName, normalizePath } from './personalization.js';
 
-const API_DOMAIN = 'https://bckbr4dhh2sngv5skvo4k7l27i0fvhdk.lambda-url.us-west-2.on.aws/';
-export const MMM_PAGINATION = { perPage: 100 };
+const API_DOMAIN = 'https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-2.on.aws';
 
 export const API_URLS = {
   pageList: `${API_DOMAIN}/get-pages`,
