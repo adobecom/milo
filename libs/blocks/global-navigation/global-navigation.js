@@ -800,7 +800,13 @@ class Gnav {
     .elements
     .navWrapper
     ?.querySelectorAll('.feds-nav > section.feds-navItem')
-    ?.length === 1;
+    ?.length <= 1;
+
+  hasMegaMenu = () => this
+    .elements
+    .navWrapper
+    ?.querySelectorAll('.feds-nav > section.feds-navItem')
+    ?.length >= 1;
 
   toggleMenuMobile = () => {
     const toggle = this.elements.mobileToggle;
@@ -809,7 +815,7 @@ class Gnav {
       disableMobileScroll();
       const sections = document.querySelectorAll('header.new-nav .feds-nav > section.feds-navItem > button.feds-navLink');
       animateInSequence(sections, 0.075);
-      if (this.isLocalNav()) {
+      if (this.isLocalNav() && this.hasMegaMenu()) {
         const section = sections[0];
         queueMicrotask(() => section.click());
       }
@@ -825,7 +831,7 @@ class Gnav {
   };
 
   decorateToggle = () => {
-    if (!this.mainNavItemCount) return '';
+    if (!this.mainNavItemCount || !this.hasMegaMenu()) return '';
 
     const toggle = toFragment`<button
       class="feds-toggle"
