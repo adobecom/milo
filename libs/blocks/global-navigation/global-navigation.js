@@ -258,7 +258,8 @@ const getBrandImage = (image, brandImageOnly) => {
   return brandImageOnly ? CONFIG.icons.brand : CONFIG.icons.company;
 };
 
-const closeOnClickOutside = (e) => {
+const closeOnClickOutside = (e, isLocalNav, navWrapper) => {
+  if (isLocalNav && navWrapper.classList.contains('feds-nav-wrapper--expanded')) return;
   const newMobileNav = getMetadata('mobile-gnav-v2') !== 'false';
   if (!isDesktop.matches && !newMobileNav) return;
 
@@ -361,7 +362,7 @@ class Gnav {
       await task();
     }
 
-    document.addEventListener('click', closeOnClickOutside);
+    document.addEventListener('click', (e) => closeOnClickOutside(e, this.isLocalNav(), this.elements.navWrapper));
     isDesktop.addEventListener('change', closeAllDropdowns);
   }, 'Error in global navigation init', 'errorType=error,module=gnav');
 
