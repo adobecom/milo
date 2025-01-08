@@ -745,6 +745,11 @@ header.global-navigation + .feds-localnav {
   header.global-navigation + .feds-localnav {
     display: none;
   }
+
+  header.global-navigation.has-promo {
+    height: auto;
+    top: var(--global-height-navPromo);
+  }
 }
 
 .breadcrumbs {

@@ -815,6 +815,7 @@ async function decorateHeader() {
   if (promo?.length) {
     const fedsPromoWrapper = createTag('div', { class: 'feds-promo-aside-wrapper' });
     header.before(fedsPromoWrapper);
+    header.classList.add('has-promo');
   }
 }
 

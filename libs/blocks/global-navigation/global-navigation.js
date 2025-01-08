@@ -937,16 +937,16 @@ class Gnav {
   decorateAside = async () => {
     this.elements.aside = '';
     const promoPath = getMetadata('gnav-promo-source');
+    const fedsPromoWrapper = document.querySelector('.feds-promo-aside-wrapper');
+
     if (!promoPath) {
-      const fedsPromoWrapper = document.querySelector('.feds-promo-aside-wrapper');
       fedsPromoWrapper?.remove();
       return this.elements.aside;
     }
 
     const { default: decorate } = await import('./features/aside/aside.js');
     if (!decorate) return this.elements.aside;
-    const fedsPromoWrapper = document.querySelector('.feds-promo-aside-wrapper');
-    this.elements.aside = await decorate({ localNavElem: this.elements.localNav, fedsPromoWrapper, promoPath });
+    this.elements.aside = await decorate({ headerElem: this.block, fedsPromoWrapper, promoPath });
     fedsPromoWrapper.append(this.elements.aside);
   };
 
