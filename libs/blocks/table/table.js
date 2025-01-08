@@ -19,7 +19,7 @@ function defineDeviceByScreenSize() {
   return 'TABLET';
 }
 
-function isStickyHeader(el) {
+export function isStickyHeader(el) {
   return el.classList.contains('sticky')
     || (el.classList.contains('sticky-desktop-up') && defineDeviceByScreenSize() === 'DESKTOP')
     || (el.classList.contains('sticky-tablet-up') && defineDeviceByScreenSize() !== 'MOBILE' && !isMobileLandscape());
