@@ -237,6 +237,7 @@ const init = (block) => {
   const tabList = rows[0];
   tabList.classList.add('tabList');
   tabList.setAttribute('role', 'tablist');
+  tabList.setAttribute('aria-valuenow', '0');
   const tabListContainer = tabList.querySelector(':scope > div');
   tabListContainer.classList.add('tab-list-container');
   const tabListItems = rows[0].querySelectorAll(':scope li');

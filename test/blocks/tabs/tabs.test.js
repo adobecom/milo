@@ -106,4 +106,29 @@ describe('tabs', () => {
       expect(newPosition).to.be.above(oldPosition);
     });
   });
+
+  it('sets aria-valuenow based on scroll position', async () => {
+    setViewport({ width: MOBILE_WIDTH, height: HEIGHT });
+    window.innerWidth = MOBILE_WIDTH;
+    window.dispatchEvent(new Event('resize'));
+    const tabList = allTabs[3].querySelector('[role="tablist"]');
+    const rightPaddle = allTabs[3].querySelector('.paddle-right');
+    const leftPaddle = allTabs[3].querySelector('.paddle-left');
+    tabList.scrollLeft = 0;
+    leftPaddle.scrollLeft = 0;
+    await delay(200);
+
+    expect(tabList.scrollLeft).to.equal(0);
+    rightPaddle.click();
+    await delay(700);
+
+    expect(tabList.scrollLeft).to.not.equal(0);
+    expect(tabList.getAttribute('aria-valuenow')).to.equal('100');
+
+    leftPaddle.click();
+    await delay(700);
+
+    expect(tabList.scrollLeft).to.equal(0);
+    expect(tabList.getAttribute('aria-valuenow')).to.equal('0');
+  });
 });
