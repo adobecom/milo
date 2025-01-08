@@ -954,7 +954,7 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .title h7 {
   font-size: 28px;
   font-weight: 700;
   line-height: 25px;
-  padding-bottom: 29px;
+  padding: 8px 0 24px;
 }
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tabs {
