@@ -811,6 +811,11 @@ async function decorateHeader() {
     header.after(localNavWrapper);
   }
   if (breadcrumbs) header.append(breadcrumbs);
+  const promo = getMetadata('gnav-promo-source');
+  if (promo?.length) {
+    const fedsPromoWrapper = createTag('div', { class: 'feds-promo-aside-wrapper' });
+    header.before(fedsPromoWrapper);
+  }
 }
 
 async function decorateIcons(area, config) {

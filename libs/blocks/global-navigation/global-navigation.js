@@ -444,8 +444,8 @@ class Gnav {
       document.body.classList.remove('disable-scroll');
       enableMobileScroll();
     });
-    const promo = getMetadata('gnav-promo-source');
-    if (promo?.length) localNav.classList.add('has-promo');
+    const promo = document.querySelector('.feds-promo-aside-wrapper');
+    if (promo) localNav.classList.add('has-promo');
     this.elements.localNav = localNav;
     localNavItems[0].querySelector('a').textContent = title.trim();
     const isAtTop = () => {
@@ -937,16 +937,17 @@ class Gnav {
   decorateAside = async () => {
     this.elements.aside = '';
     const promoPath = getMetadata('gnav-promo-source');
-
     if (!promoPath) {
-      this.elements.localNav.classList.remove('has-promo');
+      const fedsPromoWrapper = document.querySelector('.feds-promo-aside-wrapper');
+      fedsPromoWrapper?.remove();
       return this.elements.aside;
     }
 
     const { default: decorate } = await import('./features/aside/aside.js');
     if (!decorate) return this.elements.aside;
-    this.elements.aside = await decorate({ headerElem: this.block, promoPath });
-    this.block.before(toFragment`<div class="feds-promo-aside-wrapper">${this.elements.aside}</div>`)
+    const fedsPromoWrapper = document.querySelector('.feds-promo-aside-wrapper');
+    this.elements.aside = await decorate({ localNavElem: this.elements.localNav, fedsPromoWrapper, promoPath });
+    fedsPromoWrapper.append(this.elements.aside);
   };
 
   decorateBrand = () => this.decorateGenericLogo({
