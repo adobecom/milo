@@ -37,7 +37,7 @@ describe('Promo', () => {
   it('is available if set up correctly', async () => {
     const promoMeta = toFragment`<meta name="gnav-promo-source" content="http://localhost:2000/fragments/correct-promo-fragment">`;
     document.head.append(promoMeta);
-    const nav = await createFullGlobalNavigation({ hasPromo: true });
+    const nav = await createFullGlobalNavigation({ hasPromo: true, imsInitialized: true });
     expect(nav.block.classList.contains('has-promo')).to.be.true;
     const asideElem = nav.block.querySelector('.aside.promobar');
     expect(asideElem).to.exist;
