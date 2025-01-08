@@ -687,8 +687,8 @@ export function convertStageLinks({ anchors, config, hostname, href }) {
 }
 
 function addCircleLoader(elem) {
-  const { miloLibs } = getConfig();
-  loadStyle(`${miloLibs}/styles/progress-circle.css`);
+  const { base } = getConfig();
+  loadStyle(`${base}/styles/progress-circle.css`);
   const overlay = createTag('div', { class: 'overlay' });
   const loader = createTag('div', { class: 'loader' });
   loader.style.display = 'block';
@@ -702,8 +702,8 @@ function removeCircleLoader(elem) {
 }
 
 function addBarLoader(elem) {
-  const { miloLibs } = getConfig();
-  loadStyle(`${miloLibs}/styles/progress-bar.css`);
+  const { base } = getConfig();
+  loadStyle(`${base}/styles/progress-bar.css`);
   const container = createTag('div', { class: 'progress-bar-container' });
   const progressBar = createTag('div', { class: 'progress-bar' });
 
