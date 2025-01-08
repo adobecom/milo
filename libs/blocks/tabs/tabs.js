@@ -2,7 +2,6 @@
  * tabs - consonant v6
  * https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles/Tab_Role
  */
-import { debounce } from '../../utils/action.js';
 import { createTag, MILO_EVENTS, getConfig } from '../../utils/utils.js';
 import { processTrackingLabels } from '../../martech/attributes.js';
 
@@ -151,13 +150,6 @@ function initPaddles(tabList, left, right) {
     }
   });
 
-  tabList.addEventListener('scroll', debounce(() => {
-    tabList.setAttribute(
-      'aria-valuenow',
-      ((tabList.scrollLeft / (tabList.scrollWidth - tabList.clientWidth)) * 100).toFixed(0),
-    );
-  }, 500));
-
   const options = {
     root: tabList,
     rootMargin: '0px',
@@ -237,7 +229,6 @@ const init = (block) => {
   const tabList = rows[0];
   tabList.classList.add('tabList');
   tabList.setAttribute('role', 'tablist');
-  tabList.setAttribute('aria-valuenow', '0');
   const tabListContainer = tabList.querySelector(':scope > div');
   tabListContainer.classList.add('tab-list-container');
   const tabListItems = rows[0].querySelectorAll(':scope li');

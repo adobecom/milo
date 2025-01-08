@@ -49,20 +49,40 @@
   padding: var(--spacing-xxl) 0;
 }
 
+.tabs.xxl-spacing .paddle {
+  top: var(--spacing-xxl);
+}
+
 .tabs.xl-spacing {
   padding: var(--spacing-xl) 0;
+}
+
+.tabs.xl-spacing .paddle {
+  top: var(--spacing-xl);
 }
 
 .tabs.l-spacing {
   padding: var(--spacing-l) 0;
 }
 
+.tabs.l-spacing .paddle {
+  top: var(--spacing-l);
+}
+
 .tabs.s-spacing {
   padding: var(--spacing-s) 0;
 }
 
+.tabs.x-spacing .paddle {
+  top: var(--spacing-s);
+}
+
 .tabs.xs-spacing {
   padding: var(--spacing-xs) 0;
+}
+
+.tabs.xs-spacing .paddle {
+  top: var(--spacing-xs);
 }
 
 .tabs div[role="tablist"] {
@@ -166,7 +186,7 @@
   cursor: pointer;
   width: 32px;
   height: 48px;
-  top: var(--spacing-xl);
+  top: -4.5px;
   background: var(--tabs-active-bg-color);
   border: 0;
   border-bottom: 1px solid var(--tabs-border-color);
