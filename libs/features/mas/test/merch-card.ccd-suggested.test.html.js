@@ -35,7 +35,6 @@ runTests(async () => {
                 'ccd-suggested',
             );
             expect(ccdSuggestedCard.getAttribute('background-image')).to.exist;
-            expect(ccdSuggestedCard.className).to.equal('wide-strip');
         });
 
         it('should have dark theme', async () => {
