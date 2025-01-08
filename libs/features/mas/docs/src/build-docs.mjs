@@ -67,17 +67,10 @@ const htmlTemplate = `
     <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
   
   <script>
-      const ENVS = {
-        qa: 'qa-odin',
-        stage: 'stage-odin',
-        prod: 'odin',
-      };
     if (/localhost/.test(window.location.host)) {
       const meta = document.createElement('meta');
       meta.name = 'aem-base-url';
-      const envOverride = new URL(window.location.href).searchParams.get('aem.env');
-      const env = envOverride && ENVS[envOverride] ? ENVS[envOverride] : ENVS.prod;
-      meta.content = envOverride ? \`https://\${env}.adobe.com\` : 'http://localhost:8080'; // local AEM proxy URL
+      meta.content = 'http://localhost:8080'; // local AEM proxy URL
       document.head.appendChild(meta);
       }
   </script>
