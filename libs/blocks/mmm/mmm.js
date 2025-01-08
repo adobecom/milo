@@ -1,6 +1,6 @@
 import { createTag, loadStyle } from '../../utils/utils.js';
 import { fetchData, DATA_TYPE } from '../../features/personalization/personalization.js';
-import { getMepPopup, API_URLS, MMM_PAGINATION } from '../../features/personalization/preview.js';
+import { getMepPopup, API_URLS } from '../../features/personalization/preview.js';
 
 const SEARCH_CRITERIA_CHANGE_EVENT = 'mmm-search-change';
 
@@ -27,6 +27,7 @@ async function toggleDrawer(target, dd) {
     dd.classList.add('placeholder-resolved');
   }
 }
+
 function createButtonDetailsPair(mmmEl, page) {
   const { url, pageId, numOfActivities } = page;
   const triggerId = `mmm-trigger-${pageId}`;
@@ -74,11 +75,13 @@ function createButtonDetailsPair(mmmEl, page) {
   button.addEventListener('click', (e) => { toggleDrawer(e.target, dd, pageId, 'mmm'); });
   mmmEl.append(dt, dd);
 }
-function filterPageList() {
+
+function filterPageList(pageNum) {
+  const mmmEntries = document.querySelectorAll('div.mmm-container > dl > *');
   const shareUrl = new URL(`${window.location.origin}${window.location.pathname}`);
   const searchValues = {};
 
-  document.querySelectorAll('.tabs input, .tabs select').forEach((field) => {
+  document.querySelector('.mmm-search-container').querySelectorAll('input, select').forEach((field) => {
     const id = field.getAttribute('id').split('-').pop();
     const { value, tagName } = field;
     searchValues[id] = {
@@ -87,8 +90,34 @@ function filterPageList() {
     };
     if (value) shareUrl.searchParams.set(id, value);
   });
-  document.dispatchEvent(new CustomEvent(SEARCH_CRITERIA_CHANGE_EVENT, { detail: searchValues }));
-  // do page reload with all searchValue
+
+  // This event triggers an API call with beloww search criterias and a re-render
+  document.dispatchEvent(new CustomEvent(SEARCH_CRITERIA_CHANGE_EVENT, {
+    detail: {
+      urls: searchValues.urls?.value,
+      geos: searchValues.geos?.value,
+      pages: searchValues.pages?.value,
+      pageNum: pageNum || 1,
+    },
+  }));
+
+  document.querySelectorAll('button.copy-to-clipboard').forEach((button) => {
+    button.dataset.destination = shareUrl.href;
+  });
+
+  mmmEntries.forEach((entry) => {
+    const data = entry.dataset;
+    entry.classList.remove('filter-hide');
+
+    Object.keys(searchValues).forEach((key) => {
+      const { value, tagName } = searchValues[key];
+      if (tagName !== 'SELECT') return;
+      const inputVal = data[key];
+      if (value && !value.split(',').some((val) => inputVal === val)) {
+        entry.classList.add('filter-hide');
+      }
+    });
+  });
 }
 function parseData(el) {
   const data = {};
@@ -112,6 +141,7 @@ function parseData(el) {
   });
   return data;
 }
+
 function createShareButton() {
   const div = createTag(
     'div',
@@ -133,6 +163,7 @@ function createShareButton() {
       <path fill="currentColor" d="M31 0H6C2.7 0 0 2.7 0 6v25c0 3.3 2.7 6 6 6h25c3.3 0 6-2.7 6-6V6c0-3.3-2.7-6-6-6zM15.34 30.58a6.296 6.296 0 0 1-8.83 0c-2.48-2.44-2.52-6.43-.08-8.91l6.31-6.31a6.423 6.423 0 0 1 9.01-.04c.43.43.79.93 1.08 1.47l-1.52 1.51c-.11.11-.24.2-.38.28a3.68 3.68 0 0 0-3.32-2.44c-1.1-.04-2.17.37-2.96 1.13l-6.31 6.31a3.591 3.591 0 0 0 0 5.09 3.591 3.591 0 0 0 5.09 0c.19-.19 2.81-2.85 3.26-3.3 1.04.43 2.16.61 3.29.53-.96.95-4.31 4.34-4.64 4.68zm15.19-15.2-5.94 5.94c-2.54 2.57-6.63 2.73-9.38.38-.43-.43-.79-.93-1.08-1.47l1.44-1.5a2 2 0 0 1 .37-.28c.24.56.61 1.05 1.09 1.43.64.62 1.49.97 2.37.97 1.1.04 2.17-.37 2.96-1.14l6.26-6.26a3.591 3.591 0 0 0 0-5.09 3.591 3.591 0 0 0-5.09 0c-.19.19-2.87 2.83-3.32 3.29a7.267 7.267 0 0 0-3.29-.53c.96-.96 4.36-4.32 4.7-4.66a6.301 6.301 0 0 1 8.91 0l.01.01c2.46 2.47 2.46 6.46-.01 8.91z"></path>
     </svg>`,
   );
+  button.dataset.destination = document.location.href; // set original destination
   p.append(button);
   button.addEventListener('click', (e) => {
     /* c8 ignore start */
@@ -149,13 +180,14 @@ function createShareButton() {
   });
   return div;
 }
+
 function createDropdowns(data, sharedUrlSettings) {
-  const dropdownTab = document.querySelector('.section-metadata.dropdowns');
+  const searchContainer = document.querySelector('.mmm-search-container');
   const dropdownForm = createTag(
     'div',
     { id: 'mmm-dropdown-container', class: 'mmm-form-container' },
   );
-  dropdownTab.parentNode.append(dropdownForm);
+  searchContainer.append(dropdownForm);
   const dropdownSubContainer = createTag('div', { id: 'mmm-dropdown-sub-container' });
   dropdownForm.append(dropdownSubContainer);
   dropdownForm.append(createShareButton());
@@ -173,76 +205,98 @@ function createDropdowns(data, sharedUrlSettings) {
       const startingVal = sharedUrlSettings[key];
       if (startingVal === option) optionEl.setAttribute('selected', 'selected');
     });
-    select.addEventListener('change', filterPageList);
+    select.addEventListener('change', () => filterPageList());
   });
 }
+
+function debounce(func) {
+  let timeout;
+  return () => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(), 800);
+  };
+}
+
 function createSearchField(data, sharedUrlSettings) {
-  const searchTab = document.querySelector('.section-metadata.search');
+  const searchContainer = document.querySelector('.mmm-search-container');
   const searchForm = createTag(
     'div',
-    { id: 'mmm-search-query-container', class: 'mmm-form-container' },
+    { id: 'mmm-search-urls-container', class: 'mmm-form-container' },
     `<div>
-      <label for="mmm-search-query">Search:</label>
-      <input id="mmm-search-query" type="text" name="mmm-search-query" class="text-field-input" placeholder="Search for a full or partial URL">
+      <label for="mmm-search-urls">Search:</label>
+      <input id="mmm-search-urls" type="text" name="mmm-search-urls" class="text-field-input" placeholder="Search for a full or partial URL">
     </div>`,
   );
-  searchForm.append(createShareButton());
-  searchTab.parentNode.insertBefore(searchForm, searchTab);
+  searchContainer.append(searchForm);
   const searchField = searchForm.querySelector('input');
-  if (sharedUrlSettings.query) searchField.value = sharedUrlSettings.query;
-  searchField.addEventListener('keyup', filterPageList);
-  searchField.addEventListener('change', filterPageList);
+  if (sharedUrlSettings.urls) searchField.value = sharedUrlSettings.urls;
+
+  searchField.addEventListener('keyup', debounce(() => filterPageList()));
+  searchField.addEventListener('change', debounce(() => filterPageList()));
 }
+
 async function createForm(el) {
   const data = parseData(el);
   const urlParams = new URLSearchParams(window.location.search);
   const sharedUrlSettings = Object.fromEntries(urlParams.entries());
-  createSearchField(data, sharedUrlSettings);
+  const searchContainer = createTag('div', { class: 'mmm-search-container' });
+  document.querySelector('.mmm-container').parentNode.prepend(searchContainer);
   createDropdowns(data, sharedUrlSettings);
-  document.querySelectorAll('.tab-list-container button').forEach((button) => {
-    button.addEventListener('click', filterPageList);
-  });
+  createSearchField(data, sharedUrlSettings);
 }
 
 function createPaginationEl({ data, el }) {
-  const paginationEl = createTag('div', { id: 'mmm-pagination' });
+  const paginationEl = createTag('div', { id: 'mmm-pagination', 'data-current-page': data.pageNum });
   const totalPages = Math.ceil(data.totalRecords / data.perPage);
   const prev = data.pageNum - 1 || 1;
-  const prevEl = createTag('a', { 'data-page-num': prev }, '<');
+  const noResult = !data.totalRecords;
+  const prevEl = createTag('a', {
+    'data-page-num': prev,
+    class: `arrow ${data.pageNum === 1 ? 'disabled' : ''}`,
+  }, '<');
   const next = data.pageNum < totalPages ? data.pageNum + 1 : data.pageNum;
-  const nextEl = createTag('a', { 'data-page-num': next }, '>');
+  const nextEl = createTag('a', {
+    'data-page-num': next,
+    class: `arrow ${data.pageNum === totalPages ? 'disabled' : ''}`,
+  }, '>');
 
-  paginationEl.append(prevEl);
-  for (let i = 1; i <= totalPages; i++) {
-    const pageLink = createTag('a', {
-      class: `${i === data.pageNum ? 'current-page' : ''}`,
-      'data-page-num': i,
-    }, i);
-    paginationEl.append(pageLink);
+  if (!noResult) {
+    paginationEl.append(prevEl);
+    for (let i = 1; i <= totalPages; i++) {
+      const pageLink = createTag('a', {
+        class: `${i === data.pageNum ? 'current-page' : ''}`,
+        'data-page-num': i,
+      }, i);
+      paginationEl.append(pageLink);
+    }
+    paginationEl.append(nextEl);
+  } else {
+    paginationEl.innerHTML = '<h5>No results.</h5>';
   }
-  paginationEl.append(nextEl);
-
   el.append(paginationEl);
 }
 
 function getSearchParams(obj) {
   let searchString = '';
   Object.keys(obj).forEach((key) => {
-    searchString += `&${key}=${obj[key]}`;
+    if (obj[key]) searchString += `&${key}=${obj[key]}`;
   });
-  return searchString;
+  return searchString.replace(/&/, '?');
 }
 
-const handlePaginationClicks = () => {
-  const paginationEl = document.querySelector('.mmm-pagination');
+function handlePaginationClicks() {
+  const paginationEl = document.querySelector('#mmm-pagination');
   paginationEl?.querySelectorAll('a').forEach((item) => {
     item?.addEventListener('click', () => {
-      filterPageList();
+      item.parentNode.setAttribute('data-current-page', item.getAttribute('data-page-num'));
+      filterPageList(item.getAttribute('data-page-num'));
     });
   });
-};
+}
 
-const createPageList = async (el, search) => {
+async function createPageList(el, search) {
+  const paginationEl = document.querySelector('.mmm-pagination');
+  paginationEl?.classList.add('hide');
   const mmmElContainer = createTag('div', { class: 'mmm-container max-width-12-desktop' });
   const mmmEl = createTag('dl', {
     class: 'mmm foreground',
@@ -250,8 +304,9 @@ const createPageList = async (el, search) => {
     role: 'presentation',
   });
   mmmElContainer.append(mmmEl);
+  const url = `${API_URLS.pageList}${search ? getSearchParams(search) : window.location.search || '?pageNum=1'}`;
   const response = await fetchData(
-    `${API_URLS.pageList}?perPage=${MMM_PAGINATION.perPage}${search ? getSearchParams(search) : ''}`,
+    url,
     DATA_TYPE.JSON,
   );
   response.result.map((page) => createButtonDetailsPair(mmmEl, page));
@@ -259,23 +314,23 @@ const createPageList = async (el, search) => {
   const main = document.querySelector('main');
   el.replaceWith(mmmElContainer);
   main.append(section);
-  // filterPageList();
   createPaginationEl({
     el: mmmElContainer,
     data: response,
   });
+  paginationEl?.classList.remove('hide');
   handlePaginationClicks();
-};
+}
 
-const subscribeToSearchCriteriaChanges = () => {
+function subscribeToSearchCriteriaChanges() {
   document.addEventListener(SEARCH_CRITERIA_CHANGE_EVENT, (el) => {
-    console.log('time to call createPageList()', el.detail);
+    createPageList(document.querySelector('.mmm').parentNode, el.detail);
   });
-};
+}
 
 export default async function init(el) {
-  createForm(el);
   await createPageList(el);
+  createForm(el);
   subscribeToSearchCriteriaChanges();
   loadStyle('/libs/features/personalization/preview.css');
 }
