@@ -8,6 +8,7 @@
   --navigation-link-color: #035FE6;
   --navigation-link-color--hover: #136FF6;
   --feds-localnav-height: 40px;
+  --global-height-nav: 64px;
 }
 
 .global-navigation, .global-footer, .dialog-modal {
