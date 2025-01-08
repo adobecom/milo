@@ -1115,6 +1115,7 @@ async function checkForPageMods() {
       pzn,
       promo,
       target,
+      xlg,
       targetInteractionPromise,
       calculatedTimeout,
     });
@@ -1133,7 +1134,7 @@ async function checkForPageMods() {
 
   const { init } = await import('../features/personalization/personalization.js');
   await init({
-    mepParam, mepHighlight, mepButton, pzn, promo, target, targetInteractionPromise,
+    mepParam, mepHighlight, mepButton, pzn, promo, target, xlg, targetInteractionPromise,
   });
 }
 

@@ -74,7 +74,7 @@ function addPillEventListeners(div) {
 function parseMepConfig() {
   const config = getConfig();
   const { mep, locale, stageDomainsMap, env } = config;
-  const { experiments, targetEnabled, prefix, highlight } = mep;
+  const { experiments, targetEnabled, xlgEnabled, prefix, highlight } = mep;
   const activities = experiments.map((experiment) => {
     const {
       name, event, manifest, variantNames, selectedVariantName, disabled, analyticsTitle, source,
@@ -278,7 +278,11 @@ export function getMepPopup(mepConfig, isMmm = false) {
   const mepManifestPreviewButton = createTag('div', { class: `advanced-options${isMmm ? '' : ' dark'}` });
   mepManifestPreviewButton.innerHTML = `
     <a class="con-button outline button-l" data-id="${PREVIEW_BUTTON_ID}" title="Preview above choices" ${isMmm ? ' target="_blank"' : ''}>Preview</a>`;
-  const targetOnText = page.target === 'postlcp' ? 'on post LCP' : page.target;
+  const targetMapping = {
+    postlcp: 'on post LCP',
+    cached: 'on cached',
+  };
+  const targetOnText = targetMapping[page.target] || page.target;
   mepPopupHeader.innerHTML = `
     <div>
       <h4>${activities?.length || 0} Manifest(s) found</h4>
