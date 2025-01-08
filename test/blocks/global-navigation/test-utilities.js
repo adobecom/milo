@@ -173,6 +173,7 @@ export const createFullGlobalNavigation = async ({
   hasPromo,
   hasBreadcrumbs = true,
   unavContent = null,
+  imsInitialized = false,
 } = {}) => {
   const clock = sinon.useFakeTimers({ shouldAdvanceTime: true });
   setConfig({ ...config, ...customConfig });
@@ -195,7 +196,7 @@ export const createFullGlobalNavigation = async ({
     return null;
   });
   window.adobeIMS = {
-    initialized: true,
+    initialized: imsInitialized,
     isSignedInUser: stub().returns(signedIn),
     getAccessToken: stub().returns('mock-access-token'),
     getProfile: stub().returns(
