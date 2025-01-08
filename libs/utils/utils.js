@@ -812,7 +812,11 @@ async function decorateHeader() {
   }
   if (breadcrumbs) header.append(breadcrumbs);
   const promo = getMetadata('gnav-promo-source');
-  if (promo?.length) header.classList.add('has-promo');
+  if (promo?.length) {
+    const fedsPromoWrapper = createTag('div', { class: 'feds-promo-aside-wrapper' });
+    header.before(fedsPromoWrapper);
+    header.classList.add('has-promo');
+  }
 }
 
 async function decorateIcons(area, config) {
