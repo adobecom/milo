@@ -217,15 +217,17 @@ export const createFullGlobalNavigation = async ({
       ${breadcrumbsEl}
     </header>`);
 
+  if (hasPromo) {
+    document.body.prepend(toFragment`<div class="feds-promo-aside-wrapper"></div>`);
+  }
+
   await Promise.all([
     loadStyles('../../../../libs/styles/styles.css'),
     loadStyles(
       '../../../../libs/blocks/global-navigation/global-navigation.css',
     ),
   ]);
-
   const instancePromise = initGnav(document.body.querySelector('header'));
-
   await clock.runToLastAsync();
   clock.tick(1000);
   const instance = await instancePromise;

@@ -1088,6 +1088,10 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
   z-index: 9;
 }
 
+.feds-localnav.has-promo {
+  top: var(--global-height-navPromo);
+}
+
 .feds-localnav a {
   text-decoration: unset;
 }
@@ -1209,6 +1213,13 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
 
 .feds-localnav.feds-localnav--active .feds-localnav-exit {
   display: block;
+}
+
+.feds-promo-aside-wrapper {
+  position: sticky;
+  top: 0;
+  z-index: 11;
+  height: var(--global-height-navPromo);
 }
 
 @keyframes slideright {
