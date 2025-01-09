@@ -80,7 +80,7 @@ function filterPageList(pageNum, event) {
   const mmmEntries = document.querySelectorAll('div.mmm-container > dl > *');
   const shareUrl = new URL(`${window.location.origin}${window.location.pathname}`);
   const searchValues = {};
-  const activeSearchWithShortKeyword = event?.target?.value?.length < 2;
+  const activeSearchWithShortKeyword = event?.target?.value && event.target.value.length < 2;
 
   document.querySelector('.mmm-search-container').querySelectorAll('input, select').forEach((field) => {
     const id = field.getAttribute('id').split('-').pop();
