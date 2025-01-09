@@ -11,6 +11,12 @@ export const PROJECT_TYPE_LABELS = {
   rollout: 'Rollout',
 };
 
+export const PROJECT_ACTION = {
+  translate: 'Translate',
+  rollout: 'Rollout',
+  english_copy: 'English Copy',
+};
+
 export const TRANSLATE_ONLY_LANGS = ['en-GB'];
 export const ENG_LANG_CODE = 'en';
 export const TRANSCREATION_WORKFLOW = 'Transcreation';

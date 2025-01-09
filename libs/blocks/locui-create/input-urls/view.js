@@ -8,6 +8,7 @@ import FragmentsSection from '../fragments/view.js';
 import {
   authenticated,
   createDraftProject,
+  initByParams,
   nextStep,
   project,
   projectCreated,
@@ -171,7 +172,7 @@ export default function InputUrls() {
       setEditBehavior(project.value?.editBehavior || '');
       setUrlsStr(project.value?.urls?.join('\n'));
       setFragmentsEnabled(project.value?.fragments?.length > 0);
-      setFragments(project.value?.fragments);
+      setFragments(project.value?.fragments ?? []);
       if (
         project.value?.fragments?.length > 0
         && project.value?.urls.length > 0
@@ -209,7 +210,7 @@ export default function InputUrls() {
           <span>- ${PROJECT_TYPE_LABELS[type]}</span>
         </div>
         <div class="locui-form-body">
-          ${!projectCreated.value && html`
+          ${(!projectCreated.value && !initByParams.value?.type) && html`
             <div class="segment-ctrl pb-12">
               ${[PROJECT_TYPES.translation, PROJECT_TYPES.rollout].map((pType) => html`
                 <div
@@ -287,6 +288,7 @@ export default function InputUrls() {
             onInput=${handleUrlsChange}
             onBlur=${handleUrlsBlur}
             placeholder=${`Enter the full URL. E.g, ${origin}/drafts/localization/projects/raga/image-test-one`}
+            disabled=${initByParams.value?.urls}
           />
           ${errors.urlsStr
           && html`<div class="form-field-error">${errors.urlsStr}</div>`}

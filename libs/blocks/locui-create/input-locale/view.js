@@ -3,6 +3,7 @@ import useInputLocale from './index.js';
 import StepControls from '../components/stepControls.js';
 import { PROJECT_TYPES } from '../utils/constant.js';
 import Toast from '../components/toast.js';
+import { initByParams } from '../store.js';
 
 export default function InputLocales() {
   const {
@@ -24,23 +25,25 @@ export default function InputLocales() {
     setApiError,
   } = useInputLocale();
 
-  const RenderRegion = () => html`
+  const RenderRegion = () => {
+    if (!initByParams.value?.languages) {
+      return (html`
     <h5 class="section-header">Quick Select for Language/Locale</h5>
     <div class="region-grid">
       <div class="region-buttons">
         ${localeRegionList.map(
-    (region) => html`
+          (region) => html`
             <button
               key=${region.key}
               class="region-button ${selectedRegion[region.key]
-    ? 'active'
-    : ''}"
+          ? 'active'
+          : ''}"
               onClick=${() => toggleRegion(region)}
             >
               ${region.key}
             </button>
           `,
-  )}
+        )}
       </div>
       <div class="additional-cta">
         <button class="reset-button" onClick=${selectAll}>
@@ -51,31 +54,38 @@ export default function InputLocales() {
           </button>
       </div>
     </div>
-  `;
+  `);
+    } return null;
+  };
 
-  const RenderLanguage = () => html`
+  const RenderLanguage = () => {
+    if (!initByParams.value?.languages) {
+      return (html`
     <div class="language-grid">
       <h5 class="section-header">Select the Language(s)</h5>
       <div class="language-buttons">
         ${languagesList.map(
-    (language) => language.livecopies.length > 0
+          (language) => language.livecopies.length > 0
             && html`
               <button
                 key=${language.languagecode}
                 class="language-button ${language.livecopies
-    .split(',')
-    .some((locale) => selectedLocale.includes(locale))
-    ? 'active'
-    : ''}"
+          .split(',')
+          .some((locale) => selectedLocale.includes(locale))
+          ? 'active'
+          : ''}"
                 onClick=${() => selectLanguage(language)}
               >
                 ${language.language}
               </button>
             `,
-  )}
+        )}
       </div>
     </div>
-  `;
+  `);
+    }
+    return null;
+  };
 
   const RenderLocales = () => {
     const groupedLocales = selectedLocale.reduce((acc, locale) => {
