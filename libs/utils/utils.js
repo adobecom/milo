@@ -686,55 +686,6 @@ export function convertStageLinks({ anchors, config, hostname, href }) {
   });
 }
 
-function addCircleLoader(elem) {
-  const { base } = getConfig();
-  loadStyle(`${base}/styles/progress-circle.css`);
-  const overlay = createTag('div', { class: 'overlay' });
-  const loader = createTag('div', { class: 'loader' });
-  loader.style.display = 'block';
-  overlay.append(loader);
-  elem.prepend(overlay);
-}
-
-function removeCircleLoader(elem) {
-  elem.querySelector('.overlay').style.display = 'none';
-  elem.querySelector('.loader').style.display = 'none';
-}
-
-function addBarLoader(elem) {
-  const { base } = getConfig();
-  loadStyle(`${base}/styles/progress-bar.css`);
-  const container = createTag('div', { class: 'progress-bar-container' });
-  const progressBar = createTag('div', { class: 'progress-bar' });
-
-  const label = createTag('div', { class: 'progress-label' });
-  label.textContent = 'Launching the app store...';
-  container.append(label);
-
-  const track = createTag('div', { class: 'progress-bar-value' });
-  track.style.display = 'block';
-  progressBar.append(track);
-  container.append(progressBar);
-  elem.replaceWith(container);
-  return container;
-}
-
-function removeBarLoader(elem, a) {
-  elem.replaceWith(a);
-}
-
-async function decorateQuickLink(a, hasConsent) {
-  if (!window.alloy) return;
-  const { getECID } = await import('../blocks/mobile-app-banner/mobile-app-banner.js');
-  const ecid = await getECID();
-  if (hasConsent) {
-    if (!a.href.includes('ecid')) a.href = a.href.concat(`?ecid=${ecid}`);
-    window.location.href = a.href;
-  } else {
-    window.location.href = a.href;
-  }
-}
-
 export function decorateLinks(el) {
   const config = getConfig();
   decorateImageLinks(el);
@@ -775,40 +726,13 @@ export function decorateLinks(el) {
       decorateCopyLink(a, copyEvent);
     }
     const branchQuickLink = 'app.link';
-    const ecidCheck = getMetadata('quick-link-ecid'); // on | off | null
-    const loaderCheck = getMetadata('quick-link-loader'); // progress-circle | progress-bar | off | null
+    const ecidCheck = getMetadata('quick-link-ecid');
 
     if (a.href.includes(branchQuickLink) && ecidCheck === 'on') {
-      const getConsentStatus = () => {
-        const cookieGrp = window.adobePrivacy?.activeCookieGroups();
-        return cookieGrp?.includes('C0002') && cookieGrp?.includes('C0004');
-      };
-
-      const waitForConsent = new Promise((resolve) => {
-      // case: not first encounter
-        if (window.cookieConsent !== undefined) {
-          resolve(window.cookieConsent);
-        } else {
-          if (window.adobePrivacy) resolve(getConsentStatus());
-          window.addEventListener('adobePrivacy:PrivacyConsent', () => {
-            window.cookieConsent = getConsentStatus();
-            resolve(window.cookieConsent);
-          });
-        }
-      });
-
-      a.addEventListener('click', async (e) => {
-        e.preventDefault();
-        let pb;
-        if (loaderCheck === 'progress-circle') addCircleLoader(a);
-        else if (loaderCheck === 'progress-bar') pb = addBarLoader(a);
-        const hasConsent = await waitForConsent;
-        if (hasConsent) {
-          if (loaderCheck === 'progress-bar') removeBarLoader(pb, a);
-          else if (loaderCheck === 'progress-circle') removeCircleLoader(a);
-        }
-        decorateQuickLink(a, hasConsent);
-      });
+      (async () => {
+        const { default: processQL } = await import('../features/branch-quick-links/branch-quick-links.js');
+        processQL(a);
+      })();
     }
     // Append aria-label
     const pipeRegex = /\s?\|([^|]*)$/;
