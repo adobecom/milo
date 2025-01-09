@@ -92,6 +92,10 @@ function filterPageList(pageNum, event) {
     if (value) shareUrl.searchParams.set(id, value);
   });
 
+  // add page number to share url
+  shareUrl.searchParams.set('pageNum', pageNum);
+  searchValues.pageNum = { value: pageNum || 1, tagName: 'A' };
+
   // This event triggers an API call with beloww search criterias and a re-render
   if (!activeSearchWithShortKeyword) {
     document.dispatchEvent(new CustomEvent(SEARCH_CRITERIA_CHANGE_EVENT, {
@@ -99,7 +103,7 @@ function filterPageList(pageNum, event) {
         urls: searchValues.urls?.value,
         geos: searchValues.geos?.value,
         pages: searchValues.pages?.value,
-        pageNum: pageNum || 1,
+        pageNum: searchValues.pageNum?.value,
       },
     }));
   }
@@ -265,11 +269,10 @@ function createPaginationEl({ data, el }) {
   }, '>');
 
   const paginationSummary = createTag('div', { class: 'mmm-pagination-summary' });
+  const range = `${data.pageNum * data.perPage - (data.perPage - 1)} - ${data.pageNum * data.perPage < data.totalRecords ? data.pageNum * data.perPage : data.totalRecords}`;
   paginationSummary.innerHTML = `
     <div>
-      <span>Page ${data.pageNum} of ${totalPages}</span>
-      <span>|</span>
-      <span>Total records: ${data.totalRecords}</span>
+      <span>Showing ${range} of ${data.totalRecords} items</span>
     <div>
   `;
   if (!noResult) {
