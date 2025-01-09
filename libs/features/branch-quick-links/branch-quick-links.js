@@ -60,16 +60,8 @@ export default function processQL(a) {
     } else {
       if (window.adobePrivacy) resolve(getConsentStatus());
       window.addEventListener('adobePrivacy:PrivacyConsent', () => {
-        try {
-          window.cookieConsent = getConsentStatus();
-          if (window.cookieConsent === undefined || window.cookieConsent === null) {
-            throw new Error('Consent status is undefined or null.');
-          }
-          resolve(window.cookieConsent);
-        } catch (error) {
-          console.error('Error getting cookie consent:', error);
-          resolve(false);
-        }
+        window.cookieConsent = getConsentStatus();
+        resolve(window.cookieConsent);
       });
     }
   });
@@ -80,10 +72,8 @@ export default function processQL(a) {
     if (loaderCheck === 'progress-circle') addCircleLoader(a);
     else if (loaderCheck === 'progress-bar') pb = addBarLoader(a);
     const hasConsent = await waitForConsent;
-    // if (hasConsent) {
     if (loaderCheck === 'progress-bar') removeBarLoader(pb, a);
     else if (loaderCheck === 'progress-circle') removeCircleLoader(a);
-    // }
     decorateQuickLink(a, hasConsent);
   });
 }
