@@ -1121,6 +1121,7 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
   overflow: hidden;
   text-overflow: ellipsis;
   font-family: var(--body-font-family);
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .feds-localnav-items {
