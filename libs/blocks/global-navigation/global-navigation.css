@@ -991,6 +991,7 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button {
   text-align: unset;
   color: var(--text-color);
   font-family: var(--body-font-family);
+  font-size: 14px;
 }
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button[aria-selected="true"] {
