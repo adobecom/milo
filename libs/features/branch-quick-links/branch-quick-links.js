@@ -54,14 +54,19 @@ export default function processQL(a) {
     return cookieGrp?.includes('C0002') && cookieGrp?.includes('C0004');
   };
 
-  const waitForConsent = new Promise((resolve) => {
+  const waitForConsent = new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error('Consent promise timed out'));
+    }, 7000);
     if (window.cookieConsent !== undefined) {
       resolve(window.cookieConsent);
+      clearTimeout(timeout);
     } else {
       if (window.adobePrivacy) resolve(getConsentStatus());
       window.addEventListener('adobePrivacy:PrivacyConsent', () => {
         window.cookieConsent = getConsentStatus();
         resolve(window.cookieConsent);
+        clearTimeout(timeout);
       });
     }
   });
