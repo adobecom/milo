@@ -93,6 +93,10 @@ export default function processQL(a) {
         window.cookieConsent = getConsentStatus();
         resolve(getConsentStatus());
       });
+      window.addEventListener('adobePrivacy:PrivacyReject', () => {
+        window.cookieConsent = getConsentStatus();
+        resolve(getConsentStatus());
+      });
     });
     e.preventDefault();
     let pb;
