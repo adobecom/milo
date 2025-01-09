@@ -272,7 +272,7 @@ function createPaginationEl({ data, el }) {
   const range = `${data.pageNum * data.perPage - (data.perPage - 1)} - ${data.pageNum * data.perPage < data.totalRecords ? data.pageNum * data.perPage : data.totalRecords}`;
   paginationSummary.innerHTML = `
     <div>
-      <span>Showing ${range} of ${data.totalRecords} items</span>
+      <span>${range} of ${data.totalRecords}</span>
     <div>
   `;
   if (!noResult) {
