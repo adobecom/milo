@@ -862,8 +862,8 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup {
   top: calc(-1 * var(--feds-height-nav));
   visibility: hidden;
   width: 100%;
-  height: calc(var(--feds-height-nav) + 100%);
-  padding-bottom: env(safe-area-inset-bottom);
+  /* height: calc(var(--feds-height-nav) + 100%); */
+  min-height: 100dvh;
   background-color: var(--feds-background-nav);
   transition: translate 0.4s ease-out, opacity 0.2s ease, visibility 0s linear 0.5s;
   translate: 300vw 0;
@@ -1290,5 +1290,6 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
 .disable-ios-scroll {
   overflow: hidden;
   width: 100%;
+  height: 100dvh;
   position: fixed;
 }
