@@ -333,15 +333,18 @@ describe('class "CheckoutButton"', () => {
     });
 });
 
-describe('commerce service', () => {
+describe('commerce service', async () => {
     describe('function "buildCheckoutURL"', () => {
         it('returns empty string if no offers provided', async () => {
+            await initMasCommerceService();
             const service = await initMasCommerceService();
             expect(service.buildCheckoutURL([])).to.be.empty;
         });
     });
+
     describe('function "direct checkout calls"', () => {
         it('works as expected', async () => {
+            await initMasCommerceService();
             const service = await initMasCommerceService();
             const { collectCheckoutOptions, buildCheckoutURL } = new Checkout({
                 literals: { price: {} },
