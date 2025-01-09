@@ -270,9 +270,10 @@ dd .mep-popup-header .mep-close {
   justify-content: center;
   gap: var(--spacing-s);
   margin: var(--spacing-m) auto 0;
-  width: 800px;
+  width: 700px;
   flex-flow: row nowrap;
   max-width: 80vw;
+  position: relative;
 }
 .mmm-form-container > div {
   flex: 1;
@@ -311,9 +312,6 @@ dd .mep-popup-header .mep-close {
   #mmm-dropdown-container {
     flex: 0 0 50%;
   }
-  #mmm-search-urls-container {
-    max-width: 700px;
-  }
   #mmm-shareButtonContainer {
     right: 100px;
   }
@@ -324,13 +322,9 @@ dd .mep-popup-header .mep-close {
 
 
 .mmm-form-container > div.share-mmm {
-  margin-left: auto;
-  margin-right: auto;
-  text-align: center;
+  right: -4rem;
   padding-top: 10px;
-  flex: 0;
-  display: flex;
-  align-items: flex-start;
+  position: absolute;
 }
 
 .share-mmm svg.icon {
@@ -495,7 +489,7 @@ dd .mep-popup-header .mep-close {
 .mmm-pagination-summary {
   display: flex;
   justify-content: flex-end;
-  padding: 1rem;
+  padding: 0 0 .5rem;
 }
 
 main > .section > .share-mmm.inline {
