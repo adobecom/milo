@@ -1,114 +1,6 @@
-import login from '../../tools/sharepoint/login.js';
-import { accessToken, account } from '../../tools/sharepoint/state.js';
 import { createTag } from '../../utils/utils.js';
 
-const SCOPES = ['files.readwrite', 'sites.readwrite.all'];
-const TELEMETRY = { application: { appName: 'Milo - Single Page Rollout' } };
 let urlData = {};
-
-const setUrlData = (url, allowEmptyPaths = false) => {
-  const urlParts = url.split('--');
-  if (urlParts.length !== 3) {
-    return null;
-  }
-  const hlxPageIndex = urlParts[2].indexOf('.hlx.page');
-  if (hlxPageIndex < 0 || hlxPageIndex + (allowEmptyPaths ? 8 : 9) >= urlParts[2].length) {
-    return null;
-  }
-  urlData = {
-    urlBranch: urlParts[0].slice(8), // remove "https://"
-    urlRepo: urlParts[1],
-    urlOwner: urlParts[2].slice(0, hlxPageIndex),
-    urlPathRemainder: urlParts[2].slice(hlxPageIndex + 9), // 9 === ".hlx.page".length
-  };
-};
-
-const getReferrer = () => {
-  const referrer = new URLSearchParams(window.location.search).get('referrer');
-  return decodeURIComponent(referrer);
-};
-
-const resetFormData = () => {
-  document.querySelectorAll(".rollout .checkbox-group input[type='checkbox']").forEach(
-    (checkbox) => (checkbox.checked = false),
-  );
-  document.querySelectorAll('.rollout .dropdown').forEach(
-    (dropdown) => (dropdown.selectedIndex = 0),
-  );
-};
-
-const createRolloutData = (previewUrl) => {
-  const environment = document.querySelector('.modal .dropdown').value;
-  const regionalEditConfig = document.querySelectorAll('.modal .dropdown')[1].value;
-
-  console.log(`all checkboxes: ${document.querySelectorAll('.checkbox-group input[type="checkbox"]')}`);
-  const selectedLocales = Array.from(document.querySelectorAll('.checkbox-group input[type="checkbox"]'))
-    .filter((checkbox) => checkbox.checked)
-    .map((checkbox) => checkbox.value);
-
-  const data = {
-    owner: urlData.urlOwner,
-    repo: urlData.urlRepo,
-    branch: urlData.urlBranch,
-    urls: [
-      previewUrl,
-    ],
-    languages: [{
-      language: urlData.currentPageLang,
-      locales: selectedLocales,
-    }],
-    settings: {
-      env: environment,
-      regionalEditBehaviour: regionalEditConfig,
-    },
-  };
-  return data;
-}
-
-const submitRolloutAction = (previewUrl) => {
-  // Show loading bar
-  const submitButton = document.getElementById('createProjectBtn');
-  const spinner = document.getElementById('spinner');
-  const buttonText = document.getElementById('rollout-btn-text');
-  submitButton.disabled = true;
-  buttonText.textContent = 'Creating...';
-  spinner.style.display = 'inline-block';
-
-  // Simulate processing delay
-  setTimeout(async () => {
-    try {
-      const response = await fetch('https://14257-miloc-raga.adobeioruntime.net/api/v1/web/miloc-0.0.1/create-rollout-project', {
-        method: 'POST',
-        headers: { 'User-Token': accessToken.value, 'Content-Type': 'application/json' },
-        body: JSON.stringify(createRolloutData(previewUrl)),
-      });
-      console.log(`Response from Raghu's service : ${response}`);
-      if (response.ok) {
-        submitButton.disabled = false;
-        buttonText.textContent = 'Open Project';
-        spinner.style.display = 'none';
-        submitButton.onclick = () => (window.location.href = response.json().locUiUrl);
-      } else {
-        console.error('Error while creating rollout project');
-      }
-    } catch (error) {
-      console.error(`Error occurred while rolling out ${previewUrl}: ${error}`);
-    } finally {
-      resetFormData();
-    }
-  }, 2000); // Simulate a 2-second delay
-};
-
-const createDropdown = (dropdownContainer, options, label) => {
-  const dropdownGroup = createTag('div', { class: 'dropdown-group' });
-  const labelTag = createTag('label', { for: label?.toLowerCase(), textContent: label });
-  const dropdown = createTag('select', { class: 'dropdown', id: label?.toLowerCase() });
-  options.forEach((option) => {
-    dropdown.appendChild(createTag('option', { value: option.toLowerCase().replace(/\s+/g, '-') }, option));
-  });
-  dropdownGroup.append(labelTag, dropdown);
-  dropdownContainer.appendChild(dropdownGroup);
-}
 
 const getLanguageCode = (url) => {
   try {
@@ -119,88 +11,113 @@ const getLanguageCode = (url) => {
       ? pathSegments[1]
       : 'root';
   } catch {
-    console.error('Invalid URL');
     return null;
   }
 };
 
-const findLiveCopies = (data, languageCode) => {
-  const parsedData = typeof data === 'string' ? JSON.parse(data) : data;
-  if (!Array.isArray(parsedData)) throw new TypeError('Expected data to be an array');
-  return parsedData.find((item) => item.languagecode === languageCode) || null;
+const getReferrer = () => {
+  const referrer = new URLSearchParams(window.location.search).get('referrer');
+  return decodeURIComponent(referrer);
 };
 
-const getLiveCopies = async (previewUrl) => {
-  const currentLangCode = getLanguageCode(previewUrl);
-  if (currentLangCode === 'root') return { language: 'English (US)', livecopies: 'langstore/en' };
-
-  const configJsonUrl = `https://${urlData.urlBranch}--${urlData.urlRepo}--${urlData.urlOwner}.hlx.page/.milo/config.json`;
-  const response = await fetch(configJsonUrl);
-  const configJson = await response.json();
-  return findLiveCopies(JSON.stringify(configJson?.locales?.data), currentLangCode);
-};
-
-const updateRolloutButtonState = () => {
-  console.log(`all checkboxes: ${document.querySelectorAll('.rollout .checkbox-group input[type="checkbox"]')}`);
-  const rolloutButton = document.getElementById('createProjectBtn');
-  if (rolloutButton) {
-    const anyChecked = Array.from(
-      document.querySelectorAll('.checkbox-group input[type="checkbox"]'),
-    ).some((checkbox) => checkbox.checked);
-    rolloutButton.disabled = !anyChecked;
+const setUrlData = (url, allowEmptyPaths = false) => {
+  const urlParts = url.split('--');
+  if (urlParts.length !== 3) {
+    return null;
   }
-};
 
-const createLocalesCheckboxes = async (modal, previewUrl) => {
-  const liveCopiesEntry = await getLiveCopies(previewUrl);
-  urlData.currentPageLang = liveCopiesEntry.language;
+  const hlxPageIndex = urlParts[2].indexOf('.hlx.page');
+  const aemPageIndex = urlParts[2].indexOf('.aem.page');
+  const pageIndex = hlxPageIndex >= 0 ? hlxPageIndex : aemPageIndex;
+  const pageType = hlxPageIndex >= 0 ? '.hlx.page' : '.aem.page';
 
-  const checkboxGroup = createTag('div', { class: 'checkbox-group' });
-  liveCopiesEntry?.livecopies?.split(',').forEach((countryCode) => {
-    const country = countryCode?.trim()?.toLowerCase();
-    console.log(country);
-    const checkbox = createTag('input', {
-      type: 'checkbox',
-      id: country,
-      value: country,
-    }, country);
-    checkbox.onchange = updateRolloutButtonState;
-    const label = createTag('label', { for: country }, country);
-    checkboxGroup.append(checkbox, label);
-  });
-  modal.appendChild(checkboxGroup);
+  const pathLengthCheck = allowEmptyPaths ? pageType.length - 1 : pageType.length;
+  if (pageIndex < 0 || pageIndex + pathLengthCheck >= urlParts[2].length) {
+    return null;
+  }
+
+  urlData = {
+    urlBranch: urlParts[0].slice(8), // remove "https://"
+    urlRepo: urlParts[1],
+    urlOwner: urlParts[2].slice(0, pageIndex),
+    urlPathRemainder: urlParts[2].slice(pageIndex + pageType.length),
+    currentPageLang: getLanguageCode(url),
+    host: new URLSearchParams(window.location.search).get('host'),
+    project: new URLSearchParams(window.location.search).get('project'),
+    referrer: getReferrer(),
+  };
+  return urlData;
 };
 
 const buildUi = async (el, previewUrl) => {
   const modal = createTag('div', { class: 'modal' });
-  const dropdownContainer = createTag('div', { class: 'dropdown-container' });
+  const radioGroup = createTag('div', { class: 'radio-group' });
+  const envLabel = createTag('div', { class: 'env-label' }, 'Environment');
+  radioGroup.appendChild(envLabel);
 
-  createDropdown(dropdownContainer, ['Stage', 'Prod'], 'Environment:');
-  createDropdown(dropdownContainer, ['Skip', 'Merge', 'Overwrite'], 'Regional Edit Behavior:');
-  modal.append(dropdownContainer, createTag('label', { for: 'locales', class: 'locale-label' }, 'Locales:'));
+  const stageLabel = createTag('label');
+  const stageRadio = createTag('input', {
+    type: 'radio',
+    name: 'deployTarget',
+    value: 'stage',
+    required: true,
+    checked: true,
+  });
+  stageLabel.appendChild(stageRadio);
+  stageLabel.appendChild(document.createTextNode('Stage'));
 
-  await createLocalesCheckboxes(modal, previewUrl);
+  const prodLabel = createTag('label');
+  const prodRadio = createTag('input', {
+    type: 'radio',
+    name: 'deployTarget',
+    value: 'prod',
+    required: true,
+  });
+  prodLabel.appendChild(prodRadio);
+  prodLabel.appendChild(document.createTextNode('Prod'));
 
-  const submitButton = createTag('button', { id: 'createProjectBtn', type: 'button', disabled: true });
-  submitButton.append(
-    createTag('span', { id: 'rollout-btn-text' }, 'Rollout'),
-    createTag('span', { class: 'spinner', id: 'spinner', style: 'display: none' }),
+  radioGroup.appendChild(stageLabel);
+  radioGroup.appendChild(prodLabel);
+
+  const rolloutBtn = createTag('button', { class: 'rollout-btn' });
+  rolloutBtn.append(
+    createTag('span', { class: 'rollout-btn-text' }, 'Rollout'),
   );
-  submitButton.onclick = submitRolloutAction.bind(null, previewUrl);
+
+  rolloutBtn.addEventListener('click', () => {
+    const selectedEnv = document.querySelector('input[name="deployTarget"]:checked').value;
+    const locV3ConfigUrl = new URL(
+      'tools/locui-create',
+      `https://${urlData.urlBranch}--${urlData.urlRepo}--${urlData.urlOwner}.hlx.page`,
+    );
+    locV3ConfigUrl.searchParams.append('milolibs', 'milostudio-stage');
+    locV3ConfigUrl.searchParams.append('ref', urlData.urlBranch);
+    locV3ConfigUrl.searchParams.append('repo', urlData.urlRepo);
+    locV3ConfigUrl.searchParams.append('owner', urlData.urlOwner);
+    locV3ConfigUrl.searchParams.append('host', urlData.host);
+    locV3ConfigUrl.searchParams.append('project', urlData.project);
+    locV3ConfigUrl.searchParams.append('env', selectedEnv);
+    locV3ConfigUrl.searchParams.append('type', 'rollout');
+    locV3ConfigUrl.searchParams.append('encodedUrls', previewUrl);
+    locV3ConfigUrl.searchParams.append('language', urlData.currentPageLang);
+    window.open(locV3ConfigUrl, '_blank');
+  });
 
   const buttonGroup = createTag('div', { class: 'button-group' });
-  buttonGroup.appendChild(submitButton);
+  modal.appendChild(radioGroup);
+  buttonGroup.appendChild(rolloutBtn);
   modal.appendChild(buttonGroup);
 
   el.appendChild(modal);
 };
 
 const setup = async (el) => {
-  await login({ scopes: SCOPES, telemetry: TELEMETRY });
-  if (!account.value.username) return;
-
   const previewUrl = getReferrer();
-  setUrlData(previewUrl, true);
+  const data = setUrlData(previewUrl, true);
+  if (!data) {
+    el.innerHTML = '<div class="modal">Invalid URL format</div>';
+    return;
+  }
   el.innerHTML = '';
   await buildUi(el, previewUrl);
 };
@@ -208,7 +125,8 @@ const setup = async (el) => {
 export default async function init(el) {
   try {
     await setup(el);
+    return true;
   } catch {
-    console.error('Setup initialization failed');
+    return false;
   }
 }

@@ -1,214 +1,96 @@
-.rollout .modal {
-  width: 95%;
+/* Rollout Modal styling */
+.modal {
   padding: 20px;
-  /*border-radius: 8px;*/
+  max-width: 500px;
+  margin: 40px auto;
+  text-align: center;
+  font-family: Arial, sans-serif;
+}
+
+.env-label {
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #333;
+  font-size: 16px;
+}
+
+.radio-group {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  background-color: #efefef;
+  margin: 10px 0;
 }
 
-.rollout-icon {
-  width: 24px;
-  height: 24px;
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2a10 10 0 100 20c5.52 0 10-4.48 10-10 0-1.05-.16-2.05-.46-3" stroke="%23007bff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M20.59 5.41L15 10m5.59-4.59V10" stroke="%23007bff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>');
-  background-repeat: no-repeat;
-  background-size: contain;
-}
-
-/* Dropdown and checkbox styling */
-.rollout .dropdown, .rollout .checkbox-group, .rollout .modal button {
-  width: 30%;
-  margin-bottom: 10px;
-}
-
-.rollout .modal .dropdown-container {
-  display: flex;
-  gap: 16px; /* Space between the dropdown groups */
-  align-items: flex-start; /* Aligns dropdowns and labels at the top */
-}
-
-.rollout .modal .dropdown-group {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-}
-
-.rollout .modal .dropdown-group label {
-  font-weight: bold; /* Make text bold */
-  font-size: 17px;
-  margin-bottom: 4px;
-  color: #333;
-}
-
-.rollout .modal .dropdown {
-  width: 100%;
-  padding: 6px; /* Reduced padding for compact look */
-  font-weight: bold; /* Make text bold */
-  font-size: 14px;
-  color: #333;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  background-color: #f9f9f9;
-  appearance: none;
-  background-image: url('data:image/svg+xml;utf8,<svg fill="%23333" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  background-size: 16px 16px;
-  text-align: center;
-}
-
-.rollout .modal .dropdown:focus {
-  border-color: #007bff;
-  box-shadow: 0 0 5px rgba(0 123 255 / 0.5);
-  outline: none;
-}
-
-/* Dropdown container for styling */
-
-
-/* Dropdown styling */
-.rollout .modal .dropdown {
-  width: 100%;
-  padding: 10px; /* Adds padding for a clean look */
-  font-size: 14px;
-  color: #333;
-  border: 1px solid #ddd;
-  border-radius: 5px; /* Rounded corners for a modern look */
-  background-color: #f9f9f9;
-  appearance: none; /* Remove default styling */
-  outline: none;
-  background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"%3E%3Cpolyline points="6 9 12 15 18 9"%3E%3C/polyline%3E%3C/svg%3E');
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  background-size: 16px;
-  cursor: pointer;
-  transition: border-color 0.3s, box-shadow 0.3s;
-}
-
-/* Button styling */
-.rollout .modal button {
-  padding: 10px;
-  border: none;
-  background-color: #007bff;
-  color: white;
-  font-size: 16px;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.rollout .checkbox-group label {
-  display: block;
-  margin-bottom: 5px;
-}
-
-/* Loading bar styling */
-.rollout .loading-bar-container {
-  width: 100%;
-  height: 10px;
-  background-color: #f3f3f3;
-  border-radius: 5px;
-  overflow: hidden;
-  margin-top: 10px;
-  visibility: hidden;
-}
-
-.rollout .loading-bar {
-  height: 100%;
-  width: 0;
-  background-color: #007bff;
-  animation: loading 2s linear forwards;
-}
-
-@keyframes loading {
-  from { width: 0; }
-  to { width: 100%; }
-}
-
-.rollout .locale-label {
-  font-weight: bold;
-  font-size: 17px;
-  margin-bottom: 4px;
-  color: #333;
-}
-
-.rollout .checkbox-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  width: 100%;
-}
-
-.rollout .checkbox-group label {
+.radio-group label {
   display: flex;
   align-items: center;
-  padding: 6px 12px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  /*background-color: #f1f1f1;*/
-  background-color: rgb(121, 119, 117);
-  /*color: #333;*/
-  color: white;
-  cursor: pointer;
-  transition: background-color 0.3s, color 0.3s;
-  font-weight: bold; /* Make text bold */
   font-size: 14px;
-  flex: 1 1 auto; /* Allows the pills to flex and wrap */
-  max-width: calc(33% - 8px); /* Ensure they fit nicely in rows, adjust as needed */
-  min-width: 80px;
-  text-align: center;
-  /*box-sizing: border-box;*/
-  justify-content: center;
+  font-weight: 500;
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgb(0 0 0 / 5%);
 }
 
-.rollout .checkbox-group input {
-  display: none; /* Hide the actual checkbox */
+.radio-group label:hover {
+  border-color: #0078d4;
+  background-color: #f0f8ff;
+  box-shadow: 0 3px 6px rgb(0 0 0 / 10%);
 }
 
-.rollout .checkbox-group input:checked + label {
-  background-color: #007bff;
-  color: white;
-  border-color: #007bff;
+.radio-group input[type="radio"] {
+  margin-right: 8px;
+  accent-color: #0078d4;
+  width: 16px;
+  height: 16px;
 }
 
-.rollout .modal .button-group {
+.button-group {
   display: flex;
-  gap: 10px;
   justify-content: center;
+  margin-top: 15px;
 }
 
-.rollout .modal .button-group button {
-  padding: 10px 20px;
+.rollout-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #fff;
+  background: linear-gradient(135deg, #0078d4, #005a9e);
   border: none;
-  background-color: #007bff;
-  color: white;
-  font-size: 16px;
   border-radius: 5px;
   cursor: pointer;
-  margin-top: 20px; /* Adds spacing above the button */
+  transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 3px 6px rgb(0 0 0 / 10%);
 }
 
-
-
-/* Spinner styling */
-.rollout .spinner {
-  border: 3px solid rgba(255, 255, 255, 30%);
-  border-top: 3px solid white;
-  border-radius: 50%;
-  width: 14px;
-  height: 14px;
-  animation: spin 0.6s linear infinite;
-  margin-left: 8px; /* Space between text and spinner */
-  display: inline-block;
+.rollout-btn:hover {
+  background: linear-gradient(135deg, #005a9e, #003e6b);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgb(0 0 0 / 15%);
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+.rollout-btn:active {
+  background: linear-gradient(135deg, #004080, #002a57);
+  transform: translateY(1px);
+  box-shadow: 0 2px 4px rgb(0 0 0 / 10%);
 }
 
-.rollout .modal .button-group button:disabled {
+.rollout-btn:disabled {
   background-color: #ccc;
+  color: #666;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
+.rollout-btn-text {
+  font-size: 14px;
+  font-weight: normal;
+  color: inherit;
+}

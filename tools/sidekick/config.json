@@ -180,7 +180,7 @@
       "passConfig": true,
       "url": "/tools/rollout",
       "includePaths": [ "**.docx**", "**.xlsx**" ],
-      "paletteRect": "top: 40%; left: 50%; transform: translate(-50%,-50%); height: 500px; width: 800px; overflow: hidden; border-radius: 15px; box-shadow: 0 20px 35px 0px rgba(0, 0, 0, 0.5);"
+      "paletteRect": "top: 40%; left: 50%; transform: translate(-50%,-50%); height: 350px; width: 500px; overflow: hidden; border-radius: 15px; box-shadow: 0 20px 35px 0px rgba(0, 0, 0, 0.5);"
     }
   ]
 }
