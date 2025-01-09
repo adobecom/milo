@@ -25,7 +25,7 @@ test.describe('Benchmark feature test suite', () => {
     });
 
     await test.step('step-2: Validate benchmark', async () => {
-      const selector = '.ccd-cards';
+      const selector = '.ccd-slice';
       const benchmarkPage = new BenchmarkPage(page);
       const benchmark = await benchmarkPage.getBenchmark(selector);
       await expect(benchmark).toBeVisible();
