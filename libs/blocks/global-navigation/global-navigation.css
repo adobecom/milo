@@ -94,6 +94,7 @@ header.global-navigation {
 
 /* Hamburger toggle */
 .feds-toggle {
+  width: 60px;
   margin: 0;
   padding: 0;
   border: none;
@@ -103,7 +104,6 @@ header.global-navigation {
   cursor: pointer;
   font-size: 20px;
   font-weight: 300;
-  padding-left: 20px;
 }
 
 .feds-toggle:before {
@@ -120,6 +120,15 @@ header.global-navigation {
   flex-shrink: 0;
 }
 
+.feds-brand-container > .feds-brand:first-child {
+  margin-left: 12px;
+}
+
+[dir = "rtl"] .feds-brand-container > .feds-brand:first-child {
+  margin-left: 0;
+  margin-right: 12px;
+}
+
 .feds-brand,
 .feds-logo {
   align-items: center;
@@ -130,7 +139,6 @@ header.global-navigation {
 
 .feds-brand {
   display: flex;
-  padding-left: 22px;
 }
 
 .feds-logo {
