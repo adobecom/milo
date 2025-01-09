@@ -37,8 +37,13 @@ function removeBarLoader(elem, a) {
 
 async function decorateQuickLink(a, hasConsent) {
   if (!window.alloy) return;
-  const { getECID } = await import('../../blocks/mobile-app-banner/mobile-app-banner.js');
-  const ecid = await getECID();
+  let ecid = null;
+  try {
+    const data = await window.alloy('getIdentity');
+    ecid = data?.identity?.ECID;
+  } catch (e) {
+    window.lana.log(`Error fetching ECID: ${e}`, { tags: 'branch-quick-links' });
+  }
   if (hasConsent && !a.href.includes('ecid')) {
     a.href = a.href.concat(`?ecid=${ecid}`);
   }
