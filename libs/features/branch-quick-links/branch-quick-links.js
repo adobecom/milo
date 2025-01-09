@@ -57,13 +57,16 @@ export default function processQL(a) {
   const waitForConsent = new Promise((resolve, reject) => {
     const timeout = setTimeout(() => {
       reject(new Error('Consent promise timed out'));
-    }, 7000);
+    }, 10000);
     if (window.cookieConsent !== undefined) {
+      console.log("cookieConsent already set, resolving...");
       resolve(window.cookieConsent);
       clearTimeout(timeout);
     } else {
+      console.log("cookieConsent not set, waiting for event...");
       if (window.adobePrivacy) resolve(getConsentStatus());
       window.addEventListener('adobePrivacy:PrivacyConsent', () => {
+        console.log("adobePrivacy:PrivacyConsent event fired");
         window.cookieConsent = getConsentStatus();
         resolve(window.cookieConsent);
         clearTimeout(timeout);
