@@ -459,7 +459,7 @@ dd .mep-popup-header .mep-close {
   gap: 1rem;
   font-size: 1.25rem;
   justify-content: center;
-  padding: 2rem 4rem 1rem;
+  padding: 2rem 4rem;
   flex-wrap: wrap;
   max-width: 1200px;
   margin: 0 auto;
