@@ -867,7 +867,7 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup {
   translate: 300vw 0;
   display: grid;
   grid-template-rows: 56px max-content auto 80px;
-  grid-template-columns: 120px 1fr;
+  grid-template-columns: 111px 1fr;
   grid-template-areas:
     "top-bar top-bar"
     "title title"
@@ -972,9 +972,9 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tabs {
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button {
   min-height:48px;
-  width: 120px;
+  width: 111px;
   border: none;
-  padding: 8px 20px;
+  padding: 8px 11px 8px 20px;
   white-space: normal;
   font-weight: 700;
   text-align: unset;
@@ -1073,7 +1073,6 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
 }
 
 /* local-nav */
-
 .feds-localnav {
   position: sticky;
   top: 0;
@@ -1084,6 +1083,10 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
 
 .feds-localnav.has-promo {
   top: var(--global-height-navPromo);
+}
+
+.local-nav .feds-toggle[aria-expanded = "true"]:before {
+  content: "\2630";
 }
 
 .feds-localnav a {
@@ -1107,6 +1110,7 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
   overflow: hidden;
   text-overflow: ellipsis;
   font-family: var(--body-font-family);
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .feds-localnav-items {
