@@ -269,7 +269,7 @@ function createPaginationEl({ data, el }) {
   }, '>');
 
   const paginationSummary = createTag('div', { class: 'mmm-pagination-summary' });
-  const range = `${data.pageNum * data.perPage - (data.perPage - 1)} - ${data.pageNum * data.perPage < data.totalRecords ? data.pageNum * data.perPage : data.totalRecords}`;
+  const range = `${data.pageNum * data.perPage - (data.perPage - 1)}-${data.pageNum * data.perPage < data.totalRecords ? data.pageNum * data.perPage : data.totalRecords}`;
   paginationSummary.innerHTML = `
     <div>
       <span>${range} of ${data.totalRecords}</span>
