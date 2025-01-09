@@ -82,7 +82,7 @@
       mask.style.height = card.offsetHeight + 'px';
       mask.style.top = card.offsetTop + 'px';
       mask.style.left = card.offsetLeft + 'px';
-      mask.textContent = '⏱️ ' + duration + 'ms';
+      mask.textContent = `⏱️  ${duration}ms`;
       mask.classList.add('benchmark-mask');
       mask.setAttribute('data-benchmark-time', duration);
       mask.classList.add(duration > limit ? 'benchmark-mask-over-limit' : 'benchmark-mask-under-limit');
