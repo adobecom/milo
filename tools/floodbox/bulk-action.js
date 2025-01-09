@@ -5,11 +5,12 @@ const BATCH_SIZE = 25;
 const BATCH_DELAY = 2000;
 
 export class BulkAction {
-  constructor({ org, repo, callback }) {
+  constructor({ org, repo, accessToken, callback }) {
     this.org = org;
     this.repo = repo;
     this.callback = callback;
-    this.requestHandler = new RequestHandler();
+    this.accessToken = accessToken;
+    this.requestHandler = new RequestHandler(accessToken);
     this.batchCount = 0;
   }
 
@@ -52,9 +53,9 @@ export class BulkAction {
 }
 
 async function previewOrPublishPaths({
-  org, repo, paths, action, callback, isDelete = false,
+  org, repo, paths, action, accessToken, callback, isDelete = false,
 }) {
-  const bulkAction = new BulkAction({ org, repo, callback });
+  const bulkAction = new BulkAction({ org, repo, accessToken, callback });
   // eslint-disable-next-line no-console
   console.log(`Action: ${action} :: isDelete: ${isDelete}`);
   await bulkAction.previewOrPublishPaths({ paths, action, isDelete });
