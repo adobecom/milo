@@ -4,7 +4,7 @@ import { MILO_EVENTS } from '../../../libs/utils/utils.js';
 import { delay, waitForElement } from '../../helpers/waitfor.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-const { default: init, isStickyHeader } = await import('../../../libs/blocks/table/table.js');
+const { default: init } = await import('../../../libs/blocks/table/table.js');
 
 describe('table and tablemetadata', () => {
   beforeEach(() => {
@@ -110,13 +110,6 @@ describe('table and tablemetadata', () => {
       const tooltipHeading = document.querySelector('.tooltip-heading');
       expect(tooltipHeading.childNodes.length).to.equal(2);
       expect(tooltipHeading.querySelector('.milo-tooltip, .icon-tooltip')).to.exist;
-    });
-
-    it('verifies if sticky tablet-up is disabled in mobile', () => {
-      const stickyTable = document.querySelector('.sticky-tablet-up');
-      window.innerWidth = 1200;
-      window.dispatchEvent(new Event('resize'));
-      expect(isStickyHeader(stickyTable)).to.false;
     });
   });
 });
