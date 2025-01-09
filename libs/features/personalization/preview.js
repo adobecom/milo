@@ -106,6 +106,7 @@ function parseMepConfig() {
   const config = getConfig();
   const { mep, locale } = config;
   const { experiments, targetEnabled, xlgEnabled, prefix, highlight } = mep;
+  // TODO BEFORE MERGING: add xlg MEP message based on xlgEnabled
   const activities = experiments.map((experiment) => {
     const {
       name, event, manifest, variantNames, selectedVariantName, disabled, analyticsTitle, source,
