@@ -48,7 +48,12 @@ function initialRegions() {
 function prefillActionAndWorkflow(languages) {
   const storedLanguages = project.value?.languages ?? [];
   if (storedLanguages.length < 1) {
-    return languages.map((lang) => ({ ...lang, action: project.value.type === PROJECT_TYPES.translation ? 'Translate' : 'Rollout', workflow: '' }));
+    return languages.map((lang) => ({
+      ...lang,
+      action: project.value.type === PROJECT_TYPES.translation
+        ? PROJECT_ACTION.translate : PROJECT_ACTION.rollout,
+      workflow: '',
+    }));
   }
 
   const languageByCode = storedLanguages.reduce((acc, curr) => {
