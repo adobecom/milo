@@ -238,7 +238,6 @@ body {
 .form-field-textarea:disabled {
   background-color: #fff;
   border-color: #dadada;
-  color: #c6c6c6;
   cursor: not-allowed;
 }
 
