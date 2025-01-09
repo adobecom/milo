@@ -225,7 +225,7 @@ export default function InputUrls() {
           `}  
 
           <div class="form-field">
-            <div class="form-field-label">* Enter Project Name</div>
+            <div class="form-field-label">* Project Name</div>
             <div>
               <input
                 class=${`form-field-input ${errors.name && 'error'}`}
@@ -276,7 +276,7 @@ export default function InputUrls() {
           `}
 
           <div class="form-field pb-8">
-            <div class="form-field-label">* Enter the URLs</div>
+            <div class="form-field-label">* List of URLs</div>
             <div class="form-field-desc">
               (for multiple URLs, enter each on a new line.)
             </div>
