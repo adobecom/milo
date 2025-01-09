@@ -77,7 +77,7 @@ const htmlTemplate = `
   <link rel="stylesheet" href="styles.css">
 </head>
 <body class="spectrum spectrum--medium spectrum--light">
-<div class="sidenav">
+<aside class="sidenav">
     <a href="/libs/features/mas/docs/mas.html">Home</a>
     <a href="/libs/features/mas/docs/mas.js.html">mas.js</a>
     <a href="/libs/features/mas/docs/checkout-link.html">Checkout Link</a>
@@ -85,7 +85,7 @@ const htmlTemplate = `
     <a href="/libs/features/mas/docs/merch-card.html">Merch Card</a>
     <a href="/libs/features/mas/docs/ccd.html">CCD Gallery</a>
     <a href="/libs/features/mas/docs/benchmarks.html">Benchmarks</a>
-</div>
+</aside>
 <main>
 <sp-theme color="light" scale="medium">
 ${htmlContent}
