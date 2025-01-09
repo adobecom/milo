@@ -76,10 +76,11 @@ function createButtonDetailsPair(mmmEl, page) {
   mmmEl.append(dt, dd);
 }
 
-function filterPageList(pageNum) {
+function filterPageList(pageNum, event) {
   const mmmEntries = document.querySelectorAll('div.mmm-container > dl > *');
   const shareUrl = new URL(`${window.location.origin}${window.location.pathname}`);
   const searchValues = {};
+  const activeSearchWithShortKeyword = event?.target?.value?.length < 2;
 
   document.querySelector('.mmm-search-container').querySelectorAll('input, select').forEach((field) => {
     const id = field.getAttribute('id').split('-').pop();
@@ -92,14 +93,16 @@ function filterPageList(pageNum) {
   });
 
   // This event triggers an API call with beloww search criterias and a re-render
-  document.dispatchEvent(new CustomEvent(SEARCH_CRITERIA_CHANGE_EVENT, {
-    detail: {
-      urls: searchValues.urls?.value,
-      geos: searchValues.geos?.value,
-      pages: searchValues.pages?.value,
-      pageNum: pageNum || 1,
-    },
-  }));
+  if (!activeSearchWithShortKeyword) {
+    document.dispatchEvent(new CustomEvent(SEARCH_CRITERIA_CHANGE_EVENT, {
+      detail: {
+        urls: searchValues.urls?.value,
+        geos: searchValues.geos?.value,
+        pages: searchValues.pages?.value,
+        pageNum: pageNum || 1,
+      },
+    }));
+  }
 
   document.querySelectorAll('button.copy-to-clipboard').forEach((button) => {
     button.dataset.destination = shareUrl.href;
@@ -211,9 +214,9 @@ function createDropdowns(data, sharedUrlSettings) {
 
 function debounce(func) {
   let timeout;
-  return () => {
+  return (event) => {
     clearTimeout(timeout);
-    timeout = setTimeout(() => func(), 800);
+    timeout = setTimeout(() => func(event), 800);
   };
 }
 
@@ -231,8 +234,8 @@ function createSearchField(data, sharedUrlSettings) {
   const searchField = searchForm.querySelector('input');
   if (sharedUrlSettings.urls) searchField.value = sharedUrlSettings.urls;
 
-  searchField.addEventListener('keyup', debounce(() => filterPageList()));
-  searchField.addEventListener('change', debounce(() => filterPageList()));
+  searchField.addEventListener('keyup', debounce((event) => filterPageList(null, event)));
+  searchField.addEventListener('change', debounce((event) => filterPageList(null, event)));
 }
 
 async function createForm(el) {
@@ -248,18 +251,27 @@ async function createForm(el) {
 function createPaginationEl({ data, el }) {
   const paginationEl = createTag('div', { id: 'mmm-pagination', 'data-current-page': data.pageNum });
   const totalPages = Math.ceil(data.totalRecords / data.perPage);
-  const prev = data.pageNum - 1 || 1;
   const noResult = !data.totalRecords;
+  const prev = data.pageNum - 1 || 1;
+  const next = data.pageNum < totalPages ? data.pageNum + 1 : data.pageNum;
+
   const prevEl = createTag('a', {
     'data-page-num': prev,
     class: `arrow ${data.pageNum === 1 ? 'disabled' : ''}`,
   }, '<');
-  const next = data.pageNum < totalPages ? data.pageNum + 1 : data.pageNum;
   const nextEl = createTag('a', {
     'data-page-num': next,
     class: `arrow ${data.pageNum === totalPages ? 'disabled' : ''}`,
   }, '>');
 
+  const paginationSummary = createTag('div', { class: 'mmm-pagination-summary' });
+  paginationSummary.innerHTML = `
+    <div>
+      <span>Page ${data.pageNum} of ${totalPages}</span>
+      <span>|</span>
+      <span>Total records: ${data.totalRecords}</span>
+    <div>
+  `;
   if (!noResult) {
     paginationEl.append(prevEl);
     for (let i = 1; i <= totalPages; i++) {
@@ -270,6 +282,7 @@ function createPaginationEl({ data, el }) {
       paginationEl.append(pageLink);
     }
     paginationEl.append(nextEl);
+    document.querySelector('#mmm').prepend(paginationSummary);
   } else {
     paginationEl.innerHTML = '<h5>No results.</h5>';
   }
