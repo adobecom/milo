@@ -62,16 +62,8 @@ export default function processQL(a) {
       ['adobePrivacy:PrivacyConsent', 'adobePrivacy:PrivacyReject', 'adobePrivacy:PrivacyCustom']
         .forEach((event) => {
           window.addEventListener(event, () => {
-            try {
-              window.cookieConsent = getConsentStatus();
-              if (window.cookieConsent === undefined || window.cookieConsent === null) {
-                throw new Error('Consent status is undefined or null.');
-              }
-              resolve(window.cookieConsent);
-            } catch (error) {
-              console.error('Error getting cookie consent:', error);
-              resolve(false);
-            }
+            window.cookieConsent = getConsentStatus();
+            resolve(window.cookieConsent);
           });
         });
     }
