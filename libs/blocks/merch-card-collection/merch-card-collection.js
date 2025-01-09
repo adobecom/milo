@@ -5,7 +5,9 @@ import {
 } from '../../utils/utils.js';
 import { replaceText } from '../../features/placeholders.js';
 
-const DIGITS_ONLY = /^\d+$/;
+const DIGITS_ONLY = /^\/?\d+\/?$/;
+const FILTER_REGEX = /(filter|\/filter\/)/;
+const SEARCH_REGEX = /search|\/search\//;
 export const OVERRIDE_PATHS = 'overrides';
 
 const LITERAL_SLOTS = [
@@ -269,23 +271,26 @@ export default async function init(el) {
     }
   }
 
-  const literalsEl = el.lastElementChild?.firstElementChild;
+  // in case of search literals being fragments, data is marked with a data-path attribute,
+  // and shallower
+  const literalsEl = el.lastElementChild?.firstElementChild?.getAttribute('data-path') !== null
+    ? el.lastElementChild : el.lastElementChild?.firstElementChild;
   // parse literals
   const literalSlots = [];
-  if (literalsEl && /filter/.test(literalsEl.querySelector('u')?.innerText)) {
+  if (literalsEl && FILTER_REGEX.test(literalsEl.querySelector('u')?.innerText)) {
     literalsEl.querySelectorAll('u').forEach((u) => {
       const text = u.innerText.trim();
       if (DIGITS_ONLY.test(text)) {
         u.outerHTML = '<span data-placeholder="resultCount"></span>';
-      } else if (text === 'search') {
+      } else if (SEARCH_REGEX.test(text)) {
         u.outerHTML = '<span data-placeholder="searchTerm"></span>';
-      } else if (text === 'filter') {
+      } else if (FILTER_REGEX.test(text)) {
         u.outerHTML = '<span data-placeholder="filter"></span>';
       }
     });
     let index = 0;
-    while (literalsEl.firstElementChild) {
-      const literalEl = literalsEl.firstElementChild;
+    while (literalsEl?.firstElementChild) {
+      const literalEl = literalsEl?.firstElementChild;
       let slot;
       if (literalEl.tagName === 'P') {
         slot = literalEl;
