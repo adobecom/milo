@@ -93,28 +93,27 @@ export function processBackgroundImage(
     fields,
     merchCard,
     backgroundImageConfig,
-    variant,
 ) {
-    if (fields.backgroundImage) {
-        switch (variant) {
-            case 'ccd-slice':
-                if (backgroundImageConfig) {
-                    merchCard.append(
-                        createTag(
-                            backgroundImageConfig.tag,
-                            { slot: backgroundImageConfig.slot },
-                            `<img loading="lazy" src="${fields.backgroundImage}" />`,
-                        ),
-                    );
-                }
-                break;
-            case 'ccd-suggested':
-                merchCard.setAttribute(
-                    'background-image',
-                    fields.backgroundImage,
-                );
-                break;
+    if (backgroundImageConfig?.tag && fields.backgroundImage) { 
+        const imgAttributes = {
+            loading: 'lazy',
+            src: fields.backgroundImage,
+        };
+        if (fields.backgroundImageAltText) {
+            imgAttributes.alt = fields.backgroundImageAltText;
+        } else {
+            imgAttributes.role = 'none';
         }
+        merchCard.append(
+            createTag(
+                backgroundImageConfig.tag,
+                { slot: backgroundImageConfig.slot },
+                createTag('img', imgAttributes),
+            ),
+        );
+    }
+    if (backgroundImageConfig?.attribute) {
+        merchCard.setAttribute(backgroundImageConfig.attribute, fields.backgroundImage);
     }
 }
 
@@ -316,7 +315,6 @@ export async function hydrate(fragment, merchCard) {
     processTitle(fields, merchCard, aemFragmentMapping.title);
     processSubtitle(fields, merchCard, aemFragmentMapping.subtitle);
     processPrices(fields, merchCard, aemFragmentMapping.prices);
-    processBackgroundColor(fields, merchCard, aemFragmentMapping.allowedColors);
     processBackgroundImage(
         fields,
         merchCard,
