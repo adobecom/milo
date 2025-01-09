@@ -9,18 +9,18 @@ body.spectrum--darkest {
 }
 
 .sidenav {
-  width: 180px;
+  width: 120px;
   background-color: #f4f4f4;
-  padding: 20px;
+  padding: 5px;
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
 }
 
 .sidenav a {
   display: block;
-  padding: 10px 20px;
+  padding: 5px 5px;
   text-decoration: none;
   color: #333;
-  font-size: 15px;
+  font-size: 13px;
   font-weight: bold; /* Makes text bold */
   text-transform: uppercase; /* Converts text to uppercase */
 }
