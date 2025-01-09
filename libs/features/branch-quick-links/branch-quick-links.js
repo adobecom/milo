@@ -51,6 +51,7 @@ export default function processQL(a) {
 
   const getConsentStatus = () => {
     const cookieGrp = window.adobePrivacy?.activeCookieGroups();
+    console.log('getConsentStatus:', cookieGrp?.includes('C0002') && cookieGrp?.includes('C0004'));
     return cookieGrp?.includes('C0002') && cookieGrp?.includes('C0004');
   };
 
@@ -79,27 +80,19 @@ export default function processQL(a) {
   // });
 
   a.addEventListener('click', async (e) => {
-    const waitForConsent = new Promise((resolve, reject) => {
-      console.log('waitForConsent started');
-      // Check if adobePrivacy is available
-      console.log('window.adobePrivacy:', window.adobePrivacy);
-      const timeout = setTimeout(() => {
-        reject(new Error('Consent promise timed out'));
-      }, 30000);
+    const waitForConsent = new Promise((resolve) => {
+      // case: not first encounter
       if (window.cookieConsent !== undefined) {
-        console.log('cookieConsent already set, resolving...');
         resolve(window.cookieConsent);
-        clearTimeout(timeout);
-      } else {
-        console.log('cookieConsent not set, waiting for event...');
-        if (window.adobePrivacy) resolve(getConsentStatus());
-        window.addEventListener('adobePrivacy:PrivacyConsent', () => {
-          console.log('adobePrivacy:PrivacyConsent event fired');
-          window.cookieConsent = getConsentStatus();
-          resolve(window.cookieConsent);
-          clearTimeout(timeout);
-        });
       }
+      if (window.adobePrivacy) {
+        resolve(getConsentStatus());
+      }
+
+      window.addEventListener('adobePrivacy:PrivacyConsent', () => {
+        window.cookieConsent = getConsentStatus();
+        resolve(getConsentStatus());
+      });
     });
     e.preventDefault();
     let pb;
