@@ -10,7 +10,7 @@ import {
   setLocale,
   updateDraftProject,
 } from '../store.js';
-import { ENG_LANG_CODE, PROJECT_TYPES } from '../utils/constant.js';
+import { ENG_LANG_CODE, PROJECT_ACTION, PROJECT_TYPES } from '../utils/constant.js';
 
 function initialLanguageList() {
   if (
@@ -66,7 +66,8 @@ function prefillActionAndWorkflow(languages) {
       workflow,
     };
     if (!action) {
-      prefillLanguage.action = project.value.type === PROJECT_TYPES.translation ? 'Translate' : 'Rollout';
+      prefillLanguage.action = project.value.type === PROJECT_TYPES.translation
+        ? PROJECT_ACTION.translate : PROJECT_ACTION.rollout;
     }
     return prefillLanguage;
   });
