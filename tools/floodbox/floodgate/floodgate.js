@@ -171,6 +171,7 @@ export default class MiloFloodgate extends LitElement {
       repo: repoToPrevPub,
       paths,
       action: 'preview',
+      accessToken: this.token,
       callback: (status) => {
         // eslint-disable-next-line no-console
         console.log(`${status.statusCode} :: ${status.aemUrl}`);
@@ -197,6 +198,7 @@ export default class MiloFloodgate extends LitElement {
       repo: repoToPrevPub,
       paths,
       action: 'live',
+      accessToken: this.token,
       callback: (status) => {
         // eslint-disable-next-line no-console
         console.log(`${status.statusCode} :: ${status.aemUrl}`);
@@ -424,6 +426,7 @@ export default class MiloFloodgate extends LitElement {
       repo,
       paths,
       action: 'live',
+      accessToken: this.token,
       isDelete: true,
       callback: (status) => {
         // eslint-disable-next-line no-console

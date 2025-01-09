@@ -150,6 +150,7 @@ export default class MiloGraybox extends LitElement {
       repo: repoToPrevPub,
       paths,
       action: 'preview',
+      accessToken: this.token,
       callback: (status) => {
         // eslint-disable-next-line no-console
         console.log(`${status.statusCode} :: ${status.aemUrl}`);
