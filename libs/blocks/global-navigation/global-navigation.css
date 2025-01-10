@@ -773,7 +773,7 @@ header.new-nav.local-nav .feds-curtain--open {
   display: none;
 }
 
-header.new-nav:has(.feds-dropdown--active) {
+header.new-nav:has(.feds-curtain--open) {
   z-index: 12;
 }
 
