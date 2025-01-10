@@ -278,7 +278,7 @@ function createPaginationEl({ data, el }) {
   `;
   if (!noResult) {
     paginationEl.append(prevEl);
-    for (let i = 1; i <= totalPages; i++) {
+    for (let i = 1; i <= totalPages; i += 1) {
       const pageLink = createTag('a', {
         class: `${i === data.pageNum ? 'current-page' : ''}`,
         'data-page-num': i,
