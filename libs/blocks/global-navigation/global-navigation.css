@@ -94,7 +94,6 @@ header.global-navigation {
 
 /* Hamburger toggle */
 .feds-toggle {
-  width: 60px;
   margin: 0;
   padding: 0;
   border: none;
@@ -104,6 +103,7 @@ header.global-navigation {
   cursor: pointer;
   font-size: 20px;
   font-weight: 300;
+  padding-left: 20px;
 }
 
 .feds-toggle:before {
@@ -139,6 +139,7 @@ header.global-navigation {
 
 .feds-brand {
   display: flex;
+  padding-left: 22px;
 }
 
 .feds-logo {
@@ -877,6 +878,7 @@ header.new-nav .feds-nav > .feds-navItem > a.feds-navLink {
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup {
   position: fixed;
+  transform: translate3d(0,0,0); /* render correctly on iOS Safari */
   top: calc(-1 * var(--feds-height-nav));
   visibility: hidden;
   width: 100%;
@@ -1227,7 +1229,6 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
 .feds-localnav.feds-localnav--active .feds-localnav-curtain {
   width: 100%;
   height: 101lvh;
-  padding-bottom: env(safe-area-inset-bottom);
   background: var(--feds-color-black-v2);
   opacity: 0.7;
 }
@@ -1311,5 +1312,11 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
 .disable-ios-scroll {
   overflow: hidden;
   width: 100%;
+  height: 100dvh;
+  position: fixed;
+}
+
+html:has(body.disable-ios-scroll) { /* this class is only added on iOS */
+  height: 100dvh;
   position: fixed;
 }
