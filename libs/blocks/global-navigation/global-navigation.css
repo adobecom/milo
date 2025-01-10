@@ -1100,6 +1100,7 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
 
 /* local-nav */
 .feds-localnav {
+  position: -webkit-sticky;
   position: sticky;
   top: 0px;
   width: 100%;
