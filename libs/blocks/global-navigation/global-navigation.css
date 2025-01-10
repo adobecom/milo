@@ -1108,10 +1108,6 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
   z-index: 9;
 }
 
-.feds-localnav.fix {
-  position: fixed;
-}
-
 .feds-localnav.has-promo {
   top: var(--global-height-navPromo);
 }
