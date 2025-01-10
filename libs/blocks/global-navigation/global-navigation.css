@@ -954,6 +954,7 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .top-bar .main-men
   padding: 1px 0;
   border: 0;
   font-family: var(--body-font-family);
+  color: var(--text-color);
 }
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .top-bar .main-menu svg {
