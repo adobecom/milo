@@ -3,7 +3,9 @@ import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
 import { DEBOUNCE_TIME } from '../../../libs/blocks/mmm/mmm.js';
 
-const delay = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms));
+const delay = (ms = 0) => new Promise((resolve) => {
+  setTimeout(() => resolve(), ms);
+});
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const getFetchPromise = (data, type = 'json') => new Promise((resolve) => {
