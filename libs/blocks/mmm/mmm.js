@@ -298,7 +298,8 @@ function getSearchParams(obj) {
   Object.keys(obj).forEach((key) => {
     if (obj[key]) searchString += `&${key}=${obj[key]}`;
   });
-  return searchString.replace(/&/, '?');
+  searchString = `?${searchString.slice(1)}`;
+  return searchString;
 }
 
 function handlePaginationClicks() {
