@@ -879,6 +879,7 @@ header.new-nav .feds-nav > .feds-navItem > a.feds-navLink {
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup {
   position: fixed;
   transform: translate3d(0,0,0); /* render correctly on iOS Safari */
+  -webkit-transform: translate3d(0,0,0); /* older iOS versions */
   top: calc(-1 * var(--feds-height-nav));
   visibility: hidden;
   width: 100%;
