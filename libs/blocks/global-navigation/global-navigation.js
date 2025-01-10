@@ -459,6 +459,7 @@ class Gnav {
     localNavItems[0].querySelector('a').textContent = title.trim();
     const isAtTop = () => {
       const rect = this.elements.localNav.getBoundingClientRect();
+      // note: ios safari changes between -0.34375, 0, and 0.328125
       return rect.top === 0;
     };
     window.addEventListener('scroll', () => {
@@ -1173,7 +1174,7 @@ class Gnav {
             const popup = dropdownTrigger.nextElementSibling;
             // document.body.style.top should always be set
             // at this point by calling disableMobileScroll
-            if (popup && this.isLocalNav()) {
+            if (popup) {
               const y = window.scrollY;
               const iOSy = Math.abs(parseInt(document.body.style.top, 10));
               const offset = this.block.classList.contains('has-promo')
