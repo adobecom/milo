@@ -773,7 +773,7 @@ header.new-nav.local-nav .feds-curtain--open {
   display: none;
 }
 
-header.new-nav.local-nav:has(.feds-curtain--open) {
+header.new-nav:has(.feds-curtain--open) {
   z-index: 12;
 }
 
@@ -879,6 +879,7 @@ header.new-nav .feds-nav > .feds-navItem > a.feds-navLink {
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup {
   position: fixed;
   transform: translate3d(0,0,0); /* render correctly on iOS Safari */
+  -webkit-transform: translate3d(0,0,0); /* older iOS versions */
   top: calc(-1 * var(--feds-height-nav));
   visibility: hidden;
   width: 100%;
@@ -894,6 +895,10 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup {
     "title title"
     "tabs tab-panel"
     "cta cta";
+}
+
+.feds-promo-aside-wrapper + header.new-nav .feds-nav > section.feds-navItem > .feds-popup {
+  top: calc(0px - var(--feds-height-nav) - var(--global-height-navPromo));
 }
 
 [dir = "rtl"] header.new-nav .feds-nav > section.feds-navItem > .feds-popup {
