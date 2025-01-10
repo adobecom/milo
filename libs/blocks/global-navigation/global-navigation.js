@@ -105,7 +105,14 @@ export const CONFIG = {
       appswitcher: { name: 'app-switcher' },
       notifications: {
         name: 'notifications',
-        attributes: { notificationsConfig: { applicationContext: { appID: getConfig().unav?.uncAppId || 'adobecom' } } },
+        attributes: {
+          notificationsConfig: {
+            applicationContext: {
+              appID: getConfig().unav?.uncAppId || 'adobecom',
+              ...getConfig().unav?.uncConfig,
+            },
+          },
+        },
       },
       help: {
         name: 'help',
@@ -347,6 +354,14 @@ class Gnav {
       lanaLog({ message: 'GNAV: Error with IMS', e, tags: 'errorType=info,module=gnav' });
     }));
 
+  decorateProductEntryCTA = () => {
+    const button = this.content.querySelector('.product-entry-cta a');
+    if (!button) return null;
+    const cta = decorateCta({ elem: button, type: this.getMainNavItemType(button) });
+    cta.closest('.feds-cta-wrapper').classList.add('feds-product-entry-cta');
+    return cta;
+  };
+
   decorateTopNav = () => {
     this.elements.mobileToggle = this.decorateToggle();
     this.elements.topnav = toFragment`
@@ -356,6 +371,7 @@ class Gnav {
           ${this.decorateBrand()}
         </div>
         ${this.elements.navWrapper}
+        ${getMetadata('product-entry-cta')?.toLowerCase() === 'on' ? this.decorateProductEntryCTA() : ''}
         ${getConfig().searchEnabled === 'on' ? toFragment`<div class="feds-client-search"></div>` : ''}
         ${this.useUniversalNav ? this.blocks.universalNav : ''}
         ${(!this.useUniversalNav && this.blocks.profile.rawElem) ? this.blocks.profile.decoratedElem : ''}
