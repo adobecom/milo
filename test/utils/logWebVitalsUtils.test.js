@@ -4,9 +4,9 @@ import { readFile } from '@web/test-runner-commands';
 import { getConfig, loadDeferred } from '../../libs/utils/utils.js';
 
 document.head.innerHTML = `
-  <meta name="pageperf" content="on">
-  <meta name="pageperf-rate" content="100">
-  <meta name="pageperf-delay" content="0">
+  <meta name="pageperf" content="on">;
+  <meta name="pageperf-rate" content="100">;
+  <meta name="pageperf-delay" content="0">;
 `;
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
@@ -19,36 +19,11 @@ describe('Log Web Vitals Utils', () => {
     intervalId = setInterval(() => {
       window.dispatchEvent(new Event('adobePrivacy:PrivacyCustom'));
     }, 100);
-
-    const parentElement = document.createElement('div');
-    parentElement.id = 'parent';
-
-    const lcpElement = document.createElement('div');
-    lcpElement.id = 'lcpElement';
-    lcpElement.textContent = 'LCP Element';
-
-    parentElement.appendChild(lcpElement);
-    document.body.appendChild(parentElement);
   });
 
   after(() => {
     delete window.adobePrivacy;
     clearInterval(intervalId);
-  });
-
-  beforeEach(() => {
-    window.performance.getEntriesByType = () => [
-      {
-        startTime: 0,
-        name: '/test/utils/mocks/media_.png',
-        type: 'paint',
-        duration: 10,
-      },
-    ];
-  });
-
-  afterEach(() => {
-    delete window.performance.getEntriesByType;
   });
 
   it('Logs data to lana', (done) => {
