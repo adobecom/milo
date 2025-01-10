@@ -13,20 +13,12 @@ document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 
 describe('Log Web Vitals Utils', () => {
   let intervalId;
+
   before(() => {
     window.adobePrivacy = { activeCookieGroups: () => ['C0002'] };
     intervalId = setInterval(() => {
       window.dispatchEvent(new Event('adobePrivacy:PrivacyCustom'));
     }, 100);
-
-    window.performance.getEntriesByType = () => [
-      {
-        startTime: 0,
-        name: '/test/utils/mocks/media_.png',
-        type: 'paint',
-        duration: 10,
-      },
-    ];
 
     const parentElement = document.createElement('div');
     parentElement.id = 'parent';
@@ -42,6 +34,21 @@ describe('Log Web Vitals Utils', () => {
   after(() => {
     delete window.adobePrivacy;
     clearInterval(intervalId);
+  });
+
+  beforeEach(() => {
+    window.performance.getEntriesByType = () => [
+      {
+        startTime: 0,
+        name: '/test/utils/mocks/media_.png',
+        type: 'paint',
+        duration: 10,
+      },
+    ];
+  });
+
+  afterEach(() => {
+    delete window.performance.getEntriesByType;
   });
 
   it('Logs data to lana', (done) => {
@@ -64,7 +71,7 @@ describe('Log Web Vitals Utils', () => {
         expect(vitals).to.have.property('lcpEl');
         expect(vitals.lcpEl).to.be.a('string').that.is.not.empty;
         expect(vitals).to.have.property('lcpElType');
-        expect(vitals.lcpElType).to.be.oneOf(['img', 'div', 'p', 'span', '']);
+        expect(vitals.lcpElType).to.be.a('string').that.is.not.empty;
         expect(vitals.lcpSectionOne).to.equal('true');
 
         expect(vitals.loggedIn).to.equal('false');
