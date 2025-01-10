@@ -23,6 +23,7 @@ import navigationWithCustomLinks from './mocks/navigation-with-custom-links.plai
 import globalNavigationMock from './mocks/global-navigation.plain.js';
 import gnavWithlocalNav from './mocks/gnav-with-localnav.plain.js';
 import noDropdownNav from './mocks/global-navigation-no-dropdown.plain.js';
+import productEntryCTA from './mocks/global-navigation-product-entry-cta.plain.js';
 import { getConfig } from '../../../tools/send-to-caas/send-utils.js';
 
 // TODO
@@ -663,6 +664,22 @@ describe('global navigation', () => {
     it('should append the feds-client-search div when search is enabled', async () => {
       await createFullGlobalNavigation({ customConfig: { searchEnabled: 'on' } });
       expect(document.querySelector(selectors.topNav).classList.contains('feds-client-search')).to.exist;
+    });
+  });
+
+  describe('Product Entry CTA feature in global navigation', () => {
+    it('should not append the feds-product-entry-cta class when product entry cta is disabled', async () => {
+      document.head.innerHTML = '<meta name="product-entry-cta" content="off"/>';
+      const gnav = await createFullGlobalNavigation({ globalNavigation: productEntryCTA });
+      gnav.decorateProductEntryCTA();
+      expect(document.querySelector(selectors.topNav).querySelector('.feds-cta-wrapper.feds-product-entry-cta')).to.not.exist;
+    });
+
+    it('should append the feds-product-entry-cta class when product entry cta is enabled', async () => {
+      document.head.innerHTML = '<meta name="product-entry-cta" content="on" />';
+      const gnav = await createFullGlobalNavigation({ globalNavigation: productEntryCTA });
+      gnav.decorateProductEntryCTA();
+      expect(document.querySelector(selectors.topNav).querySelector('.feds-cta-wrapper.feds-product-entry-cta')).to.exist;
     });
   });
 

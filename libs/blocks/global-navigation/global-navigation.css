@@ -87,6 +87,11 @@ header.global-navigation {
   z-index: 1;
 }
 
+/* Product Entry CTA */
+.feds-product-entry-cta{
+  align-items: center;
+}
+
 /* Hamburger toggle */
 .feds-toggle {
   margin: 0;
@@ -113,6 +118,15 @@ header.global-navigation {
 .feds-brand-container {
   display: flex;
   flex-shrink: 0;
+}
+
+.feds-brand-container > .feds-brand:first-child {
+  margin-left: 12px;
+}
+
+[dir = "rtl"] .feds-brand-container > .feds-brand:first-child {
+  margin-left: 0;
+  margin-right: 12px;
 }
 
 .feds-brand,
@@ -488,6 +502,12 @@ header.global-navigation {
 [dir = "rtl"] #feds-googleLogin {
   left: 0;
   right: auto;
+}
+
+@media (max-width: 900px) {
+  .feds-product-entry-cta {
+    display: none;
+  }
 }
 
 /* Desktop styles */
@@ -1186,6 +1206,10 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
   max-height: calc(100dvh - (var(--global-height-nav) + var(--feds-localnav-height)));
 }
 
+.feds-localnav.has-promo.feds-localnav--active .feds-localnav-items {
+  max-height: calc(100dvh - (var(--global-height-nav) + var(--feds-localnav-height) + var(--global-height-navPromo)));
+}
+
 .feds-localnav.feds-localnav--active.is-sticky .feds-localnav-items {
   max-height: calc(100dvh - var(--feds-localnav-height));
 }
@@ -1294,4 +1318,5 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
 
 html:has(body.disable-ios-scroll) { /* this class is only added on iOS */
   height: 100dvh;
+  position: fixed;
 }
