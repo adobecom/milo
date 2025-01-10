@@ -3,6 +3,7 @@ import { fetchData, DATA_TYPE } from '../../features/personalization/personaliza
 import { getMepPopup, API_URLS } from '../../features/personalization/preview.js';
 
 const SEARCH_CRITERIA_CHANGE_EVENT = 'mmm-search-change';
+export const DEBOUNCE_TIME = 800;
 
 async function toggleDrawer(target, dd) {
   const el = target.closest('button');
@@ -93,7 +94,7 @@ function filterPageList(pageNum, event) {
   });
 
   // add page number to share url
-  shareUrl.searchParams.set('pageNum', pageNum);
+  shareUrl.searchParams.set('pageNum', pageNum || 1);
   searchValues.pageNum = { value: pageNum || 1, tagName: 'A' };
 
   // This event triggers an API call with beloww search criterias and a re-render
@@ -220,7 +221,7 @@ function debounce(func) {
   let timeout;
   return (event) => {
     clearTimeout(timeout);
-    timeout = setTimeout(() => func(event), 800);
+    timeout = setTimeout(() => func(event), DEBOUNCE_TIME);
   };
 }
 
