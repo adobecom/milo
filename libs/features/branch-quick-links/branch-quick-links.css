@@ -1,9 +1,9 @@
-.progress-bar-container {
+.pbar-container {
   display: flex;
   flex-direction: column;
 }
 
-.progress-bar {
+.pbar {
   height: 10px;
   border-radius: 5px;
   background-color: #D5D5D5;
@@ -11,7 +11,7 @@
   overflow: hidden;
 }
 
-.progress-bar-value {
+.pbar-value {
   width: 100%;
   height: 100%;
   background-color: #1473E6;
@@ -20,7 +20,7 @@
   will-change: transform;
 }
 
-.progress-label {
+.pbar-label {
   font-size: 17px;
   line-height: 21px;
   margin: 10px 0;

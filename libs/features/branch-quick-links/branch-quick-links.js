@@ -2,13 +2,13 @@ import { getMetadata, loadStyle, getConfig, createTag } from '../../utils/utils.
 
 function addLoader(elem) {
   const { base } = getConfig();
-  loadStyle(`${base}/styles/progress-bar.css`);
-  const container = createTag('div', { class: 'progress-bar-container' });
-  const lbl = createTag('div', { class: 'progress-label' });
+  loadStyle(`${base}/features/branch-quick-links/branch-quick-links.css`);
+  const container = createTag('div', { class: 'pbar-container' });
+  const lbl = createTag('div', { class: 'pbar-label' });
   lbl.textContent = 'Launching the app store...';
-  const tr = createTag('div', { class: 'progress-bar-value' });
+  const tr = createTag('div', { class: 'pbar-value' });
   tr.style.display = 'block';
-  const pBar = createTag('div', { class: 'progress-bar' }, tr);
+  const pBar = createTag('div', { class: 'pbar' }, tr);
   container.append(lbl, pBar);
   elem.replaceWith(container);
   return container;
@@ -43,18 +43,20 @@ export default function processQL(a) {
   };
 
   const waitForConsent = new Promise((resolve) => {
-    if (window.cookieConsent !== undefined) {
-      resolve(window.cookieConsent);
-    } else {
-      if (window.adobePrivacy) resolve(getConsentStatus());
-      ['adobePrivacy:PrivacyConsent', 'adobePrivacy:PrivacyReject', 'adobePrivacy:PrivacyCustom']
-        .forEach((event) => {
-          window.addEventListener(event, () => {
-            window.cookieConsent = getConsentStatus();
-            resolve(window.cookieConsent);
-          });
-        });
-    }
+    const fallbackTimeout = setTimeout(() => resolve(false), 10000);
+    if (window.adobePrivacy) resolve(getConsentStatus());
+    window.addEventListener('adobePrivacy:PrivacyConsent', () => {
+      clearTimeout(fallbackTimeout);
+      resolve(true);
+    });
+    window.addEventListener('adobePrivacy:PrivacyReject', () => {
+      clearTimeout(fallbackTimeout);
+      resolve(false);
+    });
+    window.addEventListener('adobePrivacy:PrivacyCustom', () => {
+      clearTimeout(fallbackTimeout);
+      resolve(getConsentStatus());
+    });
   });
 
   a.addEventListener('click', async (e) => {
