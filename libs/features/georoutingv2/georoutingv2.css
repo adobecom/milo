@@ -49,7 +49,7 @@
 }
 
 .dialog-modal.locale-modal-v2 a:last-child {
-  display: inline-block;
+  white-space: no-wrap;
 }
 
 .dialog-modal.locale-modal-v2 .picker li {
