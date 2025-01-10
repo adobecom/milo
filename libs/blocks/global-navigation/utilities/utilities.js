@@ -417,6 +417,8 @@ export const closeAllTabs = (tabs, tabpanels) => {
 export const disableMobileScroll = () => {
   if (!PERSONALIZATION_TAGS.safari()) return;
   document.body.style.top = `-${window.scrollY}px`;
+  const localnav = document.querySelector('.feds-localnav');
+  if (localnav) localnav.style.top = `-${window.scrollY}px`;
   document.body.classList.add('disable-ios-scroll');
 };
 
@@ -427,6 +429,8 @@ export const enableMobileScroll = () => {
   if (Number.isNaN(y)) return;
   document.body.classList.remove('disable-ios-scroll');
   document.body.style.removeProperty('top');
+  const localnav = document.querySelector('.feds-localnav');
+  if (localnav) localnav.style.removeProperty('top');
   window.scroll(0, y || 0);
 };
 

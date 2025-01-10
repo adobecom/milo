@@ -459,6 +459,7 @@ class Gnav {
     localNavItems[0].querySelector('a').textContent = title.trim();
     const isAtTop = () => {
       const rect = this.elements.localNav.getBoundingClientRect();
+      // note: ios safari changes between -0.34375, 0, and 0.328125
       return rect.top === 0;
     };
     window.addEventListener('scroll', () => {
