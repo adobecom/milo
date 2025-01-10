@@ -1,6 +1,6 @@
 import { Checkout } from './checkout.js';
 import * as Constants from './constants.js';
-import { EVENT_TYPE_READY, MARK_START, MARK_READY } from './constants.js';
+import { EVENT_TYPE_READY } from './constants.js';
 import { Defaults } from './defaults.js';
 import { Ims } from './ims.js';
 import { getPriceLiterals } from './literals.js';
@@ -12,6 +12,10 @@ import { setImmediate } from './utilities.js';
 import { updateConfig as updateLanaConfig } from './lana.js';
 
 export const TAG_NAME_SERVICE = 'mas-commerce-service';
+
+
+const MARK_START = 'mas:start';
+const MARK_READY = 'mas:ready';
 
 /**
  * Custom web component to provide active instance of commerce service

@@ -12,14 +12,13 @@ import {
     EVENT_MAS_READY,
     EVENT_AEM_ERROR,
     EVENT_MAS_ERROR,
-    MARK_START_SUFFIX,
-    MARK_READY_SUFFIX,
 } from './constants.js';
 import { VariantLayout } from './variants/variant-layout.js';
 import { hydrate, ANALYTICS_SECTION_ATTR } from './hydrate.js';
 
-export const MERCH_CARD_NODE_NAME = 'MERCH-CARD';
-export const MERCH_CARD = 'merch-card';
+const MERCH_CARD = 'merch-card';
+const MARK_START_SUFFIX = ':start';
+const MARK_READY_SUFFIX = ':ready';
 
 // if merch cards does not initialise in 10 seconds, it will dispatch mas:error event
 const MERCH_CARD_LOAD_TIMEOUT = 10000;
