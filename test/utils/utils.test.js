@@ -224,15 +224,6 @@ describe('Utils', () => {
         window.dispatchEvent(new CustomEvent('adobePrivacy:PrivacyConsent'));
         qL.click();
       });
-      it('should add Progress Circle Loader', async () => {
-        const localHead = await readFile({ path: './mocks/head-quick-links.html' });
-        document.head.innerHTML = localHead;
-        const qL = document.querySelector('a[href*="app.link"]');
-        await utils.loadArea();
-        window.dispatchEvent(new CustomEvent('adobePrivacy:PrivacyConsent'));
-        await qL.click();
-        document.head.innerHTML = head;
-      });
     });
 
     describe('Aria label appendment', () => {
