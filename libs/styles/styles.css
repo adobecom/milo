@@ -726,8 +726,12 @@ header.global-navigation + .feds-localnav {
 }
 
 header.global-navigation.has-promo {
-  height: auto;
+  height: var(--global-height-navPromo);
   top: var(--global-height-navPromo);
+}
+
+header.global-navigation.has-promo:has(+ .feds-localnav) {
+  top: 0;
 }
 
 .feds-sr-only {
