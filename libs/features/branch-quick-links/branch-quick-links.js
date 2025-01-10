@@ -1,20 +1,20 @@
 import { getMetadata, loadStyle, getConfig, createTag } from '../../utils/utils.js';
 
-function addBarLoader(elem) {
+function addLoader(elem) {
   const { base } = getConfig();
   loadStyle(`${base}/styles/progress-bar.css`);
   const container = createTag('div', { class: 'progress-bar-container' });
-  const label = createTag('div', { class: 'progress-label' });
-  label.textContent = 'Launching the app store...';
-  const track = createTag('div', { class: 'progress-bar-value' });
-  track.style.display = 'block';
-  const progressBar = createTag('div', { class: 'progress-bar' }, track);
-  container.append(label, progressBar);
+  const lbl = createTag('div', { class: 'progress-label' });
+  lbl.textContent = 'Launching the app store...';
+  const tr = createTag('div', { class: 'progress-bar-value' });
+  tr.style.display = 'block';
+  const pBar = createTag('div', { class: 'progress-bar' }, tr);
+  container.append(lbl, pBar);
   elem.replaceWith(container);
   return container;
 }
 
-function removeBarLoader(elem, a) {
+function removeLoader(elem, a) {
   elem.replaceWith(a);
 }
 
@@ -35,7 +35,7 @@ async function decorateQuickLink(a, hasConsent) {
 
 export default function processQL(a) {
   a.classList.add('quick-link');
-  const loaderCheck = getMetadata('quick-link-loader');
+  const isLoader = getMetadata('quick-link-loader');
 
   const getConsentStatus = () => {
     const cookieGrp = window.adobePrivacy?.activeCookieGroups();
@@ -60,9 +60,9 @@ export default function processQL(a) {
   a.addEventListener('click', async (e) => {
     e.preventDefault();
     let pb;
-    if (loaderCheck === 'progress-bar') pb = addBarLoader(a);
+    if (isLoader === 'progress-bar') pb = addLoader(a);
     const hasConsent = await waitForConsent;
-    if (loaderCheck === 'progress-bar') removeBarLoader(pb, a);
+    if (pb) removeLoader(pb, a);
     decorateQuickLink(a, hasConsent);
   });
 }
