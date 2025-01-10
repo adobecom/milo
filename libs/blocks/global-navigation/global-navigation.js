@@ -1174,7 +1174,7 @@ class Gnav {
             const popup = dropdownTrigger.nextElementSibling;
             // document.body.style.top should always be set
             // at this point by calling disableMobileScroll
-            if (popup) {
+            if (popup && this.isLocalNav()) {
               const y = window.scrollY;
               const iOSy = Math.abs(parseInt(document.body.style.top, 10));
               const offset = this.block.classList.contains('has-promo')
