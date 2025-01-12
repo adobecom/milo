@@ -1,8 +1,24 @@
 import { createTag } from '../../utils/utils.js';
 
-let urlData = {};
+const urlData = {
+  urlBranch: '',
+  urlRepo: '',
+  urlOwner: '',
+  urlPathRemainder: '',
+  currentPageLang: '',
+  referrer: '',
+  host: '',
+  project: '',
+};
 
+/**
+ * Extracts language code from URL path
+ * @param {string} url - URL to parse
+ * @returns {string|null} Language code or null if invalid
+ */
 const getLanguageCode = (url) => {
+  if (!url) return null;
+
   try {
     const pathSegments = new URL(url).pathname.split('/').filter(Boolean);
     const langPattern = /^[a-z]{2,3}(-[A-Za-z]{4})?(-[A-Za-z0-9]{2,3})?$/;
@@ -10,109 +26,141 @@ const getLanguageCode = (url) => {
     return (pathSegments[0] === 'langstore' && langPattern.test(pathSegments[1]))
       ? pathSegments[1]
       : 'root';
-  } catch {
+  } catch (err) {
+    console.error('Error parsing language code:', err);
     return null;
   }
 };
 
-const getReferrer = () => {
-  const referrer = new URLSearchParams(window.location.search).get('referrer');
-  return decodeURIComponent(referrer);
-};
-
+/**
+ * Parses URL and sets URL data
+ * @param {string} url - URL to parse
+ * @param {boolean} allowEmptyPaths - Whether to allow empty paths
+ * @returns {Object|null} URL data object or null if invalid
+ */
 const setUrlData = (url, allowEmptyPaths = false) => {
-  const urlParts = url.split('--');
-  if (urlParts.length !== 3) {
+  if (!url) return null;
+
+  try {
+    const urlParts = url.split('--');
+    if (urlParts.length !== 3) {
+      return null;
+    }
+
+    const hlxPageIndex = urlParts[2].indexOf('.hlx.page');
+    const aemPageIndex = urlParts[2].indexOf('.aem.page');
+    const pageIndex = hlxPageIndex >= 0 ? hlxPageIndex : aemPageIndex;
+    const pageType = hlxPageIndex >= 0 ? '.hlx.page' : '.aem.page';
+
+    const pathLengthCheck = allowEmptyPaths ? pageType.length - 1 : pageType.length;
+    if (pageIndex < 0 || pageIndex + pathLengthCheck >= urlParts[2].length) {
+      return null;
+    }
+
+    Object.assign(urlData, {
+      urlBranch: urlParts[0].slice(8), // remove "https://"
+      urlRepo: urlParts[1],
+      urlOwner: urlParts[2].slice(0, pageIndex),
+      urlPathRemainder: urlParts[2].slice(pageIndex + pageType.length),
+      currentPageLang: getLanguageCode(url),
+    });
+
+    return urlData;
+  } catch (err) {
+    console.error('Error parsing URL:', err);
     return null;
   }
-
-  const hlxPageIndex = urlParts[2].indexOf('.hlx.page');
-  const aemPageIndex = urlParts[2].indexOf('.aem.page');
-  const pageIndex = hlxPageIndex >= 0 ? hlxPageIndex : aemPageIndex;
-  const pageType = hlxPageIndex >= 0 ? '.hlx.page' : '.aem.page';
-
-  const pathLengthCheck = allowEmptyPaths ? pageType.length - 1 : pageType.length;
-  if (pageIndex < 0 || pageIndex + pathLengthCheck >= urlParts[2].length) {
-    return null;
-  }
-
-  urlData = {
-    urlBranch: urlParts[0].slice(8), // remove "https://"
-    urlRepo: urlParts[1],
-    urlOwner: urlParts[2].slice(0, pageIndex),
-    urlPathRemainder: urlParts[2].slice(pageIndex + pageType.length),
-    currentPageLang: getLanguageCode(url),
-    host: new URLSearchParams(window.location.search).get('host'),
-    project: new URLSearchParams(window.location.search).get('project'),
-    referrer: getReferrer(),
-  };
-  return urlData;
 };
 
+/**
+ * Creates and configures radio button element
+ * @param {string} value - Radio button value
+ * @param {boolean} checked - Whether radio is checked
+ * @returns {HTMLElement} Label containing radio button
+ */
+const createRadioButton = (value, checked = false) => {
+  const label = createTag('label');
+  const radio = createTag('input', {
+    type: 'radio',
+    name: 'deployTarget',
+    value,
+    required: true,
+    checked,
+  });
+  label.appendChild(radio);
+  label.appendChild(document.createTextNode(value.charAt(0).toUpperCase() + value.slice(1)));
+  return label;
+};
+
+/**
+ * Builds UI elements
+ * @param {HTMLElement} el - Container element
+ * @param {string} previewUrl - Preview URL
+ */
 const buildUi = async (el, previewUrl) => {
-  const modal = createTag('div', { class: 'modal' });
-  const radioGroup = createTag('div', { class: 'radio-group' });
-  const envLabel = createTag('div', { class: 'env-label' }, 'Environment');
-  radioGroup.appendChild(envLabel);
+  try {
+    const modal = createTag('div', { class: 'modal' });
+    const radioGroup = createTag('div', { class: 'radio-group' });
+    const envLabel = createTag('div', { class: 'env-label' }, 'Environment');
+    radioGroup.appendChild(envLabel);
 
-  const stageLabel = createTag('label');
-  const stageRadio = createTag('input', {
-    type: 'radio',
-    name: 'deployTarget',
-    value: 'stage',
-    required: true,
-    checked: true,
-  });
-  stageLabel.appendChild(stageRadio);
-  stageLabel.appendChild(document.createTextNode('Stage'));
+    radioGroup.appendChild(createRadioButton('stage', true));
+    radioGroup.appendChild(createRadioButton('prod'));
 
-  const prodLabel = createTag('label');
-  const prodRadio = createTag('input', {
-    type: 'radio',
-    name: 'deployTarget',
-    value: 'prod',
-    required: true,
-  });
-  prodLabel.appendChild(prodRadio);
-  prodLabel.appendChild(document.createTextNode('Prod'));
-
-  radioGroup.appendChild(stageLabel);
-  radioGroup.appendChild(prodLabel);
-
-  const rolloutBtn = createTag('button', { class: 'rollout-btn' });
-  rolloutBtn.append(
-    createTag('span', { class: 'rollout-btn-text' }, 'Rollout'),
-  );
-
-  rolloutBtn.addEventListener('click', () => {
-    const selectedEnv = document.querySelector('input[name="deployTarget"]:checked').value;
-    const locV3ConfigUrl = new URL(
-      'tools/locui-create',
-      `https://${urlData.urlBranch}--${urlData.urlRepo}--${urlData.urlOwner}.hlx.page`,
+    const rolloutBtn = createTag('button', { class: 'rollout-btn' });
+    rolloutBtn.append(
+      createTag('span', { class: 'rollout-btn-text' }, 'Rollout'),
     );
-    locV3ConfigUrl.searchParams.append('milolibs', 'milostudio-stage');
-    locV3ConfigUrl.searchParams.append('ref', urlData.urlBranch);
-    locV3ConfigUrl.searchParams.append('repo', urlData.urlRepo);
-    locV3ConfigUrl.searchParams.append('owner', urlData.urlOwner);
-    locV3ConfigUrl.searchParams.append('host', urlData.host);
-    locV3ConfigUrl.searchParams.append('project', urlData.project);
-    locV3ConfigUrl.searchParams.append('env', selectedEnv);
-    locV3ConfigUrl.searchParams.append('type', 'rollout');
-    locV3ConfigUrl.searchParams.append('encodedUrls', previewUrl);
-    locV3ConfigUrl.searchParams.append('language', urlData.currentPageLang);
-    window.open(locV3ConfigUrl, '_blank');
-  });
 
-  const buttonGroup = createTag('div', { class: 'button-group' });
-  modal.appendChild(radioGroup);
-  buttonGroup.appendChild(rolloutBtn);
-  modal.appendChild(buttonGroup);
+    rolloutBtn.addEventListener('click', () => {
+      const selectedEnv = document.querySelector('input[name="deployTarget"]:checked')?.value;
+      if (!selectedEnv) return;
 
-  el.appendChild(modal);
+      const locV3ConfigUrl = new URL(
+        'tools/locui-create',
+        `https://${urlData.urlBranch}--${urlData.urlRepo}--${urlData.urlOwner}.hlx.page`,
+      );
+
+      const params = {
+        milolibs: 'milostudio-stage',
+        ref: urlData.urlBranch,
+        repo: urlData.urlRepo,
+        owner: urlData.urlOwner,
+        host: urlData.host,
+        project: urlData.project,
+        env: selectedEnv,
+        type: 'rollout',
+        encodedUrls: previewUrl,
+        language: urlData.currentPageLang,
+      };
+
+      Object.entries(params).forEach(([key, value]) => {
+        if (value) locV3ConfigUrl.searchParams.append(key, value);
+      });
+
+      window.open(locV3ConfigUrl, '_blank');
+    });
+
+    const buttonGroup = createTag('div', { class: 'button-group' });
+    modal.appendChild(radioGroup);
+    buttonGroup.appendChild(rolloutBtn);
+    modal.appendChild(buttonGroup);
+
+    el.appendChild(modal);
+  } catch (err) {
+    console.error('Error building UI:', err);
+    el.innerHTML = '<div class="modal">Error building interface</div>';
+  }
 };
 
-const setup = async (el) => {
-  const previewUrl = getReferrer();
+/**
+ * Sets up the rollout interface
+ * @param {HTMLElement} el - Container element
+ * @param {string} previewUrl - Preview URL
+ */
+const setup = async (el, previewUrl) => {
+  if (!el || !previewUrl) return;
+
   const data = setUrlData(previewUrl, true);
   if (!data) {
     el.innerHTML = '<div class="modal">Invalid URL format</div>';
@@ -122,11 +170,32 @@ const setup = async (el) => {
   await buildUi(el, previewUrl);
 };
 
-export default async function init(el) {
+/**
+ * Initializes the rollout tool
+ * @param {HTMLElement} el - Container element
+ * @param {string} search - Search params string
+ * @returns {Promise<boolean>} Success status
+ */
+export default async function init(el, search = window.location.search) {
+  if (!el) return false;
+
   try {
-    await setup(el);
+    const params = new URLSearchParams(search);
+    const referrer = params?.get('referrer')?.trim();
+    const host = params?.get('host')?.trim();
+    const project = params?.get('project')?.trim();
+
+    if (!referrer || !host || !project) {
+      el.innerHTML = '<div class="modal">Missing required parameters</div>';
+      return false;
+    }
+
+    Object.assign(urlData, { referrer, host, project });
+    await setup(el, referrer);
     return true;
-  } catch {
+  } catch (err) {
+    console.error('Initialization error:', err);
+    el.innerHTML = '<div class="modal">Initialization failed</div>';
     return false;
   }
 }
