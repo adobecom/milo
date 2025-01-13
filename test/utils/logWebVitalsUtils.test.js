@@ -4,16 +4,15 @@ import { readFile } from '@web/test-runner-commands';
 import { getConfig, loadDeferred } from '../../libs/utils/utils.js';
 
 document.head.innerHTML = `
-  <meta name="pageperf" content="on">;
-  <meta name="pageperf-rate" content="100">;
-  <meta name="pageperf-delay" content="0">;
+  <meta name="pageperf" content="on">';
+  <meta name="pageperf-rate" content="100">';
+  <meta name="pageperf-delay" content="0">';
 `;
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 
 describe('Log Web Vitals Utils', () => {
   let intervalId;
-
   before(() => {
     window.adobePrivacy = { activeCookieGroups: () => ['C0002'] };
     intervalId = setInterval(() => {
@@ -61,7 +60,10 @@ describe('Log Web Vitals Utils', () => {
         done();
       },
     };
-
     loadDeferred(document, undefined, getConfig());
   }).timeout(5000);
 });
+
+// Sample log string:
+// eslint-disable-next-line max-len
+// chromeVer=127.0.6533.17,cls=0.1842,country=,downlink=10,lcp=82,loggedIn=false,manifest3path=/cc-shared/fragments/promos/2024/americas/cci-all-apps-q3/cci-all-apps-q3.json,manifest3selected=all,manifest4path=/cc-shared/fragments/tests/2024/q2/ace0875/ace0875.json,manifest4selected=target-var-marqueelink,os=mac,url=localhost:2000/,windowHeight=600,windowWidth=800');
