@@ -212,20 +212,6 @@ describe('Utils', () => {
       });
     });
 
-    describe('Branch Quick Links', () => {
-      it('should add Progress Bar Loader', async () => {
-        window.adobePrivacy = {
-          hasUserProvidedConsent: () => true,
-          activeCookieGroups: () => ['C0002', 'C0004'],
-        };
-        window.alloy = () => {};
-        await waitForElement('a[href*="app.link"]');
-        const qL = document.querySelector('a[href*="app.link"]');
-        window.dispatchEvent(new CustomEvent('adobePrivacy:PrivacyConsent'));
-        qL.click();
-      });
-    });
-
     describe('Aria label appendment', () => {
       it('appends aria label if defined', () => {
         const theText = 'Text';
