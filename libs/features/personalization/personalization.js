@@ -1174,7 +1174,7 @@ export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => 
 };
 
 const getVariantLabels = (manifests) => {
-  const varientLabels = manifests.filter((m) => m.variantLabel.includes('target-') && !m.variantLabel.toLowerCase().includes('target-default') && !m.variantLabel.trim().toLowerCase().includes('target-control')).map((m) => m.variantLabel);
+  const varientLabels = manifests.filter((m) => m.variantLabel.includes('target-') && m.variantLabel.includes('pzn')).map((m) => m.variantLabel);
   return varientLabels;
 };
 
@@ -1326,7 +1326,7 @@ export async function init(enablements = {}) {
   }
   let mepTargetCookie;
   let mepXLGCookie;
-  if (enablePersonalizationV2()) {
+  if (enablePersonalizationV2() && target !== 'cached') {
     manifests = manifests.concat(await handleMartechTargetInteraction(
       { config, targetInteractionPromise, calculatedTimeout },
     ));
