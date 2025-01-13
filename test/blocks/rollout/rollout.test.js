@@ -33,8 +33,8 @@ describe('Rollout', () => {
     const el = document.querySelector('div');
     const searchParams = createTestParams('invalid-url');
     const result = await init(el, `?${searchParams.toString()}`);
-    expect(result).to.be.true;
-    expect(el.innerHTML).to.equal('<div class="modal">Invalid URL format</div>');
+    expect(result).to.be.false;
+    expect(el.innerHTML).to.equal('<div class="modal warning"><div class="warning-icon"></div><div class="warning-text">This page is not eligible for rollout<br><span class="warning-text-sub">Only pages under /langstore/ are eligible for rollout</span></div></div>');
   });
 
   it('should detect language code correctly', async () => {

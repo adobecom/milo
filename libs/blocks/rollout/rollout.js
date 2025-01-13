@@ -26,7 +26,6 @@ const getLanguageCode = (url) => {
     const langPattern = /^[a-z]{2,3}(-[A-Za-z]{4})?(-[A-Za-z0-9]{2,3})?$/;
     return langPattern.test(pathSegments[1]) ? pathSegments[1] : null;
   } catch (err) {
-    console.error('Error parsing language code:', err);
     return null;
   }
 };
@@ -66,7 +65,6 @@ const setUrlData = (url, allowEmptyPaths = false) => {
 
     return urlData;
   } catch (err) {
-    console.error('Error parsing URL:', err);
     return null;
   }
 };
@@ -147,7 +145,6 @@ const buildUi = async (el, previewUrl) => {
 
     el.appendChild(modal);
   } catch (err) {
-    console.error('Error building UI:', err);
     el.innerHTML = '<div class="modal">Error building interface</div>';
   }
 };
@@ -190,7 +187,7 @@ export default async function init(el, search = window.location.search) {
     }
 
     if (!referrer.includes('/langstore/')) {
-      el.innerHTML = '<div class="modal">This page is not eligible for rollout</div>';
+      el.innerHTML = '<div class="modal warning"><div class="warning-icon"></div><div class="warning-text">This page is not eligible for rollout<br><span class="warning-text-sub">Only pages under /langstore/ are eligible for rollout</span></div></div>';
       return false;
     }
 
@@ -198,7 +195,6 @@ export default async function init(el, search = window.location.search) {
     await setup(el, referrer);
     return true;
   } catch (err) {
-    console.error('Initialization error:', err);
     el.innerHTML = '<div class="modal">Initialization failed</div>';
     return false;
   }
