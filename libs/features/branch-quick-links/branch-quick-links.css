@@ -5,10 +5,10 @@
 
 .pbar {
   height: 10px;
+  width: 100%;
   border-radius: 5px;
   background-color: #D5D5D5;
-  width: 100%;
-  overflow: hidden;
+  margin-top: 10px;
 }
 
 .pbar-value {
@@ -20,22 +20,8 @@
   will-change: transform;
 }
 
-.pbar-label {
-  font-size: 17px;
-  line-height: 21px;
-  margin: 10px 0;
-}
-
 @keyframes indeterminate-animation {
-  0% {
-    transform:  translateX(0) scaleX(0);
-  }
-
-  40% {
-    transform:  translateX(0) scaleX(0.4);
-  }
-
-  100% {
-    transform:  translateX(100%) scaleX(0.5);
-  }
+  0% { transform:  translateX(0) scaleX(0); }
+  40% { transform:  translateX(0) scaleX(0.4); }
+  100% { transform:  translateX(100%) scaleX(0.5); }
 }
