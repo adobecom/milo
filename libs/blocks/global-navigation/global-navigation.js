@@ -313,7 +313,7 @@ class Gnav {
   }
 
   // eslint-disable-next-line no-return-assign
-  getOriginalTitle = (firstElem) => this.originalTitle ||= firstElem.textContent?.split('|');
+  getOriginalTitle = (firstElem) => this.originalTitle ||= firstElem.textContent?.split('::');
 
   setupUniversalNav = () => {
     const meta = getMetadata('universal-nav')?.toLowerCase();
