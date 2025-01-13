@@ -726,9 +726,8 @@ export function decorateLinks(el) {
       decorateCopyLink(a, copyEvent);
     }
     const branchQuickLink = 'app.link';
-    const ecidCheck = getMetadata('quick-link-ecid');
 
-    if (a.href.includes(branchQuickLink) && ecidCheck === 'on') {
+    if (a.href.includes(branchQuickLink)) {
       (async () => {
         const { default: processQL } = await import('../features/branch-quick-links/branch-quick-links.js');
         processQL(a);

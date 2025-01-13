@@ -1,11 +1,11 @@
 import { getMetadata, loadStyle, getConfig, createTag } from '../../utils/utils.js';
 
-function addLoader(elem) {
+function addLoader(elem, text) {
   const { base } = getConfig();
   loadStyle(`${base}/features/branch-quick-links/branch-quick-links.css`);
   const container = createTag('div', { class: 'pbar-container' });
   const lbl = createTag('div', { class: 'pbar-label' });
-  lbl.textContent = 'Launching the app store...';
+  lbl.textContent = text;
   const tr = createTag('div', { class: 'pbar-value' });
   tr.style.display = 'block';
   const pBar = createTag('div', { class: 'pbar' }, tr);
@@ -36,6 +36,7 @@ async function decorateQuickLink(a, hasConsent) {
 export default function processQL(a) {
   a.classList.add('quick-link');
   const isLoader = getMetadata('quick-link-loader');
+  const loaderText = getMetadata('quick-link-loader-text');
 
   const getConsentStatus = () => {
     const cookieGrp = window.adobePrivacy?.activeCookieGroups();
@@ -62,7 +63,7 @@ export default function processQL(a) {
   a.addEventListener('click', async (e) => {
     e.preventDefault();
     let pb;
-    if (isLoader === 'progress-bar') pb = addLoader(a);
+    if (isLoader === 'on') pb = addLoader(a, loaderText);
     const hasConsent = await waitForConsent;
     if (pb) removeLoader(pb, a);
     decorateQuickLink(a, hasConsent);
