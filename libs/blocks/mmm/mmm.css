@@ -264,12 +264,14 @@ dd .mep-popup-header .mep-close {
 .hide {
   display: none;
 }
-
+.mmm-search-container {
+  margin-top: var(--spacing-m);
+}
 .mmm-form-container {
   display: flex;
   justify-content: center;
   gap: var(--spacing-s);
-  margin: var(--spacing-m) auto 0;
+  margin: 0 auto;
   width: 700px;
   flex-flow: row nowrap;
   max-width: 80vw;
@@ -279,6 +281,7 @@ dd .mep-popup-header .mep-close {
   flex: 1;
 }
 .mmm-form-container label {
+  margin-top: var(--spacing-xxs);
   margin-right: var(--spacing-xxs);
   display: block;
   font-size: var(--type-body-xs-size);
