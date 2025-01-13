@@ -505,6 +505,7 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
   });
   popup.querySelector('.main-menu')?.addEventListener('click', (e) => {
     e.target.closest(selectors.activeDropdown).querySelector('button').focus();
+    enableMobileScroll();
     closeAllDropdowns();
   });
   const tabbuttons = popup.querySelectorAll('.tabs button');
