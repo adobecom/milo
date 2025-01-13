@@ -313,11 +313,30 @@ export function closeAllDropdowns({ type } = {}) {
   if (isDesktop.matches) setCurtainState(false);
 }
 
+export const disableMobileScroll = () => {
+  if (!PERSONALIZATION_TAGS.safari()) return;
+  document.body.style.top = `-${window.scrollY}px`;
+  document.body.classList.add('disable-ios-scroll');
+};
+
+export const enableMobileScroll = () => {
+  if (!PERSONALIZATION_TAGS.safari()) return;
+  if (!document.body.style.top) return;
+  const y = Math.abs(parseInt(document.body.style.top, 10));
+  if (Number.isNaN(y)) return;
+  document.body.classList.remove('disable-ios-scroll');
+  document.body.style.removeProperty('top');
+  window.scroll(0, y || 0, { behavior: 'instant' });
+};
+
 export function trigger({ element, event, type } = {}) {
   if (event) event.preventDefault();
   const isOpen = element?.getAttribute('aria-expanded') === 'true';
   closeAllDropdowns({ type });
-  if (isOpen) return false;
+  if (isOpen) {
+    if (!isDesktop.matches) disableMobileScroll();
+    return false;
+  }
   element.setAttribute('aria-expanded', 'true');
   return true;
 }
@@ -412,22 +431,6 @@ export const [setUserProfile, getUserProfile] = (() => {
 export const closeAllTabs = (tabs, tabpanels) => {
   tabpanels.forEach((t) => t.setAttribute('hidden', 'true'));
   tabs.forEach((t) => t.setAttribute('aria-selected', 'false'));
-};
-
-export const disableMobileScroll = () => {
-  if (!PERSONALIZATION_TAGS.safari()) return;
-  document.body.style.top = `-${window.scrollY}px`;
-  document.body.classList.add('disable-ios-scroll');
-};
-
-export const enableMobileScroll = () => {
-  if (!PERSONALIZATION_TAGS.safari()) return;
-  if (!document.body.style.top) return;
-  const y = Math.abs(parseInt(document.body.style.top, 10));
-  if (Number.isNaN(y)) return;
-  document.body.classList.remove('disable-ios-scroll');
-  document.body.style.removeProperty('top');
-  window.scroll(0, y || 0, { behavior: 'instant' });
 };
 
 export const transformTemplateToMobile = async (popup, item, localnav = false) => {
