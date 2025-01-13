@@ -225,7 +225,7 @@ function createSearchField(data, sharedUrlSettings) {
     'div',
     { id: 'mmm-search-urls-container', class: 'mmm-form-container' },
     `<div>
-      <label for="mmm-search-urls">Search:</label>
+      <label for="mmm-search-urls">Filter:</label>
       <input id="mmm-search-urls" type="text" name="mmm-search-urls" class="text-field-input" placeholder="Search for a full or partial URL">
     </div>`,
   );
