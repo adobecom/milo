@@ -315,6 +315,8 @@ export function closeAllDropdowns({ type } = {}) {
 
 export const disableMobileScroll = () => {
   if (!PERSONALIZATION_TAGS.safari()) return;
+  if (document.body.classList.contains('disable-ios-scroll')) return;
+  if (document.body.style.top) return;
   document.body.style.top = `-${window.scrollY}px`;
   document.body.classList.add('disable-ios-scroll');
 };
