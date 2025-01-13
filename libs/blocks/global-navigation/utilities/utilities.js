@@ -333,11 +333,9 @@ export function trigger({ element, event, type } = {}) {
   if (event) event.preventDefault();
   const isOpen = element?.getAttribute('aria-expanded') === 'true';
   closeAllDropdowns({ type });
-  if (isOpen) {
-    if (!isDesktop.matches) disableMobileScroll();
-    return false;
-  }
+  if (isOpen) return false;
   element.setAttribute('aria-expanded', 'true');
+  if (!isDesktop.matches) disableMobileScroll();
   return true;
 }
 
