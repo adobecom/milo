@@ -809,14 +809,14 @@ class Gnav {
     const toggle = this.elements.mobileToggle;
     const isExpanded = this.isToggleExpanded();
     if (!isExpanded && this.newMobileNav) {
-      disableMobileScroll();
       const sections = document.querySelectorAll('header.new-nav .feds-nav > section.feds-navItem > button.feds-navLink');
       animateInSequence(sections, 0.075);
       if (this.isLocalNav() && this.hasMegaMenu()) {
+        disableMobileScroll();
         const section = sections[0];
         queueMicrotask(() => section.click());
       }
-    } else if (isExpanded && this.newMobileNav) {
+    } else if (isExpanded && this.newMobileNav && this.isLocalNav()) {
       enableMobileScroll();
     }
     toggle?.setAttribute('aria-expanded', !isExpanded);
