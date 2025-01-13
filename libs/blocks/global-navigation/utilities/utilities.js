@@ -427,7 +427,7 @@ export const enableMobileScroll = () => {
   if (Number.isNaN(y)) return;
   document.body.classList.remove('disable-ios-scroll');
   document.body.style.removeProperty('top');
-  window.scroll(0, y || 0);
+  window.scroll(0, y || 0, { behavior: 'instant' });
 };
 
 export const transformTemplateToMobile = async (popup, item, localnav = false) => {
