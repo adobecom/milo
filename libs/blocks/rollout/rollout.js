@@ -21,11 +21,10 @@ const getLanguageCode = (url) => {
 
   try {
     const pathSegments = new URL(url).pathname.split('/').filter(Boolean);
-    const langPattern = /^[a-z]{2,3}(-[A-Za-z]{4})?(-[A-Za-z0-9]{2,3})?$/;
+    if (pathSegments[0] !== 'langstore') return null;
 
-    return (pathSegments[0] === 'langstore' && langPattern.test(pathSegments[1]))
-      ? pathSegments[1]
-      : 'root';
+    const langPattern = /^[a-z]{2,3}(-[A-Za-z]{4})?(-[A-Za-z0-9]{2,3})?$/;
+    return langPattern.test(pathSegments[1]) ? pathSegments[1] : null;
   } catch (err) {
     console.error('Error parsing language code:', err);
     return null;
@@ -187,6 +186,11 @@ export default async function init(el, search = window.location.search) {
 
     if (!referrer || !host || !project) {
       el.innerHTML = '<div class="modal">Missing required parameters</div>';
+      return false;
+    }
+
+    if (!referrer.includes('/langstore/')) {
+      el.innerHTML = '<div class="modal">This page is not eligible for rollout</div>';
       return false;
     }
 
