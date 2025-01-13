@@ -5,7 +5,7 @@ import { getMepPopup, API_URLS } from '../../features/personalization/preview.js
 const SEARCH_CRITERIA_CHANGE_EVENT = 'mmm-search-change';
 export const DEBOUNCE_TIME = 800;
 
-async function toggleDrawer(target, dd) {
+async function toggleDrawer(target, dd, pageId) {
   const el = target.closest('button');
   const expanded = el.getAttribute('aria-expanded') === 'true';
   if (expanded) {
@@ -22,7 +22,6 @@ async function toggleDrawer(target, dd) {
     dd.removeAttribute('hidden');
     const loading = dd.querySelector('.loading');
     if (dd.classList.contains('placeholder-resolved') || !loading) return;
-    const { pageId } = dd.dataset;
     const pageData = await fetchData(`${API_URLS.pageDetails}${pageId}`, DATA_TYPE.JSON);
     loading.replaceWith(getMepPopup(pageData, true));
     dd.classList.add('placeholder-resolved');
@@ -68,11 +67,6 @@ function createButtonDetailsPair(mmmEl, page) {
       </svg>`,
   );
   const dd = createTag('dd', { id: panelId, hidden: true }, loading);
-  Object.keys(page).forEach((key) => {
-    const val = page[key] || 'us';
-    dt.dataset[key] = val;
-    dd.dataset[key] = val;
-  });
   button.addEventListener('click', (e) => { toggleDrawer(e.target, dd, pageId, 'mmm'); });
   mmmEl.append(dt, dd);
 }
