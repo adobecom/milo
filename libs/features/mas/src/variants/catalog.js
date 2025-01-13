@@ -90,12 +90,9 @@ export class Catalog extends VariantLayout {
 
       e.preventDefault();
       actionMenuContentSlot.classList.toggle('hidden');
-      if (!actionMenuContentSlot.classList.contains('hidden')) {
-          this.setAriaExpanded(actionMenu, 'true');
-          this.dispatchActionMenuToggle();
-      } else {
-          this.setAriaExpanded(actionMenu, 'false');
-      }
+      const isHidden = actionMenuContentSlot.classList.contains('hidden');
+      if (!isHidden) this.dispatchActionMenuToggle();
+      this.setAriaExpanded(actionMenu, isHidden);
     };
     
     toggleActionMenuFromCard = (e) => {
