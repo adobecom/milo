@@ -129,7 +129,7 @@ const decorateGnavImage = (elem) => {
   const linkElem = elem.querySelector('a');
   const imageElem = elem.querySelector('picture');
   const promoImageElem = linkElem instanceof HTMLElement
-    ? toFragment`<a class="feds-image" href="${linkElem.href}">${imageElem}</a>`
+    ? toFragment`<a class="feds-image" href="${linkElem.href}" daa-ll="gnav-image">${imageElem}</a>`
     : toFragment`<div class="feds-image">${imageElem}</div>`;
 
   elem.replaceChildren(promoImageElem);
