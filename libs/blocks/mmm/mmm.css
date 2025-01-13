@@ -516,3 +516,9 @@ main > .section > .inline-wrapper > .share-mmm.inline {
     margin: auto;
   }
 }
+
+@media (max-width: 700px) {
+  #mmm-pagination {
+    padding: 2rem 4rem;
+  }
+}
