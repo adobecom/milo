@@ -44,7 +44,7 @@ dl.mmm {
   font-size: var(--type-heading-xs-size);
   font-weight: 700;
   line-height: var(--type-heading-s-lh);
-  padding: var(--spacing-s) var(--spacing-m) var(--spacing-s) var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-m) var(--spacing-m) var(--spacing-xs);
   position: relative;
   text-align: start;
   width: 100%;
