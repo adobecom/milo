@@ -261,7 +261,7 @@ dd .mep-popup-header .mep-close {
   }
 }
 
-.hide {
+.mmm-hide {
   display: none;
 }
 .mmm-search-container {
@@ -326,8 +326,14 @@ dd .mep-popup-header .mep-close {
 
 .mmm-form-container > div.share-mmm {
   right: -4rem;
-  padding-top: 10px;
+  top: 33px;
   position: absolute;
+  height: 33px;
+  width: 33px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+
 }
 
 .share-mmm svg.icon {
@@ -343,16 +349,10 @@ dd .mep-popup-header .mep-close {
   filter: brightness(0.7);
 }
 
-.share-mmm p.icon-container,
-.share-mmm p.icon-container a {
+.share-mmm p.icon-container {
   display: flex;
-  align-items: center;
-  padding-bottom: 0;
   justify-content: center;
-}
-
-.share-mmm p {
-  padding-bottom: 8px;
+  align-items: center;
 }
 
 .share-mmm p.icon-container svg {
@@ -374,7 +374,6 @@ dd .mep-popup-header .mep-close {
   border-radius: 4px;
   border: 2px solid transparent;
   outline: none;
-  margin-inline-start: 16px;
 }
 
 .share-mmm .copy-to-clipboard:focus-visible {
@@ -462,7 +461,7 @@ dd .mep-popup-header .mep-close {
   gap: 1rem;
   font-size: 1.25rem;
   justify-content: center;
-  padding: 2rem 4rem;
+  padding: 2rem 8rem;
   flex-wrap: wrap;
   max-width: 1200px;
   margin: 0 auto;
@@ -504,7 +503,16 @@ main > .section > .inline-wrapper > .share-mmm.inline {
   margin-bottom: 0;
 }
 
-main > .section.center .share-mmm.inline p.icon-container {
+/* main > .section.center .share-mmm.inline p.icon-container {
   margin: 0 auto;
   justify-content: center;
+} */
+
+@media (max-width: 900px) {
+  .share-mmm {
+    left: 0;
+    right: 0 !important;
+    top: -1rem !important;
+    margin: auto;
+  }
 }

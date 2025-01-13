@@ -106,20 +106,6 @@ function filterPageList(pageNum, event) {
   document.querySelectorAll('button.copy-to-clipboard').forEach((button) => {
     button.dataset.destination = shareUrl.href;
   });
-
-  mmmEntries.forEach((entry) => {
-    const data = entry.dataset;
-    entry.classList.remove('filter-hide');
-
-    Object.keys(searchValues).forEach((key) => {
-      const { value, tagName } = searchValues[key];
-      if (tagName !== 'SELECT') return;
-      const inputVal = data[key];
-      if (value && !value.split(',').some((val) => inputVal === val)) {
-        entry.classList.add('filter-hide');
-      }
-    });
-  });
 }
 function parseData(el) {
   const data = {};
@@ -149,8 +135,6 @@ function createShareButton() {
     'div',
     { class: 'share-mmm' },
   );
-  const p = createTag('p', { class: 'icon-container' });
-  div.append(p);
   const buttonLabel = 'Copy link to these search settings';
   const button = createTag(
     'button',
@@ -166,7 +150,7 @@ function createShareButton() {
     </svg>`,
   );
   button.dataset.destination = document.location.href; // set original destination
-  p.append(button);
+  div.append(button);
   button.addEventListener('click', (e) => {
     /* c8 ignore start */
     e.preventDefault();
@@ -308,7 +292,7 @@ function handlePaginationClicks() {
 
 async function createPageList(el, search) {
   const paginationEl = document.querySelector('.mmm-pagination');
-  paginationEl?.classList.add('hide');
+  paginationEl?.classList.add('mmm-hide');
   const mmmElContainer = createTag('div', { class: 'mmm-container max-width-12-desktop' });
   const mmmEl = createTag('dl', {
     class: 'mmm foreground',
@@ -330,7 +314,7 @@ async function createPageList(el, search) {
     el: mmmElContainer,
     data: response,
   });
-  paginationEl?.classList.remove('hide');
+  paginationEl?.classList.remove('mmm-hide');
   handlePaginationClicks();
 }
 
