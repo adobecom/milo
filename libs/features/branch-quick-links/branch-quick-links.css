@@ -3,15 +3,6 @@
   flex-direction: column;
 }
 
-.pbar {
-  height: 10px;
-  width: 100%;
-  border-radius: 5px;
-  background-color: #D5D5D5;
-  margin-top: 10px;
-  overflow: hidden;
-}
-
 .pbar-value {
   width: 100%;
   height: 100%;
