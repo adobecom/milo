@@ -42,34 +42,37 @@ function constructPayload(form) {
 }
 
 async function submitForm(form) {
-  const payload = constructPayload(form);
-  const keys = Object.keys(payload);
-  payload.timestamp = new Date().toJSON();
-  for (const key of keys) {
-    const field = form.querySelector(`[data-field-id=${key}]`);
-    if (!payload[key] && field.querySelector('.group-container.required')) {
-      const el = form.querySelector(`input[name="${key}"]`);
-      el.setCustomValidity('A selection is required');
-      el.reportValidity();
-      const cb = () => {
-        el.setCustomValidity('');
-        el.reportValidity();
-        field.removeEventListener('input', cb);
-      };
-      field.addEventListener('input', cb);
-      return false;
+  const payload = constructPayload(form); 
+  payload.timestamp = new Date().toISOString(); 
+
+  try {
+    const response = await fetch('https://submission-worker.main--lehre-site--berufsbildung-basel.workers.dev', { 
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': "Y+IAXdbNFHyt/ihRsUZFP3fYKwATZ4QzAbiQrLsyWrw=", 
+      },
+      body: JSON.stringify(payload), 
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error: ${response.statusText}`);
     }
-    payload[key] = sanitizeComment(payload[key]);
+
+    // Log success message to the console
+    console.log('POST request successful:', {
+      status: response.status,
+      statusText: response.statusText,
+      payload,
+    });
+
+    const result = await response.json();
+    console.log('Response from server:', result); // Log the server response
+    return result; 
+  } catch (error) {
+    console.error('Form submission failed:', error);
+    return { status: 'error', message: error.message };
   }
-  /* c8 ignore next 7 */
-  const resp = await fetch(form.dataset.action, {
-    method: 'POST',
-    cache: 'no-cache',
-    headers: { 'Content-type': 'application/json' },
-    body: JSON.stringify({ data: payload }),
-  });
-  await resp.text();
-  return payload;
 }
 
 function clearForm(form) {
