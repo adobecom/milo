@@ -240,7 +240,7 @@ async function checkLinks() {
   links.forEach((link) => {
     if (link.dataset?.httpLink) {
       const httpLink = {
-        url: link.href,
+        url: link.liveHref,
         status: 'authored as http',
       };
       badResults.push(httpLink);
