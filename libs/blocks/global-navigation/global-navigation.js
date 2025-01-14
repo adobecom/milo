@@ -833,7 +833,7 @@ class Gnav {
   };
 
   decorateToggle = () => {
-    if (!this.mainNavItemCount || !this.hasMegaMenu()) return '';
+    if (!this.mainNavItemCount || (this.newMobileNav && !this.hasMegaMenu())) return '';
 
     const toggle = toFragment`<button
       class="feds-toggle"
