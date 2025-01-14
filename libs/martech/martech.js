@@ -71,7 +71,7 @@ export const getTargetPersonalization = async (
     try {
       window.lana.log(`target response time: ${responseTime}`, {
         tags: 'martech',
-        errorType: 'i',
+        errorType: 'e',
         sampleRate: 0.5,
       });
     } catch (e) {
@@ -88,7 +88,7 @@ export const getTargetPersonalization = async (
     try {
       window.lana.log('target response time: ad blocker', {
         tags: 'martech',
-        errorType: 'i',
+        errorType: 'e',
         sampleRate: 0.5,
       });
     } catch (e) {

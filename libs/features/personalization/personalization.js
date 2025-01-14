@@ -1204,7 +1204,7 @@ async function handleMartechTargetInteraction(
       try {
         window.lana.log(`target response time: ${roundedResponseTime}`, {
           tags: 'martech',
-          errorType: 'i',
+          errorType: 'e',
           sampleRate: 0.5,
         });
       } catch (e) {
