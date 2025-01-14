@@ -1178,7 +1178,7 @@ const getVariantLabels = (manifests) => {
   return varientLabels;
 };
 
-const updateCacheMEPXLG = (config) => {
+export const updateCacheMEPXLG = (config) => {
   if (config.mep.targetManifests?.length) {
     addToCookieArray('mepTarget', getVariantLabels(config.mep.targetManifests), 2);
   }
@@ -1326,7 +1326,7 @@ export async function init(enablements = {}) {
   }
   let mepTargetCookie;
   let mepXLGCookie;
-  if (enablePersonalizationV2() && target !== 'cached') {
+  if (target !== 'cached' && enablePersonalizationV2()) {
     manifests = manifests.concat(await handleMartechTargetInteraction(
       { config, targetInteractionPromise, calculatedTimeout },
     ));
@@ -1340,13 +1340,11 @@ export async function init(enablements = {}) {
     if (postLCP) {
       if (!config.mep.targetManifests) await awaitMartech();
       manifests = config.mep.targetManifests;
-      console.log('config', config);
     }
   }
   try {
     if (manifests?.length) await applyPers(manifests, mepTargetCookie, mepXLGCookie, xlg);
     if (config.mep?.preview) await import('./preview.js').then(({ saveToMmm }) => saveToMmm());
-    updateCacheMEPXLG(config);
   } catch (e) {
     log(`MEP Error: ${e.toString()}`);
     window.lana?.log(`MEP Error: ${e.toString()}`);
