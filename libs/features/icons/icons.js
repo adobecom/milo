@@ -48,9 +48,6 @@ function decorateToolTip(icon) {
   icon.className = `icon icon-info milo-tooltip ${place}`;
   icon.setAttribute('tabindex', '0');
   icon.setAttribute('role', 'button');
-  icon.addEventListener('keydown', (e) => {
-    if (e.code === 'Enter') icon.focus();
-  });
   wrapper.parentElement.replaceChild(icon, wrapper);
 }
 
