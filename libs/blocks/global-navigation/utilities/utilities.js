@@ -430,6 +430,65 @@ export const enableMobileScroll = () => {
   window.scroll(0, y || 0, { behavior: 'instant' });
 };
 
+export const [addAriaHiddenAlly, removeAriaHiddenAlly] = (() => {
+  const modifiedElements = new Set();
+  return [
+    (targets) => {
+      removeAriaHiddenAlly();
+      if (!targets || targets.length === 0) return;
+
+      // Get all elements in the document
+      const allElements = document.querySelectorAll('header *, main, footer');
+
+      // Create a Set to store elements to exclude
+      const excludeElements = new Set();
+
+      // Process each target element
+      targets.forEach((target) => {
+        // Add the target and its parents to the exclusion set
+        let currentElement = target;
+        while (currentElement) {
+          excludeElements.add(currentElement);
+          if (currentElement.tagName.toLowerCase() === 'body') break;
+          currentElement = currentElement.parentElement;
+        }
+
+        // Add all descendants of the target to the exclusion set
+        const targetDescendants = target.querySelectorAll('*');
+        targetDescendants.forEach((descendant) =>
+          excludeElements.add(descendant)
+        );
+      });
+
+      // Loop through all elements and add aria-hidden="true" to those not in the excludeElements set
+      allElements.forEach((element) => {
+        if (!excludeElements.has(element)) {
+          if (
+            !modifiedElements.has(element) &&
+            !element.hasAttribute('aria-hidden')
+          ) {
+            // Only add aria-hidden if it was not already present
+            modifiedElements.add(element);
+          }
+          element.setAttribute('aria-hidden', 'true');
+        } else if (modifiedElements.has(element)) {
+          // Remove aria-hidden if this script added it
+          element.removeAttribute('aria-hidden');
+          modifiedElements.delete(element);
+        }
+      });
+    },
+    () => {
+      modifiedElements.forEach((element) => {
+        element.removeAttribute('aria-hidden');
+      });
+
+      // Clear the set as all modifications are undone
+      modifiedElements.clear();
+    },
+  ];
+})();
+
 export const transformTemplateToMobile = async (popup, item, localnav = false) => {
   const notMegaMenu = popup.parentElement.tagName === 'DIV';
   const originalContent = popup.innerHTML;
@@ -498,12 +557,17 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
     `;
 
   popup.querySelector('.close-icon')?.addEventListener('click', () => {
+    removeAriaHiddenAlly();
     document.querySelector(selectors.mainNavToggle).focus();
     closeAllDropdowns();
     enableMobileScroll();
   });
   popup.querySelector('.main-menu')?.addEventListener('click', (e) => {
-    e.target.closest(selectors.activeDropdown).querySelector('button').focus();
+    const triggerButton = e.target.closest(selectors.activeDropdown).querySelector('button');
+    const trigger = document.querySelector(selectors.mainNavToggle);
+    const expandedMenu = document.querySelector('.feds-nav-wrapper--expanded');
+    addAriaHiddenAlly([trigger, expandedMenu]);
+    triggerButton.focus();
     closeAllDropdowns();
   });
   const tabbuttons = popup.querySelectorAll('.tabs button');

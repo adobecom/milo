@@ -44,6 +44,8 @@ import {
   closeAllTabs,
   disableMobileScroll,
   enableMobileScroll,
+  addAriaHiddenAlly,
+  removeAriaHiddenAlly,
 } from './utilities/utilities.js';
 import { getFedsPlaceholderConfig } from '../../utils/federated.js';
 
@@ -827,6 +829,11 @@ class Gnav {
     toggle?.setAttribute('aria-expanded', !isExpanded);
     document.body.classList.toggle('disable-scroll', !isExpanded);
     this.elements.navWrapper?.classList?.toggle('feds-nav-wrapper--expanded', !isExpanded);
+    if (!isExpanded) {
+      addAriaHiddenAlly([toggle, this.elements.navWrapper]);
+    } else {
+      removeAriaHiddenAlly();
+    }
     closeAllDropdowns();
     setCurtainState(!isExpanded);
     toggle?.setAttribute('daa-ll', `hamburgermenu|${isExpanded ? 'open' : 'close'}`);
@@ -1182,6 +1189,7 @@ class Gnav {
                 : 'var(--feds-height-nav)';
               popup.style = `top: calc(${iOSy || y || 0}px - ${offset} - 1px`;
             }
+            addAriaHiddenAlly([popup]);
             makeTabActive(popup);
           } else if (isDesktop.matches && this.newMobileNav && isSectionMenu) {
             const popup = dropdownTrigger.nextElementSibling;
