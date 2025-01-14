@@ -1194,10 +1194,9 @@ async function handleMartechTargetInteraction(
   let targetManifests = [];
   let targetPropositions = [];
   if (enablePersonalizationV2() && targetInteractionPromise) {
-    try {
-      const { targetInteractionData, respTime, respStartTime } = await targetInteractionPromise;
-      sendTargetResponseAnalytics(false, respStartTime, calculatedTimeout);
-
+    const { targetInteractionData, respTime, respStartTime } = await targetInteractionPromise;
+    sendTargetResponseAnalytics(false, respStartTime, calculatedTimeout);
+    if (targetInteractionData.result) {
       const roundedResponseTime = roundToQuarter(respTime);
       performance.clearMarks();
       performance.clearMeasures();
@@ -1209,8 +1208,6 @@ async function handleMartechTargetInteraction(
       }
       targetManifests = handleAlloyResponse(targetInteractionData.result);
       targetPropositions = targetInteractionData.result?.propositions || [];
-    } catch (err) {
-      console.log('Oops!! Interact Call didnt go through', err);
     }
   }
 
