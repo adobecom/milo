@@ -73,7 +73,7 @@
   padding: var(--spacing-s) 0;
 }
 
-.tabs.x-spacing .paddle {
+.tabs.s-spacing .paddle {
   top: var(--spacing-s);
 }
 
@@ -120,7 +120,7 @@
   display: flex;
   width: var(--grid-container-width);
   margin: 0 auto;
-    box-sizing: content-box;
+  box-sizing: content-box;
 }
 
 /* center tabs */
@@ -323,11 +323,7 @@
   height: 24px;
 }
 
-.tabs .paddle-left {
-  z-index: 3;
-}
-
-.tabs .paddle-right {
+.tabs .paddle {
   z-index: 3;
 }
 
@@ -381,11 +377,7 @@
   border: none;
 }
 
-.tabs.radio .paddle-left {
-  display: none;
-}
-
-.tabs.radio .paddle-right {
+.tabs.radio .paddle {
   display: none;
 }
 
