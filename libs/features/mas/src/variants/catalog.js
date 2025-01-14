@@ -92,7 +92,7 @@ export class Catalog extends VariantLayout {
       actionMenuContentSlot.classList.toggle('hidden');
       const isHidden = actionMenuContentSlot.classList.contains('hidden');
       if (!isHidden) this.dispatchActionMenuToggle();
-      this.setAriaExpanded(actionMenu, isHidden);
+      this.setAriaExpanded(actionMenu, (!isHidden).toString());
     };
     
     toggleActionMenuFromCard = (e) => {
