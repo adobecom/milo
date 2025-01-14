@@ -1182,7 +1182,7 @@ class Gnav {
             const popup = dropdownTrigger.nextElementSibling;
             if (popup) popup.style.removeProperty('top');
           }
-          trigger({ element: dropdownTrigger, event: e });
+          trigger({ element: dropdownTrigger, event: e, type: 'dropdown' });
           setActiveDropdown(dropdownTrigger);
         });
 
