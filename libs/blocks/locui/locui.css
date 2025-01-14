@@ -435,7 +435,7 @@ button.locui-urls-heading-action {
   border: 2px solid transparent;
   transition: transform 120ms;
   color: #fff;
-  background: rgb(19 19 19);
+  background: #131313;
   font-weight: bold;
   font-size: 0.875rem;
 }
@@ -730,10 +730,7 @@ button.disabled.locui-url-action {
   cursor: pointer;
   display: flex;
   align-items: center;
-}
-
-.locui-fragment:hover {
-  color: #FF1593;
+  color: #131313;
 }
 
 .checkbox {
@@ -752,13 +749,13 @@ button.disabled.locui-url-action {
 
 .checkbox.checked,
 .select-all.selected {
-  background-color: #FF1593;
-  border: 1px solid #c40e71;
+  background-color: #131313;
+  border: 1px solid #131313;
 }
 
 .select-all {
   cursor: pointer;
-  border: 1px solid #c40e71;
+  border: 1px solid #131313;
   background-color: #fff;
   border-radius: 3px;
   color: #fff;
@@ -775,7 +772,7 @@ button.disabled.locui-url-action {
 
 .select-all::after {
   content: '';
-  border: 1px solid #c40e71;
+  border: 1px solid #131313;
   border-right: 0;
   border-bottom: 0;
   border-radius: 3px;
@@ -869,22 +866,22 @@ button.disabled.locui-url-action {
 
 @keyframes dots {
   0% {
-    box-shadow: 15px 0 #FF1593, -15px 0 #fca0d2;
-    background: #FF1593
+    box-shadow: 15px 0 #131313, -15px 0 #e1e1e1;
+    background: #131313
   }
 
   33% {
-    box-shadow: 15px 0 #FF1593, -15px 0 #fca0d2;
-    background: #fca0d2
+    box-shadow: 15px 0 #131313, -15px 0 #e1e1e1;
+    background: #e1e1e1
   }
 
   66% {
-    box-shadow: 15px 0 #fca0d2, -15px 0 #FF1593;
-    background: #fca0d2
+    box-shadow: 15px 0 #e1e1e1, -15px 0 #131313;
+    background: #e1e1e1
   }
 
   100% {
-    box-shadow: 15px 0 #fca0d2, -15px 0 #FF1593;
-    background: #FF1593
+    box-shadow: 15px 0 #e1e1e1, -15px 0 #131313;
+    background: #131313
   }
 }
