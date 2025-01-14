@@ -767,16 +767,21 @@ describe('global navigation', () => {
       headline.click();
       expect(headline.getAttribute('aria-expanded')).to.equal('true');
     });
-
-    it('adds the correct class when on Safari', async () => {
+    it('disables scroll for the popup but not for the localnav', async () => {
       Object.defineProperty(navigator, 'userAgent', { get: () => 'Safari' });
       await createFullGlobalNavigation({ globalNavigation: gnavWithlocalNav, viewport: 'mobile' });
       const localNavTitle = document.querySelector(selectors.localNavTitle);
       localNavTitle.click();
       const localNav = document.querySelector(selectors.localNav);
       const curtain = localNav.querySelector('.feds-localnav-curtain');
-      expect(document.body.classList.contains('disable-ios-scroll')).to.equal(true);
+      expect(document.body.classList.contains('disable-ios-scroll')).to.equal(false);
       curtain.click();
+      expect(document.body.classList.contains('disable-ios-scroll')).to.equal(false);
+      const toggle = document.querySelector(selectors.mainNavToggle);
+      toggle.click();
+      expect(document.body.classList.contains('disable-ios-scroll')).to.equal(true);
+      const close = document.querySelector('.close-icon');
+      close.click();
       expect(document.body.classList.contains('disable-ios-scroll')).to.equal(false);
     });
   });
