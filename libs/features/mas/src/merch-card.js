@@ -344,52 +344,33 @@ export class MerchCard extends LitElement {
     }
 
     async checkReady() {
-      // Collect all relevant elements
-      const elements = [
-          ...this.querySelectorAll(
-              'span[is="inline-price"][data-wcs-osi],a[is="checkout-link"][data-wcs-osi]',
-          ),
-      ];
-  
-      if (!elements.length) {
-          performance.mark(`${MARK_MERCH_CARD_PREFIX}${this.id}${MARK_READY_SUFFIX}`);
-          this.dispatchEvent(
-              new CustomEvent(EVENT_MAS_READY, {
-                  bubbles: true,
-                  composed: true,
-              }),
-          );
-          return;
-      }
-  
-      const successPromise = Promise.all(
-          elements.map((element) =>
-              element.onceSettled().catch(() => element),
-          ),
-      ).then((resolvedElements) =>
-          resolvedElements.every((el) =>
-              el.classList.contains('placeholder-resolved'),
-          ),
-      );
-  
-      const timeoutPromise = new Promise((resolve) =>
-          setTimeout(() => resolve(false), MERCH_CARD_LOAD_TIMEOUT),
-      );
-  
-      const success = await Promise.race([successPromise, timeoutPromise]);
-      if (success === true) {
-          performance.mark(`${MARK_MERCH_CARD_PREFIX}${this.id}${MARK_READY_SUFFIX}`);
-          this.dispatchEvent(
-              new CustomEvent(EVENT_MAS_READY, {
-                  bubbles: true,
-                  composed: true,
-              }),
-          );
-          return;
-      }
-  
-      this.#fail('Contains unresolved offers');
-  }
+        const successPromise = Promise.all(
+            [
+                ...this.querySelectorAll(
+                    'span[is="inline-price"][data-wcs-osi],a[is="checkout-link"][data-wcs-osi]',
+                ),
+            ].map((element) => element.onceSettled().catch(() => element)),
+        ).then((elements) =>
+            elements.every((el) =>
+                el.classList.contains('placeholder-resolved'),
+            ),
+        );
+        const timeoutPromise = new Promise((resolve) =>
+            setTimeout(() => resolve(false), MERCH_CARD_LOAD_TIMEOUT),
+        );
+        const success = await Promise.race([successPromise, timeoutPromise]);
+        if (success === true) {
+            performance.mark(`${MARK_MERCH_CARD_PREFIX}${this.id}${MARK_READY_SUFFIX}`);
+            this.dispatchEvent(
+                new CustomEvent(EVENT_MAS_READY, {
+                    bubbles: true,
+                    composed: true,
+                }),
+            );
+            return;
+        }
+        this.#fail('Contains unresolved offers');
+    }
 
     get aemFragment() {
         return this.querySelector('aem-fragment');
