@@ -1233,6 +1233,10 @@ export async function loadDeferred(area, blocks, config) {
     import('../features/personalization/preview.js')
       .then(({ default: decoratePreviewMode }) => decoratePreviewMode());
   }
+  if (config.mep.targetEnabled) {
+    import('../features/personalization/personalization.js')
+      .then(({ updateCacheMEPXLG }) => updateCacheMEPXLG(config));
+  }
   if (config?.dynamicNavKey && config?.env?.name !== 'prod') {
     const { miloLibs } = config;
     loadStyle(`${miloLibs}/features/dynamic-navigation/status.css`);
