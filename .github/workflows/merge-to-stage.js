@@ -52,7 +52,12 @@ let body = `
 const isHighPrio = (labels) => labels.includes(LABELS.highPriority);
 const isZeroImpact = (labels) => labels.includes(LABELS.zeroImpact);
 
-const hasFailingChecks = (checks) => checks.some(({ conclusion, name }) => name !== 'merge-to-stage' && conclusion !== 'success');
+const hasFailingChecks = (checks) =>
+  checks.some(
+    ({ conclusion, name }) =>
+      name !== 'merge-to-stage' &&
+      (conclusion === 'in_progress' || conclusion === 'failure')
+  );
 
 const commentOnPR = async (comment, prNumber) => {
   console.log(comment); // Logs for debugging the action.
