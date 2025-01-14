@@ -438,13 +438,15 @@ export const [addAriaHiddenAlly, removeAriaHiddenAlly] = (() => {
       if (!targets || targets.length === 0) return;
 
       // Get all elements in the document
-      const allElements = document.querySelectorAll('header *, main, footer');
+      const allElements = document.querySelectorAll('header *, .feds-localnav, main, footer');
 
       // Create a Set to store elements to exclude
       const excludeElements = new Set();
 
       // Process each target element
       targets.forEach((target) => {
+        if (!target) return; // Skip invalid targets
+
         // Add the target and its parents to the exclusion set
         let currentElement = target;
         while (currentElement) {
@@ -479,6 +481,7 @@ export const [addAriaHiddenAlly, removeAriaHiddenAlly] = (() => {
       });
     },
     () => {
+      // Remove all Added aria-hidden attributes
       modifiedElements.forEach((element) => {
         element.removeAttribute('aria-hidden');
       });
@@ -566,7 +569,8 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
     const triggerButton = e.target.closest(selectors.activeDropdown).querySelector('button');
     const trigger = document.querySelector(selectors.mainNavToggle);
     const expandedMenu = document.querySelector('.feds-nav-wrapper--expanded');
-    addAriaHiddenAlly([trigger, expandedMenu]);
+    const asidePromobar = document.querySelector('.feds-promo-aside-wrapper');
+    addAriaHiddenAlly([trigger, expandedMenu, asidePromobar]);
     triggerButton.focus();
     closeAllDropdowns();
   });

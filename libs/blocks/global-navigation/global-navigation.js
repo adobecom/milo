@@ -829,10 +829,9 @@ class Gnav {
     toggle?.setAttribute('aria-expanded', !isExpanded);
     document.body.classList.toggle('disable-scroll', !isExpanded);
     this.elements.navWrapper?.classList?.toggle('feds-nav-wrapper--expanded', !isExpanded);
-    if (!isExpanded) {
-      addAriaHiddenAlly([toggle, this.elements.navWrapper]);
-    } else {
-      removeAriaHiddenAlly();
+    if (this.newMobileNav) {
+      const action = isExpanded ? removeAriaHiddenAlly : () => addAriaHiddenAlly([toggle, this.elements.navWrapper, this.elements.aside]);
+      action();
     }
     closeAllDropdowns();
     setCurtainState(!isExpanded);
