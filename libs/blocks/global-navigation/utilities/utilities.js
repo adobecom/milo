@@ -337,7 +337,7 @@ export function trigger({ element, event, type } = {}) {
   closeAllDropdowns({ type });
   if (isOpen) return false;
   element.setAttribute('aria-expanded', 'true');
-  if (!isDesktop.matches) disableMobileScroll();
+  if (!isDesktop.matches && type !== 'localNav-curtain') disableMobileScroll();
   return true;
 }
 
