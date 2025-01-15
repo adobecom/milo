@@ -2,12 +2,15 @@ import { createTag } from '../../../utils/utils.js';
 import { getMetadata, getDelayTime } from './section-metadata.js';
 
 function handleTopHeight(section) {
-  let headerHeight = document.querySelector('header').offsetHeight;
-  const localNav = document.querySelector('.feds-localnav');
-  if (localNav) {
-    headerHeight = localNav.offsetHeight;
-  }
-  section.style.top = `${headerHeight}px`;
+  const headerHeight = document.querySelector('header')?.offsetHeight || 0;
+  const localNavHeight = document.querySelector('.feds-localnav')?.offsetHeight || 0;
+  const fedsPromoHeight = document.querySelector('.feds-promo-wrapper')?.offsetHeight || 0;
+
+  const topHeight = fedsPromoHeight
+    ? localNavHeight || headerHeight + fedsPromoHeight
+    : localNavHeight || headerHeight;
+
+  section.style.top = `${topHeight}px`;
 }
 
 function promoIntersectObserve(el, stickySectionEl, options = {}) {
