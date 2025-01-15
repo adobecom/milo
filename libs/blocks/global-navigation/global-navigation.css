@@ -894,6 +894,7 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup {
     "title title"
     "tabs tab-panel"
     "cta cta";
+  box-sizing: content-box; /* Some DC pages use non default box-sizing  globally */
 }
 
 .feds-promo-aside-wrapper + header.new-nav .feds-nav > section.feds-navItem > .feds-popup {
