@@ -254,10 +254,12 @@ describe('isPromotionActive', () => {
     const validPromotion = {
         start: '2024-01-01T00:00:00.000Z',
         end: '2024-12-31T23:59:59.999Z',
-        outcomeType: 'PERCENTAGE_DISCOUNT',
-        duration: 'P6M',
-        amount: 25,
-        minProductQuantity: 1,
+        displaySummary: {
+            outcomeType: 'PERCENTAGE_DISCOUNT',
+            duration: 'P6M',
+            amount: 25,
+            minProductQuantity: 1,
+        },
     };
     it('promotion is active when date is within promotion period', () => {
         expect(
@@ -323,7 +325,7 @@ describe('formatAnnualPrice', () => {
         },
     };
 
-    it.only('should format annual price when promotion details are provided', () => {
+    it('should format annual price when promotion details are provided', () => {
         expect(
             formatAnnualPrice({
                 formatString: "'A$'#,##0.00",
@@ -349,7 +351,10 @@ describe('formatAnnualPrice', () => {
                 term: Term.MONTHLY,
                 promotion: {
                     ...promotion,
-                    minProductQuantity: 2,
+                    displaySummary: {
+                        ...promotion.displaySummary,
+                        minProductQuantity: 2,
+                    },
                 },
             }).accessiblePrice,
         ).to.equal('A$371.88');

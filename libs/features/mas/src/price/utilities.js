@@ -32,7 +32,12 @@ const isPromotionActive = (promotion, instant) => {
     const {
         start,
         end,
-        displaySummary: { amount, duration, minProductQuantity, outcomeType } = {},
+        displaySummary: {
+            amount,
+            duration,
+            minProductQuantity,
+            outcomeType,
+        } = {},
     } = promotion;
     if (!(amount && duration && outcomeType && minProductQuantity)) {
         return false;
@@ -326,7 +331,7 @@ const formatAnnualPrice = (data) => {
             return formatPrice(data, RecurrenceTerm.YEAR, getAnnualPrice);
         }
         const {
-            displaySummary: { outcomeType, duration, minProductQuantity } = {},
+            displaySummary: { outcomeType, duration, minProductQuantity = 1 } = {},
         } = promotion;
         switch (outcomeType) {
             case 'PERCENTAGE_DISCOUNT': {
@@ -348,7 +353,7 @@ const formatAnnualPrice = (data) => {
                         Math.floor((discountPrice + regularPrice) * 100) / 100;
                     return formatPrice(
                         { ...data, price: totalPrice },
-                        recurrenceTerms[commitment]?.[term],
+                        RecurrenceTerm.YEAR,
                     );
                 }
             }
