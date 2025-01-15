@@ -725,13 +725,11 @@ header.global-navigation + .feds-localnav {
   height: var(--feds-localnav-height);
 }
 
-header.global-navigation.has-promo {
-  height: var(--global-height-navPromo);
-  top: var(--global-height-navPromo);
-}
-
-header.global-navigation.has-promo:has(+ .feds-localnav) {
+.feds-promo-aside-wrapper {
+  position: sticky;
   top: 0;
+  z-index: 11;
+  height: var(--global-height-navPromo);
 }
 
 .feds-sr-only {
@@ -749,6 +747,10 @@ header.global-navigation.has-promo:has(+ .feds-localnav) {
 @media (min-width: 900px) {
   header.global-navigation.has-breadcrumbs {
     padding-bottom: var(--global-height-breadcrumbs);
+  }
+
+  header.global-navigation.has-promo {
+    top: var(--global-height-navPromo);
   }
 
   header.global-navigation + .feds-localnav {
