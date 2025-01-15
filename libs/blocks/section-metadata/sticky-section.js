@@ -2,14 +2,16 @@ import { createTag } from '../../utils/utils.js';
 import { getMetadata, getDelayTime } from './section-metadata.js';
 
 function handleTopHeight(section) {
-  const headerHeight = document.querySelector('header')?.offsetHeight || 0;
-  const localNavHeight = document.querySelector('.feds-localnav')?.offsetHeight || 0;
-  const fedsPromoHeight = document.querySelector('.feds-promo-wrapper')?.offsetHeight || 0;
-
-  const topHeight = fedsPromoHeight
-    ? localNavHeight || headerHeight + fedsPromoHeight
-    : localNavHeight || headerHeight;
-
+  let topHeight = document.querySelector('header').offsetHeight;
+  const localNav = document.querySelector('.feds-localnav');
+  const fedsPromo = document.querySelector('.feds-promo-wrapper');
+  if (localNav) {
+    topHeight = localNav.offsetHeight;
+  }
+  if (fedsPromo ) {
+    topHeight += fedsPromo.offsetHeight;
+  }
+  
   section.style.top = `${topHeight}px`;
 }
 
