@@ -51,7 +51,10 @@ export default function processQL(a) {
   function waitForConsent() {
     return new Promise((resolve) => {
       const fallbackTimeout = setTimeout(() => resolve(false), 30000);
-      if (window.adobePrivacy) resolve(getConsentStatus());
+      if (window.adobePrivacy) {
+        clearTimeout(fallbackTimeout);
+        resolve(getConsentStatus());
+      }
       window.addEventListener('adobePrivacy:PrivacyConsent', () => {
         clearTimeout(fallbackTimeout);
         resolve(true);
