@@ -725,6 +725,13 @@ header.global-navigation + .feds-localnav {
   height: var(--feds-localnav-height);
 }
 
+.feds-promo-aside-wrapper {
+  position: sticky;
+  top: 0;
+  z-index: 11;
+  height: var(--global-height-navPromo);
+}
+
 .feds-sr-only {
   position: absolute;
   width: 1px;
