@@ -131,6 +131,10 @@ video {
   height: fit-content;
 }
 
+:is(.media .background, .hero-marquee.asset-left .foreground-media) .video-container {
+  width: 100%;
+}
+
 @media (min-width: 600px) {
   .media:not(.media-reverse-mobile, .media-reversed) .video-container .pause-play-wrapper,
   :is(.marquee.row-reversed .asset, .marquee-anchors, .hero-marquee.asset-left) .video-container .pause-play-wrapper,
