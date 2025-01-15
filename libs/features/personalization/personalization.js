@@ -392,6 +392,7 @@ function modifySelectorTerm(termParam) {
     'any-marquee': '[class*="marquee"]',
     'any-header': ':is(h1, h2, h3, h4, h5, h6)',
   };
+  const containerSelectors = ['marquee-container'];
   const otherSelectors = ['row', 'col'];
   const htmlEls = [
     'html', 'body', 'header', 'footer', 'main',
@@ -412,6 +413,10 @@ function modifySelectorTerm(termParam) {
   if (Object.keys(specificSelectors).includes(startTextPart1)) {
     term = term.replace(startTextPart1, specificSelectors[startTextPart1]);
     term = updateEndNumber(endNumber, term);
+    return term;
+  }
+  if (containerSelectors.includes(startText)) {
+    term = `main > div:nth-child(${endNumber || 'n'} of main > div:has([class*="${startText}"])`;
     return term;
   }
 
