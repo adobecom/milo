@@ -323,8 +323,8 @@ function subscribeToSearchCriteriaChanges() {
     const searchCriteria = JSON.stringify(el?.detail || {});
     if (cachedSearchCriteria !== searchCriteria) {
       createPageList(document.querySelector('.mmm').parentNode, el.detail);
+      cachedSearchCriteria = searchCriteria;
     }
-    cachedSearchCriteria = searchCriteria;
   });
 }
 
