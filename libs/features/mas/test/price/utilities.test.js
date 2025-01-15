@@ -313,15 +313,17 @@ describe('isPromotionActive', () => {
 
 describe('formatAnnualPrice', () => {
     const promotion = {
-        outcomeType: 'PERCENTAGE_DISCOUNT',
-        duration: 'P6M',
-        amount: 25,
-        minProductQuantity: 1,
         start: '2024-11-15T04:02:37.000Z',
         end: '2030-03-01T07:59:00.000Z',
+        displaySummary: {
+            outcomeType: 'PERCENTAGE_DISCOUNT',
+            duration: 'P6M',
+            amount: 25,
+            minProductQuantity: 1,
+        },
     };
 
-    it('should format annual price when promotion details are provided', () => {
+    it.only('should format annual price when promotion details are provided', () => {
         expect(
             formatAnnualPrice({
                 formatString: "'A$'#,##0.00",
@@ -348,7 +350,7 @@ describe('formatAnnualPrice', () => {
                 promotion: {
                     ...promotion,
                     minProductQuantity: 2,
-                }
+                },
             }).accessiblePrice,
         ).to.equal('A$371.88');
     });

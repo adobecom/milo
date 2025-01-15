@@ -18,22 +18,26 @@ const getAnnualPrice = (price) => price * 12;
  * Checks if a promotion is currently active.
  *
  * @param {Object} promotion - The promotion object.
- * @param {number} promotion.amount - The amount of the promotion. (e.g: in percentage)
- * @param {number} promotion.duration - The duration of the promotion.
- * @param {number} promotion.minProductQuantity - The minimum product quantity required for the promotion.
- * @param {string} promotion.outcomeType - The type of outcome for the promotion.
  * @param {string} promotion.start - The start date of the promotion in ISO format.
  * @param {string} promotion.end - The end date of the promotion in ISO format.
- * @param {string} [instant] - An optional date to check the promotion against. Defaults to the current date if not provided.
- * @returns {boolean} - Returns true if the promotion is active, otherwise false.
+ * @param {Object} promotion.displaySummary - The display summary of the promotion.
+ * @param {number} promotion.displaySummary.amount - The amount of the promotion, (e.g: in percentage).
+ * @param {number} promotion.displaySummary.duration - The duration of the promotion.
+ * @param {number} promotion.displaySummary.minProductQuantity - The minimum product quantity for the promotion.
+ * @param {string} promotion.displaySummary.outcomeType - The outcome type of the promotion.
+ * @param {string} [instant] - An optional date string to use as the current date. If not provided, the current date is used.
+ * @returns {boolean} - Returns true if the promotion is active, false otherwise.
  */
 const isPromotionActive = (promotion, instant) => {
-    const { amount, duration, minProductQuantity, outcomeType } = promotion;
+    const {
+        start,
+        end,
+        displaySummary: { amount, duration, minProductQuantity, outcomeType } = {},
+    } = promotion;
     if (!(amount && duration && outcomeType && minProductQuantity)) {
         return false;
     }
     const now = instant ? new Date(instant) : new Date();
-    const { start, end } = promotion;
     if (!start || !end) {
         return false;
     }
@@ -321,7 +325,9 @@ const formatAnnualPrice = (data) => {
         if (!promotion) {
             return formatPrice(data, RecurrenceTerm.YEAR, getAnnualPrice);
         }
-        const { outcomeType, duration, minProductQuantity } = promotion;
+        const {
+            displaySummary: { outcomeType, duration, minProductQuantity } = {},
+        } = promotion;
         switch (outcomeType) {
             case 'PERCENTAGE_DISCOUNT': {
                 if (

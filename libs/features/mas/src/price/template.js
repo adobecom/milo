@@ -235,7 +235,7 @@ const createPriceTemplate =
             isIndianPrice: country === 'IN',
             originalPrice: price,
             priceWithoutDiscount,
-            price: (displayOptical ? price : displayPrice),
+            price: displayOptical ? price : displayPrice,
             promotion,
             quantity,
             term,
