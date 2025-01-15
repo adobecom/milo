@@ -8,10 +8,10 @@ function handleTopHeight(section) {
   if (localNav) {
     topHeight = localNav.offsetHeight;
   }
-  if (fedsPromo ) {
+  if (fedsPromo) {
     topHeight += fedsPromo.offsetHeight;
   }
-  
+
   section.style.top = `${topHeight}px`;
 }
 
