@@ -15,10 +15,17 @@ const NBSP = '&nbsp;';
 const getAnnualPrice = (price) => price * 12;
 
 /**
- * Checks if a promotion is active based on its start and end dates
- * @param {{ start: string, end: string }} promotion The promotion with start and end dates
- * @param {string} [instant] Optional instant date string to check against
- * @returns {boolean} Whether the promotion is active
+ * Checks if a promotion is currently active.
+ *
+ * @param {Object} promotion - The promotion object.
+ * @param {number} promotion.amount - The amount of the promotion. (e.g: in percentage)
+ * @param {number} promotion.duration - The duration of the promotion.
+ * @param {number} promotion.minProductQuantity - The minimum product quantity required for the promotion.
+ * @param {string} promotion.outcomeType - The type of outcome for the promotion.
+ * @param {string} promotion.start - The start date of the promotion in ISO format.
+ * @param {string} promotion.end - The end date of the promotion in ISO format.
+ * @param {string} [instant] - An optional date to check the promotion against. Defaults to the current date if not provided.
+ * @returns {boolean} - Returns true if the promotion is active, otherwise false.
  */
 const isPromotionActive = (promotion, instant) => {
     const { amount, duration, minProductQuantity, outcomeType } = promotion;
