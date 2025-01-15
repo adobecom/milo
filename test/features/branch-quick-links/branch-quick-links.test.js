@@ -9,8 +9,8 @@ describe('branch quick links', () => {
       hasUserProvidedConsent: () => true,
       activeCookieGroups: () => ['C0002', 'C0004'],
     };
-    document.head.innerHTML = await readFile({ path: './mocks/head.html' });
-    document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+    document.head.innerHTML = await readFile({ path: '../../../test/utils/mocks/head.html' });
+    document.body.innerHTML = await readFile({ path: '../../../test/utils/mocks/body.html' });
   });
 
   afterEach(() => {
