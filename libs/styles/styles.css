@@ -743,7 +743,7 @@ header.global-navigation + .feds-localnav {
   }
 
   header.global-navigation.has-promo {
-    top: calc(var(--global-height-navPromo))
+    top: var(--global-height-navPromo);
   }
 
   header.global-navigation + .feds-localnav {
