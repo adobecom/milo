@@ -2,7 +2,11 @@ import { createTag } from '../../../utils/utils.js';
 import { getMetadata, getDelayTime } from './section-metadata.js';
 
 function handleTopHeight(section) {
-  const headerHeight = document.querySelector('header').offsetHeight;
+  let headerHeight = document.querySelector('header').offsetHeight;
+  const localNav = document.querySelector('.feds-localnav');
+  if (localNav) {
+    headerHeight = localNav.offsetHeight;
+  }
   section.style.top = `${headerHeight}px`;
 }
 
