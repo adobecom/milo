@@ -974,11 +974,13 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .title {
   flex-direction: column;
   border-bottom: 1px solid var(--feds-borderColor-link-v2);
   padding: 0 20px;
+  box-sizing: inherit;
 }
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .title .breadcrumbs {
   display: block; /* even if the actual breadcrumbs are display none, we need the space to visible for the mobile gnav */
   height: 23px;
   padding-top: 12px;
+  box-sizing: inherit;
 }
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .title h7 {
   height: 25px;
@@ -986,6 +988,7 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .title h7 {
   font-weight: 700;
   line-height: 25px;
   padding: 8px 0 24px;
+  box-sizing: inherit;
 }
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tabs {
