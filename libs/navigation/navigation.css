@@ -52,6 +52,13 @@ header.global-navigation + .feds-localnav {
   height: var(--feds-localnav-height);
 }
 
+.feds-promo-aside-wrapper {
+  position: sticky;
+  top: 0;
+  z-index: 11;
+  height: var(--global-height-navpromo);
+}
+
 @media (min-width: 900px) {
   .feds-promo-link {
     color: var(--navigation-link-color);
