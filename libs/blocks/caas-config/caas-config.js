@@ -966,12 +966,14 @@ const getPanels = (tagsData) => [
 ];
 
 /* c8 ignore next 15 */
-const addIdOverlays = () => {
+export const addIdOverlays = () => {
   document.querySelectorAll('.consonant-Card').forEach((card) => {
     if (!card.querySelector('.cardid')) {
       const idBtn = document.createElement('button');
       idBtn.classList.add('cardid');
       idBtn.innerText = card.id;
+
+      idBtn.title = 'Click to copy this ID';
 
       idBtn.addEventListener('click', (e) => {
         const id = e.target.textContent;

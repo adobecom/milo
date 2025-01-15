@@ -201,8 +201,10 @@ describe('replace action with html/text instead of fragment', () => {
     expect(primaryCTA.href).to.not.equal('updated text');
     expect(secondaryCTA.innerText).to.not.equal('updated text');
     expect(actionArea.innerHTML).to.not.equal('<p>updated text</p>');
+    config.placeholders = { 'marquee-href': 'https://test.com/updated_href' };
 
     await init(mepSettings);
+    config.placeholders = null;
 
     expect(header.innerText).to.equal('updated text');
     expect(primaryCTA.innerText).to.equal('updated text');
@@ -344,10 +346,10 @@ describe('custom actions', async () => {
             pageFilter: '',
             selectorType: 'in-block:',
           },
-          'https://main--federal--adobecom.hlx.page/federal/fragments/new-sub-menu': {
+          'https://main--federal--adobecom.aem.page/federal/fragments/new-sub-menu': {
             action: 'replace',
             pageFilter: '',
-            content: 'https://main--federal--adobecom.hlx.page/federal/fragments/even-more-new-sub-menu',
+            content: 'https://main--federal--adobecom.aem.page/federal/fragments/even-more-new-sub-menu',
             selectorType: 'in-block:',
             manifestId: false,
             targetManifestId: false,

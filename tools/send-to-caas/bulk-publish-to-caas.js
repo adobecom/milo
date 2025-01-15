@@ -117,6 +117,7 @@ const processData = async (data, accessToken) => {
   let domain = `https://${host}`;
 
   if (usePreview || publishToFloodgate !== 'default') {
+    // TODO ADD HLX5 SUPPORT
     domain = `https://main--${repo}--${owner}.hlx.live`;
   }
 

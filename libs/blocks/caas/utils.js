@@ -539,6 +539,22 @@ const getCardsString = async (cards = []) => {
   return uuids.filter(Boolean).join('%2C');
 };
 
+export const stageMapToCaasTransforms = (config) => {
+  if (config.env?.name === 'prod' || !config.stageDomainsMap) return {};
+  const { href, hostname } = window.location;
+  const matchedRules = Object.entries(config.stageDomainsMap)
+    .find(([domain]) => new RegExp(domain).test(href));
+  if (!matchedRules) return {};
+  const [, domainsMap] = matchedRules;
+  return {
+    enabled: true,
+    hostnameTransforms: Object.keys(domainsMap).map((d) => ({
+      from: d,
+      to: domainsMap[d] === 'origin' ? `${d.includes('https') ? 'https://' : ''}${hostname}` : domainsMap[d],
+    })),
+  };
+};
+
 export const getConfig = async (originalState, strs = {}) => {
   const state = addMissingStateProps(originalState);
   const originSelection = Array.isArray(state.source) ? state.source.join(',') : state.source;
@@ -571,15 +587,24 @@ export const getConfig = async (originalState, strs = {}) => {
       },
       button: { style: state.collectionBtnStyle },
       resultsPerPage: state.resultsPerPage,
-      endpoint: `https://${
-        state.endpoint
-      }${targetActivity}?originSelection=${originSelection}&contentTypeTags=${state.contentTypeTags.join(
-        ',',
-      )}&secondSource=${state.showSecondarySource ? state.secondarySource.join(',') : []}&secondaryTags=${state.showSecondarySource ? state.secondaryTags.join(
-        ',',
-      ) : []}&collectionTags=${collectionTags}&excludeContentWithTags=${excludeContentWithTags}&language=${language}&country=${country}&complexQuery=${complexQuery}&excludeIds=${excludedCards}&currentEntityId=&featuredCards=${featuredCards}&environment=&draft=${
-        state.draftDb
-      }&size=${state.collectionSize || state.totalCardsToShow}${localesQueryParam}${debug}${flatFile}`,
+      endpoint: `https://${state.endpoint
+      }${targetActivity
+      }?originSelection=${originSelection
+      }&contentTypeTags=${state.contentTypeTags.join().toLowerCase()
+      }&secondSource=${state.showSecondarySource ? state.secondarySource.join(',') : []
+      }&secondaryTags=${state.showSecondarySource ? state.secondaryTags.join(',').toLowerCase() : []
+      }&collectionTags=${collectionTags.toLowerCase()
+      }&excludeContentWithTags=${excludeContentWithTags.toLowerCase()
+      }&language=${language
+      }&country=${country
+      }&complexQuery=${complexQuery
+      }&excludeIds=${excludedCards
+      }&currentEntityId=&featuredCards=${featuredCards
+      }&environment=&draft=${state.draftDb
+      }&size=${state.collectionSize || state.totalCardsToShow
+      }${localesQueryParam
+      }${debug
+      }${flatFile}`,
       fallbackEndpoint: state.fallbackEndpoint,
       totalCardsToShow: state.totalCardsToShow,
       showCardBadges: state.showCardBadges,
@@ -742,7 +767,7 @@ export const getConfig = async (originalState, strs = {}) => {
       lastViewedSession: state.lastViewedSession || '',
     },
     customCard: ['card', `return \`${state.customCard}\``],
-    linkTransformer: pageConfig.caasLinkTransformer || {},
+    linkTransformer: pageConfig.caasLinkTransformer || stageMapToCaasTransforms(pageConfig),
     headers: caasRequestHeaders,
   };
 

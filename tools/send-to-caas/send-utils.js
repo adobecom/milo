@@ -196,7 +196,7 @@ export const getOrigin = (fgColor) => {
     return originLC;
   }
 
-  if (window.location.hostname.endsWith('.hlx.page')) {
+  if (window.location.hostname.endsWith('.page')) {
     const [, singlePageRepo] = window.location.hostname.split('.')[0].split('--');
     return processRepoForFloodgate(singlePageRepo, fgColor);
   }
@@ -275,7 +275,7 @@ const getBadges = (p) => {
 const isPagePublished = async () => {
   let { branch, repo, owner } = getConfig();
   if (!(branch || repo || owner)
-    && window.location.hostname.endsWith('.hlx.page')) {
+    && window.location.hostname.endsWith('.page')) {
     [branch, repo, owner] = window.location.hostname.split('.')[0].split('--');
   }
 
@@ -306,7 +306,8 @@ const getBulkPublishLangAttr = async (options) => {
 };
 
 const getCountryAndLang = async (options) => {
-  const langStr = window.location.pathname === '/tools/send-to-caas/bulkpublisher.html'
+  /* c8 ignore next */
+  const langStr = window.location.pathname.includes('/tools/send-to-caas/bulkpublisher')
     ? await getBulkPublishLangAttr(options)
     : (LOCALES[window.location.pathname.split('/')[1]] || LOCALES['']).ietf;
   const langAttr = langStr?.toLowerCase().split('-') || [];

@@ -1,4 +1,4 @@
-import { createTag } from '../../utils/utils.js';
+import { createTag, SLD } from '../../utils/utils.js';
 
 const LIBRARY_PATH = '/docs/library/library.json';
 
@@ -129,7 +129,7 @@ async function getSuppliedLibrary() {
   const owner = searchParams.get('owner');
   const library = searchParams.get('library');
   if (!repo || !owner) return null;
-  return fetchLibrary(`https://main--${repo}--${owner}.hlx.live`, library);
+  return fetchLibrary(`https://main--${repo}--${owner}.${SLD}.live`, library);
 }
 
 async function fetchAssetsData(path) {

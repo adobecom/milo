@@ -127,7 +127,8 @@ async function checkBody() {
 async function checkLorem() {
   const result = { ...loremResult.value };
   const { innerHTML } = document.documentElement;
-  if (innerHTML.includes('Lorem ipsum')) {
+  const htmlWithoutPreflight = innerHTML.replace(document.getElementById('preflight')?.outerHTML, '');
+  if (htmlWithoutPreflight.includes('Lorem ipsum')) {
     result.icon = fail;
     result.description = 'Reason: Lorem ipsum is used on the page.';
   } else {
@@ -227,6 +228,7 @@ async function checkLinks() {
         && !knownBadUrls.some((url) => url === link.hostname) // Is not a known bad url
       ) {
         link.liveHref = link.href.replace('hlx.page', 'hlx.live');
+        link.liveHref = link.href.replace('aem.page', 'aem.live');
         return true;
       }
       return false;
@@ -278,7 +280,7 @@ export async function sendResults() {
   };
 
   await fetch(
-    'https://main--milo--adobecom.hlx.page/seo/preflight',
+    'https://main--milo--adobecom.aem.page/seo/preflight',
     {
       method: 'POST',
       credentials: 'same-origin',
@@ -313,15 +315,19 @@ async function getResults() {
   const icons = [h1, title, canon, desc, body, lorem, links];
 
   const red = icons.find((icon) => icon === 'red');
-  if (red) {
-    const sk = document.querySelector('aem-sidekick, helix-sidekick');
-    if (sk) {
-      const publishBtn = sk.shadowRoot.querySelector('div.publish.plugin button');
-      publishBtn.addEventListener('click', () => {
-        sendResults();
-      });
-    }
-  }
+  if (!red) return;
+
+  const aemSk = document.querySelector('aem-sidekick');
+  const hlxSk = document.querySelector('helix-sidekick');
+  if (!aemSk && !hlxSk) return;
+
+  const publishBtn = aemSk
+    ? aemSk.shadowRoot.querySelector('plugin-action-bar').shadowRoot.querySelector('sk-action-button.publish')
+    : hlxSk.shadowRoot.querySelector('div.publish.plugin button');
+
+  publishBtn.addEventListener('click', () => {
+    sendResults();
+  });
 }
 
 export default function Panel() {

@@ -11,6 +11,7 @@ import {
   unavLocalesTestData,
   analyticsTestData,
   unavVersion,
+  addMetaDataV2,
 } from './test-utilities.js';
 import { setConfig, getLocale } from '../../../libs/utils/utils.js';
 import initNav, { getUniversalNavLocale, osMap } from '../../../libs/blocks/global-navigation/global-navigation.js';
@@ -20,7 +21,9 @@ import longNav from './mocks/global-navigation-long.plain.js';
 import darkNav from './mocks/dark-global-navigation.plain.js';
 import navigationWithCustomLinks from './mocks/navigation-with-custom-links.plain.js';
 import globalNavigationMock from './mocks/global-navigation.plain.js';
+import gnavWithlocalNav from './mocks/gnav-with-localnav.plain.js';
 import noDropdownNav from './mocks/global-navigation-no-dropdown.plain.js';
+import productEntryCTA from './mocks/global-navigation-product-entry-cta.plain.js';
 import { getConfig } from '../../../tools/send-to-caas/send-utils.js';
 
 // TODO
@@ -292,8 +295,8 @@ describe('global navigation', () => {
 
   describe('Viewport changes', () => {
     it('should render desktop -> small desktop -> mobile', async () => {
+      document.head.appendChild(addMetaDataV2('off'));
       const nav = await createFullGlobalNavigation();
-
       expect(nav).to.exist;
       expect(isElementVisible(document.querySelector(selectors.globalNav))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.search))).to.equal(true);
@@ -322,7 +325,6 @@ describe('global navigation', () => {
 
       await setViewport(viewports.mobile);
       isDesktop.dispatchEvent(new Event('change'));
-
       expect(isElementVisible(document.querySelector(selectors.globalNav))).to.equal(true);
       expect(isElementVisible(document.querySelector(selectors.search))).to.equal(false);
       expect(isElementVisible(document.querySelector(selectors.profile))).to.equal(true);
@@ -546,7 +548,7 @@ describe('global navigation', () => {
       document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
       await initGnav(document.body.querySelector('header'));
       expect(
-        fetchStub.calledOnceWith('https://main--federal--adobecom.hlx.page/federal/path/to/gnav.plain.html'),
+        fetchStub.calledOnceWith('https://main--federal--adobecom.aem.page/federal/path/to/gnav.plain.html'),
       ).to.be.true;
     });
 
@@ -556,7 +558,7 @@ describe('global navigation', () => {
       document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
       await initGnav(document.body.querySelector('header'));
       expect(
-        fetchStub.calledOnceWith('https://main--federal--adobecom.hlx.page/federal/path/to/gnav.plain.html'),
+        fetchStub.calledOnceWith('https://main--federal--adobecom.aem.page/federal/path/to/gnav.plain.html'),
       ).to.be.true;
     });
 
@@ -665,6 +667,22 @@ describe('global navigation', () => {
     });
   });
 
+  describe('Product Entry CTA feature in global navigation', () => {
+    it('should not append the feds-product-entry-cta class when product entry cta is disabled', async () => {
+      document.head.innerHTML = '<meta name="product-entry-cta" content="off"/>';
+      const gnav = await createFullGlobalNavigation({ globalNavigation: productEntryCTA });
+      gnav.decorateProductEntryCTA();
+      expect(document.querySelector(selectors.topNav).querySelector('.feds-cta-wrapper.feds-product-entry-cta')).to.not.exist;
+    });
+
+    it('should append the feds-product-entry-cta class when product entry cta is enabled', async () => {
+      document.head.innerHTML = '<meta name="product-entry-cta" content="on" />';
+      const gnav = await createFullGlobalNavigation({ globalNavigation: productEntryCTA });
+      gnav.decorateProductEntryCTA();
+      expect(document.querySelector(selectors.topNav).querySelector('.feds-cta-wrapper.feds-product-entry-cta')).to.exist;
+    });
+  });
+
   describe('Custom Links for mobile hamburger menu', () => {
     it('Add custom links through Link Group block in parallel to large menu\'s', async () => {
       const customLinks = 'home,apps,learn';
@@ -676,6 +694,95 @@ describe('global navigation', () => {
       expect(
         document.querySelectorAll(selectors.customMobileLink).length,
       ).to.equal(customLinks.split(',').length);
+    });
+  });
+
+  describe('local nav scenarios', () => {
+    let clock;
+
+    beforeEach(async () => {
+      clock = sinon.useFakeTimers({
+        toFake: ['setTimeout'],
+        shouldAdvanceTime: true,
+      });
+    });
+
+    afterEach(() => {
+      clock.restore();
+    });
+
+    it('should load Local Nav', async () => {
+      await createFullGlobalNavigation({ globalNavigation: gnavWithlocalNav });
+      const localNav = document.querySelector(selectors.localNav);
+      expect(!!localNav).to.be.true;
+    });
+
+    it('should open local nav on click of localnav title', async () => {
+      await createFullGlobalNavigation({ globalNavigation: gnavWithlocalNav });
+      const localNavTitle = document.querySelector(selectors.localNavTitle);
+      localNavTitle.click();
+      const localNav = document.querySelector(selectors.localNav);
+      expect(localNav.classList.contains('feds-localnav--active')).to.be.true;
+    });
+
+    it('should remove is-sticky class to localnav on scroll less than localnav placement', async () => {
+      await createFullGlobalNavigation({ globalNavigation: gnavWithlocalNav });
+      const localNav = document.querySelector(selectors.localNav);
+      sinon.stub(localNav, 'getBoundingClientRect').returns({ top: 20 });
+      window.dispatchEvent(new Event('scroll'));
+      const localNavAfterScroll = document.querySelector(selectors.localNav);
+      expect(localNavAfterScroll.classList.contains('is-sticky')).to.be.false;
+    });
+
+    it('should add is-sticky class to localnav on scroll greater than localnav placement', async () => {
+      await createFullGlobalNavigation({ globalNavigation: gnavWithlocalNav });
+      const localNav = document.querySelector(selectors.localNav);
+      sinon.stub(localNav, 'getBoundingClientRect').returns({ top: 0 });
+      window.dispatchEvent(new Event('scroll'));
+      const localNavAfterScroll = document.querySelector(selectors.localNav);
+      expect(localNavAfterScroll.classList.contains('is-sticky')).to.be.true;
+    });
+
+    it('should open both screen if localnav is present but shows only level 2 screen', async () => {
+      await createFullGlobalNavigation({ globalNavigation: gnavWithlocalNav, viewport: 'mobile' });
+      const toggle = document.querySelector(selectors.mainNavToggle);
+      toggle.click();
+      await clock.runAllAsync();
+      const fedsNavWrapper = document.querySelector(selectors.navWrapper);
+      const largemenu = document.querySelector(selectors.largeMenu);
+      expect(fedsNavWrapper.classList.contains('feds-nav-wrapper--expanded')).to.be.true;
+      expect(largemenu.classList.contains('feds-dropdown--active')).to.be.true;
+    });
+
+    it('should expand nested dropdowm if click on headline', async () => {
+      await createFullGlobalNavigation({ globalNavigation: gnavWithlocalNav, viewport: 'mobile' });
+      const localNavTitle = document.querySelector(selectors.localNavTitle);
+      localNavTitle.click();
+      localNavTitle.focus();
+      await sendKeys({ press: 'Tab' });
+      await sendKeys({ press: 'Tab' });
+      document.activeElement.click();
+      expect(document.activeElement.getAttribute('aria-expanded')).to.equal('true');
+      const headline = document.activeElement.parentElement.querySelector('.feds-menu-headline');
+      headline.click();
+      expect(headline.getAttribute('aria-expanded')).to.equal('true');
+    });
+    it('disables scroll for the popup but not for the localnav', async () => {
+      Object.defineProperty(navigator, 'userAgent', { get: () => 'Safari' });
+      await createFullGlobalNavigation({ globalNavigation: gnavWithlocalNav, viewport: 'mobile' });
+      const localNavTitle = document.querySelector(selectors.localNavTitle);
+      localNavTitle.click();
+      const localNav = document.querySelector(selectors.localNav);
+      const curtain = localNav.querySelector('.feds-localnav-curtain');
+      expect(document.body.classList.contains('disable-ios-scroll')).to.equal(false);
+      curtain.click();
+      expect(document.body.classList.contains('disable-ios-scroll')).to.equal(false);
+      const toggle = document.querySelector(selectors.mainNavToggle);
+      toggle.click();
+      expect(document.body.classList.contains('disable-ios-scroll')).to.equal(true);
+      const close = document.querySelector('.close-icon');
+      close.click();
+      expect(document.body.classList.contains('disable-ios-scroll')).to.equal(false);
     });
   });
 });

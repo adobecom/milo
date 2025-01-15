@@ -6,12 +6,13 @@
   /* stylelint-disable-next-line custom-property-pattern */
   --global-height-navPromo: 72px;
   --feds-totalheight-nav: calc(var(--feds-height-nav, --global-height-nav) + var(--feds-height-breadcrumbs, --global-height-breadcrumbs));
+  --feds-localnav-height: 40px;
 
   /* Colors */
-  --link-color: #035fe6;
-  --link-hover-color: #136ff6;
-  --link-color-dark: #1473E6;
-  --link-hover-color-dark: #0d66d0;
+  --link-color: rgb(59, 99, 251);
+  --link-hover-color: rgb(39, 77, 234);
+  --link-color-dark: rgb(59, 99, 251);
+  --link-hover-color-dark: rgb(39, 77, 234);
   --background-color: #fff;
   --overlay-background-color: #ffffff20;
   --highlight-background-color: #ffffff40;
@@ -441,6 +442,10 @@ img {
   height: auto;
 }
 
+blockquote {
+  margin: 0 0 var(--spacing-s) 0;
+}
+
 svg.icon-milo, img.icon-milo {
   height: 1em;
   position: relative;
@@ -711,14 +716,43 @@ header.global-navigation, header.global-navigation.feds--dark {
   visibility: hidden;
 }
 
+header.global-navigation a {
+  text-decoration: unset;
+}
+
+header.global-navigation + .feds-localnav {
+  display: block;
+  height: var(--feds-localnav-height);
+}
+
 header.global-navigation.has-promo {
-  height: auto;
-  min-height: calc(var(--global-height-nav) + var(--global-height-navPromo));
+  height: var(--global-height-navPromo);
+  top: var(--global-height-navPromo);
+}
+
+header.global-navigation.has-promo:has(+ .feds-localnav) {
+  top: 0;
+}
+
+.feds-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 @media (min-width: 900px) {
   header.global-navigation.has-breadcrumbs {
     padding-bottom: var(--global-height-breadcrumbs);
+  }
+
+  header.global-navigation + .feds-localnav {
+    display: none;
   }
 }
 
@@ -784,25 +818,44 @@ a.fragment {
 
 a {
   color: var(--link-color);
-  text-decoration: none;
+  text-decoration: underline;
 }
 
 a:hover {
-  text-decoration: underline;
   color: var(--link-hover-color);
+}
+
+a:has(> sub:only-child) { text-decoration: unset; }
+a > sub:only-child { text-decoration: underline; }
+
+/* Links Quiet */
+a.quiet,
+a.quiet:hover,
+a.quiet:focus,
+a.quiet:active {
+  text-decoration: none;
 }
 
 /* Links Static */
 a.static,
-a.static:hover {
+a.static:hover,
+a.static:focus,
+a.static:active  {
   color: var(--text-color);
-  text-decoration: underline;
 }
 
 .dark a.static,
-.dark a.static:hover {
+.dark a.static:hover,
+.dark a.static:focus,
+.dark a.static:active {
   color: var(--color-white);
-  text-decoration: underline;
+}
+
+:is(h1, h2, h3, h4, h5, h6) a,
+:is(h1, h2, h3, h4, h5, h6) a:hover,
+:is(h1, h2, h3, h4, h5, h6) a:focus,
+:is(h1, h2, h3, h4, h5, h6) a:active {
+  color: currentColor;
 }
 
 /* Buttons */
@@ -812,7 +865,6 @@ a.static:hover {
 
 .static-links a:not([class*="button"]) {
   color: inherit;
-  text-decoration: underline;
 }
 
 .copy-link {
