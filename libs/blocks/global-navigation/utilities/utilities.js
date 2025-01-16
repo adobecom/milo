@@ -378,7 +378,11 @@ export function trigger({
   if (isOpen) return false;
   element.setAttribute('aria-expanded', 'true');
   if (!isDesktop.matches && type === 'dropdown'
+<<<<<<< HEAD
     && !!document.querySelector('header.new-nav')) disableMobileScroll();
+=======
+      && !!document.querySelector('header.new-nav')) disableMobileScroll();
+>>>>>>> c56840dab ([Release] Stage to Main (#3497))
   return true;
 }
 
