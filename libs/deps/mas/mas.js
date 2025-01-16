@@ -1605,7 +1605,8 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
             gap: var(--consonant-merch-spacing-xxs);
             padding: 15px;
             padding-inline-end: 0;
-            width: 154px;
+            height: 154px;
+            box-sizing: border-box;
             min-height: 123px;
             flex-direction: column;
             justify-content: space-between;
