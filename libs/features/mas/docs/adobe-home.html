@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>Adobe Home Gallery</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="spectrum.css">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://p.typekit.net/p.css?s=1&k=hah7vzn&ht=tk&f=7180.7181.7182.7183.22474.22749.22750.22751.22753&a=8634977&app=typekit&e=css">
     <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
@@ -29,13 +28,30 @@
 
       const params = new URLSearchParams(document.location.search);
       function toggleTheme(theme) {
-        document.body.className = 'spectrum spectrum--medium';
-        document.body.classList.add(`spectrum--${theme}`);
-        params.set('theme', theme);
-        history.replaceState(null, '', `${location.pathname}?${params}`);
-      }
+      document.querySelectorAll('sp-theme').forEach(el => el.remove());
+
+      const spTheme = document.createElement('sp-theme');
+      spTheme.setAttribute('theme', 'spectrum');
+      spTheme.setAttribute('color', theme);
+      spTheme.setAttribute('scale', 'medium');
+
+      document.body.appendChild(spTheme);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      toggleTheme('light');
+
+      setTimeout(() => {
+        toggleTheme('darkest');
+      }, 5000);
+    });
     </script>
+
+    <script src="../../../features/spectrum-web-components/dist/shared.js" type="module"></script>
+    <script src="../../../features/spectrum-web-components/dist/button.js" type="module"></script>
+    <script src="../../../features/spectrum-web-components/dist/base.js" type="module"></script>
     <script type="module" src="../dist/mas.js"></script>
+    <script type="module" src="../dist/merch-card.js"></script>
 
     <script type="module">
       // mas-commerce-service
