@@ -1715,7 +1715,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
         font-size: 14px;
         line-height: 18px;
     }
-`;var ce={mnemonics:{size:"s"},title:{tag:"h3",slot:"heading-xxxs"},description:{tag:"div",slot:"body-xxs"},prices:{tag:"p",slot:"price"},ctas:{slot:"cta",size:"S"},allowedColors:["gray"]},y=class extends h{constructor(){super(),this.card.spectrum="swc"}getGlobalCSS(){return Tt}get aemFragmentMapping(){return ce}renderLayout(){return ae`
+`;var ce={mnemonics:{size:"s"},title:{tag:"h3",slot:"heading-xxxs"},description:{tag:"div",slot:"body-xxs"},prices:{tag:"p",slot:"price"},ctas:{slot:"cta",size:"S"},allowedColors:["gray"]},y=class extends h{constructor(e){super(e),this.card.spectrum="swc"}getGlobalCSS(){return Tt}get aemFragmentMapping(){return ce}renderLayout(){return ae`
         <div class="header">
     		    <slot name="icons"></slot>
             <slot name="heading-xxxs"></slot>
