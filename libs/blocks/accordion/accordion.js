@@ -17,11 +17,9 @@ function toggleMedia(con, trig, status) {
     trig.setAttribute('hidden', '');
     trig.setAttribute('aria-expanded', 'false');
     con.setAttribute('hidden', '');
-    con.setAttribute('aria-expanded', 'false');
   } else {
     trig.setAttribute('aria-expanded', 'true');
     trig.removeAttribute('hidden');
-    con.setAttribute('aria-expanded', 'true');
     con.removeAttribute('hidden');
   }
 }
@@ -94,7 +92,6 @@ function createItem(accordion, id, heading, num, edit) {
   const dt = createTag('dt', dtAttrs, dtHtml);
   const dd = createTag('dd', { 'aria-labelledby': triggerId, id: panelId, hidden: true }, panel);
   const dm = createTag('div', { class: 'media-p' });
-
   if (edit) {
     const ogMedia = mediaCollection[id][num - 1];
     const mediaCopy = ogMedia.cloneNode(true);
