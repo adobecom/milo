@@ -14,6 +14,7 @@ const AEM_FRAGMENT_MAPPING = {
 export class AHPricingWidget extends VariantLayout {
 
   constructor() {
+    super();
     this.card.spectrum = 'swc';
   }
   
