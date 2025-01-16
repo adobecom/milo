@@ -218,6 +218,7 @@ const decorateProfileTrigger = async ({ avatar }) => {
 
   const buttonElem = toFragment`
     <button
+      data-cs-mask
       class="feds-profile-button"
       aria-expanded="false"
       aria-controls="feds-profile-menu"
@@ -225,7 +226,7 @@ const decorateProfileTrigger = async ({ avatar }) => {
       daa-ll="Account"
       aria-haspopup="true"
     >
-      <img class="feds-profile-img" src="${avatar}" alt="${profileAvatar}"></img>
+      <img data-cs-mask class="feds-profile-img" src="${avatar}" alt="${profileAvatar}"></img>
     </button>
   `;
 
