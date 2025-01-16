@@ -1314,7 +1314,7 @@ export default async function init(block) {
   });
   if (newMobileNav && !isDesktop.matches) block.classList.add('new-nav');
   await gnav.init();
-  if (gnav.isLocalNav()) block.classList.add('local-nav');
+  if (newMobileNav && gnav.isLocalNav()) block.classList.add('local-nav');
   block.setAttribute('daa-im', 'true');
   const mepMartech = mep?.martech || '';
   block.setAttribute('daa-lh', `gnav|${getExperienceName()}${mepMartech}`);
