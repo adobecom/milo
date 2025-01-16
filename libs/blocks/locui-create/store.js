@@ -22,7 +22,7 @@ export const localeRegion = signal([]);
 export const locSelected = signal(null);
 export const projectType = signal('rollout');
 export const initByParams = signal(null);
-export const env = signal('local');
+export const env = signal('stage');
 
 export function nextStep() {
   currentStep.value += 1;
