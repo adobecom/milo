@@ -73,33 +73,15 @@ const focusPrevProfileItem = ({ e }) => {
 };
 
 class KeyboardNavigation {
-  constructor(newNavWithLnav) {
+  constructor() {
     try {
       this.addEventListeners();
       this.mainNav = new MainNav();
-      if (newNavWithLnav) {
-        this.loadLnavNavigation();
-      }
       this.desktop = window.matchMedia('(min-width: 900px)');
     } catch (e) {
       lanaLog({ message: 'Keyboard Navigation failed to load', e, tags: 'errorType=error,module=gnav-keyboard' });
     }
   }
-
-  loadLnavNavigation = async () => {
-    if (!this.localNav) {
-      this.localNav = (async () => {
-        try {
-          const { default: LnavNavigation } = await import('./localNav.js');
-          return new LnavNavigation();
-        } catch (e) {
-          lanaLog({ message: 'Keyboard Navigation failed to load for LNAV', e, tags: 'errorType=info,module=gnav-keyboard' });
-          return null;
-        }
-      })();
-    }
-    return this.localNav;
-  };
 
   addEventListeners = () => {
     [...document.querySelectorAll(`${selectors.globalNav}, ${selectors.globalFooter}`)]
@@ -107,25 +89,15 @@ class KeyboardNavigation {
         el.addEventListener('keydown', (e) => logErrorFor(() => {
           switch (e.code) {
             case 'Tab': {
-              const isNewNav = !!document.querySelector('header.new-nav');
-              const isOpen = document
-                .querySelector(selectors.navWrapper)
-                .classList.contains(selectors.navWrapperExpanded.slice(1));
-              if (isNewNav && isOpen) {
-                if (e.target.classList.contains(selectors.mainNavToggle.slice(1))) {
-                  e.preventDefault();
-                  document.querySelector(`${selectors.mainMenuItems}, ${selectors.mainMenuLinks}`).focus();
-                }
-              } else {
-                cycleOnOpenSearch({ e, isDesktop: this.desktop.matches });
-                const { items } = getProfileItems({ e });
-                const profileBtn = e.target.closest(`${selectors.signIn}, ${selectors.profileButton}`);
-                if (e.shiftKey && e.target === profileBtn) closeProfile();
-                if (items[items.length - 1] === e.target) {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  closeProfile();
-                }
+              cycleOnOpenSearch({ e, isDesktop: this.desktop.matches });
+              const { items } = getProfileItems({ e });
+
+              const profileBtn = e.target.closest(`${selectors.signIn}, ${selectors.profileButton}`);
+              if (e.shiftKey && e.target === profileBtn) closeProfile();
+              if (items[items.length - 1] === e.target) {
+                e.preventDefault();
+                e.stopPropagation();
+                closeProfile();
               }
               break;
             }

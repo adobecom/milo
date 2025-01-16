@@ -2,9 +2,8 @@ import { loadBlock, decorateAutoBlock } from '../../../../utils/utils.js';
 import { toFragment, lanaLog } from '../../utilities/utilities.js';
 import { processTrackingLabels } from '../../../../martech/attributes.js';
 
-export default async function decorateAside({ headerElem, fedsPromoWrapper, promoPath } = {}) {
+export default async function decorateAside({ headerElem, promoPath } = {}) {
   const onError = () => {
-    fedsPromoWrapper?.remove();
     headerElem?.classList.remove('has-promo');
     lanaLog({ message: 'Gnav Promo fragment not replaced, potential CLS' });
     return '';

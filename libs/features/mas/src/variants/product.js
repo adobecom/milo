@@ -35,7 +35,7 @@ export class Product extends VariantLayout {
 
   renderLayout() {
     return html` ${this.badge}
-      <div class="body" aria-live="polite">
+      <div class="body">
           <slot name="icons"></slot>
           <slot name="heading-xs"></slot>
           <slot name="body-xxs"></slot>

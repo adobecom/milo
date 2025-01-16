@@ -5,7 +5,6 @@ import {
   selectors,
   isElementVisible,
   unavVersion,
-  addMetaDataV2,
 } from './test-utilities.js';
 import globalNavigationCrossCloud from './mocks/global-navigation-cross-cloud.plain.js';
 
@@ -19,7 +18,6 @@ describe('Cross Cloud Menu', () => {
 
   describe('desktop', () => {
     it('should render the Cross Cloud Menu', async () => {
-      document.head.appendChild(addMetaDataV2('off'));
       await createFullGlobalNavigation({ globalNavigation: globalNavigationCrossCloud });
       const crossCloudMenu = document.querySelector(selectors.crossCloudMenuWrapper);
 
