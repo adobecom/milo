@@ -156,8 +156,14 @@ export class MerchCardCollection extends LitElement {
             this.hasMore = result.length > pageSize;
             result = result.filter(([, index]) => index < pageSize);
         }
-
+        // result.forEach((idx, card) => {
+        //   this.prepend(card);
+        // });
+        for (let i = result.length - 1; i >= 0; i--) {
+          this.prepend(result[i][0]);
+        }
         let reduced = new Map(result);
+        
         children.forEach((child) => {
             if (reduced.has(child)) {
                 const index = reduced.get(child);
