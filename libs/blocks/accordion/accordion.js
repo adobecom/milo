@@ -92,6 +92,7 @@ function createItem(accordion, id, heading, num, edit) {
   const dt = createTag('dt', dtAttrs, dtHtml);
   const dd = createTag('dd', { 'aria-labelledby': triggerId, id: panelId, hidden: true }, panel);
   const dm = createTag('div', { class: 'media-p' });
+
   if (edit) {
     const ogMedia = mediaCollection[id][num - 1];
     const mediaCopy = ogMedia.cloneNode(true);
