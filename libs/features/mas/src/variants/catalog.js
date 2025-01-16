@@ -22,6 +22,14 @@ export class Catalog extends VariantLayout {
         return AEM_FRAGMENT_MAPPING;
     }
 
+    get actionMenu() {
+        return this.card.shadowRoot.querySelector('.action-menu');
+    }
+
+    get actionMenuContentSlot() {
+        return this.card.shadowRoot.querySelector('slot[name="action-menu-content"]');
+    }
+
     renderLayout() {
         return html` <div class="body">
                 <div class="top-section">
@@ -81,55 +89,39 @@ export class Catalog extends VariantLayout {
     };
 
     toggleActionMenu = (e) => {
-      const shadowRoot = this.card.shadowRoot;
-      const actionMenu = shadowRoot.querySelector('.action-menu');
-      const actionMenuContentSlot = shadowRoot.querySelector(
-          'slot[name="action-menu-content"]',
-      );
-      if (!actionMenuContentSlot || !e || (e.type !== 'click' && e.code !== 'Space' && e.code !== 'Enter')) return;
+      if (!this.actionMenuContentSlot || !e || (e.type !== 'click' && e.code !== 'Space' && e.code !== 'Enter')) return;
 
       e.preventDefault();
-      actionMenuContentSlot.classList.toggle('hidden');
-      const isHidden = actionMenuContentSlot.classList.contains('hidden');
+      this.actionMenuContentSlot.classList.toggle('hidden');
+      const isHidden = this.actionMenuContentSlot.classList.contains('hidden');
       if (!isHidden) this.dispatchActionMenuToggle();
-      this.setAriaExpanded(actionMenu, (!isHidden).toString());
+      this.setAriaExpanded(this.actionMenu, (!isHidden).toString());
     };
     
     toggleActionMenuFromCard = (e) => {
         //beware this is an event on card, so this points to the card, not the layout
         const retract = e?.type === 'mouseleave' ? true : undefined;
-        const shadowRoot = this.card.shadowRoot;
-        const actionMenu = shadowRoot.querySelector('.action-menu');
         this.card.blur();
-        actionMenu?.classList.remove('always-visible');
-        const actionMenuContentSlot = shadowRoot.querySelector(
-            'slot[name="action-menu-content"]',
-        );
-        if (!actionMenuContentSlot) return;
+        this.actionMenu?.classList.remove('always-visible');
+        if (!this.actionMenuContentSlot) return;
 
         if (!retract) this.dispatchActionMenuToggle();
-        actionMenuContentSlot.classList.toggle('hidden', retract);
-        this.setAriaExpanded(actionMenu, 'false');
+        this.actionMenuContentSlot.classList.toggle('hidden', retract);
+        this.setAriaExpanded(this.actionMenu, 'false');
     };
     
     hideActionMenu = (e) => {
-      const shadowRoot = this.card.shadowRoot;
-      const actionMenu = shadowRoot.querySelector('.action-menu');
-      const actionMenuContentSlot = shadowRoot.querySelector(
-        'slot[name="action-menu-content"]',
-      );
-      actionMenuContentSlot?.classList.add('hidden');
-      this.setAriaExpanded(actionMenu, 'false');
+      this.actionMenuContentSlot?.classList.add('hidden');
+      this.setAriaExpanded(this.actionMenu, 'false');
     }
     
     focusEventHandler = (e) => {
-        const actionMenu = this.card.shadowRoot.querySelector('.action-menu');
-        if (!actionMenu) return;
-        
-        actionMenu.classList.add('always-visible');
+        if (!this.actionMenu) return;
+
+        this.actionMenu.classList.add('always-visible');
         if (e.relatedTarget?.nodeName === 'MERCH-CARD-COLLECTION'
             || (e.relatedTarget?.nodeName === 'MERCH-CARD' && e.target.nodeName !== 'MERCH-ICON')) {
-            actionMenu.classList.remove('always-visible');
+            this.actionMenu.classList.remove('always-visible');
         }
     };
 
