@@ -351,7 +351,7 @@ class Gnav {
       this.addChangeEventListeners,
     ];
     const fetchKeyboardNav = () => {
-      setupKeyboardNav(this.newMobileNav && this.isLocalNav());
+      setupKeyboardNav(this.isLocalNav());
     };
     this.block.addEventListener('click', this.loadDelayed);
     this.block.addEventListener('keydown', fetchKeyboardNav);
@@ -793,7 +793,7 @@ class Gnav {
 
   isToggleExpanded = () => this.elements.mobileToggle?.getAttribute('aria-expanded') === 'true';
 
-  isLocalNav = () => this
+  isLocalNav = () => this.newMobileNav && this
     .elements
     .navWrapper
     ?.querySelectorAll('.feds-nav > section.feds-navItem')
@@ -1314,7 +1314,7 @@ export default async function init(block) {
   });
   if (newMobileNav && !isDesktop.matches) block.classList.add('new-nav');
   await gnav.init();
-  if (newMobileNav && gnav.isLocalNav()) block.classList.add('local-nav');
+  if (gnav.isLocalNav()) block.classList.add('local-nav');
   block.setAttribute('daa-im', 'true');
   const mepMartech = mep?.martech || '';
   block.setAttribute('daa-lh', `gnav|${getExperienceName()}${mepMartech}`);
