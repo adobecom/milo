@@ -706,5 +706,10 @@ export default async function init(el) {
   }
   el.replaceWith(merchCard);
   decorateMerchCardLinkAnalytics(merchCard);
+  const ctaLink = ctas?.querySelector('a');
+  if (merchCard.name && ctaLink) {
+    const { replaceKey } = await import('../../features/placeholders.js');
+    await replaceKey(merchCard.name, getConfig()).then((key) => ctaLink.setAttribute('aria-label', `${ctaLink.textContent} ${key}`));
+  }
   return merchCard;
 }
