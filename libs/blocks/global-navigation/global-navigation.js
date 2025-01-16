@@ -82,18 +82,23 @@ export const CONFIG = {
           isSignUpRequired: false,
           messageEventListener: (event) => {
             const { name, payload, executeDefaultAction } = event.detail;
-            if (name === 'System' && payload.subType === 'AppInitiated') {
-              window.adobeProfile?.getUserProfile()
-                .then((data) => { setUserProfile(data); })
-                .catch(() => { setUserProfile({}); });
-            }
-            if (name === 'System' && payload.subType === 'SignOut') {
-              executeDefaultAction();
-            }
-            if (name === 'System' && payload.subType === 'ProfileSwitch') {
-              executeDefaultAction().then((profile) => {
-                if (profile) window.location.reload();
-              });
+            if (name !== 'System') return;
+            switch (payload.subType) {
+              case 'AppInitiated':
+                window.adobeProfile?.getUserProfile()
+                  .then((data) => { setUserProfile(data); })
+                  .catch(() => { setUserProfile({}); });
+                break;
+              case 'SignOut':
+                executeDefaultAction();
+                break;
+              case 'ProfileSwitch':
+                executeDefaultAction().then((profile) => {
+                  if (profile) window.location.reload();
+                });
+                break;
+              default:
+                break;
             }
           },
           componentLoaderConfig: {
