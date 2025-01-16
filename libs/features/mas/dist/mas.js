@@ -1549,9 +1549,9 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
 }
 `;var lc={mnemonics:{size:"m"},backgroundImage:{tag:"div",slot:"image"},description:{tag:"div",slot:"body-s"},ctas:{slot:"footer",size:"S"},allowedSizes:["wide"]},ut=class extends I{getGlobalCSS(){return Yo}get aemFragmentMapping(){return lc}renderLayout(){return x` <div class="content">
                 <div class="top-section">
-                  <slot name="icons"></slot> 
-                  ${this.badge}
-                </div>  
+                    <slot name="icons"></slot>
+                    ${this.badge}
+                </div>
                 <slot name="body-s"></slot>
                 <slot name="footer"></slot>
             </div>
@@ -1559,11 +1559,11 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
             <slot></slot>`}};p(ut,"variantStyle",C`
         :host([variant='ccd-slice']) {
             --consonant-merch-card-background-color: rgb(248, 248, 248);
-            --consonant-merch-card-border-color:rgb(230, 230, 230);
+            --consonant-merch-card-border-color: rgb(230, 230, 230);
             --consonant-merch-card-body-s-color: rgb(34, 34, 34);
             --merch-color-inline-price-strikethrough: var(--spectrum-gray-600);
             --mod-img-height: 29px;
-            
+
             box-sizing: border-box;
             min-width: 290px;
             max-width: 322px;
@@ -1576,7 +1576,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
         }
 
         :host([variant='ccd-slice']) * {
-          overflow: hidden;
+            overflow: hidden;
         }
 
         :host([variant='ccd-slice']) ::slotted([slot='body-s']) {
@@ -1584,12 +1584,15 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
             line-height: var(--consonant-merch-card-body-xxs-line-height);
             min-width: 154px;
             max-width: 171px;
-            max-height: 55px;
+            height: 55px;
             overflow: hidden;
         }
 
         :host([variant='ccd-slice'][size='wide']) ::slotted([slot='body-s']) {
-          max-width: 425px;
+            max-width: 425px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         :host([variant='ccd-slice'][size='wide']) {
