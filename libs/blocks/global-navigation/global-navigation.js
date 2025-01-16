@@ -302,7 +302,7 @@ class Gnav {
     this.blocks = {
       profile: {
         rawElem: this.content.querySelector('.profile'),
-        decoratedElem: toFragment`<div class="feds-profile"></div>`,
+        decoratedElem: toFragment`<div data-cs-mask class="feds-profile"></div>`,
       },
       search: { config: { icon: CONFIG.icons.search } },
       breadcrumbs: { wrapper: '' },
