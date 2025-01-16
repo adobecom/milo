@@ -21,13 +21,13 @@ test(`${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
     await expect(marquee.headingXL).toHaveText('Heading XL Marquee standard medium left');
   });
 
-  await test.step('step-2: verify default test page', async () => {
+  await test.step('step-2: verify metadata test page', async () => {
     console.info(`[Test Page]: ${metadataURL}`);
     await page.goto(metadataURL);
     await expect(marquee.headingXL).toHaveText('Target is running');
   });
 
-  await test.step('step-3: verify default test page', async () => {
+  await test.step('step-3: verify parameter test page', async () => {
     console.info(`[Test Page]: ${parameterURL}`);
     await page.goto(parameterURL);
     await expect(marquee.headingXL).toHaveText('Target is running');
