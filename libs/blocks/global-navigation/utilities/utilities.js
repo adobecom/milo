@@ -338,7 +338,7 @@ export function trigger({ element, event, type } = {}) {
   if (isOpen) return false;
   element.setAttribute('aria-expanded', 'true');
   if (!isDesktop.matches && type === 'dropdown'
-      && document.querySelector('header').classList.contains('new-nav')) disableMobileScroll();
+      && !!document.querySelector('header.new-nav')) disableMobileScroll();
   return true;
 }
 
