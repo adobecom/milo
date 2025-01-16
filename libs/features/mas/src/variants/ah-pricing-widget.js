@@ -58,7 +58,7 @@ export class AHPricingWidget extends VariantLayout {
         display: flex;
         flex-direction: column;
         overflow: hidden;
-        padding: 12px;
+        padding: 12px !important;
         box-sizing: content-box !important;
         border: none;
     }
