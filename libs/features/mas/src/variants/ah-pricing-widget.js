@@ -16,6 +16,7 @@ export class AHPricingWidget extends VariantLayout {
   constructor(card) {
     super(card);
     this.card.spectrum = 'swc';
+    this.updateComplete;
   }
   
   getGlobalCSS() {
