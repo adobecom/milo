@@ -62,39 +62,28 @@ const htmlTemplate = `
     <meta charset="UTF-8">
     <title>M@S Web Components</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <script type="module" src="../../../deps/custom-elements.js"></script>
+    <link rel="stylesheet" href="spectrum.css">
+    <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
   
-  <script>
-    if (/localhost/.test(window.location.host)) {
-      const meta = document.createElement('meta');
-      meta.name = 'aem-base-url';
-      meta.content = 'http://localhost:8080'; // local AEM proxy URL
-      document.head.appendChild(meta);
-      }
-  </script>
   <!-- Include your custom element script as an ES6 module -->
-  <script src="../../spectrum-web-components/dist/theme.js" type="module"></script>
-  <script src="../../spectrum-web-components/dist/action-button.js" type="module"></script>
-  <script src="../../spectrum-web-components/dist/button.js" type="module"></script>
-  <script type="module" src="../dist/mas.js"></script>
-
   <script type="module">
-    const params = new URLSearchParams(document.location.search);
-    const masCommerceService = document.createElement('mas-commerce-service');
-    ['locale','language','env','cli'].forEach((attribute) => {
-      let value = params.get(attribute);
-      if (value === 'cli') attribute = 'checkout-client-id';
-      if (value) masCommerceService.setAttribute(attribute, value);
-    });
-    document.head.appendChild(masCommerceService);
+    import { init } from './common.js';
+    init();
   </script>
   <!-- Include Highlight.js stylesheet for syntax highlighting -->
   <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
-  <!-- Include any additional stylesheets -->
-  <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+<body class="spectrum spectrum--medium spectrum--light">
+<aside class="sidenav">
+    <a href="/libs/features/mas/docs/mas.html">Home</a>
+    <a href="/libs/features/mas/docs/mas.js.html">mas.js</a>
+    <a href="/libs/features/mas/docs/checkout-link.html">Checkout Link</a>
+    <a href="/libs/features/mas/docs/inline-price.html">Inline Price</a>
+    <a href="/libs/features/mas/docs/merch-card.html">Merch Card</a>
+    <a href="/libs/features/mas/docs/ccd.html">CCD Gallery</a>
+    <a href="/libs/features/mas/docs/benchmarks.html">Benchmarks</a>
+</aside>
 <main>
 <sp-theme color="light" scale="medium">
 ${htmlContent}

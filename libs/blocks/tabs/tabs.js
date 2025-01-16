@@ -34,10 +34,20 @@ const removeAttributes = (el, attrsKeys) => {
   attrsKeys.forEach((key) => el.removeAttribute(key));
 };
 
+const scrollStackedMobile = (content) => {
+  if (!window.matchMedia('(max-width: 600px)').matches) return;
+  const rects = content.getBoundingClientRect();
+  const stickyTop = document.querySelector('.feds-localnav') ?? document.querySelector('.global-navigation, .gnav');
+  const navHeight = stickyTop?.scrollHeight || 0;
+  const topOffset = rects.top + window.scrollY - navHeight - 1;
+  window.scrollTo({ top: topOffset, behavior: 'smooth' });
+};
+
 function changeTabs(e) {
   const { target } = e;
   const parent = target.parentNode;
   const content = parent.parentNode.parentNode.lastElementChild;
+  const targetContent = content.querySelector(`#${target.getAttribute('aria-controls')}`);
   const blockId = target.closest('.tabs').id;
   parent
     .querySelectorAll(`[aria-selected="true"][data-block-id="${blockId}"]`)
@@ -47,9 +57,8 @@ function changeTabs(e) {
   content
     .querySelectorAll(`[role="tabpanel"][data-block-id="${blockId}"]`)
     .forEach((p) => p.setAttribute('hidden', true));
-  content
-    .querySelector(`#${target.getAttribute('aria-controls')}`)
-    .removeAttribute('hidden');
+  targetContent.removeAttribute('hidden');
+  scrollStackedMobile(targetContent);
 }
 
 function getStringKeyName(str) {
