@@ -816,7 +816,7 @@ class Gnav {
         const section = sections[0];
         queueMicrotask(() => section.click());
       }
-    } else if (isExpanded && this.newMobileNav && this.isLocalNav()) {
+    } else if (isExpanded && this.isLocalNav()) {
       enableMobileScroll();
     }
     toggle?.setAttribute('aria-expanded', !isExpanded);
