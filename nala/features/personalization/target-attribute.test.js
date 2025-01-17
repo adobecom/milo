@@ -46,3 +46,85 @@ test(`${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
     await expect(page.locator(targetAttribute)).toHaveCount(0);
   });
 });
+
+// Test 1: verify presence of "data-adobe-target-testid" in Target tests, inblock gnav
+/* expectated amount of target attributes:
+target-block: 1
+target-gnavfragment: 1
+target-gnavchainfragments: 1
+target-gnavwithinset: 2
+all others: 0
+*/
+test(`${features[1].name},${features[1].tags}`, async ({ page, baseURL }) => {
+  const targetBlockURL = `${baseURL}${features[1].data.targetBlockURL}${miloLibs}`;
+  const targetGnavFragmentURL = `${baseURL}${features[1].data.targetGnavFragmentURL}${miloLibs}`;
+  const targetGnavChainFragmentsURL = `${baseURL}${features[1].data.targetGnavChainFragmentsURL}${miloLibs}`;
+  const targetGnavWithinset = `${baseURL}${features[1].data.targetGnavWithinset}${miloLibs}`;
+  const blockURL = `${baseURL}${features[1].data.blockURL}${miloLibs}`;
+  const gnavFragmentsURL = `${baseURL}${features[1].data.gnavFragmentsURL}${miloLibs}`;
+  const gnavChainFragmentsURL = `${baseURL}${features[1].data.gnavChainFragmentsURL}${miloLibs}`;
+  const gnavWithinsetURL = `${baseURL}${features[1].data.gnavWithinsetURL}${miloLibs}`;
+  const updateInGnavFragmentURL = `${baseURL}${features[1].data.updateInGnavFragmentURL}${miloLibs}`;
+  const defaultURL = `${baseURL}${features[1].data.defaultURL}${miloLibs}`;
+
+  const targetAttribute = '[data-adobe-target-testid="apples"]';
+
+  await test.step('step-1: verify target-block test case', async () => {
+    console.info(`[Test Page]: ${targetBlockURL}`);
+    await page.goto(targetBlockURL);
+    await expect(page.locator(targetAttribute)).toHaveCount(1);
+  });
+
+  await test.step('step-2: verify the target-gnavfragment case', async () => {
+    console.info(`[Test Page]: ${targetGnavFragmentURL}`);
+    await page.goto(targetGnavFragmentURL);
+    await expect(page.locator(targetAttribute)).toHaveCount(1);
+  });
+
+  await test.step('step-3: verify the target-gnavchainfragments case', async () => {
+    console.info(`[Test Page]: ${targetGnavChainFragmentsURL}`);
+    await page.goto(targetGnavChainFragmentsURL);
+    await expect(page.locator(targetAttribute)).toHaveCount(1);
+  });
+
+  await test.step('step-4: verify the target-gnavwithinset case', async () => {
+    console.info(`[Test Page]: ${targetGnavWithinset}`);
+    await page.goto(targetGnavWithinset);
+    await expect(page.locator(targetAttribute)).toHaveCount(2);
+  });
+
+  await test.step('step-5: verify the block case', async () => {
+    console.info(`[Test Page]: ${blockURL}`);
+    await page.goto(blockURL);
+    await expect(page.locator(targetAttribute)).toHaveCount(0);
+  });
+  await test.step('step-6: verify gnavfragment test case', async () => {
+    console.info(`[Test Page]: ${gnavFragmentsURL}`);
+    await page.goto(gnavFragmentsURL);
+    await expect(page.locator(targetAttribute)).toHaveCount(0);
+  });
+
+  await test.step('step-7: verify the gnavchainfragments case', async () => {
+    console.info(`[Test Page]: ${gnavChainFragmentsURL}`);
+    await page.goto(gnavChainFragmentsURL);
+    await expect(page.locator(targetAttribute)).toHaveCount(0);
+  });
+
+  await test.step('step-8: verify the gnavwithinset case', async () => {
+    console.info(`[Test Page]: ${gnavWithinsetURL}`);
+    await page.goto(gnavWithinsetURL);
+    await expect(page.locator(targetAttribute)).toHaveCount(0);
+  });
+
+  await test.step('step-9: verify "update in gnav fragment" case', async () => {
+    console.info(`[Test Page]: ${updateInGnavFragmentURL}`);
+    await page.goto(updateInGnavFragmentURL);
+    await expect(page.locator(targetAttribute)).toHaveCount(0);
+  });
+
+  await test.step('step-10: verify the default case', async () => {
+    console.info(`[Test Page]: ${defaultURL}`);
+    await page.goto(defaultURL);
+    await expect(page.locator(targetAttribute)).toHaveCount(0);
+  });
+});
