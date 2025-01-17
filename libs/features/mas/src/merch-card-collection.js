@@ -156,26 +156,21 @@ export class MerchCardCollection extends LitElement {
             this.hasMore = result.length > pageSize;
             result = result.filter(([, index]) => index < pageSize);
         }
-        // result.forEach((idx, card) => {
-        //   this.prepend(card);
-        // });
-        for (let i = result.length - 1; i >= 0; i--) {
-          this.prepend(result[i][0]);
+        let reduced = new Map(result.reverse());
+        for (const card of reduced.keys()) {
+          this.prepend(card);
         }
-        let reduced = new Map(result);
         
         children.forEach((child) => {
             if (reduced.has(child)) {
-                const index = reduced.get(child);
-                child.style.order = index;
-                child.setAttribute('tabindex', index + 1);
                 child.size = child.filters[this.filter]?.size;
                 child.style.removeProperty('display');
+                child.removeAttribute('aria-hidden');
                 child.requestUpdate();
             } else {
                 child.style.display = 'none';
+                child.setAttribute('aria-hidden', 'true');
                 child.size = undefined;
-                child.style.removeProperty('order');
             }
         });
         window.scrollTo(0, lastScrollTop);
