@@ -90,6 +90,15 @@ export function processBackgroundImage(
     variant,
 ) {
     if (fields.backgroundImage) {
+        const imgAttributes = {
+            loading: merchCard.loading ?? 'lazy',
+            src: fields.backgroundImage,
+        };
+        if (fields.backgroundImageAltText) {
+            imgAttributes.alt = fields.backgroundImageAltText;
+        } else {
+            imgAttributes.role = 'none';
+        }
         switch (variant) {
             case 'ccd-slice':
                 if (backgroundImageConfig) {
@@ -97,7 +106,7 @@ export function processBackgroundImage(
                         createTag(
                             backgroundImageConfig.tag,
                             { slot: backgroundImageConfig.slot },
-                            `<img loading="${merchCard.loading}" src="${fields.backgroundImage}" />`,
+                            createTag('img', imgAttributes),
                         ),
                     );
                 }
@@ -109,6 +118,12 @@ export function processBackgroundImage(
                 );
                 break;
         }
+    }
+    if (backgroundImageConfig?.attribute) {
+        merchCard.setAttribute(
+            backgroundImageConfig.attribute,
+            fields.backgroundImage,
+        );
     }
 }
 

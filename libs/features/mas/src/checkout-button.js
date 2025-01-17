@@ -4,18 +4,16 @@ export class CheckoutButton extends CheckoutMixin(HTMLButtonElement) {
     static is = 'checkout-button';
     static tag = 'button';
 
-    #href;
-
     static createCheckoutButton(options = {}, innerHTML = '') {
         return createCheckoutElement(CheckoutButton, options, innerHTML);
     }
 
     setCheckoutUrl(value) {
-        this.#href = value;
+        this.setAttribute('data-href', value);
     }
 
     get href() {
-        return this.#href;
+        return this.getAttribute('data-href');
     }
 
     get isCheckoutButton() {
@@ -27,8 +25,8 @@ export class CheckoutButton extends CheckoutMixin(HTMLButtonElement) {
             this.checkoutActionHandler?.(e);
             return;
         }
-        if (this.#href) {
-            window.location.href = this.#href;
+        if (this.href) {
+            window.location.href = this.href;
         }
     }
 }
