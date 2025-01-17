@@ -1323,7 +1323,7 @@ html:has(body.disable-ios-scroll) { /* this class is only added on iOS */
   position: fixed;
 }
 
-/* branch banner behind GNAV popup */
+/* GNAV popup height fix in case of app banner */
 .branch-banner-is-active header.new-nav .feds-nav > section.feds-navItem > .feds-popup {
   height: calc(100dvh - var(--app-banner-height));
 }
