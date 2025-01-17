@@ -165,11 +165,9 @@ export class MerchCardCollection extends LitElement {
             if (reduced.has(child)) {
                 child.size = child.filters[this.filter]?.size;
                 child.style.removeProperty('display');
-                child.removeAttribute('aria-hidden');
                 child.requestUpdate();
             } else {
                 child.style.display = 'none';
-                child.setAttribute('aria-hidden', 'true');
                 child.size = undefined;
             }
         });
