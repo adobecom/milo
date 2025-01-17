@@ -430,8 +430,6 @@ export const loadAnalyticsAndInteractionData = async ({ locale, env, calculatedT
     const ECID = targetRespJson.handle
       .flatMap((item) => item.payload)
       .find((p) => p.namespace?.code === 'ECID')?.id || null;
-
-    // Update the AMCV cookie with ECID
     updateAMCVCookie(ECID);
 
     const extractedData = [];
