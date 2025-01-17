@@ -24,7 +24,7 @@ function Modal({ type }) {
                 class="s2-btn accent"
                 href="${projectInfo.value.projectLink}"
                 onclick=${() => { closeModal(); }}
-                target="_blank"
+                target="_self"
                 rel="noreferrer noopener"
               >
                 View
