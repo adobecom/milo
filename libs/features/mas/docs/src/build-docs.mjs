@@ -63,7 +63,7 @@ const htmlTemplate = `
     <title>M@S Web Components</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="spectrum.css">
-    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
   
   <!-- Include your custom element script as an ES6 module -->
@@ -73,8 +73,6 @@ const htmlTemplate = `
   </script>
   <!-- Include Highlight.js stylesheet for syntax highlighting -->
   <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
-  <!-- Include any additional stylesheets -->
-  <link rel="stylesheet" href="styles.css">
 </head>
 <body class="spectrum spectrum--medium spectrum--light">
 <aside class="sidenav">
