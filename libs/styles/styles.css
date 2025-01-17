@@ -748,6 +748,10 @@ header.global-navigation.has-promo {
   top: var(--global-height-navPromo);
 }
 
+header.global-navigation.new-nav.local-nav {
+  top: 0;
+}
+
 @media (min-width: 900px) {
   header.global-navigation.has-breadcrumbs {
     padding-bottom: var(--global-height-breadcrumbs);
