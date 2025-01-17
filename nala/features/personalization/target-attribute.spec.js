@@ -3,7 +3,7 @@ module.exports = {
   features: [
     {
       tcid: '0',
-      name: '@0 - test for the presence of the attribute "data-adobe-target-testid"',
+      name: '@ 0 - test for the presence of the attribute "data-adobe-target-testid"',
       desc: 'test for the presence of "data-adobe-target-testid" in Target tests',
       path: '',
       data: {

@@ -14,7 +14,7 @@ test(`${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
   const replacePageURL = `${baseURL}${features[0].data.replacePageURL}${miloLibs}`;
   const targetOtherActionsURL = `${baseURL}${features[0].data.targetOtherActionsURL}${miloLibs}`;
   const otherActionsURL = `${baseURL}${features[0].data.otherActionsURL}${miloLibs}`;
-  const targetAttribute = '[data-adobe-target-testid]';
+  const targetAttribute = '[data-adobe-target-testid="myoverride"]';
 
   await test.step('step-1: verify default test case', async () => {
     console.info(`[Test Page]: ${defaultURL}`);
