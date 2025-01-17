@@ -3,6 +3,7 @@ import { createTag, getConfig, MILO_EVENTS } from '../../utils/utils.js';
 import { decorateButtons } from '../../utils/decorate.js';
 import { debounce } from '../../utils/action.js';
 import { replaceKeyArray } from '../../features/placeholders.js';
+import { getGnavHeight } from '../global-navigation/utilities/utilities.js';
 
 const DESKTOP_SIZE = 900;
 const MOBILE_SIZE = 768;
@@ -394,9 +395,8 @@ function handleHovering(table) {
   }
 }
 
-function handleScrollEffect(table) {
-  const gnav = document.querySelector('header');
-  const gnavHeight = gnav ? gnav.offsetHeight : 0;
+async function handleScrollEffect(table) {
+  const gnavHeight = getGnavHeight();
   const highlightRow = table.querySelector('.row-highlight');
   const headingRow = table.querySelector('.row-heading');
 
