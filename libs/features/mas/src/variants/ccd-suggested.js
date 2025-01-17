@@ -7,6 +7,7 @@ export const CCD_SUGGESTED_AEM_FRAGMENT_MAPPING = {
     mnemonics: { size: 'l' },
     badge: true,
     subtitle: { tag: 'h4', slot: 'detail-s' },
+    backgroundImage: { attribute: 'background-image' },
     title: { tag: 'h3', slot: 'heading-xs' },
     prices: { tag: 'p', slot: 'price' },
     description: { tag: 'div', slot: 'body-xs' },

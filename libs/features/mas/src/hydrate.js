@@ -87,7 +87,6 @@ export function processBackgroundImage(
     fields,
     merchCard,
     backgroundImageConfig,
-    variant,
 ) {
     if (fields.backgroundImage) {
         const imgAttributes = {
@@ -311,7 +310,6 @@ export async function hydrate(fragment, merchCard) {
         fields,
         merchCard,
         aemFragmentMapping.backgroundImage,
-        variant,
     );
     processDescription(fields, merchCard, aemFragmentMapping.description);
     processCTAs(fields, merchCard, aemFragmentMapping, variant);
