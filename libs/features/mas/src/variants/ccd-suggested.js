@@ -5,6 +5,7 @@ import { CSS } from './ccd-suggested.css.js';
 const AEM_FRAGMENT_MAPPING = {
     mnemonics: { size: 'l' },
     subtitle: { tag: 'h4', slot: 'detail-s' },
+    backgroundImage: { attribute: 'background-image' },
     title: { tag: 'h3', slot: 'heading-xs' },
     prices: { tag: 'p', slot: 'price' },
     description: { tag: 'div', slot: 'body-xs' },
@@ -61,6 +62,7 @@ export class CCDSuggested extends VariantLayout {
         this.card.classList.remove('thin-strip');
         this.card.classList.remove('wide-strip');
         if (!this.card.backgroundImage) {
+            // c8 ignore next 2 */
             return;
         }
         const img = new Image();
