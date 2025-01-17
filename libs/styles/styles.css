@@ -744,13 +744,13 @@ header.global-navigation + .feds-localnav {
   border: 0;
 }
 
+header.global-navigation.has-promo {
+  top: var(--global-height-navPromo);
+}
+
 @media (min-width: 900px) {
   header.global-navigation.has-breadcrumbs {
     padding-bottom: var(--global-height-breadcrumbs);
-  }
-
-  header.global-navigation.has-promo {
-    top: var(--global-height-navPromo);
   }
 
   header.global-navigation + .feds-localnav {
