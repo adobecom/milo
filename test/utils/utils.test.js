@@ -96,19 +96,36 @@ describe('Utils', () => {
   });
 
   it('render meta performanceV2 renders the normal flow', async () => {
-    // const spyOnLoadMartech = sinon.spy(loadMartech);
-    const localHead = await readFile({ path: './mocks/mep/head-target-postlcp.html' });
-    document.head.innerHTML = localHead;
     const metaTag = document.createElement('meta');
     metaTag.setAttribute('name', 'personalization-v2');
+    metaTag.setAttribute('content', 'personalization-v2');
     document.head.appendChild(metaTag);
 
     const bodyWithheader = await readFile({ path: './mocks/body-gnav.html' });
     document.body.innerHTML = bodyWithheader;
 
     await utils.loadArea();
-    // expect(spyOnLoadMartech.called).to.be.true;
-    // spyOnLoadMartech.resetHistory();
+    expect(document.querySelector('.global-navigation')).to.exist;
+  });
+
+  it('render meta performanceV2 renders the normal flow with params', async () => {
+    const params = new URLSearchParams({ 'target-timeout': '1000' });
+    const baseUrl = `${window.location.origin}${window.location.pathname}`;
+
+    const newUrl = `${baseUrl}?${params.toString()}`;
+
+    window.history.pushState({ path: newUrl }, '', newUrl);
+    const localHead = await readFile({ path: './mocks/mep/head-target-postlcp.html' });
+    document.head.innerHTML = localHead;
+    const metaTag = document.createElement('meta');
+    metaTag.setAttribute('name', 'personalization-v2');
+    metaTag.setAttribute('content', 'on');
+    document.head.appendChild(metaTag);
+
+    const bodyWithheader = await readFile({ path: './mocks/body-gnav.html' });
+    document.body.innerHTML = bodyWithheader;
+
+    await utils.loadArea();
     expect(document.querySelector('.global-navigation')).to.exist;
   });
 

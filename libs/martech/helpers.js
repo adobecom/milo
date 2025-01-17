@@ -1,4 +1,8 @@
 const AMCV_COOKIE = 'AMCV_9E1005A551ED61CA0A490D45@AdobeOrg';
+const KNDCTR_COOKIE_KEYS = [
+  'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_identity',
+  'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_cluster',
+];
 
 /**
  * Generates a random UUIDv4 using cryptographically secure random values.
@@ -211,16 +215,10 @@ function getUpdatedContext({
  * @returns {Array<Object>} List of MarTech cookies with each
  * object containing 'key' and 'value' properties.
  */
-const getMarctechCookies = () => {
-  const KNDCTR_COOKIE_KEYS = [
-    'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_identity',
-    'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_cluster',
-  ];
-  return document.cookie.split(';')
-    .map((x) => x.trim().split('='))
-    .filter(([key]) => KNDCTR_COOKIE_KEYS.includes(key))
-    .map(([key, value]) => ({ key, value }));
-};
+const getMartechCookies = () => document.cookie.split(';')
+  .map((x) => x.trim().split('='))
+  .filter(([key]) => KNDCTR_COOKIE_KEYS.includes(key))
+  .map(([key, value]) => ({ key, value }));
 
 /**
  * Creates the request payload for Adobe Analytics and Target.
@@ -300,24 +298,28 @@ function createRequestPayload({ updatedContext, pageName, locale, env }) {
         com_adobe_target: { propertyToken: AT_PROPERTY_VAL },
       },
       state: {
-        domain: 'localhost',
+        domain: (new URL(window.location.origin)).hostname,
         cookiesEnabled: true,
-        entries: getMarctechCookies(),
+        entries: getMartechCookies(),
       },
     },
   };
 }
 
 /**
- * Extracts the ECID (Experience Cloud ID) from the API response data.
+ * Updates the specified cookies with new values if they don't already exist.
  *
- * @param {Object} data - The response data from the API.
- * @returns {string|null} The ECID value, or null if not found.
+ * @param {Array<Object>} cookieData - An array of objects containing
+ * `key` and `value` pairs for the cookies.
+ *
  */
-function extractECIDFromResp(data) {
-  return data.handle
-    .flatMap((item) => item.payload)
-    .find((p) => p.namespace?.code === 'ECID')?.id || null;
+function updateMartechCookies(cookieData) {
+  cookieData?.forEach(({ key, value }) => {
+    const currentCookie = getCookie(key);
+    if (!currentCookie) {
+      setCookie(encodeURIComponent(key), value);
+    }
+  });
 }
 
 /**
@@ -425,10 +427,19 @@ export const loadAnalyticsAndInteractionData = async ({ locale, env, calculatedT
       throw new Error('Failed to fetch interact call');
     }
     const targetRespJson = await targetResp.json();
-    const ECID = extractECIDFromResp(targetRespJson);
+    const ECID = targetRespJson.handle
+      .flatMap((item) => item.payload)
+      .find((p) => p.namespace?.code === 'ECID')?.id || null;
 
     // Update the AMCV cookie with ECID
     updateAMCVCookie(ECID);
+
+    const stateStorePayload = targetRespJson?.handle?.find((item) => item.type === 'state:store')?.payload;
+    const extractedData = stateStorePayload?.map((item) => ({
+      key: item.key,
+      value: item.value,
+    }));
+    updateMartechCookies(extractedData);
 
     // Resolve or reject based on propositions
     const resultPayload = targetRespJson?.handle?.find((d) => d.type === 'personalization:decisions')?.payload;
