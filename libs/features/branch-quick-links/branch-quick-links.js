@@ -1,26 +1,24 @@
 import { getMetadata, loadStyle, getConfig, createTag } from '../../utils/utils.js';
 
-function addLoader(elem, text) {
+function addLoader(a) {
   const { base } = getConfig();
   loadStyle(`${base}/features/branch-quick-links/branch-quick-links.css`);
-  const lbl = createTag('div', { class: 'pbar-label' });
-  lbl.textContent = text;
+  const label = createTag('div', { class: 'pbar-label' });
+  label.textContent = getMetadata('quick-link-loader-text') || '';
   const tr = createTag('div', { class: 'pbar-value' });
   tr.style.display = 'block';
-  const pb = createTag('div', { class: 'pbar' }, tr);
-  pb.style.width = '100%';
-  pb.style.height = '10px';
-  pb.style.borderRadius = '5px';
-  pb.style.backgroundColor = '#D5D5D5';
-  pb.style.marginTop = '10px';
-  pb.style.overflow = 'hidden';
-  const container = createTag('div', { class: 'pbar-container' }, [lbl, pb]);
-  elem.replaceWith(container);
+  const progressBar = createTag('div', { class: 'pbar' }, tr);
+  Object.assign(progressBar.style, {
+    width: '100%',
+    height: '10px',
+    borderRadius: '5px',
+    backgroundColor: '#D5D5D5',
+    marginTop: '10px',
+    overflow: 'hidden',
+  });
+  const container = createTag('div', { class: 'pbar-container' }, [label, progressBar]);
+  a.replaceWith(container);
   return container;
-}
-
-function removeLoader(elem, a) {
-  elem.replaceWith(a);
 }
 
 async function decorateQuickLink(a, hasConsent) {
@@ -38,11 +36,8 @@ async function decorateQuickLink(a, hasConsent) {
   window.location.href = a.href;
 }
 
-export default function processQL(a) {
+export default function processQuickLink(a) {
   a.classList.add('quick-link');
-  const isLoader = getMetadata('quick-link-loader');
-  const loaderText = getMetadata('quick-link-loader-text');
-
   const getConsentStatus = () => {
     const cookieGrp = window.adobePrivacy?.activeCookieGroups();
     return cookieGrp?.includes('C0002') && cookieGrp?.includes('C0004');
@@ -72,10 +67,10 @@ export default function processQL(a) {
 
   a.addEventListener('click', async (e) => {
     e.preventDefault();
-    let pb;
-    if (isLoader === 'on') pb = addLoader(a, loaderText);
+    let loader;
+    if (getMetadata('quick-link-loader') === 'on') loader = addLoader(a);
     const hasConsent = await waitForConsent();
-    if (pb) removeLoader(pb, a);
+    if (loader) loader.replaceWith(a);
     decorateQuickLink(a, hasConsent);
   });
 }

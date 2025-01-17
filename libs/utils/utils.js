@@ -729,8 +729,8 @@ export function decorateLinks(el) {
 
     if (a.href.includes(branchQuickLink)) {
       (async () => {
-        const { default: processQL } = await import('../features/branch-quick-links/branch-quick-links.js');
-        processQL(a);
+        const { default: processQuickLink } = await import('../features/branch-quick-links/branch-quick-links.js');
+        processQuickLink(a);
       })();
     }
     // Append aria-label

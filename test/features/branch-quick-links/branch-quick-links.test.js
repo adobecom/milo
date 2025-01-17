@@ -1,7 +1,7 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import processQL from '../../../libs/features/branch-quick-links/branch-quick-links.js';
+import processQuickLink from '../../../libs/features/branch-quick-links/branch-quick-links.js';
 
 describe('branch quick links', () => {
   beforeEach(async () => {
@@ -21,21 +21,21 @@ describe('branch quick links', () => {
     window.alloy = new Promise(() => {});
     const alloyS = sinon.stub(window, 'alloy');
     alloyS.resolves({ identity: { ECID: '123' } });
-    const qL = document.querySelector('a');
-    processQL(qL);
-    await qL.click();
+    const quickLink = document.querySelector('a');
+    processQuickLink(quickLink);
+    await quickLink.click();
     window.dispatchEvent(new CustomEvent('adobePrivacy:PrivacyConsent'));
     window.dispatchEvent(new CustomEvent('adobePrivacy:PrivacyCustom'));
     window.dispatchEvent(new CustomEvent('adobePrivacy:PrivacyReject'));
-    expect(qL.classList.contains('quick-link')).to.be.true;
+    expect(quickLink.classList.contains('quick-link')).to.be.true;
     alloyS.restore();
   });
 
   it('should not add ecid if alloy is undefined', async () => {
     window.alloy = undefined;
-    const qL = document.querySelector('a');
-    processQL(qL);
-    qL.click();
-    expect(qL.href.includes('ecid')).to.be.false;
+    const quickLink = document.querySelector('a');
+    processQuickLink(quickLink);
+    quickLink.click();
+    expect(quickLink.href.includes('ecid')).to.be.false;
   });
 });
