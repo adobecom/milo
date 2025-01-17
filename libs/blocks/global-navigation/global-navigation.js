@@ -6,7 +6,6 @@ import {
   loadIms,
   decorateLinks,
   loadScript,
-  getGnavSource,
 } from '../../utils/utils.js';
 import {
   closeAllDropdowns,
@@ -42,6 +41,7 @@ import {
   disableMobileScroll,
   enableMobileScroll,
   setAsyncDropdownCount,
+  getGnavSource,
 } from './utilities/utilities.js';
 import { getFedsPlaceholderConfig } from '../../utils/federated.js';
 
