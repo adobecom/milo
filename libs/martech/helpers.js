@@ -434,11 +434,19 @@ export const loadAnalyticsAndInteractionData = async ({ locale, env, calculatedT
     // Update the AMCV cookie with ECID
     updateAMCVCookie(ECID);
 
-    const stateStorePayload = targetRespJson?.handle?.find((item) => item.type === 'state:store')?.payload;
-    const extractedData = stateStorePayload?.map((item) => ({
-      key: item.key,
-      value: item.value,
-    }));
+    const extractedData = [];
+    targetRespJson?.handle?.forEach((item) => {
+      if (item?.type === 'state:store') {
+        item?.payload?.forEach((payload) => {
+          if (
+            payload?.key === 'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_cluster'
+            || payload?.key === 'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_identity') {
+            extractedData.push({ ...payload });
+          }
+        });
+      }
+    });
+
     updateMartechCookies(extractedData);
 
     // Resolve or reject based on propositions
