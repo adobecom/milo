@@ -35,6 +35,7 @@ describe('Functional Test', () => {
     // Add custom keys so tests doesn't rely on real data
     const config = getConfig();
     config.env = { name: 'prod' };
+    config.locale = { ietf: 'en-US', prefix: '' };
     config.consumerEntitlements = {
       '11111111-aaaa-bbbb-6666-cccccccccccc': 'my-special-app',
       '22222222-xxxx-bbbb-7777-cccccccccccc': 'fireflies',
