@@ -209,20 +209,21 @@ merch-card[variant='ccd-slice'][size='wide'] {
     border-radius: 16px;
     background: #ffffff;
     box-shadow: 0px 2px 8px 0px rgba(0, 0, 0, 0.16);
+    margin-block: 20px;
 }
 
-.three-merch-cards.ah-single-plan {
+.three-merch-cards.ah-pricing-widget {
     grid-template-columns: repeat(3, minmax(156px, 0px));
 }
 
 @media screen and (min-width: 644px) {
-    .three-merch-cards.ah-single-plan {
+    .three-merch-cards.ah-pricing-widget {
         grid-template-columns: repeat(2, minmax(156px, 322px));
     }
 }
 
 @media screen and (min-width: 966px) {
-    .three-merch-cards.ah-single-plan {
+    .three-merch-cards.ah-pricing-widget {
         grid-template-columns: repeat(3, minmax(156px, 322px));
     }
 }

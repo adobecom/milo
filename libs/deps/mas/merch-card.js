@@ -1719,7 +1719,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
         font-size: 14px;
         line-height: 18px;
     }
-`;var Bo={mnemonics:{size:"s"},title:{tag:"h3",slot:"heading-xxxs"},description:{tag:"div",slot:"body-xxs"},prices:{tag:"p",slot:"price"},ctas:{slot:"cta",size:"S"},allowedColors:["gray"]},q=class extends E{constructor(t){super(t),this.card.spectrum="swc",this.updateComplete}getGlobalCSS(){return Ur}get aemFragmentMapping(){return Bo}renderLayout(){return ko`
+`;var Bo={mnemonics:{size:"s"},backgroundImage:{tag:"div",slot:"image"},title:{tag:"h3",slot:"heading-xxxs"},description:{tag:"div",slot:"body-xxs"},prices:{tag:"p",slot:"price"},ctas:{slot:"cta",size:"S"},allowedColors:["gray"]},q=class extends E{constructor(t){super(t),this.card.spectrum="swc",this.updateComplete}getGlobalCSS(){return Ur}get aemFragmentMapping(){return Bo}renderLayout(){return ko`
         <div class="header">
     		    <slot name="icons"></slot>
             <slot name="heading-xxxs"></slot>
@@ -1729,10 +1729,11 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
         <div class="footer">
           <slot name="cta"></slot>
         </div>
+        <slot name="image"></slot>
       <slot></slot>
     `}};p(q,"variantStyle",Io`
     :host([variant='ah-single-plan']) {
-        --merch-card-ah-single-plan-width: 132px;
+        --merch-card-ah-single-plan-width: 484px;
         --merch-card-ah-single-plan-height: 212px;
         --merch-card-ah-single-plan-heading-color: rgba(44, 44, 44, 1);
         --merch-card-ah-single-plan-gray-background: rgba(248, 248, 248, 1);

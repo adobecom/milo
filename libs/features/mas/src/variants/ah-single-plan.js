@@ -4,6 +4,7 @@ import { CSS } from './ah-single-plan.css.js';
 
 const AEM_FRAGMENT_MAPPING = {
   mnemonics: { size: 's' },
+  backgroundImage: { tag: 'div', slot: 'image' },
   title: { tag: 'h3', slot: 'heading-xxxs' },
   description: { tag: 'div', slot: 'body-xxs' },
   prices: { tag: 'p', slot: 'price' },
@@ -39,13 +40,14 @@ export class AHSinglePlan extends VariantLayout {
         <div class="footer">
           <slot name="cta"></slot>
         </div>
+        <slot name="image"></slot>
       <slot></slot>
     `;
   }
 
   static variantStyle = css`
     :host([variant='ah-single-plan']) {
-        --merch-card-ah-single-plan-width: 132px;
+        --merch-card-ah-single-plan-width: 484px;
         --merch-card-ah-single-plan-height: 212px;
         --merch-card-ah-single-plan-heading-color: rgba(44, 44, 44, 1);
         --merch-card-ah-single-plan-gray-background: rgba(248, 248, 248, 1);
