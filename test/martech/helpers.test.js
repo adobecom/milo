@@ -237,7 +237,7 @@ describe('loadAnalyticsAndInteractionData', () => {
     }
   });
 
-  it('should handle martech cookies updation', async () => {
+  it('should handle cookies update on api payload', async () => {
     document.cookie = 'AMCV_9E1005A551ED61CA0A490D45%40AdobeOrg=65550139393016453617222570753620662484';
     window.fetch = () => Promise.resolve({
       ok: true,
