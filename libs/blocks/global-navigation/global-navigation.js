@@ -6,6 +6,7 @@ import {
   loadIms,
   decorateLinks,
   loadScript,
+  getGnavSource,
 } from '../../utils/utils.js';
 import {
   closeAllDropdowns,
