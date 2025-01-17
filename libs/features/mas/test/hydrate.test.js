@@ -1,5 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
+import '../../spectrum-web-components/dist/button.js';
 import mas from './mas.js';
 import {
     hydrate,
@@ -13,7 +14,9 @@ import {
     processAnalytics,
     ANALYTICS_TAG,
     ANALYTICS_LINK_ATTR,
-    ANALYTICS_SECTION_ATTR
+    ANALYTICS_SECTION_ATTR,
+    processDescription,
+    updateLinksCSS,
 } from '../src/hydrate.js';
 import { AEM_FRAGMENT_MAPPING } from '../src/variants/ccd-slice.js';
 
@@ -22,6 +25,7 @@ import { withWcs } from './mocks/wcs.js';
 
 const mockMerchCard = () => {
     const merchCard = document.createElement('div');
+    merchCard.spectrum = 'css';
     document.body.appendChild(merchCard);
     const originalAppend = merchCard.append;
     merchCard.append = sinon.spy(function () {
@@ -29,6 +33,11 @@ const mockMerchCard = () => {
     });
     return merchCard;
 };
+
+await mas();
+await mockFetch(withWcs);
+
+document.head.appendChild(document.createElement('mas-commerce-service'));
 
 describe('processMnemonics', async () => {
     it('should process mnemonics', async () => {
@@ -79,16 +88,22 @@ describe('processPrices', async () => {
             '<div><p slot="prices"><span>$9.99</span></p></div>',
         );
     });
+
+    it('should preserve white spaces', async () => {
+        const fields = {
+            prices: 'Starting at  <span is="inline-price" data-template="price" data-wcs-osi="nTbB50pS4lLGv_x1l_UKggd-lxxo2zAJ7WYDa2mW19s"></span>',
+        };
+        const merchCard = mockMerchCard();
+        const pricesConfig = { tag: 'p', slot: 'price' };
+        processPrices(fields, merchCard, pricesConfig);
+        await merchCard.querySelector('span[is="inline-price"]').onceSettled();
+        expect(merchCard.textContent).to.equal('Starting at  US$22.19/mo');
+    });
 });
 
 describe('processCTAs', async () => {
     let merchCard;
     let aemFragmentMapping;
-
-    before(async () => {
-        await mas();
-        await mockFetch(withWcs);
-    });
 
     beforeEach(async () => {
         merchCard = mockMerchCard();
@@ -113,7 +128,7 @@ describe('processCTAs', async () => {
         expect(merchCard.append.called).to.be.false;
     });
 
-    it('should create spectrum buttons when merchCard.consonant is false', async () => {
+    it('should create spectrum css buttons by default', async () => {
         const fields = {
             ctas: '<a is="checkout-link" data-wcs-osi="abm" class="accent">Click me</a>',
         };
@@ -127,10 +142,31 @@ describe('processCTAs', async () => {
         expect(footer.getAttribute('slot')).to.equal('footer');
 
         const button = footer.firstChild;
+        expect(button.tagName.toLowerCase()).to.equal('button');
+        expect(button.className).to.equal(
+            'spectrum-Button spectrum-Button--accent spectrum-Button--sizeM',
+        );
+    });
+
+    it('should create spectrum wc buttons when merchCard.spectrum="swc"', async () => {
+        const fields = {
+            ctas: '<a is="checkout-link" data-wcs-osi="abm" class="accent">Click me</a>',
+        };
+        merchCard.spectrum = 'swc';
+        processCTAs(fields, merchCard, aemFragmentMapping);
+
+        const appendCall = merchCard.append.firstCall;
+        expect(appendCall).to.exist;
+
+        const footer = appendCall.args[0];
+        expect(footer.getAttribute('slot')).to.equal('footer');
+
+        const button = footer.firstChild;
         expect(button.tagName.toLowerCase()).to.equal('sp-button');
-        expect(button.getAttribute('treatment')).to.equal('fill');
-        expect(button.getAttribute('variant')).to.equal('accent');
-        expect(button.getAttribute('size')).to.equal('m');
+        expect(button.treatment).to.equal('fill');
+        expect(button.variant).to.equal('accent');
+        expect(button.getAttribute('tabindex')).to.equal('0');
+        expect(button.size).to.equal('m');
     });
 
     it('should create consonant buttons when merchCard.consonant is true', async () => {
@@ -166,9 +202,15 @@ describe('processCTAs', async () => {
         const buttons = footer.children;
         expect(buttons).to.have.lengthOf(3);
 
-        expect(buttons[0].getAttribute('variant')).to.equal('accent');
-        expect(buttons[1].getAttribute('variant')).to.equal('primary');
-        expect(buttons[2].getAttribute('variant')).to.equal('secondary');
+        expect(buttons[0].className).to.equal(
+            'spectrum-Button spectrum-Button--accent spectrum-Button--sizeM',
+        );
+        expect(buttons[1].className).to.equal(
+            'spectrum-Button spectrum-Button--primary spectrum-Button--sizeM',
+        );
+        expect(buttons[2].className).to.equal(
+            'spectrum-Button spectrum-Button--secondary spectrum-Button--sizeM',
+        );
     });
 
     it('should handle strong wrapped CTAs', async () => {
@@ -180,7 +222,9 @@ describe('processCTAs', async () => {
 
         const footer = merchCard.append.firstCall.args[0];
         const button = footer.firstChild;
-        expect(button.getAttribute('variant')).to.equal('accent');
+        expect(button.className).to.equal(
+            'spectrum-Button spectrum-Button--accent spectrum-Button--sizeM',
+        );
     });
 
     it('should handle outline CTAs', async () => {
@@ -192,8 +236,9 @@ describe('processCTAs', async () => {
 
         const footer = merchCard.append.firstCall.args[0];
         const button = footer.firstChild;
-        expect(button.getAttribute('treatment')).to.equal('outline');
-        expect(button.getAttribute('variant')).to.equal('accent');
+        expect(button.className).to.equal(
+            'spectrum-Button spectrum-Button--accent spectrum-Button--sizeM spectrum-Button--outline',
+        );
     });
 
     it('should handle link-style CTAs', async () => {
@@ -208,33 +253,6 @@ describe('processCTAs', async () => {
         const link = footer.firstChild;
         expect(link.tagName.toLowerCase()).to.equal('a');
         expect(link.classList.contains('primary-link')).to.be.true;
-    });
-
-    it('should handle click events on spectrum buttons', async () => {
-        const fields = {
-            ctas: '<a is="checkout-link" href="#" data-wcs-osi="abm" class="accent"><span>Click me</span></a>',
-        };
-
-        processCTAs(fields, merchCard, aemFragmentMapping);
-
-        const footer = merchCard.append.firstCall.args[0];
-        const button = footer.firstChild;
-        const link = button.firstChild;
-        const span = link.firstChild;
-
-        let target;
-        link.addEventListener('click', (e) => {
-            target = e.target;
-            e.preventDefault(); // prevent infinite loop
-        });
-
-        const customEvent = new MouseEvent('click', {
-            bubbles: true,
-            cancelable: true,
-            view: window,
-        });
-        span.dispatchEvent(customEvent);
-        expect(target).to.equal(link);
     });
 });
 
@@ -298,8 +316,8 @@ describe('processBackgroundImage', () => {
     });
 
     it('should not process background image when fields.backgroundImage is falsy', () => {
-        const fields = { backgroundImage: null };
-        const backgroundImageConfig = { tag: 'div', slot: 'background' };
+        const fields = { backgroundImage: null, backgroundImageAltText: 'Test Image' };
+        const backgroundImageConfig = { tag: 'div', slot: 'image' };
         const variant = 'ccd-slice';
 
         processBackgroundImage(
@@ -314,8 +332,8 @@ describe('processBackgroundImage', () => {
     });
 
     it('should append background image for ccd-slice variant', () => {
-        const fields = { backgroundImage: 'test-image.jpg' };
-        const backgroundImageConfig = { tag: 'div', slot: 'background' };
+        const fields = { backgroundImage: 'test-image.jpg', backgroundImageAltText: 'Test Image' };
+        const backgroundImageConfig = { tag: 'div', slot: 'image' };
         const variant = 'ccd-slice';
 
         processBackgroundImage(
@@ -326,13 +344,13 @@ describe('processBackgroundImage', () => {
         );
 
         expect(merchCard.outerHTML).to.equal(
-            '<div><div slot="background"><img loading="lazy" src="test-image.jpg"></div></div>',
+            '<div><div slot="image"><img loading="lazy" src="test-image.jpg" alt="Test Image"></div></div>',
         );
     });
 
     it('should set background-image attribute for ccd-suggested variant', () => {
         const fields = { backgroundImage: 'test-image.jpg' };
-        const backgroundImageConfig = { tag: 'div', slot: 'background' };
+        const backgroundImageConfig = { attribute: 'background-image' };
         const variant = 'ccd-suggested';
 
         processBackgroundImage(
@@ -345,22 +363,6 @@ describe('processBackgroundImage', () => {
         expect(merchCard.outerHTML).to.equal(
             '<div background-image="test-image.jpg"></div>',
         );
-    });
-
-    it('should not process background image for unknown variant', () => {
-        const fields = { backgroundImage: 'test-image.jpg' };
-        const backgroundImageConfig = { tag: 'div', slot: 'background' };
-        const variant = 'unknown-variant';
-
-        processBackgroundImage(
-            fields,
-            merchCard,
-            backgroundImageConfig,
-            variant,
-        );
-
-        expect(merchCard.append.called).to.be.false;
-        expect(merchCard.outerHTML).to.equal('<div></div>');
     });
 
     it('should not append background image for ccd-slice when backgroundImageConfig is falsy', () => {
@@ -381,85 +383,125 @@ describe('processBackgroundImage', () => {
 });
 
 describe('processAnalytics', () => {
-  let merchCard;
+    let merchCard;
 
-  beforeEach(() => {
-      merchCard = mockMerchCard();
-  });
+    beforeEach(() => {
+        merchCard = mockMerchCard();
+    });
 
-  afterEach(() => {
-      sinon.restore();
-  });
+    afterEach(() => {
+        sinon.restore();
+    });
 
-  it('should not set analytics attributes if no fields.tags', () => {
-      const fields = {};
-      processAnalytics(fields, merchCard);
-      expect(merchCard.hasAttribute(ANALYTICS_SECTION_ATTR)).to.be.false;
-      expect(merchCard.querySelectorAll(`a[${ANALYTICS_LINK_ATTR}]`).length).to.equal(0);
-  });
+    it('should not set analytics attributes if no fields.tags', () => {
+        const fields = {};
+        processAnalytics(fields, merchCard);
+        expect(merchCard.hasAttribute(ANALYTICS_SECTION_ATTR)).to.be.false;
+        expect(
+            merchCard.querySelectorAll(`a[${ANALYTICS_LINK_ATTR}]`).length,
+        ).to.equal(0);
+    });
 
-  it(`should not set analytics attributes when no tags start with ${ANALYTICS_TAG}`, () => {
-      const fields = { tags: ['mas:term/montly'] };
-      processAnalytics(fields, merchCard);
-      expect(merchCard.hasAttribute(ANALYTICS_SECTION_ATTR)).to.be.false;
-      expect(merchCard.querySelectorAll(`a[${ANALYTICS_LINK_ATTR}]`).length).to.equal(0);
-  });
+    it(`should not set analytics attributes when no tags start with ${ANALYTICS_TAG}`, () => {
+        const fields = { tags: ['mas:term/montly'] };
+        processAnalytics(fields, merchCard);
+        expect(merchCard.hasAttribute(ANALYTICS_SECTION_ATTR)).to.be.false;
+        expect(
+            merchCard.querySelectorAll(`a[${ANALYTICS_LINK_ATTR}]`).length,
+        ).to.equal(0);
+    });
 
-  it('should set analytics-section attribute on merchCard', () => {
-      const fields = { tags: ['mas:product_code/phsp'] };
-      processAnalytics(fields, merchCard);
-      expect(merchCard.getAttribute(ANALYTICS_SECTION_ATTR)).to.equal('phsp');
-  });
+    it('should set analytics-section attribute on merchCard', () => {
+        const fields = { tags: ['mas:product_code/phsp'] };
+        processAnalytics(fields, merchCard);
+        expect(merchCard.getAttribute(ANALYTICS_SECTION_ATTR)).to.equal('phsp');
+    });
 
-  it('should set analytics-link attributes on links inside merchCard', () => {
-      const fields = { tags: ['mas:term/montly', 'mas:product_code/ccsn'] };
+    it('should set analytics-link attributes on links inside merchCard', () => {
+        const fields = { tags: ['mas:term/montly', 'mas:product_code/ccsn'] };
 
-      const seeTerms = document.createElement('a');
-      seeTerms.setAttribute('data-analytics-id', 'see-terms');
-      const buyNow = document.createElement('a');
-      buyNow.setAttribute('data-analytics-id', 'buy-now');
-      const noAnalytics = document.createElement('a');
-      merchCard.appendChild(seeTerms);
-      merchCard.appendChild(buyNow);
-      merchCard.appendChild(noAnalytics);
+        const seeTerms = document.createElement('a');
+        seeTerms.setAttribute('data-analytics-id', 'see-terms');
+        const buyNow = document.createElement('a');
+        buyNow.setAttribute('data-analytics-id', 'buy-now');
+        const noAnalytics = document.createElement('a');
+        merchCard.appendChild(seeTerms);
+        merchCard.appendChild(buyNow);
+        merchCard.appendChild(noAnalytics);
 
-      processAnalytics(fields, merchCard);
-      expect(merchCard.getAttribute(ANALYTICS_SECTION_ATTR)).to.equal('ccsn');
-      expect(seeTerms.getAttribute(ANALYTICS_LINK_ATTR)).to.equal('see-terms-1');
-      expect(buyNow.getAttribute(ANALYTICS_LINK_ATTR)).to.equal('buy-now-2');
-      // should handle only links with data-analytics-id attribute
-      expect(merchCard.querySelectorAll(`a[${ANALYTICS_LINK_ATTR}]`).length).to.equal(2);
-  });
+        processAnalytics(fields, merchCard);
+        expect(merchCard.getAttribute(ANALYTICS_SECTION_ATTR)).to.equal('ccsn');
+        expect(seeTerms.getAttribute(ANALYTICS_LINK_ATTR)).to.equal(
+            'see-terms-1',
+        );
+        expect(buyNow.getAttribute(ANALYTICS_LINK_ATTR)).to.equal('buy-now-2');
+        // should handle only links with data-analytics-id attribute
+        expect(
+            merchCard.querySelectorAll(`a[${ANALYTICS_LINK_ATTR}]`).length,
+        ).to.equal(2);
+    });
 });
 
 describe('hydrate', () => {
-  let merchCard;
+    let merchCard;
 
-  beforeEach(() => {
-      merchCard = mockMerchCard();
-  });
+    beforeEach(() => {
+        merchCard = mockMerchCard();
+    });
 
-  afterEach(() => {
-      sinon.restore();
-  });
+    afterEach(() => {
+        sinon.restore();
+    });
 
-  it('should hydrate a ccd-slice merch card', async () => {
-      const fragment = {
-        fields: {
-          variant: 'ccd-slice',
-          mnemonicIcon: ['www.adobe.com/icons/photoshop.svg'],
-          mnemonicAlt: [],
-          mnemonicLink: ['www.adobe.com'],
-          backgroundImage: 'test-image.jpg',
-          ctas: '<a is="checkout-link" data-wcs-osi="abm" class="accent" data-analytics-id="buy-now">Click me</a>',
-          tags: ['mas:term/montly', 'mas:product_code/ccsn'],
-        },
-      };
-      merchCard.variantLayout = { aemFragmentMapping: AEM_FRAGMENT_MAPPING };
-      await hydrate(fragment, merchCard);
+    it('should hydrate a ccd-slice merch card', async () => {
+        const fragment = {
+            fields: {
+                variant: 'ccd-slice',
+                mnemonicIcon: ['www.adobe.com/icons/photoshop.svg'],
+                mnemonicAlt: [],
+                mnemonicLink: ['www.adobe.com'],
+                backgroundImage: 'test-image.jpg',
+                ctas: '<a is="checkout-link" data-wcs-osi="abm" class="accent" data-analytics-id="buy-now">Click me</a>',
+                tags: ['mas:term/montly', 'mas:product_code/ccsn'],
+            },
+        };
+        merchCard.variantLayout = { aemFragmentMapping: AEM_FRAGMENT_MAPPING };
+        await hydrate(fragment, merchCard);
 
-      expect(merchCard.getAttribute(ANALYTICS_SECTION_ATTR)).to.equal('ccsn');
-      expect(merchCard.querySelector(`a[data-analytics-id]`).getAttribute('daa-ll')).to.equal('buy-now-1');
-  });
+        expect(merchCard.getAttribute(ANALYTICS_SECTION_ATTR)).to.equal('ccsn');
+        expect(
+            merchCard
+                .querySelector(`button[data-analytics-id]`)
+                .getAttribute('daa-ll'),
+        ).to.equal('buy-now-1');
+    });
+});
 
+describe('processDescription', async () => {
+    let merchCard;
+    let aemFragmentMapping;
+
+    beforeEach(async () => {
+        merchCard = mockMerchCard();
+
+        aemFragmentMapping = {
+            description: { tag: 'div', slot: 'body-xs' },
+        };
+    });
+
+    afterEach(() => {
+        sinon.restore();
+    });
+
+    it('should process merch links', async () => {
+        const fields = {
+            description: `Buy <a is="checkout-link" data-wcs-osi="abm" class="primary-link">Link Style</a><a is="checkout-link" data-wcs-osi="abm" class="secondary-link">Link Style</a>`,
+        };
+
+        processDescription(fields, merchCard, aemFragmentMapping.description);
+        updateLinksCSS(merchCard);
+        expect(merchCard.innerHTML).to.equal(
+            '<div slot="body-xs">Buy <a is="checkout-link" data-wcs-osi="abm" class="spectrum-Link spectrum-Link--primary">Link Style</a><a is="checkout-link" data-wcs-osi="abm" class="spectrum-Link spectrum-Link--secondary">Link Style</a></div>',
+        );
+    });
 });

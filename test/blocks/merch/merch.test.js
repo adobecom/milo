@@ -27,6 +27,7 @@ import merch, {
   reopenModal,
   setCtaHash,
   openModal,
+  handleHashChange,
 } from '../../../libs/blocks/merch/merch.js';
 
 import { mockFetch, unmockFetch, readMockText } from './mocks/fetch.js';
@@ -471,6 +472,35 @@ describe('Merch Block', () => {
     });
   });
 
+  describe('function "handleHashChange"', () => {
+    afterEach(() => {
+      document.querySelector('.dialog-modal')?.remove();
+      document.querySelector('.con-button')?.remove();
+    });
+
+    it('reopen modal after hash change', () => {
+      const cta = document.createElement('a');
+      cta.classList.add('con-button');
+      cta.setAttribute('data-modal-id', 'try-phsp');
+      const clickSpy = sinon.spy(cta, 'click');
+      document.body.append(cta);
+      window.location.hash = 'try-phsp';
+
+      handleHashChange();
+      expect(clickSpy.called).to.be.true;
+      window.location.hash = '';
+    });
+
+    it('close modal after hash change', () => {
+      const div = document.createElement('div');
+      div.classList.add('dialog-modal');
+      div.setAttribute('id', 'try-phsp');
+      document.body.append(div);
+
+      handleHashChange();
+    });
+  });
+
   describe('function "buildCta"', () => {
     it('returns null if context params do not have osi', async () => {
       const el = document.createElement('a');
@@ -494,8 +524,7 @@ describe('Merch Block', () => {
     describe('openModal', () => {
       it('sets the new hash and event listener to restore the hash on close', async () => {
         const prevHash = window.location.hash;
-        const event = new CustomEvent('dummy');
-        await openModal(event, 'https://www.adobe.com/mini-plans/creativecloud.html?mid=ft&web=1', 'TRIAL', 'try-photoshop');
+        await openModal(new CustomEvent('test'), 'https://www.adobe.com/mini-plans/creativecloud.html?mid=ft&web=1', 'TRIAL', 'try-photoshop');
         expect(window.location.hash).to.equal('#try-photoshop');
         const modalCloseEvent = new CustomEvent('milo:modal:closed');
         window.dispatchEvent(modalCloseEvent);
