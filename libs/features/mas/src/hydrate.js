@@ -99,30 +99,20 @@ export function processBackgroundImage(
         } else {
             imgAttributes.role = 'none';
         }
-        switch (variant) {
-            case 'ccd-slice':
-                if (backgroundImageConfig) {
-                    merchCard.append(
-                        createTag(
-                            backgroundImageConfig.tag,
-                            { slot: backgroundImageConfig.slot },
-                            createTag('img', imgAttributes),
-                        ),
-                    );
-                }
-                break;
-            case 'ccd-suggested':
-                merchCard.setAttribute(
-                    'background-image',
-                    fields.backgroundImage,
-                );
-                break;
+        if (!backgroundImageConfig) return;
+        if (backgroundImageConfig?.attribute) {
+            merchCard.setAttribute(
+                backgroundImageConfig.attribute,
+                fields.backgroundImage,
+            );
+            return;
         }
-    }
-    if (backgroundImageConfig?.attribute) {
-        merchCard.setAttribute(
-            backgroundImageConfig.attribute,
-            fields.backgroundImage,
+        merchCard.append(
+            createTag(
+                backgroundImageConfig.tag,
+                { slot: backgroundImageConfig.slot },
+                createTag('img', imgAttributes),
+            ),
         );
     }
 }
