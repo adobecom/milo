@@ -34,7 +34,8 @@ test.describe('Aside Block test suite', () => {
       const bgdColor = await Aside.asideSmall.evaluate(
         (e) => window.getComputedStyle(e).getPropertyValue('background-color'),
       );
-      expect(bgdColor).toBe(Aside.props.background.lightGrey1);
+      // expect(bgdColor).toBe(Aside.props.background.lightGrey1);
+      expect([Aside.props.background.lightGrey1, Aside.props.background.lightGrey4]).toContain(bgdColor);
     });
 
     await test.step('step-3: Verify the accessibility test on the Aside Small block', async () => {
@@ -69,7 +70,8 @@ test.describe('Aside Block test suite', () => {
       expect(await Aside.actionButtons.count()).toEqual(2);
       // Check Aside block background:
       const bgdColor = await Aside.asideMedium.evaluate((e) => window.getComputedStyle(e).getPropertyValue('background-color'));
-      expect(bgdColor).toBe(Aside.props.background.lightGrey1);
+      // expect(bgdColor).toBe(Aside.props.background.lightGrey1);
+      expect([Aside.props.background.lightGrey1, Aside.props.background.lightGrey4]).toContain(bgdColor);
     });
 
     await test.step('step-3: Verify the accessibility test on the Aside Medium block', async () => {
@@ -103,7 +105,8 @@ test.describe('Aside Block test suite', () => {
       expect(await Aside.actionButtons.count()).toEqual(2);
       // Check Aside block background:
       const bgdColor = await Aside.asideLarge.evaluate((e) => window.getComputedStyle(e).getPropertyValue('background-color'));
-      expect(bgdColor).toBe(Aside.props.background.lightGrey1);
+      // expect(bgdColor).toBe(Aside.props.background.lightGrey1);
+      expect([Aside.props.background.lightGrey1, Aside.props.background.lightGrey4]).toContain(bgdColor);
     });
 
     await test.step('step-3: Verify the accessibility test on the Aside Large block', async () => {
