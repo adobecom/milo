@@ -121,7 +121,7 @@ function setCookie(key, value, options = {}) {
   date.setTime(date.getTime() + expires * 24 * 60 * 60 * 1000);
   const expiresString = `expires=${date.toUTCString()}`;
 
-  document.cookie = `${key}=${value}; ${expiresString}; path=/`;
+  document.cookie = `${key}=${value}; ${expiresString}; path=/ ; domain=.${(new URL(window.location.origin)).hostname};`;
 }
 
 /**
@@ -316,6 +316,7 @@ function createRequestPayload({ updatedContext, pageName, locale, env }) {
 function updateMartechCookies(cookieData) {
   cookieData?.forEach(({ key, value }) => {
     const currentCookie = getCookie(key);
+    console.log(currentCookie, cookieData);
     if (!currentCookie) {
       setCookie(encodeURIComponent(key), value);
     }
