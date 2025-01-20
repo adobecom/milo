@@ -282,6 +282,7 @@ class Footer {
       });
     } else {
       // No hash -> region selector expands a dropdown
+      regionPickerElem.setAttribute('aria-haspopup', 'true');
       regionPickerElem.href = '#'; // reset href value to not get treated as a fragment
       regionSelector.href = localizeLink(regionSelector.href);
       decorateAutoBlock(regionSelector); // add fragment-specific class(es)
