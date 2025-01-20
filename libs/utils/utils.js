@@ -725,6 +725,14 @@ export function decorateLinks(el) {
     if (a.href.includes(copyEvent)) {
       decorateCopyLink(a, copyEvent);
     }
+    const branchQuickLink = 'app.link';
+
+    if (a.href.includes(branchQuickLink)) {
+      (async () => {
+        const { default: processQuickLink } = await import('../features/branch-quick-links/branch-quick-links.js');
+        processQuickLink(a);
+      })();
+    }
     // Append aria-label
     const pipeRegex = /\s?\|([^|]*)$/;
     if (pipeRegex.test(a.textContent) && !/\.[a-z]+/i.test(a.textContent)) {
