@@ -75,10 +75,10 @@ export async function findFragments(urls) {
     if (fragments.length > 0) {
       fragments.forEach((fragment) => {
         if (acc[fragment.pathname]) {
-          acc[fragment.pathname].parentPages.push(urls[index]?.href);
+          acc[fragment.pathname].parentPages.add(urls[index]?.href);
           return acc;
         }
-        fragment.parentPages = [urls[index]?.href];
+        fragment.parentPages = new Set([urls[index]?.href]);
         acc[fragment.pathname] = fragment;
         return acc;
       });
