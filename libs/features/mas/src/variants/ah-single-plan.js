@@ -36,7 +36,7 @@ export class AHSinglePlan extends VariantLayout {
             <slot name="icons"></slot>
             <slot name="heading-xs"></slot>
         </div>
-        <slot name="body-xs"></slot>
+        <slot name="body-xxs"></slot>
         <slot name="price"></slot>
         <div class="footer">
           <slot name="cta"></slot>
