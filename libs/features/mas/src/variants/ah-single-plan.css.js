@@ -1,12 +1,12 @@
 export const CSS = `
-    merch-card[variant="ah-single-plan"] [slot="heading-xxxs"] {
+    merch-card[variant="ah-single-plan"] [slot="heading-xs"] {
         letter-spacing: normal;
         font-size: 12px;
         line-height: 18px;
         color: var(--merch-card-ah-single-plan-text-color);
     }
 
-    merch-card[variant="ah-single-plan"] [slot="body-xxs"] {
+    merch-card[variant="ah-single-plan"] [slot="body-xs"] {
         letter-spacing: normal;
         max-height: 54px;
         overflow: hidden;

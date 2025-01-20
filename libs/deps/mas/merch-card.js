@@ -1685,14 +1685,14 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
             gap: 8px;
         }
     `);import{html as ko,css as Io}from"../lit-all.min.js";var Ur=`
-    merch-card[variant="ah-single-plan"] [slot="heading-xxxs"] {
+    merch-card[variant="ah-single-plan"] [slot="heading-xs"] {
         letter-spacing: normal;
         font-size: 12px;
         line-height: 18px;
         color: var(--merch-card-ah-single-plan-text-color);
     }
 
-    merch-card[variant="ah-single-plan"] [slot="body-xxs"] {
+    merch-card[variant="ah-single-plan"] [slot="body-xs"] {
         letter-spacing: normal;
         max-height: 54px;
         overflow: hidden;
@@ -1719,22 +1719,25 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
         font-size: 14px;
         line-height: 18px;
     }
-`;var Bo={mnemonics:{size:"s"},backgroundImage:{tag:"div",slot:"image"},title:{tag:"h3",slot:"heading-xxxs"},description:{tag:"div",slot:"body-xxs"},prices:{tag:"p",slot:"price"},ctas:{slot:"cta",size:"S"},allowedColors:["gray"]},q=class extends E{constructor(t){super(t),this.card.spectrum="swc",this.updateComplete}getGlobalCSS(){return Ur}get aemFragmentMapping(){return Bo}renderLayout(){return ko`
+`;var Bo={mnemonics:{size:"s"},backgroundImage:{tag:"div",slot:"image"},title:{tag:"h3",slot:"heading-xs"},description:{tag:"div",slot:"body-xs"},prices:{tag:"p",slot:"price"},ctas:{slot:"cta",size:"S"},allowedColors:["gray"]},q=class extends E{constructor(t){super(t),this.card.spectrum="swc",this.updateComplete}getGlobalCSS(){return Ur}get aemFragmentMapping(){return Bo}renderLayout(){return ko`
+      <div class="content">
         <div class="header">
-    		    <slot name="icons"></slot>
-            <slot name="heading-xxxs"></slot>
+            <slot name="icons"></slot>
+            <slot name="heading-xs"></slot>
         </div>
-        <slot name="body-xxs"></slot>
+        <slot name="body-xs"></slot>
         <slot name="price"></slot>
         <div class="footer">
           <slot name="cta"></slot>
         </div>
-        <slot name="image"></slot>
+      </div>
+      <slot name="image"></slot>
       <slot></slot>
     `}};p(q,"variantStyle",Io`
     :host([variant='ah-single-plan']) {
-        --merch-card-ah-single-plan-width: 484px;
-        --merch-card-ah-single-plan-height: 212px;
+        --merch-card-ah-single-plan-width: 460px;
+        --merch-card-ah-single-plan-height: 206px;
+        --merch-card-ah-single-plan-content-width: 245px;
         --merch-card-ah-single-plan-heading-color: rgba(44, 44, 44, 1);
         --merch-card-ah-single-plan-gray-background: rgba(248, 248, 248, 1);
         --merch-card-ah-single-plan-white-background: rgba(255, 255, 255, 1);
@@ -1745,15 +1748,24 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
         color: var(--merch-card-ah-single-plan-heading-color);
         border-radius: 10px;
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
+        gap: 16px;
         overflow: hidden;
         padding: 12px !important;
         box-sizing: content-box !important;
         border: none;
     }
+    
     :host([variant='ah-single-plan'][background-color='gray']) {
         background-color: var(--merch-card-ah-single-plan-gray-background);
     }
+
+    :host([variant='ah-single-plan']) .content {
+        display: flex;
+        flex-direction: column;
+        width: var(--merch-card-ah-single-plan-content-width);
+    }
+
     :host([variant='ah-single-plan']) .header {
         display: flex;
         flex-direction: row;
@@ -1785,6 +1797,16 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
         display: flex;
         flex-direction: row;
         gap: 8px;
+    }
+        
+    :host([variant='ah-single-plan']) ::slotted([slot='image']) {
+        width: 199px;
+        overflow: hidden;
+    }
+
+    :host([variant='ah-single-plan']) ::slotted([slot='image']) img {
+        border-radius: 16px;
+        object-fit: cover;
     }
   `);customElements.define("ah-single-plan",q);var Et=(e,t=!1)=>{switch(e.variant){case"catalog":return new ne(e);case"image":return new Fe(e);case"inline-heading":return new $e(e);case"mini-compare-chart":return new ae(e);case"plans":return new ie(e);case"product":return new W(e);case"segment":return new se(e);case"special-offers":return new ce(e);case"twp":return new le(e);case"ccd-suggested":return new he(e);case"ccd-slice":return new me(e);case"ah-single-plan":return new q(e);default:return t?void 0:new W(e)}},zr=()=>{let e=[];return e.push(ne.variantStyle),e.push(ae.variantStyle),e.push(W.variantStyle),e.push(ie.variantStyle),e.push(se.variantStyle),e.push(ce.variantStyle),e.push(le.variantStyle),e.push(he.variantStyle),e.push(me.variantStyle),e.push(q.variantStyle),e};var Gr=document.createElement("style");Gr.innerHTML=`
 :root {
