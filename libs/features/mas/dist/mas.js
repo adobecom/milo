@@ -1694,7 +1694,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
         font-size: 14px;
         line-height: 18px;
     }
-`;var uc={mnemonics:{size:"s"},backgroundImage:{tag:"div",slot:"image"},title:{tag:"h3",slot:"heading-xs"},description:{tag:"div",slot:"body-xs"},prices:{tag:"p",slot:"price"},ctas:{slot:"cta",size:"S"},allowedColors:["gray"]},De=class extends P{constructor(t){super(t),this.card.spectrum="swc",this.updateComplete}getGlobalCSS(){return Wo}get aemFragmentMapping(){return uc}renderLayout(){return x`
+`;var uc={mnemonics:{size:"s"},backgroundImage:{tag:"div",slot:"image"},title:{tag:"h3",slot:"heading-xs"},description:{tag:"div",slot:"body-xxs"},prices:{tag:"p",slot:"price"},ctas:{slot:"cta",size:"S"},allowedColors:["gray"]},De=class extends P{constructor(t){super(t),this.card.spectrum="swc",this.updateComplete}getGlobalCSS(){return Wo}get aemFragmentMapping(){return uc}renderLayout(){return x`
       <div class="content">
         <div class="header">
             <slot name="icons"></slot>
