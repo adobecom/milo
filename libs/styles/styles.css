@@ -725,13 +725,11 @@ header.global-navigation + .feds-localnav {
   height: var(--feds-localnav-height);
 }
 
-header.global-navigation.has-promo {
-  height: var(--global-height-navPromo);
-  top: var(--global-height-navPromo);
-}
-
-header.global-navigation.has-promo:has(+ .feds-localnav) {
+.feds-promo-aside-wrapper {
+  position: sticky;
   top: 0;
+  z-index: 11;
+  height: var(--global-height-navPromo);
 }
 
 .feds-sr-only {
@@ -744,6 +742,14 @@ header.global-navigation.has-promo:has(+ .feds-localnav) {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+header.global-navigation.has-promo {
+  top: var(--global-height-navPromo);
+}
+
+header.global-navigation.new-nav.local-nav {
+  top: 0;
 }
 
 @media (min-width: 900px) {

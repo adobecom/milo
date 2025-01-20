@@ -1246,13 +1246,6 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
   display: block;
 }
 
-.feds-promo-aside-wrapper {
-  position: sticky;
-  top: 0;
-  z-index: 11;
-  height: var(--global-height-navPromo);
-}
-
 @keyframes slideright {
   from {
     translate: 0 0;
@@ -1328,4 +1321,9 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
 html:has(body.disable-ios-scroll) { /* this class is only added on iOS */
   height: 100dvh;
   position: fixed;
+}
+
+/* GNAV popup height fix in case of app banner */
+.branch-banner-is-active header.new-nav .feds-nav > section.feds-navItem > .feds-popup {
+  height: calc(100dvh - var(--app-banner-height));
 }
