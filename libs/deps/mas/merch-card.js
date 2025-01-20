@@ -1687,12 +1687,12 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
     `);import{html as ko,css as Io}from"../lit-all.min.js";var Ur=`
     merch-card[variant="ah-single-plan"] [slot="heading-xs"] {
         letter-spacing: normal;
-        font-size: 12px;
+        font-size: 14px;
         line-height: 18px;
         color: var(--merch-card-ah-single-plan-text-color);
     }
 
-    merch-card[variant="ah-single-plan"] [slot="body-xs"] {
+    merch-card[variant="ah-single-plan"] [slot="body-xxs"] {
         letter-spacing: normal;
         max-height: 54px;
         overflow: hidden;
@@ -1725,7 +1725,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
             <slot name="icons"></slot>
             <slot name="heading-xs"></slot>
         </div>
-        <slot name="body-xs"></slot>
+        <slot name="body-xxs"></slot>
         <slot name="price"></slot>
         <div class="footer">
           <slot name="cta"></slot>
