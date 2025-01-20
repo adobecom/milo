@@ -963,11 +963,40 @@ describe('Utils', () => {
 
   describe('localNav', async () => {
     it('Preserving space to avoid CLS issue', async () => {
+      const footer = document.createElement('footer');
+      footer.innerHTML = '<p>Footer Content</p>';
+      document.body.appendChild(footer);
       document.head.innerHTML = await readFile({ path: './mocks/head-localNav.html' });
       document.body.appendChild(document.createElement('header'));
       await utils.loadArea();
       console.log(document.querySelector('.feds-localnav'));
       expect(document.querySelector('.feds-localnav')).to.exist;
+    });
+  });
+
+  describe('loadFooter', async () => {
+    it('Should load if footer meta is not off', async () => {
+      const footer = document.createElement('footer');
+      footer.innerHTML = '<p>Footer Content</p>';
+      document.body.appendChild(footer);
+      await utils.loadArea();
+      expect(document.querySelector('footer')).to.exist;
+    });
+    it('Should load if footer is  off', async () => {
+      const metaTag = document.createElement('meta');
+      metaTag.setAttribute('name', 'footer');
+      metaTag.setAttribute('content', 'off');
+      document.head.appendChild(metaTag);
+
+      const footer = document.createElement('footer');
+      footer.innerHTML = '<p>Footer Content</p>';
+      document.body.appendChild(footer);
+      await utils.loadArea();
+      expect(document.querySelector('footer')).to.exist;
+
+      metaTag.setAttribute('name', 'footer');
+      metaTag.setAttribute('content', 'on');
+      document.head.appendChild(metaTag);
     });
   });
 });
