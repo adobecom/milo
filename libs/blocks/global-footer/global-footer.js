@@ -209,8 +209,6 @@ class Footer {
       <a
         href="${regionSelector.href}"
         class="${regionPickerClass}"
-        aria-expanded="false"
-        aria-haspopup="true"
         role="button">
         <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="feds-regionPicker-globe" focusable="false">
           <use href="#footer-icon-globe" />
@@ -284,6 +282,7 @@ class Footer {
       });
     } else {
       // No hash -> region selector expands a dropdown
+      regionPickerElem.setAttribute('aria-haspopup', 'true');
       regionPickerElem.href = '#'; // reset href value to not get treated as a fragment
       regionSelector.href = localizeLink(regionSelector.href);
       decorateAutoBlock(regionSelector); // add fragment-specific class(es)
