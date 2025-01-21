@@ -14,10 +14,14 @@ function promoIntersectObserve(el, stickySectionEl, options = {}) {
         observer.unobserve(entry.target);
         return;
       }
+      const footerTarget = entry.target === document.querySelector('footer');
       const isPromoStart = entry.target === stickySectionEl;
       const abovePromoStart = (isPromoStart && entry.isIntersecting)
         || stickySectionEl?.getBoundingClientRect().y > 0;
-      if (entry.isIntersecting || abovePromoStart) el.classList.add('hide-sticky-section');
+      if (footerTarget && entry.isIntersecting) el.classList.add('fill-sticky-section');
+      else el.classList.remove('fill-sticky-section');
+
+      if (!footerTarget && (entry.isIntersecting || abovePromoStart)) el.classList.add('hide-sticky-section');
       else el.classList.remove('hide-sticky-section');
     });
   }, options);
@@ -41,6 +45,9 @@ function handleStickyPromobar(section, delay) {
   }
   const io = promoIntersectObserve(section, stickySectionEl);
   if (stickySectionEl) io.observe(stickySectionEl);
+  if (section.querySelector(':is(.promobar, .notification:not(.no-hide))')) {
+    io.observe(document.querySelector('footer'));
+  }
 }
 
 export default async function handleStickySection(sticky, section) {
