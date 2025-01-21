@@ -316,7 +316,6 @@ function createRequestPayload({ updatedContext, pageName, locale, env }) {
 function updateMartechCookies(cookieData) {
   cookieData?.forEach(({ key, value }) => {
     const currentCookie = getCookie(key);
-    console.log(currentCookie, cookieData);
     if (!currentCookie) {
       setCookie(encodeURIComponent(key), value);
     }
