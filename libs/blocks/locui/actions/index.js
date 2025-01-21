@@ -79,6 +79,17 @@ function findMetaFragments(doc) {
   return fragments;
 }
 
+function removeDuplicateUrls(urlObjects) {
+  const uniqueUrls = [];
+  const filteredUrls = urlObjects.filter((url) => !urls.value.some((existing) => removeLangstorePrefix(existing.pathname) === url.pathname));
+  filteredUrls.forEach((url) => {
+    if (!uniqueUrls.some((unique) => unique.pathname === url.pathname)) {
+      uniqueUrls.push(url);
+    };
+  });
+  return uniqueUrls;
+}
+
 async function findPageFragments(path) {
   const page = path.split('/').pop();
   const isIndex = page === 'index' ? path.lastIndexOf('index') : 0;
@@ -108,7 +119,7 @@ async function findPageFragments(path) {
     acc.push(fragmentUrl);
     return acc;
   }, []);
-  fragmentUrls = [...fragmentUrls, ...findMetaFragments(doc)];
+  fragmentUrls = removeDuplicateUrls([...fragmentUrls, ...findMetaFragments(doc)]);
   if (fragmentUrls.length === 0) return [];
   return fragmentUrls;
 }
@@ -163,7 +174,7 @@ export async function syncToExcel(paths) {
   setStatus('fragments', 'info', `${paths.length} fragments found.`, null, 1500);
   setExcelStatus('Find fragments', `Found ${paths.length} fragments.`);
   if (paths.length > 0) {
-    const newUrls = paths.filter((path) => urls.find((url) => url.pathname !== path)).map((path) => new URL(path[0]));
+    const newUrls = paths.map((path) => new URL(path[0]));
     urls.value = [...urls.value, ...getUrls(newUrls)];
     // Update language cards count
     languages.value = [...languages.value.map((lang) => {
