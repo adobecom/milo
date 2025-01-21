@@ -13,13 +13,6 @@ const AEM_FRAGMENT_MAPPING = {
 };
 
 export class AHSinglePlan extends VariantLayout {
-
-  constructor(card) {
-    super(card);
-    this.card.spectrum = 'swc';
-    this.updateComplete;
-  }
-
   getGlobalCSS() {
     return CSS;
   }
@@ -85,9 +78,9 @@ export class AHSinglePlan extends VariantLayout {
         flex-direction: row;
         align-items: center;
         gap: var(--consonant-merch-spacing-xxs);
-        padding-bottom: 4px;
+        padding-block: 6px;
     }
-    :host([variant='ah-single-plan']) ::slotted([slot='heading-xxxs']) {
+    :host([variant='ah-single-plan']) ::slotted([slot='heading-xs']) {
         letter-spacing: normal;
         font-size: 12px;
         line-height: 18px;
@@ -100,6 +93,7 @@ export class AHSinglePlan extends VariantLayout {
         font-size: 12px;
         line-height: 18px;
         color: var(--merch-card-ah-single-plan-heading-color);
+        gap: 4px;
     }
     :host([variant='ah-single-plan']) .footer {
         display: flex;
@@ -119,8 +113,11 @@ export class AHSinglePlan extends VariantLayout {
     }
 
     :host([variant='ah-single-plan']) ::slotted([slot='image']) img {
-        border-radius: 16px;
+        width: 100%;
+        height: 100%;
         object-fit: cover;
+        border-radius: 16px;
+        overflow: hidden;
     }
   `;
 }

@@ -36,7 +36,7 @@ const getVariantLayout = (card, mustMatch = false) => {
         case 'ccd-slice':
             return new CCDSlice(card);
         case 'ah-single-plan':
-                return new AHSinglePlan(card);
+            return new AHSinglePlan(card);
         default:
             return mustMatch ? undefined : new Product(card);
     }

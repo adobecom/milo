@@ -19,7 +19,7 @@ export const CSS = `
         line-clamp: 3;
         -webkit-line-clamp: 3;
         -webkit-box-orient: vertical;
-        margin-bottom: 12px;
+        margin-bottom: 16px;
         box-sizing: border-box;
         color: var(--merch-card-ah-single-plan-text-color);
     }
