@@ -1,5 +1,6 @@
 import { html, LitElement, css } from 'lit';
 import { parseState, pushStateFromComponent } from '../deeplink.js';
+import { createTag } from '../utils.js';
 
 export class MerchSidenavCheckboxGroup extends LitElement {
     static properties = {
@@ -69,10 +70,22 @@ export class MerchSidenavCheckboxGroup extends LitElement {
         pushStateFromComponent(this, this.selectedValues.join(','));
     }
 
+    addAccessibilityAttributes() {
+        const id = 'sidenav-checkbox-group-title';
+        const groupIdEl = createTag('div', { class: 'invisible-and-shrank', id });
+        groupIdEl.textContent = this.sidenavCheckboxTitle;
+        this.append(groupIdEl);
+        this.querySelectorAll('sp-checkbox').forEach((checkboxEl) => {
+            checkboxEl.setAttribute('role', 'group');
+            checkboxEl.setAttribute('aria-labelledby', id);
+        });
+    }
+
     connectedCallback() {
         super.connectedCallback();
         this.updateComplete.then(async () => {
             this.setStateFromURL();
+            this.addAccessibilityAttributes();
         });
     }
 

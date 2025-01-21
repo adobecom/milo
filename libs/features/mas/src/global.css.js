@@ -420,5 +420,14 @@ body.merch-modal {
     height: 100vh;
 }
 
+.invisible-and-shrank {
+    top: 0;
+    left: -2px;
+    width: 1px;
+    height: 1px;
+    position: absolute;
+    overflow: hidden;
+}
+
 `;
 document.head.appendChild(styles);
