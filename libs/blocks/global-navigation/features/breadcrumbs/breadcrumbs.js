@@ -53,8 +53,9 @@ const createBreadcrumbs = (element) => {
     .split(',')
     .map((item) => item.trim()) || [];
 
-  ul.querySelectorAll('li').forEach((li) => {
+  ul.querySelectorAll('li').forEach((li, index) => {
     if (hiddenEntries.includes(li.innerText?.toLowerCase().trim())) li.remove();
+    if (index > 0) li.insertAdjacentHTML('afterbegin', '<span aria-hidden="true">/</span>');
   });
 
   const breadcrumbs = toFragment`
