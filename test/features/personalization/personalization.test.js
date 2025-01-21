@@ -153,11 +153,6 @@ describe('Functional Test', () => {
     expect(config.mep?.martech).to.be.undefined;
   });
 
-
-
-
-
-
   it('should choose chrome & logged out (using nickname)', async () => {
     await loadManifestAndSetResponse('./mocks/manifestWithAmpersand.json');
     await init(mepSettings);
