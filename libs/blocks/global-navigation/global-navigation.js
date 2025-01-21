@@ -352,7 +352,7 @@ class Gnav {
       this.addChangeEventListeners,
     ];
     const fetchKeyboardNav = () => {
-      setupKeyboardNav(this.newMobileNav && this.isLocalNav());
+      setupKeyboardNav(this.isLocalNav());
     };
     this.block.addEventListener('click', this.loadDelayed);
     this.block.addEventListener('keydown', fetchKeyboardNav);
@@ -794,7 +794,7 @@ class Gnav {
 
   isToggleExpanded = () => this.elements.mobileToggle?.getAttribute('aria-expanded') === 'true';
 
-  isLocalNav = () => this
+  isLocalNav = () => this.newMobileNav && this
     .elements
     .navWrapper
     ?.querySelectorAll('.feds-nav > section.feds-navItem')
@@ -817,7 +817,7 @@ class Gnav {
         const section = sections[0];
         queueMicrotask(() => section.click());
       }
-    } else if (isExpanded && this.newMobileNav && this.isLocalNav()) {
+    } else if (isExpanded && this.isLocalNav()) {
       enableMobileScroll();
     }
     toggle?.setAttribute('aria-expanded', !isExpanded);
