@@ -6,7 +6,7 @@ export const AEM_FRAGMENT_MAPPING = {
     mnemonics: { size: 'm' },
     backgroundImage: { tag: 'div', slot: 'image' },
     description: { tag: 'div', slot: 'body-s' },
-    ctas: { slot: 'footer', size: 's' },
+    ctas: { slot: 'footer', size: 'S' },
     allowedSizes: ['wide'],
 };
 
@@ -23,9 +23,9 @@ export class CCDSlice extends VariantLayout {
     renderLayout() {
         return html` <div class="content">
                 <div class="top-section">
-                  <slot name="icons"></slot> 
-                  ${this.badge}
-                </div>  
+                    <slot name="icons"></slot>
+                    ${this.badge}
+                </div>
                 <slot name="body-s"></slot>
                 <slot name="footer"></slot>
             </div>
@@ -35,29 +35,46 @@ export class CCDSlice extends VariantLayout {
 
     static variantStyle = css`
         :host([variant='ccd-slice']) {
+            --consonant-merch-card-background-color: rgb(248, 248, 248);
+            --consonant-merch-card-border-color: rgb(230, 230, 230);
+            --consonant-merch-card-body-s-color: rgb(34, 34, 34);
+            --merch-color-inline-price-strikethrough: var(--spectrum-gray-600);
+            --mod-img-height: 29px;
+
+            box-sizing: border-box;
             min-width: 290px;
-            max-width: var(--consonant-merch-card-ccd-slice-single-width);
-            max-height: var(--consonant-merch-card-ccd-slice-single-height);
-            height: var(--consonant-merch-card-ccd-slice-single-height);
-            border: 1px solid var(--spectrum-gray-700);
+            max-width: 322px;
+            width: 100%;
+            max-height: 154px;
+            height: 154px;
             border-radius: 4px;
             display: flex;
             flex-flow: wrap;
         }
 
+        :host([variant='ccd-slice']) * {
+            overflow: hidden;
+        }
+
         :host([variant='ccd-slice']) ::slotted([slot='body-s']) {
             font-size: var(--consonant-merch-card-body-xs-font-size);
             line-height: var(--consonant-merch-card-body-xxs-line-height);
-            max-width: 154px;
+            min-width: 154px;
+            max-width: 171px;
+            height: 55px;
+            overflow: hidden;
         }
 
         :host([variant='ccd-slice'][size='wide']) ::slotted([slot='body-s']) {
-          max-width: 425px;
+            max-width: 425px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         :host([variant='ccd-slice'][size='wide']) {
-            width: var(--consonant-merch-card-ccd-slice-wide-width);
-            max-width: var(--consonant-merch-card-ccd-slice-wide-width);
+            width: 600px;
+            max-width: 600px;
         }
 
         :host([variant='ccd-slice']) .content {
@@ -65,7 +82,9 @@ export class CCDSlice extends VariantLayout {
             gap: var(--consonant-merch-spacing-xxs);
             padding: 15px;
             padding-inline-end: 0;
-            width: 154px;
+            height: 154px;
+            box-sizing: border-box;
+            min-height: 123px;
             flex-direction: column;
             justify-content: space-between;
             align-items: flex-start;
@@ -87,8 +106,8 @@ export class CCDSlice extends VariantLayout {
             display: flex;
             justify-content: center;
             flex-shrink: 0;
-            width: var(--consonant-merch-card-ccd-slice-background-img-size);
-            height: var(--consonant-merch-card-ccd-slice-background-img-size);
+            width: 134px;
+            height: 149px;
             overflow: hidden;
             border-radius: 50%;
             padding: 15px;
