@@ -3,8 +3,7 @@
   position: fixed;
   bottom: 32px;
   left: 40px;
-  color: #eee;
-  font-weight: 600;
+  color: #eee; 
   font-size: 24px;
   display: block !important;
   font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
@@ -53,12 +52,14 @@
   }
 }
 
-.mep-toggle-advanced {
-  position: relative;
-  font-size: 16px;
-  padding-left: 26px;
-  margin-top: 5px;
-  cursor: pointer;
+.mep-uppercase {
+  text-transform: capitalize;
+}
+
+.mep-manifest-section {
+  gap: 8px;
+  display: flex;
+  flex-direction: column;
 }
 
 .mep-badge .mep-open::after,
@@ -83,30 +84,9 @@
   bottom: 6px;
 }
 
-.mep-toggle-advanced::before {
-  transform: rotate(45deg);
-  left: 10px;
-  bottom: 10px;
-}
-
-.mep-advanced-container.mep-advanced-open .mep-toggle-advanced::before {
-  transform: rotate(135deg);
-  bottom: 12px;
-}
-
-.mep-advanced-container .mep-advanced-options {
-  display: none;
-}
-
-.mep-advanced-container.mep-advanced-open .mep-advanced-options {
-  display: block;
-}
-
 .mep-popup-header .mep-close {
-  position: absolute;
-  right: 5px;
+  margin-right: 0;
   cursor: pointer;
-  top: 15px;
 }
 
 .mep-popup-header .mep-close::after {
@@ -122,8 +102,17 @@
 }
 
 .mep-popup {
-  font-size: 14px;
+  font-size: 16px;
 }
+
+.mep-popup .mep-columns {
+  display:flex;
+}
+
+.mep-popup .mep-column {
+  flex: 1 50%;
+}
+
 .mep-popup.in-page {
   position: absolute;
   bottom: 64px;
@@ -132,20 +121,19 @@
   min-width: 300px;
   border-radius: 16px;
   box-shadow: 0 0 10px #000;
-  font-size: 12px;
 }
 
 .mep-popup a.mep-edit-manifest {
-  position: relative; 
-  margin-left: 6px;
   cursor: pointer;
-  color: inherit;
+  font-size: 18px;
+  font-weight: 600;
 }
 
 .mep-popup .mep-popup-header {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
+  padding: 24px 12px;
   border-radius: 16px 16px 0 0;
   position: relative;
 }
@@ -162,14 +150,19 @@
   line-height: 18px;
 }
 
+.mep-popup h6 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
 .mep-popup h4,
 .mep-popup h5 {
   margin: 0;
 }
 
 .mep-popup h4 {
-  font-size: 16px;
-  margin-bottom: 6px;
+  font-size: 18px;
 }
 
 .mep-popup h5 {
@@ -215,24 +208,10 @@
   flex: 0 0 auto;
 }
 
-.mep-manifest-info {
-  padding: 12px 12px 0;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.mep-advanced-container .mep-manifest-info {
-  padding: 0 12px 0 26px;
-}
-
-.mep-popup .advanced-options {
+.mep-popup .mep-manifest-actions {
   display: flex;
   justify-content: flex-end;
   padding: 15px;
-}
-
-.mep-popup label {
-  font-weight: 500;
 }
 
 .mep-popup .target-activity-name {
@@ -250,22 +229,35 @@ label.mep-manifest-selected-variant::after {
 }
 
 .mep-manifest-title {
-  padding-right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .mep-popup.in-page .mep-manifest-list {
   max-height: calc(100vh - 300px);
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 12px;
 }
 
 .mep-popup:not(.in-page) .promo-schedule-info {
   display: none;
 }
 
-.mep-popup input.new-manifest {
-  height: 28px;
-  width: 98%;
-  margin-bottom: 5px;
+.mep-popup input.new-manifest,
+.mep-popup select.mep-manifest-variants {
+  height: 36px;
+  border: 0;
+  padding: 0;
+  border-radius: 4px;
+}
+
+.mep-popup input.new-manifest:focus,
+.mep-popup select.mep-manifest-variants:focus {
+  border: 0;
 }
 
 /* scrollbar */

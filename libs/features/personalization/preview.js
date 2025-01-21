@@ -177,7 +177,8 @@ function getManifestListDomAndParameter(mepConfig) {
     } = manifest;
     const editUrl = manifestUrl || manifestPath;
     const editPath = normalizePath(editUrl);
-    let radio = '';
+    // let radio = '';
+    let options = '';
     const variantNamesArray = typeof variantNames === 'string' ? variantNames.split('||') : variantNames;
     variantNamesArray.forEach((variant) => {
       const checked = {
@@ -189,11 +190,14 @@ function getManifestListDomAndParameter(mepConfig) {
         checked.class = 'class="mep-manifest-selected-variant"';
         manifestParameter.push(`${manifestPath}--${variant}`);
       }
-      radio += `<div>
-        <input type="radio" name="${editPath}${pageId}" value="${variant}" 
-        id="${editPath}${pageId}--${variant}" data-manifest="${editPath}" ${checked.attribute}>
-        <label for="${editPath}${pageId}--${variant}" ${checked.class}>${variant}</label>
-      </div>`;
+      options += `<option name="${editPath}${pageId}" value="${variant}" 
+      id="${editPath}${pageId}--${variant}" data-manifest="${editPath}" ${checked.attribute}>
+      <label for="${editPath}${pageId}--${variant}" ${checked.class}>${variant}</option>`;
+      // radio += `<div>
+      //   <input type="radio" name="${editPath}${pageId}" value="${variant}"
+      //   id="${editPath}${pageId}--${variant}" data-manifest="${editPath}" ${checked.attribute}>
+      //   <label for="${editPath}${pageId}--${variant}" ${checked.class}>${variant}</label>
+      // </div>`;
     });
     const checked = {
       attribute: '',
@@ -204,28 +208,33 @@ function getManifestListDomAndParameter(mepConfig) {
       checked.class = 'class="mep-manifest-selected-variant"';
       manifestParameter.push(`${editUrl}--default`);
     }
-    radio += `<div>
-      <input type="radio" name="${editPath}${pageId}" value="default" 
-      id="${editPath}${pageId}--default" data-manifest="${editPath}" ${checked.attribute}>
-      <label for="${editPath}${pageId}--default" ${checked.class}>Default (control)</label>
-    </div>`;
+    // radio += `<div>
+    //   <input type="radio" name="${editPath}${pageId}" value="default" 
+    //   id="${editPath}${pageId}--default" data-manifest="${editPath}" ${checked.attribute}>
+    //   <label for="${editPath}${pageId}--default" ${checked.class}>Default (control)</label>
+    // </div>`;
+    options += `<option name="${editPath}${pageId}" value="default" 
+    id="${editPath}${pageId}--default" data-manifest="${editPath}" ${checked.attribute}>
+    <label for="${editPath}${pageId}--default" ${checked.class}>Default (control)</option>`;
+
+    const activityContainer = targetActivityName ? `<div class="target-activity-name">${targetActivityName || ''}</div>` : '';
 
     const scheduled = eventStart && eventEnd
       ? `<p class="promo-schedule-info">Scheduled - ${disabled ? 'inactive' : 'active'}</p>
          <p>On: ${formatDate(eventStart)} - <a target= "_blank" href="?instant=${formatDate(eventStart, 'iso')}">instant</a></p>
          <p>Off: ${formatDate(eventEnd)}</p>` : '';
-    manifestList += `<div class="mep-manifest-info" title="Manifest location: ${editUrl}&#013;Analytics manifest name: ${analyticsTitle || 'N/A for this manifest type'}">
-      <div class="mep-manifest-title">
-        ${mIdx + 1}. ${getFileName(manifestPath)}
+    manifestList += `<div class="mep-manifest-section" title="Manifest location: ${editUrl}&#013;Analytics manifest name: ${analyticsTitle || 'N/A for this manifest type'}">
+      <div class="mep-manifest-title">  
         <a class="mep-edit-manifest" href="${editUrl}" target="_blank" title="Open manifest">
-          <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0,0,256,256" width="16px" height="16px" fill-rule="nonzero"><g transform=""><g fill="currentColor" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><g transform="scale(8.53333,8.53333)"><path d="M22.82813,3c-0.51175,0 -1.02356,0.19544 -1.41406,0.58594l-2.41406,2.41406l5,5l2.41406,-2.41406c0.781,-0.781 0.781,-2.04713 0,-2.82812l-2.17187,-2.17187c-0.3905,-0.3905 -0.90231,-0.58594 -1.41406,-0.58594zM17,8l-11.74023,11.74023c0,0 0.91777,-0.08223 1.25977,0.25977c0.342,0.342 0.06047,2.58 0.48047,3c0.42,0.42 2.64389,0.12436 2.96289,0.44336c0.319,0.319 0.29688,1.29688 0.29688,1.29688l11.74023,-11.74023zM4,23l-0.94336,2.67188c-0.03709,0.10544 -0.05623,0.21635 -0.05664,0.32813c0,0.55228 0.44772,1 1,1c0.11177,-0.00041 0.22268,-0.01956 0.32813,-0.05664c0.00326,-0.00128 0.00652,-0.00259 0.00977,-0.00391l0.02539,-0.00781c0.00196,-0.0013 0.00391,-0.0026 0.00586,-0.00391l2.63086,-0.92773l-1.5,-1.5z"></path></g></g></g></svg>
+        ${mIdx + 1}. ${getFileName(manifestPath)}
         </a>
-        <div class="target-activity-name">${targetActivityName || ''}</div>
+        ${activityContainer}
         <div>Source: ${source}</div>
         ${manifest.lastSeen ? `<div>Last seen: ${formatDate(new Date(manifest.lastSeen))}</div>` : ''}
         ${scheduled}
       </div>
-      <div class="mep-manifest-variants">${radio}</div>
+      <label for="experiences">Experience</label>
+      <select name="experiences" class="mep-manifest-variants">${options}</select>
     </div>`;
   });
   return { manifestList, manifestParameter };
@@ -237,9 +246,6 @@ function addMepPopupListeners(popup, pageId) {
   popup.querySelectorAll('input[type="text"]').forEach((input) => {
     input.addEventListener('keyup', updatePreviewButton.bind(null, popup, pageId));
     input.addEventListener('change', updatePreviewButton.bind(null, popup, pageId));
-  });
-  popup.querySelector('.mep-toggle-advanced').addEventListener('click', (e) => {
-    e.target.closest('.mep-popup')?.querySelector('.mep-advanced-container')?.classList.toggle('mep-advanced-open');
   });
 }
 export function getMepPopup(mepConfig, isMmm = false) {
@@ -258,51 +264,58 @@ export function getMepPopup(mepConfig, isMmm = false) {
     'data-url': pageUrl,
   });
   const mepPopupHeader = createTag('div', { class: 'mep-popup-header' });
-  const listInfo = createTag('div', { class: 'mep-manifest-info' });
-  const advancedOptions = createTag('div', { class: 'mep-advanced-container' });
+  const listInfo = createTag('div', { class: 'mep-manifest-section' });
+  const basicOptions = createTag('div', { class: 'mep-manifest-section' });
+  const advancedOptions = createTag('div', { class: 'mep-manifest-section' });
   const mepManifestList = createTag('div', { class: 'mep-manifest-list' });
 
+  const targetOnText = page.target === 'postlcp' ? 'on post LCP' : page.target;
   listInfo.innerHTML = `
+    <h6 class="mep-manifest-page-info-title">Page Info</h6>
+    <div class="mep-columns">
+      <div class="mep-column">
+        <div>Target Integration</div>
+        <div>Personalization</div>
+        <div>Geo Folder</div>
+        <div>Locale</div>
+        ${page.lastSeen ? '<div>Last Seen</div>' : ''}
+      </div>
+      <div class="mep-column">
+        <div class="mep-uppercase">${targetOnText}</div>
+        <div class="mep-uppercase">${page.personalization}</div>
+        <div>${page.geo || 'Nothing (US)'}</div>
+        <div>${page.locale?.toLowerCase()}</div>
+        ${page.lastSeen ? `<div>${formatDate(new Date(page.lastSeen))}</div>` : ''}
+      </div>
+    </div>`;
+  basicOptions.innerHTML = `
+    <h6 class="mep-manifest-page-info-title">Options</h6>
     <div class="mep-manifest-variants">
-      <input type="checkbox" name="mepHighlight${pageId}"
+      <div>
+        <input type="checkbox" name="mepHighlight${pageId}"
         id="mepHighlightCheckbox${pageId}" ${mepHighlightChecked} value="true">
         <label for="mepHighlightCheckbox${pageId}">Highlight changes</label>
-    </div>`;
+      </div>
+      <div>
+        <input type="checkbox" name="mepPreviewButtonCheckbox${pageId}"
+        id="mepPreviewButtonCheckbox${pageId}" value="off">
+        <label for="mepPreviewButtonCheckbox${pageId}">Add mepButton=off to preview link</label>
+      </div>
+    </div>
+  `;
   advancedOptions.innerHTML = `
-    <div class="mep-toggle-advanced">Advanced options</div>
-      <div class="mep-manifest-info mep-advanced-options">
-        <div>Optional: new manifest location or path</div>
-            <div class="mep-manifest-variants">
-              <div>
-                <input type="text" name="new-manifest${pageId}" class="new-manifest">
-              </div>
-            </div>
-          </div>
-          <div class="mep-manifest-info">
-            <div class="mep-manifest-variants mep-advanced-options">
-              <input type="checkbox" name="mepPreviewButtonCheckbox${pageId}"
-                id="mepPreviewButtonCheckbox${pageId}" value="off">
-                <label for="mepPreviewButtonCheckbox${pageId}">add mepButton=off to preview link</label>
-            </div>
-          </div>
-        </div>`;
+    <div>New manifest location or path*</div>
+    <input type="text" name="new-manifest${pageId}" class="new-manifest">`;
 
-  const mepManifestPreviewButton = createTag('div', { class: `advanced-options${isMmm ? '' : ' dark'}` });
+  const mepManifestPreviewButton = createTag('div', { class: `mep-manifest-actions${isMmm ? '' : ' dark'}` });
   mepManifestPreviewButton.innerHTML = `
     <a class="con-button outline button-l" data-id="${PREVIEW_BUTTON_ID}" title="Preview above choices" ${isMmm ? ' target="_blank"' : ''}>Preview</a>`;
-  const targetOnText = page.target === 'postlcp' ? 'on post LCP' : page.target;
+  const activityLabel = activities?.length > 1 ? 'Manifests' : 'Manifest';
   mepPopupHeader.innerHTML = `
-    <div>
-      <h4>${activities?.length || 0} Manifest(s) found</h4>
-        <span class="mep-close"></span>
-        <div class="mep-manifest-page-info-title">Page Info:</div>
-        <div>Target integration feature is ${targetOnText}</div>
-        <div>Personalization feature is ${page.personalization}</div>
-        <div>Page's Geo Folder is ${page.geo || 'nothing (US)'}</div>
-        <div>Page's Locale is ${page.locale?.toLowerCase()}</div>
-        ${page.lastSeen ? `<div>Last seen: ${formatDate(new Date(page.lastSeen))}</div>` : ''}
-    </div>`;
+      <h4>${activities?.length || 0} ${activityLabel}</h4>
+      <span class="mep-close"></span>`;
   mepManifestList.innerHTML = manifestList;
+  if (basicOptions) mepManifestList.prepend(basicOptions);
   if (listInfo) mepManifestList.prepend(listInfo);
   if (advancedOptions) mepManifestList.append(advancedOptions);
   mepPopup.append(mepPopupHeader);
