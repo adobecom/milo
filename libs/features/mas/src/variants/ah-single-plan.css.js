@@ -33,4 +33,12 @@ export const CSS = `
         font-size: 14px;
         line-height: 18px;
     }
+
+    merch-card[variant="ah-single-plan"] [slot='image'] img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 16px;
+        overflow: hidden;
+    }
 `;

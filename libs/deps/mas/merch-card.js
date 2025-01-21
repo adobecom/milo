@@ -1719,6 +1719,14 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
         font-size: 14px;
         line-height: 18px;
     }
+
+    merch-card[variant="ah-single-plan"] [slot='image'] img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 16px;
+        overflow: hidden;
+    }
 `;var Bo={mnemonics:{size:"s"},backgroundImage:{tag:"div",slot:"image"},title:{tag:"h3",slot:"heading-xs"},description:{tag:"div",slot:"body-xxs"},prices:{tag:"p",slot:"price"},ctas:{slot:"cta",size:"S"},allowedColors:["gray"]},q=class extends E{getGlobalCSS(){return Ur}get aemFragmentMapping(){return Bo}renderLayout(){return ko`
       <div class="content">
         <div class="header">
@@ -1802,14 +1810,6 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
         
     :host([variant='ah-single-plan']) ::slotted([slot='image']) {
         width: 199px;
-        overflow: hidden;
-    }
-
-    :host([variant='ah-single-plan']) ::slotted([slot='image']) img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        border-radius: 16px;
         overflow: hidden;
     }
   `);customElements.define("ah-single-plan",q);var Et=(e,t=!1)=>{switch(e.variant){case"catalog":return new ne(e);case"image":return new Fe(e);case"inline-heading":return new $e(e);case"mini-compare-chart":return new ae(e);case"plans":return new ie(e);case"product":return new W(e);case"segment":return new se(e);case"special-offers":return new ce(e);case"twp":return new le(e);case"ccd-suggested":return new he(e);case"ccd-slice":return new de(e);case"ah-single-plan":return new q(e);default:return t?void 0:new W(e)}},zr=()=>{let e=[];return e.push(ne.variantStyle),e.push(ae.variantStyle),e.push(W.variantStyle),e.push(ie.variantStyle),e.push(se.variantStyle),e.push(ce.variantStyle),e.push(le.variantStyle),e.push(he.variantStyle),e.push(de.variantStyle),e.push(q.variantStyle),e};var Gr=document.createElement("style");Gr.innerHTML=`

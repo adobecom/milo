@@ -228,6 +228,12 @@ merch-card[variant='ccd-slice'][size='wide'] {
     }
 }
 
+.ah-single-plan {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
 .flex-cards {
     display: flex;
     flex-wrap: wrap;
