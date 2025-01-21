@@ -41,14 +41,12 @@ export class AHPricingWidget extends VariantLayout {
     :host([variant='ah-pricing-widget']) {
         --merch-card-ah-pricing-widget-width: 132px;
         --merch-card-ah-pricing-widget-height: 212px;
-        --merch-card-ah-pricing-widget-heading-color: rgba(44, 44, 44, 1);
-        --merch-card-ah-pricing-widget-gray-background: rgba(248, 248, 248, 1);
-        --merch-card-ah-pricing-widget-white-background: rgba(255, 255, 255, 1);
-        --merch-card-ah-pricing-widget-text-color: rgba(19, 19, 19, 1);
+        --merch-card-ah-pricing-widget-gray-background: rgba(248, 248, 248);
+        --merch-card-ah-pricing-widget-text-color: rgba(19, 19, 19);
         width: var(--merch-card-ah-pricing-widget-width);
         min-height: var(--merch-card-ah-pricing-widget-height);
-        background-color: var(--merch-card-ah-pricing-widget-white-background);
-        color: var(--merch-card-ah-pricing-widget-heading-color);
+        background-color: var(--consonant-merch-card-background-color);
+        color: var(--consonant-merch-card-heading-xxxs-color);
         border-radius: 10px;
         display: flex;
         flex-direction: column;
@@ -70,20 +68,15 @@ export class AHPricingWidget extends VariantLayout {
         padding-bottom: 4px;
     }
 
-    :host([variant='ah-pricing-widget']) ::slotted([slot='heading-xxxs']) {
-        letter-spacing: normal;
-        font-size: 12px;
-        line-height: 18px;
-        color: var(--merch-card-ah-pricing-widget-heading-color);
-    }
 
     :host([variant='ah-pricing-widget']) ::slotted([slot='price']) {
         margin-left: var(--spacing-xs);
         display: flex;
         flex-direction: column;
-        font-size: 12px;
-        line-height: 18px;
-        color: var(--merch-card-ah-pricing-widget-heading-color);
+        font-size: var(--consonant-merch-card-detail-s-font-size);
+        line-height: var(--consonant-merch-card-detail-s-line-height);
+        color: var(--consonant-merch-card-heading-xxxs-color);
+        gap: 4px;
     }
 
     :host([variant='ah-pricing-widget']) .footer {

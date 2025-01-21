@@ -45,7 +45,7 @@ styles.innerHTML = `
     /* detail */
     --consonant-merch-card-detail-s-font-size: 11px;
     --consonant-merch-card-detail-s-line-height: 14px;
-    --consonant-merch-card-detail-m-font-size: 12px;
+  --consonant-merch-card-detail-m-font-size: 12px;
     --consonant-merch-card-detail-m-line-height: 15px;
     --consonant-merch-card-detail-m-font-weight: 700;
     --consonant-merch-card-detail-m-letter-spacing: 1px;
@@ -75,6 +75,7 @@ styles.innerHTML = `
     --color-accent: rgb(59, 99, 251);
     --merch-color-focus-ring: #1473E6;
     --merch-color-grey-10: #f6f6f6;
+    --merch-color-grey-50: var(--specturm-gray-50);
     --merch-color-grey-60: var(--specturm-gray-600);
     --merch-color-grey-80: #2c2c2c;
     --merch-color-grey-200: #E8E8E8;
@@ -87,6 +88,8 @@ styles.innerHTML = `
     --consonant-merch-card-heading-color: var(--spectrum-gray-800, var(--merch-color-grey-80));
     --consonant-merch-card-heading-xs-color: var(--consonant-merch-card-heading-color);
     --consonant-merch-card-price-color: #222222;
+    --consonant-merch-card-heading-xxxs-color: #131313;
+    --consonant-merch-card-body-xxs-color: #292929;
 
     /* ccd colors */
     --ccd-gray-200-light: #E6E6E6;
@@ -179,6 +182,13 @@ merch-card button a[is='checkout-link'] {
 merch-card [slot^='heading-'] {
     color: var(--consonant-merch-card-heading-color);
     font-weight: 700;
+}
+
+merch-card [slot='heading-xxxs'] {
+        font-size: var(--consonant-merch-card-heading-xxxs-font-size);
+        line-height: var(--consonant-merch-card-heading-xxxs-line-height);
+        color: var(--consonant-merch-card-heading-xxxs-color);
+        letter-spacing: normal;
 }
 
 merch-card [slot='heading-xs'] {
