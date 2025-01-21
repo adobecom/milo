@@ -45,7 +45,7 @@ function handleStickyPromobar(section, delay) {
   }
   const io = promoIntersectObserve(section, stickySectionEl);
   if (stickySectionEl) io.observe(stickySectionEl);
-  if (section.querySelector(':is(.promobar, .notification:not(.no-hide))')) {
+  if (section.querySelector(':is(.promobar, .notification)')) {
     io.observe(document.querySelector('footer'));
   }
 }
