@@ -967,10 +967,11 @@ function compareExecutionOrder(a, b) {
   return a.executionOrder > b.executionOrder ? 1 : -1;
 }
 
-export function cleanAndSortManifestList(manifests) {
-  const config = getConfig();
+export function cleanAndSortManifestList(manifests, conf) {
+  const config = conf ?? getConfig();
   const manifestObj = {};
   let allManifests = manifests;
+  let targetManifestWinsOverServerManifest = false;
   if (config.mep?.experiments) allManifests = [...manifests, ...config.mep.experiments];
   allManifests.forEach((manifest) => {
     try {
@@ -986,7 +987,10 @@ export function cleanAndSortManifestList(manifests) {
         freshManifest.source = freshManifest.source.concat(fullManifest.source);
         freshManifest.name = fullManifest.name;
         freshManifest.selectedVariantName = fullManifest.selectedVariantName;
-        freshManifest.selectedVariant = freshManifest.variants[freshManifest.selectedVariantName];
+        targetManifestWinsOverServerManifest = config?.env?.name === 'prod' && fullManifest.selectedVariantName.startsWith('target-');
+        freshManifest.selectedVariant = targetManifestWinsOverServerManifest
+          ? fullManifest.variants[fullManifest.selectedVariantName]
+          : freshManifest.variants[freshManifest.selectedVariantName];
         manifestObj[manifest.manifestPath] = freshManifest;
       } else {
         manifestObj[manifest.manifestPath] = manifest;
@@ -994,14 +998,16 @@ export function cleanAndSortManifestList(manifests) {
 
       const manifestConfig = manifestObj[manifest.manifestPath];
       const { selectedVariantName, variantNames, placeholderData } = manifestConfig;
-      if (selectedVariantName && variantNames.includes(selectedVariantName)) {
-        manifestConfig.run = true;
-        manifestConfig.selectedVariantName = selectedVariantName;
-        manifestConfig.selectedVariant = manifestConfig.variants[selectedVariantName];
-      } else {
-        /* c8 ignore next 2 */
-        manifestConfig.selectedVariantName = 'default';
-        manifestConfig.selectedVariant = 'default';
+
+      if (!targetManifestWinsOverServerManifest) {
+        if (selectedVariantName && variantNames.includes(selectedVariantName)) {
+          manifestConfig.run = true;
+          manifestConfig.selectedVariant = manifestConfig.variants[selectedVariantName];
+        } else {
+          /* c8 ignore next 2 */
+          manifestConfig.selectedVariantName = 'default';
+          manifestConfig.selectedVariant = 'default';
+        }
       }
 
       parsePlaceholders(placeholderData, getConfig(), manifestConfig.selectedVariantName);
