@@ -943,4 +943,14 @@ describe('Utils', () => {
       expect(utils.filterDuplicatedLinkBlocks(blocks)).to.deep.equal([block1, block2]);
     });
   });
+
+  describe('localNav', async () => {
+    it('Preserving space to avoid CLS issue', async () => {
+      document.head.innerHTML = await readFile({ path: './mocks/head-localNav.html' });
+      document.body.appendChild(document.createElement('header'));
+      await utils.loadArea();
+      console.log(document.querySelector('.feds-localnav'));
+      expect(document.querySelector('.feds-localnav')).to.exist;
+    });
+  });
 });

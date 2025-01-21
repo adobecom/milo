@@ -8,11 +8,18 @@ mas.js includes the followings custom elements:
 
 -   [inline-price](/libs/features/mas/docs/inline-price.html)
 -   [checkout-link](/libs/features/mas/docs/checkout-link.html)
+-   [checkout-button](/libs/features/mas/docs/checkout-button.html)
 -   [merch-card](/libs/features/mas/docs/merch-card.html)
 
 ## Enablement `mas-commerce-service`
+⚠️ Safari does not support customized built-in elements. Therefore, you need to load the following polyfill before `mas.js` for browser compatibility (not required for in-app usage).
+```html
+<script
+    src="https://www.adobe.comlibs/deps/custom-elements.js"
+></script>
+```
 
-You do need to have mas.js on your page / application, including it can be done like the following
+To add `mas.js` to your page or application, include it as shown below:
 
 ```html
 <script

@@ -1126,7 +1126,13 @@ async function updateManifestsAndPropositions({ config, targetManifests, targetP
     manifest.source = ['target'];
   });
   config.mep.targetManifests = targetManifests;
-  if (targetPropositions?.length && window._satellite) {
+  if (enablePersonalizationV2()) {
+    window.addEventListener('alloy_sendEvent', () => {
+      if (targetPropositions?.length && window._satellite) {
+        window._satellite.track('propositionDisplay', targetPropositions);
+      }
+    }, { once: true });
+  } else if (targetPropositions?.length && window._satellite) {
     window._satellite.track('propositionDisplay', targetPropositions);
   }
   if (config.mep.targetEnabled === 'postlcp') {
@@ -1194,10 +1200,9 @@ async function handleMartechTargetInteraction(
   let targetManifests = [];
   let targetPropositions = [];
   if (enablePersonalizationV2() && targetInteractionPromise) {
-    try {
-      const { targetInteractionData, respTime, respStartTime } = await targetInteractionPromise;
-      sendTargetResponseAnalytics(false, respStartTime, calculatedTimeout);
-
+    const { targetInteractionData, respTime, respStartTime } = await targetInteractionPromise;
+    sendTargetResponseAnalytics(false, respStartTime, calculatedTimeout);
+    if (targetInteractionData.result) {
       const roundedResponseTime = roundToQuarter(respTime);
       performance.clearMarks();
       performance.clearMeasures();
@@ -1209,8 +1214,6 @@ async function handleMartechTargetInteraction(
       }
       targetManifests = handleAlloyResponse(targetInteractionData.result);
       targetPropositions = targetInteractionData.result?.propositions || [];
-    } catch (err) {
-      console.log('Oops!! Interact Call didnt go through', err);
     }
   }
 
