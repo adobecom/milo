@@ -1502,7 +1502,11 @@ merch-card[variant='twp'] merch-offer-select {
         :host([variant='ccd-suggested']) ::slotted([slot='price']) {
             font-size: var(--consonant-merch-card-body-xs-font-size);
             line-height: var(--consonant-merch-card-body-xs-line-height);
-            min-width: fit-content;
+        }
+
+        :host([variant='ccd-suggested']) ::slotted([slot='price']) em {
+          font-size: var(--consonant-merch-card-body-xxs-font-size);
+          line-height: var(--consonant-merch-card-body-xxs-line-height);
         }
 
         :host([variant='ccd-suggested']) ::slotted([slot='cta']) {
