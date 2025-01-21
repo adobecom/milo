@@ -803,8 +803,9 @@ async function decorateHeader() {
     return;
   }
   header.className = headerMeta || 'global-navigation';
+  const config = getConfig();
   const metadataConfig = getMetadata('breadcrumbs')?.toLowerCase()
-    || getConfig().breadcrumbs;
+    || config.breadcrumbs;
   if (metadataConfig === 'off') return;
   const baseBreadcrumbs = getMetadata('breadcrumbs-base')?.length;
 
@@ -812,7 +813,9 @@ async function decorateHeader() {
   const dynamicNavActive = getMetadata('dynamic-nav') === 'on'
     && window.sessionStorage.getItem('gnavSource') !== null;
   if (!dynamicNavActive && (baseBreadcrumbs || breadcrumbs || autoBreadcrumbs)) header.classList.add('has-breadcrumbs');
-  const gnavSource = await getGnavSource();
+  config.gnav ??= {};
+  config.gnav.sourcePromise = getGnavSource();
+  const gnavSource = await config.gnav.sourcePromise;
   let newNavEnabled = new URLSearchParams(window.location.search).get('newNav');
   newNavEnabled = newNavEnabled ? newNavEnabled !== 'false' : getMetadata('mobile-gnav-v2') !== 'off';
   if (gnavSource.split('/').pop().startsWith('localnav-') && newNavEnabled) {
@@ -1200,15 +1203,49 @@ async function loadPostLCP(config) {
   performance.mark('Georouting');
   console.info(performance.measure('GeoroutingTime', 'PostLCPMartech', 'Georouting'));
   const header = document.querySelector('header');
-  if (header) {
+  const loadHeader = async () => {
+    const conf = getConfig();
     header.classList.add('gnav-hide');
-    await loadBlock(header);
-    header.classList.remove('gnav-hide');
+    const cssPromise = new Promise((resolve) => {
+      loadStyle('/libs/blocks/global-navigation/global-navigation.css', resolve);
+    });
+    const baseStylesPromise = new Promise((resolve) => {
+      const path = '/libs/blocks/global-navigation';
+      loadStyle(`${path}/base.css`, () => {
+        if (conf.theme === 'dark') loadStyle(`${path}/dark-nav.css`, resolve);
+        else resolve();
+      });
+    });
+    const initHeader = async () => {
+      const headerUtilsPromise = import('../blocks/global-navigation/utilities/utilities.js');
+      conf.gnav.utilsPromise = headerUtilsPromise;
+      const breadcrumbsPromise = import('../blocks/global-navigation/features/breadcrumbs/breadcrumbs.js');
+      // federated.js is generally already imported at this point
+      // since decorate.js uses it and the first section usually
+      // requires decorate.js. If not, we import it here.
+      const plainHTMLPromise = (async () => {
+        const { getFederatedUrl } = await import('./federated.js');
+        const source = await conf?.gnav?.sourcePromise ?? '';
+        const [url] = source.split('#');
+        let federatedURL = getFederatedUrl(url);
+
+        const mepGnav = conf?.mep?.inBlock?.['global-navigation'];
+        const mepFragment = mepGnav?.fragments?.[federatedURL];
+        if (mepFragment && mepFragment.action === 'replace') {
+          federatedURL = mepFragment.content;
+        }
+        const res = await fetch(federatedURL.replace(/(\.html$|$)/, '.plain.html'));
+        return res;
+      })();
+      const { default: init } = await import('../blocks/global-navigation/global-navigation.js');
+      await init(header, breadcrumbsPromise, plainHTMLPromise);
+    };
+    await Promise.all([cssPromise, baseStylesPromise, initHeader()]);
+  };
+  if (header) {
+    loadHeader().catch((e) => console.log('Failed to load global navigation', e));
   }
   console.info(performance.measure('LoadAreaStartToGnavStart', 'LoadAreaStart', 'Georouting'));
-  performance.mark('Gnav');
-  console.info(performance.measure('LoadAreaStartToGnavVisible', 'LoadAreaStart', 'Gnav'));
-  console.info(performance.measure('TotalGnavTime', 'Georouting', 'Gnav'));
 
   loadTemplate();
   const { default: loadFonts } = await import('./fonts.js');

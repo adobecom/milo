@@ -344,14 +344,18 @@ export function trigger({ element, event, type } = {}) {
 
 export const yieldToMain = () => new Promise((resolve) => { setTimeout(resolve, 0); });
 
-export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true } = {}) {
+export async function fetchAndProcessPlainHtml({
+  url,
+  fetchPromise,
+  shouldDecorateLinks = true,
+} = {}) {
   let path = getFederatedUrl(url);
   const mepGnav = getConfig()?.mep?.inBlock?.['global-navigation'];
   const mepFragment = mepGnav?.fragments?.[path];
   if (mepFragment && mepFragment.action === 'replace') {
     path = mepFragment.content;
   }
-  const res = await fetch(path.replace(/(\.html$|$)/, '.plain.html'));
+  const res = await (fetchPromise ?? fetch(path.replace(/(\.html$|$)/, '.plain.html')));
   if (res.status !== 200) {
     lanaLog({
       message: 'Error in fetchAndProcessPlainHtml',

@@ -6,9 +6,12 @@ import {
   loadIms,
   decorateLinks,
   loadScript,
-  getGnavSource,
 } from '../../utils/utils.js';
-import {
+import { getFedsPlaceholderConfig } from '../../utils/federated.js';
+
+import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
+
+const {
   closeAllDropdowns,
   decorateCta,
   fetchAndProcessPlainHtml,
@@ -44,10 +47,7 @@ import {
   closeAllTabs,
   disableMobileScroll,
   enableMobileScroll,
-} from './utilities/utilities.js';
-import { getFedsPlaceholderConfig } from '../../utils/federated.js';
-
-import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
+} = await getConfig().gnav.utilsPromise;
 
 const SIGNIN_CONTEXT = getConfig()?.signInContext;
 
@@ -293,7 +293,7 @@ const convertToPascalCase = (str) => str
   .join(' ');
 
 class Gnav {
-  constructor({ content, block, newMobileNav } = {}) {
+  constructor({ content, block, newMobileNav, breadcrumbsPromise } = {}) {
     this.content = content;
     this.block = block;
     this.customLinks = getConfig()?.customLinks?.split(',') || [];
@@ -310,6 +310,7 @@ class Gnav {
     this.setupUniversalNav();
     this.elements = {};
     this.newMobileNav = newMobileNav;
+    this.breadcrumbsPromise = breadcrumbsPromise;
   }
 
   // eslint-disable-next-line no-return-assign
@@ -347,6 +348,13 @@ class Gnav {
       this.decorateTopNav,
       this.decorateTopnavWrapper,
       loadBaseStyles,
+      () => {
+        this.block.classList.add('ready');
+        this.block.classList.remove('gnav-hide');
+        performance.mark('Gnav');
+        console.info(performance.measure('LoadAreaStartToGnavVisible', 'LoadAreaStart', 'Gnav'));
+        console.info(performance.measure('TotalGnavTime', 'Georouting', 'Gnav'));
+      },
       this.ims,
       this.addChangeEventListeners,
     ];
@@ -1254,7 +1262,7 @@ class Gnav {
     const breadcrumbsElem = this.block.querySelector('.breadcrumbs');
     // Breadcrumbs are not initially part of the nav, need to decorate the links
     if (breadcrumbsElem) decorateLinks(breadcrumbsElem);
-    const { default: createBreadcrumbs } = await import('./features/breadcrumbs/breadcrumbs.js');
+    const { default: createBreadcrumbs } = await this.breadcrumbsPromise;
     this.elements.breadcrumbsWrapper = await createBreadcrumbs(breadcrumbsElem);
     return this.elements.breadcrumbsWrapper;
   };
@@ -1290,16 +1298,20 @@ class Gnav {
   };
 }
 
-export default async function init(block) {
-  const { mep } = getConfig();
-  const sourceUrl = await getGnavSource();
+export default async function init(
+  block,
+  breadcrumbsPromise,
+  plainHTMLPromise,
+) {
+  const { mep, gnav: { sourcePromise } } = getConfig();
+  const sourceUrl = await sourcePromise;
   let newMobileNav = new URLSearchParams(window.location.search).get('newNav');
   newMobileNav = newMobileNav ? newMobileNav !== 'false' : getMetadata('mobile-gnav-v2') !== 'off';
   const [url, hash = ''] = sourceUrl.split('#');
   if (hash === '_noActiveItem') {
     setDisableAEDState();
   }
-  const content = await fetchAndProcessPlainHtml({ url });
+  const content = await fetchAndProcessPlainHtml({ url, fetchPromise: plainHTMLPromise });
   if (!content) {
     const error = new Error('Could not create global navigation. Content not found!');
     error.tags = 'errorType=error,module=gnav';
@@ -1310,6 +1322,7 @@ export default async function init(block) {
   const gnav = new Gnav({
     content,
     block,
+    breadcrumbsPromise,
     newMobileNav,
   });
   if (newMobileNav && !isDesktop.matches) block.classList.add('new-nav');
