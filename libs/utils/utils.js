@@ -1177,6 +1177,7 @@ async function checkForPageMods() {
 }
 
 async function loadPostLCP(config) {
+  performance.mark('loadPostLCP');
   await decoratePlaceholders(document.body.querySelector('header'), config);
   const sk = document.querySelector('aem-sidekick, helix-sidekick');
   if (sk) import('./sidekick-decorate.js').then((mod) => { mod.default(sk); });
@@ -1190,22 +1191,28 @@ async function loadPostLCP(config) {
   } else {
     loadMartech();
   }
-
+  performance.mark('PostLCPMartech');
   const georouting = getMetadata('georouting') || config.geoRouting;
   if (georouting === 'on') {
     const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
     await loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
   }
+  performance.mark('Georouting');
+  console.info(performance.measure('GeoroutingTime', 'PostLCPMartech', 'Georouting'));
   const header = document.querySelector('header');
   if (header) {
     header.classList.add('gnav-hide');
     await loadBlock(header);
     header.classList.remove('gnav-hide');
   }
+  console.info(performance.measure('LoadAreaStartToGnavStart', 'LoadAreaStart', 'Georouting'));
+  performance.mark('Gnav');
+  console.info(performance.measure('LoadAreaStartToGnavVisible', 'LoadAreaStart', 'Gnav'));
+  console.info(performance.measure('TotalGnavTime', 'Georouting', 'Gnav'));
+
   loadTemplate();
   const { default: loadFonts } = await import('./fonts.js');
   loadFonts(config.locale, loadStyle);
-
   if (config?.mep) {
     import('../features/personalization/personalization.js')
       .then(({ addMepAnalytics }) => addMepAnalytics(config, header));
@@ -1398,7 +1405,14 @@ async function processSection(section, config, isDoc) {
   await Promise.all(loadBlocks);
 
   delete section.el.dataset.status;
-  if (isDoc && firstSection) await loadPostLCP(config);
+  if (isDoc && firstSection) {
+    performance.mark('FirstSection');
+    console.info(performance.measure('FirstSectionLoaded', 'LoadAreaStart', 'FirstSection'));
+    await loadPostLCP(config);
+  } else if (isDoc && section.el.dataset.idx === '1') {
+    performance.mark('SecondSection');
+    console.info(performance.measure('SecondSectionLoaded', 'LoadAreaStart', 'SecondSection'));
+  }
   delete section.el.dataset.idx;
   return section.blocks;
 }
@@ -1407,6 +1421,7 @@ export async function loadArea(area = document) {
   const isDoc = area === document;
 
   if (isDoc) {
+    performance.mark('LoadAreaStart');
     await checkForPageMods();
     appendHtmlToCanonicalUrl();
     appendSuffixToTitles();
@@ -1434,7 +1449,12 @@ export async function loadArea(area = document) {
     scrollToHashedElement(currentHash);
   }
 
-  if (isDoc) await documentPostSectionLoading(config);
+  if (isDoc) {
+    performance.mark('AllSections');
+    console.info(performance.measure('AllSectionsLoaded', 'LoadAreaStart', 'AllSections'));
+
+    await documentPostSectionLoading(config);
+  }
 
   await loadDeferred(area, areaBlocks, config);
 }
