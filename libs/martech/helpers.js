@@ -31,9 +31,7 @@ function generateUUIDv4() {
   return uuid;
 }
 
-function getTargetPropertyBasedOnPageRegion(env) {
-  const { pathname } = window.location;
-
+export function getTargetPropertyBasedOnPageRegion({ env, pathname }) {
   if (env !== 'prod') return 'bc8dfa27-29cc-625c-22ea-f7ccebfc6231';
 
   // EMEA & LATAM
@@ -86,7 +84,7 @@ function setCookie(key, value, options = {}) {
   document.cookie = `${key}=${value}; ${expiresString}; path=/ ; domain=.${getDomainWithoutWWW()};`;
 }
 
-const getVisitorStatus = ({
+export const getVisitorStatus = ({
   expiryDays = 30,
   cookieName = 's_nr',
   domain = `.${(new URL(window.location.origin)).hostname}`,
@@ -178,7 +176,9 @@ function createRequestPayload({ updatedContext, pageName, locale, env, hitType }
   const prevPageName = getCookie('gpv');
 
   const REPORT_SUITES_ID = env === 'prod' ? ['adbadobenonacdcprod'] : ['adbadobenonacdcqa'];
-  const AT_PROPERTY_VAL = getTargetPropertyBasedOnPageRegion(env);
+  const AT_PROPERTY_VAL = getTargetPropertyBasedOnPageRegion(
+    { env, pathname: window.location?.pathname },
+  );
 
   return {
     event: {
@@ -193,7 +193,7 @@ function createRequestPayload({ updatedContext, pageName, locale, env, hitType }
             isErrorPage: false,
             isHomePage: false,
             name: pageName,
-            pageViews: { value: hitType === 'pageView' ? 1 : 0 }, //
+            pageViews: { value: hitType === 'pageView' ? 1 : 0 },
           },
           webInteraction: hitType === 'pageView' || hitType === 'propositionDisplay' ? undefined : {
             name: 'Martech-API',
