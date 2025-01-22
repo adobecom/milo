@@ -1,3 +1,2 @@
-export default function init(el) {
-  el.remove();
+export default async function init() {
 };
