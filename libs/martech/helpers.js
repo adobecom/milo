@@ -333,6 +333,9 @@ export const loadAnalyticsAndInteractionData = async ({ locale, env, calculatedT
   const LOCAL_TIME = CURRENT_DATE.toISOString();
   const LOCAL_TIMEZONE_OFFSET = CURRENT_DATE.getTimezoneOffset();
   const isHybridPersFlagEnabled = document.head?.querySelector('meta[name="hybrid-pers"]')?.content === 'on';
+  if (isHybridPersFlagEnabled) {
+    window.hybridPers = true;
+  }
   const hitType = isHybridPersFlagEnabled ? 'pageViews' : 'propositionFetch';
 
   const pageName = getPageNameForAnalytics({ locale });
