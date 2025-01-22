@@ -714,7 +714,7 @@ export default async function init(el) {
     ctaLink.addEventListener('mas:resolved', async () => {
       const productName = ctaLink.value[0]?.productArrangement?.productFamily;
       if (productName) {
-        await replaceKey(productName, getConfig()).then((key) => ctaLink.setAttribute('aria-label', `${ctaLink.textContent} - ${key}`));
+        await replaceKey(productName, getConfig()).then((label) => ctaLink.setAttribute('aria-label', `${ctaLink.textContent} - ${label}`));
       }
     });
   }
