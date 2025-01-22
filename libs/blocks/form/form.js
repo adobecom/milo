@@ -50,6 +50,7 @@ async function submitForm(form) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${API_KEY}`, 
       },
       body: JSON.stringify(payload), 
     });
