@@ -988,9 +988,12 @@ export function cleanAndSortManifestList(manifests, conf) {
         freshManifest.name = fullManifest.name;
         freshManifest.selectedVariantName = fullManifest.selectedVariantName;
         targetManifestWinsOverServerManifest = config?.env?.name === 'prod' && fullManifest.selectedVariantName.startsWith('target-');
-        freshManifest.selectedVariant = targetManifestWinsOverServerManifest
-          ? fullManifest.variants[fullManifest.selectedVariantName]
-          : freshManifest.variants[freshManifest.selectedVariantName];
+
+        freshManifest.variants = targetManifestWinsOverServerManifest
+          ? fullManifest.variants
+          : freshManifest.variants;
+
+        freshManifest.selectedVariant = freshManifest.variants[freshManifest.selectedVariantName];
         manifestObj[manifest.manifestPath] = freshManifest;
       } else {
         manifestObj[manifest.manifestPath] = manifest;
@@ -999,15 +1002,12 @@ export function cleanAndSortManifestList(manifests, conf) {
       const manifestConfig = manifestObj[manifest.manifestPath];
       const { selectedVariantName, variantNames, placeholderData } = manifestConfig;
 
-      if (!targetManifestWinsOverServerManifest) {
-        if (selectedVariantName && variantNames.includes(selectedVariantName)) {
-          manifestConfig.run = true;
-          manifestConfig.selectedVariant = manifestConfig.variants[selectedVariantName];
-        } else {
-          /* c8 ignore next 2 */
-          manifestConfig.selectedVariantName = 'default';
-          manifestConfig.selectedVariant = 'default';
-        }
+      if (selectedVariantName && variantNames.includes(selectedVariantName)) {
+        manifestConfig.selectedVariant = manifestConfig.variants[selectedVariantName];
+      } else {
+        /* c8 ignore next 2 */
+        manifestConfig.selectedVariantName = 'default';
+        manifestConfig.selectedVariant = 'default';
       }
 
       parsePlaceholders(placeholderData, getConfig(), manifestConfig.selectedVariantName);
