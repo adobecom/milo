@@ -20,7 +20,11 @@ jobs:
           base: ${{ github.ref }}
           filters: |
             src:
-              - 'libs/**'    
+              - 'libs/**'
+      - name: Set API key
+        run: echo "REACT_APP_API_KEY=${{ secrets.API_KEY }}" >> .env
+      - name: Build Project
+        run: npm run build    
       - if: steps.changes.outputs.src == 'true'
         name: Trigger DC Workflow
         uses: actions/github-script@v7

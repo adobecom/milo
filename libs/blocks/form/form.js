@@ -1,5 +1,10 @@
 import sanitizeComment from '../../utils/sanitizeComment.js';
 import { createTag } from '../../utils/utils.js';
+import dotenv from 'dotenv';
+dotenv.config();
+
+const API_KEY = process.env.REACT_APP_API_KEY;
+console.log('Form API Key:', API_KEY);
 
 const RULE_OPERATORS = {
   equal: '=',
