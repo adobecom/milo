@@ -129,7 +129,7 @@ export default function InputLocales() {
     <div class="locui-form-body">
         <div>
           <h2 class="locui-project-type">${project.value.type === PROJECT_TYPES.translation ? 'Translate' : 'Rollout'}</h2>
-          <p class="locui-project-name"><strong>Project Name:</strong> ${project.value.name || 'n/a'}</p>
+          <p class="locui-project-name">Project Name: <strong>${project.value.name || 'n/a'}</strong></p>
         </div>
         <${RenderRegion} />
         <div class="language-locale-container">
