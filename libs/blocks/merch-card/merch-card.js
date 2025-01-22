@@ -706,10 +706,17 @@ export default async function init(el) {
   }
   el.replaceWith(merchCard);
   decorateMerchCardLinkAnalytics(merchCard);
+
+  // Adding aria-label for checkout-link using productFamily as placeholder key
   const ctaLink = ctas?.querySelector('a');
-  if (merchCard.name && ctaLink) {
+  if (ctaLink && !ctaLink.getAttribute('aria-label')) {
     const { replaceKey } = await import('../../features/placeholders.js');
-    await replaceKey(merchCard.name, getConfig()).then((key) => ctaLink.setAttribute('aria-label', `${ctaLink.textContent} ${key}`));
+    ctaLink.addEventListener('mas:resolved', async () => {
+      const productName = ctaLink.value[0]?.productArrangement?.productFamily;
+      if (productName) {
+        await replaceKey(productName, getConfig()).then((key) => ctaLink.setAttribute('aria-label', `${ctaLink.textContent} - ${key}`));
+      }
+    });
   }
   return merchCard;
 }
