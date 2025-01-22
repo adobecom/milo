@@ -67,23 +67,26 @@ function decorateLightboxButtons() {
   return [expandBtn, closeBtn];
 }
 
-function decorateSlideIndicators(slides) {
+function decorateSlideIndicators(slides, jumpTo) {
   const indicatorDots = [];
 
   for (let i = 0; i < slides.length; i += 1) {
     const li = createTag('li', {
       class: 'carousel-indicator',
-      role: 'tab',
-      tabindex: -1,
       'data-index': i,
-      'aria-selected': false,
-      'aria-labelledby': `Viewing Slide ${i + 1}`,
     });
+
+    if (jumpTo) {
+      li.setAttribute('role', 'tab');
+      li.setAttribute('tabindex', -1);
+      li.setAttribute('aria-selected', false);
+      li.setAttribute('aria-labelledby', `Viewing Slide ${i + 1}`);
+    }
 
     // Set inital active state
     if (i === 0) {
       li.classList.add('active');
-      li.setAttribute('tabindex', 0);
+      if (jumpTo) li.setAttribute('tabindex', 0);
     }
     indicatorDots.push(li);
   }
@@ -184,6 +187,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     slideIndicators,
     controlsContainer,
     direction,
+    jumpTo,
   } = carouselElements;
 
   let referenceSlide = slideContainer.querySelector('.reference-slide');
@@ -206,7 +210,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   activeSlide.classList.remove('active');
   activeSlide.querySelectorAll('a, video').forEach((focusableElement) => focusableElement.setAttribute('tabindex', -1));
   activeSlideIndicator.classList.remove('active');
-  activeSlideIndicator.setAttribute('tabindex', -1);
+  if (jumpTo) activeSlideIndicator.setAttribute('tabindex', -1);
 
   /*
    * If indicator dot buttons are clicked update:
@@ -274,7 +278,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
       .forEach((focusableElement) => { focusableElement.setAttribute('tabindex', 0); });
   }
   activeSlideIndicator.classList.add('active');
-  activeSlideIndicator.setAttribute('tabindex', 0);
+  if (jumpTo) activeSlideIndicator.setAttribute('tabindex', 0);
   setIndicatorMultiplyer(carouselElements, activeSlideIndicator, event);
 
   // Loop over all slide siblings to update their order
@@ -417,10 +421,11 @@ export default function init(el) {
     return rdx;
   }, []);
 
+  const jumpTo = el.classList.contains('jump-to');
   const fragment = new DocumentFragment();
   const nextPreviousBtns = decorateNextPreviousBtns();
   const nextPreviousContainer = createTag('div', { class: 'carousel-button-container' });
-  const slideIndicators = decorateSlideIndicators(slides);
+  const slideIndicators = decorateSlideIndicators(slides, jumpTo);
   const controlsContainer = createTag('div', { class: 'carousel-controls is-delayed' });
 
   convertMpcMp4(slides);
@@ -435,7 +440,7 @@ export default function init(el) {
     slideIndicators,
     controlsContainer,
     direction: undefined,
-    jumpTo: !!el.classList.contains('jump-to'),
+    jumpTo,
   };
 
   if (el.classList.contains('lightbox')) {
@@ -456,11 +461,12 @@ export default function init(el) {
   el.textContent = '';
   el.append(slideWrapper);
 
-  const dotsUl = createTag('ul', {
-    class: 'carousel-indicators',
-    role: 'tablist',
-    tabindex: 0,
-  });
+  const dotsUl = createTag('ul', { class: 'carousel-indicators' });
+  if (jumpTo) {
+    dotsUl.setAttribute('role', 'tablist');
+    dotsUl.setAttribute('tabindex', 0);
+  }
+
   dotsUl.append(...slideIndicators);
   controlsContainer.append(dotsUl);
   nextPreviousContainer.append(...nextPreviousBtns, controlsContainer);

@@ -129,7 +129,7 @@
 
 .carousel .carousel-previous path,
 .carousel .carousel-next path {
-  fill: #242424;
+  fill: var(--carousel-nav-arrow-color);
 }
 
 .dark .carousel .carousel-previous path,
