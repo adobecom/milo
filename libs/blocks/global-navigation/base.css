@@ -44,6 +44,9 @@
   --feds-backgroundColor-tabs-v2: #f8f8f8;
   --feds-backgroundColor-tabContent-v2: #f3f3f3;
   --feds-borderColor-localnav-v2: #eee;
+
+  /* App banner */
+  --app-banner-height: 76px;
 }
 
 /* Nav Link styles */
