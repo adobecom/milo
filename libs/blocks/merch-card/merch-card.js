@@ -707,14 +707,14 @@ export default async function init(el) {
   el.replaceWith(merchCard);
   decorateMerchCardLinkAnalytics(merchCard);
 
-  // Adding aria-label for checkout-link using productFamily as placeholder key
+  // Adding aria-label for checkout-link using productFamily as placeholder key and card-heading
   const ctaLink = ctas?.querySelector('a');
   if (ctaLink && !ctaLink.getAttribute('aria-label')) {
     const { replaceKey } = await import('../../features/placeholders.js');
     ctaLink.addEventListener('mas:resolved', async () => {
       const productName = ctaLink.value[0]?.productArrangement?.productFamily;
       if (productName) {
-        await replaceKey(productName, getConfig()).then((label) => ctaLink.setAttribute('aria-label', `${ctaLink.textContent} - ${label}`));
+        await replaceKey(productName, getConfig()).then((label) => ctaLink.setAttribute('aria-label', `${ctaLink.textContent} ${label} ${merchCard.querySelector('.card-heading')?.textContent}`));
       }
     });
   }
