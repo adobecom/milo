@@ -714,7 +714,7 @@ export default async function init(el) {
     ctaLink.addEventListener('mas:resolved', async () => {
       const productName = ctaLink.value[0]?.productArrangement?.productFamily;
       if (productName) {
-        await replaceKey(productName, getConfig()).then((label) => ctaLink.setAttribute('aria-label', `${ctaLink.textContent} ${label} ${merchCard.querySelector('.card-heading')?.textContent}`));
+        await replaceKey(productName, getConfig()).then((label) => ctaLink.setAttribute('aria-label', `${ctaLink.textContent} - ${label} - ${merchCard.querySelector('.card-heading')?.textContent}`));
       }
     });
   }
