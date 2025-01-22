@@ -42,7 +42,6 @@ describe('Rollout', () => {
   it('should detect language code correctly', async () => {
     const el = document.querySelector('div');
     const searchParams = createTestParams();
-    console.log(searchParams);
     const windowOpenStub = sinon.stub(window, 'open');
 
     const result = await init(el, `?${searchParams.toString()}`);
