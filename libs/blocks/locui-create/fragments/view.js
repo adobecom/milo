@@ -35,7 +35,7 @@ export default function FragmentsSection({
 
   const locFragment = (fragment) => {
     const checked = selectedFragments.find((pathname) => pathname === fragment.pathname);
-    const parentPages = fragment?.parentPages?.filter((page) => page) ?? [];
+    const parentPages = Array.from(fragment?.parentPages ?? []).filter((page) => page);
     return html`
     <li class="locui-create-fragment">
     <div class="locui-create-fragment-input-container">

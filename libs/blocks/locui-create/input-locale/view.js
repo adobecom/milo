@@ -29,6 +29,14 @@ export default function InputLocales() {
     if (!initByParams.value?.languages) {
       return (html`
     <h5 class="section-header">Quick Select for Language/Locale</h5>
+    <div class="additional-cta">
+        <button class="reset-button" onClick=${selectAll}>
+          Select All
+        </button>
+        <button class="reset-button" onClick=${resetSelection}>
+            Reset All
+          </button>
+      </div>
     <div class="region-grid">
       <div class="region-buttons">
         ${localeRegionList.map(
@@ -44,14 +52,6 @@ export default function InputLocales() {
             </button>
           `,
         )}
-      </div>
-      <div class="additional-cta">
-        <button class="reset-button" onClick=${selectAll}>
-          Select All
-        </button>
-        <button class="reset-button" onClick=${resetSelection}>
-            Reset All
-          </button>
       </div>
     </div>
   `);
@@ -129,7 +129,7 @@ export default function InputLocales() {
     <div class="locui-form-body">
         <div>
           <h2 class="locui-project-type">${project.value.type === PROJECT_TYPES.translation ? 'Translate' : 'Rollout'}</h2>
-          <p class="locui-project-name"><strong>Project Name:</strong> ${project.value.name || 'n/a'}</p>
+          <p class="locui-project-name">Project Name: <strong>${project.value.name || 'n/a'}</strong></p>
         </div>
         <${RenderRegion} />
         <div class="language-locale-container">
