@@ -1,18 +1,11 @@
 body {
-  background: url('./img/bg.png');
-  background-size: 100% 50%;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
   font-family: 'Adobe Clean', adobe-clean, sans-serif;
 }
 
 .locui {
-  max-width: 83.4%;
   margin: 24px auto;
   min-height: 100vh;
   padding: 48px;
-  box-shadow: 0 0 8px 0 rgb(0 0 0 / 10%);
-  border-radius: 10px;
   background-color: #fff;
 }
 
