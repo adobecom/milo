@@ -571,7 +571,12 @@ class Gnav {
         await task();
       }
     } catch (e) {
-      lanaLog({ message: 'GNAV: issues within onReady', e, tags: 'gnav', errorType: 'info' });
+      lanaLog({
+        e,
+        tags: 'gnav',
+        errorType: 'info',
+        message: `GNAV: issues within imsReady - ${this.useUniversalNav ? 'decorateUniversalNav':  'decorateProfile'}`,
+        });
     }
   };
 
