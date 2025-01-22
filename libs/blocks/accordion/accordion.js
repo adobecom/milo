@@ -17,11 +17,9 @@ function toggleMedia(con, trig, status) {
     trig.setAttribute('hidden', '');
     trig.setAttribute('aria-expanded', 'false');
     con.setAttribute('hidden', '');
-    con.setAttribute('aria-expanded', 'false');
   } else {
     trig.setAttribute('aria-expanded', 'true');
     trig.removeAttribute('hidden');
-    con.setAttribute('aria-expanded', 'true');
     con.removeAttribute('hidden');
   }
 }
