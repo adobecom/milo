@@ -1,9 +1,10 @@
-const ADMIN = 'https://admin.hlx.page';
+import { SLD } from '../../../utils/utils.js';
 
+const ADMIN = 'https://admin.hlx.page';
 const urlParams = new URLSearchParams(window.location.search);
 const owner = urlParams.get('owner') || 'adobecom';
 const repo = urlParams.get('repo') || 'milo';
-export const origin = `https://main--${repo}--${owner}.hlx.page`;
+export const origin = `https://main--${repo}--${owner}.${SLD}.page`;
 
 export async function preview(path) {
   const url = `${ADMIN}/preview/${owner}/${repo}/main${path}`;
