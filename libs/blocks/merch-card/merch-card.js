@@ -714,6 +714,7 @@ export default async function init(el) {
       if (!ctaLink.getAttribute('aria-label')) {
         const { replaceKey } = await import('../../features/placeholders.js');
         ctaLink.addEventListener('mas:resolved', async () => {
+          console.log('mas:resolved');
           const productName = ctaLink.value[0]?.productArrangement?.productFamily;
           if (productName) {
             await replaceKey(productName, getConfig()).then((label) => {
