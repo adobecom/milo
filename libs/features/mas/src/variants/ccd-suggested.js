@@ -3,15 +3,15 @@ import { VariantLayout } from './variant-layout.js';
 import { CSS } from './ccd-suggested.css.js';
 
 export const CCD_SUGGESTED_AEM_FRAGMENT_MAPPING = {
-    size: [],
-    mnemonics: { size: 'l' },
-    badge: true,
-    subtitle: { tag: 'h4', slot: 'detail-s' },
     backgroundImage: { attribute: 'background-image' },
-    title: { tag: 'h3', slot: 'heading-xs' },
-    prices: { tag: 'p', slot: 'price' },
-    description: { tag: 'div', slot: 'body-xs' },
+    badge: true,
     ctas: { slot: 'cta', size: 'M' },
+    description: { tag: 'div', slot: 'body-xs' },
+    mnemonics: { size: 'l' },
+    prices: { tag: 'p', slot: 'price' },
+    size: [],
+    subtitle: { tag: 'h4', slot: 'detail-s' },
+    title: { tag: 'h3', slot: 'heading-xs' },
 };
 
 export class CCDSuggested extends VariantLayout {

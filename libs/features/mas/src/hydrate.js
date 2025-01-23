@@ -53,8 +53,8 @@ function processBadge(fields, merchCard) {
     }
 }
 
-export function processSize(fields, merchCard, allowedSizes) {
-    if (allowedSizes?.includes(fields.size)) {
+export function processSize(fields, merchCard, sizeConfig) {
+    if (sizeConfig?.includes(fields.size)) {
         merchCard.setAttribute('size', fields.size);
     }
 }
@@ -302,7 +302,7 @@ export async function hydrate(fragment, merchCard) {
 
     processMnemonics(fields, merchCard, aemFragmentMapping.mnemonics);
     processBadge(fields, merchCard);
-    processSize(fields, merchCard, aemFragmentMapping.allowedSizes);
+    processSize(fields, merchCard, aemFragmentMapping.size);
     processTitle(fields, merchCard, aemFragmentMapping.title);
     processSubtitle(fields, merchCard, aemFragmentMapping.subtitle);
     processPrices(fields, merchCard, aemFragmentMapping.prices);

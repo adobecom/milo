@@ -3,13 +3,12 @@ import { html, css } from 'lit';
 import { CSS } from './ccd-slice.css.js';
 
 export const CCD_SLICE_AEM_FRAGMENT_MAPPING = {
-    size: ['wide'],
-    mnemonics: { size: 'm' },
-    badge: true,
     backgroundImage: { tag: 'div', slot: 'image' },
-    description: { tag: 'div', slot: 'body-s' },
+    badge: true,
     ctas: { slot: 'footer', size: 'S' },
-    allowedSizes: ['wide'],
+    description: { tag: 'div', slot: 'body-s' },
+    mnemonics: { size: 'm' },
+    size: ['wide'],
 };
 
 export class CCDSlice extends VariantLayout {

@@ -5,13 +5,13 @@ import { EVENT_MERCH_CARD_ACTION_MENU_TOGGLE } from '../constants.js';
 import { CSS } from './catalog.css.js';
 
 export const CATALOG_AEM_FRAGMENT_MAPPING = {
+    badge: true,
+    ctas: { slot: 'footer', size: 'm' },
+    description: { tag: 'div', slot: 'body-xs' },
+    mnemonics: { size: 'l' },
+    prices: { tag: 'h3', slot: 'heading-xs' },
     size: ['wide', 'super-wide'],
     title: { tag: 'h3', slot: 'heading-xs' },
-    badge: true,
-    prices: { tag: 'h3', slot: 'heading-xs' },
-    description: { tag: 'div', slot: 'body-xs' },
-    ctas: { slot: 'footer', size: 'm' },
-    allowedSizes: ['wide', 'super-wide'],
 };
 
 export class Catalog extends VariantLayout {
