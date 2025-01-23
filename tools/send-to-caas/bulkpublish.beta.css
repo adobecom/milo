@@ -294,8 +294,7 @@ textarea#errors{
   text-align: center;
 }
 
-.publish-warning,
-.preview-warning {
+.publish-warning {
   margin-bottom: 0;
   height: 0;
   overflow: hidden;
