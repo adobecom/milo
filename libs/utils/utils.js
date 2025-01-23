@@ -1177,6 +1177,8 @@ async function checkForPageMods() {
 }
 
 async function loadPostLCP(config) {
+  const { default: loadFavIcon } = await import('./favicon.js');
+  loadFavIcon(createTag, getConfig(), getMetadata);
   await decoratePlaceholders(document.body.querySelector('header'), config);
   const sk = document.querySelector('aem-sidekick, helix-sidekick');
   if (sk) import('./sidekick-decorate.js').then((mod) => { mod.default(sk); });
@@ -1328,8 +1330,6 @@ async function documentPostSectionLoading(config) {
     addRichResults(richResults, { createTag, getMetadata });
   }
   loadFooter();
-  const { default: loadFavIcon } = await import('./favicon.js');
-  loadFavIcon(createTag, getConfig(), getMetadata);
   if (config.experiment?.selectedVariant?.scripts?.length) {
     config.experiment.selectedVariant.scripts.forEach((script) => loadScript(script));
   }
