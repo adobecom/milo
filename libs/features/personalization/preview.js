@@ -211,37 +211,38 @@ function getManifestListDomAndParameter(mepConfig) {
     <label for="${editPath}${pageId}--default" ${checked.class}>Default (control)${checked.isCurrent}</option>`;
     manifestList += `<div class="mep-manifest-section" title="Manifest location: ${editUrl}&#013;Analytics manifest name: ${analyticsTitle || 'N/A for this manifest type'}">
       <div class="mep-manifest-title">  
-        <a class="mep-edit-manifest" href="${editUrl}" target="_blank" title="Open manifest">
-        ${mIdx + 1}. ${getFileName(manifestPath)}
-        </a>
-        ${targetActivityName ? `<div class="target-activity-name">${targetActivityName || ''}</div>` : ''}
-        <div class="mep-columns">
-          <div class="mep-column">
-            <div>Source</div>
-            ${manifest.lastSeen ? '<div>Last seen</div>' : ''}
-            ${eventStart && eventEnd ? '<div>Scheduled</div>' : ''}
-           
+          <a class="mep-edit-manifest" href="${editUrl}" target="_blank" title="Open manifest">
+          ${mIdx + 1}. ${getFileName(manifestPath)}
+          </a>
+          ${targetActivityName ? `<div class="target-activity-name">${targetActivityName || ''}</div>` : ''}
+          <div class="mep-columns">
+            <div class="mep-column">
+              <div>Source</div>
+              ${manifest.lastSeen ? '<div>Last seen</div>' : ''}
+              ${eventStart && eventEnd ? '<div>Scheduled</div>' : ''}
+            
+            </div>
+            <div class="mep-column">
+              <div>${source}</div>
+              ${manifest.lastSeen ? `<div>${formatDate(new Date(manifest.lastSeen))}</div>` : ''}
+              ${eventStart && eventEnd ? `<div>${disabled ? 'inactive' : 'active'}</div>` : ''}
+        
+            </div>
           </div>
-          <div class="mep-column">
-            <div>${source}</div>
-            ${manifest.lastSeen ? `<div>${formatDate(new Date(manifest.lastSeen))}</div>` : ''}
-            ${eventStart && eventEnd ? `<div>${disabled ? 'inactive' : 'active'}</div>` : ''}
-       
+          ${eventStart && eventEnd ? `<div class="mep-columns">
+            <div class="mep-column">
+              <div>On</div>
+              <div>Off</div>
+            </div>
+            <div class="mep-column">
+              <div>${formatDate(eventStart)} <a target= "_blank" href="?instant=${formatDate(eventStart, 'iso')}">Instant</a></div>
+              <div>${formatDate(eventEnd)}</div>
+            </div>
           </div>
-        </div>
-        ${eventStart && eventEnd ? `<div class="mep-columns">
-          <div class="mep-column">
-            <div>On</div>
-            <div>Off</div>
-          </div>
-          <div class="mep-column">
-            <div>${formatDate(eventStart)} <a target= "_blank" href="?instant=${formatDate(eventStart, 'iso')}">Instant</a></div>
-            <div>${formatDate(eventEnd)}</div>
-          </div>
-        </div>
-      </div>` : ''}
-      <label for="experiences">Experience</label>
-      <select name="experiences" class="mep-manifest-variants">${options}</select>
+        </div>` : ''}
+        <label for="experiences">Experience</label>
+        <select name="experiences" class="mep-manifest-variants">${options}</select>
+      </div>
     </div>`;
   });
   return { manifestList, manifestParameter };
@@ -296,7 +297,8 @@ export function getMepPopup(mepConfig, isMmm = false) {
         <div>${page.locale?.toLowerCase()}</div>
         ${page.lastSeen ? `<div>${formatDate(new Date(page.lastSeen))}</div>` : ''}
       </div>
-    </div>`;
+    </div>
+    `;
   advancedOptions.innerHTML = `
     <h6 class="mep-manifest-page-info-title">Options</h6>
     <div class="mep-manifest-variants">
@@ -324,9 +326,16 @@ export function getMepPopup(mepConfig, isMmm = false) {
   mepManifestList.innerHTML = manifestList;
   if (listInfo) mepManifestList.prepend(listInfo);
   if (advancedOptions) mepManifestList.append(advancedOptions);
+
   mepPopup.append(mepPopupHeader);
   mepPopup.append(mepManifestList);
   mepPopup.append(mepManifestPreviewButton);
+
+  mepManifestList.querySelectorAll('.mep-manifest-section:not(:last-child)').forEach((section) => {
+    const mepDivider = createTag('div', { class: 'mep-divider' });
+    section.insertAdjacentElement('afterend', mepDivider);
+  });
+
   const previewButton = mepPopup.querySelector(`a[data-id="${PREVIEW_BUTTON_ID}"]`);
   if (previewButton) updatePreviewButton(mepPopup, pageId);
   addMepPopupListeners(mepPopup, pageId);

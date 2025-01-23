@@ -61,6 +61,10 @@
   flex-direction: column;
 }
 
+.mep-divider {
+  border-bottom: 1px solid #fff;
+}
+
 .mep-badge .mep-open::after,
 .mep-toggle-advanced::before {
   content: '';
