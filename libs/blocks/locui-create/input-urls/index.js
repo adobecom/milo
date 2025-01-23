@@ -17,6 +17,9 @@ export function validateUrls(urlsStr) {
   while (urls.length > 0) {
     try {
       const url = new URL(urls[0]);
+      if (!(/^(https):\/\/[^\s/$.?#].[^\s]*$/g.test(urls[0]))) {
+        return errorMessage;
+      }
       if (url.origin !== origin) {
         return errorMessage;
       }
