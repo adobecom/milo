@@ -718,7 +718,7 @@ export default async function init(el) {
           if (productName) {
             await replaceKey(productName, getConfig()).then((label) => {
               const cardHeading = merchCard.querySelector('.card-heading')?.textContent;
-              const ariaLabel = label.toLowerCase() === cardHeading.toLowerCase() ? `${ctaLink.textContent} - ${label}` : `${ctaLink.textContent} - ${label} - ${cardHeading}`;
+              const ariaLabel = label.toLowerCase() === cardHeading.toLowerCase() ? `${ctaLink.textContent} - ${cardHeading}` : `${ctaLink.textContent} - ${label} - ${cardHeading}`;
               ctaLink.setAttribute('aria-label', ariaLabel);
             });
           }
