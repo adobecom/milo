@@ -113,7 +113,7 @@ describe('tabs', () => {
   describe('tabs with background color', () => {
     it('sets the background color of the active tab', async () => {
       const coloredTabs = document.querySelector('#colored');
-      const tabs = coloredTabs.querySelectorAll('button');
+      const tabs = coloredTabs.querySelectorAll('button[role="tab"]');
       expect(coloredTabs).to.exist;
       expect(tabs[0].style.backgroundColor).to.equal('rgb(255, 0, 0)');
       expect(tabs[1].style.backgroundColor).to.equal('');
