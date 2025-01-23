@@ -11,7 +11,7 @@ export const API_URLS = {
 
 function updatePreviewButton(popup, pageId) {
   const selectedInputs = popup.querySelectorAll(
-    'input[type="radio"]:checked, input[type="text"]',
+    'option:checked, input[type="text"]',
   );
   const manifestParameter = [];
 
@@ -177,62 +177,69 @@ function getManifestListDomAndParameter(mepConfig) {
     } = manifest;
     const editUrl = manifestUrl || manifestPath;
     const editPath = normalizePath(editUrl);
-    // let radio = '';
     let options = '';
     const variantNamesArray = typeof variantNames === 'string' ? variantNames.split('||') : variantNames;
     variantNamesArray.forEach((variant) => {
       const checked = {
         attribute: '',
-        class: '',
+        // class: '',
+        isCurrent: '',
       };
       if (variant === selectedVariantName) {
-        checked.attribute = 'checked="checked"';
-        checked.class = 'class="mep-manifest-selected-variant"';
+        checked.attribute = 'selected';
+        checked.isCurrent = '*';
+        // checked.class = 'class="mep-manifest-selected-variant"';
         manifestParameter.push(`${manifestPath}--${variant}`);
       }
       options += `<option name="${editPath}${pageId}" value="${variant}" 
       id="${editPath}${pageId}--${variant}" data-manifest="${editPath}" ${checked.attribute}>
-      <label for="${editPath}${pageId}--${variant}" ${checked.class}>${variant}</option>`;
-      // radio += `<div>
-      //   <input type="radio" name="${editPath}${pageId}" value="${variant}"
-      //   id="${editPath}${pageId}--${variant}" data-manifest="${editPath}" ${checked.attribute}>
-      //   <label for="${editPath}${pageId}--${variant}" ${checked.class}>${variant}</label>
-      // </div>`;
+      <label for="${editPath}${pageId}--${variant}" ${checked.class}>${variant}${checked.isCurrent}</option>`;
     });
     const checked = {
       attribute: '',
       class: '',
+      isCurrent: '',
     };
     if (!variantNames.includes(selectedVariantName)) {
-      checked.attribute = 'checked="checked"';
-      checked.class = 'class="mep-manifest-selected-variant"';
+      checked.attribute = 'selected';
+      checked.isCurrent = '*';
+      // checked.class = 'class="mep-manifest-selected-variant"';
       manifestParameter.push(`${editUrl}--default`);
     }
-    // radio += `<div>
-    //   <input type="radio" name="${editPath}${pageId}" value="default" 
-    //   id="${editPath}${pageId}--default" data-manifest="${editPath}" ${checked.attribute}>
-    //   <label for="${editPath}${pageId}--default" ${checked.class}>Default (control)</label>
-    // </div>`;
     options += `<option name="${editPath}${pageId}" value="default" 
     id="${editPath}${pageId}--default" data-manifest="${editPath}" ${checked.attribute}>
-    <label for="${editPath}${pageId}--default" ${checked.class}>Default (control)</option>`;
-
-    const activityContainer = targetActivityName ? `<div class="target-activity-name">${targetActivityName || ''}</div>` : '';
-
-    const scheduled = eventStart && eventEnd
-      ? `<p class="promo-schedule-info">Scheduled - ${disabled ? 'inactive' : 'active'}</p>
-         <p>On: ${formatDate(eventStart)} - <a target= "_blank" href="?instant=${formatDate(eventStart, 'iso')}">instant</a></p>
-         <p>Off: ${formatDate(eventEnd)}</p>` : '';
+    <label for="${editPath}${pageId}--default" ${checked.class}>Default (control)${checked.isCurrent}</option>`;
     manifestList += `<div class="mep-manifest-section" title="Manifest location: ${editUrl}&#013;Analytics manifest name: ${analyticsTitle || 'N/A for this manifest type'}">
       <div class="mep-manifest-title">  
         <a class="mep-edit-manifest" href="${editUrl}" target="_blank" title="Open manifest">
         ${mIdx + 1}. ${getFileName(manifestPath)}
         </a>
-        ${activityContainer}
-        <div>Source: ${source}</div>
-        ${manifest.lastSeen ? `<div>Last seen: ${formatDate(new Date(manifest.lastSeen))}</div>` : ''}
-        ${scheduled}
-      </div>
+        ${targetActivityName ? `<div class="target-activity-name">${targetActivityName || ''}</div>` : ''}
+        <div class="mep-columns">
+          <div class="mep-column">
+            <div>Source</div>
+            ${manifest.lastSeen ? '<div>Last seen</div>' : ''}
+            ${eventStart && eventEnd ? '<div>Scheduled</div>' : ''}
+           
+          </div>
+          <div class="mep-column">
+            <div>${source}</div>
+            ${manifest.lastSeen ? `<div>${formatDate(new Date(manifest.lastSeen))}</div>` : ''}
+            ${eventStart && eventEnd ? `<div>${disabled ? 'inactive' : 'active'}</div>` : ''}
+       
+          </div>
+        </div>
+        ${eventStart && eventEnd ? `<div class="mep-columns">
+          <div class="mep-column">
+            <div>On</div>
+            <div>Off</div>
+          </div>
+          <div class="mep-column">
+            <div>${formatDate(eventStart)} <a target= "_blank" href="?instant=${formatDate(eventStart, 'iso')}">Instant</a></div>
+            <div>${formatDate(eventEnd)}</div>
+          </div>
+        </div>
+      </div>` : ''}
       <label for="experiences">Experience</label>
       <select name="experiences" class="mep-manifest-variants">${options}</select>
     </div>`;
@@ -240,13 +247,16 @@ function getManifestListDomAndParameter(mepConfig) {
   return { manifestList, manifestParameter };
 }
 function addMepPopupListeners(popup, pageId) {
-  popup.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach((input) => {
+  popup.querySelectorAll('select, input[type="checkbox"]').forEach((input) => {
     input.addEventListener('change', updatePreviewButton.bind(null, popup, pageId));
   });
   popup.querySelectorAll('input[type="text"]').forEach((input) => {
     input.addEventListener('keyup', updatePreviewButton.bind(null, popup, pageId));
     input.addEventListener('change', updatePreviewButton.bind(null, popup, pageId));
   });
+}
+function formatManifestText(count) {
+  return count > 1 ? 'Manifests' : 'Manifest';
 }
 export function getMepPopup(mepConfig, isMmm = false) {
   const { activities, page } = mepConfig;
@@ -265,7 +275,6 @@ export function getMepPopup(mepConfig, isMmm = false) {
   });
   const mepPopupHeader = createTag('div', { class: 'mep-popup-header' });
   const listInfo = createTag('div', { class: 'mep-manifest-section' });
-  const basicOptions = createTag('div', { class: 'mep-manifest-section' });
   const advancedOptions = createTag('div', { class: 'mep-manifest-section' });
   const mepManifestList = createTag('div', { class: 'mep-manifest-list' });
 
@@ -288,7 +297,7 @@ export function getMepPopup(mepConfig, isMmm = false) {
         ${page.lastSeen ? `<div>${formatDate(new Date(page.lastSeen))}</div>` : ''}
       </div>
     </div>`;
-  basicOptions.innerHTML = `
+  advancedOptions.innerHTML = `
     <h6 class="mep-manifest-page-info-title">Options</h6>
     <div class="mep-manifest-variants">
       <div>
@@ -302,20 +311,17 @@ export function getMepPopup(mepConfig, isMmm = false) {
         <label for="mepPreviewButtonCheckbox${pageId}">Add mepButton=off to preview link</label>
       </div>
     </div>
-  `;
-  advancedOptions.innerHTML = `
     <div>New manifest location or path*</div>
     <input type="text" name="new-manifest${pageId}" class="new-manifest">`;
 
-  const mepManifestPreviewButton = createTag('div', { class: `mep-manifest-actions${isMmm ? '' : ' dark'}` });
+  const mepManifestPreviewButton = createTag('div', { class: `mep-manifest-footer${isMmm ? '' : ' dark'}` });
   mepManifestPreviewButton.innerHTML = `
     <a class="con-button outline button-l" data-id="${PREVIEW_BUTTON_ID}" title="Preview above choices" ${isMmm ? ' target="_blank"' : ''}>Preview</a>`;
-  const activityLabel = activities?.length > 1 ? 'Manifests' : 'Manifest';
+
   mepPopupHeader.innerHTML = `
-      <h4>${activities?.length || 0} ${activityLabel}</h4>
+      <h4>${activities?.length || 0} ${formatManifestText(activities?.length)}</h4>
       <span class="mep-close"></span>`;
   mepManifestList.innerHTML = manifestList;
-  if (basicOptions) mepManifestList.prepend(basicOptions);
   if (listInfo) mepManifestList.prepend(listInfo);
   if (advancedOptions) mepManifestList.append(advancedOptions);
   mepPopup.append(mepPopupHeader);
@@ -335,7 +341,7 @@ function createPreviewPill() {
   const mepBadge = createTag('div', { class: 'mep-manifest mep-badge' });
   mepBadge.innerHTML = `
    <span class="mep-open"></span>
-      <div class="mep-manifest-count">${activities?.length || 0} Manifest(s) found</div>`;
+      <div class="mep-manifest-count">${activities?.length || 0} ${formatManifestText(activities?.length)} found</div>`;
   pill.append(mepBadge);
   pill.append(getMepPopup(mepConfig));
   overlay.append(pill);
