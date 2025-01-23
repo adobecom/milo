@@ -712,17 +712,17 @@ export default async function init(el) {
     const ctaLinks = ctas.querySelectorAll('a');
     ctaLinks.forEach(async (ctaLink) => {
       if (!ctaLink.getAttribute('aria-label')) {
-        if (window.location.pathname.includes('/products/catalog')) {
-          ctaLink.setAttribute('aria-label', `${ctaLink.textContent} - ${merchCard.querySelector('.card-heading')?.textContent}`);
-        } else {
-          const { replaceKey } = await import('../../features/placeholders.js');
-          ctaLink.addEventListener('mas:resolved', async () => {
-            const productName = ctaLink.value[0]?.productArrangement?.productFamily;
-            if (productName) {
-              await replaceKey(productName, getConfig()).then((label) => ctaLink.setAttribute('aria-label', `${ctaLink.textContent} - ${label} - ${merchCard.querySelector('.card-heading')?.textContent}`));
-            }
-          });
-        }
+        const { replaceKey } = await import('../../features/placeholders.js');
+        ctaLink.addEventListener('mas:resolved', async () => {
+          const productName = ctaLink.value[0]?.productArrangement?.productFamily;
+          if (productName) {
+            await replaceKey(productName, getConfig()).then((label) => {
+              const cardHeading = merchCard.querySelector('.card-heading')?.textContent;
+              const ariaLabel = label.toLowerCase() === cardHeading.toLowerCase() ? `${ctaLink.textContent} - ${label}` : `${ctaLink.textContent} - ${label} - ${cardHeading}`;
+              ctaLink.setAttribute('aria-label', ariaLabel);
+            });
+          }
+        });
       }
     });
   }
