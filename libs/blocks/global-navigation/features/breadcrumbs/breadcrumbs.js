@@ -57,9 +57,11 @@ const createBreadcrumbs = (element) => {
     if (hiddenEntries.includes(li.innerText?.toLowerCase().trim())) li.remove();
   });
 
+  const noTransform = element.classList.contains('no-transform') ? ' no-transform' : '';
+
   const breadcrumbs = toFragment`
     <div class="feds-breadcrumbs-wrapper">
-      <nav class="feds-breadcrumbs" aria-label="Breadcrumb">${ul}</nav>
+      <nav class="feds-breadcrumbs${noTransform}" aria-label="Breadcrumb">${ul}</nav>
     </div>
   `;
   ul.querySelector('li:last-of-type')?.setAttribute('aria-current', 'page');

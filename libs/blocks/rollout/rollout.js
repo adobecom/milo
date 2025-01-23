@@ -94,7 +94,7 @@ const createRadioButton = (value, checked = false) => {
  * @param {HTMLElement} el - Container element
  * @param {string} previewUrl - Preview URL
  */
-const buildUi = async (el, previewUrl) => {
+const buildUi = async (el, previewUrl, overrideBranch) => {
   try {
     const modal = createTag('div', { class: 'modal' });
     const radioGroup = createTag('div', { class: 'radio-group' });
@@ -113,13 +113,18 @@ const buildUi = async (el, previewUrl) => {
       const selectedEnv = document.querySelector('input[name="deployTarget"]:checked')?.value;
       if (!selectedEnv) return;
 
+      let branch = urlData.urlBranch;
+      if (overrideBranch) {
+        branch = selectedEnv === 'stage' ? `${overrideBranch}-stage` : overrideBranch;
+      }
+
       const locV3ConfigUrl = new URL(
         'tools/locui-create',
-        `https://${urlData.urlBranch}--${urlData.urlRepo}--${urlData.urlOwner}.hlx.page`,
+        `https://${branch}--${urlData.urlRepo}--${urlData.urlOwner}.hlx.page`,
       );
 
       const params = {
-        milolibs: 'milostudio-stage',
+        milolibs: selectedEnv === 'stage' ? 'milostudio-stage' : 'milostudio',
         ref: urlData.urlBranch,
         repo: urlData.urlRepo,
         owner: urlData.urlOwner,
@@ -154,7 +159,7 @@ const buildUi = async (el, previewUrl) => {
  * @param {HTMLElement} el - Container element
  * @param {string} previewUrl - Preview URL
  */
-const setup = async (el, previewUrl) => {
+const setup = async (el, previewUrl, overrideBranch) => {
   if (!el || !previewUrl) return;
 
   const data = setUrlData(previewUrl, true);
@@ -163,7 +168,7 @@ const setup = async (el, previewUrl) => {
     return;
   }
   el.innerHTML = '';
-  await buildUi(el, previewUrl);
+  await buildUi(el, previewUrl, overrideBranch);
 };
 
 /**
@@ -174,13 +179,12 @@ const setup = async (el, previewUrl) => {
  */
 export default async function init(el, search = window.location.search) {
   if (!el) return false;
-
   try {
     const params = new URLSearchParams(search);
+    const overrideBranch = params?.get('overrideBranch')?.trim();
     const referrer = params?.get('referrer')?.trim();
     const host = params?.get('host')?.trim();
     const project = params?.get('project')?.trim();
-
     if (!referrer || !host || !project) {
       el.innerHTML = '<div class="modal">Missing required parameters</div>';
       return false;
@@ -192,7 +196,7 @@ export default async function init(el, search = window.location.search) {
     }
 
     Object.assign(urlData, { referrer, host, project });
-    await setup(el, referrer);
+    await setup(el, referrer, overrideBranch);
     return true;
   } catch (err) {
     el.innerHTML = '<div class="modal">Initialization failed</div>';
