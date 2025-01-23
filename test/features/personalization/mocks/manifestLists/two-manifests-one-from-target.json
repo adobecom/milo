@@ -16,7 +16,7 @@
           "target-test": {
               "commands": [
                   {
-                      "action": "target-manifest-action",
+                      "action": "append",
                       "selector": "section1",
                       "pageFilter": "",
                       "target": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/fragments/test1",
@@ -38,7 +38,7 @@
       "selectedVariant": {
           "commands": [
               {
-                  "action": "target-manifest-action",
+                  "action": "append",
                   "selector": "section1",
                   "pageFilter": "",
                   "target": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/fragments/test",
@@ -70,7 +70,7 @@
           "target-test": {
               "commands": [
                   {
-                      "action": "server-manifest-action",
+                      "action": "appendtosection",
                       "selector": "section1",
                       "pageFilter": "",
                       "target": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/fragments/test1",
@@ -92,7 +92,7 @@
       "selectedVariant": {
           "commands": [
               {
-                  "action": "server-manifest-action",
+                  "action": "appendtosection",
                   "selector": "section1",
                   "pageFilter": "",
                   "target": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/fragments/pzn",

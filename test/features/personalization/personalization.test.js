@@ -406,7 +406,7 @@ describe('MEP Utils', () => {
       const response = cleanAndSortManifestList(manifests, config);
       const result = response.find((manifest) => manifest.source.length > 1);
       expect(result).to.be.not.null;
-      expect(result.selectedVariant.commands[0].action).to.equal('server-manifest-action');
+      expect(result.selectedVariant.commands[0].action).to.equal('appendtosection');
     });
     it('chooses target manifest over server manifest if same manifest path and in production and selected audience is "target-*"', async () => {
       const config = { env: { name: 'prod' } };
@@ -417,7 +417,7 @@ describe('MEP Utils', () => {
       const response = cleanAndSortManifestList(manifests, config);
       const result = response.find((manifest) => manifest.source.length > 1);
       expect(result).to.be.not.null;
-      expect(result.selectedVariant.commands[0].action).to.equal('target-manifest-action');
+      expect(result.selectedVariant.commands[0].action).to.equal('append');
     });
   });
 });
