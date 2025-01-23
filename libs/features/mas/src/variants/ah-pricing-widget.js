@@ -4,15 +4,16 @@ import { CSS } from './ah-pricing-widget.css.js';
 
 const AEM_FRAGMENT_MAPPING = {
   mnemonics: { size: 's' },
-  title: { tag: 'h3', slot: 'heading-xxxs' },
-  description: { tag: 'div', slot: 'body-xxs' },
+  title: { tag: 'h3', slot: 'heading-xxxs', maxCount: 40 },
+  description: { tag: 'div', slot: 'body-xxs', maxCount: 200 },
   prices: { tag: 'p', slot: 'price' },
   ctas: { slot: 'cta', size: 'S' },
+  backgroundImage: { tag: 'div', slot: 'image' },
   allowedColors: ['gray'],
+  allowedSizes: ['single', 'double']
 };
 
 export class AHPricingWidget extends VariantLayout {
-  
   getGlobalCSS() {
     return CSS;
   }
@@ -24,6 +25,7 @@ export class AHPricingWidget extends VariantLayout {
 
   renderLayout() {
     return html`
+      <div class="content">
         <div class="header">
     		    <slot name="icons"></slot>
             <slot name="heading-xxxs"></slot>
@@ -33,6 +35,8 @@ export class AHPricingWidget extends VariantLayout {
         <div class="footer">
           <slot name="cta"></slot>
         </div>
+      </div>
+      ${this.card.size === 'single' ? html`<slot name="image"></slot>` : ''}
       <slot></slot>
     `;
   }
@@ -40,7 +44,9 @@ export class AHPricingWidget extends VariantLayout {
   static variantStyle = css`
     :host([variant='ah-pricing-widget']) {
         --merch-card-ah-pricing-widget-width: 132px;
-        --merch-card-ah-pricing-widget-height: 212px;
+        --merch-card-ah-pricing-widget-content-max-width: 245px;
+        --merch-card-ah-pricing-widget-height: 206px;
+        --merch-card-ah-pricing-widget-header-min-height: 36px;
         --merch-card-ah-pricing-widget-gray-background: rgba(248, 248, 248);
         --merch-card-ah-pricing-widget-text-color: rgba(19, 19, 19);
         width: var(--merch-card-ah-pricing-widget-width);
@@ -49,23 +55,39 @@ export class AHPricingWidget extends VariantLayout {
         color: var(--consonant-merch-card-heading-xxxs-color);
         border-radius: 10px;
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
         overflow: hidden;
         padding: 12px !important;
+        gap: 16px;
         box-sizing: content-box !important;
         border: none;
+    }
+
+    :host([variant='ah-pricing-widget'][size='single']) {
+        --merch-card-ah-pricing-widget-width: 460px;
+    }
+
+    :host([variant='ah-pricing-widget'][size='double']) {
+        --merch-card-ah-pricing-widget-width: 214px;
     }
 
     :host([variant='ah-pricing-widget'][background-color='gray']) {
         background-color: var(--merch-card-ah-pricing-widget-gray-background);
     }
 
+    :host([variant='ah-pricing-widget']) .content {
+        display: flex;
+        flex-direction: column;
+        width: var(--merch-card-ah-pricing-widget-content-max-width);
+    }
+
     :host([variant='ah-pricing-widget']) .header {
         display: flex;
+        min-height: var(--merch-card-ah-pricing-widget-header-min-height);
         flex-direction: row;
         align-items: center;
         gap: var(--consonant-merch-spacing-xxs);
-        padding-bottom: 4px;
+        margin-bottom: 4px;
     }
 
 
@@ -73,6 +95,8 @@ export class AHPricingWidget extends VariantLayout {
         margin-left: var(--spacing-xs);
         display: flex;
         flex-direction: column;
+        flex-grow: 1;
+        justify-content: end;
         font-size: var(--consonant-merch-card-detail-s-font-size);
         line-height: var(--consonant-merch-card-detail-s-line-height);
         color: var(--consonant-merch-card-heading-xxxs-color);
@@ -83,13 +107,18 @@ export class AHPricingWidget extends VariantLayout {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-top: auto;
+        margin-top: 24px;
     }
 
     :host([variant='ah-pricing-widget']) ::slotted([slot='cta']) {
         display: flex;
         flex-direction: row;
         gap: 8px;
+    }
+
+    :host([variant='ah-pricing-widget']) ::slotted([slot='image']) {
+        width: 199px;
+        overflow: hidden;
     }
   `;
 }

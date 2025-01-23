@@ -45,10 +45,11 @@ styles.innerHTML = `
     /* detail */
     --consonant-merch-card-detail-s-font-size: 11px;
     --consonant-merch-card-detail-s-line-height: 14px;
-  --consonant-merch-card-detail-m-font-size: 12px;
+    --consonant-merch-card-detail-m-font-size: 12px;
     --consonant-merch-card-detail-m-line-height: 15px;
     --consonant-merch-card-detail-m-font-weight: 700;
     --consonant-merch-card-detail-m-letter-spacing: 1px;
+    --consonant-merch-card-detail-xl-line-height: 23px;
 
     /* body */
     --consonant-merch-card-body-xxs-font-size: 12px;
