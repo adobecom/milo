@@ -6,6 +6,8 @@ This custom element implements all the merch-card variants provided in acom and 
 
 A `merch-card` can be rendered using either static html markup or `aem-fragment` custom element to retrieve a card from Odin/AEM.
 
+The CTAs styles depend on Spectrum CSS that must be provided by the consumer.
+
 Designs:
 
 **ACOM**: https://www.figma.com/design/tiEUQLJ1hVlosqwzAATVXZ/Cards-(Merch)?node-id=1086-17994&t=LeMR0vbaBoEKaKln-1
@@ -48,17 +50,21 @@ CCD Gallery provides a comprehensive list of all supported card variants in CCD.
             log(target, 'merch-card is ready: ', e.target.variant);
         });
 
-        card1.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            if (e.target.isCheckoutLink) {
-                log(target, 'merch-card checkout-link click: ', e.target);
-            } else if (e.target.isInlinePrice) {
-                log(target, 'merch-card price click: ', e.target.innerText);
-            } else {
-                log(target, 'merch-card click: ', e.target);
-            }
-        });
+        card1.addEventListener(
+            'click',
+            (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (e.target.isCheckoutButton) {
+                    log(target, 'merch-card checkout-button click: ', e.target);
+                } else if (e.target.isInlinePrice) {
+                    log(target, 'merch-card price click: ', e.target.innerText);
+                } else {
+                    log(target, 'merch-card click: ', e.target);
+                }
+            },
+            { capture: true },
+        );
     }
 </script>
 ```
@@ -93,12 +99,13 @@ CCD Gallery provides a comprehensive list of all supported card variants in CCD.
 
 ### Attributes
 
-| Name        | Description                                                                               | Default Value                        | Required | Provider |
-| ----------- | ----------------------------------------------------------------------------------------- | ------------------------------------ | -------- | -------- |
-| `variant`   | Variant in terms design. Not required when used with an `aem-fragment`                    |                                      | `false`  | mas.js |
-| `consonant` | Whether to use consonant styles without sp-button decorator around the footer CTAs.       | `true` if `aem-fragment` is not used | `false`  | mas.js |
-| `size`      | card width; a card can span over 2 columns or entire row on a css grid `wide\|super-wide` |                                      | `false`  | mas.js |
-| `daa-lh`    | Analytics identifier of a card. Value is coming from the 'PRODUCT_CODE' tag set on the card (for now manual authoring required, later will be tagged automatically). Sample values: 'ccsn' or 'phlt'. |                                      | `false`  | mas.js |
+| Name        | Description                                                                                                                                                                                           | Default Value | Required | Provider |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- | -------- | -------- |
+| `variant`   | Variant in terms design. Not required when used with an `aem-fragment`                                                                                                                                |               | `false`  | mas.js   |
+| `consonant` | Uses Consonant for the footer CTA styles during hydration from an aem fragment                                                                                                                        | `false`       | `false`  | mas.js   |
+| `spectrum`  | Uses Spectrum for the footer CTA styles during hydration from an aem fragment. (options: `css`, `swc`)                                                                                                | `css`         | `false`  | mas.js   |
+| `size`      | card width; a card can span over 2 columns or entire row on a css grid `wide\|super-wide`                                                                                                             |               | `false`  | mas.js   |
+| `daa-lh`    | Analytics identifier of a card. Value is coming from the 'PRODUCT_CODE' tag set on the card (for now manual authoring required, later will be tagged automatically). Sample values: 'ccsn' or 'phlt'. |               | `false`  | mas.js   |
 
 #### Active variants:
 
@@ -210,11 +217,11 @@ The reason is that some merch cards are resolved very quickly and event could di
 
 ### Attributes
 
-| Name       | Description                                                                              | Default Value | Required | Provider |
-| ---------- | ---------------------------------------------------------------------------------------- | ------------- | -------- | -------- |
+| Name       | Description                                                                              | Default Value | Required | Provider      |
+| ---------- | ---------------------------------------------------------------------------------------- | ------------- | -------- | ------------- |
 | `fragment` | Fragment id. The copy/use feature in M@S Studio will copy the id/markup to the clipboard |               | `true`   | consumer code |
 | `title`    | Informative title                                                                        |               | `false`  | consumer code |
-| `ims`      | attempts to use an IMS access token via `window.adobeid.authorize()` to fetch a fragment |               | `false`  | mas.js |
+| `ims`      | attempts to use an IMS access token via `window.adobeid.authorize()` to fetch a fragment |               | `false`  | mas.js        |
 
 ### Properties
 
@@ -272,19 +279,20 @@ The reason is that some merch cards are resolved very quickly and event could di
 The `merch-card` custom element renders content in its default slot, allowing consumers to seamlessly extend it with additional UI capabilities.
 
 ### Example
+
 In the demo below, the `aem-fragment` custom element is headless and does not render any content.
 The `sp-action-button` custom element renders into the default slot as no explicit slot is provided.
 
 ```html {.demo .light}
 <style>
-    merch-card sp-action-button {
+    merch-card button {
         position: absolute;
         display: none;
         top: 4px;
         right: 4px;
     }
 
-    merch-card:hover sp-action-button {
+    merch-card:hover button {
         display: block;
     }
 </style>
@@ -292,7 +300,7 @@ The `sp-action-button` custom element renders into the default slot as no explic
     <aem-fragment
         fragment="d8008cac-010f-4607-bacc-a7a327da1312"
     ></aem-fragment>
-    <sp-action-button id="ctxBtn"> ... </sp-action-button>
+    <button id="ctxBtn">...</button>
 </merch-card>
 <script type="module">
     document

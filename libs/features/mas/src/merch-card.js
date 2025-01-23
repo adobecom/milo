@@ -16,11 +16,14 @@ import {
 import { VariantLayout } from './variants/variant-layout.js';
 import { hydrate, ANALYTICS_SECTION_ATTR } from './hydrate.js';
 
-export const MERCH_CARD_NODE_NAME = 'MERCH-CARD';
-export const MERCH_CARD = 'merch-card';
+const MERCH_CARD = 'merch-card';
+const MARK_START_SUFFIX = ':start';
+const MARK_READY_SUFFIX = ':ready';
 
 // if merch cards does not initialise in 10 seconds, it will dispatch mas:error event
 const MERCH_CARD_LOAD_TIMEOUT = 10000;
+
+const MARK_MERCH_CARD_PREFIX = 'merch-card:';
 
 export class MerchCard extends LitElement {
     static properties = {
@@ -43,6 +46,7 @@ export class MerchCard extends LitElement {
         actionMenu: { type: Boolean, attribute: 'action-menu' },
         customHr: { type: Boolean, attribute: 'custom-hr' },
         consonant: { type: Boolean, attribute: 'consonant' },
+        spectrum: { type: String, attribute: 'spectrum' }, /* css|swc */
         detailBg: { type: String, attribute: 'detail-bg' },
         secureLabel: { type: String, attribute: 'secure-label' },
         checkboxLabel: { type: String, attribute: 'checkbox-label' },
@@ -106,13 +110,12 @@ export class MerchCard extends LitElement {
      */
     variantLayout;
 
-    #ready = false;
-
     constructor() {
         super();
         this.filters = {};
         this.types = '';
         this.selected = false;
+        this.spectrum = 'css';
         this.handleAemFragmentEvents = this.handleAemFragmentEvents.bind(this);
     }
 
@@ -136,9 +139,9 @@ export class MerchCard extends LitElement {
             changedProperties.has('badgeBackgroundColor') ||
             changedProperties.has('borderColor')
         ) {
-            this.style.setProperty('--merch-card-border', this.computedBorderStyle);
+            this.style.setProperty('--consonant-merch-card-border', this.computedBorderStyle);
         }
-        this.variantLayout?.postCardUpdateHook(this);
+        this.variantLayout?.postCardUpdateHook(changedProperties);
     }
 
     get theme() {
@@ -272,6 +275,8 @@ export class MerchCard extends LitElement {
 
     connectedCallback() {
         super.connectedCallback();
+        const id = this.querySelector('aem-fragment')?.getAttribute('fragment');
+        performance.mark(`${MARK_MERCH_CARD_PREFIX}${id}${MARK_START_SUFFIX}`);
         this.addEventListener(
             EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
             this.handleQuantitySelection,
@@ -300,7 +305,7 @@ export class MerchCard extends LitElement {
 
     disconnectedCallback() {
         super.disconnectedCallback();
-        this.variantLayout.disconnectedCallbackHook();
+        this.variantLayout?.disconnectedCallbackHook();
 
         this.removeEventListener(
             EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
@@ -355,6 +360,7 @@ export class MerchCard extends LitElement {
         );
         const success = await Promise.race([successPromise, timeoutPromise]);
         if (success === true) {
+            performance.mark(`${MARK_MERCH_CARD_PREFIX}${this.id}${MARK_READY_SUFFIX}`);
             this.dispatchEvent(
                 new CustomEvent(EVENT_MAS_READY, {
                     bubbles: true,
@@ -397,12 +403,23 @@ export class MerchCard extends LitElement {
         return this.querySelector('merch-quantity-select');
     }
 
+    displayFooterElementsInColumn() {
+        if (!this.classList.contains('product')) return;
+
+        const secureTransactionLabel = this.shadowRoot.querySelector('.secure-transaction-label');
+        const checkoutLinkCtas = this.footerSlot?.querySelectorAll('a[is="checkout-link"].con-button')
+        if (checkoutLinkCtas.length === 2 && secureTransactionLabel) {
+            secureTransactionLabel.parentElement.classList.add('footer-column');
+        }
+    }
+
     merchCardReady() {
         if (this.offerSelect && !this.offerSelect.planType) return;
         // add checks for other properties if needed
         this.dispatchEvent(
             new CustomEvent(EVENT_MERCH_CARD_READY, { bubbles: true }),
         );
+        this.displayFooterElementsInColumn();
     }
 
     // TODO enable with TWP //
