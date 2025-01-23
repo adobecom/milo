@@ -23,15 +23,13 @@ function promoIntersectObserve(el, stickySectionEl, options = {}) {
         observer.unobserve(entry.target);
         return;
       }
-      const footerTarget = entry.target === document.querySelector('footer');
-      const isPromoStart = entry.target === stickySectionEl;
-      const abovePromoStart = (isPromoStart && entry.isIntersecting)
-        || stickySectionEl?.getBoundingClientRect().y > 0;
-      if (footerTarget && entry.isIntersecting) el.classList.add('fill-sticky-section');
-      else el.classList.remove('fill-sticky-section');
 
-      if (!footerTarget && (entry.isIntersecting || abovePromoStart)) el.classList.add('hide-sticky-section');
-      else el.classList.remove('hide-sticky-section');
+      const abovePromoStart = (entry.target === stickySectionEl && entry.isIntersecting)
+        || stickySectionEl?.getBoundingClientRect().y > 0;
+
+      if (entry.target === document.querySelector('footer')) {
+        el.classList.toggle('fill-sticky-section', entry.isIntersecting);
+      } else el.classList.toggle('hide-sticky-section', abovePromoStart);
     });
   }, options);
   return io;
