@@ -233,6 +233,7 @@ export default function InputUrls() {
                 disabled=${projectCreated.value}
                 onInput=${handleNameChange}
                 placeholder="Enter letters, alphabet and hyphens only"
+                maxlength="50"
               />
               ${errors.name
               && html`<div class="form-field-error">${errors.name}</div>`}
