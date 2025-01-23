@@ -1719,6 +1719,16 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
 
     merch-card[variant="ah-pricing-widget"] [slot="price"] .price-currency-symbol {
         vertical-align: top;
+        line-height: var(--consonant-merch-card-detail-l-line-height);
+        display: inline-block;
+        width: 20px;
+        text-align: start;
+    }
+
+    merch-card[variant="ah-pricing-widget"] [slot="price"] .price-recurrence{
+        display: inline-block;
+        width: 21px;
+        text-align: end;
     }
 
     merch-card[variant="ah-pricing-widget"] [slot="price"] .price-currency-symbol,
@@ -1733,6 +1743,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
         font-size: var(--consonant-merch-card-body-xxs-font-size);
         line-height: var(--consonant-merch-card-body-xxs-line-height);
         text-decoration-thickness: from-font;
+        text-underline-offset: 1px;
         width: fit-content;
     }
 
@@ -1900,6 +1911,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
     --consonant-merch-card-detail-m-line-height: 15px;
     --consonant-merch-card-detail-m-font-weight: 700;
     --consonant-merch-card-detail-m-letter-spacing: 1px;
+    --consonant-merch-card-detail-l-line-height: 21px;
     --consonant-merch-card-detail-xl-line-height: 23px;
 
     /* body */

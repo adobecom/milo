@@ -33,6 +33,16 @@ export const CSS = `
 
     merch-card[variant="ah-pricing-widget"] [slot="price"] .price-currency-symbol {
         vertical-align: top;
+        line-height: var(--consonant-merch-card-detail-l-line-height);
+        display: inline-block;
+        width: 20px;
+        text-align: start;
+    }
+
+    merch-card[variant="ah-pricing-widget"] [slot="price"] .price-recurrence{
+        display: inline-block;
+        width: 21px;
+        text-align: end;
     }
 
     merch-card[variant="ah-pricing-widget"] [slot="price"] .price-currency-symbol,
@@ -47,6 +57,7 @@ export const CSS = `
         font-size: var(--consonant-merch-card-body-xxs-font-size);
         line-height: var(--consonant-merch-card-body-xxs-line-height);
         text-decoration-thickness: from-font;
+        text-underline-offset: 1px;
         width: fit-content;
     }
 
