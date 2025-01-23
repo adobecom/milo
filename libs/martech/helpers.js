@@ -441,9 +441,7 @@ export const loadAnalyticsAndInteractionData = async ({ locale, env, calculatedT
     targetRespJson?.handle?.forEach((item) => {
       if (item?.type === 'state:store') {
         item?.payload?.forEach((payload) => {
-          if (
-            payload?.key === 'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_cluster'
-            || payload?.key === 'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_identity') {
+          if (payload?.key === KNDCTR_COOKIE_KEYS[0] || payload?.key === KNDCTR_COOKIE_KEYS[1]) {
             extractedData.push({ ...payload });
           }
         });
