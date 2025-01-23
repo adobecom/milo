@@ -1,9 +1,10 @@
 /* eslint-disable no-restricted-syntax */
-import { expect } from './../../../../node_modules/@esm-bundle/chai/esm/chai.js';
-import { readFile, sendKeys, setViewport } from './../../../../node_modules/@web/test-runner-commands/browser/commands.mjs';
-import { loadStyle } from './../../../../libs/utils/utils.js';
-import KeyboardNavigation from './../../../../libs/blocks/global-navigation/utilities/keyboard/index.js';
-import { selectors } from './../../../../libs/blocks/global-navigation/utilities/keyboard/utils.js';
+import { expect } from '@esm-bundle/chai/esm/chai.js';
+// eslint-disable-next-line import/extensions,import/no-relative-packages
+import { readFile, sendKeys, setViewport } from '../../../../node_modules/@web/test-runner-commands/browser/commands.mjs';
+import { loadStyle } from '../../../../libs/utils/utils.js';
+import KeyboardNavigation from '../../../../libs/blocks/global-navigation/utilities/keyboard/index.js';
+import { selectors } from '../../../../libs/blocks/global-navigation/utilities/keyboard/utils.js';
 
 const isOpen = (element) => element.getAttribute('aria-expanded') === 'true'
   && element.hasAttribute('daa-lh', 'header|Close');
@@ -12,8 +13,10 @@ const isClosed = (element) => element.getAttribute('aria-expanded') === 'false'
 const getPopup = (element) => element.parentElement.querySelector(selectors.popup);
 const getNavLinks = (trigger) => [...getPopup(trigger).querySelectorAll(`${selectors.navLink}, ${selectors.promoLink}, ${selectors.imagePromo}`)];
 let mainNavItems;
+// eslint-disable-next-line no-unused-vars
 let otherNavItems;
 let keyboardNavigation;
+// eslint-disable-next-line no-unused-vars
 let allNavItems;
 
 const loadStyles = (path) => new Promise((resolve) => {
