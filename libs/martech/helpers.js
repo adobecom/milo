@@ -4,6 +4,11 @@ const KNDCTR_COOKIE_KEYS = [
   'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_cluster',
 ];
 
+function getDomainWithoutWWW() {
+  const domain = window?.location?.hostname;
+  return domain.replace(/^www\./, '');
+}
+
 /**
  * Generates a random UUIDv4 using cryptographically secure random values.
  * This implementation follows the RFC 4122 specification for UUIDv4.
@@ -121,7 +126,7 @@ function setCookie(key, value, options = {}) {
   date.setTime(date.getTime() + expires * 24 * 60 * 60 * 1000);
   const expiresString = `expires=${date.toUTCString()}`;
 
-  document.cookie = `${key}=${value}; ${expiresString}; path=/ ; domain=.${(new URL(window.location.origin)).hostname};`;
+  document.cookie = `${key}=${value}; ${expiresString}; path=/ ; domain=.${getDomainWithoutWWW()};`;
 }
 
 /**
@@ -298,7 +303,7 @@ function createRequestPayload({ updatedContext, pageName, locale, env }) {
         com_adobe_target: { propertyToken: AT_PROPERTY_VAL },
       },
       state: {
-        domain: (new URL(window.location.origin)).hostname,
+        domain: getDomainWithoutWWW(),
         cookiesEnabled: true,
         entries: getMartechCookies(),
       },
