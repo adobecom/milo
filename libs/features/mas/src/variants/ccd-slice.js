@@ -23,9 +23,9 @@ export class CCDSlice extends VariantLayout {
     renderLayout() {
         return html` <div class="content">
                 <div class="top-section">
-                  <slot name="icons"></slot> 
-                  ${this.badge}
-                </div>  
+                    <slot name="icons"></slot>
+                    ${this.badge}
+                </div>
                 <slot name="body-s"></slot>
                 <slot name="footer"></slot>
             </div>
@@ -36,11 +36,11 @@ export class CCDSlice extends VariantLayout {
     static variantStyle = css`
         :host([variant='ccd-slice']) {
             --consonant-merch-card-background-color: rgb(248, 248, 248);
-            --consonant-merch-card-border-color:rgb(230, 230, 230);
+            --consonant-merch-card-border-color: rgb(230, 230, 230);
             --consonant-merch-card-body-s-color: rgb(34, 34, 34);
             --merch-color-inline-price-strikethrough: var(--spectrum-gray-600);
             --mod-img-height: 29px;
-            
+
             box-sizing: border-box;
             min-width: 290px;
             max-width: 322px;
@@ -53,7 +53,7 @@ export class CCDSlice extends VariantLayout {
         }
 
         :host([variant='ccd-slice']) * {
-          overflow: hidden;
+            overflow: hidden;
         }
 
         :host([variant='ccd-slice']) ::slotted([slot='body-s']) {
@@ -61,12 +61,15 @@ export class CCDSlice extends VariantLayout {
             line-height: var(--consonant-merch-card-body-xxs-line-height);
             min-width: 154px;
             max-width: 171px;
-            max-height: 54px;
+            height: 55px;
             overflow: hidden;
         }
 
         :host([variant='ccd-slice'][size='wide']) ::slotted([slot='body-s']) {
-          max-width: 425px;
+            max-width: 425px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         :host([variant='ccd-slice'][size='wide']) {
@@ -79,7 +82,8 @@ export class CCDSlice extends VariantLayout {
             gap: var(--consonant-merch-spacing-xxs);
             padding: 15px;
             padding-inline-end: 0;
-            width: 154px;
+            height: 154px;
+            box-sizing: border-box;
             min-height: 123px;
             flex-direction: column;
             justify-content: space-between;
