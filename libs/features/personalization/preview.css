@@ -1,8 +1,8 @@
 .mep-preview-overlay {
   z-index: 101;
   position: fixed;
-  bottom: 32px;
-  left: 40px;
+  bottom: 16px;
+  left: 32px;
   color: #eee; 
   font-size: 24px;
   display: block !important;
@@ -106,10 +106,12 @@
 
 .mep-popup .mep-columns {
   display:flex;
+  gap: 16px;
 }
 
-.mep-popup .mep-column {
-  flex: 1 50%;
+.mep-popup .mep-column a {
+  position: absolute;
+  right: 0;
 }
 
 .mep-popup.in-page {
@@ -132,7 +134,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24px 12px;
+  padding: 12px 12px;
   border-radius: 16px 16px 0 0;
   position: relative;
 }
@@ -143,10 +145,6 @@
 
 .mep-popup .mep-popup-header > div {
   margin: 8px 0;
-}
-
-.mep-popup .mep-popup-header > div > div {
-  line-height: 18px;
 }
 
 .mep-popup h6 {
@@ -207,23 +205,18 @@
   flex: 0 0 auto;
 }
 
-.mep-popup .mep-manifest-actions {
+.mep-popup .mep-manifest-footer {
   display: flex;
   justify-content: flex-end;
-  padding: 15px;
+  padding: 12px;
 }
 
 .mep-popup .target-activity-name {
   font-style: italic;
 }
 
-label.mep-manifest-selected-variant::after {
-  content: ' *';
-}
-
 .mep-manifest-title,
 .mep-popup label {
-  line-height: 18px;
   position: relative;
 }
 
@@ -238,8 +231,8 @@ label.mep-manifest-selected-variant::after {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  margin: 12px;
+  gap: 12px;
+  padding: 12px;
 }
 
 .mep-popup:not(.in-page) .promo-schedule-info {
@@ -265,11 +258,11 @@ label.mep-manifest-selected-variant::after {
 }
 
 .mep-manifest-list::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: #888;
 }
 
 .mep-manifest-list::-webkit-scrollbar-thumb {
-  background: #888;
+  background: #f1f1f1;
 }
 
 .mep-manifest-list::-webkit-scrollbar-thumb:hover {
