@@ -422,12 +422,23 @@ export class MerchCard extends LitElement {
         return this.querySelector('merch-quantity-select');
     }
 
+    displayFooterElementsInColumn() {
+        if (!this.classList.contains('product')) return;
+
+        const secureTransactionLabel = this.shadowRoot.querySelector('.secure-transaction-label');
+        const checkoutLinkCtas = this.footerSlot?.querySelectorAll('a[is="checkout-link"].con-button')
+        if (checkoutLinkCtas.length === 2 && secureTransactionLabel) {
+            secureTransactionLabel.parentElement.classList.add('footer-column');
+        }
+    }
+
     merchCardReady() {
         if (this.offerSelect && !this.offerSelect.planType) return;
         // add checks for other properties if needed
         this.dispatchEvent(
             new CustomEvent(EVENT_MERCH_CARD_READY, { bubbles: true }),
         );
+        this.displayFooterElementsInColumn();
     }
 
     // TODO enable with TWP //
