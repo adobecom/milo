@@ -1704,6 +1704,8 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
     }
 
     merch-card[variant="ah-pricing-widget"] [slot="price"] .price {
+        display: inline-block;
+        height: var(--consonant-merch-card-detail-xl-line-height);
         line-height: var(--consonant-merch-card-detail-xl-line-height);
     }
 
@@ -1777,6 +1779,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
         --merch-card-ah-pricing-widget-header-min-height: 36px;
         --merch-card-ah-pricing-widget-gray-background: rgba(248, 248, 248);
         --merch-card-ah-pricing-widget-text-color: rgba(19, 19, 19);
+        --merch-card-ah-pricing-widget-price-line-height: 17px;
         width: var(--merch-card-ah-pricing-widget-width);
         min-height: var(--merch-card-ah-pricing-widget-height);
         background-color: var(--consonant-merch-card-background-color);
@@ -1826,7 +1829,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
         flex-grow: 1;
         justify-content: end;
         font-size: var(--consonant-merch-card-detail-s-font-size);
-        line-height: var(--consonant-merch-card-detail-s-line-height);
+        line-height: var(--merch-card-ah-pricing-widget-price-line-height);
         color: var(--consonant-merch-card-heading-xxxs-color);
         gap: 4px;
     }

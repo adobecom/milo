@@ -18,6 +18,8 @@ export const CSS = `
     }
 
     merch-card[variant="ah-pricing-widget"] [slot="price"] .price {
+        display: inline-block;
+        height: var(--consonant-merch-card-detail-xl-line-height);
         line-height: var(--consonant-merch-card-detail-xl-line-height);
     }
 
