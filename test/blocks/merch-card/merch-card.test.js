@@ -576,17 +576,4 @@ describe('Product Merch Card', () => {
     const lowerBodySlot = merchCard.querySelector('[slot="body-lower"]');
     expect(lowerBodySlot).to.exist;
   });
-
-  describe('Aria Label', () => {
-    it('Supports aria-label', async () => {
-      document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/product.html');
-      const merchCard = await init(document.querySelector('.product'));
-      await delay();
-      const ctaLink = merchCard.querySelector('.action-area a');
-      ctaLink.value = [{ productArrangement: { productFamily: 'ARIA' } }];
-      ctaLink.dispatchEvent(new Event('mas:resolved'));
-      await delay();
-      expect(ctaLink.getAttribute('aria-label')).to.exist;
-    });
-  });
 });

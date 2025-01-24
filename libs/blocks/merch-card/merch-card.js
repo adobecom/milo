@@ -706,25 +706,6 @@ export default async function init(el) {
   }
   el.replaceWith(merchCard);
   decorateMerchCardLinkAnalytics(merchCard);
-
-  // Adding aria-label for checkout-link using productFamily as placeholder key and card-heading
-  if (ctas) {
-    const ctaLinks = ctas.querySelectorAll('a');
-    ctaLinks.forEach(async (ctaLink) => {
-      if (!ctaLink.getAttribute('aria-label')) {
-        const { replaceKey } = await import('../../features/placeholders.js');
-        ctaLink.addEventListener('mas:resolved', async () => {
-          const productName = ctaLink.value[0]?.productArrangement?.productFamily;
-          if (productName) {
-            await replaceKey(productName, getConfig()).then((label) => {
-              const cardHeading = merchCard.querySelector('.card-heading')?.textContent;
-              const ariaLabel = label.toLowerCase() === cardHeading.toLowerCase() ? `${ctaLink.textContent} - ${cardHeading}` : `${ctaLink.textContent} - ${label} - ${cardHeading}`;
-              ctaLink.setAttribute('aria-label', ariaLabel);
-            });
-          }
-        });
-      }
-    });
-  }
+  
   return merchCard;
 }
