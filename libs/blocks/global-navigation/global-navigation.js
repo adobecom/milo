@@ -218,6 +218,7 @@ const decorateProfileTrigger = async ({ avatar }) => {
 
   const buttonElem = toFragment`
     <button
+      data-cs-mask
       class="feds-profile-button"
       aria-expanded="false"
       aria-controls="feds-profile-menu"
@@ -225,7 +226,7 @@ const decorateProfileTrigger = async ({ avatar }) => {
       daa-ll="Account"
       aria-haspopup="true"
     >
-      <img class="feds-profile-img" src="${avatar}" alt="${profileAvatar}"></img>
+      <img data-cs-mask class="feds-profile-img" src="${avatar}" alt="${profileAvatar}"></img>
     </button>
   `;
 
@@ -301,7 +302,7 @@ class Gnav {
     this.blocks = {
       profile: {
         rawElem: this.content.querySelector('.profile'),
-        decoratedElem: toFragment`<div class="feds-profile"></div>`,
+        decoratedElem: toFragment`<div data-cs-mask class="feds-profile"></div>`,
       },
       search: { config: { icon: CONFIG.icons.search } },
       breadcrumbs: { wrapper: '' },
@@ -351,7 +352,7 @@ class Gnav {
       this.addChangeEventListeners,
     ];
     const fetchKeyboardNav = () => {
-      setupKeyboardNav(this.newMobileNav && this.isLocalNav());
+      setupKeyboardNav(this.isLocalNav());
     };
     this.block.addEventListener('click', this.loadDelayed);
     this.block.addEventListener('keydown', fetchKeyboardNav);
@@ -793,7 +794,7 @@ class Gnav {
 
   isToggleExpanded = () => this.elements.mobileToggle?.getAttribute('aria-expanded') === 'true';
 
-  isLocalNav = () => this
+  isLocalNav = () => this.newMobileNav && this
     .elements
     .navWrapper
     ?.querySelectorAll('.feds-nav > section.feds-navItem')
@@ -816,7 +817,7 @@ class Gnav {
         const section = sections[0];
         queueMicrotask(() => section.click());
       }
-    } else if (isExpanded && this.newMobileNav && this.isLocalNav()) {
+    } else if (isExpanded && this.isLocalNav()) {
       enableMobileScroll();
     }
     toggle?.setAttribute('aria-expanded', !isExpanded);
