@@ -78,6 +78,14 @@ export const styles = css`
 
         padding: var(--consonant-merch-spacing-xs);
     }
+    
+    footer.footer-column {
+        flex-direction: column;
+    }
+    
+    footer.footer-column .secure-transaction-label {
+        align-self: flex-start;
+    }
 
     hr {
         background-color: var(--merch-color-grey-200);
