@@ -3,7 +3,6 @@ import {
     CLASS_NAME_PENDING,
     CLASS_NAME_RESOLVED,
     EVENT_TYPE_FAILED,
-    EVENT_TYPE_PENDING,
     EVENT_TYPE_RESOLVED,
     STATE_FAILED,
     STATE_PENDING,
@@ -13,18 +12,6 @@ import { ignore } from './external.js';
 import { discoverService, setImmediate, useService } from './utilities.js';
 import { Log } from './log.js';
 
-const MasElementConstants = {
-    CLASS_NAME_FAILED,
-    CLASS_NAME_PENDING,
-    CLASS_NAME_RESOLVED,
-    EVENT_TYPE_FAILED,
-    EVENT_TYPE_PENDING,
-    EVENT_TYPE_RESOLVED,
-    STATE_FAILED,
-    STATE_PENDING,
-    STATE_RESOLVED,
-};
-
 const StateClassName = {
     [STATE_FAILED]: CLASS_NAME_FAILED,
     [STATE_PENDING]: CLASS_NAME_PENDING,
@@ -33,7 +20,6 @@ const StateClassName = {
 
 const StateEventType = {
     [STATE_FAILED]: EVENT_TYPE_FAILED,
-    [STATE_PENDING]: EVENT_TYPE_PENDING,
     [STATE_RESOLVED]: EVENT_TYPE_RESOLVED,
 };
 
@@ -45,7 +31,7 @@ export class MasElement {
     log = undefined;
     options = undefined;
     promises = [];
-    state =STATE_PENDING;
+    state = STATE_PENDING;
     timer = null;
     value = undefined;
     version = 0;
@@ -166,7 +152,7 @@ export class MasElement {
         if (options) this.options = options;
         this.state = STATE_PENDING;
         this.update();
-        setImmediate(() => this.notify());
+        this.log?.debug('Pending:', { osi: this.wrapperElement?.options?.wcsOsi });
         return this.version;
     }
 
