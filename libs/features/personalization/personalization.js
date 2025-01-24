@@ -766,7 +766,6 @@ async function getPersonalizationVariant(
   manifestPath,
   variantNames = [],
   variantLabel = null,
-  enablePersV2,
 ) {
   const config = getConfig();
   if (config.mep?.variantOverride?.[manifestPath]) {
@@ -780,7 +779,7 @@ async function getPersonalizationVariant(
 
   let userEntitlements = [];
   if (hasEntitlementTag) {
-    if (enablePersV2) {
+    if (config?.mep?.enablePersV2) {
       userEntitlements = [];
     } else {
       userEntitlements = await config.entitlements();
@@ -838,7 +837,7 @@ export const addMepAnalytics = (config, header) => {
     }
   });
 };
-export async function getManifestConfig(info = {}, variantOverride = false, enablePersV2 = false) {
+export async function getManifestConfig(info = {}, variantOverride = false) {
   const {
     name,
     manifestData,
@@ -908,7 +907,6 @@ export async function getManifestConfig(info = {}, variantOverride = false, enab
     manifestConfig.manifestPath,
     manifestConfig.variantNames,
     variantLabel,
-    enablePersV2,
   );
 
   manifestConfig.placeholderData = manifestPlaceholders || data?.placeholders?.data;
@@ -1045,7 +1043,7 @@ export function parseNestedPlaceholders({ placeholders }) {
   });
 }
 
-export async function applyPers({ manifests, enablePersV2 }) {
+export async function applyPers({ manifests }) {
   if (!manifests?.length) return;
   let experiments = manifests;
   const config = getConfig();
@@ -1053,7 +1051,6 @@ export async function applyPers({ manifests, enablePersV2 }) {
     experiments[i] = await getManifestConfig(
       experiments[i],
       config.mep?.variantOverride,
-      enablePersV2,
     );
   }
 
@@ -1131,13 +1128,13 @@ export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => 
 };
 
 async function updateManifestsAndPropositions(
-  { config, targetManifests, targetPropositions, enablePersV2 },
+  { config, targetManifests, targetPropositions },
 ) {
   targetManifests.forEach((manifest) => {
     manifest.source = ['target'];
   });
   config.mep.targetManifests = targetManifests;
-  if (enablePersV2) {
+  if (config?.mep?.enablePersV2) {
     window.addEventListener('alloy_sendEvent', () => {
       if (targetPropositions?.length && window._satellite) {
         window._satellite.track('propositionDisplay', targetPropositions);
@@ -1206,11 +1203,11 @@ const handleAlloyResponse = (response) => ((response.propositions || response.de
   ?.filter(Boolean) ?? [];
 
 async function handleMartechTargetInteraction(
-  { config, targetInteractionPromise, calculatedTimeout, enablePersV2 },
+  { config, targetInteractionPromise, calculatedTimeout },
 ) {
   let targetManifests = [];
   let targetPropositions = [];
-  if (enablePersV2 && targetInteractionPromise) {
+  if (config?.mep?.enablePersV2 && targetInteractionPromise) {
     const { targetInteractionData, respTime, respStartTime } = await targetInteractionPromise;
     sendTargetResponseAnalytics(false, respStartTime, calculatedTimeout);
     if (targetInteractionData.result) {
@@ -1229,7 +1226,7 @@ async function handleMartechTargetInteraction(
   }
 
   return updateManifestsAndPropositions(
-    { config, targetManifests, targetPropositions, enablePersV2 },
+    { config, targetManifests, targetPropositions },
   );
 }
 
@@ -1240,7 +1237,7 @@ async function callMartech(config) {
     targetPropositions,
   } = await getTargetPersonalization({ handleAlloyResponse, sendTargetResponseAnalytics });
   return updateManifestsAndPropositions(
-    { config, targetManifests, targetPropositions, enablePersV2: false },
+    { config, targetManifests, targetPropositions },
   );
 }
 
@@ -1268,6 +1265,7 @@ export async function init(enablements = {}) {
       targetEnabled: target,
       experiments: [],
       prefix: config.locale?.prefix.split('/')[1]?.toLowerCase() || US_GEO,
+      enablePersV2,
     };
     manifests = manifests.concat(await combineMepSources(pzn, promo, mepParam));
     manifests?.forEach((manifest) => {
@@ -1280,7 +1278,7 @@ export async function init(enablements = {}) {
 
   if (enablePersV2 && target === true) {
     manifests = manifests.concat(await handleMartechTargetInteraction(
-      { config, targetInteractionPromise, calculatedTimeout, enablePersV2 },
+      { config, targetInteractionPromise, calculatedTimeout },
     ));
   } else {
     if (target === true) manifests = manifests.concat(await callMartech(config));
@@ -1291,7 +1289,7 @@ export async function init(enablements = {}) {
     manifests = config.mep.targetManifests;
   }
   try {
-    if (manifests?.length) await applyPers({ manifests, enablePersV2 });
+    if (manifests?.length) await applyPers({ manifests });
     if (config.mep?.preview) await import('./preview.js').then(({ saveToMmm }) => saveToMmm());
   } catch (e) {
     log(`MEP Error: ${e.toString()}`);

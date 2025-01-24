@@ -1105,7 +1105,7 @@ function isSignedOut() {
  * @returns {boolean} True if personalization is enabled, otherwise false.
  */
 export function enablePersonalizationV2() {
-  const enablePersV2 = document.head.querySelector('meta[name="personalization-v2"]');
+  const enablePersV2 = getMepEnablement('personalization-v2');
   return !!enablePersV2 && isSignedOut();
 }
 
