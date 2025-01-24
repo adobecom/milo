@@ -43,7 +43,8 @@ describe('loadAnalyticsAndInteractionData', () => {
       isHybridPersFlagEnabled: true,
     });
 
-    expect(result).to.deep.equal({});
+    expect(result.result.propositions).to.have.lengthOf(1);
+    expect(result.type).to.be.equal('pageView');
   });
 
   it('should handle consent cookie being set to "out"', async () => {
