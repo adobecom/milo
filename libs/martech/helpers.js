@@ -445,7 +445,9 @@ export const loadAnalyticsAndInteractionData = async (
       }
     });
 
-    const resultPayload = targetRespJson?.handle?.find((d) => d.type === 'personalization:decisions')?.payload;
+    const resultPayload = targetRespJson?.handle?.filter((d) => d.type === 'personalization:decisions')
+      .map((d) => d.payload)
+      .reduce((acc, curr) => [...acc, ...curr], []);
 
     if (isHybridPersFlagEnabled) {
       const reqUrl = createRequestUrl({ env, hitType: 'propositionDisplay' });
