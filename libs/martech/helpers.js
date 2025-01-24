@@ -345,7 +345,7 @@ export const loadAnalyticsAndInteractionData = async (
   if (isHybridPersFlagEnabled) {
     window.hybridPers = true;
   }
-  const hitType = isHybridPersFlagEnabled ? 'pageViews' : 'propositionFetch';
+  const hitType = isHybridPersFlagEnabled ? 'pageView' : 'propositionFetch';
 
   const pageName = getPageNameForAnalytics({ locale });
 
