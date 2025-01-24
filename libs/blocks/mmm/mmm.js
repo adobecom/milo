@@ -6,17 +6,17 @@ const SEARCH_CRITERIA_CHANGE_EVENT = 'mmm-search-change';
 let cachedSearchCriteria = '';
 export const DEBOUNCE_TIME = 800;
 const SEARCH_CONTAINER = '.mmm-search-container';
-const LAST_SEEN_MAP = {
-  day: 1,
-  week: 7,
-  month: 30,
-  threeMonths: 90,
-  sixMonths: 180,
-  year: 360,
-  all: 0,
+const LAST_SEEN_OPTIONS = {
+  day: { value: 'Day', key: 'day' },
+  week: { value: 'Week', key: 'week' },
+  month: { value: 'Month', key: 'month' },
+  threeMonths: { value: '3 Months', key: 'threeMonths' },
+  sixMonths: { value: '6 Months', key: 'sixMonths' },
+  year: { value: 'Year', key: 'year' },
+  all: { value: 'All', key: 'all' },
 };
 const SEARCH_INITIAL_VALUES = {
-  lastSeenManifest: LAST_SEEN_MAP.threeMonths,
+  lastSeenManifest: LAST_SEEN_OPTIONS.threeMonths.key,
   pageNum: 1,
 };
 
@@ -239,25 +239,22 @@ function createSearchField(data, sharedUrlSettings) {
   searchField.addEventListener('change', debounce((event) => filterPageList(null, event)));
 }
 
+function isSelectedLastSeenDropdownOption(key) {
+  const searchKey = new URL(window.location.href).searchParams.get('lastSeenManifest');
+  if (searchKey) return searchKey * 1 === key;
+  return LAST_SEEN_OPTIONS[key].key === SEARCH_INITIAL_VALUES.lastSeenManifest;
+}
+
 function createLastSeenManifestDD() {
   const searchContainer = document.querySelector(SEARCH_CONTAINER);
-  const options = [
-    { value: 'Day', key: 1 },
-    { value: 'Week', key: 7 },
-    { value: 'Month', key: 30 },
-    { value: '3 Months', key: 90 },
-    { value: '6 Months', key: 180 },
-    { value: 'Year', key: 360 },
-    { value: 'All', key: 0 },
-  ];
   const dd = createTag(
     'div',
     { id: 'mmm-dropdown-lastSeenManifest', class: 'mmm-form-container' },
     `<div>
       <label for="mmm-lastSeenManifest">Manifests seen in the last:</label>
       <select id="mmm-lastSeenManifest" type="text" name="mmm-lastSeenManifest" class="text-field-input">
-        ${options.map((option) => `
-          <option value="${option.key}" ${option.key === SEARCH_INITIAL_VALUES.lastSeenManifest ? 'selected' : ''}>${option.value}</option>
+        ${Object.keys(LAST_SEEN_OPTIONS).map((key) => `
+          <option value="${LAST_SEEN_OPTIONS[key].key}" ${isSelectedLastSeenDropdownOption(LAST_SEEN_OPTIONS[key].key) ? 'selected' : ''}>${LAST_SEEN_OPTIONS[key].value}</option>
         `)}
       </select>
     </div>`,
