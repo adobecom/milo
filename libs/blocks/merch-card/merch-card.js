@@ -706,6 +706,5 @@ export default async function init(el) {
   }
   el.replaceWith(merchCard);
   decorateMerchCardLinkAnalytics(merchCard);
-  
   return merchCard;
 }
