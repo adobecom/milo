@@ -249,13 +249,17 @@ function createRequestPayload({ updatedContext, pageName, locale, env, hitType }
     pageInfo.location = {
       href, origin, protocol, host, hostname, port, pathname, search, hash,
     };
+    pageInfo.siteSection = webPageDetails.siteSection;
     digitalData.diagnostic.franklin.implementation = 'milo';
     digitalData.primaryUser.primaryProfile.profileInfo = {
       ...digitalData.primaryUser.primaryProfile.profileInfo,
       entitlementCreativeCloud: 'unknown',
       entitlementStatusCreativeCloud: 'unknown',
     };
-    data.webPageDetails = webPageDetails;
+    digitalData.target = { at_property_val: AT_PROPERTY_VAL };
+    data.web = { webPageDetails };
+    data.eventType = hitTypeEventTypeMap[hitType];
+
     xdm.implementationDetails = {
       name: 'https://ns.adobe.com/experience/alloy/reactor',
       version: '1.0',
