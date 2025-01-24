@@ -309,7 +309,7 @@ export const createRequestUrl = ({
   let DATA_STREAM_ID = env === 'prod' ? '913eac4d-900b-45e8-9ee7-306216765cd2' : 'e065836d-be57-47ef-b8d1-999e1657e8fd';
   if (hitType === 'pageView' || hitType === 'propositionDisplay') {
     const isFirstVisit = !getCookie(AMCV_COOKIE);
-    const consentCookie = getCookie('OptanonConsent');
+    const consentCookie = getCookie('OptanonConsent') || '';
     if (isFirstVisit || !consentCookie.includes('C0004')) {
       DATA_STREAM_ID = env === 'prod' ? '57c20bab-94c3-425e-95cb-0b9948b1fdd4' : 'a44f0037-2ada-441f-a012-243832ce5ff9';
     }
