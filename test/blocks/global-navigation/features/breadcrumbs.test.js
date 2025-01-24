@@ -19,6 +19,20 @@ export const breadcrumbMock = () => toFragment`
   </div>
 `;
 
+const breadcrumbWithCase = () => toFragment`
+  <div class="breadcrumbs no-transform">
+    <div>
+      <div>
+        <ul>
+          <li><a href="http://www.google.com/">Home</a></li>
+          <li><a href="http://localhost:2000/">Adobe Photoshop</a></li>
+          <li>Photoshop on iPhone</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+`;
+
 export const assertBreadcrumb = ({ breadcrumb, length }) => {
   expect(breadcrumb.querySelector('nav')).to.exist;
   expect(breadcrumb.querySelector('ul').children.length).to.equal(length);
@@ -49,6 +63,12 @@ describe('breadcrumbs', () => {
     document.head.innerHTML = '<meta name="breadcrumbs-hidden-entries" content="ActOrs, PlaYers">';
     const breadcrumb = await breadcrumbs(breadcrumbMock());
     assertBreadcrumb({ breadcrumb, length: 2 });
+  });
+
+  it('should use make the breadcrumnbs preserve case using css when no-transform modifier is added to block', async () => {
+    const breadcrumb = await breadcrumbs(breadcrumbWithCase());
+    assertBreadcrumb({ breadcrumb, length: 3 });
+    expect(breadcrumb.querySelector('nav').className.includes('no-transform')).to.be.true;
   });
 
   it('should use a custom page title and show the current page if set', async () => {
