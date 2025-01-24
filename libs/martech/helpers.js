@@ -385,7 +385,7 @@ export const loadAnalyticsAndInteractionData = async ({ locale, env, calculatedT
   }
 
   // Define constants based on environment
-  const DATA_STREAM_ID = env === 'prod' ? '5856abb0-95d8-4f9a-bb92-37f99d2bd492' : '87f9b644-5fd3-4015-81d5-f68ad81c3561';
+  const DATA_STREAM_ID = env === 'prod' ? '913eac4d-900b-45e8-9ee7-306216765cd2' : 'e065836d-be57-47ef-b8d1-999e1657e8fd';
   const TARGET_API_URL = getUrl();
 
   // Device and viewport information
