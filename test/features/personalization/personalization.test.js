@@ -35,6 +35,7 @@ describe('Functional Test', () => {
     // Add custom keys so tests doesn't rely on real data
     const config = getConfig();
     config.env = { name: 'prod' };
+    config.locale = { ietf: 'en-US', prefix: '' };
     config.consumerEntitlements = {
       '11111111-aaaa-bbbb-6666-cccccccccccc': 'my-special-app',
       '22222222-xxxx-bbbb-7777-cccccccccccc': 'fireflies',
@@ -152,11 +153,11 @@ describe('Functional Test', () => {
     expect(config.mep?.martech).to.be.undefined;
   });
 
-  it('should choose chrome & logged out', async () => {
+  it('should choose chrome & logged out (using nickname)', async () => {
     await loadManifestAndSetResponse('./mocks/manifestWithAmpersand.json');
     await init(mepSettings);
     const config = getConfig();
-    expect(config.mep?.martech).to.equal('|chrome & logged|ampersand');
+    expect(config.mep?.martech).to.equal('|my nickname|ampersand');
   });
 
   it('should choose not firefox', async () => {
@@ -164,6 +165,52 @@ describe('Functional Test', () => {
     await init(mepSettings);
     const config = getConfig();
     expect(config.mep?.martech).to.equal('|not firefox|not');
+  });
+
+  it('should not error when nickname has multiple colons', async () => {
+    await loadManifestAndSetResponse('./mocks/manifestWithNicknames.json');
+    const tempMepSettings = {
+      mepParam: '/path/to/manifest.json--pzn2: param-nickname=double:',
+      mepHighlight: false,
+      mepButton: false,
+      pzn: '/path/to/manifest.json',
+      promo: false,
+      target: false,
+    };
+    await init(tempMepSettings);
+    const config = getConfig();
+    console.log('test: ', config);
+    expect(config.mep?.martech).to.equal('|pzn2|manifest');
+  });
+
+  it('should not error when name nickname is empty', async () => {
+    await loadManifestAndSetResponse('./mocks/manifestWithNicknames.json');
+    const tempMepSettings = {
+      mepParam: '/path/to/manifest.json--:param-nickname=start',
+      mepHighlight: false,
+      mepButton: false,
+      pzn: '/path/to/manifest.json',
+      promo: false,
+      target: false,
+    };
+    await init(tempMepSettings);
+    const config = getConfig();
+    expect(config.mep?.martech).to.equal('|:param-nickname|manifest');
+  });
+
+  it('should show nickname instead of original audience when using nicknames syntax', async () => {
+    await loadManifestAndSetResponse('./mocks/manifestWithNicknames.json');
+    const tempMepSettings = {
+      mepParam: '/path/to/manifest.json--pzn2: param-nickname=true',
+      mepHighlight: false,
+      mepButton: false,
+      pzn: '/path/to/manifest.json',
+      promo: false,
+      target: false,
+    };
+    await init(tempMepSettings);
+    const config = getConfig();
+    expect(config.mep?.martech).to.equal('|pzn2|manifest');
   });
 
   it('should read and use entitlement data', async () => {

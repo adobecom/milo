@@ -47,8 +47,8 @@ let isPostLCP = false;
 
 export const TRACKED_MANIFEST_TYPE = 'personalization';
 
-// Replace any non-alpha chars except comma, space, ampersand and hyphen
-const RE_KEY_REPLACE = /[^a-z0-9\- _,&=]/g;
+// Replace any non-alpha chars except comma, space, ampersand, colon, and hyphen
+const RE_KEY_REPLACE = /[^a-z0-9\- _,&=:]/g;
 
 const MANIFEST_KEYS = [
   'action',
@@ -574,7 +574,7 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
   if (!config.mep?.preview) manifestId = false;
   const { origin } = PAGE_URL;
   variantNames.forEach((vn) => {
-    const targetManifestId = vn.startsWith(TARGET_EXP_PREFIX) ? targetId : false;
+    const targetManifestId = vn.includes(TARGET_EXP_PREFIX) ? targetId : false;
     if (!line[vn] || line[vn].toLowerCase() === 'false') return;
 
     const variantInfo = {
@@ -784,14 +784,16 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
   }
 
   const hasMatch = (name) => {
-    if (name === '') return true;
+    if (!name) return true;
     if (name === variantLabel?.toLowerCase()) return true;
     if (name.startsWith('param-')) return checkForParamMatch(name);
     if (userEntitlements?.includes(name)) return true;
     return PERSONALIZATION_KEYS.includes(name) && PERSONALIZATION_TAGS[name]();
   };
 
-  const matchVariant = (name) => {
+  const matchVariant = (n) => {
+    // split before checks
+    const name = n.includes(':') ? n.split(':')[1] : n;
     if (name.startsWith(TARGET_EXP_PREFIX)) return hasMatch(name);
     const processedList = name.split('&').map((condition) => {
       const reverse = condition.trim().startsWith(COLUMN_NOT_OPERATOR);
@@ -1084,7 +1086,12 @@ export async function applyPers(manifests) {
 
   const pznVariants = pznList.map((r) => {
     const val = r.experiment.selectedVariantName.replace(TARGET_EXP_PREFIX, '').trim().slice(0, 15);
-    return val === 'default' ? 'nopzn' : val;
+    const arr = val.split(':');
+    if (arr.length > 2 || arr[0]?.trim() === '' || arr[1]?.trim() === '') {
+      log('MEP Error: When using (optional) column nicknames, please use the following syntax: "<nickname>: <original audience>"');
+    }
+    if (!val.includes(':') || val.startsWith(':')) return val === 'default' ? 'nopzn' : val;
+    return arr[0].trim();
   });
   const pznManifests = pznList.map((r) => r.experiment.analyticsTitle);
   config.mep.martech = `|${pznVariants.join('--')}|${pznManifests.join('--')}`;
