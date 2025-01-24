@@ -172,7 +172,11 @@ const getMartechCookies = () => document.cookie.split(';')
   .filter(([key]) => KNDCTR_COOKIE_KEYS.includes(key))
   .map(([key, value]) => ({ key, value }));
 
-function createRequestPayload({ updatedContext, pageName, locale, env, hitType }) {
+function createRequestPayload(
+  {
+    updatedContext, pageName, locale, env, hitType, isCollect = false,
+  },
+) {
   const prevPageName = getCookie('gpv');
 
   const REPORT_SUITES_ID = env === 'prod' ? ['adbadobenonacdcprod'] : ['adbadobenonacdcqa'];
@@ -180,48 +184,52 @@ function createRequestPayload({ updatedContext, pageName, locale, env, hitType }
     { env, pathname: window.location?.pathname },
   );
 
-  return {
-    event: {
-      xdm: {
-        ...updatedContext,
-        identityMap: getOrGenerateUserId(),
-        web: {
-          webPageDetails: {
-            URL: window.location.href,
-            siteSection: 'www.adobe.com',
-            server: 'www.adobe.com',
-            isErrorPage: false,
-            isHomePage: false,
-            name: pageName,
-            pageViews: { value: hitType === 'pageView' ? 1 : 0 },
-          },
-          webInteraction: hitType === 'pageView' || hitType === 'propositionDisplay' ? undefined : {
-            name: 'Martech-API',
-            type: 'other',
-            linkClicks: { value: 1 },
-          },
-          webReferrer: { URL: document.referrer },
+  const eventObj = {
+    xdm: {
+      ...updatedContext,
+      identityMap: getOrGenerateUserId(),
+      web: {
+        webPageDetails: {
+          URL: window.location.href,
+          siteSection: 'www.adobe.com',
+          server: 'www.adobe.com',
+          isErrorPage: false,
+          isHomePage: false,
+          name: pageName,
+          pageViews: { value: hitType === 'pageView' ? 1 : 0 },
         },
-        timestamp: new Date().toISOString(),
-        eventType: hitTypeEventTypeMap[hitType],
+        webInteraction: hitType === 'pageView' || hitType === 'propositionDisplay' ? undefined : {
+          name: 'Martech-API',
+          type: 'other',
+          linkClicks: { value: 1 },
+        },
+        webReferrer: { URL: document.referrer },
       },
-      data: {
-        __adobe: {
-          target: {
-            is404: false, authState: 'loggedOut', hitType, isMilo: true, adobeLocale: locale.ietf, hasGnav: true,
-          },
+      timestamp: new Date().toISOString(),
+      eventType: hitTypeEventTypeMap[hitType],
+    },
+    data: {
+      __adobe: {
+        target: {
+          is404: false, authState: 'loggedOut', hitType, isMilo: true, adobeLocale: locale.ietf, hasGnav: true,
         },
-        _adobe_corpnew: {
-          marketingtech: { adobe: { alloy: { approach: 'martech-API' } } },
-          digitalData: {
-            page: { pageInfo: { language: locale.ietf } },
-            diagnostic: { franklin: { implementation: 'milo' } },
-            previousPage: { pageInfo: { pageName: prevPageName } },
-            primaryUser: { primaryProfile: { profileInfo: { authState: 'loggedOut', returningStatus: getVisitorStatus({}) } } },
-          },
+      },
+      _adobe_corpnew: {
+        marketingtech: { adobe: { alloy: { approach: 'martech-API' } } },
+        digitalData: {
+          page: { pageInfo: { language: locale.ietf } },
+          diagnostic: { franklin: { implementation: 'milo' } },
+          previousPage: { pageInfo: { pageName: prevPageName } },
+          primaryUser: { primaryProfile: { profileInfo: { authState: 'loggedOut', returningStatus: getVisitorStatus({}) } } },
         },
       },
     },
+  };
+
+  const eventValue = isCollect ? { events: [{ ...eventObj }] } : { event: { ...eventObj } };
+
+  return {
+    ...eventValue,
     query: {
       identity: { fetch: ['ECID'] },
       personalization: hitType === 'propositionDisplay' ? undefined : {
@@ -318,7 +326,9 @@ const setGpvCookie = (pageName) => {
   setCookie('gpv', pageName, { expires });
 };
 
-export const loadAnalyticsAndInteractionData = async ({ locale, env, calculatedTimeout }) => {
+export const loadAnalyticsAndInteractionData = async (
+  { locale, env, calculatedTimeout, isHybridPersFlagEnabled },
+) => {
   const value = getCookie('kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent');
 
   if (value === 'general=out') {
@@ -333,7 +343,6 @@ export const loadAnalyticsAndInteractionData = async ({ locale, env, calculatedT
   const CURRENT_DATE = new Date();
   const LOCAL_TIME = CURRENT_DATE.toISOString();
   const LOCAL_TIMEZONE_OFFSET = CURRENT_DATE.getTimezoneOffset();
-  const isHybridPersFlagEnabled = document.head?.querySelector('meta[name="hybrid-pers"]')?.content === 'on';
   if (isHybridPersFlagEnabled) {
     window.hybridPers = true;
   }
@@ -405,16 +414,17 @@ export const loadAnalyticsAndInteractionData = async ({ locale, env, calculatedT
         locale,
         env,
         hitType: 'propositionDisplay',
+        isCollect: true,
       });
 
       // eslint-disable-next-line no-underscore-dangle
-      reqBody.event.xdm._experience = {
+      reqBody.events[0].xdm._experience = {
         decisioning: {
           propositions: resultPayload,
           propositionEventType: { display: 1 },
         },
       };
-      reqBody.event.xdm.documentUnloading = true;
+      reqBody.events[0].xdm.documentUnloading = true;
 
       fetch(reqUrl, {
         method: 'POST',

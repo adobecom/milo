@@ -26,6 +26,7 @@ describe('loadAnalyticsAndInteractionData', () => {
       locale: { ietf: 'en-US', prefix: 'us' },
       env: 'prod',
       calculatedTimeout: 10000,
+      isHybridPersFlagEnabled: true,
     });
 
     expect(result).to.deep.equal({
@@ -40,6 +41,7 @@ describe('loadAnalyticsAndInteractionData', () => {
         locale: { ietf: 'en-US', prefix: 'us' },
         env: 'prod',
         calculatedTimeout: 10000,
+        isHybridPersFlagEnabled: true,
       });
     } catch (err) {
       expect(err.message).to.equal('Consent Cookie doesnt allow interact');
@@ -54,6 +56,7 @@ describe('loadAnalyticsAndInteractionData', () => {
         locale: { ietf: 'en-US', prefix: 'us' },
         env: 'prod',
         calculatedTimeout: 10000,
+        isHybridPersFlagEnabled: false,
       });
     } catch (err) {
       expect(err.message).to.equal('Error: Network error');
@@ -70,6 +73,7 @@ describe('loadAnalyticsAndInteractionData', () => {
         locale: { ietf: 'en-US', prefix: 'us' },
         env: 'prod',
         calculatedTimeout: 1000,
+        isHybridPersFlagEnabled: false,
       });
     } catch (err) {
       expect(err.message).to.equal('Error: Request timed out');
@@ -87,6 +91,7 @@ describe('loadAnalyticsAndInteractionData', () => {
         locale: { ietf: 'en-US', prefix: 'us' },
         env: 'prod',
         calculatedTimeout: 10000,
+        isHybridPersFlagEnabled: true,
       });
     } catch (err) {
       expect(err.message).to.be.string;
@@ -98,6 +103,7 @@ describe('loadAnalyticsAndInteractionData', () => {
       locale: { ietf: 'en-US', prefix: 'us' },
       env: 'dev',
       calculatedTimeout: 10000,
+      isHybridPersFlagEnabled: true,
     });
 
     expect(result.type).to.equal('propositionFetch');
@@ -109,6 +115,7 @@ describe('loadAnalyticsAndInteractionData', () => {
       locale: { ietf: 'en-US', prefix: 'us' },
       env: 'prod',
       calculatedTimeout: 10000,
+      isHybridPersFlagEnabled: true,
     });
 
     expect(result.type).to.equal('propositionFetch');
@@ -128,6 +135,7 @@ describe('loadAnalyticsAndInteractionData', () => {
       locale: { ietf: 'en-US', prefix: 'us' },
       env: 'prod',
       calculatedTimeout: 10000,
+      isHybridPersFlagEnabled: true,
     });
 
     expect(result.type).to.equal('propositionFetch');
@@ -185,6 +193,7 @@ describe('loadAnalyticsAndInteractionData', () => {
       locale: { ietf: 'en-US', prefix: 'us' },
       env: 'prod',
       calculatedTimeout: 10000,
+      isHybridPersFlagEnabled: true,
     });
 
     expect(result.type).to.equal('propositionFetch');
@@ -201,6 +210,7 @@ describe('loadAnalyticsAndInteractionData', () => {
         locale: { ietf: 'en-US', prefix: 'us' },
         env: 'prod',
         calculatedTimeout: 10000,
+        isHybridPersFlagEnabled: true,
       });
 
       expect.fail('Error: Failed to fetch interact call');
@@ -232,6 +242,7 @@ describe('loadAnalyticsAndInteractionData', () => {
         locale: { ietf: 'en-US', prefix: 'us' },
         env: 'prod',
         calculatedTimeout: 10000,
+        isHybridPersFlagEnabled: true,
       });
     } catch (err) {
       expect(err.message).to.equal('Error: No propositions found');
@@ -282,6 +293,7 @@ describe('loadAnalyticsAndInteractionData', () => {
         locale: { ietf: 'en-US', prefix: 'us' },
         env: 'prod',
         calculatedTimeout: 10000,
+        isHybridPersFlagEnabled: true,
       });
     } catch (err) {
       expect(err.message).to.equal('Error: No propositions found');
@@ -296,6 +308,7 @@ describe('loadAnalyticsAndInteractionData', () => {
         locale: { ietf: 'en-US', prefix: 'us' },
         env: 'prod',
         calculatedTimeout: 1000,
+        isHybridPersFlagEnabled: true,
       });
     } catch (err) {
       expect(err.message).to.equal('Consent Cookie doesnt allow interact');
