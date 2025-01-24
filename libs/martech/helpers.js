@@ -269,11 +269,11 @@ function updateAMCVCookie(ECID) {
   }
 }
 
-function getUrl() {
+function getUrl(isCollect) {
   const PAGE_URL = new URL(window.location.href);
   const { host } = window.location;
   const query = PAGE_URL.searchParams.get('env');
-  const url = 'https://edge.adobedc.net/ee/v2/interact';
+  const url = `https://edge.adobedc.net/ee/v2/${isCollect ? 'collect' : 'interact'}`;
 
   /* c8 ignore start */
   if (query || host.includes('localhost') || host.includes('.page')
@@ -285,18 +285,19 @@ function getUrl() {
   if (host.includes('stage.adobe')
     || host.includes('corp.adobe')
     || host.includes('graybox.adobe')) {
-    return 'https://www.stage.adobe.com/experienceedge/v2/interact';
+    return `https://www.stage.adobe.com/experienceedge/v2/${isCollect ? 'collect' : 'interact'}`;
   }
 
   const { origin } = window.location;
-  return `${origin}/experienceedge/v2/interact`;
+  return `${origin}/experienceedge/v2/${isCollect ? 'collect' : 'interact'}`;
 }
 
 export const createRequestUrl = ({
   env,
   hitType,
+  isCollect = false,
 }) => {
-  const TARGET_API_URL = getUrl();
+  const TARGET_API_URL = getUrl(isCollect);
   if (hitType === 'pageView' || hitType === 'propositionDisplay') {
     const isFirstVisit = !getCookie(AMCV_COOKIE);
     const consentCookie = getCookie('kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_cluster');
@@ -395,10 +396,9 @@ export const loadAnalyticsAndInteractionData = async ({ locale, env, calculatedT
     updateMartechCookies(extractedData);
 
     const resultPayload = targetRespJson?.handle?.find((d) => d.type === 'personalization:decisions')?.payload;
-    if (resultPayload.length === 0) throw new Error('No propositions found');
 
     if (isHybridPersFlagEnabled) {
-      const reqUrl = createRequestUrl({ env, hitType: 'propositionDisplay' });
+      const reqUrl = createRequestUrl({ env, hitType: 'propositionDisplay', isCollect: true });
       const reqBody = createRequestPayload({
         updatedContext,
         pageName,
@@ -422,6 +422,7 @@ export const loadAnalyticsAndInteractionData = async ({ locale, env, calculatedT
       });
     }
 
+    if (resultPayload.length === 0) throw new Error('No propositions found');
     setGpvCookie(pageName);
     return {
       type: hitType,
