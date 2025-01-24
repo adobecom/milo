@@ -381,7 +381,7 @@ export const loadAnalyticsAndInteractionData = async ({ locale, env, calculatedT
   const value = getCookie('kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent');
 
   if (value === 'general=out') {
-    return Promise.reject(new Error('Consent Cookie doesnt allow interact'));
+    return {};
   }
 
   // Define constants based on environment
