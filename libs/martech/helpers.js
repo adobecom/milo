@@ -388,7 +388,6 @@ export const loadAnalyticsAndInteractionData = async (
     const ECID = targetRespJson.handle
       .flatMap((item) => item.payload)
       .find((p) => p.namespace?.code === 'ECID')?.id || null;
-    updateAMCVCookie(ECID);
 
     const extractedData = [];
     targetRespJson?.handle?.forEach((item) => {
@@ -400,8 +399,6 @@ export const loadAnalyticsAndInteractionData = async (
         });
       }
     });
-
-    updateMartechCookies(extractedData);
 
     const resultPayload = targetRespJson?.handle?.find((d) => d.type === 'personalization:decisions')?.payload;
 
@@ -430,6 +427,8 @@ export const loadAnalyticsAndInteractionData = async (
         body: JSON.stringify(reqBody),
       });
     }
+    updateAMCVCookie(ECID);
+    updateMartechCookies(extractedData);
 
     if (resultPayload.length === 0) throw new Error('No propositions found');
     setGpvCookie(pageName);
