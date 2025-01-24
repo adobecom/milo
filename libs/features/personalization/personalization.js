@@ -967,10 +967,11 @@ function compareExecutionOrder(a, b) {
   return a.executionOrder > b.executionOrder ? 1 : -1;
 }
 
-export function cleanAndSortManifestList(manifests) {
-  const config = getConfig();
+export function cleanAndSortManifestList(manifests, conf) {
+  const config = conf ?? getConfig();
   const manifestObj = {};
   let allManifests = manifests;
+  let targetManifestWinsOverServerManifest = false;
   if (config.mep?.experiments) allManifests = [...manifests, ...config.mep.experiments];
   allManifests.forEach((manifest) => {
     try {
@@ -986,6 +987,12 @@ export function cleanAndSortManifestList(manifests) {
         freshManifest.source = freshManifest.source.concat(fullManifest.source);
         freshManifest.name = fullManifest.name;
         freshManifest.selectedVariantName = fullManifest.selectedVariantName;
+        targetManifestWinsOverServerManifest = config?.env?.name === 'prod' && fullManifest.selectedVariantName.startsWith('target-');
+
+        freshManifest.variants = targetManifestWinsOverServerManifest
+          ? fullManifest.variants
+          : freshManifest.variants;
+
         freshManifest.selectedVariant = freshManifest.variants[freshManifest.selectedVariantName];
         manifestObj[manifest.manifestPath] = freshManifest;
       } else {
@@ -994,9 +1001,8 @@ export function cleanAndSortManifestList(manifests) {
 
       const manifestConfig = manifestObj[manifest.manifestPath];
       const { selectedVariantName, variantNames, placeholderData } = manifestConfig;
+
       if (selectedVariantName && variantNames.includes(selectedVariantName)) {
-        manifestConfig.run = true;
-        manifestConfig.selectedVariantName = selectedVariantName;
         manifestConfig.selectedVariant = manifestConfig.variants[selectedVariantName];
       } else {
         /* c8 ignore next 2 */

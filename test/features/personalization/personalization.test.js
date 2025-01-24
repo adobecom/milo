@@ -3,7 +3,7 @@ import { readFile } from '@web/test-runner-commands';
 import { assert, stub } from 'sinon';
 import { getConfig, setConfig } from '../../../libs/utils/utils.js';
 import {
-  handleFragmentCommand, applyPers,
+  handleFragmentCommand, applyPers, cleanAndSortManifestList,
   init, matchGlob, createContent, combineMepSources, buildVariantInfo,
 } from '../../../libs/features/personalization/personalization.js';
 import mepSettings from './mepSettings.js';
@@ -394,6 +394,30 @@ describe('MEP Utils', () => {
       expect(manifests[2].manifestPath).to.equal('/black-friday.json');
       expect(manifests[3].manifestPath).to.equal('/mep-param/manifest1.json');
       expect(manifests[4].manifestPath).to.equal('/mep-param/manifest2.json');
+    });
+  });
+  describe('cleanAndSortManifestList', async () => {
+    it('chooses server manifest over target manifest if same manifest path', async () => {
+      const config = { env: { name: 'stage' } };
+      let manifests = await readFile({ path: './mocks/manifestLists/two-manifests-one-from-target.json' });
+      manifests = JSON.parse(manifests);
+      manifests[0].manifestPath = 'same path';
+      manifests[1].manifestPath = 'same path';
+      const response = cleanAndSortManifestList(manifests, config);
+      const result = response.find((manifest) => manifest.source.length > 1);
+      expect(result).to.be.not.null;
+      expect(result.selectedVariant.commands[0].action).to.equal('appendtosection');
+    });
+    it('chooses target manifest over server manifest if same manifest path and in production and selected audience is "target-*"', async () => {
+      const config = { env: { name: 'prod' } };
+      let manifests = await readFile({ path: './mocks/manifestLists/two-manifests-one-from-target.json' });
+      manifests = JSON.parse(manifests);
+      manifests[0].manifestPath = 'same path';
+      manifests[1].manifestPath = 'same path';
+      const response = cleanAndSortManifestList(manifests, config);
+      const result = response.find((manifest) => manifest.source.length > 1);
+      expect(result).to.be.not.null;
+      expect(result.selectedVariant.commands[0].action).to.equal('append');
     });
   });
 });
