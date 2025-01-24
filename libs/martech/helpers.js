@@ -1,8 +1,11 @@
+/* eslint-disable no-underscore-dangle */
 const AMCV_COOKIE = 'AMCV_9E1005A551ED61CA0A490D45@AdobeOrg';
 const KNDCTR_COOKIE_KEYS = [
   'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_identity',
   'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_cluster',
 ];
+
+let DATA_STREAM_ID = '';
 
 function getDomainWithoutWWW() {
   const domain = window?.location?.hostname;
@@ -172,33 +175,33 @@ const getMartechCookies = () => document.cookie.split(';')
   .filter(([key]) => KNDCTR_COOKIE_KEYS.includes(key))
   .map(([key, value]) => ({ key, value }));
 
-function createRequestPayload(
-  {
-    updatedContext, pageName, locale, env, hitType, isCollect = false,
-  },
-) {
+function createRequestPayload({ updatedContext, pageName, locale, env, hitType }) {
   const prevPageName = getCookie('gpv');
+  const isCollectCall = hitType === 'propositionDisplay';
+  const isPageViewCall = hitType === 'pageView';
 
-  const REPORT_SUITES_ID = env === 'prod' ? ['adbadobenonacdcprod'] : ['adbadobenonacdcqa'];
+  const REPORT_SUITES_ID = env === 'prod' ? ['adbadobenonacdcprod', 'adbadobeprototype'] : ['adbadobenonacdcqa'];
   const AT_PROPERTY_VAL = getTargetPropertyBasedOnPageRegion(
     { env, pathname: window.location?.pathname },
   );
+
+  const webPageDetails = {
+    URL: window.location.href,
+    siteSection: 'www.adobe.com',
+    server: 'www.adobe.com',
+    isErrorPage: false,
+    isHomePage: false,
+    name: pageName,
+    pageViews: { value: isPageViewCall ? 1 : 0 },
+  };
 
   const eventObj = {
     xdm: {
       ...updatedContext,
       identityMap: getOrGenerateUserId(),
       web: {
-        webPageDetails: {
-          URL: window.location.href,
-          siteSection: 'www.adobe.com',
-          server: 'www.adobe.com',
-          isErrorPage: false,
-          isHomePage: false,
-          name: pageName,
-          pageViews: { value: hitType === 'pageView' ? 1 : 0 },
-        },
-        webInteraction: hitType === 'pageView' || hitType === 'propositionDisplay' ? undefined : {
+        webPageDetails,
+        webInteraction: isPageViewCall || isCollectCall ? undefined : {
           name: 'Martech-API',
           type: 'other',
           linkClicks: { value: 1 },
@@ -215,7 +218,6 @@ function createRequestPayload(
         },
       },
       _adobe_corpnew: {
-        marketingtech: { adobe: { alloy: { approach: 'martech-API' } } },
         digitalData: {
           page: { pageInfo: { language: locale.ietf } },
           diagnostic: { franklin: { implementation: 'milo' } },
@@ -223,23 +225,62 @@ function createRequestPayload(
           primaryUser: { primaryProfile: { profileInfo: { authState: 'loggedOut', returningStatus: getVisitorStatus({}) } } },
         },
       },
+      marketingtech: {
+        adobe: {
+          alloy: {
+            approach: 'martech-API',
+            edgeConfigIdLaunch: DATA_STREAM_ID,
+            edgeConfigId: DATA_STREAM_ID,
+          },
+        },
+      },
     },
   };
 
-  const eventValue = isCollect ? { events: [{ ...eventObj }] } : { event: { ...eventObj } };
+  if (isPageViewCall) {
+    const {
+      href, origin, protocol, host, hostname, port, pathname, search, hash,
+    } = window.location;
+    const { data, xdm } = eventObj;
+    const { digitalData } = data._adobe_corpnew;
+    const { pageInfo } = digitalData.page;
+    pageInfo.pageName = pageName;
+    pageInfo.processedPageName = pageName;
+    pageInfo.location = {
+      href, origin, protocol, host, hostname, port, pathname, search, hash,
+    };
+    digitalData.diagnostic.franklin.implementation = 'milo';
+    digitalData.primaryUser.primaryProfile.profileInfo = {
+      ...digitalData.primaryUser.primaryProfile.profileInfo,
+      entitlementCreativeCloud: 'unknown',
+      entitlementStatusCreativeCloud: 'unknown',
+    };
+    data.webPageDetails = webPageDetails;
+    xdm.implementationDetails = {
+      name: 'https://ns.adobe.com/experience/alloy/reactor',
+      version: '1.0',
+      environment: 'serverapi',
+    };
+  }
+
+  const eventValue = isCollectCall ? { events: [{ ...eventObj }] } : { event: { ...eventObj } };
 
   return {
     ...eventValue,
     query: {
       identity: { fetch: ['ECID'] },
-      personalization: hitType === 'propositionDisplay' ? undefined : {
+      personalization: isCollectCall ? undefined : {
         schemas: [
           'https://ns.adobe.com/personalization/default-content-item',
           'https://ns.adobe.com/personalization/html-content-item',
           'https://ns.adobe.com/personalization/json-content-item',
           'https://ns.adobe.com/personalization/redirect-item',
+          'https://ns.adobe.com/personalization/ruleset-item',
+          'https://ns.adobe.com/personalization/message/in-app',
+          'https://ns.adobe.com/personalization/message/content-card',
           'https://ns.adobe.com/personalization/dom-action',
         ],
+        surfaces: [`web://${window.location.host + window.location.pathname}`],
         decisionScopes: ['__view__'],
       },
     },
@@ -277,11 +318,11 @@ function updateAMCVCookie(ECID) {
   }
 }
 
-function getUrl(isCollect) {
+function getUrl(isCollectCall) {
   const PAGE_URL = new URL(window.location.href);
   const { host } = window.location;
   const query = PAGE_URL.searchParams.get('env');
-  const url = `https://edge.adobedc.net/ee/v2/${isCollect ? 'collect' : 'interact'}`;
+  const url = `https://edge.adobedc.net/ee/v2/${isCollectCall ? 'collect' : 'interact'}`;
 
   /* c8 ignore start */
   if (query || host.includes('localhost') || host.includes('.page')
@@ -293,20 +334,19 @@ function getUrl(isCollect) {
   if (host.includes('stage.adobe')
     || host.includes('corp.adobe')
     || host.includes('graybox.adobe')) {
-    return `https://www.stage.adobe.com/experienceedge/v2/${isCollect ? 'collect' : 'interact'}`;
+    return `https://www.stage.adobe.com/experienceedge/v2/${isCollectCall ? 'collect' : 'interact'}`;
   }
 
   const { origin } = window.location;
-  return `${origin}/experienceedge/v2/${isCollect ? 'collect' : 'interact'}`;
+  return `${origin}/experienceedge/v2/${isCollectCall ? 'collect' : 'interact'}`;
 }
 
 export const createRequestUrl = ({
   env,
   hitType,
-  isCollect = false,
 }) => {
-  const TARGET_API_URL = getUrl(isCollect);
-  let DATA_STREAM_ID = env === 'prod' ? '913eac4d-900b-45e8-9ee7-306216765cd2' : 'e065836d-be57-47ef-b8d1-999e1657e8fd';
+  const TARGET_API_URL = getUrl(hitType === 'propositionDisplay');
+  DATA_STREAM_ID = env === 'prod' ? '913eac4d-900b-45e8-9ee7-306216765cd2' : 'e065836d-be57-47ef-b8d1-999e1657e8fd';
   if (hitType === 'pageView' || hitType === 'propositionDisplay') {
     const isFirstVisit = !getCookie(AMCV_COOKIE);
     const consentCookie = getCookie('OptanonConsent') || '';
@@ -340,8 +380,9 @@ export const loadAnalyticsAndInteractionData = async (
   } = getDeviceInfo();
 
   const CURRENT_DATE = new Date();
-  const LOCAL_TIME = CURRENT_DATE.toISOString();
-  const LOCAL_TIMEZONE_OFFSET = CURRENT_DATE.getTimezoneOffset();
+  const localTime = CURRENT_DATE.toISOString();
+
+  const timezoneOffset = CURRENT_DATE.getTimezoneOffset();
   if (isHybridPersFlagEnabled) {
     window.hybridPers = true;
   }
@@ -355,19 +396,19 @@ export const loadAnalyticsAndInteractionData = async (
     screenOrientation,
     viewportWidth,
     viewportHeight,
-    LOCAL_TIME,
-    LOCAL_TIMEZONE_OFFSET,
+    localTime,
+    timezoneOffset,
+  });
+
+  const requestUrl = createRequestUrl({
+    env,
+    hitType,
   });
 
   const requestBody = createRequestPayload({
     updatedContext,
     pageName,
     locale,
-    env,
-    hitType,
-  });
-
-  const requestUrl = createRequestUrl({
     env,
     hitType,
   });
@@ -403,17 +444,15 @@ export const loadAnalyticsAndInteractionData = async (
     const resultPayload = targetRespJson?.handle?.find((d) => d.type === 'personalization:decisions')?.payload;
 
     if (isHybridPersFlagEnabled) {
-      const reqUrl = createRequestUrl({ env, hitType: 'propositionDisplay', isCollect: true });
+      const reqUrl = createRequestUrl({ env, hitType: 'propositionDisplay' });
       const reqBody = createRequestPayload({
         updatedContext,
         pageName,
         locale,
         env,
         hitType: 'propositionDisplay',
-        isCollect: true,
       });
 
-      // eslint-disable-next-line no-underscore-dangle
       reqBody.events[0].xdm._experience = {
         decisioning: {
           propositions: resultPayload,
