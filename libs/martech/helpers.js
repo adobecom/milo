@@ -310,7 +310,7 @@ export const createRequestUrl = ({
   if (hitType === 'pageView' || hitType === 'propositionDisplay') {
     const isFirstVisit = !getCookie(AMCV_COOKIE);
     const consentCookie = getCookie('kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_cluster');
-    if (isFirstVisit && !consentCookie.includes('C0004')) {
+    if (isFirstVisit || !consentCookie.includes('C0004')) {
       DATA_STREAM_ID = env === 'prod' ? '57c20bab-94c3-425e-95cb-0b9948b1fdd4' : 'a44f0037-2ada-441f-a012-243832ce5ff9';
     }
     return `${TARGET_API_URL}?dataStreamId=${DATA_STREAM_ID}&requestId=${generateUUIDv4()}`;
