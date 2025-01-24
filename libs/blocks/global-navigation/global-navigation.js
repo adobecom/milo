@@ -316,7 +316,6 @@ class Gnav {
   getOriginalTitle = (firstElem) => this.originalTitle ||= firstElem.textContent?.split('::');
 
   setupUniversalNav = () => {
-    const { config } = getConfig();
     const meta = getMetadata('universal-nav')?.toLowerCase();
     this.universalNavComponents = meta?.split(',').map((option) => option.trim())
       .filter((component) => Object.keys(CONFIG.universalNav.components).includes(component) || component === 'signup');
@@ -327,10 +326,6 @@ class Gnav {
       this.blocks.universalNav.addEventListener('click', () => {
         if (this.isToggleExpanded()) this.toggleMenuMobile();
       }, true);
-    }
-
-    if (config.needUnavContainer) {
-      this.blocks.universalNav = toFragment`<div class="feds-utilities"></div>`;
     }
   };
 
@@ -401,7 +396,7 @@ class Gnav {
         ${getMetadata('product-entry-cta')?.toLowerCase() === 'on' ? this.decorateProductEntryCTA() : ''}
         ${getConfig().searchEnabled === 'on' ? toFragment`<div class="feds-client-search"></div>` : ''}
         ${this.useUniversalNav ? this.blocks.universalNav : ''}
-        ${getConfig().needUnavContainer === 'true' ? toFragment`<div class="feds-client-unav"></div>` : ''}
+        ${getConfig().selfIntegrateUnav ? toFragment`<div class="feds-client-unav"></div>` : ''}
         ${(!this.useUniversalNav && this.blocks.profile.rawElem) ? this.blocks.profile.decoratedElem : ''}
         ${this.decorateLogo()}
       </nav>
