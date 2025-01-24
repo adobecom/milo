@@ -241,7 +241,7 @@ function createSearchField(data, sharedUrlSettings) {
 
 function isSelectedLastSeenDropdownOption(key) {
   const searchKey = new URL(window.location.href).searchParams.get('lastSeenManifest');
-  if (searchKey) return searchKey * 1 === key;
+  if (searchKey) return searchKey === key;
   return LAST_SEEN_OPTIONS[key].key === SEARCH_INITIAL_VALUES.lastSeenManifest;
 }
 
