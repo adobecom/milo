@@ -420,13 +420,16 @@ body.merch-modal {
     height: 100vh;
 }
 
-.invisible-and-shrank {
-    top: 0;
-    left: -2px;
-    width: 1px;
-    height: 1px;
-    position: absolute;
-    overflow: hidden;
+merch-sidenav-checkbox-group h3 {
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 700;
+    height: 32px;
+    letter-spacing: 0px;
+    padding: 0px;
+    line-height: 18.2px;
+    color: var(--color-gray-600);
+    margin: 0px;
 }
 
 `;
