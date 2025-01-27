@@ -725,13 +725,11 @@ export async function buildCta(el, params) {
   // Adding aria-label for checkout-link using productFamily as placeholder key and card-heading
   if (!cta.getAttribute('aria-label')) {
     cta.onceSettled().finally(async () => {
-      const productName = cta.value[0]?.productArrangement?.productFamily;
-      const merchCard = cta.closest('merch-card');
-      if (productName) {
-        await replaceKey(productName, getConfig()).then((label) => {
-          const cardHeading = merchCard ? ` - ${merchCard.querySelector('.card-heading')?.textContent}` : '';
-          const ariaLabel = label.toLowerCase() === cardHeading?.toLowerCase() ? `${cta.textContent}${cardHeading}` : `${cta.textContent} - ${label}${cardHeading}`;
-          cta.setAttribute('aria-label', ariaLabel);
+      const productFamily = cta.value[0]?.productArrangement?.productFamily;
+      const customerSegment = cta.value[0]?.customerSegment;
+      if (productFamily) {
+        await replaceKey(productFamily, getConfig()).then((label) => {
+          cta.setAttribute('aria-label', `${cta.textContent} - ${label} - ${customerSegment}`);
         });
       }
     });
