@@ -332,7 +332,7 @@ const decorateMenu = (config) => logErrorFor(async () => {
     const content = await fetchAndProcessPlainHtml({ url: pathElement.href });
 
     if (!content) return;
-    asyncDropDownCount++;
+    asyncDropDownCount += 1;
     const menuContent = toFragment`<div class="feds-menu-content">${content.innerHTML}</div>`;
     menuTemplate = toFragment`<div class="feds-popup">
         <div class="feds-menu-container">
@@ -369,7 +369,6 @@ const decorateMenu = (config) => logErrorFor(async () => {
       if (!hasActiveLink()) {
         const sections = document.querySelectorAll('.feds-nav .feds-navItem--megaMenu');
         const disableAED = getDisableAEDState();
-  
         if (!disableAED && sections.length === 1) {
           sections[0].classList.add(selectors.activeNavItem.slice(1));
           setActiveLink(true);
