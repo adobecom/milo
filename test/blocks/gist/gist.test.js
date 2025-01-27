@@ -8,9 +8,11 @@ const { default: init } = await import('../../../libs/blocks/gist/gist.js');
 
 describe('adobetv autoblock', () => {
   let createElementStub;
+  let clock;
   let originalCreateElement;
 
   beforeEach(() => {
+    clock = sinon.useFakeTimers();
     originalCreateElement = document.createElement;
 
     createElementStub = sinon.stub(document, 'createElement').callsFake((tagName) => {
@@ -21,7 +23,7 @@ describe('adobetv autoblock', () => {
             const callbackMatch = url.match(/callback=([^&]+)/);
             if (callbackMatch) {
               const callbackName = callbackMatch[1];
-              Promise.resolve().then(() => {
+              setTimeout(() => {
                 if (window[callbackName]) {
                   window[callbackName]({ div: '<div class="gist-data">Mock Gist Content</div>' });
                 }
@@ -37,11 +39,13 @@ describe('adobetv autoblock', () => {
 
   afterEach(() => {
     createElementStub.restore();
+    clock.restore();
   });
 
   it('creates gist block with mocked data', async () => {
     const gistLink = document.body.querySelector('a');
     init(gistLink);
+    await clock.runAllAsync();
     const div = await waitForElement('div.gist-data');
     expect(div).to.exist;
     expect(div.innerHTML).to.contain('Mock Gist Content');
