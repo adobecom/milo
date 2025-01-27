@@ -11,6 +11,7 @@ function getDomainWithoutWWW() {
   const domain = window?.location?.hostname;
   return domain.replace(/^www\./, '');
 }
+
 const hitTypeEventTypeMap = {
   propositionFetch: 'decisioning.propositionFetch',
   pageView: 'web.webpagedetails.pageViews',
