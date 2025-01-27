@@ -2122,11 +2122,8 @@ body.merch-modal {
 
 merch-sidenav-checkbox-group h3 {
     font-size: 14px;
-    font-style: normal;
-    font-weight: 700;
     height: 32px;
     letter-spacing: 0px;
-    padding: 0px;
     line-height: 18.2px;
     color: var(--color-gray-600);
     margin: 0px;
