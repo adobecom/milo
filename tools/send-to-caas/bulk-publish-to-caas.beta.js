@@ -194,7 +194,6 @@ const processData = async (data, accessToken) => {
     try {
       const rawUrl = page.Path || page.path || page.url || page.URL || page.Url || page;
       const { pathname } = new URL(rawUrl);
-
       const pathnameNoHtml = pathname.replace('.html', '');
       const prodUrl = `${host}${pathnameNoHtml}${useHtml ? '.html' : ''}`;
       const pageUrl = `${domain}${pathname}`;
