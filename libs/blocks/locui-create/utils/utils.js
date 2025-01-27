@@ -1,7 +1,12 @@
 import getServiceConfig from '../../../utils/service-config.js';
 import { origin } from '../../locui/utils/franklin.js';
 import { getInitialName } from '../input-urls/index.js';
-import { env, locSelected, locales as stLocales, project as stProject } from '../store.js';
+import {
+  env,
+  locSelected,
+  locales as stLocales,
+  project as stProject,
+} from '../store.js';
 
 export function getTenantName() {
   try {
@@ -28,7 +33,8 @@ export function processLocaleData(localeData) {
         .split(',')
         .map((loc) => loc.trim())
         .join(','),
-    })).sort((a, b) => a.language.localeCompare(b.language));
+    }))
+    .sort((a, b) => a.language.localeCompare(b.language));
 
   const processedLocaleRegion = localeData.localegroups.data.map((item) => ({
     ...item,
@@ -107,14 +113,19 @@ export function setSelectedLocalesAndRegions() {
 }
 
 export function getLanguageDetails(lang) {
-  const langDetails = stLocales.value?.find(({ languagecode }) => languagecode.toLowerCase() === lang.toLowerCase()) ?? {};
-  return [{
-    action: 'Rollout',
-    langCode: langDetails.languagecode,
-    language: langDetails.language,
-    locales: langDetails.livecopies.split(','),
-    workflow: '',
-  }];
+  const langDetails =
+    stLocales.value?.find(
+      ({ languagecode }) => languagecode.toLowerCase() === lang.toLowerCase()
+    ) ?? {};
+  return [
+    {
+      action: 'Rollout',
+      langCode: langDetails.languagecode,
+      language: langDetails.language,
+      locales: langDetails.livecopies.split(','),
+      workflow: '',
+    },
+  ];
 }
 
 export function getProjectByParams(searchParams) {
