@@ -378,6 +378,11 @@ header.global-navigation {
   text-transform: capitalize;
 }
 
+.feds-breadcrumbs.no-transform a,
+.feds-breadcrumbs.no-transform [aria-current] {
+  text-transform: none;
+}
+
 .feds-breadcrumbs a {
   display: block;
   color: var(--feds-color-link-breadcrumbs);
