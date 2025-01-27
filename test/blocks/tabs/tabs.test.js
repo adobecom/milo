@@ -8,7 +8,7 @@ const MOBILE_WIDTH = 375;
 const HEIGHT = 1500;
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-const { default: init } = await import('../../../libs/blocks/tabs/tabs.js');
+const { default: init, getRedirectionUrl, assignLinkedTabs } = await import('../../../libs/blocks/tabs/tabs.js');
 loadStyle('../../../libs/blocks/tabs/tabs.css');
 
 describe('tabs', () => {
@@ -136,6 +136,39 @@ describe('tabs', () => {
       expect(tabPanels[0].getAttribute('data-nested-lh')).to.equal('t1Ind');
       expect(tabPanels[1].getAttribute('data-nested-lh')).to.equal('t2Bus');
       expect(tabPanels[2].getAttribute('data-nested-lh')).to.equal('t3Stu');
+    });
+  });
+
+  describe('Tabs linked to pages', () => {
+    it('returns an empty string when targetId or linked page are not valid', () => {
+      expect(getRedirectionUrl({ 'tab-1': '/testpage-1' }, '')).to.equal('');
+      expect(getRedirectionUrl({ 'tab-1': '/testpage-1' }, 'id-without-linked-page')).to.equal('');
+    });
+
+    it('replaces window.location.pathname with the linked page url', () => {
+      const url = getRedirectionUrl({ 'tab-1': '/testpage-1' }, 'tab-1');
+      expect(url.pathname).to.equal('/testpage-1');
+    });
+
+    it('does not save any data to linkedTabs object if invalid input', () => {
+      const linkedTabsList = {};
+      assignLinkedTabs(linkedTabsList, {}, '', '');
+      expect(linkedTabsList).to.deep.equal({});
+      assignLinkedTabs(linkedTabsList, { link: '/testpage' }, '', '');
+      expect(linkedTabsList).to.deep.equal({});
+      assignLinkedTabs(linkedTabsList, { link: '/testpage' }, 'id', '');
+      expect(linkedTabsList).to.deep.equal({});
+      assignLinkedTabs(linkedTabsList, { link: 'invalid link' }, 'id', 'val');
+      expect(linkedTabsList).to.deep.equal({});
+    });
+
+    it('saves tab id and tab link into linkedTabs object', () => {
+      const linkedTabsList = {};
+      const metaSettings = { link: '/testpage-1' };
+      const id = '1';
+      const val = 'demo';
+      assignLinkedTabs(linkedTabsList, metaSettings, id, val);
+      expect(linkedTabsList).to.deep.equal({ 'tab-1-demo': '/testpage-1' });
     });
   });
 });
