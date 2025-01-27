@@ -38,8 +38,8 @@ describe('Accordion', () => {
     });
 
     const accordions = document.body.querySelectorAll('.accordion');
-    accordions.forEach(async (accordion) => {
-      await module.default(accordion);
+    accordions.forEach((accordion) => {
+      module.default(accordion);
     });
   });
 

@@ -39,8 +39,8 @@ describe('Accordion', () => {
     });
 
     const accordions = document.body.querySelectorAll('.accordion');
-    accordions.forEach(async (accordion) => {
-      await module.default(accordion);
+    accordions.forEach((accordion) => {
+      module.default(accordion);
     });
   });
 
@@ -134,6 +134,5 @@ describe('Accordion', () => {
       expect(expandBtn.getAttribute('aria-pressed')).to.equal('mixed');
       expect(collapseBtn.getAttribute('aria-pressed')).to.equal('mixed');
     });
-    it('shows first image when rich media is expanded');
   });
 });
