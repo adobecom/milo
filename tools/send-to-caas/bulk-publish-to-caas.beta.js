@@ -489,10 +489,16 @@ helpButtons.forEach((btn) => {
 
       case 'use-preview':
         showAlert(`<p><b>Use Preview Content</b>
-          <p>When this option is checked, the tool will publish content from:
-          <p><tt>https://stage--{repo}--{owner}.hlx.<b>page</b></tt>
-          <p>This can be useful for testing before publishing to production.</p>`);
-        break;
+          <p>When this option is checked, the tool will publish CaaS Metadata content from the stage environments:</p>
+          <p>For example:<br>
+            <tt> - https://www.stage.adobe.com</tt><br>
+            <tt> - https://business.stage.adobe.com</tt><br>
+            <tt> - https://blog.stage.adobe.com</tt><br>
+            <tt> - https://milo.stage.adobe.com</tt><br>
+            <tt> - https://news.stage.adobe.com</tt>
+          </p>
+          <p>This can be useful for testing before publishing content to production.</p>`);
+        break;  
 
       default:
         showAlert(`<p><b>Help</b><p>Help for "${el}" is on its way! Stay tuned.</p>`);
