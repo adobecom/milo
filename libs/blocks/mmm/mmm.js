@@ -348,7 +348,7 @@ async function createPageList(el, search) {
     url,
     DATA_TYPE.JSON,
   );
-  response.result.map((page) => createButtonDetailsPair(mmmEl, page));
+  response.result?.map((page) => createButtonDetailsPair(mmmEl, page));
   const section = createTag('div', { id: 'mep-section', class: 'section' });
   const main = document.querySelector('main');
   el.replaceWith(mmmElContainer);
