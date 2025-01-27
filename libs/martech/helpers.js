@@ -369,6 +369,10 @@ const setGpvCookie = (pageName) => {
   setCookie('gpv', pageName, { expires });
 };
 
+const getPayloadsByType = (data, type) => data?.handle?.filter((d) => d.type === type)
+  .map((d) => d.payload)
+  .reduce((acc, curr) => [...acc, ...curr], []);
+
 export const loadAnalyticsAndInteractionData = async (
   { locale, env, calculatedTimeout, isHybridPersFlagEnabled },
 ) => {
@@ -430,11 +434,13 @@ export const loadAnalyticsAndInteractionData = async (
       throw new Error('Failed to fetch interact call');
     }
     const targetRespJson = await targetResp.json();
+
     const ECID = targetRespJson.handle
       .flatMap((item) => item.payload)
       .find((p) => p.namespace?.code === 'ECID')?.id || null;
 
     const extractedData = [];
+
     targetRespJson?.handle?.forEach((item) => {
       if (item?.type === 'state:store') {
         item?.payload?.forEach((payload) => {
@@ -445,10 +451,7 @@ export const loadAnalyticsAndInteractionData = async (
       }
     });
 
-    const resultPayload = targetRespJson?.handle?.filter((d) => d.type === 'personalization:decisions')
-      .map((d) => d.payload)
-      .reduce((acc, curr) => [...acc, ...curr], []);
-
+    const resultPayload = getPayloadsByType(targetRespJson, 'personalization:decisions');
     if (isHybridPersFlagEnabled) {
       const reqUrl = createRequestUrl({ env, hitType: 'propositionDisplay' });
       const reqBody = createRequestPayload({
@@ -461,11 +464,20 @@ export const loadAnalyticsAndInteractionData = async (
 
       reqBody.events[0].xdm._experience = {
         decisioning: {
-          propositions: resultPayload,
+          propositions: resultPayload?.map(({ id, scope, scopeDetails }) => (
+            { id, scope, scopeDetails })),
           propositionEventType: { display: 1 },
         },
       };
       reqBody.events[0].xdm.documentUnloading = true;
+      reqBody.events[0].data._experience = {
+        decisioning: {
+          propositions: resultPayload?.map(({ id, scope, scopeDetails }) => (
+            { id, scope, scopeDetails })),
+          propositionEventType: { display: 1 },
+        },
+      };
+      reqBody.events[0].data.documentUnloading = true;
 
       fetch(reqUrl, {
         method: 'POST',
@@ -475,7 +487,39 @@ export const loadAnalyticsAndInteractionData = async (
     updateAMCVCookie(ECID);
     updateMartechCookies(extractedData);
 
-    if (resultPayload.length === 0) throw new Error('No propositions found');
+    const alloyData = {
+      destinations: getPayloadsByType(targetRespJson, 'activation:pull'),
+      propositions: resultPayload,
+      inferences: getPayloadsByType(targetRespJson, 'rtml:inferences'),
+      decisions: [],
+    };
+    window.dispatchEvent(new CustomEvent('alloy_sendEvent', { detail: alloyData }));
+
+    if (alloyData && alloyData.destinations) {
+      const xlgKey = 'data._adobe_corpnew.digitalData.adobe.xlg';
+      if (!window?.alloy_all) {
+        window.alloy_all = {};
+      }
+      for (const destination of alloyData.destinations) {
+        for (const segment of destination.segments) {
+          const currentXlgValue = window?.alloy_all?.get?.(xlgKey) || '';
+
+          // Check if segment ID is already in xlg or if xlg is not set
+          if (!currentXlgValue.split(',').includes(segment.id)) {
+            window?.alloy_all?.set(xlgKey, `${segment.id},${currentXlgValue}`);
+          }
+        }
+      }
+
+      // Remove trailing comma if present
+      const finalXlgValue = window?.alloy_all?.get?.(xlgKey);
+      if (finalXlgValue && finalXlgValue.endsWith(',')) {
+        window?.alloy_all?.set(xlgKey, finalXlgValue.slice(0, -1));
+      }
+    }
+
+    if (resultPayload?.length === 0) throw new Error('No propositions found');
+
     setGpvCookie(pageName);
     return {
       type: hitType,
