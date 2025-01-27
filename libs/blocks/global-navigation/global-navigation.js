@@ -44,6 +44,7 @@ import {
   closeAllTabs,
   disableMobileScroll,
   enableMobileScroll,
+  setAsyncDropdownCount,
 } from './utilities/utilities.js';
 import { getFedsPlaceholderConfig } from '../../utils/federated.js';
 
@@ -997,16 +998,6 @@ class Gnav {
         this.elements.mainNav.appendChild(mainNavItem);
       }
     }
-
-    if (!hasActiveLink()) {
-      const sections = this.elements.mainNav.querySelectorAll('.feds-navItem--section');
-      const disableAED = getDisableAEDState();
-
-      if (!disableAED && sections.length === 1) {
-        sections[0].classList.add(selectors.activeNavItem.slice(1));
-        setActiveLink(true);
-      }
-    }
     if (this.newMobileNav) {
       await this.decorateLocalNav();
     }
@@ -1301,6 +1292,7 @@ export default async function init(block) {
     setDisableAEDState();
   }
   const content = await fetchAndProcessPlainHtml({ url });
+  setAsyncDropdownCount(content.querySelectorAll('.large-menu').length);
   if (!content) {
     const error = new Error('Could not create global navigation. Content not found!');
     error.tags = 'errorType=error,module=gnav';
