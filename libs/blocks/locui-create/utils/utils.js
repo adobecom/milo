@@ -113,8 +113,7 @@ export function setSelectedLocalesAndRegions() {
 }
 
 export function getLanguageDetails(lang) {
-  const langDetails =
-    stLocales.value?.find(
+  const langDetails = stLocales.value?.find(
       ({ languagecode }) => languagecode.toLowerCase() === lang.toLowerCase()
     ) ?? {};
   return [
