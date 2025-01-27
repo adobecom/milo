@@ -727,11 +727,10 @@ export async function buildCta(el, params) {
     cta.onceSettled().finally(async () => {
       const productFamily = cta.value[0]?.productArrangement?.productFamily;
       const customerSegment = cta.value[0]?.customerSegment;
-      if (productFamily) {
-        await replaceKey(productFamily, getConfig()).then((label) => {
-          cta.setAttribute('aria-label', `${cta.textContent} - ${label} - ${customerSegment}`);
-        });
-      }
+      let ariaLabel = cta.textContent;
+      ariaLabel = productFamily ? `${ariaLabel} - ${await replaceKey(productFamily, getConfig())}` : ariaLabel;
+      ariaLabel = customerSegment ? `${ariaLabel} - ${await replaceKey(customerSegment, getConfig())}` : ariaLabel;
+      cta.setAttribute('aria-label', ariaLabel);
     });
   }
   return cta;
