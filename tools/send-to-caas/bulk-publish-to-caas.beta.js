@@ -197,8 +197,8 @@ const processData = async (data, accessToken) => {
 
       const pathnameNoHtml = pathname.replace('.html', '');
       const prodUrl = `${host}${pathnameNoHtml}${useHtml ? '.html' : ''}`;
-      const pageUrl = `${domain}${pathname}`; 
-      
+      const pageUrl = `${domain}${pathname}`;
+
       index += 1;
       statusModal.setContent(`Publishing ${index} of ${data.length}:<br>${pageUrl}`);
 
@@ -327,9 +327,7 @@ const getPresetsData = async () => {
       parent.insertBefore(option, separator);
     });
   });
-
 };
-
 
 const resetAdvancedOptions = () => {
   /* eslint-disable no-undef */
@@ -498,7 +496,7 @@ helpButtons.forEach((btn) => {
             <tt> - https://news.stage.adobe.com</tt>
           </p>
           <p>This can be useful for testing before publishing content to production.</p>`);
-        break;  
+        break;
 
       default:
         showAlert(`<p><b>Help</b><p>Help for "${el}" is on its way! Stay tuned.</p>`);
@@ -528,7 +526,7 @@ const init = async () => {
   loadFromLS();
   checkCaasEnv();
   checkUserStatus();
-  
+
   window.addEventListener('beforeunload', () => {
     FIELDS.forEach((field) => {
       setConfig({ [field]: document.getElementById(field).value });
