@@ -21,7 +21,7 @@ describe('adobetv autoblock', () => {
             const callbackMatch = url.match(/callback=([^&]+)/);
             if (callbackMatch) {
               const callbackName = callbackMatch[1];
-              setTimeout(() => {
+              Promise.resolve().then(() => {
                 if (window[callbackName]) {
                   window[callbackName]({ div: '<div class="gist-data">Mock Gist Content</div>' });
                 }
