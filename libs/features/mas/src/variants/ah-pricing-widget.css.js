@@ -56,7 +56,7 @@ export const CSS = `
         color: var(--consonant-merch-card-body-xxs-color);
         font-size: var(--consonant-merch-card-body-xxs-font-size);
         line-height: var(--consonant-merch-card-body-xxs-line-height);
-        text-decoration-thickness: from-font;
+        text-decoration-thickness: .75px;
         text-underline-offset: 1px;
         width: fit-content;
     }
@@ -67,6 +67,12 @@ export const CSS = `
         object-fit: cover;
         border-radius: 16px;
         overflow: hidden;
+    }
+
+    merch-card[variant="ah-pricing-widget"] [slot="cta"] .spectrum-Button-label {
+        height: 16px;
+        padding-block: 2px;
+        white-space: nowrap;
     }
 
     .spectrum--dark merch-card[variant="ah-pricing-widget"][background-color='gray']{

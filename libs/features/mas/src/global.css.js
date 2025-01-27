@@ -49,7 +49,7 @@ styles.innerHTML = `
     --consonant-merch-card-detail-m-line-height: 15px;
     --consonant-merch-card-detail-m-font-weight: 700;
     --consonant-merch-card-detail-m-letter-spacing: 1px;
-    --consonant-merch-card-detail-l-line-height: 21px;
+    --consonant-merch-card-detail-l-line-height: 19px;
     --consonant-merch-card-detail-xl-line-height: 23px;
 
     /* body */

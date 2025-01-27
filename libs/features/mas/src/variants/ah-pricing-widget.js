@@ -114,6 +114,7 @@ export class AHPricingWidget extends VariantLayout {
     :host([variant='ah-pricing-widget']) ::slotted([slot='cta']) {
         display: flex;
         flex-direction: row;
+        flex-wrap: wrap;
         gap: 8px;
     }
 

@@ -1720,7 +1720,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
         color: var(--consonant-merch-card-body-xxs-color);
         font-size: var(--consonant-merch-card-body-xxs-font-size);
         line-height: var(--consonant-merch-card-body-xxs-line-height);
-        text-decoration-thickness: from-font;
+        text-decoration-thickness: .75px;
         text-underline-offset: 1px;
         width: fit-content;
     }
@@ -1731,6 +1731,12 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
         object-fit: cover;
         border-radius: 16px;
         overflow: hidden;
+    }
+
+    merch-card[variant="ah-pricing-widget"] [slot="cta"] .spectrum-Button-label {
+        height: 16px;
+        padding-block: 2px;
+        white-space: nowrap;
     }
 
     .spectrum--dark merch-card[variant="ah-pricing-widget"][background-color='gray']{
@@ -1833,6 +1839,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
     :host([variant='ah-pricing-widget']) ::slotted([slot='cta']) {
         display: flex;
         flex-direction: row;
+        flex-wrap: wrap;
         gap: 8px;
     }
 
@@ -1889,7 +1896,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
     --consonant-merch-card-detail-m-line-height: 15px;
     --consonant-merch-card-detail-m-font-weight: 700;
     --consonant-merch-card-detail-m-letter-spacing: 1px;
-    --consonant-merch-card-detail-l-line-height: 21px;
+    --consonant-merch-card-detail-l-line-height: 19px;
     --consonant-merch-card-detail-xl-line-height: 23px;
 
     /* body */
