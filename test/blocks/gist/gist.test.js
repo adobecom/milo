@@ -16,24 +16,24 @@ describe('adobetv autoblock', () => {
     originalCreateElement = document.createElement;
 
     createElementStub = sinon.stub(document, 'createElement').callsFake((tagName) => {
-      if (tagName === 'script') {
-        const scriptMock = originalCreateElement.call(document, 'script');
-        Object.defineProperty(scriptMock, 'src', {
-          set(url) {
-            const callbackMatch = url.match(/callback=([^&]+)/);
-            if (callbackMatch) {
-              const callbackName = callbackMatch[1];
-              setTimeout(() => {
-                if (window[callbackName]) {
-                  window[callbackName]({ div: '<div class="gist-data">Mock Gist Content</div>' });
-                }
-              }, 0);
-            }
-          },
-        });
-        return scriptMock;
+      if (tagName !== 'script') {
+        return originalCreateElement.call(document, tagName);
       }
-      return originalCreateElement.call(document, tagName);
+      const scriptMock = originalCreateElement.call(document, 'script');
+      Object.defineProperty(scriptMock, 'src', {
+        set(url) {
+          const callbackMatch = url.match(/callback=([^&]+)/);
+          if (callbackMatch) {
+            const callbackName = callbackMatch[1];
+            setTimeout(() => {
+              if (window[callbackName]) {
+                window[callbackName]({ div: '<div class="gist-data">Mock Gist Content</div>' });
+              }
+            }, 0);
+          }
+        },
+      });
+      return scriptMock;
     });
   });
 
