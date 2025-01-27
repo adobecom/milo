@@ -219,7 +219,7 @@ export async function syncToLangstore() {
         await startSync();
         getServiceUpdates();
       } else {
-        allowSyncToLangstore.value = heading.value.projectType !== 'rollout';
+        allowSyncToLangstore.value = true;
         allowSendForLoc.value = true;
         allowCancelProject.value = false;
       }
@@ -282,7 +282,7 @@ export async function sendForLoc() {
       // Give the service time to digest and error check creating a project
       setStatus('service', 'info', 'Starting project.');
     } else {
-      allowSyncToLangstore.value = heading.value.projectType !== 'rollout';;
+      allowSyncToLangstore.value = heading.value.projectType !== 'rollout';
       allowSendForLoc.value = true;
       allowCancelProject.value = false;
       return;
