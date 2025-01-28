@@ -79,11 +79,13 @@ function findMetaFragments(doc) {
   return fragments;
 }
 
+function findMatchingUrl(url) {
+  return !urls.value.some((existing) => removeLangstorePrefix(existing.pathname) === url.pathname);
+}
+
 function removeDuplicateUrls(urlObjects) {
   const uniqueUrls = [];
-  const filteredUrls = urlObjects.filter((url) =>
-    !urls.value.some((existing) => removeLangstorePrefix(existing.pathname) === url.pathname)
-  );
+  const filteredUrls = urlObjects.filter((url) => findMatchingUrl(url));
   filteredUrls.forEach((url) => {
     if (!uniqueUrls.some((unique) => unique.pathname === url.pathname)) {
       uniqueUrls.push(url);
