@@ -50,20 +50,20 @@ function closePanel(btn, panel) {
   panel.setAttribute('hidden', '');
 }
 
-function displayMedia(displayArea, el, dd, clickedId, expanded) {
+function closeMediaPanel(displayArea, el, dd, clickedId) {
+  closePanel(el, dd);
+  const clickedMedia = displayArea.childNodes[clickedId - 1];
+  const video = clickedMedia.querySelector('video');
+  if (video) pauseVideo(video);
+  const otherExpandedPanels = el.closest('.accordion').querySelectorAll('.accordion-trigger[aria-expanded="true"]');
+  if (!otherExpandedPanels.length) return;
+  clickedMedia.classList.remove('expanded');
+  const newExpandedId = otherExpandedPanels[0].id.split('trigger-')[1] - 1;
+  displayArea.childNodes[newExpandedId].classList.add('expanded');
+}
+
+function openMediaPanel(displayArea, el, dd, clickedId) {
   const accordionId = el.getAttribute('aria-controls').split('-')[1];
-  if (expanded) {
-    closePanel(el, dd);
-    const clickedMedia = displayArea.childNodes[clickedId - 1];
-    const video = clickedMedia.querySelector('video');
-    if (video) pauseVideo(video);
-    const otherExpandedPanels = el.closest('.accordion').querySelectorAll('.accordion-trigger[aria-expanded="true"]');
-    if (!otherExpandedPanels.length) return;
-    clickedMedia.classList.remove('expanded');
-    const newExpandedId = otherExpandedPanels[0].id.split('trigger-')[1] - 1;
-    displayArea.childNodes[newExpandedId].classList.add('expanded');
-    return;
-  }
   [...mediaCollection[accordionId]].forEach((mediaCollectionItem, idx) => {
     const video = mediaCollectionItem.querySelector('video');
     if (idx === clickedId - 1) {
@@ -92,7 +92,11 @@ function handleClick(el, dd, num) {
   const closestEditorial = el.closest('.editorial');
   const expanded = el.getAttribute('aria-expanded') === 'true';
   if (closestEditorial) {
-    displayMedia(closestEditorial.querySelector('.accordion-media'), el, dd, num, expanded);
+    if (expanded) {
+      closeMediaPanel(closestEditorial.querySelector('.accordion-media'), el, dd, num);
+      return;
+    }
+    openMediaPanel(closestEditorial.querySelector('.accordion-media'), el, dd, num);
     return;
   }
 
