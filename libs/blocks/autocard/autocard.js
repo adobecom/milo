@@ -1,4 +1,4 @@
-import {createTag} from '../../utils/utils.js';
+import { createTag } from '../../utils/utils.js';
 
 export default function init(el) {
   const { hash } = new URL(el.href);
