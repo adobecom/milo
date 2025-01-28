@@ -403,25 +403,50 @@ const setWindowAlloy = (alloyData) => {
   }
 };
 
-const processPropositions = (propositions) => {
+const setTTMetaAndAlloyTarget = (propositions) => {
+  const regex = /,|:/;
   const isEmpty = (val) => !val || val?.length === 0;
+  const offerNames = [];
+  const activityNames = [];
+  let targetResponse = window.alloy_all.get(window.alloy_all, 'data._adobe_corpnew.digitalData.adobe.target.response') || '';
+  const clean = (str) => (str || '').replace(regex, '');
+
   propositions.forEach((proposition) => {
     proposition.items?.forEach(({ meta }) => {
       if (isEmpty(meta)) return;
-      window.ttMETA = window.ttMETA || [];
 
-      window.ttMETA.push({
-        CampaignName: meta['activity.name'],
-        RecipeName: meta['experience.name'],
-        CampaignId: meta['activity.id'],
-        RecipeId: meta['experience.id'],
-        OfferId: meta['option.id'],
-        OfferName: meta['option.name'],
-        TrafficId: meta['experience.trafficAllocationId'],
-        TrafficType: meta['experience.trafficAllocationType'],
-      });
+      const offerName = meta['option.name'];
+      const activityName = meta['activity.name'];
+      window.ttMETA = window.ttMETA || [];
+      if (offerNames.indexOf(offerName) === -1 || activityNames.indexOf(activityName) === -1) {
+        offerNames.push(offerName);
+        activityNames.push(activityName);
+        const data = {
+          CampaignName: activityName,
+          RecipeName: meta['experience.name'],
+          CampaignId: meta['activity.id'],
+          RecipeId: meta['experience.id'],
+          OfferId: meta['option.id'],
+          OfferName: offerName,
+          TrafficId: meta['experience.trafficAllocationId'],
+          TrafficType: meta['experience.trafficAllocationType'],
+        };
+
+        window.ttMETA.push(data);
+
+        const activityId = data.CampaignId;
+        if (targetResponse.indexOf(activityId) === -1) {
+          // If there is already a response string, append a comma
+          if (targetResponse) targetResponse += ',';
+
+          if (targetResponse.indexOf(activityId) === -1) {
+            targetResponse += `T:${[activityId, activityName, data.OfferId, offerName, data.RecipeId, data.RecipeName, data.TrafficId, data.TrafficType].map(clean).join(':')}`;
+          }
+        }
+      }
     });
   });
+  window.alloy_all.set(window.alloy_all, 'data._adobe_corpnew.digitalData.adobe.target.response', targetResponse);
 };
 
 function filterPropositionInJson(payloads) {
@@ -515,24 +540,24 @@ export const loadAnalyticsAndInteractionData = async (
     });
 
     const resultPayload = getPayloadsByType(targetRespJson, 'personalization:decisions');
-    const filteredPayload = filterPropositionInJson(resultPayload);
-    if (isHybridPersFlagEnabled && filteredPayload.length) {
-      sendPropositionDisplayRequest(filteredPayload, env, requestPayload);
+    if (isHybridPersFlagEnabled) {
+      const filteredPayload = filterPropositionInJson(resultPayload);
+      if (filteredPayload.length) {
+        sendPropositionDisplayRequest(filteredPayload, env, requestPayload);
+      }
+      const alloyData = {
+        destinations: getPayloadsByType(targetRespJson, 'activation:pull'),
+        propositions: resultPayload,
+        inferences: getPayloadsByType(targetRespJson, 'rtml:inferences'),
+        decisions: [],
+      };
+      window.dispatchEvent(new CustomEvent('alloy_sendEvent', { detail: alloyData }));
+      setWindowAlloy(alloyData);
+      setTTMetaAndAlloyTarget(resultPayload);
     }
 
     updateAMCVCookie(ECID);
     updateMartechCookies(extractedData);
-
-    const alloyData = {
-      destinations: getPayloadsByType(targetRespJson, 'activation:pull'),
-      propositions: resultPayload,
-      inferences: getPayloadsByType(targetRespJson, 'rtml:inferences'),
-      decisions: [],
-    };
-    window.dispatchEvent(new CustomEvent('alloy_sendEvent', { detail: alloyData }));
-
-    setWindowAlloy(alloyData);
-    processPropositions(resultPayload);
 
     if (resultPayload?.length === 0) throw new Error('No propositions found');
 
