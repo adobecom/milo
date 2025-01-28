@@ -10,7 +10,6 @@ const PHONE_SIZE = window.screen.width < 550 || window.screen.height < 550;
 const safariIpad = navigator.userAgent.includes('Macintosh') && navigator.maxTouchPoints > 1;
 export const US_GEO = 'en-us';
 export const PERSONALIZATION_TAGS = {
-  'test-tld-id': () => true,
   all: () => true,
   chrome: () => navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Edg'),
   firefox: () => navigator.userAgent.includes('Firefox'),
@@ -789,6 +788,7 @@ async function getPersonalizationVariant(
     } else {
       userEntitlements = await config.entitlements();
     }
+    userEntitlements = ['test-tld-id'];
   }
 
   const hasMatch = (name) => {
