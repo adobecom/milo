@@ -332,7 +332,6 @@ const decorateMenu = (config) => logErrorFor(async () => {
     const content = await fetchAndProcessPlainHtml({ url: pathElement.href });
 
     if (!content) return;
-    asyncDropDownCount += 1;
     const menuContent = toFragment`<div class="feds-menu-content">${content.innerHTML}</div>`;
     menuTemplate = toFragment`<div class="feds-popup">
         <div class="feds-menu-container">
@@ -364,6 +363,7 @@ const decorateMenu = (config) => logErrorFor(async () => {
       config.template.classList.add(selectors.activeNavItem.slice(1));
     }
 
+    asyncDropDownCount += 1;
     config.template.classList.add('feds-navItem--megaMenu');
     if (getAsyncDropdownCount() === asyncDropDownCount) {
       if (!hasActiveLink()) {
