@@ -374,6 +374,86 @@ const getPayloadsByType = (data, type) => data?.handle?.filter((d) => d.type ===
   .map((d) => d.payload)
   .reduce((acc, curr) => [...acc, ...curr], []);
 
+const setWindowAlloy = (alloyData) => {
+  const get = (obj, path) => path.split('.').reduce((current, segment) => (current !== undefined && current !== null ? current[segment] : undefined), obj);
+
+  const set = (obj, path, val) => {
+    path.split('.').reduce((current, segment, index, segments) => {
+      if (index === segments.length - 1) current[segment] = val;
+      else current[segment] = current[segment] || {};
+      return current[segment];
+    }, obj);
+
+    return obj;
+  };
+  window.alloy_all = window.alloy_all || { get, set };
+  if (alloyData?.destinations) {
+    const xlgValue = 'data._adobe_corpnew.digitalData.adobe.xlg';
+    const existingXlg = window.alloy_all.get(window.alloy_all, xlgValue) || '';
+    const xlgIds = existingXlg ? new Set(existingXlg.split(',')) : new Set();
+
+    for (const destination of alloyData.destinations) {
+      for (const segment of destination.segments) {
+        const segmentId = segment.id;
+        if (!xlgIds.has(segmentId)) xlgIds.add(segmentId);
+      }
+    }
+    const updatedXlg = Array.from(xlgIds).join(',');
+    window.alloy_all.set(window.alloy_all, xlgValue, updatedXlg);
+  }
+};
+
+const processPropositions = (propositions) => {
+  const isEmpty = (val) => !val || val?.length === 0;
+  propositions.forEach((proposition) => {
+    proposition.items?.forEach(({ meta }) => {
+      if (isEmpty(meta)) return;
+      window.ttMETA = window.ttMETA || [];
+
+      window.ttMETA.push({
+        CampaignName: meta['activity.name'],
+        RecipeName: meta['experience.name'],
+        CampaignId: meta['activity.id'],
+        RecipeId: meta['experience.id'],
+        OfferId: meta['option.id'],
+        OfferName: meta['option.name'],
+        TrafficId: meta['experience.trafficAllocationId'],
+        TrafficType: meta['experience.trafficAllocationType'],
+      });
+    });
+  });
+};
+
+function filterPropositionInJson(payloads) {
+  return payloads
+    .filter((item) => item?.items?.some((i) => i?.data?.format === 'application/json'))
+    .map(({ items, ...rest }) => ({
+      ...rest,
+      items: items.map(({ data, ...itemRest }) => itemRest),
+    }));
+}
+
+function sendPropositionDisplayRequest(filteredPayload, env, requestPayload) {
+  const reqUrl = createRequestUrl({ env, hitType: 'propositionDisplay' });
+  const reqBody = createRequestPayload({ ...requestPayload, hitType: 'propositionDisplay' });
+
+  const decisioning = {
+    propositions: filteredPayload,
+    propositionEventType: { display: 1 },
+  };
+
+  reqBody.events[0].xdm._experience = { decisioning };
+  reqBody.events[0].data._experience = { decisioning };
+
+  reqBody.events[0].xdm.documentUnloading = true;
+  reqBody.events[0].data.documentUnloading = true;
+
+  fetch(reqUrl, {
+    method: 'POST',
+    body: JSON.stringify(reqBody),
+  });
+}
+
 export const loadAnalyticsAndInteractionData = async (
   { locale, env, calculatedTimeout, isHybridPersFlagEnabled },
 ) => {
@@ -382,11 +462,6 @@ export const loadAnalyticsAndInteractionData = async (
   if (value === 'general=out') {
     return {};
   }
-
-  const {
-    screenWidth, screenHeight,
-    screenOrientation, viewportWidth, viewportHeight,
-  } = getDeviceInfo();
 
   const CURRENT_DATE = new Date();
   const localTime = CURRENT_DATE.toISOString();
@@ -399,28 +474,15 @@ export const loadAnalyticsAndInteractionData = async (
 
   const pageName = getPageNameForAnalytics({ locale });
 
-  const updatedContext = getUpdatedContext({
-    screenWidth,
-    screenHeight,
-    screenOrientation,
-    viewportWidth,
-    viewportHeight,
-    localTime,
-    timezoneOffset,
-  });
+  const updatedContext = getUpdatedContext({ ...getDeviceInfo(), localTime, timezoneOffset });
 
   const requestUrl = createRequestUrl({
     env,
     hitType,
   });
 
-  const requestBody = createRequestPayload({
-    updatedContext,
-    pageName,
-    locale,
-    env,
-    hitType,
-  });
+  const requestPayload = { updatedContext, pageName, locale, env, hitType };
+  const requestBody = createRequestPayload(requestPayload);
 
   try {
     const targetResp = await Promise.race([
@@ -453,38 +515,11 @@ export const loadAnalyticsAndInteractionData = async (
     });
 
     const resultPayload = getPayloadsByType(targetRespJson, 'personalization:decisions');
-    if (isHybridPersFlagEnabled) {
-      const reqUrl = createRequestUrl({ env, hitType: 'propositionDisplay' });
-      const reqBody = createRequestPayload({
-        updatedContext,
-        pageName,
-        locale,
-        env,
-        hitType: 'propositionDisplay',
-      });
-
-      reqBody.events[0].xdm._experience = {
-        decisioning: {
-          propositions: resultPayload?.map(({ id, scope, scopeDetails }) => (
-            { id, scope, scopeDetails })),
-          propositionEventType: { display: 1 },
-        },
-      };
-      reqBody.events[0].xdm.documentUnloading = true;
-      reqBody.events[0].data._experience = {
-        decisioning: {
-          propositions: resultPayload?.map(({ id, scope, scopeDetails }) => (
-            { id, scope, scopeDetails })),
-          propositionEventType: { display: 1 },
-        },
-      };
-      reqBody.events[0].data.documentUnloading = true;
-
-      fetch(reqUrl, {
-        method: 'POST',
-        body: JSON.stringify(reqBody),
-      });
+    const filteredPayload = filterPropositionInJson(resultPayload);
+    if (isHybridPersFlagEnabled && filteredPayload.length) {
+      sendPropositionDisplayRequest(filteredPayload, env, requestPayload);
     }
+
     updateAMCVCookie(ECID);
     updateMartechCookies(extractedData);
 
@@ -496,32 +531,8 @@ export const loadAnalyticsAndInteractionData = async (
     };
     window.dispatchEvent(new CustomEvent('alloy_sendEvent', { detail: alloyData }));
 
-    const get = (obj, path) => path.split('.').reduce((current, segment) => (current !== undefined && current !== null ? current[segment] : undefined), obj);
-
-    const set = (obj, path, val) => {
-      path.split('.').reduce((current, segment, index, segments) => {
-        if (index === segments.length - 1) current[segment] = val;
-        else current[segment] = current[segment] || {};
-        return current[segment];
-      }, obj);
-
-      return obj;
-    };
-    window.alloy_all = window.alloy_all || { get, set };
-    if (alloyData?.destinations) {
-      const xlgValue = 'data._adobe_corpnew.digitalData.adobe.xlg';
-      const existingXlg = window.alloy_all.get(window.alloy_all, xlgValue) || '';
-      const xlgIds = existingXlg ? new Set(existingXlg.split(',')) : new Set();
-
-      for (const destination of alloyData.destinations) {
-        for (const segment of destination.segments) {
-          const segmentId = segment.id;
-          if (!xlgIds.has(segmentId)) xlgIds.add(segmentId);
-        }
-      }
-      const updatedXlg = Array.from(xlgIds).join(',');
-      window.alloy_all.set(window.alloy_all, xlgValue, updatedXlg);
-    }
+    setWindowAlloy(alloyData);
+    processPropositions(resultPayload);
 
     if (resultPayload?.length === 0) throw new Error('No propositions found');
 

@@ -36,6 +36,29 @@ describe('loadAnalyticsAndInteractionData', () => {
   });
 
   it('should fetch and return the proposition data with hybrid', async () => {
+    window.fetch = () => Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve({
+        handle: [
+          {
+            type: 'personalization:decisions',
+            payload: [
+              {
+                decisionId: '1',
+                proposition: 'Test Proposition',
+                items: [{
+                  data: {
+                    id: '901343',
+                    format: 'application/json',
+                  },
+                },
+                ],
+              },
+            ],
+          },
+        ],
+      }),
+    });
     const result = await loadAnalyticsAndInteractionData({
       locale: { ietf: 'en-US', prefix: 'us' },
       env: 'prod',
