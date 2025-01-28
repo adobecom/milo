@@ -41,28 +41,26 @@
   direction: ltr;
 }
 
-@media screen and (max-width: 599px) {
-  .mep-hidden .mep-badge .mep-open {
-    margin-right: 0;
-  }
-
-  .mep-hidden .mep-badge .mep-manifest-count {
-    display: none;
-  }
-}
-
-.mep-uppercase {
-  text-transform: capitalize;
-}
-
-.mep-manifest-section {
-  gap: 8px;
+.mep-popup .mep-popup-body,
+.mep-popup .mep-manifest-list {
   display: flex;
+  gap: 12px;
+}
+
+.mep-popup .mep-popup-body,
+.mep-popup .mep-manifest-list {
   flex-direction: column;
 }
 
+.mep-popup .mep-section {
+  gap: 8px;
+  display: flex;
+  flex-direction: column;
+  flex: 0 1 calc(100% / 2 - 8px);
+}
+
 .mep-divider {
-  border-bottom: 1px solid #fff;
+  border-bottom: 1px solid #909090;
 }
 
 .mep-badge .mep-open::after,
@@ -75,16 +73,20 @@
   height: 6px;
   border-top: 2px solid;
   border-right: 2px solid;
-  transform: rotate(-45deg);
+  transform: rotate(135deg);
   left: 6px;
-  bottom: 5px;
+  bottom: 7px;
   transition-duration: 0.2s;
 }
 
 .mep-hidden .mep-badge .mep-open::after {
-  transform: rotate(45deg);
-  left: 5px;
-  bottom: 6px;
+  transform: rotate(-45deg);
+  left: 6px;
+  bottom: 5px;
+}
+
+.mep-popup-header svg {
+  height: 20px;
 }
 
 .mep-popup-header .mep-close {
@@ -111,6 +113,7 @@
 .mep-popup .mep-columns {
   display:flex;
   gap: 16px;
+  text-transform: capitalize;
 }
 
 .mep-popup .mep-column a {
@@ -118,18 +121,10 @@
   right: 0;
 }
 
-.mep-popup.in-page {
-  position: absolute;
-  bottom: 64px;
-  left: -8px;
-  background-color: #444;
-  min-width: 300px;
-  border-radius: 16px;
-  box-shadow: 0 0 10px #000;
-}
-
 .mep-popup a.mep-edit-manifest {
   cursor: pointer;
+  display: flex;
+  flex-shrink: 0;
   font-size: 18px;
   font-weight: 600;
 }
@@ -141,10 +136,6 @@
   padding: 12px 12px;
   border-radius: 16px 16px 0 0;
   position: relative;
-}
-
-.mep-popup.in-page .mep-popup-header {
-  background-color: #222;
 }
 
 .mep-popup .mep-popup-header > div {
@@ -174,18 +165,6 @@
   margin: 0;
 }
 
-.mep-popup.in-page::before {
-  content: '';
-  width: 0;
-  height: 0;
-  position: absolute;
-  border-left: 15px solid transparent;
-  border-right: 15px solid transparent;
-  border-top: 15px solid #444;
-  bottom: -15px;
-  left: 30px;
-}
-
 .mep-hidden .mep-popup {
   display: none;
 }
@@ -209,9 +188,10 @@
   flex: 0 0 auto;
 }
 
-.mep-popup .mep-manifest-footer {
+.mep-popup .mep-popup-footer {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: right;
   padding: 12px;
 }
 
@@ -219,28 +199,16 @@
   font-style: italic;
 }
 
-.mep-manifest-title,
+.mep-manifest-info,
 .mep-popup label {
   position: relative;
 }
 
-.mep-manifest-title {
+.mep-manifest-info,
+.mep-experience-dropdown {
   display: flex;
   flex-direction: column;
   gap: 8px;
-}
-
-.mep-popup.in-page .mep-manifest-list {
-  max-height: calc(100vh - 300px);
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 12px;
-}
-
-.mep-popup:not(.in-page) .promo-schedule-info {
-  display: none;
 }
 
 .mep-popup input.new-manifest,
@@ -256,20 +224,84 @@
   border: 0;
 }
 
+.mep-popup:not(.in-page) .promo-schedule-info,
+.mep-popup:not(.in-page) .mep-popup-header,
+.mep-popup:not(.in-page) [title="Mep Manifest Manager"] {
+  display: none;
+}
+
+/* In Page */
+.mep-popup.in-page {
+  position: absolute;
+  bottom: 64px;
+  left: -8px;
+  background-color: #444;
+  min-width: 300px;
+  border-radius: 16px;
+  box-shadow: 0 0 10px #000;
+}
+
+.mep-popup.in-page .mep-popup-body {
+  padding: 12px;
+  overflow-y: auto;
+  max-height: calc(100vh - 300px);
+}
+
+.mep-popup.in-page .mep-manifest-list {
+  flex-wrap: initial;
+  flex-direction: column;
+}
+
+.mep-popup.in-page .mep-section {
+  flex: 1 1 auto;
+}
+
+.mep-popup.in-page::before {
+  content: '';
+  width: 0;
+  height: 0;
+  position: absolute;
+  border-left: 15px solid transparent;
+  border-right: 15px solid transparent;
+  border-top: 15px solid #444;
+  bottom: -15px;
+  left: 30px;
+}
+
+.mep-popup.in-page .mep-popup-header {
+  background-color: #222;
+}
+.mep-popup.in-page .mep-divider {
+  border-bottom: 1px solid #fff;
+}
+
+
+/* Media Queries */
+@media screen and (max-width: 599px) {
+  .mep-hidden .mep-badge .mep-open {
+    margin-right: 0;
+  }
+
+  .mep-hidden .mep-badge .mep-manifest-count {
+    display: none;
+  }
+}
+
+
 /* scrollbar */
-.mep-manifest-list::-webkit-scrollbar {
+.mep-popup-body::-webkit-scrollbar {
   width: 10px;
 }
 
-.mep-manifest-list::-webkit-scrollbar-track {
+.mep-popup-body::-webkit-scrollbar-track {
   background: #888;
 }
 
-.mep-manifest-list::-webkit-scrollbar-thumb {
+.mep-popup-body::-webkit-scrollbar-thumb {
   background: #f1f1f1;
 }
 
-.mep-manifest-list::-webkit-scrollbar-thumb:hover {
+.mep-popup-body::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
 
