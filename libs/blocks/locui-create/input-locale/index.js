@@ -96,7 +96,10 @@ export default function useInputLocale() {
 
   const [apiError, setApiError] = useState('');
 
-  const findLanguageForLocale = (locale) => languagesList.find((lang) => lang.livecopies.split(',').includes(locale));
+  const findLanguageForLocale = (locale) => languagesList.find((lang) => lang.livecopies.split(',')
+    .includes(locale));
+  const findLanguage = (languageName) => languagesList
+    .find((lang) => lang.language.toLowerCase() === languageName.toLowerCase());
 
   const transformActiveLocales = () => {
     const groupedLocales = {};
@@ -204,6 +207,20 @@ export default function useInputLocale() {
     setSelectedLocale(allLocales);
     setActiveLocales(allActiveLocales);
   };
+
+  useEffect(() => {
+    const activeLanguages = [...new Set(Object.values(activeLocales))];
+    if (activeLanguages.length > 0) {
+      const selectedLocales = activeLanguages.reduce((acc, curr) => {
+        const lang = findLanguage(curr);
+        const localeCopies = lang.livecopies.split(',');
+        acc.push(...localeCopies);
+
+        return acc;
+      }, []);
+      setSelectedLocale(selectedLocales);
+    }
+  }, [activeLocales, languagesList]);
 
   useEffect(() => {
     setSelectedRegion((prevState) => ({

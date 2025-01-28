@@ -110,9 +110,9 @@ export function getLanguageDetails(lang) {
   const langDetails = stLocales.value?.find(({ languagecode }) => languagecode === lang) ?? {};
   return [{
     action: 'Rollout',
-    langCode: langDetails.languagecode,
-    language: langDetails.language,
-    locales: langDetails.livecopies.split(','),
+    langCode: langDetails?.languagecode,
+    language: langDetails?.language,
+    locales: langDetails?.livecopies?.split(','),
     workflow: '',
   }];
 }
