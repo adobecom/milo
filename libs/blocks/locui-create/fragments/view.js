@@ -35,6 +35,7 @@ export default function FragmentsSection({
 
   const locFragment = (fragment) => {
     const checked = selectedFragments.find((pathname) => pathname === fragment.pathname);
+    const parentPages = Array.from(fragment?.parentPages ?? []).filter((page) => page);
     return html`
     <li class="locui-create-fragment">
     <div class="locui-create-fragment-input-container">
@@ -42,7 +43,7 @@ export default function FragmentsSection({
      <label class='locui-create-fragment-label' for=${fragment.pathname}>${fragment.pathname}</label>
      </div>
      <ul class='locui-create-fragment-parent'>
-      ${fragment.parentPages && fragment.parentPages.length > 0 && fragment.parentPages.map((parentPage) => html`<li>${parentPage}</li>`)}
+      ${parentPages.map((parentPage) => html`<li>${parentPage}</li>`)}
      </ul>
     </div>`;
   };
@@ -52,12 +53,13 @@ export default function FragmentsSection({
   ${isLoading ? html`<${Loader} />`
     : html`
     <ul class=${`locui-create-fragments-list ${validFragments.length > 0 && selectedFragments.length < 1 && 'error'}`}>
-   ${validFragments && validFragments.length > 0 ? validFragments.map((fragment) => locFragment(fragment)) : html`<p>No Valid fragments</p>`}
+   ${validFragments?.length > 0 ? validFragments.map((fragment) => locFragment(fragment)) : html`<p>No Valid fragments</p>`}
    </ul>`
 }
    <div>
-    ${errorFragments && errorFragments.length > 0 && html`<div class='form-field-error'>Invalid fragments <a href="#" onClick=${() => showFragments(errorFragments)}>view details</a></div>`}
-    ${validFragments.length > 0 && selectedFragments.length < 1 && html`<div class='form-field-error'>Select atleast one fragment to proceed further</div>`}
+    ${errorFragments?.length > 0 && html`<div class='form-field-error'>Invalid fragments <button class='locui-invalid-fragments-btn' onClick=${() => {
+    showFragments(errorFragments);
+  }}>view details</button></div>`}
    </div>
   </div>`;
 }

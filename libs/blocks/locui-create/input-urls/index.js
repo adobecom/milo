@@ -1,6 +1,8 @@
 import { findDeepFragments } from '../../locui/actions/index.js';
+import { urls as locuiUrls } from '../../locui/utils/state.js';
 import { validateUrlsFormat } from '../../locui/loc/index.js';
 import { origin } from '../../locui/utils/franklin.js';
+import { PROJECT_TYPES } from '../utils/constant.js';
 
 export function validateProjectName(name) {
   if (name && !/^[a-zA-Z0-9-]+$/.test(name)) {
@@ -15,6 +17,9 @@ export function validateUrls(urlsStr) {
   while (urls.length > 0) {
     try {
       const url = new URL(urls[0]);
+      if (!(/^(https):\/\/[^\s/$.?#].[^\s]*$/g.test(urls[0]))) {
+        return errorMessage;
+      }
       if (url.origin !== origin) {
         return errorMessage;
       }
@@ -26,7 +31,15 @@ export function validateUrls(urlsStr) {
   return '';
 }
 
+export function validateFragments(isFragmentEnabled, noOfValidFrag, fragmentsSelected) {
+  if (isFragmentEnabled && noOfValidFrag > 0 && fragmentsSelected.length === 0) {
+    return 'Select atleast one fragment to proceed further';
+  }
+  return '';
+}
+
 export function validateForm({
+  type,
   name,
   editBehavior,
   urlsStr,
@@ -38,7 +51,7 @@ export function validateForm({
   if (name === '') {
     errors.name = 'Project name is required';
   }
-  if (editBehavior === '') {
+  if (type === 'rollout' && editBehavior === '') {
     errors.editBehavior = 'Edit behavior is required';
   }
   if (urlsStr === '') {
@@ -57,22 +70,35 @@ export function checkForErrors(errors) {
 }
 
 export async function findFragments(urls) {
+  // Using locui state urls as it is internally used in finding fragments and check duplicates
+  locuiUrls.value = [...urls];
   const fragmentUrls = urls.map((url) => findDeepFragments(url.pathname));
   const pageFragments = await Promise.all(fragmentUrls);
   const fragmentsByPathname = pageFragments.reduce((acc, fragments, index) => {
     if (fragments.length > 0) {
       fragments.forEach((fragment) => {
         if (acc[fragment.pathname]) {
-          acc[fragment.pathname].parentPages.push(urls[index]);
+          acc[fragment.pathname].parentPages.add(urls[index]?.href);
           return acc;
         }
-        fragment.parentPages = [urls[index]?.href];
+        fragment.parentPages = new Set([urls[index]?.href]);
         acc[fragment.pathname] = fragment;
         return acc;
       });
     }
     return acc;
   }, {});
+  locuiUrls.value = [];
   const foundFragments = Object.values(fragmentsByPathname);
   return validateUrlsFormat(foundFragments, true);
+}
+
+export function getInitialName(type) {
+  const prefix = type === PROJECT_TYPES.rollout ? 'rollout' : 'translate';
+  let date = new Date().toISOString();
+  if (date.indexOf('.') > -1) {
+    date = date.slice(0, date.indexOf('.'));
+  }
+  const formattedDate = date.replace(/[-:]/g, '').replace(/T/g, '-');
+  return `${prefix}-${formattedDate}`;
 }

@@ -23,7 +23,7 @@ export default function StepControls({
         class=${`s2-btn accent ${nextDisabled && 'disabled'}`}
         onclick=${onNext}
       >
-        ${nextLabel}
+        <strong>${nextLabel}</strong>
       </button>`}
     </div>
   `;

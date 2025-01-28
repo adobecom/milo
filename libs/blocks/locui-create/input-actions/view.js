@@ -1,135 +1,128 @@
 import { html } from '../../../deps/htm-preact.js';
-import { prevStep, project, setProject } from '../store.js';
 import StepControls from '../components/stepControls.js';
-import projectCreatedModal from './index.js';
+import useInputActions from './index.js';
+import { prevStep, project } from '../store.js';
+import { PROJECT_TYPES, PROJECT_TYPE_LABELS, TRANSLATE_ONLY_LANGS } from '../utils/constant.js';
+import Toast from '../components/toast.js';
 
-const tabelHeaders = ['Languages', 'Locales', 'Action', 'Workflow type'];
+function TranslateActions({ languageCount, handleActionSelect, handleWorkflowSelect }) {
+  const tableHeaders = [`Languages (${languageCount})`,
+    'Action',
+    'Workflow type'];
+  return html` <div class="table-wrapper table-translate">
+        <table>
+          <thead>
+            <tr>
+              ${tableHeaders.map((heading) => html`<th>${heading}</th>`)}
+            </tr>
+          </thead>
+          <tbody>
+            ${project.value.languages.map((entry) => html`
+              <tr>
+                <td>${entry.language}</td>
+                <td>
+                  <select
+                    value=${entry.action || ''}
+                    class="form-field-select"
+                    onChange=${(e) => handleActionSelect(e, entry)}
+                    name="actions"
+                    id="actions"
+                  >
+                    ${!TRANSLATE_ONLY_LANGS.includes(entry.langCode) && html`<option value="English Copy">English Copy</option>`}
+                    <option value="Translate">Translate</option>
+                  </select>
+                </td>
+                <td>
+                  <select
+                    value=${entry.workflow || ''}
+                    class="form-field-select"
+                    onChange=${(e) => handleWorkflowSelect(e, entry)}
+                    name="wf-type"
+                    id="wf-type"
+                  >
+                    <option value="">Default</option>
+                    <option value="HybridMT">HybridMT</option>
+                    <option value="Standard">Standard</option>
+                  </select>
+                </td>
+              </tr>
+            `)}
+          </tbody>
+        </table>
+      </div>`;
+}
 
-// replaced by project.value data
-const tableEntries = [
-  {
-    languages: 'Chinese',
-    locales: ['cn'],
-    action: '',
-    workflow: '',
-  },
-  {
-    languages: 'English',
-    locales: ['it_en', 'ae_en'],
-    action: '',
-    workflow: '',
-  },
-  {
-    languages: 'French',
-    locales: ['fr', 'be_fr'],
-    action: '',
-    workflow: '',
-  },
-  {
-    languages: 'German',
-    locales: ['de'],
-    action: '',
-    workflow: '',
-  },
-  {
-    languages: 'Italian',
-    locales: ['ch_it'],
-    action: '',
-    workflow: '',
-  },
-  {
-    languages: 'Japanese',
-    locales: ['jp'],
-    action: '',
-    workflow: '',
-  },
-  {
-    languages: 'Japanese',
-    locales: ['jp'],
-    action: '',
-    workflow: '',
-  },
-];
+function RolloutActions({ languageCount }) {
+  const tableHeaders = [`Languages (${languageCount})`, 'Locales', 'Action'];
+  return html` <div class="table-wrapper table-rollout">
+  <table>
+    <thead>
+      <tr>
+        ${tableHeaders.map((heading) => html`<th>${heading}</th>`)}
+      </tr>
+    </thead>
+    <tbody>
+      ${project.value.languages.map((entry) => html`
+        <tr>
+          <td>${entry.language}</td>
+          <td>
+           <div class="locale-list-container">
+            ${entry?.locales ? entry.locales.map((locale) => html`
+              <div class='locale-list-item'>${locale}</div>`) : 'No Locale found'}
+           </div>
+          </td>
+          <td>
+           ${entry.action || ''}
+          </td>
+        </tr>
+      `)}
+    </tbody>
+  </table>
+</div>`;
+}
 
-export default function InputActions() {
-  const handleActionSelect = (ev, entry) => {
-    // console.log("Action", ev.target.value, entry)
-    entry.action = ev.target.value;
-  };
+export default function InputActionsView() {
+  const {
+    languageCount,
+    isFormValid,
+    handleActionSelect,
+    handleWorkflowSelect,
+    apiError,
+    projectConfirmationModal,
+    setApiError,
+  } = useInputActions();
 
-  const handleWorkflowSelect = (ev, entry) => {
-    // console.log("Workflow", ev, entry)
-    entry.workflow = ev.target.value;
-  };
-
-  const handleNext = () => {
-    // console.log(tableEntries)
-    setProject({ tableEntries });
-    projectCreatedModal();
+  const handleNext = async () => {
+    if (isFormValid) {
+      projectConfirmationModal();
+    }
   };
 
   return html`
   <div class="locui-form-container">
     <div class="locui-table">
-      <p>Project Name: <strong>${project.value.name || 'n/a'}</strong></p>
-      <div class="table-wrapper">
-        <table>
-          <thead>
-            <tr>
-              ${tabelHeaders.map((heading) => (html`
-                <th>${heading}</th>
-              `))}
-            </tr>
-          </thead>
-          <tbody>
-            ${tableEntries.map((entry) => (html`
-              <tr>
-                <td>${entry.languages}</td>
-                <td>
-                  ${entry.locales.map((locale) => html`
-                    <button class="locale-list-item">${locale}</button>
-                  `)}
-                </td>
-                <td>
-                  <select 
-                    value=${entry.action}
-                    class="form-field-select" 
-                    onChange=${(e) => handleActionSelect(e, entry)}
-                    name="actions" 
-                    id="actions"
-                  >
-                    <option value="" disabled selected hidden>Select</option>
-                    <option value="English Copy">English Copy</option>
-                    <option value="Rollout">Rollout</option>
-                    <option value="Translate">Translate</option>
-                  </select>
-                </td>
-                <td>
-                  <select 
-                    value=${entry.workflow}
-                    class="form-field-select" 
-                    onChange=${(e) => handleWorkflowSelect(e, entry)}
-                    name="wf-type" 
-                    id="wf-type"
-                  >
-                    <option value="" disabled selected hidden>Select</option>
-                    <option value="HybridMT">HybridMT</option>
-                    <option value="Standard">Standard</option>
-                  </select>  
-                </td>
-              </tr>  
-            `))}
-          </tbody>
-        </table>
-      </div>
+      <h2 class="locui-project-type">${PROJECT_TYPE_LABELS[project.value.type]}</p>
+      <p class="locui-project-name">
+        Project Name: <strong>${project.value.name || 'n/a'}</strong>
+      </p>
+      ${project.value.type === PROJECT_TYPES.translation ? html`<${TranslateActions} languageCount=${languageCount} handleActionSelect=${handleActionSelect} handleWorkflowSelect=${handleWorkflowSelect} />`
+    : html`<${RolloutActions} languageCount=${languageCount} />`}
+     
     </div>
+     ${apiError
+      && html`<${Toast}
+        message=${apiError}
+        type="error"
+        onClose=${() => setApiError('')}
+      />`}
     <div class="step-controls">
-      <${StepControls} 
-        onBack=${prevStep} 
-        nextLabel=${'Create Project'}
+      <${StepControls}
+        onBack=${prevStep}
+        nextLabel="Create Project"
         onNext=${handleNext}
+        nextDisabled=${!isFormValid}
       />
     </div>
   </div>
-`;
+  `;
 }

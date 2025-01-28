@@ -8,7 +8,7 @@ export default function Url({ suffix, item }) {
   let hasError;
   if (item.valid === undefined) {
     // if not validated (LANGSTORE, locale) then get validation status from urls
-    const match = urls.value.find((url) => sourcePath.endsWith(url.pathname)
+    const match = urls.value.find((url) => sourcePath.endsWith(url.pagePath)
       || url.langstore.pathname.endsWith(langstorePath));
     hasError = typeof match.valid === 'string' ? match.valid : false;
   } else {
@@ -20,7 +20,7 @@ export default function Url({ suffix, item }) {
       <p class=locui-url-path>${sourcePath}${hasError ? html`<span>${hasError}</span>` : ''}</p>
       <div class="locui-url-tab-group locui-url-tab-group-cols-${suffix.length}">
         <${Tabs} suffix=${suffix[0]} path=${sourcePath} hasError=${hasError} sync=${item.sync} />
-        ${langstorePath && html`
+        ${langstorePath && sourcePath !== langstorePath && html`
           <${Tabs} suffix=${suffix[1]} path=${langstorePath} hasError=${hasError} sync=${item.sync} />
         `}
       </div>

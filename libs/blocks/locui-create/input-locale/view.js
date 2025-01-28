@@ -1,14 +1,17 @@
 import { html } from '../../../deps/htm-preact.js';
 import useInputLocale from './index.js';
 import StepControls from '../components/stepControls.js';
+import { PROJECT_TYPES } from '../utils/constant.js';
+import Toast from '../components/toast.js';
+import { initByParams } from '../store.js';
 
 export default function InputLocales() {
   const {
     selectedRegion,
     selectedLocale,
     activeLocales,
-    localeRegion,
-    locales,
+    localeRegionList,
+    languagesList,
     project,
     errorPresent,
     handleNext,
@@ -17,59 +20,76 @@ export default function InputLocales() {
     toggleRegion,
     selectLanguage,
     toggleLocale,
+    selectAll,
+    apiError,
+    setApiError,
   } = useInputLocale();
 
-  const RenderRegion = () => html`
+  const RenderRegion = () => {
+    if (!initByParams.value?.languages) {
+      return (html`
+    <h5 class="section-header">Quick Select for Language/Locale</h5>
+    <div class="additional-cta">
+        <button class="reset-button" onClick=${selectAll}>
+          Select All
+        </button>
+        <button class="reset-button" onClick=${resetSelection}>
+            Reset All
+          </button>
+      </div>
     <div class="region-grid">
-      <p>Quick Select for Language/Locale</p>
       <div class="region-buttons">
-        ${localeRegion.value.map(
-    (region) => html`
+        ${localeRegionList.map(
+          (region) => html`
             <button
               key=${region.key}
               class="region-button ${selectedRegion[region.key]
-    ? 'active'
-    : ''}"
+          ? 'active'
+          : ''}"
               onClick=${() => toggleRegion(region)}
             >
               ${region.key}
             </button>
           `,
-  )}
-        <button class="reset-button" onClick=${resetSelection}>
-          Reset All
-        </button>
+        )}
       </div>
     </div>
-  `;
+  `);
+    } return null;
+  };
 
-  const RenderLanguage = () => html`
+  const RenderLanguage = () => {
+    if (!initByParams.value?.languages) {
+      return (html`
     <div class="language-grid">
-      <p>Select the Language(s)</p>
+      <h5 class="section-header">Select the Language(s)</h5>
       <div class="language-buttons">
-        ${locales.value.map(
-    (language) => language.livecopies.length > 0
+        ${languagesList.map(
+          (language) => language.livecopies.length > 0
             && html`
               <button
                 key=${language.languagecode}
                 class="language-button ${language.livecopies
-    .split(',')
-    .some((locale) => selectedLocale.includes(locale))
-    ? 'active'
-    : ''}"
+          .split(',')
+          .some((locale) => selectedLocale.includes(locale))
+          ? 'active'
+          : ''}"
                 onClick=${() => selectLanguage(language)}
               >
                 ${language.language}
               </button>
             `,
-  )}
+        )}
       </div>
     </div>
-  `;
+  `);
+    }
+    return null;
+  };
 
   const RenderLocales = () => {
     const groupedLocales = selectedLocale.reduce((acc, locale) => {
-      const language = locales.value.find((lang) => lang.livecopies.split(',').includes(locale));
+      const language = languagesList.find((lang) => lang.livecopies.split(',').includes(locale));
 
       if (language) {
         if (!acc[language.language]) {
@@ -104,25 +124,40 @@ export default function InputLocales() {
   };
 
   return html`
-    <div>
-      <p><strong>Project Name:</strong> ${project.value.name || 'n/a'}</p>
-    </div>
-    <${RenderRegion} />
-    <div class="language-locale-container">
-      <${RenderLanguage} />
-      ${selectedLocale.length > 0
-      && html`
-        <div class="locale-grid">
-          <p>Selected Locales</p>
-          <div class="locale-container">${RenderLocales()}</div>
+  <div class="locui-form-container">
+    <div class="locui-input-form-area ">
+    <div class="locui-form-body">
+        <div>
+          <h2 class="locui-project-type">${project.value.type === PROJECT_TYPES.translation ? 'Translate' : 'Rollout'}</h2>
+          <p class="locui-project-name">Project Name: <strong>${project.value.name || 'n/a'}</strong></p>
         </div>
-      `}
+        <${RenderRegion} />
+        <div class="language-locale-container">
+          <${RenderLanguage} />
+          ${project.value.type !== PROJECT_TYPES.translation && selectedLocale.length > 0
+          && html`
+            <div class="locale-grid">
+              <h5 class="section-header">Selected Locales</h5>
+              <div class="locale-container">${RenderLocales()}</div>
+            </div>
+          `}
+        </div>
+      </div>
     </div>
-    <${StepControls}
-      backDisabled=${false}
-      nextDisabled=${!errorPresent()}
-      onNext=${handleNext}
-      onBack=${handleBack}
-    />
+    ${apiError
+      && html`<${Toast}
+        message=${apiError}
+        type="error"
+        onClose=${() => setApiError('')}
+      />`}
+    <div>
+      <${StepControls}
+        backDisabled=${false}
+        nextDisabled=${!errorPresent()}
+        onNext=${handleNext}
+        onBack=${handleBack}
+      />
+    </div>
+  </div>
   `;
 }

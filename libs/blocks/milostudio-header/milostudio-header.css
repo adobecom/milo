@@ -1,0 +1,30 @@
+.milostudio-header-container {
+  display: flex;
+  padding: 1.5rem 1rem;
+}
+
+.milostudio-header-link {
+  display: flex;
+}
+
+.milostudio-header-link:hover {
+  text-decoration: none;
+  cursor: pointer;
+} 
+
+.milostudio-header-logo {
+  background: url('./img/logo-4f4133ca.svg');
+  width: 40px;
+  text-indent: -1000px;
+  overflow: hidden;
+  display: block;
+  background-repeat: no-repeat;
+  margin-left: 10px;
+}
+
+.milostudio-header-title {
+  font-weight: 700;
+  color: rgb(211, 21, 16);
+  font-size: 18px;
+  font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
+}
