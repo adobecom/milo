@@ -496,27 +496,31 @@ export const loadAnalyticsAndInteractionData = async (
     };
     window.dispatchEvent(new CustomEvent('alloy_sendEvent', { detail: alloyData }));
 
-    if (alloyData && alloyData.destinations) {
-      const xlgKey = 'data._adobe_corpnew.digitalData.adobe.xlg';
-      if (!window?.alloy_all) {
-        window.alloy_all = {};
-      }
+    const get = (obj, path) => path.split('.').reduce((current, segment) => (current !== undefined && current !== null ? current[segment] : undefined), obj);
+
+    const set = (obj, path, val) => {
+      path.split('.').reduce((current, segment, index, segments) => {
+        if (index === segments.length - 1) current[segment] = val;
+        else current[segment] = current[segment] || {};
+        return current[segment];
+      }, obj);
+
+      return obj;
+    };
+    window.alloy_all = window.alloy_all || { get, set };
+    if (alloyData?.destinations) {
+      const xlgValue = 'data._adobe_corpnew.digitalData.adobe.xlg';
+      const existingXlg = window.alloy_all.get(window.alloy_all, xlgValue) || '';
+      const xlgIds = existingXlg ? new Set(existingXlg.split(',')) : new Set();
+
       for (const destination of alloyData.destinations) {
         for (const segment of destination.segments) {
-          const currentXlgValue = window?.alloy_all?.get?.(xlgKey) || '';
-
-          // Check if segment ID is already in xlg or if xlg is not set
-          if (!currentXlgValue.split(',').includes(segment.id)) {
-            window?.alloy_all?.set(xlgKey, `${segment.id},${currentXlgValue}`);
-          }
+          const segmentId = segment.id;
+          if (!xlgIds.has(segmentId)) xlgIds.add(segmentId);
         }
       }
-
-      // Remove trailing comma if present
-      const finalXlgValue = window?.alloy_all?.get?.(xlgKey);
-      if (finalXlgValue && finalXlgValue.endsWith(',')) {
-        window?.alloy_all?.set(xlgKey, finalXlgValue.slice(0, -1));
-      }
+      const updatedXlg = Array.from(xlgIds).join(',');
+      window.alloy_all.set(window.alloy_all, xlgValue, updatedXlg);
     }
 
     if (resultPayload?.length === 0) throw new Error('No propositions found');
