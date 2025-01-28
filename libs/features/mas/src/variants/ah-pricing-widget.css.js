@@ -77,7 +77,7 @@ export const CSS = `
     }
 
     .spectrum--dark merch-card[variant="ah-pricing-widget"][background-color='gray']{
-      --merch-card-ah-pricing-widget-gray-background: rgb(17, 17, 17);
+      --merch-card-ah-pricing-widget-gray-background: rgb(27, 27, 27);
     }
 
     .spectrum--dark merch-card[variant="ah-pricing-widget"] {

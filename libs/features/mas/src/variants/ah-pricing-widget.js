@@ -10,7 +10,7 @@ const AEM_FRAGMENT_MAPPING = {
   ctas: { slot: 'cta', size: 'S' },
   backgroundImage: { tag: 'div', slot: 'image' },
   allowedColors: ['gray'],
-  allowedSizes: ['single', 'double']
+  size: ['single', 'double']
 };
 
 export class AHPricingWidget extends VariantLayout {

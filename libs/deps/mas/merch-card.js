@@ -1767,7 +1767,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
     }
 
     .spectrum--dark merch-card[variant="ah-pricing-widget"][background-color='gray']{
-      --merch-card-ah-pricing-widget-gray-background: rgb(17, 17, 17);
+      --merch-card-ah-pricing-widget-gray-background: rgb(27, 27, 27);
     }
 
     .spectrum--dark merch-card[variant="ah-pricing-widget"] {
@@ -1779,7 +1779,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
     .spectrum--dark  merch-card[variant="ah-pricing-widget"]:hover {
       --consonant-merch-card-border-color:rgb(73, 73, 73);
     }
-`;var $o={mnemonics:{size:"s"},title:{tag:"h3",slot:"heading-xxxs",maxCount:40},description:{tag:"div",slot:"body-xxs",maxCount:200},prices:{tag:"p",slot:"price"},ctas:{slot:"cta",size:"S"},backgroundImage:{tag:"div",slot:"image"},allowedColors:["gray"],allowedSizes:["single","double"]},q=class extends w{getGlobalCSS(){return Vr}get aemFragmentMapping(){return $o}renderLayout(){return jr`
+`;var $o={mnemonics:{size:"s"},title:{tag:"h3",slot:"heading-xxxs",maxCount:40},description:{tag:"div",slot:"body-xxs",maxCount:200},prices:{tag:"p",slot:"price"},ctas:{slot:"cta",size:"S"},backgroundImage:{tag:"div",slot:"image"},allowedColors:["gray"],size:["single","double"]},q=class extends w{getGlobalCSS(){return Vr}get aemFragmentMapping(){return $o}renderLayout(){return jr`
       <div class="content">
         <div class="header">
     		    <slot name="icons"></slot>
