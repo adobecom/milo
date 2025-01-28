@@ -21,44 +21,44 @@ export const CSS = `
         display: inline-block;
         height: var(--consonant-merch-card-detail-xl-line-height);
         line-height: var(--consonant-merch-card-detail-xl-line-height);
+        font-style: normal;
+        margin-top: 4px;
     }
 
-    merch-card[variant="ah-pricing-widget"] [slot="price"] .price-integer,
-    merch-card[variant="ah-pricing-widget"] [slot="price"] .price-decimals-delimiter,
-    merch-card[variant="ah-pricing-widget"] [slot="price"] .price-decimals {
+    merch-card[variant="ah-pricing-widget"] [slot="price"] .price.price-strikethrough {
+        height: var(--consonant-merch-card-detail-l-line-height);
+        line-height: var(--consonant-merch-card-detail-l-line-height);
+        font-size: var(--consonant-merch-card-body-xxs-font-size);
+        color: var(--ah-gray-500);
+    }
+
+    merch-card[variant="ah-pricing-widget"] [slot="price"] .price:not(.price-strikethrough) .price-currency-symbol,
+    merch-card[variant="ah-pricing-widget"] [slot="price"] .price:not(.price-strikethrough) .price-integer,
+    merch-card[variant="ah-pricing-widget"] [slot="price"] .price:not(.price-strikethrough) .price-decimals-delimiter,
+    merch-card[variant="ah-pricing-widget"] [slot="price"] .price:not(.price-strikethrough) .price-decimals {
         color: var(--consonant-merch-card-heading-xxxs-color);
         font-size: var(--consonant-merch-card-heading-xs-font-size);
         font-weight: 700;
     }
 
-    merch-card[variant="ah-pricing-widget"] [slot="price"] .price-currency-symbol {
-        vertical-align: top;
-        line-height: var(--consonant-merch-card-detail-l-line-height);
-        display: inline-block;
-        width: 20px;
-        text-align: start;
-    }
-
-    merch-card[variant="ah-pricing-widget"] [slot="price"] .price-recurrence{
+    merch-card[variant="ah-pricing-widget"] [slot="price"] .price:not(.price-strikethrough) .price-recurrence {
         display: inline-block;
         width: 21px;
         text-align: end;
+        font-size: var(--consonant-merch-card-body-xxs-font-size);
+        color: var(--consonant-merch-card-body-xxs-color);
+        font-weight: 400;
     }
-
-    merch-card[variant="ah-pricing-widget"] [slot="price"] .price-currency-symbol,
-    merch-card[variant="ah-pricing-widget"] [slot="price"] .price-recurrence {
-      font-size: var(--consonant-merch-card-body-xxs-font-size);
-      color: var(--consonant-merch-card-body-xxs-color);
-      font-weight: 400;
-  }
 
     merch-card[variant="ah-pricing-widget"] [slot="price"] a {
         color: var(--consonant-merch-card-body-xxs-color);
         font-size: var(--consonant-merch-card-body-xxs-font-size);
+        font-style: normal;
         line-height: var(--consonant-merch-card-body-xxs-line-height);
         text-decoration-thickness: .75px;
         text-underline-offset: 1px;
         width: fit-content;
+        margin-top: 4px;
     }
 
     merch-card[variant="ah-pricing-widget"] [slot='image'] img {

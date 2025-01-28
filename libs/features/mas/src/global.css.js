@@ -49,7 +49,7 @@ styles.innerHTML = `
     --consonant-merch-card-detail-m-line-height: 15px;
     --consonant-merch-card-detail-m-font-weight: 700;
     --consonant-merch-card-detail-m-letter-spacing: 1px;
-    --consonant-merch-card-detail-l-line-height: 19px;
+    --consonant-merch-card-detail-l-line-height: 18px;
     --consonant-merch-card-detail-xl-line-height: 23px;
 
     /* body */
@@ -99,7 +99,8 @@ styles.innerHTML = `
     --ccd-gray-700-dark: #464646;
     --ccd-gray-600-light: #6D6D6D;
 
-    
+    /* ah colors */
+    --ah-gray-500: #717171;
   
     /* merch card generic */
     --consonant-merch-card-max-width: 300px;

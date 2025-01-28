@@ -44,6 +44,7 @@ export class AHPricingWidget extends VariantLayout {
   static variantStyle = css`
     :host([variant='ah-pricing-widget']) {
         --merch-card-ah-pricing-widget-width: 132px;
+        --merch-card-ah-pricing-widget-min-width: 132px;
         --merch-card-ah-pricing-widget-content-max-width: 245px;
         --merch-card-ah-pricing-widget-height: 206px;
         --merch-card-ah-pricing-widget-header-min-height: 36px;
@@ -51,6 +52,7 @@ export class AHPricingWidget extends VariantLayout {
         --merch-card-ah-pricing-widget-text-color: rgba(19, 19, 19);
         --merch-card-ah-pricing-widget-price-line-height: 17px;
         width: var(--merch-card-ah-pricing-widget-width);
+        min-width: var(--merch-card-ah-pricing-widget-min-width);
         min-height: var(--merch-card-ah-pricing-widget-height);
         background-color: var(--consonant-merch-card-background-color);
         color: var(--consonant-merch-card-heading-xxxs-color);
@@ -99,9 +101,9 @@ export class AHPricingWidget extends VariantLayout {
         flex-grow: 1;
         justify-content: end;
         font-size: var(--consonant-merch-card-detail-s-font-size);
+        font-style: italic;
         line-height: var(--merch-card-ah-pricing-widget-price-line-height);
         color: var(--consonant-merch-card-heading-xxxs-color);
-        gap: 4px;
     }
 
     :host([variant='ah-pricing-widget']) .footer {
