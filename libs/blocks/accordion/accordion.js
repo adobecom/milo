@@ -36,18 +36,18 @@ function pauseVideo(video) {
   pauseBtn.click();
 }
 
-function openPanel(el, dd) {
-  const analyticsValue = el.getAttribute('daa-ll');
-  el.setAttribute('aria-expanded', 'true');
-  el.setAttribute('daa-ll', analyticsValue.replace(/open-/, 'close-'));
-  dd.removeAttribute('hidden');
+function openPanel(btn, panel) {
+  const analyticsValue = btn.getAttribute('daa-ll');
+  btn.setAttribute('aria-expanded', 'true');
+  btn.setAttribute('daa-ll', analyticsValue.replace(/open-/, 'close-'));
+  panel.removeAttribute('hidden');
 }
 
-function closePanel(el, dd) {
-  const analyticsValue = el.getAttribute('daa-ll');
-  el.setAttribute('aria-expanded', 'false');
-  el.setAttribute('daa-ll', analyticsValue.replace(/close-/, 'open-'));
-  dd.setAttribute('hidden', '');
+function closePanel(btn, panel) {
+  const analyticsValue = btn.getAttribute('daa-ll');
+  btn.setAttribute('aria-expanded', 'false');
+  btn.setAttribute('daa-ll', analyticsValue.replace(/close-/, 'open-'));
+  panel.setAttribute('hidden', '');
 }
 
 function displayMedia(displayArea, el, dd, clickedId, expanded) {
