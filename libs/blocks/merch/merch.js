@@ -726,7 +726,8 @@ export async function buildCta(el, params) {
   if (!cta.getAttribute('aria-label')) {
     cta.onceSettled().finally(async () => {
       const productFamily = cta.value[0]?.productArrangement?.productFamily;
-      const customerSegment = cta.value[0]?.customerSegment;
+      const marketSegment = cta.value[0]?.marketSegments[0];
+      const customerSegment = marketSegment === 'EDU' ? marketSegment : cta.value[0]?.customerSegment;
       let ariaLabel = cta.textContent;
       ariaLabel = productFamily ? `${ariaLabel} - ${await replaceKey(productFamily, getConfig())}` : ariaLabel;
       ariaLabel = customerSegment ? `${ariaLabel} - ${await replaceKey(customerSegment, getConfig())}` : ariaLabel;
