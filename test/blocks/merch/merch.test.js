@@ -27,6 +27,7 @@ import merch, {
   reopenModal,
   setCtaHash,
   openModal,
+  handleHashChange,
 } from '../../../libs/blocks/merch/merch.js';
 
 import { mockFetch, unmockFetch, readMockText } from './mocks/fetch.js';
@@ -75,6 +76,14 @@ const CHECKOUT_LINK_CONFIGS = {
   {
     PRODUCT_FAMILY: 'testProductCode',
     DOWNLOAD_TEXT: 'productCode',
+  },
+  {
+    PRODUCT_FAMILY: 'AUDITION',
+    DOWNLOAD_TEXT: 'Download',
+    DOWNLOAD_URL: 'https://creativecloud.adobe.com/apps/download/audition',
+    FREE_TRIAL_PATH: 'https://www.adobe.com/mini-plans/audition.html?mid=ft&web=1',
+    BUY_NOW_PATH: 'www.adobe.com/will/not/be/localized.html',
+    LOCALE: '',
   },
   ],
 };
@@ -463,6 +472,35 @@ describe('Merch Block', () => {
     });
   });
 
+  describe('function "handleHashChange"', () => {
+    afterEach(() => {
+      document.querySelector('.dialog-modal')?.remove();
+      document.querySelector('.con-button')?.remove();
+    });
+
+    it('reopen modal after hash change', () => {
+      const cta = document.createElement('a');
+      cta.classList.add('con-button');
+      cta.setAttribute('data-modal-id', 'try-phsp');
+      const clickSpy = sinon.spy(cta, 'click');
+      document.body.append(cta);
+      window.location.hash = 'try-phsp';
+
+      handleHashChange();
+      expect(clickSpy.called).to.be.true;
+      window.location.hash = '';
+    });
+
+    it('close modal after hash change', () => {
+      const div = document.createElement('div');
+      div.classList.add('dialog-modal');
+      div.setAttribute('id', 'try-phsp');
+      document.body.append(div);
+
+      handleHashChange();
+    });
+  });
+
   describe('function "buildCta"', () => {
     it('returns null if context params do not have osi', async () => {
       const el = document.createElement('a');
@@ -486,8 +524,7 @@ describe('Merch Block', () => {
     describe('openModal', () => {
       it('sets the new hash and event listener to restore the hash on close', async () => {
         const prevHash = window.location.hash;
-        const event = new CustomEvent('dummy');
-        await openModal(event, 'https://www.adobe.com/mini-plans/creativecloud.html?mid=ft&web=1', 'TRIAL', 'try-photoshop');
+        await openModal(new CustomEvent('test'), 'https://www.adobe.com/mini-plans/creativecloud.html?mid=ft&web=1', 'TRIAL', 'try-photoshop');
         expect(window.location.hash).to.equal('#try-photoshop');
         const modalCloseEvent = new CustomEvent('milo:modal:closed');
         window.dispatchEvent(modalCloseEvent);
@@ -707,6 +744,34 @@ describe('Merch Block', () => {
       expect(action).to.be.undefined;
     });
 
+    it('getModalAction: localize buy now path if it comes from us/en production', async () => {
+      setConfig({
+        ...config,
+        pathname: '/fr/test.html',
+        locales: { fr: { ietf: 'fr-FR' } },
+        prodDomains: PROD_DOMAINS,
+        placeholders: { download: 'Télécharger' },
+      });
+      fetchCheckoutLinkConfigs.promise = undefined;
+      setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
+      const action = await getModalAction([{ productArrangement: { productFamily: 'ILLUSTRATOR' } }], { modal: true });
+      expect(action.url).to.equal('https://www.adobe.com/fr/plans-fragments/modals/individual/modals-content-rich/illustrator/master.modal.html');
+    });
+
+    it('getModalAction: skip modal url localization if url is invalid', async () => {
+      setConfig({
+        ...config,
+        pathname: '/fr/test.html',
+        locales: { fr: { ietf: 'fr-FR' } },
+        prodDomains: PROD_DOMAINS,
+        placeholders: { download: 'Télécharger' },
+      });
+      fetchCheckoutLinkConfigs.promise = undefined;
+      setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
+      const action = await getModalAction([{ productArrangement: { productFamily: 'AUDITION' } }], { modal: true });
+      expect(action.url).to.equal('www.adobe.com/will/not/be/localized.html');
+    });
+
     it('getModalAction: returns undefined if checkout-link config is not found', async () => {
       fetchCheckoutLinkConfigs.promise = undefined;
       setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
@@ -871,21 +936,6 @@ describe('Merch Block', () => {
         const wcsLocale = getMiloLocaleSettings({ prefix }).locale;
         expect(wcsLocale).to.be.equal(expectedLocale);
       });
-    });
-  });
-
-  describe('AU resources', () => {
-    it('Load AU styles', async () => {
-      setConfig({
-        ...config,
-        pathname: '/au/test.html',
-        locales: { au: { ietf: 'en-AU' } },
-        prodDomains: PROD_DOMAINS,
-        placeholders: { download: 'Download' },
-        locale: { prefix: '/au' },
-      });
-      await mockIms('AU');
-      await initService(true);
     });
   });
 });

@@ -5,38 +5,28 @@
     <meta charset="UTF-8">
     <title>M@S Web Components</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <script type="module" src="../../../deps/custom-elements.js"></script>
+    <link rel="stylesheet" href="spectrum.css">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
   
-  <script>
-    if (/localhost/.test(window.location.host)) {
-      const meta = document.createElement('meta');
-      meta.name = 'aem-base-url';
-      meta.content = 'http://localhost:8080'; // local AEM proxy URL
-      document.head.appendChild(meta);
-      }
-  </script>
   <!-- Include your custom element script as an ES6 module -->
-  <script src="../../../features/spectrum-web-components/dist/theme.js" type="module"></script>
-  <script src="../../../features/spectrum-web-components/dist/button.js" type="module"></script>
-  <script type="module" src="../../../deps/mas/mas.js"></script>
-
   <script type="module">
-    const params = new URLSearchParams(document.location.search);
-    const masCommerceService = document.createElement('mas-commerce-service');
-    ['locale','language','env'].forEach((attribute) => {
-      const value = params.get(attribute);
-      if (value) masCommerceService.setAttribute(attribute, value);
-    });
-    document.head.appendChild(masCommerceService);
+    import { init } from './common.js';
+    init();
   </script>
-  <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
   <!-- Include Highlight.js stylesheet for syntax highlighting -->
-  <link rel="stylesheet" href="../../../styles/styles.css">
   <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
-  <!-- Include any additional stylesheets -->
-  <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+<body class="spectrum spectrum--medium spectrum--light">
+<aside class="sidenav">
+    <a href="/libs/features/mas/docs/mas.html">Home</a>
+    <a href="/libs/features/mas/docs/mas.js.html">mas.js</a>
+    <a href="/libs/features/mas/docs/checkout-link.html">Checkout Link</a>
+    <a href="/libs/features/mas/docs/inline-price.html">Inline Price</a>
+    <a href="/libs/features/mas/docs/merch-card.html">Merch Card</a>
+    <a href="/libs/features/mas/docs/ccd.html">CCD Gallery</a>
+    <a href="/libs/features/mas/docs/benchmarks.html">Benchmarks</a>
+</aside>
 <main>
 <sp-theme color="light" scale="medium">
 <h1 id="merch-at-scale-(mas)" tabindex="-1">Merch At Scale (MAS) <a class="header-anchor" href="#merch-at-scale-(mas)" href="#merch-at-scale-(mas)" title="Permalink to this heading">#</a></h1>
@@ -75,7 +65,7 @@
 </ul>
 </li>
 <li>
-<p><strong>mas.js</strong>: A JavaScript library to enable “4” on any page. <a href="/libs/features/mas/docs/mas.js.html" class="con-button blue">mas.js documentation</a></p>
+<p><strong>mas.js</strong>: A JavaScript library to enable “4” on any page. <a href="/libs/features/mas/docs/mas.js.html" class="con-button primary-link">mas.js documentation</a></p>
 </li>
 </ol>
 <h2 id="terminology" tabindex="-1">Terminology <a class="header-anchor" href="#terminology" href="#terminology" title="Permalink to this heading">#</a></h2>
@@ -93,6 +83,16 @@
 <li>Web Components and mas.js are used to implement the commerce functionality.</li>
 <li>WCS provides the necessary commerce data through its APIs.</li>
 </ol>
+<h2 id="analytics" tabindex="-1">Analytics <a class="header-anchor" href="#analytics" href="#analytics" title="Permalink to this heading">#</a></h2>
+<p>For analytics purposes, every <code>&lt;merch-card&gt;</code> tag can be tagged with ‘PRODUCT_CODE’ tag in Studio. When <code>PRODUCT_CODE</code> tag is present on the card, <code>&lt;merch-card&gt;</code> will reflect the tag value in the ‘daa-lh’ attribute. It is a non-translatable, human-readable card id.
+To set a non-translatable, human-readable id on link - open Link editor in Studio and select the value from the dropdown.
+Once value is set, every link will have 2 attributes:</p>
+<ul>
+<li>data-analytics-id - the value set in studio, without changes e.g. ‘buy-now’</li>
+<li>daa-ll - the value set in studio + position of the link within the card, e.g. ‘free-trial-1’, ‘buy-now-2’</li>
+</ul>
+<p>Example: if you have 5 cards with buy-now cta on your page, you can take a combination of merch-card daa-lh and link daa-ll:
+${daa-lh}–${daa-ll}: will result in ‘phlt–buy-now-2’.</p>
 
 </sp-theme>
 </main>

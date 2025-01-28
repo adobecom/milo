@@ -1,3 +1,4 @@
+/* eslint-disable default-param-last */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-console */
 
@@ -7,6 +8,7 @@ import { getFederatedUrl } from '../../utils/federated.js';
 /* c8 ignore start */
 const PHONE_SIZE = window.screen.width < 550 || window.screen.height < 550;
 const safariIpad = navigator.userAgent.includes('Macintosh') && navigator.maxTouchPoints > 1;
+export const US_GEO = 'en-us';
 export const PERSONALIZATION_TAGS = {
   all: () => true,
   chrome: () => navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Edg'),
@@ -55,7 +57,7 @@ const MANIFEST_KEYS = [
   'page filter optional',
 ];
 
-const DATA_TYPE = {
+export const DATA_TYPE = {
   JSON: 'json',
   TEXT: 'text',
 };
@@ -227,7 +229,7 @@ const log = (...msg) => {
   if (config.mep?.preview) console.log(...msg);
 };
 
-const fetchData = async (url, type = DATA_TYPE.JSON) => {
+export const fetchData = async (url, type = DATA_TYPE.JSON) => {
   try {
     const resp = await fetch(normalizePath(url));
     if (!resp.ok) {
@@ -467,7 +469,7 @@ function getSelectedElements(sel, rootEl, forceRootEl) {
   try {
     els = root.querySelectorAll(modifiedSelector);
   } catch (e) {
-  /* eslint-disable-next-line no-console */
+    /* eslint-disable-next-line no-console */
     log('Invalid selector: ', selector);
     return null;
   }
@@ -515,7 +517,7 @@ export function handleCommands(
   const section1 = document.querySelector('main > div');
   commands.forEach((cmd) => {
     const { action, content, selector } = cmd;
-    cmd.content = forceInline ? addHash(content, INLINE_HASH) : content;
+    cmd.content = forceInline && getSelectorType(content) === 'fragment' ? addHash(content, INLINE_HASH) : content;
     if (selector.startsWith(IN_BLOCK_SELECTOR_PREFIX)) {
       registerInBlockActions(cmd);
       cmd.selectorType = IN_BLOCK_SELECTOR_PREFIX;
@@ -659,7 +661,7 @@ export async function createMartechMetadata(placeholders, config, column) {
 
     placeholders.forEach((item, i) => {
       const firstRow = placeholders[i];
-      let usValue = firstRow['en-us'] || firstRow.us || firstRow.en || firstRow.key;
+      let usValue = firstRow[US_GEO] || firstRow.us || firstRow.en || firstRow.key;
 
       if (!usValue) return;
 
@@ -675,7 +677,7 @@ export function parsePlaceholders(placeholders, config, selectedVariantName = ''
   if (!placeholders?.length || selectedVariantName === 'default') return config;
   const valueNames = [
     selectedVariantName.toLowerCase(),
-    config.mep?.geoPrefix,
+    config.mep?.prefix,
     config.locale.region.toLowerCase(),
     config.locale.ietf.toLowerCase(),
     ...config.locale.ietf.toLowerCase().split('-'),
@@ -760,7 +762,11 @@ export const getEntitlements = async (data) => {
   });
 };
 
-async function getPersonalizationVariant(manifestPath, variantNames = [], variantLabel = null) {
+async function getPersonalizationVariant(
+  manifestPath,
+  variantNames = [],
+  variantLabel = null,
+) {
   const config = getConfig();
   if (config.mep?.variantOverride?.[manifestPath]) {
     return config.mep.variantOverride[manifestPath];
@@ -773,7 +779,11 @@ async function getPersonalizationVariant(manifestPath, variantNames = [], varian
 
   let userEntitlements = [];
   if (hasEntitlementTag) {
-    userEntitlements = await config.entitlements();
+    if (config?.mep?.enablePersV2) {
+      userEntitlements = [];
+    } else {
+      userEntitlements = await config.entitlements();
+    }
   }
 
   const hasMatch = (name) => {
@@ -807,6 +817,7 @@ const createDefaultExperiment = (manifest) => ({
   selectedVariantName: 'default',
   variantNames: ['all'],
   variants: {},
+  source: ['promo'],
 });
 
 export const addMepAnalytics = (config, header) => {
@@ -837,6 +848,7 @@ export async function getManifestConfig(info = {}, variantOverride = false) {
     variantLabel,
     disabled,
     event,
+    source,
   } = info;
   if (disabled && (!variantOverride || !Object.keys(variantOverride).length)) {
     return createDefaultExperiment(info);
@@ -869,8 +881,10 @@ export async function getManifestConfig(info = {}, variantOverride = false) {
   };
   if (infoTab) {
     manifestConfig.manifestType = infoObj?.['manifest-type']?.toLowerCase();
-    if (manifestOverrideName && manifestConfig.manifestType === TRACKED_MANIFEST_TYPE) {
+    if (manifestConfig.manifestType === TRACKED_MANIFEST_TYPE) {
       manifestConfig.manifestOverrideName = manifestOverrideName;
+      const analytics = manifestOverrideName || getFileName(manifestPath).replace('.json', '');
+      manifestConfig.analyticsTitle = analytics.trim().slice(0, 15);
     }
     const executionOrder = {
       'manifest-type': 1,
@@ -901,6 +915,7 @@ export async function getManifestConfig(info = {}, variantOverride = false) {
   manifestConfig.manifestUrl = manifestUrl;
   manifestConfig.disabled = disabled;
   manifestConfig.event = event;
+  if (source?.length) manifestConfig.source = source;
   return manifestConfig;
 }
 
@@ -971,6 +986,7 @@ export function cleanAndSortManifestList(manifests) {
           fullManifest = manifest;
           freshManifest = manifestObj[manifest.manifestPath];
         }
+        freshManifest.source = freshManifest.source.concat(fullManifest.source);
         freshManifest.name = fullManifest.name;
         freshManifest.selectedVariantName = fullManifest.selectedVariantName;
         freshManifest.selectedVariant = freshManifest.variants[freshManifest.selectedVariantName];
@@ -1027,12 +1043,15 @@ export function parseNestedPlaceholders({ placeholders }) {
   });
 }
 
-export async function applyPers(manifests) {
+export async function applyPers({ manifests }) {
   if (!manifests?.length) return;
   let experiments = manifests;
   const config = getConfig();
   for (let i = 0; i < experiments.length; i += 1) {
-    experiments[i] = await getManifestConfig(experiments[i], config.mep?.variantOverride);
+    experiments[i] = await getManifestConfig(
+      experiments[i],
+      config.mep?.variantOverride,
+    );
   }
 
   experiments = cleanAndSortManifestList(experiments);
@@ -1067,10 +1086,7 @@ export async function applyPers(manifests) {
     const val = r.experiment.selectedVariantName.replace(TARGET_EXP_PREFIX, '').trim().slice(0, 15);
     return val === 'default' ? 'nopzn' : val;
   });
-  const pznManifests = pznList.map((r) => {
-    const val = r.experiment?.manifestOverrideName || r.experiment?.manifest;
-    return getFileName(val).replace('.json', '').trim().slice(0, 15);
-  });
+  const pznManifests = pznList.map((r) => r.experiment.analyticsTitle);
   config.mep.martech = `|${pznVariants.join('--')}|${pznManifests.join('--')}`;
 }
 
@@ -1081,7 +1097,7 @@ export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => 
     persManifests = persEnabled.toLowerCase()
       .split(/,|(\s+)|(\\n)/g)
       .filter((path) => path?.trim())
-      .map((manifestPath) => ({ manifestPath }));
+      .map((manifestPath) => ({ manifestPath, source: ['pzn'] }));
   }
 
   if (promoEnabled) {
@@ -1104,18 +1120,27 @@ export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => 
     mepParam.split('---').forEach((manifestPair) => {
       const manifestPath = manifestPair.trim().toLowerCase().split('--')[0];
       if (!persManifestPaths.includes(manifestPath)) {
-        persManifests.push({ manifestPath });
+        persManifests.push({ manifestPath, source: ['mep param'] });
       }
     });
   }
   return persManifests;
 };
 
-async function callMartech(config) {
-  const { getTargetPersonalization } = await import('../../martech/martech.js');
-  const { targetManifests, targetPropositions } = await getTargetPersonalization();
+async function updateManifestsAndPropositions(
+  { config, targetManifests, targetPropositions },
+) {
+  targetManifests.forEach((manifest) => {
+    manifest.source = ['target'];
+  });
   config.mep.targetManifests = targetManifests;
-  if (targetPropositions?.length && window._satellite) {
+  if (config?.mep?.enablePersV2) {
+    window.addEventListener('alloy_sendEvent', () => {
+      if (targetPropositions?.length && window._satellite) {
+        window._satellite.track('propositionDisplay', targetPropositions);
+      }
+    }, { once: true });
+  } else if (targetPropositions?.length && window._satellite) {
     window._satellite.track('propositionDisplay', targetPropositions);
   }
   if (config.mep.targetEnabled === 'postlcp') {
@@ -1124,6 +1149,98 @@ async function callMartech(config) {
   }
   return targetManifests;
 }
+
+function roundToQuarter(num) {
+  return Math.ceil(num / 250) / 4;
+}
+
+function calculateResponseTime(responseStart) {
+  const responseTime = Date.now() - responseStart;
+  return roundToQuarter(responseTime);
+}
+
+function sendTargetResponseAnalytics(failure, responseStart, timeoutLocal, message) {
+  // temporary solution until we can decide on a better timeout value
+  const responseTime = calculateResponseTime(responseStart);
+  const timeoutTime = roundToQuarter(timeoutLocal);
+  let val = `target response time ${responseTime}:timed out ${failure}:timeout ${timeoutTime}`;
+  if (message) val += `:${message}`;
+  // eslint-disable-next-line no-underscore-dangle
+  window._satellite?.track?.('event', {
+    documentUnloading: true,
+    xdm: {
+      eventType: 'web.webinteraction.linkClicks',
+      web: {
+        webInteraction: {
+          linkClicks: { value: 1 },
+          type: 'other',
+          name: val,
+        },
+      },
+    },
+    data: { _adobe_corpnew: { digitalData: { primaryEvent: { eventInfo: { eventName: val } } } } },
+  });
+}
+
+const handleAlloyResponse = (response) => ((response.propositions || response.decisions))
+  ?.map((i) => i.items)
+  ?.flat()
+  ?.map((item) => {
+    const content = item?.data?.content;
+    if (!content || !(content.manifestLocation || content.manifestContent)) return null;
+
+    return {
+      manifestPath: content.manifestLocation || content.manifestPath,
+      manifestUrl: content.manifestLocation,
+      manifestData: content.manifestContent?.experiences?.data || content.manifestContent?.data,
+      manifestPlaceholders: content.manifestContent?.placeholders?.data,
+      manifestInfo: content.manifestContent?.info.data,
+      name: item.meta['activity.name'],
+      variantLabel: item.meta['experience.name'] && `target-${item.meta['experience.name']}`,
+      meta: item.meta,
+    };
+  })
+  ?.filter(Boolean) ?? [];
+
+async function handleMartechTargetInteraction(
+  { config, targetInteractionPromise, calculatedTimeout },
+) {
+  let targetManifests = [];
+  let targetPropositions = [];
+  if (config?.mep?.enablePersV2 && targetInteractionPromise) {
+    const { targetInteractionData, respTime, respStartTime } = await targetInteractionPromise;
+    sendTargetResponseAnalytics(false, respStartTime, calculatedTimeout);
+    if (targetInteractionData.result) {
+      const roundedResponseTime = roundToQuarter(respTime);
+      performance.clearMarks();
+      performance.clearMeasures();
+      try {
+        window.lana.log(`target response time: ${roundedResponseTime}`, { tags: 'martech', errorType: 'i' });
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error('Error logging target response time:', e);
+      }
+      targetManifests = handleAlloyResponse(targetInteractionData.result);
+      targetPropositions = targetInteractionData.result?.propositions || [];
+    }
+  }
+
+  return updateManifestsAndPropositions(
+    { config, targetManifests, targetPropositions },
+  );
+}
+
+async function callMartech(config) {
+  const { getTargetPersonalization } = await import('../../martech/martech.js');
+  const {
+    targetManifests,
+    targetPropositions,
+  } = await getTargetPersonalization({ handleAlloyResponse, sendTargetResponseAnalytics });
+  return updateManifestsAndPropositions(
+    { config, targetManifests, targetPropositions },
+  );
+}
+
 const awaitMartech = () => new Promise((resolve) => {
   const listener = (event) => resolve(event.detail);
   window.addEventListener(MARTECH_RETURNED_EVENT, listener, { once: true });
@@ -1132,7 +1249,8 @@ const awaitMartech = () => new Promise((resolve) => {
 export async function init(enablements = {}) {
   let manifests = [];
   const {
-    mepParam, mepHighlight, mepButton, pzn, promo, target, postLCP,
+    mepParam, mepHighlight, mepButton, pzn, promo, enablePersV2,
+    target, targetInteractionPromise, calculatedTimeout, postLCP,
   } = enablements;
   const config = getConfig();
   if (postLCP) {
@@ -1146,7 +1264,8 @@ export async function init(enablements = {}) {
       highlight: (mepHighlight !== undefined && mepHighlight !== 'false'),
       targetEnabled: target,
       experiments: [],
-      geoPrefix: config.locale?.prefix.split('/')[1]?.toLowerCase() || 'en-us',
+      prefix: config.locale?.prefix.split('/')[1]?.toLowerCase() || US_GEO,
+      enablePersV2,
     };
     manifests = manifests.concat(await combineMepSources(pzn, promo, mepParam));
     manifests?.forEach((manifest) => {
@@ -1157,15 +1276,21 @@ export async function init(enablements = {}) {
     if (pzn) loadLink(getXLGListURL(config), { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
   }
 
-  if (target === true) manifests = manifests.concat(await callMartech(config));
-  if (target === 'postlcp') callMartech(config);
+  if (enablePersV2 && target === true) {
+    manifests = manifests.concat(await handleMartechTargetInteraction(
+      { config, targetInteractionPromise, calculatedTimeout },
+    ));
+  } else {
+    if (target === true) manifests = manifests.concat(await callMartech(config));
+    if (target === 'postlcp') callMartech(config);
+  }
   if (postLCP) {
     if (!config.mep.targetManifests) await awaitMartech();
     manifests = config.mep.targetManifests;
   }
-  if (!manifests || !manifests.length) return;
   try {
-    await applyPers(manifests);
+    if (manifests?.length) await applyPers({ manifests });
+    if (config.mep?.preview) await import('./preview.js').then(({ saveToMmm }) => saveToMmm());
   } catch (e) {
     log(`MEP Error: ${e.toString()}`);
     window.lana?.log(`MEP Error: ${e.toString()}`);

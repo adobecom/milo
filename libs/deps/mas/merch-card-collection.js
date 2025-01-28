@@ -1,4 +1,4 @@
-import{html as l,LitElement as N}from"../lit-all.min.js";var m=class{constructor(e,t){this.key=Symbol("match-media-key"),this.matches=!1,this.host=e,this.host.addController(this),this.media=window.matchMedia(t),this.matches=this.media.matches,this.onChange=this.onChange.bind(this),e.addController(this)}hostConnected(){var e;(e=this.media)==null||e.addEventListener("change",this.onChange)}hostDisconnected(){var e;(e=this.media)==null||e.removeEventListener("change",this.onChange)}onChange(e){this.matches!==e.matches&&(this.matches=e.matches,this.host.requestUpdate(this.key,!this.matches))}};var f="hashchange";function S(r=window.location.hash){let e=[],t=r.replace(/^#/,"").split("&");for(let o of t){let[i,c=""]=o.split("=");i&&e.push([i,decodeURIComponent(c.replace(/\+/g," "))])}return Object.fromEntries(e)}function p(r){let e=new URLSearchParams(window.location.hash.slice(1));Object.entries(r).forEach(([i,c])=>{c?e.set(i,c):e.delete(i)}),e.sort();let t=e.toString();if(t===window.location.hash)return;let o=window.scrollY||document.documentElement.scrollTop;window.location.hash=t,window.scrollTo(0,o)}function T(r){let e=()=>{if(window.location.hash&&!window.location.hash.includes("="))return;let t=S(window.location.hash);r(t)};return e(),window.addEventListener(f,e),()=>{window.removeEventListener(f,e)}}var x="merch-card-collection:sort",g="merch-card-collection:showmore";var C=(r,e={})=>{r.querySelectorAll("span[data-placeholder]").forEach(t=>{let{placeholder:o}=t.dataset;t.innerText=e[o]??""})};var _="(max-width: 1199px)",b="(min-width: 768px)",y="(min-width: 1200px)";import{css as A,unsafeCSS as w}from"../lit-all.min.js";var R=A`
+var N=Object.defineProperty;var y=(s,e,t)=>e in s?N(s,e,{enumerable:!0,configurable:!0,writable:!0,value:t}):s[e]=t;var E=(s,e,t)=>y(s,typeof e!="symbol"?e+"":e,t);import{html as c,LitElement as O}from"../lit-all.min.js";var f=class{constructor(e,t){this.key=Symbol("match-media-key"),this.matches=!1,this.host=e,this.host.addController(this),this.media=window.matchMedia(t),this.matches=this.media.matches,this.onChange=this.onChange.bind(this),e.addController(this)}hostConnected(){var e;(e=this.media)==null||e.addEventListener("change",this.onChange)}hostDisconnected(){var e;(e=this.media)==null||e.removeEventListener("change",this.onChange)}onChange(e){this.matches!==e.matches&&(this.matches=e.matches,this.host.requestUpdate(this.key,!this.matches))}};var T="hashchange";function L(s=window.location.hash){let e=[],t=s.replace(/^#/,"").split("&");for(let r of t){let[n,i=""]=r.split("=");n&&e.push([n,decodeURIComponent(i.replace(/\+/g," "))])}return Object.fromEntries(e)}function d(s){let e=new URLSearchParams(window.location.hash.slice(1));Object.entries(s).forEach(([n,i])=>{i?e.set(n,i):e.delete(n)}),e.sort();let t=e.toString();if(t===window.location.hash)return;let r=window.scrollY||document.documentElement.scrollTop;window.location.hash=t,window.scrollTo(0,r)}function x(s){let e=()=>{if(window.location.hash&&!window.location.hash.includes("="))return;let t=L(window.location.hash);s(t)};return e(),window.addEventListener(T,e),()=>{window.removeEventListener(T,e)}}var S="merch-card-collection:sort",g="merch-card-collection:showmore";var A="(max-width: 1199px)",R="(min-width: 768px)",C="(min-width: 1200px)";import{css as M,unsafeCSS as w}from"../lit-all.min.js";var b=M`
     #header,
     #resultText,
     #footer {
@@ -65,7 +65,7 @@ import{html as l,LitElement as N}from"../lit-all.min.js";var m=class{constructor
     }
 
     /* tablets */
-    @media screen and ${w(b)} {
+    @media screen and ${w(R)} {
         #header {
             grid-template-columns: 1fr fit-content(100%) fit-content(100%);
         }
@@ -84,7 +84,7 @@ import{html as l,LitElement as N}from"../lit-all.min.js";var m=class{constructor
     }
 
     /* Laptop */
-    @media screen and ${w(y)} {
+    @media screen and ${w(C)} {
         #resultText {
             grid-column: span 2;
             order: -3;
@@ -96,55 +96,55 @@ import{html as l,LitElement as N}from"../lit-all.min.js";var m=class{constructor
             justify-content: end;
         }
     }
-`;var d=(r,e)=>r.querySelector(`[slot="${e}"]`).textContent.trim();var M="merch-card-collection",n={alphabetical:"alphabetical",authored:"authored"},O={filters:["noResultText","resultText","resultsText"],mobile:["noSearchResultsMobileText","searchResultMobileText","searchResultsMobileText"],desktop:["noSearchResultsText","searchResultText","searchResultsText"]},v=(r,{filter:e})=>r.filter(t=>t.filters.hasOwnProperty(e)),L=(r,{types:e})=>e?(e=e.split(","),r.filter(t=>e.some(o=>t.types.includes(o)))):r,D=r=>r.sort((e,t)=>(e.title??"").localeCompare(t.title??"","en",{sensitivity:"base"})),H=(r,{filter:e})=>r.sort((t,o)=>o.filters[e]?.order==null||isNaN(o.filters[e]?.order)?-1:t.filters[e]?.order==null||isNaN(t.filters[e]?.order)?1:t.filters[e].order-o.filters[e].order),B=(r,{search:e})=>e?.length?(e=e.toLowerCase(),r.filter(t=>(t.title??"").toLowerCase().includes(e))):r,E=class extends N{static properties={filter:{type:String,attribute:"filter",reflect:!0},filtered:{type:String,attribute:"filtered"},search:{type:String,attribute:"search",reflect:!0},sort:{type:String,attribute:"sort",default:n.authored,reflect:!0},types:{type:String,attribute:"types",reflect:!0},limit:{type:Number,attribute:"limit"},page:{type:Number,attribute:"page",reflect:!0},singleApp:{type:String,attribute:"single-app",reflect:!0},hasMore:{type:Boolean},displayResult:{type:Boolean,attribute:"display-result"},resultCount:{type:Number},sidenav:{type:Object}};mobileAndTablet=new m(this,_);constructor(){super(),this.filter="all",this.hasMore=!1,this.resultCount=void 0,this.displayResult=!1}render(){return l`${this.header}
+`;var u=(s,e)=>s.querySelector(`[slot="${e}"]`)?.textContent?.trim();var D="merch-card-collection",a={alphabetical:"alphabetical",authored:"authored"},v={filters:["noResultText","resultText","resultsText"],mobile:["noSearchResultsMobileText","searchResultMobileText","searchResultsMobileText"],desktop:["noSearchResultsText","searchResultText","searchResultsText"]},P=(s,e={})=>{s.querySelectorAll("span[data-placeholder]").forEach(t=>{let{placeholder:r}=t.dataset;t.innerText=e[r]??""})},B=(s,{filter:e})=>s.filter(t=>t.filters.hasOwnProperty(e)),H=(s,{types:e})=>e?(e=e.split(","),s.filter(t=>e.some(r=>t.types.includes(r)))):s,V=s=>s.sort((e,t)=>(e.title??"").localeCompare(t.title??"","en",{sensitivity:"base"})),I=(s,{filter:e})=>s.sort((t,r)=>r.filters[e]?.order==null||isNaN(r.filters[e]?.order)?-1:t.filters[e]?.order==null||isNaN(t.filters[e]?.order)?1:t.filters[e].order-r.filters[e].order),k=(s,{search:e})=>e?.length?(e=e.toLowerCase(),s.filter(t=>(t.title??"").toLowerCase().includes(e))):s,h=class extends O{constructor(){super();E(this,"mobileAndTablet",new f(this,A));this.filter="all",this.hasMore=!1,this.resultCount=void 0,this.displayResult=!1}render(){return c`${this.header}
             <slot></slot>
-            ${this.footer}`}updated(e){if(!this.querySelector("merch-card"))return;let t=window.scrollY||document.documentElement.scrollTop,o=[...this.children].filter(s=>s.tagName==="MERCH-CARD");if(o.length===0)return;e.has("singleApp")&&this.singleApp&&o.forEach(s=>{s.updateFilters(s.name===this.singleApp)});let i=this.sort===n.alphabetical?D:H,h=[v,L,B,i].reduce((s,a)=>a(s,this),o).map((s,a)=>[s,a]);if(this.resultCount=h.length,this.page&&this.limit){let s=this.page*this.limit;this.hasMore=h.length>s,h=h.filter(([,a])=>a<s)}let u=new Map(h);o.forEach(s=>{if(u.has(s)){let a=u.get(s);s.style.order=a,s.setAttribute("tabindex",a+1),s.size=s.filters[this.filter]?.size,s.style.removeProperty("display"),s.requestUpdate()}else s.style.display="none",s.size=void 0,s.style.removeProperty("order")}),window.scrollTo(0,t),this.updateComplete.then(()=>{let s=this.shadowRoot.getElementById("resultText")?.firstElementChild?.assignedElements?.()?.[0];s&&C(s,{resultCount:this.resultCount,searchTerm:this.search,filter:this.sidenav?.filters.selectedText})})}connectedCallback(){super.connectedCallback(),this.filtered?(this.filter=this.filtered,this.page=1):this.startDeeplink(),this.sidenav=document.querySelector("merch-sidenav")}disconnectedCallback(){super.disconnectedCallback(),this.stopDeeplink?.()}get header(){if(!this.filtered)return l`<div id="header">
-                <sp-theme theme="spectrum" color="light" scale="medium">
+            ${this.footer}`}updated(t){if(!this.querySelector("merch-card"))return;let r=window.scrollY||document.documentElement.scrollTop,n=[...this.children].filter(o=>o.tagName==="MERCH-CARD");if(n.length===0)return;t.has("singleApp")&&this.singleApp&&n.forEach(o=>{o.updateFilters(o.name===this.singleApp)});let i=this.sort===a.alphabetical?V:I,l=[B,H,k,i].reduce((o,p)=>p(o,this),n).map((o,p)=>[o,p]);if(this.resultCount=l.length,this.page&&this.limit){let o=this.page*this.limit;this.hasMore=l.length>o,l=l.filter(([,p])=>p<o)}let m=new Map(l.reverse());for(let o of m.keys())this.prepend(o);n.forEach(o=>{m.has(o)?(o.size=o.filters[this.filter]?.size,o.style.removeProperty("display"),o.requestUpdate()):(o.style.display="none",o.size=void 0)}),window.scrollTo(0,r),this.updateComplete.then(()=>{let o=this.shadowRoot.getElementById("resultText")?.firstElementChild?.assignedElements?.()?.[0];o&&P(o,{resultCount:this.resultCount,searchTerm:this.search,filter:this.sidenav?.filters.selectedText})})}connectedCallback(){super.connectedCallback(),this.filtered?(this.filter=this.filtered,this.page=1):this.startDeeplink(),this.sidenav=document.querySelector("merch-sidenav")}disconnectedCallback(){super.disconnectedCallback(),this.stopDeeplink?.()}get header(){if(!this.filtered)return c`<div id="header">
+                <sp-theme  color="light" scale="medium">
                     ${this.searchBar} ${this.filtersButton} ${this.sortButton}
                 </sp-theme>
             </div>
-            <div id="resultText">
-                ${this.displayResult?l`<slot name="${this.resultTextSlotName}"></slot>`:""}
-            </div>`}get footer(){if(!this.filtered)return l`<div id="footer">
-            <sp-theme theme="spectrum" color="light" scale="medium">
+            <div id="resultText" aria-live="polite">
+                ${this.displayResult?c`<slot name="${this.resultTextSlotName}"></slot>`:""}
+            </div>`}get footer(){if(!this.filtered)return c`<div id="footer">
+            <sp-theme  color="light" scale="medium">
                 ${this.showMoreButton}
             </sp-theme>
-        </div>`}get resultTextSlotName(){return O[this.search?this.mobileAndTablet.matches?"mobile":"desktop":"filters"][Math.min(this.resultCount,2)]}get showMoreButton(){if(this.hasMore)return l`<sp-button
+        </div>`}get resultTextSlotName(){return v[this.search?this.mobileAndTablet.matches?"mobile":"desktop":"filters"][Math.min(this.resultCount,2)]}get showMoreButton(){if(this.hasMore)return c`<sp-button
             variant="secondary"
             treatment="outline"
             style="order: 1000;"
             @click="${this.showMore}"
         >
             <slot name="showMoreText"></slot>
-        </sp-button>`}get filtersButton(){return this.mobileAndTablet.matches?l`<sp-action-button
+        </sp-button>`}get filtersButton(){return this.mobileAndTablet.matches?c`<sp-action-button
                   id="filtersButton"
                   variant="secondary"
                   treatment="outline"
                   @click="${this.openFilters}"
                   ><slot name="filtersText"></slot
-              ></sp-action-button>`:""}get searchBar(){let e=d(this,"searchText");return this.mobileAndTablet.matches?l`<merch-search deeplink="search">
+              ></sp-action-button>`:""}get searchBar(){let t=u(this,"searchText");return this.mobileAndTablet.matches?c`<merch-search deeplink="search">
                   <sp-search
                       id="searchBar"
                       @submit="${this.searchSubmit}"
-                      placeholder="${e}"
+                      placeholder="${t}"
                   ></sp-search>
-              </merch-search>`:""}get sortButton(){let e=d(this,"sortText"),t=d(this,"popularityText"),o=d(this,"alphabeticallyText");if(!(e&&t&&o))return;let i=this.sort===n.alphabetical;return l`
+              </merch-search>`:""}get sortButton(){let t=u(this,"sortText"),r=u(this,"popularityText"),n=u(this,"alphabeticallyText");if(!(t&&r&&n))return;let i=this.sort===a.alphabetical;return c`
             <sp-action-menu
                 id="sortButton"
                 size="m"
                 @change="${this.sortChanged}"
                 selects="single"
-                value="${i?n.alphabetical:n.authored}"
+                value="${i?a.alphabetical:a.authored}"
             >
                 <span slot="label-only"
-                    >${e}:
-                    ${i?o:t}</span
+                    >${t}:
+                    ${i?n:r}</span
                 >
-                <sp-menu-item value="${n.authored}"
-                    >${t}</sp-menu-item
+                <sp-menu-item value="${a.authored}"
+                    >${r}</sp-menu-item
                 >
-                <sp-menu-item value="${n.alphabetical}"
-                    >${o}</sp-menu-item
+                <sp-menu-item value="${a.alphabetical}"
+                    >${n}</sp-menu-item
                 >
             </sp-action-menu>
-        `}sortChanged(e){e.target.value===n.authored?p({sort:void 0}):p({sort:e.target.value}),this.dispatchEvent(new CustomEvent(x,{bubbles:!0,composed:!0,detail:{value:e.target.value}}))}async showMore(){this.dispatchEvent(new CustomEvent(g,{bubbles:!0,composed:!0}));let e=this.page+1;p({page:e}),this.page=e,await this.updateComplete}startDeeplink(){this.stopDeeplink=T(({category:e,filter:t,types:o,sort:i,search:c,single_app:h,page:u})=>{t=t||e,!this.filtered&&t&&t!==this.filter&&setTimeout(()=>{p({page:void 0}),this.page=1},1),this.filtered||(this.filter=t??this.filter),this.types=o??"",this.search=c??"",this.singleApp=h,this.sort=i,this.page=Number(u)||1})}openFilters(e){this.sidenav?.showModal(e)}static styles=[R]};E.SortOrder=n;customElements.define(M,E);export{E as MerchCardCollection};
+        `}sortChanged(t){t.target.value===a.authored?d({sort:void 0}):d({sort:t.target.value}),this.dispatchEvent(new CustomEvent(S,{bubbles:!0,composed:!0,detail:{value:t.target.value}}))}async showMore(){this.dispatchEvent(new CustomEvent(g,{bubbles:!0,composed:!0}));let t=this.page+1;d({page:t}),this.page=t,await this.updateComplete}startDeeplink(){this.stopDeeplink=x(({category:t,filter:r,types:n,sort:i,search:_,single_app:l,page:m})=>{r=r||t,!this.filtered&&r&&r!==this.filter&&setTimeout(()=>{d({page:void 0}),this.page=1},1),this.filtered||(this.filter=r??this.filter),this.types=n??"",this.search=_??"",this.singleApp=l,this.sort=i,this.page=Number(m)||1})}openFilters(t){this.sidenav?.showModal(t)}};E(h,"properties",{filter:{type:String,attribute:"filter",reflect:!0},filtered:{type:String,attribute:"filtered"},search:{type:String,attribute:"search",reflect:!0},sort:{type:String,attribute:"sort",default:a.authored,reflect:!0},types:{type:String,attribute:"types",reflect:!0},limit:{type:Number,attribute:"limit"},page:{type:Number,attribute:"page",reflect:!0},singleApp:{type:String,attribute:"single-app",reflect:!0},hasMore:{type:Boolean},displayResult:{type:Boolean,attribute:"display-result"},resultCount:{type:Number},sidenav:{type:Object}}),E(h,"styles",[b]);h.SortOrder=a;customElements.define(D,h);export{h as MerchCardCollection,P as updateLiterals};

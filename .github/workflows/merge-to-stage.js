@@ -20,19 +20,20 @@ const LABELS = {
   zeroImpact: 'zero-impact',
 };
 const TEAM_MENTIONS = [
-  '@adobecom/miq-sot',
   '@adobecom/bacom-sot',
-  '@adobecom/homepage-sot',
   '@adobecom/creative-cloud-sot',
   '@adobecom/document-cloud-sot',
+  '@adobecom/express-sot',
+  '@adobecom/homepage-sot',
+  '@adobecom/miq-sot',
 ];
 const SLACK = {
   merge: ({ html_url, number, title, prefix = '' }) => `:merged: PR merged to stage: ${prefix} <${html_url}|${number}: ${title}>.`,
   openedSyncPr: ({ html_url, number }) => `:fast_forward: Created <${html_url}|Stage to Main PR ${number}>`,
 };
 
-let github; 
-let owner; 
+let github;
+let owner;
 let repo;
 
 let body = `
@@ -51,7 +52,12 @@ let body = `
 const isHighPrio = (labels) => labels.includes(LABELS.highPriority);
 const isZeroImpact = (labels) => labels.includes(LABELS.zeroImpact);
 
-const hasFailingChecks = (checks) => checks.some(({ conclusion, name }) => name !== 'merge-to-stage' && conclusion === 'failure');
+const hasFailingChecks = (checks) =>
+  checks.some(
+    ({ conclusion, name }) =>
+      name !== 'merge-to-stage' &&
+      (conclusion === 'in_progress' || conclusion === 'failure')
+  );
 
 const commentOnPR = async (comment, prNumber) => {
   console.log(comment); // Logs for debugging the action.
@@ -89,7 +95,7 @@ const getPRs = async () => {
 
   prs = prs.filter(({ checks, reviews, number, title }) => {
     if (hasFailingChecks(checks)) {
-      commentOnPR(`Skipped merging ${number}: ${title} due to failing checks`, number);
+      commentOnPR(`Skipped merging ${number}: ${title} due to failing or running checks`, number);
       return false;
     }
 
@@ -230,7 +236,7 @@ const main = async (params) => {
   github = params.github;
   owner = params.context.repo.owner;
   repo = params.context.repo.repo;
-  if (isWithinRCP(process.env.STAGE_RCP_OFFSET_DAYS || 2)) return console.log('Stopped, within RCP period.');
+  if (isWithinRCP({ offset: process.env.STAGE_RCP_OFFSET_DAYS || 2, excludeShortRCP: true })) return console.log('Stopped, within RCP period.');
 
   try {
     const stageToMainPR = await getStageToMainPR();

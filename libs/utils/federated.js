@@ -12,7 +12,7 @@ export const getFederatedContentRoot = () => {
   ];
   const { allowedOrigins = [], origin: configOrigin } = getConfig();
   if (federatedContentRoot) return federatedContentRoot;
-  // Non milo consumers will have its origin from congig
+  // Non milo consumers will have its origin from config
   const origin = configOrigin || window.location.origin;
 
   federatedContentRoot = [...allowedOrigins, ...cdnWhitelistedOrigins].some((o) => origin.replace('.stage', '') === o)
@@ -38,4 +38,22 @@ export const getFederatedUrl = (url = '') => {
     window.lana?.log(`getFederatedUrl errored parsing the URL: ${url}: ${e.toString()}`);
   }
   return url;
+};
+
+let fedsPlaceholderConfig;
+export const getFedsPlaceholderConfig = ({ useCache = true } = {}) => {
+  if (useCache && fedsPlaceholderConfig) return fedsPlaceholderConfig;
+
+  const { locale, placeholders } = getConfig();
+  const libOrigin = getFederatedContentRoot();
+
+  fedsPlaceholderConfig = {
+    locale: {
+      ...locale,
+      contentRoot: `${libOrigin}${locale.prefix}/federal/globalnav`,
+    },
+    placeholders,
+  };
+
+  return fedsPlaceholderConfig;
 };

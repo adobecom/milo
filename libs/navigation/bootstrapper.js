@@ -1,10 +1,7 @@
-export default async function bootstrapBlock(miloLibs, blockConfig) {
+/* eslint import/no-relative-packages: 0 */
+export default async function bootstrapBlock(initBlock, blockConfig) {
   const { name, targetEl, layout, noBorder, jarvis } = blockConfig;
-  const { getConfig, createTag, loadLink, loadScript } = await import(`${miloLibs}/utils/utils.js`);
-  const { default: initBlock } = await import(`${miloLibs}/blocks/${name}/${name}.js`);
-
-  const styles = [`${miloLibs}/blocks/${name}/${name}.css`, `${miloLibs}/navigation/navigation.css`];
-  styles.forEach((url) => loadLink(url, { rel: 'stylesheet' }));
+  const { getConfig, createTag, loadScript } = await import('../utils/utils.js');
 
   const setNavLayout = () => {
     const element = document.querySelector(targetEl);
@@ -26,6 +23,7 @@ export default async function bootstrapBlock(miloLibs, blockConfig) {
     const metaTags = [
       { key: 'unavComponents', name: 'universal-nav' },
       { key: 'redirect', name: 'adobe-home-redirect' },
+      { key: 'mobileGnavV2', name: 'mobile-gnav-v2' },
     ];
     metaTags.forEach((tag) => {
       const { key } = tag;
@@ -37,11 +35,15 @@ export default async function bootstrapBlock(miloLibs, blockConfig) {
         document.head.append(metaTag);
       }
     });
+    if (blockConfig.isLocalNav) {
+      const localNavWrapper = createTag('div', { class: 'feds-localnav' });
+      document.querySelector('header').after(localNavWrapper);
+    }
   }
 
   await initBlock(document.querySelector(targetEl));
   if (blockConfig.targetEl === 'footer') {
-    const { loadPrivacy } = await import(`${miloLibs}/scripts/delayed.js`);
+    const { loadPrivacy } = await import('../scripts/delayed.js');
     setTimeout(() => {
       loadPrivacy(getConfig, loadScript);
     }, blockConfig.delay);

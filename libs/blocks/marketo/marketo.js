@@ -19,6 +19,7 @@ import {
   loadLink,
   localizeLink,
   createTag,
+  getConfig,
   createIntersectionObserver,
   SLD,
 } from '../../utils/utils.js';
@@ -173,8 +174,9 @@ export const loadMarketo = (el, formData) => {
   const baseURL = formData[BASE_URL];
   const munchkinID = formData[MUNCHKIN_ID];
   const formID = formData[FORM_ID];
+  const { base } = getConfig();
 
-  loadScript(`https://${baseURL}/js/forms2/js/forms2.min.js`)
+  loadScript(`${base}/deps/forms2.min.js`)
     .then(() => {
       const { MktoForms2 } = window;
       if (!MktoForms2) throw new Error('Marketo forms not loaded');
@@ -227,7 +229,7 @@ export default function init(el) {
 
   if (formData[SUCCESS_TYPE] === 'section' && ungated) {
     el.classList.add('hide-block');
-    showSuccessSection(formData, false);
+    showSuccessSection(formData, true);
     return;
   }
 

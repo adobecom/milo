@@ -5,38 +5,28 @@
     <meta charset="UTF-8">
     <title>M@S Web Components</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <script type="module" src="../../../deps/custom-elements.js"></script>
+    <link rel="stylesheet" href="spectrum.css">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
   
-  <script>
-    if (/localhost/.test(window.location.host)) {
-      const meta = document.createElement('meta');
-      meta.name = 'aem-base-url';
-      meta.content = 'http://localhost:8080'; // local AEM proxy URL
-      document.head.appendChild(meta);
-      }
-  </script>
   <!-- Include your custom element script as an ES6 module -->
-  <script src="../../../features/spectrum-web-components/dist/theme.js" type="module"></script>
-  <script src="../../../features/spectrum-web-components/dist/button.js" type="module"></script>
-  <script type="module" src="../../../deps/mas/mas.js"></script>
-
   <script type="module">
-    const params = new URLSearchParams(document.location.search);
-    const masCommerceService = document.createElement('mas-commerce-service');
-    ['locale','language','env'].forEach((attribute) => {
-      const value = params.get(attribute);
-      if (value) masCommerceService.setAttribute(attribute, value);
-    });
-    document.head.appendChild(masCommerceService);
+    import { init } from './common.js';
+    init();
   </script>
-  <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
   <!-- Include Highlight.js stylesheet for syntax highlighting -->
-  <link rel="stylesheet" href="../../../styles/styles.css">
   <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
-  <!-- Include any additional stylesheets -->
-  <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+<body class="spectrum spectrum--medium spectrum--light">
+<aside class="sidenav">
+    <a href="/libs/features/mas/docs/mas.html">Home</a>
+    <a href="/libs/features/mas/docs/mas.js.html">mas.js</a>
+    <a href="/libs/features/mas/docs/checkout-link.html">Checkout Link</a>
+    <a href="/libs/features/mas/docs/inline-price.html">Inline Price</a>
+    <a href="/libs/features/mas/docs/merch-card.html">Merch Card</a>
+    <a href="/libs/features/mas/docs/ccd.html">CCD Gallery</a>
+    <a href="/libs/features/mas/docs/benchmarks.html">Benchmarks</a>
+</aside>
 <main>
 <sp-theme color="light" scale="medium">
 <h1 id="mas.js" tabindex="-1">mas.js <a class="header-anchor" href="#mas.js" href="#mas.js" title="Permalink to this heading">#</a></h1>
@@ -46,12 +36,20 @@
 <ul>
 <li><a href="/libs/features/mas/docs/inline-price.html">inline-price</a></li>
 <li><a href="/libs/features/mas/docs/checkout-link.html">checkout-link</a></li>
+<li><a href="/libs/features/mas/docs/checkout-button.html">checkout-button</a></li>
 <li><a href="/libs/features/mas/docs/merch-card.html">merch-card</a></li>
-<li><a href="/libs/features/mas/docs/ccd.html">CCD Gallery</a></li>
 </ul>
 <h2 id="enablement-mas-commerce-service" tabindex="-1">Enablement <code>mas-commerce-service</code> <a class="header-anchor" href="#enablement-mas-commerce-service" href="#enablement-mas-commerce-service" title="Permalink to this heading">#</a></h2>
-<p>You do need to have mas.js on your page / application, including it can be done like the following</p>
-<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;/libs/deps/mas/mas.js&quot;</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;module&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+<p>⚠️ Safari does not support customized built-in elements. Therefore, you need to load the following polyfill before <code>mas.js</code> for browser compatibility (not required for in-app usage).</p>
+<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">script</span>
+    <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;https://www.adobe.comlibs/deps/custom-elements.js&quot;</span>
+&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+</code></pre>
+<p>To add <code>mas.js</code> to your page or application, include it as shown below:</p>
+<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">script</span>
+    <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;https://www.adobe.com/libs/features/mas/dist/mas.js&quot;</span>
+    <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;module&quot;</span>
+&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
 </code></pre>
 <h3 id="attributes" tabindex="-1">Attributes <a class="header-anchor" href="#attributes" href="#attributes" title="Permalink to this heading">#</a></h3>
 <table>
@@ -95,6 +93,12 @@
 <td><code>false</code></td>
 </tr>
 <tr>
+<td><code>host-env</code></td>
+<td>host environment, either <code>stage</code> or <code>prod</code></td>
+<td><code>prod</code></td>
+<td><code>false</code></td>
+</tr>
+<tr>
 <td><code>force-tax-exclusive</code></td>
 <td>force all price display to be tax exclusive</td>
 <td><code>false</code></td>
@@ -110,6 +114,24 @@
 <td><code>language</code></td>
 <td>language of the price literal, e.g: per license</td>
 <td>en or locale langauge if set</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>wcs-api-key</code></td>
+<td>api key used for making WCS calls</td>
+<td><code>wcms-commerce-ims-ro-user-milo</code></td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>lana-tags</code></td>
+<td>Enables logging via lana<a href="https://github.com/adobecom/milo/blob/stage/libs/utils/lana.js">^1</a> with the given tags. e.g:<code>ccd</code>.</td>
+<td></td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>lana-sample-rate</code></td>
+<td>Sets the sampling rate, see <a href="https://wiki.corp.adobe.com/pages/viewpage.action?spaceKey=WCMSOps&amp;title=LANA+-+Log+Always+Never+Assume">^1</a> for details.</td>
+<td>1</td>
 <td><code>false</code></td>
 </tr>
 </tbody>
@@ -162,6 +184,12 @@
 
 <span class="hljs-comment">&lt;!-- or with a country and language --&gt;</span>
 <span class="hljs-tag">&lt;<span class="hljs-name">mas-commerce-service</span> <span class="hljs-attr">country</span>=<span class="hljs-string">&quot;JP&quot;</span> <span class="hljs-attr">language</span>=<span class="hljs-string">&quot;en&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">mas-commerce-service</span>&gt;</span>
+
+<span class="hljs-comment">&lt;!-- with custom api key &amp; checkout clientid --&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">mas-commerce-service</span>
+    <span class="hljs-attr">wcs-api-key</span>=<span class="hljs-string">&quot;custom-api-key&quot;</span>
+    <span class="hljs-attr">checkout-client-id</span>=<span class="hljs-string">&quot;custom-client-id&quot;</span>
+&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">mas-commerce-service</span>&gt;</span>
 </code></pre>
 <p>you can play around with below price, either adding locale, language or env as parameters that will be injected to <code>mas-commerce-service</code> as attributes, and then it will be activated.</p>
 <p class="example">
