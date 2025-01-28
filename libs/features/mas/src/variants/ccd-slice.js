@@ -16,6 +16,11 @@ export class CCDSlice extends VariantLayout {
         return CSS;
     }
 
+    constructor() {
+        super();
+        this.card.spectrum = 'swc';
+    }
+
     /* c8 ignore next 3 */
     get aemFragmentMapping() {
         return CCD_SLICE_AEM_FRAGMENT_MAPPING;
