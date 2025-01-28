@@ -531,6 +531,9 @@ export const loadAnalyticsAndInteractionData = async (
       result: { propositions: resultPayload },
     };
   } catch (err) {
+    if (err.message !== 'No propositions found') {
+      console.log(err);
+    }
     setGpvCookie(pageName);
     return {};
   }
