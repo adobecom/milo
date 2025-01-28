@@ -1585,7 +1585,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
   --consonant-merch-card-border-color:rgb(48, 48, 48);
   --consonant-merch-card-detail-s-color:rgb(235, 235, 235);
 }
-`;var At={backgroundImage:{tag:"div",slot:"image"},badge:!0,ctas:{slot:"footer",size:"S"},description:{tag:"div",slot:"body-s"},mnemonics:{size:"m"},size:["wide"]},de=class extends S{getGlobalCSS(){return Fr}get aemFragmentMapping(){return At}renderLayout(){return ko` <div class="content">
+`;var At={backgroundImage:{tag:"div",slot:"image"},badge:!0,ctas:{slot:"footer",size:"S"},description:{tag:"div",slot:"body-s"},mnemonics:{size:"m"},size:["wide"]},de=class extends S{getGlobalCSS(){return Fr}constructor(t){super(t),this.card.spectrum="swc",this.updateComplete}get aemFragmentMapping(){return At}renderLayout(){return ko` <div class="content">
                 <div class="top-section">
                     <slot name="icons"></slot>
                     ${this.badge}

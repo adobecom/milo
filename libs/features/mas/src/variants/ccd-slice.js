@@ -16,9 +16,10 @@ export class CCDSlice extends VariantLayout {
         return CSS;
     }
 
-    constructor() {
-        super();
-        this.card.spectrum = 'swc';
+    constructor(card) {
+      super(card);
+      this.card.spectrum = 'swc';
+      this.updateComplete;
     }
 
     /* c8 ignore next 3 */
