@@ -3,7 +3,19 @@ const ADMIN = 'https://admin.hlx.page';
 const urlParams = new URLSearchParams(window.location.search);
 const owner = urlParams.get('owner') || 'adobecom';
 const repo = urlParams.get('repo') || 'milo';
-export const origin = `https://main--${repo}--${owner}.hlx.page`;
+export const origin = `https://main--${repo}--${owner}.${SLD}.page`;
+
+// Temporary fix until https://github.com/adobe/helix-admin/issues/2831 is fixed.
+function fixPreviewDomain(json) {
+  if (SLD === 'aem') {
+    if (json?.preview?.url) {
+      json.preview.url = json.preview.url.replace('.hlx.', '.aem.');
+    }
+    if (json?.live?.url) {
+      json.live.url = json.live.url.replace('.hlx.', '.aem.');
+    }
+  }
+}
 
 export async function preview(path) {
   const url = `${ADMIN}/preview/${owner}/${repo}/main${path}`;
