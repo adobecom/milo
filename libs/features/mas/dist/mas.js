@@ -1544,13 +1544,7 @@ merch-card[variant="ccd-slice"] [slot='image'] {
     padding: 15px;
     align-self: center;
     padding-inline-start: 0;
-}
-
-merch-card[variant="ccd-slice"] [slot='image'] img {
-    overflow: hidden;
-    border-radius: 50%;
-    width: inherit;
-    height: inherit;
+    box-sizing: border-box;
 }
 
 merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
