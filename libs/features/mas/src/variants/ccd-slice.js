@@ -103,26 +103,6 @@ export class CCDSlice extends VariantLayout {
             color: var(--spectrum-gray-800, var(--merch-color-grey-80));
         }
 
-        :host([variant='ccd-slice']) ::slotted([slot='image']) {
-            display: flex;
-            justify-content: center;
-            flex-shrink: 0;
-            width: 134px;
-            height: 149px;
-            overflow: hidden;
-            border-radius: 50%;
-            padding: 15px;
-            align-self: center;
-            padding-inline-start: 0;
-        }
-
-        :host([variant='ccd-slice']) ::slotted([slot='image']) img {
-            overflow: hidden;
-            border-radius: 50%;
-            width: inherit;
-            height: inherit;
-        }
-
         :host([variant='ccd-slice']) div[class$='-badge'] {
             font-size: var(--consonant-merch-card-body-xxs-font-size);
             position: static;

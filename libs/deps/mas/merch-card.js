@@ -1558,16 +1558,31 @@ merch-card[variant='twp'] merch-offer-select {
         }
     `);import{html as ko,css as Bo}from"../lit-all.min.js";var Fr=`
 
+merch-card[variant="ccd-slice"] [slot='image'] {
+    display: flex;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 134px;
+    height: 149px;
+    overflow: hidden;
+    border-radius: 50%;
+    padding: 15px;
+    align-self: center;
+    padding-inline-start: 0;
+}
+
 merch-card[variant="ccd-slice"] [slot='image'] img {
-  overflow: hidden;
-  border-radius: 50%;
+    overflow: hidden;
+    border-radius: 50%;
+    width: inherit;
+    height: inherit;
 }
 
 merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
-  font-size: var(--consonant-merch-card-body-xxs-font-size);
-  font-style: normal;
-  font-weight: 400;
-  line-height: var(--consonant-merch-card-body-xxs-line-height);
+    font-size: var(--consonant-merch-card-body-xxs-font-size);
+    font-style: normal;
+    font-weight: 400;
+    line-height: var(--consonant-merch-card-body-xxs-line-height);
 }
 
 .spectrum--darkest merch-card[variant="ccd-slice"] {
@@ -1652,26 +1667,6 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
             line-height: var(--consonant-merch-card-body-xxs-line-height);
             text-decoration-line: underline;
             color: var(--spectrum-gray-800, var(--merch-color-grey-80));
-        }
-
-        :host([variant='ccd-slice']) ::slotted([slot='image']) {
-            display: flex;
-            justify-content: center;
-            flex-shrink: 0;
-            width: 134px;
-            height: 149px;
-            overflow: hidden;
-            border-radius: 50%;
-            padding: 15px;
-            align-self: center;
-            padding-inline-start: 0;
-        }
-
-        :host([variant='ccd-slice']) ::slotted([slot='image']) img {
-            overflow: hidden;
-            border-radius: 50%;
-            width: inherit;
-            height: inherit;
         }
 
         :host([variant='ccd-slice']) div[class$='-badge'] {
