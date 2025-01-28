@@ -29,6 +29,7 @@ export function processMnemonics(fields, merchCard, mnemonicsConfig) {
         const attrs = {
             slot: 'icons',
             src,
+            loading: merchCard.loading,
             size: mnemonicsConfig?.size ?? 'l',
         };
         if (alt) attrs.alt = alt;
@@ -52,8 +53,8 @@ function processBadge(fields, merchCard) {
     }
 }
 
-export function processSize(fields, merchCard, allowedSizes) {
-    if (allowedSizes?.includes(fields.size)) {
+export function processSize(fields, merchCard, sizeConfig) {
+    if (sizeConfig?.includes(fields.size)) {
         merchCard.setAttribute('size', fields.size);
     }
 }
@@ -104,15 +105,23 @@ export function processBackgroundImage(
     merchCard,
     backgroundImageConfig,
 ) {
-    if (backgroundImageConfig?.tag && fields.backgroundImage) { 
+    if (fields.backgroundImage) {
         const imgAttributes = {
-            loading: 'lazy',
+            loading: merchCard.loading ?? 'lazy',
             src: fields.backgroundImage,
         };
         if (fields.backgroundImageAltText) {
             imgAttributes.alt = fields.backgroundImageAltText;
         } else {
             imgAttributes.role = 'none';
+        }
+        if (!backgroundImageConfig) return;
+        if (backgroundImageConfig?.attribute) {
+            merchCard.setAttribute(
+                backgroundImageConfig.attribute,
+                fields.backgroundImage,
+            );
+            return;
         }
         merchCard.append(
             createTag(
@@ -121,9 +130,6 @@ export function processBackgroundImage(
                 createTag('img', imgAttributes),
             ),
         );
-    }
-    if (backgroundImageConfig?.attribute) {
-        merchCard.setAttribute(backgroundImageConfig.attribute, fields.backgroundImage);
     }
 }
 
@@ -334,7 +340,7 @@ export async function hydrate(fragment, merchCard) {
     const { fields } = fragment;
     const { variant } = fields;
     if (!variant) return;
-    merchCard.id = fragment.id;
+
     // remove all previous slotted content except the default slot
     merchCard.querySelectorAll('[slot]').forEach((el) => {
         el.remove();
@@ -358,7 +364,7 @@ export async function hydrate(fragment, merchCard) {
 
     processMnemonics(fields, merchCard, aemFragmentMapping.mnemonics);
     processBadge(fields, merchCard);
-    processSize(fields, merchCard, aemFragmentMapping.allowedSizes);
+    processSize(fields, merchCard, aemFragmentMapping.size);
     processTitle(fields, merchCard, aemFragmentMapping.title);
     processSubtitle(fields, merchCard, aemFragmentMapping.subtitle);
     processPrices(fields, merchCard, aemFragmentMapping.prices);
@@ -366,7 +372,6 @@ export async function hydrate(fragment, merchCard) {
         fields,
         merchCard,
         aemFragmentMapping.backgroundImage,
-        variant,
     );
     processBackgroundColor(fields, merchCard, aemFragmentMapping.allowedColors);
     processDescription(fields, merchCard, aemFragmentMapping.description);
