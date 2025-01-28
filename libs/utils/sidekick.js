@@ -85,7 +85,7 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
     sendToCaaS({ host, project, branch, repo, owner }, loadScript, loadStyle);
   });
 
-  const sk = document.querySelector('helix-sidekick');
+  const sk = document.querySelector('aem-sidekick, helix-sidekick');
 
   // Add plugin listeners here
   sk.addEventListener('custom:send-to-caas', sendToCaasListener);
@@ -114,8 +114,7 @@ function onSkLoaded(callback) {
 }
 
 export function connectSK(status, standby = null) {
-  const sidekick = document.querySelector('helix-sidekick')
-    || document.querySelector('aem-sidekick');
+  const sidekick = document.querySelector('aem-sidekick, helix-sidekick');
   if (sidekick) {
     sidekick.addEventListener('statusfetched', status);
     sidekick.addEventListener('status-fetched', status);
