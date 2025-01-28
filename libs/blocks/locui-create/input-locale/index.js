@@ -98,9 +98,6 @@ export default function useInputLocale() {
 
   const findLanguageForLocale = (locale) => languagesList.find((lang) => lang.livecopies.split(',')
     .includes(locale));
-  const findLanguage = (languageName) => languagesList
-    .find((lang) => lang.language.toLowerCase() === languageName.toLowerCase());
-
   const transformActiveLocales = () => {
     const groupedLocales = {};
     const languageCodes = {};
@@ -209,20 +206,6 @@ export default function useInputLocale() {
   };
 
   useEffect(() => {
-    const activeLanguages = [...new Set(Object.values(activeLocales))];
-    if (activeLanguages.length > 0) {
-      const selectedLocales = activeLanguages.reduce((acc, curr) => {
-        const lang = findLanguage(curr);
-        const localeCopies = lang.livecopies.split(',');
-        acc.push(...localeCopies);
-
-        return acc;
-      }, []);
-      setSelectedLocale(selectedLocales);
-    }
-  }, [activeLocales, languagesList]);
-
-  useEffect(() => {
     setSelectedRegion((prevState) => ({
       ...prevState,
       ...updateRegionStates(selectedLocale),
@@ -277,16 +260,24 @@ export default function useInputLocale() {
   };
 
   const toggleLocale = (locale) => {
-    setActiveLocales((prev) => {
-      const updatedActiveLocales = { ...prev };
-      if (updatedActiveLocales[locale]) {
-        delete updatedActiveLocales[locale];
-      } else {
-        const language = findLanguageForLocale(locale);
-        if (language) updatedActiveLocales[locale] = language.language;
-      }
-      return updatedActiveLocales;
-    });
+    let isLangDeselecting = false;
+    const lang = activeLocales[locale];
+    const updatedActiveLocales = { ...activeLocales };
+    if (updatedActiveLocales[locale]) {
+      delete updatedActiveLocales[locale];
+      isLangDeselecting = !Object.values(updatedActiveLocales).some((val) => val === lang);
+    } else {
+      const language = findLanguageForLocale(locale);
+      if (language) updatedActiveLocales[locale] = language.language;
+    }
+    setActiveLocales(updatedActiveLocales);
+    if (isLangDeselecting) {
+      const languageLocales = languagesList.find((l) => l.language === lang);
+      const { livecopies = '' } = languageLocales;
+      const updatedSelectedLocale = selectedLocale
+        .filter((loc) => !livecopies.split(',').includes(loc));
+      setSelectedLocale(updatedSelectedLocale);
+    }
   };
 
   return {
