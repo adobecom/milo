@@ -29,6 +29,7 @@ export const CSS = `
         height: var(--consonant-merch-card-detail-l-line-height);
         line-height: var(--consonant-merch-card-detail-l-line-height);
         font-size: var(--consonant-merch-card-body-xxs-font-size);
+        text-decoration-thickness: .5px;
         color: var(--ah-gray-500);
     }
 
