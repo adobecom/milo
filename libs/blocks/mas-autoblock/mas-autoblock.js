@@ -17,4 +17,6 @@ export default async function init(el) {
   const aemFragment = createTag('aem-fragment', { fragment });
   const merchCard = createTag('merch-card', { consonant: '' }, aemFragment);
   el.replaceWith(merchCard);
+  await aemFragment.updateComplete;
+  await merchCard.checkReady();
 }
