@@ -2,9 +2,6 @@
 
 import { expect, test } from '@playwright/test';
 import { features } from './mep-button.spec.js';
-import TextBlock from '../../blocks/text/text.page.js';
-import MerchCard from '../../blocks/merchcard/merchcard.pages.js';
-
 
 const miloLibs = process.env.MILO_LIBS || '';
 const mepButtonLoc = '.mep-badge';
@@ -39,8 +36,21 @@ test(`${features[2].name},${features[2].tags}`, async ({ page, baseURL }) => {
   await page.goto(URL);
   await page.locator(mepButtonLoc).click();
   await page.locator(highlightLoc).check();
-  const highlightCSSContentTextBox = await page.evaluate("window.getComputedStyle(document.getElementById('text-intro'), '::before').getPropertyValue('content')");
-  const highlightCSSContentMerchCard = await page.evaluate("window.getComputedStyle(document.getElementById('merch-card'), '::before').getPropertyValue('content')");
+  const highlightCSSContentTextBox = await page.evaluate("window.getComputedStyle(document.querySelector('#text-intro'), '::before').getPropertyValue('content')");
+  const highlightCSSContentMerchCard = await page.evaluate("window.getComputedStyle(document.querySelector('.merch-card'), '::before').getPropertyValue('content')");
+  const highlightCSSContentMarquee = await page.evaluate("window.getComputedStyle(document.querySelector('.marquee h2'), '::before').getPropertyValue('content')");
   await expect(highlightCSSContentTextBox).toContain('content updated by: mep-button.json');
   await expect(highlightCSSContentMerchCard).toContain('content updated by: mep-button.json');
+  await expect(highlightCSSContentMarquee).toContain('content updated by: mep-button.json');
+});
+
+// Test 3: there should be 3 manifests on this page
+test(`${features[3].name},${features[3].tags}`, async ({ page, baseURL }) => {
+  const URL = `${baseURL}${features[3].path}${miloLibs}`;
+  const pencilIconLoc = '.mep-edit-manifest';
+  console.info(`[Test Page]: ${URL}`);
+  await page.goto(URL);
+  await page.locator(mepButtonLoc).click();
+  await page.waitForTimeout(100);
+  await expect(page.locator(pencilIconLoc)).toHaveCount(3);
 });

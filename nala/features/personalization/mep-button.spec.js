@@ -22,5 +22,12 @@ module.exports = {
       path: '/drafts/nala/features/personalization/mep-button/mep-button',
       tags: '@mep @mepbutton2 @smoke @regression @milo',
     },
+    {
+      tcid: '3',
+      name: '@3 - test ability to count multiple manifests',
+      desc: 'There should be 3 manifests on this page',
+      path: '/drafts/nala/features/personalization/mep-button/number-of-manifests',
+      tags: '@mep @mepbutton3 @smoke @regression @milo',
+    },
   ],
 };
