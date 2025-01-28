@@ -117,10 +117,12 @@ export function connectSK(status, standby = null) {
   const sidekick = document.querySelector('aem-sidekick, helix-sidekick');
   if (sidekick) {
     sidekick.addEventListener('statusfetched', status);
+    sidekick.addEventListener('status-fetched', status);
   } else {
     standby?.();
     onSkLoaded((sk) => {
       sk?.addEventListener('statusfetched', status);
+      sk?.addEventListener('status-fetched', status);
     });
   }
 }
