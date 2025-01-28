@@ -76,6 +76,10 @@ export const normalizePath = (p, localize = true) => {
     return getFederatedUrl(path);
   }
 
+  if (path.includes('tmp-xlg-test.json')) {
+    return path;
+  }
+  
   if (path.startsWith(config.codeRoot)
     || path.includes('.hlx.')
     || path.includes('.aem.')
