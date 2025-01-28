@@ -347,7 +347,6 @@ class Gnav {
       this.decorateMainNav,
       this.decorateTopNav,
       this.decorateTopnavWrapper,
-      loadBaseStyles,
       () => {
         this.block.classList.add('ready');
         this.block.classList.remove('gnav-hide');
