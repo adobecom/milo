@@ -165,11 +165,6 @@ export class CCDSuggested extends VariantLayout {
             line-height: var(--consonant-merch-card-body-xs-line-height);
         }
 
-        :host([variant='ccd-suggested']) ::slotted([slot='price']) em {
-          font-size: var(--consonant-merch-card-body-xxs-font-size);
-          line-height: var(--consonant-merch-card-body-xxs-line-height);
-        }
-
         :host([variant='ccd-suggested']) ::slotted([slot='cta']) {
             display: flex;
             align-items: center;
