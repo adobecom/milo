@@ -209,7 +209,7 @@ export const createContent = (el, { content, manifestId, targetManifestId, actio
 const COMMANDS = {
   [COMMANDS_KEYS.remove]: (el, { content, manifestId }) => {
     if (content === 'false') return;
-    if (manifestId) {
+    if (manifestId && !el.href?.includes('/tools/ost')) {
       el.dataset.removedManifestId = manifestId;
       return;
     }
