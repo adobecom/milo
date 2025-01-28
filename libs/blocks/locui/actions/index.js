@@ -82,7 +82,9 @@ function findMetaFragments(doc) {
 function removeDuplicateUrls(urlObjects) {
   const uniqueUrls = [];
   const filteredUrls = urlObjects.filter((url) =>
-    !urls.value.some((existing) => removeLangstorePrefix(existing.pathname) === url.pathname)
+    !urls.value.some((existing) =>
+      removeLangstorePrefix(existing.pathname) === url.pathname
+    )
   );
   filteredUrls.forEach((url) => {
     if (!uniqueUrls.some((unique) => unique.pathname === url.pathname)) {
