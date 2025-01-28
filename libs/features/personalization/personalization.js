@@ -789,7 +789,7 @@ async function getPersonalizationVariant(
       userEntitlements = await config.entitlements();
     }
     entitlementKeys.forEach((tag) => {
-      if (!PERSONALIZATION_KEYS.includes(tag)) userEntitlements.push(tag)
+      if (variantInfo.allNames.includes(tag) && !PERSONALIZATION_KEYS.includes(tag)) userEntitlements.push(tag)
     });
   }
 
