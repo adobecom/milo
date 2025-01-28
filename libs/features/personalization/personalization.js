@@ -788,7 +788,9 @@ async function getPersonalizationVariant(
     } else {
       userEntitlements = await config.entitlements();
     }
-    userEntitlements = ['test-tld-id'];
+    entitlementKeys.forEach((tag) => {
+      if (!PERSONALIZATION_KEYS.includes(tag)) userEntitlements.push(tag)
+    });
   }
 
   const hasMatch = (name) => {
