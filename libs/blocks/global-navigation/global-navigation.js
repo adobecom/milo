@@ -444,7 +444,8 @@ class Gnav {
       localNav.querySelector('.feds-localnav-title').setAttribute('daa-ll', `${title}_localNav|${isActive ? 'close' : 'open'}`);
     });
 
-    localNav.querySelector('.feds-localnav-curtain').addEventListener('click', (e) => {
+    const curtain = localNav.querySelector('.feds-localnav-curtain');
+    curtain.addEventListener('click', (e) => {
       trigger({ element: e.currentTarget, event: e, type: 'localNav-curtain' });
     });
     const promo = document.querySelector('.feds-promo-aside-wrapper');
@@ -456,8 +457,11 @@ class Gnav {
       // note: ios safari changes between -0.34375, 0, and 0.328125
       return rect.top === 0;
     };
-    window.addEventListener('scroll', () => {
+    window.addEventListener('scroll', (e) => {
       const classList = this.elements.localNav?.classList;
+      if (classList.contains('feds-localnav--active')) {
+        trigger({ element: curtain, event: e, type: 'localNav-curtain' });
+      }
       if (isAtTop()) {
         if (!classList?.contains('is-sticky')) {
           classList?.add('is-sticky');
