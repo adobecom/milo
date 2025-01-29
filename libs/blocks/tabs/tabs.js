@@ -67,7 +67,8 @@ function changeTabs(e) {
   const parent = target.parentNode;
   const content = parent.parentNode.parentNode.lastElementChild;
   const targetContent = content.querySelector(`#${target.getAttribute('aria-controls')}`);
-  const blockId = target.closest('.tabs').id;
+  const tabsBlock = target.closest('.tabs');
+  const blockId = tabsBlock.id;
   parent
     .querySelectorAll(`[aria-selected="true"][data-block-id="${blockId}"]`)
     .forEach((t) => t.setAttribute('aria-selected', false));
@@ -77,7 +78,7 @@ function changeTabs(e) {
     .querySelectorAll(`[role="tabpanel"][data-block-id="${blockId}"]`)
     .forEach((p) => p.setAttribute('hidden', true));
   targetContent.removeAttribute('hidden');
-  scrollStackedMobile(targetContent);
+  if (tabsBlock.classList.contains('stacked-mobile')) scrollStackedMobile(targetContent);
 }
 
 function getStringKeyName(str) {
