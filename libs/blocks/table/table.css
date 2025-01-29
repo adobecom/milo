@@ -358,7 +358,7 @@
   background-repeat: no-repeat;
   background-position: center;
   width: 12px;
-  height: 17px;
+  aspect-ratio: 1.7;
   cursor: pointer;
   rotate: -90deg;
   background-size: contain;
