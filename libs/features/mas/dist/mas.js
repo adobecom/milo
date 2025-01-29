@@ -1746,16 +1746,19 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
         white-space: nowrap;
     }
 
-    .spectrum--darkest merch-card[variant="ah-pricing"][background-color='gray']{
+    .spectrum--dark merch-card[variant="ah-pricing"][background-color='gray'],
+    .spectrum--darkest merch-card[variant="ah-pricing"][background-color='gray'] {
       --merch-card-ah-pricing-gray-background: rgb(27, 27, 27);
     }
 
+    .spectrum--dark merch-card[variant="ah-pricing"],
     .spectrum--darkest merch-card[variant="ah-pricing"] {
       --consonant-merch-card-background-color:rgb(17, 17, 17);
       --consonant-merch-card-heading-xxxs-color:rgb(242, 242, 242);
       --consonant-merch-card-body-xxs-color:rgb(219, 219, 219);
     }
 
+    .spectrum--dark merch-card[variant="ah-pricing"]:hover,
     .spectrum--darkest merch-card[variant="ah-pricing"]:hover {
       --consonant-merch-card-border-color:rgb(73, 73, 73);
     }
