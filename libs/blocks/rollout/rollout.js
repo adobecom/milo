@@ -61,6 +61,7 @@ const setUrlData = (url, allowEmptyPaths = false) => {
       urlOwner: urlParts[2].slice(0, pageIndex),
       urlPathRemainder: urlParts[2].slice(pageIndex + pageType.length),
       currentPageLang: getLanguageCode(url),
+      hostSuffix: pageType,
     });
 
     return urlData;
@@ -120,7 +121,7 @@ const buildUi = async (el, previewUrl, overrideBranch) => {
 
       const locV3ConfigUrl = new URL(
         'tools/locui-create',
-        `https://${branch}--${urlData.urlRepo}--${urlData.urlOwner}.hlx.page`,
+        `https://${branch}--${urlData.urlRepo}--${urlData.urlOwner}${urlData.hostSuffix}`,
       );
 
       const params = {
@@ -185,7 +186,7 @@ export default async function init(el, search = window.location.search) {
     const referrer = params?.get('referrer')?.trim();
     const host = params?.get('host')?.trim();
     const project = params?.get('project')?.trim();
-    if (!referrer || !host || !project) {
+    if (!referrer) {
       el.innerHTML = '<div class="modal">Missing required parameters</div>';
       return false;
     }
