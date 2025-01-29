@@ -1,4 +1,5 @@
 import getServiceConfig from '../../../utils/service-config.js';
+import { SLD } from '../../../utils/utils.js';
 import { origin } from '../../locui/utils/franklin.js';
 import { getInitialName } from '../input-urls/index.js';
 import {
@@ -154,10 +155,13 @@ export function validateOrigin(urlStr) {
     const urlDomains = url.host?.split('.');
     const originUrl = new URL(origin);
     const originDomains = originUrl.host?.split('.');
-    if (urlDomains && originDomains && urlDomains.length === originDomains.length) {
-      const [urlSD, urlSDL, urlTDL] = urlDomains;
-      const [originSD, originSDL, originTDL] = originDomains;
-      if (urlSD === originSD && urlTDL === originTDL && (urlSDL === originSDL || urlSDL === 'aem' || urlSDL === 'hlx')) {
+    if (SLD === 'hlx') {
+      return urlStr === origin;
+    }
+    if (SLD === 'aem' && urlDomains?.length === originDomains.length) {
+      const [urlSD, urlSLD] = urlDomains;
+      const [originSD] = originDomains;
+      if (urlSD === originSD && (urlSLD === 'aem' || urlSLD === 'hlx')) {
         return true;
       }
       return false;
