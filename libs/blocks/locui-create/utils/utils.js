@@ -152,8 +152,6 @@ export function getProjectByParams(searchParams) {
 export function validateOrigin(urlStr) {
   try {
     const url = new URL(urlStr);
-    
-    
     if (SLD === 'hlx') {
       return url.origin === origin;
     }
