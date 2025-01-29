@@ -1765,10 +1765,6 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
         overflow: hidden;
     }
 
-    merch-card[variant="ah-pricing"] [slot="cta"] .spectrum-Button {
-        background-color: red;
-    }
-
     merch-card[variant="ah-pricing"] [slot="cta"] .spectrum-Button-label {
         height: 16px;
         padding-block: 2px;
