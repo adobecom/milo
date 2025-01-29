@@ -355,7 +355,7 @@ export const yieldToMain = () => new Promise((resolve) => { setTimeout(resolve, 
 export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true } = {}) {
   let path = getFederatedUrl(url);
   const mepGnav = getConfig()?.mep?.inBlock?.['global-navigation'];
-  const mepFragment = mepGnav?.fragments?.[path];
+  const mepFragment = mepGnav?.fragments?.[getPath(path)];
   if (mepFragment && mepFragment.action === 'replace') {
     path = mepFragment.content;
   }
