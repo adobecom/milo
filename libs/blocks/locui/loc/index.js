@@ -187,8 +187,7 @@ async function loginToSharePoint() {
 async function connectSidekick() {
   return new Promise((resolve) => {
     const onStatus = ({ detail }) => {
-      const userInfo = detail?.data?.profile ?? null;
-      user.value = userInfo;
+      user.value = detail?.data?.profile ?? detail?.profile ?? null;
       if (user.value) {
         setStatus('details');
         resolve();
