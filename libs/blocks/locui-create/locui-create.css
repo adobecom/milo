@@ -382,6 +382,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: 10px;
+  word-break: break-all;
 }
 
 .modal-header strong {

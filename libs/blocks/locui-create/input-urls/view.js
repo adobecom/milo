@@ -233,6 +233,7 @@ export default function InputUrls() {
                 disabled=${projectCreated.value}
                 onInput=${handleNameChange}
                 placeholder="Enter letters, alphabet and hyphens only"
+                maxlength="50"
               />
               ${errors.name
               && html`<div class="form-field-error">${errors.name}</div>`}
@@ -265,7 +266,7 @@ export default function InputUrls() {
                   <option value="skip">Skip</option>
                   <option value="merge">Merge</option>
                   <option value="overwrite">Overwrite</option>
-                  <option value="custom-merge">Custom Merge</option>
+                  <option value="custom-merge">Custom Merge (.xlsx)</option>
                 </select>
                 ${errors.editBehavior
                 && html`<div class="form-field-error">
