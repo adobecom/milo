@@ -216,7 +216,7 @@
 .mep-popup select.mep-manifest-variants {
   height: 36px;
   border: 0;
-  padding: 8px 8px 8px 12px;
+  padding: 0 12px;
   border-radius: 4px;
 }
 
