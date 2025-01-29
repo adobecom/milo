@@ -154,7 +154,9 @@ export function CheckoutMixin(Base) {
             const newUrl = new URL(url);
             newUrl.searchParams.set('ctx', 'if');
             if (modalType === MODAL_TYPE_3_IN_1.CRM) {
-              newUrl.searchParams.set('af', 'uc_segmentation_hide_tabs');
+              newUrl.searchParams.set('af', 'uc_segmentation_hide_tabs,uc_new_user_iframe,uc_new_system_close');
+            } else {
+              newUrl.searchParams.set('af', 'uc_new_user_iframe,uc_new_system_close');
             }
             return newUrl.toString();
           } catch (error) {
