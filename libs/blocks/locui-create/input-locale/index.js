@@ -9,6 +9,7 @@ import {
   setProject,
   setLocale,
   updateDraftProject,
+  initByParams,
 } from '../store.js';
 import { ENG_LANG_CODE, PROJECT_ACTION, PROJECT_TYPES } from '../utils/constant.js';
 
@@ -265,14 +266,17 @@ export default function useInputLocale() {
     const updatedActiveLocales = { ...activeLocales };
     if (updatedActiveLocales[locale]) {
       delete updatedActiveLocales[locale];
-      isLangDeselecting = !Object.values(updatedActiveLocales).some((val) => val === lang);
+      isLangDeselecting = !Object.values(updatedActiveLocales)
+        .some((val) => val.toLowerCase() === lang.toLowerCase());
     } else {
       const language = findLanguageForLocale(locale);
       if (language) updatedActiveLocales[locale] = language.language;
     }
     setActiveLocales(updatedActiveLocales);
-    if (isLangDeselecting) {
-      const languageLocales = languagesList.find((l) => l.language === lang);
+    if (isLangDeselecting && !initByParams.value?.languages
+      ?.some((val) => val.language.toLowerCase() === lang.toLowerCase())) {
+      const languageLocales = languagesList
+        .find((l) => l.language.toLowerCase() === lang.toLowerCase());
       const { livecopies = '' } = languageLocales;
       const updatedSelectedLocale = selectedLocale
         .filter((loc) => !livecopies.split(',').includes(loc));
