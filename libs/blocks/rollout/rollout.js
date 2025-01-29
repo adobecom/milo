@@ -186,7 +186,7 @@ export default async function init(el, search = window.location.search) {
     const referrer = params?.get('referrer')?.trim();
     const host = params?.get('host')?.trim();
     const project = params?.get('project')?.trim();
-    if (!referrer) {
+    if (!referrer || !project) {
       el.innerHTML = '<div class="modal">Missing required parameters</div>';
       return false;
     }
