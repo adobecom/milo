@@ -1134,16 +1134,16 @@ async function updateManifestsAndPropositions(
     manifest.source = ['target'];
   });
   config.mep.targetManifests = targetManifests;
-  if (!config.mep.hybridPersEnabled) {
-    if (config.mep.enablePersV2) {
+  if (config.mep.enablePersV2) {
+    if (!config.mep.hybridPersEnabled) {
       window.addEventListener('alloy_sendEvent', () => {
         if (targetPropositions?.length && window._satellite) {
           window._satellite.track('propositionDisplay', targetPropositions);
         }
       }, { once: true });
-    } else if (targetPropositions?.length && window._satellite) {
-      window._satellite.track('propositionDisplay', targetPropositions);
     }
+  } else if (targetPropositions?.length && window._satellite) {
+    window._satellite.track('propositionDisplay', targetPropositions);
   }
   if (config.mep.targetEnabled === 'postlcp') {
     const event = new CustomEvent(MARTECH_RETURNED_EVENT, { detail: 'Martech returned' });
