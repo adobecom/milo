@@ -126,7 +126,7 @@
 .mep-popup a.mep-edit-manifest {
   cursor: pointer;
   display: flex;
-  flex-shrink: 0;
+  max-width: max-content;
   font-size: 18px;
   font-weight: 600;
 }
