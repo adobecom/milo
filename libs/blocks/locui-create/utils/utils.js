@@ -152,12 +152,14 @@ export function getProjectByParams(searchParams) {
 export function validateOrigin(urlStr) {
   try {
     const url = new URL(urlStr);
+    
+    
+    if (SLD === 'hlx') {
+      return url.origin === origin;
+    }
     const urlDomains = url.host?.split('.');
     const originUrl = new URL(origin);
     const originDomains = originUrl.host?.split('.');
-    if (SLD === 'hlx') {
-      return urlStr === origin;
-    }
     if (SLD === 'aem' && urlDomains?.length === originDomains.length) {
       const [urlSD, urlSLD] = urlDomains;
       const [originSD] = originDomains;
