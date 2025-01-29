@@ -1,8 +1,8 @@
 import { findDeepFragments } from '../../locui/actions/index.js';
 import { urls as locuiUrls } from '../../locui/utils/state.js';
 import { validateUrlsFormat } from '../../locui/loc/index.js';
-import { origin } from '../../locui/utils/franklin.js';
 import { PROJECT_TYPES } from '../utils/constant.js';
+import { validateOrigin } from '../utils/utils.js';
 
 export function validateProjectName(name) {
   if (name && !/^[a-zA-Z0-9-]+$/.test(name)) {
@@ -20,7 +20,7 @@ export function validateUrls(urlsStr) {
       if (!(/^(https):\/\/[^\s/$.?#].[^\s]*$/g.test(urls[0]))) {
         return errorMessage;
       }
-      if (url.origin !== origin) {
+      if (validateOrigin(url)) {
         return errorMessage;
       }
     } catch {

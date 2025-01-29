@@ -147,3 +147,21 @@ export function getProjectByParams(searchParams) {
 
   return Object.keys(projectInfo).length > 0 ? projectInfo : null;
 }
+
+export function validateOrigin(urlStr) {
+  try {
+    const url = new URL(urlStr);
+    const urlDomains = url.host?.split('.');
+    const originDomains = origin.host?.split('.');
+    if (urlDomains.length === originDomains.length) {
+      const [urlSD, urlSDL, urlTDL] = urlDomains;
+      const [originSD, originSDL, originTDL] = originDomains;
+      if (urlSD === originSD && urlTDL === originTDL && (urlSDL === originSDL || urlSDL === 'aem' || urlSDL === 'hlx')) {
+        return true;
+      }
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
