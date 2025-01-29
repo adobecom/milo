@@ -1,4 +1,4 @@
-import { useState, useEffect } from '../../../deps/htm-preact.js';
+import { useState, useEffect, useCallback } from '../../../deps/htm-preact.js';
 import {
   nextStep,
   prevStep,
@@ -171,7 +171,7 @@ export default function useInputLocale() {
     removeLocalesFromActive(regionCountryCodes);
   };
 
-  const updateRegionStates = (localeList) => {
+  const updateRegionStates = useCallback((localeList) => {
     const updatedRegionStates = {};
     localeRegionList.forEach((region) => {
       const regionLocales = region.value.split(',');
@@ -179,7 +179,7 @@ export default function useInputLocale() {
       updatedRegionStates[region.key] = isRegionActive;
     });
     return updatedRegionStates;
-  };
+  }, [localeRegionList]);
 
   const selectAll = () => {
     const allRegions = {};
@@ -211,7 +211,7 @@ export default function useInputLocale() {
       ...prevState,
       ...updateRegionStates(selectedLocale),
     }));
-  }, [selectedLocale]);
+  }, [selectedLocale, updateRegionStates]);
 
   const errorPresent = () => Object.keys(activeLocales).length > 0;
 
