@@ -1721,10 +1721,15 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
         font-size: var(--consonant-merch-card-body-xxs-font-size);
         font-style: normal;
         line-height: var(--consonant-merch-card-body-xxs-line-height);
+        text-decoration: underline;
         text-decoration-thickness: .75px;
         text-underline-offset: 1px;
         width: fit-content;
         margin-top: 4px;
+    }
+
+    merch-card[variant="ah-pricing"] [slot="price"] a:hover {
+        color: var(--consonant-merch-card-body-xxs-color);
     }
 
     merch-card[variant="ah-pricing"] [slot='image'] img {
