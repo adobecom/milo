@@ -6,7 +6,7 @@
     <title>M@S Web Components</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="spectrum.css">
-    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
   
   <!-- Include your custom element script as an ES6 module -->
@@ -16,11 +16,9 @@
   </script>
   <!-- Include Highlight.js stylesheet for syntax highlighting -->
   <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
-  <!-- Include any additional stylesheets -->
-  <link rel="stylesheet" href="styles.css">
 </head>
 <body class="spectrum spectrum--medium spectrum--light">
-<div class="sidenav">
+<aside class="sidenav">
     <a href="/libs/features/mas/docs/mas.html">Home</a>
     <a href="/libs/features/mas/docs/mas.js.html">mas.js</a>
     <a href="/libs/features/mas/docs/checkout-link.html">Checkout Link</a>
@@ -28,7 +26,7 @@
     <a href="/libs/features/mas/docs/merch-card.html">Merch Card</a>
     <a href="/libs/features/mas/docs/ccd.html">CCD Gallery</a>
     <a href="/libs/features/mas/docs/benchmarks.html">Benchmarks</a>
-</div>
+</aside>
 <main>
 <sp-theme color="light" scale="medium">
 <h1 id="mas.js" tabindex="-1">mas.js <a class="header-anchor" href="#mas.js" href="#mas.js" title="Permalink to this heading">#</a></h1>
@@ -38,12 +36,18 @@
 <ul>
 <li><a href="/libs/features/mas/docs/inline-price.html">inline-price</a></li>
 <li><a href="/libs/features/mas/docs/checkout-link.html">checkout-link</a></li>
+<li><a href="/libs/features/mas/docs/checkout-button.html">checkout-button</a></li>
 <li><a href="/libs/features/mas/docs/merch-card.html">merch-card</a></li>
 </ul>
 <h2 id="enablement-mas-commerce-service" tabindex="-1">Enablement <code>mas-commerce-service</code> <a class="header-anchor" href="#enablement-mas-commerce-service" href="#enablement-mas-commerce-service" title="Permalink to this heading">#</a></h2>
-<p>You do need to have mas.js on your page / application, including it can be done like the following</p>
+<p>⚠️ Safari does not support customized built-in elements. Therefore, you need to load the following polyfill before <code>mas.js</code> for browser compatibility (not required for in-app usage).</p>
 <pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">script</span>
-    <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;https://www.adobe.com/libs/features/mas/mas/dist/mas.js&quot;</span>
+    <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;https://www.adobe.comlibs/deps/custom-elements.js&quot;</span>
+&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+</code></pre>
+<p>To add <code>mas.js</code> to your page or application, include it as shown below:</p>
+<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">script</span>
+    <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;https://www.adobe.com/libs/features/mas/dist/mas.js&quot;</span>
     <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;module&quot;</span>
 &gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
 </code></pre>

@@ -150,6 +150,7 @@ const PAGE_URL = new URL(window.location.href);
 export const SLD = PAGE_URL.hostname.includes('.aem.') ? 'aem' : 'hlx';
 
 const PROMO_PARAM = 'promo';
+let isMartechLoaded = false;
 
 export function getEnv(conf) {
   const { host } = window.location;
@@ -668,7 +669,7 @@ export function convertStageLinks({ anchors, config, hostname, href }) {
   if (!matchedRules) return;
   const [, domainsMap] = matchedRules;
   [...anchors].forEach((a) => {
-    const hasLocalePrefix = a.pathname.startsWith(locale.prefix);
+    const hasLocalePrefix = a.pathname.startsWith(`${locale.prefix}/`);
     const noLocaleLink = hasLocalePrefix ? a.href.replace(locale.prefix, '') : a.href;
     const matchedDomain = Object.keys(domainsMap)
       .find((domain) => (new RegExp(domain)).test(noLocaleLink));
@@ -693,6 +694,7 @@ export function decorateLinks(el) {
   const { hostname, href } = window.location;
   const links = [...anchors].reduce((rdx, a) => {
     appendHtmlToLink(a);
+    if (a.href.includes('http:')) a.setAttribute('data-http-link', 'true');
     a.href = localizeLink(a.href);
     decorateSVG(a);
     if (a.href.includes('#_blank')) {
@@ -724,6 +726,14 @@ export function decorateLinks(el) {
     const copyEvent = '#_evt-copy';
     if (a.href.includes(copyEvent)) {
       decorateCopyLink(a, copyEvent);
+    }
+    const branchQuickLink = 'app.link';
+
+    if (a.href.includes(branchQuickLink)) {
+      (async () => {
+        const { default: processQuickLink } = await import('../features/branch-quick-links/branch-quick-links.js');
+        processQuickLink(a);
+      })();
     }
     // Append aria-label
     const pipeRegex = /\s?\|([^|]*)$/;
@@ -773,7 +783,17 @@ function decorateDefaults(el) {
   });
 }
 
-function decorateHeader() {
+export async function getGnavSource() {
+  const { locale, dynamicNavKey } = getConfig();
+  let url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
+  if (dynamicNavKey) {
+    const { default: dynamicNav } = await import('../features/dynamic-navigation/dynamic-navigation.js');
+    url = dynamicNav(url, dynamicNavKey);
+  }
+  return url;
+}
+
+async function decorateHeader() {
   const breadcrumbs = document.querySelector('.breadcrumbs');
   breadcrumbs?.remove();
   const header = document.querySelector('header');
@@ -794,9 +814,21 @@ function decorateHeader() {
   const dynamicNavActive = getMetadata('dynamic-nav') === 'on'
     && window.sessionStorage.getItem('gnavSource') !== null;
   if (!dynamicNavActive && (baseBreadcrumbs || breadcrumbs || autoBreadcrumbs)) header.classList.add('has-breadcrumbs');
+  const gnavSource = await getGnavSource();
+  let newNavEnabled = new URLSearchParams(window.location.search).get('newNav');
+  newNavEnabled = newNavEnabled ? newNavEnabled !== 'false' : getMetadata('mobile-gnav-v2') !== 'off';
+  if (gnavSource.split('/').pop().startsWith('localnav-') && newNavEnabled) {
+    // Preserving space to avoid CLS issue
+    const localNavWrapper = createTag('div', { class: 'feds-localnav' });
+    header.after(localNavWrapper);
+  }
   if (breadcrumbs) header.append(breadcrumbs);
   const promo = getMetadata('gnav-promo-source');
-  if (promo?.length) header.classList.add('has-promo');
+  if (promo?.length) {
+    const fedsPromoWrapper = createTag('div', { class: 'feds-promo-aside-wrapper' });
+    header.before(fedsPromoWrapper);
+    header.classList.add('has-promo');
+  }
 }
 
 async function decorateIcons(area, config) {
@@ -1049,6 +1081,7 @@ export async function loadMartech({
 
   const { default: initMartech } = await import('../martech/martech.js');
   await initMartech({ persEnabled, persManifests, postLCP });
+  isMartechLoaded = true;
 
   return true;
 }
@@ -1073,7 +1106,7 @@ function isSignedOut() {
  * @returns {boolean} True if personalization is enabled, otherwise false.
  */
 export function enablePersonalizationV2() {
-  const enablePersV2 = document.head.querySelector('meta[name="personalization-v2"]');
+  const enablePersV2 = getMepEnablement('personalization-v2');
   return !!enablePersV2 && isSignedOut();
 }
 
@@ -1085,6 +1118,7 @@ async function checkForPageMods() {
     martech,
   } = Object.fromEntries(PAGE_URL.searchParams);
   let targetInteractionPromise = null;
+  let calculatedTimeout = null;
   if (mepParam === 'off') return;
   const pzn = getMepEnablement('personalization');
   const promo = getMepEnablement('manifestnames', PROMO_PARAM);
@@ -1097,7 +1131,7 @@ async function checkForPageMods() {
   const enablePersV2 = enablePersonalizationV2();
   if ((target || xlg) && enablePersV2) {
     const params = new URL(window.location.href).searchParams;
-    const calculatedTimeout = parseInt(params.get('target-timeout'), 10)
+    calculatedTimeout = parseInt(params.get('target-timeout'), 10)
       || parseInt(getMetadata('target-timeout'), 10)
       || TARGET_TIMEOUT_MS;
 
@@ -1115,34 +1149,27 @@ async function checkForPageMods() {
 
       return { targetInteractionData: data, respTime, respStartTime: now };
     })();
-
-    const { init } = await import('../features/personalization/personalization.js');
-    await init({
-      mepParam,
-      mepHighlight,
-      mepButton,
-      pzn,
-      promo,
-      target,
-      targetInteractionPromise,
-      calculatedTimeout,
-    });
-    return;
-  }
-  if (target || xlg) {
-    loadMartech();
-  } else if (pzn && martech !== 'off') {
+  } else if ((target || xlg) && !isMartechLoaded) loadMartech();
+  else if (pzn && martech !== 'off') {
     loadIms()
       .then(() => {
         /* c8 ignore next */
-        if (window.adobeIMS?.isSignedInUser()) loadMartech();
+        if (window.adobeIMS?.isSignedInUser() && !isMartechLoaded) loadMartech();
       })
       .catch((e) => { console.log('Unable to load IMS:', e); });
   }
 
   const { init } = await import('../features/personalization/personalization.js');
   await init({
-    mepParam, mepHighlight, mepButton, pzn, promo, target, targetInteractionPromise,
+    mepParam,
+    mepHighlight,
+    mepButton,
+    pzn,
+    promo,
+    target,
+    targetInteractionPromise,
+    calculatedTimeout,
+    enablePersV2,
   });
 }
 
@@ -1154,12 +1181,8 @@ async function loadPostLCP(config) {
     /* c8 ignore next 2 */
     const { init } = await import('../features/personalization/personalization.js');
     await init({ postLCP: true });
-    if (enablePersonalizationV2()) {
-      loadMartech();
-    }
-  } else {
-    loadMartech();
-  }
+    if (enablePersonalizationV2() && !isMartechLoaded) loadMartech();
+  } else if (!isMartechLoaded) loadMartech();
 
   const georouting = getMetadata('georouting') || config.geoRouting;
   if (georouting === 'on') {
@@ -1407,10 +1430,6 @@ export async function loadArea(area = document) {
   if (isDoc) await documentPostSectionLoading(config);
 
   await loadDeferred(area, areaBlocks, config);
-}
-
-export function loadDelayed() {
-  // TODO: remove after all consumers have stopped calling this method
 }
 
 export const utf8ToB64 = (str) => window.btoa(unescape(encodeURIComponent(str)));

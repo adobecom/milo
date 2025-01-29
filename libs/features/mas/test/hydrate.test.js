@@ -15,14 +15,18 @@ import {
     ANALYTICS_TAG,
     ANALYTICS_LINK_ATTR,
     ANALYTICS_SECTION_ATTR,
+    processDescription,
+    updateLinksCSS,
 } from '../src/hydrate.js';
-import { AEM_FRAGMENT_MAPPING } from '../src/variants/ccd-slice.js';
+import { CCD_SLICE_AEM_FRAGMENT_MAPPING } from '../src/variants/ccd-slice.js';
 
 import { mockFetch } from './mocks/fetch.js';
 import { withWcs } from './mocks/wcs.js';
 
 const mockMerchCard = () => {
     const merchCard = document.createElement('div');
+    merchCard.spectrum = 'css';
+    merchCard.loading = 'lazy';
     document.body.appendChild(merchCard);
     const originalAppend = merchCard.append;
     merchCard.append = sinon.spy(function () {
@@ -47,7 +51,7 @@ describe('processMnemonics', async () => {
         const mnemonicsConfig = { size: 'm' };
         processMnemonics(fields, merchCard, mnemonicsConfig);
         expect(merchCard.outerHTML).to.equal(
-            '<div><merch-icon slot="icons" src="www.adobe.com/icons/photoshop.svg" size="m" href="https://www.adobe.com/"></merch-icon></div>',
+            '<div><merch-icon slot="icons" src="www.adobe.com/icons/photoshop.svg" loading="lazy" size="m" href="https://www.adobe.com/"></merch-icon></div>',
         );
     });
 });
@@ -234,7 +238,7 @@ describe('processCTAs', async () => {
         const footer = merchCard.append.firstCall.args[0];
         const button = footer.firstChild;
         expect(button.className).to.equal(
-            'spectrum-Button spectrum-Button--accent spectrum-Button--outline spectrum-Button--sizeM',
+            'spectrum-Button spectrum-Button--accent spectrum-Button--sizeM spectrum-Button--outline',
         );
     });
 
@@ -250,33 +254,6 @@ describe('processCTAs', async () => {
         const link = footer.firstChild;
         expect(link.tagName.toLowerCase()).to.equal('a');
         expect(link.classList.contains('primary-link')).to.be.true;
-    });
-
-    it('should handle click events on spectrum buttons', async () => {
-        const fields = {
-            ctas: '<a is="checkout-link" href="#" data-wcs-osi="abm" class="accent"><span>Click me</span></a>',
-        };
-
-        processCTAs(fields, merchCard, aemFragmentMapping);
-
-        const footer = merchCard.append.firstCall.args[0];
-        const button = footer.firstChild;
-        const link = button.firstChild;
-        const span = link.firstChild;
-
-        let target;
-        link.addEventListener('click', (e) => {
-            target = e.target;
-            e.preventDefault(); // prevent infinite loop
-        });
-
-        const customEvent = new MouseEvent('click', {
-            bubbles: true,
-            cancelable: true,
-            view: window,
-        });
-        span.dispatchEvent(customEvent);
-        expect(target).to.equal(link);
     });
 });
 
@@ -340,7 +317,10 @@ describe('processBackgroundImage', () => {
     });
 
     it('should not process background image when fields.backgroundImage is falsy', () => {
-        const fields = { backgroundImage: null, backgroundImageAltText: 'Test Image' };
+        const fields = {
+            backgroundImage: null,
+            backgroundImageAltText: 'Test Image',
+        };
         const backgroundImageConfig = { tag: 'div', slot: 'image' };
         const variant = 'ccd-slice';
 
@@ -356,7 +336,10 @@ describe('processBackgroundImage', () => {
     });
 
     it('should append background image for ccd-slice variant', () => {
-        const fields = { backgroundImage: 'test-image.jpg', backgroundImageAltText: 'Test Image' };
+        const fields = {
+            backgroundImage: 'test-image.jpg',
+            backgroundImageAltText: 'Test Image',
+        };
         const backgroundImageConfig = { tag: 'div', slot: 'image' };
         const variant = 'ccd-slice';
 
@@ -489,14 +472,45 @@ describe('hydrate', () => {
                 tags: ['mas:term/montly', 'mas:product_code/ccsn'],
             },
         };
-        merchCard.variantLayout = { aemFragmentMapping: AEM_FRAGMENT_MAPPING };
+        merchCard.variantLayout = {
+            aemFragmentMapping: CCD_SLICE_AEM_FRAGMENT_MAPPING,
+        };
         await hydrate(fragment, merchCard);
 
         expect(merchCard.getAttribute(ANALYTICS_SECTION_ATTR)).to.equal('ccsn');
         expect(
             merchCard
-                .querySelector(`a[data-analytics-id]`)
+                .querySelector(`button[data-analytics-id]`)
                 .getAttribute('daa-ll'),
         ).to.equal('buy-now-1');
+    });
+});
+
+describe('processDescription', async () => {
+    let merchCard;
+    let aemFragmentMapping;
+
+    beforeEach(async () => {
+        merchCard = mockMerchCard();
+
+        aemFragmentMapping = {
+            description: { tag: 'div', slot: 'body-xs' },
+        };
+    });
+
+    afterEach(() => {
+        sinon.restore();
+    });
+
+    it('should process merch links', async () => {
+        const fields = {
+            description: `Buy <a is="checkout-link" data-wcs-osi="abm" class="primary-link">Link Style</a><a is="checkout-link" data-wcs-osi="abm" class="secondary-link">Link Style</a>`,
+        };
+
+        processDescription(fields, merchCard, aemFragmentMapping.description);
+        updateLinksCSS(merchCard);
+        expect(merchCard.innerHTML).to.equal(
+            '<div slot="body-xs">Buy <a is="checkout-link" data-wcs-osi="abm" class="spectrum-Link spectrum-Link--primary">Link Style</a><a is="checkout-link" data-wcs-osi="abm" class="spectrum-Link spectrum-Link--secondary">Link Style</a></div>',
+        );
     });
 });
