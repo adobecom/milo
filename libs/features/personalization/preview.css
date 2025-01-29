@@ -55,6 +55,7 @@
 
 .mep-popup .mep-section {
   gap: 8px;
+  max-width: 444px;
   display: flex;
   flex-direction: column;
   flex: 0 1 calc(100% / 2 - 8px);
@@ -216,7 +217,7 @@
 .mep-popup select.mep-manifest-variants {
   height: 36px;
   border: 0;
-  padding: 0;
+  padding: 8px 8px 8px 12px;
   border-radius: 4px;
 }
 
