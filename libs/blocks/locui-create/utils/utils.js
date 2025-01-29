@@ -163,7 +163,7 @@ export function validateOrigin(urlStr) {
       return false;
     }
     return false;
-  } catch (e) {
+  } catch {
     return false;
   }
 }
