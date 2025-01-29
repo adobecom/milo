@@ -41,38 +41,91 @@ function constructPayload(form) {
   return payload;
 }
 
+// async function submitForm(form) {
+//   const payload = constructPayload(form); 
+//   payload.timestamp = new Date().toISOString(); 
+
+//   try {
+//     const response = await fetch('https://submission-worker.main--lehre-site--berufsbildung-basel.workers.dev', { 
+//       method: 'POST',
+//       headers: {
+//         'Content-Type': 'application/json',
+//       },
+//       body: JSON.stringify(payload), 
+//     });
+
+//     if (!response.ok) {
+//       throw new Error(`Error: ${response.statusText}`);
+//     }
+
+//     // Log success message to the console
+//     console.log('POST request successful:', {
+//       status: response.status,
+//       statusText: response.statusText,
+//       payload,
+//     });
+
+//     const result = await response.json();
+//     console.log('Response from server:', result); // Log the server response
+//     return result; 
+//   } catch (error) {
+//     console.error('Form submission failed:', error);
+//     return { status: 'error', message: error.message };
+//   }
+// }
+
 async function submitForm(form) {
-  const payload = constructPayload(form); 
-  payload.timestamp = new Date().toISOString(); 
+  const emailField = form.querySelector('#email');
+  const email = emailField ? emailField.value : null;
+  const captchaToken = document.querySelector('#cf-turnstile-response')?.value; // Get CAPTCHA token
+
+  if (!email) {
+    alert('Please enter your email.');
+    return;
+  }
+
+  if (!captchaToken) {
+    alert('Please complete the CAPTCHA.');
+    return;
+  }
 
   try {
     const response = await fetch('https://submission-worker.main--lehre-site--berufsbildung-basel.workers.dev', { 
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload), 
-    });
-
-    if (!response.ok) {
-      throw new Error(`Error: ${response.statusText}`);
-    }
-
-    // Log success message to the console
-    console.log('POST request successful:', {
-      status: response.status,
-      statusText: response.statusText,
-      payload,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, captchaToken }), 
     });
 
     const result = await response.json();
-    console.log('Response from server:', result); // Log the server response
-    return result; 
+    if (result.success) {
+      alert('Verification email sent! Check your inbox.');
+    } else {
+      alert('Failed CAPTCHA or email verification.');
+    }
   } catch (error) {
-    console.error('Form submission failed:', error);
-    return { status: 'error', message: error.message };
+    console.error('Error:', error);
+    alert('An error occurred.');
   }
 }
+
+function loadTurnstile() {
+  const script = document.createElement('script');
+  script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
+  script.async = true;
+  script.onload = () => {
+    turnstile.render('#captcha-container', {
+      sitekey: '0x4AAAAAAA6uqp_nGspHkBq3',  // Replace with your actual Site Key
+      callback: (token) => {
+        console.log('CAPTCHA Token received:', token);
+        document.querySelector('#cf-turnstile-response').value = token;
+      }
+    });
+  };
+  document.body.appendChild(script);
+}
+
+document.addEventListener('DOMContentLoaded', loadTurnstile);
+
 
 function clearForm(form) {
   [...form.elements].forEach((fe) => {
