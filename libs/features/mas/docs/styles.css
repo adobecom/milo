@@ -189,7 +189,7 @@ merch-card[variant='ccd-slice'][size='wide'] {
     grid-template-columns: minmax(290px, 322px);
 }
 
-.three-merch-cards.ah-pricing {
+.benchmarks.three-merch-cards.ah-pricing {
     grid-template-columns: minmax(156px, 484px);
 }
 
@@ -198,7 +198,7 @@ merch-card[variant='ccd-slice'][size='wide'] {
         grid-template-columns: repeat(2, minmax(290px, 322px));
     }
 
-    .three-merch-cards.ah-pricing {
+    .benchmarks.three-merch-cards.ah-pricing {
         grid-template-columns: repeat(2, 156px);
     }
 }
@@ -208,7 +208,7 @@ merch-card[variant='ccd-slice'][size='wide'] {
         grid-template-columns: repeat(3, minmax(290px, 322px));
     }
 
-    .three-merch-cards.ah-pricing {
+    .benchmarks.three-merch-cards.ah-pricing {
         grid-template-columns: repeat(3, minmax(156px, min-content));
     }
 }
@@ -240,18 +240,6 @@ merch-card[variant='ccd-slice'][size='wide'] {
 .three-merch-cards.ah-pricing {
     grid-template-columns: repeat(3, minmax(156px, 0px));
     gap: 8px;
-}
-
-@media screen and (min-width: 644px) {
-    .three-merch-cards.ah-pricing {
-        grid-template-columns: repeat(2, minmax(156px, 322px));
-    }
-}
-
-@media screen and (min-width: 966px) {
-    .three-merch-cards.ah-pricing {
-        grid-template-columns: repeat(3, minmax(156px, 322px));
-    }
 }
 
 .theme-toggle {
