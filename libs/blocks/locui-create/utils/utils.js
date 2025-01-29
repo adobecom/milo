@@ -155,16 +155,9 @@ export function validateOrigin(urlStr) {
     if (SLD === 'hlx') {
       return url.origin === origin;
     }
-    const urlDomains = url.host?.split('.');
-    const originUrl = new URL(origin);
-    const originDomains = originUrl.host?.split('.');
-    if (SLD === 'aem' && urlDomains?.length === originDomains.length) {
-      const [urlSD, urlSLD] = urlDomains;
-      const [originSD] = originDomains;
-      if (urlSD === originSD && (urlSLD === 'aem' || urlSLD === 'hlx')) {
-        return true;
-      }
-      return false;
+    if (SLD === 'aem') {
+      const origins = [url.origin.replace('.aem.', '.hlx.'), url.origin.replace('.hlx.', '.aem.')];
+      return origins.includes(origin);
     }
     return false;
   } catch {
