@@ -34,7 +34,12 @@
   --tabs-active-text-color: #fff;
   --tabs-bg-color: #1a1a1a;
   --tabs-active-bg-color: #1E1E1E;
-  --tabs-list-bg-gradient: linear-gradient(rgb(0 0 0 / 0%) 60%, rgb(0 0 0 / 80%));
+  --tabs-list-bg-gradient: linear-gradient(
+    rgba(0, 0, 0, 0%) 0%,
+    rgba(0, 0, 0, 0%) 60%,
+    rgba(0, 0, 0, 20%) 80%,
+    rgba(0, 0, 0, 40%) 100%
+  );
   --tabs-pill-bg-color: #ffffff;
   --tabs-pill-bg-color-hover: #666;
   --tabs-pill-bg-color-active: #444;
