@@ -22,14 +22,14 @@ describe('adobetv autoblock', () => {
       const scriptMock = originalCreateElement.call(document, 'script');
       Object.defineProperty(scriptMock, 'src', {
         set(url) {
-          const gistCb = url.match(/callback=([^&]+)/);
+          const gistCb = url.match(/callback=([^&]+)/)?.[1];
           if (!gistCb) return;
-          const callbackName = gistCb[1];
-          setTimeout(() => {
-            if (window[callbackName]) {
-              window[callbackName]({ div: '<div class="gist-data">Mock Gist Content</div>' });
+          (async () => {
+            await clock.runAllAsync();
+            if (window[gistCb]) {
+              window[gistCb]({ div: '<div class="gist-data">Mock Gist Content</div>' });
             }
-          }, 0);
+          })();
         },
       });
       return scriptMock;
