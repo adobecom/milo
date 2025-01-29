@@ -152,16 +152,18 @@ export function validateOrigin(urlStr) {
   try {
     const url = new URL(urlStr);
     const urlDomains = url.host?.split('.');
-    const originDomains = origin.host?.split('.');
-    if (urlDomains.length === originDomains.length) {
+    const originUrl = new URL(origin);
+    const originDomains = originUrl.host?.split('.');
+    if (urlDomains && originDomains && urlDomains.length === originDomains.length) {
       const [urlSD, urlSDL, urlTDL] = urlDomains;
       const [originSD, originSDL, originTDL] = originDomains;
       if (urlSD === originSD && urlTDL === originTDL && (urlSDL === originSDL || urlSDL === 'aem' || urlSDL === 'hlx')) {
         return true;
       }
+      return false;
     }
     return false;
-  } catch {
+  } catch (e) {
     return false;
   }
 }
