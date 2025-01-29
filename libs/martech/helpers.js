@@ -480,7 +480,7 @@ function sendPropositionDisplayRequest(filteredPayload, env, requestPayload) {
 }
 
 export const loadAnalyticsAndInteractionData = async (
-  { locale, env, calculatedTimeout, isHybridPersFlagEnabled },
+  { locale, env, calculatedTimeout, hybridPersEnabled },
 ) => {
   const value = getCookie('kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent');
 
@@ -492,10 +492,10 @@ export const loadAnalyticsAndInteractionData = async (
   const localTime = CURRENT_DATE.toISOString();
 
   const timezoneOffset = CURRENT_DATE.getTimezoneOffset();
-  if (isHybridPersFlagEnabled) {
+  if (hybridPersEnabled) {
     window.hybridPers = true;
   }
-  const hitType = isHybridPersFlagEnabled ? 'pageView' : 'propositionFetch';
+  const hitType = hybridPersEnabled ? 'pageView' : 'propositionFetch';
 
   const pageName = getPageNameForAnalytics({ locale });
 
@@ -540,7 +540,7 @@ export const loadAnalyticsAndInteractionData = async (
     });
 
     const resultPayload = getPayloadsByType(targetRespJson, 'personalization:decisions');
-    if (isHybridPersFlagEnabled) {
+    if (hybridPersEnabled) {
       const filteredPayload = filterPropositionInJson(resultPayload);
       if (filteredPayload.length) {
         sendPropositionDisplayRequest(filteredPayload, env, requestPayload);
