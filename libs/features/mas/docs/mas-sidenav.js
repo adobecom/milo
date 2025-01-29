@@ -1,6 +1,5 @@
 class MasSidenav extends HTMLElement {
   constructor() {
-    console.log('xd');
     super();
     this.classList.add('sidenav');
 

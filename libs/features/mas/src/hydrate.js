@@ -8,6 +8,7 @@ export const ANALYTICS_TAG = 'mas:product_code/';
 export const ANALYTICS_LINK_ATTR = 'daa-ll';
 export const ANALYTICS_SECTION_ATTR = 'daa-lh';
 const SPECTRUM_BUTTON_SIZES = ['XL', 'L', 'M', 'S'];
+const TEXT_TRUNCATE_SUFFIX = '...';
 
 export function processMnemonics(fields, merchCard, mnemonicsConfig) {
     const mnemonics = fields.mnemonicIcon?.map((icon, index) => ({
@@ -68,7 +69,7 @@ export function processTitle(fields, merchCard, titleConfig) {
             const [truncatedTitle, cleanTitle] = getTruncatedTextData(fields.cardTitle, maxCount);
             if (truncatedTitle !== fields.cardTitle) {
                 attributes.title = cleanTitle;
-                title = `${truncatedTitle.trim()}...`;
+                title = truncatedTitle;
             }
         }
         merchCard.append(
@@ -153,7 +154,7 @@ export function processDescription(fields, merchCard, descriptionConfig) {
             const [truncatedDescription, cleanDescription] = getTruncatedTextData(fields.description, maxCount);
             if (truncatedDescription !== fields.description) {
                 attributes.title = cleanDescription;
-                description = `${truncatedDescription.trim()}...`;
+                description = truncatedDescription;
             }
         }
         merchCard.append(createTag(
@@ -167,12 +168,28 @@ export function processDescription(fields, merchCard, descriptionConfig) {
 function getTruncatedTextData(text, limit) {
     const cleanText = clearTags(text);
     if (cleanText.length <= limit) return [text, cleanText];
+
     let index = 0;
     let inTag = false;
-    let remaining = limit - 3 < 1 ? 1 : limit - 3;
+    let remaining = limit - TEXT_TRUNCATE_SUFFIX.length < 1 ? 1 : limit - TEXT_TRUNCATE_SUFFIX.length;
+    let lastOpenTag = null;
+
     for (const char of text) {
         index++;
-        if (char === '<') inTag = true;
+        if (char === '<') {
+            inTag = true;
+            if (text[index] === '/') {
+                lastOpenTag = null;
+            }
+            else {
+                let tagName = '';
+                for (const tagChar of text.substring(index)) {
+                    if (tagChar === ' ' || tagChar === '>') break;
+                    tagName += tagChar;
+                }
+                lastOpenTag = tagName;
+            }
+        }
         if (char === '>') {
             inTag = false;
             continue;
@@ -181,7 +198,15 @@ function getTruncatedTextData(text, limit) {
         remaining--;
         if (remaining === 0) break;
     }
-    return [text.substring(0, index), cleanText];
+
+    let trimmedText = text.substring(0, index).trim();
+    const excludeClosingTags = ['p'];
+    if (lastOpenTag && !excludeClosingTags.includes(lastOpenTag)) {
+        trimmedText += `</${lastOpenTag}>`
+    }
+    let truncatedText = `${trimmedText}${TEXT_TRUNCATE_SUFFIX}`;
+
+    return [truncatedText, cleanText];
 }
 
 function clearTags(text) {
