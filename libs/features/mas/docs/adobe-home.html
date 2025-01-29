@@ -45,6 +45,7 @@
         <script type="module" src="../dist/mas.js"></script>
 
         <script type="module">
+            import './mas-sidenav.js';
             // mas-commerce-service
             const masCommerceService = document.createElement(
                 'mas-commerce-service',
@@ -61,6 +62,7 @@
     </head>
 
     <body class="spectrum spectrum--medium spectrum--light">
+        <aside is="mas-sidenav"></aside>
         <main>
             <div class="gallery-content">
                 <h1 id="ah-gallery" tabindex="-1">
@@ -86,11 +88,11 @@
                 >
 
                 <div class="adobe-home-container">
-                    <h2 id="ah-pricing-widget" tabindex="-1">
+                    <h2 id="ah-pricing" tabindex="-1">
                         Adobe Home Pricing Widget
                         <a
                             class="header-anchor"
-                            href="#ah-pricing-widget"
+                            href="#ah-pricing"
                             title="Permalink to this heading"
                             >#</a
                         >
@@ -98,7 +100,7 @@
 
                     <h3 class="size-header" tabindex="-1">Triple Plan</h3>
 
-                    <div class="three-merch-cards ah-pricing-widget">
+                    <div class="three-merch-cards ah-pricing">
                         <merch-card
                             ><aem-fragment
                                 fragment="44520fdc-f6e1-4c21-8978-9cd25a1be158"
@@ -118,7 +120,7 @@
 
                     <h3 class="size-header" tabindex="-1">Double Plan</h3>
 
-                    <div class="two-merch-cards ah-pricing-widget">
+                    <div class="two-merch-cards ah-pricing">
                         <merch-card
                             ><aem-fragment
                                 fragment="78fd4254-31a3-4191-b19b-031d9857300b"
@@ -133,7 +135,7 @@
 
                     <h3 class="size-header" tabindex="-1">Single Plan</h3>
 
-                    <div class="one-merch-card ah-pricing-widget">
+                    <div class="one-merch-card ah-pricing">
                         <merch-card
                             ><aem-fragment
                                 fragment="8058f4b0-309b-44be-9ae8-1494d8cfa6c4"

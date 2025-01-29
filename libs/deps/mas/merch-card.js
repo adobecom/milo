@@ -1689,14 +1689,14 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
             gap: 8px;
         }
     `);import{html as jr,css as Fo}from"../lit-all.min.js";var Vr=`
-    merch-card[variant="ah-pricing-widget"] [slot="body-xxs"] {
+    merch-card[variant="ah-pricing"] [slot="body-xxs"] {
         letter-spacing: normal;
         margin-bottom: 16px;
         box-sizing: border-box;
         color: var(--consonant-merch-card-body-xxs-color);
     }
 
-    merch-card[variant="ah-pricing-widget"] [slot="heading-xxxs"] {
+    merch-card[variant="ah-pricing"] [slot="heading-xxxs"] {
         overflow: hidden;
         text-overflow: ellipsis;
         display: -webkit-box;
@@ -1707,7 +1707,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
         -webkit-line-clamp: 3;
     }
 
-    merch-card[variant="ah-pricing-widget"] [slot="price"] .price {
+    merch-card[variant="ah-pricing"] [slot="price"] .price {
         display: inline-block;
         height: var(--consonant-merch-card-detail-xl-line-height);
         line-height: var(--consonant-merch-card-detail-xl-line-height);
@@ -1715,7 +1715,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
         margin-top: 4px;
     }
 
-    merch-card[variant="ah-pricing-widget"] [slot="price"] .price.price-strikethrough {
+    merch-card[variant="ah-pricing"] [slot="price"] .price.price-strikethrough {
         height: var(--consonant-merch-card-detail-l-line-height);
         line-height: var(--consonant-merch-card-detail-l-line-height);
         font-size: var(--consonant-merch-card-body-xxs-font-size);
@@ -1723,16 +1723,16 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
         color: var(--ah-gray-500);
     }
 
-    merch-card[variant="ah-pricing-widget"] [slot="price"] .price:not(.price-strikethrough) .price-currency-symbol,
-    merch-card[variant="ah-pricing-widget"] [slot="price"] .price:not(.price-strikethrough) .price-integer,
-    merch-card[variant="ah-pricing-widget"] [slot="price"] .price:not(.price-strikethrough) .price-decimals-delimiter,
-    merch-card[variant="ah-pricing-widget"] [slot="price"] .price:not(.price-strikethrough) .price-decimals {
+    merch-card[variant="ah-pricing"] [slot="price"] .price:not(.price-strikethrough) .price-currency-symbol,
+    merch-card[variant="ah-pricing"] [slot="price"] .price:not(.price-strikethrough) .price-integer,
+    merch-card[variant="ah-pricing"] [slot="price"] .price:not(.price-strikethrough) .price-decimals-delimiter,
+    merch-card[variant="ah-pricing"] [slot="price"] .price:not(.price-strikethrough) .price-decimals {
         color: var(--consonant-merch-card-heading-xxxs-color);
         font-size: var(--consonant-merch-card-heading-xs-font-size);
         font-weight: 700;
     }
 
-    merch-card[variant="ah-pricing-widget"] [slot="price"] .price:not(.price-strikethrough) .price-recurrence {
+    merch-card[variant="ah-pricing"] [slot="price"] .price:not(.price-strikethrough) .price-recurrence {
         display: inline-block;
         width: 21px;
         text-align: end;
@@ -1741,7 +1741,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
         font-weight: 400;
     }
 
-    merch-card[variant="ah-pricing-widget"] [slot="price"] a {
+    merch-card[variant="ah-pricing"] [slot="price"] a {
         color: var(--consonant-merch-card-body-xxs-color);
         font-size: var(--consonant-merch-card-body-xxs-font-size);
         font-style: normal;
@@ -1752,7 +1752,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
         margin-top: 4px;
     }
 
-    merch-card[variant="ah-pricing-widget"] [slot='image'] img {
+    merch-card[variant="ah-pricing"] [slot='image'] img {
         width: 100%;
         height: 100%;
         object-fit: cover;
@@ -1760,23 +1760,23 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
         overflow: hidden;
     }
 
-    merch-card[variant="ah-pricing-widget"] [slot="cta"] .spectrum-Button-label {
+    merch-card[variant="ah-pricing"] [slot="cta"] .spectrum-Button-label {
         height: 16px;
         padding-block: 2px;
         white-space: nowrap;
     }
 
-    .spectrum--dark merch-card[variant="ah-pricing-widget"][background-color='gray']{
-      --merch-card-ah-pricing-widget-gray-background: rgb(27, 27, 27);
+    .spectrum--dark merch-card[variant="ah-pricing"][background-color='gray']{
+      --merch-card-ah-pricing-gray-background: rgb(27, 27, 27);
     }
 
-    .spectrum--dark merch-card[variant="ah-pricing-widget"] {
+    .spectrum--dark merch-card[variant="ah-pricing"] {
       --consonant-merch-card-background-color:rgb(17, 17, 17);
       --consonant-merch-card-heading-xxxs-color:rgb(242, 242, 242);
       --consonant-merch-card-body-xxs-color:rgb(219, 219, 219);
     }
 
-    .spectrum--dark  merch-card[variant="ah-pricing-widget"]:hover {
+    .spectrum--dark  merch-card[variant="ah-pricing"]:hover {
       --consonant-merch-card-border-color:rgb(73, 73, 73);
     }
 `;var $o={mnemonics:{size:"s"},title:{tag:"h3",slot:"heading-xxxs",maxCount:40},description:{tag:"div",slot:"body-xxs",maxCount:200},prices:{tag:"p",slot:"price"},ctas:{slot:"cta",size:"S"},backgroundImage:{tag:"div",slot:"image"},allowedColors:["gray"],size:["single","double"]},q=class extends w{getGlobalCSS(){return Vr}get aemFragmentMapping(){return $o}renderLayout(){return jr`
@@ -1794,18 +1794,18 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
       ${this.card.size==="single"?jr`<slot name="image"></slot>`:""}
       <slot></slot>
     `}};p(q,"variantStyle",Fo`
-    :host([variant='ah-pricing-widget']) {
-        --merch-card-ah-pricing-widget-width: 132px;
-        --merch-card-ah-pricing-widget-min-width: 132px;
-        --merch-card-ah-pricing-widget-content-max-width: 245px;
-        --merch-card-ah-pricing-widget-height: 206px;
-        --merch-card-ah-pricing-widget-header-min-height: 36px;
-        --merch-card-ah-pricing-widget-gray-background: rgba(248, 248, 248);
-        --merch-card-ah-pricing-widget-text-color: rgba(19, 19, 19);
-        --merch-card-ah-pricing-widget-price-line-height: 17px;
-        width: var(--merch-card-ah-pricing-widget-width);
-        min-width: var(--merch-card-ah-pricing-widget-min-width);
-        min-height: var(--merch-card-ah-pricing-widget-height);
+    :host([variant='ah-pricing']) {
+        --merch-card-ah-pricing-width: 132px;
+        --merch-card-ah-pricing-min-width: 132px;
+        --merch-card-ah-pricing-content-max-width: 245px;
+        --merch-card-ah-pricing-height: 206px;
+        --merch-card-ah-pricing-header-min-height: 36px;
+        --merch-card-ah-pricing-gray-background: rgba(248, 248, 248);
+        --merch-card-ah-pricing-text-color: rgba(19, 19, 19);
+        --merch-card-ah-pricing-price-line-height: 17px;
+        width: var(--merch-card-ah-pricing-width);
+        min-width: var(--merch-card-ah-pricing-min-width);
+        min-height: var(--merch-card-ah-pricing-height);
         background-color: var(--consonant-merch-card-background-color);
         color: var(--consonant-merch-card-heading-xxxs-color);
         border-radius: 10px;
@@ -1818,27 +1818,27 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
         border: none;
     }
 
-    :host([variant='ah-pricing-widget'][size='single']) {
-        --merch-card-ah-pricing-widget-width: 460px;
+    :host([variant='ah-pricing'][size='single']) {
+        --merch-card-ah-pricing-width: 460px;
     }
 
-    :host([variant='ah-pricing-widget'][size='double']) {
-        --merch-card-ah-pricing-widget-width: 214px;
+    :host([variant='ah-pricing'][size='double']) {
+        --merch-card-ah-pricing-width: 214px;
     }
 
-    :host([variant='ah-pricing-widget'][background-color='gray']) {
-        background-color: var(--merch-card-ah-pricing-widget-gray-background);
+    :host([variant='ah-pricing'][background-color='gray']) {
+        background-color: var(--merch-card-ah-pricing-gray-background);
     }
 
-    :host([variant='ah-pricing-widget']) .content {
+    :host([variant='ah-pricing']) .content {
         display: flex;
         flex-direction: column;
-        width: var(--merch-card-ah-pricing-widget-content-max-width);
+        width: var(--merch-card-ah-pricing-content-max-width);
     }
 
-    :host([variant='ah-pricing-widget']) .header {
+    :host([variant='ah-pricing']) .header {
         display: flex;
-        min-height: var(--merch-card-ah-pricing-widget-header-min-height);
+        min-height: var(--merch-card-ah-pricing-header-min-height);
         flex-direction: row;
         align-items: center;
         gap: var(--consonant-merch-spacing-xxs);
@@ -1846,7 +1846,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
     }
 
 
-    :host([variant='ah-pricing-widget']) ::slotted([slot='price']) {
+    :host([variant='ah-pricing']) ::slotted([slot='price']) {
         margin-left: var(--spacing-xs);
         display: flex;
         flex-direction: column;
@@ -1854,29 +1854,29 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
         justify-content: end;
         font-size: var(--consonant-merch-card-detail-s-font-size);
         font-style: italic;
-        line-height: var(--merch-card-ah-pricing-widget-price-line-height);
+        line-height: var(--merch-card-ah-pricing-price-line-height);
         color: var(--consonant-merch-card-heading-xxxs-color);
     }
 
-    :host([variant='ah-pricing-widget']) .footer {
+    :host([variant='ah-pricing']) .footer {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-top: 24px;
     }
 
-    :host([variant='ah-pricing-widget']) ::slotted([slot='cta']) {
+    :host([variant='ah-pricing']) ::slotted([slot='cta']) {
         display: flex;
         flex-direction: row;
         flex-wrap: wrap;
         gap: 8px;
     }
 
-    :host([variant='ah-pricing-widget']) ::slotted([slot='image']) {
+    :host([variant='ah-pricing']) ::slotted([slot='image']) {
         width: 199px;
         overflow: hidden;
     }
-  `);customElements.define("ah-pricing-widget",q);var _t=(e,t=!1)=>{switch(e.variant){case"catalog":return new ie(e);case"image":return new Ve(e);case"inline-heading":return new je(e);case"mini-compare-chart":return new se(e);case"plans":return new ce(e);case"product":return new W(e);case"segment":return new le(e);case"special-offers":return new he(e);case"twp":return new de(e);case"ccd-suggested":return new me(e);case"ccd-slice":return new pe(e);case"ah-pricing-widget":return new q(e);default:return t?void 0:new W(e)}},Yr={catalog:vt,image:null,"inline-heading":null,"mini-compare-chart":null,plans:null,product:null,segment:null,"special-offers":St,twp:null,"ccd-suggested":At,"ccd-slice":Tt},Wr=()=>{let e=[];return e.push(ie.variantStyle),e.push(se.variantStyle),e.push(W.variantStyle),e.push(ce.variantStyle),e.push(le.variantStyle),e.push(he.variantStyle),e.push(de.variantStyle),e.push(me.variantStyle),e.push(pe.variantStyle),e.push(q.variantStyle),e};var qr=document.createElement("style");qr.innerHTML=`
+  `);customElements.define("ah-pricing",q);var _t=(e,t=!1)=>{switch(e.variant){case"catalog":return new ie(e);case"image":return new Ve(e);case"inline-heading":return new je(e);case"mini-compare-chart":return new se(e);case"plans":return new ce(e);case"product":return new W(e);case"segment":return new le(e);case"special-offers":return new he(e);case"twp":return new de(e);case"ccd-suggested":return new me(e);case"ccd-slice":return new pe(e);case"ah-pricing":return new q(e);default:return t?void 0:new W(e)}},Yr={catalog:vt,image:null,"inline-heading":null,"mini-compare-chart":null,plans:null,product:null,segment:null,"special-offers":St,twp:null,"ccd-suggested":At,"ccd-slice":Tt},Wr=()=>{let e=[];return e.push(ie.variantStyle),e.push(se.variantStyle),e.push(W.variantStyle),e.push(ce.variantStyle),e.push(le.variantStyle),e.push(he.variantStyle),e.push(de.variantStyle),e.push(me.variantStyle),e.push(pe.variantStyle),e.push(q.variantStyle),e};var qr=document.createElement("style");qr.innerHTML=`
 :root {
     --consonant-merch-card-detail-font-size: 12px;
     --consonant-merch-card-detail-font-weight: 500;

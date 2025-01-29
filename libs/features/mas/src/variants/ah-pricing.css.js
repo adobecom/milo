@@ -1,12 +1,12 @@
 export const CSS = `
-    merch-card[variant="ah-pricing-widget"] [slot="body-xxs"] {
+    merch-card[variant="ah-pricing"] [slot="body-xxs"] {
         letter-spacing: normal;
         margin-bottom: 16px;
         box-sizing: border-box;
         color: var(--consonant-merch-card-body-xxs-color);
     }
 
-    merch-card[variant="ah-pricing-widget"] [slot="heading-xxxs"] {
+    merch-card[variant="ah-pricing"] [slot="heading-xxxs"] {
         overflow: hidden;
         text-overflow: ellipsis;
         display: -webkit-box;
@@ -17,7 +17,7 @@ export const CSS = `
         -webkit-line-clamp: 3;
     }
 
-    merch-card[variant="ah-pricing-widget"] [slot="price"] .price {
+    merch-card[variant="ah-pricing"] [slot="price"] .price {
         display: inline-block;
         height: var(--consonant-merch-card-detail-xl-line-height);
         line-height: var(--consonant-merch-card-detail-xl-line-height);
@@ -25,7 +25,7 @@ export const CSS = `
         margin-top: 4px;
     }
 
-    merch-card[variant="ah-pricing-widget"] [slot="price"] .price.price-strikethrough {
+    merch-card[variant="ah-pricing"] [slot="price"] .price.price-strikethrough {
         height: var(--consonant-merch-card-detail-l-line-height);
         line-height: var(--consonant-merch-card-detail-l-line-height);
         font-size: var(--consonant-merch-card-body-xxs-font-size);
@@ -33,16 +33,16 @@ export const CSS = `
         color: var(--ah-gray-500);
     }
 
-    merch-card[variant="ah-pricing-widget"] [slot="price"] .price:not(.price-strikethrough) .price-currency-symbol,
-    merch-card[variant="ah-pricing-widget"] [slot="price"] .price:not(.price-strikethrough) .price-integer,
-    merch-card[variant="ah-pricing-widget"] [slot="price"] .price:not(.price-strikethrough) .price-decimals-delimiter,
-    merch-card[variant="ah-pricing-widget"] [slot="price"] .price:not(.price-strikethrough) .price-decimals {
+    merch-card[variant="ah-pricing"] [slot="price"] .price:not(.price-strikethrough) .price-currency-symbol,
+    merch-card[variant="ah-pricing"] [slot="price"] .price:not(.price-strikethrough) .price-integer,
+    merch-card[variant="ah-pricing"] [slot="price"] .price:not(.price-strikethrough) .price-decimals-delimiter,
+    merch-card[variant="ah-pricing"] [slot="price"] .price:not(.price-strikethrough) .price-decimals {
         color: var(--consonant-merch-card-heading-xxxs-color);
         font-size: var(--consonant-merch-card-heading-xs-font-size);
         font-weight: 700;
     }
 
-    merch-card[variant="ah-pricing-widget"] [slot="price"] .price:not(.price-strikethrough) .price-recurrence {
+    merch-card[variant="ah-pricing"] [slot="price"] .price:not(.price-strikethrough) .price-recurrence {
         display: inline-block;
         width: 21px;
         text-align: end;
@@ -51,7 +51,7 @@ export const CSS = `
         font-weight: 400;
     }
 
-    merch-card[variant="ah-pricing-widget"] [slot="price"] a {
+    merch-card[variant="ah-pricing"] [slot="price"] a {
         color: var(--consonant-merch-card-body-xxs-color);
         font-size: var(--consonant-merch-card-body-xxs-font-size);
         font-style: normal;
@@ -62,7 +62,7 @@ export const CSS = `
         margin-top: 4px;
     }
 
-    merch-card[variant="ah-pricing-widget"] [slot='image'] img {
+    merch-card[variant="ah-pricing"] [slot='image'] img {
         width: 100%;
         height: 100%;
         object-fit: cover;
@@ -70,23 +70,23 @@ export const CSS = `
         overflow: hidden;
     }
 
-    merch-card[variant="ah-pricing-widget"] [slot="cta"] .spectrum-Button-label {
+    merch-card[variant="ah-pricing"] [slot="cta"] .spectrum-Button-label {
         height: 16px;
         padding-block: 2px;
         white-space: nowrap;
     }
 
-    .spectrum--dark merch-card[variant="ah-pricing-widget"][background-color='gray']{
-      --merch-card-ah-pricing-widget-gray-background: rgb(27, 27, 27);
+    .spectrum--dark merch-card[variant="ah-pricing"][background-color='gray']{
+      --merch-card-ah-pricing-gray-background: rgb(27, 27, 27);
     }
 
-    .spectrum--dark merch-card[variant="ah-pricing-widget"] {
+    .spectrum--dark merch-card[variant="ah-pricing"] {
       --consonant-merch-card-background-color:rgb(17, 17, 17);
       --consonant-merch-card-heading-xxxs-color:rgb(242, 242, 242);
       --consonant-merch-card-body-xxs-color:rgb(219, 219, 219);
     }
 
-    .spectrum--dark  merch-card[variant="ah-pricing-widget"]:hover {
+    .spectrum--dark  merch-card[variant="ah-pricing"]:hover {
       --consonant-merch-card-border-color:rgb(73, 73, 73);
     }
 `;

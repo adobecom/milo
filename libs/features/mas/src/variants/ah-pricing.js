@@ -1,6 +1,6 @@
 import { html, css } from 'lit';
 import { VariantLayout } from './variant-layout.js';
-import { CSS } from './ah-pricing-widget.css.js';
+import { CSS } from './ah-pricing.css.js';
 
 const AEM_FRAGMENT_MAPPING = {
   mnemonics: { size: 's' },
@@ -13,7 +13,7 @@ const AEM_FRAGMENT_MAPPING = {
   size: ['single', 'double']
 };
 
-export class AHPricingWidget extends VariantLayout {
+export class AHPricing extends VariantLayout {
   getGlobalCSS() {
     return CSS;
   }
@@ -42,18 +42,18 @@ export class AHPricingWidget extends VariantLayout {
   }
 
   static variantStyle = css`
-    :host([variant='ah-pricing-widget']) {
-        --merch-card-ah-pricing-widget-width: 132px;
-        --merch-card-ah-pricing-widget-min-width: 132px;
-        --merch-card-ah-pricing-widget-content-max-width: 245px;
-        --merch-card-ah-pricing-widget-height: 206px;
-        --merch-card-ah-pricing-widget-header-min-height: 36px;
-        --merch-card-ah-pricing-widget-gray-background: rgba(248, 248, 248);
-        --merch-card-ah-pricing-widget-text-color: rgba(19, 19, 19);
-        --merch-card-ah-pricing-widget-price-line-height: 17px;
-        width: var(--merch-card-ah-pricing-widget-width);
-        min-width: var(--merch-card-ah-pricing-widget-min-width);
-        min-height: var(--merch-card-ah-pricing-widget-height);
+    :host([variant='ah-pricing']) {
+        --merch-card-ah-pricing-width: 132px;
+        --merch-card-ah-pricing-min-width: 132px;
+        --merch-card-ah-pricing-content-max-width: 245px;
+        --merch-card-ah-pricing-height: 206px;
+        --merch-card-ah-pricing-header-min-height: 36px;
+        --merch-card-ah-pricing-gray-background: rgba(248, 248, 248);
+        --merch-card-ah-pricing-text-color: rgba(19, 19, 19);
+        --merch-card-ah-pricing-price-line-height: 17px;
+        width: var(--merch-card-ah-pricing-width);
+        min-width: var(--merch-card-ah-pricing-min-width);
+        min-height: var(--merch-card-ah-pricing-height);
         background-color: var(--consonant-merch-card-background-color);
         color: var(--consonant-merch-card-heading-xxxs-color);
         border-radius: 10px;
@@ -66,27 +66,27 @@ export class AHPricingWidget extends VariantLayout {
         border: none;
     }
 
-    :host([variant='ah-pricing-widget'][size='single']) {
-        --merch-card-ah-pricing-widget-width: 460px;
+    :host([variant='ah-pricing'][size='single']) {
+        --merch-card-ah-pricing-width: 460px;
     }
 
-    :host([variant='ah-pricing-widget'][size='double']) {
-        --merch-card-ah-pricing-widget-width: 214px;
+    :host([variant='ah-pricing'][size='double']) {
+        --merch-card-ah-pricing-width: 214px;
     }
 
-    :host([variant='ah-pricing-widget'][background-color='gray']) {
-        background-color: var(--merch-card-ah-pricing-widget-gray-background);
+    :host([variant='ah-pricing'][background-color='gray']) {
+        background-color: var(--merch-card-ah-pricing-gray-background);
     }
 
-    :host([variant='ah-pricing-widget']) .content {
+    :host([variant='ah-pricing']) .content {
         display: flex;
         flex-direction: column;
-        width: var(--merch-card-ah-pricing-widget-content-max-width);
+        width: var(--merch-card-ah-pricing-content-max-width);
     }
 
-    :host([variant='ah-pricing-widget']) .header {
+    :host([variant='ah-pricing']) .header {
         display: flex;
-        min-height: var(--merch-card-ah-pricing-widget-header-min-height);
+        min-height: var(--merch-card-ah-pricing-header-min-height);
         flex-direction: row;
         align-items: center;
         gap: var(--consonant-merch-spacing-xxs);
@@ -94,7 +94,7 @@ export class AHPricingWidget extends VariantLayout {
     }
 
 
-    :host([variant='ah-pricing-widget']) ::slotted([slot='price']) {
+    :host([variant='ah-pricing']) ::slotted([slot='price']) {
         margin-left: var(--spacing-xs);
         display: flex;
         flex-direction: column;
@@ -102,29 +102,29 @@ export class AHPricingWidget extends VariantLayout {
         justify-content: end;
         font-size: var(--consonant-merch-card-detail-s-font-size);
         font-style: italic;
-        line-height: var(--merch-card-ah-pricing-widget-price-line-height);
+        line-height: var(--merch-card-ah-pricing-price-line-height);
         color: var(--consonant-merch-card-heading-xxxs-color);
     }
 
-    :host([variant='ah-pricing-widget']) .footer {
+    :host([variant='ah-pricing']) .footer {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-top: 24px;
     }
 
-    :host([variant='ah-pricing-widget']) ::slotted([slot='cta']) {
+    :host([variant='ah-pricing']) ::slotted([slot='cta']) {
         display: flex;
         flex-direction: row;
         flex-wrap: wrap;
         gap: 8px;
     }
 
-    :host([variant='ah-pricing-widget']) ::slotted([slot='image']) {
+    :host([variant='ah-pricing']) ::slotted([slot='image']) {
         width: 199px;
         overflow: hidden;
     }
   `;
 }
 
-customElements.define('ah-pricing-widget', AHPricingWidget);
+customElements.define('ah-pricing', AHPricing);
