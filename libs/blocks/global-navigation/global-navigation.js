@@ -83,22 +83,24 @@ export const CONFIG = {
           messageEventListener: (event) => {
             const { name, payload, executeDefaultAction } = event.detail;
             if (name !== 'System') return;
-            switch (payload.subType) {
-              case 'AppInitiated':
-                window.adobeProfile?.getUserProfile()
-                  .then((data) => { setUserProfile(data); })
-                  .catch(() => { setUserProfile({}); });
-                break;
-              case 'SignOut':
-                executeDefaultAction();
-                break;
-              case 'ProfileSwitch':
-                executeDefaultAction().then((profile) => {
-                  if (profile) window.location.reload();
-                });
-                break;
-              default:
-                break;
+            if (typeof executeDefaultAction === 'function') {
+              switch (payload.subType) {
+                case 'AppInitiated':
+                  window.adobeProfile?.getUserProfile()
+                    .then((data) => { setUserProfile(data); })
+                    .catch(() => { setUserProfile({}); });
+                  break;
+                case 'SignOut':
+                  executeDefaultAction();
+                  break;
+                case 'ProfileSwitch':
+                  Promise.resolve(executeDefaultAction()).then((profile) => {
+                    if (profile) window.location.reload();
+                  });
+                  break;
+                default:
+                  break;
+              }
             }
           },
           componentLoaderConfig: {
