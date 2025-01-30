@@ -33,10 +33,17 @@ describe('Navigation component', async () => {
 
   it('Renders the header block', async () => {
     const onReady = stub();
-    await loadBlock({ authoringPath: '/federal/dev', header: { imsClientId: 'fedsmilo', onReady }, env: 'prod', theme: 'dark' }, 'http://localhost:2000');
+    await loadBlock({ authoringPath: '/federal/dev', header: { imsClientId: 'fedsmilo', onReady, layout: 'fullWidth', noBorder: 'true' }, env: 'prod', theme: 'dark' }, 'http://localhost:2000');
     const el = document.getElementsByTagName('header');
     expect(el).to.exist;
     expect(onReady.called).to.be.true;
+  });
+
+  it('Renders the localnav if isLocalNav key is passed', async () => {
+    const onReady = stub();
+    await loadBlock({ authoringPath: '/federal/dev', header: { imsClientId: 'fedsmilo', onReady, isLocalNav: true, jarvis: { id: '1.1' } }, env: 'prod', theme: 'dark' }, 'http://localhost:2000');
+    const el = document.querySelector('.feds-localnav');
+    expect(el).to.exist;
   });
 
   it('Renders the footer block should not load when config is not passed', async () => {
