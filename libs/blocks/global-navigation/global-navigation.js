@@ -91,7 +91,7 @@ export const CONFIG = {
                 executeDefaultAction();
                 break;
               case 'ProfileSwitch':
-                executeDefaultAction().then((profile) => {
+                Promise.resolve(executeDefaultAction()).then((profile) => {
                   if (profile) window.location.reload();
                 });
                 break;
