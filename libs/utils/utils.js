@@ -793,6 +793,14 @@ export async function getGnavSource() {
   return url;
 }
 
+export function isLocalNav() {
+  const { locale = {} } = getConfig();
+  const gnavSource = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
+  let newNavEnabled = new URLSearchParams(window.location.search).get('newNav');
+  newNavEnabled = newNavEnabled ? newNavEnabled !== 'false' : getMetadata('mobile-gnav-v2') !== 'off';
+  return gnavSource.split('/').pop().startsWith('localnav-') && newNavEnabled;
+}
+
 async function decorateHeader() {
   const breadcrumbs = document.querySelector('.breadcrumbs');
   breadcrumbs?.remove();
@@ -814,7 +822,6 @@ async function decorateHeader() {
   const dynamicNavActive = getMetadata('dynamic-nav') === 'on'
     && window.sessionStorage.getItem('gnavSource') !== null;
   if (!dynamicNavActive && (baseBreadcrumbs || breadcrumbs || autoBreadcrumbs)) header.classList.add('has-breadcrumbs');
-  const { isLocalNav } = await import('../blocks/global-navigation/utilities/utilities.js');
   const hasLocalNav = await isLocalNav();
   if (hasLocalNav) {
     // Preserving space to avoid CLS issue
