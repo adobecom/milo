@@ -1189,7 +1189,7 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
   list-style: none;
 }
 
-.feds-localnav.feds-localnav--active .feds-localnav-items .feds-menu-items {
+.feds-localnav .feds-localnav-items .feds-menu-items {
   padding: 0;
   border-bottom: 0;
 }
@@ -1198,11 +1198,11 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
   padding: 0;
 }
 
-.feds-localnav.feds-localnav--active .feds-localnav-items .feds-menu-column .feds-navLink {
+.feds-localnav .feds-localnav-items .feds-menu-column .feds-navLink {
   padding-left: 38px;
 }
 
-.feds-localnav.feds-localnav--active .feds-localnav-items .feds-menu-items .feds-navLink {
+.feds-localnav .feds-localnav-items .feds-menu-items .feds-navLink {
   padding: 12px 56px;
 }
 

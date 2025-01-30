@@ -267,7 +267,9 @@ const closeOnClickOutside = (e, isLocalNav, navWrapper) => {
     .find((openItem) => openItem.parentElement.contains(e.target));
 
   if (!isClickedElemOpen) {
-    closeAllDropdowns();
+    const animatedElement = isLocalNav ? document.querySelector('header.new-nav + .feds-localnav .feds-localnav-items') : undefined;
+    const animationType = isLocalNav ? 'transition' : undefined;
+    closeAllDropdowns({ animatedElement, animationType });
   }
 };
 
@@ -446,7 +448,13 @@ class Gnav {
 
     const curtain = localNav.querySelector('.feds-localnav-curtain');
     curtain.addEventListener('click', (e) => {
-      trigger({ element: e.currentTarget, event: e, type: 'localNav-curtain' });
+      trigger({
+        element: e.currentTarget,
+        event: e,
+        type: 'localNav-curtain',
+        animatedElement: itemWrapper,
+        animationType: 'transition',
+      });
     });
     const promo = document.querySelector('.feds-promo-aside-wrapper');
     if (promo) localNav.classList.add('has-promo');
@@ -460,7 +468,13 @@ class Gnav {
     window.addEventListener('scroll', (e) => {
       const classList = this.elements.localNav?.classList;
       if (classList.contains('feds-localnav--active')) {
-        trigger({ element: curtain, event: e, type: 'localNav-curtain' });
+        trigger({
+          element: curtain,
+          event: e,
+          type: 'localNav-curtain',
+          animatedElement: itemWrapper,
+          animationType: 'transition',
+        });
       }
       if (isAtTop()) {
         if (!classList?.contains('is-sticky')) {
