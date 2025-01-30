@@ -286,7 +286,7 @@
         showFiltersCb.dispatchEvent(new Event('change'));
         await delay(50);
 
-        expect(findByLabel('Event Filter')).to.not.be.null;
+        expect(findByLabel('Show Empty Filters')).to.not.be.null;
 
         // Verify adding of filter tag
         const addBtn = configPanelEl.querySelector('.filters.multifield-add');
