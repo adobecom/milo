@@ -783,16 +783,6 @@ function decorateDefaults(el) {
   });
 }
 
-export async function getGnavSource() {
-  const { locale, dynamicNavKey } = getConfig();
-  let url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
-  if (dynamicNavKey) {
-    const { default: dynamicNav } = await import('../features/dynamic-navigation/dynamic-navigation.js');
-    url = dynamicNav(url, dynamicNavKey);
-  }
-  return url;
-}
-
 export function isLocalNav() {
   const { locale = {} } = getConfig();
   const gnavSource = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
