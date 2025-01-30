@@ -1,4 +1,4 @@
-import { getConfig, getLocale } from '../../../utils/utils.js';
+import { getConfig, getLocale, SLD } from '../../../utils/utils.js';
 import {
   allowSendForLoc,
   heading,
