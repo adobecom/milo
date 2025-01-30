@@ -1163,38 +1163,6 @@ async function updateManifestsAndPropositions(
   return targetManifests;
 }
 
-function roundToQuarter(num) {
-  return Math.ceil(num / 250) / 4;
-}
-
-function calculateResponseTime(responseStart) {
-  const responseTime = Date.now() - responseStart;
-  return roundToQuarter(responseTime);
-}
-
-function sendTargetResponseAnalytics(failure, responseStart, timeoutLocal, message) {
-  // temporary solution until we can decide on a better timeout value
-  const responseTime = calculateResponseTime(responseStart);
-  const timeoutTime = roundToQuarter(timeoutLocal);
-  let val = `target response time ${responseTime}:timed out ${failure}:timeout ${timeoutTime}`;
-  if (message) val += `:${message}`;
-  // eslint-disable-next-line no-underscore-dangle
-  window._satellite?.track?.('event', {
-    documentUnloading: true,
-    xdm: {
-      eventType: 'web.webinteraction.linkClicks',
-      web: {
-        webInteraction: {
-          linkClicks: { value: 1 },
-          type: 'other',
-          name: val,
-        },
-      },
-    },
-    data: { _adobe_corpnew: { digitalData: { primaryEvent: { eventInfo: { eventName: val } } } } },
-  });
-}
-
 const handleAlloyResponse = (response) => ((response.propositions || response.decisions))
   ?.map((i) => i.items)
   ?.flat()
@@ -1216,19 +1184,17 @@ const handleAlloyResponse = (response) => ((response.propositions || response.de
   ?.filter(Boolean) ?? [];
 
 async function handleMartechTargetInteraction(
-  { config, targetInteractionPromise, calculatedTimeout },
+  { config, targetInteractionPromise },
 ) {
   let targetManifests = [];
   let targetPropositions = [];
   if (config?.mep?.enablePersV2 && targetInteractionPromise) {
-    const { targetInteractionData, respTime, respStartTime } = await targetInteractionPromise;
-    sendTargetResponseAnalytics(false, respStartTime, calculatedTimeout);
+    const { targetInteractionData, respTime } = await targetInteractionPromise;
     if (targetInteractionData.result) {
-      const roundedResponseTime = roundToQuarter(respTime);
       performance.clearMarks();
       performance.clearMeasures();
       try {
-        window.lana.log(`target response time: ${roundedResponseTime}`, {
+        window.lana.log(`target response time: ${Math.ceil(respTime / 250) / 4}`, {
           tags: 'martech',
           errorType: 'e',
           sampleRate: 0.5,
@@ -1252,7 +1218,7 @@ async function callMartech(config) {
   const {
     targetManifests,
     targetPropositions,
-  } = await getTargetPersonalization({ handleAlloyResponse, sendTargetResponseAnalytics });
+  } = await getTargetPersonalization({ handleAlloyResponse });
   return updateManifestsAndPropositions(
     { config, targetManifests, targetPropositions },
   );
