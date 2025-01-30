@@ -43,12 +43,22 @@ export function removeLangstorePrefix(path) {
   return path.replace(/^\/langstore\/[^/]+/, '');
 }
 
+export function validateOrigin(urlStr) {
+  try {
+    const url = new URL(urlStr);
+    const origins = [url.origin.replace('.aem.', '.hlx.'), url.origin.replace('.hlx.', '.aem.')];
+    return origins.includes(origin);
+  } catch {
+    return false;
+  }
+}
+
 export function validateUrlsFormat(projectUrls, removeMedia = false) {
   let firstUrlLang;
   projectUrls.forEach((projectUrl, idx) => {
     const url = getUrl(projectUrl);
     const domain = isUrl(url.alt) ?? url;
-    if (domain.origin !== origin) {
+    if (!validateOrigin(domain.origin)) {
       const aemUrl = domain.hostname?.split('--').length === 3;
       url.valid = !aemUrl ? 'not AEM url' : 'not same domain';
     }
