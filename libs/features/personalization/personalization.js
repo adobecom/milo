@@ -354,12 +354,15 @@ function registerInBlockActions(command) {
     command.selector = blockSelector;
     if (getSelectorType(blockSelector) === 'fragment') {
       const { origin } = window.location;
+      const isLocalOrSLD = origin.includes('localhost') || origin.includes(`.${SLD}.`);
+      const isLive = origin.includes('.live');
 
-      if (!blockSelector.includes('/federal/') && (origin.includes('localhost') || origin.includes(`.${SLD}.`))) {
-        blockSelector = blockSelector.replace(
-          origin.includes('.live') ? '.page' : '.live',
-          origin.includes('.live') ? '.live' : '.page',
-        );
+      if (!blockSelector.includes('/federal/') && isLocalOrSLD) {
+        blockSelector = blockSelector.replace(isLive ? '.page' : '.live', isLive ? '.live' : '.page');
+      }
+
+      if (getSelectorType(command.content) === 'fragment') {
+        command.content = command.content.replace(isLive ? '.page' : '.live', isLive ? '.live' : '.page');
       }
 
       blockSelector = blockSelector.includes('/federal/') ? getFederatedUrl(blockSelector) : blockSelector;
