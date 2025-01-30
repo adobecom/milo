@@ -1,8 +1,15 @@
 /* eslint import/no-relative-packages: 0 */
 import {
-  getConfig, getMetadata, loadStyle, loadLana, decorateLinks, localizeLink,
+  getConfig,
+  getMetadata,
+  loadStyle,
+  loadLana,
+  decorateLinks,
+  localizeLink,
+  getFederatedContentRoot,
+  getFederatedUrl,
+  getFedsPlaceholderConfig,
 } from '../../../utils/utils.js';
-import { getFederatedContentRoot, getFederatedUrl, getFedsPlaceholderConfig } from '../../../utils/federated.js';
 import { processTrackingLabels } from '../../../martech/attributes.js';
 import { replaceText } from '../../../features/placeholders.js';
 import { PERSONALIZATION_TAGS } from '../../../features/personalization/personalization.js';

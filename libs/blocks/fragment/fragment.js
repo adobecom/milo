@@ -95,7 +95,7 @@ export default async function init(a) {
 
   let resourcePath = a.href;
   if (a.href.includes('/federal/')) {
-    const { getFederatedUrl } = await import('../../utils/federated.js');
+    const { getFederatedUrl } = await import('../../utils/utils.js');
     resourcePath = getFederatedUrl(a.href);
   }
   const resp = await customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
