@@ -2,7 +2,9 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-console */
 
-import { createTag, getConfig, loadLink, loadScript, localizeLink } from '../../utils/utils.js';
+import {
+  createTag, getConfig, loadLink, loadScript, localizeLink, SLD,
+} from '../../utils/utils.js';
 import { getFederatedUrl } from '../../utils/federated.js';
 
 /* c8 ignore start */
@@ -351,8 +353,17 @@ function registerInBlockActions(command) {
     blockSelector = blockAndSelector.slice(1).join(' ');
     command.selector = blockSelector;
     if (getSelectorType(blockSelector) === 'fragment') {
-      if (blockSelector.includes('/federal/')) blockSelector = getFederatedUrl(blockSelector);
-      if (command.content.includes('/federal/')) command.content = getFederatedUrl(command.content);
+      const { origin } = window.location;
+
+      if (!blockSelector.includes('/federal/') && (origin.includes('localhost') || origin.includes(`.${SLD}.`))) {
+        blockSelector = blockSelector.replace(
+          origin.includes('.live') ? '.page' : '.live',
+          origin.includes('.live') ? '.live' : '.page',
+        );
+      }
+
+      blockSelector = blockSelector.includes('/federal/') ? getFederatedUrl(blockSelector) : blockSelector;
+      command.content = command.content.includes('/federal/') ? getFederatedUrl(command.content) : command.content;
       config.mep.inBlock[blockName].fragments ??= {};
       const { fragments } = config.mep.inBlock[blockName];
       delete command.selector;
