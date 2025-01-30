@@ -80,7 +80,7 @@ export const CONFIG = {
           isSignUpRequired: false,
           messageEventListener: (event) => {
             const { name, payload, executeDefaultAction } = event.detail;
-            if (name !== 'System') return;
+            if (!name || name !== 'System' || !payload || typeof executeDefaultAction !== 'function') return;
             switch (payload.subType) {
               case 'AppInitiated':
                 window.adobeProfile?.getUserProfile()
