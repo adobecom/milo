@@ -105,7 +105,7 @@ async function findPageFragments(path) {
     const dupe = urls.value.some((url) => removeLangstorePrefix(url.pathname) === pathname);
     if (accDupe || dupe) return acc;
     const fragmentUrl = new URL(`${origin}${pathname}`);
-    fragmentUrl.alt = !isUrl(fragment.textContent) ? fragment.textContent : originalUrl;
+    fragmentUrl.alt = isUrl(fragment.textContent) ? fragment.textContent : originalUrl;
     acc.push(fragmentUrl);
     return acc;
   }, []);
