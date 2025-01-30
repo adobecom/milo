@@ -75,38 +75,52 @@ function constructPayload(form) {
 // }
 
 async function submitForm(form) {
-  const emailField = form.querySelector('#email');
-  const email = emailField ? emailField.value : null;
-  const captchaToken = document.querySelector('#cf-turnstile-response')?.value; // Get CAPTCHA token
+  const payload = constructPayload(form); 
+  payload.timestamp = new Date().toISOString(); 
 
-  if (!email) {
-    alert('Please enter your email.');
+  // Check if the email has been verified
+  const emailInput = form.querySelector('#email');
+  if (!emailInput || !emailInput.dataset.verified) {
+    alert("Please verify your email before submitting.");
     return;
   }
 
+  // Include the Cloudflare Turnstile token (if applicable)
+  const captchaToken = form.querySelector('#cf-turnstile')?.value;
   if (!captchaToken) {
-    alert('Please complete the CAPTCHA.');
+    alert("Please complete the CAPTCHA verification.");
     return;
   }
 
   try {
     const response = await fetch('https://submission-worker.main--lehre-site--berufsbildung-basel.workers.dev', { 
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, captchaToken }), 
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${API_KEY}`, // Ensure API Key is securely set
+      },
+      body: JSON.stringify({ ...payload, captchaToken }), // Include CAPTCHA token
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error: ${response.statusText}`);
+    }
+
+    console.log('POST request successful:', {
+      status: response.status,
+      statusText: response.statusText,
+      payload,
     });
 
     const result = await response.json();
-    if (result.success) {
-      alert('Verification email sent! Check your inbox.');
-    } else {
-      alert('Failed CAPTCHA or email verification.');
-    }
+    console.log('Response from server:', result);
+    return result; 
   } catch (error) {
-    console.error('Error:', error);
-    alert('An error occurred.');
+    console.error('Form submission failed:', error);
+    return { status: 'error', message: error.message };
   }
 }
+
 
 function loadTurnstile() {
   const script = document.createElement('script');
@@ -114,7 +128,7 @@ function loadTurnstile() {
   script.async = true;
   script.onload = () => {
     turnstile.render('#captcha-container', {
-      sitekey: '0x4AAAAAAA6uqp_nGspHkBq3',  // Replace with your actual Site Key
+      sitekey: '0x4AAAAAAA6uqp_nGspHkBq3',
       callback: (token) => {
         console.log('CAPTCHA Token received:', token);
         document.querySelector('#cf-turnstile-response').value = token;
@@ -139,6 +153,48 @@ function clearForm(form) {
 
 function createButton({ type, label }, thankYou) {
   const button = createTag('button', { class: 'button' }, label);
+
+  if (type === 'get-code') {
+    button.addEventListener('click', async (event) => {
+      event.preventDefault();
+      const form = button.closest('form');
+      const emailInput = form.querySelector('#email');
+
+      if (!emailInput.value) {
+        alert("Please enter your email to receive a verification code.");
+        return;
+      }
+
+      button.setAttribute('disabled', '');
+      await requestVerificationCode(emailInput.value);
+      button.removeAttribute('disabled');
+    });
+  }
+
+  if (type === 'verify-code') {
+    button.addEventListener('click', async (event) => {
+      event.preventDefault();
+      const form = button.closest('form');
+      const emailInput = form.querySelector('#email');
+      const codeInput = form.querySelector('#verificationCode');
+      const captchaToken = form.querySelector('#cf-turnstile')?.value; // Cloudflare CAPTCHA
+
+      if (!emailInput.value || !codeInput.value) {
+        alert("Please enter your email and verification code.");
+        return;
+      }
+
+      button.setAttribute('disabled', '');
+      const verified = await verifyCode(emailInput.value, codeInput.value, captchaToken);
+      button.removeAttribute('disabled');
+
+      if (verified) {
+        alert("Email verified! You can now submit the form.");
+        form.querySelector('[type="submit"]').removeAttribute('disabled'); // Enable submit button
+      }
+    });
+  }
+
   if (type === 'submit') {
     button.addEventListener('click', async (event) => {
       const form = button.closest('form');
@@ -154,13 +210,13 @@ function createButton({ type, label }, thankYou) {
           const thanksText = createTag('h4', { class: 'thank-you' }, handleThankYou);
           form.append(thanksText);
           setTimeout(() => thanksText.remove(), 2000);
-          /* c8 ignore next 3 */
         } else {
           window.location.href = handleThankYou;
         }
       }
     });
   }
+
   if (type === 'clear') {
     button.classList.add('outline');
     button.addEventListener('click', (e) => {
@@ -169,8 +225,45 @@ function createButton({ type, label }, thankYou) {
       clearForm(form);
     });
   }
+
   return button;
 }
+
+
+// function createButton({ type, label }, thankYou) {
+//   const button = createTag('button', { class: 'button' }, label);
+//   if (type === 'submit') {
+//     button.addEventListener('click', async (event) => {
+//       const form = button.closest('form');
+//       if (form.checkValidity()) {
+//         event.preventDefault();
+//         button.setAttribute('disabled', '');
+//         const submission = await submitForm(form);
+//         button.removeAttribute('disabled');
+//         if (!submission) return;
+//         clearForm(form);
+//         const handleThankYou = thankYou.querySelector('a') ? thankYou.querySelector('a').href : thankYou.innerHTML;
+//         if (!thankYou.innerHTML.includes('href')) {
+//           const thanksText = createTag('h4', { class: 'thank-you' }, handleThankYou);
+//           form.append(thanksText);
+//           setTimeout(() => thanksText.remove(), 2000);
+//           /* c8 ignore next 3 */
+//         } else {
+//           window.location.href = handleThankYou;
+//         }
+//       }
+//     });
+//   }
+//   if (type === 'clear') {
+//     button.classList.add('outline');
+//     button.addEventListener('click', (e) => {
+//       e.preventDefault();
+//       const form = button.closest('form');
+//       clearForm(form);
+//     });
+//   }
+//   return button;
+// }
 
 function createHeading({ label }, el) {
   return createTag(el, {}, label);
