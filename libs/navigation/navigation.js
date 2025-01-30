@@ -120,7 +120,7 @@ export default async function loadBlock(configs, customLib) {
     pathname: `/${locale}`,
     miloLibs: `${miloLibs}/libs`,
     locales: configs.locales || locales,
-    contentRoot: authoringPath || footer.authoringPath,
+    contentRoot: authoringPath || footer?.authoringPath,
     stageDomainsMap: getStageDomainsMap(stageDomainsMap),
     origin: `https://main--federal--adobecom.aem.${env === 'prod' ? 'live' : 'page'}`,
     allowedOrigins: [...allowedOrigins, `https://main--federal--adobecom.aem.${env === 'prod' ? 'live' : 'page'}`],
