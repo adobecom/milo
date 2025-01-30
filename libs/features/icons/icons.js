@@ -81,7 +81,7 @@ export default async function loadIcons(icons, config) {
     const existingIcon = icon.querySelector('svg');
     if (!iconSVGs[iconName] || existingIcon) return;
     const parent = icon.parentElement;
-    if (parent.childNodes.length > 1) {
+    if (parent?.childNodes.length > 1) {
       if (parent.lastChild === icon) {
         icon.classList.add('margin-inline-start');
       } else if (parent.firstChild === icon) {
