@@ -1,4 +1,4 @@
-import { useState, useEffect } from '../../../deps/htm-preact.js';
+import { useState, useEffect, useCallback } from '../../../deps/htm-preact.js';
 import {
   nextStep,
   prevStep,
@@ -9,6 +9,7 @@ import {
   setProject,
   setLocale,
   updateDraftProject,
+  initByParams,
 } from '../store.js';
 import { ENG_LANG_CODE, PROJECT_ACTION, PROJECT_TYPES } from '../utils/constant.js';
 
@@ -96,8 +97,8 @@ export default function useInputLocale() {
 
   const [apiError, setApiError] = useState('');
 
-  const findLanguageForLocale = (locale) => languagesList.find((lang) => lang.livecopies.split(',').includes(locale));
-
+  const findLanguageForLocale = (locale) => languagesList.find((lang) => lang.livecopies.split(',')
+    .includes(locale));
   const transformActiveLocales = () => {
     const groupedLocales = {};
     const languageCodes = {};
@@ -170,7 +171,7 @@ export default function useInputLocale() {
     removeLocalesFromActive(regionCountryCodes);
   };
 
-  const updateRegionStates = (localeList) => {
+  const updateRegionStates = useCallback((localeList) => {
     const updatedRegionStates = {};
     localeRegionList.forEach((region) => {
       const regionLocales = region.value.split(',');
@@ -178,7 +179,7 @@ export default function useInputLocale() {
       updatedRegionStates[region.key] = isRegionActive;
     });
     return updatedRegionStates;
-  };
+  }, [localeRegionList]);
 
   const selectAll = () => {
     const allRegions = {};
@@ -210,7 +211,7 @@ export default function useInputLocale() {
       ...prevState,
       ...updateRegionStates(selectedLocale),
     }));
-  }, [selectedLocale]);
+  }, [selectedLocale, updateRegionStates]);
 
   const errorPresent = () => Object.keys(activeLocales).length > 0;
 
@@ -260,16 +261,27 @@ export default function useInputLocale() {
   };
 
   const toggleLocale = (locale) => {
-    setActiveLocales((prev) => {
-      const updatedActiveLocales = { ...prev };
-      if (updatedActiveLocales[locale]) {
-        delete updatedActiveLocales[locale];
-      } else {
-        const language = findLanguageForLocale(locale);
-        if (language) updatedActiveLocales[locale] = language.language;
-      }
-      return updatedActiveLocales;
-    });
+    let isLangDeselecting = false;
+    const lang = activeLocales[locale];
+    const updatedActiveLocales = { ...activeLocales };
+    if (updatedActiveLocales[locale]) {
+      delete updatedActiveLocales[locale];
+      isLangDeselecting = !Object.values(updatedActiveLocales)
+        .some((val) => val.toLowerCase() === lang.toLowerCase());
+    } else {
+      const language = findLanguageForLocale(locale);
+      if (language) updatedActiveLocales[locale] = language.language;
+    }
+    setActiveLocales(updatedActiveLocales);
+    if (isLangDeselecting && !initByParams.value?.languages
+      ?.some((val) => val.language.toLowerCase() === lang.toLowerCase())) {
+      const languageLocales = languagesList
+        .find((l) => l.language.toLowerCase() === lang.toLowerCase());
+      const { livecopies = '' } = languageLocales;
+      const updatedSelectedLocale = selectedLocale
+        .filter((loc) => !livecopies.split(',').includes(loc));
+      setSelectedLocale(updatedSelectedLocale);
+    }
   };
 
   return {
