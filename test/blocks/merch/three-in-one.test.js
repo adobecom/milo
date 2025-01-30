@@ -1,7 +1,8 @@
 import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
+import sinon from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
-import openThreeInOneModal, { createContent, handle3in1IFrameEvents, LANA_OPTIONS, MSG_SUBTYPE } from '../../../libs/blocks/merch/threeInOne.js';
+import openThreeInOneModal, { handle3in1IFrameEvents, MSG_SUBTYPE } from '../../../libs/blocks/merch/threeInOne.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/threeInOne.html' });
 
@@ -11,8 +12,16 @@ const config = {
 };
 
 describe('Three-in-one modal', () => {
-  before(async () => {
+  const originalOpen = window.open;
+  const twpLink = document.querySelector('#twp-link');
+
+  beforeEach(async () => {
     setConfig(config);
+    window.open = sinon.stub(window, 'open');
+  });
+
+  afterEach(() => {
+    window.open = originalOpen;
   });
 
   it('should return undefined if no href or modal type', async () => {
@@ -22,8 +31,7 @@ describe('Three-in-one modal', () => {
     expect(await openThreeInOneModal(checkoutLinkWithoutModalType)).to.be.undefined;
   });
 
-  it('should open a modal with iframe', async () => {
-    const twpLink = document.querySelector('#twp-link');
+  it('should open a modal with an iframe and a loader', async () => {
     const modal = await openThreeInOneModal(twpLink);
     expect(modal).to.exist;
     expect(modal.getAttribute('id')).to.equal('three-in-one');
@@ -31,7 +39,55 @@ describe('Three-in-one modal', () => {
     const iframe = modal.querySelector('iframe');
     expect(iframe).to.exist;
     expect(iframe.src).to.equal('https://commerce.adobe.com/store/segmentation?ms=COM&ot=TRIAL&pa=phsp_direct_individual&cli=adobe_com&ctx=if&co=US&lang=en');
-    const loader = modal.querySelector('sp-progress-circle');
+    expect(iframe.classList.contains('loading')).to.be.true;
+    expect(iframe.title).to.equal('Three-in-one modal');
+    expect(iframe.getAttribute('frameborder')).to.equal('0');
+    expect(iframe.getAttribute('marginwidth')).to.equal('0');
+    expect(iframe.getAttribute('marginheight')).to.equal('0');
+    expect(iframe.getAttribute('allowfullscreen')).to.equal('true');
+    expect(iframe.getAttribute('loading')).to.equal('lazy');
+    const spTheme = modal.querySelector('sp-theme');
+    expect(spTheme).to.exist;
+    const loader = spTheme.querySelector('sp-progress-circle');
     expect(loader).to.exist;
+    modal.remove();
+  });
+
+  it('should hide loader when commerce page finished loading', async () => {
+    const modal = await openThreeInOneModal(twpLink);
+    const iframe = modal.querySelector('iframe');
+    const spTheme = modal.querySelector('sp-theme');
+    expect(iframe).to.exist;
+    expect(spTheme).to.exist;
+    handle3in1IFrameEvents({ data: `{"app":"ucv3","subType": "${MSG_SUBTYPE.AppLoaded}"}` });
+    expect(iframe.classList.contains('loading')).to.be.false;
+    expect(spTheme).to.be.null;
+  });
+
+  it('should open external link in a new tab', async () => {
+    const modal = await openThreeInOneModal(twpLink);
+    handle3in1IFrameEvents({ data: `{"app":"ucv3","subType": "${MSG_SUBTYPE.EXTERNAL}", "data":{"externalUrl":"https://www.google.com/maps","target":"_blank"}}` });
+    expect(window.open.calledOnceWith('https://www.google.com/maps', '_blank')).to.be.true;
+    modal.remove();
+  });
+
+  it('should open link in a new tab when message subtype is "switch"', async () => {
+    const modal = await openThreeInOneModal(twpLink);
+    handle3in1IFrameEvents({ data: `{"app":"ucv3","subType": "${MSG_SUBTYPE.SWITCH}", "data":{"externalUrl":"https://www.google.com/maps","target":"_blank"}}` });
+    expect(window.open.calledOnceWith('https://www.google.com/maps', '_blank')).to.be.true;
+    modal.remove();
+  });
+
+  it('should open link in a new tab when message subtype is "return_back"', async () => {
+    const modal = await openThreeInOneModal(twpLink);
+    handle3in1IFrameEvents({ data: `{"app":"ucv3","subType": "${MSG_SUBTYPE.RETURN_BACK}", "data":{"externalUrl":"https://www.google.com/maps","target":"_blank"}}` });
+    expect(window.open.calledOnceWith('https://www.google.com/maps', '_blank')).to.be.true;
+    modal.remove();
+  });
+
+  it('should close modal when message subtype is "close"', async () => {
+    const modal = await openThreeInOneModal(twpLink);
+    handle3in1IFrameEvents({ data: `{"app":"ucv3","subType": "${MSG_SUBTYPE.Close}"}` });
+    expect(modal).to.be.null;
   });
 });
