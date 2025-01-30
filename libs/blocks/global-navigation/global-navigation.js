@@ -375,6 +375,11 @@ class Gnav {
       lanaLog({ message: 'GNAV: Error with IMS', e, tags: 'errorType=info,module=gnav' });
     }));
 
+  removeLocalNav = () => {
+    lanaLog({ message: 'Gnav Localnav was removed, potential CLS', tags: 'gnav-localnav' });
+    document.querySelector('.feds-localnav')?.remove();
+  }
+
   decorateProductEntryCTA = () => {
     const button = this.content.querySelector('.product-entry-cta a');
     if (!button) return null;
@@ -402,11 +407,15 @@ class Gnav {
   };
 
   decorateLocalNav = async () => {
-    if (!this.isLocalNav()) return;
+    if (!this.isLocalNav()) {
+      this.removeLocalNav();
+      return;
+    };
     const localNavItems = this.elements.navWrapper.querySelector('.feds-nav').querySelectorAll('.feds-navItem:not(.feds-navItem--section, .feds-navItem--mobile-only)');
-    const firstElem = localNavItems[0]?.querySelector('a');
+    const firstElem = localNavItems[0]?.querySelector('a') || localNavItems[0]?.querySelector('button');
     if (!firstElem) {
       lanaLog({ message: 'GNAV: Incorrect authoring of localnav found.', tags: 'errorType=info,module=gnav' });
+      this.removeLocalNav();
       return;
     }
     const [title, navTitle = ''] = this.getOriginalTitle(firstElem);
@@ -427,7 +436,7 @@ class Gnav {
 
     localNavItems.forEach((elem, idx) => {
       const clonedItem = elem.cloneNode(true);
-      const link = clonedItem.querySelector('a');
+      const link = clonedItem.querySelector('a') || localNavItems[0]?.querySelector('button');
 
       if (idx === 0) {
         localNav.querySelector('.feds-localnav-title').innerText = title.trim();
@@ -450,7 +459,7 @@ class Gnav {
     const promo = document.querySelector('.feds-promo-aside-wrapper');
     if (promo) localNav.classList.add('has-promo');
     this.elements.localNav = localNav;
-    localNavItems[0].querySelector('a').textContent = title.trim();
+    firstElem.textContent = title.trim();
     const isAtTop = () => {
       const rect = this.elements.localNav.getBoundingClientRect();
       // note: ios safari changes between -0.34375, 0, and 0.328125
