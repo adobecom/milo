@@ -253,7 +253,7 @@ function formatManifestText(count) {
   return count > 1 ? 'Manifests' : 'Manifest';
 }
 export function getMepPopup(mepConfig, isMmm = false) {
-  const { activities, page } = mepConfig;
+  const { page } = mepConfig;
   const pageId = page?.pageId ? `-${page.pageId}` : '';
   const { manifestList } = getManifestListDomAndParameter(mepConfig);
   let mepHighlightChecked = '';
