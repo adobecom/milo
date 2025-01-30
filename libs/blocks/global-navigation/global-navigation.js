@@ -1296,7 +1296,6 @@ export default async function init(block) {
     setDisableAEDState();
   }
   const content = await fetchAndProcessPlainHtml({ url });
-  setAsyncDropdownCount(content.querySelectorAll('.large-menu').length);
   if (!content) {
     const error = new Error('Could not create global navigation. Content not found!');
     error.tags = 'gnav';
@@ -1305,6 +1304,7 @@ export default async function init(block) {
     lanaLog({ message: error.message, ...error });
     throw error;
   }
+  setAsyncDropdownCount(content.querySelectorAll('.large-menu').length);
   const gnav = new Gnav({
     content,
     block,
