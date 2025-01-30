@@ -14,6 +14,7 @@ export default function StepControls({
       && html`<button
         class=${`s2-btn secondary ${backDisabled && 'disabled'}`}
         onclick=${onBack}
+        disabled=${backDisabled}
       >
         ${backLabel}
       </button>`}
@@ -22,6 +23,7 @@ export default function StepControls({
       && html`<button
         class=${`s2-btn accent ${nextDisabled && 'disabled'}`}
         onclick=${onNext}
+        disabled=${nextDisabled}
       >
         <strong>${nextLabel}</strong>
       </button>`}
