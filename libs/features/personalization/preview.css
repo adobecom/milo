@@ -245,7 +245,7 @@
 .mep-popup.in-page .mep-popup-body {
   padding: 12px;
   overflow-y: auto;
-  max-height: calc(100vh - 300px);
+  max-height: calc(100vh - 234px);
 }
 
 .mep-popup.in-page .mep-manifest-list {
