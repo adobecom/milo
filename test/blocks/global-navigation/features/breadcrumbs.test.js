@@ -42,7 +42,6 @@ const breadcrumbWithEmptyList = () => toFragment`
 </div>
 `;
 
-
 export const assertBreadcrumb = ({ breadcrumb, length }) => {
   expect(breadcrumb.querySelector('nav')).to.exist;
   expect(breadcrumb.querySelector('ul').children.length).to.equal(length);
