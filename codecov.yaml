@@ -11,3 +11,4 @@ coverage:
    ignore:
       - "!libs/"
       - "libs/deps/"
+      
