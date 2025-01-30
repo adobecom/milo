@@ -1240,6 +1240,6 @@
 .aside .foreground.container .action-area a.icon-area.con-button,
 .aside.split.bio .foreground.container .text .action-area a.icon-area.con-button {
   display: inline-block;
-  height: auto;
-  margin-bottom: 0;
+  height: unset;
+  margin-bottom: unset;
 }
