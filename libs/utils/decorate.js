@@ -4,7 +4,7 @@ import {
   getConfig,
   createIntersectionObserver,
   getFederatedContentRoot,
-  getFedsPlaceholderConfig
+  getFedsPlaceholderConfig,
 } from './utils.js';
 
 const { miloLibs, codeRoot } = getConfig();

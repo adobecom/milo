@@ -8,7 +8,7 @@ import {
   loadLink,
   loadScript,
   localizeLink,
-  getFederatedUrl 
+  getFederatedUrl,
 } from '../../utils/utils.js';
 
 /* c8 ignore start */

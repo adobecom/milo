@@ -24,7 +24,6 @@ import {
   isDarkMode,
 } from '../global-navigation/utilities/utilities.js';
 
-
 import { replaceKey } from '../../features/placeholders.js';
 
 const { miloLibs, codeRoot, locale, mep } = getConfig();
