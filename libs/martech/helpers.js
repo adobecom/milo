@@ -4,8 +4,16 @@ const KNDCTR_COOKIE_KEYS = [
   'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_identity',
   'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_cluster',
 ];
+const DATA_STREAM_IDS_PROD = {
+  firstVisitNoConsent: '7c20bab-94c3-425e-95cb-0b9948b1fdd4',
+  default: '913eac4d-900b-45e8-9ee7-306216765cd2',
+};
+const DATA_STREAM_IDS_STAGE = {
+  firstVisitNoConsent: 'a44f0037-2ada-441f-a012-243832ce5ff9',
+  default: 'e065836d-be57-47ef-b8d1-999e1657e8fd',
+};
 
-let DATA_STREAM_ID = '';
+let dataStreamId = '';
 
 function getDomainWithoutWWW() {
   const domain = window?.location?.hostname;
@@ -93,8 +101,7 @@ export const getVisitorStatus = ({
   cookieName = 's_nr',
   domain = `.${(new URL(window.location.origin)).hostname}`,
 }) => {
-  const currentDate = new Date();
-  const currentTime = currentDate.getTime();
+  const currentTime = new Date().getTime();
   const cookieValue = getCookie(cookieName) || '';
   const cookieAttributes = { expires: new Date(currentTime + expiryDays * 24 * 60 * 60 * 1000) };
 
@@ -188,8 +195,8 @@ function createRequestPayload({ updatedContext, pageName, locale, env, hitType }
 
   const webPageDetails = {
     URL: window.location.href,
-    siteSection: 'www.adobe.com',
-    server: 'www.adobe.com',
+    siteSection: window.location.hostname,
+    server: window.location.hostname,
     isErrorPage: false,
     isHomePage: false,
     name: pageName,
@@ -230,8 +237,8 @@ function createRequestPayload({ updatedContext, pageName, locale, env, hitType }
         adobe: {
           alloy: {
             approach: 'martech-API',
-            edgeConfigIdLaunch: DATA_STREAM_ID,
-            edgeConfigId: DATA_STREAM_ID,
+            edgeConfigIdLaunch: dataStreamId,
+            edgeConfigId: dataStreamId,
           },
         },
       },
@@ -351,17 +358,17 @@ export const createRequestUrl = ({
   hitType,
 }) => {
   const TARGET_API_URL = getUrl(hitType === 'propositionDisplay');
-  DATA_STREAM_ID = env === 'prod' ? '913eac4d-900b-45e8-9ee7-306216765cd2' : 'e065836d-be57-47ef-b8d1-999e1657e8fd';
+  dataStreamId = env === 'prod' ? DATA_STREAM_IDS_PROD.default : DATA_STREAM_IDS_STAGE.default;
   if (hitType === 'pageView' || hitType === 'propositionDisplay') {
     const isFirstVisit = !getCookie(AMCV_COOKIE);
     const consentCookie = getCookie('OptanonConsent') || '';
     if (isFirstVisit || !consentCookie.includes('C0004')) {
-      DATA_STREAM_ID = env === 'prod' ? '57c20bab-94c3-425e-95cb-0b9948b1fdd4' : 'a44f0037-2ada-441f-a012-243832ce5ff9';
+      dataStreamId = env === 'prod' ? DATA_STREAM_IDS_PROD.firstVisitNoConsent : DATA_STREAM_IDS_STAGE.firstVisitNoConsent;
     }
-    return `${TARGET_API_URL}?dataStreamId=${DATA_STREAM_ID}&requestId=${generateUUIDv4()}`;
+    return `${TARGET_API_URL}?dataStreamId=${dataStreamId}&requestId=${generateUUIDv4()}`;
   }
 
-  return `${TARGET_API_URL}?dataStreamId=${DATA_STREAM_ID}&requestId=${generateUUIDv4()}`;
+  return `${TARGET_API_URL}?dataStreamId=${dataStreamId}&requestId=${generateUUIDv4()}`;
 };
 
 const setGpvCookie = (pageName) => {
@@ -439,9 +446,7 @@ const setTTMetaAndAlloyTarget = (propositions) => {
           // If there is already a response string, append a comma
           if (targetResponse) targetResponse += ',';
 
-          if (targetResponse.indexOf(activityId) === -1) {
-            targetResponse += `T:${[activityId, activityName, data.OfferId, offerName, data.RecipeId, data.RecipeName, data.TrafficId, data.TrafficType].map(clean).join(':')}`;
-          }
+          targetResponse += `T:${[activityId, activityName, data.OfferId, offerName, data.RecipeId, data.RecipeName, data.TrafficId, data.TrafficType].map(clean).join(':')}`;
         }
       }
     });
