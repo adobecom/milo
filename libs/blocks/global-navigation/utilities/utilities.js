@@ -1,6 +1,6 @@
 /* eslint import/no-relative-packages: 0 */
 import {
-  getConfig, getMetadata, loadStyle, loadLana, decorateLinks, localizeLink,
+  getConfig, getMetadata, loadStyle, loadLana, decorateLinks, localizeLink, isLocalNav,
 } from '../../../utils/utils.js';
 import { getFederatedContentRoot, getFederatedUrl, getFedsPlaceholderConfig } from '../../../utils/federated.js';
 import { processTrackingLabels } from '../../../martech/attributes.js';
@@ -554,14 +554,6 @@ export const dropWhile = (xs, f) => {
   if (f(xs[0])) return dropWhile(xs.slice(1), f);
   return xs;
 };
-
-export function isLocalNav() {
-  const { locale = {} } = getConfig();
-  const gnavSource = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
-  let newNavEnabled = new URLSearchParams(window.location.search).get('newNav');
-  newNavEnabled = newNavEnabled ? newNavEnabled !== 'false' : getMetadata('mobile-gnav-v2') !== 'off';
-  return gnavSource.split('/').pop().startsWith('localnav-') && newNavEnabled;
-}
 
 export function getGnavHeight() {
   let topHeight = document.querySelector('header')?.offsetHeight || 0;
