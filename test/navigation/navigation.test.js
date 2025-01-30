@@ -58,7 +58,7 @@ describe('Navigation component', async () => {
 
   it('Should not render the header block when config is not passed', async () => {
     try {
-      await loadBlock({ env: 'qa', footer: { privacyId: '12343' }}, 'http://localhost:2000');
+      await loadBlock({ env: 'qa', footer: { privacyId: '12343' } }, 'http://localhost:2000');
       const el = document.getElementsByTagName('header');
       expect(el).to.not.exist;
     } catch (e) {
