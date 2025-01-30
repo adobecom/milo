@@ -292,7 +292,8 @@ export function getMepPopup(mepConfig, isMmm = false) {
         ${page.lastSeen ? `<div>${formatDate(new Date(page.lastSeen))}</div>` : ''}
       </div>
     </div>
-    <a href="https://main--milo--adobecom.aem.page/docs/authoring/features/mmm" title="Mep Manifest Manager" target="_blank" >MEP Manifest Manager</a>
+        ${page.lastSeen ? `<div>${formatDate(new Date(page.lastSeen))}</div>` : ''}
+    ${!isMmm ? '<a href="https://main--milo--adobecom.aem.page/docs/authoring/features/mmm" title="MMM - Mep Manifest Manager" target="_blank" >MMM - MEP Manifest Manager</a>' : ''}
     `;
   mepOptions.innerHTML = `
     <h6 class="mep-manifest-page-info-title">Options</h6>
