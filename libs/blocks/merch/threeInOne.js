@@ -43,10 +43,6 @@ export const handle3in1IFrameEvents = ({ data: msgData }) => {
       if (!data?.externalUrl || !data.target) return;
       window.open(data.externalUrl, data.target);
       break;
-    case MSG_SUBTYPE.OrderComplete:
-      break;
-    case MSG_SUBTYPE.Error:
-      break;
     case MSG_SUBTYPE.Close:
       document.querySelector('.dialog-modal.three-in-one')?.dispatchEvent(new Event('closeModal'));
       break;
