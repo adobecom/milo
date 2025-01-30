@@ -46,14 +46,13 @@ export function removeLangstorePrefix(path) {
 export function validateOrigin(urlStr) {
   try {
     const url = new URL(urlStr);
+    let replaceWith = '';
     if (SLD === 'hlx') {
-      return url.origin === origin;
+      replaceWith = '.aem.page';
+    } else if (SLD === 'aem') {
+      replaceWith = '.hlx.page';
     }
-    if (SLD === 'aem') {
-      const origins = [url.origin.replace('.aem.', '.hlx.'), url.origin.replace('.hlx.', '.aem.')];
-      return origins.includes(origin);
-    }
-    return false;
+    return replaceWith ? origin === url.origin.replace(`.${SLD}.page`, replaceWith) : false;
   } catch {
     return false;
   }
