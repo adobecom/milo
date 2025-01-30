@@ -19,6 +19,20 @@ export const breadcrumbMock = () => toFragment`
   </div>
 `;
 
+const breadcrumbWithCase = () => toFragment`
+  <div class="breadcrumbs no-transform">
+    <div>
+      <div>
+        <ul>
+          <li><a href="http://www.google.com/">Home</a></li>
+          <li><a href="http://localhost:2000/">Adobe Photoshop</a></li>
+          <li>Photoshop on iPhone</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+`;
+
 export const assertBreadcrumb = ({ breadcrumb, length }) => {
   expect(breadcrumb.querySelector('nav')).to.exist;
   expect(breadcrumb.querySelector('ul').children.length).to.equal(length);
@@ -51,18 +65,24 @@ describe('breadcrumbs', () => {
     assertBreadcrumb({ breadcrumb, length: 2 });
   });
 
+  it('should use make the breadcrumnbs preserve case using css when no-transform modifier is added to block', async () => {
+    const breadcrumb = await breadcrumbs(breadcrumbWithCase());
+    assertBreadcrumb({ breadcrumb, length: 3 });
+    expect(breadcrumb.querySelector('nav').className.includes('no-transform')).to.be.true;
+  });
+
   it('should use a custom page title and show the current page if set', async () => {
     document.head.innerHTML = '<meta name="breadcrumbs-page-title" content="Custom Title"><meta name="breadcrumbs-show-current-page" content="on">';
     const breadcrumb = await breadcrumbs(breadcrumbMock());
     assertBreadcrumb({ breadcrumb, length: 5 });
-    expect(breadcrumb.querySelector('ul li:last-of-type').innerText.trim()).to.equal('Custom Title');
+    expect(breadcrumb.querySelector('ul li:last-of-type').innerText.trim().replace(/^\//, '').trim()).to.equal('Custom Title');
   });
 
   it('should use a custom page title if its explicity set even without breadcrumbs-show-current-page:ON', async () => {
     document.head.innerHTML = '<meta name="breadcrumbs-page-title" content="Custom Title">';
     const breadcrumb = await breadcrumbs(breadcrumbMock());
     assertBreadcrumb({ breadcrumb, length: 5 });
-    expect(breadcrumb.querySelector('ul li:last-of-type').innerText.trim()).to.equal('Custom Title');
+    expect(breadcrumb.querySelector('ul li:last-of-type').innerText.trim().replace(/^\//, '').trim()).to.equal('Custom Title');
   });
 
   it('should create a breadcrumb SEO element', async () => {

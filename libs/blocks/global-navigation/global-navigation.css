@@ -378,6 +378,11 @@ header.global-navigation {
   text-transform: capitalize;
 }
 
+.feds-breadcrumbs.no-transform a,
+.feds-breadcrumbs.no-transform [aria-current] {
+  text-transform: none;
+}
+
 .feds-breadcrumbs a {
   display: block;
   color: var(--feds-color-link-breadcrumbs);
@@ -387,9 +392,8 @@ header.global-navigation {
   color: var(--feds-color-breadcrumbs--current);
 }
 
-.feds-breadcrumbs li:not(:first-of-type)::before {
+.feds-breadcrumbs li span[aria-hidden="true"] {
   padding: 0 12px;
-  content: '/';
 }
 
 .feds-utilities {
@@ -1321,4 +1325,9 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
 html:has(body.disable-ios-scroll) { /* this class is only added on iOS */
   height: 100dvh;
   position: fixed;
+}
+
+/* GNAV popup height fix in case of app banner */
+.branch-banner-is-active header.new-nav .feds-nav > section.feds-navItem > .feds-popup {
+  height: calc(100dvh - var(--app-banner-height));
 }
