@@ -77,20 +77,35 @@ export async function getUserToken() {
   return userToken;
 }
 
+async function fetchLocales(tenantBaseUrl) {
+  try {
+    const response = await fetch(
+      `${tenantBaseUrl}/.milo/config.json?sheet=${LOCALES}&sheet=${LOCALE_GROUPS}`,
+    );
+    if (!response.ok) {
+      throw new Error(`Server Error: ${response.status}`);
+    }
+    const localeData = await response.json();
+    if (localeData.locales && localeData.localegroups) {
+      return localeData;
+    }
+    return null;
+  } catch (error) {
+    console.error('Error during fetchLocaleDetailsFromOrigin:', error.message);
+    return null;
+  }
+}
+
 export async function fetchLocaleDetails() {
   try {
     loading.value = true;
-    const response = await fetch(
-      `${origin}/.milo/config.json?sheet=${LOCALES}&sheet=${LOCALE_GROUPS}`,
-    );
-
-    if (!response.ok) {
-      // const errorText = await response.text();
-      // console.error(`Failed to fetch locale details: ${errorText}`);
-      throw new Error(`Server Error: ${response.status}`);
+    let localeData = await fetchLocales(origin);
+    if (!localeData) {
+      localeData = await fetchLocales('https://main--milo--adobecom.aem.page');
     }
-
-    const localeData = await response.json();
+    if (!localeData) {
+      throw new Error('Server Error: could not fetch locales');
+    }
     const
       {
         locales: processedLocales,
@@ -101,7 +116,6 @@ export async function fetchLocaleDetails() {
     localeRegion.value = processedLocaleRegion;
   } catch (error) {
     console.error('Error during fetchLocaleDetails:', error.message);
-    throw error;
   }
   loading.value = false;
 }
