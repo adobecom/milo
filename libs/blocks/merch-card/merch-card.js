@@ -2,7 +2,6 @@ import { decorateButtons, decorateBlockHrs } from '../../utils/decorate.js';
 import { getConfig, createTag, loadStyle } from '../../utils/utils.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
 import { processTrackingLabels } from '../../martech/attributes.js';
-import '../../deps/mas/merch-card.js';
 import '../../deps/lit-all.min.js';
 
 const TAG_PATTERN = /^[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-].*$/;
