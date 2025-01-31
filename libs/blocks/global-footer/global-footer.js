@@ -230,15 +230,7 @@ class Footer {
     if (url.hash !== '') {
       // Hash -> region selector opens a modal
       decorateAutoBlock(regionPickerElem); // add modal-specific attributes
-      // TODO remove logs after finding the root cause for the region picker 404s -> MWPW-143627
       regionPickerElem.href = url.hash;
-      if (regionPickerElem.classList[0] !== 'modal') {
-        lanaLog({
-          message: `Modal block class missing from region picker pre loading the block; locale: ${locale}; regionPickerElem: ${regionPickerElem.outerHTML}`,
-          tags: 'global-footer',
-          errorType: 'warn',
-        });
-      }
       loadStyle(`${base}/blocks/modal/modal.css`);
       const { default: initModal } = await import('../modal/modal.js');
       const modal = await initModal(regionPickerElem);
