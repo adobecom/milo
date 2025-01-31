@@ -273,6 +273,14 @@ export const [setDisableAEDState, getDisableAEDState] = (() => {
   ];
 })();
 
+export const [setAsyncDropdownCount, getAsyncDropdownCount] = (() => {
+  let asyncDropdownCount = 0;
+  return [
+    (val) => { asyncDropdownCount = val; },
+    () => asyncDropdownCount,
+  ];
+})();
+
 export const [hasActiveLink, setActiveLink, isActiveLink, getActiveLink] = (() => {
   let activeLinkFound;
   const { origin, pathname } = window.location;
@@ -457,7 +465,8 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
         {{main-menu}}
       </button>
   `;
-  const brand = document.querySelector('.feds-brand')?.outerHTML;
+  // Get the outerHTML of the .feds-brand element or use a default empty <span> if it doesn't exist
+  const brand = document.querySelector('.feds-brand')?.outerHTML || '<span></span>';
   const breadCrumbs = document.querySelector('.feds-breadcrumbs')?.outerHTML;
   popup.innerHTML = `
     <div class="top-bar">
