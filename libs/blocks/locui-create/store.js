@@ -1,10 +1,10 @@
 import { signal } from '../../deps/htm-preact.js';
 import login from '../../tools/sharepoint/login.js';
 import { accessToken } from '../../tools/sharepoint/state.js';
+import { origin } from '../locui/utils/franklin.js';
 import { LOCALES, LOCALE_GROUPS, TRANSCREATION_WORKFLOW } from './utils/constant.js';
 import {
   processLocaleData,
-  getTenantName,
   createPayload,
   getMilocUrl,
 } from './utils/utils.js';
@@ -80,13 +80,8 @@ export async function getUserToken() {
 export async function fetchLocaleDetails() {
   try {
     loading.value = true;
-    const tenantName = getTenantName();
-    if (!tenantName) {
-      // console.warn('Tenant name is missing, skipping fetchLocaleDetails.');
-      return;
-    }
     const response = await fetch(
-      `https://main--${tenantName}--adobecom.hlx.page/.milo/config.json?sheet=${LOCALES}&sheet=${LOCALE_GROUPS}`,
+      `${origin}/.milo/config.json?sheet=${LOCALES}&sheet=${LOCALE_GROUPS}`,
     );
 
     if (!response.ok) {
