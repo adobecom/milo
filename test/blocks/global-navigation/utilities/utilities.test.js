@@ -486,7 +486,7 @@ describe('global navigation utilities', () => {
       const lnav = toFragment`<div class="feds-localnav"></div>`;
       document.body.append(gnav, lnav);
       const gnavHeight = getGnavHeight();
-      expect(gnavHeight).to.equal(40);
+      expect(gnavHeight).to.equal(64);
     });
   });
 });
