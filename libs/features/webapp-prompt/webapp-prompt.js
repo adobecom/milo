@@ -156,7 +156,7 @@ export class AppPrompt {
     this.parent.prepend(this.template);
     this.elements.closeIcon.focus();
 
-    this.redirectFn = this.initRedirect(this.options['pause-on-hover'] === 'on');
+    this.cleanupFn = this.initRedirect(this.options['pause-on-hover'] === 'on');
   };
 
   doesEntitlementMatch = async () => {
@@ -332,7 +332,7 @@ export class AppPrompt {
 
   close = ({ saveDismissal = true, dismissalActions = true } = {}) => {
     const appPromptElem = document.querySelector(CONFIG.selectors.prompt);
-    this.redirectFn();
+    this.cleanupFn();
     appPromptElem?.remove();
     if (saveDismissal) this.setDismissedPrompt();
     document.removeEventListener('keydown', this.handleKeyDown);
