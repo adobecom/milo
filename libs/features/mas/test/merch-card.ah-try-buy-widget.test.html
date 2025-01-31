@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Merch Card CCD Pricing Widget Web Component demo page</title>
+        <title>Merch Card AH Try Buy Widget Web Component demo page</title>
         <script>
             window.process = {
                 env: {},
@@ -53,7 +53,7 @@
                     it('should exist in the HTML document', async () => {
                         expect(
                             document.querySelector(
-                                'merch-card[variant="ah-pricing"]',
+                                'merch-card[variant="ah-try-buy-widget"]',
                             ),
                         ).to.exist;
                     });
@@ -61,7 +61,12 @@
             });
         </script>
         <main>
-            <merch-card size="gray" class="" tabindex="0" variant="ah-pricing">
+            <merch-card
+                size="gray"
+                class=""
+                tabindex="0"
+                variant="ah-try-buy-widget"
+            >
                 <sp-status-light
                     size="s"
                     variant="info"
@@ -96,7 +101,7 @@
                     <sp-button size="s" variant="accent">Buy</sp-button>
                 </div>
             </merch-card>
-            <merch-card tabindex="0" variant="ah-pricing">
+            <merch-card tabindex="0" variant="ah-try-buy-widget">
                 <sp-status-light
                     size="s"
                     variant="info"
@@ -128,7 +133,7 @@
                     <sp-button size="s" variant="primary">Buy</sp-button>
                 </div>
             </merch-card>
-            <merch-card class="" tabindex="0" variant="ah-pricing">
+            <merch-card class="" tabindex="0" variant="ah-try-buy-widget">
                 <sp-status-light
                     size="s"
                     variant="info"

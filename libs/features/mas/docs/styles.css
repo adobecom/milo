@@ -189,7 +189,7 @@ merch-card[variant='ccd-slice'][size='wide'] {
     grid-template-columns: minmax(290px, 322px);
 }
 
-.benchmarks.three-merch-cards.ah-pricing {
+.benchmarks.three-merch-cards.ah-try-buy-widget {
     grid-template-columns: minmax(156px, 484px);
 }
 
@@ -198,7 +198,7 @@ merch-card[variant='ccd-slice'][size='wide'] {
         grid-template-columns: repeat(2, minmax(290px, 322px));
     }
 
-    .benchmarks.three-merch-cards.ah-pricing {
+    .benchmarks.three-merch-cards.ah-try-buy-widget {
         grid-template-columns: repeat(2, 156px);
     }
 }
@@ -208,7 +208,7 @@ merch-card[variant='ccd-slice'][size='wide'] {
         grid-template-columns: repeat(3, minmax(290px, 322px));
     }
 
-    .benchmarks.three-merch-cards.ah-pricing {
+    .benchmarks.three-merch-cards.ah-try-buy-widget {
         grid-template-columns: repeat(3, minmax(156px, min-content));
     }
 }
@@ -217,7 +217,6 @@ merch-card[variant='ccd-slice'][size='wide'] {
 
 .adobe-home-container {
     display: flex;
-    width: 484px;
     padding: 20px;
     flex-direction: column;
     align-items: flex-start;
@@ -232,12 +231,12 @@ merch-card[variant='ccd-slice'][size='wide'] {
     margin: 0;
 }
 
-.two-merch-cards.ah-pricing {
+.two-merch-cards.ah-try-buy-widget {
     grid-template-columns: repeat(2, minmax(238px, 0px));
     gap: 8px;
 }
 
-.three-merch-cards.ah-pricing {
+.three-merch-cards.ah-try-buy-widget {
     grid-template-columns: repeat(3, minmax(156px, 0px));
     gap: 8px;
 }
