@@ -108,6 +108,7 @@ export class AppPrompt {
     this.entName = entName;
     this.parent = parent;
     this.getAnchorState = getAnchorState;
+    this.timeoutId = null;
     this.id = this.promptPath.split('/').pop();
     this.elements = {};
     if (modalsActive()) {
@@ -282,20 +283,19 @@ export class AppPrompt {
   }
 
   initRedirect = (withPause = false) => {
-    let timeoutId;
     let remainingTime = this.options['loader-duration'];
     let startTime;
 
     const startTimeout = () => {
       startTime = performance.now();
-      timeoutId = setTimeout(() => {
+      this.timeoutId = setTimeout(() => {
         this.close({ saveDismissal: false, dismissalActions: false });
         AppPrompt.redirectTo(this.options['redirect-url']);
       }, remainingTime);
     };
 
     const stopTimeout = () => {
-      clearTimeout(timeoutId);
+      clearTimeout(this.timeoutId);
       remainingTime -= performance.now() - startTime;
     };
 
@@ -322,7 +322,7 @@ export class AppPrompt {
   close = ({ saveDismissal = true, dismissalActions = true } = {}) => {
     const appPromptElem = document.querySelector(CONFIG.selectors.prompt);
     appPromptElem?.remove();
-    clearTimeout(this.redirectFn);
+    clearTimeout(this.timeoutId);
     if (saveDismissal) this.setDismissedPrompt();
     document.removeEventListener('keydown', this.handleKeyDown);
     this.anchor?.focus();
