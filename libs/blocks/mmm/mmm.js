@@ -71,7 +71,7 @@ function createButtonDetailsPair(mmmEl, page) {
   mmmEl.append(dt, dd);
 }
 
-function filterPageList(pageNum, event) {
+function filterPageList(pageNum, perPage, event) { // add perPage and handle all calls !!
   const shareUrl = new URL(`${window.location.origin}${window.location.pathname}`);
   const searchValues = {};
   const activeSearchWithShortKeyword = event?.target?.value && event.target.value.length < 2;
@@ -86,9 +86,11 @@ function filterPageList(pageNum, event) {
     if (value) shareUrl.searchParams.set(id, value);
   });
 
-  // add page number to share url
+  // add pageNum and perPage to shareable url and args for api call
   shareUrl.searchParams.set('pageNum', pageNum || 1);
+  shareUrl.searchParams.set('perPage', searchValues.perPage?.value || 25);
   searchValues.pageNum = { value: pageNum || 1, tagName: 'A' };
+  searchValues.perPage = { value: perPage || 25, tagName: 'A' }; // !! check why the tagname?
 
   // This event triggers an API call with beloww search criterias and a re-render
   if (!activeSearchWithShortKeyword) {
@@ -98,6 +100,7 @@ function filterPageList(pageNum, event) {
         geos: searchValues.geos?.value,
         pages: searchValues.pages?.value,
         pageNum: searchValues.pageNum?.value,
+        perPage: searchValues.perPage?.value,
       },
     }));
   }
@@ -216,8 +219,8 @@ function createSearchField(data, sharedUrlSettings) {
   const searchField = searchForm.querySelector('input');
   if (sharedUrlSettings.urls) searchField.value = sharedUrlSettings.urls;
 
-  searchField.addEventListener('keyup', debounce((event) => filterPageList(null, event)));
-  searchField.addEventListener('change', debounce((event) => filterPageList(null, event)));
+  searchField.addEventListener('keyup', debounce((event) => filterPageList(null, null, event)));
+  searchField.addEventListener('change', debounce((event) => filterPageList(null, null, event)));
 }
 
 async function createForm(el) {
@@ -231,41 +234,41 @@ async function createForm(el) {
 }
 
 function createPaginationEl({ data, el }) {
-  const paginationEl = createTag('div', { id: 'mmm-pagination', 'data-current-page': data.pageNum });
-  const totalPages = Math.ceil(data.totalRecords / data.perPage);
-  const noResult = !data.totalRecords;
-  const prev = data.pageNum - 1 || 1;
-  const next = data.pageNum < totalPages ? data.pageNum + 1 : data.pageNum;
-
-  const prevEl = createTag('a', {
-    'data-page-num': prev,
-    class: `arrow ${data.pageNum === 1 ? 'disabled' : ''}`,
-  }, '<');
-  const nextEl = createTag('a', {
-    'data-page-num': next,
-    class: `arrow ${data.pageNum === totalPages ? 'disabled' : ''}`,
-  }, '>');
-
-  const paginationSummary = createTag('div', { class: 'mmm-pagination-summary' });
-  const range = `${data.pageNum * data.perPage - (data.perPage - 1)}-${data.pageNum * data.perPage < data.totalRecords ? data.pageNum * data.perPage : data.totalRecords}`;
-  paginationSummary.innerHTML = `
-    <div>
-      <span>${range} of ${data.totalRecords}</span>
-    <div>
-  `;
-  if (!noResult) {
-    paginationEl.append(prevEl);
-    for (let i = 1; i <= totalPages; i += 1) {
-      const pageLink = createTag('a', {
-        class: `${i === data.pageNum ? 'current-page' : ''}`,
-        'data-page-num': i,
-      }, i);
-      paginationEl.append(pageLink);
-    }
-    paginationEl.append(nextEl);
-    document.querySelector('#mmm').prepend(paginationSummary);
+  const { pageNum, perPage, totalRecords } = data;
+  const paginationEl = createTag('div', { id: 'mmm-pagination', 'data-current-page': pageNum, 'data-perpage': perPage });
+  if (totalRecords) {
+    const perPageOptions = [25, 50, 100]; // add more options as needed
+    const paginationWrapper = createTag('div', { id: 'mmm-pagination-wrapper' });
+    const paginationLabel = createTag('label', { for: 'mmm-pagination-dropdown' }, 'Items per page:');
+    const paginationDropdown = createTag('select', { id: 'mmm-pagination-dropdown', value: perPage });
+    perPageOptions.forEach((option) => paginationDropdown.append(createTag('option', {
+      value: option,
+      ...(option >= totalRecords ? { disabled: 'disabled' } : {}),
+      ...(option === perPage ? { selected: 'selected' } : {}),
+    }, option)));
+    paginationEl.append(paginationWrapper);
+    const totalPages = Math.ceil(totalRecords / perPage);
+    const prev = pageNum - 1 || 1;
+    const next = pageNum < totalPages ? pageNum + 1 : pageNum;
+    const firstEl = createTag('a', { 'data-page-num': '1', class: `arrow ${pageNum === 1 ? 'disabled' : ''}` }, '|<');
+    const prevEl = createTag('a', { 'data-page-num': prev, class: `arrow ${pageNum === 1 ? 'disabled' : ''}` }, '<');
+    const nextEl = createTag('a', { 'data-page-num': next, class: `arrow ${pageNum === totalPages ? 'disabled' : ''}` }, '>');
+    const lastEl = createTag('a', { 'data-page-num': totalPages, class: `arrow ${pageNum === totalPages ? 'disabled' : ''}` }, '>|');
+    const range = `${pageNum * perPage - (perPage - 1)}-${pageNum * perPage < totalRecords ? pageNum * perPage : totalRecords}`;
+    const paginationSummary = createTag('div', { class: 'mmm-pagination-summary' }, `<div><span>${range} of ${totalRecords}</span><div>`);
+    // paginationSummary.innerHTML = `<div><span>${range} of ${totalRecords}</span><div>`;
+    paginationWrapper.append(
+      createTag('div', { id: 'pagination-select' }, [paginationLabel, paginationDropdown]),
+      createTag('div', { id: 'pagination-arrows' }, [
+        firstEl,
+        prevEl,
+        paginationSummary,
+        nextEl,
+        lastEl,
+      ]),
+    );
   } else {
-    paginationEl.innerHTML = '<h5>No results.</h5>';
+    paginationEl.append(createTag('h5', { id: 'mmm-pagination-no-results' }, 'No results'));
   }
   el.append(paginationEl);
 }
@@ -279,12 +282,21 @@ function getSearchParams(obj) {
   return searchString;
 }
 
+function handlePaginationDropdownChange() {
+  const paginationEl = document.querySelector('#mmm-pagination');
+  paginationEl?.querySelector('select')?.addEventListener('change', (event) => {
+    paginationEl.setAttribute('data-perpage', event.target.value);
+    filterPageList(paginationEl.getAttribute('data-page-num'), paginationEl.getAttribute('data-perpage'), event);
+  });
+}
+
 function handlePaginationClicks() {
   const paginationEl = document.querySelector('#mmm-pagination');
   paginationEl?.querySelectorAll('a').forEach((item) => {
-    item?.addEventListener('click', () => {
-      item.parentNode.setAttribute('data-current-page', item.getAttribute('data-page-num'));
-      filterPageList(item.getAttribute('data-page-num'));
+    item?.addEventListener('click', (event) => {
+      // item.parentNode.setAttribute('data-current-page', item.getAttribute('data-page-num'));
+      paginationEl.setAttribute('data-current-page', item.getAttribute('data-page-num'));
+      filterPageList(item.getAttribute('data-page-num'), paginationEl.getAttribute('data-perpage'), event);
     });
   });
 }
@@ -299,12 +311,13 @@ async function createPageList(el, search) {
     role: 'presentation',
   });
   mmmElContainer.append(mmmEl);
-  const url = `${API_URLS.pageList}${search ? getSearchParams(search) : window.location.search || '?pageNum=1'}`;
+  const url = `${API_URLS.pageList}${search ? getSearchParams(search) : window.location.search || '?pageNum=1&perPage=25'}`;
   const response = await fetchData(
     url,
     DATA_TYPE.JSON,
   );
   response.result.map((page) => createButtonDetailsPair(mmmEl, page));
+  console.log(['api response received', `url: ${url}`, response]);
   const section = createTag('div', { id: 'mep-section', class: 'section' });
   const main = document.querySelector('main');
   el.replaceWith(mmmElContainer);
@@ -315,6 +328,7 @@ async function createPageList(el, search) {
   });
   paginationEl?.classList.remove('mmm-hide');
   handlePaginationClicks();
+  handlePaginationDropdownChange();
 }
 
 function subscribeToSearchCriteriaChanges() {
