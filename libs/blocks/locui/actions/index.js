@@ -94,7 +94,7 @@ async function findPageFragments(path) {
     const originalUrl = fragment.dataset.modalPath || fragment.dataset.path || fragment.href;
     let pathname;
     try {
-      pathname = new URL(originalUrl, origin).pathname.replace('.html', '');
+      pathname = new URL(originalUrl, originalUrl ? origin : '').pathname.replace('.html', '');
     } catch (error) {
       setStatus('service', 'error', 'Invalid Fragment Path in files', originalUrl);
       return acc;
