@@ -4,6 +4,10 @@ body {
   background-attachment: fixed;
 }
 
+div.locui-create {
+  line-height: var(--type-body-m-lh);
+}
+
 /* --- Shared --- */
 
 .row {
@@ -333,12 +337,15 @@ body {
 
 .main-content h3 {
   font-size: 24px;
+  font-weight: normal;
   padding: 0 0 10px 30px;
   border-bottom: 0.5px solid rgb(185, 185, 185);
+  margin-top: 20px;
   margin-bottom: 10px;
 }
 
-.locui-project-name {
+div.locui-create .locui-project-name {
+  margin: 16px 0;
   font-size: 16px;
 }
 
@@ -417,15 +424,12 @@ body {
 }
 
 /* Side Navigation */
-
+div.locui-create 
 .nav-link,
-.nav-link:hover {
+div.locui-create .nav-link:hover {
   text-decoration: none;
   color: black;
 }
-/* .nav-link:hover {
-  text-decoration: none;
-} */
 
 .nav-list {
   list-style: none;
@@ -433,7 +437,7 @@ body {
   margin: 0;
 }
 
-.nav-item {
+div.locui-create .nav-item {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -461,8 +465,10 @@ body {
   background: url('./img/analytics-icon.svg') center 14px / 20px no-repeat;
 }
 
-.nav-label {
+div.locui-create .nav-label {
+  line-height: inherit;
   text-align: center;
+  font-weight: normal;
   font-size: 12px;
   margin: 3px 0 0;
 }
@@ -610,6 +616,7 @@ body {
 }
 
 .locui-project-type {
+  margin: 20px 0;
   font-weight: 700;
   font-size: 1.25rem;
   font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
