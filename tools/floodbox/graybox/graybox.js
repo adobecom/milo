@@ -126,7 +126,6 @@ export default class MiloGraybox extends LitElement {
           // eslint-disable-next-line no-console
           console.log(`${status.statusCode} :: ${status.filePath}`);
           this._promotedFiles.push(status.filePath);
-          // eslint-disable-next-line chai-friendly/no-unused-expressions
           if (SUCCESS_CODES.includes(status.statusCode)) {
             this._promotedFilesCount += 1;
           } else {
@@ -154,7 +153,6 @@ export default class MiloGraybox extends LitElement {
       callback: (status) => {
         // eslint-disable-next-line no-console
         console.log(`${status.statusCode} :: ${status.aemUrl}`);
-        // eslint-disable-next-line chai-friendly/no-unused-expressions
         if (SUCCESS_CODES.includes(status.statusCode)) {
           this._previewedFilesCount += 1;
         } else {
