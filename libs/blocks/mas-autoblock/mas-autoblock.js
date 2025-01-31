@@ -8,10 +8,13 @@ export function getFragmentId(el) {
   return searchParams.get('fragment');
 }
 
+/**
+ * From element's text content extracts the first word, which should be the tag name.
+ * @param el DOM element
+ * @returns {*|string} tag name
+ */
 export function getTagName(el) {
-  const defaultTagName = 'merch-card';
-  const tokens = el.textContent.trim().split(' ');
-  return tokens[0].replace(':', '').trim() || defaultTagName;
+  return el.textContent.trim().match(/^[^:\s]+/)?.[0] || 'merch-card';
 }
 
 export async function createCard(el, fragment) {
@@ -28,7 +31,7 @@ export default async function init(el) {
 
   const { base } = getConfig();
   await Promise.all([
-    import(`${base}/deps/mas/mas.js`),
+    import(`${base}/deps/mas/mas-light.js`),
     initService(),
   ]);
   await createCard(el, fragment);

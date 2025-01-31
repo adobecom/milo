@@ -38,6 +38,12 @@ await build({
     outfile: `${outfolder}/mas.js`,
 });
 
+await build({
+  ...defaults,
+  entryPoints: ['./src/mas-light.js'],
+  outfile: `${outfolder}/mas-light.js`,
+});
+
 // web components
 Promise.all([
     build({
