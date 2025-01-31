@@ -557,7 +557,7 @@ export const dropWhile = (xs, f) => {
 
 export function getGnavHeight() {
   let topHeight = document.querySelector('header')?.offsetHeight || 0;
-  if (isLocalNav()) {
+  if (isLocalNav() && !isDesktop.matches) {
     const localNav = document.querySelector('.feds-localnav');
     topHeight = localNav.offsetHeight || DEFAULT_LOCALNAV_HEIGHT;
   }
