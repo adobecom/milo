@@ -157,7 +157,8 @@ video {
 }
 
 @media (min-width: 600px) and (max-width: 1199px) {
-  .hero-marquee.asset-left .video-container.video-holder .pause-play-wrapper {
+  .hero-marquee.asset-left .video-container.video-holder .pause-play-wrapper, 
+  .aside:is(.media-top-tablet, .aside.media-bottom-tablet) .video-container.video-holder .pause-play-wrapper {
     left: auto;
     right: 2%;
   }
