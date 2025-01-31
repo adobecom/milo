@@ -5,6 +5,7 @@
   overflow: scroll;
   border-top: 1px solid #dadada;
   border-bottom: 1px solid #dadada;
+  margin: 20px;
 }
 
 .community-faq .card.product-card {
