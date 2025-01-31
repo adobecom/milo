@@ -349,6 +349,7 @@ function registerInBlockActions(command) {
   if (blockAndSelector.length > 1) {
     let blockSelector;
     blockSelector = blockAndSelector.slice(1).join(' ');
+    // command.selector = blockSelector;
     if (getSelectorType(blockSelector) === 'fragment') {
       blockSelector = getFederatedUrl(normalizePath(blockSelector));
       command.content = getFederatedUrl(normalizePath(command.content));
