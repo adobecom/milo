@@ -2,6 +2,7 @@ import {
   createTag, getConfig, loadArea, loadScript, loadStyle, localizeLink, SLD,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
+import { MODAL_TYPE_3_IN_1 } from './constants.js';
 
 export const CHECKOUT_LINK_CONFIG_PATH = '/commerce/checkout-link.json'; // relative to libs.
 
@@ -478,7 +479,7 @@ async function openExternalModal(url, getModal, extraOptions) {
 
 const isInternalModal = (url) => /\/fragments\//.test(url);
 
-export async function openModal(e, url, offerType, hash, extraOptions) {
+export async function openModal(e, url, offerType, hash, extraOptions, el) {
   e.preventDefault();
   e.stopImmediatePropagation();
   const { getModal } = await import('../modal/modal.js');
@@ -496,7 +497,13 @@ export async function openModal(e, url, offerType, hash, extraOptions) {
     const fragmentPath = url.split(/(hlx|aem).(page|live)/).pop();
     modal = await openFragmentModal(fragmentPath, getModal);
   } else {
-    modal = await openExternalModal(url, getModal, extraOptions);
+    const isThreeInOneModal = [MODAL_TYPE_3_IN_1.CRM, MODAL_TYPE_3_IN_1.D2P, MODAL_TYPE_3_IN_1.TWP].includes(el?.getAttribute('data-modal-type')) && el?.href;
+    if (isThreeInOneModal) {
+      const { default: openThreeInOneModal } = await import('./threeInOne.js');
+      modal = await openThreeInOneModal(el);
+    } else {
+      modal = await openExternalModal(url, getModal, extraOptions, el);
+    }
   }
   if (modal) {
     modal.classList.add(offerTypeClass);
@@ -539,7 +546,10 @@ export async function getModalAction(offers, options, el) {
   if (!url) return undefined;
   url = isInternalModal(url) || isProdModal(url)
     ? localizeLink(checkoutLinkConfig[columnName]) : checkoutLinkConfig[columnName];
-  return { url, handler: (e) => openModal(e, url, offerType, hash, options.extraOptions) };
+  return {
+    url,
+    handler: (e) => openModal(e, url, offerType, hash, options.extraOptions, el),
+  };
 }
 
 export async function getCheckoutAction(offers, options, imsSignedInPromise, el) {
