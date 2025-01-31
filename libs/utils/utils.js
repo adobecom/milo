@@ -91,7 +91,8 @@ const MILO_BLOCKS = [
   'z-pattern',
   'share',
   'reading-time',
-  'community-faq'
+  'community-faq',
+  'turing'
 ];
 const AUTO_BLOCKS = [
   { adobetv: 'tv.adobe.com' },
