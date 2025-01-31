@@ -32,6 +32,17 @@ describe('Icon Suppprt', () => {
     await loadIcons(icons, config); // Test duplicate icon not created if run twice
   });
 
+  it('Handles tooltip- prefix correctly', async () => {
+    const tooltipIcon = createTag('span', { class: 'icon icon-tooltip-info' });
+    await loadIcons([tooltipIcon], config);
+
+    const svgIcon = tooltipIcon.querySelector(':scope svg');
+    expect(svgIcon).to.exist;
+
+    const iconName = tooltipIcon.classList[1].replace('icon-', '').replace(/tooltip-/, '');
+    expect(iconName).to.equal('info');
+  });
+
   it('Fetches successfully with cache control enabled', async () => {
     const otherIcons = [createTag('span', { class: 'icon icon-play' })];
     await loadIcons(otherIcons, config);
