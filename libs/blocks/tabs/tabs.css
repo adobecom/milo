@@ -14,10 +14,9 @@
     rgba(136, 136, 136, 0.03) 80%,
     rgba(136, 136, 136, 0.08) 100%
   );
-  --tabs-pill-bg-color: #242424;
+  --tabs-pill-bg-color: #e1e1e1;
   --tabs-pill-bg-color-hover: #dadada;
   --tabs-pill-bg-color-active: #c6c6c6;
-  --tabs-pill-selected-text-color: #ffffff;
   --tabs-mobile-stacked-bg-color: #242424;
   --tabs-mobile-stacked-text-color: #ffffff;
   --tabs-pill-text-color: #131313;
@@ -40,11 +39,10 @@
     rgba(0, 0, 0, 20%) 80%,
     rgba(0, 0, 0, 40%) 100%
   );
-  --tabs-pill-bg-color: #ffffff;
+  --tabs-pill-bg-color: #555;
   --tabs-pill-bg-color-hover: #666;
   --tabs-pill-bg-color-active: #444;
   --tabs-pill-text-color: #fff;
-  --tabs-pill-selected-text-color: #131313;
   --tabs-mobile-stacked-bg-color: #ffffff;
   --tabs-mobile-stacked-text-color: #131313;
   --tabs-paddle-bs-color: #ffffff1a;
@@ -327,7 +325,7 @@
 }
 
 .tabs[class*='pill'] div[role="tablist"] button[aria-selected="true"] {
-  color: var(--tabs-pill-selected-text-color);
+  color: var(--tabs-pill-text-color);
   background: var(--tabs-pill-bg-color);
   text-shadow: 0.4px 0 0 var(--tabs-pill-text-color);
 }
