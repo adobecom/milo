@@ -746,7 +746,7 @@ export const getEntitlementMap = async () => {
   const entitlements = {};
   fetchedData?.data?.forEach((ent) => {
     const { id, tagname } = ent;
-    if (new URLSearchParams(window.location.search).get('disable_test_segment')) return;
+    if (new URLSearchParams(window.location.search).get('disabletestsegment')) return;
     if (window.alloy_all.data._adobe_corpnew.digitalData.adobe.xlg.includes(id)) {
       entitlements[id] = tagname;
       // pass
