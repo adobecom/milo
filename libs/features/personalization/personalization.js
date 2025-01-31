@@ -347,26 +347,13 @@ function registerInBlockActions(command) {
   config.mep.inBlock ??= {};
   config.mep.inBlock[blockName] ??= {};
 
-  let blockSelector;
   if (blockAndSelector.length === 1) delete command.selector;
   if (blockAndSelector.length > 1) {
+    let blockSelector;
     blockSelector = blockAndSelector.slice(1).join(' ');
-    command.selector = blockSelector;
     if (getSelectorType(blockSelector) === 'fragment') {
-      const { origin } = window.location;
-      const isLocalOrSLD = origin.includes('localhost') || origin.includes(`.${SLD}.`);
-      const isLive = origin.includes('.live');
-
-      if (!blockSelector.includes('/federal/') && isLocalOrSLD) {
-        blockSelector = blockSelector.replace(isLive ? '.page' : '.live', isLive ? '.live' : '.page');
-      }
-
-      if (getSelectorType(command.content) === 'fragment') {
-        command.content = command.content.replace(isLive ? '.page' : '.live', isLive ? '.live' : '.page');
-      }
-
-      blockSelector = blockSelector.includes('/federal/') ? getFederatedUrl(blockSelector) : blockSelector;
-      command.content = command.content.includes('/federal/') ? getFederatedUrl(command.content) : command.content;
+      blockSelector = getFederatedUrl(normalizePath(blockSelector));
+      command.content = getFederatedUrl(normalizePath(command.content));
       config.mep.inBlock[blockName].fragments ??= {};
       const { fragments } = config.mep.inBlock[blockName];
       delete command.selector;
