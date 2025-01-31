@@ -8,9 +8,9 @@
   margin: 20px;
 }
 
-.community-faq .card.product-card {
+.community-faq .card {
   width: 30%;
   min-width: 30%;
   padding: 20px;
-  box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+  box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px !important;
 }
