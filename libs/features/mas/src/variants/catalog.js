@@ -53,6 +53,7 @@ export class Catalog extends VariantLayout {
                     name="action-menu-content"
                     class="action-menu-content
             ${!this.card.actionMenuContent ? 'hidden' : ''}"
+                    @focusout="${this.hideActionMenu}"
                     >${this.card.actionMenuContent}
                 </slot>
                 <slot name="heading-xs"></slot>
@@ -110,6 +111,11 @@ export class Catalog extends VariantLayout {
         this.actionMenuContentSlot.classList.toggle('hidden', retract);
         this.setAriaExpanded(this.actionMenu, 'false');
     };
+    
+    hideActionMenu = (e) => {
+      this.actionMenuContentSlot?.classList.add('hidden');
+      this.setAriaExpanded(this.actionMenu, 'false');
+    }
     
     setAriaExpanded(element, value) {
         element.setAttribute('aria-expanded', value);
