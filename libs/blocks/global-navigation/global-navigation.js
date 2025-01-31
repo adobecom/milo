@@ -78,17 +78,32 @@ export const CONFIG = {
         name: 'profile',
         attributes: {
           isSignUpRequired: false,
+          messageEventListener: (event) => {
+            const { name, payload, executeDefaultAction } = event.detail;
+            if (!name || name !== 'System' || !payload || typeof executeDefaultAction !== 'function') return;
+            switch (payload.subType) {
+              case 'AppInitiated':
+                window.adobeProfile?.getUserProfile()
+                  .then((data) => { setUserProfile(data); })
+                  .catch(() => { setUserProfile({}); });
+                break;
+              case 'SignOut':
+                executeDefaultAction();
+                break;
+              case 'ProfileSwitch':
+                Promise.resolve(executeDefaultAction()).then((profile) => {
+                  if (profile) window.location.reload();
+                });
+                break;
+              default:
+                break;
+            }
+          },
           componentLoaderConfig: {
             config: {
               enableLocalSection: true,
+              enableProfileSwitcher: true,
               miniAppContext: {
-                onMessage: (name, payload) => {
-                  if (name === 'System' && payload.subType === 'AppInitiated') {
-                    window.adobeProfile?.getUserProfile()
-                      .then((data) => { setUserProfile(data); })
-                      .catch(() => { setUserProfile({}); });
-                  }
-                },
                 logger: {
                   trace: () => {},
                   debug: () => {},
@@ -129,6 +144,7 @@ export const CONFIG = {
           callbacks: getConfig().jarvis?.callbacks,
         },
       },
+      cart: { name: 'cart' },
     },
   },
 };
@@ -262,7 +278,7 @@ const closeOnClickOutside = (e, isLocalNav, navWrapper) => {
   const newMobileNav = getMetadata('mobile-gnav-v2') !== 'false';
   if (!isDesktop.matches && !newMobileNav) return;
 
-  const openElemSelector = `${selectors.globalNav} [aria-expanded = "true"], ${selectors.localNav} [aria-expanded = "true"]`;
+  const openElemSelector = `${selectors.globalNav} [aria-expanded = "true"]:not(.universal-nav-container *), ${selectors.localNav} [aria-expanded = "true"]`;
   const isClickedElemOpen = [...document.querySelectorAll(openElemSelector)]
     .find((openItem) => openItem.parentElement.contains(e.target));
 
@@ -645,7 +661,7 @@ class Gnav {
       return 'linux';
     };
 
-    const unavVersion = new URLSearchParams(window.location.search).get('unavVersion') || '1.3';
+    const unavVersion = new URLSearchParams(window.location.search).get('unavVersion') || '1.4';
     await Promise.all([
       loadScript(`https://${environment}.adobeccstatic.com/unav/${unavVersion}/UniversalNav.js`),
       loadStyles(`https://${environment}.adobeccstatic.com/unav/${unavVersion}/UniversalNav.css`, true),
@@ -745,6 +761,7 @@ class Gnav {
       },
       children: getChildren(),
       isSectionDividerRequired: getConfig()?.unav?.showSectionDivider,
+      showTrayExperience: (!isDesktop.matches),
     });
 
     // Exposing UNAV config for consumers
@@ -752,7 +769,7 @@ class Gnav {
     await window.UniversalNav(CONFIG.universalNav.universalNavConfig);
     this.decorateAppPrompt({ getAnchorState: () => window.UniversalNav.getComponent?.('app-switcher') });
     isDesktop.addEventListener('change', () => {
-      window.UniversalNav.reload(CONFIG.universalNav.universalNavConfig);
+      window.UniversalNav.reload(getConfiguration());
     });
   };
 
