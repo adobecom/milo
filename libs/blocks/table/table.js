@@ -427,9 +427,8 @@ function applyStylesBasedOnScreenSize(table, originTable) {
       icon.parentElement.addEventListener('click', () => handleExpand(icon));
       icon.parentElement.setAttribute('tabindex', 0);
       icon.parentElement.addEventListener('keydown', (e) => {
-        if (e.key !== 'Tab') {
-          e.preventDefault();
-        }
+        if (e.key !== 'Tab') e.preventDefault();
+
         if (e.key === 'Enter' || e.key === ' ') handleExpand(icon);
       });
     });
