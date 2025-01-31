@@ -1,3 +1,4 @@
+import { sendKeys, setViewport } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { decorateLinks, loadStyle, setConfig } from '../../../libs/utils/utils.js';
 import { mockFetch, readMockText } from '../merch/mocks/fetch.js';
@@ -166,6 +167,22 @@ describe('Catalog Card', () => {
       ],
       buttons: ['Learn More', 'Save now'],
     });
+  });
+
+  it('Action menu visible', async () => {
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/catalog-action-menu-only.html');
+    await setViewport({ width: 1025, height: 640 });
+    const merchCard = await init(document.querySelector('.merch-card.ribbon'));
+    const actionMenu = merchCard.shadowRoot.querySelector('.action-menu');
+    merchCard.dispatchEvent(new Event('focusin'));
+    expect(actionMenu.classList.contains('always-visible')).to.be.true;
+    await sendKeys({ press: 'Tab' });
+    await sendKeys({ press: 'Tab' });
+    await sendKeys({ press: 'Tab' });
+    await sendKeys({ press: 'Tab' });
+    await sendKeys({ press: 'Tab' });
+    await sendKeys({ press: 'Tab' });
+    expect(actionMenu.classList.contains('always-visible')).to.be.false;
   });
 
   it('Supports Catalog card without badge', async () => {
