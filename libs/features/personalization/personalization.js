@@ -746,7 +746,10 @@ export const getEntitlementMap = async () => {
   const entitlements = {};
   fetchedData?.data?.forEach((ent) => {
     const { id, tagname } = ent;
-    entitlements[id] = tagname;
+    if (window.alloy_all.data._adobe_corpnew.digitalData.adobe.xlg.includes(id)) {
+      entitlements[id] = tagname;
+      // pass
+    }
   });
   config.mep ??= {};
   config.mep.entitlementMap = { ...config.consumerEntitlements, ...entitlements };
