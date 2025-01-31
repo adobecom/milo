@@ -255,13 +255,6 @@ class Footer {
 
       if (modal) await loadRegionNav(); // just in case the modal is already open
 
-      if (regionPickerElem.classList[0] !== 'modal') {
-        lanaLog({
-          message: `Modal block class missing from region picker post loading the block; locale: ${locale}; regionPickerElem: ${regionPickerElem.outerHTML}`,
-          tags: 'global-footer',
-          errorType: 'warn',
-        });
-      }
       regionPickerElem.addEventListener('click', () => {
         if (!isRegionPickerExpanded()) {
           regionPickerElem.setAttribute('aria-expanded', 'true');
