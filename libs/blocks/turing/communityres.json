@@ -1,0 +1,1847 @@
+{
+	"_links": {
+		"next": {
+			"href": "https://cc-api-cp-stage.adobe.io/api/v2/ff_community/assets?cursor=GheYZd%2FmHAr4hiFcfV3ZzcMYcmGFYCB0oLXDtsFlKQYJ5OFMbLG7NSdULosUKit1vP49pw8zv6PnYi3QesV74wdDXemrTkG1H%2BHP5vuwGAKj3Tg4DV1%2BzHiB9JxfgbTr6dVEvGdEO2pV9eHdqx49mg%3D%3D&cursor=saHh5x3tgQVVplyS%2FHy2BrqrfqiRiYkhP6WCnVN26Ulaa2ysnohSIfSDX4Owq%2Ft4MmjcW4QFNedQXtZUv1Ak%2BB0n0QXGsmUzdWUo903frHfpsvBYgL99GBHHrYwHBi80Fc1rS5BV6P8N%2Bv0i79Gjrg%3D%3D",
+			"type": "application/hal+json"
+		},
+		"self": {
+			"href": "https://cc-api-cp-stage.adobe.io/api/v2/ff_community/assets?sort=date_desc&size=10",
+			"type": "application/hal+json"
+		}
+	},
+	"_embedded": {
+		"assets": [
+			{
+				"_links": {
+					"rendition": {
+						"max_width": 2048,
+						"templated": true,
+						"max_height": 2048,
+						"href": "https://cdn-stage.cp.adobe.io/content/2/rendition/d8e618cc-d645-4d10-a987-72454d3730ef/artwork/18b31d01-615d-457e-ad9b-01fb9f3a3f73/version/0/format/{format}/dimension/{dimension}/size/{size}"
+					},
+					"self": {
+						"href": "https://cc-api-cp-stage.adobe.io/api/v2/ff_community/assets/d8e618cc-d645-4d10-a987-72454d3730ef",
+						"type": "application/hal+json"
+					},
+					"asset_rendition": {
+						"max_width": 2048,
+						"templated": true,
+						"max_height": 2048,
+						"href": "https://cdn-stage.cp.adobe.io/content/2/rendition/d8e618cc-d645-4d10-a987-72454d3730ef/format/{format}/dimension/{dimension}/size/{size}/ts/1738211090993"
+					}
+				},
+				"_embedded": {
+					"owner": {
+						"_links": {
+							"images": [
+								{
+									"width": 50,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/50",
+									"type": "image/jpeg",
+									"height": 50
+								},
+								{
+									"width": 100,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/100",
+									"type": "image/jpeg",
+									"height": 100
+								},
+								{
+									"width": 115,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/115",
+									"type": "image/jpeg",
+									"height": 115
+								},
+								{
+									"width": 138,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/138",
+									"type": "image/jpeg",
+									"height": 138
+								},
+								{
+									"width": 230,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/230",
+									"type": "image/jpeg",
+									"height": 230
+								},
+								{
+									"width": 276,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/276",
+									"type": "image/jpeg",
+									"height": 276
+								}
+							],
+							"self": {
+								"href": "https://cc-api-cp-stage.adobe.io/api/v2/ff_community/users/sreeharshac1"
+							}
+						},
+						"id": "sreeharshac1",
+						"first_name": "Sreeharsha",
+						"last_name": "C",
+						"user_name": "sreeharshac1",
+						"display_name": "Sreeharsha C",
+						"city": "",
+						"state": "",
+						"country": "India",
+						"location": "India",
+						"is_valid_profile": true,
+						"has_default_image": false
+					},
+					"artwork": {
+						"_links": {
+							"rendition": {
+								"max_width": 2048,
+								"templated": true,
+								"max_height": 2048,
+								"href": "https://cdn-stage.cp.adobe.io/content/2/rendition/d8e618cc-d645-4d10-a987-72454d3730ef/artwork/18b31d01-615d-457e-ad9b-01fb9f3a3f73/version/0/format/{format}/dimension/{dimension}/size/{size}"
+							},
+							"self": {
+								"href": "https://cc-api-cp-stage.adobe.io/api/v2/ff_community/assets/d8e618cc-d645-4d10-a987-72454d3730ef/artwork",
+								"type": "application/hal+json"
+							}
+						},
+						"id": "18b31d01-615d-457e-ad9b-01fb9f3a3f73",
+						"urn": "urn:aaid:sc:US:18b31d01-615d-457e-ad9b-01fb9f3a3f73",
+						"created": "2025-01-30T04:24:49.551Z",
+						"type": "image/jpeg",
+						"size": 1245915,
+						"width": 2048,
+						"height": 2048
+					}
+				},
+				"id": "d8e618cc-d645-4d10-a987-72454d3730ef",
+				"urn": "urn:aaid:sc:US:d8e618cc-d645-4d10-a987-72454d3730ef",
+				"created": "2025-01-30T04:24:43.096Z",
+				"updated": "2025-01-30T04:24:50.993Z",
+				"published": "2025-01-30T04:34:22.090Z",
+				"metadata_updated": "2025-01-30T04:24:53.150Z",
+				"type": "application/vnd.adobe.firefly-cp+dcx",
+				"title": "A dog sitting happily in a ray of sunshine",
+				"tags": [],
+				"category": {
+					"id": "text2Image",
+					"name": "text2Image"
+				},
+				"machine_tags": [
+					"docVersion_v3",
+					"dataModelVersion_2.0.0",
+					"translated"
+				],
+				"custom": {
+					"firefly#model": {
+						"docVersion": "v3",
+						"module": "text2Image",
+						"dataModelVersion": "2.0.0"
+					},
+					"input": {
+						"firefly#inputModel": "{\"type\":\"text2Image\",\"imageRef\":{\"localBlobRef\":\"06a5d640786a76243caf38765abacb58fa59f8e608ffbfda80c59621b49be4cd\",\"mimeType\":\"image/jpeg\"},\"title\":\"Un chien assis joyeusement dans un rayon de soleil\",\"mimeType\":\"image/jpeg\",\"seed\":86327,\"seeds\":[92924,86327,97517,57267],\"aspectRatio\":1,\"model\":{\"browserId\":\"838f2f\",\"prompt\":\"Un chien assis joyeusement dans un rayon de soleil\",\"promptType\":\"inspiration\",\"styles\":{\"value\":[],\"mode\":\"manual\"},\"seeds\":[92924,86327,97517,57267],\"aspectRatio\":\"square\",\"advancedParams\":{},\"locale\":\"en-IN\",\"modelVersion\":\"image3_fast\",\"modelInputVersion\":\"v3\",\"detailLevel\":\"preview\",\"sessionHistoryId\":\"173ef810-b32b-4e23-822d-56d301459cbc\",\"seed\":86327}}",
+						"firefly#prompts": {
+							"fi-FI": "Koira istuu onnellisena auringonpaisteessa",
+							"nb-NO": "En hund som sitter lykkelig i en solstråle",
+							"uk-UA": "Собака щасливо сидить у промінчику сонця",
+							"de-DE": "Ein Hund, der glücklich im Sonnenschein sitzt",
+							"hu-HU": "Egy kutya, aki boldogan ül a napsugárban",
+							"en-US": "A dog sitting happily in a ray of sunshine",
+							"ko-KR": "한 줄기 햇살에 행복하게 앉아 있는 개",
+							"pt-BR": "Um cão que senta-se feliz em um raio de sol",
+							"es-ES": "Un perro sentado feliz en un rayo de sol",
+							"it-IT": "Un cane seduto felicemente in un raggio di sole",
+							"zh-Hans-CN": "一只狗狗快乐地坐在一缕阳光下",
+							"pl-PL": "Pies siedzący szczęśliwie w promieniach słońca",
+							"ru-RU": "Собака счастливо сидит в луче солнца",
+							"nl-NL": "Een hond die gelukkig in een zonnestraal zit",
+							"sv-SE": "En hund som sitter lyckligt i en solstråle",
+							"da-DK": "En hund, der sidder glad i en solstråle",
+							"tr-TR": "Güneş ışığında mutlu bir şekilde oturan bir köpek",
+							"cs-CZ": "Pes spokojeně sedící v paprsku slunečního svitu",
+							"fr-FR": "Un chien assis joyeusement dans un rayon de soleil",
+							"ja-JP": "一筋の太陽の光を浴びて楽しそうに座る犬",
+							"zh-Hant-TW": "一隻狗狗快樂地坐在一縷陽光下"
+						},
+						"firefly#originalPrompt": "Un chien assis joyeusement dans un rayon de soleil",
+						"firefly#locale": "fr-FR"
+					},
+					"output": {
+						"firefly#outputModel": {
+							"generation": {
+								"type": "array",
+								"expectedMimeType": "image/jpeg",
+								"expectedArrayLength": "1"
+							}
+						}
+					}
+				},
+				"alias": "u0NVZ",
+				"aliases": [
+					"u0NVZ"
+				],
+				"stats": {
+					"detail_count": 55,
+					"anonymous_like_count": 0,
+					"purchase_count": 0,
+					"original_count": 0,
+					"copy_count": 0,
+					"add_to_library_count": 0,
+					"website_count": 0,
+					"video_info_count": 0,
+					"video_stream_count": 0,
+					"video_embed_count": 0,
+					"comment_count": 0,
+					"custom_counts": {}
+				},
+				"purchased": false,
+				"liked": false,
+				"is_owner": false,
+				"activities": {}
+			},
+			{
+				"_links": {
+					"rendition": {
+						"max_width": 2048,
+						"templated": true,
+						"max_height": 2048,
+						"href": "https://cdn-stage.cp.adobe.io/content/2/rendition/39490657-0206-423a-94c1-c862c7141ed0/artwork/618f2039-4cae-40be-b295-fa5a2023a66a/version/0/format/{format}/dimension/{dimension}/size/{size}"
+					},
+					"self": {
+						"href": "https://cc-api-cp-stage.adobe.io/api/v2/ff_community/assets/39490657-0206-423a-94c1-c862c7141ed0",
+						"type": "application/hal+json"
+					},
+					"asset_rendition": {
+						"max_width": 2048,
+						"templated": true,
+						"max_height": 2048,
+						"href": "https://cdn-stage.cp.adobe.io/content/2/rendition/39490657-0206-423a-94c1-c862c7141ed0/format/{format}/dimension/{dimension}/size/{size}/ts/1738211235046"
+					}
+				},
+				"_embedded": {
+					"owner": {
+						"_links": {
+							"images": [
+								{
+									"width": 50,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/50",
+									"type": "image/jpeg",
+									"height": 50
+								},
+								{
+									"width": 100,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/100",
+									"type": "image/jpeg",
+									"height": 100
+								},
+								{
+									"width": 115,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/115",
+									"type": "image/jpeg",
+									"height": 115
+								},
+								{
+									"width": 138,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/138",
+									"type": "image/jpeg",
+									"height": 138
+								},
+								{
+									"width": 230,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/230",
+									"type": "image/jpeg",
+									"height": 230
+								},
+								{
+									"width": 276,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/276",
+									"type": "image/jpeg",
+									"height": 276
+								}
+							],
+							"self": {
+								"href": "https://cc-api-cp-stage.adobe.io/api/v2/ff_community/users/sreeharshac1"
+							}
+						},
+						"id": "sreeharshac1",
+						"first_name": "Sreeharsha",
+						"last_name": "C",
+						"user_name": "sreeharshac1",
+						"display_name": "Sreeharsha C",
+						"city": "",
+						"state": "",
+						"country": "India",
+						"location": "India",
+						"is_valid_profile": true,
+						"has_default_image": false
+					},
+					"artwork": {
+						"_links": {
+							"rendition": {
+								"max_width": 2048,
+								"templated": true,
+								"max_height": 2048,
+								"href": "https://cdn-stage.cp.adobe.io/content/2/rendition/39490657-0206-423a-94c1-c862c7141ed0/artwork/618f2039-4cae-40be-b295-fa5a2023a66a/version/0/format/{format}/dimension/{dimension}/size/{size}"
+							},
+							"self": {
+								"href": "https://cc-api-cp-stage.adobe.io/api/v2/ff_community/assets/39490657-0206-423a-94c1-c862c7141ed0/artwork",
+								"type": "application/hal+json"
+							}
+						},
+						"id": "618f2039-4cae-40be-b295-fa5a2023a66a",
+						"urn": "urn:aaid:sc:US:618f2039-4cae-40be-b295-fa5a2023a66a",
+						"created": "2025-01-30T04:27:13.782Z",
+						"type": "image/jpeg",
+						"size": 1227896,
+						"width": 2048,
+						"height": 2048
+					}
+				},
+				"id": "39490657-0206-423a-94c1-c862c7141ed0",
+				"urn": "urn:aaid:sc:US:39490657-0206-423a-94c1-c862c7141ed0",
+				"created": "2025-01-30T04:27:08.941Z",
+				"updated": "2025-01-30T04:27:15.046Z",
+				"published": "2025-01-30T04:34:21.525Z",
+				"metadata_updated": "2025-01-30T04:27:16.737Z",
+				"type": "application/vnd.adobe.firefly-cp+dcx",
+				"title": "A dog runs through the snow, its fur blowing in the wind.",
+				"tags": [],
+				"category": {
+					"id": "text2Image",
+					"name": "text2Image"
+				},
+				"machine_tags": [
+					"docVersion_v3",
+					"dataModelVersion_2.0.0",
+					"translated"
+				],
+				"custom": {
+					"firefly#model": {
+						"docVersion": "v3",
+						"module": "text2Image",
+						"dataModelVersion": "2.0.0"
+					},
+					"input": {
+						"firefly#inputModel": "{\"type\":\"text2Image\",\"imageRef\":{\"localBlobRef\":\"1b735a7444c5d0a745a3e190bacf1b811253e6cff19587ecc3b4775011662906\",\"mimeType\":\"image/jpeg\"},\"title\":\"Ein Hund rennt durch den Schnee, sein Fell weht im Wind.\",\"mimeType\":\"image/jpeg\",\"seed\":39145,\"seeds\":[31702,44347,39145,11545],\"aspectRatio\":1,\"model\":{\"browserId\":\"838f2f\",\"prompt\":\"Ein Hund rennt durch den Schnee, sein Fell weht im Wind.\",\"promptType\":\"inspiration\",\"styles\":{\"value\":[],\"mode\":\"manual\"},\"seeds\":[31702,44347,39145,11545],\"aspectRatio\":\"square\",\"advancedParams\":{},\"locale\":\"en-IN\",\"modelVersion\":\"image3_fast\",\"modelInputVersion\":\"v3\",\"detailLevel\":\"preview\",\"sessionHistoryId\":\"9fb61229-8555-40bf-a5df-882b11783b6f\",\"seed\":39145}}",
+						"firefly#prompts": {
+							"fi-FI": "Koira juoksee lumen läpi, sen turkis puhaltaa tuulessa.",
+							"nb-NO": "En hund løper gjennom snøen, pelsen blåser i vinden.",
+							"uk-UA": "Собака біжить по снігу, її шерсть розвівається на вітрі.",
+							"hu-HU": "Egy kutya fut át a hóban, szőrme fúj a szélben.",
+							"de-DE": "Ein Hund rennt durch den Schnee, sein Fell weht im Wind.",
+							"en-US": "A dog runs through the snow, its fur blowing in the wind.",
+							"ko-KR": "개 한 마리가 털이 바람에 날리며 눈 속을 달린다.",
+							"pt-BR": "Um cachorro corre pela neve, seu pelo ao vento.",
+							"es-ES": "Un perro corre por la nieve, su pelaje se agita con el viento.",
+							"it-IT": "Un cane corre nella neve, il suo pelo è mosso dal vento.",
+							"zh-Hans-CN": "一只狗在雪地上奔跑，它的皮毛在风中飘扬。",
+							"pl-PL": "Pies biegnie po śniegu, a jego futro powiewa na wietrze.",
+							"ru-RU": "Собака бежит по снегу, ее шерсть развевается на ветру.",
+							"nl-NL": "Een hond rent door de sneeuw, zijn vacht wappert in de wind.",
+							"sv-SE": "En hund springer genom snön och pälsen blåser i vinden.",
+							"da-DK": "En hund løber gennem sneen, dens pels blæser i vinden.",
+							"tr-TR": "Bir köpek karda koşuyor, kürkü rüzgarda uçuşuyor.",
+							"cs-CZ": "Pes běží sněhem a jeho srst vlaje ve větru.",
+							"fr-FR": "Un chien court dans la neige, sa fourrure soufflant au vent.",
+							"ja-JP": "犬が雪の中を走り、毛皮が風になびきます。",
+							"zh-Hant-TW": "一隻狗在雪地上奔跑，它的皮毛在風中飄揚。"
+						},
+						"firefly#originalPrompt": "Ein Hund rennt durch den Schnee, sein Fell weht im Wind.",
+						"firefly#locale": "de-DE"
+					},
+					"output": {
+						"firefly#outputModel": {
+							"generation": {
+								"type": "array",
+								"expectedMimeType": "image/jpeg",
+								"expectedArrayLength": "1"
+							}
+						}
+					}
+				},
+				"alias": "8I08j",
+				"aliases": [
+					"8I08j"
+				],
+				"stats": {
+					"detail_count": 81,
+					"anonymous_like_count": 0,
+					"purchase_count": 0,
+					"original_count": 0,
+					"copy_count": 0,
+					"add_to_library_count": 0,
+					"website_count": 0,
+					"video_info_count": 0,
+					"video_stream_count": 0,
+					"video_embed_count": 0,
+					"comment_count": 0,
+					"custom_counts": {}
+				},
+				"purchased": false,
+				"liked": false,
+				"is_owner": false,
+				"activities": {}
+			},
+			{
+				"_links": {
+					"rendition": {
+						"max_width": 2048,
+						"templated": true,
+						"max_height": 2048,
+						"href": "https://cdn-stage.cp.adobe.io/content/2/rendition/d4a0c059-6ff2-4b97-ae98-9bc695433662/artwork/a693cd08-a4ac-4478-b4cc-8a5e13b2b2cc/version/0/format/{format}/dimension/{dimension}/size/{size}"
+					},
+					"self": {
+						"href": "https://cc-api-cp-stage.adobe.io/api/v2/ff_community/assets/d4a0c059-6ff2-4b97-ae98-9bc695433662",
+						"type": "application/hal+json"
+					},
+					"asset_rendition": {
+						"max_width": 2048,
+						"templated": true,
+						"max_height": 2048,
+						"href": "https://cdn-stage.cp.adobe.io/content/2/rendition/d4a0c059-6ff2-4b97-ae98-9bc695433662/format/{format}/dimension/{dimension}/size/{size}/ts/1738211412925"
+					}
+				},
+				"_embedded": {
+					"owner": {
+						"_links": {
+							"images": [
+								{
+									"width": 50,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/50",
+									"type": "image/jpeg",
+									"height": 50
+								},
+								{
+									"width": 100,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/100",
+									"type": "image/jpeg",
+									"height": 100
+								},
+								{
+									"width": 115,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/115",
+									"type": "image/jpeg",
+									"height": 115
+								},
+								{
+									"width": 138,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/138",
+									"type": "image/jpeg",
+									"height": 138
+								},
+								{
+									"width": 230,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/230",
+									"type": "image/jpeg",
+									"height": 230
+								},
+								{
+									"width": 276,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/276",
+									"type": "image/jpeg",
+									"height": 276
+								}
+							],
+							"self": {
+								"href": "https://cc-api-cp-stage.adobe.io/api/v2/ff_community/users/sreeharshac1"
+							}
+						},
+						"id": "sreeharshac1",
+						"first_name": "Sreeharsha",
+						"last_name": "C",
+						"user_name": "sreeharshac1",
+						"display_name": "Sreeharsha C",
+						"city": "",
+						"state": "",
+						"country": "India",
+						"location": "India",
+						"is_valid_profile": true,
+						"has_default_image": false
+					},
+					"artwork": {
+						"_links": {
+							"rendition": {
+								"max_width": 2048,
+								"templated": true,
+								"max_height": 2048,
+								"href": "https://cdn-stage.cp.adobe.io/content/2/rendition/d4a0c059-6ff2-4b97-ae98-9bc695433662/artwork/a693cd08-a4ac-4478-b4cc-8a5e13b2b2cc/version/0/format/{format}/dimension/{dimension}/size/{size}"
+							},
+							"self": {
+								"href": "https://cc-api-cp-stage.adobe.io/api/v2/ff_community/assets/d4a0c059-6ff2-4b97-ae98-9bc695433662/artwork",
+								"type": "application/hal+json"
+							}
+						},
+						"id": "a693cd08-a4ac-4478-b4cc-8a5e13b2b2cc",
+						"urn": "urn:aaid:sc:US:a693cd08-a4ac-4478-b4cc-8a5e13b2b2cc",
+						"created": "2025-01-30T04:30:11.077Z",
+						"type": "image/jpeg",
+						"size": 1340175,
+						"width": 2048,
+						"height": 2048
+					}
+				},
+				"id": "d4a0c059-6ff2-4b97-ae98-9bc695433662",
+				"urn": "urn:aaid:sc:US:d4a0c059-6ff2-4b97-ae98-9bc695433662",
+				"created": "2025-01-30T04:30:06.169Z",
+				"updated": "2025-01-30T04:30:12.925Z",
+				"published": "2025-01-30T04:34:20.417Z",
+				"metadata_updated": "2025-01-30T04:30:14.758Z",
+				"type": "application/vnd.adobe.firefly-cp+dcx",
+				"title": "A dog wags its tail excitedly, its ears pricked up.",
+				"tags": [],
+				"category": {
+					"id": "text2Image",
+					"name": "text2Image"
+				},
+				"machine_tags": [
+					"docVersion_v3",
+					"dataModelVersion_2.0.0",
+					"translated"
+				],
+				"custom": {
+					"firefly#model": {
+						"docVersion": "v3",
+						"module": "text2Image",
+						"dataModelVersion": "2.0.0"
+					},
+					"input": {
+						"firefly#inputModel": "{\"type\":\"text2Image\",\"imageRef\":{\"localBlobRef\":\"782adeb77d6223f014396a4082539cec1f157e93d717c677fc4d3522a57307ca\",\"mimeType\":\"image/jpeg\"},\"title\":\"Ein Hund wedelt aufgeregt mit dem Schwanz, die Ohren sind gespitzt.\",\"mimeType\":\"image/jpeg\",\"seed\":87651,\"seeds\":[1214,70542,89365,87651],\"aspectRatio\":1,\"model\":{\"browserId\":\"838f2f\",\"prompt\":\"Ein Hund wedelt aufgeregt mit dem Schwanz, die Ohren sind gespitzt.\",\"promptType\":\"inspiration\",\"styles\":{\"value\":[],\"mode\":\"manual\"},\"seeds\":[1214,70542,89365,87651],\"aspectRatio\":\"square\",\"advancedParams\":{},\"locale\":\"en-IN\",\"modelVersion\":\"image3_fast\",\"modelInputVersion\":\"v3\",\"detailLevel\":\"preview\",\"sessionHistoryId\":\"0614e670-42cc-4abe-a20d-3402c72bf6f7\",\"seed\":87651}}",
+						"firefly#prompts": {
+							"fi-FI": "Koira heiluttaa häntäänsä innoissaan, korvat pistettyinä.",
+							"nb-NO": "En hund logrer begeistret med halen, ørene spisser seg.",
+							"uk-UA": "Собака збуджено виляє хвостом, нашорошивши вуха.",
+							"hu-HU": "Egy kutya izgatottan csóválja a farkát, a fülét felhúzza.",
+							"de-DE": "Ein Hund wedelt aufgeregt mit dem Schwanz, die Ohren sind gespitzt.",
+							"en-US": "A dog wags its tail excitedly, its ears pricked up.",
+							"ko-KR": "개 한 마리가 귀를 쫑긋 세우고 신이 나서 꼬리를 흔든다.",
+							"pt-BR": "Um cachorro abana o rabo animadamente, com as orelhas erguidas.",
+							"es-ES": "Un perro mueve la cola con entusiasmo, con las orejas levantadas.",
+							"it-IT": "Un cane scodinzola eccitato, con le orecchie dritte.",
+							"zh-Hans-CN": "一只狗兴奋地摇着尾巴，竖起了耳朵。",
+							"pl-PL": "Pies macha podnieconym ogonem z nadstawionymi uszami.",
+							"ru-RU": "Собака взволнованно виляет хвостом, навострив уши.",
+							"nl-NL": "Een hond kwispelt opgewonden met zijn staart, zijn oren gespitst.",
+							"sv-SE": "En hund viftar upphetsat på svansen och spetsar öronen.",
+							"da-DK": "En hund logrer begejstret med halen og spidse ører.",
+							"tr-TR": "Bir köpek heyecanla kuyruğunu sallıyor, kulakları dikiliyor.",
+							"cs-CZ": "Pes vzrušeně vrtí ocasem a má uši nastražené.",
+							"fr-FR": "Un chien remue la queue avec excitation, les oreilles dressées.",
+							"ja-JP": "犬が興奮して尻尾を振り、耳をピンと立てています。",
+							"zh-Hant-TW": "一隻狗興奮地搖著尾巴，豎起了耳朵。"
+						},
+						"firefly#originalPrompt": "Ein Hund wedelt aufgeregt mit dem Schwanz, die Ohren sind gespitzt.",
+						"firefly#locale": "de-DE"
+					},
+					"output": {
+						"firefly#outputModel": {
+							"generation": {
+								"type": "array",
+								"expectedMimeType": "image/jpeg",
+								"expectedArrayLength": "1"
+							}
+						}
+					}
+				},
+				"alias": "OZjZx",
+				"aliases": [
+					"OZjZx"
+				],
+				"stats": {
+					"detail_count": 106,
+					"anonymous_like_count": 0,
+					"purchase_count": 0,
+					"original_count": 0,
+					"copy_count": 0,
+					"add_to_library_count": 0,
+					"website_count": 0,
+					"video_info_count": 0,
+					"video_stream_count": 0,
+					"video_embed_count": 0,
+					"comment_count": 0,
+					"custom_counts": {}
+				},
+				"purchased": false,
+				"liked": false,
+				"is_owner": false,
+				"activities": {}
+			},
+			{
+				"_links": {
+					"rendition": {
+						"max_width": 2048,
+						"templated": true,
+						"max_height": 2048,
+						"href": "https://cdn-stage.cp.adobe.io/content/2/rendition/60bce6f7-9140-4292-827e-86f28f14b755/artwork/3ed055af-d104-49a5-93e8-c16ddc1f19fd/version/0/format/{format}/dimension/{dimension}/size/{size}"
+					},
+					"self": {
+						"href": "https://cc-api-cp-stage.adobe.io/api/v2/ff_community/assets/60bce6f7-9140-4292-827e-86f28f14b755",
+						"type": "application/hal+json"
+					},
+					"asset_rendition": {
+						"max_width": 2048,
+						"templated": true,
+						"max_height": 2048,
+						"href": "https://cdn-stage.cp.adobe.io/content/2/rendition/60bce6f7-9140-4292-827e-86f28f14b755/format/{format}/dimension/{dimension}/size/{size}/ts/1738211321573"
+					}
+				},
+				"_embedded": {
+					"owner": {
+						"_links": {
+							"images": [
+								{
+									"width": 50,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/50",
+									"type": "image/jpeg",
+									"height": 50
+								},
+								{
+									"width": 100,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/100",
+									"type": "image/jpeg",
+									"height": 100
+								},
+								{
+									"width": 115,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/115",
+									"type": "image/jpeg",
+									"height": 115
+								},
+								{
+									"width": 138,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/138",
+									"type": "image/jpeg",
+									"height": 138
+								},
+								{
+									"width": 230,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/230",
+									"type": "image/jpeg",
+									"height": 230
+								},
+								{
+									"width": 276,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/276",
+									"type": "image/jpeg",
+									"height": 276
+								}
+							],
+							"self": {
+								"href": "https://cc-api-cp-stage.adobe.io/api/v2/ff_community/users/sreeharshac1"
+							}
+						},
+						"id": "sreeharshac1",
+						"first_name": "Sreeharsha",
+						"last_name": "C",
+						"user_name": "sreeharshac1",
+						"display_name": "Sreeharsha C",
+						"city": "",
+						"state": "",
+						"country": "India",
+						"location": "India",
+						"is_valid_profile": true,
+						"has_default_image": false
+					},
+					"artwork": {
+						"_links": {
+							"rendition": {
+								"max_width": 2048,
+								"templated": true,
+								"max_height": 2048,
+								"href": "https://cdn-stage.cp.adobe.io/content/2/rendition/60bce6f7-9140-4292-827e-86f28f14b755/artwork/3ed055af-d104-49a5-93e8-c16ddc1f19fd/version/0/format/{format}/dimension/{dimension}/size/{size}"
+							},
+							"self": {
+								"href": "https://cc-api-cp-stage.adobe.io/api/v2/ff_community/assets/60bce6f7-9140-4292-827e-86f28f14b755/artwork",
+								"type": "application/hal+json"
+							}
+						},
+						"id": "3ed055af-d104-49a5-93e8-c16ddc1f19fd",
+						"urn": "urn:aaid:sc:US:3ed055af-d104-49a5-93e8-c16ddc1f19fd",
+						"created": "2025-01-30T04:28:40.333Z",
+						"type": "image/jpeg",
+						"size": 1545363,
+						"width": 2048,
+						"height": 2048
+					}
+				},
+				"id": "60bce6f7-9140-4292-827e-86f28f14b755",
+				"urn": "urn:aaid:sc:US:60bce6f7-9140-4292-827e-86f28f14b755",
+				"created": "2025-01-30T04:28:34.987Z",
+				"updated": "2025-01-30T04:28:41.573Z",
+				"published": "2025-01-30T04:34:20.944Z",
+				"metadata_updated": "2025-01-30T04:28:43.241Z",
+				"type": "application/vnd.adobe.firefly-cp+dcx",
+				"title": "A dog resting peacefully on a cozy blanket.",
+				"tags": [],
+				"category": {
+					"id": "text2Image",
+					"name": "text2Image"
+				},
+				"machine_tags": [
+					"docVersion_v3",
+					"dataModelVersion_2.0.0",
+					"translated"
+				],
+				"custom": {
+					"firefly#model": {
+						"docVersion": "v3",
+						"module": "text2Image",
+						"dataModelVersion": "2.0.0"
+					},
+					"input": {
+						"firefly#inputModel": "{\"type\":\"text2Image\",\"imageRef\":{\"localBlobRef\":\"1d33456df0dbb1ea1d8aeef9f38c5095a176b6932005e6066f97fc0202110d21\",\"mimeType\":\"image/jpeg\"},\"title\":\"Un chien reposant paisiblement sur une couverture douillette.\",\"mimeType\":\"image/jpeg\",\"seed\":4111,\"seeds\":[4111,73023,38610,58392],\"aspectRatio\":1,\"model\":{\"browserId\":\"838f2f\",\"prompt\":\"Un chien reposant paisiblement sur une couverture douillette.\",\"promptType\":\"inspiration\",\"styles\":{\"value\":[],\"mode\":\"manual\"},\"seeds\":[4111,73023,38610,58392],\"aspectRatio\":\"square\",\"advancedParams\":{},\"locale\":\"en-IN\",\"modelVersion\":\"image3_fast\",\"modelInputVersion\":\"v3\",\"detailLevel\":\"preview\",\"sessionHistoryId\":\"f97ae50a-6847-4773-b97d-92b22cf8886a\",\"seed\":4111}}",
+						"firefly#prompts": {
+							"fi-FI": "Koira lepää rauhallisesti kodikkaalla peitolla.",
+							"nb-NO": "En hund som hviler fredelig på et koselig teppe.",
+							"uk-UA": "Собака, що мирно відпочиває на затишній ковдрі.",
+							"de-DE": "Ein Hund, der friedlich auf einer kuscheligen Decke ruht.",
+							"hu-HU": "Egy kutya békésen pihen egy hangulatos takarón.",
+							"en-US": "A dog resting peacefully on a cozy blanket.",
+							"ko-KR": "포근한 담요 위에서 평화롭게 쉬고 있는 개.",
+							"pt-BR": "Um cachorro descansando pacificamente em um cobertor aconchegante.",
+							"es-ES": "Un perro descansando plácidamente sobre una acogedora manta.",
+							"it-IT": "Un cane che riposa pacificamente su una coperta accogliente.",
+							"zh-Hans-CN": "一只狗在舒适的毯子上安详地休息。",
+							"pl-PL": "Pies spokojnie odpoczywający na przytulnym kocu.",
+							"ru-RU": "Собака мирно отдыхает на уютном одеяле.",
+							"nl-NL": "Een hond die vredig rust op een knusse deken.",
+							"sv-SE": "En hund som vilar fridfullt på en mysig filt.",
+							"da-DK": "En hund, der hviler fredeligt på et hyggeligt tæppe.",
+							"tr-TR": "Rahat bir battaniyenin üzerinde huzur içinde dinlenen bir köpek.",
+							"cs-CZ": "Pes klidně odpočívající na příjemné dece.",
+							"fr-FR": "Un chien reposant paisiblement sur une couverture douillette.",
+							"ja-JP": "心地よい毛布の上で静かに休む犬。",
+							"zh-Hant-TW": "一隻狗在舒適的毯子上安詳地休息。"
+						},
+						"firefly#originalPrompt": "Un chien reposant paisiblement sur une couverture douillette.",
+						"firefly#locale": "fr-FR"
+					},
+					"output": {
+						"firefly#outputModel": {
+							"generation": {
+								"type": "array",
+								"expectedMimeType": "image/jpeg",
+								"expectedArrayLength": "1"
+							}
+						}
+					}
+				},
+				"alias": "vOc3f",
+				"aliases": [
+					"vOc3f"
+				],
+				"stats": {
+					"detail_count": 92,
+					"anonymous_like_count": 0,
+					"purchase_count": 0,
+					"original_count": 0,
+					"copy_count": 0,
+					"add_to_library_count": 0,
+					"website_count": 0,
+					"video_info_count": 0,
+					"video_stream_count": 0,
+					"video_embed_count": 0,
+					"comment_count": 0,
+					"custom_counts": {}
+				},
+				"purchased": false,
+				"liked": false,
+				"is_owner": false,
+				"activities": {}
+			},
+			{
+				"_links": {
+					"rendition": {
+						"max_width": 2048,
+						"templated": true,
+						"max_height": 2048,
+						"href": "https://cdn-stage.cp.adobe.io/content/2/rendition/640fc44a-aac5-4bb1-b863-fa1c10cb51fe/artwork/b01d839b-6a98-4f1b-abb5-00121196ce1b/version/0/format/{format}/dimension/{dimension}/size/{size}"
+					},
+					"self": {
+						"href": "https://cc-api-cp-stage.adobe.io/api/v2/ff_community/assets/640fc44a-aac5-4bb1-b863-fa1c10cb51fe",
+						"type": "application/hal+json"
+					},
+					"asset_rendition": {
+						"max_width": 2048,
+						"templated": true,
+						"max_height": 2048,
+						"href": "https://cdn-stage.cp.adobe.io/content/2/rendition/640fc44a-aac5-4bb1-b863-fa1c10cb51fe/format/{format}/dimension/{dimension}/size/{size}/ts/1736960994176"
+					}
+				},
+				"_embedded": {
+					"owner": {
+						"_links": {
+							"images": [
+								{
+									"width": 50,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/50",
+									"type": "image/jpeg",
+									"height": 50
+								},
+								{
+									"width": 100,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/100",
+									"type": "image/jpeg",
+									"height": 100
+								},
+								{
+									"width": 115,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/115",
+									"type": "image/jpeg",
+									"height": 115
+								},
+								{
+									"width": 138,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/138",
+									"type": "image/jpeg",
+									"height": 138
+								},
+								{
+									"width": 230,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/230",
+									"type": "image/jpeg",
+									"height": 230
+								},
+								{
+									"width": 276,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/276",
+									"type": "image/jpeg",
+									"height": 276
+								}
+							],
+							"self": {
+								"href": "https://cc-api-cp-stage.adobe.io/api/v2/ff_community/users/sreeharshac1"
+							}
+						},
+						"id": "sreeharshac1",
+						"first_name": "Sreeharsha",
+						"last_name": "C",
+						"user_name": "sreeharshac1",
+						"display_name": "Sreeharsha C",
+						"city": "",
+						"state": "",
+						"country": "India",
+						"location": "India",
+						"is_valid_profile": true,
+						"has_default_image": false
+					},
+					"artwork": {
+						"_links": {
+							"rendition": {
+								"max_width": 2048,
+								"templated": true,
+								"max_height": 2048,
+								"href": "https://cdn-stage.cp.adobe.io/content/2/rendition/640fc44a-aac5-4bb1-b863-fa1c10cb51fe/artwork/b01d839b-6a98-4f1b-abb5-00121196ce1b/version/0/format/{format}/dimension/{dimension}/size/{size}"
+							},
+							"self": {
+								"href": "https://cc-api-cp-stage.adobe.io/api/v2/ff_community/assets/640fc44a-aac5-4bb1-b863-fa1c10cb51fe/artwork",
+								"type": "application/hal+json"
+							}
+						},
+						"id": "b01d839b-6a98-4f1b-abb5-00121196ce1b",
+						"urn": "urn:aaid:sc:US:b01d839b-6a98-4f1b-abb5-00121196ce1b",
+						"created": "2025-01-15T17:09:52.790Z",
+						"type": "image/jpeg",
+						"size": 1898135,
+						"width": 2048,
+						"height": 2048
+					}
+				},
+				"id": "640fc44a-aac5-4bb1-b863-fa1c10cb51fe",
+				"urn": "urn:aaid:sc:US:640fc44a-aac5-4bb1-b863-fa1c10cb51fe",
+				"created": "2025-01-15T17:09:47.363Z",
+				"updated": "2025-01-15T17:09:54.176Z",
+				"published": "2025-01-15T17:10:35.453Z",
+				"metadata_updated": "2025-01-15T17:09:56.276Z",
+				"type": "application/vnd.adobe.firefly-cp+dcx",
+				"title": "A golden wheat field under a clear blue sky.",
+				"tags": [],
+				"category": {
+					"id": "text2Image",
+					"name": "text2Image"
+				},
+				"machine_tags": [
+					"docVersion_v3",
+					"dataModelVersion_2.0.0",
+					"translated"
+				],
+				"custom": {
+					"firefly#model": {
+						"docVersion": "v3",
+						"module": "text2Image",
+						"dataModelVersion": "2.0.0"
+					},
+					"input": {
+						"firefly#inputModel": "{\"type\":\"text2Image\",\"title\":\"A golden wheat field under a clear blue sky.\",\"mimeType\":\"image/jpeg\",\"seed\":90058,\"seeds\":[34231,90058,11942,80938],\"aspectRatio\":1,\"model\":{\"browserId\":\"63cac9\",\"prompt\":\"A golden wheat field under a clear blue sky.\",\"promptType\":\"inspiration\",\"styles\":{\"value\":[],\"mode\":\"manual\"},\"seeds\":[34231,90058,11942,80938],\"aspectRatio\":\"square\",\"advancedParams\":{},\"locale\":\"en-IN\",\"guideStrength\":50,\"rlhfCreativity\":6,\"modelVersion\":\"image3_fast\",\"modelInputVersion\":\"v3\",\"detailLevel\":\"preview\",\"sessionHistoryId\":\"ab1fb207-187c-4c57-a5b0-59ac6c0d0797\",\"seed\":90058}}",
+						"firefly#prompts": {
+							"fi-FI": "Kultainen vehnäpelto kirkkaan sinisen taivaan alla.",
+							"nb-NO": "En gyllen hveteåker under en klar blå himmel.",
+							"uk-UA": "Золоте пшеничне поле під чистим блакитним небом.",
+							"de-DE": "Ein goldenes Weizenfeld unter strahlend blauem Himmel.",
+							"hu-HU": "Arany búzamező a tiszta kék ég alatt.",
+							"en-US": "A golden wheat field under a clear blue sky.",
+							"ko-KR": "맑고 푸른 하늘 아래 황금빛 밀밭.",
+							"pt-BR": "Um campo de trigo dourado sob um céu azul claro.",
+							"es-ES": "Un campo de trigo dorado bajo un cielo azul claro.",
+							"it-IT": "Un campo di grano dorato sotto un cielo azzurro e limpido.",
+							"zh-Hans-CN": "湛蓝天空下的金黄色麦田。",
+							"pl-PL": "Złote pole pszenicy pod czystym, błękitnym niebem.",
+							"ru-RU": "Золотое пшеничное поле под ясным голубым небом.",
+							"nl-NL": "Een goudkleurig tarweveld onder een helderblauwe hemel.",
+							"sv-SE": "Ett gyllene vetefält under en klarblå himmel.",
+							"da-DK": "En gylden hvedemark under en klar blå himmel.",
+							"tr-TR": "Berrak mavi bir gökyüzünün altında altın bir buğday tarlası.",
+							"cs-CZ": "Zlatavé pšeničné pole pod jasně modrou oblohou.",
+							"fr-FR": "Un champ de blé doré sous un ciel bleu clair.",
+							"ja-JP": "澄み切った青空に映える黄金色の麦畑。",
+							"zh-Hant-TW": "湛藍天空下的金黃色麥田。"
+						},
+						"firefly#originalPrompt": "A golden wheat field under a clear blue sky.",
+						"firefly#locale": "en-US"
+					},
+					"output": {
+						"firefly#outputModel": {
+							"generation": {
+								"type": "array",
+								"expectedMimeType": "image/jpeg",
+								"expectedArrayLength": "1"
+							}
+						}
+					}
+				},
+				"alias": "V2OUp",
+				"aliases": [
+					"V2OUp"
+				],
+				"stats": {
+					"detail_count": 792,
+					"anonymous_like_count": 0,
+					"purchase_count": 0,
+					"original_count": 0,
+					"copy_count": 0,
+					"add_to_library_count": 0,
+					"website_count": 0,
+					"video_info_count": 0,
+					"video_stream_count": 0,
+					"video_embed_count": 0,
+					"comment_count": 0,
+					"custom_counts": {}
+				},
+				"purchased": false,
+				"liked": false,
+				"is_owner": false,
+				"activities": {}
+			},
+			{
+				"_links": {
+					"rendition": {
+						"max_width": 1792,
+						"templated": true,
+						"max_height": 2304,
+						"href": "https://cdn-stage.cp.adobe.io/content/2/rendition/b1ddab8a-a392-4dee-9736-9a30632c762e/artwork/358a510f-d8a9-488c-9e16-8a18ce3beb9f/version/0/format/{format}/dimension/{dimension}/size/{size}"
+					},
+					"self": {
+						"href": "https://cc-api-cp-stage.adobe.io/api/v2/ff_community/assets/b1ddab8a-a392-4dee-9736-9a30632c762e",
+						"type": "application/hal+json"
+					},
+					"asset_rendition": {
+						"max_width": 1792,
+						"templated": true,
+						"max_height": 2304,
+						"href": "https://cdn-stage.cp.adobe.io/content/2/rendition/b1ddab8a-a392-4dee-9736-9a30632c762e/format/{format}/dimension/{dimension}/size/{size}/ts/1736960642987"
+					}
+				},
+				"_embedded": {
+					"owner": {
+						"_links": {
+							"images": [
+								{
+									"width": 50,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/50",
+									"type": "image/jpeg",
+									"height": 50
+								},
+								{
+									"width": 100,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/100",
+									"type": "image/jpeg",
+									"height": 100
+								},
+								{
+									"width": 115,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/115",
+									"type": "image/jpeg",
+									"height": 115
+								},
+								{
+									"width": 138,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/138",
+									"type": "image/jpeg",
+									"height": 138
+								},
+								{
+									"width": 230,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/230",
+									"type": "image/jpeg",
+									"height": 230
+								},
+								{
+									"width": 276,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/276",
+									"type": "image/jpeg",
+									"height": 276
+								}
+							],
+							"self": {
+								"href": "https://cc-api-cp-stage.adobe.io/api/v2/ff_community/users/sreeharshac1"
+							}
+						},
+						"id": "sreeharshac1",
+						"first_name": "Sreeharsha",
+						"last_name": "C",
+						"user_name": "sreeharshac1",
+						"display_name": "Sreeharsha C",
+						"city": "",
+						"state": "",
+						"country": "India",
+						"location": "India",
+						"is_valid_profile": true,
+						"has_default_image": false
+					},
+					"artwork": {
+						"_links": {
+							"rendition": {
+								"max_width": 1792,
+								"templated": true,
+								"max_height": 2304,
+								"href": "https://cdn-stage.cp.adobe.io/content/2/rendition/b1ddab8a-a392-4dee-9736-9a30632c762e/artwork/358a510f-d8a9-488c-9e16-8a18ce3beb9f/version/0/format/{format}/dimension/{dimension}/size/{size}"
+							},
+							"self": {
+								"href": "https://cc-api-cp-stage.adobe.io/api/v2/ff_community/assets/b1ddab8a-a392-4dee-9736-9a30632c762e/artwork",
+								"type": "application/hal+json"
+							}
+						},
+						"id": "358a510f-d8a9-488c-9e16-8a18ce3beb9f",
+						"urn": "urn:aaid:sc:US:358a510f-d8a9-488c-9e16-8a18ce3beb9f",
+						"created": "2025-01-15T17:04:01.524Z",
+						"type": "image/jpeg",
+						"size": 1611763,
+						"width": 1792,
+						"height": 2304
+					}
+				},
+				"id": "b1ddab8a-a392-4dee-9736-9a30632c762e",
+				"urn": "urn:aaid:sc:US:b1ddab8a-a392-4dee-9736-9a30632c762e",
+				"created": "2025-01-15T17:03:56.312Z",
+				"updated": "2025-01-15T17:04:02.987Z",
+				"published": "2025-01-15T17:06:10.391Z",
+				"metadata_updated": "2025-01-15T17:04:05.305Z",
+				"type": "application/vnd.adobe.firefly-cp+dcx",
+				"title": "A dense rainforest with a misty waterfall.",
+				"tags": [],
+				"category": {
+					"id": "text2Image",
+					"name": "text2Image"
+				},
+				"machine_tags": [
+					"docVersion_v2",
+					"dataModelVersion_2.0.0",
+					"translated"
+				],
+				"custom": {
+					"firefly#model": {
+						"docVersion": "v2",
+						"module": "text2Image",
+						"dataModelVersion": "2.0.0"
+					},
+					"input": {
+						"firefly#inputModel": "{\"type\":\"text2Image\",\"title\":\"A dense rainforest with a misty waterfall.\",\"mimeType\":\"image/jpeg\",\"seed\":34706,\"seeds\":[34706,955,81167,51739],\"aspectRatio\":0.7777777777777778,\"model\":{\"browserId\":\"8fe488\",\"prompt\":\"A dense rainforest with a misty waterfall.\",\"promptType\":\"inspiration\",\"styles\":{\"value\":[\"photo\"],\"mode\":\"manual\"},\"referenceImage\":{\"id\":\"image-style-zeros.images.featured_5\",\"ref\":{\"remoteBlobRef\":\"https://clio-assets-stage.corp.adobe.com/clio-playground/image-style-zeros/v3/images/Featured/5.jpg\"},\"type\":\"style-reference\"},\"structureReferenceImage\":{\"id\":\"structure-match.images.featured_11\",\"ref\":{\"remoteBlobRef\":\"https://clio-assets-stage.corp.adobe.com/clio-playground/structure-match/v0/images1/featured/1.jpg\"},\"type\":\"structure-reference\"},\"seeds\":[34706,955,81167,51739],\"aspectRatio\":\"portrait\",\"advancedParams\":{},\"locale\":\"en-IN\",\"guideStrength\":50,\"rlhfCreativity\":6,\"keywords\":{\"mode\":\"auto\"},\"modelInputVersion\":\"v2\",\"exif\":{\"mode\":\"auto\"},\"sessionHistoryId\":\"dddb7d5b-bb8d-4d04-8d8a-e149962f4b6c\",\"seed\":34706}}",
+						"firefly#prompts": {
+							"fi-FI": "Tiheä sademetsä, jossa on sumuinen vesiputous.",
+							"nb-NO": "En tett regnskog med en tåkete foss.",
+							"uk-UA": "Густий тропічний ліс з туманним водоспадом.",
+							"de-DE": "Ein dichter Regenwald mit einem nebligen Wasserfall.",
+							"hu-HU": "Sűrű esőerdő ködös vízeséssel.",
+							"en-US": "A dense rainforest with a misty waterfall.",
+							"ko-KR": "안개 낀 폭포가 있는 빽빽한 열대우림.",
+							"pt-BR": "Uma densa floresta tropical com uma cachoeira enevoada.",
+							"es-ES": "Una densa selva tropical con una cascada brumosa.",
+							"it-IT": "Una fitta foresta pluviale con una cascata nebbiosa.",
+							"zh-Hans-CN": "茂密的热带雨林，有雾气缭绕的瀑布。",
+							"pl-PL": "Gęsty las deszczowy z mglistym wodospadem.",
+							"ru-RU": "Густой тропический лес с туманным водопадом.",
+							"nl-NL": "Een dicht regenwoud met een mistige waterval.",
+							"sv-SE": "En tät regnskog med ett dimmigt vattenfall.",
+							"da-DK": "En tæt regnskov med et tåget vandfald.",
+							"tr-TR": "Puslu bir şelaleye sahip yoğun bir yağmur ormanı.",
+							"cs-CZ": "Hustý deštný prales s mlžným vodopádem.",
+							"fr-FR": "Une forêt tropicale dense avec une cascade brumeuse.",
+							"ja-JP": "霧のかかった滝のある鬱蒼とした熱帯雨林。",
+							"zh-Hant-TW": "茂密的熱帶雨林，有霧氣繚繞的瀑布。"
+						},
+						"firefly#originalPrompt": "A dense rainforest with a misty waterfall.",
+						"firefly#locale": "en-US"
+					},
+					"output": {
+						"firefly#outputModel": {
+							"generation": {
+								"type": "array",
+								"expectedMimeType": "image/jpeg",
+								"expectedArrayLength": "1"
+							}
+						}
+					}
+				},
+				"alias": "D5wjd",
+				"aliases": [
+					"D5wjd"
+				],
+				"stats": {
+					"detail_count": 1007,
+					"anonymous_like_count": 0,
+					"purchase_count": 0,
+					"original_count": 0,
+					"copy_count": 0,
+					"add_to_library_count": 0,
+					"website_count": 0,
+					"video_info_count": 0,
+					"video_stream_count": 0,
+					"video_embed_count": 0,
+					"comment_count": 0,
+					"custom_counts": {}
+				},
+				"purchased": false,
+				"liked": false,
+				"is_owner": false,
+				"activities": {}
+			},
+			{
+				"_links": {
+					"rendition": {
+						"max_width": 1792,
+						"templated": true,
+						"max_height": 2304,
+						"href": "https://cdn-stage.cp.adobe.io/content/2/rendition/3f9e4269-721d-4cbb-9e72-196268705199/artwork/69381a2d-8bc0-40ea-af14-a6301b6c403e/version/0/format/{format}/dimension/{dimension}/size/{size}"
+					},
+					"self": {
+						"href": "https://cc-api-cp-stage.adobe.io/api/v2/ff_community/assets/3f9e4269-721d-4cbb-9e72-196268705199",
+						"type": "application/hal+json"
+					},
+					"asset_rendition": {
+						"max_width": 1792,
+						"templated": true,
+						"max_height": 2304,
+						"href": "https://cdn-stage.cp.adobe.io/content/2/rendition/3f9e4269-721d-4cbb-9e72-196268705199/format/{format}/dimension/{dimension}/size/{size}/ts/1736240752643"
+					}
+				},
+				"_embedded": {
+					"owner": {
+						"_links": {
+							"images": [
+								{
+									"width": 50,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/50",
+									"type": "image/jpeg",
+									"height": 50
+								},
+								{
+									"width": 100,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/100",
+									"type": "image/jpeg",
+									"height": 100
+								},
+								{
+									"width": 115,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/115",
+									"type": "image/jpeg",
+									"height": 115
+								},
+								{
+									"width": 138,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/138",
+									"type": "image/jpeg",
+									"height": 138
+								},
+								{
+									"width": 230,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/230",
+									"type": "image/jpeg",
+									"height": 230
+								},
+								{
+									"width": 276,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/276",
+									"type": "image/jpeg",
+									"height": 276
+								}
+							],
+							"self": {
+								"href": "https://cc-api-cp-stage.adobe.io/api/v2/ff_community/users/sreeharshac1"
+							}
+						},
+						"id": "sreeharshac1",
+						"first_name": "Sreeharsha",
+						"last_name": "C",
+						"user_name": "sreeharshac1",
+						"display_name": "Sreeharsha C",
+						"city": "",
+						"state": "",
+						"country": "India",
+						"location": "India",
+						"is_valid_profile": true,
+						"has_default_image": false
+					},
+					"artwork": {
+						"_links": {
+							"rendition": {
+								"max_width": 1792,
+								"templated": true,
+								"max_height": 2304,
+								"href": "https://cdn-stage.cp.adobe.io/content/2/rendition/3f9e4269-721d-4cbb-9e72-196268705199/artwork/69381a2d-8bc0-40ea-af14-a6301b6c403e/version/0/format/{format}/dimension/{dimension}/size/{size}"
+							},
+							"self": {
+								"href": "https://cc-api-cp-stage.adobe.io/api/v2/ff_community/assets/3f9e4269-721d-4cbb-9e72-196268705199/artwork",
+								"type": "application/hal+json"
+							}
+						},
+						"id": "69381a2d-8bc0-40ea-af14-a6301b6c403e",
+						"urn": "urn:aaid:sc:US:69381a2d-8bc0-40ea-af14-a6301b6c403e",
+						"created": "2025-01-07T09:05:51.139Z",
+						"type": "image/jpeg",
+						"size": 1435002,
+						"width": 1792,
+						"height": 2304
+					}
+				},
+				"id": "3f9e4269-721d-4cbb-9e72-196268705199",
+				"urn": "urn:aaid:sc:US:3f9e4269-721d-4cbb-9e72-196268705199",
+				"created": "2025-01-07T09:05:46.098Z",
+				"updated": "2025-01-07T09:05:52.643Z",
+				"published": "2025-01-07T09:06:45.319Z",
+				"metadata_updated": "2025-01-07T09:05:54.171Z",
+				"type": "application/vnd.adobe.firefly-cp+dcx",
+				"title": "A colorful garden with oversized flowers, floating butterflies and a small fairy house.",
+				"tags": [],
+				"category": {
+					"id": "text2Image",
+					"name": "text2Image"
+				},
+				"machine_tags": [
+					"docVersion_v3",
+					"dataModelVersion_2.0.0",
+					"translated"
+				],
+				"custom": {
+					"firefly#model": {
+						"docVersion": "v3",
+						"module": "text2Image",
+						"dataModelVersion": "2.0.0"
+					},
+					"input": {
+						"firefly#inputModel": "{\"type\":\"text2Image\",\"title\":\"A colorful garden with oversized flowers, floating butterflies and a small fairy house.\",\"mimeType\":\"image/jpeg\",\"seed\":68577,\"seeds\":[30077,50555,68577,89451],\"aspectRatio\":0.7777777777777778,\"model\":{\"focusedVariation\":\"abcfba10-63ee-499d-8411-016d97911e11\",\"browserId\":\"bcfd6d\",\"prompt\":\"A colorful garden with oversized flowers, floating butterflies and a small fairy house.\",\"promptType\":\"inspiration\",\"styles\":{\"value\":[\"art\",\"bokeh\",\"layered_paper\",\"synthwave\",\"vibrant_colors\",\"surface_detail\",\"multiexposure\"],\"mode\":\"manual\"},\"referenceImage\":{\"id\":\"image-style-zeros.images.featured_5\",\"ref\":{\"remoteBlobRef\":\"https://clio-assets-stage.corp.adobe.com/clio-playground/image-style-zeros/v3/images/Featured/5.jpg\"},\"type\":\"style-reference\"},\"structureReferenceImage\":{\"id\":\"9e3059059bdfd9833d1c6343e733ae468cc4b44f0fb034da84041cb2b912264c\",\"ref\":{\"localBlobRef\":\"9e3059059bdfd9833d1c6343e733ae468cc4b44f0fb034da84041cb2b912264c\",\"mimeType\":\"image/jpeg\"},\"type\":\"image-file-structure-reference\"},\"seeds\":[30077,50555,68577,89451],\"aspectRatio\":\"portrait\",\"advancedParams\":{},\"locale\":\"en-IN\",\"guideStrength\":100,\"rlhfCreativity\":9,\"keywords\":{\"mode\":\"auto\"},\"modelVersion\":\"image3_fast\",\"modelInputVersion\":\"v3\",\"detailLevel\":\"preview\",\"sessionHistoryId\":\"f64b868e-5566-4cfe-aa69-bef93206b5d4\",\"seed\":68577}}",
+						"firefly#prompts": {
+							"fi-FI": "Värikäs puutarha, jossa on ylisuuria kukkia, kelluvia perhosia ja pieni keijutalo.",
+							"nb-NO": "En fargerik hage med store blomster, flytende sommerfugler og et lite fehus.",
+							"uk-UA": "Барвистий сад з великими квітами, плаваючими метеликами і маленьким казковим будиночком.",
+							"de-DE": "Ein bunter Garten mit überdimensionalen Blumen, schwebenden Schmetterlingen und einem kleinen Feenhaus.",
+							"hu-HU": "Színes kert túlméretezett virágokkal, lebegő pillangókkal és egy kis tündérházzal.",
+							"en-US": "A colorful garden with oversized flowers, floating butterflies and a small fairy house.",
+							"ko-KR": "커다란 꽃, 떠다니는 나비, 작은 요정 집이 있는 다채로운 정원.",
+							"pt-BR": "Um jardim colorido com flores enormes, borboletas flutuantes e uma pequena casa de fadas.",
+							"es-ES": "Un colorido jardín con flores de gran tamaño, mariposas flotantes y una pequeña casa de hadas.",
+							"it-IT": "Un giardino colorato con fiori di grandi dimensioni, farfalle galleggianti e una piccola casa delle fate.",
+							"zh-Hans-CN": "一个色彩缤纷的花园，有超大的花朵、漂浮的蝴蝶和一个小仙女屋。",
+							"pl-PL": "Kolorowy ogród z przerośniętymi kwiatami, latającymi motylami i małym domkiem z bajki.",
+							"ru-RU": "Красочный сад с огромными цветами, порхающими бабочками и маленьким сказочным домиком.",
+							"nl-NL": "Een kleurrijke tuin met oversized bloemen, zwevende vlinders en een klein sprookjeshuisje.",
+							"sv-SE": "En färgglad trädgård med överdimensionerade blommor, svävande fjärilar och ett litet älvhus.",
+							"da-DK": "En farverig have med overdimensionerede blomster, flydende sommerfugle og et lille fehus.",
+							"tr-TR": "Büyük boy çiçekler, yüzen kelebekler ve küçük bir peri evi ile rengarenk bir bahçe.",
+							"cs-CZ": "Barevná zahrada s nadrozměrnými květinami, plovoucími motýly a malým pohádkovým domkem.",
+							"fr-FR": "Un jardin coloré avec des fleurs surdimensionnées, des papillons flottants et une petite maison de fées.",
+							"ja-JP": "特大の花、浮かぶ蝶、小さな妖精の家があるカラフルな庭園。",
+							"zh-Hant-TW": "一個色彩繽紛的花園，有超大的花朵、漂浮的蝴蝶和一個小仙女屋。"
+						},
+						"firefly#originalPrompt": "A colorful garden with oversized flowers, floating butterflies and a small fairy house.",
+						"firefly#locale": "en-US"
+					},
+					"output": {
+						"firefly#outputModel": {
+							"generation": {
+								"type": "array",
+								"expectedMimeType": "image/jpeg",
+								"expectedArrayLength": "1"
+							}
+						}
+					}
+				},
+				"alias": "BX6mM",
+				"aliases": [
+					"BX6mM"
+				],
+				"stats": {
+					"detail_count": 1244,
+					"anonymous_like_count": 0,
+					"purchase_count": 0,
+					"original_count": 0,
+					"copy_count": 0,
+					"add_to_library_count": 0,
+					"website_count": 0,
+					"video_info_count": 0,
+					"video_stream_count": 0,
+					"video_embed_count": 0,
+					"comment_count": 0,
+					"custom_counts": {}
+				},
+				"purchased": false,
+				"liked": false,
+				"is_owner": false,
+				"activities": {}
+			},
+			{
+				"_links": {
+					"rendition": {
+						"max_width": 2048,
+						"templated": true,
+						"max_height": 2048,
+						"href": "https://cdn-stage.cp.adobe.io/content/2/rendition/bcbd5d20-5ba4-4c69-9f9d-75a3bed505f9/artwork/8619e54b-c403-4a4b-b7d4-4c449603e826/version/0/format/{format}/dimension/{dimension}/size/{size}"
+					},
+					"self": {
+						"href": "https://cc-api-cp-stage.adobe.io/api/v2/ff_community/assets/bcbd5d20-5ba4-4c69-9f9d-75a3bed505f9",
+						"type": "application/hal+json"
+					},
+					"asset_rendition": {
+						"max_width": 2048,
+						"templated": true,
+						"max_height": 2048,
+						"href": "https://cdn-stage.cp.adobe.io/content/2/rendition/bcbd5d20-5ba4-4c69-9f9d-75a3bed505f9/format/{format}/dimension/{dimension}/size/{size}/ts/1736240445064"
+					}
+				},
+				"_embedded": {
+					"owner": {
+						"_links": {
+							"images": [
+								{
+									"width": 50,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/50",
+									"type": "image/jpeg",
+									"height": 50
+								},
+								{
+									"width": 100,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/100",
+									"type": "image/jpeg",
+									"height": 100
+								},
+								{
+									"width": 115,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/115",
+									"type": "image/jpeg",
+									"height": 115
+								},
+								{
+									"width": 138,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/138",
+									"type": "image/jpeg",
+									"height": 138
+								},
+								{
+									"width": 230,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/230",
+									"type": "image/jpeg",
+									"height": 230
+								},
+								{
+									"width": 276,
+									"href": "https://pps-stage.services.adobe.com/api/profile/1D9650A14DAD5AD80A490D15@AdobeID/image/a34424fa-3848-405c-b385-a99bc2e00e01/276",
+									"type": "image/jpeg",
+									"height": 276
+								}
+							],
+							"self": {
+								"href": "https://cc-api-cp-stage.adobe.io/api/v2/ff_community/users/sreeharshac1"
+							}
+						},
+						"id": "sreeharshac1",
+						"first_name": "Sreeharsha",
+						"last_name": "C",
+						"user_name": "sreeharshac1",
+						"display_name": "Sreeharsha C",
+						"city": "",
+						"state": "",
+						"country": "India",
+						"location": "India",
+						"is_valid_profile": true,
+						"has_default_image": false
+					},
+					"artwork": {
+						"_links": {
+							"rendition": {
+								"max_width": 2048,
+								"templated": true,
+								"max_height": 2048,
+								"href": "https://cdn-stage.cp.adobe.io/content/2/rendition/bcbd5d20-5ba4-4c69-9f9d-75a3bed505f9/artwork/8619e54b-c403-4a4b-b7d4-4c449603e826/version/0/format/{format}/dimension/{dimension}/size/{size}"
+							},
+							"self": {
+								"href": "https://cc-api-cp-stage.adobe.io/api/v2/ff_community/assets/bcbd5d20-5ba4-4c69-9f9d-75a3bed505f9/artwork",
+								"type": "application/hal+json"
+							}
+						},
+						"id": "8619e54b-c403-4a4b-b7d4-4c449603e826",
+						"urn": "urn:aaid:sc:US:8619e54b-c403-4a4b-b7d4-4c449603e826",
+						"created": "2025-01-07T09:00:43.677Z",
+						"type": "image/jpeg",
+						"size": 1833633,
+						"width": 2048,
+						"height": 2048
+					}
+				},
+				"id": "bcbd5d20-5ba4-4c69-9f9d-75a3bed505f9",
+				"urn": "urn:aaid:sc:US:bcbd5d20-5ba4-4c69-9f9d-75a3bed505f9",
+				"created": "2025-01-07T09:00:38.530Z",
+				"updated": "2025-01-07T09:00:45.064Z",
+				"published": "2025-01-07T09:03:30.371Z",
+				"metadata_updated": "2025-01-07T09:00:47.212Z",
+				"type": "application/vnd.adobe.firefly-cp+dcx",
+				"title": "A glowing moon over a quiet, foggy forest.",
+				"tags": [],
+				"category": {
+					"id": "text2Image",
+					"name": "text2Image"
+				},
+				"machine_tags": [
+					"docVersion_v3",
+					"dataModelVersion_2.0.0",
+					"translated"
+				],
+				"custom": {
+					"firefly#model": {
+						"docVersion": "v3",
+						"module": "text2Image",
+						"dataModelVersion": "2.0.0"
+					},
+					"input": {
+						"firefly#inputModel": "{\"type\":\"text2Image\",\"title\":\"A glowing moon over a quiet, foggy forest.\",\"mimeType\":\"image/jpeg\",\"seed\":27531,\"seeds\":[27531,12260,28862,49527],\"aspectRatio\":1,\"model\":{\"browserId\":\"bcfd6d\",\"prompt\":\"A glowing moon over a quiet, foggy forest.\",\"promptType\":\"inspiration\",\"styles\":{\"value\":[],\"mode\":\"manual\"},\"seeds\":[27531,12260,28862,49527],\"aspectRatio\":\"square\",\"advancedParams\":{},\"locale\":\"en-IN\",\"guideStrength\":50,\"rlhfCreativity\":6,\"modelVersion\":\"image3_fast\",\"modelInputVersion\":\"v3\",\"detailLevel\":\"preview\",\"sessionHistoryId\":\"1c5cf47b-9d01-496d-b7dc-c3e4710b04bd\",\"seed\":27531}}",
+						"firefly#prompts": {
+							"fi-FI": "Hehkuva kuu hiljaisen, sumuisen metsän yllä.",
+							"nb-NO": "En glødende måne over en stille, tåkete skog.",
+							"uk-UA": "Світиться місяць над тихим туманним лісом.",
+							"de-DE": "Ein leuchtender Mond über einem stillen, nebligen Wald.",
+							"hu-HU": "Izzó hold egy csendes, ködös erdő felett.",
+							"en-US": "A glowing moon over a quiet, foggy forest.",
+							"ko-KR": "조용하고 안개 낀 숲 위로 빛나는 달.",
+							"pt-BR": "Uma lua brilhante sobre uma floresta tranquila e nebulosa.",
+							"es-ES": "Una luna resplandeciente sobre un bosque tranquilo y brumoso.",
+							"it-IT": "Una luna splendente su una foresta tranquilla e nebbiosa.",
+							"zh-Hans-CN": "一轮皎洁的月亮笼罩着一片寂静、雾气弥漫的森林。",
+							"pl-PL": "Świecący księżyc nad cichym, mglistym lasem.",
+							"ru-RU": "Светящаяся луна над тихим, туманным лесом.",
+							"nl-NL": "Een gloeiende maan boven een rustig, mistig bos.",
+							"sv-SE": "En glödande måne över en tyst, dimmig skog.",
+							"da-DK": "En glødende måne over en stille, tåget skov.",
+							"tr-TR": "Sessiz, sisli bir ormanın üzerinde parlayan bir ay.",
+							"cs-CZ": "Zářící měsíc nad tichým, zamlženým lesem.",
+							"fr-FR": "Une lune rougeoyante au-dessus d’une forêt calme et brumeuse.",
+							"ja-JP": "静かで霧のかかった森の上の輝く月。",
+							"zh-Hant-TW": "一輪皎潔的月亮籠罩著一片寂靜、霧氣瀰漫的森林。"
+						},
+						"firefly#originalPrompt": "A glowing moon over a quiet, foggy forest.",
+						"firefly#locale": "en-US"
+					},
+					"output": {
+						"firefly#outputModel": {
+							"generation": {
+								"type": "array",
+								"expectedMimeType": "image/jpeg",
+								"expectedArrayLength": "1"
+							}
+						}
+					}
+				},
+				"alias": "ytq5f",
+				"aliases": [
+					"ytq5f"
+				],
+				"stats": {
+					"detail_count": 1190,
+					"anonymous_like_count": 0,
+					"purchase_count": 0,
+					"original_count": 0,
+					"copy_count": 0,
+					"add_to_library_count": 0,
+					"website_count": 0,
+					"video_info_count": 0,
+					"video_stream_count": 0,
+					"video_embed_count": 0,
+					"comment_count": 0,
+					"custom_counts": {}
+				},
+				"purchased": false,
+				"liked": false,
+				"is_owner": false,
+				"activities": {}
+			},
+			{
+				"_links": {
+					"rendition": {
+						"max_width": 2048,
+						"templated": true,
+						"max_height": 2048,
+						"href": "https://cdn-stage.cp.adobe.io/content/2/rendition/44f607bc-0d34-4dd0-971d-59d31225d947/artwork/6cae55fe-15f0-4105-ad0a-d4e3cecd8a8e/version/0/format/{format}/dimension/{dimension}/size/{size}"
+					},
+					"self": {
+						"href": "https://cc-api-cp-stage.adobe.io/api/v2/ff_community/assets/44f607bc-0d34-4dd0-971d-59d31225d947",
+						"type": "application/hal+json"
+					},
+					"asset_rendition": {
+						"max_width": 2048,
+						"templated": true,
+						"max_height": 2048,
+						"href": "https://cdn-stage.cp.adobe.io/content/2/rendition/44f607bc-0d34-4dd0-971d-59d31225d947/format/{format}/dimension/{dimension}/size/{size}/ts/1734510710801"
+					}
+				},
+				"_embedded": {
+					"owner": {
+						"_links": {
+							"images": [
+								{
+									"width": 50,
+									"href": "https://pps-stage.services.adobe.com/api/profile/image/default/65ed0931-9318-4ee1-b21f-a6718e9e0c79/50",
+									"type": "image/jpeg",
+									"height": 50
+								},
+								{
+									"width": 100,
+									"href": "https://pps-stage.services.adobe.com/api/profile/image/default/65ed0931-9318-4ee1-b21f-a6718e9e0c79/100",
+									"type": "image/jpeg",
+									"height": 100
+								},
+								{
+									"width": 115,
+									"href": "https://pps-stage.services.adobe.com/api/profile/image/default/65ed0931-9318-4ee1-b21f-a6718e9e0c79/115",
+									"type": "image/jpeg",
+									"height": 115
+								},
+								{
+									"width": 138,
+									"href": "https://pps-stage.services.adobe.com/api/profile/image/default/65ed0931-9318-4ee1-b21f-a6718e9e0c79/138",
+									"type": "image/jpeg",
+									"height": 138
+								},
+								{
+									"width": 230,
+									"href": "https://pps-stage.services.adobe.com/api/profile/image/default/65ed0931-9318-4ee1-b21f-a6718e9e0c79/230",
+									"type": "image/jpeg",
+									"height": 230
+								},
+								{
+									"width": 276,
+									"href": "https://pps-stage.services.adobe.com/api/profile/image/default/65ed0931-9318-4ee1-b21f-a6718e9e0c79/276",
+									"type": "image/jpeg",
+									"height": 276
+								}
+							],
+							"self": {
+								"href": "https://cc-api-cp-stage.adobe.io/api/v2/ff_community/users/0bc1b628"
+							}
+						},
+						"id": "0bc1b628",
+						"first_name": "Sharat",
+						"last_name": "Chandra Racha",
+						"user_name": "0bc1b628",
+						"display_name": "Sharat Chandra Racha",
+						"city": "",
+						"state": "",
+						"country": "",
+						"location": "",
+						"is_valid_profile": true,
+						"has_default_image": true
+					},
+					"artwork": {
+						"_links": {
+							"rendition": {
+								"max_width": 2048,
+								"templated": true,
+								"max_height": 2048,
+								"href": "https://cdn-stage.cp.adobe.io/content/2/rendition/44f607bc-0d34-4dd0-971d-59d31225d947/artwork/6cae55fe-15f0-4105-ad0a-d4e3cecd8a8e/version/0/format/{format}/dimension/{dimension}/size/{size}"
+							},
+							"self": {
+								"href": "https://cc-api-cp-stage.adobe.io/api/v2/ff_community/assets/44f607bc-0d34-4dd0-971d-59d31225d947/artwork",
+								"type": "application/hal+json"
+							}
+						},
+						"id": "6cae55fe-15f0-4105-ad0a-d4e3cecd8a8e",
+						"urn": "urn:aaid:sc:US:6cae55fe-15f0-4105-ad0a-d4e3cecd8a8e",
+						"created": "2024-12-18T08:31:49.005Z",
+						"type": "image/jpeg",
+						"size": 1620864,
+						"width": 2048,
+						"height": 2048
+					}
+				},
+				"id": "44f607bc-0d34-4dd0-971d-59d31225d947",
+				"urn": "urn:aaid:sc:US:44f607bc-0d34-4dd0-971d-59d31225d947",
+				"created": "2024-12-18T08:31:46.937Z",
+				"updated": "2024-12-18T08:31:50.801Z",
+				"published": "2024-12-18T08:32:48.261Z",
+				"metadata_updated": "2024-12-18T08:31:53.036Z",
+				"type": "application/vnd.adobe.firefly-cp+dcx",
+				"title": "a sunrise over a distant snowy mountain range",
+				"tags": [],
+				"category": {
+					"id": "text2Image",
+					"name": "text2Image"
+				},
+				"machine_tags": [
+					"docVersion_v2",
+					"dataModelVersion_2.0.0",
+					"translated"
+				],
+				"custom": {
+					"firefly#model": {
+						"docVersion": "v2",
+						"module": "text2Image",
+						"dataModelVersion": "2.0.0"
+					},
+					"input": {
+						"firefly#inputModel": "{\"type\":\"text2Image\",\"title\":\"a sunrise over a distant snowy mountain range\",\"mimeType\":\"image/jpeg\",\"seed\":47170,\"seeds\":[47170,18794,40376,15519],\"aspectRatio\":1,\"model\":{\"browserId\":\"825895\",\"prompt\":\"a sunrise over a distant snowy mountain range\",\"promptType\":\"inspiration\",\"styles\":{\"value\":[\"photo\",\"golden_hour\"],\"mode\":\"manual\"},\"referenceImage\":{\"id\":\"d49a9b4e8423d31b3969354b9d9e6086ca37390d939102ef5a252505cfbea759\",\"ref\":{\"localBlobRef\":\"d49a9b4e8423d31b3969354b9d9e6086ca37390d939102ef5a252505cfbea759\",\"mimeType\":\"image/jpeg\"},\"type\":\"image-file-style-reference\"},\"structureReferenceImage\":{\"id\":\"bfec62a652aa102253a7a9c91f5a88e2de86ba8423115d881ad61c0c4ef21dc5\",\"ref\":{\"localBlobRef\":\"bfec62a652aa102253a7a9c91f5a88e2de86ba8423115d881ad61c0c4ef21dc5\",\"mimeType\":\"image/jpeg\"},\"type\":\"image-file-structure-reference\"},\"seeds\":[47170,18794,40376,15519],\"aspectRatio\":\"square\",\"advancedParams\":{},\"locale\":\"en-IN\",\"guideStrength\":50,\"rlhfCreativity\":6,\"keywords\":{\"mode\":\"auto\"},\"modelInputVersion\":\"v2\",\"exif\":{\"mode\":\"auto\"},\"sessionHistoryId\":\"06c98c00-f2e2-4698-b2e8-5d8e9ce8b64f\",\"focusedSeed\":533,\"seed\":47170}}",
+						"firefly#prompts": {
+							"fi-FI": "Auringonnousu kaukaisen lumisen vuorijonon yllä",
+							"nb-NO": "en soloppgang over en fjern snødekt fjellkjede",
+							"uk-UA": "схід сонця над далеким засніженим гірським хребтом",
+							"de-DE": "Ein Sonnenaufgang über einer fernen verschneiten Bergkette",
+							"hu-HU": "Napfelkelte egy távoli havas hegység felett",
+							"en-US": "a sunrise over a distant snowy mountain range",
+							"ko-KR": "멀리 펼쳐진 눈 덮인 산맥 위로 떠오르는 일출",
+							"pt-BR": "Um nascer do sol sobre uma cordilheira nevada distante",
+							"es-ES": "Un amanecer sobre una lejana cordillera nevada",
+							"it-IT": "un'alba su una lontana catena montuosa innevata",
+							"zh-Hans-CN": "远处白雪皑皑的山脉上的日出",
+							"pl-PL": "Wschód słońca nad odległym, ośnieżonym pasmem górskim",
+							"ru-RU": "восход солнца над далеким снежным горным хребтом",
+							"nl-NL": "Een zonsopgang boven een besneeuwde bergketen in de verte",
+							"sv-SE": "en soluppgång över en avlägsen snötäckt bergskedja",
+							"da-DK": "en solopgang over en fjern sneklædt bjergkæde",
+							"tr-TR": "Uzak karlı bir dağ silsilesi üzerinde bir gün doğumu",
+							"cs-CZ": "východ slunce nad vzdáleným zasněženým pohořím",
+							"fr-FR": "un lever de soleil sur une chaîne de montagnes enneigées lointaine",
+							"ja-JP": "遠くの雪に覆われた山脈に昇る朝日",
+							"zh-Hant-TW": "遠處白雪皚皚的山脈上的日出"
+						},
+						"firefly#originalPrompt": "a sunrise over a distant snowy mountain range",
+						"firefly#locale": "en-US"
+					},
+					"output": {
+						"firefly#outputModel": {
+							"generation": {
+								"type": "array",
+								"expectedMimeType": "image/jpeg",
+								"expectedArrayLength": "1"
+							}
+						}
+					}
+				},
+				"alias": "gwima",
+				"aliases": [
+					"gwima"
+				],
+				"stats": {
+					"detail_count": 1961,
+					"anonymous_like_count": 0,
+					"purchase_count": 0,
+					"original_count": 0,
+					"copy_count": 0,
+					"add_to_library_count": 0,
+					"website_count": 0,
+					"video_info_count": 0,
+					"video_stream_count": 0,
+					"video_embed_count": 0,
+					"comment_count": 0,
+					"custom_counts": {}
+				},
+				"purchased": false,
+				"liked": false,
+				"is_owner": false,
+				"activities": {}
+			},
+			{
+				"_links": {
+					"rendition": {
+						"max_width": 2048,
+						"templated": true,
+						"max_height": 2048,
+						"href": "https://cdn-stage.cp.adobe.io/content/2/rendition/a478847c-4143-4f4b-9ac6-a3fd30b5cb62/artwork/47505b17-2d75-4d5c-a66c-02dc49f70833/version/0/format/{format}/dimension/{dimension}/size/{size}"
+					},
+					"self": {
+						"href": "https://cc-api-cp-stage.adobe.io/api/v2/ff_community/assets/a478847c-4143-4f4b-9ac6-a3fd30b5cb62",
+						"type": "application/hal+json"
+					},
+					"asset_rendition": {
+						"max_width": 2048,
+						"templated": true,
+						"max_height": 2048,
+						"href": "https://cdn-stage.cp.adobe.io/content/2/rendition/a478847c-4143-4f4b-9ac6-a3fd30b5cb62/format/{format}/dimension/{dimension}/size/{size}/ts/1732269632692"
+					}
+				},
+				"_embedded": {
+					"owner": {
+						"_links": {
+							"images": [
+								{
+									"width": 50,
+									"href": "https://mir-s3-cdn.s2stagehance.com/user/50/225f5b25229473.66b1f058acdfa.jpg",
+									"type": "image/jpeg",
+									"height": 50
+								},
+								{
+									"width": 100,
+									"href": "https://mir-s3-cdn.s2stagehance.com/user/100/225f5b25229473.66b1f058acdfa.jpg",
+									"type": "image/jpeg",
+									"height": 100
+								},
+								{
+									"width": 115,
+									"href": "https://mir-s3-cdn.s2stagehance.com/user/115/225f5b25229473.66b1f058acdfa.jpg",
+									"type": "image/jpeg",
+									"height": 115
+								},
+								{
+									"width": 138,
+									"href": "https://mir-s3-cdn.s2stagehance.com/user/138/225f5b25229473.66b1f058acdfa.jpg",
+									"type": "image/jpeg",
+									"height": 138
+								},
+								{
+									"width": 230,
+									"href": "https://mir-s3-cdn.s2stagehance.com/user/230/225f5b25229473.66b1f058acdfa.jpg",
+									"type": "image/jpeg",
+									"height": 230
+								},
+								{
+									"width": 276,
+									"href": "https://mir-s3-cdn.s2stagehance.com/user/276/225f5b25229473.66b1f058acdfa.jpg",
+									"type": "image/jpeg",
+									"height": 276
+								}
+							],
+							"self": {
+								"href": "https://cc-api-cp-stage.adobe.io/api/v2/ff_community/users/divyar6"
+							}
+						},
+						"id": "divyar6",
+						"first_name": "Community",
+						"last_name": "User",
+						"user_name": "divyar6",
+						"display_name": "Community User",
+						"city": "",
+						"state": "",
+						"country": "India",
+						"location": "India",
+						"is_valid_profile": true,
+						"has_default_image": false
+					},
+					"artwork": {
+						"_links": {
+							"rendition": {
+								"max_width": 2048,
+								"templated": true,
+								"max_height": 2048,
+								"href": "https://cdn-stage.cp.adobe.io/content/2/rendition/a478847c-4143-4f4b-9ac6-a3fd30b5cb62/artwork/47505b17-2d75-4d5c-a66c-02dc49f70833/version/0/format/{format}/dimension/{dimension}/size/{size}"
+							},
+							"self": {
+								"href": "https://cc-api-cp-stage.adobe.io/api/v2/ff_community/assets/a478847c-4143-4f4b-9ac6-a3fd30b5cb62/artwork",
+								"type": "application/hal+json"
+							}
+						},
+						"id": "47505b17-2d75-4d5c-a66c-02dc49f70833",
+						"urn": "urn:aaid:sc:US:47505b17-2d75-4d5c-a66c-02dc49f70833",
+						"created": "2024-11-22T10:00:31.616Z",
+						"type": "image/jpeg",
+						"size": 1402082,
+						"width": 2048,
+						"height": 2048
+					}
+				},
+				"id": "a478847c-4143-4f4b-9ac6-a3fd30b5cb62",
+				"urn": "urn:aaid:sc:US:a478847c-4143-4f4b-9ac6-a3fd30b5cb62",
+				"created": "2024-11-22T10:00:25.090Z",
+				"updated": "2024-11-22T10:00:32.692Z",
+				"published": "2024-11-22T10:09:08.834Z",
+				"metadata_updated": "2024-11-22T10:00:35.047Z",
+				"type": "application/vnd.adobe.firefly-cp+dcx",
+				"title": "An ultra-realistic photograph captured with a Sony α7 III camera, equipped with an 85mm lens at F 1.2 aperture setting, portraying a young woman sitting on a wooden bench in a sunlit park. The background is beautifully blurred, highlighting the subject. The park is adorned with lush greenery and blooming flowers, creating a serene atmosphere. Soft sunlight gracefully illuminates the subject’s face and hair, casting a dreamlike glow. The image, shot in high resolution and a 16:9 aspect ratio, captures the subject’s natural beauty and personality with stunning realism –ar 16:9 –v 5.2 –style raw",
+				"tags": [],
+				"category": {
+					"id": "text2Image",
+					"name": "text2Image"
+				},
+				"machine_tags": [
+					"docVersion_v3",
+					"dataModelVersion_2.0.0",
+					"translated"
+				],
+				"custom": {
+					"firefly#model": {
+						"docVersion": "v3",
+						"module": "text2Image",
+						"dataModelVersion": "2.0.0"
+					},
+					"input": {
+						"firefly#inputModel": "{\"type\":\"text2Image\",\"title\":\"An ultra-realistic photograph captured with a Sony α7 III camera, equipped with an 85mm lens at F 1.2 aperture setting, portraying a young woman sitting on a wooden bench in a sunlit park. The background is beautifully blurred, highlighting the subject. The park is adorned with lush greenery and blooming flowers, creating a serene atmosphere. Soft sunlight gracefully illuminates the subject’s face and hair, casting a dreamlike glow. The image, shot in high resolution and a 16:9 aspect ratio, captures the subject’s natural beauty and personality with stunning realism –ar 16:9 –v 5.2 –style raw\",\"mimeType\":\"image/jpeg\",\"seed\":96755,\"seeds\":[69006,88507,76511,96755],\"aspectRatio\":1,\"model\":{\"focusedVariation\":\"feff9290-a626-4d85-b972-433758333966\",\"browserId\":\"58c5d3\",\"prompt\":\"An ultra-realistic photograph captured with a Sony α7 III camera, equipped with an 85mm lens at F 1.2 aperture setting, portraying a young woman sitting on a wooden bench in a sunlit park. The background is beautifully blurred, highlighting the subject. The park is adorned with lush greenery and blooming flowers, creating a serene atmosphere. Soft sunlight gracefully illuminates the subject’s face and hair, casting a dreamlike glow. The image, shot in high resolution and a 16:9 aspect ratio, captures the subject’s natural beauty and personality with stunning realism –ar 16:9 –v 5.2 –style raw\",\"promptType\":\"inspiration\",\"styles\":{\"value\":[\"art\",\"hyper_realistic\"],\"mode\":\"manual\"},\"referenceImage\":{\"id\":\"image-style-zeros.images.featured_6\",\"ref\":{\"remoteBlobRef\":\"https://clio-assets-stage.corp.adobe.com/clio-playground/image-style-zeros/v3/images/Featured/6.jpg\"},\"type\":\"style-reference\"},\"seeds\":[69006,88507,76511,96755],\"aspectRatio\":\"square\",\"advancedParams\":{},\"locale\":\"en-IN\",\"guideStrength\":50,\"rlhfCreativity\":6,\"keywords\":{\"mode\":\"auto\"},\"modelInputVersion\":\"v3\",\"sessionHistoryId\":\"209e8f0f-b05d-494c-a418-aa9219102196\",\"seed\":96755}}",
+						"firefly#prompts": {
+							"fi-FI": "Sony α7 III -kameralla otettu ultrarealistinen valokuva, joka on varustettu 85 mm:n objektiivilla F 1.2 -aukolla, esittää nuorta naista istumassa puisella penkillä aurinkoisessa puistossa. Tausta on kauniisti epäselvä, mikä korostaa kohdetta. Puistoa koristaa rehevä vehreys ja kukkivat kukat, jotka luovat rauhallisen ilmapiirin. Pehmeä auringonvalo valaisee kauniisti kohteen kasvot ja hiukset luoden unenomaisen hehkun. Suurella resoluutiolla ja 16:9-kuvasuhteella otettu kuva vangitsee kohteen luonnollisen kauneuden ja persoonallisuuden hämmästyttävän realistisesti – ar 16:9 – v 5.2 –tyyliin raakana",
+							"nb-NO": "Et ultrarealistisk bilde tatt med et Sony α7 III-kamera, utstyrt med et 85 mm-objektiv med F 1.2-blenderinnstilling, som viser en ung kvinne som sitter på en trebenk i en solbelyst park. Bakgrunnen er vakkert uskarp og fremhever motivet. Parken er utsmykket med frodige grøntområder og blomstrende blomster, noe som skaper en rolig atmosfære. Mykt sollys lyser grasiøst opp motivets ansikt og hår, og gir en drømmeaktig glød. Bildet, tatt i høy oppløsning og et sideforhold på 16:9, fanger motivets naturlige skjønnhet og personlighet med fantastisk realisme – ar 16:9 –v 5,2 –stil rå",
+							"uk-UA": "Ультрареалістична фотографія, зроблена за допомогою камери Sony α7 III з об'єктивом 85 мм і налаштуванням діафрагми F 1.2, зображує молоду жінку, яка сидить на дерев'яній лавці в освітленому сонцем парку. Фон красиво розмивається, виділяючи об'єкт зйомки. Парк прикрашений пишною зеленню і розпустилися квітами, створюючи безтурботну атмосферу. М'яке сонячне світло граціозно висвітлює обличчя та волосся об'єкта, відливаючи мрійливим сяйвом. Зображення, зняте у високій роздільній здатності та співвідношенні сторін 16:9, відображає природну красу та індивідуальність об'єкта з приголомшливим реалізмом – у форматі raw – ar 16:9 –v 5.2",
+							"de-DE": "Ein ultrarealistisches Foto, das mit einer Sony α7 III Kamera aufgenommen wurde, die mit einem 85-mm-Objektiv bei Blende F 1,2 ausgestattet ist und eine junge Frau zeigt, die auf einer Holzbank in einem sonnenbeschienenen Park sitzt. Der Hintergrund ist schön verschwommen, wodurch das Motiv hervorgehoben wird. Der Park ist mit üppigem Grün und blühenden Blumen geschmückt, die eine ruhige Atmosphäre schaffen. Sanftes Sonnenlicht beleuchtet anmutig das Gesicht und die Haare des Motivs und wirft ein traumhaftes Licht. Das Bild, das in hoher Auflösung und einem Seitenverhältnis von 16:9 aufgenommen wurde, fängt die natürliche Schönheit und Persönlichkeit des Motivs mit atemberaubendem Realismus ein – AR 16:9 –v 5.2 – RAW",
+							"hu-HU": "Rendkívül valósághű fénykép, amelyet egy Sony α7 III fényképezőgéppel készítettek, 85 mm-es objektívvel felszerelve F 1.2 rekeszértéken, és egy fiatal nőt ábrázol, aki egy fapadon ül egy napsütötte parkban. A háttér gyönyörűen elmosódott, kiemelve a témát. A parkot buja növényzet és virágzó virágok díszítik, ami nyugodt légkört teremt. A lágy napfény kecsesen megvilágítja az alany arcát és haját, álomszerű fényt vetve. A nagy felbontásban és 16:9-es képaránnyal készített kép lenyűgöző realizmussal ragadja meg az alany természetes szépségét és személyiségét – ar 16:9 –v 5.2 – stílus nyersen",
+							"en-US": "An ultra-realistic photograph captured with a Sony α7 III camera, equipped with an 85mm lens at F 1.2 aperture setting, portraying a young woman sitting on a wooden bench in a sunlit park. The background is beautifully blurred, highlighting the subject. The park is adorned with lush greenery and blooming flowers, creating a serene atmosphere. Soft sunlight gracefully illuminates the subject’s face and hair, casting a dreamlike glow. The image, shot in high resolution and a 16:9 aspect ratio, captures the subject’s natural beauty and personality with stunning realism –ar 16:9 –v 5.2 –style raw",
+							"ko-KR": "85mm 렌즈를 장착하고 조리개를 F 1.2로 설정하여 소니 α7 III 카메라로 촬영한 초사실적인 사진으로, 햇살이 내리쬐는 공원의 나무 벤치에 앉아 있는 젊은 여성의 모습을 담고 있습니다. 배경이 아름답게 흐려져 피사체가 강조됩니다. 공원은 무성한 녹지와 활짝 핀 꽃으로 장식되어 고요한 분위기를 자아냅니다. 부드러운 햇빛이 피사체의 얼굴과 머리카락을 우아하게 비추며 몽환적인 빛을 발합니다. 고해상도와 16:9 화면비로 촬영된 이 이미지는 놀라운 사실감(ar 16:9 –v 5.2 –스타일 raw)으로 피사체의 자연스러운 아름다움과 개성을 포착합니다",
+							"pt-BR": "Uma fotografia ultrarrealista captada com uma câmara Sony α7 III, equipada com uma lente de 85 mm com uma abertura de F 1.2, retratando uma jovem sentada num banco de madeira num parque iluminado pelo sol. O fundo é lindamente desfocado, destacando o assunto. O parque é adornado com vegetação exuberante e flores desabrochando, criando uma atmosfera serena. A luz solar suave ilumina graciosamente o rosto e o cabelo do sujeito, lançando um brilho onírico. A imagem, captada em alta resolução e com um formato de 16:9, capta a beleza natural e a personalidade do objeto com um realismo impressionante –ar 16:9 –v 5.2 –estilo raw",
+							"es-ES": "Una fotografía ultrarrealista capturada con una cámara Sony α7 III, equipada con un objetivo de 85 mm con un ajuste de apertura de F 1.2, que retrata a una mujer joven sentada en un banco de madera en un parque iluminado por el sol. El fondo está bellamente borroso, resaltando el sujeto. El parque está adornado con exuberante vegetación y flores en flor, creando un ambiente sereno. La suave luz del sol ilumina con gracia la cara y el cabello del sujeto, proyectando un resplandor onírico. La imagen, tomada en alta resolución y con una relación de aspecto de 16:9, captura la belleza natural y la personalidad del sujeto con un realismo asombroso –ar 16:9 –v 5.2 –estilo RAW",
+							"it-IT": "Una fotografia ultra-realistica scattata con una fotocamera Sony α7 III, dotata di un obiettivo da 85 mm con apertura F 1.2, che ritrae una giovane donna seduta su una panchina di legno in un parco illuminato dal sole. Lo sfondo è splendidamente sfocato, evidenziando il soggetto. Il parco è adornato da una vegetazione lussureggiante e fiori in fiore, che creano un'atmosfera serena. La luce soffusa del sole illumina con grazia il viso e i capelli del soggetto, proiettando un bagliore onirico. L'immagine, scattata in alta risoluzione e in formato 16:9, cattura la bellezza naturale e la personalità del soggetto con un realismo sorprendente –ar 16:9 –v 5.2 –style raw",
+							"zh-Hans-CN": "使用索尼 α7 III 相机拍摄的超写实照片，配备 F 85 光圈设置的 1.2mm 镜头，描绘了一位年轻女子坐在阳光明媚的公园的木凳上。背景非常模糊，突出了主体。公园点缀着郁郁葱葱的绿色植物和盛开的花朵，营造出宁静的氛围。柔和的阳光优雅地照亮拍摄对象的脸部和头发，投下梦幻般的光芒。该图像以高分辨率和 16：9 的纵横比拍摄，以令人惊叹的真实感捕捉了拍摄对象的自然美和个性 – ar 16：9 –v 5.2 – 风格的原始",
+							"pl-PL": "Niezwykle realistyczne zdjęcie wykonane aparatem Sony α7 III, wyposażonym w obiektyw 85 mm przy ustawieniu przysłony F 1.2, przedstawiające młodą kobietę siedzącą na drewnianej ławce w nasłonecznionym parku. Tło jest pięknie rozmyte, co podkreśla obiekt. Park ozdobiony jest bujną zielenią i kwitnącymi kwiatami, tworząc spokojną atmosferę. Delikatne światło słoneczne z wdziękiem oświetla twarz i włosy fotografowanej osoby, rzucając oniryczny blask. Zdjęcie, wykonane w wysokiej rozdzielczości i proporcjach 16:9, uchwyciło naturalne piękno i osobowość fotografowanej osoby z oszałamiającym realizmem – w stylu ar 16:9 –v 5.2",
+							"ru-RU": "Ультрареалистичная фотография, сделанная на камеру Sony α7 III, оснащенную объективом 85 мм с диафрагмой F1.2, изображает молодую женщину, сидящую на деревянной скамейке в залитом солнцем парке. Фон красиво размывается, выделяя объект съемки. Парк утопает в пышной зелени и цветущих цветах, создавая безмятежную атмосферу. Мягкий солнечный свет изящно освещает лицо и волосы модели, отбрасывая сказочное сияние. Изображение, снятое в высоком разрешении и с соотношением сторон 16:9, запечатлевает естественную красоту и индивидуальность объекта с потрясающим реализмом в стиле RAW – в формате 16:9 –v 5.2",
+							"nl-NL": "Een ultrarealistische foto gemaakt met een Sony α7 III-camera, uitgerust met een 85 mm-lens met een diafragma van F 1.2, waarop een jonge vrouw op een houten bank in een zonovergoten park zit. De achtergrond is prachtig vervaagd, waardoor het onderwerp wordt benadrukt. Het park is versierd met weelderig groen en bloeiende bloemen, waardoor een serene sfeer ontstaat. Zacht zonlicht verlicht sierlijk het gezicht en het haar van het onderwerp en werpt een dromerige gloed. Het beeld, gemaakt in hoge resolutie en een beeldverhouding van 16:9, legt de natuurlijke schoonheid en persoonlijkheid van het onderwerp vast met verbluffend realisme -ar 16:9 -v 5.2 -stijl raw",
+							"sv-SE": "Ett ultrarealistiskt fotografi som tagits med en Sony α7 III-kamera, utrustad med ett 85 mm-objektiv med bländarinställningen F 1,2, som porträtterar en ung kvinna som sitter på en träbänk i en solbelyst park. Bakgrunden är vackert suddig och framhäver motivet. Parken är prydd med frodig grönska och blommande blommor, vilket skapar en lugn atmosfär. Mjukt solljus lyser graciöst upp motivets ansikte och hår och kastar ett drömlikt sken. Bilden, som är tagen i hög upplösning och med ett bildförhållande på 16:9, fångar motivets naturliga skönhet och personlighet med häpnadsväckande realism –ar 16:9 –v 5.2 –stil rå",
+							"da-DK": "Et ultrarealistisk fotografi taget med et Sony α7 III-kamera, der er udstyret med et 85 mm-objektiv med F 1.2-blændeindstilling, og som viser en ung kvinde, der sidder på en træbænk i en solbeskinnet park. Baggrunden er smukt sløret og fremhæver motivet. Parken er prydet med frodigt grønt og blomstrende blomster, hvilket skaber en fredfyldt atmosfære. Blødt sollys oplyser yndefuldt motivets ansigt og hår og kaster en drømmeagtig glød. Billedet, der er optaget i høj opløsning og et billedformat på 16:9, fanger motivets naturlige skønhed og personlighed med fantastisk realisme – ar 16:9 –v 5,2 – stil rå",
+							"tr-TR": "F 1,2 diyafram açıklığı ayarında 85 mm lense sahip Sony α7 III fotoğraf makinesiyle çekilen ve güneşli bir parkta ahşap bir bankta oturan genç bir kadını tasvir eden ultra gerçekçi bir fotoğraf. Arka plan güzel bir şekilde bulanıklaştırılır ve konuyu vurgular. Park, gür yeşillikler ve çiçek açan çiçeklerle süslenmiştir ve sakin bir atmosfer yaratmaktadır. Yumuşak güneş ışığı, nesnenin yüzünü ve saçını zarif bir şekilde aydınlatarak rüya gibi bir ışıltı verir. Yüksek çözünürlükte ve 16:9 en-boy oranında çekilen görüntü, nesnenin doğal güzelliğini ve kişiliğini çarpıcı bir gerçekçilikle yakalar – ar 16:9 –v 5.2 –stil ham",
+							"cs-CZ": "Mimořádně realistická fotografie pořízená fotoaparátem Sony α7 III vybaveným 85mm objektivem při nastavení clony F 1,2, zachycující mladou ženu sedící na dřevěné lavičce ve sluncem zalitém parku. Pozadí je krásně rozmazané a zvýrazňuje objekt. Park zdobí svěží zeleň a rozkvetlé květiny, které vytvářejí klidnou atmosféru. Měkké sluneční světlo elegantně osvětluje obličej a vlasy objektu a vrhá snovou záři. Snímek pořízený ve vysokém rozlišení a s poměrem stran 16:9 zachycuje přirozenou krásu a osobnost objektu s ohromujícím realismem ve stylu AR 16:9 –v 5.2",
+							"fr-FR": "Une photographie ultra-réaliste prise avec un appareil photo Sony α7 III, équipé d’un objectif de 85 mm à une ouverture de F 1.2, représentant une jeune femme assise sur un banc en bois dans un parc ensoleillé. L’arrière-plan est magnifiquement flou, mettant en valeur le sujet. Le parc est orné d’une végétation luxuriante et de fleurs épanouies, créant une atmosphère sereine. La douce lumière du soleil illumine gracieusement le visage et les cheveux du sujet, projetant une lueur onirique. L’image, prise en haute résolution et au format 16:9, capture la beauté naturelle et la personnalité du sujet avec un réalisme époustouflant – en 16:9 – v 5.2 – style brut",
+							"ja-JP": "ソニーα7 IIIカメラに85mmレンズ、F値1.2で撮影した超臨場感あふれる写真で、太陽の光が降り注ぐ公園の木製ベンチに座る若い女性を捉えた作品です。背景が美しくぼかされ、被写体が強調されています。公園内は豊かな緑と咲き誇る花々で彩られ、落ち着いた雰囲気を醸し出しています。柔らかな日差しが被写体の顔や髪を優雅に照らし、幻想的な輝きを放ちます。高解像度と 16:9 のアスペクト比で撮影されたこの画像は、被写体の自然な美しさと個性を見事なリアリズム (ar 16:9 –v 5.2 – スタイルの生) で捉えています",
+							"zh-Hant-TW": "使用索尼 α7 III 相機拍攝的超寫實照片，配備 F 85 光圈設置的 1.2mm 鏡頭，描繪了一位年輕女子坐在陽光明媚的公園的木凳上。背景非常模糊，突出了主體。公園點綴著鬱鬱蔥蔥的綠色植物和盛開的花朵，營造出寧靜的氛圍。柔和的陽光優雅地照亮拍攝物件的臉部和頭髮，投下夢幻般的光芒。該圖像以高解析度和 16：9 的縱橫比拍攝，以令人驚歎的真實感捕捉了拍攝物件的自然美和個性 – ar 16：9 –v 5.2 – 風格的原始"
+						},
+						"firefly#originalPrompt": "An ultra-realistic photograph captured with a Sony α7 III camera, equipped with an 85mm lens at F 1.2 aperture setting, portraying a young woman sitting on a wooden bench in a sunlit park. The background is beautifully blurred, highlighting the subject. The park is adorned with lush greenery and blooming flowers, creating a serene atmosphere. Soft sunlight gracefully illuminates the subject’s face and hair, casting a dreamlike glow. The image, shot in high resolution and a 16:9 aspect ratio, captures the subject’s natural beauty and personality with stunning realism –ar 16:9 –v 5.2 –style raw",
+						"firefly#locale": "en-US"
+					},
+					"output": {
+						"firefly#outputModel": {
+							"generation": {
+								"type": "array",
+								"expectedMimeType": "image/jpeg",
+								"expectedArrayLength": "1"
+							}
+						}
+					}
+				},
+				"alias": "XVYtM",
+				"aliases": [
+					"XVYtM"
+				],
+				"stats": {
+					"detail_count": 3154,
+					"anonymous_like_count": 0,
+					"purchase_count": 0,
+					"original_count": 0,
+					"copy_count": 0,
+					"add_to_library_count": 0,
+					"website_count": 0,
+					"video_info_count": 0,
+					"video_stream_count": 0,
+					"video_embed_count": 0,
+					"comment_count": 0,
+					"custom_counts": {}
+				},
+				"purchased": false,
+				"liked": false,
+				"is_owner": false,
+				"activities": {}
+			}
+		]
+	},
+	"total": 4604
+}

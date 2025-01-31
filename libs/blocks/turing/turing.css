@@ -1,0 +1,164 @@
+.turing * {
+  margin: 0;
+  padding: 0;
+}
+
+.turing.carousel_items {
+  display: flex;
+  overflow: scroll;
+}
+
+.turing .modal .modal-close {
+  /* border: 3px solid transparent; */
+  position: absolute;
+  padding: 0;
+  cursor: pointer;
+  background: #444444;
+  color: #fff;
+  border-radius: 50%;
+  height: 26px;
+  right: 5px;
+  top: 5px;
+  width: 26px;
+  z-index: 1;
+  text-align: center;
+}
+
+.turing .carousel_item {
+  position: relative;
+  min-width: 200px;
+  height: 200px;
+  transition: all 0.5s linear;
+  background-repeat: no-repeat;
+  background-size: cover;
+  margin: 20px 10px;
+  box-shadow: 0 3px 6px #707070;;
+}
+
+
+.turing .carousel_item:hover {
+  box-shadow: 0 10px 20px black;
+}
+
+.turing .carousel_text {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 160px;
+  transform: translate(-50%);
+  padding: 0.5rem 1rem;
+  border-radius: 3px;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  text-shadow: 1px 1px black;
+  font-size: 16px;
+  font-weight: bolder;
+}
+
+.turing .carousel_creator {
+  display: block;
+  font-weight: normal;
+  font-size: 12px;
+}
+
+.turing .modal {
+  background: #F5F5F5;
+  border-radius: 6px;
+  margin: auto;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-width: calc((100% - 6px) - 2em);
+  max-height: calc((100% - 6px) - 2em);
+  height: fit-content;
+  width: 100%;
+  user-select: text;
+  /* visibility: visible; */
+  overflow: auto;
+  z-index: 102;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  padding: 20px;
+  display: none;
+}
+
+.turing .modal .turing-modal-image {
+  padding: 20px;
+  background-color: #fff;
+}
+
+.turing .modal .turing-modal-image img {
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  min-height: 500px;
+}
+
+.turing .modal .turing-modal-image .turing-modal-image-text {
+  position: absolute;
+  bottom: 100px;
+  left: 100px;
+  font-size: 50px;
+  font-weight: bold;
+  font-family: cursive;
+  color: #fff;
+}
+
+.turing .modal .turing-modal-config {
+  background-color: #fff;
+  padding: 20px;
+}
+
+.turing .modal .turing-modal-config > div {
+  display: grid;
+  width: 400px;
+  grid-template-columns: 1fr 2fr;
+  grid-gap: 10px;
+}
+
+.turing .modal #fontColor { 
+  width: 200px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 10px;
+}
+
+.turing .modal .colorpicker {
+  height: 50px;
+  width: 50px;
+  border-radius: 50%;
+  border: 1px solid black;
+}
+
+
+.turing .modal .colorpicker.white {
+  background-color: #fff;
+}
+
+.turing .modal .colorpicker.black {
+  background-color: #000;
+}
+
+.turing .modal .colorpicker.red {
+  background-color: #DE1738;
+}
+
+.turing .modal .colorpicker.blue {
+  background-color: #bae1ff;
+}
+
+.turing .modal .colorpicker.green {
+  background-color: #baffc9;
+}
+
+.turing .modal .colorpicker.pink {
+  background-color: #ffd4e5;
+}
+
+.turing .modal input[type='range'] {
+  width: 200px;
+}
