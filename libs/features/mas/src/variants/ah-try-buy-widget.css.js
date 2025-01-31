@@ -10,6 +10,10 @@ export const CSS = `
         color: var(--consonant-merch-card-body-xxs-color);
     }
 
+    merch-card[variant="ah-try-buy-widget"] [slot="body-xxs"] a:hover {
+        color: var(--consonant-merch-card-body-xxs-color);
+    }
+
     merch-card[variant="ah-try-buy-widget"] [slot="heading-xxxs"] {
         overflow: hidden;
         text-overflow: ellipsis;
