@@ -149,7 +149,6 @@ export default class MiloFloodgate extends LitElement {
           // eslint-disable-next-line no-console
           console.log(`${status.statusCode} :: ${status.filePath}`);
           this._promotedFiles.push(status.filePath);
-          // eslint-disable-next-line chai-friendly/no-unused-expressions
           if (SUCCESS_CODES.includes(status.statusCode)) {
             this._promotedFilesCount += 1;
           } else {
@@ -175,7 +174,6 @@ export default class MiloFloodgate extends LitElement {
       callback: (status) => {
         // eslint-disable-next-line no-console
         console.log(`${status.statusCode} :: ${status.aemUrl}`);
-        // eslint-disable-next-line chai-friendly/no-unused-expressions
         if (SUCCESS_CODES.includes(status.statusCode)) {
           this._previewedFilesCount += 1;
         } else {
@@ -202,7 +200,6 @@ export default class MiloFloodgate extends LitElement {
       callback: (status) => {
         // eslint-disable-next-line no-console
         console.log(`${status.statusCode} :: ${status.aemUrl}`);
-        // eslint-disable-next-line chai-friendly/no-unused-expressions
         if (SUCCESS_CODES.includes(status.statusCode)) {
           this._publishedFilesCount += 1;
         } else {
@@ -314,7 +311,6 @@ export default class MiloFloodgate extends LitElement {
         // eslint-disable-next-line no-console
         console.log(`${status.statusCode} :: ${status.filePath}`);
         this._copiedFiles.push(status.filePath);
-        // eslint-disable-next-line chai-friendly/no-unused-expressions
         if (SUCCESS_CODES.includes(status.statusCode)) {
           this._copiedFilesCount += 1;
         } else {
@@ -431,7 +427,6 @@ export default class MiloFloodgate extends LitElement {
       callback: (status) => {
         // eslint-disable-next-line no-console
         console.log(`${status.statusCode} :: ${status.aemUrl}`);
-        // eslint-disable-next-line chai-friendly/no-unused-expressions
         if (SUCCESS_CODES.includes(status.statusCode)) {
           this._unpublishFilesCount += 1;
         } else {
@@ -457,7 +452,6 @@ export default class MiloFloodgate extends LitElement {
       const resp = await reqHandler.deleteContent(path);
       // eslint-disable-next-line no-console
       console.log(`${resp.statusCode} :: ${resp.filePath}`);
-      // eslint-disable-next-line chai-friendly/no-unused-expressions
       if (SUCCESS_CODES.includes(resp.statusCode)) {
         this._deletedFilesCount += 1;
       } else {
