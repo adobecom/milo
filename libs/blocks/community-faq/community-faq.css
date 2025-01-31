@@ -1,0 +1,239 @@
+.accordion-container {
+  padding: var(--spacing-m) 0;
+}
+
+div.accordion {
+  display: none;
+}
+
+dl.accordion {
+  margin: 0 auto;
+  max-width: var(--grid-container-width);
+  border-bottom: 1px solid var(--color-gray-500);
+}
+
+.accordion-container.no-borders dl.accordion {
+  border: none;
+}
+
+.accordion dd {
+  margin: 0;
+  padding: var(--spacing-xs);
+  font-size: var(--type-body-s-size);
+  line-height: var(--type-body-s-lh);
+}
+
+.accordion dt button {
+  align-items: center;
+  background: none;
+  border: 1px solid var(--color-gray-500);
+  border-width: 1px 0 0;
+  color: var(--text-color);
+  display: flex;
+  font-family: var(--body-font-family);
+  font-size: var(--type-heading-xs-size);
+  font-weight: 700;
+  line-height: var(--type-heading-s-lh);
+  padding: var(--spacing-s) var(--spacing-m) var(--spacing-s) var(--spacing-xs);
+  position: relative;
+  text-align: start;
+  width: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
+.accordion dt button:hover {
+  cursor: pointer;
+  color: var(--color-black);
+}
+
+.accordion-container.no-borders .accordion dt button {
+  border: none;
+}
+
+.accordion dt .accordion-heading {
+  margin: 0;
+}
+
+.accordion-icon {
+  position: absolute;
+  right: var(--spacing-xs);
+  top: 50%;
+  margin-top: -6px;
+  width: 12px;
+  height: 12px;
+  pointer-events: none;
+}
+
+html[dir="rtl"] .accordion-icon {
+  right: unset;
+  left: var(--spacing-xs);
+}
+
+.accordion-icon::before,
+.accordion-icon::after {
+  content: "";
+  display: block;
+  position: absolute;
+  width: 2px;
+  height: 12px;
+  background: var(--color-gray-600);
+  border-radius: 2px;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  margin: auto;
+  transition: all .2s ease;
+}
+
+.accordion-icon::after {
+  width: 12px;
+  height: 2px;
+}
+
+.accordion dt button::before {
+  content: "";
+  display: block;
+  position: absolute;
+  width: 2px;
+  height: 100%;
+  left: 0;
+  top: 0;
+  background-color: transparent;
+}
+
+.accordion dt button[aria-expanded="true"]::before {
+  background-color: var(--link-color-dark);
+}
+
+.quiet .accordion dt button[aria-expanded="true"]::before {
+  display: none;
+}
+
+.accordion dt button[aria-expanded="true"] .accordion-icon::before,
+.accordion dt button[aria-expanded="true"] .accordion-icon::after {
+  transform: rotate(90deg);
+}
+
+.accordion dt button[aria-expanded="true"] .accordion-icon::after {
+  opacity: 0;
+}
+
+.accordion dt button:hover .accordion-icon::before,
+.accordion dt button:hover .accordion-icon::after {
+  background: var(--color-black);
+}
+
+.accordion dt button:focus,
+.accordion dt button:hover,
+.accordion dt button[aria-expanded="true"] {
+  background: #00000005;
+}
+
+.accordion dd p:first-child {
+  margin-top: 0;
+}
+
+/* dark */
+.dark .accordion dt button,
+.darkest .accordion dt button {
+  color: #fff;
+}
+
+.dark dl.accordion {
+  border-bottom-color: var(--color-gray-600);
+}
+
+.dark .accordion dt button {
+  border-top-color: var(--color-gray-600);
+}
+
+.dark .accordion dt button:focus,
+.dark .accordion dt button:hover,
+.dark .accordion dt button[aria-expanded="true"] {
+  background: #00000060;
+}
+
+.dark .accordion dt button:hover .accordion-icon::before,
+.dark .accordion dt button:hover .accordion-icon::after {
+  background: var(--color-gray-100);
+}
+
+html[dir="rtl"] .accordion dt button {
+  padding: var(--spacing-s) var(--spacing-xs) var(--spacing-s) var(--spacing-m);
+}
+
+html[dir="rtl"] .accordion dt button::before {
+  right: 0;
+}
+
+.section[class*='-up'] dl.accordion {
+  max-width: unset;
+}
+
+/* Editorial Variation  */
+.accordion-media {
+  display:  none;
+}
+
+.accordion-media > div {
+  position: relative;
+  display: none;
+  animation-duration: 1s;
+  animation-name: fade-in;
+}
+
+
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+.accordion-media > div.expanded,
+.accordion-media > div.expanded > img {
+  display: inline;
+  position: relative;
+  height: 525px;
+  max-height: 525px;
+  max-width: 700px;
+  width: auto;
+}
+
+div.media-p {
+  width: 268px;
+  padding: 0;
+}
+
+@media screen and (min-width: 1200px) {
+  .editorial {
+    display: flex;
+    gap: 54px;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .editorial .accordion {
+    width: 50%;
+    display: inline-block;
+    margin: 0;
+  }
+
+  .media-p {
+    display: none;
+  }
+
+  .accordion-media {
+    width: 700px;
+    height: 525px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    margin: 0;
+  }
+}
