@@ -564,7 +564,7 @@ main > .section > .inline-wrapper > .share-mmm.inline {
 
 #pagination-arrows a:not(.disabled) {
   color: #000000;
-  cursor: pointer;
+  cursor: pointer !important;
 }
 
 
