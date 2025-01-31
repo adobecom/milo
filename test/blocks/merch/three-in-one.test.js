@@ -15,6 +15,8 @@ setConfig(config);
 describe('Three-in-one modal', () => {
   const originalOpen = window.open;
   const twpLink = document.querySelector('#twp-link');
+  const crmLink = document.querySelector('#crm-link');
+  const d2pLink = document.querySelector('#d2p-link');
   beforeEach(async () => {
     window.open = sinon.stub(window, 'open');
   });
@@ -38,7 +40,6 @@ describe('Three-in-one modal', () => {
     expect(iframe).to.exist;
     expect(iframe.src).to.equal('https://commerce.adobe.com/store/segmentation?ms=COM&ot=TRIAL&pa=phsp_direct_individual&cli=adobe_com&ctx=if&co=US&lang=en');
     expect(iframe.classList.contains('loading')).to.be.true;
-    expect(iframe.title).to.equal('Three-in-one modal');
     expect(iframe.getAttribute('frameborder')).to.equal('0');
     expect(iframe.getAttribute('marginwidth')).to.equal('0');
     expect(iframe.getAttribute('marginheight')).to.equal('0');
@@ -49,6 +50,16 @@ describe('Three-in-one modal', () => {
     const loader = spTheme.querySelector('sp-progress-circle');
     expect(loader).to.exist;
     modal.remove();
+  });
+
+  it('sets proper iframe title for each modal type', async () => {
+    [twpLink, crmLink, d2pLink].forEach(async (link) => {
+      const modal = await openThreeInOneModal(link);
+      const modalType = link.getAttribute('data-modal-type');
+      const title = modalType === 'crm' ? 'Single App' : modalType;
+      expect(modal.querySelector('iframe').title).to.equal(title);
+      modal.remove();
+    });
   });
 
   it('should hide loader when commerce page finished loading', async () => {
