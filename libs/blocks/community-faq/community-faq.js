@@ -1,5 +1,21 @@
+import { getConfig } from '../../utils/utils.js';
+
 export default async function init(el) {
-  const res = await fetch("https://community-stg.adobe.com/api/2.0/search?q=select%20id,%20subject,%20body,%20view_href%20FROM%20messages%20WHERE%20subject%20MATCHES%20'%22remove%20background%22'%20AND%20category.id%3D%22ct-photoshop%22%20AND%20depth%3D0%20ORDER%20BY%20replies.count(*)%20DESC%20limit%2010%20offset%200");
+  const { miloLibs, codeRoot } = getConfig();
+  const base = miloLibs || codeRoot;
+  const res = await fetch(`${base}/blocks/community-faq/community-faq.json`);
   const js = await res.json();
+  js.data.items.forEach(e => {
+    const x = `<div class="card product-card border">
+    <div>
+      <div>
+        <h3 id="lorem-ipsum-dolor-sit-amet-3">${e.subject.substring(0, 30) + ' ...'}</h3>
+        <p>${e.body.substring(0, 100) + ' ...'}</p>
+        <p><em><a href=${e.view_href}>Learn more</a></em></p>
+      </div>
+    </div>
+    </div>`;
+    el.innerHTML += x;
+  });
   console.log(js);
 }
