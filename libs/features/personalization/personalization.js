@@ -72,7 +72,7 @@ export const normalizePath = (p, localize = true) => {
   }
 
   const config = getConfig();
-  if (path.startsWith('https://www.adobe.com/federal/')) {
+  if (path.includes('/federal/')) {
     return getFederatedUrl(path);
   }
 
@@ -349,10 +349,11 @@ function registerInBlockActions(command) {
   if (blockAndSelector.length > 1) {
     let blockSelector;
     blockSelector = blockAndSelector.slice(1).join(' ');
+    // TODO: confirm this can be safely removed:
     // command.selector = blockSelector;
     if (getSelectorType(blockSelector) === 'fragment') {
-      blockSelector = getFederatedUrl(normalizePath(blockSelector));
-      command.content = getFederatedUrl(normalizePath(command.content));
+      blockSelector = normalizePath(blockSelector);
+      command.content = normalizePath(command.content);
       config.mep.inBlock[blockName].fragments ??= {};
       const { fragments } = config.mep.inBlock[blockName];
       delete command.selector;
