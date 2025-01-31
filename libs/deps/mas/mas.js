@@ -1671,6 +1671,10 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
         color: var(--consonant-merch-card-body-xxs-color);
     }
 
+    merch-card[variant="ah-try-buy-widget"] [slot="body-xxs"] a {
+        color: var(--consonant-merch-card-body-xxs-color);
+    }
+
     merch-card[variant="ah-try-buy-widget"] [slot="heading-xxxs"] {
         overflow: hidden;
         text-overflow: ellipsis;
