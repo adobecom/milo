@@ -48,9 +48,9 @@ const setUrlData = (url, allowEmptyPaths = false) => {
     const hlxPageIndex = urlParts[2].indexOf('.hlx.page');
     const aemPageIndex = urlParts[2].indexOf('.aem.page');
     const pageIndex = hlxPageIndex >= 0 ? hlxPageIndex : aemPageIndex;
-    const pageType = hlxPageIndex >= 0 ? '.hlx.page' : '.aem.page';
+    const sld = hlxPageIndex >= 0 ? '.hlx.page' : '.aem.page';
 
-    const pathLengthCheck = allowEmptyPaths ? pageType.length - 1 : pageType.length;
+    const pathLengthCheck = allowEmptyPaths ? sld.length - 1 : sld.length;
     if (pageIndex < 0 || pageIndex + pathLengthCheck >= urlParts[2].length) {
       return null;
     }
@@ -59,8 +59,9 @@ const setUrlData = (url, allowEmptyPaths = false) => {
       urlBranch: urlParts[0].slice(8), // remove "https://"
       urlRepo: urlParts[1],
       urlOwner: urlParts[2].slice(0, pageIndex),
-      urlPathRemainder: urlParts[2].slice(pageIndex + pageType.length),
+      urlPathRemainder: urlParts[2].slice(pageIndex + sld.length),
       currentPageLang: getLanguageCode(url),
+      sld,
     });
 
     return urlData;
@@ -120,7 +121,7 @@ const buildUi = async (el, previewUrl, overrideBranch) => {
 
       const locV3ConfigUrl = new URL(
         'tools/locui-create',
-        `https://${branch}--${urlData.urlRepo}--${urlData.urlOwner}.hlx.page`,
+        `https://${branch}--${urlData.urlRepo}--${urlData.urlOwner}${urlData.sld}`,
       );
 
       const params = {
@@ -185,7 +186,7 @@ export default async function init(el, search = window.location.search) {
     const referrer = params?.get('referrer')?.trim();
     const host = params?.get('host')?.trim();
     const project = params?.get('project')?.trim();
-    if (!referrer || !host || !project) {
+    if (!referrer || !project) {
       el.innerHTML = '<div class="modal">Missing required parameters</div>';
       return false;
     }
