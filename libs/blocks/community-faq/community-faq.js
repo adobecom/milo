@@ -9,7 +9,7 @@ export default async function init(el) {
     const x = `<div class="card product-card border">
     <div>
       <div>
-        <h3 id="lorem-ipsum-dolor-sit-amet-3">${e.subject.substring(0, 30) + ' ...'}</h3>
+        <h3 id="lorem-ipsum-dolor-sit-amet-3">${e.subject}</h3>
         <p>${e.body.substring(0, 100) + ' ...'}</p>
         <p><em><a href=${e.view_href}>Learn more</a></em></p>
       </div>
