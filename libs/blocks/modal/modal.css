@@ -264,6 +264,10 @@
     width: fit-content;
   }
 
+  .dialog-modal.three-in-one {
+    width: 100%;
+  }
+
   .dialog-modal.tall-video {
     --modal-width-var: 50vw;
 

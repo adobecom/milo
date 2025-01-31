@@ -2,6 +2,7 @@ import {
   createTag, getConfig, loadArea, loadScript, loadStyle, localizeLink, SLD,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
+import { MODAL_TYPE_3_IN_1 } from './constants.js';
 
 export const CHECKOUT_LINK_CONFIG_PATH = '/commerce/checkout-link.json'; // relative to libs.
 
@@ -125,12 +126,6 @@ const GeoMap = {
   sea: 'SG_en',
   th_en: 'TH_en',
   th_th: 'TH_th',
-};
-
-export const MODAL_TYPE_3_IN_1 = {
-  TWP: 'twp',
-  D2P: 'd2p',
-  CRM: 'crm',
 };
 
 export function getMiloLocaleSettings(locale) {

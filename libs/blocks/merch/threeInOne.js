@@ -1,4 +1,5 @@
 import { createTag, getConfig } from '../../utils/utils.js';
+import { MODAL_TYPE_3_IN_1 } from './constants.js';
 
 export const MSG_SUBTYPE = {
   AppLoaded: 'AppLoaded',
@@ -51,16 +52,17 @@ export const handle3in1IFrameEvents = ({ data: msgData }) => {
   }
 };
 
-export async function createContent(iframeUrl) {
+export async function createContent(iframeUrl, modalType) {
   const { base } = getConfig();
   await Promise.all([
     import(`${base}/features/spectrum-web-components/dist/theme.js`),
     import(`${base}/features/spectrum-web-components/dist/progress-circle.js`),
   ]);
   const content = createTag('div', { class: 'milo-iframe' });
+  const title = modalType === MODAL_TYPE_3_IN_1.CRM ? 'Single App' : modalType;
   const iframe = createTag('iframe', {
     src: iframeUrl,
-    title: 'Three-in-one modal',
+    title,
     frameborder: '0',
     marginwidth: '0',
     marginheight: '0',
@@ -84,7 +86,7 @@ export default async function openThreeInOneModal(el) {
   window.addEventListener('message', handle3in1IFrameEvents);
 
   const { getModal } = await import('../modal/modal.js');
-  const content = await createContent(iframeUrl);
+  const content = await createContent(iframeUrl, modalType);
   return getModal(null, {
     id: 'three-in-one',
     content,
