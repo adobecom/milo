@@ -57,7 +57,6 @@ export const createPayload = (project) => {
 
 export async function getMilocUrl() {
   const { miloc } = await getServiceConfig(origin, env.value);
-  console.log('saurabh', await getServiceConfig(origin, env.value));
   return miloc.url;
 }
 
