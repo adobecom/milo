@@ -101,7 +101,7 @@ export async function fetchLocaleDetails() {
     loading.value = true;
     let localeData = await fetchLocales(origin);
     if (!localeData) {
-      localeData = await fetchLocales('https://main--milo--adobecom.aem.page');
+      localeData = await fetchLocales('https://main--federal--adobecom.aem.page');
     }
     if (!localeData) {
       throw new Error('Server Error: could not fetch locales');
