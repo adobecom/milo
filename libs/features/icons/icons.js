@@ -34,17 +34,10 @@ export const fetchIcons = (config) => new Promise(async (resolve) => {
   resolve(fetchedIcons);
 });
 
-function checkIfIconIsTooltip(icon) {
-  const wrapper = icon.closest('em');
-  if (!wrapper) return null;
-
-  const conf = wrapper.textContent.includes('|');
-  if (!conf) return null;
-
-  return [...icon.classList].some((cls) => cls.includes('tooltip'));
-}
-
 function decorateToolTip(icon, iconName) {
+  const hasTooltip = icon.closest('em')?.textContent.includes('|') && [...icon.classList].some((cls) => cls.includes('tooltip'));
+  if (!hasTooltip) return;
+
   const wrapper = icon.closest('em');
   wrapper.className = 'tooltip-wrapper';
   if (!wrapper) return;
@@ -67,17 +60,10 @@ export default async function loadIcons(icons, config) {
   if (!iconSVGs) return;
   icons.forEach(async (icon) => {
     const iconNameInitial = icon.classList[1].replace('icon-', '');
-    let iconName;
+    let iconName = iconNameInitial === 'tooltip' ? 'info' : iconNameInitial;
+    if (iconNameInitial.includes('tooltip-')) iconName = iconNameInitial.replace(/tooltip-/, '');
+    decorateToolTip(icon, iconName);
 
-    if (iconNameInitial === 'tooltip') {
-      iconName = 'info';
-    } else if (iconNameInitial.includes('tooltip-')) {
-      iconName = iconNameInitial.replace(/tooltip-/, '');
-    } else {
-      iconName = iconNameInitial;
-    }
-
-    if (checkIfIconIsTooltip(icon)) decorateToolTip(icon, iconName);
     const existingIcon = icon.querySelector('svg');
     if (!iconSVGs[iconName] || existingIcon) return;
     const parent = icon.parentElement;
