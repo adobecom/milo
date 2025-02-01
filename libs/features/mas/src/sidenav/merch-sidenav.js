@@ -1,5 +1,5 @@
 import { html, css, LitElement } from 'lit';
-import { MatchMediaController } from '@spectrum-web-components/reactive-controllers/src/MatchMedia.js';
+import MatchMediaController from '../match-media-controller.js';
 import { headingStyles } from './merch-sidenav-heading.css.js';
 import '../merch-search.js';
 import './merch-sidenav-list.js';

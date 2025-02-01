@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import { MatchMediaController } from '@spectrum-web-components/reactive-controllers/src/MatchMedia.js';
+import MatchMediaController from './match-media-controller.js';
 import { styles } from './merch-subscription-panel.css.js';
 import {
     EVENT_MERCH_OFFER_SELECT_READY,
