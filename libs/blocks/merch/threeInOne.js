@@ -29,20 +29,15 @@ export const handle3in1IFrameEvents = ({ data: msgData }) => {
   window.lana?.log(`3-in-1 modal: ${subType}`, LANA_OPTIONS);
   switch (subType) {
     case MSG_SUBTYPE.AppLoaded:
-      document.querySelector('.three-in-one iframe')?.classList?.remove('loading');
+      document.querySelector('.three-in-one iframe')?.classList.remove('loading');
       document.querySelector('.three-in-one sp-theme')?.remove();
       break;
     case MSG_SUBTYPE.EXTERNAL:
-      if (!data?.externalUrl || !data.target) return;
-      window.open(data.externalUrl, data.target);
-      break;
     case MSG_SUBTYPE.SWITCH:
-      if (!data?.externalUrl || !data.target) return;
-      window.open(data.externalUrl, data.target);
-      break;
     case MSG_SUBTYPE.RETURN_BACK:
-      if (!data?.externalUrl || !data.target) return;
-      window.open(data.externalUrl, data.target);
+      if (data?.externalUrl && data.target) {
+        window.open(data.externalUrl, data.target);
+      }
       break;
     case MSG_SUBTYPE.Close:
       document.querySelector('.dialog-modal.three-in-one')?.dispatchEvent(new Event('closeModal'));

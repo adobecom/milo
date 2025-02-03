@@ -21,7 +21,7 @@
   z-index: 102;
 }
 
-.dialog-modal.three-in-one {
+.dialog-modal.upgrade-flow-modal, .dialog-modal.three-in-one  {
   height: 100%;
   width: 100%;
   max-height: 100%;
@@ -29,11 +29,11 @@
   overflow: hidden;
 }
 
-.three-in-one .dialog-close {
+.upgrade-flow-modal .dialog-close, .three-in-one .dialog-close {
   display: none;
 }
 
-.three-in-one .milo-iframe {
+.upgrade-flow-modal .upgrade-flow-iframe, .three-in-one .milo-iframe {
   overflow: hidden;
   height: 100%;
   width: 100%;
@@ -93,25 +93,6 @@
   .dialog-modal.delayed-modal {
     width: 900px;
   }
-}
-
-.dialog-modal.upgrade-flow-modal {
-  height: 100%;
-  width: 100%;
-  max-height: 100%;
-  max-width: 100%;
-  overflow: hidden;
-}
-
-.upgrade-flow-modal .dialog-close {
-  display: none;
-}
-
-.upgrade-flow-modal .upgrade-flow-iframe {
-  overflow: hidden;
-  height: 100%;
-  width: 100%;
-  box-sizing: border-box; 
 }
 
 .modal-curtain.is-open {

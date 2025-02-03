@@ -497,7 +497,7 @@ export async function openModal(e, url, offerType, hash, extraOptions, el) {
     const fragmentPath = url.split(/(hlx|aem).(page|live)/).pop();
     modal = await openFragmentModal(fragmentPath, getModal);
   } else {
-    const isThreeInOneModal = [MODAL_TYPE_3_IN_1.CRM, MODAL_TYPE_3_IN_1.D2P, MODAL_TYPE_3_IN_1.TWP].includes(el?.getAttribute('data-modal-type')) && el?.href;
+    const isThreeInOneModal = Object.values(MODAL_TYPE_3_IN_1).includes(el?.getAttribute('data-modal-type')) && el?.href;
     if (isThreeInOneModal) {
       const { default: openThreeInOneModal } = await import('./threeInOne.js');
       modal = await openThreeInOneModal(el);
