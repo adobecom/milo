@@ -294,12 +294,12 @@
                   {
                     "id": "featureValues.changeBackground.changeBackgroundImages",
                     "type": "ImageUpload",
-                    "title": "Images and Thumbnails",
+                    "title": "Images",
                     "children": [{}],
                     "properties": {
-                      "id": "imagesThumbnails",
+                      "id": "images",
                       "required": true,
-                      "buttonTitle": "Upload Images and Thumbnails"
+                      "buttonTitle": "Upload Images"
                     }
                   }
                 ],
@@ -334,7 +334,7 @@
             "content": ":changebg: $<changeBackgroundSvg> $<changeBackgroundLabel>",
             "children": [
               {
-                "content": ["$<thumbnail>", "$<mainImage>"],
+                "content": ["$<mainImage>"],
                 "iterable": true,
                 "parentId": "changeBackgroundImages",
                 "contentType": "img"
@@ -348,7 +348,6 @@
             "children": [
               {
                 "content": [
-                  "<picture><source type=\"image/webp\" srcset=\"$<thumbnail>\" media=\"(min-width: 600px)\"><source type=\"image/webp\" srcset=\"$<thumbnail>\"><source type=\"image/jpeg\" srcset=\"$<thumbnail>\" media=\"(min-width: 600px)\"><img loading=\"lazy\" alt=\"light up flowers\" src=\"$<thumbnail>\" width=\"570\" height=\"570\"></picture>",
                   " <picture><source type=\"image/webp\" srcset=\"$<mainImage>\" media=\"(min-width: 600px)\"><source type=\"image/webp\" srcset=\"$<mainImage>\"><source type=\"image/jpeg\" srcset=\"$<mainImage>\" media=\"(min-width: 600px)\"><img loading=\"lazy\" alt=\"light up flowers\" src=\"$<mainImage>\" width=\"570\" height=\"570\"></picture>"
                 ],
                 "iterable": true,
