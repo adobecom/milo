@@ -87,7 +87,7 @@ function createItem(accordion, id, heading, num, edit) {
 
   const para = panel?.querySelector('p');
   const text = para ? para.textContent : panel?.textContent;
-  const dtAttrs = hTag ? {} : { role: 'heading', 'aria-level': 3, class: 'descr-term' };
+  const dtAttrs = hTag ? { class: 'descr-term' } : { role: 'heading', 'aria-level': 3, class: 'descr-term' };
   const dtHtml = hTag ? createTag(hTag.tagName, { class: 'accordion-heading' }, button) : button;
   const dt = createTag('div', dtAttrs, dtHtml);
   const dd = createTag('div', { 'aria-labelledby': triggerId, id: panelId, hidden: true, class: 'descr-details' }, panel);
