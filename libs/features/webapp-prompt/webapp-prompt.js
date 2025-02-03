@@ -156,7 +156,7 @@ export class AppPrompt {
     this.parent.prepend(this.template);
     this.elements.closeIcon.focus();
 
-    this.redirectFn = this.initRedirect(this.options['pause-on-hover'] === 'on');
+    this.cleanupFn = this.initRedirect(this.options['pause-on-hover'] === 'on');
   };
 
   doesEntitlementMatch = async () => {
@@ -309,6 +309,17 @@ export class AppPrompt {
 
     // Start the timeout initially
     startTimeout();
+
+    return () => {
+      clearTimeout(timeoutId);
+      if (withPause) {
+        const appPromptElem = document.querySelector(CONFIG.selectors.prompt);
+        if (appPromptElem) {
+          appPromptElem.removeEventListener('mouseenter', stopTimeout);
+          appPromptElem.removeEventListener('mouseleave', startTimeout);
+        }
+      }
+    };
   };
 
   isDismissedPrompt = () => AppPrompt.getDismissedPrompts().includes(this.id);
@@ -321,8 +332,8 @@ export class AppPrompt {
 
   close = ({ saveDismissal = true, dismissalActions = true } = {}) => {
     const appPromptElem = document.querySelector(CONFIG.selectors.prompt);
+    this.cleanupFn();
     appPromptElem?.remove();
-    clearTimeout(this.redirectFn);
     if (saveDismissal) this.setDismissedPrompt();
     document.removeEventListener('keydown', this.handleKeyDown);
     this.anchor?.focus();
