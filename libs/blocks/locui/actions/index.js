@@ -94,7 +94,7 @@ async function findPageFragments(path) {
     const originalUrl = fragment.dataset.modalPath || fragment.dataset.path || fragment.href;
     let pathname;
     try {
-      pathname = new URL(originalUrl, origin).pathname.replace('.html', '');
+      pathname = new URL(originalUrl, originalUrl ? origin : '').pathname.replace('.html', '');
     } catch (error) {
       setStatus('service', 'error', 'Invalid Fragment Path in files', originalUrl);
       return acc;
@@ -102,10 +102,11 @@ async function findPageFragments(path) {
     // Find dupes across current iterator as well as original url list
     const accDupe = acc.some((url) => url.pathname === pathname);
     // Used remove langstore prefix for langstore urls
-    const dupe = urls.value.some((url) => removeLangstorePrefix(url.pathname) === pathname);
+    const dupe = urls.value
+      .some((url) => removeLangstorePrefix(url.pathname) === removeLangstorePrefix(pathname));
     if (accDupe || dupe) return acc;
     const fragmentUrl = new URL(`${origin}${pathname}`);
-    fragmentUrl.alt = !isUrl(fragment.textContent) ? fragment.textContent : originalUrl;
+    fragmentUrl.alt = isUrl(fragment.textContent) ? fragment.textContent : originalUrl;
     acc.push(fragmentUrl);
     return acc;
   }, []);

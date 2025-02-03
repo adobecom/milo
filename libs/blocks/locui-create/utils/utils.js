@@ -1,4 +1,5 @@
 import getServiceConfig from '../../../utils/service-config.js';
+import { SLD } from '../../../utils/utils.js';
 import { origin } from '../../locui/utils/franklin.js';
 import { getInitialName } from '../input-urls/index.js';
 import {
@@ -7,23 +8,6 @@ import {
   locales as stLocales,
   project as stProject,
 } from '../store.js';
-
-export function getTenantName() {
-  try {
-    const url = window.location.href;
-    const regex = /--([^--]+)--/;
-    const match = url.match(regex);
-    if (match?.[1]) {
-      // console.log('Tenant name extracted:', match[1]);
-      return match[1];
-    }
-    // console.warn('No tenant name found in URL. Defaulting to "milo".');
-    return 'milo';
-  } catch (error) {
-    // console.error('Error extracting tenant name:', error);
-    return 'milo';
-  }
-}
 
 export function processLocaleData(localeData) {
   const processedLocales = localeData.locales.data
@@ -121,7 +105,7 @@ export function getLanguageDetails(lang) {
       action: 'Rollout',
       langCode: langDetails.languagecode,
       language: langDetails.language,
-      locales: langDetails.livecopies.split(','),
+      locales: langDetails.livecopies?.split(','),
       workflow: '',
     },
   ];
@@ -146,4 +130,20 @@ export function getProjectByParams(searchParams) {
   }
 
   return Object.keys(projectInfo).length > 0 ? projectInfo : null;
+}
+
+export function validateOrigin(urlStr) {
+  try {
+    const url = new URL(urlStr);
+    if (SLD === 'hlx') {
+      return url.origin === origin;
+    }
+    if (SLD === 'aem') {
+      const origins = [url.origin.replace('.aem.', '.hlx.'), url.origin.replace('.hlx.', '.aem.')];
+      return origins.includes(origin);
+    }
+    return false;
+  } catch {
+    return false;
+  }
 }

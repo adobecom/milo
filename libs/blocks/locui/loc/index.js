@@ -12,11 +12,12 @@ import {
   user,
 } from '../utils/state.js';
 import { setStatus } from '../utils/status.js';
-import { getStatus, origin, preview } from '../utils/franklin.js';
+import { getStatus, preview } from '../utils/franklin.js';
 import login from '../../../tools/sharepoint/login.js';
 import { getServiceUpdates } from '../utils/miloc.js';
 import { connectSK } from '../../../utils/sidekick.js';
 import { isUrl, getUrl } from '../utils/url.js';
+import { validateOrigin } from '../../locui-create/utils/utils.js';
 
 const LANG_ACTIONS = ['Translate', 'English Copy', 'Rollout', 'Transcreate'];
 const MOCK_REFERRER = 'https%3A%2F%2Fadobe.sharepoint.com%2F%3Ax%3A%2Fr%2Fsites%2Fadobecom%2F_layouts%2F15%2FDoc.aspx%3Fsourcedoc%3D%257B94460FAC-CDEE-4B31-B8E0-AA5E3F45DCC5%257D%26file%3Dwesco-demo.xlsx';
@@ -48,7 +49,7 @@ export function validateUrlsFormat(projectUrls, removeMedia = false) {
   projectUrls.forEach((projectUrl, idx) => {
     const url = getUrl(projectUrl);
     const domain = isUrl(url.alt) ?? url;
-    if (domain.origin !== origin) {
+    if (!validateOrigin(domain.origin)) {
       const aemUrl = domain.hostname?.split('--').length === 3;
       url.valid = !aemUrl ? 'not AEM url' : 'not same domain';
     }
