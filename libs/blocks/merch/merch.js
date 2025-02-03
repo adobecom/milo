@@ -586,7 +586,7 @@ export async function initService(force = false, attributes = {}) {
     }
   });
   initService.promise = initService.promise ?? polyfills().then(async () => {
-    await import('../../deps/mas/mas.js');
+    await import('../../deps/mas/commerce.js');
     const { language, locale, country } = getMiloLocaleSettings(miloLocale);
     let service = document.head.querySelector('mas-commerce-service');
     if (!service) {
