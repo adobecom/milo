@@ -25,11 +25,12 @@ function initialRegions() {
   if (project.value.type === PROJECT_TYPES.translation) {
     const englishLocale = locales.value.find((locItem) => locItem.languagecode === ENG_LANG_CODE);
     const { livecopies = '' } = englishLocale || {};
+    const livecopiesArr = livecopies.split(',');
     return localeRegion.value.reduce((acc, curr) => {
       const { key, value } = curr;
       const valueList = value.split(',');
       const valueWithoutEnglishLocale = valueList.reduce((localeList, locale) => {
-        if (!livecopies.includes(locale)) {
+        if (livecopiesArr.some((l) => l !== locale)) {
           localeList.push(locale);
         }
         return localeList;
