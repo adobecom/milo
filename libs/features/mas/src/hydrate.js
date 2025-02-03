@@ -293,50 +293,52 @@ function processConsonantButton(cta, strong) {
 }
 
 export function processCTAs(fields, merchCard, aemFragmentMapping, variant) {
-    if (fields.ctas) {
-        const { slot } = aemFragmentMapping.ctas;
-        const footer = createTag('div', { slot }, fields.ctas);
+  if (fields.ctas) {
+      const { slot } = aemFragmentMapping.ctas;
+      const footer = createTag('div', { slot }, fields.ctas);
 
-        const ctas = [...footer.querySelectorAll('a')].map((cta) => {
-            const strong = cta.parentElement.tagName === 'STRONG';
-            if (merchCard.consonant) return processConsonantButton(cta, strong);
-            const checkoutLinkStyle =
-                CHECKOUT_STYLE_PATTERN.exec(cta.className)?.[0] ?? 'accent';
-            const isAccent = checkoutLinkStyle.includes('accent');
-            const isPrimary = checkoutLinkStyle.includes('primary');
-            const isSecondary = checkoutLinkStyle.includes('secondary');
-            const isOutline = checkoutLinkStyle.includes('-outline');
-            const isLink = checkoutLinkStyle.includes('-link');
-            if (isLink) {
-                return cta;
-            }
-            let variant;
-            if (isAccent || strong) {
-                variant = 'accent';
-            } else if (isPrimary) {
-                variant = 'primary';
-            } else if (isSecondary) {
-                variant = 'secondary';
-            }
-            if (merchCard.spectrum === 'swc')
-                return createSpectrumSwcButton(
-                    cta,
-                    aemFragmentMapping,
-                    isOutline,
-                    variant,
-                );
-            return createSpectrumCssButton(
-                cta,
-                aemFragmentMapping,
-                isOutline,
-                variant,
-            );
-        });
+      const ctas = [...footer.querySelectorAll('a')].map((cta) => {
+          const strong = cta.parentElement.tagName === 'STRONG';
+          if (merchCard.consonant) return processConsonantButton(cta, strong);
 
-        footer.innerHTML = '';
-        footer.append(...ctas);
-        merchCard.append(footer);
-    }
+          const checkoutLinkStyle =
+              CHECKOUT_STYLE_PATTERN.exec(cta.className)?.[0] ?? 'accent';
+          const isAccent = checkoutLinkStyle.includes('accent');
+          const isPrimary = checkoutLinkStyle.includes('primary');
+          const isSecondary = checkoutLinkStyle.includes('secondary');
+          const isOutline = checkoutLinkStyle.includes('-outline');
+          const isLink = checkoutLinkStyle.includes('-link');
+
+          if (isLink) return cta;
+
+          let variant;
+          if (isAccent || strong) {
+              variant = 'accent';
+          } else if (isPrimary) {
+              variant = 'primary';
+          } else if (isSecondary) {
+              variant = 'secondary';
+          }
+
+          return merchCard.spectrum === 'swc'
+              ? createSpectrumSwcButton(cta, aemFragmentMapping, isOutline, variant)
+              : createSpectrumCssButton(cta, aemFragmentMapping, isOutline, variant);
+      });
+
+      footer.append(...ctas);
+
+      
+      if (merchCard.shadowRoot) {
+          const existingCtaSlot = merchCard.shadowRoot.querySelector('slot[name="cta"]');
+          if (existingCtaSlot) {
+              existingCtaSlot.replaceWith(footer);
+          } else {
+              merchCard.shadowRoot.append(footer);
+          }
+      } else {
+          merchCard.append(footer);
+      }
+  }
 }
 
 export function processAnalytics(fields, merchCard) {

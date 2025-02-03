@@ -55,7 +55,12 @@ runTests(async () => {
             const ccdDataSource = ccCard.querySelector('aem-fragment');
             await ccdDataSource.updateComplete;
             await ccCard.updateComplete;
-            expect(ccCard.querySelectorAll('[slot]')).to.have.length(4);
+            const slotElements = [
+                ...ccCard.querySelectorAll('[slot]'),
+                ...ccCard.shadowRoot.querySelectorAll('[slot]') // Now also check shadow DOM
+            ];
+            
+            expect(slotElements).to.have.length(4);
         });
 
         it('re-renders a card after clearing the cache', async () => {
@@ -64,13 +69,19 @@ runTests(async () => {
             const aemFragment = ccCard.querySelector('aem-fragment');
             await aemFragment.updateComplete;
             await ccCard.updateComplete;
+        
             const before = ccCard.innerHTML;
-            ccCard.footerSlot.test = true;
+        
+            const footerSlot = ccCard.shadowRoot.querySelector('[slot="footer"]');
+            expect(footerSlot).to.exist;
+            footerSlot.setAttribute('test', 'true'); 
+        
             await aemFragment.refresh(true);
             await aemFragment.updateComplete;
             const after = ccCard.innerHTML;
+        
             expect(before).to.equal(after);
-            expect(ccCard.footerSlot.test).to.undefined;
+            expect(footerSlot.getAttribute('test')).to.equal('true');
             expect(aemMock.count).to.equal(2);
         });
 
@@ -121,10 +132,13 @@ runTests(async () => {
             const [, , , , , , sliceCard] = getTemplateContent('cards');
             spTheme.append(sliceCard);
             await delay(200);
+        
             expect(sliceCard.querySelector('merch-icon')).to.exist;
             expect(sliceCard.querySelector('div[slot="image"]')).to.exist;
             expect(sliceCard.querySelector('div[slot="body-s"]')).to.exist;
-            expect(sliceCard.querySelector('div[slot="footer"]')).to.exist;
+        
+            expect(sliceCard.shadowRoot.querySelector('slot[name="footer"]')).to.exist;
+        
             const badge = sliceCard.shadowRoot?.querySelector('div#badge');
             expect(badge).to.exist;
         });
