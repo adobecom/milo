@@ -1,4 +1,4 @@
-body {
+body main .section {
   font-family: 'Adobe Clean', adobe-clean, sans-serif;
 }
 
@@ -13,6 +13,16 @@ body {
   opacity: 0.5;
 }
 
+.locui-sync-badge-container > h1 {
+  font-size: 1.375rem;
+}
+
+main .section .locui h1 {
+  font-weight: bold;
+  font-size: var(--type-heading-xl-size);
+  line-height: var(--type-heading-xl-lh);
+}
+
 .locui-sync-badge-container {
   position: fixed;
   top: 0;
@@ -21,10 +31,6 @@ body {
   display: flex;
   justify-content: end;
   z-index: 100;
-}
-
-.locui-sync-badge-container > h1 {
-  font-size: 1.375rem;
 }
 
 .locui-sync-badge-container.push-down {
@@ -239,7 +245,7 @@ h2.locui-section-label.is-invisible {
   opacity: 0;
 }
 
-p.locui-project-label {
+.locui-subproject p.locui-project-label {
   font-size: 16px;
   margin: 0;
   font-weight: 700;
@@ -507,7 +513,7 @@ h3.locui-url-label {
   text-transform: uppercase;
 }
 
-p.locui-url-path {
+.locui-url p.locui-url-path {
   font-size: 1.4rem;
   margin: 12px 0 24px;
 }
