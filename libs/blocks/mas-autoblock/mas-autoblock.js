@@ -1,4 +1,4 @@
-import { createTag } from '../../utils/utils.js';
+import { createTag, getConfig } from '../../utils/utils.js';
 import { initService } from '../merch/merch.js';
 
 export function getFragmentId(el) {
@@ -28,6 +28,11 @@ export async function createCard(el, fragment) {
 export default async function init(el) {
   const fragment = getFragmentId(el);
   if (!fragment) return;
-  await initService();
+
+  const { base } = getConfig();
+  await Promise.all([
+    import(`${base}/deps/mas/mas.js`),
+    initService(),
+  ]);
   await createCard(el, fragment);
 }
