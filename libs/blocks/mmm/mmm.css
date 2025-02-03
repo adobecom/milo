@@ -568,5 +568,8 @@ main > .section > .inline-wrapper > .share-mmm.inline {
   cursor: pointer;
 }
 
+#pagination-arrows a.disabled svg {
+  opacity: .4;
+}
 
 
