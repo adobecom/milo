@@ -143,7 +143,7 @@ function filterPageList(pageNum, perPage, event) {
   shareUrl.searchParams.set('pageNum', pageNum || 1);
   shareUrl.searchParams.set('perPage', searchValues.perPage?.value || 25);
   searchValues.pageNum = { value: pageNum || 1, tagName: 'A' };
-  searchValues.perPage = { value: perPage || 25, tagName: 'SELECT' }; // !! check why the tagname?
+  searchValues.perPage = { value: perPage || 25, tagName: 'SELECT' };
 
   // assemble event details object with all filter criterias
   const detail = {};
