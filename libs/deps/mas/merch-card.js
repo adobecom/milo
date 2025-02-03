@@ -1855,6 +1855,8 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
         flex-direction: column;
         min-width: var(--merch-card-ah-try-buy-widget-content-min-width);
         max-width: var(--merch-card-ah-try-buy-widget-content-max-width);
+        flex-basis: var(--merch-card-ah-try-buy-widget-content-min-width);
+        flex-grow: 1;
     }
 
     :host([variant='ah-try-buy-widget']) .header {
