@@ -82,7 +82,10 @@ async function setContent() {
 
   getStatuses();
   const sk = document.querySelector('aem-sidekick, helix-sidekick');
-  sk?.addEventListener('statusfetched', async () => {
+  sk?.addEventListener('statusfetched', async () => { // sidekick v6
+    getStatuses();
+  });
+  sk?.addEventListener('status-fetched', async () => { // sidekick v7
     getStatuses();
   });
 }
