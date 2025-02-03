@@ -64,7 +64,7 @@ function handleClick(el, dd, num) {
 }
 
 function defalutOpen(accordion) {
-  handleClick(accordion.querySelector('.accordion-trigger'), accordion.querySelector('dd'), 1, 0);
+  handleClick(accordion.querySelector('.accordion-trigger'), accordion.querySelector('.descr-details'), 1, 0);
 }
 
 function createItem(accordion, id, heading, num, edit) {
