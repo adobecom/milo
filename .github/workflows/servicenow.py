@@ -74,7 +74,7 @@ if __name__ == "__main__":
     print(response.text)
     sys.exit(1)
   else:
-    print("IMS token request was successful")
+    print("IMS token request was successful: ", response.status_code)
     token = jsonParse["access_token"]
 
   print("Create CMR in ServiceNow...")
@@ -114,7 +114,8 @@ if __name__ == "__main__":
     print(response.text)
     sys.exit(1)
   else:
-    print("CMR creation was successful")
+    print("CMR creation was successful: ", response.status_code)
+    print(response.text)
     transaction_id = jsonParse["id"]
 
   print("Waiting for Transaction from Queue to ServiceNow then Retrieve CMR ID...")
@@ -140,7 +141,8 @@ if __name__ == "__main__":
     print(response.text)
     sys.exit(1)
   else:
-    print("CMR ID retrieval was successful")
+    print("CMR ID retrieval was successful: ", response.status_code)
+    print(response.text)
     cmr_id = jsonParse["result"]["changeId"]
 
   print("Setting Actual Maintenance Time Windows for CMR...")
@@ -175,4 +177,5 @@ if __name__ == "__main__":
     print(response.text)
     sys.exit(1)
   else:
-    print("CMR closure was successful")
+    print("CMR closure was successful: ", response.status_code)
+    print(response.text)
