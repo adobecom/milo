@@ -14,7 +14,7 @@ document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 
 let icons;
 
-describe('Icon Suppprt', () => {
+describe('Icon Support', () => {
   let paramsGetStub;
 
   before(() => {
@@ -47,7 +47,7 @@ describe('Icon Suppprt', () => {
     expect(svgs.length).to.equal(1);
   });
 
-  it('Creates default tooltip', async () => {
+  it('Creates default tooltip ', async () => {
     const tooltip = document.querySelector('.milo-tooltip.right');
     expect(tooltip).to.exist;
     expect(tooltip.dataset.tooltip).to.equal('This is my tooltip text.');
@@ -56,5 +56,55 @@ describe('Icon Suppprt', () => {
   it('Creates top tooltip', async () => {
     const tooltip = document.querySelector('.milo-tooltip.top');
     expect(tooltip).to.exist;
+  });
+});
+
+describe('Tooltip Integration with loadIcons', () => {
+  let iconTooltip;
+  let wrapper;
+  let normalIcon;
+
+  beforeEach(() => {
+    iconTooltip = createTag('span', { class: 'icon icon-tooltip' });
+    wrapper = createTag('em', {}, 'top|This is a tooltip text.');
+    wrapper.appendChild(iconTooltip);
+    document.body.appendChild(wrapper);
+
+    normalIcon = createTag('span', { class: 'icon icon-play' });
+    document.body.appendChild(normalIcon);
+  });
+
+  afterEach(() => {
+    document.body.innerHTML = '';
+  });
+
+  it('Should only decorate icons with "icon-tooltip" class', async () => {
+    await loadIcons([iconTooltip, normalIcon], config);
+
+    expect(iconTooltip.dataset.tooltip).to.equal('This is a tooltip text.');
+    expect(iconTooltip.classList.contains('milo-tooltip')).to.be.true;
+    expect(normalIcon.dataset.tooltip).to.be.undefined;
+    expect(normalIcon.classList.contains('milo-tooltip')).to.be.false;
+  });
+
+  it('Tooltip should not be visible by default', async () => {
+    await loadIcons([iconTooltip], config);
+
+    const tooltipContent = document.querySelector('.milo-tooltip[data-tooltip]');
+    expect(tooltipContent).to.exist;
+    expect(tooltipContent.style.display).to.equal('');
+    expect(tooltipContent.style.visibility).to.equal('');
+  });
+
+  it('Should replace wrapper with icon', async () => {
+    await loadIcons([iconTooltip], config);
+    expect(document.body.contains(wrapper)).to.be.false;
+    expect(document.body.contains(iconTooltip)).to.be.true;
+  });
+
+  it('Should assign correct default icon class and name', async () => {
+    await loadIcons([iconTooltip], config);
+    expect(iconTooltip.classList.contains('icon-info')).to.be.true;
+    expect(iconTooltip.dataset.name).to.be.undefined;
   });
 });
