@@ -41,21 +41,24 @@ const getRequest = (url, process, useBulk = true) => {
   };
 };
 
-const setUserData = (data) => {
-  if (!data) return null;
-  const { profile } = data;
-  const permissions = {};
-  PROCESS_TYPES.forEach((key) => {
-    if (key !== 'index') {
-      const process = isLive(key) ? 'live' : 'preview';
-      const userPermissions = data[process]?.permissions;
-      permissions[key] = {
-        useBulk: frisk(userPermissions, 'list'),
-        canUse: frisk(userPermissions, 'write'),
-      };
-    }
-  });
-  return { profile, permissions };
+const setUserData = (event) => {
+  const processes = event?.detail?.data;
+  if (processes) {
+    const profile = processes.profile ?? null;
+    const permissions = {};
+    PROCESS_TYPES.forEach((key) => {
+      if (key !== 'index') {
+        const process = isLive(key) ? 'live' : 'preview';
+        const userPermissions = processes[process]?.permissions;
+        permissions[key] = {
+          useBulk: frisk(userPermissions, 'list'),
+          canUse: frisk(userPermissions, 'write'),
+        };
+      }
+    });
+    return { profile, permissions };
+  }
+  return null;
 };
 
 const isPushedDown = async () => {
@@ -77,18 +80,15 @@ const isPushedDown = async () => {
 
 const authenticate = async (tool = null) => {
   isPushedDown();
-  const setUserV6 = (event) => { tool.user = setUserData(event?.detail?.data); };
-  const setUserV7 = (event) => { tool.user = setUserData(event?.detail); };
+  const setUser = (event) => { tool.user = setUserData(event); };
   const openSideKick = document.querySelector('aem-sidekick, helix-sidekick');
   if (openSideKick) {
-    openSideKick.addEventListener('statusfetched', setUserV6); // sidekick v6
-    openSideKick.addEventListener('status-fetched', setUserV7); // sidekick v7
+    openSideKick.addEventListener('statusfetched', setUser);
     /* c8 ignore next 6 */
   } else {
     document.addEventListener('sidekick-ready', () => {
       const sidekick = document.querySelector('aem-sidekick, helix-sidekick');
-      sidekick.addEventListener('statusfetched', setUserV6); // sidekick v6
-      sidekick.addEventListener('status-fetched', setUserV7); // sidekick v7
+      sidekick.addEventListener('statusfetched', setUser);
     }, { once: true });
   }
 };

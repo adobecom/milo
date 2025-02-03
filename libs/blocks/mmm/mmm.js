@@ -5,20 +5,6 @@ import { getMepPopup, API_URLS } from '../../features/personalization/preview.js
 const SEARCH_CRITERIA_CHANGE_EVENT = 'mmm-search-change';
 let cachedSearchCriteria = '';
 export const DEBOUNCE_TIME = 800;
-const SEARCH_CONTAINER = '.mmm-search-container';
-const LAST_SEEN_OPTIONS = {
-  day: { value: 'Day', key: 'day' },
-  week: { value: 'Week', key: 'week' },
-  month: { value: 'Month', key: 'month' },
-  threeMonths: { value: '3 Months', key: 'threeMonths' },
-  sixMonths: { value: '6 Months', key: 'sixMonths' },
-  year: { value: 'Year', key: 'year' },
-  all: { value: 'All', key: 'all' },
-};
-const SEARCH_INITIAL_VALUES = {
-  lastSeenManifest: LAST_SEEN_OPTIONS.threeMonths.key,
-  pageNum: 1,
-};
 
 async function toggleDrawer(target, dd, pageId) {
   const el = target.closest('button');
@@ -86,18 +72,12 @@ function createButtonDetailsPair(mmmEl, page) {
   mmmEl.append(dt, dd);
 }
 
-/**
- * This function should be fired by any search criteria field change event
- * Or by page number change event
- * @param {Number} pageNum - optional. Number of the clicked page.
- * @param {Event} event - optional. Page number click Event object.
- */
 function filterPageList(pageNum, event) {
   const shareUrl = new URL(`${window.location.origin}${window.location.pathname}`);
   const searchValues = {};
   const activeSearchWithShortKeyword = event?.target?.value && event.target.value.length < 2;
 
-  document.querySelector(SEARCH_CONTAINER).querySelectorAll('input, select').forEach((field) => {
+  document.querySelector('.mmm-search-container').querySelectorAll('input, select').forEach((field) => {
     const id = field.getAttribute('id').split('-').pop();
     const { value, tagName } = field;
     searchValues[id] = {
@@ -111,14 +91,16 @@ function filterPageList(pageNum, event) {
   shareUrl.searchParams.set('pageNum', pageNum || 1);
   searchValues.pageNum = { value: pageNum || 1, tagName: 'A' };
 
-  // assemble event details object with all filter criterias
-  const detail = {};
-  Object.keys(searchValues).forEach((key) => {
-    detail[key] = searchValues[key].value;
-  });
-  // This event triggers an API call with most recent search criteria and a forces a re-render
+  // This event triggers an API call with beloww search criterias and a re-render
   if (!activeSearchWithShortKeyword) {
-    document.dispatchEvent(new CustomEvent(SEARCH_CRITERIA_CHANGE_EVENT, { detail }));
+    document.dispatchEvent(new CustomEvent(SEARCH_CRITERIA_CHANGE_EVENT, {
+      detail: {
+        urls: searchValues.urls?.value,
+        geos: searchValues.geos?.value,
+        pages: searchValues.pages?.value,
+        pageNum: searchValues.pageNum?.value,
+      },
+    }));
   }
 
   document.querySelectorAll('button.copy-to-clipboard').forEach((button) => {
@@ -186,7 +168,7 @@ function createShareButton() {
 }
 
 function createDropdowns(data, sharedUrlSettings) {
-  const searchContainer = document.querySelector(SEARCH_CONTAINER);
+  const searchContainer = document.querySelector('.mmm-search-container');
   const dropdownForm = createTag(
     'div',
     { id: 'mmm-dropdown-container', class: 'mmm-form-container' },
@@ -222,7 +204,7 @@ function debounce(func) {
 }
 
 function createSearchField(data, sharedUrlSettings) {
-  const searchContainer = document.querySelector(SEARCH_CONTAINER);
+  const searchContainer = document.querySelector('.mmm-search-container');
   const searchForm = createTag(
     'div',
     { id: 'mmm-search-urls-container', class: 'mmm-form-container' },
@@ -239,38 +221,13 @@ function createSearchField(data, sharedUrlSettings) {
   searchField.addEventListener('change', debounce((event) => filterPageList(null, event)));
 }
 
-function isSelectedLastSeenDropdownOption(key) {
-  const searchKey = new URL(window.location.href).searchParams.get('lastSeenManifest');
-  if (searchKey) return searchKey === key;
-  return LAST_SEEN_OPTIONS[key].key === SEARCH_INITIAL_VALUES.lastSeenManifest;
-}
-
-function createLastSeenManifestDD() {
-  const searchContainer = document.querySelector(SEARCH_CONTAINER);
-  const dd = createTag(
-    'div',
-    { id: 'mmm-dropdown-lastSeenManifest', class: 'mmm-form-container' },
-    `<div>
-      <label for="mmm-lastSeenManifest">Manifests seen in the last:</label>
-      <select id="mmm-lastSeenManifest" type="text" name="mmm-lastSeenManifest" class="text-field-input">
-        ${Object.keys(LAST_SEEN_OPTIONS).map((key) => `
-          <option value="${LAST_SEEN_OPTIONS[key].key}" ${isSelectedLastSeenDropdownOption(LAST_SEEN_OPTIONS[key].key) ? 'selected' : ''}>${LAST_SEEN_OPTIONS[key].value}</option>
-        `)}
-      </select>
-    </div>`,
-  );
-  dd.addEventListener('change', () => filterPageList());
-  searchContainer.append(dd);
-}
-
 async function createForm(el) {
   const data = parseData(el);
   const urlParams = new URLSearchParams(window.location.search);
   const sharedUrlSettings = Object.fromEntries(urlParams.entries());
-  const searchContainer = createTag('div', { class: SEARCH_CONTAINER.slice(1) });
+  const searchContainer = createTag('div', { class: 'mmm-search-container' });
   document.querySelector('.mmm-container').parentNode.prepend(searchContainer);
   createDropdowns(data, sharedUrlSettings);
-  createLastSeenManifestDD();
   createSearchField(data, sharedUrlSettings);
 }
 
@@ -343,12 +300,12 @@ async function createPageList(el, search) {
     role: 'presentation',
   });
   mmmElContainer.append(mmmEl);
-  const url = `${API_URLS.pageList}${getSearchParams(search ?? SEARCH_INITIAL_VALUES)}`;
+  const url = `${API_URLS.pageList}${search ? getSearchParams(search) : window.location.search || '?pageNum=1'}`;
   const response = await fetchData(
     url,
     DATA_TYPE.JSON,
   );
-  response.result?.map((page) => createButtonDetailsPair(mmmEl, page));
+  response.result.map((page) => createButtonDetailsPair(mmmEl, page));
   const section = createTag('div', { id: 'mep-section', class: 'section' });
   const main = document.querySelector('main');
   el.replaceWith(mmmElContainer);
@@ -361,11 +318,6 @@ async function createPageList(el, search) {
   handlePaginationClicks();
 }
 
-/**
- * This function creates a listener to search criteria changes
- * and will fires an API call when event is received.
- * The search criteria change event is fired inside filterPageList()
- */
 function subscribeToSearchCriteriaChanges() {
   document.addEventListener(SEARCH_CRITERIA_CHANGE_EVENT, (el) => {
     const searchCriteria = JSON.stringify(el?.detail || {});

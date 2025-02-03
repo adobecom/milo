@@ -392,8 +392,9 @@ header.global-navigation {
   color: var(--feds-color-breadcrumbs--current);
 }
 
-.feds-breadcrumbs li span[aria-hidden="true"] {
+.feds-breadcrumbs li:not(:first-of-type)::before {
   padding: 0 12px;
+  content: '/';
 }
 
 .feds-utilities {

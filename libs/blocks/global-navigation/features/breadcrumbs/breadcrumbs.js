@@ -23,11 +23,10 @@ const setBreadcrumbSEO = (breadcrumbs) => {
   };
   breadcrumbs.querySelectorAll('ul > li').forEach((item, idx) => {
     const link = item.querySelector('a');
-    const name = link ? link.innerText.trim() : [...item.childNodes].filter((node) => !node.matches?.('span[aria-hidden="true"]')).map((node) => node.textContent.trim()).join('');
     breadcrumbsSEO.itemListElement.push({
       '@type': 'ListItem',
       position: idx + 1,
-      name,
+      name: link ? link.innerText.trim() : item.innerText.trim(),
       item: link?.href,
     });
   });
@@ -54,9 +53,8 @@ const createBreadcrumbs = (element) => {
     .split(',')
     .map((item) => item.trim()) || [];
 
-  ul.querySelectorAll('li').forEach((li, index) => {
+  ul.querySelectorAll('li').forEach((li) => {
     if (hiddenEntries.includes(li.innerText?.toLowerCase().trim())) li.remove();
-    if (index > 0) li.insertAdjacentHTML('afterbegin', '<span aria-hidden="true">/</span>');
   });
 
   const noTransform = element.classList.contains('no-transform') ? ' no-transform' : '';

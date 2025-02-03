@@ -12,10 +12,6 @@ import {
   trigger,
   yieldToMain,
   addMepHighlightAndTargetId,
-  getAsyncDropdownCount,
-  setActiveLink,
-  getDisableAEDState,
-  hasActiveLink,
 } from '../utilities.js';
 
 const decorateHeadline = (elem, index) => {
@@ -308,7 +304,6 @@ const decorateCrossCloudMenu = (content) => {
 
 // Current limitation: after an h5 (or h2 in the case of the footer)
 // is found in a menu column, no new sections can be created without a heading
-let asyncDropDownCount = 0;
 const decorateMenu = (config) => logErrorFor(async () => {
   let menuTemplate;
   if (config.type === 'syncDropdownTrigger') {
@@ -332,6 +327,7 @@ const decorateMenu = (config) => logErrorFor(async () => {
     const content = await fetchAndProcessPlainHtml({ url: pathElement.href });
 
     if (!content) return;
+
     const menuContent = toFragment`<div class="feds-menu-content">${content.innerHTML}</div>`;
     menuTemplate = toFragment`<div class="feds-popup">
         <div class="feds-menu-container">
@@ -363,18 +359,7 @@ const decorateMenu = (config) => logErrorFor(async () => {
       config.template.classList.add(selectors.activeNavItem.slice(1));
     }
 
-    asyncDropDownCount += 1;
     config.template.classList.add('feds-navItem--megaMenu');
-    if (getAsyncDropdownCount() === asyncDropDownCount) {
-      if (!hasActiveLink()) {
-        const sections = document.querySelectorAll('.feds-nav .feds-navItem--megaMenu');
-        const disableAED = getDisableAEDState();
-        if (!disableAED && sections.length === 1) {
-          sections[0].classList.add(selectors.activeNavItem.slice(1));
-          setActiveLink(true);
-        }
-      }
-    }
   }
 
   if (config.type === 'footerMenu') {

@@ -126,30 +126,4 @@ describe('Rollout', () => {
     // Restore original window.open
     windowOpenStub.restore();
   });
-
-  it('should handle aem.page', async () => {
-    const el = document.querySelector('div');
-    const searchParams = createTestParams('https://main--federal--adobecom.aem.page/langstore/en/drafts/test-one-page');
-    const windowOpenStub = sinon.stub(window, 'open');
-
-    const result = await init(el, `?${searchParams.toString()}`);
-    expect(result).to.be.true;
-
-    // select the radio button stage
-    const radioButtons = el.querySelectorAll('.radio-group input[type="radio"]');
-    radioButtons[0].checked = true;
-
-    // Trigger rollout button click
-    const rolloutBtn = el.querySelector('.rollout-btn');
-    rolloutBtn.click();
-
-    expect(windowOpenStub.called).to.be.true;
-
-    const lastUrl = new URL(windowOpenStub.firstCall.args[0]);
-    expect(lastUrl.hostname).to.equal('main--federal--adobecom.aem.page');
-    expect(lastUrl.searchParams.get('milolibs')).to.equal('milostudio-stage');
-
-    // Restore original window.open
-    windowOpenStub.restore();
-  });
 });
