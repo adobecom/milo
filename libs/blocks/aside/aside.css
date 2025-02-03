@@ -905,7 +905,7 @@
     margin-top: 0;
   }
 
-  .aside.split.bio .foreground.container .text .icon-area {
+  .aside.split.bio .foreground.container .text .icon-area:not(.con-button) {
     display: block;
   }
 
