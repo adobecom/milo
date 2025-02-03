@@ -558,4 +558,9 @@
   .tabs.stacked-mobile.quiet div[role="tablist"] button {
     margin-inline-start: 0;
   }
+
+  .tabs[class*='stacked-mobile'] .paddle {
+    background: unset;
+    border: none;
+  }
 }
