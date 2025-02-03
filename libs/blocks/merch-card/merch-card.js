@@ -625,6 +625,17 @@ export default async function init(el) {
         actionMenuContent.innerHTML,
       ),
     );
+    merchCard.addEventListener('focusin', () => {
+      const actionMenu = merchCard.shadowRoot.querySelector('.action-menu');
+      actionMenu.classList.add('always-visible');
+    });
+    merchCard.addEventListener('focusout', (e) => {
+      if (!e.target.href || e.target.src || e.target.parentElement.classList.contains('card-heading')) {
+        return;
+      }
+      const actionMenu = merchCard.shadowRoot.querySelector('.action-menu');
+      actionMenu.classList.remove('always-visible');
+    });
   }
   let ctas = el.querySelector('p > strong a, p > em a')?.closest('p');
   if (!ctas) {
