@@ -4,7 +4,7 @@
   --tabs-border-color: #909090;
   --tabs-border-hover-color: #acacac;
   --tabs-text-color: #686868;
-  --tabs-active-text-color: #2C2C2C;
+  --tabs-active-text-color: #2c2c2c;
   --tabs-bg-color: #f1f1f1;
   --tabs-active-bg-color: #fff;
   --tabs-list-bg-gradient: linear-gradient(
@@ -21,18 +21,18 @@
   --tabs-mobile-stacked-text-color: #ffffff;
   --tabs-pill-text-color: #131313;
   --tabs-paddle-bs-color: #0000001a;
-  --tabs-radio-gray: #6D6D6D;
-  --tabs-radio-blue: #0265DC;
+  --tabs-radio-gray: #6d6d6d;
+  --tabs-radio-blue: #0265dc;
   --tabs-radio-bg: #fff;
   --tabs-radio-button-bg: #fdfdfd;
 }
 
 :root .dark {
   --tabs-border-color: #909090;
-  --tabs-text-color: #B6B6B6;
+  --tabs-text-color: #b6b6b6;
   --tabs-active-text-color: #fff;
   --tabs-bg-color: #1a1a1a;
-  --tabs-active-bg-color: #1E1E1E;
+  --tabs-active-bg-color: #1e1e1e;
   --tabs-list-bg-gradient: linear-gradient(
     rgba(0, 0, 0, 0%) 0%,
     rgba(0, 0, 0, 0%) 60%,
@@ -69,7 +69,7 @@
 }
 
 .tabs.quiet.xxl-spacing .paddle {
-  top: calc(var(--spacing-xxl) + 1px);
+  top: var(--spacing-xxl);
 }
 
 .tabs.xl-spacing {
@@ -81,7 +81,7 @@
 }
 
 .tabs.quiet.xl-spacing .paddle {
-  top: calc(var(--spacing-xl) + 1px);
+  top: var(--spacing-xl);
 }
 
 .tabs.l-spacing {
@@ -93,7 +93,7 @@
 }
 
 .tabs.quiet.l-spacing .paddle {
-  top: calc(var(--spacing-l) + 1px);
+  top: var(--spacing-l);
 }
 
 .tabs.s-spacing {
@@ -105,7 +105,7 @@
 }
 
 .tabs.quiet.s-spacing .paddle {
-  top: calc(var(--spacing-s) + 1px);
+  top: var(--spacing-s);
 }
 
 .tabs.xs-spacing {
@@ -117,7 +117,7 @@
 }
 
 .tabs.quiet.xs-spacing .paddle {
-  top: calc(var(--spacing-xs) + 1px);
+  top: var(--spacing-xs);
 }
 
 .tabs div[role="tablist"] {
@@ -230,6 +230,7 @@
   padding: 14px 0 12px;
   display: flex;
   align-items: center;
+  margin-top: 1px;
 }
 
 .tabs.radio div[role="tablist"],
@@ -594,11 +595,7 @@
     margin-bottom: 0;
   }
 
-  .tabs.stacked-mobile div[role="tablist"] button[aria-selected="true"] {
-    background-color: var(--tabs-mobile-stacked-bg-color);
-    color: var(--tabs-mobile-stacked-text-color);
-  }
-  
+  .tabs.stacked-mobile div[role="tablist"] button[aria-selected="true"],
   .tabs.stacked-mobile.dark div[role="tablist"] button[aria-selected="true"] {
     background-color: var(--tabs-mobile-stacked-bg-color);
     color: var(--tabs-mobile-stacked-text-color);
