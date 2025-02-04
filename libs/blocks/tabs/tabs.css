@@ -64,11 +64,7 @@
   padding: var(--spacing-xxl) 0;
 }
 
-.tabs:not(.quiet).xxl-spacing .paddle {
-  top: var(--spacing-xxl);
-}
-
-.tabs.quiet.xxl-spacing .paddle {
+.tabs.xxl-spacing .paddle {
   top: var(--spacing-xxl);
 }
 
@@ -76,11 +72,7 @@
   padding: var(--spacing-xl) 0;
 }
 
-.tabs:not(.quiet).xl-spacing .paddle {
-  top: var(--spacing-xl);
-}
-
-.tabs.quiet.xl-spacing .paddle {
+.tabs.xl-spacing .paddle {
   top: var(--spacing-xl);
 }
 
@@ -88,11 +80,7 @@
   padding: var(--spacing-l) 0;
 }
 
-.tabs:not(.quiet).l-spacing .paddle {
-  top: var(--spacing-l);
-}
-
-.tabs.quiet.l-spacing .paddle {
+.tabs.l-spacing .paddle {
   top: var(--spacing-l);
 }
 
@@ -100,11 +88,7 @@
   padding: var(--spacing-s) 0;
 }
 
-.tabs:not(.quiet).s-spacing .paddle {
-  top: var(--spacing-s);
-}
-
-.tabs.quiet.s-spacing .paddle {
+.tabs.s-spacing .paddle {
   top: var(--spacing-s);
 }
 
@@ -112,11 +96,7 @@
   padding: var(--spacing-xs) 0;
 }
 
-.tabs:not(.quiet).xs-spacing .paddle {
-  top: var(--spacing-xs);
-}
-
-.tabs.quiet.xs-spacing .paddle {
+.tabs.xs-spacing .paddle {
   top: var(--spacing-xs);
 }
 
@@ -273,7 +253,7 @@
   margin-inline-start: 24px;
 }
 
-.tabs.pill .tabList button{
+.tabs.pill .tabList button {
   border: none;
 }
 
@@ -598,8 +578,7 @@
     margin-bottom: 0;
   }
 
-  .tabs.stacked-mobile div[role="tablist"] button[aria-selected="true"],
-  .tabs.stacked-mobile.dark div[role="tablist"] button[aria-selected="true"] {
+  .tabs.stacked-mobile div[role="tablist"] button[aria-selected="true"] {
     background-color: var(--tabs-mobile-stacked-bg-color);
     color: var(--tabs-mobile-stacked-text-color);
   }
