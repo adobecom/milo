@@ -1,7 +1,7 @@
 import requests
 import time
 import datetime
-import timedelta
+import random
 import json
 import os
 import sys
@@ -34,6 +34,45 @@ def find_string_in_json(json_data, target_string):
                   return True
 
   return False
+
+def backoff_with_timeout(operation, max_retries=5, base_delay=1, max_delay=60, timeout=300):
+    start_time = time.time()
+    attempts = 0
+    while attempts <= max_retries and (time.time() - start_time) < timeout:
+        try:
+            return operation()  # Attempt the operation
+        except Exception as e:
+            attempts += 1
+            if attempts > max_retries or (time.time() - start_time) >= timeout:
+                raise  # Re-raise the exception if max retries or timeout is reached
+
+            delay = min(base_delay * (2 ** (attempts - 1)), max_delay) + random.uniform(0, 0.1 * base_delay)
+            time.sleep(delay)
+    raise TimeoutError("Operation timed out after {} seconds or {} retries, whatever came first.".format(timeout, max_retries))
+
+# Example usage
+def get_cmr_id_operation():
+  response = requests.get(servicenow_get_cmr_url, headers=headers)
+  JSON_PARSE = json.loads(response.text)
+
+  if response.status_code != 200:
+    print("GET failed with response code: ", response.status_code)
+    print(response.text)
+    raise Exception("CMR ID Retrieval Operation failed...")
+  elif find_string_in_json(JSON_PARSE, "error"):
+    print("CMR ID retrieval failed with response code: ", response.status_code)
+    print(response.text)
+    raise Exception("CMR ID Retrieval Operation failed...")
+  else:
+    if find_string_in_json(JSON_PARSE, "Unknown"):
+      print("CMR ID retrieval failed with response code: ", response.status_code)
+      print(response.text)
+      raise Exception("CMR ID Retrieval Operation failed...")
+
+    print("CMR ID retrieval was successful: ", response.status_code)
+    print(response.text)
+
+  return JSON_PARSE["result"]["changeId"]
 
 # Execute Script logic:
 # python3 servicenow.py
@@ -129,21 +168,13 @@ if __name__ == "__main__":
 
   # Wait 10 seconds to provide time for the transaction to exit the queue and be saved into ServiceNow as a CMR record.
   time.sleep(10)
-  response = requests.get(servicenow_get_cmr_url, headers=headers)
-  jsonParse = json.loads(response.text)
 
-  if response.status_code != 200:
-    print("GET failed with response code: ", response.status_code)
-    print(response.text)
-    sys.exit(1)
-  elif find_string_in_json(jsonParse, "error"):
-    print("CMR ID retrieval failed with response code: ", response.status_code)
-    print(response.text)
-    sys.exit(1)
-  else:
-    print("CMR ID retrieval was successful: ", response.status_code)
-    print(response.text)
-    cmr_id = jsonParse["result"]["changeId"]
+  try:
+      result = backoff_with_timeout(get_cmr_id_operation, max_retries=15, base_delay=1, max_delay=60, timeout=120)
+      print("CMR ID found and validated: ", result)
+  except Exception as e:
+      print("All CMR ID retrieval attempts failed: ", e)
+      sys.exit(1)
 
   print("Setting Actual Maintenance Time Windows for CMR...")
   actual_start_time = (datetime.datetime.now() - datetime.timedelta(seconds = 10)).timestamp()
