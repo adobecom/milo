@@ -29,7 +29,7 @@
   overflow: hidden;
 }
 
-.upgrade-flow-modal .dialog-close, .three-in-one .dialog-close {
+.upgrade-flow-modal .dialog-close {
   display: none;
 }
 

@@ -27,10 +27,16 @@ export const handle3in1IFrameEvents = ({ data: msgData }) => {
   const { app, subType, data } = parsedMsg || {};
   if (app !== 'ucv3') return;
   window.lana?.log(`3-in-1 modal: ${subType}`, LANA_OPTIONS);
+  const threeInOne = document.querySelector('.three-in-one');
+  const closeBtn = threeInOne?.querySelector('.dialog-close');
   switch (subType) {
     case MSG_SUBTYPE.AppLoaded:
-      document.querySelector('.three-in-one iframe')?.classList.remove('loading');
-      document.querySelector('.three-in-one sp-theme')?.remove();
+      threeInOne?.querySelector('iframe')?.classList.remove('loading');
+      threeInOne?.querySelector('sp-theme')?.remove();
+      if (closeBtn) {
+        closeBtn.setAttribute('aria-hidden', 'true');
+        closeBtn.style.opacity = '0';
+      }
       break;
     case MSG_SUBTYPE.EXTERNAL:
     case MSG_SUBTYPE.SWITCH:
