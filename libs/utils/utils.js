@@ -1023,7 +1023,7 @@ export async function loadIms() {
       return;
     }
     const [unavMeta, ahomeMeta] = [getMetadata('universal-nav')?.trim(), getMetadata('adobe-home-redirect')];
-    const defaultScope = `AdobeID,openid,gnav${unavMeta && unavMeta !== 'off' ? ',pps.read,firefly_api,additional_info.roles,read_organizations,account_cluster.read' : ''}`;
+    const defaultScope = `AdobeID,openid,gnav${unavMeta && unavMeta !== 'off' ? ',pps.read,firefly_api,additional_info.roles,read_organizations' : ''}`;
     const timeout = setTimeout(() => reject(new Error('IMS timeout')), imsTimeout || 5000);
     window.adobeid = {
       client_id: imsClientId,
@@ -1129,6 +1129,7 @@ async function checkForPageMods() {
     || mepHighlight || mepButton || mepParam === '' || xlg)) return;
 
   const enablePersV2 = enablePersonalizationV2();
+  const hybridPersEnabled = getMepEnablement('hybrid-pers');
   if ((target || xlg) && enablePersV2) {
     const params = new URL(window.location.href).searchParams;
     calculatedTimeout = parseInt(params.get('target-timeout'), 10)
@@ -1141,7 +1142,7 @@ async function checkForPageMods() {
       const now = performance.now();
       performance.mark('interaction-start');
       const data = await loadAnalyticsAndInteractionData(
-        { locale, env: getEnv({})?.name, calculatedTimeout },
+        { locale, env: getEnv({})?.name, calculatedTimeout, hybridPersEnabled },
       );
       performance.mark('interaction-end');
       performance.measure('total-time', 'interaction-start', 'interaction-end');
@@ -1170,6 +1171,7 @@ async function checkForPageMods() {
     targetInteractionPromise,
     calculatedTimeout,
     enablePersV2,
+    hybridPersEnabled,
   });
 }
 
