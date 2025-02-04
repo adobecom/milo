@@ -1141,28 +1141,28 @@ export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => 
 };
 
 async function updateManifestsAndPropositions(
-  { config, targetManifests, targetPropositions },
+  { config, targetAjoManifests, targetAjoPropositions },
 ) {
-  targetManifests.forEach((manifest) => {
-    manifest.source = ['target'];
+  targetAjoManifests.forEach((manifest) => {
+    manifest.source = [config.mep.ajoEnabled ? 'ajo' : 'target'];
   });
-  config.mep.targetManifests = targetManifests;
+  config.mep.targetAjoManifests = targetAjoManifests;
   if (config.mep.enablePersV2) {
     if (!config.mep.hybridPersEnabled) {
       window.addEventListener('alloy_sendEvent', () => {
-        if (targetPropositions?.length && window._satellite) {
-          window._satellite.track('propositionDisplay', targetPropositions);
+        if (targetAjoPropositions?.length && window._satellite) {
+          window._satellite.track('propositionDisplay', targetAjoPropositions);
         }
       }, { once: true });
     }
-  } else if (targetPropositions?.length && window._satellite) {
-    window._satellite.track('propositionDisplay', targetPropositions);
+  } else if (targetAjoPropositions?.length && window._satellite) {
+    window._satellite.track('propositionDisplay', targetAjoPropositions);
   }
   if (config.mep.targetEnabled === 'postlcp') {
     const event = new CustomEvent(MARTECH_RETURNED_EVENT, { detail: 'Martech returned' });
     window.dispatchEvent(event);
   }
-  return targetManifests;
+  return targetAjoManifests;
 }
 
 function roundToQuarter(num) {
@@ -1201,65 +1201,71 @@ function sendTargetResponseAnalytics(failure, responseStart, timeoutLocal, messa
 }
 
 const handleAlloyResponse = (response) => ((response.propositions || response.decisions))
-  ?.map((i) => i.items)
+  ?.map((i) => {
+    const { id } = i;
+    return i.items.map((item) => ({ ...item, id }));
+  })
   ?.flat()
   ?.map((item) => {
     const content = item?.data?.content;
     if (!content || !(content.manifestLocation || content.manifestContent)) return null;
-
     return {
       manifestPath: content.manifestLocation || content.manifestPath,
       manifestUrl: content.manifestLocation,
       manifestData: content.manifestContent?.experiences?.data || content.manifestContent?.data,
       manifestPlaceholders: content.manifestContent?.placeholders?.data,
       manifestInfo: content.manifestContent?.info.data,
-      name: item.meta['activity.name'],
-      variantLabel: item.meta['experience.name'] && `target-${item.meta['experience.name']}`,
+      name: item.meta?.['activity.name'] || item.id,
+      variantLabel: (item.meta?.['experience.name'] && `target-${item.meta['experience.name']}`)
+        || content.experienceName,
       meta: item.meta,
     };
   })
   ?.filter(Boolean) ?? [];
 
 async function handleMartechTargetInteraction(
-  { config, targetInteractionPromise, calculatedTimeout },
+  { config, targetAjoInteractionPromise, calculatedTimeout },
 ) {
-  let targetManifests = [];
-  let targetPropositions = [];
-  if (config?.mep?.enablePersV2 && targetInteractionPromise) {
-    const { targetInteractionData, respTime, respStartTime } = await targetInteractionPromise;
+  const targetAjo = config.mep.ajoEnabled ? 'ajo' : 'target';
+  let targetAjoManifests = [];
+  let targetAjoPropositions = [];
+  if (config?.mep?.enablePersV2 && targetAjoInteractionPromise) {
+    const { targetAjoInteractionData, respTime, respStartTime } = await targetAjoInteractionPromise;
     sendTargetResponseAnalytics(false, respStartTime, calculatedTimeout);
-    if (targetInteractionData.result) {
+    if (targetAjoInteractionData.result) {
       const roundedResponseTime = roundToQuarter(respTime);
       performance.clearMarks();
       performance.clearMeasures();
       try {
-        window.lana.log(`target response time: ${roundedResponseTime}`, {
+        window.lana.log(`${targetAjo} response time: ${roundedResponseTime}`, {
           tags: 'martech',
           errorType: 'e',
           sampleRate: 0.5,
         });
       } catch (e) {
         // eslint-disable-next-line no-console
-        console.error('Error logging target response time:', e);
+        console.error(`Error logging ${targetAjo} response time:`, e);
       }
-      targetManifests = handleAlloyResponse(targetInteractionData.result);
-      targetPropositions = targetInteractionData.result?.propositions || [];
+      targetAjoManifests = handleAlloyResponse(targetAjoInteractionData.result);
+      targetAjoPropositions = targetAjoInteractionData.result?.propositions || [];
     }
   }
 
   return updateManifestsAndPropositions(
-    { config, targetManifests, targetPropositions },
+    { config, targetAjoManifests, targetAjoPropositions },
   );
 }
 
 async function callMartech(config) {
-  const { getTargetPersonalization } = await import('../../martech/martech.js');
+  const { getTargetAjoPersonalization } = await import('../../martech/martech.js');
   const {
-    targetManifests,
-    targetPropositions,
-  } = await getTargetPersonalization({ handleAlloyResponse, sendTargetResponseAnalytics });
+    targetAjoManifests,
+    targetAjoPropositions,
+  } = await getTargetAjoPersonalization(
+    { handleAlloyResponse, config, sendTargetResponseAnalytics },
+  );
   return updateManifestsAndPropositions(
-    { config, targetManifests, targetPropositions },
+    { config, targetAjoManifests, targetAjoPropositions },
   );
 }
 
@@ -1272,7 +1278,7 @@ export async function init(enablements = {}) {
   let manifests = [];
   const {
     mepParam, mepHighlight, mepButton, pzn, promo, enablePersV2, hybridPersEnabled,
-    target, targetInteractionPromise, calculatedTimeout, postLCP,
+    target, ajo, targetAjoInteractionPromise, calculatedTimeout, postLCP,
   } = enablements;
   const config = getConfig();
   if (postLCP) {
@@ -1285,6 +1291,7 @@ export async function init(enablements = {}) {
       variantOverride: parseMepParam(mepParam),
       highlight: (mepHighlight !== undefined && mepHighlight !== 'false'),
       targetEnabled: target,
+      ajoEnabled: ajo,
       experiments: [],
       prefix: config.locale?.prefix.split('/')[1]?.toLowerCase() || US_GEO,
       enablePersV2,
@@ -1299,17 +1306,17 @@ export async function init(enablements = {}) {
     if (pzn) loadLink(getXLGListURL(config), { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
   }
 
-  if (enablePersV2 && target === true) {
+  if (enablePersV2 && (target === true || ajo === true)) {
     manifests = manifests.concat(await handleMartechTargetInteraction(
-      { config, targetInteractionPromise, calculatedTimeout },
+      { config, targetAjoInteractionPromise, calculatedTimeout },
     ));
   } else {
-    if (target === true) manifests = manifests.concat(await callMartech(config));
-    if (target === 'postlcp') callMartech(config);
+    if (target === true || ajo === true) manifests = manifests.concat(await callMartech(config));
+    if (target === 'postlcp' || ajo === 'postlcp') callMartech(config);
   }
   if (postLCP) {
-    if (!config.mep.targetManifests) await awaitMartech();
-    manifests = config.mep.targetManifests;
+    if (!config.mep.targetAjoManifests) await awaitMartech();
+    manifests = config.mep.targetAjoManifests;
   }
   try {
     if (manifests?.length) await applyPers({ manifests });
