@@ -117,28 +117,16 @@ export class Catalog extends VariantLayout {
       this.setAriaExpanded(this.actionMenu, 'false');
     }
     
-    focusEventHandler = (e) => {
-        if (!this.actionMenu) return;
-
-        this.actionMenu.classList.add('always-visible');
-        if (e.relatedTarget?.nodeName === 'MERCH-CARD-COLLECTION'
-            || (e.relatedTarget?.nodeName === 'MERCH-CARD' && e.target.nodeName !== 'MERCH-ICON')) {
-            this.actionMenu.classList.remove('always-visible');
-        }
-    };
-
     setAriaExpanded(element, value) {
         element.setAttribute('aria-expanded', value);
     }
 
     connectedCallbackHook() {
         this.card.addEventListener('mouseleave', this.toggleActionMenuFromCard);
-        this.card.addEventListener('focusout', this.focusEventHandler);
     }
 
     disconnectedCallbackHook() {
         this.card.removeEventListener('mouseleave', this.toggleActionMenuFromCard);
-        this.card.removeEventListener('focusout', this.focusEventHandler);
     }
 
     static variantStyle = css`
