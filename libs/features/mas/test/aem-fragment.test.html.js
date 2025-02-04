@@ -134,7 +134,7 @@ runTests(async () => {
             await delay(200);
         
             expect(sliceCard.querySelector('merch-icon')).to.exist;
-            expect(sliceCard.querySelector('div[slot="image"]')).to.exist;
+            expect(sliceCard.shadowRoot.querySelector('div[slot="image"]')).to.exist;
             expect(sliceCard.querySelector('div[slot="body-s"]')).to.exist;
         
             expect(sliceCard.shadowRoot.querySelector('slot[name="footer"]')).to.exist;

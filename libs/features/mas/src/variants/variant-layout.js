@@ -1,5 +1,4 @@
 import { html } from 'lit';
-import { spectrumCSS } from '../spectrum.css.js';
 
 export class VariantLayout {
     static styleMap = {};
@@ -86,7 +85,7 @@ export class VariantLayout {
 
     /* c8 ignore next 3 */
     getGlobalCSS() {
-        return `${spectrumCSS}`;
+        return '';
     }
 
     /* c8 ignore next 3 */

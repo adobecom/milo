@@ -76,14 +76,6 @@ export const CSS = `
         font-weight: 700;
     }
 
-    merch-card[variant="ah-try-buy-widget"] [slot='image'] img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        border-radius: 16px;
-        overflow: hidden;
-    }
-
     merch-card[variant="ah-try-buy-widget"] [slot="cta"] .spectrum-Button-label {
         height: 16px;
         padding-block: 2px;

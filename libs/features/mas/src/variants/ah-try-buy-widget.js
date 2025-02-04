@@ -27,9 +27,7 @@ export class AHTryBuyWidget extends VariantLayout {
     return AEM_FRAGMENT_MAPPING;
   }
 
-  get showImage() {
-    return this.card.size === 'single' && !this.#mobile.matches;
-  }
+
 
   renderLayout() {
     return html`
@@ -41,7 +39,6 @@ export class AHTryBuyWidget extends VariantLayout {
         <slot name="body-xxs"></slot>
         <slot name="price"></slot>
       </div>
-      ${this.showImage ? html`<slot name="image"></slot>` : ''}
       <slot></slot>
     `;
   }
@@ -72,11 +69,13 @@ export class AHTryBuyWidget extends VariantLayout {
         box-sizing: content-box !important;
         border: none;
         outline: 1px solid var(--merch-card-ah-try-buy-widget-outline);
+        justify-content: space-between;
     }
 
     :host([variant='ah-try-buy-widget'][size='single']) {
         --merch-card-ah-try-buy-widget-max-width: 460px;
-        flex-direction: row;
+        max-height: 230px;
+        flex-direction: column;
         flex-wrap: wrap;
     }
 
@@ -94,9 +93,9 @@ export class AHTryBuyWidget extends VariantLayout {
     }
 
     :host([variant='ah-try-buy-widget']) .content {
-      display: flex;
+        display: flex;
         flex-direction: column;
-        flex-grow: 1;
+        flex-grow: 0;
         justify-content: flex-start;
         min-width: var(--merch-card-ah-try-buy-widget-content-min-width);
         max-width: var(--merch-card-ah-try-buy-widget-content-max-width);
@@ -126,13 +125,29 @@ export class AHTryBuyWidget extends VariantLayout {
 
     :host([variant='ah-try-buy-widget']) .footer {
       display: flex;
+      width: fit-content;
       flex-wrap: wrap;
-      justify-content: flex-start;
       gap: 8px;
-      width: auto;
+      flex-direction: row;
+    }
 
-    :host([variant='ah-try-buy-widget']) ::slotted([slot='image']) {
-        width: 199px;
+    :host([variant='ah-try-buy-widget'][size='single']) .image {
+      display: flex;
+      width: 199px;
+      overflow: hidden;
+      height: 100%;
+      order: 1;
+    }
+
+    :host([variant='ah-try-buy-widget']) .image {
+        display: none;
+    }
+
+    :host([variant='ah-try-buy-widget']) .image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 16px;
         overflow: hidden;
     }
 

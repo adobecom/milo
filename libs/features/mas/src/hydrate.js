@@ -1,5 +1,6 @@
 import { CheckoutButton } from './checkout-button.js';
 import { createTag } from './utils.js';
+import spectrumCSS from './spectrum.css.js';
 
 const DEFAULT_BADGE_COLOR = '#000000';
 const DEFAULT_BADGE_BACKGROUND_COLOR = '#F8D904';
@@ -124,10 +125,12 @@ export function processBackgroundImage(
             );
             return;
         }
-        merchCard.append(
+        merchCard.shadowRoot.append(
             createTag(
                 backgroundImageConfig.tag,
-                { slot: backgroundImageConfig.slot },
+                { slot: backgroundImageConfig.slot,
+                    class: 'image',
+                 },
                 createTag('img', imgAttributes),
             ),
         );
@@ -335,8 +338,15 @@ export function processCTAs(fields, merchCard, aemFragmentMapping, variant) {
 
         footer.innerHTML = '';
         footer.append(...ctas);
-        footer.classList.add('footer');
+
         merchCard.shadowRoot.append(footer);
+        if (!merchCard.shadowRoot.querySelector('style')) {
+            const styleElement = document.createElement('style');
+            styleElement.textContent = spectrumCSS;
+            merchCard.shadowRoot.prepend(styleElement);
+        }
+
+        footer.classList.add('footer');
     }
 }
 

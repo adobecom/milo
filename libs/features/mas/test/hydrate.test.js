@@ -343,9 +343,10 @@ describe('processBackgroundImage', () => {
             backgroundImageConfig,
             variant,
         );
-
-        expect(merchCard.outerHTML).to.equal(
-            '<div><div slot="image"><img loading="lazy" src="test-image.jpg" alt="Test Image"></div></div>',
+        const imageContainer = merchCard.shadowRoot.querySelector('div[slot="image"]');
+        expect(imageContainer).to.exist;
+        expect(imageContainer.innerHTML).to.equal(
+            '<img loading="lazy" src="test-image.jpg" alt="Test Image">',
         );
     });
 
