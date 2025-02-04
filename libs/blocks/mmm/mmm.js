@@ -15,9 +15,15 @@ const LAST_SEEN_OPTIONS = {
   year: { value: 'Year', key: 'year' },
   all: { value: 'All', key: 'all' },
 };
+const SUBDOMAIN_OPTIONS = {
+  www: { value: 'www', key: 'www' },
+  business: { value: 'business', key: 'business' },
+  all: { value: 'all', key: 'all' },
+};
 const SEARCH_INITIAL_VALUES = {
   lastSeenManifest: LAST_SEEN_OPTIONS.threeMonths.key,
   pageNum: 1,
+  subdomain: SUBDOMAIN_OPTIONS.www.key,
 };
 
 async function toggleDrawer(target, dd, pageId) {
@@ -97,7 +103,7 @@ function filterPageList(pageNum, event) {
   const searchValues = {};
   const activeSearchWithShortKeyword = event?.target?.value && event.target.value.length < 2;
 
-  document.querySelector(SEARCH_CONTAINER).querySelectorAll('input, select').forEach((field) => {
+  document.querySelector(SEARCH_CONTAINER).querySelectorAll('input, select, textarea').forEach((field) => {
     const id = field.getAttribute('id').split('-').pop();
     const { value, tagName } = field;
     searchValues[id] = {
@@ -228,36 +234,49 @@ function createSearchField(data, sharedUrlSettings) {
     { id: 'mmm-search-urls-container', class: 'mmm-form-container' },
     `<div>
       <label for="mmm-search-urls">Filter:</label>
-      <input id="mmm-search-urls" type="text" name="mmm-search-urls" class="text-field-input" placeholder="Search for a full or partial URL">
+      <textarea id="mmm-search-urls" type="text" name="mmm-search-urls" class="text-field-input" placeholder="Search for the full or partial: page URL, manifest URL, manifest experience name or Target activity name"></textarea>
     </div>`,
   );
   searchContainer.append(searchForm);
-  const searchField = searchForm.querySelector('input');
+  const searchField = searchForm.querySelector('textarea');
   if (sharedUrlSettings.urls) searchField.value = sharedUrlSettings.urls;
 
   searchField.addEventListener('keyup', debounce((event) => filterPageList(null, event)));
   searchField.addEventListener('change', debounce((event) => filterPageList(null, event)));
+  searchField.addEventListener('input', function () {
+    this.style.height = 'auto'; /* Reset height to auto to recalculate */
+    this.style.height = `${this.scrollHeight - 32}px`;
+  });
 }
 
-function isSelectedLastSeenDropdownOption(key) {
-  const searchKey = new URL(window.location.href).searchParams.get('lastSeenManifest');
+function isSelectedDropdownOption(key, searchParamKey, options) {
+  const searchKey = new URL(window.location.href).searchParams.get(searchParamKey);
   if (searchKey) return searchKey === key;
-  return LAST_SEEN_OPTIONS[key].key === SEARCH_INITIAL_VALUES.lastSeenManifest;
+  return options[key].key === SEARCH_INITIAL_VALUES[searchParamKey];
 }
 
-function createLastSeenManifestDD() {
+function createLastSeenManifestAndDomainDD() {
   const searchContainer = document.querySelector(SEARCH_CONTAINER);
   const dd = createTag(
     'div',
-    { id: 'mmm-dropdown-lastSeenManifest', class: 'mmm-form-container' },
+    { id: 'mmm-dropdown-container', class: 'mmm-form-container' },
     `<div>
       <label for="mmm-lastSeenManifest">Manifests seen in the last:</label>
       <select id="mmm-lastSeenManifest" type="text" name="mmm-lastSeenManifest" class="text-field-input">
         ${Object.keys(LAST_SEEN_OPTIONS).map((key) => `
-          <option value="${LAST_SEEN_OPTIONS[key].key}" ${isSelectedLastSeenDropdownOption(LAST_SEEN_OPTIONS[key].key) ? 'selected' : ''}>${LAST_SEEN_OPTIONS[key].value}</option>
+          <option value="${LAST_SEEN_OPTIONS[key].key}" ${isSelectedDropdownOption(LAST_SEEN_OPTIONS[key].key, 'lastSeenManifest', LAST_SEEN_OPTIONS) ? 'selected' : ''}>${LAST_SEEN_OPTIONS[key].value}</option>
         `)}
       </select>
-    </div>`,
+    </div>
+    <div>
+      <label for="mmm-subdomain">Subdomain:</label>
+      <select id="mmm-subdomain" type="text" name="mmm-subdomain" class="text-field-input">
+        ${Object.keys(SUBDOMAIN_OPTIONS).map((key) => `
+          <option value="${SUBDOMAIN_OPTIONS[key].key}" ${isSelectedDropdownOption(SUBDOMAIN_OPTIONS[key].key, 'subdomain', SUBDOMAIN_OPTIONS) ? 'selected' : ''}>${SUBDOMAIN_OPTIONS[key].value}</option>
+        `)}
+      </select>
+    </div>
+    `,
   );
   dd.addEventListener('change', () => filterPageList());
   searchContainer.append(dd);
@@ -270,7 +289,7 @@ async function createForm(el) {
   const searchContainer = createTag('div', { class: SEARCH_CONTAINER.slice(1) });
   document.querySelector('.mmm-container').parentNode.prepend(searchContainer);
   createDropdowns(data, sharedUrlSettings);
-  createLastSeenManifestDD();
+  createLastSeenManifestAndDomainDD();
   createSearchField(data, sharedUrlSettings);
 }
 
