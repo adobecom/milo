@@ -22,7 +22,7 @@ const SUBDOMAIN_OPTIONS = {
   all: { value: 'all', key: 'all' },
 };
 
-const getLocalStorageFilter = () => {
+export const getLocalStorageFilter = () => {
   const cookie = localStorage.getItem(MMM_LOCAL_STORAGE_KEY);
   return cookie ? JSON.parse(cookie) : null;
 };
