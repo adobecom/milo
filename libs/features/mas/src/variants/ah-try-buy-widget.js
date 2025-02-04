@@ -77,6 +77,12 @@ export class AHTryBuyWidget extends VariantLayout {
     :host([variant='ah-try-buy-widget'][size='single']) {
         --merch-card-ah-try-buy-widget-max-width: 460px;
         flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    :host([variant='ah-try-buy-widget'][size='single']) ::slotted(div[slot="cta"])  {
+        display: flex;
+        flex-grow: 0;
     }
 
     :host([variant='ah-try-buy-widget'][size='double']) {
@@ -118,7 +124,7 @@ export class AHTryBuyWidget extends VariantLayout {
         color: var(--consonant-merch-card-heading-xxxs-color);
     }
 
-    :host([variant='ah-try-buy-widget']) ::slotted([slot='cta']) {
+    :host([variant='ah-try-buy-widget']) .footer {
         display: flex;
         flex-wrap: wrap;
         justify-content: flex-start;
@@ -126,29 +132,9 @@ export class AHTryBuyWidget extends VariantLayout {
         width: 100%;
     }
 
-    :host([variant='ah-try-buy-widget'][size='single']) ::slotted([slot='cta']) {
-        order: 1;
-    }
-
-    :host([variant='ah-try-buy-widget'][size='single']) ::slotted([slot='image']) {
-        order: 2;
-    }
-
     :host([variant='ah-try-buy-widget']) ::slotted([slot='image']) {
         width: 199px;
         overflow: hidden;
-    }
-
-    :host([variant='ah-try-buy-widget']) ::slotted(.spectrum-Button) {
-        all: unset; 
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        max-width: 200px;
-        padding: 8px 12px;
-        border-radius: 4px;
-        font-size: 14px;
     }
 
     :host([variant='ah-try-buy-widget']) ::slotted(.spectrum-Button--primary) {

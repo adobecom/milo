@@ -335,6 +335,7 @@ export function processCTAs(fields, merchCard, aemFragmentMapping, variant) {
 
         footer.innerHTML = '';
         footer.append(...ctas);
+        footer.classList.add('footer');
         merchCard.shadowRoot.append(footer);
     }
 }
