@@ -1035,7 +1035,13 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content {
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds-cta--secondary {
   margin: 12px;
-  max-width: 180px;
+  display: inline-block;
+  line-height: 2;
+  text-wrap: wrap;
+  min-width: 100px;
+  max-width: 200px;
+  align-items: center;
+  text-align: center;
 }
 
 [dir = "rtl"] header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content {
