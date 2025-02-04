@@ -33,6 +33,7 @@
       const card = document.createElement('merch-card');
       const fragment = document.createElement('aem-fragment');
       fragment.setAttribute('fragment', fragmentId);
+      card.setAttribute('id', fragmentId);
       card.appendChild(fragment);
       let timeoutId;
       const onReady = () => {
@@ -61,7 +62,7 @@
       //if adjust is set to true, we adjust the limit based on the stored initTime and
       //reference time of 82ms it took on a quick network. This way, we should not be
       //affected by network speed when comparing benchmarks to limit.
-      const referentInitialTime = 82.0;
+      const referentInitialTime = 35.0;
       const previousLimit = limit;
       if (referentInitialTime < window.initTime) {
         limit = limit * window.initTime / referentInitialTime;
