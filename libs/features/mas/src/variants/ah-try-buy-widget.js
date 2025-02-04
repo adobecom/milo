@@ -40,9 +40,6 @@ export class AHTryBuyWidget extends VariantLayout {
         </div>
         <slot name="body-xxs"></slot>
         <slot name="price"></slot>
-        <div class="footer">
-          <slot name="cta"></slot>
-        </div>
       </div>
       ${this.showImage ? html`<slot name="image"></slot>` : ''}
       <slot></slot>
@@ -127,6 +124,14 @@ export class AHTryBuyWidget extends VariantLayout {
         justify-content: flex-start;
         gap: 8px;
         width: 100%;
+    }
+
+    :host([variant='ah-try-buy-widget'][size='single']) ::slotted([slot='cta']) {
+        order: 1;
+    }
+
+    :host([variant='ah-try-buy-widget'][size='single']) ::slotted([slot='image']) {
+        order: 2;
     }
 
     :host([variant='ah-try-buy-widget']) ::slotted([slot='image']) {
