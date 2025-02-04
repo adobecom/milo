@@ -2,7 +2,9 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-console */
 
-import { createTag, getConfig, loadLink, loadScript, localizeLink } from '../../utils/utils.js';
+import {
+  createTag, getConfig, loadLink, loadScript, localizeLink, SLD,
+} from '../../utils/utils.js';
 import { getFederatedUrl } from '../../utils/federated.js';
 
 /* c8 ignore start */
@@ -345,15 +347,28 @@ function registerInBlockActions(command) {
   config.mep.inBlock ??= {};
   config.mep.inBlock[blockName] ??= {};
 
+  let blockSelector;
   if (blockAndSelector.length === 1) delete command.selector;
   if (blockAndSelector.length > 1) {
-    let blockSelector;
     blockSelector = blockAndSelector.slice(1).join(' ');
-    // TODO: confirm this can be safely removed:
-    // command.selector = blockSelector;
+    command.selector = blockSelector;
     if (getSelectorType(blockSelector) === 'fragment') {
-      blockSelector = normalizePath(blockSelector);
-      command.content = normalizePath(command.content);
+      const { origin } = window.location;
+      if (!blockSelector.includes('/federal/') && (origin.includes('localhost') || origin.includes(`.${SLD}.`))) {
+        blockSelector = blockSelector.replace(
+          origin.includes('.live') ? '.page' : '.live',
+          origin.includes('.live') ? '.live' : '.page',
+        );
+      }
+      if (getSelectorType(command.content) === 'fragment') {
+        command.content = command.content.replace(
+          origin.includes('.live') ? '.page' : '.live',
+          origin.includes('.live') ? '.live' : '.page',
+        );
+      }
+
+      blockSelector = blockSelector.includes('/federal/') ? getFederatedUrl(blockSelector) : blockSelector;
+      command.content = command.content.includes('/federal/') ? getFederatedUrl(command.content) : command.content;
       config.mep.inBlock[blockName].fragments ??= {};
       const { fragments } = config.mep.inBlock[blockName];
       delete command.selector;
