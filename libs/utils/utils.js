@@ -1124,11 +1124,15 @@ async function checkForPageMods() {
   const promo = getMepEnablement('manifestnames', PROMO_PARAM);
   const target = martech === 'off' ? false : getMepEnablement('target');
   const xlg = martech === 'off' ? false : getMepEnablement('xlg');
+  const isPOC = (document.title === '404' && window.location.pathname === '/products/photoshop/123.html');
+  const ajo = martech === 'off' ? false : isPOC;
+  // const ajo = martech === 'off' ? false : getMepEnablement('ajo');
 
   if (!(pzn || target || promo || mepParam
-    || mepHighlight || mepButton || mepParam === '' || xlg)) return;
+    || mepHighlight || mepButton || mepParam === '' || xlg || ajo)) return;
 
   const enablePersV2 = enablePersonalizationV2();
+  //NOTE: will need to add AJO for eanblePersV2:
   if ((target || xlg) && enablePersV2) {
     const params = new URL(window.location.href).searchParams;
     calculatedTimeout = parseInt(params.get('target-timeout'), 10)
@@ -1147,9 +1151,9 @@ async function checkForPageMods() {
       performance.measure('total-time', 'interaction-start', 'interaction-end');
       const respTime = performance.getEntriesByName('total-time')[0];
 
-      return { targetInteractionData: data, respTime, respStartTime: now };
+      return { targetAjoInteractionData: data, respTime, respStartTime: now };
     })();
-  } else if ((target || xlg) && !isMartechLoaded) loadMartech();
+  } else if ((target || xlg || ajo) && !isMartechLoaded) loadMartech();
   else if (pzn && martech !== 'off') {
     loadIms()
       .then(() => {
@@ -1167,6 +1171,7 @@ async function checkForPageMods() {
     pzn,
     promo,
     target,
+    ajo,
     targetInteractionPromise,
     calculatedTimeout,
     enablePersV2,
