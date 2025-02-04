@@ -125,12 +125,11 @@ export class AHTryBuyWidget extends VariantLayout {
     }
 
     :host([variant='ah-try-buy-widget']) .footer {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: flex-start;
-        gap: 8px;
-        width: 100%;
-    }
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-start;
+      gap: 8px;
+      width: auto;
 
     :host([variant='ah-try-buy-widget']) ::slotted([slot='image']) {
         width: 199px;
