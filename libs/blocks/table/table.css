@@ -420,10 +420,11 @@
 }
 
 [dir="rtl"] .section-row-title .milo-tooltip.top::before {
-  left: unset;
-  top: -30px;
+  left: 50%;
+  top: -8px;
   right: unset;
   margin: 0;
+  transform: translateX(-50%) translateY(-100%);
 }
 
 [dir="rtl"] .section-row-title .milo-tooltip.top::after {
@@ -730,6 +731,7 @@
 
   [dir="rtl"] .section-row-title .milo-tooltip.top::before {
     top: 50%;
+    transform: translateY(-50%);
   }
 
   [dir="rtl"] .section-row-title .milo-tooltip:is(.top, .bottom, .left, .right)::after {
