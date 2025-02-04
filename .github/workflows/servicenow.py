@@ -36,22 +36,52 @@ def find_string_in_json(json_data, target_string):
   return False
 
 def backoff_with_timeout(operation, max_retries=5, base_delay=1, max_delay=60, timeout=300):
-    start_time = time.time()
-    attempts = 0
-    while attempts <= max_retries and (time.time() - start_time) < timeout:
-        try:
-            return operation()  # Attempt the operation
-        except Exception as e:
-            attempts += 1
-            if attempts > max_retries or (time.time() - start_time) >= timeout:
-                raise  # Re-raise the exception if max retries or timeout is reached
+  """
+  Smart back off for operations that may require multiple attempts with increasing intervals between each
+  execution until a successful return. Allows max attempts and/or timeout to ensure infinite looping doesn't
+  happen.
 
-            delay = min(base_delay * (2 ** (attempts - 1)), max_delay) + random.uniform(0, 0.1 * base_delay)
-            time.sleep(delay)
-    raise TimeoutError("Operation timed out after {} seconds or {} retries, whatever came first.".format(timeout, max_retries))
+  Args:
+      operation (_type_): The operation you would like to attempt in intervals.
+      max_retries (int, optional): The max amount of attempts allowed for the smart backoff. Defaults to 5.
+      base_delay (int, optional): The starting delay for the random amount to calculate intervals. Defaults to 1.
+      max_delay (int, optional): The maximum delay for the random amount to calculate intervals. Defaults to 60.
+      timeout (int, optional): The max amount of time allowed for the smart backoff. Defaults to 300.
 
-# Example usage
+  Raises:
+      TimeoutError: If the max amount of attempts or timeout is reached before a successful operation return happens, a timeout exception is thrown.
+
+  Returns:
+      _type_: The return value from the sent in operation that requires a smart backoff.
+  """
+
+  start_time = time.time()
+  attempts = 0
+  while attempts <= max_retries and (time.time() - start_time) < timeout:
+      try:
+          print("Attempting ServiceNow API operation...")
+          return operation()  # Attempt the operation
+      except Exception as e:
+          attempts += 1
+          if attempts > max_retries or (time.time() - start_time) >= timeout:
+              raise  # Re-raise the exception if max retries or timeout is reached
+
+          delay = min(base_delay * (2 ** (attempts - 1)), max_delay) + random.uniform(0, 0.1 * base_delay)
+          time.sleep(delay)
+  raise TimeoutError("Operation timed out after {} seconds or {} retries, whatever came first.".format(timeout, max_retries))
+
 def get_cmr_id_operation():
+  """
+  Operation to retrieve a Change Management Request ID from ServiceNow
+
+  Raises:
+      Exception: If the GET request returns a non 200 response.
+      Exception: If the GET request is successful but returns a error message payload.
+      Exception: If the GET request is successful but returns an "Unknown" status message in payload.
+
+  Returns:
+      _type_: The Change ID from the JSON payload
+  """
   response = requests.get(servicenow_get_cmr_url, headers=headers)
   JSON_PARSE = json.loads(response.text)
 
@@ -170,8 +200,8 @@ if __name__ == "__main__":
   time.sleep(10)
 
   try:
-      result = backoff_with_timeout(get_cmr_id_operation, max_retries=15, base_delay=1, max_delay=60, timeout=120)
-      print("CMR ID found and validated: ", result)
+      cmr_id = backoff_with_timeout(get_cmr_id_operation, max_retries=15, base_delay=1, max_delay=60, timeout=120)
+      print("CMR ID found and validated: ", cmr_id)
   except Exception as e:
       print("All CMR ID retrieval attempts failed: ", e)
       sys.exit(1)
@@ -210,3 +240,6 @@ if __name__ == "__main__":
   else:
     print("CMR closure was successful: ", response.status_code)
     print(response.text)
+
+  print("Change Management Request in ServiceNow was successful.")
+  print ("You can find the change record in ServiceNow https://adobe.service-now.com/now/change-launchpad/homepage, by searching for this ID: ", cmr_id)
