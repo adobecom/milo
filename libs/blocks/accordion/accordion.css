@@ -39,8 +39,8 @@ dl.accordion {
 }
 
 .accordion-expand-all button.disabled {
-  color: #909090;
-  border-color: #909090;
+  color: var(--color-gray-500);
+  border-color: var(--color-gray-500);
   background-color: #fff;
   text-decoration: line-through;
   cursor: auto;
