@@ -419,6 +419,19 @@
   border-left-color: #0469E3;
 }
 
+[dir="rtl"] .section-row-title .milo-tooltip.top::before {
+  left: unset;
+  top: -30px;
+  right: unset;
+  margin: 0;
+}
+
+[dir="rtl"] .section-row-title .milo-tooltip.top::after {
+  left: 8px;
+  top: -8px;
+  transform: rotate(90deg);
+}
+
 /* hover */
 @media (min-width: 900px) {
   .table .col.hover {
@@ -715,11 +728,20 @@
     right: initial;
   }
 
+  [dir="rtl"] .section-row-title .milo-tooltip.top::before {
+    top: 50%;
+  }
+
   [dir="rtl"] .section-row-title .milo-tooltip:is(.top, .bottom, .left, .right)::after {
     border-color: transparent #0469E3 transparent transparent;
     left: 100%;
     margin: 0 0 0 -4px;
     right: initial;
+  }
+
+  [dir="rtl"] .section-row-title .milo-tooltip.top::after {
+    transform: unset;
+    top: 4px;
   }
 
   .table .row-heading .col-heading .pricing {
