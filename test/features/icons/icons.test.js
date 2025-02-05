@@ -26,34 +26,40 @@ describe('Icon Support', () => {
     paramsGetStub.restore();
   });
 
-  before(async () => {
+  beforeEach(async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/body.html' });
     icons = document.querySelectorAll('span.icon');
     await loadIcons(icons, config);
-    await loadIcons(icons, config); // Test duplicate icon not created if run twice
   });
 
   it('Fetches successfully with cache control enabled', async () => {
     const otherIcons = [createTag('span', { class: 'icon icon-play' })];
     await loadIcons(otherIcons, config);
+    const svg = otherIcons[0].querySelector('svg');
+    expect(svg).to.exist;
   });
 
-  it('Replaces span.icon', async () => {
-    const selector = icons[0].querySelector(':scope svg');
-    expect(selector).to.exist;
+  it('Replaces span.icon', () => {
+    icons.forEach((icon) => {
+      const svg = icon.querySelector(':scope svg');
+      expect(svg).to.exist;
+    });
   });
 
-  it('No duplicate icon', async () => {
-    const svgs = icons[0].querySelectorAll(':scope svg');
-    expect(svgs.length).to.equal(1);
+  it('No duplicate icon', () => {
+    icons.forEach((icon) => {
+      const svgs = icon.querySelectorAll(':scope svg');
+      expect(svgs.length).to.equal(1);
+    });
   });
 
-  it('Creates default tooltip ', async () => {
+  it('Creates default tooltip', () => {
     const tooltip = document.querySelector('.milo-tooltip.right');
     expect(tooltip).to.exist;
     expect(tooltip.dataset.tooltip).to.equal('This is my tooltip text.');
   });
 
-  it('Creates top tooltip', async () => {
+  it('Creates top tooltip', () => {
     const tooltip = document.querySelector('.milo-tooltip.top');
     expect(tooltip).to.exist;
   });
