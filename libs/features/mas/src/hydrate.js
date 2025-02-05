@@ -1,6 +1,6 @@
 import { CheckoutButton } from './checkout-button.js';
+import { Checkout } from './checkout.js';
 import { createTag } from './utils.js';
-import spectrumCSS from './spectrum.css.js';
 
 const DEFAULT_BADGE_COLOR = '#000000';
 const DEFAULT_BADGE_BACKGROUND_COLOR = '#F8D904';
@@ -273,15 +273,35 @@ function createSpectrumSwcButton(cta, aemFragmentMapping, isOutline, variant) {
             tabIndex: 0,
             size: aemFragmentMapping.ctas.size ?? 'm',
         },
-        cta,
+        cta.innerHTML,
     );
 
-    spectrumCta.addEventListener('click', (e) => {
-        if (e.target !== cta) {
-            /* c8 ignore next 3 */
-            e.stopPropagation();
-            cta.click();
-        }
+    const providers = { checkout: [] };
+    const settings = {}; // Customize as needed
+    const checkout = Checkout({ providers, settings });
+    const options = checkout.collectCheckoutOptions({}, cta);
+    const checkoutButton = CheckoutButton.createCheckoutButton(options, '');
+
+    const hiddenContainer = document.createElement('div');
+    hiddenContainer.style.cssText = 'position: absolute; width: 0; height: 0; overflow: hidden; pointer-events: none;';
+    document.body.appendChild(hiddenContainer);
+    hiddenContainer.appendChild(checkoutButton);
+
+    checkoutButton.connectedCallback?.();
+    checkoutButton.requestUpdate?.();
+
+    checkoutButton.onceSettled().then(() => {
+      spectrumCta.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const clickEvent = new MouseEvent('click', {
+          view: window,
+          bubbles: true,
+          cancelable: true
+        });
+        checkoutButton.dispatchEvent(clickEvent);
+      });
+    }).catch((error) => {
+      console.error('Checkout button is not ready:', error);
     });
 
     return spectrumCta;
@@ -338,14 +358,7 @@ export function processCTAs(fields, merchCard, aemFragmentMapping, variant) {
 
         footer.innerHTML = '';
         footer.append(...ctas);
-
         merchCard.shadowRoot.append(footer);
-        if (!merchCard.shadowRoot.querySelector('style')) {
-            const styleElement = document.createElement('style');
-            styleElement.textContent = spectrumCSS;
-            merchCard.shadowRoot.prepend(styleElement);
-        }
-
         footer.classList.add('footer');
     }
 }
