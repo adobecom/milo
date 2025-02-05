@@ -1220,8 +1220,6 @@ async function handleMartechTargetInteraction(
 }
 
 async function callMartech(config) {
-  // const ajo = config.mep?.ajoEnabled ?? false;
-
   const { getTargetAjoPersonalization } = await import('../../martech/martech.js');
   const {
     targetAjoManifests,
