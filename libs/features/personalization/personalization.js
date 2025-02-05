@@ -225,24 +225,31 @@ const COMMANDS = {
   },
   [COMMANDS_KEYS.updateAttribute]: (el, cmd) => {
     if (!cmd.attribute || !cmd.content) return;
+    const [attribute, parameter] = cmd.attribute.split('_');
 
-    if (cmd.attribute === 'href') {
-      try {
-        let url = cmd.content;
-        if (cmd.parameter !== undefined) {
-          url += `?${cmd.parameter}`;
+    let value;
+    if (attribute === 'href') {
+      if (parameter) {
+        const href = el.getAttribute('href');
+        const checkParameter = new URLSearchParams(new URL(href).search);
+        const character = checkParameter.has(parameter) ? '&' : '?';
+
+        value = `${href}${character}${parameter}=${cmd.content}`;
+      } else {
+        try {
+          const href = /^https?:\/\//i.test(cmd.content) ? cmd.content : `http://${cmd.content}`;
+          const testContent = new URL(href);
+
+          value = testContent.href;
+        } catch (error) {
+          console.error('Invalid updateAttribute URL:', cmd.content);
         }
-        if (!/^https?:\/\//i.test(url)) {
-          url = `http://${url}`;
-        }
-        const testContent = new URL(url);
-        el.setAttribute(cmd.attribute, testContent.href);
-      } catch (error) {
-        console.error('Invalid updateAttribute URL:', cmd.content);
       }
     } else {
-      el.setAttribute(cmd.attribute, cmd.content);
+      value = cmd.content;
     }
+
+    if (value) el.setAttribute(attribute, value);
   },
 };
 
@@ -468,16 +475,10 @@ export function modifyNonFragmentSelector(selector, action) {
     .trim();
 
   let attribute;
-  let parameter;
 
   if (action === COMMANDS_KEYS.updateAttribute) {
     const string = newSelector.split(' ').pop();
-    const match = string.replace('.', '').split('_');
-    // const regex = /(?:_([^_]+)|\.([^.]+))$/;
-    // const match = string.match(regex);
-
-    attribute = match ? match[0] : null;
-    parameter = match ? match[1] : null;
+    attribute = string.replace('.', '');
     newSelector = newSelector.replace(string, '');
   }
 
@@ -485,7 +486,6 @@ export function modifyNonFragmentSelector(selector, action) {
     modifiedSelector: newSelector,
     modifiers,
     attribute,
-    parameter,
   };
 }
 
@@ -509,7 +509,6 @@ function getSelectedElements(sel, rootEl, forceRootEl, action) {
     modifiedSelector,
     modifiers,
     attribute,
-    parameter,
   } = modifyNonFragmentSelector(selector, action);
 
   let els;
@@ -522,7 +521,7 @@ function getSelectedElements(sel, rootEl, forceRootEl, action) {
   }
   if (modifiers.includes(FLAGS.all) || !els.length) return { els, modifiers };
   els = [els[0]];
-  return { els, modifiers, attribute, parameter };
+  return { els, modifiers, attribute };
 }
 
 const addHash = (url, newHash) => {
@@ -575,10 +574,9 @@ export function handleCommands(
       els,
       modifiers,
       attribute,
-      parameter,
     } = getSelectedElements(selector, rootEl, forceRootEl, action);
 
-    Object.assign(cmd, { modifiers, attribute, parameter });
+    Object.assign(cmd, { modifiers, attribute });
 
     els?.forEach((el) => {
       if (!el
