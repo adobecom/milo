@@ -24,7 +24,7 @@ const ORG_MAP = {
     return;
   }
 
-  let fullURL = window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : '') + window.location.pathname + '#/search';
+  const fullURL = window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : '') + window.location.pathname + '#/search';
   window.history.pushState({}, null, fullURL);
   document.body.style.visibility = 'visible';
   } 
