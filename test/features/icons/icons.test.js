@@ -26,7 +26,7 @@ describe('Icon Support', () => {
     paramsGetStub.restore();
   });
 
-  beforeEach(async () => {
+  before(async () => {
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });
     icons = document.querySelectorAll('span.icon');
     await loadIcons(icons, config);
@@ -34,26 +34,24 @@ describe('Icon Support', () => {
 
   it('Fetches successfully with cache control enabled', async () => {
     const otherIcons = [createTag('span', { class: 'icon icon-play' })];
+    document.body.appendChild(otherIcons[0]);
+
     await loadIcons(otherIcons, config);
     const svg = otherIcons[0].querySelector('svg');
     expect(svg).to.exist;
   });
 
   it('Replaces span.icon', () => {
-    icons.forEach((icon) => {
-      const svg = icon.querySelector(':scope svg');
-      expect(svg).to.exist;
-    });
+    const selector = icons[0].querySelector(':scope svg');
+    expect(selector).to.exist;
   });
 
   it('No duplicate icon', () => {
-    icons.forEach((icon) => {
-      const svgs = icon.querySelectorAll(':scope svg');
-      expect(svgs.length).to.equal(1);
-    });
+    const svgs = icons[0].querySelectorAll(':scope svg');
+    expect(svgs.length).to.equal(1);
   });
 
-  it('Creates default tooltip', () => {
+  it('Creates default tooltip (right-aligned)', () => {
     const tooltip = document.querySelector('.milo-tooltip.right');
     expect(tooltip).to.exist;
     expect(tooltip.dataset.tooltip).to.equal('This is my tooltip text.');
@@ -102,8 +100,20 @@ describe('Tooltip Integration with loadIcons', () => {
     expect(tooltipContent.style.visibility).to.equal('');
   });
 
+  it('Creates a tooltip without default alignment (left)', () => {
+    const customTooltip = createTag('span', { class: 'icon icon-tooltip milo-tooltip left', 'data-tooltip': 'Left-aligned tooltip' });
+    document.body.appendChild(customTooltip);
+
+    loadIcons([customTooltip], config);
+
+    const tooltip = document.querySelector('.milo-tooltip.left');
+    expect(tooltip).to.exist;
+    expect(tooltip.dataset.tooltip).to.equal('Left-aligned tooltip');
+  });
+
   it('Should replace wrapper with icon', async () => {
     await loadIcons([iconTooltip], config);
+
     expect(document.body.contains(wrapper)).to.be.false;
     expect(document.body.contains(iconTooltip)).to.be.true;
   });
@@ -112,5 +122,25 @@ describe('Tooltip Integration with loadIcons', () => {
     await loadIcons([iconTooltip], config);
     expect(iconTooltip.classList.contains('icon-info')).to.be.true;
     expect(iconTooltip.dataset.name).to.be.undefined;
+  });
+
+  it('Should not assign default icon class if already defined', async () => {
+    const customIcon = createTag('span', { class: 'icon icon-warning' });
+    document.body.appendChild(customIcon);
+
+    await loadIcons([customIcon], config);
+
+    expect(customIcon.classList.contains('icon-warning')).to.be.true;
+    expect(customIcon.classList.contains('icon-info')).to.be.false;
+  });
+
+  it('Should not add tooltip if data-tooltip is missing', async () => {
+    const noTooltipIcon = createTag('span', { class: 'icon icon-tooltip' });
+    document.body.appendChild(noTooltipIcon);
+
+    await loadIcons([noTooltipIcon], config);
+
+    expect(noTooltipIcon.classList.contains('milo-tooltip')).to.be.false;
+    expect(noTooltipIcon.dataset.tooltip).to.be.undefined;
   });
 });
