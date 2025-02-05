@@ -338,6 +338,11 @@ function normalizeKeys(obj) {
   }, {});
 }
 
+function replaceLivePage(str, origin) {
+  const isLive = origin.includes('.live');
+  return str.replace(isLive ? '.page' : '.live', isLive ? '.live' : '.page');
+}
+
 function registerInBlockActions(command) {
   const blockAndSelector = command.selector.substring(IN_BLOCK_SELECTOR_PREFIX.length)
     .trim().split(/\s+/);
@@ -354,17 +359,13 @@ function registerInBlockActions(command) {
     command.selector = blockSelector;
     if (getSelectorType(blockSelector) === 'fragment') {
       const { origin } = window.location;
-      if (!blockSelector.includes('/federal/') && (origin.includes('localhost') || origin.includes(`.${SLD}.`))) {
-        blockSelector = blockSelector.replace(
-          origin.includes('.live') ? '.page' : '.live',
-          origin.includes('.live') ? '.live' : '.page',
-        );
+      const isLocalOrSLD = origin.includes('localhost') || origin.includes(`.${SLD}.`);
+
+      if (!blockSelector.includes('/federal/') && isLocalOrSLD) {
+        blockSelector = replaceLivePage(blockSelector, origin);
       }
       if (getSelectorType(command.content) === 'fragment') {
-        command.content = command.content.replace(
-          origin.includes('.live') ? '.page' : '.live',
-          origin.includes('.live') ? '.live' : '.page',
-        );
+        command.content = replaceLivePage(command.content, origin);
       }
 
       blockSelector = blockSelector.includes('/federal/') ? getFederatedUrl(blockSelector) : blockSelector;
