@@ -406,7 +406,7 @@
   margin-left: 16px;
 }
 
-[dir="rtl"] .section-row-title .milo-tooltip:is(.top, .bottom, .left, .right)::before {
+[dir="rtl"] .section-row-title .milo-tooltip:is(.bottom, .left, .right)::before {
   left: initial;
   margin: 0 12px 0 0;
   right: 100%;
@@ -414,7 +414,7 @@
   transform: translateY(-50%);
 }
 
-[dir="rtl"] .section-row-title .milo-tooltip:is(.top, .bottom, .left, .right)::after {
+[dir="rtl"] .section-row-title .milo-tooltip:is(.bottom, .left, .right)::after {
   left: -8px;
   margin: 0 4px 0 -4px;
   top: 50%;
@@ -717,6 +717,11 @@
     left: 100%;
     margin: 0 0 0 12px;
     right: initial;
+  }
+
+  [dir="rtl"] .section-row-title .milo-tooltip.top::before {
+    top: 50%;
+    transform: translateY(-50%);
   }
 
   [dir="rtl"] .section-row-title .milo-tooltip:is(.top, .bottom, .left, .right)::after {
