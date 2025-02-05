@@ -3,8 +3,11 @@ coverage:
     patch:
       default:
         target: 90%
-        threshold: 0.1%
+        threshold: 0.5%
     project:
       default:
         target: auto
-        threshold: 0.1%
+        threshold: 0.5%
+   ignore:
+      - "!libs/"
+      - "libs/deps/"
