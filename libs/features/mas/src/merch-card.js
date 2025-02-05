@@ -7,6 +7,7 @@ import {
 } from './variants/variants.js';
 
 import './global.css.js';
+import './aem-fragment.js';
 import {
     EVENT_AEM_LOAD,
     EVENT_MERCH_CARD_READY,
