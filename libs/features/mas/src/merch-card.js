@@ -376,7 +376,7 @@ export class MerchCard extends LitElement {
         const timeoutPromise = new Promise((resolve) =>
             setTimeout(() => resolve(false), MERCH_CARD_LOAD_TIMEOUT),
         );
-        const success = await Promise.race([successPromise, timeoutPromise]);
+        const success = await Promise.race([successPromise, timeoutPromise, this.aemFragment?.updateComplete]);
         if (success === true) {
             performance.mark(
                 `${MARK_MERCH_CARD_PREFIX}${this.id}${MARK_READY_SUFFIX}`,
