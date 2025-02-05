@@ -472,7 +472,7 @@ function subscribeToSearchCriteriaChanges() {
 }
 
 export default async function init(el) {
-  await createPageList(el);
+  await createPageList(el, new URLSearchParams(window.location.search));
   createForm(el);
   subscribeToSearchCriteriaChanges();
   loadStyle('/libs/features/personalization/preview.css');
