@@ -26,6 +26,7 @@ export const defaultConfig = {
   loaderDuration: 7500,
   redirectUrl: '#soup',
   productName: 'photoshop',
+  pauseOnHover: 'off',
   ...DISMISSAL_CONFIG,
 };
 
