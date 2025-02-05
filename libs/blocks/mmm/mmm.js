@@ -157,6 +157,7 @@ function filterPageList(pageNum, event) {
     button.dataset.destination = shareUrl.href;
   });
 }
+
 function parseData(el) {
   const data = {};
   const rows = el.querySelectorAll('div');
@@ -352,16 +353,6 @@ function createPaginationEl({ data, el }) {
   el.append(paginationEl);
 }
 
-function getSearchParams(obj) {
-  let searchString = '';
-  Object.keys(obj).forEach((key) => {
-    if (obj[key]) searchString += `&${key}=${obj[key]}`;
-  });
-  searchString = `?${searchString.slice(1)}`;
-  return searchString;
-  // todo: save to local and retrieve
-}
-
 function handlePaginationClicks() {
   const paginationEl = document.querySelector('#mmm-pagination');
   paginationEl?.querySelectorAll('a').forEach((item) => {
@@ -382,10 +373,14 @@ async function createPageList(el, search) {
     role: 'presentation',
   });
   mmmElContainer.append(mmmEl);
-  const url = `${API_URLS.pageList}${getSearchParams(search ?? SEARCH_INITIAL_VALUES)}`;
+  const url = API_URLS.pageList;
   const response = await fetchData(
     url,
     DATA_TYPE.JSON,
+    {
+      method: 'POST',
+      body: JSON.stringify(search ?? SEARCH_INITIAL_VALUES),
+    },
   );
   response.result?.map((page) => createButtonDetailsPair(mmmEl, page));
   const section = createTag('div', { id: 'mep-section', class: 'section' });
