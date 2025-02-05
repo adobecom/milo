@@ -131,6 +131,12 @@ export class AHTryBuyWidget extends VariantLayout {
       flex-direction: row;
     }
 
+    :host([variant='ah-try-buy-widget']) .footer .spectrum-Button-label {
+        height: 16px;
+        padding-block: 2px;
+        white-space: nowrap;
+    }
+
     :host([variant='ah-try-buy-widget'][size='single']) .image {
       display: flex;
       width: 199px;

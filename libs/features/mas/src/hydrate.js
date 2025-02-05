@@ -139,12 +139,12 @@ export function processBackgroundImage(
 
 export function processPrices(fields, merchCard, pricesConfig) {
     if (fields.prices && pricesConfig) {
-        const headingM = createTag(
+        const priceSlot = createTag(
             pricesConfig.tag,
             { slot: pricesConfig.slot },
             fields.prices,
         );
-        merchCard.append(headingM);
+        merchCard.append(priceSlot);
     }
 }
 
@@ -277,13 +277,14 @@ function createSpectrumSwcButton(cta, aemFragmentMapping, isOutline, variant) {
     );
 
     const providers = { checkout: [] };
-    const settings = {}; // Customize as needed
+    const settings = {};
     const checkout = Checkout({ providers, settings });
     const options = checkout.collectCheckoutOptions({}, cta);
     const checkoutButton = CheckoutButton.createCheckoutButton(options, '');
 
     const hiddenContainer = document.createElement('div');
-    hiddenContainer.style.cssText = 'position: absolute; width: 0; height: 0; overflow: hidden; pointer-events: none;';
+    hiddenContainer.style.cssText =
+      'position: absolute; width: 0; height: 0; overflow: hidden; pointer-events: none;';
     document.body.appendChild(hiddenContainer);
     hiddenContainer.appendChild(checkoutButton);
 
@@ -291,14 +292,19 @@ function createSpectrumSwcButton(cta, aemFragmentMapping, isOutline, variant) {
     checkoutButton.requestUpdate?.();
 
     checkoutButton.onceSettled().then(() => {
+      if (hiddenContainer.parentNode) {
+        hiddenContainer.parentNode.removeChild(hiddenContainer);
+      }
+
       spectrumCta.addEventListener('click', (e) => {
         e.stopPropagation();
-        const clickEvent = new MouseEvent('click', {
-          view: window,
-          bubbles: true,
-          cancelable: true
-        });
-        checkoutButton.dispatchEvent(clickEvent);
+        if (typeof checkoutButton.clickHandler === 'function') {
+          checkoutButton.clickHandler(e);
+        } else if (checkoutButton.href && checkoutButton.href !== '#') {
+          window.location.href = checkoutButton.href;
+        } else {
+          console.warn('No checkout action is available.');
+        }
       });
     }).catch((error) => {
       console.error('Checkout button is not ready:', error);
