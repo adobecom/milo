@@ -997,7 +997,8 @@
   }
 
   .aside.split.media-top-tablet .split-image img,
-  .aside.split.media-bottom-tablet .split-image img {
+  .aside.split.media-bottom-tablet .split-image img,
+  .aside.split:is(.media-top-tablet, .media-bottom-tablet) .split-image video {
     position: relative;
     width: 100%;
     max-width: 100%;
