@@ -47,6 +47,7 @@ function decorateToolTip(icon) {
   const place = conf.pop()?.trim().toLowerCase() || 'right';
   icon.className = `icon icon-info milo-tooltip ${place}`;
   icon.setAttribute('tabindex', '0');
+  icon.setAttribute('aria-label', content);
   icon.setAttribute('role', 'button');
   wrapper.parentElement.replaceChild(icon, wrapper);
 }
