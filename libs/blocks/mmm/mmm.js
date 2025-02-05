@@ -443,8 +443,8 @@ async function createPageList(el, search) {
   el.replaceWith(mmmElContainer);
   main.append(section);
   createPaginationEl({
-    el: mmmElContainer,
     data: response,
+    el: mmmElContainer,
   });
   paginationEl?.classList.remove('mmm-hide');
   handlePaginationClicks();
@@ -472,7 +472,10 @@ function subscribeToSearchCriteriaChanges() {
 }
 
 export default async function init(el) {
-  await createPageList(el, new URLSearchParams(window.location.search));
+  await createPageList(
+    el,
+    Object.fromEntries(new URLSearchParams(window.location.search).entries()),
+  );
   createForm(el);
   subscribeToSearchCriteriaChanges();
   loadStyle('/libs/features/personalization/preview.css');
