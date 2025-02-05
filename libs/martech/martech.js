@@ -65,7 +65,6 @@ function calculateResponseTime(responseStart) {
 }
 
 export const getTargetAjoPersonalization = async (
-  // { handleAlloyResponse, ajo = false, config },
   { handleAlloyResponse, config },
 ) => {
   const responseStart = Date.now();
