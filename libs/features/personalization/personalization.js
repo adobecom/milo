@@ -1179,9 +1179,8 @@ const handleAlloyResponse = (response) => ((response.propositions || response.de
       manifestPlaceholders: content.manifestContent?.placeholders?.data,
       manifestInfo: content.manifestContent?.info.data,
       name: item.meta?.['activity.name'] || item.id,
-      //HARD CODED!!!!!!!! MUST BE REMOVED!!!
       variantLabel: (item.meta?.['experience.name'] && `target-${item.meta['experience.name']}`)
-        || content.experienceName || 'ajo-cc',
+        || content.experienceName,
       meta: item.meta,
     };
   })
