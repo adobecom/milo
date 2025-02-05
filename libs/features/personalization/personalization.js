@@ -224,15 +224,25 @@ const COMMANDS = {
     );
   },
   [COMMANDS_KEYS.updateAttribute]: (el, cmd) => {
-    console.log(cmd);
-    // if (!cmd.attribute || !cmd.content) return;
-    // try {
-    //   const simulateHref = new URL(cmd.content);
-    // } catch (error) {
-    //   console.error('Invalid updateAttribute URL:', cmd.content);
-    // }
-    // el.setAttribute(cmd.attribute, cmd.content);
-    console.log(el);
+    if (!cmd.attribute || !cmd.content) return;
+
+    if (cmd.attribute === 'href') {
+      try {
+        let url = cmd.content;
+        if (cmd.parameter !== undefined) {
+          url += `?${cmd.parameter}`;
+        }
+        if (!/^https?:\/\//i.test(url)) {
+          url = `http://${url}`;
+        }
+        const testContent = new URL(url);
+        el.setAttribute(cmd.attribute, testContent.href);
+      } catch (error) {
+        console.error('Invalid updateAttribute URL:', cmd.content);
+      }
+    } else {
+      el.setAttribute(cmd.attribute, cmd.content);
+    }
   },
 };
 
@@ -495,7 +505,12 @@ function getSelectedElements(sel, rootEl, forceRootEl, action) {
       return { els: [], modifiers: [] };
     }
   }
-  const { modifiedSelector, modifiers, attribute } = modifyNonFragmentSelector(selector, action);
+  const {
+    modifiedSelector,
+    modifiers,
+    attribute,
+    parameter,
+  } = modifyNonFragmentSelector(selector, action);
 
   let els;
   try {
@@ -507,7 +522,7 @@ function getSelectedElements(sel, rootEl, forceRootEl, action) {
   }
   if (modifiers.includes(FLAGS.all) || !els.length) return { els, modifiers };
   els = [els[0]];
-  return { els, modifiers, attribute };
+  return { els, modifiers, attribute, parameter };
 }
 
 const addHash = (url, newHash) => {
