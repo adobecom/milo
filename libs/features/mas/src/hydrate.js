@@ -9,6 +9,17 @@ export const ANALYTICS_LINK_ATTR = 'daa-ll';
 export const ANALYTICS_SECTION_ATTR = 'daa-lh';
 const SPECTRUM_BUTTON_SIZES = ['XL', 'L', 'M', 'S'];
 
+export function appendSlot(fieldName, fields, el, mapping, settings) {
+  const content = fields[fieldName] || settings && settings[fieldName];
+  if (content && mapping[fieldName]) {
+    const tag = createTag(
+      mapping[fieldName].tag,
+      { slot: mapping[fieldName]?.slot },
+      content,
+    );
+    el.append(tag);
+  }
+}
 export function processMnemonics(fields, merchCard, mnemonicsConfig) {
     const mnemonics = fields.mnemonicIcon?.map((icon, index) => ({
         icon,
@@ -110,26 +121,33 @@ export function processBackgroundImage(
     }
 }
 
-export function processPrices(fields, merchCard, pricesConfig) {
-    if (fields.prices && pricesConfig) {
-        const headingM = createTag(
-            pricesConfig.tag,
-            { slot: pricesConfig.slot },
-            fields.prices,
-        );
-        merchCard.append(headingM);
-    }
+export function processPrices(fields, merchCard, mapping, settings) {
+  if (!fields.prices || !mapping.prices) return;
+  const headingM = createTag(
+      mapping.prices.tag,
+      { slot: mapping.prices.slot },
+      fields.prices,
+  );
+  if (settings.priceLabel) {
+    headingM.append(settings.priceLabel);
+  }
+  merchCard.append(headingM);
 }
 
-export function processDescription(fields, merchCard, descriptionConfig) {
-    if (fields.description && descriptionConfig) {
-        const body = createTag(
-            descriptionConfig.tag,
-            { slot: descriptionConfig.slot },
-            fields.description,
-        );
-        merchCard.append(body);
-    }
+export function processDescriptionAndPromo(fields, merchCard, mapping) {
+  appendSlot('promoText', fields, merchCard, mapping);
+  appendSlot('description', fields, merchCard, mapping);
+}
+
+export function processStockOffersAndSecureLabel(fields, merchCard, aemFragmentMapping, settings) {
+  // for Stock Checkbox, presence flag is set on the card, label and osi for an offer are set in settings
+  if (fields.showStockCheckbox && aemFragmentMapping.stockOffer) {
+    merchCard.setAttribute('checkbox-label', settings.stockCheckboxLabel);
+    merchCard.setAttribute('stock-offer-osis', settings.stockOfferOsis);
+  }
+  if (settings.secureLabel && aemFragmentMapping.secureLabel) {
+    merchCard.setAttribute('secure-label', settings.secureLabel);
+  }
 }
 
 function createSpectrumCssButton(cta, aemFragmentMapping, isOutline, variant) {
@@ -269,25 +287,40 @@ export function updateLinksCSS(merchCard) {
     });
 }
 
+export function cleanup(merchCard) {
+  // remove all previous slotted content except the default slot
+  merchCard.querySelectorAll('[slot]').forEach((el) => {
+    el.remove();
+  });
+  const attributesToRemove = [
+  'checkbox-label',
+  'stock-offer-osis',
+  'secure-label',
+  'background-image',
+  'badge-background-color',
+  'badge-color',
+  'badge-text',
+  'size'
+  ];
+  attributesToRemove.forEach(attr => merchCard.removeAttribute(attr));
+  const classesToRemove = ['wide-strip', 'thin-strip'];
+  merchCard.classList.remove(...classesToRemove);
+  merchCard.removeAttribute(ANALYTICS_SECTION_ATTR);
+}
+
 export async function hydrate(fragment, merchCard) {
     const { fields } = fragment;
     const { variant } = fields;
     if (!variant) return;
     merchCard.id = fragment.id;
-    // remove all previous slotted content except the default slot
-    merchCard.querySelectorAll('[slot]').forEach((el) => {
-        el.remove();
-    });
-
-    merchCard.removeAttribute('background-image');
-    merchCard.removeAttribute('badge-background-color');
-    merchCard.removeAttribute('badge-color');
-    merchCard.removeAttribute('badge-text');
-    merchCard.removeAttribute('size');
-    merchCard.classList.remove('wide-strip');
-    merchCard.classList.remove('thin-strip');
-    merchCard.removeAttribute(ANALYTICS_SECTION_ATTR);
-
+    // temporary hardcode for plans. this data will be coming from settings (MWPW-166756)
+    const settings = {
+      stockCheckboxLabel: '{{stock-checkbox-label}}',
+      stockOfferOsis: '',
+      secureLabel: '{{secure-transaction}}',
+      priceLabel: '{{tax-exclusive}} {{annual-paid-monthly}}'
+    };
+    cleanup(merchCard);
     merchCard.variant = variant;
     await merchCard.updateComplete;
 
@@ -299,14 +332,15 @@ export async function hydrate(fragment, merchCard) {
     processSize(fields, merchCard, aemFragmentMapping.allowedSizes);
     processTitle(fields, merchCard, aemFragmentMapping.title);
     processSubtitle(fields, merchCard, aemFragmentMapping.subtitle);
-    processPrices(fields, merchCard, aemFragmentMapping.prices);
+    processPrices(fields, merchCard, aemFragmentMapping, settings);
     processBackgroundImage(
         fields,
         merchCard,
         aemFragmentMapping.backgroundImage,
         variant,
     );
-    processDescription(fields, merchCard, aemFragmentMapping.description);
+    processDescriptionAndPromo(fields, merchCard, aemFragmentMapping);
+    processStockOffersAndSecureLabel(fields, merchCard, aemFragmentMapping, settings);
     processCTAs(fields, merchCard, aemFragmentMapping, variant);
     processAnalytics(fields, merchCard);
     updateLinksCSS(merchCard);

@@ -17,6 +17,7 @@ merch-card[variant="plans"] [slot="quantity-select"] {
   padding: var(--consonant-merch-spacing-xs);
 }
 
+/* columns approach likely needs to be removed as legacy, but in a separate PR */
 .one-merch-card.plans,
 .two-merch-cards.plans,
 .three-merch-cards.plans,

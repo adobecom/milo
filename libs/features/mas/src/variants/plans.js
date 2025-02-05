@@ -2,9 +2,24 @@ import { VariantLayout } from "./variant-layout";
 import { html, css } from 'lit';
 import { CSS } from './plans.css.js';
 
+const AEM_FRAGMENT_MAPPING = {
+  title: { tag: 'p', slot: 'heading-xs' },
+  prices: { tag: 'p', slot: 'heading-m' },
+  promoText: {tag: 'p', slot: 'promo-text'},
+  description: { tag: 'div', slot: 'body-xs' },
+  stockOffer: true,
+  secureLabel: true,
+  ctas: { slot: 'footer', size: 'm' },
+};
+
 export class Plans extends VariantLayout {
   constructor(card) {
     super(card);
+  }
+
+    /* c8 ignore next 3 */
+  get aemFragmentMapping() {
+    return AEM_FRAGMENT_MAPPING;
   }
 
   getGlobalCSS() {
@@ -31,6 +46,8 @@ export class Plans extends VariantLayout {
             <slot name="icons"></slot>
             <slot name="heading-xs"></slot>
             <slot name="heading-m"></slot>
+            <slot name="annualPrice"></slot>
+            <slot name="priceLabel"></slot>
             <slot name="body-xxs"></slot>
             ${!this.promoBottom ? html`<slot name="promo-text"></slot><slot name="callout-content"></slot> ` : ''}
             <slot name="body-xs"></slot>

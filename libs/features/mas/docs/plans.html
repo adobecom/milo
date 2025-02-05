@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Plans Gallery</title>
+    <link rel="stylesheet" href="https://use.typekit.net/pps7abe.css">
+    <link rel="stylesheet" href="spectrum.css">
+    <link rel="stylesheet" href="styles.css">
+    <script type="module" src="../dist/mas.js"></script>
+    <script>
+      const ENVS = {
+        qa: 'qa-odin',
+        stage: 'stage-odin',
+        prod: 'odin',
+      };
+      const href = window.location.href;
+      const envOverride = new URL(href).searchParams.get('aem.env');
+      const env =
+        envOverride && ENVS[envOverride]
+          ? ENVS[envOverride]
+          : ENVS.prod;
+      const meta = document.createElement('meta');
+      meta.name = 'aem-base-url';
+      meta.content = `https://${env}.adobe.com`;
+      document.head.appendChild(meta);
+
+      const params = new URLSearchParams(document.location.search);
+      function toggleTheme(theme) {
+        document.body.className = 'spectrum spectrum--medium';
+        document.body.classList.add(`spectrum--${theme}`);
+        params.set('theme', theme);
+        history.replaceState(null, '', `${location.pathname}?${params}`);
+      }
+    </script>
+    <script type="module">
+      // mas-commerce-service
+      const masCommerceService = document.createElement('mas-commerce-service');
+      ['locale','language','env'].forEach((attribute) => {
+        const value = params.get(attribute);
+        if (value) masCommerceService.setAttribute(attribute, value);
+      });
+      masCommerceService.setAttribute('host-env', 'prod');
+      masCommerceService.setAttribute('lana-tags', 'ccd');
+      masCommerceService.setAttribute('lana-sample-rate', '100'); // optional, default value is set to '1'
+      document.head.appendChild(masCommerceService);
+    </script>
+  </head>
+  <body class="spectrum spectrum--medium spectrum--light">
+    <aside class="sidenav">
+      <a href="/libs/features/mas/docs/mas.html">Home</a>
+      <a href="/libs/features/mas/docs/mas.js.html">mas.js</a>
+      <a href="/libs/features/mas/docs/checkout-link.html">Checkout Link</a>
+      <a href="/libs/features/mas/docs/inline-price.html">Inline Price</a>
+      <a href="/libs/features/mas/docs/merch-card.html">Merch Card</a>
+      <a href="/libs/features/mas/docs/ccd.html">CCD Gallery</a>
+      <a href="/libs/features/mas/docs/benchmarks.html">Benchmarks</a>
+    </aside>
+
+    <main>
+      <div class="gallery-content">
+        <h1 id="plans-gallery" tabindex="-1">Plans Gallery</h1>
+        Switch Theme: <a class="spectrum-Link pectrum-Link--secondary" href="javascript:toggleTheme('darkest');">Darkest</a> OR <a class="spectrum-Link pectrum-Link--secondary" href="javascript:toggleTheme('light');">Light</a>
+
+        <h2 id="crd-mrch-plan-ind" tabindex="-1">Regular Plans Individual Cards <a class="header-anchor" href="#crd-mrch-plan-ind" title="Permalink to this heading">#</a></h2>
+        <div class="three-merch-cards">
+            <merch-card><aem-fragment fragment="1736f2c9-0931-401b-b3c0-fe87ff72ad38"></aem-fragment></merch-card>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      const theme = params.get('theme');
+      if (theme) toggleTheme(theme);
+    </script>
+  </body>
+</html>

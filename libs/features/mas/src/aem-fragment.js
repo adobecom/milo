@@ -213,7 +213,7 @@ export class AemFragment extends HTMLElement {
     }
 
     #transformAuthorData() {
-        const { fields, id, tags } = this.#rawData;
+        const { fields, id, tags, } = this.#rawData;
         this.#data = fields.reduce(
             (acc, { name, multiple, values }) => {
                 acc.fields[name] = multiple ? values : values[0];
