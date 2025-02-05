@@ -140,6 +140,20 @@ ENVS.local = {
 
 export const MILO_EVENTS = { DEFERRED: 'milo:deferred' };
 
+if (navigator.userAgent.includes('facebook')) {
+  document.querySelector('meta[property="og:title"]')?.setAttribute('content', 'Its facebook');
+  document.querySelector('meta[property="og:description"]')?.setAttribute('content', 'Its facebook D');
+  // document.write('<meta property="og:title" content="Facebook-Specific Title">');
+  // document.write('<meta property="og:description" content="This is a description only for Facebook.">');
+  console.log(' fb');
+} else {
+  document.querySelector('meta[property="og:title"]')?.setAttribute('content', 'Its not facebook');
+  document.querySelector('meta[property="og:description"]')?.setAttribute('content', 'Its not facebook D');
+  // document.write('<meta property="og:title" content="Not FB">');
+  // document.write('<meta property="og:description" content="Not FB Description">');
+  console.log('not fb');
+}
+
 const LANGSTORE = 'langstore';
 const PREVIEW = 'target-preview';
 const PAGE_URL = new URL(window.location.href);
