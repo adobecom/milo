@@ -10,31 +10,33 @@ export const CLIENT_ID_HLX_PAGE = '600a4521c23d4c7eb9c7b039bee534a0';
 export const CLIENT_ID_HLX_LIVE = '96e41871f28349e08b3562747a72dc75';
 
 export const getPdfConfig = (location) => {
+  const { host } = location;
   const { env, page, live, hlxPage, hlxLive } = getConfig();
-  const { host, search } = location;
-  const searchParams = new URLSearchParams(search);
-  const query = searchParams.get('env');
   let clientId = env.consumer?.pdfViewerClientId || env.pdfViewerClientId;
   let reportSuiteId = env.consumer?.pdfViewerReportSuite || env.pdfViewerReportSuite;
 
-  if (host.includes('.aem.page') || query === 'page') {
+  if (host.includes('.aem.page')) {
     clientId = page?.pdfViewerClientId || CLIENT_ID_PAGE;
     reportSuiteId = page?.pdfViewerReportSuite || env.pdfViewerReportSuite;
   }
 
-  if (host.includes('.aem.live') || query === 'live') {
+  if (host.includes('.aem.live')) {
     clientId = live?.pdfViewerClientId || CLIENT_ID_LIVE;
     reportSuiteId = live?.pdfViewerReportSuite || env.pdfViewerReportSuite;
   }
 
-  if (host.includes('.hlx.page') || query === 'hlxPage') {
-    clientId = hlxPage?.pdfViewerClientId || CLIENT_ID_HLX_PAGE;
-    reportSuiteId = hlxPage?.pdfViewerReportSuite || env.pdfViewerReportSuite;
+  if (host.includes('.hlx.page')) {
+    clientId = hlxPage?.pdfViewerClientId || env.consumer?.pdfViewerClientId || CLIENT_ID_HLX_PAGE;
+    reportSuiteId = hlxPage?.pdfViewerReportSuite
+      || env.consumer?.pdfViewerReportSuite
+      || env.pdfViewerReportSuite;
   }
 
-  if (host.includes('.hlx.live') || query === 'hlxLive') {
-    clientId = hlxLive?.pdfViewerClientId || CLIENT_ID_HLX_LIVE;
-    reportSuiteId = hlxLive?.pdfViewerReportSuite || env.pdfViewerReportSuite;
+  if (host.includes('.hlx.live')) {
+    clientId = hlxLive?.pdfViewerClientId || live?.pdfViewerClientId || CLIENT_ID_HLX_LIVE;
+    reportSuiteId = hlxLive?.pdfViewerReportSuite
+      || live?.pdfViewerReportSuite
+      || env.pdfViewerReportSuite;
   }
 
   return { clientId, reportSuiteId };

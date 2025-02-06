@@ -60,16 +60,49 @@ describe('PDF Viewer', () => {
   });
 
   describe('getPdfConfig', () => {
-    it('gets milo stage config', () => {
+    it('gets milo local config', () => {
       setConfig({});
       expect(getPdfConfig(window.location)).to.eql({ clientId: 'a76f1668fd3244d98b3838e189900a5e', reportSuiteId: undefined });
     });
 
+    it('gets milo page config', () => {
+      const location = { host: 'main--milo--adobecom.aem.page' };
+      setConfig({ clientEnv: 'stage' });
+      expect(getPdfConfig(location)).to.eql({
+        clientId: CLIENT_ID_PAGE,
+        reportSuiteId: undefined,
+      });
+    });
+
+    it('gets milo live config', () => {
+      const location = { host: 'main--milo--adobecom.aem.live' };
+      setConfig({ clientEnv: 'stage' });
+      expect(getPdfConfig(location)).to.eql({
+        clientId: CLIENT_ID_LIVE,
+        reportSuiteId: undefined,
+      });
+    });
+
+    it('gets milo hlxPage config', () => {
+      const location = { host: 'main--milo--adobecom.hlx.page' };
+      setConfig({ clientEnv: 'stage' });
+      expect(getPdfConfig(location)).to.eql({
+        clientId: CLIENT_ID_HLX_PAGE,
+        reportSuiteId: undefined,
+      });
+    });
+
+    it('gets milo hlxLive config', () => {
+      const location = { host: 'main--milo--adobecom.hlx.live' };
+      setConfig({ clientEnv: 'stage' });
+      expect(getPdfConfig(location)).to.eql({
+        clientId: CLIENT_ID_HLX_LIVE,
+        reportSuiteId: undefined,
+      });
+    });
+
     it('gets milo prod config', () => {
-      const location = {
-        host: 'milo.adobe.com',
-        search: '',
-      };
+      const location = { host: 'milo.adobe.com' };
       setConfig({ clientEnv: 'prod' });
       expect(getPdfConfig(location)).to.eql({ clientId: '3c0a5ddf2cc04d3198d9e48efc390fa9', reportSuiteId: undefined });
     });
@@ -83,10 +116,7 @@ describe('PDF Viewer', () => {
     });
 
     it('gets consumer page config', () => {
-      const location = {
-        host: 'main--bacom--adobecom.aem.page',
-        search: '',
-      };
+      const location = { host: 'main--bacom--adobecom.aem.page' };
       setConfig(CONSUMER_CONFIG);
       expect(getPdfConfig(location)).to.eql({
         clientId: 'pageID',
@@ -95,10 +125,7 @@ describe('PDF Viewer', () => {
     });
 
     it('gets consumer live config', () => {
-      const location = {
-        host: 'main--bacom--adobecom.aem.live',
-        search: '',
-      };
+      const location = { host: 'main--bacom--adobecom.aem.live' };
       setConfig(CONSUMER_CONFIG);
       expect(getPdfConfig(location)).to.eql({
         clientId: 'liveID',
@@ -107,10 +134,7 @@ describe('PDF Viewer', () => {
     });
 
     it('gets consumer hlxPage config', () => {
-      const location = {
-        host: 'main--bacom--adobecom.hlx.page',
-        search: '',
-      };
+      const location = { host: 'main--bacom--adobecom.hlx.page' };
       setConfig(CONSUMER_CONFIG);
       expect(getPdfConfig(location)).to.eql({
         clientId: 'hlxPageID',
@@ -119,10 +143,7 @@ describe('PDF Viewer', () => {
     });
 
     it('gets consumer hlxLive config', () => {
-      const location = {
-        host: 'main--bacom--adobecom.hlx.live',
-        search: '',
-      };
+      const location = { host: 'main--bacom--adobecom.hlx.live' };
       setConfig(CONSUMER_CONFIG);
       expect(getPdfConfig(location)).to.eql({
         clientId: 'hlxLiveID',
@@ -131,10 +152,7 @@ describe('PDF Viewer', () => {
     });
 
     it('gets consumer stage config', () => {
-      const location = {
-        host: 'business.stage.adobe.com',
-        search: '',
-      };
+      const location = { host: 'business.stage.adobe.com' };
       setConfig({ ...CONSUMER_CONFIG, clientEnv: 'stage' });
       expect(getPdfConfig(location)).to.eql({
         clientId: 'stageID',
@@ -143,62 +161,11 @@ describe('PDF Viewer', () => {
     });
 
     it('gets consumer prod config', () => {
-      const location = {
-        host: 'business.adobe.com',
-        search: '',
-      };
+      const location = { host: 'business.adobe.com' };
       setConfig({ ...CONSUMER_CONFIG, clientEnv: 'prod' });
       expect(getPdfConfig(location)).to.eql({
         clientId: 'prodID',
         reportSuiteId: 'prodReportSuite',
-      });
-    });
-
-    it('gets milo page config by query', () => {
-      const location = {
-        host: window.location.host,
-        search: '?env=page',
-      };
-      setConfig({});
-      expect(getPdfConfig(location)).to.eql({
-        clientId: CLIENT_ID_PAGE,
-        reportSuiteId: undefined,
-      });
-    });
-
-    it('gets milo live config by query', () => {
-      const location = {
-        host: window.location.host,
-        search: '?env=live',
-      };
-      setConfig({});
-      expect(getPdfConfig(location)).to.eql({
-        clientId: CLIENT_ID_LIVE,
-        reportSuiteId: undefined,
-      });
-    });
-
-    it('gets milo hlxPage config by query', () => {
-      const location = {
-        host: window.location.host,
-        search: '?env=hlxPage',
-      };
-      setConfig({});
-      expect(getPdfConfig(location)).to.eql({
-        clientId: CLIENT_ID_HLX_PAGE,
-        reportSuiteId: undefined,
-      });
-    });
-
-    it('gets milo hlxLive config by query', () => {
-      const location = {
-        host: window.location.host,
-        search: '?env=hlxLive',
-      };
-      setConfig({});
-      expect(getPdfConfig(location)).to.eql({
-        clientId: CLIENT_ID_HLX_LIVE,
-        reportSuiteId: undefined,
       });
     });
   });
