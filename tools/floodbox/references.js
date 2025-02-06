@@ -9,7 +9,7 @@ class References {
     this.htmlPaths = htmlPaths;
 
     // eslint-disable-next-line no-useless-escape
-    this.referencePattern = new RegExp(`https?:\/\/[^/]*--${repo}--${org}\\.[^/]*(?:page|live)(\/(?:fragments\/.*|.*\\.(?:pdf|svg|json)))`);
+    this.referencePattern = new RegExp(`https?:\/\/[^/]*--${repo}--${org}\\.[^/]*(?:page|live)(\/.*(?:fragments\/|\\.(?:pdf|svg|json))[^?]*)`);
     this.requestHandler = new RequestHandler(accessToken);
   }
 
