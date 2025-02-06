@@ -180,6 +180,14 @@ function getManifestListDomAndParameter(mepConfig) {
     const variantNamesArray = typeof variantNames === 'string' ? variantNames.split('||') : variantNames;
     let options = '';
     let isSelected = '';
+    if (!variantNames.includes(selectedVariantName)) {
+      isSelected = 'selected';
+      manifestParameter.push(`${editUrl}--default`);
+    }
+    options += `<option name="${editPath}${pageId}" value="default" 
+    id="${editPath}${pageId}--default" data-manifest="${editPath}" ${isSelected}>
+    <label for="${editPath}${pageId}--default">Default (control)</option>`;
+    isSelected = '';
     variantNamesArray.forEach((variant) => {
       isSelected = '';
       if (variant === selectedVariantName) {
@@ -190,14 +198,6 @@ function getManifestListDomAndParameter(mepConfig) {
       id="${editPath}${pageId}--${variant}" data-manifest="${editPath}" ${isSelected}>
       <label for="${editPath}${pageId}--${variant}">${variant}</option>`;
     });
-    isSelected = '';
-    if (!variantNames.includes(selectedVariantName)) {
-      isSelected = 'selected';
-      manifestParameter.push(`${editUrl}--default`);
-    }
-    options += `<option name="${editPath}${pageId}" value="default" 
-    id="${editPath}${pageId}--default" data-manifest="${editPath}" ${isSelected}>
-    <label for="${editPath}${pageId}--default">Default (control)</option>`;
     manifestList += `<div class="mep-section" title="Manifest location: ${editUrl}&#013;Analytics manifest name: ${analyticsTitle || 'N/A for this manifest type'}">
       <div class="mep-manifest-info">  
           <a class="mep-edit-manifest" href="${editUrl}" target="_blank" title="Open manifest">
