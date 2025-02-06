@@ -69,7 +69,6 @@ describe('preview feature', () => {
     const event = new Event(MILO_EVENTS.DEFERRED);
     document.dispatchEvent(event);
     expect(document.querySelectorAll('.mep-preview-overlay').length).to.equal(1);
-    expect(document.querySelector('.mep-popup-header h4').textContent).to.equal('0 Manifest(s) found');
   });
   it('expand and close panel, expand and close advance, remove button', () => {
     expect(document.querySelector('.mep-preview-overlay > div').className).to.equal('mep-hidden');
@@ -77,10 +76,6 @@ describe('preview feature', () => {
     expect(document.querySelector('.mep-preview-overlay > div').className).to.equal('');
     document.querySelector('.mep-badge').click();
     expect(document.querySelector('.mep-preview-overlay > div').className).to.equal('mep-hidden');
-    document.querySelector('.mep-toggle-advanced').click();
-    expect(document.querySelector('.mep-advanced-container').classList.contains('mep-advanced-open')).to.be.true;
-    document.querySelector('.mep-toggle-advanced').click();
-    expect(document.querySelector('.mep-advanced-container').classList.contains('mep-advanced-open')).to.be.false;
     document.querySelector('.mep-close').click();
     expect(document.querySelectorAll('.mep-preview-overlay').length).to.equal(0);
   });
@@ -89,7 +84,6 @@ describe('preview feature', () => {
     setConfig(config);
     await decoratePreviewMode();
     expect(document.querySelectorAll('.mep-preview-overlay').length).to.equal(1);
-    expect(document.querySelector('.mep-popup-header h4').textContent).to.equal(`${config.mep.experiments.length} Manifest(s) found`);
   });
   it('adds highlights', () => {
     expect(document.querySelector('[data-path="/fragments/fragmentreplaced"]').getAttribute('data-manifest-id')).to.equal('selected-example.json');
@@ -100,8 +94,8 @@ describe('preview feature', () => {
     expect(document.querySelector('merch-card').getAttribute('data-manifest-id')).to.equal('selected-example.json');
   });
   it('preselects form inputs', () => {
-    expect(document.querySelector('input[name*="/homepage/fragments/mep/selected-example.json"][value="target-smb"]').getAttribute('checked')).to.equal('checked');
-    expect(document.querySelector('input[name*="/homepage/fragments/mep/default-selected.json"][value="default"]').getAttribute('checked')).to.equal('checked');
+    expect(document.querySelector('option[name*="/homepage/fragments/mep/selected-example.json"][value="target-smb"]').getAttribute('selected')).to.equal('');
+    expect(document.querySelector('option[name*="/homepage/fragments/mep/default-selected.json"][value="default"]').getAttribute('selected')).to.equal('');
     expect(document.querySelector('input#mepHighlightCheckbox').getAttribute('checked')).to.equal('checked');
   });
   it('updates preview button', () => {
