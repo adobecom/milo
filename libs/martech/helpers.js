@@ -4,6 +4,7 @@ const KNDCTR_COOKIE_KEYS = [
   'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_identity',
   'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_cluster',
 ];
+
 const DATA_STREAM_IDS_PROD = {
   firstVisitNoConsent: '57c20bab-94c3-425e-95cb-0b9948b1fdd4',
   default: '913eac4d-900b-45e8-9ee7-306216765cd2',
