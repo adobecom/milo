@@ -101,6 +101,19 @@ describe('Tooltip Integration with loadIcons', () => {
     expect(tooltipContent.style.visibility).to.equal('');
   });
 
+  it('Tooltip should be visible when hovering (focused)', async () => {
+    wrapper = createTag('em', {}, 'top|This is a tooltip text.');
+    wrapper.appendChild(iconTooltip);
+    document.body.appendChild(wrapper);
+    await loadIcons([iconTooltip], config);
+    const tooltip = document.querySelector('.milo-tooltip');
+
+    expect(tooltip).to.exist;
+    expect(tooltip.dataset.tooltip).to.equal('This is a tooltip text.');
+    tooltip.focus();
+    expect(document.activeElement).to.equal(tooltip);
+  });
+
   it('Creates a tooltip without default alignment (left)', () => {
     const customTooltip = createTag('span', { class: 'icon icon-tooltip milo-tooltip left', 'data-tooltip': 'Left-aligned tooltip' });
     document.body.appendChild(customTooltip);
