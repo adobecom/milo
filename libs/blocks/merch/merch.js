@@ -490,15 +490,7 @@ export async function openModal(e, url, offerType, hash, extraOptions, el) {
     const prevHash = window.location.hash.replace('#', '') === hash ? '' : window.location.hash;
     window.location.hash = hash;
     window.addEventListener('milo:modal:closed', () => {
-      if (prevHash === '') {
-        window.history.pushState(
-          {},
-          document.title,
-          `${window.location.pathname}${window.location.search}`,
-        );
-      } else {
-        window.history.pushState({}, document.title, `#${prevHash}`);
-      }
+      window.history.pushState({}, document.title, prevHash !== '' ? `#${prevHash}` : `${window.location.pathname}${window.location.search}`);
     }, { once: true });
   }
   if (isInternalModal(url)) {
@@ -507,7 +499,7 @@ export async function openModal(e, url, offerType, hash, extraOptions, el) {
   } else {
     const isThreeInOneModal = Object.values(MODAL_TYPE_3_IN_1).includes(el?.getAttribute('data-modal-type')) && el?.href;
     if (isThreeInOneModal) {
-      const { default: openThreeInOneModal } = await import('./threeInOne.js');
+      const { default: openThreeInOneModal } = await import('./three-in-one.js');
       modal = await openThreeInOneModal(el);
     } else {
       modal = await openExternalModal(url, getModal, extraOptions, el);
