@@ -226,7 +226,7 @@ const parseContent = async (el, merchCard) => {
   ];
 
   innerElements.forEach((element) => {
-    if (!element.innerHTML) return;
+    if (!element.innerHTML.trim()) return;
     let { tagName } = element;
     if (isHeadingTag(tagName)) {
       let slotName = SLOT_MAP[merchCard.variant]?.[tagName] || SLOT_MAP_DEFAULT[tagName];
