@@ -391,7 +391,7 @@
   inline-size: var(--grid-container-width);
 }
 
-.tabs.radio div[role="tablist"] .tab-list-container {
+.tabs.radio div[role="tablist"].tabList .tab-list-container {
   background: var(--tabs-radio-bg);
   border: 1px solid var(--tabs-border-color);
   border-radius: 24px;
@@ -436,6 +436,19 @@
   margin-block-end: var(--spacing-xs);
 }
 
+.tabs.radio div[role="tablist"] button,
+.tabs.radio div[role="tablist"] button[aria-selected="true"],
+.tabs.radio div[role="tablist"] button:hover,
+.tabs.radio div[role="tablist"] button:focus,
+.tabs.radio div[role="tablist"] button[aria-selected="true"]:focus,
+.tabs.radio div[role="tablist"] button:focus-visible {
+  background: unset;
+  border-radius: unset;
+  outline: revert;
+  outline-offset: revert;
+  margin-inline-start: revert;
+}
+
 /* Section Metadata */
 .tabs-background-transparent .tabs,
 .tabs-background-transparent .tabs div[role="tablist"],
@@ -462,7 +475,7 @@
 }
 
 @media screen and (min-width: 600px) {
-  .tabs.radio div[role="tablist"] .tab-list-container {
+  .tabs.radio div[role="tablist"].tabList .tab-list-container {
     flex-direction: row;
     align-items: center;
     border-radius: 40px;
