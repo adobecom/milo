@@ -694,6 +694,7 @@ export function decorateLinks(el) {
   const { hostname, href } = window.location;
   const links = [...anchors].reduce((rdx, a) => {
     appendHtmlToLink(a);
+    if (a.href.includes('http:')) a.setAttribute('data-http-link', 'true');
     a.href = localizeLink(a.href);
     decorateSVG(a);
     if (a.href.includes('#_blank')) {
@@ -1022,7 +1023,7 @@ export async function loadIms() {
       return;
     }
     const [unavMeta, ahomeMeta] = [getMetadata('universal-nav')?.trim(), getMetadata('adobe-home-redirect')];
-    const defaultScope = `AdobeID,openid,gnav${unavMeta && unavMeta !== 'off' ? ',pps.read,firefly_api,additional_info.roles,read_organizations' : ''}`;
+    const defaultScope = `AdobeID,openid,gnav${unavMeta && unavMeta !== 'off' ? ',pps.read,firefly_api,additional_info.roles,read_organizations,account_cluster.read' : ''}`;
     const timeout = setTimeout(() => reject(new Error('IMS timeout')), imsTimeout || 5000);
     window.adobeid = {
       client_id: imsClientId,
@@ -1128,6 +1129,7 @@ async function checkForPageMods() {
     || mepHighlight || mepButton || mepParam === '' || xlg)) return;
 
   const enablePersV2 = enablePersonalizationV2();
+  const hybridPersEnabled = getMepEnablement('hybrid-pers');
   if ((target || xlg) && enablePersV2) {
     const params = new URL(window.location.href).searchParams;
     calculatedTimeout = parseInt(params.get('target-timeout'), 10)
@@ -1140,7 +1142,7 @@ async function checkForPageMods() {
       const now = performance.now();
       performance.mark('interaction-start');
       const data = await loadAnalyticsAndInteractionData(
-        { locale, env: getEnv({})?.name, calculatedTimeout },
+        { locale, env: getEnv({})?.name, calculatedTimeout, hybridPersEnabled },
       );
       performance.mark('interaction-end');
       performance.measure('total-time', 'interaction-start', 'interaction-end');
@@ -1169,10 +1171,13 @@ async function checkForPageMods() {
     targetInteractionPromise,
     calculatedTimeout,
     enablePersV2,
+    hybridPersEnabled,
   });
 }
 
 async function loadPostLCP(config) {
+  const { default: loadFavIcon } = await import('./favicon.js');
+  loadFavIcon(createTag, getConfig(), getMetadata);
   await decoratePlaceholders(document.body.querySelector('header'), config);
   const sk = document.querySelector('aem-sidekick, helix-sidekick');
   if (sk) import('./sidekick-decorate.js').then((mod) => { mod.default(sk); });
@@ -1320,8 +1325,6 @@ async function documentPostSectionLoading(config) {
     addRichResults(richResults, { createTag, getMetadata });
   }
   loadFooter();
-  const { default: loadFavIcon } = await import('./favicon.js');
-  loadFavIcon(createTag, getConfig(), getMetadata);
   if (config.experiment?.selectedVariant?.scripts?.length) {
     config.experiment.selectedVariant.scripts.forEach((script) => loadScript(script));
   }
