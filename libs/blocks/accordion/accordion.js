@@ -64,7 +64,7 @@ function handleClick(el, dd, num) {
 }
 
 function defalutOpen(accordion) {
-  handleClick(accordion.querySelector('.accordion-trigger'), accordion.querySelector('dd'), 1, 0);
+  handleClick(accordion.querySelector('.accordion-trigger'), accordion.querySelector('.descr-details'), 1, 0);
 }
 
 function createItem(accordion, id, heading, num, edit) {
@@ -87,10 +87,10 @@ function createItem(accordion, id, heading, num, edit) {
 
   const para = panel?.querySelector('p');
   const text = para ? para.textContent : panel?.textContent;
-  const dtAttrs = hTag ? {} : { role: 'heading', 'aria-level': 3 };
+  const dtAttrs = hTag ? { class: 'descr-term' } : { role: 'heading', 'aria-level': 3, class: 'descr-term' };
   const dtHtml = hTag ? createTag(hTag.tagName, { class: 'accordion-heading' }, button) : button;
-  const dt = createTag('dt', dtAttrs, dtHtml);
-  const dd = createTag('dd', { 'aria-labelledby': triggerId, id: panelId, hidden: true }, panel);
+  const dt = createTag('div', dtAttrs, dtHtml);
+  const dd = createTag('div', { 'aria-labelledby': triggerId, id: panelId, hidden: true, class: 'descr-details' }, panel);
   const dm = createTag('div', { class: 'media-p' });
 
   if (edit) {
@@ -118,7 +118,7 @@ function populateMedia(accordion, id, num, collection) {
 
 export default function init(el) {
   const id = getUniqueId(el);
-  const accordion = createTag('dl', { class: 'accordion', id: `accordion-${id}`, role: 'presentation' });
+  const accordion = createTag('div', { class: 'descr-list accordion', id: `accordion-${id}`, role: 'presentation' });
   const accordionMedia = createTag('div', { class: 'accordion-media', id: `accordion-media-${id}` });
   const isSeo = el.classList.contains('seo');
   const isEditorial = el.classList.contains('editorial');

@@ -18,7 +18,7 @@ describe('Accordion', () => {
 
   it('Renders with accordion class', async () => {
     document.head.innerHTML = await readFile({ path: './mocks/body.html' });
-    const accordionDl = document.querySelector('dl.accordion');
+    const accordionDl = document.querySelector('.descr-list.accordion');
     expect(accordionDl).to.exist;
   });
 
@@ -31,7 +31,7 @@ describe('Accordion', () => {
     expect(script).to.exist;
 
     // handleClick()
-    const firstAccordionButton = document.body.querySelector('dt button');
+    const firstAccordionButton = document.body.querySelector('.descr-term button');
     expect(firstAccordionButton.getAttribute('aria-expanded')).to.equal('false');
     expect(firstAccordionButton.getAttribute('daa-ll')).to.equal('open-1--What if my dough didn t rise');
     firstAccordionButton.click();

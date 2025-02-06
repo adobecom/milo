@@ -17,13 +17,13 @@ describe('Accordion', () => {
 
   it('Load editorial body', async () => {
     document.head.innerHTML = await readFile({ path: './mocks/editorial-body.html' });
-    const accordionDl = document.querySelector('dl.accordion');
+    const accordionDl = document.querySelector('.descr-list.accordion');
     expect(accordionDl).to.exist;
   });
 
   it('Runs all basic functions of the accordion', async () => {
     // handleClick()
-    const firstAccordionButton = document.body.querySelector('dt button');
+    const firstAccordionButton = document.body.querySelector('.descr-term button');
     console.log('firstAccordionButton');
     console.log(firstAccordionButton);
     expect(firstAccordionButton.getAttribute('aria-expanded')).to.equal('true');
