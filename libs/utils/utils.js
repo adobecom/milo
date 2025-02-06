@@ -124,7 +124,7 @@ const ENVS = {
     adminconsole: 'stage.adminconsole.adobe.com',
     account: 'stage.account.adobe.com',
     edgeConfigId: '8d2805dd-85bf-4748-82eb-f99fdad117a6',
-    pdfViewerClientId: '600a4521c23d4c7eb9c7b039bee534a0',
+    pdfViewerClientId: 'a76f1668fd3244d98b3838e189900a5e',
   },
   prod: {
     name: 'prod',

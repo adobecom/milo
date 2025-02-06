@@ -1,23 +1,40 @@
 /* global AdobeDC */
 
-import { createTag, getConfig, loadScript, SLD } from '../../utils/utils.js';
+import { createTag, getConfig, loadScript } from '../../utils/utils.js';
 
 const API_SOURCE_URL = 'https://acrobatservices.adobe.com/view-sdk/viewer.js';
 const PDF_RENDER_DIV_ID = 'adobe-dc-view';
-const CLIENT_ID_LIVE = '96e41871f28349e08b3562747a72dc75';
+export const CLIENT_ID_PAGE = '762c730cf6184796bcd02ff8b79ce6fc';
+export const CLIENT_ID_LIVE = 'cf650e2632384d8fb33d82d2997804d8';
+export const CLIENT_ID_HLX_PAGE = '600a4521c23d4c7eb9c7b039bee534a0';
+export const CLIENT_ID_HLX_LIVE = '96e41871f28349e08b3562747a72dc75';
 
-export const getPdfConfig = () => {
-  const { env, live } = getConfig();
-  const { host, href } = window.location;
-  const location = new URL(href);
-  const query = location.searchParams.get('env');
+export const getPdfConfig = (location) => {
+  const { env, page, live, hlxPage, hlxLive } = getConfig();
+  const { host, search } = location;
+  const searchParams = new URLSearchParams(search);
+  const query = searchParams.get('env');
   let clientId = env.consumer?.pdfViewerClientId || env.pdfViewerClientId;
   let reportSuiteId = env.consumer?.pdfViewerReportSuite || env.pdfViewerReportSuite;
 
-  if (host.includes(`${SLD}.live`) || query === 'live') {
-    /* c8 ignore next 2 */
+  if (host.includes('.aem.page') || query === 'page') {
+    clientId = page?.pdfViewerClientId || CLIENT_ID_PAGE;
+    reportSuiteId = page?.pdfViewerReportSuite || env.pdfViewerReportSuite;
+  }
+
+  if (host.includes('.aem.live') || query === 'live') {
     clientId = live?.pdfViewerClientId || CLIENT_ID_LIVE;
     reportSuiteId = live?.pdfViewerReportSuite || env.pdfViewerReportSuite;
+  }
+
+  if (host.includes('.hlx.page') || query === 'hlxPage') {
+    clientId = hlxPage?.pdfViewerClientId || CLIENT_ID_HLX_PAGE;
+    reportSuiteId = hlxPage?.pdfViewerReportSuite || env.pdfViewerReportSuite;
+  }
+
+  if (host.includes('.hlx.live') || query === 'hlxLive') {
+    clientId = hlxLive?.pdfViewerClientId || CLIENT_ID_HLX_LIVE;
+    reportSuiteId = hlxLive?.pdfViewerReportSuite || env.pdfViewerReportSuite;
   }
 
   return { clientId, reportSuiteId };
@@ -37,7 +54,7 @@ const init = async (a) => {
 
   await loadScript(API_SOURCE_URL);
   const fileName = decodeURI(url?.split('/').pop());
-  const { clientId, reportSuiteId } = getPdfConfig();
+  const { clientId, reportSuiteId } = getPdfConfig(window.location);
 
   /* c8 ignore next 42 */
   const handleViewSdkReady = () => {
