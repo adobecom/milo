@@ -125,15 +125,27 @@ export function processBackgroundImage(
             );
             return;
         }
-        merchCard.shadowRoot.append(
-            createTag(
-                backgroundImageConfig.tag,
-                { slot: backgroundImageConfig.slot,
-                    class: 'image',
-                 },
-                createTag('img', imgAttributes),
-            ),
-        );
+        if (merchCard.spectrum === 'swc') {
+            merchCard.shadowRoot.append(
+                createTag(
+                    backgroundImageConfig.tag,
+                    { slot: backgroundImageConfig.slot,
+                        class: 'image',
+                    },
+                    createTag('img', imgAttributes),
+                ),
+            );
+        } else {
+          merchCard.append(
+              createTag(
+                  backgroundImageConfig.tag,
+                  { slot: backgroundImageConfig.slot,
+                  },
+                  createTag('img', imgAttributes),
+              ),
+          );
+        }
+
     }
 }
 
@@ -168,7 +180,7 @@ export function processDescription(fields, merchCard, descriptionConfig) {
     }
 }
 
-function getTruncatedTextData(text, limit, withSuffix = true) {
+export function getTruncatedTextData(text, limit, withSuffix = true) {
     const cleanText = clearTags(text);
     if (cleanText.length <= limit) return [text, cleanText];
 
@@ -328,7 +340,10 @@ export function processCTAs(fields, merchCard, aemFragmentMapping, variant) {
 
         const ctas = [...footer.querySelectorAll('a')].map((cta) => {
             const strong = cta.parentElement.tagName === 'STRONG';
-            if (merchCard.consonant) return processConsonantButton(cta, strong);
+            if (merchCard.consonant) {
+                return processConsonantButton(cta, strong);
+            }
+
             const checkoutLinkStyle =
                 CHECKOUT_STYLE_PATTERN.exec(cta.className)?.[0] ?? 'accent';
             const isAccent = checkoutLinkStyle.includes('accent');
@@ -336,9 +351,11 @@ export function processCTAs(fields, merchCard, aemFragmentMapping, variant) {
             const isSecondary = checkoutLinkStyle.includes('secondary');
             const isOutline = checkoutLinkStyle.includes('-outline');
             const isLink = checkoutLinkStyle.includes('-link');
+
             if (isLink) {
                 return cta;
             }
+
             let variant;
             if (isAccent || strong) {
                 variant = 'accent';
@@ -347,25 +364,21 @@ export function processCTAs(fields, merchCard, aemFragmentMapping, variant) {
             } else if (isSecondary) {
                 variant = 'secondary';
             }
-            if (merchCard.spectrum === 'swc')
-                return createSpectrumSwcButton(
-                    cta,
-                    aemFragmentMapping,
-                    isOutline,
-                    variant,
-                );
-            return createSpectrumCssButton(
-                cta,
-                aemFragmentMapping,
-                isOutline,
-                variant,
-            );
+
+            return merchCard.spectrum === 'swc'
+                ? createSpectrumSwcButton(cta, aemFragmentMapping, isOutline, variant)
+                : createSpectrumCssButton(cta, aemFragmentMapping, isOutline, variant);
         });
 
         footer.innerHTML = '';
         footer.append(...ctas);
-        merchCard.shadowRoot.append(footer);
-        footer.classList.add('footer');
+
+        if (merchCard.spectrum === 'swc') {
+            merchCard.shadowRoot.append(footer);
+            footer.classList.add('footer');
+        } else {
+            merchCard.append(footer);
+        }
     }
 }
 
