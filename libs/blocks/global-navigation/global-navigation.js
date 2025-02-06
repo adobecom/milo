@@ -99,6 +99,7 @@ export const CONFIG = {
                 break;
             }
           },
+          ...getConfig().unav?.profile?.messageEventListener,
           componentLoaderConfig: {
             config: {
               enableLocalSection: true,
