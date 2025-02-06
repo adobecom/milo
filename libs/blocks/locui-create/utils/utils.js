@@ -1,5 +1,4 @@
 import getServiceConfig from '../../../utils/service-config.js';
-import { SLD } from '../../../utils/utils.js';
 import { origin } from '../../locui/utils/franklin.js';
 import { getInitialName } from '../input-urls/index.js';
 import {
@@ -135,14 +134,8 @@ export function getProjectByParams(searchParams) {
 export function validateOrigin(urlStr) {
   try {
     const url = new URL(urlStr);
-    if (SLD === 'hlx') {
-      return url.origin === origin;
-    }
-    if (SLD === 'aem') {
-      const origins = [url.origin.replace('.aem.', '.hlx.'), url.origin.replace('.hlx.', '.aem.')];
-      return origins.includes(origin);
-    }
-    return false;
+    const origins = [url.origin.replace('.aem.', '.hlx.'), url.origin.replace('.hlx.', '.aem.')];
+    return origins.includes(origin);
   } catch {
     return false;
   }
