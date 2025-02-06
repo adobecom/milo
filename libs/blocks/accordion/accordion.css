@@ -36,6 +36,7 @@ dl.accordion {
   box-sizing: content-box;
   cursor: pointer;
   margin-bottom: 16px;
+  font-family: var(--body-font-family);
 }
 
 .accordion-expand-all button.disabled {
