@@ -231,10 +231,12 @@ const COMMANDS = {
     if (attribute === 'href') {
       if (parameter) {
         const href = el.getAttribute('href');
-        const checkParameter = new URLSearchParams(new URL(href).search);
-        const character = checkParameter.has(parameter) ? '&' : '?';
+        const url = new URL(href);
+        const parameters = new URLSearchParams(url.search);
 
-        value = `${href}${character}${parameter}=${cmd.content}`;
+        parameters.set(parameter, cmd.content);
+        url.search = parameters.toString();
+        value = url.toString();
       } else {
         try {
           const href = /^https?:\/\//i.test(cmd.content) ? cmd.content : `http://${cmd.content}`;
