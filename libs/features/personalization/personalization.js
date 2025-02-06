@@ -1121,7 +1121,7 @@ export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => 
   if (mepParam && mepParam !== 'off') {
     const persManifestPaths = persManifests.map((manifest) => {
       const { manifestPath } = manifest;
-      if (manifestPath.startsWith('/')) return manifestPath;
+      if (manifestPath?.startsWith('/')) return manifestPath;
       try {
         const url = new URL(manifestPath);
         return url.pathname;

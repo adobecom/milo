@@ -238,6 +238,10 @@
     width: fit-content;
   }
 
+  .dialog-modal .embed-vimeo {
+    min-width: 80vw;
+  }
+
   .dialog-modal.tall-video {
     --modal-width-var: 50vw;
 
