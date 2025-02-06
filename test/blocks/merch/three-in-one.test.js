@@ -2,7 +2,7 @@ import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
 import sinon from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
-import openThreeInOneModal, { handle3in1IFrameEvents, MSG_SUBTYPE } from '../../../libs/blocks/merch/threeInOne.js';
+import openThreeInOneModal, { handle3in1IFrameEvents, MSG_SUBTYPE } from '../../../libs/blocks/merch/three-in-one.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/threeInOne.html' });
 
