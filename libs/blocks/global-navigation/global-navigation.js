@@ -436,7 +436,7 @@ class Gnav {
 
     localNavItems.forEach((elem, idx) => {
       const clonedItem = elem.cloneNode(true);
-      const link = clonedItem.querySelector('a') || localNavItems[0]?.querySelector('button');
+      const link = clonedItem.querySelector('a') || clonedItem.querySelector('button');
 
       if (idx === 0) {
         localNav.querySelector('.feds-localnav-title').innerText = title.trim();
