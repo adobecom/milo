@@ -351,9 +351,7 @@ class Footer {
 
     // Decorate copyright element
     const currentYear = new Date().getFullYear();
-    copyrightElem.replaceWith(toFragment`<span class="feds-footer-copyright">
-        Copyright © ${currentYear} ${copyrightElem.textContent}
-      </span>`);
+    copyrightElem.remove();
 
     // Add Ad Choices icon
     const adChoicesElem = privacyContent.querySelector('a[href*="#interest-based-ads"]');
@@ -362,7 +360,10 @@ class Footer {
       </svg>`);
 
     this.elements.legal = toFragment`<div class="feds-footer-legalWrapper" daa-lh="Legal"></div>`;
-
+    this.elements.legal.append(copyrightElem);
+    copyrightElem.replaceWith(toFragment`<span class="feds-footer-copyright">
+      Copyright © ${currentYear} ${copyrightElem.textContent}
+    </span>`);
     while (privacyContent.children.length) {
       const privacySection = privacyContent.firstElementChild;
       privacySection.classList.add('feds-footer-privacySection');
@@ -371,6 +372,13 @@ class Footer {
         link.setAttribute('daa-ll', getAnalyticsValue(link.textContent, index + 1));
       });
       this.elements.legal.append(privacySection);
+
+      const privacySectionDiv = document.createElement('div');
+      [...privacySection.attributes].forEach((attr) => {
+        privacySectionDiv.setAttribute(attr.name, attr.value);
+      });
+      privacySectionDiv.innerHTML = privacySection.innerHTML.replace(/( \/ )/g, '<span class="feds-footer-privacyLink-divider">$1</span>');;
+      privacySection.parentNode.replaceChild(privacySectionDiv, privacySection);
     }
 
     return this.elements.legal;
