@@ -2,7 +2,7 @@ import { decorateAnchorVideo } from '../../utils/decorate.js';
 
 export default function init(a) {
   a.classList.add('hide-video');
-  const bgBlocks = ['aside', 'marquee', 'hero-marquee'];
+  const bgBlocks = ['aside', 'marquee', 'hero-marquee', 'long-from'];
   if (a.href.includes('.mp4') && bgBlocks.some((b) => a.closest(`.${b}`))) {
     a.classList.add('hide');
     if (!a.parentNode) return;
