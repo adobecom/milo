@@ -217,7 +217,6 @@ function getManifestListDomAndParameter(mepConfig) {
               <div>${source}</div>
               ${manifest.lastSeen ? `<div>${formatDate(new Date(manifest.lastSeen))}</div>` : ''}
               ${eventStart && eventEnd ? `<div>${disabled ? 'inactive' : 'active'}</div>` : ''}
-        
             </div>
           </div>
           ${eventStart && eventEnd ? `<div class="mep-columns">
@@ -292,8 +291,7 @@ export function getMepPopup(mepConfig, isMmm = false) {
         ${page.lastSeen ? `<div>${formatDate(new Date(page.lastSeen))}</div>` : ''}
       </div>
     </div>
-        ${page.lastSeen ? `<div>${formatDate(new Date(page.lastSeen))}</div>` : ''}
-    ${!isMmm ? '<a href="https://main--milo--adobecom.aem.page/docs/authoring/features/mmm" title="MMM - Mep Manifest Manager" target="_blank" >MMM - MEP Manifest Manager</a>' : ''}
+        ${!isMmm ? '<a href="https://main--milo--adobecom.aem.page/docs/authoring/features/mmm" title="MMM - Mep Manifest Manager" target="_blank" >MMM - MEP Manifest Manager</a>' : ''}
     `;
   mepOptions.innerHTML = `
     <h6 class="mep-manifest-page-info-title">Options</h6>
