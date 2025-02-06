@@ -7,6 +7,7 @@ const AEM_FRAGMENT_MAPPING = {
   prices: { tag: 'p', slot: 'heading-m' },
   promoText: {tag: 'p', slot: 'promo-text'},
   description: { tag: 'div', slot: 'body-xs' },
+  callout: {tag: 'div', slot: 'callout-content'},
   stockOffer: true,
   secureLabel: true,
   ctas: { slot: 'footer', size: 'm' },
@@ -49,9 +50,9 @@ export class Plans extends VariantLayout {
             <slot name="annualPrice"></slot>
             <slot name="priceLabel"></slot>
             <slot name="body-xxs"></slot>
-            ${!this.promoBottom ? html`<slot name="promo-text"></slot><slot name="callout-content"></slot> ` : ''}
+            <slot name="promo-text"></slot>
             <slot name="body-xs"></slot>
-            ${this.promoBottom ? html`<slot name="promo-text"></slot><slot name="callout-content"></slot> ` : ''}  
+            <slot name="callout-content"></slot> 
             ${this.stockCheckbox}
         </div>
         <slot name="quantity-select"></slot>

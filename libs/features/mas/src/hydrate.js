@@ -9,13 +9,12 @@ export const ANALYTICS_LINK_ATTR = 'daa-ll';
 export const ANALYTICS_SECTION_ATTR = 'daa-lh';
 const SPECTRUM_BUTTON_SIZES = ['XL', 'L', 'M', 'S'];
 
-export function appendSlot(fieldName, fields, el, mapping, settings) {
-  const content = fields[fieldName] || settings && settings[fieldName];
-  if (content && mapping[fieldName]) {
+export function appendSlot(fieldName, fields, el, mapping) {
+  if (fields[fieldName] && mapping[fieldName]) {
     const tag = createTag(
       mapping[fieldName].tag,
       { slot: mapping[fieldName]?.slot },
-      content,
+      fields[fieldName],
     );
     el.append(tag);
   }
@@ -121,22 +120,31 @@ export function processBackgroundImage(
     }
 }
 
-export function processPrices(fields, merchCard, mapping, settings) {
+export function processPrices(fields, merchCard, mapping) {
   if (!fields.prices || !mapping.prices) return;
   const headingM = createTag(
       mapping.prices.tag,
       { slot: mapping.prices.slot },
       fields.prices,
   );
-  if (settings.priceLabel) {
-    headingM.append(settings.priceLabel);
-  }
   merchCard.append(headingM);
 }
 
 export function processDescriptionAndPromo(fields, merchCard, mapping) {
   appendSlot('promoText', fields, merchCard, mapping);
   appendSlot('description', fields, merchCard, mapping);
+  appendSlot('callout', fields, merchCard, mapping);
+  const callout = merchCard.querySelector('[slot="callout-content"]');
+  if (callout) {
+    const textDiv = createTag('div', {}, callout.querySelector('p').textContent);
+    const innerDiv = createTag('div', {}, textDiv);
+    if (callout.querySelector('img')) {
+      innerDiv.append(callout.querySelector('img'));
+    }
+    const outerDiv = createTag('div', {}, innerDiv);
+    callout.innerHTML = '';
+    callout.append(outerDiv);
+  }
 }
 
 export function processStockOffersAndSecureLabel(fields, merchCard, aemFragmentMapping, settings) {
@@ -315,10 +323,9 @@ export async function hydrate(fragment, merchCard) {
     merchCard.id = fragment.id;
     // temporary hardcode for plans. this data will be coming from settings (MWPW-166756)
     const settings = {
-      stockCheckboxLabel: '{{stock-checkbox-label}}',
+      stockCheckboxLabel: 'Add a 30-day free trial of Adobe Stock.*', // to be {{stock-checkbox-label}}
       stockOfferOsis: '',
-      secureLabel: '{{secure-transaction}}',
-      priceLabel: '{{tax-exclusive}} {{annual-paid-monthly}}'
+      secureLabel: 'Secure transaction' // to be {{secure-transaction}}
     };
     cleanup(merchCard);
     merchCard.variant = variant;
