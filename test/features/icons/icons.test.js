@@ -46,7 +46,8 @@ describe('Icon Support', () => {
     expect(selector).to.exist;
   });
 
-  it('No duplicate icon', () => {
+  it('No duplicate icon', async () => {
+    await loadIcons(icons, config);
     const svgs = icons[0].querySelectorAll(':scope svg');
     expect(svgs.length).to.equal(1);
   });
