@@ -63,13 +63,12 @@ function calculateResponseTime(responseStart) {
 }
 
 export const getTargetPersonalization = async (
-  { handleAlloyResponse, sendTargetResponseAnalytics },
+  { handleAlloyResponse },
 ) => {
   const responseStart = Date.now();
   window.addEventListener(ALLOY_SEND_EVENT, () => {
-    const responseTime = calculateResponseTime(responseStart);
     try {
-      window.lana.log(`target response time: ${responseTime}`, {
+      window.lana.log(`target response time: ${calculateResponseTime(responseStart)}`, {
         tags: 'martech',
         errorType: 'e',
         sampleRate: 0.5,
@@ -99,9 +98,12 @@ export const getTargetPersonalization = async (
   }
   if (response.timeout) {
     waitForEventOrTimeout(ALLOY_SEND_EVENT, 5100 - timeout)
-      .then(() => sendTargetResponseAnalytics(true, responseStart, timeout));
+      .then(() => window.lana.log(`target response timed out: ${calculateResponseTime(responseStart)}`, {
+        tags: 'martech',
+        errorType: 'e',
+        sampleRate: 0.5,
+      }));
   } else {
-    sendTargetResponseAnalytics(false, responseStart, timeout);
     targetManifests = handleAlloyResponse(response.result);
     targetPropositions = response.result?.propositions || [];
   }
