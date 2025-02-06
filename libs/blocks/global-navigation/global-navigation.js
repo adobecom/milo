@@ -442,7 +442,6 @@ class Gnav {
         localNav.querySelector('.feds-localnav-title').innerText = title.trim();
         link.textContent = navTitle.trim() || titleLabel;
       }
-
       itemWrapper.appendChild(clonedItem);
     });
 
