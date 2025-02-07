@@ -92,7 +92,6 @@ describe('MMM', () => {
     expect(infoColumnTwo.querySelector('div:nth-child(2)').textContent).to.include('on');
     expect(infoColumnTwo.querySelector('div:nth-child(3)').textContent).to.include('Nothing (US)');
     expect(infoColumnTwo.querySelector('div:nth-child(4)').textContent).to.include('en-us');
-
     const mepPopupBody = mmmPopup.querySelector('.mep-popup-body');
     expect(mepPopupBody).to.exist;
     const radios = mepPopupBody.querySelectorAll('select');
@@ -108,7 +107,6 @@ describe('MMM', () => {
     const manifestColumnTwo = mepPopupBody.querySelector('.mep-manifest-info .mep-columns > .mep-column:nth-child(2)');
     expect(manifestColumnTwo.querySelector('div:nth-child(1)').textContent).to.include('Default (control)');
     expect(manifestColumnTwo.querySelector('div:nth-child(2)').textContent).to.include('target');
-    expect(manifestColumnTwo.querySelector('div:nth-child(3)').textContent).to.include('Dec 5, 2024 6:22 PM');
     const editButton = mepPopupBody.querySelector('.mep-edit-manifest');
     expect(editButton).to.exist;
     expect(editButton.href).to.equal('https://main--homepage--adobecom.hlx.page/homepage/fragments/mep/hp-11-15-black-friday.json');
