@@ -153,6 +153,32 @@ function handleAddOnContent(table) {
   table.addEventListener('mas:resolved', debounce(() => { handleEqualHeight(table, '.row-heading'); }));
 }
 
+function setTooltipPosition(el) {
+  const tooltips = el.querySelectorAll('.milo-tooltip');
+
+  tooltips.forEach((tooltip) => {
+    const classesToCheck = ['top', 'bottom', 'left', 'right'];
+    const defaultClass = classesToCheck.find((className) => tooltip.classList.contains(className)) || 'right';
+    tooltip.setAttribute('data-tooltip-default-position', defaultClass);
+
+    tooltip.addEventListener('mouseenter', () => {
+      const isTabletOrMobile = ['TABLET', 'MOBILE'].includes(defineDeviceByScreenSize());
+      const isRtl = document.documentElement.dir === 'rtl';
+
+      if (!((el.getBoundingClientRect().width === window.innerWidth) || isTabletOrMobile)) {
+        tooltip.classList.remove(...classesToCheck);
+        tooltip.classList.add(defaultClass);
+        return;
+      }
+
+      const newClass = isTabletOrMobile === isRtl ? 'right' : 'left';
+
+      tooltip.classList.remove(...classesToCheck);
+      tooltip.classList.add(newClass);
+    });
+  });
+}
+
 async function setAriaLabelForIcons(el) {
   const config = getConfig();
   const expendableIcons = el.querySelectorAll('.icon.expand[role="button"]');
@@ -607,6 +633,7 @@ export default function init(el) {
     const handleResize = () => {
       applyStylesBasedOnScreenSize(el, originTable);
       if (isStickyHeader(el)) handleScrollEffect(el);
+      setTooltipPosition(el);
     };
     handleResize();
 
