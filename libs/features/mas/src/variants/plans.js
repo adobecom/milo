@@ -2,11 +2,12 @@ import { VariantLayout } from "./variant-layout";
 import { html, css } from 'lit';
 import { CSS } from './plans.css.js';
 
-const AEM_FRAGMENT_MAPPING = {
+export const PLANS_AEM_FRAGMENT_MAPPING = {
   title: { tag: 'p', slot: 'heading-xs' },
   prices: { tag: 'p', slot: 'heading-m' },
   promoText: {tag: 'p', slot: 'promo-text'},
   description: { tag: 'div', slot: 'body-xs' },
+  mnemonics: { size: 'l' },
   callout: {tag: 'div', slot: 'callout-content'},
   stockOffer: true,
   secureLabel: true,
@@ -20,7 +21,7 @@ export class Plans extends VariantLayout {
 
     /* c8 ignore next 3 */
   get aemFragmentMapping() {
-    return AEM_FRAGMENT_MAPPING;
+    return PLANS_AEM_FRAGMENT_MAPPING;
   }
 
   getGlobalCSS() {

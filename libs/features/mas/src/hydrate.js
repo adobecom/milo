@@ -1,4 +1,3 @@
-import { CheckoutButton } from './checkout-button.js';
 import { createTag } from './utils.js';
 
 const DEFAULT_BADGE_COLOR = '#000000';
