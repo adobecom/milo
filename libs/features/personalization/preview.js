@@ -134,7 +134,7 @@ function parseMepConfig() {
     page: {
       url,
       page,
-      target: targetEnabled ? 'on' : 'off',
+      target: getMetadata('target') || 'off',
       personalization: (getMetadata('personalization')) ? 'on' : 'off',
       geo: prefix === US_GEO ? '' : prefix,
       locale: locale.ietf,
