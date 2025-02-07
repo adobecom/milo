@@ -1,3 +1,4 @@
+import { MasElement } from "./mas-element.js";
 import { useService } from "./utilities.js";
 
 /**
