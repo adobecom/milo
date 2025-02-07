@@ -9,15 +9,17 @@ export const ANALYTICS_SECTION_ATTR = 'daa-lh';
 const SPECTRUM_BUTTON_SIZES = ['XL', 'L', 'M', 'S'];
 
 export function appendSlot(fieldName, fields, el, mapping) {
-  if (fields[fieldName] && mapping[fieldName]) {
+  const config = mapping[fieldName];
+  if (fields[fieldName] && config) {
     const tag = createTag(
-      mapping[fieldName].tag,
-      { slot: mapping[fieldName]?.slot },
+      config.tag,
+      { slot: config?.slot },
       fields[fieldName],
     );
     el.append(tag);
   }
 }
+
 export function processMnemonics(fields, merchCard, mnemonicsConfig) {
     const mnemonics = fields.mnemonicIcon?.map((icon, index) => ({
         icon,
@@ -80,16 +82,8 @@ export function processTitle(fields, merchCard, titleConfig) {
     }
 }
 
-export function processSubtitle(fields, merchCard, subtitleConfig) {
-    if (fields.subtitle && subtitleConfig) {
-        merchCard.append(
-            createTag(
-                subtitleConfig.tag,
-                { slot: subtitleConfig.slot },
-                fields.subtitle,
-            ),
-        );
-    }
+export function processSubtitle(fields, merchCard, mapping) {
+  appendSlot('subtitle', fields, merchCard, mapping); 
 }
 
 export function processBackgroundImage(
@@ -126,22 +120,17 @@ export function processBackgroundImage(
 }
 
 export function processPrices(fields, merchCard, mapping) {
-  if (!fields.prices || !mapping.prices) return;
-  const headingM = createTag(
-      mapping.prices.tag,
-      { slot: mapping.prices.slot },
-      fields.prices,
-  );
-  merchCard.append(headingM);
+  appendSlot('prices', fields, merchCard, mapping); 
 }
 
-export function processDescriptionAndPromo(fields, merchCard, mapping) {
+export function processDescription(fields, merchCard, mapping) {
   appendSlot('promoText', fields, merchCard, mapping);
   appendSlot('description', fields, merchCard, mapping);
   appendSlot('callout', fields, merchCard, mapping);
+  // this will be gone with https://jira.corp.adobe.com/browse/MWPW-167305
   const callout = merchCard.querySelector('[slot="callout-content"]');
   if (callout) {
-    const textDiv = createTag('div', {}, callout.querySelector('p').textContent);
+    const textDiv = createTag('div', {}, callout.querySelector('p')?.textContent);
     const innerDiv = createTag('div', {}, textDiv);
     if (callout.querySelector('img')) {
       innerDiv.append(callout.querySelector('img'));
@@ -343,14 +332,14 @@ export async function hydrate(fragment, merchCard) {
     processBadge(fields, merchCard);
     processSize(fields, merchCard, aemFragmentMapping.size);
     processTitle(fields, merchCard, aemFragmentMapping.title);
-    processSubtitle(fields, merchCard, aemFragmentMapping.subtitle);
-    processPrices(fields, merchCard, aemFragmentMapping, settings);
+    processSubtitle(fields, merchCard, aemFragmentMapping);
+    processPrices(fields, merchCard, aemFragmentMapping);
     processBackgroundImage(
         fields,
         merchCard,
         aemFragmentMapping.backgroundImage,
     );
-    processDescriptionAndPromo(fields, merchCard, aemFragmentMapping);
+    processDescription(fields, merchCard, aemFragmentMapping);
     processStockOffersAndSecureLabel(fields, merchCard, aemFragmentMapping, settings);
     processCTAs(fields, merchCard, aemFragmentMapping, variant);
     processAnalytics(fields, merchCard);
