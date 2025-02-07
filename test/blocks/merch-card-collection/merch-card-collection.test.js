@@ -171,7 +171,7 @@ describe('Merch Cards', async () => {
     expect(merchCards.outerHTML).to.equal(merchCards.nextElementSibling.outerHTML);
   });
 
-  it('should override cards when asked to', async () => {
+  it('MEP: should override cards when asked to', async () => {
     const el = document.getElementById('multipleFilters');
     setConfig({
       ...conf,
@@ -205,6 +205,37 @@ describe('Merch Cards', async () => {
     expect(photoshop.title.indexOf('PROMOTION') > 0).to.be.true;
     expect(express.title.indexOf('PROMOTION') > 0).to.be.true;
     expect(merchCards.dataset.overrides).to.equal('promo1.json:/override-photoshop,promo2.json:/override-express');
+  });
+
+  it('MEP: should modify cards when asked to', async () => {
+    const el = document.getElementById('multipleFilters');
+    setConfig({
+      ...conf,
+      mep: {
+        preview: true,
+        commands: [
+          {
+            action: 'remove',
+            selector: 'merch-card h3 #_include-fragments #_all',
+            pageFilter: '',
+            content: 'true',
+            selectorType: 'other',
+            manifestId: 'merchcardupdates.json',
+            targetManifestId: false,
+            modifiers: [
+              'include-fragments',
+              'all',
+            ],
+          },
+        ],
+      },
+    });
+    cards = [...document.querySelectorAll('#cards .merch-card')]
+      .map((merchCardEl) => ({ cardContent: merchCardEl.outerHTML })); // mock cards
+    const merchCards = await init(el);
+    expect(merchCards.filter).to.equal('all');
+    await delay(500);
+    expect(merchCards.querySelectorAll('h3[data-removed-manifest-id]').length).to.equal(4);
   });
 
   it('should localize the query-index url', async () => {
