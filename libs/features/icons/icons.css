@@ -2,6 +2,11 @@
   position: relative;
   text-decoration: none;
   border-bottom: none;
+  min-width: 24px;
+  display: inline-flex;
+  min-height: 24px;
+  align-items: center;
+  justify-content: center;
 }
 
 .milo-tooltip::before {
@@ -34,6 +39,11 @@
   z-index: 10;
 }
 
+.milo-tooltip.top::after,
+.milo-tooltip.bottom::after  {
+  margin-left: -8px;
+}
+
 .milo-tooltip.left::before {
   left: initial;
   margin: initial;
@@ -51,7 +61,7 @@
 }
 
 .milo-tooltip.top::before {
-  left: 50%;
+  left: calc(50% - 11px);
   transform: translateX(-50%) translateY(-100%);
   top: -10px;
   margin-bottom: 15px;
@@ -66,7 +76,7 @@
 }
 
 .milo-tooltip.bottom::before {
-  left: 50%;  
+  left: calc(50% - 11px);
   transform: translateX(-50%);
   top: 100%;
   margin-top: 12px;
@@ -80,10 +90,14 @@
   border-color: transparent transparent #0469E3;
 }
 
-.milo-tooltip:hover::before {
+.milo-tooltip:hover::before,
+.milo-tooltip:focus::before,
+.milo-tooltip:active::before {
   display: block; 
 }
 
-.milo-tooltip:hover::after {
+.milo-tooltip:hover::after,
+.milo-tooltip:focus::after,
+.milo-tooltip:active::after {
   display: block;
 }

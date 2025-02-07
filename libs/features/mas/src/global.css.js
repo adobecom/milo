@@ -157,9 +157,13 @@ merch-card.background-opacity-70 {
 }
 
 merch-card.has-divider hr {
-    margin-bottom: var(--consonant-merch-spacing-xs);
+    margin: var(--consonant-merch-spacing-xs) 0;
     height: 1px;
     border: none;
+}
+
+merch-card.has-divider div[slot='body-lower'] hr {
+    margin: 0;
 }
 
 merch-card p, merch-card h3, merch-card h4 {
@@ -369,6 +373,14 @@ merch-card div[slot="footer"] {
     display: contents;
 }
 
+merch-card.product div[slot="footer"] {
+    display: block;
+}
+
+merch-card.product div[slot="footer"] a + a {
+    margin: 5px 0 0 5px;
+}
+
 merch-card [slot="footer"] a {
     word-wrap: break-word;
     text-align: center;
@@ -417,6 +429,15 @@ body.merch-modal {
     overflow: hidden;
     scrollbar-gutter: stable;
     height: 100vh;
+}
+
+merch-sidenav-checkbox-group h3 {
+    font-size: 14px;
+    height: 32px;
+    letter-spacing: 0px;
+    line-height: 18.2px;
+    color: var(--color-gray-600);
+    margin: 0px;
 }
 
 `;

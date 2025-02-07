@@ -164,6 +164,7 @@ const getReviews = ({ pr, github, owner, repo }) =>
       owner,
       repo,
       pull_number: pr.number,
+      per_page: 100,
     })
     .then(({ data }) => {
       pr.reviews = data;

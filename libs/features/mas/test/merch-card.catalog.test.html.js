@@ -54,7 +54,6 @@ runTests(async () => {
             const catalogCard = document.querySelector(
               'merch-card[variant="catalog"]',
             );
-            const mouseoverEvent = new MouseEvent('mouseover', { bubbles: true });
             const mouseleaveEvent = new MouseEvent('mouseleave', { bubbles: true });
             const focusoutEvent = new Event('focusout');
             catalogCard.dispatchEvent(mouseleaveEvent);

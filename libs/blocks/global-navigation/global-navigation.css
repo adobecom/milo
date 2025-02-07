@@ -378,6 +378,11 @@ header.global-navigation {
   text-transform: capitalize;
 }
 
+.feds-breadcrumbs.no-transform a,
+.feds-breadcrumbs.no-transform [aria-current] {
+  text-transform: none;
+}
+
 .feds-breadcrumbs a {
   display: block;
   color: var(--feds-color-link-breadcrumbs);
@@ -387,9 +392,8 @@ header.global-navigation {
   color: var(--feds-color-breadcrumbs--current);
 }
 
-.feds-breadcrumbs li:not(:first-of-type)::before {
+.feds-breadcrumbs li span[aria-hidden="true"] {
   padding: 0 12px;
-  content: '/';
 }
 
 .feds-utilities {
@@ -402,7 +406,6 @@ header.global-navigation {
 
 .feds-utilities .unav-comp-app-switcher-popover, /* App Switcher */
 .feds-utilities .spectrum-Dialog-content, /* Notifications */
-.feds-utilities .unav-comp-external-profile, /* Profile */
 .feds-utilities .unav-comp-help-popover, /* Help */
 .feds-utilities .unc-overlay-container { /* Tooltips */
   transform: translate3d(0,0,0); /* Fix Safari issues w/ position: sticky */
