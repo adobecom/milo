@@ -92,6 +92,7 @@ describe('MMM', () => {
     expect(infoColumnTwo.querySelector('div:nth-child(2)').textContent).to.include('on');
     expect(infoColumnTwo.querySelector('div:nth-child(3)').textContent).to.include('Nothing (US)');
     expect(infoColumnTwo.querySelector('div:nth-child(4)').textContent).to.include('en-us');
+    expect(infoColumnTwo.querySelector('div:nth-child(5)').textContent).to.include('Dec 6, 2024 2:02 PM');
 
     const mepPopupBody = mmmPopup.querySelector('.mep-popup-body');
     expect(mepPopupBody).to.exist;
