@@ -288,39 +288,37 @@ function createSpectrumSwcButton(cta, aemFragmentMapping, isOutline, variant) {
         cta.innerHTML,
     );
 
-    const providers = { checkout: [] };
-    const settings = {};
-    const checkout = Checkout({ providers, settings });
-    const options = checkout.collectCheckoutOptions({}, cta);
-    const checkoutButton = CheckoutButton.createCheckoutButton(options, '');
-
-    const hiddenContainer = document.createElement('div');
-    hiddenContainer.style.cssText =
-      'position: absolute; width: 0; height: 0; overflow: hidden; pointer-events: none;';
-    document.body.appendChild(hiddenContainer);
-    hiddenContainer.appendChild(checkoutButton);
-
-    checkoutButton.connectedCallback?.();
-    checkoutButton.requestUpdate?.();
-
-    checkoutButton.onceSettled().then(() => {
-      if (hiddenContainer.parentNode) {
-        hiddenContainer.parentNode.removeChild(hiddenContainer);
-      }
-
-      spectrumCta.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (typeof checkoutButton.clickHandler === 'function') {
-          checkoutButton.clickHandler(e);
-        } else if (checkoutButton.href && checkoutButton.href !== '#') {
-          window.location.href = checkoutButton.href;
-        } else {
-          console.warn('No checkout action is available.');
+    (async () => {
+        try {
+          await customElements.whenDefined('checkout-button');
+          const CheckoutButtonEl = customElements.get('checkout-button');
+          const checkoutBtn = CheckoutButtonEl.createCheckoutButton({}, cta.innerHTML);
+    
+          for (const attr of cta.attributes) {
+            checkoutBtn.setAttribute(attr.name, attr.value);
+          }
+    
+          if (typeof checkoutBtn.connectedCallback === 'function') {
+            checkoutBtn.connectedCallback();
+          }
+          await checkoutBtn.render();
+          await checkoutBtn.onceSettled();
+    
+          spectrumCta.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (typeof checkoutBtn.clickHandler === 'function') {
+              checkoutBtn.clickHandler(e);
+            } else if (checkoutBtn.href && checkoutBtn.href !== '#') {
+              window.location.href = checkoutBtn.href;
+            } else {
+              console.warn('No checkout action is available.');
+            }
+          });
+    
+        } catch (err) {
+          console.error('Failed to initialize checkout-button logic:', err);
         }
-      });
-    }).catch((error) => {
-      console.error('Checkout button is not ready:', error);
-    });
+      })();
 
     return spectrumCta;
 }
