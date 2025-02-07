@@ -1,0 +1,97 @@
+{
+  "id": 1,
+  "tenant": "",
+  "enabled": true,
+  "description": "Redirect Configuration",
+  "name": "Redirect",
+  "fieldsMetadata": {
+    "steps": [
+      {
+        "id": "step1",
+        "type": "Step",
+        "title": "Redirect Configurator",
+        "children": [
+          {
+            "id": "column1",
+            "type": "Column",
+            "title": "",
+            "children": [
+              {
+                "id": "sourceUrl",
+                "type": "TextField",
+                "title": "Source",
+                "children": [{}],
+                "properties": {
+                  "required": true,
+                  "metaDataId": ""
+                }
+              },
+              {
+                "id": "locale",
+                "type": "SelectLocale",
+                "title": "Locale",
+                "children": [{}],
+                "properties": {
+                  "required": false
+                }
+              },
+              {
+                "id": "destinationUrl",
+                "type": "TextField",
+                "title": "Destination",
+                "children": [{}],
+                "properties": {
+                  "required": true,
+                  "pattern": {
+                    "value": "^(https?|ftp):\\/\\/[^\\s/$.?#].[^\\s]*$",
+                    "message": "Please enter a valid URL"
+                  }
+                }
+              }
+            ],
+            "properties": {}
+          }
+        ],
+        "properties": {}
+      },
+      {
+        "id": "step2",
+        "type": "Step",
+        "title": "Redirects - Preview",
+        "children": [
+          {
+            "id": "col3",
+            "type": "Column",
+            "title": "",
+            "children": [
+              {
+                "id": "redirectUrl",
+                "type": "Table",
+                "title": "",
+                "children": [{}],
+                "properties": {
+                  "required": true,
+                  "metaDataId": "",
+                  "resetNextSections": true,
+                  "tableHeader": ["Source", "Destination"],
+                  "pageSizes": [5, 10, 15, 20],
+                  "rowsPerPage": 5
+                }
+              }
+            ],
+            "properties": {}
+          }
+        ],
+        "properties": {
+          "colWidth": "full"
+        }
+      }
+    ]
+  },
+  "createdDate": 1723108792219,
+  "modifiedDate": 1725011314076,
+  "linkedSchema": [],
+  "configurationMetadataCollection": [],
+  "workflowTypeCollection": []
+}
+
