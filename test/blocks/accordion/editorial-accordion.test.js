@@ -75,7 +75,7 @@ describe('Accordion', () => {
     });
 
     it('shows shows next available image if visible image panel is closed', () => {
-      const panel1Btn = el.querySelector('.accordion dt:first-of-type button');
+      const panel1Btn = el.querySelector('.accordion .descr-term button');
       panel1Btn.click();
       expect(el.querySelector('.accordion-media > div:nth-of-type(2)').classList.contains('expanded')).to.be.true;
     });
@@ -83,7 +83,7 @@ describe('Accordion', () => {
     it('shows last selected image when rich media is all collapsed', () => {
       const collapseBtn = el.querySelector('.collapse-btn');
       collapseBtn.click();
-      const panel2Btn = el.querySelector('.accordion dt:nth-of-type(2) button');
+      const panel2Btn = el.querySelectorAll('.accordion .descr-term button')[1];
       panel2Btn.click();
       const panel2Image = el.querySelector('.accordion-media > div:nth-of-type(2)');
       expect(panel2Image.classList.contains('expanded')).to.be.true;
