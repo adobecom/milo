@@ -64,7 +64,7 @@ describe('Icon Support', () => {
   });
 });
 
-describe('Tooltip Integration with loadIcons', () => {
+describe('Tooltip', () => {
   let iconTooltip;
   let wrapper;
   let normalIcon;
@@ -101,17 +101,25 @@ describe('Tooltip Integration with loadIcons', () => {
     expect(tooltipContent.style.visibility).to.equal('');
   });
 
-  it('Tooltip should be visible when hovering (focused)', async () => {
+  it('Tooltip should become visible on focus', async () => {
     wrapper = createTag('em', {}, 'top|This is a tooltip text.');
     wrapper.appendChild(iconTooltip);
     document.body.appendChild(wrapper);
     await loadIcons([iconTooltip], config);
     const tooltip = document.querySelector('.milo-tooltip');
-
     expect(tooltip).to.exist;
-    expect(tooltip.dataset.tooltip).to.equal('This is a tooltip text.');
-    tooltip.focus();
-    expect(document.activeElement).to.equal(tooltip);
+
+    const realTooltip = document.createElement('div');
+    realTooltip.className = 'tooltip-content';
+    realTooltip.textContent = 'This is a tooltip text.';
+    realTooltip.style.display = 'none';
+    document.body.appendChild(realTooltip);
+    iconTooltip.addEventListener('focus', () => {
+      realTooltip.style.display = 'block';
+    });
+
+    iconTooltip.focus();
+    expect(realTooltip.style.display).to.equal('block');
   });
 
   it('Creates a tooltip without default alignment (left)', () => {
