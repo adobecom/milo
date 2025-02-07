@@ -72,7 +72,7 @@ runTests(async () => {
         
             const before = ccCard.innerHTML;
         
-            const footerSlot = ccCard.shadowRoot.querySelector('[slot="footer"]');
+            const footerSlot = ccCard.querySelector('[slot="footer"]');
             expect(footerSlot).to.exist;
             footerSlot.setAttribute('test', 'true'); 
         
@@ -134,7 +134,7 @@ runTests(async () => {
             await delay(200);
         
             expect(sliceCard.querySelector('merch-icon')).to.exist;
-            expect(sliceCard.shadowRoot.querySelector('div[slot="image"]')).to.exist;
+            expect(sliceCard.querySelector('div[slot="image"]')).to.exist;
             expect(sliceCard.querySelector('div[slot="body-s"]')).to.exist;
         
             expect(sliceCard.shadowRoot.querySelector('slot[name="footer"]')).to.exist;

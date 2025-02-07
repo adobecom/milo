@@ -17,11 +17,30 @@ import {
     ANALYTICS_SECTION_ATTR,
     processDescription,
     updateLinksCSS,
+    getTruncatedTextData,
 } from '../src/hydrate.js';
+import { CheckoutButton } from '../src/checkout-button.js';
 import { CCD_SLICE_AEM_FRAGMENT_MAPPING } from '../src/variants/ccd-slice.js';
 
 import { mockFetch } from './mocks/fetch.js';
 import { withWcs } from './mocks/wcs.js';
+
+function getFooterElement(merchCard) {
+  return merchCard.spectrum === 'swc'
+      ? merchCard.shadowRoot.querySelector('div[slot="footer"]')
+      : merchCard.querySelector('div[slot="footer"]');
+}
+
+/**
+* Helper to pick an appended CTA from either shadow DOM or light DOM 
+* based on merchCard.spectrum.
+*/
+function getCTAElement(merchCard, selector = 'button[data-analytics-id]') {
+  return merchCard.spectrum === 'swc'
+      ? merchCard.shadowRoot.querySelector(selector)
+      : merchCard.querySelector(selector);
+}
+
 
 const mockMerchCard = () => {
     const merchCard = document.createElement('div');
@@ -57,16 +76,43 @@ describe('processMnemonics', async () => {
     });
 });
 
-describe('processTitle', async () => {
-    it('should process use tag and slot metadata', async () => {
-        const fields = { cardTitle: 'Photoshop' };
-        const merchCard = mockMerchCard();
-        const titleConfig = { tag: 'h2', slot: 'title' };
-        processTitle(fields, merchCard, titleConfig);
-        expect(merchCard.outerHTML).to.equal(
-            '<div><h2 slot="title">Photoshop</h2></div>',
-        );
-    });
+describe('processTitle', () => {
+  it('should process use tag and slot metadata', () => {
+      const fields = { cardTitle: 'Photoshop' };
+      const merchCard = mockMerchCard();
+      const titleConfig = { tag: 'h2', slot: 'title' };
+      processTitle(fields, merchCard, titleConfig);
+      expect(merchCard.outerHTML).to.equal(
+          '<div><h2 slot="title">Photoshop</h2></div>',
+      );
+  });
+
+  it('should truncate the title if cardTitle length exceeds maxCount', () => {
+      const fields = { cardTitle: '1234567890' };
+      const merchCard = mockMerchCard();
+      // maxCount => 5, triggers truncation
+      const titleConfig = { tag: 'h2', slot: 'title', maxCount: 5 };
+      processTitle(fields, merchCard, titleConfig);
+
+      const h2 = merchCard.querySelector('h2[slot="title"]');
+      // We expect the function to have truncated the title to something like '12...'
+      // The "cleanTitle" is the full '1234567890', stored in h2.title
+      expect(h2.textContent).to.equal('12...');
+      expect(h2.getAttribute('title')).to.equal('1234567890');
+  });
+
+  it('should NOT truncate the title if cardTitle length <= maxCount', () => {
+      const fields = { cardTitle: 'Short' };
+      const merchCard = mockMerchCard();
+      // maxCount => 10, so no truncation
+      const titleConfig = { tag: 'h2', slot: 'title', maxCount: 10 };
+      processTitle(fields, merchCard, titleConfig);
+
+      const h2 = merchCard.querySelector('h2[slot="title"]');
+      expect(h2.textContent).to.equal('Short');
+      // No truncated text => no title attribute
+      expect(h2.hasAttribute('title')).to.be.false;
+  });
 });
 
 describe('processSize', async () => {
@@ -104,151 +150,152 @@ describe('processPrices', async () => {
 });
 
 describe('processCTAs', async () => {
-    let merchCard;
-    let aemFragmentMapping;
+  let merchCard;
+  let aemFragmentMapping;
 
-    beforeEach(async () => {
-        merchCard = mockMerchCard();
+  beforeEach(async () => {
+      merchCard = mockMerchCard();
+      aemFragmentMapping = {
+          ctas: {
+              slot: 'footer',
+              size: 'm',
+          },
+      };
+  });
 
-        aemFragmentMapping = {
-            ctas: {
-                slot: 'footer',
-                size: 'm',
-            },
-        };
-    });
+  afterEach(() => {
+      sinon.restore();
+  });
 
-    afterEach(() => {
-        sinon.restore();
-    });
+  it('should not process CTAs when fields.ctas is falsy', async () => {
+      const fields = { ctas: null };
+      processCTAs(fields, merchCard, aemFragmentMapping);
+      expect(merchCard.append.called).to.be.false;
+  });
 
-    it('should not process CTAs when fields.ctas is falsy', async () => {
-        const fields = { ctas: null };
+  it('should create spectrum css buttons by default', async () => {
+      const fields = {
+          ctas: '<a is="checkout-link" data-wcs-osi="abm" class="accent">Click me</a>',
+      };
+      processCTAs(fields, merchCard, aemFragmentMapping);
 
-        processCTAs(fields, merchCard, aemFragmentMapping);
+      // Since spectrum='css', the footer is in the light DOM
+      const footer = getFooterElement(merchCard);
+      expect(footer).to.exist;
+      expect(footer.getAttribute('slot')).to.equal('footer');
 
-        expect(merchCard.append.called).to.be.false;
-    });
+      const button = footer.firstChild;
+      expect(button.tagName.toLowerCase()).to.equal('button');
+      expect(button.className).to.equal(
+          'spectrum-Button spectrum-Button--accent spectrum-Button--sizeM',
+      );
+  });
 
-    it('should create spectrum css buttons by default', async () => {
-        const fields = {
-            ctas: '<a is="checkout-link" data-wcs-osi="abm" class="accent">Click me</a>',
-        };
+  it('should create spectrum wc buttons when merchCard.spectrum="swc"', async () => {
+      const fields = {
+          ctas: '<a is="checkout-link" data-wcs-osi="abm" class="accent">Click me</a>',
+      };
+      merchCard.spectrum = 'swc';
+      processCTAs(fields, merchCard, aemFragmentMapping);
 
-        processCTAs(fields, merchCard, aemFragmentMapping);
+      // Now the footer is in the shadow root
+      const footer = getFooterElement(merchCard);
+      expect(footer).to.exist;
+      expect(footer.getAttribute('slot')).to.equal('footer');
 
-        const footer = merchCard.shadowRoot.querySelector('div[slot="footer"]');
-        expect(footer).to.exist;
+      const button = footer.firstChild;
+      expect(button.tagName.toLowerCase()).to.equal('sp-button');
+      expect(button.treatment).to.equal('fill');
+      expect(button.variant).to.equal('accent');
+      expect(button.getAttribute('tabindex')).to.equal('0');
+      expect(button.size).to.equal('m');
+  });
 
-        expect(footer.getAttribute('slot')).to.equal('footer');
+  it('should create consonant buttons when merchCard.consonant is true', async () => {
+      merchCard.consonant = true;
+      const fields = {
+          ctas: '<a is="checkout-link" data-wcs-osi="abm" class="accent">Click me</a>',
+      };
+      processCTAs(fields, merchCard, aemFragmentMapping);
 
-        const button = footer.firstChild;
-        expect(button.tagName.toLowerCase()).to.equal('button');
-        expect(button.className).to.equal(
-            'spectrum-Button spectrum-Button--accent spectrum-Button--sizeM',
-        );
-    });
+      const footer = getFooterElement(merchCard);
+      expect(footer).to.exist;
 
-    it('should create spectrum wc buttons when merchCard.spectrum="swc"', async () => {
-        const fields = {
-            ctas: '<a is="checkout-link" data-wcs-osi="abm" class="accent">Click me</a>',
-        };
-        merchCard.spectrum = 'swc';
-        processCTAs(fields, merchCard, aemFragmentMapping);
+      const link = footer.firstChild;
+      expect(link.classList.contains('con-button')).to.be.true;
+      expect(link.classList.contains('accent')).to.be.true;
+  });
 
-        const footer = merchCard.shadowRoot.querySelector('div[slot="footer"]');
-        expect(footer).to.exist;
+  it('should handle multiple CTAs', async () => {
+      const fields = {
+          ctas: `
+              <a is="checkout-link" data-wcs-osi="abm" class="accent">Accent</a>
+              <a is="checkout-link" data-wcs-osi="abm" class="primary">Primary</a>
+              <a is="checkout-link" data-wcs-osi="abm" class="secondary">Secondary</a>
+          `,
+      };
+      processCTAs(fields, merchCard, aemFragmentMapping);
 
-        expect(footer.getAttribute('slot')).to.equal('footer');
+      const footer = getFooterElement(merchCard);
+      expect(footer).to.exist;
 
-        const button = footer.firstChild;
-        expect(button.tagName.toLowerCase()).to.equal('sp-button');
-        expect(button.treatment).to.equal('fill');
-        expect(button.variant).to.equal('accent');
-        expect(button.getAttribute('tabindex')).to.equal('0');
-        expect(button.size).to.equal('m');
-    });
+      const buttons = footer.children;
+      expect(buttons).to.have.lengthOf(3);
+      expect(buttons[0].className).to.equal(
+          'spectrum-Button spectrum-Button--accent spectrum-Button--sizeM',
+      );
+      expect(buttons[1].className).to.equal(
+          'spectrum-Button spectrum-Button--primary spectrum-Button--sizeM',
+      );
+      expect(buttons[2].className).to.equal(
+          'spectrum-Button spectrum-Button--secondary spectrum-Button--sizeM',
+      );
+  });
 
-    it('should create consonant buttons when merchCard.consonant is true', async () => {
-        // when a merch-card with a fields is rendered in a Milo page.
-        merchCard.consonant = true;
-        const fields = {
-            ctas: '<a is="checkout-link" data-wcs-osi="abm" class="accent">Click me</a>',
-        };
+  it('should handle strong wrapped CTAs', async () => {
+      const fields = {
+          ctas: '<strong><a is="checkout-link" data-wcs-osi="abm" class="accent">Strong CTA</a></strong>',
+      };
+      processCTAs(fields, merchCard, aemFragmentMapping);
 
-        processCTAs(fields, merchCard, aemFragmentMapping);
+      const footer = getFooterElement(merchCard);
+      expect(footer).to.exist;
 
-        const footer = merchCard.shadowRoot.querySelector('div[slot="footer"]');
-        expect(footer).to.exist;
+      const button = footer.firstChild;
+      expect(button.className).to.equal(
+          'spectrum-Button spectrum-Button--accent spectrum-Button--sizeM',
+      );
+  });
 
-        const link = footer.firstChild;
-        expect(link.classList.contains('con-button')).to.be.true;
-        expect(link.classList.contains('accent')).to.be.true;
-    });
+  it('should handle outline CTAs', async () => {
+      const fields = {
+          ctas: '<a is="checkout-link" data-wcs-osi="abm" class="accent-outline">Outline CTA</a>',
+      };
+      processCTAs(fields, merchCard, aemFragmentMapping);
 
-    it('should handle multiple CTAs', async () => {
-        const fields = {
-            ctas: `
-                <a is="checkout-link" data-wcs-osi="abm" class="accent">Accent</a>
-                <a is="checkout-link" data-wcs-osi="abm" class="primary">Primary</a>
-                <a is="checkout-link" data-wcs-osi="abm" class="secondary">Secondary</a>
-            `,
-        };
+      const footer = getFooterElement(merchCard);
+      expect(footer).to.exist;
 
-        processCTAs(fields, merchCard, aemFragmentMapping);
-        const footer = merchCard.shadowRoot.querySelector('div[slot="footer"]');
-        const buttons = footer.children;
-        expect(buttons).to.have.lengthOf(3);
+      const button = footer.firstChild;
+      expect(button.className).to.equal(
+          'spectrum-Button spectrum-Button--accent spectrum-Button--sizeM spectrum-Button--outline',
+      );
+  });
 
-        expect(buttons[0].className).to.equal(
-            'spectrum-Button spectrum-Button--accent spectrum-Button--sizeM',
-        );
-        expect(buttons[1].className).to.equal(
-            'spectrum-Button spectrum-Button--primary spectrum-Button--sizeM',
-        );
-        expect(buttons[2].className).to.equal(
-            'spectrum-Button spectrum-Button--secondary spectrum-Button--sizeM',
-        );
-    });
+  it('should handle link-style CTAs', async () => {
+      const fields = {
+          ctas: `<a is="checkout-link" data-wcs-osi="abm" class="primary-link">Link Style</a>
+          <a is="checkout-link" data-wcs-osi="abm">Link Style</a>`,
+      };
+      processCTAs(fields, merchCard, aemFragmentMapping);
 
-    it('should handle strong wrapped CTAs', async () => {
-        const fields = {
-            ctas: '<strong><a is="checkout-link" data-wcs-osi="abm" class="accent">Strong CTA</a></strong>',
-        };
+      const footer = getFooterElement(merchCard);
+      expect(footer).to.exist;
 
-        processCTAs(fields, merchCard, aemFragmentMapping);
-        const footer = merchCard.shadowRoot.querySelector('div[slot="footer"]');
-        const button = footer.firstChild;
-        expect(button.className).to.equal(
-            'spectrum-Button spectrum-Button--accent spectrum-Button--sizeM',
-        );
-    });
-
-    it('should handle outline CTAs', async () => {
-        const fields = {
-            ctas: '<a is="checkout-link" data-wcs-osi="abm" class="accent-outline">Outline CTA</a>',
-        };
-
-        processCTAs(fields, merchCard, aemFragmentMapping);
-        const footer = merchCard.shadowRoot.querySelector('div[slot="footer"]');
-        const button = footer.firstChild;
-        expect(button.className).to.equal(
-            'spectrum-Button spectrum-Button--accent spectrum-Button--sizeM spectrum-Button--outline',
-        );
-    });
-
-    it('should handle link-style CTAs', async () => {
-        const fields = {
-            ctas: `<a is="checkout-link" data-wcs-osi="abm" class="primary-link">Link Style</a>
-            <a is="checkout-link" data-wcs-osi="abm">Link Style</a>`,
-        };
-
-        processCTAs(fields, merchCard, aemFragmentMapping, 'ccd-suggested');
-        const footer = merchCard.shadowRoot.querySelector('div[slot="footer"]');
-        const link = footer.firstChild;
-        expect(link.tagName.toLowerCase()).to.equal('a');
-        expect(link.classList.contains('primary-link')).to.be.true;
-    });
+      const link = footer.firstChild;
+      expect(link.tagName.toLowerCase()).to.equal('a');
+      expect(link.classList.contains('primary-link')).to.be.true;
+  });
 });
 
 describe('processSubtitle', () => {
@@ -343,7 +390,7 @@ describe('processBackgroundImage', () => {
             backgroundImageConfig,
             variant,
         );
-        const imageContainer = merchCard.shadowRoot.querySelector('div[slot="image"]');
+        const imageContainer = merchCard.querySelector('div[slot="image"]');
         expect(imageContainer).to.exist;
         expect(imageContainer.innerHTML).to.equal(
             '<img loading="lazy" src="test-image.jpg" alt="Test Image">',
@@ -437,7 +484,6 @@ describe('processAnalytics', () => {
             'see-terms-1',
         );
         expect(buyNow.getAttribute(ANALYTICS_LINK_ATTR)).to.equal('buy-now-2');
-        // should handle only links with data-analytics-id attribute
         expect(
             merchCard.querySelectorAll(`a[${ANALYTICS_LINK_ATTR}]`).length,
         ).to.equal(2);
@@ -475,38 +521,88 @@ describe('hydrate', () => {
         expect(merchCard.getAttribute(ANALYTICS_SECTION_ATTR)).to.equal('ccsn');
         expect(
             merchCard
-                .shadowRoot
                 .querySelector(`button[data-analytics-id]`)
                 .getAttribute('daa-ll'),
         ).to.equal('buy-now-1');
     });
 });
 
-describe('processDescription', async () => {
-    let merchCard;
-    let aemFragmentMapping;
+describe('processDescription', () => {
+  let merchCard;
+  let aemFragmentMapping;
 
-    beforeEach(async () => {
-        merchCard = mockMerchCard();
+  beforeEach(async () => {
+      merchCard = mockMerchCard();
+      aemFragmentMapping = {
+          description: { tag: 'div', slot: 'body-xs' },
+      };
+  });
 
-        aemFragmentMapping = {
-            description: { tag: 'div', slot: 'body-xs' },
-        };
-    });
+  afterEach(() => {
+      sinon.restore();
+  });
 
-    afterEach(() => {
-        sinon.restore();
-    });
+  it('should process merch links', async () => {
+      const fields = {
+          description: `Buy <a is="checkout-link" data-wcs-osi="abm" class="primary-link">Link Style</a><a is="checkout-link" data-wcs-osi="abm" class="secondary-link">Link Style</a>`,
+      };
+      processDescription(fields, merchCard, aemFragmentMapping.description);
+      updateLinksCSS(merchCard);
+      expect(merchCard.innerHTML).to.equal(
+          '<div slot="body-xs">Buy <a is="checkout-link" data-wcs-osi="abm" class="spectrum-Link spectrum-Link--primary">Link Style</a><a is="checkout-link" data-wcs-osi="abm" class="spectrum-Link spectrum-Link--secondary">Link Style</a></div>',
+      );
+  });
 
-    it('should process merch links', async () => {
-        const fields = {
-            description: `Buy <a is="checkout-link" data-wcs-osi="abm" class="primary-link">Link Style</a><a is="checkout-link" data-wcs-osi="abm" class="secondary-link">Link Style</a>`,
-        };
+  it('should do nothing if fields.description is falsy or no config', () => {
+      processDescription({}, merchCard, aemFragmentMapping.description);
+      expect(merchCard.innerHTML).to.equal('');
+      processDescription({ description: 'Some text' }, merchCard, null);
+      expect(merchCard.innerHTML).to.equal('');
+  });
 
-        processDescription(fields, merchCard, aemFragmentMapping.description);
-        updateLinksCSS(merchCard);
-        expect(merchCard.innerHTML).to.equal(
-            '<div slot="body-xs">Buy <a is="checkout-link" data-wcs-osi="abm" class="spectrum-Link spectrum-Link--primary">Link Style</a><a is="checkout-link" data-wcs-osi="abm" class="spectrum-Link spectrum-Link--secondary">Link Style</a></div>',
-        );
-    });
+  it('should truncate when description is longer than maxCount (without suffix)', async () => {
+      const fields = {
+          description: '1234567890 Hello World!',
+      };
+      aemFragmentMapping.description.maxCount = 5;
+      processDescription(fields, merchCard, aemFragmentMapping.description);
+      const div = merchCard.querySelector('div[slot="body-xs"]');
+      expect(div.textContent).to.equal('12345');
+      expect(div.getAttribute('title')).to.equal('1234567890 Hello World!');
+  });
+
+  it('should NOT truncate when description <= maxCount', async () => {
+      const fields = {
+          description: 'Short text',
+      };
+      aemFragmentMapping.description.maxCount = 50; 
+      processDescription(fields, merchCard, aemFragmentMapping.description);
+      const div = merchCard.querySelector('div[slot="body-xs"]');
+      expect(div.textContent).to.equal('Short text');
+      expect(div.hasAttribute('title')).to.be.false;
+  });
+});
+
+
+describe('getTruncatedTextData', () => {
+  it('closes any open tags in truncated text', () => {
+      const text = '<p>Hello <b>World</b> more text</p>';
+      const limit = 10; 
+      const [truncated] = getTruncatedTextData(text, limit);
+      expect(truncated).to.equal('<p>Hello <b>W</b>...');
+  });
+
+  it('handles leftover <p> specifically by ignoring if first in openTags', () => {
+      const text = '<p><span>Hello world';
+      const limit = 5;
+      const [truncated] = getTruncatedTextData(text, limit);
+      expect(truncated).to.equal('<p><span>He</span>...');
+  });
+
+  it('handles slash near tag ends properly', () => {
+      const text = '<div>Hello <img src="test.jpg" /> world</div>';
+      const limit = 8;
+      const [truncated] = getTruncatedTextData(text, limit);
+      expect(truncated).to.equal('<div>Hello</div>...');
+  });
 });
