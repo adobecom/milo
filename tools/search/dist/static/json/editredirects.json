@@ -1,0 +1,55 @@
+{
+  "id": 1,
+  "tenant": "",
+  "enabled": true,
+  "description": "Redirect Configuration",
+  "name": "Redirect",
+  "fieldsMetadata": {
+    "steps": [
+      {
+        "id": "step1",
+        "type": "Step",
+        "title": "Edit Redirect Configurator",
+        "children": [
+          {
+            "id": "column1",
+            "type": "Column",
+            "title": "",
+            "children": [
+              {
+                "id": "sourceUrl",
+                "type": "TextField",
+                "title": "Source",
+                "children": [{}],
+                "properties": {
+                  "required": true
+                }
+              },
+              {
+                "id": "destinationUrl",
+                "type": "TextField",
+                "title": "Destination",
+                "children": [{}],
+                "properties": {
+                  "required": true,
+                  "pattern": {
+                    "value": "^(https?|ftp):\\/\\/[^\\s/$.?#].[^\\s]*$",
+                    "message": "Please enter a valid URL"
+                  }
+                }
+              }
+            ],
+            "properties": {}
+          }
+        ],
+        "properties": {}
+      }
+    ]
+  },
+  "createdDate": 1723108792219,
+  "modifiedDate": 1725011314076,
+  "linkedSchema": [],
+  "configurationMetadataCollection": [],
+  "workflowTypeCollection": []
+}
+
