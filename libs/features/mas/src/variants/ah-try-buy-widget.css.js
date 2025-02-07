@@ -76,6 +76,13 @@ export const CSS = `
         font-weight: 700;
     }
 
+    merch-card[variant="ah-try-buy-widget"] [slot="cta"] {
+        align-self: end;
+        gap: 8px;
+        display: flex;
+        padding-top: 24px;
+    }
+
     .spectrum--dark merch-card[variant="ah-try-buy-widget"][background-color='gray'],
     .spectrum--darkest merch-card[variant="ah-try-buy-widget"][background-color='gray'] {
       --merch-card-ah-try-buy-widget-gray-background: rgb(27, 27, 27);

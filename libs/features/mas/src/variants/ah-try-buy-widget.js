@@ -38,6 +38,9 @@ export class AHTryBuyWidget extends VariantLayout {
         </div>
         <slot name="body-xxs"></slot>
         <slot name="price"></slot>
+        <div class="footer">
+          <slot name="cta"></slot>
+        </div>
       </div>
       <slot></slot>
     `;
@@ -65,7 +68,7 @@ export class AHTryBuyWidget extends VariantLayout {
         flex-direction: column;
         overflow: hidden;
         padding: 12px !important;
-        gap: 16px;
+        gap: 24px;
         box-sizing: content-box !important;
         border: none;
         outline: 1px solid var(--merch-card-ah-try-buy-widget-outline);
@@ -95,7 +98,6 @@ export class AHTryBuyWidget extends VariantLayout {
     :host([variant='ah-try-buy-widget']) .content {
         display: flex;
         flex-direction: column;
-        flex-grow: 0;
         justify-content: flex-start;
         min-width: var(--merch-card-ah-try-buy-widget-content-min-width);
         max-width: var(--merch-card-ah-try-buy-widget-content-max-width);
