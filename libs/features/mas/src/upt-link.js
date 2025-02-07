@@ -16,6 +16,7 @@ export class UptLink extends HTMLAnchorElement {
 
   connectedCallback() {
       this.masElement.connectedCallback();
+      console.log(this, 'test');
       this.addEventListener('click', this.clickHandler);
   }
 
