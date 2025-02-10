@@ -13,15 +13,22 @@ export class UptLink extends HTMLAnchorElement {
       super();
       const service = useService();
       const { country, language } = service.settings;
-      const wcsOsi = [this.getAttribute('data-wcs-osi')];
+      const dataWcsOsi = this.getAttribute('data-wcs-osi');
+      if (!dataWcsOsi) {
+          console.error('"data-wcs-osi" attribute missing from upt-link.')
+          return;
+      }
+      const wcsOsi = [dataWcsOsi];
       const promotionCode = this.getAttribute('data-promotion-code');
       const options = { country, language, wcsOsi, promotionCode }
       const promises = service.resolveOfferSelectors(options);
-      console.log('Before promise');
-      Promise.all(promises).then(([offer]) => {
-        console.log('After promise: ', offer, language, country, promotionCode);
-        this.href = `${PROMO_TERMS_URL}?locale=${language}_${country}&promotion_code=${promotionCode}&country=${country}&offer_id=${offer.offerId}`
-      })
+      Promise.all(promises).then(([[offer]]) => {
+        let params = `locale=${language}_${country}&country=${country}&offer_id=${offer.offerId}`;
+        if (promotionCode) params += `&promotion_code=${promotionCode}`;
+        this.href = `${PROMO_TERMS_URL}?${params}`
+      }).catch(error => {
+          console.error(`Could not resolve offer selectors for wcsOsi: ${dataWcsOsi}.`, error.message);
+      });
   }
 
   get isUptLink() {

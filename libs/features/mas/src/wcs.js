@@ -36,8 +36,6 @@ export function Wcs({ settings }) {
     const queue = new Map();
     let timer;
 
-    console.log("WCS", settings);
-
     /**
      * Accepts list of OSIs having same locale and map of pending promises, grouped by OSI.
      * Sends one or more requests to WCS endpoint to provide required offers.
