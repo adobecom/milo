@@ -140,8 +140,6 @@ function filterPageList(pageNum, perPage, event) {
   });
 
   // add pageNum and perPage to shareable url and args for api call
-  shareUrl.searchParams.set('pageNum', pageNum || 1);
-  shareUrl.searchParams.set('perPage', searchValues.perPage?.value || 25);
   searchValues.pageNum = { value: pageNum || 1, tagName: 'A' };
   searchValues.perPage = { value: perPage || 25, tagName: 'SELECT' };
 
@@ -472,10 +470,7 @@ function subscribeToSearchCriteriaChanges() {
 }
 
 export default async function init(el) {
-  await createPageList(
-    el,
-    Object.fromEntries(new URLSearchParams(window.location.search).entries()),
-  );
+  await createPageList(el);
   createForm(el);
   subscribeToSearchCriteriaChanges();
   loadStyle('/libs/features/personalization/preview.css');
