@@ -159,23 +159,49 @@ function setTooltipPosition(el) {
   tooltips.forEach((tooltip) => {
     const classesToCheck = ['top', 'bottom', 'left', 'right'];
     const defaultClass = classesToCheck.find((className) => tooltip.classList.contains(className)) || 'right';
-    tooltip.setAttribute('data-tooltip-default-position', defaultClass);
+    let isTabletOrMobile = ['TABLET', 'MOBILE'].includes(defineDeviceByScreenSize());
 
-    tooltip.addEventListener('mouseenter', () => {
-      const isTabletOrMobile = ['TABLET', 'MOBILE'].includes(defineDeviceByScreenSize());
+    function updateTooltipPosition() {
+      isTabletOrMobile = ['TABLET', 'MOBILE'].includes(defineDeviceByScreenSize());
       const isRtl = document.documentElement.dir === 'rtl';
+      const tooltipRect = tooltip.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const tooltipBefore = window.getComputedStyle(tooltip, '::before');
+      const beforeWidth = parseFloat(tooltipBefore.width) || 0;
+      const padding = 30;
+      const isVertical = defaultClass === 'top' || defaultClass === 'bottom';
+      const tooltipCenter = tooltipRect.left + tooltipRect.width / 2;
 
-      if (!((el.getBoundingClientRect().width === window.innerWidth) || isTabletOrMobile)) {
-        tooltip.classList.remove(...classesToCheck);
-        tooltip.classList.add(defaultClass);
-        return;
+      const overflowsRight = isVertical
+        ? tooltipCenter + beforeWidth / 2 + padding > viewportWidth
+        : tooltipRect.right + beforeWidth + padding > viewportWidth;
+
+      const overflowsLeft = isVertical
+        ? tooltipCenter - beforeWidth / 2 - padding < 0
+        : tooltipRect.left - beforeWidth - padding < 0;
+
+      let newClass = defaultClass;
+
+      if (isTabletOrMobile) {
+        newClass = isRtl ? 'right' : 'left';
+      } else if (overflowsLeft) {
+        newClass = 'right';
+      } else if (overflowsRight) {
+        newClass = 'left';
       }
 
-      const newClass = isTabletOrMobile === isRtl ? 'right' : 'left';
+      if (!tooltip.classList.contains(newClass)) {
+        tooltip.classList.remove(...classesToCheck);
+        tooltip.classList.add(newClass);
+      }
+    }
 
-      tooltip.classList.remove(...classesToCheck);
-      tooltip.classList.add(newClass);
-    });
+    if (isTabletOrMobile) {
+      updateTooltipPosition();
+    }
+
+    tooltip.addEventListener('mouseenter', updateTooltipPosition);
+    tooltip.addEventListener('focus', updateTooltipPosition);
   });
 }
 
