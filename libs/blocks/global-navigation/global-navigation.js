@@ -84,7 +84,6 @@ const getMessageEventListener = () => {
   };
 };
 
-
 export const CONFIG = {
   icons: isDarkMode() ? darkIcons : icons,
   delays: {
