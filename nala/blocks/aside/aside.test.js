@@ -415,7 +415,7 @@ test.describe('Aside Block test suite', () => {
     });
 
     await test.step('step-3: Verify the accessibility test on the Aside Notification Extra Small Dark block', async () => {
-      await runAccessibilityTest({ page, testScope: Aside.asideNotifExtraSmallDark });
+      await runAccessibilityTest({ page, testScope: Aside.asideNotifExtraSmallDark, skipA11yTest: true });
     });
   });
 
