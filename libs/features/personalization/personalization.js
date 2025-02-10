@@ -1194,7 +1194,8 @@ function sendTargetResponseAnalytics(failure, responseStart, timeoutLocal, messa
           },
         },
       },
-    data: { _adobe_corpnew: { digitalData: { primaryEvent: { eventInfo: { eventName: val } } } } },
+      data:
+       { _adobe_corpnew: { digitalData: { primaryEvent: { eventInfo: { eventName: val } } } } },
     });
   }, { once: true });
 }
