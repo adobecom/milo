@@ -68,13 +68,15 @@ function findMetaFragments(doc) {
   let fragments = [];
   const metas = doc.getElementsByTagName('meta');
   if (metas.length) {
+    const urlsPathName = urls.value.map((url) => removeLangstorePrefix(url.pathname));
     fragments = [...metas]
       .filter((meta) => {
         const content = meta.getAttribute('content');
         const isOGUrl = meta.getAttribute('property') === 'og:url';
         return content?.includes('/fragments/') && isUrl(content) && !isOGUrl;
       })
-      .map((meta) => new URL(meta.getAttribute('content')));
+      .map((meta) => new URL(meta.getAttribute('content')))
+      .filter((metaUrl) => !urlsPathName.includes(removeLangstorePrefix(metaUrl.pathname)));
   }
   return fragments;
 }
