@@ -1,5 +1,6 @@
-import { MasElement } from "./mas-element.js";
 import { useService } from "./utilities.js";
+
+const PROMO_TERMS_URL = 'https://www.adobe.com/offers/promo-terms.html';
 
 /**
  * Universal Promo Terms Link
@@ -8,30 +9,23 @@ export class UptLink extends HTMLAnchorElement {
   static is = 'upt-link';
   static tag = 'a';
 
-  // static createUptLink(options = {}, innerHTML = '') {
-  //     return createCheckoutElement(UptLink, options, innerHTML);
-  // }
-
-  masElement = new MasElement(this);
-
-  connectedCallback() {
-      this.masElement.connectedCallback();
-      console.log(this, 'test');
-      this.addEventListener('click', this.clickHandler);
-  }
-
-  disconnectedCallback() {
-      this.masElement.disconnectedCallback();
-      this.removeEventListener('click', this.clickHandler);
+  constructor() {
+      super();
+      const service = useService();
+      const { country, language } = service.settings;
+      const wcsOsi = [this.getAttribute('data-wcs-osi')];
+      const promotionCode = this.getAttribute('data-promotion-code');
+      const options = { country, language, wcsOsi, promotionCode }
+      const promises = service.resolveOfferSelectors(options);
+      console.log('Before promise');
+      Promise.all(promises).then(([offer]) => {
+        console.log('After promise: ', offer, language, country, promotionCode);
+        this.href = `${PROMO_TERMS_URL}?locale=${language}_${country}&promotion_code=${promotionCode}&country=${country}&offer_id=${offer.offerId}`
+      })
   }
 
   get isUptLink() {
       return true;
-  }
-
-  clickHandler(e) {
-      const service = useService();
-      console.log('Service', e, service);
   }
 }
 
