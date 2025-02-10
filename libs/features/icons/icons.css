@@ -16,7 +16,7 @@
   transform: translateY(-50%);
   left: 100%;
   margin-left: 12px;
-  width: 200px;
+  max-width: 140px;
   padding: 10px;
   border-radius: 5px;
   background: #0469E3;
@@ -24,6 +24,13 @@
   text-align: left;
   display: none;
   z-index: 10;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 16px;
+  width: max-content;
+  white-space: normal;
+  word-wrap: break-word;
 }
 
 .milo-tooltip::after {
@@ -100,4 +107,10 @@
 .milo-tooltip:focus::after,
 .milo-tooltip:active::after {
   display: block;
+}
+
+@media (max-width: 600px) {
+  .milo-tooltip::before { 
+    max-width: 180px;
+  }
 }
