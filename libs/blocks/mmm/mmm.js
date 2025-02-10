@@ -271,7 +271,7 @@ function createSearchField() {
 
   searchField.addEventListener('keyup', debounce((event) => filterPageList(null, event)));
   searchField.addEventListener('change', debounce((event) => filterPageList(null, event)));
-  searchField.addEventListener('input', function () {
+  searchField.addEventListener('input', function adjustHeight() {
     this.style.height = 'auto'; /* Reset height to auto to recalculate */
     this.style.height = `${this.scrollHeight - 32}px`;
   });
