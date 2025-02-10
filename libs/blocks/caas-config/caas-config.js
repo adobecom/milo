@@ -76,6 +76,7 @@ const defaultOptions = {
     product: 'Product Card',
     'text-card': 'Text Card',
     'icon-card': 'Icon Card',
+    'news-card': 'News Card',
     'custom-card': 'Custom Card',
   },
   collectionBtnStyle: {
