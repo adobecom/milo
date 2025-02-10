@@ -224,6 +224,7 @@ const COMMANDS = {
     );
   },
   [COMMANDS_KEYS.updateAttribute]: (el, cmd) => {
+    const { manifestId, targetManifestId } = cmd;
     if (!cmd.attribute || !cmd.content) return;
     const [attribute, parameter] = cmd.attribute.split('_');
 
@@ -251,7 +252,10 @@ const COMMANDS = {
       value = cmd.content;
     }
 
-    if (value) el.setAttribute(attribute, value);
+    if (value) {
+      el.setAttribute(attribute, value);
+      addIds(el, manifestId, targetManifestId);
+    }
   },
 };
 
