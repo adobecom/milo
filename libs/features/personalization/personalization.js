@@ -481,7 +481,7 @@ export function modifyNonFragmentSelector(selector, action) {
   if (action === COMMANDS_KEYS.updateAttribute) {
     const string = newSelector.split(' ').pop();
     attribute = string.replace('.', '');
-    newSelector = newSelector.replace(string, '');
+    newSelector = newSelector.replace(string, '').trim();
   }
 
   return {

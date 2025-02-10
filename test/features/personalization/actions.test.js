@@ -80,6 +80,19 @@ describe('replace action', () => {
   });
 });
 
+describe('updateAttribute action', async () => {
+  it('updateAttribute should add or modify a html element attribute', async () => {
+    let manifestJson = await readFile({ path: './mocks/actions/manifestUpdateAttribute.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+    await init(mepSettings);
+    await handleCommands(manifestJson.data, undefined, true, true);
+    expect(document.querySelector('.marquee h2').getAttribute('class')).to.equal('added-class');
+    expect(document.querySelector('.marquee strong a').getAttribute('href')).to.equal('http://www.google.com/?osi=new-parameter');
+    expect(document.querySelector('.marquee em a').getAttribute('new-attribute')).to.equal('added-attribute');
+  });
+});
+
 describe('insertAfter action', async () => {
   it('insertContentAfter should add fragment after target content and fragment', async () => {
     let manifestJson = await readFile({ path: './mocks/actions/manifestInsertAfter.json' });
