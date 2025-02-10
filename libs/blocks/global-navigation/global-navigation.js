@@ -57,6 +57,34 @@ function getHelpChildren() {
   ];
 }
 
+const getMessageEventListener = () => {
+  const configListener = getConfig().unav?.profile?.messageEventListener;
+  if (configListener) return configListener;
+
+  return (event) => {
+    const { name, payload, executeDefaultAction } = event.detail;
+    if (!name || name !== 'System' || !payload || typeof executeDefaultAction !== 'function') return;
+    switch (payload.subType) {
+      case 'AppInitiated':
+        window.adobeProfile?.getUserProfile()
+          .then((data) => { setUserProfile(data); })
+          .catch(() => { setUserProfile({}); });
+        break;
+      case 'SignOut':
+        executeDefaultAction();
+        break;
+      case 'ProfileSwitch':
+        Promise.resolve(executeDefaultAction()).then((profile) => {
+          if (profile) window.location.reload();
+        });
+        break;
+      default:
+        break;
+    }
+  };
+};
+
+
 export const CONFIG = {
   icons: isDarkMode() ? darkIcons : icons,
   delays: {
@@ -78,27 +106,7 @@ export const CONFIG = {
         name: 'profile',
         attributes: {
           isSignUpRequired: false,
-          messageEventListener: (event) => {
-            const { name, payload, executeDefaultAction } = event.detail;
-            if (!name || name !== 'System' || !payload || typeof executeDefaultAction !== 'function') return;
-            switch (payload.subType) {
-              case 'AppInitiated':
-                window.adobeProfile?.getUserProfile()
-                  .then((data) => { setUserProfile(data); })
-                  .catch(() => { setUserProfile({}); });
-                break;
-              case 'SignOut':
-                executeDefaultAction();
-                break;
-              case 'ProfileSwitch':
-                Promise.resolve(executeDefaultAction()).then((profile) => {
-                  if (profile) window.location.reload();
-                });
-                break;
-              default:
-                break;
-            }
-          },
+          messageEventListener: getMessageEventListener(),
           componentLoaderConfig: {
             config: {
               enableLocalSection: true,
