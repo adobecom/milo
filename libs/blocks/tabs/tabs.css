@@ -468,10 +468,7 @@
   margin-block-end: var(--spacing-xs);
 }
 
-.tabs.radio div[role="tablist"] button,
-.tabs.radio div[role="tablist"] button:hover,
-.tabs.radio div[role="tablist"] button:focus-visible,
-.tabs.radio div[role="tablist"] button[aria-selected="true"] {
+.tabs.radio div[role="tablist"] :is(button, button:hover, button:focus-visible, button[aria-selected="true"]) {
   background: unset;
   border-radius: unset;
   outline: revert;
