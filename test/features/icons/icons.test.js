@@ -102,24 +102,15 @@ describe('Tooltip', () => {
   });
 
   it('Tooltip should become visible on focus', async () => {
-    wrapper = createTag('em', {}, 'top|This is a tooltip text.');
-    wrapper.appendChild(iconTooltip);
     document.body.appendChild(wrapper);
     await loadIcons([iconTooltip], config);
     const tooltip = document.querySelector('.milo-tooltip');
     expect(tooltip).to.exist;
-
-    const realTooltip = document.createElement('div');
-    realTooltip.className = 'tooltip-content';
-    realTooltip.textContent = 'This is a tooltip text.';
-    realTooltip.style.display = 'none';
-    document.body.appendChild(realTooltip);
-    iconTooltip.addEventListener('focus', () => {
-      realTooltip.style.display = 'block';
-    });
-
-    iconTooltip.focus();
-    expect(realTooltip.style.display).to.equal('block');
+    expect(tooltip.dataset.tooltip).to.equal('This is a tooltip text.');
+    expect(tooltip.getAttribute('role')).to.equal('button');
+    expect(tooltip.className).to.contain('top');
+    tooltip.focus();
+    expect(document.activeElement).to.equal(tooltip);
   });
 
   it('Creates a tooltip without default alignment (left)', () => {
