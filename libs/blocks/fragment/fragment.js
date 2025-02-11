@@ -66,6 +66,7 @@ export default async function init(a) {
   const { decorateArea, mep, placeholders } = getConfig();
   let relHref = localizeLink(a.href);
   let inline = false;
+  let lazy = false;
 
   if (a.parentElement?.nodeName === 'P') {
     const children = a.parentElement.childNodes;
@@ -79,6 +80,11 @@ export default async function init(a) {
     inline = true;
     a.href = a.href.replace('#_inline', '');
     relHref = relHref.replace('#_inline', '');
+  }
+  if (a.href.includes('#_lazy')) {
+    lazy = true;
+    a.href = a.href.replace('#_lazy', '');
+    relHref = relHref.replace('#_lazy', '');
   }
 
   const path = new URL(a.href).pathname;
@@ -135,6 +141,15 @@ export default async function init(a) {
   }
   if (inline) {
     insertInlineFrag(sections, a, relHref, mep);
+  } else if (lazy) {
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        observer.disconnect();
+        a.parentElement.replaceChild(fragment, a);
+        loadArea(fragment);
+      }
+    });
+    observer.observe(a.parentElement);
   } else {
     a.parentElement.replaceChild(fragment, a);
     await loadArea(fragment);
