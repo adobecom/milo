@@ -14,9 +14,9 @@ window.resizeIframe = function resizeIframe(obj) {
 
 export default async function init(el) {
   const url = el.href ?? el.querySelector('a')?.href;
-  if (!url) return;
-
   el.classList.remove('iframe');
+
+  if (!url) return;
   const classes = [...el.classList].join(' ');
 
   const iframeProperties = {
@@ -38,5 +38,6 @@ export default async function init(el) {
     window.addEventListener('resize', debounce(() => window.resizeIframe(iframe), 100));
   }
 
-  el.replaceWith(embed);
+  el.insertAdjacentElement('afterend', embed);
+  el.remove();
 }
