@@ -30,7 +30,7 @@ function initialRegions() {
       const { key, value } = curr;
       const valueList = value.split(',');
       const valueWithoutEnglishLocale = valueList.reduce((localeList, locale) => {
-        if (livecopiesArr.some((l) => l !== locale)) {
+        if (livecopiesArr.every((l) => l !== locale)) {
           localeList.push(locale);
         }
         return localeList;
