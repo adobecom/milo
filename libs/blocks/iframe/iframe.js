@@ -26,7 +26,6 @@ export default async function init(el) {
     allowfullscreen: true,
     ...(el.classList.contains('lazy-load') && { loading: 'lazy' }),
     scrolling: el.classList.contains('auto-height') ? 'no' : 'auto',
-    style: el.classList.contains('auto-height') ? 'height: 100%' : '',
   };
 
   const iframe = createTag('iframe', iframeProperties);
