@@ -368,20 +368,22 @@ class Footer {
     while (privacyContent.children.length) {
       const privacySection = privacyContent.firstElementChild;
       privacySection.classList.add('feds-footer-privacySection');
-      privacySection.setAttribute('role', 'list');
       privacySection.querySelectorAll('a').forEach((link, index) => {
         link.classList.add('feds-footer-privacyLink');
         link.setAttribute('daa-ll', getAnalyticsValue(link.textContent, index + 1));
-        link.setAttribute('role', 'listitem');
+        const privacySectionListItem = document.createElement('li');
+        privacySectionListItem.classList.add('feds-footer-privacy-listitem');
+        link.parentNode.insertBefore(privacySectionListItem, link);
+        privacySectionListItem.appendChild(link);
       });
       this.elements.legal.append(privacySection);
 
-      const privacySectionDiv = document.createElement('div');
+      const privacySectionList = document.createElement('ul');
       [...privacySection.attributes].forEach((attr) => {
-        privacySectionDiv.setAttribute(attr.name, attr.value);
+        privacySectionList.setAttribute(attr.name, attr.value);
       });
-      privacySectionDiv.innerHTML = privacySection.innerHTML.replace(/( \/ )/g, '<span class="feds-footer-privacyLink-divider" aria-hidden="true">$1</span>');
-      privacySection.parentNode.replaceChild(privacySectionDiv, privacySection);
+      privacySectionList.innerHTML = privacySection.innerHTML.replace(/( \/ )/g, '<span class="feds-footer-privacyLink-divider" aria-hidden="true">$1</span>');
+      privacySection.parentNode.replaceChild(privacySectionList, privacySection);
     }
 
     return this.elements.legal;

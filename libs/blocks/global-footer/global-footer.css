@@ -227,7 +227,8 @@
   display: inline-block;
 }
 
-.feds-footer-privacySection {
+.feds-footer-privacySection,
+.feds-footer-privacy-listitem {
   display: inline;
 }
 
