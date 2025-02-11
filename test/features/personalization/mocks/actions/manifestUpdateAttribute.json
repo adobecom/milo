@@ -34,6 +34,14 @@
       "param-newoffer=123": "",
       "chrome": "",
       "content": "added-class"
+    },
+    {
+      "action": "updateattribute",
+        "selector": ".second-marquee-title strong a href",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "",
+      "content": "thisshouldfail"
     }
   ],
   ":type": "sheet"
