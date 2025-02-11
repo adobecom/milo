@@ -139,7 +139,7 @@ function filterPageList(pageNum, perPage, event) {
     if (value) shareUrl.searchParams.set(id, value);
   });
 
-  // add pageNum and perPage to shareable url and args for api call
+  // add pageNum and perPage to args for api call
   searchValues.pageNum = { value: pageNum || 1, tagName: 'A' };
   searchValues.perPage = { value: perPage || 25, tagName: 'SELECT' };
 
