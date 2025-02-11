@@ -101,3 +101,8 @@
 .milo-tooltip:active::after {
   display: block;
 }
+
+.milo-tooltip.hide-tooltip::before,
+.milo-tooltip.hide-tooltip::after {
+  display: none !important;
+}
