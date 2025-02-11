@@ -47,6 +47,7 @@ module.exports = {
     },
   ],
   ignorePatterns: [
+    '/tools/*/dist/*',
     '/libs/deps/*',
     '/tools/loc/*',
     '/libs/features/spectrum-web-components/*',
