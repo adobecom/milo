@@ -1,4 +1,4 @@
-import { useService } from "./utilities.js";
+import { useService as getService } from "./utilities.js";
 
 const PROMO_TERMS_URL = 'https://www.adobe.com/offers/promo-terms.html';
 
@@ -40,7 +40,7 @@ export class UptLink extends HTMLAnchorElement {
             return;
         }
 
-        const service = useService();
+        const service = getService();
 
         const wcsOsi = [osi];
         const promotionCode = this.getAttribute('data-promotion-code');
