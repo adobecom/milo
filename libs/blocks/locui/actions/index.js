@@ -68,7 +68,7 @@ function findMetaFragments(doc) {
   let fragments = [];
   const metas = doc.getElementsByTagName('meta');
   if (metas.length) {
-    const urlsPathName = urls.value.map((url) => removeLangstorePrefix(url.pathname));
+    const urlsPathName = (urls.value ?? []).map((url) => removeLangstorePrefix(url.pathname));
     fragments = [...metas]
       .filter((meta) => {
         const content = meta.getAttribute('content');
