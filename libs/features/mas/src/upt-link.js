@@ -6,34 +6,56 @@ const PROMO_TERMS_URL = 'https://www.adobe.com/offers/promo-terms.html';
  * Universal Promo Terms Link
  */
 export class UptLink extends HTMLAnchorElement {
-  static is = 'upt-link';
-  static tag = 'a';
+    static is = 'upt-link';
+    static tag = 'a';
+    static observedAttributes = ['data-wcs-osi', 'data-promotion-code'];
 
-  constructor() {
-      super();
-      const service = useService();
-      const { country, language } = service.settings;
-      const dataWcsOsi = this.getAttribute('data-wcs-osi');
-      if (!dataWcsOsi) {
-          console.error('"data-wcs-osi" attribute missing from upt-link.')
-          return;
-      }
-      const wcsOsi = [dataWcsOsi];
-      const promotionCode = this.getAttribute('data-promotion-code');
-      const options = { country, language, wcsOsi, promotionCode }
-      const promises = service.resolveOfferSelectors(options);
-      Promise.all(promises).then(([[offer]]) => {
-        let params = `locale=${language}_${country}&country=${country}&offer_id=${offer.offerId}`;
-        if (promotionCode) params += `&promotion_code=${promotionCode}`;
-        this.href = `${PROMO_TERMS_URL}?${params}`
-      }).catch(error => {
-          console.error(`Could not resolve offer selectors for wcsOsi: ${dataWcsOsi}.`, error.message);
-      });
-  }
+    #initialized = false;
 
-  get isUptLink() {
-      return true;
-  }
+    get isUptLink() {
+        return true;
+    }
+
+    /**
+     * @param {string} osi 
+     * @param {string} promotionCode 
+     */
+    initializeWcsData(osi, promotionCode) {
+        this.setAttribute('data-promotion-code', promotionCode);
+        this.setAttribute('data-wcs-osi', osi);
+        this.#initialized = true;
+        this.composePromoTermsUrl();
+    }
+
+    attributeChangedCallback(_name, _oldValue, _newValue) {
+        if (!this.#initialized) return;
+        this.composePromoTermsUrl();
+    }
+
+    composePromoTermsUrl() {
+        const osi = this.getAttribute('data-wcs-osi');
+        if (!osi) {
+            const fragmentId = this.closest('merch-card').querySelector('aem-fragment').getAttribute('fragment');
+            console.error(`Missing 'data-wcs-osi' attribute on upt-link. Fragment: ${fragmentId}`);
+            return;
+        }
+
+        const service = useService();
+
+        const wcsOsi = [osi];
+        const promotionCode = this.getAttribute('data-promotion-code');
+        const { country, language } = service.settings;
+        const options = { country, language, wcsOsi, promotionCode };
+
+        const promises = service.resolveOfferSelectors(options);
+        Promise.all(promises).then(([[offer]]) => {
+          let params = `locale=${language}_${country}&country=${country}&offer_id=${offer.offerId}`;
+          if (promotionCode) params += `&promotion_code=${promotionCode}`;
+          this.href = `${PROMO_TERMS_URL}?${params}`
+        }).catch(error => {
+            console.error(`Could not resolve offer selectors for id: ${osi}.`, error.message);
+        });
+    }
 }
 
 // Define custom DOM element

@@ -1,4 +1,5 @@
 import { CheckoutButton } from './checkout-button.js';
+import { UptLink } from './upt-link.js';
 import { createTag } from './utils.js';
 
 const DEFAULT_BADGE_COLOR = '#000000';
@@ -136,6 +137,13 @@ export function processDescription(fields, merchCard, descriptionConfig) {
         );
         merchCard.append(body);
     }
+}
+
+export function processUptLinks(fields, merchCard) {
+    const uptLinks = merchCard.querySelectorAll('a[is="upt-link"]');
+    uptLinks.forEach((/** @type {UptLink} */ uptLink) => {
+        uptLink.initializeWcsData(fields.osi, fields.promoCode);
+    })
 }
 
 function createSpectrumCssButton(cta, aemFragmentMapping, isOutline, variant) {
@@ -312,6 +320,7 @@ export async function hydrate(fragment, merchCard) {
         aemFragmentMapping.backgroundImage,
     );
     processDescription(fields, merchCard, aemFragmentMapping.description);
+    processUptLinks(fields, merchCard);
     processCTAs(fields, merchCard, aemFragmentMapping, variant);
     processAnalytics(fields, merchCard);
     updateLinksCSS(merchCard);
