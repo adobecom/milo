@@ -123,6 +123,7 @@ const CREATE_CMDS = {
 const COMMANDS_KEYS = {
   remove: 'remove',
   replace: 'replace',
+  updateAttribute: 'updateattribute',
 };
 
 function addIds(el, manifestId, targetManifestId) {
@@ -221,6 +222,40 @@ const COMMANDS = {
       'beforebegin',
       createContent(el, cmd),
     );
+  },
+  [COMMANDS_KEYS.updateAttribute]: (el, cmd) => {
+    const { manifestId, targetManifestId } = cmd;
+    if (!cmd.attribute || !cmd.content) return;
+    const [attribute, parameter] = cmd.attribute.split('_');
+
+    let value;
+    if (attribute === 'href') {
+      if (parameter) {
+        const href = el.getAttribute('href');
+        const url = new URL(href);
+        const parameters = new URLSearchParams(url.search);
+
+        parameters.set(parameter, cmd.content);
+        url.search = parameters.toString();
+        value = url.toString();
+      } else {
+        try {
+          const href = /^https?:\/\//i.test(cmd.content) ? cmd.content : `http://${cmd.content}`;
+          const testContent = new URL(href);
+
+          value = testContent.href;
+        } catch (error) {
+          console.error('Invalid updateAttribute URL:', cmd.content);
+        }
+      }
+    } else {
+      value = cmd.content;
+    }
+
+    if (value) {
+      el.setAttribute(attribute, value);
+      addIds(el, manifestId, targetManifestId);
+    }
   },
 };
 
@@ -433,22 +468,34 @@ function getModifiers(selector) {
   }
   return { sel, modifiers };
 }
-export function modifyNonFragmentSelector(selector) {
+export function modifyNonFragmentSelector(selector, action) {
   const { sel, modifiers } = getModifiers(selector);
+
+  let newSelector = sel
+    .split('>').join(' > ')
+    .split(',').join(' , ')
+    .replaceAll(/main\s*>?\s*(section\d*)/gi, '$1')
+    .split(/\s+/)
+    .map(modifySelectorTerm)
+    .join(' ')
+    .trim();
+
+  let attribute;
+
+  if (action === COMMANDS_KEYS.updateAttribute) {
+    const string = newSelector.split(' ').pop();
+    attribute = string.replace('.', '');
+    newSelector = newSelector.replace(string, '').trim();
+  }
+
   return {
-    modifiedSelector: sel
-      .split('>').join(' > ')
-      .split(',').join(' , ')
-      .replaceAll(/main\s*>?\s*(section\d*)/gi, '$1')
-      .split(/\s+/)
-      .map(modifySelectorTerm)
-      .join(' ')
-      .trim(),
+    modifiedSelector: newSelector,
     modifiers,
+    attribute,
   };
 }
 
-function getSelectedElements(sel, rootEl, forceRootEl) {
+function getSelectedElements(sel, rootEl, forceRootEl, action) {
   const root = forceRootEl ? rootEl : document;
   const selector = sel.trim();
   if (!selector) return {};
@@ -464,7 +511,12 @@ function getSelectedElements(sel, rootEl, forceRootEl) {
       return { els: [], modifiers: [] };
     }
   }
-  const { modifiedSelector, modifiers } = modifyNonFragmentSelector(selector);
+  const {
+    modifiedSelector,
+    modifiers,
+    attribute,
+  } = modifyNonFragmentSelector(selector, action);
+
   let els;
   try {
     els = root.querySelectorAll(modifiedSelector);
@@ -475,8 +527,9 @@ function getSelectedElements(sel, rootEl, forceRootEl) {
   }
   if (modifiers.includes(FLAGS.all) || !els.length) return { els, modifiers };
   els = [els[0]];
-  return { els, modifiers };
+  return { els, modifiers, attribute };
 }
+
 const addHash = (url, newHash) => {
   if (!newHash) return url;
   try {
@@ -523,8 +576,13 @@ export function handleCommands(
       cmd.selectorType = IN_BLOCK_SELECTOR_PREFIX;
       return;
     }
-    const { els, modifiers } = getSelectedElements(selector, rootEl, forceRootEl);
-    cmd.modifiers = modifiers;
+    const {
+      els,
+      modifiers,
+      attribute,
+    } = getSelectedElements(selector, rootEl, forceRootEl, action);
+
+    Object.assign(cmd, { modifiers, attribute });
 
     els?.forEach((el) => {
       if (!el
@@ -1290,6 +1348,7 @@ export async function init(enablements = {}) {
       enablePersV2,
       hybridPersEnabled,
     };
+
     manifests = manifests.concat(await combineMepSources(pzn, promo, mepParam));
     manifests?.forEach((manifest) => {
       if (manifest.disabled) return;
