@@ -56,6 +56,20 @@ export class UptLink extends HTMLAnchorElement {
             console.error(`Could not resolve offer selectors for id: ${osi}.`, error.message);
         });
     }
+
+    /**
+     * @param {HTMLElement} element 
+     */
+    static createFrom(element) {
+        const uptLink = new UptLink();
+        for (const attribute of element.attributes) {
+            if (['class', 'is'].includes(attribute.name)) continue;
+            uptLink.setAttribute(attribute.name, attribute.value);
+        }
+        uptLink.innerHTML = element.innerHTML;
+        uptLink.setAttribute('tabindex', 0);
+        return uptLink;
+    }
 }
 
 // Define custom DOM element

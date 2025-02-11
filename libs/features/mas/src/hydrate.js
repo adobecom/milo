@@ -140,10 +140,12 @@ export function processDescription(fields, merchCard, descriptionConfig) {
 }
 
 export function processUptLinks(fields, merchCard) {
-    const uptLinks = merchCard.querySelectorAll('a[is="upt-link"]');
-    uptLinks.forEach((/** @type {UptLink} */ uptLink) => {
+    const placeholders = merchCard.querySelectorAll('a.upt-link');
+    placeholders.forEach(placeholder => {
+        const uptLink = UptLink.createFrom(placeholder);
+        placeholder.replaceWith(uptLink);
         uptLink.initializeWcsData(fields.osi, fields.promoCode);
-    })
+    });
 }
 
 function createSpectrumCssButton(cta, aemFragmentMapping, isOutline, variant) {
