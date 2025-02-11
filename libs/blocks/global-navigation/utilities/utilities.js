@@ -514,11 +514,13 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
     document.querySelector(selectors.mainNavToggle).focus();
     closeAllDropdowns();
     enableMobileScroll();
+    document.body.classList.remove('gnav-popup-with-branch-banner');
   });
   popup.querySelector('.main-menu')?.addEventListener('click', (e) => {
     e.target.closest(selectors.activeDropdown).querySelector('button').focus();
     enableMobileScroll();
     closeAllDropdowns();
+    document.body.classList.remove('gnav-popup-with-branch-banner');
   });
   const tabbuttons = popup.querySelectorAll('.tabs button');
   const tabpanels = popup.querySelectorAll('.tab-content [role="tabpanel"]');
@@ -551,3 +553,53 @@ export const dropWhile = (xs, f) => {
   if (f(xs[0])) return dropWhile(xs.slice(1), f);
   return xs;
 };
+
+
+/**
+ * Monitors the DOM for the presence of a branch banner and updates its status.
+ * @returns {void}
+ */
+export const [branchBannerLoadCheck, getBranchBannerInfo] = (() => {
+  const branchBannerInfo = {
+    isPresent: false,
+    isSticky: false,
+  };
+  return [
+    () => {
+      // Create a MutationObserver instance to monitor the body for new child elements
+      const observer = new MutationObserver((mutationsList, observer) => {
+        mutationsList.forEach(mutation => {
+          if (mutation.type === 'childList') {
+            mutation.addedNodes.forEach(node => {
+              // Check if the added node has the ID 'branch-banner-iframe'
+              if (node.id === 'branch-banner-iframe') {
+                branchBannerInfo.isPresent = true;
+                // The element is added, now check its height and sticky status
+                // Check if the element has a sticky position
+                branchBannerInfo.isSticky = window.getComputedStyle(node).position === 'fixed';
+                if (branchBannerInfo.isSticky) {
+                  const height = node.offsetHeight; // Get the height of the element
+                  document.querySelector('.feds-localnav').style.top = `${height}px`;
+                }
+
+                // Optional: Disconnect the observer if you no longer need to track the element
+                observer.disconnect();
+              }
+            });
+          }
+        });
+      });
+
+      // Start observing the body element for added child nodes
+      observer.observe(document.body, {
+        childList: true,   // Watch for added or removed child nodes
+        subtree: false     // Only observe direct children of <body>
+      });
+    },
+    /**
+     * Retrieves the current status of the branch banner.
+     * @returns {Object} An object containing the presence and sticky status of the branch banner.
+     */
+    () => branchBannerInfo,
+  ]
+})();

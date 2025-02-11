@@ -42,6 +42,8 @@ import {
   disableMobileScroll,
   enableMobileScroll,
   setAsyncDropdownCount,
+  branchBannerLoadCheck,
+  getBranchBannerInfo,
 } from './utilities/utilities.js';
 import { getFedsPlaceholderConfig } from '../../utils/federated.js';
 
@@ -1182,6 +1184,13 @@ class Gnav {
                 ? 'var(--feds-height-nav) - var(--global-height-navPromo)'
                 : 'var(--feds-height-nav)';
               popup.style = `top: calc(${iOSy || y || 0}px - ${offset} - 2px`;
+              const { isPresent } = getBranchBannerInfo();
+              if (isPresent) {
+                popup.style = `
+                  top: calc(${iOSy || y || 0}px - var(--feds-height-nav) - var(--app-banner-height));
+                  height: 100dvh;
+                `;
+              }
             }
             makeTabActive(popup);
           } else if (isDesktop.matches && this.newMobileNav && isSectionMenu) {
@@ -1190,6 +1199,15 @@ class Gnav {
           }
           trigger({ element: dropdownTrigger, event: e, type: 'dropdown' });
           setActiveDropdown(dropdownTrigger);
+          // branch banner case
+          const { isPresent } = getBranchBannerInfo();
+          if (isSectionMenu && !isDesktop.matches && isPresent) {
+            if (this.elements.mainNav.querySelectorAll('.feds-navItem--section.feds-dropdown--active').length) {
+              document.body.classList.add('gnav-popup-with-branch-banner');
+            } else {
+              document.body.classList.remove('gnav-popup-with-branch-banner');
+            }
+          }
         });
 
         // Update analytics value when dropdown is expanded/collapsed
@@ -1305,6 +1323,7 @@ export default async function init(block) {
   if (hash === '_noActiveItem') {
     setDisableAEDState();
   }
+  branchBannerLoadCheck();
   const content = await fetchAndProcessPlainHtml({ url });
   setAsyncDropdownCount(content.querySelectorAll('.large-menu').length);
   if (!content) {

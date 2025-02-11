@@ -186,6 +186,9 @@ class Popup {
       }
       case 'Escape': {
         closeAllDropdowns();
+        if (newNav) {
+          document.body.classList.remove('gnav-popup-with-branch-banner');
+        }
         this.focusMainNav(isFooter);
         if (newNav && isLocalNav && !isFooter) {
           const toggle = document.querySelector('header.new-nav .feds-toggle');

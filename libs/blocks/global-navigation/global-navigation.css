@@ -776,7 +776,7 @@ header.new-nav.local-nav .feds-curtain--open {
 }
 
 header.new-nav:has(.feds-dropdown--active) {
-  z-index: 12;
+  z-index: 100000;
 }
 
 /* main-menu screen */
@@ -1327,6 +1327,6 @@ html:has(body.disable-ios-scroll) { /* this class is only added on iOS */
 }
 
 /* GNAV popup height fix in case of app banner */
-.branch-banner-is-active header.new-nav .feds-nav > section.feds-navItem > .feds-popup {
-  height: calc(100dvh - var(--app-banner-height));
+.gnav-popup-with-branch-banner #branch-banner-iframe {
+  position: fixed;
 }
