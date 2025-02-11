@@ -1,42 +1,42 @@
 import { createTag } from '../../utils/utils.js';
 
-// eslint-disable-next-line func-names
-window.resizeIframe = function (obj) {
+window.resizeIframe = function resizeIframe(obj) {
   const checkHeight = setInterval(() => {
-    if (obj.contentWindow.document.body.scrollHeight !== 0) {
+    const { scrollHeight } = obj.contentWindow.document.body;
+    if (scrollHeight !== 0) {
       clearInterval(checkHeight);
-      obj.style.height = `${obj.contentWindow.document.body.scrollHeight}px`;
+      const newHeight = `${scrollHeight}px`;
+      obj.style.height = newHeight;
+      if (obj.parentElement) obj.parentElement.style.height = newHeight;
     }
   }, 100);
 };
 
-export default function init(el) {
+export default async function init(el) {
   const url = el.href ?? el.querySelector('a')?.href;
+  if (!url) return;
+
   el.classList.remove('iframe');
   const classes = [...el.classList].join(' ');
 
-  if (!url) return;
+  const iframeProperties = {
+    src: url,
+    allowfullscreen: true,
+    ...(el.classList.contains('lazy-load') && { loading: 'lazy' }),
+    ...(el.classList.contains('auto-height') && {
+      scrolling: 'no',
+      style: 'height: 100%',
+      onload() { window.resizeIframe(this); },
+    }),
+  };
 
-  const iframeProperties = { src: url, allowfullscreen: true };
-  if (el.classList.contains('lazy-load')) {
-    iframeProperties.loading = 'lazy';
-    // iframeProperties.style = 'height: 100vh';
-    // iframeProperties.onload = 'resizeIframe(this)';
-  }
-  if (el.classList.contains('auto-height')) {
-    iframeProperties.scrolling = 'no';
-    iframeProperties.style = 'height: 100%';
-    iframeProperties.onload = 'resizeIframe(this)';
-  }
   const iframe = createTag('iframe', iframeProperties);
   const embed = createTag('div', { class: `milo-iframe ${classes}` }, iframe);
 
   if (el.classList.contains('auto-height')) {
-    window.addEventListener('scroll', () => {
-      window.resizeIframe(iframe);
-    });
+    const { debounce } = await import('../../utils/action.js');
+    window.addEventListener('resize', debounce(() => window.resizeIframe(iframe), 100));
   }
 
-  el.insertAdjacentElement('afterend', embed);
-  el.remove();
+  el.replaceWith(embed);
 }

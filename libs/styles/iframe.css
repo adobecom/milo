@@ -16,6 +16,11 @@
   position: absolute;
 }
 
+.milo-iframe.auto-height {
+  padding-bottom: 0;
+  height: 80vh;
+}
+
 .dialog-modal .milo-video,
 .dialog-modal .milo-iframe {
   min-width: 80vw;
