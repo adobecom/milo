@@ -1,6 +1,6 @@
 const ORG_MAP = {
   'da-bacom': 'DA BACOM',
-  'da-helpx': 'DA HELPX',
+  'da-cc-sandbox': 'DA BACOM',
 };
 
 (async function init() {
