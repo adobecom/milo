@@ -13,6 +13,7 @@ module.exports = {
       "eslint-plugin-import",
   ],
   ignorePatterns: [
+    '/tools/*/dist/*',
     '/libs/deps/*',
     '/tools/loc/*',
   ],
