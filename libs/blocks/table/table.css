@@ -323,25 +323,24 @@
 
 /* icons */
 .table:not(.merch) .row .col span.milo-tooltip {
-  margin-left: var(--spacing-xs);
-  margin-right: 0;
+  margin-right: -4px;
 }
 
 [dir='rtl'] .table:not(.merch) .row .col span.milo-tooltip {
-  margin-left: 0;
-  margin-right: var(--spacing-xs);
+  margin-right: 0;
+  margin-left: -4px;
 }
 
-.table .icon-milo-info {
+.table span[data-tooltip] .icon-milo {
   height: 16px;
 }
 
-.table .icon-milo-info:hover {
+.table span[data-tooltip] .icon-milo:hover {
   cursor: pointer;
 }
 
-.table .icon-milo-info:hover path,
-.table .active .icon-milo-info path {
+.table span[data-tooltip] .icon-milo:hover path,
+.table span[data-tooltip] .active .icon-milo path {
   color: var(--hover-border-color);
 }
 
@@ -514,7 +513,7 @@
 }
 
 .table.has-addon .addon-label .icon,
-.table.has-addon .active .icon-milo-info path {
+.table.has-addon span[data-tooltip] .active .icon-milo path {
   color: black;
 }
 
