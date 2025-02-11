@@ -50,7 +50,7 @@ export class UptLink extends HTMLAnchorElement {
         const promises = service.resolveOfferSelectors(options);
         Promise.all(promises).then(([[offer]]) => {
           let params = `locale=${language}_${country}&country=${country}&offer_id=${offer.offerId}`;
-          if (promotionCode) params += `&promotion_code=${promotionCode}`;
+          if (promotionCode) params += `&promotion_code=${encodeURIComponent(promotionCode)}`;
           this.href = `${PROMO_TERMS_URL}?${params}`
         }).catch(error => {
             console.error(`Could not resolve offer selectors for id: ${osi}.`, error.message);
