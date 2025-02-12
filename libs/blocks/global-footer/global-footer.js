@@ -374,6 +374,7 @@ class Footer {
         const privacySectionListItem = document.createElement('li');
         privacySectionListItem.classList.add('feds-footer-privacy-listitem');
         link.parentNode.insertBefore(privacySectionListItem, link);
+        privacySectionListItem.innerHTML = '<span class="feds-footer-privacyLink-divider" aria-hidden="true">/</span>';
         privacySectionListItem.appendChild(link);
       });
       this.elements.legal.append(privacySection);
@@ -382,7 +383,7 @@ class Footer {
       [...privacySection.attributes].forEach((attr) => {
         privacySectionList.setAttribute(attr.name, attr.value);
       });
-      privacySectionList.innerHTML = privacySection.innerHTML.replace(/( \/ )/g, '<span class="feds-footer-privacyLink-divider" aria-hidden="true">$1</span>');
+      privacySectionList.innerHTML = privacySection.innerHTML.replace(/( \/ )/g, '');
       privacySection.parentNode.replaceChild(privacySectionList, privacySection);
     }
 
