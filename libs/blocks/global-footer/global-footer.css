@@ -223,13 +223,9 @@
   display: block;
 }
 
-.feds-footer-copyright {
-  display: inline-block;
-}
-
-.feds-footer-privacySection,
-.feds-footer-privacy-listitem {
-  display: inline;
+.feds-footer-privacySection {
+  display: flex;
+  flex-wrap: wrap;
 }
 
 .feds-footer-privacyLink {
