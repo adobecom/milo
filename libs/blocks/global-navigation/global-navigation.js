@@ -347,6 +347,7 @@ class Gnav {
   };
 
   init = () => logErrorFor(async () => {
+    branchBannerLoadCheck(this.updateActiveGnavPopup);
     this.elements.curtain = toFragment`<div class="feds-curtain"></div>`;
 
     // Order is important, decorateTopnavWrapper will render the nav
@@ -1039,6 +1040,31 @@ class Gnav {
     return 'link';
   };
 
+  updateActiveGnavPopup = (activePopup) => {
+    let popup = null;
+    if (activePopup) {
+      popup = activePopup;
+    } else {
+      const selectedSection = this.elements.mainNav.querySelector('.feds-navItem--section.feds-dropdown--active');
+      popup = selectedSection?.querySelector('.feds-popup');
+    }
+    if (!popup) return;
+    const y = window.scrollY;
+    const iOSy = Math.abs(parseInt(document.body.style.top, 10));
+    const offset = this.block.classList.contains('has-promo')
+      ? 'var(--feds-height-nav) - var(--global-height-navPromo)'
+      : 'var(--feds-height-nav)';
+    popup.removeAttribute('style');
+    popup.style = `top: calc(${iOSy || y || 0}px - ${offset} - 2px`;
+    const { isPresent } = getBranchBannerInfo();
+    if (isPresent) {
+      popup.style = `
+        top: calc(${0}px - var(--feds-height-nav) - var(--app-banner-height));
+        height: 100dvh;
+      `;
+    }
+  }
+
   decorateMainNavItem = (item, index) => {
     const itemType = this.getMainNavItemType(item);
 
@@ -1174,40 +1200,25 @@ class Gnav {
         // Toggle trigger's dropdown on click
         dropdownTrigger.addEventListener('click', (e) => {
           if (!isDesktop.matches && this.newMobileNav && isSectionMenu) {
+            document.body.classList.add('gnav-popup-with-branch-banner');
             const popup = dropdownTrigger.nextElementSibling;
             // document.body.style.top should always be set
             // at this point by calling disableMobileScroll
             if (popup && this.isLocalNav()) {
-              const y = window.scrollY;
-              const iOSy = Math.abs(parseInt(document.body.style.top, 10));
-              const offset = this.block.classList.contains('has-promo')
-                ? 'var(--feds-height-nav) - var(--global-height-navPromo)'
-                : 'var(--feds-height-nav)';
-              popup.style = `top: calc(${iOSy || y || 0}px - ${offset} - 2px`;
-              const { isPresent } = getBranchBannerInfo();
-              if (isPresent) {
-                popup.style = `
-                  top: calc(${iOSy || y || 0}px - var(--feds-height-nav) - var(--app-banner-height));
-                  height: 100dvh;
-                `;
-              }
+              this.updateActiveGnavPopup(popup);
             }
             makeTabActive(popup);
           } else if (isDesktop.matches && this.newMobileNav && isSectionMenu) {
             const popup = dropdownTrigger.nextElementSibling;
-            if (popup) popup.style.removeProperty('top');
-          }
-          trigger({ element: dropdownTrigger, event: e, type: 'dropdown' });
-          setActiveDropdown(dropdownTrigger);
-          // branch banner case
-          const { isPresent } = getBranchBannerInfo();
-          if (isSectionMenu && !isDesktop.matches && isPresent) {
-            if (this.elements.mainNav.querySelectorAll('.feds-navItem--section.feds-dropdown--active').length) {
-              document.body.classList.add('gnav-popup-with-branch-banner');
-            } else {
+            if (popup) {
+              popup.style.removeProperty('top');
+              popup.style.removeProperty('height');
               document.body.classList.remove('gnav-popup-with-branch-banner');
             }
           }
+          trigger({ element: dropdownTrigger, event: e, type: 'dropdown' });
+          setActiveDropdown(dropdownTrigger);
+          
         });
 
         // Update analytics value when dropdown is expanded/collapsed
@@ -1323,7 +1334,6 @@ export default async function init(block) {
   if (hash === '_noActiveItem') {
     setDisableAEDState();
   }
-  branchBannerLoadCheck();
   const content = await fetchAndProcessPlainHtml({ url });
   setAsyncDropdownCount(content.querySelectorAll('.large-menu').length);
   if (!content) {

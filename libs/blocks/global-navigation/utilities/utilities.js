@@ -565,7 +565,7 @@ export const [branchBannerLoadCheck, getBranchBannerInfo] = (() => {
     isSticky: false,
   };
   return [
-    () => {
+    (updateGnavPopup) => {
       // Create a MutationObserver instance to monitor the body for new child elements
       const observer = new MutationObserver((mutationsList, observer) => {
         mutationsList.forEach(mutation => {
@@ -581,7 +581,15 @@ export const [branchBannerLoadCheck, getBranchBannerInfo] = (() => {
                   const height = node.offsetHeight; // Get the height of the element
                   document.querySelector('.feds-localnav').style.top = `${height}px`;
                 }
-
+                updateGnavPopup();
+              }
+            });
+            mutation.removedNodes.forEach(node => {
+              // Check if the removed node has the ID 'branch-banner-iframe'
+              if (node.id === 'branch-banner-iframe') {
+                branchBannerInfo.isPresent = false;
+                branchBannerInfo.isSticky = false;
+                document.querySelector('.feds-localnav').removeAttribute('style');
                 // Optional: Disconnect the observer if you no longer need to track the element
                 observer.disconnect();
               }

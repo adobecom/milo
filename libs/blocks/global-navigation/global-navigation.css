@@ -1326,7 +1326,13 @@ html:has(body.disable-ios-scroll) { /* this class is only added on iOS */
   position: fixed;
 }
 
-/* GNAV popup height fix in case of app banner */
-.gnav-popup-with-branch-banner #branch-banner-iframe {
-  position: fixed;
+/* Branch banner fix with GNAV popup */
+.gnav-popup-with-branch-banner {
+  transition: 0ms !important;
+}
+.gnav-popup-with-branch-banner.branch-banner-is-active {
+  position: static;
+}
+.gnav-popup-with-branch-banner #branch-banner-iframe + header {
+  transition: 0ms;
 }
