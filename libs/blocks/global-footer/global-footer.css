@@ -241,8 +241,7 @@
   vertical-align: bottom;
 }
 
-.feds-footer-privacy-listitem:before {
-    content: "/";
+span.feds-footer-privacyLink-divider {
     display: inline-block;
     margin: 0 5px;
 }
@@ -322,7 +321,7 @@
     justify-content: flex-end;
     text-align: right;
   }
-  .feds-footer-privacy-listitem:before, .feds-footer-privacyLink {
+  span.feds-footer-privacyLink-divider, .feds-footer-privacyLink {
     margin-left: 5px;
     margin-right: 0;
   }
