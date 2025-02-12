@@ -1740,7 +1740,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
     /* colors */
     --consonant-merch-card-background-color: inherit;
     --consonant-merch-card-border-color: #eaeaea;
-    --color-accent: rgb(59, 99, 251);
+    --color-accent: rgb(39, 77, 234);
     --merch-color-focus-ring: #1473E6;
     --merch-color-grey-10: #f6f6f6;
     --merch-color-grey-60: var(--specturm-gray-600);
