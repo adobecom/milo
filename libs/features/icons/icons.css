@@ -29,8 +29,6 @@
   font-weight: 400;
   line-height: 16px;
   width: max-content;
-  white-space: normal;
-  word-wrap: break-word;
 }
 
 .milo-tooltip::after {
