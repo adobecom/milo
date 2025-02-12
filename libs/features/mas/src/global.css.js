@@ -241,40 +241,23 @@ merch-card [slot='heading-xl'] {
 }
 
 merch-card [slot='callout-content'] {
-    display: flex;
-    flex-direction: column;
-    margin: var(--consonant-merch-spacing-xxxs) 0px;
-    gap: var(--consonant-merch-card-callout-spacing-xxs);
-}
-
-merch-card [slot='callout-content'] > div {
-    display: flex;
-    flex-direction: column;
-    margin: var(--consonant-merch-spacing-xxxs) 0px;
-    gap: var(--consonant-merch-card-callout-spacing-xxs);
-    align-items: flex-start;
-}
-
-merch-card [slot='callout-content'] > div > div {
-    display: flex;
+    margin: var(--consonant-merch-spacing-xxs) 0;
     background: rgba(203 203 203 / 50%);
     border-radius: var(--consonant-merch-spacing-xxxs);
     padding: var(--consonant-merch-spacing-xxxs) var(--consonant-merch-spacing-xxxs) var(--consonant-merch-spacing-xxxs) var(--consonant-merch-spacing-xxs);
-}
-
-merch-card [slot='callout-content'] > div > div > div {
-    display: inline-block;
-    text-align: start;
-    letter-spacing: var(--consonant-merch-card-callout-letter-spacing);
+    width: fit-content;
     color: var(--consonant-merch-card-callout-font-color);
 }
 
-merch-card [slot='callout-content'] img {
-    width: var(--consonant-merch-card-callout-icon-size);
-    height: var(--consonant-merch-card-callout-icon-size);
-    margin-inline-end: 2.5px;
-    margin-inline-start: 9px;
-    margin-block-start: 2.5px;
+merch-card [slot='callout-content'] .icon-button {
+    height: 16px;
+    padding: 0;
+    border: 0;
+    min-inline-size: 16px;
+}
+
+merch-card [slot='callout-content'] .icon-button:hover {
+    background-color: transparent;
 }
 
 merch-card [slot='detail-s'] {

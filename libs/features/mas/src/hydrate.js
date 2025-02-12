@@ -127,18 +127,6 @@ export function processDescription(fields, merchCard, mapping) {
   appendSlot('promoText', fields, merchCard, mapping);
   appendSlot('description', fields, merchCard, mapping);
   appendSlot('callout', fields, merchCard, mapping);
-  // this will be gone with https://jira.corp.adobe.com/browse/MWPW-167305
-  const callout = merchCard.querySelector('[slot="callout-content"]');
-  if (callout) {
-    const textDiv = createTag('div', {}, callout.querySelector('p')?.textContent);
-    const innerDiv = createTag('div', {}, textDiv);
-    if (callout.querySelector('img')) {
-      innerDiv.append(callout.querySelector('img'));
-    }
-    const outerDiv = createTag('div', {}, innerDiv);
-    callout.innerHTML = '';
-    callout.append(outerDiv);
-  }
 }
 
 export function processStockOffersAndSecureLabel(fields, merchCard, aemFragmentMapping, settings) {
