@@ -226,6 +226,7 @@ const parseContent = async (el, merchCard) => {
   ];
 
   innerElements.forEach((element) => {
+    if (!element.innerHTML.trim()) return;
     let { tagName } = element;
     if (isHeadingTag(tagName)) {
       let slotName = SLOT_MAP[merchCard.variant]?.[tagName] || SLOT_MAP_DEFAULT[tagName];
@@ -663,7 +664,10 @@ export default async function init(el) {
       const merchIcon = createTag('merch-icon', { slot: 'icons', src: icon.src, alt: icon.alt, href: icon.href, size: 'l' });
       merchCard.appendChild(merchIcon);
     });
-    icons.forEach((icon) => icon.remove());
+    icons.forEach((icon) => {
+      if (icon.parentElement.nodeName === 'A') icon.parentElement.remove();
+      else icon.remove();
+    });
   }
 
   addStock(merchCard, styles);
