@@ -1,5 +1,4 @@
 import { CheckoutButton } from './checkout-button.js';
-import { Checkout } from './checkout.js';
 import { createTag } from './utils.js';
 
 const DEFAULT_BADGE_COLOR = '#000000';
@@ -292,34 +291,25 @@ function createSpectrumSwcButton(cta, aemFragmentMapping, isOutline, variant) {
         try {
           await customElements.whenDefined('checkout-button');
           const CheckoutButtonEl = customElements.get('checkout-button');
-          const checkoutBtn = CheckoutButtonEl.createCheckoutButton({}, cta.innerHTML);
-    
+          const checkoutBtn = CheckoutButtonEl?.createCheckoutButton({}, cta.innerHTML);
           for (const attr of cta.attributes) {
-            checkoutBtn.setAttribute(attr.name, attr.value);
+              try {
+                  checkoutBtn.setAttribute(attr.name, attr.value);
+              } catch (e) {
+                  console.warn(`Failed to copy attribute ${attr.name}`, e);
+              }
           }
-    
-          if (typeof checkoutBtn.connectedCallback === 'function') {
-            checkoutBtn.connectedCallback();
-          }
+          checkoutBtn.connectedCallback();
           await checkoutBtn.render();
           await checkoutBtn.onceSettled();
-    
           spectrumCta.addEventListener('click', (e) => {
             e.stopPropagation();
-            if (typeof checkoutBtn.clickHandler === 'function') {
-              checkoutBtn.clickHandler(e);
-            } else if (checkoutBtn.href && checkoutBtn.href !== '#') {
-              window.location.href = checkoutBtn.href;
-            } else {
-              console.warn('No checkout action is available.');
-            }
+            checkoutBtn.click(e);
           });
-    
         } catch (err) {
           console.error('Failed to initialize checkout-button logic:', err);
         }
       })();
-
     return spectrumCta;
 }
 
