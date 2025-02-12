@@ -29,5 +29,12 @@ module.exports = {
       path: '/drafts/nala/features/personalization/mep-button/number-of-manifests',
       tags: '@mep @mepbutton3 @smoke @regression @milo',
     },
+    {
+      tcid: '4',
+      name: '@4 - promos should appear properly on button',
+      desc: 'Promos should have a start and end date and should be labeled appropriately',
+      path: '/drafts/nala/features/promotions/promo-future',
+      tags: '@mep @mepbutton4 @smoke @regression @milo',
+    },
   ],
 };
