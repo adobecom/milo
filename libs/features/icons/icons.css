@@ -104,5 +104,5 @@
 
 .milo-tooltip.hide-tooltip::before,
 .milo-tooltip.hide-tooltip::after {
-  display: none !important;
+  display: none;
 }
