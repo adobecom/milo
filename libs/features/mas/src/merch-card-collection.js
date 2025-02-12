@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import MatchMediaController from './match-media-controller.js';
+import { MatchMediaController } from '@spectrum-web-components/reactive-controllers/src/MatchMedia.js';
 import { deeplink, pushState } from './deeplink.js';
 
 import {

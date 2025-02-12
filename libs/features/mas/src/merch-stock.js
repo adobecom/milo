@@ -1,6 +1,6 @@
 import { LitElement, css, html } from 'lit';
 import { EVENT_MERCH_STOCK_CHANGE } from './constants.js';
-import MatchMediaController from './match-media-controller.js';
+import { MatchMediaController } from '@spectrum-web-components/reactive-controllers/src/MatchMedia.js';
 import { MOBILE_LANDSCAPE } from './media.js';
 
 export class MerchStock extends LitElement {

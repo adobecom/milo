@@ -1,5 +1,5 @@
 import { LitElement, html } from 'lit';
-import MatchMediaController from './match-media-controller.js';
+import { MatchMediaController } from '@spectrum-web-components/reactive-controllers/src/MatchMedia.js';
 import styles from './plans-modal.css.js';
 import { MOBILE_LANDSCAPE } from './media.js';
 

@@ -1,7 +1,7 @@
 import { html, css } from 'lit';
 import { VariantLayout } from './variant-layout.js';
 import { CSS } from './ah-try-buy-widget.css.js';
-import MatchMediaController from '../match-media-controller.js';
+import { MatchMediaController } from '@spectrum-web-components/reactive-controllers/src/MatchMedia.js';
 import { MOBILE_LANDSCAPE } from '../media.js';
 
 const AEM_FRAGMENT_MAPPING = {
@@ -135,12 +135,6 @@ export class AHTryBuyWidget extends VariantLayout {
       flex-direction: row;
     }
 
-    :host([variant='ah-try-buy-widget']) .footer .spectrum-Button-label {
-        height: 16px;
-        padding-block: 2px;
-        white-space: nowrap;
-    }
-
     :host([variant='ah-try-buy-widget'][size='single']) .image {
       display: flex;
       width: 199px;
@@ -159,16 +153,6 @@ export class AHTryBuyWidget extends VariantLayout {
         object-fit: cover;
         border-radius: 16px;
         overflow: hidden;
-    }
-
-    :host([variant='ah-try-buy-widget']) ::slotted(.spectrum-Button--primary) {
-        background-color: var(--spectrum-primary-color, #1473E6);
-        color: white;
-    }
-
-    :host([variant='ah-try-buy-widget']) ::slotted(.spectrum-Button--secondary) {
-        background-color: var(--spectrum-secondary-color, #E5E5E5);
-        color: black;
     }
   `;
 }
