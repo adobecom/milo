@@ -382,7 +382,7 @@ class Footer {
       [...privacySection.attributes].forEach((attr) => {
         privacySectionList.setAttribute(attr.name, attr.value);
       });
-      privacySectionList.innerHTML = privacySection.innerHTML.replace(/( \/ )/g, '<span class="feds-footer-privacyLink-divider" aria-hidden="true">$1</span>');
+      privacySectionList.innerHTML = privacySection.innerHTML.replace(/( \/ )/g, '');
       privacySection.parentNode.replaceChild(privacySectionList, privacySection);
     }
 

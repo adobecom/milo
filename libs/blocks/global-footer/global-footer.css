@@ -241,7 +241,8 @@
   vertical-align: bottom;
 }
 
-span.feds-footer-privacyLink-divider {
+.feds-footer-privacy-listitem:before {
+    content: "/";
     display: inline-block;
     margin: 0 5px;
 }
@@ -321,7 +322,7 @@ span.feds-footer-privacyLink-divider {
     justify-content: flex-end;
     text-align: right;
   }
-  span.feds-footer-privacyLink-divider, .feds-footer-privacyLink {
+  .feds-footer-privacy-listitem:before, .feds-footer-privacyLink {
     margin-left: 5px;
     margin-right: 0;
   }
