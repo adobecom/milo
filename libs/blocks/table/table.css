@@ -331,20 +331,16 @@
   margin-left: -4px;
 }
 
-.table .milo-tooltip svg {
-  top: unset;
-}
-
-.table .icon-milo-info {
+.table span[data-tooltip] .icon-milo {
   height: 16px;
 }
 
-.table .icon-info:hover {
+.table span[data-tooltip] .icon-milo:hover {
   cursor: pointer;
 }
 
-.table .icon-info:hover path,
-.table .active .icon-info path {
+.table span[data-tooltip] .icon-milo:hover path,
+.table span[data-tooltip] .active .icon-milo path {
   color: var(--hover-border-color);
 }
 
@@ -517,7 +513,7 @@
 }
 
 .table.has-addon .addon-label .icon,
-.table.has-addon .active .icon-milo-info path {
+.table.has-addon span[data-tooltip] .active .icon-milo path {
   color: black;
 }
 
