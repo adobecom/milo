@@ -374,7 +374,7 @@ class Footer {
         const privacySectionListItem = document.createElement('li');
         privacySectionListItem.classList.add('feds-footer-privacy-listitem');
         link.parentNode.insertBefore(privacySectionListItem, link);
-        // privacySectionListItem.innerHTML = '<span class="feds-footer-privacyLink-divider" aria-hidden="true">/</span>';
+        privacySectionListItem.innerHTML = '<span class="feds-footer-privacyLink-divider" aria-hidden="true">/</span>';
         privacySectionListItem.appendChild(link);
       });
       this.elements.legal.append(privacySection);
