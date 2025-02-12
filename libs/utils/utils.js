@@ -1192,13 +1192,15 @@ async function loadPostLCP(config) {
 
   const georouting = getMetadata('georouting') || config.geoRouting;
   if (georouting === 'on') {
-    const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
-    await loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
+    import('../features/georoutingv2/georoutingv2.js')
+      .then(({ default: loadGeoRouting }) => {
+        loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
+      });
   }
   const header = document.querySelector('header');
   if (header) {
     header.classList.add('gnav-hide');
-    await loadBlock(header);
+    loadBlock(header);
     header.classList.remove('gnav-hide');
   }
   loadTemplate();
