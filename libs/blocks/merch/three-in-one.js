@@ -32,10 +32,11 @@ export const handle3in1IFrameEvents = ({ data: msgData }) => {
   window.lana?.log(`3-in-1 modal: ${subType}`, LANA_OPTIONS);
   const threeInOne = document.querySelector('.three-in-one');
   const closeBtn = threeInOne?.querySelector('.dialog-close');
+  if (!threeInOne) return;
   switch (subType) {
     case MSG_SUBTYPE.AppLoaded:
-      threeInOne?.querySelector('iframe')?.classList.remove('loading');
-      threeInOne?.querySelector('sp-theme')?.remove();
+      threeInOne.querySelector('iframe')?.classList.remove('loading');
+      threeInOne.querySelector('sp-theme')?.remove();
       if (closeBtn) {
         closeBtn.setAttribute('aria-hidden', 'true');
         closeBtn.style.opacity = '0';
@@ -50,6 +51,7 @@ export const handle3in1IFrameEvents = ({ data: msgData }) => {
       break;
     case MSG_SUBTYPE.Close:
       document.querySelector('.dialog-modal.three-in-one')?.dispatchEvent(new Event('closeModal'));
+      window.removeEventListener('message', handle3in1IFrameEvents);
       break;
     default:
       break;
@@ -81,8 +83,6 @@ export default async function openThreeInOneModal(el) {
   const iframeUrl = el?.href;
   const modalType = el?.getAttribute('data-modal-type');
   if (!modalType || !iframeUrl) return undefined;
-
-  window.addEventListener('message', handle3in1IFrameEvents);
 
   const { getModal } = await import('../modal/modal.js');
   const content = await createContent(iframeUrl, modalType);

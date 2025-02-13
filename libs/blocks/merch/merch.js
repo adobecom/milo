@@ -499,7 +499,8 @@ export async function openModal(e, url, offerType, hash, extraOptions, el) {
   } else {
     const isThreeInOneModal = Object.values(MODAL_TYPE_3_IN_1).includes(el?.getAttribute('data-modal-type')) && el?.href;
     if (isThreeInOneModal) {
-      const { default: openThreeInOneModal } = await import('./three-in-one.js');
+      const { default: openThreeInOneModal, handle3in1IFrameEvents } = await import('./three-in-one.js');
+      window.addEventListener('message', handle3in1IFrameEvents);
       modal = await openThreeInOneModal(el);
     } else {
       modal = await openExternalModal(url, getModal, extraOptions, el);
