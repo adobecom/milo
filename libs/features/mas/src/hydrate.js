@@ -292,34 +292,22 @@ function createSpectrumSwcButton(cta, aemFragmentMapping, isOutline, variant) {
           await customElements.whenDefined('checkout-button');
           const CheckoutButtonEl = customElements.get('checkout-button');
           const checkoutBtn = CheckoutButtonEl?.createCheckoutButton({}, cta.innerHTML);
-          const tempDOM = document.createElement('div');
-          tempDOM.appendChild(checkoutBtn);
-          try {
-              for (const attr of cta.attributes) {
-                  try {
-                      checkoutBtn.setAttribute(attr.name, attr.value);
-                  } catch (e) {
-                      console.warn(`Skipped attribute ${attr.name}`, e);
-                  }
+          for (const attr of cta.attributes) {
+              try {
+                  checkoutBtn.setAttribute(attr.name, attr.value);
+              } catch (e) {
+                  console.warn(`Failed to copy attribute ${attr.name}`, e);
               }
-          } finally {
-              tempDOM.remove();
           }
           checkoutBtn.connectedCallback();
-          await Promise.allSettled([
-              checkoutBtn.render?.(), 
-              checkoutBtn.onceSettled?.()
-          ]);
+          await checkoutBtn.render();
+          await checkoutBtn.onceSettled();
           spectrumCta.addEventListener('click', (e) => {
             e.stopPropagation();
             checkoutBtn.click(e);
           });
         } catch (err) {
-          console.error('CheckoutButton critical failure:', {
-              error: err.message,
-              elementType: cta?.tagName,
-              checkoutButtonDefined: !!customElements.get('checkout-button')
-          });
+          console.error('Failed to initialize checkout-button logic:', err);
         }
       })();
     return spectrumCta;
