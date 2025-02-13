@@ -437,6 +437,10 @@ class Gnav {
     localNavItems.forEach((elem, idx) => {
       const clonedItem = elem.cloneNode(true);
       const link = clonedItem.querySelector('a') || clonedItem.querySelector('button');
+      
+      if (link) {
+        link.dataset.title = link.textContent;
+      }
 
       if (idx === 0) {
         localNav.querySelector('.feds-localnav-title').innerText = title.trim();
@@ -1068,9 +1072,13 @@ class Gnav {
     // Copying dropdown contents to localNav items
     const decorateLocalNavItems = (navItem, template) => {
       const elements = [...document.querySelectorAll('.feds-localnav .feds-navItem')].find(
-        (el) => el.textContent.trim() === navItem.textContent,
+        (el) => {
+          const link = el.querySelector('a') || el.querySelector('button');
+          return link.dataset.title?.trim() === navItem.textContent;
+        }
       );
       if (elements) {
+        console.log(template.innerHTML)
         elements.innerHTML = template.innerHTML;
         // Reattach click events & mutation observers, as cloned elem don't retain event listeners
         elements.querySelector('.feds-localnav-items button')?.addEventListener('click', (e) => {
