@@ -1343,6 +1343,7 @@ html:has(body.disable-ios-scroll) { /* this class is only added on iOS */
 html:has(body.branch-banner-is-active.disable-ios-scroll) {
   position: static;
 }
+
 .branch-banner-is-active header.new-nav .feds-nav > section.feds-navItem > .feds-popup {
   height: calc(100dvh - var(--app-banner-height));
 }

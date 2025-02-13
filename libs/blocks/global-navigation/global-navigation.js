@@ -42,6 +42,8 @@ import {
   disableMobileScroll,
   enableMobileScroll,
   setAsyncDropdownCount,
+  branchBannerLoadCheck,
+  getBranchBannerInfo,
 } from './utilities/utilities.js';
 import { getFedsPlaceholderConfig } from '../../utils/federated.js';
 
@@ -1189,6 +1191,13 @@ class Gnav {
                 ? 'var(--feds-height-nav) - var(--global-height-navPromo)'
                 : 'var(--feds-height-nav)';
               popup.style = `top: calc(${iOSy || y || 0}px - ${offset} - 2px`;
+              const { isPresent, isSticky } = getBranchBannerInfo();
+              if (isPresent && !isSticky) {
+                popup.style = `
+                  top: calc(${iOSy || y || 0}px - var(--feds-height-nav));
+                  height: calc(100dvh - var(--app-banner-height) + ${iOSy || y || 0}px);
+                `;
+              }
             }
             makeTabActive(popup);
           } else if (isDesktop.matches && this.newMobileNav && isSectionMenu) {
@@ -1312,6 +1321,7 @@ export default async function init(block) {
   if (hash === '_noActiveItem') {
     setDisableAEDState();
   }
+  branchBannerLoadCheck();
   const content = await fetchAndProcessPlainHtml({ url });
   setAsyncDropdownCount(content.querySelectorAll('.large-menu').length);
   if (!content) {
