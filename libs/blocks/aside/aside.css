@@ -567,7 +567,7 @@
 }
 
 .aside.promobar .action-area .con-button {
-  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .aside.promobar .promo-text.desktop-up,
