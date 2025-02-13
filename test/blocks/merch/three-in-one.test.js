@@ -76,18 +76,24 @@ describe('Three-in-one modal', () => {
   });
 
   it('should open external link in a new tab', async () => {
+    const modal = await openThreeInOneModal(twpLink);
     handle3in1IFrameEvents({ data: `{"app":"ucv3","subType": "${MSG_SUBTYPE.EXTERNAL}", "data":{"externalUrl":"https://www.google.com/maps","target":"_blank"}}` });
     expect(window.open.calledOnceWith('https://www.google.com/maps', '_blank')).to.be.true;
+    modal.remove();
   });
 
   it('should open link in a new tab when message subtype is "switch"', async () => {
+    const modal = await openThreeInOneModal(twpLink);
     handle3in1IFrameEvents({ data: `{"app":"ucv3","subType": "${MSG_SUBTYPE.SWITCH}", "data":{"externalUrl":"https://www.google.com/maps","target":"_blank"}}` });
     expect(window.open.calledOnceWith('https://www.google.com/maps', '_blank')).to.be.true;
+    modal.remove();
   });
 
   it('should open link in a new tab when message subtype is "return_back"', async () => {
+    const modal = await openThreeInOneModal(twpLink);
     handle3in1IFrameEvents({ data: `{"app":"ucv3","subType": "${MSG_SUBTYPE.RETURN_BACK}", "data":{"externalUrl":"https://www.google.com/maps","target":"_blank"}}` });
     expect(window.open.calledOnceWith('https://www.google.com/maps', '_blank')).to.be.true;
+    modal.remove();
   });
 
   it('should close modal when message subtype is "close"', async () => {
