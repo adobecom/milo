@@ -1119,27 +1119,29 @@ async function checkForPageMods() {
     mepButton,
     martech,
   } = Object.fromEntries(PAGE_URL.searchParams);
-  let targetInteractionPromise = null;
+  let targetAjoInteractionPromise = null;
   let calculatedTimeout = null;
   if (mepParam === 'off') return;
   const pzn = getMepEnablement('personalization');
   const promo = getMepEnablement('manifestnames', PROMO_PARAM);
   const target = martech === 'off' ? false : getMepEnablement('target');
   const xlg = martech === 'off' ? false : getMepEnablement('xlg');
+  const isPOC = (document.title === '404' && window.location.pathname === '/products/photoshop/123.html');
+  const ajo = martech === 'off' ? false : isPOC || getMepEnablement('ajo');
 
   if (!(pzn || target || promo || mepParam
-    || mepHighlight || mepButton || mepParam === '' || xlg)) return;
+    || mepHighlight || mepButton || mepParam === '' || xlg || ajo)) return;
 
   const enablePersV2 = enablePersonalizationV2();
   const hybridPersEnabled = getMepEnablement('hybrid-pers');
-  if ((target || xlg) && enablePersV2) {
+  if ((target || xlg || ajo) && enablePersV2) {
     const params = new URL(window.location.href).searchParams;
     calculatedTimeout = parseInt(params.get('target-timeout'), 10)
       || parseInt(getMetadata('target-timeout'), 10)
       || TARGET_TIMEOUT_MS;
 
     const { locale } = getConfig();
-    targetInteractionPromise = (async () => {
+    targetAjoInteractionPromise = (async () => {
       const { loadAnalyticsAndInteractionData } = await import('../martech/helpers.js');
       const now = performance.now();
       performance.mark('interaction-start');
@@ -1150,9 +1152,9 @@ async function checkForPageMods() {
       performance.measure('total-time', 'interaction-start', 'interaction-end');
       const respTime = performance.getEntriesByName('total-time')[0];
 
-      return { targetInteractionData: data, respTime, respStartTime: now };
+      return { targetAjoInteractionData: data, respTime, respStartTime: now };
     })();
-  } else if ((target || xlg) && !isMartechLoaded) loadMartech();
+  } else if ((target || xlg || ajo) && !isMartechLoaded) loadMartech();
   else if (pzn && martech !== 'off') {
     loadIms()
       .then(() => {
@@ -1170,7 +1172,8 @@ async function checkForPageMods() {
     pzn,
     promo,
     target,
-    targetInteractionPromise,
+    ajo,
+    targetAjoInteractionPromise,
     calculatedTimeout,
     enablePersV2,
     hybridPersEnabled,
