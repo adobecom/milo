@@ -116,7 +116,7 @@ export function getHtml(container, path) {
 
     const isBlock = element.nodeName === 'DIV' && element.className;
     const content = isBlock ? getTable(element) : element.outerHTML;
-    return `${acc}${content}${BLOCK_SPACING}`;
+    return `${acc}${content}${isBlock ? BLOCK_SPACING : ''}`;
   }, '');
 }
 
