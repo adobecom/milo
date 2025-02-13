@@ -4,7 +4,7 @@ import { CSS } from './ah-try-buy-widget.css.js';
 import { MatchMediaController } from '@spectrum-web-components/reactive-controllers/src/MatchMedia.js';
 import { MOBILE_LANDSCAPE } from '../media.js';
 
-const AEM_FRAGMENT_MAPPING = {
+export const AH_TRY_BUY_WIDGET_AEM_FRAGMENT_MAPPING = {
   mnemonics: { size: 's' },
   title: { tag: 'h3', slot: 'heading-xxxs', maxCount: 40 },
   description: { tag: 'div', slot: 'body-xxs', maxCount: 200 },
@@ -24,7 +24,7 @@ export class AHTryBuyWidget extends VariantLayout {
 
   /* c8 ignore next 3 */
   get aemFragmentMapping() {
-    return AEM_FRAGMENT_MAPPING;
+    return AH_TRY_BUY_WIDGET_AEM_FRAGMENT_MAPPING;
   }
 
 
