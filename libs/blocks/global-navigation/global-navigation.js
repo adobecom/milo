@@ -1047,6 +1047,7 @@ class Gnav {
     return 'link';
   };
 
+  // update GNAV popup position based on branch banner
   updatePopupPosition = (activePopup) => {
     let popup = null;
     if (activePopup) {
@@ -1067,7 +1068,7 @@ class Gnav {
     if (isPresent && !isSticky) {
       popup.style = `
         top: calc(0px - var(--feds-height-nav));
-        height: calc(100dvh - var(--app-banner-height) + ${iOSy || 0}px);
+        height: calc(100dvh - var(--app-banner-height) + ${iOSy || y || 0}px);
       `;
     }
   }

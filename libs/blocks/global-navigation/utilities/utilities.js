@@ -577,8 +577,10 @@ export const [branchBannerLoadCheck, getBranchBannerInfo] = (() => {
                 branchBannerInfo.isSticky = window.getComputedStyle(node).position === 'fixed';
                 if (branchBannerInfo.isSticky) {
                   const height = node.offsetHeight; // Get the height of the element
+                  // Adjust the top position of the lnav to account for the branch banner height
                   document.querySelector('.feds-localnav').style.top = `${height}px`;
                 }
+                // Update the popup position when the branch banner is added
                 updatePopupPosition();
               }
             });
@@ -588,9 +590,11 @@ export const [branchBannerLoadCheck, getBranchBannerInfo] = (() => {
               if (node.id === 'branch-banner-iframe') {
                 branchBannerInfo.isPresent = false;
                 branchBannerInfo.isSticky = false;
+                // Remove the top style attribute when the branch banner is removed
                 document.querySelector('.feds-localnav').removeAttribute('style');
+                // Update the popup position when the branch banner is removed
                 updatePopupPosition();
-                // Optional: Disconnect the observer if you no longer need to track the element
+                // Optional: Disconnect the observer if you no longer need to track it
                 observer.disconnect();
               }
             });
