@@ -6,11 +6,11 @@ const KNDCTR_COOKIE_KEYS = [
 ];
 
 const DATA_STREAM_IDS_PROD = {
-  firstVisitNoConsent: '57c20bab-94c3-425e-95cb-0b9948b1fdd4',
+  excludeDS: '57c20bab-94c3-425e-95cb-0b9948b1fdd4',
   default: '913eac4d-900b-45e8-9ee7-306216765cd2',
 };
 const DATA_STREAM_IDS_STAGE = {
-  firstVisitNoConsent: 'a44f0037-2ada-441f-a012-243832ce5ff9',
+  excludeDS: 'a44f0037-2ada-441f-a012-243832ce5ff9',
   default: 'e065836d-be57-47ef-b8d1-999e1657e8fd',
 };
 
@@ -363,8 +363,8 @@ export const createRequestUrl = ({
   if (hitType === 'pageView' || hitType === 'propositionDisplay') {
     const isFirstVisit = !getCookie(AMCV_COOKIE);
     const consentCookie = getCookie('OptanonConsent') || '';
-    if (isFirstVisit || !consentCookie.includes('C0004')) {
-      dataStreamId = env === 'prod' ? DATA_STREAM_IDS_PROD.firstVisitNoConsent : DATA_STREAM_IDS_STAGE.firstVisitNoConsent;
+    if (isFirstVisit || !consentCookie || consentCookie.includes('C0004:0')) {
+      dataStreamId = env === 'prod' ? DATA_STREAM_IDS_PROD.excludeDS : DATA_STREAM_IDS_STAGE.excludeDS;
     }
     return `${TARGET_API_URL}?dataStreamId=${dataStreamId}&requestId=${generateUUIDv4()}`;
   }
