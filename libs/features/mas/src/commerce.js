@@ -31,3 +31,12 @@ export {
     applyPlanType,
     getSettings,
 };
+
+// At the bottom of commerce.js
+(() => {
+  const tagName = 'checkout-button';
+  if (!window.customElements.get(tagName)) {
+      window.customElements.define(tagName, CheckoutButton);
+      console.log('Commerce.js evaluated at', Date.now()); // Remove in prod
+  }
+})();

@@ -36,4 +36,5 @@ if (!window.customElements.get(CheckoutButton.is)) {
     window.customElements.define(CheckoutButton.is, CheckoutButton, {
         extends: CheckoutButton.tag,
     });
+    console.log('checkout-button.js evaluated at', Date.now());
 }
