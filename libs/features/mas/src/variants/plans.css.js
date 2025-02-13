@@ -1,4 +1,4 @@
-import { TABLET_UP, DESKTOP_UP, LARGE_DESKTOP,} from '../media.js';
+import { TABLET_UP, DESKTOP_UP, LARGE_DESKTOP } from '../media.js';
 export const CSS = `
 :root {
   --consonant-merch-card-plans-width: 300px;
@@ -20,4 +20,49 @@ merch-card[variant="plans"] [slot="quantity-select"] {
   width: 100%;
   padding: var(--consonant-merch-spacing-xs);
 }
+<<<<<<< HEAD
+=======
+
+.one-merch-card.plans,
+.two-merch-cards.plans,
+.three-merch-cards.plans,
+.four-merch-cards.plans {
+    grid-template-columns: var(--consonant-merch-card-plans-width);
+}
+
+/* Tablet */
+@media screen and ${TABLET_UP} {
+  :root {
+    --consonant-merch-card-plans-width: 302px;
+  }
+  .two-merch-cards.plans,
+  .three-merch-cards.plans,
+  .four-merch-cards.plans {
+      grid-template-columns: repeat(2, var(--consonant-merch-card-plans-width));
+  }
+  .four-merch-cards.plans .foreground {
+      max-width: unset;
+  }
+}
+
+/* desktop */
+@media screen and ${DESKTOP_UP} {
+  :root {
+    --consonant-merch-card-plans-width: 276px;
+  }
+  .three-merch-cards.plans {
+      grid-template-columns: repeat(3, var(--consonant-merch-card-plans-width));
+  }
+  .four-merch-cards.plans {
+      grid-template-columns: repeat(4, var(--consonant-merch-card-plans-width));
+  }
+}
+
+/* Large desktop */
+    @media screen and ${LARGE_DESKTOP} {
+    .four-merch-cards.plans {
+        grid-template-columns: repeat(4, var(--consonant-merch-card-plans-width));
+    }
+}
+>>>>>>> upstream/stage
 `;
