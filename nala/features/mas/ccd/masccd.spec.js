@@ -32,6 +32,7 @@ module.exports = {
         description: 'Save over 65% on Photoshop and more than 20 apps for the first year. Plus get the first month on us when purchase by Sep 2',
         price: 'US$19.99/mo',
         strikethroughPrice: 'US$59.99/mo',
+        abmLabel: 'Annual, paid monthly',
         cta: 'Buy now',
         offerid: '951DCCB08194F40B9C79951675547DF5',
         linkText: 'See terms',
