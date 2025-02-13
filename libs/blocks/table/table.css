@@ -404,14 +404,14 @@
 
 [dir="rtl"] .section-row-title .milo-tooltip:is(.top, .bottom, .left, .right)::before {
   left: initial;
-  margin: 0 12px 0 0;
+  margin: 0 8px 0 0;
   right: 100%;
   top: 50%;
   transform: translateY(-50%);
 }
 
 [dir="rtl"] .section-row-title .milo-tooltip:is(.top, .bottom, .left, .right)::after {
-  left: -8px;
+  left: -4px;
   margin: 0 4px 0 -4px;
   top: 50%;
   transform: translateY(-50%);
@@ -694,14 +694,14 @@
 
   .section-row-title .milo-tooltip:is(.top, .bottom, .left, .right)::before {
     left: initial;
-    margin: 0 12px 0 0;
+    margin: 0 8px 0 0;
     right: 100%;
     top: 50%;
     transform: translateY(-50%);
   }
 
   .section-row-title .milo-tooltip:is(.top, .bottom, .left, .right)::after {
-    left: -8px;
+    left: -4px;
     margin: 0 4px 0 -4px;
     top: 50%;
     transform: translateY(-50%);

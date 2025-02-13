@@ -1003,7 +1003,9 @@ merch-card[variant="plans"] [slot="quantity-select"] {
   :root {
     --consonant-merch-card-plans-width: 276px;
   }
-  .three-merch-cards.plans,
+  .three-merch-cards.plans {
+      grid-template-columns: repeat(3, var(--consonant-merch-card-plans-width));
+  }
   .four-merch-cards.plans {
       grid-template-columns: repeat(4, var(--consonant-merch-card-plans-width));
   }

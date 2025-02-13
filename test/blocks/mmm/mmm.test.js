@@ -1,7 +1,7 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
-import { DEBOUNCE_TIME } from '../../../libs/blocks/mmm/mmm.js';
+import { DEBOUNCE_TIME, getLocalStorageFilter } from '../../../libs/blocks/mmm/mmm.js';
 
 const delay = (ms = 0) => new Promise((resolve) => {
   setTimeout(() => resolve(), ms);
@@ -148,12 +148,15 @@ describe('MMM', () => {
   });
 
   it('Test filters', async () => {
+    let filterData = getLocalStorageFilter();
+    expect(filterData).to.be.null;
+
     const copyButton = document.querySelector('.copy-to-clipboard');
     expect(copyButton).to.exist;
     const event = new Event('change');
     expect(copyButton.dataset.destination).to.not.include('geos');
     expect(copyButton.dataset.destination).to.not.include('pages');
-    expect(copyButton.dataset.destination).to.not.include('urls');
+    expect(copyButton.dataset.destination).to.not.include('filter');
 
     const geoDropdown = document.querySelector('#mmm-dropdown-geos');
     expect(geoDropdown).to.exist;
@@ -161,7 +164,7 @@ describe('MMM', () => {
     geoDropdown.dispatchEvent(event);
     expect(copyButton.dataset.destination).to.include('geos');
     expect(copyButton.dataset.destination).to.not.include('pages');
-    expect(copyButton.dataset.destination).to.not.include('urls');
+    expect(copyButton.dataset.destination).to.not.include('filter');
 
     const pageDropdown = document.querySelector('#mmm-dropdown-pages');
     expect(pageDropdown).to.exist;
@@ -169,26 +172,35 @@ describe('MMM', () => {
     pageDropdown.dispatchEvent(event);
     expect(copyButton.dataset.destination).to.include('geos');
     expect(copyButton.dataset.destination).to.include('pages');
-    expect(copyButton.dataset.destination).to.not.include('urls');
+    expect(copyButton.dataset.destination).to.not.include('filter');
 
     geoDropdown.options[0].selected = true;
     geoDropdown.dispatchEvent(event);
     expect(copyButton.dataset.destination).to.not.include('geos');
     expect(copyButton.dataset.destination).to.include('pages');
-    expect(copyButton.dataset.destination).to.not.include('urls');
+    expect(copyButton.dataset.destination).to.not.include('filter');
 
     const lastSeenManifestDropdown = document.querySelector('#mmm-lastSeenManifest');
     lastSeenManifestDropdown.options[0].selected = true;
     lastSeenManifestDropdown.dispatchEvent(event);
     expect(copyButton.dataset.destination).to.include('lastSeenManifest');
 
-    const mmmSearchQuery = document.querySelector('#mmm-search-urls');
+    const mmmSearchQuery = document.querySelector('#mmm-search-filter');
     expect(mmmSearchQuery).to.exist;
     mmmSearchQuery.value = 'pricing';
     mmmSearchQuery.dispatchEvent(event);
     await delay(DEBOUNCE_TIME + 1); // await debounce time
     expect(copyButton.dataset.destination).to.not.include('geos');
     expect(copyButton.dataset.destination).to.include('pages');
-    expect(copyButton.dataset.destination).to.include('urls');
+    expect(copyButton.dataset.destination).to.include('filter');
+
+    filterData = getLocalStorageFilter();
+    expect(filterData).to.not.be.null;
+    expect(filterData.filter).to.not.be.null;
+    expect(filterData.geos).to.not.be.null;
+    expect(filterData.pages).to.not.be.null;
+    expect(filterData.pageNum).to.not.be.null;
+    expect(filterData.subdomain).to.not.be.null;
+    expect(filterData.lastSeenManifest).to.not.be.null;
   });
 });

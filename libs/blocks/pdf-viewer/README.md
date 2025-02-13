@@ -11,6 +11,48 @@ How to create a new client id:
 5. Push up to your feature branch to verify.
 6. Once you're done, remove the temporary client id from the code and delete it from the [developer console](https://developer.adobe.com/console/).
 
+## Using in a Consumer Repo
+You'll need to create client IDs for your consumer domains and add them to your config.
+
+```
+// scripts.js
+const CONFIG = {
+  stage: {
+    ...
+    pdfViewerClientId: '<CLIENT_ID>',
+    pdfViewerReportSuite: '<REPORT_SUITE_ID>',
+  },
+  prod: {
+    pdfViewerClientId: '<CLIENT_ID>',
+    pdfViewerReportSuite: '<REPORT_SUITE_ID>',
+  },
+  // The following envs are non-standard and used specifically for this block
+  page: {
+    pdfViewerClientId: '<CLIENT_ID>', // client id for aem.page domain
+    pdfViewerReportSuite: '<REPORT_SUITE_ID>',
+  },
+  live: {
+    pdfViewerClientId: '<CLIENT_ID>', // client id for aem.live domain
+    pdfViewerReportSuite: '<REPORT_SUITE_ID>',
+  },
+  hlxPage: {
+    pdfViewerClientId: '<CLIENT_ID>',
+    pdfViewerReportSuite: '<REPORT_SUITE_ID>',
+  },
+  hlxLive: {
+    pdfViewerClientId: '<CLIENT_ID>',
+    pdfViewerReportSuite: '<REPORT_SUITE_ID>',
+  },
+  ...
+};
+
+(async function loadPage() {
+  const { loadArea, setConfig } = await import(`${LIBS}/utils/utils.js`);
+  setConfig({ ...CONFIG, miloLibs: LIBS });
+  await loadArea();
+}());
+```
+
 ## Resources
 - Product Documentation: https://developer.adobe.com/document-services/docs/overview/pdf-embed-api
 - Inline Mode demo: https://acrobatservices.adobe.com/view-sdk-demo/index.html#/view/IN_LINE/Bodea%20Brochure.pdf
