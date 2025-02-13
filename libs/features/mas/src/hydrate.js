@@ -404,7 +404,6 @@ export function updateLinksCSS(merchCard) {
 }
 
 export async function hydrate(fragment, merchCard) {
-    console.log('hydrate.js evaluated at', Date.now());
     const { fields } = fragment;
     const { variant } = fields;
     if (!variant) return;
