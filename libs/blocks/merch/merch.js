@@ -2,6 +2,7 @@ import {
   createTag, getConfig, loadArea, loadScript, loadStyle, localizeLink, SLD,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
+import { MODAL_TYPE_3_IN_1 } from '../../deps/mas/constants.js';
 
 export const CHECKOUT_LINK_CONFIG_PATH = '/commerce/checkout-link.json'; // relative to libs.
 
@@ -478,7 +479,7 @@ async function openExternalModal(url, getModal, extraOptions) {
 
 const isInternalModal = (url) => /\/fragments\//.test(url);
 
-export async function openModal(e, url, offerType, hash, extraOptions) {
+export async function openModal(e, url, offerType, hash, extraOptions, el) {
   e.preventDefault();
   e.stopImmediatePropagation();
   const { getModal } = await import('../modal/modal.js');
@@ -489,14 +490,20 @@ export async function openModal(e, url, offerType, hash, extraOptions) {
     const prevHash = window.location.hash.replace('#', '') === hash ? '' : window.location.hash;
     window.location.hash = hash;
     window.addEventListener('milo:modal:closed', () => {
-      window.history.pushState({}, document.title, `#${prevHash}`);
+      window.history.pushState({}, document.title, prevHash !== '' ? `#${prevHash}` : `${window.location.pathname}${window.location.search}`);
     }, { once: true });
   }
   if (isInternalModal(url)) {
     const fragmentPath = url.split(/(hlx|aem).(page|live)/).pop();
     modal = await openFragmentModal(fragmentPath, getModal);
   } else {
-    modal = await openExternalModal(url, getModal, extraOptions);
+    const isThreeInOneModal = Object.values(MODAL_TYPE_3_IN_1).includes(el?.getAttribute('data-modal-type')) && el?.href;
+    if (isThreeInOneModal) {
+      const { default: openThreeInOneModal } = await import('./three-in-one.js');
+      modal = await openThreeInOneModal(el);
+    } else {
+      modal = await openExternalModal(url, getModal, extraOptions, el);
+    }
   }
   if (modal) {
     modal.classList.add(offerTypeClass);
@@ -539,7 +546,10 @@ export async function getModalAction(offers, options, el) {
   if (!url) return undefined;
   url = isInternalModal(url) || isProdModal(url)
     ? localizeLink(checkoutLinkConfig[columnName]) : checkoutLinkConfig[columnName];
-  return { url, handler: (e) => openModal(e, url, offerType, hash, options.extraOptions) };
+  return {
+    url,
+    handler: (e) => openModal(e, url, offerType, hash, options.extraOptions, el),
+  };
 }
 
 export async function getCheckoutAction(offers, options, imsSignedInPromise, el) {
@@ -760,19 +770,3 @@ export default async function init(el) {
   log.warn('Failed to get context:', { el });
   return null;
 }
-
-export async function handleHashChange() {
-  const modalDialog = document.querySelector('.dialog-modal');
-  if (window.location.hash) {
-    const modalId = window.location.hash.replace('#', '');
-    const cta = document.querySelector(`.con-button[data-modal-id="${modalId}"]`);
-    if (!modalDialog) {
-      reopenModal(cta);
-    }
-  } else if (modalDialog) {
-    const { closeModal } = await import('../modal/modal.js');
-    closeModal(modalDialog);
-  }
-}
-
-window.addEventListener('hashchange', handleHashChange);

@@ -38,6 +38,19 @@ await build({
     outfile: `${outfolder}/mas.js`,
 });
 
+// constants.js
+await build({
+  ...defaults,
+  entryPoints: ['./src/constants.js'],
+  outfile: './dist/constants.js',
+});
+
+await build({
+  ...defaults,
+  entryPoints: ['./src/constants.js'],
+  outfile: `${outfolder}/constants.js`,
+});
+
 // web components
 Promise.all([
     build({
