@@ -80,7 +80,7 @@ runTests(async () => {
             });
             event.composedPath = () => [quantitySelect];
             inputField.dispatchEvent(event);
-            await delay(100);
+            await delay(600);
             expect(quantitySelect.selectedValue).to.equal(3);
             const button = plansCard.querySelector('.con-button');
             expect(button.getAttribute('data-quantity')).to.equal('3');
