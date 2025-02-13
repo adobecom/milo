@@ -32,7 +32,17 @@ describe('Icon Support', () => {
     await loadIcons(icons, config);
   });
 
-  it('renders an SVG inside the icon element', async () => {
+  it('Handles tooltip- prefix correctly', async () => {
+    const tooltipIcon = createTag('span', { class: 'icon icon-tooltip-info' });
+    await loadIcons([tooltipIcon], config);
+    const svgIcon = tooltipIcon.querySelector(':scope svg');
+    expect(svgIcon).to.exist;
+
+    const iconName = tooltipIcon.classList[1].replace('icon-', '').replace(/tooltip-/, '');
+    expect(iconName).to.equal('info');
+  });
+
+  it('Fetches successfully with cache control enabled', async () => {
     const otherIcons = [createTag('span', { class: 'icon icon-play' })];
     document.body.appendChild(otherIcons[0]);
 
