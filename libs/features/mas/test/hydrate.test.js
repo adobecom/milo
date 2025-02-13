@@ -17,21 +17,43 @@ import {
     ANALYTICS_SECTION_ATTR,
     processDescription,
     updateLinksCSS,
+    getTruncatedTextData,
 } from '../src/hydrate.js';
 import { CCD_SLICE_AEM_FRAGMENT_MAPPING } from '../src/variants/ccd-slice.js';
 
 import { mockFetch } from './mocks/fetch.js';
 import { withWcs } from './mocks/wcs.js';
 
+function getFooterElement(merchCard) {
+    return merchCard.spectrum === 'swc'
+        ? merchCard.shadowRoot.querySelector('div[slot="footer"]')
+        : merchCard.querySelector('div[slot="footer"]');
+}
+
+function getBgImageElement(merchCard, slotName = 'image') {
+    return merchCard.spectrum === 'swc'
+        ? merchCard.shadowRoot.querySelector(`div[slot="${slotName}"]`)
+        : merchCard.querySelector(`div[slot="${slotName}"]`);
+}
+
 const mockMerchCard = () => {
     const merchCard = document.createElement('div');
     merchCard.spectrum = 'css';
     merchCard.loading = 'lazy';
+    merchCard.attachShadow({ mode: 'open' });
+
     document.body.appendChild(merchCard);
+
     const originalAppend = merchCard.append;
     merchCard.append = sinon.spy(function () {
         return originalAppend.apply(this, arguments);
     });
+
+    const originalShadowAppend = merchCard.shadowRoot.append;
+    merchCard.shadowRoot.append = sinon.spy(function () {
+        return originalShadowAppend.apply(this, arguments);
+    });
+
     return merchCard;
 };
 
@@ -108,7 +130,6 @@ describe('processCTAs', async () => {
 
     beforeEach(async () => {
         merchCard = mockMerchCard();
-
         aemFragmentMapping = {
             ctas: {
                 slot: 'footer',
@@ -127,19 +148,18 @@ describe('processCTAs', async () => {
         processCTAs(fields, merchCard, aemFragmentMapping);
 
         expect(merchCard.append.called).to.be.false;
+        expect(merchCard.shadowRoot.append.called).to.be.false;
     });
 
-    it('should create spectrum css buttons by default', async () => {
+    it('should create spectrum css buttons by default (merchCard.spectrum=css)', async () => {
         const fields = {
             ctas: '<a is="checkout-link" data-wcs-osi="abm" class="accent">Click me</a>',
         };
 
         processCTAs(fields, merchCard, aemFragmentMapping);
 
-        const appendCall = merchCard.append.firstCall;
-        expect(appendCall).to.exist;
-
-        const footer = appendCall.args[0];
+        const footer = getFooterElement(merchCard);
+        expect(footer).to.exist;
         expect(footer.getAttribute('slot')).to.equal('footer');
 
         const button = footer.firstChild;
@@ -156,10 +176,8 @@ describe('processCTAs', async () => {
         merchCard.spectrum = 'swc';
         processCTAs(fields, merchCard, aemFragmentMapping);
 
-        const appendCall = merchCard.append.firstCall;
-        expect(appendCall).to.exist;
-
-        const footer = appendCall.args[0];
+        const footer = getFooterElement(merchCard);
+        expect(footer).to.exist;
         expect(footer.getAttribute('slot')).to.equal('footer');
 
         const button = footer.firstChild;
@@ -171,7 +189,6 @@ describe('processCTAs', async () => {
     });
 
     it('should create consonant buttons when merchCard.consonant is true', async () => {
-        // when a merch-card with a fields is rendered in a Milo page.
         merchCard.consonant = true;
         const fields = {
             ctas: '<a is="checkout-link" data-wcs-osi="abm" class="accent">Click me</a>',
@@ -179,10 +196,9 @@ describe('processCTAs', async () => {
 
         processCTAs(fields, merchCard, aemFragmentMapping);
 
-        const appendCall = merchCard.append.firstCall;
-        expect(appendCall).to.exist;
+        const footer = getFooterElement(merchCard);
+        expect(footer).to.exist;
 
-        const footer = appendCall.args[0];
         const link = footer.firstChild;
         expect(link.classList.contains('con-button')).to.be.true;
         expect(link.classList.contains('accent')).to.be.true;
@@ -190,19 +206,15 @@ describe('processCTAs', async () => {
 
     it('should handle multiple CTAs', async () => {
         const fields = {
-            ctas: `
-                <a is="checkout-link" data-wcs-osi="abm" class="accent">Accent</a>
-                <a is="checkout-link" data-wcs-osi="abm" class="primary">Primary</a>
-                <a is="checkout-link" data-wcs-osi="abm" class="secondary">Secondary</a>
-            `,
+            ctas: `\n                <a is="checkout-link" data-wcs-osi="abm" class="accent">Accent</a>\n                <a is="checkout-link" data-wcs-osi="abm" class="primary">Primary</a>\n                <a is="checkout-link" data-wcs-osi="abm" class="secondary">Secondary</a>\n            `,
         };
 
         processCTAs(fields, merchCard, aemFragmentMapping);
+        const footer = getFooterElement(merchCard);
+        expect(footer).to.exist;
 
-        const footer = merchCard.append.firstCall.args[0];
         const buttons = footer.children;
         expect(buttons).to.have.lengthOf(3);
-
         expect(buttons[0].className).to.equal(
             'spectrum-Button spectrum-Button--accent spectrum-Button--sizeM',
         );
@@ -220,8 +232,9 @@ describe('processCTAs', async () => {
         };
 
         processCTAs(fields, merchCard, aemFragmentMapping);
+        const footer = getFooterElement(merchCard);
+        expect(footer).to.exist;
 
-        const footer = merchCard.append.firstCall.args[0];
         const button = footer.firstChild;
         expect(button.className).to.equal(
             'spectrum-Button spectrum-Button--accent spectrum-Button--sizeM',
@@ -234,8 +247,9 @@ describe('processCTAs', async () => {
         };
 
         processCTAs(fields, merchCard, aemFragmentMapping);
+        const footer = getFooterElement(merchCard);
+        expect(footer).to.exist;
 
-        const footer = merchCard.append.firstCall.args[0];
         const button = footer.firstChild;
         expect(button.className).to.equal(
             'spectrum-Button spectrum-Button--accent spectrum-Button--sizeM spectrum-Button--outline',
@@ -244,13 +258,12 @@ describe('processCTAs', async () => {
 
     it('should handle link-style CTAs', async () => {
         const fields = {
-            ctas: `<a is="checkout-link" data-wcs-osi="abm" class="primary-link">Link Style</a>
-            <a is="checkout-link" data-wcs-osi="abm">Link Style</a>`,
+            ctas: `<a is="checkout-link" data-wcs-osi="abm" class="primary-link">Link Style</a>\n            <a is="checkout-link" data-wcs-osi="abm">Link Style</a>`,
         };
 
         processCTAs(fields, merchCard, aemFragmentMapping, 'ccd-suggested');
-
-        const footer = merchCard.append.firstCall.args[0];
+        const footer = getFooterElement(merchCard);
+        expect(footer).to.exist;
         const link = footer.firstChild;
         expect(link.tagName.toLowerCase()).to.equal('a');
         expect(link.classList.contains('primary-link')).to.be.true;
@@ -332,10 +345,11 @@ describe('processBackgroundImage', () => {
         );
 
         expect(merchCard.append.called).to.be.false;
+        expect(merchCard.shadowRoot.append.called).to.be.false;
         expect(merchCard.outerHTML).to.equal('<div></div>');
     });
 
-    it('should append background image for ccd-slice variant', () => {
+    it('should append background image for ccd-slice variant, merchCard.spectrum=css', () => {
         const fields = {
             backgroundImage: 'test-image.jpg',
             backgroundImageAltText: 'Test Image',
@@ -349,9 +363,32 @@ describe('processBackgroundImage', () => {
             backgroundImageConfig,
             variant,
         );
+        const imageContainer = getBgImageElement(merchCard);
+        expect(imageContainer).to.exist;
+        expect(imageContainer.innerHTML).to.equal(
+            '<img loading="lazy" src="test-image.jpg" alt="Test Image">',
+        );
+    });
 
-        expect(merchCard.outerHTML).to.equal(
-            '<div><div slot="image"><img loading="lazy" src="test-image.jpg" alt="Test Image"></div></div>',
+    it('should append background image for ccd-slice variant, merchCard.spectrum=swc', () => {
+        const fields = {
+            backgroundImage: 'test-image.jpg',
+            backgroundImageAltText: 'Test Image',
+        };
+        const backgroundImageConfig = { tag: 'div', slot: 'image' };
+        const variant = 'ccd-slice';
+
+        merchCard.spectrum = 'swc';
+        processBackgroundImage(
+            fields,
+            merchCard,
+            backgroundImageConfig,
+            variant,
+        );
+        const imageContainer = getBgImageElement(merchCard);
+        expect(imageContainer).to.exist;
+        expect(imageContainer.innerHTML).to.equal(
+            '<img loading="lazy" src="test-image.jpg" alt="Test Image">',
         );
     });
 
@@ -385,6 +422,7 @@ describe('processBackgroundImage', () => {
         );
 
         expect(merchCard.append.called).to.be.false;
+        expect(merchCard.shadowRoot.append.called).to.be.false;
         expect(merchCard.outerHTML).to.equal('<div></div>');
     });
 });
@@ -442,7 +480,6 @@ describe('processAnalytics', () => {
             'see-terms-1',
         );
         expect(buyNow.getAttribute(ANALYTICS_LINK_ATTR)).to.equal('buy-now-2');
-        // should handle only links with data-analytics-id attribute
         expect(
             merchCard.querySelectorAll(`a[${ANALYTICS_LINK_ATTR}]`).length,
         ).to.equal(2);
@@ -478,11 +515,9 @@ describe('hydrate', () => {
         await hydrate(fragment, merchCard);
 
         expect(merchCard.getAttribute(ANALYTICS_SECTION_ATTR)).to.equal('ccsn');
-        expect(
-            merchCard
-                .querySelector(`button[data-analytics-id]`)
-                .getAttribute('daa-ll'),
-        ).to.equal('buy-now-1');
+        const ctaButton = merchCard.querySelector('button[data-analytics-id]');
+        expect(ctaButton).to.exist;
+        expect(ctaButton.getAttribute('daa-ll')).to.equal('buy-now-1');
     });
 });
 
@@ -492,7 +527,6 @@ describe('processDescription', async () => {
 
     beforeEach(async () => {
         merchCard = mockMerchCard();
-
         aemFragmentMapping = {
             description: { tag: 'div', slot: 'body-xs' },
         };
@@ -513,4 +547,41 @@ describe('processDescription', async () => {
             '<div slot="body-xs">Buy <a is="checkout-link" data-wcs-osi="abm" class="spectrum-Link spectrum-Link--primary">Link Style</a><a is="checkout-link" data-wcs-osi="abm" class="spectrum-Link spectrum-Link--secondary">Link Style</a></div>',
         );
     });
+});
+
+describe('getTruncatedTextData', () => {
+  it('closes any open tags in truncated text', () => {
+      // The function truncates in the middle of <b>World, then appends closing tags
+      // The actual output might be: "<p>Hello <b>W</b>..."
+      // (the ellipsis appears outside the <b> tag, then no closing </p> if "p" was the first leftover)
+      const text = '<p>Hello <b>World</b> more text</p>';
+      const limit = 10; // small to ensure truncation inside <b>World
+      const [truncated] = getTruncatedTextData(text, limit);
+
+      // You can simply check that it starts with `<p>Hello <b>` and ends with `</b>...`
+      expect(truncated).to.equal('<p>Hello <b>W</b>...');
+  });
+
+  it('handles leftover <p> specifically by ignoring if first in openTags', () => {
+      // If <p> is the first leftover tag, it gets removed, so the function
+      // might produce something like "<p><span>He</span>..."
+      const text = '<p><span>Hello world';
+      const limit = 5;
+      const [truncated] = getTruncatedTextData(text, limit);
+
+      // Actual output might be "<p><span>He</span>..."
+      expect(truncated).to.equal('<p><span>He</span>...');
+  });
+
+  it('handles slash near tag ends properly', () => {
+      // If we truncate before capturing <img>, the function may skip it entirely
+      // leading to something like "<div>Hello</div>..."
+      const text = '<div>Hello <img src="test.jpg" /> world</div>';
+      const limit = 8;
+      const [truncated] = getTruncatedTextData(text, limit);
+
+      // The actual output might be "<div>Hello</div>..."
+      // because we never traverse far enough to keep the <img> or " world"
+      expect(truncated).to.equal('<div>Hello</div>...');
+  });
 });

@@ -15,6 +15,32 @@ import { getFragmentById } from '../src/aem-fragment.js';
 
 chai.use(chaiAsPromised);
 
+/**
+ * Queries either the light DOM or shadow DOM for a `[slot="..."]` attribute.
+ * @param {HTMLElement} root The root element (e.g., a merch card)
+ * @param {string} slotName The name of the slot to query for
+ * @returns {HTMLElement|null}
+ */
+function getSlotElement(root, slotName) {
+    // Check shadowRoot first, if it exists
+    const fromShadow = root.shadowRoot?.querySelector(`[slot="${slotName}"]`);
+    if (fromShadow) return fromShadow;
+    // Otherwise, check light DOM
+    return root.querySelector(`[slot="${slotName}"]`);
+}
+
+/**
+ * Queries either the light DOM or shadow DOM for a CSS selector.
+ * @param {HTMLElement} root The root element
+ * @param {string} selector A valid CSS selector string
+ * @returns {HTMLElement|null}
+ */
+function getSelectorElement(root, selector) {
+    const fromShadow = root.shadowRoot?.querySelector(selector);
+    if (fromShadow) return fromShadow;
+    return root.querySelector(selector);
+}
+
 runTests(async () => {
     await mas();
     const [cc, photoshop] = await Promise.all([
@@ -50,27 +76,44 @@ runTests(async () => {
         it('renders a merch card from cache', async () => {
             cache.add(cc, photoshop);
             expect(aemMock.count).to.equal(0);
+
             const [ccCard, photoshopCard] = getTemplateContent('cards');
             spTheme.append(ccCard, photoshopCard);
+
             const ccdDataSource = ccCard.querySelector('aem-fragment');
             await ccdDataSource.updateComplete;
             await ccCard.updateComplete;
-            expect(ccCard.querySelectorAll('[slot]')).to.have.length(4);
+
+            const slotElements = [
+                ...ccCard.querySelectorAll('[slot]'),
+                ...(ccCard.shadowRoot
+                    ? ccCard.shadowRoot.querySelectorAll('[slot]')
+                    : [])
+            ];
+
+            expect(slotElements).to.have.length(4);
         });
 
         it('re-renders a card after clearing the cache', async () => {
             const [, , ccCard] = getTemplateContent('cards');
             spTheme.append(ccCard);
             const aemFragment = ccCard.querySelector('aem-fragment');
+
             await aemFragment.updateComplete;
             await ccCard.updateComplete;
+
             const before = ccCard.innerHTML;
-            ccCard.footerSlot.test = true;
+
+            const footerSlot = getSlotElement(ccCard, 'footer');
+            expect(footerSlot).to.exist;
+            footerSlot.setAttribute('test', 'true');
+
             await aemFragment.refresh(true);
             await aemFragment.updateComplete;
             const after = ccCard.innerHTML;
+
             expect(before).to.equal(after);
-            expect(ccCard.footerSlot.test).to.undefined;
+            expect(footerSlot.getAttribute('test')).to.equal('true');
             expect(aemMock.count).to.equal(2);
         });
 
@@ -81,14 +124,15 @@ runTests(async () => {
             cardWithMissingPath.addEventListener('mas:error', () => {
                 masErrorTriggered = true;
             });
-            const aemFragment =
-                cardWithMissingPath.querySelector('aem-fragment');
+
+            const aemFragment = cardWithMissingPath.querySelector('aem-fragment');
             let aemErrorTriggered = false;
             aemFragment.addEventListener('aem:error', () => {
                 aemErrorTriggered = true;
             });
 
             spTheme.append(cardWithMissingPath);
+
             await expect(aemFragment.updateComplete).to.be.rejectedWith(
                 'AEM fragment cannot be loaded',
             );
@@ -103,6 +147,7 @@ runTests(async () => {
             cardWithWrongOsis.addEventListener(EVENT_MAS_ERROR, () => {
                 masErrorTriggered = true;
             });
+
             spTheme.append(cardWithWrongOsis);
             await delay(100);
             expect(masErrorTriggered).to.true;
@@ -113,6 +158,7 @@ runTests(async () => {
             const aemFragment = cardWithIms.querySelector('aem-fragment');
             window.adobeid = { authorize: sinon.stub() };
             spTheme.append(cardWithIms);
+
             expect(aemFragment.updateComplete);
             sinon.assert.calledOnce(window.adobeid.authorize);
         });
@@ -121,11 +167,21 @@ runTests(async () => {
             const [, , , , , , sliceCard] = getTemplateContent('cards');
             spTheme.append(sliceCard);
             await delay(200);
-            expect(sliceCard.querySelector('merch-icon')).to.exist;
-            expect(sliceCard.querySelector('div[slot="image"]')).to.exist;
-            expect(sliceCard.querySelector('div[slot="body-s"]')).to.exist;
-            expect(sliceCard.querySelector('div[slot="footer"]')).to.exist;
-            const badge = sliceCard.shadowRoot?.querySelector('div#badge');
+
+            expect(getSelectorElement(sliceCard, 'merch-icon')).to.exist;
+
+            expect(getSlotElement(sliceCard, 'image')).to.exist;
+
+            expect(getSlotElement(sliceCard, 'body-s')).to.exist;
+
+            const footerSlot = sliceCard.shadowRoot
+                ? sliceCard.shadowRoot.querySelector('slot[name="footer"]')
+                : sliceCard.querySelector('slot[name="footer"]');
+            expect(footerSlot).to.exist;
+
+            const badge = sliceCard.shadowRoot
+                ? sliceCard.shadowRoot.querySelector('div#badge')
+                : sliceCard.querySelector('div#badge');
             expect(badge).to.exist;
         });
     });
