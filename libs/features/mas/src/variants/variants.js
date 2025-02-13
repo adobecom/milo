@@ -60,7 +60,7 @@ export const variantFragmentMappings = {
     twp: null,
     'ccd-suggested': CCD_SUGGESTED_AEM_FRAGMENT_MAPPING,
     'ccd-slice': CCD_SLICE_AEM_FRAGMENT_MAPPING,
-    'ah-try-buy-ediget': AH_TRY_BUY_WIDGET_AEM_FRAGMENT_MAPPING,
+    'ah-try-buy-widget': AH_TRY_BUY_WIDGET_AEM_FRAGMENT_MAPPING,
 };
 
 const getVariantStyles = () => {
