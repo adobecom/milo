@@ -523,7 +523,7 @@ describe('processDescription', async () => {
       const fields = {
           promoText: `Save over 30% with an annual plan.`,
           description: `Description Text`,
-          callout: `\u003Cp\u003EAI Assitant add-on available.\u003Cimg src=\"https://main--milo--adobecom.hlx.page/drafts/rosahu/info-icon.svg\" title=\"this is a dummy tooltip text\"\u003E\u003C/p\u003E`,
+          callout: `\u003Cp\u003EAI Assistant add-on available.\u003Cimg src=\"https://main--milo--adobecom.hlx.page/drafts/rosahu/info-icon.svg\" title=\"this is a dummy tooltip text\"\u003E\u003C/p\u003E`,
       };
 
       processDescription(fields, merchCard, aemFragmentMapping);
@@ -532,7 +532,7 @@ describe('processDescription', async () => {
           'Save over 30% with an annual plan.',
       );
       expect(merchCard.querySelector('div[slot="callout-content"]')?.textContent).to.equal(
-        'AI Assitant add-on available.',
+        'AI Assistant add-on available.',
     );
   });
 });
