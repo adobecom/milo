@@ -986,12 +986,13 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .title .breadcrumb
   box-sizing: inherit;
 }
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .title h7 {
-  height: 25px;
+  min-height: 25px;
   font-size: 28px;
   font-weight: 700;
   line-height: 25px;
   padding: 8px 0 24px;
   box-sizing: inherit;
+  white-space: break-spaces;
 }
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tabs {
@@ -1056,6 +1057,10 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content a {
   animation: slideup 0.6s ease, fadein 0.8s ease;
   animation-fill-mode: forwards;
   font-weight: 700;
+}
+
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content a.feds-navLink:not(:has(div)) {
+  white-space: break-spaces;
 }
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds-navLink-title {
