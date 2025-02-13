@@ -354,6 +354,7 @@ class Gnav {
   };
 
   init = () => logErrorFor(async () => {
+    branchBannerLoadCheck(this.updatePopupPosition);
     this.elements.curtain = toFragment`<div class="feds-curtain"></div>`;
 
     // Order is important, decorateTopnavWrapper will render the nav
@@ -1046,6 +1047,31 @@ class Gnav {
     return 'link';
   };
 
+  updatePopupPosition = (activePopup) => {
+    let popup = null;
+    if (activePopup) {
+      popup = activePopup;
+    } else {
+      const selectedSection = this.elements.mainNav.querySelector('.feds-navItem--section.feds-dropdown--active');
+      popup = selectedSection?.querySelector('.feds-popup');
+    }
+    if (!popup) return;
+    const y = window.scrollY;
+    const iOSy = Math.abs(parseInt(document.body.style.top, 10));
+    const offset = this.block.classList.contains('has-promo')
+      ? 'var(--feds-height-nav) - var(--global-height-navPromo)'
+      : 'var(--feds-height-nav)';
+    popup.removeAttribute('style');
+    popup.style = `top: calc(${iOSy || y || 0}px - ${offset} - 2px`;
+    const { isPresent, isSticky } = getBranchBannerInfo();
+    if (isPresent && !isSticky) {
+      popup.style = `
+        top: calc(0px - var(--feds-height-nav));
+        height: calc(100dvh - var(--app-banner-height) + ${iOSy || 0}px);
+      `;
+    }
+  }
+
   decorateMainNavItem = (item, index) => {
     const itemType = this.getMainNavItemType(item);
 
@@ -1185,19 +1211,7 @@ class Gnav {
             // document.body.style.top should always be set
             // at this point by calling disableMobileScroll
             if (popup && this.isLocalNav()) {
-              const y = window.scrollY;
-              const iOSy = Math.abs(parseInt(document.body.style.top, 10));
-              const offset = this.block.classList.contains('has-promo')
-                ? 'var(--feds-height-nav) - var(--global-height-navPromo)'
-                : 'var(--feds-height-nav)';
-              popup.style = `top: calc(${iOSy || y || 0}px - ${offset} - 2px`;
-              const { isPresent, isSticky } = getBranchBannerInfo();
-              if (isPresent && !isSticky) {
-                popup.style = `
-                  top: calc(${iOSy || y || 0}px - var(--feds-height-nav));
-                  height: calc(100dvh - var(--app-banner-height) + ${iOSy || y || 0}px);
-                `;
-              }
+              this.updatePopupPosition(popup);
             }
             makeTabActive(popup);
           } else if (isDesktop.matches && this.newMobileNav && isSectionMenu) {
@@ -1321,7 +1335,6 @@ export default async function init(block) {
   if (hash === '_noActiveItem') {
     setDisableAEDState();
   }
-  branchBannerLoadCheck();
   const content = await fetchAndProcessPlainHtml({ url });
   setAsyncDropdownCount(content.querySelectorAll('.large-menu').length);
   if (!content) {

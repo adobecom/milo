@@ -1330,19 +1330,19 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
   overflow: hidden;
   width: 100%;
   min-height: 100dvh;
-  position: fixed;
+  /* position: fixed; */
 }
 
 html:has(body.disable-ios-scroll) { /* this class is only added on iOS */
   height: 100dvh;
-  position: fixed;
+  /* position: fixed; */
 }
 
 /* GNAV popup height fix in case of app banner */
-.branch-banner-is-active.disable-ios-scroll,
+/* .branch-banner-is-active.disable-ios-scroll,
 html:has(body.branch-banner-is-active.disable-ios-scroll) {
   position: static;
-}
+} */
 
 .branch-banner-is-active header.new-nav .feds-nav > section.feds-navItem > .feds-popup {
   height: calc(100dvh - var(--app-banner-height));
