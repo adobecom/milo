@@ -191,9 +191,9 @@ function createSpectrumSwcButton(cta, aemFragmentMapping, isOutline, variant) {
     return spectrumCta;
 }
 
-function processConsonantButton(cta, strong) {
+function createConsonantButton(cta, isAccent) {
     cta.classList.add('con-button');
-    if (strong) {
+    if (isAccent) {
         cta.classList.add('blue');
     }
     return cta;
@@ -205,8 +205,6 @@ export function processCTAs(fields, merchCard, aemFragmentMapping, variant) {
         const footer = createTag('div', { slot }, fields.ctas);
 
         const ctas = [...footer.querySelectorAll('a')].map((cta) => {
-            const strong = cta.parentElement.tagName === 'STRONG';
-            if (merchCard.consonant) return processConsonantButton(cta, strong);
             const checkoutLinkStyle =
                 CHECKOUT_STYLE_PATTERN.exec(cta.className)?.[0] ?? 'accent';
             const isAccent = checkoutLinkStyle.includes('accent');
@@ -214,11 +212,12 @@ export function processCTAs(fields, merchCard, aemFragmentMapping, variant) {
             const isSecondary = checkoutLinkStyle.includes('secondary');
             const isOutline = checkoutLinkStyle.includes('-outline');
             const isLink = checkoutLinkStyle.includes('-link');
+            if (merchCard.consonant) return createConsonantButton(cta, isAccent);
             if (isLink) {
                 return cta;
             }
             let variant;
-            if (isAccent || strong) {
+            if (isAccent) {
                 variant = 'accent';
             } else if (isPrimary) {
                 variant = 'primary';
