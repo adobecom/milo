@@ -12,6 +12,7 @@ export const PLANS_AEM_FRAGMENT_MAPPING = {
   stockOffer: true,
   secureLabel: true,
   ctas: { slot: 'footer', size: 'm' },
+  style: 'consonant'
 };
 
 export class Plans extends VariantLayout {

@@ -148,6 +148,7 @@ button {
 }
 
 .gallery-content {
+  display: block;
   padding: 30px;
 }
 
@@ -205,25 +206,7 @@ merch-card[variant="ccd-slice"][size="wide"] {
   gap: 32px;
 }
 
-/*.benchmark stuff */
-.benchmark-mask {
-  font-size: larger;
-  font-weight: bold;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: white;
-}
-
-.benchmark-mask-over-limit {
-  background:rgba(217, 109, 109, 0.7);
-}
-
-.benchmark-mask-under-limit {
-  background:rgba(133, 215, 133, 0.7);
-}
-
-/*.benchmark stuff */
+/* benchmark stuff */
 .benchmark-mask {
   font-size: larger;
   font-weight: bold;

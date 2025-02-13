@@ -316,6 +316,9 @@ export async function hydrate(fragment, merchCard) {
     const { aemFragmentMapping } = merchCard.variantLayout;
     if (!aemFragmentMapping) return;
 
+    if (aemFragmentMapping.style === 'consonant') {
+      merchCard.setAttribute('consonant', true);
+    }
     processMnemonics(fields, merchCard, aemFragmentMapping.mnemonics);
     processBadge(fields, merchCard);
     processSize(fields, merchCard, aemFragmentMapping.size);
