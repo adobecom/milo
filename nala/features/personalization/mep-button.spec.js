@@ -36,5 +36,13 @@ module.exports = {
       path: '/drafts/nala/features/promotions/promo-future',
       tags: '@mep @mepbutton4 @smoke @regression @milo',
     },
+    {
+      tcid: '5',
+      name: '@5 - add manifest via mep button',
+      desc: 'test the ability to add a manifest via the mep button',
+      path: '/drafts/nala/features/personalization/mep-button/adding-new-manifest',
+      data: { pathToManifest: '/drafts/nala/features/personalization/mep-button/added-manifest.json' },
+      tags: '@mep @mepbutton5 @smoke @regression @milo',
+    },
   ],
 };

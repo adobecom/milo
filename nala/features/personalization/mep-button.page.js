@@ -7,5 +7,8 @@ export default class MepButton {
     this.manifest = page.locator('.mep-edit-manifest');
     this.manifestHref = page.locator('.mep-edit-manifest[href$=".json"]');
     this.manifestList = page.locator('.mep-manifest-list');
+    this.advancedOptions = page.locator('.mep-toggle-advanced');
+    this.newManifestInput = page.locator('.new-manifest');
+    this.previewButton = page.locator('a[data-id="preview-button"]');
   }
 }
