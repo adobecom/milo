@@ -52,9 +52,13 @@ test.describe('Milo Z Pattern Block test suite', () => {
       }
     });
 
-    await test.step('step-3: Verify the accessibility test on the ZPattern default block', async () => {
-      // The accessibility test is failing, so skipping it.
-      await runAccessibilityTest({ page, testScope: zpattern.mediaBlocks, skipA11yTest: true });
+    await test.step('step-3: Verify the accessibility test on all ZPattern media blocks', async () => {
+      const mediaBlocks = await zpattern.mediaBlocks.all();
+
+      for (const [index, mediaBlock] of mediaBlocks.entries()) {
+        console.info(`Running accessibility test on media block #${index + 1}`);
+        await runAccessibilityTest({ page, testScope: mediaBlock });
+      }
     });
   });
 
@@ -171,9 +175,13 @@ test.describe('Milo Z Pattern Block test suite', () => {
       }
     });
 
-    await test.step('step-3: Verify the accessibility test on the ZPattern dark block', async () => {
-      // The accessibility test is failing, so skipping it.
-      await runAccessibilityTest({ page, testScope: zpattern.mediaBlocks, skipA11yTest: true });
+    await test.step('step-3: Verify the accessibility test on all ZPattern dark blocks', async () => {
+      const mediaBlocks = await zpattern.mediaBlocks.all();
+
+      for (const [index, mediaBlock] of mediaBlocks.entries()) {
+        console.info(`Running accessibility test on media block #${index + 1}`);
+        await runAccessibilityTest({ page, testScope: mediaBlock });
+      }
     });
   });
 });
