@@ -108,7 +108,7 @@ export function parsePageAndUrl(config, windowLocation, prefix) {
 function parseMepConfig() {
   const config = getConfig();
   const { mep, locale } = config;
-  const { experiments, targetEnabled, prefix, highlight } = mep;
+  const { experiments, prefix, highlight } = mep;
   const activities = experiments.map((experiment) => {
     const {
       name, event, manifest, variantNames, selectedVariantName, disabled, analyticsTitle, source,
@@ -134,7 +134,7 @@ function parseMepConfig() {
     page: {
       url,
       page,
-      target: targetEnabled ? 'on' : 'off',
+      target: getMetadata('target') || 'off',
       personalization: (getMetadata('personalization')) ? 'on' : 'off',
       geo: prefix === US_GEO ? '' : prefix,
       locale: locale.ietf,
