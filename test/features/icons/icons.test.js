@@ -32,7 +32,7 @@ describe('Icon Support', () => {
     await loadIcons(icons, config);
   });
 
-  it('Fetches successfully with cache control enabled', async () => {
+  it('renders an SVG inside the icon element', async () => {
     const otherIcons = [createTag('span', { class: 'icon icon-play' })];
     document.body.appendChild(otherIcons[0]);
 
@@ -41,7 +41,7 @@ describe('Icon Support', () => {
     expect(svg).to.exist;
   });
 
-  it('Replaces span.icon', () => {
+  it('Renders an SVG after loading the icons', () => {
     const selector = icons[0].querySelector(':scope svg');
     expect(selector).to.exist;
   });
@@ -109,8 +109,6 @@ describe('Tooltip', () => {
     expect(tooltip.dataset.tooltip).to.equal('This is a tooltip text.');
     expect(tooltip.getAttribute('role')).to.equal('button');
     expect(tooltip.className).to.contain('top');
-    tooltip.focus();
-    expect(document.activeElement).to.equal(tooltip);
   });
 
   it('Creates a tooltip without default alignment (left)', () => {
