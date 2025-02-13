@@ -6,4 +6,5 @@ node ./build-docs.mjs checkout-button.md ../checkout-button.html
 node ./build-docs.mjs mas.md ../mas.html
 node ./build-docs.mjs mas.js.md ../mas.js.html
 node ./build-docs.mjs merch-card.md ../merch-card.html
+node ./build-docs.mjs plans.md ../plans.html
 npx esbuild --bundle  --outfile=../spectrum.js ./spectrum.mjs

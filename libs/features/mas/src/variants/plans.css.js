@@ -4,7 +4,11 @@ export const CSS = `
   --consonant-merch-card-plans-width: 300px;
   --consonant-merch-card-plans-icon-size: 40px;
 }
-  
+
+merch-card[variant="plans"] {
+  width: 276px;
+}
+
 merch-card[variant="plans"] [slot="description"] {
   min-height: 84px;
 }
@@ -16,6 +20,8 @@ merch-card[variant="plans"] [slot="quantity-select"] {
   width: 100%;
   padding: var(--consonant-merch-spacing-xs);
 }
+<<<<<<< HEAD
+=======
 
 .one-merch-card.plans,
 .two-merch-cards.plans,
@@ -58,4 +64,5 @@ merch-card[variant="plans"] [slot="quantity-select"] {
         grid-template-columns: repeat(4, var(--consonant-merch-card-plans-width));
     }
 }
+>>>>>>> upstream/stage
 `;

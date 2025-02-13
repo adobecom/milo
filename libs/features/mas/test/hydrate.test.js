@@ -83,8 +83,10 @@ describe('processPrices', async () => {
             prices: '<span>$9.99</span>',
         };
         const merchCard = mockMerchCard();
-        const pricesConfig = { tag: 'p', slot: 'prices' };
-        processPrices(fields, merchCard, pricesConfig);
+        const mapping = { 
+          prices: { tag: 'p', slot: 'prices' }
+        };
+        processPrices(fields, merchCard, mapping);
         expect(merchCard.outerHTML).to.equal(
             '<div><p slot="prices"><span>$9.99</span></p></div>',
         );
@@ -95,8 +97,10 @@ describe('processPrices', async () => {
             prices: 'Starting at  <span is="inline-price" data-template="price" data-wcs-osi="nTbB50pS4lLGv_x1l_UKggd-lxxo2zAJ7WYDa2mW19s"></span>',
         };
         const merchCard = mockMerchCard();
-        const pricesConfig = { tag: 'p', slot: 'price' };
-        processPrices(fields, merchCard, pricesConfig);
+        const mapping = { 
+          prices: { tag: 'p', slot: 'price' }
+        };
+        processPrices(fields, merchCard, mapping);
         await merchCard.querySelector('span[is="inline-price"]').onceSettled();
         expect(merchCard.textContent).to.equal('Starting at  US$22.19/mo');
     });
@@ -275,9 +279,9 @@ describe('processSubtitle', () => {
 
     it('should not append subtitle when fields.subtitle is falsy', () => {
         const fields = { subtitle: null };
-        const subtitleConfig = { tag: 'h3', slot: 'subtitle' };
+        const mapping = { subtitle: { tag: 'h3', slot: 'subtitle' }};
 
-        processSubtitle(fields, merchCard, subtitleConfig);
+        processSubtitle(fields, merchCard, mapping);
 
         expect(merchCard.append.called).to.be.false;
         expect(merchCard.outerHTML).to.equal('<div></div>');
@@ -285,9 +289,8 @@ describe('processSubtitle', () => {
 
     it('should not append subtitle when subtitleConfig is falsy', () => {
         const fields = { subtitle: 'Test Subtitle' };
-        const subtitleConfig = null;
 
-        processSubtitle(fields, merchCard, subtitleConfig);
+        processSubtitle(fields, merchCard, {});
 
         expect(merchCard.append.called).to.be.false;
         expect(merchCard.outerHTML).to.equal('<div></div>');
@@ -295,9 +298,9 @@ describe('processSubtitle', () => {
 
     it('should append subtitle with correct tag and slot', () => {
         const fields = { subtitle: 'Test Subtitle' };
-        const subtitleConfig = { tag: 'h3', slot: 'subtitle' };
+        const mapping = { subtitle: { tag: 'h3', slot: 'subtitle' } };
 
-        processSubtitle(fields, merchCard, subtitleConfig);
+        processSubtitle(fields, merchCard, mapping);
 
         expect(merchCard.outerHTML).to.equal(
             '<div><h3 slot="subtitle">Test Subtitle</h3></div>',
@@ -495,6 +498,8 @@ describe('processDescription', async () => {
 
         aemFragmentMapping = {
             description: { tag: 'div', slot: 'body-xs' },
+            promoText: {tag: 'p', slot: 'promo-text'},
+            callout: {tag: 'div', slot: 'callout-content'},
         };
     });
 
@@ -507,10 +512,27 @@ describe('processDescription', async () => {
             description: `Buy <a is="checkout-link" data-wcs-osi="abm" class="primary-link">Link Style</a><a is="checkout-link" data-wcs-osi="abm" class="secondary-link">Link Style</a>`,
         };
 
-        processDescription(fields, merchCard, aemFragmentMapping.description);
+        processDescription(fields, merchCard, aemFragmentMapping);
         updateLinksCSS(merchCard);
         expect(merchCard.innerHTML).to.equal(
             '<div slot="body-xs">Buy <a is="checkout-link" data-wcs-osi="abm" class="spectrum-Link spectrum-Link--primary">Link Style</a><a is="checkout-link" data-wcs-osi="abm" class="spectrum-Link spectrum-Link--secondary">Link Style</a></div>',
         );
     });
+
+    it('should process promo and callout', async () => {
+      const fields = {
+          promoText: `Save over 30% with an annual plan.`,
+          description: `Description Text`,
+          callout: `\u003Cp\u003EAI Assistant add-on available.\u003Cimg src=\"https://main--milo--adobecom.hlx.page/drafts/rosahu/info-icon.svg\" title=\"this is a dummy tooltip text\"\u003E\u003C/p\u003E`,
+      };
+
+      processDescription(fields, merchCard, aemFragmentMapping);
+      updateLinksCSS(merchCard);
+      expect(merchCard.querySelector('p[slot="promo-text"]')?.textContent).to.equal(
+          'Save over 30% with an annual plan.',
+      );
+      expect(merchCard.querySelector('div[slot="callout-content"]')?.textContent).to.equal(
+        'AI Assistant add-on available.',
+    );
+  });
 });
