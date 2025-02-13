@@ -289,7 +289,6 @@ function createSpectrumSwcButton(cta, aemFragmentMapping, isOutline, variant) {
 
     (async () => {
         try {
-          await customElements.whenDefined('checkout-button');
           const CheckoutButtonEl = customElements.get('checkout-button');
           const checkoutBtn = CheckoutButtonEl?.createCheckoutButton({}, cta.innerHTML);
           for (const attr of cta.attributes) {
