@@ -979,8 +979,6 @@ merch-card[variant="plans"] [slot="quantity-select"] {
   width: 100%;
   padding: var(--consonant-merch-spacing-xs);
 }
-<<<<<<< HEAD
-=======
 
 .one-merch-card.plans,
 .two-merch-cards.plans,
@@ -1023,7 +1021,6 @@ merch-card[variant="plans"] [slot="quantity-select"] {
         grid-template-columns: repeat(4, var(--consonant-merch-card-plans-width));
     }
 }
->>>>>>> upstream/stage
 `;var st={title:{tag:"p",slot:"heading-xs"},prices:{tag:"p",slot:"heading-m"},promoText:{tag:"p",slot:"promo-text"},description:{tag:"div",slot:"body-xs"},mnemonics:{size:"l"},callout:{tag:"div",slot:"callout-content"},stockOffer:!0,secureLabel:!0,ctas:{slot:"footer",size:"m"},style:"consonant"},N=class extends l{constructor(e){super(e)}get aemFragmentMapping(){return st}getGlobalCSS(){return Ft}postCardUpdateHook(){this.adjustTitleWidth()}get stockCheckbox(){return this.card.checkboxLabel?Ht`<label id="stock-checkbox">
                 <input type="checkbox" @change=${this.card.toggleStockOffer}></input>
                 <span></span>

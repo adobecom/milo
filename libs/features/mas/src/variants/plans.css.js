@@ -20,8 +20,6 @@ merch-card[variant="plans"] [slot="quantity-select"] {
   width: 100%;
   padding: var(--consonant-merch-spacing-xs);
 }
-<<<<<<< HEAD
-=======
 
 .one-merch-card.plans,
 .two-merch-cards.plans,
@@ -64,5 +62,4 @@ merch-card[variant="plans"] [slot="quantity-select"] {
         grid-template-columns: repeat(4, var(--consonant-merch-card-plans-width));
     }
 }
->>>>>>> upstream/stage
 `;
