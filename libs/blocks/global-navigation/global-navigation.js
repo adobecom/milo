@@ -42,6 +42,8 @@ import {
   disableMobileScroll,
   enableMobileScroll,
   setAsyncDropdownCount,
+  branchBannerLoadCheck,
+  getBranchBannerInfo,
 } from './utilities/utilities.js';
 import { getFedsPlaceholderConfig } from '../../utils/federated.js';
 
@@ -352,6 +354,7 @@ class Gnav {
   };
 
   init = () => logErrorFor(async () => {
+    branchBannerLoadCheck(this.updatePopupPosition);
     this.elements.curtain = toFragment`<div class="feds-curtain"></div>`;
 
     // Order is important, decorateTopnavWrapper will render the nav
@@ -1044,6 +1047,38 @@ class Gnav {
     return 'link';
   };
 
+  // update GNAV popup position based on branch banner
+  updatePopupPosition = (activePopup) => {
+    let popup = null;
+    if (activePopup) {
+      popup = activePopup;
+    } else {
+      const selectedSection = this.elements.mainNav.querySelector('.feds-navItem--section.feds-dropdown--active');
+      popup = selectedSection?.querySelector('.feds-popup');
+    }
+    if (!popup) return;
+    const y = window.scrollY;
+    const iOSy = Math.abs(parseInt(document.body.style.top, 10));
+    const offset = this.block.classList.contains('has-promo')
+      ? 'var(--feds-height-nav) - var(--global-height-navPromo)'
+      : 'var(--feds-height-nav)';
+    popup.removeAttribute('style');
+    popup.style = `top: calc(${iOSy || y || 0}px - ${offset} - 2px)`;
+    const { isPresent, isSticky, height } = getBranchBannerInfo();
+    if (isPresent && !isSticky) {
+      let delta = (iOSy || y || 0) - height;
+      popup.style = `
+        top: calc(0px - var(--feds-height-nav) + ${Math.max(delta, 0)}px - 2px);
+        height: calc(100dvh + ${Math.min(delta, 0)}px + 2px);
+      `;
+    } else if(isPresent && isSticky) {
+      popup.style = `
+        top: calc(${iOSy || y || 0}px - ${offset} - 2px);
+        height: calc(100dvh - ${height}px + 2px);
+      `;
+    }
+  }
+
   decorateMainNavItem = (item, index) => {
     const itemType = this.getMainNavItemType(item);
 
@@ -1183,12 +1218,7 @@ class Gnav {
             // document.body.style.top should always be set
             // at this point by calling disableMobileScroll
             if (popup && this.isLocalNav()) {
-              const y = window.scrollY;
-              const iOSy = Math.abs(parseInt(document.body.style.top, 10));
-              const offset = this.block.classList.contains('has-promo')
-                ? 'var(--feds-height-nav) - var(--global-height-navPromo)'
-                : 'var(--feds-height-nav)';
-              popup.style = `top: calc(${iOSy || y || 0}px - ${offset} - 2px`;
+              this.updatePopupPosition(popup);
             }
             makeTabActive(popup);
           } else if (isDesktop.matches && this.newMobileNav && isSectionMenu) {
