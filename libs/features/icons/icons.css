@@ -107,6 +107,11 @@
   display: block;
 }
 
+.milo-tooltip.hide-tooltip::before,
+.milo-tooltip.hide-tooltip::after {
+  display: none;
+}
+
 @media (max-width: 600px) {
   .milo-tooltip::before { 
     max-width: 180px;
