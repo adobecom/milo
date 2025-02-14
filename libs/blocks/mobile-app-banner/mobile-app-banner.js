@@ -16,7 +16,7 @@ async function getKey(product) {
 async function getECID() {
   let ecid = null;
   if (window.alloy) {
-    await window.alloy('getIdentity').then((data) => {
+    await window.alloy_getIdentity.then((data) => {
       ecid = data?.identity?.ECID;
     }).catch((err) => window.lana.log(`Error fetching ECID: ${err}`, { tags: 'mobile-app-banner' }));
   }
