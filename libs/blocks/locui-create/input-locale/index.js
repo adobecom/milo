@@ -35,11 +35,12 @@ function initialRegions() {
         }
         return localeList;
       }, []);
-
-      acc.push({
-        key,
-        value: valueWithoutEnglishLocale.join(','),
-      });
+      if (valueWithoutEnglishLocale.length > 0) {
+        acc.push({
+          key,
+          value: valueWithoutEnglishLocale.join(','),
+        });
+      }
 
       return acc;
     }, []);
