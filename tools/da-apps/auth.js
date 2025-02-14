@@ -9,7 +9,7 @@ const ORG_MAP = {
   const searchParams = new URLSearchParams(window.location.search);
   const repo = searchParams.get('tenant');
   const token = searchParams.get('token');
-  const redirectPath = searchParams.get('path')
+  const redirectPath = searchParams.get('path');
   const tenant = ORG_MAP[repo];
 
   window.sessionStorage.setItem('da-repo', JSON.stringify(tenant));
@@ -28,4 +28,4 @@ const ORG_MAP = {
   const fullURL = `${window.location.protocol}//${window.location.hostname}${window.location.port ? `:${window.location.port}` : ''}${window.location.pathname}#/${redirectPath}`;
   window.history.replaceState({}, null, fullURL);
   document.body.style.visibility = 'visible';
-})();
+}());
