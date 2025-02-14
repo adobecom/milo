@@ -11,14 +11,11 @@ describe('marketo multi-step', () => {
   beforeEach(() => {
     document.body.innerHTML = innerHTML;
     clock = sinon.useFakeTimers();
-    window.MktoForms2 = {
-      whenRendered: stub().callsFake((callback) => callback({ getFormElem: () => ({ get: () => document.querySelector('form') }) })),
-      whenReady: stub().callsFake((callback) => callback({ onValidate: () => {} })),
-    };
+    window.MktoForms2 = { whenReady: stub().callsFake((callback) => callback({ onValidate: () => {}, getFormElem: () => ({ get: () => document.querySelector('form') }) })) };
 
     const el = document.querySelector('.marketo');
     init(el);
-    clock.tick(200);
+    clock.tick(300);
   });
 
   afterEach(() => {
@@ -32,7 +29,6 @@ describe('marketo multi-step', () => {
 
     expect(stepDetails).to.exist;
     expect(stepDetails.textContent).to.equal('Step 1 of 2');
-    expect(window.MktoForms2.whenRendered.calledOnce).to.be.true;
     expect(window.MktoForms2.whenReady.calledOnce).to.be.true;
 
     const step1 = el.querySelector('.mktoFormRowTop[data-validate="1"]');
@@ -77,5 +73,6 @@ describe('marketo multi-step', () => {
 
     expect(formEl.dataset.step).to.equal('1');
     expect(formEl.querySelector('.back-btn')).to.be.null;
+    expect(formEl.querySelector('.step-details .step').textContent).to.equal('Step 1 of 2');
   });
 });

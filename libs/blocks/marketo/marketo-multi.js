@@ -1,4 +1,5 @@
 import { createTag } from '../../utils/utils.js';
+import { debounce } from '../../utils/action.js';
 
 const VALIDATION_STEP = {
   name: '2',
@@ -16,24 +17,21 @@ function updateStepDetails(formEl, step, totalSteps) {
   formEl.classList.remove('show-warnings');
   formEl.dataset.step = step;
   formEl.querySelector('.step-details .step').textContent = `Step ${step} of ${totalSteps}`;
+  formEl.querySelector('#mktoButton_new').textContent = step === totalSteps ? 'Submit' : 'Next';
 }
 
 function showPreviousStep(formEl, totalSteps) {
   const currentStep = parseInt(formEl.dataset.step, 10);
   const previousStep = currentStep - 1;
-  const submitButton = formEl.querySelector('#mktoButton_new');
   const backBtn = formEl.querySelector('.back-btn');
 
   updateStepDetails(formEl, previousStep, totalSteps);
-  submitButton.textContent = 'Next';
-
   if (previousStep === 1) backBtn?.remove();
 }
 
 const showNextStep = (formEl, currentStep, totalSteps) => {
   if (currentStep === totalSteps) return;
   const nextStep = currentStep + 1;
-  const submitButton = formEl.querySelector('#mktoButton_new');
   const stepDetails = formEl.querySelector('.step-details');
 
   if (!stepDetails.querySelector('.back-btn')) {
@@ -43,10 +41,6 @@ const showNextStep = (formEl, currentStep, totalSteps) => {
   }
 
   updateStepDetails(formEl, nextStep, totalSteps);
-
-  if (nextStep === totalSteps) {
-    setTimeout(() => { submitButton.textContent = 'Submit'; }, 200);
-  }
 };
 
 export const formValidate = (formEl) => {
@@ -62,26 +56,35 @@ export const formValidate = (formEl) => {
   return currentStep === totalSteps;
 };
 
-export const onRender = (form, totalSteps) => {
-  const formEl = form.getFormElem().get(0);
-  if (!formEl) return;
+function setValidationSteps(formEl, totalSteps) {
+  formEl.querySelectorAll('.mktoFormRowTop').forEach((row) => {
+    const rowAttr = row.getAttribute('data-mktofield') || row.getAttribute('data-mkto_vis_src');
+    const step = VALIDATION_STEP[rowAttr] ? Math.min(VALIDATION_STEP[rowAttr], totalSteps) : 1;
+    row.setAttribute('data-validate', step);
+  });
+}
 
+function onRender(formEl, totalSteps) {
+  const currentStep = parseInt(formEl.dataset.step, 10);
   const submitButton = formEl.querySelector('#mktoButton_new');
-  if (submitButton && formEl.dataset.step === '1') submitButton.textContent = 'Next';
+  if (submitButton) submitButton.textContent = currentStep === totalSteps ? 'Submit' : 'Next';
+  formEl.querySelector('.step-details .step').textContent = `Step ${currentStep} of ${totalSteps}`;
 
-  if (!formEl.querySelector('.step-details')) {
-    const stepEl = createTag('p', { class: 'step' }, `Step 1 of ${totalSteps}`);
-    const stepDetails = createTag('div', { class: 'step-details' }, stepEl);
-    formEl.append(stepDetails);
-  }
+  setValidationSteps(formEl, totalSteps);
+}
 
-  setTimeout(() => {
-    formEl.querySelectorAll('.mktoFormRowTop').forEach((row) => {
-      const rowAttr = row.getAttribute('data-mktofield') || row.getAttribute('data-mkto_vis_src');
-      const step = VALIDATION_STEP[rowAttr] ? Math.min(VALIDATION_STEP[rowAttr], totalSteps) : 1;
-      row.setAttribute('data-validate', step);
-    });
-  }, 100);
+const readyForm = (form, totalSteps) => {
+  const formEl = form.getFormElem().get(0);
+  form.onValidate(() => formValidate(formEl));
+
+  const stepEl = createTag('p', { class: 'step' }, `Step 1 of ${totalSteps}`);
+  const stepDetails = createTag('div', { class: 'step-details' }, stepEl);
+  formEl.append(stepDetails);
+
+  const debouncedOnRender = debounce(() => onRender(formEl, totalSteps), 10);
+  const observer = new MutationObserver(debouncedOnRender);
+  observer.observe(formEl, { childList: true, subtree: true });
+  debouncedOnRender();
 };
 
 export default (el) => {
@@ -91,6 +94,5 @@ export default (el) => {
   formEl.dataset.step = 1;
 
   const { MktoForms2 } = window;
-  MktoForms2.whenRendered((form) => { onRender(form, totalSteps); });
-  MktoForms2.whenReady((form) => { form.onValidate(() => formValidate(formEl)); });
+  MktoForms2.whenReady((form) => { readyForm(form, totalSteps); });
 };

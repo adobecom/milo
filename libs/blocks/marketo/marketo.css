@@ -128,9 +128,9 @@
 }
 
 .marketo.multi-step .step-details button {
-  background: none!important;
+  background: none;
   border: none;
-  padding: 0!important;
+  padding: 0;
   text-decoration: underline;
   cursor: pointer;
   color: var(--link-color-dark);
