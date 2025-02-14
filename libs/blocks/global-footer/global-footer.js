@@ -6,6 +6,8 @@ import {
   getConfig,
   localizeLink,
   loadStyle,
+  getFederatedUrl,
+  getFedsPlaceholderConfig,
 } from '../../utils/utils.js';
 
 import {
@@ -21,8 +23,6 @@ import {
   federatePictureSources,
   isDarkMode,
 } from '../global-navigation/utilities/utilities.js';
-
-import { getFederatedUrl, getFedsPlaceholderConfig } from '../../utils/federated.js';
 
 import { replaceKey } from '../../features/placeholders.js';
 

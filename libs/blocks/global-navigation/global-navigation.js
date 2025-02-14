@@ -7,6 +7,7 @@ import {
   decorateLinks,
   loadScript,
   getGnavSource,
+  getFedsPlaceholderConfig,
 } from '../../utils/utils.js';
 import {
   closeAllDropdowns,
@@ -43,7 +44,6 @@ import {
   enableMobileScroll,
   setAsyncDropdownCount,
 } from './utilities/utilities.js';
-import { getFedsPlaceholderConfig } from '../../utils/federated.js';
 
 import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
 
