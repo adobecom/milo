@@ -552,7 +552,6 @@ export const dropWhile = (xs, f) => {
   return xs;
 };
 
-
 /**
  * Monitors the DOM for the presence of a branch banner and updates its status.
  * @returns {void}
@@ -566,10 +565,10 @@ export const [branchBannerLoadCheck, getBranchBannerInfo] = (() => {
   return [
     (updatePopupPosition) => {
       // Create a MutationObserver instance to monitor the body for new child elements
-      const observer = new MutationObserver((mutationsList, observer) => {
-        mutationsList.forEach(mutation => {
+      const observer = new MutationObserver((mutationsList) => {
+        mutationsList.forEach((mutation) => {
           if (mutation.type === 'childList') {
-            mutation.addedNodes.forEach(node => {
+            mutation.addedNodes.forEach((node) => {
               // Check if the added node has the ID 'branch-banner-iframe'
               if (node.id === 'branch-banner-iframe') {
                 branchBannerInfo.isPresent = true;
@@ -586,7 +585,7 @@ export const [branchBannerLoadCheck, getBranchBannerInfo] = (() => {
               }
             });
 
-            mutation.removedNodes.forEach(node => {
+            mutation.removedNodes.forEach((node) => {
               // Check if the removed node has the ID 'branch-banner-iframe'
               if (node.id === 'branch-banner-iframe') {
                 branchBannerInfo.isPresent = false;
@@ -606,8 +605,8 @@ export const [branchBannerLoadCheck, getBranchBannerInfo] = (() => {
 
       // Start observing the body element for added child nodes
       observer.observe(document.body, {
-        childList: true,   // Watch for added or removed child nodes
-        subtree: false     // Only observe direct children of <body>
+        childList: true, // Watch for added or removed child nodes
+        subtree: false, // Only observe direct children of <body>
       });
     },
     /**
@@ -615,5 +614,5 @@ export const [branchBannerLoadCheck, getBranchBannerInfo] = (() => {
      * @returns {Object} An object containing the presence and sticky status of the branch banner.
      */
     () => branchBannerInfo,
-  ]
+  ];
 })();

@@ -1066,18 +1066,18 @@ class Gnav {
     popup.style = `top: calc(${iOSy || y || 0}px - ${offset} - 2px)`;
     const { isPresent, isSticky, height } = getBranchBannerInfo();
     if (isPresent && !isSticky) {
-      let delta = (iOSy || y || 0) - height;
+      const delta = (iOSy || y || 0) - height;
       popup.style = `
         top: calc(0px - var(--feds-height-nav) + ${Math.max(delta, 0)}px - 2px);
         height: calc(100dvh + ${Math.min(delta, 0)}px + 2px);
       `;
-    } else if(isPresent && isSticky) {
+    } else if (isPresent && isSticky) {
       popup.style = `
         top: calc(${iOSy || y || 0}px - ${offset} - 2px);
         height: calc(100dvh - ${height}px + 2px);
       `;
     }
-  }
+  };
 
   decorateMainNavItem = (item, index) => {
     const itemType = this.getMainNavItemType(item);
