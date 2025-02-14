@@ -386,9 +386,7 @@ class Footer {
       copyrightListItem.classList.add('feds-footer-privacy-listitem');
       copyrightListItem.innerHTML = linkDivider;
       copyrightListItem.prepend(copyrightElem);
-      copyrightElem.replaceWith(toFragment`<span class="feds-footer-copyright">
-        Copyright © ${currentYear} ${copyrightElem.textContent}
-      </span>`);
+      copyrightElem.replaceWith(toFragment`<span class="feds-footer-copyright">Copyright © ${currentYear} ${copyrightElem.textContent}</span>`);
       privacySectionList.prepend(copyrightListItem);
       privacySectionList.innerHTML += privacySection.innerHTML.replace(/( \/ )/g, '');
       privacySection.parentNode.replaceChild(privacySectionList, privacySection);
