@@ -273,6 +273,14 @@ export const [setDisableAEDState, getDisableAEDState] = (() => {
   ];
 })();
 
+export const [setAsyncDropdownCount, getAsyncDropdownCount] = (() => {
+  let asyncDropdownCount = 0;
+  return [
+    (val) => { asyncDropdownCount = val; },
+    () => asyncDropdownCount,
+  ];
+})();
+
 export const [hasActiveLink, setActiveLink, isActiveLink, getActiveLink] = (() => {
   let activeLinkFound;
   const { origin, pathname } = window.location;
@@ -447,17 +455,18 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
       const daallTab = headline?.getAttribute('daa-ll');
       const daalhTabContent = section.querySelector('.feds-menu-items')?.getAttribute('daa-lh');
       const content = section.querySelector('.feds-menu-items') ?? section;
-      const links = [...content.querySelectorAll('a.feds-navLink')].map((x) => x.outerHTML).join('');
+      const links = [...content.querySelectorAll('a.feds-navLink, .feds-cta--secondary')].map((x) => x.outerHTML).join('');
       return { name, links, daallTab, daalhTabContent };
     });
-  const CTA = popup.querySelector('.feds-cta')?.outerHTML ?? '';
+  const CTA = popup.querySelector('.feds-cta--primary')?.outerHTML ?? '';
   const mainMenu = `
       <button class="main-menu" daa-ll="Main menu_Gnav" aria-label='Main menu'>
         <svg xmlns="http://www.w3.org/2000/svg" width="7" height="12" viewBox="0 0 7 12" fill="none"><path d="M5.55579 1L1.09618 5.45961C1.05728 5.4985 1.0571 5.56151 1.09577 5.60062L5.51027 10.0661" stroke=${isDarkMode() ? '#f2f2f2' : 'black'} stroke-width="2" stroke-linecap="round"/></svg>
         {{main-menu}}
       </button>
   `;
-  const brand = document.querySelector('.feds-brand')?.outerHTML;
+  // Get the outerHTML of the .feds-brand element or use a default empty <span> if it doesn't exist
+  const brand = document.querySelector('.feds-brand')?.outerHTML || '<span></span>';
   const breadCrumbs = document.querySelector('.feds-breadcrumbs')?.outerHTML;
   popup.innerHTML = `
     <div class="top-bar">

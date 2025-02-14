@@ -137,5 +137,5 @@ export default async function main() {
     topNav.removeChild(statusWidget);
   });
 
-  fedsWrapper.after(statusWidget);
+  if (fedsWrapper) fedsWrapper.after(statusWidget);
 }

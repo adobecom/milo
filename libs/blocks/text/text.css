@@ -120,7 +120,7 @@
   align-items: center;
 }
 
-.text-block .icon-area {
+.text-block .icon-area:not(:has(span.icon)) {
   display: flex;
   column-gap: var(--spacing-xs);
 }
@@ -201,7 +201,6 @@
 
 .inset.text-block .foreground ul,
 .inset.text-block .foreground ol {
-  list-style: outside;
   padding-left: var(--spacing-xs);
 }
 

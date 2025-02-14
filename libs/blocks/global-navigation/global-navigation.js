@@ -15,7 +15,6 @@ import {
   getActiveLink,
   getAnalyticsValue,
   getExperienceName,
-  hasActiveLink,
   isActiveLink,
   icons,
   isDesktop,
@@ -28,7 +27,6 @@ import {
   logErrorFor,
   selectors,
   setActiveDropdown,
-  setActiveLink,
   setCurtainState,
   setUserProfile,
   toFragment,
@@ -38,12 +36,12 @@ import {
   isDarkMode,
   darkIcons,
   setDisableAEDState,
-  getDisableAEDState,
   animateInSequence,
   transformTemplateToMobile,
   closeAllTabs,
   disableMobileScroll,
   enableMobileScroll,
+  setAsyncDropdownCount,
 } from './utilities/utilities.js';
 import { getFedsPlaceholderConfig } from '../../utils/federated.js';
 
@@ -58,6 +56,33 @@ function getHelpChildren() {
     { type: 'Community' },
   ];
 }
+
+const getMessageEventListener = () => {
+  const configListener = getConfig().unav?.profile?.messageEventListener;
+  if (configListener) return configListener;
+
+  return (event) => {
+    const { name, payload, executeDefaultAction } = event.detail;
+    if (!name || name !== 'System' || !payload || typeof executeDefaultAction !== 'function') return;
+    switch (payload.subType) {
+      case 'AppInitiated':
+        window.adobeProfile?.getUserProfile()
+          .then((data) => { setUserProfile(data); })
+          .catch(() => { setUserProfile({}); });
+        break;
+      case 'SignOut':
+        executeDefaultAction();
+        break;
+      case 'ProfileSwitch':
+        Promise.resolve(executeDefaultAction()).then((profile) => {
+          if (profile) window.location.reload();
+        });
+        break;
+      default:
+        break;
+    }
+  };
+};
 
 export const CONFIG = {
   icons: isDarkMode() ? darkIcons : icons,
@@ -80,17 +105,12 @@ export const CONFIG = {
         name: 'profile',
         attributes: {
           isSignUpRequired: false,
+          messageEventListener: getMessageEventListener(),
           componentLoaderConfig: {
             config: {
               enableLocalSection: true,
+              enableProfileSwitcher: true,
               miniAppContext: {
-                onMessage: (name, payload) => {
-                  if (name === 'System' && payload.subType === 'AppInitiated') {
-                    window.adobeProfile?.getUserProfile()
-                      .then((data) => { setUserProfile(data); })
-                      .catch(() => { setUserProfile({}); });
-                  }
-                },
                 logger: {
                   trace: () => {},
                   debug: () => {},
@@ -131,6 +151,7 @@ export const CONFIG = {
           callbacks: getConfig().jarvis?.callbacks,
         },
       },
+      cart: { name: 'cart' },
     },
   },
 };
@@ -264,7 +285,7 @@ const closeOnClickOutside = (e, isLocalNav, navWrapper) => {
   const newMobileNav = getMetadata('mobile-gnav-v2') !== 'false';
   if (!isDesktop.matches && !newMobileNav) return;
 
-  const openElemSelector = `${selectors.globalNav} [aria-expanded = "true"], ${selectors.localNav} [aria-expanded = "true"]`;
+  const openElemSelector = `${selectors.globalNav} [aria-expanded = "true"]:not(.universal-nav-container *), ${selectors.localNav} [aria-expanded = "true"]`;
   const isClickedElemOpen = [...document.querySelectorAll(openElemSelector)]
     .find((openItem) => openItem.parentElement.contains(e.target));
 
@@ -647,7 +668,7 @@ class Gnav {
       return 'linux';
     };
 
-    const unavVersion = new URLSearchParams(window.location.search).get('unavVersion') || '1.3';
+    const unavVersion = new URLSearchParams(window.location.search).get('unavVersion') || '1.4';
     await Promise.all([
       loadScript(`https://${environment}.adobeccstatic.com/unav/${unavVersion}/UniversalNav.js`),
       loadStyles(`https://${environment}.adobeccstatic.com/unav/${unavVersion}/UniversalNav.css`, true),
@@ -747,6 +768,7 @@ class Gnav {
       },
       children: getChildren(),
       isSectionDividerRequired: getConfig()?.unav?.showSectionDivider,
+      showTrayExperience: (!isDesktop.matches),
     });
 
     // Exposing UNAV config for consumers
@@ -754,7 +776,7 @@ class Gnav {
     await window.UniversalNav(CONFIG.universalNav.universalNavConfig);
     this.decorateAppPrompt({ getAnchorState: () => window.UniversalNav.getComponent?.('app-switcher') });
     isDesktop.addEventListener('change', () => {
-      window.UniversalNav.reload(CONFIG.universalNav.universalNavConfig);
+      window.UniversalNav.reload(getConfiguration());
     });
   };
 
@@ -995,16 +1017,6 @@ class Gnav {
       const mainNavItem = this.decorateMainNavItem(item, index);
       if (mainNavItem) {
         this.elements.mainNav.appendChild(mainNavItem);
-      }
-    }
-
-    if (!hasActiveLink()) {
-      const sections = this.elements.mainNav.querySelectorAll('.feds-navItem--section');
-      const disableAED = getDisableAEDState();
-
-      if (!disableAED && sections.length === 1) {
-        sections[0].classList.add(selectors.activeNavItem.slice(1));
-        setActiveLink(true);
       }
     }
     if (this.newMobileNav) {
@@ -1301,6 +1313,7 @@ export default async function init(block) {
     setDisableAEDState();
   }
   const content = await fetchAndProcessPlainHtml({ url });
+  setAsyncDropdownCount(content.querySelectorAll('.large-menu').length);
   if (!content) {
     const error = new Error('Could not create global navigation. Content not found!');
     error.tags = 'errorType=error,module=gnav';

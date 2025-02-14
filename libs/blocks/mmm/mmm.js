@@ -5,6 +5,51 @@ import { getMepPopup, API_URLS } from '../../features/personalization/preview.js
 const SEARCH_CRITERIA_CHANGE_EVENT = 'mmm-search-change';
 let cachedSearchCriteria = '';
 export const DEBOUNCE_TIME = 800;
+export const MMM_LOCAL_STORAGE_KEY = 'mmm_filter_settings';
+const SEARCH_CONTAINER = '.mmm-search-container';
+const LAST_SEEN_OPTIONS = {
+  day: { value: 'Day', key: 'day' },
+  week: { value: 'Week', key: 'week' },
+  month: { value: 'Month', key: 'month' },
+  threeMonths: { value: '3 Months', key: 'threeMonths' },
+  sixMonths: { value: '6 Months', key: 'sixMonths' },
+  year: { value: 'Year', key: 'year' },
+  all: { value: 'All', key: 'all' },
+};
+const SUBDOMAIN_OPTIONS = {
+  www: { value: 'www', key: 'www' },
+  business: { value: 'business', key: 'business' },
+  all: { value: 'all', key: 'all' },
+};
+
+export const getLocalStorageFilter = () => {
+  const cookie = localStorage.getItem(MMM_LOCAL_STORAGE_KEY);
+  return cookie ? JSON.parse(cookie) : null;
+};
+
+const setLocalStorageFilter = (obj) => {
+  localStorage.setItem(MMM_LOCAL_STORAGE_KEY, JSON.stringify(obj));
+};
+
+const getInitialValues = () => {
+  const search = new URLSearchParams(window.location.search);
+  const values = {};
+  if (search.size) {
+    search.entries().forEach((item) => {
+      const key = item[0];
+      const value = item[1];
+      values[key] = value;
+    });
+    return values;
+  }
+  return getLocalStorageFilter();
+};
+
+const SEARCH_INITIAL_VALUES = getInitialValues() ?? {
+  lastSeenManifest: LAST_SEEN_OPTIONS.threeMonths.key,
+  pageNum: 1,
+  subdomain: SUBDOMAIN_OPTIONS.www.key,
+};
 
 async function toggleDrawer(target, dd, pageId) {
   const el = target.closest('button');
@@ -72,12 +117,18 @@ function createButtonDetailsPair(mmmEl, page) {
   mmmEl.append(dt, dd);
 }
 
+/**
+ * This function should be fired by any search criteria field change event
+ * Or by page number change event
+ * @param {Number} pageNum - optional. Number of the clicked page.
+ * @param {Event} event - optional. Page number click Event object.
+ */
 function filterPageList(pageNum, event) {
   const shareUrl = new URL(`${window.location.origin}${window.location.pathname}`);
   const searchValues = {};
   const activeSearchWithShortKeyword = event?.target?.value && event.target.value.length < 2;
 
-  document.querySelector('.mmm-search-container').querySelectorAll('input, select').forEach((field) => {
+  document.querySelector(SEARCH_CONTAINER).querySelectorAll('input, select, textarea').forEach((field) => {
     const id = field.getAttribute('id').split('-').pop();
     const { value, tagName } = field;
     searchValues[id] = {
@@ -91,22 +142,22 @@ function filterPageList(pageNum, event) {
   shareUrl.searchParams.set('pageNum', pageNum || 1);
   searchValues.pageNum = { value: pageNum || 1, tagName: 'A' };
 
-  // This event triggers an API call with beloww search criterias and a re-render
+  // assemble event details object with all filter criterias
+  const detail = {};
+  Object.keys(searchValues).forEach((key) => {
+    detail[key] = searchValues[key].value;
+  });
+  // This event triggers an API call with most recent search criteria and a forces a re-render
   if (!activeSearchWithShortKeyword) {
-    document.dispatchEvent(new CustomEvent(SEARCH_CRITERIA_CHANGE_EVENT, {
-      detail: {
-        urls: searchValues.urls?.value,
-        geos: searchValues.geos?.value,
-        pages: searchValues.pages?.value,
-        pageNum: searchValues.pageNum?.value,
-      },
-    }));
+    setLocalStorageFilter(detail);
+    document.dispatchEvent(new CustomEvent(SEARCH_CRITERIA_CHANGE_EVENT, { detail }));
   }
 
   document.querySelectorAll('button.copy-to-clipboard').forEach((button) => {
     button.dataset.destination = shareUrl.href;
   });
 }
+
 function parseData(el) {
   const data = {};
   const rows = el.querySelectorAll('div');
@@ -149,7 +200,8 @@ function createShareButton() {
       <path fill="currentColor" d="M31 0H6C2.7 0 0 2.7 0 6v25c0 3.3 2.7 6 6 6h25c3.3 0 6-2.7 6-6V6c0-3.3-2.7-6-6-6zM15.34 30.58a6.296 6.296 0 0 1-8.83 0c-2.48-2.44-2.52-6.43-.08-8.91l6.31-6.31a6.423 6.423 0 0 1 9.01-.04c.43.43.79.93 1.08 1.47l-1.52 1.51c-.11.11-.24.2-.38.28a3.68 3.68 0 0 0-3.32-2.44c-1.1-.04-2.17.37-2.96 1.13l-6.31 6.31a3.591 3.591 0 0 0 0 5.09 3.591 3.591 0 0 0 5.09 0c.19-.19 2.81-2.85 3.26-3.3 1.04.43 2.16.61 3.29.53-.96.95-4.31 4.34-4.64 4.68zm15.19-15.2-5.94 5.94c-2.54 2.57-6.63 2.73-9.38.38-.43-.43-.79-.93-1.08-1.47l1.44-1.5a2 2 0 0 1 .37-.28c.24.56.61 1.05 1.09 1.43.64.62 1.49.97 2.37.97 1.1.04 2.17-.37 2.96-1.14l6.26-6.26a3.591 3.591 0 0 0 0-5.09 3.591 3.591 0 0 0-5.09 0c-.19.19-2.87 2.83-3.32 3.29a7.267 7.267 0 0 0-3.29-.53c.96-.96 4.36-4.32 4.7-4.66a6.301 6.301 0 0 1 8.91 0l.01.01c2.46 2.47 2.46 6.46-.01 8.91z"></path>
     </svg>`,
   );
-  button.dataset.destination = document.location.href; // set original destination
+  // set initial destination
+  button.dataset.destination = document.location.href;
   div.append(button);
   button.addEventListener('click', (e) => {
     /* c8 ignore start */
@@ -167,8 +219,8 @@ function createShareButton() {
   return div;
 }
 
-function createDropdowns(data, sharedUrlSettings) {
-  const searchContainer = document.querySelector('.mmm-search-container');
+function createDropdowns(data) {
+  const searchContainer = document.querySelector(SEARCH_CONTAINER);
   const dropdownForm = createTag(
     'div',
     { id: 'mmm-dropdown-container', class: 'mmm-form-container' },
@@ -188,7 +240,7 @@ function createDropdowns(data, sharedUrlSettings) {
     Object.keys(options).forEach((option) => {
       const optionEl = createTag('option', { value: option }, options[option]);
       select.append(optionEl);
-      const startingVal = sharedUrlSettings[key];
+      const startingVal = SEARCH_INITIAL_VALUES[key];
       if (startingVal === option) optionEl.setAttribute('selected', 'selected');
     });
     select.addEventListener('change', () => filterPageList());
@@ -203,32 +255,62 @@ function debounce(func) {
   };
 }
 
-function createSearchField(data, sharedUrlSettings) {
-  const searchContainer = document.querySelector('.mmm-search-container');
+function createSearchField() {
+  const searchContainer = document.querySelector(SEARCH_CONTAINER);
   const searchForm = createTag(
     'div',
-    { id: 'mmm-search-urls-container', class: 'mmm-form-container' },
+    { id: 'mmm-search-filter-container', class: 'mmm-form-container' },
     `<div>
-      <label for="mmm-search-urls">Filter:</label>
-      <input id="mmm-search-urls" type="text" name="mmm-search-urls" class="text-field-input" placeholder="Search for a full or partial URL">
+      <label for="mmm-search-filter">Filter:</label>
+      <textarea id="mmm-search-filter" type="text" name="mmm-search-filter" class="text-field-input" placeholder="Search for the full or partial: page URL, manifest URL, manifest experience name or Target activity name"></textarea>
     </div>`,
   );
   searchContainer.append(searchForm);
-  const searchField = searchForm.querySelector('input');
-  if (sharedUrlSettings.urls) searchField.value = sharedUrlSettings.urls;
+  const searchField = searchForm.querySelector('textarea');
+  searchField.value = SEARCH_INITIAL_VALUES.filter || '';
 
   searchField.addEventListener('keyup', debounce((event) => filterPageList(null, event)));
   searchField.addEventListener('change', debounce((event) => filterPageList(null, event)));
+  searchField.addEventListener('input', function adjustHeight() {
+    this.style.height = 'auto'; /* Reset height to auto to recalculate */
+    this.style.height = `${this.scrollHeight - 32}px`;
+  });
+}
+
+function createLastSeenManifestAndDomainDD() {
+  const searchContainer = document.querySelector(SEARCH_CONTAINER);
+  const dd = createTag(
+    'div',
+    { id: 'mmm-dropdown-container', class: 'mmm-form-container' },
+    `<div>
+      <label for="mmm-lastSeenManifest">Manifests seen in the last:</label>
+      <select id="mmm-lastSeenManifest" type="text" name="mmm-lastSeenManifest" class="text-field-input">
+        ${Object.keys(LAST_SEEN_OPTIONS).map((key) => `
+          <option value="${LAST_SEEN_OPTIONS[key].key}" ${SEARCH_INITIAL_VALUES.lastSeenManifest === LAST_SEEN_OPTIONS[key].key ? 'selected' : ''}>${LAST_SEEN_OPTIONS[key].value}</option>
+        `)}
+      </select>
+    </div>
+    <div>
+      <label for="mmm-subdomain">Subdomain:</label>
+      <select id="mmm-subdomain" type="text" name="mmm-subdomain" class="text-field-input">
+        ${Object.keys(SUBDOMAIN_OPTIONS).map((key) => `
+          <option value="${SUBDOMAIN_OPTIONS[key].key}" ${SEARCH_INITIAL_VALUES.subdomain === SUBDOMAIN_OPTIONS[key].key ? 'selected' : ''}>${SUBDOMAIN_OPTIONS[key].value}</option>
+        `)}
+      </select>
+    </div>
+    `,
+  );
+  dd.addEventListener('change', () => filterPageList());
+  searchContainer.append(dd);
 }
 
 async function createForm(el) {
   const data = parseData(el);
-  const urlParams = new URLSearchParams(window.location.search);
-  const sharedUrlSettings = Object.fromEntries(urlParams.entries());
-  const searchContainer = createTag('div', { class: 'mmm-search-container' });
+  const searchContainer = createTag('div', { class: SEARCH_CONTAINER.slice(1) });
   document.querySelector('.mmm-container').parentNode.prepend(searchContainer);
-  createDropdowns(data, sharedUrlSettings);
-  createSearchField(data, sharedUrlSettings);
+  createDropdowns(data);
+  createLastSeenManifestAndDomainDD();
+  createSearchField();
 }
 
 function createPaginationEl({ data, el }) {
@@ -271,15 +353,6 @@ function createPaginationEl({ data, el }) {
   el.append(paginationEl);
 }
 
-function getSearchParams(obj) {
-  let searchString = '';
-  Object.keys(obj).forEach((key) => {
-    if (obj[key]) searchString += `&${key}=${obj[key]}`;
-  });
-  searchString = `?${searchString.slice(1)}`;
-  return searchString;
-}
-
 function handlePaginationClicks() {
   const paginationEl = document.querySelector('#mmm-pagination');
   paginationEl?.querySelectorAll('a').forEach((item) => {
@@ -300,12 +373,16 @@ async function createPageList(el, search) {
     role: 'presentation',
   });
   mmmElContainer.append(mmmEl);
-  const url = `${API_URLS.pageList}${search ? getSearchParams(search) : window.location.search || '?pageNum=1'}`;
+  const url = API_URLS.pageList;
   const response = await fetchData(
     url,
     DATA_TYPE.JSON,
+    {
+      method: 'POST',
+      body: JSON.stringify(search ?? SEARCH_INITIAL_VALUES),
+    },
   );
-  response.result.map((page) => createButtonDetailsPair(mmmEl, page));
+  response.result?.map((page) => createButtonDetailsPair(mmmEl, page));
   const section = createTag('div', { id: 'mep-section', class: 'section' });
   const main = document.querySelector('main');
   el.replaceWith(mmmElContainer);
@@ -318,8 +395,18 @@ async function createPageList(el, search) {
   handlePaginationClicks();
 }
 
+/**
+ * This function creates a listener to search criteria changes
+ * and will fires an API call when event is received.
+ * The search criteria change event is fired inside filterPageList()
+ */
 function subscribeToSearchCriteriaChanges() {
   document.addEventListener(SEARCH_CRITERIA_CHANGE_EVENT, (el) => {
+    // clear url of search params (if user came from a share link)
+    if (document.location.search) {
+      window.history.pushState({}, document.title, `${document.location.origin}${document.location.pathname}`);
+    }
+
     const searchCriteria = JSON.stringify(el?.detail || {});
     if (cachedSearchCriteria !== searchCriteria) {
       createPageList(document.querySelector('.mmm').parentNode, el.detail);

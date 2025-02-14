@@ -1,35 +1,50 @@
 :root {
   /* Tab Colors */
   --tabs-active-color: #1473e6;
-  --tabs-border-color: #d8d8d8;
+  --tabs-border-color: #909090;
   --tabs-border-hover-color: #acacac;
-  --tabs-text-color: #7e7e7e;
-  --tabs-active-text-color: #2C2C2C;
+  --tabs-text-color: #686868;
+  --tabs-active-text-color: #2c2c2c;
   --tabs-bg-color: #f1f1f1;
   --tabs-active-bg-color: #fff;
-  --tabs-list-bg-gradient: linear-gradient(rgb(255 255 255 / 0%) 60%, rgb(245 245 245 / 80%));
+  --tabs-list-bg-gradient: linear-gradient(
+    to bottom, 
+    rgba(136, 136, 136, 0) 0%,
+    rgba(136, 136, 136, 0) 60%,
+    rgba(136, 136, 136, 0.03) 80%,
+    rgba(136, 136, 136, 0.08) 100%
+  );
   --tabs-pill-bg-color: #e1e1e1;
   --tabs-pill-bg-color-hover: #dadada;
   --tabs-pill-bg-color-active: #c6c6c6;
+  --tabs-mobile-stacked-bg-color: #242424;
+  --tabs-mobile-stacked-text-color: #ffffff;
   --tabs-pill-text-color: #131313;
   --tabs-paddle-bs-color: #0000001a;
-  --tabs-radio-gray: #6D6D6D;
-  --tabs-radio-blue: #0265DC;
+  --tabs-radio-gray: #6d6d6d;
+  --tabs-radio-blue: #0265dc;
   --tabs-radio-bg: #fff;
   --tabs-radio-button-bg: #fdfdfd;
 }
 
 :root .dark {
-  --tabs-border-color: rgb(56 56 56);
-  --tabs-text-color: #cdcdcd;
+  --tabs-border-color: #909090;
+  --tabs-text-color: #b6b6b6;
   --tabs-active-text-color: #fff;
   --tabs-bg-color: #1a1a1a;
-  --tabs-active-bg-color: #111;
-  --tabs-list-bg-gradient: linear-gradient(rgb(0 0 0 / 0%) 60%, rgb(0 0 0 / 80%));
+  --tabs-active-bg-color: #1e1e1e;
+  --tabs-list-bg-gradient: linear-gradient(
+    rgba(0, 0, 0, 0%) 0%,
+    rgba(0, 0, 0, 0%) 60%,
+    rgba(0, 0, 0, 20%) 80%,
+    rgba(0, 0, 0, 40%) 100%
+  );
   --tabs-pill-bg-color: #555;
   --tabs-pill-bg-color-hover: #666;
   --tabs-pill-bg-color-active: #444;
   --tabs-pill-text-color: #fff;
+  --tabs-mobile-stacked-bg-color: #ffffff;
+  --tabs-mobile-stacked-text-color: #131313;
   --tabs-paddle-bs-color: #ffffff1a;
   --tabs-radio-gray: #d4d4d4;
   --tabs-radio-blue: #5eaaf7;
@@ -91,7 +106,6 @@
   display: flex;
   z-index: 2;
   margin: 0 var(--spacing-m);
-
   /* ScrollProps - If content exceeds height of container, overflow! */
   overflow: auto;
   overflow-y: hidden;
@@ -101,6 +115,9 @@
   
   /* default bg */
   background: var(--tabs-list-bg-gradient);
+  background-size: 100% 16px;
+  background-position: bottom;
+  background-repeat: no-repeat;
 }
 
 .tabs div[role="tablist"]::-webkit-scrollbar {
@@ -130,7 +147,7 @@
   margin: auto;
 }
 
-.tabs.center div[role="tablist"] .tab-list-container {
+.tabs.center:not(.same-width) div[role="tablist"] .tab-list-container {
   width: auto;
 }
 
@@ -181,6 +198,10 @@
   z-index: 1;
 }
 
+.tabs.same-width div[role="tablist"] button {
+  flex: 1;
+}
+
 .tabs .paddle {
   position: absolute;
   cursor: pointer;
@@ -193,6 +214,10 @@
   padding: 14px 0 12px;
   display: flex;
   align-items: center;
+}
+
+.tabs.quiet .paddle {
+  margin-top: 1px;
 }
 
 .tabs.radio div[role="tablist"],
@@ -230,6 +255,14 @@
   padding-right: 0;
   padding-left: 0;
   margin-inline-start: 24px;
+}
+
+.tabs.pill .tabList button {
+  border: none;
+}
+
+.tabs.quiet .tabList {
+  padding-bottom: 1px;
 }
 
 .tabs[class*='pill'] .tab-content {
@@ -331,6 +364,9 @@
   cursor: default;
   box-shadow: none;
   background: var(--tabs-list-bg-gradient);
+  background-size: 100% 16px;
+  background-position: bottom;
+  background-repeat: no-repeat;
 }
 
 .tabs .paddle-left {
@@ -387,7 +423,7 @@
   inline-size: var(--grid-container-width);
 }
 
-.tabs.radio div[role="tablist"] .tab-list-container {
+.tabs.radio div[role="tablist"].tabList .tab-list-container {
   background: var(--tabs-radio-bg);
   border: 1px solid var(--tabs-border-color);
   border-radius: 24px;
@@ -432,6 +468,14 @@
   margin-block-end: var(--spacing-xs);
 }
 
+.tabs.radio div[role="tablist"] :is(button, button:hover, button:focus-visible, button[aria-selected="true"]) {
+  background: unset;
+  border-radius: unset;
+  outline: revert;
+  outline-offset: revert;
+  margin-inline-start: revert;
+}
+
 /* Section Metadata */
 .tabs-background-transparent .tabs,
 .tabs-background-transparent .tabs div[role="tablist"],
@@ -458,7 +502,7 @@
 }
 
 @media screen and (min-width: 600px) {
-  .tabs.radio div[role="tablist"] .tab-list-container {
+  .tabs.radio div[role="tablist"].tabList .tab-list-container {
     flex-direction: row;
     align-items: center;
     border-radius: 40px;
@@ -494,6 +538,10 @@
     width: auto;
   }
 
+  .tabs .tabList {
+    min-height: 62px;
+  }
+
   .tabs div[role="tablist"] button {
     padding: 24px 32px 18px;
     line-height: 18px;
@@ -518,6 +566,10 @@
     margin: 0;
   }
 
+  .tabs.stacked-mobile .paddle {
+    display: none;
+  }
+
   .tabs.stacked-mobile div[role="tablist"] .tab-list-container {
     flex-direction: column;
     margin: 30px auto;
@@ -539,11 +591,8 @@
   }
 
   .tabs.stacked-mobile div[role="tablist"] button[aria-selected="true"] {
-    background-color: #dadada;
-  }
-  
-  .tabs.stacked-mobile.dark div[role="tablist"] button[aria-selected="true"] {
-    background-color: #393939;
+    background-color: var(--tabs-mobile-stacked-bg-color);
+    color: var(--tabs-mobile-stacked-text-color);
   }
 
   .tabs.stacked-mobile.center div[role="tablist"] .tab-list-container {
@@ -553,5 +602,10 @@
 
   .tabs.stacked-mobile.quiet div[role="tablist"] button {
     margin-inline-start: 0;
+  }
+
+  .tabs[class*='stacked-mobile'] .paddle {
+    background: unset;
+    border: none;
   }
 }
