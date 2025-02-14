@@ -28,7 +28,7 @@ describe('global navigation utilities', () => {
   beforeEach(() => {
     document.body.innerHTML = '';
   });
-  xit('fetchAndProcessPlainHtml with MEP', () => {
+  it('fetchAndProcessPlainHtml with MEP', () => {
     expect(fetchAndProcessPlainHtml).to.exist;
     const mepConfig = getConfig();
     mepConfig.mep = mepInBlock;
@@ -40,7 +40,7 @@ describe('global navigation utilities', () => {
     });
   });
 
-  xit('toFragment', () => {
+  it('toFragment', () => {
     expect(toFragment).to.exist;
     const fragment = toFragment`<div>test</div>`;
     expect(fragment.tagName).to.equal('DIV');
@@ -84,7 +84,7 @@ describe('global navigation utilities', () => {
       });
     };
 
-    xit('shouldnt change non-federal absolute sources', async () => {
+    it('shouldnt change non-federal absolute sources', async () => {
       const template = getImageTemplate({
         host: 'https://adobe.com',
         path: '/test/path/federal/media.png',
@@ -97,7 +97,7 @@ describe('global navigation utilities', () => {
       });
     });
 
-    xit('shouldnt change non-federal absolute localized sources', async () => {
+    it('shouldnt change non-federal absolute localized sources', async () => {
       const localeUrlsTemplate = getImageTemplate({
         host: 'https://adobe.com',
         path: '/test/federal/media.png',
@@ -112,7 +112,7 @@ describe('global navigation utilities', () => {
       });
     });
 
-    xit('should change federal absolute sources', async () => {
+    it('should change federal absolute sources', async () => {
       const template = getImageTemplate({
         host: 'https://adobe.com',
         path: '/federal/media.png',
@@ -125,7 +125,7 @@ describe('global navigation utilities', () => {
       });
     });
 
-    xit('should change federal absolute localized sources', async () => {
+    it('should change federal absolute localized sources', async () => {
       const template = getImageTemplate({
         host: 'https://adobe.com',
         path: '/federal/media.png',
@@ -140,7 +140,7 @@ describe('global navigation utilities', () => {
       });
     });
 
-    xit('shouldnt change non-federal relative sources', async () => {
+    it('shouldnt change non-federal relative sources', async () => {
       const template = getImageTemplate({
         host: '.',
         path: '/test/path/federal/media.png',
@@ -153,7 +153,7 @@ describe('global navigation utilities', () => {
       });
     });
 
-    xit('shouldnt change non-federal relative localized sources', async () => {
+    it('shouldnt change non-federal relative localized sources', async () => {
       const localeUrlsTemplate = getImageTemplate({
         host: '.',
         path: '/test/federal/media.png',
@@ -168,7 +168,7 @@ describe('global navigation utilities', () => {
       });
     });
 
-    xit('should change federal relative sources', async () => {
+    it('should change federal relative sources', async () => {
       const template = getImageTemplate({
         host: '.',
         path: '/federal/media.png',
@@ -181,7 +181,7 @@ describe('global navigation utilities', () => {
       });
     });
 
-    xit('should change federal relative localized sources', async () => {
+    it('should change federal relative localized sources', async () => {
       const template = getImageTemplate({
         host: '.',
         path: '/federal/media.png',
@@ -196,7 +196,7 @@ describe('global navigation utilities', () => {
       });
     });
 
-    xit('should allow to force picture federation to /federal/media.png', async () => {
+    it('should allow to force picture federation to /federal/media.png', async () => {
       const template = getImageTemplate({
         host: '.',
         path: '/media.png',
@@ -213,7 +213,7 @@ describe('global navigation utilities', () => {
   // No tests for using the the live url and .aem. urls
   // as mocking window.location.origin is not possible
   describe('getFedsPlaceholderConfig', () => {
-    xit('should return contentRoot for localhost', () => {
+    it('should return contentRoot for localhost', () => {
       const locale = { locale: { ietf: 'en-US', prefix: '' } };
       setConfig({ ...config, ...locale });
       const placeholderConfig = { useCache: false };
@@ -223,7 +223,7 @@ describe('global navigation utilities', () => {
       expect(contentRoot).to.equal(`${baseHost}/federal/globalnav`);
     });
 
-    xit('should return a config object for a specific locale', () => {
+    it('should return a config object for a specific locale', () => {
       const customConfig = {
         locales: {
           '': { ietf: 'en-US' },
@@ -240,14 +240,14 @@ describe('global navigation utilities', () => {
     });
   });
 
-  xit('getAnalyticsValue should return a string', () => {
+  it('getAnalyticsValue should return a string', () => {
     expect(getAnalyticsValue('test')).to.equal('test');
     expect(getAnalyticsValue('test test?')).to.equal('test test');
     expect(getAnalyticsValue('test test 1?', 2)).to.equal('test test 1-2');
   });
 
   describe('decorateCta', () => {
-    xit('should return a fragment for a primary cta', () => {
+    it('should return a fragment for a primary cta', () => {
       const elem = toFragment`<a href="test">test</a>`;
       const el = decorateCta({ elem });
       expect(el.tagName).to.equal('DIV');
@@ -259,7 +259,7 @@ describe('global navigation utilities', () => {
       expect(el.children[0].textContent.trim()).to.equal('test');
     });
 
-    xit('should return a fragment for a secondary cta', () => {
+    it('should return a fragment for a secondary cta', () => {
       const elem = toFragment`<a href="test">test</a>`;
       const el = decorateCta({ elem, type: 'secondaryCta' });
       expect(el.tagName).to.equal('DIV');
@@ -273,7 +273,7 @@ describe('global navigation utilities', () => {
   });
 
   describe('active logic', () => {
-    xit('can have its state updated', () => {
+    it('can have its state updated', () => {
       const currentState = hasActiveLink() || false;
       setActiveLink(!currentState);
       expect(hasActiveLink()).to.equal(!currentState);
@@ -281,7 +281,7 @@ describe('global navigation utilities', () => {
       expect(hasActiveLink()).to.equal(currentState);
     });
 
-    xit('finds the active link from an area', () => {
+    it('finds the active link from an area', () => {
       setActiveLink(false);
 
       const area = toFragment`<div>
@@ -298,7 +298,7 @@ describe('global navigation utilities', () => {
     });
   });
 
-  xit('closeAllDropdowns should close all dropdowns, respecting the globalNavSelector', async () => {
+  it('closeAllDropdowns should close all dropdowns, respecting the globalNavSelector', async () => {
     // Build navigation
     await createFullGlobalNavigation({ });
     // Mark first element with dropdown as being expanded
@@ -310,7 +310,7 @@ describe('global navigation utilities', () => {
     expect(document.querySelectorAll('[aria-expanded="true"]').length).to.equal(0);
   });
 
-  xit('closeAllDropdowns doesn\'t close items with the "fedsPreventautoclose" attribute', async () => {
+  it('closeAllDropdowns doesn\'t close items with the "fedsPreventautoclose" attribute', async () => {
     // Build navigation
     await createFullGlobalNavigation({ });
     // Get first two elements with a dropdown and expand them
@@ -329,7 +329,7 @@ describe('global navigation utilities', () => {
     expect(document.querySelectorAll('[aria-expanded="true"]').length).to.equal(1);
   });
 
-  xit('trigger manages the aria-expanded state of a global-navigation element', async () => {
+  it('trigger manages the aria-expanded state of a global-navigation element', async () => {
     // Build navigation
     await createFullGlobalNavigation({ });
     // Get first element with a dropdown
@@ -342,12 +342,12 @@ describe('global navigation utilities', () => {
     expect(element.getAttribute('aria-expanded')).to.equal('false');
   });
 
-  xit('getExperienceName defaults to imsClientId', () => {
+  it('getExperienceName defaults to imsClientId', () => {
     const experienceName = getExperienceName();
     expect(experienceName).to.equal(config.imsClientId);
   });
 
-  xit('getExperienceName replaces default experience name with client ID', () => {
+  it('getExperienceName replaces default experience name with client ID', () => {
     // If the experience name is the default one (gnav), the imsClientId should be used instead
     const gnavSourceMeta = toFragment`<meta name="gnav-source" content="http://localhost:2000/ch_de/libs/feds/gnav">`;
     document.head.append(gnavSourceMeta);
@@ -360,7 +360,7 @@ describe('global navigation utilities', () => {
     gnavSourceMeta.remove();
   });
 
-  xit('getExperienceName is empty if no imsClientId is defined', () => {
+  it('getExperienceName is empty if no imsClientId is defined', () => {
     const ogImsClientId = config.imsClientId;
     delete config.imsClientId;
     setConfig(config);
@@ -371,7 +371,7 @@ describe('global navigation utilities', () => {
   });
 
   describe('LANA logs', () => {
-    xit('should send LANA log on error', async () => {
+    it('should send LANA log on error', async () => {
       // Mock the global window.lana.log method
       const originalLanaLog = window.lana.log;
       const lanaLogSpy = sinon.spy();
@@ -394,7 +394,7 @@ describe('global navigation utilities', () => {
   });
 
   describe('takeWhile functionality', () => {
-    xit('should take elements from the array while the predicate returns true', () => {
+    it('should take elements from the array while the predicate returns true', () => {
       const array = [1, 2, 3, 4, 5];
       const predicate = sinon.stub();
       predicate.withArgs(1).returns(true);
@@ -410,7 +410,7 @@ describe('global navigation utilities', () => {
       expect(predicate.thirdCall.args[0]).to.equal(3);
     });
 
-    xit('should return an empty array if the predicate returns false for the first element', () => {
+    it('should return an empty array if the predicate returns false for the first element', () => {
       const array = [1, 2, 3, 4, 5];
       const predicate = sinon.stub();
       predicate.withArgs(1).returns(false);
@@ -422,7 +422,7 @@ describe('global navigation utilities', () => {
       expect(predicate.firstCall.args[0]).to.equal(1);
     });
 
-    xit('should return the entire array if the predicate always returns true', () => {
+    it('should return the entire array if the predicate always returns true', () => {
       const array = [1, 2, 3, 4, 5];
       const predicate = sinon.stub().returns(true);
 
@@ -437,7 +437,7 @@ describe('global navigation utilities', () => {
   });
 
   describe('dropWhile functionality', () => {
-    xit('should drop elements from the array while the predicate returns true', () => {
+    it('should drop elements from the array while the predicate returns true', () => {
       const array = [1, 2, 3, 4, 5];
       const predicate = sinon.stub();
       predicate.withArgs(1).returns(true);
@@ -451,7 +451,7 @@ describe('global navigation utilities', () => {
       expect(predicate.thirdCall.args[0]).to.equal(3);
     });
 
-    xit('should return an empty array if the predicate returns true for all elements', () => {
+    it('should return an empty array if the predicate returns true for all elements', () => {
       const array = [1, 2, 3, 4, 5];
       const predicate = sinon.stub().returns(true);
       const result = dropWhile(array, predicate);
@@ -462,7 +462,7 @@ describe('global navigation utilities', () => {
       });
     });
 
-    xit('should return the original array if the predicate returns false for the first element', () => {
+    it('should return the original array if the predicate returns false for the first element', () => {
       const array = [1, 2, 3, 4, 5];
       const predicate = sinon.stub().returns(false);
       const result = dropWhile(array, predicate);
@@ -471,7 +471,7 @@ describe('global navigation utilities', () => {
       expect(predicate.firstCall.args[0]).to.equal(1);
     });
 
-    xit('should handle an empty array gracefully', () => {
+    it('should handle an empty array gracefully', () => {
       const array = [];
       const predicate = sinon.stub().returns(true);
       const result = dropWhile(array, predicate);
