@@ -33,7 +33,6 @@ test.describe('ACOM MAS cards feature test suite', () => {
 
     await test.step('step-2: Verify Plans Merch Card content', async () => {
       await expect(acomPage.getCard(data.id)).toBeVisible();
-      // await expect(await acomPage.getCard(data.id)).toHaveAttribute('daa-lh', /.*/);
       await expect(acomPage.getCardIcon(data.id)).toBeVisible();
       await expect(acomPage.getCardIcon(data.id)).toHaveAttribute('src', /content\/dam/);
       await expect(await acomPage.getCardTitle(data.id)).toBeVisible();
