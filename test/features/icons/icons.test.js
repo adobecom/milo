@@ -47,8 +47,7 @@ describe('Icon Support', () => {
     document.body.appendChild(otherIcons[0]);
 
     await loadIcons(otherIcons, config);
-    const svg = otherIcons[0].querySelector('svg');
-    expect(svg).to.exist;
+    expect(otherIcons[0].querySelector('svg')).to.exist;
   });
 
   it('Renders an SVG after loading the icons', () => {
