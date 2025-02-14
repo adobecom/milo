@@ -79,6 +79,10 @@ export function CheckoutMixin(Base) {
             return this.masElement.options;
         }
 
+        get opens3in1Modal() {
+          return Object.values(MODAL_TYPE_3_IN_1).includes(this.getAttribute('data-modal-type')) && !!this.href;
+        }
+
         requestUpdate(force = false) {
             return this.masElement.requestUpdate(force);
         }

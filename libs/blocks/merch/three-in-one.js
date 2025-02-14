@@ -60,22 +60,10 @@ export const handle3in1IFrameEvents = ({ data: msgData }) => {
 
 export async function createContent(iframeUrl, modalType) {
   const content = createTag('div', { class: 'milo-iframe' });
-  const title = modalType === MODAL_TYPE_3_IN_1.CRM ? 'Single App' : modalType;
-  const iframe = createTag('iframe', {
-    src: iframeUrl,
-    title,
-    frameborder: '0',
-    marginwidth: '0',
-    marginheight: '0',
-    allowfullscreen: 'true',
-    loading: 'lazy',
-    class: 'loading',
-  });
-  const pCircle = createTag('sp-progress-circle', { label: 'progress circle', indeterminate: true, size: 'l' });
-  const theme = createTag('sp-theme', { theme: 'spectrum', color: 'light', scale: 'medium', dir: 'ltr' });
-  theme.append(pCircle);
-  content.append(theme);
-  content.append(iframe);
+  content.innerHTML = `<sp-theme system="light" color="light" scale="medium" dir="ltr">
+  <sp-progress-circle label="progress circle" indeterminate="" size="l" dir="ltr" role="progressbar" aria-label="progress circle"></sp-progress-circle>
+  </sp-theme>
+  <iframe src="${iframeUrl}" title="${modalType === MODAL_TYPE_3_IN_1.CRM ? 'Single App' : modalType}" frameborder="0" marginwidth="0" marginheight="0" allowfullscreen="true" loading="lazy" class="loading" style="height: 100%;"></iframe>`;
   return content;
 }
 
@@ -83,7 +71,6 @@ export default async function openThreeInOneModal(el) {
   const iframeUrl = el?.href;
   const modalType = el?.getAttribute('data-modal-type');
   if (!modalType || !iframeUrl) return undefined;
-
   const { getModal } = await import('../modal/modal.js');
   const content = await createContent(iframeUrl, modalType);
   return getModal(null, {

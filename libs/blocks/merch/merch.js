@@ -2,7 +2,6 @@ import {
   createTag, getConfig, loadArea, loadScript, loadStyle, localizeLink, SLD,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
-import { MODAL_TYPE_3_IN_1 } from '../../deps/mas/constants.js';
 
 export const CHECKOUT_LINK_CONFIG_PATH = '/commerce/checkout-link.json'; // relative to libs.
 
@@ -496,15 +495,12 @@ export async function openModal(e, url, offerType, hash, extraOptions, el) {
   if (isInternalModal(url)) {
     const fragmentPath = url.split(/(hlx|aem).(page|live)/).pop();
     modal = await openFragmentModal(fragmentPath, getModal);
+  } else if (el?.opens3in1Modal) {
+    const { default: openThreeInOneModal, handle3in1IFrameEvents } = await import('./three-in-one.js');
+    window.addEventListener('message', handle3in1IFrameEvents);
+    modal = await openThreeInOneModal(el);
   } else {
-    const isThreeInOneModal = Object.values(MODAL_TYPE_3_IN_1).includes(el?.getAttribute('data-modal-type')) && el?.href;
-    if (isThreeInOneModal) {
-      const { default: openThreeInOneModal, handle3in1IFrameEvents } = await import('./three-in-one.js');
-      window.addEventListener('message', handle3in1IFrameEvents);
-      modal = await openThreeInOneModal(el);
-    } else {
-      modal = await openExternalModal(url, getModal, extraOptions, el);
-    }
+    modal = await openExternalModal(url, getModal, extraOptions, el);
   }
   if (modal) {
     modal.classList.add(offerTypeClass);
