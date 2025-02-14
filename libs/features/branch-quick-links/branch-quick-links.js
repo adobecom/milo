@@ -30,7 +30,7 @@ async function decorateQuickLink(a, hasConsent) {
   } catch (e) {
     window.lana.log(`Error fetching ECID: ${e}`, { tags: 'branch-quick-links' });
   }
-  if (hasConsent && !a.href.includes('ecid')) {
+  if (ecid && hasConsent && !a.href.includes('ecid')) {
     a.href = a.href.concat(`?ecid=${ecid}`);
   }
   window.location.href = a.href;
