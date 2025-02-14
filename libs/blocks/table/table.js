@@ -153,6 +153,58 @@ function handleAddOnContent(table) {
   table.addEventListener('mas:resolved', debounce(() => { handleEqualHeight(table, '.row-heading'); }));
 }
 
+function setTooltipPosition(el) {
+  const tooltips = el.querySelectorAll('.milo-tooltip');
+
+  tooltips.forEach((tooltip) => {
+    const classesToCheck = ['top', 'bottom', 'left', 'right'];
+    const defaultClass = classesToCheck.find((className) => tooltip.classList.contains(className)) || 'right';
+    let isTabletOrMobile = ['TABLET', 'MOBILE'].includes(defineDeviceByScreenSize());
+
+    function updateTooltipPosition() {
+      isTabletOrMobile = ['TABLET', 'MOBILE'].includes(defineDeviceByScreenSize());
+      const isRtl = document.documentElement.dir === 'rtl';
+      const tooltipRect = tooltip.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const tooltipBefore = window.getComputedStyle(tooltip, '::before');
+      const beforeWidth = parseFloat(tooltipBefore.width) || 0;
+      const padding = 30;
+      const isVertical = defaultClass === 'top' || defaultClass === 'bottom';
+      const tooltipCenter = tooltipRect.left + tooltipRect.width / 2;
+
+      const overflowsRight = isVertical
+        ? tooltipCenter + beforeWidth / 2 + padding > viewportWidth
+        : tooltipRect.right + beforeWidth + padding > viewportWidth;
+
+      const overflowsLeft = isVertical
+        ? tooltipCenter - beforeWidth / 2 - padding < 0
+        : tooltipRect.left - beforeWidth - padding < 0;
+
+      let newClass = defaultClass;
+
+      if (isTabletOrMobile) {
+        newClass = isRtl ? 'right' : 'left';
+      } else if (overflowsLeft) {
+        newClass = 'right';
+      } else if (overflowsRight) {
+        newClass = 'left';
+      }
+
+      if (!tooltip.classList.contains(newClass)) {
+        tooltip.classList.remove(...classesToCheck);
+        tooltip.classList.add(newClass);
+      }
+    }
+
+    if (isTabletOrMobile) {
+      updateTooltipPosition();
+    }
+
+    tooltip.addEventListener('mouseenter', updateTooltipPosition);
+    tooltip.addEventListener('focus', updateTooltipPosition);
+  });
+}
+
 async function setAriaLabelForIcons(el) {
   const config = getConfig();
   const expendableIcons = el.querySelectorAll('.icon.expand[role="button"]');
@@ -607,6 +659,7 @@ export default function init(el) {
     const handleResize = () => {
       applyStylesBasedOnScreenSize(el, originTable);
       if (isStickyHeader(el)) handleScrollEffect(el);
+      setTooltipPosition(el);
     };
     handleResize();
 
