@@ -40,6 +40,8 @@ const FORM_MAP = {
   'success-section': SUCCESS_SECTION,
   'co-partner-names': 'program.copartnernames',
   'sfdc-campaign-id': 'program.campaignids.sfdc',
+  'poi-field': 'field_filters.products',
+  'hardcoded-poi': 'program.poi',
 };
 export const FORM_PARAM = 'form';
 
