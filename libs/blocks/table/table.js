@@ -92,6 +92,25 @@ function handleHeading(table, headingCols) {
       trackingHeader.setAttribute('aria-describedby', describedBy);
 
       col.setAttribute('role', 'columnheader');
+
+      if (/^H[1-6]$/.test(trackingHeader.tagName)) {
+        const newSpan = document.createElement('span');
+        const computedStyles = window.getComputedStyle(trackingHeader);
+
+        [...trackingHeader.attributes].forEach((attr) => {
+          newSpan.setAttribute(attr.name, attr.value);
+        });
+        newSpan.setAttribute('scope', 'col');
+
+        newSpan.style.cssText = computedStyles.cssText;
+        newSpan.style.display = computedStyles.display;
+        ['marginTop', 'marginRight', 'marginBottom', 'marginLeft'].forEach((prop) => {
+          newSpan.style[prop] = computedStyles[prop];
+        });
+
+        newSpan.innerHTML = trackingHeader.innerHTML;
+        trackingHeader.replaceWith(newSpan);
+      }
     }
 
     nodeToApplyRoleScope.setAttribute('scope', 'col');
