@@ -105,6 +105,11 @@ export class VariantLayout {
         return '[slot="heading-xs"]';
     }
 
+    get borderColor() {
+        this.card.style.setProperty('--custom-border-color', this.card.borderColor);
+        return this.card.borderColor || '';
+    }
+
     get secureLabelFooter() {
         const secureLabel = this.card.secureLabel
             ? html`<span class="secure-transaction-label"

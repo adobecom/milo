@@ -101,6 +101,12 @@ export function processBackgroundColor(fields, merchCard, allowedColors) {
     merchCard.setAttribute('background-color', fields.backgroundColor);
 }
 
+export function processBorderColor(fields, merchCard) {
+    if (fields.borderColor) {
+        merchCard.setAttribute('border-color', fields.borderColor);
+    }
+}
+
 export function processBackgroundImage(
     fields,
     merchCard,
@@ -440,6 +446,7 @@ export async function hydrate(fragment, merchCard) {
         aemFragmentMapping.backgroundImage,
     );
     processBackgroundColor(fields, merchCard, aemFragmentMapping.allowedColors);
+    processBorderColor(fields, merchCard);
     processDescription(fields, merchCard, aemFragmentMapping.description);
     processCTAs(fields, merchCard, aemFragmentMapping, variant);
     processAnalytics(fields, merchCard);

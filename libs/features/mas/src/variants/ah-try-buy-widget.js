@@ -11,17 +11,17 @@ export const AH_TRY_BUY_WIDGET_AEM_FRAGMENT_MAPPING = {
   prices: { tag: 'p', slot: 'price' },
   ctas: { slot: 'cta', size: 'S' },
   backgroundImage: { tag: 'div', slot: 'image' },
+  backgroundColor: { attribute: 'background-color' },
+  borderColor: { attribute: 'border-color' },
   allowedColors: ['gray'],
-  size: ['single', 'double']
+  size: ['single', 'double', 'triple'],
 };
 
 export class AHTryBuyWidget extends VariantLayout {
   getGlobalCSS() {
     return CSS;
   }
-
-  #mobile = new MatchMediaController(this.card, MOBILE_LANDSCAPE);
-
+  
   /* c8 ignore next 3 */
   get aemFragmentMapping() {
     return AH_TRY_BUY_WIDGET_AEM_FRAGMENT_MAPPING;
@@ -70,8 +70,8 @@ export class AHTryBuyWidget extends VariantLayout {
         padding: 12px !important;
         gap: 24px;
         box-sizing: content-box !important;
-        border: none;
-        outline: 1px solid var(--merch-card-ah-try-buy-widget-outline);
+        border: 1px solid;
+        border-color: var(--custom-border-color, transparent);
         justify-content: space-between;
     }
 
