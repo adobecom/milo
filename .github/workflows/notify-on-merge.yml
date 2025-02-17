@@ -17,5 +17,6 @@ jobs:
         # If you're testing locally, you can add '--env-file=.env'
         run: node .github/workflows/notify-merge.js
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.OKAN_SLACK_WEBHOOK }}
+          OKAN_SLACK_WEBHOOK: ${{ secrets.OKAN_SLACK_WEBHOOK }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
