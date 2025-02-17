@@ -363,11 +363,9 @@ module.exports = {
       path: '/libs/features/mas/docs/ccd.html',
       data: {
         id: '018bf7f7-1e82-4b16-9dd1-039ee013e490',
-        description: 'This card is testing universal Promo Terms link.',
         linkText: 'See terms',
-        cta: 'Buy now',
-        offerid: '30404A88D89A328584307175B8B27616',
-        background: 'media_1526ec63ba66eead46d7bde733ac7c4e994d829f1.png',
+        offerid: '3B8086C370FDF28C8AEEE1C5BD233E5A',
+        uptLinkUrl: 'https://www.adobe.com/offers/promo-terms.html?locale=en_US&country=US&offer_id=3B8086C370FDF28C8AEEE1C5BD233E5A&promotion_code=MHYXZS',
         // iconLink: '',
       },
       browserParams: '?theme=darkest',
