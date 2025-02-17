@@ -220,12 +220,15 @@
 
 /* Privacy */
 .feds-footer-legalWrapper {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  row-gap: 12px;
 }
 
 .feds-footer-privacySection {
   display: flex;
   flex-wrap: wrap;
+  margin: 0;
 }
 
 .feds-footer-privacyLink {

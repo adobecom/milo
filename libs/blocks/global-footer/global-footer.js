@@ -362,6 +362,7 @@ class Footer {
     this.elements.legal = toFragment`<div class="feds-footer-legalWrapper" daa-lh="Legal"></div>`;
     const linkDivider = '<span class="feds-footer-privacyLink-divider" aria-hidden="true">/</span>';
 
+    let privacyContentIndex = 0;
     while (privacyContent.children.length) {
       const privacySection = privacyContent.firstElementChild;
       privacySection.classList.add('feds-footer-privacySection');
@@ -378,18 +379,21 @@ class Footer {
       });
       this.elements.legal.append(privacySection);
 
-      const privacySectionList = document.createElement('ul');
-      [...privacySection.attributes].forEach((attr) => {
-        privacySectionList.setAttribute(attr.name, attr.value);
-      });
-      const copyrightListItem = document.createElement('li');
-      copyrightListItem.classList.add('feds-footer-privacy-listitem');
-      copyrightListItem.innerHTML = linkDivider;
-      copyrightListItem.prepend(copyrightElem);
-      copyrightElem.replaceWith(toFragment`<span class="feds-footer-copyright">Copyright © ${currentYear} ${copyrightElem.textContent}</span>`);
-      privacySectionList.prepend(copyrightListItem);
-      privacySectionList.innerHTML += privacySection.innerHTML.replace(/( \/ )/g, '');
-      privacySection.parentNode.replaceChild(privacySectionList, privacySection);
+      if (privacyContentIndex === 0) {
+        const privacySectionList = document.createElement('ul');
+        [...privacySection.attributes].forEach((attr) => {
+          privacySectionList.setAttribute(attr.name, attr.value);
+        });
+        const copyrightListItem = document.createElement('li');
+        copyrightListItem.classList.add('feds-footer-privacy-listitem');
+        copyrightListItem.innerHTML = linkDivider;
+        copyrightListItem.prepend(copyrightElem);
+        copyrightElem.replaceWith(toFragment`<span class="feds-footer-copyright">Copyright © ${currentYear} ${copyrightElem.textContent}</span>`);
+        privacySectionList.prepend(copyrightListItem);
+        privacySectionList.innerHTML += privacySection.innerHTML.replace(/( \/ )/g, '');
+        privacySection.parentNode.replaceChild(privacySectionList, privacySection);
+      }
+      privacyContentIndex += 1;
     }
 
     return this.elements.legal;
