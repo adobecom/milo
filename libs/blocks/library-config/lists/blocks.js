@@ -284,7 +284,7 @@ export default async function loadBlocks(blocks, list, query, type) {
         const containerHtml = getHtml(container, block.path);
         e.target.classList.add('copied');
         setTimeout(() => { e.target.classList.remove('copied'); }, 3000);
-        const blob = new Blob([`${containerHtml}`], { type: 'text/html' });
+        const blob = new Blob([containerHtml], { type: 'text/html' });
         createCopy(blob);
       });
       item.append(name, copy);
