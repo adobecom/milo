@@ -579,6 +579,8 @@ export const [branchBannerLoadCheck, getBranchBannerInfo] = (() => {
                 if (branchBannerInfo.isSticky) {
                   // Adjust the top position of the lnav to account for the branch banner height
                   document.querySelector('.feds-localnav').style.top = `${branchBannerInfo.height}px`;
+                } else {
+                  document.body.classList.add('branch-banner-inline');
                 }
                 // Update the popup position when the branch banner is added
                 updatePopupPosition();
@@ -593,6 +595,7 @@ export const [branchBannerLoadCheck, getBranchBannerInfo] = (() => {
                 branchBannerInfo.height = 0;
                 // Remove the top style attribute when the branch banner is removed
                 document.querySelector('.feds-localnav')?.removeAttribute('style');
+                document.body.classList.remove('branch-banner-inline');
                 // Update the popup position when the branch banner is removed
                 updatePopupPosition();
                 // Optional: Disconnect the observer if you no longer need to track it

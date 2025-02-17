@@ -1330,8 +1330,25 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
   overflow: hidden;
   width: 100%;
   min-height: 100dvh;
+  position: fixed;
 }
 
 html:has(body.disable-ios-scroll) { /* this class is only added on iOS */
   height: 100dvh;
+  position: fixed;
+}
+
+/* Adjustments for app banner non-sticky behavior */
+.branch-banner-is-active.branch-banner-inline {
+  transition: 0ms !important;
+}
+
+.disable-ios-scroll.branch-banner-is-active.branch-banner-inline {
+  margin-top: 0 !important;
+}
+
+.disable-ios-scroll.branch-banner-is-active.branch-banner-inline #branch-banner-iframe {
+  position: static;
+  display: block;
+  transition: margin 0ms;
 }

@@ -1049,33 +1049,22 @@ class Gnav {
 
   // update GNAV popup position based on branch banner
   updatePopupPosition = (activePopup) => {
-    let popup = null;
-    if (activePopup) {
-      popup = activePopup;
-    } else {
-      const selectedSection = this.elements.mainNav.querySelector('.feds-navItem--section.feds-dropdown--active');
-      popup = selectedSection?.querySelector('.feds-popup');
-    }
+    const popup = activePopup || this.elements.mainNav.querySelector('.feds-navItem--section.feds-dropdown--active .feds-popup');
     if (!popup) return;
-    const y = window.scrollY;
-    const iOSy = Math.abs(parseInt(document.body.style.top, 10));
-    const offset = this.block.classList.contains('has-promo')
+    const yOffset = window.scrollY || Math.abs(parseInt(document.body.style.top, 10)) || 0;
+    const navOffset = this.block.classList.contains('has-promo')
       ? 'var(--feds-height-nav) - var(--global-height-navPromo)'
       : 'var(--feds-height-nav)';
-    popup.removeAttribute('style');
-    popup.style = `top: calc(${iOSy || y || 0}px - ${offset} - 2px)`;
+    popup.style.top = `calc(${yOffset}px - ${navOffset} - 2px)`;
     const { isPresent, isSticky, height } = getBranchBannerInfo();
-    if (isPresent && !isSticky) {
-      const delta = (iOSy || y || 0) - height;
-      popup.style = `
-        top: calc(0px - var(--feds-height-nav) + ${Math.max(delta, 0)}px - 2px);
-        height: calc(100dvh + ${Math.min(delta, 0)}px + 2px);
-      `;
-    } else if (isPresent && isSticky) {
-      popup.style = `
-        top: calc(${iOSy || y || 0}px - ${offset} - 2px);
-        height: calc(100dvh - ${height}px + 2px);
-      `;
+    if (isPresent) {
+      const delta = yOffset - height;
+      if (isSticky) {
+        popup.style.height = `calc(100dvh - ${height}px + 2px)`;
+      } else {
+        popup.style.top = `calc(0px - var(--feds-height-nav) + ${Math.max(delta, 0)}px - 2px)`;
+        popup.style.height = `calc(100dvh + ${Math.min(delta, 0)}px + 2px)`;
+      }
     }
   };
 

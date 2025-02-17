@@ -534,6 +534,7 @@ describe('global navigation utilities', () => {
       const { isPresent, isSticky } = getBranchBannerInfo();
       expect(isPresent).to.be.true;
       expect(isSticky).to.be.false;
+      expect(document.body.classList.contains('branch-banner-inline')).to.be.true;
       clock.uninstall();
     });
     it('set css for popup if inline banner loads when hamburger menu is open', async () => {
@@ -554,6 +555,7 @@ describe('global navigation utilities', () => {
       const popup = document.querySelector('.feds-navItem--section.feds-dropdown--active .feds-popup');
       expect(!!popup.style.top).to.be.true;
       expect(!!popup.style.height).to.be.true;
+      expect(document.body.classList.contains('branch-banner-inline')).to.be.true;
       clock.uninstall();
     });
     it('set css for popup if when we open popup with sticky branch banner', async () => {
