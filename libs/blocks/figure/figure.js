@@ -35,6 +35,14 @@ function decorateVideo(clone, figEl) {
       applyAccessibilityEvents(videoTag);
       decoratePausePlayWrapper(videoTag, 'autoplay');
     }
+    if (videoTag.controls) {
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach(({ isIntersecting, target }) => {
+          if (!isIntersecting && !target.paused) target.pause();
+        });
+      }, { rootMargin: '0px' });
+      io.observe(videoTag);
+    }
     figEl.prepend(clone.querySelector('.video-container, .pause-play-wrapper, video'));
   }
 }
