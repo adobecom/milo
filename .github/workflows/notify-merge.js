@@ -1,9 +1,7 @@
-// notify-merge.js
-
 const fs = require('fs');
+
 const { slackNotification, getLocalConfigs } = require('./helpers.js');
 
-// Use the same Slack message template as in merge-to-stage.js.
 const SLACK = {
   merge: ({ html_url, number, title, prefix = '' }) =>
     `:merged: PR merged to stage: ${prefix} <${html_url}|${number}: ${title}>.`,
@@ -11,10 +9,33 @@ const SLACK = {
 
 const mergeRegex = /Merge pull request #(\d+)/i;
 
-async function main({ github, context }) {
+function getRepoInfo() {
+  const repoFull = process.env.GITHUB_REPOSITORY; // e.g. "your-org/your-repo"
+  if (!repoFull) {
+    throw new Error("GITHUB_REPOSITORY is not defined in the environment.");
+  }
+  const [owner, repo] = repoFull.split('/');
+  return { owner, repo };
+}
+
+async function getPR(prNumber, owner, repo, token) {
+  const url = `https://api.github.com/repos/${owner}/${repo}/pulls/${prNumber}`;
+  const response = await fetch(url, {
+    headers: {
+      Accept: 'application/vnd.github.v3+json',
+      Authorization: `token ${token}`,
+    },
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to fetch PR ${prNumber}: ${response.status}`);
+  }
+  return await response.json();
+}
+
+async function main() {
   let prNumbers = new Set();
 
-  // If GITHUB_EVENT_PATH is available, use it to extract commit info.
+  // Read event payload if available (from GITHUB_EVENT_PATH)
   const eventPath = process.env.GITHUB_EVENT_PATH;
   if (eventPath) {
     try {
@@ -32,16 +53,18 @@ async function main({ github, context }) {
     }
   }
 
-  // If we found merge commit(s), fetch PR details and send notifications.
+  const { owner, repo } = getRepoInfo();
+
+  const githubToken = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
+  if (!githubToken) {
+    console.error('No GitHub token provided. Set GITHUB_TOKEN (or GH_TOKEN for local testing).');
+    process.exit(1);
+  }
+
   if (prNumbers.size > 0) {
-    const { owner, repo } = context.repo;
     for (let prNumber of prNumbers) {
       try {
-        const { data: pr } = await github.rest.pulls.get({
-          owner,
-          repo,
-          pull_number: prNumber,
-        });
+        const pr = await getPR(prNumber, owner, repo, githubToken);
         const message = SLACK.merge({
           html_url: pr.html_url,
           number: pr.number,
@@ -56,13 +79,11 @@ async function main({ github, context }) {
     }
     console.log('All notifications processed from event payload.');
   } else {
-    // Fallback: use the GitHub Actions context to send a generic message.
-    const branch = context.ref.split('/').pop();
-    const commit = context.sha;
-    const { owner, repo } = context.repo;
+    const branch = process.env.GITHUB_REF ? process.env.GITHUB_REF.split('/').pop() : 'unknown';
+    const commit = process.env.GITHUB_SHA || 'unknown';
     const commitUrl = `https://github.com/${owner}/${repo}/commit/${commit}`;
     const message = `*Merge Alert!*  
-A new merge was detected on *${branch}* in \`${owner}/${repo}\`.  
+A new merge was detected on *${branch}*.  
 [View Commit](${commitUrl})`;
     console.log(`Sending fallback Slack notification: ${message}`);
     await slackNotification(message, process.env.OKAN_SLACK_WEBHOOK);
@@ -73,14 +94,7 @@ if (process.env.LOCAL_RUN) {
   const { github, context } = getLocalConfigs();
   main({ github, context });
 } else {
-  const { getOctokit, context } = require('@actions/github');
-  const githubToken = process.env.GITHUB_TOKEN;
-  if (!githubToken) {
-    console.error('GITHUB_TOKEN is not defined.');
-    process.exit(1);
-  }
-  const octokit = getOctokit(githubToken);
-  main({ github: octokit, context });
+  main();
 }
 
 module.exports = main;
