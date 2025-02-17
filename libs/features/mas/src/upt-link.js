@@ -68,8 +68,11 @@ export class UptLink extends HTMLAnchorElement {
     static createFrom(element) {
         const uptLink = new UptLink();
         for (const attribute of element.attributes) {
-            if (['class', 'is'].includes(attribute.name)) continue;
-            uptLink.setAttribute(attribute.name, attribute.value);
+            if (attribute.name === 'is') continue;
+            if (attribute.name === 'class' && attribute.value.includes('upt-link'))
+                uptLink.setAttribute('class', attribute.value.replace('upt-link', '').trim());
+            else
+                uptLink.setAttribute(attribute.name, attribute.value);
         }
         uptLink.innerHTML = element.innerHTML;
         uptLink.setAttribute('tabindex', 0);

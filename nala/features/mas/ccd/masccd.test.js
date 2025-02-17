@@ -1222,4 +1222,65 @@ test.describe('CCD Merchcard feature test suite', () => {
       expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'slice-wide'), CCD.sliceCssProp.cta.dark)).toBeTruthy();
     });
   });
+
+  // @MAS-CCD-slice-upt-link : CCD single width slice card with Universal Promo Terms link
+  test(`${features[19].name},${features[19].tags}`, async ({ page, baseURL }) => {
+    const testPage = `${baseURL}${features[19].path}${miloLibs}`;
+    const { data } = features[19];
+    console.info('[Test Page]: ', testPage);
+
+    await test.step('step-1: Go to CCD Merch Card feature test page', async () => {
+      await page.goto(testPage);
+      await page.waitForLoadState('domcontentloaded');
+      await expect(page).toHaveURL(`${baseURL}${features[19].path}`);
+    });
+
+    await test.step('step-2: Verify CCD Merch Card content', async () => {
+      await expect(await CCD.getCard(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCard(data.id, 'slice')).toHaveAttribute('daa-lh', /.*/);
+      await expect(await CCD.getCardIcon(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCardIcon(data.id, 'slice')).toHaveAttribute('src', /assets\/img/);
+      await expect(await CCD.getCardBadge(data.id, 'slice')).not.toBeVisible();
+      await expect(await CCD.getCardImage(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCardImage(data.id, 'slice')).toHaveAttribute('src', new RegExp(data.background));
+      await expect(await CCD.getCardDescription(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCardDescription(data.id, 'slice')).toContainText(data.description);
+      await expect(await CCD.getCardLegalLink(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCardLegalLink(data.id, 'slice')).toContainText(data.linkText);
+      await expect(await CCD.getCardLegalLink(data.id, 'slice')).toHaveAttribute('href', new RegExp(data.offerid));
+      await expect(await CCD.getCardLegalLink(data.id, 'slice')).toHaveAttribute('data-analytics-id', /.*/);
+      await expect(await CCD.getCardPrice(data.id, 'slice')).not.toBeVisible();
+      await expect(await CCD.getCardCTA(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCardCTA(data.id, 'slice')).toHaveAttribute('class', /accent/);
+      await expect(await CCD.getCardCTA(data.id, 'slice')).toContainText(data.cta);
+      await expect((await CCD.getCardCTALink(data.id, 'slice')).evaluate((el) => el.href)).resolves.toMatch(new RegExp(`${data.offerid}`));
+      await expect(await CCD.getCardCTALink(data.id, 'slice')).toHaveAttribute('data-analytics-id', /.*/);
+    });
+
+    await test.step('step-3: Verify CCD Merch Card spec', async () => {
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice'), CCD.sliceCssProp.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice'), CCD.sliceCssProp.singleSize)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, 'slice'), CCD.sliceCssProp.icon)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'slice'), CCD.sliceCssProp.description.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, 'slice'), CCD.sliceCssProp.legalLink.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'slice'), CCD.sliceCssProp.cta.light)).toBeTruthy();
+    });
+
+    await test.step('step-4: Go to CCD Merch Card feature test page in dark mode', async () => {
+      const darkThemePage = `${baseURL}${features[19].path}${features[19].browserParams}`;
+      await page.goto(darkThemePage);
+      await page.waitForLoadState('domcontentloaded');
+      await expect(page).toHaveURL(`${baseURL}${features[19].path}${features[19].browserParams}`);
+    });
+
+    await test.step('step-5: Verify CCD Merch Card spec', async () => {
+      await expect(await CCD.getCard(data.id, 'slice')).toBeVisible();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice'), CCD.sliceCssProp.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCard(data.id, 'slice'), CCD.sliceCssProp.singleSize)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, 'slice'), CCD.sliceCssProp.icon)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, 'slice'), CCD.sliceCssProp.legalLink.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'slice'), CCD.sliceCssProp.description.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'slice'), CCD.sliceCssProp.cta.dark)).toBeTruthy();
+    });
+  });
 });

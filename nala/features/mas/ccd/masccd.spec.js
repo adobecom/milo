@@ -357,5 +357,21 @@ module.exports = {
       browserParams: '?theme=darkest',
       tags: '@mas-ccd @slice-card @slice-wide @commerce @smoke @regression @milo',
     },
+    {
+      tcid: '19',
+      name: '@MAS-CCD-slice-upt-link',
+      path: '/libs/features/mas/docs/ccd.html',
+      data: {
+        id: '018bf7f7-1e82-4b16-9dd1-039ee013e490',
+        description: 'This card is testing universal Promo Terms link.',
+        linkText: 'See terms',
+        cta: 'Buy now',
+        offerid: '30404A88D89A328584307175B8B27616',
+        background: 'media_1526ec63ba66eead46d7bde733ac7c4e994d829f1.png',
+        // iconLink: '',
+      },
+      browserParams: '?theme=darkest',
+      tags: '@mas-ccd @slice-card @slice-single @commerce @smoke @regression @milo',
+    },
   ],
 };
