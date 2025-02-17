@@ -16,6 +16,11 @@ export class UptLink extends HTMLAnchorElement {
         return true;
     }
 
+    constructor() {
+        super();
+        this.setAttribute('is', UptLink.is);
+    }
+
     /**
      * @param {string} osi 
      * @param {string} promotionCode 
