@@ -229,9 +229,9 @@ const log = (...msg) => {
   if (config.mep?.preview) console.log(...msg);
 };
 
-export const fetchData = async (url, type = DATA_TYPE.JSON) => {
+export const fetchData = async (url, type = DATA_TYPE.JSON, config) => {
   try {
-    const resp = await fetch(normalizePath(url));
+    const resp = await fetch(normalizePath(url), config);
     if (!resp.ok) {
       /* c8 ignore next 5 */
       if (resp.status === 404) {
@@ -1121,7 +1121,7 @@ export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => 
   if (mepParam && mepParam !== 'off') {
     const persManifestPaths = persManifests.map((manifest) => {
       const { manifestPath } = manifest;
-      if (manifestPath.startsWith('/')) return manifestPath;
+      if (manifestPath?.startsWith('/')) return manifestPath;
       try {
         const url = new URL(manifestPath);
         return url.pathname;
@@ -1147,12 +1147,14 @@ async function updateManifestsAndPropositions(
     manifest.source = ['target'];
   });
   config.mep.targetManifests = targetManifests;
-  if (config?.mep?.enablePersV2) {
-    window.addEventListener('alloy_sendEvent', () => {
-      if (targetPropositions?.length && window._satellite) {
-        window._satellite.track('propositionDisplay', targetPropositions);
-      }
-    }, { once: true });
+  if (config.mep.enablePersV2) {
+    if (!config.mep.hybridPersEnabled) {
+      window.addEventListener('alloy_sendEvent', () => {
+        if (targetPropositions?.length && window._satellite) {
+          window._satellite.track('propositionDisplay', targetPropositions);
+        }
+      }, { once: true });
+    }
   } else if (targetPropositions?.length && window._satellite) {
     window._satellite.track('propositionDisplay', targetPropositions);
   }
@@ -1179,20 +1181,23 @@ function sendTargetResponseAnalytics(failure, responseStart, timeoutLocal, messa
   let val = `target response time ${responseTime}:timed out ${failure}:timeout ${timeoutTime}`;
   if (message) val += `:${message}`;
   // eslint-disable-next-line no-underscore-dangle
-  window._satellite?.track?.('event', {
-    documentUnloading: true,
-    xdm: {
-      eventType: 'web.webinteraction.linkClicks',
-      web: {
-        webInteraction: {
-          linkClicks: { value: 1 },
-          type: 'other',
-          name: val,
+  window.addEventListener('alloy_sendEvent', () => {
+    window._satellite?.track?.('event', {
+      documentUnloading: true,
+      xdm: {
+        eventType: 'web.webinteraction.linkClicks',
+        web: {
+          webInteraction: {
+            linkClicks: { value: 1 },
+            type: 'other',
+            name: val,
+          },
         },
       },
-    },
-    data: { _adobe_corpnew: { digitalData: { primaryEvent: { eventInfo: { eventName: val } } } } },
-  });
+      data:
+       { _adobe_corpnew: { digitalData: { primaryEvent: { eventInfo: { eventName: val } } } } },
+    });
+  }, { once: true });
 }
 
 const handleAlloyResponse = (response) => ((response.propositions || response.decisions))
@@ -1266,7 +1271,7 @@ const awaitMartech = () => new Promise((resolve) => {
 export async function init(enablements = {}) {
   let manifests = [];
   const {
-    mepParam, mepHighlight, mepButton, pzn, promo, enablePersV2,
+    mepParam, mepHighlight, mepButton, pzn, promo, enablePersV2, hybridPersEnabled,
     target, targetInteractionPromise, calculatedTimeout, postLCP,
   } = enablements;
   const config = getConfig();
@@ -1283,6 +1288,7 @@ export async function init(enablements = {}) {
       experiments: [],
       prefix: config.locale?.prefix.split('/')[1]?.toLowerCase() || US_GEO,
       enablePersV2,
+      hybridPersEnabled,
     };
     manifests = manifests.concat(await combineMepSources(pzn, promo, mepParam));
     manifests?.forEach((manifest) => {

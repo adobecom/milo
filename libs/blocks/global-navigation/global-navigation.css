@@ -1033,6 +1033,18 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content {
   border-left: 1px solid var(--feds-borderColor-link-v2);
 }
 
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds-cta--secondary {
+  margin: 12px;
+  height: unset;
+  display: inline-block;
+  line-height: 1.2;
+  text-wrap: wrap;
+  min-width: 100px;
+  max-width: 200px;
+  text-align: center;
+  padding: 5px 18px 6px;
+}
+
 [dir = "rtl"] header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content {
   border-left: none;
   border-right: 1px solid var(--feds-borderColor-link-v2);
