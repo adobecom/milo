@@ -158,6 +158,16 @@ describe('Utils', () => {
       });
     });
 
+    describe('Anchors', () => {
+      it('decorates anchors with the proper id', () => {
+        const anchor = document.querySelector('span.anchor');
+        expect(anchor).to.exist;
+        expect(anchor.classList.contains('icon')).to.be.false;
+        expect(anchor.classList.contains(`anchor-${anchor.id}`)).to.be.true;
+        expect(anchor.id).to.exist;
+      });
+    });
+
     describe('PDF Viewer', () => {
       it('pdf link with different text content opens in new window', () => {
         const link = document.querySelector('a[href$="pdf"]');

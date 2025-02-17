@@ -833,6 +833,16 @@ async function decorateHeader() {
   }
 }
 
+async function decorateAnchors(area) {
+  const anchors = area.querySelectorAll('span[class*="icon-anchor-"]');
+  if (anchors.length === 0) return;
+  anchors.forEach((anchor) => {
+    anchor.id = anchor.classList[1].replace('icon-anchor-', '');
+    anchor.classList.replace(anchor.classList[0], 'anchor');
+    anchor.classList.replace(anchor.classList[1], `anchor-${anchor.id}`);
+  });
+}
+
 async function decorateIcons(area, config) {
   const icons = area.querySelectorAll('span.icon');
   if (icons.length === 0) return;
@@ -1380,6 +1390,7 @@ async function processSection(section, config, isDoc) {
   preloadBlockResources(section.preloadLinks);
   await Promise.all([
     decoratePlaceholders(section.el, config),
+    decorateAnchors(section.el),
     decorateIcons(section.el, config),
   ]);
   const loadBlocks = [...stylePromises];

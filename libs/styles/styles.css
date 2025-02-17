@@ -892,6 +892,14 @@ a.static:active  {
   visibility: hidden;
 }
 
+/* Anchors */
+span.anchor:target::before {
+  content: "";
+  display: block;
+  height: 100px;
+  margin: -100px 0 0;
+}
+
 /* mobile only */
 @media (max-width: 600px) {
   .con-button.button-justified-mobile {

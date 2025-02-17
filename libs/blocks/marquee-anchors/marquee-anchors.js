@@ -16,7 +16,7 @@ const blockTypeSizes = {
 };
 
 const fetchedIcons = {};
-function decorateAnchors(anchors) {
+function decorateMarqueeAnchors(anchors) {
   const linkGroup = createTag('div', { class: 'links-group' });
   anchors[0].insertAdjacentElement('beforebegin', linkGroup);
   const { miloLibs, codeRoot } = getConfig();
@@ -79,5 +79,5 @@ export default function init(el) {
   });
 
   const anchors = el.querySelectorAll('.anchor-link');
-  if (anchors.length) decorateAnchors(anchors);
+  if (anchors.length) decorateMarqueeAnchors(anchors);
 }
