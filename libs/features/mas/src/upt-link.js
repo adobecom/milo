@@ -26,8 +26,9 @@ export class UptLink extends HTMLAnchorElement {
      * @param {string} promotionCode 
      */
     initializeWcsData(osi, promotionCode) {
-        this.setAttribute('data-promotion-code', promotionCode);
         this.setAttribute('data-wcs-osi', osi);
+        if (promotionCode)
+            this.setAttribute('data-promotion-code', promotionCode);
         this.#initialized = true;
         this.composePromoTermsUrl();
     }
