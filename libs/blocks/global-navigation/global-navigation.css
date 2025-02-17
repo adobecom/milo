@@ -1350,5 +1350,4 @@ html:has(body.disable-ios-scroll) { /* this class is only added on iOS */
 .disable-ios-scroll.branch-banner-is-active.branch-banner-inline #branch-banner-iframe {
   position: static;
   display: block;
-  transition: margin 0ms;
 }
