@@ -44,7 +44,7 @@ test.describe('ACOM MAS cards feature test suite', () => {
       await expect(await acomPage.getCardPromoText(data.id)).toBeVisible();
       await expect(await acomPage.getCardPromoText(data.id)).toContainText(data.promoText);
       await expect(await acomPage.getCardCTA(data.id)).toBeVisible();
-      await expect(await acomPage.getCardCTA(data.id)).toHaveAttribute('class', /spectrum-Button--accent/);
+      await expect(await acomPage.getCardCTA(data.id)).toHaveAttribute('class', /con-button blue/);
       await expect(await acomPage.getCardCTA(data.id)).toContainText(data.cta);
       await expect((await acomPage.getCardCTA(data.id)).evaluate((el) => el.href)).resolves.toMatch(COMMERCE_LINK_REGEX);
       await expect(await acomPage.getCardCTA(data.id)).toHaveAttribute('data-analytics-id', /.*/);
