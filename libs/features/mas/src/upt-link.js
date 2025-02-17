@@ -1,6 +1,9 @@
 import { useService as getService } from "./utilities.js";
 
-const PROMO_TERMS_URL = 'https://www.adobe.com/offers/promo-terms.html';
+function getPromoTermsUrl(env) {
+    const host = env === 'PRODUCTION' ? 'www.adobe.com' : 'www.stage.adobe.com';
+    return `https://${host}/offers/promo-terms.html`;
+}
 
 /**
  * Universal Promo Terms Link
@@ -50,14 +53,14 @@ export class UptLink extends HTMLAnchorElement {
 
         const wcsOsi = [osi];
         const promotionCode = this.getAttribute('data-promotion-code');
-        const { country, language } = service.settings;
+        const { country, language, env } = service.settings;
         const options = { country, language, wcsOsi, promotionCode };
 
         const promises = service.resolveOfferSelectors(options);
         Promise.all(promises).then(([[offer]]) => {
           let params = `locale=${language}_${country}&country=${country}&offer_id=${offer.offerId}`;
           if (promotionCode) params += `&promotion_code=${encodeURIComponent(promotionCode)}`;
-          this.href = `${PROMO_TERMS_URL}?${params}`
+          this.href = `${getPromoTermsUrl(env)}?${params}`
         }).catch(error => {
             console.error(`Could not resolve offer selectors for id: ${osi}.`, error.message);
         });
