@@ -10,7 +10,6 @@ import {
 import globalNavigationMock from './mocks/global-navigation.plain.js';
 
 describe('profile', () => {
-  // This only a test haha
   before(() => {
     document.head.innerHTML = `
     <link rel="icon" href="/libs/img/favicons/favicon.ico" size="any">
