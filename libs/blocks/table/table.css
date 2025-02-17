@@ -331,20 +331,16 @@
   margin-left: -4px;
 }
 
-.table .milo-tooltip svg {
-  top: unset;
-}
-
-.table .icon-milo-info {
+.table span[data-tooltip] .icon-milo {
   height: 16px;
 }
 
-.table .icon-info:hover {
+.table span[data-tooltip] .icon-milo:hover {
   cursor: pointer;
 }
 
-.table .icon-info:hover path,
-.table .active .icon-info path {
+.table span[data-tooltip] .icon-milo:hover path,
+.table span[data-tooltip] .active .icon-milo path {
   color: var(--hover-border-color);
 }
 
@@ -408,14 +404,14 @@
 
 [dir="rtl"] .section-row-title .milo-tooltip:is(.top, .bottom, .left, .right)::before {
   left: initial;
-  margin: 0 12px 0 0;
+  margin: 0 8px 0 0;
   right: 100%;
   top: 50%;
   transform: translateY(-50%);
 }
 
 [dir="rtl"] .section-row-title .milo-tooltip:is(.top, .bottom, .left, .right)::after {
-  left: -8px;
+  left: -4px;
   margin: 0 4px 0 -4px;
   top: 50%;
   transform: translateY(-50%);
@@ -517,7 +513,7 @@
 }
 
 .table.has-addon .addon-label .icon,
-.table.has-addon .active .icon-milo-info path {
+.table.has-addon span[data-tooltip] .active .icon-milo path {
   color: black;
 }
 
@@ -698,14 +694,14 @@
 
   .section-row-title .milo-tooltip:is(.top, .bottom, .left, .right)::before {
     left: initial;
-    margin: 0 12px 0 0;
+    margin: 0 8px 0 0;
     right: 100%;
     top: 50%;
     transform: translateY(-50%);
   }
 
   .section-row-title .milo-tooltip:is(.top, .bottom, .left, .right)::after {
-    left: -8px;
+    left: -4px;
     margin: 0 4px 0 -4px;
     top: 50%;
     transform: translateY(-50%);
