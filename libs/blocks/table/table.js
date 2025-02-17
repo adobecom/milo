@@ -92,26 +92,25 @@ function handleHeading(table, headingCols) {
       trackingHeader.setAttribute('aria-describedby', describedBy);
 
       col.setAttribute('role', 'columnheader');
+    }
 
-      if (/^H[1-6]$/.test(trackingHeader.tagName)) {
-        const newSpan = document.createElement('span');
-        const computedStyles = window.getComputedStyle(trackingHeader);
+    const headings = col.querySelectorAll('h1, h2, h3, h4, h5, h6');
 
-        [...trackingHeader.attributes].forEach((attr) => {
+    headings.forEach((trackingHeaderItem) => {
+      if (/^H[1-6]$/.test(trackingHeaderItem.tagName)) {
+        const newSpan = document.createElement('p');
+
+        [...trackingHeaderItem.attributes].forEach((attr) => {
           newSpan.setAttribute(attr.name, attr.value);
         });
         newSpan.setAttribute('scope', 'col');
 
-        newSpan.style.cssText = computedStyles.cssText;
-        newSpan.style.display = computedStyles.display;
-        ['marginTop', 'marginRight', 'marginBottom', 'marginLeft'].forEach((prop) => {
-          newSpan.style[prop] = computedStyles[prop];
-        });
-
-        newSpan.innerHTML = trackingHeader.innerHTML;
-        trackingHeader.replaceWith(newSpan);
+        newSpan.innerHTML = trackingHeaderItem.innerHTML;
+        const marginClass = `${trackingHeaderItem.tagName.toLowerCase()}-margins`;
+        newSpan.classList.add(marginClass);
+        trackingHeaderItem.replaceWith(newSpan);
       }
-    }
+    });
 
     nodeToApplyRoleScope.setAttribute('scope', 'col');
   });
