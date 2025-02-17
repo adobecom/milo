@@ -1055,6 +1055,7 @@ class Gnav {
     const navOffset = this.block.classList.contains('has-promo')
       ? 'var(--feds-height-nav) - var(--global-height-navPromo)'
       : 'var(--feds-height-nav)';
+    popup.removeAttribute('style');
     popup.style.top = `calc(${yOffset}px - ${navOffset} - 2px)`;
     const { isPresent, isSticky, height } = getBranchBannerInfo();
     if (isPresent) {

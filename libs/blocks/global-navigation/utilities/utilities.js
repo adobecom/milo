@@ -553,8 +553,10 @@ export const dropWhile = (xs, f) => {
 };
 
 /**
- * Monitors the DOM for the presence of a branch banner and updates its status.
- * @returns {void}
+ * Initializes a MutationObserver to monitor the body for the addition or removal of a branch banner iframe.
+ * When the branch banner is added or removed, updates the branch banner information and adjusts the local navigation and popup position accordingly.
+ * 
+ * @param {Function} updatePopupPosition - A callback function to update the popup position when the branch banner is added or removed.
  */
 export const [branchBannerLoadCheck, getBranchBannerInfo] = (() => {
   const branchBannerInfo = {
@@ -580,6 +582,7 @@ export const [branchBannerLoadCheck, getBranchBannerInfo] = (() => {
                   // Adjust the top position of the lnav to account for the branch banner height
                   document.querySelector('.feds-localnav').style.top = `${branchBannerInfo.height}px`;
                 } else {
+                  // Add a class to the body to indicate the presence of a non-sticky branch banner
                   document.body.classList.add('branch-banner-inline');
                 }
                 // Update the popup position when the branch banner is added
@@ -595,6 +598,7 @@ export const [branchBannerLoadCheck, getBranchBannerInfo] = (() => {
                 branchBannerInfo.height = 0;
                 // Remove the top style attribute when the branch banner is removed
                 document.querySelector('.feds-localnav')?.removeAttribute('style');
+                // Remove the class indicating the presence of a non-sticky branch banner
                 document.body.classList.remove('branch-banner-inline');
                 // Update the popup position when the branch banner is removed
                 updatePopupPosition();
