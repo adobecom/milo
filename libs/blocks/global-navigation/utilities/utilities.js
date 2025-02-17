@@ -553,10 +553,12 @@ export const dropWhile = (xs, f) => {
 };
 
 /**
- * Initializes a MutationObserver to monitor the body for the addition or removal of a branch banner iframe.
- * When the branch banner is added or removed, updates the branch banner information and adjusts the local navigation and popup position accordingly.
- * 
- * @param {Function} updatePopupPosition - A callback function to update the popup position when the branch banner is added or removed.
+ * Initializes a MutationObserver to monitor the body
+  for the addition or removal of a branch banner iframe.
+ * When the branch banner is added or removed, updates the branch banner
+  information and adjusts the local navigation and popup position accordingly.
+ * A callback function to update the popup position when the branch banner is added or removed.
+ * @param {Function} updatePopupPosition
  */
 export const [branchBannerLoadCheck, getBranchBannerInfo] = (() => {
   const branchBannerInfo = {
