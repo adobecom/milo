@@ -1,0 +1,23 @@
+name: Notify on Merge
+
+on:
+  push:
+    branches:
+      - stage
+      - main
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Send Slack Notification
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const main = require('./.github/workflows/notify-merge.js');
+            main({ github, context });
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.OKAN_SLACK_WEBHOOK }}
