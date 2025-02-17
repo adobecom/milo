@@ -257,7 +257,7 @@
   margin-inline-start: 24px;
 }
 
-.tabs.pill .tabList button {
+.tabs[class*='pill'] .tabList button {
   border: none;
 }
 
