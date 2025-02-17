@@ -271,7 +271,7 @@ export function addAccessibilityControl(videoString, videoAttrs, indexOfVideo, t
   return `
     <div class='video-container video-holder'>${videoString}
       <a class='pause-play-wrapper' role='button' tabindex=${tabIndex} aria-pressed=true video-index=${indexOfVideo}>
-        <div class='offset-filler ${videoAttrs.includes('autoplay') ? 'is-playing' : ''}'>  
+        <div class='offset-filler ${videoAttrs.includes('autoplay') ? 'is-playing' : ''}'>
           <img class='accessibility-control pause-icon' src='${fedRoot}/federal/assets/svgs/accessibility-pause.svg'/>
           <img class='accessibility-control play-icon' src='${fedRoot}/federal/assets/svgs/accessibility-play.svg'/>
         </div>
@@ -483,6 +483,15 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
       videoEl?.appendChild(createTag('source', { src, type: 'video/mp4' }));
     },
   });
+  if (videoEl.controls) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(({ isIntersecting, target }) => {
+        if (!isIntersecting && !target.paused) target.pause();
+      });
+    }, { rootMargin: '0px' });
+    io.observe(videoEl);
+  }
+
   if (accessibilityEnabled) {
     applyAccessibilityEvents(videoEl);
     if (!videoEl.controls) {
