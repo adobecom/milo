@@ -53,7 +53,7 @@ echo "Waiting 10 seconds for purge to complete..."
 sleep 10
 
 # Check if the purge was successful
-if echo "$PURGE_RESPONSE" | grep -q "ok"; then
+if echo "$PURGE_RESPONSE" | grep -q "202"; then
   echo "Branch $FEATURE_BRANCH successfully purged"
 else
   echo "Failed to purge branch $FEATURE_BRANCH"
