@@ -833,7 +833,7 @@ async function decorateHeader() {
   }
 }
 
-async function decorateAnchors(area) {
+function decorateAnchors(area) {
   const anchors = area.querySelectorAll('span[class*="icon-anchor-"]');
   if (anchors.length === 0) return;
   anchors.forEach((anchor) => {
