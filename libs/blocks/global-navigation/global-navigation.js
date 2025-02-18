@@ -115,8 +115,8 @@ export const CONFIG = {
                   trace: () => {},
                   debug: () => {},
                   info: () => {},
-                  warn: (e) => lanaLog({ message: 'Profile Menu warning', e, tags: 'errorType=warn,module=universalnav' }),
-                  error: (e) => lanaLog({ message: 'Profile Menu error', e, tags: 'errorType=error,module=universalnav' }),
+                  warn: (e) => lanaLog({ message: 'Profile Menu warning', e, tags: 'universalnav', errorType: 'warn' }),
+                  error: (e) => lanaLog({ message: 'Profile Menu error', e, tags: 'universalnav', errorType: 'error' }),
                 },
               },
               ...getConfig().unav?.profile?.config,
@@ -186,7 +186,7 @@ export const LANGMAP = {
 // signIn, decorateSignIn and decorateProfileTrigger can be removed if IMS takes over the profile
 const signIn = (options = {}) => {
   if (typeof window.adobeIMS?.signIn !== 'function') {
-    lanaLog({ message: 'IMS signIn method not available', tags: 'errorType=warn,module=gnav' });
+    lanaLog({ message: 'IMS signIn method not available', tags: 'gnav', errorType: 'warn' });
     return;
   }
   window.adobeIMS.signIn(options);
@@ -222,7 +222,7 @@ const decorateSignIn = async ({ rawElem, decoratedElem }) => {
         signIn(SIGNIN_CONTEXT);
       });
     } else {
-      lanaLog({ message: 'Sign in link not found in dropdown.', tags: 'errorType=warn,module=gnav' });
+      lanaLog({ message: 'Sign in link not found in dropdown.', tags: 'gnav', errorType: 'warn' });
     }
 
     decoratedElem.append(dropdownElem);
@@ -386,7 +386,7 @@ class Gnav {
 
     document.addEventListener('click', (e) => closeOnClickOutside(e, this.isLocalNav(), this.elements.navWrapper));
     isDesktop.addEventListener('change', closeAllDropdowns);
-  }, 'Error in global navigation init', 'errorType=error,module=gnav');
+  }, 'Error in global navigation init', 'gnav', 'error');
 
   ims = async () => (window.adobeIMS?.initialized ? this.imsReady() : loadIms()
     .then(() => this.imsReady())
@@ -395,7 +395,7 @@ class Gnav {
         window.addEventListener('onImsLibInstance', () => this.imsReady());
         return;
       }
-      lanaLog({ message: 'GNAV: Error with IMS', e, tags: 'errorType=info,module=gnav' });
+      lanaLog({ message: 'GNAV: Error with IMS', e, tags: 'gnav', errorType: 'info' });
     }));
 
   decorateProductEntryCTA = () => {
@@ -429,7 +429,7 @@ class Gnav {
     const localNavItems = this.elements.navWrapper.querySelector('.feds-nav').querySelectorAll('.feds-navItem:not(.feds-navItem--section, .feds-navItem--mobile-only)');
     const firstElem = localNavItems[0]?.querySelector('a');
     if (!firstElem) {
-      lanaLog({ message: 'GNAV: Incorrect authoring of localnav found.', tags: 'errorType=info,module=gnav' });
+      lanaLog({ message: 'GNAV: Incorrect authoring of localnav found.', tags: 'gnav', errorType: 'info' });
       return;
     }
     const [title, navTitle = ''] = this.getOriginalTitle(firstElem);
@@ -437,7 +437,8 @@ class Gnav {
     if (!localNav) {
       lanaLog({
         message: 'GNAV: Localnav does not include \'localnav\' in its name.',
-        tags: 'errorType=info,module=gnav',
+        tags: 'gnav',
+        errorType: 'info',
       });
       localNav = toFragment`<div class="feds-localnav"/>`;
       this.block.after(localNav);
@@ -574,7 +575,7 @@ class Gnav {
 
         resolve();
       } catch (e) {
-        lanaLog({ message: 'GNAV: Error within loadDelayed', e, tags: 'errorType=warn,module=gnav' });
+        lanaLog({ message: 'GNAV: Error within loadDelayed', e, tags: 'gnav', errorType: 'warn' });
         resolve();
       }
     });
@@ -593,7 +594,12 @@ class Gnav {
         await task();
       }
     } catch (e) {
-      lanaLog({ message: 'GNAV: issues within onReady', e, tags: 'errorType=info,module=gnav' });
+      lanaLog({
+        e,
+        tags: 'gnav',
+        errorType: 'info',
+        message: `GNAV: issues within imsReady - ${this.useUniversalNav ? 'decorateUniversalNav' : 'decorateProfile'}`,
+      });
     }
   };
 
@@ -619,7 +625,8 @@ class Gnav {
       lanaLog({
         message: 'GNAV: decorateProfile has failed to fetch profile data',
         e: `${profileData.statusText} url: ${profileData.url}`,
-        tags: 'errorType=info,module=gnav',
+        tags: 'gnav',
+        errorType: 'info',
       });
       return;
     }
@@ -884,7 +891,7 @@ class Gnav {
       if (this.isToggleExpanded()) setHamburgerPadding();
     };
 
-    toggle.addEventListener('click', () => logErrorFor(onToggleClick, 'Toggle click failed', 'errorType=error,module=gnav'));
+    toggle.addEventListener('click', () => logErrorFor(onToggleClick, 'Toggle click failed', 'gnav', 'error'));
 
     const onDeviceChange = () => {
       if (isDesktop.matches) {
@@ -897,7 +904,7 @@ class Gnav {
       }
     };
 
-    isDesktop.addEventListener('change', () => logErrorFor(onDeviceChange, 'Toggle logic failed on device change', 'errorType=error,module=gnav'));
+    isDesktop.addEventListener('change', () => logErrorFor(onDeviceChange, 'Toggle logic failed on device change', 'gnav', 'error'));
 
     return toggle;
   };
@@ -1148,7 +1155,7 @@ class Gnav {
             decorateLocalNavItems(item, template);
           }
         }
-      }, 'Decorate dropdown failed', 'errorType=info,module=gnav');
+      }, 'Decorate dropdown failed', 'gnav', 'info');
 
       template.addEventListener('click', decorateDropdown);
       decorationTimeout = setTimeout(decorateDropdown, CONFIG.delays.mainNavDropdowns);
@@ -1313,14 +1320,15 @@ export default async function init(block) {
     setDisableAEDState();
   }
   const content = await fetchAndProcessPlainHtml({ url });
-  setAsyncDropdownCount(content.querySelectorAll('.large-menu').length);
   if (!content) {
     const error = new Error('Could not create global navigation. Content not found!');
-    error.tags = 'errorType=error,module=gnav';
+    error.tags = 'gnav';
     error.url = url;
-    lanaLog({ message: error.message, error, tags: 'errorType=error,module=gnav' });
+    error.errorType = 'error';
+    lanaLog({ message: error.message, ...error });
     throw error;
   }
+  setAsyncDropdownCount(content.querySelectorAll('.large-menu').length);
   const gnav = new Gnav({
     content,
     block,
