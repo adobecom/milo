@@ -96,19 +96,18 @@ function handleHeading(table, headingCols) {
 
     const headings = col.querySelectorAll('h1, h2, h3, h4, h5, h6');
 
-    headings.forEach((trackingHeaderItem) => {
-      if (/^H[1-6]$/.test(trackingHeaderItem.tagName)) {
+    headings.forEach((headingItem) => {
+      if (/^H[1-6]$/.test(headingItem.tagName)) {
         const newSpan = document.createElement('p');
 
-        [...trackingHeaderItem.attributes].forEach((attr) => {
+        [...headingItem.attributes].forEach((attr) => {
           newSpan.setAttribute(attr.name, attr.value);
         });
         newSpan.setAttribute('scope', 'col');
 
-        newSpan.innerHTML = trackingHeaderItem.innerHTML;
-        const marginClass = `${trackingHeaderItem.tagName.toLowerCase()}-margins`;
-        newSpan.classList.add(marginClass);
-        trackingHeaderItem.replaceWith(newSpan);
+        newSpan.innerHTML = headingItem.innerHTML;
+        newSpan.classList.add(`${headingItem.tagName.toLowerCase()}-margins`);
+        headingItem.replaceWith(newSpan);
       }
     });
 
