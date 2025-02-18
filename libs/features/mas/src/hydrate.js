@@ -123,10 +123,20 @@ export function processPrices(fields, merchCard, mapping) {
   appendSlot('prices', fields, merchCard, mapping); 
 }
 
+function isEmpty(html) {
+  if (!html) return true;
+
+  const parser = new DOMParser();
+  const dom = parser.parseFromString(html, 'text/html');
+  return dom.body.textContent.trim() === '';
+}
+
 export function processDescription(fields, merchCard, mapping) {
   appendSlot('promoText', fields, merchCard, mapping);
   appendSlot('description', fields, merchCard, mapping);
-  appendSlot('callout', fields, merchCard, mapping);
+  if (!isEmpty(fields['callout'])) {
+    appendSlot('callout', fields, merchCard, mapping);
+  }
   appendSlot('quantitySelect', fields, merchCard, mapping);
 }
 
