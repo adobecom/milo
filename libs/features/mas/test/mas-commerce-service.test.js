@@ -149,7 +149,7 @@ describe('commerce service', () => {
                 const el = await initMasCommerceService({
                     'lana-tags': 'ccd',
                     'lana-sample-rate': '100',
-                    'host-env': 'stage',
+                    'env': 'stage',
                 });
                 el.log.error('test error');
                 const [, url] = calls[0].open.lastCall.args;

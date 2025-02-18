@@ -26,13 +26,14 @@ export class MasCommerceService extends HTMLElement {
     promise = null;
 
     get #config() {
+        const env = this.getAttribute('env') ?? 'prod';
         const config = {
-            hostEnv: { name: this.getAttribute('host-env') ?? 'prod' },
-            commerce: { env: this.getAttribute('env') },
+            hostEnv: { name: env },
+            commerce: { env },
             lana: {
                 tags: this.getAttribute('lana-tags'),
                 sampleRate: parseInt(this.getAttribute('lana-sample-rate'), 10),
-                isProdDomain: this.getAttribute('host-env') === 'prod',
+                isProdDomain: env === 'prod',
             },
         };
         //root parameters

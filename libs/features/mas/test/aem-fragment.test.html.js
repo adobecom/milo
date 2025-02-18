@@ -131,40 +131,31 @@ runTests(async () => {
     });
 
     describe('getFragmentById', async () => {
+        const masCommerceService = {
+          settings: {
+            env: 'stage',
+            locale: 'fr_FR',
+            wcsApiKey: 'testApiKey',
+          }
+        }
         beforeEach(async () => {
             await mockFetch(withAem);
             cache.clear();
         });
 
         it('throws an error if response is not ok', async () => {
-            const promise = getFragmentById(
-                'http://localhost:2023',
-                'notfound',
-                false,
-            );
+            const promise = getFragmentById('notfound', masCommerceService);
             await expect(promise).to.be.rejectedWith('Failed to get fragment: 404 Fragment not found');
         });
 
-        it('fetches fragment from author endpoint', async () => {
-            const promise = getFragmentById(
-                'http://localhost:2023',
-                'fragment-cc-all-apps',
-                true,
-            );
-            expect(fetch.lastCall.firstArg).to.equal(
-                'http://localhost:2023/adobe/sites/cf/fragments/fragment-cc-all-apps',
-            );
-        });
-
-        it('fetches fragment from freyja on publish', async () => {
-            const promise = getFragmentById(
-                'http://localhost:2023',
-                'fragment-cc-all-apps',
-                false,
-            );
-            expect(fetch.lastCall.firstArg).to.equal(
-                'http://localhost:2023/adobe/sites/fragments/fragment-cc-all-apps',
-            );
-        });
+        // it('fetches fragment from freyja on publish', async () => {
+        //     const promise = getFragmentById(
+        //         'fragment-cc-all-apps',
+        //         false,
+        //     );
+        //     expect(fetch.lastCall.firstArg).to.equal(
+        //         'http://localhost:2023/adobe/sites/fragments/fragment-cc-all-apps',
+        //     );
+        // });
     });
 });

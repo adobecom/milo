@@ -1,38 +1,7 @@
-
-    <!DOCTYPE html>
-    <html>
-    <head>
-    <meta charset="UTF-8">
-    <title>M@S Web Components</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="spectrum.css">
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://p.typekit.net/p.css?s=1&amp;k=hah7vzn&amp;ht=tk&amp;f=7180.7181.7182.7183.22474.22749.22750.22751.22753&amp;a=8634977&amp;app=typekit&amp;e=css">
-    <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
-  
-  <!-- Include your custom element script as an ES6 module -->
-  <script type="module">
-    import { init } from './common.js';
-    init();
-  </script>
-  <!-- Include Highlight.js stylesheet for syntax highlighting -->
-  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
-</head>
-<body class="spectrum spectrum--medium spectrum--light">
-<aside class="sidenav">
-    <a href="/libs/features/mas/docs/mas.html">Home</a>
-    <a href="/libs/features/mas/docs/mas.js.html">mas.js</a>
-    <a href="/libs/features/mas/docs/checkout-link.html">Checkout Link</a>
-    <a href="/libs/features/mas/docs/inline-price.html">Inline Price</a>
-    <a href="/libs/features/mas/docs/merch-card.html">Merch Card</a>
-    <a href="/libs/features/mas/docs/ccd.html">CCD Gallery</a>
-    <a href="/libs/features/mas/docs/benchmarks.html">Benchmarks</a>
-</aside>
-<main>
-<sp-theme color="light" scale="medium">
 <div class="gallery-content">
   <h1 id="ccd-gallery" tabindex="-1">CCD Gallery <a class="header-anchor" href="#ccd-gallery" href="#ccd-gallery" title="Permalink to this heading">#</a></h1>
   Switch Theme: <a class="theme-toggle spectrum-Link spectrum-Link--secondary" value="darkest" href="#">Darkest</a> OR <a class="theme-toggle spectrum-Link spectrum-Link--secondary" value="light" href="#">Light</a>
+
   <h2 id="ccd-slice-card" tabindex="-1">CCD Slice Cards <a class="header-anchor" href="#ccd-slice-card" title="Permalink to this heading">#</a></h2>
   <div class="three-merch-cards ccd-slice">
       <merch-card><aem-fragment fragment="0ef2a804-e788-4959-abb8-b4d96a18b0ef"></aem-fragment></merch-card>
@@ -47,6 +16,7 @@
     <merch-card><aem-fragment fragment="c25b20cc-e8a3-4854-b94f-51eec7d0ec25"></aem-fragment></merch-card>
     <merch-card><aem-fragment fragment="6b3c6c4e-e19f-4d08-914f-fcfd9f77ca14"></aem-fragment></merch-card>
   </div>
+
   <h2 id="ccd-suggested-card" tabindex="-1">CCD Suggested Cards <a class="header-anchor" href="#ccd-suggested-card" title="Permalink to this heading">#</a></h2>
   <div class="three-merch-cards ccd-suggested">
       <merch-card><aem-fragment fragment="0a2ac7c9-1965-488e-beca-856849305313"></aem-fragment></merch-card>
@@ -58,6 +28,7 @@
       <merch-card><aem-fragment fragment="6217fb6d-e793-4235-af70-6f82401fc5de"></aem-fragment></merch-card>
       <merch-card><aem-fragment fragment="d23182d8-fc92-483d-bcfe-d1fe3d3ce737"></aem-fragment></merch-card>
 </div>
+
   <h2 id="various-cards" tabindex="-1">Free to update cards <a class="header-anchor" href="#various-cards" title="Permalink to this heading">#</a></h2>
   <div class="flex-cards">
     <merch-card><aem-fragment fragment="42e9a6bf-3b94-4b13-a2ba-184591308096"></aem-fragment></merch-card>
@@ -65,24 +36,3 @@
     <merch-card><aem-fragment fragment="1ccfef82-9870-428c-b9fc-35770a21ae4f"></aem-fragment></merch-card>
   </div>
 </div>
-
-</sp-theme>
-</main>
-<script type="module">
-  document.querySelectorAll('code.demo').forEach(el => {
-      const targetContainer = document.createElement('div');
-      targetContainer.classList.toggle('light', el.classList.contains('light'));
-      targetContainer.innerHTML = `<h4>Demo: </h4><div class="demo-container">${el.textContent}</div>`;
-      el.parentElement.after(targetContainer);
-      // Extract and evaluate <script> tags
-      const scriptTags = targetContainer.getElementsByTagName('script');
-      for (let i = 0; i < scriptTags.length; i++) {
-          const script = document.createElement('script');
-          script.text = scriptTags[i].text;
-          document.body.appendChild(script); // Appends to the document to execute
-          scriptTags[i].remove(); // Remove the script tag
-      }
-  });
-</script>
-</body>
-</html>
