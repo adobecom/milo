@@ -49,9 +49,11 @@ PURGE_URL="https://admin.hlx.page/code/$prOrg/$prRepo/$FEATURE_BRANCH/*"
 echo "Executing: curl -si -X POST \"$PURGE_URL\""
 PURGE_RESPONSE=$(curl -si -X POST "$PURGE_URL")
 
+echo "Waiting 10 seconds for purge to complete..."
+sleep 10
 
 # Check if the purge was successful
-if echo "$PURGE_RESPONSE" | grep -q "200 OK"; then
+if echo "$PURGE_RESPONSE" | grep -q "ok"; then
   echo "Branch $FEATURE_BRANCH successfully purged"
 else
   echo "Failed to purge branch $FEATURE_BRANCH"
