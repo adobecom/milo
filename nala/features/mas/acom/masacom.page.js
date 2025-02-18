@@ -37,6 +37,6 @@ export default class MasAcom {
 
   getCardCTA(id) {
     const card = this.getCard(id);
-    return card.locator('div[slot="footer"] > button');
+    return card.locator('div[slot="footer"] > a[is="checkout-link"]');
   }
 }

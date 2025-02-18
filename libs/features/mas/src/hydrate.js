@@ -302,7 +302,6 @@ export async function hydrate(fragment, merchCard) {
     const { fields } = fragment;
     const { variant } = fields;
     if (!variant) return;
-    merchCard.id = fragment.id;
     // temporary hardcode for plans. this data will be coming from settings (MWPW-166756)
     const settings = {
       stockCheckboxLabel: 'Add a 30-day free trial of Adobe Stock.*', // to be {{stock-checkbox-label}}
@@ -310,6 +309,7 @@ export async function hydrate(fragment, merchCard) {
       secureLabel: 'Secure transaction' // to be {{secure-transaction}}
     };
     cleanup(merchCard);
+    merchCard.id = fragment.id;
     merchCard.variant = variant;
     await merchCard.updateComplete;
 
