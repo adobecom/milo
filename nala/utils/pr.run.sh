@@ -42,6 +42,17 @@ export PR_NUMBER
 
 echo "PR Branch live URL: $PR_BRANCH_LIVE_URL_GH"
 
+# Purge the PR branch before running tests
+echo "Purging branch: $FEATURE_BRANCH"
+PURGE_RESPONSE=$(curl -si -X POST "https://admin.hlx.page/code/$prOrg/$toRepoName/$FEATURE_BRANCH/*")
+
+# Check if the purge was successful
+if echo "$PURGE_RESPONSE" | grep -q "200 OK"; then
+  echo "Branch $FEATURE_BRANCH successfully purged"
+else
+  echo "Failed to purge branch $FEATURE_BRANCH"
+  echo "Response: $PURGE_RESPONSE"
+fi
 
 # Convert GitHub Tag(@) labels that can be grepped
 for label in ${labels}; do
