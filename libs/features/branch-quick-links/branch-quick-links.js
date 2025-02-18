@@ -21,7 +21,7 @@ function addLoader(a) {
   return container;
 }
 
-async function decorateQuickLink(a, hasConsent) {
+async function decorateQuickLink(a, hasConsent, isNewTab) {
   if (!window.alloy) return;
   let ecid = null;
   try {
@@ -33,7 +33,8 @@ async function decorateQuickLink(a, hasConsent) {
   if (hasConsent && !a.href.includes('ecid')) {
     a.href = a.href.concat(`?ecid=${ecid}`);
   }
-  window.location.href = a.href;
+  if (isNewTab) window.open(a.href, '_blank');
+  else window.location.href = a.href;
 }
 
 export default function processQuickLink(a) {
@@ -71,6 +72,7 @@ export default function processQuickLink(a) {
     if (getMetadata('quick-link-loader') === 'on') loader = addLoader(a);
     const hasConsent = await waitForConsent();
     if (loader) loader.replaceWith(a);
-    decorateQuickLink(a, hasConsent);
+    const isNewTab = (e.metaKey || e.ctrlKey) && e.button === 0;
+    decorateQuickLink(a, hasConsent, isNewTab);
   });
 }
