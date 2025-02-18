@@ -835,7 +835,7 @@ async function decorateHeader() {
 
 function decorateAnchors(area) {
   const anchors = area.querySelectorAll('span[class*="icon-anchor-"]');
-  if (anchors.length === 0) return;
+  if (!anchors.length) return;
   anchors.forEach((anchor) => {
     anchor.id = anchor.classList[1].replace('icon-anchor-', '');
     anchor.classList.replace(anchor.classList[0], 'anchor');
