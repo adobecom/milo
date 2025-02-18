@@ -491,14 +491,13 @@ dd .mep-popup-header .mep-close {
   pointer-events: none;
 }
 #mmm-pagination .arrow {
-  font-size: 1.5rem;
   font-weight: 600;
 }
 
 .mmm-pagination-summary {
   display: flex;
   justify-content: flex-end;
-  padding: 0 0 .5rem;
+  padding: 0 0;
 }
 
 main > .section > .share-mmm.inline {
@@ -529,3 +528,45 @@ main > .section > .inline-wrapper > .share-mmm.inline {
     padding: 2rem 4rem;
   }
 }
+
+/* pagination */
+#mmm-pagination-wrapper {
+  width: 100%;
+  display: flex;
+  gap: 10px;
+  justify-content: right;
+  flex-direction: row;
+}
+
+#pagination-select {
+  align-items: center;
+}
+
+#mmm-pagination-wrapper label, 
+#mmm-pagination-wrapper span {
+  font-size: 12px;
+  font-weight: 400;
+  text-align: left;
+}
+
+#mmm-pagination-dropdown {
+  min-width: 90px;
+  height: 36px;
+  border-radius: 4px;
+  margin-right: 20px;
+}
+
+#pagination-arrows, 
+#pagination-select {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+#pagination-arrows a:not(.disabled) {
+  color: #000;
+  cursor: pointer;
+}
+
+
+
