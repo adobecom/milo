@@ -893,6 +893,10 @@ a.static:active  {
 }
 
 /* Anchors */
+span.anchor {
+  pointer-events: none;
+}
+
 span.anchor:target::before {
   content: "";
   display: block;
