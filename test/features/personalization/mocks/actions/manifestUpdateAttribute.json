@@ -9,7 +9,7 @@
       "page filter (optional)": "",
       "param-newoffer=123": "",
       "chrome": "",
-      "content": "www.google.com"
+      "content": "https://www.google.com/"
     },
     {
       "action": "updateattribute",

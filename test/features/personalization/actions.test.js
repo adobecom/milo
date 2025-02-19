@@ -88,7 +88,7 @@ describe('updateAttribute action', async () => {
     await init(mepSettings);
     await handleCommands(manifestJson.data, undefined, true, true);
     expect(document.querySelector('.marquee h2').getAttribute('class')).to.equal('added-class');
-    expect(document.querySelector('.marquee strong a').getAttribute('href')).to.equal('http://www.google.com/?osi=new-parameter');
+    expect(document.querySelector('.marquee strong a').getAttribute('href')).to.equal('https://www.google.com/?osi=new-parameter#_inline');
     expect(document.querySelector('.marquee em a').getAttribute('new-attribute')).to.equal('added-attribute');
   });
 });
