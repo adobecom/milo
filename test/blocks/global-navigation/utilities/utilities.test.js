@@ -17,7 +17,7 @@ import {
   dropWhile,
 } from '../../../../libs/blocks/global-navigation/utilities/utilities.js';
 import { setConfig, getConfig } from '../../../../libs/utils/utils.js';
-import { createFullGlobalNavigation, config } from '../test-utilities.js';
+import { createFullGlobalNavigation, config, mockRes } from '../test-utilities.js';
 import mepInBlock from '../mocks/mep-config.js';
 import { getFedsPlaceholderConfig } from '../../../../libs/utils/federated.js';
 
@@ -35,6 +35,16 @@ describe('global navigation utilities', () => {
       expect(inNewMenu).to.exist;
       const newMenu = fragment.querySelector('a[href*="mep-large-menu-table"]');
       expect(newMenu).to.exist;
+    });
+  });
+
+  it('fetchAndProcessPlainHtml with failed fetch call should return null fragment', () => {
+    sinon.stub(window, 'fetch').callsFake((url) => {
+      if (url.includes('/old/navigations')) return mockRes({ payload: null, ok: false, status: 400 });
+      return null;
+    });
+    fetchAndProcessPlainHtml({ url: '/old/navigations' }).then((fragment) => {
+      expect(fragment).to.be.null;
     });
   });
 
