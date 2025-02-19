@@ -63,11 +63,28 @@ export class Plans extends VariantLayout {
 
   static variantStyle = css`
     :host([variant='plans']) {
-      min-height: 348px;
+        --merch-card-plans-min-width: 244px;
+        --merch-card-plans-max-width: 244px;
+        --merch-card-plans-padding: 15px;
+    }
+
+    :host([variant='plans']) .body {
+        min-width: var(--merch-card-plans-min-width);
+        max-width: var(--merch-card-plans-max-width);
+        padding: var(--merch-card-plans-padding);
+    }
+
+    :host([variant='plans']) ::slotted([slot='callout-content']) {
+        line-height: var(--consonant-merch-card-body-xs-line-height);
+    }
+
+    :host([variant='plans']) footer {
+        padding: var(--merch-card-plans-padding);
+        padding-top: 0;
     }
       
     :host([variant='plans']) ::slotted([slot='heading-xs']) {
-      max-width: var(--consonant-merch-card-heading-xs-max-width, 100%);
+        max-width: var(--consonant-merch-card-heading-xs-max-width, 100%);
     }
   `;
 }

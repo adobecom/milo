@@ -964,12 +964,12 @@ merch-card .footer-row-cell:nth-child(8) {
   --consonant-merch-card-plans-icon-size: 40px;
 }
 
-merch-card[variant="plans"] {
-  width: 276px;
-}
-
 merch-card[variant="plans"] [slot="description"] {
   min-height: 84px;
+}
+
+merch-card[variant="plans"] [slot='callout-content'] {
+  padding: 2px 10px 3px 10px;
 }
 
 merch-card[variant="plans"] [slot="quantity-select"] {
@@ -1041,11 +1041,28 @@ merch-card[variant="plans"] [slot="quantity-select"] {
         <slot name="quantity-select"></slot>
         ${this.secureLabelFooter}`}};c(N,"variantStyle",ge`
     :host([variant='plans']) {
-      min-height: 348px;
+        --merch-card-plans-min-width: 244px;
+        --merch-card-plans-max-width: 244px;
+        --merch-card-plans-padding: 15px;
+    }
+
+    :host([variant='plans']) .body {
+        min-width: var(--merch-card-plans-min-width);
+        max-width: var(--merch-card-plans-max-width);
+        padding: var(--merch-card-plans-padding);
+    }
+
+    :host([variant='plans']) ::slotted([slot='callout-content']) {
+        line-height: var(--consonant-merch-card-body-xs-line-height);
+    }
+
+    :host([variant='plans']) footer {
+        padding: var(--merch-card-plans-padding);
+        padding-top: 0;
     }
       
     :host([variant='plans']) ::slotted([slot='heading-xs']) {
-      max-width: var(--consonant-merch-card-heading-xs-max-width, 100%);
+        max-width: var(--consonant-merch-card-heading-xs-max-width, 100%);
     }
   `);import{html as dt,css as ue}from"../lit-all.min.js";var Gt=`
 :root {
