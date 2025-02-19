@@ -123,10 +123,25 @@ export function processPrices(fields, merchCard, mapping) {
   appendSlot('prices', fields, merchCard, mapping); 
 }
 
+function parseHtml(html) {
+  const parser = new DOMParser();
+  return parser.parseFromString(html, 'text/html');
+}
+
+function isHtmlEmpty(html) {
+  if (!html) return true;
+
+  const dom = parseHtml(html);
+  return dom.body.textContent.trim() === '';
+}
+
 export function processDescription(fields, merchCard, mapping) {
   appendSlot('promoText', fields, merchCard, mapping);
   appendSlot('description', fields, merchCard, mapping);
-  appendSlot('callout', fields, merchCard, mapping);
+  if (!isHtmlEmpty(fields['callout'])) {
+    appendSlot('callout', fields, merchCard, mapping);
+  }
+  appendSlot('quantitySelect', fields, merchCard, mapping);
 }
 
 export function processStockOffersAndSecureLabel(fields, merchCard, aemFragmentMapping, settings) {
