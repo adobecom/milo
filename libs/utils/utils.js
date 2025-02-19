@@ -49,6 +49,7 @@ const MILO_BLOCKS = [
   'marquee',
   'marquee-anchors',
   'martech-metadata',
+  'mas-autoblock',
   'media',
   'merch',
   'merch-card',
@@ -109,6 +110,7 @@ const AUTO_BLOCKS = [
   { 'pdf-viewer': '.pdf', styles: false },
   { video: '.mp4' },
   { merch: '/tools/ost?' },
+  { 'mas-autoblock': 'mas.adobe.com/studio' },
 ];
 const DO_NOT_INLINE = [
   'accordion',
@@ -124,7 +126,7 @@ const ENVS = {
     adminconsole: 'stage.adminconsole.adobe.com',
     account: 'stage.account.adobe.com',
     edgeConfigId: '8d2805dd-85bf-4748-82eb-f99fdad117a6',
-    pdfViewerClientId: '600a4521c23d4c7eb9c7b039bee534a0',
+    pdfViewerClientId: 'a76f1668fd3244d98b3838e189900a5e',
   },
   prod: {
     name: 'prod',

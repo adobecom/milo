@@ -986,12 +986,13 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .title .breadcrumb
   box-sizing: inherit;
 }
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .title h7 {
-  height: 25px;
+  min-height: 25px;
   font-size: 28px;
   font-weight: 700;
   line-height: 25px;
   padding: 8px 0 24px;
   box-sizing: inherit;
+  white-space: break-spaces;
 }
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tabs {
@@ -1033,6 +1034,18 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content {
   border-left: 1px solid var(--feds-borderColor-link-v2);
 }
 
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds-cta--secondary {
+  margin: 12px;
+  height: unset;
+  display: inline-block;
+  line-height: 1.2;
+  text-wrap: wrap;
+  min-width: 100px;
+  max-width: 200px;
+  text-align: center;
+  padding: 5px 18px 6px;
+}
+
 [dir = "rtl"] header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content {
   border-left: none;
   border-right: 1px solid var(--feds-borderColor-link-v2);
@@ -1044,6 +1057,10 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content a {
   animation: slideup 0.6s ease, fadein 0.8s ease;
   animation-fill-mode: forwards;
   font-weight: 700;
+}
+
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content a.feds-navLink:not(:has(div)) {
+  white-space: break-spaces;
 }
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds-navLink-title {
