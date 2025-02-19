@@ -3,7 +3,7 @@ import { readFile } from '@web/test-runner-commands';
 import { assert, stub } from 'sinon';
 import { getConfig, setConfig } from '../../../libs/utils/utils.js';
 import {
-  handleFragmentCommand, applyPers, cleanAndSortManifestList,
+  handleFragmentCommand, applyPers, cleanAndSortManifestList, normalizePath,
   init, matchGlob, createContent, combineMepSources, buildVariantInfo,
 } from '../../../libs/features/personalization/personalization.js';
 import mepSettings from './mepSettings.js';
@@ -88,6 +88,13 @@ describe('Functional Test', () => {
 
     expect(document.querySelector('.custom-block-1')).to.be.null;
     expect(document.querySelector('.custom-block-2')).to.be.null;
+  });
+
+  it('should not normalize (later) absolute path to a script file, if the file is hosted in DAM', async () => {
+    const DAMpath = 'https://www.adobe.com/content/dam/cc/optimization/mwpw-168109/test.js';
+    const nonDAMpath = 'https://www.adobe.com/foo/test.js';
+    expect(normalizePath(DAMpath)).to.include('https://www.adobe.com');
+    expect(normalizePath(nonDAMpath)).to.not.include('https://www.adobe.com');
   });
 
   it('scheduled manifest should apply changes if active (bts)', async () => {

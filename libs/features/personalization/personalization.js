@@ -64,8 +64,13 @@ export const DATA_TYPE = {
 
 const IN_BLOCK_SELECTOR_PREFIX = 'in-block:';
 
+const isDamContent = (path) => path?.includes('/content/dam/');
+
 export const normalizePath = (p, localize = true) => {
   let path = p;
+
+  // do not change(normalize) DAM content link's domain, since DAM content links are PROD only
+  if (isDamContent(path)) return path;
 
   if (!path?.includes('/')) {
     return path;
@@ -1195,7 +1200,7 @@ function sendTargetResponseAnalytics(failure, responseStart, timeoutLocal, messa
         },
       },
       data:
-       { _adobe_corpnew: { digitalData: { primaryEvent: { eventInfo: { eventName: val } } } } },
+        { _adobe_corpnew: { digitalData: { primaryEvent: { eventInfo: { eventName: val } } } } },
     });
   }, { once: true });
 }
