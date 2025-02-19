@@ -192,25 +192,26 @@ export function processDescription(fields, merchCard, descriptionConfig) {
 }
 
 export function getTruncatedTextData(text, limit, withSuffix = true) {
-    const cleanText = clearTags(text);
-    if (cleanText.length <= limit) return [text, cleanText];
+    const _text = typeof text !== 'string' ? '' : text;
+    const cleanText = clearTags(_text);
+    if (cleanText.length <= limit) return [_text, cleanText];
 
     let index = 0;
     let inTag = false;
     let remaining = withSuffix ? (limit - TEXT_TRUNCATE_SUFFIX.length < 1 ? 1 : limit - TEXT_TRUNCATE_SUFFIX.length) : limit;
     let openTags = [];
 
-    for (const char of text) {
+    for (const char of _text) {
         index++;
         if (char === '<') {
             inTag = true;
             // Check next character
-            if (text[index] === '/') {
+            if (_text[index] === '/') {
                 openTags.pop();
             }
             else {
                 let tagName = '';
-                for (const tagChar of text.substring(index)) {
+                for (const tagChar of _text.substring(index)) {
                     if (tagChar === ' ' || tagChar === '>') break;
                     tagName += tagChar;
                 }
@@ -219,7 +220,7 @@ export function getTruncatedTextData(text, limit, withSuffix = true) {
         }
         if (char === '/') {
             // Check next character
-            if (text[index] === '>') {
+            if (_text[index] === '>') {
                 openTags.pop();
             }
         }
@@ -232,7 +233,7 @@ export function getTruncatedTextData(text, limit, withSuffix = true) {
         if (remaining === 0) break;
     }
 
-    let trimmedText = text.substring(0, index).trim();
+    let trimmedText = _text.substring(0, index).trim();
     if (openTags.length > 0) {
         if (openTags[0] === 'p') openTags.shift();
         for (const tag of openTags.reverse()) {
@@ -245,6 +246,8 @@ export function getTruncatedTextData(text, limit, withSuffix = true) {
 }
 
 function clearTags(text) {
+    if (!text) return '';
+
     let result = '';
     let inTag = false;
     for (const char of text) {
@@ -315,7 +318,7 @@ function createSpectrumSwcButton(cta, aemFragmentMapping, isOutline, variant) {
           await checkoutBtn.onceSettled();
           spectrumCta.addEventListener('click', (e) => {
             e.stopPropagation();
-            checkoutBtn.click(e);
+            checkoutBtn.click();
           });
         } catch (err) {
           console.error('Failed to initialize checkout-button logic:', err);
