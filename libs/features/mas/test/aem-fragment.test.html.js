@@ -75,20 +75,24 @@ runTests(async () => {
         });
 
         it('ignores incomplete markup', async () => {
-            const [, , , cardWithMissingPath] = getTemplateContent('cards');
+            const [, , , cardWithMissingFragmentId] = getTemplateContent('cards');
 
             let masErrorTriggered = false;
-            cardWithMissingPath.addEventListener('mas:error', () => {
+            cardWithMissingFragmentId.addEventListener('mas:error', (e) => {
+              if (e.target.tagName === 'MERCH-CARD') {
                 masErrorTriggered = true;
+              }
             });
             const aemFragment =
-                cardWithMissingPath.querySelector('aem-fragment');
+            cardWithMissingFragmentId.querySelector('aem-fragment');
             let aemErrorTriggered = false;
-            aemFragment.addEventListener('aem:error', () => {
+            aemFragment.addEventListener('aem:error', (e) => {
+              if (e.target.tagName === 'AEM-FRAGMENT') {
                 aemErrorTriggered = true;
+              }
             });
 
-            spTheme.append(cardWithMissingPath);
+            spTheme.append(cardWithMissingFragmentId);
             await expect(aemFragment.updateComplete).to.be.rejectedWith(
                 'AEM fragment cannot be loaded',
             );
@@ -100,11 +104,13 @@ runTests(async () => {
             const [, , , , , cardWithWrongOsis] = getTemplateContent('cards');
 
             let masErrorTriggered = false;
-            cardWithWrongOsis.addEventListener(EVENT_MAS_ERROR, () => {
+            cardWithWrongOsis.addEventListener(EVENT_MAS_ERROR, (e) => {
                 masErrorTriggered = true;
             });
             spTheme.append(cardWithWrongOsis);
-            await delay(100);
+            const aemFragment = cardWithWrongOsis.querySelector('aem-fragment');
+            await aemFragment.updateComplete;
+            await cardWithWrongOsis.checkReady();
             expect(masErrorTriggered).to.true;
         });
 
@@ -139,14 +145,12 @@ runTests(async () => {
             await expect(promise).to.be.rejectedWith('Failed to get fragment: 404 Fragment not found');
         });
 
-        // it('fetches fragment from freyja on publish', async () => {
-        //     const promise = getFragmentById(
-        //         'fragment-cc-all-apps',
-        //         false,
-        //     );
-        //     expect(fetch.lastCall.firstArg).to.equal(
-        //         'http://localhost:2023/adobe/sites/fragments/fragment-cc-all-apps',
-        //     );
-        // });
+        it('fetches fragment from freyja on publish', async () => {
+            const promise = getFragmentById('fragment-cc-all-apps', masCommerceService);
+            await promise;
+            expect(fetch.lastCall.firstArg).to.equal(
+                'https://www.stage.adobe.com/mas/io/fragment?id=fragment-cc-all-apps&api_key=testApiKey&locale=fr_FR',
+            );
+        });
     });
 });
