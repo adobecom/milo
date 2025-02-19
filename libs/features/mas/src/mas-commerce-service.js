@@ -78,7 +78,7 @@ export class MasCommerceService extends HTMLElement {
         };
     }
 
-    async activate() {
+    async activate(resolve) {
         const config = this.#config;
         // Load settings and literals
         const settings = Object.freeze(getSettings(config));
@@ -145,13 +145,14 @@ export class MasCommerceService extends HTMLElement {
             });
             performance.mark(MARK_READY);
             this.dispatchEvent(event);
+            resolve(this);
         });
     }
 
     connectedCallback() {
         if (!this.readyPromise) {
             performance.mark(MARK_START);
-            this.readyPromise = this.activate();
+            this.readyPromise = new Promise((resolve) => this.activate(resolve));
         }
     }
 

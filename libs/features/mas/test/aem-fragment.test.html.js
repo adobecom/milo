@@ -18,10 +18,10 @@ chai.use(chaiAsPromised);
 runTests(async () => {
     await mas();
     const [cc, photoshop] = await Promise.all([
-        fetch('mocks/sites/cf/fragments/fragment-cc-all-apps.json').then(
+        fetch('mocks/sites/fragments/fragment-cc-all-apps.json').then(
             (res) => res.json(),
         ),
-        fetch('mocks/sites/cf/fragments/fragment-photoshop.json').then((res) =>
+        fetch('mocks/sites/fragments/fragment-photoshop.json').then((res) =>
             res.json(),
         ),
     ]);
@@ -106,15 +106,6 @@ runTests(async () => {
             spTheme.append(cardWithWrongOsis);
             await delay(100);
             expect(masErrorTriggered).to.true;
-        });
-
-        it('uses ims token to retrieve a fragment', async () => {
-            const [, , , , cardWithIms] = getTemplateContent('cards');
-            const aemFragment = cardWithIms.querySelector('aem-fragment');
-            window.adobeid = { authorize: sinon.stub() };
-            spTheme.append(cardWithIms);
-            expect(aemFragment.updateComplete);
-            sinon.assert.calledOnce(window.adobeid.authorize);
         });
 
         it('renders ccd slice card', async () => {

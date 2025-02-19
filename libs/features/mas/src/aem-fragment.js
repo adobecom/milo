@@ -5,7 +5,6 @@ const sheet = new CSSStyleSheet();
 sheet.replaceSync(':host { display: contents; }');
 
 const ATTRIBUTE_FRAGMENT = 'fragment';
-const ATTRIBUTE_IMS = 'ims';
 
 const fail = (message) => {
     throw new Error(`Failed to get fragment: ${message}`);
@@ -14,25 +13,21 @@ const fail = (message) => {
 /**
  * Get fragment by ID
  * @param {string} id fragment id
- * @param {Object} headers optional request headers
  * @returns {Promise<Object>} the raw fragment item
  */
-export async function getFragmentById(id, masCommerceService, headers) {
+export async function getFragmentById(id, masCommerceService) {
   const { env, wcsApiKey, locale } = masCommerceService.settings;
   const host = env === 'prod' ? 'https://www.adobe.com' : 'https://www.stage.adobe.com';
   const endpoint = `${host}/mas/io/fragment?id=${id}&api_key=${wcsApiKey}&locale=${locale}`;
     const response = await fetch(endpoint, {
         cache: 'default',
         credentials: 'omit',
-        headers,
     }).catch((e) => fail(e.message));
     if (!response?.ok) {
         fail(`${response.status} ${response.statusText}`);
     }
     return response.json();
 }
-
-let headers;
 
 class FragmentCache {
     #fragmentCache = new Map();
@@ -82,11 +77,6 @@ export class AemFragment extends HTMLElement {
     #fragmentId;
 
     /**
-     * @type {boolean} whether an access token should be used via IMS.
-     */
-    #ims = false;
-
-    /**
      * Internal promise to track the readiness of the web-component to render.
      */
     #readyPromise;
@@ -99,16 +89,6 @@ export class AemFragment extends HTMLElement {
         super();
         this.attachShadow({ mode: 'open' });
         this.shadowRoot.adoptedStyleSheets = [sheet];
-
-        const ims = this.getAttribute(ATTRIBUTE_IMS);
-        if (['', true, 'true'].includes(ims)) {
-            this.#ims = true;
-            if (!headers) {
-                headers = {
-                    Authorization: `Bearer ${window.adobeid?.authorize?.()}`,
-                };
-            }
-        }
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
@@ -138,7 +118,7 @@ export class AemFragment extends HTMLElement {
         }
 
         const service = useService();
-        let servicePromise = service.readyPromise;
+        let servicePromise = service?.readyPromise;
         if (!servicePromise) {
           servicePromise = new Promise ((resolve) => {
             service.addEventListener(EVENT_TYPE_READY, (e) => {
@@ -186,7 +166,6 @@ export class AemFragment extends HTMLElement {
             fragment = await getFragmentById(
                 this.#fragmentId,
                 masCommerceService,
-                this.#ims ? headers : undefined,
             );
             cache.add(fragment);
         }
