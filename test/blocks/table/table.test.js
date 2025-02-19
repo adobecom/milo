@@ -127,5 +127,25 @@ describe('table and tablemetadata', () => {
         expect(selectElement.getAttribute('aria-label')).to.equal(ariaLabel);
       });
     });
+
+    it('should show and hide tooltip on hover, focus, and Escape key', async () => {
+      const tooltip = document.querySelector('.milo-tooltip');
+      expect(tooltip).to.exist;
+
+      tooltip.dispatchEvent(new Event('mouseenter'));
+      expect(tooltip.classList.contains('hide-tooltip')).to.be.false;
+
+      tooltip.dispatchEvent(new Event('mouseleave'));
+      expect(tooltip.classList.contains('hide-tooltip')).to.be.true;
+
+      tooltip.dispatchEvent(new Event('focus'));
+      expect(tooltip.classList.contains('hide-tooltip')).to.be.false;
+
+      tooltip.dispatchEvent(new Event('blur'));
+      expect(tooltip.classList.contains('hide-tooltip')).to.be.true;
+
+      await sendKeys({ press: 'Escape' });
+      expect(tooltip.classList.contains('hide-tooltip')).to.be.true;
+    });
   });
 });
