@@ -229,8 +229,9 @@ const COMMANDS = {
     const [attribute, parameter] = cmd.attribute.split('_');
 
     let value;
-    if (attribute === 'href') {
-      if (parameter) {
+
+    if (attribute === 'href' && parameter) {
+      try {
         const href = el.getAttribute('href');
         const url = new URL(href);
         const parameters = new URLSearchParams(url.search);
@@ -238,15 +239,8 @@ const COMMANDS = {
         parameters.set(parameter, cmd.content);
         url.search = parameters.toString();
         value = url.toString();
-      } else {
-        try {
-          const href = /^https?:\/\//i.test(cmd.content) ? cmd.content : `http://${cmd.content}`;
-          const testContent = new URL(href);
-
-          value = testContent.href;
-        } catch (error) {
-          console.error('Invalid updateAttribute URL:', cmd.content);
-        }
+      } catch (error) {
+        console.error('Invalid updateAttribute URL:', cmd.content);
       }
     } else {
       value = cmd.content;
@@ -471,7 +465,7 @@ function getModifiers(selector) {
 export function modifyNonFragmentSelector(selector, action) {
   const { sel, modifiers } = getModifiers(selector);
 
-  let newSelector = sel
+  let modifiedSelector  = sel
     .split('>').join(' > ')
     .split(',').join(' , ')
     .replaceAll(/main\s*>?\s*(section\d*)/gi, '$1')
@@ -483,13 +477,13 @@ export function modifyNonFragmentSelector(selector, action) {
   let attribute;
 
   if (action === COMMANDS_KEYS.updateAttribute) {
-    const string = newSelector.split(' ').pop();
+    const string = modifiedSelector.split(' ').pop();
     attribute = string.replace('.', '');
-    newSelector = newSelector.replace(string, '').trim();
+    modifiedSelector = modifiedSelector.replace(string, '').trim();
   }
 
   return {
-    modifiedSelector: newSelector,
+    modifiedSelector,
     modifiers,
     attribute,
   };

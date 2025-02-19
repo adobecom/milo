@@ -90,9 +90,6 @@ describe('updateAttribute action', async () => {
     expect(document.querySelector('.marquee h2').getAttribute('class')).to.equal('added-class');
     expect(document.querySelector('.marquee strong a').getAttribute('href')).to.equal('http://www.google.com/?osi=new-parameter');
     expect(document.querySelector('.marquee em a').getAttribute('new-attribute')).to.equal('added-attribute');
-
-    stub(console, 'error');
-    expect(console.error.calledWith('Type Unsupported is not supported')).to.be.false;
   });
 });
 
