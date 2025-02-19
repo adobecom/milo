@@ -264,7 +264,7 @@ export const [setConfig, updateConfig, getConfig] = (() => {
 })();
 
 export function isInTextNode(node) {
-  return node.parentElement.firstChild.tagName === 'A' || node.parentElement.firstChild.nodeType === Node.TEXT_NODE;
+  return (node.parentElement.children.length > 1 && node.parentElement.firstChild.tagName === 'A') || node.parentElement.firstChild.nodeType === Node.TEXT_NODE;
 }
 
 export function createTag(tag, attributes, html, options = {}) {
