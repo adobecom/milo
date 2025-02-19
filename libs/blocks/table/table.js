@@ -96,17 +96,15 @@ function handleHeading(table, headingCols) {
 
     const headings = col.querySelectorAll('h1, h2, h3, h4, h5, h6');
 
-    headings.forEach((headingItem) => {
-      const newSpan = document.createElement('p');
+    headings.forEach((heading) => {
+      const newElement = document.createElement('p');
 
-      [...headingItem.attributes].forEach((attr) => {
-        newSpan.setAttribute(attr.name, attr.value);
-      });
-      newSpan.setAttribute('scope', 'col');
+      [...heading.attributes].forEach(({ name, value }) => newElement.setAttribute(name, value));
 
-      newSpan.innerHTML = headingItem.innerHTML;
-      newSpan.classList.add(`${headingItem.tagName.toLowerCase()}-margins`);
-      headingItem.replaceWith(newSpan);
+      newElement.textContent = heading.textContent;
+      newElement.classList.add(`${heading.tagName.toLowerCase()}-margins`);
+
+      heading.replaceWith(newElement);
     });
 
     nodeToApplyRoleScope.setAttribute('scope', 'col');
