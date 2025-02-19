@@ -10,6 +10,7 @@ const VALIDATION_STEP = {
   state: '3',
   postcode: '3',
   mktoFormsPrimaryProductInterest: '3',
+  mktoFormsCompanyType: '3',
 };
 
 function updateStepDetails(formEl, step, totalSteps) {
@@ -18,6 +19,7 @@ function updateStepDetails(formEl, step, totalSteps) {
   formEl.dataset.step = step;
   formEl.querySelector('.step-details .step').textContent = `Step ${step} of ${totalSteps}`;
   formEl.querySelector('#mktoButton_new').textContent = step === totalSteps ? 'Submit' : 'Next';
+  formEl.querySelector(`.mktoFormRowTop[data-validate="${step}"]:not(.mktoHidden) input`)?.focus();
 }
 
 function showPreviousStep(formEl, totalSteps) {
@@ -60,7 +62,7 @@ function setValidationSteps(formEl, totalSteps) {
   formEl.querySelectorAll('.mktoFormRowTop').forEach((row) => {
     const rowAttr = row.getAttribute('data-mktofield') || row.getAttribute('data-mkto_vis_src');
     const step = VALIDATION_STEP[rowAttr] ? Math.min(VALIDATION_STEP[rowAttr], totalSteps) : 1;
-    row.setAttribute('data-validate', step);
+    row.dataset.validate = rowAttr?.startsWith('adobe-privacy') ? totalSteps : step;
   });
 }
 

@@ -100,7 +100,7 @@
 
 .marketo.multi-step .mktoForm[data-step="2"] .mktoFormRow.mktoFormRowTop[data-validate="2"],
 .marketo.multi-step .mktoForm[data-step="3"] .mktoFormRow.mktoFormRowTop[data-validate="3"] {
-  display: block;
+  display: contents;
 }
 
 .marketo.multi-step .mktoForm[data-step="2"] .mktoFormRow.mktoFormRowTop[data-validate="1"],
@@ -115,7 +115,7 @@
 
 .marketo.multi-step .mktoForm[data-step="3"] .mktoFormRow.mktoFormRowTop.adobe-privacy,
 .marketo.multi-step.multi-2 .mktoForm[data-step="2"] .mktoFormRow.mktoFormRowTop.adobe-privacy {
-  display: block;
+  display: grid;
 }
 
 .marketo.multi-step .step-details {
@@ -559,6 +559,16 @@
   .marketo .mktoFormRow.mktoFormRowTop.comments,
   .marketo .mktoFormRow.mktoFormRowTop.demo,
   .marketo .mktoFormRow.mktoFormRowTop.name {
+    display: block;
+    grid-column: span 2;
+  }
+
+  .marketo.multi-step .mktoForm[data-step="2"] .mktoFormRow.mktoFormRowTop[data-validate="2"].comments,
+  .marketo.multi-step .mktoForm[data-step="2"] .mktoFormRow.mktoFormRowTop[data-validate="2"].demo,
+  .marketo.multi-step .mktoForm[data-step="2"] .mktoFormRow.mktoFormRowTop[data-validate="2"].name,
+  .marketo.multi-step .mktoForm[data-step="3"] .mktoFormRow.mktoFormRowTop[data-validate="3"].comments,
+  .marketo.multi-step .mktoForm[data-step="3"] .mktoFormRow.mktoFormRowTop[data-validate="3"].demo,
+  .marketo.multi-step .mktoForm[data-step="3"] .mktoFormRow.mktoFormRowTop[data-validate="3"].name {
     display: block;
     grid-column: span 2;
   }
