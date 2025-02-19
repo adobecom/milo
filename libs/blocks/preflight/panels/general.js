@@ -12,6 +12,7 @@ const DA_DOMAIN = 'da.live';
 const content = signal({});
 
 function getAdminUrl(url, type) {
+  if (!url.hostname.includes('adobecom.hlx.') && !url.hostname.includes('adobecom.aem.')) return false;
   const project = url.hostname === 'localhost' ? 'main--milo--adobecom' : url.hostname.split('.')[0];
   const [branch, repo, owner] = project.split('--');
   const base = `https://admin.hlx.page/${type}/${owner}/${repo}/${branch}${url.pathname}`;
@@ -20,8 +21,22 @@ function getAdminUrl(url, type) {
 
 async function getStatus(url) {
   const adminUrl = getAdminUrl(url, 'status');
-  const resp = await fetch(adminUrl);
+  const urlToFetch = adminUrl || url;
+  let resp;
+  try {
+    resp = await fetch(urlToFetch);
+  } catch (e) {
+    console.log('Erorr making request, cors', e);
+    return {
+      url,
+      edit: null,
+      preview: 'N/A',
+      live: 'N/A',
+      publish: 'N/A',
+    };
+  }
   if (!resp.ok) return {};
+  console.log(resp);
   const json = await resp.json();
   const preview = json.preview.lastModified || DEF_NEVER;
   const live = json.live.lastModified || DEF_NEVER;
@@ -171,7 +186,7 @@ function usePublishProps(item) {
 function Item({ name, item, idx }) {
   const { publishText, disablePublish } = usePublishProps(item);
   const isChecked = item.checked ? ' is-checked' : '';
-  const isFetching = item.edit ? '' : ' is-fetching';
+  const isFetching = item.edit || item.preview === 'N/A' ? '' : ' is-fetching';
   const editIcon = item.edit && item.edit.includes(DA_DOMAIN) ? 'da-icon' : 'sharepoint-icon';
   if (!item.url) return undefined;
 
