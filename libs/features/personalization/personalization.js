@@ -465,7 +465,7 @@ function getModifiers(selector) {
 export function modifyNonFragmentSelector(selector, action) {
   const { sel, modifiers } = getModifiers(selector);
 
-  let modifiedSelector  = sel
+  let modifiedSelector = sel
     .split('>').join(' > ')
     .split(',').join(' , ')
     .replaceAll(/main\s*>?\s*(section\d*)/gi, '$1')
