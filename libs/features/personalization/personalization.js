@@ -1224,15 +1224,15 @@ const handleAlloyResponse = (response) => ((response.propositions || response.de
   ?.filter(Boolean) ?? [];
 
 async function handleMartechTargetInteraction(
-  { config, targetAjoInteractionPromise, calculatedTimeout },
+  { config, targetInteractionPromise, calculatedTimeout },
 ) {
   const targetAjo = config.mep.ajoEnabled ? 'ajo' : 'target';
   let targetAjoManifests = [];
   let targetAjoPropositions = [];
-  if (config?.mep?.enablePersV2 && targetAjoInteractionPromise) {
-    const { targetAjoInteractionData, respTime, respStartTime } = await targetAjoInteractionPromise;
+  if (config?.mep?.enablePersV2 && targetInteractionPromise) {
+    const { targetInteractionData, respTime, respStartTime } = await targetInteractionPromise;
     sendTargetResponseAnalytics(false, respStartTime, calculatedTimeout);
-    if (targetAjoInteractionData.result) {
+    if (targetInteractionData.result) {
       const roundedResponseTime = roundToQuarter(respTime);
       performance.clearMarks();
       performance.clearMeasures();
@@ -1246,8 +1246,8 @@ async function handleMartechTargetInteraction(
         // eslint-disable-next-line no-console
         console.error(`Error logging ${targetAjo} response time:`, e);
       }
-      targetAjoManifests = handleAlloyResponse(targetAjoInteractionData.result);
-      targetAjoPropositions = targetAjoInteractionData.result?.propositions || [];
+      targetAjoManifests = handleAlloyResponse(targetInteractionData.result);
+      targetAjoPropositions = targetInteractionData.result?.propositions || [];
     }
   }
 
@@ -1278,7 +1278,7 @@ export async function init(enablements = {}) {
   let manifests = [];
   const {
     mepParam, mepHighlight, mepButton, pzn, promo, enablePersV2, hybridPersEnabled,
-    target, ajo, targetAjoInteractionPromise, calculatedTimeout, postLCP,
+    target, ajo, targetInteractionPromise, calculatedTimeout, postLCP,
   } = enablements;
   const config = getConfig();
   if (postLCP) {
@@ -1308,7 +1308,7 @@ export async function init(enablements = {}) {
 
   if (enablePersV2 && (target === true || ajo === true)) {
     manifests = manifests.concat(await handleMartechTargetInteraction(
-      { config, targetAjoInteractionPromise, calculatedTimeout },
+      { config, targetInteractionPromise, calculatedTimeout },
     ));
   } else {
     if (target === true || ajo === true) manifests = manifests.concat(await callMartech(config));

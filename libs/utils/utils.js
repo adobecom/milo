@@ -1119,7 +1119,7 @@ async function checkForPageMods() {
     mepButton,
     martech,
   } = Object.fromEntries(PAGE_URL.searchParams);
-  let targetAjoInteractionPromise = null;
+  let targetInteractionPromise = null;
   let calculatedTimeout = null;
   if (mepParam === 'off') return;
   const pzn = getMepEnablement('personalization');
@@ -1134,14 +1134,14 @@ async function checkForPageMods() {
 
   const enablePersV2 = enablePersonalizationV2();
   const hybridPersEnabled = getMepEnablement('hybrid-pers');
-  if ((target || xlg || ajo) && enablePersV2) {
+  if ((target || xlg) && enablePersV2) {
     const params = new URL(window.location.href).searchParams;
     calculatedTimeout = parseInt(params.get('target-timeout'), 10)
       || parseInt(getMetadata('target-timeout'), 10)
       || TARGET_TIMEOUT_MS;
 
     const { locale } = getConfig();
-    targetAjoInteractionPromise = (async () => {
+    targetInteractionPromise = (async () => {
       const { loadAnalyticsAndInteractionData } = await import('../martech/helpers.js');
       const now = performance.now();
       performance.mark('interaction-start');
@@ -1152,7 +1152,7 @@ async function checkForPageMods() {
       performance.measure('total-time', 'interaction-start', 'interaction-end');
       const respTime = performance.getEntriesByName('total-time')[0];
 
-      return { targetAjoInteractionData: data, respTime, respStartTime: now };
+      return { targetInteractionData: data, respTime, respStartTime: now };
     })();
   } else if ((target || xlg || ajo) && !isMartechLoaded) loadMartech();
   else if (pzn && martech !== 'off') {
@@ -1173,7 +1173,7 @@ async function checkForPageMods() {
     promo,
     target,
     ajo,
-    targetAjoInteractionPromise,
+    targetInteractionPromise,
     calculatedTimeout,
     enablePersV2,
     hybridPersEnabled,
