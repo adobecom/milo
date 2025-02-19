@@ -1,6 +1,6 @@
 /* eslint-disable import/no-relative-packages */
 import { createTag } from '../../utils/utils.js';
-import { MODAL_TYPE_3_IN_1 } from '../../deps/mas/constants.js';
+import { MODAL_TYPE_3_IN_1 } from '../../deps/mas/mas.js';
 import '../../features/spectrum-web-components/dist/theme.js';
 import '../../features/spectrum-web-components/dist/progress-circle.js';
 

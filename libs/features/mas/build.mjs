@@ -27,30 +27,16 @@ writeFileSync(`commerce.json`, JSON.stringify(metafile));
 
 // mas.js
 await build({
-    ...defaults,
-    entryPoints: ['./src/mas.js'],
-    outfile: './dist/mas.js',
-});
-
-await build({
-    ...defaults,
-    entryPoints: ['./src/mas.js'],
-    outfile: `${outfolder}/mas.js`,
-});
-
-// constants.js
-await build({
   ...defaults,
-  entryPoints: ['./src/constants.js'],
-  outfile: './dist/constants.js',
+  entryPoints: ['./src/mas.js'],
+  outfile: './dist/mas.js',
 });
 
 await build({
   ...defaults,
-  entryPoints: ['./src/constants.js'],
-  outfile: `${outfolder}/constants.js`,
+  entryPoints: ['./src/mas.js'],
+  outfile: `${outfolder}/mas.js`,
 });
-
 // web components
 Promise.all([
     build({
