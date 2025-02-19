@@ -90,7 +90,7 @@ describe('Functional Test', () => {
     expect(document.querySelector('.custom-block-2')).to.be.null;
   });
 
-  it('should not normalize (later) absolute path to a script file, if the file is hosted in DAM', async () => {
+  it('should not normalize absolute path to a script file, if the file is hosted in DAM', async () => {
     const DAMpath = 'https://www.adobe.com/content/dam/cc/optimization/mwpw-168109/test.js';
     const nonDAMpath = 'https://www.adobe.com/foo/test.js';
     expect(normalizePath(DAMpath)).to.include('https://www.adobe.com');
