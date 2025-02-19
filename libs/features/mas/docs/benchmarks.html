@@ -77,11 +77,6 @@
     const promises = fragmentIds.map((fragmentId) => measureCardPerformances(container, fragmentId));
     const results = await Promise.allSettled(promises);
 
-    function toFixed(num, fixed) {
-      var re = new RegExp('^-?\\d+(?:\.\\d{0,' + (fixed || -1) + '})?');
-      return num.toString().match(re)[0];
-    }
-
     results.forEach((result) => {
       const { card, duration } = result.status === 'fulfilled' ? result.value : {};
       const mask = document.createElement('div');
@@ -90,7 +85,7 @@
       mask.style.height = card.offsetHeight + 'px';
       mask.style.top = card.offsetTop + 'px';
       mask.style.left = card.offsetLeft + 'px';
-      mask.textContent = `⏱️  ${toFixed(duration, 6)}ms`;
+      mask.textContent = `⏱️  ${parseFloat(duration).toFixed(2)}ms`;
       mask.classList.add('benchmark-mask');
       mask.setAttribute('data-benchmark-time', duration);
       mask.classList.add(duration > limit ? 'benchmark-mask-over-limit' : 'benchmark-mask-under-limit');

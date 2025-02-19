@@ -586,6 +586,14 @@ describe('getTruncatedTextData', () => {
       // because we never traverse far enough to keep the <img> or " world"
       expect(truncated).to.equal('<div>Hello</div>...');
   });
+
+  it('handles null text values', () => {
+    const text = null;
+    const limit = 5;
+    const [truncated] = getTruncatedTextData(text, limit);
+
+    expect(truncated).to.equal('');
+  });
 });
 
 describe('processBackgroundColor', () => {
