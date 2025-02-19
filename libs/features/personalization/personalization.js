@@ -232,9 +232,9 @@ const COMMANDS = {
 
     if (attribute === 'href' && parameter) {
       const href = el.getAttribute('href');
-      const url = new URL(href);
-      const parameters = new URLSearchParams(url.search);
       try {
+        const url = new URL(href);
+        const parameters = new URLSearchParams(url.search);
         parameters.set(parameter, cmd.content);
         url.search = parameters.toString();
         value = url.toString();
