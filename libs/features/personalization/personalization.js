@@ -69,12 +69,7 @@ const isDamContent = (path) => path?.includes('/content/dam/');
 export const normalizePath = (p, localize = true) => {
   let path = p;
 
-  // do not change(normalize) DAM content link's domain, since DAM content links are PROD only
-  if (isDamContent(path)) return path;
-
-  if (!path?.includes('/')) {
-    return path;
-  }
+  if (isDamContent(path) || !path?.includes('/')) return path;
 
   const config = getConfig();
   if (path.startsWith('https://www.adobe.com/federal/')) {
