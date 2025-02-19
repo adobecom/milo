@@ -95,15 +95,21 @@ export function processSubtitle(fields, merchCard, subtitleConfig) {
 }
 
 export function processBackgroundColor(fields, merchCard, allowedColors) {
-    if (!allowedColors?.includes(fields.backgroundColor)) {
+    if (!fields.backgroundColor || fields.backgroundColor.toLowerCase() === 'default') {
+        merchCard.style.removeProperty('--merch-card-custom-background-color');
+        merchCard.removeAttribute('background-color');
         return;
     }
-    merchCard.setAttribute('background-color', fields.backgroundColor);
+
+    if (allowedColors?.[fields.backgroundColor]) {
+        merchCard.style.setProperty('--merch-card-custom-background-color', allowedColors[fields.backgroundColor]);
+        merchCard.setAttribute('background-color', fields.backgroundColor);
+    }
 }
 
-export function processBorderColor(fields, merchCard) {
-    if (fields.borderColor) {
-        merchCard.setAttribute('border-color', fields.borderColor);
+export function processBorderColor(fields, merchCard, borderColorConfig) {
+    if (fields.borderColor && borderColorConfig && fields.borderColor !== 'transparent') {
+        merchCard.style.setProperty('--merch-card-custom-border-color', `var(--${fields.borderColor})`);
     }
 }
 
@@ -446,7 +452,7 @@ export async function hydrate(fragment, merchCard) {
         aemFragmentMapping.backgroundImage,
     );
     processBackgroundColor(fields, merchCard, aemFragmentMapping.allowedColors);
-    processBorderColor(fields, merchCard);
+    processBorderColor(fields, merchCard, aemFragmentMapping.borderColor);
     processDescription(fields, merchCard, aemFragmentMapping.description);
     processCTAs(fields, merchCard, aemFragmentMapping, variant);
     processAnalytics(fields, merchCard);

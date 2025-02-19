@@ -1,8 +1,6 @@
 import { html, css } from 'lit';
 import { VariantLayout } from './variant-layout.js';
 import { CSS } from './ah-try-buy-widget.css.js';
-import { MatchMediaController } from '@spectrum-web-components/reactive-controllers/src/MatchMedia.js';
-import { MOBILE_LANDSCAPE } from '../media.js';
 
 export const AH_TRY_BUY_WIDGET_AEM_FRAGMENT_MAPPING = {
   mnemonics: { size: 's' },
@@ -13,7 +11,9 @@ export const AH_TRY_BUY_WIDGET_AEM_FRAGMENT_MAPPING = {
   backgroundImage: { tag: 'div', slot: 'image' },
   backgroundColor: { attribute: 'background-color' },
   borderColor: { attribute: 'border-color' },
-  allowedColors: ['gray'],
+  allowedColors: {
+    gray: 'rgb(248, 248, 248)'
+  },
   size: ['single', 'double', 'triple'],
 };
 
@@ -58,20 +58,20 @@ export class AHTryBuyWidget extends VariantLayout {
         --merch-card-ah-try-buy-widget-text-color: rgba(19, 19, 19);
         --merch-card-ah-try-buy-widget-price-line-height: 17px;
         --merch-card-ah-try-buy-widget-outline: transparent;
+        --merch-card-custom-border-width: 1px;
         min-width: var(--merch-card-ah-try-buy-widget-min-width);
         max-width: var(--merch-card-ah-try-buy-widget-max-width);
         min-height: var(--merch-card-ah-try-buy-widget-height);
-        background-color: var(--consonant-merch-card-background-color);
+        background-color: var(--merch-card-custom-background-color, var(--consonant-merch-card-background-color));
         color: var(--consonant-merch-card-heading-xxxs-color);
         border-radius: 10px;
+        border: 1px solid var(--merch-card-custom-border-color, transparent);
         display: flex;
         flex-direction: column;
         overflow: hidden;
         padding: 12px !important;
         gap: 24px;
         box-sizing: content-box !important;
-        border: 1px solid;
-        border-color: var(--custom-border-color, transparent);
         justify-content: space-between;
     }
 
@@ -89,10 +89,6 @@ export class AHTryBuyWidget extends VariantLayout {
 
     :host([variant='ah-try-buy-widget'][size='double']) {
         --merch-card-ah-try-buy-widget-max-width: 214px;
-    }
-
-    :host([variant='ah-try-buy-widget'][background-color='gray']) {
-        background-color: var(--merch-card-ah-try-buy-widget-gray-background);
     }
 
     :host([variant='ah-try-buy-widget']) .content {

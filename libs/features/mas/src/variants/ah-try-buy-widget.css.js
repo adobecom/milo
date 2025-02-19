@@ -81,6 +81,7 @@ export const CSS = `
         gap: 8px;
         display: flex;
         padding-top: 24px;
+        flex-wrap: wrap;
     }
 
     .spectrum--dark merch-card[variant="ah-try-buy-widget"][background-color='gray'],

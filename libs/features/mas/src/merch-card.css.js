@@ -5,7 +5,6 @@ export const styles = css`
     :host {
         --consonant-merch-card-background-color: #fff;
         --consonant-merch-card-border: 1px solid var(--consonant-merch-card-border-color);
-        
         -webkit-font-smoothing: antialiased;
         background-color: var(--consonant-merch-card-background-color);
         border-radius: var(--consonant-merch-spacing-xs);

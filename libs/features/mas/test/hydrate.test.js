@@ -18,6 +18,8 @@ import {
     processDescription,
     updateLinksCSS,
     getTruncatedTextData,
+    processBackgroundColor,
+    processBorderColor,
 } from '../src/hydrate.js';
 import { CCD_SLICE_AEM_FRAGMENT_MAPPING } from '../src/variants/ccd-slice.js';
 
@@ -584,4 +586,91 @@ describe('getTruncatedTextData', () => {
       // because we never traverse far enough to keep the <img> or " world"
       expect(truncated).to.equal('<div>Hello</div>...');
   });
+});
+
+describe('processBackgroundColor', () => {
+    let merchCard;
+
+    beforeEach(() => {
+        merchCard = mockMerchCard();
+    });
+
+    it('should set background color when valid', () => {
+        const fields = { backgroundColor: 'gray' };
+        const allowedColors = { gray: 'var(--spectrum-gray-50)' };
+        
+        processBackgroundColor(fields, merchCard, allowedColors);
+        
+        expect(merchCard.style.getPropertyValue('--merch-card-custom-background-color'))
+            .to.equal('var(--spectrum-gray-50)');
+        expect(merchCard.getAttribute('background-color')).to.equal('gray');
+    });
+
+    it('should not set color when invalid', () => {
+        const fields = { backgroundColor: 'red' };
+        const allowedColors = { gray: 'var(--spectrum-gray-50)' };
+        
+        processBackgroundColor(fields, merchCard, allowedColors);
+        
+        expect(merchCard.style.getPropertyValue('--merch-card-custom-background-color'))
+            .to.be.empty;
+        expect(merchCard.hasAttribute('background-color')).to.be.false;
+    });
+
+    it('should handle allowedColors=null', () => {
+        const fields = { backgroundColor: 'gray' };
+        
+        processBackgroundColor(fields, merchCard, null);
+        
+        expect(merchCard.style.getPropertyValue('--merch-card-custom-background-color'))
+            .to.be.empty;
+    });
+
+    it('should remove color when set to default', () => {
+        merchCard.style.setProperty('--merch-card-custom-background-color', 'blue');
+        merchCard.setAttribute('background-color', 'gray');
+        
+        processBackgroundColor({ backgroundColor: 'default' }, merchCard, {});
+        
+        expect(merchCard.style.getPropertyValue('--merch-card-custom-background-color'))
+            .to.be.empty;
+        expect(merchCard.hasAttribute('background-color')).to.be.false;
+    });
+});
+
+describe('processBorderColor', () => {
+    let merchCard;
+
+    beforeEach(() => {
+        merchCard = mockMerchCard();
+    });
+
+    it('should set border color when configured', () => {
+        const fields = { borderColor: 'spectrum-gray-800' };
+        const borderColorConfig = { attribute: 'border-color' };
+        
+        processBorderColor(fields, merchCard, borderColorConfig);
+        
+        expect(merchCard.style.getPropertyValue('--merch-card-custom-border-color'))
+            .to.equal('var(--spectrum-gray-800)');
+    });
+
+    it('should not set border color without config', () => {
+        const fields = { borderColor: 'spectrum-gray-800' };
+        
+        processBorderColor(fields, merchCard, null);
+        
+        expect(merchCard.style.getPropertyValue('--merch-card-custom-border-color'))
+            .to.be.empty;
+    });
+
+    it('should ignore transparent border color', () => {
+        const fields = { borderColor: 'transparent' };
+        const borderColorConfig = { attribute: 'border-color' };
+        
+        processBorderColor(fields, merchCard, borderColorConfig);
+        
+        expect(merchCard.style.getPropertyValue('--merch-card-custom-border-color'))
+            .to.be.empty;
+    });
 });
