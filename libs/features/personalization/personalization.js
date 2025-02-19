@@ -519,7 +519,7 @@ function getSelectedElements(sel, rootEl, forceRootEl, action) {
     log('Invalid selector: ', selector);
     return null;
   }
-  if (modifiers.includes(FLAGS.all) || !els.length) return { els, modifiers };
+  if (modifiers.includes(FLAGS.all) || !els.length) return { els, modifiers, attribute };
   els = [els[0]];
   return { els, modifiers, attribute };
 }
