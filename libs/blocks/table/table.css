@@ -78,6 +78,10 @@
   margin: 0;
 }
 
+.table p.h1-margins, .table p.h2-margins, .table p.h3-margins, .table p.h4-margins .table p.h5-margins, .table p.h6-margins {
+  font-weight: bold;
+}
+
 .table p.h1-margins { margin: 0.67em 0; }
 .table p.h2-margins { margin: 0.83em 0; }
 .table p.h3-margins { margin: 1em 0; }
