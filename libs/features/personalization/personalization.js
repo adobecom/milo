@@ -231,16 +231,16 @@ const COMMANDS = {
     let value;
 
     if (attribute === 'href' && parameter) {
+      const href = el.getAttribute('href');
+      const url = new URL(href);
+      const parameters = new URLSearchParams(url.search);
       try {
-        const href = el.getAttribute('href');
-        const url = new URL(href);
-        const parameters = new URLSearchParams(url.search);
-
         parameters.set(parameter, cmd.content);
         url.search = parameters.toString();
         value = url.toString();
       } catch (error) {
-        console.error('Invalid updateAttribute URL:', cmd.content);
+        /* c8 ignore next 2 */
+        console.log(`Invalid updateAttribute URL: ${href}`, error.message || error);
       }
     } else {
       value = cmd.content;
