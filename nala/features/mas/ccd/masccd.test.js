@@ -83,7 +83,7 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
   });
 
-  // @MAS-CCD-suggested-strikethrough : CCD suggested card with eyebrow, legal link and strikethrough price
+  // @MAS-CCD-suggested-strikethrough : CCD suggested card with eyebrow, legal link, strikethrough price and ABM price label
   test(`${features[1].name},${features[1].tags}`, async ({ page, baseURL }) => {
     const testPage = `${baseURL}${features[1].path}${miloLibs}`;
     const { data } = features[1];
@@ -113,6 +113,7 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardPrice(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText(data.price);
       await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText(data.strikethroughPrice);
+      await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText(data.abmLabel);
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toHaveAttribute('class', /primary/);
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toContainText(data.cta);
