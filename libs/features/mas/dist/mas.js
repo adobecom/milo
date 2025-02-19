@@ -156,7 +156,11 @@ Opts:`,u),!n.lana.localhost||n.lana.debug){let b=new XMLHttpRequest;return n.lan
         display: inline-flex;
         align-items: center;
         cursor: pointer;
-        gap: 10px; /*same as spectrum */
+        gap: 9px; /*same as spectrum */
+        color: var(--spectrum-gray-800);
+        line-height: var(--consonant-merch-card-detail-m-line-height);
+        padding-top: 4px;
+        padding-bottom: 5px;
     }
 
     #stock-checkbox > input {
@@ -166,10 +170,10 @@ Opts:`,u),!n.lana.localhost||n.lana.debug){let b=new XMLHttpRequest;return n.lan
     #stock-checkbox > span {
         display: inline-block;
         box-sizing: border-box;
-        border: 2px solid rgb(117, 117, 117);
+        border: 2px solid var(--spectrum-gray-600);
         border-radius: 2px;
-        width: 14px;
-        height: 14px;
+        width: 12px;
+        height: 12px;
     }
 
     #stock-checkbox > input:checked + span {
@@ -1033,7 +1037,11 @@ merch-card[variant="plans"] [slot="quantity-select"] {
 
     :host([variant='plans']) footer {
         padding: var(--merch-card-plans-padding);
-        padding-top: 0;
+        padding-top: 1px;
+    }
+
+    :host([variant='plans']) .secure-transaction-label {
+        color: #505050;
     }
       
     :host([variant='plans']) ::slotted([slot='heading-xs']) {

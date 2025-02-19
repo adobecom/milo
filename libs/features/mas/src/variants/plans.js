@@ -80,7 +80,11 @@ export class Plans extends VariantLayout {
 
     :host([variant='plans']) footer {
         padding: var(--merch-card-plans-padding);
-        padding-top: 0;
+        padding-top: 1px;
+    }
+
+    :host([variant='plans']) .secure-transaction-label {
+        color: #505050;
     }
       
     :host([variant='plans']) ::slotted([slot='heading-xs']) {
