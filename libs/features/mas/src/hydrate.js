@@ -192,57 +192,63 @@ export function processDescription(fields, merchCard, descriptionConfig) {
 }
 
 export function getTruncatedTextData(text, limit, withSuffix = true) {
-    const _text = typeof text !== 'string' ? '' : text;
-    const cleanText = clearTags(_text);
-    if (cleanText.length <= limit) return [_text, cleanText];
+    try {
+        const _text = typeof text !== 'string' ? '' : text;
+        const cleanText = clearTags(_text);
+        if (cleanText.length <= limit) return [_text, cleanText];
 
-    let index = 0;
-    let inTag = false;
-    let remaining = withSuffix ? (limit - TEXT_TRUNCATE_SUFFIX.length < 1 ? 1 : limit - TEXT_TRUNCATE_SUFFIX.length) : limit;
-    let openTags = [];
+        let index = 0;
+        let inTag = false;
+        let remaining = withSuffix ? (limit - TEXT_TRUNCATE_SUFFIX.length < 1 ? 1 : limit - TEXT_TRUNCATE_SUFFIX.length) : limit;
+        let openTags = [];
 
-    for (const char of _text) {
-        index++;
-        if (char === '<') {
-            inTag = true;
-            // Check next character
-            if (_text[index] === '/') {
-                openTags.pop();
-            }
-            else {
-                let tagName = '';
-                for (const tagChar of _text.substring(index)) {
-                    if (tagChar === ' ' || tagChar === '>') break;
-                    tagName += tagChar;
+        for (const char of _text) {
+            index++;
+            if (char === '<') {
+                inTag = true;
+                // Check next character
+                if (_text[index] === '/') {
+                    openTags.pop();
                 }
-                openTags.push(tagName);
+                else {
+                    let tagName = '';
+                    for (const tagChar of _text.substring(index)) {
+                        if (tagChar === ' ' || tagChar === '>') break;
+                        tagName += tagChar;
+                    }
+                    openTags.push(tagName);
+                }
+            }
+            if (char === '/') {
+                // Check next character
+                if (_text[index] === '>') {
+                    openTags.pop();
+                }
+            }
+            if (char === '>') {
+                inTag = false;
+                continue;
+            }
+            if (inTag) continue;
+            remaining--;
+            if (remaining === 0) break;
+        }
+
+        let trimmedText = _text.substring(0, index).trim();
+        if (openTags.length > 0) {
+            if (openTags[0] === 'p') openTags.shift();
+            for (const tag of openTags.reverse()) {
+                trimmedText += `</${tag}>`
             }
         }
-        if (char === '/') {
-            // Check next character
-            if (_text[index] === '>') {
-                openTags.pop();
-            }
-        }
-        if (char === '>') {
-            inTag = false;
-            continue;
-        }
-        if (inTag) continue;
-        remaining--;
-        if (remaining === 0) break;
+        let truncatedText = `${trimmedText}${withSuffix ? TEXT_TRUNCATE_SUFFIX : ''}`;
+        return [truncatedText, cleanText];
+    } catch (error) {
+        // Fallback to original text without truncation
+        const fallbackText = typeof text === 'string' ? text : '';
+        const cleanFallback = clearTags(fallbackText);
+        return [fallbackText, cleanFallback];
     }
-
-    let trimmedText = _text.substring(0, index).trim();
-    if (openTags.length > 0) {
-        if (openTags[0] === 'p') openTags.shift();
-        for (const tag of openTags.reverse()) {
-            trimmedText += `</${tag}>`
-        }
-    }
-    let truncatedText = `${trimmedText}${withSuffix ? TEXT_TRUNCATE_SUFFIX : ''}`;
-
-    return [truncatedText, cleanText];
 }
 
 function clearTags(text) {
