@@ -1,6 +1,19 @@
 import { expect } from '@esm-bundle/chai';
 import { modifyNonFragmentSelector } from '../../../libs/features/personalization/personalization.js';
 
+const attributeValue = [
+  {
+    c: 'href',
+    b: 'marquee primary-cta href',
+    a: '.marquee strong a',
+  },
+  {
+    c: 'href_osi',
+    b: 'marquee primary-cta href_osi',
+    a: '.marquee strong a',
+  },
+];
+
 const values = [
   {
     b: 'body > main > div',
@@ -158,6 +171,14 @@ describe('test different values', () => {
       const { modifiedSelector, modifiers } = modifyNonFragmentSelector(value.b);
       expect(modifiedSelector).to.equal(value.a);
       expect(modifiers).to.deep.equal(value.m || []);
+    });
+  });
+  attributeValue.forEach((value) => {
+    it(`should return the expected value for ${value.b} and ${value.c}`, () => {
+      const { modifiedSelector, modifiers, attribute } = modifyNonFragmentSelector(value.b, 'updateattribute');
+      expect(modifiedSelector).to.equal(value.a);
+      expect(modifiers).to.deep.equal(value.m || []);
+      expect(attribute).to.equal(value.c);
     });
   });
 });
