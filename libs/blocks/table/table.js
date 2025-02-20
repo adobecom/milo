@@ -76,7 +76,6 @@ function handleHeading(table, headingCols) {
     }
 
     const trackingHeader = col.querySelector('.tracking-header');
-    const nodeToApplyRoleScope = trackingHeader ?? col;
 
     if (trackingHeader) {
       const trackingHeaderID = `t${tableIndex + 1}-c${i + 1}-header`;
@@ -106,8 +105,6 @@ function handleHeading(table, headingCols) {
 
       heading.replaceWith(newElement);
     });
-
-    nodeToApplyRoleScope.setAttribute('scope', 'col');
   });
 }
 
