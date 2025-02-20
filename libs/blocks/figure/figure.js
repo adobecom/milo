@@ -15,9 +15,9 @@ function htmlToElement(html) {
   return template.content.firstChild;
 }
 
-function decorateVideo(clone, figEl) {
-  const videoTag = clone.querySelector('video');
-  const anchorTag = clone.querySelector('a[href*=".mp4"]');
+function decorateVideo(videoEl, figEl) {
+  const videoTag = videoEl.querySelector('video');
+  const anchorTag = videoEl.querySelector('a[href*=".mp4"]');
   if (anchorTag && !anchorTag.hash) anchorTag.hash = '#autoplay';
   if (anchorTag) decorateAnchorVideo({ src: anchorTag.href, anchorTag });
   if (videoTag) {
@@ -43,41 +43,39 @@ function decorateVideo(clone, figEl) {
       }, { rootMargin: '0px' });
       io.observe(videoTag);
     }
-    figEl.prepend(clone.querySelector('.video-container, .pause-play-wrapper, video'));
+    figEl.prepend(videoEl.querySelector('.video-container, .pause-play-wrapper, video'));
   }
 }
 
 export function buildFigure(blockEl) {
-  const figEl = document.createElement('figure');
-  figEl.classList.add('figure');
+  const figEl = createTag('figure', { class: 'figure' });
   Array.from(blockEl.children).forEach((child) => {
-    const clone = child.cloneNode(true);
     // picture, video, or embed link is NOT wrapped in P tag
     const tags = ['PICTURE', 'VIDEO', 'A'];
-    if (tags.includes(clone.nodeName) || (clone.nodeName === 'SPAN' && clone.classList.contains('modal-img-link'))) {
-      if (clone.href?.includes('.mp4')) {
-        const videoPlaceholderLink = `<p>${clone.outerHTML}</p>`;
+    if (tags.includes(child.nodeName) || (child.nodeName === 'SPAN' && child.classList.contains('modal-img-link'))) {
+      if (child.href?.includes('.mp4')) {
+        const videoPlaceholderLink = `<p>${child.outerHTML}</p>`;
         const videoLink = htmlToElement(videoPlaceholderLink);
         decorateVideo(videoLink, figEl);
       }
-      figEl.prepend(clone);
+      figEl.prepend(child);
     } else {
       // content wrapped in P tag(s)
-      const imageVideo = clone.querySelector('.modal-img-link');
+      const imageVideo = child.querySelector('.modal-img-link');
       if (imageVideo) {
         figEl.prepend(imageVideo);
       }
-      const picture = clone.querySelector('picture');
+      const picture = child.querySelector('picture');
       if (picture) {
         figEl.prepend(picture);
       }
-      decorateVideo(clone, figEl);
-      const caption = clone.querySelector('em');
+      decorateVideo(child, figEl);
+      const caption = child.querySelector('em');
       if (caption) {
         const figElCaption = buildCaption(caption);
         figEl.append(figElCaption);
       }
-      const link = clone.querySelector('a');
+      const link = child.querySelector('a');
       if (link) {
         const img = figEl.querySelector('picture') || figEl.querySelector('video');
         if (img && !link.classList.contains('pause-play-wrapper')) {
