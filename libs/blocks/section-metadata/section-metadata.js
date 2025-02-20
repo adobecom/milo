@@ -56,7 +56,7 @@ function handleDelay(time, section) {
 }
 
 function handleAnchor(anchor, section) {
-  if (!(anchor || section)) return;
+  if (!anchor || !section) return;
   section.id = anchor;
   section.classList.add('section-anchor');
 }
