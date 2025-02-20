@@ -15,9 +15,11 @@ import {
   logErrorFor,
   takeWhile,
   dropWhile,
+  getBranchBannerInfo,
 } from '../../../../libs/blocks/global-navigation/utilities/utilities.js';
 import { setConfig, getConfig } from '../../../../libs/utils/utils.js';
 import { createFullGlobalNavigation, config, mockRes } from '../test-utilities.js';
+import gnavWithlocalNav from '../mocks/gnav-with-localnav.plain.js';
 import mepInBlock from '../mocks/mep-config.js';
 import { getFedsPlaceholderConfig } from '../../../../libs/utils/federated.js';
 
@@ -485,6 +487,109 @@ describe('global navigation utilities', () => {
       const result = dropWhile(array, predicate);
       expect(result).to.deep.equal([]);
       expect(predicate.callCount).to.equal(0);
+    });
+  });
+
+  describe('Branch Banner Load Check', () => {
+    beforeEach(() => {
+      document.body.innerHTML = '';
+    });
+    it('should set the lnav top position and info if branch banner is sticky', async () => {
+      const bannerHeight = '76px';
+      const clock = sinon.useFakeTimers({ shouldClearNativeTimers: true });
+      await createFullGlobalNavigation({ globalNavigation: gnavWithlocalNav, viewport: 'mobile' });
+      const header = document.querySelector('header');
+      const banner = document.createElement('div');
+      banner.id = 'branch-banner-iframe';
+      banner.style.height = bannerHeight;
+      banner.style.position = 'fixed';
+      document.body.insertBefore(banner, header);
+      await clock.tickAsync(300);
+      const { isPresent, isSticky } = getBranchBannerInfo();
+      expect(isPresent).to.be.true;
+      expect(isSticky).to.be.true;
+      expect(document.querySelector('.feds-localnav').style.top).to.equal(bannerHeight);
+      clock.uninstall();
+    });
+    it('should remove the lnav top position if sticky branch banner is removed', async () => {
+      const bannerHeight = '76px';
+      const clock = sinon.useFakeTimers({ shouldClearNativeTimers: true });
+      await createFullGlobalNavigation({ globalNavigation: gnavWithlocalNav, viewport: 'mobile' });
+      const header = document.querySelector('header');
+      const banner = document.createElement('div');
+      banner.id = 'branch-banner-iframe';
+      banner.style.height = bannerHeight;
+      banner.style.position = 'fixed';
+      document.body.insertBefore(banner, header);
+      await clock.tickAsync(300);
+      const { isPresent, isSticky } = getBranchBannerInfo();
+      expect(isPresent).to.be.true;
+      expect(isSticky).to.be.true;
+      expect(document.querySelector('.feds-localnav').style.top).to.equal(bannerHeight);
+      document.querySelector('#branch-banner-iframe').remove();
+      await clock.tickAsync(300);
+      expect(document.querySelector('.feds-localnav').style.top).to.equal('');
+      clock.uninstall();
+    });
+    it('should set info if branch banner is inline', async () => {
+      const bannerHeight = '76px';
+      const clock = sinon.useFakeTimers({ shouldClearNativeTimers: true });
+      await createFullGlobalNavigation({ globalNavigation: gnavWithlocalNav, viewport: 'mobile' });
+      const header = document.querySelector('header');
+      const banner = document.createElement('div');
+      banner.id = 'branch-banner-iframe';
+      banner.style.height = bannerHeight;
+      document.body.insertBefore(banner, header);
+      await clock.tickAsync(300);
+      const { isPresent, isSticky } = getBranchBannerInfo();
+      expect(isPresent).to.be.true;
+      expect(isSticky).to.be.false;
+      expect(document.body.classList.contains('branch-banner-inline')).to.be.true;
+      clock.uninstall();
+    });
+    it('set css for popup if inline banner loads when hamburger menu is open', async () => {
+      const bannerHeight = '76px';
+      const clock = sinon.useFakeTimers({ shouldClearNativeTimers: true });
+      await createFullGlobalNavigation({ globalNavigation: gnavWithlocalNav, viewport: 'mobile' });
+      const toggle = document.querySelector('.feds-toggle');
+      toggle.click();
+      const header = document.querySelector('header');
+      const banner = document.createElement('div');
+      banner.id = 'branch-banner-iframe';
+      banner.style.height = bannerHeight;
+      document.body.insertBefore(banner, header);
+      await clock.tickAsync(300);
+      const { isPresent, isSticky } = getBranchBannerInfo();
+      expect(isPresent).to.be.true;
+      expect(isSticky).to.be.false;
+      const popup = document.querySelector('.feds-navItem--section.feds-dropdown--active .feds-popup');
+      expect(!!popup.style.top).to.be.true;
+      expect(!!popup.style.height).to.be.true;
+      expect(document.body.classList.contains('branch-banner-inline')).to.be.true;
+      clock.uninstall();
+    });
+    it('set css for popup if when we open popup with sticky branch banner', async () => {
+      const bannerHeight = '76px';
+      const clock = sinon.useFakeTimers({ shouldClearNativeTimers: true });
+      await createFullGlobalNavigation({ globalNavigation: gnavWithlocalNav, viewport: 'mobile' });
+      const header = document.querySelector('header');
+      const banner = document.createElement('div');
+      banner.id = 'branch-banner-iframe';
+      banner.style.height = bannerHeight;
+      banner.style.position = 'fixed';
+      document.body.insertBefore(banner, header);
+      await clock.tickAsync(300);
+      const { isPresent, isSticky } = getBranchBannerInfo();
+      expect(isPresent).to.be.true;
+      expect(isSticky).to.be.true;
+      expect(document.querySelector('.feds-localnav').style.top).to.equal(bannerHeight);
+      const toggle = document.querySelector('.feds-toggle');
+      toggle.click();
+      await clock.tickAsync(300);
+      const popup = document.querySelector('.feds-navItem--section.feds-dropdown--active .feds-popup');
+      expect(!!popup.style.top).to.be.true;
+      expect(!!popup.style.height).to.be.true;
+      clock.uninstall();
     });
   });
 });

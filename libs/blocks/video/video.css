@@ -131,7 +131,7 @@ video {
   height: fit-content;
 }
 
-:is(.media .background, .hero-marquee.asset-left .foreground-media) .video-container {
+:is(.media .background, .hero-marquee .foreground-media) .video-container {
   width: 100%;
 }
 

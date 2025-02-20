@@ -1,0 +1,48 @@
+{
+  "total": 5,
+  "offset": 0,
+  "limit": 5,
+  "data": [
+    {
+      "action": "updateattribute",
+      "selector": "marquee strong a href",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "",
+      "content": "https://www.google.com/"
+    },
+    {
+      "action": "updateattribute",
+      "selector": "marquee strong a href_osi",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "",
+      "content": "new-parameter"
+    },
+    {
+      "action": "updateattribute",
+      "selector": "marquee em a new-attribute",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "",
+      "content": "added-attribute"
+    },
+    {
+      "action": "updateattribute",
+      "selector": "marquee h2 class",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "",
+      "content": "added-class"
+    },
+    {
+      "action": "updateattribute",
+        "selector": ".second-marquee-title strong a href",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "",
+      "content": "thisshouldfail"
+    }
+  ],
+  ":type": "sheet"
+}

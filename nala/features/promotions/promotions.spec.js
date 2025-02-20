@@ -58,7 +58,8 @@ module.exports = {
         textMarquee: 'Promo test page',
         textDefault: 'Default text',
         textFuture: 'Future promo text insert',
-        status: 'Scheduled - inactive',
+        status1: 'Scheduled', // new format
+        status2: 'inactive', // new format
         manifestFile: 'promo-insert-future.json',
       },
       tags: '@promo @commerce @regression',
@@ -100,7 +101,7 @@ module.exports = {
         textBeforeText: 'Text promo text insert',
         textReplaceMarquee: 'Marquee promo replace',
         textReplace: 'Promo text replace',
-        inactiveStatus: 'Scheduled - inactive',
+        inactiveStatus: 'inactive',
         manifestInsertFile: 'promo-insert.json',
         manifestReplaceFile: 'promo-replace.json',
       },

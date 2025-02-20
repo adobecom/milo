@@ -31,7 +31,7 @@ test.describe('Milo Chart feature test suite', () => {
     });
 
     await test.step('step-3: Verify the accessibility test on the chart block', async () => {
-      await runAccessibilityTest({ page, testScope: chart.chart, skipA11yTest: true });
+      await runAccessibilityTest({ page, testScope: chart.chart });
     });
   });
 
@@ -59,7 +59,7 @@ test.describe('Milo Chart feature test suite', () => {
     });
 
     await test.step('step-3: Verify the accessibility test on the chart block', async () => {
-      await runAccessibilityTest({ page, testScope: chart.chart, skipA11yTest: true });
+      await runAccessibilityTest({ page, testScope: chart.chart });
     });
   });
 
@@ -96,7 +96,7 @@ test.describe('Milo Chart feature test suite', () => {
     });
 
     await test.step('step-3: Verify the accessibility test on the chart block', async () => {
-      await runAccessibilityTest({ page, testScope: chart.chart, skipA11yTest: true });
+      await runAccessibilityTest({ page, testScope: chart.chart });
     });
   });
 
@@ -126,7 +126,7 @@ test.describe('Milo Chart feature test suite', () => {
     });
 
     await test.step('step-3: Verify the accessibility test on the chart block', async () => {
-      await runAccessibilityTest({ page, testScope: chart.chart, skipA11yTest: true });
+      await runAccessibilityTest({ page, testScope: chart.chart });
     });
   });
 
@@ -159,7 +159,7 @@ test.describe('Milo Chart feature test suite', () => {
     });
 
     await test.step('step-3: Verify the accessibility test on the chart block', async () => {
-      await runAccessibilityTest({ page, testScope: chart.chart, skipA11yTest: true });
+      await runAccessibilityTest({ page, testScope: chart.chart });
     });
   });
 
@@ -189,7 +189,7 @@ test.describe('Milo Chart feature test suite', () => {
     });
 
     await test.step('step-3: Verify the accessibility test on the chart block', async () => {
-      await runAccessibilityTest({ page, testScope: chart.chart, skipA11yTest: true });
+      await runAccessibilityTest({ page, testScope: chart.chart });
     });
   });
 
@@ -220,7 +220,7 @@ test.describe('Milo Chart feature test suite', () => {
     });
 
     await test.step('step-3: Verify the accessibility test on the chart block', async () => {
-      await runAccessibilityTest({ page, testScope: chart.chart, skipA11yTest: true });
+      await runAccessibilityTest({ page, testScope: chart.chart });
     });
   });
 });
