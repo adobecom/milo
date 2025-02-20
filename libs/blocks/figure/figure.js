@@ -7,13 +7,6 @@ function buildCaption(pEl) {
   return figCaptionEl;
 }
 
-function htmlToElement(html) {
-  const template = document.createElement('template');
-  const convertHtml = html.trim();
-  template.innerHTML = convertHtml;
-  return template.content.firstChild;
-}
-
 function decorateVideo(videoEl, figEl) {
   const videoTag = videoEl.querySelector('video');
   if (videoTag) {
@@ -27,11 +20,6 @@ export function buildFigure(blockEl) {
     // picture, video, or embed link is NOT wrapped in P tag
     const tags = ['PICTURE', 'VIDEO', 'A'];
     if (tags.includes(child.nodeName) || (child.nodeName === 'SPAN' && child.classList.contains('modal-img-link'))) {
-      if (child.href?.includes('.mp4')) {
-        const videoPlaceholderLink = `<p>${child.outerHTML}</p>`;
-        const videoLink = htmlToElement(videoPlaceholderLink);
-        decorateVideo(videoLink, figEl);
-      }
       figEl.prepend(child);
     } else {
       // content wrapped in P tag(s)
