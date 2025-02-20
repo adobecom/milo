@@ -5,7 +5,6 @@ export const styles = css`
     :host {
         --consonant-merch-card-background-color: #fff;
         --consonant-merch-card-border: 1px solid var(--consonant-merch-card-border-color);
-        
         -webkit-font-smoothing: antialiased;
         background-color: var(--consonant-merch-card-background-color);
         border-radius: var(--consonant-merch-spacing-xs);
@@ -234,24 +233,25 @@ export const styles = css`
 `;
 
 export const sizeStyles = () => {
-    const styles = [
-        css`
-        /* Tablet */
-        @media screen and ${unsafeCSS(TABLET_UP)} {
-            :host([size='wide']),
-            :host([size='super-wide']) {
-                width: 100%;
-                grid-column: 1 / -1;
-            }
-        }
+  const styles = [
+      css`
+      /* Tablet */
+      @media screen and ${unsafeCSS(TABLET_UP)} {
+          :host([size='wide']),
+          :host([size='super-wide']) {
+              width: 100%;
+              grid-column: 1 / -1;
+          }
+      }
 
-        /* Laptop */
-        @media screen and ${unsafeCSS(DESKTOP_UP)} {
-            :host([size='wide']) {
-                grid-column: span 2;
-            }
-        `,
-    ];
+      /* Laptop */
+      @media screen and ${unsafeCSS(DESKTOP_UP)} {
+          :host([size='wide']) {
+              grid-column: span 2;
+          }
+      }
+      `,
+  ];
 
-    return styles;
+  return styles;
 };

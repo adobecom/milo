@@ -8,6 +8,7 @@ export const ANALYTICS_TAG = 'mas:product_code/';
 export const ANALYTICS_LINK_ATTR = 'daa-ll';
 export const ANALYTICS_SECTION_ATTR = 'daa-lh';
 const SPECTRUM_BUTTON_SIZES = ['XL', 'L', 'M', 'S'];
+const TEXT_TRUNCATE_SUFFIX = '...';
 
 export function processMnemonics(fields, merchCard, mnemonicsConfig) {
     const mnemonics = fields.mnemonicIcon?.map((icon, index) => ({
@@ -61,11 +62,21 @@ export function processSize(fields, merchCard, sizeConfig) {
 
 export function processTitle(fields, merchCard, titleConfig) {
     if (fields.cardTitle && titleConfig) {
+        const attributes = { slot: titleConfig.slot };
+        let title = fields.cardTitle;
+        const { maxCount } = titleConfig;
+        if (maxCount) {
+            const [truncatedTitle, cleanTitle] = getTruncatedTextData(fields.cardTitle, maxCount);
+            if (truncatedTitle !== fields.cardTitle) {
+                attributes.title = cleanTitle;
+                title = truncatedTitle;
+            }
+        }
         merchCard.append(
             createTag(
                 titleConfig.tag,
-                { slot: titleConfig.slot },
-                fields.cardTitle,
+                attributes,
+                title
             ),
         );
     }
@@ -80,6 +91,25 @@ export function processSubtitle(fields, merchCard, subtitleConfig) {
                 fields.subtitle,
             ),
         );
+    }
+}
+
+export function processBackgroundColor(fields, merchCard, allowedColors) {
+    if (!fields.backgroundColor || fields.backgroundColor.toLowerCase() === 'default') {
+        merchCard.style.removeProperty('--merch-card-custom-background-color');
+        merchCard.removeAttribute('background-color');
+        return;
+    }
+
+    if (allowedColors?.[fields.backgroundColor]) {
+        merchCard.style.setProperty('--merch-card-custom-background-color', allowedColors[fields.backgroundColor]);
+        merchCard.setAttribute('background-color', fields.backgroundColor);
+    }
+}
+
+export function processBorderColor(fields, merchCard, borderColorConfig) {
+    if (fields.borderColor && borderColorConfig && fields.borderColor !== 'transparent') {
+        merchCard.style.setProperty('--merch-card-custom-border-color', `var(--${fields.borderColor})`);
     }
 }
 
@@ -106,36 +136,136 @@ export function processBackgroundImage(
             );
             return;
         }
-        merchCard.append(
-            createTag(
-                backgroundImageConfig.tag,
-                { slot: backgroundImageConfig.slot },
-                createTag('img', imgAttributes),
-            ),
-        );
+        if (merchCard.spectrum === 'swc') {
+            merchCard.shadowRoot.append(
+                createTag(
+                    backgroundImageConfig.tag,
+                    { slot: backgroundImageConfig.slot,
+                        class: 'image',
+                    },
+                    createTag('img', imgAttributes),
+                ),
+            );
+        } else {
+          merchCard.append(
+              createTag(
+                  backgroundImageConfig.tag,
+                  { slot: backgroundImageConfig.slot,
+                  },
+                  createTag('img', imgAttributes),
+              ),
+          );
+        }
+
     }
 }
 
 export function processPrices(fields, merchCard, pricesConfig) {
     if (fields.prices && pricesConfig) {
-        const headingM = createTag(
+        const priceSlot = createTag(
             pricesConfig.tag,
             { slot: pricesConfig.slot },
             fields.prices,
         );
-        merchCard.append(headingM);
+        merchCard.append(priceSlot);
     }
 }
 
 export function processDescription(fields, merchCard, descriptionConfig) {
     if (fields.description && descriptionConfig) {
-        const body = createTag(
+        const attributes = { slot: descriptionConfig.slot };
+        let description = fields.description;
+        const { maxCount } = descriptionConfig;
+        if (maxCount) {
+            const [truncatedDescription, cleanDescription] = getTruncatedTextData(fields.description, maxCount, false);
+            if (truncatedDescription !== fields.description) {
+                attributes.title = cleanDescription;
+                description = truncatedDescription;
+            }
+        }
+        merchCard.append(createTag(
             descriptionConfig.tag,
-            { slot: descriptionConfig.slot },
-            fields.description,
-        );
-        merchCard.append(body);
+            attributes,
+            description,
+        ));
     }
+}
+
+export function getTruncatedTextData(text, limit, withSuffix = true) {
+    try {
+        const _text = typeof text !== 'string' ? '' : text;
+        const cleanText = clearTags(_text);
+        if (cleanText.length <= limit) return [_text, cleanText];
+
+        let index = 0;
+        let inTag = false;
+        let remaining = withSuffix ? (limit - TEXT_TRUNCATE_SUFFIX.length < 1 ? 1 : limit - TEXT_TRUNCATE_SUFFIX.length) : limit;
+        let openTags = [];
+
+        for (const char of _text) {
+            index++;
+            if (char === '<') {
+                inTag = true;
+                // Check next character
+                if (_text[index] === '/') {
+                    openTags.pop();
+                }
+                else {
+                    let tagName = '';
+                    for (const tagChar of _text.substring(index)) {
+                        if (tagChar === ' ' || tagChar === '>') break;
+                        tagName += tagChar;
+                    }
+                    openTags.push(tagName);
+                }
+            }
+            if (char === '/') {
+                // Check next character
+                if (_text[index] === '>') {
+                    openTags.pop();
+                }
+            }
+            if (char === '>') {
+                inTag = false;
+                continue;
+            }
+            if (inTag) continue;
+            remaining--;
+            if (remaining === 0) break;
+        }
+
+        let trimmedText = _text.substring(0, index).trim();
+        if (openTags.length > 0) {
+            if (openTags[0] === 'p') openTags.shift();
+            for (const tag of openTags.reverse()) {
+                trimmedText += `</${tag}>`
+            }
+        }
+        let truncatedText = `${trimmedText}${withSuffix ? TEXT_TRUNCATE_SUFFIX : ''}`;
+        return [truncatedText, cleanText];
+    } catch (error) {
+        // Fallback to original text without truncation
+        const fallbackText = typeof text === 'string' ? text : '';
+        const cleanFallback = clearTags(fallbackText);
+        return [fallbackText, cleanFallback];
+    }
+}
+
+function clearTags(text) {
+    if (!text) return '';
+
+    let result = '';
+    let inTag = false;
+    for (const char of text) {
+        if (char === '<') inTag = true;
+        if (char === '>') {
+            inTag = false;
+            continue;
+        }
+        if (inTag) continue;
+        result += char;
+    }
+    return result;
 }
 
 function createSpectrumCssButton(cta, aemFragmentMapping, isOutline, variant) {
@@ -175,17 +305,31 @@ function createSpectrumSwcButton(cta, aemFragmentMapping, isOutline, variant) {
             tabIndex: 0,
             size: aemFragmentMapping.ctas.size ?? 'm',
         },
-        cta,
+        cta.innerHTML,
     );
 
-    spectrumCta.addEventListener('click', (e) => {
-        if (e.target !== cta) {
-            /* c8 ignore next 3 */
+    (async () => {
+        try {
+          const CheckoutButtonEl = customElements.get('checkout-button');
+          const checkoutBtn = CheckoutButtonEl?.createCheckoutButton({}, cta.innerHTML);
+          for (const attr of cta.attributes) {
+              try {
+                  checkoutBtn.setAttribute(attr.name, attr.value);
+              } catch (e) {
+                  console.warn(`Failed to copy attribute ${attr.name}`, e);
+              }
+          }
+          checkoutBtn.connectedCallback();
+          await checkoutBtn.render();
+          await checkoutBtn.onceSettled();
+          spectrumCta.addEventListener('click', (e) => {
             e.stopPropagation();
-            cta.click();
+            checkoutBtn.click();
+          });
+        } catch (err) {
+          console.error('Failed to initialize checkout-button logic:', err);
         }
-    });
-
+      })();
     return spectrumCta;
 }
 
@@ -204,7 +348,10 @@ export function processCTAs(fields, merchCard, aemFragmentMapping, variant) {
 
         const ctas = [...footer.querySelectorAll('a')].map((cta) => {
             const strong = cta.parentElement.tagName === 'STRONG';
-            if (merchCard.consonant) return processConsonantButton(cta, strong);
+            if (merchCard.consonant) {
+                return processConsonantButton(cta, strong);
+            }
+
             const checkoutLinkStyle =
                 CHECKOUT_STYLE_PATTERN.exec(cta.className)?.[0] ?? 'accent';
             const isAccent = checkoutLinkStyle.includes('accent');
@@ -212,9 +359,11 @@ export function processCTAs(fields, merchCard, aemFragmentMapping, variant) {
             const isSecondary = checkoutLinkStyle.includes('secondary');
             const isOutline = checkoutLinkStyle.includes('-outline');
             const isLink = checkoutLinkStyle.includes('-link');
+
             if (isLink) {
                 return cta;
             }
+
             let variant;
             if (isAccent || strong) {
                 variant = 'accent';
@@ -223,24 +372,21 @@ export function processCTAs(fields, merchCard, aemFragmentMapping, variant) {
             } else if (isSecondary) {
                 variant = 'secondary';
             }
-            if (merchCard.spectrum === 'swc')
-                return createSpectrumSwcButton(
-                    cta,
-                    aemFragmentMapping,
-                    isOutline,
-                    variant,
-                );
-            return createSpectrumCssButton(
-                cta,
-                aemFragmentMapping,
-                isOutline,
-                variant,
-            );
+
+            return merchCard.spectrum === 'swc'
+                ? createSpectrumSwcButton(cta, aemFragmentMapping, isOutline, variant)
+                : createSpectrumCssButton(cta, aemFragmentMapping, isOutline, variant);
         });
 
         footer.innerHTML = '';
         footer.append(...ctas);
-        merchCard.append(footer);
+
+        if (merchCard.spectrum === 'swc') {
+            merchCard.shadowRoot.append(footer);
+            footer.classList.add('footer');
+        } else {
+            merchCard.append(footer);
+        }
     }
 }
 
@@ -252,14 +398,16 @@ export function processAnalytics(fields, merchCard) {
         .pop();
     if (!cardAnalyticsId) return;
     merchCard.setAttribute(ANALYTICS_SECTION_ATTR, cardAnalyticsId);
-    merchCard
-        .querySelectorAll(`a[data-analytics-id],button[data-analytics-id]`)
-        .forEach((el, index) => {
-            el.setAttribute(
-                ANALYTICS_LINK_ATTR,
-                `${el.dataset.analyticsId}-${index + 1}`,
-            );
-        });
+    const elements = [
+      ...merchCard.shadowRoot.querySelectorAll(`a[data-analytics-id],button[data-analytics-id]`),
+      ...merchCard.querySelectorAll(`a[data-analytics-id],button[data-analytics-id]`)
+    ];
+    elements.forEach((el, index) => {
+      el.setAttribute(
+        ANALYTICS_LINK_ATTR,
+        `${el.dataset.analyticsId}-${index + 1}`,
+      );
+    });
 }
 
 export function updateLinksCSS(merchCard) {
@@ -286,6 +434,7 @@ export async function hydrate(fragment, merchCard) {
     });
 
     merchCard.removeAttribute('background-image');
+    merchCard.removeAttribute('background-color');
     merchCard.removeAttribute('badge-background-color');
     merchCard.removeAttribute('badge-color');
     merchCard.removeAttribute('badge-text');
@@ -311,6 +460,8 @@ export async function hydrate(fragment, merchCard) {
         merchCard,
         aemFragmentMapping.backgroundImage,
     );
+    processBackgroundColor(fields, merchCard, aemFragmentMapping.allowedColors);
+    processBorderColor(fields, merchCard, aemFragmentMapping.borderColor);
     processDescription(fields, merchCard, aemFragmentMapping.description);
     processCTAs(fields, merchCard, aemFragmentMapping, variant);
     processAnalytics(fields, merchCard);

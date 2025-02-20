@@ -14,7 +14,7 @@
     },
     "dependencies": {},
     "devDependencies": {
-        "@dexter/tacocat-core": "file:./internal/tacocat-core-1.13.0.tgz",
+        "@dexter/tacocat-core": "file:./internal/tacocat-core-1.13.1.tgz",
         "@esm-bundle/chai-as-promised": "7.1.1",
         "@esm-bundle/chai": "4.3.4-fix.0",
         "@pandora/commerce-checkout-url-builder": "file:./internal/commerce-checkout-url-builder-1.6.0.tgz",
