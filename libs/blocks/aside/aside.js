@@ -194,6 +194,17 @@ function decorateLayout(el) {
     const iconClass = iconVariant ? `${iconVariant[1]}-area` : 'icon-area';
     if (iconVariant) loadIconography();
     iconArea.classList.add(iconClass);
+    const image = iconArea.querySelector('img');
+    if (image) {
+      if (image.complete) {
+        el.style.visibility = 'visible';
+      } else {
+        el.style.visibility = 'hidden';
+        image.addEventListener('load', () => {
+          el.style.visibility = 'visible';
+        });
+      }
+    }
   }
   const foregroundImage = foreground.querySelector(':scope > div:not(.text) img')?.closest('div');
   const bgImage = el.querySelector(':scope > div:not(.text):not(.foreground) img')?.closest('div');
