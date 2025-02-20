@@ -894,12 +894,12 @@ a.static:active  {
 
 /* Anchors */
 .section-anchor {
-  scroll-margin-top: 64px;
+  scroll-margin-top: var(--global-height-nav);
 }
 
 @media screen and (min-width: 600px) {
   .global-navigation.has-breadcrumbs + main .section-anchor {
-    scroll-margin-top: 97px;
+    scroll-margin-top: var(--feds-totalheight-nav);
   }
 }
 
