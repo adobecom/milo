@@ -118,6 +118,12 @@
   text-transform: capitalize;
 }
 
+.mep-popup .mep-columns .mep-selected-variant {
+  text-transform: initial;
+}
+
+
+
 .mep-popup .mep-column a {
   position: absolute;
   right: 0;
