@@ -28,7 +28,7 @@ const click = async (value) => {
     );
     await elementClick(node);
 };
-const expectedSelection = (expectedValue, expectedExpand = false) => {
+const expectedSelection = (expectedValue, expectedExpand = false, expectedParentExpand = false) => {
     const item = getCategories().querySelector(
         `sp-sidenav-item[value=${expectedValue}]`,
     );
@@ -37,6 +37,12 @@ const expectedSelection = (expectedValue, expectedExpand = false) => {
         expect(item.getAttribute('expanded')).to.equal(
             '',
             `${expectedValue} should be expanded`,
+        );
+    }
+    if (expectedParentExpand) {
+        expect(item.parentNode.getAttribute('expanded')).to.equal(
+            '',
+            `${expectedValue} parent should be expanded`,
         );
     }
     expect(item.getAttribute('selected')).to.equal(
@@ -98,7 +104,14 @@ runTests(async () => {
             window.location.hash = 'filter=pdf';
             await render();
             await delay(100);
-            expectedSelection('pdf', false);
+            expectedSelection('pdf', false, true);
+            window.location.hash = 'filter=video';
+            await delay(100);
+            expectedSelection('video', false, true);
+            window.location.hash = 'filter=creativitydesign';
+            await delay(100);
+            expectedSelection('creativitydesign', true);
+            window.location.hash = '';
         });
     });
 
