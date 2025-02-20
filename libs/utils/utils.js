@@ -264,8 +264,6 @@ export const [setConfig, updateConfig, getConfig] = (() => {
 })();
 
 export function isInTextNode(node) {
-  console.log('node.parentElement.children.length', node.parentElement.children.length);
-  
   return (node.parentElement.childNodes.length > 1 && node.parentElement.firstChild.tagName === 'A') || node.parentElement.firstChild.nodeType === Node.TEXT_NODE;
 }
 
