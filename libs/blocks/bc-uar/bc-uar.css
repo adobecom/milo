@@ -1,1 +1,118 @@
-.bc-wrapper { padding: 60px; }
+.bc-uar { 
+  background: linear-gradient(90deg, rgb(213 197 255), rgb(168 233 255));
+  border-radius: 40px;
+  display: flex;
+  margin: 40px auto;
+  max-width: 1440px;
+  min-height: calc(900px - 10px);
+  padding: 48px;
+  position: relative;
+}
+
+.branding { 
+  color: #fff;
+  font-weight: 700;
+  font-size: 26px;
+  position: absolute;
+}
+
+.bc-container {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 54px;
+  justify-content: center;
+  margin: auto;
+  max-width: 896px;
+}
+
+.bc-input-container {
+  align-self: flex-end;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+  width: 100%;
+}
+
+.bc-input {
+  background: rgba(255 255 255 / 60%);
+  border: 1px solid #fff;
+  border-radius: 64px;
+  color: #000;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 22px 24px;
+  width: 100%
+}
+
+.landing-view {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 54px;
+  justify-content: center;
+}
+
+.landing-heading {
+  width: 72%;
+}
+
+.landing-heading h1 {
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 46px;
+  margin: 0 0 12px;
+  text-align: center;
+}
+
+.landing-heading h2 {
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 24px;
+  margin: 0;
+  text-align: center;
+}
+
+.landing-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  width: 100%;
+}
+
+.landing-card {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0;
+  width: 210px;
+}
+
+.card-image {
+  background-image: var(--card-image);
+  background-size: cover;
+  border-radius: 16px 16px 0 0;
+  height: 178px;
+  pointer-events: none;
+  width: 100%;
+}
+
+.card-text {
+  background-color: var(--card-color);
+  border-radius: 0 0 16px 16px;
+  pointer-events: none;
+}
+
+.card-text .text {
+  background: rgba(255 255 255 / 80%);
+  border-radius: 12px;
+  display: block;
+  font-size: 14px;
+  line-height: 18px;
+  margin: 8px;
+  padding: 10px 8px;
+  pointer-events: none;
+  text-align: left;
+}
