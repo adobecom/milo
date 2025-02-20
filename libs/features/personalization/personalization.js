@@ -64,12 +64,12 @@ export const DATA_TYPE = {
 
 const IN_BLOCK_SELECTOR_PREFIX = 'in-block:';
 
+const isDamContent = (path) => path?.includes('/content/dam/');
+
 export const normalizePath = (p, localize = true) => {
   let path = p;
 
-  if (!path?.includes('/')) {
-    return path;
-  }
+  if (isDamContent(path) || !path?.includes('/')) return path;
 
   const config = getConfig();
   if (path.startsWith('https://www.adobe.com/federal/')) {
@@ -1195,7 +1195,7 @@ function sendTargetResponseAnalytics(failure, responseStart, timeoutLocal, messa
         },
       },
       data:
-       { _adobe_corpnew: { digitalData: { primaryEvent: { eventInfo: { eventName: val } } } } },
+        { _adobe_corpnew: { digitalData: { primaryEvent: { eventInfo: { eventName: val } } } } },
     });
   }, { once: true });
 }
