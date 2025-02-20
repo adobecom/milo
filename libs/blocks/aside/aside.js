@@ -195,7 +195,16 @@ function decorateLayout(el) {
     if (iconVariant) loadIconography();
     iconArea.classList.add(iconClass);
     const image = iconArea.querySelector('img');
-    iconArea.style.aspectRatio = image.width / image.height;
+    if (image) {
+      if (image.complete) {
+        el.style.visibility = 'visible';
+      } else {
+        el.style.visibility = 'hidden';
+        image.addEventListener('load', () => {
+          el.style.visibility = 'visible';
+        });
+      }
+    }
   }
   const foregroundImage = foreground.querySelector(':scope > div:not(.text) img')?.closest('div');
   const bgImage = el.querySelector(':scope > div:not(.text):not(.foreground) img')?.closest('div');
