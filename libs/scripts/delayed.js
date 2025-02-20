@@ -62,6 +62,35 @@ export const loadGoogleLogin = async (getMetadata, loadIms, loadScript, getConfi
   initGoogleLogin(loadIms, getMetadata, loadScript, getConfig);
 };
 
+export const showHiddenContent = () => {
+  const elements = document.querySelectorAll('body main *:not(.metadata, .metadata *, .section-metadata, .section-metadata *, .card-metadata, .card-metadata *)');
+  elements.forEach((el) => {
+    const style = window.getComputedStyle(el);
+
+    if (style.display === 'none') {
+      el.style.setProperty('display', 'block', 'important');
+      el.style.setProperty('opacity', '0.5', 'important');
+    }
+
+    // 3. If it's visibility:hidden, force it visible
+    if (style.visibility === 'hidden') {
+      el.style.setProperty('visibility', 'visible', 'important');
+      el.style.setProperty('opacity', '0.5', 'important');
+    }
+
+    // 4. If opacity is 0, set it to 1
+    if (style.opacity === '0') {
+      el.style.setProperty('opacity', '0.5', 'important');
+    }
+
+    // 5. Remove the hidden attribute if it exists
+    if (el.hasAttribute('hidden')) {
+      el.removeAttribute('hidden');
+      el.style.setProperty('opacity', '0.5', 'important');
+    }
+  });
+};
+
 /**
  * Executes everything that happens a lot later, without impacting the user experience.
  */
@@ -85,6 +114,9 @@ const loadDelayed = ([
       resolve(null);
     }
     import('../utils/samplerum.js').then(({ sampleRUM }) => sampleRUM());
+    const urlParams = new URLSearchParams(window.location.search);
+    const showHiddenContentParam = urlParams.get('showHiddenContent');
+    if (showHiddenContentParam === 'on') showHiddenContent();
   }, DELAY);
 });
 
