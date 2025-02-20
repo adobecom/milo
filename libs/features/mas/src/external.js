@@ -1,9 +1,4 @@
 // This file aliases and re-exports commonly used external dependencies
-import {
-    CheckoutType,
-    WorkflowStep,
-    buildCheckoutUrl,
-} from '@pandora/commerce-checkout-url-builder';
 import { Term, Commitment } from '@pandora/data-models-odm';
 
 import {
@@ -40,8 +35,21 @@ import {
 const { freeze } = Object;
 
 /** @type {Commerce.Checkout.CheckoutWorkflow} */
+const CheckoutType = { V2: 'UCv2', V3: 'UCv3' };
 const CheckoutWorkflow = freeze({ ...CheckoutType });
 /** @type {Commerce.Checkout.CheckoutWorkflowStep} */
+const WorkflowStep ={
+  CHECKOUT: 'checkout',
+  CHECKOUT_EMAIL: 'checkout/email',
+  SEGMENTATION: 'segmentation',
+  BUNDLE: 'bundle',
+  COMMITMENT: 'commitment',
+  RECOMMENDATION: 'recommendation',
+  EMAIL: 'email',
+  PAYMENT: 'payment',
+  CHANGE_PLAN_TEAM_PLANS: 'change-plan/team-upgrade/plans',
+  CHANGE_PLAN_TEAM_PAYMENT: 'change-plan/team-upgrade/payment'
+};
 const CheckoutWorkflowStep = freeze({ ...WorkflowStep });
 const Env = {
     STAGE: 'STAGE',
@@ -63,7 +71,6 @@ export {
     WcsTerm,
     WcsPlanType,
     applyPlanType,
-    buildCheckoutUrl,
     computePromoStatus,
     delay,
     equalsCaseInsensitive,
