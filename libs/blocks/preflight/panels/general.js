@@ -8,6 +8,7 @@ const NOT_FOUND = {
   live: { lastModified: DEF_NOT_FOUND },
 };
 const DA_DOMAIN = 'da.live';
+const nonEDSContent = 'Non AEM EDS Content';
 
 const content = signal({});
 
@@ -21,22 +22,19 @@ function getAdminUrl(url, type) {
 
 async function getStatus(url) {
   const adminUrl = getAdminUrl(url, 'status');
-  const urlToFetch = adminUrl || url;
-  let resp;
-  try {
-    resp = await fetch(urlToFetch);
-  } catch (e) {
-    console.log('Erorr making request, cors', e);
+  if (!adminUrl) {
+    const resp = await fetch(url);
+    if (!resp.ok) return {};
     return {
       url,
       edit: null,
-      preview: 'N/A',
-      live: 'N/A',
-      publish: 'N/A',
+      preview: nonEDSContent,
+      live: nonEDSContent,
+      publish: nonEDSContent,
     };
   }
+  const resp = await fetch(adminUrl);
   if (!resp.ok) return {};
-  console.log(resp);
   const json = await resp.json();
   const preview = json.preview.lastModified || DEF_NEVER;
   const live = json.live.lastModified || DEF_NEVER;
@@ -186,7 +184,7 @@ function usePublishProps(item) {
 function Item({ name, item, idx }) {
   const { publishText, disablePublish } = usePublishProps(item);
   const isChecked = item.checked ? ' is-checked' : '';
-  const isFetching = item.edit || item.preview === 'N/A' ? '' : ' is-fetching';
+  const isFetching = item.edit || item.preview === nonEDSContent ? '' : ' is-fetching';
   const editIcon = item.edit && item.edit.includes(DA_DOMAIN) ? 'da-icon' : 'sharepoint-icon';
   if (!item.url) return undefined;
 
