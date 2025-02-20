@@ -339,9 +339,7 @@ class Footer {
 
     // Decorate copyright element
     const currentYear = new Date().getFullYear();
-    copyrightElem.replaceWith(toFragment`<span class="feds-footer-copyright">
-        Copyright © ${currentYear} ${copyrightElem.textContent}
-      </span>`);
+    copyrightElem.remove();
 
     // Add Ad Choices icon
     const adChoicesElem = privacyContent.querySelector('a[href*="#interest-based-ads"]');
@@ -350,15 +348,40 @@ class Footer {
       </svg>`);
 
     this.elements.legal = toFragment`<div class="feds-footer-legalWrapper" daa-lh="Legal"></div>`;
+    const linkDivider = '<span class="feds-footer-privacyLink-divider" aria-hidden="true">/</span>';
 
+    let privacyContentIndex = 0;
     while (privacyContent.children.length) {
       const privacySection = privacyContent.firstElementChild;
       privacySection.classList.add('feds-footer-privacySection');
       privacySection.querySelectorAll('a').forEach((link, index) => {
         link.classList.add('feds-footer-privacyLink');
         link.setAttribute('daa-ll', getAnalyticsValue(link.textContent, index + 1));
+        const privacySectionListItem = document.createElement('li');
+        privacySectionListItem.classList.add('feds-footer-privacy-listitem');
+        link.parentNode.insertBefore(privacySectionListItem, link);
+        privacySectionListItem.appendChild(link);
+        if (index !== privacySection.querySelectorAll('a').length - 1) {
+          privacySectionListItem.innerHTML += linkDivider;
+        }
       });
       this.elements.legal.append(privacySection);
+
+      if (privacyContentIndex === 0) {
+        const privacySectionList = document.createElement('ul');
+        [...privacySection.attributes].forEach((attr) => {
+          privacySectionList.setAttribute(attr.name, attr.value);
+        });
+        const copyrightListItem = document.createElement('li');
+        copyrightListItem.classList.add('feds-footer-privacy-listitem');
+        copyrightListItem.innerHTML = linkDivider;
+        copyrightListItem.prepend(copyrightElem);
+        copyrightElem.replaceWith(toFragment`<span class="feds-footer-copyright">Copyright © ${currentYear} ${copyrightElem.textContent}</span>`);
+        privacySectionList.prepend(copyrightListItem);
+        privacySectionList.innerHTML += privacySection.innerHTML.replace(/( \/ )/g, '');
+        privacySection.parentNode.replaceChild(privacySectionList, privacySection);
+      }
+      privacyContentIndex += 1;
     }
 
     return this.elements.legal;
