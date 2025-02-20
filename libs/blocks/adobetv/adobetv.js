@@ -36,7 +36,7 @@ export default function init(a) {
     const io = new IntersectionObserver((entries) => {
       entries.forEach(({ isIntersecting, target }) => {
         if (!isIntersecting && target.getAttribute('data-playing') === 'true') {
-          target.contentWindow.postMessage({ type: 'mpcAction', action: 'pause' }, target.src);
+          target.contentWindow?.postMessage({ type: 'mpcAction', action: 'pause' }, target.src);
         }
       });
     }, { rootMargin: '0px' });
