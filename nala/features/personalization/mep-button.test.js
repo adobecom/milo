@@ -81,3 +81,17 @@ test(`${features[5].name},${features[5].tags}`, async ({ page, baseURL }) => {
   await mepButtonLoc.previewButton.click();
   await expect(marqueePageLoc.marquee).toHaveCount(1);
 });
+// Test 6: test the order of experiences 
+test(`${features[6].name},${features[6].tags}`, async ({ page, baseURL }) => {
+  const marqueePageLoc = new MarqueePage(page);
+  const URL = `${baseURL}${features[5].path}${miloLibs}`;
+  console.info(`[Test Page]: ${URL}`);
+  await page.goto(URL);
+  await expect(marqueePageLoc.marquee).toHaveCount(0);
+  await mepButtonLoc.mepButton.click();
+  await mepButtonLoc.advancedOptions.click();
+  await mepButtonLoc.newManifestInput.fill(features[6].data.pathToManifest);
+  await mepButtonLoc.previewButton.click();
+  await expect(marqueePageLoc.marquee).toHaveCount(1);
+});
+

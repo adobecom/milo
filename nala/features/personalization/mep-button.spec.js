@@ -37,12 +37,12 @@ module.exports = {
       tags: '@mep @mepbutton4 @smoke @regression @milo',
     },
     {
-      tcid: '5',
-      name: '@5 - add manifest via mep button',
-      desc: 'test the ability to add a manifest via the mep button',
-      path: '/drafts/nala/features/personalization/mep-button/adding-new-manifest',
-      data: { pathToManifest: '/drafts/nala/features/personalization/mep-button/added-manifest.json' },
-      tags: '@mep @mepbutton5 @smoke @regression @milo',
+      tcid: '6',
+      name: '@6 - test the order of experiences',
+      desc: 'test the order of promos vs regular experiences',
+      path: '/drafts/nala/features/promotions/promo-insert?mep=%2Fdrafts%2Fnala%2Ffeatures%2Fpromotions%2Fmanifests%2Fpromo-insert.json--default---%2Fdrafts%2Fnala%2Ffeatures%2Fpersonalization%2Fmep-button%2Fexecution-order1.json',
+      data: { pathToManifest: '' },
+      tags: '@mep @mepbutton6 @smoke @regression @milo',
     },
   ],
 };
