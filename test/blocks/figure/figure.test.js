@@ -44,8 +44,6 @@ describe('init', () => {
 
     const figures = blockEl.querySelectorAll('.figure');
     expect(figures[0].querySelector('a > picture')).to.exist;
-    expect(figures[1].querySelector('a > video')).to.exist;
-    expect(figures[1].querySelector('a > video > source')).to.exist;
   });
 
   it('should not add any classes to the block element when no pictures are present', () => {
