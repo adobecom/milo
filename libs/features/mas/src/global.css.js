@@ -247,6 +247,17 @@ merch-card [slot='callout-content'] {
     gap: var(--consonant-merch-card-callout-spacing-xxs);
 }
 
+merch-card [slot='callout-content'] .icon-button {
+    height: 16px;
+    padding: 0;
+    border: 0;
+    min-inline-size: 16px;
+}
+
+merch-card [slot='callout-content'] .icon-button:hover {
+    background-color: transparent;
+}
+
 merch-card [slot='callout-content'] > div {
     display: flex;
     flex-direction: column;
