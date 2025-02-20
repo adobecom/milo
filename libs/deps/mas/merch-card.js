@@ -1050,6 +1050,10 @@ merch-card[variant="plans"] [slot="quantity-select"] {
         --merch-card-plans-padding: 15px;
     }
 
+    :host([variant='plans']) ::slotted([slot='heading-xs']) {
+        height: 23px;
+    }
+
     :host([variant='plans']) .body {
         min-width: var(--merch-card-plans-min-width);
         max-width: var(--merch-card-plans-max-width);
