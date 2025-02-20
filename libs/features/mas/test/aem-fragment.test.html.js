@@ -18,10 +18,10 @@ chai.use(chaiAsPromised);
 runTests(async () => {
     await mas();
     const [cc, photoshop] = await Promise.all([
-        fetch('mocks/sites/cf/fragments/fragment-cc-all-apps.json').then(
+        fetch('mocks/sites/fragments/fragment-cc-all-apps.json').then(
             (res) => res.json(),
         ),
-        fetch('mocks/sites/cf/fragments/fragment-photoshop.json').then((res) =>
+        fetch('mocks/sites/fragments/fragment-photoshop.json').then((res) =>
             res.json(),
         ),
     ]);
@@ -75,20 +75,24 @@ runTests(async () => {
         });
 
         it('ignores incomplete markup', async () => {
-            const [, , , cardWithMissingPath] = getTemplateContent('cards');
+            const [, , , cardWithMissingFragmentId] = getTemplateContent('cards');
 
             let masErrorTriggered = false;
-            cardWithMissingPath.addEventListener('mas:error', () => {
+            cardWithMissingFragmentId.addEventListener('mas:error', (e) => {
+              if (e.target.tagName === 'MERCH-CARD') {
                 masErrorTriggered = true;
+              }
             });
             const aemFragment =
-                cardWithMissingPath.querySelector('aem-fragment');
+            cardWithMissingFragmentId.querySelector('aem-fragment');
             let aemErrorTriggered = false;
-            aemFragment.addEventListener('aem:error', () => {
+            aemFragment.addEventListener('aem:error', (e) => {
+              if (e.target.tagName === 'AEM-FRAGMENT') {
                 aemErrorTriggered = true;
+              }
             });
 
-            spTheme.append(cardWithMissingPath);
+            spTheme.append(cardWithMissingFragmentId);
             await expect(aemFragment.updateComplete).to.be.rejectedWith(
                 'AEM fragment cannot be loaded',
             );
@@ -100,21 +104,14 @@ runTests(async () => {
             const [, , , , , cardWithWrongOsis] = getTemplateContent('cards');
 
             let masErrorTriggered = false;
-            cardWithWrongOsis.addEventListener(EVENT_MAS_ERROR, () => {
+            cardWithWrongOsis.addEventListener(EVENT_MAS_ERROR, (e) => {
                 masErrorTriggered = true;
             });
             spTheme.append(cardWithWrongOsis);
-            await delay(100);
+            const aemFragment = cardWithWrongOsis.querySelector('aem-fragment');
+            await aemFragment.updateComplete;
+            await cardWithWrongOsis.checkReady();
             expect(masErrorTriggered).to.true;
-        });
-
-        it('uses ims token to retrieve a fragment', async () => {
-            const [, , , , cardWithIms] = getTemplateContent('cards');
-            const aemFragment = cardWithIms.querySelector('aem-fragment');
-            window.adobeid = { authorize: sinon.stub() };
-            spTheme.append(cardWithIms);
-            expect(aemFragment.updateComplete);
-            sinon.assert.calledOnce(window.adobeid.authorize);
         });
 
         it('renders ccd slice card', async () => {
@@ -131,39 +128,28 @@ runTests(async () => {
     });
 
     describe('getFragmentById', async () => {
+        const masCommerceService = {
+          settings: {
+            env: 'stage',
+            locale: 'fr_FR',
+            wcsApiKey: 'testApiKey',
+          }
+        }
         beforeEach(async () => {
             await mockFetch(withAem);
             cache.clear();
         });
 
         it('throws an error if response is not ok', async () => {
-            const promise = getFragmentById(
-                'http://localhost:2023',
-                'notfound',
-                false,
-            );
+            const promise = getFragmentById('notfound', masCommerceService);
             await expect(promise).to.be.rejectedWith('Failed to get fragment: 404 Fragment not found');
         });
 
-        it('fetches fragment from author endpoint', async () => {
-            const promise = getFragmentById(
-                'http://localhost:2023',
-                'fragment-cc-all-apps',
-                true,
-            );
-            expect(fetch.lastCall.firstArg).to.equal(
-                'http://localhost:2023/adobe/sites/cf/fragments/fragment-cc-all-apps',
-            );
-        });
-
         it('fetches fragment from freyja on publish', async () => {
-            const promise = getFragmentById(
-                'http://localhost:2023',
-                'fragment-cc-all-apps',
-                false,
-            );
+            const promise = getFragmentById('fragment-cc-all-apps', masCommerceService);
+            await promise;
             expect(fetch.lastCall.firstArg).to.equal(
-                'http://localhost:2023/adobe/sites/fragments/fragment-cc-all-apps',
+                'https://www.stage.adobe.com/mas/io/fragment?id=fragment-cc-all-apps&api_key=testApiKey&locale=fr_FR',
             );
         });
     });
