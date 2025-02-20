@@ -892,6 +892,17 @@ a.static:active  {
   visibility: hidden;
 }
 
+/* Anchors */
+.section-anchor {
+  scroll-margin-top: var(--global-height-nav);
+}
+
+@media screen and (min-width: 600px) {
+  .global-navigation.has-breadcrumbs + main .section-anchor {
+    scroll-margin-top: var(--feds-totalheight-nav);
+  }
+}
+
 /* mobile only */
 @media (max-width: 600px) {
   .con-button.button-justified-mobile {
