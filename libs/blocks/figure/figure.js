@@ -1,4 +1,3 @@
-import { applyHoverPlay, decorateAnchorVideo, applyAccessibilityEvents, decoratePausePlayWrapper, isVideoAccessible } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
 
 function buildCaption(pEl) {
@@ -17,32 +16,7 @@ function htmlToElement(html) {
 
 function decorateVideo(videoEl, figEl) {
   const videoTag = videoEl.querySelector('video');
-  const anchorTag = videoEl.querySelector('a[href*=".mp4"]');
-  if (anchorTag && !anchorTag.hash) anchorTag.hash = '#autoplay';
-  if (anchorTag) decorateAnchorVideo({ src: anchorTag.href, anchorTag });
   if (videoTag) {
-    videoTag.removeAttribute('data-mouseevent');
-    if (videoTag.dataset?.videoSource) {
-      videoTag.appendChild(
-        createTag('source', {
-          src: videoTag.dataset?.videoSource,
-          type: 'video/mp4',
-        }),
-      );
-    }
-    applyHoverPlay(videoTag);
-    if (!videoTag.controls && isVideoAccessible(anchorTag)) {
-      applyAccessibilityEvents(videoTag);
-      decoratePausePlayWrapper(videoTag, 'autoplay');
-    }
-    if (videoTag.controls) {
-      const io = new IntersectionObserver((entries) => {
-        entries.forEach(({ isIntersecting, target }) => {
-          if (!isIntersecting && !target.paused) target.pause();
-        });
-      }, { rootMargin: '0px' });
-      io.observe(videoTag);
-    }
     figEl.prepend(videoEl.querySelector('.video-container, .pause-play-wrapper, video'));
   }
 }
