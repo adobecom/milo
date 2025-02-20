@@ -7,6 +7,7 @@ import {
   decorateLinks,
   loadScript,
   getGnavSource,
+  getFedsPlaceholderConfig,
 } from '../../utils/utils.js';
 import {
   closeAllDropdowns,
@@ -45,7 +46,6 @@ import {
   branchBannerLoadCheck,
   getBranchBannerInfo,
 } from './utilities/utilities.js';
-import { getFedsPlaceholderConfig } from '../../utils/federated.js';
 
 import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
 
