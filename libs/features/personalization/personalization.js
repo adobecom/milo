@@ -338,9 +338,9 @@ function normalizeKeys(obj) {
   }, {});
 }
 
-function replaceLivePage(str, origin) {
-  const isLive = origin.includes('.live');
-  return str.replace(isLive ? '.page' : '.live', isLive ? '.live' : '.page');
+function handleDotLive(str, origin) {
+  const isLive = origin.endsWith('.live');
+  return isLive ? str.replace('.page', '.live') : str;
 }
 
 function registerInBlockActions(command) {
@@ -362,10 +362,10 @@ function registerInBlockActions(command) {
       const isLocalOrSLD = origin.includes('localhost') || origin.includes(`.${SLD}.`);
 
       if (!blockSelector.includes('/federal/') && isLocalOrSLD) {
-        blockSelector = replaceLivePage(blockSelector, origin);
+        blockSelector = handleDotLive(blockSelector, origin);
       }
       if (getSelectorType(command.content) === 'fragment') {
-        command.content = replaceLivePage(command.content, origin);
+        command.content = handleDotLive(command.content, origin);
       }
 
       blockSelector = blockSelector.includes('/federal/') ? getFederatedUrl(blockSelector) : blockSelector;
