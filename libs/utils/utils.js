@@ -765,8 +765,8 @@ export function decorateLinks(el) {
     }
 
     if (a.href.includes(BUSINESS_PLANS_PATH)) {
-      generateM7Link().then((newLink) => {
-        a.href = newLink;
+      generateM7Link().then((m7Link) => {
+        a.href = m7Link;
       });
     }
 
