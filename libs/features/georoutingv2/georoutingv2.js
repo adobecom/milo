@@ -271,6 +271,7 @@ export default async function loadGeoRouting(
   getMetadataFunc,
   loadBlockFunc,
   loadStyleFunc,
+  v2jsonPromise,
 ) {
   if (getGeoroutingOverride()) return;
   config = conf;
@@ -279,25 +280,22 @@ export default async function loadGeoRouting(
   loadBlock = loadBlockFunc;
   loadStyle = loadStyleFunc;
 
-  const urls = [
-    `${config.contentRoot ?? ''}/georoutingv2.json`,
-    `${config.contentRoot ?? ''}/georouting.json`,
-    `${getFederatedContentRoot()}/federal/georouting/georoutingv2.json`,
-  ];
-  let resp;
-  for (const url of urls) {
-    resp = await fetch(url);
-    if (resp.ok) {
-      if (url.includes('georouting.json')) {
-        const json = await resp.json();
-        // eslint-disable-next-line import/no-cycle
-        const { default: loadGeoRoutingOld } = await import('../georouting/georouting.js');
-        loadGeoRoutingOld(config, createTag, getMetadata, json);
-      }
-      break;
-    }
-  }
-  const json = await resp.json();
+  const loadOldGeorouting = async (json) => {
+    const { default: loadGeoRoutingOld } = await import('../georouting/georouting.js');
+    await loadGeoRoutingOld(config, createTag, getMetadata, json);
+    return 'use-old-georouting';
+  };
+  const oldGeorouting = () => fetch(`${config.contentRoot ?? ''}/georouting.json`)
+    .then((r) => r.json())
+    .then(loadOldGeorouting)
+    .catch(() => null);
+  const federatedJSON = () => fetch(`${getFederatedContentRoot()}/federal/georouting/georoutingv2.json`)
+    .then((r) => r.json())
+    .catch(() => null);
+
+  const json = (await v2jsonPromise) ?? (await oldGeorouting()) ?? (await federatedJSON());
+  if (json === 'use-old-georouting') return;
+
   const { locale } = config;
 
   const urlLocale = locale.prefix.replace('/', '');
