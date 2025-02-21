@@ -1190,7 +1190,6 @@ async function loadPostLCP(config) {
     if (enablePersonalizationV2() && !isMartechLoaded) loadMartech();
   } else if (!isMartechLoaded) loadMartech();
 
-  performance.mark('georouting-start');
   const georouting = getMetadata('georouting') || config.geoRouting;
   if (georouting === 'on') {
     const jsonPromise = fetch(`${config.contentRoot ?? ''}/georoutingv2.json`)
@@ -1198,8 +1197,6 @@ async function loadPostLCP(config) {
       .catch(() => null);
     const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
     await loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle, jsonPromise);
-    performance.mark('georouting-end');
-    console.log(performance.measure('georouting', 'georouting-start', 'georouting-end'));
   }
   const header = document.querySelector('header');
   if (header) {
