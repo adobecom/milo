@@ -76,7 +76,7 @@ describe('Rollout', () => {
     const searchParams = createTestParams('');
     const result = await init(el, `?${searchParams.toString()}`);
     expect(result).to.be.false;
-    expect(el.innerHTML).to.equal('<div class="modal">Missing required parameters</div>');
+    expect(el.innerHTML).to.equal('<div class="modal">Missing required parameter referrer</div>');
   });
 
   it('should handle overrideBranch parameter', async () => {
