@@ -35,17 +35,29 @@ const landingCard = ({ cardDetails, onLandingClick }) => {
 };
 
 const App = () => {
-  const [userInput, setUserInput] = useState('');
-  const [currentView, setcurrentView] = useState('');
   const [showCards, setShowCards] = useState(true);
 
   useEffect(() => {
-    const observer = new MutationObserver((mutations) => {
+    const observer = new MutationObserver(() => {
       const sendButton = document.querySelector('.bc-send-button');
-      if (sendButton) {
+      const input = document.querySelector('.bc-chat-input');
+
+      if (sendButton && input) {
         sendButton.addEventListener('click', () => {
           setShowCards(false);
         });
+
+        // Add Enter key handler for both input and button
+        const handleEnter = (event) => {
+          if (event.key === 'Enter') {
+            setShowCards(false);
+            sendButton.click(); // Trigger the send button click
+          }
+        };
+
+        input.addEventListener('keydown', handleEnter);
+        sendButton.addEventListener('keydown', handleEnter);
+
         observer.disconnect();
       }
     });
@@ -61,9 +73,9 @@ const App = () => {
   const onLandingClick = (event) => {
     const { text } = event.target.dataset;
     const input = document.querySelector('.bc-chat-input');
-    setUserInput(text);
     input.value = text;
     input.dispatchEvent(new Event('input', { bubbles: true }));
+    document.querySelector('.bc-send-button').focus();
   };
 
   return html`
@@ -71,11 +83,11 @@ const App = () => {
     <div class="bc-container">
       <div class="bc-views">
           <div class="landing-view">
-            <div class="landing-heading">
-              <h1>Not sure which apps are best for you? Take a minute. We'll help you figure it out.</h1>
-              <h2>You can type in your idea or click on a suggestion to get started.</h2>
-            </div>
             ${showCards && html`
+              <div class="landing-heading">
+                <h1>Not sure which apps are best for you? Take a minute. We'll help you figure it out.</h1>
+                <h2>You can type in your idea or click on a suggestion to get started.</h2>
+              </div>
               <div class="landing-cards">
                 ${landingCardDetails.map((cardDetails) => html`
                   <${landingCard} cardDetails=${cardDetails} onLandingClick=${onLandingClick} />
