@@ -34,6 +34,7 @@ body.spectrum--darkest {
 
 main {
     display: flex;
+    background: var(--spectrum-gray-50);
     flex: 1;
     justify-content: center;
     margin: 0 16px;
@@ -215,6 +216,18 @@ merch-card[variant='ccd-slice'][size='wide'] {
 
 /* Adobe Home */
 
+h1,
+h2,
+h3,
+h4,
+h5 {
+  color: var(--spectrum-gray-900);
+}
+
+.theme-selection {
+  color: var(--spectrum-gray-900);
+}
+
 .adobe-home-container {
     display: flex;
     padding: 20px;
@@ -222,7 +235,7 @@ merch-card[variant='ccd-slice'][size='wide'] {
     align-items: flex-start;
     gap: 16px;
     border-radius: 16px;
-    background: #ffffff;
+    background: var(--spectrum-gray-100);
     box-shadow: 0px 2px 8px 0px rgba(0, 0, 0, 0.16);
     margin-top: 16px;
 }
@@ -242,7 +255,7 @@ merch-card[variant='ccd-slice'][size='wide'] {
 }
 
 .theme-toggle {
-    color: black !important;
+  color: var(--spectrum-gray-900);
 }
 
 .flex-cards {

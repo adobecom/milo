@@ -12,7 +12,7 @@ export const AH_TRY_BUY_WIDGET_AEM_FRAGMENT_MAPPING = {
   backgroundColor: { attribute: 'background-color' },
   borderColor: { attribute: 'border-color' },
   allowedColors: {
-    gray: 'rgb(248, 248, 248)'
+    gray: '--spectrum-gray-50'
   },
   size: ['single', 'double', 'triple'],
 };

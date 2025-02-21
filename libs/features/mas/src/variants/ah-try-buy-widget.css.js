@@ -4,6 +4,9 @@ export const CSS = `
         margin-bottom: 16px;
         box-sizing: border-box;
         color: var(--consonant-merch-card-body-xxs-color);
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        word-break: break-word;
     }
 
     merch-card[variant="ah-try-buy-widget"] [slot="body-xxs"] a {

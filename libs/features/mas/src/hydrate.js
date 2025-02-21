@@ -102,7 +102,7 @@ export function processBackgroundColor(fields, merchCard, allowedColors) {
     }
 
     if (allowedColors?.[fields.backgroundColor]) {
-        merchCard.style.setProperty('--merch-card-custom-background-color', allowedColors[fields.backgroundColor]);
+        merchCard.style.setProperty('--merch-card-custom-background-color', `var(${allowedColors[fields.backgroundColor]})`);
         merchCard.setAttribute('background-color', fields.backgroundColor);
     }
 }
