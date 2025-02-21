@@ -629,10 +629,8 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
           targetManifestId,
         });
       } else {
-        // const hash = (action === 'updatemetadata' && selector === 'gnav-source') ? line[vn].split('#')[1] || '' : '';
         variants[vn][action].push({
           selector: normalizePath(selector),
-          // val: `${normalizePath(line[vn])}${hash ? `#${hash}` : ''}`,
           val: normalizePath(line[vn]),
           pageFilter,
           manifestId,
