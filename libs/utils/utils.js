@@ -739,7 +739,6 @@ export function decorateLinks(el) {
         processQuickLink(a);
       })();
     }
-
     // Append aria-label
     const pipeRegex = /\s?\|([^|]*)$/;
     if (pipeRegex.test(a.textContent) && !/\.[a-z]+/i.test(a.textContent)) {
