@@ -157,4 +157,11 @@ describe('article header', () => {
     await init(document.body.querySelector('.article-header'));
     expect(document.body.querySelector('.article-category a')).to.be.null;
   });
+
+  it('supports a featured video', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/body-video.html' });
+    const el = document.body.querySelector('.article-header');
+    await init(el);
+    expect(el.querySelector('.article-feature-video video')).to.exist;
+  });
 });
