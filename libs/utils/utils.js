@@ -151,6 +151,7 @@ const PREVIEW = 'target-preview';
 const PAGE_URL = new URL(window.location.href);
 export const SLD = PAGE_URL.hostname.includes('.aem.') ? 'aem' : 'hlx';
 
+const BUSINESS_PLANS_PATH = '/creativecloud/business-plans.html';
 const PROMO_PARAM = 'promo';
 let isMartechLoaded = false;
 
@@ -689,6 +690,31 @@ export function convertStageLinks({ anchors, config, hostname, href }) {
   });
 }
 
+async function getImsCountry() {
+  if (window.adobeIMS?.isSignedInUser()) {
+    const profile = await window.adobeIMS.getProfile();
+    return profile.countryCode;
+  }
+
+  return null;
+}
+
+export async function generateM7Link() {
+  const { locale } = getConfig();
+  const { getMiloLocaleSettings } = await import('../blocks/merch/merch.js');
+  const pageCountry = getMiloLocaleSettings(locale).country;
+  const imsCountry = await getImsCountry();
+  const country = imsCountry || pageCountry;
+
+  const m7link = new URL('https://commerce.adobe.com/store/segmentation');
+  m7link.searchParams.append('cli', 'adobe_com');
+  m7link.searchParams.append('co', country);
+  m7link.searchParams.append('pa', 'ccsn_direct_individual');
+  m7link.searchParams.append('cs', 't');
+  m7link.searchParams.append('af', 'uc_segmentation_hide_tabs');
+  return m7link.toString();
+}
+
 export function decorateLinks(el) {
   const config = getConfig();
   decorateImageLinks(el);
@@ -737,6 +763,13 @@ export function decorateLinks(el) {
         processQuickLink(a);
       })();
     }
+
+    if (a.href.includes(BUSINESS_PLANS_PATH)) {
+      generateM7Link().then((newLink) => {
+        a.href = newLink;
+      });
+    }
+
     // Append aria-label
     const pipeRegex = /\s?\|([^|]*)$/;
     if (pipeRegex.test(a.textContent) && !/\.[a-z]+/i.test(a.textContent)) {
