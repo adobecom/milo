@@ -38,7 +38,7 @@ describe('init', () => {
     expect(blockEl.classList.contains('figure-list-1')).to.be.false;
   });
 
-  it('should create picture and video figure blocks wrapped in A tag', () => {
+  it('should create picture figure block wrapped in A tag', () => {
     const blockEl = sections[3].querySelector('.figure');
     init(blockEl);
 
