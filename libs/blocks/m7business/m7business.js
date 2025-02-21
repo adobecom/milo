@@ -1,4 +1,5 @@
 import { getConfig } from '../../utils/utils.js';
+import { getMiloLocaleSettings } from '../merch/merch.js';
 
 async function getImsCountry() {
   if (window.adobeIMS?.isSignedInUser()) {
@@ -11,7 +12,6 @@ async function getImsCountry() {
 
 export async function generateM7Link() {
   const { locale } = getConfig();
-  const { getMiloLocaleSettings } = await import('../merch/merch.js');
   const pageCountry = getMiloLocaleSettings(locale).country;
   const imsCountry = await getImsCountry();
   const country = imsCountry || pageCountry;
