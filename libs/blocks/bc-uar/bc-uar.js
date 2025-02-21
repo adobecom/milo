@@ -1,4 +1,5 @@
 import { render, html, useEffect, useState } from '../../deps/htm-preact.js';
+import loadChat from './bc-chat.js';
 
 const landingCardDetails = [
   {
@@ -12,7 +13,7 @@ const landingCardDetails = [
     cardColor: '#F0BD7C',
   },
   {
-    cardText: 'I’m looking for the best tools to edit videos',
+    cardText: 'I\'m looking for the best tools to edit videos',
     cardImage: 'https://www.adobe.com/cc-shared/assets/img/uar/bc/ideas-to-get-started-3-edit-videos.png',
     cardColor: '#B89FF0',
   },
@@ -36,66 +37,55 @@ const landingCard = ({ cardDetails, onLandingClick }) => {
 const App = () => {
   const [userInput, setUserInput] = useState('');
   const [currentView, setcurrentView] = useState('');
+  const [showCards, setShowCards] = useState(true);
 
-  const handleInput = async (event) => {
-    setUserInput(event.target.value);
-  };
+  useEffect(() => {
+    const observer = new MutationObserver((mutations) => {
+      const sendButton = document.querySelector('.bc-send-button');
+      if (sendButton) {
+        sendButton.addEventListener('click', () => {
+          setShowCards(false);
+        });
+        observer.disconnect();
+      }
+    });
 
-  const handleSubmit = async () => {
-    // put JS to invoke chat view here, including submission text in a callback
-    const input = document.querySelector('#bcInput');
-    if (userInput === '') setUserInput(input.value);
-    setcurrentView('chat');
-  };
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
 
-  const handleEnter = async (event) => {
-    if (event.keyCode === 13) {
-      handleSubmit();
-    }
-  };
+    return () => observer.disconnect();
+  }, []);
 
   const onLandingClick = (event) => {
     const { text } = event.target.dataset;
-    const input = document.querySelector('#bcInput');
+    const input = document.querySelector('.bc-chat-input');
     setUserInput(text);
     input.value = text;
-    handleSubmit();
+    input.dispatchEvent(new Event('input', { bubbles: true }));
   };
 
   return html`
     <div class="branding"><img src="https://www.adobe.com/cc-shared/assets/img/uar/bc/adobe-logo.svg" /></div>
     <div class="bc-container">
       <div class="bc-views">
-        ${currentView !== 'chat' && html`
           <div class="landing-view">
             <div class="landing-heading">
               <h1>Not sure which apps are best for you? Take a minute. We'll help you figure it out.</h1>
               <h2>You can type in your idea or click on a suggestion to get started.</h2>
             </div>
-            <div class="landing-cards">
-              ${landingCardDetails.map((cardDetails) => html`
-                <${landingCard} cardDetails=${cardDetails} onLandingClick=${onLandingClick} />
-              `)}
-            </div>
+            ${showCards && html`
+              <div class="landing-cards">
+                ${landingCardDetails.map((cardDetails) => html`
+                  <${landingCard} cardDetails=${cardDetails} onLandingClick=${onLandingClick} />
+                `)}
+              </div>
+            `}
             <div class="bc-input-container">
-              <input type="text" 
-                id="bcInput" 
-                class="bc-input" 
-                placeholder="Describe what you want to create" 
-                oninput=${handleInput} 
-                onkeypress=${handleEnter} 
-                autocomplete="off"
-              ></input>
-              <button id="submitButton" onClick=${handleSubmit} class="con-button blue">Submit</button>
+              <div id="adobe-brand-concierge-mount-point"></div>
             </div>
           </div>
-        `}
-        ${currentView === 'chat' && html`
-          <div class="chat-view">
-            <div>Chat View HERE. Text input was: ${userInput || 'empty'}</div>
-            <button onClick=${() => { setcurrentView(''); setUserInput(''); }} class="con-button blue">Reset</button>
-          </div>
-        `}
       </div>
     </div>
   `;
@@ -104,4 +94,5 @@ const App = () => {
 export default async function init(el) {
   el.replaceChildren();
   render(html`<${App}}/>`, el);
+  await loadChat();
 }

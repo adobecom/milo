@@ -27,11 +27,6 @@
 }
 
 .bc-input-container {
-  align-self: flex-end;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  justify-content: center;
   width: 100%;
 }
 
