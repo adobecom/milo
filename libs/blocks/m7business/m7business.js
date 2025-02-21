@@ -26,6 +26,5 @@ export async function generateM7Link() {
 }
 
 export default async function init(el) {
-  const m7Link = await generateM7Link();
-  el.href = m7Link;
+  el.href = await generateM7Link();
 }
