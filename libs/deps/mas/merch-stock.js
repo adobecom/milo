@@ -27,3 +27,4 @@ var _=Object.defineProperty;var i=(o,e,t)=>e in o?_(o,e,{enumerable:!0,configura
                 line-height: 15px;
             }
         `]),n(c,"properties",{checked:{type:Boolean,attribute:"checked",reflect:!0},planType:{type:String,attribute:"plan-type",reflect:!0}});window.customElements.define("merch-stock",c);export{c as MerchStock};
+//# sourceMappingURL=merch-stock.js.map

@@ -7,6 +7,7 @@ import {
   decorateLinks,
   loadScript,
   getGnavSource,
+  getFedsPlaceholderConfig,
 } from '../../utils/utils.js';
 import {
   closeAllDropdowns,
@@ -42,8 +43,9 @@ import {
   disableMobileScroll,
   enableMobileScroll,
   setAsyncDropdownCount,
+  branchBannerLoadCheck,
+  getBranchBannerInfo,
 } from './utilities/utilities.js';
-import { getFedsPlaceholderConfig } from '../../utils/federated.js';
 
 import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
 
@@ -352,6 +354,7 @@ class Gnav {
   };
 
   init = () => logErrorFor(async () => {
+    branchBannerLoadCheck(this.updatePopupPosition);
     this.elements.curtain = toFragment`<div class="feds-curtain"></div>`;
 
     // Order is important, decorateTopnavWrapper will render the nav
@@ -1002,7 +1005,7 @@ class Gnav {
 
   decorateMainNav = async () => {
     const breadcrumbs = isDesktop.matches ? '' : await this.decorateBreadcrumbs();
-    this.elements.mainNav = toFragment`<div class="feds-nav"></div>`;
+    this.elements.mainNav = toFragment`<div class="feds-nav" role="list"></div>`;
     this.elements.navWrapper = toFragment`
       <div class="feds-nav-wrapper" id="feds-nav-wrapper">
         ${breadcrumbs}
@@ -1049,6 +1052,28 @@ class Gnav {
     const isText = !(item.querySelector('a') instanceof HTMLElement);
     if (isText) return 'text';
     return 'link';
+  };
+
+  // update GNAV popup position based on branch banner
+  updatePopupPosition = (activePopup) => {
+    const popup = activePopup || this.elements.mainNav.querySelector('.feds-navItem--section.feds-dropdown--active .feds-popup');
+    if (!popup) return;
+    const yOffset = window.scrollY || Math.abs(parseInt(document.body.style.top, 10)) || 0;
+    const navOffset = this.block.classList.contains('has-promo')
+      ? 'var(--feds-height-nav) - var(--global-height-navPromo)'
+      : 'var(--feds-height-nav)';
+    popup.removeAttribute('style');
+    popup.style.top = `calc(${yOffset}px - ${navOffset} - 2px)`;
+    const { isPresent, isSticky, height } = getBranchBannerInfo();
+    if (isPresent) {
+      const delta = yOffset - height;
+      if (isSticky) {
+        popup.style.height = `calc(100dvh - ${height}px + 2px)`;
+      } else {
+        popup.style.top = `calc(0px - var(--feds-height-nav) + ${Math.max(delta, 0)}px - 2px)`;
+        popup.style.height = `calc(100dvh + ${Math.min(delta, 0)}px + 2px)`;
+      }
+    }
   };
 
   decorateMainNavItem = (item, index) => {
@@ -1179,7 +1204,7 @@ class Gnav {
         const sectionModifier = isSectionMenu ? ' feds-navItem--section' : '';
         const sectionDaaLh = isSectionMenu ? ` daa-lh='${getAnalyticsValue(item.textContent)}'` : '';
         const triggerTemplate = toFragment`
-          <${tag} class="feds-navItem${sectionModifier}${activeModifier}" ${sectionDaaLh}>
+          <${tag} role="listitem" class="feds-navItem${sectionModifier}${activeModifier}" ${sectionDaaLh}>
             ${dropdownTrigger}
           </${tag}>`;
 
@@ -1190,12 +1215,7 @@ class Gnav {
             // document.body.style.top should always be set
             // at this point by calling disableMobileScroll
             if (popup && this.isLocalNav()) {
-              const y = window.scrollY;
-              const iOSy = Math.abs(parseInt(document.body.style.top, 10));
-              const offset = this.block.classList.contains('has-promo')
-                ? 'var(--feds-height-nav) - var(--global-height-navPromo)'
-                : 'var(--feds-height-nav)';
-              popup.style = `top: calc(${iOSy || y || 0}px - ${offset} - 2px`;
+              this.updatePopupPosition(popup);
             }
             makeTabActive(popup);
           } else if (isDesktop.matches && this.newMobileNav && isSectionMenu) {
@@ -1217,7 +1237,7 @@ class Gnav {
         // Remove its 'em' or 'strong' wrapper
         item.parentElement.replaceWith(item);
 
-        return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered">
+        return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered" role="listitem">
             ${decorateCta({ elem: item, type: itemType, index: index + 1 })}
           </div>`, item);
       case 'link': {
@@ -1251,7 +1271,7 @@ class Gnav {
         }
 
         const linkTemplate = toFragment`
-          <div class="feds-navItem${activeModifier}${customLinkModifier}">
+          <div class="feds-navItem${activeModifier}${customLinkModifier}" role="listitem">
             ${linkElem}
           </div>`;
         return removeCustomLink ? '' : addMepHighlightAndTargetId(linkTemplate, item);

@@ -53,7 +53,7 @@ test.describe('Milo Carousel Block test suite', () => {
 
     await test.step('step-4: Verify the accessibility test on the carousel block', async () => {
       // The accessibility test for the carousel container is failing, so skipping the test step
-      await runAccessibilityTest({ page, testScope: carousel.carouselContainer, skipA11yTest: true });
+      await runAccessibilityTest({ page, testScope: carousel.carouselContainer });
     });
   });
 

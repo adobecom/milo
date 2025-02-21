@@ -1,5 +1,11 @@
-import { createTag, loadStyle, getConfig, createIntersectionObserver } from './utils.js';
-import { getFederatedContentRoot, getFedsPlaceholderConfig } from './federated.js';
+import {
+  createTag,
+  loadStyle,
+  getConfig,
+  createIntersectionObserver,
+  getFederatedContentRoot,
+  getFedsPlaceholderConfig,
+} from './utils.js';
 
 const { miloLibs, codeRoot } = getConfig();
 const HIDE_CONTROLS = '_hide-controls';
@@ -318,6 +324,7 @@ export function applyAccessibilityEvents(videoEl) {
     pausePlayWrapper.addEventListener('keydown', handlePause);
   }
   if (videoEl.hasAttribute('autoplay')) {
+    videoEl.addEventListener('canplay', () => { videoEl.play(); });
     videoEl.addEventListener('ended', () => { syncPausePlayIcon(videoEl); });
   }
 }
