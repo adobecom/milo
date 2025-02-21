@@ -1,0 +1,111 @@
+name: "Label Failed Checks"
+
+on:
+  workflow_run:
+    workflows: ["Failed Checks"]
+    types:
+      - completed
+
+jobs:
+  label-failed-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch Failed Checks and Update PR Label
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const run_id = context.payload.workflow_run.id;
+            const branch = context.payload.workflow_run.head_branch;
+
+            // Run for PRs to 'stage' or 'main'
+            const allowed_branches = ["stage", "main"];
+            if (!allowed_branches.includes(branch)) {
+              console.log(`Skipping PRs to other than stage/main (Current: ${branch})`);
+              return;
+            }
+
+            console.log(`Processing PR for branch: ${branch}`);
+
+            // Get all the jobs
+            const jobs = await github.rest.actions.listJobsForWorkflowRun({
+              owner,
+              repo,
+              run_id
+            });
+
+            let failedJobs = [];
+            for (const job of jobs.data.jobs) {
+              if (job.conclusion === "failure") {
+                failedJobs.push(`❌ ${job.name}`);
+              }
+            }
+
+            if (failedJobs.length === 0) {
+              console.log("No failed jobs found. Exiting.");
+              return;
+            }
+
+            console.log(`Failed Jobs: ${failedJobs.join(", ")}`);
+
+            // get the pr details
+            const { data: prs } = await github.rest.pulls.list({
+              owner,
+              repo,
+              state: "open",
+              head: `${owner}:${branch}`
+            });
+
+            if (prs.length === 0) {
+              console.log("No matching PR found for this workflow. Exiting.");
+              return;
+            }
+
+            const prNumber = prs[0].number;
+
+            // Get existing labels
+            const { data: pr } = await github.rest.pulls.get({
+              owner,
+              repo,
+              pull_number: prNumber
+            });
+
+            const existingLabels = pr.labels.map(label => label.name);
+            let failedLabels = existingLabels.find(label => label.startsWith("Failed Checks:"));
+
+            let updatedFailedChecks = [];
+            if (failedLabels) {
+              updatedFailedChecks = failedLabels.replace("Failed Checks: ", "").split(", ");
+            }
+
+            // Add all failed checks if not already listed
+            failedJobs.forEach(job => {
+              if (!updatedFailedChecks.includes(job)) {
+                updatedFailedChecks.push(job);
+              }
+            });
+
+            const newLabel = `Failed Checks: ${updatedFailedChecks.join(", ")}`;
+
+            // Remove old failure labels
+            const labelsToRemove = existingLabels.filter(label => label.startsWith("Failed Checks:"));
+            for (const label of labelsToRemove) {
+              await github.rest.issues.removeLabel({
+                owner,
+                repo,
+                issue_number: prNumber,
+                name: label
+              });
+            }
+
+            // Add new failure label
+            await github.rest.issues.addLabels({
+              owner,
+              repo,
+              issue_number: prNumber,
+              labels: [newLabel]
+            });
+
+            console.log(`Updated label: ${newLabel} on PR #${prNumber}`);
