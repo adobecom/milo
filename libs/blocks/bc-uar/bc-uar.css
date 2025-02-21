@@ -1,5 +1,10 @@
 .bc-container { 
-  background: linear-gradient(90deg, rgb(213 197 255), rgb(168 233 255));
+  animation: gradient 15s ease infinite;
+  background: linear-gradient(90deg, #C8B7FE00 25%, #8EE3FF80,#C8B7FE00 75%),
+  radial-gradient(ellipse at 25% 25%, #fec7db 5%, #FEA6FE, transparent 25%),
+  radial-gradient(ellipse at 75% 95%, #fec7db, #FEA6FE 10%, transparent 20%),
+  linear-gradient(90deg, #C8B7FE 25%, #8EE3FF, #C8B7FE 75%);
+  background-size: 300% 300%;
   display: flex;
   margin: auto;
   min-height: 100vh;
@@ -18,6 +23,10 @@
   top: 0;
   transition: opacity 1s ease-in;
   z-index: 5;
+}
+
+.bc-container.bc-active {
+  animation-iteration-count: 2;
 }
 
 .bc-container.bc-active::before {
@@ -128,4 +137,31 @@
   padding: 10px 8px;
   pointer-events: none;
   text-align: left;
+}
+
+@keyframes gradient {
+	0% {
+		background-position: 0% 50%;
+    background-size: 100% 200%;
+	}
+
+  25% {
+		background-position: 50% 75%;
+    background-size: 200% 300%;
+	}
+
+  50% {
+		background-position: 100% 100%;
+    background-size: 400% 300%;
+	}
+
+  75% {
+		background-position: 50% 75%;
+    background-size: 200% 300%;
+	}
+
+	100% {
+		background-position: 0% 50%;
+    background-size: 100% 200%;
+	}
 }
