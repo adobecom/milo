@@ -1209,6 +1209,9 @@ async function loadPostLCP(config) {
     import('../features/personalization/personalization.js')
       .then(({ addMepAnalytics }) => addMepAnalytics(config, header));
   }
+  // privacy here - test 2
+  const { loadPrivacy } = await import('../scripts/delayed.js');
+  loadPrivacy(getConfig, loadScript);
 }
 
 export function scrollToHashedElement(hash) {
@@ -1414,8 +1417,9 @@ export async function loadArea(area = document) {
     decorateDocumentExtras();
   }
 
-  const { loadPrivacy } = await import('../scripts/delayed.js');
-  loadPrivacy(getConfig, loadScript);
+  // privacy here - test 1
+  // const { loadPrivacy } = await import('../scripts/delayed.js');
+  // loadPrivacy(getConfig, loadScript);
 
   const sections = decorateSections(area, isDoc);
 
