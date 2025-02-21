@@ -2,7 +2,13 @@ name: "Label Failed Checks"
 
 on:
   workflow_run:
-    workflows: ["Label Failed Checks"]
+    workflows:
+      - "Check code compatibility with Milo supported browsers"
+      - "Run Nala Tests"
+      - "Unit Tests"
+      - "CodeQL"
+      - "Lint"
+      - "MAS Unit Tests"
     types:
       - completed
 
