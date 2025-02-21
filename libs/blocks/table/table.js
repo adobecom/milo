@@ -93,9 +93,7 @@ function handleHeading(table, headingCols) {
       col.setAttribute('role', 'columnheader');
     }
 
-    const headings = col.querySelectorAll('h1, h2, h3, h4, h5, h6');
-
-    headings.forEach((heading) => {
+    col.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach((heading) => {
       const newElement = document.createElement('p');
 
       [...heading.attributes].forEach(({ name, value }) => newElement.setAttribute(name, value));
