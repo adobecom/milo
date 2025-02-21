@@ -75,15 +75,15 @@ const App = () => {
     const input = document.querySelector('.bc-chat-input');
     input.value = text;
     input.dispatchEvent(new Event('input', { bubbles: true }));
-    document.querySelector('.bc-send-button').focus();
+    document.querySelector('.bc-send-button').click();
   };
 
   return html`
-    <div class="branding"><img src="https://www.adobe.com/cc-shared/assets/img/uar/bc/adobe-logo.svg" /></div>
-    <div class="bc-container">
-      <div class="bc-views">
+    <div class="bc-container${showCards === false ? ' bc-active' : ''}">
+      <div class="branding"><img src="https://www.adobe.com/cc-shared/assets/img/uar/bc/adobe-logo.svg" /></div>
+      <div class="bc-content">
+          ${showCards && html`
           <div class="landing-view">
-            ${showCards && html`
               <div class="landing-heading">
                 <h1>Not sure which apps are best for you? Take a minute. We'll help you figure it out.</h1>
                 <h2>You can type in your idea or click on a suggestion to get started.</h2>
@@ -93,10 +93,10 @@ const App = () => {
                   <${landingCard} cardDetails=${cardDetails} onLandingClick=${onLandingClick} />
                 `)}
               </div>
-            `}
-            <div class="bc-input-container">
-              <div id="adobe-brand-concierge-mount-point"></div>
-            </div>
+          </div>
+          `}
+          <div class="bc-mount-container">
+            <div id="adobe-brand-concierge-mount-point"></div>
           </div>
       </div>
     </div>
