@@ -605,7 +605,7 @@ describe('processBackgroundColor', () => {
 
     it('should set background color when valid', () => {
         const fields = { backgroundColor: 'gray' };
-        const allowedColors = { gray: 'var(--spectrum-gray-50)' };
+        const allowedColors = { gray: '--spectrum-gray-50' };
         
         processBackgroundColor(fields, merchCard, allowedColors);
         
