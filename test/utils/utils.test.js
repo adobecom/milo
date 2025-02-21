@@ -442,7 +442,8 @@ describe('Utils', () => {
 
     it('Converts business plans link to M7 link for IMS user', async () => {
       const buIms = window.adobeIMS;
-      window.adobeIMS = { getProfile: () => {return { countryCode: 'CH' }}, isSignedInUser: () => true };
+      const profile = { countryCode: 'CH' };
+      window.adobeIMS = { getProfile: () => profile, isSignedInUser: () => true };
       const m7Link = await utils.generateM7Link();
       expect(m7Link).to.equal('https://commerce.adobe.com/store/segmentation?cli=adobe_com&co=CH&pa=ccsn_direct_individual&cs=t&af=uc_segmentation_hide_tabs');
       window.adobeIMS = buIms;
