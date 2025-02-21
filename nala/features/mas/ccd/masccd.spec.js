@@ -343,5 +343,19 @@ module.exports = {
       browserParams: '?theme=darkest',
       tags: '@mas-ccd @slice-card @slice-wide @commerce @smoke @regression @milo',
     },
+    {
+      tcid: '19',
+      name: '@MAS-CCD-slice-upt-link',
+      path: '/libs/features/mas/docs/ccd.html',
+      data: {
+        id: '018bf7f7-1e82-4b16-9dd1-039ee013e490',
+        linkText: 'See terms',
+        offerid: '3B8086C370FDF28C8AEEE1C5BD233E5A',
+        uptLinkUrl: 'https://www.adobe.com/offers/promo-terms.html?locale=en_US&country=US&offer_id=3B8086C370FDF28C8AEEE1C5BD233E5A&promotion_code=MHYXZS',
+        // iconLink: '',
+      },
+      browserParams: '?theme=darkest',
+      tags: '@mas-ccd @slice-card @slice-single @commerce @smoke @regression @milo',
+    },
   ],
 };

@@ -1,3 +1,5 @@
+import { CheckoutButton } from './checkout-button.js';
+import { UptLink } from './upt-link.js';
 import { createTag } from './utils.js';
 
 const DEFAULT_BADGE_COLOR = '#000000';
@@ -138,6 +140,15 @@ export function processStockOffersAndSecureLabel(fields, merchCard, aemFragmentM
   if (settings.secureLabel && aemFragmentMapping.secureLabel) {
     merchCard.setAttribute('secure-label', settings.secureLabel);
   }
+}
+
+export function processUptLinks(fields, merchCard) {
+    const placeholders = merchCard.querySelectorAll('a.upt-link');
+    placeholders.forEach(placeholder => {
+        const uptLink = UptLink.createFrom(placeholder);
+        placeholder.replaceWith(uptLink);
+        uptLink.initializeWcsData(fields.osi, fields.promoCode);
+    });
 }
 
 function createSpectrumCssButton(cta, aemFragmentMapping, isOutline, variant) {
@@ -331,6 +342,7 @@ export async function hydrate(fragment, merchCard) {
     );
     processDescription(fields, merchCard, aemFragmentMapping);
     processStockOffersAndSecureLabel(fields, merchCard, aemFragmentMapping, settings);
+    processUptLinks(fields, merchCard);
     processCTAs(fields, merchCard, aemFragmentMapping, variant);
     processAnalytics(fields, merchCard);
     updateLinksCSS(merchCard);
