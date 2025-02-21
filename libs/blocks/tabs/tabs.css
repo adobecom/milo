@@ -257,10 +257,6 @@
   margin-inline-start: 24px;
 }
 
-.tabs.pill .tabList button {
-  border: none;
-}
-
 .tabs.quiet .tabList {
   padding-bottom: 1px;
 }
@@ -286,6 +282,7 @@
   border-radius: 75px;
   font-weight: 400;
   padding: 0.2em 1em;
+  border: none;
 }
 
 .tabs.radio div[role="tablist"] button {
