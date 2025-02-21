@@ -78,27 +78,32 @@ export const normalizePath = (p, localize = true) => {
     return getFederatedUrl(path);
   }
 
-  if (path.startsWith(config.codeRoot)
-    || path.includes('.hlx.')
-    || path.includes('.aem.')
-    || path.includes('.adobe.')) {
-    try {
-      const url = new URL(path);
-      const firstFolder = url.pathname.split('/')[1];
+  try {
+    const url = new URL(path);
+    const firstFolder = url.pathname.split('/')[1];
+    const { hash } = url;
+
+    if (path.startsWith(config.codeRoot)
+      || path.includes('.hlx.')
+      || path.includes('.aem.')
+      || path.includes('.adobe.')) {
       if (!localize
         || config.locale.ietf === 'en-US'
-        || url.hash.includes('#_dnt')
+        || hash.includes('#_dnt')
         || firstFolder in config.locales
         || path.includes('.json')) {
         path = url.pathname;
       } else {
         path = `${config.locale.prefix}${url.pathname}`;
       }
-    } catch (e) { /* return path below */ }
-  } else if (!path.startsWith('http') && !path.startsWith('/')) {
-    path = `/${path}`;
+    } else if (!path.startsWith('http') && !path.startsWith('/')) {
+      path = `/${path}`;
+    }
+
+    return `${path}${hash}`;
+  } catch (e) {
+    return path;
   }
-  return path;
 };
 
 export const getFileName = (path) => path?.split('/').pop();
@@ -624,8 +629,10 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
           targetManifestId,
         });
       } else {
+        // const hash = (action === 'updatemetadata' && selector === 'gnav-source') ? line[vn].split('#')[1] || '' : '';
         variants[vn][action].push({
           selector: normalizePath(selector),
+          // val: `${normalizePath(line[vn])}${hash ? `#${hash}` : ''}`,
           val: normalizePath(line[vn]),
           pageFilter,
           manifestId,
