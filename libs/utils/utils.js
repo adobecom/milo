@@ -45,6 +45,7 @@ const MILO_BLOCKS = [
   'instagram',
   'locui',
   'locui-create',
+  'm7business',
   'marketo',
   'marquee',
   'marquee-anchors',
@@ -111,6 +112,7 @@ const AUTO_BLOCKS = [
   { video: '.mp4' },
   { merch: '/tools/ost?' },
   { 'mas-autoblock': 'mas.adobe.com/studio' },
+  { m7business: '/creativecloud/business-plans.html' },
 ];
 const DO_NOT_INLINE = [
   'accordion',
@@ -151,7 +153,6 @@ const PREVIEW = 'target-preview';
 const PAGE_URL = new URL(window.location.href);
 export const SLD = PAGE_URL.hostname.includes('.aem.') ? 'aem' : 'hlx';
 
-const BUSINESS_PLANS_PATH = '/creativecloud/business-plans.html';
 const PROMO_PARAM = 'promo';
 let isMartechLoaded = false;
 
@@ -690,31 +691,6 @@ export function convertStageLinks({ anchors, config, hostname, href }) {
   });
 }
 
-async function getImsCountry() {
-  if (window.adobeIMS?.isSignedInUser()) {
-    const profile = await window.adobeIMS.getProfile();
-    return profile.countryCode;
-  }
-
-  return null;
-}
-
-export async function generateM7Link() {
-  const { locale } = getConfig();
-  const { getMiloLocaleSettings } = await import('../blocks/merch/merch.js');
-  const pageCountry = getMiloLocaleSettings(locale).country;
-  const imsCountry = await getImsCountry();
-  const country = imsCountry || pageCountry;
-
-  const m7link = new URL('https://commerce.adobe.com/store/segmentation');
-  m7link.searchParams.append('cli', 'adobe_com');
-  m7link.searchParams.append('co', country);
-  m7link.searchParams.append('pa', 'ccsn_direct_individual');
-  m7link.searchParams.append('cs', 't');
-  m7link.searchParams.append('af', 'uc_segmentation_hide_tabs');
-  return m7link.toString();
-}
-
 export function decorateLinks(el) {
   const config = getConfig();
   decorateImageLinks(el);
@@ -762,12 +738,6 @@ export function decorateLinks(el) {
         const { default: processQuickLink } = await import('../features/branch-quick-links/branch-quick-links.js');
         processQuickLink(a);
       })();
-    }
-
-    if (a.href.includes(BUSINESS_PLANS_PATH)) {
-      generateM7Link().then((m7Link) => {
-        a.href = m7Link;
-      });
     }
 
     // Append aria-label

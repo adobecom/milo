@@ -433,22 +433,6 @@ describe('Utils', () => {
       expect(httpLink.dataset.httpLink).to.equal('true');
     });
 
-    it('Converts business plans link to M7 link', () => {
-      const container = document.querySelector('main div');
-      utils.decorateLinks(container);
-      const m7Link = container.querySelector('.business-plans');
-      expect(m7Link.href).to.equal('https://commerce.adobe.com/store/segmentation?cli=adobe_com&co=US&pa=ccsn_direct_individual&cs=t&af=uc_segmentation_hide_tabs');
-    });
-
-    it('Converts business plans link to M7 link for IMS user', async () => {
-      const buIms = window.adobeIMS;
-      const profile = { countryCode: 'CH' };
-      window.adobeIMS = { getProfile: () => profile, isSignedInUser: () => true };
-      const m7Link = await utils.generateM7Link();
-      expect(m7Link).to.equal('https://commerce.adobe.com/store/segmentation?cli=adobe_com&co=CH&pa=ccsn_direct_individual&cs=t&af=uc_segmentation_hide_tabs');
-      window.adobeIMS = buIms;
-    });
-
     it('Sets up milo.deferredPromise', async () => {
       const { resolveDeferred } = utils.getConfig();
       expect(window.milo.deferredPromise).to.exist;
