@@ -64,12 +64,12 @@ export const DATA_TYPE = {
 
 const IN_BLOCK_SELECTOR_PREFIX = 'in-block:';
 
+const isDamContent = (path) => path?.includes('/content/dam/');
+
 export const normalizePath = (p, localize = true) => {
   let path = p;
 
-  if (!path?.includes('/')) {
-    return path;
-  }
+  if (isDamContent(path) || !path?.includes('/')) return path;
 
   const config = getConfig();
   if (path.startsWith('https://www.adobe.com/federal/')) {
@@ -123,6 +123,7 @@ const CREATE_CMDS = {
 const COMMANDS_KEYS = {
   remove: 'remove',
   replace: 'replace',
+  updateAttribute: 'updateattribute',
 };
 
 function addIds(el, manifestId, targetManifestId) {
@@ -222,6 +223,34 @@ const COMMANDS = {
       createContent(el, cmd),
     );
   },
+  [COMMANDS_KEYS.updateAttribute]: (el, cmd) => {
+    const { manifestId, targetManifestId } = cmd;
+    if (!cmd.attribute || !cmd.content) return;
+    const [attribute, parameter] = cmd.attribute.split('_');
+
+    let value;
+
+    if (attribute === 'href' && parameter) {
+      const href = el.getAttribute('href');
+      try {
+        const url = new URL(href);
+        const parameters = new URLSearchParams(url.search);
+        parameters.set(parameter, cmd.content);
+        url.search = parameters.toString();
+        value = url.toString();
+      } catch (error) {
+        /* c8 ignore next 2 */
+        console.log(`Invalid updateAttribute URL: ${href}`, error.message || error);
+      }
+    } else {
+      value = cmd.content;
+    }
+
+    if (value) {
+      el.setAttribute(attribute, value);
+      addIds(el, manifestId, targetManifestId);
+    }
+  },
 };
 
 const log = (...msg) => {
@@ -229,9 +258,9 @@ const log = (...msg) => {
   if (config.mep?.preview) console.log(...msg);
 };
 
-export const fetchData = async (url, type = DATA_TYPE.JSON) => {
+export const fetchData = async (url, type = DATA_TYPE.JSON, config) => {
   try {
-    const resp = await fetch(normalizePath(url));
+    const resp = await fetch(normalizePath(url), config);
     if (!resp.ok) {
       /* c8 ignore next 5 */
       if (resp.status === 404) {
@@ -433,22 +462,34 @@ function getModifiers(selector) {
   }
   return { sel, modifiers };
 }
-export function modifyNonFragmentSelector(selector) {
+export function modifyNonFragmentSelector(selector, action) {
   const { sel, modifiers } = getModifiers(selector);
+
+  let modifiedSelector = sel
+    .split('>').join(' > ')
+    .split(',').join(' , ')
+    .replaceAll(/main\s*>?\s*(section\d*)/gi, '$1')
+    .split(/\s+/)
+    .map(modifySelectorTerm)
+    .join(' ')
+    .trim();
+
+  let attribute;
+
+  if (action === COMMANDS_KEYS.updateAttribute) {
+    const string = modifiedSelector.split(' ').pop();
+    attribute = string.replace('.', '');
+    modifiedSelector = modifiedSelector.replace(string, '').trim();
+  }
+
   return {
-    modifiedSelector: sel
-      .split('>').join(' > ')
-      .split(',').join(' , ')
-      .replaceAll(/main\s*>?\s*(section\d*)/gi, '$1')
-      .split(/\s+/)
-      .map(modifySelectorTerm)
-      .join(' ')
-      .trim(),
+    modifiedSelector,
     modifiers,
+    attribute,
   };
 }
 
-function getSelectedElements(sel, rootEl, forceRootEl) {
+function getSelectedElements(sel, rootEl, forceRootEl, action) {
   const root = forceRootEl ? rootEl : document;
   const selector = sel.trim();
   if (!selector) return {};
@@ -464,7 +505,12 @@ function getSelectedElements(sel, rootEl, forceRootEl) {
       return { els: [], modifiers: [] };
     }
   }
-  const { modifiedSelector, modifiers } = modifyNonFragmentSelector(selector);
+  const {
+    modifiedSelector,
+    modifiers,
+    attribute,
+  } = modifyNonFragmentSelector(selector, action);
+
   let els;
   try {
     els = root.querySelectorAll(modifiedSelector);
@@ -473,10 +519,11 @@ function getSelectedElements(sel, rootEl, forceRootEl) {
     log('Invalid selector: ', selector);
     return null;
   }
-  if (modifiers.includes(FLAGS.all) || !els.length) return { els, modifiers };
+  if (modifiers.includes(FLAGS.all) || !els.length) return { els, modifiers, attribute };
   els = [els[0]];
-  return { els, modifiers };
+  return { els, modifiers, attribute };
 }
+
 const addHash = (url, newHash) => {
   if (!newHash) return url;
   try {
@@ -523,8 +570,13 @@ export function handleCommands(
       cmd.selectorType = IN_BLOCK_SELECTOR_PREFIX;
       return;
     }
-    const { els, modifiers } = getSelectedElements(selector, rootEl, forceRootEl);
-    cmd.modifiers = modifiers;
+    const {
+      els,
+      modifiers,
+      attribute,
+    } = getSelectedElements(selector, rootEl, forceRootEl, action);
+
+    Object.assign(cmd, { modifiers, attribute });
 
     els?.forEach((el) => {
       if (!el
@@ -1195,7 +1247,7 @@ function sendTargetResponseAnalytics(failure, responseStart, timeoutLocal, messa
         },
       },
       data:
-       { _adobe_corpnew: { digitalData: { primaryEvent: { eventInfo: { eventName: val } } } } },
+        { _adobe_corpnew: { digitalData: { primaryEvent: { eventInfo: { eventName: val } } } } },
     });
   }, { once: true });
 }
@@ -1290,6 +1342,7 @@ export async function init(enablements = {}) {
       enablePersV2,
       hybridPersEnabled,
     };
+
     manifests = manifests.concat(await combineMepSources(pzn, promo, mepParam));
     manifests?.forEach((manifest) => {
       if (manifest.disabled) return;

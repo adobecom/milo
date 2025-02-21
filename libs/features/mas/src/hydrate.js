@@ -1,4 +1,5 @@
 import { CheckoutButton } from './checkout-button.js';
+import { UptLink } from './upt-link.js';
 import { createTag } from './utils.js';
 
 const DEFAULT_BADGE_COLOR = '#000000';
@@ -268,6 +269,15 @@ function clearTags(text) {
     return result;
 }
 
+export function processUptLinks(fields, merchCard) {
+    const placeholders = merchCard.querySelectorAll('a.upt-link');
+    placeholders.forEach(placeholder => {
+        const uptLink = UptLink.createFrom(placeholder);
+        placeholder.replaceWith(uptLink);
+        uptLink.initializeWcsData(fields.osi, fields.promoCode);
+    });
+}
+
 function createSpectrumCssButton(cta, aemFragmentMapping, isOutline, variant) {
     const CheckoutButton = customElements.get('checkout-button');
     const spectrumCta = CheckoutButton.createCheckoutButton({}, cta.innerHTML);
@@ -463,6 +473,7 @@ export async function hydrate(fragment, merchCard) {
     processBackgroundColor(fields, merchCard, aemFragmentMapping.allowedColors);
     processBorderColor(fields, merchCard, aemFragmentMapping.borderColor);
     processDescription(fields, merchCard, aemFragmentMapping.description);
+    processUptLinks(fields, merchCard);
     processCTAs(fields, merchCard, aemFragmentMapping, variant);
     processAnalytics(fields, merchCard);
     updateLinksCSS(merchCard);
