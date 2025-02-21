@@ -17,11 +17,10 @@ import {
   dropWhile,
   getBranchBannerInfo,
 } from '../../../../libs/blocks/global-navigation/utilities/utilities.js';
-import { setConfig, getConfig } from '../../../../libs/utils/utils.js';
+import { setConfig, getConfig, getFedsPlaceholderConfig } from '../../../../libs/utils/utils.js';
 import { createFullGlobalNavigation, config, mockRes } from '../test-utilities.js';
 import gnavWithlocalNav from '../mocks/gnav-with-localnav.plain.js';
 import mepInBlock from '../mocks/mep-config.js';
-import { getFedsPlaceholderConfig } from '../../../../libs/utils/federated.js';
 
 const baseHost = 'https://main--federal--adobecom.aem.page';
 describe('global navigation utilities', () => {
