@@ -74,8 +74,13 @@ header.global-navigation {
   right: 20;
   left: unset;
 }
+
 .global-navigation.mini-gnav .feds-menu-container {
   min-width: 760px;
+}
+
+.global-navigation.mini-gnav .feds-promo-wrapper {
+  display: none;
 }
 
 [dir = "rtl"] .feds-nav-wrapper {
