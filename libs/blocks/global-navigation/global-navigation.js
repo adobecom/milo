@@ -1355,6 +1355,8 @@ export default async function init(block) {
     newMobileNav,
   });
   if (newMobileNav && !isDesktop.matches) block.classList.add('new-nav');
+  const isMiniGnav = new URLSearchParams(window.location.search).get('mini-gnav');
+  isMiniGnav && block.classList.add('mini-gnav');
   await gnav.init();
   if (gnav.isLocalNav()) block.classList.add('local-nav');
   block.setAttribute('daa-im', 'true');
