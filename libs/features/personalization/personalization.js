@@ -345,7 +345,14 @@ function normalizeKeys(obj) {
 
 function handleDotLive(str, origin) {
   const isLive = origin.endsWith('.live');
-  return isLive ? str.replace('.page', '.live') : str;
+  const isPage = origin.endsWith('.page');
+  if (isLive) {
+    return str.replace('.page', '.live');
+  }
+  if (isPage) {
+    return str.replace('.live', '.page');
+  }
+  return str;
 }
 
 function registerInBlockActions(command) {
