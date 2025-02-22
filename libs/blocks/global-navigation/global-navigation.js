@@ -1078,7 +1078,12 @@ class Gnav {
         },
       );
       if (elements) {
-        elements.append(template.querySelector('.feds-popup'));
+        // To override the textcontent of button of first item of localnav
+        const dropdownBtn = template.querySelector('button');
+        if (dropdownBtn) {
+          dropdownBtn.textContent = elements.querySelector('button')?.textContent;
+        }
+        elements.innerHTML = template.innerHTML;
         // Reattach click events & mutation observers, as cloned elem don't retain event listeners
         elements.querySelector('.feds-localnav-items button')?.addEventListener('click', (e) => {
           trigger({ element: e.currentTarget, event: e, type: 'localNavItem' });
