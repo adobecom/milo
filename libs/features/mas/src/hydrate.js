@@ -332,6 +332,7 @@ function createSpectrumSwcButton(cta, aemFragmentMapping, isOutline, variant) {
           checkoutBtn.connectedCallback();
           await checkoutBtn.render();
           await checkoutBtn.onceSettled();
+          spectrumCta.setAttribute('data-href', checkoutBtn.href);
           spectrumCta.addEventListener('click', (e) => {
             e.stopPropagation();
             checkoutBtn.click();
