@@ -195,15 +195,11 @@ function decorateLayout(el) {
     if (iconVariant) loadIconography();
     iconArea.classList.add(iconClass);
     const image = iconArea.querySelector('img');
-    if (image) {
-      if (image.complete) {
-        el.style.visibility = 'visible';
-      } else {
-        el.style.visibility = 'hidden';
-        image.addEventListener('load', () => {
-          el.style.visibility = 'visible';
-        });
-      }
+    if (image && !image.complete) {
+      el.style.display = 'none';
+      image.addEventListener('load', () => {
+        el.style.display = 'block';
+      });
     }
   }
   const foregroundImage = foreground.querySelector(':scope > div:not(.text) img')?.closest('div');
