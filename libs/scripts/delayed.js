@@ -62,19 +62,34 @@ export const loadGoogleLogin = async (getMetadata, loadIms, loadScript, getConfi
   initGoogleLogin(loadIms, getMetadata, loadScript, getConfig);
 };
 
-export const showHiddenContent = () => {
-  // We'll track which elements we've un-hidden (so we know not to border the children)
+function containsHiddenContent(el) {
+  // Grab all child nodes (including el itself if you want)
+  const allNodes = el.querySelectorAll('*');
+
+  for (const node of allNodes) {
+    const style = window.getComputedStyle(node);
+
+    if (
+      style.display === 'none'
+        || style.visibility === 'hidden'
+        || style.opacity === '0'
+        || node.hasAttribute('hidden')
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+export const showHiddenContent = (block) => {
   const forciblyUnhidden = new WeakSet();
 
-  // Query all elements except those in .metadata / .section-metadata / .card-metadata
-  const elements = document.querySelectorAll(
-    'body main *:not(.metadata, .metadata *, .section-metadata, .section-metadata *, .card-metadata, .card-metadata *)',
-  );
+  const elements = block.querySelectorAll('*');
 
   elements.forEach((el) => {
     const style = window.getComputedStyle(el);
 
-    // Decide if 'el' is hidden by any of these criteria
     const isHidden = style.display === 'none'
         || style.visibility === 'hidden'
         || style.opacity === '0'
@@ -84,8 +99,6 @@ export const showHiddenContent = () => {
       return; // not hidden, do nothing
     }
 
-    // Check if any ancestor was already forcibly unhidden
-    // If so, we won't add the border on this child
     let hasUnhiddenAncestor = false;
     let parent = el.parentElement;
     while (parent) {
@@ -96,12 +109,10 @@ export const showHiddenContent = () => {
       parent = parent.parentElement;
     }
 
-    // If it's the *outermost* hidden element, give it a red border
     if (!hasUnhiddenAncestor) {
       el.style.border = '2px dashed red';
     }
 
-    // Now forcibly unhide this element (no matter if it's outermost or not)
     if (style.display === 'none') {
       el.style.setProperty('display', 'block', 'important');
     }
@@ -122,6 +133,27 @@ export const showHiddenContent = () => {
     forciblyUnhidden.add(el);
   });
 };
+
+export function copyComponentsWithHiddenContent() {
+  const sections = document.querySelectorAll('main .section');
+
+  sections.forEach((section) => {
+    const components = section.querySelectorAll(':scope > div:not(.metadata, .section-metadata, .card-metadata)');
+
+    components.forEach((component) => {
+      if (containsHiddenContent(component)) {
+        const clone = component.cloneNode(true);
+
+        clone.style.border = '2px dashed red';
+        clone.setAttribute('data-hidden-copy', 'true'); // for debugging
+
+        // Insert the clone *immediately after* the original component
+        component.parentNode.insertBefore(clone, component.nextSibling);
+        showHiddenContent(clone);
+      }
+    });
+  });
+}
 
 /**
  * Executes everything that happens a lot later, without impacting the user experience.
@@ -148,7 +180,7 @@ const loadDelayed = ([
     import('../utils/samplerum.js').then(({ sampleRUM }) => sampleRUM());
     const urlParams = new URLSearchParams(window.location.search);
     const showHiddenContentParam = urlParams.get('showHiddenContent');
-    if (showHiddenContentParam === 'on') showHiddenContent();
+    if (showHiddenContentParam === 'on') copyComponentsWithHiddenContent()();
   }, DELAY);
 });
 
