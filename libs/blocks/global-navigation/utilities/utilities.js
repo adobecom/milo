@@ -1,8 +1,15 @@
 /* eslint import/no-relative-packages: 0 */
 import {
-  getConfig, getMetadata, loadStyle, loadLana, decorateLinks, localizeLink,
+  getConfig,
+  getMetadata,
+  loadStyle,
+  loadLana,
+  decorateLinks,
+  localizeLink,
+  getFederatedContentRoot,
+  getFederatedUrl,
+  getFedsPlaceholderConfig,
 } from '../../../utils/utils.js';
-import { getFederatedContentRoot, getFederatedUrl, getFedsPlaceholderConfig } from '../../../utils/federated.js';
 import { processTrackingLabels } from '../../../martech/attributes.js';
 import { replaceText } from '../../../features/placeholders.js';
 import { PERSONALIZATION_TAGS } from '../../../features/personalization/personalization.js';
@@ -47,20 +54,21 @@ export const darkIcons = {
   company: '<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 133.5 118.1"><defs><style>.cls-1 {fill: currentColor;}</style></defs><g><g><polygon class="cls-1" points="84.1 0 133.5 0 133.5 118.1 84.1 0"/><polygon class="cls-1" points="49.4 0 0 0 0 118.1 49.4 0"/><polygon class="cls-1" points="66.7 43.5 98.2 118.1 77.6 118.1 68.2 94.4 45.2 94.4 66.7 43.5"/></g></g></svg>',
 };
 
-export const lanaLog = ({ message, e = '', tags = 'errorType=default' }) => {
+export const lanaLog = ({ message, e = '', tags = 'default', errorType }) => {
   const url = getMetadata('gnav-source');
   window.lana.log(`${message} | gnav-source: ${url} | href: ${window.location.href} | ${e.reason || e.error || e.message || e}`, {
     clientId: 'feds-milo',
     sampleRate: 1,
     tags,
+    errorType,
   });
 };
 
-export const logErrorFor = async (fn, message, tags) => {
+export const logErrorFor = async (fn, message, tags, errorType) => {
   try {
     await fn();
   } catch (e) {
-    lanaLog({ message, e, tags });
+    lanaLog({ message, e, tags, errorType });
   }
 };
 
@@ -151,7 +159,8 @@ export function loadStyles(url, override = false) {
       lanaLog({
         message: 'GNAV: Error in loadStyles',
         e: `error loading style: ${url}`,
-        tags: 'errorType=info,module=utilities',
+        tags: 'utilities',
+        errorType: 'info',
       });
     }
   });
@@ -364,7 +373,8 @@ export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true
     lanaLog({
       message: 'Error in fetchAndProcessPlainHtml',
       e: `${res.statusText} url: ${res.url}`,
-      tags: 'errorType=info,module=utilities',
+      tags: 'utilities',
+      errorType: 'info',
     });
     return null;
   }
@@ -402,7 +412,8 @@ export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true
         lanaLog({
           message: 'Error in fetchAndProcessPlainHtml',
           e,
-          tags: 'errorType=info,module=utilities',
+          tags: 'utilities',
+          errorType: 'info',
         });
       });
   }
@@ -455,10 +466,10 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
       const daallTab = headline?.getAttribute('daa-ll');
       const daalhTabContent = section.querySelector('.feds-menu-items')?.getAttribute('daa-lh');
       const content = section.querySelector('.feds-menu-items') ?? section;
-      const links = [...content.querySelectorAll('a.feds-navLink')].map((x) => x.outerHTML).join('');
+      const links = [...content.querySelectorAll('a.feds-navLink, .feds-cta--secondary')].map((x) => x.outerHTML).join('');
       return { name, links, daallTab, daalhTabContent };
     });
-  const CTA = popup.querySelector('.feds-cta')?.outerHTML ?? '';
+  const CTA = popup.querySelector('.feds-cta--primary')?.outerHTML ?? '';
   const mainMenu = `
       <button class="main-menu" daa-ll="Main menu_Gnav" aria-label='Main menu'>
         <svg xmlns="http://www.w3.org/2000/svg" width="7" height="12" viewBox="0 0 7 12" fill="none"><path d="M5.55579 1L1.09618 5.45961C1.05728 5.4985 1.0571 5.56151 1.09577 5.60062L5.51027 10.0661" stroke=${isDarkMode() ? '#f2f2f2' : 'black'} stroke-width="2" stroke-linecap="round"/></svg>
@@ -551,3 +562,77 @@ export const dropWhile = (xs, f) => {
   if (f(xs[0])) return dropWhile(xs.slice(1), f);
   return xs;
 };
+
+/**
+ * Initializes a MutationObserver to monitor the body
+  for the addition or removal of a branch banner iframe.
+ * When the branch banner is added or removed, updates the branch banner
+  information and adjusts the local navigation and popup position accordingly.
+ * A callback function to update the popup position when the branch banner is added or removed.
+ * @param {Function} updatePopupPosition
+ */
+export const [branchBannerLoadCheck, getBranchBannerInfo] = (() => {
+  const branchBannerInfo = {
+    isPresent: false,
+    isSticky: false,
+    height: 0,
+  };
+  return [
+    (updatePopupPosition) => {
+      // Create a MutationObserver instance to monitor the body for new child elements
+      const observer = new MutationObserver((mutationsList) => {
+        mutationsList.forEach((mutation) => {
+          if (mutation.type === 'childList') {
+            mutation.addedNodes.forEach((node) => {
+              // Check if the added node has the ID 'branch-banner-iframe'
+              if (node.id === 'branch-banner-iframe') {
+                branchBannerInfo.isPresent = true;
+                // The element is added, now check its height and sticky status
+                // Check if the element has a sticky position
+                branchBannerInfo.isSticky = window.getComputedStyle(node).position === 'fixed';
+                branchBannerInfo.height = node.offsetHeight; // Get the height of the element
+                if (branchBannerInfo.isSticky) {
+                  // Adjust the top position of the lnav to account for the branch banner height
+                  document.querySelector('.feds-localnav').style.top = `${branchBannerInfo.height}px`;
+                } else {
+                  // Add a class to the body to indicate the presence of a non-sticky branch banner
+                  document.body.classList.add('branch-banner-inline');
+                }
+                // Update the popup position when the branch banner is added
+                updatePopupPosition();
+              }
+            });
+
+            mutation.removedNodes.forEach((node) => {
+              // Check if the removed node has the ID 'branch-banner-iframe'
+              if (node.id === 'branch-banner-iframe') {
+                branchBannerInfo.isPresent = false;
+                branchBannerInfo.isSticky = false;
+                branchBannerInfo.height = 0;
+                // Remove the top style attribute when the branch banner is removed
+                document.querySelector('.feds-localnav')?.removeAttribute('style');
+                // Remove the class indicating the presence of a non-sticky branch banner
+                document.body.classList.remove('branch-banner-inline');
+                // Update the popup position when the branch banner is removed
+                updatePopupPosition();
+                // Optional: Disconnect the observer if you no longer need to track it
+                observer.disconnect();
+              }
+            });
+          }
+        });
+      });
+
+      // Start observing the body element for added child nodes
+      observer.observe(document.body, {
+        childList: true, // Watch for added or removed child nodes
+        subtree: false, // Only observe direct children of <body>
+      });
+    },
+    /**
+     * Retrieves the current status of the branch banner.
+     * @returns {Object} An object containing the presence and sticky status of the branch banner.
+     */
+    () => branchBannerInfo,
+  ];
+})();

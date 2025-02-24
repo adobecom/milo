@@ -168,7 +168,8 @@ test.describe('Promotions feature test suite', () => {
     await test.step('Validate manifest is on served on the page but inactive', async () => {
       await PROMO.mepMenuOpen.click();
       await expect(await PROMO.mepManifestList).toBeVisible();
-      await expect(await PROMO.mepManifestList).toContainText(data.status);
+      await expect(await PROMO.mepManifestList).toContainText(data.status1);
+      await expect(await PROMO.mepManifestList).toContainText(data.status2);
       await expect(await PROMO.mepManifestList).toContainText(data.manifestFile);
     });
 
@@ -297,7 +298,7 @@ test.describe('Promotions feature test suite', () => {
     });
 
     await test.step('Disable insert manifest and preview', async () => {
-      await PROMO.mepInsertDefault.click();
+      await PROMO.mepSelectInsert.selectOption('Default (control)');
       await PROMO.mepPreviewButton.click();
 
       await page.waitForLoadState('domcontentloaded');
@@ -321,8 +322,8 @@ test.describe('Promotions feature test suite', () => {
 
     await test.step('Enable insert and disable replace manifest and preview', async () => {
       await PROMO.mepMenuOpen.click();
-      await PROMO.mepInsertAll.click();
-      await PROMO.mepReplaceDefault.click();
+      await PROMO.mepSelectInsert.selectOption('all');
+      await PROMO.mepSelectReplace.selectOption('Default (control)');
       await PROMO.mepPreviewButton.click();
 
       await page.waitForLoadState('domcontentloaded');
@@ -348,8 +349,8 @@ test.describe('Promotions feature test suite', () => {
 
     await test.step('Desable all manifests and preview', async () => {
       await PROMO.mepMenuOpen.click();
-      await PROMO.mepInsertDefault.click();
-      await PROMO.mepReplaceDefault.click();
+      await PROMO.mepSelectInsert.selectOption('Default (control)');
+      await PROMO.mepSelectReplace.selectOption('Default (control)');
       await PROMO.mepPreviewButton.click();
 
       await page.waitForLoadState('domcontentloaded');
