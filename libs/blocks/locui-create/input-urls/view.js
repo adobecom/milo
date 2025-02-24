@@ -8,12 +8,12 @@ import FragmentsSection from '../fragments/view.js';
 import {
   authenticated,
   createDraftProject,
-  initByParams,
   nextStep,
   project,
   projectCreated,
   setProject,
   updateDraftProject,
+  userWorkflowType,
 } from '../store.js';
 import StepControls from '../components/stepControls.js';
 import { origin } from '../../locui/utils/franklin.js';
@@ -27,7 +27,7 @@ import {
   getInitialName,
 } from './index.js';
 import { getUrls } from '../../locui/loc/index.js';
-import { PROJECT_TYPES, PROJECT_TYPE_LABELS, URL_SEPARATOR_PATTERN } from '../utils/constant.js';
+import { PROJECT_TYPES, PROJECT_TYPE_LABELS, URL_SEPARATOR_PATTERN, WORKFLOW } from '../utils/constant.js';
 import Toast from '../components/toast.js';
 
 export default function InputUrls() {
@@ -210,7 +210,7 @@ export default function InputUrls() {
           <span>- ${PROJECT_TYPE_LABELS[type]}</span>
         </div>
         <div class="locui-form-body">
-          ${(!projectCreated.value && !initByParams.value?.type) && html`
+          ${(WORKFLOW[userWorkflowType.value]?.switcher) && html`
             <div class="segment-ctrl pb-12">
               ${[PROJECT_TYPES.translation, PROJECT_TYPES.rollout].map((pType) => html`
                 <div
@@ -233,7 +233,6 @@ export default function InputUrls() {
                 disabled=${projectCreated.value}
                 onInput=${handleNameChange}
                 placeholder="Enter letters, alphabet and hyphens only"
-                maxlength="50"
               />
               ${errors.name
               && html`<div class="form-field-error">${errors.name}</div>`}
@@ -289,7 +288,7 @@ export default function InputUrls() {
             onInput=${handleUrlsChange}
             onBlur=${handleUrlsBlur}
             placeholder=${`Enter the full URL. E.g, ${origin}/drafts/localization/projects/raga/image-test-one`}
-            disabled=${initByParams.value?.urls}
+            disabled=${!WORKFLOW[userWorkflowType.value]?.urls}
           />
           ${errors.urlsStr
           && html`<div class="form-field-error">${errors.urlsStr}</div>`}
@@ -301,7 +300,7 @@ export default function InputUrls() {
               id="includeFragments"
               name="includeFragments"
               checked=${fragmentsEnabled}
-              disabled=${urlsStr.length === 0 || errors?.urlsStr?.length > 0}
+              disabled=${urlsStr.length === 0 || errors?.urlsStr?.length > 0 || userWorkflowType.value === 'promoteRollout'}
               onClick=${handleFragmentsToggle}
             />
             <label

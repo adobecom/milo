@@ -20,3 +20,26 @@ export const PROJECT_ACTION = {
 export const TRANSLATE_ONLY_LANGS = ['en-GB'];
 export const ENG_LANG_CODE = 'en';
 export const TRANSCREATION_WORKFLOW = 'Transcreation';
+
+export const WORKFLOW = {
+  promoteRollout: {
+    switcher: false,
+    urls: false,
+    languages: false,
+  },
+  edit: {
+    switcher: false,
+    urls: true,
+    languages: true,
+  },
+  singleRollout: {
+    switcher: false,
+    urls: false,
+    languages: false,
+  },
+  normal: {
+    switcher: true,
+    urls: true,
+    languages: true,
+  },
+};

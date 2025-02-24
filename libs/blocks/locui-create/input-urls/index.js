@@ -50,6 +50,9 @@ export function validateForm({
   if (name === '') {
     errors.name = 'Project name is required';
   }
+  if (name.length > 50) {
+    errors.name = 'Project name is too long. Please ensure it is no more than 50 characters.';
+  }
   if (type === 'rollout' && editBehavior === '') {
     errors.editBehavior = 'Edit behavior is required';
   }
