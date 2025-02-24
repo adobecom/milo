@@ -892,6 +892,27 @@ a.static:active  {
   visibility: hidden;
 }
 
+/* Image */
+
+.image-heading-wrapper {
+  position: relative;
+  width: fit-content;
+}
+
+.visually-hidden-heading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+  white-space: nowrap;
+}
+
 /* mobile only */
 @media (max-width: 600px) {
   .con-button.button-justified-mobile {

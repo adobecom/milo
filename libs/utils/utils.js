@@ -634,6 +634,29 @@ export function decorateImageLinks(el) {
   });
 }
 
+export function decorateImageHeaders(el) {
+  const images = el.querySelectorAll('img[alt^="h"][alt*=" -"]');
+
+  if (!images.length) return;
+
+  [...images].forEach((img) => {
+    const headingMatch = img.alt.match(/^(h[1-6])\s*-\s*(.+)/i);
+
+    if (!headingMatch) {
+      return;
+    }
+
+    const [, headingTag, headingText] = headingMatch;
+    img.alt = '';
+    const wrapperDiv = createTag('div', { class: 'image-heading-wrapper' });
+    const hiddenHeading = createTag(headingTag, { class: 'visually-hidden-heading' });
+    hiddenHeading.textContent = headingText;
+    wrapperDiv.appendChild(hiddenHeading);
+    wrapperDiv.appendChild(img.cloneNode(true));
+    img.parentElement.replaceChild(wrapperDiv, img);
+  });
+}
+
 export function decorateAutoBlock(a) {
   const config = getConfig();
   const { hostname } = window.location;
@@ -750,6 +773,7 @@ export function convertStageLinks({ anchors, config, hostname, href }) {
 export function decorateLinks(el) {
   const config = getConfig();
   decorateImageLinks(el);
+  decorateImageHeaders(el);
   const anchors = el.getElementsByTagName('a');
   const { hostname, href } = window.location;
   const links = [...anchors].reduce((rdx, a) => {
