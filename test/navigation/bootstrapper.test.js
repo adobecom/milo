@@ -97,7 +97,7 @@ describe('Bootstrapper', async () => {
   it('Renders the localnav', async () => {
     blockConfig.header.isLocalNav = true;
     blockConfig.header.mobileGnavV2 = true;
-    setConfig({ contentRoot: '/federal/localnav' })
+    setConfig({ contentRoot: '/federal/localnav' });
     const { default: init } = await import('../../libs/blocks/global-navigation/global-navigation.js');
     await loadBlock(init, blockConfig.header);
     const el = document.querySelector('header');
