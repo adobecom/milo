@@ -92,7 +92,7 @@ async function findPageFragments(path) {
 
     if (accDupe || dupe) return acc;
     const fragmentUrl = new URL(`${origin}${pathname}`);
-    fragmentUrl.alt = fragment.textContent;
+    fragmentUrl.alt = isUrl(fragment.textContent) ? fragment.textContent : originalUrl;
     acc.push(fragmentUrl);
     return acc;
   }, []);

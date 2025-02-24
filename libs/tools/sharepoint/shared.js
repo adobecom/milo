@@ -1,4 +1,5 @@
 import getServiceConfig from '../../utils/service-config.js';
+import { SLD } from '../../utils/utils.js';
 
 const MOCK_REFERRER = 'https://adobe.sharepoint.com/:x:/r/sites/adobecom/_layouts/15/Doc.aspx?sourcedoc=%7B654BFAD2-84A7-442D-A13D-18DE87A405B7%7D';
 
@@ -14,7 +15,7 @@ export async function getSharePointDetails(hlxOrigin) {
 }
 
 export function getItemId() {
-  const referrer = new URLSearchParams(window.location.search).get('referrer') || MOCK_REFERRER;
+  const referrer = new URLSearchParams(window.location.search).get('referrer');
   const sourceDoc = referrer?.match(/sourcedoc=([^&]+)/)[1];
   const sourceId = decodeURIComponent(sourceDoc);
   return sourceId.slice(1, -1);
@@ -24,5 +25,5 @@ export function getSiteOrigin() {
   const search = new URLSearchParams(window.location.search);
   const repo = search.get('repo');
   const owner = search.get('owner');
-  return repo && owner ? `https://main--${repo}--${owner}.hlx.live` : window.location.origin;
+  return repo && owner ? `https://main--${repo}--${owner}.${SLD}.page` : window.location.origin;
 }
