@@ -34,7 +34,12 @@ header.global-navigation {
   z-index: 10;
   background-color: var(--feds-background-nav);
   box-sizing: content-box;
-  contain: layout;
+}
+
+@media (min-width: 900px) {
+  header.global-navigation {
+    contain: layout;
+  }
 }
 
 .feds-topnav-wrapper {
