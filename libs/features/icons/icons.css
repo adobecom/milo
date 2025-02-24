@@ -15,8 +15,8 @@
   top: 50%;
   transform: translateY(-50%);
   left: 100%;
-  margin-left: 12px;
-  width: 200px;
+  margin-left: 8px;
+  max-width: 140px;
   padding: 10px;
   border-radius: 5px;
   background: #0469E3;
@@ -24,13 +24,18 @@
   text-align: left;
   display: none;
   z-index: 10;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 16px;
+  width: max-content;
 }
 
 .milo-tooltip::after {
   content: "";
   position: absolute;
   left: 100%;
-  margin-left: -4px;
+  margin-left: -8px;
   top: 50%;
   transform: translateY(-50%);
   border: 8px solid #0469E3;
@@ -48,11 +53,11 @@
   left: initial;
   margin: initial;
   right: 100%;
-  margin-right: 12px;
+  margin-right: 8px;
 }
 
 .milo-tooltip.left::after {
-  left: -8px;
+  left: 0;
   margin-right: 4px;
   top: 50%;
   transform: translateY(-50%);
@@ -63,13 +68,13 @@
 .milo-tooltip.top::before {
   left: calc(50% - 11px);
   transform: translateX(-50%) translateY(-100%);
-  top: -10px;
+  top: -6px;
   margin-bottom: 15px;
 }
 
 .milo-tooltip.top::after {
   left: 50%;
-  top: -2px;
+  top: 2px;
   transform: translateY(-50%);
   border: 8px solid #0469E3;
   border-color: #0469E3 transparent transparent;
@@ -79,12 +84,12 @@
   left: calc(50% - 11px);
   transform: translateX(-50%);
   top: 100%;
-  margin-top: 12px;
+  margin-top: 9px;
 }
 
 .milo-tooltip.bottom::after {
   left: 50%;
-  top: calc(100% + 4px);
+  top: calc(100% + 1px);
   transform: translateY(-50%);
   border: 8px solid #0469E3;
   border-color: transparent transparent #0469E3;
@@ -100,4 +105,15 @@
 .milo-tooltip:focus::after,
 .milo-tooltip:active::after {
   display: block;
+}
+
+.milo-tooltip.hide-tooltip::before,
+.milo-tooltip.hide-tooltip::after {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .milo-tooltip::before { 
+    max-width: 180px;
+  }
 }

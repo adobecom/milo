@@ -54,7 +54,7 @@ export default class Video {
       'iframe-mpc': {
         class: 'adobetv',
         scrolling: 'no',
-        allowfullscreen: '',
+        allow: 'encrypted-media; fullscreen',
         loading: 'lazy',
       },
       'iframe-youtube': {

@@ -172,6 +172,34 @@ async function setAriaLabelForIcons(el) {
   });
 }
 
+function setTooltipListeners(el) {
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      el.querySelectorAll('.milo-tooltip').forEach((tooltip) => {
+        tooltip.classList.add('hide-tooltip');
+      });
+    }
+  });
+
+  el.querySelectorAll('.milo-tooltip').forEach((tooltip) => {
+    tooltip.addEventListener('mouseenter', () => {
+      tooltip.classList.remove('hide-tooltip');
+    });
+
+    tooltip.addEventListener('mouseleave', () => {
+      tooltip.classList.add('hide-tooltip');
+    });
+
+    tooltip.addEventListener('focus', () => {
+      tooltip.classList.remove('hide-tooltip');
+    });
+
+    tooltip.addEventListener('blur', () => {
+      tooltip.classList.add('hide-tooltip');
+    });
+  });
+}
+
 function handleHighlight(table) {
   const isHighlightTable = table.classList.contains('highlight');
   const firstRow = table.querySelector('.row-1');
@@ -447,7 +475,8 @@ function applyStylesBasedOnScreenSize(table, originTable) {
       icon.parentElement.addEventListener('click', () => handleExpand(icon));
       icon.parentElement.setAttribute('tabindex', 0);
       icon.parentElement.addEventListener('keydown', (e) => {
-        e.preventDefault();
+        if (e.key === ' ') e.preventDefault();
+
         if (e.key === 'Enter' || e.key === ' ') handleExpand(icon);
       });
     });
@@ -621,6 +650,7 @@ export default function init(el) {
 
     isDecorated = true;
     setAriaLabelForIcons(el);
+    setTooltipListeners(el);
   };
 
   window.addEventListener(MILO_EVENTS.DEFERRED, () => {
