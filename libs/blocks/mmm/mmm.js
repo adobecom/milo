@@ -5,6 +5,7 @@ import { getMepPopup, API_URLS } from '../../features/personalization/preview.js
 const SEARCH_CRITERIA_CHANGE_EVENT = 'mmm-search-change';
 let cachedSearchCriteria = '';
 export const DEBOUNCE_TIME = 800;
+export const MMM_LOCAL_STORAGE_KEY = 'mmm_filter_settings';
 const SEARCH_CONTAINER = '.mmm-search-container';
 const LAST_SEEN_OPTIONS = {
   day: { value: 'Day', key: 'day' },
@@ -15,9 +16,40 @@ const LAST_SEEN_OPTIONS = {
   year: { value: 'Year', key: 'year' },
   all: { value: 'All', key: 'all' },
 };
-const SEARCH_INITIAL_VALUES = {
+const SUBDOMAIN_OPTIONS = {
+  www: { value: 'www', key: 'www' },
+  business: { value: 'business', key: 'business' },
+  all: { value: 'all', key: 'all' },
+};
+
+export const getLocalStorageFilter = () => {
+  const cookie = localStorage.getItem(MMM_LOCAL_STORAGE_KEY);
+  return cookie ? JSON.parse(cookie) : null;
+};
+
+const setLocalStorageFilter = (obj) => {
+  localStorage.setItem(MMM_LOCAL_STORAGE_KEY, JSON.stringify(obj));
+};
+
+const getInitialValues = () => {
+  const search = new URLSearchParams(window.location.search);
+  const values = {};
+  if (search.size) {
+    search.entries().forEach((item) => {
+      const key = item[0];
+      const value = item[1];
+      values[key] = value;
+    });
+    return values;
+  }
+  return getLocalStorageFilter();
+};
+
+const SEARCH_INITIAL_VALUES = getInitialValues() ?? {
   lastSeenManifest: LAST_SEEN_OPTIONS.threeMonths.key,
   pageNum: 1,
+  subdomain: SUBDOMAIN_OPTIONS.www.key,
+  perPage: 25,
 };
 
 async function toggleDrawer(target, dd, pageId) {
@@ -92,12 +124,12 @@ function createButtonDetailsPair(mmmEl, page) {
  * @param {Number} pageNum - optional. Number of the clicked page.
  * @param {Event} event - optional. Page number click Event object.
  */
-function filterPageList(pageNum, event) {
+function filterPageList(pageNum, perPage, event) {
   const shareUrl = new URL(`${window.location.origin}${window.location.pathname}`);
   const searchValues = {};
   const activeSearchWithShortKeyword = event?.target?.value && event.target.value.length < 2;
 
-  document.querySelector(SEARCH_CONTAINER).querySelectorAll('input, select').forEach((field) => {
+  document.querySelector(SEARCH_CONTAINER).querySelectorAll('input, select, textarea').forEach((field) => {
     const id = field.getAttribute('id').split('-').pop();
     const { value, tagName } = field;
     searchValues[id] = {
@@ -107,9 +139,9 @@ function filterPageList(pageNum, event) {
     if (value) shareUrl.searchParams.set(id, value);
   });
 
-  // add page number to share url
-  shareUrl.searchParams.set('pageNum', pageNum || 1);
+  // add pageNum and perPage to args for api call
   searchValues.pageNum = { value: pageNum || 1, tagName: 'A' };
+  searchValues.perPage = { value: perPage || 25, tagName: 'SELECT' };
 
   // assemble event details object with all filter criterias
   const detail = {};
@@ -118,6 +150,7 @@ function filterPageList(pageNum, event) {
   });
   // This event triggers an API call with most recent search criteria and a forces a re-render
   if (!activeSearchWithShortKeyword) {
+    setLocalStorageFilter(detail);
     document.dispatchEvent(new CustomEvent(SEARCH_CRITERIA_CHANGE_EVENT, { detail }));
   }
 
@@ -125,6 +158,7 @@ function filterPageList(pageNum, event) {
     button.dataset.destination = shareUrl.href;
   });
 }
+
 function parseData(el) {
   const data = {};
   const rows = el.querySelectorAll('div');
@@ -167,7 +201,8 @@ function createShareButton() {
       <path fill="currentColor" d="M31 0H6C2.7 0 0 2.7 0 6v25c0 3.3 2.7 6 6 6h25c3.3 0 6-2.7 6-6V6c0-3.3-2.7-6-6-6zM15.34 30.58a6.296 6.296 0 0 1-8.83 0c-2.48-2.44-2.52-6.43-.08-8.91l6.31-6.31a6.423 6.423 0 0 1 9.01-.04c.43.43.79.93 1.08 1.47l-1.52 1.51c-.11.11-.24.2-.38.28a3.68 3.68 0 0 0-3.32-2.44c-1.1-.04-2.17.37-2.96 1.13l-6.31 6.31a3.591 3.591 0 0 0 0 5.09 3.591 3.591 0 0 0 5.09 0c.19-.19 2.81-2.85 3.26-3.3 1.04.43 2.16.61 3.29.53-.96.95-4.31 4.34-4.64 4.68zm15.19-15.2-5.94 5.94c-2.54 2.57-6.63 2.73-9.38.38-.43-.43-.79-.93-1.08-1.47l1.44-1.5a2 2 0 0 1 .37-.28c.24.56.61 1.05 1.09 1.43.64.62 1.49.97 2.37.97 1.1.04 2.17-.37 2.96-1.14l6.26-6.26a3.591 3.591 0 0 0 0-5.09 3.591 3.591 0 0 0-5.09 0c-.19.19-2.87 2.83-3.32 3.29a7.267 7.267 0 0 0-3.29-.53c.96-.96 4.36-4.32 4.7-4.66a6.301 6.301 0 0 1 8.91 0l.01.01c2.46 2.47 2.46 6.46-.01 8.91z"></path>
     </svg>`,
   );
-  button.dataset.destination = document.location.href; // set original destination
+  // set initial destination
+  button.dataset.destination = document.location.href;
   div.append(button);
   button.addEventListener('click', (e) => {
     /* c8 ignore start */
@@ -185,7 +220,7 @@ function createShareButton() {
   return div;
 }
 
-function createDropdowns(data, sharedUrlSettings) {
+function createDropdowns(data) {
   const searchContainer = document.querySelector(SEARCH_CONTAINER);
   const dropdownForm = createTag(
     'div',
@@ -206,7 +241,7 @@ function createDropdowns(data, sharedUrlSettings) {
     Object.keys(options).forEach((option) => {
       const optionEl = createTag('option', { value: option }, options[option]);
       select.append(optionEl);
-      const startingVal = sharedUrlSettings[key];
+      const startingVal = SEARCH_INITIAL_VALUES[key];
       if (startingVal === option) optionEl.setAttribute('selected', 'selected');
     });
     select.addEventListener('change', () => filterPageList());
@@ -221,43 +256,50 @@ function debounce(func) {
   };
 }
 
-function createSearchField(data, sharedUrlSettings) {
+function createSearchField() {
   const searchContainer = document.querySelector(SEARCH_CONTAINER);
   const searchForm = createTag(
     'div',
-    { id: 'mmm-search-urls-container', class: 'mmm-form-container' },
+    { id: 'mmm-search-filter-container', class: 'mmm-form-container' },
     `<div>
-      <label for="mmm-search-urls">Filter:</label>
-      <input id="mmm-search-urls" type="text" name="mmm-search-urls" class="text-field-input" placeholder="Search for a full or partial URL">
+      <label for="mmm-search-filter">Filter:</label>
+      <textarea id="mmm-search-filter" type="text" name="mmm-search-filter" class="text-field-input" placeholder="Search for the full or partial: page URL, manifest URL, manifest experience name or Target activity name"></textarea>
     </div>`,
   );
   searchContainer.append(searchForm);
-  const searchField = searchForm.querySelector('input');
-  if (sharedUrlSettings.urls) searchField.value = sharedUrlSettings.urls;
+  const searchField = searchForm.querySelector('textarea');
+  searchField.value = SEARCH_INITIAL_VALUES.filter || '';
 
-  searchField.addEventListener('keyup', debounce((event) => filterPageList(null, event)));
-  searchField.addEventListener('change', debounce((event) => filterPageList(null, event)));
+  searchField.addEventListener('keyup', debounce((event) => filterPageList(null, null, event)));
+  searchField.addEventListener('change', debounce((event) => filterPageList(null, null, event)));
+  searchField.addEventListener('input', function adjustHeight() {
+    this.style.height = 'auto'; /* Reset height to auto to recalculate */
+    this.style.height = `${this.scrollHeight - 32}px`;
+  });
 }
 
-function isSelectedLastSeenDropdownOption(key) {
-  const searchKey = new URL(window.location.href).searchParams.get('lastSeenManifest');
-  if (searchKey) return searchKey === key;
-  return LAST_SEEN_OPTIONS[key].key === SEARCH_INITIAL_VALUES.lastSeenManifest;
-}
-
-function createLastSeenManifestDD() {
+function createLastSeenManifestAndDomainDD() {
   const searchContainer = document.querySelector(SEARCH_CONTAINER);
   const dd = createTag(
     'div',
-    { id: 'mmm-dropdown-lastSeenManifest', class: 'mmm-form-container' },
+    { id: 'mmm-dropdown-container', class: 'mmm-form-container' },
     `<div>
       <label for="mmm-lastSeenManifest">Manifests seen in the last:</label>
       <select id="mmm-lastSeenManifest" type="text" name="mmm-lastSeenManifest" class="text-field-input">
         ${Object.keys(LAST_SEEN_OPTIONS).map((key) => `
-          <option value="${LAST_SEEN_OPTIONS[key].key}" ${isSelectedLastSeenDropdownOption(LAST_SEEN_OPTIONS[key].key) ? 'selected' : ''}>${LAST_SEEN_OPTIONS[key].value}</option>
+          <option value="${LAST_SEEN_OPTIONS[key].key}" ${SEARCH_INITIAL_VALUES.lastSeenManifest === LAST_SEEN_OPTIONS[key].key ? 'selected' : ''}>${LAST_SEEN_OPTIONS[key].value}</option>
         `)}
       </select>
-    </div>`,
+    </div>
+    <div>
+      <label for="mmm-subdomain">Subdomain:</label>
+      <select id="mmm-subdomain" type="text" name="mmm-subdomain" class="text-field-input">
+        ${Object.keys(SUBDOMAIN_OPTIONS).map((key) => `
+          <option value="${SUBDOMAIN_OPTIONS[key].key}" ${SEARCH_INITIAL_VALUES.subdomain === SUBDOMAIN_OPTIONS[key].key ? 'selected' : ''}>${SUBDOMAIN_OPTIONS[key].value}</option>
+        `)}
+      </select>
+    </div>
+    `,
   );
   dd.addEventListener('change', () => filterPageList());
   searchContainer.append(dd);
@@ -265,70 +307,111 @@ function createLastSeenManifestDD() {
 
 async function createForm(el) {
   const data = parseData(el);
-  const urlParams = new URLSearchParams(window.location.search);
-  const sharedUrlSettings = Object.fromEntries(urlParams.entries());
   const searchContainer = createTag('div', { class: SEARCH_CONTAINER.slice(1) });
   document.querySelector('.mmm-container').parentNode.prepend(searchContainer);
-  createDropdowns(data, sharedUrlSettings);
-  createLastSeenManifestDD();
-  createSearchField(data, sharedUrlSettings);
+  createDropdowns(data);
+  createLastSeenManifestAndDomainDD();
+  createSearchField();
 }
 
 function createPaginationEl({ data, el }) {
-  const paginationEl = createTag('div', { id: 'mmm-pagination', 'data-current-page': data.pageNum });
-  const totalPages = Math.ceil(data.totalRecords / data.perPage);
-  const noResult = !data.totalRecords;
-  const prev = data.pageNum - 1 || 1;
-  const next = data.pageNum < totalPages ? data.pageNum + 1 : data.pageNum;
-
-  const prevEl = createTag('a', {
-    'data-page-num': prev,
-    class: `arrow ${data.pageNum === 1 ? 'disabled' : ''}`,
-  }, '<');
-  const nextEl = createTag('a', {
-    'data-page-num': next,
-    class: `arrow ${data.pageNum === totalPages ? 'disabled' : ''}`,
-  }, '>');
-
-  const paginationSummary = createTag('div', { class: 'mmm-pagination-summary' });
-  const range = `${data.pageNum * data.perPage - (data.perPage - 1)}-${data.pageNum * data.perPage < data.totalRecords ? data.pageNum * data.perPage : data.totalRecords}`;
-  paginationSummary.innerHTML = `
-    <div>
-      <span>${range} of ${data.totalRecords}</span>
-    <div>
-  `;
-  if (!noResult) {
-    paginationEl.append(prevEl);
-    for (let i = 1; i <= totalPages; i += 1) {
-      const pageLink = createTag('a', {
-        class: `${i === data.pageNum ? 'current-page' : ''}`,
-        'data-page-num': i,
-      }, i);
-      paginationEl.append(pageLink);
-    }
-    paginationEl.append(nextEl);
-    document.querySelector('#mmm').prepend(paginationSummary);
+  const { pageNum, perPage, totalRecords } = data;
+  const arrowIcons = {
+    first: '<svg width="14" height="12" viewBox="0 0 14 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13.205 10.59L8.61504 6L13.205 1.41L11.795 0L5.79504 6L11.795 12L13.205 10.59ZM0.795044 0H2.79504V12H0.795044V0Z" fill="black"/></svg>',
+    prev: '<svg width="8" height="12" viewBox="0 0 8 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7.70504 1.41L6.29504 0L0.295044 6L6.29504 12L7.70504 10.59L3.12504 6L7.70504 1.41Z" fill="black"/></svg>',
+    next: '<svg width="8" height="12" viewBox="0 0 8 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.70504 0L0.295044 1.41L4.87504 6L0.295044 10.59L1.70504 12L7.70504 6L1.70504 0Z" fill="black"/></svg>',
+    last: '<svg width="14" height="12" viewBox="0 0 14 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0.795044 1.41L5.38504 6L0.795044 10.59L2.20504 12L8.20504 6L2.20504 0L0.795044 1.41ZM11.205 0H13.205V12H11.205V0Z" fill="black"/></svg>',
+  };
+  const paginationEl = createTag('div', {
+    id: 'mmm-pagination',
+    'data-current-page': pageNum,
+    'data-perpage': perPage,
+  });
+  if (totalRecords) {
+    const perPageOptions = [25, 50, 100]; // add more options as needed
+    const paginationWrapper = createTag('div', { id: 'mmm-pagination-wrapper' });
+    const paginationLabel = createTag(
+      'label',
+      { for: 'mmm-pagination-dropdown' },
+      'Items per page:',
+    );
+    const paginationDropdown = createTag(
+      'select',
+      {
+        id: 'mmm-pagination-dropdown',
+        value: perPage,
+      },
+    );
+    perPageOptions.forEach((option) => paginationDropdown.append(createTag('option', {
+      value: option,
+      ...(option === perPage ? { selected: 'selected' } : {}),
+    }, option)));
+    paginationEl.append(paginationWrapper);
+    const totalPages = Math.ceil(totalRecords / perPage);
+    const prev = pageNum - 1 || 1;
+    const next = pageNum < totalPages ? pageNum + 1 : pageNum;
+    const firstEl = createTag('a', {
+      'data-page-num': '1',
+      class: `arrow ${pageNum === 1 ? 'disabled' : ''}`,
+    }, arrowIcons.first);
+    const prevEl = createTag('a', {
+      'data-page-num': prev,
+      class: `arrow ${pageNum === 1 ? 'disabled' : ''}`,
+    }, arrowIcons.prev);
+    const nextEl = createTag('a', {
+      'data-page-num': next,
+      class: `arrow ${pageNum === totalPages ? 'disabled' : ''}`,
+    }, arrowIcons.next);
+    const lastEl = createTag('a', {
+      'data-page-num': totalPages,
+      class: `arrow ${pageNum === totalPages ? 'disabled' : ''}`,
+    }, arrowIcons.last);
+    const rangeStart = pageNum * perPage - (perPage - 1);
+    const rangeEnd = pageNum * perPage < totalRecords ? pageNum * perPage : totalRecords;
+    const range = `${rangeStart.toLocaleString()} - ${rangeEnd.toLocaleString()}`;
+    const paginationSummary = createTag(
+      'div',
+      { class: 'mmm-pagination-summary' },
+      `<div><span>${range} of ${totalRecords.toLocaleString()}</span><div>`,
+    );
+    paginationWrapper.append(
+      createTag('div', { id: 'pagination-select' }, [paginationLabel, paginationDropdown]),
+      createTag('div', { id: 'pagination-arrows' }, [
+        firstEl,
+        prevEl,
+        paginationSummary,
+        nextEl,
+        lastEl,
+      ]),
+    );
   } else {
-    paginationEl.innerHTML = '<h5>No results.</h5>';
+    paginationEl.append(createTag('h5', { id: 'mmm-pagination-no-results' }, 'No results'));
   }
   el.append(paginationEl);
 }
 
-function getSearchParams(obj) {
-  let searchString = '';
-  Object.keys(obj).forEach((key) => {
-    if (obj[key]) searchString += `&${key}=${obj[key]}`;
+function handlePaginationDropdownChange() {
+  const paginationEl = document.querySelector('#mmm-pagination');
+  paginationEl?.querySelector('select')?.addEventListener('change', (event) => {
+    paginationEl.dataset.perpage = event.target.value;
+    filterPageList(
+      paginationEl.dataset.pageNum,
+      paginationEl.dataset.perpage,
+      event,
+    );
   });
-  searchString = `?${searchString.slice(1)}`;
-  return searchString;
 }
 
 function handlePaginationClicks() {
   const paginationEl = document.querySelector('#mmm-pagination');
   paginationEl?.querySelectorAll('a').forEach((item) => {
-    item?.addEventListener('click', () => {
-      item.parentNode.setAttribute('data-current-page', item.getAttribute('data-page-num'));
-      filterPageList(item.getAttribute('data-page-num'));
+    item?.addEventListener('click', (event) => {
+      paginationEl.dataset.currentPage = item.dataset.pageNum;
+      filterPageList(
+        item.dataset.pageNum,
+        paginationEl.dataset.perpage,
+        event,
+      );
     });
   });
 }
@@ -343,10 +426,14 @@ async function createPageList(el, search) {
     role: 'presentation',
   });
   mmmElContainer.append(mmmEl);
-  const url = `${API_URLS.pageList}${getSearchParams(search ?? SEARCH_INITIAL_VALUES)}`;
+  const url = API_URLS.pageList;
   const response = await fetchData(
     url,
     DATA_TYPE.JSON,
+    {
+      method: 'POST',
+      body: JSON.stringify(search ?? SEARCH_INITIAL_VALUES),
+    },
   );
   response.result?.map((page) => createButtonDetailsPair(mmmEl, page));
   const section = createTag('div', { id: 'mep-section', class: 'section' });
@@ -354,11 +441,12 @@ async function createPageList(el, search) {
   el.replaceWith(mmmElContainer);
   main.append(section);
   createPaginationEl({
-    el: mmmElContainer,
     data: response,
+    el: mmmElContainer,
   });
   paginationEl?.classList.remove('mmm-hide');
   handlePaginationClicks();
+  handlePaginationDropdownChange();
 }
 
 /**
@@ -368,6 +456,11 @@ async function createPageList(el, search) {
  */
 function subscribeToSearchCriteriaChanges() {
   document.addEventListener(SEARCH_CRITERIA_CHANGE_EVENT, (el) => {
+    // clear url of search params (if user came from a share link)
+    if (document.location.search) {
+      window.history.pushState({}, document.title, `${document.location.origin}${document.location.pathname}`);
+    }
+
     const searchCriteria = JSON.stringify(el?.detail || {});
     if (cachedSearchCriteria !== searchCriteria) {
       createPageList(document.querySelector('.mmm').parentNode, el.detail);

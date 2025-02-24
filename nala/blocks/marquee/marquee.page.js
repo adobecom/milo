@@ -138,7 +138,7 @@ export default class Marquee {
         },
       },
       'marquee.split.one-third-large': {
-        style: /^background:\s+rgb\(245, 245, 245\)$/,
+        style: /^background:\s+rgb\(249, 249, 249\)$/,
         iconImg: {
           loading: 'eager',
           fetchpriority: 'high',
