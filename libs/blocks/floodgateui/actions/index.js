@@ -7,6 +7,7 @@ import { origin, preview } from '../../locui/utils/franklin.js';
 import { decorateSections } from '../../../utils/utils.js';
 import { getUrls } from '../../locui/loc/index.js';
 import { validateUrlsFormat } from '../floodgate/index.js';
+import { isUrl } from '../utils/url.js';
 
 export const showRolloutOptions = signal(false);
 
