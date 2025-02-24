@@ -3,7 +3,7 @@ import useInputLocale from './index.js';
 import StepControls from '../components/stepControls.js';
 import { PROJECT_TYPES, WORKFLOW } from '../utils/constant.js';
 import Toast from '../components/toast.js';
-import { initByParams, userWorkflowType } from '../store.js';
+import { userWorkflowType } from '../store.js';
 
 export default function InputLocales() {
   const {

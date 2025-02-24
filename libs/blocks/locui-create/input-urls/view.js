@@ -8,7 +8,6 @@ import FragmentsSection from '../fragments/view.js';
 import {
   authenticated,
   createDraftProject,
-  initByParams,
   nextStep,
   project,
   projectCreated,
