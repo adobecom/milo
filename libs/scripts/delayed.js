@@ -63,32 +63,63 @@ export const loadGoogleLogin = async (getMetadata, loadIms, loadScript, getConfi
 };
 
 export const showHiddenContent = () => {
-  const elements = document.querySelectorAll('body main *:not(.metadata, .metadata *, .section-metadata, .section-metadata *, .card-metadata, .card-metadata *)');
+  // We'll track which elements we've un-hidden (so we know not to border the children)
+  const forciblyUnhidden = new WeakSet();
+
+  // Query all elements except those in .metadata / .section-metadata / .card-metadata
+  const elements = document.querySelectorAll(
+    'body main *:not(.metadata, .metadata *, .section-metadata, .section-metadata *, .card-metadata, .card-metadata *)',
+  );
+
   elements.forEach((el) => {
     const style = window.getComputedStyle(el);
 
-    if (style.display === 'none') {
+    // Decide if 'el' is hidden by any of these criteria
+    const isHidden = style.display === 'none'
+        || style.visibility === 'hidden'
+        || style.opacity === '0'
+        || el.hasAttribute('hidden');
+
+    if (!isHidden) {
+      return; // not hidden, do nothing
+    }
+
+    // Check if any ancestor was already forcibly unhidden
+    // If so, we won't add the border on this child
+    let hasUnhiddenAncestor = false;
+    let parent = el.parentElement;
+    while (parent) {
+      if (forciblyUnhidden.has(parent)) {
+        hasUnhiddenAncestor = true;
+        break;
+      }
+      parent = parent.parentElement;
+    }
+
+    // If it's the *outermost* hidden element, give it a red border
+    if (!hasUnhiddenAncestor) {
       el.style.border = '2px dashed red';
+    }
+
+    // Now forcibly unhide this element (no matter if it's outermost or not)
+    if (style.display === 'none') {
       el.style.setProperty('display', 'block', 'important');
     }
 
-    // 3. If it's visibility:hidden, force it visible
     if (style.visibility === 'hidden') {
-      el.style.border = '2px dashed red';
       el.style.setProperty('visibility', 'visible', 'important');
     }
 
-    // 4. If opacity is 0, set it to 1
     if (style.opacity === '0') {
-      el.style.border = '2px dashed red';
       el.style.setProperty('opacity', '1', 'important');
     }
 
-    // 5. Remove the hidden attribute if it exists
     if (el.hasAttribute('hidden')) {
-      el.style.border = '2px dashed red';
       el.removeAttribute('hidden');
     }
+
+    // Mark this element as "forcibly unhidden"
+    forciblyUnhidden.add(el);
   });
 };
 
