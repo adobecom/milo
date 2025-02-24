@@ -50,6 +50,7 @@ function Create() {
           }
         }
         if (projectInitByUrl && !projectKey) {
+          setUserWorkflowType('singleRollout');
           setProject(projectInitByUrl);
           setInitByParams(projectInitByUrl);
           setSelectedLocalesAndRegions();
