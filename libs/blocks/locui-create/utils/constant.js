@@ -25,7 +25,7 @@ export const WORKFLOW = {
   promoteRollout: {
     switcher: false,
     urls: false,
-    languages:  false,
+    languages: false,
   },
   edit: {
     switcher: false,
@@ -41,5 +41,5 @@ export const WORKFLOW = {
     switcher: true,
     urls: true,
     languages: true,
-  }
-}
+  },
+};
