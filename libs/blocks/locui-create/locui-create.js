@@ -11,6 +11,7 @@ import {
   project,
   setInitByParams,
   setProject,
+  setUserWorkflowType,
 } from './store.js';
 import StepTracker from './components/stepTracker.js';
 import InputActions from './input-actions/view.js';
@@ -31,10 +32,12 @@ function Create() {
         env.value = getEnvQueryParam();
         const searchParams = new URLSearchParams(window.location.search);
         const projectKey = searchParams.get('projectKey');
+        const workflow = searchParams.get('workflow');
         const projectInitByUrl = getProjectByParams(searchParams);
 
         /* Fetch draft project if project key is found in url params */
         if (projectKey) {
+          setUserWorkflowType(workflow);
           const error = await fetchDraftProject(projectKey);
           if (error) {
             setToast({ type: 'error', message: error });

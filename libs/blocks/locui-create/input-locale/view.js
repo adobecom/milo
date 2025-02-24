@@ -1,9 +1,9 @@
 import { html } from '../../../deps/htm-preact.js';
 import useInputLocale from './index.js';
 import StepControls from '../components/stepControls.js';
-import { PROJECT_TYPES } from '../utils/constant.js';
+import { PROJECT_TYPES, WORKFLOW } from '../utils/constant.js';
 import Toast from '../components/toast.js';
-import { initByParams } from '../store.js';
+import { initByParams, userWorkflowType } from '../store.js';
 
 export default function InputLocales() {
   const {
@@ -26,7 +26,7 @@ export default function InputLocales() {
   } = useInputLocale();
 
   const RenderRegion = () => {
-    if (!initByParams.value?.languages) {
+    if (WORKFLOW[userWorkflowType.value]?.languages) {
       return (html`
     <h5 class="section-header">Quick Select for Language/Locale</h5>
     <div class="additional-cta">
@@ -59,7 +59,7 @@ export default function InputLocales() {
   };
 
   const RenderLanguage = () => {
-    if (!initByParams.value?.languages) {
+    if (WORKFLOW[userWorkflowType.value]?.languages) {
       return (html`
     <div class="language-grid">
       <h5 class="section-header">Select the Language(s)</h5>
