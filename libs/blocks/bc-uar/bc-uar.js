@@ -105,6 +105,6 @@ const App = () => {
 
 export default async function init(el) {
   el.replaceChildren();
-  render(html`<${App}}/>`, el);
-  await loadChat();
+  await loadChat(); // Wait for chat to load first
+  render(html`<${App}/>`, el);
 }
