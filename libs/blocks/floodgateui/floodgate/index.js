@@ -37,7 +37,7 @@ export function validateUrlsFormat(projectUrls, removeMedia = false) {
   projectUrls.forEach((projectUrl, idx) => {
     const urlObj = getUrl(projectUrl);
     const url = isUrl(urlObj.alt) ?? urlObj;
-    if (!validateOrigin(domain.origin)) {
+    if (!validateOrigin(url.origin)) {
       const aemUrl = url.hostname?.split('--').length === 3;
       url.valid = !aemUrl ? 'not AEM url' : 'not same domain';
     }
