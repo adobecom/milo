@@ -12,6 +12,7 @@ export default class MasCCDPage {
     this.suggestedCardEyebrow = page.locator('h4[slot="detail-s"]');
     this.suggestedCardDescription = page.locator('div[slot="body-xs"] p').first();
     this.suggestedCardLegalLink = page.locator('div[slot="body-xs"] p > a');
+    this.suggestedCardUptLink = page.locator('div[slot="body-xs"] p > a[is="upt-link"]');
     this.suggestedCardPrice = page.locator('p[slot="price"]');
     this.suggestedCardCTA = page.locator('div[slot="cta"] > button');
     this.suggestedCardCTAButton = page.locator('div[slot="cta"] button[is="checkout-button"]');
@@ -21,6 +22,7 @@ export default class MasCCDPage {
     this.sliceCardImage = page.locator('div[slot="image"] img');
     this.sliceCardDescription = page.locator('div[slot="body-s"] p > strong').first();
     this.sliceCardLegalLink = page.locator('div[slot="body-s"] p > a');
+    this.sliceCardUptLink = page.locator('div[slot="body-s"] p > a[is="upt-link"]');
     this.sliceCardCTA = page.locator('div[slot="footer"] > button');
     this.sliceCardCTAButton = page.locator('div[slot="footer"] button[is="checkout-button"]');
 
@@ -292,6 +294,11 @@ export default class MasCCDPage {
         slice: this.sliceCardLegalLink,
         'slice-wide': this.sliceCardLegalLink,
       },
+      uptLink: {
+        suggested: this.suggestedCardUptLink,
+        slice: this.sliceCardUptLink,
+        'slice-wide': this.sliceCardUptLink,
+      },
       price: {
         suggested: this.suggestedCardPrice,
         slice: this.price,
@@ -354,6 +361,10 @@ export default class MasCCDPage {
 
   async getCardLegalLink(id, cardType) {
     return this.getCardField(id, cardType, 'legalLink');
+  }
+
+  async getCardUptLink(id, cardType) {
+    return this.getCardField(id, cardType, 'uptLink');
   }
 
   async getCardPrice(id, cardType) {

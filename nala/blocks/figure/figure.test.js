@@ -53,9 +53,13 @@ test.describe('Milo Figure Block test suite', () => {
       await expect(await figureBlock.figCaption.nth(1)).toContainText(data.figCaption_2);
     });
 
-    await test.step('step-3: Verify the accessibility test on the Figure block', async () => {
-      // The accessibility test for the Figure block is failing, so skipping it.
-      await runAccessibilityTest({ page, testScope: figureBlock.figure, skipA11yTest: true });
+    await test.step('step-3: Verify the accessibility test on all Figure blocks', async () => {
+      const figureBlocks = await figureBlock.figure.all();
+
+      for (let i = 0; i < figureBlocks.length; i++) {
+        console.info(`Running accessibility test on Figure block #${i + 1}`);
+        await runAccessibilityTest({ page, testScope: figureBlocks[i] });
+      }
     });
   });
 });

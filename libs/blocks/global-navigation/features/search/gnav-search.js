@@ -8,9 +8,8 @@ import {
   lanaLog,
 } from '../../utilities/utilities.js';
 import { replaceKeyArray } from '../../../../features/placeholders.js';
-import { getConfig } from '../../../../utils/utils.js';
+import { getConfig, getFedsPlaceholderConfig } from '../../../../utils/utils.js';
 import { debounce } from '../../../../utils/action.js';
-import { getFedsPlaceholderConfig } from '../../../../utils/federated.js';
 
 const CONFIG = {
   suggestions: {
