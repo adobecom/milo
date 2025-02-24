@@ -68,25 +68,26 @@ export const showHiddenContent = () => {
     const style = window.getComputedStyle(el);
 
     if (style.display === 'none') {
+      el.style.border = '2px dashed red';
       el.style.setProperty('display', 'block', 'important');
-      el.style.setProperty('opacity', '0.5', 'important');
     }
 
     // 3. If it's visibility:hidden, force it visible
     if (style.visibility === 'hidden') {
+      el.style.border = '2px dashed red';
       el.style.setProperty('visibility', 'visible', 'important');
-      el.style.setProperty('opacity', '0.5', 'important');
     }
 
     // 4. If opacity is 0, set it to 1
     if (style.opacity === '0') {
-      el.style.setProperty('opacity', '0.5', 'important');
+      el.style.border = '2px dashed red';
+      el.style.setProperty('opacity', '1', 'important');
     }
 
     // 5. Remove the hidden attribute if it exists
     if (el.hasAttribute('hidden')) {
+      el.style.border = '2px dashed red';
       el.removeAttribute('hidden');
-      el.style.setProperty('opacity', '0.5', 'important');
     }
   });
 };
