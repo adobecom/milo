@@ -101,18 +101,13 @@ function getUniqueId(el, rootElem) {
   return [...tabs].indexOf(el) + 1;
 }
 
-function stopEventBubbling(event) {
-  event.stopPropagation();
-}
-
 function configTabs(config, rootElem) {
   if (config['active-tab']) {
     const id = `#tab-${CSS.escape(config['tab-id'])}-${CSS.escape(getStringKeyName(config['active-tab']))}`;
     const sel = rootElem.querySelector(id);
     if (sel) {
-      sel.addEventListener('click', stopEventBubbling, false);
+      sel.addEventListener('click', (e) => e.stopPropagation(), { once: true });
       sel.click();
-      sel.removeEventListener('click', stopEventBubbling, false);
     }
   }
   const tabParam = new URLSearchParams(window.location.search).get('tab');
