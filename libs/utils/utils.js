@@ -1184,8 +1184,7 @@ async function checkForPageMods() {
   const promo = getMepEnablement('manifestnames', PROMO_PARAM);
   const target = martech === 'off' ? false : getMepEnablement('target');
   const xlg = martech === 'off' ? false : getMepEnablement('xlg');
-  const isPOC = (document.title === '404' && window.location.pathname === '/products/photoshop/123.html');
-  const ajo = martech === 'off' ? false : isPOC || getMepEnablement('ajo');
+  const ajo = martech === 'off' ? false : getMepEnablement('ajo');
 
   if (!(pzn || target || promo || mepParam
     || mepHighlight || mepButton || mepParam === '' || xlg || ajo)) return;
