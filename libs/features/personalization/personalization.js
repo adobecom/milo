@@ -78,31 +78,36 @@ export const normalizePath = (p, localize = true) => {
   if (isDamContent(path) || !path?.includes('/')) return path;
 
   const config = getConfig();
-  if (path.startsWith('https://www.adobe.com/federal/')) {
+  if (path.includes('/federal/')) {
     return getFederatedUrl(path);
   }
 
-  if (path.startsWith(config.codeRoot)
-    || path.includes('.hlx.')
-    || path.includes('.aem.')
-    || path.includes('.adobe.')) {
-    try {
-      const url = new URL(path);
-      const firstFolder = url.pathname.split('/')[1];
+  try {
+    const url = new URL(path);
+    const firstFolder = url.pathname.split('/')[1];
+    const { hash } = url;
+
+    if (path.startsWith(config.codeRoot)
+      || path.includes('.hlx.')
+      || path.includes('.aem.')
+      || path.includes('.adobe.')) {
       if (!localize
         || config.locale.ietf === 'en-US'
-        || url.hash.includes('#_dnt')
+        || hash.includes('#_dnt')
         || firstFolder in config.locales
         || path.includes('.json')) {
         path = url.pathname;
       } else {
         path = `${config.locale.prefix}${url.pathname}`;
       }
-    } catch (e) { /* return path below */ }
-  } else if (!path.startsWith('http') && !path.startsWith('/')) {
-    path = `/${path}`;
+    } else if (!path.startsWith('http') && !path.startsWith('/')) {
+      path = `/${path}`;
+    }
+
+    return `${path}${hash}`;
+  } catch (e) {
+    return path;
   }
-  return path;
 };
 
 export const getFileName = (path) => path?.split('/').pop();
