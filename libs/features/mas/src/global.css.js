@@ -160,6 +160,10 @@ merch-card[variant="ccd-slice"] * {
   box-sizing: border-box;
 }
 
+merch-card * {
+  padding: revert-layer;
+}
+
 merch-card.background-opacity-70 {
     background-color: rgba(255 255 255 / 70%);
 }
