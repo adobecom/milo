@@ -462,7 +462,7 @@ class Gnav {
 
     localNavItems.forEach((elem, idx) => {
       const clonedItem = elem.cloneNode(true);
-      const link = clonedItem.querySelector('a') || clonedItem.querySelector('button');
+      const link = clonedItem.querySelector('a, button');
 
       if (link) {
         link.dataset.title = link.textContent;
@@ -916,6 +916,7 @@ class Gnav {
         setCurtainState(false);
         closeAllDropdowns();
         this.blocks?.search?.instance?.clearSearchForm();
+
       }
     };
 
@@ -1128,17 +1129,17 @@ class Gnav {
     const decorateLocalNavItems = (navItem, template) => {
       const elements = [...document.querySelectorAll('.feds-localnav .feds-navItem')].find(
         (el) => {
-          const link = el.querySelector('a') || el.querySelector('button');
+          const link = el.querySelector('a, button');
           return link.dataset.title?.trim() === navItem.textContent;
         },
       );
       if (elements) {
-        // To override the textcontent of button of first item of localnav
-        const dropdownBtn = template.querySelector('button');
-        if (dropdownBtn) {
-          dropdownBtn.textContent = elements.querySelector('button')?.textContent;
-        }
+        const dropdownBtn = elements.querySelector('button');
         elements.innerHTML = template.innerHTML;
+        // To override the textcontent of button of first item of localnav
+        if (dropdownBtn) {
+          elements.querySelector('button').textContent = dropdownBtn.textContent;
+        }
         // Reattach click events & mutation observers, as cloned elem don't retain event listeners
         elements.querySelector('.feds-localnav-items button')?.addEventListener('click', (e) => {
           trigger({ element: e.currentTarget, event: e, type: 'localNavItem' });
