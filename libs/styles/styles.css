@@ -742,7 +742,7 @@ header.global-navigation + .feds-localnav {
   height: var(--global-height-navPromo);
 }
 
-.feds-sr-only {
+sr-only, .feds-sr-only {
   position: absolute;
   width: 1px;
   height: 1px;
