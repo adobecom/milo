@@ -237,6 +237,8 @@ However, it can be accessed via `e.target.source` property.
                       target,
                       'merch-card checkout-button click: ',
                       '\n\t',
+                      e.target.dataset.navigationUrl,
+                      '\n\t',
                       e.target.outerHTML,
                       '\n\t',
                       e.target.source.outerHTML,
