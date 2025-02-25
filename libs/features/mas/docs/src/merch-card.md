@@ -1,3 +1,5 @@
+<script type="module" src="../../spectrum-web-components/dist/button.js"></script>
+
 # merch-card custom element
 
 ## Introduction
@@ -29,47 +31,43 @@ CCD Gallery provides a comprehensive list of all supported card variants in CCD.
 </merch-card>
 
 <script type="module">
-    const log = (target, ...messages) =>
-        (target.innerHTML = `${messages.join(' ')}<br>${target.innerHTML}`);
-    {
-        const target = document.getElementById('log');
+      const target = document.getElementById('log1');
 
-        const fragment1 = document.getElementById('fragment1');
-        fragment1.addEventListener('aem:load', (e) => {
-            log(
-                target,
-                'aem-fragment is loaded: ',
-                JSON.stringify(e.target.data, null, '\t'),
-            );
-        });
+      const fragment1 = document.getElementById('fragment1');
+      fragment1.addEventListener('aem:load', (e) => {
+          log(
+              target,
+              'aem-fragment is loaded: ',
+              JSON.stringify(e.target.data, null, '\t'),
+          );
+      });
 
-        const card1 = document.getElementById('card1');
-        card1.addEventListener('mas:ready', (e) => {
-            log(target, 'merch-card is ready: ', e.target.variant);
-        });
+      const card1 = document.getElementById('card1');
+      card1.addEventListener('mas:ready', (e) => {
+          log(target, 'merch-card is ready: ', e.target.variant);
+      });
 
-        card1.addEventListener(
-            'click',
-            (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (e.target.isCheckoutButton) {
-                    log(target, 'merch-card checkout-button click: ', e.target);
-                } else if (e.target.isInlinePrice) {
-                    log(target, 'merch-card price click: ', e.target.innerText);
-                } else {
-                    log(target, 'merch-card click: ', e.target);
-                }
-            },
-            { capture: true },
-        );
-    }
+      card1.addEventListener(
+          'click',
+          (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (e.target.isCheckoutButton) {
+                  log(target, 'merch-card checkout-button click: ', e.target);
+              } else if (e.target.isInlinePrice) {
+                  log(target, 'merch-card price click: ', e.target.innerText);
+              } else {
+                  log(target, 'merch-card click: ', e.target);
+              }
+          },
+      { capture: true },
+    );
 </script>
 ```
 
 #### Logs
 
-```html {#log}
+```html {#log1}
 
 ```
 
@@ -211,6 +209,56 @@ The reason is that some merch cards are resolved very quickly and event could di
 
 ```
 
+### spectrum = 'swc'
+
+The `spectrum` attribute is used to specify the Spectrum technology to use for rendering the CTAs.
+With `swc` the checkout buttons are rendered as Spectrum SWC sp-button and the click event is directed to actual checkout-button web component that is kept off the DOM.
+However, it can be accessed via `e.target.source` property.
+
+```html {.demo .light}
+<merch-card id="cardSwc" spectrum="swc">
+    <aem-fragment
+        title="CCD Slice Creative Cloud Photography"
+        fragment="830f76be-0e83-4faf-9051-3dbb1a1dff04"
+    ></aem-fragment>
+</merch-card>
+
+<script type="module">
+      const target = document.getElementById('log3');
+
+      const cardSwc = document.getElementById('cardSwc');
+      console.log('cardSwc', cardSwc);
+      cardSwc.addEventListener(
+          'click',
+          (e) => {
+              e.preventDefault();
+              if (e.target.source?.isCheckoutButton) {
+                  log(
+                      target,
+                      'merch-card checkout-button click: ',
+                      '\n\t',
+                      e.target.dataset.navigationUrl,
+                      '\n\t',
+                      e.target.outerHTML,
+                      '\n\t',
+                      e.target.source.outerHTML,
+                      '\n',
+                  );
+              } else if (e.target.isInlinePrice) {
+                  log(target, 'merch-card price click: ', e.target.innerText);
+              } else {
+                  log(target, 'merch-card click: ', e.target);
+              }
+          },
+          { capture: true },
+      );
+</script>
+```
+
+```html {#log3}
+
+```
+
 ## aem-fragment custom element
 
 ### Attributes
@@ -250,7 +298,7 @@ The reason is that some merch cards are resolved very quickly and event could di
 <button id="btnRefresh">Refresh</button>
 <script type="module">
     {
-        const target = document.getElementById('log3');
+        const target = document.getElementById('log4');
 
         const psCard = document.getElementById('psCard2');
         psCard.addEventListener('mas:ready', (e) => {
@@ -268,7 +316,7 @@ The reason is that some merch cards are resolved very quickly and event could di
 </script>
 ```
 
-```html {#log3}
+```html {#log4}
 
 ```
 
