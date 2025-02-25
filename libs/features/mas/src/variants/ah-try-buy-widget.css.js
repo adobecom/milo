@@ -87,6 +87,27 @@ export const CSS = `
         flex-wrap: wrap;
     }
 
+    merch-card[variant="ah-try-buy-widget"] [slot="image"] {
+      display: none;
+    }
+    
+    merch-card[variant="ah-try-buy-widget"][size='single'] [slot="image"] {
+      display: flex;
+      width: 199px;
+      overflow: hidden;
+      height: 100%;
+      border-radius: 16px;
+      order: 1;
+    }
+
+    merch-card[variant="ah-try-buy-widget"][size='single'] [slot="image"] img {
+      width: 100%;
+      height: 207px;
+      object-fit: cover;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
     .spectrum--dark merch-card[variant="ah-try-buy-widget"][background-color='gray'],
     .spectrum--darkest merch-card[variant="ah-try-buy-widget"][background-color='gray'] {
       --merch-card-ah-try-buy-widget-gray-background: rgb(27, 27, 27);

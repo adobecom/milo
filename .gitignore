@@ -14,6 +14,5 @@ test-a11y-results/
 tmp
 libs/navigation/dist/
 *.mdc
-/.cursor
-/.cursor 2
-/libs/features/mas/.cursor
+/.cursor*/
+.cursor\ 2/

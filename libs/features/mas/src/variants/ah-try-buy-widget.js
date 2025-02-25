@@ -42,6 +42,7 @@ export class AHTryBuyWidget extends VariantLayout {
           <slot name="cta"></slot>
         </div>
       </div>
+      <slot name="image"></slot>
       <slot></slot>
     `;
   }
@@ -80,6 +81,8 @@ export class AHTryBuyWidget extends VariantLayout {
         max-height: 230px;
         flex-direction: column;
         flex-wrap: wrap;
+        column-gap: 0;
+        justify-content: space-around;
     }
 
     :host([variant='ah-try-buy-widget'][size='single']) ::slotted(div[slot="cta"])  {
