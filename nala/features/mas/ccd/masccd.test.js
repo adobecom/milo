@@ -83,7 +83,7 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
   });
 
-  // @MAS-CCD-suggested-strikethrough : CCD suggested card with eyebrow, legal link and strikethrough price
+  // @MAS-CCD-suggested-strikethrough : CCD suggested card with eyebrow, legal link, strikethrough price and ABM price label
   test(`${features[1].name},${features[1].tags}`, async ({ page, baseURL }) => {
     const testPage = `${baseURL}${features[1].path}${miloLibs}`;
     const { data } = features[1];
@@ -113,6 +113,7 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardPrice(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText(data.price);
       await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText(data.strikethroughPrice);
+      await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText(data.abmLabel);
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toHaveAttribute('class', /primary/);
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toContainText(data.cta);
@@ -1220,6 +1221,26 @@ test.describe('CCD Merchcard feature test suite', () => {
       expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'slice-wide'), CCD.sliceCssProp.description.dark)).toBeTruthy();
       expect(await webUtil.verifyCSS(await CCD.getCardPrice(data.id, 'slice-wide'), CCD.sliceCssProp.price.dark)).toBeTruthy();
       expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'slice-wide'), CCD.sliceCssProp.cta.dark)).toBeTruthy();
+    });
+  });
+
+  // @MAS-CCD-slice-upt-link : CCD single width slice card with Universal Promo Terms link
+  test(`${features[19].name},${features[19].tags}`, async ({ page, baseURL }) => {
+    const testPage = `${baseURL}${features[19].path}${miloLibs}`;
+    const { data } = features[19];
+    console.info('[Test Page]: ', testPage);
+
+    await test.step('step-1: Go to CCD Merch Card feature test page', async () => {
+      await page.goto(testPage);
+      await page.waitForLoadState('domcontentloaded');
+      await expect(page).toHaveURL(`${baseURL}${features[19].path}`);
+    });
+
+    await test.step('step-2: Verify CCD Merch Card content', async () => {
+      await expect(await CCD.getCardUptLink(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCardUptLink(data.id, 'slice')).toContainText(data.linkText);
+      await expect(await CCD.getCardUptLink(data.id, 'slice')).toHaveAttribute('href', data.uptLinkUrl);
+      await expect(await CCD.getCardUptLink(data.id, 'slice')).toHaveAttribute('data-analytics-id', /.*/);
     });
   });
 });

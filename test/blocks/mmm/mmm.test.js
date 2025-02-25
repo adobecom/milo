@@ -1,7 +1,7 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
-import { DEBOUNCE_TIME } from '../../../libs/blocks/mmm/mmm.js';
+import { DEBOUNCE_TIME, getLocalStorageFilter } from '../../../libs/blocks/mmm/mmm.js';
 
 const delay = (ms = 0) => new Promise((resolve) => {
   setTimeout(() => resolve(), ms);
@@ -81,30 +81,33 @@ describe('MMM', () => {
     expect(loading).to.not.exist;
     const mmmPopup = firstMmmDd.querySelector('.mep-popup');
     expect(mmmPopup).to.exist;
-    const mmmPopupHeader = mmmPopup.querySelector('.mep-popup-header');
-    const h4 = mmmPopupHeader.querySelector('h4');
-    expect(h4.textContent).to.equal('3 Manifest(s) found');
-    expect(mmmPopupHeader.textContent).to.include('Target integration feature is on');
-    expect(mmmPopupHeader.textContent).to.include('Personalization feature is on');
-    expect(mmmPopupHeader.textContent).to.include('Page\'s Geo Folder is nothing (US)');
-    expect(mmmPopupHeader.textContent).to.include('Page\'s Locale is en-us');
-    expect(mmmPopupHeader.textContent).to.include('Last seen:');
-    const mepManifestList = mmmPopup.querySelector('.mep-manifest-list');
-    expect(mepManifestList).to.exist;
-    const mepManifestListItems = mmmPopup.querySelectorAll('.mep-manifest-list > .mep-manifest-info');
-    expect(mepManifestListItems.length).to.equal(4);
-    const radios = mepManifestList.querySelectorAll('input[type="radio"]');
-    expect(radios.length).to.equal(19);
-    const checkboxes = mepManifestList.querySelectorAll('input[type="checkbox"]');
+    const infoColumnOne = mmmPopup.querySelector('.mep-popup-body .mep-columns > .mep-column:nth-child(1)');
+    expect(infoColumnOne.querySelector('div:nth-child(1)').textContent).to.include('Target Integration');
+    expect(infoColumnOne.querySelector('div:nth-child(2)').textContent).to.include('Personalization');
+    expect(infoColumnOne.querySelector('div:nth-child(3)').textContent).to.include('Geo Folder');
+    expect(infoColumnOne.querySelector('div:nth-child(4)').textContent).to.include('Locale');
+    expect(infoColumnOne.querySelector('div:nth-child(5)').textContent).to.include('Last Seen');
+    const infoColumnTwo = mmmPopup.querySelector('.mep-popup-body .mep-columns > .mep-column:nth-child(2)');
+    expect(infoColumnTwo.querySelector('div:nth-child(1)').textContent).to.include('on');
+    expect(infoColumnTwo.querySelector('div:nth-child(2)').textContent).to.include('on');
+    expect(infoColumnTwo.querySelector('div:nth-child(3)').textContent).to.include('Nothing (US)');
+    expect(infoColumnTwo.querySelector('div:nth-child(4)').textContent).to.include('en-us');
+    const mepPopupBody = mmmPopup.querySelector('.mep-popup-body');
+    expect(mepPopupBody).to.exist;
+    const radios = mepPopupBody.querySelectorAll('select');
+    expect(radios.length).to.equal(3);
+    const checkboxes = mepPopupBody.querySelectorAll('input[type="checkbox"]');
     expect(checkboxes.length).to.equal(2);
-    const inputs = mepManifestList.querySelectorAll('input[type="text"]');
+    const inputs = mepPopupBody.querySelectorAll('input[type="text"]');
     expect(inputs.length).to.equal(1);
-    const manifestTitle = mepManifestList.querySelector('.mep-manifest-title');
-    expect(manifestTitle.textContent).to.include('1. hp-11-15-black-friday.json');
-    expect(manifestTitle.textContent).to.include('PZN | US | Homepage | Logged Out - 11/15/24 - Blk-Frdy-Cybr-Mndy');
-    expect(manifestTitle.textContent).to.include('Source: target');
-    expect(manifestTitle.textContent).to.include('Last seen:');
-    const editButton = manifestTitle.querySelector('.mep-edit-manifest');
+    const manifestColumnOne = mepPopupBody.querySelector('.mep-manifest-info .mep-columns > .mep-column:nth-child(1)');
+    expect(manifestColumnOne.querySelector('div:nth-child(1)').textContent).to.include('Selected');
+    expect(manifestColumnOne.querySelector('div:nth-child(2)').textContent).to.include('Source');
+    expect(manifestColumnOne.querySelector('div:nth-child(3)').textContent).to.include('Last seen');
+    const manifestColumnTwo = mepPopupBody.querySelector('.mep-manifest-info .mep-columns > .mep-column:nth-child(2)');
+    expect(manifestColumnTwo.querySelector('div:nth-child(1)').textContent).to.include('Default (control)');
+    expect(manifestColumnTwo.querySelector('div:nth-child(2)').textContent).to.include('target');
+    const editButton = mepPopupBody.querySelector('.mep-edit-manifest');
     expect(editButton).to.exist;
     expect(editButton.href).to.equal('https://main--homepage--adobecom.hlx.page/homepage/fragments/mep/hp-11-15-black-friday.json');
     const previewButton = mmmPopup.querySelector('a[data-id="preview-button"]');
@@ -120,21 +123,14 @@ describe('MMM', () => {
     const previewButton = mmmPopup.querySelector('a[data-id="preview-button"]');
     expect(previewButton).to.exist;
     expect(previewButton.href).to.include('https%3A%2F%2Fmain--homepage--adobecom.hlx.page%2Fhomepage%2Ffragments%2Fmep%2Fhp-11-15-black-friday.json--default');
-    const radio = mmmPopup.querySelector('input[type="radio"][name="https://main--homepage--adobecom.hlx.page/homepage/fragments/mep/hp-11-15-black-friday.json4"][value="target-apro-twp-abdn"]');
-    expect(radio).to.exist;
-    radio.click();
-    expect(previewButton.href).to.include('https%3A%2F%2Fmain--homepage--adobecom.hlx.page%2Fhomepage%2Ffragments%2Fmep%2Fhp-11-15-black-friday.json--target-apro-twp-abdn');
+    const option = mmmPopup.querySelector('option[name="https://main--homepage--adobecom.hlx.page/homepage/fragments/mep/hp-11-15-black-friday.json4"][value="target-apro-twp-abdn"]');
+    expect(option).to.exist;
+    option.click();
+    expect(previewButton.href).to.include('https://www.adobe.com/?mep=https%3A%2F%2Fmain--homepage--adobecom.hlx.page%2Fhomepage%2Ffragments%2Fmep%2Fhp-11-15-black-friday.json--default');
     const addHighlight = mmmPopup.querySelector('#mepHighlightCheckbox-4');
     expect(addHighlight).to.exist;
     addHighlight.click();
     expect(previewButton.href).to.include('mepHighlight=true');
-    const toggleAdvancedContainer = mmmPopup.querySelector('.mep-advanced-container');
-    expect(toggleAdvancedContainer).to.exist;
-    expect(toggleAdvancedContainer.className).to.equal('mep-advanced-container');
-    const toggleAdvanced = mmmPopup.querySelector('.mep-toggle-advanced');
-    expect(toggleAdvanced).to.exist;
-    toggleAdvanced.click();
-    expect(toggleAdvancedContainer.className).to.equal('mep-advanced-container mep-advanced-open');
     const addButtonOff = document.querySelector('#mepPreviewButtonCheckbox-4');
     expect(addButtonOff).to.exist;
     addButtonOff.click();
@@ -148,12 +144,15 @@ describe('MMM', () => {
   });
 
   it('Test filters', async () => {
+    let filterData = getLocalStorageFilter();
+    expect(filterData).to.be.null;
+
     const copyButton = document.querySelector('.copy-to-clipboard');
     expect(copyButton).to.exist;
     const event = new Event('change');
     expect(copyButton.dataset.destination).to.not.include('geos');
     expect(copyButton.dataset.destination).to.not.include('pages');
-    expect(copyButton.dataset.destination).to.not.include('urls');
+    expect(copyButton.dataset.destination).to.not.include('filter');
 
     const geoDropdown = document.querySelector('#mmm-dropdown-geos');
     expect(geoDropdown).to.exist;
@@ -161,7 +160,7 @@ describe('MMM', () => {
     geoDropdown.dispatchEvent(event);
     expect(copyButton.dataset.destination).to.include('geos');
     expect(copyButton.dataset.destination).to.not.include('pages');
-    expect(copyButton.dataset.destination).to.not.include('urls');
+    expect(copyButton.dataset.destination).to.not.include('filter');
 
     const pageDropdown = document.querySelector('#mmm-dropdown-pages');
     expect(pageDropdown).to.exist;
@@ -169,26 +168,35 @@ describe('MMM', () => {
     pageDropdown.dispatchEvent(event);
     expect(copyButton.dataset.destination).to.include('geos');
     expect(copyButton.dataset.destination).to.include('pages');
-    expect(copyButton.dataset.destination).to.not.include('urls');
+    expect(copyButton.dataset.destination).to.not.include('filter');
 
     geoDropdown.options[0].selected = true;
     geoDropdown.dispatchEvent(event);
     expect(copyButton.dataset.destination).to.not.include('geos');
     expect(copyButton.dataset.destination).to.include('pages');
-    expect(copyButton.dataset.destination).to.not.include('urls');
+    expect(copyButton.dataset.destination).to.not.include('filter');
 
     const lastSeenManifestDropdown = document.querySelector('#mmm-lastSeenManifest');
     lastSeenManifestDropdown.options[0].selected = true;
     lastSeenManifestDropdown.dispatchEvent(event);
     expect(copyButton.dataset.destination).to.include('lastSeenManifest');
 
-    const mmmSearchQuery = document.querySelector('#mmm-search-urls');
+    const mmmSearchQuery = document.querySelector('#mmm-search-filter');
     expect(mmmSearchQuery).to.exist;
     mmmSearchQuery.value = 'pricing';
     mmmSearchQuery.dispatchEvent(event);
     await delay(DEBOUNCE_TIME + 1); // await debounce time
     expect(copyButton.dataset.destination).to.not.include('geos');
     expect(copyButton.dataset.destination).to.include('pages');
-    expect(copyButton.dataset.destination).to.include('urls');
+    expect(copyButton.dataset.destination).to.include('filter');
+
+    filterData = getLocalStorageFilter();
+    expect(filterData).to.not.be.null;
+    expect(filterData.filter).to.not.be.null;
+    expect(filterData.geos).to.not.be.null;
+    expect(filterData.pages).to.not.be.null;
+    expect(filterData.pageNum).to.not.be.null;
+    expect(filterData.subdomain).to.not.be.null;
+    expect(filterData.lastSeenManifest).to.not.be.null;
   });
 });

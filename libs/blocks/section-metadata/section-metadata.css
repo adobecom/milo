@@ -257,6 +257,10 @@ main > .section[class*='-up'] > .content {
     order: 1;
   }
 
+  .section[class*='grid-width-'] {
+    display: block;
+  }
+
 }
 
 @media screen and (min-width: 600px) and (max-width: 1200px) {
