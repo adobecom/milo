@@ -1348,7 +1348,16 @@ html:has(body.disable-ios-scroll) { /* this class is only added on iOS */
   position: fixed;
 }
 
-/* GNAV popup height fix in case of app banner */
-.branch-banner-is-active header.new-nav .feds-nav > section.feds-navItem > .feds-popup {
-  height: calc(100dvh - var(--app-banner-height));
+/* Adjustments for app banner non-sticky behavior */
+.branch-banner-is-active.branch-banner-inline {
+  transition: 0ms !important;
+}
+
+.disable-ios-scroll.branch-banner-is-active.branch-banner-inline {
+  margin-top: 0 !important;
+}
+
+.disable-ios-scroll.branch-banner-is-active.branch-banner-inline #branch-banner-iframe {
+  position: relative;
+  display: block;
 }

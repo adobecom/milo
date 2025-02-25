@@ -4,9 +4,8 @@ import {
   lanaLog,
   toFragment,
 } from '../../blocks/global-navigation/utilities/utilities.js';
-import { getConfig, decorateSVG } from '../../utils/utils.js';
+import { getConfig, decorateSVG, getFedsPlaceholderConfig } from '../../utils/utils.js';
 import { replaceKey, replaceText } from '../placeholders.js';
-import { getFedsPlaceholderConfig } from '../../utils/federated.js';
 
 export const DISMISSAL_CONFIG = {
   animationCount: 2,
