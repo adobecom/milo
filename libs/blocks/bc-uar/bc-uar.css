@@ -1,13 +1,21 @@
+.bc-uar {
+  --bc-width: 896px;
+
+}
+
 .bc-container { 
   animation: gradient 15s ease infinite;
+  align-items: center;
   background: linear-gradient(90deg, #C8B7FE00 25%, #8EE3FF80,#C8B7FE00 75%),
   radial-gradient(ellipse at 25% 25%, #fec7db 5%, #FEA6FE, transparent 25%),
   radial-gradient(ellipse at 75% 95%, #fec7db, #FEA6FE 10%, transparent 20%),
   linear-gradient(90deg, #C8B7FE 25%, #8EE3FF, #C8B7FE 75%);
   background-size: 300% 300%;
   display: flex;
-  margin: auto;
+  flex-direction: column;
+  justify-content: stretch;
   min-height: 100vh;
+  padding: 0 12px;
   position: relative;
 }
 
@@ -33,25 +41,26 @@
   opacity: 1;
 }
 
-.branding { 
+.branding {
+  align-self: flex-start;
   color: #fff;
   font-weight: 700;
   font-size: 26px;
   padding: 48px;
-  position: absolute;
+  position: relative;
   z-index: 15;
 }
 
 .bc-content {
   display: flex;
-  align-items: flex-end;
-  flex-wrap: wrap;
+  align-items: center;
+  flex-direction: column;
   gap: 54px;
-  justify-content: center;
-  margin: auto;
-  max-width: 896px;
+  justify-content: flex-end;
+  max-width: var(--bc-width);
   min-height: 594px;
   transition: min-height 0.5s ease-in-out;
+  width: 100%;
   z-index: 10;
 }
 
@@ -60,11 +69,18 @@
 }
 
 .bc-mount-container {
-  min-width: 896px;
+  margin-bottom: 12px;
+  max-width: var(--bc-width);
+  width: 100%;
 }
 
-.bc-messages {
-  max-height: 690px;
+.bc-content .bc-messages {
+  max-height: 720px;
+  padding: 0 12px 10px 0;
+}
+
+.bc-chat-input {
+  font-family: var(--body-font-family) !important;
 }
 
 .landing-view {
@@ -114,16 +130,22 @@
 
 .card-image {
   background-image: var(--card-image);
-  background-size: cover;
+  background-position: 50% 50%;
+  background-size: 112%;
+  background-repeat: no-repeat;
   border-radius: 16px 16px 0 0;
   height: 178px;
   pointer-events: none;
+  transform-origin: center;
+  transition: background-size .5s ease-in-out;
   width: 100%;
+  
 }
 
 .card-text {
   background-color: var(--card-color);
   border-radius: 0 0 16px 16px;
+  font-family: var(--body-font-family);
   pointer-events: none;
 }
 
@@ -137,6 +159,11 @@
   padding: 10px 8px;
   pointer-events: none;
   text-align: left;
+}
+
+.landing-card:hover .card-image, 
+.landing-card:focus .card-image {
+  background-size: 123%;
 }
 
 @keyframes gradient {
