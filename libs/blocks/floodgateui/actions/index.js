@@ -120,7 +120,7 @@ async function findDeepFragments(path) {
       searched.push(search.pathname);
     }
   }
-  return fragments.length ? fragments : [];
+  return fragments.length ? getUrls(fragments) : [];
 }
 
 export async function findFragments() {
