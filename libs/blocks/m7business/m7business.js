@@ -10,7 +10,7 @@ async function getImsCountry() {
   return null;
 }
 
-export async function generateM7Link() {
+export async function generateM7Link(options) {
   const { locale } = getConfig();
   const pageCountry = getMiloLocaleSettings(locale).country;
   const imsCountry = await getImsCountry();
@@ -22,9 +22,12 @@ export async function generateM7Link() {
   m7link.searchParams.append('pa', 'ccsn_direct_individual');
   m7link.searchParams.append('cs', 't');
   m7link.searchParams.append('af', 'uc_segmentation_hide_tabs');
+  options?.forEach((option) => {
+    m7link.searchParams.append(option.name, option.value);
+  });
   return m7link.toString();
 }
 
 export default async function init(el) {
-  el.href = await generateM7Link();
+  el.href = await generateM7Link([]);
 }

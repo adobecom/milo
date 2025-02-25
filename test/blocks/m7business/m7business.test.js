@@ -13,7 +13,7 @@ describe('m7business autoblock', () => {
     const buIms = window.adobeIMS;
     const profile = { countryCode: 'CH' };
     window.adobeIMS = { getProfile: () => profile, isSignedInUser: () => true };
-    const m7Link = await generateM7Link();
+    const m7Link = await generateM7Link([]);
     expect(m7Link).to.equal('https://commerce.adobe.com/store/segmentation?cli=adobe_com&co=CH&pa=ccsn_direct_individual&cs=t&af=uc_segmentation_hide_tabs');
     window.adobeIMS = buIms;
   });
