@@ -33,7 +33,7 @@ export const defaultLiterals = {
     taxInclusiveLabel:
         '{taxTerm, select, GST {incl. GST} VAT {incl. VAT} TAX {incl. tax} IVA {incl. IVA} SST {incl. SST} KDV {incl. KDV} other {}}',
     alternativePriceAriaLabel: 'Alternatively at {alternativePrice}',
-    strikethroughAriaLabel: 'Regularly at {strikethroughPrice}',
+    strikethroughAriaLabel: 'Regularly at',
 };
 
 const log = createLog('ConsonantTemplates/price');
@@ -137,10 +137,9 @@ function renderContainer(
         true,
     );
 
-    return renderSpan(cssClass, markup, {
+    return `${accessibleLabel ? `<sr-only>${accessibleLabel}</sr-only>` : ''}${renderSpan(cssClass, markup, {
         ...attributes,
-        ['aria-label']: accessibleLabel,
-    });
+    })}`;
 }
 
 /**
@@ -242,19 +241,10 @@ const createPriceTemplate =
             usePrecision,
         });
 
-        let accessibleLabel = accessiblePrice;
+        let accessibleLabel = '';
 
         let recurrenceLabel = '';
         if (toBoolean(displayRecurrence) && recurrenceTerm) {
-            const recurrenceAccessibleLabel = formatLiteral(
-                literalKeys.recurrenceAriaLabel,
-                {
-                    recurrenceTerm,
-                },
-            );
-            if (recurrenceAccessibleLabel) {
-                accessibleLabel += ' ' + recurrenceAccessibleLabel;
-            }
             recurrenceLabel = formatLiteral(literalKeys.recurrenceLabel, {
                 recurrenceTerm,
             });
@@ -265,13 +255,6 @@ const createPriceTemplate =
             perUnitLabel = formatLiteral(literalKeys.perUnitLabel, {
                 perUnit: 'LICENSE',
             });
-            const perUnitAriaLabel = formatLiteral(
-                literalKeys.perUnitAriaLabel,
-                { perUnit: 'LICENSE' },
-            );
-            if (perUnitAriaLabel) {
-                accessibleLabel += ' ' + perUnitAriaLabel;
-            }
         }
 
         let taxInclusivityLabel = '';
@@ -282,9 +265,6 @@ const createPriceTemplate =
                     : literalKeys.taxInclusiveLabel,
                 { taxTerm },
             );
-            if (taxInclusivityLabel) {
-                accessibleLabel += ' ' + taxInclusivityLabel;
-            }
         }
 
         if (displayStrikethrough) {
