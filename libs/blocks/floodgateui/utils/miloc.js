@@ -120,6 +120,7 @@ export async function getServiceConfigFg(origin) {
 export async function fetchStatusAction() {
   // fetch copy status
   const config = await getServiceConfigFg(origin);
+  if (!config) return {};
   const paramsFg = await getParamsFg(config);
   const excelPath = paramsFg.projectExcelPath;
   const env = heading.value.env;
