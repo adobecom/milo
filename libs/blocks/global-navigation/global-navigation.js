@@ -916,7 +916,6 @@ class Gnav {
         setCurtainState(false);
         closeAllDropdowns();
         this.blocks?.search?.instance?.clearSearchForm();
-
       }
     };
 
