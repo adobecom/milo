@@ -4,9 +4,8 @@ import {
   lanaLog,
   toFragment,
 } from '../../blocks/global-navigation/utilities/utilities.js';
-import { getConfig, decorateSVG } from '../../utils/utils.js';
+import { getConfig, decorateSVG, getFedsPlaceholderConfig } from '../../utils/utils.js';
 import { replaceKey, replaceText } from '../placeholders.js';
-import { getFedsPlaceholderConfig } from '../../utils/federated.js';
 
 export const DISMISSAL_CONFIG = {
   animationCount: 2,
@@ -156,7 +155,7 @@ export class AppPrompt {
     this.parent.prepend(this.template);
     this.elements.closeIcon.focus();
 
-    this.redirectFn = this.initRedirect(this.options['pause-on-hover'] === 'on');
+    this.cleanupFn = this.initRedirect(this.options['pause-on-hover'] === 'on');
   };
 
   doesEntitlementMatch = async () => {
@@ -309,6 +308,17 @@ export class AppPrompt {
 
     // Start the timeout initially
     startTimeout();
+
+    return () => {
+      clearTimeout(timeoutId);
+      if (withPause) {
+        const appPromptElem = document.querySelector(CONFIG.selectors.prompt);
+        if (appPromptElem) {
+          appPromptElem.removeEventListener('mouseenter', stopTimeout);
+          appPromptElem.removeEventListener('mouseleave', startTimeout);
+        }
+      }
+    };
   };
 
   isDismissedPrompt = () => AppPrompt.getDismissedPrompts().includes(this.id);
@@ -321,8 +331,8 @@ export class AppPrompt {
 
   close = ({ saveDismissal = true, dismissalActions = true } = {}) => {
     const appPromptElem = document.querySelector(CONFIG.selectors.prompt);
+    this.cleanupFn();
     appPromptElem?.remove();
-    clearTimeout(this.redirectFn);
     if (saveDismissal) this.setDismissedPrompt();
     document.removeEventListener('keydown', this.handleKeyDown);
     this.anchor?.focus();

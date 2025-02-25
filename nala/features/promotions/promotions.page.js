@@ -17,9 +17,7 @@ export default class CommercePage {
     this.mepMenuOpen = page.locator('.mep-open');
     this.mepPreviewButton = page.locator('//a[contains(text(),"Preview")]');
     this.mepManifestList = page.locator('.mep-manifest-list');
-    this.mepInsertDefault = page.locator('//input[contains(@name,"promo-insert") and @value="default"]');
-    this.mepInsertAll = page.locator('//input[contains(@name,"promo-insert") and @value="all"]');
-    this.mepReplaceDefault = page.locator('//input[contains(@name,"promo-replace") and @value="default"]');
-    this.mepReplaceAll = page.locator('//input[contains(@name,"promo-replace") and @value="all"]');
+    this.mepSelectInsert = page.locator('select').nth(0);
+    this.mepSelectReplace = page.locator('select').nth(1);
   }
 }

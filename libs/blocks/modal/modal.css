@@ -235,10 +235,11 @@
 @media (min-width: 600px) {
   .dialog-modal {
     max-width: 80vw;
+    width: fit-content;
   }
 
-  .dialog-modal:not(:has(.embed-vimeo)) {
-    width: fit-content;
+  .dialog-modal .embed-vimeo {
+    min-width: 80vw;
   }
 
   .dialog-modal.tall-video {
