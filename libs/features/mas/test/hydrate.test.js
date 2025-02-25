@@ -27,9 +27,7 @@ import { mockFetch } from './mocks/fetch.js';
 import { withWcs } from './mocks/wcs.js';
 
 function getFooterElement(merchCard) {
-    return merchCard.spectrum === 'swc'
-        ? merchCard.shadowRoot.querySelector('div[slot="footer"]')
-        : merchCard.querySelector('div[slot="footer"]');
+    return merchCard.querySelector('div[slot="footer"]');
 }
 
 function getBgImageElement(merchCard, slotName = 'image') {

@@ -141,9 +141,11 @@ pre {
 }
 
 #log,
+#log1,
 #log2,
-#log3 {
-    display: block;
+#log3,
+#log4 {
+  display: block;
 }
 
 button {

@@ -1,4 +1,3 @@
-import { CheckoutButton } from './checkout-button.js';
 import { UptLink } from './upt-link.js';
 import { createTag } from './utils.js';
 
@@ -148,14 +147,14 @@ export function processBackgroundImage(
                 ),
             );
         } else {
-          merchCard.append(
-              createTag(
-                  backgroundImageConfig.tag,
+            merchCard.append(
+                createTag(
+                    backgroundImageConfig.tag,
                   { slot: backgroundImageConfig.slot,
                   },
-                  createTag('img', imgAttributes),
-              ),
-          );
+                    createTag('img', imgAttributes),
+                ),
+            );
         }
 
     }
@@ -302,11 +301,17 @@ function createSpectrumCssButton(cta, aemFragmentMapping, isOutline, variant) {
 }
 
 function createSpectrumSwcButton(cta, aemFragmentMapping, isOutline, variant) {
+    const CheckoutButton = customElements.get('checkout-button');
+    const checkoutButton = CheckoutButton.createCheckoutButton(cta.dataset);
+    checkoutButton.connectedCallback();
+    checkoutButton.render();
+
     let treatment = 'fill';
 
     if (isOutline) {
         treatment = 'outline';
     }
+
     const spectrumCta = createTag(
         'sp-button',
         {
@@ -318,28 +323,16 @@ function createSpectrumSwcButton(cta, aemFragmentMapping, isOutline, variant) {
         cta.innerHTML,
     );
 
-    (async () => {
-        try {
-          const CheckoutButtonEl = customElements.get('checkout-button');
-          const checkoutBtn = CheckoutButtonEl?.createCheckoutButton({}, cta.innerHTML);
-          for (const attr of cta.attributes) {
-              try {
-                  checkoutBtn.setAttribute(attr.name, attr.value);
-              } catch (e) {
-                  console.warn(`Failed to copy attribute ${attr.name}`, e);
-              }
-          }
-          checkoutBtn.connectedCallback();
-          await checkoutBtn.render();
-          await checkoutBtn.onceSettled();
-          spectrumCta.setAttribute('data-navigation-url', checkoutBtn.href);
-          spectrumCta.addEventListener('click', (e) => {
-            checkoutBtn.click();
-          });
-        } catch (err) {
-          console.error('Failed to initialize checkout-button logic:', err);
-        }
-      })();
+    spectrumCta.source = checkoutButton;
+    checkoutButton.onceSettled().then((target) => {
+        spectrumCta.setAttribute('data-navigation-url', target.href);
+    });
+
+    spectrumCta.addEventListener('click', (e) => {
+        if (e.defaultPrevented) return;
+        checkoutButton.click();
+    });
+
     return spectrumCta;
 }
 
@@ -390,13 +383,7 @@ export function processCTAs(fields, merchCard, aemFragmentMapping, variant) {
 
         footer.innerHTML = '';
         footer.append(...ctas);
-
-        if (merchCard.spectrum === 'swc') {
-            merchCard.shadowRoot.append(footer);
-            footer.classList.add('footer');
-        } else {
-            merchCard.append(footer);
-        }
+        merchCard.append(footer);
     }
 }
 
@@ -413,10 +400,10 @@ export function processAnalytics(fields, merchCard) {
       ...merchCard.querySelectorAll(`a[data-analytics-id],button[data-analytics-id]`)
     ];
     elements.forEach((el, index) => {
-      el.setAttribute(
-        ANALYTICS_LINK_ATTR,
-        `${el.dataset.analyticsId}-${index + 1}`,
-      );
+        el.setAttribute(
+            ANALYTICS_LINK_ATTR,
+            `${el.dataset.analyticsId}-${index + 1}`,
+        );
     });
 }
 
