@@ -120,10 +120,9 @@ export async function getServiceConfigFg(origin) {
 export async function fetchStatusAction() {
   // fetch copy status
   const config = await getServiceConfigFg(origin);
-  if (!config || !heading.value.env) return {};
   const paramsFg = await getParamsFg(config);
   const excelPath = paramsFg.projectExcelPath;
-  const env = heading.value.env;
+  const env = heading.value.env || 'stage';
   let params = { type: 'copy', projectExcelPath: excelPath, adminPageUri: paramsFg.adminPageUri };
   const copyStatus = await postData(config[env].milofg.status.url, params);
   // fetch promote status
