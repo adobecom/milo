@@ -176,6 +176,10 @@ export function handleImageLoad(el, image) {
     image.addEventListener('load', () => {
       el.style.visibility = 'visible';
     });
+    image.addEventListener('error', () => {
+      image.style.visibility = 'hidden';
+      el.style.visibility = 'visible';
+    });
   }
 }
 

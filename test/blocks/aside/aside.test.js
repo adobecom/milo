@@ -180,5 +180,17 @@ describe('aside', () => {
       await img.dispatchEvent(new Event('load'));
       expect(el.style.visibility).to.equal('visible');
     });
+
+    it('should show element if image is not loaded successfully', async () => {
+      const el = await waitForElement('#test-notification-small');
+      el.style.visibility = 'hidden';
+      const img = el.querySelector('img');
+      expect(img.complete).to.equal(false);
+      handleImageLoad(el, img);
+      expect(el.style.visibility).to.equal('hidden');
+      await img.dispatchEvent(new Event('error'));
+      expect(el.style.visibility).to.equal('visible');
+      expect(img.style.visibility).to.equal('hidden');
+    });
   });
 });
