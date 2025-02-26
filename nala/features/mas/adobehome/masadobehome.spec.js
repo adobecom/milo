@@ -6,7 +6,7 @@ module.exports = {
     {
       tcid: '0',
       name: '@MAS-AH-Try-Buy-Widget-triple',
-      path: '/libs/features/adobehome/docs/adobe-home.html',
+      path: '/libs/features/mas/docs/adobe-home.html',
       data: {
         id: '44520fdc-f6e1-4c21-8978-9cd25a1be158',
         title: 'Creative Cloud All Apps',
@@ -21,7 +21,7 @@ module.exports = {
     {
       tcid: '1',
       name: '@MAS-AH-Try-Buy-Widget-double',
-      path: '/libs/features/adobehome/docs/adobe-home.html',
+      path: '/libs/features/mas/docs/adobe-home.html',
       data: {
         id: '02ee0d3c-a472-44a1-b15a-f65c24eefc4b',
         title: 'Photoshop',
@@ -36,7 +36,7 @@ module.exports = {
     {
       tcid: '2',
       name: '@MAS-AH-Try-Buy-Widget-single',
-      path: '/libs/features/adobehome/docs/adobe-home.html',
+      path: '/libs/features/mas/docs/adobe-home.html',
       data: {
         id: 'a07239e9-7216-403c-b1ee-3b1d0982a64b',
         title: 'Creative Cloud All Apps',

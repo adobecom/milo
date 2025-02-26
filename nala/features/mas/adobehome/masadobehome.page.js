@@ -2,16 +2,19 @@ export default class AdobeHomePage {
   constructor(page) {
     this.page = page;
 
+    // Direct locators for widget elements
     this.widgetCardTriple = page.locator('merch-card[variant="ah-try-buy-widget"][size="triple"]');
     this.widgetCardDouble = page.locator('merch-card[variant="ah-try-buy-widget"][size="double"]');
     this.widgetCardSingle = page.locator('merch-card[variant="ah-try-buy-widget"][size="single"]');
 
+    // Direct locators for widget fields
     this.title = page.locator('[slot="heading-xxxs"]');
     this.description = page.locator('[slot="body-xxs"]');
     this.price = page.locator('[slot="price"]');
     this.cta = page.locator('[slot="cta"] sp-button');
     this.image = page.locator('div[slot="image"] img');
 
+    // CSS properties for validation
     this.widgetCssProp = {
       base: {
         light: {
@@ -47,137 +50,56 @@ export default class AdobeHomePage {
           'font-size': '16px',
           'line-height': '20px',
           'font-weight': '700',
-          color: 'var(--merch-card-ah-try-buy-widget-text-color)',
+          // eslint-disable-next-line quote-props
+          'color': 'var(--merch-card-ah-try-buy-widget-text-color)',
         },
         price: {
-          'font-size': '14px',
-          'line-height': '17px',
-          'font-style': 'italic',
-          color: 'var(--merch-card-ah-try-buy-widget-text-color)',
+          'font-size': 'var(--merch-card-price-font-size)',
+          'line-height': 'var(--merch-card-price-line-height)',
+          'font-style': 'var(--merch-card-price-font-style)',
+          color: 'var(--merch-card-price-color)',
         },
       },
     };
   }
 
-  async getCard(id, cardType) {
-    const cardVariant = {
-      'ah-try-buy-widget-single': this.widgetCardTriple,
-      'ah-try-buy-widget-double': this.widgetCardDouble,
-      'ah-try-buy-widget-triple': this.widgetCardSingle,
-    };
-
-    const card = cardVariant[cardType];
-    if (!card) {
-      throw new Error(`Invalid card type: ${cardType}`);
-    }
-
-    return card.filter({ has: this.page.locator(`aem-fragment[fragment="${id}"]`) });
-  }
-
-  // General method for retrieving the locator for each card's field
-  async getCardField(id, cardType, fieldName) {
-    const card = await this.getCard(id, cardType);
-
-    const fields = {
-      title: {
-        'ah-try-buy-widget-single': this.description,
-        'ah-try-buy-widget-double': this.description,
-        'ah-try-buy-widget-triple': this.description,
-      },
-      icon: this.cardIcon,
-      description: {
-        'ah-try-buy-widget-single': this.description,
-        'ah-try-buy-widget-double': this.description,
-        'ah-try-buy-widget-triple': this.description,
-      },
-      legalLink: {
-        'ah-try-buy-widget-single': this.legalLink,
-        'ah-try-buy-widget-double': this.legalLink,
-        'ah-try-buy-widget-triple': this.legalLink,
-      },
-      uptLink: {
-        'ah-try-buy-widget-single': this.uptLink,
-        'ah-try-buy-widget-double': this.uptLink,
-        'ah-try-buy-widget-triple': this.uptLink,
-      },
-      price: {
-        'ah-try-buy-widget-single': this.price,
-        'ah-try-buy-widget-double': this.price,
-        'ah-try-buy-widget-triple': this.price,
-      },
-      cta: {
-        'ah-try-buy-widget-single': this.cta,
-        'ah-try-buy-widget-double': this.cta,
-        'ah-try-buy-widget-triple': this.cta,
-      },
-      ctaLink: {
-        'ah-try-buy-widget-single': this.ctaLink,
-        'ah-try-buy-widget-double': this.ctaLink,
-        'ah-try-buy-widget-triple': this.ctaLink,
-      },
-      image: this.widgetCardSingle,
-    };
-
-    const fieldLocator = fields[fieldName];
-    if (!fieldLocator) {
-      throw new Error(`Invalid field name: ${fieldName}`);
-    }
-
-    if (fieldLocator[cardType]) {
-      return card.locator(fieldLocator[cardType]);
-    }
-
-    return card.locator(fieldLocator);
-  }
-
-  async getCardTitle(id, cardType) {
-    return this.getCardField(id, cardType, 'title');
-  }
-
-  async getCardIcon(id, cardType) {
-    return this.getCardField(id, cardType, 'icon');
-  }
-
-  async getCardDescription(id, cardType) {
-    return this.getCardField(id, cardType, 'description');
-  }
-
-  async getCardLegalLink(id, cardType) {
-    return this.getCardField(id, cardType, 'legalLink');
-  }
-
-  async getCardPrice(id, cardType) {
-    return this.getCardField(id, cardType, 'price');
-  }
-
-  async getCardCTA(id, cardType) {
-    return this.getCardField(id, cardType, 'cta');
-  }
-
-  async getCardImage(id, cardType) {
-    if (cardType === 'ah-try-buy-widget-double' || cardType === 'ah-try-buy-widget-triple') {
-      throw new Error('Invalid card type. This card variant does not have an image slot.');
-    }
-    return this.getCardField(id, cardType, 'image');
-  }
-
+  // Get widget by ID and size
   async getWidget(id, size) {
+    // First locate the fragment
+    const fragmentLocator = this.page.locator(`aem-fragment[fragment="${id}"]`);
+
+    // Wait for the fragment to be attached with a reasonable timeout
+    await fragmentLocator.waitFor({ state: 'attached', timeout: 10000 })
+      .catch((e) => console.log(`Warning: Fragment ${id} not found: ${e.message}`));
+
+    // Get the parent merch-card
     const widget = this.page.locator(`merch-card[variant="ah-try-buy-widget"][size="${size}"]`)
-      .filter({ has: this.page.locator(`aem-fragment[fragment="${id}"]:visible`) });
+      .filter({ has: fragmentLocator });
+
     return widget;
   }
 
+  // Get a specific field from a widget
   async getWidgetField(id, size, fieldName) {
     const widget = await this.getWidget(id, size);
+
+    // Simple field mapping similar to MasCCDPage
     const fields = {
-      title: '>>> [slot="heading-xxxs"]',
-      description: '[slot="body-xxs"]:visible',
-      price: '[slot="price"]:visible',
-      cta: '[slot="cta"] sp-button:visible',
+      title: '[slot="heading-xxxs"]',
+      description: '[slot="body-xxs"]',
+      price: '[slot="price"]',
+      cta: '[slot="cta"] sp-button',
     };
-    return widget.locator(fields[fieldName]);
+
+    const selector = fields[fieldName];
+    if (!selector) {
+      throw new Error(`Invalid field name: ${fieldName}`);
+    }
+
+    return widget.locator(selector);
   }
 
+  // Get widget attribute
   async getWidgetAttribute(id, size, attribute) {
     const widget = await this.getWidget(id, size);
     return widget.getAttribute(attribute);
