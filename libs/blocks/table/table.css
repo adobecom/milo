@@ -292,7 +292,7 @@
 .table .section-head .section-head-title > :not(.icon) {
   font-size: var(--type-body-m-size);
   line-height: var(--type-heading-s-lh);
-  width: calc(100% - 20px);
+  width: calc(100% - 25px);
 }
 
 .table .section-head .section-head-title,
@@ -323,25 +323,24 @@
 
 /* icons */
 .table:not(.merch) .row .col span.milo-tooltip {
-  margin-left: var(--spacing-xs);
-  margin-right: 0;
+  margin-right: -4px;
 }
 
 [dir='rtl'] .table:not(.merch) .row .col span.milo-tooltip {
-  margin-left: 0;
-  margin-right: var(--spacing-xs);
+  margin-right: 0;
+  margin-left: -4px;
 }
 
-.table .icon-milo-info {
+.table span[data-tooltip] .icon-milo {
   height: 16px;
 }
 
-.table .icon-milo-info:hover {
+.table span[data-tooltip] .icon-milo:hover {
   cursor: pointer;
 }
 
-.table .icon-milo-info:hover path,
-.table .active .icon-milo-info path {
+.table span[data-tooltip] .icon-milo:hover path,
+.table span[data-tooltip] .active .icon-milo path {
   color: var(--hover-border-color);
 }
 
@@ -354,12 +353,18 @@
 .table .icon.expand {
   background-color: transparent;
   border: 0;
-  background-image: url('../../ui/img/expand2.svg');
+  background-image: url('../../ui/img/chevron-wide-black.svg');
   background-repeat: no-repeat;
-  background-position: center right;
-  width: 15px;
-  height: 15px;
+  background-position: center;
+  width: 12px;
+  aspect-ratio: 1.7;
   cursor: pointer;
+  rotate: -90deg;
+  background-size: contain;
+}
+
+[dir="rtl"] .table .icon.expand {
+  rotate: 90deg;
 }
 
 .table .section-head-title:hover .icon.expand {
@@ -367,7 +372,7 @@
 }
 
 .table .icon.expand[aria-expanded=true] {
-  background-image: url('../../ui/img/collapse2.svg');
+  rotate: unset;
 }
 
 .table .row-highlight .col-highlight.transparent-border {
@@ -399,14 +404,14 @@
 
 [dir="rtl"] .section-row-title .milo-tooltip:is(.top, .bottom, .left, .right)::before {
   left: initial;
-  margin: 0 12px 0 0;
+  margin: 0 8px 0 0;
   right: 100%;
   top: 50%;
   transform: translateY(-50%);
 }
 
 [dir="rtl"] .section-row-title .milo-tooltip:is(.top, .bottom, .left, .right)::after {
-  left: -8px;
+  left: -4px;
   margin: 0 4px 0 -4px;
   top: 50%;
   transform: translateY(-50%);
@@ -508,7 +513,7 @@
 }
 
 .table.has-addon .addon-label .icon,
-.table.has-addon .active .icon-milo-info path {
+.table.has-addon span[data-tooltip] .active .icon-milo path {
   color: black;
 }
 
@@ -689,14 +694,14 @@
 
   .section-row-title .milo-tooltip:is(.top, .bottom, .left, .right)::before {
     left: initial;
-    margin: 0 12px 0 0;
+    margin: 0 8px 0 0;
     right: 100%;
     top: 50%;
     transform: translateY(-50%);
   }
 
   .section-row-title .milo-tooltip:is(.top, .bottom, .left, .right)::after {
-    left: -8px;
+    left: -4px;
     margin: 0 4px 0 -4px;
     top: 50%;
     transform: translateY(-50%);

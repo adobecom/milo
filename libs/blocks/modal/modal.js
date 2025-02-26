@@ -100,7 +100,7 @@ function getCustomModal(custom, dialog) {
 async function getPathModal(path, dialog) {
   let href = path;
   if (path.includes('/federal/')) {
-    const { getFederatedUrl } = await import('../../utils/federated.js');
+    const { getFederatedUrl } = await import('../../utils/utils.js');
     href = getFederatedUrl(path);
   }
   const block = createTag('a', { href });
@@ -112,7 +112,7 @@ async function getPathModal(path, dialog) {
 }
 
 export async function getModal(details, custom) {
-  if (!(details?.path || custom)) return null;
+  if (!((details?.path && details?.id) || custom)) return null;
   const { id } = details || custom;
 
   dialogLoadingSet.add(id);

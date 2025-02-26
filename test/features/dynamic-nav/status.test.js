@@ -48,6 +48,17 @@ describe('Dynamic Nav Status', () => {
     expect(statusWidget).to.exist;
   });
 
+  it('does not load the widget on when gnav v2 is not present', () => {
+    const feds = document.querySelector('.feds-nav-wrapper');
+    feds.classList.remove('feds-nav-wrapper');
+    dynamicNav();
+    status();
+
+    const statusWidget = document.querySelector('.dynamic-nav-status');
+    expect(statusWidget).to.be.null;
+    feds.classList.add('feds-nav-wrapper');
+  });
+
   it('loads the status widget', () => {
     dynamicNav();
     status();
