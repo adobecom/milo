@@ -10,7 +10,7 @@
     <div class="page-title">
       <h1>
         <i>CaaS</i> BulkPublisher <i>Tool</i> 
-        <span class="beta">beta</span>
+        <span class="v2">v2</span>
         <button class="feedback">@FeedBack</button>
       </h1>
     </div>  
@@ -151,13 +151,11 @@
           <div class="theme-options">Theme: 
             <input type="radio" id="option-light" name="theme" value="light">Light
             <input type="radio" id="option-dark" name="theme" value="dark">Dark
-            | 
             <a class="classic" href="./bulkpublisher.classic.html">Classic Version</a>
           </div>
 
           <div class="urls">
             <h2>URLs</h2>
-            <p><i><b>Note</b>: This tool is in <b>BETA</b> stage. Please report any issues in the <b>#javelin-friends</b> channel on Slack.</i></p>
             <p>Enter a URL or list of URLs, each on a separate line, to be sent to CaaS.</p>
             <textarea id="urls" 
               name="urls" 
@@ -178,9 +176,9 @@
           <div class="status">
             <div class="results-header">
               <h2>Status</h2> 
-              <div class="controls hidden">
-                <button class="clear-results">Clear</button>
-                <button class="export-results">Export...</button>
+              <div class="results-options">
+                <button class="export-results">Download <span>CSV</span> &#8681;</button>
+                <button class="clear-results">Clear Results</button>
               </div>
             </div>
             <p class="status-checking">Checking...</p>
@@ -194,7 +192,7 @@
                 <tr>
                   <th width="90px" colspan="2">Success</th>
                   <th width="65%">URL</th>
-                  <th width="30%">EntityID</th>
+                  <th width="30%">Entity_ID</th>
                 </tr>
               <tbody></tbody>
             </table>
@@ -209,18 +207,7 @@
               <tbody></tbody>
             </table>
 
-            <div class="success">
-              <label for="success">Success:</label>
-              <textarea id="success" name="success" rows="10" cols="50"></textarea>
-            </div>
-
-            <div class="errors">
-              <label for="errors">Errors: <span>x</span></label>
-              <textarea id="errors" name="errors" rows="10" cols="50"></textarea>
-            </div>
           </div>
-
-        </div>
       </div>
     </div>
 

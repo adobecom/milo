@@ -17,6 +17,7 @@ import {
 import comEnterpriseToCaasTagMap from './comEnterpriseToCaasTagMap.js';
 
 const BODY = document.body;
+const STATUS_EL = BODY.querySelector('.status');
 const SIGNEDIN_EL = BODY.querySelector('.status-signed-in');
 const SIGNEDOUT_EL = BODY.querySelector('.status-signed-out');
 
@@ -43,7 +44,7 @@ const DEFAULT_VALUES_CB = {
 // Hold the selected preset data
 let selectedPreset = {};
 
-const resultsHeader = document.querySelector('.results-header');
+const resultsHeader = BODY.querySelector('.results-header');
 
 const fetchExcelJson = async (url) => {
   const resp = await fetch(url);
@@ -100,14 +101,12 @@ const updateTagsFromSheetData = (tags, sheetTagsStr) => {
   return [...tagSet].map((t) => ({ id: t }));
 };
 
-const showResultsControls = () => {
-  // resultsHeader.style.display = 'block';
-  const headerControls = resultsHeader.querySelector('.results-header .controls');
-  headerControls.style.display = 'block';
+const showResultsOptions = () => {
+  STATUS_EL.classList.add('show-options');
 };
 
 const resetResultsTables = () => {
-  resultsHeader.querySelector('.results-header .controls').style.display = 'none';
+  STATUS_EL.classList.remove('show-options');
   const successTable = document.querySelector('.success-table');
   const successTBody = successTable.querySelector('tbody');
   successTBody.innerHTML = '';
@@ -119,7 +118,7 @@ const resetResultsTables = () => {
 };
 
 const showSuccessTable = (successArr) => {
-  showResultsControls();
+  showResultsOptions();
   const env = getConfig().caasEnv === 'prod' ? '' : `-${getConfig().caasEnv}`;
   const chimeraEndpoint = `https://14257-chimera${env}.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection?debug=1&featuredCards=`;
   const successTable = document.querySelector('.success-table');
@@ -139,7 +138,7 @@ const showSuccessTable = (successArr) => {
 };
 
 const showErrorTable = (errorArr) => {
-  showResultsControls();
+  showResultsOptions();
   const errorTable = document.querySelector('.error-table');
   const tableBody = errorTable.querySelector('tbody');
   errorTable.style.display = 'block';
@@ -256,6 +255,7 @@ const processData = async (data, accessToken) => {
 
   SIGNEDIN_EL.style.display = 'none';
   SIGNEDOUT_EL.style.display = 'none';
+  
   resetResultsTables();
   if (successArr.length) {
     showSuccessTable(successArr);
@@ -401,8 +401,58 @@ presetSelector.addEventListener('change', () => {
 const clearResultsButton = document.querySelector('.clear-results');
 clearResultsButton.addEventListener('click', () => {
   resetResultsTables();
-  // clearResultsButton.style.display = 'none';
+  STATUS_EL.classList.remove('results');
   SIGNEDIN_EL.style.display = 'block';
+});
+
+const exportResultsToCSV = () => {
+  console.log('Exporting results to CSV file...');
+  let table = document.querySelector('.success-table tbody');
+  let csvContent = "STATUS,URL,RESPONSE\n";
+
+  for (let row of table.rows) {
+    let rowData = [];
+    for (let cell of row.cells) {
+      if (cell.cellIndex === 0) continue; // Skip the first column
+      let cellText = cell.innerText;
+      if (cellText.includes(",")) { // Wrap text with quotes if it contains commas
+        cellText = `"${cellText}"`;
+      }
+      rowData.push(cellText);
+    }
+    csvContent += rowData.join(',') + '\n';
+  }
+
+  let errorsTable = document.querySelector('.error-table tbody');
+  for (let row of errorsTable.rows) {
+    let rowData = [];
+    for (let cell of row.cells) {
+      if (cell.cellIndex === 0) continue; // Skip the first column
+      let cellText = cell.innerText;
+      if (cellText.includes(",")) { // Wrap text with quotes if it contains commas
+        cellText = `"${cellText}"`;
+      }
+      rowData.push(cellText);
+    }
+    csvContent += rowData.join(',') + '\n';
+  }
+
+  let fileName = prompt("Enter filename (without extension):", "CaaSBulkPublisher_Output");
+  if (!fileName) return; // If user cancels, do nothing
+
+  // Create a Blob with the CSV content and download it
+  let blob = new Blob([csvContent], { type: "text/csv" });
+  let a = document.createElement("a"); 
+  a.href = URL.createObjectURL(blob);
+  a.download = `${fileName}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a); // Cleanup
+};
+
+const exportResultsButton = document.querySelector('.export-results');
+exportResultsButton.addEventListener('click', () => {
+  exportResultsToCSV();
 });
 
 // eslint-disable-next-line no-undef
