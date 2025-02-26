@@ -1,3 +1,4 @@
+/* FULL SCROLL */
 .bc-uar {
   --bc-width: 896px;
 
@@ -24,13 +25,26 @@
   background-size: cover;
   content: ' ';
   opacity: 0;
-  position: absolute;
+  position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   top: 0;
   transition: opacity 1s ease-in;
   z-index: 5;
+}
+
+.bc-container::after {
+  background: linear-gradient(0deg, #fbd974 140px ,#fbd97400);
+  background-repeat: no-repeat;
+  content: ' ';
+  opacity: 0;
+  position: fixed;
+  height: 400px;
+  bottom: 0;
+  transition: opacity 1s ease-in;
+  width: 100%;
+  z-index: 6;
 }
 
 .bc-container.bc-active {
@@ -41,13 +55,18 @@
   opacity: 1;
 }
 
+.bc-container.bc-active::after {
+  opacity: 1;
+}
+
 .branding {
   align-self: flex-start;
   color: #fff;
   font-weight: 700;
   font-size: 26px;
   padding: 48px;
-  position: relative;
+  position: sticky;
+  top: 0;
   z-index: 15;
 }
 
@@ -57,7 +76,6 @@
   flex-direction: column;
   gap: 54px;
   justify-content: flex-end;
-  max-width: var(--bc-width);
   min-height: 594px;
   transition: min-height 0.5s ease-in-out;
   width: 100%;
@@ -65,18 +83,12 @@
 }
 
 .bc-active .bc-content {
-  min-height: 840px;
+  min-height: calc(100vh - 127px);
 }
 
 .bc-mount-container {
   margin-bottom: 12px;
-  max-width: var(--bc-width);
   width: 100%;
-}
-
-.bc-content .bc-messages {
-  max-height: 720px;
-  padding: 0 12px 10px 0;
 }
 
 .bc-chat-input {
@@ -88,6 +100,7 @@
   flex-wrap: wrap;
   gap: 54px;
   justify-content: center;
+  max-width: var(--bc-width);
 }
 
 .landing-heading {
@@ -191,4 +204,62 @@
 		background-position: 0% 50%;
     background-size: 100% 200%;
 	}
+}
+
+
+/* Web Agent Overrides */
+.bc-messages-container {
+  justify-content: center;
+}
+
+.bc-content .bc-messages {
+  align-self: flex-end;
+  display: none !important;
+  max-width: var(--bc-width);
+  padding: 0 0 64px;
+  width: 100%;
+}
+
+.bc-active .bc-content .bc-messages {
+  display: flex !important;
+}
+
+.bc-messages-container + div {
+  align-self: center;
+  max-width: var(--bc-width);
+  width: 100%;
+  position: sticky;
+  bottom: 12px;
+}
+
+.bc-messages-container::before {
+  background: linear-gradient(0deg, #fbd974 80px ,#fbd97400);
+  bottom: 0;
+  content: ' ';
+  height: 170px;
+  position: fixed;
+  opacity: 0;
+  align-self: center;
+  transition: opacity 3s 1s ease-in;
+  max-width: var(--bc-width);
+  width: 100%;
+}
+
+.bc-active .bc-messages-container::before {
+  opacity: 1;
+}
+
+/* Desktop */
+@media screen and (min-width: 1024px) {
+  .bc-container {
+    justify-content: center;
+  }
+  
+  .branding {
+    position: fixed;
+  }
+  
+  .bc-active .bc-content {
+    min-height: 100vh;
+  }
 }
