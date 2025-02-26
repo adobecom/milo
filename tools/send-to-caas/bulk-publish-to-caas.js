@@ -305,14 +305,14 @@ const loadFromLS = () => {
 
 const publishWarning = document.querySelector('.publish-warning');
 const checkCaasEnv = () => {
-  // eslint-disable no-undef
+  // eslint-disable-next-line no-undef
   if (!caasEnv.value) caasEnv.value = 'prod';
+  // eslint-disable-next-line no-undef
   if (caasEnv.value === 'prod' && !draftOnly.checked) {
     publishWarning.style.height = '30px';
   } else {
     publishWarning.style.height = '0';
   }
-  // eslint-enable no-undef
 };
 
 // presets options
@@ -405,7 +405,7 @@ clearResultsButton.addEventListener('click', () => {
 });
 
 const exportResultsToCSV = () => {
-  let table = document.querySelector('.success-table tbody');
+  const table = document.querySelector('.success-table tbody');
   let csvContent = "STATUS,URL,RESPONSE\n";
 
   for (let row of table.rows) {
@@ -424,18 +424,19 @@ const exportResultsToCSV = () => {
   let errorsTable = document.querySelector('.error-table tbody');
   for (let row of errorsTable.rows) {
     let rowData = [];
-    for (let cell of row.cells) {
+    for (const cell of row.cells) {
       if (cell.cellIndex === 0) continue; // Skip the first column
       let cellText = cell.innerText;
-      if (cellText.includes(",")) { // Wrap text with quotes if it contains commas
+      if (cellText.includes(',')) { // Wrap text with quotes if it contains commas
         cellText = `"${cellText}"`;
       }
       rowData.push(cellText);
     }
-    csvContent += rowData.join(',') + '\n';
+    csvContent += `${rowData.join(',') }\n`;
   }
 
-  let fileName = prompt('Enter filename (without extension):', 'CaaSBulkPublisher_Output');
+  // eslint-disable-next-line no-alert
+  const fileName = prompt('Enter filename (without extension):', 'CaaSBulkPublisher_Output');
   if (!fileName) return; // If user cancels, do nothing
 
   // Create a Blob with the CSV content and download it
