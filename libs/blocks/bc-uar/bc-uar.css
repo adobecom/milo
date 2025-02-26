@@ -44,7 +44,7 @@
   bottom: 0;
   transition: opacity 1s ease-in;
   width: 100%;
-  z-index: 6;
+  z-index: 5;
 }
 
 .bc-container.bc-active {
@@ -230,6 +230,7 @@
   width: 100%;
   position: sticky;
   bottom: 12px;
+  z-index: 10;
 }
 
 .bc-messages-container::before {
@@ -243,6 +244,7 @@
   transition: opacity 3s 1s ease-in;
   max-width: var(--bc-width);
   width: 100%;
+  z-index: 5;
 }
 
 .bc-active .bc-messages-container::before {
