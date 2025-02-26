@@ -418,12 +418,12 @@ const exportResultsToCSV = () => {
       }
       rowData.push(cellText);
     }
-    csvContent += rowData.join(',') + '\n';
+    csvContent += `${rowData.join(',')  }\n`;
   }
 
-  let errorsTable = document.querySelector('.error-table tbody');
-  for (let row of errorsTable.rows) {
-    let rowData = [];
+  const errorsTable = document.querySelector('.error-table tbody');
+  for (const row of errorsTable.rows) {
+    const rowData = [];
     for (const cell of row.cells) {
       if (cell.cellIndex === 0) continue; // Skip the first column
       let cellText = cell.innerText;
@@ -432,7 +432,7 @@ const exportResultsToCSV = () => {
       }
       rowData.push(cellText);
     }
-    csvContent += `${rowData.join(',') }\n`;
+    csvContent += `${rowData.join(',')}\n`;
   }
 
   // eslint-disable-next-line no-alert
