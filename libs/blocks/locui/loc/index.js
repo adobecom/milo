@@ -137,7 +137,9 @@ async function loadLocales() {
 async function loadProjectSettings(projSettings) {
   const settings = projSettings.reduce((acc, { key, value }) => ({ ...acc, [key]: value }), {});
   heading.value = { ...heading.value, env: settings.env, projectId: settings['Project ID'], projectType: settings['project.type'] };
-  isLOCV3RolloutFlow.value = settings['project.version'] === 'LOCV3' && settings['project.type'] !== 'rollout';
+  if (settings['project.version'] && settings['project.type']) {
+    isLOCV3RolloutFlow.value = settings['project.version'] === 'LOCV3' && settings['project.type'] === 'localization';
+  }
   if (settings['Project ID']) {
     setStatus('service', 'info', 'Connecting to localization service.');
     await getServiceUpdates();
