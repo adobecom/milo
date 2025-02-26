@@ -12,8 +12,10 @@
   --tabs-pill-bg-color-hover: #e1e1e1;
   --tabs-pill-bg-focus: #505050;
   --tabs-pill-bg-color-active: #505050;
+  --tabs-pill-text-focus-color: #ffffff;
   --tabs-pill-text-color: #131313;
   --tabs-pill-text-selected-color: #ffffff;
+  --tabs-pill-text-disabled: rgba(0, 0, 0, 0.22);
   --tabs-paddle-bs-color: #0000001a;
   --tabs-radio-gray: #6d6d6d;
   --tabs-radio-blue: #0265dc;
@@ -33,10 +35,14 @@
     rgba(0, 0, 0, 20%) 80%,
     rgba(0, 0, 0, 40%) 100%
   );
-  --tabs-pill-bg-color: #555;
-  --tabs-pill-bg-color-hover: #666;
-  --tabs-pill-bg-color-active: #444;
+  --tabs-pill-bg-color: #ffffff;
+  --tabs-pill-bg-focus: #6d6d6d;
+  --tabs-pill-bg-color-hover: #6d6d6d;
+  --tabs-pill-bg-color-active: #393939;
   --tabs-pill-text-color: #fff;
+  --tabs-pill-text-selected-color: #000000;
+  --tabs-pill-text-focus-color: #ffffff;
+  --tabs-pill-text-disabled: #8a8a8a;
   --tabs-mobile-stacked-bg-color: #ffffff;
   --tabs-mobile-stacked-text-color: #131313;
   --tabs-paddle-bs-color: #ffffff1a;
@@ -279,6 +285,11 @@
   border: none;
 }
 
+.tabs[class*='pill'] div[role="tablist"] button:disabled {
+  color: var(--tabs-pill-text-disabled);
+}
+
+
 .tabs.radio div[role="tablist"] button {
   background: transparent;
   padding-block: 0 var(--spacing-s);
@@ -315,7 +326,7 @@
 }
 
 .tabs[class*='pill'] div[role="tablist"] button:focus {
-  color: var(--tabs-pill-text-selected-color);
+  color: var(--tabs-pill-text-focus-color);
   background: var(--tabs-pill-bg-focus);
 }
 
@@ -324,7 +335,7 @@
 }
 
 .tabs[class*='pill'] div[role="tablist"] button:active {
-  color: var(--tabs-pill-text-selected-color);
+  color: var(--tabs-pill-text-focus-color);
   background: var(--tabs-pill-bg-color-active);
 }
 

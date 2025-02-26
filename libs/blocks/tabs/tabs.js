@@ -65,6 +65,7 @@ function changeTabs(e) {
     window.location.assign(redirectionUrl);
     return;
   }
+  this.blur();
   const parent = target.parentNode;
   const content = parent.parentNode.parentNode.lastElementChild;
   const targetContent = content.querySelector(`#${target.getAttribute('aria-controls')}`);
