@@ -12,6 +12,7 @@ import {
   allowCancelProject,
   polling,
   urls,
+  isLOCV3RolloutFlow,
 } from './state.js';
 import { getItemId } from '../../../tools/sharepoint/shared.js';
 import updateExcelTable from '../../../tools/sharepoint/excel.js';
@@ -26,6 +27,7 @@ const INTERVAL = 3000;
 const MAX_COUNT = 1200; // 3000 x 1200 = 3600000s = 1 hour
 const ROLLOUT_ALL_AVAILABLE = ['completed', 'translated'];
 const UNAUTHORIZED = 401;
+const LOCV3_ROLLOUT_ALL_STATUS = ['translated', 'cancelled'];
 
 let waiting = false;
 
@@ -36,9 +38,15 @@ async function getMilocUrl() {
 }
 
 function handleProjectStatusDetail(detail) {
-  allowRollout.value = Object.keys(detail).some(
+  let isAllowRollout = Object.keys(detail).some(
     (key) => ROLLOUT_ALL_AVAILABLE.includes(detail[key].status),
   );
+  if (isLOCV3RolloutFlow.value) {
+    isAllowRollout = languages.value.every(
+      ({ code }) => LOCV3_ROLLOUT_ALL_STATUS.includes(detail[code].status),
+    );
+  }
+  allowRollout.value = isAllowRollout;
   languages.value = [...languages.value.map((lang) => ({ ...lang, ...detail[lang.code] }))];
 }
 
