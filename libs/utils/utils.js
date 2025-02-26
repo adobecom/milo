@@ -578,6 +578,8 @@ export function decorateSVG(a) {
     const splitText = textContent.split('|');
     const authoredUrl = new URL(splitText.shift().trim());
     const altText = splitText.join('|').trim();
+    const parent = a.parentElement;
+    const isHTagParent = parent?.tagName.startsWith('H');
 
     // Relative link checking
     const hrefUrl = a.href.startsWith('/')
@@ -588,8 +590,13 @@ export function decorateSVG(a) {
       ? authoredUrl.pathname
       : authoredUrl;
 
-    const img = createTag('img', { loading: 'lazy', src, alt: altText || '' });
+    const img = createTag('img', { loading: 'lazy', src, alt: isHTagParent ? '' : altText || '' });
     const pic = createTag('picture', null, img);
+
+    if (isHTagParent) {
+      const span = createTag('span', { class: 'visually-hidden-heading' }, altText);
+      parent.prepend(span);
+    }
 
     if (authoredUrl.pathname === hrefUrl.pathname) {
       a.parentElement.replaceChild(pic, a);
@@ -608,13 +615,15 @@ export function decorateImageLinks(el) {
   const images = el.querySelectorAll('img[alt*="|"]');
   if (!images.length) return;
   [...images].forEach((img) => {
-    const [source, alt, icon] = img.alt.split('|');
+    const [source, alt, icon, heading] = img.alt.split('|');
+    const headingTrim = heading?.trim();
+    const pic = img.closest('picture');
+    const picParent = pic.parentElement;
+
     try {
       const url = new URL(source.trim());
       const href = url.hostname.includes(`.${SLD}.`) ? `${url.pathname}${url.hash}` : url.href;
       if (alt?.trim().length) img.alt = alt.trim();
-      const pic = img.closest('picture');
-      const picParent = pic.parentElement;
       if (href.includes('.mp4')) {
         const a = createTag('a', { href: url, 'data-video-poster': pic.outerHTML });
         a.innerHTML = url;
@@ -631,29 +640,19 @@ export function decorateImageLinks(el) {
     } catch (e) {
       console.log('Error:', `${e.message} '${source.trim()}'`);
     }
-  });
-}
 
-export function decorateImageHeaders(el) {
-  const images = el.querySelectorAll('img[alt^="h"][alt*=" -"]');
+    if (headingTrim && /^h[1-6]$/.test(headingTrim)) {
+      const headingTag = heading.trim();
+      const altTrimmed = alt.trim();
+      const spanTag = createTag('span', { class: 'visually-hidden-heading' }, altTrimmed);
+      const hiddenHeading = createTag(headingTag, { class: 'image-heading' });
 
-  if (!images.length) return;
+      hiddenHeading.append(...Array.from(picParent.childNodes));
 
-  [...images].forEach((img) => {
-    const headingMatch = img.alt.match(/^(h[1-6])\s*-\s*(.+)/i);
-
-    if (!headingMatch) {
-      return;
+      hiddenHeading.prepend(spanTag);
+      picParent.replaceWith(hiddenHeading);
+      img.alt = '';
     }
-
-    const [, headingTag, headingText] = headingMatch;
-    img.alt = '';
-    const wrapperDiv = createTag('div', { class: 'image-heading-wrapper' });
-    const hiddenHeading = createTag(headingTag, { class: 'visually-hidden-heading' });
-    hiddenHeading.textContent = headingText;
-    wrapperDiv.appendChild(hiddenHeading);
-    wrapperDiv.appendChild(img.cloneNode(true));
-    img.parentElement.replaceChild(wrapperDiv, img);
   });
 }
 
@@ -773,7 +772,6 @@ export function convertStageLinks({ anchors, config, hostname, href }) {
 export function decorateLinks(el) {
   const config = getConfig();
   decorateImageLinks(el);
-  decorateImageHeaders(el);
   const anchors = el.getElementsByTagName('a');
   const { hostname, href } = window.location;
   const links = [...anchors].reduce((rdx, a) => {

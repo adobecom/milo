@@ -893,24 +893,25 @@ a.static:active  {
 }
 
 /* Image */
-
 .image-heading-wrapper {
   position: relative;
   width: fit-content;
 }
 
+.image-heading {
+  width: fit-content;
+  position: relative;
+}
+
 .visually-hidden-heading {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  width: 0;
+  height: 0;
   padding: 0;
-  margin: 0;
+  margin: -1px;
   overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  border: 0;
   white-space: nowrap;
+  border: 0;
 }
 
 /* mobile only */
