@@ -248,7 +248,7 @@ header.global-navigation {
 .feds-cta {
   display: flex;
   flex-shrink: 0;
-  height: 32px;
+  min-height: 32px;
   min-width: 72px;
   padding: 0 14px;
   border-width: 2px;
@@ -256,12 +256,11 @@ header.global-navigation {
   border-radius: 16px;
   font-size: 15px;
   font-weight: 700;
-  line-height: 0;
+  line-height: 1.5;
   box-sizing: border-box;
   align-items: center;
   justify-content: center;
   overflow: visible;
-  white-space: nowrap;
   transition-property: color, border-color, background-color;
   transition-duration: 130ms;
   transition-timing-function: ease-out;
