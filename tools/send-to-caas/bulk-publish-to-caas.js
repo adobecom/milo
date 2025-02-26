@@ -44,8 +44,6 @@ const DEFAULT_VALUES_CB = {
 // Hold the selected preset data
 let selectedPreset = {};
 
-const resultsHeader = BODY.querySelector('.results-header');
-
 const fetchExcelJson = async (url) => {
   const resp = await fetch(url);
   if (resp.ok) {
@@ -255,7 +253,7 @@ const processData = async (data, accessToken) => {
 
   SIGNEDIN_EL.style.display = 'none';
   SIGNEDOUT_EL.style.display = 'none';
-  
+
   resetResultsTables();
   if (successArr.length) {
     showSuccessTable(successArr);
@@ -307,13 +305,14 @@ const loadFromLS = () => {
 
 const publishWarning = document.querySelector('.publish-warning');
 const checkCaasEnv = () => {
+  // eslint-disable no-undef
   if (!caasEnv.value) caasEnv.value = 'prod';
-  // eslint-disable-next-line no-undef
   if (caasEnv.value === 'prod' && !draftOnly.checked) {
     publishWarning.style.height = '30px';
   } else {
     publishWarning.style.height = '0';
   }
+  // eslint-enable no-undef
 };
 
 // presets options
@@ -406,7 +405,6 @@ clearResultsButton.addEventListener('click', () => {
 });
 
 const exportResultsToCSV = () => {
-  console.log('Exporting results to CSV file...');
   let table = document.querySelector('.success-table tbody');
   let csvContent = "STATUS,URL,RESPONSE\n";
 
@@ -437,12 +435,12 @@ const exportResultsToCSV = () => {
     csvContent += rowData.join(',') + '\n';
   }
 
-  let fileName = prompt("Enter filename (without extension):", "CaaSBulkPublisher_Output");
+  let fileName = prompt('Enter filename (without extension):', 'CaaSBulkPublisher_Output');
   if (!fileName) return; // If user cancels, do nothing
 
   // Create a Blob with the CSV content and download it
-  let blob = new Blob([csvContent], { type: "text/csv" });
-  let a = document.createElement("a"); 
+  const blob = new Blob([csvContent], { type: 'text/csv' });
+  const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = `${fileName}.csv`;
   document.body.appendChild(a);
