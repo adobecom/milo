@@ -18,8 +18,11 @@ function updateStepDetails(formEl, step, totalSteps) {
   formEl.classList.remove('show-warnings');
   formEl.dataset.step = step;
   formEl.querySelector('.step-details .step').textContent = `Step ${step} of ${totalSteps}`;
-  formEl.querySelector('#mktoButton_new').textContent = step === totalSteps ? 'Submit' : 'Next';
-  formEl.querySelector(`.mktoFormRowTop[data-validate="${step}"]:not(.mktoHidden) input`)?.focus();
+  formEl.querySelector('#mktoButton_new')?.classList.toggle('mktoHidden', step !== totalSteps);
+  formEl.querySelector('#mktoButton_next')?.classList.toggle('mktoHidden', step === totalSteps);
+  setTimeout(() => {
+    formEl.querySelector(`.mktoFormRowTop[data-validate="${step}"]:not(.mktoHidden) input`)?.focus();
+  }, 100);
 }
 
 function showPreviousStep(formEl, totalSteps) {
@@ -69,9 +72,8 @@ function setValidationSteps(formEl, totalSteps) {
 function onRender(formEl, totalSteps) {
   const currentStep = parseInt(formEl.dataset.step, 10);
   const submitButton = formEl.querySelector('#mktoButton_new');
-  if (submitButton) submitButton.textContent = currentStep === totalSteps ? 'Submit' : 'Next';
+  submitButton?.classList.toggle('mktoHidden', currentStep !== totalSteps);
   formEl.querySelector('.step-details .step').textContent = `Step ${currentStep} of ${totalSteps}`;
-
   setValidationSteps(formEl, totalSteps);
 }
 
@@ -79,9 +81,12 @@ const readyForm = (form, totalSteps) => {
   const formEl = form.getFormElem().get(0);
   form.onValidate(() => formValidate(formEl));
 
+  const nextButton = createTag('button', { type: 'button', id: 'mktoButton_next', class: 'mktoButton mktoUpdatedBTN mktoVisible' }, 'Next');
+  nextButton.addEventListener('click', () => form.validate());
+  const nextContainer = createTag('div', { class: 'mktoButtonRow' }, nextButton);
   const stepEl = createTag('p', { class: 'step' }, `Step 1 of ${totalSteps}`);
   const stepDetails = createTag('div', { class: 'step-details' }, stepEl);
-  formEl.append(stepDetails);
+  formEl.append(nextContainer, stepDetails);
 
   const debouncedOnRender = debounce(() => onRender(formEl, totalSteps), 10);
   const observer = new MutationObserver(debouncedOnRender);
