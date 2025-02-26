@@ -27,19 +27,19 @@ export default class AdobeHomePage {
       },
       sizes: {
         single: {
-          'min-width': '132px',
-          'max-width': '132px',
+          'min-width': '239px',
+          'max-width': '239px',
           height: '206px',
         },
         double: {
-          'min-width': '214px',
-          'max-width': '214px',
+          'min-width': '206px',
+          'max-width': '206px',
           height: '206px',
         },
         triple: {
-          'min-width': '460px',
-          'max-width': '460px',
-          height: '230px',
+          'min-width': '444px',
+          'max-width': '444px',
+          height: '206px',
         },
       },
       typography: {
@@ -55,12 +55,6 @@ export default class AdobeHomePage {
           'font-style': 'italic',
           color: 'var(--merch-card-ah-try-buy-widget-text-color)',
         },
-      },
-      badge: {
-        'background-color': 'rgb(248, 217, 4)',
-        color: 'rgb(34, 34, 34)',
-        'font-size': '12px',
-        'border-radius': '4px',
       },
     };
   }
@@ -152,10 +146,6 @@ export default class AdobeHomePage {
     return this.getCardField(id, cardType, 'legalLink');
   }
 
-  async getCardUptLink(id, cardType) {
-    return this.getCardField(id, cardType, 'uptLink');
-  }
-
   async getCardPrice(id, cardType) {
     return this.getCardField(id, cardType, 'price');
   }
@@ -164,14 +154,32 @@ export default class AdobeHomePage {
     return this.getCardField(id, cardType, 'cta');
   }
 
-  async getCardCTALink(id, cardType) {
-    return this.getCardField(id, cardType, 'ctaLink');
-  }
-
   async getCardImage(id, cardType) {
-    if (cardType === 'ah-try-buy-widget-single') {
-      throw new Error('Invalid card type. "ah-try-buy-widget-single" card does not have an image slot.');
+    if (cardType === 'ah-try-buy-widget-double' || cardType === 'ah-try-buy-widget-triple') {
+      throw new Error('Invalid card type. This card variant does not have an image slot.');
     }
     return this.getCardField(id, cardType, 'image');
+  }
+
+  async getWidget(id, size) {
+    const widget = this.page.locator(`merch-card[variant="ah-try-buy-widget"][size="${size}"]`)
+      .filter({ has: this.page.locator(`aem-fragment[fragment="${id}"]:visible`) });
+    return widget;
+  }
+
+  async getWidgetField(id, size, fieldName) {
+    const widget = await this.getWidget(id, size);
+    const fields = {
+      title: '>>> [slot="heading-xxxs"]',
+      description: '[slot="body-xxs"]:visible',
+      price: '[slot="price"]:visible',
+      cta: '[slot="cta"] sp-button:visible',
+    };
+    return widget.locator(fields[fieldName]);
+  }
+
+  async getWidgetAttribute(id, size, attribute) {
+    const widget = await this.getWidget(id, size);
+    return widget.getAttribute(attribute);
   }
 }
