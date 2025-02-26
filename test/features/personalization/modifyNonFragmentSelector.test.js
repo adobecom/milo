@@ -171,7 +171,7 @@ const values = [
   {
     b: 'marquee-container1',
     a: 'main > div:nth-child(1 of main > div:has([class*="marquee-container"])',
-  }
+  },
 ];
 describe('test different values', () => {
   values.forEach((value) => {
