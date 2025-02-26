@@ -11,9 +11,10 @@ import {
   allowCancelProject,
   projectStatus,
   polling,
+  isLOCV3RolloutFlow,
 } from '../utils/state.js';
 import { setExcelStatus, setStatus } from '../utils/status.js';
-import { origin, preview } from '../utils/franklin.js';
+import { origin, preview, repo } from '../utils/franklin.js';
 import { createTag, decorateSections, decorateFooterPromo } from '../../../utils/utils.js';
 import { getUrls, validateUrlsFormat, getLangstorePrefix, removeLangstorePrefix } from '../loc/index.js';
 import updateExcelTable from '../../../tools/sharepoint/excel.js';
@@ -298,8 +299,47 @@ export async function sendForLoc() {
   isSending = false;
 }
 
-export function showRollout() {
+function showRollout() {
   showRolloutOptions.value = true;
+}
+
+function getLocV3CreateUrl() {
+  try {
+    const { origin: pageOrigin = '', hostname = '', search = '', protocol = '' } = window.location;
+    const milolibs = heading.value.env !== 'prod' ? 'milostudio-stage' : 'milostudio';
+    let v3Origin = pageOrigin;
+    if (repo === 'milo') {
+      const splittedHost = hostname.split('--');
+      splittedHost.shift();
+      splittedHost.unshift(milolibs);
+      v3Origin = `${protocol}//${splittedHost.join('--')}`;
+    }
+    const url = new URL(`${v3Origin}/tools/locui-create`);
+    const searchParams = new URLSearchParams(search);
+    const DISCARD_KEYS = ['referrer', 'milolibs'];
+    DISCARD_KEYS.forEach((key) => {
+      if (searchParams.has(key)) {
+        searchParams.delete(key);
+      }
+    });
+    searchParams.append('milolibs', milolibs);
+    searchParams.append('env', heading.value.env);
+    searchParams.append('workflow', 'promoteRollout');
+    searchParams.append('projectKey', heading.value.projectId);
+    url.search = searchParams.toString();
+    return url;
+  } catch (e) {
+    console.error('Problem while creating url', e);
+    return '';
+  }
+}
+export function handleRolloutAll() {
+  if (isLOCV3RolloutFlow.value) {
+    const createV3Url = getLocV3CreateUrl();
+    if (createV3Url) { window.open(createV3Url, '_blank', 'noopener noreferrer'); }
+  } else {
+    showRollout();
+  }
 }
 
 export async function rolloutAll(e, reroll) {

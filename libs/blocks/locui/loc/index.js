@@ -10,6 +10,7 @@ import {
   allowSyncToLangstore,
   canRefresh,
   user,
+  isLOCV3RolloutFlow,
 } from '../utils/state.js';
 import { setStatus } from '../utils/status.js';
 import { getStatus, origin, preview } from '../utils/franklin.js';
@@ -136,6 +137,7 @@ async function loadLocales() {
 async function loadProjectSettings(projSettings) {
   const settings = projSettings.reduce((acc, { key, value }) => ({ ...acc, [key]: value }), {});
   heading.value = { ...heading.value, env: settings.env, projectId: settings['Project ID'], projectType: settings['project.type'] };
+  isLOCV3RolloutFlow.value = settings['project.version'] === 'LOCV3' && settings['project.type'] !== 'rollout';
   if (settings['Project ID']) {
     setStatus('service', 'info', 'Connecting to localization service.');
     await getServiceUpdates();
