@@ -9,9 +9,9 @@
   --tabs-active-bg-color: #fff;
   --tabs-list-bg-gradient: linear-gradient(rgb(255 255 255 / 0%) 60%, rgb(245 245 245 / 80%));
   --tabs-pill-bg-color: #292929;
-  --tabs-pill-bg-color-hover: #e6e6e6;
-  --tabs-pill-bg-focus: #d5d5d5;
-  --tabs-pill-bg-color-active: #d5d5d5;
+  --tabs-pill-bg-color-hover: #e1e1e1;
+  --tabs-pill-bg-focus: #505050;
+  --tabs-pill-bg-color-active: #505050;
   --tabs-pill-text-color: #131313;
   --tabs-pill-text-selected-color: #ffffff;
   --tabs-paddle-bs-color: #0000001a;
@@ -315,17 +315,16 @@
 }
 
 .tabs[class*='pill'] div[role="tablist"] button:focus {
-  color: var(--tabs-pill-text-color);
+  color: var(--tabs-pill-text-selected-color);
   background: var(--tabs-pill-bg-focus);
 }
 
 .tabs[class*='pill'] div[role="tablist"] button:focus-visible {
   outline: 2px solid #4145ca;
-  outline-offset: 2px;
 }
 
 .tabs[class*='pill'] div[role="tablist"] button:active {
-  color: var(--tabs-pill-text-color);
+  color: var(--tabs-pill-text-selected-color);
   background: var(--tabs-pill-bg-color-active);
 }
 
