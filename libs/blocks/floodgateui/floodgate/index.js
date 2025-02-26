@@ -44,7 +44,7 @@ export function validateUrlsFormat(projectUrls, removeMedia = false) {
     if ((/\.(gif|jpg|jpeg|tiff|png|webp)$/i).test(url.pathname)) {
       url.valid = 'media';
     }
-    projectUrls[idx] = Array.isArray(projectUrls[idx]) ? [url] : url;
+    projectUrls[idx] = Array.isArray(projectUrls[idx]) ? [urlObj] : urlObj;
   });
   if (removeMedia) {
     return projectUrls.filter((url) => getUrl(url).valid !== 'media');
