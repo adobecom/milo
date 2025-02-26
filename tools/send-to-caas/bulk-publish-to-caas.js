@@ -406,14 +406,14 @@ clearResultsButton.addEventListener('click', () => {
 
 const exportResultsToCSV = () => {
   const table = document.querySelector('.success-table tbody');
-  let csvContent = "STATUS,URL,RESPONSE\n";
+  let csvContent = 'STATUS,URL,RESPONSE\n';
 
-  for (let row of table.rows) {
-    let rowData = [];
-    for (let cell of row.cells) {
+  for (const row of table.rows) {
+    const rowData = [];
+    for (const cell of row.cells) {
       if (cell.cellIndex === 0) continue; // Skip the first column
       let cellText = cell.innerText;
-      if (cellText.includes(",")) { // Wrap text with quotes if it contains commas
+      if (cellText.includes(',')) { // Wrap text with quotes if it contains commas
         cellText = `"${cellText}"`;
       }
       rowData.push(cellText);
