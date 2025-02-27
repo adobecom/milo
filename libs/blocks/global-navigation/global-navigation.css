@@ -36,12 +36,6 @@ header.global-navigation {
   box-sizing: content-box;
 }
 
-@media (min-width: 900px) {
-  header.global-navigation {
-    contain: layout;
-  }
-}
-
 .feds-topnav-wrapper {
   position: relative;
   z-index: 2;
@@ -519,6 +513,10 @@ header.global-navigation {
 
 /* Desktop styles */
 @media (min-width: 900px) {
+  header.global-navigation {
+    contain: layout;
+  }
+
   /* General */
   .global-navigation.has-breadcrumbs {
     padding-bottom: var(--feds-height-breadcrumbs);
