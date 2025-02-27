@@ -159,7 +159,8 @@ export default async function loadBlock(configs, customLib) {
             errorType: e.errorType,
           });
         }
-      } else if (block.key === 'footer') {
+      }
+      if (block.key === 'footer') {
         try {
           await import('./footer.css');
         } catch (e) {
