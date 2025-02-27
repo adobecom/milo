@@ -22,7 +22,6 @@ function addLoader(a) {
 }
 
 async function decorateQuickLink(a, hasConsent) {
-  if (!window.alloy) return;
   let ecid = null;
   try {
     const data = await window.alloy_getIdentity;
