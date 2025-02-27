@@ -511,6 +511,23 @@ function getSelectedElements(sel, rootEl, forceRootEl, action) {
       return { els: [], modifiers: [] };
     }
   }
+
+  const metadataBlocks = rootEl.querySelectorAll('.section-metadata');
+  if (metadataBlocks.length) {
+    let section;
+    for (let i = 0; i < metadataBlocks.length; i++) {
+      [...metadataBlocks[i].children].forEach((child) => {
+        if (child.children[0].textContent === 'style' 
+          && child.children[1].textContent.includes(selector)) {
+          section = metadataBlocks[i].parentElement;
+        }
+      });
+      if (section) {
+        return { els: [section], modifiers: [] }
+      }
+    }
+  }
+
   const {
     modifiedSelector,
     modifiers,
@@ -528,6 +545,8 @@ function getSelectedElements(sel, rootEl, forceRootEl, action) {
   if (modifiers.includes(FLAGS.all) || !els.length) return { els, modifiers, attribute };
   els = [els[0]];
   return { els, modifiers, attribute };
+  
+
 }
 
 const addHash = (url, newHash) => {
