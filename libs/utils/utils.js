@@ -578,8 +578,6 @@ export function decorateSVG(a) {
     const splitText = textContent.split('|');
     const authoredUrl = new URL(splitText.shift().trim());
     const altText = splitText.join('|').trim();
-    const parent = a.parentElement;
-    const isHTagParent = parent?.tagName.startsWith('H');
 
     // Relative link checking
     const hrefUrl = a.href.startsWith('/')
@@ -590,13 +588,8 @@ export function decorateSVG(a) {
       ? authoredUrl.pathname
       : authoredUrl;
 
-    const img = createTag('img', { loading: 'lazy', src, alt: isHTagParent ? '' : altText || '' });
+    const img = createTag('img', { loading: 'lazy', src, alt: altText || '' });
     const pic = createTag('picture', null, img);
-
-    if (isHTagParent) {
-      const span = createTag('span', { class: 'visually-hidden-heading' }, altText);
-      parent.prepend(span);
-    }
 
     if (authoredUrl.pathname === hrefUrl.pathname) {
       a.parentElement.replaceChild(pic, a);
