@@ -215,7 +215,7 @@ export const loadCaasFiles = async () => {
   const beta = searchParams?.get('caasbeta');
   if (beta) {
     cssFile = `https://adobecom.github.io/caas/dist/app.css`;
-    jsFile = `https://adobecom.github.io/caas/dist/main.source.js`;
+    jsFile = 'https://adobecom.github.io/caas/dist/main.source.js';
   }  
 
   loadStyle(cssFile);
