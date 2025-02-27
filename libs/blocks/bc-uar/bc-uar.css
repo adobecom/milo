@@ -1,7 +1,6 @@
 /* FULL SCROLL */
 .bc-uar {
-  --bc-width: 896px;
-
+  --bc-width: 800px;
 }
 
 .bc-container { 
@@ -64,10 +63,16 @@
   color: #fff;
   font-weight: 700;
   font-size: 26px;
+  opacity: 1;
   padding: 48px;
   position: sticky;
   top: 0;
+  transition: opacity .25s ease-in;
   z-index: 15;
+}
+
+.bc-active .branding {
+  opacity: 0;
 }
 
 .bc-content {
@@ -104,7 +109,7 @@
 }
 
 .landing-heading {
-  width: 72%;
+  width: 80%;
 }
 
 .landing-heading h1 {
@@ -138,13 +143,13 @@
   display: flex;
   flex-wrap: wrap;
   padding: 0;
-  width: 210px;
+  width: 188px;
 }
 
 .card-image {
   background-image: var(--card-image);
   background-position: 50% 50%;
-  background-size: 112%;
+  background-size: 125%;
   background-repeat: no-repeat;
   border-radius: 16px 16px 0 0;
   height: 178px;
@@ -176,7 +181,7 @@
 
 .landing-card:hover .card-image, 
 .landing-card:focus .card-image {
-  background-size: 123%;
+  background-size: 138%;
 }
 
 @keyframes gradient {
@@ -263,5 +268,11 @@
   
   .bc-active .bc-content {
     min-height: 100vh;
+  }
+}
+
+@media screen and (min-width: 1280px) {
+  .bc-active .branding {
+    opacity: 1;
   }
 }
