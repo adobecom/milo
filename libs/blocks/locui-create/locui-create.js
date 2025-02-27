@@ -33,11 +33,12 @@ function Create() {
         const searchParams = new URLSearchParams(window.location.search);
         const projectKey = searchParams.get('projectKey');
         const workflow = searchParams.get('workflow');
+        const language = searchParams.get('language');
         const projectInitByUrl = getProjectByParams(searchParams);
 
         /* Fetch draft project if project key is found in url params */
         if (projectKey) {
-          setUserWorkflowType(workflow);
+          setUserWorkflowType(language ? 'promoteRollout' : workflow);
           const error = await fetchDraftProject(projectKey);
           if (error) {
             setToast({ type: 'error', message: error });

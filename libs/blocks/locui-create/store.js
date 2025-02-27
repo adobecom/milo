@@ -7,6 +7,7 @@ import {
   processLocaleData,
   createPayload,
   getMilocUrl,
+  getLanguageDetails,
 } from './utils/utils.js';
 
 export const telemetry = { application: { appName: 'Adobe Localization' } };
@@ -199,6 +200,8 @@ export async function updateDraftProject(publish = false) {
 }
 
 export async function fetchDraftProject(projectKey) {
+  const searchParams = new URLSearchParams(window.location.search);
+  const lang = searchParams.get('language');
   if (!projectKey) {
     return 'Project key has not been provided.';
   }
@@ -223,14 +226,15 @@ export async function fetchDraftProject(projectKey) {
     );
     const resJson = await response.json();
     if (response.ok) {
+      const projectNameProfix = lang ? `-${lang}` : ''
       setProject({
         type: (resJson.projectType === 'rollout' || userWorkflowType.value === 'promoteRollout') ? 'rollout' : 'localization',
-        name: resJson.projectName + (userWorkflowType.value === 'promoteRollout' ? '-rollout' : ''),
+        name: `${resJson.projectName}${userWorkflowType.value === 'promoteRollout' ? `-rollout` : ''}${projectNameProfix}`,
         htmlFlow: resJson.settings?.useHtmlFlow,
         editBehavior: resJson.settings?.regionalEditBehaviour,
         urls: resJson.urls,
         fragments: [],
-        languages: (userWorkflowType.value === 'promoteRollout') ? resJson?.languages.map((language) => ({
+        languages: lang ? getLanguageDetails(lang) : (userWorkflowType.value === 'promoteRollout') ? resJson?.languages.map((language) => ({
           ...language,
           action: 'Rollout',
         })) : resJson.languages ?? [],
