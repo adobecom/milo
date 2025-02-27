@@ -34,6 +34,13 @@ const landingCard = ({ cardDetails, onLandingClick }) => {
   `;
 };
 
+function addFavicon() {
+  const link = document.createElement('link');
+  link.rel = 'icon';
+  link.href = 'https://www.adobe.com/creativecloud/img/favicons/favicon.ico';
+  document.head.appendChild(link);
+}
+
 const App = () => {
   const [showCards, setShowCards] = useState(true);
 
@@ -106,5 +113,6 @@ const App = () => {
 export default async function init(el) {
   el.replaceChildren();
   await loadChat(); // Wait for chat to load first
+  addFavicon();
   render(html`<${App}/>`, el);
 }
