@@ -364,9 +364,15 @@ function toLowerAlpha(str) {
   return s.replace(RE_KEY_REPLACE, '');
 }
 
+function sanitizeKey(key) {
+  // Remove any characters that could be used for prototype pollution
+  return key.replace(/__proto__|constructor|prototype/, '');
+}
+
 function normalizeKeys(obj) {
   return Object.keys(obj).reduce((newObj, key) => {
-    newObj[toLowerAlpha(key)] = obj[key];
+    const sanitizedKey = sanitizeKey(toLowerAlpha(key));
+    newObj[sanitizedKey] = obj[key];
     return newObj;
   }, {});
 }
@@ -916,11 +922,12 @@ export async function getManifestConfig(info = {}, variantOverride = false) {
   let data = manifestData;
   if (!data) {
     const fetchedData = await fetchData(manifestPath, DATA_TYPE.JSON);
-    if (fetchData) data = fetchedData;
+    if (fetchData) data = normalizeKeys(fetchedData);
   }
 
   const persData = data?.experiences?.data || data?.data || data;
   if (!persData) return null;
+  const normalizedPersData = persData.map(normalizeKeys);
   const infoTab = manifestInfo || data?.info?.data;
   const infoObj = infoTab?.reduce((acc, item) => {
     acc[item.key] = item.value;
@@ -928,7 +935,7 @@ export async function getManifestConfig(info = {}, variantOverride = false) {
   }, {});
   const manifestOverrideName = infoObj?.['manifest-override-name']?.toLowerCase();
   const targetId = name || manifestOverrideName;
-  const manifestConfig = parseManifestVariants(persData, manifestPath, targetId);
+  const manifestConfig = parseManifestVariants(normalizedPersData, manifestPath, targetId);
 
   if (!manifestConfig) {
     /* c8 ignore next 3 */
