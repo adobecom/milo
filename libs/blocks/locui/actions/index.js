@@ -303,7 +303,7 @@ function showRollout() {
   showRolloutOptions.value = true;
 }
 
-function getLocV3CreateUrl() {
+export function getLocV3CreateUrl(additionalParams) {
   try {
     const { origin: pageOrigin = '', hostname = '', search = '', protocol = '' } = window.location;
     const milolibs = heading.value.env !== 'prod' ? 'milostudio-stage' : 'milostudio';
@@ -326,6 +326,11 @@ function getLocV3CreateUrl() {
     searchParams.append('env', heading.value.env);
     searchParams.append('workflow', 'promoteRollout');
     searchParams.append('projectKey', heading.value.projectId);
+    if (additionalParams) {
+      for (const [key, value] of Object.entries(additionalParams)) {
+        searchParams.append(key, value);
+      }
+    }
     url.search = searchParams.toString();
     return url;
   } catch (e) {
