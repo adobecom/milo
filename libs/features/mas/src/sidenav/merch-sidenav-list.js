@@ -80,13 +80,13 @@ export class MerchSidenavList extends LitElement {
      * click handler to manage first level items state of sidenav
      * @param {*} param
      */
-    handleClick({ target: item }, pushState = true) {
+    handleClick({ target: item }, shouldUpdateHash = true) {
         const { value, parentNode } = item;
         this.selectElement(item);
         if (parentNode?.tagName === 'SP-SIDENAV') {
             //swc does not consider, in multilevel, first level as a potential selection
             //and does not close other parents, we'll do that here
-            if (pushState) {
+            if (shouldUpdateHash) {
               pushStateFromComponent(this, value);
             }
             item.selected = true;
@@ -126,7 +126,6 @@ export class MerchSidenavList extends LitElement {
     }
 
     startDeeplink() {
-      let pushState = false;
       this.stopDeeplink = deeplink(
           (params) => {
               const value = params[this.deeplink] ?? 'all';
@@ -140,9 +139,8 @@ export class MerchSidenavList extends LitElement {
                   } 
                   if (element.parentNode?.tagName === 'SP-SIDENAV-ITEM') {
                     element.parentNode.expanded = true;
-                  } 
-                  this.handleClick({ target: element }, pushState);
-                  pushState = true;
+                  }
+                  this.handleClick({ target: element }, !!window.location.hash.includes('category'));
               });
           },
       );
