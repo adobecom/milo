@@ -418,7 +418,7 @@ const exportResultsToCSV = () => {
       }
       rowData.push(cellText);
     }
-    csvContent += `${rowData.join(',')  }\n`;
+    csvContent += `${rowData.join(',')}\n`;
   }
 
   const errorsTable = document.querySelector('.error-table tbody');
