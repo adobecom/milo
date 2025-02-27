@@ -23,7 +23,6 @@
   --tabs-pill-text-focus-color: #ffffff;
   --tabs-pill-text-color: #505050;
   --tabs-pill-text-selected-color: #ffffff;
-  --tabs-pill-text-disabled: rgba(0, 0, 0, 0.22);
   --tabs-paddle-bs-color: #0000001a;
   --tabs-radio-gray: #6d6d6d;
   --tabs-radio-blue: #0265dc;
@@ -50,7 +49,6 @@
   --tabs-pill-text-color: #fff;
   --tabs-pill-text-selected-color: #000000;
   --tabs-pill-text-focus-color: #ffffff;
-  --tabs-pill-text-disabled: #8a8a8a;
   --tabs-mobile-stacked-bg-color: #ffffff;
   --tabs-mobile-stacked-text-color: #131313;
   --tabs-paddle-bs-color: #ffffff1a;
@@ -291,10 +289,6 @@
   font-weight: 400;
   padding: 0.2em 1em;
   border: none;
-}
-
-.tabs[class*='pill'] div[role="tablist"] button:disabled {
-  color: var(--tabs-pill-text-disabled);
 }
 
 .tabs.radio div[role="tablist"] button {
