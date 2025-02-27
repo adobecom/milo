@@ -33,7 +33,7 @@ async function decorateQuickLink(a, hasConsent) {
   if (ecid && hasConsent && !a.href.includes('ecid')) {
     const urlObj = new URL(a.href, window.location.origin);
     urlObj.searchParams.set('ecid', ecid);
-    a.href = urlObj.toString();
+    a.href = urlObj.href;
   }
   window.location.href = a.href;
 }
