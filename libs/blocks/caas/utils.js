@@ -211,6 +211,13 @@ export const loadCaasFiles = async () => {
     jsFile = `http://${host}.corp.adobe.com:5000/dist/main.js`;
   }
 
+  // for caas beta releases
+  const beta = searchParams?.get('caasbeta');
+  if (beta) {
+    cssFile = `https://adobecom.github.io/caas/dist/app.css`;
+    jsFile = `https://adobecom.github.io/caas/dist/main.source.js`;
+  }  
+
   loadStyle(cssFile);
   await loadScript(`https://www.adobe.com/special/chimera/caas-libs/${version}/react.umd.js`);
   await loadScript(`https://www.adobe.com/special/chimera/caas-libs/${version}/react.dom.umd.js`);
