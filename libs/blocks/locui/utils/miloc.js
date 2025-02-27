@@ -43,7 +43,7 @@ function handleProjectStatusDetail(detail) {
   );
   if (isLOCV3RolloutFlow.value) {
     isAllowRollout = languages.value.every(
-      ({ code }) => LOCV3_ROLLOUT_ALL_STATUS.includes(detail[code].status),
+      ({ code }) => LOCV3_ROLLOUT_ALL_STATUS.includes(detail[code]?.status ?? ''),
     );
   }
   allowRollout.value = isAllowRollout;
