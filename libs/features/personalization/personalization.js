@@ -78,7 +78,7 @@ export const normalizePath = (p, localize = true) => {
   if (isDamContent(path) || !path?.includes('/')) return path;
 
   const config = getConfig();
-  if (path.startsWith('https://www.adobe.com/federal/')) {
+  if (path.includes('/federal/')) {
     return getFederatedUrl(path);
   }
 
