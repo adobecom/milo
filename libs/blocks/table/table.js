@@ -94,14 +94,7 @@ function handleHeading(table, headingCols) {
     }
 
     col.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach((heading) => {
-      const newElement = document.createElement('p');
-
-      [...heading.attributes].forEach(({ name, value }) => newElement.setAttribute(name, value));
-
-      newElement.textContent = heading.textContent;
-      newElement.classList.add(`${heading.tagName.toLowerCase()}-margins`);
-
-      heading.replaceWith(newElement);
+      heading.setAttribute('role', 'paragraph');
     });
   });
 }

@@ -792,32 +792,32 @@ h1, h2, h3, h4, h5, h6 {
   scroll-margin-top: var(--feds-totalheight-nav);
 }
 
-h1, .table .col .h1-margins {
+h1 {
   font-size: var(--type-heading-xl-size);
   line-height: var(--type-heading-xl-lh);
 }
 
-h2, .table .col .h2-margins {
+h2 {
   font-size: var(--type-heading-l-size);
   line-height: var(--type-heading-l-lh);
 }
 
-h3, .table .col .h3-margins {
+h3 {
   font-size: var(--type-heading-m-size);
   line-height: var(--type-heading-m-lh);
 }
 
-h4, .table .col .h4-margins {
+h4 {
   font-size: var(--type-heading-s-size);
   line-height: var(--type-heading-s-lh);
 }
 
-h5, .table .col .h5-margins {
+h5 {
   font-size: var(--type-heading-xs-size);
   line-height: var(--type-heading-xs-lh);
 }
 
-h6, .table .col .h6-margins {
+h6 {
   font-size: var(--type-heading-xs-size);
   line-height: var(--type-heading-xs-lh);
 }
