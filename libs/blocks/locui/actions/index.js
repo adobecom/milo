@@ -327,7 +327,9 @@ export function getLocV3CreateUrl(additionalParams) {
     searchParams.append('workflow', 'promoteRollout');
     searchParams.append('projectKey', heading.value.projectId);
     if (additionalParams) {
-      searchParams.append('language', additionalParams.LangCode);
+      for (const [key, value] of Object.entries(additionalParams)) {
+        searchParams.append(key, value);
+      }
     }
     url.search = searchParams.toString();
     return url;

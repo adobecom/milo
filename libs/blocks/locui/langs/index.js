@@ -71,7 +71,7 @@ export function showSkippedFiles(item) {
 
 export function handleRollout(item, idx) {
   if (isLOCV3RolloutFlow.value) {
-    const createV3Url = getLocV3CreateUrl(item);
+    const createV3Url = getLocV3CreateUrl({ language: item.LangCode });
     if (createV3Url) { window.open(createV3Url, '_blank', 'noopener noreferrer'); }
   } else {
     rollout(item, idx);
