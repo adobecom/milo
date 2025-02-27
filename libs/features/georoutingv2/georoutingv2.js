@@ -1,5 +1,7 @@
 import { getFederatedContentRoot } from '../../utils/utils.js';
 
+const OLD_GEOROUTING = 'oldgeorouting';
+
 let config;
 let createTag;
 let getMetadata;
@@ -271,7 +273,7 @@ export default async function loadGeoRouting(
   getMetadataFunc,
   loadBlockFunc,
   loadStyleFunc,
-  v2jsonPromise,
+  v2jsonPromise = import(`${conf.contentRoot ?? ''}/georoutingv2.json`),
 ) {
   if (getGeoroutingOverride()) return;
   config = conf;
@@ -280,10 +282,13 @@ export default async function loadGeoRouting(
   loadBlock = loadBlockFunc;
   loadStyle = loadStyleFunc;
 
+  const v2JSON = v2jsonPromise
+    .then((r) => r.json())
+    .catch(() => null);
   const loadOldGeorouting = async (json) => {
     const { default: loadGeoRoutingOld } = await import('../georouting/georouting.js');
     await loadGeoRoutingOld(config, createTag, getMetadata, json);
-    return 'use-old-georouting';
+    return OLD_GEOROUTING;
   };
   const oldGeorouting = () => fetch(`${config.contentRoot ?? ''}/georouting.json`)
     .then((r) => r.json())
@@ -293,8 +298,8 @@ export default async function loadGeoRouting(
     .then((r) => r.json())
     .catch(() => null);
 
-  const json = (await v2jsonPromise) ?? (await oldGeorouting()) ?? (await federatedJSON());
-  if (json === 'use-old-georouting') return;
+  const json = (await v2JSON) ?? (await oldGeorouting()) ?? (await federatedJSON());
+  if (json === OLD_GEOROUTING) return;
 
   const { locale } = config;
 
