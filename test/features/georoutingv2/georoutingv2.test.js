@@ -203,9 +203,7 @@ const ogInnerHeight = window.innerHeight;
 const ogFetch = window.fetch;
 window.fetch = stub();
 
-const v2JSONPromise = () => fetch('/georoutingv2.json')
-  .then((r) => r.json())
-  .catch(() => null);
+const v2JSONPromise = () => fetch('/georoutingv2.json');
 
 function stubHeadRequestToReturnVal(prefix, val) {
   const path = window.location.href.replace(`${window.location.origin}`, '');
