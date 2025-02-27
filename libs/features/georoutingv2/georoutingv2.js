@@ -273,7 +273,7 @@ export default async function loadGeoRouting(
   getMetadataFunc,
   loadBlockFunc,
   loadStyleFunc,
-  v2jsonPromise = import(`${conf.contentRoot ?? ''}/georoutingv2.json`),
+  v2jsonPromise = null,
 ) {
   if (getGeoroutingOverride()) return;
   config = conf;
@@ -282,7 +282,7 @@ export default async function loadGeoRouting(
   loadBlock = loadBlockFunc;
   loadStyle = loadStyleFunc;
 
-  const v2JSON = v2jsonPromise
+  const v2JSON = (v2jsonPromise ?? import(`${conf.contentRoot ?? ''}/georoutingv2.json`))
     .then((r) => r.json())
     .catch(() => null);
   const loadOldGeorouting = async (json) => {
