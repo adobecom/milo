@@ -68,7 +68,7 @@ export const showHiddenContent = () => {
 
   // Query all elements except those in .metadata / .section-metadata / .card-metadata
   const elements = document.querySelectorAll(
-    'body main *:not(.metadata, .metadata *, .card-metadata, .card-metadata *)',
+    'body main *:not(.metadata, .metadata *, .section-metadata, .section-metadata *, .card-metadata, .card-metadata *)',
   );
 
   elements.forEach((el) => {
