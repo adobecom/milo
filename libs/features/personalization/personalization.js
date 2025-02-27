@@ -83,6 +83,9 @@ export const normalizePath = (p, localize = true) => {
   }
 
   try {
+    if (!path.startsWith(config.codeRoot) && !path.startsWith('http') && !path.startsWith('/')) {
+      path = `/${path}`;
+    }
     const url = new URL(path);
     const firstFolder = url.pathname.split('/')[1];
     const { hash } = url;
@@ -100,8 +103,6 @@ export const normalizePath = (p, localize = true) => {
       } else {
         path = `${config.locale.prefix}${url.pathname}`;
       }
-    } else if (!path.startsWith('http') && !path.startsWith('/')) {
-      path = `/${path}`;
     }
 
     return `${path}${hash}`;
