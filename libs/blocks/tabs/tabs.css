@@ -21,7 +21,7 @@
   --tabs-pill-bg-focus: #505050;
   --tabs-pill-bg-color-active: #505050;
   --tabs-pill-text-focus-color: #ffffff;
-  --tabs-pill-text-color: #131313;
+  --tabs-pill-text-color: #505050;
   --tabs-pill-text-selected-color: #ffffff;
   --tabs-pill-text-disabled: rgba(0, 0, 0, 0.22);
   --tabs-paddle-bs-color: #0000001a;
@@ -296,7 +296,6 @@
 .tabs[class*='pill'] div[role="tablist"] button:disabled {
   color: var(--tabs-pill-text-disabled);
 }
-
 
 .tabs.radio div[role="tablist"] button {
   background: transparent;
