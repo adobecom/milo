@@ -77,18 +77,17 @@ export const normalizePath = (p, localize = true) => {
 
   if (isDamContent(path) || !path?.includes('/')) return path;
 
+  if (path.includes('/federal/')) return getFederatedUrl(path);
+
   const config = getConfig();
-  if (path.includes('/federal/')) {
-    return getFederatedUrl(path);
+  if (!path.startsWith(config.codeRoot) && !path.startsWith('http') && !path.startsWith('/')) {
+    path = `/${path}`;
   }
 
   try {
-    if (!path.startsWith(config.codeRoot) && !path.startsWith('http') && !path.startsWith('/')) {
-      path = `/${path}`;
-    }
     const url = new URL(path);
-    const firstFolder = url.pathname.split('/')[1];
-    const { hash } = url;
+    const { hash, pathname } = url;
+    const firstFolder = pathname.split('/')[1];
 
     if (path.startsWith(config.codeRoot)
       || path.includes('.hlx.')
@@ -99,12 +98,11 @@ export const normalizePath = (p, localize = true) => {
         || hash.includes('#_dnt')
         || firstFolder in config.locales
         || path.includes('.json')) {
-        path = url.pathname;
+        path = pathname;
       } else {
-        path = `${config.locale.prefix}${url.pathname}`;
+        path = `${config.locale.prefix}${pathname}`;
       }
     }
-
     return `${path}${hash}`;
   } catch (e) {
     return path;
