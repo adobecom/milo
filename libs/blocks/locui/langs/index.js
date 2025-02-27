@@ -96,7 +96,7 @@ function createSingleRolloutUrl(item) {
     url.search = searchParams.toString();
     return url;
   } catch (e) {
-    console.error('Problemm while creating url', e);
+    console.error('Problem while creating url', e);
     return '';
   }
 }
