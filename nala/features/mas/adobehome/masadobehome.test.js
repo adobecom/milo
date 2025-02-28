@@ -15,13 +15,9 @@ test.describe('Merch AH Try Buy Widget test suite', () => {
   let webUtil;
 
   test.beforeEach(async ({ page, browserName }) => {
-    // Skip non-Chromium browsers if needed
-    // test.skip(browserName !== 'chromium', 'Not supported to run on multiple browsers.');
-
     ah = new AdobeHomePage(page);
     webUtil = new WebUtil(page);
 
-    // Set Chrome-specific headers if needed
     if (browserName === 'chromium') {
       await page.setExtraHTTPHeaders({ 'sec-ch-ua': '"Chromium";v="123", "Not:A-Brand";v="8"' });
     }
@@ -44,28 +40,22 @@ test.describe('Merch AH Try Buy Widget test suite', () => {
     }
   };
 
-  // Individual tests for each feature - avoids the loop issue
-  test(`Test: ${features[0].name}`, async ({ page, baseURL }) => {
+  test(`Test: ${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
     const testData = features[0];
     console.log(`Running test for ${testData.name} with ID ${testData.data.id}`);
 
-    // Construct the test URL directly in the test case, similar to masccd.test.js
     const testUrl = `${baseURL}${testData.path}${miloLibs}`;
     console.log(`Navigating to: ${testUrl}`);
-    
-    // Navigate to the page
+
     await page.goto(testUrl, { waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('networkidle', { timeout: 15000 })
       .catch((e) => console.log(`Warning: Network did not reach idle state: ${e.message}`));
 
-    // Debug DOM structure
     await test.step('Debug DOM structure', async () => {
-      // Use page.evaluate for faster DOM querying
       const domInfo = await page.evaluate(({ id }) => {
         const fragments = document.querySelectorAll('aem-fragment');
         const merchCards = document.querySelectorAll('merch-card[variant="ah-try-buy-widget"]');
 
-        // Check for specific fragment
         const specificFragment = document.querySelector(`aem-fragment[fragment="${id}"]`);
 
         return {
@@ -84,29 +74,22 @@ test.describe('Merch AH Try Buy Widget test suite', () => {
       console.log('All card sizes:', domInfo.cardSizes);
     });
 
-    // Validate widget content
     await test.step(`Validate widget content for ${testData.name}`, async () => {
       try {
-        // Get the widget
         const widget = await ah.getWidget(testData.data.id, testData.data.size);
 
-        // Validate content using direct DOM evaluation for better reliability
         const contentInfo = await page.evaluate(({ id, size }) => {
-          // Helper function to search through shadow DOM
           function searchShadowDOM(root, selector) {
             if (!root) return null;
 
-            // Check in light DOM
             let result = root.querySelector(selector);
             if (result) return result;
 
-            // Check in shadow DOM
             if (root.shadowRoot) {
               result = root.shadowRoot.querySelector(selector);
               if (result) return result;
             }
 
-            // Check in children
             for (const child of Array.from(root.children)) {
               result = searchShadowDOM(child, selector);
               if (result) return result;
@@ -115,7 +98,6 @@ test.describe('Merch AH Try Buy Widget test suite', () => {
             return null;
           }
 
-          // Find the fragment
           const fragment = document.querySelector(`aem-fragment[fragment="${id}"]`);
           if (!fragment) return { error: 'Fragment not found' };
           let merchCard = null;
@@ -142,7 +124,6 @@ test.describe('Merch AH Try Buy Widget test suite', () => {
 
           if (!merchCard) return { error: 'Merch card not found' };
 
-          // Get content from the card
           const titleEl = searchShadowDOM(merchCard, '[slot="heading-xxxs"]');
           const descriptionEl = searchShadowDOM(merchCard, '[slot="body-xxs"]');
           const priceEl = searchShadowDOM(merchCard, '[slot="price"]');
@@ -166,7 +147,6 @@ test.describe('Merch AH Try Buy Widget test suite', () => {
 
         console.log('Content info:', JSON.stringify(contentInfo, null, 2));
 
-        // Validate the content if found
         if (contentInfo.found) {
           expect(contentInfo.cardAttributes.variant).toBe('ah-try-buy-widget');
           expect(contentInfo.cardAttributes.size).toBe(testData.data.size);
@@ -186,7 +166,6 @@ test.describe('Merch AH Try Buy Widget test suite', () => {
           console.log('Could not find widget content:', contentInfo.error);
         }
 
-        // Validate CSS if applicable
         if (testData.data.cssProps) {
           await verifyWidgetCSS(widget, testData);
           console.log(`CSS validation passed for ${testData.name}`);
@@ -201,11 +180,9 @@ test.describe('Merch AH Try Buy Widget test suite', () => {
     const testData = features[1];
     console.log(`Running test for ${testData.name} with ID ${testData.data.id}`);
 
-    // Construct the test URL directly in the test case
     const testUrl = `${baseURL}${testData.path}${miloLibs}`;
     console.log(`Navigating to: ${testUrl}`);
-    
-    // Navigate to the page
+
     await page.goto(testUrl, { waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('networkidle', { timeout: 15000 })
       .catch((e) => console.log(`Warning: Network did not reach idle state: ${e.message}`));
@@ -216,13 +193,10 @@ test.describe('Merch AH Try Buy Widget test suite', () => {
     });
 
     await test.step('Verify price styling', async () => {
-      // Use direct DOM evaluation for more reliable style checking
       const computedStyle = await page.evaluate(({ id, size }) => {
-        // Find the fragment
         const fragment = document.querySelector(`aem-fragment[fragment="${id}"]`);
         if (!fragment) return null;
 
-        // Find the parent merch-card
         let merchCard = null;
         let parent = fragment.parentElement;
         while (parent) {
@@ -237,11 +211,9 @@ test.describe('Merch AH Try Buy Widget test suite', () => {
 
         if (!merchCard) return null;
 
-        // Find the price element
         const priceEl = merchCard.querySelector('[slot="price"]');
         if (!priceEl) return null;
 
-        // Get computed style
         const style = window.getComputedStyle(priceEl);
         return {
           fontSize: style.fontSize,
@@ -266,11 +238,9 @@ test.describe('Merch AH Try Buy Widget test suite', () => {
     const testData = features[2];
     console.log(`Running test for ${testData.name} with ID ${testData.data.id}`);
 
-    // Construct the test URL directly in the test case
     const testUrl = `${baseURL}${testData.path}${miloLibs}`;
     console.log(`Navigating to: ${testUrl}`);
-    
-    // Navigate to the page
+
     await page.goto(testUrl, { waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('networkidle', { timeout: 15000 })
       .catch((e) => console.log(`Warning: Network did not reach idle state: ${e.message}`));
@@ -281,28 +251,22 @@ test.describe('Merch AH Try Buy Widget test suite', () => {
     });
   });
 
-  // API validation test
   test('Validate API response', async ({ page, baseURL }) => {
     const testData = features[0];
     console.log(`Running API validation test with ID ${testData.data.id}`);
 
-    // Construct the test URL directly in the test case
     const testUrl = `${baseURL}${testData.path}${miloLibs}`;
     console.log(`Navigating to: ${testUrl}`);
-    
-    // Navigate to the page
+
     await page.goto(testUrl, { waitUntil: 'domcontentloaded' });
     await page.waitForLoadState('networkidle', { timeout: 15000 })
       .catch((e) => console.log(`Warning: Network did not reach idle state: ${e.message}`));
 
     try {
-      // Use direct DOM evaluation to find and click the CTA
       const clicked = await page.evaluate(({ id, size }) => {
-        // Find the fragment
         const fragment = document.querySelector(`aem-fragment[fragment="${id}"]`);
         if (!fragment) return { success: false, error: 'Fragment not found' };
 
-        // Find the parent merch-card
         let merchCard = null;
         let parent = fragment.parentElement;
         while (parent) {
@@ -317,11 +281,9 @@ test.describe('Merch AH Try Buy Widget test suite', () => {
 
         if (!merchCard) return { success: false, error: 'Merch card not found' };
 
-        // Find the CTA button
         const ctaEl = merchCard.querySelector('[slot="cta"] sp-button');
         if (!ctaEl) return { success: false, error: 'CTA button not found' };
 
-        // Click the button
         ctaEl.click();
 
         return { success: true };
@@ -331,7 +293,6 @@ test.describe('Merch AH Try Buy Widget test suite', () => {
       });
 
       if (clicked.success) {
-        // Wait for the response
         const response = await page.waitForResponse(
           (res) => res.url().includes(testData.data.offerid),
         );
