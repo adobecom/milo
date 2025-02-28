@@ -155,7 +155,6 @@ async function buildSharing() {
 }
 
 function validateDate(date) {
-  if (!date) return;
   const { env } = getConfig();
   if (env?.name === 'prod') return;
   if (date && !/^[0-1]\d{1}-[0-3]\d{1}-[2]\d{3}$/.test(date.textContent.trim())) {
@@ -166,7 +165,7 @@ function validateDate(date) {
 
 function decorateFigure(el) {
   el.classList.add('article-feature-image');
-  const picture = el.querySelector('picture, video, a[href*=".mp4"]');
+  const picture = el.querySelector('picture');
   const caption = el.querySelector('em');
   const figure = document.createElement('figure');
 
@@ -199,17 +198,17 @@ export default async function init(blockEl) {
   titleContainer.classList.add('article-title');
 
   const bylineContainer = childrenEls[2];
-  bylineContainer?.classList.add('article-byline');
-  bylineContainer?.firstElementChild.classList.add('article-byline-info');
+  bylineContainer.classList.add('article-byline');
+  bylineContainer.firstElementChild.classList.add('article-byline-info');
 
-  const authorContainer = bylineContainer?.firstElementChild.firstElementChild;
-  const authorEl = authorContainer?.firstElementChild;
-  authorContainer?.classList.add('article-author');
+  const authorContainer = bylineContainer.firstElementChild.firstElementChild;
+  const authorEl = authorContainer.firstElementChild;
+  authorContainer.classList.add('article-author');
 
   buildAuthorInfo(authorEl, bylineContainer);
 
-  const date = bylineContainer?.querySelector('.article-byline-info > p:last-child');
-  date?.classList.add('article-date');
+  const date = bylineContainer.querySelector('.article-byline-info > p:last-child');
+  date.classList.add('article-date');
   validateDate(date);
 
   const shareBlock = await buildSharing();
@@ -217,6 +216,6 @@ export default async function init(blockEl) {
 
   const featureImgContainer = childrenEls[3];
   decorateFigure(featureImgContainer);
-  console.log('featureImgContainer', featureImgContainer);
+
   document.addEventListener('milo:deferred', () => updateShareText(shareBlock));
 }
