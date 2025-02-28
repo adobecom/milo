@@ -927,7 +927,7 @@ export async function getManifestConfig(info = {}, variantOverride = false) {
 
   const persData = data?.experiences?.data || data?.data || data;
   if (!persData) return null;
-  const normalizedPersData = persData.map(normalizeKeys);
+  const normalizedPersData = Array.isArray(persData) ? persData.map(normalizeKeys) : [];
   const infoTab = manifestInfo || data?.info?.data;
   const infoObj = infoTab?.reduce((acc, item) => {
     acc[item.key] = item.value;
