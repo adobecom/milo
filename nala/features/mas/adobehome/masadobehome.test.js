@@ -226,7 +226,7 @@ test.describe('Merch AH Try Buy Widget test suite', () => {
       if (computedStyle) {
         expect(computedStyle.fontSize).toBe('14px');
         expect(computedStyle.lineHeight).toBe('17px');
-        await expect(computedStyle.fontStyle).toBe('italic');
+        expect(computedStyle.fontStyle).toBe('italic');
         expect(computedStyle.color).toBe('rgb(19, 19, 19)');
       } else {
         console.log('Could not get computed style for price element');
@@ -289,7 +289,7 @@ test.describe('Merch AH Try Buy Widget test suite', () => {
         return { success: true };
       }, {
         id: testData.data.id,
-        size: testData.data.size
+        size: testData.data.size,
       });
 
       if (clicked.success) {
@@ -298,7 +298,7 @@ test.describe('Merch AH Try Buy Widget test suite', () => {
         );
 
         console.log(`API response status: ${response.status()}`);
-        await expect(response.status()).toBe(200);
+        expect(response.status()).toBe(200);
       } else {
         console.log('Failed to click CTA:', clicked.error);
         throw new Error(`Failed to click CTA: ${clicked.error}`);
