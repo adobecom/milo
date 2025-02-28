@@ -1492,6 +1492,10 @@ export async function loadArea(area = document) {
   if (isDoc) await documentPostSectionLoading(config);
 
   await loadDeferred(area, areaBlocks, config);
+  const main = document.querySelector('main');
+  const text = createTag('p');
+  text.textContent = navigator.userAgent;
+  main.insertAdjacentElement('afterbegin', text);
 }
 
 export const utf8ToB64 = (str) => window.btoa(unescape(encodeURIComponent(str)));
