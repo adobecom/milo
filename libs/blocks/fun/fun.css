@@ -1,0 +1,50 @@
+body{
+  background: linear-gradient(183deg, #060923, #000000, #092706, #000000, #320000, #000000, #2b052d, #000000);
+  background-size: 1600% 1600%;
+  
+  -webkit-animation: AnimationName 3s ease infinite;
+  -moz-animation: AnimationName 3s ease infinite;
+  -o-animation: AnimationName 3s ease infinite;
+  animation: AnimationName 3s ease infinite;
+  }
+  @-webkit-keyframes AnimationName {
+      0%{background-position:22% 0%}
+      50%{background-position:79% 100%}
+      100%{background-position:22% 0%}
+  }
+  @-moz-keyframes AnimationName {
+      0%{background-position:22% 0%}
+      50%{background-position:79% 100%}
+      100%{background-position:22% 0%}
+  }
+  @-o-keyframes AnimationName {
+      0%{background-position:22% 0%}
+      50%{background-position:79% 100%}
+      100%{background-position:22% 0%}
+  }
+  @keyframes AnimationName { 
+      0%{background-position:22% 0%}
+      50%{background-position:79% 100%}
+      100%{background-position:22% 0%}
+  }
+  canvas{
+    margin:0;
+  /*   position: absolute;
+    z-index: 1;
+    top: 0;
+    left: 0; */
+  }
+  ::-webkit-scrollbar {
+    z-index: 30;
+    width: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: #2b2e33;
+  }
+  ::-webkit-scrollbar-track {
+    background-color: #181a1d;
+  }
+  p {
+    position: relative;
+    z-index: 10;
+  }
