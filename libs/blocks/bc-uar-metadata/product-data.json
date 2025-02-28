@@ -1,0 +1,930 @@
+{
+  "premiere_pro": {
+      "title": "Premiere Pro",
+      "description": "Best app for making videos shine, from social clips to feature films. Create everything from social clips to feature films with the leading video editor. Create fabulous videos, whether you started with a camera or your phone. Automatically turn dialogue into captions - no more transcribing. Easily resize your videos to fit every screen. Professional video and film editing.",
+      "page": "https://www.adobe.com/products/premiere_pro.html",
+      "learning_resource": "https://www.adobe.com/learn/premiere_pro?learnIn=1",
+      "details": [
+          "Individual Product Plans: 7-day free trial. US$22.99/mo for the annual paid monthly plan.",
+          "Supported Platform: desktop",
+          "Expert Level: Intermediate to Advanced"
+      ],
+      "image": "",
+      "video_url": "https://www.adobe.com/creativecloud/media_19031a0af45e84aeaf575b82fac61f9e3b7baabd3.mp4",
+      "background_color": "#304A2F",
+      "logo": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-icon-premier-pro-64.svg",
+      "targeted_segments": {
+          "student": {
+              "plan": "**Students and teachers:** Try this app and 20+ others in Creative Cloud All Apps for just US$19.99/mo for the first year, then US$34.99/mo. Annual paid monthly plan. [See terms](https://www.adobe.com/offer-terms/ccm-ste-introductory.html). ",
+              "primary": {
+                  "text": "Start free trial",
+                  "url": "https://www.adobe.com/mini-plans/premiere.html?mid=ft&web=1&plan=edu"
+              },
+              "secondary": {
+                  "text": "See plans & pricing",
+                  "url": "https://www.adobe.com/creativecloud/plans.html?plan=edu"
+              }
+          }
+      },
+      "primary": {
+          "text": "Start free trial",
+          "url": "https://www.adobe.com/mini-plans/premiere.html?mid=ft&web=1"
+      },
+      "secondary": {
+          "text": "See plans & pricing",
+          "url": "https://www.adobe.com/creativecloud/plans.html?filter=video-audio"
+      }
+  },
+  "after_effects": {
+      "title": "After Effects",
+      "description": "Best app for making animated graphics, visual effects, and titles. Easily add titles, transitions, and more to your movies with the visual effects and motion graphics app the pros use. Create scrolling movie titles, mood-setting intros, and transitions. Start from scratch, or let us help. Mix it up - change a scene's setting for an entirely new look. Catch more eyes by animating characters, objects, and logos in your videos. Create motion graphics and visual effects for film, TV, video, and web.",
+      "page": "https://www.adobe.com/products/after_effects.html",
+      "details": [
+          "Individual Product Plans: 7-day free trial. US$22.99/mo for the annual paid monthly plan.",
+          "Supported Platform: desktop",
+          "Expert Level: Intermediate to Advanced"
+      ],
+      "learning_resource": "https://www.adobe.com/learn/after_effects?learnIn=1",
+      "image": "",
+      "video_url": "https://www.adobe.com/creativecloud/media_125599a11cde7309730b72033f0576b3be42bca06.mp4",
+      "background_color": "#010101",
+      "logo": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-icon-after-effects-appicon-64.svg",
+      "targeted_segments": {
+          "student": {
+              "plan": "**Students and teachers:** Try this app and 20+ others in Creative Cloud All Apps for just US$19.99/mo for the first year, then US$34.99/mo. Annual paid monthly plan. [See terms](https://www.adobe.com/offer-terms/ccm-ste-introductory.html).",
+              "primary": {
+                  "text": "Start free trial",
+                  "url": "https://www.adobe.com/mini-plans/aftereffects.html?mid=ft&web=1&plan=edu"
+              },
+              "secondary": {
+                  "text": "See plans & pricing",
+                  "url": "https://www.adobe.com/creativecloud/plans.html?plan=edu"
+              }
+          }
+      },
+      "primary": {
+          "text": "Start free trial",
+          "url": "https://www.adobe.com/mini-plans/aftereffects.html?mid=ft&web=1"
+      },
+      "secondary": {
+          "text": "See plans & pricing",
+          "url": "https://www.adobe.com/creativecloud/plans.html?filter=video-audio"
+      }
+  },
+  "animate": {
+      "title": "Animate",
+      "description": "Best app for making animations for cartoons, games, and more. Design animations for cartoons, banners, games, and the web. Make interactive animations for games, TV shows, and the web. Create web banners that respond to your users' touch and clicks. Draw original characters and bring them to life. Design interactive vector animations for multiple platforms.",
+      "page": "https://www.adobe.com/products/animate.html",
+      "details": [
+          "Individual Product Plans: 7-day free trial. US$22.99/mo for the annual paid monthly plan.",
+          "Supported Platform: desktop",
+          "Expert Level: Intermediate"
+      ],
+      "learning_resource": "https://www.adobe.com/learn/animate?learnIn=1",
+      "image": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-image-animate.png",
+      "background_color": "#303ABD",
+      "logo": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-icon-animate-64.svg",
+      "targeted_segments": {
+          "student": {
+              "plan": "**Students and teachers:** Try this app and 20+ others in Creative Cloud All Apps for just US$19.99/mo for the first year, then US$34.99/mo. Annual paid monthly plan. [See terms](https://www.adobe.com/offer-terms/ccm-ste-introductory.html).",
+              "primary": {
+                  "text": "Start free trial",
+                  "url": "https://www.adobe.com/mini-plans/animate.html?mid=ft&web=1&plan=edu"
+              },
+              "secondary": {
+                  "text": "See plans & pricing",
+                  "url": "https://www.adobe.com/creativecloud/plans.html?plan=edu"
+              }
+          }
+      },
+      "primary": {
+          "text": "Start free trial",
+          "url": "https://www.adobe.com/mini-plans/animate.html?mid=ft&web=1"
+      },
+      "secondary": {
+          "text": "See plans & pricing",
+          "url": "https://www.adobe.com/creativecloud/plans.html?filter=video-audio"
+      }
+  },
+  "audition": {
+      "title": "Audition",
+      "description": "Best app for adding sound effects to video and audio projects. Create, mix, and add sound effects to your movies, social posts, and podcasts. Create and mix your own sound effects, from the subtle to the extreme. Pack more punch into your podcasts and audio projects with handy filters and effects. Polish audio tracks for all of your video projects so they sound as good as they look. Audio recording, mixing, and restoration.",
+      "page": "https://www.adobe.com/products/audition.html",
+      "details": [
+          "Individual Product Plans: 7-day free trial. US$22.99/mo for the annual paid monthly plan.",
+          "Supported Platform: desktop",
+          "Expert Level: Intermediate"
+      ],
+      "learning_resource": "https://www.adobe.com/learn/audition?learnIn=1",
+      "image": "",
+      "background_color": "#428FD9",
+      "logo": "https://www.adobe.com/cc-shared/assets/img/product-icons/svg/audition-64.svg",
+      "targeted_segments": {
+          "student": {
+              "plan": "**Students and teachers:** Try this app and 20+ others in Creative Cloud All Apps for just US$19.99/mo for the first year, then US$34.99/mo. Annual paid monthly plan. [See terms](https://www.adobe.com/offer-terms/ccm-ste-introductory.html).",
+              "primary": {
+                  "text": "Start free trial",
+                  "url": "https://www.adobe.com/mini-plans/audition.html?mid=ft&web=1&plan=edu"
+              },
+              "secondary": {
+                  "text": "See plans & pricing",
+                  "url": "https://www.adobe.com/creativecloud/plans.html?plan=edu"
+              }
+          }
+      },
+      "primary": {
+          "text": "Start free trial",
+          "url": "https://www.adobe.com/mini-plans/audition.html?mid=ft&web=1"
+      },
+      "secondary": {
+          "text": "See plans & pricing",
+          "url": "https://www.adobe.com/creativecloud/plans.html?filter=video-audio"
+      }
+  },
+  "indesign": {
+      "title": "InDesign",
+      "description": "Best app for creating and publishing print and digital content. Create and publish print and digital content with the leading design app. Design brochures, magazines, and more. Create and publish print and digital content with the leading design app. Design brochures, magazines, and more.",
+      "page": "https://www.adobe.com/products/indesign.html",
+      "details": [
+          "Individual Product Plans: 7-day free trial. US$22.99/mo for the annual paid monthly plan.",
+          "Supported Platform: desktop",
+          "Expert Level: Intermediate"
+      ],
+      "learning_resource": "https://www.adobe.com/learn/indesign?learnIn=1",
+      "image": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-image-indesign.png",
+      "background_color": "#FF3365",
+      "logo": "https://www.adobe.com/cc-shared/assets/img/product-icons/svg/indesign-64.svg",
+      "targeted_segments": {
+          "student": {
+              "plan": "**Students and teachers:** Try this app and 20+ others in Creative Cloud All Apps for just US$19.99/mo for the first year, then US$34.99/mo. Annual paid monthly plan. [See terms](https://www.adobe.com/offer-terms/ccm-ste-introductory.html).",
+              "primary": {
+                  "text": "Start free trial",
+                  "url": "https://www.adobe.com/mini-plans/indesign.html?mid=ft&web=1&plan=edu"
+              },
+              "secondary": {
+                  "text": "See plans & pricing",
+                  "url": "https://www.adobe.com/creativecloud/plans.html?plan=edu"
+              }
+          }
+      },
+      "primary": {
+          "text": "Start free trial",
+          "url": "https://www.adobe.com/mini-plans/indesign.html?mid=ft&web=1"
+      },
+      "secondary": {
+          "text": "See plans & pricing",
+          "url": "https://www.adobe.com/creativecloud/plans.html?filter=design"
+      }
+  },
+  "illustrator": {
+      "title": "Illustrator",
+      "description": "Industry-leading graphic design app for custom, scalable vector creations with new generative AI features. Create beautiful designs, icons, and more with precise tools and generative AI. Design logos, icons, packaging, web graphics, and so much more. Share your message. Take your flyer or poster graphics from digital to print with ease. With powerful new features, create graphics that match your style, explore dozens of options, and finish designs in record time. Create precise designs, Illustrations, and vector graphics on desktop and iPad.",
+      "page": "https://www.adobe.com/products/illustrator.html",
+      "details": [
+          "Individual Product Plans: 7-day free trial. US$22.99/mo for the annual paid monthly plan.",
+          "Supported Platform: desktop",
+          "Expert Level: Intermediate to Advanced"
+      ],
+      "learning_resource": "https://www.adobe.com/learn/illustrator?learnIn=1",
+      "image": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-image-illustrator.png",
+      "background_color": "#FFA313",
+      "logo": "https://www.adobe.com/cc-shared/assets/img/product-icons/svg/illustrator-64.svg",
+      "targeted_segments": {
+          "student": {
+              "plan": "**Students and teachers:** Try this app and 20+ others in Creative Cloud All Apps for just US$19.99/mo for the first year, then US$34.99/mo. Annual paid monthly plan. [See terms](https://www.adobe.com/offer-terms/ccm-ste-introductory.html).",
+              "primary": {
+                  "text": "Start free trial",
+                  "url": "https://www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1&plan=edu"
+              },
+              "secondary": {
+                  "text": "See plans & pricing",
+                  "url": "https://www.adobe.com/creativecloud/plans.html?plan=edu"
+              }
+          }
+      },
+      "primary": {
+          "text": "Start free trial",
+          "url": "https://www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1"
+      },
+      "secondary": {
+          "text": "See plans & pricing",
+          "url": "https://www.adobe.com/creativecloud/plans.html?filter=illustration"
+      }
+  },
+  "photoshop": {
+      "title": "Photoshop",
+      "description": "Best app for creating images, graphics, and art with powerful tools and generative AI. Create gorgeous images and incredible art with amazing tools and generative AI. Create a composite of two or more images by placing them on their own independent, transparent layers. Make complex edits in a flash with the most advanced Generative Fill yet. Plus, use Generative Expand to extend your image with new content. Use the Remove Tool to make large objects disappear and fill the space with content that seamlessly matches the background. Create beautiful graphics, photos, and art on desktop, web, and iPad. Comes with Adobe Fresco for drawing and painting.",
+      "page": "https://www.adobe.com/products/photoshop.html",
+      "details": [
+          "Individual Product Plans: 7-day free trial. US$22.99/mo for the annual paid monthly plan.",
+          "Supported Platforms: desktop, web, iPad",
+          "Expert Level: Intermediate to Advanced"
+      ],
+      "learning_resource": "https://www.adobe.com/learn/photoshop?learnIn=1",
+      "image": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-image-photoshop.png",
+      "background_color": "#0F1414",
+      "logo": "https://www.adobe.com/cc-shared/assets/img/product-icons/svg/photoshop-64.svg",
+      "targeted_segments": {
+          "student": {
+              "plan": "**Students and teachers:** Try this app and 20+ others in Creative Cloud All Apps for just US$19.99/mo for the first year, then US$34.99/mo. Annual paid monthly plan. [See terms](https://www.adobe.com/offer-terms/ccm-ste-introductory.html).",
+              "primary": {
+                  "text": "Start free trial",
+                  "url": "https://www.adobe.com/mini-plans/photoshop.html?mid=ft&web=1&plan=edu"
+              },
+              "secondary": {
+                  "text": "See plans & pricing",
+                  "url": "https://www.adobe.com/creativecloud/plans.html?plan=edu"
+              }
+          }
+      },
+      "primary": {
+          "text": "Start free trial",
+          "url": "https://www.adobe.com/mini-plans/photoshop.html?mid=ft&web=1"
+      },
+      "secondary": {
+          "text": "See plans & pricing",
+          "url": "https://www.adobe.com/creativecloud/plans.html?single_app=photoshop"
+      }
+  },
+  "acrobat_pro": {
+      "title": "Acrobat Pro",
+      "description": "Best app for editing, converting, and e-signing PDFs, now available with Acrobat AI Assistant add-on. Create, edit, sign, and manage your PDFs - quickly, easily, anywhere. Ask your doc questions with the AI Assistant add-on, available at checkout. Summarize readings with a click. Get quick insights and create study guides or quiz questions based on your content. Add Acrobat AI Assistant at checkout. Easily fix text and swap images without jumping to another app. All it takes is a few clicks. Turn your PDF into a different file type and vice versa. Converting file types is simple and easy with Acrobat.",
+      "page": "https://www.adobe.com/acrobat.html",
+      "details": [
+          "Individual Product Plans: 7-day free trial. US$19.99/mo for the annual paid monthly plan.",
+          "Supported Platforms: desktop, mobile, web",
+          "Expert Level: Beginner to Intermediate"
+      ],
+      "learning_resource": "https://www.adobe.com/learn/acrobat_pro?learnIn=1",
+      "image": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-image-acrobat-pro.png",
+      "background_color": "#C0170C",
+      "logo": "https://www.adobe.com/cc-shared/assets/img/product-icons/svg/acrobat-pro-64.svg",
+      "targeted_segments": {
+          "student": {
+              "plan": "**Students and teachers:** Try this app and 20+ others in Creative Cloud All Apps for just US$19.99/mo for the first year, then US$34.99/mo. Annual paid monthly plan. [See terms](https://www.adobe.com/offer-terms/ccm-ste-introductory.html).",
+              "primary": {
+                  "text": "Start free trial",
+                  "url": "https://www.adobe.com/mini-plans/acrobat-pro.html?mid=ft&web=1&plan=edu"
+              },
+              "secondary": {
+                  "text": "See plans & pricing",
+                  "url": "https://www.adobe.com/creativecloud/plans.html?plan=edu"
+              }
+          }
+      },
+      "primary": {
+          "text": "Start free trial",
+          "url": "https://www.adobe.com/mini-plans/acrobat-pro.html?mid=ft&web=1"
+      },
+      "secondary": {
+          "text": "See plans & pricing",
+          "url": "https://www.adobe.com/creativecloud/plans.html?filter=acrobat"
+      }
+  },
+  "lightroom": {
+      "title": "Lightroom",
+      "description": "Best app for editing photos from anywhere with help from generative AI. Edit photos from anywhere with easy controls and create the look you want with generative AI. Remove anything in a touch with Generative Remove, powered by Adobe Firefly generative AI. Quickly find the best filter for your image with Adaptive Presets. Choose from portrait, sky, and subject presets for the perfect look. Use sliders and filters to easily create images that will dazzle and delight. Edit, organize, store, and share photos from anywhere.",
+      "page": "https://www.adobe.com/products/photoshop-lightroom.html",
+      "details": [
+          "Individual Product Plans starting at US$11.99/mo",
+          "Supported Platforms: desktop, mobile, and web",
+          "Expert Level: Beginner to Intermediate"
+      ],
+      "learning_resource": "https://www.adobe.com/learn/lightroom?learnIn=1",
+      "image": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-image-lightroom.png",
+      "background_color": "#E98D3F",
+      "logo": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-icon-lightroom-64.svg",
+      "targeted_segments": {
+          "student": {
+              "plan": "**Students and teachers:** Try this app and 20+ others in Creative Cloud All Apps for just US$19.99/mo for the first year, then US$34.99/mo. Annual paid monthly plan. [See terms](https://www.adobe.com/offer-terms/ccm-ste-introductory.html).",
+              "primary": {
+                  "text": "Start free trial",
+                  "url": "https://www.adobe.com/mini-plans/photoshop-lightroom.html?mid=ft&web=1&plan=edu"
+              },
+              "secondary": {
+                  "text": "See plans & pricing",
+                  "url": "https://www.adobe.com/creativecloud/plans.html?plan=edu"
+              }
+          }
+      },
+      "primary": {
+          "text": "Start free trial",
+          "url": "https://www.adobe.com/mini-plans/photoshop-lightroom.html?mid=ft&web=1"
+      },
+      "secondary": {
+          "text": "See plans & pricing",
+          "url": "https://www.adobe.com/creativecloud/plans.html?filter=photography"
+      }
+  },
+  "creative_cloud_photo_plan": {
+      "title": "Creative Cloud Photo Plan",
+      "description": "Edit photos from anywhere with easy controls and create the look you want with generative AI. Remove anything in a touch with Generative Remove, powered by Adobe Firefly generative AI. Quickly find the best filter for your image with Adaptive Presets. Choose from portrait, sky, and subject presets for the perfect look. Use sliders and filters to easily create images that will dazzle and delight. Edit and organize photos.",
+      "page": "https://www.adobe.com/creativecloud/photography.html",
+      "details": [
+          "Individual Product Plans: Get both Photoshop and Lightroom in our Photography plan. US$19.99/mo for the annual paid monthly plan.",
+          "Supported Platforms: desktop, iPad",
+          "Expert Level: Intermediate to Advanced"
+      ],
+      "learning_resource": "https://www.adobe.com/learn/cc_photo_plan?learnIn=1",
+      "image": "",
+      "logo": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-icon-creative-cloud-all-apps-64.svg",
+      "targeted_segments": {
+          "student": {
+              "plan": "**Students and teachers:** Try this app and 20+ others in Creative Cloud All Apps for just US$19.99/mo for the first year, then US$34.99/mo. Annual paid monthly plan. [See terms](https://www.adobe.com/offer-terms/ccm-ste-introductory.html).",
+              "primary": {
+                  "text": "Start free trial",
+                  "url": "https://www.adobe.com/mini-plans/photoshop-lightroom.html?mid=ft&web=1&plan=edu"
+              },
+              "secondary": {
+                  "text": "See plans & pricing",
+                  "url": "https://www.adobe.com/creativecloud/plans.html?plan=edu"
+              }
+          }
+      },
+      "primary": {
+          "text": "Start free trial",
+          "url": "https://www.adobe.com/mini-plans/photoshop-lightroom-classic.html?mid=ft&web=1"
+      },
+      "secondary": {
+          "text": "See plans & pricing",
+          "url": "https://www.adobe.com/creativecloud/plans.html?filter=photography"
+      }
+  },
+  "creative_cloud_all_apps_plan": {
+      "title": "Creative Cloud All Apps Plan",
+      "description": "Comes with 20,000+ fonts and 100GB of storage. Gives you templates and tutorials for a fast, easy start. Create in new ways with 20+ apps, generative AI features, fonts, templates, and more. (Substance 3D apps are not included.) Say it just the way you want with 20,000 fonts at your fingertips. Make your work shine with millions of free photos, drawings, video clips, and more. Create images, add or remove objects, fill in or expand images, generate seamless patterns, and more with generative AI. Get 20+ Creative Cloud apps including Photoshop, Illustrator, Adobe Express, Premiere Pro, and Acrobat Pro. (Substance 3D apps are not included.)",
+      "page": "https://www.adobe.com/creativecloud/all-apps.html",
+      "details": [
+          "Individual Product Plan: Get 20+ apps, generative AI capabilities, fonts, templates, and more. US$59.99/mo for the annual paid monthly plan.",
+          "Supported Platforms: desktop, web for some, mobile for some",
+          "Expert Level: Intermediate to Advanced"
+      ],
+      "learning_resource": "https://www.adobe.com/learn/cc_all_apps_plan?learnIn=1",
+      "video_url": "https://www.adobe.com/creativecloud/media_1da1165409efeb11659afab896d681acd2b97086b.mp4",
+      "background_color": "#5D83FF",
+      "image": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-icon-creative-cloud-all-apps-64.svg",
+      "targeted_segments": {
+          "student": {
+              "plan": "**Students and teachers:** Try this app and 20+ others in Creative Cloud All Apps for just US$19.99/mo for the first year, then US$34.99/mo. Annual paid monthly plan. [See terms](https://www.adobe.com/offer-terms/ccm-ste-introductory.html).",
+              "primary": {
+                  "text": "Start free trial",
+                  "url": "https://www.adobe.com/mini-plans/creativecloud.html?mid=ft&web=1&plan=edu"
+              },
+              "secondary": {
+                  "text": "See plans & pricing",
+                  "url": "https://www.adobe.com/creativecloud/plans.html?plan=edu"
+              }
+          }
+      },
+      "primary": {
+          "text": "Start free trial",
+          "url": "https://www.adobe.com/mini-plans/creativecloud.html?mid=ft&web=1"
+      },
+      "secondary": {
+          "text": "See plans & pricing",
+          "url": "https://www.adobe.com/creativecloud/plans.html"
+      }
+  },
+  "adobe_express": {
+      "title": "Adobe Express",
+      "description": "Make social posts, logos, banners, and more on web and mobile. Start from thousands of templates or make totally custom content. Stand out with the all-in-one AI content creation app, powered by Adobe Firefly. Design flyers, edit images and videos for TikToks, resumes, and Reels with the new, all-in-one Adobe Express.",
+      "page": "https://www.adobe.com/express/",
+      "details": [
+          "Individual Product Plan: a user-friendly design tool that allows users to create graphics, social media posts, flyers, videos, and more with ease. It offers templates, drag-and-drop editing, and AI-powered tools to simplify content creation. Use the free version for as long as you want, or get Adobe Express Premium. US$9.99/mo for the annual paid monthly plan.",
+          "Supported Platforms: web and mobile",
+          "Expert Level: Beginner"
+      ],
+      "background_color": "#F6D0FF",
+      "learning_resource": "https://www.adobe.com/learn/adobe_express?learnIn=1",
+      "image": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-image-express.png",
+      "logo": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-icon-adobe-express-64.svg",
+      "primary": {
+          "text": "Get Adobe Express free",
+          "url": "https://www.adobe.com/express/?promoid=NLMHR7GC&mv=other"
+      },
+      "secondary": {
+          "text": "See plans & pricing",
+          "url": "https://www.adobe.com/creativecloud/plans.html?filter=social"
+      }
+  },
+  "substance_3d_stager": {
+      "title": "Substance 3D Stager",
+      "description": "Compose and render 3D scenes in your own virtual studio with help from generative AI. Compose and render state-of-the-art 3D scenes with generative AI in your own virtual studio. Assemble and stage 3D scenes for visualizations in your own virtual studio. Create the right environment for your scene with Generative Background, powered by Adobe Firefly. Drag and drop 3D assets, materials, lights, and cameras to set up the perfect shot.",
+      "page": "https://www.adobe.com/products/substance3d/apps/stager.html",
+      "details": [
+          "Individual Product Plans: Get this app and the complete set of Substance 3D apps, plus 3D assets, fonts, and more for US$49.99/mo per license.",
+          "Supported Platforms: desktop",
+          "Expert Level: Intermediate to Advanced"
+      ],
+      "learning_resource": "https://www.adobe.com/learn/substance_3d_stager?learnIn=1",
+      "image": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-image-substance-3d-stager.png",
+      "background_color": "#8CA765",
+      "logo": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-icon-substance-3d-stager-64.svg",
+      "primary": {
+          "text": "Start free trial",
+          "url": "https://www.adobe.com/mini-plans/substance3D-collection.html?mid=ft&web=1"
+      },
+      "secondary": {
+          "text": "See plans & pricing",
+          "url": "https://www.adobe.com/creativecloud/plans.html?filter=3dar"
+      }
+  },
+  "substance_3d_painter": {
+      "title": "Substance 3D Painter",
+      "description": "The industry standard for texturing 3D models in real time. Texture 3D models in real time with this industry standard app. Pick a brush and quickly texture 3D assets in a familiar interface. Easily change existing brush strokes and textures. With a real-time viewport, what you see is what you make.",
+      "page": "https://www.adobe.com/products/substance3d/apps/painter.html",
+      "details": [
+          "Individual Product Plans: Get this app and the complete set of Substance 3D apps, plus 3D assets, fonts, and more for US$49.99/mo per license.",
+          "Supported Platforms: desktop",
+          "Expert Level: Intermediate to Advanced"
+      ],
+      "learning_resource": "https://www.adobe.com/learn/substance_3d_painter?learnIn=1",
+      "image": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-image-substance-3d-painter.png",
+      "background_color": "#9B6340",
+      "logo": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-icon-substance-3d-painter-64.svg",
+      "primary": {
+          "text": "Start free trial",
+          "url": "https://www.adobe.com/mini-plans/substance3D-collection.html?mid=ft&web=1"
+      },
+      "secondary": {
+          "text": "See plans & pricing",
+          "url": "https://www.adobe.com/creativecloud/plans.html?filter=3dar"
+      }
+  },
+  "substance_3d_sampler": {
+      "title": "Substance 3D Sampler",
+      "description": "Create 3D materials and lights from real-life images and generative AI. Create 3D materials and lights in a flash from real-life images. Create custom materials with Text to Texture, powered by Adobe Firefly generative AI. Create 3D models from your own images with 3D Capture photogrammetry. Blend materials with filters to create advanced surfaces.",
+      "page": "https://www.adobe.com/products/substance3d/apps/sampler.html",
+      "details": [
+          "Individual Product Plans: Get this app and the complete set of Substance 3D apps, plus 3D assets, fonts, and more for US$49.99/mo per license.",
+          "Supported Platforms: desktop",
+          "Expert Level: Intermediate to Advanced"
+      ],
+      "learning_resource": "https://www.adobe.com/learn/substance_3d_sampler?learnIn=1",
+      "image": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-image-substance-3d-sampler.png",
+      "background_color": "#45220E",
+      "logo": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-icon-substance-3d-sampler-64.svg",
+      "primary": {
+          "text": "Start free trial",
+          "url": "https://www.adobe.com/mini-plans/substance3D-collection.html?mid=ft&web=1"
+      },
+      "secondary": {
+          "text": "See plans & pricing",
+          "url": "https://www.adobe.com/creativecloud/plans.html?filter=3dar"
+      }
+  },
+  "substance_3d_modeler": {
+      "title": "Substance 3D Modeler",
+      "description": "Intuitively sculpt 3D models on desktop and in VR. Intuitively create 3D models on desktop and in VR. Shape digital clay into 3D models. Switch seamlessly between desktop and VR. Sculpt 3D models using natural, fluid movements.",
+      "page": "https://www.adobe.com/products/substance3d/apps/modeler.html",
+      "details": [
+          "Individual Product Plans: Get this app and the complete set of Substance 3D apps, plus 3D assets, fonts, and more for US$49.99/mo per license.",
+          "Supported Platforms: desktop",
+          "Expert Level: Advanced"
+      ],
+      "learning_resource": "https://www.adobe.com/learn/substance_3d_modeler?learnIn=1",
+      "image": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-image-substance-3d-modeler.png",
+      "background_color": "#BB9571",
+      "logo": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-icon-substance-3d-modeler-64.svg",
+      "primary": {
+          "text": "Start free trial",
+          "url": "https://www.adobe.com/mini-plans/substance3D-collection.html?mid=ft&web=1"
+      },
+      "secondary": {
+          "text": "See plans & pricing",
+          "url": "https://www.adobe.com/creativecloud/plans.html?filter=3dar"
+      }
+  },
+  "substance_3d_designer": {
+      "title": "Substance 3D Designer",
+      "description": "Design parametric 3D assets with full control and infinite possibilities. Design parametric 3D assets with full control and infinite possibilities. Author 3D assets from scratch, with infinite options. Create and edit parametric materials - modify color, patterns, and more. Build lights, patterns, filters, and 3D models.",
+      "page": "https://www.adobe.com/products/substance3d/apps/designer.html",
+      "details": [
+          "Individual Product Plans: Get this app and the complete set of Substance 3D apps, plus 3D assets, fonts, and more for US$49.99/mo per license.",
+          "Supported Platforms: desktop",
+          "Expert Level: Advanced"
+      ],
+      "learning_resource": "https://www.adobe.com/learn/substance_3d_designer?learnIn=1",
+      "image": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-image-substance-3d-designer.png",
+      "background_color": "#0D2C2F",
+      "logo": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-icon-substance-designer-64.svg",
+      "primary": {
+          "text": "Start free trial",
+          "url": "https://www.adobe.com/mini-plans/substance3D-collection.html?mid=ft&web=1"
+      },
+      "secondary": {
+          "text": "See plans & pricing",
+          "url": "https://www.adobe.com/creativecloud/plans.html?filter=3dar"
+      }
+  },
+  "substance_3d_collection": {
+      "title": "Substance 3D Collection",
+      "description": "Select from over 15,000 3D assets, curated for your creative workflow. Model, texture, and render 3D assets and scenes. Download 50 3D assets per month. (Not included in Creative Cloud All Apps.)",
+      "page": "https://www.adobe.com/products/substance3d.html",
+      "details": [
+          "Individual Product Plans: Complete set of Substance 3D apps, plus 3D assets, fonts, and more for US$49.99/mo per license.",
+          "Supported Platforms: desktop",
+          "Expert Level: Advanced"
+      ],
+      "learning_resource": "https://www.adobe.com/learn/substance_3d_collection?learnIn=1",
+      "image": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-image-substance-3d.png",
+      "background_color": "#1C0A07",
+      "logo": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-icon-substance3d-64.svg",
+      "primary": {
+          "text": "Start free trial",
+          "url": "https://www.adobe.com/mini-plans/substance3D-collection.html?mid=ft&web=1"
+      },
+      "secondary": {
+          "text": "See plans & pricing",
+          "url": "https://www.adobe.com/creativecloud/plans.html?filter=3dar"
+      }
+  },
+  "creative_cloud_all_apps_for_students_and_teachers": {
+      "title": "Creative Cloud All Apps for Students and Teachers",
+      "description": "Get 20+ Creative Cloud apps, including Photoshop, Acrobat Pro, and more. Comes with 20,000+ fonts and 100GB of storage. Gives you templates and tutorials for a fast, easy start. **Students and teachers:** Try 20+ apps, generative AI capabilities, fonts, templates, and more for just US$19.99/mo the first year, then US$34.99/mo. Annual paid monthly plan. Students, save more than 60%. Get a collection of creative apps and generative AI features. The world's best creative apps - get the full version of Photoshop, Illustrator, Premiere Pro, and more. Your own portfolio website to showcase your work and get hired. Apps to create and share photos, videos, and graphics anywhere. Learn at your own pace with helpful tutorials for every skill level. Generative credits for AI-powered content creation",
+      "page": "https://www.adobe.com/creativecloud/buy/students.html",
+      "details": [
+          "Student Product Plans: Pay US$19.99/mo the first year and US$34.99/mo after that.",
+          "Supported Platforms: desktop, web for some, mobile for some",
+          "Expert Level: Beginner to Advanced"
+      ],
+      "learning_resource": "https://www.adobe.com/learn/creative_cloud_all_apps_for_students_and_teachers?learnIn=1",
+      "image": "",
+      "background_color": "#5D83FF",
+      "video_url": "https://www.adobe.com/creativecloud/media_1da1165409efeb11659afab896d681acd2b97086b.mp4",
+      "logo": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-icon-creative-cloud-all-apps-64.svg",
+      "primary": {
+          "text": "Start free trial",
+          "url": "https://www.adobe.com/mini-plans/creativecloud.html?mid=ft&web=1&plan=edu"
+      },
+      "secondary": {
+          "text": "See plans & pricing",
+          "url": "https://www.adobe.com/creativecloud/plans.html?plan=edu"
+      }
+  },
+  "premiere_pro_for_teams": {
+      "title": "Premiere Pro for Teams",
+      "description": "Create social clips, promo spots, explainer videos, and more with the leading video editor. Create fabulous videos, whether you started with a camera or your phone. Automatically turn dialogue into captions - no more transcribing. Easily resize your videos to fit every screen. Professional video and film editing.",
+      "page": "https://www.adobe.com/products/premiere_pro.html",
+      "details": [
+          "Business B2B Product Plans: Work together smarter and faster. US$37.99/mo per license for the annual paid monthly plan.",
+          "Supported Platforms: desktop",
+          "Expert Level: Intermediate to Advanced"
+      ],
+      "learning_resource": "https://www.adobe.com/learn/premiere_pro?learnIn=1",
+      "image": "",
+      "video_url": "https://www.adobe.com/creativecloud/media_19031a0af45e84aeaf575b82fac61f9e3b7baabd3.mp4",
+      "background_color": "#304A2F",
+      "logo": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-icon-premier-pro-64.svg",
+      "primary": {
+          "text": "Start free trial",
+          "url": "https://www.adobe.com/mini-plans/premiere.html?mid=ft&web=1&plan=team"
+      },
+      "secondary": {
+          "text": "See plans & pricing",
+          "url": "https://www.adobe.com/creativecloud/business-plans.html?filter=video-audio"
+      }
+  },
+  "after_effects_for_teams": {
+      "title": "After Effects for Teams",
+      "description": "Make high-quality visual effects, titles, and animated graphics for all your video projects. Create scrolling movie titles, mood-setting intros, and transitions. Start from scratch, or let us help. Mix it up - change a scene's setting for an entirely new look. Catch more eyes by animating characters, objects, and logos in your videos. Create motion graphics and visual effects for film, TV, video, and web. Includes exclusive business features: Admin Console for managing licenses Advanced 24/7 tech support Unlimited job posts using Adobe Talent Slack and Microsoft Teams app integration",
+      "page": "https://www.adobe.com/products/after_effects.html",
+      "details": [
+          "Business B2B Product Plans: Work together smarter and faster. US$37.99/mo per license for the annual paid monthly plan.",
+          "Supported Platforms: desktop",
+          "Expert Level: Intermediate to Advanced"
+      ],
+      "learning_resource": "https://www.adobe.com/learn/after_effects?learnIn=1",
+      "image": "",
+      "video_url": "https://www.adobe.com/creativecloud/media_125599a11cde7309730b72033f0576b3be42bca06.mp4",
+      "background_color": "#010101",
+      "logo": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-icon-after-effects-appicon-64.svg",
+      "primary": {
+          "text": "Buy now",
+          "url": "https://www.adobe.com/creativecloud/business-plans.html?filter=video-audio"
+      }
+  },
+  "animate_for_teams": {
+      "title": "Animate for Teams",
+      "description": "Design interactive animations for games, TV shows, and the web. Make interactive animations for games, TV shows, and the web. Create web banners that respond to your users' touch and clicks. Draw original characters and bring them to life. Design interactive vector animations for multiple platforms. Includes exclusive business features: Admin Console for managing licenses Advanced 24/7 tech support Unlimited job posts using Adobe Talent Slack and Microsoft Teams app integration",
+      "page": "https://www.adobe.com/products/animate.html",
+      "details": [
+          "Business B2B Product Plans: Work together smarter and faster. US$37.99/mo per license for the annual paid monthly plan.",
+          "Supported Platforms: desktop",
+          "Expert Level: Intermediate"
+      ],
+      "learning_resource": "https://www.adobe.com/learn/animate?learnIn=1",
+      "image": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-image-animate.png",
+      "background_color": "#303ABD",
+      "logo": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-icon-animate-64.svg",
+      "primary": {
+          "text": "Buy now",
+          "url": "https://www.adobe.com/creativecloud/business-plans.html?filter=video-audio"
+      }
+  },
+  "audition_for_teams": {
+      "title": "Audition for Teams",
+      "description": "Create pro-quality sound effects, audio mixes, podcasts, and more. Create and mix your own sound effects, from the subtle to the extreme. Pack more punch into your podcasts and audio projects with handy filters and effects. Polish audio tracks for all of your video projects so they sound as good as they look. Audio recording, mixing, and restoration. Includes exclusive business features: Admin Console for managing licenses Advanced 24/7 tech support Unlimited job posts using Adobe Talent Slack and Microsoft Teams app integration",
+      "page": "https://www.adobe.com/products/audition.html",
+      "details": [
+          "Business B2B Product Plans: Work together smarter and faster. US$37.99/mo per license for the annual paid monthly plan.",
+          "Supported Platforms: desktop",
+          "Expert Level: Intermediate"
+      ],
+      "learning_resource": "https://www.adobe.com/learn/audition?learnIn=1",
+      "image": "https://www.adobe.com/products/media_184b1894ebd118fde1476ebcdae6faaf80601309a.jpeg?width=2000&format=webply&optimize=medium",
+      "background_color": "#428FD9",
+      "logo": "https://www.adobe.com/cc-shared/assets/img/product-icons/svg/audition-64.svg",
+      "primary": {
+          "text": "Buy now",
+          "url": "https://www.adobe.com/creativecloud/business-plans.html?filter=video-audio"
+      }
+  },
+  "indesign_for_teams": {
+      "title": "InDesign for Teams",
+      "description": "Make digital brochures, design business cards, create company posters, and more with time-saving layout features and generative AI. Design dazzling digital magazines, eBooks, and interactive documents. Create printed flyers and books with easy layout tools and templates. Create images right inside InDesign using commercially safe Adobe Firefly models. Page design and layout for print and digital media. Includes exclusive business features: Admin Console for managing licenses Advanced 24/7 tech support Unlimited job posts using Adobe Talent Slack and Microsoft Teams app integration",
+      "page": "https://www.adobe.com/products/indesign.html",
+      "details": [
+          "Business B2B Product Plans: Work together smarter and faster. US$37.99/mo per license for the annual paid monthly plan.",
+          "Supported Platforms: desktop",
+          "Expert Level: Intermediate"
+      ],
+      "learning_resource": "https://www.adobe.com/learn/indesign?learnIn=1",
+      "image": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-image-indesign.png",
+      "background_color": "#FF3365",
+      "logo": "https://www.adobe.com/cc-shared/assets/img/product-icons/svg/indesign-64.svg",
+      "primary": {
+          "text": "Start free trial",
+          "url": "https://www.adobe.com/mini-plans/indesign.html?mid=ft&web=1&plan=team"
+      },
+      "secondary": {
+          "text": "See plans & pricing",
+          "url": "https://www.adobe.com/creativecloud/business-plans.html?filter=design"
+      }
+  },
+  "illustrator_for_teams": {
+      "title": "Illustrator for Teams",
+      "description": "Create beautiful logos, icons, infographics, packaging designs, and more with precise tools and generative AI. Design logos, icons, packaging, web graphics, and so much more. Share your message. Take your flyer or poster graphics from digital to print with ease. With powerful new features, create graphics that match your style, explore dozens of options, and finish designs in record time. Create precise designs, Illustrations, and vector graphics on desktop and iPad. Includes exclusive business features: Admin Console for managing licenses Advanced 24/7 tech support Unlimited job posts using Adobe Talent Slack and Microsoft Teams app integration",
+      "page": "https://www.adobe.com/products/illustrator.html",
+      "details": [
+          "Business B2B Product Plans: Work together smarter and faster. US$37.99/mo per license for the annual paid monthly plan.",
+          "Supported Platforms: desktop",
+          "Expert Level: Intermediate to Advanced"
+      ],
+      "learning_resource": "https://www.adobe.com/learn/illustrator?learnIn=1",
+      "image": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-image-illustrator.png",
+      "background_color": "#FFA313",
+      "logo": "https://www.adobe.com/cc-shared/assets/img/product-icons/svg/illustrator-64.svg",
+      "primary": {
+          "text": "Start free trial",
+          "url": "https://www.adobe.com/mini-plans/illustrator.html?mid=ft&web=1&plan=team"
+      },
+      "secondary": {
+          "text": "See plans & pricing",
+          "url": "https://www.adobe.com/creativecloud/business-plans.html?filter=illustration"
+      }
+  },
+  "photoshop_for_teams": {
+      "title": "Photoshop for Teams",
+      "description": "Create amazing brand images and graphics with the industry-standard app and generative AI features. Create a composite of two or more images by placing them on their own independent, transparent layers. Make complex edits in a flash with the most advanced Generative Fill yet. Plus, use Generative Expand to extend your image with new content. Use the Remove Tool to make large objects disappear and fill the space with content that seamlessly matches the background. Create beautiful graphics, photos, and art on desktop, web, and iPad. Comes with Adobe Fresco for drawing and painting. Includes exclusive business features: Admin Console for managing licenses Advanced 24/7 tech support Unlimited job posts using Adobe Talent Slack and Microsoft Teams app integration",
+      "page": "https://www.adobe.com/products/photoshop.html",
+      "details": [
+          "Business B2B Product Plans: Work together smarter and faster. US$37.99/mo per license for the annual paid monthly plan.",
+          "Supported Platforms: desktop, web, iPad",
+          "Expert Level: Intermediate to Advanced"
+      ],
+      "learning_resource": "https://www.adobe.com/learn/photoshop?learnIn=1",
+      "image": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-image-photoshop.png",
+      "background_color": "#0F1414",
+      "logo": "https://www.adobe.com/cc-shared/assets/img/product-icons/svg/photoshop-64.svg",
+      "primary": {
+          "text": "Start free trial",
+          "url": "https://www.adobe.com/mini-plans/photoshop.html?mid=ft&web=1&plan=team"
+      },
+      "secondary": {
+          "text": "See plans & pricing",
+          "url": "https://www.adobe.com/creativecloud/business-plans.html?single_app=photoshop"
+      }
+  },
+  "acrobat_pro_for_teams": {
+      "title": "Acrobat Pro for Teams",
+      "description": "Add Acrobat AI Assistant at checkout. Give your teams the power to create, edit, sign, and manage PDFs - quickly, easily, anywhere. Ask your doc questions with the AI Assistant add-on, available at checkout. Summarize readings with a click. Get quick insights and create study guides or quiz questions based on your content. Add Acrobat AI Assistant at checkout. Easily fix text and swap images without jumping to another app. All it takes is a few clicks. Turn your PDF into a different file type and vice versa. Converting file types is simple and easy with Acrobat. Includes exclusive business features: Admin Console for managing licenses Advanced 24/7 tech support Two 1:1 expert sessions per user per year Unlimited job posts using Adobe Talent Slack and Microsoft Teams app integration",
+      "page": "https://www.adobe.com/acrobat.html",
+      "details": [
+          "Business B2B Product Plans: Work together smarter and faster. US$23.99/mo per license for the annual paid monthly plan.",
+          "Supported Platforms: desktop, web, mobile",
+          "Expert Level: Beginner to Intermediate"
+      ],
+      "learning_resource": "https://www.adobe.com/learn/acrobat_pro?learnIn=1",
+      "image": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-image-acrobat-pro.png",
+      "background_color": "#C0170C",
+      "logo": "https://www.adobe.com/cc-shared/assets/img/product-icons/svg/acrobat-pro-64.svg",
+      "primary": {
+          "text": "Start free trial",
+          "url": "https://www.adobe.com/mini-plans/acrobat-pro.html?mid=ft&web=1&plan=team"
+      },
+      "secondary": {
+          "text": "See plans & pricing",
+          "url": "https://www.adobe.com/creativecloud/business-plans.html?filter=acrobat"
+      }
+  },
+  "lightroom_for_teams": {
+      "title": "Lightroom for Teams",
+      "description": "Edit photos from anywhere with easy controls and create the look you want with generative AI. Remove anything in a touch with Generative Remove, powered by Adobe Firefly generative AI. Quickly find the best filter for your image with Adaptive Presets. Choose from portrait, sky, and subject presets for the perfect look. Use sliders and filters to easily create images that will dazzle and delight. Edit, organize, store, and share photos from anywhere. Includes exclusive business features: Admin Console for managing licenses Advanced 24/7 tech support Unlimited job posts using Adobe Talent Slack and Microsoft Teams app integration",
+      "page": "https://www.adobe.com/products/photoshop-lightroom.html",
+      "details": [
+          "Business B2B Product Plans: US$37.99/mo per license",
+          "Supported Platforms: desktop, web, mobile",
+          "Expert Level: Beginner to Intermediate"
+      ],
+      "learning_resource": "https://www.adobe.com/learn/lightroom-cc?learnIn=1",
+      "image": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-image-lightroom.png",
+      "background_color": "#E98D3F",
+      "logo": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-icon-lightroom-64.svg",
+      "primary": {
+          "text": "Start free trial",
+          "url": "https://www.adobe.com/mini-plans/photoshop-lightroom-classic.html?mid=ft&web=1&plan=team"
+      },
+      "secondary": {
+          "text": "See plans & pricing",
+          "url": "https://www.adobe.com/creativecloud/business-plans.html?filter=photography"
+      }
+  },
+  "creative_cloud_all_apps_for_teams": {
+      "title": "Creative Cloud All Apps for Teams",
+      "description": "Create in new ways with 20+ apps, generative AI features, fonts, templates, and more plus exclusive business features. Say it just the way you want with 20,000 fonts at your fingertips. Make your work shine with millions of free photos, drawings, video clips, and more. Create images, add or remove objects, fill in or expand images, generate seamless patterns, and more with generative AI. Get 20+ Creative Cloud Apps including Photoshop, Illustrator, Adobe Express, Premiere Pro, and Acrobat Pro. (Substance 3D apps are not included.)",
+      "page": "https://www.adobe.com/creativecloud/business/teams.html",
+      "details": [
+          "Business B2B Product Plans: Work together smarter and faster with 20+ apps, generative AI capabilities, fonts, templates, and more. US$89.99/mo per license for the annual paid monthly plan.",
+          "Supported Platforms: desktop, web for some, mobile for some",
+          "Expert Level: Intermediate to Advanced"
+      ],
+      "learning_resource": "https://www.adobe.com/learn/cc_all_apps?learnIn=1",
+      "image": "",
+      "background_color": "#5D83FF",
+      "video_url": "https://www.adobe.com/creativecloud/media_1da1165409efeb11659afab896d681acd2b97086b.mp4",
+      "logo": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-icon-creative-cloud-all-apps-64.svg",
+      "primary": {
+          "text": "Start free trial",
+          "url": "https://www.adobe.com/mini-plans/creativecloud.html?mid=ft&web=1&plan=team"
+      },
+      "secondary": {
+          "text": "See plans & pricing",
+          "url": "https://www.adobe.com/creativecloud/business-plans.html?filter=all"
+      }
+  },
+  "adobe_express_teams": {
+      "title": "Adobe Express Teams",
+      "description": "Make on-brand ads, logos, social content, and more. Start from thousands of templates or make totally custom content. Stand out with the all-in-one AI content creation app, powered by Adobe Firefly. Save over 35% for the first year. Empower your team to make on-brand flyers, videos, and social posts that stand out. Empower your teams to scale content, and get 50% off for the first year only. Includes exclusive business features: Admin Console for managing licenses Advanced 24/7 tech support Unlimited job posts using Adobe Talent Slack and Microsoft Teams app integration",
+      "page": "https://www.adobe.com/express/business/teams",
+      "details": [
+          "Business B2B Product Plans: Pay US$4.99/moper license the first year, then US$7.99/moper license.",
+          "Supported Platforms: web and mobile",
+          "Expert Level: Beginner"
+      ],
+      "background_color": "#F6D0FF",
+      "learning_resource": "https://www.adobe.com/learn/adobe_express_teams?learnIn=1",
+      "image": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-image-express.png",
+      "logo": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-icon-adobe-express-64.svg",
+      "primary": {
+          "text": "Buy now",
+          "url": "https://commerce-stg.adobe.com/store/email?items%5B0%5D%5Bid%5D=6B88FCCB8E19512178FA3F3CC31B6221&co=us&lang=en&cli=creative&items%5B0%5D%5Bq%5D=2"
+      },
+      "secondary": {
+          "text": "See plans & pricing",
+          "url": "https://www.adobe.com/creativecloud/business-plans.html?filter=social"
+      }
+  },
+  "substance_3d_stager_for_teams": {
+      "title": "Substance 3D Stager for Teams",
+      "description": "Compose and render state-of-the-art 3D scenes with generative AI in your own virtual studio. Assemble and stage 3D scenes for visualizations in your own virtual studio. Create the right environment for your scene with Generative Background, powered by Adobe Firefly. Drag and drop 3D assets, materials, lights, and cameras to set up the perfect shot. Includes exclusive business features: Admin Console for managing licenses Advanced 24/7 tech support Unlimited job posts using Adobe Talent Slack and Microsoft Teams app integration",
+      "page": "https://www.adobe.com/products/substance3d/apps/stager.html",
+      "details": [
+          "Business B2B Product Plans: Get this app and the complete set of Substance 3D apps, plus 3D assets, fonts, and more for US$99.99/mo per license.",
+          "Supported Platforms: desktop",
+          "Expert Level: Intermediate to Advanced"
+      ],
+      "learning_resource": "https://www.adobe.com/learn/substance_3d_stager?learnIn=1",
+      "image": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-image-substance-3d-stager.png",
+      "background_color": "#8CA765",
+      "logo": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-icon-substance-3d-stager-64.svg",
+      "primary": {
+          "text": "Start free trial",
+          "url": "https://www.adobe.com/mini-plans/substance3D-collection.html?mid=ft&web=1&plan=team"
+      },
+      "secondary": {
+          "text": "See plans & pricing",
+          "url": "https://www.adobe.com/creativecloud/business-plans.html?filter=3dar"
+      }
+  },
+  "substance_3d_painter_for_teams": {
+      "title": "Substance 3D Painter for Teams",
+      "description": "Texture 3D models in real time with this industry standard app. Pick a brush and quickly texture 3D assets in a familiar interface. Easily change existing brush strokes and textures. With a real-time viewport, what you see is what you make. Includes exclusive business features: Admin Console for managing licenses Advanced 24/7 tech support Unlimited job posts using Adobe Talent Slack and Microsoft Teams app integration",
+      "page": "https://www.adobe.com/products/substance3d/apps/painter.html",
+      "details": [
+          "Business B2B Product Plans: Get this app and the complete set of Substance 3D apps, plus 3D assets, fonts, and more for US$99.99/mo per license.",
+          "Supported Platforms: desktop",
+          "Expert Level: Intermediate to Advanced"
+      ],
+      "learning_resource": "https://www.adobe.com/learn/substance_3d_painter?learnIn=1",
+      "image": "",
+      "background_color": "#9B6340",
+      "logo": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-icon-substance-3d-painter-64.svg",
+      "primary": {
+          "text": "Start free trial",
+          "url": "https://www.adobe.com/mini-plans/substance3D-collection.html?mid=ft&web=1&plan=team"
+      },
+      "secondary": {
+          "text": "See plans & pricing",
+          "url": "https://www.adobe.com/creativecloud/business-plans.html?filter=3dar"
+      }
+  },
+  "substance_3d_sampler_for_teams": {
+      "title": "Substance 3D Sampler for Teams",
+      "description": "Create 3D materials and lights in a flash from real-life images and generative AI. Create 3D materials and lights in a flash from real-life images. Create custom materials with Text to Texture, powered by Adobe Firefly generative AI. Create 3D models from your own images with 3D Capture photogrammetry. Blend materials with filters to create advanced surfaces. Includes exclusive business features: Admin Console for managing licenses Advanced 24/7 tech support Unlimited job posts using Adobe Talent Slack and Microsoft Teams app integration",
+      "page": "https://www.adobe.com/products/substance3d/apps/sampler.html",
+      "details": [
+          "Business B2B Product Plans: Get this app and the complete set of Substance 3D apps, plus 3D assets, fonts, and more for US$99.99/mo per license.",
+          "Supported Platforms: desktop",
+          "Expert Level: Advanced"
+      ],
+      "learning_resource": "https://www.adobe.com/learn/substance_3d_sampler?learnIn=1",
+      "image": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-image-substance-3d-sampler.png",
+      "background_color": "#45220E",
+      "logo": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-icon-substance-3d-sampler-64.svg",
+      "primary": {
+          "text": "Start free trial",
+          "url": "https://www.adobe.com/mini-plans/substance3D-collection.html?mid=ft&web=1&plan=team"
+      },
+      "secondary": {
+          "text": "See plans & pricing",
+          "url": "https://www.adobe.com/creativecloud/business-plans.html?filter=3dar"
+      }
+  },
+  "substance_3d_modeler_for_teams": {
+      "title": "Substance 3D Modeler for Teams",
+      "description": "Intuitively sculpt 3D models on desktop and in VR. Intuitively create 3D models on desktop and in VR. Shape digital clay into 3D models. Switch seamlessly between desktop and VR. Sculpt 3D models using natural, fluid movements. Includes exclusive business features: Admin Console for managing licenses Advanced 24/7 tech support Unlimited job posts using Adobe Talent Slack and Microsoft Teams app integration",
+      "page": "https://www.adobe.com/products/substance3d/apps/modeler.html",
+      "details": [
+          "Business B2B Product Plans: Get this app and the complete set of Substance 3D apps, plus 3D assets, fonts, and more for US$99.99/mo per license.",
+          "Supported Platforms: desktop",
+          "Expert Level: Advanced"
+      ],
+      "learning_resource": "https://www.adobe.com/learn/substance_3d_modeler?learnIn=1",
+      "image": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-image-substance-3d-modeler.png",
+      "background_color": "#BB9571",
+      "logo": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-icon-substance-3d-modeler-64.svg",
+      "primary": {
+          "text": "Start free trial",
+          "url": "https://www.adobe.com/mini-plans/substance3D-collection.html?mid=ft&web=1&plan=team"
+      },
+      "secondary": {
+          "text": "See plans & pricing",
+          "url": "https://www.adobe.com/creativecloud/business-plans.html?filter=3dar"
+      }
+  },
+  "substance_3d_designer_for_teams": {
+      "title": "Substance 3D Designer for Teams",
+      "description": "Design parametric 3D assets with full control and infinite possibilities. Author 3D assets from scratch, with infinite options. Create and edit parametric materials - modify color, patterns, and more. Build lights, patterns, filters, and 3D models. Includes exclusive business features: Admin Console for managing licenses Advanced 24/7 tech support Unlimited job posts using Adobe Talent Slack and Microsoft Teams app integration",
+      "page": "https://www.adobe.com/products/substance3d/apps/designer.html",
+      "details": [
+          "Business B2B Product Plans: Get this app and the complete set of Substance 3D apps, plus 3D assets, fonts, and more for US$99.99/mo per license.",
+          "Supported Platforms: desktop",
+          "Expert Level: Advanced"
+      ],
+      "learning_resource": "https://www.adobe.com/learn/substance_3d_designer?learnIn=1",
+      "image": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-image-substance-3d-designer.png",
+      "background_color": "#0D2C2F",
+      "logo": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-icon-substance-designer-64.svg",
+      "primary": {
+          "text": "Start free trial",
+          "url": "https://www.adobe.com/mini-plans/substance3D-collection.html?mid=ft&web=1&plan=team"
+      },
+      "secondary": {
+          "text": "See plans & pricing",
+          "url": "https://www.adobe.com/creativecloud/business-plans.html?filter=3dar"
+      }
+  },
+  "substance_3d_collection_for_teams": {
+      "title": "Substance 3D Collection for Teams",
+      "description": "Work together smarter and faster for US$99.99/mo per license. Model, texture, and render 3D assets and scenes. Model, texture, and render 3D assets and scenes. Download 100 3D assets per month. (Not included in Creative Cloud All Apps.) Includes: Adobe Substance 3D Modeler: Sculpt and build 3D models. Adobe Substance 3D Sampler: Create 3D materials and lights. Adobe Substance 3D Designer: Design parametric 3D assets. Adobe Substance 3D Painter: Texture 3D models in real time. Adobe Substance 3D Stager: Compose and render 3D scenes. Adobe Substance 3D Assets: High-end 3D asset library. 100 3D assets a month, 1TB of cloud storage, and 25 monthly generative credits",
+      "page": "https://www.adobe.com/products/substance3d.html",
+      "details": [
+          "Business B2B Product Plans: Get this app and the complete set of Substance 3D apps, plus 3D assets, fonts, and more for US$99.99/mo per license.",
+          "Supported Platforms: desktop",
+          "Expert Level: Intermediate to Advanced"
+      ],
+      "learning_resource": "https://www.adobe.com/learn/substance_3d_collection?learnIn=1",
+      "image": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-image-substance-3d.png",
+      "background_color": "#1C0A07",
+      "logo": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-icon-substance3d-64.svg",
+      "primary": {
+          "text": "Start free trial",
+          "url": "https://www.adobe.com/mini-plans/substance3D-collection.html?mid=ft&web=1&plan=team"
+      },
+      "secondary": {
+          "text": "See plans & pricing",
+          "url": "https://www.adobe.com/creativecloud/business-plans.html?filter=3dar"
+      }
+  }
+}
