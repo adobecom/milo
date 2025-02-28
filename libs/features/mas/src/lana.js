@@ -11,8 +11,6 @@ const config = {
 // total lana limit in /utils/lana.js is 2000
 const PAGE_LIMIT = 1000;
 
-const seenPayloads = new Set();
-
 function isError(value) {
     return (
         value instanceof Error || typeof value?.originatingRequest === 'string'
@@ -81,10 +79,7 @@ const lanaAppender = {
             payload += JSON.stringify(values, serializeParam);
         }
 
-        if (!seenPayloads.has(payload)) {
-            seenPayloads.add(payload);
-            window.lana?.log(payload, config);
-        }
+        window.lana?.log(payload, config);
     },
 };
 

@@ -74,7 +74,7 @@ CCD Gallery provides a comprehensive list of all supported card variants in CCD.
 ### With static content (dynamic pricing)
 
 ```html {.demo .light}
-<merch-card variant="plans" badge-color="#EDCC2D" badge-background-color="#000000"" badge-text=" Best value">
+<merch-card id="static" variant="plans" badge-color="#EDCC2D" badge-background-color="#000000"" badge-text=" Best value">
   <merch-icon slot="icons" size="l" src="https://www.adobe.com/content/dam/shared/images/product-icons/svg/creative-cloud.svg" alt="Creative Cloud All Apps"></merch-icon>
   <h4 slot="heading-xs">Creative Cloud All Apps</h4>
   <h3 slot="heading-m">
@@ -152,61 +152,76 @@ The reason is that some merch cards are resolved very quickly and event could di
         margin-top: 16px;
     }
 </style>
-<merch-card class="event-demo">
+<script type="module">
+    {
+        const logErrors = document.getElementById('log-errors');
+        const logReady = document.getElementById('log-mas-ready');
+        const message = (e, type) => {
+          const id = e.target.getAttribute('id') || e.target.getAttribute('data-wcs-osi');
+          const detail = e.detail ? `: ${e.detail}` : '';
+          return `'${type}' on ${e.target.nodeName} #${id}${detail}`;
+        };
+        document.addEventListener('mas:failed', (e) => {
+            log(logErrors, message(e, 'mas:failed'));
+        });
+        document.addEventListener('aem:ready', (e) =>
+            log(logReady, message(e, 'aem:ready')),
+        );
+        document.addEventListener('aem:error', (e) =>
+            log(logErrors, message(e, 'aem:error')),
+        );
+        document.addEventListener('mas:ready', (e) => {
+            e.target.classList.add('ready');
+            e.target.classList.remove('error');
+            log(logReady, message(e, 'mas:ready'));
+        });
+        document.addEventListener('mas:error', (e) => {
+            e.target.classList.remove('ready');
+            e.target.classList.add('error');
+            log(logErrors, message(e, 'mas:error'));
+        });
+    }
+</script>
+<p>Valid card</p>
+<merch-card class="event-demo" id="valid-card">
     <aem-fragment
         fragment="d8008cac-010f-4607-bacc-a7a327da1312"
     ></aem-fragment>
 </merch-card>
 
 <p>Checkout link OSI is wrong</p>
-<merch-card class="event-demo">
+<merch-card class="event-demo" id="wrongosi">
     <aem-fragment
         fragment="3c29614a-a024-458f-8bd6-ee910898f684"
     ></aem-fragment>
 </merch-card>
 
 <p>Fragment id is wrong</p>
-<merch-card class="event-demo">
-    <aem-fragment fragment="wrong-fragment-id"></aem-fragment>
+<merch-card class="event-demo" id="invalid-fragment-id">
+    <aem-fragment fragment="wrong-fragment-id" id="invalid-fragment-id"></aem-fragment>
 </merch-card>
 
 <button id="btnRefreshFragments">Refresh Fragments</button>
 
 <script type="module">
     {
-        const target = document.getElementById('log2');
-        [...document.querySelectorAll('.event-demo')].forEach((card) => {
-            card.addEventListener('aem:ready', (e) =>
-                log(target, `${e.target.nodeName}: ${e.detail}`),
-            );
-            card.addEventListener('aem:error', (e) =>
-                log(target, `${e.target.nodeName}: ${e.detail}`),
-            );
-
-            card.addEventListener('mas:ready', () => {
-                card.classList.add('ready');
-                card.classList.remove('error');
-            });
-            card.addEventListener('mas:error', (e) => {
-                card.classList.remove('ready');
-                card.classList.add('error');
-                log(target, `${e.target.nodeName}: ${e.detail}`);
-            });
-
-            document
-                .getElementById('btnRefreshFragments')
-                .addEventListener('click', () => {
-                    document
-                        .querySelector('mas-commerce-service')
-                        .refreshFragments();
-                });
-        });
+      document
+              .getElementById('btnRefreshFragments')
+              .addEventListener('click', () => {
+                  document
+                      .querySelector('mas-commerce-service')
+                      .refreshFragments();
+              });
     }
 </script>
 ```
 
-```html {#log2}
+### Error log
+```html {#log-errors}
+```
 
+### mas:ready log
+```html {#log-mas-ready}
 ```
 
 ### spectrum = 'swc'
@@ -342,7 +357,7 @@ The `sp-action-button` custom element renders into the default slot as no explic
         display: block;
     }
 </style>
-<merch-card>
+<merch-card id="headless">
     <aem-fragment
         fragment="d8008cac-010f-4607-bacc-a7a327da1312"
     ></aem-fragment>

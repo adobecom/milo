@@ -58,7 +58,7 @@ export class MasElement {
           this.promises = [];
       }
       this.wrapperElement.dispatchEvent(
-          new CustomEvent(StateEventType[this.state], { bubbles: true }),
+          new CustomEvent(StateEventType[this.state], { bubbles: true, detail: this.error }),
       );
     }
 
