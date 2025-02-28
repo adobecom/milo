@@ -251,8 +251,8 @@ test.describe('Merch AH Try Buy Widget test suite', () => {
     });
   });
 
-  test('Validate API response', async ({ page, baseURL }) => {
-    const testData = features[0];
+  test(`Test: ${features[3].name},${features[3].tags}`, async ({ page, baseURL }) => {
+    const testData = features[3];
     console.log(`Running API validation test with ID ${testData.data.id}`);
 
     const testUrl = `${baseURL}${testData.path}${miloLibs}`;
