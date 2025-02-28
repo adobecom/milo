@@ -315,6 +315,15 @@
   border-bottom-color: var(--tabs-active-color);
 }
 
+.tabs[class*='pill'] div[role="tablist"] button:focus {
+  color: var(--tabs-pill-text-focus-color);
+  background: var(--tabs-pill-bg-focus);
+}
+
+.tabs[class*='pill'] div[role="tablist"] button:focus-visible {
+  outline: 2px solid #4145ca;
+}
+
 .tabs[class*='pill'] div[role="tablist"] button[aria-selected="true"] {
   color: var(--tabs-pill-text-selected-color);
   background: var(--tabs-pill-bg-color);
@@ -324,15 +333,6 @@
 .tabs[class*='pill'] div[role="tablist"] button:hover {
   color: var(--tabs-pill-text-color);
   background: var(--tabs-pill-bg-color-hover);
-}
-
-.tabs[class*='pill'] div[role="tablist"] button:focus {
-  color: var(--tabs-pill-text-focus-color);
-  background: var(--tabs-pill-bg-focus);
-}
-
-.tabs[class*='pill'] div[role="tablist"] button:focus-visible {
-  outline: 2px solid #4145ca;
 }
 
 .tabs[class*='pill'] div[role="tablist"] button:active {
