@@ -53,7 +53,10 @@ export function Wcs({ settings }) {
         log.debug('Fetching:', options);
         let url = '';
         let response;
-        const detailedMessage = (error, response, url) => `${error}: ${response?.status}, url: ${url.toString()}`;
+        const detailedMessage = (error, response, url) => {
+          const requestId = response.headers.get('x-request-id');
+          return `${error}: ${response?.status}, url: ${url.toString()}, x-request-id: ${requestId}`;
+        };
         try {
             options.offerSelectorIds = options.offerSelectorIds.sort();
             url = new URL(settings.wcsURL);
@@ -124,8 +127,8 @@ export function Wcs({ settings }) {
             }
         } catch (e) {
             /* c8 ignore next 2 */
-            message = ERROR_MESSAGE_BAD_REQUEST;
-            log.error(message, options, e);
+            message = `WCS Request error: ${e.message}`;
+            log.error(message, options);
         }
 
         if (reject && promises.size) {

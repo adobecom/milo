@@ -27,8 +27,8 @@ const MERCH_CARD = 'merch-card';
 const MARK_START_SUFFIX = ':start';
 const MARK_READY_SUFFIX = ':ready';
 
-// if merch cards does not initialise in 10 seconds, it will dispatch mas:error event
-const MERCH_CARD_LOAD_TIMEOUT = 10000;
+// if merch cards does not initialise in 20 seconds, it will dispatch mas:error event
+const MERCH_CARD_LOAD_TIMEOUT = 20000;
 
 const MARK_MERCH_CARD_PREFIX = 'merch-card:';
 
@@ -374,10 +374,11 @@ export class MerchCard extends LitElement {
             ),
         );
         const timeoutPromise = new Promise((resolve) =>
-            setTimeout(() => resolve(false), MERCH_CARD_LOAD_TIMEOUT),
+            setTimeout(() => resolve('timeout'), MERCH_CARD_LOAD_TIMEOUT),
         );
-        const success = await Promise.race([successPromise, timeoutPromise]);
-        if (success === true) {
+        //await this.aemFragment?.updateComplete;
+        const result = await Promise.race([successPromise, timeoutPromise]);
+        if (result === true) {
             performance.mark(
                 `${MARK_MERCH_CARD_PREFIX}${this.id}${MARK_READY_SUFFIX}`,
             );
@@ -388,8 +389,11 @@ export class MerchCard extends LitElement {
                 }),
             );
             return;
+        } else if (result === 'timeout') {
+          this.#fail(`Contains offers that were not resolved within ${MERCH_CARD_LOAD_TIMEOUT} timeout`);
+        } else {
+          this.#fail(`Contains unresolved offers`);
         }
-        this.#fail('Contains unresolved offers');
     }
 
     get aemFragment() {
