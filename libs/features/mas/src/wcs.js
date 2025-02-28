@@ -1,6 +1,7 @@
 import {
     ERROR_MESSAGE_BAD_REQUEST,
     ERROR_MESSAGE_OFFER_NOT_FOUND,
+    HEADER_X_REQUEST_ID,
 } from './constants.js';
 import {
     Env,
@@ -54,8 +55,8 @@ export function Wcs({ settings }) {
         let url = '';
         let response;
         const detailedMessage = (error, response, url) => {
-          const requestId = response.headers.get('x-request-id');
-          return `${error}: ${response?.status}, url: ${url.toString()}, x-request-id: ${requestId}`;
+            const requestId = response.headers.get(HEADER_X_REQUEST_ID);
+            return `${error}: ${response?.status}, url: ${url.toString()}, ${HEADER_X_REQUEST_ID}: ${requestId}`;
         };
         try {
             options.offerSelectorIds = options.offerSelectorIds.sort();
@@ -87,9 +88,14 @@ export function Wcs({ settings }) {
                 credentials: 'omit',
             });
             if (response.ok) {
-                const data = await response.json();
-                log.debug('Fetched:', options, data);
-                let offers = data.resolvedOffers ?? [];
+                let offers = [];
+                try {
+                    const data = await response.json();
+                    log.debug('Fetched:', options, data);
+                    offers = data.resolvedOffers ?? [];
+                } catch (e) {
+                    log.error('Error parsing JSON:', e);
+                }
                 offers = offers.map(applyPlanType);
                 // resolve all promises that have offers
                 promises.forEach(({ resolve }, offerSelectorId) => {
@@ -127,7 +133,7 @@ export function Wcs({ settings }) {
             }
         } catch (e) {
             /* c8 ignore next 2 */
-            message = `WCS Request error: ${e.message}`;
+            message = `Network error: ${e.message}`;
             log.error(message, options);
         }
 
@@ -135,7 +141,9 @@ export function Wcs({ settings }) {
             // reject pending promises, their offers weren't provided by WCS
             log.debug('Missing:', { offerSelectorIds: [...promises.keys()] });
             promises.forEach((promise) => {
-                promise.reject(new Error(detailedMessage(message, response, url)));
+                promise.reject(
+                    new Error(detailedMessage(message, response, url)),
+                );
             });
         }
     }

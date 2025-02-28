@@ -89,3 +89,5 @@ export const Landscape = {
     DRAFT: 'DRAFT',
     PUBLISHED: 'PUBLISHED',
 };
+
+export const HEADER_X_REQUEST_ID = 'X-Request-Id';

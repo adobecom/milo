@@ -1,6 +1,7 @@
 import sinon from 'sinon';
+import { fetchWithRetry } from '../../src/utils/fetchWithRetry.js';
 
-const { fetch: originalFetch } = window;
+const originalFetch = fetchWithRetry;
 
 export async function mockFetch(...stubs) {
     const mocks = await Promise.all(stubs.map((stub) => stub(originalFetch)));
@@ -12,9 +13,13 @@ export async function mockFetch(...stubs) {
             String(args[0]),
             window.location,
         );
+        
+        // Extract headers from the request options
+        const headers = args[1]?.headers || {};
+        
         let found = false;
         for await (const mock of mocks) {
-            found = await mock({ href, pathname, searchParams });
+            found = await mock({ href, pathname, searchParams, headers });
             if (found === false) continue;
             mock.count++;
             break;
