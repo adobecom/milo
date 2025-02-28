@@ -1,4 +1,5 @@
 import { EVENT_AEM_LOAD, EVENT_AEM_ERROR } from './constants.js';
+import { fetchWithRetry } from './utils/fetchWithRetry.js';
 
 const sheet = new CSSStyleSheet();
 sheet.replaceSync(':host { display: contents; }');
@@ -27,7 +28,7 @@ export async function getFragmentById(baseUrl, id, author, headers) {
     const endpoint = author
         ? `${baseUrl}/adobe/sites/cf/fragments/${id}`
         : `${baseUrl}/adobe/sites/fragments/${id}`;
-    const response = await fetch(endpoint, {
+    const response = await fetchWithRetry(endpoint, {
         cache: 'default',
         credentials: 'omit',
         headers,

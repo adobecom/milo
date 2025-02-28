@@ -1,6 +1,6 @@
 import { Checkout } from './checkout.js';
 import * as Constants from './constants.js';
-import { EVENT_TYPE_READY } from './constants.js';
+import { EVENT_TYPE_READY, SELECTOR_MAS_ELEMENT } from './constants.js';
 import { Defaults } from './defaults.js';
 import { Ims } from './ims.js';
 import { getPriceLiterals } from './literals.js';
@@ -167,7 +167,7 @@ export class MasCommerceService extends HTMLElement {
     refreshOffers() {
         this.flushWcsCache();
         document
-            .querySelectorAll('span[is="inline-price"],a[is="checkout-link"]')
+            .querySelectorAll(SELECTOR_MAS_ELEMENT)
             .forEach((el) => el.requestUpdate(true));
         this.log.debug('Refreshed WCS offers');
     }

@@ -17,6 +17,8 @@ import {
     EVENT_MAS_READY,
     EVENT_AEM_ERROR,
     EVENT_MAS_ERROR,
+    SELECTOR_MAS_CHECKOUT_LINK,
+    SELECTOR_MAS_ELEMENT,
 } from './constants.js';
 import { VariantLayout } from './variants/variant-layout.js';
 import { hydrate, ANALYTICS_SECTION_ATTR } from './hydrate.js';
@@ -212,12 +214,12 @@ export class MerchCard extends LitElement {
     }
 
     get price() {
-        return this.headingmMSlot?.querySelector('span[is="inline-price"]');
+        return this.headingmMSlot?.querySelector(SELECTOR_MAS_INLINE_PRICE);
     }
 
     get checkoutLinks() {
         return [
-            ...(this.footerSlot?.querySelectorAll('a[is="checkout-link"]') ??
+            ...(this.footerSlot?.querySelectorAll(SELECTOR_MAS_CHECKOUT_LINK) ??
                 []),
         ];
     }
@@ -363,11 +365,9 @@ export class MerchCard extends LitElement {
 
     async checkReady() {
         const successPromise = Promise.all(
-            [
-                ...this.querySelectorAll(
-                    'span[is="inline-price"][data-wcs-osi],a[is="checkout-link"][data-wcs-osi]',
-                ),
-            ].map((element) => element.onceSettled().catch(() => element)),
+            [...this.querySelectorAll(SELECTOR_MAS_ELEMENT)].map((element) =>
+                element.onceSettled().catch(() => element),
+            ),
         ).then((elements) =>
             elements.every((el) =>
                 el.classList.contains('placeholder-resolved'),
@@ -426,8 +426,12 @@ export class MerchCard extends LitElement {
     displayFooterElementsInColumn() {
         if (!this.classList.contains('product')) return;
 
-        const secureTransactionLabel = this.shadowRoot.querySelector('.secure-transaction-label');
-        const checkoutLinkCtas = this.footerSlot?.querySelectorAll('a[is="checkout-link"].con-button')
+        const secureTransactionLabel = this.shadowRoot.querySelector(
+            '.secure-transaction-label',
+        );
+        const checkoutLinkCtas = this.footerSlot?.querySelectorAll(
+            SELECTOR_MAS_CHECKOUT_LINK,
+        );
         if (checkoutLinkCtas.length === 2 && secureTransactionLabel) {
             secureTransactionLabel.parentElement.classList.add('footer-column');
         }

@@ -10,6 +10,7 @@ import {
     applyPlanType,
 } from './external.js';
 import { Log } from './log.js';
+import { fetchWithRetry } from './utils/fetchWithRetry.js';
 
 /**
  * @typedef {Map<string, {
@@ -79,7 +80,7 @@ export function Wcs({ settings }) {
                 url.searchParams.set('currency', options.currency);
             }
 
-            response = await fetch(url.toString(), {
+            response = await fetchWithRetry(url.toString(), {
                 credentials: 'omit',
             });
             if (response.ok) {
