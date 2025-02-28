@@ -135,7 +135,8 @@
 
 .carousel .carousel-previous path,
 .carousel .carousel-next path {
-  fill: var(--carousel-nav-arrow-color);
+  /* fill: var(--carousel-nav-arrow-color); */
+  fill: lightblue;
 }
 
 .dark .carousel .carousel-previous path,
