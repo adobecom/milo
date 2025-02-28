@@ -176,7 +176,7 @@ test.describe('Merch AH Try Buy Widget test suite', () => {
     });
   });
 
-  test(`Test: ${features[1].name}`, async ({ page, baseURL }) => {
+  test(`Test: ${features[1].name},${features[1].tags}`, async ({ page, baseURL }) => {
     const testData = features[1];
     console.log(`Running test for ${testData.name} with ID ${testData.data.id}`);
 
@@ -234,7 +234,7 @@ test.describe('Merch AH Try Buy Widget test suite', () => {
     });
   });
 
-  test(`Test: ${features[2].name}`, async ({ page, baseURL }) => {
+  test(`Test: ${features[2].name},${features[2].tags}`, async ({ page, baseURL }) => {
     const testData = features[2];
     console.log(`Running test for ${testData.name} with ID ${testData.data.id}`);
 
