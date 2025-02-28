@@ -92,6 +92,12 @@
   z-index: 2;
 }
 
+/* Sample */
+.carousel .carousel-previous,
+.carousel .carousel-next {
+  background-color: red;
+}
+
 .carousel .carousel-previous {
   order: 1;
 }
