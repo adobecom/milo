@@ -442,7 +442,7 @@ test.describe('Milo Marquee Block test suite', () => {
     });
 
     await test.step('step-4: Verify the accessibility test on the Marquee (split, one-third, large, light) block', async () => {
-      await runAccessibilityTest({ page, testScope: marquee.marqueeSplitOneThirdLargeLight, skipA11yTest: true });
+      await runAccessibilityTest({ page, testScope: marquee.marqueeSplitOneThirdLargeLight });
     });
   });
 
@@ -513,7 +513,7 @@ test.describe('Milo Marquee Block test suite', () => {
     });
 
     await test.step('step-4: Verify the accessibility test on the Marquee (split,one-third,small,light) block', async () => {
-      await runAccessibilityTest({ page, testScope: marquee.marqueeSplitOneThirdSmallLight, skipA11yTest: true });
+      await runAccessibilityTest({ page, testScope: marquee.marqueeSplitOneThirdSmallLight });
     });
   });
 

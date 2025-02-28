@@ -221,25 +221,28 @@
 /* Privacy */
 .feds-footer-legalWrapper {
   display: flex;
-  flex-direction: column; /* More privacy rows are allowed */
-  align-items: flex-start;
+  flex-direction: column;
   row-gap: 12px;
 }
 
 .feds-footer-privacySection {
   display: flex;
-  align-items: center;
-  column-gap: 5px;
   flex-wrap: wrap;
   margin: 0;
 }
 
 .feds-footer-privacyLink {
-  display: flex;
+  display: inline-flex;
   column-gap: 5px;
   align-items: center;
   color: var(--feds-color-link);
   fill: var(--feds-color-link);
+  vertical-align: bottom;
+}
+
+span.feds-footer-privacyLink-divider {
+    display: inline-block;
+    margin: 0 5px;
 }
 
 .feds-footer-privacyLink:hover {
@@ -310,11 +313,16 @@
   /* Privacy */
   .feds-footer-legalWrapper {
     align-items: flex-end;
+    text-align: right;
   }
 
   .feds-footer-privacySection {
     justify-content: flex-end;
     text-align: right;
+  }
+  span.feds-footer-privacyLink-divider, .feds-footer-privacyLink {
+    margin-left: 5px;
+    margin-right: 0;
   }
 }
 
