@@ -1508,7 +1508,7 @@ export async function loadArea(area = document) {
   text.id = 'user-agent';
   const data = await getHighEntropyValues();
   if (data) {
-    text.innerHTML = `platform: ${data.platform} 
+    text.innerHTML = `platform: ${data.platform}</br> 
       model: ${data.model}<br>
       platformVersion: ${data.platformVersion}<br>
       architecture: ${data.architecture}<br>
