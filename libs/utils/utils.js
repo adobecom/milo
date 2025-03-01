@@ -1512,7 +1512,10 @@ export async function loadArea(area = document) {
       model: ${data.model}<br>
       platformVersion: ${data.platformVersion}<br>
       architecture: ${data.architecture}<br>
-      uaFullVersion: ${data.uaFullVersion}`;
+      uaFullVersion: ${data.uaFullVersion}<br>
+      navigator.userAgent: ${navigator.userAgent}<br>
+      navigator.vendor: ${navigator.vendor}<br>
+      windor.opera: ${window.opera}<br>`;
   }
   const main = document.querySelector('main');
   if (!main.querySelector('p#user-agent')) {
