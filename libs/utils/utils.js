@@ -1492,10 +1492,32 @@ export async function loadArea(area = document) {
   if (isDoc) await documentPostSectionLoading(config);
 
   await loadDeferred(area, areaBlocks, config);
-  const main = document.querySelector('main');
+  async function getHighEntropyValues() {
+    if (navigator.userAgentData) {
+      return navigator.userAgentData.getHighEntropyValues([
+        'platform',
+        'platformVersion',
+        'architecture',
+        'model',
+        'uaFullVersion',
+      ]);
+    }
+    return null;
+  }
   const text = createTag('p');
-  text.textContent = navigator.userAgent;
-  main.insertAdjacentElement('afterbegin', text);
+  text.id = 'user-agent';
+  const data = await getHighEntropyValues();
+  if (data) {
+    text.innerHTML = `platform: ${data.platform} 
+      model: ${data.model}<br>
+      platformVersion: ${data.platformVersion}<br>
+      architecture: ${data.architecture}<br>
+      uaFullVersion: ${data.uaFullVersion}`;
+  }
+  const main = document.querySelector('main');
+  if (!main.querySelector('p#user-agent')) {
+    main.insertAdjacentElement('afterbegin', text);
+  }
 }
 
 export const utf8ToB64 = (str) => window.btoa(unescape(encodeURIComponent(str)));
