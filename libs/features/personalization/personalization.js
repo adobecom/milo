@@ -14,10 +14,10 @@ import {
 /* c8 ignore start */
 const PHONE_SIZE = window.screen.width < 550 || window.screen.height < 550;
 const safariIpad = navigator.userAgent.includes('Macintosh') && navigator.maxTouchPoints > 1;
-const isGalaxyTabS9 = async () => {
+const isGalaxyTab = async () => {
   if (navigator.userAgentData) {
-    const data = await navigator.userAgentData.getHighEntropyValues(['platform', 'model']);
-    return data.platform === 'Linux' && data.model === '' && navigator.maxTouchPoints > 1 && window.screen.width >= 800 && window.screen.width <= 2560 && window.screen.height >= 1280 && window.screen.height <= 1600;
+    const data = await navigator.userAgentData.getHighEntropyValues(['platform']);
+    return data.platform === 'Linux' && navigator.maxTouchPoints > 1 && window.screen.width >= 800 && window.screen.width <= 2560 && window.screen.height >= 1280 && window.screen.height <= 1600 && !navigator.userAgent.includes('X11');
   }
   return false;
 };
@@ -28,13 +28,13 @@ export const PERSONALIZATION_TAGS = {
   firefox: () => navigator.userAgent.includes('Firefox'),
   safari: () => navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome'),
   edge: () => navigator.userAgent.includes('Edg'),
-  android: () => navigator.userAgent.includes('Android') || isGalaxyTabS9(),
+  android: () => navigator.userAgent.includes('Android') || isGalaxyTab(),
   ios: () => /iPad|iPhone|iPod/.test(navigator.userAgent) || safariIpad,
   windows: () => navigator.userAgent.includes('Windows'),
   mac: () => navigator.userAgent.includes('Macintosh') && !safariIpad,
   'mobile-device': () => safariIpad
     || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i
-      .test(navigator.userAgent) || isGalaxyTabS9(),
+      .test(navigator.userAgent) || isGalaxyTab(),
   phone: () => PERSONALIZATION_TAGS['mobile-device']() && PHONE_SIZE,
   tablet: () => PERSONALIZATION_TAGS['mobile-device']() && !PHONE_SIZE,
   desktop: () => !PERSONALIZATION_TAGS['mobile-device'](),
