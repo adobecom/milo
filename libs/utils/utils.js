@@ -1504,6 +1504,13 @@ export async function loadArea(area = document) {
     }
     return null;
   }
+  const isGalaxyTab = async () => {
+    if (navigator.userAgentData) {
+      const data = await navigator.userAgentData.getHighEntropyValues(['platform']);
+      return data.platform === 'Linux' && navigator.maxTouchPoints > 1 && window.screen.width >= 800 && window.screen.width <= 2560 && window.screen.height >= 1280 && window.screen.height <= 1600 && !navigator.userAgent.includes('X11');
+    }
+    return false;
+  };
   const text = createTag('p');
   let textString = '';
   text.id = 'user-agent';
@@ -1518,7 +1525,9 @@ export async function loadArea(area = document) {
       maintest: ${data.platform === 'Linux' && navigator.maxTouchPoints > 1 && window.screen.width >= 800 && window.screen.width <= 2560 && window.screen.height >= 1280 && window.screen.height <= 1600 && !navigator.userAgent.includes('X11')}</br>
       end`;
   }
-  textString += `navigator.userAgent: ${navigator.userAgent}<br>
+  textString += `navigator.userAgent: ${navigator.userAgent}</br>
+  isAndroid: ${navigator.userAgent.includes('Android') || isGalaxyTab()}</br>
+  mobile-device(excluding safariIpad test: ${('/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i').test(navigator.userAgent) || isGalaxyTab()},
   !navigator.userAgent.includes('X11'): ${!navigator.userAgent.includes('X11')};`;
   text.innerHTML = textString;
   const main = document.querySelector('main');
