@@ -10,6 +10,18 @@ export const ANALYTICS_SECTION_ATTR = 'daa-lh';
 const SPECTRUM_BUTTON_SIZES = ['XL', 'L', 'M', 'S'];
 const TEXT_TRUNCATE_SUFFIX = '...';
 
+export function appendSlot(fieldName, fields, el, mapping) {
+  const config = mapping[fieldName];
+  if (fields[fieldName] && config) {
+    const tag = createTag(
+      config.tag,
+      { slot: config?.slot },
+      fields[fieldName],
+    );
+    el.append(tag);
+  }
+}
+
 export function processMnemonics(fields, merchCard, mnemonicsConfig) {
     const mnemonics = fields.mnemonicIcon?.map((icon, index) => ({
         icon,
@@ -82,15 +94,26 @@ export function processTitle(fields, merchCard, titleConfig) {
     }
 }
 
-export function processSubtitle(fields, merchCard, subtitleConfig) {
-    if (fields.subtitle && subtitleConfig) {
-        merchCard.append(
-            createTag(
-                subtitleConfig.tag,
-                { slot: subtitleConfig.slot },
-                fields.subtitle,
-            ),
-        );
+export function processSubtitle(fields, merchCard, mapping) {
+  appendSlot('subtitle', fields, merchCard, mapping); 
+}
+
+export function processBackgroundColor(fields, merchCard, allowedColors) {
+    if (!fields.backgroundColor || fields.backgroundColor.toLowerCase() === 'default') {
+        merchCard.style.removeProperty('--merch-card-custom-background-color');
+        merchCard.removeAttribute('background-color');
+        return;
+    }
+
+    if (allowedColors?.[fields.backgroundColor]) {
+        merchCard.style.setProperty('--merch-card-custom-background-color', `var(${allowedColors[fields.backgroundColor]})`);
+        merchCard.setAttribute('background-color', fields.backgroundColor);
+    }
+}
+
+export function processBorderColor(fields, merchCard, borderColorConfig) {
+    if (fields.borderColor && borderColorConfig && fields.borderColor !== 'transparent') {
+        merchCard.style.setProperty('--merch-card-custom-border-color', `var(--${fields.borderColor})`);
     }
 }
 
@@ -136,59 +159,43 @@ export function processBackgroundImage(
             );
             return;
         }
-        if (merchCard.spectrum === 'swc') {
-            merchCard.shadowRoot.append(
-                createTag(
-                    backgroundImageConfig.tag,
-                    { slot: backgroundImageConfig.slot,
-                        class: 'image',
-                    },
-                    createTag('img', imgAttributes),
-                ),
-            );
-        } else {
-            merchCard.append(
-                createTag(
-                    backgroundImageConfig.tag,
-                  { slot: backgroundImageConfig.slot,
-                  },
-                    createTag('img', imgAttributes),
-                ),
-            );
-        }
-
-    }
-}
-
-export function processPrices(fields, merchCard, pricesConfig) {
-    if (fields.prices && pricesConfig) {
-        const priceSlot = createTag(
-            pricesConfig.tag,
-            { slot: pricesConfig.slot },
-            fields.prices,
+        merchCard.append(
+            createTag(
+                backgroundImageConfig.tag,
+                { slot: backgroundImageConfig.slot },
+                createTag('img', imgAttributes),
+            ),
         );
-        merchCard.append(priceSlot);
     }
 }
 
-export function processDescription(fields, merchCard, descriptionConfig) {
-    if (fields.description && descriptionConfig) {
-        const attributes = { slot: descriptionConfig.slot };
-        let description = fields.description;
-        const { maxCount } = descriptionConfig;
-        if (maxCount) {
-            const [truncatedDescription, cleanDescription] = getTruncatedTextData(fields.description, maxCount, false);
-            if (truncatedDescription !== fields.description) {
-                attributes.title = cleanDescription;
-                description = truncatedDescription;
-            }
-        }
-        merchCard.append(createTag(
-            descriptionConfig.tag,
-            attributes,
-            description,
-        ));
-    }
+export function processPrices(fields, merchCard, mapping) {
+  appendSlot('prices', fields, merchCard, mapping); 
+}
+
+export function processDescription(fields, merchCard, mapping) {
+  if (maxCount) {
+      const [truncatedDescription, cleanDescription] = getTruncatedTextData(fields.description, maxCount, false);
+      if (truncatedDescription !== fields.description) {
+          attributes.title = cleanDescription;
+          fieldsdescription = truncatedDescription;
+      }
+  }
+  appendSlot('promoText', fields, merchCard, mapping);
+  const { maxCount } = mapping;
+  appendSlot('description', fields, merchCard, mapping);
+  appendSlot('callout', fields, merchCard, mapping);
+}
+
+export function processStockOffersAndSecureLabel(fields, merchCard, aemFragmentMapping, settings) {
+  // for Stock Checkbox, presence flag is set on the card, label and osi for an offer are set in settings
+  if (fields.showStockCheckbox && aemFragmentMapping.stockOffer) {
+    merchCard.setAttribute('checkbox-label', settings.stockCheckboxLabel);
+    merchCard.setAttribute('stock-offer-osis', settings.stockOfferOsis);
+  }
+  if (settings.secureLabel && aemFragmentMapping.secureLabel) {
+    merchCard.setAttribute('secure-label', settings.secureLabel);
+  }
 }
 
 export function getTruncatedTextData(text, limit, withSuffix = true) {
@@ -336,9 +343,9 @@ function createSpectrumSwcButton(cta, aemFragmentMapping, isOutline, variant) {
     return spectrumCta;
 }
 
-function processConsonantButton(cta, strong) {
+function createConsonantButton(cta, isAccent) {
     cta.classList.add('con-button');
-    if (strong) {
+    if (isAccent) {
         cta.classList.add('blue');
     }
     return cta;
@@ -350,11 +357,6 @@ export function processCTAs(fields, merchCard, aemFragmentMapping, variant) {
         const footer = createTag('div', { slot }, fields.ctas);
 
         const ctas = [...footer.querySelectorAll('a')].map((cta) => {
-            const strong = cta.parentElement.tagName === 'STRONG';
-            if (merchCard.consonant) {
-                return processConsonantButton(cta, strong);
-            }
-
             const checkoutLinkStyle =
                 CHECKOUT_STYLE_PATTERN.exec(cta.className)?.[0] ?? 'accent';
             const isAccent = checkoutLinkStyle.includes('accent');
@@ -362,13 +364,13 @@ export function processCTAs(fields, merchCard, aemFragmentMapping, variant) {
             const isSecondary = checkoutLinkStyle.includes('secondary');
             const isOutline = checkoutLinkStyle.includes('-outline');
             const isLink = checkoutLinkStyle.includes('-link');
-
+            if (merchCard.consonant) return createConsonantButton(cta, isAccent);
             if (isLink) {
                 return cta;
             }
 
             let variant;
-            if (isAccent || strong) {
+            if (isAccent) {
                 variant = 'accent';
             } else if (isPrimary) {
                 variant = 'primary';
@@ -420,15 +422,40 @@ export function updateLinksCSS(merchCard) {
     });
 }
 
+export function cleanup(merchCard) {
+  // remove all previous slotted content except the default slot
+  merchCard.querySelectorAll('[slot]').forEach((el) => {
+    el.remove();
+  });
+  const attributesToRemove = [
+  'checkbox-label',
+  'stock-offer-osis',
+  'secure-label',
+  'background-image',
+  'badge-background-color',
+  'badge-color',
+  'badge-text',
+  'size',
+  ANALYTICS_SECTION_ATTR,
+  ];
+  attributesToRemove.forEach(attr => merchCard.removeAttribute(attr));
+  const classesToRemove = ['wide-strip', 'thin-strip'];
+  merchCard.classList.remove(...classesToRemove);
+}
+
 export async function hydrate(fragment, merchCard) {
     const { fields } = fragment;
     const { variant } = fields;
     if (!variant) return;
+    // temporary hardcode for plans. this data will be coming from settings (MWPW-166756)
+    const settings = {
+      stockCheckboxLabel: 'Add a 30-day free trial of Adobe Stock.*', // to be {{stock-checkbox-label}}
+      stockOfferOsis: '',
+      secureLabel: 'Secure transaction' // to be {{secure-transaction}}
+    };
+    cleanup(merchCard);
+    merchCard.id = fragment.id;
 
-    // remove all previous slotted content except the default slot
-    merchCard.querySelectorAll('[slot]').forEach((el) => {
-        el.remove();
-    });
 
     merchCard.removeAttribute('background-image');
     merchCard.removeAttribute('background-color');
@@ -446,12 +473,15 @@ export async function hydrate(fragment, merchCard) {
     const { aemFragmentMapping } = merchCard.variantLayout;
     if (!aemFragmentMapping) return;
 
+    if (aemFragmentMapping.style === 'consonant') {
+      merchCard.setAttribute('consonant', true);
+    }
     processMnemonics(fields, merchCard, aemFragmentMapping.mnemonics);
     processBadge(fields, merchCard);
     processSize(fields, merchCard, aemFragmentMapping.size);
     processTitle(fields, merchCard, aemFragmentMapping.title);
-    processSubtitle(fields, merchCard, aemFragmentMapping.subtitle);
-    processPrices(fields, merchCard, aemFragmentMapping.prices);
+    processSubtitle(fields, merchCard, aemFragmentMapping);
+    processPrices(fields, merchCard, aemFragmentMapping);
     processBackgroundImage(
         fields,
         merchCard,
@@ -460,6 +490,8 @@ export async function hydrate(fragment, merchCard) {
     processBackgroundColor(fields, merchCard, aemFragmentMapping.allowedColors);
     processBorderColor(fields, merchCard, aemFragmentMapping.borderColor);
     processDescription(fields, merchCard, aemFragmentMapping.description);
+    processDescription(fields, merchCard, aemFragmentMapping);
+    processStockOffersAndSecureLabel(fields, merchCard, aemFragmentMapping, settings);
     processUptLinks(fields, merchCard);
     processCTAs(fields, merchCard, aemFragmentMapping, variant);
     processAnalytics(fields, merchCard);

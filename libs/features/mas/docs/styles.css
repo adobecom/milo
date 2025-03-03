@@ -153,7 +153,8 @@ button {
 }
 
 .gallery-content {
-    padding: 30px;
+  display: block;
+  padding: 30px;
 }
 
 code {
@@ -266,25 +267,7 @@ h5 {
     gap: 32px;
 }
 
-/*.benchmark stuff */
-.benchmark-mask {
-    font-size: larger;
-    font-weight: bold;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: white;
-}
-
-.benchmark-mask-over-limit {
-    background: rgba(217, 109, 109, 0.7);
-}
-
-.benchmark-mask-under-limit {
-    background: rgba(133, 215, 133, 0.7);
-}
-
-/*.benchmark stuff */
+/* benchmark stuff */
 .benchmark-mask {
     font-size: larger;
     font-weight: bold;

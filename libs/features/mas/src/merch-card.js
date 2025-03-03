@@ -62,6 +62,7 @@ export class MerchCard extends LitElement {
             attribute: 'stock-offer-osis',
             converter: {
                 fromAttribute: (value) => {
+                    if (!value) return;
                     const [PUF, ABM, M2M] = value.split(',');
                     return { PUF, ABM, M2M };
                 },
