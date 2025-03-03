@@ -72,7 +72,7 @@ export default function processQuickLink(a) {
     if (getMetadata('quick-link-loader') === 'on') loader = addLoader(a);
     const hasConsent = await waitForConsent();
     if (loader) loader.replaceWith(a);
-    const isNewTab = (e.metaKey || e.ctrlKey) && e.button === 0;
+    const isNewTab = (e.metaKey || e.ctrlKey);
     decorateQuickLink(a, hasConsent, isNewTab);
   });
 }
