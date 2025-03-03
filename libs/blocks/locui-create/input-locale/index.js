@@ -275,7 +275,6 @@ export default function useInputLocale() {
       if (language) updatedActiveLocales[locale] = language.language;
     }
     setActiveLocales(updatedActiveLocales);
-    // fix for locales here
     if (isLangDeselecting && WORKFLOW[userWorkflowType.value]?.languages && !initByParams.value?.languages
       ?.some((val) => val.language.toLowerCase() === lang.toLowerCase())) {
       const languageLocales = languagesList
