@@ -159,8 +159,10 @@ export function CheckoutMixin(Base) {
             newUrl.searchParams.set('ctx', 'if');
             if (modalType === MODAL_TYPE_3_IN_1.CRM) {
               newUrl.searchParams.set('af', 'uc_segmentation_hide_tabs,uc_new_user_iframe,uc_new_system_close');
+              newUrl.searchParams.set('cli', 'creative');
             } else {
               newUrl.searchParams.set('af', 'uc_new_user_iframe,uc_new_system_close');
+              newUrl.searchParams.set('cli', 'mini_plans');
             }
             return newUrl.toString();
           } catch (error) {
