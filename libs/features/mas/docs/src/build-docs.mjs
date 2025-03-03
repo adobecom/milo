@@ -89,9 +89,9 @@ const htmlTemplate = `
     <a href="/libs/features/mas/docs/inline-price.html">Inline Price</a>
     <a href="/libs/features/mas/docs/merch-card.html">Merch Card</a>
     <a href="/libs/features/mas/docs/ccd.html">CCD Gallery</a>
+    <a href="/libs/features/mas/docs/adobe-home.html">Adobe Home Gallery</a>
     <a href="/libs/features/mas/docs/plans.html">Plans Gallery</a>
     <a href="/libs/features/mas/docs/benchmarks.html">Benchmarks</a>
-    <a href="/libs/features/mas/docs/adobe-home.html">Adobe Home Gallery</a>
 </aside>
 <main>
 <sp-theme color="light" scale="medium">

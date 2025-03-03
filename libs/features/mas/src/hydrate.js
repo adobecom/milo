@@ -13,10 +13,22 @@ const TEXT_TRUNCATE_SUFFIX = '...';
 export function appendSlot(fieldName, fields, el, mapping) {
   const config = mapping[fieldName];
   if (fields[fieldName] && config) {
+    const attributes = { slot: config?.slot };
+    let content = fields[fieldName];
+    
+    // Handle maxCount if specified in the config
+    if (config.maxCount && typeof content === 'string') {
+      const [truncatedContent, cleanContent] = getTruncatedTextData(content, config.maxCount, config.withSuffix);
+      if (truncatedContent !== content) {
+        attributes.title = cleanContent; // Add full text as title attribute for tooltip
+        content = truncatedContent;
+      }
+    }
+    
     const tag = createTag(
       config.tag,
-      { slot: config?.slot },
-      fields[fieldName],
+      attributes,
+      content,
     );
     el.append(tag);
   }
@@ -73,48 +85,12 @@ export function processSize(fields, merchCard, sizeConfig) {
 }
 
 export function processTitle(fields, merchCard, titleConfig) {
-    if (fields.cardTitle && titleConfig) {
-        const attributes = { slot: titleConfig.slot };
-        let title = fields.cardTitle;
-        const { maxCount } = titleConfig;
-        if (maxCount) {
-            const [truncatedTitle, cleanTitle] = getTruncatedTextData(fields.cardTitle, maxCount);
-            if (truncatedTitle !== fields.cardTitle) {
-                attributes.title = cleanTitle;
-                title = truncatedTitle;
-            }
-        }
-        merchCard.append(
-            createTag(
-                titleConfig.tag,
-                attributes,
-                title
-            ),
-        );
-    }
+  // Use the enhanced appendSlot function for consistency
+  appendSlot('cardTitle', fields, merchCard, { cardTitle: titleConfig });
 }
 
 export function processSubtitle(fields, merchCard, mapping) {
   appendSlot('subtitle', fields, merchCard, mapping); 
-}
-
-export function processBackgroundColor(fields, merchCard, allowedColors) {
-    if (!fields.backgroundColor || fields.backgroundColor.toLowerCase() === 'default') {
-        merchCard.style.removeProperty('--merch-card-custom-background-color');
-        merchCard.removeAttribute('background-color');
-        return;
-    }
-
-    if (allowedColors?.[fields.backgroundColor]) {
-        merchCard.style.setProperty('--merch-card-custom-background-color', `var(${allowedColors[fields.backgroundColor]})`);
-        merchCard.setAttribute('background-color', fields.backgroundColor);
-    }
-}
-
-export function processBorderColor(fields, merchCard, borderColorConfig) {
-    if (fields.borderColor && borderColorConfig && fields.borderColor !== 'transparent') {
-        merchCard.style.setProperty('--merch-card-custom-border-color', `var(--${fields.borderColor})`);
-    }
 }
 
 export function processBackgroundColor(fields, merchCard, allowedColors) {
@@ -174,15 +150,7 @@ export function processPrices(fields, merchCard, mapping) {
 }
 
 export function processDescription(fields, merchCard, mapping) {
-  if (maxCount) {
-      const [truncatedDescription, cleanDescription] = getTruncatedTextData(fields.description, maxCount, false);
-      if (truncatedDescription !== fields.description) {
-          attributes.title = cleanDescription;
-          fieldsdescription = truncatedDescription;
-      }
-  }
   appendSlot('promoText', fields, merchCard, mapping);
-  const { maxCount } = mapping;
   appendSlot('description', fields, merchCard, mapping);
   appendSlot('callout', fields, merchCard, mapping);
 }
@@ -247,7 +215,7 @@ export function getTruncatedTextData(text, limit, withSuffix = true) {
             for (const tag of openTags.reverse()) {
                 trimmedText += `</${tag}>`
             }
-        }
+  }
         let truncatedText = `${trimmedText}${withSuffix ? TEXT_TRUNCATE_SUFFIX : ''}`;
         return [truncatedText, cleanText];
     } catch (error) {
@@ -432,6 +400,8 @@ export function cleanup(merchCard) {
   'stock-offer-osis',
   'secure-label',
   'background-image',
+  'background-color',
+  'border-color',
   'badge-background-color',
   'badge-color',
   'badge-text',
@@ -489,7 +459,6 @@ export async function hydrate(fragment, merchCard) {
     );
     processBackgroundColor(fields, merchCard, aemFragmentMapping.allowedColors);
     processBorderColor(fields, merchCard, aemFragmentMapping.borderColor);
-    processDescription(fields, merchCard, aemFragmentMapping.description);
     processDescription(fields, merchCard, aemFragmentMapping);
     processStockOffersAndSecureLabel(fields, merchCard, aemFragmentMapping, settings);
     processUptLinks(fields, merchCard);

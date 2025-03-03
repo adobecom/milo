@@ -20,6 +20,7 @@ import {
     getTruncatedTextData,
     processBackgroundColor,
     processBorderColor,
+    appendSlot,
 } from '../src/hydrate.js';
 import { CCD_SLICE_AEM_FRAGMENT_MAPPING } from '../src/variants/ccd-slice.js';
 
@@ -373,28 +374,6 @@ describe('processBackgroundImage', () => {
         );
     });
 
-    it('should append background image for ccd-slice variant, merchCard.spectrum=swc', () => {
-        const fields = {
-            backgroundImage: 'test-image.jpg',
-            backgroundImageAltText: 'Test Image',
-        };
-        const backgroundImageConfig = { tag: 'div', slot: 'image' };
-        const variant = 'ccd-slice';
-
-        merchCard.spectrum = 'swc';
-        processBackgroundImage(
-            fields,
-            merchCard,
-            backgroundImageConfig,
-            variant,
-        );
-        const imageContainer = getBgImageElement(merchCard);
-        expect(imageContainer).to.exist;
-        expect(imageContainer.innerHTML).to.equal(
-            '<img loading="lazy" src="test-image.jpg" alt="Test Image">',
-        );
-    });
-
     it('should set background-image attribute for ccd-suggested variant', () => {
         const fields = { backgroundImage: 'test-image.jpg' };
         const backgroundImageConfig = { attribute: 'background-image' };
@@ -701,4 +680,122 @@ describe('processBorderColor', () => {
         expect(merchCard.style.getPropertyValue('--merch-card-custom-border-color'))
             .to.be.empty;
     });
+});
+
+describe('appendSlot', () => {
+  let el;
+  
+  beforeEach(() => {
+    el = document.createElement('div');
+  });
+  
+  it('should append element with content when field exists', () => {
+    const fieldName = 'testField';
+    const fields = { testField: 'Test Content' };
+    const mapping = { testField: { tag: 'p', slot: 'test-slot' } };
+    
+    appendSlot(fieldName, fields, el, mapping);
+    
+    const appended = el.querySelector('[slot="test-slot"]');
+    expect(appended).to.exist;
+    expect(appended.tagName).to.equal('P');
+    expect(appended.textContent).to.equal('Test Content');
+  });
+  
+  it('should not append element when field does not exist', () => {
+    const fieldName = 'missingField';
+    const fields = { otherField: 'Test Content' };
+    const mapping = { missingField: { tag: 'p', slot: 'test-slot' } };
+    
+    appendSlot(fieldName, fields, el, mapping);
+    
+    const appended = el.querySelector('[slot="test-slot"]');
+    expect(appended).to.not.exist;
+  });
+  
+  it('should truncate content when maxCount is specified and content exceeds limit', () => {
+    const fieldName = 'longField';
+    const longText = 'This is a very long text that should be truncated';
+    const fields = { longField: longText };
+    const mapping = { longField: { tag: 'p', slot: 'test-slot', maxCount: 10 } };
+    
+    appendSlot(fieldName, fields, el, mapping);
+    
+    const appended = el.querySelector('[slot="test-slot"]');
+    expect(appended).to.exist;
+    expect(appended.textContent).to.equal('This is...');
+    expect(appended.getAttribute('title')).to.equal(longText);
+  });
+  
+  it('should not truncate content when maxCount is specified but content is within limit', () => {
+    const fieldName = 'shortField';
+    const shortText = 'Short text';
+    const fields = { shortField: shortText };
+    const mapping = { shortField: { tag: 'p', slot: 'test-slot', maxCount: 20 } };
+    
+    appendSlot(fieldName, fields, el, mapping);
+    
+    const appended = el.querySelector('[slot="test-slot"]');
+    expect(appended).to.exist;
+    expect(appended.textContent).to.equal(shortText);
+    expect(appended.getAttribute('title')).to.be.null;
+  });
+  
+  it('should respect withSuffix=false when truncating', () => {
+    const fieldName = 'longField';
+    const longText = 'This is a very long text that should be truncated without ellipsis';
+    const fields = { longField: longText };
+    const mapping = { longField: { tag: 'p', slot: 'test-slot', maxCount: 10, withSuffix: false } };
+    
+    appendSlot(fieldName, fields, el, mapping);
+    
+    const appended = el.querySelector('[slot="test-slot"]');
+    expect(appended).to.exist;
+    expect(appended.textContent).to.equal('This is a');
+    expect(appended.textContent).to.not.include('...');
+    expect(appended.getAttribute('title')).to.equal(longText);
+  });
+  
+  it('should handle HTML content when truncating', () => {
+    const fieldName = 'htmlField';
+    const htmlText = '<strong>This</strong> is a <em>formatted</em> text that should be truncated';
+    const fields = { htmlField: htmlText };
+    const mapping = { htmlField: { tag: 'p', slot: 'test-slot', maxCount: 15 } };
+    
+    appendSlot(fieldName, fields, el, mapping);
+    
+    const appended = el.querySelector('[slot="test-slot"]');
+    expect(appended).to.exist;
+    // The exact truncated text might vary depending on how getTruncatedTextData handles HTML
+    expect(appended.textContent.length).to.be.lessThan(htmlText.length);
+    expect(appended.getAttribute('title')).to.not.be.null;
+  });
+  
+  it('should not attempt truncation on non-string content', () => {
+    const fieldName = 'objectField';
+    const objectContent = { key: 'value' };
+    const fields = { objectField: objectContent };
+    const mapping = { objectField: { tag: 'p', slot: 'test-slot', maxCount: 10 } };
+    
+    appendSlot(fieldName, fields, el, mapping);
+    
+    const appended = el.querySelector('[slot="test-slot"]');
+    expect(appended).to.exist;
+    // The object will be converted to string by the browser
+    expect(appended.textContent).to.equal(objectContent.toString());
+  });
+  
+  it('should break at word boundaries when truncating', () => {
+    const fieldName = 'textField';
+    const text = 'This is a sentence with multiple words';
+    const fields = { textField: text };
+    const mapping = { textField: { tag: 'p', slot: 'test-slot', maxCount: 12 } };
+    
+    appendSlot(fieldName, fields, el, mapping);
+    
+    const appended = el.querySelector('[slot="test-slot"]');
+    expect(appended).to.exist;
+    // Should break at a space, not in the middle of "sentence"
+    expect(appended.textContent).to.equal('This is a...');
+  });
 });

@@ -4,8 +4,8 @@ import { CSS } from './ah-try-buy-widget.css.js';
 
 export const AH_TRY_BUY_WIDGET_AEM_FRAGMENT_MAPPING = {
   mnemonics: { size: 's' },
-  title: { tag: 'h3', slot: 'heading-xxxs', maxCount: 40 },
-  description: { tag: 'div', slot: 'body-xxs', maxCount: 200 },
+  title: { tag: 'h3', slot: 'heading-xxxs', maxCount: 40, withSuffix: true },
+  description: { tag: 'div', slot: 'body-xxs', maxCount: 200, withSuffix: false },
   prices: { tag: 'p', slot: 'price' },
   ctas: { slot: 'cta', size: 'S' },
   backgroundImage: { tag: 'div', slot: 'image' },
