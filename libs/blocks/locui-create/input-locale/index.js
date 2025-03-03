@@ -11,7 +11,7 @@ import {
   updateDraftProject,
   initByParams,
 } from '../store.js';
-import { ENG_LANG_CODE, PROJECT_ACTION, PROJECT_TYPES } from '../utils/constant.js';
+import { ENG_LANG_CODE, PROJECT_ACTION, PROJECT_TYPES, WORKFLOW } from '../utils/constant.js';
 
 function initialLanguageList() {
   if (
@@ -275,7 +275,8 @@ export default function useInputLocale() {
       if (language) updatedActiveLocales[locale] = language.language;
     }
     setActiveLocales(updatedActiveLocales);
-    if (isLangDeselecting && !initByParams.value?.languages
+    // fix for locales here
+    if (isLangDeselecting && WORKFLOW[userWorkflowType.value]?.languages && !initByParams.value?.languages
       ?.some((val) => val.language.toLowerCase() === lang.toLowerCase())) {
       const languageLocales = languagesList
         .find((l) => l.language.toLowerCase() === lang.toLowerCase());
