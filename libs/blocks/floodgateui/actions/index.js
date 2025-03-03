@@ -7,6 +7,7 @@ import { origin, preview } from '../../locui/utils/franklin.js';
 import { decorateSections } from '../../../utils/utils.js';
 import { getUrls } from '../../locui/loc/index.js';
 import { validateUrlsFormat } from '../floodgate/index.js';
+import { isUrl } from '../utils/url.js';
 
 export const showRolloutOptions = signal(false);
 
@@ -92,7 +93,7 @@ async function findPageFragments(path) {
 
     if (accDupe || dupe) return acc;
     const fragmentUrl = new URL(`${origin}${pathname}`);
-    fragmentUrl.alt = fragment.textContent;
+    fragmentUrl.alt = isUrl(fragment.textContent) ? fragment.textContent : originalUrl;
     acc.push(fragmentUrl);
     return acc;
   }, []);
@@ -119,7 +120,7 @@ async function findDeepFragments(path) {
       searched.push(search.pathname);
     }
   }
-  return fragments.length ? fragments : [];
+  return fragments.length ? getUrls(fragments) : [];
 }
 
 export async function findFragments() {

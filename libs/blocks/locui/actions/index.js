@@ -1,6 +1,8 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-restricted-syntax */
-import { heading, urls, languages, allowSyncToLangstore, allowSendForLoc, allowRollout } from '../utils/state.js';
+import {
+  heading, urls, languages, allowSyncToLangstore, allowSendForLoc, allowRollout,
+} from '../utils/state.js';
 import { setExcelStatus, setStatus } from '../utils/status.js';
 import { origin, preview } from '../utils/franklin.js';
 import { decorateSections } from '../../../utils/utils.js';
