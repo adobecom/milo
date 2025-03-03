@@ -1268,8 +1268,10 @@ async function loadPostLCP(config) {
       .then(({ addMepAnalytics }) => addMepAnalytics(config, header));
   }
   // privacy here - test 2
-  const { loadPrivacy } = await import('../scripts/delayed.js');
-  loadPrivacy(getConfig, loadScript);
+  if (document.querySelector('.quick-link')) {
+    const { loadPrivacy } = await import('../scripts/delayed.js');
+    loadPrivacy(getConfig, loadScript);
+  }
 }
 
 export function scrollToHashedElement(hash) {

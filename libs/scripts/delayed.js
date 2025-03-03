@@ -73,6 +73,7 @@ const loadDelayed = ([
   loadIms,
 ], DELAY = 3000) => new Promise((resolve) => {
   setTimeout(() => {
+    if (!window.adobePrivacy) loadPrivacy(getConfig, loadScript);
     loadJarvisChat(getConfig, getMetadata, loadScript, loadStyle);
     loadGoogleLogin(getMetadata, loadIms, loadScript, getConfig);
     if (getMetadata('interlinks') === 'on') {
