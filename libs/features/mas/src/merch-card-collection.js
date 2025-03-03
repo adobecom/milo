@@ -212,7 +212,7 @@ export class MerchCardCollection extends LitElement {
 
     async populateFromFragment(id) {
         this.removeAttribute('fragment');
-        const endpoint = `https://www.stage.adobe.com/mas/io/fragment?id=${id}&api_key=nico&locale=fr_FR`
+        const endpoint = `https://www.stage.adobe.com/mas/io/fragment?id=${id}&api_key=nico`
         const response = await fetch(endpoint).catch((e) => console.log(e.message));
         if (!response?.ok) {
             console.log(`${response.status} ${response.statusText}`);
@@ -227,10 +227,6 @@ export class MerchCardCollection extends LitElement {
         const fragments = Object.keys(data.fields.cards).map(key => data.fields.cards[key]);
         cache.add(...fragments);
 
-        for (const category of data.fields.categories) {
-
-        }
-
         for (const fragment of fragments) {
             const merchCard = document.createElement('merch-card');
             merchCard.setAttribute('consonant', '');
@@ -243,7 +239,7 @@ export class MerchCardCollection extends LitElement {
                 const index = category.cards.indexOf(fragment.id);
                 if (index === -1) continue;
                 const name = category.label.toLowerCase();
-                merchCard.filters[name] = { order: index + 1 };
+                merchCard.filters[name] = { order: index + 1, size: fragment.fields.size };
             }
             this.append(merchCard);
         }
