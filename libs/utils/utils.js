@@ -1505,18 +1505,19 @@ export async function loadArea(area = document) {
     return null;
   }
   const text = createTag('p');
+  let textString = '';
   text.id = 'user-agent';
   const data = await getHighEntropyValues();
   if (data) {
-    text.innerHTML = `platform: ${data.platform}</br> 
+    textString = `platform: ${data.platform}</br> 
       model: ${data.model}<br>
       platformVersion: ${data.platformVersion}<br>
       architecture: ${data.architecture}<br>
       uaFullVersion: ${data.uaFullVersion}<br>
-      navigator.userAgent: ${navigator.userAgent}<br>
-      navigator.vendor: ${navigator.vendor}<br>
-      windor.opera: ${window.opera}<br>`;
+      platform: ${data.platform}</br>`
   }
+  textString += `navigator.userAgent: ${navigator.userAgent}<br>`;
+  text.innerHTML = textString;
   const main = document.querySelector('main');
   if (!main.querySelector('p#user-agent')) {
     main.insertAdjacentElement('afterbegin', text);
