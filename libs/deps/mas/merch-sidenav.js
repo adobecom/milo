@@ -128,3 +128,4 @@ var P=Object.defineProperty;var v=o=>{throw TypeError(o)};var H=(o,e,t)=>e in o?
                 right: 16px;
             }
         `,u]);customElements.define("merch-sidenav",p);export{p as MerchSideNav};
+//# sourceMappingURL=merch-sidenav.js.map

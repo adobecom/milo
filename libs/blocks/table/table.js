@@ -153,6 +153,20 @@ function handleAddOnContent(table) {
   table.addEventListener('mas:resolved', debounce(() => { handleEqualHeight(table, '.row-heading'); }));
 }
 
+function setTooltipPosition(el) {
+  if (!['TABLET', 'MOBILE'].includes(defineDeviceByScreenSize())) return;
+
+  const isRtl = document.documentElement.dir === 'rtl';
+  const classesToCheck = isRtl ? ['top', 'bottom', 'left'] : ['top', 'bottom', 'right'];
+  const selector = classesToCheck.map((cls) => `.milo-tooltip.${cls}`).join(',');
+  const tooltips = el.querySelectorAll(selector);
+
+  tooltips.forEach((tooltip) => {
+    tooltip.classList.remove(...classesToCheck);
+    tooltip.classList.add(isRtl ? 'right' : 'left');
+  });
+}
+
 async function setAriaLabelForIcons(el) {
   const config = getConfig();
   const expendableIcons = el.querySelectorAll('.icon.expand[role="button"]');
@@ -168,6 +182,34 @@ async function setAriaLabelForIcons(el) {
   ariaLabelElements.forEach((element) => {
     const labelIndex = element.classList.contains('filter') ? 1 : 0;
     element.setAttribute('aria-label', ariaLabels[labelIndex]);
+  });
+}
+
+function setTooltipListeners(el) {
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      el.querySelectorAll('.milo-tooltip').forEach((tooltip) => {
+        tooltip.classList.add('hide-tooltip');
+      });
+    }
+  });
+
+  el.querySelectorAll('.milo-tooltip').forEach((tooltip) => {
+    tooltip.addEventListener('mouseenter', () => {
+      tooltip.classList.remove('hide-tooltip');
+    });
+
+    tooltip.addEventListener('mouseleave', () => {
+      tooltip.classList.add('hide-tooltip');
+    });
+
+    tooltip.addEventListener('focus', () => {
+      tooltip.classList.remove('hide-tooltip');
+    });
+
+    tooltip.addEventListener('blur', () => {
+      tooltip.classList.add('hide-tooltip');
+    });
   });
 }
 
@@ -607,6 +649,7 @@ export default function init(el) {
     const handleResize = () => {
       applyStylesBasedOnScreenSize(el, originTable);
       if (isStickyHeader(el)) handleScrollEffect(el);
+      setTooltipPosition(el);
     };
     handleResize();
 
@@ -622,6 +665,7 @@ export default function init(el) {
 
     isDecorated = true;
     setAriaLabelForIcons(el);
+    setTooltipListeners(el);
   };
 
   window.addEventListener(MILO_EVENTS.DEFERRED, () => {

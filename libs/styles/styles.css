@@ -9,8 +9,8 @@
   --feds-localnav-height: 40px;
 
   /* Colors */
-  --link-color: rgb(59, 99, 251);
-  --link-hover-color: rgb(39, 77, 234);
+  --link-color: rgb(39, 77, 234);
+  --link-hover-color: rgb(29, 62, 207);
   --link-color-dark: rgb(59, 99, 251);
   --link-hover-color-dark: rgb(39, 77, 234);
   --background-color: #fff;
@@ -890,6 +890,17 @@ a.static:active  {
 /* Tooltip */
 .tooltip-wrapper {
   visibility: hidden;
+}
+
+/* Anchors */
+.section-anchor {
+  scroll-margin-top: var(--global-height-nav);
+}
+
+@media screen and (min-width: 600px) {
+  .global-navigation.has-breadcrumbs + main .section-anchor {
+    scroll-margin-top: var(--feds-totalheight-nav);
+  }
 }
 
 /* mobile only */

@@ -35,8 +35,16 @@ export default class MasAcom {
     return card.locator('div[slot="body-xs"] p');
   }
 
+  getSeeAllPlansLink(id) {
+    return this.getCardDescription(id).locator('a.modal-Link');
+  }
+
   getCardCTA(id) {
     const card = this.getCard(id);
-    return card.locator('div[slot="footer"] > button');
+    return card.locator('div[slot="footer"] > a[is="checkout-link"]');
+  }
+
+  getStockCheckbox(id) {
+    return this.getCard(id).locator('[id="stock-checkbox"]');
   }
 }

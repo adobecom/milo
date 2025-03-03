@@ -1,6 +1,5 @@
-import { getMetadata, getConfig } from '../../../../utils/utils.js';
+import { getMetadata, getConfig, getFederatedUrl } from '../../../../utils/utils.js';
 import { toFragment, lanaLog } from '../../utilities/utilities.js';
-import { getFederatedUrl } from '../../../../utils/federated.js';
 
 const metadata = {
   seo: 'breadcrumbs-seo',
@@ -81,7 +80,7 @@ const createWithBase = async (el) => {
     element.querySelector('ul')?.prepend(...base.querySelectorAll('li'));
     return createBreadcrumbs(element);
   } catch (e) {
-    lanaLog({ e, message: 'Breadcrumbs failed fetching base', tags: 'errorType=info,module=gnav-breadcrumbs' });
+    lanaLog({ e, message: 'Breadcrumbs failed fetching base', tags: 'gnav-breadcrumbs', errorType: 'info' });
     return null;
   }
 };
@@ -110,7 +109,7 @@ export default async function init(el) {
     setBreadcrumbSEO(breadcrumbsEl);
     return breadcrumbsEl;
   } catch (e) {
-    lanaLog({ e, message: 'Breadcrumbs failed rendering', tags: 'errorType=error,module=gnav-breadcrumbs' });
+    lanaLog({ e, message: 'Breadcrumbs failed rendering', tags: 'gnav-breadcrumbs', errorType: 'error' });
     return null;
   }
 }

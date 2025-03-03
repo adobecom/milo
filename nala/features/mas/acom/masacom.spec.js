@@ -15,12 +15,13 @@ module.exports = {
         description: 'Create, edit, sign, and manage your PDFs — quickly, easily, anywhere.',
         price: 'US$19.99/mo',
         cta: 'Buy now',
-        offerid: '30404A88D89A328584307175B8B27616',
+        ctaOsi: 'MzCpF9nUi8rEzyW-9slEUwtRenS69PRW5fp84a93uK4',
         iconUrl: '',
+        seeAllPlansText: 'See all plans & pricing details',
+        stockCheckboxLabel: 'Add a 30-day free trial of Adobe Stock.*',
       },
       browserParams: '?theme=darkest',
       tags: '@mas-acom @mas-plans-card @commerce @smoke @regression @milo',
     },
-
   ],
 };

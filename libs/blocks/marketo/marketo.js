@@ -180,6 +180,10 @@ export const loadMarketo = (el, formData) => {
 
       MktoForms2.loadForm(`//${baseURL}`, munchkinID, formID);
       MktoForms2.whenReady((form) => { readyForm(form, formData); });
+      /* c8 ignore next 3 */
+      if (el.classList.contains('multi-step')) {
+        import('./marketo-multi.js').then(({ default: multiStep }) => multiStep(el));
+      }
     })
     .catch(() => {
       /* c8 ignore next 2 */
@@ -261,6 +265,10 @@ export default function init(el) {
   fragment.append(formWrapper);
   el.replaceChildren(fragment);
   el.classList.add('loading');
+  /* c8 ignore next 3 */
+  if (el.classList.contains('multi-2') || el.classList.contains('multi-3')) {
+    el.classList.add('multi-step');
+  }
 
   loadLink(`https://${baseURL}`, { rel: 'dns-prefetch' });
 

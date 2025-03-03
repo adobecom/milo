@@ -32,6 +32,7 @@ module.exports = {
         description: 'Save over 65% on Photoshop and more than 20 apps for the first year. Plus get the first month on us when purchase by Sep 2',
         price: 'US$19.99/mo',
         strikethroughPrice: 'US$59.99/mo',
+        abmLabel: 'Annual, paid monthly',
         cta: 'Buy now',
         osi: 'Hnk2P6L5wYhnpZLFYTW5upuk2Y3AJXlso8VGWQ0l2TI',
         linkText: 'See terms',
@@ -341,6 +342,20 @@ module.exports = {
       },
       browserParams: '?theme=darkest',
       tags: '@mas-ccd @slice-card @slice-wide @commerce @smoke @regression @milo',
+    },
+    {
+      tcid: '19',
+      name: '@MAS-CCD-slice-upt-link',
+      path: '/libs/features/mas/docs/ccd.html',
+      data: {
+        id: '018bf7f7-1e82-4b16-9dd1-039ee013e490',
+        linkText: 'See terms',
+        offerid: '3B8086C370FDF28C8AEEE1C5BD233E5A',
+        uptLinkUrl: 'https://www.adobe.com/offers/promo-terms.html?locale=en_US&country=US&offer_id=3B8086C370FDF28C8AEEE1C5BD233E5A&promotion_code=MHYXZS',
+        // iconLink: '',
+      },
+      browserParams: '?theme=darkest',
+      tags: '@mas-ccd @slice-card @slice-single @commerce @smoke @regression @milo',
     },
   ],
 };
