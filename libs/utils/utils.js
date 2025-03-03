@@ -1514,9 +1514,11 @@ export async function loadArea(area = document) {
       platformVersion: ${data.platformVersion}<br>
       architecture: ${data.architecture}<br>
       uaFullVersion: ${data.uaFullVersion}<br>
-      platform: ${data.platform}</br>`
+      platform: ${data.platform}</br>
+      maintest: ${data.platform === 'Linux' && navigator.maxTouchPoints > 1 && window.screen.width >= 800 && window.screen.width <= 2560 && window.screen.height >= 1280 && window.screen.height <= 1600 && !navigator.userAgent.includes('X11')}</br>`;
   }
-  textString += `navigator.userAgent: ${navigator.userAgent}<br>`;
+  textString += `navigator.userAgent: ${navigator.userAgent}<br>
+  !navigator.userAgent.includes('X11'): ${!navigator.userAgent.includes('X11')};`;
   text.innerHTML = textString;
   const main = document.querySelector('main');
   if (!main.querySelector('p#user-agent')) {
