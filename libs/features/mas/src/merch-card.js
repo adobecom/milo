@@ -19,6 +19,7 @@ import {
     EVENT_MAS_ERROR,
     SELECTOR_MAS_CHECKOUT_LINK,
     SELECTOR_MAS_ELEMENT,
+    SELECTOR_MAS_INLINE_PRICE,
 } from './constants.js';
 import { VariantLayout } from './variants/variant-layout.js';
 import { hydrate, ANALYTICS_SECTION_ATTR } from './hydrate.js';
@@ -27,7 +28,7 @@ const MERCH_CARD = 'merch-card';
 const MARK_START_SUFFIX = ':start';
 const MARK_READY_SUFFIX = ':ready';
 
-// if merch cards does not initialise in 20 seconds, it will dispatch mas:error event
+// if merch card does not initialise in 20 seconds, it will dispatch mas:error event
 const MERCH_CARD_LOAD_TIMEOUT = 20000;
 
 const MARK_MERCH_CARD_PREFIX = 'merch-card:';
@@ -376,7 +377,8 @@ export class MerchCard extends LitElement {
         const timeoutPromise = new Promise((resolve) =>
             setTimeout(() => resolve('timeout'), MERCH_CARD_LOAD_TIMEOUT),
         );
-        //await this.aemFragment?.updateComplete;
+
+        await this.aemFragment?.updateComplete;
         const result = await Promise.race([successPromise, timeoutPromise]);
         if (result === true) {
             performance.mark(
@@ -390,9 +392,11 @@ export class MerchCard extends LitElement {
             );
             return;
         } else if (result === 'timeout') {
-          this.#fail(`Contains offers that were not resolved within ${MERCH_CARD_LOAD_TIMEOUT} timeout`);
+            this.#fail(
+                `Contains offers that were not resolved within ${MERCH_CARD_LOAD_TIMEOUT} timeout`,
+            );
         } else {
-          this.#fail(`Contains unresolved offers`);
+            this.#fail(`Contains unresolved offers`);
         }
     }
 

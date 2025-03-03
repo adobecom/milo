@@ -80,8 +80,8 @@ const cache = new FragmentCache();
 export class AemFragment extends HTMLElement {
     cache = cache;
 
-    #rawData;
-    #data;
+    #rawData = null;
+    #data = null;
 
     /**
      * @type {string} fragment id
@@ -162,11 +162,12 @@ export class AemFragment extends HTMLElement {
             })
             .catch((e) => {
                 /* c8 ignore next 3 */
-                this.#fail('Network error: failed to load fragment');
+                this.#fail(
+                    'Network error: failed to load fragment: ' + e.message,
+                );
                 this.#readyPromise = null;
                 return false;
             });
-        this.#readyPromise;
     }
 
     #fail(error) {
@@ -181,10 +182,12 @@ export class AemFragment extends HTMLElement {
     }
 
     async fetchData() {
-        this.#rawData = null;
-        this.#data = null;
         let fragment = cache.get(this.#fragmentId);
-        if (!fragment) {
+        if (fragment) {
+          this.#rawData = fragment;
+          return;
+        }
+        try {
             fragment = await getFragmentById(
                 baseUrl,
                 this.#fragmentId,
@@ -192,8 +195,14 @@ export class AemFragment extends HTMLElement {
                 this.#ims ? headers : undefined,
             );
             cache.add(fragment);
+            this.#rawData = fragment;
+        } catch (e) {
+            // fail only if we never had the data
+            if (!this.#data)
+                this.#fail(
+                    'Network error: failed to load fragment: ' + e.message,
+                );
         }
-        this.#rawData = fragment;
     }
 
     get updateComplete() {
@@ -225,7 +234,7 @@ export class AemFragment extends HTMLElement {
     }
 
     #transformPublishData() {
-        const { fields, id, tags,  } = this.#rawData;
+        const { fields, id, tags } = this.#rawData;
         this.#data = Object.entries(fields).reduce(
             (acc, [key, value]) => {
                 acc.fields[key] = value?.mimeType ? value.value : (value ?? '');

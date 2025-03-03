@@ -1,7 +1,5 @@
 import { HEADER_X_REQUEST_ID } from "../constants.js";
 
-const originalFetch = window.fetch;
-
 /**
  * A fetch wrapper that retries failed requests up to a specified number of times.
  * Only retries on network errors, not server errors (HTTP status codes).
@@ -14,7 +12,7 @@ const originalFetch = window.fetch;
 async function fetchWithRetry(
     resource,
     options = {},
-    retries = 3,
+    retries = 2,
     delay = 500
 ) {
     let lastError;
@@ -31,7 +29,7 @@ async function fetchWithRetry(
     
     for (let attempt = 0; attempt <= retries; attempt++) {
         try {
-            const response = await originalFetch(resource, options);
+            const response = await fetch(resource, options);
             // Don't retry on server errors (HTTP status codes)
             return response;
         } catch (error) {

@@ -1,4 +1,4 @@
-import { HEADER_X_REQUEST_ID } from "../../src/constants.js";
+import { HEADER_X_REQUEST_ID } from '../../src/constants.js';
 
 export async function withWcs(originalFetch) {
     const offers = JSON.parse(
@@ -23,12 +23,12 @@ export async function withWcs(originalFetch) {
 
             // Create headers object for response
             const responseHeaders = {
-                 get: (name) => {
+                get: (name) => {
                     if (name === HEADER_X_REQUEST_ID && requestId) {
                         return requestId;
                     }
                     return null;
-                }
+                },
             };
 
             // 404 if any of requested osis does not exist

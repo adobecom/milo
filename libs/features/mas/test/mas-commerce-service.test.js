@@ -139,8 +139,6 @@ describe('commerce service', () => {
                     promotionCode: '',
                     quantity: [1],
                     wcsApiKey: 'wcms-commerce-ims-ro-user-milo',
-                    wcsBufferDelay: 1,
-                    wcsBufferLimit: 1,
                     wcsURL: 'https://www.adobe.com/web_commerce_artifact',
                 });
             });
