@@ -227,6 +227,17 @@ export async function fetchDraftProject(projectKey) {
     const resJson = await response.json();
     if (response.ok) {
       const projectNameProfix = lang ? `-${lang}` : '';
+      let languages;
+      if (lang) {
+        languages = getLanguageDetails(lang);
+      } else if (userWorkflowType.value === 'promoteRollout') {
+        languages = resJson?.languages.map((language) => ({
+          ...language,
+          action: 'Rollout',
+        }));
+      } else {
+        languages = resJson.languages ?? [];
+      }
       setProject({
         type: (resJson.projectType === 'rollout' || userWorkflowType.value === 'promoteRollout') ? 'rollout' : 'localization',
         name: `${resJson.projectName}${userWorkflowType.value === 'promoteRollout' ? '-rollout' : ''}${projectNameProfix}`,
@@ -234,10 +245,7 @@ export async function fetchDraftProject(projectKey) {
         editBehavior: resJson.settings?.regionalEditBehaviour,
         urls: resJson.urls,
         fragments: [],
-        languages: lang ? getLanguageDetails(lang) : (userWorkflowType.value === 'promoteRollout') ? resJson?.languages.map((language) => ({
-          ...language,
-          action: 'Rollout',
-        })) : resJson.languages ?? [],
+        languages,
       });
       projectInfo.value = {
         ...projectInfo.value,
