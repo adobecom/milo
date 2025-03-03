@@ -5,12 +5,12 @@ export const CSS = `
   --consonant-merch-card-plans-icon-size: 40px;
 }
 
-merch-card[variant="plans"] {
-  width: 276px;
-}
-
 merch-card[variant="plans"] [slot="description"] {
   min-height: 84px;
+}
+
+merch-card[variant="plans"] [slot='callout-content'] {
+  padding: 2px 10px 3px 10px;
 }
 
 merch-card[variant="plans"] [slot="quantity-select"] {
