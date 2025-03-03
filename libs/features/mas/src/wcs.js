@@ -52,10 +52,8 @@ export function Wcs({ settings }) {
         log.debug('Fetching:', options);
         let url = '';
         let response;
-        const detailedMessage = (error, response, url) => {
-          const requestId = response.headers.get('x-request-id');
-          return `${error}: ${response?.status}, url: ${url.toString()}, x-request-id: ${requestId}`;
-        };
+        let start;
+        let end;
         try {
             options.offerSelectorIds = options.offerSelectorIds.sort();
             url = new URL(settings.wcsURL);
@@ -82,9 +80,11 @@ export function Wcs({ settings }) {
                 url.searchParams.set('currency', options.currency);
             }
 
+            start = Date.now();
             response = await fetch(url.toString(), {
                 credentials: 'omit',
             });
+            end = Date.now();
             if (response.ok) {
                 const data = await response.json();
                 log.debug('Fetched:', options, data);
@@ -133,8 +133,11 @@ export function Wcs({ settings }) {
         if (reject && promises.size) {
             // reject pending promises, their offers weren't provided by WCS
             log.debug('Missing:', { offerSelectorIds: [...promises.keys()] });
+            const requestId = response.headers?.get('x-request-id');
+            const headerDetails = requestId ? `x-request-id: ${requestId}` : '';
+            const errorDetails = `${message}: ${response?.status}, url: ${url.toString()}${headerDetails}, start: ${start}, end: ${end}`;
             promises.forEach((promise) => {
-                promise.reject(new Error(detailedMessage(message, response, url)));
+                promise.reject(new Error(errorDetails));
             });
         }
     }

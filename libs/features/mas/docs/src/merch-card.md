@@ -152,36 +152,51 @@ The reason is that some merch cards are resolved very quickly and event could di
         margin-top: 16px;
     }
 </style>
+
+<button id="btnRefreshFragments">Refresh Fragments</button>
 <script type="module">
-    {
-        const logErrors = document.getElementById('log-errors');
+    { 
         const logReady = document.getElementById('log-mas-ready');
         const message = (e, type) => {
           const id = e.target.getAttribute('id') || e.target.getAttribute('data-wcs-osi');
           const detail = e.detail ? `: ${e.detail}` : '';
           return `'${type}' on ${e.target.nodeName} #${id}${detail}`;
         };
-        document.addEventListener('mas:failed', (e) => {
-            log(logErrors, message(e, 'mas:failed'));
+        // WCS request failed
+        document.addEventListener('mas:failed', (event) => {
+            log(document.getElementById('log-mas-failed'), message(event, 'mas:failed'));
         });
-        document.addEventListener('aem:ready', (e) =>
-            log(logReady, message(e, 'aem:ready')),
+        // Freyja request failed
+        document.addEventListener('aem:error', (event) =>
+            log(document.getElementById('log-aem-error'), message(event, 'aem:error')),
         );
-        document.addEventListener('aem:error', (e) =>
-            log(logErrors, message(e, 'aem:error')),
+        // Error in merch-card (WCS or Frejya request, or any other issue)
+        document.addEventListener('mas:error', (event) => {
+            event.target.classList.remove('ready');
+            event.target.classList.add('error');
+            log(document.getElementById('log-mas-error'), message(event, 'mas:error'));
+        });
+        // success events
+        document.addEventListener('aem:ready', (event) =>
+            log(logReady, message(event, 'aem:ready')),
         );
-        document.addEventListener('mas:ready', (e) => {
-            e.target.classList.add('ready');
-            e.target.classList.remove('error');
-            log(logReady, message(e, 'mas:ready'));
-        });
-        document.addEventListener('mas:error', (e) => {
-            e.target.classList.remove('ready');
-            e.target.classList.add('error');
-            log(logErrors, message(e, 'mas:error'));
-        });
+        document.addEventListener('mas:ready', (event) => {
+            event.target.classList.add('ready');
+            event.target.classList.remove('error');
+            log(logReady, message(event, 'mas:ready'));
+        }); 
+        
+        // refresh btn 
+        document
+          .getElementById('btnRefreshFragments')
+          .addEventListener('click', () => {
+              document
+                  .querySelector('mas-commerce-service')
+                  .refreshFragments();
+          });
     }
 </script>
+
 <p>Valid card</p>
 <merch-card class="event-demo" id="valid-card">
     <aem-fragment
@@ -201,23 +216,18 @@ The reason is that some merch cards are resolved very quickly and event could di
     <aem-fragment fragment="wrong-fragment-id" id="invalid-fragment-id"></aem-fragment>
 </merch-card>
 
-<button id="btnRefreshFragments">Refresh Fragments</button>
-
-<script type="module">
-    {
-      document
-              .getElementById('btnRefreshFragments')
-              .addEventListener('click', () => {
-                  document
-                      .querySelector('mas-commerce-service')
-                      .refreshFragments();
-              });
-    }
-</script>
 ```
 
-### Error log
-```html {#log-errors}
+### mas:failed log
+```html {#log-mas-failed}
+```
+
+### aem:error log
+```html {#log-aem-error}
+```
+
+### mas:error log
+```html {#log-mas-error}
 ```
 
 ### mas:ready log

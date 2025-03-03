@@ -27,13 +27,15 @@ export async function getFragmentById(baseUrl, id, author, headers) {
     const endpoint = author
         ? `${baseUrl}/adobe/sites/cf/fragments/${id}`
         : `${baseUrl}/adobe/sites/fragments/${id}`;
+    const start = Date.now();
     const response = await fetch(endpoint, {
         cache: 'default',
         credentials: 'omit',
         headers,
     }).catch((e) => fail(e.message));
+    const end = Date.now();
     if (!response?.ok) {
-        fail(`${response.status} ${response.statusText}`);
+        fail(`${response.status} ${response.statusText}, start: ${start}, end: ${end}`);
     }
     return response.json();
 }
@@ -161,18 +163,18 @@ export class AemFragment extends HTMLElement {
             })
             .catch((e) => {
                 /* c8 ignore next 3 */
-                this.#fail('Network error: failed to load fragment');
+                this.#fail(e.message);
                 this.#readyPromise = null;
                 return false;
             });
         this.#readyPromise;
     }
 
-    #fail(error) {
+    #fail(errorMessage) {
         this.classList.add('error');
         this.dispatchEvent(
             new CustomEvent(EVENT_AEM_ERROR, {
-                detail: error,
+                detail: errorMessage,
                 bubbles: true,
                 composed: true,
             }),

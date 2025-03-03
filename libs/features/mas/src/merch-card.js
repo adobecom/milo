@@ -340,7 +340,7 @@ export class MerchCard extends LitElement {
     // custom methods
     async handleAemFragmentEvents(e) {
         if (e.type === EVENT_AEM_ERROR) {
-            this.#fail('AEM fragment cannot be loaded');
+            this.#fail(`AEM fragment cannot be loaded: ${e.detail}`);
         }
         if (e.type === EVENT_AEM_LOAD) {
             if (e.target.nodeName === 'AEM-FRAGMENT') {

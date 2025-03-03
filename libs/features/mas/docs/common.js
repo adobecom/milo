@@ -34,5 +34,5 @@ const init = () => {
   masCommerceService.setAttribute('lana-tags', 'ccd');
   document.head.appendChild(masCommerceService);
 }
-window.log = (target, ...messages) =>  (target.textContent = `${messages.join(' ')}${target.textContent}`);
+window.log = (target, ...messages) =>  (target.innerHTML =  `${messages.join(' ')}<br>${target.innerHTML}`);
 export { init };
