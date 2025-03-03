@@ -1527,7 +1527,7 @@ export async function loadArea(area = document) {
   }
   textString += `navigator.userAgent: ${navigator.userAgent}</br>
   isAndroid: ${navigator.userAgent.includes('Android') || isGalaxyTab()}</br>
-  mobile-device(excluding safariIpad test: ${('/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i').test(navigator.userAgent) || isGalaxyTab()},
+  mobile-device(excluding safariIpad test: ${/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i.test(navigator.userAgent) || isGalaxyTab()},
   !navigator.userAgent.includes('X11'): ${!navigator.userAgent.includes('X11')};`;
   text.innerHTML = textString;
   const main = document.querySelector('main');
