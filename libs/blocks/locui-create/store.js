@@ -226,10 +226,10 @@ export async function fetchDraftProject(projectKey) {
     );
     const resJson = await response.json();
     if (response.ok) {
-      const projectNameProfix = lang ? `-${lang}` : ''
+      const projectNameProfix = lang ? `-${lang}` : '';
       setProject({
         type: (resJson.projectType === 'rollout' || userWorkflowType.value === 'promoteRollout') ? 'rollout' : 'localization',
-        name: `${resJson.projectName}${userWorkflowType.value === 'promoteRollout' ? `-rollout` : ''}${projectNameProfix}`,
+        name: `${resJson.projectName}${userWorkflowType.value === 'promoteRollout' ? '-rollout' : ''}${projectNameProfix}`,
         htmlFlow: resJson.settings?.useHtmlFlow,
         editBehavior: resJson.settings?.regionalEditBehaviour,
         urls: resJson.urls,
