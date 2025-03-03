@@ -64,10 +64,10 @@ test.describe('MAS Docs feature test suite', () => {
       await expect(masFailedLog).toContainText(/'mas:failed' on A #wrongosi: Error: Bad WCS request: 404, url:(.*), start: \d{13}, end: \d{13}/);
 
       const aemErrorLog = page.locator('#log-aem-error');
-      await expect(aemErrorLog).toContainText(/'aem:error' on AEM-FRAGMENT #invalid-fragment-id: Failed to get fragment: 400 , start: \d{13}, end: \d{13}/);
+      await expect(aemErrorLog).toContainText(/'aem:error' on AEM-FRAGMENT #invalid-fragment-id: Failed to get fragment: status: 400 , url: (.*), start: \d{13}, end: \d{13}/);
 
       const masErrorLog = page.locator('#log-mas-error');
-      await expect(masErrorLog).toContainText(/'mas:error' on MERCH-CARD #invalid-fragment-id: AEM fragment cannot be loaded: Failed to get fragment: 400 , start: \d{13}, end: \d{13}/);
+      await expect(masErrorLog).toContainText(/'mas:error' on MERCH-CARD #invalid-fragment-id: AEM fragment cannot be loaded: Failed to get fragment: status: 400 , url: (.*), start: \d{13}, end: \d{13}/);
     });
 
     await test.step('step-3: Verify refresh btn', async () => {

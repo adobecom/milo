@@ -32,10 +32,10 @@ export async function getFragmentById(baseUrl, id, author, headers) {
         cache: 'default',
         credentials: 'omit',
         headers,
-    }).catch((e) => fail(e.message));
+    }).catch((e) => fail(`Error fetching fragment ${endpoint}: ${e.message}`));
     const end = Date.now();
     if (!response?.ok) {
-        fail(`${response.status} ${response.statusText}, start: ${start}, end: ${end}`);
+        fail(`status: ${response.status} ${response.statusText}, url: ${endpoint}, start: ${start}, end: ${end}`);
     }
     return response.json();
 }

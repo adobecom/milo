@@ -198,7 +198,7 @@ runTests(async () => {
                 'notfound',
                 false,
             );
-            await expect(promise).to.be.rejectedWith('Failed to get fragment: 404 Fragment not found');
+            await expect(promise).to.be.rejectedWith(/Failed to get fragment: status: 404 Fragment not found/);
         });
 
         it('fetches fragment from author endpoint', async () => {

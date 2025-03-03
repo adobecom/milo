@@ -40,6 +40,7 @@ export class MasElement {
     
     constructor(wrapperElement) {
       this.wrapperElement = wrapperElement;
+      this.log = Log.module('mas-element');
     }
 
     update() {      
@@ -167,7 +168,6 @@ export class MasElement {
         if (!this.wrapperElement.isConnected || !useService()) return;
         // Batch consecutive updates
         if (this.timer) return;
-        const log = Log.module('mas-element');
         // Save current state to restore it if needed
         const { error, options, state, value, version } = this;
         // Inform `onceSettled` that `render` can follow soon
@@ -205,7 +205,7 @@ export class MasElement {
                         this.notify();
                     }
                 } catch (error) {
-                    log.error(`Failed to render mas-element: `, error);
+                    this.log.error(`Failed to render mas-element: `, error);
                     this.toggleFailed(this.version, error, options);
                 }
             }
