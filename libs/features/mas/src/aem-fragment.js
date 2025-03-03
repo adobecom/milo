@@ -100,7 +100,7 @@ export class AemFragment extends HTMLElement {
     #author = false;
 
     static get observedAttributes() {
-        return [ATTRIBUTE_FRAGMENT, ATTRIBUTE_AUTHOR];
+        return [ATTRIBUTE_FRAGMENT, ATTRIBUTE_AUTHOR, 'type'];
     }
 
     constructor() {
@@ -184,12 +184,18 @@ export class AemFragment extends HTMLElement {
         this.#data = null;
         let fragment = cache.get(this.#fragmentId);
         if (!fragment) {
-            fragment = await getFragmentById(
-                baseUrl,
-                this.#fragmentId,
-                this.#author,
-                this.#ims ? headers : undefined,
-            );
+            const type = this.getAttribute('type');
+            if (type === 'collection') {
+                fragment = await getIOFragmentById(this.#fragmentId, this.#ims ? headers : undefined);
+            }
+            else {
+                fragment = await getFragmentById(
+                    baseUrl,
+                    this.#fragmentId,
+                    this.#author,
+                    this.#ims ? headers : undefined,
+                );
+            }
             cache.add(fragment);
         }
         this.#rawData = fragment;

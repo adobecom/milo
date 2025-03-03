@@ -122,6 +122,10 @@ export class MerchCardCollection extends LitElement {
             ${this.footer}`;
     }
 
+    checkReady() {
+        return Promise.resolve;
+    }
+
     updated(changedProperties) {
         // cards are not added yet.
         if (!this.querySelector('merch-card')) return;
@@ -197,11 +201,54 @@ export class MerchCardCollection extends LitElement {
             this.startDeeplink();
         }
         this.sidenav = document.querySelector('merch-sidenav');
+        const fragmentId = this.getAttribute('fragment');
+        if (fragmentId) this.populateFromFragment(fragmentId);
     }
 
     disconnectedCallback() {
         super.disconnectedCallback();
         this.stopDeeplink?.();
+    }
+
+    async populateFromFragment(id) {
+        this.removeAttribute('fragment');
+        const endpoint = `https://www.stage.adobe.com/mas/io/fragment?id=${id}&api_key=nico&locale=fr_FR`
+        const response = await fetch(endpoint).catch((e) => console.log(e.message));
+        if (!response?.ok) {
+            console.log(`${response.status} ${response.statusText}`);
+        }
+        const data = await response.json();
+
+        let cache;
+        await customElements.whenDefined('aem-fragment').then(() => {
+            cache = document.createElement('aem-fragment').cache;
+        });
+
+        const fragments = Object.keys(data.fields.cards).map(key => data.fields.cards[key]);
+        cache.add(...fragments);
+
+        for (const category of data.fields.categories) {
+
+        }
+
+        for (const fragment of fragments) {
+            const merchCard = document.createElement('merch-card');
+            merchCard.setAttribute('consonant', '');
+            merchCard.setAttribute('style', '');
+            const aemFragment = document.createElement('aem-fragment');
+            aemFragment.setAttribute('fragment', fragment.id);
+            merchCard.append(aemFragment);
+            merchCard.filters = {};
+            for (const category of data.fields.categories) {
+                const index = category.cards.indexOf(fragment.id);
+                if (index === -1) continue;
+                const name = category.label.toLowerCase();
+                merchCard.filters[name] = { order: index + 1 };
+            }
+            this.append(merchCard);
+        }
+
+        this.displayResult = true;
     }
 
     get header() {
