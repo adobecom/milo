@@ -55,6 +55,7 @@ export class MerchCard extends LitElement {
         actionMenu: { type: Boolean, attribute: 'action-menu' },
         customHr: { type: Boolean, attribute: 'custom-hr' },
         consonant: { type: Boolean, attribute: 'consonant' },
+        failed: { type: Boolean, attribute: 'failed', reflect: true },
         spectrum: { type: String, attribute: 'spectrum' } /* css|swc */,
         detailBg: { type: String, attribute: 'detail-bg' },
         secureLabel: { type: String, attribute: 'secure-label' },
@@ -127,6 +128,7 @@ export class MerchCard extends LitElement {
 
     constructor() {
         super();
+        this.failed = false;
         this.filters = {};
         this.types = '';
         this.selected = false;
@@ -346,7 +348,6 @@ export class MerchCard extends LitElement {
     // custom methods
     async handleAemFragmentEvents(e) {
         if (e.type === EVENT_AEM_ERROR) {
-            this.log.error(e.detail);
             this.#fail(`AEM fragment cannot be loaded: ${e.detail}`);
         }
         if (e.type === EVENT_AEM_LOAD) {
@@ -358,7 +359,10 @@ export class MerchCard extends LitElement {
         }
     }
 
-    #fail(error) {
+    #fail(error, dispatch = true) {
+        this.log.error(error);
+        this.failed = true;
+        if (!dispatch) return;
         this.dispatchEvent(
             new CustomEvent(EVENT_MAS_ERROR, {
                 detail: error,
@@ -382,7 +386,11 @@ export class MerchCard extends LitElement {
             setTimeout(() => resolve('timeout'), MERCH_CARD_LOAD_TIMEOUT),
         );
 
-        await this.aemFragment?.updateComplete;
+        const aemLoad = await this.aemFragment?.updateComplete;
+        if (aemLoad === false) {
+            this.#fail('AEM fragment cannot be loaded', false);
+            return;
+        }
         const result = await Promise.race([successPromise, timeoutPromise]);
         if (result === true) {
             performance.mark(
