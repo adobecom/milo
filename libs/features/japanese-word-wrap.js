@@ -68,6 +68,8 @@ function isFirefox() {
  * Check if a word wrap has been applied to an element.
  */
 export function isWordWrapApplied(element) {
+  console.log('element.classList', element.classList);
+  
   return !element.classList.contains('con-button') && !!element.querySelector('wbr');
 }
 
