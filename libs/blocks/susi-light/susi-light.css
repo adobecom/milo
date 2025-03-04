@@ -1,10 +1,42 @@
-.susi-light-container {
+.susi-light {
   height: calc(100vh - calc(var(--feds-height-nav) + 67px) );
   background-size: cover;
+  display:flex;
+  gap: 166px;
+  align-items: center;
+}
+
+.susi-product-logo {
+  width: 44px;
+  height: 44px;
+}
+
+.susi-product-title {
+  display: inline-block;
+  color: var(--Content-Neutral-default, #222);
+  font-family: "Adobe Clean";
+  font-size: 30px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 130%; /* 39px */
+  margin: 0 0 12px 10px;
+}
+
+.susi-product-tagline {
+  color: var(--Content-Neutral-default, #222);
+  font-family: "Adobe Clean";
+  font-size: 22px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 130%; /* 28.6px */
 }
 
 .susi-light-wrapper {
-  padding: 10px;
+  padding: 32px;
   background-color: white;
-  width: fit-content;
+  height: 500px;
+  border-radius: 16px;
+  width: 400px;
+  box-sizing: border-box;
+  margin-left: 12.5%;
 }

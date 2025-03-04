@@ -1,7 +1,9 @@
 import { loadScript, createTag } from '../../utils/utils.js';
 
 export default async function init(el) {
-  const bgImg = el.querySelectorAll(':scope > div')[0].textContent?.trim();
+  const children = el.querySelectorAll(':scope > div');
+  const bgImg = children[0].textContent?.trim();
+  el.style.backgroundImage = `url(${bgImg})`;
   el.innerHTML = '';
   const sentry = createTag('susi-sentry-light');
   sentry.setAttribute('stage', 'true');
@@ -18,18 +20,21 @@ export default async function init(el) {
   const lib = 'https://auth-light.identity-stage.adobe.com/sentry/wrapper.js';
   await loadScript(lib);
 
-  const susiContainer = createTag('div', { class: 'susi-light-container' });
-  susiContainer.style.backgroundImage = `url(${bgImg})`;
   const susiWrapper = createTag('div', { class: 'susi-light-wrapper' });
   susiWrapper.appendChild(sentry);
 
-  // const productInfo = createTag('div', { class: 'susi-product-info' });
-  // const logo = createTag('div', { class: 'susi-product-logo' });
-  // const title = createTag('div', { class: 'susi-product-title' });
-  // const tagline = createTag('div', { class: 'susi-product-tagline' });
-  susiWrapper.appendChild(sentry);
+  const ps = children[1].querySelectorAll(':scope p');
+  const productInfo = createTag('div', { class: 'susi-product-info' });
+  const logoURL = ps[0].querySelector('img')?.getAttribute('src');
+  const logo = createTag('img', { class: 'susi-product-logo', src: logoURL });
+  const titleText = ps[1].textContent;
+  const title = createTag('span', { class: 'susi-product-title' }, titleText);
+  const taglineText = ps[2].textContent;
+  const tagline = createTag('div', { class: 'susi-product-tagline' }, taglineText);
+  productInfo.appendChild(logo);
+  productInfo.appendChild(title);
+  productInfo.appendChild(tagline);
 
-  susiContainer.appendChild(susiWrapper);
-
-  el.appendChild(susiContainer);
+  el.appendChild(susiWrapper);
+  el.appendChild(productInfo);
 }
