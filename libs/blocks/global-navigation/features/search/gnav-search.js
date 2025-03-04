@@ -5,7 +5,6 @@ import {
   trigger,
   closeAllDropdowns,
   logErrorFor,
-  lanaLog,
 } from '../../utilities/utilities.js';
 import { replaceKeyArray } from '../../../../features/placeholders.js';
 import { getConfig, getFedsPlaceholderConfig } from '../../../../utils/utils.js';
@@ -30,12 +29,11 @@ class Search {
     this.icon = config.icon;
     this.trigger = config.trigger;
     this.parent = this.trigger.closest('.feds-nav-wrapper');
-    lanaLog({ message: `Search integrated on URL : ${window.location.href}`, tags: 'gnav-search', errorType: 'info' });
     const observer = new MutationObserver(() => {
       this.clearSearchForm();
     });
     observer.observe(this.trigger, { attributeFilter: ['aria-expanded'] });
-    logErrorFor(this.init.bind(this), 'Search init has failed', 'gnav-search', 'error');
+    logErrorFor(this.init.bind(this), 'Search init has failed', 'errorType=error,module=gnav-search');
   }
 
   async init() {

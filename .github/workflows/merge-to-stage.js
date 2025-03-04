@@ -7,7 +7,6 @@ const {
 
 // Run from the root of the project for local testing: node --env-file=.env .github/workflows/merge-to-stage.js
 const PR_TITLE = '[Release] Stage to Main';
-const SEEN = {};
 const REQUIRED_APPROVALS = process.env.REQUIRED_APPROVALS ? Number(process.env.REQUIRED_APPROVALS) : 2;
 const MAX_MERGES = process.env.MAX_PRS_PER_BATCH ? Number(process.env.MAX_PRS_PER_BATCH) : 8;
 let existingPRCount = 0;
@@ -132,18 +131,6 @@ const merge = async ({ prs, type }) => {
   for await (const { number, files, html_url, title } of prs) {
     try {
       if (mergeLimitExceeded()) return;
-      const fileOverlap = files.find((file) => SEEN[file]);
-      if (fileOverlap) {
-        commentOnPR(
-          `Skipped ${number}: "${title}" due to file "${fileOverlap}" overlap. Merging will be attempted in the next batch`,
-          number,
-        );
-        continue;
-      }
-      if (type !== LABELS.zeroImpact) {
-        files.forEach((file) => (SEEN[file] = true));
-      }
-
       if (!process.env.LOCAL_RUN) {
         await github.rest.pulls.merge({
           owner,
@@ -166,7 +153,6 @@ const merge = async ({ prs, type }) => {
       ).catch(console.error);
       await new Promise((resolve) => setTimeout(resolve, 5000));
     } catch (error) {
-      files.forEach((file) => (SEEN[file] = false));
       commentOnPR(`Error merging ${number}: ${title} ${error.message}`, number);
     }
   }
@@ -177,10 +163,6 @@ const getStageToMainPR = () => github.rest.pulls
   .then(({ data } = {}) => data.find(({ title } = {}) => title === PR_TITLE))
   .then((pr) => pr && addLabels({ pr, github, owner, repo }))
   .then((pr) => pr && addFiles({ pr, github, owner, repo }))
-  .then((pr) => {
-    pr?.files.forEach((file) => (SEEN[file] = true));
-    return pr;
-  });
 
 const openStageToMainPR = async () => {
   const { data: comparisonData } = await github.rest.repos.compareCommits({

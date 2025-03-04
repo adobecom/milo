@@ -141,7 +141,7 @@ export async function decorateBlockBg(block, node, { useHandleFocalpoint = false
     const allVP = [['mobile-only'], ['tablet-only'], ['desktop-only']];
     const viewports = childCount === 2 ? binaryVP : allVP;
     [...node.children].forEach((child, i) => {
-      if (childCount > 1) child.classList.add(...viewports[i]);
+      if (childCount > 1 && i < viewports.length) child.classList.add(...viewports[i]);
       const pic = child.querySelector('picture');
       if (useHandleFocalpoint && pic
         && (child.childElementCount === 2 || child.textContent?.trim())) {

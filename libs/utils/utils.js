@@ -1250,8 +1250,9 @@ async function loadPostLCP(config) {
 
   const georouting = getMetadata('georouting') || config.geoRouting;
   if (georouting === 'on') {
+    const jsonPromise = fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
     const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
-    await loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
+    await loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle, jsonPromise);
   }
   const header = document.querySelector('header');
   if (header) {
