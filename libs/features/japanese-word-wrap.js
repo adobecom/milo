@@ -68,9 +68,14 @@ function isFirefox() {
  * Check if a word wrap has been applied to an element.
  */
 export function isWordWrapApplied(element) {
-  console.log('element.classList', element.classList);
-  
-  return !element.classList.contains('con-button') && !!element.querySelector('wbr');
+  return !!element.querySelector('wbr');
+}
+
+export function ifWbrCtaRemove(element) {
+  if (!element.classList.contains('con-button')) {
+    element.querySelectorAll('wbr').forEach((wbr) => wbr.remove());
+  }
+  return !element.classList.contains('con-button');
 }
 
 /**
@@ -138,6 +143,7 @@ export async function applyJapaneseLineBreaks(config, options = {}) {
       || (isFirefox() && hasFlexOrGrid(el))
     ) return;
     parser.applyElement(el, { threshold: budouxThres });
+    ifWbrCtaRemove(el);
   });
 
   if (bwEnabled) {
