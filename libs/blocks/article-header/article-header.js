@@ -182,6 +182,15 @@ function decorateFigure(el) {
   el.lastElementChild.remove();
 }
 
+function decorateMedia(el) {
+  if (el.querySelector('picture')) {
+    decorateFigure(el);
+    return;
+  }
+
+  el.classList.add('article-feature-video');
+}
+
 export default async function init(blockEl) {
   const childrenEls = Array.from(blockEl.children);
   const categoryContainer = childrenEls[0];
@@ -214,8 +223,8 @@ export default async function init(blockEl) {
   const shareBlock = await buildSharing();
   bylineContainer.append(shareBlock);
 
-  const featureImgContainer = childrenEls[3];
-  decorateFigure(featureImgContainer);
+  const mediaContainer = childrenEls[3];
+  decorateMedia(mediaContainer);
 
   document.addEventListener('milo:deferred', () => updateShareText(shareBlock));
 }
