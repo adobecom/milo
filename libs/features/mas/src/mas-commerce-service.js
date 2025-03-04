@@ -146,7 +146,7 @@ export class MasCommerceService extends HTMLElement {
         });
         setTimeout(() => {
             this.logFailedRequests();
-        }, 5000);
+        }, 10000);
     }
 
     connectedCallback() {

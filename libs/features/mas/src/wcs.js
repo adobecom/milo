@@ -66,6 +66,8 @@ export function Wcs({ settings }) {
         // Create a map of unresolved promises to track which ones need fallback
         const unresolvedPromises = new Map(promises);
 
+        let start;
+        let duration;
         try {
             url = new URL(settings.wcsURL);
             url.searchParams.set(
@@ -91,9 +93,11 @@ export function Wcs({ settings }) {
                 url.searchParams.set('currency', options.currency);
             }
 
+            start = Date.now();
             response = await masFetch(url.toString(), {
                 credentials: 'omit',
             });
+            duration = Date.now() - start;
             if (response.ok) {
                 let offers = [];
                 try {
@@ -133,7 +137,7 @@ export function Wcs({ settings }) {
             log.debug('Missing:', { offerSelectorIds: [...promises.keys()] });
             promises.forEach((promise) => {
                 promise.reject(
-                    new Error(getFetchErrorMessage(message, response, url)),
+                    new Error(getFetchErrorMessage(message, response, url, { start, duration })),
                 );
             });
         }

@@ -228,7 +228,7 @@ runTests(async () => {
                 false,
             );
             await expect(promise).to.be.rejectedWith(
-                'Unexpected Fragment response: 404, url: http://localhost:2023/adobe/sites/fragments/notfound',
+                'Unexpected fragment response: 404, url: http://localhost:2023/adobe/sites/fragments/notfound',
             );
         });
 

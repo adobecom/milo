@@ -23,6 +23,7 @@ import {
 } from './constants.js';
 import { VariantLayout } from './variants/variant-layout.js';
 import { hydrate, ANALYTICS_SECTION_ATTR } from './hydrate.js';
+import { Log } from './log.js';
 
 const MERCH_CARD = 'merch-card';
 const MARK_START_SUFFIX = ':start';
@@ -122,6 +123,7 @@ export class MerchCard extends LitElement {
      * @type {VariantLayout}
      */
     variantLayout;
+    log = undefined;
 
     constructor() {
         super();
@@ -131,6 +133,7 @@ export class MerchCard extends LitElement {
         this.spectrum = 'css';
         this.loading = 'lazy';
         this.handleAemFragmentEvents = this.handleAemFragmentEvents.bind(this);
+        this.log = Log.module('merch-card');
     }
 
     static getFragmentMapping(variant) {
@@ -343,7 +346,8 @@ export class MerchCard extends LitElement {
     // custom methods
     async handleAemFragmentEvents(e) {
         if (e.type === EVENT_AEM_ERROR) {
-            this.#fail('AEM fragment cannot be loaded');
+            this.log.error(e.detail);
+            this.#fail(`AEM fragment cannot be loaded: ${e.detail}`);
         }
         if (e.type === EVENT_AEM_LOAD) {
             if (e.target.nodeName === 'AEM-FRAGMENT') {

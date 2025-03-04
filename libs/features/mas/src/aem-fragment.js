@@ -26,25 +26,27 @@ export async function getFragmentById(baseUrl, id, author, headers) {
     const endpoint = author
         ? `${baseUrl}/adobe/sites/cf/fragments/${id}`
         : `${baseUrl}/adobe/sites/fragments/${id}`;
+    const start = Date.now();
     const response = await masFetch(endpoint, {
         cache: 'default',
         credentials: 'omit',
         headers,
     }).catch((e) => {
         throw new Error(
-            getFetchErrorMessage(
-                'Failed to get fragment',
-                response,
-                endpoint,
-            ),
+            getFetchErrorMessage('Failed to get fragment', response, endpoint, {
+                start,
+                duration: 0,
+            }),
         );
     });
+    const duration = Date.now() - start;
     if (!response?.ok) {
         throw new Error(
             getFetchErrorMessage(
-                'Unexpected Fragment response',
+                'Unexpected fragment response',
                 response,
                 endpoint,
+                { start, duration },
             ),
         );
     }
