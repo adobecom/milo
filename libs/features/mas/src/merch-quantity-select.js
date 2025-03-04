@@ -1,5 +1,6 @@
 import { html, LitElement } from 'lit';
 import { styles } from './merch-quantity-select.css.js';
+import { debounce } from './utils.js';
 
 import { ARROW_DOWN, ARROW_UP, ENTER } from './focus.js';
 import { EVENT_MERCH_QUANTITY_SELECTOR_CHANGE } from './constants.js';
@@ -43,6 +44,7 @@ export class MerchQuantitySelect extends LitElement {
         this.boundKeydownListener = this.handleKeydown.bind(this);
         this.addEventListener('keydown', this.boundKeydownListener);
         window.addEventListener('mousedown', this.handleClickOutside);
+        this.handleKeyupDebounced = debounce(this.handleKeyup.bind(this), 500);
     }
 
     handleKeyup() {
@@ -93,10 +95,9 @@ export class MerchQuantitySelect extends LitElement {
             inputValue > 0 &&
             inputValue !== this.selectedValue
         ) {
-            const adjustedInputValue =
-                this.maxInput && inputValue > this.maxInput
-                    ? this.maxInput
-                    : inputValue;
+            let adjustedInputValue = inputValue;
+            if (this.maxInput && inputValue > this.maxInput) adjustedInputValue = this.maxInput;
+            if (this.min && adjustedInputValue < this.min) adjustedInputValue = this.min;
             this.selectedValue = adjustedInputValue;
             inputField.value = adjustedInputValue;
             this.highlightedIndex = this.options.indexOf(adjustedInputValue);
@@ -210,7 +211,7 @@ export class MerchQuantitySelect extends LitElement {
                     .value="${this.selectedValue}"
                     type="number"
                     @keydown="${this.handleKeydown}"
-                    @keyup="${this.handleKeyup}"
+                    @keyup="${this.handleKeyupDebounced}"
                 />
                 <button class="picker-button" @click="${this.toggleMenu}">
                     <div
