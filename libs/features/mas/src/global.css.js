@@ -250,7 +250,7 @@ merch-card [slot='callout-content'] {
 merch-card [slot='callout-content'] > p {
     background: rgba(203 203 203 / 50%);
     border-radius: var(--consonant-merch-spacing-xxxs);
-    padding: var(--consonant-merch-spacing-xxxs) var(--consonant-merch-spacing-xxxs) var(--consonant-merch-spacing-xxxs) var(--consonant-merch-spacing-xxs);
+    padding: var(--consonant-merch-spacing-xxxs) var(--consonant-merch-spacing-xxs);
     width: fit-content;
     font: normal normal normal var(--consonant-merch-card-callout-font-size)/var(--consonant-merch-card-callout-line-height) var(--body-font-family, 'Adobe Clean');
 }
