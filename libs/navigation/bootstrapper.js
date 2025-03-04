@@ -25,6 +25,7 @@ export default async function bootstrapBlock(initBlock, blockConfig) {
       { key: 'unavComponents', name: 'universal-nav' },
       { key: 'redirect', name: 'adobe-home-redirect' },
       { key: 'mobileGnavV2', name: 'mobile-gnav-v2' },
+      { key: 'footerSource', name: 'footer-source' },
     ];
     metaTags.forEach((tag) => {
       const { key } = tag;

@@ -76,7 +76,16 @@ class Footer {
       shouldDecorateLinks: false,
     });
 
-    if (!this.body) return;
+    if (!this.body) {
+      const error = new Error('Could not create global footer. Content not found!');
+      error.tags = 'global-footer';
+      error.url = url;
+      error.errorType = 'error';
+      lanaLog({ message: error.message, ...error });
+      const { onFooterError } = getConfig();
+      onFooterError?.(error);
+      return;
+    }
 
     const [region, social] = ['.region-selector', '.social'].map((selector) => this.body.querySelector(selector));
     const [regionParent, socialParent] = [region?.parentElement, social?.parentElement];
@@ -112,8 +121,9 @@ class Footer {
 
     const mepMartech = mep?.martech || '';
     this.block.setAttribute('daa-lh', `gnav|${getExperienceName()}|footer${mepMartech}`);
-
     this.block.append(this.elements.footer);
+    const { onFooterReady } = getConfig();
+    onFooterReady?.();
   }, 'Failed to decorate footer content', 'global-footer', 'error');
 
   loadMenuLogic = async () => {
