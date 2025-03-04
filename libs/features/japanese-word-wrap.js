@@ -73,9 +73,10 @@ export function isWordWrapApplied(element) {
 
 export function ifWbrCtaRemove(element) {
   if (!element.classList.contains('con-button')) {
-    element.querySelectorAll('wbr').forEach((wbr) => wbr.remove());
+    return;
   }
-  return !element.classList.contains('con-button');
+
+  element.querySelectorAll('wbr').forEach((wbr) => wbr.remove());
 }
 
 /**
