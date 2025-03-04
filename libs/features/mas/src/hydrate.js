@@ -294,6 +294,7 @@ function createSpectrumSwcButton(cta, aemFragmentMapping, isOutline, variant) {
             variant,
             tabIndex: 0,
             size: aemFragmentMapping.ctas.size ?? 'm',
+            ...(cta.dataset.analyticsId && { 'data-analytics-id': cta.dataset.analyticsId }),
         },
         cta.innerHTML,
     );
@@ -366,8 +367,8 @@ export function processAnalytics(fields, merchCard) {
     if (!cardAnalyticsId) return;
     merchCard.setAttribute(ANALYTICS_SECTION_ATTR, cardAnalyticsId);
     const elements = [
-      ...merchCard.shadowRoot.querySelectorAll(`a[data-analytics-id],button[data-analytics-id],sp-button[data-analytics-id]`),
-      ...merchCard.querySelectorAll(`a[data-analytics-id],button[data-analytics-id],sp-button[data-analytics-id]`)
+      ...merchCard.shadowRoot.querySelectorAll(`a[data-analytics-id],button[data-analytics-id]`),
+      ...merchCard.querySelectorAll(`a[data-analytics-id],button[data-analytics-id]`)
     ];
     elements.forEach((el, index) => {
         el.setAttribute(
