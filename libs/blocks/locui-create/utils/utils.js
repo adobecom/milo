@@ -6,7 +6,9 @@ import {
   locSelected,
   locales as stLocales,
   project as stProject,
+  userWorkflowType,
 } from '../store.js';
+import { USER_WORKFLOW_TYPE } from './constant.js';
 
 export function processLocaleData(localeData) {
   const processedLocales = localeData.locales.data
@@ -95,19 +97,28 @@ export function setSelectedLocalesAndRegions() {
   locSelected.value = { selectedLocale, activeLocales };
 }
 
-export function getLanguageDetails(lang) {
-  const langDetails = stLocales.value?.find(
-    ({ languagecode }) => languagecode.toLowerCase() === lang.toLowerCase(),
-  ) ?? {};
-  return [
-    {
+export function getLanguageDetails(langCode, languages = {}) {
+  if (langCode) {
+    const langDetails = stLocales.value?.find(
+      ({ languagecode }) => languagecode.toLowerCase() === langCode.toLowerCase(),
+    ) ?? {};
+    return [
+      {
+        action: 'Rollout',
+        langCode: langDetails.languagecode,
+        language: langDetails.language,
+        locales: langDetails.livecopies?.split(','),
+        workflow: '',
+      },
+    ];
+  } else if (userWorkflowType.value === USER_WORKFLOW_TYPE.promote_rollout) {
+    return languages.map((language) => ({
+      ...language,
       action: 'Rollout',
-      langCode: langDetails.languagecode,
-      language: langDetails.language,
-      locales: langDetails.livecopies?.split(','),
-      workflow: '',
-    },
-  ];
+    }));
+  }
+
+  return languages ?? [];
 }
 
 export function getProjectByParams(searchParams) {

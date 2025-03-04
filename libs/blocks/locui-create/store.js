@@ -2,7 +2,7 @@ import { signal } from '../../deps/htm-preact.js';
 import login from '../../tools/sharepoint/login.js';
 import { accessToken } from '../../tools/sharepoint/state.js';
 import { origin } from '../locui/utils/franklin.js';
-import { LOCALES, LOCALE_GROUPS, TRANSCREATION_WORKFLOW } from './utils/constant.js';
+import { LOCALES, LOCALE_GROUPS, TRANSCREATION_WORKFLOW, USER_WORKFLOW_TYPE } from './utils/constant.js';
 import {
   processLocaleData,
   createPayload,
@@ -226,34 +226,23 @@ export async function fetchDraftProject(projectKey) {
     );
     const resJson = await response.json();
     if (response.ok) {
-      const projectNameProfix = lang ? `-${lang}` : '';
-      let languages;
-      if (lang) {
-        languages = getLanguageDetails(lang);
-      } else if (userWorkflowType.value === 'promoteRollout') {
-        languages = resJson?.languages.map((language) => ({
-          ...language,
-          action: 'Rollout',
-        }));
-      } else {
-        languages = resJson.languages ?? [];
-      }
+      const projectNameSuffix = `${userWorkflowType.value === USER_WORKFLOW_TYPE.promote_rollout ? '-rollout' : ''}${lang ? `-${lang}` : ''}`;
       setProject({
-        type: (resJson.projectType === 'rollout' || userWorkflowType.value === 'promoteRollout') ? 'rollout' : 'localization',
-        name: `${resJson.projectName}${userWorkflowType.value === 'promoteRollout' ? '-rollout' : ''}${projectNameProfix}`,
+        type: (resJson.projectType === 'rollout' || userWorkflowType.value === USER_WORKFLOW_TYPE.promote_rollout) ? 'rollout' : 'localization',
+        name: `${resJson.projectName}${projectNameSuffix}`,
         htmlFlow: resJson.settings?.useHtmlFlow,
         editBehavior: resJson.settings?.regionalEditBehaviour,
         urls: resJson.urls,
         fragments: [],
-        languages,
+        languages: getLanguageDetails(lang, resJson.languages),
       });
       projectInfo.value = {
         ...projectInfo.value,
         projectKey,
       };
-      projectCreated.value = (userWorkflowType.value !== 'promoteRollout');
-      if (userWorkflowType.value !== 'promoteRollout') {
-        setUserWorkflowType('edit');
+      projectCreated.value = (userWorkflowType.value !== USER_WORKFLOW_TYPE.promote_rollout);
+      if (userWorkflowType.value !== USER_WORKFLOW_TYPE.promote_rollout) {
+        setUserWorkflowType(USER_WORKFLOW_TYPE.edit);
       }
       error = '';
     }
