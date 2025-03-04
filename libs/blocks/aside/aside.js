@@ -85,7 +85,10 @@ function formatPromoButton(el) {
   el.querySelectorAll('.action-area').forEach((aa) => {
     aa.querySelectorAll('.con-button').forEach((btn) => {
       btn.classList.add('button-l');
-      btn.querySelectorAll('wbr').forEach((wbr) => wbr.remove());
+      setTimeout(() => {
+        btn.querySelectorAll('wbr').forEach((wbr) => wbr.remove());
+      }, 1000);
+
       if (!el.classList.contains('popup')) return;
       if (!btn.classList.contains('outline')) btn.classList.add('fill');
     });
