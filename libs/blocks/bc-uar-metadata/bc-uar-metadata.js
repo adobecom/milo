@@ -18,23 +18,6 @@ async function loadProductMetadata(path = '/libs/blocks/bc-uar-metadata/product-
   }
 }
 
-// Function to handle JSON file uploads
-async function handleJsonFileUpload(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        const jsonData = JSON.parse(event.target.result);
-        resolve(jsonData);
-      } catch (error) {
-        reject(new Error('Invalid JSON file'));
-      }
-    };
-    reader.onerror = () => reject(new Error('Error reading file'));
-    reader.readAsText(file);
-  });
-}
-
 // Default product template with all required fields based on the provided example
 const DEFAULT_PRODUCT_TEMPLATE = {
   title: '',
@@ -285,36 +268,6 @@ const App = () => {
   // Add this function to handle closing the template modal
   const handleCloseTemplate = () => {
     setShowTemplate(false);
-  };
-
-  // Add these new handlers
-  const handleFileUpload = async (e) => {
-    try {
-      const file = e.target.files[0];
-      if (!file) return;
-      const jsonData = await handleJsonFileUpload(file);
-      setMetadata(jsonData);
-      setSaveStatus('saved');
-      alert('JSON file successfully loaded');
-    } catch (error) {
-      console.error('Error uploading JSON:', error);
-      alert(`Error uploading JSON: ${error.message}`);
-    }
-  };
-
-  const handleJsonPaste = () => {
-    const jsonText = prompt('Paste your JSON data here:');
-    if (!jsonText) return;
-
-    try {
-      const jsonData = JSON.parse(jsonText);
-      setMetadata(jsonData);
-      setSaveStatus('saved');
-      alert('JSON data successfully loaded');
-    } catch (error) {
-      console.error('Error parsing JSON:', error);
-      alert(`Error parsing JSON: ${error.message}`);
-    }
   };
 
   const renderProductEditor = () => {
@@ -766,27 +719,6 @@ const App = () => {
     `;
   };
 
-  // Update the product actions section to include upload/paste buttons
-  const renderProductActions = () => html`
-      <div class="product-actions">
-        <button class="action-button add-product" onClick=${handleAddProduct}>Add Product</button>
-        <button class="action-button remove-product" onClick=${handleRemoveProduct} disabled=${!selectedProduct}>Remove Product</button>
-        <button class="action-button export-json" onClick=${handleExportJSON}>Export JSON</button>
-        <button class="action-button save-data" onClick=${handleSaveData}>Save Data</button>
-        <button class="action-button show-template" onClick=${handleShowTemplate}>Show Template</button>
-        <div class="json-import-actions">
-          <label class="action-button upload-json">
-            Upload JSON
-            <input type="file" accept=".json" onChange=${handleFileUpload} style="display: none;" />
-          </label>
-          <button class="action-button paste-json" onClick=${handleJsonPaste}>Paste JSON</button>
-        </div>
-        <div class="save-status ${saveStatus.status}">
-          ${saveStatus.message}
-        </div>
-      </div>
-    `;
-
   if (loading) {
     return html`<div class="loading">Loading product data...</div>`;
   }
@@ -809,8 +741,34 @@ const App = () => {
             `)}
           </select>
           
-          ${renderProductActions()}
+          <div class="product-actions">
+            <button class="action-button add-product" onClick=${handleAddProduct}>
+              Add Product
+            </button>
+            <button 
+              class="action-button remove-product" 
+              onClick=${handleRemoveProduct}
+              disabled=${!selectedProduct}
+            >
+              Remove Product
+            </button>
+            <button class="action-button export-json" onClick=${handleExportJSON}>
+              Export JSON
+            </button>
+            <button class="action-button save-data" onClick=${handleSaveData}>
+              Save Changes
+            </button>
+            <button class="action-button show-template" onClick=${handleShowTemplate}>
+              Show Template
+            </button>
+          </div>
         </div>
+        
+        ${saveStatus && html`
+          <div class=${`save-status ${saveStatus}`}>
+            ${saveStatus === 'saving' ? 'Saving changes...' : saveStatus === 'saved' ? 'Changes saved successfully!' : 'Error saving changes'}
+          </div>
+        `}
         
         ${showTemplate && html`
           <div class="template-modal">
