@@ -105,7 +105,6 @@ export function CheckoutMixin(Base) {
         }
 
         async render(overrides = {}) {
-            if (!this.isConnected) return false;
             // eslint-disable-next-line react-hooks/rules-of-hooks
             const service = useService();
             if (!service) return false;
@@ -203,7 +202,6 @@ export function CheckoutMixin(Base) {
             checkoutAction = undefined,
             version = undefined,
         ) {
-            if (!this.isConnected) return false;
             // eslint-disable-next-line react-hooks/rules-of-hooks
             const service = useService();
             if (!service) return false;
