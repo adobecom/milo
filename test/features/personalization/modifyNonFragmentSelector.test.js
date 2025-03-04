@@ -164,6 +164,10 @@ const values = [
     b: '.aside03',
     a: '.aside03',
   },
+  {
+    b: 'mep-id-marquee-container',
+    a: 'main > div:has([mep-id*="marquee-container"])',
+  },
 ];
 describe('test different values', () => {
   values.forEach((value) => {

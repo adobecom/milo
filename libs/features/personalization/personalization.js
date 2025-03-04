@@ -37,6 +37,7 @@ export const PERSONALIZATION_TAGS = {
 const PERSONALIZATION_KEYS = Object.keys(PERSONALIZATION_TAGS);
 /* c8 ignore stop */
 
+const MEP_ID = 'mep-id';
 const CLASS_EL_DELETE = 'p13n-deleted';
 const CLASS_EL_REPLACE = 'p13n-replaced';
 const COLUMN_NOT_OPERATOR = 'not ';
@@ -432,6 +433,8 @@ function modifySelectorTerm(termParam) {
     'div', 'a', 'p', 'strong', 'em', 'picture', 'source', 'img', 'h',
     'ul', 'ol', 'li',
   ];
+  const hasMepId = term.startsWith(MEP_ID);
+  term = hasMepId ? term.replace(`${MEP_ID}-`, '') : term;
   const startTextMatch = term.match(/^[a-zA-Z/./-]*/);
   const startText = startTextMatch ? startTextMatch[0].toLowerCase() : '';
   const startTextPart1 = startText.split(/\.|:/)[0];
@@ -448,6 +451,7 @@ function modifySelectorTerm(termParam) {
     term = updateEndNumber(endNumber, term);
     return term;
   }
+  if (hasMepId) return `main > div:has([${MEP_ID}*="${term}"])`;
 
   if (!startText.startsWith('.')) term = `.${term}`;
   if (endNumber) {
@@ -497,7 +501,7 @@ export function modifyNonFragmentSelector(selector, action) {
 
 function getSelectedElements(sel, rootEl, forceRootEl, action) {
   const root = forceRootEl ? rootEl : document;
-  const selector = sel.trim();
+  const selector = sel.startsWith(MEP_ID) ? sel.split(' ').join('-').trim() : sel.trim();
   if (!selector) return {};
 
   if (getSelectorType(selector) === 'fragment') {
@@ -561,6 +565,18 @@ export const deleteMarkedEls = (rootEl = document) => {
     .forEach((el) => el.remove());
 };
 
+export function addMepIdToSectionMetadata(rootEl = document) {
+  const metadataBlocks = rootEl.querySelectorAll('.section-metadata');
+  metadataBlocks.forEach((metadataBlock) => {
+    [...metadataBlock.children].forEach((child) => {
+      const col1 = child.children[0]?.textContent.toLowerCase().trim();
+      const col2 = child.children[1]?.textContent.toLowerCase().trim();
+      if (!col1 || !col2 || col1 !== MEP_ID) return;
+      metadataBlock.setAttribute(MEP_ID, col2);
+    });
+  });
+}
+
 export function handleCommands(
   commands,
   rootEl = document,
@@ -568,6 +584,7 @@ export function handleCommands(
   forceRootEl = false,
 ) {
   const section1 = document.querySelector('main > div');
+  addMepIdToSectionMetadata(rootEl);
   commands.forEach((cmd) => {
     const { action, content, selector } = cmd;
     cmd.content = forceInline && getSelectorType(content) === 'fragment' ? addHash(content, INLINE_HASH) : content;
