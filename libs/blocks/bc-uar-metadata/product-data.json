@@ -116,7 +116,7 @@
           "Expert Level: Intermediate"
       ],
       "learning_resource": "https://www.adobe.com/learn/audition?learnIn=1",
-      "image": "",
+      "image": "https://www.adobe.com/products/media_184b1894ebd118fde1476ebcdae6faaf80601309a.jpeg",
       "background_color": "#428FD9",
       "logo": "https://www.adobe.com/cc-shared/assets/img/product-icons/svg/audition-64.svg",
       "targeted_segments": {
@@ -327,6 +327,7 @@
       ],
       "learning_resource": "https://www.adobe.com/learn/cc_photo_plan?learnIn=1",
       "image": "",
+      "video_url": "https://images-tv.adobe.com/mpcv3/5234/408fee5e-a54c-447e-888c-4b3b708bc109_1739318488.854x480at800_h264.mp4#_autoplay1",
       "logo": "https://www.adobe.com/cc-shared/assets/img/uar/bc/product-icon-creative-cloud-all-apps-64.svg",
       "targeted_segments": {
           "student": {
@@ -632,7 +633,7 @@
           "Expert Level: Intermediate"
       ],
       "learning_resource": "https://www.adobe.com/learn/audition?learnIn=1",
-      "image": "https://www.adobe.com/products/media_184b1894ebd118fde1476ebcdae6faaf80601309a.jpeg?width=2000&format=webply&optimize=medium",
+      "image": "https://www.adobe.com/products/media_184b1894ebd118fde1476ebcdae6faaf80601309a.jpeg",
       "background_color": "#428FD9",
       "logo": "https://www.adobe.com/cc-shared/assets/img/product-icons/svg/audition-64.svg",
       "primary": {
