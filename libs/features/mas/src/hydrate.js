@@ -66,19 +66,16 @@ export function processTitle(fields, merchCard, titleConfig) {
         let title = fields.cardTitle;
         const { maxCount } = titleConfig;
         if (maxCount) {
-            const [truncatedTitle, cleanTitle] = getTruncatedTextData(fields.cardTitle, maxCount);
+            const [truncatedTitle, cleanTitle] = getTruncatedTextData(
+                fields.cardTitle,
+                maxCount,
+            );
             if (truncatedTitle !== fields.cardTitle) {
                 attributes.title = cleanTitle;
                 title = truncatedTitle;
             }
         }
-        merchCard.append(
-            createTag(
-                titleConfig.tag,
-                attributes,
-                title
-            ),
-        );
+        merchCard.append(createTag(titleConfig.tag, attributes, title));
     }
 }
 
@@ -95,21 +92,34 @@ export function processSubtitle(fields, merchCard, subtitleConfig) {
 }
 
 export function processBackgroundColor(fields, merchCard, allowedColors) {
-    if (!fields.backgroundColor || fields.backgroundColor.toLowerCase() === 'default') {
+    if (
+        !fields.backgroundColor ||
+        fields.backgroundColor.toLowerCase() === 'default'
+    ) {
         merchCard.style.removeProperty('--merch-card-custom-background-color');
         merchCard.removeAttribute('background-color');
         return;
     }
 
     if (allowedColors?.[fields.backgroundColor]) {
-        merchCard.style.setProperty('--merch-card-custom-background-color', `var(${allowedColors[fields.backgroundColor]})`);
+        merchCard.style.setProperty(
+            '--merch-card-custom-background-color',
+            `var(${allowedColors[fields.backgroundColor]})`,
+        );
         merchCard.setAttribute('background-color', fields.backgroundColor);
     }
 }
 
 export function processBorderColor(fields, merchCard, borderColorConfig) {
-    if (fields.borderColor && borderColorConfig && fields.borderColor !== 'transparent') {
-        merchCard.style.setProperty('--merch-card-custom-border-color', `var(--${fields.borderColor})`);
+    if (
+        fields.borderColor &&
+        borderColorConfig &&
+        fields.borderColor !== 'transparent'
+    ) {
+        merchCard.style.setProperty(
+            '--merch-card-custom-border-color',
+            `var(--${fields.borderColor})`,
+        );
     }
 }
 
@@ -140,9 +150,7 @@ export function processBackgroundImage(
             merchCard.shadowRoot.append(
                 createTag(
                     backgroundImageConfig.tag,
-                    { slot: backgroundImageConfig.slot,
-                        class: 'image',
-                    },
+                    { slot: backgroundImageConfig.slot, class: 'image' },
                     createTag('img', imgAttributes),
                 ),
             );
@@ -150,13 +158,11 @@ export function processBackgroundImage(
             merchCard.append(
                 createTag(
                     backgroundImageConfig.tag,
-                  { slot: backgroundImageConfig.slot,
-                  },
+                    { slot: backgroundImageConfig.slot },
                     createTag('img', imgAttributes),
                 ),
             );
         }
-
     }
 }
 
@@ -177,17 +183,16 @@ export function processDescription(fields, merchCard, descriptionConfig) {
         let description = fields.description;
         const { maxCount } = descriptionConfig;
         if (maxCount) {
-            const [truncatedDescription, cleanDescription] = getTruncatedTextData(fields.description, maxCount, false);
+            const [truncatedDescription, cleanDescription] =
+                getTruncatedTextData(fields.description, maxCount, false);
             if (truncatedDescription !== fields.description) {
                 attributes.title = cleanDescription;
                 description = truncatedDescription;
             }
         }
-        merchCard.append(createTag(
-            descriptionConfig.tag,
-            attributes,
-            description,
-        ));
+        merchCard.append(
+            createTag(descriptionConfig.tag, attributes, description),
+        );
     }
 }
 
@@ -199,7 +204,11 @@ export function getTruncatedTextData(text, limit, withSuffix = true) {
 
         let index = 0;
         let inTag = false;
-        let remaining = withSuffix ? (limit - TEXT_TRUNCATE_SUFFIX.length < 1 ? 1 : limit - TEXT_TRUNCATE_SUFFIX.length) : limit;
+        let remaining = withSuffix
+            ? limit - TEXT_TRUNCATE_SUFFIX.length < 1
+                ? 1
+                : limit - TEXT_TRUNCATE_SUFFIX.length
+            : limit;
         let openTags = [];
 
         for (const char of _text) {
@@ -209,8 +218,7 @@ export function getTruncatedTextData(text, limit, withSuffix = true) {
                 // Check next character
                 if (_text[index] === '/') {
                     openTags.pop();
-                }
-                else {
+                } else {
                     let tagName = '';
                     for (const tagChar of _text.substring(index)) {
                         if (tagChar === ' ' || tagChar === '>') break;
@@ -238,7 +246,7 @@ export function getTruncatedTextData(text, limit, withSuffix = true) {
         if (openTags.length > 0) {
             if (openTags[0] === 'p') openTags.shift();
             for (const tag of openTags.reverse()) {
-                trimmedText += `</${tag}>`
+                trimmedText += `</${tag}>`;
             }
         }
         let truncatedText = `${trimmedText}${withSuffix ? TEXT_TRUNCATE_SUFFIX : ''}`;
@@ -270,7 +278,7 @@ function clearTags(text) {
 
 export function processUptLinks(fields, merchCard) {
     const placeholders = merchCard.querySelectorAll('a.upt-link');
-    placeholders.forEach(placeholder => {
+    placeholders.forEach((placeholder) => {
         const uptLink = UptLink.createFrom(placeholder);
         placeholder.replaceWith(uptLink);
         uptLink.initializeWcsData(fields.osi, fields.promoCode);
@@ -322,10 +330,10 @@ function createSpectrumSwcButton(cta, aemFragmentMapping, isOutline, variant) {
         },
         cta.innerHTML,
     );
-
     spectrumCta.source = checkoutButton;
+    spectrumCta.dataset.wcsOsi = checkoutButton.dataset.wcsOsi;
     checkoutButton.onceSettled().then((target) => {
-        spectrumCta.setAttribute('data-navigation-url', target.href);
+        spectrumCta.dataset.navigationUrl = target.href;
     });
 
     spectrumCta.addEventListener('click', (e) => {
@@ -377,8 +385,18 @@ export function processCTAs(fields, merchCard, aemFragmentMapping, variant) {
             }
 
             return merchCard.spectrum === 'swc'
-                ? createSpectrumSwcButton(cta, aemFragmentMapping, isOutline, variant)
-                : createSpectrumCssButton(cta, aemFragmentMapping, isOutline, variant);
+                ? createSpectrumSwcButton(
+                      cta,
+                      aemFragmentMapping,
+                      isOutline,
+                      variant,
+                  )
+                : createSpectrumCssButton(
+                      cta,
+                      aemFragmentMapping,
+                      isOutline,
+                      variant,
+                  );
         });
 
         footer.innerHTML = '';
@@ -396,8 +414,12 @@ export function processAnalytics(fields, merchCard) {
     if (!cardAnalyticsId) return;
     merchCard.setAttribute(ANALYTICS_SECTION_ATTR, cardAnalyticsId);
     const elements = [
-      ...merchCard.shadowRoot.querySelectorAll(`a[data-analytics-id],button[data-analytics-id]`),
-      ...merchCard.querySelectorAll(`a[data-analytics-id],button[data-analytics-id]`)
+        ...merchCard.shadowRoot.querySelectorAll(
+            `a[data-analytics-id],button[data-analytics-id]`,
+        ),
+        ...merchCard.querySelectorAll(
+            `a[data-analytics-id],button[data-analytics-id]`,
+        ),
     ];
     elements.forEach((el, index) => {
         el.setAttribute(

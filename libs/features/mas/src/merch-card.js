@@ -20,6 +20,7 @@ import {
     SELECTOR_MAS_CHECKOUT_LINK,
     SELECTOR_MAS_ELEMENT,
     SELECTOR_MAS_INLINE_PRICE,
+    SELECTOR_MAS_SP_BUTTON,
 } from './constants.js';
 import { VariantLayout } from './variants/variant-layout.js';
 import { hydrate, ANALYTICS_SECTION_ATTR } from './hydrate.js';
@@ -373,8 +374,14 @@ export class MerchCard extends LitElement {
     }
 
     async checkReady() {
+        const masElements = [...this.querySelectorAll(SELECTOR_MAS_ELEMENT)];
+        masElements.push(
+            ...[...this.querySelectorAll(SELECTOR_MAS_SP_BUTTON)].map(
+                (element) => element.source,
+            ),
+        );
         const successPromise = Promise.all(
-            [...this.querySelectorAll(SELECTOR_MAS_ELEMENT)].map((element) =>
+            masElements.map((element) =>
                 element.onceSettled().catch(() => element),
             ),
         ).then((elements) =>
