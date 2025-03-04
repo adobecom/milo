@@ -1,5 +1,6 @@
 import { html, LitElement } from 'lit';
 import { styles } from './merch-quantity-select.css.js';
+import { debounce } from './utils.js';
 
 import { ARROW_DOWN, ARROW_UP, ENTER } from './focus.js';
 import { EVENT_MERCH_QUANTITY_SELECTOR_CHANGE } from './constants.js';
@@ -43,6 +44,7 @@ export class MerchQuantitySelect extends LitElement {
         this.boundKeydownListener = this.handleKeydown.bind(this);
         this.addEventListener('keydown', this.boundKeydownListener);
         window.addEventListener('mousedown', this.handleClickOutside);
+        this.handleKeyupDebounced = debounce(this.handleKeyup.bind(this), 500);
     }
 
     handleKeyup() {
@@ -85,22 +87,25 @@ export class MerchQuantitySelect extends LitElement {
         if (e.composedPath().includes(this)) e.stopPropagation();
     }
 
+    adjustInput(inputField, value) {
+        this.selectedValue = value;
+        inputField.value = value;
+        this.highlightedIndex = this.options.indexOf(value);
+    }
+
     handleInput() {
         const inputField = this.shadowRoot.querySelector('.text-field-input');
         const inputValue = parseInt(inputField.value);
+        if (isNaN(inputValue)) return;
         if (
-            !isNaN(inputValue) &&
             inputValue > 0 &&
             inputValue !== this.selectedValue
         ) {
-            const adjustedInputValue =
-                this.maxInput && inputValue > this.maxInput
-                    ? this.maxInput
-                    : inputValue;
-            this.selectedValue = adjustedInputValue;
-            inputField.value = adjustedInputValue;
-            this.highlightedIndex = this.options.indexOf(adjustedInputValue);
-        }
+            let adjustedInputValue = inputValue;
+            if (this.maxInput && inputValue > this.maxInput) adjustedInputValue = this.maxInput;
+            if (this.min && adjustedInputValue < this.min) adjustedInputValue = this.min;
+            this.adjustInput(inputField, adjustedInputValue);
+        } else this.adjustInput(inputField, this.min || 1);
     }
 
     disconnectedCallback() {
@@ -210,7 +215,7 @@ export class MerchQuantitySelect extends LitElement {
                     .value="${this.selectedValue}"
                     type="number"
                     @keydown="${this.handleKeydown}"
-                    @keyup="${this.handleKeyup}"
+                    @keyup="${this.handleKeyupDebounced}"
                 />
                 <button class="picker-button" @click="${this.toggleMenu}">
                     <div
