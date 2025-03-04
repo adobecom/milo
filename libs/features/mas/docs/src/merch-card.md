@@ -297,7 +297,7 @@ The `merch-card` component can raise several types of errors during its lifecycl
 | "Network error: failed to load fragment" | Occurs when the fragment cannot be loaded due to network issues | `aem:error`, `mas:error` | Connection problems, server unavailable, etc. |
 | "Contains offers that were not resolved within timeout" | Occurs when offers are not resolved within the timeout period | `mas:error` | Offers take too long to resolve (exceeds `MERCH_CARD_LOAD_TIMEOUT`) |
 | "Contains unresolved offers" | Occurs when offers cannot be resolved | `mas:error` | Pricing or checkout information cannot be retrieved |
-| WCS Error | Occurs when the OSI (Offer Selection Identifier) is incorrect | `mas:failed` | The OSI doesn't exist or is incorrect |
+
 
 ### Error Event Flow
 
