@@ -1,0 +1,10 @@
+.susi-light-container {
+  height: calc(100vh - calc(var(--feds-height-nav) + 67px) );
+  background-size: cover;
+}
+
+.susi-light-wrapper {
+  padding: 10px;
+  background-color: white;
+  width: fit-content;
+}
