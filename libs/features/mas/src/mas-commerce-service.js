@@ -30,7 +30,7 @@ export class MasCommerceService extends HTMLElement {
             commerce: { env: this.getAttribute('env') },
             lana: {
                 tags: this.getAttribute('lana-tags'),
-                sampleRate: parseInt(this.getAttribute('lana-sample-rate'), 10),
+                sampleRate: parseInt(this.getAttribute('lana-sample-rate') ?? 1, 10),
                 isProdDomain: this.getAttribute('host-env') === 'prod',
             },
         };
@@ -212,9 +212,7 @@ export class MasCommerceService extends HTMLElement {
                 /(\/fragments\/|web_commerce_artifact)/.test(name),
             )
         ) {
-            const failedUrls = uniqueFailedResources
-                .map(({ name }) => name)
-                .join('\n');
+            const failedUrls = uniqueFailedResources.map(({ name }) => name);
             this.log.error('Failed requests:', failedUrls);
         }
         this.lastLoggingTime = Date.now();
