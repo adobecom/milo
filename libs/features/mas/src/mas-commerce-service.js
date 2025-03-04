@@ -13,7 +13,6 @@ import { updateConfig as updateLanaConfig } from './lana.js';
 
 export const TAG_NAME_SERVICE = 'mas-commerce-service';
 
-
 const MARK_START = 'mas:start';
 const MARK_READY = 'mas:ready';
 
@@ -24,7 +23,7 @@ const MARK_READY = 'mas:ready';
 export class MasCommerceService extends HTMLElement {
     static instance;
     promise = null;
-
+    lastLoggingTime = 0;
     get #config() {
         const config = {
             hostEnv: { name: this.getAttribute('host-env') ?? 'prod' },
@@ -145,6 +144,9 @@ export class MasCommerceService extends HTMLElement {
             performance.mark(MARK_READY);
             this.dispatchEvent(event);
         });
+        setTimeout(() => {
+            this.logFailedRequests();
+        }, 5000);
     }
 
     connectedCallback() {
@@ -170,12 +172,52 @@ export class MasCommerceService extends HTMLElement {
             .querySelectorAll(SELECTOR_MAS_ELEMENT)
             .forEach((el) => el.requestUpdate(true));
         this.log.debug('Refreshed WCS offers');
+        this.logFailedRequests();
     }
 
     refreshFragments() {
         this.flushWcsCache();
         document.querySelectorAll('aem-fragment').forEach((el) => el.refresh());
         this.log.debug('Refreshed AEM fragments');
+        this.logFailedRequests();
+    }
+
+    /**
+     * Logs failed network requests related to AEM fragments and WCS commerce artifacts.
+     * Identifies failed resources by checking for zero transfer size, zero duration,
+     * response status less than 200, or response status greater than or equal to 400.
+     * Only logs errors if any of the failed resources are fragment or commerce artifact requests.
+     */
+    /* c8 ignore next 21 */
+    logFailedRequests() {
+        const failedResources = [...performance.getEntriesByType('resource')]
+            .filter(({ startTime }) => startTime > this.lastLoggingTime)
+            .filter(
+                ({ transferSize, duration, responseStatus }) =>
+                    (transferSize === 0 &&
+                        duration === 0 &&
+                        responseStatus < 200) ||
+                    responseStatus >= 400,
+            );
+
+        // Create a Map to deduplicate resources by URL, keeping only the last one
+        const uniqueFailedResources = Array.from(
+            new Map(
+                failedResources.map((resource) => [resource.name, resource]),
+            ).values(),
+        );
+
+        if (
+            uniqueFailedResources.some(({ name }) =>
+                /(\/fragments\/|web_commerce_artifact)/.test(name),
+            )
+        ) {
+            const failedUrls = uniqueFailedResources
+                .map(({ name }) => name)
+                .join('\n');
+            this.log.error('Failed requests:', failedUrls);
+        }
+        this.lastLoggingTime = Date.now();
     }
 }
 

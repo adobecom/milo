@@ -9,7 +9,7 @@ import { HEADER_X_REQUEST_ID } from "../constants.js";
  * @param {number} [delay=500] - Delay between retries in milliseconds
  * @returns {Promise<Response>} - The fetch response
  */
-async function fetchWithRetry(
+async function masFetch(
     resource,
     options = {},
     retries = 2,
@@ -24,7 +24,7 @@ async function fetchWithRetry(
     
     // Generate a request ID once, outside the retry loop
     if (!options.headers[HEADER_X_REQUEST_ID]) {
-        options.headers[HEADER_X_REQUEST_ID] = window.crypto.randomUUID ? window.crypto.randomUUID() : `req-${Date.now()}-${Math.random().toString(36).substring(2, 10)}`;
+        //options.headers[HEADER_X_REQUEST_ID] = window.crypto.randomUUID ? window.crypto.randomUUID() : `req-${Date.now()}-${Math.random().toString(36).substring(2, 10)}`;
     }
     
     for (let attempt = 0; attempt <= retries; attempt++) {
@@ -47,4 +47,4 @@ async function fetchWithRetry(
     throw lastError;
 }
 
-export { fetchWithRetry };
+export { masFetch };

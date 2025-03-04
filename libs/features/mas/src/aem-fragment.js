@@ -1,5 +1,7 @@
 import { EVENT_AEM_LOAD, EVENT_AEM_ERROR } from './constants.js';
-import { fetchWithRetry } from './utils/fetchWithRetry.js';
+import { Log } from './log.js';
+import { getFetchErrorMessage } from './utils.js';
+import { masFetch } from './utils/mas-fetch.js';
 
 const sheet = new CSSStyleSheet();
 sheet.replaceSync(':host { display: contents; }');
@@ -11,10 +13,6 @@ const baseUrl =
 const ATTRIBUTE_FRAGMENT = 'fragment';
 const ATTRIBUTE_AUTHOR = 'author';
 const ATTRIBUTE_IMS = 'ims';
-
-const fail = (message) => {
-    throw new Error(`Failed to get fragment: ${message}`);
-};
 
 /**
  * Get fragment by ID
@@ -28,13 +26,27 @@ export async function getFragmentById(baseUrl, id, author, headers) {
     const endpoint = author
         ? `${baseUrl}/adobe/sites/cf/fragments/${id}`
         : `${baseUrl}/adobe/sites/fragments/${id}`;
-    const response = await fetchWithRetry(endpoint, {
+    const response = await masFetch(endpoint, {
         cache: 'default',
         credentials: 'omit',
         headers,
-    }).catch((e) => fail(e.message));
+    }).catch((e) => {
+        throw new Error(
+            getFetchErrorMessage(
+                'Failed to get fragment',
+                response,
+                endpoint,
+            ),
+        );
+    });
     if (!response?.ok) {
-        fail(`${response.status} ${response.statusText}`);
+        throw new Error(
+            getFetchErrorMessage(
+                'Unexpected Fragment response',
+                response,
+                endpoint,
+            ),
+        );
     }
     return response.json();
 }
@@ -79,6 +91,7 @@ const cache = new FragmentCache();
  */
 export class AemFragment extends HTMLElement {
     cache = cache;
+    #log = Log.module('aem-fragment');
 
     #rawData = null;
     #data = null;
@@ -172,6 +185,7 @@ export class AemFragment extends HTMLElement {
 
     #fail(error) {
         this.classList.add('error');
+        this.#log.error(error);
         this.dispatchEvent(
             new CustomEvent(EVENT_AEM_ERROR, {
                 detail: error,
@@ -182,10 +196,11 @@ export class AemFragment extends HTMLElement {
     }
 
     async fetchData() {
+        this.classList.remove('error');
         let fragment = cache.get(this.#fragmentId);
         if (fragment) {
-          this.#rawData = fragment;
-          return;
+            this.#rawData = fragment;
+            return;
         }
         try {
             fragment = await getFragmentById(

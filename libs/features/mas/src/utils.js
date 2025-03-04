@@ -1,3 +1,5 @@
+import { HEADER_X_REQUEST_ID } from "./constants.js";
+
 export function debounce(func, delay) {
     let debounceTimer;
     return function () {
@@ -54,4 +56,13 @@ export function isMobileOrTablet() {
 /* c8 ignore next 4 */
 export function wait(ms = 1000) {
     return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export function getFetchErrorMessage(error, response, url) {
+    let message = `${error}: ${response?.status}, url: ${url.toString()}`;
+    const requestId = response?.headers?.get(HEADER_X_REQUEST_ID);
+    if (requestId) {
+        message = `${message}, ${HEADER_X_REQUEST_ID}: ${requestId}`;
+    }
+    return message;
 }

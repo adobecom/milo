@@ -11,7 +11,8 @@ import {
     applyPlanType,
 } from './external.js';
 import { Log } from './log.js';
-import { fetchWithRetry } from './utils/fetchWithRetry.js';
+import { getFetchErrorMessage } from './utils.js';
+import { masFetch } from './utils/mas-fetch.js';
 
 /**
  * @typedef {Map<string, {
@@ -59,10 +60,6 @@ export function Wcs({ settings }) {
         log.debug('Fetching:', options);
         let url = '';
         let response;
-        const detailedMessage = (error, response, url) => {
-            const requestId = response?.headers?.get(HEADER_X_REQUEST_ID);
-            return `${error}: ${response?.status}, url: ${url.toString()}, ${HEADER_X_REQUEST_ID}: ${requestId}`;
-        };
         if (options.offerSelectorIds.length > 1)
             throw new Error('Multiple OSIs are not supported anymore');
 
@@ -94,7 +91,7 @@ export function Wcs({ settings }) {
                 url.searchParams.set('currency', options.currency);
             }
 
-            response = await fetchWithRetry(url.toString(), {
+            response = await masFetch(url.toString(), {
                 credentials: 'omit',
             });
             if (response.ok) {
@@ -136,7 +133,7 @@ export function Wcs({ settings }) {
             log.debug('Missing:', { offerSelectorIds: [...promises.keys()] });
             promises.forEach((promise) => {
                 promise.reject(
-                    new Error(detailedMessage(message, response, url)),
+                    new Error(getFetchErrorMessage(message, response, url)),
                 );
             });
         }
