@@ -28,6 +28,12 @@ To add `mas.js` to your page or application, include it as shown below:
 ></script>
 ```
 
+
+Mas elements such as `inline-price`, `checkout-link`, `checkout-button` are loaded via WCS service.
+In case of network issues, the request will be retried up to 3 times with 500ms of delay between attempts.
+It will also fallback to last successfully loaded offers for the same OSI.
+
+
 ### Attributes
 
 | Name                     | Description                                                                                         | Default Value                    | Required |

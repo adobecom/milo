@@ -345,6 +345,11 @@ aemFragment.addEventListener('aem:load', (event) => {
 
 ## aem-fragment custom element
 
+`aem-fragment` custom element is used to load a fragment from Odin/Frejya.
+It supports retrying to load the fragment in case of errors two times with 500ms of delay between attempts.
+It also falls back to last successfully loaded fragment for the same fragment id.
+
+
 ### Attributes
 
 | Name       | Description                                                                              | Default Value | Required | Provider      |

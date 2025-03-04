@@ -44,6 +44,9 @@
     <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;module&quot;</span>
 &gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
 </code></pre>
+<p>Mas elements such as <code>inline-price</code>, <code>checkout-link</code>, <code>checkout-button</code> are loaded via WCS service.
+In case of network issues, the request will be retried up to 3 times with 500ms of delay between attempts.
+It will also fallback to last successfully loaded offers for the same OSI.</p>
 <h3 id="attributes" tabindex="-1">Attributes <a class="header-anchor" href="#attributes" href="#attributes" title="Permalink to this heading">#</a></h3>
 <table>
 <thead>

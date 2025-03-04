@@ -417,6 +417,9 @@ aemFragment.<span class="hljs-title function_">addEventListener</span>(<span cla
 });
 </code></pre>
 <h2 id="aem-fragment-custom-element" tabindex="-1">aem-fragment custom element <a class="header-anchor" href="#aem-fragment-custom-element" href="#aem-fragment-custom-element" title="Permalink to this heading">#</a></h2>
+<p><code>aem-fragment</code> custom element is used to load a fragment from Odin/Frejya.
+It supports retrying to load the fragment in case of errors two times with 500ms of delay between attempts.
+It also falls back to last successfully loaded fragment for the same fragment id.</p>
 <h3 id="attributes-1" tabindex="-1">Attributes <a class="header-anchor" href="#attributes-1" href="#attributes-1" title="Permalink to this heading">#</a></h3>
 <table>
 <thead>
