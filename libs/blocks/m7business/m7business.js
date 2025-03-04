@@ -17,11 +17,10 @@ export async function generateM7Link(options) {
   const country = imsCountry || pageCountry;
 
   const m7link = new URL('https://commerce.adobe.com/store/segmentation');
-  m7link.searchParams.append('cli', 'adobe_com');
+  m7link.searchParams.append('cli', 'creative');
   m7link.searchParams.append('co', country);
   m7link.searchParams.append('pa', 'ccsn_direct_individual');
   m7link.searchParams.append('cs', 't');
-  m7link.searchParams.append('af', 'uc_segmentation_hide_tabs');
   options?.forEach((option) => {
     m7link.searchParams.append(option.name, option.value);
   });

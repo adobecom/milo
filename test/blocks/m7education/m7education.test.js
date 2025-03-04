@@ -6,6 +6,6 @@ describe('m7education autoblock', () => {
     const a = document.createElement('a');
     a.setAttribute('href', 'https://www.adobe.com/creativecloud/education-plans.html');
     await init(a);
-    expect(a.href).to.equal('https://commerce.adobe.com/store/segmentation?cli=adobe_com&co=US&pa=ccsn_direct_individual&cs=t&af=uc_segmentation_hide_tabs&ms=EDU');
+    expect(a.href).to.equal('https://commerce.adobe.com/store/segmentation?cli=creative&co=US&pa=ccsn_direct_individual&cs=t&ms=EDU');
   });
 });
