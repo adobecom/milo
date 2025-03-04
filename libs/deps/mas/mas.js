@@ -1930,7 +1930,8 @@ merch-card [slot='callout-content'] > p {
     border-radius: var(--consonant-merch-spacing-xxxs);
     padding: var(--consonant-merch-spacing-xxxs) var(--consonant-merch-spacing-xxs);
     width: fit-content;
-    font: normal normal normal var(--consonant-merch-card-callout-font-size)/var(--consonant-merch-card-callout-line-height) var(--body-font-family, 'Adobe Clean');
+    font-size: var(--consonant-merch-card-callout-font-size);
+    line-height: var(--consonant-merch-card-callout-line-height);
 }
 
 merch-card [slot='callout-content'] .icon-button {
