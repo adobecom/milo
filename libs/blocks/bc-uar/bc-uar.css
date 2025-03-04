@@ -94,6 +94,7 @@
 .bc-mount-container {
   margin-bottom: 12px;
   width: 100%;
+  justify-items: center;
 }
 
 .bc-chat-input {
