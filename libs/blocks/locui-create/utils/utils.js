@@ -111,7 +111,7 @@ export function getLanguageDetails(langCode, languages = {}) {
         workflow: '',
       },
     ];
-  } else if (userWorkflowType.value === USER_WORKFLOW_TYPE.promote_rollout) {
+  } if (userWorkflowType.value === USER_WORKFLOW_TYPE.promote_rollout) {
     return languages.map((language) => ({
       ...language,
       action: 'Rollout',
