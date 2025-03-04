@@ -28,11 +28,11 @@ export const PERSONALIZATION_TAGS = {
   firefox: () => navigator.userAgent.includes('Firefox'),
   safari: () => navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome'),
   edge: () => navigator.userAgent.includes('Edg'),
-  android: () => navigator.userAgent.includes('Android') || isGalaxyTab(),
+  android: async () => navigator.userAgent.includes('Android') || isGalaxyTab(),
   ios: () => /iPad|iPhone|iPod/.test(navigator.userAgent) || safariIpad,
   windows: () => navigator.userAgent.includes('Windows'),
   mac: () => navigator.userAgent.includes('Macintosh') && !safariIpad,
-  'mobile-device': () => safariIpad
+  'mobile-device': async () => safariIpad
     || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i
       .test(navigator.userAgent) || isGalaxyTab(),
   phone: () => PERSONALIZATION_TAGS['mobile-device']() && PHONE_SIZE,
