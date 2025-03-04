@@ -26,13 +26,14 @@ export class MasCommerceService extends HTMLElement {
     promise = null;
 
     get #config() {
+        const env = this.getAttribute('env') ?? 'prod';
         const config = {
-            hostEnv: { name: this.getAttribute('host-env') ?? 'prod' },
-            commerce: { env: this.getAttribute('env') },
+            hostEnv: { name: env },
+            commerce: { env },
             lana: {
                 tags: this.getAttribute('lana-tags'),
                 sampleRate: parseInt(this.getAttribute('lana-sample-rate'), 10),
-                isProdDomain: this.getAttribute('host-env') === 'prod',
+                isProdDomain: env === 'prod',
             },
         };
         //root parameters
@@ -77,7 +78,7 @@ export class MasCommerceService extends HTMLElement {
         };
     }
 
-    async activate() {
+    async activate(resolve) {
         const config = this.#config;
         // Load settings and literals
         const settings = Object.freeze(getSettings(config));
@@ -144,13 +145,14 @@ export class MasCommerceService extends HTMLElement {
             });
             performance.mark(MARK_READY);
             this.dispatchEvent(event);
+            resolve(this);
         });
     }
 
     connectedCallback() {
         if (!this.readyPromise) {
             performance.mark(MARK_START);
-            this.readyPromise = this.activate();
+            this.readyPromise = new Promise((resolve) => this.activate(resolve));
         }
     }
 

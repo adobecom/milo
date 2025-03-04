@@ -1,4 +1,5 @@
-import { EVENT_AEM_LOAD, EVENT_AEM_ERROR } from './constants.js';
+import { EVENT_AEM_LOAD, EVENT_AEM_ERROR, EVENT_TYPE_READY } from './constants.js';
+import { useService } from './utilities.js';
 
 const sheet = new CSSStyleSheet();
 sheet.replaceSync(':host { display: contents; }');
@@ -17,28 +18,23 @@ const fail = (message) => {
 
 /**
  * Get fragment by ID
- * @param {string} baseUrl the aem base url
  * @param {string} id fragment id
- * @param {string} author should the fragment be fetched from author endpoint
- * @param {Object} headers optional request headers
+ * @param {string} masCommerceService settings provider
  * @returns {Promise<Object>} the raw fragment item
  */
-export async function getFragmentById(baseUrl, id, author, headers) {
-    const endpoint = author
-        ? `${baseUrl}/adobe/sites/cf/fragments/${id}`
-        : `${baseUrl}/adobe/sites/fragments/${id}`;
+export async function getFragmentById(id, masCommerceService) {
+    const { env, wcsApiKey, locale } = masCommerceService.settings;
+    const host = env === 'prod' ? 'https://www.adobe.com' : 'https://www.stage.adobe.com';
+    const endpoint = `${host}/mas/io/fragment?id=${id}&api_key=${wcsApiKey}&locale=${locale}`;
     const response = await fetch(endpoint, {
         cache: 'default',
         credentials: 'omit',
-        headers,
     }).catch((e) => fail(e.message));
     if (!response?.ok) {
         fail(`${response.status} ${response.statusText}`);
     }
     return response.json();
 }
-
-let headers;
 
 class FragmentCache {
     #fragmentCache = new Map();
@@ -88,45 +84,24 @@ export class AemFragment extends HTMLElement {
     #fragmentId;
 
     /**
-     * @type {boolean} whether an access token should be used via IMS.
-     */
-    #ims = false;
-
-    /**
      * Internal promise to track the readiness of the web-component to render.
      */
     #readyPromise;
 
-    #author = false;
-
     static get observedAttributes() {
-        return [ATTRIBUTE_FRAGMENT, ATTRIBUTE_AUTHOR];
+        return [ATTRIBUTE_FRAGMENT];
     }
 
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
         this.shadowRoot.adoptedStyleSheets = [sheet];
-
-        const ims = this.getAttribute(ATTRIBUTE_IMS);
-        if (['', true, 'true'].includes(ims)) {
-            this.#ims = true;
-            if (!headers) {
-                headers = {
-                    Authorization: `Bearer ${window.adobeid?.authorize?.()}`,
-                };
-            }
-        }
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
         if (name === ATTRIBUTE_FRAGMENT) {
             this.#fragmentId = newValue;
             this.refresh(false);
-        }
-
-        if (name === ATTRIBUTE_AUTHOR) {
-            this.#author = ['', 'true'].includes(newValue);
         }
     }
 
@@ -148,7 +123,17 @@ export class AemFragment extends HTMLElement {
         if (flushCache) {
             cache.remove(this.#fragmentId);
         }
-        this.#readyPromise = this.fetchData()
+        const service = useService();
+        let servicePromise = service?.readyPromise;
+        if (!servicePromise) {
+          servicePromise = new Promise ((resolve) => {
+            service.addEventListener(EVENT_TYPE_READY, (e) => {
+              resolve(e.target);
+            });
+          });
+        } 
+        this.#readyPromise = servicePromise
+            .then((service) => this.fetchData(service))
             .then(() => {
                 this.dispatchEvent(
                     new CustomEvent(EVENT_AEM_LOAD, {
@@ -165,7 +150,6 @@ export class AemFragment extends HTMLElement {
                 this.#readyPromise = null;
                 return false;
             });
-        this.#readyPromise;
     }
 
     #fail(error) {
@@ -179,16 +163,14 @@ export class AemFragment extends HTMLElement {
         );
     }
 
-    async fetchData() {
+    async fetchData(masCommerceService) {
         this.#rawData = null;
         this.#data = null;
         let fragment = cache.get(this.#fragmentId);
         if (!fragment) {
             fragment = await getFragmentById(
-                baseUrl,
                 this.#fragmentId,
-                this.#author,
-                this.#ims ? headers : undefined,
+                masCommerceService,
             );
             cache.add(fragment);
         }
@@ -204,23 +186,8 @@ export class AemFragment extends HTMLElement {
 
     get data() {
         if (this.#data) return this.#data;
-        if (this.#author) {
-            this.#transformAuthorData();
-        } else {
-            this.#transformPublishData();
-        }
+        this.#transformPublishData();
         return this.#data;
-    }
-
-    #transformAuthorData() {
-        const { fields, id, tags } = this.#rawData;
-        this.#data = fields.reduce(
-            (acc, { name, multiple, values }) => {
-                acc.fields[name] = multiple ? values : values[0];
-                return acc;
-            },
-            { fields: {}, id, tags },
-        );
     }
 
     #transformPublishData() {
