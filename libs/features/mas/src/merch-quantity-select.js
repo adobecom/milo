@@ -87,21 +87,25 @@ export class MerchQuantitySelect extends LitElement {
         if (e.composedPath().includes(this)) e.stopPropagation();
     }
 
+    adjustInput(inputField, value) {
+        this.selectedValue = value;
+        inputField.value = value;
+        this.highlightedIndex = this.options.indexOf(value);
+    }
+
     handleInput() {
         const inputField = this.shadowRoot.querySelector('.text-field-input');
         const inputValue = parseInt(inputField.value);
+        if (isNaN(inputValue)) return;
         if (
-            !isNaN(inputValue) &&
             inputValue > 0 &&
             inputValue !== this.selectedValue
         ) {
             let adjustedInputValue = inputValue;
             if (this.maxInput && inputValue > this.maxInput) adjustedInputValue = this.maxInput;
             if (this.min && adjustedInputValue < this.min) adjustedInputValue = this.min;
-            this.selectedValue = adjustedInputValue;
-            inputField.value = adjustedInputValue;
-            this.highlightedIndex = this.options.indexOf(adjustedInputValue);
-        }
+            this.adjustInput(inputField, adjustedInputValue);
+        } else this.adjustInput(inputField, this.min || 1);
     }
 
     disconnectedCallback() {
