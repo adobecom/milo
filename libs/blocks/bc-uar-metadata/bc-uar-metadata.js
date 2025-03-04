@@ -86,6 +86,7 @@ const App = () => {
   const [saveStatus, setSaveStatus] = useState(''); // '', 'saving', 'saved', 'error'
   const [urlStatus, setUrlStatus] = useState({});
   const [autoCheckUrls, setAutoCheckUrls] = useState(true); // New state for auto-checking URLs
+  const [showTemplate, setShowTemplate] = useState(false); // Add this line
 
   // Define handleCheckUrl before using it in useEffect
   const handleCheckUrl = useCallback(async (url, fieldKey, showLoading = true) => {
@@ -257,6 +258,16 @@ const App = () => {
       // Reset status after 3 seconds
       setTimeout(() => setSaveStatus(''), 3000);
     }, 1000);
+  };
+
+  // Add this function to handle showing the template
+  const handleShowTemplate = () => {
+    setShowTemplate(true);
+  };
+
+  // Add this function to handle closing the template modal
+  const handleCloseTemplate = () => {
+    setShowTemplate(false);
   };
 
   const renderProductEditor = () => {
@@ -747,12 +758,29 @@ const App = () => {
             <button class="action-button save-data" onClick=${handleSaveData}>
               Save Changes
             </button>
+            <button class="action-button show-template" onClick=${handleShowTemplate}>
+              Show Template
+            </button>
           </div>
         </div>
         
         ${saveStatus && html`
           <div class=${`save-status ${saveStatus}`}>
             ${saveStatus === 'saving' ? 'Saving changes...' : saveStatus === 'saved' ? 'Changes saved successfully!' : 'Error saving changes'}
+          </div>
+        `}
+        
+        ${showTemplate && html`
+          <div class="template-modal">
+            <div class="template-modal-content">
+              <div class="template-modal-header">
+                <h2>Default Product Template</h2>
+                <button class="close-button" onClick=${handleCloseTemplate}>×</button>
+              </div>
+              <div class="template-modal-body">
+                <pre class="template-preview">${JSON.stringify(DEFAULT_PRODUCT_TEMPLATE, null, 2)}</pre>
+              </div>
+            </div>
           </div>
         `}
         

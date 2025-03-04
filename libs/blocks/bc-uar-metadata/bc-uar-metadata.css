@@ -57,7 +57,7 @@
 .action-button {
   padding: 8px 12px;
   border: none;
-  border-radius: 4px;
+  border-radius: 16px;
   background-color: #06c;
   color: white;
   cursor: pointer;
@@ -122,7 +122,7 @@
   padding: 8px 16px;
   border: 1px solid #ddd;
   background-color: #f5f5f5;
-  border-radius: 4px;
+  border-radius: 16px;
   cursor: pointer;
   font-size: 14px;
 }
@@ -255,7 +255,7 @@
   padding: 8px 12px;
   background-color: #f5f5f5;
   border: 1px solid #ddd;
-  border-radius: 4px;
+  border-radius: 16px;
   cursor: pointer;
   white-space: nowrap;
 }
@@ -426,7 +426,7 @@
   background-color: #06c;
   color: white;
   text-decoration: none;
-  border-radius: 4px;
+  border-radius: 16px;
   font-weight: bold;
 }
 
