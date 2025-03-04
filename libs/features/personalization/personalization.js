@@ -14,6 +14,7 @@ import {
 /* c8 ignore start */
 const PHONE_SIZE = window.screen.width < 550 || window.screen.height < 550;
 const safariIpad = navigator.userAgent.includes('Macintosh') && navigator.maxTouchPoints > 1;
+const isGalaxyTab = navigator.userAgent.includes('Linux') && navigator.maxTouchPoints > 1;
 export const US_GEO = 'en-us';
 export const PERSONALIZATION_TAGS = {
   all: () => true,
@@ -21,13 +22,13 @@ export const PERSONALIZATION_TAGS = {
   firefox: () => navigator.userAgent.includes('Firefox'),
   safari: () => navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome'),
   edge: () => navigator.userAgent.includes('Edg'),
-  android: () => navigator.userAgent.includes('Android'),
+  android: () => navigator.userAgent.includes('Android') || isGalaxyTab,
   ios: () => /iPad|iPhone|iPod/.test(navigator.userAgent) || safariIpad,
   windows: () => navigator.userAgent.includes('Windows'),
   mac: () => navigator.userAgent.includes('Macintosh') && !safariIpad,
   'mobile-device': () => safariIpad
     || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i
-      .test(navigator.userAgent),
+      .test(navigator.userAgent) || isGalaxyTab,
   phone: () => PERSONALIZATION_TAGS['mobile-device']() && PHONE_SIZE,
   tablet: () => PERSONALIZATION_TAGS['mobile-device']() && !PHONE_SIZE,
   desktop: () => !PERSONALIZATION_TAGS['mobile-device'](),
