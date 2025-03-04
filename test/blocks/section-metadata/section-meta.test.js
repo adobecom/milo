@@ -56,6 +56,14 @@ describe('Section Metdata', () => {
     expect(sec.classList.contains('masonry-layout')).to.be.true;
   });
 
+  it('Exclude marquee-container from masonry', async () => {
+    const sec = document.querySelector('.section.masonrysec');
+    const sm = sec.querySelector('.section-metadata');
+    await init(sm);
+    const container = sec.querySelector('.marquee-container');
+    expect(container.classList.contains('grid-full-width')).to.be.false;
+  });
+
   it('gets section metadata', () => {
     const metadata = getMetadata(document.querySelector('.section.color .section-metadata'));
     expect(metadata.background.text).to.equal('rgb(239, 239, 239)');
