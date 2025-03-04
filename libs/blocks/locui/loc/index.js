@@ -12,7 +12,7 @@ import {
   user,
 } from '../utils/state.js';
 import { setStatus } from '../utils/status.js';
-import { getStatus, origin, preview } from '../utils/franklin.js';
+import { getStatus, origin, preview, validSLD, switchSLD } from '../utils/franklin.js';
 import login from '../../../tools/sharepoint/login.js';
 import { getServiceUpdates } from '../utils/miloc.js';
 import { connectSK } from '../../../utils/sidekick.js';
@@ -147,6 +147,30 @@ async function loadProjectSettings(projSettings) {
   }
 }
 
+function checkMixedUrls(projectUrls) {
+  const validateUrls = [...projectUrls];
+  // Check if the origin matches with project origin (Donot allow mixed urls)
+  const hasSameSLD = validateUrls.some(validSLD);
+  const hasDifferentSLD = validateUrls.some((u) => !validSLD(u));
+  if (hasDifferentSLD && hasSameSLD) {
+    setStatus(
+      'details',
+      'error',
+      'Invalid URLs.',
+      `Mixed URLs are not allowed. Please update urls to ${new URL(window.location.href).hostname} only.`,
+    );
+    return false;
+  }
+
+  if (hasDifferentSLD) {
+    const projectUrl = switchSLD(window.location.href);
+    setStatus('details', 'info', `Redirecting to ${projectUrl.hostname} domain.`);
+    window.location.href = projectUrl.href;
+    return false;
+  }
+  return true;
+}
+
 async function loadDetails() {
   setStatus('details', 'info', 'Loading languages and URLs.');
   try {
@@ -163,6 +187,7 @@ async function loadDetails() {
     }, []);
     languages.value = projectLangs;
     setStatus('details', 'info', 'Validating Project Configuration');
+    if (!checkMixedUrls(projectUrls)) return;
     urls.value = await validatedUrls(projectUrls);
     if (json.settings) loadProjectSettings(json.settings.data);
     const errors = urls.value.filter((url) => typeof url.valid === 'string');
