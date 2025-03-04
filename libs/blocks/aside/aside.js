@@ -81,25 +81,10 @@ function decorateMedia(el) {
 }
 
 function formatPromoButton(el) {
-  function observeWbrRemoval(btn) {
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        mutation.addedNodes.forEach((node) => {
-          if (node.nodeName === 'WBR') {
-            node.remove();
-          }
-        });
-      });
-    });
-
-    observer.observe(btn, { childList: true, subtree: true });
-  }
-
   if (!el.classList.contains('promobar')) return;
   el.querySelectorAll('.action-area').forEach((aa) => {
     aa.querySelectorAll('.con-button').forEach((btn) => {
       btn.classList.add('button-l');
-      observeWbrRemoval(btn);
       if (!el.classList.contains('popup')) return;
       if (!btn.classList.contains('outline')) btn.classList.add('fill');
     });
