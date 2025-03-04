@@ -72,6 +72,8 @@ export function isWordWrapApplied(element) {
 }
 
 export function ifWbrCtaRemove(element) {
+  console.log('hi');
+  
   if (!element.classList.contains('con-button')) {
     return;
   }
@@ -138,13 +140,14 @@ export async function applyJapaneseLineBreaks(config, options = {}) {
 
   // Apply budoux to target selector
   textElements.forEach((el) => {
+    ifWbrCtaRemove(el);
+
     if (
       budouxExcludeElements.has(el)
       || isWordWrapApplied(el)
       || (isFirefox() && hasFlexOrGrid(el))
     ) return;
     parser.applyElement(el, { threshold: budouxThres });
-    ifWbrCtaRemove(el);
   });
 
   if (bwEnabled) {
