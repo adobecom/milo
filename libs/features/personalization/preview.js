@@ -185,8 +185,7 @@ function getManifestListDomAndParameter(mepConfig) {
       manifestParameter.push(`${editUrl}--default`);
     }
     options += `<option name="${editPath}${pageId}" value="default" 
-    id="${editPath}${pageId}--default" data-manifest="${editPath}" ${isSelected}>
-    <label for="${editPath}${pageId}--default">Default (control)</option>`;
+    id="${editPath}${pageId}--default" data-manifest="${editPath}" ${isSelected}>Default (control)</option>`;
     isSelected = '';
     variantNamesArray.forEach((variant) => {
       isSelected = '';
@@ -195,8 +194,7 @@ function getManifestListDomAndParameter(mepConfig) {
         manifestParameter.push(`${manifestPath}--${variant}`);
       }
       options += `<option name="${editPath}${pageId}" value="${variant}" 
-      id="${editPath}${pageId}--${variant}" data-manifest="${editPath}" ${isSelected}>
-      <label for="${editPath}${pageId}--${variant}">${variant}</option>`;
+      id="${editPath}${pageId}--${variant}" data-manifest="${editPath}" ${isSelected}>${variant}</option>`;
     });
     manifestList += `<div class="mep-section" title="Manifest location: ${editUrl}&#013;Analytics manifest name: ${analyticsTitle || 'N/A for this manifest type'}">
       <div class="mep-manifest-info">  
@@ -213,7 +211,7 @@ function getManifestListDomAndParameter(mepConfig) {
             
             </div>
             <div class="mep-column">
-              ${!variantNames.includes(selectedVariantName) ? '<div>Default (control)</div>' : `<div>${selectedVariantName}</div>`}
+              ${!variantNames.includes(selectedVariantName) ? '<div>Default (control)</div>' : `<div class='mep-selected-variant'>${selectedVariantName}</div>`}
               <div>${source}</div>
               ${manifest.lastSeen ? `<div>${formatDate(new Date(manifest.lastSeen))}</div>` : ''}
               ${eventStart && eventEnd ? `<div>${disabled ? 'inactive' : 'active'}</div>` : ''}
