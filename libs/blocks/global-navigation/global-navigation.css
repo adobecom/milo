@@ -34,6 +34,7 @@ header.global-navigation {
   z-index: 10;
   background-color: var(--feds-background-nav);
   box-sizing: content-box;
+  overflow-x: clip;
 }
 
 .feds-topnav-wrapper {
@@ -513,10 +514,6 @@ header.global-navigation {
 
 /* Desktop styles */
 @media (min-width: 900px) {
-  header.global-navigation {
-    contain: layout;
-  }
-
   /* General */
   .global-navigation.has-breadcrumbs {
     padding-bottom: var(--feds-height-breadcrumbs);
