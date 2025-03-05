@@ -561,12 +561,25 @@ export const deleteMarkedEls = (rootEl = document) => {
     .forEach((el) => el.remove());
 };
 
+function addSectionIds(rootEl = document) {
+  const metadataBlocks = rootEl.querySelectorAll('div:not([id]) > .section-metadata');
+  metadataBlocks.forEach((block) => {
+    [...block.children].forEach((row) => {
+      const col1 = row.children[0]?.textContent.toLowerCase().trim();
+      const col2 = row.children[1]?.textContent.toLowerCase().trim().split(' ').join('-');
+      if (!col1 || !col2 || col1 !== 'id') return;
+      block.parentNode.id = col2;
+    });
+  });
+}
+
 export function handleCommands(
   commands,
   rootEl = document,
   forceInline = false,
   forceRootEl = false,
 ) {
+  addSectionIds(rootEl);
   const section1 = document.querySelector('main > div');
   commands.forEach((cmd) => {
     const { action, content, selector } = cmd;

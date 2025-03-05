@@ -74,6 +74,7 @@ export const getMetadata = (el) => [...el.childNodes].reduce((rdx, row) => {
 export default async function init(el) {
   const section = el.closest('.section');
   const metadata = getMetadata(el);
+  if (metadata.id) section.id = metadata.id.text.split(' ').join('-');
   if (metadata.style) await handleStyle(metadata.style.text, section);
   if (metadata.background) handleBackground(metadata, section);
   if (metadata.layout) handleLayout(metadata.layout.text, section);
