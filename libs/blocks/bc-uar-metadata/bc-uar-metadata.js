@@ -656,26 +656,11 @@ const App = () => {
       <div class="product-preview">
         <h2>Preview</h2>
         <div class="preview-scroll-container">
-          <div class="product-card">
-            <div class="product-header" style=${product.background_color ? `background-color: ${product.background_color}` : ''}>
-              ${product.logo ? html`<img class="product-logo" src=${product.logo} alt="${product.title} logo" />` : ''}
-              <h3 class="product-title">${product.title || 'Product Title'}</h3>
-            </div>
-            
-            <div class="product-content">
-              <p class="product-description">${product.description || 'Product Description'}</p>
-              
-              ${product.details && product.details.length > 0 && html`
-                <div class="product-details">
-                  ${product.details.map((detail) => html`
-                    <div class="product-detail-item">${detail}</div>
-                  `)}
-                </div>
-              `}
-              
-              ${product.image || product.video_url ? html`
-                <div class="product-media">
-                  ${product.video_url ? html`
+          <div class="product-card" style=${product.background_color ? `background-color: ${product.background_color}` : ''}>
+            ${product.image || product.video_url ? html`
+              <div class="product-media-header">
+                ${product.video_url ? html`
+                  <div class="video-container">
                     <video 
                       class="product-video" 
                       src=${product.video_url} 
@@ -683,77 +668,117 @@ const App = () => {
                       poster=${product.image || ''}
                       preload="metadata"
                     ></video>
-                  ` : product.image ? html`
+                  </div>
+                ` : product.image ? html`
+                  <div class="image-container">
                     <img class="product-image" src=${product.image} alt="${product.title}" />
-                  ` : ''}
-                </div>
-              ` : ''}
-              
-              <div class="product-links">
-                ${product.primary?.url && html`
-                  <a 
-                    href=${product.primary.url} 
-                    target="_blank" 
-                    class="product-link primary-link"
-                    style=${product.primary_color ? `background-color: ${product.primary_color}` : ''}
-                  >
-                    ${product.primary.text || 'Start free trial'}
-                  </a>
-                `}
-                
-                ${product.secondary?.url && html`
-                  <a 
-                    href=${product.secondary.url} 
-                    target="_blank" 
-                    class="product-link secondary-link"
-                    style=${product.secondary_color ? `background-color: ${product.secondary_color}` : ''}
-                  >
-                    ${product.secondary.text || 'See plans & pricing'}
-                  </a>
-                `}
-                
-                ${!product.primary?.url && !product.secondary?.url && product.page && html`
-                  <a href=${product.page} target="_blank" class="product-link">Learn More</a>
-                `}
+                  </div>
+                ` : ''}
+              </div>
+            ` : ''}
+            
+            <div class="product-content-wrapper">
+              <div class="product-header">
+                ${product.logo ? html`<img class="product-logo" src=${product.logo} alt="${product.title} logo" />` : ''}
+                <h3 class="product-title">${product.title || 'Product Title'}</h3>
               </div>
               
-              ${product.targeted_segments && Object.keys(product.targeted_segments).length > 0 && html`
-                <div class="targeted-segments-preview">
-                  <h4 class="segments-title">Targeted Segments</h4>
-                  ${Object.entries(product.targeted_segments).map(([segmentKey, segmentValue]) => html`
-                    <div class="segment-preview">
-                      <h5 class="segment-title">${segmentKey}</h5>
-                      ${segmentValue.plan && html`
-                        <div class="segment-plan">
-                          <p>${segmentValue.plan}</p>
-                        </div>
-                      `}
-                      <div class="segment-links">
-                        ${segmentValue.primary?.url && html`
-                          <a 
-                            href=${segmentValue.primary.url} 
-                            target="_blank" 
-                            class="product-link primary-link"
-                            style=${product.primary_color ? `background-color: ${product.primary_color}` : ''}
-                          >
-                            ${segmentValue.primary.text || 'Start free trial'}
-                          </a>
-                        `}
-                        ${segmentValue.secondary?.url && html`
-                          <a 
-                            href=${segmentValue.secondary.url} 
-                            target="_blank" 
-                            class="product-link secondary-link"
-                            style=${product.secondary_color ? `background-color: ${product.secondary_color}` : ''}
-                          >
-                            ${segmentValue.secondary.text || 'See plans & pricing'}
-                          </a>
-                        `}
-                      </div>
-                    </div>
-                  `)}
+              <div class="product-content">
+                <p class="product-description">${product.description || 'Product Description'}</p>
+                
+                ${product.details && product.details.length > 0 && html`
+                  <div class="product-details">
+                    <ul class="details-list">
+                      ${product.details.map((detail) => html`
+                        <li class="product-detail-item">${detail}</li>
+                      `)}
+                    </ul>
+                  </div>
+                `}
+                
+                <div class="product-links">
+                  ${product.primary?.url && html`
+                    <a 
+                      href=${product.primary.url} 
+                      target="_blank" 
+                      class="product-link primary-link"
+                      style=${product.primary_color ? `background-color: ${product.primary_color}` : ''}
+                    >
+                      ${product.primary.text || 'Start free trial'}
+                    </a>
+                  `}
+                  
+                  ${product.secondary?.url && html`
+                    <a 
+                      href=${product.secondary.url} 
+                      target="_blank" 
+                      class="product-link secondary-link"
+                      style=${product.secondary_color ? `background-color: ${product.secondary_color}` : ''}
+                    >
+                      ${product.secondary.text || 'See plans & pricing'}
+                    </a>
+                  `}
+                  
+                  ${!product.primary?.url && !product.secondary?.url && product.page && html`
+                    <a href=${product.page} target="_blank" class="product-link">Learn More</a>
+                  `}
                 </div>
-              `}
+                
+                ${product.learning_resource && html`
+                  <div class="learning-resource">
+                    ${product.page && html`
+                      <a href=${product.page} target="_blank" class="resource-link product-page-link">
+                        <span class="resource-icon">🔗</span>
+                        <span class="resource-text">Product Page</span>
+                      </a>
+                    `}
+                    <a href=${product.learning_resource} target="_blank" class="resource-link">
+                      <span class="resource-icon">📚</span>
+                      <span class="resource-text">Learning Resources</span>
+                    </a>
+                  </div>
+                `}
+                
+                ${product.targeted_segments && Object.keys(product.targeted_segments).length > 0 && html`
+                  <div class="targeted-segments-preview">
+                    <h4 class="segments-title">Targeted Segments</h4>
+                    <div class="segments-container">
+                      ${Object.entries(product.targeted_segments).map(([segmentKey, segmentValue]) => html`
+                        <div class="segment-preview">
+                          <h5 class="segment-title">${segmentKey}</h5>
+                          ${segmentValue.plan && html`
+                            <div class="segment-plan">
+                              <p>${segmentValue.plan}</p>
+                            </div>
+                          `}
+                          <div class="segment-links">
+                            ${segmentValue.primary?.url && html`
+                              <a 
+                                href=${segmentValue.primary.url} 
+                                target="_blank" 
+                                class="product-link primary-link"
+                                style=${product.primary_color ? `background-color: ${product.primary_color}` : ''}
+                              >
+                                ${segmentValue.primary.text || 'Start free trial'}
+                              </a>
+                            `}
+                            ${segmentValue.secondary?.url && html`
+                              <a 
+                                href=${segmentValue.secondary.url} 
+                                target="_blank" 
+                                class="product-link secondary-link"
+                                style=${product.secondary_color ? `background-color: ${product.secondary_color}` : ''}
+                              >
+                                ${segmentValue.secondary.text || 'See plans & pricing'}
+                              </a>
+                            `}
+                          </div>
+                        </div>
+                      `)}
+                    </div>
+                  </div>
+                `}
+              </div>
             </div>
           </div>
           

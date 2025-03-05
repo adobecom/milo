@@ -55,8 +55,8 @@
 }
 
 .action-button {
-  padding: 8px 12px;
-  border: none;
+  padding: 8px 16px;
+  border: 1px solid #ddd;
   border-radius: 16px;
   background-color: #06c;
   color: white;
@@ -350,92 +350,240 @@
 
 .product-card {
   border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0 0 0 / 5%);
+  box-shadow: 0 4px 12px rgba(0 0 0 / 10%);
   width: 100%;
   flex-shrink: 0;
   overflow: hidden;
   border: 1px solid #eee;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  margin-bottom: 20px;
+  background-color: #f5f5f5;
+}
+
+.product-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0 0 0 / 15%);
 }
 
 .product-header {
-  background-color: #f5f5f5;
-  padding: 20px;
+  padding: 20px 24px 0;
   display: flex;
   align-items: center;
   gap: 15px;
+  border-bottom: none;
+}
+
+.product-media-header {
+  margin-bottom: 0;
 }
 
 .product-logo {
-  max-width: 64px;
-  max-height: 64px;
+  max-width: 24px;
+  max-height: 24px;
   object-fit: contain;
+  border-radius: 4px;
 }
 
 .product-title {
   margin: 0;
-  font-size: 20px;
+  font-size: 16px;
   color: #333;
+  font-weight: 700;
 }
 
 .product-content {
-  padding: 20px;
+  padding: 0 24px 24px;
   background-color: #fff;
+  margin: 0 15px 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0 0 0 / 5%);
+}
+
+.product-content-wrapper {
+  background-color: #fff;
+  margin: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0 0 0 / 5%);
 }
 
 .product-description {
-  margin: 0 0 15px;
-  color: #666;
-  line-height: 1.5;
+  margin: 0 0 20px;
+  color: #555;
+  line-height: 1.6;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.image-container, .video-container {
+  margin-bottom: 0;
+  border-radius: 0;
+  overflow: hidden;
+  box-shadow: none;
+}
+
+.product-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.image-container:hover .product-image {
+  transform: scale(1.02);
+}
+
+.product-video {
+  width: 100%;
+  height: auto;
+  display: block;
+  background-color: #000;
 }
 
 .product-details {
-  margin: 0 0 15px;
-  padding: 10px;
-  background-color: rgb(0 0 0 / 3%);
-  border-radius: 4px;
+  margin: 0 0 20px;
+  padding: 15px;
+  background-color: rgba(0 0 0 / 3%);
+  border-radius: 6px;
+  border: 1px solid rgba(0 0 0 / 5%);
+}
+
+.details-list {
+  margin: 0;
+  padding-left: 20px;
 }
 
 .product-detail-item {
   margin-bottom: 8px;
-  line-height: 1.4;
+  line-height: 1.5;
+  color: #444;
+  font-size: 14px;
+  font-weight: 400;
 }
 
 .product-detail-item:last-child {
   margin-bottom: 0;
 }
 
-.detail-label {
-  font-weight: bold;
-  text-transform: capitalize;
-}
-
-.detail-value {
-  word-break: break-word;
-}
-
 .product-links {
   display: flex;
-  gap: 10px;
-  margin-top: 15px;
+  gap: 12px;
+  margin-top: 20px;
   flex-wrap: wrap;
 }
 
 .product-link {
-  display: inline-block;
-  padding: 8px 16px;
-  background-color: #06c;
-  color: white;
-  text-decoration: none;
-  border-radius: 16px;
-  font-weight: bold;
+    display: flex;
+    margin-top: 4px;
+    margin-right: 4px;
+    margin-bottom: 4px;
+    padding: 1px 16px;
+    height: 32px;
+    background-color: rgb(41 41 41);
+    border: 2px solid rgb(41 41 41);
+    border-radius: 16px;
+    color: white;
+    font-weight: 700;
+    font-family: "Adobe Clean", adobe-clean, "Trebuchet MS", sans-serif;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    text-decoration: none;
 }
 
 .product-link.secondary-link {
-  background-color: #0a4;
+  background-color: white;
+  color: black;
+  border: 2px solid rgb(218 218 218);
 }
 
 .product-link:hover {
   opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0 0 0 / 15%);
+}
+
+.learning-resource {
+  margin-top: 15px;
+}
+
+.resource-link {
+  height: 3;
+  display: inline-flex;
+  align-items: center;
+  margin-right: 10px;
+  color: #06c;
+  text-decoration: none;
+  font-size: 14px;
+  padding: 6px 12px;
+  border-radius: 16px;
+  background-color: rgba(0 102 204 / 10%);
+  transition: background-color 0.2s ease;
+}
+
+.resource-link:hover {
+  background-color: rgba(0 102 204 / 15%);
+}
+
+.resource-icon {
+  margin-right: 6px;
+}
+
+.segments-container {
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.segment-preview {
+  padding: 15px;
+  background-color: rgba(0 0 0 / 3%);
+  border-radius: 8px;
+  border: 1px solid rgba(0 0 0 / 5%);
+}
+
+.segment-title {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 16px;
+  text-transform: capitalize;
+  color: #333;
+  border-bottom: 1px solid rgba(0 0 0 / 10%);
+  padding-bottom: 8px;
+}
+
+.segment-plan {
+  margin-bottom: 15px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #555;
+}
+
+.segment-plan p {
+  margin: 0;
+}
+
+.segment-links {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .segments-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .product-links {
+    flex-direction: column;
+  }
+  
+  .product-link {
+    width: 100%;
+    text-align: center;
+  }
 }
 
 .json-preview-container {
@@ -576,37 +724,6 @@
   color: #555;
 }
 
-.segment-preview {
-  margin-bottom: 15px;
-  padding: 12px;
-  background-color: rgb(0 0 0 / 3%);
-  border-radius: 6px;
-}
-
-.segment-title {
-  margin-top: 0;
-  margin-bottom: 10px;
-  font-size: 14px;
-  text-transform: capitalize;
-  color: #444;
-}
-
-.segment-plan {
-  margin-bottom: 10px;
-  font-size: 13px;
-  line-height: 1.4;
-}
-
-.segment-plan p {
-  margin: 0;
-}
-
-.segment-links, .global-links {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
 .global-buttons-preview {
   margin-top: 20px;
   padding-top: 15px;
@@ -646,20 +763,6 @@
   width: 100%;
   overflow: hidden;
   line-height: 0; /* Remove extra space below images */
-}
-
-.product-image {
-  width: 100%;
-  height: auto;
-  display: block;
-  object-fit: cover;
-}
-
-.product-video {
-  width: 100%;
-  height: auto;
-  display: block;
-  background-color: #000;
 }
 
 .json-import-actions {
