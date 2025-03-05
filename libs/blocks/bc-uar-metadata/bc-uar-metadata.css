@@ -143,6 +143,7 @@
   margin-top: 20px;
   flex: 1;
   overflow: hidden;
+  flex-direction: row-reverse;
 }
 
 .editor-section, 
@@ -173,14 +174,14 @@
   width: 100%;
 }
 
-/* Add specific widths for split view */
+/* Update the flex ratios for split view */
 .editor-container:not(.editor-only):not(.preview-only) .editor-section {
-  flex: 3; /* Take 60% of the space */
+  flex: 2; /* Take 2/3 of the space */
   min-width: 0; /* Allow flex to shrink below content size if needed */
 }
 
 .editor-container:not(.editor-only):not(.preview-only) .preview-section {
-  flex: 2; /* Take 40% of the space */
+  flex: 1; /* Take 1/3 of the space */
   min-width: 0; /* Allow flex to shrink below content size if needed */
 }
 
