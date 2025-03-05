@@ -278,6 +278,9 @@ function createSpectrumCssButton(cta, aemFragmentMapping, isOutline, variant) {
 function createSpectrumSwcButton(cta, aemFragmentMapping, isOutline, variant) {
     const CheckoutButton = customElements.get('checkout-button');
     const checkoutButton = CheckoutButton.createCheckoutButton(cta.dataset);
+    if (cta.dataset.analyticsId) {
+        checkoutButton.setAttribute('data-analytics-id', cta.dataset.analyticsId);
+    }
     checkoutButton.connectedCallback();
     checkoutButton.render();
 
