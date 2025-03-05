@@ -2,7 +2,7 @@ import { Catalog, CATALOG_AEM_FRAGMENT_MAPPING } from './catalog.js';
 import { Image } from './image.js';
 import { InlineHeading } from './inline-heading.js';
 import { MiniCompareChart } from './mini-compare-chart.js';
-import { Plans } from './plans.js';
+import { Plans, PLANS_AEM_FRAGMENT_MAPPING } from './plans.js';
 import { Product } from './product.js';
 import { Segment } from './segment.js';
 import {
@@ -50,7 +50,7 @@ export const variantFragmentMappings = {
     image: null,
     'inline-heading': null,
     'mini-compare-chart': null,
-    plans: null,
+    plans: PLANS_AEM_FRAGMENT_MAPPING,
     product: null,
     segment: null,
     'special-offers': SPECIAL_OFFERS_AEM_FRAGMENT_MAPPING,
