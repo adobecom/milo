@@ -1523,15 +1523,15 @@ export async function loadArea(area = document) {
       uaFullVersion: ${data.uaFullVersion}<br>
       platform: ${data.platform}</br>
       maintest: ${data.platform === 'Linux' && navigator.maxTouchPoints > 1 && window.screen.width >= 800 && window.screen.width <= 2560 && window.screen.height >= 1280 && window.screen.height <= 1600 && !navigator.userAgent.includes('X11')}</br>
-      maxTouchPoints: ${navigator.maxTouchPoints}</br>
       end</br>`;
   }
   const { PERSONALIZATION_TAGS } = await import('../features/personalization/personalization.js');
   textString += `navigator.userAgent: ${navigator.userAgent}</br>
   isAndroid: ${navigator.userAgent.includes('Android') || await isGalaxyTab()}</br>
   mobile-device(excluding safariIpad test: ${/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i.test(navigator.userAgent) || await isGalaxyTab()},
-  PERSONALIZATION_TAGS['mobile-device']():  ${await PERSONALIZATION_TAGS['mobile-device']()},
-  !navigator.userAgent.includes('X11'): ${!navigator.userAgent.includes('X11')};`;
+  PERSONALIZATION_TAGS['mobile-device']():  ${await PERSONALIZATION_TAGS['mobile-device']()}</br>
+  !navigator.userAgent.includes('X11'): ${!navigator.userAgent.includes('X11')}</br>
+  maxTouchPoints: ${navigator.maxTouchPoints}</br>`;
   text.innerHTML = textString;
   const main = document.querySelector('main');
   if (!main.querySelector('p#user-agent')) {
