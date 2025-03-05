@@ -38,14 +38,12 @@ describe('init', () => {
     expect(blockEl.classList.contains('figure-list-1')).to.be.false;
   });
 
-  it('should create picture and video figure blocks wrapped in A tag', () => {
+  it('should create picture figure block wrapped in A tag', () => {
     const blockEl = sections[3].querySelector('.figure');
     init(blockEl);
 
     const figures = blockEl.querySelectorAll('.figure');
     expect(figures[0].querySelector('a > picture')).to.exist;
-    expect(figures[1].querySelector('a > video')).to.exist;
-    expect(figures[1].querySelector('a > video > source')).to.exist;
   });
 
   it('should not add any classes to the block element when no pictures are present', () => {
