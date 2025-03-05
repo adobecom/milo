@@ -159,7 +159,7 @@ The reason is that some merch cards are resolved very quickly and event could di
         const logReady = document.getElementById('log-mas-ready');
         const message = (e, type) => {
           const id = e.target.getAttribute('id') || e.target.getAttribute('data-wcs-osi');
-          const detail = e.detail ? `: ${e.detail}` : '';
+          const detail = e.detail ? `: ${JSON.stringify(e.detail, null, 2)}` : '';
           return `'${type}' on ${e.target.nodeName} #${id}${detail}`;
         };
         // WCS request failed
@@ -316,7 +316,7 @@ const merchCard = document.getElementById('my-merch-card');
 
 // Listen for merch-card errors
 merchCard.addEventListener('mas:error', (event) => {
-    console.error('Merch card error:', event.detail);
+    console.error('Merch card error:', JSON.stringify(event.detail, null, 2));
     // Add error styling
     merchCard.classList.add('error');
 });
@@ -334,12 +334,12 @@ const aemFragment = merchCard.querySelector('aem-fragment');
 
 // Listen for AEM fragment errors
 aemFragment.addEventListener('aem:error', (event) => {
-    console.error('AEM fragment error:', event.detail);
+    console.error('AEM fragment error:', JSON.stringify(event.detail, null, 2));
 });
 
 // Listen for AEM fragment load event
 aemFragment.addEventListener('aem:load', (event) => {
-    console.log('AEM fragment loaded:', event.detail);
+    console.log('AEM fragment loaded:', JSON.stringify(event.detail, null, 2));
 });
 ```
 
@@ -395,7 +395,7 @@ It also falls back to last successfully loaded fragment for the same fragment id
         });
         const aemFragment = psCard.querySelector('aem-fragment');
         aemFragment.addEventListener('aem:load', (e) => {
-            log(target, JSON.stringify(e.detail));
+            log(target, JSON.stringify(e.detail, null, 2));
             log(target, 'aem-fragment has loaded');
         });
         document.getElementById('btnRefresh').addEventListener('click', () => {

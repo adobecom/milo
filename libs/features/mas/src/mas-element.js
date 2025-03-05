@@ -11,6 +11,8 @@ import {
 import { ignore } from './external.js';
 import { discoverService, setImmediate, useService } from './utilities.js';
 import { Log } from './log.js';
+import { getMasCommerceServiceDurationLog } from './utils.js';
+import { MasError } from './mas-error.js';
 
 const StateClassName = {
     [STATE_FAILED]: CLASS_NAME_FAILED,
@@ -37,37 +39,52 @@ export class MasElement {
     version = 0;
 
     wrapperElement;
-    
+
     constructor(wrapperElement) {
-      this.wrapperElement = wrapperElement;
-      this.log = Log.module('mas-element');
+        this.wrapperElement = wrapperElement;
+        this.log = Log.module('mas-element');
     }
 
-    update() {      
-      [STATE_FAILED, STATE_PENDING, STATE_RESOLVED].forEach((state) => {
-          this.wrapperElement.classList.toggle(StateClassName[state], state === this.state);
-      });
+    update() {
+        [STATE_FAILED, STATE_PENDING, STATE_RESOLVED].forEach((state) => {
+            this.wrapperElement.classList.toggle(
+                StateClassName[state],
+                state === this.state,
+            );
+        });
     }
 
     notify() {
-      if (this.state === STATE_RESOLVED || this.state === STATE_FAILED) {          
-          if (this.state === STATE_RESOLVED) {
-              this.promises.forEach(({ resolve }) => resolve(this.wrapperElement));
-          } else if (this.state === STATE_FAILED) {
-              this.promises.forEach(({ reject }) => reject(this.error));
-          }
-          this.promises = [];
-      }
-      this.wrapperElement.dispatchEvent(
-          new CustomEvent(StateEventType[this.state], { bubbles: true, detail: this.error }),
-      );
+        if (this.state === STATE_RESOLVED || this.state === STATE_FAILED) {
+            if (this.state === STATE_RESOLVED) {
+                this.promises.forEach(({ resolve }) =>
+                    resolve(this.wrapperElement),
+                );
+            } else if (this.state === STATE_FAILED) {
+                this.promises.forEach(({ reject }) => reject(this.error));
+            }
+            this.promises = [];
+        }
+        let detail = this.error;
+        if (this.error instanceof MasError) {
+            detail = {
+                message: this.error.message,
+                ...this.error.context,
+            };
+        }
+        this.wrapperElement.dispatchEvent(
+            new CustomEvent(StateEventType[this.state], {
+                bubbles: true,
+                detail,
+            }),
+        );
     }
 
     /**
      * Adds name/value of the updated attribute to the `changes` map,
      * requests placeholder update.
      */
-    attributeChangedCallback(name, _, value) {      
+    attributeChangedCallback(name, _, value) {
         this.changes.set(name, value);
         // Initiate update of the placeholder
         this.requestUpdate();
@@ -93,7 +110,7 @@ export class MasElement {
         }
         this.dispose();
         this.dispose = ignore;
-    };
+    }
 
     /**
      * Returns a promise resolving to this placeholder
@@ -103,12 +120,13 @@ export class MasElement {
      */
     onceSettled() {
         const { error, promises, state } = this;
-        if (STATE_RESOLVED === state) return Promise.resolve(this.wrapperElement);
+        if (STATE_RESOLVED === state)
+            return Promise.resolve(this.wrapperElement);
         if (STATE_FAILED === state) return Promise.reject(error);
         return new Promise((resolve, reject) => {
             promises.push({ resolve, reject });
         });
-    };
+    }
 
     /**
      * Sets component state to "RESOLVED".
@@ -126,7 +144,7 @@ export class MasElement {
         // before notifying observers about state change
         setImmediate(() => this.notify());
         return true;
-    };
+    }
 
     /**
      * Sets component state to "FAILED".
@@ -139,7 +157,11 @@ export class MasElement {
         this.error = error;
         this.state = STATE_FAILED;
         this.update();
-        this.log?.error('Failed:', { element: this.wrapperElement, error });
+        this.log?.error(`Failed to render mas-element: ${error.message}`, {
+            element: this.wrapperElement,
+            ...error.context,
+            ...getMasCommerceServiceDurationLog(),
+        });
         setImmediate(() => this.notify());
         return true;
     }
@@ -153,7 +175,9 @@ export class MasElement {
         if (options) this.options = options;
         this.state = STATE_PENDING;
         this.update();
-        this.log?.debug('Pending:', { osi: this.wrapperElement?.options?.wcsOsi });
+        this.log?.debug('Pending:', {
+            osi: this.wrapperElement?.options?.wcsOsi,
+        });
         return this.version;
     }
 
@@ -183,10 +207,16 @@ export class MasElement {
             // Trottle connected-disconnected series of events
             // when placeholder is actively manipulated by a higher component
             if (this.connected) {
-                this.log?.debug('Updated:', { element: this.wrapperElement, changes });
+                this.log?.debug('Updated:', {
+                    element: this.wrapperElement,
+                    changes,
+                });
             } else {
                 this.connected = true;
-                this.log?.debug('Connected:', { element: this.wrapperElement, changes });
+                this.log?.debug('Connected:', {
+                    element: this.wrapperElement,
+                    changes,
+                });
             }
             if (changes || force) {
                 try {
@@ -205,13 +235,12 @@ export class MasElement {
                         this.notify();
                     }
                 } catch (error) {
-                    this.log.error(`Failed to render mas-element: `, error);
                     this.toggleFailed(this.version, error, options);
                 }
             }
         });
     }
-};
+}
 
 /**
  * Deletes properties of `dataset` object that coerce to common defaults in a DOM dataset:

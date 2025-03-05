@@ -221,7 +221,7 @@ The reason is that some merch cards are resolved very quickly and event could di
         <span class="hljs-keyword">const</span> logReady = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;log-mas-ready&#x27;</span>);
         <span class="hljs-keyword">const</span> <span class="hljs-title function_">message</span> = (<span class="hljs-params">e, type</span>) =&gt; {
           <span class="hljs-keyword">const</span> id = e.<span class="hljs-property">target</span>.<span class="hljs-title function_">getAttribute</span>(<span class="hljs-string">&#x27;id&#x27;</span>) || e.<span class="hljs-property">target</span>.<span class="hljs-title function_">getAttribute</span>(<span class="hljs-string">&#x27;data-wcs-osi&#x27;</span>);
-          <span class="hljs-keyword">const</span> detail = e.<span class="hljs-property">detail</span> ? <span class="hljs-string">`: <span class="hljs-subst">${e.detail}</span>`</span> : <span class="hljs-string">&#x27;&#x27;</span>;
+          <span class="hljs-keyword">const</span> detail = e.<span class="hljs-property">detail</span> ? <span class="hljs-string">`: <span class="hljs-subst">${<span class="hljs-built_in">JSON</span>.stringify(e.detail, <span class="hljs-literal">null</span>, <span class="hljs-number">2</span>)}</span>`</span> : <span class="hljs-string">&#x27;&#x27;</span>;
           <span class="hljs-keyword">return</span> <span class="hljs-string">`&#x27;<span class="hljs-subst">${type}</span>&#x27; on <span class="hljs-subst">${e.target.nodeName}</span> #<span class="hljs-subst">${id}</span><span class="hljs-subst">${detail}</span>`</span>;
         };
         <span class="hljs-comment">// WCS request failed</span>
@@ -390,7 +390,7 @@ However, it can be accessed via <code>e.target.source</code> property.</p>
 
 <span class="hljs-comment">// Listen for merch-card errors</span>
 merchCard.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;mas:error&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">event</span>) =&gt;</span> {
-    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">&#x27;Merch card error:&#x27;</span>, event.<span class="hljs-property">detail</span>);
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">&#x27;Merch card error:&#x27;</span>, <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(event.<span class="hljs-property">detail</span>, <span class="hljs-literal">null</span>, <span class="hljs-number">2</span>));
     <span class="hljs-comment">// Add error styling</span>
     merchCard.<span class="hljs-property">classList</span>.<span class="hljs-title function_">add</span>(<span class="hljs-string">&#x27;error&#x27;</span>);
 });
@@ -408,12 +408,12 @@ merchCard.<span class="hljs-title function_">addEventListener</span>(<span class
 
 <span class="hljs-comment">// Listen for AEM fragment errors</span>
 aemFragment.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;aem:error&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">event</span>) =&gt;</span> {
-    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">&#x27;AEM fragment error:&#x27;</span>, event.<span class="hljs-property">detail</span>);
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">&#x27;AEM fragment error:&#x27;</span>, <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(event.<span class="hljs-property">detail</span>, <span class="hljs-literal">null</span>, <span class="hljs-number">2</span>));
 });
 
 <span class="hljs-comment">// Listen for AEM fragment load event</span>
 aemFragment.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;aem:load&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">event</span>) =&gt;</span> {
-    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&#x27;AEM fragment loaded:&#x27;</span>, event.<span class="hljs-property">detail</span>);
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&#x27;AEM fragment loaded:&#x27;</span>, <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(event.<span class="hljs-property">detail</span>, <span class="hljs-literal">null</span>, <span class="hljs-number">2</span>));
 });
 </code></pre>
 <h2 id="aem-fragment-custom-element" tabindex="-1">aem-fragment custom element <a class="header-anchor" href="#aem-fragment-custom-element" href="#aem-fragment-custom-element" title="Permalink to this heading">#</a></h2>
@@ -524,7 +524,7 @@ It also falls back to last successfully loaded fragment for the same fragment id
         });
         <span class="hljs-keyword">const</span> aemFragment = psCard.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&#x27;aem-fragment&#x27;</span>);
         aemFragment.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;aem:load&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">e</span>) =&gt;</span> {
-            <span class="hljs-title function_">log</span>(target, <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(e.<span class="hljs-property">detail</span>));
+            <span class="hljs-title function_">log</span>(target, <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(e.<span class="hljs-property">detail</span>, <span class="hljs-literal">null</span>, <span class="hljs-number">2</span>));
             <span class="hljs-title function_">log</span>(target, <span class="hljs-string">&#x27;aem-fragment has loaded&#x27;</span>);
         });
         <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;btnRefresh&#x27;</span>).<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;click&#x27;</span>, <span class="hljs-function">() =&gt;</span> {

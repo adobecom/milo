@@ -1,7 +1,6 @@
 import {
     ERROR_MESSAGE_BAD_REQUEST,
     ERROR_MESSAGE_OFFER_NOT_FOUND,
-    HEADER_X_REQUEST_ID,
 } from './constants.js';
 import {
     Env,
@@ -11,7 +10,8 @@ import {
     applyPlanType,
 } from './external.js';
 import { Log } from './log.js';
-import { getFetchErrorMessage } from './utils.js';
+import { MasError } from './mas-error.js';
+import { getMasCommerceServiceDurationLog } from './utils.js';
 import { masFetch } from './utils/mas-fetch.js';
 
 /**
@@ -66,7 +66,7 @@ export function Wcs({ settings }) {
         // Create a map of unresolved promises to track which ones need fallback
         const unresolvedPromises = new Map(promises);
 
-        let start;
+        let startTime;
         let duration;
         try {
             url = new URL(settings.wcsURL);
@@ -93,11 +93,11 @@ export function Wcs({ settings }) {
                 url.searchParams.set('currency', options.currency);
             }
 
-            start = Date.now();
+            startTime = Date.now();
             response = await masFetch(url.toString(), {
                 credentials: 'omit',
             });
-            duration = Date.now() - start;
+            duration = Date.now() - startTime;
             if (response.ok) {
                 let offers = [];
                 try {
@@ -105,7 +105,10 @@ export function Wcs({ settings }) {
                     log.debug('Fetched:', options, data);
                     offers = data.resolvedOffers ?? [];
                 } catch (e) {
-                    log.error('Error parsing JSON:', e);
+                    log.error(`Error parsing JSON: ${e.message}`, {
+                        ...e.context,
+                        ...getMasCommerceServiceDurationLog(),
+                    });
                 }
                 offers = offers.map(applyPlanType);
                 // resolve all promises that have offers
@@ -129,7 +132,6 @@ export function Wcs({ settings }) {
         } catch (e) {
             /* c8 ignore next 2 */
             message = `Network error: ${e.message}`;
-            log.error(message, options);
         }
 
         if (reject && promises.size) {
@@ -137,7 +139,12 @@ export function Wcs({ settings }) {
             log.debug('Missing:', { offerSelectorIds: [...promises.keys()] });
             promises.forEach((promise) => {
                 promise.reject(
-                    new Error(getFetchErrorMessage(message, response, url, { start, duration })),
+                    new MasError(message, {
+                        response,
+                        startTime,
+                        duration,
+                        ...getMasCommerceServiceDurationLog(),
+                    }),
                 );
             });
         }

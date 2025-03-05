@@ -25,6 +25,7 @@ import {
 import { VariantLayout } from './variants/variant-layout.js';
 import { hydrate, ANALYTICS_SECTION_ATTR } from './hydrate.js';
 import { Log } from './log.js';
+import { getMasCommerceServiceDurationLog } from './utils.js';
 
 const MERCH_CARD = 'merch-card';
 const MARK_START_SUFFIX = ':start';
@@ -349,7 +350,7 @@ export class MerchCard extends LitElement {
     // custom methods
     async handleAemFragmentEvents(e) {
         if (e.type === EVENT_AEM_ERROR) {
-            this.#fail(`AEM fragment cannot be loaded: ${e.detail}`);
+            this.#fail(`AEM fragment cannot be loaded`, e.detail);
         }
         if (e.type === EVENT_AEM_LOAD) {
             if (e.target.nodeName === 'AEM-FRAGMENT') {
@@ -360,8 +361,12 @@ export class MerchCard extends LitElement {
         }
     }
 
-    #fail(error, dispatch = true) {
-        this.log.error(error);
+    #fail(error, details = {}, dispatch = true) {
+        this.log.error(error, {
+            ...details,
+            element: this,
+            ...getMasCommerceServiceDurationLog(),
+        });
         this.failed = true;
         if (!dispatch) return;
         this.dispatchEvent(
@@ -395,7 +400,7 @@ export class MerchCard extends LitElement {
 
         const aemLoad = await this.aemFragment?.updateComplete;
         if (aemLoad === false) {
-            this.#fail('AEM fragment cannot be loaded', false);
+            this.#fail('AEM fragment cannot be loaded', {}, false);
             return;
         }
         const result = await Promise.race([successPromise, timeoutPromise]);

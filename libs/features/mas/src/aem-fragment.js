@@ -1,6 +1,6 @@
 import { EVENT_AEM_LOAD, EVENT_AEM_ERROR } from './constants.js';
 import { Log } from './log.js';
-import { getFetchErrorMessage } from './utils.js';
+import { MasError } from './mas-error.js';
 import { masFetch } from './utils/mas-fetch.js';
 
 const sheet = new CSSStyleSheet();
@@ -26,29 +26,26 @@ export async function getFragmentById(baseUrl, id, author, headers) {
     const endpoint = author
         ? `${baseUrl}/adobe/sites/cf/fragments/${id}`
         : `${baseUrl}/adobe/sites/fragments/${id}`;
-    const start = Date.now();
+    const startTime = Date.now();
     const response = await masFetch(endpoint, {
         cache: 'default',
         credentials: 'omit',
         headers,
     }).catch((e) => {
-        throw new Error(
-            getFetchErrorMessage('Failed to get fragment', response, endpoint, {
-                start,
-                duration: 0,
-            }),
-        );
+        const duration = Date.now() - startTime;
+        throw new MasError('Failed to get fragment', {
+            response,
+            startTime,
+            duration,
+        });
     });
-    const duration = Date.now() - start;
+    const duration = Date.now() - startTime;
     if (!response?.ok) {
-        throw new Error(
-            getFetchErrorMessage(
-                'Unexpected fragment response',
-                response,
-                endpoint,
-                { start, duration },
-            ),
-        );
+        throw new MasError('Unexpected fragment response', {
+            response,
+            startTime,
+            duration,
+        });
     }
     return response.json();
 }
@@ -97,7 +94,7 @@ export class AemFragment extends HTMLElement {
 
     #rawData = null;
     #data = null;
-
+    #stale = false;
     /**
      * @type {string} fragment id
      */
@@ -148,7 +145,7 @@ export class AemFragment extends HTMLElement {
 
     connectedCallback() {
         if (!this.#fragmentId) {
-            this.#fail('Missing fragment id');
+            this.#fail({ message: 'Missing fragment id' });
             return;
         }
     }
@@ -168,7 +165,7 @@ export class AemFragment extends HTMLElement {
             .then(() => {
                 this.dispatchEvent(
                     new CustomEvent(EVENT_AEM_LOAD, {
-                        detail: this.data,
+                        detail: { ...this.data, stale: this.#stale },
                         bubbles: true,
                         composed: true,
                     }),
@@ -177,20 +174,18 @@ export class AemFragment extends HTMLElement {
             })
             .catch((e) => {
                 /* c8 ignore next 3 */
-                this.#fail(
-                    'Network error: failed to load fragment: ' + e.message,
-                );
+                this.#fail(e);
                 this.#readyPromise = null;
                 return false;
             });
     }
 
-    #fail(error) {
+    #fail({ message, context }) {
         this.classList.add('error');
-        this.#log.error(error);
+        this.#log.error(message, context);
         this.dispatchEvent(
             new CustomEvent(EVENT_AEM_ERROR, {
-                detail: error,
+                detail: { message, context },
                 bubbles: true,
                 composed: true,
             }),
@@ -204,22 +199,16 @@ export class AemFragment extends HTMLElement {
             this.#rawData = fragment;
             return;
         }
-        try {
-            fragment = await getFragmentById(
-                baseUrl,
-                this.#fragmentId,
-                this.#author,
-                this.#ims ? headers : undefined,
-            );
-            cache.add(fragment);
-            this.#rawData = fragment;
-        } catch (e) {
-            // fail only if we never had the data
-            if (!this.#data)
-                this.#fail(
-                    'Network error: failed to load fragment: ' + e.message,
-                );
-        }
+        this.#stale = true;
+        fragment = await getFragmentById(
+            baseUrl,
+            this.#fragmentId,
+            this.#author,
+            this.#ims ? headers : undefined,
+        );
+        cache.add(fragment);
+        this.#rawData = fragment;
+        this.#stale = false;
     }
 
     get updateComplete() {

@@ -124,6 +124,7 @@ merch-card:not([variant]) {
 }
 
 pre {
+    width: auto;
     max-height: 500px;
     overflow: scroll;
     background-color: var(--spectrum-global-color-gray-300);

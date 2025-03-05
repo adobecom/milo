@@ -1,4 +1,4 @@
-import { HEADER_X_REQUEST_ID } from './constants.js';
+import { MAS_COMMERCE_SERVICE_INIT_DURATION_MEASURE_NAME } from './constants.js';
 
 export function debounce(func, delay) {
     let debounceTimer;
@@ -58,19 +58,15 @@ export function wait(ms = 1000) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export function getFetchErrorMessage(
-    error,
-    response,
-    url,
-    { start, duration },
-) {
-    let message = `${error}: ${response?.status}, url: ${url.toString()}`;
-    const requestId = response?.headers?.get(HEADER_X_REQUEST_ID);
-    if (requestId) {
-        message = `${message}, ${HEADER_X_REQUEST_ID}: ${requestId}`;
-    }
-    if (start && duration) {
-        message = `${message}, start: ${start}, duration: ${duration}`;
-    }
-    return message;
+/**
+ * Returns the duration of the mas-commerce-service initialization.
+ * @returns {number} The duration of the mas-commerce-service initialization.
+ */
+export function getMasCommerceServiceDurationLog() {
+    const masCommerceService = document.querySelector('mas-commerce-service');
+    if (!masCommerceService) return {};
+    return {
+        [MAS_COMMERCE_SERVICE_INIT_DURATION_MEASURE_NAME]:
+            masCommerceService.initDuration,
+    };
 }

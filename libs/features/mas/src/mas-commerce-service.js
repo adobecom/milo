@@ -10,6 +10,7 @@ import { getSettings } from './settings.js';
 import { Wcs } from './wcs.js';
 import { setImmediate } from './utilities.js';
 import { updateConfig as updateLanaConfig } from './lana.js';
+import { getMasCommerceServiceDurationLog } from './utils.js';
 
 export const TAG_NAME_SERVICE = 'mas-commerce-service';
 
@@ -30,7 +31,10 @@ export class MasCommerceService extends HTMLElement {
             commerce: { env: this.getAttribute('env') },
             lana: {
                 tags: this.getAttribute('lana-tags'),
-                sampleRate: parseInt(this.getAttribute('lana-sample-rate') ?? 1, 10),
+                sampleRate: parseInt(
+                    this.getAttribute('lana-sample-rate') ?? 1,
+                    10,
+                ),
                 isProdDomain: this.getAttribute('host-env') === 'prod',
             },
         };
@@ -142,6 +146,11 @@ export class MasCommerceService extends HTMLElement {
                 detail: this,
             });
             performance.mark(MARK_READY);
+            this.initDuration = performance.measure(
+                Constants.MAS_COMMERCE_SERVICE_INIT_DURATION_MEASURE_NAME,
+                MARK_START,
+                MARK_READY,
+            )?.duration;
             this.dispatchEvent(event);
         });
         setTimeout(() => {
@@ -213,7 +222,10 @@ export class MasCommerceService extends HTMLElement {
             )
         ) {
             const failedUrls = uniqueFailedResources.map(({ name }) => name);
-            this.log.error('Failed requests:', failedUrls);
+            this.log.error('Failed requests:', {
+                failedUrls,
+                ...getMasCommerceServiceDurationLog(),
+            });
         }
         this.lastLoggingTime = Date.now();
     }
