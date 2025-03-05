@@ -4,7 +4,7 @@ import { assert, stub } from 'sinon';
 import { getConfig, setConfig } from '../../../libs/utils/utils.js';
 import {
   handleFragmentCommand, applyPers, cleanAndSortManifestList, normalizePath,
-  init, matchGlob, createContent, combineMepSources, buildVariantInfo, addMepIdToSectionMetadata,
+  init, matchGlob, createContent, combineMepSources, buildVariantInfo, addSectionIds,
 } from '../../../libs/features/personalization/personalization.js';
 import mepSettings from './mepSettings.js';
 import mepSettingsPreview from './mepPreviewSettings.js';
@@ -378,10 +378,11 @@ describe('Functional Test', () => {
     expect(document.querySelector('meta[property="og:image"]').content).to.equal('https://adobe.com/path/to/image.jpg');
   });
 
-  it('will add mep-id attribute to the section metadata', async () => {
-    addMepIdToSectionMetadata(document);
-    const metadataBlock = document.querySelector('.section-metadata');
-    expect(metadataBlock.getAttribute('mep-id')).to.equal('marquee-container');
+  it('will add id to the section div', async () => {
+    addSectionIds(document);
+    const sectionWithId = document.querySelector('#marquee-container');
+    expect(sectionWithId).to.exist;
+    expect(sectionWithId.getAttribute('id')).to.equal('marquee-container');
   });
 });
 
