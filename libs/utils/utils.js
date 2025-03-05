@@ -69,6 +69,7 @@ const MILO_BLOCKS = [
   'review',
   'section-metadata',
   'slideshare',
+  'susi-light',
   'preflight',
   'promo',
   'quiz',
