@@ -32,7 +32,7 @@ export const defaultLiterals = {
         '{taxTerm, select, GST {excl. GST} VAT {excl. VAT} TAX {excl. tax} IVA {excl. IVA} SST {excl. SST} KDV {excl. KDV} other {}}',
     taxInclusiveLabel:
         '{taxTerm, select, GST {incl. GST} VAT {incl. VAT} TAX {incl. tax} IVA {incl. IVA} SST {incl. SST} KDV {incl. KDV} other {}}',
-    alternativePriceAriaLabel: 'Alternatively at {alternativePrice}',
+    alternativePriceAriaLabel: 'Alternatively at',
     strikethroughAriaLabel: 'Regularly at',
 };
 
@@ -65,6 +65,7 @@ const literalKeys = {
     taxExclusiveLabel: 'taxExclusiveLabel',
     taxInclusiveLabel: 'taxInclusiveLabel',
     strikethroughAriaLabel: 'strikethroughAriaLabel',
+    alternativePriceAriaLabel: 'alternativePriceAriaLabel'
 };
 const WCS_TAX_DISPLAY_EXCLUSIVE = 'TAX_EXCLUSIVE';
 
@@ -102,6 +103,7 @@ function renderContainer(
     cssClass,
     {
         accessibleLabel,
+        accessibleLabel2,
         currencySymbol,
         decimals,
         decimalsDelimiter,
@@ -136,8 +138,9 @@ function renderContainer(
         taxInclusivityLabel,
         true,
     );
-
-    return `${accessibleLabel ? `<sr-only>${accessibleLabel}</sr-only>` : ''}${renderSpan(cssClass, markup, {
+    const regularlySRLabel = accessibleLabel ? `<sr-only>${accessibleLabel}</sr-only>` : '';
+    const alternativlySRLabel = accessibleLabel2 ? `<sr-only>${accessibleLabel2}</sr-only>` : '';
+    return `${regularlySRLabel}${renderSpan(cssClass, markup, {
         ...attributes,
     })}`;
 }
@@ -241,7 +244,7 @@ const createPriceTemplate =
             usePrecision,
         });
 
-        let accessibleLabel = '';
+        let accessibleLabel = '', accessibleLabel2 = '';
 
         let recurrenceLabel = '';
         if (toBoolean(displayRecurrence) && recurrenceTerm) {
@@ -274,6 +277,13 @@ const createPriceTemplate =
                     strikethroughPrice: accessibleLabel,
                 },
             );
+        } else if (true) { 
+            accessibleLabel2 = formatLiteral(
+                literalKeys.alternativePriceAriaLabel,
+                {
+                    alternativePrice: accessibleLabel2,
+                },
+            );
         }
 
         let cssClass = cssClassNames.container;
@@ -293,6 +303,7 @@ const createPriceTemplate =
                 {
                     ...formattedPrice,
                     accessibleLabel,
+                    accessibleLabel2,
                     recurrenceLabel,
                     perUnitLabel,
                     taxInclusivityLabel,

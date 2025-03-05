@@ -742,6 +742,9 @@ async function buildPrice(el, params) {
   if (!context) return null;
   const service = await initService();
   const price = service.createInlinePrice(context);
+  price.addEventListener('mas:resolved', () => {
+    console.log(price);
+  });
   return price;
 }
 
