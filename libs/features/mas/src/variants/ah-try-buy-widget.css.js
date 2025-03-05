@@ -102,7 +102,6 @@ export const CSS = `
 
     merch-card[variant="ah-try-buy-widget"][size='single'] [slot="image"] img {
       width: 100%;
-      height: 207px;
       object-fit: cover;
       border-radius: 16px;
       overflow: hidden;
