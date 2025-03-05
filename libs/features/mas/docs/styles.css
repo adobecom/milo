@@ -247,6 +247,10 @@ h5 {
     margin: 0;
 }
 
+.one-merch-card.ah-try-buy-widget {
+    grid-template-columns: minmax(484px, 0);
+}
+
 .two-merch-cards.ah-try-buy-widget {
     grid-template-columns: repeat(2, minmax(238px, 0px));
     gap: 8px;
