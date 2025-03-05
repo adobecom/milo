@@ -1,9 +1,9 @@
-import { CheckoutButton } from './checkout-button.js';
 import { UptLink } from './upt-link.js';
 import { createTag } from './utils.js';
 
 const DEFAULT_BADGE_COLOR = '#000000';
 const DEFAULT_BADGE_BACKGROUND_COLOR = '#F8D904';
+const DEFAULT_BORDER_COLOR = '#EAEAEA';
 const CHECKOUT_STYLE_PATTERN = /(accent|primary|secondary)(-(outline|link))?/;
 export const ANALYTICS_TAG = 'mas:product_code/';
 export const ANALYTICS_LINK_ATTR = 'daa-ll';
@@ -62,6 +62,15 @@ function processBadge(fields, merchCard) {
         merchCard.setAttribute(
             'badge-background-color',
             fields.badgeBackgroundColor || DEFAULT_BADGE_BACKGROUND_COLOR,
+        );
+        merchCard.setAttribute(
+            'border-color',
+            fields.badgeBackgroundColor || DEFAULT_BADGE_BACKGROUND_COLOR,
+        );
+    } else {
+        merchCard.setAttribute(
+            'border-color',
+            fields.borderColor || DEFAULT_BORDER_COLOR,
         );
     }
 }
