@@ -2,7 +2,7 @@
   height: calc(100vh - calc(var(--feds-height-nav) + 67px) );
   background-size: cover;
   display:flex;
-  gap: 166px;
+  gap: 11.5%;
   align-items: center;
 }
 
@@ -31,12 +31,25 @@
   line-height: 130%; /* 28.6px */
 }
 
+.login-container {
+  margin-left: 12.5%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 400px;
+}
+
+.guest-footer {
+  padding: 20px 32px;
+  background-color: white;
+  border-radius: 16px;
+  justify-items: center;
+}
+
 .susi-light-wrapper {
   padding: 32px;
   background-color: white;
   height: 500px;
   border-radius: 16px;
-  width: 400px;
   box-sizing: border-box;
-  margin-left: 12.5%;
 }

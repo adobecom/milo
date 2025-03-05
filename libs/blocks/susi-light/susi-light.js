@@ -15,13 +15,29 @@ export default async function init(el) {
     redirect_uri: window.location.href,
     locale: window.location.hash.substring(1) || 'en-us',
   };
-  sentry.config = {};
+  sentry.config = { title: 'Hello' };
+  const onRedirect = (e) => {
+    // eslint-disable-next-line no-console
+    console.log('redirecting to:', e.detail);
+    setTimeout(() => {
+      window.location.assign(e.detail);
+      // temporary solution: allows analytics to go thru
+    }, 100);
+  };
+
+  sentry.addEventListener('redirect', onRedirect);
 
   const lib = 'https://auth-light.identity-stage.adobe.com/sentry/wrapper.js';
   await loadScript(lib);
 
+  const loginContainer = createTag('div', { class: 'login-container' });
+
   const susiWrapper = createTag('div', { class: 'susi-light-wrapper' });
   susiWrapper.appendChild(sentry);
+  loginContainer.appendChild(susiWrapper);
+
+  const guestFooter = createTag('div', { class: 'guest-footer' }, children[2]);
+  loginContainer.appendChild(guestFooter);
 
   const ps = children[1].querySelectorAll(':scope p');
   const productInfo = createTag('div', { class: 'susi-product-info' });
@@ -35,6 +51,6 @@ export default async function init(el) {
   productInfo.appendChild(title);
   productInfo.appendChild(tagline);
 
-  el.appendChild(susiWrapper);
+  el.appendChild(loginContainer);
   el.appendChild(productInfo);
 }
