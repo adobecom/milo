@@ -34,7 +34,6 @@ header.global-navigation {
   z-index: 10;
   background-color: var(--feds-background-nav);
   box-sizing: content-box;
-  overflow-x: clip;
 }
 
 .feds-topnav-wrapper {
@@ -514,6 +513,10 @@ header.global-navigation {
 
 /* Desktop styles */
 @media (min-width: 900px) {
+  header.global-navigation {
+    contain: layout;
+  }
+
   /* General */
   .global-navigation.has-breadcrumbs {
     padding-bottom: var(--feds-height-breadcrumbs);
@@ -986,12 +989,13 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .title .breadcrumb
   box-sizing: inherit;
 }
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .title h7 {
-  height: 25px;
+  min-height: 25px;
   font-size: 28px;
   font-weight: 700;
   line-height: 25px;
   padding: 8px 0 24px;
   box-sizing: inherit;
+  white-space: break-spaces;
 }
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tabs {
@@ -1033,6 +1037,18 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content {
   border-left: 1px solid var(--feds-borderColor-link-v2);
 }
 
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds-cta--secondary {
+  margin: 12px;
+  height: unset;
+  display: inline-block;
+  line-height: 1.2;
+  text-wrap: wrap;
+  min-width: 100px;
+  max-width: 200px;
+  text-align: center;
+  padding: 5px 18px 6px;
+}
+
 [dir = "rtl"] header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content {
   border-left: none;
   border-right: 1px solid var(--feds-borderColor-link-v2);
@@ -1044,6 +1060,10 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content a {
   animation: slideup 0.6s ease, fadein 0.8s ease;
   animation-fill-mode: forwards;
   font-weight: 700;
+}
+
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content a.feds-navLink:not(:has(div)) {
+  white-space: break-spaces;
 }
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds-navLink-title {
@@ -1326,7 +1346,16 @@ html:has(body.disable-ios-scroll) { /* this class is only added on iOS */
   position: fixed;
 }
 
-/* GNAV popup height fix in case of app banner */
-.branch-banner-is-active header.new-nav .feds-nav > section.feds-navItem > .feds-popup {
-  height: calc(100dvh - var(--app-banner-height));
+/* Adjustments for app banner non-sticky behavior */
+.branch-banner-is-active.branch-banner-inline {
+  transition: 0ms !important;
+}
+
+.disable-ios-scroll.branch-banner-is-active.branch-banner-inline {
+  margin-top: 0 !important;
+}
+
+.disable-ios-scroll.branch-banner-is-active.branch-banner-inline #branch-banner-iframe {
+  position: relative;
+  display: block;
 }

@@ -105,7 +105,10 @@ function configTabs(config, rootElem) {
   if (config['active-tab']) {
     const id = `#tab-${CSS.escape(config['tab-id'])}-${CSS.escape(getStringKeyName(config['active-tab']))}`;
     const sel = rootElem.querySelector(id);
-    if (sel) sel.click();
+    if (sel) {
+      sel.addEventListener('click', (e) => e.stopPropagation(), { once: true });
+      sel.click();
+    }
   }
   const tabParam = new URLSearchParams(window.location.search).get('tab');
   if (!tabParam) return;

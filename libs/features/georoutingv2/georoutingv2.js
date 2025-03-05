@@ -1,4 +1,6 @@
-import { getFederatedContentRoot } from '../../utils/federated.js';
+import { getFederatedContentRoot } from '../../utils/utils.js';
+
+const OLD_GEOROUTING = 'oldgeorouting';
 
 let config;
 let createTag;
@@ -271,6 +273,7 @@ export default async function loadGeoRouting(
   getMetadataFunc,
   loadBlockFunc,
   loadStyleFunc,
+  v2jsonPromise = null,
 ) {
   if (getGeoroutingOverride()) return;
   config = conf;
@@ -279,25 +282,25 @@ export default async function loadGeoRouting(
   loadBlock = loadBlockFunc;
   loadStyle = loadStyleFunc;
 
-  const urls = [
-    `${config.contentRoot ?? ''}/georoutingv2.json`,
-    `${config.contentRoot ?? ''}/georouting.json`,
-    `${getFederatedContentRoot()}/federal/georouting/georoutingv2.json`,
-  ];
-  let resp;
-  for (const url of urls) {
-    resp = await fetch(url);
-    if (resp.ok) {
-      if (url.includes('georouting.json')) {
-        const json = await resp.json();
-        // eslint-disable-next-line import/no-cycle
-        const { default: loadGeoRoutingOld } = await import('../georouting/georouting.js');
-        loadGeoRoutingOld(config, createTag, getMetadata, json);
-      }
-      break;
-    }
-  }
-  const json = await resp.json();
+  const v2JSON = (v2jsonPromise ?? import(`${conf.contentRoot ?? ''}/georoutingv2.json`))
+    .then((r) => r.json())
+    .catch(() => null);
+  const loadOldGeorouting = async (json) => {
+    const { default: loadGeoRoutingOld } = await import('../georouting/georouting.js');
+    await loadGeoRoutingOld(config, createTag, getMetadata, json);
+    return OLD_GEOROUTING;
+  };
+  const oldGeorouting = () => fetch(`${config.contentRoot ?? ''}/georouting.json`)
+    .then((r) => r.json())
+    .then(loadOldGeorouting)
+    .catch(() => null);
+  const federatedJSON = () => fetch(`${getFederatedContentRoot()}/federal/georouting/georoutingv2.json`)
+    .then((r) => r.json())
+    .catch(() => null);
+
+  const json = (await v2JSON) ?? (await oldGeorouting()) ?? (await federatedJSON());
+  if (json === OLD_GEOROUTING) return;
+
   const { locale } = config;
 
   const urlLocale = locale.prefix.replace('/', '');
