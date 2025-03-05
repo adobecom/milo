@@ -678,7 +678,7 @@ class Gnav {
     const config = getConfig();
     const locale = getUniversalNavLocale(config.locale);
     const environment = config.env.name === 'prod' ? 'prod' : 'stage';
-    const visitorGuid = window.alloy ? await window.alloy('getIdentity')
+    const visitorGuid = window.alloy ? await window.alloy_getIdentity
       .then((data) => data?.identity?.ECID).catch(() => undefined) : undefined;
     const experienceName = getExperienceName();
 
