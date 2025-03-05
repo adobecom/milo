@@ -1528,7 +1528,7 @@ export async function loadArea(area = document) {
   const { PERSONALIZATION_TAGS } = await import('../features/personalization/personalization.js');
   textString += `navigator.userAgent: ${navigator.userAgent}</br>
   isAndroid: ${navigator.userAgent.includes('Android') || await isGalaxyTab()}</br>
-  mobile-device(excluding safariIpad test: ${/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i.test(navigator.userAgent) || await isGalaxyTab()},
+  mobile-device(excluding safariIpad test: ${/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i.test(navigator.userAgent) || await isGalaxyTab()}</br>
   PERSONALIZATION_TAGS['mobile-device']():  ${await PERSONALIZATION_TAGS['mobile-device']()}</br>
   !navigator.userAgent.includes('X11'): ${!navigator.userAgent.includes('X11')}</br>
   maxTouchPoints: ${navigator.maxTouchPoints}</br>`;
