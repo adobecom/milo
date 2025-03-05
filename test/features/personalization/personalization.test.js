@@ -4,7 +4,7 @@ import { assert, stub } from 'sinon';
 import { getConfig, setConfig } from '../../../libs/utils/utils.js';
 import {
   handleFragmentCommand, applyPers, cleanAndSortManifestList, normalizePath,
-  init, matchGlob, createContent, combineMepSources, buildVariantInfo, addSectionIds,
+  init, matchGlob, createContent, combineMepSources, buildVariantInfo, addSectionAnchors,
 } from '../../../libs/features/personalization/personalization.js';
 import mepSettings from './mepSettings.js';
 import mepSettingsPreview from './mepPreviewSettings.js';
@@ -379,7 +379,7 @@ describe('Functional Test', () => {
   });
 
   it('will add id to the section div', async () => {
-    addSectionIds(document);
+    addSectionAnchors(document);
     const sectionWithId = document.querySelector('#marquee-container');
     expect(sectionWithId).to.exist;
     expect(sectionWithId.getAttribute('id')).to.equal('marquee-container');

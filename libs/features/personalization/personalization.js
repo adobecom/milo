@@ -561,7 +561,7 @@ export const deleteMarkedEls = (rootEl = document) => {
     .forEach((el) => el.remove());
 };
 
-export function addSectionIds(rootEl = document) {
+export function addSectionAnchors(rootEl = document) {
   const metadataBlocks = rootEl.querySelectorAll('.section-metadata');
   metadataBlocks.forEach((block) => {
     [...block.children].forEach((row) => {
@@ -580,7 +580,7 @@ export function handleCommands(
   forceRootEl = false,
 ) {
   const section1 = document.querySelector('main > div');
-  addSectionIds(rootEl);
+  addSectionAnchors(rootEl);
   commands.forEach((cmd) => {
     const { action, content, selector } = cmd;
     cmd.content = forceInline && getSelectorType(content) === 'fragment' ? addHash(content, INLINE_HASH) : content;
