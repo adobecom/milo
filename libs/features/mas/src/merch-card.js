@@ -366,10 +366,7 @@ export class MerchCard extends LitElement {
     }
 
     #fail(error, details = {}, dispatch = true) {
-        this.log.error(`merch-card: ${error}`, {
-            ...(details.context ?? {}),
-            ...getMasCommerceServiceDurationLog(),
-        });
+        this.log.error(`merch-card: ${error}`, details.context ?? {});
         this.failed = true;
         if (!dispatch) return;
         this.dispatchEvent(
