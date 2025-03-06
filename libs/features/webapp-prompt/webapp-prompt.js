@@ -4,9 +4,8 @@ import {
   lanaLog,
   toFragment,
 } from '../../blocks/global-navigation/utilities/utilities.js';
-import { getConfig, decorateSVG } from '../../utils/utils.js';
+import { getConfig, decorateSVG, getFedsPlaceholderConfig } from '../../utils/utils.js';
 import { replaceKey, replaceText } from '../placeholders.js';
-import { getFedsPlaceholderConfig } from '../../utils/federated.js';
 
 export const DISMISSAL_CONFIG = {
   animationCount: 2,
@@ -140,7 +139,8 @@ export class AppPrompt {
         lanaLog({
           message: 'Error on getting anchor state',
           e,
-          tags: 'errorType=error,module=pep',
+          tags: 'pep',
+          errorType: 'error',
         });
         return {};
       }));
@@ -174,7 +174,8 @@ export class AppPrompt {
       lanaLog({
         message: `Error fetching content for prompt: ${this.promptPath}.plain.html`,
         e: `Status ${res.status} when trying to fetch content for prompt`,
-        tags: 'errorType=error,module=pep',
+        tags: 'pep',
+        errorType: 'error',
       });
       return '';
     }
@@ -215,7 +216,8 @@ export class AppPrompt {
         lanaLog({
           message: 'Error fetching user profile',
           e,
-          tags: 'errorType=error,module=pep',
+          tags: 'pep',
+          errorType: 'error',
         });
       });
 
@@ -369,7 +371,7 @@ export default async function init(config) {
     if (!appPrompt.initializationQueued) await appPrompt.init();
     return appPrompt;
   } catch (e) {
-    lanaLog({ message: 'Could not initialize PEP', e, tags: 'errorType=error,module=pep' });
+    lanaLog({ message: 'Could not initialize PEP', e, tags: 'pep', errorType: 'error' });
     return null;
   }
 }

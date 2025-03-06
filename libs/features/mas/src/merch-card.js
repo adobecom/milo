@@ -69,6 +69,7 @@ export class MerchCard extends LitElement {
             attribute: 'stock-offer-osis',
             converter: {
                 fromAttribute: (value) => {
+                    if (!value) return;
                     const [PUF, ABM, M2M] = value.split(',');
                     return { PUF, ABM, M2M };
                 },
@@ -350,7 +351,10 @@ export class MerchCard extends LitElement {
     // custom methods
     async handleAemFragmentEvents(e) {
         if (e.type === EVENT_AEM_ERROR) {
-            this.#fail(`AEM fragment cannot be loaded: ${e.detail.message}`, e.detail);
+            this.#fail(
+                `AEM fragment cannot be loaded: ${e.detail.message}`,
+                e.detail,
+            );
         }
         if (e.type === EVENT_AEM_LOAD) {
             if (e.target.nodeName === 'AEM-FRAGMENT') {
@@ -371,7 +375,7 @@ export class MerchCard extends LitElement {
         if (!dispatch) return;
         this.dispatchEvent(
             new CustomEvent(EVENT_MAS_ERROR, {
-                detail: error,
+                detail: { message: error, ...details },
                 bubbles: true,
                 composed: true,
             }),

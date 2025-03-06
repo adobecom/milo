@@ -4,15 +4,15 @@ import { CSS } from './ah-try-buy-widget.css.js';
 
 export const AH_TRY_BUY_WIDGET_AEM_FRAGMENT_MAPPING = {
   mnemonics: { size: 's' },
-  title: { tag: 'h3', slot: 'heading-xxxs', maxCount: 40 },
-  description: { tag: 'div', slot: 'body-xxs', maxCount: 200 },
+  title: { tag: 'h3', slot: 'heading-xxxs', maxCount: 40, withSuffix: true },
+  description: { tag: 'div', slot: 'body-xxs', maxCount: 200, withSuffix: false },
   prices: { tag: 'p', slot: 'price' },
   ctas: { slot: 'cta', size: 'S' },
   backgroundImage: { tag: 'div', slot: 'image' },
   backgroundColor: { attribute: 'background-color' },
   borderColor: { attribute: 'border-color' },
   allowedColors: {
-    gray: '--spectrum-gray-50'
+    gray: '--spectrum-gray-100'
   },
   size: ['single', 'double', 'triple'],
 };
@@ -27,8 +27,6 @@ export class AHTryBuyWidget extends VariantLayout {
     return AH_TRY_BUY_WIDGET_AEM_FRAGMENT_MAPPING;
   }
 
-
-
   renderLayout() {
     return html`
       <div class="content">
@@ -37,7 +35,9 @@ export class AHTryBuyWidget extends VariantLayout {
             <slot name="heading-xxxs"></slot>
         </div>
         <slot name="body-xxs"></slot>
-        <slot name="price"></slot>
+        <div class="price">
+            <slot name="price"></slot>
+        </div>
         <div class="footer">
           <slot name="cta"></slot>
         </div>
@@ -50,10 +50,7 @@ export class AHTryBuyWidget extends VariantLayout {
   static variantStyle = css`
     :host([variant='ah-try-buy-widget']) {
         --merch-card-ah-try-buy-widget-min-width: 132px;
-        --merch-card-ah-try-buy-widget-max-width: 132px;
         --merch-card-ah-try-buy-widget-content-min-width: 132px;
-        --merch-card-ah-try-buy-widget-content-max-width: 245px;
-        --merch-card-ah-try-buy-widget-height: 206px;
         --merch-card-ah-try-buy-widget-header-min-height: 36px;
         --merch-card-ah-try-buy-widget-gray-background: rgba(248, 248, 248);
         --merch-card-ah-try-buy-widget-text-color: rgba(19, 19, 19);
@@ -61,8 +58,6 @@ export class AHTryBuyWidget extends VariantLayout {
         --merch-card-ah-try-buy-widget-outline: transparent;
         --merch-card-custom-border-width: 1px;
         min-width: var(--merch-card-ah-try-buy-widget-min-width);
-        max-width: var(--merch-card-ah-try-buy-widget-max-width);
-        min-height: var(--merch-card-ah-try-buy-widget-height);
         background-color: var(--merch-card-custom-background-color, var(--consonant-merch-card-background-color));
         color: var(--consonant-merch-card-heading-xxxs-color);
         border-radius: 10px;
@@ -71,18 +66,13 @@ export class AHTryBuyWidget extends VariantLayout {
         flex-direction: column;
         overflow: hidden;
         padding: 12px !important;
-        gap: 24px;
+        gap: 16px;
         box-sizing: content-box !important;
         justify-content: space-between;
     }
 
     :host([variant='ah-try-buy-widget'][size='single']) {
-        --merch-card-ah-try-buy-widget-max-width: 460px;
-        max-height: 230px;
-        flex-direction: column;
-        flex-wrap: wrap;
-        column-gap: 0;
-        justify-content: space-around;
+        flex-direction: row;
     }
 
     :host([variant='ah-try-buy-widget'][size='single']) ::slotted(div[slot="cta"])  {
@@ -90,16 +80,11 @@ export class AHTryBuyWidget extends VariantLayout {
         flex-grow: 0;
     }
 
-    :host([variant='ah-try-buy-widget'][size='double']) {
-        --merch-card-ah-try-buy-widget-max-width: 214px;
-    }
-
     :host([variant='ah-try-buy-widget']) .content {
         display: flex;
         flex-direction: column;
         justify-content: flex-start;
         min-width: var(--merch-card-ah-try-buy-widget-content-min-width);
-        max-width: var(--merch-card-ah-try-buy-widget-content-max-width);
         flex-basis: var(--merch-card-ah-try-buy-widget-content-min-width);
         flex-grow: 1;
     }
@@ -113,12 +98,15 @@ export class AHTryBuyWidget extends VariantLayout {
         margin-bottom: 4px;
     }
 
+    :host([variant='ah-try-buy-widget']) .price {
+        display: flex;
+        flex-grow: 1;
+    }
 
     :host([variant='ah-try-buy-widget']) ::slotted([slot='price']) {
         margin-left: var(--spacing-xs);
         display: flex;
         flex-direction: column;
-        flex-grow: 1;
         justify-content: end;
         font-size: var(--consonant-merch-card-detail-s-font-size);
         font-style: italic;
@@ -132,26 +120,6 @@ export class AHTryBuyWidget extends VariantLayout {
       flex-wrap: wrap;
       gap: 8px;
       flex-direction: row;
-    }
-
-    :host([variant='ah-try-buy-widget'][size='single']) .image {
-      display: flex;
-      width: 199px;
-      overflow: hidden;
-      height: 100%;
-      order: 1;
-    }
-
-    :host([variant='ah-try-buy-widget']) .image {
-        display: none;
-    }
-
-    :host([variant='ah-try-buy-widget']) .image img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        border-radius: 16px;
-        overflow: hidden;
     }
   `;
 }

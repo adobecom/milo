@@ -51,6 +51,11 @@ const outputPath = path.join(targetFile);
 // Read the Markdown file
 const inputContent = fs.readFileSync(inputPath, 'utf8');
 
+// depending on surface, load either Milo consonant or Spectrum styles
+const styleDependecy = ['plans.md'].includes(sourceFile) 
+  ? '<link rel="stylesheet" href="../../../styles/styles.css">' 
+  : '<link rel="stylesheet" href="spectrum.css">';
+
 // Render Markdown to HTML
 const htmlContent = md.render(inputContent);
 
@@ -62,7 +67,7 @@ const htmlTemplate = `
     <meta charset="UTF-8">
     <title>M@S Web Components</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="spectrum.css">
+    ${styleDependecy}
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
   

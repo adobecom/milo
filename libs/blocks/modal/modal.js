@@ -3,7 +3,7 @@
 import { createTag, getMetadata, localizeLink, loadStyle, getConfig } from '../../utils/utils.js';
 import { decorateSectionAnalytics } from '../../martech/attributes.js';
 
-const FOCUSABLES = 'a:not(.hide-video), button, input, textarea, select, details, [tabindex]:not([tabindex="-1"]';
+const FOCUSABLES = 'a:not(.hide-video), button, input, textarea, select, details, [tabindex]:not([tabindex="-1"])';
 const CLOSE_ICON = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
   <g transform="translate(-10500 3403)">
     <circle cx="10" cy="10" r="10" transform="translate(10500 -3403)" fill="#707070"/>
@@ -100,7 +100,7 @@ function getCustomModal(custom, dialog) {
 async function getPathModal(path, dialog) {
   let href = path;
   if (path.includes('/federal/')) {
-    const { getFederatedUrl } = await import('../../utils/federated.js');
+    const { getFederatedUrl } = await import('../../utils/utils.js');
     href = getFederatedUrl(path);
   }
   const block = createTag('a', { href });
@@ -139,6 +139,7 @@ export async function getModal(details, custom) {
     'aria-label': 'Close',
     'daa-ll': `${analyticsEventName}:modalClose:buttonClose`,
   }, CLOSE_ICON);
+  const focusPlaceholder = createTag('div', { class: 'dialog-focus-placeholder', tabindex: 0 });
 
   const focusVisible = { focusVisible: true };
   const focusablesOnLoad = [...dialog.querySelectorAll(FOCUSABLES)];
@@ -154,20 +155,17 @@ export async function getModal(details, custom) {
     firstFocusable = close;
   }
 
-  dialog.addEventListener('keydown', (event) => {
-    const isShiftKey = event.shiftKey;
-    const isTab = event.key === 'Tab';
-    const isCloseActive = document.activeElement === close;
+  let shiftTabOnClose = false;
 
-    if (!isShiftKey && isTab && isCloseActive) {
-      event.preventDefault();
-      firstFocusable.focus(focusVisible);
-    }
+  close.addEventListener('keydown', (event) => {
+    if (event.key !== 'Tab' || !event.shiftKey) return;
+    shiftTabOnClose = true;
+    focusPlaceholder.focus(focusVisible);
+  });
 
-    if (isTab && isShiftKey && document.activeElement === firstFocusable) {
-      event.preventDefault();
-      close.focus(focusVisible);
-    }
+  focusPlaceholder.addEventListener('focus', () => {
+    if (!shiftTabOnClose) close.focus(focusVisible);
+    shiftTabOnClose = false;
   });
 
   close.addEventListener('click', (e) => {
@@ -181,7 +179,8 @@ export async function getModal(details, custom) {
     }
   });
   decorateSectionAnalytics(dialog, `${id}-modal`, getConfig());
-  dialog.append(close);
+  dialog.prepend(close);
+  dialog.append(focusPlaceholder);
   document.body.append(dialog);
   dialogLoadingSet.delete(id);
   firstFocusable.focus({ preventScroll: true, ...focusVisible });

@@ -7,6 +7,7 @@ import {
   decorateLinks,
   loadScript,
   getGnavSource,
+  getFedsPlaceholderConfig,
 } from '../../utils/utils.js';
 import {
   closeAllDropdowns,
@@ -45,7 +46,6 @@ import {
   branchBannerLoadCheck,
   getBranchBannerInfo,
 } from './utilities/utilities.js';
-import { getFedsPlaceholderConfig } from '../../utils/federated.js';
 
 import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
 
@@ -316,6 +316,11 @@ const convertToPascalCase = (str) => str
   .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
   .join(' ');
 
+const removeLocalNav = () => {
+  lanaLog({ message: 'Gnav Localnav was removed, potential CLS', tags: 'gnav-localnav' });
+  document.querySelector('.feds-localnav')?.remove();
+};
+
 class Gnav {
   constructor({ content, block, newMobileNav } = {}) {
     this.content = content;
@@ -428,9 +433,12 @@ class Gnav {
   };
 
   decorateLocalNav = async () => {
-    if (!this.isLocalNav()) return;
+    if (!this.isLocalNav()) {
+      removeLocalNav();
+      return;
+    }
     const localNavItems = this.elements.navWrapper.querySelector('.feds-nav').querySelectorAll('.feds-navItem:not(.feds-navItem--section, .feds-navItem--mobile-only)');
-    const firstElem = localNavItems[0]?.querySelector('a');
+    const firstElem = localNavItems[0]?.querySelector('a') || localNavItems[0]?.querySelector('button');
     if (!firstElem) {
       lanaLog({ message: 'GNAV: Incorrect authoring of localnav found.', tags: 'gnav', errorType: 'info' });
       return;
@@ -454,7 +462,11 @@ class Gnav {
 
     localNavItems.forEach((elem, idx) => {
       const clonedItem = elem.cloneNode(true);
-      const link = clonedItem.querySelector('a');
+      const link = clonedItem.querySelector('a, button');
+
+      if (link) {
+        link.dataset.title = link.textContent;
+      }
 
       if (idx === 0) {
         localNav.querySelector('.feds-localnav-title').innerText = title.trim();
@@ -477,7 +489,7 @@ class Gnav {
     const promo = document.querySelector('.feds-promo-aside-wrapper');
     if (promo) localNav.classList.add('has-promo');
     this.elements.localNav = localNav;
-    localNavItems[0].querySelector('a').textContent = title.trim();
+    firstElem.textContent = title.trim();
     const isAtTop = () => {
       const rect = this.elements.localNav.getBoundingClientRect();
       // note: ios safari changes between -0.34375, 0, and 0.328125
@@ -1005,7 +1017,7 @@ class Gnav {
 
   decorateMainNav = async () => {
     const breadcrumbs = isDesktop.matches ? '' : await this.decorateBreadcrumbs();
-    this.elements.mainNav = toFragment`<div class="feds-nav"></div>`;
+    this.elements.mainNav = toFragment`<div class="feds-nav" role="list"></div>`;
     this.elements.navWrapper = toFragment`
       <div class="feds-nav-wrapper" id="feds-nav-wrapper">
         ${breadcrumbs}
@@ -1115,10 +1127,18 @@ class Gnav {
     // Copying dropdown contents to localNav items
     const decorateLocalNavItems = (navItem, template) => {
       const elements = [...document.querySelectorAll('.feds-localnav .feds-navItem')].find(
-        (el) => el.textContent.trim() === navItem.textContent,
+        (el) => {
+          const link = el.querySelector('a, button');
+          return link.dataset.title?.trim() === navItem.textContent;
+        },
       );
       if (elements) {
+        const dropdownBtn = elements.querySelector('button');
         elements.innerHTML = template.innerHTML;
+        // To override the textcontent of button of first item of localnav
+        if (dropdownBtn) {
+          elements.querySelector('button').textContent = dropdownBtn.textContent;
+        }
         // Reattach click events & mutation observers, as cloned elem don't retain event listeners
         elements.querySelector('.feds-localnav-items button')?.addEventListener('click', (e) => {
           trigger({ element: e.currentTarget, event: e, type: 'localNavItem' });
@@ -1204,7 +1224,7 @@ class Gnav {
         const sectionModifier = isSectionMenu ? ' feds-navItem--section' : '';
         const sectionDaaLh = isSectionMenu ? ` daa-lh='${getAnalyticsValue(item.textContent)}'` : '';
         const triggerTemplate = toFragment`
-          <${tag} class="feds-navItem${sectionModifier}${activeModifier}" ${sectionDaaLh}>
+          <${tag} role="listitem" class="feds-navItem${sectionModifier}${activeModifier}" ${sectionDaaLh}>
             ${dropdownTrigger}
           </${tag}>`;
 
@@ -1237,7 +1257,7 @@ class Gnav {
         // Remove its 'em' or 'strong' wrapper
         item.parentElement.replaceWith(item);
 
-        return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered">
+        return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered" role="listitem">
             ${decorateCta({ elem: item, type: itemType, index: index + 1 })}
           </div>`, item);
       case 'link': {
@@ -1271,7 +1291,7 @@ class Gnav {
         }
 
         const linkTemplate = toFragment`
-          <div class="feds-navItem${activeModifier}${customLinkModifier}">
+          <div class="feds-navItem${activeModifier}${customLinkModifier}" role="listitem">
             ${linkElem}
           </div>`;
         return removeCustomLink ? '' : addMepHighlightAndTargetId(linkTemplate, item);

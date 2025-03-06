@@ -48,5 +48,20 @@ module.exports = {
       },
       tags: '@adobehome @ah-try-buy-widget @single @smoke',
     },
+    {
+      tcid: '3',
+      name: '@MAS-AH-Try-Buy-Widget-single-api',
+      path: '/libs/features/mas/docs/adobe-home.html',
+      data: {
+        id: 'e8518688-2374-467b-93ed-2cf9fdc58e08',
+        title: 'Adobe Acrobat',
+        description: 'The complete PDF solution for a mobile, connected world.',
+        price: 'US$19.99/mo',
+        cta: 'Buy',
+        size: 'triple',
+        offerid: 'B256F077BCC09CF934478DA36E52478B',
+      },
+      tags: '@adobehome @ah-try-buy-widget @single @smoke',
+    },
   ],
 };

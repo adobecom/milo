@@ -16,8 +16,13 @@ Designs:
 
 **CCD**: https://www.figma.com/proto/7tUtNgFelfMjgPoJ5QcE1k/Merch%40Scale-Frameworks?node-id=2077-63597&t=cWfdzWlga79eyjyI-1
 
+**Adobe Home**: https://www.figma.com/design/7tUtNgFelfMjgPoJ5QcE1k/Merch%40Scale-Frameworks?node-id=2081-22654&m=dev
+
 **CCD Gallery**: [/libs/features/mas/docs/ccd.html](/libs/features/mas/docs/ccd.html)
 CCD Gallery provides a comprehensive list of all supported card variants in CCD.
+
+**Adobe Home Gallery**: [/libs/features/mas/docs/adobe-home.html](/libs/features/mas/docs/adobe-home.html)
+Adobe Home Gallery provides a comprehensive list of all supported card variants in Adobe Home.
 
 ## Examples
 
@@ -116,6 +121,7 @@ CCD Gallery provides a comprehensive list of all supported card variants in CCD.
 -   `twp`
 -   `ccd-slice`
 -   `ccd-suggested`
+-   `ah-try-buy-widget`
 
 ### Properties
 

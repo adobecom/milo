@@ -177,6 +177,7 @@ runTests(async () => {
             cardWithWrongOsis.addEventListener(EVENT_MAS_ERROR, () => {
                 masErrorTriggered = true;
             });
+
             spTheme.append(cardWithWrongOsis);
             await delay(1800);
             expect(masErrorTriggered).to.true;

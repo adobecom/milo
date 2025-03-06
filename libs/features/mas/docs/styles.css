@@ -124,7 +124,6 @@ merch-card:not([variant]) {
 }
 
 pre {
-    width: auto;
     max-height: 500px;
     overflow: scroll;
     background-color: var(--spectrum-global-color-gray-300);
@@ -154,7 +153,8 @@ button {
 }
 
 .gallery-content {
-    padding: 30px;
+  display: block;
+  padding: 30px;
 }
 
 code {
@@ -247,6 +247,10 @@ h5 {
     margin: 0;
 }
 
+.one-merch-card.ah-try-buy-widget {
+    grid-template-columns: minmax(484px, 0);
+}
+
 .two-merch-cards.ah-try-buy-widget {
     grid-template-columns: repeat(2, minmax(238px, 0px));
     gap: 8px;
@@ -267,25 +271,7 @@ h5 {
     gap: 32px;
 }
 
-/*.benchmark stuff */
-.benchmark-mask {
-    font-size: larger;
-    font-weight: bold;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: white;
-}
-
-.benchmark-mask-over-limit {
-    background: rgba(217, 109, 109, 0.7);
-}
-
-.benchmark-mask-under-limit {
-    background: rgba(133, 215, 133, 0.7);
-}
-
-/*.benchmark stuff */
+/* benchmark stuff */
 .benchmark-mask {
     font-size: larger;
     font-weight: bold;

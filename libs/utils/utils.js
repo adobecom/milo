@@ -263,8 +263,66 @@ export const [setConfig, updateConfig, getConfig] = (() => {
   ];
 })();
 
+let federatedContentRoot;
+/* eslint-disable import/prefer-default-export */
+export const getFederatedContentRoot = () => {
+  const cdnWhitelistedOrigins = [
+    'https://www.adobe.com',
+    'https://business.adobe.com',
+    'https://blog.adobe.com',
+    'https://milo.adobe.com',
+    'https://news.adobe.com',
+  ];
+  const { allowedOrigins = [], origin: configOrigin } = getConfig();
+  if (federatedContentRoot) return federatedContentRoot;
+  // Non milo consumers will have its origin from config
+  const origin = configOrigin || window.location.origin;
+
+  federatedContentRoot = [...allowedOrigins, ...cdnWhitelistedOrigins].some((o) => origin.replace('.stage', '') === o)
+    ? origin
+    : 'https://www.adobe.com';
+
+  if (origin.includes('localhost') || origin.includes(`.${SLD}.`)) {
+    federatedContentRoot = `https://main--federal--adobecom.aem.${origin.endsWith('.live') ? 'live' : 'page'}`;
+  }
+
+  return federatedContentRoot;
+};
+
+// TODO we should match the akamai patterns /locale/federal/ at the start of the url
+// and make the check more strict.
+export const getFederatedUrl = (url = '') => {
+  if (typeof url !== 'string' || !url.includes('/federal/')) return url;
+  if (url.startsWith('/')) return `${getFederatedContentRoot()}${url}`;
+  try {
+    const { pathname, search, hash } = new URL(url);
+    return `${getFederatedContentRoot()}${pathname}${search}${hash}`;
+  } catch (e) {
+    window.lana?.log(`getFederatedUrl errored parsing the URL: ${url}: ${e.toString()}`);
+  }
+  return url;
+};
+
+let fedsPlaceholderConfig;
+export const getFedsPlaceholderConfig = ({ useCache = true } = {}) => {
+  if (useCache && fedsPlaceholderConfig) return fedsPlaceholderConfig;
+
+  const { locale, placeholders } = getConfig();
+  const libOrigin = getFederatedContentRoot();
+
+  fedsPlaceholderConfig = {
+    locale: {
+      ...locale,
+      contentRoot: `${libOrigin}${locale.prefix}/federal/globalnav`,
+    },
+    placeholders,
+  };
+
+  return fedsPlaceholderConfig;
+};
+
 export function isInTextNode(node) {
-  return node.parentElement.firstChild.nodeType === Node.TEXT_NODE;
+  return (node.parentElement.childNodes.length > 1 && node.parentElement.firstChild.tagName === 'A') || node.parentElement.firstChild.nodeType === Node.TEXT_NODE;
 }
 
 export function createTag(tag, attributes, html, options = {}) {
@@ -1192,8 +1250,9 @@ async function loadPostLCP(config) {
 
   const georouting = getMetadata('georouting') || config.geoRouting;
   if (georouting === 'on') {
+    const jsonPromise = fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
     const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
-    await loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
+    await loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle, jsonPromise);
   }
   const header = document.querySelector('header');
   if (header) {
