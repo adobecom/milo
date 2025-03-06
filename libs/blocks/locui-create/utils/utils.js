@@ -105,8 +105,8 @@ export function getLanguageDetails(langs) {
 
     return {
       action: 'Rollout',
-      langCode: langDetails.languagecode || langCode,
-      language: langDetails.language || '',
+      langCode: langDetails.languagecode,
+      language: langDetails.language,
       locales: langDetails.livecopies?.split(','),
       workflow: '',
     };
@@ -118,7 +118,8 @@ export function getProject(resJson, lang) {
     ? 'rollout' : 'localization';
   const projectNameSuffix = `${userWorkflowType.value === USER_WORKFLOW_TYPE.promote_rollout ? '-rollout' : ''}${lang ? `-${lang}` : ''}`;
   const languages = lang?.split(',') ?? resJson.languages.map((language) => language.langCode);
-  const projectLanguages = getLanguageDetails(languages);
+  const projectLanguages = (userWorkflowType.value === USER_WORKFLOW_TYPE.edit)
+    ? resJson.languages : getLanguageDetails(languages);
 
   return {
     type: projectType,
@@ -127,7 +128,7 @@ export function getProject(resJson, lang) {
     editBehavior: resJson.settings?.regionalEditBehaviour,
     urls: resJson.urls,
     fragments: [],
-    languages: projectLanguages ?? resJson.languages,
+    languages: projectLanguages,
   };
 }
 
