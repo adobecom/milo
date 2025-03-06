@@ -1,6 +1,7 @@
 import { EVENT_AEM_LOAD, EVENT_AEM_ERROR } from './constants.js';
 import { Log } from './log.js';
 import { MasError } from './mas-error.js';
+import { getMasCommerceServiceDurationLog } from './utils.js';
 import { masFetch } from './utils/mas-fetch.js';
 
 const sheet = new CSSStyleSheet();
@@ -53,6 +54,7 @@ export async function getFragmentById(baseUrl, id, author, headers) {
             response,
             startTime,
             duration,
+            ...getMasCommerceServiceDurationLog(),
         });
     }
 }
