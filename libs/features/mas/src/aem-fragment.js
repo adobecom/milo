@@ -173,9 +173,12 @@ export class AemFragment extends HTMLElement {
                 return true;
             })
             .catch((e) => {
-                /* c8 ignore next 3 */
-                this.#fail(e);
+                if (this.#rawData) {
+                  this.cache.add(this.#rawData);
+                  return true;
+                }
                 this.#readyPromise = null;
+                this.#fail(e);
                 return false;
             });
     }

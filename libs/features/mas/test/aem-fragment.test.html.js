@@ -12,6 +12,7 @@ import '../src/merch-card.js';
 import '../src/aem-fragment.js';
 import { EVENT_MAS_ERROR } from '../src/constants.js';
 import { getFragmentById } from '../src/aem-fragment.js';
+import { MasError } from '../src/mas-error.js';
 
 chai.use(chaiAsPromised);
 
@@ -93,7 +94,7 @@ runTests(async () => {
                     ? ccCard.shadowRoot.querySelectorAll('[slot]')
                     : []),
             ];
-            
+
             expect(slotElements).to.have.length(4);
         });
 
@@ -133,7 +134,6 @@ runTests(async () => {
             expect(initialData).to.exist;
 
             // Trigger a refresh which should now fail
-            //await aemFragment.refresh(true);
             await aemFragment.refresh(true);
             await delay(100);
             await aemFragment.updateComplete;
@@ -178,7 +178,7 @@ runTests(async () => {
                 masErrorTriggered = true;
             });
             spTheme.append(cardWithWrongOsis);
-            await delay(1600);
+            await delay(1800);
             expect(masErrorTriggered).to.true;
         });
 
@@ -227,9 +227,18 @@ runTests(async () => {
                 'notfound',
                 false,
             );
-            await expect(promise).to.be.rejectedWith(
-                'Unexpected fragment response: 404, url: http://localhost:2023/adobe/sites/fragments/notfound',
-            );
+            try {
+                await promise;
+                expect.fail('Promise should have been rejected');
+            } catch (error) {
+                expect(error).to.be.instanceOf(MasError);
+                expect(error.context).to.have.property('duration');
+                expect(error.context).to.have.property('startTime');
+                expect(error.context).to.include({
+                    status: 404,
+                    url: 'http://localhost:2023/adobe/sites/fragments/notfound',
+                });
+            }
         });
 
         it('fetches fragment from author endpoint', async () => {

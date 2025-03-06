@@ -351,22 +351,28 @@ However, it can be accessed via <code>e.target.source</code> property.</p>
 <td>The <code>fragment</code> attribute is missing or empty</td>
 </tr>
 <tr>
+<td>“Failed to get fragment”</td>
+<td>Occurs when there’s a network error fetching the fragment</td>
+<td><code>aem:error</code></td>
+<td>Network issues, CORS problems</td>
+</tr>
+<tr>
+<td>“Unexpected fragment response”</td>
+<td>Occurs when the server returns a non-OK response</td>
+<td><code>aem:error</code></td>
+<td>Server errors, invalid fragment ID</td>
+</tr>
+<tr>
 <td>“AEM fragment cannot be loaded”</td>
-<td>Occurs when the AEM fragment fails to load for any reason</td>
+<td>Occurs when the merch-card detects that the fragment failed to load</td>
 <td><code>mas:error</code></td>
-<td>The fragment ID doesn’t exist or is incorrect</td>
+<td>Propagated from <code>aem:error</code> events</td>
 </tr>
 <tr>
-<td>“Network error: failed to load fragment”</td>
-<td>Occurs when the fragment cannot be loaded due to network issues</td>
-<td><code>aem:error</code>, <code>mas:error</code></td>
-<td>Connection problems, server unavailable, etc.</td>
-</tr>
-<tr>
-<td>“Contains offers that were not resolved within timeout”</td>
+<td><code>Contains offers that were not resolved within ${MERCH_CARD_LOAD_TIMEOUT} timeout</code></td>
 <td>Occurs when offers are not resolved within the timeout period</td>
 <td><code>mas:error</code></td>
-<td>Offers take too long to resolve (exceeds <code>MERCH_CARD_LOAD_TIMEOUT</code>)</td>
+<td>Offers take too long to resolve</td>
 </tr>
 <tr>
 <td>“Contains unresolved offers”</td>
@@ -378,8 +384,19 @@ However, it can be accessed via <code>e.target.source</code> property.</p>
 </table>
 <h3 id="error-event-flow" tabindex="-1">Error Event Flow <a class="header-anchor" href="#error-event-flow" href="#error-event-flow" title="Permalink to this heading">#</a></h3>
 <ol>
-<li>When an error occurs in an <code>aem-fragment</code>, it dispatches an <code>aem:error</code> event</li>
-<li>The <code>merch-card</code> listens for this event and propagates it as a <code>mas:error</code> event</li>
+<li>When an error occurs in an <code>aem-fragment</code>, it dispatches an <code>aem:error</code> event with detailed information in the <code>detail</code> property that includes:
+<ul>
+<li><code>message</code>: The error message string</li>
+<li><code>context</code>: Additional context about the error (may include response details, timing information)</li>
+</ul>
+</li>
+<li>The <code>merch-card</code> listens for this event and calls its internal <code>#fail</code> method, which:
+<ul>
+<li>Logs the error with additional context</li>
+<li>Sets the <code>failed</code> property to <code>true</code></li>
+<li>Propagates it as a <code>mas:error</code> event with the error message in the <code>detail</code> property</li>
+</ul>
+</li>
 <li>For WCS (Web Commerce Service) errors, a <code>mas:failed</code> event is dispatched</li>
 <li>The <code>merch-card</code> component will mark itself as failed and stop trying to resolve offers</li>
 </ol>
@@ -390,7 +407,8 @@ However, it can be accessed via <code>e.target.source</code> property.</p>
 
 <span class="hljs-comment">// Listen for merch-card errors</span>
 merchCard.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;mas:error&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">event</span>) =&gt;</span> {
-    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">&#x27;Merch card error:&#x27;</span>, <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(event.<span class="hljs-property">detail</span>, <span class="hljs-literal">null</span>, <span class="hljs-number">2</span>));
+    <span class="hljs-comment">// event.detail contains the error message string</span>
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">&#x27;Merch card error:&#x27;</span>, event.<span class="hljs-property">detail</span>);
     <span class="hljs-comment">// Add error styling</span>
     merchCard.<span class="hljs-property">classList</span>.<span class="hljs-title function_">add</span>(<span class="hljs-string">&#x27;error&#x27;</span>);
 });
@@ -403,17 +421,19 @@ merchCard.<span class="hljs-title function_">addEventListener</span>(<span class
 });
 
 <span class="hljs-comment">// Get reference to the aem-fragment inside the merch-card</span>
-<span class="hljs-comment">// aem-fragment events can also be listened on the merch-card element.</span>
 <span class="hljs-keyword">const</span> aemFragment = merchCard.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&#x27;aem-fragment&#x27;</span>);
 
 <span class="hljs-comment">// Listen for AEM fragment errors</span>
 aemFragment.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;aem:error&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">event</span>) =&gt;</span> {
-    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">&#x27;AEM fragment error:&#x27;</span>, <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(event.<span class="hljs-property">detail</span>, <span class="hljs-literal">null</span>, <span class="hljs-number">2</span>));
+    <span class="hljs-comment">// event.detail contains { message, context }</span>
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">&#x27;AEM fragment error message:&#x27;</span>, event.<span class="hljs-property">detail</span>.<span class="hljs-property">message</span>);
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">&#x27;AEM fragment error context:&#x27;</span>, event.<span class="hljs-property">detail</span>.<span class="hljs-property">context</span>);
 });
 
 <span class="hljs-comment">// Listen for AEM fragment load event</span>
 aemFragment.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;aem:load&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">event</span>) =&gt;</span> {
-    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&#x27;AEM fragment loaded:&#x27;</span>, <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(event.<span class="hljs-property">detail</span>, <span class="hljs-literal">null</span>, <span class="hljs-number">2</span>));
+    <span class="hljs-comment">// event.detail contains the fragment data</span>
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&#x27;AEM fragment loaded:&#x27;</span>, event.<span class="hljs-property">detail</span>);
 });
 </code></pre>
 <h2 id="aem-fragment-custom-element" tabindex="-1">aem-fragment custom element <a class="header-anchor" href="#aem-fragment-custom-element" href="#aem-fragment-custom-element" title="Permalink to this heading">#</a></h2>

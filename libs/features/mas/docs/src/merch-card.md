@@ -293,16 +293,21 @@ The `merch-card` component can raise several types of errors during its lifecycl
 | Error Type | Description | Event | Cause |
 | ---------- | ----------- | ----- | ----- |
 | "Missing fragment id" | Occurs when an `aem-fragment` is used without specifying a fragment ID | `aem:error` | The `fragment` attribute is missing or empty |
-| "AEM fragment cannot be loaded" | Occurs when the AEM fragment fails to load for any reason | `mas:error` | The fragment ID doesn't exist or is incorrect |
-| "Network error: failed to load fragment" | Occurs when the fragment cannot be loaded due to network issues | `aem:error`, `mas:error` | Connection problems, server unavailable, etc. |
-| "Contains offers that were not resolved within timeout" | Occurs when offers are not resolved within the timeout period | `mas:error` | Offers take too long to resolve (exceeds `MERCH_CARD_LOAD_TIMEOUT`) |
+| "Failed to get fragment" | Occurs when there's a network error fetching the fragment | `aem:error` | Network issues, CORS problems |
+| "Unexpected fragment response" | Occurs when the server returns a non-OK response | `aem:error` | Server errors, invalid fragment ID |
+| "AEM fragment cannot be loaded" | Occurs when the merch-card detects that the fragment failed to load | `mas:error` | Propagated from `aem:error` events |
+| `Contains offers that were not resolved within ${MERCH_CARD_LOAD_TIMEOUT} timeout` | Occurs when offers are not resolved within the timeout period | `mas:error` | Offers take too long to resolve |
 | "Contains unresolved offers" | Occurs when offers cannot be resolved | `mas:error` | Pricing or checkout information cannot be retrieved |
-
 
 ### Error Event Flow
 
-1. When an error occurs in an `aem-fragment`, it dispatches an `aem:error` event
-2. The `merch-card` listens for this event and propagates it as a `mas:error` event
+1. When an error occurs in an `aem-fragment`, it dispatches an `aem:error` event with detailed information in the `detail` property that includes:
+   - `message`: The error message string
+   - `context`: Additional context about the error (may include response details, timing information)
+2. The `merch-card` listens for this event and calls its internal `#fail` method, which:
+   - Logs the error with additional context
+   - Sets the `failed` property to `true`
+   - Propagates it as a `mas:error` event with the error message in the `detail` property
 3. For WCS (Web Commerce Service) errors, a `mas:failed` event is dispatched
 4. The `merch-card` component will mark itself as failed and stop trying to resolve offers
 
@@ -316,7 +321,8 @@ const merchCard = document.getElementById('my-merch-card');
 
 // Listen for merch-card errors
 merchCard.addEventListener('mas:error', (event) => {
-    console.error('Merch card error:', JSON.stringify(event.detail, null, 2));
+    // event.detail contains the error message string
+    console.error('Merch card error:', event.detail);
     // Add error styling
     merchCard.classList.add('error');
 });
@@ -329,17 +335,19 @@ merchCard.addEventListener('mas:ready', (event) => {
 });
 
 // Get reference to the aem-fragment inside the merch-card
-// aem-fragment events can also be listened on the merch-card element.
 const aemFragment = merchCard.querySelector('aem-fragment');
 
 // Listen for AEM fragment errors
 aemFragment.addEventListener('aem:error', (event) => {
-    console.error('AEM fragment error:', JSON.stringify(event.detail, null, 2));
+    // event.detail contains { message, context }
+    console.error('AEM fragment error message:', event.detail.message);
+    console.error('AEM fragment error context:', event.detail.context);
 });
 
 // Listen for AEM fragment load event
 aemFragment.addEventListener('aem:load', (event) => {
-    console.log('AEM fragment loaded:', JSON.stringify(event.detail, null, 2));
+    // event.detail contains the fragment data
+    console.log('AEM fragment loaded:', event.detail);
 });
 ```
 

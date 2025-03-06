@@ -13,6 +13,8 @@ export class MasError extends Error {
      */
     constructor(message, context, cause) {
         super(message, { cause });
+        
+        this.name = 'MasError';
 
         if (context.response) {
             const requestId =
@@ -20,20 +22,16 @@ export class MasError extends Error {
             if (requestId) {
                 context.requestId = requestId;
             }
-            // Add response status and status text to context if available
             if (context.response.status) {
                 context.status = context.response.status;
                 context.statusText = context.response.statusText;
             }
-
-            // Add response URL to context if available
             if (context.response.url) {
                 context.url = context.response.url;
             }
             delete context.response;
         }
         this.context = context;
-
         if (Error.captureStackTrace) {
             Error.captureStackTrace(this, MasError);
         }

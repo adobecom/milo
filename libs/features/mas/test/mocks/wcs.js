@@ -37,6 +37,7 @@ export async function withWcs(originalFetch) {
                     ok: false,
                     status: 404,
                     headers: responseHeaders,
+                    url: `https://www.adobe.com/${pathname}?${searchParams.toString()}`,
                     json: async () => new Error(),
                     text: async () => 'Some osis were not found',
                 });
@@ -47,6 +48,7 @@ export async function withWcs(originalFetch) {
                 ok: true,
                 status: 200,
                 headers: responseHeaders,
+                url: `https://www.adobe.com/${pathname}?${searchParams.toString()}`,
                 json: async () => ({
                     resolvedOffers: buckets.flatMap((array) => array ?? []),
                 }),

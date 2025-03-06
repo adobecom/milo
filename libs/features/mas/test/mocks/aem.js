@@ -29,6 +29,7 @@ export async function withAem(fetch) {
                     return Promise.resolve({
                         ok: false,
                         status: 500,
+                        url: `${window.location.origin}${pathname}`,
                         statusText: 'Server Error',
                         headers: responseHeaders,
                     });
@@ -39,6 +40,7 @@ export async function withAem(fetch) {
                 return Promise.resolve({
                     ok: false,
                     status: 404,
+                    url: `${window.location.origin}${pathname}`,
                     statusText: 'Fragment not found',
                     headers: responseHeaders,
                 });
