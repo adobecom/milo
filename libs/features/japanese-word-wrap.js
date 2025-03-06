@@ -64,21 +64,15 @@ function isFirefox() {
   return navigator.userAgent.includes('Firefox');
 }
 
+function isAsideCta(element) {
+  return element.closest('.aside') && element.parentElement?.classList.contains('con-button');
+}
+
 /**
  * Check if a word wrap has been applied to an element.
  */
 export function isWordWrapApplied(element) {
   return !!element.querySelector('wbr');
-}
-
-export function ifWbrCtaRemove(element) {
-  console.log('hi');
-  
-  if (!element.classList.contains('con-button')) {
-    return;
-  }
-
-  element.querySelectorAll('wbr').forEach((wbr) => wbr.remove());
 }
 
 /**
@@ -140,11 +134,10 @@ export async function applyJapaneseLineBreaks(config, options = {}) {
 
   // Apply budoux to target selector
   textElements.forEach((el) => {
-    ifWbrCtaRemove(el);
-
     if (
       budouxExcludeElements.has(el)
       || isWordWrapApplied(el)
+      || isAsideCta(el)
       || (isFirefox() && hasFlexOrGrid(el))
     ) return;
     parser.applyElement(el, { threshold: budouxThres });
