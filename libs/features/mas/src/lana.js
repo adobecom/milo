@@ -2,7 +2,7 @@
 const config = {
     clientId: 'merch-at-scale',
     delimiter: '¶',
-    ignoredProperties: ['analytics', 'literals'],
+    ignoredProperties: ['analytics', 'literals', 'element'],
     serializableTypes: ['Array', 'Object'],
     sampleRate: 1,
     tags: 'acom',
