@@ -157,7 +157,8 @@ export class MasElement {
         this.error = error;
         this.state = STATE_FAILED;
         this.update();
-        this.log?.error(`Failed to render mas-element: ${error.message}`, {
+        const wcName = this.wrapperElement.getAttribute('is');
+        this.log?.error(`${wcName}: Failed to render: ${error.message}`, {
             element: this.wrapperElement,
             ...error.context,
             ...getMasCommerceServiceDurationLog(),
