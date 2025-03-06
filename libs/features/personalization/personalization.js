@@ -562,8 +562,7 @@ export const deleteMarkedEls = (rootEl = document) => {
 };
 
 export function addSectionAnchors(rootEl = document) {
-  const metadataBlocks = rootEl.querySelectorAll('.section-metadata');
-  metadataBlocks.forEach((block) => {
+  rootEl.querySelectorAll('.section-metadata').forEach((block) => {
     [...block.children].forEach((row) => {
       const col1 = row.children[0]?.textContent.toLowerCase().trim();
       const col2 = row.children[1]?.textContent.toLowerCase().trim().split(' ').join('');
