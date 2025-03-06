@@ -131,11 +131,11 @@ export default async function loadBlock(configs, customLib) {
   setConfig(clientConfig);
   for await (const block of blockConfig) {
     const configBlock = configs[block.key];
-    const config = getConfig();
-    const gnavSource = `${config?.locale?.contentRoot}/gnav`;
-    const footerSource = `${config?.locale?.contentRoot}/footer`;
 
     if (configBlock) {
+      const config = getConfig();
+      const gnavSource = `${config?.locale?.contentRoot}/gnav`;
+      const footerSource = `${config?.locale?.contentRoot}/footer`;
       if (block.key === 'header') {
         try {
           const { default: init } = await import('../blocks/global-navigation/global-navigation.js');
@@ -161,11 +161,9 @@ export default async function loadBlock(configs, customLib) {
         }
       }
       if (block.key === 'footer') {
-        try {
-          await import('./footer.css');
-        } catch (e) {
+        import('./footer.css').catch(() => {
           loadStyle(`${miloLibs}/libs/navigation/footer.css`);
-        }
+        });
         try {
           const { default: init } = await import('../blocks/global-footer/global-footer.js');
           await bootstrapBlock(init, { ...block, footerSource });
