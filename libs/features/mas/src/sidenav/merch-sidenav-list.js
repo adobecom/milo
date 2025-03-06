@@ -1,5 +1,5 @@
 import { html, LitElement, css } from 'lit';
-import { parseState, pushStateFromComponent } from '../deeplink.js';
+import { deeplink, pushStateFromComponent } from '../deeplink.js';
 import { headingStyles } from './merch-sidenav-heading.css.js';
 import { debounce } from '../utils';
 import { EVENT_MERCH_SIDENAV_SELECT } from '../constants.js';
@@ -76,40 +76,19 @@ export class MerchSidenavList extends LitElement {
         }
     }
 
-    /*
-     * set the state of the sidenav based on the URL
-     */
-    setStateFromURL() {
-        const state = parseState();
-        const value = state[this.deeplink] ?? 'all';
-        if (value) {
-            const element = this.querySelector(
-                `sp-sidenav-item[value="${value}"]`,
-            );
-            if (!element) return;
-            this.updateComplete.then(() => {
-                const sideNavItemTagName = 'SP-SIDENAV-ITEM';
-                if (element.firstElementChild?.tagName === sideNavItemTagName) {
-                  element.expanded = true;
-                }
-                this.selectElement(element);
-            });
-        }
-    }
-
     /**
      * click handler to manage first level items state of sidenav
      * @param {*} param
      */
-    handleClick({ target: item }) {
+    handleClick({ target: item }, shouldUpdateHash = true) {
         const { value, parentNode } = item;
-
         this.selectElement(item);
-
-        if (parentNode && parentNode.tagName === 'SP-SIDENAV') {
+        if (parentNode?.tagName === 'SP-SIDENAV') {
             //swc does not consider, in multilevel, first level as a potential selection
             //and does not close other parents, we'll do that here
-            pushStateFromComponent(this, value);
+            if (shouldUpdateHash) {
+              pushStateFromComponent(this, value);
+            }
             item.selected = true;
             parentNode
                 .querySelectorAll(
@@ -121,6 +100,17 @@ export class MerchSidenavList extends LitElement {
                         item.selected = false;
                     }
                 });
+        } else if (parentNode?.tagName === 'SP-SIDENAV-ITEM') {
+          const topLevelItems = parentNode.closest('sp-sidenav')?.querySelectorAll(':scope > sp-sidenav-item');
+          [...topLevelItems].filter((item) => item !== parentNode).forEach((item) => {
+              item.expanded = false;
+          });
+          parentNode.closest('sp-sidenav')?.querySelectorAll('sp-sidenav-item[selected]')
+              .forEach((item) => {
+                  if (item.value !== value) {
+                      item.selected = false;
+                  }
+              });
         }
     }
 
@@ -135,17 +125,40 @@ export class MerchSidenavList extends LitElement {
         pushStateFromComponent(this, value);
     }
 
+    startDeeplink() {
+      this.stopDeeplink = deeplink(
+          (params) => {
+              const value = params[this.deeplink] ?? 'all';
+              const element = this.querySelector(
+                  `sp-sidenav-item[value="${value}"]`,
+              );
+              if (!element) return;
+              this.updateComplete.then(() => {
+                  if (element.firstElementChild?.tagName === 'SP-SIDENAV-ITEM') {
+                    element.expanded = true;
+                  } 
+                  if (element.parentNode?.tagName === 'SP-SIDENAV-ITEM') {
+                    element.parentNode.expanded = true;
+                  }
+                  this.handleClick({ target: element }, !!window.location.hash.includes('category'));
+              });
+          },
+      );
+  }
+
     connectedCallback() {
         super.connectedCallback();
         this.addEventListener('click', this.handleClickDebounced);
         this.updateComplete.then(() => {
-            this.setStateFromURL();
+            if (!this.deeplink) return;
+            this.startDeeplink();
         });
     }
 
     disconnectedCallback() {
         super.disconnectedCallback();
         this.removeEventListener('click', this.handleClickDebounced);
+        this.stopDeeplink?.();
     }
 
     render() {
