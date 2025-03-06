@@ -170,6 +170,19 @@ function loadIconography() {
   return new Promise((resolve) => { loadStyle(`${base}/styles/iconography.css`, resolve); });
 }
 
+export function handleImageLoad(el, image) {
+  if (image && !image.complete) {
+    el.style.visibility = 'hidden';
+    image.addEventListener('load', () => {
+      el.style.visibility = 'visible';
+    });
+    image.addEventListener('error', () => {
+      image.style.visibility = 'hidden';
+      el.style.visibility = 'visible';
+    });
+  }
+}
+
 function decorateLayout(el) {
   const elems = el.querySelectorAll(':scope > div');
   if (elems.length > 1) {
@@ -194,6 +207,8 @@ function decorateLayout(el) {
     const iconClass = iconVariant ? `${iconVariant[1]}-area` : 'icon-area';
     if (iconVariant) loadIconography();
     iconArea.classList.add(iconClass);
+    const image = iconArea.querySelector('img');
+    handleImageLoad(el, image);
   }
   const foregroundImage = foreground.querySelector(':scope > div:not(.text) img')?.closest('div');
   const bgImage = el.querySelector(':scope > div:not(.text):not(.foreground) img')?.closest('div');
