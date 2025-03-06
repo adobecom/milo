@@ -1,6 +1,5 @@
 import { html, LitElement } from 'lit';
 import { MatchMediaController } from '@spectrum-web-components/reactive-controllers/src/MatchMedia.js';
-
 import { deeplink, pushState } from './deeplink.js';
 
 import {
@@ -156,20 +155,19 @@ export class MerchCardCollection extends LitElement {
             this.hasMore = result.length > pageSize;
             result = result.filter(([, index]) => index < pageSize);
         }
-
-        let reduced = new Map(result);
+        let reduced = new Map(result.reverse());
+        for (const card of reduced.keys()) {
+          this.prepend(card);
+        }
+        
         children.forEach((child) => {
             if (reduced.has(child)) {
-                const index = reduced.get(child);
-                child.style.order = index;
-                child.setAttribute('tabindex', index + 1);
                 child.size = child.filters[this.filter]?.size;
                 child.style.removeProperty('display');
                 child.requestUpdate();
             } else {
                 child.style.display = 'none';
                 child.size = undefined;
-                child.style.removeProperty('order');
             }
         });
         window.scrollTo(0, lastScrollTop);
@@ -212,7 +210,7 @@ export class MerchCardCollection extends LitElement {
                     ${this.searchBar} ${this.filtersButton} ${this.sortButton}
                 </sp-theme>
             </div>
-            <div id="resultText">
+            <div id="resultText" aria-live="polite">
                 ${this.displayResult
                     ? html`<slot name="${this.resultTextSlotName}"></slot>`
                     : ''}

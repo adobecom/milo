@@ -4,6 +4,7 @@ import { Term, Commitment } from '@pandora/data-models-odm';
 import {
     formatAnnualPrice,
     formatOpticalPrice,
+    isPromotionActive,
 } from '../../src/price/utilities.js';
 
 const OPTICAL_TEST_CASES = [
@@ -31,12 +32,12 @@ const OPTICAL_TEST_CASES = [
             usePrecision: true,
         },
         [
-            [23.7, 'CHF2.00'],
-            [24.991, 'CHF2.10'],
-            [24.77, 'CHF2.05'],
-            [24.8899, 'CHF2.10'],
-            [12000.24321, 'CHF1000.05'],
-            [12000.489, 'CHF1000.05'],
+            [23.7, 'CHF1.98'],
+            [24.991, 'CHF2.08'],
+            [24.77, 'CHF2.06'],
+            [24.8899, 'CHF2.07'],
+            [12000.24321, 'CHF1000.02'],
+            [12000.489, 'CHF1000.04'],
         ],
     ],
     [
@@ -48,9 +49,9 @@ const OPTICAL_TEST_CASES = [
         },
         [
             [23.7, 'EUR1.98'],
-            [24.99, 'EUR2.09'],
-            [24.77, 'EUR2.07'],
-            [24.88, 'EUR2.08'],
+            [24.99, 'EUR2.08'],
+            [24.77, 'EUR2.06'],
+            [24.88, 'EUR2.07'],
             [12000.24, 'EUR1000.02'],
             [12000.48, 'EUR1000.04'],
         ],
@@ -64,9 +65,9 @@ const OPTICAL_TEST_CASES = [
         },
         [
             [23.7, 'US$1.98'],
-            [24.99, 'US$2.09'],
-            [24.77, 'US$2.07'],
-            [24.88, 'US$2.08'],
+            [24.99, 'US$2.08'],
+            [24.77, 'US$2.06'],
+            [24.88, 'US$2.07'],
             [820.2, 'US$68.35'],
             [12000.24, 'US$1000.02'],
             [12000.48, 'US$1000.04'],
@@ -81,11 +82,11 @@ const OPTICAL_TEST_CASES = [
         },
         [
             [23.7, 'CHF 23.70'],
-            [24.99, 'CHF 25.00'],
-            [24.77, 'CHF 24.75'],
-            [24.88, 'CHF 24.90'],
-            [1200.24, 'CHF 1,200.25'],
-            [1200.48, 'CHF 1,200.50'],
+            [24.99, 'CHF 24.99'],
+            [24.77, 'CHF 24.77'],
+            [24.88, 'CHF 24.88'],
+            [1200.24, 'CHF 1,200.24'],
+            [1200.48, 'CHF 1,200.48'],
         ],
     ],
     [
@@ -190,7 +191,7 @@ const OPTICAL_TEST_CASES = [
             usePrecision: true,
             isIndianPrice: true,
         },
-        [[40600000, '&#8377;33,83,333.34']],
+        [[40600000, '&#8377;33,83,333.33']],
     ],
 ];
 
@@ -246,5 +247,129 @@ describe('function "formatAnnualPrice"', () => {
                 });
             });
         });
+    });
+});
+
+describe('isPromotionActive', () => {
+    const validPromotion = {
+        start: '2024-01-01T00:00:00.000Z',
+        end: '2024-12-31T23:59:59.999Z',
+        displaySummary: {
+            outcomeType: 'PERCENTAGE_DISCOUNT',
+            duration: 'P6M',
+            amount: 25,
+            minProductQuantity: 1,
+        },
+    };
+    it('promotion is active when date is within promotion period', () => {
+        expect(
+            isPromotionActive(validPromotion, '2024-06-15T12:00:00.000Z'),
+        ).to.equal(true);
+    });
+
+    it('promotion is active when date matches start date exactly', () => {
+        expect(
+            isPromotionActive(validPromotion, '2024-01-01T00:00:00.000Z'),
+        ).to.equal(true);
+    });
+
+    it('promotion is active when date matches end date exactly', () => {
+        expect(
+            isPromotionActive(validPromotion, '2024-12-31T23:59:59.999Z'),
+        ).to.equal(true);
+    });
+
+    it('promotion is not active when date is before promotion period', () => {
+        expect(
+            isPromotionActive(validPromotion, '2023-12-31T23:59:59.999Z'),
+        ).to.equal(false);
+    });
+
+    it('promotion is not active when date is after promotion period', () => {
+        expect(
+            isPromotionActive(validPromotion, '2025-01-01T00:00:00.000Z'),
+        ).to.equal(false);
+    });
+
+    it('promotion is not active when promotion dates are missing', () => {
+        const invalidPromotion = { start: null, end: null };
+        expect(isPromotionActive(invalidPromotion)).to.equal(false);
+    });
+
+    it('promotion is not active when promotion is missing start date', () => {
+        const invalidPromotion = {
+            start: null,
+            end: '2024-12-31T23:59:59.999Z',
+        };
+        expect(isPromotionActive(invalidPromotion)).to.equal(false);
+    });
+
+    it('promotion is not active when promotion is missing end date', () => {
+        const invalidPromotion = {
+            start: '2024-01-01T00:00:00.000Z',
+            end: null,
+        };
+        expect(isPromotionActive(invalidPromotion)).to.equal(false);
+    });
+});
+
+describe('formatAnnualPrice', () => {
+    const promotion = {
+        start: '2024-11-15T04:02:37.000Z',
+        end: '2030-03-01T07:59:00.000Z',
+        displaySummary: {
+            outcomeType: 'PERCENTAGE_DISCOUNT',
+            duration: 'P6M',
+            amount: 25,
+            minProductQuantity: 1,
+        },
+    };
+
+    it('should format annual price when promotion details are provided', () => {
+        expect(
+            formatAnnualPrice({
+                formatString: "'A$'#,##0.00",
+                price: 23.23,
+                originalPrice: 23.23,
+                priceWithoutDiscount: 30.99,
+                commitment: Commitment.YEAR,
+                term: Term.MONTHLY,
+                instant: '2024-12-01T00:00:00.000Z',
+                promotion,
+            }).accessiblePrice,
+        ).to.equal('A$325.32');
+    });
+
+    it('should format annual price with regular price when min quantity is not met', () => {
+        expect(
+            formatAnnualPrice({
+                formatString: "'A$'#,##0.00",
+                price: 23.23,
+                originalPrice: 23.23,
+                priceWithoutDiscount: 30.99,
+                commitment: Commitment.YEAR,
+                term: Term.MONTHLY,
+                promotion: {
+                    ...promotion,
+                    displaySummary: {
+                        ...promotion.displaySummary,
+                        minProductQuantity: 2,
+                    },
+                },
+            }).accessiblePrice,
+        ).to.equal('A$371.88');
+    });
+
+    it('should format annual price with discount when promotion details are not provided', () => {
+        expect(
+            formatAnnualPrice({
+                formatString: "'A$'#,##0.00",
+                price: 23.23,
+                originalPrice: 23.23,
+                priceWithoutDiscount: 30.99,
+                commitment: Commitment.YEAR,
+                term: Term.MONTHLY,
+            }).accessiblePrice,
+        ).to.equal('A$278.76');
     });
 });

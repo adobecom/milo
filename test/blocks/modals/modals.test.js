@@ -112,7 +112,7 @@ describe('Modals', () => {
     const modal = document.getElementById('milo');
     expect(modal).to.exist;
     expect(modal.getAttribute('daa-lh')).to.equal('milo-modal');
-    const buttons = modal.querySelectorAll('button');
+    const buttons = modal.querySelectorAll('button[id]');
     expect(buttons[0].getAttribute('daa-ll')).to.equal('Milo Button 1-1--Milo');
     expect(buttons[1].getAttribute('daa-ll')).to.equal('Milo Button 2-2--Milo');
     window.location.hash = '';

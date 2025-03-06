@@ -1,4 +1,6 @@
 import { CheckoutLink } from './checkout-link.js';
+import { CheckoutButton } from './checkout-button.js';
+import { UptLink } from './upt-link.js';
 import { Landscape } from './constants.js';
 import { Defaults } from './defaults.js';
 import { TAG_NAME_SERVICE } from './mas-commerce-service.js';
@@ -17,8 +19,10 @@ import { getSettings } from './settings.js';
 export {
     TAG_NAME_SERVICE,
     CheckoutLink,
+    CheckoutButton,
     CheckoutWorkflow,
     CheckoutWorkflowStep,
+    UptLink,
     Defaults,
     InlinePrice,
     Log,

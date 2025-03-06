@@ -5,7 +5,9 @@ import {
 } from '../../utils/utils.js';
 import { replaceText } from '../../features/placeholders.js';
 
-const DIGITS_ONLY = /^\d+$/;
+const DIGITS_ONLY = /^\/?\d+\/?$/;
+const FILTER_REGEX = /(filter|\/filter\/)/;
+const SEARCH_REGEX = /search|\/search\//;
 export const OVERRIDE_PATHS = 'overrides';
 
 const LITERAL_SLOTS = [
@@ -41,7 +43,15 @@ const fail = (el, err = '') => {
 
 /** Parse and prepare cards */
 async function getCardsRoot(config, html) {
-  const cards = `<div>${html}</div>`;
+  let cards = `<div>${html}</div>`;
+  const { mep, placeholders } = config;
+  if (mep?.commands?.length) {
+    const mepRoot = createTag('div', {}, cards);
+    const { handleCommands, replacePlaceholders } = await import('../../features/personalization/personalization.js');
+    handleCommands(mep?.commands, mepRoot, false, true);
+    if (placeholders) mepRoot.innerHTML = replacePlaceholders(mepRoot.innerHTML, placeholders);
+    cards = mepRoot.innerHTML;
+  }
   const fragment = document.createRange().createContextualFragment(
     await replaceText(cards, config),
   );
@@ -275,14 +285,14 @@ export default async function init(el) {
     ? el.lastElementChild : el.lastElementChild?.firstElementChild;
   // parse literals
   const literalSlots = [];
-  if (/filter/.test(literalsEl?.querySelector('u')?.innerText)) {
-    literalsEl?.querySelectorAll('u').forEach((u) => {
+  if (literalsEl && FILTER_REGEX.test(literalsEl.querySelector('u')?.innerText)) {
+    literalsEl.querySelectorAll('u').forEach((u) => {
       const text = u.innerText.trim();
       if (DIGITS_ONLY.test(text)) {
         u.outerHTML = '<span data-placeholder="resultCount"></span>';
-      } else if (text === 'search') {
+      } else if (SEARCH_REGEX.test(text)) {
         u.outerHTML = '<span data-placeholder="searchTerm"></span>';
-      } else if (text === 'filter') {
+      } else if (FILTER_REGEX.test(text)) {
         u.outerHTML = '<span data-placeholder="filter"></span>';
       }
     });
@@ -302,9 +312,6 @@ export default async function init(el) {
       literalEl.remove();
       if (slot) {
         slot.setAttribute('slot', LITERAL_SLOTS[index]);
-        if (LITERAL_SLOTS[index].toLowerCase().includes('result')) {
-          slot.setAttribute('aria-live', 'polite');
-        }
         index += 1;
       }
       literalSlots.push(slot);
@@ -341,5 +348,6 @@ export default async function init(el) {
     'merch-card-collection-render',
     'merch-card-collection-render:start',
   );
+
   return merchCardCollection;
 }
