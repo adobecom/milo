@@ -194,7 +194,7 @@ export class AemFragment extends HTMLElement {
 
     #fail({ message, context }) {
         this.classList.add('error');
-        this.#log.error(message, context);
+        this.#log.error(`aem-fragment: ${message}`, context);
         this.dispatchEvent(
             new CustomEvent(EVENT_AEM_ERROR, {
                 detail: { message, context },
