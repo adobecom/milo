@@ -140,6 +140,7 @@ export function Wcs({ settings }) {
             promises.forEach((promise) => {
                 promise.reject(
                     new MasError(message, {
+                        ...options,
                         response,
                         startTime,
                         duration,
