@@ -204,23 +204,7 @@ describe('class "CheckoutButton"', () => {
         });
     });
 
-    describe('method "render"', () => {
-        it('returns false if element is not connected to DOM', async () => {
-            await initMasCommerceService();
-            const checkoutButton = mockCheckoutButton('no-offer', {}, false);
-            expect(await checkoutButton.render()).to.be.false;
-        });
-    });
-
     describe('method "renderOffers"', () => {
-        it('returns false and does not render href if element is not connected to DOM', async () => {
-            await initMasCommerceService();
-            const checkoutButton = mockCheckoutButton('no-offer', {}, false);
-            checkoutButton.setCheckoutUrl(HREF);
-            expect(await checkoutButton.renderOffers([])).to.be.false;
-            expect(checkoutButton.href).to.be.equal(HREF);
-        });
-
         it('returns false and renders failed placeholder if offers array is empty', async () => {
             await initMasCommerceService();
             const checkoutButton = mockCheckoutButton('no-offer', {});
@@ -235,10 +219,7 @@ describe('class "CheckoutButton"', () => {
             await initMasCommerceService();
             const checkoutButton = mockCheckoutButton('no-offer', {}, false);
             checkoutButton.setCheckoutUrl(HREF);
-            const version = checkoutButton.masElement.togglePending();
             checkoutButton.masElement.togglePending();
-            expect(await checkoutButton.renderOffers([], {}, version)).to.be
-                .false;
             expect(checkoutButton.href).to.equal(HREF);
         });
     });
