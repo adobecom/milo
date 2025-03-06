@@ -233,9 +233,6 @@ export async function fetchDraftProject(projectKey) {
         projectKey,
       };
       projectCreated.value = (userWorkflowType.value !== USER_WORKFLOW_TYPE.promote_rollout);
-      if (userWorkflowType.value !== USER_WORKFLOW_TYPE.promote_rollout) {
-        setUserWorkflowType(USER_WORKFLOW_TYPE.edit);
-      }
       error = '';
     }
     if (resJson.error) {
