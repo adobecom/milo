@@ -21,6 +21,13 @@ export const TRANSLATE_ONLY_LANGS = ['en-GB'];
 export const ENG_LANG_CODE = 'en';
 export const TRANSCREATION_WORKFLOW = 'Transcreation';
 
+export const USER_WORKFLOW_TYPE = {
+  promote_rollout: 'promoteRollout',
+  edit: 'edit',
+  single_rollout: 'singleRollout',
+  normal: 'normal',
+};
+
 export const WORKFLOW = {
   promoteRollout: {
     switcher: false,
