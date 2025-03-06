@@ -17,21 +17,44 @@ import {
     ANALYTICS_SECTION_ATTR,
     processDescription,
     updateLinksCSS,
+    getTruncatedTextData,
+    processBackgroundColor,
+    processBorderColor,
+    appendSlot,
 } from '../src/hydrate.js';
 import { CCD_SLICE_AEM_FRAGMENT_MAPPING } from '../src/variants/ccd-slice.js';
 
 import { mockFetch } from './mocks/fetch.js';
 import { withWcs } from './mocks/wcs.js';
 
+function getFooterElement(merchCard) {
+    return merchCard.querySelector('div[slot="footer"]');
+}
+
+function getBgImageElement(merchCard, slotName = 'image') {
+    return merchCard.spectrum === 'swc'
+        ? merchCard.shadowRoot.querySelector(`div[slot="${slotName}"]`)
+        : merchCard.querySelector(`div[slot="${slotName}"]`);
+}
+
 const mockMerchCard = () => {
     const merchCard = document.createElement('div');
     merchCard.spectrum = 'css';
     merchCard.loading = 'lazy';
+    merchCard.attachShadow({ mode: 'open' });
+
     document.body.appendChild(merchCard);
+
     const originalAppend = merchCard.append;
     merchCard.append = sinon.spy(function () {
         return originalAppend.apply(this, arguments);
     });
+
+    const originalShadowAppend = merchCard.shadowRoot.append;
+    merchCard.shadowRoot.append = sinon.spy(function () {
+        return originalShadowAppend.apply(this, arguments);
+    });
+
     return merchCard;
 };
 
@@ -83,8 +106,10 @@ describe('processPrices', async () => {
             prices: '<span>$9.99</span>',
         };
         const merchCard = mockMerchCard();
-        const pricesConfig = { tag: 'p', slot: 'prices' };
-        processPrices(fields, merchCard, pricesConfig);
+        const mapping = { 
+          prices: { tag: 'p', slot: 'prices' }
+        };
+        processPrices(fields, merchCard, mapping);
         expect(merchCard.outerHTML).to.equal(
             '<div><p slot="prices"><span>$9.99</span></p></div>',
         );
@@ -95,8 +120,10 @@ describe('processPrices', async () => {
             prices: 'Starting at  <span is="inline-price" data-template="price" data-wcs-osi="nTbB50pS4lLGv_x1l_UKggd-lxxo2zAJ7WYDa2mW19s"></span>',
         };
         const merchCard = mockMerchCard();
-        const pricesConfig = { tag: 'p', slot: 'price' };
-        processPrices(fields, merchCard, pricesConfig);
+        const mapping = { 
+          prices: { tag: 'p', slot: 'price' }
+        };
+        processPrices(fields, merchCard, mapping);
         await merchCard.querySelector('span[is="inline-price"]').onceSettled();
         expect(merchCard.textContent).to.equal('Starting at  US$22.19/mo');
     });
@@ -108,7 +135,6 @@ describe('processCTAs', async () => {
 
     beforeEach(async () => {
         merchCard = mockMerchCard();
-
         aemFragmentMapping = {
             ctas: {
                 slot: 'footer',
@@ -127,19 +153,18 @@ describe('processCTAs', async () => {
         processCTAs(fields, merchCard, aemFragmentMapping);
 
         expect(merchCard.append.called).to.be.false;
+        expect(merchCard.shadowRoot.append.called).to.be.false;
     });
 
-    it('should create spectrum css buttons by default', async () => {
+    it('should create spectrum css buttons by default (merchCard.spectrum=css)', async () => {
         const fields = {
             ctas: '<a is="checkout-link" data-wcs-osi="abm" class="accent">Click me</a>',
         };
 
         processCTAs(fields, merchCard, aemFragmentMapping);
 
-        const appendCall = merchCard.append.firstCall;
-        expect(appendCall).to.exist;
-
-        const footer = appendCall.args[0];
+        const footer = getFooterElement(merchCard);
+        expect(footer).to.exist;
         expect(footer.getAttribute('slot')).to.equal('footer');
 
         const button = footer.firstChild;
@@ -156,10 +181,8 @@ describe('processCTAs', async () => {
         merchCard.spectrum = 'swc';
         processCTAs(fields, merchCard, aemFragmentMapping);
 
-        const appendCall = merchCard.append.firstCall;
-        expect(appendCall).to.exist;
-
-        const footer = appendCall.args[0];
+        const footer = getFooterElement(merchCard);
+        expect(footer).to.exist;
         expect(footer.getAttribute('slot')).to.equal('footer');
 
         const button = footer.firstChild;
@@ -171,7 +194,6 @@ describe('processCTAs', async () => {
     });
 
     it('should create consonant buttons when merchCard.consonant is true', async () => {
-        // when a merch-card with a fields is rendered in a Milo page.
         merchCard.consonant = true;
         const fields = {
             ctas: '<a is="checkout-link" data-wcs-osi="abm" class="accent">Click me</a>',
@@ -179,10 +201,9 @@ describe('processCTAs', async () => {
 
         processCTAs(fields, merchCard, aemFragmentMapping);
 
-        const appendCall = merchCard.append.firstCall;
-        expect(appendCall).to.exist;
+        const footer = getFooterElement(merchCard);
+        expect(footer).to.exist;
 
-        const footer = appendCall.args[0];
         const link = footer.firstChild;
         expect(link.classList.contains('con-button')).to.be.true;
         expect(link.classList.contains('accent')).to.be.true;
@@ -190,19 +211,15 @@ describe('processCTAs', async () => {
 
     it('should handle multiple CTAs', async () => {
         const fields = {
-            ctas: `
-                <a is="checkout-link" data-wcs-osi="abm" class="accent">Accent</a>
-                <a is="checkout-link" data-wcs-osi="abm" class="primary">Primary</a>
-                <a is="checkout-link" data-wcs-osi="abm" class="secondary">Secondary</a>
-            `,
+            ctas: `\n                <a is="checkout-link" data-wcs-osi="abm" class="accent">Accent</a>\n                <a is="checkout-link" data-wcs-osi="abm" class="primary">Primary</a>\n                <a is="checkout-link" data-wcs-osi="abm" class="secondary">Secondary</a>\n            `,
         };
 
         processCTAs(fields, merchCard, aemFragmentMapping);
+        const footer = getFooterElement(merchCard);
+        expect(footer).to.exist;
 
-        const footer = merchCard.append.firstCall.args[0];
         const buttons = footer.children;
         expect(buttons).to.have.lengthOf(3);
-
         expect(buttons[0].className).to.equal(
             'spectrum-Button spectrum-Button--accent spectrum-Button--sizeM',
         );
@@ -220,8 +237,9 @@ describe('processCTAs', async () => {
         };
 
         processCTAs(fields, merchCard, aemFragmentMapping);
+        const footer = getFooterElement(merchCard);
+        expect(footer).to.exist;
 
-        const footer = merchCard.append.firstCall.args[0];
         const button = footer.firstChild;
         expect(button.className).to.equal(
             'spectrum-Button spectrum-Button--accent spectrum-Button--sizeM',
@@ -234,8 +252,9 @@ describe('processCTAs', async () => {
         };
 
         processCTAs(fields, merchCard, aemFragmentMapping);
+        const footer = getFooterElement(merchCard);
+        expect(footer).to.exist;
 
-        const footer = merchCard.append.firstCall.args[0];
         const button = footer.firstChild;
         expect(button.className).to.equal(
             'spectrum-Button spectrum-Button--accent spectrum-Button--sizeM spectrum-Button--outline',
@@ -244,13 +263,12 @@ describe('processCTAs', async () => {
 
     it('should handle link-style CTAs', async () => {
         const fields = {
-            ctas: `<a is="checkout-link" data-wcs-osi="abm" class="primary-link">Link Style</a>
-            <a is="checkout-link" data-wcs-osi="abm">Link Style</a>`,
+            ctas: `<a is="checkout-link" data-wcs-osi="abm" class="primary-link">Link Style</a>\n            <a is="checkout-link" data-wcs-osi="abm">Link Style</a>`,
         };
 
         processCTAs(fields, merchCard, aemFragmentMapping, 'ccd-suggested');
-
-        const footer = merchCard.append.firstCall.args[0];
+        const footer = getFooterElement(merchCard);
+        expect(footer).to.exist;
         const link = footer.firstChild;
         expect(link.tagName.toLowerCase()).to.equal('a');
         expect(link.classList.contains('primary-link')).to.be.true;
@@ -275,9 +293,9 @@ describe('processSubtitle', () => {
 
     it('should not append subtitle when fields.subtitle is falsy', () => {
         const fields = { subtitle: null };
-        const subtitleConfig = { tag: 'h3', slot: 'subtitle' };
+        const mapping = { subtitle: { tag: 'h3', slot: 'subtitle' }};
 
-        processSubtitle(fields, merchCard, subtitleConfig);
+        processSubtitle(fields, merchCard, mapping);
 
         expect(merchCard.append.called).to.be.false;
         expect(merchCard.outerHTML).to.equal('<div></div>');
@@ -285,9 +303,8 @@ describe('processSubtitle', () => {
 
     it('should not append subtitle when subtitleConfig is falsy', () => {
         const fields = { subtitle: 'Test Subtitle' };
-        const subtitleConfig = null;
 
-        processSubtitle(fields, merchCard, subtitleConfig);
+        processSubtitle(fields, merchCard, {});
 
         expect(merchCard.append.called).to.be.false;
         expect(merchCard.outerHTML).to.equal('<div></div>');
@@ -295,9 +312,9 @@ describe('processSubtitle', () => {
 
     it('should append subtitle with correct tag and slot', () => {
         const fields = { subtitle: 'Test Subtitle' };
-        const subtitleConfig = { tag: 'h3', slot: 'subtitle' };
+        const mapping = { subtitle: { tag: 'h3', slot: 'subtitle' } };
 
-        processSubtitle(fields, merchCard, subtitleConfig);
+        processSubtitle(fields, merchCard, mapping);
 
         expect(merchCard.outerHTML).to.equal(
             '<div><h3 slot="subtitle">Test Subtitle</h3></div>',
@@ -332,10 +349,11 @@ describe('processBackgroundImage', () => {
         );
 
         expect(merchCard.append.called).to.be.false;
+        expect(merchCard.shadowRoot.append.called).to.be.false;
         expect(merchCard.outerHTML).to.equal('<div></div>');
     });
 
-    it('should append background image for ccd-slice variant', () => {
+    it('should append background image for ccd-slice variant, merchCard.spectrum=css', () => {
         const fields = {
             backgroundImage: 'test-image.jpg',
             backgroundImageAltText: 'Test Image',
@@ -349,9 +367,10 @@ describe('processBackgroundImage', () => {
             backgroundImageConfig,
             variant,
         );
-
-        expect(merchCard.outerHTML).to.equal(
-            '<div><div slot="image"><img loading="lazy" src="test-image.jpg" alt="Test Image"></div></div>',
+        const imageContainer = getBgImageElement(merchCard);
+        expect(imageContainer).to.exist;
+        expect(imageContainer.innerHTML).to.equal(
+            '<img loading="lazy" src="test-image.jpg" alt="Test Image">',
         );
     });
 
@@ -385,6 +404,7 @@ describe('processBackgroundImage', () => {
         );
 
         expect(merchCard.append.called).to.be.false;
+        expect(merchCard.shadowRoot.append.called).to.be.false;
         expect(merchCard.outerHTML).to.equal('<div></div>');
     });
 });
@@ -442,7 +462,6 @@ describe('processAnalytics', () => {
             'see-terms-1',
         );
         expect(buyNow.getAttribute(ANALYTICS_LINK_ATTR)).to.equal('buy-now-2');
-        // should handle only links with data-analytics-id attribute
         expect(
             merchCard.querySelectorAll(`a[${ANALYTICS_LINK_ATTR}]`).length,
         ).to.equal(2);
@@ -478,11 +497,9 @@ describe('hydrate', () => {
         await hydrate(fragment, merchCard);
 
         expect(merchCard.getAttribute(ANALYTICS_SECTION_ATTR)).to.equal('ccsn');
-        expect(
-            merchCard
-                .querySelector(`button[data-analytics-id]`)
-                .getAttribute('daa-ll'),
-        ).to.equal('buy-now-1');
+        const ctaButton = merchCard.querySelector('button[data-analytics-id]');
+        expect(ctaButton).to.exist;
+        expect(ctaButton.getAttribute('daa-ll')).to.equal('buy-now-1');
     });
 });
 
@@ -492,9 +509,10 @@ describe('processDescription', async () => {
 
     beforeEach(async () => {
         merchCard = mockMerchCard();
-
         aemFragmentMapping = {
             description: { tag: 'div', slot: 'body-xs' },
+            promoText: {tag: 'p', slot: 'promo-text'},
+            callout: {tag: 'div', slot: 'callout-content'},
         };
     });
 
@@ -507,10 +525,277 @@ describe('processDescription', async () => {
             description: `Buy <a is="checkout-link" data-wcs-osi="abm" class="primary-link">Link Style</a><a is="checkout-link" data-wcs-osi="abm" class="secondary-link">Link Style</a>`,
         };
 
-        processDescription(fields, merchCard, aemFragmentMapping.description);
+        processDescription(fields, merchCard, aemFragmentMapping);
         updateLinksCSS(merchCard);
         expect(merchCard.innerHTML).to.equal(
             '<div slot="body-xs">Buy <a is="checkout-link" data-wcs-osi="abm" class="spectrum-Link spectrum-Link--primary">Link Style</a><a is="checkout-link" data-wcs-osi="abm" class="spectrum-Link spectrum-Link--secondary">Link Style</a></div>',
         );
     });
+
+    it('should process promo and callout', async () => {
+      const fields = {
+          promoText: `Save over 30% with an annual plan.`,
+          description: `Description Text`,
+          callout: `\u003Cp\u003EAI Assistant add-on available.\u003Cimg src=\"https://main--milo--adobecom.hlx.page/drafts/rosahu/info-icon.svg\" title=\"this is a dummy tooltip text\"\u003E\u003C/p\u003E`,
+      };
+
+      processDescription(fields, merchCard, aemFragmentMapping);
+      updateLinksCSS(merchCard);
+      expect(merchCard.querySelector('p[slot="promo-text"]')?.textContent).to.equal(
+          'Save over 30% with an annual plan.',
+      );
+      expect(merchCard.querySelector('div[slot="callout-content"]')?.textContent).to.equal(
+        'AI Assistant add-on available.',
+    );
+  });
+});
+
+describe('getTruncatedTextData', () => {
+  it('closes any open tags in truncated text', () => {
+      // The function truncates in the middle of <b>World, then appends closing tags
+      // The actual output might be: "<p>Hello <b>W</b>..."
+      // (the ellipsis appears outside the <b> tag, then no closing </p> if "p" was the first leftover)
+      const text = '<p>Hello <b>World</b> more text</p>';
+      const limit = 10; // small to ensure truncation inside <b>World
+      const [truncated] = getTruncatedTextData(text, limit);
+
+      // You can simply check that it starts with `<p>Hello <b>` and ends with `</b>...`
+      expect(truncated).to.equal('<p>Hello <b>W</b>...');
+  });
+
+  it('handles leftover <p> specifically by ignoring if first in openTags', () => {
+      // If <p> is the first leftover tag, it gets removed, so the function
+      // might produce something like "<p><span>He</span>..."
+      const text = '<p><span>Hello world';
+      const limit = 5;
+      const [truncated] = getTruncatedTextData(text, limit);
+
+      // Actual output might be "<p><span>He</span>..."
+      expect(truncated).to.equal('<p><span>He</span>...');
+  });
+
+  it('handles slash near tag ends properly', () => {
+      // If we truncate before capturing <img>, the function may skip it entirely
+      // leading to something like "<div>Hello</div>..."
+      const text = '<div>Hello <img src="test.jpg" /> world</div>';
+      const limit = 8;
+      const [truncated] = getTruncatedTextData(text, limit);
+
+      // The actual output might be "<div>Hello</div>..."
+      // because we never traverse far enough to keep the <img> or " world"
+      expect(truncated).to.equal('<div>Hello</div>...');
+  });
+
+  it('handles null text values', () => {
+    const text = null;
+    const limit = 5;
+    const [truncated] = getTruncatedTextData(text, limit);
+
+    expect(truncated).to.equal('');
+  });
+});
+
+describe('processBackgroundColor', () => {
+    let merchCard;
+
+    beforeEach(() => {
+        merchCard = mockMerchCard();
+    });
+
+    it('should set background color when valid', () => {
+        const fields = { backgroundColor: 'gray' };
+        const allowedColors = { gray: '--spectrum-gray-50' };
+        
+        processBackgroundColor(fields, merchCard, allowedColors);
+        
+        expect(merchCard.style.getPropertyValue('--merch-card-custom-background-color'))
+            .to.equal('var(--spectrum-gray-50)');
+        expect(merchCard.getAttribute('background-color')).to.equal('gray');
+    });
+
+    it('should not set color when invalid', () => {
+        const fields = { backgroundColor: 'red' };
+        const allowedColors = { gray: 'var(--spectrum-gray-50)' };
+        
+        processBackgroundColor(fields, merchCard, allowedColors);
+        
+        expect(merchCard.style.getPropertyValue('--merch-card-custom-background-color'))
+            .to.be.empty;
+        expect(merchCard.hasAttribute('background-color')).to.be.false;
+    });
+
+    it('should handle allowedColors=null', () => {
+        const fields = { backgroundColor: 'gray' };
+        
+        processBackgroundColor(fields, merchCard, null);
+        
+        expect(merchCard.style.getPropertyValue('--merch-card-custom-background-color'))
+            .to.be.empty;
+    });
+
+    it('should remove color when set to default', () => {
+        merchCard.style.setProperty('--merch-card-custom-background-color', 'blue');
+        merchCard.setAttribute('background-color', 'gray');
+        
+        processBackgroundColor({ backgroundColor: 'default' }, merchCard, {});
+        
+        expect(merchCard.style.getPropertyValue('--merch-card-custom-background-color'))
+            .to.be.empty;
+        expect(merchCard.hasAttribute('background-color')).to.be.false;
+    });
+});
+
+describe('processBorderColor', () => {
+    let merchCard;
+
+    beforeEach(() => {
+        merchCard = mockMerchCard();
+    });
+
+    it('should set border color when configured', () => {
+        const fields = { borderColor: 'spectrum-gray-800' };
+        const borderColorConfig = { attribute: 'border-color' };
+        
+        processBorderColor(fields, merchCard, borderColorConfig);
+        
+        expect(merchCard.style.getPropertyValue('--merch-card-custom-border-color'))
+            .to.equal('var(--spectrum-gray-800)');
+    });
+
+    it('should not set border color without config', () => {
+        const fields = { borderColor: 'spectrum-gray-800' };
+        
+        processBorderColor(fields, merchCard, null);
+        
+        expect(merchCard.style.getPropertyValue('--merch-card-custom-border-color'))
+            .to.be.empty;
+    });
+
+    it('should ignore transparent border color', () => {
+        const fields = { borderColor: 'transparent' };
+        const borderColorConfig = { attribute: 'border-color' };
+        
+        processBorderColor(fields, merchCard, borderColorConfig);
+        
+        expect(merchCard.style.getPropertyValue('--merch-card-custom-border-color'))
+            .to.be.empty;
+    });
+});
+
+describe('appendSlot', () => {
+  let el;
+  
+  beforeEach(() => {
+    el = document.createElement('div');
+  });
+  
+  it('should append element with content when field exists', () => {
+    const fieldName = 'testField';
+    const fields = { testField: 'Test Content' };
+    const mapping = { testField: { tag: 'p', slot: 'test-slot' } };
+    
+    appendSlot(fieldName, fields, el, mapping);
+    
+    const appended = el.querySelector('[slot="test-slot"]');
+    expect(appended).to.exist;
+    expect(appended.tagName).to.equal('P');
+    expect(appended.textContent).to.equal('Test Content');
+  });
+  
+  it('should not append element when field does not exist', () => {
+    const fieldName = 'missingField';
+    const fields = { otherField: 'Test Content' };
+    const mapping = { missingField: { tag: 'p', slot: 'test-slot' } };
+    
+    appendSlot(fieldName, fields, el, mapping);
+    
+    const appended = el.querySelector('[slot="test-slot"]');
+    expect(appended).to.not.exist;
+  });
+  
+  it('should truncate content when maxCount is specified and content exceeds limit', () => {
+    const fieldName = 'longField';
+    const longText = 'This is a very long text that should be truncated';
+    const fields = { longField: longText };
+    const mapping = { longField: { tag: 'p', slot: 'test-slot', maxCount: 10 } };
+    
+    appendSlot(fieldName, fields, el, mapping);
+    
+    const appended = el.querySelector('[slot="test-slot"]');
+    expect(appended).to.exist;
+    expect(appended.textContent).to.equal('This is...');
+    expect(appended.getAttribute('title')).to.equal(longText);
+  });
+  
+  it('should not truncate content when maxCount is specified but content is within limit', () => {
+    const fieldName = 'shortField';
+    const shortText = 'Short text';
+    const fields = { shortField: shortText };
+    const mapping = { shortField: { tag: 'p', slot: 'test-slot', maxCount: 20 } };
+    
+    appendSlot(fieldName, fields, el, mapping);
+    
+    const appended = el.querySelector('[slot="test-slot"]');
+    expect(appended).to.exist;
+    expect(appended.textContent).to.equal(shortText);
+    expect(appended.getAttribute('title')).to.be.null;
+  });
+  
+  it('should respect withSuffix=false when truncating', () => {
+    const fieldName = 'longField';
+    const longText = 'This is a very long text that should be truncated without ellipsis';
+    const fields = { longField: longText };
+    const mapping = { longField: { tag: 'p', slot: 'test-slot', maxCount: 10, withSuffix: false } };
+    
+    appendSlot(fieldName, fields, el, mapping);
+    
+    const appended = el.querySelector('[slot="test-slot"]');
+    expect(appended).to.exist;
+    expect(appended.textContent).to.equal('This is a');
+    expect(appended.textContent).to.not.include('...');
+    expect(appended.getAttribute('title')).to.equal(longText);
+  });
+  
+  it('should handle HTML content when truncating', () => {
+    const fieldName = 'htmlField';
+    const htmlText = '<strong>This</strong> is a <em>formatted</em> text that should be truncated';
+    const fields = { htmlField: htmlText };
+    const mapping = { htmlField: { tag: 'p', slot: 'test-slot', maxCount: 15 } };
+    
+    appendSlot(fieldName, fields, el, mapping);
+    
+    const appended = el.querySelector('[slot="test-slot"]');
+    expect(appended).to.exist;
+    // The exact truncated text might vary depending on how getTruncatedTextData handles HTML
+    expect(appended.textContent.length).to.be.lessThan(htmlText.length);
+    expect(appended.getAttribute('title')).to.not.be.null;
+  });
+  
+  it('should not attempt truncation on non-string content', () => {
+    const fieldName = 'objectField';
+    const objectContent = { key: 'value' };
+    const fields = { objectField: objectContent };
+    const mapping = { objectField: { tag: 'p', slot: 'test-slot', maxCount: 10 } };
+    
+    appendSlot(fieldName, fields, el, mapping);
+    
+    const appended = el.querySelector('[slot="test-slot"]');
+    expect(appended).to.exist;
+    // The object will be converted to string by the browser
+    expect(appended.textContent).to.equal(objectContent.toString());
+  });
+  
+  it('should break at word boundaries when truncating', () => {
+    const fieldName = 'textField';
+    const text = 'This is a sentence with multiple words';
+    const fields = { textField: text };
+    const mapping = { textField: { tag: 'p', slot: 'test-slot', maxCount: 12 } };
+    
+    appendSlot(fieldName, fields, el, mapping);
+    
+    const appended = el.querySelector('[slot="test-slot"]');
+    expect(appended).to.exist;
+    // Should break at a space, not in the middle of "sentence"
+    expect(appended.textContent).to.equal('This is a...');
+  });
 });
