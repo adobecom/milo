@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { features } from './table.spec.js';
 import TableBlock from './table.page.js';
+import { runAccessibilityTest } from '../../libs/accessibility.js';
 
 let table;
 
@@ -31,6 +32,10 @@ test.describe('Milo Table block feature test suite', () => {
       // verify table header and section rows content
       await table.verifyHeaderRow(data);
       await table.verifySectionRow(data);
+    });
+
+    await test.step('step-3: Verify the accessibility test on the table (default) block', async () => {
+      await runAccessibilityTest({ page, testScope: table.table });
     });
   });
 

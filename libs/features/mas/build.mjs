@@ -7,7 +7,7 @@ const defaults = {
     bundle: true,
     format: 'esm',
     minify: true,
-    // sourcemap: true,
+    sourcemap: false,
     platform: 'browser',
     target: ['es2020'],
 };
@@ -27,17 +27,16 @@ writeFileSync(`commerce.json`, JSON.stringify(metafile));
 
 // mas.js
 await build({
-    ...defaults,
-    entryPoints: ['./src/mas.js'],
-    outfile: './dist/mas.js',
+  ...defaults,
+  entryPoints: ['./src/mas.js'],
+  outfile: './dist/mas.js',
 });
 
 await build({
-    ...defaults,
-    entryPoints: ['./src/mas.js'],
-    outfile: `${outfolder}/mas.js`,
+  ...defaults,
+  entryPoints: ['./src/mas.js'],
+  outfile: `${outfolder}/mas.js`,
 });
-
 // web components
 Promise.all([
     build({

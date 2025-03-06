@@ -6,6 +6,7 @@ import {
   selectors,
   isElementVisible,
   unavVersion,
+  addMetaDataV2,
 } from './test-utilities.js';
 import { toFragment } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
 import globalNavigationMock from './mocks/global-navigation.plain.js';
@@ -13,10 +14,17 @@ import globalNavigationWideColumnMock from './mocks/global-navigation-wide-colum
 
 describe('main nav popups', () => {
   before(() => {
-    document.head.innerHTML = `<link rel="icon" href="/libs/img/favicons/favicon.ico" size="any">
-    <script src="https://auth.services.adobe.com/imslib/imslib.min.js" type="javascript/blocked" data-loaded="true"></script>
-    <script src="https://stage.adobeccstatic.com/unav/${unavVersion}/UniversalNav.js" type="javascript/blocked" data-loaded="true"></script>
-    `;
+    document.head.innerHTML = `
+    <link rel="icon" href="/libs/img/favicons/favicon.ico" size="any">
+    <script type="importmap">
+      {
+        "imports": {
+          "https://auth.services.adobe.com/imslib/imslib.min.js": "./mocks/imslib-mock.js",
+          "https://stage.adobeccstatic.com/unav/${unavVersion}/UniversalNav.js": "./mocks/unav-mock.js"
+        }
+      }
+    </script>
+  `;
   });
 
   describe('desktop', () => {
@@ -47,6 +55,7 @@ describe('main nav popups', () => {
     });
 
     it('should render popups with wide columns', async () => {
+      document.head.appendChild(addMetaDataV2('off'));
       await createFullGlobalNavigation({ globalNavigation: globalNavigationWideColumnMock });
       expect(document.querySelector('.feds-navItem--section .feds-menu-column--group .feds-menu-column + .feds-menu-column')).to.exist;
       expect(document.querySelector('.column-break')).to.not.exist;
@@ -139,6 +148,7 @@ describe('main nav popups', () => {
     });
 
     it('should open a popup and headline on click', async () => {
+      document.head.appendChild(addMetaDataV2('off'));
       await createFullGlobalNavigation({ viewport: 'mobile' });
 
       document.querySelector(selectors.mainNavToggle).click();

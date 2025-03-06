@@ -5,19 +5,28 @@ import {
   selectors,
   isElementVisible,
   unavVersion,
+  addMetaDataV2,
 } from './test-utilities.js';
 import globalNavigationCrossCloud from './mocks/global-navigation-cross-cloud.plain.js';
 
 describe('Cross Cloud Menu', () => {
   before(() => {
-    document.head.innerHTML = `<link rel="icon" href="/libs/img/favicons/favicon.ico" size="any">
-    <script src="https://auth.services.adobe.com/imslib/imslib.min.js" type="javascript/blocked" data-loaded="true"></script>
-    <script src="https://stage.adobeccstatic.com/unav/${unavVersion}/UniversalNav.js" type="javascript/blocked" data-loaded="true"></script>
-    `;
+    document.head.innerHTML = `
+    <link rel="icon" href="/libs/img/favicons/favicon.ico" size="any">
+    <script type="importmap">
+      {
+        "imports": {
+          "https://auth.services.adobe.com/imslib/imslib.min.js": "./mocks/imslib-mock.js",
+          "https://stage.adobeccstatic.com/unav/${unavVersion}/UniversalNav.js": "./mocks/unav-mock.js"
+        }
+      }
+    </script>
+  `;
   });
 
   describe('desktop', () => {
     it('should render the Cross Cloud Menu', async () => {
+      document.head.appendChild(addMetaDataV2('off'));
       await createFullGlobalNavigation({ globalNavigation: globalNavigationCrossCloud });
       const crossCloudMenu = document.querySelector(selectors.crossCloudMenuWrapper);
 

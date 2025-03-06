@@ -72,8 +72,8 @@ export default async function loadBlock(configs, customLib) {
     env = 'prod',
     locale = '',
     theme,
-    allowedOrigins = [],
     stageDomainsMap = {},
+    allowedOrigins = [],
   } = configs || {};
   if (!header && !footer) {
     // eslint-disable-next-line no-console
@@ -103,40 +103,48 @@ export default async function loadBlock(configs, customLib) {
   }
 
   // Relative paths work just fine since they exist in the context of this file's origin
-  const [{ default: bootstrapBlock }, { default: locales }, { setConfig }] = await Promise.all([
+  const [
+    { default: bootstrapBlock },
+    { default: locales },
+    { setConfig, getConfig }] = await Promise.all([
     import('./bootstrapper.js'),
     import('../utils/locales.js'),
     import('../utils/utils.js'),
   ]);
   const paramConfigs = getParamsConfigs(configs);
   const clientConfig = {
-    clientEnv: env,
-    origin: `https://main--federal--adobecom.aem.${env === 'prod' ? 'live' : 'page'}`,
-    miloLibs: `${miloLibs}/libs`,
-    pathname: `/${locale}`,
-    locales: configs.locales || locales,
-    contentRoot: authoringPath || footer.authoringPath,
     theme,
-    ...paramConfigs,
     prodDomains,
-    allowedOrigins: [...allowedOrigins, `https://main--federal--adobecom.aem.${env === 'prod' ? 'live' : 'page'}`],
+    clientEnv: env,
     standaloneGnav: true,
+    pathname: `/${locale}`,
+    miloLibs: `${miloLibs}/libs`,
+    locales: configs.locales || locales,
+    contentRoot: authoringPath || footer?.authoringPath,
     stageDomainsMap: getStageDomainsMap(stageDomainsMap),
+    origin: `https://main--federal--adobecom.aem.${env === 'prod' ? 'live' : 'page'}`,
+    allowedOrigins: [...allowedOrigins, `https://main--federal--adobecom.aem.${env === 'prod' ? 'live' : 'page'}`],
+    ...paramConfigs,
   };
   setConfig(clientConfig);
   for await (const block of blockConfig) {
     const configBlock = configs[block.key];
+    const config = getConfig();
+    const gnavSource = `${config?.locale?.contentRoot}/gnav`;
     try {
       if (configBlock) {
         if (block.key === 'header') {
           const { default: init } = await import('../blocks/global-navigation/global-navigation.js');
           await bootstrapBlock(init, {
             ...block,
+            gnavSource,
             unavComponents: configBlock.unav?.unavComponents,
             redirect: configBlock.redirect,
             layout: configBlock.layout,
             noBorder: configBlock.noBorder,
             jarvis: configBlock.jarvis,
+            isLocalNav: configBlock.isLocalNav,
+            mobileGnavV2: configBlock.mobileGnavV2 || 'off',
           });
         } else if (block.key === 'footer') {
           try {
@@ -151,6 +159,11 @@ export default async function loadBlock(configs, customLib) {
       }
     } catch (e) {
       configBlock.onError?.(e);
+      window.lana.log(`${e.message} | gnav-source: ${gnavSource} | href: ${window.location.href}`, {
+        clientId: 'feds-milo',
+        tags: 'standalone-gnav',
+        errorType: e.errorType,
+      });
     }
   }
 }
