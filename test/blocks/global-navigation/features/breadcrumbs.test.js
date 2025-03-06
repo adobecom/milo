@@ -33,6 +33,15 @@ const breadcrumbWithCase = () => toFragment`
   </div>
 `;
 
+const breadcrumbWithEmptyList = () => toFragment`
+<div class="breadcrumbs no-transform">
+  <div>
+    <div>
+    </div>
+  </div>
+</div>
+`;
+
 export const assertBreadcrumb = ({ breadcrumb, length }) => {
   expect(breadcrumb.querySelector('nav')).to.exist;
   expect(breadcrumb.querySelector('ul').children.length).to.equal(length);
@@ -75,14 +84,20 @@ describe('breadcrumbs', () => {
     document.head.innerHTML = '<meta name="breadcrumbs-page-title" content="Custom Title"><meta name="breadcrumbs-show-current-page" content="on">';
     const breadcrumb = await breadcrumbs(breadcrumbMock());
     assertBreadcrumb({ breadcrumb, length: 5 });
-    expect(breadcrumb.querySelector('ul li:last-of-type').innerText.trim()).to.equal('Custom Title');
+    expect(breadcrumb.querySelector('ul li:last-of-type').innerText.trim().replace(/^\//, '').trim()).to.equal('Custom Title');
   });
 
   it('should use a custom page title if its explicity set even without breadcrumbs-show-current-page:ON', async () => {
     document.head.innerHTML = '<meta name="breadcrumbs-page-title" content="Custom Title">';
     const breadcrumb = await breadcrumbs(breadcrumbMock());
     assertBreadcrumb({ breadcrumb, length: 5 });
-    expect(breadcrumb.querySelector('ul li:last-of-type').innerText.trim()).to.equal('Custom Title');
+    expect(breadcrumb.querySelector('ul li:last-of-type').innerText.trim().replace(/^\//, '').trim()).to.equal('Custom Title');
+  });
+
+  it('should fail to load when list is empty', async () => {
+    document.head.innerHTML = '<meta name="breadcrumbs-base" content="https://mock.com/mock-isnt-called-anyway">';
+    const breadcrumb = await breadcrumbs(breadcrumbWithEmptyList());
+    expect(breadcrumb).to.be.null;
   });
 
   it('should create a breadcrumb SEO element', async () => {
