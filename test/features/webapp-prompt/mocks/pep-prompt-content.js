@@ -7,6 +7,7 @@ export default ({
   animationDuration,
   tooltipMessage,
   tooltipDuration,
+  pauseOnHover,
 }) => `<div>
   <p>
     <picture>
@@ -51,6 +52,10 @@ export default ({
     ${tooltipDuration && `<div>
       <div>dismissal-tooltip-duration</div>
       <div>${tooltipDuration}</div>
+    </div>`}
+    ${pauseOnHover === 'on' && `<div>
+      <div>pause-on-hover</div>
+      <div>${pauseOnHover}</div>
     </div>`}
   </div>
 </div>`;

@@ -4,9 +4,8 @@ import {
   lanaLog,
   toFragment,
 } from '../../blocks/global-navigation/utilities/utilities.js';
-import { getConfig, decorateSVG } from '../../utils/utils.js';
+import { getConfig, decorateSVG, getFedsPlaceholderConfig } from '../../utils/utils.js';
 import { replaceKey, replaceText } from '../placeholders.js';
-import { getFedsPlaceholderConfig } from '../../utils/federated.js';
 
 export const DISMISSAL_CONFIG = {
   animationCount: 2,
@@ -19,6 +18,7 @@ const CONFIG = {
   selectors: { prompt: '.appPrompt' },
   delay: 7000,
   loaderColor: '#EB1000',
+  pauseOnHover: 'off',
   ...DISMISSAL_CONFIG,
 };
 
@@ -139,7 +139,8 @@ export class AppPrompt {
         lanaLog({
           message: 'Error on getting anchor state',
           e,
-          tags: 'errorType=error,module=pep',
+          tags: 'pep',
+          errorType: 'error',
         });
         return {};
       }));
@@ -155,7 +156,7 @@ export class AppPrompt {
     this.parent.prepend(this.template);
     this.elements.closeIcon.focus();
 
-    this.redirectFn = this.initRedirect();
+    this.cleanupFn = this.initRedirect(this.options['pause-on-hover'] === 'on');
   };
 
   doesEntitlementMatch = async () => {
@@ -173,7 +174,8 @@ export class AppPrompt {
       lanaLog({
         message: `Error fetching content for prompt: ${this.promptPath}.plain.html`,
         e: `Status ${res.status} when trying to fetch content for prompt`,
-        tags: 'errorType=error,module=pep',
+        tags: 'pep',
+        errorType: 'error',
       });
       return '';
     }
@@ -214,7 +216,8 @@ export class AppPrompt {
         lanaLog({
           message: 'Error fetching user profile',
           e,
-          tags: 'errorType=error,module=pep',
+          tags: 'pep',
+          errorType: 'error',
         });
       });
 
@@ -225,10 +228,12 @@ export class AppPrompt {
     metadata['dismissal-animation-duration'] = parseInt(metadata['dismissal-animation-duration'] ?? CONFIG.animationDuration, 10);
     metadata['dismissal-tooltip-message'] ??= CONFIG.tooltipMessage;
     metadata['dismissal-tooltip-duration'] = parseInt(metadata['dismissal-tooltip-duration'] ?? CONFIG.tooltipDuration, 10);
+    metadata['pause-on-hover'] ??= CONFIG.pauseOnHover;
     this.options = metadata;
   };
 
   decorate = () => {
+    const animationPauseOnHover = this.options['pause-on-hover'] === 'on';
     this.elements.closeIcon = toFragment`<button daa-ll="Close Modal" aria-label="${this.cancel}" class="appPrompt-close"></button>`;
     this.elements.cta = toFragment`<button daa-ll="Stay on this page" class="appPrompt-cta appPrompt-cta--close">${this.cancel}</button>`;
     this.elements.profile = this.profile
@@ -257,7 +262,7 @@ export class AppPrompt {
         ${this.elements.cta}
       </div>
       <div class="appPrompt-progressWrapper">
-        <div class="appPrompt-progress" style="background-color: ${this.options['loader-color']}; animation-duration: ${this.options['loader-duration']}ms;"></div>
+        <div class="appPrompt-progress ${animationPauseOnHover && 'appPrompt-progressPauseOnHover'}" style="background-color: ${this.options['loader-color']}; animation-duration: ${this.options['loader-duration']}ms;"></div>
       </div>
     </div>`;
   };
@@ -278,10 +283,46 @@ export class AppPrompt {
     window.location.assign(url);
   }
 
-  initRedirect = () => setTimeout(() => {
-    this.close({ saveDismissal: false, dismissalActions: false });
-    AppPrompt.redirectTo(this.options['redirect-url']);
-  }, this.options['loader-duration']);
+  initRedirect = (withPause = false) => {
+    let timeoutId;
+    let remainingTime = this.options['loader-duration'];
+    let startTime;
+
+    const startTimeout = () => {
+      startTime = performance.now();
+      timeoutId = setTimeout(() => {
+        this.close({ saveDismissal: false, dismissalActions: false });
+        AppPrompt.redirectTo(this.options['redirect-url']);
+      }, remainingTime);
+    };
+
+    const stopTimeout = () => {
+      clearTimeout(timeoutId);
+      remainingTime -= performance.now() - startTime;
+    };
+
+    if (withPause) {
+      const appPromptElem = document.querySelector(CONFIG.selectors.prompt);
+      if (appPromptElem) {
+        appPromptElem.addEventListener('mouseenter', stopTimeout);
+        appPromptElem.addEventListener('mouseleave', startTimeout);
+      }
+    }
+
+    // Start the timeout initially
+    startTimeout();
+
+    return () => {
+      clearTimeout(timeoutId);
+      if (withPause) {
+        const appPromptElem = document.querySelector(CONFIG.selectors.prompt);
+        if (appPromptElem) {
+          appPromptElem.removeEventListener('mouseenter', stopTimeout);
+          appPromptElem.removeEventListener('mouseleave', startTimeout);
+        }
+      }
+    };
+  };
 
   isDismissedPrompt = () => AppPrompt.getDismissedPrompts().includes(this.id);
 
@@ -293,8 +334,8 @@ export class AppPrompt {
 
   close = ({ saveDismissal = true, dismissalActions = true } = {}) => {
     const appPromptElem = document.querySelector(CONFIG.selectors.prompt);
+    this.cleanupFn();
     appPromptElem?.remove();
-    clearTimeout(this.redirectFn);
     if (saveDismissal) this.setDismissedPrompt();
     document.removeEventListener('keydown', this.handleKeyDown);
     this.anchor?.focus();
@@ -330,7 +371,7 @@ export default async function init(config) {
     if (!appPrompt.initializationQueued) await appPrompt.init();
     return appPrompt;
   } catch (e) {
-    lanaLog({ message: 'Could not initialize PEP', e, tags: 'errorType=error,module=pep' });
+    lanaLog({ message: 'Could not initialize PEP', e, tags: 'pep', errorType: 'error' });
     return null;
   }
 }

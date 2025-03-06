@@ -1,7 +1,6 @@
-import { getConfig } from '../../../../utils/utils.js';
+import { getConfig, getFedsPlaceholderConfig } from '../../../../utils/utils.js';
 import { toFragment, trigger, closeAllDropdowns, logErrorFor } from '../../utilities/utilities.js';
 import { replaceKeyArray } from '../../../../features/placeholders.js';
-import { getFedsPlaceholderConfig } from '../../../../utils/federated.js';
 
 const getLanguage = (ietfLocale) => {
   if (!ietfLocale.length) return 'en';
@@ -55,7 +54,7 @@ class ProfileDropdown {
     this.sections = sections;
     this.openOnInit = openOnInit;
     this.localMenu = rawElem.querySelector('h5')?.parentElement;
-    logErrorFor(this.init.bind(this), 'ProfileDropdown.init()', 'errorType=error,module=gnav-profile');
+    logErrorFor(this.init.bind(this), 'ProfileDropdown.init()', 'gnav-profile', 'error');
   }
 
   async init() {
@@ -102,6 +101,7 @@ class ProfileDropdown {
     // the email had some special logic as well;
     // for MVP, we took a simpler approach ("Some very long name, very l...")
     this.avatarElem = toFragment`<img
+      data-cs-mask
       class="feds-profile-img"
       src="${this.avatar}"
       tabindex="0"
@@ -117,8 +117,8 @@ class ProfileDropdown {
         >
           ${this.avatarElem}
           <div class="feds-profile-details">
-            <p class="feds-profile-name">${this.profileData.displayName}</p>
-            <p class="feds-profile-email">${this.decorateEmail(this.profileData.email)}</p>
+            <p data-cs-mask class="feds-profile-name">${this.profileData.displayName}</p>
+            <p data-cs-mask class="feds-profile-email">${this.decorateEmail(this.profileData.email)}</p>
             <p class="feds-profile-account">${this.placeholders.viewAccount}</p>
           </div>
         </a>
