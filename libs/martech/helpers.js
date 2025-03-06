@@ -156,7 +156,7 @@ function handleConsentAndSecondVisit() {
   const isAdobeDomain = hostname === 'www.adobe.com' || hostname === 'www.stage.adobe.com';
   const consentCookieValue = getCookie('OptanonConsent');
 
-  if (consentCookieValue.includes('C0002:1') && isAdobeDomain) {
+  if (consentCookieValue?.includes('C0002:1') && isAdobeDomain) {
     const updatedVisitAttempt = secondVisitAttempt === 0 ? 1 : secondVisitAttempt + 1;
     localStorage.setItem('secondHit', updatedVisitAttempt);
     return updatedVisitAttempt;
