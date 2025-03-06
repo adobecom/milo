@@ -97,28 +97,38 @@ export function setSelectedLocalesAndRegions() {
   locSelected.value = { selectedLocale, activeLocales };
 }
 
-export function getLanguageDetails(langCode, languages = {}) {
-  if (langCode) {
+export function getLanguageDetails(langs) {
+  return langs.map((langCode) => {
     const langDetails = stLocales.value?.find(
       ({ languagecode }) => languagecode.toLowerCase() === langCode.toLowerCase(),
     ) ?? {};
-    return [
-      {
-        action: 'Rollout',
-        langCode: langDetails.languagecode,
-        language: langDetails.language,
-        locales: langDetails.livecopies?.split(','),
-        workflow: '',
-      },
-    ];
-  } if (userWorkflowType.value === USER_WORKFLOW_TYPE.promote_rollout) {
-    return languages.map((language) => ({
-      ...language,
-      action: 'Rollout',
-    }));
-  }
 
-  return languages ?? [];
+    return {
+      action: 'Rollout',
+      langCode: langDetails.languagecode || langCode,
+      language: langDetails.language || '',
+      locales: langDetails.livecopies?.split(','),
+      workflow: '',
+    };
+  });
+}
+
+export function getProject(resJson, lang) {
+  const projectType = (resJson.projectType === 'rollout' || userWorkflowType.value === USER_WORKFLOW_TYPE.promote_rollout)
+    ? 'rollout' : 'localization';
+  const projectNameSuffix = `${userWorkflowType.value === USER_WORKFLOW_TYPE.promote_rollout ? '-rollout' : ''}${lang ? `-${lang}` : ''}`;
+  const languages = lang?.split(',') ?? resJson.languages.map((language) => language.langCode);
+  const projectLanguages = getLanguageDetails(languages);
+
+  return {
+    type: projectType,
+    name: `${resJson.projectName}${projectNameSuffix}`,
+    htmlFlow: resJson.settings?.useHtmlFlow,
+    editBehavior: resJson.settings?.regionalEditBehaviour,
+    urls: resJson.urls,
+    fragments: [],
+    languages: projectLanguages ?? resJson.languages,
+  };
 }
 
 export function getProjectByParams(searchParams) {
@@ -136,7 +146,7 @@ export function getProjectByParams(searchParams) {
     projectInfo.urls = decodedUrls;
   }
   if (language) {
-    projectInfo.languages = getLanguageDetails(language);
+    projectInfo.languages = getLanguageDetails(language.split(','));
   }
 
   return Object.keys(projectInfo).length > 0 ? projectInfo : null;

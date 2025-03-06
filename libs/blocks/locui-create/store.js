@@ -7,7 +7,7 @@ import {
   processLocaleData,
   createPayload,
   getMilocUrl,
-  getLanguageDetails,
+  getProject,
 } from './utils/utils.js';
 
 export const telemetry = { application: { appName: 'Adobe Localization' } };
@@ -226,16 +226,8 @@ export async function fetchDraftProject(projectKey) {
     );
     const resJson = await response.json();
     if (response.ok) {
-      const projectNameSuffix = `${userWorkflowType.value === USER_WORKFLOW_TYPE.promote_rollout ? '-rollout' : ''}${lang ? `-${lang}` : ''}`;
-      setProject({
-        type: (resJson.projectType === 'rollout' || userWorkflowType.value === USER_WORKFLOW_TYPE.promote_rollout) ? 'rollout' : 'localization',
-        name: `${resJson.projectName}${projectNameSuffix}`,
-        htmlFlow: resJson.settings?.useHtmlFlow,
-        editBehavior: resJson.settings?.regionalEditBehaviour,
-        urls: resJson.urls,
-        fragments: [],
-        languages: getLanguageDetails(lang, resJson.languages),
-      });
+      const newProject = getProject(resJson, lang);
+      setProject(newProject);
       projectInfo.value = {
         ...projectInfo.value,
         projectKey,
