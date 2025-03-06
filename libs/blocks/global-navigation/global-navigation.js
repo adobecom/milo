@@ -9,7 +9,6 @@ import {
   getGnavSource,
   getFedsPlaceholderConfig,
 } from '../../utils/utils.js';
-
 import {
   closeAllDropdowns,
   decorateCta,
