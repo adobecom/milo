@@ -27,27 +27,34 @@ export async function getFragmentById(baseUrl, id, author, headers) {
         ? `${baseUrl}/adobe/sites/cf/fragments/${id}`
         : `${baseUrl}/adobe/sites/fragments/${id}`;
     const startTime = Date.now();
-    const response = await masFetch(endpoint, {
-        cache: 'default',
-        credentials: 'omit',
-        headers,
-    }).catch((e) => {
+    let response;
+    try {
+        response = await masFetch(endpoint, {
+            cache: 'default',
+            credentials: 'omit',
+            headers,
+        });
+        if (!response?.ok) {
+            const duration = Date.now() - startTime;
+            throw new MasError('Unexpected fragment response', {
+                response,
+                startTime,
+                duration,
+            });
+        }
+        return response.json();
+    } catch (e) {
         const duration = Date.now() - startTime;
+        if (!response) {
+            response = { url: endpoint };
+        }
+
         throw new MasError('Failed to get fragment', {
             response,
             startTime,
             duration,
         });
-    });
-    const duration = Date.now() - startTime;
-    if (!response?.ok) {
-        throw new MasError('Unexpected fragment response', {
-            response,
-            startTime,
-            duration,
-        });
     }
-    return response.json();
 }
 
 let headers;
@@ -174,8 +181,8 @@ export class AemFragment extends HTMLElement {
             })
             .catch((e) => {
                 if (this.#rawData) {
-                  this.cache.add(this.#rawData);
-                  return true;
+                    cache.add(this.#rawData);
+                    return true;
                 }
                 this.#readyPromise = null;
                 this.#fail(e);
