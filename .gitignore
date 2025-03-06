@@ -13,3 +13,7 @@ test-results/
 test-a11y-results/
 tmp
 libs/navigation/dist/
+*.mdc
+/.cursor*/
+.cursor\ 2/
+/.cursor 2

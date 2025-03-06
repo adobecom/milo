@@ -15,6 +15,7 @@ import {
     CCDSuggested,
 } from './ccd-suggested.js';
 import { CCD_SLICE_AEM_FRAGMENT_MAPPING, CCDSlice } from './ccd-slice.js';
+import { AH_TRY_BUY_WIDGET_AEM_FRAGMENT_MAPPING, AHTryBuyWidget } from './ah-try-buy-widget.js';
 
 const getVariantLayout = (card, mustMatch = false) => {
     switch (card.variant) {
@@ -40,6 +41,8 @@ const getVariantLayout = (card, mustMatch = false) => {
             return new CCDSuggested(card);
         case 'ccd-slice':
             return new CCDSlice(card);
+          case 'ah-try-buy-widget':
+            return new AHTryBuyWidget(card);
         default:
             return mustMatch ? undefined : new Product(card);
     }
@@ -57,6 +60,7 @@ export const variantFragmentMappings = {
     twp: null,
     'ccd-suggested': CCD_SUGGESTED_AEM_FRAGMENT_MAPPING,
     'ccd-slice': CCD_SLICE_AEM_FRAGMENT_MAPPING,
+    'ah-try-buy-widget': AH_TRY_BUY_WIDGET_AEM_FRAGMENT_MAPPING,
 };
 
 const getVariantStyles = () => {
@@ -70,6 +74,7 @@ const getVariantStyles = () => {
     styles.push(TWP.variantStyle);
     styles.push(CCDSuggested.variantStyle);
     styles.push(CCDSlice.variantStyle);
+    styles.push(AHTryBuyWidget.variantStyle);
     return styles;
 };
 
