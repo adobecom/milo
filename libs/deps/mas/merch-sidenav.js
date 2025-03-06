@@ -128,4 +128,3 @@ var V=Object.defineProperty;var P=(o,e,t)=>e in o?V(o,e,{enumerable:!0,configura
                 right: 16px;
             }
         `,E]);customElements.define("merch-sidenav",m);export{m as MerchSideNav};
-//# sourceMappingURL=merch-sidenav.js.map
