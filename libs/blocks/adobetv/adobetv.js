@@ -3,7 +3,7 @@ import { createTag } from '../../utils/utils.js';
 
 export default function init(a) {
   a.classList.add('hide-video');
-  const bgBlocks = ['aside', 'marquee', 'hero-marquee', 'long-from'];
+  const bgBlocks = ['aside', 'marquee', 'hero-marquee', 'long-form'];
   if (a.href.includes('.mp4') && bgBlocks.some((b) => a.closest(`.${b}`))) {
     a.classList.add('hide');
     if (!a.parentNode) return;
@@ -36,7 +36,7 @@ export default function init(a) {
     const io = new IntersectionObserver((entries) => {
       entries.forEach(({ isIntersecting, target }) => {
         if (!isIntersecting && target.getAttribute('data-playing') === 'true') {
-          target.contentWindow.postMessage({ type: 'mpcAction', action: 'pause' }, target.src);
+          target.contentWindow?.postMessage({ type: 'mpcAction', action: 'pause' }, target.src);
         }
       });
     }, { rootMargin: '0px' });

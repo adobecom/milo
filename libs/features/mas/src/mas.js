@@ -6,3 +6,4 @@ import { updateConfig } from './lana.js';
 updateConfig({ sampleRate: 1 });
 
 export * from './commerce.js';
+export * from './constants.js';

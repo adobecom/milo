@@ -4,7 +4,11 @@ export const CSS = `
   --consonant-merch-card-plans-width: 300px;
   --consonant-merch-card-plans-icon-size: 40px;
 }
-  
+
+merch-card[variant="plans"] {
+  width: 276px;
+}
+
 merch-card[variant="plans"] [slot="description"] {
   min-height: 84px;
 }
