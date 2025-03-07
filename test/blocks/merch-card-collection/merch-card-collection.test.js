@@ -235,7 +235,7 @@ describe('Merch Cards', async () => {
     const merchCards = await init(el);
     expect(merchCards.filter).to.equal('all');
     await delay(500);
-    expect(merchCards.querySelectorAll('h3[data-removed-manifest-id]').length).to.equal(4);
+    expect(merchCards.querySelectorAll('h3').length).to.equal(0);
   });
 
   it('should localize the query-index url', async () => {

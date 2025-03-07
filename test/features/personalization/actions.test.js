@@ -244,33 +244,6 @@ describe('remove action', () => {
     await initFragments(removeMeFrag);
     expect(document.querySelector('a[href="/fragments/removeme"]')).to.be.null;
   });
-
-  it('removeContent should tag but not remove content in preview', async () => {
-    document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
-
-    let manifestJson = await readFile({ path: './mocks/actions/manifestRemove.json' });
-    manifestJson = JSON.parse(manifestJson);
-    setFetchResponse(manifestJson);
-    delete config.mep;
-
-    expect(document.querySelector('.z-pattern')).to.not.be.null;
-    await init({
-      mepParam: '',
-      mepHighlight: false,
-      mepButton: false,
-      pzn: '/path/to/manifest.json',
-      promo: false,
-      target: false,
-    });
-
-    expect(document.querySelector('.z-pattern')).to.not.be.null;
-    expect(document.querySelector('.z-pattern').dataset.removedManifestId).to.equal('manifest.json');
-
-    const removeMeFrag = document.querySelector('a[href="/fragments/removeme"]');
-    await initFragments(removeMeFrag);
-    expect(document.querySelector('a[href="/fragments/removeme"]')).to.not.be.null;
-    expect(document.querySelector('a[href="/fragments/removeme"]').dataset.removedManifestId).to.not.be.null;
-  });
 });
 
 describe('useBlockCode action', async () => {
