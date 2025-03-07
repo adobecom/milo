@@ -1,8 +1,10 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
+import { createTag } from '../../../utils/utils.js';
 
 const imagesWithMismatch = signal([]);
 const imagesWithMatch = signal([]);
 const checksPerformed = signal(false);
+const viewportTooSmall = signal(!window.matchMedia('(min-width: 1200px)').matches);
 
 const groups = [
   { title: 'Images with dimension mismatch', imgArray: imagesWithMismatch },
@@ -10,51 +12,81 @@ const groups = [
 ];
 
 async function checkImageDimensions() {
-  if (checksPerformed.value) return;
+  if (checksPerformed.value || viewportTooSmall.value) return;
+  checksPerformed.value = true;
 
-  const images = document.querySelectorAll('main picture img');
-  if (!images) return;
+  const allImages = [...document.querySelectorAll('main picture img')];
+  if (!allImages.length) return;
 
-  images.forEach(async (img) => {
-    // Don't consider hidden images, icons, or SVGs
-    if (!img.checkVisibility()
-      || img.closest('.icon-area')
-      || img.src.endsWith('.svg')) return;
-    // Force load images
-    if (!img.complete) {
-      img.setAttribute('loading', 'eager');
-      await new Promise((resolve) => {
-        img.addEventListener('load', resolve);
-      });
-    }
+  // Force load all images
+  await Promise.all(
+    allImages.map((img) => {
+      if (!img.complete) {
+        img.setAttribute('loading', 'eager');
+        return new Promise((resolve) => {
+          img.addEventListener('load', resolve);
+        });
+      }
+      return Promise.resolve();
+    }),
+  );
 
-    const {
-      naturalWidth,
-      naturalHeight,
-      offsetWidth: displayWidth,
-      offsetHeight: displayHeight,
-    } = img;
+  // Filter the loaded images to ensure they are visible, not an icon, and not an SVG
+  const images = allImages.filter((img) => img.checkVisibility()
+    && !img.closest('.icon-area')
+    && !img.src.endsWith('.svg'));
 
-    const factor = Math.round((naturalWidth / displayWidth) * 100) / 100;
-    const hasMismatch = factor < 2; // TODO: Lower factor for full width images
+  if (!images.length) return;
+
+  for (const img of images) {
+    const naturalWidth = img.getAttribute('width') ? parseInt(img.getAttribute('width'), 10) : img.naturalWidth;
+    const naturalHeight = img.getAttribute('height') ? parseInt(img.getAttribute('height'), 10) : img.naturalHeight;
+    const displayWidth = img.offsetWidth;
+    const displayHeight = img.offsetHeight;
+
+    // TODO: Lower factor for full width images
+    const idealFactor = 2;
+    // Calculate and round up the actual factor to nearest .05
+    const actualFactor = Math.round((naturalWidth / displayWidth) * 100) / 100;
+    const roundedFactor = Math.ceil(actualFactor * 20) / 20;
+    const hasMismatch = roundedFactor < idealFactor;
 
     const imageData = {
       src: img.getAttribute('src'),
       naturalDimensions: `${naturalWidth}x${naturalHeight}`,
       displayDimensions: `${displayWidth}x${displayHeight}`,
-      factor,
+      recommendedDimensions: `${Math.ceil(displayWidth * idealFactor)}x${Math.ceil(displayHeight * idealFactor)}`,
+      roundedFactor,
     };
+
+    let pictureMetaElem = img.closest('picture').querySelector('.picture-meta');
+    if (!pictureMetaElem) {
+      pictureMetaElem = createTag('div', { class: 'picture-meta' });
+      img.closest('picture').insertBefore(pictureMetaElem, img.nextSibling);
+    }
+
+    let assetMessage;
 
     if (hasMismatch) {
       imagesWithMismatch.value = [...imagesWithMismatch.value, imageData];
-      img.closest('picture').classList.add('has-mismatch');
+
+      assetMessage = createTag(
+        'div',
+        { class: 'picture-meta-asset has-mismatch' },
+        `Size: too small, use > ${imageData.recommendedDimensions}`,
+      );
     } else {
       imagesWithMatch.value = [...imagesWithMatch.value, imageData];
-      img.closest('picture').classList.add('no-mismatch');
-    }
-  });
 
-  checksPerformed.value = true;
+      assetMessage = createTag(
+        'div',
+        { class: 'picture-meta-asset no-mismatch' },
+        'Size: correct',
+      );
+    }
+
+    pictureMetaElem.append(assetMessage);
+  }
 }
 
 function AssetsItem({ title, description }) {
@@ -76,20 +108,26 @@ function ImageGroup({ group }) {
       </div>
     </div>
 
-    ${imgArray.value.length > 0 && html`
+    ${viewportTooSmall.value && html`
+      <div class='assets-image-grid'>
+        <div class='assets-image-grid-item full-width'>Please resize your browser to at least 1200px width to run image checks</div>
+      </div>
+    `}
+
+    ${!viewportTooSmall.value && imgArray.value.length > 0 && html`
     <div class='assets-image-grid'>
       ${imgArray.value.map((img) => html`
       <div class='assets-image-grid-item'>
         <img src='${img.src}' />
         <div class='assets-image-grid-item-text'>
-          <span>Factor: ${img.factor}</span>
+          <span>Factor: ${img.roundedFactor}</span>
           <span>Natural size: ${img.naturalDimensions}</span>
           <span>Display size: ${img.displayDimensions}</span>
         </div>
       </div>`)}
     </div>`}
 
-    ${!imgArray.value.length && html`
+    ${!viewportTooSmall.value && !imgArray.value.length && html`
       <div class='assets-image-grid'>
         <div class='assets-image-grid-item full-width'>No images found</div>
       </div>
@@ -98,7 +136,31 @@ function ImageGroup({ group }) {
 }
 
 export default function Assets() {
-  useEffect(() => { checkImageDimensions(); }, []);
+  useEffect(() => {
+    let resizeTimeout;
+
+    const handleResize = () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        const mediaQuery = window.matchMedia('(min-width: 1200px)');
+        const isSmall = !mediaQuery.matches;
+        if (viewportTooSmall.value !== isSmall) {
+          viewportTooSmall.value = isSmall;
+          if (!isSmall) {
+            checkImageDimensions();
+          }
+        }
+      }, 250);
+    };
+
+    window.addEventListener('resize', handleResize);
+    checkImageDimensions();
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      clearTimeout(resizeTimeout);
+    };
+  }, []);
 
   return html`
   <div class='assets-columns'>

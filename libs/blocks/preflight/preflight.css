@@ -572,17 +572,6 @@ span.preflight-time {
   font-size: 16px;
 }
 
-img[data-alt-check] {
-  border: 5px solid rgb(255 234 2);
-  box-sizing: border-box;
-  filter: drop-shadow(8px 8px 18px rgb(199 182 2));
-}
-
-img[data-alt-check]::after {
-  content: attr(data-alt-check);
-  color: red;
-}
-
 .access-image-grid-item span {
   font-size: 16px;
   font-weight: bold;
@@ -672,30 +661,47 @@ img[data-alt-check]::after {
   font-weight: bold;
 }
 
-picture:is(.has-mismatch, .no-mismatch) {
+picture:has(.picture-meta) {
   position: relative;
+  display: block;
 }
 
-picture:is(.has-mismatch, .no-mismatch)::after {
+.picture-meta {
   position: absolute;
   top: 10px;
   left: 10px;
-  padding: 5px;
+  right: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  row-gap: 5px;
   color: #fff;
   font-weight: bold;
-  font-size: 16px;
-  line-height: 1.4;
+  font-size: 14px;
+  line-height: 1.2;
+  z-index: 9;
+}
+
+.picture-meta.no-picture-tag {
+  position: static;
+}
+
+.picture-meta > div {
+  padding: 5px;
   border-radius: 6px;
 }
 
-picture.has-mismatch::after {
-  content: 'Incorrect asset size';
-  background: red;
+.picture-meta-a11y.is-decorative {
+  background: #FFB74D;
 }
 
-picture.no-mismatch::after {
-  content: 'Correct asset size';
-  background: darkolivegreen;
+.picture-meta-asset.has-mismatch {
+  background: #EF5350;
+}
+
+.picture-meta-asset.no-mismatch,
+.picture-meta-a11y.has-alt {
+  background: #4CAF50;
 }
 
 .preflight .image-filter {
