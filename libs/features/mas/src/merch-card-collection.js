@@ -22,6 +22,11 @@ const SORT_ORDER = {
     authored: 'authored',
 };
 
+const VARIANT_CLASSES = {
+    catalog: ['four-merch-card'],
+    plans: ['four-merch-card'],
+}
+
 const RESULT_TEXT_SLOT_NAMES = {
     // no search
     filters: ['noResultText', 'resultText', 'resultsText'],
@@ -269,6 +274,9 @@ export class MerchCardCollection extends LitElement {
                 };
                 await hydrate(fragmentForHydration, merchCard);
             }
+
+            const variant = fragments[0]?.fields.variant;
+            this.classList.add('merch-card-collection', variant, ...(VARIANT_CLASSES[variant] || []));
 
             this.displayResult = true;
             this.hydrating = false;
