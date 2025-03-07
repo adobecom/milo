@@ -6,10 +6,14 @@ import { deeplink, pushState } from './deeplink.js';
 import {
     EVENT_MERCH_CARD_COLLECTION_SORT,
     EVENT_MERCH_CARD_COLLECTION_SHOWMORE,
+    EVENT_AEM_ERROR,
+    EVENT_AEM_LOAD,
 } from './constants.js';
 import { TABLET_DOWN } from './media.js';
 import { styles } from './merch-card-collection.css.js';
 import { getSlotText } from './utils.js';
+import './mas-commerce-service';
+import { hydrate } from './hydrate.js';
 
 const MERCH_CARD_COLLECTION = 'merch-card-collection';
 
@@ -114,12 +118,31 @@ export class MerchCardCollection extends LitElement {
         this.hasMore = false;
         this.resultCount = undefined;
         this.displayResult = false;
+        this.hydrating = false;
     }
 
     render() {
         return html`${this.header}
             <slot></slot>
             ${this.footer}`;
+    }
+
+    checkReady() {
+        let ticks;
+        return new Promise((resolve) => {
+            const checkReadyInterval = setInterval(() => {
+                const aemFragment = this.querySelector('aem-fragment');
+                if (!aemFragment) {
+                    resolve(true);
+                    clearInterval(checkReadyInterval);
+                }
+                else ticks++;
+                if (ticks === 20) {
+                    resolve(false);
+                    clearInterval(checkReadyInterval);
+                }
+            }, 100)
+        });
     }
 
     updated(changedProperties) {
@@ -197,11 +220,60 @@ export class MerchCardCollection extends LitElement {
             this.startDeeplink();
         }
         this.sidenav = document.querySelector('merch-sidenav');
+        this.hydrateFromFragment();
     }
 
     disconnectedCallback() {
         super.disconnectedCallback();
         this.stopDeeplink?.();
+    }
+
+    async hydrateFromFragment() {
+        if (this.hydrating) return false;
+
+        const aemFragment = this.querySelector('aem-fragment');
+        if (!aemFragment) return;
+
+        this.hydrating = true;
+        
+        aemFragment.addEventListener(EVENT_AEM_ERROR, (event) => {
+            console.error(event.detail);
+            this.hydrating = false;
+            aemFragment.remove();
+        });
+        aemFragment.addEventListener(EVENT_AEM_LOAD, async (event) => {
+            const { cards, categories } = event.detail.fields;
+            const fragments = Object.keys(cards).map(key => cards[key]);
+            for (const fragment of fragments) {
+                const merchCard = document.createElement('merch-card');
+                merchCard.setAttribute('consonant', '');
+                merchCard.setAttribute('style', '');
+                merchCard.filters = {};
+                for (const category of categories) {
+                    const index = category.cards.indexOf(fragment.id);
+                    if (index === -1) continue;
+                    const name = category.label.toLowerCase();
+                    merchCard.filters[name] = { order: index + 1, size: fragment.fields.size };
+                }
+                this.append(merchCard);
+                const fragmentForHydration = { ...fragment, fields: Object.keys(fragment.fields).reduce((fields, key) => {
+                        const fieldValue = fragment.fields[key];
+                        if (typeof fieldValue === 'object' && !Array.isArray(fieldValue)) {
+                            fields[key] = fieldValue.value;
+                        }
+                        else {
+                            fields[key] = fieldValue;
+                        }
+                        return fields;
+                    }, {}) 
+                };
+                await hydrate(fragmentForHydration, merchCard);
+            }
+
+            this.displayResult = true;
+            this.hydrating = false;
+            aemFragment.remove();
+        });
     }
 
     get header() {
