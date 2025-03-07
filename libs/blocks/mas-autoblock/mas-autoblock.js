@@ -1,6 +1,7 @@
 import { createTag } from '../../utils/utils.js';
 import '../../deps/mas/merch-card.js';
 import '../../deps/mas/merch-card-collection.js';
+import { initService } from '../merch/merch.js';
 
 export function getFragmentId(el) {
   const { hash } = new URL(el.href);
@@ -47,5 +48,6 @@ export async function createCard(el, fragment) {
 export default async function init(el) {
   const fragment = getFragmentId(el);
   if (!fragment) return;
+  await initService();
   await createCard(el, fragment);
 }
