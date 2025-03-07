@@ -68,6 +68,12 @@ export function getUrlInfo() {
   function getParam(name) {
     return location.searchParams.get(name);
   }
+
+  function isValidReferrer(url) {
+    const allowedHosts = ['adobe.sharepoint.com'];
+    return allowedHosts.includes(new URL(url)?.hostname);
+  }
+
   const projectName = getParam('project');
   const sub = projectName ? projectName.split('--') : [];
 
@@ -83,7 +89,7 @@ export function getUrlInfo() {
     ref,
     origin: `https://${ref}--${repo}--${owner}.hlx.page`, // TODO ADD HLX5 SUPPORT
     isValid() {
-      return sp && owner && repo && ref;
+      return sp && owner && repo && ref && isValidReferrer(sp);
     },
   };
   return urlInfo;

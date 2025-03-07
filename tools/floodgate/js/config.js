@@ -22,15 +22,16 @@ function getPromoteIgnorePaths(configJson) {
 async function getConfig(fgColor) {
   if (!decoratedConfig) {
     const urlInfo = getUrlInfo();
-    if (urlInfo.isValid()) {
-      const configPath = `${urlInfo.origin}${FLOODGATE_CONFIG}`;
-      const configJson = await fetchConfigJson(configPath);
-      decoratedConfig = {
-        sp: getSharepointConfig(configJson, fgColor),
-        admin: getHelixAdminConfig(),
-        promoteIgnorePaths: getPromoteIgnorePaths(configJson),
-      };
+    if (!urlInfo.isValid()) {
+      throw new Error('Invalid Url Parameters that point to project file');
     }
+    const configPath = `${urlInfo.origin}${FLOODGATE_CONFIG}`;
+    const configJson = await fetchConfigJson(configPath);
+    decoratedConfig = {
+      sp: getSharepointConfig(configJson, fgColor),
+      admin: getHelixAdminConfig(),
+      promoteIgnorePaths: getPromoteIgnorePaths(configJson),
+    };
   }
   return decoratedConfig;
 }
