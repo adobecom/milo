@@ -34,10 +34,11 @@
 }
 
 .bc-container::after {
-  background: linear-gradient(0deg, #fbd974 140px ,#fbd97400);
+  background: linear-gradient(0deg, #fbd974 170px ,#fbd97400);
   background-repeat: no-repeat;
   content: ' ';
   opacity: 0;
+  pointer-events: none;
   position: fixed;
   height: 430px;
   bottom: 0;
@@ -185,6 +186,43 @@
   width: 100%;
 }
 
+
+.bc-scroll-button {
+  background-color: #fff;
+  background-image: url("data:image/svg+xml;base64,PHN2ZyAgIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjIwIiBoZWlnaHQ9IjIwIiB2aWV3Qm94PSIwIDAgMjAgMjAiPgogIDxwYXRoIGQ9Ik0xMy41NTAyOSwxMy43MTQ4NGMtLjI5Mjk3LS4yOTI5Ny0uNzY3NTgtLjI5Mjk3LTEuMDYwNTUsMGwtMS43Mzk3NSwxLjczOTc1VjIuNzYxNzJjMC0uNDE0MDYtLjMzNTk0LS43NS0uNzUtLjc1cy0uNzUuMzM1OTQtLjc1Ljc1djEyLjY2MjZsLTEuNzA5OTYtMS43MDk0N2MtLjI5Mjk3LS4yOTI5Ny0uNzY3NTgtLjI5Mjk3LTEuMDYwNTUsMHMtLjI5Mjk3Ljc2NzU4LDAsMS4wNjA1NWwzLjAwNTM3LDMuMDA0ODhjLjE0NjQ4LjE0NjQ4LjMzODM4LjIxOTczLjUzMDI3LjIxOTczcy4zODM3OS0uMDczMjQuNTMwMjctLjIxOTczbDMuMDA0ODgtMy4wMDQ4OGMuMjkyOTctLjI5Mjk3LjI5Mjk3LS43Njc1OCwwLTEuMDYwNTVaIiBmaWxsPSJ2YXIoLS1pY29uUHJpbWFyeSwgIzIyMikiIHN0cm9rZS13aWR0aD0iMCIvPgo8L3N2Zz4=");
+  background-repeat: no-repeat;
+  background-position: 50%;
+  border-radius: 50%;
+  border: none;
+  bottom: 140px;
+  box-shadow: 0 2px 8px 0 rgb(0 0 0 / 16%);
+  cursor: pointer;
+  height: 36px;
+  left: 50%;
+  opacity: 0;
+  position: fixed;
+  pointer-events: none;
+  transform: translateX(-50%);
+  transition: opacity 0.25s ease-in-out;
+  width: 36px;
+  z-index: 15;
+}
+
+.bc-scroll-button:hover {
+  background-color: #f3f3f3;
+}
+
+.bc-scroll-button:focus-visible {
+  outline: 2px solid #4b75ff;
+  outline-offset: 2px;
+}
+
+.bc-scroll-button.active {
+  transition: opacity 0.5s 0.25s ease-in-out;
+  opacity: 1;
+  pointer-events: initial;
+}
+
 @keyframes gradient {
 	0% {
 		background-position: 0% 50%;
@@ -222,7 +260,7 @@
   align-self: flex-end;
   display: none !important;
   max-width: var(--bc-width);
-  padding: 0 0 64px;
+  padding: 0 0 48px;
   width: 100%;
 }
 
@@ -240,10 +278,11 @@
 }
 
 .bc-messages-container::before {
-  background: linear-gradient(0deg, #fbd974 80px ,#fbd97400);
+  background: linear-gradient(0deg, #fbd974 120px ,#fbd97400);
   bottom: 0;
   content: ' ';
-  height: 200px;
+  height: 170px;
+  pointer-events: none;
   position: fixed;
   opacity: 0;
   align-self: center;

@@ -24,6 +24,17 @@ const landingCardDetails = [
   },
 ];
 
+const handleScroll = () => {
+  const scrollButton = document.querySelector('.bc-scroll-button');
+  if (scrollButton) {
+    const isAtBottom = window.scrollY
+    + window.innerHeight === document.body.getBoundingClientRect().height;
+
+    if (isAtBottom) scrollButton.classList.remove('active');
+    else scrollButton.classList.add('active');
+  }
+};
+
 const landingCard = ({ cardDetails, onLandingClick }) => {
   const { cardText, cardImage, cardColor } = cardDetails;
   return html`
@@ -85,6 +96,13 @@ const App = () => {
     document.querySelector('.bc-send-button').click();
   };
 
+  const onScrollClick = () => {
+    window.scrollTo({
+      top: document.body.getBoundingClientRect().height,
+      behavior: 'smooth',
+    });
+  };
+
   return html`
     <div class="bc-container${showCards === false ? ' bc-active' : ''}">
       <div class="branding"><img src="https://www.adobe.com/cc-shared/assets/img/uar/bc/adobe-logo.svg" /></div>
@@ -104,6 +122,7 @@ const App = () => {
           `}
           <div class="bc-mount-container">
             <div id="adobe-brand-concierge-mount-point"></div>
+            ${!showCards && html`<button class="bc-scroll-button" onClick=${onScrollClick}></button>`}
           </div>
       </div>
     </div>
@@ -114,5 +133,6 @@ export default async function init(el) {
   el.replaceChildren();
   await loadChat(); // Wait for chat to load first
   addFavicon();
+  document.addEventListener('scroll', () => handleScroll());
   render(html`<${App}/>`, el);
 }
