@@ -9,8 +9,10 @@ export const PLANS_AEM_FRAGMENT_MAPPING = {
   description: { tag: 'div', slot: 'body-xs' },
   mnemonics: { size: 'l' },
   callout: {tag: 'div', slot: 'callout-content'},
+  quantitySelect: { tag: 'div', slot: 'quantity-select' },
   stockOffer: true,
   secureLabel: true,
+  badge: true,
   ctas: { slot: 'footer', size: 'm' },
   style: 'consonant'
 };

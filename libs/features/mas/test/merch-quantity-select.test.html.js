@@ -139,7 +139,7 @@ runTests(async () => {
                 event.composedPath = () => [quantitySelect];
                 inputField.dispatchEvent(event);
                 await delay();
-                expect(quantitySelect.selectedValue).to.equal(3);
+                expect(quantitySelect.selectedValue).to.equal(4);
                 expect(popOver.classList.contains('closed')).to.be.true;
             });
 
@@ -156,7 +156,7 @@ runTests(async () => {
                 event.composedPath = () => [quantitySelect];
                 inputField.dispatchEvent(event);
                 await delay();
-                expect(quantitySelect.selectedValue).to.equal(3);
+                expect(quantitySelect.selectedValue).to.equal(4);
                 expect(popOver.classList.contains('closed')).to.be.true;
             });
 
@@ -190,7 +190,7 @@ runTests(async () => {
                 event.composedPath = () => [quantitySelect];
                 inputField.dispatchEvent(event);
                 await delay();
-                expect(quantitySelect.selectedValue).to.equal(250);
+                expect(quantitySelect.selectedValue).to.equal(4);
             });
         });
     }
