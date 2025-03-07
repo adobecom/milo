@@ -42,11 +42,7 @@ export const getPdfConfig = (location) => {
   return { clientId, reportSuiteId };
 };
 
-const init = async (a) => {
-  const url = a?.href;
-
-  if (!url) return;
-
+const initViewer = async (a, url) => {
   const id = `${PDF_RENDER_DIV_ID}_${Math.random().toString().slice(2)}`;
   const pdfViewerDiv = createTag('div', { class: 'pdf-container', id });
 
@@ -104,6 +100,28 @@ const init = async (a) => {
     document.removeEventListener('adobe_dc_view_sdk.ready', handleViewSdkReady);
   };
   document.addEventListener('adobe_dc_view_sdk.ready', handleViewSdkReady);
+};
+
+const init = async (a) => {
+  const url = a?.href;
+
+  if (!url) return;
+
+  const hiddenSection = a.closest('.section.hide-block.form-success');
+  if (hiddenSection) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(async (entry) => {
+        if (entry.isIntersecting) {
+          await initViewer(a, url);
+          observer.disconnect();
+        }
+      });
+    });
+    observer.observe(hiddenSection);
+    return;
+  }
+
+  await initViewer(a, url);
 };
 
 export default init;
