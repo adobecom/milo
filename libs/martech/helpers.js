@@ -256,6 +256,7 @@ function createRequestPayload({ updatedContext, pageName, locale, env, hitType }
             approach: 'martech-API',
             edgeConfigIdLaunch: dataStreamId,
             edgeConfigId: dataStreamId,
+            personalisation: 'hybrid',
           },
         },
       },
