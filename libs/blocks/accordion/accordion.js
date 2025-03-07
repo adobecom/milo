@@ -87,7 +87,8 @@ function handleClick(el, dd, num) {
   if (expandAllBtns.length) {
     expandAllBtns.forEach((btn) => {
       btn.setAttribute('aria-pressed', 'mixed');
-      btn.classList.remove('fill', 'disabled');
+      btn.classList.remove('fill');
+      btn.disabled = false;
     });
   }
 
@@ -175,11 +176,12 @@ async function createExpandAllContainer(accordionItems, isEditorial, mediaEl) {
     if (targetBtn.getAttribute('aria-pressed') === 'true') return;
     targetBtn.setAttribute('aria-pressed', 'true');
     targetBtn.classList.remove('fill');
-    targetBtn.classList.add('disabled');
+    targetBtn.disabled = true;
     const siblingBtn = targetBtn.nextElementSibling || targetBtn.previousElementSibling;
     siblingBtn.setAttribute('aria-pressed', 'false');
-    siblingBtn.classList.remove('disabled');
+    siblingBtn.disabled = false;
     siblingBtn.classList.add('fill');
+    siblingBtn.focus();
     if (action === 'expand') {
       accordionItems.forEach(({ dt, dd }) => openPanel(dt.querySelector('button'), dd));
       if (!isEditorial) return;
