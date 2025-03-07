@@ -367,12 +367,12 @@ export class MerchCard extends LitElement {
     }
 
     #fail(error, details = {}, dispatch = true) {
-        this.log.error(`merch-card: ${error}`, details.context ?? {});
+        this.log.error(`merch-card: ${error}`, details);
         this.failed = true;
         if (!dispatch) return;
         this.dispatchEvent(
             new CustomEvent(EVENT_MAS_ERROR, {
-                detail: { message: error, ...details },
+                detail: { ...details, message: error },
                 bubbles: true,
                 composed: true,
             }),
