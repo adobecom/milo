@@ -178,7 +178,7 @@ export function getEnv(conf) {
 
 export function getLocale(locales, pathname = window.location.pathname) {
   if (!locales) {
-    return { ietf: 'en-US', tk: 'hah7vzn.css', prefix: '' };
+    return { ietf: 'en-US', tk: 'hah7vzn.css', prefix: '', country: 'US' };
   }
   const split = pathname.split('/');
   const localeString = split[1];
@@ -192,6 +192,7 @@ export function getLocale(locales, pathname = window.location.pathname) {
   const isUS = locale.ietf === 'en-US';
   locale.prefix = isUS ? '' : `/${localeString}`;
   locale.region = isUS ? 'us' : localeString.split('_')[0];
+  locale.country = locale.ietf?.split('-')[1] || localeString?.toUpperCase() || 'US';
   return locale;
 }
 

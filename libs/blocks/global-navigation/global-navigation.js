@@ -775,6 +775,7 @@ class Gnav {
       target: this.blocks.universalNav,
       env: environment,
       locale,
+      countryCode: getConfig()?.locale?.country,
       imsClientId: window.adobeid?.client_id,
       theme: isDarkMode() ? 'dark' : 'light',
       analyticsContext: {
