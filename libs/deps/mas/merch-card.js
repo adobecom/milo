@@ -1863,7 +1863,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
         display: flex;
         flex-direction: column;
         overflow: hidden;
-        padding: 12px !important;
+        padding: 11px !important;
         gap: 16px;
         justify-content: space-between;
         box-sizing: border-box !important;
