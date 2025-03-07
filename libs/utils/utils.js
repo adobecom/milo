@@ -1184,9 +1184,10 @@ async function checkForPageMods() {
   const promo = getMepEnablement('manifestnames', PROMO_PARAM);
   const target = martech === 'off' ? false : getMepEnablement('target');
   const xlg = martech === 'off' ? false : getMepEnablement('xlg');
+  const ajo = martech === 'off' ? false : getMepEnablement('ajo');
 
   if (!(pzn || target || promo || mepParam
-    || mepHighlight || mepButton || mepParam === '' || xlg)) return;
+    || mepHighlight || mepButton || mepParam === '' || xlg || ajo)) return;
 
   const enablePersV2 = enablePersonalizationV2();
   const hybridPersEnabled = getMepEnablement('hybrid-pers');
@@ -1210,7 +1211,7 @@ async function checkForPageMods() {
 
       return { targetInteractionData: data, respTime, respStartTime: now };
     })();
-  } else if ((target || xlg) && !isMartechLoaded) loadMartech();
+  } else if ((target || xlg || ajo) && !isMartechLoaded) loadMartech();
   else if (pzn && martech !== 'off') {
     loadIms()
       .then(() => {
@@ -1228,6 +1229,7 @@ async function checkForPageMods() {
     pzn,
     promo,
     target,
+    ajo,
     targetInteractionPromise,
     calculatedTimeout,
     enablePersV2,

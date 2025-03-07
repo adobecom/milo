@@ -33,12 +33,12 @@ describe('MEP Utils', () => {
     });
   });
   describe('getMepEnablement', async () => {
-    it('checks target metadata set to off', async () => {
+    it('checks target metadata set to on', async () => {
       document.head.innerHTML = await readFile({ path: './mocks/mep/head-target-on.html' });
       const targetEnabled = getMepEnablement('target');
       expect(targetEnabled).to.equal(true);
     });
-    it('checks target metadata set to on', async () => {
+    it('checks target metadata set to off', async () => {
       document.head.innerHTML = await readFile({ path: './mocks/mep/head-target-off.html' });
       const targetEnabled = getMepEnablement('target');
       expect(targetEnabled).to.equal(false);
@@ -47,6 +47,21 @@ describe('MEP Utils', () => {
       document.head.innerHTML = await readFile({ path: './mocks/mep/head-target-postlcp.html' });
       const targetEnabled = getMepEnablement('target');
       expect(targetEnabled).to.equal('postlcp');
+    });
+    it('checks ajo metadata set to on', async () => {
+      document.head.innerHTML = await readFile({ path: './mocks/mep/head-ajo-on.html' });
+      const ajoEnabled = getMepEnablement('ajo');
+      expect(ajoEnabled).to.equal(true);
+    });
+    it('checks ajo metadata set to off', async () => {
+      document.head.innerHTML = await readFile({ path: './mocks/mep/head-ajo-off.html' });
+      const ajoEnabled = getMepEnablement('ajo');
+      expect(ajoEnabled).to.equal(false);
+    });
+    it('checks ajo metadata set to postlcp', async () => {
+      document.head.innerHTML = await readFile({ path: './mocks/mep/head-ajo-postlcp.html' });
+      const ajoEnabled = getMepEnablement('ajo');
+      expect(ajoEnabled).to.equal('postlcp');
     });
     it('checks from just metadata with no target metadata', async () => {
       document.head.innerHTML = await readFile({ path: './mocks/mep/head-promo.html' });
