@@ -48,8 +48,6 @@ describe('getSettings', () => {
       url.searchParams.set('modal', 'true');
       url.searchParams.set('commerce.landscape', 'DRAFT');
       url.searchParams.set('commerce.env', 'STAGE');
-      url.searchParams.set('wcsBufferDelay', '30');
-      url.searchParams.set('wcsBufferLimit', '5');
       url.searchParams.set('quantity', '2');
       url.searchParams.set('wcsApiKey', 'testapikey');
       window.history.replaceState({}, '', url.toString());
@@ -69,8 +67,6 @@ describe('getSettings', () => {
           entitlement: true,
           modal: true,
           landscape: 'DRAFT',
-          wcsBufferDelay: 30,
-          wcsBufferLimit: 5,
           quantity: [2],
           wcsApiKey: 'testapikey',
           locale: "en_US",
