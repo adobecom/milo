@@ -95,8 +95,8 @@ export const Landscape = {
 
 export const HEADER_X_REQUEST_ID = 'X-Request-Id';
 
-export const MAS_COMMERCE_SERVICE_INIT_DURATION_MEASURE_NAME =
-    'mas-commerce-service:init-duration';
+export const MAS_COMMERCE_SERVICE_INIT_TIME_MEASURE_NAME =
+    'mas-commerce-service:initTime';
 
 export const WORKFLOW_STEP = {
     CHECKOUT: 'checkout',

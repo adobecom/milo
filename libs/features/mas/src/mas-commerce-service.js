@@ -147,7 +147,7 @@ export class MasCommerceService extends HTMLElement {
             });
             performance.mark(MARK_READY);
             this.initDuration = performance.measure(
-                Constants.MAS_COMMERCE_SERVICE_INIT_DURATION_MEASURE_NAME,
+                Constants.MAS_COMMERCE_SERVICE_INIT_TIME_MEASURE_NAME,
                 MARK_START,
                 MARK_READY,
             )?.duration;

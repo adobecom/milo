@@ -1,4 +1,4 @@
-import { MAS_COMMERCE_SERVICE_INIT_DURATION_MEASURE_NAME } from './constants.js';
+import { MAS_COMMERCE_SERVICE_INIT_TIME_MEASURE_NAME } from './constants.js';
 
 export function debounce(func, delay) {
     let debounceTimer;
@@ -66,7 +66,7 @@ export function getMasCommerceServiceDurationLog() {
     const masCommerceService = document.querySelector('mas-commerce-service');
     if (!masCommerceService) return {};
     return {
-        [MAS_COMMERCE_SERVICE_INIT_DURATION_MEASURE_NAME]:
+        [MAS_COMMERCE_SERVICE_INIT_TIME_MEASURE_NAME]:
             masCommerceService.initDuration,
     };
 }

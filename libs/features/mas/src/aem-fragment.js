@@ -197,7 +197,7 @@ export class AemFragment extends HTMLElement {
         this.#log.error(`aem-fragment: ${message}`, context);
         this.dispatchEvent(
             new CustomEvent(EVENT_AEM_ERROR, {
-                detail: { message, context },
+                detail: { message, ...context },
                 bubbles: true,
                 composed: true,
             }),
