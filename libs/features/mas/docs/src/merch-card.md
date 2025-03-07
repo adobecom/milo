@@ -240,56 +240,6 @@ The reason is that some merch cards are resolved very quickly and event could di
 ```html {#log-mas-ready}
 ```
 
-### spectrum = 'swc'
-
-The `spectrum` attribute is used to specify the Spectrum technology to use for rendering the CTAs.
-With `swc` the checkout buttons are rendered as Spectrum SWC sp-button and the click event is directed to actual checkout-button web component that is kept off the DOM.
-However, it can be accessed via `e.target.source` property.
-
-```html {.demo .light}
-<merch-card id="cardSwc" spectrum="swc">
-    <aem-fragment
-        title="CCD Slice Creative Cloud Photography"
-        fragment="830f76be-0e83-4faf-9051-3dbb1a1dff04"
-    ></aem-fragment>
-</merch-card>
-
-<script type="module">
-      const target = document.getElementById('log3');
-
-      const cardSwc = document.getElementById('cardSwc');
-      console.log('cardSwc', cardSwc);
-      cardSwc.addEventListener(
-          'click',
-          (e) => {
-              e.preventDefault();
-              if (e.target.source?.isCheckoutButton) {
-                  log(
-                      target,
-                      'merch-card checkout-button click: ',
-                      '\n\t',
-                      e.target.dataset.navigationUrl,
-                      '\n\t',
-                      e.target.outerHTML,
-                      '\n\t',
-                      e.target.source.outerHTML,
-                      '\n',
-                  );
-              } else if (e.target.isInlinePrice) {
-                  log(target, 'merch-card price click: ', e.target.innerText);
-              } else {
-                  log(target, 'merch-card click: ', e.target);
-              }
-          },
-          { capture: true },
-      );
-</script>
-```
-
-```html {#log3}
-
-```
-
 ## Error Handling
 
 The `merch-card` component can raise several types of errors during its lifecycle. These errors are dispatched as events that can be caught and handled by the consumer.
@@ -355,6 +305,56 @@ aemFragment.addEventListener('aem:load', (event) => {
     // event.detail contains the fragment data
     console.log('AEM fragment loaded:', event.detail);
 });
+```
+
+### spectrum = 'swc'
+
+The `spectrum` attribute is used to specify the Spectrum technology to use for rendering the CTAs.
+With `swc` the checkout buttons are rendered as Spectrum SWC sp-button and the click event is directed to actual checkout-button web component that is kept off the DOM.
+However, it can be accessed via `e.target.source` property.
+
+```html {.demo .light}
+<merch-card id="cardSwc" spectrum="swc">
+    <aem-fragment
+        title="CCD Slice Creative Cloud Photography"
+        fragment="830f76be-0e83-4faf-9051-3dbb1a1dff04"
+    ></aem-fragment>
+</merch-card>
+
+<script type="module">
+      const target = document.getElementById('log3');
+
+      const cardSwc = document.getElementById('cardSwc');
+      console.log('cardSwc', cardSwc);
+      cardSwc.addEventListener(
+          'click',
+          (e) => {
+              e.preventDefault();
+              if (e.target.source?.isCheckoutButton) {
+                  log(
+                      target,
+                      'merch-card checkout-button click: ',
+                      '\n\t',
+                      e.target.dataset.navigationUrl,
+                      '\n\t',
+                      e.target.outerHTML,
+                      '\n\t',
+                      e.target.source.outerHTML,
+                      '\n',
+                  );
+              } else if (e.target.isInlinePrice) {
+                  log(target, 'merch-card price click: ', e.target.innerText);
+              } else {
+                  log(target, 'merch-card click: ', e.target);
+              }
+          },
+          { capture: true },
+      );
+</script>
+```
+
+```html {#log3}
+
 ```
 
 ## aem-fragment custom element
