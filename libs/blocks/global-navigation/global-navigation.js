@@ -6,7 +6,6 @@ import {
   loadIms,
   decorateLinks,
   loadScript,
-  getGnavSource,
   getFedsPlaceholderConfig,
 } from '../../utils/utils.js';
 import {
@@ -1348,6 +1347,16 @@ class Gnav {
 
     return this.elements.search;
   };
+}
+
+async function getGnavSource() {
+  const { locale, dynamicNavKey } = getConfig();
+  let url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
+  if (dynamicNavKey) {
+    const { default: dynamicNav } = await import('../../features/dynamic-navigation/dynamic-navigation.js');
+    url = dynamicNav(url, dynamicNavKey);
+  }
+  return url;
 }
 
 export default async function init(block) {
