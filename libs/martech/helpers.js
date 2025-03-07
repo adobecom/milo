@@ -149,7 +149,7 @@ function getOrGenerateUserId() {
   };
 }
 
-function handleConsentAndSecondVisit() {
+function getUpdatedVisitAttempt() {
   const { hostname } = window.location;
   const secondVisitAttempt = Number(localStorage.getItem('secondHit')) || 0;
 
@@ -286,7 +286,7 @@ function createRequestPayload({ updatedContext, pageName, locale, env, hitType }
     data.web = { webPageDetails };
     data.eventType = hitTypeEventTypeMap[hitType];
 
-    if (handleConsentAndSecondVisit() === 2) {
+    if (getUpdatedVisitAttempt() === 2) {
       digitalData.adobe = {
         libraryVersions: 'alloy-api',
         experienceCloud: { secondVisits: 'setEvent' },
