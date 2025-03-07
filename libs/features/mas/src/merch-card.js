@@ -30,6 +30,7 @@ import { getMasCommerceServiceDurationLog } from './utils.js';
 const MERCH_CARD = 'merch-card';
 const MARK_START_SUFFIX = ':start';
 const MARK_READY_SUFFIX = ':ready';
+const MARK_ERROR_SUFFIX = ':error';
 
 // if merch card does not initialise in 20 seconds, it will dispatch mas:error event
 const MERCH_CARD_LOAD_TIMEOUT = 20000;
@@ -404,6 +405,7 @@ export class MerchCard extends LitElement {
             return;
         }
         const result = await Promise.race([successPromise, timeoutPromise]);
+
         if (result === true) {
             performance.mark(
                 `${MARK_MERCH_CARD_PREFIX}${this.id}${MARK_READY_SUFFIX}`,
@@ -415,12 +417,24 @@ export class MerchCard extends LitElement {
                 }),
             );
             return;
-        } else if (result === 'timeout') {
-            this.#fail(
-                `Contains offers that were not resolved within ${MERCH_CARD_LOAD_TIMEOUT} timeout`,
-            );
         } else {
-            this.#fail(`Contains unresolved offers`);
+            const { duration, startTime } = performance.measure(
+                `${MARK_MERCH_CARD_PREFIX}${this.id}${MARK_ERROR_SUFFIX}`,
+                `${MARK_MERCH_CARD_PREFIX}${this.id}${MARK_START_SUFFIX}`,
+            );
+            const details = {
+                duration,
+                startTime,
+                ...getMasCommerceServiceDurationLog(),
+            };
+            if (result === 'timeout') {
+                this.#fail(
+                    `Contains offers that were not resolved within ${MERCH_CARD_LOAD_TIMEOUT} timeout`,
+                    details,
+                );
+            } else {
+                this.#fail(`Contains unresolved offers`, details);
+            }
         }
     }
 
