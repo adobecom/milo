@@ -52,7 +52,7 @@ export async function withAem(fetch) {
             ).then((res) => {
                 if (res.ok) return res;
                 throw new Error(
-                    `Failed to get fragment: ${res.status} ${res.statusText}`,
+                    `Failed to fetch fragment: ${res.status} ${res.statusText}`,
                 );
             });
         }

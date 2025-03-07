@@ -50,7 +50,7 @@ export async function getFragmentById(baseUrl, id, author, headers) {
             response = { url: endpoint };
         }
 
-        throw new MasError('Failed to get fragment', {
+        throw new MasError('Failed to fetch fragment', {
             response,
             startTime,
             duration,

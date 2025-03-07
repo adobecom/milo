@@ -249,7 +249,7 @@ The `merch-card` component can raise several types of errors during its lifecycl
 | Error Type | Description | Event | Cause |
 | ---------- | ----------- | ----- | ----- |
 | "Missing fragment id" | Occurs when an `aem-fragment` is used without specifying a fragment ID | `aem:error` | The `fragment` attribute is missing or empty |
-| "Failed to get fragment" | Occurs when there's a network error fetching the fragment | `aem:error` | Network issues, CORS problems |
+| "Failed to fetch fragment" | Occurs when there's a network error fetching the fragment | `aem:error` | Network issues, CORS problems |
 | "Unexpected fragment response" | Occurs when the server returns a non-OK response | `aem:error` | Server errors, invalid fragment ID |
 | "AEM fragment cannot be loaded" | Occurs when the merch-card detects that the fragment failed to load | `mas:error` | Propagated from `aem:error` events |
 | `Contains offers that were not resolved within ${MERCH_CARD_LOAD_TIMEOUT} timeout` | Occurs when offers are not resolved within the timeout period | `mas:error` | Offers take too long to resolve |
