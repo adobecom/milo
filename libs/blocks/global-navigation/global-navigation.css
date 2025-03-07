@@ -268,6 +268,13 @@ header.global-navigation {
   cursor: pointer;
 }
 
+.feds-promo .feds-cta {
+  height: initial;
+  min-height: 32px;
+  line-height: 1.5;
+  white-space: unset;
+}
+
 .feds-topnav--overflowing .feds-cta {
   height: 30px;
   padding: 0 10px;
