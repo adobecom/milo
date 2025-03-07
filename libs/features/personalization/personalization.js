@@ -565,7 +565,7 @@ export function addSectionAnchors(rootEl = document) {
   rootEl.querySelectorAll('.section-metadata').forEach((block) => {
     [...block.children].forEach((row) => {
       const col1 = row.children[0]?.textContent.toLowerCase().trim();
-      const col2 = row.children[1]?.textContent.toLowerCase().trim().replaceAll(' ', '-');
+      const col2 = row.children[1]?.textContent.toLowerCase().trim().replaceAll(/\s+/g, '-');
       if (!col1 || !col2 || col1 !== 'anchor') return;
       block.parentElement.setAttribute('id', col2);
     });

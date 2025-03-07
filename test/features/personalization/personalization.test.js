@@ -382,7 +382,6 @@ describe('Functional Test', () => {
     addSectionAnchors(document);
     const sectionWithId = document.querySelector('#marquee-container');
     expect(sectionWithId).to.exist;
-    expect(sectionWithId.getAttribute('id')).to.equal('marquee-container');
   });
 });
 

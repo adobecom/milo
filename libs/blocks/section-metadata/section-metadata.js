@@ -57,7 +57,7 @@ function handleDelay(time, section) {
 
 function handleAnchor(anchor, section) {
   if (!anchor || !section) return;
-  section.id = anchor.toLowerCase().trim().replaceAll(' ', '-');
+  section.id = anchor.toLowerCase().trim().replaceAll(/\s+/g, '-');
   section.classList.add('section-anchor');
 }
 
