@@ -28,4 +28,3 @@ var o=Object.defineProperty;var r=(e,t,s)=>t in e?o(e,t,{enumerable:!0,configura
             display: none;
         }
     `),n(i,"properties",{description:{type:String,attribute:!0}});customElements.define("merch-mnemonic-list",i);export{i as MerchMnemonicList};
-//# sourceMappingURL=merch-mnemonic-list.js.map

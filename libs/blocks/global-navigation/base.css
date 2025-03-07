@@ -273,6 +273,14 @@ header.global-navigation.ready {
     content: '';
   }
 
+  .feds-navLink.feds-navLink--header[class *= '-gradient'] .feds-navLink-title:after {
+    display: none;
+  }
+
+  .feds-navLink.feds-navLink--header {
+    pointer-events: none;
+  }
+
   [dir = "rtl"] .feds-navLink[class *= '-gradient'] .feds-navLink-title:after {
     transform: rotate(135deg);
   }
