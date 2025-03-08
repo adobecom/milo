@@ -3,6 +3,8 @@ import {
     updateMasElement,
     MasElement,
 } from './mas-element.js';
+import { getPriceLiterals } from './literals.js';
+import IntlMessageFormat from 'intl-messageformat';
 import { selectOffers, useService } from './utilities.js';
 
 // countries where tax is displayed for all segments by default
@@ -276,7 +278,7 @@ export class InlinePrice extends HTMLSpanElement {
      * Optional object with properties to use as overrides
      * over those collected from dataset of this component.
      */
-    renderOffers(offers, overrides = {}, version = undefined) {
+    async renderOffers(offers, overrides = {}, version = undefined) {
         if (!this.isConnected) return;
         // eslint-disable-next-line react-hooks/rules-of-hooks
         const service = useService();
@@ -292,6 +294,49 @@ export class InlinePrice extends HTMLSpanElement {
         if (offers.length) {
             if (this.masElement.toggleResolved(version, offers, options)) {
                 this.innerHTML = service.buildPriceHTML(offers, options);
+
+                // Adding logic for <sr-only>Alternatively at</sr-only>
+                const htmlPattern = /<\/?[^>]+(>|$)/g;
+                async function formatLiteral(key, parameters) {
+                    const settings = {};
+                    const masCommerceService = document.querySelector('mas-commerce-service');
+                    ['locale', 'country', 'language'].forEach((attribute) => {
+                        const value = masCommerceService?.getAttribute(attribute);
+                        if (value) {
+                            settings[attribute] = value;
+                        }
+                    });
+                    const literals = await getPriceLiterals(settings);
+                    const literal = literals[key];
+                    if (!literal) {
+                        /* c8 ignore next 2 */
+                        return '';
+                    }
+                    const locale = settings.language && settings.country ? `${settings.language?.toLowerCase()}-${settings.country?.toUpperCase()}` : document.body.parentElement.lang;
+                    try {
+                        return new IntlMessageFormat(
+                            literal.replace(htmlPattern, ''),
+                            locale,
+                        ).format(parameters);
+                    } catch {
+                        /* c8 ignore next 2 */
+                        console.error('Failed to format literal:', literal);
+                        return '';
+                    }
+                }
+                const alternativlySRLabelText =  await formatLiteral('alternativePriceAriaLabel', { alternativePrice: '' });
+                const alternativlySRLabel = document.createElement('sr-only');
+                alternativlySRLabel.classList.add('alternative-price-aria-label');
+                alternativlySRLabel.innerHTML = alternativlySRLabelText;
+                if (alternativlySRLabelText) {
+                    const parentEl = this.closest('.col') ?? this.closest('merch-card') ?? this.closest('p')
+                    if (this.querySelectorAll('.price').length === 2 && this.querySelector('.price-strikethrough')) {
+                        this.querySelector('.price:not(.price-strikethrough)')?.before(alternativlySRLabel);
+                    } else if(parentEl?.querySelectorAll('span[is="inline-price"]').length > 1 && !parentEl.querySelector('.alternative-price-aria-label')) {
+                        const alternativePriceEl = parentEl.querySelector('span[is="inline-price"]:not(span[data-template="strikethrough"])');
+                        alternativePriceEl.prepend(alternativlySRLabel);
+                    }
+                }
                 return true;
             }
         } else {

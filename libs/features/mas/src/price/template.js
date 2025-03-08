@@ -103,7 +103,6 @@ function renderContainer(
     cssClass,
     {
         accessibleLabel,
-        accessibleLabel2,
         currencySymbol,
         decimals,
         decimalsDelimiter,
@@ -138,8 +137,7 @@ function renderContainer(
         taxInclusivityLabel,
         true,
     );
-    const regularlySRLabel = accessibleLabel ? `<sr-only>${accessibleLabel}</sr-only>` : '';
-    const alternativlySRLabel = accessibleLabel2 ? `<sr-only>${accessibleLabel2}</sr-only>` : '';
+    const regularlySRLabel = accessibleLabel ? `<sr-only class="strikethrough-aria-label">${accessibleLabel}</sr-only>` : '';
     return `${regularlySRLabel}${renderSpan(cssClass, markup, {
         ...attributes,
     })}`;
@@ -244,7 +242,7 @@ const createPriceTemplate =
             usePrecision,
         });
 
-        let accessibleLabel = '', accessibleLabel2 = '';
+        let accessibleLabel = '';
 
         let recurrenceLabel = '';
         if (toBoolean(displayRecurrence) && recurrenceTerm) {
@@ -277,13 +275,6 @@ const createPriceTemplate =
                     strikethroughPrice: accessibleLabel,
                 },
             );
-        } else if (true) { 
-            accessibleLabel2 = formatLiteral(
-                literalKeys.alternativePriceAriaLabel,
-                {
-                    alternativePrice: accessibleLabel2,
-                },
-            );
         }
 
         let cssClass = cssClassNames.container;
@@ -303,7 +294,6 @@ const createPriceTemplate =
                 {
                     ...formattedPrice,
                     accessibleLabel,
-                    accessibleLabel2,
                     recurrenceLabel,
                     perUnitLabel,
                     taxInclusivityLabel,
