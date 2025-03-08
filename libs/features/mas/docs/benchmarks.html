@@ -22,6 +22,7 @@
     <link rel="stylesheet" href="styles.css">
     <script type="module">
       import { init } from './common.js';
+      import './mas-sidenav.js';
       init();
     </script>
 </head>
@@ -62,7 +63,7 @@
       //if adjust is set to true, we adjust the limit based on the stored initTime and
       //reference time of 82ms it took on a quick network. This way, we should not be
       //affected by network speed when comparing benchmarks to limit.
-      const referentInitialTime = 35.0;
+      const referentInitialTime = 82.0;
       const previousLimit = limit;
       if (referentInitialTime < window.initTime) {
         limit = limit * window.initTime / referentInitialTime;
@@ -75,6 +76,7 @@
     }
     const promises = fragmentIds.map((fragmentId) => measureCardPerformances(container, fragmentId));
     const results = await Promise.allSettled(promises);
+
     results.forEach((result) => {
       const { card, duration } = result.status === 'fulfilled' ? result.value : {};
       const mask = document.createElement('div');
@@ -83,31 +85,28 @@
       mask.style.height = card.offsetHeight + 'px';
       mask.style.top = card.offsetTop + 'px';
       mask.style.left = card.offsetLeft + 'px';
-      mask.textContent = `⏱️  ${duration}ms`;
+      mask.textContent = `⏱️  ${parseFloat(duration).toFixed(2)}ms`;
       mask.classList.add('benchmark-mask');
       mask.setAttribute('data-benchmark-time', duration);
       mask.classList.add(duration > limit ? 'benchmark-mask-over-limit' : 'benchmark-mask-under-limit');
-      container.appendChild(mask);  
+      container.appendChild(mask);
     });        
   }
 </script>
 
 <body class="spectrum spectrum--medium spectrum--light">
-  <aside class="sidenav">
-    <a href="/libs/features/mas/docs/mas.html">Home</a>
-    <a href="/libs/features/mas/docs/mas.js.html">mas.js</a>
-    <a href="/libs/features/mas/docs/checkout-link.html">Checkout Link</a>
-    <a href="/libs/features/mas/docs/inline-price.html">Inline Price</a>
-    <a href="/libs/features/mas/docs/merch-card.html">Merch Card</a>
-    <a href="/libs/features/mas/docs/ccd.html">CCD Gallery</a>
-    <a href="/libs/features/mas/docs/benchmarks.html">Benchmarks</a>
-  </aside>
+  <aside is="mas-sidenav"></aside>
   <main>
       <div class="gallery-content">
-        <h1 id="ccd-cards" tabindex="-1">CCD cards benchmark<a class="header-cards" href="#ccd-cards" href="#ccd-cards" title="Permalink to this heading">#</a></h1>
         Marked as green if below each container limit, red otherwise. If you are running this page under a slow network, <a href="/libs/features/mas/docs/benchmarks.html?adjust=true">you can adjust the limit by adding <code>?adjust=true</code> to the URL.</a>      
+        <h1 id="ccd-cards" tabindex="-1">CCD cards benchmark<a class="header-cards" href="#ccd-cards" title="Permalink to this heading">#</a></h1>
         <div class="three-merch-cards ccd-slice"         
           data-benchmark="0ef2a804-e788-4959-abb8-b4d96a18b0ef,58c7906f-70a6-4e2b-bc29-257ff2ade513,51c23f28-504f-450d-9764-0e60f1e279b2,c13897c7-de77-4e45-b23b-eec9fd66cad1,bdf40d06-5914-4f1f-aa10-77c5676fe671,31205553-b453-4c9e-a2ef-7b6aa7bfdc72"
+          data-benchmark-limit="400">
+        </div>
+        <h1 id="ah-cards" tabindex="-1">AH cards benchmark<a class="header-cards" href="#ah-cards" title="Permalink to this heading">#</a></h1>
+        <div class="benchmarks three-merch-cards ah-try-buy-widget"         
+          data-benchmark="44520fdc-f6e1-4c21-8978-9cd25a1be158,96727fef-fed2-410e-80d2-1515fd397f8e,8058f4b0-309b-44be-9ae8-1494d8cfa6c4"
           data-benchmark-limit="400">
         </div>
       </div>

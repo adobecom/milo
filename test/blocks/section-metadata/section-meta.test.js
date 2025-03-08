@@ -118,4 +118,12 @@ describe('Section Metdata', () => {
     await delay(700);
     expect(sec.style.top).to.be.eql('77px');
   });
+
+  it('adds an anchor', async () => {
+    const sec = document.querySelector('.section.anchor');
+    const sm = sec.querySelector('.section-metadata');
+    await init(sm);
+    expect(sec.id).to.be.eql('anchor-test');
+    expect(sec.classList.contains('section-anchor')).to.be.true;
+  });
 });
