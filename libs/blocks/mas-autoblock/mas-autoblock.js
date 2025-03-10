@@ -1,5 +1,6 @@
 import { createTag } from '../../utils/utils.js';
 import '../../deps/mas/merch-card.js';
+import '../../deps/mas/merch-quantity-select.js';
 
 export function getFragmentId(el) {
   const { hash } = new URL(el.href);
