@@ -97,7 +97,6 @@ export function Wcs({ settings }) {
             response = await masFetch(url.toString(), {
                 credentials: 'omit',
             });
-            duration = Date.now() - startTime;
             if (response.ok) {
                 let offers = [];
                 try {
@@ -132,6 +131,8 @@ export function Wcs({ settings }) {
         } catch (e) {
             /* c8 ignore next 2 */
             message = `Network error: ${e.message}`;
+        } finally {
+            duration = Date.now() - startTime;
         }
 
         if (reject && promises.size) {
