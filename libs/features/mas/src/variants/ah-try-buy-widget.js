@@ -49,7 +49,7 @@ export class AHTryBuyWidget extends VariantLayout {
 
   static variantStyle = css`
     :host([variant='ah-try-buy-widget']) {
-        --merch-card-ah-try-buy-widget-min-width: 132px;
+        --merch-card-ah-try-buy-widget-min-width: 156px;
         --merch-card-ah-try-buy-widget-content-min-width: 132px;
         --merch-card-ah-try-buy-widget-header-min-height: 36px;
         --merch-card-ah-try-buy-widget-gray-background: rgba(248, 248, 248);
@@ -57,6 +57,7 @@ export class AHTryBuyWidget extends VariantLayout {
         --merch-card-ah-try-buy-widget-price-line-height: 17px;
         --merch-card-ah-try-buy-widget-outline: transparent;
         --merch-card-custom-border-width: 1px;
+        height: 100%;
         min-width: var(--merch-card-ah-try-buy-widget-min-width);
         background-color: var(--merch-card-custom-background-color, var(--consonant-merch-card-background-color));
         color: var(--consonant-merch-card-heading-xxxs-color);
@@ -65,10 +66,10 @@ export class AHTryBuyWidget extends VariantLayout {
         display: flex;
         flex-direction: column;
         overflow: hidden;
-        padding: 12px !important;
+        padding: 11px !important;
         gap: 16px;
-        box-sizing: content-box !important;
         justify-content: space-between;
+        box-sizing: border-box !important;
     }
 
     :host([variant='ah-try-buy-widget'][size='single']) {
