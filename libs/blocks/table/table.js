@@ -3,6 +3,7 @@ import { createTag, getConfig, MILO_EVENTS } from '../../utils/utils.js';
 import { decorateButtons } from '../../utils/decorate.js';
 import { debounce } from '../../utils/action.js';
 import { replaceKeyArray } from '../../features/placeholders.js';
+import { getGnavHeight } from '../global-navigation/utilities/utilities.js';
 
 const DESKTOP_SIZE = 900;
 const MOBILE_SIZE = 768;
@@ -76,7 +77,6 @@ function handleHeading(table, headingCols) {
     }
 
     const trackingHeader = col.querySelector('.tracking-header');
-    const nodeToApplyRoleScope = trackingHeader ?? col;
 
     if (trackingHeader) {
       const trackingHeaderID = `t${tableIndex + 1}-c${i + 1}-header`;
@@ -94,7 +94,9 @@ function handleHeading(table, headingCols) {
       col.setAttribute('role', 'columnheader');
     }
 
-    nodeToApplyRoleScope.setAttribute('scope', 'col');
+    col.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach((heading) => {
+      heading.setAttribute('role', 'paragraph');
+    });
   });
 }
 
@@ -436,9 +438,8 @@ function handleHovering(table) {
   }
 }
 
-function handleScrollEffect(table) {
-  const gnav = document.querySelector('header');
-  const gnavHeight = gnav ? gnav.offsetHeight : 0;
+async function handleScrollEffect(table) {
+  const gnavHeight = getGnavHeight();
   const highlightRow = table.querySelector('.row-highlight');
   const headingRow = table.querySelector('.row-heading');
 
