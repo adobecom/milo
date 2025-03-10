@@ -199,10 +199,10 @@ function normCountry(country) {
   return (country.toLowerCase() === 'uk' ? 'gb' : country.toLowerCase()).split('_')[0];
 }
 
-export async function getCountry(config, ignoreCookie = false, timeout = 5000) {
+export async function getCountry(config, timeout = 5000) {
   const { getCookie } = await import('../features/georoutingv2/georoutingv2.js');
   const urlParams = new URLSearchParams(window.location.search);
-  let countryCode = urlParams.get('country') || (!ignoreCookie && getCookie('international'));
+  let countryCode = urlParams.get('country') || getCookie('international');
   if (countryCode) {
     return normCountry(countryCode);
   }
