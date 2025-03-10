@@ -10,6 +10,9 @@ import {
     applyPlanType,
 } from './external.js';
 import { Log } from './log.js';
+import { MasError } from './mas-error.js';
+import { getMasCommerceServiceDurationLog } from './utils.js';
+import { masFetch } from './utils/mas-fetch.js';
 
 /**
  * @typedef {Map<string, {
@@ -35,6 +38,11 @@ export function Wcs({ settings }) {
      */
     const queue = new Map();
     let timer;
+    /**
+     * Stale cache to keep items in for fallback
+     * @type {Map<string, Promise<Commerce.Wcs.Offer[]>>}
+     */
+    let staleCache = new Map();
 
     /**
      * Accepts list of OSIs having same locale and map of pending promises, grouped by OSI.
@@ -52,9 +60,15 @@ export function Wcs({ settings }) {
         log.debug('Fetching:', options);
         let url = '';
         let response;
-        const detailedMessage = (error, response, url) => `${error}: ${response?.status}, url: ${url.toString()}`;
+        if (options.offerSelectorIds.length > 1)
+            throw new Error('Multiple OSIs are not supported anymore');
+
+        // Create a map of unresolved promises to track which ones need fallback
+        const unresolvedPromises = new Map(promises);
+
+        let startTime;
+        let duration;
         try {
-            options.offerSelectorIds = options.offerSelectorIds.sort();
             url = new URL(settings.wcsURL);
             url.searchParams.set(
                 'offer_selector_ids',
@@ -79,13 +93,22 @@ export function Wcs({ settings }) {
                 url.searchParams.set('currency', options.currency);
             }
 
-            response = await fetch(url.toString(), {
+            startTime = Date.now();
+            response = await masFetch(url.toString(), {
                 credentials: 'omit',
             });
             if (response.ok) {
-                const data = await response.json();
-                log.debug('Fetched:', options, data);
-                let offers = data.resolvedOffers ?? [];
+                let offers = [];
+                try {
+                    const data = await response.json();
+                    log.debug('Fetched:', options, data);
+                    offers = data.resolvedOffers ?? [];
+                } catch (e) {
+                    log.error(`Error parsing JSON: ${e.message}`, {
+                        ...e.context,
+                        ...getMasCommerceServiceDurationLog(),
+                    });
+                }
                 offers = offers.map(applyPlanType);
                 // resolve all promises that have offers
                 promises.forEach(({ resolve }, offerSelectorId) => {
@@ -97,41 +120,34 @@ export function Wcs({ settings }) {
                         .flat();
                     // resolve current promise if at least 1 offer is present
                     if (resolved.length) {
+                        unresolvedPromises.delete(offerSelectorId);
                         promises.delete(offerSelectorId);
                         resolve(resolved);
                     }
                 });
-            }
-            // in case of 404 WCS error caused by a request with multiple osis,
-            // fallback to `fetch-by-one` strategy
-            else if (
-                response.status === 404 &&
-                options.offerSelectorIds.length > 1
-            ) {
-                log.debug('Multi-osi 404, fallback to fetch-by-one strategy');
-                await Promise.allSettled(
-                    options.offerSelectorIds.map((offerSelectorId) =>
-                        resolveWcsOffers(
-                            { ...options, offerSelectorIds: [offerSelectorId] },
-                            promises,
-                            false, // do not reject promises for missing offers, this will be done below
-                        ),
-                    ),
-                );
             } else {
                 message = ERROR_MESSAGE_BAD_REQUEST;
             }
         } catch (e) {
             /* c8 ignore next 2 */
-            message = ERROR_MESSAGE_BAD_REQUEST;
-            log.error(message, options, e);
+            message = `Network error: ${e.message}`;
+        } finally {
+            duration = Date.now() - startTime;
         }
 
         if (reject && promises.size) {
             // reject pending promises, their offers weren't provided by WCS
             log.debug('Missing:', { offerSelectorIds: [...promises.keys()] });
             promises.forEach((promise) => {
-                promise.reject(new Error(detailedMessage(message, response, url)));
+                promise.reject(
+                    new MasError(message, {
+                        ...options,
+                        response,
+                        startTime,
+                        duration,
+                        ...getMasCommerceServiceDurationLog(),
+                    }),
+                );
             });
         }
     }
@@ -149,12 +165,14 @@ export function Wcs({ settings }) {
     }
 
     /**
-     * Flushes WCS cache
+     * Flushes WCS cache but keeps items in stale cache for fallback
      */
     function flushWcsCache() {
         const size = cache.size;
+        // Store current cache as stale cache instead of clearing it
+        staleCache = new Map(cache);
         cache.clear();
-        log.debug(`Flushed ${size} cache entries`);
+        log.debug(`Moved ${size} cache entries to stale cache`);
     }
 
     /**
@@ -185,46 +203,40 @@ export function Wcs({ settings }) {
 
         return wcsOsi.map((osi) => {
             const cacheKey = `${osi}-${groupKey}`;
-            if (!cache.has(cacheKey)) {
-                const promise = new Promise((resolve, reject) => {
-                    let group = queue.get(groupKey);
-                    if (!group) {
-                        const options = {
-                            country,
-                            locale,
-                            offerSelectorIds: [],
-                        };
-                        if (country !== 'GB') options.language = language;
-                        const promises = new Map();
-                        group = { options, promises };
-                        queue.set(groupKey, group);
-                    }
-                    if (promotionCode) {
-                        group.options.promotionCode = promotionCode;
-                    }
-                    group.options.offerSelectorIds.push(osi);
-                    group.promises.set(osi, {
-                        resolve,
-                        reject,
-                    });
-                    if (
-                        group.options.offerSelectorIds.length >=
-                        settings.wcsBufferLimit
-                    ) {
-                        flushQueue();
-                    } else {
-                        log.debug('Queued:', group.options);
-                        if (!timer) {
-                            timer = setTimeout(
-                                flushQueue,
-                                settings.wcsBufferDelay,
-                            );
-                        }
-                    }
-                });
-                cache.set(cacheKey, promise);
+            if (cache.has(cacheKey)) {
+                return cache.get(cacheKey);
             }
-            return cache.get(cacheKey);
+            const promiseWithFallback = new Promise((resolve, reject) => {
+                let group = queue.get(groupKey);
+                if (!group) {
+                    const options = {
+                        country,
+                        locale,
+                        offerSelectorIds: [],
+                    };
+                    if (country !== 'GB') options.language = language;
+                    const promises = new Map();
+                    group = { options, promises };
+                    queue.set(groupKey, group);
+                }
+                if (promotionCode) {
+                    group.options.promotionCode = promotionCode;
+                }
+                group.options.offerSelectorIds.push(osi);
+                group.promises.set(osi, {
+                    resolve,
+                    reject,
+                });
+                flushQueue();
+            }).catch((error) => {
+                if (staleCache.has(cacheKey)) {
+                    return staleCache.get(cacheKey);
+                }
+                throw error;
+            });
+
+            cache.set(cacheKey, promiseWithFallback);
+            return promiseWithFallback;
         });
     }
 
