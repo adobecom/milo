@@ -222,7 +222,11 @@ export async function getCountry(config, ignoreCookie = false, timeout = 5000) {
       return normalized;
     }
   } catch (e) {
-    window.lana.log('could not fetch geo2 data from geo2 service', e);
+    if (e.name === 'AbortError') {
+      window.lana.log('fetch request to geo2 service timed out');
+    } else {
+      window.lana.log('could not fetch geo2 data from geo2 service', e);
+    }
   }
 
   const country = config.locale.region;
