@@ -1,5 +1,10 @@
+import { lanaLog } from '../../blocks/global-navigation/utilities/utilities.js';
+import { getFederatedContentRoot } from '../../utils/federated.js';
+import { getConfig } from '../../utils/utils.js';
+
 let fetchedIcons;
 let fetched = false;
+const federalIcons = {};
 
 async function getSVGsfromFile(path) {
   /* c8 ignore next */
@@ -22,6 +27,7 @@ async function getSVGsfromFile(path) {
   return miloIcons;
 }
 
+// TODO: remove after all consumers have stopped calling this method
 // eslint-disable-next-line no-async-promise-executor
 export const fetchIcons = (config) => new Promise(async (resolve) => {
   /* c8 ignore next */
@@ -34,13 +40,20 @@ export const fetchIcons = (config) => new Promise(async (resolve) => {
   resolve(fetchedIcons);
 });
 
-function decorateToolTip(icon, iconName) {
-  const hasTooltip = icon.closest('em')?.textContent.includes('|') && [...icon.classList].some((cls) => cls.includes('tooltip'));
-  if (!hasTooltip) return;
+export function fetchIconList(url) {
+  return fetch(url)
+    .then((resp) => resp.json())
+    .then((json) => json.content.data)
+    .catch(() => {
+      lanaLog({ message: 'Failed to fetch iconList', tags: 'icons', errorType: 'error' });
+      return [];
+    });
+}
 
+async function decorateToolTip(icon) {
   const wrapper = icon.closest('em');
-  wrapper.className = 'tooltip-wrapper';
   if (!wrapper) return;
+  wrapper.className = 'tooltip-wrapper';
   const conf = wrapper.textContent.split('|');
   // Text is the last part of a tooltip
   const content = conf.pop().trim();
@@ -48,35 +61,71 @@ function decorateToolTip(icon, iconName) {
   icon.dataset.tooltip = content;
   // Position is the next to last part of a tooltip
   const place = conf.pop()?.trim().toLowerCase() || 'right';
-  icon.className = `icon icon-${iconName} milo-tooltip ${place}`;
-  icon.setAttribute('tabindex', '0');
-  icon.setAttribute('aria-label', content);
-  icon.setAttribute('role', 'button');
+  icon.className = `icon icon-info-outline milo-tooltip ${place}`;
+  [['tabindex', '0'], ['aria-label', content], ['role', 'button']].forEach(([attr, value]) => {
+    icon.setAttribute(attr, value);
+  });
   wrapper.parentElement.replaceChild(icon, wrapper);
 }
 
-export default async function loadIcons(icons, config) {
-  const iconSVGs = await fetchIcons(config);
-  if (!iconSVGs) return;
-  icons.forEach(async (icon) => {
-    const iconNameInitial = icon.classList[1].replace('icon-', '');
-    let iconName = iconNameInitial === 'tooltip' ? 'info' : iconNameInitial;
-    if (iconNameInitial.includes('tooltip-')) iconName = iconNameInitial.replace(/tooltip-/, '');
-    decorateToolTip(icon, iconName);
+export function setNodeIndexClass(icon) {
+  const children = icon.parentNode.childNodes;
+  const nodeIndex = Array.prototype.indexOf.call(children, icon);
+  let indexClass = (nodeIndex === children.length - 1) ? 'last' : 'middle';
+  if (nodeIndex === 0) indexClass = 'first';
+  if (children.length === 1) indexClass = 'only';
+  icon.classList.add(`node-index-${indexClass}`);
+}
 
-    const existingIcon = icon.querySelector('svg');
-    if (!iconSVGs[iconName] || existingIcon) return;
-    const parent = icon.parentElement;
-    if (parent?.childNodes.length > 1) {
-      if (parent.lastChild === icon) {
-        icon.classList.add('margin-inline-start');
-      } else if (parent.firstChild === icon) {
-        icon.classList.add('margin-inline-end');
-        if (parent.parentElement.tagName === 'LI') parent.parentElement.classList.add('icon-list-item');
-      } else {
-        icon.classList.add('margin-inline-start', 'margin-inline-end');
-      }
+export default async function loadIcons(icons) {
+  const fedRoot = getFederatedContentRoot();
+  const iconRequests = [];
+  const iconsToFetch = new Map();
+  icons.forEach((icon) => {
+    setNodeIndexClass(icon);
+    if (icon.classList.contains('icon-tooltip')) decorateToolTip(icon);
+    const iconName = [...icon.classList].find((c) => c.startsWith('icon-'))?.substring(5);
+    if (icon.dataset.svgInjected || !iconName) return;
+    if (!federalIcons[iconName] && !iconsToFetch.has(iconName)) {
+      iconsToFetch.set(iconName, fetch(`${fedRoot}/federal/assets/icons/svgs/${iconName}.svg`)
+        .then(async (res) => {
+          if (!res.ok) throw new Error(`Failed to fetch SVG for ${iconName}: ${res.statusText}`);
+          const text = await res.text();
+          const parser = new DOMParser();
+          const svgElement = parser.parseFromString(text, 'image/svg+xml').querySelector('svg');
+          if (!svgElement) {
+            lanaLog({ message: `No SVG element found in fetched content for ${iconName}`, tags: 'icons', errorType: 'error' });
+            return;
+          }
+          svgElement.classList.add('icon-milo', `icon-milo-${iconName}`);
+          federalIcons[iconName] = svgElement;
+        })
+        .catch(async (e) => {
+          lanaLog({ message: `Error fetching federal SVG for ${iconName}, falling back to Milo icon`, e, tags: 'icons', errorType: 'error' });
+          // Fallback to Milo icons
+          if (!fetchedIcons) {
+            const { miloLibs, codeRoot } = getConfig();
+            const base = miloLibs || codeRoot;
+            fetchedIcons = await getSVGsfromFile(`${base}/img/icons/icons.svg`);
+          }
+          if (fetchedIcons?.[iconName]) {
+            federalIcons[iconName] = fetchedIcons[iconName].cloneNode(true);
+            return;
+          }
+          lanaLog({ message: `No fallback Milo icon found for ${iconName}`, e, tags: 'icons', errorType: 'error' });
+        }));
     }
-    icon.insertAdjacentHTML('afterbegin', iconSVGs[iconName].outerHTML);
+    iconRequests.push(iconsToFetch.get(iconName));
+    const parent = icon.parentElement;
+    if (parent && parent.parentElement.tagName === 'LI') parent.parentElement.classList.add('icon-list-item');
+  });
+  await Promise.all(iconRequests);
+  icons.forEach((icon) => {
+    const iconName = [...icon.classList].find((c) => c.startsWith('icon-'))?.substring(5);
+    if (iconName && federalIcons[iconName] && !icon.dataset.svgInjected) {
+      const svgClone = federalIcons[iconName].cloneNode(true);
+      icon.appendChild(svgClone);
+      icon.dataset.svgInjected = 'true';
+    }
   });
 }
