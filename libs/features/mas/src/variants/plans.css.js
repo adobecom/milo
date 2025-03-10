@@ -10,7 +10,7 @@ merch-card[variant="plans"] [slot="description"] {
 }
 
 merch-card[variant="plans"] [slot='callout-content'] {
-  padding: 2px 10px 3px 10px;
+  padding: 2px 10px 3px;
 }
 
 merch-card[variant="plans"] [slot="quantity-select"] {
