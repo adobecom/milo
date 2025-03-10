@@ -1,4 +1,5 @@
 import stylePublish from './sidekick-decorate.js';
+import { debounce } from './action.js';
 
 // loadScript and loadStyle are passed in to avoid circular dependencies
 export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
@@ -37,7 +38,7 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
   // Add plugin listeners here
   sk.addEventListener('custom:send-to-caas', sendToCaasListener);
   sk.addEventListener('custom:check-schema', checkSchemaListener);
-  sk.addEventListener('custom:preflight', preflightListener);
+  sk.addEventListener('custom:preflight', debounce(() => preflightListener(), 500));
 
   // Color code publish button
   stylePublish(sk);
