@@ -1,6 +1,5 @@
 import { createTag } from '../../utils/utils.js';
 import '../../deps/mas/merch-card.js';
-import '../../deps/mas/merch-card-collection.js';
 import { initService } from '../merch/merch.js';
 
 export function getFragmentId(el) {
@@ -23,7 +22,7 @@ export function getTagName(el) {
  * @param {HTMLElement} el
  * @param {string} fragment
  */
-function getTagOptions(el, fragment) {
+async function getTagOptions(el, fragment) {
   const tagName = getTagName(el);
   let attributes;
   const html = createTag('aem-fragment', { fragment });
@@ -32,6 +31,8 @@ function getTagOptions(el, fragment) {
       attributes = { consonant: '' };
       break;
     case 'merch-card-collection':
+      await import('../../deps/mas/merch-card-collection.js');
+      break;
     default:
       break;
   }
@@ -39,7 +40,7 @@ function getTagOptions(el, fragment) {
 }
 
 export async function createCard(el, fragment) {
-  const [tagName, attributes, html] = getTagOptions(el, fragment);
+  const [tagName, attributes, html] = await getTagOptions(el, fragment);
   const element = createTag(tagName, attributes, html);
   el.replaceWith(element);
   await element.checkReady();

@@ -16,6 +16,7 @@ import './mas-commerce-service';
 import { hydrate } from './hydrate.js';
 
 const MERCH_CARD_COLLECTION = 'merch-card-collection';
+const MERCH_CARD_COLLECTION_LOAD_TIMEOUT = 10000;
 
 const SORT_ORDER = {
     alphabetical: 'alphabetical',
@@ -133,21 +134,12 @@ export class MerchCardCollection extends LitElement {
     }
 
     checkReady() {
-        let ticks;
-        return new Promise((resolve) => {
-            const checkReadyInterval = setInterval(() => {
-                const aemFragment = this.querySelector('aem-fragment');
-                if (!aemFragment) {
-                    resolve(true);
-                    clearInterval(checkReadyInterval);
-                }
-                else ticks++;
-                if (ticks === 20) {
-                    resolve(false);
-                    clearInterval(checkReadyInterval);
-                }
-            }, 100)
-        });
+        const aemFragment = this.querySelector('aem-fragment');
+        if (!aemFragment) return;
+        const timeoutPromise = new Promise((resolve) =>
+            setTimeout(() => resolve(false), MERCH_CARD_COLLECTION_LOAD_TIMEOUT),
+        );
+        return Promise.race([aemFragment.updateComplete, timeoutPromise])
     }
 
     updated(changedProperties) {
