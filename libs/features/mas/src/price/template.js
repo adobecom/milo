@@ -32,8 +32,8 @@ export const defaultLiterals = {
         '{taxTerm, select, GST {excl. GST} VAT {excl. VAT} TAX {excl. tax} IVA {excl. IVA} SST {excl. SST} KDV {excl. KDV} other {}}',
     taxInclusiveLabel:
         '{taxTerm, select, GST {incl. GST} VAT {incl. VAT} TAX {incl. tax} IVA {incl. IVA} SST {incl. SST} KDV {incl. KDV} other {}}',
-    alternativePriceAriaLabel: 'Alternatively at {alternativePrice}',
-    strikethroughAriaLabel: 'Regularly at {strikethroughPrice}',
+    alternativePriceAriaLabel: 'Alternatively at',
+    strikethroughAriaLabel: 'Regularly at',
 };
 
 const log = createLog('ConsonantTemplates/price');
@@ -65,6 +65,7 @@ const literalKeys = {
     taxExclusiveLabel: 'taxExclusiveLabel',
     taxInclusiveLabel: 'taxInclusiveLabel',
     strikethroughAriaLabel: 'strikethroughAriaLabel',
+    alternativePriceAriaLabel: 'alternativePriceAriaLabel'
 };
 const WCS_TAX_DISPLAY_EXCLUSIVE = 'TAX_EXCLUSIVE';
 
@@ -136,11 +137,10 @@ function renderContainer(
         taxInclusivityLabel,
         true,
     );
-
-    return renderSpan(cssClass, markup, {
+    const regularlySRLabel = accessibleLabel ? `<sr-only class="strikethrough-aria-label">${accessibleLabel}</sr-only>` : '';
+    return `${regularlySRLabel}${renderSpan(cssClass, markup, {
         ...attributes,
-        ['aria-label']: accessibleLabel,
-    });
+    })}`;
 }
 
 /**
@@ -242,19 +242,10 @@ const createPriceTemplate =
             usePrecision,
         });
 
-        let accessibleLabel = accessiblePrice;
+        let accessibleLabel = '';
 
         let recurrenceLabel = '';
         if (toBoolean(displayRecurrence) && recurrenceTerm) {
-            const recurrenceAccessibleLabel = formatLiteral(
-                literalKeys.recurrenceAriaLabel,
-                {
-                    recurrenceTerm,
-                },
-            );
-            if (recurrenceAccessibleLabel) {
-                accessibleLabel += ' ' + recurrenceAccessibleLabel;
-            }
             recurrenceLabel = formatLiteral(literalKeys.recurrenceLabel, {
                 recurrenceTerm,
             });
@@ -265,13 +256,6 @@ const createPriceTemplate =
             perUnitLabel = formatLiteral(literalKeys.perUnitLabel, {
                 perUnit: 'LICENSE',
             });
-            const perUnitAriaLabel = formatLiteral(
-                literalKeys.perUnitAriaLabel,
-                { perUnit: 'LICENSE' },
-            );
-            if (perUnitAriaLabel) {
-                accessibleLabel += ' ' + perUnitAriaLabel;
-            }
         }
 
         let taxInclusivityLabel = '';
@@ -282,9 +266,6 @@ const createPriceTemplate =
                     : literalKeys.taxInclusiveLabel,
                 { taxTerm },
             );
-            if (taxInclusivityLabel) {
-                accessibleLabel += ' ' + taxInclusivityLabel;
-            }
         }
 
         if (displayStrikethrough) {
