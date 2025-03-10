@@ -17,7 +17,6 @@ it('lana should load existing window.lana.options', async () => {
     clientId: 'testClientId',
     endpoint: 'https://lana.adobeio.com/',
     errorType: 'e',
-    severity: 'i',
     sampleRate: 100,
     tags: '',
     implicitSampleRate: 100,

@@ -13,15 +13,6 @@
      * 'i' - implicit (automatically caught errors)
      */
     errorType: 'e',
-    /**
-     * Severity level of the log message:
-     * 'debug' (or 'd') - Debug information (verbose)
-     * 'info' (or 'i') - General information (default)
-     * 'warn' (or 'w') - Warning messages
-     * 'error' (or 'e') - Error messages
-     * 'critical' (or 'c') - Critical errors (highest severity)
-     */
-    severity: 'i',
     sampleRate: 1,
     tags: '',
     implicitSampleRate: 1,
@@ -89,20 +80,22 @@
       return;
     }
 
-    // Process severity - set default based on debug mode
-    const isDebugMode = hasDebugParam();
+    // Process severity only if it's explicitly provided in original options
     let severity;
-
-    if (!o.severity) {
-      // Default severity based on debug mode
-      severity = isDebugMode ? 'd' : 'i';
-    } else if (!VALID_SEVERITIES.has(o.severity)) {
-      // Invalid severity, default based on debug mode
-      const defaultSeverity = isDebugMode ? 'd' : 'i';
-      console.warn(`LANA: Invalid severity '${o.severity}'. Defaulting to '${defaultSeverity}'.`);
-      severity = defaultSeverity;
-    } else {
-      severity = o.severity;
+    if (options && options.severity !== undefined) {
+      // Check if value is valid
+      if (VALID_SEVERITIES.has(options.severity)) {
+        severity = options.severity;
+      } else {
+        // Invalid severity, use default based on debug mode
+        const isDebugMode = hasDebugParam() || w.lana.debug;
+        const defaultSeverity = isDebugMode ? 'd' : 'i';
+        console.warn(`LANA: Invalid severity '${options.severity}'. Defaulting to '${defaultSeverity}'.`);
+        severity = defaultSeverity;
+      }
+    } else if (w.lana.debug) {
+      // In debug mode, use debug severity if enabled
+      severity = 'd';
     }
 
     const sampleRateParam = parseInt(new URL(window.location).searchParams.get('lana-sample'), 10);
@@ -120,8 +113,7 @@
       `t=${encodeURI(o.errorType)}`,
     ];
 
-    // Only add severity parameter if it's being explicitly used
-    // This ensures backward compatibility with tests expecting the old URL format
+    // Only add severity parameter if it's explicitly provided
     if (severity) {
       queryParams.push(`r=${encodeURI(severity)}`);
     }
@@ -152,7 +144,7 @@
    * Used for errors that are automatically caught by window error handlers
    */
   function sendUnhandledError(e) {
-    log(e.reason || e.error || e.message, { errorType: 'i', severity: 'e' });
+    log(e.reason || e.error || e.message, { errorType: 'i' });
   }
 
   w.lana = {
