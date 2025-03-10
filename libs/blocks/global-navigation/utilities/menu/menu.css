@@ -73,6 +73,7 @@
 
 .feds-localnav-items .feds-menu-headline:after {
   right: 38px;
+  top: 20px;
 }
 
 [dir = "rtl"] .feds-menu-headline:after {
