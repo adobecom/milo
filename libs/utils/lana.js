@@ -92,7 +92,7 @@
     // Process severity - set default based on debug mode
     const isDebugMode = hasDebugParam();
     let severity;
-    
+
     if (!o.severity) {
       // Default severity based on debug mode
       severity = isDebugMode ? 'd' : 'i';
@@ -119,7 +119,7 @@
       `s=${sampleRate}`,
       `t=${encodeURI(o.errorType)}`,
     ];
-    
+
     // Only add severity parameter if it's being explicitly used
     // This ensures backward compatibility with tests expecting the old URL format
     if (severity) {
