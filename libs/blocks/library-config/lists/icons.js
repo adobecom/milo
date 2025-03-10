@@ -2,8 +2,10 @@ import { fetchIconList } from '../../../features/icons/icons.js';
 import { createTag } from '../../../utils/utils.js';
 import createCopy from '../library-utils.js';
 
+let fedIconList;
+
 export default async function iconList(content, list, query) {
-  const fedIconList = await fetchIconList(content[0].path);
+  if (!fedIconList) fedIconList = await fetchIconList(content[0].path);
   list.innerHTML = '';
   if (fedIconList.length) {
     [...fedIconList].forEach((icon) => {
