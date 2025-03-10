@@ -733,7 +733,7 @@ export async function createMartechMetadata(placeholders, config, column) {
 /* c8 ignore start */
 export async function parsePlaceholders(placeholders, config, selectedVariantName = '') {
   if (!placeholders?.length || selectedVariantName === 'default') return config;
-  let userCountry = await config.mepCountryPromise;
+  let userCountry = await config.mep.countryPromise;
   if (userCountry) {
     userCountry = `usercountry(${userCountry})`;
   }
@@ -741,7 +741,7 @@ export async function parsePlaceholders(placeholders, config, selectedVariantNam
     selectedVariantName.toLowerCase(),
     config.mep?.prefix,
     config.locale.region.toLowerCase(),
-    userCountry.toLowerCase(),
+    ...(userCountry ? [userCountry.toLowerCase()] : []),
     config.locale.ietf.toLowerCase(),
     ...config.locale.ietf.toLowerCase().split('-'),
     'value',
@@ -1342,6 +1342,7 @@ export async function init(enablements = {}) {
     isPostLCP = true;
   } else {
     config.mep = {
+      ...config.mep || {},
       updateFragDataProps,
       preview: (mepButton !== 'off'
         && (config.env?.name !== 'prod' || mepParam || mepParam === '' || mepButton)),
@@ -1353,7 +1354,6 @@ export async function init(enablements = {}) {
       enablePersV2,
       hybridPersEnabled,
     };
-
     manifests = manifests.concat(await combineMepSources(pzn, promo, mepParam));
     manifests?.forEach((manifest) => {
       if (manifest.disabled) return;

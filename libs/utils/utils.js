@@ -195,43 +195,6 @@ export function getLocale(locales, pathname = window.location.pathname) {
   return locale;
 }
 
-function normCountry(country) {
-  return (country.toLowerCase() === 'uk' ? 'gb' : country.toLowerCase()).split('_')[0];
-}
-
-export async function getCountry(config, timeout = 5000) {
-  const { getCookie } = await import('../features/georoutingv2/georoutingv2.js');
-  const urlParams = new URLSearchParams(window.location.search);
-  let countryCode = urlParams.get('country') || getCookie('international');
-  if (countryCode) {
-    return normCountry(countryCode);
-  }
-  countryCode = sessionStorage.getItem('visitorCountry');
-  if (countryCode) return countryCode;
-
-  const controller = new AbortController();
-  const { signal } = controller;
-  const fetchTimeout = setTimeout(() => controller.abort(), timeout);
-
-  try {
-    const resp = await fetch('https://geo2.adobe.com/json/', { signal });
-    clearTimeout(fetchTimeout);
-    if (resp.ok) {
-      const { country } = await resp.json();
-      const normalized = normCountry(country);
-      return normalized;
-    }
-  } catch (e) {
-    if (e.name === 'AbortError') {
-      window.lana.log('fetch request to geo2 service timed out');
-    } else {
-      window.lana.log('could not fetch geo2 data from geo2 service', e);
-    }
-  }
-
-  const country = config.locale.region;
-  return normCountry(country);
-}
 export function getMetadata(name, doc = document) {
   const attr = name && name.includes(':') ? 'property' : 'name';
   const meta = doc.head.querySelector(`meta[${attr}="${name}"]`);
@@ -292,7 +255,6 @@ export const [setConfig, updateConfig, getConfig] = (() => {
         && (conf.useDotHtml ?? PAGE_URL.pathname.endsWith('.html'));
       config.entitlements = handleEntitlements;
       config.consumerEntitlements = conf.entitlements || [];
-      config.mepCountryPromise = getCountry(config);
       setupMiloObj(config);
       return config;
     },
@@ -1198,6 +1160,44 @@ function isSignedOut() {
   return !Object.keys(serverTiming || {}).length || serverTiming?.sis === '0';
 }
 
+function normCountry(country) {
+  return (country.toLowerCase() === 'uk' ? 'gb' : country.toLowerCase()).split('_')[0];
+}
+
+export async function getCountry(config, timeout = 5000) {
+  const { getCookie } = await import('../features/georoutingv2/georoutingv2.js');
+  const urlParams = new URLSearchParams(window.location.search);
+  let countryCode = urlParams.get('country') || getCookie('international');
+  if (countryCode) {
+    return normCountry(countryCode);
+  }
+  countryCode = sessionStorage.getItem('visitorCountry');
+  if (countryCode) return countryCode;
+
+  const controller = new AbortController();
+  const { signal } = controller;
+  const fetchTimeout = setTimeout(() => controller.abort(), timeout);
+
+  try {
+    const resp = await fetch('https://geo2.adobe.com/json/', { signal });
+    clearTimeout(fetchTimeout);
+    if (resp.ok) {
+      const { country } = await resp.json();
+      const normalized = normCountry(country);
+      return normalized;
+    }
+  } catch (e) {
+    if (e.name === 'AbortError') {
+      window.lana.log('fetch request to geo2 service timed out');
+    } else {
+      window.lana.log('could not fetch geo2 data from geo2 service', e);
+    }
+  }
+
+  const country = config.locale.region;
+  return normCountry(country);
+}
+
 /**
  * Enables personalization (V2) for the page.
  *
@@ -1225,7 +1225,8 @@ async function checkForPageMods() {
 
   if (!(pzn || target || promo || mepParam
     || mepHighlight || mepButton || mepParam === '' || xlg)) return;
-
+  const config = getConfig();
+  config.mep = { countryPromise: getCountry('country') };
   const enablePersV2 = enablePersonalizationV2();
   const hybridPersEnabled = getMepEnablement('hybrid-pers');
   if ((target || xlg) && enablePersV2) {
