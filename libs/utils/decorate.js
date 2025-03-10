@@ -286,6 +286,15 @@ export function addAccessibilityControl(videoString, videoAttrs, indexOfVideo, t
   `;
 }
 
+function SafeVideoPause(video) {
+  if (video.autoplay) { video.playPromise = video.play(); }
+  if (video.playPromise !== undefined) {
+    video.playPromise.then(() => {
+      video.pause();
+    });
+  }
+}
+
 export function handlePause(event) {
   event.stopPropagation();
   if (event.code !== 'Enter' && event.code !== 'Space' && !['focus', 'click', 'blur'].includes(event.type)) {
@@ -294,11 +303,12 @@ export function handlePause(event) {
   event.preventDefault();
   const video = event.target.closest('.video-holder').parentElement.querySelector('video');
   if (event.type === 'blur') {
-    video.pause();
+    SafeVideoPause(video);
   } else if (video.paused || video.ended || event.type === 'focus') {
-    video.play();
+    const playPromise = video.play();
+    video.playPromise = playPromise;
   } else {
-    video.pause();
+    SafeVideoPause(video);
   }
   syncPausePlayIcon(video);
 }
@@ -309,8 +319,11 @@ export function applyHoverPlay(video) {
     video.parentElement.addEventListener('focus', handlePause);
     video.parentElement.addEventListener('blur', handlePause);
     if (!video.hasAttribute('data-mouseevent')) {
-      video.addEventListener('mouseenter', () => { video.play(); });
-      video.addEventListener('mouseleave', () => { video.pause(); });
+      video.addEventListener('mouseenter', () => {
+        const playPromise = video.play();
+        video.playPromise = playPromise;
+      });
+      video.addEventListener('mouseleave', () => { SafeVideoPause(video); });
       video.addEventListener('ended', () => { syncPausePlayIcon(video); });
       video.setAttribute('data-mouseevent', true);
     }
