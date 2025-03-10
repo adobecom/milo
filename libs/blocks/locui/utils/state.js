@@ -26,6 +26,7 @@ export const projectStatus = signal({});
 export const canRefresh = signal(false);
 export const serviceStatus = signal('');
 export const serviceStatusDate = signal();
+export const isLOCV3RolloutFlow = signal(false);
 
 export function getSiteConfig() {
   setStatus('siteConfig', 'info', 'Getting site settings.');

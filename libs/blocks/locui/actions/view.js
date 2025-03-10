@@ -12,10 +12,10 @@ import {
 import {
   sendForLoc,
   showRolloutOptions,
-  showRollout,
   rolloutAll,
   startSyncToLangstore,
   cancelLocProject,
+  handleRolloutAll,
 } from './index.js';
 
 export default function Actions() {
@@ -92,7 +92,7 @@ export default function Actions() {
           <div class=locui-url-heading-action-group>
             ${!showRolloutOptions.value && html`
               <button
-                onClick=${showRollout}
+                onClick=${handleRolloutAll}
                 class=locui-urls-heading-action>
                 Rollout all
               </button>
