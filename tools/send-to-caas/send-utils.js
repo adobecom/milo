@@ -165,10 +165,16 @@ const getTags = (s) => {
   };
 };
 
+const sanitizeDate = (dateStr) => {
+  const [year, month, day] = dateStr.split('-');
+  return `${month}-${day}-${year}`;
+};
+
 const getDateProp = (dateStr, errorMsg) => {
   if (!dateStr) return undefined;
+  const sanitizedDate = dateStr.match(/\d{4}-\d{2}-\d{2}/) ? sanitizeDate(dateStr) : dateStr;
   try {
-    const date = new Date(dateStr);
+    const date = new Date(sanitizedDate);
     if (date.getFullYear() < 2000) return { error: `${errorMsg} - Date is before the year 2000` };
     return date.toISOString();
   } catch (e) {
