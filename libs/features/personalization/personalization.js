@@ -731,12 +731,17 @@ export async function createMartechMetadata(placeholders, config, column) {
 }
 
 /* c8 ignore start */
-export function parsePlaceholders(placeholders, config, selectedVariantName = '') {
+export async function parsePlaceholders(placeholders, config, selectedVariantName = '') {
   if (!placeholders?.length || selectedVariantName === 'default') return config;
+  let userCountry = await config.mepCountryPromise;
+  if (userCountry) {
+    userCountry = `usercountry(${userCountry})`;
+  }
   const valueNames = [
     selectedVariantName.toLowerCase(),
     config.mep?.prefix,
     config.locale.region.toLowerCase(),
+    userCountry.toLowerCase(),
     config.locale.ietf.toLowerCase(),
     ...config.locale.ietf.toLowerCase().split('-'),
     'value',
