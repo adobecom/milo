@@ -7,13 +7,30 @@
     clientId: '',
     endpoint: 'https://www.adobe.com/lana/ll',
     endpointStage: 'https://www.stage.adobe.com/lana/ll',
+    /**
+     * Type of error being logged:
+     * 'e' - explicit (manually logged errors/messages)
+     * 'i' - implicit (automatically caught errors)
+     */
     errorType: 'e',
+    /**
+     * Severity level of the log message:
+     * 'debug' (or 'd') - Debug information (verbose)
+     * 'info' (or 'i') - General information (default)
+     * 'warn' (or 'w') - Warning messages
+     * 'error' (or 'e') - Error messages
+     * 'critical' (or 'c') - Critical errors (highest severity)
+     */
+    severity: 'i',
     sampleRate: 1,
     tags: '',
     implicitSampleRate: 1,
     useProd: true,
     isProdDomain: false,
   };
+
+  // Valid severity values (both full and abbreviated formats)
+  const VALID_SEVERITIES = new Set(['d', 'debug', 'i', 'info', 'w', 'warn', 'e', 'error', 'c', 'critical']);
 
   const w = window;
 
@@ -52,6 +69,14 @@
     }, {});
   }
 
+  function hasDebugParam() {
+    return w.location.search.toLowerCase().indexOf('lanadebug') !== -1;
+  }
+
+  function isLocalhost() {
+    return w.location.host.toLowerCase().indexOf('localhost') !== -1;
+  }
+
   function log(msg, options) {
     msg = msg && msg.stack ? msg.stack : (msg || '');
     if (msg.length > MSG_LIMIT) {
@@ -63,6 +88,19 @@
       console.warn('LANA ClientID is not set in options.');
       return;
     }
+
+    // Process severity - set default based on debug mode
+    const isDebugMode = hasDebugParam();
+    if (!o.severity) {
+      // Default severity based on debug mode
+      o.severity = isDebugMode ? 'd' : 'i';
+    } else if (!VALID_SEVERITIES.has(o.severity)) {
+      // Invalid severity, default based on debug mode
+      const defaultSeverity = isDebugMode ? 'd' : 'i';
+      console.warn(`LANA: Invalid severity '${o.severity}'. Defaulting to '${defaultSeverity}'.`);
+      o.severity = defaultSeverity;
+    }
+    // Note: We keep the original abbreviated form if it's valid
 
     const sampleRateParam = parseInt(new URL(window.location).searchParams.get('lana-sample'), 10);
     const sampleRate = sampleRateParam || (o.errorType === 'i' ? o.implicitSampleRate : o.sampleRate);
@@ -77,6 +115,7 @@
       `c=${encodeURI(o.clientId)}`,
       `s=${sampleRate}`,
       `t=${encodeURI(o.errorType)}`,
+      `r=${encodeURI(o.severity)}`,
     ];
 
     if (o.tags) {
@@ -100,16 +139,12 @@
     }
   }
 
+  /**
+   * Sends unhandled errors to Lana with errorType 'i' (implicit)
+   * Used for errors that are automatically caught by window error handlers
+   */
   function sendUnhandledError(e) {
-    log(e.reason || e.error || e.message, { errorType: 'i' });
-  }
-
-  function hasDebugParam() {
-    return w.location.search.toLowerCase().indexOf('lanadebug') !== -1;
-  }
-
-  function isLocalhost() {
-    return w.location.host.toLowerCase().indexOf('localhost') !== -1;
+    log(e.reason || e.error || e.message, { errorType: 'i', severity: 'e' });
   }
 
   w.lana = {
