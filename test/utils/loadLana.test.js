@@ -24,7 +24,7 @@ describe('Utils loadLana', () => {
 
     const initialLana = window.lana.log;
     sinon.spy(console, 'log');
-    await window.lana.log('test', { clientId: 'myclient', sampleRate: 0, severity: 'i' });
+    await window.lana.log('test', { clientId: 'myclient', sampleRate: 0 });
     await waitFor(() => initialLana !== window.lana.log);
 
     expect(window.lana.options).to.exist;
@@ -33,7 +33,7 @@ describe('Utils loadLana', () => {
     console.log.restore();
 
     sinon.spy(console, 'log');
-    await window.lana.log('test2', { clientId: 'myclient', sampleRate: 0, severity: 'i' });
+    await window.lana.log('test2', { clientId: 'myclient', sampleRate: 0 });
     expect(console.log.args[0][0]).to.equal('LANA Msg: ');
     expect(console.log.args[0][1]).to.equal('test2');
     console.log.restore();
@@ -90,8 +90,8 @@ describe('Utils loadLana', () => {
     sinon.spy(console, 'log');
     
     // Call with explicitly specified severity
-    await window.lana.log('explicit severity test', { 
-      clientId: 'myclient', 
+    await window.lana.log('explicit severity test', {
+      clientId: 'myclient',
       sampleRate: 100,
       severity: 'w'  // Explicitly set to warning
     });

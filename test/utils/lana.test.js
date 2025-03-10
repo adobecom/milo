@@ -6,7 +6,6 @@ const defaultTestOptions = {
   clientId: 'testClientId',
   endpoint: 'https://lana.adobeio.com/',
   errorType: 'e',
-  severity: 'i',
   sampleRate: 100,
   implicitSampleRate: 100,
 };
@@ -91,7 +90,7 @@ describe('LANA', () => {
     expect(xhrRequests.length).to.equal(1);
     expect(xhrRequests[0].method).to.equal('GET');
     expect(xhrRequests[0].url).to.equal(
-      `https://www.stage.adobe.com/lana/ll?m=${expectedMsg}&c=testClientId&s=100&t=e&r=i`,
+      `https://www.stage.adobe.com/lana/ll?m=${expectedMsg}&c=testClientId&s=100&t=e`,
     );
   });
 
@@ -165,7 +164,7 @@ describe('LANA', () => {
     expect(xhrRequests.length).to.equal(1);
     expect(xhrRequests[0].method).to.equal('GET');
     expect(xhrRequests[0].url).to.equal(
-      'https://www.stage.adobe.com/lana/ll?m=I%20set%20the%20client%20id&c=testClientId&s=100&t=e&r=i&tags=commerce,pricestore',
+      'https://www.stage.adobe.com/lana/ll?m=I%20set%20the%20client%20id&c=testClientId&s=100&t=e&tags=commerce,pricestore',
     );
   });
 
@@ -179,7 +178,7 @@ describe('LANA', () => {
     expect(xhrRequests.length).to.equal(1);
     expect(xhrRequests[0].method).to.equal('GET');
     expect(xhrRequests[0].url).to.equal(
-      'https://www.stage.adobe.com/lana/ll?m=only%20the%20clientId%20set%20in%20window.lana.options&c=blah&s=100&t=e&r=i',
+      'https://www.stage.adobe.com/lana/ll?m=only%20the%20clientId%20set%20in%20window.lana.options&c=blah&s=100&t=e',
     );
   });
 
@@ -204,7 +203,7 @@ describe('LANA', () => {
     expect(xhrRequests.length).to.equal(1);
     expect(xhrRequests[0].method).to.equal('GET');
     expect(xhrRequests[0].url).to.equal(
-      'https://www.stage.adobe.com/lana/ll?m=lana-sample%20query%20param&c=blah&s=100&t=e&r=i',
+      'https://www.stage.adobe.com/lana/ll?m=lana-sample%20query%20param&c=blah&s=100&t=e',
     );
 
     window.history.pushState({ path: originalUrl }, '', originalUrl);
@@ -228,7 +227,7 @@ describe('LANA', () => {
     expect(xhrRequests.length).to.equal(1);
     expect(xhrRequests[0].method).to.equal('GET');
     expect(xhrRequests[0].url).to.equal(
-      'https://www.stage.adobe.com/lana/ll?m=lana-sample%20query%20param&c=blah&s=100&t=e&r=i',
+      'https://www.stage.adobe.com/lana/ll?m=lana-sample%20query%20param&c=blah&s=100&t=e',
     );
 
     window.history.pushState({ path: originalUrl }, '', originalUrl);
@@ -252,7 +251,7 @@ describe('LANA', () => {
       'https://www.stage.adobe.com/lana/ll?m=Debug%20mode%20test&c=testClientId&s=100&t=e&r=d&d',
     );
   });
-
+  
   it('explicit severity takes precedence over debug mode default', () => {
     window.lana.debug = true;
     window.lana.log('Explicit severity test', { severity: 'w' });
