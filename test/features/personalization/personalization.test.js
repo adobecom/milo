@@ -4,7 +4,7 @@ import { assert, stub } from 'sinon';
 import { getConfig, setConfig } from '../../../libs/utils/utils.js';
 import {
   handleFragmentCommand, applyPers, cleanAndSortManifestList, normalizePath,
-  init, matchGlob, createContent, combineMepSources, buildVariantInfo,
+  init, matchGlob, createContent, combineMepSources, buildVariantInfo, addSectionAnchors,
 } from '../../../libs/features/personalization/personalization.js';
 import mepSettings from './mepSettings.js';
 import mepSettingsPreview from './mepPreviewSettings.js';
@@ -376,6 +376,12 @@ describe('Functional Test', () => {
     expect(document.querySelector('meta[name="mynewmetadata"]').content).to.equal('woot');
     expect(document.querySelector('meta[property="og:title"]').content).to.equal('New Title');
     expect(document.querySelector('meta[property="og:image"]').content).to.equal('https://adobe.com/path/to/image.jpg');
+  });
+
+  it('will add id to the section div', async () => {
+    addSectionAnchors(document);
+    const sectionWithId = document.querySelector('#marquee-container');
+    expect(sectionWithId).to.exist;
   });
 });
 
