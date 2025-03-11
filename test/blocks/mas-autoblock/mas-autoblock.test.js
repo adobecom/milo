@@ -49,24 +49,24 @@ describe('mas autoblock', () => {
     expect(getTagName(a)).to.equal('merch-card-collection');
   });
 
-  it('create card', () => {
+  it('create card', async () => {
     const a = document.createElement('a');
     a.setAttribute('href', 'https://mas.adobe.com/studio.html#path=acom&fragment=a657fd3d9f67');
     a.textContent = 'merch-card: ACOM / Catalog / Test Card';
     const fragmentId = getFragmentId(a);
     document.body.append(a);
-    createCard(a, fragmentId);
+    await createCard(a, fragmentId);
     const card = document.body.querySelector('merch-card');
     expect(card.outerHTML).to.equal('<merch-card consonant=""><aem-fragment fragment="a657fd3d9f67"></aem-fragment></merch-card>');
   });
 
-  it('create collection', () => {
+  it('create collection', async () => {
     const fragmentId = 'COLL_ID';
     const a = document.createElement('a');
     a.setAttribute('href', 'https://mas.adobe.com/studio.html#path=acom&fragment=COLL_ID');
     a.textContent = 'merch-card-collection: ACOM / Catalog / Test Collection';
     document.body.append(a);
-    createCard(a, fragmentId);
+    await createCard(a, fragmentId);
     const coll = document.body.querySelector('merch-card-collection');
     expect(coll.outerHTML).to.equal('<merch-card-collection consonant=""><aem-fragment fragment="COLL_ID"></aem-fragment></merch-card-collection>');
   });
