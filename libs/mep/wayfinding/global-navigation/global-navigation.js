@@ -1297,8 +1297,25 @@ class Gnav {
     const itemWrapper = localnavWrapper.querySelector('.feds-nav');
     topNavWrapper.append(logo, localnavWrapper);
     const lnavSource = getMetadata('localnav-source');
-    const { default: init } = await import('./features/localnav/localnav.js');
-    await init(itemWrapper, lnavSource, this.newMobileNav);
+    try {
+      const content = await fetchAndProcessPlainHtml({ url: lnavSource });
+      if (!content) {
+        lanaLog({ e, message: 'Localnav content not found', tags: 'gnav-localnav', errorType: 'error' });
+      }
+      const items = [...content.querySelectorAll('h2, p:only-child > strong > a, p:only-child > em > a')]
+      .filter((item) => CONFIG.features.every((feature) => !item.closest(`.${feature}`)));
+      for await (const [index, item] of items.entries()) {
+        await yieldToMain();
+        const mainNavItem = this.decorateMainNavItem(item, index);
+        if (mainNavItem) {
+          itemWrapper.appendChild(mainNavItem);
+        }
+      }
+      
+    } catch (e) {
+      lanaLog({ e, message: 'Localnav failed rendering', tags: 'gnav-localnav', errorType: 'error' });
+      return null;
+    }
     await this.decorateMobileLocalNav();
   };
 
