@@ -124,7 +124,7 @@ function renderContainer(
         hasCurrencySpace ? '&nbsp;' : '',
     );
 
-    let markup = '';
+    let markup = accessibleLabel ? `<sr-only class="strikethrough-aria-label">${accessibleLabel}</sr-only>` : '';
     if (isCurrencyFirst) markup += currencyMarkup + currencySpaceMarkup;
     markup += renderSpan(cssClassNames.integer, integer);
     markup += renderSpan(cssClassNames.decimalsDelimiter, decimalsDelimiter);
@@ -137,10 +137,10 @@ function renderContainer(
         taxInclusivityLabel,
         true,
     );
-    const regularlySRLabel = accessibleLabel ? `<sr-only class="strikethrough-aria-label">${accessibleLabel}</sr-only>` : '';
-    return `${regularlySRLabel}${renderSpan(cssClass, markup, {
+
+    return renderSpan(cssClass, markup, {
         ...attributes,
-    })}`;
+    });
 }
 
 /**
