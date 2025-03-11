@@ -11,6 +11,7 @@ export default async function init(el) {
   sentry.setAttribute('variant', 'standard');
   sentry.authParams = {
     client_id: imsClientId,
+    hints: 'eyJlbmFibGVkX3NvY2lhbF9wcm92aWRlcnMiOlsiZ29vZ2xlIiwgImFwcGxlIl19',
     scope: 'AdobeID,openid,gnav',
     response_type: 'token',
     redirect_uri: window.location.href,

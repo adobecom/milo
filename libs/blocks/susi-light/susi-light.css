@@ -6,6 +6,8 @@
   align-items: center;
   justify-content: center;
   flex-direction: column-reverse;
+  height: calc(100vh - calc(var(--feds-height-nav) + 106px) );
+  box-sizing: border-box;
 }
 
 .susi-product-logo {
@@ -69,7 +71,7 @@
 }
 
 .guest-footer {
-  padding: 20px 32px;
+  padding: 10px 16px;
   background-color: white;
   border-radius: 16px;
   justify-items: center;
@@ -98,9 +100,10 @@
     height: calc(100vh - calc(var(--feds-height-nav) + 67px) );
     justify-content: initial;
     flex-direction: initial;
+    box-sizing: border-box;
   }
   .guest-footer {
-    padding: 10px 16px;
+    padding: 20px 32px;
   }
   .susi-product-logo {
     width: 44px;
