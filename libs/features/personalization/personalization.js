@@ -89,6 +89,7 @@ export const normalizePath = (p, localize = true) => {
     const url = new URL(path);
     const { hash, pathname } = url;
     const firstFolder = pathname.split('/')[1];
+    const mepHash = '#_dnt';
 
     if (path.startsWith(config.codeRoot)
       || path.includes('.hlx.')
@@ -96,7 +97,7 @@ export const normalizePath = (p, localize = true) => {
       || path.includes('.adobe.')) {
       if (!localize
         || config.locale.ietf === 'en-US'
-        || hash.includes('#_dnt')
+        || hash.includes(mepHash)
         || firstFolder in config.locales
         || path.includes('.json')) {
         path = pathname;
@@ -104,7 +105,7 @@ export const normalizePath = (p, localize = true) => {
         path = `${config.locale.prefix}${pathname}`;
       }
     }
-    return `${path}${hash}`;
+    return `${path}${hash.replace(mepHash, '')}`;
   } catch (e) {
     return path;
   }
