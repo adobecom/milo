@@ -15,9 +15,6 @@ const priceOptical = createPriceTemplate({
 const priceStrikethrough = createPriceTemplate({
     displayStrikethrough: true,
 });
-const priceAlternative = createPriceTemplate({
-    displayStrikethroughNext: true,
-});
 const priceAnnual = createPriceTemplate({
     displayAnnual: true,
 });
@@ -29,7 +26,6 @@ export {
     pricePromo,
     priceOptical,
     priceStrikethrough,
-    priceAlternative,
     priceAnnual,
     priceWithAnnual,
     pricePromoWithAnnual,

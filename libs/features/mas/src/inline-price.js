@@ -330,7 +330,7 @@ export class InlinePrice extends HTMLSpanElement {
                 alternativlySRLabel.innerHTML = alternativlySRLabelText;
                 if (alternativlySRLabelText) {
                     const parentEl = this.closest('.col') ?? this.closest('merch-card') ?? this.closest('p')
-                    if (this.querySelectorAll('.price').length === 2 && this.querySelector('.price-strikethrough')) {
+                    if (this.querySelectorAll('.price').length > 1 && this.querySelector('.price-strikethrough')) {
                         this.querySelector('.price:not(.price-strikethrough)')?.before(alternativlySRLabel);
                     } else if(parentEl?.querySelectorAll('span[is="inline-price"]').length > 1 && !parentEl.querySelector('.alternative-price-aria-label')) {
                         const alternativePriceEl = parentEl.querySelector('span[is="inline-price"]:not(span[data-template="strikethrough"])');
