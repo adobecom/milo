@@ -91,16 +91,16 @@ describe('masFetch', () => {
         fetchStub.rejects(networkError);
         
         // Start the async operation but don't await it yet
-        const fetchPromise = masFetch('https://example.com/api', {}, 2, 500);
+        const fetchPromise = masFetch('https://example.com/api', {}, 2);
         
         // Verify initial call was made
         expect(fetchStub.callCount).to.equal(1);
         
         // Advance time and verify retries
-        await clock.tickAsync(500);
+        await clock.tickAsync(150);
         expect(fetchStub.callCount).to.equal(2);
         
-        await clock.tickAsync(500);
+        await clock.tickAsync(400);
         expect(fetchStub.callCount).to.equal(3);
         
         // Now await the promise (which should reject)

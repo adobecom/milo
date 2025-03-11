@@ -29,8 +29,8 @@ export class MasError extends Error {
             if (context.response.url) {
                 context.url = context.response.url;
             }
-            delete context.response;
         }
+        delete context.response;
         this.context = context;
         if (Error.captureStackTrace) {
             Error.captureStackTrace(this, MasError);
