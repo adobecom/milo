@@ -37,4 +37,36 @@ test.describe('MAS Docs feature test suite', () => {
       await expect(eventsLog).toHaveText('checkout-link resolvedcheckout-link resolvedcheckout-link resolvedcheckout-link resolved');
     });
   });
+
+  // @MAS-DOCS-merch-card
+  test(`${features[1].name},${features[1].tags}`, async ({ page, baseURL }) => {
+    const delay = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms));
+    const testPage = `${baseURL}${features[1].path}${miloLibs}`;
+    console.info('[Test Page]: ', testPage);
+
+    await test.step('step-1: Go to MAS Merch Card Docs page', async () => {
+      await page.goto(testPage);
+      await page.waitForLoadState('domcontentloaded');
+      await expect(page).toHaveURL(`${baseURL}${features[1].path}`);
+    });
+
+    await test.step('step-2: Verify successfull mas:ready events', async () => {
+      const eventsLog = page.locator('#log-mas-ready');
+      await expect(eventsLog).toContainText("'mas:ready' on MERCH-CARD #830f76be-0e83-4faf-9051-3dbb1a1dff04");
+      await expect(eventsLog).toContainText("'mas:ready' on MERCH-CARD #d8008cac-010f-4607-bacc-a7a327da1312");
+      await expect(eventsLog).toContainText("'mas:ready' on MERCH-CARD #static");
+    });
+
+    await test.step('step-3: Verify error events if WCS or Odin request failed', async () => {
+      const masFailedLog = page.locator('#log-mas-failed');
+      await expect(masFailedLog).toContainText(/'mas:failed' on A #wrongosi/);
+
+      const aemErrorLog = page.locator('#log-aem-error');
+      await expect(aemErrorLog).toContainText(/'aem:error' on AEM-FRAGMENT/);
+
+      const masErrorLog = page.locator('#log-mas-error');
+      await expect(masErrorLog).toContainText(/'mas:error' on MERCH-CARD #3c29614a-a024-458f-8bd6-ee910898f684/);
+      await expect(masErrorLog).toContainText(/'mas:error' on MERCH-CARD #invalid-fragment-id/);
+    });
+  });
 });

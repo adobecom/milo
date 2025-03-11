@@ -35,7 +35,6 @@
             src="http://localhost:2023/__wds-outside-root__/2/features/spectrum-web-components/dist/button.js"
             type="module"
         ></script>
-        <mas-commerce-service></mas-commerce-service>
         <script type="module" src="./aem-fragment.test.html.js"></script>
     </head>
 
@@ -88,6 +87,15 @@
                     fragment="fragment-cc-all-apps-badge"
                 ></aem-fragment>
             </merch-card>
+        </template>
+        <template id="merch-card-refresh-error">
+          <merch-card>
+            <aem-fragment
+                title="Creative Cloud All Apps"
+                fragment="fragment-cc-all-apps2"
+            >
+            </aem-fragment>
+        </merch-card>
         </template>
     </body>
 </html>

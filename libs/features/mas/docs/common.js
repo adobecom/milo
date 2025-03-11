@@ -31,8 +31,9 @@ const init = () => {
     if (value) masCommerceService.setAttribute(attribute, value);
   });
   masCommerceService.setAttribute('host-env', 'prod');
-  masCommerceService.setAttribute('lana-tags', 'ccd');
+  masCommerceService.setAttribute('lana-tags', 'nala');
+  masCommerceService.setAttribute('lana-sample-rate', '100');
   document.head.appendChild(masCommerceService);
 }
-window.log = (target, ...messages) =>  (target.textContent = `${messages.join(' ')}${target.textContent}`);
+window.log = (target, ...messages) =>  (target.innerHTML =  `${messages.join(' ')}<br>${target.innerHTML}`);
 export { init };

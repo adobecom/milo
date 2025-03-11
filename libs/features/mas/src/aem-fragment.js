@@ -1,4 +1,8 @@
 import { EVENT_AEM_LOAD, EVENT_AEM_ERROR } from './constants.js';
+import { Log } from './log.js';
+import { MasError } from './mas-error.js';
+import { getMasCommerceServiceDurationLog } from './utils.js';
+import { masFetch } from './utils/mas-fetch.js';
 
 const sheet = new CSSStyleSheet();
 sheet.replaceSync(':host { display: contents; }');
@@ -10,10 +14,6 @@ const baseUrl =
 const ATTRIBUTE_FRAGMENT = 'fragment';
 const ATTRIBUTE_AUTHOR = 'author';
 const ATTRIBUTE_IMS = 'ims';
-
-const fail = (message) => {
-    throw new Error(`Failed to get fragment: ${message}`);
-};
 
 /**
  * Get fragment by ID
@@ -27,15 +27,36 @@ export async function getFragmentById(baseUrl, id, author, headers) {
     const endpoint = author
         ? `${baseUrl}/adobe/sites/cf/fragments/${id}`
         : `${baseUrl}/adobe/sites/fragments/${id}`;
-    const response = await fetch(endpoint, {
-        cache: 'default',
-        credentials: 'omit',
-        headers,
-    }).catch((e) => fail(e.message));
-    if (!response?.ok) {
-        fail(`${response.status} ${response.statusText}`);
+    const startTime = Date.now();
+    let response;
+    try {
+        response = await masFetch(endpoint, {
+            cache: 'default',
+            credentials: 'omit',
+            headers,
+        });
+        if (!response?.ok) {
+            const duration = Date.now() - startTime;
+            throw new MasError('Unexpected fragment response', {
+                response,
+                startTime,
+                duration,
+            });
+        }
+        return response.json();
+    } catch (e) {
+        const duration = Date.now() - startTime;
+        if (!response) {
+            response = { url: endpoint };
+        }
+
+        throw new MasError('Failed to fetch fragment', {
+            response,
+            startTime,
+            duration,
+            ...getMasCommerceServiceDurationLog(),
+        });
     }
-    return response.json();
 }
 
 let headers;
@@ -78,10 +99,11 @@ const cache = new FragmentCache();
  */
 export class AemFragment extends HTMLElement {
     cache = cache;
+    #log = Log.module('aem-fragment');
 
-    #rawData;
-    #data;
-
+    #rawData = null;
+    #data = null;
+    #stale = false;
     /**
      * @type {string} fragment id
      */
@@ -132,7 +154,7 @@ export class AemFragment extends HTMLElement {
 
     connectedCallback() {
         if (!this.#fragmentId) {
-            this.#fail('Missing fragment id');
+            this.#fail({ message: 'Missing fragment id' });
             return;
         }
     }
@@ -152,7 +174,7 @@ export class AemFragment extends HTMLElement {
             .then(() => {
                 this.dispatchEvent(
                     new CustomEvent(EVENT_AEM_LOAD, {
-                        detail: this.data,
+                        detail: { ...this.data, stale: this.#stale },
                         bubbles: true,
                         composed: true,
                     }),
@@ -160,19 +182,22 @@ export class AemFragment extends HTMLElement {
                 return true;
             })
             .catch((e) => {
-                /* c8 ignore next 3 */
-                this.#fail('Network error: failed to load fragment');
+                if (this.#rawData) {
+                    cache.add(this.#rawData);
+                    return true;
+                }
                 this.#readyPromise = null;
+                this.#fail(e);
                 return false;
             });
-        this.#readyPromise;
     }
 
-    #fail(error) {
+    #fail({ message, context }) {
         this.classList.add('error');
+        this.#log.error(`aem-fragment: ${message}`, context);
         this.dispatchEvent(
             new CustomEvent(EVENT_AEM_ERROR, {
-                detail: error,
+                detail: { message, ...context },
                 bubbles: true,
                 composed: true,
             }),
@@ -180,19 +205,22 @@ export class AemFragment extends HTMLElement {
     }
 
     async fetchData() {
-        this.#rawData = null;
-        this.#data = null;
+        this.classList.remove('error');
         let fragment = cache.get(this.#fragmentId);
-        if (!fragment) {
-            fragment = await getFragmentById(
-                baseUrl,
-                this.#fragmentId,
-                this.#author,
-                this.#ims ? headers : undefined,
-            );
-            cache.add(fragment);
+        if (fragment) {
+            this.#rawData = fragment;
+            return;
         }
+        this.#stale = true;
+        fragment = await getFragmentById(
+            baseUrl,
+            this.#fragmentId,
+            this.#author,
+            this.#ims ? headers : undefined,
+        );
+        cache.add(fragment);
         this.#rawData = fragment;
+        this.#stale = false;
     }
 
     get updateComplete() {
