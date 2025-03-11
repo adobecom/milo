@@ -4,15 +4,19 @@ import {
   yieldToMain,
   toFragment,
   decorateCta,
+  isDesktop,
   logErrorFor,
   getActiveLink,
+  setActiveDropdown,
   getAnalyticsValue,
+  loadDecorateMenu,
+  enableMobileScroll,
   fetchAndProcessPlainHtml,
   addMepHighlightAndTargetId,
 } from "../../utilities/utilities.js";
 
 import { CONFIG } from "../../global-navigation.js"
-
+let isNewMobileNav = false;
   // eslint-disable-next-line class-methods-use-this
   const getMainNavItemType = (item) => {
     const itemTopParent = item.closest('div');
@@ -33,7 +37,6 @@ import { CONFIG } from "../../global-navigation.js"
   };
 
 const decorateMainNavItem = (item, index) => {
-  debugger
   const itemType = getMainNavItemType(item);
 
   const itemHasActiveLink = ['syncDropdownTrigger', 'link'].includes(itemType)
@@ -108,7 +111,6 @@ const decorateMainNavItem = (item, index) => {
   // All dropdown decoration is delayed
   const delayDropdownDecoration = ({ template } = {}) => {
     let decorationTimeout;
-
     const decorateDropdown = () => logErrorFor(async () => {
       template.removeEventListener('click', decorateDropdown);
       clearTimeout(decorationTimeout);
@@ -121,29 +123,29 @@ const decorateMainNavItem = (item, index) => {
         type: itemType,
       });
 
-      // if (this.newMobileNav) {
-      //   const popup = template.querySelector('.feds-popup');
-      //   let originalContent = popup.innerHTML;
+      if (isNewMobileNav) {
+        const popup = template.querySelector('.feds-popup');
+        let originalContent = popup.innerHTML;
 
-      //   if (!isDesktop.matches && popup) {
-      //     originalContent = await transformTemplateToMobile(popup, item, this.isLocalNav());
-      //     popup.querySelector('.close-icon')?.addEventListener('click', this.toggleMenuMobile);
-      //   }
-      //   isDesktop.addEventListener('change', async () => {
-      //     enableMobileScroll();
-      //     if (isDesktop.matches) {
-      //       popup.innerHTML = originalContent;
-      //       this.block.classList.remove('new-nav');
-      //     } else {
-      //       originalContent = await transformTemplateToMobile(popup, item, this.isLocalNav());
-      //       popup.querySelector('.close-icon')?.addEventListener('click', this.toggleMenuMobile);
-      //       this.block.classList.add('new-nav');
-      //     }
-      //   });
-      //   if (this.isLocalNav()) {
-      //     decorateLocalNavItems(item, template);
-      //   }
-      // }
+        if (!isDesktop.matches && popup) {
+          originalContent = await transformTemplateToMobile(popup, item, isLocalNav());
+          popup.querySelector('.close-icon')?.addEventListener('click', this.toggleMenuMobile);
+        }
+        isDesktop.addEventListener('change', async () => {
+          enableMobileScroll();
+          if (isDesktop.matches) {
+            popup.innerHTML = originalContent;
+            this.block.classList.remove('new-nav');
+          } else {
+            originalContent = await transformTemplateToMobile(popup, item, isLocalNav());
+            popup.querySelector('.close-icon')?.addEventListener('click', this.toggleMenuMobile);
+            this.block.classList.add('new-nav');
+          }
+        });
+        if (isLocalNav()) {
+          decorateLocalNavItems(item, template);
+        }
+      }
     }, 'Decorate dropdown failed', 'gnav', 'info');
 
     template.addEventListener('click', decorateDropdown);
@@ -173,27 +175,27 @@ const decorateMainNavItem = (item, index) => {
         </${tag}>`;
 
       // Toggle trigger's dropdown on click
-      // dropdownTrigger.addEventListener('click', (e) => {
-        // if (!isDesktop.matches && this.newMobileNav && isSectionMenu) {
-        //   const popup = dropdownTrigger.nextElementSibling;
-        //   // document.body.style.top should always be set
-        //   // at this point by calling disableMobileScroll
-        //   if (popup && this.isLocalNav()) {
-        //     this.updatePopupPosition(popup);
-        //   }
-        //   makeTabActive(popup);
-        // } else if (isDesktop.matches && this.newMobileNav && isSectionMenu) {
-        //   const popup = dropdownTrigger.nextElementSibling;
-        //   if (popup) popup.style.removeProperty('top');
-        // }
-        // trigger({ element: dropdownTrigger, event: e, type: 'dropdown' });
-        // setActiveDropdown(dropdownTrigger);
-      // });
+      dropdownTrigger.addEventListener('click', (e) => {
+        if (isNewMobileNav && isSectionMenu) {
+          const popup = dropdownTrigger.nextElementSibling;
+          // document.body.style.top should always be set
+          // at this point by calling disableMobileScroll
+          if (popup && isLocalNav()) {
+            this.updatePopupPosition(popup);
+          }
+          makeTabActive(popup);
+        } else if (isNewMobileNav && isSectionMenu) {
+          const popup = dropdownTrigger.nextElementSibling;
+          if (popup) popup.style.removeProperty('top');
+        }
+        trigger({ element: dropdownTrigger, event: e, type: 'dropdown' });
+        setActiveDropdown(dropdownTrigger);
+      });
 
       // Update analytics value when dropdown is expanded/collapsed
       // observeDropdown(dropdownTrigger);
 
-      // delayDropdownDecoration({ template: triggerTemplate });
+      delayDropdownDecoration({ template: triggerTemplate });
       return addMepHighlightAndTargetId(triggerTemplate, item);
     }
     case 'primaryCta':
@@ -253,7 +255,9 @@ const decorateMainNavItem = (item, index) => {
 }
 
 
-export default async function init(el, lnavSource) {
+export default async function init(el, lnavSource, newMobileNav, isLocalNav) {
+  isNewMobileNav = newMobileNav;
+
   try {
     const content = await fetchAndProcessPlainHtml({ url: lnavSource });
     if (!content) {
@@ -264,12 +268,11 @@ export default async function init(el, lnavSource) {
     for await (const [index, item] of items.entries()) {
       await yieldToMain();
       const mainNavItem = decorateMainNavItem(item, index);
-      debugger
       if (mainNavItem) {
         el.appendChild(mainNavItem);
       }
     }
-    // el.append(content)
+    
   } catch (e) {
     lanaLog({ e, message: 'Localnav failed rendering', tags: 'gnav-localnav', errorType: 'error' });
     return null;

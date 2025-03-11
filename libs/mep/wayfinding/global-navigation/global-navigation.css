@@ -54,6 +54,11 @@ header.global-navigation {
   justify-content: space-between;
 }
 
+.feds-localnav .feds-brand {
+  display: none;
+
+}
+
 .feds-nav-wrapper {
   position: absolute;
   top: 100%;
@@ -722,7 +727,25 @@ header.global-navigation {
   .feds-breadcrumbs a:hover {
     text-decoration: underline;
   }
+
+  .feds-localnav-title {
+    display: none;
+  }
 }
+
+.feds-localnav .feds-topnav {
+  height: 0;
+}
+
+.feds-localnav button {
+  background: none;
+}
+
+
+/* .feds-localnav .feds-nav-wrapper {
+  height: 0;
+  display: flex;
+} */
 
 /* Small desktop styles */
 @media (min-width: 900px) and (max-width: 1199px) {
@@ -736,6 +759,7 @@ header.global-navigation {
 
 /* Desktop styles */
 @media (min-width: 1200px) {
+  
   .feds-logo {
     display: flex;
   }
@@ -753,7 +777,20 @@ header.global-navigation {
   }
 
   header.global-navigation + .feds-localnav {
-    display: block;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+    height: var(--feds-height-nav);
+    background-color: var(--feds-background-nav);
+    background-color: var(--feds-background-nav);
+    border-bottom: 1px solid var(--feds-borderColor);
+    box-sizing: content-box;
+  }
+
+  .feds-localnav .feds-topnav {
+    height: inherit;
   }
 }
 

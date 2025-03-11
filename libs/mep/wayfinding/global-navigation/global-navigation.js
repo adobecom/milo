@@ -427,73 +427,66 @@ class Gnav {
     `;
   };
 
-  // decorateLocalNav = async () => {
-  //   if (!this.isLocalNav()) return;
-  //   const localNavItems = this.elements.navWrapper.querySelector('.feds-nav').querySelectorAll('.feds-navItem:not(.feds-navItem--section, .feds-navItem--mobile-only)');
-  //   const firstElem = localNavItems[0]?.querySelector('a');
-  //   if (!firstElem) {
-  //     lanaLog({ message: 'GNAV: Incorrect authoring of localnav found.', tags: 'gnav', errorType: 'info' });
-  //     return;
-  //   }
-  //   const [title, navTitle = ''] = this.getOriginalTitle(firstElem);
-  //   let localNav = document.querySelector('.feds-localnav');
-  //   if (!localNav) {
-  //     lanaLog({
-  //       message: 'GNAV: Localnav does not include \'localnav\' in its name.',
-  //       tags: 'gnav',
-  //       errorType: 'info',
-  //     });
-  //     localNav = toFragment`<div class="feds-localnav"/>`;
-  //     this.block.after(localNav);
-  //   }
-  //   localNav.setAttribute('daa-lh', `${title}_localNav`);
-  //   localNav.append(toFragment`<button class="feds-navLink--hoverCaret feds-localnav-title" aria-haspopup="true" aria-expanded="false" daa-ll="${title}_localNav|open"></button>`, toFragment` <div class="feds-localnav-curtain"></div>`, toFragment` <div class="feds-localnav-items"></div>`, toFragment`<a href="#" class="feds-sr-only feds-localnav-exit">.</a>`);
+  decorateMobileLocalNav = async () => {
+    if (!this.isLocalNav()) return;
+    const localNavItems = document.querySelector('.feds-localnav .feds-nav').querySelectorAll('.feds-navItem:not(.feds-navItem--section, .feds-navItem--mobile-only)');
+    const firstElem = localNavItems[0]?.querySelector('a');
+    if (!firstElem) {
+      lanaLog({ message: 'GNAV: Incorrect authoring of localnav found.', tags: 'gnav', errorType: 'info' });
+      return;
+    }
+    const [title, navTitle = ''] = this.getOriginalTitle(firstElem);
+    let localNav = document.querySelector('.feds-localnav');
+    localNav.setAttribute('daa-lh', `${title}_localNav`);
+    localNav.prepend(toFragment`<button class="feds-navLink--hoverCaret feds-localnav-title" aria-haspopup="true" aria-expanded="false" daa-ll="${title}_localNav|open"></button>`, toFragment` <div class="feds-localnav-curtain"></div>`)
+    
+    localNav.append(toFragment` <div class="feds-localnav-items"></div>`, toFragment`<a href="#" class="feds-sr-only feds-localnav-exit">.</a>`);
+    const itemWrapper = localNav.querySelector('.feds-localnav-items');
+    const titleLabel = await replaceKey('overview', getFedsPlaceholderConfig());
 
-  //   const itemWrapper = localNav.querySelector('.feds-localnav-items');
-  //   const titleLabel = await replaceKey('overview', getFedsPlaceholderConfig());
+    localNavItems.forEach((elem, idx) => {
+      const clonedItem = elem.cloneNode(true);
+      const link = elem.querySelector('a');
 
-  //   localNavItems.forEach((elem, idx) => {
-  //     const clonedItem = elem.cloneNode(true);
-  //     const link = clonedItem.querySelector('a');
+      if (idx === 0) {
+        localNav.querySelector('.feds-localnav-title').innerText = title.trim();
+        link.textContent = navTitle.trim() || titleLabel;
+      }
 
-  //     if (idx === 0) {
-  //       localNav.querySelector('.feds-localnav-title').innerText = title.trim();
-  //       link.textContent = navTitle.trim() || titleLabel;
-  //     }
+      itemWrapper.appendChild(clonedItem);
+      
+    });
 
-  //     itemWrapper.appendChild(clonedItem);
-  //   });
+    localNav.querySelector('.feds-localnav-title').addEventListener('click', () => {
+      localNav.classList.toggle('feds-localnav--active');
+      const isActive = localNav.classList.contains('feds-localnav--active');
+      localNav.querySelector('.feds-localnav-title').setAttribute('aria-expanded', isActive);
+      localNav.querySelector('.feds-localnav-title').setAttribute('daa-ll', `${title}_localNav|${isActive ? 'close' : 'open'}`);
+    });
 
-  //   localNav.querySelector('.feds-localnav-title').addEventListener('click', () => {
-  //     localNav.classList.toggle('feds-localnav--active');
-  //     const isActive = localNav.classList.contains('feds-localnav--active');
-  //     localNav.querySelector('.feds-localnav-title').setAttribute('aria-expanded', isActive);
-  //     localNav.querySelector('.feds-localnav-title').setAttribute('daa-ll', `${title}_localNav|${isActive ? 'close' : 'open'}`);
-  //   });
-
-  //   localNav.querySelector('.feds-localnav-curtain').addEventListener('click', (e) => {
-  //     trigger({ element: e.currentTarget, event: e, type: 'localNav-curtain' });
-  //   });
-  //   const promo = document.querySelector('.feds-promo-aside-wrapper');
-  //   if (promo) localNav.classList.add('has-promo');
-  //   this.elements.localNav = localNav;
-  //   localNavItems[0].querySelector('a').textContent = title.trim();
-  //   const isAtTop = () => {
-  //     const rect = this.elements.localNav.getBoundingClientRect();
-  //     // note: ios safari changes between -0.34375, 0, and 0.328125
-  //     return rect.top === 0;
-  //   };
-  //   window.addEventListener('scroll', () => {
-  //     const classList = this.elements.localNav?.classList;
-  //     if (isAtTop()) {
-  //       if (!classList?.contains('is-sticky')) {
-  //         classList?.add('is-sticky');
-  //       }
-  //     } else {
-  //       classList?.remove('is-sticky');
-  //     }
-  //   });
-  // };
+    localNav.querySelector('.feds-localnav-curtain').addEventListener('click', (e) => {
+      trigger({ element: e.currentTarget, event: e, type: 'localNav-curtain' });
+    });
+    const promo = document.querySelector('.feds-promo-aside-wrapper');
+    if (promo) localNav.classList.add('has-promo');
+    this.elements.localNav = localNav;
+    localNavItems[0].querySelector('a').textContent = title.trim();
+    const isAtTop = () => {
+      const rect = this.elements.localNav.getBoundingClientRect();
+      // note: ios safari changes between -0.34375, 0, and 0.328125
+      return rect.top === 0;
+    };
+    window.addEventListener('scroll', () => {
+      const classList = this.elements.localNav?.classList;
+      if (isAtTop()) {
+        if (!classList?.contains('is-sticky')) {
+          classList?.add('is-sticky');
+        }
+      } else {
+        classList?.remove('is-sticky');
+      }
+    });
+  };
 
   decorateTopnavWrapper = async () => {
     const breadcrumbs = isDesktop.matches ? await this.decorateBreadcrumbs() : '';
@@ -537,6 +530,7 @@ class Gnav {
           this.elements.navWrapper.prepend(this.elements.breadcrumbsWrapper);
         }
       }
+      // this.decorateLocalNav();
     });
 
     // Add a modifier when the nav is tangent to the viewport and content is partly hidden
@@ -826,11 +820,7 @@ class Gnav {
 
   isToggleExpanded = () => this.elements.mobileToggle?.getAttribute('aria-expanded') === 'true';
 
-  isLocalNav = () => this.newMobileNav && this
-    .elements
-    .navWrapper
-    ?.querySelectorAll('.feds-nav > section.feds-navItem')
-    ?.length <= 1;
+  isLocalNav = () => this.newMobileNav && document.querySelector('.feds-localnav');
 
   hasMegaMenu = () => this
     .elements
@@ -1029,9 +1019,7 @@ class Gnav {
         this.elements.mainNav.appendChild(mainNavItem);
       }
     }
-    if (this.newMobileNav) {
-      await this.decorateLocalNav();
-    }
+    await this.decorateLocalNav();
     return this.elements.mainNav;
   };
 
@@ -1299,16 +1287,19 @@ class Gnav {
     return this.elements.breadcrumbsWrapper;
   };
 
+
   decorateLocalNav = async () => {
-    // if (!this.block.classList.contains('has-breadcrumbs')) return null;
-    // if (this.elements.breadcrumbsWrapper) return this.elements.breadcrumbsWrapper;
     const localnavElem = document.querySelector('.feds-localnav');
+    const topNavWrapper = toFragment`<div class="feds-topnav"></div>`;
+    localnavElem.append(topNavWrapper);
+    const logo = this.decorateBrand();
+    const localnavWrapper = toFragment`<div class="feds-nav-wrapper"><div class="feds-nav"></div></div>`;
+    const itemWrapper = localnavWrapper.querySelector('.feds-nav');
+    topNavWrapper.append(logo, localnavWrapper);
     const lnavSource = getMetadata('localnav-source');
-    console.log('i am here')
-    // Breadcrumbs are not initially part of the nav, need to decorate the links
     const { default: init } = await import('./features/localnav/localnav.js');
-    await init(localnavElem, lnavSource);
-    // return this.elements.breadcrumbsWrapper;
+    await init(itemWrapper, lnavSource, this.newMobileNav);
+    await this.decorateMobileLocalNav();
   };
 
   searchPresent = () => !!this.content.querySelector('.search');
