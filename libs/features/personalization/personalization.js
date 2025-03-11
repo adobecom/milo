@@ -340,8 +340,10 @@ export const matchGlob = (searchStr, inputStr) => {
 
 export async function replaceInner(path, element) {
   if (!path || !element) return false;
-  let plainPath = path.endsWith('/') ? `${path}index` : path;
+  const [basePath, hash] = path.trim().split('#');
+  let plainPath = basePath.endsWith('/') ? `${basePath}index` : basePath;
   plainPath = plainPath.endsWith('.plain.html') ? plainPath : `${plainPath}.plain.html`;
+  if (hash) plainPath += `#${hash}`;
   const html = await fetchData(plainPath, DATA_TYPE.TEXT);
   if (!html) return false;
 
@@ -684,6 +686,7 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
       } else {
         variants[vn][action].push({
           selector: normalizePath(selector),
+          // val: normalizePath(line[vn]).split('#')[0],
           val: normalizePath(line[vn]),
           pageFilter,
           manifestId,
