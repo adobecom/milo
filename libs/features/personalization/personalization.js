@@ -1138,7 +1138,8 @@ export async function applyPers({ manifests }) {
 
   const main = document.querySelector('main');
   if (config.mep.replacepage && !isPostLCP && main) {
-    await replaceInner(config.mep.replacepage.val, main);
+    const [newPage] = config.mep.replacepage.val.split('#');
+    await replaceInner(newPage, main);
     const { manifestId, targetManifestId } = config.mep.replacepage;
     addIds(main, manifestId, targetManifestId);
   }
