@@ -1,5 +1,6 @@
 const ORG_MAP = {
   'da-bacom': 'DA BACOM',
+  'da-bacom-blog': 'DA BACOM_BLOG',
   'da-cc-sandbox': 'DA BACOM',
 };
 
