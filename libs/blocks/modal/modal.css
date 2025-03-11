@@ -325,11 +325,11 @@
   }
 
   .region-selector .content {
-    column-count: 5;
+    column-count: 3;
   }
 
   .dialog-modal#langnav {
-    width: 1200px;
+    width: 523px;
     max-width: calc((100% - 6px) - 2em);
   }
 
