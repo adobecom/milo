@@ -426,15 +426,16 @@ async function openFragmentModal(path, getModal) {
 export function appendTabName(url) {
   const metaPreselectPlan = document.querySelector('meta[name="preselect-plan"]');
   if (!metaPreselectPlan?.content) return url;
+  const isRelativePath = url.startsWith('/');
   let urlWithPlan;
   try {
-    urlWithPlan = new URL(url);
+    urlWithPlan = isRelativePath ? new URL(`${location.origin}${url}`) : new URL(url);
   } catch (err) {
     window.lana?.log(`Invalid URL ${url} : ${err}`);
     return url;
   }
   urlWithPlan.searchParams.set('plan', metaPreselectPlan.content);
-  return urlWithPlan.href;
+  return isRelativePath ? urlWithPlan.href.replace(location.origin, '') : urlWithPlan.href;
 }
 
 export function appendExtraOptions(url, extraOptions) {
