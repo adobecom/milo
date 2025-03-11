@@ -1,5 +1,5 @@
 import { expect } from '@esm-bundle/chai';
-import init, { getFragmentId, getTagName, createCard } from '../../../libs/blocks/mas-autoblock/mas-autoblock.js';
+import init, { getFragmentId, getTagName, createControl } from '../../../libs/blocks/mas-autoblock/mas-autoblock.js';
 
 describe('mas autoblock', () => {
   before(() => {
@@ -55,7 +55,7 @@ describe('mas autoblock', () => {
     a.textContent = 'merch-card: ACOM / Catalog / Test Card';
     const fragmentId = getFragmentId(a);
     document.body.append(a);
-    await createCard(a, fragmentId);
+    createControl(a, fragmentId);
     const card = document.body.querySelector('merch-card');
     expect(card.outerHTML).to.equal('<merch-card consonant=""><aem-fragment fragment="a657fd3d9f67"></aem-fragment></merch-card>');
   });
@@ -66,8 +66,8 @@ describe('mas autoblock', () => {
     a.setAttribute('href', 'https://mas.adobe.com/studio.html#path=acom&fragment=COLL_ID');
     a.textContent = 'merch-card-collection: ACOM / Catalog / Test Collection';
     document.body.append(a);
-    await createCard(a, fragmentId);
+    createControl(a, fragmentId);
     const coll = document.body.querySelector('merch-card-collection');
-    expect(coll.outerHTML).to.equal('<merch-card-collection consonant=""><aem-fragment fragment="COLL_ID"></aem-fragment></merch-card-collection>');
+    expect(coll.outerHTML).to.equal('<merch-card-collection><aem-fragment fragment="COLL_ID"></aem-fragment></merch-card-collection>');
   });
 });
