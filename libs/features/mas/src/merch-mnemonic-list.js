@@ -4,11 +4,11 @@ export class MerchMnemonicList extends LitElement {
     static styles = css`
         :host {
             display: flex;
-            flex-direction: row;
-            gap: 5px;
-            margin-bottom: 5px;
-            margin-right: 10px;
-            align-items: flex-end;
+            flex-wrap: nowrap;
+            gap: 8px;
+            margin-right: 16px;
+            align-items: center;
+            margin-bottom: 16px;
         }
 
         ::slotted([slot='icon']) {

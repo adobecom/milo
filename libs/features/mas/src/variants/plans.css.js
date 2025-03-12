@@ -1,4 +1,4 @@
-import { TABLET_UP, DESKTOP_UP, LARGE_DESKTOP } from '../media.js';
+import { MOBILE_LANDSCAPE, TABLET_UP, DESKTOP_UP, LARGE_DESKTOP } from '../media.js';
 export const CSS = `
 :root {
   --consonant-merch-card-plans-width: 300px;
@@ -13,13 +13,33 @@ merch-card[variant="plans"] [slot="description"] {
   min-height: 84px;
 }
 
+merch-card[variant="plans"] [slot="whats-included"] [slot="description"] {
+  min-height: auto;
+}
+
 merch-card[variant="plans"] [slot="quantity-select"] {
   display: flex;
   justify-content: flex-start;
   box-sizing: border-box;
   width: 100%;
   padding: var(--consonant-merch-spacing-xs);
+  padding-top: 0;
 }
+
+/* Mobile */
+@media screen and ${MOBILE_LANDSCAPE} {
+    merch-whats-included merch-mnemonic-list,
+    merch-whats-included [slot="heading"] {
+        width: 100%;
+    }
+}
+
+merch-card[variant="plans"]:not([size]) {
+    merch-whats-included merch-mnemonic-list,
+    merch-whats-included [slot="heading"] {
+        width: 100%;
+    }
+} 
 
 .one-merch-card.plans,
 .two-merch-cards.plans,
