@@ -56,11 +56,11 @@ header.global-navigation.local-nav {
   max-width: var(--feds-maxWidth-nav);
   height: inherit;
   justify-content: space-between;
+  align-items: center;
 }
 
-.feds-localnav .feds-brand {
+.feds-localnav .feds-brand-container {
   display: none;
-
 }
 
 .feds-nav-wrapper {
@@ -281,6 +281,10 @@ header.global-navigation.local-nav {
   height: 30px;
   padding: 0 10px;
   font-size: 14px;
+}
+
+.feds-localnav .feds-topnav {
+  height: 0;
 }
 
 .feds-cta--primary {
@@ -533,6 +537,31 @@ header.global-navigation.local-nav {
     box-sizing: content-box;
   }
 
+  .feds-localnav.is-sticky .feds-brand-container {
+    display: block;
+  }
+
+  .feds-localnav .feds-topnav {
+    height: inherit;
+  }
+
+  header.global-navigation + .feds-localnav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* position: relative; */
+    z-index: 2;
+    height: var(--feds-height-nav);
+    background-color: var(--feds-background-nav);
+    background-color: var(--feds-background-nav);
+    border-bottom: 1px solid var(--feds-borderColor);
+    box-sizing: content-box;
+  }
+
+  .feds-localnav .feds-nav-wrapper button {
+    background: none;
+  }
+
   .feds-toggle {
     display: none;
   }
@@ -542,7 +571,7 @@ header.global-navigation.local-nav {
     display: flex;
     flex-direction: row;
     flex-grow: 1;
-    height: unset;
+    height: inherit;
     border-bottom: unset;
     border-top: unset;
     justify-content: space-between;
@@ -735,10 +764,15 @@ header.global-navigation.local-nav {
   .feds-localnav-title {
     display: none;
   }
-}
 
-.feds-localnav .feds-topnav {
-  height: 0;
+  header.global-navigation .feds-navLink--hoverCaret:after {
+    visibility: hidden;
+  }
+
+  header.global-navigation .feds-navLink--hoverCaret[aria-expanded = "true"]:after {
+    visibility: visible;
+  }
+  
 }
 
 /* .feds-localnav button {
@@ -779,23 +813,6 @@ header.global-navigation.local-nav {
 
   .feds-navItem--megaMenu .feds-popup {
     align-items: center;
-  }
-
-  header.global-navigation + .feds-localnav {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    /* position: relative; */
-    z-index: 2;
-    height: var(--feds-height-nav);
-    background-color: var(--feds-background-nav);
-    background-color: var(--feds-background-nav);
-    border-bottom: 1px solid var(--feds-borderColor);
-    box-sizing: content-box;
-  }
-
-  .feds-localnav .feds-topnav {
-    height: inherit;
   }
 }
 

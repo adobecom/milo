@@ -422,7 +422,7 @@ class Gnav {
         ${getConfig().searchEnabled === 'on' ? toFragment`<div class="feds-client-search"></div>` : ''}
         ${this.useUniversalNav ? this.blocks.universalNav : ''}
         ${(!this.useUniversalNav && this.blocks.profile.rawElem) ? this.blocks.profile.decoratedElem : ''}
-        ${this.decorateLogo()}
+        ${this.decorateLogo(this.content)}
       </nav>
     `;
   };
@@ -821,7 +821,7 @@ class Gnav {
 
   isToggleExpanded = () => this.elements.mobileToggle?.getAttribute('aria-expanded') === 'true';
 
-  isLocalNav = () => this.newMobileNav && document.querySelector('.feds-localnav');
+  isLocalNav = () => this.newMobileNav && getMetadata('localnav-source')
 
   hasMegaMenu = () => this
     .elements
@@ -903,8 +903,8 @@ class Gnav {
     return toggle;
   };
 
-  decorateGenericLogo = ({ selector, classPrefix, includeLabel = true, analyticsValue } = {}) => {
-    const rawBlock = this.content.querySelector(selector);
+  decorateGenericLogo = ({ selector, classPrefix, includeLabel = true, analyticsValue, content } = {}) => {
+    const rawBlock = (content || this.content).querySelector(selector);
     if (!rawBlock) return '';
 
     // Get all non-image links
@@ -987,7 +987,8 @@ class Gnav {
     analyticsValue: 'Brand',
   });
 
-  decorateLogo = () => this.decorateGenericLogo({
+  decorateLogo = (content) => this.decorateGenericLogo({
+    content,
     selector: '.adobe-logo',
     classPrefix: 'feds-logo',
     includeLabel: false,
@@ -1020,7 +1021,9 @@ class Gnav {
         this.elements.mainNav.appendChild(mainNavItem);
       }
     }
-    await this.decorateLocalNav();
+    if (this.isLocalNav()) {
+      await this.decorateLocalNav();
+    }
     return this.elements.mainNav;
   };
 
@@ -1288,12 +1291,11 @@ class Gnav {
     return this.elements.breadcrumbsWrapper;
   };
 
-
   decorateLocalNav = async () => {
     const localnavElem = document.querySelector('.feds-localnav');
     const topNavWrapper = toFragment`<div class="feds-topnav"></div>`;
     localnavElem.append(topNavWrapper);
-    const logo = this.decorateBrand();
+    const logo = toFragment`<div class="feds-brand-container"></div>`;
     const localnavWrapper = toFragment`<div class="feds-nav-wrapper"><div class="feds-nav"></div></div>`;
     const itemWrapper = localnavWrapper.querySelector('.feds-nav');
     topNavWrapper.append(logo, localnavWrapper);
@@ -1312,7 +1314,8 @@ class Gnav {
           itemWrapper.appendChild(mainNavItem);
         }
       }
-      
+      const adobeLogo = this.decorateLogo(content);
+      logo.append(adobeLogo)
     } catch (e) {
       lanaLog({ e, message: 'Localnav failed rendering', tags: 'gnav-localnav', errorType: 'error' });
       return null;
