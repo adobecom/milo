@@ -37,6 +37,10 @@ header.global-navigation {
   overflow-x: clip;
 }
 
+header.global-navigation.local-nav {
+  position: relative;
+}
+
 .feds-topnav-wrapper {
   position: relative;
   z-index: 2;
@@ -737,9 +741,9 @@ header.global-navigation {
   height: 0;
 }
 
-.feds-localnav button {
-  background: none;
-}
+/* .feds-localnav button {
+  background: inherit;
+} */
 
 
 /* .feds-localnav .feds-nav-wrapper {
@@ -752,6 +756,7 @@ header.global-navigation {
   .feds-brand-image + .feds-brand-label {
     display: none;
   }
+
   header.global-navigation + .feds-localnav {
     display: block;
   }
@@ -780,7 +785,7 @@ header.global-navigation {
     display: flex;
     justify-content: center;
     align-items: center;
-    position: relative;
+    /* position: relative; */
     z-index: 2;
     height: var(--feds-height-nav);
     background-color: var(--feds-background-nav);

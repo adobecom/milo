@@ -474,6 +474,7 @@ class Gnav {
     const isAtTop = () => {
       const rect = this.elements.localNav.getBoundingClientRect();
       // note: ios safari changes between -0.34375, 0, and 0.328125
+      console.log(rect.top)
       return rect.top === 0;
     };
     window.addEventListener('scroll', () => {
