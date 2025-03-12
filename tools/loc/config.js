@@ -188,27 +188,28 @@ function getHelixAdminConfig() {
 async function getConfig() {
   if (!decoratedConfig) {
     const urlInfo = getUrlInfo();
-    if (urlInfo.isValid()) {
-      const configPath = `${urlInfo.origin}${LOC_CONFIG}`;
-      const configJson = await fetchConfigJson(configPath);
-      const locales = getLocalesConfig(configJson);
-      const decoratedLocales = getDecoratedLocalesConfig(locales);
-      const workflowsConfig = getWorkflowsConfig(configJson);
-      decoratedConfig = {
-        locales,
-        decoratedLocales,
-        glaas: getDecoratedGLaaSConfig(configJson, decoratedLocales, workflowsConfig),
-        sp: getSharepointConfig(configJson),
-        admin: getHelixAdminConfig(),
-        getLivecopiesForLanguage(language) {
-          const localeConfig = decoratedLocales[language];
-          return localeConfig?.livecopies ? localeConfig.livecopies : null;
-        },
-        getWorkflowForLanguage(language, customWorkflow) {
-          return getWorkflowForLanguage(workflowsConfig, language, decoratedLocales, customWorkflow);
-        },
-      };
+    if (!urlInfo.isValid()) {
+      throw new Error('Invalid Url Parameters that point to project file');
     }
+    const configPath = `${urlInfo.origin}${LOC_CONFIG}`;
+    const configJson = await fetchConfigJson(configPath);
+    const locales = getLocalesConfig(configJson);
+    const decoratedLocales = getDecoratedLocalesConfig(locales);
+    const workflowsConfig = getWorkflowsConfig(configJson);
+    decoratedConfig = {
+      locales,
+      decoratedLocales,
+      glaas: getDecoratedGLaaSConfig(configJson, decoratedLocales, workflowsConfig),
+      sp: getSharepointConfig(configJson),
+      admin: getHelixAdminConfig(),
+      getLivecopiesForLanguage(language) {
+        const localeConfig = decoratedLocales[language];
+        return localeConfig?.livecopies ? localeConfig.livecopies : null;
+      },
+      getWorkflowForLanguage(language, customWorkflow) {
+        return getWorkflowForLanguage(workflowsConfig, language, decoratedLocales, customWorkflow);
+      },
+    };
   }
   return decoratedConfig;
 }

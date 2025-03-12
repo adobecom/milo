@@ -124,6 +124,7 @@ export const CONFIG = {
               ...getConfig().unav?.profile?.config,
             },
           },
+          complexConfig: getConfig().unav?.profile?.complexConfig || null,
           callbacks: {
             onSignIn: () => { window.adobeIMS?.signIn(SIGNIN_CONTEXT); },
             onSignUp: () => { window.adobeIMS?.signIn(SIGNIN_CONTEXT); },
