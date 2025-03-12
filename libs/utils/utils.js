@@ -1460,7 +1460,10 @@ async function processSection(section, config, isDoc) {
   await Promise.all(loadBlocks);
 
   delete section.el.dataset.status;
-  if (isDoc && firstSection) await loadPostLCP(config);
+  if (isDoc && firstSection) {
+    document.documentElement.style.removeProperty('display');
+    await loadPostLCP(config);
+  }
   delete section.el.dataset.idx;
   return section.blocks;
 }
