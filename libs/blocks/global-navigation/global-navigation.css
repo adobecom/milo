@@ -1235,8 +1235,8 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
 }
 
 .feds-localnav .feds-localnav-items .feds-navLink-content .feds-navLink-title,
-.feds-localnav .feds-localnav-items .feds-menu-items .feds-navLink {
-  white-space: break-spaces;
+.feds-localnav .feds-localnav-items .feds-menu-items li .feds-navLink {
+    white-space: break-spaces;
 }
 
 .feds-localnav .feds-localnav-items .feds-navItem--centered {
