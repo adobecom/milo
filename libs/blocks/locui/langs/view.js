@@ -1,6 +1,6 @@
 import { html } from '../../../deps/htm-preact.js';
 import { languages } from '../utils/state.js';
-import { getSkippedFileWarnings, rollout, showLangErrors, showSkippedFiles, showUrls } from './index.js';
+import { getSkippedFileWarnings, showLangErrors, showSkippedFiles, showUrls, handleRollout } from './index.js';
 
 function getPrettyStatus({ status, queued } = {}) {
   switch (status) {
@@ -44,7 +44,7 @@ function Language({ item, idx }) {
     if (item.status === 'error') {
       e.stopPropagation();
     }
-    rollout(item, idx);
+    handleRollout(item, idx);
   };
 
   const [showAction, actionType] = langActionProps(item);

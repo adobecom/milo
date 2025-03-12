@@ -1,8 +1,9 @@
 import { rolloutLang } from '../utils/miloc.js';
-import { languages, polling } from '../utils/state.js';
+import { languages, polling, isLOCV3RolloutFlow } from '../utils/state.js';
 import { getModal } from '../../modal/modal.js';
 import Modal from './modal.js';
 import { createTag } from '../../../utils/utils.js';
+import { getLocV3CreateUrl } from '../actions/index.js';
 
 export function showUrls(item, prefix) {
   const div = createTag('div');
@@ -16,7 +17,7 @@ export function showUrls(item, prefix) {
   return getModal(null, modalOpts);
 }
 
-export async function rollout(item, idx) {
+async function rollout(item, idx) {
   const reroll = item.status === 'completed';
   const retry = item.status === 'error';
 
@@ -66,4 +67,13 @@ export function showSkippedFiles(item) {
     closeEvent: 'closeModal',
   };
   return getModal(null, modalOpts);
+}
+
+export function handleRollout(item, idx) {
+  if (isLOCV3RolloutFlow.value) {
+    const createV3Url = getLocV3CreateUrl({ language: item.LangCode });
+    if (createV3Url) { window.open(createV3Url, '_blank', 'noopener noreferrer'); }
+  } else {
+    rollout(item, idx);
+  }
 }
