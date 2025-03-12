@@ -19,7 +19,6 @@ test(`[Test Id - ${features[0].tcid}] ${features[0].name},${features[0].tags}`, 
   await expect(textBlock1.headlineAlt).toHaveText('Base page text. Section 2');
   await expect(textBlock7.headlineAlt).toHaveText('Base page text fragment');
   await expect(page.locator(sec5Loc)).toHaveCount(1);
-
 });
 
 // Test 1: confirm various MEP actions on the personalized page
