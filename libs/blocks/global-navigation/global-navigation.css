@@ -1231,6 +1231,7 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
   padding: 12px 46px 12px 38px;
   outline-offset: -1px;
   color: var(--feds-color-link);
+  white-space: break-spaces;
 }
 
 .feds-localnav .feds-localnav-items .feds-navLink-content .feds-navLink-title,
