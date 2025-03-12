@@ -1,4 +1,4 @@
-import { createTag } from '../../utils/utils.js';
+import { createTag, getConfig } from '../../utils/utils.js';
 import '../../deps/mas/merch-card.js';
 import { initService } from '../merch/merch.js';
 
@@ -20,9 +20,18 @@ export function getTagName(el) {
 
 async function loadControl(el) {
   const tagName = getTagName(el);
+  const { base } = getConfig();
   switch (tagName) {
     case 'merch-card-collection':
       await import('../../deps/mas/merch-card-collection.js');
+      await import(`${base}/features/spectrum-web-components/dist/theme.js`);
+      await import(`${base}/features/spectrum-web-components/dist/button.js`);
+      await import(`${base}/features/spectrum-web-components/dist/action-button.js`);
+      await import(`${base}/features/spectrum-web-components/dist/action-menu.js`);
+      await import(`${base}/features/spectrum-web-components/dist/search.js`);
+      await import(`${base}/features/spectrum-web-components/dist/menu.js`);
+      await import(`${base}/features/spectrum-web-components/dist/overlay.js`);
+      await import(`${base}/features/spectrum-web-components/dist/tray.js`);
       break;
     default:
       break;
