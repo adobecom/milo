@@ -28,7 +28,7 @@ const click = async (value) => {
     );
     await elementClick(node);
 };
-const expectedSelection = (expectedValue, expectedExpand = false) => {
+const expectedSelection = (expectedValue, expectedExpand = false, expectedParentExpand = false) => {
     const item = getCategories().querySelector(
         `sp-sidenav-item[value=${expectedValue}]`,
     );
@@ -37,6 +37,12 @@ const expectedSelection = (expectedValue, expectedExpand = false) => {
         expect(item.getAttribute('expanded')).to.equal(
             '',
             `${expectedValue} should be expanded`,
+        );
+    }
+    if (expectedParentExpand) {
+        expect(item.parentNode.getAttribute('expanded')).to.equal(
+            '',
+            `${expectedValue} parent should be expanded`,
         );
     }
     expect(item.getAttribute('selected')).to.equal(
@@ -98,7 +104,14 @@ runTests(async () => {
             window.location.hash = 'filter=pdf';
             await render();
             await delay(100);
-            expectedSelection('pdf', false);
+            expectedSelection('pdf', false, true);
+            window.location.hash = 'filter=video';
+            await delay(100);
+            expectedSelection('video', false, true);
+            window.location.hash = 'filter=creativitydesign';
+            await delay(100);
+            expectedSelection('creativitydesign', true);
+            window.location.hash = '';
         });
     });
 
@@ -146,7 +159,7 @@ runTests(async () => {
             await elementClick(cbm);
             expect(parseState().types).to.be.undefined;
         });
-        it('updates the navigation item depending of state', async () => {
+        it('updates the navigation item depending of state and vice versa', async () => {
             resetChecks();
             pushState({ types: 'web,mobile' });
             await refreshElement(
@@ -157,6 +170,14 @@ runTests(async () => {
             expect(web.checked).to.be.true;
             const mobile = document.querySelector('sp-checkbox[name=mobile]');
             expect(mobile.checked).to.be.true;
+            web.click();
+            await refreshElement(
+              document.querySelector('merch-sidenav-checkbox-group')
+                  .parentElement,
+          );
+          expect(parseState().types).to.equal('mobile');
+          expect(web.checked).to.be.false;
+          expect(mobile.checked).to.be.true;
         });
     });
 
