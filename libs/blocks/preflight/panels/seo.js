@@ -256,7 +256,8 @@ async function checkLinks() {
     badResults.push(...spidyResults);
   }
 
-  badLinks.value = badResults.map((result) => links.find((link) => compareResults(result, link)));
+  badLinks.value = badResults.map((result) => links.find((link) => compareResults(result, link)))
+    .filter(Boolean);
 
   // Format the results for display
   const count = badLinks.value.length;
