@@ -86,7 +86,8 @@ export class Plans extends VariantLayout {
   }
 
   connectedCallbackHook() {
-    matchMobile().addEventListener('change', this.adaptForMobile);
+    const match = matchMobile();
+    if (match?.addEventListener) match.addEventListener('change', this.adaptForMobile);
   }
 
   disconnectedCallbackHook() {

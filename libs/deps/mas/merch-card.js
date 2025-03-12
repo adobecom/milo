@@ -1053,7 +1053,7 @@ merch-card[variant="plans"]:not([size]) {
                 <input type="checkbox" @change=${this.card.toggleStockOffer}></input>
                 <span></span>
                 ${this.card.checkboxLabel}
-            </label>`:""}connectedCallbackHook(){Ke().addEventListener("change",this.adaptForMobile)}disconnectedCallbackHook(){let t=Ke();t?.removeEventListener&&t.removeEventListener("change",this.adaptForMobile)}renderLayout(){return Mr` ${this.badge}
+            </label>`:""}connectedCallbackHook(){let t=Ke();t?.addEventListener&&t.addEventListener("change",this.adaptForMobile)}disconnectedCallbackHook(){let t=Ke();t?.removeEventListener&&t.removeEventListener("change",this.adaptForMobile)}renderLayout(){return Mr` ${this.badge}
         <div class="body">
             <slot name="icons"></slot>
             <slot name="heading-xs"></slot>
