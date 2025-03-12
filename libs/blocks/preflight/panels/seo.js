@@ -194,7 +194,7 @@ function compareResults(result, link) {
   if (link.closest('header')) link.parent = 'gnav';
   if (link.closest('main')) link.parent = 'main';
   if (link.closest('footer')) link.parent = 'footer';
-  // link.classList.add('problem-link');
+  link.classList.add('problem-link');
   link.status = result.status;
   link.dataset.status = link.status;
   return true;
@@ -227,7 +227,7 @@ async function checkLinks() {
         && !link.closest('.preflight') // Is not inside preflight
         && !knownBadUrls.some((url) => url === link.hostname) // Is not a known bad url
       ) {
-        // link.liveHref = link.href;
+        link.liveHref = link.href;
         if (link.href.includes('hlx.page')) link.liveHref = link.href.replace('hlx.page', 'hlx.live');
         if (link.href.includes('aem.page')) link.liveHref = link.href.replace('aem.page', 'aem.live');
         return true;
