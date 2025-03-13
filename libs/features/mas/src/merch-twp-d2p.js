@@ -1,7 +1,5 @@
 import { LitElement, html } from 'lit';
-
 import { MatchMediaController } from '@spectrum-web-components/reactive-controllers/src/MatchMedia.js';
-
 import { styles } from './merch-twp-d2p.css.js';
 import { TABLET_DOWN } from './media.js';
 import {
