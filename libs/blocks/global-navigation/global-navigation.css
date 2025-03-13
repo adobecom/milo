@@ -1217,7 +1217,7 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
   border-bottom: 0;
 }
 
-.feds-localnav.feds-localnav--active .feds-localnav-items .feds-menu-column > ul {
+.feds-localnav .feds-localnav-items .feds-menu-column > ul {
   padding: 0;
 }
 
