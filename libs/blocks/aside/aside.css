@@ -1122,7 +1122,8 @@
     height: var(--icon-size-m);
   }
 
-  .aside.promobar .action-area {
+  .aside.promobar .action-area,
+  .aside.notification .action-area {
     flex-shrink: 0;
   }
 
