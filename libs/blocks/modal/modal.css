@@ -21,6 +21,12 @@
   z-index: 102;
 }
 
+
+ .dialog-modal#langnav {
+    width: 523px;
+    max-width: calc((100% - 6px) - 2em);
+  }
+
 .dialog-modal.upgrade-flow-modal,
 .dialog-modal.three-in-one {
   height: 100%;
@@ -318,12 +324,6 @@
     padding-bottom: 0;
   }
 }
-
- .dialog-modal#langnav {
-    width: 523px;
-    max-width: calc((100% - 6px) - 2em);
-  }
-
 
 @media (min-width: 1200px) {
   .dialog-modal.s-size {
