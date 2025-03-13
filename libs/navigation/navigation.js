@@ -112,9 +112,13 @@ export default async function loadBlock(configs, customLib) {
     import('../utils/utils.js'),
   ]);
   const paramConfigs = getParamsConfigs(configs);
-  const origin = env === 'prod'
-    ? 'https://www.adobe.com/federal'
-    : 'https://main--federal--adobecom.aem.page';
+  const origin = (() => {
+    switch (env) {
+      case 'prod': return 'https://www.adobe.com';
+      case 'stage': return 'https://www.stage.adobe.com';
+      default: return 'https://main--federal--adobecom.aem.page';
+    }
+  })();
   const clientConfig = {
     theme,
     prodDomains,
