@@ -18,8 +18,7 @@ export function getTagName(el) {
   return el.textContent.trim().match(/^[^:\s]+/)?.[0] || 'merch-card';
 }
 
-async function loadControl(el) {
-  const tagName = getTagName(el);
+async function loadControl(tagName) {
   const { base } = getConfig();
   switch (tagName) {
     case 'merch-card-collection':
@@ -64,8 +63,7 @@ export function createControl(el, fragment) {
   return control;
 }
 
-async function postProcess(control) {
-  const tagName = getTagName(control);
+async function postProcess(control, tagName) {
   await control.checkReady();
   switch (tagName) {
     case 'merch-card-collection': {
@@ -85,7 +83,8 @@ export default async function init(el) {
   const fragment = getFragmentId(el);
   if (!fragment) return;
   await initService();
-  await loadControl(el);
+  const tagName = getTagName(el);
+  await loadControl(tagName);
   const control = createControl(el, fragment);
-  await postProcess(control);
+  await postProcess(control, tagName);
 }
