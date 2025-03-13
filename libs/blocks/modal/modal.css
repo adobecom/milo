@@ -331,8 +331,8 @@
 
  
  .dialog-modal#langnav {
-    width: 523px;
-    max-width: calc((100% - 6px) - 2em);
+    max-width: 80vw;
+    width: fit-content;
   }
   
    .region-selector .content {
