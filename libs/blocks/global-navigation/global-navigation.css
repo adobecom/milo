@@ -799,6 +799,7 @@ header.new-nav .feds-nav-wrapper {
   transition: translate 0.4s ease-out, opacity 0.4s ease, visibility 0s linear 0.5s;
   display: flex;
   visibility: hidden;
+  overflow-x: clip;
 }
 
 [dir = "rtl"] header.new-nav .feds-nav-wrapper {
