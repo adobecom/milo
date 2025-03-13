@@ -1,6 +1,6 @@
 import { html, useState, useEffect } from '../../../deps/htm-preact.js';
 import '../../../deps/axe.min.js';
-import customAccessibilityChecks from './accessiblityHelper.js';
+import customAccessibilityChecks from './accessiblity-helper.js';
 
 /**
  * Runs the accessibility test using axe-core and custom checks.
