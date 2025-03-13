@@ -71,7 +71,7 @@ async function postProcess(control) {
     case 'merch-card-collection': {
       const placeholders = control.data?.placeholders || { filtersText: 'Filters' };
       for (const key of Object.keys(placeholders)) {
-        const placeholder = createTag('p', null, placeholders[key]);
+        const placeholder = createTag('p', { slot: key }, placeholders[key]);
         control.append(placeholder);
       }
       break;
