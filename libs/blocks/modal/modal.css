@@ -319,18 +319,19 @@
   }
 }
 
+ .dialog-modal#langnav {
+    width: 523px;
+    max-width: calc((100% - 6px) - 2em);
+  }
+
+
 @media (min-width: 1200px) {
   .dialog-modal.s-size {
     max-width: 650px;
   }
 
   .region-selector .content {
-    column-count: 3;
-  }
-
-  .dialog-modal#langnav {
-    width: 523px;
-    max-width: calc((100% - 6px) - 2em);
+    column-count: 5;
   }
 
   .dialog-modal.commerce-frame {
