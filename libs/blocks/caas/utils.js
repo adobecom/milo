@@ -211,6 +211,12 @@ export const loadCaasFiles = async () => {
     jsFile = `http://${host}.corp.adobe.com:5000/dist/main.js`;
   }
 
+  // for caas alpha releases
+  if (version === 'alpha') {
+    cssFile = 'https://adobecom.github.io/caas/dist/app.css';
+    jsFile = 'https://adobecom.github.io/caas/dist/main.source.js';
+  }
+
   loadStyle(cssFile);
   await loadScript(`https://www.adobe.com/special/chimera/caas-libs/${version}/react.umd.js`);
   await loadScript(`https://www.adobe.com/special/chimera/caas-libs/${version}/react.dom.umd.js`);
@@ -657,7 +663,7 @@ export const getConfig = async (originalState, strs = {}) => {
     featuredCards: featuredCards.split(URL_ENCODED_COMMA),
     filterPanel: {
       enabled: state.showFilters,
-      eventFilter: state.filterEvent,
+      eventFilter: state.filterEvent || [],
       type: state.showFilters ? state.filterLocation : 'left',
       showEmptyFilters: state.filtersShowEmpty,
       filters: await getFilterArray(state, country, language, strs),
@@ -824,7 +830,7 @@ export const defaultState = {
   excludeTags: [],
   fallbackEndpoint: '',
   featuredCards: [],
-  filterEvent: '',
+  filterEvent: [],
   filterBuildPanel: 'automatic',
   filterLocation: 'left',
   filterLogic: 'or',

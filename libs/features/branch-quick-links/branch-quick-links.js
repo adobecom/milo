@@ -22,16 +22,17 @@ function addLoader(a) {
 }
 
 async function decorateQuickLink(a, hasConsent) {
-  if (!window.alloy) return;
   let ecid = null;
   try {
-    const data = await window.alloy('getIdentity');
+    const data = await window.alloy_getIdentity;
     ecid = data?.identity?.ECID;
   } catch (e) {
     window.lana.log(`Error fetching ECID: ${e}`, { tags: 'branch-quick-links' });
   }
-  if (hasConsent && !a.href.includes('ecid')) {
-    a.href = a.href.concat(`?ecid=${ecid}`);
+  if (ecid && hasConsent && !a.href.includes('ecid')) {
+    const urlObj = new URL(a.href, window.location.origin);
+    urlObj.searchParams.set('ecid', ecid);
+    a.href = urlObj.href;
   }
   window.location.href = a.href;
 }

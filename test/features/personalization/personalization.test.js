@@ -3,8 +3,8 @@ import { readFile } from '@web/test-runner-commands';
 import { assert, stub } from 'sinon';
 import { getConfig, setConfig } from '../../../libs/utils/utils.js';
 import {
-  handleFragmentCommand, applyPers, cleanAndSortManifestList,
-  init, matchGlob, createContent, combineMepSources, buildVariantInfo,
+  handleFragmentCommand, applyPers, cleanAndSortManifestList, normalizePath,
+  init, matchGlob, createContent, combineMepSources, buildVariantInfo, addSectionAnchors,
 } from '../../../libs/features/personalization/personalization.js';
 import mepSettings from './mepSettings.js';
 import mepSettingsPreview from './mepPreviewSettings.js';
@@ -88,6 +88,13 @@ describe('Functional Test', () => {
 
     expect(document.querySelector('.custom-block-1')).to.be.null;
     expect(document.querySelector('.custom-block-2')).to.be.null;
+  });
+
+  it('should not normalize absolute path to a script file, if the file is hosted in DAM', async () => {
+    const DAMpath = 'https://www.adobe.com/content/dam/cc/optimization/mwpw-168109/test.js';
+    const nonDAMpath = 'https://www.adobe.com/foo/test.js';
+    expect(normalizePath(DAMpath)).to.include('https://www.adobe.com');
+    expect(normalizePath(nonDAMpath)).to.not.include('https://www.adobe.com');
   });
 
   it('scheduled manifest should apply changes if active (bts)', async () => {
@@ -369,6 +376,12 @@ describe('Functional Test', () => {
     expect(document.querySelector('meta[name="mynewmetadata"]').content).to.equal('woot');
     expect(document.querySelector('meta[property="og:title"]').content).to.equal('New Title');
     expect(document.querySelector('meta[property="og:image"]').content).to.equal('https://adobe.com/path/to/image.jpg');
+  });
+
+  it('will add id to the section div', async () => {
+    addSectionAnchors(document);
+    const sectionWithId = document.querySelector('#marquee-container');
+    expect(sectionWithId).to.exist;
   });
 });
 

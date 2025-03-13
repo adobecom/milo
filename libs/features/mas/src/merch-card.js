@@ -7,6 +7,7 @@ import {
 } from './variants/variants.js';
 
 import './global.css.js';
+import './aem-fragment.js';
 import {
     EVENT_AEM_LOAD,
     EVENT_MERCH_CARD_READY,
@@ -61,6 +62,7 @@ export class MerchCard extends LitElement {
             attribute: 'stock-offer-osis',
             converter: {
                 fromAttribute: (value) => {
+                    if (!value) return;
                     const [PUF, ABM, M2M] = value.split(',');
                     return { PUF, ABM, M2M };
                 },

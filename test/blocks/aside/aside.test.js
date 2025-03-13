@@ -3,9 +3,10 @@ import { expect } from '@esm-bundle/chai';
 import { waitForElement } from '../../helpers/waitfor.js';
 import { setConfig } from '../../../libs/utils/utils.js';
 
-const { default: init } = await import('../../../libs/blocks/aside/aside.js');
+const { default: init, handleImageLoad } = await import('../../../libs/blocks/aside/aside.js');
 const standardBody = await readFile({ path: './mocks/standard.html' });
 const splitBody = await readFile({ path: './mocks/split.html' });
+const body = await readFile({ path: './mocks/body.html' });
 const conf = { miloLibs: 'http://localhost:2000/libs' };
 
 setConfig(conf);
@@ -20,7 +21,7 @@ describe('aside', () => {
 
     it('allows a background color', async () => {
       const el = await waitForElement('#test-default');
-      expect(window.getComputedStyle(el)?.backgroundColor).to.be.oneOf(['rgb(249, 249, 249)', 'rgb(238, 238, 238)']);
+      expect(window.getComputedStyle(el)?.backgroundColor).to.equal('rgb(249, 249, 249)');
     });
 
     it('allows a background image', async () => {
@@ -158,6 +159,38 @@ describe('aside', () => {
     it('allows a product lockup', async () => {
       const el = await waitForElement('#test-lockup .lockup-area img');
       expect(el).to.exist;
+    });
+  });
+
+  describe('aside notification small', () => {
+    before(() => {
+      document.body.innerHTML = body;
+      const blocks = document.querySelectorAll('.aside.notification.small');
+      blocks.forEach((el) => init(el));
+    });
+
+    it('should hide element until image is loaded', async () => {
+      const el = await waitForElement('#test-notification-small');
+      expect(el).to.exist;
+      el.style.visibility = 'hidden';
+      const img = el.querySelector('img');
+      expect(img.complete).to.equal(false);
+      handleImageLoad(el, img);
+      expect(el.style.visibility).to.equal('hidden');
+      await img.dispatchEvent(new Event('load'));
+      expect(el.style.visibility).to.equal('visible');
+    });
+
+    it('should show element if image is not loaded successfully', async () => {
+      const el = await waitForElement('#test-notification-small');
+      el.style.visibility = 'hidden';
+      const img = el.querySelector('img');
+      expect(img.complete).to.equal(false);
+      handleImageLoad(el, img);
+      expect(el.style.visibility).to.equal('hidden');
+      await img.dispatchEvent(new Event('error'));
+      expect(el.style.visibility).to.equal('visible');
+      expect(img.style.visibility).to.equal('hidden');
     });
   });
 });

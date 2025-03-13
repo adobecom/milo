@@ -27,8 +27,8 @@
   --feds-background-link--hover: #e9e9e9;
   --feds-borderColor-link: #e9e9e9;
   --feds-color-link: #292929;
-  --feds-color-blue-link: #3b63fb;
-  --feds-color-link--hover: #274dea;
+  --feds-color-blue-link: #274dea;
+  --feds-color-link--hover: #1d3ecf;
   --feds-color-navLink-description: #505050;
   --feds-color-link-breadcrumbs: #707070;
   /* Footer */
@@ -107,7 +107,7 @@
 }
 
 [dir = "rtl"] .feds-navLink--hoverCaret {
-  padding-right: 12px;
+  padding-right: 20px;
   padding-left: 32px;
 }
 
@@ -271,6 +271,14 @@ header.global-navigation.ready {
     height: 4px;
     transform: rotate(-45deg);
     content: '';
+  }
+
+  .feds-navLink.feds-navLink--header[class *= '-gradient'] .feds-navLink-title:after {
+    display: none;
+  }
+
+  .feds-navLink.feds-navLink--header {
+    pointer-events: none;
   }
 
   [dir = "rtl"] .feds-navLink[class *= '-gradient'] .feds-navLink-title:after {

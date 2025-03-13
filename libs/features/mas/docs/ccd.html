@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://p.typekit.net/p.css?s=1&k=hah7vzn&ht=tk&f=7180.7181.7182.7183.22474.22749.22750.22751.22753&a=8634977&app=typekit&e=css">
     <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
-    <script src="/libs/deps/lit-all.min.js" type="module"></script>
 
     <script>
       const ENVS = {
@@ -36,6 +35,7 @@
       }
     </script>
     <script type="module" src="../dist/mas.js"></script>
+    <script type="module" src="./mas-sidenav.js"></script>
 
     <script type="module">
       // mas-commerce-service
@@ -51,15 +51,7 @@
     </script>
 </head>
   <body class="spectrum spectrum--medium spectrum--light">
-    <aside class="sidenav">
-      <a href="/libs/features/mas/docs/mas.html">Home</a>
-      <a href="/libs/features/mas/docs/mas.js.html">mas.js</a>
-      <a href="/libs/features/mas/docs/checkout-link.html">Checkout Link</a>
-      <a href="/libs/features/mas/docs/inline-price.html">Inline Price</a>
-      <a href="/libs/features/mas/docs/merch-card.html">Merch Card</a>
-      <a href="/libs/features/mas/docs/ccd.html">CCD Gallery</a>
-      <a href="/libs/features/mas/docs/benchmarks.html">Benchmarks</a>
-    </aside>
+    <aside is="mas-sidenav"></aside>
     <main>
       <div class="gallery-content">
         
@@ -98,6 +90,7 @@
           <merch-card><aem-fragment fragment="42e9a6bf-3b94-4b13-a2ba-184591308096"></aem-fragment></merch-card>
           <merch-card><aem-fragment fragment="9744936c-94e4-4e78-806b-58dd63d02fd7"></aem-fragment></merch-card>
           <merch-card><aem-fragment fragment="1ccfef82-9870-428c-b9fc-35770a21ae4f"></aem-fragment></merch-card>
+          <merch-card><aem-fragment fragment="018bf7f7-1e82-4b16-9dd1-039ee013e490"></aem-fragment></merch-card>
       </div>
     </div>
   </main>
