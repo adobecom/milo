@@ -1118,6 +1118,10 @@
     height: var(--icon-size-m);
   }
 
+  .aside.promobar .action-area {
+    flex-shrink: 0;
+  }
+
   .aside.center:not(.notification) .foreground.container .text {
     max-width: 50%;
   }
