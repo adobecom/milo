@@ -317,8 +317,9 @@ export const getUniversalNavLocale = (locale) => {
 const getCountry = () => {
   let [lang, country] = getUniversalNavLocale(getConfig().locale).toLowerCase().split('_');
   if (country === 'gb') country = 'uk';
-  return GeoMap[`${country}_${lang}`]?.split('_')[0] || GeoMap[country]?.split('_')[0] || 'US';
+  return GeoMap[`${country}_${lang}`]?.split('_')[0] || GeoMap[country]?.split('_')[0] || country || 'US';
 };
+
 const convertToPascalCase = (str) => str
   ?.split('-')
   .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
