@@ -24,8 +24,8 @@ const SORT_ORDER = {
 };
 
 const VARIANT_CLASSES = {
-    catalog: ['four-merch-card'],
-    plans: ['four-merch-card'],
+    catalog: ['four-merch-cards'],
+    plans: ['four-merch-cards'],
 }
 
 const RESULT_TEXT_SLOT_NAMES = {
