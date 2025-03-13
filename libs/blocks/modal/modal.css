@@ -21,16 +21,6 @@
   z-index: 102;
 }
 
-
- .dialog-modal#langnav {
-    width: 523px;
-    max-width: calc((100% - 6px) - 2em);
-  }
-
- .region-selector .content {
-    column-count: 3;
-  }
-
 .dialog-modal.upgrade-flow-modal,
 .dialog-modal.three-in-one {
   height: 100%;
@@ -337,6 +327,16 @@
   .dialog-modal.commerce-frame {
     width: 1024px;
     height: 850px;
+  }
+
+ 
+ .dialog-modal#langnav {
+    width: 523px;
+    max-width: calc((100% - 6px) - 2em);
+  }
+  
+   .region-selector .content {
+    column-count: 5;
   }
 
   .dialog-modal.commerce-frame > .fragment,
