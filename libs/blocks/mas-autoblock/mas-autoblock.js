@@ -56,12 +56,29 @@ function getTagOptions(fragment, tagName) {
   return [attributes, html];
 }
 
-export async function createControl(el, fragment) {
+export function createControl(el, fragment) {
   const tagName = getTagName(el);
   const [attributes, html] = getTagOptions(fragment, tagName);
-  const element = createTag(tagName, attributes, html);
-  el.replaceWith(element);
-  await element.checkReady();
+  const control = createTag(tagName, attributes, html);
+  el.replaceWith(control);
+  return control;
+}
+
+async function postProcess(control) {
+  const tagName = getTagName(control);
+  await control.checkReady();
+  switch (tagName) {
+    case 'merch-card-collection': {
+      const placeholders = control.data?.placeholders || { filtersText: 'Filters' };
+      for (const key of Object.keys(placeholders)) {
+        const placeholder = createTag('p', null, placeholders[key]);
+        control.append(placeholder);
+      }
+      break;
+    }
+    default:
+      break;
+  }
 }
 
 export default async function init(el) {
@@ -69,5 +86,6 @@ export default async function init(el) {
   if (!fragment) return;
   await initService();
   await loadControl(el);
-  await createControl(el, fragment);
+  const control = createControl(el, fragment);
+  await postProcess(control);
 }
