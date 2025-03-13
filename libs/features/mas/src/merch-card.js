@@ -399,10 +399,12 @@ export class MerchCard extends LitElement {
             setTimeout(() => resolve('timeout'), MERCH_CARD_LOAD_TIMEOUT),
         );
 
-        const aemLoad = await this.aemFragment?.updateComplete;
-        if (aemLoad === false) {
-            this.#fail('AEM fragment cannot be loaded', {}, false);
-            return;
+        if (this.aemFragment) {
+            const aemLoad = await this.aemFragment.updateComplete;
+            if (aemLoad === false) {
+                this.#fail('AEM fragment cannot be loaded', {}, false);
+                return;
+            }
         }
         const result = await Promise.race([successPromise, timeoutPromise]);
 
