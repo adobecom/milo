@@ -40,33 +40,22 @@ export class Plans extends VariantLayout {
     const footer = shadowRoot.querySelector('footer');
     const size = this.card.getAttribute('size');
     const stockInFooter = shadowRoot.querySelector('footer #stock-checkbox');
+    const stockInBody = shadowRoot.querySelector('.body #stock-checkbox');
 
     if (!size) {
       footer.classList.remove('wide-footer');
       if (stockInFooter) stockInFooter.remove();
       return;
     }
-    if (size !== 'super-wide' && size !== 'wide' && !footer.classList.contains('wide-footer')) {
+
+    const mobile = isMobile();
+    if (footer) footer.classList.toggle('wide-footer', !mobile);
+    if (mobile && stockInFooter) {
+      stockInBody ? stockInFooter.remove() : shadowRoot.querySelector('.body').appendChild(stockInFooter);
       return;
     }
-
-    const isMob = isMobile();
-    if (footer) {
-      footer.classList.toggle('wide-footer', !isMob);
-    }
-    const stockInBody = shadowRoot.querySelector('.body #stock-checkbox');
-    if (isMob) {
-      if (stockInFooter && stockInBody) {
-        stockInFooter.remove();
-      } else if (stockInFooter && !stockInBody) {
-        shadowRoot.querySelector('.body').appendChild(stockInFooter);
-      }
-    } else {
-      if (stockInBody && stockInFooter) {
-        stockInBody.remove();
-      } else if (stockInBody && !stockInFooter) {
-        footer.prepend(stockInBody);
-      }
+    if (stockInBody) {
+      stockInFooter ? stockInBody.remove() : footer.prepend(stockInBody);
     }
   }
 
