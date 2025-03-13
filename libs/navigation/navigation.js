@@ -112,6 +112,9 @@ export default async function loadBlock(configs, customLib) {
     import('../utils/utils.js'),
   ]);
   const paramConfigs = getParamsConfigs(configs);
+  const origin = env === 'prod'
+    ? 'https://www.adobe.com/federal'
+    : 'https://main--federal--adobecom.aem.page';
   const clientConfig = {
     theme,
     prodDomains,
@@ -122,8 +125,8 @@ export default async function loadBlock(configs, customLib) {
     locales: configs.locales || locales,
     contentRoot: authoringPath || footer?.authoringPath,
     stageDomainsMap: getStageDomainsMap(stageDomainsMap),
-    origin: `https://main--federal--adobecom.aem.${env === 'prod' ? 'live' : 'page'}`,
-    allowedOrigins: [...allowedOrigins, `https://main--federal--adobecom.aem.${env === 'prod' ? 'live' : 'page'}`],
+    origin,
+    allowedOrigins: [...allowedOrigins, origin],
     onFooterReady: footer?.onReady,
     onFooterError: footer?.onError,
     ...paramConfigs,
