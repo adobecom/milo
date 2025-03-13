@@ -45,7 +45,7 @@ export const CC_SINGLE_APPS = [
   ['XD'],
 ];
 
-const GeoMap = {
+export const GeoMap = {
   ar: 'AR_es',
   be_en: 'BE_en',
   be_fr: 'BE_fr',

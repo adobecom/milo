@@ -49,6 +49,8 @@ import {
 
 import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
 
+import { GeoMap } from '../merch/merch.js';
+
 const SIGNIN_CONTEXT = getConfig()?.signInContext;
 
 function getHelpChildren() {
@@ -312,6 +314,11 @@ export const getUniversalNavLocale = (locale) => {
   return `${prefix.toLowerCase()}_${prefix.toUpperCase()}`;
 };
 
+const getCountry = () => {
+  let [lang, country] = getUniversalNavLocale(getConfig().locale).toLowerCase().split('_');
+  if (country === 'gb') country = 'uk';
+  return GeoMap[`${country}_${lang}`]?.split('_')[0] || GeoMap[country]?.split('_')[0] || 'US';
+};
 const convertToPascalCase = (str) => str
   ?.split('-')
   .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
@@ -776,6 +783,7 @@ class Gnav {
       target: this.blocks.universalNav,
       env: environment,
       locale,
+      countryCode: getCountry(),
       imsClientId: window.adobeid?.client_id,
       theme: isDarkMode() ? 'dark' : 'light',
       analyticsContext: {
