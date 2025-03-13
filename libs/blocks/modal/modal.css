@@ -125,6 +125,10 @@
   outline: 2px solid var(--modal-focus-color);
 }
 
+.dialog-focus-placeholder {
+  height: 0;
+}
+
 .dialog-modal .section > .content {
   max-width: initial;
 }

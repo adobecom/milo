@@ -1,7 +1,7 @@
 import { html, LitElement } from 'lit';
 import { MatchMediaController } from '@spectrum-web-components/reactive-controllers/src/MatchMedia.js';
-
 import { deeplink, pushState } from './deeplink.js';
+import { EVENT_MERCH_SIDENAV_SELECT } from './constants.js';
 
 import {
     EVENT_MERCH_CARD_COLLECTION_SORT,
@@ -179,6 +179,14 @@ export class MerchCardCollection extends LitElement {
                 .getElementById('resultText')
                 ?.firstElementChild?.assignedElements?.()?.[0];
             if (!resultTextElement) return;
+
+            this.sidenav?.filters?.addEventListener(EVENT_MERCH_SIDENAV_SELECT, () => {
+              updateLiterals(resultTextElement, {
+                resultCount: this.resultCount,
+                searchTerm: this.search,
+                filter: this.sidenav?.filters.selectedText,
+              });
+            });
 
             updateLiterals(resultTextElement, {
                 resultCount: this.resultCount,
