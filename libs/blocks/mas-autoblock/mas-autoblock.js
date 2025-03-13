@@ -2,6 +2,24 @@ import { createTag, getConfig } from '../../utils/utils.js';
 import '../../deps/mas/merch-card.js';
 import { initService } from '../merch/merch.js';
 
+const DEFAULT_PLACEHOLDERS = {
+  searchText: 'Search all products',
+  filtersText: 'Filters',
+  sortText: 'Sort',
+  popularityText: 'Popularity',
+  alphabeticallyText: 'Alphabetically',
+  noResultsText: '0 results',
+  resultText: '1 result in All',
+  resultsText: '111 results in All',
+  searchResultText: '1 result for',
+  searchResultsText: '111 results for',
+  searchResultMobileText: '1 result for: ',
+  searchResultsMobileText: '111 results for: ',
+  noSearchResultsText: 'Your search for',
+  noSearchResultsMobileText: 'Your search for',
+  showMoreText: 'Show more',
+};
+
 export function getFragmentId(el) {
   const { hash } = new URL(el.href);
   const hashValue = hash.startsWith('#') ? hash.substring(1) : hash;
@@ -67,7 +85,7 @@ async function postProcess(control, tagName) {
   await control.checkReady();
   switch (tagName) {
     case 'merch-card-collection': {
-      const placeholders = control.data?.placeholders || { filtersText: 'Filters' };
+      const placeholders = control.data?.placeholders || DEFAULT_PLACEHOLDERS;
       for (const key of Object.keys(placeholders)) {
         const placeholder = createTag('p', { slot: key }, placeholders[key]);
         control.append(placeholder);
