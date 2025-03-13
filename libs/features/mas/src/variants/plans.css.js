@@ -9,6 +9,10 @@ merch-card[variant="plans"] {
   width: 276px;
 }
 
+merch-card-collection merch-card[variant="plans"] {
+  width: auto;
+}
+
 merch-card[variant="plans"] [slot="description"] {
   min-height: 84px;
 }

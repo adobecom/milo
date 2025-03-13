@@ -976,6 +976,10 @@ merch-card[variant="plans"] {
   width: 276px;
 }
 
+merch-card-collection merch-card[variant="plans"] {
+  width: auto;
+}
+
 merch-card[variant="plans"] [slot="description"] {
   min-height: 84px;
 }
@@ -1049,7 +1053,7 @@ merch-card[variant="plans"]:not([size]) {
         grid-template-columns: repeat(4, var(--consonant-merch-card-plans-width));
     }
 }
-`;var yt={title:{tag:"p",slot:"heading-xs"},prices:{tag:"p",slot:"heading-m"},promoText:{tag:"p",slot:"promo-text"},description:{tag:"div",slot:"body-xs"},mnemonics:{size:"l"},callout:{tag:"div",slot:"callout-content"},quantitySelect:{tag:"div",slot:"quantity-select"},stockOffer:!0,secureLabel:!0,badge:!0,size:["wide","super-wide"],whatsIncluded:{tag:"div",slot:"whats-included"},ctas:{slot:"footer",size:"m"},style:"consonant"},ye=class extends w{constructor(t){super(t),this.adaptForMobile=this.adaptForMobile.bind(this)}get aemFragmentMapping(){return yt}getGlobalCSS(){return Pr}adaptForMobile(){let t=this.card.shadowRoot,r=t.querySelector("footer"),n=this.card.getAttribute("size"),o=t.querySelector("footer #stock-checkbox"),a=t.querySelector(".body #stock-checkbox");if(!n){r.classList.remove("wide-footer"),o&&o.remove();return}let i=ue();if(r&&r.classList.toggle("wide-footer",!i),i&&o){a?o.remove():t.querySelector(".body").appendChild(o);return}a&&(o?a.remove():r.prepend(a))}postCardUpdateHook(){this.adaptForMobile(),this.adjustTitleWidth()}get stockCheckbox(){return this.card.checkboxLabel?Cr`<label id="stock-checkbox">
+`;var yt={title:{tag:"p",slot:"heading-xs"},prices:{tag:"p",slot:"heading-m"},promoText:{tag:"p",slot:"promo-text"},description:{tag:"div",slot:"body-xs"},mnemonics:{size:"l"},callout:{tag:"div",slot:"callout-content"},quantitySelect:{tag:"div",slot:"quantity-select"},stockOffer:!0,secureLabel:!0,badge:!0,size:["wide","super-wide"],whatsIncluded:{tag:"div",slot:"whats-included"},ctas:{slot:"footer",size:"m"},style:"consonant"},ye=class extends w{constructor(t){super(t),this.adaptForMobile=this.adaptForMobile.bind(this)}get aemFragmentMapping(){return yt}getGlobalCSS(){return Pr}adaptForMobile(){let t=this.card.shadowRoot,r=t.querySelector("footer"),n=this.card.getAttribute("size"),o=t.querySelector("footer #stock-checkbox"),a=t.querySelector(".body #stock-checkbox"),i=t.querySelector(".body");if(!n){r.classList.remove("wide-footer"),o&&o.remove();return}let s=ue();if(r&&r.classList.toggle("wide-footer",!s),s&&o){a?o.remove():i.appendChild(o);return}!s&&a&&(o?a.remove():r.prepend(a))}postCardUpdateHook(){this.adaptForMobile(),this.adjustTitleWidth()}get stockCheckbox(){return this.card.checkboxLabel?Cr`<label id="stock-checkbox">
                 <input type="checkbox" @change=${this.card.toggleStockOffer}></input>
                 <span></span>
                 ${this.card.checkboxLabel}

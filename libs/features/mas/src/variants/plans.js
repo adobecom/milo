@@ -41,6 +41,7 @@ export class Plans extends VariantLayout {
     const size = this.card.getAttribute('size');
     const stockInFooter = shadowRoot.querySelector('footer #stock-checkbox');
     const stockInBody = shadowRoot.querySelector('.body #stock-checkbox');
+    const body = shadowRoot.querySelector('.body');
 
     if (!size) {
       footer.classList.remove('wide-footer');
@@ -51,10 +52,10 @@ export class Plans extends VariantLayout {
     const mobile = isMobile();
     if (footer) footer.classList.toggle('wide-footer', !mobile);
     if (mobile && stockInFooter) {
-      stockInBody ? stockInFooter.remove() : shadowRoot.querySelector('.body').appendChild(stockInFooter);
+      stockInBody ? stockInFooter.remove() : body.appendChild(stockInFooter);
       return;
     }
-    if (stockInBody) {
+    if (!mobile && stockInBody) {
       stockInFooter ? stockInBody.remove() : footer.prepend(stockInBody);
     }
   }
