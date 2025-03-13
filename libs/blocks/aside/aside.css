@@ -954,6 +954,11 @@
     align-items: center;
     text-align: center;
   }
+
+  .aside.promobar .action-area wbr,
+  .aside.notification .action-area wbr {
+    display: none;
+  }
 }
 
 @media (min-width: 600px) and (max-width: 1199px) {
@@ -1120,11 +1125,6 @@
   .aside.promobar.popup .promo-text .icon-area,
   .aside.promobar.popup .promo-text .icon-area img {
     height: var(--icon-size-m);
-  }
-
-  .aside.promobar .action-area,
-  .aside.notification .action-area {
-    flex-shrink: 0;
   }
 
   .aside.center:not(.notification) .foreground.container .text {
