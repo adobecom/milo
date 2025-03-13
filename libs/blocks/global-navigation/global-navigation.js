@@ -1161,6 +1161,7 @@ class Gnav {
           elem?.addEventListener('click', (e) => {
             trigger({ element: e.currentTarget, event: e, type: 'headline' });
           });
+          elem.textContent = elem.textContent?.trim();
         });
       }
     };
