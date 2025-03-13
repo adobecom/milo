@@ -64,10 +64,6 @@ function isFirefox() {
   return navigator.userAgent.includes('Firefox');
 }
 
-function isAsideCta(element) {
-  return element.closest('.aside') && element.parentElement?.classList.contains('con-button');
-}
-
 /**
  * Check if a word wrap has been applied to an element.
  */
@@ -137,7 +133,6 @@ export async function applyJapaneseLineBreaks(config, options = {}) {
     if (
       budouxExcludeElements.has(el)
       || isWordWrapApplied(el)
-      || isAsideCta(el)
       || (isFirefox() && hasFlexOrGrid(el))
     ) return;
     parser.applyElement(el, { threshold: budouxThres });
