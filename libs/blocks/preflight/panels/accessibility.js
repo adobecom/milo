@@ -24,7 +24,7 @@ async function runAccessibilityTest() {
     );
 
     const customViolations = await customAccessibilityChecks({
-      checks: ['altText', 'contrast'],
+      checks: ['altText'],
       include: ['main'],
       exclude: ['.preflight', '.global-navigation', 'footer'],
     });
