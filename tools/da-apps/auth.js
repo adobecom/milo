@@ -1,5 +1,6 @@
 const ORG_MAP = {
   'da-bacom': 'DA BACOM',
+  'da-bacom-blog': 'DA BACOM_BLOG',
   'da-cc-sandbox': 'DA BACOM',
 };
 
@@ -12,8 +13,8 @@ const ORG_MAP = {
   const redirectPath = searchParams.get('path');
   const tenant = ORG_MAP[repo];
 
-  window.sessionStorage.setItem('da-repo', JSON.stringify(tenant));
-  window.sessionStorage.setItem('da-token', JSON.stringify(token));
+  window.sessionStorage.setItem('da-repo', tenant);
+  window.sessionStorage.setItem('da-token', token);
 
   if (token === 'undefined') {
     document.body.innerHTML = `

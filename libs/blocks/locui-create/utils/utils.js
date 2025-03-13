@@ -6,7 +6,9 @@ import {
   locSelected,
   locales as stLocales,
   project as stProject,
+  userWorkflowType,
 } from '../store.js';
+import { USER_WORKFLOW_TYPE } from './constant.js';
 
 export function processLocaleData(localeData) {
   const processedLocales = localeData.locales.data
@@ -95,19 +97,39 @@ export function setSelectedLocalesAndRegions() {
   locSelected.value = { selectedLocale, activeLocales };
 }
 
-export function getLanguageDetails(lang) {
-  const langDetails = stLocales.value?.find(
-    ({ languagecode }) => languagecode.toLowerCase() === lang.toLowerCase(),
-  ) ?? {};
-  return [
-    {
+export function getLanguageDetails(langs) {
+  return langs.map((langCode) => {
+    const langDetails = stLocales.value?.find(
+      ({ languagecode }) => languagecode.toLowerCase() === langCode.toLowerCase(),
+    ) ?? {};
+
+    return {
       action: 'Rollout',
       langCode: langDetails.languagecode,
       language: langDetails.language,
       locales: langDetails.livecopies?.split(','),
       workflow: '',
-    },
-  ];
+    };
+  });
+}
+
+export function getProject(resJson, lang) {
+  const projectType = (resJson.projectType === 'rollout' || userWorkflowType.value === USER_WORKFLOW_TYPE.promote_rollout)
+    ? 'rollout' : 'localization';
+  const projectNameSuffix = `${userWorkflowType.value === USER_WORKFLOW_TYPE.promote_rollout ? '-rollout' : ''}${lang ? `-${lang}` : ''}`;
+  const languages = lang?.split(',') ?? resJson.languages.map((language) => language.langCode);
+  const projectLanguages = (userWorkflowType.value === USER_WORKFLOW_TYPE.edit)
+    ? resJson.languages : getLanguageDetails(languages);
+
+  return {
+    type: projectType,
+    name: `${resJson.projectName}${projectNameSuffix}`,
+    htmlFlow: resJson.settings?.useHtmlFlow,
+    editBehavior: resJson.settings?.regionalEditBehaviour,
+    urls: resJson.urls,
+    fragments: [],
+    languages: projectLanguages,
+  };
 }
 
 export function getProjectByParams(searchParams) {
@@ -125,7 +147,7 @@ export function getProjectByParams(searchParams) {
     projectInfo.urls = decodedUrls;
   }
   if (language) {
-    projectInfo.languages = getLanguageDetails(language);
+    projectInfo.languages = getLanguageDetails(language.split(','));
   }
 
   return Object.keys(projectInfo).length > 0 ? projectInfo : null;

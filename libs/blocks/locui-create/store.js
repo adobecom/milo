@@ -2,11 +2,12 @@ import { signal } from '../../deps/htm-preact.js';
 import login from '../../tools/sharepoint/login.js';
 import { accessToken } from '../../tools/sharepoint/state.js';
 import { origin } from '../locui/utils/franklin.js';
-import { LOCALES, LOCALE_GROUPS, TRANSCREATION_WORKFLOW } from './utils/constant.js';
+import { LOCALES, LOCALE_GROUPS, TRANSCREATION_WORKFLOW, USER_WORKFLOW_TYPE } from './utils/constant.js';
 import {
   processLocaleData,
   createPayload,
   getMilocUrl,
+  getProject,
 } from './utils/utils.js';
 
 export const telemetry = { application: { appName: 'Adobe Localization' } };
@@ -23,6 +24,7 @@ export const locSelected = signal(null);
 export const projectType = signal('rollout');
 export const initByParams = signal(null);
 export const env = signal('stage');
+export const userWorkflowType = signal('normal');
 
 export function nextStep() {
   currentStep.value += 1;
@@ -51,6 +53,10 @@ export function setLocale(_locale) {
     ...locSelected.value,
     ..._locale,
   };
+}
+
+export function setUserWorkflowType(workflow) {
+  userWorkflowType.value = workflow;
 }
 
 export function reset() {
@@ -194,6 +200,8 @@ export async function updateDraftProject(publish = false) {
 }
 
 export async function fetchDraftProject(projectKey) {
+  const searchParams = new URLSearchParams(window.location.search);
+  const lang = searchParams.get('language');
   if (!projectKey) {
     return 'Project key has not been provided.';
   }
@@ -218,20 +226,13 @@ export async function fetchDraftProject(projectKey) {
     );
     const resJson = await response.json();
     if (response.ok) {
-      setProject({
-        type: resJson.projectType === 'rollout' ? 'rollout' : 'localization',
-        name: resJson.projectName,
-        htmlFlow: resJson.settings?.useHtmlFlow,
-        editBehavior: resJson.settings?.regionalEditBehaviour,
-        urls: resJson.urls,
-        fragments: [],
-        languages: resJson?.languages ?? [],
-      });
+      const newProject = getProject(resJson, lang);
+      setProject(newProject);
       projectInfo.value = {
         ...projectInfo.value,
         projectKey,
       };
-      projectCreated.value = true;
+      projectCreated.value = (userWorkflowType.value !== USER_WORKFLOW_TYPE.promote_rollout);
       error = '';
     }
     if (resJson.error) {
