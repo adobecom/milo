@@ -68,6 +68,6 @@
 
 @media (min-width: 1200px) {
   .region-nav > div:nth-of-type(2) {
-    column-count: 5;
+    column-count: 3;
   }
 }
