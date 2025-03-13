@@ -30,7 +30,8 @@
   overflow: hidden;
 }
 
-.upgrade-flow-modal .dialog-close {
+.upgrade-flow-modal .dialog-close,
+.dialog-modal.hide-close-button .dialog-close {
   display: none;
 }
 
