@@ -673,3 +673,96 @@ img[data-alt-check]::after {
 .lcp-tooltip-modal.show {
   visibility: visible;
 }
+
+
+/* Accessibility Tab */
+
+/* Violations Section */
+
+.success {
+  font-size: 16px;
+  font-weight: bold;
+  color: green;
+  margin-bottom: 6px;
+}
+
+.violations {
+  font-size: 16px;
+  font-weight: bold;
+  color: red;
+  margin-bottom: 6px;
+}
+
+.violation-list {
+  padding-left: 16px;
+}
+
+.violation-list li {
+  margin-bottom: 6px;
+  list-style-type: disc;
+}
+
+.violation-details {
+  padding-left: 20px;
+  font-size: 14px;
+  color: #ddd;
+}
+
+.violation-details strong {
+  color: #fff;
+}
+
+.violation-link {
+  color: #e6e6e6;
+  text-decoration: underline;
+}
+
+.violation-index {
+  font-weight: bold;
+  margin-right: 10px;
+  color: #ccc;
+}
+
+.violation-summary {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  align-items: center;
+  padding: 12px 24px;
+  cursor: pointer;
+}
+
+.violation-summary:hover {
+  background-color: rgba(255, 255, 255, 5%);
+}
+
+/* Affected Elements */
+.affected-elements {
+  padding-left: 20px;
+  margin-top: 5px;
+}
+
+.affected-elements li {
+  font-size: 14px;
+  color: #eee;
+}
+
+/* Severity Colors */
+.severity {
+  font-weight: bold;
+}
+
+.severity.critical {
+  color: red;
+}
+
+.severity.serious {
+  color: orange;
+}
+
+.severity.moderate {
+  color: goldenrod;
+}
+
+.severity.minor {
+  color: lightgray;
+}
