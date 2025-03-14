@@ -15,8 +15,8 @@ const DEFAULT_PLACEHOLDERS = {
   searchResultsText: '<span data-placeholder="resultCount"></span> results for <strong><span data-placeholder="searchTerm"></span></strong>',
   searchResultMobileText: '1 result for: <strong><span data-placeholder="searchTerm"></span></strong>',
   searchResultsMobileText: '<span data-placeholder="resultCount"></span> results for: <strong><span data-placeholder="searchTerm"></span></strong>',
-  noSearchResultsText: 'Your search for <strong><span data-placeholder="resultCount"></span></strong> did not yield any results.',
-  noSearchResultsMobileText: '<p>Your search for <strong><span data-placeholder="resultCount"></span></strong> did not yield any results. Try a different search term.</p><p>Suggestions:</p><ul><li>Make sure all words are spelled correctly</li><li>Use quotes to search for an entire phrase, such as "crop an image"</li></ul>',
+  noSearchResultsText: 'Your search for <strong><span data-placeholder="searchTerm"></span></strong> did not yield any results.',
+  noSearchResultsMobileText: '<p>Your search for <strong><span data-placeholder="searchTerm"></span></strong> did not yield any results. Try a different search term.</p><p>Suggestions:</p><ul><li>Make sure all words are spelled correctly</li><li>Use quotes to search for an entire phrase, such as "crop an image"</li></ul>',
   showMoreText: 'Show more',
 };
 
