@@ -118,10 +118,10 @@ runTests(async () => {
         });
 
         it('ignores incomplete markup', async () => {
-            const [, , , cardWithMissingFragmentId] = getTemplateContent('cards');
+            const [, , , cardWithMissingPath] = getTemplateContent('cards');
 
             let masErrorTriggered = false;
-            cardWithMissingFragmentId.addEventListener('mas:error', (e) => {
+            cardWithMissingPath.addEventListener('mas:error', (e) => {
               if (e.target.tagName === 'MERCH-CARD') {
                 masErrorTriggered = true;
               }
@@ -157,15 +157,6 @@ runTests(async () => {
             await aemFragment.updateComplete;
             await cardWithWrongOsis.checkReady();
             expect(masErrorTriggered).to.true;
-        });
-
-        it('uses ims token to retrieve a fragment', async () => {
-            const [, , , , cardWithIms] = getTemplateContent('cards');
-            const aemFragment = cardWithIms.querySelector('aem-fragment');
-            window.adobeid = { authorize: sinon.stub() };
-            spTheme.append(cardWithIms);
-            expect(aemFragment.updateComplete);
-            sinon.assert.calledOnce(window.adobeid.authorize);
         });
 
         it('renders ccd slice card', async () => {

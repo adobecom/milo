@@ -23,7 +23,7 @@ const MARK_READY = 'mas:ready';
  */
 export class MasCommerceService extends HTMLElement {
     static instance;
-    promise = null;
+    readyPromise = null;
 
     get #config() {
         const env = this.getAttribute('env') ?? 'prod';
