@@ -3,6 +3,8 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import processQuickLink from '../../../libs/features/branch-quick-links/branch-quick-links.js';
 
+window.lana = { log: sinon.stub() };
+
 describe('branch quick links', () => {
   beforeEach(async () => {
     window.adobePrivacy = {
@@ -18,24 +20,32 @@ describe('branch quick links', () => {
   });
 
   it('should add a class to the quick link', async () => {
-    window.alloy = new Promise(() => {});
-    const alloyS = sinon.stub(window, 'alloy');
-    alloyS.resolves({ identity: { ECID: '123' } });
-    const quickLink = document.querySelector('a');
+    window.alloy = () => Promise.resolve({ identity: { ECID: '123' } });
+    const quickLink = document.querySelector('a[href*="app.link"]');
     processQuickLink(quickLink);
+    quickLink.href = '#';
     await quickLink.click();
     window.dispatchEvent(new CustomEvent('adobePrivacy:PrivacyConsent'));
     window.dispatchEvent(new CustomEvent('adobePrivacy:PrivacyCustom'));
     window.dispatchEvent(new CustomEvent('adobePrivacy:PrivacyReject'));
     expect(quickLink.classList.contains('quick-link')).to.be.true;
-    alloyS.restore();
   });
 
-  it('should not add ecid if alloy is undefined', async () => {
-    window.alloy = undefined;
-    const quickLink = document.querySelector('a');
+  it('should throw an error while fetching ecid', async () => {
+    window.alloy = () => Promise.reject(new Error('Error fetching ECID'));
+    const quickLink = document.querySelector('a[href*="app.link"]');
     processQuickLink(quickLink);
-    quickLink.click();
-    expect(quickLink.href.includes('ecid')).to.be.false;
+    quickLink.href = '#';
+    await quickLink.click();
+  });
+
+  describe('case: alloy is undefined', async () => {
+    it('should not add ecid if alloy is undefined', async () => {
+      window.alloy = undefined;
+      const quickLink = document.querySelector('a');
+      processQuickLink(quickLink);
+      await quickLink.click();
+      expect(quickLink.href.includes('ecid')).to.be.false;
+    });
   });
 });

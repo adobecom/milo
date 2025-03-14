@@ -1,7 +1,7 @@
 import { html, LitElement } from 'lit';
 import { MatchMediaController } from '@spectrum-web-components/reactive-controllers/src/MatchMedia.js';
-
 import { deeplink, pushState } from './deeplink.js';
+import { EVENT_MERCH_SIDENAV_SELECT } from './constants.js';
 
 import {
     EVENT_MERCH_CARD_COLLECTION_SORT,
@@ -156,20 +156,19 @@ export class MerchCardCollection extends LitElement {
             this.hasMore = result.length > pageSize;
             result = result.filter(([, index]) => index < pageSize);
         }
-
-        let reduced = new Map(result);
+        let reduced = new Map(result.reverse());
+        for (const card of reduced.keys()) {
+          this.prepend(card);
+        }
+        
         children.forEach((child) => {
             if (reduced.has(child)) {
-                const index = reduced.get(child);
-                child.style.order = index;
-                child.setAttribute('tabindex', index + 1);
                 child.size = child.filters[this.filter]?.size;
                 child.style.removeProperty('display');
                 child.requestUpdate();
             } else {
                 child.style.display = 'none';
                 child.size = undefined;
-                child.style.removeProperty('order');
             }
         });
         window.scrollTo(0, lastScrollTop);
@@ -180,6 +179,14 @@ export class MerchCardCollection extends LitElement {
                 .getElementById('resultText')
                 ?.firstElementChild?.assignedElements?.()?.[0];
             if (!resultTextElement) return;
+
+            this.sidenav?.filters?.addEventListener(EVENT_MERCH_SIDENAV_SELECT, () => {
+              updateLiterals(resultTextElement, {
+                resultCount: this.resultCount,
+                searchTerm: this.search,
+                filter: this.sidenav?.filters.selectedText,
+              });
+            });
 
             updateLiterals(resultTextElement, {
                 resultCount: this.resultCount,

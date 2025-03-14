@@ -1,7 +1,9 @@
 /* eslint-disable no-plusplus */
-import { createTag, MILO_EVENTS } from '../../utils/utils.js';
+import { createTag, getConfig, MILO_EVENTS } from '../../utils/utils.js';
 import { decorateButtons } from '../../utils/decorate.js';
 import { debounce } from '../../utils/action.js';
+import { replaceKeyArray } from '../../features/placeholders.js';
+import { getGnavHeight } from '../global-navigation/utilities/utilities.js';
 
 const DESKTOP_SIZE = 900;
 const MOBILE_SIZE = 768;
@@ -75,7 +77,6 @@ function handleHeading(table, headingCols) {
     }
 
     const trackingHeader = col.querySelector('.tracking-header');
-    const nodeToApplyRoleScope = trackingHeader ?? col;
 
     if (trackingHeader) {
       const trackingHeaderID = `t${tableIndex + 1}-c${i + 1}-header`;
@@ -90,11 +91,12 @@ function handleHeading(table, headingCols) {
       const describedBy = `${headerBody?.id ?? ''} ${headerPricing?.id ?? ''}`.trim();
       trackingHeader.setAttribute('aria-describedby', describedBy);
 
-      col.removeAttribute('role');
+      col.setAttribute('role', 'columnheader');
     }
 
-    nodeToApplyRoleScope.setAttribute('role', 'columnheader');
-    nodeToApplyRoleScope.setAttribute('scope', 'col');
+    col.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach((heading) => {
+      heading.setAttribute('role', 'paragraph');
+    });
   });
 }
 
@@ -151,6 +153,66 @@ function handleAddOnContent(table) {
   });
   setTimeout(() => handleEqualHeight(table, '.row-heading'), 0);
   table.addEventListener('mas:resolved', debounce(() => { handleEqualHeight(table, '.row-heading'); }));
+}
+
+function setTooltipPosition(el) {
+  if (!['TABLET', 'MOBILE'].includes(defineDeviceByScreenSize())) return;
+
+  const isRtl = document.documentElement.dir === 'rtl';
+  const classesToCheck = isRtl ? ['top', 'bottom', 'left'] : ['top', 'bottom', 'right'];
+  const selector = classesToCheck.map((cls) => `.milo-tooltip.${cls}`).join(',');
+  const tooltips = el.querySelectorAll(selector);
+
+  tooltips.forEach((tooltip) => {
+    tooltip.classList.remove(...classesToCheck);
+    tooltip.classList.add(isRtl ? 'right' : 'left');
+  });
+}
+
+async function setAriaLabelForIcons(el) {
+  const config = getConfig();
+  const expendableIcons = el.querySelectorAll('.icon.expand[role="button"]');
+  const selectFilters = el.parentElement.querySelectorAll('.filters .filter');
+  const ariaLabelElements = [...selectFilters, ...expendableIcons];
+
+  if (!ariaLabelElements.length) {
+    return;
+  }
+
+  const ariaLabels = await replaceKeyArray(['toggle-row', 'choose-table-column'], config);
+
+  ariaLabelElements.forEach((element) => {
+    const labelIndex = element.classList.contains('filter') ? 1 : 0;
+    element.setAttribute('aria-label', ariaLabels[labelIndex]);
+  });
+}
+
+function setTooltipListeners(el) {
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      el.querySelectorAll('.milo-tooltip').forEach((tooltip) => {
+        tooltip.classList.add('hide-tooltip');
+      });
+    }
+  });
+
+  el.querySelectorAll('.milo-tooltip').forEach((tooltip) => {
+    tooltip.addEventListener('mouseenter', () => {
+      tooltip.classList.remove('hide-tooltip');
+    });
+
+    tooltip.addEventListener('mouseleave', () => {
+      tooltip.classList.add('hide-tooltip');
+    });
+
+    tooltip.addEventListener('focus', () => {
+      tooltip.classList.remove('hide-tooltip');
+    });
+
+    tooltip.addEventListener('blur', () => {
+      tooltip.classList.add('hide-tooltip');
+    });
+  });
 }
 
 function handleHighlight(table) {
@@ -255,8 +317,10 @@ function handleSection(sectionParams) {
     }
 
     if (isCollapseTable) {
-      const iconTag = createTag('span', { class: 'icon expand' });
-      sectionHeadTitle.appendChild(iconTag);
+      const iconTag = createTag('span', { class: 'icon expand', role: 'button' });
+      if (!sectionHeadTitle.querySelector('.icon.expand')) {
+        sectionHeadTitle.prepend(iconTag);
+      }
 
       if (expandSection) {
         iconTag.setAttribute('aria-expanded', 'true');
@@ -374,9 +438,8 @@ function handleHovering(table) {
   }
 }
 
-function handleScrollEffect(table) {
-  const gnav = document.querySelector('header');
-  const gnavHeight = gnav ? gnav.offsetHeight : 0;
+async function handleScrollEffect(table) {
+  const gnavHeight = getGnavHeight();
   const highlightRow = table.querySelector('.row-highlight');
   const headingRow = table.querySelector('.row-heading');
 
@@ -427,7 +490,8 @@ function applyStylesBasedOnScreenSize(table, originTable) {
       icon.parentElement.addEventListener('click', () => handleExpand(icon));
       icon.parentElement.setAttribute('tabindex', 0);
       icon.parentElement.addEventListener('keydown', (e) => {
-        e.preventDefault();
+        if (e.key === ' ') e.preventDefault();
+
         if (e.key === 'Enter' || e.key === ' ') handleExpand(icon);
       });
     });
@@ -586,6 +650,7 @@ export default function init(el) {
     const handleResize = () => {
       applyStylesBasedOnScreenSize(el, originTable);
       if (isStickyHeader(el)) handleScrollEffect(el);
+      setTooltipPosition(el);
     };
     handleResize();
 
@@ -600,6 +665,8 @@ export default function init(el) {
     });
 
     isDecorated = true;
+    setAriaLabelForIcons(el);
+    setTooltipListeners(el);
   };
 
   window.addEventListener(MILO_EVENTS.DEFERRED, () => {
