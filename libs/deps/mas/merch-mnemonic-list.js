@@ -8,7 +8,6 @@ var o=Object.defineProperty;var r=(e,t,i)=>t in e?o(e,t,{enumerable:!0,configura
             gap: 8px;
             margin-right: 16px;
             align-items: center;
-            margin-bottom: 16px;
         }
 
         ::slotted([slot='icon']) {

@@ -96,11 +96,11 @@ export class Plans extends VariantLayout {
             <slot name="body-xxs"></slot>
             <slot name="promo-text"></slot>
             <slot name="body-xs"></slot>
-            <slot name="callout-content"></slot>
             <slot name="whats-included"></slot>
+            <slot name="callout-content"></slot>
             ${this.stockCheckbox}
+            <slot name="quantity-select"></slot>
         </div>
-        <slot name="quantity-select"></slot>
         ${this.secureLabelFooter}`;
   }
 

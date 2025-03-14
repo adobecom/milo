@@ -8,12 +8,13 @@ export class MerchWhatsIncluded extends LitElement {
             align-items: center;
             overflow: hidden;
             box-sizing: border-box;
+            row-gap: 10px;
         }
 
         ::slotted([slot='heading']) {
             font-size: 14px;
             font-weight: 700;
-            margin: 0 16px 16px 0;
+            margin-right: 16px;
         }
 
         ::slotted([slot='content']) {

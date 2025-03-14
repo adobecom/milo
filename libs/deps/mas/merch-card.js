@@ -993,7 +993,6 @@ merch-card[variant="plans"] [slot="quantity-select"] {
   justify-content: flex-start;
   box-sizing: border-box;
   width: 100%;
-  padding: var(--consonant-merch-spacing-xs);
   padding-top: 0;
 }
 
@@ -1067,11 +1066,11 @@ merch-card[variant="plans"]:not([size]) {
             <slot name="body-xxs"></slot>
             <slot name="promo-text"></slot>
             <slot name="body-xs"></slot>
-            <slot name="callout-content"></slot>
             <slot name="whats-included"></slot>
+            <slot name="callout-content"></slot>
             ${this.stockCheckbox}
+            <slot name="quantity-select"></slot>
         </div>
-        <slot name="quantity-select"></slot>
         ${this.secureLabelFooter}`}};p(ye,"variantStyle",po`
     :host([variant='plans']) {
       min-height: 348px;
@@ -2210,6 +2209,10 @@ merch-card [slot='heading-xl'] {
     margin: 0;
 }
 
+merch-card [slot='whats-included'] {
+    margin: var(--consonant-merch-spacing-xxxs) 0px;
+}
+
 merch-card [slot='callout-content'] {
     display: flex;
     flex-direction: column;
@@ -2443,7 +2446,6 @@ merch-sidenav-checkbox-group h3 {
             gap: 8px;
             margin-right: 16px;
             align-items: center;
-            margin-bottom: 16px;
         }
 
         ::slotted([slot='icon']) {
@@ -2473,12 +2475,13 @@ merch-sidenav-checkbox-group h3 {
             align-items: center;
             overflow: hidden;
             box-sizing: border-box;
+            row-gap: 10px;
         }
 
         ::slotted([slot='heading']) {
             font-size: 14px;
             font-weight: 700;
-            margin: 0 16px 16px 0;
+            margin-right: 16px;
         }
 
         ::slotted([slot='content']) {

@@ -8,7 +8,6 @@ export class MerchMnemonicList extends LitElement {
             gap: 8px;
             margin-right: 16px;
             align-items: center;
-            margin-bottom: 16px;
         }
 
         ::slotted([slot='icon']) {
