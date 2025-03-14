@@ -3,7 +3,7 @@ import { getMiloLocaleSettings } from '../merch/merch.js';
 
 export function generateM7Link(options) {
   const paCode = getMetadata('m7-pa-code');
-  if (!paCode) return;
+  if (!paCode) return '';
 
   const { locale } = getConfig();
   const country = getMiloLocaleSettings(locale).country || 'US';
