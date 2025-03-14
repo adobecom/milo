@@ -6,7 +6,7 @@ export const CSS = `
 }
 
 merch-card[variant="plans"] {
-  width: 276px;
+  width: var(--consonant-merch-card-plans-width);
 }
 
 merch-card[variant="plans"] [slot="description"] {
