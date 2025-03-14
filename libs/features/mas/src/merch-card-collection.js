@@ -124,6 +124,7 @@ export class MerchCardCollection extends LitElement {
         this.hasMore = false;
         this.resultCount = undefined;
         this.displayResult = false;
+        this.data = null;
         this.hydrating = false;
     }
 
@@ -135,7 +136,7 @@ export class MerchCardCollection extends LitElement {
 
     checkReady() {
         const aemFragment = this.querySelector('aem-fragment');
-        if (!aemFragment) return;
+        if (!aemFragment) return Promise.resolve(true);
         const timeoutPromise = new Promise((resolve) =>
             setTimeout(() => resolve(false), MERCH_CARD_COLLECTION_LOAD_TIMEOUT),
         );
@@ -239,6 +240,7 @@ export class MerchCardCollection extends LitElement {
             aemFragment.remove();
         });
         aemFragment.addEventListener(EVENT_AEM_LOAD, async (event) => {
+            this.data = event.detail;
             const { cards, categories } = event.detail.fields;
             const fragments = Object.keys(cards).map(key => cards[key]);
             for (const fragment of fragments) {

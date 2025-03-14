@@ -1,6 +1,24 @@
-import { createTag } from '../../utils/utils.js';
+import { createTag, getConfig } from '../../utils/utils.js';
 import '../../deps/mas/merch-card.js';
 import { initService } from '../merch/merch.js';
+
+const DEFAULT_PLACEHOLDERS = {
+  searchText: 'Search all products',
+  filtersText: 'Filters',
+  sortText: 'Sort',
+  popularityText: 'Popularity',
+  alphabeticallyText: 'Alphabetically',
+  noResultsText: '0 results',
+  resultText: '1 result in <strong><span data-placeholder="filter"></span></strong>',
+  resultsText: '<span data-placeholder="resultCount"></span> results in <strong><span data-placeholder="filter"></span></strong>',
+  searchResultText: '1 result for <strong><span data-placeholder="searchTerm"></span></strong>',
+  searchResultsText: '<span data-placeholder="resultCount"></span> results for <strong><span data-placeholder="searchTerm"></span></strong>',
+  searchResultMobileText: '1 result for: <strong><span data-placeholder="searchTerm"></span></strong>',
+  searchResultsMobileText: '<span data-placeholder="resultCount"></span> results for: <strong><span data-placeholder="searchTerm"></span></strong>',
+  noSearchResultsText: 'Your search for <strong><span data-placeholder="searchTerm"></span></strong> did not yield any results.',
+  noSearchResultsMobileText: '<p>Your search for <strong><span data-placeholder="searchTerm"></span></strong> did not yield any results. Try a different search term.</p><p>Suggestions:</p><ul><li>Make sure all words are spelled correctly</li><li>Use quotes to search for an entire phrase, such as "crop an image"</li></ul>',
+  showMoreText: 'Show more',
+};
 
 export function getFragmentId(el) {
   const { hash } = new URL(el.href);
@@ -18,11 +36,19 @@ export function getTagName(el) {
   return el.textContent.trim().match(/^[^:\s]+/)?.[0] || 'merch-card';
 }
 
-async function loadControl(el) {
-  const tagName = getTagName(el);
+async function loadControl(tagName) {
+  const { base } = getConfig();
   switch (tagName) {
     case 'merch-card-collection':
       await import('../../deps/mas/merch-card-collection.js');
+      await import(`${base}/features/spectrum-web-components/dist/theme.js`);
+      await import(`${base}/features/spectrum-web-components/dist/button.js`);
+      await import(`${base}/features/spectrum-web-components/dist/action-button.js`);
+      await import(`${base}/features/spectrum-web-components/dist/action-menu.js`);
+      await import(`${base}/features/spectrum-web-components/dist/search.js`);
+      await import(`${base}/features/spectrum-web-components/dist/menu.js`);
+      await import(`${base}/features/spectrum-web-components/dist/overlay.js`);
+      await import(`${base}/features/spectrum-web-components/dist/tray.js`);
       break;
     default:
       break;
@@ -47,18 +73,38 @@ function getTagOptions(fragment, tagName) {
   return [attributes, html];
 }
 
-export async function createControl(el, fragment) {
+export function createControl(el, fragment) {
   const tagName = getTagName(el);
   const [attributes, html] = getTagOptions(fragment, tagName);
-  const element = createTag(tagName, attributes, html);
-  el.replaceWith(element);
-  await element.checkReady();
+  const control = createTag(tagName, attributes, html);
+  el.replaceWith(control);
+  return control;
+}
+
+async function postProcess(control, tagName) {
+  await control.checkReady();
+  switch (tagName) {
+    case 'merch-card-collection': {
+      const placeholders = control.data?.placeholders || DEFAULT_PLACEHOLDERS;
+      for (const key of Object.keys(placeholders)) {
+        const value = placeholders[key];
+        const tag = value.includes('<p>') ? 'div' : 'p';
+        const placeholder = createTag(tag, { slot: key }, value);
+        control.append(placeholder);
+      }
+      break;
+    }
+    default:
+      break;
+  }
 }
 
 export default async function init(el) {
   const fragment = getFragmentId(el);
   if (!fragment) return;
   await initService();
-  await loadControl(el);
-  await createControl(el, fragment);
+  const tagName = getTagName(el);
+  await loadControl(tagName);
+  const control = createControl(el, fragment);
+  await postProcess(control, tagName);
 }
