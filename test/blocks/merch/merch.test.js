@@ -790,6 +790,11 @@ describe('Merch Block', () => {
         urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator4.html?plan=edu',
       },
       {
+        url: '/mini-plans/illustrator4.html',
+        plan: 'edu',
+        urlWithPlan: '/mini-plans/illustrator4.html?plan=edu',
+      },
+      {
         url: 'https://www.adobe.com/mini-plans/illustrator5.html#thisishash',
         plan: 'edu',
         urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator5.html?plan=edu#thisishash',
@@ -808,6 +813,11 @@ describe('Merch Block', () => {
         url: 'https://www.adobe.com/mini-plans/illustrator8.selector.html/resource?mid=ft&web=1#thisishash',
         plan: 'team',
         urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator8.selector.html/resource?mid=ft&web=1&plan=team#thisishash',
+      },
+      {
+        url: '/mini-plans/illustrator8.selector.html/resource?mid=ft&web=1#thisishash',
+        plan: 'team',
+        urlWithPlan: '/mini-plans/illustrator8.selector.html/resource?mid=ft&web=1&plan=team#thisishash',
       },
       {
         url: 'https://www.adobe.com/mini-plans/illustrator9.sel1.sel2.html/resource#thisishash',
