@@ -1,32 +1,22 @@
-import { getConfig } from '../../utils/utils.js';
+import { getConfig, getMetadata } from '../../utils/utils.js';
 import { getMiloLocaleSettings } from '../merch/merch.js';
 
-async function getImsCountry() {
-  if (window.adobeIMS?.isSignedInUser()) {
-    const profile = await window.adobeIMS.getProfile();
-    return profile.countryCode;
-  }
+export function generateM7Link(options) {
+  const paCode = getMetadata('m7-pa-code');
+  if (!paCode) return;
 
-  return null;
-}
-
-export async function generateM7Link(options) {
   const { locale } = getConfig();
-  const pageCountry = getMiloLocaleSettings(locale).country;
-  const imsCountry = await getImsCountry();
-  const country = imsCountry || pageCountry;
+  const country = getMiloLocaleSettings(locale).country || 'US';
 
-  const m7link = new URL('https://commerce.adobe.com/store/segmentation');
-  m7link.searchParams.append('cli', 'creative');
+  const m7link = new URL('https://commerce.adobe.com/store/segmentation?cli=creative&cs=t');
   m7link.searchParams.append('co', country);
-  m7link.searchParams.append('pa', 'ccsn_direct_individual');
-  m7link.searchParams.append('cs', 't');
+  m7link.searchParams.append('pa', paCode);
   options?.forEach((option) => {
     m7link.searchParams.append(option.name, option.value);
   });
   return m7link.toString();
 }
 
-export default async function init(el) {
-  el.href = await generateM7Link([]);
+export default function init(el) {
+  el.href = generateM7Link([]) || el.href;
 }
