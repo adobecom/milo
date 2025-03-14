@@ -9,6 +9,7 @@ import './utils.js';
 import '../src/merch-offer.js';
 import '../src/merch-offer-select.js';
 import '../src/merch-quantity-select.js';
+import { delay } from './utils.js';
 
 import { mockIms } from './mocks/ims.js';
 import { withWcs } from './mocks/wcs.js';
@@ -24,16 +25,8 @@ runTests(async () => {
             const miniCompareCharts = document.querySelectorAll(
                 'merch-card[variant="mini-compare-chart"]',
             );
-            await Promise.all(
-                [...miniCompareCharts].flatMap((card) => {
-                    return [
-                        card.updateComplete,
-                        ...[...card.querySelectorAll('[data-wcs-osi]')].map(
-                            (osi) => osi.onceSettled(),
-                        ),
-                    ];
-                }),
-            );
+            await Promise.all(Array.from(miniCompareCharts).map((card) => card.checkReady()));
+            await delay();
             const [card1Slots, card2Slots, card3Slots] = [
                 ...miniCompareCharts,
             ].map((miniCompareChart) => {
