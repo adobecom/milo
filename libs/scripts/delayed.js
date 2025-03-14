@@ -41,7 +41,6 @@ export const loadPrivacy = async (getConfig, loadScript) => {
     privacy: { otDomainId },
     documentLanguage: true,
   };
-
   loadScript(`https://www.${env?.name === 'prod' ? '' : 'dev01.'}adobe.com/etc.clientlibs/globalnav/clientlibs/base/privacy-standalone.js`);
 
   // Privacy triggers can exist anywhere on the page and can be added at any time
