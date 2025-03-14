@@ -162,7 +162,7 @@ const defaultOptions = {
   },
   paginationType: {
     paginator: 'Paginator',
-    loadMore: 'Load More',
+    loadMore: 'Load more',
   },
   search: {
     'contentArea.title': 'Card Titles',
