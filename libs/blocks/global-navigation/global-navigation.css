@@ -34,6 +34,7 @@ header.global-navigation {
   z-index: 10;
   background-color: var(--feds-background-nav);
   box-sizing: content-box;
+  overflow-x: clip;
 }
 
 .feds-topnav-wrapper {
@@ -265,6 +266,13 @@ header.global-navigation {
   transition-duration: 130ms;
   transition-timing-function: ease-out;
   cursor: pointer;
+}
+
+.feds-promo .feds-cta {
+  height: initial;
+  min-height: 32px;
+  line-height: 1.5;
+  white-space: unset;
 }
 
 .feds-topnav--overflowing .feds-cta {
@@ -513,10 +521,6 @@ header.global-navigation {
 
 /* Desktop styles */
 @media (min-width: 900px) {
-  header.global-navigation {
-    contain: layout;
-  }
-
   /* General */
   .global-navigation.has-breadcrumbs {
     padding-bottom: var(--feds-height-breadcrumbs);
@@ -1224,9 +1228,15 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
   background: var(--feds-background-popup);
   font-weight: 400;
   border-bottom: 0;
-  padding: 12px 38px;
+  padding: 12px 46px 12px 38px;
   outline-offset: -1px;
   color: var(--feds-color-link);
+  white-space: break-spaces;
+}
+
+.feds-localnav .feds-localnav-items .feds-navLink-content .feds-navLink-title,
+.feds-localnav .feds-localnav-items li .feds-navLink {
+    white-space: break-spaces;
 }
 
 .feds-localnav .feds-localnav-items .feds-navItem--centered {

@@ -1,5 +1,4 @@
 /* eslint-disable no-console */
-
 const MILO_TEMPLATES = [
   '404',
   'featured-story',
@@ -857,6 +856,14 @@ export async function getGnavSource() {
   return url;
 }
 
+export function isLocalNav() {
+  const { locale = {} } = getConfig();
+  const gnavSource = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
+  let newNavEnabled = new URLSearchParams(window.location.search).get('newNav');
+  newNavEnabled = newNavEnabled ? newNavEnabled !== 'false' : getMetadata('mobile-gnav-v2') !== 'off';
+  return gnavSource.split('/').pop().startsWith('localnav-') && newNavEnabled;
+}
+
 async function decorateHeader() {
   const breadcrumbs = document.querySelector('.breadcrumbs');
   breadcrumbs?.remove();
@@ -878,10 +885,7 @@ async function decorateHeader() {
   const dynamicNavActive = getMetadata('dynamic-nav') === 'on'
     && window.sessionStorage.getItem('gnavSource') !== null;
   if (!dynamicNavActive && (baseBreadcrumbs || breadcrumbs || autoBreadcrumbs)) header.classList.add('has-breadcrumbs');
-  const gnavSource = await getGnavSource();
-  let newNavEnabled = new URLSearchParams(window.location.search).get('newNav');
-  newNavEnabled = newNavEnabled ? newNavEnabled !== 'false' : getMetadata('mobile-gnav-v2') !== 'off';
-  if (gnavSource.split('/').pop().startsWith('localnav-') && newNavEnabled) {
+  if (isLocalNav()) {
     // Preserving space to avoid CLS issue
     const localNavWrapper = createTag('div', { class: 'feds-localnav' });
     header.after(localNavWrapper);
@@ -1188,9 +1192,10 @@ async function checkForPageMods() {
   const promo = getMepEnablement('manifestnames', PROMO_PARAM);
   const target = martech === 'off' ? false : getMepEnablement('target');
   const xlg = martech === 'off' ? false : getMepEnablement('xlg');
+  const ajo = martech === 'off' ? false : getMepEnablement('ajo');
 
   if (!(pzn || target || promo || mepParam
-    || mepHighlight || mepButton || mepParam === '' || xlg)) return;
+    || mepHighlight || mepButton || mepParam === '' || xlg || ajo)) return;
 
   const enablePersV2 = enablePersonalizationV2();
   const hybridPersEnabled = getMepEnablement('hybrid-pers');
@@ -1214,7 +1219,7 @@ async function checkForPageMods() {
 
       return { targetInteractionData: data, respTime, respStartTime: now };
     })();
-  } else if ((target || xlg) && !isMartechLoaded) loadMartech();
+  } else if ((target || xlg || ajo) && !isMartechLoaded) loadMartech();
   else if (pzn && martech !== 'off') {
     loadIms()
       .then(() => {
@@ -1232,6 +1237,7 @@ async function checkForPageMods() {
     pzn,
     promo,
     target,
+    ajo,
     targetInteractionPromise,
     calculatedTimeout,
     enablePersV2,
@@ -1255,13 +1261,15 @@ async function loadPostLCP(config) {
   const georouting = getMetadata('georouting') || config.geoRouting;
   if (georouting === 'on') {
     const jsonPromise = fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
-    const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
-    await loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle, jsonPromise);
+    import('../features/georoutingv2/georoutingv2.js')
+      .then(({ default: loadGeoRouting }) => {
+        loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle, jsonPromise);
+      });
   }
   const header = document.querySelector('header');
   if (header) {
     header.classList.add('gnav-hide');
-    await loadBlock(header);
+    loadBlock(header);
     header.classList.remove('gnav-hide');
   }
   loadTemplate();
