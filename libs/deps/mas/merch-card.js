@@ -1048,6 +1048,7 @@ merch-card[variant="plans"] [slot="quantity-select"] {
         --merch-card-plans-min-width: 244px;
         --merch-card-plans-max-width: 244px;
         --merch-card-plans-padding: 15px;
+        --secure-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23505050' viewBox='0 0 12 15'%3E%3Cpath d='M11.5 6H11V5A5 5 0 1 0 1 5v1H.5a.5.5 0 0 0-.5.5v8a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5v-8a.5.5 0 0 0-.5-.5ZM3 5a3 3 0 1 1 6 0v1H3Zm4 6.111V12.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1.389a1.5 1.5 0 1 1 2 0Z'/%3E%3C/svg%3E");
     }
 
     :host([variant='plans']) ::slotted([slot='heading-xs']) {
@@ -1062,6 +1063,10 @@ merch-card[variant="plans"] [slot="quantity-select"] {
 
     :host([variant='plans']) ::slotted([slot='callout-content']) {
         line-height: var(--consonant-merch-card-body-xs-line-height);
+    }
+
+    :host([variant='plans']) #stock-checkbox {
+        margin-top: 8px;
     }
 
     :host([variant='plans']) footer {
