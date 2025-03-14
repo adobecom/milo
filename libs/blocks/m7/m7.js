@@ -11,7 +11,7 @@ export function generateM7Link(href) {
   const m7link = new URL('https://commerce.adobe.com/store/segmentation?cli=creative&cs=t');
   m7link.searchParams.append('co', country);
   m7link.searchParams.append('pa', paCode);
-  if (href.includes('/creativecloud/education-plans.html')) {
+  if (href.includes('/creativecloud/education-plans')) {
     m7link.searchParams.append('ms', 'EDU');
   }
   return m7link.toString();
