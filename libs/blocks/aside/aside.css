@@ -981,8 +981,8 @@
     text-align: center;
   }
 
-  .aside.promobar p .con-button wbr,
-  .aside.notification p .con-button wbr {
+  .aside.promobar .action-area wbr,
+  .aside.notification .action-area wbr {
     display: none;
   }
 }
