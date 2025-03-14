@@ -170,5 +170,13 @@ describe('tabs', () => {
       assignLinkedTabs(linkedTabsList, metaSettings, id, val);
       expect(linkedTabsList).to.deep.equal({ 'tab-1-demo': '/testpage-1' });
     });
+
+    it('has the attribute daa-state="true" on tab buttons', () => {
+      const tablist = allTabs[0].querySelector('div[role="tablist"]');
+      const buttonList = tablist.querySelectorAll('button');
+      buttonList.forEach((button) => {
+        expect(button.getAttribute('daa-state')).to.equal('true');
+      });
+    });
   });
 });
