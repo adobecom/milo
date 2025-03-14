@@ -220,13 +220,8 @@ export const createContent = (el, { content, manifestId, targetManifestId, actio
 };
 
 const COMMANDS = {
-  [COMMANDS_KEYS.remove]: (el, { content, manifestId }) => {
-    if (content === 'false') return;
-    if (manifestId && !el.href?.includes('/tools/ost')) {
-      el.dataset.removedManifestId = manifestId;
-      return;
-    }
-    el.classList.add(CLASS_EL_DELETE);
+  [COMMANDS_KEYS.remove]: (el, { content }) => {
+    if (content !== 'false') el.classList.add(CLASS_EL_DELETE);
   },
   [COMMANDS_KEYS.replace]: (el, cmd) => {
     if (!el || el.classList.contains(CLASS_EL_REPLACE)) return;
@@ -1111,11 +1106,7 @@ export function handleFragmentCommand(command, a) {
     return fragment;
   }
   if (action === COMMANDS_KEYS.remove) {
-    if (manifestId) {
-      a.parentElement.dataset.removedManifestId = manifestId;
-    } else {
-      a.parentElement.remove();
-    }
+    a.parentElement.remove();
   }
   return false;
 }
