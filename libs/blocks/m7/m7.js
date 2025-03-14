@@ -18,5 +18,9 @@ export function generateM7Link(href) {
 }
 
 export default function init(el) {
-  el.href = generateM7Link(el.href);
+  try {
+    el.href = generateM7Link(el.href);
+  } catch (e) {
+    window.lana.log(`Cannot generate M7 URL. ${e}`, { tags: 'm7', errorType: 'i' });
+  }
 }
