@@ -9,7 +9,7 @@ async function validateAuthorUrl(url) {
   const resp = await fetch(`${url.toLowerCase()}.plain.html`);
   if (!resp?.ok) {
     /* c8 ignore next 3 */
-    window.lana?.log(`Could not retrieve metadata for ${url}`, { tags: 'errorType=warn,module=article-header' });
+    window.lana?.log(`Could not retrieve metadata for ${url}`, { tags: 'article-header' });
     return null;
   }
 
