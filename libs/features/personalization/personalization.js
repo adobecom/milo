@@ -1105,8 +1105,10 @@ export function cleanAndSortManifestList(manifests, conf) {
 
 export function handleFragmentCommand(command, a) {
   const { action, fragment, manifestId, targetManifestId } = command;
+  const addInline = (a.href.includes(INLINE_HASH) && !fragment.includes(INLINE_HASH));
   if (action === COMMANDS_KEYS.replace) {
     a.href = fragment;
+    if (addInline) a.href += `#${INLINE_HASH}`;
     addIds(a, manifestId, targetManifestId);
     return fragment;
   }

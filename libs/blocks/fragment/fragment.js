@@ -63,7 +63,7 @@ function replaceDotMedia(path, doc) {
 }
 
 export default async function init(a) {
-  const { decorateArea, mep, placeholders } = getConfig();
+  const { decorateArea, mep, placeholders, locale } = getConfig();
   let relHref = localizeLink(a.href);
   let inline = false;
 
@@ -75,17 +75,24 @@ export default async function init(a) {
     div.append(...children);
   }
 
+  let mepFrag;
+  try {
+    const path = !a.href.includes('/federal/') ? new URL(a.href).pathname
+      : a.href.replace('#_inline', '').replace(locale.prefix, '');
+    mepFrag = mep?.fragments?.[path];
+  } catch (e) {
+    // do nothing
+  }
+  if (mepFrag) {
+    const { handleFragmentCommand } = await import('../../features/personalization/personalization.js');
+    relHref = handleFragmentCommand(mepFrag, a);
+    if (!relHref) return;
+  }
+
   if (a.href.includes('#_inline')) {
     inline = true;
     a.href = a.href.replace('#_inline', '');
     relHref = relHref.replace('#_inline', '');
-  }
-
-  const path = new URL(a.href).pathname;
-  if (mep?.fragments?.[path]) {
-    const { handleFragmentCommand } = await import('../../features/personalization/personalization.js');
-    relHref = handleFragmentCommand(mep?.fragments[path], a);
-    if (!relHref) return;
   }
 
   if (isCircularRef(relHref)) {
