@@ -218,7 +218,6 @@ export default async function init(el) {
 
   if (isEditorial) {
     const editorialMedia = el.querySelectorAll(':scope > div:nth-child(3n)');
-    editorialMedia.forEach((media) => media.classList.add(`media-item-${id}`));
     [...editorialMedia].map(
       (media, idx, collection) => populateMedia(accordionMedia, id, idx, collection),
     );
