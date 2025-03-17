@@ -89,6 +89,7 @@ export const normalizePath = (p, localize = true) => {
     const url = new URL(path);
     const { hash, pathname } = url;
     const firstFolder = pathname.split('/')[1];
+    const mepHash = '#_dnt';
 
     if (path.startsWith(config.codeRoot)
       || path.includes('.hlx.')
@@ -96,7 +97,7 @@ export const normalizePath = (p, localize = true) => {
       || path.includes('.adobe.')) {
       if (!localize
         || config.locale.ietf === 'en-US'
-        || hash.includes('#_dnt')
+        || hash.includes(mepHash)
         || firstFolder in config.locales
         || path.includes('.json')) {
         path = pathname;
@@ -104,7 +105,7 @@ export const normalizePath = (p, localize = true) => {
         path = `${config.locale.prefix}${pathname}`;
       }
     }
-    return `${path}${hash}`;
+    return `${path}${hash.replace(mepHash, '')}`;
   } catch (e) {
     return path;
   }
@@ -219,13 +220,8 @@ export const createContent = (el, { content, manifestId, targetManifestId, actio
 };
 
 const COMMANDS = {
-  [COMMANDS_KEYS.remove]: (el, { content, manifestId }) => {
-    if (content === 'false') return;
-    if (manifestId && !el.href?.includes('/tools/ost')) {
-      el.dataset.removedManifestId = manifestId;
-      return;
-    }
-    el.classList.add(CLASS_EL_DELETE);
+  [COMMANDS_KEYS.remove]: (el, { content }) => {
+    if (content !== 'false') el.classList.add(CLASS_EL_DELETE);
   },
   [COMMANDS_KEYS.replace]: (el, cmd) => {
     if (!el || el.classList.contains(CLASS_EL_REPLACE)) return;
@@ -1110,11 +1106,7 @@ export function handleFragmentCommand(command, a) {
     return fragment;
   }
   if (action === COMMANDS_KEYS.remove) {
-    if (manifestId) {
-      a.parentElement.dataset.removedManifestId = manifestId;
-    } else {
-      a.parentElement.remove();
-    }
+    a.parentElement.remove();
   }
   return false;
 }
