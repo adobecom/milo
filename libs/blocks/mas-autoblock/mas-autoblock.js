@@ -23,8 +23,6 @@ export function getTagName(el) {
 }
 
 export async function createCard(el, fragment) {
-  const aemFragment = createTag('aem-fragment', { fragment });
-  const merchCard = createTag(getTagName(el), { consonant: '' }, aemFragment);
   // add <mas-commerce-service>
   const servicePromise = initService();
   const timeoutPromise = new Promise((resolve) => {
@@ -33,11 +31,12 @@ export async function createCard(el, fragment) {
   let success = await Promise.race([servicePromise, timeoutPromise]);
   if (!success) {
     throw new Error('Failed to initialize mas commerce service');
-    // return;
   }
   const service = await servicePromise;
   log = service.Log.module('merch');
 
+  const aemFragment = createTag('aem-fragment', { fragment });
+  const merchCard = createTag(getTagName(el), { consonant: '' }, aemFragment);
   el.replaceWith(merchCard);
   const merchCardPromise = merchCard.checkReady();
   success = await Promise.race([merchCardPromise, timeoutPromise]);

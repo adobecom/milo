@@ -1,0 +1,38 @@
+{
+  "resolvedOffers": [
+      {
+          "offerSelectorIds": [
+              "Hnk2P6L5wYhnpZLFYTW5upuk2Y3AJXlso8VGWQ0l2TI"
+          ],
+          "offerId": "951DCCB08194F40B9C79951675547DF5",
+          "startDate": "2023-03-13T09:11:00.000Z",
+          "endDate": "2099-08-24T08:00:00.000Z",
+          "priceDetails": {
+              "price": 19.99,
+              "priceWithoutTax": 19.99,
+              "usePrecision": true,
+              "formatString": "'US$'#,##0.00",
+              "taxDisplay": "TAX_EXCLUSIVE",
+              "taxTerm": "TAX"
+          },
+          "analytics": "{\"offerId\":\"951DCCB08194F40B9C79951675547DF5\",\"label\":\"ccsn_direct_individual\",\"price\":\"19.99\",\"amountWithoutTax\":\"19.99\",\"commitmentType\":\"YEAR\",\"billingFrequency\":\"MONTHLY\",\"currencyCode\":\"USD\"}",
+          "productArrangementCode": "ccsn_direct_individual",
+          "productArrangement": {
+              "productFamily": "CC_ALL_APPS",
+              "productCode": "CCSN"
+          },
+          "buyingProgram": "RETAIL",
+          "commitment": "YEAR",
+          "term": "MONTHLY",
+          "customerSegment": "INDIVIDUAL",
+          "marketSegments": [
+              "EDU"
+          ],
+          "salesChannel": "DIRECT",
+          "offerType": "BASE",
+          "pricePoint": "INTRO_PRICE_19_99",
+          "language": "MULT",
+          "merchant": "ADOBE"
+      }
+  ]
+}

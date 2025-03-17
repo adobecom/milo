@@ -1,6 +1,5 @@
 import { runTests } from '@web/test-runner-mocha';
 import chaiAsPromised from '@esm-bundle/chai-as-promised';
-import sinon from 'sinon';
 import chai, { expect } from '@esm-bundle/chai';
 
 import { mockFetch } from './mocks/fetch.js';

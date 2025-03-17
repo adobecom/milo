@@ -128,11 +128,8 @@ export class AemFragment extends HTMLElement {
         const service = useService();
         let servicePromise = service?.readyPromise;
         if (!servicePromise) {
-          servicePromise = new Promise ((resolve) => {
-            document.addEventListener(EVENT_TYPE_READY, (e) => {
-              resolve(e.target);
-            });
-          });
+          this.#fail('aem-fragment failed to load: mas-commerce-service not found');
+          return false;
         }
         this.#readyPromise = withTimeout(servicePromise, AEM_FRAGMENT_TIMEOUT, TIMEOUT_MESSAGE)
             .then((service) => this.fetchData(service))

@@ -363,6 +363,16 @@ export class MerchCard extends LitElement {
     }
 
     async checkReady() {
+        const timeoutPromise = new Promise((resolve) =>
+            setTimeout(() => resolve(false), MERCH_CARD_LOAD_TIMEOUT),
+        );
+        if (this.aemFragment) {
+          const aemLoad = await Promise.race([this.aemFragment.updateComplete, timeoutPromise]);
+          if (aemLoad === false) {
+              this.#fail('AEM fragment cannot be loaded', {}, false);
+              return;
+          }
+        }
         const successPromise = Promise.all(
             [
                 ...this.querySelectorAll(
@@ -373,9 +383,6 @@ export class MerchCard extends LitElement {
             elements.every((el) =>
                 el.classList.contains('placeholder-resolved'),
             ),
-        );
-        const timeoutPromise = new Promise((resolve) =>
-            setTimeout(() => resolve(false), MERCH_CARD_LOAD_TIMEOUT),
         );
 
         const success = await Promise.race([successPromise, timeoutPromise]);
