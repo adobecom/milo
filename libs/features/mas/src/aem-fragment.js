@@ -168,21 +168,20 @@ export class AemFragment extends HTMLElement {
         this.#data = null;
         let fragment = cache.get(this.#fragmentId);
         if (!fragment) {
-          const { wcsApiKey, locale } = service.settings;
-          if (this.#baseUrl) return this.#baseUrl;
-          const { env } = service.settings;
-          this.#baseUrl = `https://www${env === 'stage' ? '.stage' : ''}.adobe.com/mas/io`;
-          const currentPage = new URL(window.location.href);
-          const overrideHost = document.querySelector('meta[name="aem-base-url"]')?.content ??
-                                currentPage.searchParams?.get('aem-base-url');
-          if (overrideHost) {
-            this.#baseUrl = `${overrideHost}`;
-            if (!this.#headers) {
-              this.#headers = {
-                  Authorization: `Bearer ${window.adobeid?.authorize?.()}`,
-              };
+          const { env, wcsApiKey, locale } = service.settings;
+          if (!this.#baseUrl) {
+            this.#baseUrl = `https://www${env?.toLowerCase() === 'stage' ? '.stage' : ''}.adobe.com/mas/io`;
+            const overrideHost = document.querySelector('meta[name="mas-io-url"]')?.content;
+            if (overrideHost) {
+              this.#baseUrl = overrideHost;
+              if (!this.#headers) {
+                this.#headers = {
+                    Authorization: `Bearer ${window.adobeid?.authorize?.()}`,
+                };
+              }
             }
           }
+
           const endpoint = `${this.#baseUrl}/fragment?id=${this.#fragmentId}&api_key=${wcsApiKey}&locale=${locale}`;
           fragment = await getFragmentById(endpoint, this.#headers);
           cache.add(fragment);

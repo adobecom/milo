@@ -26,7 +26,7 @@
                     ? ENVS[envOverride]
                     : ENVS.prod;
             const meta = document.createElement('meta');
-            meta.name = 'aem-base-url';
+            meta.name = 'mas-io-url';
             meta.content = `https://${env}.adobe.com`;
             document.head.appendChild(meta);
 

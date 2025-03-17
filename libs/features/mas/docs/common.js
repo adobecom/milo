@@ -1,26 +1,16 @@
 import '../../../deps/custom-elements.js';
 import '../dist/mas.js'; 
+const MAS_IO_URL = 'mas-io-url';
 const init = () => {
-  const ENVS = {
-    qa: 'qa-odin',
-    stage: 'stage-odin',
-    prod: 'odin',
-  };
-  const href = window.location.href;
-  const envOverride = new URL(href).searchParams.get('aem.env');
-  const env =
-    envOverride && ENVS[envOverride]
-      ? ENVS[envOverride]
-      : ENVS.prod;
-  if (window.location.host.includes('aem.page') || window.location.host.includes('hlx.page')) {
+  const params = new URLSearchParams(document.location.search);
+  if (params.get(MAS_IO_URL)) {
     const meta = document.createElement('meta');
-    meta.name = 'aem-base-url';
-    meta.content = 'https://mas.adobe.com/io/fragment';
+    meta.name = MAS_IO_URL;
+    meta.content = params.get(MAS_IO_URL);
     document.head.appendChild(meta);
   }
   
   // theme
-  const params = new URLSearchParams(document.location.search);
   const darkTheme = params?.get('theme')?.toLowerCase() === 'dark';
   const theme = document.createElement('script');
   theme.setAttribute('src', `../../spectrum-web-components/dist/themes/${darkTheme ? 'dark' : 'light'}.js`);
@@ -35,9 +25,6 @@ const init = () => {
   });
   masCommerceService.setAttribute('host-env', 'prod');
   masCommerceService.setAttribute('lana-tags', 'ccd');
-  if (window.location.host.includes('aem.page') || window.location.host.includes('hlx.page')) {
-    masCommerceService.setAttribute('env', 'stage');
-  }
   document.head.appendChild(masCommerceService);
 }
 window.log = (target, ...messages) =>  (target.textContent = `${messages.join(' ')}${target.textContent}`);

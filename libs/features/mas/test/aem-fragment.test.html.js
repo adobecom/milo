@@ -197,11 +197,12 @@ runTests(async () => {
 
         it('throws an error if response is not ok', async () => {
             const promise = getFragmentById('notfound', masCommerceService);
-            await expect(promise).to.be.rejectedWith('Failed to get fragment: 404 Fragment not found');
+            await expect(promise).to.be.rejectedWith('Failed to get fragment: 404 Not Found');
         });
 
         it('fetches fragment from freyja on publish', async () => {
-            const promise = getFragmentById('fragment-cc-all-apps', masCommerceService);
+            const endpoint = 'https://www.stage.adobe.com/mas/io/fragment?id=fragment-cc-all-apps&api_key=testApiKey&locale=fr_FR'
+            const promise = getFragmentById(endpoint);
             await promise;
             expect(fetch.lastCall.firstArg).to.equal(
                 'https://www.stage.adobe.com/mas/io/fragment?id=fragment-cc-all-apps&api_key=testApiKey&locale=fr_FR',
