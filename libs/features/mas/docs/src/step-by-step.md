@@ -1,12 +1,13 @@
 # Step By Step - Enable M@S
 
-1. Import mas.js
+## 1. Import mas.js
 ```html
 <script src="https://www.adobe.com/libs/features/mas/dist/mas.js" type="module"></script>
 ```
 
-2. Create and attach `<mas-commerce-service>` element to your DOM. Preferrably, place it inside the <head> tag. 
-(!) Mas Commerce Service should be added to DOM *before* `<aem-fragment>` elements are created.
+## 2. Add `<mas-commerce-service>` element
+Preferrably, place it inside the <head> tag. 
+(!) Mas Commerce Service should be attached to DOM *before* `<aem-fragment>` elements are created.
 ```html
 <head>
   ...
@@ -14,11 +15,15 @@
 </head>  
 ```
 
-3. Create and attach `<merch-card>` and `<aem-fragment>` elements.
+## 3. Add `<merch-card>` elements.
+```html
+<merch-card><aem-fragment fragment="a1ca4a50-dd85-4cf9-94e2-a9e90ad4bb27"></aem-fragment></merch-card>
+```
 
-4. Import spectrum css / spectrum web components / 
+## 4. Import styles
+Depending on the surface, import spectrum css / spectrum web components / consonant styles
 
-5. Import polyfill, if required
+## 5. Import polyfill, if required
 ```html
 <script src="https://www.adobe.comlibs/deps/custom-elements.js"></script>
 ```
