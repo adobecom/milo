@@ -29,7 +29,13 @@ export async function generateM7Link(href) {
 
 export default async function init(el) {
   try {
-    el.href = await generateM7Link(el.href);
+    if (window.adobeIMS?.initialized) {
+      el.href = await generateM7Link(el.href);
+    } else {
+      window.addEventListener('onImsLibInstance', async () => {
+        el.href = await generateM7Link(el.href);
+      });
+    }
   } catch (e) {
     window.lana.log(`Cannot generate M7 URL. ${e}`, { tags: 'm7', errorType: 'i' });
   }
