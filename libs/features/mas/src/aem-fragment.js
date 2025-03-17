@@ -1,10 +1,13 @@
 import { EVENT_AEM_LOAD, EVENT_AEM_ERROR, EVENT_TYPE_READY } from './constants.js';
-import { useService } from './utilities.js';
+import { useService, withTimeout } from './utilities.js';
 
 const sheet = new CSSStyleSheet();
 sheet.replaceSync(':host { display: contents; }');
 
 const ATTRIBUTE_FRAGMENT = 'fragment';
+// 10 seconds timeout
+const AEM_FRAGMENT_TIMEOUT = 10000;
+const TIMEOUT_MESSAGE = 'aem-fragment: mas-commerce-service did not intialize within timeout';
 
 const fail = (message) => {
     throw new Error(`Failed to get fragment: ${message}`);
@@ -130,8 +133,8 @@ export class AemFragment extends HTMLElement {
               resolve(e.target);
             });
           });
-        } 
-        this.#readyPromise = servicePromise
+        }
+        this.#readyPromise = withTimeout(servicePromise, AEM_FRAGMENT_TIMEOUT, TIMEOUT_MESSAGE)
             .then((service) => this.fetchData(service))
             .then(() => {
                 this.dispatchEvent(

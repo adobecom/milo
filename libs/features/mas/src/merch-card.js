@@ -377,11 +377,6 @@ export class MerchCard extends LitElement {
         const timeoutPromise = new Promise((resolve) =>
             setTimeout(() => resolve(false), MERCH_CARD_LOAD_TIMEOUT),
         );
-        const aemLoad = await this.aemFragment?.updateComplete;
-        if (aemLoad === false) {
-          this.#fail('AEM fragment cannot be loaded', {}, false);
-          return;
-        }
 
         const success = await Promise.race([successPromise, timeoutPromise]);
         if (success === true) {
@@ -394,7 +389,7 @@ export class MerchCard extends LitElement {
                     composed: true,
                 }),
             );
-            return;
+            return this;
         }
         this.#fail('Contains unresolved offers');
     }
