@@ -1057,10 +1057,6 @@ merch-card[variant="plans"] [slot="quantity-select"] {
         padding: var(--merch-card-plans-padding);
     }
 
-    :host([variant='plans']) ::slotted([slot='callout-content']) {
-        line-height: var(--consonant-merch-card-body-xs-line-height);
-    }
-
     :host([variant='plans']) #stock-checkbox {
         margin-top: 8px;
     }
