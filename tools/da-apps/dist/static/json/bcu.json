@@ -1,0 +1,101 @@
+{
+  "pagination": {
+    "currentPage": 1,
+    "totalPages": 1,
+    "totalItems": 3
+  },
+  "stats": {
+    "dryRunValidation": {
+      "filterKey": "",
+      "progress": {
+        "IN_PROGRESS": 4
+      },
+      "completed": {
+        "COMPLETED": 15
+      },
+      "error": {
+        "ERROR": 0
+      }
+    },
+    "successful": {
+      "filterKey": "",
+      "completed": {
+        "COMPLETED": 15
+      }
+    },
+    "totalErrors": {
+      "filterKey": "",
+      "error": {
+        "ERROR": 4
+      }
+    }
+  },
+  "projects": [
+    {
+      "id": 1031,
+      "projectName": "Project 1",
+      "projectKey": "5883967d715993df6a930e579a03df17",
+      "projectState": "SAVE",
+      "tenant": "BACOM",
+      "createdBy": "Saurabh Sircar",
+      "createdByEmail": "glo36140@adobe.com",
+      "createdDate": 1739777956458,
+      "modifiedDate": 1739777956458,
+      "status": "IN_PROGRESS",
+      "numPages": 1
+    },
+    {
+      "id": 1030,
+      "projectName": "Project 2",
+      "projectKey": "fae1f1b7e2bbc4a703f48f6cecba8b63",
+      "projectState": "DRY_RUN_VALIDATION",
+      "tenant": "BACOM",
+      "createdBy": "Saurabh Sircar",
+      "createdByEmail": "glo36140@adobe.com",
+      "createdDate": 1739777641917,
+      "modifiedDate": 1739777641917,
+      "status": "ERROR",
+      "numPages": 1
+    },
+    {
+      "id": 1029,
+      "projectName": "Project 3",
+      "projectKey": "c9e39de79ffe4e0dca5bd7ac1634ad33",
+      "projectState": "DRY_RUN_VALIDATION",
+      "tenant": "BACOM",
+      "createdBy": "Saurabh Sircar",
+      "createdByEmail": "glo36140@adobe.com",
+      "createdDate": 1739777280954,
+      "modifiedDate": 1739777280954,
+      "status": "COMPLETED",
+      "numPages": 1
+    },
+    {
+      "id": 1030,
+      "projectName": "Project 4",
+      "projectKey": "c9e39de79ffe4e0dca5bd7ac1634ad33",
+      "projectState": "DRY_RUN_VALIDATION",
+      "tenant": "BACOM",
+      "createdBy": "Saurabh Sircar",
+      "createdByEmail": "glo36140@adobe.com",
+      "createdDate": 1739777280954,
+      "modifiedDate": 1739777280954,
+      "status": "CANCELLED",
+      "numPages": 1
+    },
+    {
+      "id": 1031,
+      "projectName": "Project 5",
+      "projectKey": "c9e39de79ffe4e0dca5bd7ac1634ad33",
+      "projectState": "DRY_RUN_VALIDATION",
+      "tenant": "BACOM",
+      "createdBy": "Saurabh Sircar",
+      "createdByEmail": "glo36140@adobe.com",
+      "createdDate": 1739777280954,
+      "modifiedDate": 1739777280954,
+      "status": "QUEUED",
+      "numPages": 1
+    }
+  ]
+}
+
