@@ -126,10 +126,20 @@ export class AemFragment extends HTMLElement {
         }
         // eslint-disable-next-line react-hooks/rules-of-hooks
         const service = useService();
+        if (!service) {
+          const message = 'aem-fragment failed to load: mas-commerce-service not found';
+          this.#fail(message);
+          throw new Error(message);
+        }
         let servicePromise = service?.readyPromise;
         if (!servicePromise) {
-          this.#fail('aem-fragment failed to load: mas-commerce-service not found');
-          return false;
+          if (!servicePromise) {
+            servicePromise = new Promise ((resolve) => {
+              service?.addEventListener(EVENT_TYPE_READY, (e) => {
+                resolve(e.target);
+              });
+            });
+          }
         }
         this.#readyPromise = withTimeout(servicePromise, AEM_FRAGMENT_TIMEOUT, TIMEOUT_MESSAGE)
             .then((service) => this.fetchData(service))
@@ -149,11 +159,9 @@ export class AemFragment extends HTMLElement {
                 this.#readyPromise = null;
                 return false;
             });
-        this.#readyPromise;
     }
 
     #fail(errorMessage, error) {
-        console.error(error);
         this.classList.add('error');
         this.dispatchEvent(
             new CustomEvent(EVENT_AEM_ERROR, {

@@ -2,9 +2,9 @@
   <h1 id="ccd-gallery" tabindex="-1">CCD Gallery <a class="header-anchor" href="#ccd-gallery" href="#ccd-gallery" title="Permalink to this heading">#</a></h1>
   Switch Theme: <a class="theme-toggle spectrum-Link spectrum-Link--secondary" value="darkest" href="#">Darkest</a> OR <a class="theme-toggle spectrum-Link spectrum-Link--secondary" value="light" href="#">Light</a>
 
-  Switch Locale: <a class="locale-toggle spectrum-Link spectrum-Link--secondary" value="en_US" href="#">en_US</a> OR <a class="locale-toggle spectrum-Link spectrum-Link--secondary" value="fr_FR" href="#">fr_FR</a>
+  Switch Locale: <a class="locale-toggle spectrum-Link spectrum-Link--secondary" value="en_US" href="?locale=en_US">en_US</a> OR <a class="locale-toggle spectrum-Link spectrum-Link--secondary" value="fr_FR" href="?locale=fr_FR">fr_FR</a>
 
-  Switch country/language: <a class="locale-toggle spectrum-Link spectrum-Link--secondary" value="US,en" href="#">Country: US, language: en</a> OR <a class="locale-toggle spectrum-Link spectrum-Link--secondary" value="FR,fr" href="#">Country: FR, language: fr</a>
+  Switch country/language: <a class="locale-toggle spectrum-Link spectrum-Link--secondary" value="US,en" href="?country=US&language=en">Country: US, language: en</a> OR <a class="locale-toggle spectrum-Link spectrum-Link--secondary" value="FR,fr" href="?country=FR&language=fr">Country: FR, language: fr</a>
 
   <h2 id="ccd-slice-card" tabindex="-1">CCD Slice Cards <a class="header-anchor" href="#ccd-slice-card" title="Permalink to this heading">#</a></h2>
   <div class="three-merch-cards ccd-slice">
