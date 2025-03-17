@@ -389,6 +389,10 @@
   .dialog-modal.tall-video .milo-video {
     --modal-width-var: 35vw;
   }
+
+  .dialog-modal.manage-plan-cancel {
+    width: 1280px;
+  }
 }
 
 @media (min-width: 1200px) and (orientation: landscape) {
