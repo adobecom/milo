@@ -61,12 +61,12 @@ describe('m7business autoblock', () => {
     const buIms = window.adobeIMS;
     const profile = { countryCode: 'CH' };
     window.adobeIMS = { initialized: true, getProfile: () => profile, isSignedInUser: () => true };
-    const m7Link = await generateM7Link([]);
+    const m7Link = await generateM7Link('/creativecloud/business-plans');
     expect(m7Link).to.equal('https://commerce.adobe.com/store/segmentation?cli=creative&cs=t&co=CH&pa=ccsn_direct_individual');
     window.adobeIMS = buIms;
   });
 
-  it('Converts business plans link to M7 link for signed in user', async () => {
+  it('Converts business plans link to M7 link for signed in user - IMS not ready', async () => {
     document.head.innerHTML = '<meta name="m7-pa-code" content="ccsn_direct_individual">';
     const buIms = window.adobeIMS;
     const profile = { countryCode: 'CH' };
