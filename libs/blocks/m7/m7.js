@@ -12,7 +12,7 @@ async function getImsCountry() {
 
 export async function generateM7Link(href) {
   const paCode = getMetadata('m7-pa-code');
-  if (!paCode) return href;
+  if (!paCode || (!href.includes('/creativecloud/business-plans') && !href.includes('/creativecloud/education-plans'))) return href;
 
   const imsCountry = await getImsCountry();
   const { locale } = getConfig();
