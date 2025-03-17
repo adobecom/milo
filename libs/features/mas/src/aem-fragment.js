@@ -121,6 +121,7 @@ export class AemFragment extends HTMLElement {
         if (flushCache) {
             cache.remove(this.#fragmentId);
         }
+        // eslint-disable-next-line react-hooks/rules-of-hooks
         const service = useService();
         let servicePromise = service?.readyPromise;
         if (!servicePromise) {
