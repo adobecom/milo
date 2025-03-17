@@ -44,6 +44,7 @@ const cssClassNames = {
     container: 'price',
     containerOptical: 'price-optical',
     containerStrikethrough: 'price-strikethrough',
+    containerAlternative: 'price-alternative',
     containerAnnual: 'price-annual',
     containerAnnualPrefix: 'price-annual-prefix',
     containerAnnualSuffix: 'price-annual-suffix',
@@ -103,6 +104,7 @@ function renderContainer(
     cssClass,
     {
         accessibleLabel,
+        altAccessibleLabel,
         currencySymbol,
         decimals,
         decimalsDelimiter,
@@ -124,7 +126,9 @@ function renderContainer(
         hasCurrencySpace ? '&nbsp;' : '',
     );
 
-    let markup = accessibleLabel ? `<sr-only class="strikethrough-aria-label">${accessibleLabel}</sr-only>` : '';
+    let markup = '';
+    if (accessibleLabel) markup = `<sr-only class="strikethrough-aria-label">${accessibleLabel}</sr-only>`;
+    else if (altAccessibleLabel) markup = `<sr-only class="alt-aria-label">${altAccessibleLabel}</sr-only>`;
     if (isCurrencyFirst) markup += currencyMarkup + currencySpaceMarkup;
     markup += renderSpan(cssClassNames.integer, integer);
     markup += renderSpan(cssClassNames.decimalsDelimiter, decimalsDelimiter);
@@ -150,6 +154,7 @@ function renderContainer(
 // TODO: check WCS data elements to include: analytics, endDate, language, merchant, offerType, pricePoint, startDate
 const createPriceTemplate =
     ({
+        isAlternativePrice = false,
         displayOptical = false,
         displayStrikethrough = false,
         displayAnnual = false,
@@ -242,7 +247,7 @@ const createPriceTemplate =
             usePrecision,
         });
 
-        let accessibleLabel = '';
+        let accessibleLabel = '', altAccessibleLabel = '';
 
         let recurrenceLabel = '';
         if (toBoolean(displayRecurrence) && recurrenceTerm) {
@@ -277,6 +282,15 @@ const createPriceTemplate =
             );
         }
 
+        if (isAlternativePrice) {
+            altAccessibleLabel = formatLiteral(
+                literalKeys.alternativePriceAriaLabel,
+                {
+                    alternativePrice: altAccessibleLabel,
+                },
+            );
+        }
+
         let cssClass = cssClassNames.container;
         if (displayOptical) {
             cssClass += ' ' + cssClassNames.containerOptical;
@@ -284,8 +298,11 @@ const createPriceTemplate =
         if (displayStrikethrough) {
             cssClass += ' ' + cssClassNames.containerStrikethrough;
         }
+        if (isAlternativePrice) {
+            cssClass += ' ' + cssClassNames.containerAlternative;
+        }
         if (displayAnnual) {
-            cssClass += ' ' + cssClassNames.containerAnnual;
+        cssClass += ' ' + cssClassNames.containerAnnual;
         }
 
         if (toBoolean(displayFormatted)) {
@@ -294,6 +311,7 @@ const createPriceTemplate =
                 {
                     ...formattedPrice,
                     accessibleLabel,
+                    altAccessibleLabel,
                     recurrenceLabel,
                     perUnitLabel,
                     taxInclusivityLabel,
@@ -344,7 +362,7 @@ const createPromoPriceTemplate = () => (context, value, attributes) => {
         displayOldPrice &&
         value.priceWithoutDiscount &&
         value.priceWithoutDiscount != value.price;
-    return `${createPriceTemplate()(context, value, attributes)}${
+    return `${createPriceTemplate({ isAlternativePrice: shouldDisplayOldPrice })(context, value, attributes)}${
         shouldDisplayOldPrice
             ? '&nbsp;' +
               createPriceTemplate({
@@ -388,7 +406,7 @@ const createPromoPriceWithAnnualTemplate =
                       displayStrikethrough: true,
                   })(ctxStAnnual, value, attributes) + '&nbsp;'
                 : ''
-        }${createPriceTemplate()(context, value, attributes)}${renderSpan(cssClassNames.containerAnnualPrefix, '&nbsp;(')}${createPriceTemplate(
+        }${createPriceTemplate({ isAlternativePrice: shouldDisplayOldPrice })(context, value, attributes)}${renderSpan(cssClassNames.containerAnnualPrefix, '&nbsp;(')}${createPriceTemplate(
             {
                 displayAnnual: true,
                 instant,

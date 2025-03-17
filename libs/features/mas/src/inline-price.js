@@ -295,48 +295,18 @@ export class InlinePrice extends HTMLSpanElement {
             if (this.masElement.toggleResolved(version, offers, options)) {
                 this.innerHTML = service.buildPriceHTML(offers, options);
 
-                // Adding logic for <sr-only>Alternatively at</sr-only>
-                const htmlPattern = /<\/?[^>]+(>|$)/g;
-                async function formatLiteral(key, parameters) {
-                    const settings = {};
-                    const masCommerceService = document.querySelector('mas-commerce-service');
-                    ['locale', 'country', 'language'].forEach((attribute) => {
-                        const value = masCommerceService?.getAttribute(attribute);
-                        if (value) {
-                            settings[attribute] = value;
-                        }
-                    });
-                    const literals = await getPriceLiterals(settings);
-                    const literal = literals[key];
-                    if (!literal) {
-                        /* c8 ignore next 2 */
-                        return '';
+                // Adding logic for options.alternativePrice to add <sr-only>Alternatively at</sr-only>
+                let parentEl = this.closest('p');
+                let inlinePrices = parentEl?.querySelectorAll('span[is="inline-price"]');
+                if (!parentEl || inlinePrices.length < 2) parentEl = this.closest('.col') ?? this.closest('merch-card');
+                if (!parentEl || !parentEl?.querySelector('span[data-template="strikethrough"]') || parentEl.querySelector('.alt-aria-label')) return true;
+                inlinePrices = parentEl?.querySelectorAll('span[is="inline-price"]');
+                inlinePrices.forEach((price) => {
+                    if (price.dataset.template === 'strikethrough' && !options.alternativePrice) {
+                        options.alternativePrice = true;
+                        this.innerHTML = service.buildPriceHTML(offers, options);
                     }
-                    const locale = settings.language && settings.country ? `${settings.language?.toLowerCase()}-${settings.country?.toUpperCase()}` : document.body.parentElement.lang;
-                    try {
-                        return new IntlMessageFormat(
-                            literal.replace(htmlPattern, ''),
-                            locale,
-                        ).format(parameters);
-                    } catch {
-                        /* c8 ignore next 2 */
-                        console.error('Failed to format literal:', literal);
-                        return '';
-                    }
-                }
-                const alternativlySRLabelText =  await formatLiteral('alternativePriceAriaLabel', { alternativePrice: '' });
-                const alternativlySRLabel = document.createElement('sr-only');
-                alternativlySRLabel.classList.add('alternative-price-aria-label');
-                alternativlySRLabel.innerHTML = alternativlySRLabelText;
-                if (alternativlySRLabelText) {
-                    const parentEl = this.closest('.col') ?? this.closest('merch-card') ?? this.closest('p')
-                    if (this.querySelectorAll('.price').length > 1 && this.querySelector('.price-strikethrough')) {
-                        this.querySelector('.price:not(.price-strikethrough)')?.prepend(alternativlySRLabel);
-                    } else if(parentEl?.querySelectorAll('span[is="inline-price"]').length > 1 && !parentEl.querySelector('.alternative-price-aria-label')) {
-                        const alternativePriceEl = parentEl.querySelector('span[is="inline-price"]:not(span[data-template="strikethrough"])');
-                        alternativePriceEl.prepend(alternativlySRLabel);
-                    }
-                }
+                });
                 return true;
             }
         } else {
@@ -355,6 +325,7 @@ export class InlinePrice extends HTMLSpanElement {
         const service = useService();
         if (!service) return false;
         const {
+            alternativePrice,
             displayOldPrice,
             displayPerUnit,
             displayRecurrence,
@@ -367,6 +338,7 @@ export class InlinePrice extends HTMLSpanElement {
             wcsOsi,
         } = service.collectPriceOptions(options);
         updateMasElement(this, {
+            alternativePrice,
             displayOldPrice,
             displayPerUnit,
             displayRecurrence,

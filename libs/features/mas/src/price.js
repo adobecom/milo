@@ -7,6 +7,7 @@ import {
     priceAnnual,
     priceWithAnnual,
     pricePromoWithAnnual,
+    priceAlternative,
     omitProperties,
     toBoolean,
     discount,
@@ -92,6 +93,8 @@ export function Price({ literals, providers, settings }) {
                     method = options.promotionCode
                         ? pricePromoWithAnnual
                         : priceWithAnnual;
+                } else if (options.alternativePrice) {
+                    method = priceAlternative;
                 } else {
                     method = options.promotionCode ? pricePromo : price;
                 }
