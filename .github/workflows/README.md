@@ -1,0 +1,3 @@
+### Description
+Based on the [Github security guidance](https://docs.github.com/en/actions/security-for-github-actions/security-guides/security-hardening-for-github-actions#using-third-party-actions) we pinned actions to a full length commit SHA's rather than tags, which are more common.
+In order to upgrade an action, simply go to the Github repo such as: https://github.com/actions/checkout/releases - find the latest release and the commit-SHA that is connected to it. When you run the action on your own fork, you can simply validate it's still running as expected and manages to download the 3rd party package within the scope of the action.
