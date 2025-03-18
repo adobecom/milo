@@ -571,8 +571,6 @@ div[data-failed="true"]::before {
 }
 
 span.icon {
-  width: 1em;
-  display: inline-block;
   margin-inline: var(--icon-spacing);
 }
 
