@@ -228,6 +228,20 @@ describe('class "InlinePrice"', () => {
             );
             expect(inlinePrice.state).to.equal(InlinePrice.STATE_FAILED);
         });
+
+        it('alternativePrice option test for aria label: both price should have sr-only.', async () => {
+            await initMasCommerceService();
+            const inlinePrice = mockInlinePrice('puf');
+            Object.assign(inlinePrice.dataset, { template: 'strikethrough' });
+            const inlinePrice2 = mockInlinePrice('abm');
+            const p = document.createElement('p');
+            p.append(...document.body.children);
+            document.body.append(p);
+            await inlinePrice.onceSettled();
+            await inlinePrice2.onceSettled();
+            const srOnlyLabels = document.querySelectorAll('sr-only');
+            expect(srOnlyLabels.length).to.equal(2);
+        });
     });
 
     describe('method "requestUpdate"', () => {
