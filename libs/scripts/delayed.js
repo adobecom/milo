@@ -62,6 +62,11 @@ export const loadGoogleLogin = async (getMetadata, loadIms, loadScript, getConfi
   initGoogleLogin(loadIms, getMetadata, loadScript, getConfig);
 };
 
+export const loadAriaAutomation = async () => {
+  const { default: addAriaLabels } = await import('../utils/automated-aria.js');
+  addAriaLabels();
+};
+
 /**
  * Executes everything that happens a lot later, without impacting the user experience.
  */
@@ -74,6 +79,7 @@ const loadDelayed = ([
 ], DELAY = 3000) => new Promise((resolve) => {
   setTimeout(() => {
     loadPrivacy(getConfig, loadScript);
+    loadAriaAutomation();
     loadJarvisChat(getConfig, getMetadata, loadScript, loadStyle);
     loadGoogleLogin(getMetadata, loadIms, loadScript, getConfig);
     if (getMetadata('interlinks') === 'on') {
