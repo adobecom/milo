@@ -17,11 +17,16 @@ describe('Three-in-one modal', () => {
   const twpLink = document.querySelector('#twp-link');
   const crmLink = document.querySelector('#crm-link');
   const d2pLink = document.querySelector('#d2p-link');
+  let clock;
+
   beforeEach(async () => {
     window.open = sinon.stub(window, 'open');
+    clock = sinon.useFakeTimers();
   });
+
   afterEach(() => {
     window.open = originalOpen;
+    clock.restore();
   });
 
   it('should return undefined if no href or modal type', async () => {
@@ -119,6 +124,34 @@ describe('Three-in-one modal', () => {
     handle3in1IFrameEvents({ data: `{"app":"ucv3","subType": "${MSG_SUBTYPE.EXTERNAL}", "data":{}}` });
     expect(iframe.classList.contains('loading')).to.be.true;
     expect(window.open.notCalled).to.be.true;
+    modal.remove();
+  });
+
+  it('should show error message after 15 seconds if page not loaded', async () => {
+    const modal = await openThreeInOneModal(twpLink);
+    const iframe = modal.querySelector('iframe');
+    const spTheme = modal.querySelector('sp-theme');
+    expect(iframe.classList.contains('loading')).to.be.true;
+    expect(spTheme).to.exist;
+    clock.tick(15000);
+    const errorWrapper = modal.querySelector('.error-wrapper');
+    expect(errorWrapper).to.exist;
+    expect(errorWrapper.querySelector('.error-msg')).to.exist;
+    expect(errorWrapper.querySelector('.try-again-btn')).to.exist;
+    expect(iframe.style.display).to.equal('none');
+    expect(spTheme.style.display).to.equal('none');
+    modal.remove();
+  });
+
+  it('should not show error message if page loaded before timeout', async () => {
+    const modal = await openThreeInOneModal(twpLink);
+    const iframe = modal.querySelector('iframe');
+    clock.tick(5000);
+    handle3in1IFrameEvents({ data: `{"app":"ucv3","subType": "${MSG_SUBTYPE.AppLoaded}"}` });
+    clock.tick(10000);
+    const errorWrapper = modal.querySelector('.error-wrapper');
+    expect(errorWrapper).to.not.exist;
+    expect(iframe.classList.contains('loading')).to.be.false;
     modal.remove();
   });
 });
