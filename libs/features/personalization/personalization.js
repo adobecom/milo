@@ -746,15 +746,18 @@ export async function createMartechMetadata(placeholders, config, column) {
 /* c8 ignore start */
 export function parsePlaceholders(placeholders, config, selectedVariantName = '') {
   if (!placeholders?.length || selectedVariantName === 'default') return config;
+  const { userCountry } = config.mep;
   const valueNames = [
     selectedVariantName.toLowerCase(),
     config.mep?.prefix,
     config.locale.region.toLowerCase(),
+    ...(userCountry ? [`usercountry(${userCountry})`] : []),
     config.locale.ietf.toLowerCase(),
     ...config.locale.ietf.toLowerCase().split('-'),
     'value',
     'other',
   ];
+  console.log('valueNames', valueNames);
   const keys = placeholders?.length ? Object.entries(placeholders[0]) : [];
   const keyVal = keys.find(([key]) => valueNames.includes(key.toLowerCase()));
   const key = keyVal?.[0];
@@ -1085,7 +1088,12 @@ export function cleanAndSortManifestList(manifests, conf) {
         manifestConfig.selectedVariantName = 'default';
         manifestConfig.selectedVariant = 'default';
       }
-
+      if (config.mep?.countryPromise) {
+        config.mep.countryPromise.then((country) => {
+          const userCountry = country === 'uk' ? 'gb' : country.split('_')[0];
+          config.mep.userCountry = userCountry;
+        });
+      }
       parsePlaceholders(placeholderData, getConfig(), manifestConfig.selectedVariantName);
     } catch (e) {
       log(`MEP Error parsing manifests: ${e.toString()}`);
@@ -1129,7 +1137,10 @@ export async function applyPers({ manifests }) {
     );
   }
 
-  experiments = cleanAndSortManifestList(experiments);
+  if (config.mep.countryPromise) {
+    config.mep.userCountry = await config.mep.countryPromise;
+  }
+  experiments = cleanAndSortManifestList(experiments, config);
   parseNestedPlaceholders(config);
 
   let results = [];
@@ -1352,6 +1363,7 @@ export async function init(enablements = {}) {
     isPostLCP = true;
   } else {
     config.mep = {
+      ...config.mep,
       updateFragDataProps,
       preview: (mepButton !== 'off'
         && (config.env?.name !== 'prod' || mepParam || mepParam === '' || mepButton)),

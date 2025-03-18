@@ -1193,10 +1193,25 @@ async function checkForPageMods() {
   const target = martech === 'off' ? false : getMepEnablement('target');
   const xlg = martech === 'off' ? false : getMepEnablement('xlg');
   const ajo = martech === 'off' ? false : getMepEnablement('ajo');
+  const mepgeolocation = martech === 'off' ? false : getMepEnablement('mepgeolocation');
 
   if (!(pzn || target || promo || mepParam
     || mepHighlight || mepButton || mepParam === '' || xlg || ajo)) return;
 
+  if (mepgeolocation) {
+    const config = getConfig();
+    const urlParams = new URLSearchParams(window.location.search);
+    let akamaiCode = urlParams.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
+    if (akamaiCode) {
+      if (akamaiCode === 'gb') akamaiCode = 'uk';
+      config.mep = { userCountry: akamaiCode, mepgeolocation: true };
+    } else {
+      import('../features/georoutingv2/georoutingv2.js')
+        .then(({ getAkamaiCode }) => {
+          config.mep = { countryPromise: getAkamaiCode(true) };
+        });
+    }
+  }
   const enablePersV2 = enablePersonalizationV2();
   const hybridPersEnabled = getMepEnablement('hybrid-pers');
   if ((target || xlg) && enablePersV2) {
