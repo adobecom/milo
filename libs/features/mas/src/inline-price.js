@@ -296,8 +296,7 @@ export class InlinePrice extends HTMLSpanElement {
                 this.innerHTML = service.buildPriceHTML(offers, options);
 
                 // Adding logic for options.alternativePrice to add <sr-only>Alternatively at</sr-only>
-                let parentEl = this.closest('p');
-                if (!parentEl || parentEl.querySelectorAll('span[is="inline-price"]').length < 2) parentEl = this.closest('.col') ?? this.closest('merch-card');
+                const parentEl = this.closest(this.dataset.parentEl) ?? this.closest('p');
                 if (!parentEl || !parentEl.querySelector('span[data-template="strikethrough"]') || parentEl.querySelector('.alt-aria-label')) return true;
                 const inlinePrices = parentEl?.querySelectorAll('span[is="inline-price"]');
                 inlinePrices.forEach((price) => {
