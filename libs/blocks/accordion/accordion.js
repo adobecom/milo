@@ -140,7 +140,7 @@ function createItem(accordion, id, heading, num, edit) {
   const dd = createTag('div', { 'aria-labelledby': triggerId, id: panelId, hidden: true, class: 'descr-details' }, panel);
   const dm = createTag('div', { class: 'media-p' });
 
-  const isMobile = window.matchMedia('(max-width: 1200px)').matches;
+  const isMobile = window.matchMedia('(max-width: 1199px)').matches;
 
   if (edit && isMobile) {
     const ogMedia = mediaCollection[id][num - 1];
