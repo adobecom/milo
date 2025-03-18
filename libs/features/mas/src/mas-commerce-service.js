@@ -155,7 +155,6 @@ export class MasCommerceService extends HTMLElement {
 
     attributeChangedCallback(name, oldValue, newValue) {
       if (this.isConnected) {
-        performance.mark(MARK_START);
         this.readyPromise = new Promise((resolve) => this.activate(resolve));
       }
     }
