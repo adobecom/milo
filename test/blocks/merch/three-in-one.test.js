@@ -159,27 +159,17 @@ describe('Three-in-one modal', () => {
     const modal = await openThreeInOneModal(twpLink);
     const iframe = modal.querySelector('iframe');
     const spTheme = modal.querySelector('sp-theme');
-
-    // Trigger error state
     clock.tick(15000);
-
     const errorWrapper = modal.querySelector('.error-wrapper');
     const tryAgainBtn = errorWrapper.querySelector('.try-again-btn');
-
-    // Store original src to compare
     const originalSrc = iframe.src;
-
-    // Click try again button
     tryAgainBtn.click();
-
-    // Verify iframe was reloaded
     expect(iframe.getAttribute('data-wasreloaded')).to.equal('true');
     expect(iframe.style.display).to.equal('block');
     expect(iframe.src).to.equal(originalSrc);
     expect(iframe.classList.contains('loading')).to.be.true;
     expect(spTheme.style.display).to.equal('block');
     expect(modal.querySelector('.error-wrapper')).to.not.exist;
-
     modal.remove();
   });
 
@@ -187,15 +177,15 @@ describe('Three-in-one modal', () => {
     const modal = await openThreeInOneModal(twpLink);
     const iframe = modal.querySelector('iframe');
     const spTheme = modal.querySelector('sp-theme');
-
-    // Trigger error state
     clock.tick(15000);
-
     const errorWrapper = modal.querySelector('.error-wrapper');
-
-    // Test with missing parameters
     reloadIframe({});
-    reloadIframe({ iframe: null, theme: spTheme, msgWrapper: errorWrapper, handleTimeoutError: () => {} });
+    reloadIframe({
+      iframe: null,
+      theme: spTheme,
+      msgWrapper: errorWrapper,
+      handleTimeoutError: () => {},
+    });
     reloadIframe({ iframe, theme: null, msgWrapper: errorWrapper, handleTimeoutError: () => {} });
     reloadIframe({ iframe, theme: spTheme, msgWrapper: null, handleTimeoutError: () => {} });
     reloadIframe({ iframe, theme: spTheme, msgWrapper: errorWrapper, handleTimeoutError: null });
