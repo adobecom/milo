@@ -2,7 +2,7 @@ import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
 import sinon from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
-import openThreeInOneModal, { handle3in1IFrameEvents, MSG_SUBTYPE } from '../../../libs/blocks/merch/three-in-one.js';
+import openThreeInOneModal, { handle3in1IFrameEvents, MSG_SUBTYPE, reloadIframe } from '../../../libs/blocks/merch/three-in-one.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/threeInOne.html' });
 
@@ -152,6 +152,59 @@ describe('Three-in-one modal', () => {
     const errorWrapper = modal.querySelector('.error-wrapper');
     expect(errorWrapper).to.not.exist;
     expect(iframe.classList.contains('loading')).to.be.false;
+    modal.remove();
+  });
+
+  it('should reload iframe when try again button is clicked', async () => {
+    const modal = await openThreeInOneModal(twpLink);
+    const iframe = modal.querySelector('iframe');
+    const spTheme = modal.querySelector('sp-theme');
+
+    // Trigger error state
+    clock.tick(15000);
+
+    const errorWrapper = modal.querySelector('.error-wrapper');
+    const tryAgainBtn = errorWrapper.querySelector('.try-again-btn');
+
+    // Store original src to compare
+    const originalSrc = iframe.src;
+
+    // Click try again button
+    tryAgainBtn.click();
+
+    // Verify iframe was reloaded
+    expect(iframe.getAttribute('data-wasreloaded')).to.equal('true');
+    expect(iframe.style.display).to.equal('block');
+    expect(iframe.src).to.equal(originalSrc);
+    expect(iframe.classList.contains('loading')).to.be.true;
+    expect(spTheme.style.display).to.equal('block');
+    expect(modal.querySelector('.error-wrapper')).to.not.exist;
+
+    modal.remove();
+  });
+
+  it('should do nothing if required parameters are missing in reloadIframe', async () => {
+    const modal = await openThreeInOneModal(twpLink);
+    const iframe = modal.querySelector('iframe');
+    const spTheme = modal.querySelector('sp-theme');
+
+    // Trigger error state
+    clock.tick(15000);
+
+    const errorWrapper = modal.querySelector('.error-wrapper');
+
+    // Test with missing parameters
+    reloadIframe({});
+    reloadIframe({ iframe: null, theme: spTheme, msgWrapper: errorWrapper, handleTimeoutError: () => {} });
+    reloadIframe({ iframe, theme: null, msgWrapper: errorWrapper, handleTimeoutError: () => {} });
+    reloadIframe({ iframe, theme: spTheme, msgWrapper: null, handleTimeoutError: () => {} });
+    reloadIframe({ iframe, theme: spTheme, msgWrapper: errorWrapper, handleTimeoutError: null });
+
+    // Verify nothing changed
+    expect(errorWrapper).to.exist;
+    expect(iframe.style.display).to.equal('none');
+    expect(spTheme.style.display).to.equal('none');
+
     modal.remove();
   });
 });
