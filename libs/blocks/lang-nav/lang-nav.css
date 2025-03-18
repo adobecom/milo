@@ -1,0 +1,73 @@
+
+.region-nav > div:nth-of-type(2) > div > p,
+.region-nav > div:nth-of-type(2) > div > ul li {
+  line-height: 1.7;
+}
+
+.region-nav > div:nth-of-type(2) > div > p {
+  font-size: 16px;
+  margin-bottom: 0;
+}
+
+.region-nav > div:first-of-type {
+  padding: 32px 0 20px;
+}
+
+.region-nav > div:first-of-type > div {
+  font-size: 16px;
+  display: block;
+  position: relative;
+}
+
+.region-nav > div:first-of-type > div > p {
+  margin: 0 0 4px;
+}
+
+.region-nav > div:first-of-type > div > p:first-of-type {
+  font-size: 24px;
+}
+
+.region-nav > div:first-of-type > p:last-of-type {
+  margin-bottom: 0;
+}
+
+.region-nav > div:nth-of-type(2) > div > p:first-of-type {
+  margin-top: 0;
+}
+
+.region-nav > div > div ul li > a:focus-visible {
+  text-decoration: underline;
+  outline: none;
+}
+
+.region-nav {
+  padding: 0 32px 32px;
+  font-size: 14px;
+}
+
+.region-nav ul {
+  list-style: none;
+  padding-left: 0;
+  padding-right: 0;
+  margin: 0;
+}
+
+.region-nav > div:nth-of-type(2) {
+  column-count: 1;
+}
+
+.region-nav.hide {
+  display: none;
+}
+
+@media (min-width: 600px) {
+  .region-nav > div:nth-of-type(2) {
+    column-count: 3;
+  }
+}
+
+@media (min-width: 1200px) {
+  .region-nav > div:nth-of-type(2) {
+    column-count: 5;
+  }
+}

@@ -65,6 +65,7 @@ const MILO_BLOCKS = [
   'read-more',
   'recommended-articles',
   'region-nav',
+  'lang-nav',
   'review',
   'section-metadata',
   'slideshare',
