@@ -1,10 +1,14 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
 import { createTag } from '../../../utils/utils.js';
 
+function isViewportTooSmall() {
+  return !window.matchMedia('(min-width: 1200px)').matches;
+}
+
 const imagesWithMismatch = signal([]);
 const imagesWithMatch = signal([]);
 const checksPerformed = signal(false);
-const viewportTooSmall = signal(!window.matchMedia('(min-width: 1200px)').matches);
+const viewportTooSmall = signal(isViewportTooSmall());
 
 const groups = [
   { title: 'Images with dimension mismatch', imgArray: imagesWithMismatch },
@@ -38,33 +42,46 @@ async function checkImageDimensions() {
 
   if (!images.length) return;
 
+  const maxFullWidth = 1920;
+  const viewportWidth = document.documentElement.clientWidth;
+
   for (const img of images) {
+    // Get the original dimensions of the uploaded image; fallback to the natural dimensions
     const naturalWidth = img.getAttribute('width') ? parseInt(img.getAttribute('width'), 10) : img.naturalWidth;
     const naturalHeight = img.getAttribute('height') ? parseInt(img.getAttribute('height'), 10) : img.naturalHeight;
+    // Get the display dimensions of the image
     const displayWidth = img.offsetWidth;
     const displayHeight = img.offsetHeight;
-
-    // TODO: Lower factor for full width images
-    const idealFactor = 2;
-    // Calculate and round up the actual factor to nearest .05
-    const actualFactor = Math.round((naturalWidth / displayWidth) * 100) / 100;
+    // Check if the image is full width
+    const isFullWidthImage = displayWidth >= viewportWidth;
+    // Define the ideal factor depending on the image's display width
+    const idealFactor = isFullWidthImage ? 1.5 : 2;
+    // Get the multiplication factor depending on image display width; allow 5% tolerance
+    const factorDivisor = isFullWidthImage ? maxFullWidth : displayWidth;
+    const actualFactor = Math.round((naturalWidth / factorDivisor) * 100) / 100;
     const roundedFactor = Math.ceil(actualFactor * 20) / 20;
+    // Check if the image meets the ideal factor
     const hasMismatch = roundedFactor < idealFactor;
-
+    // Define the recommended dimensions
+    const recommendedDimensions = isFullWidthImage
+      ? `${maxFullWidth * idealFactor}x${Math.ceil((maxFullWidth * idealFactor * naturalHeight) / naturalWidth)}`
+      : `${Math.ceil(displayWidth * idealFactor)}x${Math.ceil(displayHeight * idealFactor)}`;
+    // Save the image data relevant to the final template
     const imageData = {
       src: img.getAttribute('src'),
       naturalDimensions: `${naturalWidth}x${naturalHeight}`,
       displayDimensions: `${displayWidth}x${displayHeight}`,
-      recommendedDimensions: `${Math.ceil(displayWidth * idealFactor)}x${Math.ceil(displayHeight * idealFactor)}`,
+      recommendedDimensions,
       roundedFactor,
+      hasMismatch,
     };
-
+    // Check for or define a picture meta element to display image analysis results
     let pictureMetaElem = img.closest('picture').querySelector('.picture-meta');
     if (!pictureMetaElem) {
       pictureMetaElem = createTag('div', { class: 'picture-meta' });
       img.closest('picture').insertBefore(pictureMetaElem, img.nextSibling);
     }
-
+    // Separate images depending on mismatch and define the message to display
     let assetMessage;
 
     if (hasMismatch) {
@@ -121,8 +138,9 @@ function ImageGroup({ group }) {
         <img src='${img.src}' />
         <div class='assets-image-grid-item-text'>
           <span>Factor: ${img.roundedFactor}</span>
-          <span>Natural size: ${img.naturalDimensions}</span>
+          <span>Upload size: ${img.naturalDimensions}</span>
           <span>Display size: ${img.displayDimensions}</span>
+          ${img.hasMismatch && html`<span>Recommended size: ${img.recommendedDimensions}</span>`}
         </div>
       </div>`)}
     </div>`}
@@ -142,13 +160,10 @@ export default function Assets() {
     const handleResize = () => {
       clearTimeout(resizeTimeout);
       resizeTimeout = setTimeout(() => {
-        const mediaQuery = window.matchMedia('(min-width: 1200px)');
-        const isSmall = !mediaQuery.matches;
+        const isSmall = isViewportTooSmall();
         if (viewportTooSmall.value !== isSmall) {
           viewportTooSmall.value = isSmall;
-          if (!isSmall) {
-            checkImageDimensions();
-          }
+          if (!isSmall) checkImageDimensions();
         }
       }, 250);
     };
