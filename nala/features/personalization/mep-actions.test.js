@@ -7,6 +7,7 @@ import TextBlock from '../../blocks/text/text.page.js';
 import MarqueeBlock from '../../blocks/marquee/marquee.page.js';
 
 const miloLibs = process.env.MILO_LIBS || '';
+const sec5Loc = 'main:has-text("Section 5")';
 
 // Test 0: confirm the default page
 test(`[Test Id - ${features[0].tcid}] ${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
@@ -17,6 +18,7 @@ test(`[Test Id - ${features[0].tcid}] ${features[0].name},${features[0].tags}`, 
   await page.goto(URL);
   await expect(textBlock1.headlineAlt).toHaveText('Base page text. Section 2');
   await expect(textBlock7.headlineAlt).toHaveText('Base page text fragment');
+  await expect(page.locator(sec5Loc)).toHaveCount(1);
 });
 
 // Test 1: confirm various MEP actions on the personalized page
@@ -33,7 +35,6 @@ test(`[Test Id - ${features[1].tcid}] ${features[1].name},${features[1].tags}`, 
   const textBlock10 = new TextBlock(page, 10);
   const textBlock11 = new TextBlock(page, 11);
   const textBlock12 = new TextBlock(page, 12);
-  const textBlock13 = new TextBlock(page, 13);
   const URL = `${baseURL}${features[1].path}${miloLibs}`;
   console.info(`[Test Page]: ${URL}`);
   await page.goto(URL);
@@ -44,12 +45,12 @@ test(`[Test Id - ${features[1].tcid}] ${features[1].name},${features[1].tags}`, 
   await expect(textBlock5.headlineAlt).toHaveText('Appended to 3');
   await expect(textBlock6.headlineAlt).toHaveText('Prepended to 4');
   await expect(textBlock7.headlineAlt).toHaveText('Base page text. Section 4');
-  await expect(textBlock8.headlineAlt).not.toBeVisible();
-  await expect(textBlock9.headlineAlt).toHaveText('Section 6 replacement');
-  await expect(textBlock10.headlineAlt).toHaveText('Base page text. Section 7');
-  await expect(textBlock11.headlineAlt).toHaveText('Replaced basepage fragment');
-  await expect(textBlock12.headlineAlt).toHaveText('Inserted after basepage fragment');
-  await expect(textBlock13.headlineAlt).toHaveText('Inserted after replaced fragment');
+  await expect(page.locator(sec5Loc)).toHaveCount(0);
+  await expect(textBlock8.headlineAlt).toHaveText('Section 6 replacement');
+  await expect(textBlock9.headlineAlt).toHaveText('Base page text. Section 7');
+  await expect(textBlock10.headlineAlt).toHaveText('Replaced basepage fragment');
+  await expect(textBlock11.headlineAlt).toHaveText('Inserted after basepage fragment');
+  await expect(textBlock12.headlineAlt).toHaveText('Inserted after replaced fragment');
 });
 
 // Test 2: confirm insertScript (make text orange)

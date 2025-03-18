@@ -112,6 +112,13 @@ export default async function loadBlock(configs, customLib) {
     import('../utils/utils.js'),
   ]);
   const paramConfigs = getParamsConfigs(configs);
+  const origin = (() => {
+    switch (env) {
+      case 'prod': return 'https://www.adobe.com';
+      case 'stage': return 'https://www.stage.adobe.com';
+      default: return 'https://main--federal--adobecom.aem.page';
+    }
+  })();
   const clientConfig = {
     theme,
     prodDomains,
@@ -122,18 +129,22 @@ export default async function loadBlock(configs, customLib) {
     locales: configs.locales || locales,
     contentRoot: authoringPath || footer?.authoringPath,
     stageDomainsMap: getStageDomainsMap(stageDomainsMap),
-    origin: `https://main--federal--adobecom.aem.${env === 'prod' ? 'live' : 'page'}`,
-    allowedOrigins: [...allowedOrigins, `https://main--federal--adobecom.aem.${env === 'prod' ? 'live' : 'page'}`],
+    origin,
+    allowedOrigins: [...allowedOrigins, origin],
+    onFooterReady: footer?.onReady,
+    onFooterError: footer?.onError,
     ...paramConfigs,
   };
   setConfig(clientConfig);
   for await (const block of blockConfig) {
     const configBlock = configs[block.key];
-    const config = getConfig();
-    const gnavSource = `${config?.locale?.contentRoot}/gnav`;
-    try {
-      if (configBlock) {
-        if (block.key === 'header') {
+
+    if (configBlock) {
+      const config = getConfig();
+      const gnavSource = `${config?.locale?.contentRoot}/gnav`;
+      const footerSource = `${config?.locale?.contentRoot}/footer`;
+      if (block.key === 'header') {
+        try {
           const { default: init } = await import('../blocks/global-navigation/global-navigation.js');
           await bootstrapBlock(init, {
             ...block,
@@ -146,24 +157,32 @@ export default async function loadBlock(configs, customLib) {
             isLocalNav: configBlock.isLocalNav,
             mobileGnavV2: configBlock.mobileGnavV2 || 'off',
           });
-        } else if (block.key === 'footer') {
-          try {
-            await import('./footer.css');
-          } catch (e) {
-            loadStyle(`${miloLibs}/libs/navigation/footer.css`);
-          }
-          const { default: init } = await import('../blocks/global-footer/global-footer.js');
-          await bootstrapBlock(init, { ...block });
+          configBlock.onReady?.();
+        } catch (e) {
+          configBlock.onError?.(e);
+          window.lana.log(`${e.message} | gnav-source: ${gnavSource} | href: ${window.location.href}`, {
+            clientId: 'feds-milo',
+            tags: 'standalone-gnav',
+            errorType: e.errorType,
+          });
         }
-        configBlock.onReady?.();
       }
-    } catch (e) {
-      configBlock.onError?.(e);
-      window.lana.log(`${e.message} | gnav-source: ${gnavSource} | href: ${window.location.href}`, {
-        clientId: 'feds-milo',
-        tags: 'standalone-gnav',
-        errorType: e.errorType,
-      });
+      if (block.key === 'footer') {
+        import('./footer.css').catch(() => {
+          loadStyle(`${miloLibs}/libs/navigation/footer.css`);
+        });
+        try {
+          const { default: init } = await import('../blocks/global-footer/global-footer.js');
+          await bootstrapBlock(init, { ...block, footerSource });
+        } catch (e) {
+          configBlock.onError?.(e);
+          window.lana.log(`${e.message} | footer-source: ${footerSource} | href: ${window.location.href}`, {
+            clientId: 'feds-milo',
+            tags: 'standalone-footer',
+            errorType: e.errorType,
+          });
+        }
+      }
     }
   }
 }

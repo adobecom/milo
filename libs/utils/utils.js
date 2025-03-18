@@ -842,6 +842,16 @@ function decorateDefaults(el) {
   });
 }
 
+export async function getGnavSource() {
+  const { locale, dynamicNavKey } = getConfig();
+  let url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
+  if (dynamicNavKey) {
+    const { default: dynamicNav } = await import('../features/dynamic-navigation/dynamic-navigation.js');
+    url = dynamicNav(url, dynamicNavKey);
+  }
+  return url;
+}
+
 export function isLocalNav() {
   const { locale = {} } = getConfig();
   const gnavSource = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
@@ -1247,13 +1257,15 @@ async function loadPostLCP(config) {
   const georouting = getMetadata('georouting') || config.geoRouting;
   if (georouting === 'on') {
     const jsonPromise = fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
-    const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
-    await loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle, jsonPromise);
+    import('../features/georoutingv2/georoutingv2.js')
+      .then(({ default: loadGeoRouting }) => {
+        loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle, jsonPromise);
+      });
   }
   const header = document.querySelector('header');
   if (header) {
     header.classList.add('gnav-hide');
-    await loadBlock(header);
+    loadBlock(header);
     header.classList.remove('gnav-hide');
   }
   loadTemplate();
