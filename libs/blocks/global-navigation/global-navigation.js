@@ -123,6 +123,7 @@ export const CONFIG = {
                   error: (e) => lanaLog({ message: 'Profile Menu error', e, tags: 'universalnav', errorType: 'error' }),
                 },
               },
+              releaseName: getConfig().unav?.profile?.releaseName || null,
               ...getConfig().unav?.profile?.config,
             },
           },
