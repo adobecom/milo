@@ -25,7 +25,7 @@ export const loadJarvisChat = async (getConfig, getMetadata, loadScript, loadSty
 };
 
 export const loadPrivacy = async (getConfig, loadScript) => {
-  const { privacyId, env } = getConfig();
+  const { privacyId } = getConfig();
   const acom = 'b02782c1-a5e1-4d3b-99bb-537f2bf36700';
   const ids = {
     'hlx.page': 'f5b9e81a-54b5-40cb-afc3-84ca26e7dbaf-test',
