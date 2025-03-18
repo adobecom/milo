@@ -25,6 +25,10 @@ export class MasCommerceService extends HTMLElement {
     static instance;
     readyPromise = null;
 
+    static get observedAttributes() {
+      return ['locale', 'country', 'language', 'env'];
+    }
+
     get #config() {
         const env = this.getAttribute('env') ?? 'prod';
         const config = {
@@ -149,11 +153,16 @@ export class MasCommerceService extends HTMLElement {
         });
     }
 
+    attributeChangedCallback(name, oldValue, newValue) {
+      if (this.isConnected) {
+        performance.mark(MARK_START);
+        this.readyPromise = new Promise((resolve) => this.activate(resolve));
+      }
+    }
+
     connectedCallback() {
-        if (!this.readyPromise) {
-            performance.mark(MARK_START);
-            this.readyPromise = new Promise((resolve) => this.activate(resolve));
-        }
+      performance.mark(MARK_START);
+      this.readyPromise = new Promise((resolve) => this.activate(resolve));
     }
 
     disconnectedCallback() {
@@ -162,12 +171,12 @@ export class MasCommerceService extends HTMLElement {
 
     flushWcsCache() {
         /* c8 ignore next 3 */
-        this.flushWcsCache();
+        this.flushCache();
         this.log.debug('Flushed WCS cache');
     }
 
     refreshOffers() {
-        this.flushWcsCache();
+        this.flushCache();
         document
             .querySelectorAll('span[is="inline-price"],a[is="checkout-link"]')
             .forEach((el) => el.requestUpdate(true));
@@ -175,7 +184,7 @@ export class MasCommerceService extends HTMLElement {
     }
 
     refreshFragments() {
-        this.flushWcsCache();
+        this.flushCache();
         document.querySelectorAll('aem-fragment').forEach((el) => el.refresh());
         this.log.debug('Refreshed AEM fragments');
     }

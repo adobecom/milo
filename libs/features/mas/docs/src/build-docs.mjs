@@ -57,7 +57,11 @@ const styleDependecy = ['plans.md'].includes(sourceFile)
   : '<link rel="stylesheet" href="spectrum.css">';
 
 // Render Markdown to HTML
-const htmlContent = md.render(inputContent);
+let htmlContent = md.render(inputContent);
+// wrap in sp-theme
+htmlContent = ['ccd.md'].includes(sourceFile) 
+  ? htmlContent 
+  : `<sp-theme color="light" scale="medium">\n${htmlContent}\n</sp-theme>`;
 
 // HTML template with your custom element script
 const htmlTemplate = `
@@ -98,9 +102,7 @@ const htmlTemplate = `
     <a href="/libs/features/mas/docs/benchmarks.html">Benchmarks</a>
 </aside>
 <main>
-<sp-theme color="light" scale="medium">
 ${htmlContent}
-</sp-theme>
 </main>
 <script type="module">
   document.querySelectorAll('code.demo').forEach(el => {

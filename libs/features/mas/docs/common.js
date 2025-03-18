@@ -18,16 +18,18 @@ export async function polyfills() {
   return polyfillsPromise;
 }
 
-const toggleTheme = (theme, params) => {
-  document.body.className = 'spectrum spectrum--medium';
-  document.body.classList.add(`spectrum--${theme}`);
+const toggleTheme = (theme, event, params) => {
+  event?.preventDefault();
+  document.body.className = `spectrum spectrum--medium spectrum--${theme}`;
   document.querySelector('sp-theme')?.setAttribute('color', theme);
-  params.set('theme', theme);
-  history.replaceState(
-      null,
-      '',
-      `${location.pathname}?${params}`,
-  );
+  if (params) {
+    params.set('theme', theme);
+    history.replaceState(
+        null,
+        '',
+        `${location.pathname}?${params}`,
+    );
+  }
 }
 
 const init = async () => {
@@ -39,14 +41,10 @@ const init = async () => {
     meta.content = params.get(MAS_IO_URL);
     document.head.appendChild(meta);
   }
-  
+
   // theme
-  const darkTheme = params?.get('theme')?.toLowerCase() === 'dark';
-  const theme = document.createElement('script');
-  theme.setAttribute('src', `../../spectrum-web-components/dist/themes/${darkTheme ? 'dark' : 'light'}.js`);
-  theme.setAttribute('type', `module`);
-  document.head.appendChild(theme);
-  
+  toggleTheme(params.get('theme') ?? 'light');
+
   // mas-commerce-service
   const masCommerceService = document.querySelector('mas-commerce-service');
   ['locale','country','language','env'].forEach((attribute) => {
@@ -54,10 +52,40 @@ const init = async () => {
     if (value) masCommerceService.setAttribute(attribute, value);
   });
   await import('../dist/mas.js');
+  masCommerceService.refreshFragments();
 
   document.querySelectorAll('a.theme-toggle').forEach((link) => 
-    link.addEventListener('click', (e) =>
-      toggleTheme(e.target.getAttribute('value'), params)
+    link.addEventListener('click', (event) =>
+      toggleTheme(event.target.getAttribute('value'), event, params)
+    )
+  );
+
+  document.querySelectorAll('a.locale-toggle').forEach((link) => 
+    link.addEventListener('click', (e) => {
+      e?.preventDefault();
+      if (e.target.getAttribute('value').includes(',')) {
+        const [country, language] = e.target.getAttribute('value').split(',');
+        masCommerceService.setAttribute('country', country);
+        masCommerceService.setAttribute('language', language);
+        masCommerceService.removeAttribute('locale');
+        params.set('country', country);
+        params.set('language', language);
+        params.delete('locale');
+      } else {
+        masCommerceService.setAttribute('locale', e.target.getAttribute('value'));
+        masCommerceService.removeAttribute('country');
+        masCommerceService.removeAttribute('language');
+        params.set('locale', e.target.getAttribute('value'));
+        params.delete('country');
+        params.delete('language');
+      }
+      masCommerceService.refreshFragments();
+      history.replaceState(
+          null,
+          '',
+          `${location.pathname}?${params}`,
+      );
+    }
     )
   );
 }

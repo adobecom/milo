@@ -3,7 +3,7 @@ import '../../deps/mas/merch-card.js';
 import '../../deps/mas/merch-quantity-select.js';
 import { initService } from '../merch/merch.js';
 
-const MAS_AUTOBLOCK_TIMEOUT = 105000;
+const MAS_AUTOBLOCK_TIMEOUT = 5000;
 let log;
 
 export function getFragmentId(el) {

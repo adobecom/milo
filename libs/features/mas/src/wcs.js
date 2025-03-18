@@ -149,9 +149,9 @@ export function Wcs({ settings }) {
     }
 
     /**
-     * Flushes WCS cache
+     * Flushes cache
      */
-    function flushWcsCache() {
+    function flushCache() {
         const size = cache.size;
         cache.clear();
         log.debug(`Flushed ${size} cache entries`);
@@ -233,6 +233,6 @@ export function Wcs({ settings }) {
         WcsPlanType,
         WcsTerm,
         resolveOfferSelectors,
-        flushWcsCache,
+        flushCache,
     };
 }
