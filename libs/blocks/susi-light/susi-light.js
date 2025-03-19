@@ -1,14 +1,16 @@
 import { loadScript, createTag, getConfig } from '../../utils/utils.js';
 
 export default async function init(el) {
+  const lib = 'https://auth-light.identity-stage.adobe.com/sentry/wrapper.js';
+  await loadScript(lib);
   const { imsClientId } = getConfig();
   const children = el.querySelectorAll(':scope > div');
   const bgImg = children[0].textContent?.trim();
   if (bgImg) el.style.backgroundImage = `url(${bgImg})`;
   el.innerHTML = '';
   const sentry = createTag('susi-sentry-light');
-  sentry.setAttribute('stage', 'true');
-  sentry.setAttribute('variant', 'standard');
+  sentry.stage = true;
+  sentry.variant = 'standard';
   sentry.authParams = {
     client_id: imsClientId,
     hints: 'eyJlbmFibGVkX3NvY2lhbF9wcm92aWRlcnMiOlsiZ29vZ2xlIiwgImFwcGxlIl19',
@@ -40,10 +42,6 @@ export default async function init(el) {
   };
 
   sentry.addEventListener('on-analytics', onAnalytics);
-
-  const lib = 'https://auth-light.identity-stage.adobe.com/sentry/wrapper.js';
-  await loadScript(lib);
-
   const loginContainer = createTag('div', { class: 'login-container' });
 
   const susiWrapper = createTag('div', { class: 'susi-light-wrapper' });
