@@ -3,8 +3,6 @@ import {
     updateMasElement,
     MasElement,
 } from './mas-element.js';
-import { getPriceLiterals } from './literals.js';
-import IntlMessageFormat from 'intl-messageformat';
 import { selectOffers, useService } from './utilities.js';
 
 // countries where tax is displayed for all segments by default
@@ -111,6 +109,7 @@ export class InlinePrice extends HTMLSpanElement {
             perpetual,
             promotionCode,
             quantity,
+            alternativePrice,
             template,
             wcsOsi,
         } = service.collectPriceOptions(options);
@@ -123,6 +122,7 @@ export class InlinePrice extends HTMLSpanElement {
             perpetual,
             promotionCode,
             quantity,
+            alternativePrice,
             template,
             wcsOsi,
         });

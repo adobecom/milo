@@ -28,6 +28,7 @@ export function Price({ literals, providers, settings }) {
             language: defaultLanguage,
             promotionCode: defaultPromotionCode,
             quantity: defaultQuantity,
+            alternativePrice: defaultAlternativePrice,
         } = settings;
         const {
             displayOldPrice = defaultDisplayOldPrice,
@@ -40,6 +41,7 @@ export function Price({ literals, providers, settings }) {
             perpetual,
             promotionCode = defaultPromotionCode,
             quantity = defaultQuantity,
+            alternativePrice = defaultAlternativePrice,
             template,
             wcsOsi,
             ...rest
@@ -56,6 +58,7 @@ export function Price({ literals, providers, settings }) {
             perpetual: toBoolean(perpetual),
             promotionCode: computePromoStatus(promotionCode).effectivePromoCode,
             quantity: toQuantity(quantity, Defaults.quantity),
+            alternativePrice: toBoolean(alternativePrice),
             template,
             wcsOsi: toOfferSelectorIds(wcsOsi),
         });
