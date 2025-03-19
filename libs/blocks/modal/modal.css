@@ -391,6 +391,7 @@
   }
 
   .dialog-modal.manage-plan-cancel {
+    max-width: 100%;
     width: 1280px;
   }
 }

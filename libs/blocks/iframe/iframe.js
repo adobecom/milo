@@ -25,14 +25,13 @@ function handleManagePlanEvents(message) {
 }
 
 export function handleIFrameEvents({ data }) {
-  let parsedMsg = null;
   try {
-    parsedMsg = JSON.parse(data);
+    const parsedMsg = JSON.parse(data);
+    if (parsedMsg.app === 'ManagePlan') handleManagePlanEvents(parsedMsg);
   } catch (error) {
-    return;
+    // eslint-disable-next-line no-console
+    console.log(error);
   }
-  const { app } = parsedMsg;
-  if (app === 'ManagePlan') handleManagePlanEvents(parsedMsg);
 }
 
 export default function init(el) {
@@ -40,12 +39,8 @@ export default function init(el) {
   el.classList.remove('iframe');
   const classes = [...el.classList].join(' ');
 
-  let url = null;
-  try {
-    url = new URL(linkHref);
-  } catch (e) {
-    return;
-  }
+  if (!linkHref) return;
+  const url = new URL(linkHref);
 
   if (ALLOWED_MESSAGE_ORIGINS.includes(url.origin) || window.location.origin === url.origin) {
     window.addEventListener('message', handleIFrameEvents);
