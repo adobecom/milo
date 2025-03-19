@@ -90,7 +90,6 @@ export default function init(regionSelector) {
   `;
 
   const addRegionClickHandler = (id) => {
-    debugger
     const element = regionSelector.querySelector(`#${id}`);
     element?.addEventListener('click', () => setInternational(id));
   };
