@@ -2,6 +2,7 @@ import { createTag, getConfig } from '../../utils/utils.js';
 import '../../deps/mas/merch-card.js';
 import { initService } from '../merch/merch.js';
 
+// Should probably be removed (?)
 const DEFAULT_PLACEHOLDERS = {
   searchText: 'Search all products',
   filtersText: 'Filters',
@@ -19,6 +20,14 @@ const DEFAULT_PLACEHOLDERS = {
   noSearchResultsMobileText: '<p>Your search for <strong><span data-placeholder="searchTerm"></span></strong> did not yield any results. Try a different search term.</p><p>Suggestions:</p><ul><li>Make sure all words are spelled correctly</li><li>Use quotes to search for an entire phrase, such as "crop an image"</li></ul>',
   showMoreText: 'Show more',
 };
+const MAS_AUTOBLOCK_TIMEOUT = 5000;
+let log;
+
+function getTimeoutPromise() {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve(false), MAS_AUTOBLOCK_TIMEOUT);
+  });
+}
 
 export function getFragmentId(el) {
   const { hash } = new URL(el.href);
@@ -37,6 +46,16 @@ export function getTagName(el) {
 }
 
 async function loadControl(tagName) {
+  /** Load service first */
+  const servicePromise = initService();
+  const success = await Promise.race([servicePromise, getTimeoutPromise()]);
+  if (!success) {
+    throw new Error('Failed to initialize mas commerce service');
+  }
+  const service = await servicePromise;
+  log = service.Log.module('merch');
+
+  /** Load the control and any dependencies */
   const { base } = getConfig();
   switch (tagName) {
     case 'merch-card-collection':
@@ -81,8 +100,16 @@ export function createControl(el, fragment) {
   return control;
 }
 
-async function postProcess(control, tagName) {
-  await control.checkReady();
+export async function checkReady(control) {
+  const readyPromise = control.checkReady();
+  const success = await Promise.race([readyPromise, getTimeoutPromise()]);
+
+  if (!success) {
+    log.error('Merch card did not initialize withing give timeout');
+  }
+}
+
+function postProcess(control, tagName) {
   switch (tagName) {
     case 'merch-card-collection': {
       const placeholders = control.data?.placeholders || DEFAULT_PLACEHOLDERS;
@@ -102,9 +129,9 @@ async function postProcess(control, tagName) {
 export default async function init(el) {
   const fragment = getFragmentId(el);
   if (!fragment) return;
-  await initService();
   const tagName = getTagName(el);
   await loadControl(tagName);
   const control = createControl(el, fragment);
-  await postProcess(control, tagName);
+  await checkReady(control);
+  postProcess(control, tagName);
 }

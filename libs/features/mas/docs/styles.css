@@ -2,6 +2,7 @@ body {
     margin: 0;
     padding: 0;
     display: flex;
+    min-height: 100vh;
 }
 
 body.spectrum--darkest {
@@ -13,6 +14,7 @@ body.spectrum--darkest {
     background-color: #f4f4f4;
     padding: 5px;
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    flex-shrink: 0;
 }
 
 .sidenav a {
@@ -32,6 +34,7 @@ body.spectrum--darkest {
 
 main {
     display: flex;
+    background: var(--spectrum-gray-50);
     flex: 1;
     justify-content: center;
     margin: 0 16px;
@@ -138,9 +141,11 @@ pre {
 }
 
 #log,
+#log1,
 #log2,
-#log3 {
-    display: block;
+#log3,
+#log4 {
+  display: block;
 }
 
 button {
@@ -200,9 +205,17 @@ merch-card[variant='ccd-slice'][size='wide'] {
     grid-template-columns: minmax(290px, 322px);
 }
 
+.benchmarks.three-merch-cards.ah-try-buy-widget {
+    grid-template-columns: minmax(156px, 484px);
+}
+
 @media screen and (min-width: 644px) {
     .three-merch-cards.ccd-slice {
         grid-template-columns: repeat(2, minmax(290px, 322px));
+    }
+
+    .benchmarks.three-merch-cards.ah-try-buy-widget {
+        grid-template-columns: repeat(2, 156px);
     }
 }
 
@@ -210,6 +223,58 @@ merch-card[variant='ccd-slice'][size='wide'] {
     .three-merch-cards.ccd-slice {
         grid-template-columns: repeat(3, minmax(290px, 322px));
     }
+
+    .benchmarks.three-merch-cards.ah-try-buy-widget {
+        grid-template-columns: repeat(3, minmax(156px, min-content));
+    }
+}
+
+/* Adobe Home */
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+  color: var(--spectrum-gray-900);
+}
+
+.theme-selection {
+  color: var(--spectrum-gray-900);
+}
+
+.adobe-home-container {
+    display: flex;
+    padding: 20px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    border-radius: 16px;
+    background: var(--spectrum-gray-100);
+    box-shadow: 0px 2px 8px 0px rgba(0, 0, 0, 0.16);
+    margin-top: 16px;
+}
+
+.size-header {
+    margin: 0;
+}
+
+.one-merch-card.ah-try-buy-widget {
+    grid-template-columns: minmax(484px, 0);
+}
+
+.two-merch-cards.ah-try-buy-widget {
+    grid-template-columns: repeat(2, minmax(238px, 0px));
+    gap: 8px;
+}
+
+.three-merch-cards.ah-try-buy-widget {
+    grid-template-columns: repeat(3, minmax(156px, 0px));
+    gap: 8px;
+}
+
+.theme-toggle {
+  color: var(--spectrum-gray-900);
 }
 
 .flex-cards {

@@ -752,13 +752,17 @@
   }
 
   .aside .split-image .modal-img-link,
-  .aside.split .split-image img:not(.accessibility-control),
+  .aside.split .split-image img,
   .aside.split .split-image video {
     width: 50vw;
     position: absolute;
     right: 0;
     object-fit: cover;
     object-position: center top;
+  }
+
+  .aside.split .split-image img.accessibility-control {
+    position: relative;
   }
 
   .aside .split-image .modal-img-link,
@@ -949,6 +953,11 @@
     padding: var(--spacing-xxs) 0 0;
     align-items: center;
     text-align: center;
+  }
+
+  .aside.promobar .action-area wbr,
+  .aside.notification .action-area wbr {
+    display: none;
   }
 }
 

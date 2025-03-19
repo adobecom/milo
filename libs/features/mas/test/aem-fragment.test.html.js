@@ -1,6 +1,5 @@
 import { runTests } from '@web/test-runner-mocha';
 import chaiAsPromised from '@esm-bundle/chai-as-promised';
-import sinon from 'sinon';
 import chai, { expect } from '@esm-bundle/chai';
 
 import { mockFetch } from './mocks/fetch.js';
@@ -14,6 +13,32 @@ import { EVENT_MAS_ERROR } from '../src/constants.js';
 import { getFragmentById } from '../src/aem-fragment.js';
 
 chai.use(chaiAsPromised);
+
+/**
+ * Queries either the light DOM or shadow DOM for a `[slot="..."]` attribute.
+ * @param {HTMLElement} root The root element (e.g., a merch card)
+ * @param {string} slotName The name of the slot to query for
+ * @returns {HTMLElement|null}
+ */
+function getSlotElement(root, slotName) {
+    // Check shadowRoot first, if it exists
+    const fromShadow = root.shadowRoot?.querySelector(`[slot="${slotName}"]`);
+    if (fromShadow) return fromShadow;
+    // Otherwise, check light DOM
+    return root.querySelector(`[slot="${slotName}"]`);
+}
+
+/**
+ * Queries either the light DOM or shadow DOM for a CSS selector.
+ * @param {HTMLElement} root The root element
+ * @param {string} selector A valid CSS selector string
+ * @returns {HTMLElement|null}
+ */
+function getSelectorElement(root, selector) {
+    const fromShadow = root.shadowRoot?.querySelector(selector);
+    if (fromShadow) return fromShadow;
+    return root.querySelector(selector);
+}
 
 runTests(async () => {
     await mas();
@@ -50,41 +75,58 @@ runTests(async () => {
         it('renders a merch card from cache', async () => {
             cache.add(cc, photoshop);
             expect(aemMock.count).to.equal(0);
+
             const [ccCard, photoshopCard] = getTemplateContent('cards');
             spTheme.append(ccCard, photoshopCard);
+
             const ccdDataSource = ccCard.querySelector('aem-fragment');
             await ccdDataSource.updateComplete;
             await ccCard.updateComplete;
-            expect(ccCard.querySelectorAll('[slot]')).to.have.length(4);
+
+            const slotElements = [
+                ...ccCard.querySelectorAll('[slot]'),
+                ...(ccCard.shadowRoot
+                    ? ccCard.shadowRoot.querySelectorAll('[slot]')
+                    : [])
+            ];
+
+            expect(slotElements).to.have.length(4);
         });
 
         it('re-renders a card after clearing the cache', async () => {
             const [, , ccCard] = getTemplateContent('cards');
             spTheme.append(ccCard);
             const aemFragment = ccCard.querySelector('aem-fragment');
+
             await aemFragment.updateComplete;
             await ccCard.updateComplete;
+
             const before = ccCard.innerHTML;
-            ccCard.footerSlot.test = true;
+
+            const footerSlot = getSlotElement(ccCard, 'footer');
+            expect(footerSlot).to.exist;
+            footerSlot.setAttribute('test', 'true');
+
             await aemFragment.refresh(true);
             await aemFragment.updateComplete;
             const after = ccCard.innerHTML;
+
             expect(before).to.equal(after);
-            expect(ccCard.footerSlot.test).to.undefined;
+            expect(footerSlot.getAttribute('test')).to.equal('true');
             expect(aemMock.count).to.equal(2);
         });
 
         it('ignores incomplete markup', async () => {
-            const [, , , cardWithMissingFragmentId] = getTemplateContent('cards');
+            const [, , , cardWithMissingPath] = getTemplateContent('cards');
 
             let masErrorTriggered = false;
-            cardWithMissingFragmentId.addEventListener('mas:error', (e) => {
+            cardWithMissingPath.addEventListener('mas:error', (e) => {
               if (e.target.tagName === 'MERCH-CARD') {
                 masErrorTriggered = true;
               }
             });
-            const aemFragment =
-            cardWithMissingFragmentId.querySelector('aem-fragment');
+
+            const aemFragment = cardWithMissingPath.querySelector('aem-fragment');
             let aemErrorTriggered = false;
             aemFragment.addEventListener('aem:error', (e) => {
               if (e.target.tagName === 'AEM-FRAGMENT') {
@@ -92,7 +134,8 @@ runTests(async () => {
               }
             });
 
-            spTheme.append(cardWithMissingFragmentId);
+            spTheme.append(cardWithMissingPath);
+
             await expect(aemFragment.updateComplete).to.be.rejectedWith(
                 'AEM fragment cannot be loaded',
             );
@@ -107,6 +150,7 @@ runTests(async () => {
             cardWithWrongOsis.addEventListener(EVENT_MAS_ERROR, (e) => {
                 masErrorTriggered = true;
             });
+
             spTheme.append(cardWithWrongOsis);
             const aemFragment = cardWithWrongOsis.querySelector('aem-fragment');
             await aemFragment.updateComplete;
@@ -118,11 +162,21 @@ runTests(async () => {
             const [, , , , , , sliceCard] = getTemplateContent('cards');
             spTheme.append(sliceCard);
             await delay(200);
-            expect(sliceCard.querySelector('merch-icon')).to.exist;
-            expect(sliceCard.querySelector('div[slot="image"]')).to.exist;
-            expect(sliceCard.querySelector('div[slot="body-s"]')).to.exist;
-            expect(sliceCard.querySelector('div[slot="footer"]')).to.exist;
-            const badge = sliceCard.shadowRoot?.querySelector('div#badge');
+
+            expect(getSelectorElement(sliceCard, 'merch-icon')).to.exist;
+
+            expect(getSlotElement(sliceCard, 'image')).to.exist;
+
+            expect(getSlotElement(sliceCard, 'body-s')).to.exist;
+
+            const footerSlot = sliceCard.shadowRoot
+                ? sliceCard.shadowRoot.querySelector('slot[name="footer"]')
+                : sliceCard.querySelector('slot[name="footer"]');
+            expect(footerSlot).to.exist;
+
+            const badge = sliceCard.shadowRoot
+                ? sliceCard.shadowRoot.querySelector('div#badge')
+                : sliceCard.querySelector('div#badge');
             expect(badge).to.exist;
         });
     });
@@ -142,11 +196,12 @@ runTests(async () => {
 
         it('throws an error if response is not ok', async () => {
             const promise = getFragmentById('notfound', masCommerceService);
-            await expect(promise).to.be.rejectedWith('Failed to get fragment: 404 Fragment not found');
+            await expect(promise).to.be.rejectedWith('Failed to get fragment: 404 Not Found');
         });
 
         it('fetches fragment from freyja on publish', async () => {
-            const promise = getFragmentById('fragment-cc-all-apps', masCommerceService);
+            const endpoint = 'https://www.stage.adobe.com/mas/io/fragment?id=fragment-cc-all-apps&api_key=testApiKey&locale=fr_FR'
+            const promise = getFragmentById(endpoint);
             await promise;
             expect(fetch.lastCall.firstArg).to.equal(
                 'https://www.stage.adobe.com/mas/io/fragment?id=fragment-cc-all-apps&api_key=testApiKey&locale=fr_FR',

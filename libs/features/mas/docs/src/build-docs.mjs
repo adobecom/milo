@@ -57,7 +57,11 @@ const styleDependecy = ['plans.md'].includes(sourceFile)
   : '<link rel="stylesheet" href="spectrum.css">';
 
 // Render Markdown to HTML
-const htmlContent = md.render(inputContent);
+let htmlContent = md.render(inputContent);
+// wrap in sp-theme
+htmlContent = ['ccd.md'].includes(sourceFile) 
+  ? htmlContent 
+  : `<sp-theme color="light" scale="medium">\n${htmlContent}\n</sp-theme>`;
 
 // HTML template with your custom element script
 const htmlTemplate = `
@@ -79,23 +83,26 @@ const htmlTemplate = `
   </script>
   <!-- Include Highlight.js stylesheet for syntax highlighting -->
   <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
+  <script type="module" src="./mas-sidenav.js"></script>
+  
+  <mas-commerce-service lana-tags="nala"></mas-commerce-service>
 </head>
 <body class="spectrum spectrum--medium spectrum--light">
 <aside class="sidenav">
     <a href="/libs/features/mas/docs/mas.html">Home</a>
     <a href="/libs/features/mas/docs/mas.js.html">mas.js</a>
+    <a href="/libs/features/mas/docs/step-by-step.html">Step By Step - Enable M@S</a>
     <a href="/libs/features/mas/docs/checkout-link.html">Checkout Link</a>
     <a href="/libs/features/mas/docs/checkout-button.html">Checkout Button</a>
     <a href="/libs/features/mas/docs/inline-price.html">Inline Price</a>
     <a href="/libs/features/mas/docs/merch-card.html">Merch Card</a>
     <a href="/libs/features/mas/docs/ccd.html">CCD Gallery</a>
+    <a href="/libs/features/mas/docs/adobe-home.html">Adobe Home Gallery</a>
     <a href="/libs/features/mas/docs/plans.html">Plans Gallery</a>
     <a href="/libs/features/mas/docs/benchmarks.html">Benchmarks</a>
 </aside>
 <main>
-<sp-theme color="light" scale="medium">
 ${htmlContent}
-</sp-theme>
 </main>
 <script type="module">
   document.querySelectorAll('code.demo').forEach(el => {
@@ -107,6 +114,7 @@ ${htmlContent}
       const scriptTags = targetContainer.getElementsByTagName('script');
       for (let i = 0; i < scriptTags.length; i++) {
           const script = document.createElement('script');
+          script.type = 'module';
           script.text = scriptTags[i].text;
           document.body.appendChild(script); // Appends to the document to execute
           scriptTags[i].remove(); // Remove the script tag

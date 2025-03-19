@@ -363,6 +363,16 @@ export class MerchCard extends LitElement {
     }
 
     async checkReady() {
+        const timeoutPromise = new Promise((resolve) =>
+            setTimeout(() => resolve(false), MERCH_CARD_LOAD_TIMEOUT),
+        );
+        if (this.aemFragment) {
+          const aemLoad = await Promise.race([this.aemFragment.updateComplete, timeoutPromise]);
+          if (aemLoad === false) {
+              this.#fail('AEM fragment cannot be loaded', {}, false);
+              return;
+          }
+        }
         const successPromise = Promise.all(
             [
                 ...this.querySelectorAll(
@@ -374,12 +384,8 @@ export class MerchCard extends LitElement {
                 el.classList.contains('placeholder-resolved'),
             ),
         );
-        const timeoutPromise = new Promise((resolve) =>
-            setTimeout(() => resolve(false), MERCH_CARD_LOAD_TIMEOUT),
-        );
-        //const success = await Promise.race([successPromise, timeoutPromise]);
-        const success = await Promise.race([successPromise, timeoutPromise, this.aemFragment?.updateComplete]);
-        
+
+        const success = await Promise.race([successPromise, timeoutPromise]);
         if (success === true) {
             performance.mark(
                 `${MARK_MERCH_CARD_PREFIX}${this.id}${MARK_READY_SUFFIX}`,
@@ -390,7 +396,7 @@ export class MerchCard extends LitElement {
                     composed: true,
                 }),
             );
-            return;
+            return this;
         }
         this.#fail('Contains unresolved offers');
     }
