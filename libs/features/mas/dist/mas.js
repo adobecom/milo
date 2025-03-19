@@ -947,6 +947,15 @@ merch-card[variant="plans"] [slot="description"] {
   min-height: 84px;
 }
 
+merch-card[variant="plans"] [slot="callout-content"] {
+    margin: 8px 0 0;
+}
+
+merch-card[variant="plans"] [slot="callout-content"] > p {
+    padding: 2px 10px 3px;
+    background: #D9D9D9;
+}
+
 merch-card[variant="plans"] [slot="quantity-select"] {
   display: flex;
   justify-content: flex-start;
