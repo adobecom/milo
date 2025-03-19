@@ -1,7 +1,7 @@
 /* Custom properties (variables) */
 :root {
   /* Top navigation - box model */
-  --feds-height-nav: 63px;
+  --feds-height-nav: 56px;
   --feds-maxWidth-nav: 1440px;
   --feds-minWidth-menu: 1200px;
   --feds-height-breadcrumbs: 33px;

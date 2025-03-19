@@ -1,7 +1,7 @@
 /*** Variables ***/
 
  :root {
-  --global-height-nav: 64px;
+  --global-height-nav: 56px;
   --global-height-breadcrumbs: 33px;
   /* stylelint-disable-next-line custom-property-pattern */
   --global-height-navPromo: 72px;
