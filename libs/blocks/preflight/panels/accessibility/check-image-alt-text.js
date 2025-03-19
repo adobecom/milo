@@ -15,7 +15,7 @@ export default function checkImageAltText(elements = [], config = {}) {
   }
 
   const violations = [];
-  const images = elements.filter((el) => el.tagName && el.tagName.toLowerCase() === 'img');
+  const images = elements.filter((el) => el.tagName?.toLowerCase() === 'img');
 
   images.forEach((img) => {
     const alt = img.getAttribute('alt');
@@ -42,9 +42,18 @@ export default function checkImageAltText(elements = [], config = {}) {
           html: img.outerHTML,
         }],
       });
-    } else if (/^\d+$/.test(alt.trim()) || alt.trim().length < 3) {
+
+      return;
+    }
+
+    const altTrimmed = alt.trim();
+
+    const isNumeric = /^\d+$/.test(alt.trim());
+    const isShort = altTrimmed.length < 3;
+
+    if (isNumeric || isShort) {
       violations.push({
-        description: `Alt text "${alt}" appears meaningless.`,
+        description: `Alt text "${alt}" is too short (less than 3 characters) or numeric.`,
         impact: 'serious',
         id: 'image-alt',
         help: 'Provide descriptive alt text that conveys the purpose of the image.',

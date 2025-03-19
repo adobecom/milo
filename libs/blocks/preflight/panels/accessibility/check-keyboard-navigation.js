@@ -51,19 +51,19 @@ export default function checkKeyboardNavigation(elements = [], config = {}) {
 
     const hasFocusIndicator = hasVisibleOutline || hasBoxShadow;
 
-    if (!hasFocusIndicator) {
-      violations.push({
-        description: 'Element does not have a visible focus indicator.',
-        impact: 'moderate',
-        id: 'focus-visible',
-        help: 'Ensure interactive elements show a visible focus indicator on keyboard focus.',
-        helpUrl: 'https://www.w3.org/WAI/WCAG21/Understanding/focus-visible.html',
-        nodes: [{
-          target: [getUniqueSelector(el)],
-          html: el.outerHTML,
-        }],
-      });
-    }
+    if (hasFocusIndicator) return;
+
+    violations.push({
+      description: 'Element does not have a visible focus indicator.',
+      impact: 'moderate',
+      id: 'focus-visible',
+      help: 'Ensure interactive elements show a visible focus indicator on keyboard focus.',
+      helpUrl: 'https://www.w3.org/WAI/WCAG21/Understanding/focus-visible.html',
+      nodes: [{
+        target: [getUniqueSelector(el)],
+        html: el.outerHTML,
+      }],
+    });
   });
 
   return violations;
