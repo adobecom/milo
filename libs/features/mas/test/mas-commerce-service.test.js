@@ -138,6 +138,7 @@ describe('commerce service', () => {
                     modal: false,
                     promotionCode: '',
                     quantity: [1],
+                    alternativePrice: false,
                     wcsApiKey: 'wcms-commerce-ims-ro-user-milo',
                     wcsBufferDelay: 1,
                     wcsBufferLimit: 1,
