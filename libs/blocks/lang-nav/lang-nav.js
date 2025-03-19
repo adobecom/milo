@@ -76,8 +76,11 @@ export function decorateLink(link, path) {
 }
 
 export default function init(block) {
-  block.innerHTML = `<div id="test">Helo world</div>`;
-  block.querySelector("#test").addEventListener('click', () => {
+  block.innerHTML = `<div><li id="jp">Japanese</li><li id="kr">Korean</li></div>`;
+  block.querySelector("#jp").addEventListener('click', () => {
     setInternational('jp');
+  })
+  block.querySelector("#kr").addEventListener('click', () => {
+    setInternational('kr');
   })
 }
