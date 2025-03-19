@@ -579,13 +579,6 @@ span.icon.node-index-middle { margin-inline: var(--icon-spacing); }
 span.icon.node-index-last { margin-inline-end: unset; }
 span.icon.node-index-only { margin-inline: unset; }
 
-span.icon svg {
-  height: 1em;
-  position: relative;
-  top: .1em;
-  width: auto;
-}
-
 /* Con Block Utils */
 .con-block.xs-spacing { padding: var(--spacing-xs) 0; }
 .con-block.s-spacing { padding: var(--spacing-s) 0; }
