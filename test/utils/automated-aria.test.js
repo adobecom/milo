@@ -5,10 +5,10 @@ import { readFile } from '@web/test-runner-commands';
 import addAriaLabels, {
   getTextBeforeHeader,
   getProduct,
-  getVisibleHeaders,
   findBlockContainers,
   addAriaLabelToCTA,
 } from '../../libs/utils/automated-aria.js';
+
 const { setConfig } = await import('../../libs/utils/utils.js');
 
 const mockConfig = {};
@@ -54,23 +54,12 @@ describe('ARIA Labels Utility Functions', () => {
     });
   });
 
-  describe('getVisibleHeaders', () => {
-    it('should get visible headers only', async () => {
-      const html = await readFile({ path: './mocks/aria/visible-headers.html' });
-      const parser = new DOMParser();
-      document.body.innerHTML = parser.parseFromString(html, 'text/html').body.innerHTML;
-      const headers = getVisibleHeaders(document.body, 1);
-      expect(headers.length).to.equal(1);
-      expect(headers[0].textContent).to.equal('Visible');
-    });
-  });
-
   describe('findBlockContainers', () => {
     it('should find direct divs with common prefix', async () => {
       const html = await readFile({ path: './mocks/aria/block-containers.html' });
       const parser = new DOMParser();
       const doc = parser.parseFromString(html, 'text/html');
-      const containers = findBlockContainers(doc.body.firstElementChild);
+      const containers = findBlockContainers(doc.body.querySelectorAll(':scope > div')[0]);
       expect(containers.length).to.equal(2);
     });
 
@@ -78,9 +67,9 @@ describe('ARIA Labels Utility Functions', () => {
       const html = await readFile({ path: './mocks/aria/block-containers.html' });
       const parser = new DOMParser();
       const doc = parser.parseFromString(html, 'text/html');
-      const containers = findBlockContainers(doc.body.lastElementChild);
+      const containers = findBlockContainers(doc.body.querySelectorAll(':scope > div')[1]);
       expect(containers.length).to.equal(1);
-      expect(containers[0]).to.equal(doc.body.lastElementChild);
+      expect(containers[0]).to.equal(doc.body.querySelectorAll(':scope > div')[1]);
     });
   });
 
@@ -123,7 +112,7 @@ describe('ARIA Labels Utility Functions', () => {
       expect(window.lana.log.called).to.be.true;
     });
 
-    it.only('should process CTAs with valid config', async () => {
+    it('should process CTAs with valid config', async () => {
       const config = JSON.parse(await readFile({ path: './mocks/aria/cta-aria-label-config.json' }));
       const products = JSON.parse(await readFile({ path: './mocks/aria/product-names.json' }));
       sandbox.stub(window, 'fetch')
@@ -137,6 +126,118 @@ describe('ARIA Labels Utility Functions', () => {
       await addAriaLabels();
       const cta = document.querySelector('.con-button');
       expect(cta.getAttribute('aria-label')).to.equal('Buy Now Adobe Photoshop Extended');
+    });
+
+    it('should handle multiple CTAs with different scenarios', async () => {
+      const config = JSON.parse(await readFile({ path: './mocks/aria/cta-aria-label-config.json' }));
+      const products = JSON.parse(await readFile({ path: './mocks/aria/product-names.json' }));
+      sandbox.stub(window, 'fetch')
+        .onFirstCall()
+        .resolves({ json: () => Promise.resolve(config) })
+        .onSecondCall()
+        .resolves({ json: () => Promise.resolve(products) });
+      const html = await readFile({ path: './mocks/aria/block-containers.html' });
+      const parser = new DOMParser();
+      document.body.innerHTML = parser.parseFromString(html, 'text/html').body.querySelectorAll(':scope > div')[2].outerHTML;
+      await addAriaLabels();
+      // Check first CTA with Photoshop
+      const cta1 = document.querySelector('.card-one .con-button');
+      expect(cta1.getAttribute('aria-label')).to.equal('Buy Now Photoshop');
+      // Check second CTA with Lightroom
+      const cta2 = document.querySelector('.card-two .con-button');
+      expect(cta2.getAttribute('aria-label')).to.equal('Buy Now Lightroom');
+      // Check third CTA with multiple headers (should have no aria-label)
+      const cta3 = document.querySelector('.card-three .con-button');
+      expect(cta3.hasAttribute('aria-label')).to.be.false;
+      // Check final CTA with Adobe Express
+      const cta4 = document.querySelector('.card-container > h3 + .con-button');
+      expect(cta4.getAttribute('aria-label')).to.equal('Free trial Adobe Express');
+    });
+
+    it('Does not modify existing aria-labels', async () => {
+      const config = JSON.parse(await readFile({ path: './mocks/aria/cta-aria-label-config.json' }));
+      const products = JSON.parse(await readFile({ path: './mocks/aria/product-names.json' }));
+      sandbox.stub(window, 'fetch')
+        .onFirstCall()
+        .resolves({ json: () => Promise.resolve(config) })
+        .onSecondCall()
+        .resolves({ json: () => Promise.resolve(products) });
+      const html = await readFile({ path: './mocks/aria/tabs.html' });
+      const parser = new DOMParser();
+      document.body.innerHTML = parser.parseFromString(html, 'text/html').body.innerHTML;
+      await addAriaLabels();
+
+      // Check CTAs in first tab panel
+      const firstPanel = document.querySelector('#tab-panel-mini-compare-1');
+      expect(firstPanel.querySelector('[aria-label="Select Lightroom"]')).to.exist;
+      expect(firstPanel.querySelector('[aria-label="Select Photography"]')).to.exist;
+      expect(firstPanel.querySelector('[aria-label="Select Creative Cloud All Apps"]')).to.exist;
+
+      // Check CTAs in second tab panel
+      const secondPanel = document.querySelector('#tab-panel-mini-compare-2');
+      expect(secondPanel.querySelector('[aria-label="Select Creative Cloud All Apps for Students and Teachers"]')).to.exist;
+
+      // Check CTAs in third tab panel
+      const thirdPanel = document.querySelector('#tab-panel-mini-compare-3');
+      expect(thirdPanel.querySelector('[aria-label="Select Lightroom for Teams"]')).to.exist;
+      expect(thirdPanel.querySelector('[aria-label="Select Creative Cloud All Apps for business"]')).to.exist;
+    });
+
+    it('should add aria-labels to CTAs in aside promotion', async () => {
+      const config = JSON.parse(await readFile({ path: './mocks/aria/cta-aria-label-config.json' }));
+      const products = JSON.parse(await readFile({ path: './mocks/aria/product-names.json' }));
+      sandbox.stub(window, 'fetch')
+        .onFirstCall()
+        .resolves({ json: () => Promise.resolve(config) })
+        .onSecondCall()
+        .resolves({ json: () => Promise.resolve(products) });
+      const html = await readFile({ path: './mocks/aria/aside-promotion.html' });
+      const parser = new DOMParser();
+      document.body.innerHTML = parser.parseFromString(html, 'text/html').body.innerHTML;
+      await addAriaLabels();
+
+      // Check mobile CTAs
+      const mobileCTAs = document.querySelector('.mobile-up .action-area').querySelectorAll('.con-button');
+      expect(mobileCTAs[0].getAttribute('aria-label')).to.not.exist;
+      expect(mobileCTAs[1].getAttribute('aria-label')).to.not.exist;
+
+      // Check tablet CTAs
+      const tabletCTAs = document.querySelector('.tablet-up .action-area').querySelectorAll('.con-button');
+      expect(tabletCTAs[0].getAttribute('aria-label')).to.equal('Free trial Creative Cloud');
+      expect(tabletCTAs[1].getAttribute('aria-label')).to.equal('Buy now Creative Cloud');
+
+      // Check desktop CTAs
+      const desktopCTAs = document.querySelector('.desktop-up .action-area').querySelectorAll('.con-button');
+      expect(desktopCTAs[0].getAttribute('aria-label')).to.equal('Free trial Creative Cloud');
+      expect(desktopCTAs[1].getAttribute('aria-label')).to.equal('Buy now Creative Cloud');
+    });
+
+    it('should handle aria-label consistency across links with same href', async () => {
+      const config = JSON.parse(await readFile({ path: './mocks/aria/cta-aria-label-config.json' }));
+      const products = JSON.parse(await readFile({ path: './mocks/aria/product-names.json' }));
+      sandbox.stub(window, 'fetch')
+        .onFirstCall()
+        .resolves({ json: () => Promise.resolve(config) })
+        .onSecondCall()
+        .resolves({ json: () => Promise.resolve(products) });
+      const html = await readFile({ path: './mocks/aria/aria-label-consistency.html' });
+      const parser = new DOMParser();
+      document.body.innerHTML = parser.parseFromString(html, 'text/html').body.innerHTML;
+      await addAriaLabels();
+
+      // Check links with consistent aria-labels (should keep their labels)
+      const photoshopLinks = document.querySelectorAll('a[href="/products/photoshop"]');
+      expect(photoshopLinks[0].getAttribute('aria-label')).to.equal('Buy now Adobe Photoshop');
+      expect(photoshopLinks[1].getAttribute('aria-label')).to.not.exist;
+
+      const lightroomLinks = document.querySelectorAll('a[href="/products/lightroom"]');
+      expect(lightroomLinks[0].getAttribute('aria-label')).to.equal('Buy now Adobe Lightroom');
+      expect(lightroomLinks[1].getAttribute('aria-label')).to.not.exist;
+
+      // Check links without aria-labels (should remain without labels)
+      const illustratorLinks = document.querySelectorAll('a[href="/products/illustrator"]');
+      expect(illustratorLinks[0].getAttribute('aria-label')).to.equal('Buy now Illustrator');
+      expect(illustratorLinks[1].getAttribute('aria-label')).to.equal('Buy now Illustrator');
     });
   });
 });
