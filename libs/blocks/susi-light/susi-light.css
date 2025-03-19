@@ -10,14 +10,20 @@
   box-sizing: border-box;
 }
 
+.fragment .susi-light {
+  background: none;
+  background-image: none !important;
+  height: auto;
+}
+
 .susi-product-logo {
   width: 30px;
   height: 30px;
 }
 
-/* .susi-product-info {
+.fragment .susi-product-info {
   display: none;
-} */
+}
 
 .susi-product-title {
   display: inline-block;
@@ -83,6 +89,10 @@
   line-height: 25px;
 }
 
+.fragment .guest-footer {
+  display: none;;
+}
+
 .susi-light-wrapper {
   padding: 16px;
   background-color: white;
@@ -123,6 +133,9 @@
   }
   .login-container {
     margin-left: 12.5%;
+  }
+  .fragment .login-container {
+    margin-left: 0;
   }
   [dir = "rtl"] .login-container {
     margin-right: 12.5%; 

@@ -4,7 +4,7 @@ export default async function init(el) {
   const { imsClientId } = getConfig();
   const children = el.querySelectorAll(':scope > div');
   const bgImg = children[0].textContent?.trim();
-  el.style.backgroundImage = `url(${bgImg})`;
+  if (bgImg) el.style.backgroundImage = `url(${bgImg})`;
   el.innerHTML = '';
   const sentry = createTag('susi-sentry-light');
   sentry.setAttribute('stage', 'true');
@@ -48,18 +48,18 @@ export default async function init(el) {
 
   const susiWrapper = createTag('div', { class: 'susi-light-wrapper' });
 
-  const loginTitle = createTag('div', { class: 'login-title' }, 'Log in or create an account');
-  const loginDesc = createTag('div', { class: 'login-description' }, children[1].textContent);
+  const loginTitle = createTag('div', { class: 'login-title' }, children[1].textContent);
+  const loginDesc = createTag('div', { class: 'login-description' }, children[2].textContent);
   susiWrapper.appendChild(loginTitle);
   susiWrapper.appendChild(loginDesc);
 
   susiWrapper.appendChild(sentry);
   loginContainer.appendChild(susiWrapper);
 
-  const guestFooter = createTag('div', { class: 'guest-footer' }, children[3]);
+  const guestFooter = createTag('div', { class: 'guest-footer' }, children[4]);
   loginContainer.appendChild(guestFooter);
 
-  const ps = children[2].querySelectorAll(':scope p');
+  const ps = children[3].querySelectorAll(':scope p');
   const productInfo = createTag('div', { class: 'susi-product-info' });
   const logoURL = ps[0].querySelector('img')?.getAttribute('src');
   const logo = createTag('img', { class: 'susi-product-logo', src: logoURL });
