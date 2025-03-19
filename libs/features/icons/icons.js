@@ -119,7 +119,7 @@ export default async function loadIcons(icons) {
     const parent = icon.parentElement;
     if (parent && parent.parentElement.tagName === 'LI') parent.parentElement.classList.add('icon-list-item');
   });
-  await Promise.all(iconRequests);
+  await Promise.allSettled(iconRequests);
   icons.forEach((icon) => {
     const iconName = [...icon.classList].find((c) => c.startsWith('icon-'))?.substring(5);
     if (iconName && federalIcons[iconName] && !icon.dataset.svgInjected) {
