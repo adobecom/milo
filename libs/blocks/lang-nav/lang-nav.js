@@ -1,4 +1,5 @@
 import { getConfig } from '../../utils/utils.js';
+import { toFragment } from '../global-navigation/utilities/utilities.js';
 
 const queriedPages = [];
 
@@ -75,12 +76,24 @@ export function decorateLink(link, path) {
   });
 }
 
-export default function init(block) {
-  block.innerHTML = `<div><li id="jp">Japanese</li><li id="kr">Korean</li></div>`;
-  block.querySelector("#jp").addEventListener('click', () => {
-    setInternational('jp');
-  })
-  block.querySelector("#kr").addEventListener('click', () => {
-    setInternational('kr');
-  })
+
+
+export default function init(regionSelector) {
+  const regionPickerTextElem = regionSelector.closest('.feds-regionPicker-wrapper').querySelector(".feds-regionPicker-text");
+  regionPickerTextElem.textContent = 'English';
+  regionSelector.innerHTML = `
+    <div>
+      <li id="en">English</li>
+      <li id="jp">Japanese</li>
+      <li id="kr">Korean</li>
+    </div>
+  `;
+
+  const addRegionClickHandler = (id) => {
+    debugger
+    const element = regionSelector.querySelector(`#${id}`);
+    element?.addEventListener('click', () => setInternational(id));
+  };
+
+  ['en', 'jp', 'kr'].forEach(addRegionClickHandler);
 }
