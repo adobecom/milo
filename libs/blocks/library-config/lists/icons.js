@@ -3,16 +3,18 @@ import { createTag } from '../../../utils/utils.js';
 import createCopy from '../library-utils.js';
 
 let fedIconList;
+const iconElements = new Map();
 
 export default async function iconList(content, list, query) {
-  if (!fedIconList) fedIconList = await fetchIconList(content[0].path);
-  list.innerHTML = '';
-  if (fedIconList.length) {
-    [...fedIconList].forEach((icon) => {
+  if (!fedIconList) {
+    fedIconList = await fetchIconList(content[0].path);
+    if (!fedIconList?.length) {
+      throw new Error('No icons returned from fetchIconList');
+    }
+    fedIconList.forEach((icon) => {
       const svg = createTag('span', { class: `icon icon-${icon.name}` }, createTag('img', { class: `icon-${icon.name}-img icon-fed`, src: `${icon.url}`, width: '18px' }));
       const titleText = createTag('p', { class: 'item-title' }, icon.name);
       const title = createTag('li', { class: 'icon-item' }, svg);
-      if (query && !icon.name.includes(query)) title.classList.add('is-hidden');
       title.append(titleText);
       const copy = createTag('button', { class: 'copy' });
       copy.id = `${icon.name}-icon-copy`;
@@ -25,7 +27,19 @@ export default async function iconList(content, list, query) {
         window.hlx?.rum.sampleRUM('click', { source: e.target });
       });
       title.append(copy);
-      list.append(title);
+
+      iconElements.set(icon.name, title);
     });
   }
+
+  list.replaceChildren();
+
+  iconElements.forEach((element, name) => {
+    if (!query || name.includes(query)) {
+      element.classList.remove('is-hidden');
+    } else {
+      element.classList.add('is-hidden');
+    }
+    list.appendChild(element);
+  });
 }
