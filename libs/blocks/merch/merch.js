@@ -732,6 +732,7 @@ export async function buildCta(el, params) {
 
   // Adding aria-label for checkout-link using productFamily and customerSegment as placeholder key.
   if (el.ariaLabel) {
+    // If Milo aria-label available from sharepoint doc, just use it.
     cta.setAttribute('aria-label', el.ariaLabel);
   } else if (!cta.ariaLabel) {
     cta.onceSettled().finally(async () => {
