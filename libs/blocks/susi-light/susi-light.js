@@ -8,6 +8,7 @@ export default async function init(el) {
   const bgImg = children[0].textContent?.trim();
   if (bgImg) el.style.backgroundImage = `url(${bgImg})`;
   el.innerHTML = '';
+  const layouts = ['emailAndSocial', 'socialAndEmail', 'emailOnly', 'socialOnly'];
   const sentry = createTag('susi-sentry-light');
   sentry.stage = true;
   sentry.variant = 'standard';
@@ -19,7 +20,10 @@ export default async function init(el) {
     redirect_uri: window.location.href,
     locale: window.location.hash.substring(1) || 'en-us',
   };
-  sentry.config = {};
+  sentry.config = { };
+  if (children[6] && layouts.includes(children[6].textContent?.trim())) {
+    sentry.config.layout = children[6].textContent?.trim();
+  }
 
   const onRedirect = (e) => {
     // eslint-disable-next-line no-console
@@ -44,7 +48,8 @@ export default async function init(el) {
   sentry.addEventListener('on-analytics', onAnalytics);
   const loginContainer = createTag('div', { class: 'login-container' });
 
-  const susiWrapper = createTag('div', { class: 'susi-light-wrapper' });
+  const susiSmall = sentry.config.layout === layouts[2] || sentry.config.layout === layouts[3];
+  const susiWrapper = createTag('div', { class: `susi-light-wrapper ${susiSmall ? 'short' : ''}` });
 
   const loginTitle = createTag('div', { class: 'login-title' }, children[1].textContent);
   const loginDesc = createTag('div', { class: 'login-description' }, children[2].textContent);

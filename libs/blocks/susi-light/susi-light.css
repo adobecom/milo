@@ -16,6 +16,14 @@
   height: auto;
 }
 
+div.susi-light-wrapper.short {
+  display: flex;
+  flex-direction: column;
+  width: 400px;
+  max-height: 340px;
+  align-items: center;
+}
+
 .susi-product-logo {
   width: 30px;
   height: 30px;
