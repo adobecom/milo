@@ -341,7 +341,8 @@ export function getMepPopup(mepConfig, isMmm = false) {
 function createPreviewPill() {
   const mepConfig = parseMepConfig();
   const { activities } = mepConfig;
-  const overlay = createTag('div', { class: 'mep-preview-overlay static-links', style: 'display: none;' });
+  const isMacPlatform = window.navigator.platform.includes('MacIntel') ? 'os-mac' : '';
+  const overlay = createTag('div', { class: `mep-preview-overlay static-links ${isMacPlatform}`, style: 'display: none;' });
   const pill = document.createElement('div');
   pill.classList.add('mep-hidden');
   const mepBadge = createTag('div', { class: 'mep-manifest mep-badge' });

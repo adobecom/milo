@@ -291,6 +291,14 @@
   .mep-hidden .mep-badge .mep-manifest-count {
     display: none;
   }
+
+  div.mep-popup.in-page {
+    max-width: 100% !important; 
+  }
+  
+  .os-mac div.mep-popup.in-page select {
+    font-size: 17px;
+  }
 }
 
 
