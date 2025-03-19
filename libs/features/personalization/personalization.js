@@ -42,6 +42,7 @@ const CLASS_EL_DELETE = 'p13n-deleted';
 const CLASS_EL_REPLACE = 'p13n-replaced';
 const COLUMN_NOT_OPERATOR = 'not ';
 const TARGET_EXP_PREFIX = 'target-';
+const USER_COUNTRY = 'usercountry';
 const INLINE_HASH = '_inline';
 const MARTECH_RETURNED_EVENT = 'martechReturned';
 const PAGE_URL = new URL(window.location.href);
@@ -54,7 +55,7 @@ let isPostLCP = false;
 export const TRACKED_MANIFEST_TYPE = 'personalization';
 
 // Replace any non-alpha chars except comma, space, ampersand, colon, and hyphen
-const RE_KEY_REPLACE = /[^a-z0-9\- _,&=:]/g;
+const RE_KEY_REPLACE = /[^a-z0-9\- _,&=:()]/g;
 
 const MANIFEST_KEYS = [
   'action',
@@ -795,9 +796,11 @@ function trimNames(arr) {
 export function buildVariantInfo(variantNames) {
   return variantNames.reduce((acc, name) => {
     let nameArr = [name];
-    if (!name.startsWith(TARGET_EXP_PREFIX)) nameArr = name.split(',');
+    if (!name.startsWith(TARGET_EXP_PREFIX) && !name.startsWith(USER_COUNTRY)) {
+      nameArr = name.split(/,(?![^(]*\))/);
+    }
     acc[name] = trimNames(nameArr);
-    acc.allNames = [...acc.allNames, ...trimNames(name.split(/[,&]|\bnot\b/))];
+    acc.allNames = [...acc.allNames, ...trimNames(name.split(/(?:\([^)]*\))?,|&|\bnot\b/))];
     return acc;
   }, { allNames: [] });
 }
@@ -864,6 +867,12 @@ async function getPersonalizationVariant(
     if (!name) return true;
     if (name === variantLabel?.toLowerCase()) return true;
     if (name.startsWith('param-')) return checkForParamMatch(name);
+    if (name.startsWith('usercountry')) {
+      const countryList = name.match(/\(([^)]+)\)/)?.[1]?.split(',').map((c) => (c).trim());
+      if (countryList && countryList.includes(config.mep.userCountry)) {
+        return true;
+      }
+    }
     if (userEntitlements?.includes(name)) return true;
     return PERSONALIZATION_KEYS.includes(name) && PERSONALIZATION_TAGS[name]();
   };
