@@ -731,7 +731,9 @@ export async function buildCta(el, params) {
   }
 
   // Adding aria-label for checkout-link using productFamily and customerSegment as placeholder key.
-  if (!cta.getAttribute('aria-label')) {
+  if (el.ariaLabel) {
+    cta.setAttribute('aria-label', el.ariaLabel);
+  } else if (!cta.ariaLabel) {
     cta.onceSettled().finally(async () => {
       const productFamily = cta.value[0]?.productArrangement?.productFamily;
       const marketSegment = cta.value[0]?.marketSegments[0];
