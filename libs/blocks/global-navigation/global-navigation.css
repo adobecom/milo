@@ -859,6 +859,7 @@ header.new-nav .feds-nav > section.feds-navItem > button.feds-navLink {
 }
 
 header.new-nav .feds-nav > section.feds-navItem > button.feds-navLink::after {
+  content: url('<svg xmlns="http://www.w3.org/2000/svg" width="9" height="16" viewBox="0 0 9 16" fill="none"><path d="M1.44434 1.55566L7.89259 8.00392C7.93148 8.04281 7.93166 8.10582 7.89299 8.14493L1.50983 14.6017" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>');
   width: 9.271px;
   height: 9.179px;
   transform: rotate(-45deg);
