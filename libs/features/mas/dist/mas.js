@@ -940,7 +940,7 @@ merch-card .footer-row-cell:nth-child(8) {
 }
 
 merch-card[variant="plans"] {
-  width: 276px;
+  width: var(--consonant-merch-card-plans-width);
 }
 
 merch-card[variant="plans"] [slot="description"] {
@@ -982,11 +982,9 @@ merch-card[variant="plans"] [slot="quantity-select"] {
   :root {
     --consonant-merch-card-plans-width: 276px;
   }
-  .three-merch-cards.plans {
-      grid-template-columns: repeat(3, var(--consonant-merch-card-plans-width));
-  }
+  .three-merch-cards.plans,
   .four-merch-cards.plans {
-      grid-template-columns: repeat(4, var(--consonant-merch-card-plans-width));
+      grid-template-columns: repeat(3, var(--consonant-merch-card-plans-width));
   }
 }
 
