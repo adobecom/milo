@@ -71,11 +71,13 @@ export function Wcs({ settings }) {
         const unresolvedPromises = new Map(promises);
 
         const [osi] = options.offerSelectorIds;
-        const startMark = `${NAMESPACE}:${osi}${MARK_START_SUFFIX}`;
-        const measureName = `${NAMESPACE}:${osi}${MARK_DURATION_SUFFIX}`;
+        const uniqueId = Date.now() + Math.random().toString(36).substring(2, 7);
+        const startMark = `${NAMESPACE}:${osi}:${uniqueId}${MARK_START_SUFFIX}`;
+        const measureName = `${NAMESPACE}:${osi}:${uniqueId}${MARK_DURATION_SUFFIX}`;
         let startTime;
         let duration;
         try {
+            performance.mark(startMark);
             url = new URL(settings.wcsURL);
             url.searchParams.set('offer_selector_ids', osi);
             url.searchParams.set('country', options.country);
@@ -96,8 +98,6 @@ export function Wcs({ settings }) {
             if (options.currency) {
                 url.searchParams.set('currency', options.currency);
             }
-
-            performance.mark(startMark);
             response = await masFetch(url.toString(), {
                 credentials: 'omit',
             });
