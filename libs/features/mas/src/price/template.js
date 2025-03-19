@@ -283,6 +283,7 @@ const createPriceTemplate =
         }
 
         if (isAlternativePrice) {
+            console.log(displayOptical,displayStrikethrough,displayAnnual);
             altAccessibleLabel = formatLiteral(
                 literalKeys.alternativePriceAriaLabel,
                 {

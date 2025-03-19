@@ -125,6 +125,7 @@ function getSettings(config = {}) {
         forceTaxExclusive,
         promotionCode,
         quantity,
+        alternativePrice: Defaults.alternativePrice,
         wcsApiKey,
         wcsBufferDelay,
         wcsBufferLimit,
