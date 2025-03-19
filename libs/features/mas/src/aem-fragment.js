@@ -1,4 +1,4 @@
-import { EVENT_AEM_LOAD, EVENT_AEM_ERROR } from './constants.js';
+import { EVENT_AEM_LOAD, EVENT_AEM_ERROR, MARK_START_SUFFIX, MARK_DURATION_SUFFIX } from './constants.js';
 import { Log } from './log.js';
 import { MasError } from './mas-error.js';
 import { getMasCommerceServiceDurationLog } from './utils.js';
@@ -15,6 +15,8 @@ const ATTRIBUTE_FRAGMENT = 'fragment';
 const ATTRIBUTE_AUTHOR = 'author';
 const ATTRIBUTE_IMS = 'ims';
 
+const AEM_FRAGMENT_TAG_NAME = 'aem-fragment';
+
 /**
  * Get fragment by ID
  * @param {string} baseUrl the aem base url
@@ -23,11 +25,11 @@ const ATTRIBUTE_IMS = 'ims';
  * @param {Object} headers optional request headers
  * @returns {Promise<Object>} the raw fragment item
  */
-export async function getFragmentById(baseUrl, id, author, headers) {
+export async function getFragmentById(baseUrl, id, author, headers, startMark) {
     const endpoint = author
         ? `${baseUrl}/adobe/sites/cf/fragments/${id}`
         : `${baseUrl}/adobe/sites/fragments/${id}`;
-    const startTime = Date.now();
+    const measureName = `${AEM_FRAGMENT_TAG_NAME}:${id}${MARK_DURATION_SUFFIX}`;
     let response;
     try {
         response = await masFetch(endpoint, {
@@ -36,7 +38,10 @@ export async function getFragmentById(baseUrl, id, author, headers) {
             headers,
         });
         if (!response?.ok) {
-            const duration = Date.now() - startTime;
+            const { startTime, duration } = performance.measure(
+                measureName,
+                startMark,
+            );
             throw new MasError('Unexpected fragment response', {
                 response,
                 startTime,
@@ -45,7 +50,10 @@ export async function getFragmentById(baseUrl, id, author, headers) {
         }
         return response.json();
     } catch (e) {
-        const duration = Date.now() - startTime;
+        const { startTime, duration } = performance.measure(
+            measureName,
+            startMark,
+        );
         if (!response) {
             response = { url: endpoint };
         }
@@ -99,11 +107,13 @@ const cache = new FragmentCache();
  */
 export class AemFragment extends HTMLElement {
     cache = cache;
-    #log = Log.module('aem-fragment');
+    #log = Log.module(AEM_FRAGMENT_TAG_NAME);
 
     #rawData = null;
     #data = null;
     #stale = false;
+    #startMark = null;
+    
     /**
      * @type {string} fragment id
      */
@@ -157,6 +167,8 @@ export class AemFragment extends HTMLElement {
             this.#fail({ message: 'Missing fragment id' });
             return;
         }
+        this.#startMark = `${AEM_FRAGMENT_TAG_NAME}:${this.#fragmentId}${MARK_START_SUFFIX}`;
+        performance.mark(this.#startMark);
     }
 
     async refresh(flushCache = true) {
@@ -217,6 +229,7 @@ export class AemFragment extends HTMLElement {
             this.#fragmentId,
             this.#author,
             this.#ims ? headers : undefined,
+            this.#startMark,
         );
         cache.add(fragment);
         this.#rawData = fragment;
@@ -263,4 +276,4 @@ export class AemFragment extends HTMLElement {
     }
 }
 
-customElements.define('aem-fragment', AemFragment);
+customElements.define(AEM_FRAGMENT_TAG_NAME, AemFragment);

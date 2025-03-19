@@ -21,6 +21,7 @@ import {
     SELECTOR_MAS_ELEMENT,
     SELECTOR_MAS_INLINE_PRICE,
     SELECTOR_MAS_SP_BUTTON,
+    MARK_START_SUFFIX,
 } from './constants.js';
 import { VariantLayout } from './variants/variant-layout.js';
 import { hydrate, ANALYTICS_SECTION_ATTR } from './hydrate.js';
@@ -28,7 +29,6 @@ import { Log } from './log.js';
 import { getMasCommerceServiceDurationLog } from './utils.js';
 
 const MERCH_CARD = 'merch-card';
-const MARK_START_SUFFIX = ':start';
 const MARK_READY_SUFFIX = ':ready';
 const MARK_ERROR_SUFFIX = ':error';
 
@@ -39,6 +39,7 @@ const MARK_MERCH_CARD_PREFIX = 'merch-card:';
 
 export class MerchCard extends LitElement {
     static properties = {
+        id: { type: String, attribute: 'id', reflect: true },
         name: { type: String, attribute: 'name', reflect: true },
         variant: { type: String, reflect: true },
         size: { type: String, attribute: 'size', reflect: true },
@@ -132,6 +133,7 @@ export class MerchCard extends LitElement {
 
     constructor() {
         super();
+        this.id = null;
         this.failed = false;
         this.filters = {};
         this.types = '';
@@ -305,8 +307,8 @@ export class MerchCard extends LitElement {
 
     connectedCallback() {
         super.connectedCallback();
-        const id = this.querySelector('aem-fragment')?.getAttribute('fragment');
-        performance.mark(`${MARK_MERCH_CARD_PREFIX}${id}${MARK_START_SUFFIX}`);
+        this.id ??= this.querySelector('aem-fragment')?.getAttribute('fragment');
+        performance.mark(`${MARK_MERCH_CARD_PREFIX}${this.id}${MARK_START_SUFFIX}`);
         this.addEventListener(
             EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
             this.handleQuantitySelection,

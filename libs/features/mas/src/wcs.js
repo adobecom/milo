@@ -1,6 +1,8 @@
 import {
     ERROR_MESSAGE_BAD_REQUEST,
     ERROR_MESSAGE_OFFER_NOT_FOUND,
+    MARK_DURATION_SUFFIX,
+    MARK_START_SUFFIX,
 } from './constants.js';
 import {
     Env,
@@ -14,6 +16,8 @@ import { MasError } from './mas-error.js';
 import { getMasCommerceServiceDurationLog } from './utils.js';
 import { masFetch } from './utils/mas-fetch.js';
 
+const NAMESPACE = 'wcs';
+
 /**
  * @typedef {Map<string, {
  *  resolve: (offers: Commerce.Wcs.Offer[]) => void,
@@ -25,7 +29,7 @@ import { masFetch } from './utils/mas-fetch.js';
  * @returns {Commerce.Wcs.Client}
  */
 export function Wcs({ settings }) {
-    const log = Log.module('wcs');
+    const log = Log.module(NAMESPACE);
     const { env, wcsApiKey: apiKey } = settings;
     /**
      * Cache of promises resolving to arrays of Wcs offers grouped by osi-based keys.
@@ -66,14 +70,14 @@ export function Wcs({ settings }) {
         // Create a map of unresolved promises to track which ones need fallback
         const unresolvedPromises = new Map(promises);
 
+        const [osi] = options.offerSelectorIds;
+        const startMark = `${NAMESPACE}:${osi}${MARK_START_SUFFIX}`;
+        const measureName = `${NAMESPACE}:${osi}${MARK_DURATION_SUFFIX}`;
         let startTime;
         let duration;
         try {
             url = new URL(settings.wcsURL);
-            url.searchParams.set(
-                'offer_selector_ids',
-                options.offerSelectorIds.join(','),
-            );
+            url.searchParams.set('offer_selector_ids', osi);
             url.searchParams.set('country', options.country);
             url.searchParams.set('locale', options.locale);
             url.searchParams.set(
@@ -93,7 +97,7 @@ export function Wcs({ settings }) {
                 url.searchParams.set('currency', options.currency);
             }
 
-            startTime = Date.now();
+            performance.mark(startMark);
             response = await masFetch(url.toString(), {
                 credentials: 'omit',
             });
@@ -132,7 +136,13 @@ export function Wcs({ settings }) {
             /* c8 ignore next 2 */
             message = `Network error: ${e.message}`;
         } finally {
-            duration = Date.now() - startTime;
+            ({ startTime, duration } = performance.measure(
+                measureName,
+                startMark,
+            ));
+            // Clean up marks
+            performance.clearMarks(startMark);
+            performance.clearMeasures(measureName);
         }
 
         if (reject && promises.size) {

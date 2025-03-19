@@ -227,7 +227,7 @@ export class MasCommerceService extends HTMLElement {
                 ...getMasCommerceServiceDurationLog(),
             });
         }
-        this.lastLoggingTime = Date.now();
+        this.lastLoggingTime = performance.now().toFixed(3);
     }
 }
 

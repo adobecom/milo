@@ -120,3 +120,6 @@ export const MODAL_TYPE_3_IN_1 = {
     D2P: 'd2p',
     CRM: 'crm',
 };
+
+export const MARK_START_SUFFIX = ':start';
+export const MARK_DURATION_SUFFIX = ':duration';
