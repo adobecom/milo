@@ -439,7 +439,7 @@ export async function hydrate(fragment, merchCard) {
       secureLabel: 'Secure transaction' // to be {{secure-transaction}}
     };
     cleanup(merchCard);
-    merchCard.id = fragment.id;
+    merchCard.id ??= fragment.id;
 
 
     merchCard.removeAttribute('background-image');

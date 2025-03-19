@@ -17,21 +17,29 @@ import {
     EVENT_MAS_READY,
     EVENT_AEM_ERROR,
     EVENT_MAS_ERROR,
+    SELECTOR_MAS_CHECKOUT_LINK,
+    SELECTOR_MAS_ELEMENT,
+    SELECTOR_MAS_INLINE_PRICE,
+    SELECTOR_MAS_SP_BUTTON,
+    MARK_START_SUFFIX,
 } from './constants.js';
 import { VariantLayout } from './variants/variant-layout.js';
 import { hydrate, ANALYTICS_SECTION_ATTR } from './hydrate.js';
+import { Log } from './log.js';
+import { getMasCommerceServiceDurationLog } from './utils.js';
 
 const MERCH_CARD = 'merch-card';
-const MARK_START_SUFFIX = ':start';
 const MARK_READY_SUFFIX = ':ready';
+const MARK_ERROR_SUFFIX = ':error';
 
-// if merch cards does not initialise in 10 seconds, it will dispatch mas:error event
-const MERCH_CARD_LOAD_TIMEOUT = 10000;
+// if merch card does not initialise in 20 seconds, it will dispatch mas:error event
+const MERCH_CARD_LOAD_TIMEOUT = 20000;
 
 const MARK_MERCH_CARD_PREFIX = 'merch-card:';
 
 export class MerchCard extends LitElement {
     static properties = {
+        id: { type: String, attribute: 'id', reflect: true },
         name: { type: String, attribute: 'name', reflect: true },
         variant: { type: String, reflect: true },
         size: { type: String, attribute: 'size', reflect: true },
@@ -51,6 +59,7 @@ export class MerchCard extends LitElement {
         actionMenu: { type: Boolean, attribute: 'action-menu' },
         customHr: { type: Boolean, attribute: 'custom-hr' },
         consonant: { type: Boolean, attribute: 'consonant' },
+        failed: { type: Boolean, attribute: 'failed', reflect: true },
         spectrum: { type: String, attribute: 'spectrum' } /* css|swc */,
         detailBg: { type: String, attribute: 'detail-bg' },
         secureLabel: { type: String, attribute: 'secure-label' },
@@ -120,15 +129,19 @@ export class MerchCard extends LitElement {
      * @type {VariantLayout}
      */
     variantLayout;
+    log = undefined;
 
     constructor() {
         super();
+        this.id = null;
+        this.failed = false;
         this.filters = {};
         this.types = '';
         this.selected = false;
         this.spectrum = 'css';
         this.loading = 'lazy';
         this.handleAemFragmentEvents = this.handleAemFragmentEvents.bind(this);
+        this.log = Log.module('merch-card');
     }
 
     static getFragmentMapping(variant) {
@@ -213,12 +226,12 @@ export class MerchCard extends LitElement {
     }
 
     get price() {
-        return this.headingmMSlot?.querySelector('span[is="inline-price"]');
+        return this.headingmMSlot?.querySelector(SELECTOR_MAS_INLINE_PRICE);
     }
 
     get checkoutLinks() {
         return [
-            ...(this.footerSlot?.querySelectorAll('a[is="checkout-link"]') ??
+            ...(this.footerSlot?.querySelectorAll(SELECTOR_MAS_CHECKOUT_LINK) ??
                 []),
         ];
     }
@@ -294,8 +307,8 @@ export class MerchCard extends LitElement {
 
     connectedCallback() {
         super.connectedCallback();
-        const id = this.querySelector('aem-fragment')?.getAttribute('fragment');
-        performance.mark(`${MARK_MERCH_CARD_PREFIX}${id}${MARK_START_SUFFIX}`);
+        this.id ??= this.querySelector('aem-fragment')?.getAttribute('fragment');
+        performance.mark(`${MARK_MERCH_CARD_PREFIX}${this.id}${MARK_START_SUFFIX}`);
         this.addEventListener(
             EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
             this.handleQuantitySelection,
@@ -341,7 +354,10 @@ export class MerchCard extends LitElement {
     // custom methods
     async handleAemFragmentEvents(e) {
         if (e.type === EVENT_AEM_ERROR) {
-            this.#fail('AEM fragment cannot be loaded');
+            this.#fail(
+                `AEM fragment cannot be loaded: ${e.detail.message}`,
+                e.detail,
+            );
         }
         if (e.type === EVENT_AEM_LOAD) {
             if (e.target.nodeName === 'AEM-FRAGMENT') {
@@ -352,10 +368,13 @@ export class MerchCard extends LitElement {
         }
     }
 
-    #fail(error) {
+    #fail(error, details = {}, dispatch = true) {
+        this.log.error(`merch-card: ${error}`, details);
+        this.failed = true;
+        if (!dispatch) return;
         this.dispatchEvent(
             new CustomEvent(EVENT_MAS_ERROR, {
-                detail: error,
+                detail: { ...details, message: error },
                 bubbles: true,
                 composed: true,
             }),
@@ -363,22 +382,35 @@ export class MerchCard extends LitElement {
     }
 
     async checkReady() {
+        const masElements = [...this.querySelectorAll(SELECTOR_MAS_ELEMENT)];
+        masElements.push(
+            ...[...this.querySelectorAll(SELECTOR_MAS_SP_BUTTON)].map(
+                (element) => element.source,
+            ),
+        );
         const successPromise = Promise.all(
-            [
-                ...this.querySelectorAll(
-                    'span[is="inline-price"][data-wcs-osi],a[is="checkout-link"][data-wcs-osi]',
-                ),
-            ].map((element) => element.onceSettled().catch(() => element)),
+            masElements.map((element) =>
+                element.onceSettled().catch(() => element),
+            ),
         ).then((elements) =>
             elements.every((el) =>
                 el.classList.contains('placeholder-resolved'),
             ),
         );
         const timeoutPromise = new Promise((resolve) =>
-            setTimeout(() => resolve(false), MERCH_CARD_LOAD_TIMEOUT),
+            setTimeout(() => resolve('timeout'), MERCH_CARD_LOAD_TIMEOUT),
         );
-        const success = await Promise.race([successPromise, timeoutPromise]);
-        if (success === true) {
+
+        if (this.aemFragment) {
+            const aemLoad = await this.aemFragment.updateComplete;
+            if (aemLoad === false) {
+                this.#fail('AEM fragment cannot be loaded', {}, false);
+                return;
+            }
+        }
+        const result = await Promise.race([successPromise, timeoutPromise]);
+
+        if (result === true) {
             performance.mark(
                 `${MARK_MERCH_CARD_PREFIX}${this.id}${MARK_READY_SUFFIX}`,
             );
@@ -389,8 +421,25 @@ export class MerchCard extends LitElement {
                 }),
             );
             return;
+        } else {
+            const { duration, startTime } = performance.measure(
+                `${MARK_MERCH_CARD_PREFIX}${this.id}${MARK_ERROR_SUFFIX}`,
+                `${MARK_MERCH_CARD_PREFIX}${this.id}${MARK_START_SUFFIX}`,
+            );
+            const details = {
+                duration,
+                startTime,
+                ...getMasCommerceServiceDurationLog(),
+            };
+            if (result === 'timeout') {
+                this.#fail(
+                    `Contains offers that were not resolved within ${MERCH_CARD_LOAD_TIMEOUT} timeout`,
+                    details,
+                );
+            } else {
+                this.#fail(`Contains unresolved offers`, details);
+            }
         }
-        this.#fail('Contains unresolved offers');
     }
 
     get aemFragment() {
@@ -427,8 +476,12 @@ export class MerchCard extends LitElement {
     displayFooterElementsInColumn() {
         if (!this.classList.contains('product')) return;
 
-        const secureTransactionLabel = this.shadowRoot.querySelector('.secure-transaction-label');
-        const checkoutLinkCtas = this.footerSlot?.querySelectorAll('a[is="checkout-link"].con-button')
+        const secureTransactionLabel = this.shadowRoot.querySelector(
+            '.secure-transaction-label',
+        );
+        const checkoutLinkCtas = this.footerSlot?.querySelectorAll(
+            SELECTOR_MAS_CHECKOUT_LINK,
+        );
         if (checkoutLinkCtas.length === 2 && secureTransactionLabel) {
             secureTransactionLabel.parentElement.classList.add('footer-column');
         }
