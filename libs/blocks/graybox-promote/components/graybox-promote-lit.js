@@ -14,7 +14,7 @@ const base = miloLibs || codeRoot;
 const styleSheet = await getSheet(
   `${base}/blocks/graybox-promote/graybox-promote.css`,
 );
-const ADMIN = 'https://admin.hlx.page';
+const ADMIN = 'https://admin.aem.page';
 const KEYS = {
   PROJECT_INFO: {
     EXPERIENCE_NAME: 'experienceName',
@@ -76,7 +76,7 @@ const getProjectInfo = async (context) => {
 const getGrayboxConfig = async (context) => {
   const { ref, repo, owner, grayboxIoEnv } = context;
   const sheet = await getJson(
-    `https://${ref}--${repo}--${owner}.hlx.page/.milo/graybox-config.json`,
+    `https://${ref}--${repo}--${owner}.aem.page/.milo/graybox-config.json`,
     'Failed to fetch graybox config',
   );
 
@@ -96,7 +96,7 @@ const getGrayboxConfig = async (context) => {
 };
 
 const getSharepointData = async (context) => {
-  const liveOrigin = context.previewUrl.origin.replace('-graybox', '').replace('.hlx.page', '.hlx.live');
+  const liveOrigin = context.previewUrl.origin.replace('-graybox', '').replace('.aem.page', '.aem.live');
   const { sharepoint } = await getServiceConfig(liveOrigin);
   context.setup.rootFolder = `/${sharepoint.rootMapping.replace('-graybox', '')}`;
   context.setup.gbRootFolder = `/${sharepoint.rootMapping}`;
