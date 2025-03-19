@@ -69,7 +69,8 @@ export const addAriaLabelToCTA = (cta, productNames, textsToAddProductNames, tex
     const productHeader = headers.find((header) => {
       const text = typeof header === 'string' ? header : header.textContent.trim();
       const product = getProduct(text, productNames);
-      return product && (product === productInCTA || !productInCTA);
+      return product
+        && (product.includes(productInCTA) || productInCTA.includes(product) || !productInCTA);
     });
     if (productHeader) {
       cta.setAttribute('aria-label', `${cta.textContent} ${getProduct(productHeader.textContent?.trim() || productHeader, productNames)}`);
