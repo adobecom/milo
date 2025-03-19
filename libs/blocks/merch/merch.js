@@ -759,10 +759,6 @@ export default async function init(el) {
   const isCta = searchParams.get('type') === 'checkoutUrl';
   const merch = await (isCta ? buildCta : buildPrice)(el, searchParams);
   const service = await initService();
-  if (searchParams.get('type') === 'price') {
-    const a11yParent = el.closest('.col, merch-card, p, div');
-    merch.dataset.parentEl = a11yParent?.nodeName;
-  }
   log = service.Log.module('merch');
   if (merch) {
     log.debug('Rendering:', { options: { ...merch.dataset }, merch, el });
