@@ -1,4 +1,8 @@
-import { EVENT_AEM_LOAD, EVENT_AEM_ERROR, EVENT_TYPE_READY } from './constants.js';
+import { EVENT_AEM_LOAD, EVENT_AEM_ERROR, MARK_START_SUFFIX, MARK_DURATION_SUFFIX, EVENT_TYPE_READY } from './constants.js';
+import { Log } from './log.js';
+import { MasError } from './mas-error.js';
+import { getMasCommerceServiceDurationLog } from './utils.js';
+import { masFetch } from './utils/mas-fetch.js';
 import { useService, withTimeout } from './utilities.js';
 
 const sheet = new CSSStyleSheet();
@@ -9,28 +13,54 @@ const ATTRIBUTE_FRAGMENT = 'fragment';
 const AEM_FRAGMENT_TIMEOUT = 10000;
 const TIMEOUT_MESSAGE = 'aem-fragment: mas-commerce-service did not intialize within timeout';
 
-const fail = (message) => {
-    throw new Error(`Failed to get fragment: ${message}`);
-};
+const AEM_FRAGMENT_TAG_NAME = 'aem-fragment';
 
 /**
  * Get fragment by ID
- * @param {string} id fragment id
- * @param {string} author should the fragment be fetched from author endpoint
+ * @param {string} endpoint fragment id
  * @param {Object} headers optional request headers
  * @returns {Promise<Object>} the raw fragment item
- * @param {string} masCommerceService settings provider
  */
-export async function getFragmentById(endpoint, headers) {
-    const response = await fetch(endpoint, {
-        cache: 'default',
-        credentials: 'omit',
-        headers,
-    }).catch((e) => fail(e.message));
-    if (!response?.ok) {
-        fail(`${response.status} ${response.statusText}`);
+export async function getFragmentById(endpoint, headers, startMark) {
+    const endpoint = author
+        ? `${baseUrl}/adobe/sites/cf/fragments/${id}`
+        : `${baseUrl}/adobe/sites/fragments/${id}`;
+    const measureName = `${AEM_FRAGMENT_TAG_NAME}:${id}${MARK_DURATION_SUFFIX}`;
+    let response;
+    try {
+        response = await masFetch(endpoint, {
+            cache: 'default',
+            credentials: 'omit',
+            headers,
+        });
+        if (!response?.ok) {
+            const { startTime, duration } = performance.measure(
+                measureName,
+                startMark,
+            );
+            throw new MasError('Unexpected fragment response', {
+                response,
+                startTime,
+                duration,
+            });
+        }
+        return response.json();
+    } catch (e) {
+        const { startTime, duration } = performance.measure(
+            measureName,
+            startMark,
+        );
+        if (!response) {
+            response = { url: endpoint };
+        }
+
+        throw new MasError('Failed to fetch fragment', {
+            response,
+            startTime,
+            duration,
+            ...getMasCommerceServiceDurationLog(),
+        });
     }
-    return response.json();
 }
 
 class FragmentCache {
@@ -71,10 +101,13 @@ const cache = new FragmentCache();
  */
 export class AemFragment extends HTMLElement {
     cache = cache;
+    #log = Log.module(AEM_FRAGMENT_TAG_NAME);
 
-    #rawData;
-    #data;
-
+    #rawData = null;
+    #data = null;
+    #stale = false;
+    #startMark = null;
+    
     /**
      * @type {string} fragment id
      */
@@ -108,9 +141,11 @@ export class AemFragment extends HTMLElement {
 
     connectedCallback() {
         if (!this.#fragmentId) {
-            this.#fail('Missing fragment id');
+            this.#fail({ message: 'Missing fragment id' });
             return;
         }
+        this.#startMark = `${AEM_FRAGMENT_TAG_NAME}:${this.#fragmentId}${MARK_START_SUFFIX}`;
+        performance.mark(this.#startMark);
     }
 
     async refresh(flushCache = true) {
@@ -146,26 +181,30 @@ export class AemFragment extends HTMLElement {
             .then(() => {
                 this.dispatchEvent(
                     new CustomEvent(EVENT_AEM_LOAD, {
-                        detail: this.data,
+                        detail: { ...this.data, stale: this.#stale },
                         bubbles: true,
                         composed: true,
                     }),
                 );
                 return true;
             })
-            .catch((e) => {
-                /* c8 ignore next 3 */
-                this.#fail('Network error: failed to load fragment', e);
+            .catch((e) => { //todo why??
+                if (this.#rawData) {
+                    cache.add(this.#rawData);
+                    return true;
+                }
                 this.#readyPromise = null;
+                this.#fail(e);
                 return false;
             });
     }
 
-    #fail(errorMessage, error) {
+    #fail({ message, context }) {
         this.classList.add('error');
+        this.#log.error(`aem-fragment: ${message}`, context);
         this.dispatchEvent(
             new CustomEvent(EVENT_AEM_ERROR, {
-                detail: errorMessage,
+                detail: { message, ...context },
                 bubbles: true,
                 composed: true,
             }),
@@ -173,29 +212,37 @@ export class AemFragment extends HTMLElement {
     }
 
     async fetchData(service) {
-        this.#rawData = null;
-        this.#data = null;
+        this.classList.remove('error');
         let fragment = cache.get(this.#fragmentId);
-        if (!fragment) {
-          const { env, wcsApiKey, locale } = service.settings;
-          if (!this.#baseUrl) {
-            this.#baseUrl = `https://www${env?.toLowerCase() === 'stage' ? '.stage' : ''}.adobe.com/mas/io`;
-            const overrideHost = document.querySelector('meta[name="mas-io-url"]')?.content;
-            if (overrideHost) {
-              this.#baseUrl = overrideHost;
-              if (!this.#headers) {
-                this.#headers = {
-                    Authorization: `Bearer ${window.adobeid?.authorize?.()}`,
-                };
-              }
+        if (fragment) {
+            this.#rawData = fragment;
+            return;
+        }
+        this.#stale = true;
+        const { env, wcsApiKey, locale } = service.settings;
+        if (!this.#baseUrl) {
+          this.#baseUrl = `https://www${env?.toLowerCase() === 'stage' ? '.stage' : ''}.adobe.com/mas/io`;
+          const overrideHost = document.querySelector('meta[name="mas-io-url"]')?.content;
+          if (overrideHost) {
+            this.#baseUrl = overrideHost;
+            if (!this.#headers) {
+              this.#headers = {
+                  Authorization: `Bearer ${window.adobeid?.authorize?.()}`,
+              };
             }
           }
-
-          const endpoint = `${this.#baseUrl}/fragment?id=${this.#fragmentId}&api_key=${wcsApiKey}&locale=${locale}`;
-          fragment = await getFragmentById(endpoint, this.#headers);
-          cache.add(fragment);
         }
+
+        const endpoint = `${this.#baseUrl}/fragment?id=${this.#fragmentId}&api_key=${wcsApiKey}&locale=${locale}`;
+        
+        fragment = await getFragmentById(
+            endpoint,
+            this.#headers,
+            this.#startMark,
+        );
+        cache.add(fragment);
         this.#rawData = fragment;
+        this.#stale = false;
     }
 
     get updateComplete() {
@@ -239,4 +286,4 @@ export class AemFragment extends HTMLElement {
     }
 }
 
-customElements.define('aem-fragment', AemFragment);
+customElements.define(AEM_FRAGMENT_TAG_NAME, AemFragment);

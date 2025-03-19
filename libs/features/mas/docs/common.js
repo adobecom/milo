@@ -51,6 +51,8 @@ const init = async () => {
     const value = params.get(attribute);
     if (value) masCommerceService.setAttribute(attribute, value);
   });
+  masCommerceService.setAttribute('lana-tags', 'nala');
+  masCommerceService.setAttribute('lana-sample-rate', '100');
   await import('../dist/mas.js');
   masCommerceService.refreshFragments();
 
@@ -89,5 +91,5 @@ const init = async () => {
     )
   );
 }
-window.log = (target, ...messages) =>  (target.textContent = `${messages.join(' ')}${target.textContent}`);
+window.log = (target, ...messages) =>  (target.innerHTML =  `${messages.join(' ')}<br>${target.innerHTML}`);
 export { init };
