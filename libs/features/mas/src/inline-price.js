@@ -299,12 +299,14 @@ export class InlinePrice extends HTMLSpanElement {
                 const parentEl = this.closest('p, h3, div');
                 if (!parentEl || !parentEl.querySelector('span[data-template="strikethrough"]') || parentEl.querySelector('.alt-aria-label')) return true;
                 const inlinePrices = parentEl?.querySelectorAll('span[is="inline-price"]');
-                inlinePrices.forEach((price) => {
-                    if (price.dataset.template === 'strikethrough' && !options.alternativePrice) {
-                        options.alternativePrice = true;
-                        this.innerHTML = service.buildPriceHTML(offers, options);
-                    }
-                });
+                if (inlinePrices.length === 2) {
+                    inlinePrices.forEach((price) => {
+                        if (price.dataset.template === 'strikethrough' && !options.alternativePrice) {
+                            options.alternativePrice = true;
+                            this.innerHTML = service.buildPriceHTML(offers, options);
+                        }
+                    });
+                }
                 return true;
             }
         } else {
