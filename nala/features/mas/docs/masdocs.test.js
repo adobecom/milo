@@ -40,7 +40,6 @@ test.describe('MAS Docs feature test suite', () => {
 
   // @MAS-DOCS-merch-card
   test(`${features[1].name},${features[1].tags}`, async ({ page, baseURL }) => {
-    const delay = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms));
     const testPage = `${baseURL}${features[1].path}${miloLibs}`;
     console.info('[Test Page]: ', testPage);
 
