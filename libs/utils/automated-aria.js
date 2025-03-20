@@ -68,6 +68,7 @@ const processNestedContainers = (patternDivs, findBlockContainersFn) => {
       deepestContainers.push(div);
     } else if (nested.length > 1) {
       deepestContainers.push(...nested);
+      deepestContainers.push(div); // Add the parent last
     }
   });
   return deepestContainers;

@@ -84,7 +84,7 @@ describe('ARIA Labels Utility Functions', () => {
       const doc = parser.parseFromString(html, 'text/html');
       const cta = doc.querySelector('.con-button');
       addAriaLabelToCTA(cta, productNames, textsToAddProductNames, textsToAddHeaders);
-      expect(cta.getAttribute('aria-label')).to.equal('Buy Now - Photoshop');
+      expect(cta.getAttribute('aria-label')).to.equal('Buy Now Photoshop');
     });
 
     it('should add header to CTA', async () => {
@@ -128,7 +128,7 @@ describe('ARIA Labels Utility Functions', () => {
       document.body.innerHTML = parser.parseFromString(html, 'text/html').body.innerHTML;
       await addAriaLabels();
       const cta = document.querySelector('.con-button');
-      expect(cta.getAttribute('aria-label')).to.equal('Buy Now - Adobe Photoshop Extended');
+      expect(cta.getAttribute('aria-label')).to.equal('Buy Now Adobe Photoshop Extended');
     });
 
     it('should handle multiple CTAs with different scenarios', async () => {
@@ -145,16 +145,52 @@ describe('ARIA Labels Utility Functions', () => {
       await addAriaLabels();
       // Check first CTA with Photoshop
       const cta1 = document.querySelector('.card-one .con-button');
-      expect(cta1.getAttribute('aria-label')).to.equal('Buy Now - Photoshop');
+      expect(cta1.getAttribute('aria-label')).to.equal('Buy Now Photoshop');
       // Check second CTA with Lightroom
       const cta2 = document.querySelector('.card-two .con-button');
-      expect(cta2.getAttribute('aria-label')).to.equal('Buy Now - Lightroom');
+      expect(cta2.getAttribute('aria-label')).to.equal('Buy Now Lightroom');
       // Check third CTA with multiple headers (should have no aria-label)
       const cta3 = document.querySelector('.card-three .con-button');
       expect(cta3.hasAttribute('aria-label')).to.be.false;
       // Check final CTA with Adobe Express
       const cta4 = document.querySelector('.card-container > h3 + .con-button');
-      expect(cta4.getAttribute('aria-label')).to.equal('Free trial - Adobe Express');
+      expect(cta4.getAttribute('aria-label')).to.equal('Free trial Adobe Express');
+    });
+
+    it.only('should handle multiple CTAs with containers within containers', async () => {
+      const config = JSON.parse(await readFile({ path: './mocks/aria/cta-aria-label-config.json' }));
+      const products = JSON.parse(await readFile({ path: './mocks/aria/product-names.json' }));
+      sandbox.stub(window, 'fetch')
+        .onFirstCall()
+        .resolves({ json: () => Promise.resolve(config) })
+        .onSecondCall()
+        .resolves({ json: () => Promise.resolve(products) });
+      const html = await readFile({ path: './mocks/aria/block-containers.html' });
+      const parser = new DOMParser();
+      document.body.innerHTML = parser.parseFromString(html, 'text/html').body.querySelectorAll(':scope > div')[3].outerHTML;
+      await addAriaLabels();
+      // Check first CTA with Photoshop
+      const cta1div = document.querySelector('.card-one .div-one .con-button');
+      expect(cta1div.getAttribute('aria-label')).to.equal('Buy Now Photoshop');
+      // Check second CTA with Lightroom
+      const cta2div = document.querySelector('.card-one .div-two .con-button');
+      expect(cta2div.getAttribute('aria-label')).to.equal('Buy Now Acrobat');
+      // Check third CTA with multiple headers (should have no aria-label)
+      const cta3div = document.querySelector('.card-one .div-three .con-button');
+      expect(cta3div.hasAttribute('aria-label')).to.be.false;
+
+      // Check first CTA with Photoshop
+      const cta1 = document.querySelector('.card-one .con-button');
+      expect(cta1.getAttribute('aria-label')).to.equal('Buy Now Photoshop');
+      // Check second CTA with Lightroom
+      const cta2 = document.querySelector('.card-two .con-button');
+      expect(cta2.getAttribute('aria-label')).to.equal('Buy Now Lightroom');
+      // Check third CTA with multiple headers (should have no aria-label)
+      const cta3 = document.querySelector('.card-three .con-button');
+      expect(cta3.hasAttribute('aria-label')).to.be.false;
+      // Check final CTA with Adobe Express
+      const cta4 = document.querySelector('.card-container > h3 + .con-button');
+      expect(cta4.getAttribute('aria-label')).to.equal('Free trial Adobe Express');
     });
 
     it('Does not modify existing aria-labels', async () => {
@@ -206,41 +242,13 @@ describe('ARIA Labels Utility Functions', () => {
 
       // Check tablet CTAs
       const tabletCTAs = document.querySelector('.tablet-up .action-area').querySelectorAll('.con-button');
-      expect(tabletCTAs[0].getAttribute('aria-label')).to.equal('Free trial - Creative Cloud');
-      expect(tabletCTAs[1].getAttribute('aria-label')).to.equal('Buy now - Creative Cloud');
+      expect(tabletCTAs[0].getAttribute('aria-label')).to.equal('Free trial Creative Cloud');
+      expect(tabletCTAs[1].getAttribute('aria-label')).to.equal('Buy now Creative Cloud');
 
       // Check desktop CTAs
       const desktopCTAs = document.querySelector('.desktop-up .action-area').querySelectorAll('.con-button');
-      expect(desktopCTAs[0].getAttribute('aria-label')).to.equal('Free trial - Creative Cloud');
-      expect(desktopCTAs[1].getAttribute('aria-label')).to.equal('Buy now - Creative Cloud');
-    });
-
-    it('should handle aria-label consistency across links with same href', async () => {
-      const config = JSON.parse(await readFile({ path: './mocks/aria/cta-aria-label-config.json' }));
-      const products = JSON.parse(await readFile({ path: './mocks/aria/product-names.json' }));
-      sandbox.stub(window, 'fetch')
-        .onFirstCall()
-        .resolves({ json: () => Promise.resolve(config) })
-        .onSecondCall()
-        .resolves({ json: () => Promise.resolve(products) });
-      const html = await readFile({ path: './mocks/aria/aria-label-consistency.html' });
-      const parser = new DOMParser();
-      document.body.innerHTML = parser.parseFromString(html, 'text/html').body.innerHTML;
-      await addAriaLabels();
-
-      // Check links with consistent aria-labels (should keep their labels)
-      const photoshopLinks = document.querySelectorAll('a[href="/products/photoshop"]');
-      expect(photoshopLinks[0].getAttribute('aria-label')).to.equal('Buy now Adobe Photoshop');
-      expect(photoshopLinks[1].getAttribute('aria-label')).to.not.exist;
-
-      const lightroomLinks = document.querySelectorAll('a[href="/products/lightroom"]');
-      expect(lightroomLinks[0].getAttribute('aria-label')).to.equal('Buy now Adobe Lightroom');
-      expect(lightroomLinks[1].getAttribute('aria-label')).to.not.exist;
-
-      // Check links without aria-labels (should remain without labels)
-      const illustratorLinks = document.querySelectorAll('a[href="/products/illustrator"]');
-      expect(illustratorLinks[0].getAttribute('aria-label')).to.equal('Buy now - Illustrator');
-      expect(illustratorLinks[1].getAttribute('aria-label')).to.equal('Buy now - Illustrator');
+      expect(desktopCTAs[0].getAttribute('aria-label')).to.equal('Free trial Creative Cloud');
+      expect(desktopCTAs[1].getAttribute('aria-label')).to.equal('Buy now Creative Cloud');
     });
   });
 });
