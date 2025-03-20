@@ -1053,6 +1053,7 @@ export function cleanAndSortManifestList(manifests, conf) {
     try {
       if (!manifest?.manifest) return;
       if (!manifest.manifestPath) manifest.manifestPath = normalizePath(manifest.manifest);
+      if (manifest.source && !manifest.source.includes('target')) manifest.manifest = normalizePath(manifest.manifest);
       if (manifest.manifestPath in manifestObj) {
         let fullManifest = manifestObj[manifest.manifestPath];
         let freshManifest = manifest;
@@ -1068,6 +1069,10 @@ export function cleanAndSortManifestList(manifests, conf) {
         freshManifest.variants = targetManifestWinsOverServerManifest
           ? fullManifest.variants
           : freshManifest.variants;
+
+        if (!targetManifestWinsOverServerManifest) {
+          freshManifest.manifestPath = normalizePath(freshManifest.manifestPath);
+        }
 
         freshManifest.selectedVariant = freshManifest.variants[freshManifest.selectedVariantName];
         manifestObj[manifest.manifestPath] = freshManifest;
