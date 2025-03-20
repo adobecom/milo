@@ -249,7 +249,8 @@ function addMepPopupListeners(popup, pageId) {
 function formatManifestText(count) {
   return count > 1 ? 'Manifests' : 'Manifest';
 }
-function setTargetOnText(target) {
+function setTargetOnText(target, page) {
+  if (target === undefined) return page.target;
   return target === 'postlcp' ? 'on post LCP' : target;
 }
 export function getMepPopup(mepConfig, isMmm = false) {
@@ -278,11 +279,10 @@ export function getMepPopup(mepConfig, isMmm = false) {
     postlcp: 'postlcp',
     true: 'on',
     false: 'off',
-    undefined: 'off',
   };
   const targetEnabled = targetMapping[config.mep?.targetEnabled];
   const mepTarget = isMmm ? page.target : targetEnabled;
-  const targetOnText = setTargetOnText(mepTarget);
+  const targetOnText = setTargetOnText(mepTarget, page);
 
   mepPageInfo.innerHTML = `
     <h6 class="mep-manifest-page-info-title">Page Info</h6>
