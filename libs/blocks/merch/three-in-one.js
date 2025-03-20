@@ -45,12 +45,12 @@ export const showErrorMsg = ({ iframe, miloIframe, showBtn, theme, handleTimeout
           }
         </style>
       </defs>
-      <title>S Alert 24 N</title>
+      <title>Alert</title>
       <rect id="Canvas" fill="#ff13dc" opacity="0" width="24" height="24" />
       <path class="fill"
         d="M11.418,1.72L0.267,21.675c-0.134,0.238,0.033,0.535,0.581,0.535h22.305c0.547,0,0.714-0.297,0.581-0.535L12.582,1.72c-0.134-0.238-1.031-0.238-1.164,0ZM13.333,19.669c0,0.333-0.333,0.333-0.333,0.333h-2c0,0-0.333,0-0.333-0.333v-2c0-0.333,0.333-0.333,0.333-0.333h2c0,0,0.333,0,0.333,0.333Zm0-4c0,0.333-0.333,0.333-0.333,0.333h-2c0,0-0.333,0-0.333-0.333v-8c0-0.333,0.333-0.333,0.333-0.333h2c0,0,0.333,0,0.333,0.333Z" />
     </svg>
-    <p class="error-msg">${showBtn ? '{something-went-wrong-refresh}' : '{something-went-wrong-try-later}'}</p>
+    <p class="error-msg">${showBtn ? '{error-refresh}' : '{error-try-later}'}</p>
   </div>`;
   const msgWrapper = createTag('div', { class: 'error-wrapper' }, iconAndText, { parent: miloIframe });
 
