@@ -357,6 +357,7 @@ export function localizeLink(
   overrideDomain = false,
 ) {
   try {
+    console.log(href);
     const url = new URL(href);
     const relative = url.hostname === originHostName;
     const processedHref = relative ? href.replace(url.origin, '') : href;
