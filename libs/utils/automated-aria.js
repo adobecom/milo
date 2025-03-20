@@ -168,14 +168,13 @@ export const addAriaLabelToCTA = (cta, productNames, textsToAddProductNames, tex
   const ctaContainer = containers.find((container) => container.contains(cta)) || block;
   const isInContainer = ctaContainer !== block;
 
-  if (isInContainer) {
-    assignAriaLabel(
-      cta,
-      getHeaders(ctaContainer),
-      productNames,
-      textsToAddProductNames,
-      textsToAddHeaders,
-    );
+  if (isInContainer && assignAriaLabel(
+    cta,
+    getHeaders(ctaContainer),
+    productNames,
+    textsToAddProductNames,
+    textsToAddHeaders,
+  )) {
     return;
   }
 
