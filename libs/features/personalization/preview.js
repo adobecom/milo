@@ -250,7 +250,6 @@ function formatManifestText(count) {
   return count > 1 ? 'Manifests' : 'Manifest';
 }
 function setTargetOnText(target) {
-  if (target === undefined) return 'off';
   return target === 'postlcp' ? 'on post LCP' : target;
 }
 export function getMepPopup(mepConfig, isMmm = false) {
@@ -279,6 +278,7 @@ export function getMepPopup(mepConfig, isMmm = false) {
     postlcp: 'postlcp',
     true: 'on',
     false: 'off',
+    undefined: 'off',
   };
   const targetEnabled = targetMapping[config.mep?.targetEnabled];
   const mepTarget = isMmm ? page.target : targetEnabled;
