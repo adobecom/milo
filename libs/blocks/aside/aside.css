@@ -954,6 +954,11 @@
     align-items: center;
     text-align: center;
   }
+
+  .aside.promobar .action-area wbr,
+  .aside.notification .action-area wbr {
+    display: none;
+  }
 }
 
 @media (min-width: 600px) and (max-width: 1199px) {
