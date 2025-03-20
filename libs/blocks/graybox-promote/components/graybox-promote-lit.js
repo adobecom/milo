@@ -14,7 +14,7 @@ const base = miloLibs || codeRoot;
 const styleSheet = await getSheet(
   `${base}/blocks/graybox-promote/graybox-promote.css`,
 );
-const ADMIN = 'https://admin.aem.page';
+const ADMIN = 'https://admin.hlx.page';
 const KEYS = {
   PROJECT_INFO: {
     EXPERIENCE_NAME: 'experienceName',
