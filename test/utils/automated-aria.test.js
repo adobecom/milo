@@ -157,7 +157,7 @@ describe('ARIA Labels Utility Functions', () => {
       expect(cta4.getAttribute('aria-label')).to.equal('Free trial Adobe Express');
     });
 
-    it.only('should handle multiple CTAs with containers within containers', async () => {
+    it('should handle multiple CTAs with containers within containers', async () => {
       const config = JSON.parse(await readFile({ path: './mocks/aria/cta-aria-label-config.json' }));
       const products = JSON.parse(await readFile({ path: './mocks/aria/product-names.json' }));
       sandbox.stub(window, 'fetch')
