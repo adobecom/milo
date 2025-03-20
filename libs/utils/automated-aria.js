@@ -227,7 +227,7 @@ export default async function addAriaLabels() {
   if (!ctaAriaLabelConfig || !productNames) return;
 
   const { prefix } = getConfig().locale;
-  const localePrefix = prefix || 'us';
+  const localePrefix = prefix?.replace('/', '') || 'us';
 
   if (!ctaAriaLabelConfig.data?.length || !productNames.data?.length) {
     window.lana.log(
