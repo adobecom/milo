@@ -130,6 +130,7 @@ export class MerchCard extends LitElement {
      */
     variantLayout;
     log = undefined;
+    readyEventDispatched = false;
 
     constructor() {
         super();
@@ -416,12 +417,15 @@ export class MerchCard extends LitElement {
             performance.mark(
                 `${MARK_MERCH_CARD_PREFIX}${this.id}${MARK_READY_SUFFIX}`,
             );
-            this.dispatchEvent(
+            if (!this.readyEventDispatched) {
+              this.readyEventDispatched = true;
+              this.dispatchEvent(
                 new CustomEvent(EVENT_MAS_READY, {
                     bubbles: true,
                     composed: true,
                 }),
-            );
+              );
+            }
             return this;
         } else {
             const { duration, startTime } = performance.measure(

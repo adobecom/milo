@@ -84,8 +84,6 @@ const htmlTemplate = `
   <!-- Include Highlight.js stylesheet for syntax highlighting -->
   <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
   <script type="module" src="./mas-sidenav.js"></script>
-  
-  <mas-commerce-service lana-tags="nala"></mas-commerce-service>
 </head>
 <body class="spectrum spectrum--medium spectrum--light">
     <aside is="mas-sidenav"></aside>

@@ -66,11 +66,20 @@ runTests(async () => {
         it('has fragment cache', async () => {
             expect(cache).to.exist;
             expect(cache.has('id123')).to.false;
-            cache.add({ id: 'id123', test: 1 });
+            cache.add('id123', { id: 'id123', test: 1 });
             expect(cache.has('id123')).to.true;
             cache.clear();
             expect(cache.has('id123')).to.false;
         });
+
+        it('caches localized fragment by en_US id', async () => {
+          expect(cache).to.exist;
+          expect(cache.has('id123')).to.false;
+          cache.add('id123', { id: 'id567', test: 1 });
+          expect(cache.has('id123')).to.true;
+          cache.clear();
+          expect(cache.has('id123')).to.false;
+      });
 
         it('renders a merch card from cache', async () => {
             cache.add(cc);
@@ -238,17 +247,6 @@ runTests(async () => {
                     url: 'http://localhost:2023/adobe/sites/fragments/notfound',
                 });
             }
-        });
-
-        it('fetches fragment from author endpoint', async () => {
-            const promise = getFragmentById(
-                'http://localhost:2023',
-                'fragment-cc-all-apps',
-                true,
-            );
-            expect(fetch.lastCall.firstArg).to.equal(
-                'http://localhost:2023/adobe/sites/cf/fragments/fragment-cc-all-apps',
-            );
         });
 
         it('fetches fragment from freyja on publish', async () => {

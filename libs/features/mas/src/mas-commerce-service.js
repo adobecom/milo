@@ -25,9 +25,6 @@ export class MasCommerceService extends HTMLElement {
     static instance;
     readyPromise = null;
 
-    static get observedAttributes() {
-      return ['locale', 'country', 'language', 'env'];
-    }
     lastLoggingTime = 0;
     get #config() {
         const env = this.getAttribute('env') ?? 'prod';
@@ -42,6 +39,7 @@ export class MasCommerceService extends HTMLElement {
                 ),
                 isProdDomain: env === 'prod',
             },
+            masIOUrl: this.getAttribute('mas-io-url'),
         };
         //root parameters
         ['locale', 'country', 'language'].forEach((attribute) => {
@@ -164,12 +162,6 @@ export class MasCommerceService extends HTMLElement {
         }, 10000);
     }
 
-    attributeChangedCallback() {
-      if (this.isConnected) {
-        this.readyPromise = new Promise((resolve) => this.activate(resolve));
-      }
-    }
-
     connectedCallback() {
       performance.mark(MARK_START);
       this.readyPromise = new Promise((resolve) => this.activate(resolve));
@@ -196,7 +188,7 @@ export class MasCommerceService extends HTMLElement {
 
     refreshFragments() {
         this.flushCache();
-        document.querySelectorAll('aem-fragment').forEach((el) => el.refresh());
+        document.querySelectorAll('aem-fragment').forEach((el) => el.refresh(this));
         this.log.debug('Refreshed AEM fragments');
         this.logFailedRequests();
     }

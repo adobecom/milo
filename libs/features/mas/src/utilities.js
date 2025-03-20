@@ -88,9 +88,3 @@ export function useService() {
     return document.getElementsByTagName(MAS_COMMERCE_SERVICE)?.[0];
 }
 
-export function withTimeout(promise, timeoutMs, message) {
-  const timeout = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error(message ?? "Operation timed out")), timeoutMs)
-  );
-  return Promise.race([promise, timeout]);
-}

@@ -100,6 +100,7 @@ function getSettings(config = {}) {
         wcsURL = WCS_STAGE_URL;
     }
 
+    const masIOUrl = getParameter('mas-io-url') ?? config.masIOUrl;
     return {
         ...getLocaleSettings(config),
         displayOldPrice,
@@ -119,6 +120,7 @@ function getSettings(config = {}) {
         wcsApiKey,
         wcsURL,
         landscape,
+        masIOUrl,
     };
 }
 
