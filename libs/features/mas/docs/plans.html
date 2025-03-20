@@ -13,6 +13,7 @@
   <!-- Include your custom element script as an ES6 module -->
   <script type="module">
     import { init } from './common.js';
+    import './mas-sidenav.js';
     init();
   </script>
   <!-- Include Highlight.js stylesheet for syntax highlighting -->
@@ -22,19 +23,7 @@
   <mas-commerce-service lana-tags="nala"></mas-commerce-service>
 </head>
 <body class="spectrum spectrum--medium spectrum--light">
-<aside class="sidenav">
-    <a href="/libs/features/mas/docs/mas.html">Home</a>
-    <a href="/libs/features/mas/docs/mas.js.html">mas.js</a>
-    <a href="/libs/features/mas/docs/step-by-step.html">Step By Step - Enable M@S</a>
-    <a href="/libs/features/mas/docs/checkout-link.html">Checkout Link</a>
-    <a href="/libs/features/mas/docs/checkout-button.html">Checkout Button</a>
-    <a href="/libs/features/mas/docs/inline-price.html">Inline Price</a>
-    <a href="/libs/features/mas/docs/merch-card.html">Merch Card</a>
-    <a href="/libs/features/mas/docs/ccd.html">CCD Gallery</a>
-    <a href="/libs/features/mas/docs/adobe-home.html">Adobe Home Gallery</a>
-    <a href="/libs/features/mas/docs/plans.html">Plans Gallery</a>
-    <a href="/libs/features/mas/docs/benchmarks.html">Benchmarks</a>
-</aside>
+<aside is="mas-sidenav"></aside>
 <main>
 <sp-theme color="light" scale="medium">
 <div class="plans-gallery-content">
@@ -43,24 +32,24 @@
   <div class="three-merch-cards">
       <div>
         <merch-card><aem-fragment fragment="a15b77f7-fb32-4608-8b5c-a1b98675ad85"></aem-fragment></merch-card>
-        <a target="_blank" href="https://main--mas--adobecom.hlx.live/studio.html?#path=nala&query=a15b77f7-fb32-4608-8b5c-a1b98675ad85"> Open in Studio</a>
+        <a class="studio-link" target="_blank" href="https://main--mas--adobecom.hlx.live/studio.html?#path=nala&query=a15b77f7-fb32-4608-8b5c-a1b98675ad85"> Open in Studio</a>
       </div>
       <div>
         <merch-card><aem-fragment fragment="1736f2c9-0931-401b-b3c0-fe87ff72ad38"></aem-fragment></merch-card>
-        <a target="_blank" href="https://main--mas--adobecom.hlx.live/studio.html?#path=nala&query=1736f2c9-0931-401b-b3c0-fe87ff72ad38"> Open in Studio</a>
+        <a class="studio-link" target="_blank" href="https://main--mas--adobecom.hlx.live/studio.html?#path=nala&query=1736f2c9-0931-401b-b3c0-fe87ff72ad38"> Open in Studio</a>
       </div>
       <div>
         <merch-card><aem-fragment fragment="616273eb-3aad-462a-a6d7-6f6857973b77"></aem-fragment></merch-card>
-        <a target="_blank" href="https://main--mas--adobecom.hlx.live/studio.html?#path=nala&query=616273eb-3aad-462a-a6d7-6f6857973b77"> Open in Studio</a>
+        <a class="studio-link" target="_blank" href="https://main--mas--adobecom.hlx.live/studio.html?#path=nala&query=616273eb-3aad-462a-a6d7-6f6857973b77"> Open in Studio</a>
       </div>
       <div>
         <merch-card><aem-fragment fragment="8373b5c2-69e6-4e9c-befc-b424dd33469b"></aem-fragment></merch-card>
-        <a target="_blank" href="https://main--mas--adobecom.hlx.live/studio.html?#path=nala&query=8373b5c2-69e6-4e9c-befc-b424dd33469b"> Open in Studio</a>
+        <a class="studio-link" target="_blank" href="https://main--mas--adobecom.hlx.live/studio.html?#path=nala&query=8373b5c2-69e6-4e9c-befc-b424dd33469b"> Open in Studio</a>
       </div>
   </div>
-  <!-- <div id="plans-collection">
-    <a target="_blank" href="https://mwpw-165478--cc--adobecom.hlx.page/drafts/commerce/plans?milolibs=mwpw-165478--milo--adobecom">Plans collection page ↗</a>
-  </div> -->
+  <div id="plans-collection">
+    <a target="_blank" href="https://mwpw-165478--cc--adobecom.hlx.page/drafts/commerce/plans?milolibs=mwpw-165461--milo--adobecom">Plans collection page ↗</a>
+  </div>
 </div>
 
 </sp-theme>
