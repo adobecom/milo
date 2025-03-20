@@ -65,7 +65,7 @@ export class Plans extends VariantLayout {
 
   static variantStyle = css`
     :host([variant='plans']) {
-      min-height: 348px;
+      height: 100%;
     }
       
     :host([variant='plans']) ::slotted([slot='heading-xs']) {
