@@ -1070,10 +1070,6 @@ export function cleanAndSortManifestList(manifests, conf) {
           ? fullManifest.variants
           : freshManifest.variants;
 
-        if (!targetManifestWinsOverServerManifest) {
-          freshManifest.manifestPath = normalizePath(freshManifest.manifestPath);
-        }
-
         freshManifest.selectedVariant = freshManifest.variants[freshManifest.selectedVariantName];
         manifestObj[manifest.manifestPath] = freshManifest;
       } else {
