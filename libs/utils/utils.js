@@ -367,6 +367,7 @@ export function localizeLink(
     const extension = getExtension(path);
     const allowedExts = ['', 'html', 'json'];
     if (!allowedExts.includes(extension)) return processedHref;
+    console.log('Allowed: '+url);
     const { locale, locales, prodDomains } = getConfig();
     if (!locale || !locales) return processedHref;
     const isLocalizable = relative || (prodDomains && prodDomains.includes(url.hostname))
@@ -378,6 +379,7 @@ export function localizeLink(
         || path.endsWith(`/${loc}`)));
     if (isLocalizedLink) return processedHref;
     const urlPath = `${locale.prefix}${path}${url.search}${hash}`;
+    console.log('return: '+relative ? urlPath : `${url.origin}${urlPath}`);
     return relative ? urlPath : `${url.origin}${urlPath}`;
   } catch (error) {
     return href;
