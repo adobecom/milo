@@ -149,14 +149,14 @@ const assignAriaLabel = (
     if (productHeader) {
       const productName = getProduct(productHeader.textContent?.trim()
         || productHeader, productNames);
-      cta.setAttribute('aria-label', `${cta.textContent} - ${productName}`);
+      cta.setAttribute('aria-label', `vhargrave-${cta.textContent} - ${productName}`);
       return true;
     }
   }
 
   if (textsToAddHeaders.includes(buttonText) && allContent.length) {
     const headerText = allContent[0].textContent?.trim() || allContent[0];
-    cta.setAttribute('aria-label', `${cta.textContent} - ${headerText}`);
+    cta.setAttribute('aria-label', `vhargrave-${cta.textContent} - ${headerText}`);
     return true;
   }
 
