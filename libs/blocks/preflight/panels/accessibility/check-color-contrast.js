@@ -24,9 +24,28 @@ function parseCssRgb(rgbStr) {
   return match ? match.slice(1, 4).map(Number) : null;
 }
 
+// Checks if an alpha value is fully transparent (zero).
+function isZeroAlpha(alpha) {
+  return alpha === '0' || alpha === '0%' || parseFloat(alpha) === 0;
+}
+
 // Checks if an RGBA color string is fully transparent.
 function isTransparent(rgbStr) {
-  return rgbStr.includes('rgba') && rgbStr.trim().endsWith(', 0)');
+  if (!rgbStr) return false;
+
+  const str = rgbStr.trim().toLowerCase();
+
+  const modernMatch = str.match(/rgb[a]?\([^)]*\/\s*([\d.]+%?)\s*\)/);
+  if (modernMatch) {
+    return isZeroAlpha(modernMatch[1]);
+  }
+
+  const legacyMatch = str.match(/rgba?\([^)]*,\s*([\d.]+)\s*\)$/);
+  if (legacyMatch) {
+    return isZeroAlpha(legacyMatch[1]);
+  }
+
+  return false;
 }
 
 // Traverses the DOM to find the effective background color.
@@ -83,6 +102,10 @@ export default function checkColorContrast(elements = [], config = {}) {
     const styles = window.getComputedStyle(el);
     const fontSize = parseFloat(styles.fontSize) || 0;
     const fontWeight = parseInt(styles.fontWeight, 10) || 400;
+
+    // WCAG 2.1 Large Text Definition:
+    // Bold text >= 14pt (≈ 18.66px), Normal text >= 18pt (≈ 24px)
+    // Large text requires contrast ratio of 3:1, Normal text requires 4.5:1
     const isLargeText = fontSize >= 24 || (fontSize >= 18.66 && fontWeight >= 700);
     const requiredContrast = isLargeText ? 3.0 : minContrast;
 

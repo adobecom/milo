@@ -679,18 +679,19 @@ img[data-alt-check]::after {
 
 /* Violations Section */
 
-.success {
-  font-size: 16px;
-  font-weight: bold;
-  color: green;
-  margin-bottom: 6px;
-}
-
+.success,
 .violations {
   font-size: 16px;
   font-weight: bold;
-  color: red;
   margin-bottom: 6px;
+}
+
+.success {
+  color: green;
+}
+
+.violations {
+  color: red;
 }
 
 .violation-list {

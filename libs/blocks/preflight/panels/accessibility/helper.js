@@ -22,7 +22,7 @@ export function getUniqueSelector(el) {
  * @returns {HTMLElement[]} - Filtered DOM elements.
  */
 export function getFilteredElements(includeSelectors = ['body'], excludeSelectors = []) {
-  const includedElements = includeSelectors.flatMap((selector) => Array.from(document.querySelectorAll(`${selector} *`)));
+  const includedElements = includeSelectors.flatMap((selector) => Array.from(document.querySelectorAll(`${selector},  ${selector} *`)));
 
   if (excludeSelectors.length === 0) return includedElements;
 

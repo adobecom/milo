@@ -23,21 +23,11 @@ const customChecksConfig = {
  */
 async function runAccessibilityTest() {
   try {
-    window.lana.log(`Running Accessibility test on: ${window.location.href}`);
-
     const results = await window.axe.run(axeCoreConfig);
-
-    window.lana.log(
-      `Axe-core Accessibility Test Completed. Violations Found: ${results.violations.length}`,
-    );
 
     const customViolations = await customAccessibilityChecks(customChecksConfig);
 
     results.violations.push(...customViolations);
-
-    window.lana.log(
-      `Custom Accessibility Checks Completed. Violations Found: ${customViolations.length}`,
-    );
 
     return {
       pass: results.violations.length === 0,
@@ -130,7 +120,7 @@ export default function Accessibility() {
               <ul class="summary-list">
                 <li><strong>Page:</strong> <a href="${url}" target="_blank">${url}</a></li>
                 <li><strong>Test Scope:</strong> body</li>
-                <li><strong>WCAG Tags:</strong> ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']</li>
+                <li><strong>WCAG Tags:</strong> ${axeCoreConfig.runOnly?.values?.join(', ') || 'NONE'}</li>
               </ul>
             </div>
           </div>
