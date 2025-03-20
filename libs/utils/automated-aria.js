@@ -114,29 +114,25 @@ const getHeadersOutsideContainers = (block, containers) => {
   return allHeaders.filter((h) => !containedHeaders.includes(h));
 };
 
-// Helper to check if headers are valid (having multiple headers of the same level)
-const areHeadersValid = (headers) => {
-  const hasMultipleSameLevel = headers.length > 1
-    && new Set(headers.map((h) => h.tagName.toLowerCase())).size < headers.length;
-  return !hasMultipleSameLevel;
-};
-
 // Helper to assign ARIA label based on product or header
 const assignAriaLabel = (
   cta,
-  scope,
   headers,
   productNames,
   textsToAddProductNames,
   textsToAddHeaders,
   textBeforeHeader,
 ) => {
-  if (!areHeadersValid(headers)) return false;
+  // Filter out all headers of a level if there are multiple of that level
+  const filteredHeaders = headers.filter((header) => {
+    const level = header.tagName.toLowerCase();
+    return headers.filter((h) => h.tagName.toLowerCase() === level).length === 1;
+  });
 
   const buttonText = cta.textContent.trim().toLowerCase();
   const productInCTA = cta.classList.contains('modal') ? ''
     : getProduct(cta.href.replace('-', ' '), productNames);
-  const allContent = [...headers, textBeforeHeader].filter(Boolean);
+  const allContent = [...filteredHeaders, textBeforeHeader].filter(Boolean);
 
   if (textsToAddProductNames.includes(buttonText)) {
     const productHeader = allContent.find((header) => {
@@ -148,7 +144,7 @@ const assignAriaLabel = (
     if (productHeader) {
       const productName = getProduct(productHeader.textContent?.trim()
         || productHeader, productNames);
-      cta.setAttribute('aria-label', `${cta.textContent} - ${productName}`);
+      cta.setAttribute('aria-label', `${cta.textContent} ${productName}`);
       return true;
     }
   }
@@ -174,7 +170,6 @@ export const addAriaLabelToCTA = (cta, productNames, textsToAddProductNames, tex
   if (isInContainer) {
     assignAriaLabel(
       cta,
-      ctaContainer,
       getHeaders(ctaContainer),
       productNames,
       textsToAddProductNames,
@@ -186,7 +181,6 @@ export const addAriaLabelToCTA = (cta, productNames, textsToAddProductNames, tex
   const uncontainedHeaders = getHeadersOutsideContainers(block, containers);
   if (uncontainedHeaders.length && assignAriaLabel(
     cta,
-    block,
     uncontainedHeaders,
     productNames,
     textsToAddProductNames,
@@ -197,7 +191,6 @@ export const addAriaLabelToCTA = (cta, productNames, textsToAddProductNames, tex
   const textBeforeHeader = getTextBeforeHeader(block);
   assignAriaLabel(
     cta,
-    block,
     getHeaders(block),
     productNames,
     textsToAddProductNames,
@@ -263,24 +256,6 @@ export default async function addAriaLabels() {
     addAriaLabelToCTA(cta, productNames.data, textsToAddProductNames, textsToAddHeaders);
     if (cta.hasAttribute('aria-label')) {
       modifiedCTAs.push(cta);
-    }
-  });
-
-  // Check for aria-label consistency only for CTAs we just modified
-  const allLinks = Array.from(document.querySelectorAll('a[href]'));
-  modifiedCTAs.forEach((cta) => {
-    const href = cta.getAttribute('href');
-    const ariaLabel = cta.getAttribute('aria-label');
-    if (!href || !ariaLabel) return;
-
-    const sameHrefLinks = allLinks.filter((link) => link.getAttribute('href') === href);
-    const hasInconsistentLabel = sameHrefLinks.some((link) => {
-      const linkLabel = link.getAttribute('aria-label');
-      return linkLabel && linkLabel.toLowerCase() !== ariaLabel.toLowerCase();
-    });
-
-    if (hasInconsistentLabel) {
-      cta.removeAttribute('aria-label');
     }
   });
 }
