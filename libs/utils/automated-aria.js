@@ -105,13 +105,12 @@ export const findBlockContainers = (container) => {
 };
 
 // Retrieves all h1-h6 headers within container.
-export const getHeaders = (container) => findBlockContainers(container)
-  .flatMap((component) => Array.from(component.querySelectorAll('h1, h2, h3, h4, h5, h6')));
+export const getHeaders = (container) => Array.from(container.querySelectorAll('h1, h2, h3, h4, h5, h6'));
 
 // Helper to get headers outside containers
 const getHeadersOutsideContainers = (block, containers) => {
-  const allHeaders = Array.from(block.querySelectorAll('h1, h2, h3, h4, h5, h6'));
-  const containedHeaders = containers.flatMap((c) => Array.from(c.querySelectorAll('h1, h2, h3, h4, h5, h6')));
+  const allHeaders = getHeaders(block);
+  const containedHeaders = containers.flatMap((c) => getHeaders(c));
   return allHeaders.filter((h) => !containedHeaders.includes(h));
 };
 
@@ -149,14 +148,14 @@ const assignAriaLabel = (
     if (productHeader) {
       const productName = getProduct(productHeader.textContent?.trim()
         || productHeader, productNames);
-      cta.setAttribute('aria-label', `vhargrave-${cta.textContent} - ${productName}`);
+      cta.setAttribute('aria-label', `${cta.textContent} - ${productName}`);
       return true;
     }
   }
 
   if (textsToAddHeaders.includes(buttonText) && allContent.length) {
     const headerText = allContent[0].textContent?.trim() || allContent[0];
-    cta.setAttribute('aria-label', `vhargrave-${cta.textContent} - ${headerText}`);
+    cta.setAttribute('aria-label', `${cta.textContent} - ${headerText}`);
     return true;
   }
 
