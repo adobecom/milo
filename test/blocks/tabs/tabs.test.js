@@ -171,12 +171,14 @@ describe('tabs', () => {
       expect(linkedTabsList).to.deep.equal({ 'tab-1-demo': '/testpage-1' });
     });
 
-    it('has the attribute daa-state="true" on tab buttons', () => {
+    it('tab buttons should have the attribute daa-state="true" and a daa-ll attribute', () => {
       const tablist = allTabs[0].querySelector('div[role="tablist"]');
       const buttonList = tablist.querySelectorAll('button');
       buttonList.forEach((button) => {
         expect(button.getAttribute('daa-state')).to.equal('true');
+        expect(button.getAttribute('daa-ll')).to.exist;
       });
+      expect(document.querySelector('#tab-2-tab-b').getAttribute('daa-ll')).to.equal('tab-Tab B-2');
     });
   });
 });
