@@ -23,20 +23,23 @@ const MARK_READY = 'mas:ready';
  */
 export class MasCommerceService extends HTMLElement {
     static instance;
-    promise = null;
+    readyPromise = null;
+
     lastLoggingTime = 0;
     get #config() {
+        const env = this.getAttribute('env') ?? 'prod';
         const config = {
-            hostEnv: { name: this.getAttribute('host-env') ?? 'prod' },
-            commerce: { env: this.getAttribute('env') },
+            hostEnv: { name: env },
+            commerce: { env },
             lana: {
                 tags: this.getAttribute('lana-tags'),
                 sampleRate: parseInt(
                     this.getAttribute('lana-sample-rate') ?? 1,
                     10,
                 ),
-                isProdDomain: this.getAttribute('host-env') === 'prod',
+                isProdDomain: env === 'prod',
             },
+            masIOUrl: this.getAttribute('mas-io-url'),
         };
         //root parameters
         ['locale', 'country', 'language'].forEach((attribute) => {
@@ -80,7 +83,7 @@ export class MasCommerceService extends HTMLElement {
         };
     }
 
-    async activate() {
+    async activate(resolve) {
         const config = this.#config;
         // Load settings and literals
         const settings = Object.freeze(getSettings(config));
@@ -152,6 +155,7 @@ export class MasCommerceService extends HTMLElement {
                 MARK_READY,
             )?.duration;
             this.dispatchEvent(event);
+            resolve(this);
         });
         setTimeout(() => {
             this.logFailedRequests();
@@ -159,10 +163,8 @@ export class MasCommerceService extends HTMLElement {
     }
 
     connectedCallback() {
-        if (!this.readyPromise) {
-            performance.mark(MARK_START);
-            this.readyPromise = this.activate();
-        }
+      performance.mark(MARK_START);
+      this.readyPromise = new Promise((resolve) => this.activate(resolve));
     }
 
     disconnectedCallback() {
@@ -171,12 +173,12 @@ export class MasCommerceService extends HTMLElement {
 
     flushWcsCache() {
         /* c8 ignore next 3 */
-        this.flushWcsCache();
+        this.flushWcsCacheInternal();
         this.log.debug('Flushed WCS cache');
     }
 
     refreshOffers() {
-        this.flushWcsCache();
+        this.flushWcsCacheInternal();
         document
             .querySelectorAll(SELECTOR_MAS_ELEMENT)
             .forEach((el) => el.requestUpdate(true));
@@ -185,7 +187,7 @@ export class MasCommerceService extends HTMLElement {
     }
 
     refreshFragments() {
-        this.flushWcsCache();
+        this.flushWcsCacheInternal();
         document.querySelectorAll('aem-fragment').forEach((el) => el.refresh());
         this.log.debug('Refreshed AEM fragments');
         this.logFailedRequests();

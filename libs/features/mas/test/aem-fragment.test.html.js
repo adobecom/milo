@@ -1,6 +1,5 @@
 import { runTests } from '@web/test-runner-mocha';
 import chaiAsPromised from '@esm-bundle/chai-as-promised';
-import sinon from 'sinon';
 import chai, { expect } from '@esm-bundle/chai';
 
 import { mockFetch } from './mocks/fetch.js';
@@ -45,10 +44,10 @@ function getSelectorElement(root, selector) {
 runTests(async () => {
     await mas();
     const [cc, photoshop] = await Promise.all([
-        fetch('mocks/sites/cf/fragments/fragment-cc-all-apps.json').then(
+        fetch('mocks/sites/fragments/fragment-cc-all-apps.json').then(
             (res) => res.json(),
         ),
-        fetch('mocks/sites/cf/fragments/fragment-photoshop.json').then((res) =>
+        fetch('mocks/sites/fragments/fragment-photoshop.json').then((res) =>
             res.json(),
         ),
     ]);
@@ -67,10 +66,19 @@ runTests(async () => {
         it('has fragment cache', async () => {
             expect(cache).to.exist;
             expect(cache.has('id123')).to.false;
-            cache.add({ id: 'id123', test: 1 });
+            cache.add('id123', { id: 'id123', test: 1 });
             expect(cache.has('id123')).to.true;
             cache.clear();
             expect(cache.has('id123')).to.false;
+        });
+
+        it('caches localized fragment by requested(en_US) id', async () => {
+          expect(cache).to.exist;
+          expect(cache.has('id123en_US')).to.false;
+          cache.addByRequestedId('id123en_US', { id: 'id567', test: 1 });
+          expect(cache.has('id123en_US')).to.true;
+          cache.clear();
+          expect(cache.has('id123en_US')).to.false;
         });
 
         it('renders a merch card from cache', async () => {
@@ -112,8 +120,7 @@ runTests(async () => {
             expect(footerSlot).to.exist;
             footerSlot.setAttribute('test', 'true');
 
-            await aemFragment.refresh(true);
-            await aemFragment.updateComplete;
+            await aemFragment.refresh();
             const after = ccCard.innerHTML;
 
             expect(before).to.equal(after);
@@ -134,7 +141,7 @@ runTests(async () => {
             expect(initialData).to.exist;
 
             // Trigger a refresh which should now fail
-            await aemFragment.refresh(true);
+            await aemFragment.refresh();
             await delay(100);
             await aemFragment.updateComplete;
 
@@ -150,15 +157,19 @@ runTests(async () => {
             const [, , , cardWithMissingPath] = getTemplateContent('cards');
 
             let masErrorTriggered = false;
-            cardWithMissingPath.addEventListener('mas:error', () => {
+            cardWithMissingPath.addEventListener('mas:error', (e) => {
+              if (e.target.tagName === 'MERCH-CARD') {
                 masErrorTriggered = true;
+              }
             });
 
             const aemFragment =
                 cardWithMissingPath.querySelector('aem-fragment');
             let aemErrorTriggered = false;
-            aemFragment.addEventListener('aem:error', () => {
+            aemFragment.addEventListener('aem:error', (e) => {
+              if (e.target.tagName === 'AEM-FRAGMENT') {
                 aemErrorTriggered = true;
+              }
             });
 
             spTheme.append(cardWithMissingPath);
@@ -174,23 +185,15 @@ runTests(async () => {
             const [, , , , , cardWithWrongOsis] = getTemplateContent('cards');
 
             let masErrorTriggered = false;
-            cardWithWrongOsis.addEventListener(EVENT_MAS_ERROR, () => {
+            cardWithWrongOsis.addEventListener(EVENT_MAS_ERROR, (e) => {
                 masErrorTriggered = true;
             });
 
             spTheme.append(cardWithWrongOsis);
-            await delay(1800);
+            const aemFragment = cardWithWrongOsis.querySelector('aem-fragment');
+            await aemFragment.updateComplete;
+            await cardWithWrongOsis.checkReady();
             expect(masErrorTriggered).to.true;
-        });
-
-        it('uses ims token to retrieve a fragment', async () => {
-            const [, , , , cardWithIms] = getTemplateContent('cards');
-            const aemFragment = cardWithIms.querySelector('aem-fragment');
-            window.adobeid = { authorize: sinon.stub() };
-            spTheme.append(cardWithIms);
-
-            expect(aemFragment.updateComplete);
-            sinon.assert.calledOnce(window.adobeid.authorize);
         });
 
         it('renders ccd slice card', async () => {
@@ -217,17 +220,20 @@ runTests(async () => {
     });
 
     describe('getFragmentById', async () => {
+        const masCommerceService = {
+          settings: {
+            env: 'stage',
+            locale: 'fr_FR',
+            wcsApiKey: 'testApiKey',
+          }
+        }
         beforeEach(async () => {
             await mockFetch(withAem);
             cache.clear();
         });
 
         it('throws an error if response is not ok', async () => {
-            const promise = getFragmentById(
-                'http://localhost:2023',
-                'notfound',
-                false,
-            );
+            const promise = getFragmentById('notfound');
             try {
                 await promise;
                 expect.fail('Promise should have been rejected');
@@ -237,30 +243,17 @@ runTests(async () => {
                 expect(error.context).to.have.property('startTime');
                 expect(error.context).to.include({
                     status: 404,
-                    url: 'http://localhost:2023/adobe/sites/fragments/notfound',
+                    url: 'http://localhost:2023/test/notfound',
                 });
             }
         });
 
-        it('fetches fragment from author endpoint', async () => {
-            const promise = getFragmentById(
-                'http://localhost:2023',
-                'fragment-cc-all-apps',
-                true,
-            );
-            expect(fetch.lastCall.firstArg).to.equal(
-                'http://localhost:2023/adobe/sites/cf/fragments/fragment-cc-all-apps',
-            );
-        });
-
         it('fetches fragment from freyja on publish', async () => {
-            const promise = getFragmentById(
-                'http://localhost:2023',
-                'fragment-cc-all-apps',
-                false,
-            );
+            const endpoint = 'https://www.stage.adobe.com/mas/io/fragment?id=fragment-cc-all-apps&api_key=testApiKey&locale=fr_FR'
+            const promise = getFragmentById(endpoint);
+            await promise;
             expect(fetch.lastCall.firstArg).to.equal(
-                'http://localhost:2023/adobe/sites/fragments/fragment-cc-all-apps',
+                'https://www.stage.adobe.com/mas/io/fragment?id=fragment-cc-all-apps&api_key=testApiKey&locale=fr_FR',
             );
         });
     });

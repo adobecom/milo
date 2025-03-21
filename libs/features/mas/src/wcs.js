@@ -175,9 +175,9 @@ export function Wcs({ settings }) {
     }
 
     /**
-     * Flushes WCS cache but keeps items in stale cache for fallback
+     * Flushes cache but keeps items in stale cache for fallback
      */
-    function flushWcsCache() {
+    function flushWcsCacheInternal() {
         const size = cache.size;
         // Store current cache as stale cache instead of clearing it
         staleCache = new Map(cache);
@@ -255,6 +255,6 @@ export function Wcs({ settings }) {
         WcsPlanType,
         WcsTerm,
         resolveOfferSelectors,
-        flushWcsCache,
+        flushWcsCacheInternal,
     };
 }

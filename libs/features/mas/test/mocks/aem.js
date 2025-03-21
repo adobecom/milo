@@ -2,10 +2,8 @@ import { HEADER_X_REQUEST_ID } from "../../src/constants.js";
 
 export async function withAem(fetch) {
   const requestCounts = {};
-    return async ({ pathname, headers }) => {
-        const isPublish = /\/sites\/fragments\//.test(pathname);
-        const isAuthor = /cf\/fragments\//.test(pathname);
-        if (isPublish || isAuthor) {
+    return async ({ pathname, headers, searchParams }) => {
+        if (/\/mas\/io\/fragment/.test(pathname)) {
             // Get the request ID from the incoming request headers
             const requestId = headers?.[HEADER_X_REQUEST_ID];
 
@@ -19,7 +17,7 @@ export async function withAem(fetch) {
                 }
             };
 
-            const fragmentId = pathname.split('/').pop().replace('.json', '');
+            const fragmentId = searchParams.get('id');
 
             // Track requests for fragment-cc-all-apps2 to simulate failure on second request
             if (fragmentId === 'fragment-cc-all-apps2') {
@@ -45,11 +43,7 @@ export async function withAem(fetch) {
                     headers: responseHeaders,
                 });
             }
-            return await fetch(
-                isAuthor
-                    ? `/test/mocks/sites/cf/fragments/${fragmentId}.json`
-                    : `/test/mocks/sites/fragments/${fragmentId}.json`,
-            ).then((res) => {
+            return await fetch(`/test/mocks/sites/fragments/${fragmentId}.json`).then((res) => {
                 if (res.ok) return res;
                 throw new Error(
                     `Failed to fetch fragment: ${res.status} ${res.statusText}`,

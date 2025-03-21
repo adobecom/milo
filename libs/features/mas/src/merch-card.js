@@ -130,6 +130,7 @@ export class MerchCard extends LitElement {
      */
     variantLayout;
     log = undefined;
+    readyEventDispatched = false;
 
     constructor() {
         super();
@@ -151,7 +152,8 @@ export class MerchCard extends LitElement {
     firstUpdated() {
         this.variantLayout = getVariantLayout(this, false);
         this.variantLayout?.connectedCallbackHook();
-        this.aemFragment?.updateComplete.catch(() => {
+        this.aemFragment?.updateComplete.catch((e) => {
+            this.#fail(e, {}, false);
             this.style.display = 'none';
         });
     }
@@ -362,14 +364,15 @@ export class MerchCard extends LitElement {
         if (e.type === EVENT_AEM_LOAD) {
             if (e.target.nodeName === 'AEM-FRAGMENT') {
                 const fragment = e.detail;
-                await hydrate(fragment, this);
-                this.checkReady();
+                hydrate(fragment, this)
+                  .then(() => this.checkReady())
+                  .catch((e) => this.log?.error(e));
             }
         }
     }
 
     #fail(error, details = {}, dispatch = true) {
-        this.log.error(`merch-card: ${error}`, details);
+        this.log?.error(`merch-card: ${error}`, details);
         this.failed = true;
         if (!dispatch) return;
         this.dispatchEvent(
@@ -382,6 +385,19 @@ export class MerchCard extends LitElement {
     }
 
     async checkReady() {
+        const timeoutPromise = new Promise((resolve) =>
+            setTimeout(() => resolve('timeout'), MERCH_CARD_LOAD_TIMEOUT),
+        );
+        if (this.aemFragment) {
+          const result = await Promise.race([this.aemFragment.updateComplete, timeoutPromise]);
+          if (result === false) {
+            const errorMessage = result === 'timeout' 
+              ? `AEM fragment was not resolved within ${MERCH_CARD_LOAD_TIMEOUT} timeout`
+              : 'AEM fragment cannot be loaded';
+              this.#fail(errorMessage, {}, false);
+              return;
+          }
+      }
         const masElements = [...this.querySelectorAll(SELECTOR_MAS_ELEMENT)];
         masElements.push(
             ...[...this.querySelectorAll(SELECTOR_MAS_SP_BUTTON)].map(
@@ -397,30 +413,22 @@ export class MerchCard extends LitElement {
                 el.classList.contains('placeholder-resolved'),
             ),
         );
-        const timeoutPromise = new Promise((resolve) =>
-            setTimeout(() => resolve('timeout'), MERCH_CARD_LOAD_TIMEOUT),
-        );
-
-        if (this.aemFragment) {
-            const aemLoad = await this.aemFragment.updateComplete;
-            if (aemLoad === false) {
-                this.#fail('AEM fragment cannot be loaded', {}, false);
-                return;
-            }
-        }
         const result = await Promise.race([successPromise, timeoutPromise]);
 
         if (result === true) {
             performance.mark(
                 `${MARK_MERCH_CARD_PREFIX}${this.id}${MARK_READY_SUFFIX}`,
             );
-            this.dispatchEvent(
+            if (!this.readyEventDispatched) {
+              this.readyEventDispatched = true;
+              this.dispatchEvent(
                 new CustomEvent(EVENT_MAS_READY, {
                     bubbles: true,
                     composed: true,
                 }),
-            );
-            return;
+              );
+            }
+            return this;
         } else {
             const { duration, startTime } = performance.measure(
                 `${MARK_MERCH_CARD_PREFIX}${this.id}${MARK_ERROR_SUFFIX}`,

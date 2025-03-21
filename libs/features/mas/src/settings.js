@@ -100,6 +100,9 @@ function getSettings(config = {}) {
         wcsURL = WCS_STAGE_URL;
     }
 
+    const masIOUrl = getParameter('mas-io-url') 
+                  ?? config.masIOUrl 
+                  ?? `https://www${env === Env.STAGE ? '.stage' : ''}.adobe.com/mas/io`;
     return {
         ...getLocaleSettings(config),
         displayOldPrice,
@@ -119,6 +122,7 @@ function getSettings(config = {}) {
         wcsApiKey,
         wcsURL,
         landscape,
+        masIOUrl,
     };
 }
 
