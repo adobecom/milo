@@ -1245,6 +1245,10 @@ async function checkForPageMods() {
 }
 
 async function loadPostLCP(config) {
+  await Promise.all([
+      loadScript('https://unpkg.com/react@18/umd/react.development.js'),
+      loadScript('https://unpkg.com/react-dom@18/umd/react-dom.development.js')
+  ]);
   const { default: loadFavIcon } = await import('./favicon.js');
   loadFavIcon(createTag, getConfig(), getMetadata);
   await decoratePlaceholders(document.body.querySelector('header'), config);
