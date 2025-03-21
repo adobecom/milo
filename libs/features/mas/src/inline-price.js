@@ -278,7 +278,7 @@ export class InlinePrice extends HTMLSpanElement {
      * Optional object with properties to use as overrides
      * over those collected from dataset of this component.
      */
-    async renderOffers(offers, overrides = {}, version = undefined) {
+    renderOffers(offers, overrides = {}, version = undefined) {
         if (!this.isConnected) return;
         // eslint-disable-next-line react-hooks/rules-of-hooks
         const service = useService();

@@ -303,7 +303,7 @@ const createPriceTemplate =
             cssClass += ' ' + cssClassNames.containerAlternative;
         }
         if (displayAnnual) {
-        cssClass += ' ' + cssClassNames.containerAnnual;
+            cssClass += ' ' + cssClassNames.containerAnnual;
         }
 
         if (toBoolean(displayFormatted)) {
