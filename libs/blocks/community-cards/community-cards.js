@@ -1,5 +1,4 @@
-import { loadStyle, loadScript } from `${window.location.origin}/libs/utils/utils.js`
-
+import { loadStyle, loadScript } from '../../utils/utils.js';
 // function loadScript(src) {
 //     return new Promise((resolve, reject) => {
 //         const script = document.createElement('script');
