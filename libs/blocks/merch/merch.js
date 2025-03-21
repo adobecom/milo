@@ -283,7 +283,7 @@ export async function fetchEntitlements() {
 
 export async function fetchCheckoutLinkConfigs(base = '', env = '') {
   const params = new URLSearchParams(window.location.search);
-  const path = params.get('use-checkout-link-sandbox') && env !== 'prod'
+  const path = params.get('checkout-link-sandbox') === 'on' && env !== 'prod'
     ? `${base}${CHECKOUT_LINK_SANDBOX_CONFIG_PATH}`
     : `${base}${CHECKOUT_LINK_CONFIG_PATH}`;
   fetchCheckoutLinkConfigs.promise = fetchCheckoutLinkConfigs.promise
