@@ -16,6 +16,6 @@ export default async function init(el) {
   ]);
   await loadComponent();
   const c = document.createElement('sp-theme');
-  el.parentElement.insertAfter(c, el);
+  el.insertAdjacentElement("afterend", c);
   c.append(el)
 }
