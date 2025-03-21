@@ -373,8 +373,8 @@
 .notification.pill.split .split-list-area .split-list-item .con-button {
   white-space: normal;
   text-align: center;
-  min-width: 80px;
-  max-width: 80px;
+  min-width: 89px;
+  max-width: 89px;
 }
 
 .notification.pill.split .split-list-area .split-list-item img {
