@@ -132,7 +132,7 @@ async function decorateLockup(lockupArea, el) {
   if (pre && pre[2] === 'icon') el.classList.replace(pre[0], `${pre[1]}-lockup`);
 }
 
-function decorateSplitList(listContent, el) {
+function decorateSplitList(listContent) {
   const listContainer = createTag('div', { class: 'split-list-area' });
   [...listContent.querySelectorAll('li')].forEach((item) => {
     const listItem = createTag('div', { class: 'split-list-item' });
@@ -141,7 +141,7 @@ function decorateSplitList(listContent, el) {
     }
     const img = item.querySelector('img');
     if (img) {
-      const textContent = createTag('div', {class: 'text-content'});
+      const textContent = createTag('div', { class: 'text-content'});
       const text = createTag('div', {}, item.innerText.trim());
       textContent.append(...[img, text]);
       listItem.prepend(textContent);
@@ -157,7 +157,7 @@ async function decorateForegroundText(el, container) {
   if (el.classList.contains('countdown-timer') && !el.classList.contains('pill') && !el.classList.contains('ribbon')) {
     await loadCDT(text, el.classList);
   }
-  if (el.classList.contains('split')) return decorateSplitList(text?.querySelector('ul'), el);
+  if (el.classList.contains('split')) return decorateSplitList(text?.querySelector('ul'));
   const iconArea = text?.querySelector('p:has(picture)');
   iconArea?.classList.add('icon-area');
   if (iconArea?.textContent.trim()) await decorateLockup(iconArea, el);
