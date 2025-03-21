@@ -839,6 +839,21 @@ export const getEntitlements = async (data) => {
   });
 };
 
+async function fetchAndSetUserCountry(config) {
+  if (!config.mep.userCountry && config.mep.countryPromise) {
+    try {
+      let userCountry = await config.mep.countryPromise;
+      if (userCountry) {
+        userCountry = userCountry === 'uk' ? 'gb' : userCountry.split('_')[0];
+        config.mep.userCountry = userCountry;
+      }
+      console.log('config.mep.userCountry', config.mep.userCountry);
+    } catch (e) {
+      log('MEP Error: Unable to get user country');
+    }
+  }
+}
+
 async function getPersonalizationVariant(
   manifestPath,
   variantNames = [],
@@ -867,7 +882,7 @@ async function getPersonalizationVariant(
     if (!name) return true;
     if (name === variantLabel?.toLowerCase()) return true;
     if (name.startsWith('param-')) return checkForParamMatch(name);
-    if (name.startsWith('usercountry')) {
+    if (name.includes('usercountry')) {
       const countryList = name.match(/\(([^)]+)\)/)?.[1]?.split(',').map((c) => (c).trim());
       if (countryList && countryList.includes(config.mep.userCountry)) {
         return true;
@@ -888,6 +903,8 @@ async function getPersonalizationVariant(
     });
     return !processedList.includes(false);
   };
+
+  await fetchAndSetUserCountry(config);
 
   const matchingVariant = variantNames.find((variant) => variantInfo[variant].some(matchVariant));
   return matchingVariant;
@@ -1133,24 +1150,23 @@ export async function applyPers({ manifests }) {
   if (!manifests?.length) return;
   let experiments = manifests;
   const config = getConfig();
+  // if (!config.mep.userCountry && config.mep.countryPromise) {
+  //   try {
+  //     let userCountry = await config.mep.countryPromise;
+  //     if (userCountry) {
+  //       userCountry = userCountry === 'uk' ? 'gb' : userCountry.split('_')[0];
+  //       config.mep.userCountry = userCountry;
+  //     }
+  //     console.log('config.mep.userCountry', config.mep.userCountry);
+  //   } catch (e) {
+  //     log('MEP Error: Unable to get user country');
+  //   }
+  // }
   for (let i = 0; i < experiments.length; i += 1) {
     experiments[i] = await getManifestConfig(
       experiments[i],
       config.mep?.variantOverride,
     );
-  }
-
-  if (!config.mep.userCountry && config.mep.countryPromise) {
-    try {
-      let userCountry = await config.mep.countryPromise;
-      if (userCountry) {
-        userCountry = userCountry === 'uk' ? 'gb' : userCountry.split('_')[0];
-        config.mep.userCountry = userCountry;
-      }
-      console.log('config.mep.userCountry', config.mep.userCountry);
-    } catch (e) {
-      log('MEP Error: Unable to get user country');
-    }
   }
   experiments = cleanAndSortManifestList(experiments, config);
   parseNestedPlaceholders(config);
