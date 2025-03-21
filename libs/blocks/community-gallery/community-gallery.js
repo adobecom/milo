@@ -19,6 +19,6 @@ export default async function init(el) {
   ]);
   await loadComponent();
   const c = createTag('sp-theme', { dir: 'rtl', scale: 'medium', color: 'light'});
-  el.insertAdjacentHTML("afterend", c);
+  el.insertAdjacentElement("afterend", c);
   c.append(el)
 }
