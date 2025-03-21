@@ -29,7 +29,7 @@ export const handle3in1IFrameEvents = ({ data: msgData }) => {
   }
   const { app, subType, data } = parsedMsg || {};
   if (app !== 'ucv3') return;
-  window.lana?.log(`3-in-1 modal: ${subType}`, LANA_OPTIONS);
+  window.lana?.log(`3-in-1 modal: ${subType}`, data, LANA_OPTIONS);
   const threeInOne = document.querySelector('.three-in-one');
   const closeBtn = threeInOne?.querySelector('.dialog-close');
   if (!threeInOne) return;
