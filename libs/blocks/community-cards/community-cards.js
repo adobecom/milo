@@ -17,7 +17,7 @@ async function loadReact() {
     renderReactApp();
 }
 
-export function init(el) {
+export async function init(el) {
   await loadReact();
   ReactDOM.render(<FeaturedPostWrapper
     locale='en-US'
