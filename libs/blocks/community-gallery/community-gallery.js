@@ -15,4 +15,7 @@ export default async function init(el) {
       loadScript(`${window.location.origin}/libs/features/spectrum-web-components/dist/theme.js`)
   ]);
   await loadComponent();
+  const c = document.createElement('sp-theme');
+  el.parentElement.insertAfter(c, el);
+  c.append(el)
 }
