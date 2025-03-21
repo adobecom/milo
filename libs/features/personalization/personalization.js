@@ -1097,12 +1097,6 @@ export function cleanAndSortManifestList(manifests, conf) {
         manifestConfig.selectedVariantName = 'default';
         manifestConfig.selectedVariant = 'default';
       }
-      if (config.mep?.countryPromise) {
-        config.mep.countryPromise.then((country) => {
-          const userCountry = country === 'uk' ? 'gb' : country.split('_')[0];
-          config.mep.userCountry = userCountry;
-        });
-      }
       parsePlaceholders(placeholderData, getConfig(), manifestConfig.selectedVariantName);
     } catch (e) {
       log(`MEP Error parsing manifests: ${e.toString()}`);
@@ -1146,8 +1140,17 @@ export async function applyPers({ manifests }) {
     );
   }
 
-  if (config.mep.countryPromise) {
-    config.mep.userCountry = await config.mep.countryPromise;
+  if (!config.mep.userCountry && config.mep.countryPromise) {
+    try {
+      let userCountry = await config.mep.countryPromise;
+      if (userCountry) {
+        userCountry = userCountry === 'uk' ? 'gb' : userCountry.split('_')[0];
+        config.mep.userCountry = userCountry;
+      }
+      console.log('config.mep.userCountry', config.mep.userCountry);
+    } catch (e) {
+      log('MEP Error: Unable to get user country');
+    }
   }
   experiments = cleanAndSortManifestList(experiments, config);
   parseNestedPlaceholders(config);
