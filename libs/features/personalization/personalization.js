@@ -758,7 +758,6 @@ export function parsePlaceholders(placeholders, config, selectedVariantName = ''
     'value',
     'other',
   ];
-  console.log('valueNames', valueNames);
   const keys = placeholders?.length ? Object.entries(placeholders[0]) : [];
   const keyVal = keys.find(([key]) => valueNames.includes(key.toLowerCase()));
   const key = keyVal?.[0];
@@ -839,7 +838,7 @@ export const getEntitlements = async (data) => {
   });
 };
 
-async function fetchAndSetUserCountry(config) {
+async function setMepUserCountry(config) {
   if (!config.mep.userCountry && config.mep.countryPromise) {
     try {
       let userCountry = await config.mep.countryPromise;
@@ -904,7 +903,7 @@ async function getPersonalizationVariant(
     return !processedList.includes(false);
   };
 
-  await fetchAndSetUserCountry(config);
+  await setMepUserCountry(config);
 
   const matchingVariant = variantNames.find((variant) => variantInfo[variant].some(matchVariant));
   return matchingVariant;

@@ -1178,6 +1178,23 @@ export function enablePersonalizationV2() {
   return !!enablePersV2 && isSignedOut();
 }
 
+async function determineUserCountry(config) {
+  const urlParams = new URLSearchParams(window.location.search);
+  const country = urlParams.get('country') || (document.cookie.split('; ').find((row) => row.startsWith('international='))?.split('=')[1]);
+  if (country) {
+    config.mep = { userCountry: country.toLowerCase() === 'uk' ? 'gb' : country.toLowerCase().split('_')[0] };
+  } else {
+    let akamaiCode = urlParams.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
+    if (akamaiCode) {
+      if (akamaiCode === 'gb') akamaiCode = 'uk';
+      config.mep = { userCountry: akamaiCode, mepgeolocation: true };
+    } else {
+      const { getAkamaiCode } = await import('../features/georoutingv2/georoutingv2.js');
+      config.mep = { countryPromise: getAkamaiCode(true) };
+    }
+  }
+}
+
 async function checkForPageMods() {
   const {
     mep: mepParam,
@@ -1200,17 +1217,7 @@ async function checkForPageMods() {
 
   if (mepgeolocation) {
     const config = getConfig();
-    const urlParams = new URLSearchParams(window.location.search);
-    let akamaiCode = urlParams.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
-    if (akamaiCode) {
-      if (akamaiCode === 'gb') akamaiCode = 'uk';
-      config.mep = { userCountry: akamaiCode, mepgeolocation: true };
-    } else {
-      import('../features/georoutingv2/georoutingv2.js')
-        .then(({ getAkamaiCode }) => {
-          config.mep = { countryPromise: getAkamaiCode(true) };
-        });
-    }
+    determineUserCountry(config);
   }
   const enablePersV2 = enablePersonalizationV2();
   const hybridPersEnabled = getMepEnablement('hybrid-pers');
