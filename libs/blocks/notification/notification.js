@@ -132,12 +132,32 @@ async function decorateLockup(lockupArea, el) {
   if (pre && pre[2] === 'icon') el.classList.replace(pre[0], `${pre[1]}-lockup`);
 }
 
+function decorateSplitList(listContent, el) {
+  const listContainer = createTag('div', { class: 'split-list-area' });
+  [...listContent.querySelectorAll('li')].forEach((item) => {
+    const listItem = createTag('div', { class: 'split-list-item' });
+    if (['STRONG', 'EM', 'A'].includes(item.lastElementChild.nodeName)) {
+      listItem.append(createTag('div', {}, item.lastElementChild));
+    }
+    const img = item.querySelector('img');
+    if (img) {
+      const textContent = createTag('div', {class: 'text-content'});
+      const text = createTag('div', {}, item.innerText.trim());
+      textContent.append(...[img, text]);
+      listItem.prepend(textContent);
+    }
+    listContainer.append(listItem);
+  });
+  listContent.replaceWith(listContainer);
+}
+
 async function decorateForegroundText(el, container) {
   const text = container?.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
   text?.classList.add('text');
   if (el.classList.contains('countdown-timer') && !el.classList.contains('pill') && !el.classList.contains('ribbon')) {
     await loadCDT(text, el.classList);
   }
+  if (el.classList.contains('split')) return decorateSplitList(text?.querySelector('ul'), el);
   const iconArea = text?.querySelector('p:has(picture)');
   iconArea?.classList.add('icon-area');
   if (iconArea?.textContent.trim()) await decorateLockup(iconArea, el);

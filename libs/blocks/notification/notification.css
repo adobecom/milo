@@ -345,6 +345,31 @@
 .notification.pill.max-width-12 { max-width: 1200px; }
 .notification.pill.max-width-auto { max-width: unset; }
 
+.notification.pill.split .text .copy-wrap,
+.notification.pill.split .split-list-area {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.notification.pill.split .split-list-area .split-list-item
+ {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.notification.pill.split .split-list-area .split-list-item .text-content {
+  display: flex;
+  gap: var(--spacing-xxs);
+  align-items: center;
+}
+
+.notification.pill.split .split-list-area .split-list-item img {
+  width: var(--icon-size-xs);
+  height: auto;
+}
+
 @media screen and (min-width: 600px) {
   .notification {
     --max-inline-size-image: 188px;
