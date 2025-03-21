@@ -365,7 +365,7 @@
 
 .notification.pill.split .split-list-area .split-list-item .text-content {
   display: flex;
-  gap: var(--spacing-xxs);
+  gap: 6px;
   align-items: center;
   font-weight: 700;
 }
