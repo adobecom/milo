@@ -14,7 +14,6 @@ async function loadReact() {
         loadScript('https://unpkg.com/react-dom@18/umd/react-dom.development.js'),
         loadScript(`${window.location.origin}/libs/blocks/community-cards/featured.bundle.js`)
     ]);
-    renderReactApp();
 }
 
 export default async function init(el) {
