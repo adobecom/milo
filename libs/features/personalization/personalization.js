@@ -747,7 +747,7 @@ export async function createMartechMetadata(placeholders, config, column) {
 /* c8 ignore start */
 export function parsePlaceholders(placeholders, config, selectedVariantName = '') {
   if (!placeholders?.length || selectedVariantName === 'default') return config;
-  const { userCountry } = config.mep;
+  const userCountry = config.mep?.userCountry;
   const valueNames = [
     selectedVariantName.toLowerCase(),
     config.mep?.prefix,
@@ -901,7 +901,9 @@ async function getPersonalizationVariant(
     return !processedList.includes(false);
   };
 
-  await setMepUserCountry(config);
+  if (config.mep?.geoLocation) {
+    await setMepUserCountry(config);
+  }
 
   const matchingVariant = variantNames.find((variant) => variantInfo[variant].some(matchVariant));
   return matchingVariant;

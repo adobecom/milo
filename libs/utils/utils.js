@@ -1187,12 +1187,13 @@ async function determineUserCountry(config) {
     let akamaiCode = urlParams.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
     if (akamaiCode) {
       if (akamaiCode === 'gb') akamaiCode = 'uk';
-      config.mep = { userCountry: akamaiCode, mepgeolocation: true };
+      config.mep = { userCountry: akamaiCode };
     } else {
       const { getAkamaiCode } = await import('../features/georoutingv2/georoutingv2.js');
       config.mep = { countryPromise: getAkamaiCode(true) };
     }
   }
+  config.mep.geoLocation = true;
 }
 
 async function checkForPageMods() {
