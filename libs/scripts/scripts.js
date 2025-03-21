@@ -72,7 +72,7 @@ const eagerLoad = (img) => {
   if (firstDiv?.classList.contains('marquee')) {
     firstDiv.querySelectorAll('img').forEach(eagerLoad);
   } else {
-    eagerLoad(document.querySelector('img'));
+    [...firstDiv.querySelectorAll('img')].forEach((i) => { eagerLoad(i); })
   }
 }());
 
