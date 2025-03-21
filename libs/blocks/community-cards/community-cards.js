@@ -19,9 +19,5 @@ async function loadReact() {
 
 export async function init(el) {
   await loadReact();
-  ReactDOM.render(`<FeaturedPostWrapper
-    locale='en-US'
-    environment='stage'
-              categoryId='ct-adobe-firefly'
-    />`, el);
+  // ReactDOM.render(`<FeaturedPostWrapper locale='en-US' environment='stage' categoryId='ct-adobe-firefly' />`, el);
 }
