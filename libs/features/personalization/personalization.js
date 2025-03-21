@@ -795,9 +795,7 @@ function trimNames(arr) {
 export function buildVariantInfo(variantNames) {
   return variantNames.reduce((acc, name) => {
     let nameArr = [name];
-    if (!name.startsWith(TARGET_EXP_PREFIX) && !name.startsWith(USER_COUNTRY)) {
-      nameArr = name.split(/,(?![^(]*\))/);
-    }
+    if (!name.startsWith(TARGET_EXP_PREFIX)) nameArr = name.split(/,(?![^(]*\))/);
     acc[name] = trimNames(nameArr);
     acc.allNames = [...acc.allNames, ...trimNames(name.split(/(?:\([^)]*\))?,|&|\bnot\b/))];
     return acc;
