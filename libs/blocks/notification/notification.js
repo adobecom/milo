@@ -141,7 +141,7 @@ function decorateSplitList(listContent) {
     }
     const img = item.querySelector('img');
     if (img) {
-      const textContent = createTag('div', { class: 'text-content'});
+      const textContent = createTag('div', { class: 'text-content' });
       const text = createTag('div', {}, item.innerText.trim());
       textContent.append(...[img, text]);
       listItem.prepend(textContent);
