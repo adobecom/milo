@@ -44,6 +44,7 @@ const MILO_BLOCKS = [
   'instagram',
   'locui',
   'locui-create',
+  'm7',
   'marketo',
   'marquee',
   'marquee-anchors',
@@ -109,7 +110,9 @@ const AUTO_BLOCKS = [
   { 'pdf-viewer': '.pdf', styles: false },
   { video: '.mp4' },
   { merch: '/tools/ost?' },
-  { 'mas-autoblock': 'mas.adobe.com/studio' },
+  { 'mas-autoblock': 'mas.adobe.com/studio', styles: false },
+  { m7: '/creativecloud/business-plans.html', styles: false },
+  { m7: '/creativecloud/education-plans.html', styles: false },
 ];
 const DO_NOT_INLINE = [
   'accordion',
@@ -1257,13 +1260,15 @@ async function loadPostLCP(config) {
   const georouting = getMetadata('georouting') || config.geoRouting;
   if (georouting === 'on') {
     const jsonPromise = fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
-    const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
-    await loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle, jsonPromise);
+    import('../features/georoutingv2/georoutingv2.js')
+      .then(({ default: loadGeoRouting }) => {
+        loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle, jsonPromise);
+      });
   }
   const header = document.querySelector('header');
   if (header) {
     header.classList.add('gnav-hide');
-    await loadBlock(header);
+    loadBlock(header);
     header.classList.remove('gnav-hide');
   }
   loadTemplate();
