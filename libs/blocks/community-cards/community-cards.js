@@ -20,8 +20,8 @@ async function loadReact() {
 export function init(el) {
   await loadReact();
   ReactDOM.render(<FeaturedPostWrapper
-    locale=‘en-US’
-    environment=‘stage’
-              categoryId=‘ct-adobe-firefly’
+    locale='en-US'
+    environment='stage'
+              categoryId='ct-adobe-firefly'
     />, el);
 }
