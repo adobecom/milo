@@ -218,6 +218,7 @@ export class AemFragment extends HTMLElement {
 
     async fetchData() {
         this.classList.remove('error');
+        this.#data = null;
         let fragment = cache.get(this.#fragmentId);
         if (fragment) {
             this.#rawData = fragment;
