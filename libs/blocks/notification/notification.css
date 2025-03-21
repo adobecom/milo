@@ -367,6 +367,7 @@
   display: flex;
   gap: var(--spacing-xxs);
   align-items: center;
+  font-weight: 700;
 }
 
 .notification.pill.split .split-list-area .split-list-item .con-button {
