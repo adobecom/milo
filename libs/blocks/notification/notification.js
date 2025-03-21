@@ -157,7 +157,10 @@ async function decorateForegroundText(el, container) {
   if (el.classList.contains('countdown-timer') && !el.classList.contains('pill') && !el.classList.contains('ribbon')) {
     await loadCDT(text, el.classList);
   }
-  if (el.classList.contains('split')) return decorateSplitList(text?.querySelector('ul'));
+  if (el.classList.contains('split')) {
+    decorateSplitList(text?.querySelector('ul'));
+    return;
+  }
   const iconArea = text?.querySelector('p:has(picture)');
   iconArea?.classList.add('icon-area');
   if (iconArea?.textContent.trim()) await decorateLockup(iconArea, el);
