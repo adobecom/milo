@@ -28,5 +28,5 @@ export function getFilteredElements(includeSelectors = ['body'], excludeSelector
 
   const excludedElements = excludeSelectors.flatMap((selector) => Array.from(document.querySelectorAll(`${selector}, ${selector} *`)));
 
-  return includedElements.filter((el) => !excludedElements.includes(el));
+  return includedElements.filter((el) => !excludedElements.some((ex) => el.isSameNode(ex)));
 }

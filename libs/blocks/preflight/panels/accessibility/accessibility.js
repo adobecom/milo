@@ -4,7 +4,7 @@ import customAccessibilityChecks from './accessibility-custom-checks.js';
 
 const axeCoreConfig = {
   include: [['body']],
-  exclude: [['.preflight'], ['header'], ['.global-navigation']],
+  exclude: [['.preflight'], ['header'], ['.global-navigation'], ['footer']],
   runOnly: {
     type: 'tag',
     values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'],
