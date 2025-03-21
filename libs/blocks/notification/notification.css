@@ -90,6 +90,10 @@
   margin: 0;
   inline-size: 100%;
 }
+.notification.pill.split .foreground {
+  padding-inline: var(--spacing-xs);
+  padding-block: var(--spacing-xs);
+}
 
 .notification.ribbon.xxs-padding .foreground {
   padding-block: var(--spacing-xxs);
