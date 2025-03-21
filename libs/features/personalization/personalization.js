@@ -1150,18 +1150,6 @@ export async function applyPers({ manifests }) {
   if (!manifests?.length) return;
   let experiments = manifests;
   const config = getConfig();
-  // if (!config.mep.userCountry && config.mep.countryPromise) {
-  //   try {
-  //     let userCountry = await config.mep.countryPromise;
-  //     if (userCountry) {
-  //       userCountry = userCountry === 'uk' ? 'gb' : userCountry.split('_')[0];
-  //       config.mep.userCountry = userCountry;
-  //     }
-  //     console.log('config.mep.userCountry', config.mep.userCountry);
-  //   } catch (e) {
-  //     log('MEP Error: Unable to get user country');
-  //   }
-  // }
   for (let i = 0; i < experiments.length; i += 1) {
     experiments[i] = await getManifestConfig(
       experiments[i],
