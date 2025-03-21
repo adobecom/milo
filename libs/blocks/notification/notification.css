@@ -349,6 +349,10 @@
 .notification.pill.max-width-12 { max-width: 1200px; }
 .notification.pill.max-width-auto { max-width: unset; }
 
+.notification.pill.split .text {
+  padding-inline-end: 0px;
+}
+
 .notification.pill.split .text .copy-wrap,
 .notification.pill.split .split-list-area {
   display: flex;
