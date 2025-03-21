@@ -72,14 +72,14 @@ runTests(async () => {
             expect(cache.has('id123')).to.false;
         });
 
-        it('caches localized fragment by en_US id', async () => {
+        it('caches localized fragment by requested(en_US) id', async () => {
           expect(cache).to.exist;
-          expect(cache.has('id123')).to.false;
-          cache.add('id123', { id: 'id567', test: 1 });
-          expect(cache.has('id123')).to.true;
+          expect(cache.has('id123en_US')).to.false;
+          cache.addByRequestedId('id123en_US', { id: 'id567', test: 1 });
+          expect(cache.has('id123en_US')).to.true;
           cache.clear();
-          expect(cache.has('id123')).to.false;
-      });
+          expect(cache.has('id123en_US')).to.false;
+        });
 
         it('renders a merch card from cache', async () => {
             cache.add(cc);
@@ -120,7 +120,7 @@ runTests(async () => {
             expect(footerSlot).to.exist;
             footerSlot.setAttribute('test', 'true');
 
-            await aemFragment.refresh(document.querySelector('mas-commerce-service'));
+            await aemFragment.refresh();
             const after = ccCard.innerHTML;
 
             expect(before).to.equal(after);
@@ -141,7 +141,7 @@ runTests(async () => {
             expect(initialData).to.exist;
 
             // Trigger a refresh which should now fail
-            await aemFragment.refresh(true);
+            await aemFragment.refresh();
             await delay(100);
             await aemFragment.updateComplete;
 

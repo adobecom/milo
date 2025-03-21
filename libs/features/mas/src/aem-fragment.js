@@ -65,10 +65,20 @@ class FragmentCache {
 
     /**
    * Add fragment to cache
-   * @param {string} fragmentId is always en_US one, even if we add french fragment. fragmentId != fragment.id 
+   * @param {string} fragmentId requested id. 
+   * requested id can differe from returned fragment.id because of translation
    */
-    add(fragmentId, fragment) {
+    addByRequestedId(fragmentId, fragment) {
       this.#fragmentCache.set(fragmentId, fragment);
+    }
+
+    add(...fragments) {
+      fragments.forEach((fragment) => {
+        const { id: fragmentId } = fragment;
+        if (fragmentId) {
+            this.#fragmentCache.set(fragmentId, fragment);
+        }
+      });
     }
 
     has(fragmentId) {
@@ -92,12 +102,14 @@ const cache = new FragmentCache();
  * @attr {string} fragment - fragment id.
  */
 export class AemFragment extends HTMLElement {
-  cache = cache;
+    cache = cache;
     #log = Log.module(AEM_FRAGMENT_TAG_NAME);
 
     #rawData = null;
+    #data = null;
     #stale = false;
     #startMark = null;
+    #service = null;
     
     /**
      * @type {string} fragment id
@@ -116,7 +128,7 @@ export class AemFragment extends HTMLElement {
     #author = false;
 
     static get observedAttributes() {
-        return [ATTRIBUTE_FRAGMENT];
+        return [ATTRIBUTE_FRAGMENT, ATTRIBUTE_AUTHOR];
     }
 
     constructor() {
@@ -130,7 +142,7 @@ export class AemFragment extends HTMLElement {
             this.#fragmentId = newValue;
         }
         if (name === ATTRIBUTE_AUTHOR) {
-          this.#author = ['', 'true'].includes(newValue);
+            this.#author = ['', 'true'].includes(newValue);
         }
     }
 
@@ -142,11 +154,18 @@ export class AemFragment extends HTMLElement {
         this.#startMark = `${AEM_FRAGMENT_TAG_NAME}:${this.#fragmentId}${MARK_START_SUFFIX}`;
         performance.mark(this.#startMark);
         this.#readyPromise = new Promise((resolve, reject) => {
-          this.dispose = discoverService((masCommerceService) => this.refresh(masCommerceService, resolve, reject));
+          this.dispose = discoverService((masCommerceService) => this.activate(masCommerceService, resolve, reject));
         });
     }
 
-    async refresh(service, resolve, reject, flushCache = true) {
+    async activate(masCommerceService, resolve, reject) {
+      this.#service = masCommerceService;
+      this.refresh(false)
+        .then((result) => resolve(result))
+        .catch((e)=> reject(e));
+    }
+
+    async refresh(flushCache = true) {
         if (this.#fetchPromise) {
             const ready = await Promise.race([
                 this.#fetchPromise,
@@ -158,7 +177,7 @@ export class AemFragment extends HTMLElement {
             cache.remove(this.#fragmentId);
         }
 
-        this.#fetchPromise = this.fetchData(service).then(() => {
+        this.#fetchPromise = this.fetchData().then(() => {
                 this.dispatchEvent(
                     new CustomEvent(EVENT_AEM_LOAD, {
                         detail: { ...this.data, stale: this.#stale },
@@ -166,20 +185,18 @@ export class AemFragment extends HTMLElement {
                         composed: true,
                     }),
                 );
-                if (resolve) resolve(this);
                 return true;
             })
             .catch((e) => {
                 if (this.#rawData) {
-                    cache.add(this.#fragmentId, this.#rawData);
+                    cache.addByRequestedId(this.#fragmentId, this.#rawData);
                     return true;
                 }
                 this.#readyPromise = null;
                 this.#fail(e);
-                if (reject) reject(e);
                 return false;
             });
-      return this.#fetchPromise;
+        return this.#fetchPromise;
     }
 
     #fail({ message, context }) {
@@ -194,15 +211,16 @@ export class AemFragment extends HTMLElement {
         );
     }
 
-    async fetchData(service) {
+    async fetchData() {
         this.classList.remove('error');
+        this.#data = null;
         let fragment = cache.get(this.#fragmentId);
         if (fragment) {
             this.#rawData = fragment;
             return;
         }
         this.#stale = true;
-        const { masIOUrl, wcsApiKey, locale } = service.settings;
+        const { masIOUrl, wcsApiKey, locale } = this.#service.settings;
         const endpoint = `${masIOUrl}/fragment?id=${this.#fragmentId}&api_key=${wcsApiKey}&locale=${locale}`;
         
         fragment = await getFragmentById(
@@ -210,7 +228,7 @@ export class AemFragment extends HTMLElement {
             this.#fragmentId,
             this.#startMark,
         );
-        cache.add(this.#fragmentId, fragment);
+        cache.addByRequestedId(this.#fragmentId, fragment);
         this.#rawData = fragment;
         this.#stale = false;
     }
@@ -223,15 +241,18 @@ export class AemFragment extends HTMLElement {
     }
 
     get data() {
+      if (this.#data) return this.#data;
       if (this.#author) {
-          return this.#transformAuthorData();
+        this.transformAuthorData();
+      } else {
+        this.transformPublishData();
       }
-      return this.#transformPublishData();;
+      return this.#data;
     }
 
-    #transformAuthorData() {
+    transformAuthorData() {
         const { fields, id, tags } = this.#rawData;
-        return fields.reduce(
+        this.#data = fields.reduce(
             (acc, { name, multiple, values }) => {
                 acc.fields[name] = multiple ? values : values[0];
                 return acc;
@@ -240,9 +261,9 @@ export class AemFragment extends HTMLElement {
         );
     }
 
-    #transformPublishData() {
+    transformPublishData() {
         const { fields, id, tags } = this.#rawData;
-        return Object.entries(fields).reduce(
+        this.#data = Object.entries(fields).reduce(
             (acc, [key, value]) => {
                 acc.fields[key] = value?.mimeType ? value.value : (value ?? '');
                 return acc;

@@ -364,14 +364,15 @@ export class MerchCard extends LitElement {
         if (e.type === EVENT_AEM_LOAD) {
             if (e.target.nodeName === 'AEM-FRAGMENT') {
                 const fragment = e.detail;
-                await hydrate(fragment, this);
-                this.checkReady();
+                hydrate(fragment, this)
+                  .then(() => this.checkReady())
+                  .catch((e) => this.log?.error(e));
             }
         }
     }
 
     #fail(error, details = {}, dispatch = true) {
-        this.log.error(`merch-card: ${error}`, details);
+        this.log?.error(`merch-card: ${error}`, details);
         this.failed = true;
         if (!dispatch) return;
         this.dispatchEvent(
