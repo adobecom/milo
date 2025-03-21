@@ -11,9 +11,11 @@ describe('MEP Utils', () => {
       setTimeout(() => {
         const persEnabled = getMepEnablement('personalization');
         const promoEnabled = getMepEnablement('manifestnames', 'promo');
+        const ajoEnabled = getMepEnablement('ajo');
         const targetEnabled = getMepEnablement('target');
         expect(promoEnabled).to.equal(false);
         expect(persEnabled).to.equal(false);
+        expect(ajoEnabled).to.equal(false);
         expect(targetEnabled).to.equal('postlcp');
       }, 1000);
     });

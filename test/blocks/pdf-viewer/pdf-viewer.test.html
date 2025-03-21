@@ -1,0 +1,58 @@
+<html>
+  <head>
+    <script type="importmap">
+      {
+        "imports": {
+          "../../../libs/utils/utils.js": "./mocks/pdf-utils.js"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <a href="https://main--milo--adobecom.hlx.page/drafts/pdf-viewsdk/foo.pdf"></a>
+  </body>
+  <script type="module">
+    import { runTests } from '@web/test-runner-mocha';
+    import { readFile } from '@web/test-runner-commands';
+    import { expect } from '@esm-bundle/chai';
+    import { stub } from 'sinon';
+    import { waitForElement } from '../../helpers/waitfor.js';
+    import { setConfig, getConfig, loadScript } from '../../../libs/utils/utils.js';
+    import { default as pdfViewer } from "../../../libs/blocks/pdf-viewer/pdf-viewer.js"
+
+    runTests(() => {
+      describe('PDF Viewer', () => {
+        before(() => {
+          setConfig({ env: {
+            pdfViewerClientId: 'foo',
+            pdfViewerReportSuite: 'bar',
+          }});
+        });
+
+        it('does not render when there are no pdf links', async () => {
+          await pdfViewer(undefined);
+          expect(document.querySelectorAll('.pdf-container').length).to.equal(0);
+        });
+
+        it('renders PDFs embedded onto the page', async () => {
+          await pdfViewer(document.querySelector('a'));
+          expect(document.querySelector('.pdf-container')).to.exist;
+        });
+
+        it('initializes viewer when hidden section becomes visible', async () => {
+          document.body.innerHTML = `
+            <div class="section hide-block form-success">
+              <a href="test.pdf">PDF Link</a>
+            </div>
+          `;
+          const link = document.querySelector('a');
+          const hiddenSection = document.querySelector('.section.hide-block.form-success');
+          await pdfViewer(link);
+          hiddenSection.classList.remove('hide-block');
+          const pdf = await waitForElement('.pdf-container');
+          expect(pdf).to.exist;
+        });
+      });
+    });
+  </script>
+</html>
