@@ -1,4 +1,5 @@
 import { createTag } from '../../utils/utils.js';
+import { getMetadata } from '../section-metadata/section-metadata.js';
 
 const ALLOWED_MESSAGE_ORIGINS = [
   'https://stage.plan.adobe.com',
@@ -47,6 +48,31 @@ export default function init(el) {
 
   const iframe = createTag('iframe', { src: linkHref, allowfullscreen: true });
   const embed = createTag('div', { class: `milo-iframe ${classes}` }, iframe);
+  iframe.onload = () => {
+    const iframeOrigin = new URL(iframe.src).origin;
+
+    if (iframeOrigin !== window.location.origin) {
+      fetch(linkHref)
+        .then((response) => response.text())
+        .then((html) => {
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, 'text/html');
+          const header = doc.querySelector('h1, h2, h3, h4, h5, h6')?.textContent;
+          if (header) iframe.title = header;
+        });
+      return;
+    }
+
+    const frameDoc = iframe.contentWindow.document;
+    const heading = frameDoc.querySelector('h1, h2, h3, h4, h5, h6');
+
+    if (heading) {
+      iframe.title = heading.textContent;
+    } else {
+      const metaDataElement = el.parentElement.querySelector('.modal-metadata');
+      if (metaDataElement) iframe.title = getMetadata(metaDataElement)?.title.text;
+    }
+  };
 
   el.insertAdjacentElement('afterend', embed);
   el.remove();
