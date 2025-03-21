@@ -1,4 +1,4 @@
-import { loadStyle, loadScript } from '../../utils/utils.js';
+import { loadStyle, loadScript, createTag } from '../../utils/utils.js';
 
 
 async function loadComponent() {
@@ -18,7 +18,7 @@ export default async function init(el) {
       loadScript(`${window.location.origin}/libs/blocks/community-gallery/spectrum-theme.js`)
   ]);
   await loadComponent();
-  const c = document.createElement('sp-theme');
-  el.insertAdjacentElement("afterend", c);
+  const c = createTag('sp-theme', { dir: 'rtl', scale: 'medium', color: 'light'});
+  el.insertAdjacentHTML("afterend", c);
   c.append(el)
 }
