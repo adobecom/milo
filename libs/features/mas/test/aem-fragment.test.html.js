@@ -120,8 +120,7 @@ runTests(async () => {
             expect(footerSlot).to.exist;
             footerSlot.setAttribute('test', 'true');
 
-            await aemFragment.refresh(true);
-            await aemFragment.updateComplete;
+            await aemFragment.refresh(document.querySelector('mas-commerce-service'));
             const after = ccCard.innerHTML;
 
             expect(before).to.equal(after);
@@ -244,7 +243,7 @@ runTests(async () => {
                 expect(error.context).to.have.property('startTime');
                 expect(error.context).to.include({
                     status: 404,
-                    url: 'http://localhost:2023/adobe/sites/fragments/notfound',
+                    url: 'http://localhost:2023/test/notfound',
                 });
             }
         });

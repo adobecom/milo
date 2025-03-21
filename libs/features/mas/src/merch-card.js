@@ -152,7 +152,8 @@ export class MerchCard extends LitElement {
     firstUpdated() {
         this.variantLayout = getVariantLayout(this, false);
         this.variantLayout?.connectedCallbackHook();
-        this.aemFragment?.updateComplete.catch(() => {
+        this.aemFragment?.updateComplete.catch((e) => {
+            this.#fail(e, {}, false);
             this.style.display = 'none';
         });
     }

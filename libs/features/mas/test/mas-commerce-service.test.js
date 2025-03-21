@@ -107,6 +107,7 @@ describe('commerce service', () => {
                 });
                 expect(el.settings).to.deep.contains({
                     locale: 'fr_CA',
+                    masIOUrl: 'https://www.stage.adobe.com/mas/io',
                     language: 'es',
                     country: 'CA',
                     env: 'STAGE',
@@ -135,6 +136,7 @@ describe('commerce service', () => {
                     landscape: 'PUBLISHED',
                     language: 'en',
                     locale: 'en_US',
+                    masIOUrl: 'https://www.adobe.com/mas/io',
                     modal: false,
                     promotionCode: '',
                     quantity: [1],

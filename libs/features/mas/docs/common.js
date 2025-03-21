@@ -1,5 +1,3 @@
-const MAS_IO_URL = 'mas-io-url';
-
 let polyfillsPromise;
 export async function polyfills() {
   if (polyfillsPromise) return polyfillsPromise;
@@ -72,12 +70,6 @@ const init = async () => {
   await polyfills();
   await import('../dist/mas.js');
   const params = new URLSearchParams(document.location.search);
-  if (params.get(MAS_IO_URL)) {
-    const meta = document.createElement('meta');
-    meta.name = MAS_IO_URL;
-    meta.content = params.get(MAS_IO_URL);
-    document.head.appendChild(meta);
-  }
 
   // theme
   toggleTheme(params.get('theme') ?? 'light');

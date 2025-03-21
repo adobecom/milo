@@ -28,10 +28,11 @@
             }
         </script>
         <script type="module" src="./mas-sidenav.js"></script>
-        <script type="module" src="../../../deps/custom-elements.js"></script>
-        <script type="module" src="../dist/mas.js"></script>
+        <script type="module">
+          import { init } from './common.js';
+          init();
+        </script>
         <script type="module" src="../../../features/spectrum-web-components/dist/button.js"></script>
-        <mas-commerce-service lana-tags="nala"></mas-commerce-service>
     </head>
 
     <body class="spectrum spectrum--medium spectrum--light">
@@ -61,6 +62,11 @@
                             href="javascript:toggleTheme('light');"
                             >Light</a
                         >
+                    </div>
+                    <div>
+                      Switch Locale: <a class="spectrum-Link spectrum-Link--secondary" href="?locale=en_US">en_US</a> OR <a class="spectrum-Link spectrum-Link--secondary" href="?locale=fr_FR">fr_FR</a>
+                    </div>
+                    <div>Switch country/language: <a class="spectrum-Link spectrum-Link--secondary" href="?country=US&language=en">Country: US, language: en</a> OR <a class="spectrum-Link spectrum-Link--secondary" href="?country=FR&language=fr">Country: FR, language: fr</a>
                     </div>
                     <div class="adobe-home-container">
                         <h2 id="ah-try-buy-widget" tabindex="-1">

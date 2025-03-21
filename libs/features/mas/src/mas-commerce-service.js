@@ -173,12 +173,12 @@ export class MasCommerceService extends HTMLElement {
 
     flushWcsCache() {
         /* c8 ignore next 3 */
-        this.flushCache();
+        this.flushWcsCacheInternal();
         this.log.debug('Flushed WCS cache');
     }
 
     refreshOffers() {
-        this.flushCache();
+        this.flushWcsCacheInternal();
         document
             .querySelectorAll(SELECTOR_MAS_ELEMENT)
             .forEach((el) => el.requestUpdate(true));
@@ -187,7 +187,7 @@ export class MasCommerceService extends HTMLElement {
     }
 
     refreshFragments() {
-        this.flushCache();
+        this.flushWcsCacheInternal();
         document.querySelectorAll('aem-fragment').forEach((el) => el.refresh(this));
         this.log.debug('Refreshed AEM fragments');
         this.logFailedRequests();

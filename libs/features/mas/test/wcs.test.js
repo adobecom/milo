@@ -56,7 +56,7 @@ describe('resolveOfferSelectors', () => {
         await client.resolveOfferSelectors({ wcsOsi: ['abm'] });
         await client.resolveOfferSelectors({ wcsOsi: ['abm'] });
         expect(fetch.callCount).to.equal(1);
-        await client.flushCache();
+        await client.flushWcsCacheInternal();
         await client.resolveOfferSelectors({ wcsOsi: ['abm'] });
         expect(fetch.callCount).to.equal(2);
     });

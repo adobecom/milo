@@ -9,6 +9,7 @@ const sheet = new CSSStyleSheet();
 sheet.replaceSync(':host { display: contents; }');
 
 const ATTRIBUTE_FRAGMENT = 'fragment';
+const ATTRIBUTE_AUTHOR = 'author';
 const AEM_FRAGMENT_TAG_NAME = 'aem-fragment';
 
 /**
@@ -112,6 +113,8 @@ export class AemFragment extends HTMLElement {
      */
     #fetchPromise;
 
+    #author = false;
+
     static get observedAttributes() {
         return [ATTRIBUTE_FRAGMENT];
     }
@@ -125,6 +128,9 @@ export class AemFragment extends HTMLElement {
     attributeChangedCallback(name, oldValue, newValue) {
         if (name === ATTRIBUTE_FRAGMENT) {
             this.#fragmentId = newValue;
+        }
+        if (name === ATTRIBUTE_AUTHOR) {
+          this.#author = ['', 'true'].includes(newValue);
         }
     }
 
@@ -173,6 +179,7 @@ export class AemFragment extends HTMLElement {
                 if (reject) reject(e);
                 return false;
             });
+      return this.#fetchPromise;
     }
 
     #fail({ message, context }) {
@@ -195,11 +202,8 @@ export class AemFragment extends HTMLElement {
             return;
         }
         this.#stale = true;
-        const { env, wcsApiKey, locale, masIOUrl } = service.settings;
-        const baseUrl = masIOUrl
-            ? masIOUrl
-            : `https://www${env?.toLowerCase() === 'stage' ? '.stage' : ''}.adobe.com/mas/io`;
-        const endpoint = `${baseUrl}/fragment?id=${this.#fragmentId}&api_key=${wcsApiKey}&locale=${locale}`;
+        const { masIOUrl, wcsApiKey, locale } = service.settings;
+        const endpoint = `${masIOUrl}/fragment?id=${this.#fragmentId}&api_key=${wcsApiKey}&locale=${locale}`;
         
         fragment = await getFragmentById(
             endpoint,
@@ -219,6 +223,24 @@ export class AemFragment extends HTMLElement {
     }
 
     get data() {
+      if (this.#author) {
+          return this.#transformAuthorData();
+      }
+      return this.#transformPublishData();;
+    }
+
+    #transformAuthorData() {
+        const { fields, id, tags } = this.#rawData;
+        return fields.reduce(
+            (acc, { name, multiple, values }) => {
+                acc.fields[name] = multiple ? values : values[0];
+                return acc;
+            },
+            { fields: {}, id, tags },
+        );
+    }
+
+    #transformPublishData() {
         const { fields, id, tags } = this.#rawData;
         return Object.entries(fields).reduce(
             (acc, [key, value]) => {
