@@ -1,1 +1,3 @@
-
+.section.container {
+  width: var(--grid-container-width);
+}
