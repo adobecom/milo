@@ -8,5 +8,9 @@ async function loadComponent() {
 }
 
 export default async function init(el) {
+  await Promise.all([
+      loadScript('https://unpkg.com/react@18/umd/react.development.js'),
+      loadScript('https://unpkg.com/react-dom@18/umd/react-dom.development.js')
+  ]);
   await loadComponent();
 }
