@@ -249,7 +249,7 @@ export default async function init(block) {
   dropdown.addEventListener('click', (e) => {
     e.stopPropagation();
   });
-
+  block.closest('.feds-regionPicker-wrapper').appendChild(dropdown);
   /*container.appendChild(selectedLangButton);
   container.appendChild(dropdown);
   document.querySelector('body').appendChild(container);*/
