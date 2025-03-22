@@ -254,7 +254,7 @@ export function getVideoAttrs(hash, dataset) {
 export function syncPausePlayIcon(video, event) {
   if (!video.getAttributeNames().includes('data-hoverplay')) {
     const offsetFiller = video.closest('.video-holder').querySelector('.offset-filler');
-    if (event?.type === 'loadstart' && offsetFiller?.classList.contains('is-playing')) {
+    if (event?.type === 'playing' && offsetFiller?.classList.contains('is-playing')) {
       return;
     }
     const anchorTag = video.closest('.video-holder').querySelector('a');
@@ -329,7 +329,7 @@ export function applyAccessibilityEvents(videoEl) {
   }
   if (videoEl.hasAttribute('autoplay')) {
     videoEl.addEventListener('canplay', () => videoEl.play());
-    videoEl.addEventListener('loadstart', (event) => syncPausePlayIcon(videoEl, event));
+    videoEl.addEventListener('playing', (event) => syncPausePlayIcon(videoEl, event));
     videoEl.addEventListener('ended', () => syncPausePlayIcon(videoEl));
   }
 }
