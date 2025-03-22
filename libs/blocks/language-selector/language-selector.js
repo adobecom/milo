@@ -250,6 +250,9 @@ export default async function init(block) {
     e.stopPropagation();
   });
   block.closest('.feds-regionPicker-wrapper').appendChild(dropdown);
+  const element = block.closest('.feds-regionPicker-wrapper').querySelector('.fragment');
+  element.remove();
+  
   /*container.appendChild(selectedLangButton);
   container.appendChild(dropdown);
   document.querySelector('body').appendChild(container);*/
