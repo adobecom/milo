@@ -51,18 +51,17 @@ export default function init(el) {
   const { parentElement } = el;
 
   iframe.onload = () => {
-    const iframeOrigin = new URL(iframe.src).origin;
-
-    if (iframeOrigin !== window.location.origin) {
+    if (new URL(iframe.src).origin !== window.location.origin) {
       const metaDataElement = parentElement.querySelector('.section-metadata');
-      if (metaDataElement) iframe.title = getMetadata(metaDataElement)?.title.text;
+      const metadataTitle = metaDataElement ? getMetadata(metaDataElement)?.title?.text : null;
+      if (metadataTitle) iframe.title = metadataTitle;
       return;
     }
 
     const frameDoc = iframe.contentWindow.document;
     const heading = frameDoc.querySelector('h1, h2, h3, h4, h5, h6');
-
-    iframe.title = heading.textContent;
+    const headingText = heading?.textContent;
+    if (headingText) iframe.title = headingText;
   };
 
   el.insertAdjacentElement('afterend', embed);
