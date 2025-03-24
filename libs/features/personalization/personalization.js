@@ -54,7 +54,7 @@ let isPostLCP = false;
 export const TRACKED_MANIFEST_TYPE = 'personalization';
 
 // Replace any non-alpha chars except comma, space, ampersand, colon, and hyphen
-const RE_KEY_REPLACE = /[^a-z0-9\- _,&=:()]/g;
+const RE_KEY_REPLACE = /[^a-z0-9\- _,&=:]/g;
 
 const MANIFEST_KEYS = [
   'action',
@@ -362,7 +362,23 @@ const setMetadata = (metadata) => {
 
 function toLowerAlpha(str) {
   const s = str.toLowerCase();
-  return s.replace(RE_KEY_REPLACE, '');
+  const userCountryPattern = /usercountry\([^)]*\)/gi;
+  const userCountryMatches = s.match(userCountryPattern) || [];
+  let modifiedStr = s;
+
+  userCountryMatches.forEach((match, index) => {
+    const placeholder = `placeholder${index}`;
+    modifiedStr = modifiedStr.replace(match, placeholder);
+  });
+
+  modifiedStr = modifiedStr.replace(RE_KEY_REPLACE, '');
+
+  userCountryMatches.forEach((match, index) => {
+    const placeholder = `placeholder${index}`;
+    modifiedStr = modifiedStr.replace(placeholder, match);
+  });
+
+  return modifiedStr;
 }
 
 function normalizeKeys(obj) {
