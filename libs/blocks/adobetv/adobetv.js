@@ -14,7 +14,8 @@ export default function init(a) {
     });
   } else {
     const sectionMetadata = a.parentElement.parentElement.parentElement?.querySelector('.section-metadata');
-    const title = sectionMetadata ? getMetadata(sectionMetadata)?.title.text : 'Adobe TV Video';
+    const metadataTitle = sectionMetadata ? getMetadata(sectionMetadata)?.title?.text : null;
+    const title = metadataTitle || 'Adobe Video Publishing Cloud Player';
 
     const iframe = createTag('iframe', {
       src: a.href,
