@@ -14,6 +14,18 @@ class LiteVimeo extends HTMLElement {
     this.addEventListener('click', this.addIframe);
   }
 
+  async fetchVideoTitle() {
+    try {
+      const response = await fetch(`https://vimeo.com/api/oembed.json?url=https://vimeo.com/${this.videoId}`);
+      const data = await response.json();
+      if (data.title && this.iframeEl) this.iframeEl.title = data.title;
+      return null;
+    } catch (error) {
+      console.error('Error fetching Vimeo title:', error);
+      return null;
+    }
+  }
+
   static warmConnections() {
     if (LiteVimeo.preconnected) return;
     LiteVimeo.preconnected = true;
@@ -49,10 +61,11 @@ class LiteVimeo extends HTMLElement {
     this.append(playBtnEl);
   }
 
-  addIframe() {
+  async addIframe() {
     if (this.classList.contains('ltv-activated')) return;
+    this.fetchVideoTitle();
     this.classList.add('ltv-activated');
-    const iframeEl = createTag('iframe', {
+    this.iframeEl = createTag('iframe', {
       style: 'border: 0; top: 0; left: 0; width: 100%; height: 100%; position: absolute; background-color: #000;',
       frameborder: '0',
       title: 'Content from Vimeo',
@@ -60,8 +73,8 @@ class LiteVimeo extends HTMLElement {
       allowFullscreen: true,
       src: `https://player.vimeo.com/video/${encodeURIComponent(this.videoId)}?autoplay=1&muted=${this.isMobile ? 1 : 0}`,
     });
-    this.insertAdjacentElement('afterend', iframeEl);
-    iframeEl.addEventListener('load', () => iframeEl.focus(), { once: true });
+    this.insertAdjacentElement('afterend', this.iframeEl);
+    this.iframeEl.addEventListener('load', () => this.iframeEl.focus(), { once: true });
     this.remove();
   }
 }

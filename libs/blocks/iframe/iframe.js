@@ -48,30 +48,21 @@ export default function init(el) {
 
   const iframe = createTag('iframe', { src: linkHref, allowfullscreen: true });
   const embed = createTag('div', { class: `milo-iframe ${classes}` }, iframe);
+  const { parentElement } = el;
+
   iframe.onload = () => {
     const iframeOrigin = new URL(iframe.src).origin;
 
     if (iframeOrigin !== window.location.origin) {
-      fetch(linkHref)
-        .then((response) => response.text())
-        .then((html) => {
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(html, 'text/html');
-          const header = doc.querySelector('h1, h2, h3, h4, h5, h6')?.textContent;
-          if (header) iframe.title = header;
-        });
+      const metaDataElement = parentElement.querySelector('.section-metadata');
+      if (metaDataElement) iframe.title = getMetadata(metaDataElement)?.title.text;
       return;
     }
 
     const frameDoc = iframe.contentWindow.document;
     const heading = frameDoc.querySelector('h1, h2, h3, h4, h5, h6');
 
-    if (heading) {
-      iframe.title = heading.textContent;
-    } else {
-      const metaDataElement = el.parentElement.querySelector('.modal-metadata');
-      if (metaDataElement) iframe.title = getMetadata(metaDataElement)?.title.text;
-    }
+    iframe.title = heading.textContent;
   };
 
   el.insertAdjacentElement('afterend', embed);
