@@ -21,7 +21,6 @@ class LiteVimeo extends HTMLElement {
       if (data.title && this.iframeEl) this.iframeEl.title = data.title;
       return null;
     } catch (error) {
-      console.error('Error fetching Vimeo title:', error);
       return null;
     }
   }
