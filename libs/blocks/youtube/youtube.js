@@ -19,6 +19,18 @@ class LiteYTEmbed extends HTMLElement {
     this.needsYTApiForAutoplay = navigator.vendor.includes('Apple') || this.isMobile;
   }
 
+  async fetchVideoTitle() {
+    try {
+      const response = await fetch(`https://www.youtube.com/oembed?url=http://www.youtube.com/watch?v=${this.videoId}&format=json`);
+      const data = await response.json();
+      if (data.title && this.iframeEl) this.iframeEl.title = data.title;
+      return null;
+    } catch (error) {
+      console.error('Error fetching video title:', error);
+      return null;
+    }
+  }
+
   static warmConnections() {
     if (LiteYTEmbed.preconnected) return;
     LiteYTEmbed.preconnected = true;
@@ -43,7 +55,7 @@ class LiteYTEmbed extends HTMLElement {
 
   async addIframe() {
     if (this.classList.contains('lyt-activated')) return;
-
+    this.fetchVideoTitle();
     this.classList.add('lyt-activated');
     const params = new URLSearchParams(this.getAttribute('params') || []);
     params.append('autoplay', '1');
@@ -62,14 +74,14 @@ class LiteYTEmbed extends HTMLElement {
         title: this.playLabel,
       });
     } else {
-      const iframeEl = createTag('iframe', {
+      this.iframeEl = createTag('iframe', {
         src: `https://www.youtube-nocookie.com/embed/${encodeURIComponent(this.videoId)}?${params.toString()}`,
         allowFullscreen: true,
         allow: 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture',
         title: this.playLabel,
       });
-      this.insertAdjacentElement('afterend', iframeEl);
-      iframeEl.focus();
+      this.insertAdjacentElement('afterend', this.iframeEl);
+      this.iframeEl.focus();
       this.remove();
     }
   }
