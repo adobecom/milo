@@ -275,9 +275,14 @@ header.global-navigation {
 }
 
 .feds-topnav--overflowing .feds-cta {
-  height: 30px;
+  min-height: 30px;
+  height: initial;
+  white-space: normal;
   padding: 0 10px;
   font-size: 14px;
+  max-width: 100%;
+  line-height: 1;
+  padding-block: 4px;
 }
 
 .feds-cta--primary {
@@ -1379,3 +1384,9 @@ html:has(body.disable-ios-scroll) { /* this class is only added on iOS */
   position: relative;
   display: block;
 }
+
+.feds-popup .feds-menu-items .feds-navLink-content .feds-navLink-description {
+  white-space: normal;
+}
+
+/* .feds-topnav--overflowing .feds-cta */
