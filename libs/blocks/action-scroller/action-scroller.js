@@ -6,6 +6,7 @@ const base = miloLibs || codeRoot;
 const [NAV, ALIGN] = ['navigation', 'grid-align'];
 const defaultItemWidth = 106;
 const defaultGridGap = 32;
+const defaultPadding = 50;
 
 const PREVBUTTON = `<button class="nav-button previous-button"><img class="previous-icon" alt="Previous icon" src="${base}/blocks/carousel/img/arrow.svg"></button>`;
 const NEXTBUTTON = `<button class="nav-button next-button"><img class="next-icon" alt="Next icon" src="${base}/blocks/carousel/img/arrow.svg"></button>`;
@@ -22,8 +23,10 @@ const getBlockProps = (el) => [...el.childNodes].reduce((attr, row) => {
   return attr;
 }, {});
 
-function parsePxToInt(pxString) {
-  return parseInt(pxString.replace('px', ''), 10);
+function parsePxToInt(pxString, defaultValue) {
+  if (!pxString) return defaultValue;
+  const parsedValue = parseInt(pxString.replace('px', ''), 10);
+  return Number.isNaN(parsedValue) ? defaultValue : parsedValue;
 }
 
 export function getScrollerPropertyValues(el) {
@@ -34,11 +37,11 @@ export function getScrollerPropertyValues(el) {
   const elProperties = window.getComputedStyle(el, null);
 
   const gapStyle = elProperties.getPropertyValue('column-gap');
-  const gridGap = gapStyle ? parsePxToInt(gapStyle) : defaultGridGap;
+  const gridGap = parsePxToInt(gapStyle, defaultGridGap);
   const scrollDistance = itemWidth + gridGap;
 
   const paddingStyle = elProperties.getPropertyValue('--action-scroller-mobile-padding');
-  const padding = paddingStyle ? parsePxToInt(paddingStyle) : 0;
+  const padding = parsePxToInt(paddingStyle, defaultPadding);
 
   return { itemWidth, columns, gridGap, scrollDistance, padding };
 }
