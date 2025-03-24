@@ -1,5 +1,6 @@
 import { decorateAnchorVideo } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
+import { getMetadata } from '../section-metadata/section-metadata.js';
 
 export default function init(a) {
   a.classList.add('hide-video');
@@ -12,12 +13,15 @@ export default function init(a) {
       anchorTag: a,
     });
   } else {
+    const sectionMetadata = a.parentElement.parentElement.parentElement?.querySelector('.section-metadata');
+    const title = sectionMetadata ? getMetadata(sectionMetadata)?.title.text : 'Adobe TV Video';
+
     const iframe = createTag('iframe', {
       src: a.href,
       class: 'adobetv',
       scrolling: 'no',
       allow: 'encrypted-media; fullscreen',
-      title: 'Adobe Video Publishing Cloud Player',
+      title,
       loading: 'lazy',
     });
     const embed = createTag('div', { class: 'milo-video' }, iframe);
