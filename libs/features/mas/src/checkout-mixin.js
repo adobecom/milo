@@ -152,7 +152,7 @@ export function CheckoutMixin(Base) {
          * @param {string} url
          * @param {'twp' | 'd2p' | 'crm'} modalType
          */
-        add3in1ModalParams(url, modalType) {
+        add3in1ModalParams({ url, modalType, customerSegment, marketSegments }) {
           try {
             const newUrl = new URL(url);
             newUrl.searchParams.set('ctx', 'if');
@@ -162,6 +162,12 @@ export function CheckoutMixin(Base) {
             } else {
               newUrl.searchParams.set('af', 'uc_new_user_iframe,uc_new_system_close');
               newUrl.searchParams.set('cli', 'mini_plans');
+              if (customerSegment === 'INDIVIDUAL' && marketSegments.includes('EDU')) {
+                newUrl.searchParams.set('ms', 'e');
+              }
+              if (customerSegment === 'TEAM' && marketSegments.includes('COM')) {
+                newUrl.searchParams.set('cs', 't');
+              }
             }
             return newUrl.toString();
           } catch (error) {
@@ -234,7 +240,13 @@ export function CheckoutMixin(Base) {
             if (offers.length) {
                 if (this.masElement.toggleResolved(version, offers, options)) {
                     const url = service.buildCheckoutURL(offers, options);
-                    const urlToSet = checkoutAction && modalType ? this.add3in1ModalParams(url, modalType) : url;
+                    const { customerSegment, marketSegments } = offers[0];
+                    const urlToSet = checkoutAction && modalType ? this.add3in1ModalParams({ 
+                      url, 
+                      modalType, 
+                      customerSegment, 
+                      marketSegments 
+                    }) : url;
                     this.setCheckoutUrl(urlToSet);
                     return true;
                 }

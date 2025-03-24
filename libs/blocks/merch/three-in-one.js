@@ -1,6 +1,5 @@
 /* eslint-disable import/no-relative-packages */
 import { createTag } from '../../utils/utils.js';
-import { MODAL_TYPE_3_IN_1 } from '../../deps/mas/mas.js';
 import '../../features/spectrum-web-components/dist/theme.js';
 import '../../features/spectrum-web-components/dist/progress-circle.js';
 
@@ -63,7 +62,7 @@ export async function createContent(iframeUrl, modalType) {
   content.innerHTML = `<sp-theme system="light" color="light" scale="medium" dir="ltr">
   <sp-progress-circle label="progress circle" indeterminate="" size="l" dir="ltr" role="progressbar" aria-label="progress circle"></sp-progress-circle>
   </sp-theme>
-  <iframe src="${iframeUrl}" title="${modalType === MODAL_TYPE_3_IN_1.CRM ? 'Single App' : modalType}" frameborder="0" marginwidth="0" marginheight="0" allowfullscreen="true" loading="lazy" class="loading" style="height: 100%;"></iframe>`;
+  <iframe src="${iframeUrl}" title="${modalType === 'crm' ? 'Single App' : modalType}" frameborder="0" marginwidth="0" marginheight="0" allowfullscreen="true" loading="lazy" class="loading" style="height: 100%;"></iframe>`;
   return content;
 }
 

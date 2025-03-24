@@ -261,6 +261,98 @@ describe('class "CheckoutLink"', () => {
         });
     });
 
+    describe('3-in-1 modal related functions', () => {
+        let checkoutLink;
+
+        beforeEach(async () => {
+            await initMasCommerceService();
+            checkoutLink = mockCheckoutLink('abm');
+            await checkoutLink.onceSettled();
+        });
+
+        describe('add3in1ModalParams', () => {
+            it('adds correct parameters for CRM modal type', () => {
+                const url = 'https://commerce.adobe.com/store/checkout?items=123';
+                const result = checkoutLink.add3in1ModalParams({ url, modalType: 'crm' });
+                expect(result).to.include('ctx=if');
+                expect(result).to.include('cli=creative');
+                expect(result).to.include('af=uc_segmentation_hide_tabs%2Cuc_new_user_iframe%2Cuc_new_system_close');
+            });
+
+            it('adds correct parameters for TWP modal types', () => {
+                const url = 'https://commerce.adobe.com/store/checkout?items=123';
+                const result = checkoutLink.add3in1ModalParams({ url, modalType: 'twp' });
+                expect(result).to.include('ctx=if');
+                expect(result).to.include('cli=mini_plans');
+                expect(result).to.include('af=uc_new_user_iframe%2Cuc_new_system_close');
+            });
+
+            it('adds correct parameters for D2P modal types', () => {
+              const url = 'https://commerce.adobe.com/store/checkout?items=123';
+              const result = checkoutLink.add3in1ModalParams({ url, modalType: 'd2p' });
+              expect(result).to.include('ctx=if');
+              expect(result).to.include('cli=mini_plans');
+              expect(result).to.include('af=uc_new_user_iframe%2Cuc_new_system_close');
+          });
+
+            it('adds team parameter for TEAM customer segment', () => {
+                const url = 'https://commerce.adobe.com/store/checkout?items=123';
+                const result = checkoutLink.add3in1ModalParams({
+                    url,
+                    modalType: 'd2p',
+                    customerSegment: 'TEAM',
+                    marketSegments: ['COM']
+                });
+                expect(result).to.include('cs=t');
+            });
+
+            it('adds team parameter for TEAM customer segment', () => {
+              const url = 'https://commerce.adobe.com/store/checkout?items=123';
+              const result = checkoutLink.add3in1ModalParams({
+                  url,
+                  modalType: 'twp',
+                  customerSegment: 'INDIVIDUAL',
+                  marketSegments: ['EDU']
+              });
+              expect(result).to.include('ms=e');
+          });
+
+          it('does not add cs and ms parameters for CRM modal', () => {
+            const url = 'https://commerce.adobe.com/store/checkout?items=123';
+            const result = checkoutLink.add3in1ModalParams({
+                url,
+                modalType: 'crm',
+                customerSegment: 'INDIVIDUAL',
+                marketSegments: ['EDU']
+            });
+            expect(result).to.not.include('ms=e');
+            expect(result).to.not.include('cs=t');
+          });
+        });
+
+        describe('setModalType', () => {
+            it('handles all valid modal types', () => {
+                const modalTypes = ['twp', 'd2p', 'crm'];
+                
+                modalTypes.forEach(type => {
+                    const url = `https://commerce.adobe.com/store/checkout?modal=${type}`;
+                    const modalType = checkoutLink.setModalType(checkoutLink, url);
+
+                    expect(modalType).to.equal(type);
+                    expect(checkoutLink.getAttribute('data-modal-type')).to.equal(type);
+                });
+            });
+
+            it('does not set modal type for invalid modal parameter', () => {
+                const url = 'https://commerce.adobe.com/store/checkout?modal=invalid';
+                const modalType = checkoutLink.setModalType(checkoutLink, url);
+
+                expect(modalType).to.be.undefined;
+                expect(checkoutLink.getAttribute('data-modal-type')).to.be.null;
+            });
+        });
+    });
+
     describe('logged-in features', () => {
         it('renders download link', async () => {
             mockIms('US');
