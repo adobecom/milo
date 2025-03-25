@@ -2,7 +2,7 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { getConfig, setConfig, createTag, loadDeferred } from '../../../libs/utils/utils.js';
 import dynamicNav from '../../../libs/features/dynamic-navigation/dynamic-navigation.js';
-import status, { tooltipInfo, ACTIVE, INACTIVE, ENABLED } from '../../../libs/features/dynamic-navigation/status.js';
+import status, { tooltipInfo, ACTIVE, INACTIVE, ENABLED, RESET } from '../../../libs/features/dynamic-navigation/status.js';
 
 const statusText = (parentElement) => {
   const info = {
@@ -88,6 +88,16 @@ describe('Dynamic Nav Status', () => {
     expect(statusWidget.classList.contains(ENABLED)).to.be.true;
   });
 
+  it('loads the status widget in a reset state', () => {
+    document.querySelector('meta[name="dynamic-nav"]').setAttribute('content', 'reset');
+
+    dynamicNav();
+    status();
+
+    const statusWidget = document.querySelector('.dynamic-nav-status');
+    expect(statusWidget.classList.contains(RESET)).to.be.true;
+  });
+
   it('loads the status widget in an inactive state', () => {
     dynamicNav();
     status();
@@ -166,6 +176,24 @@ describe('Dynamic Nav Status', () => {
       expect(info.additionalInfo).to.equal(tooltipInfo[ENABLED]);
       expect(info.status).to.equal(ENABLED);
       expect(info.setting).to.equal('on');
+      expect(info.consumerKey).to.equal('bacom');
+      expect(info.match).to.equal('true');
+      expect(info.authoredSource).to.equal('/test');
+      expect(info.storedSource).to.equal('/test');
+    });
+
+    it('displays the correct information to the user for the enabled state "reset"', () => {
+      document.querySelector('meta[name="dynamic-nav"]').setAttribute('content', 'reset');
+      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.hlx/test');
+
+      dynamicNav();
+      status();
+
+      const statusWidget = document.querySelector('.dynamic-nav-status');
+      const info = statusText(statusWidget);
+      expect(info.additionalInfo).to.equal(tooltipInfo[RESET]);
+      expect(info.status).to.equal(RESET);
+      expect(info.setting).to.equal('reset');
       expect(info.consumerKey).to.equal('bacom');
       expect(info.match).to.equal('true');
       expect(info.authoredSource).to.equal('/test');

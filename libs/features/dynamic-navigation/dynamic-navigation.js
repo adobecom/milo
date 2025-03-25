@@ -27,6 +27,13 @@ export default function dynamicNav(url, key) {
   const metadataContent = getMetadata('dynamic-nav');
   const dynamicNavGroup = getMetadata('dynamic-nav-group');
 
+  if (metadataContent === 'reset') {
+    window.sessionStorage.removeItem('gnavSource', url);
+    window.sessionStorage.removeItem('dynamicNavKey', key);
+    window.sessionStorage.removeItem('dynamicNavGroup', dynamicNavGroup);
+    return url;
+  }
+
   if (metadataContent === 'entry') {
     window.sessionStorage.setItem('gnavSource', url);
     window.sessionStorage.setItem('dynamicNavKey', key);
