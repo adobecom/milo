@@ -3922,3 +3922,10 @@
 .short-card {
   position: relative; /* Ensure the icon is positioned within the card */
 }
+
+
+@media only screen and (max-width: 767px) {
+  .ufd-image-card {
+    width: 240px;
+  }
+}
