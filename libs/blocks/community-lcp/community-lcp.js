@@ -19,8 +19,8 @@ function createImageCard(el) {
   const redirectLink = el.querySelector('a').href;
   const img = el.querySelector('picture');
   const screenWidth = defineDeviceByScreenSize()
-  let background = el.querySelector('div:first-child div:first-child').innerText.trim();
-  if (screenWidth == 'DESKTOP') background = el.querySelector('div:first-child div:last-child').innerText.trim();
+  let background = el.querySelector('div:first-child div div:first-child').innerText.trim();
+  if (screenWidth == 'DESKTOP') background = el.querySelector('div:first-child div div:last-child').innerText.trim();
   const dcCardContent = createTag('div', {class: 'directory-card-content', style: `background: ${background}`});
   dcCardContent.append(createTag('div', {class: 'content-card-header'}, heading.innerText.trim()));
   dcCardContent.append(createTag('div', {class: 'content-card-subheader'}, textContent));
