@@ -3924,6 +3924,47 @@
 }
 
 
+@media only screen and (max-width: 600px) {
+  .ufd-directory-card > div {
+    width: 272px;
+    display: flex;
+    flex-direction: row-reverse;
+  }
+  
+  .ufd-image-card {
+    width: 72px;
+  }
+  
+  .directory-card-content {
+    display: flex;
+    height: 72px;
+    margin: 0;
+    padding: 0;
+    border-radius: 12px 0 0 12px;
+  }
+}
+
+@media only screen and (min-width: 600px) and (max-width: 1200px) {
+  .ufd-directory-card > div {
+    width: 272px;
+    display: flex;
+    flex-direction: row-reverse;
+  }
+  
+  .ufd-image-card {
+    width: 72px;
+  }
+
+  .directory-card-content {
+    display: flex;
+    background: linear-gradient(to top, rgb(154, 71, 226) 40%, transparent 80%);
+    height: 72px;
+    margin: 0;
+    padding: 0;
+    border-radius: 12px 0 0 12px;
+  }
+}
+
 @media only screen and (min-width: 1200px) {
   .ufd-image-card {
     width: 240px;
