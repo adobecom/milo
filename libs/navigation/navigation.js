@@ -6,7 +6,7 @@ const blockConfig = [
     name: 'global-navigation',
     targetEl: 'header',
     appendType: 'prepend',
-    params: ['imsClientId', 'searchEnabled', 'unav', 'customLinks', 'jarvis'],
+    params: ['imsClientId', 'searchEnabled', 'unav', 'customLinks', 'jarvis', 'selfIntegrateUnav'],
   },
   {
     key: 'footer',
@@ -112,6 +112,13 @@ export default async function loadBlock(configs, customLib) {
     import('../utils/utils.js'),
   ]);
   const paramConfigs = getParamsConfigs(configs);
+  const origin = (() => {
+    switch (env) {
+      case 'prod': return 'https://www.adobe.com';
+      case 'stage': return 'https://www.stage.adobe.com';
+      default: return 'https://main--federal--adobecom.aem.page';
+    }
+  })();
   const clientConfig = {
     theme,
     prodDomains,
@@ -122,8 +129,8 @@ export default async function loadBlock(configs, customLib) {
     locales: configs.locales || locales,
     contentRoot: authoringPath || footer?.authoringPath,
     stageDomainsMap: getStageDomainsMap(stageDomainsMap),
-    origin: `https://main--federal--adobecom.aem.${env === 'prod' ? 'live' : 'page'}`,
-    allowedOrigins: [...allowedOrigins, `https://main--federal--adobecom.aem.${env === 'prod' ? 'live' : 'page'}`],
+    origin,
+    allowedOrigins: [...allowedOrigins, origin],
     onFooterReady: footer?.onReady,
     onFooterError: footer?.onError,
     ...paramConfigs,
@@ -142,7 +149,7 @@ export default async function loadBlock(configs, customLib) {
           await bootstrapBlock(init, {
             ...block,
             gnavSource,
-            unavComponents: configBlock.unav?.unavComponents,
+            unavComponents: configBlock.selfIntegrateUnav ? [] : configBlock.unav?.unavComponents,
             redirect: configBlock.redirect,
             layout: configBlock.layout,
             noBorder: configBlock.noBorder,

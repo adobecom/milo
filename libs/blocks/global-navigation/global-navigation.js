@@ -49,6 +49,8 @@ import {
 
 import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
 
+import { getMiloLocaleSettings } from '../merch/merch.js';
+
 const SIGNIN_CONTEXT = getConfig()?.signInContext;
 
 function getHelpChildren() {
@@ -427,6 +429,7 @@ class Gnav {
         ${getMetadata('product-entry-cta')?.toLowerCase() === 'on' ? this.decorateProductEntryCTA() : ''}
         ${getConfig().searchEnabled === 'on' ? toFragment`<div class="feds-client-search"></div>` : ''}
         ${this.useUniversalNav ? this.blocks.universalNav : ''}
+        ${getConfig().selfIntegrateUnav ? toFragment`<div class="feds-client-unav"></div>` : ''}
         ${(!this.useUniversalNav && this.blocks.profile.rawElem) ? this.blocks.profile.decoratedElem : ''}
         ${this.decorateLogo()}
       </nav>
@@ -776,6 +779,7 @@ class Gnav {
       target: this.blocks.universalNav,
       env: environment,
       locale,
+      countryCode: getMiloLocaleSettings(getConfig().locale)?.country || 'US',
       imsClientId: window.adobeid?.client_id,
       theme: isDarkMode() ? 'dark' : 'light',
       analyticsContext: {
@@ -1158,6 +1162,7 @@ class Gnav {
           elem?.addEventListener('click', (e) => {
             trigger({ element: e.currentTarget, event: e, type: 'headline' });
           });
+          elem.textContent = elem.textContent?.trim();
         });
       }
     };

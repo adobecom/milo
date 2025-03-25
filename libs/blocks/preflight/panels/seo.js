@@ -128,7 +128,7 @@ async function checkLorem() {
   const result = { ...loremResult.value };
   const { innerHTML } = document.documentElement;
   const htmlWithoutPreflight = innerHTML.replace(document.getElementById('preflight')?.outerHTML, '');
-  if (htmlWithoutPreflight.includes('Lorem ipsum')) {
+  if (htmlWithoutPreflight.toLowerCase().includes('lorem ipsum')) {
     result.icon = fail;
     result.description = 'Reason: Lorem ipsum is used on the page.';
   } else {
@@ -256,7 +256,8 @@ async function checkLinks() {
     badResults.push(...spidyResults);
   }
 
-  badLinks.value = badResults.map((result) => links.find((link) => compareResults(result, link)));
+  badLinks.value = badResults.map((result) => links.find((link) => compareResults(result, link)))
+    .filter(Boolean);
 
   // Format the results for display
   const count = badLinks.value.length;
