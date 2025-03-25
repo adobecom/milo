@@ -3925,6 +3925,11 @@
 
 
 @media only screen and (max-width: 600px) {
+  .ufd-directory-card {
+    display: flex;
+    flex-direction: column;
+  }
+  
   .ufd-directory-card > div {
     width: 272px;
     display: flex;
@@ -3945,6 +3950,11 @@
 }
 
 @media only screen and (min-width: 600px) and (max-width: 1200px) {
+  .ufd-directory-card {
+    display: flex;
+    flex-direction: column;
+  }
+  
   .ufd-directory-card > div {
     width: 272px;
     display: flex;
