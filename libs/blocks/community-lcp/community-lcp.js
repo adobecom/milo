@@ -10,7 +10,7 @@ function createImageCard(el) {
   dcCardContent.append(createTag('div', {class: 'content-card-subheader'}, textContent.innerText.trim()));
   const dcimg = createTag('div', {class: 'ufd-image-card', style: "width: 240px;"});
   const dcContainer = createTag('div', {}, dcimg);
-  const dcContainer.append(dcCardContent);
+  dcContainer.append(dcCardContent);
   return dcContainer;
 }
 
