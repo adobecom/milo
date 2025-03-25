@@ -19,11 +19,11 @@ export default async function init(el) {
   if (cardsec) {
     const imgCard = createImageCard(el);
     cardsec.append(imgCard);
-    el.remove();
+    // el.remove();
     return;
   }
   const imgCard = createImageCard(el);
   const dc = createTag('div', {class: 'ufd-directory-card'}, imgCard);
   el.closest('.section').append(dc);
-  el.remove();
+  // el.remove();
 }
