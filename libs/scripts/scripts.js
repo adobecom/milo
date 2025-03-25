@@ -93,6 +93,7 @@ function defineDeviceByScreenSize() {
     else imgs = document.querySelectorAll('body > main > div:nth-child(1) community-lcp picture:nth-child(1)')
     imgs.forEach((img) => eagerLoad(img))
   }
+}());
 
 (async function loadPage() {
   if (getMetadata('template') === '404') window.SAMPLE_PAGEVIEWS_AT_RATE = 'high';
