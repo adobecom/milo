@@ -57,12 +57,12 @@ const createMasCommerceService = (params) => {
     old.remove();
   }
   const masCommerceService = document.createElement('mas-commerce-service');
-  ['locale','country','language','env'].forEach((attribute) => {
+  masCommerceService.setAttribute('lana-tags', 'nala');
+  masCommerceService.setAttribute('lana-sample-rate', '100');
+  ['locale','country','language','env','lana-tags'].forEach((attribute) => {
     const value = params.get(attribute);
     if (value) masCommerceService.setAttribute(attribute, value);
   });
-  masCommerceService.setAttribute('lana-tags', 'nala');
-  masCommerceService.setAttribute('lana-sample-rate', '100');
   document.head.appendChild(masCommerceService);
 }
 
