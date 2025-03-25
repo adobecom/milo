@@ -923,9 +923,14 @@ const findReplaceableNodes = (area) => {
     let matchFound = false;
     if (node.nodeType === Node.TEXT_NODE) {
       matchFound = regex.test(node.nodeValue);
-    } else if (node.nodeType === Node.ELEMENT_NODE && node.hasAttribute('href')) {
-      const hrefValue = node.getAttribute('href');
-      matchFound = regex.test(hrefValue);
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+      const { attributes } = node;
+      for (let i = 0; i < attributes.length; i += 1) {
+        const { value: attrValue } = attributes[i];
+        if (regex.test(attrValue)) {
+          matchFound = true;
+        }
+      }
     }
     if (matchFound) {
       nodes.push(node);
