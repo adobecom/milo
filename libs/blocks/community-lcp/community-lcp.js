@@ -14,7 +14,7 @@ function createImageCard(el) {
   return dcContainer;
 }
 
-export async function init(el) {
+export default async function init(el) {
   const cardsec = el.closest('.section').querySelector('ufd-directory-card');
   if (cardsec) {
     const imgCard = createImageCard(el);
