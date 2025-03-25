@@ -2,8 +2,6 @@ import { html, useState, useEffect } from '../../../../deps/htm-preact.js';
 import '../../../../deps/axe.min.js';
 import customAccessibilityChecks from './accessibility-custom-checks.js';
 
-let a11yTestAlreadyRan = false;
-
 const axeCoreConfig = {
   include: [['body']],
   exclude: [['.preflight'], ['header'], ['.global-navigation'], ['footer']],
@@ -52,9 +50,6 @@ export default function Accessibility() {
 
   useEffect(() => {
     const runTest = async () => {
-      if (a11yTestAlreadyRan) return;
-      a11yTestAlreadyRan = true;
-
       setLoading(true);
       setTestResults(null);
       setExpandedViolations([]);
