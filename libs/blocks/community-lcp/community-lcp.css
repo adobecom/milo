@@ -3937,8 +3937,8 @@
   }
   
   .ufd-image-card {
-    width: 72px;
-    min-width: 72px;
+    width: 141px;
+    min-width: 141px;
     border-radius: 0 12px 12px 0;
     position: relative;
     z-index: -1;
@@ -3950,6 +3950,7 @@
     display: flex;
     position: relative;
     z-index: -1;
+    height: 72px;
   }
   
   .directory-card-content {
@@ -3980,8 +3981,8 @@
   }
   
   .ufd-image-card {
-      width: 72px;
-      min-width: 72px;
+      width: 141px;
+      min-width: 141px;
       border-radius: 0 12px 12px 0;
       position: relative;
       z-index: -1;
@@ -3991,6 +3992,7 @@
     margin: 0;
     padding: 0;
     display: flex;
+    height: 72px;
   }
 
   .directory-card-content {
