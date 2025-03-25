@@ -12,7 +12,7 @@ function createImageCard(el) {
   const dcimg = createTag('div', {class: 'ufd-image-card', style: "width: 240px;"}, img);
   const dcContainer = createTag('div', {}, dcimg);
   dcContainer.append(dcCardContent);
-  dcContainer.addEventListener('click' => {
+  dcContainer.addEventListener('click', () => {
     window.location.href = redirectLink;
   });
   return dcContainer;
