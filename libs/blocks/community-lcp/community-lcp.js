@@ -18,12 +18,14 @@ export default async function init(el) {
   const cardsec = el.closest('.section').querySelector('.ufd-directory-card');
   if (cardsec) {
     const imgCard = createImageCard(el);
-    cardsec.append(imgCard);
-    // el.remove();
+    cardsec.replace(imgCard, el)
     return;
   }
+  const dc = createTag('div', {class: 'ufd-directory-card'});
+  const cards = el.closest('.section').querySelectorAll('.community-lcp');
+  [...cards].forEach((c) => dc.append(c));
   const imgCard = createImageCard(el);
-  const dc = createTag('div', {class: 'ufd-directory-card'}, imgCard);
   el.closest('.section').append(dc);
+  cardsec.replace(imgCard, el)
   // el.remove();
 }
