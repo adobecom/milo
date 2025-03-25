@@ -18,7 +18,7 @@ export default async function init(el) {
   const cardsec = el.closest('.section').querySelector('.ufd-directory-card');
   if (cardsec) {
     const imgCard = createImageCard(el);
-    cardsec.replace(imgCard, el)
+    el.replaceWith(imgCard);
     return;
   }
   const dc = createTag('div', {class: 'ufd-directory-card'});
@@ -26,6 +26,5 @@ export default async function init(el) {
   const cards = el.closest('.section').querySelectorAll('.community-lcp');
   [...cards].forEach((c) => dc.append(c));
   const imgCard = createImageCard(el);
-  cardsec.replace(imgCard, el)
-  // el.remove();
+  el.replaceWith(imgCard);
 }
