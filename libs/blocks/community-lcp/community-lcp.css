@@ -3995,7 +3995,6 @@
 
   .directory-card-content {
     display: flex;
-    background: linear-gradient(to top, rgb(154, 71, 226) 40%, transparent 80%);
     height: 36px;
     position: absolute;
         min-width: 236px;
