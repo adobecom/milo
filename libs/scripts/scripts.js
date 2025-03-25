@@ -85,12 +85,12 @@ function defineDeviceByScreenSize() {
   if (firstDiv?.classList.contains('marquee')) {
     firstDiv.querySelectorAll('img').forEach(eagerLoad);
   } else {
-    const lcpblock = document.querySelector('body > main > div:nth-child(1) community-lcp');
+    const lcpblock = document.querySelector('body > main > div:nth-child(1) .community-lcp');
     if (!lcpblock) return eagerLoad(document.querySelector('img'));
     const screenWidth = defineDeviceByScreenSize();
     let imgs = null;
-    if (screenWidth == 'DESKTOP') imgs = document.querySelectorAll('body > main > div:nth-child(1) community-lcp picture:nth-child(2)');
-    else imgs = document.querySelectorAll('body > main > div:nth-child(1) community-lcp picture:nth-child(1)')
+    if (screenWidth == 'DESKTOP') imgs = document.querySelectorAll('body > main > div:nth-child(1) .community-lcp picture:nth-child(2)');
+    else imgs = document.querySelectorAll('body > main > div:nth-child(1) .community-lcp picture:nth-child(1)')
     imgs.forEach((img) => eagerLoad(img))
   }
 }());
