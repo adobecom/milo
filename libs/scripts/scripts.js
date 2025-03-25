@@ -89,8 +89,8 @@ function defineDeviceByScreenSize() {
     if (!lcpblock) return eagerLoad(document.querySelector('img'));
     const screenWidth = defineDeviceByScreenSize();
     let imgs = null;
-    if (screenWidth == 'DESKTOP') imgs = document.querySelectorAll('body > main > div:nth-child(1) .community-lcp picture:nth-child(2)');
-    else imgs = document.querySelectorAll('body > main > div:nth-child(1) .community-lcp picture:nth-child(1)')
+    if (screenWidth == 'DESKTOP') imgs = document.querySelectorAll('body > main > div:nth-child(1) .community-lcp > div:last-child > div:last-child picture');
+    else imgs = document.querySelectorAll('body > main > div:nth-child(1) .community-lcp > div:last-child > div:first-child picture')
     imgs.forEach((img) => eagerLoad(img))
   }
 }());
