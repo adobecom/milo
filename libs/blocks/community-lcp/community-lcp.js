@@ -1,11 +1,26 @@
 import { createTag } from '../../utils/utils.js';
 
+function defineDeviceByScreenSize() {
+  const DESKTOP_SIZE = 1200;
+  const MOBILE_SIZE = 600;
+  const screenWidth = window.innerWidth;
+  if (screenWidth >= DESKTOP_SIZE) {
+    return 'DESKTOP';
+  }
+  if (screenWidth <= MOBILE_SIZE) {
+    return 'MOBILE';
+  }
+  return 'TABLET';
+}
+
 function createImageCard(el) {
   const heading = el.querySelector('h1, h2, h3, h4, h5, h6');
   const textContent = el.querySelector('a').innerText.trim();
   const redirectLink = el.querySelector('a').href;
   const img = el.querySelector('picture');
-  const background = el.querySelector('div:first-child').innerText.trim();
+  cnst screenWidth = defineDeviceByScreenSize()
+  let background = el.querySelector('div:first-child div:first-child').innerText.trim();
+  if (screenWidth == 'DESKTOP') background = el.querySelector('div:first-child div:last-child').innerText.trim();
   const dcCardContent = createTag('div', {class: 'directory-card-content', style: `background: ${background}`});
   dcCardContent.append(createTag('div', {class: 'content-card-header'}, heading.innerText.trim()));
   dcCardContent.append(createTag('div', {class: 'content-card-subheader'}, textContent));
