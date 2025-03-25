@@ -2,6 +2,7 @@ import {
   getConfig, loadIms, loadLink, loadScript, getMepEnablement, getMetadata,
 } from '../utils/utils.js';
 
+const ALLOY_PROPOSITION_FETCH = 'alloy_propositionFetch';
 const ALLOY_SEND_EVENT = 'alloy_sendEvent';
 const ALLOY_SEND_EVENT_ERROR = 'alloy_sendEvent_error';
 const ENTITLEMENT_TIMEOUT = 3000;
@@ -49,8 +50,10 @@ const waitForEventOrTimeout = (eventName, timeoutLocal, returnValIfTimeout) => n
     }
   }, timeoutLocal);
 
+  const eventError = eventName
+    === ALLOY_SEND_EVENT ? ALLOY_SEND_EVENT_ERROR : ALLOY_PROPOSITION_FETCH;
   window.addEventListener(eventName, listener, { once: true });
-  window.addEventListener(ALLOY_SEND_EVENT_ERROR, errorListener, { once: true });
+  window.addEventListener(eventError, errorListener, { once: true });
 });
 
 function roundToQuarter(num) {
@@ -62,11 +65,14 @@ function calculateResponseTime(responseStart) {
   return roundToQuarter(responseTime);
 }
 
-export const getTargetPersonalization = async (
-  { handleAlloyResponse, sendTargetResponseAnalytics },
+export const getTargetAjoPersonalization = async (
+  { handleAlloyResponse, config, sendTargetResponseAnalytics },
 ) => {
   const responseStart = Date.now();
-  window.addEventListener(ALLOY_SEND_EVENT, () => {
+  const ajo = config.mep.ajoEnabled;
+  const eventName = ajo ? ALLOY_PROPOSITION_FETCH : ALLOY_SEND_EVENT;
+  const targetAjo = ajo ? 'ajo' : 'target';
+  window.addEventListener(eventName, () => {
     const responseTime = calculateResponseTime(responseStart);
     try {
       window.lana.log(`target response time: ${responseTime}`, {
@@ -80,33 +86,34 @@ export const getTargetPersonalization = async (
     }
   }, { once: true });
 
-  let targetManifests = [];
-  let targetPropositions = [];
+  let targetAjoManifests = [];
+  let targetAjoPropositions = [];
 
-  const response = await waitForEventOrTimeout(ALLOY_SEND_EVENT, timeout);
+  const response = await waitForEventOrTimeout(eventName, timeout);
+
   if (response.error) {
     try {
-      window.lana.log('target response time: ad blocker', {
+      window.lana.log(`${targetAjo} response time: ad blocker`, {
         tags: 'martech',
         errorType: 'e',
         sampleRate: 0.5,
       });
     } catch (e) {
       // eslint-disable-next-line no-console
-      console.error('Error logging target response time for ad blocker:', e);
+      console.error(`Error logging ${targetAjo} response time for ad blocker:`, e);
     }
-    return { targetManifests, targetPropositions };
+    return { targetAjoManifests, targetAjoPropositions };
   }
   if (response.timeout) {
-    waitForEventOrTimeout(ALLOY_SEND_EVENT, 5100 - timeout)
+    waitForEventOrTimeout(eventName, 5100 - timeout)
       .then(() => sendTargetResponseAnalytics(true, responseStart, timeout));
   } else {
     sendTargetResponseAnalytics(false, responseStart, timeout);
-    targetManifests = handleAlloyResponse(response.result);
-    targetPropositions = response.result?.propositions || [];
+    targetAjoManifests = handleAlloyResponse(response.result);
+    targetAjoPropositions = response.result?.propositions || [];
   }
 
-  return { targetManifests, targetPropositions };
+  return { targetAjoManifests, targetAjoPropositions };
 };
 
 const setupEntitlementCallback = () => {
