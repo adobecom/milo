@@ -17,7 +17,6 @@ const AEM_FRAGMENT_TAG_NAME = 'aem-fragment';
  * @param {string} endpoint url to fetch fragment from
  * @param {string} id fragment id
  * @returns {Promise<Object>} the raw fragment item
- * @param {string} masCommerceService settings provider
  */
 export async function getFragmentById(endpoint, id, startMark) {
     const measureName = `${AEM_FRAGMENT_TAG_NAME}:${id}${MARK_DURATION_SUFFIX}`;
@@ -126,12 +125,10 @@ export class AemFragment extends HTMLElement {
      */
     #fetchPromise;
 
-    #baseUrl = false;
-
-    #headers;
+    #author = false;
 
     static get observedAttributes() {
-        return [ATTRIBUTE_FRAGMENT];
+        return [ATTRIBUTE_FRAGMENT, ATTRIBUTE_AUTHOR];
     }
 
     constructor() {
