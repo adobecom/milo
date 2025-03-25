@@ -3939,6 +3939,12 @@
   .ufd-image-card {
     width: 72px;
   }
+
+  .ufd-image-card img {
+    margin: 0;
+    padding: 0;
+    display: flex;
+  }
   
   .directory-card-content {
     display: flex;
@@ -3967,6 +3973,12 @@
   
   .ufd-image-card {
     width: 72px;
+  }
+
+  .ufd-image-card img {
+    margin: 0;
+    padding: 0;
+    display: flex;
   }
 
   .directory-card-content {
