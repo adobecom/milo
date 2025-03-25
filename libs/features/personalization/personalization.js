@@ -1382,6 +1382,13 @@ const awaitMartech = () => new Promise((resolve) => {
   window.addEventListener(MARTECH_RETURNED_EVENT, listener, { once: true });
 });
 
+const getUserCountry = (config) => {
+  const { mep } = config;
+  return mep?.geoLocation ? {
+    userCountry: mep.userCountry,
+    countryPromise: mep.countryPromise,
+  } : {};
+};
 export async function init(enablements = {}) {
   let manifests = [];
   const {
@@ -1389,11 +1396,12 @@ export async function init(enablements = {}) {
     target, ajo, targetInteractionPromise, calculatedTimeout, postLCP,
   } = enablements;
   const config = getConfig();
+  const userCountry = getUserCountry(config);
   if (postLCP) {
     isPostLCP = true;
   } else {
     config.mep = {
-      ...(config.mep || {}),
+      ...userCountry,
       updateFragDataProps,
       preview: (mepButton !== 'off'
         && (config.env?.name !== 'prod' || mepParam || mepParam === '' || mepButton)),
