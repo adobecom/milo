@@ -22,10 +22,10 @@ export default async function init(el) {
     return;
   }
   const dc = createTag('div', {class: 'ufd-directory-card'});
+  el.closest('.section').append(dc);
   const cards = el.closest('.section').querySelectorAll('.community-lcp');
   [...cards].forEach((c) => dc.append(c));
   const imgCard = createImageCard(el);
-  el.closest('.section').append(dc);
   cardsec.replace(imgCard, el)
   // el.remove();
 }
