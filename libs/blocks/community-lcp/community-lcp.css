@@ -3938,6 +3938,7 @@
   
   .ufd-image-card {
     width: 72px;
+    border-radius: 0 12px 12px 0;
   }
 
   .ufd-image-card img {
@@ -3973,6 +3974,7 @@
   
   .ufd-image-card {
     width: 72px;
+    border-radius: 0 12px 12px 0;
   }
 
   .ufd-image-card img {
