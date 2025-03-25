@@ -4,10 +4,12 @@ import { foundDisableValues } from './dynamic-navigation.js';
 export const ACTIVE = 'active';
 export const ENABLED = 'enabled';
 export const INACTIVE = 'inactive';
+export const RESET = 'reset';
 export const tooltipInfo = {
   active: 'Displayed in green, this status appears when a user is on an entry page or a page with the Dynamic Nav enabled, indicating that the nav is fully functioning.',
   enabled: 'Displayed in yellow, this status indicates that the Dynamic Nav is set to "on," but the user has not yet visited an entry page.',
   inactive: 'Displayed in red, this status indicates that the Dynamic Nav is either not configured or has been disabled.',
+  reset: 'Displayed in grey, this status indicates that this page resets the Dynamic Nav.',
 };
 
 const getCurrentSource = (status, storageSource, authoredSource) => {
@@ -19,6 +21,8 @@ const getCurrentSource = (status, storageSource, authoredSource) => {
 
 const getStatus = (status, disabled, storageSource) => {
   if (status === 'entry') return ACTIVE;
+
+  if (status === 'reset') return RESET;
 
   if (disabled) return INACTIVE;
 
@@ -126,9 +130,8 @@ const createStatusWidget = (dynamicNavKey) => {
   return statusWidget;
 };
 
-export default async function main() {
-  const { dynamicNavKey } = getConfig();
-  const statusWidget = createStatusWidget(dynamicNavKey);
+const loadWidget = (navKey) => {
+  const statusWidget = createStatusWidget(navKey);
   const topNav = document.querySelector('.feds-topnav');
   const fedsWrapper = document.querySelector('.feds-nav-wrapper');
   const dnsClose = statusWidget.querySelector('.dns-close');
@@ -138,4 +141,17 @@ export default async function main() {
   });
 
   if (fedsWrapper) fedsWrapper.after(statusWidget);
+};
+
+export default async function main() {
+  const { dynamicNavKey } = getConfig();
+
+  if (document.querySelector('.feds-nav-wrapper')) {
+    loadWidget(dynamicNavKey);
+    return;
+  }
+
+  window.addEventListener('feds:navLoaded', () => {
+    loadWidget(dynamicNavKey);
+  });
 }
