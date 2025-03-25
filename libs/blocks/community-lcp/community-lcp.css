@@ -1,0 +1,3956 @@
+/*!*********************************************************************************************************************!*\
+  !*** css ./node_modules/.pnpm/css-loader@6.10.0_webpack@5.90.2/node_modules/css-loader/dist/cjs.js!./src/index.css ***!
+  \*********************************************************************************************************************/
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  code {
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+      monospace;
+  }
+/*!*************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/.pnpm/css-loader@6.10.0_webpack@5.90.2/node_modules/css-loader/dist/cjs.js!./node_modules/.pnpm/sass-loader@13.3.3_sass@1.72.0_webpack@5.90.2/node_modules/sass-loader/dist/cjs.js!./src/app/components/CommunityHubComponent.scss ***!
+  \*************************************************************************************************************************************************************************************************************************************************************/
+/*************************************************************************
+ *
+ * ADOBE CONFIDENTIAL
+ * ___________________
+ *
+ *  Copyright 2024 Adobe
+ *  All Rights Reserved.
+ *
+ * NOTICE: All information contained herein is, and remains
+ * the property of Adobe and its suppliers, if any. The intellectual
+ * and technical concepts contained herein are proprietary to Adobe
+ * and its suppliers and are protected by all applicable intellectual
+ * property laws, including trade secret and copyright laws.
+ * Dissemination of this information or reproduction of this material
+ * is strictly forbidden unless prior written permission is obtained
+ * from Adobe.
+ **************************************************************************/
+.communityHubHeaderSection {
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  display: flex;
+  overflow: hidden;
+  height: 200px;
+  padding-left: 48px;
+  padding-right: 48px;
+  color: var(--spectrum-global-color-gray-900);
+  color: red;
+  font-size: 32px;
+}
+
+.hubContainer {
+  background-color: white;
+  min-height: 886px;
+}
+
+.ufd-layout {
+  flex-direction: column;
+  width: 100%;
+  align-items: center;
+}
+/*!*****************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/.pnpm/css-loader@6.10.0_webpack@5.90.2/node_modules/css-loader/dist/cjs.js!./node_modules/.pnpm/sass-loader@13.3.3_sass@1.72.0_webpack@5.90.2/node_modules/sass-loader/dist/cjs.js!./src/app/components/GlobalHeader/GlobalHeader.scss ***!
+  \*****************************************************************************************************************************************************************************************************************************************************************/
+/*************************************************************************
+ *
+ * ADOBE CONFIDENTIAL
+ * ___________________
+ *
+ *  Copyright 2024 Adobe
+ *  All Rights Reserved.
+ *
+ * NOTICE: All information contained herein is, and remains
+ * the property of Adobe and its suppliers, if any. The intellectual
+ * and technical concepts contained herein are proprietary to Adobe
+ * and its suppliers and are protected by all applicable intellectual
+ * property laws, including trade secret and copyright laws.
+ * Dissemination of this information or reproduction of this material
+ * is strictly forbidden unless prior written permission is obtained
+ * from Adobe.
+ **************************************************************************/
+.iconLogoBtnDesktop, .iconLogoBtnMobile, .profileAvatarBtn, .searchIconBtn, .localeSelectorIconBtn, .clearIconBtn {
+  border: none;
+  padding-left: 0;
+  padding-right: 0;
+  background-color: transparent;
+}
+.iconLogoBtnDesktop:focus-visible, .iconLogoBtnDesktop:hover, .iconLogoBtnMobile:focus-visible, .iconLogoBtnMobile:hover, .profileAvatarBtn:focus-visible, .profileAvatarBtn:hover, .searchIconBtn:focus-visible, .searchIconBtn:hover, .localeSelectorIconBtn:focus-visible, .localeSelectorIconBtn:hover, .clearIconBtn:focus-visible, .clearIconBtn:hover {
+  background-color: transparent;
+}
+
+@media screen and (max-width: 767px) {
+  .iconLogoBtnDesktop {
+    display: none;
+  }
+}
+
+.iconLogoBtnMobile {
+  display: none;
+}
+@media screen and (max-width: 767px) {
+  .iconLogoBtnMobile {
+    display: block;
+    height: 36px;
+  }
+}
+
+.clearIconBtn {
+  position: absolute;
+  right: 0;
+  top: 4px;
+}
+
+.iconLogoBtn {
+  --spectrum-actionbutton-focus-indicator-gap: -3px;
+}
+
+.userProfileSection {
+  display: flex;
+  align-items: center;
+}
+@media only screen and (min-width: 768px) {
+  .userProfileSection .searchIcon {
+    display: none;
+  }
+}
+
+.privateMessageIcon, .notificationIcon, .localeSelectorIcon {
+  margin-top: 10px;
+}
+
+.privateMessageIcon {
+  margin-right: -2px;
+}
+
+#localeSelectorIcon {
+  margin-top: 1px;
+  margin-right: -1px;
+  cursor: pointer;
+}
+
+#searchIcon {
+  padding-left: 8px;
+  z-index: 1;
+  align-items: center;
+  display: flex;
+}
+
+#privateMessageIcon, #notificationIcon, #searchIcon {
+  fill: #707070;
+}
+
+.outlink, .localeSelectorIcon, .searchIcon {
+  margin-right: 25px;
+  vertical-align: bottom;
+}
+
+.searchIcon {
+  margin-right: 20px;
+}
+
+.userProfileSection #searchIcon {
+  margin-top: 10px;
+  padding-left: 0px;
+  cursor: pointer;
+}
+
+.usersProfileMenu {
+  border: none;
+  position: relative;
+  display: inline-block;
+}
+
+.usersProfileMenuAvatar img {
+  margin-top: 5px;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.searchNav {
+  display: flex;
+  position: absolute;
+  left: calc(50% - 99px);
+  align-items: center;
+  width: 296px;
+  height: 28px;
+}
+@media only screen and (max-width: 767px) {
+  .searchNav {
+    display: none;
+  }
+}
+@media only screen and (min-width: 768px) and (max-width: 1279px) {
+  .searchNav {
+    left: calc(50% - 120px);
+  }
+}
+
+.searchField {
+  width: 260px;
+  position: absolute;
+  border: 1px solid #e1e1e1;
+  border-radius: 4px;
+  height: 28px;
+  color: #505050;
+  padding-left: 36px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: "adobe-clean";
+}
+.searchField:focus-visible {
+  outline: 0px;
+}
+.searchField::placeholder {
+  font-style: italic;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+}
+
+.navContainer {
+  margin: 0 auto;
+}
+
+.gnavHeader {
+  justify-content: space-between;
+  align-items: center;
+  display: flex;
+  width: 100%;
+  position: relative;
+}
+
+.gnavLeft {
+  display: flex;
+  text-decoration: none;
+  align-items: center;
+  cursor: pointer;
+}
+
+.badge {
+  background-color: #D7373F;
+  bottom: 20px;
+  position: absolute;
+  line-height: 0.6rem;
+  border-radius: 8px;
+  -moz-border-radius: 8px;
+  border: 1.5px solid var(--spectrum-global-color-gray-100);
+  min-width: 1rem;
+  height: 16px;
+  box-sizing: border-box;
+  margin-left: 10px;
+}
+@media only screen and (max-width: 767px) {
+  .badge {
+    bottom: 17px;
+  }
+}
+.badge .badge-count {
+  color: #FFFFFF;
+  font-size: 10px;
+  padding: 1px 3px;
+  font-weight: 600;
+  text-align: center;
+}
+
+#HeaderWrapper {
+  border-bottom: 1px solid #eaeaea;
+  height: 60px;
+  align-items: center;
+  display: flex;
+  padding: 0 24px;
+}
+
+#btnSignIn {
+  white-space: nowrap;
+  cursor: pointer;
+}
+/*!********************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/.pnpm/css-loader@6.10.0_webpack@5.90.2/node_modules/css-loader/dist/cjs.js!./node_modules/.pnpm/sass-loader@13.3.3_sass@1.72.0_webpack@5.90.2/node_modules/sass-loader/dist/cjs.js!./src/app/components/GlobalHeader/ProfileDropdown.scss ***!
+  \********************************************************************************************************************************************************************************************************************************************************************/
+/*************************************************************************
+ *
+ * ADOBE CONFIDENTIAL
+ * ___________________
+ *
+ *  Copyright 2024 Adobe
+ *  All Rights Reserved.
+ *
+ * NOTICE: All information contained herein is, and remains
+ * the property of Adobe and its suppliers, if any. The intellectual
+ * and technical concepts contained herein are proprietary to Adobe
+ * and its suppliers and are protected by all applicable intellectual
+ * property laws, including trade secret and copyright laws.
+ * Dissemination of this information or reproduction of this material
+ * is strictly forbidden unless prior written permission is obtained
+ * from Adobe.
+ **************************************************************************/
+.ghostLoader {
+  background: linear-gradient(90deg, #eaeaea, #ffffff);
+  background-size: 400% 100%;
+  animation: gradient 2s linear infinite;
+}
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
+.dropdownWrapper .usersProfileMenuDropdown {
+  margin-top: 10px;
+  flex-direction: column;
+  position: absolute;
+  background-color: #ffffff;
+  width: 305px;
+  overflow: auto;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  z-index: 1;
+  right: -5px;
+  padding: 4px 12px 16px 12px;
+  font-family: adobe-clean;
+  border: 1px solid #cacaca;
+  border-radius: 4px;
+}
+.dropdownWrapper .usersProfileMenuDropdown .usersProfileMenuRow1 {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding-top: 20px;
+  padding-bottom: 23px;
+}
+.dropdownWrapper .usersProfileMenuDropdown .usersProfileMenuRow1 .usersProfileMenuRow1Col1 {
+  display: flex;
+}
+.dropdownWrapper .usersProfileMenuDropdown .usersProfileMenuRow1 .usersProfileMenuRow1Col1 img {
+  width: 75px;
+  height: 75px;
+  margin-top: 4px;
+  margin-left: 12px;
+  border-radius: 50%;
+}
+.dropdownWrapper .usersProfileMenuDropdown .usersProfileMenuRow1 .usersProfileMenuRow1Col2 {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding-left: 12px;
+  -webkit-font-smoothing: antialiased;
+}
+.dropdownWrapper .usersProfileMenuDropdown .usersProfileMenuRow1 .usersProfileMenuRow1Col2 .authorLogin, .dropdownWrapper .usersProfileMenuDropdown .usersProfileMenuRow1 .usersProfileMenuRow1Col2 .authorEmail {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 198px;
+  white-space: nowrap;
+}
+.dropdownWrapper .usersProfileMenuDropdown .usersProfileMenuRow1 .usersProfileMenuRow1Col2 .authorLogin {
+  margin: 0;
+  height: 27px;
+  color: #2c2c2c;
+  font: normal normal bold 22px/29px adobe-clean;
+}
+.dropdownWrapper .usersProfileMenuDropdown .usersProfileMenuRow1 .usersProfileMenuRow1Col2 .authorEmail {
+  color: #6e6e6e;
+  margin-top: 2px;
+  margin-bottom: 0px;
+  font: normal normal normal 14px/21px adobe-clean;
+}
+.dropdownWrapper .usersProfileMenuDropdown .usersProfileMenuRow1 .usersProfileMenuRow1Col2 .adobeAccount {
+  cursor: pointer;
+  text-decoration: none;
+  margin-top: 10px;
+  font: normal normal normal 14px/21px adobe-clean;
+  color: #4B4B4B;
+}
+.dropdownWrapper .usersProfileMenuDropdown .usersProfileMenuRow2, .dropdownWrapper .usersProfileMenuDropdown .usersProfileMenuRow3 {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.dropdownWrapper .usersProfileMenuDropdown .usersProfileMenuRow2 a, .dropdownWrapper .usersProfileMenuDropdown .usersProfileMenuRow3 a {
+  padding-bottom: 5px;
+  color: #4b4b4b;
+  text-decoration: none;
+  width: -webkit-fill-available;
+  width: -moz-available;
+  display: flex;
+  padding-left: 12px;
+  padding-top: 5px;
+  font: normal normal normal 16px/24px adobe-clean;
+  -webkit-font-smoothing: antialiased;
+}
+.dropdownWrapper .usersProfileMenuDropdown .usersProfileMenuRow2 a:hover, .dropdownWrapper .usersProfileMenuDropdown .usersProfileMenuRow3 a:hover {
+  background-color: #f5f5f5;
+  border-radius: 4px;
+}
+.dropdownWrapper .usersProfileMenuDropdown .usersProfileMenuRow2 {
+  padding-bottom: 6px;
+}
+.dropdownWrapper .usersProfileMenuDropdown .usersProfileMenuRow2 p {
+  margin: 0;
+  font-size: 10px;
+  color: #6e6e6e;
+  padding-bottom: 10px;
+  padding-left: 12px;
+  font-weight: bold;
+  letter-spacing: 0.66px;
+  font: normal normal normal 11px/14px adobe-clean;
+  -webkit-font-smoothing: antialiased;
+}
+.dropdownWrapper .usersProfileMenuDropdown .usersProfileMenuRow3 {
+  margin-top: -8px;
+}
+.dropdownWrapper .usersProfileMenuDropdown .usersProfileMenuRow3 div {
+  padding-bottom: 5px;
+  color: #4b4b4b;
+  text-decoration: none;
+  width: -webkit-fill-available;
+  width: -moz-available;
+  display: flex;
+  padding-left: 12px;
+  padding-top: 5px;
+  cursor: pointer;
+  font: normal normal normal 16px/24px adobe-clean;
+  -webkit-font-smoothing: antialiased;
+}
+.dropdownWrapper .usersProfileMenuDropdown .usersProfileMenuRow3 div:hover {
+  background-color: #f5f5f5;
+  border-radius: 4px;
+}
+.dropdownWrapper .usersProfileMenuDropdown .horizontalRule {
+  border-top: 1px solid #e1e1e1;
+  padding-bottom: 13px;
+  margin: 0px 12px;
+}
+.dropdownWrapper .arrow {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-top: 1px solid #cacaca;
+  border-right: 0px solid #ffffff;
+  border-bottom: 0px solid #ffffff;
+  border-left: 1px solid #cacaca;
+  top: 30px;
+  left: 11px;
+  content: "";
+  transform: rotate(45deg);
+  background: #ffffff;
+  z-index: 1;
+}
+/*!*******************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/.pnpm/css-loader@6.10.0_webpack@5.90.2/node_modules/css-loader/dist/cjs.js!./node_modules/.pnpm/sass-loader@13.3.3_sass@1.72.0_webpack@5.90.2/node_modules/sass-loader/dist/cjs.js!./src/app/components/GlobalHeader/LocaleDropDown.scss ***!
+  \*******************************************************************************************************************************************************************************************************************************************************************/
+/*************************************************************************
+ *
+ * ADOBE CONFIDENTIAL
+ * ___________________
+ *
+ *  Copyright 2024 Adobe
+ *  All Rights Reserved.
+ *
+ * NOTICE: All information contained herein is, and remains
+ * the property of Adobe and its suppliers, if any. The intellectual
+ * and technical concepts contained herein are proprietary to Adobe
+ * and its suppliers and are protected by all applicable intellectual
+ * property laws, including trade secret and copyright laws.
+ * Dissemination of this information or reproduction of this material
+ * is strictly forbidden unless prior written permission is obtained
+ * from Adobe.
+ **************************************************************************/
+.localeDropdownWrapper .localeDropdown {
+  margin-top: 10px;
+  flex-direction: column;
+  position: absolute;
+  background-color: #ffffff;
+  width: 220px;
+  overflow: auto;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  z-index: 1;
+  right: -5px;
+  font-family: adobe-clean;
+  border: 1px solid #cacaca;
+  border-radius: 4px;
+}
+
+.locale-menu {
+  padding: 6px 0px 4px 0px;
+  overflow: hidden;
+  background-color: transparent;
+  display: inline-block;
+  margin: 4px 0;
+  list-style-type: none;
+}
+
+.global-community-label {
+  display: flex;
+  flex-direction: row;
+  font-weight: 800;
+  line-height: 1.3;
+  color: #505050;
+  align-items: self-start;
+}
+
+.menu-item {
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  padding: 7px 12px 7px 10px;
+  margin: 0;
+  border-left: 2px solid transparent;
+  min-height: 32px;
+  font-size: 14px;
+  font-weight: 500;
+  font-style: normal;
+}
+
+.global-community-text {
+  margin-right: 10px;
+}
+
+.global-community-collapse {
+  align-items: center;
+}
+
+.language-list-dropdown {
+  display: block;
+}
+
+.menu-item-label {
+  flex: 1 1 auto;
+  margin-left: 10px;
+  color: #505050;
+}
+
+.menu-item:hover {
+  background-color: #f5f5f5;
+  border-radius: 4px;
+}
+
+.language-text-label {
+  font-weight: 600;
+  color: #707070;
+  position: relative;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  padding: 7px 12px 7px 10px;
+  margin: 0;
+  border-left: 2px solid transparent;
+  min-height: 32px;
+  font-size: 14px;
+  font-style: normal;
+}
+
+.locale-arrow {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-top: 1px solid #cacaca;
+  border-right: 0px solid #ffffff;
+  border-bottom: 0px solid #ffffff;
+  border-left: 1px solid #cacaca;
+  content: "";
+  transform: rotate(45deg);
+  background: #ffffff;
+  z-index: 1;
+  top: 45px;
+}
+
+.signin {
+  right: 145px;
+}
+
+.locale-item-label {
+  margin-left: -40px;
+  font-weight: 500;
+  color: #505050;
+}
+
+.locale-select {
+  display: flex;
+  flex-direction: row;
+}
+
+.locale-text {
+  margin-left: 8px;
+  line-height: 1.3;
+}
+
+.locale-selected {
+  color: #1473e6;
+}
+
+.checkmark-selected {
+  display: none;
+}
+
+.locale-menu-dropdown-wrapper .show {
+  display: flex;
+}
+
+.checkmark {
+  width: 12px;
+}
+
+.restrictedLocales {
+  padding-bottom: 0px;
+}
+
+.restrictedLocales .infoActionButton {
+  margin-top: -5px;
+}
+/*!*****************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/.pnpm/css-loader@6.10.0_webpack@5.90.2/node_modules/css-loader/dist/cjs.js!./node_modules/.pnpm/sass-loader@13.3.3_sass@1.72.0_webpack@5.90.2/node_modules/sass-loader/dist/cjs.js!./src/app/components/Banner/Banner.scss ***!
+  \*****************************************************************************************************************************************************************************************************************************************************/
+/*************************************************************************
+ *
+ * ADOBE CONFIDENTIAL
+ * ___________________
+ *
+ *  Copyright 2024 Adobe
+ *  All Rights Reserved.
+ *
+ * NOTICE: All information contained herein is, and remains
+ * the property of Adobe and its suppliers, if any. The intellectual
+ * and technical concepts contained herein are proprietary to Adobe
+ * and its suppliers and are protected by all applicable intellectual
+ * property laws, including trade secret and copyright laws.
+ * Dissemination of this information or reproduction of this material
+ * is strictly forbidden unless prior written permission is obtained
+ * from Adobe.
+ **************************************************************************/
+.bannerContainer {
+  margin: 0;
+  padding: 20px 80px;
+  background-color: #FAFAFA;
+  line-height: 34px;
+}
+@media screen and (min-width: 768px) and (max-width: 1279px) {
+  .bannerContainer {
+    padding: 20px 60px;
+  }
+}
+
+.bannerContent {
+  flex-direction: row;
+  text-align: left;
+  overflow: visible;
+  max-width: 1280px;
+  margin: 0 auto;
+  position: relative;
+  text-align: center;
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  align-items: center;
+}
+@media only screen and (max-width: 767px) {
+  .bannerContent {
+    flex-direction: column;
+  }
+}
+
+.bannerTitle {
+  display: inline-block;
+  margin: 0;
+  min-height: 41px;
+  margin-top: 7px;
+  font-weight: 800;
+  -webkit-font-smoothing: antialiased;
+  font-size: 28px;
+}
+@media only screen and (max-width: 767px) {
+  .bannerTitle {
+    padding-top: 8px;
+    font-size: 22px;
+    margin: 0;
+    line-height: 1.2;
+    min-height: fit-content;
+    display: flex;
+    align-items: end;
+  }
+}
+
+.bannerLogoContainer {
+  flex: 1;
+  padding-top: 5px;
+  padding-bottom: 0px;
+}
+@media only screen and (max-width: 767px) {
+  .bannerLogoContainer {
+    display: flex;
+    flex-direction: column;
+    min-height: fit-content;
+    padding-top: 0px;
+  }
+}
+
+.bannerLogo {
+  display: flex;
+  text-decoration: none;
+  color: inherit;
+  width: fit-content;
+}
+@media only screen and (max-width: 767px) {
+  .bannerLogo {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+.productLogo {
+  width: 48px;
+  height: 48px;
+}
+@media only screen and (min-width: 767px) {
+  .productLogo {
+    margin-right: 22px;
+  }
+}
+
+#postToCommunityBtn {
+  font-size: 15px;
+  font-weight: 700;
+  background-color: #1473e6;
+  font-family: "adobe-clean";
+  display: flex;
+}
+@media only screen and (max-width: 767px) {
+  #postToCommunityBtn {
+    margin-top: 10px;
+    margin-bottom: 20px;
+    text-wrap: nowrap;
+  }
+}
+#postToCommunityBtn:hover {
+  background-color: #0d66d0;
+  border-color: #0d66d0;
+  color: white;
+}
+
+.postToCommunityBtn {
+  min-width: 156px;
+}
+
+.postToCommunityBtnTablet {
+  min-width: 72px;
+}
+
+.launchContainer {
+  display: flex;
+  align-items: center;
+  height: 32px;
+}
+@media only screen and (max-width: 767px) {
+  .launchContainer {
+    height: fit-content;
+    flex-direction: column-reverse;
+  }
+}
+
+#launchLink {
+  margin-right: 26px;
+  color: #2C2C2C;
+  font-size: 16px;
+  text-decoration: none;
+}
+@media only screen and (max-width: 767px) {
+  #launchLink {
+    line-height: 0px;
+    margin-right: 10px;
+  }
+}
+#launchLink:hover .launchText {
+  text-decoration: underline;
+  color: #0D66D0;
+}
+
+.launchImage {
+  height: 14px;
+  margin-bottom: -2px;
+}
+
+.launchText {
+  padding-left: 10px;
+  padding-right: 6px;
+  color: #6E6E6E;
+  font-weight: bold;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+/*!***********************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/.pnpm/css-loader@6.10.0_webpack@5.90.2/node_modules/css-loader/dist/cjs.js!./node_modules/.pnpm/sass-loader@13.3.3_sass@1.72.0_webpack@5.90.2/node_modules/sass-loader/dist/cjs.js!./src/app/components/HubLayout/HubLayout.scss ***!
+  \***********************************************************************************************************************************************************************************************************************************************************/
+/*************************************************************************
+ *
+ * ADOBE CONFIDENTIAL
+ * ___________________
+ *
+ *  Copyright 2024 Adobe
+ *  All Rights Reserved.
+ *
+ * NOTICE: All information contained herein is, and remains
+ * the property of Adobe and its suppliers, if any. The intellectual
+ * and technical concepts contained herein are proprietary to Adobe
+ * and its suppliers and are protected by all applicable intellectual
+ * property laws, including trade secret and copyright laws.
+ * Dissemination of this information or reproduction of this material
+ * is strictly forbidden unless prior written permission is obtained
+ * from Adobe.
+ **************************************************************************/
+.hubLayout {
+  max-width: 1280px;
+  margin: auto;
+  padding: 0 80px;
+}
+@media screen and (max-width: 1279px) {
+  .hubLayout {
+    padding: 0 60px;
+  }
+}
+@media only screen and (max-width: 767px) {
+  .hubLayout {
+    padding: 0 18px;
+  }
+}
+
+.hubHeader {
+  color: #2C2C2C;
+  font: 800 22px/29px adobe-clean;
+}
+
+.ugcCarouselWrapper {
+  height: 288px;
+}
+@media only screen and (max-width: 767px) {
+  .ugcCarouselWrapper {
+    height: auto;
+  }
+}
+
+.sectionWrapper {
+  margin-bottom: 40px;
+}
+.sectionWrapper .section {
+  padding-left: 0px;
+  padding-right: 0px;
+}
+/*!**********************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/.pnpm/css-loader@6.10.0_webpack@5.90.2/node_modules/css-loader/dist/cjs.js!./node_modules/.pnpm/sass-loader@13.3.3_sass@1.72.0_webpack@5.90.2/node_modules/sass-loader/dist/cjs.js!./node_modules/.pnpm/@community+hubs@2.0.20_xrlecvytmkdnppxshg3hjh3v5u/node_modules/@community/hubs/dist/app/components/Gallery/Gallery.scss ***!
+  \**********************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+.galleryHeaderSection {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.styleContainer {
+  height: 100%;
+  flex-direction: column;
+  display: flex;
+  overflow-y: scroll;
+}
+
+.feed-item {
+  outline: none;
+}
+.feed-item:focus-visible::after {
+  content: "";
+  display: flex;
+  width: calc(100% + 2 * var(--spectrum-focus-indicator-thickness));
+  height: calc(100% + 2 * var(--spectrum-focus-indicator-thickness));
+  top: calc(-1 * var(--spectrum-focus-indicator-thickness));
+  left: calc(-1 * var(--spectrum-focus-indicator-thickness));
+  pointer-events: none;
+  position: absolute;
+  border-radius: var(--spectrum-alias-border-radius-medium);
+  transition: box-shadow var(--spectrum-global-animation-duration-100) ease-in-out;
+  box-shadow: 0 0 0 var(--spectrum-focus-indicator-thickness) var(--highcontrast-focus-indicator-color, var(--spectrum-alias-focus-ring-color));
+}
+/*!*****************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/.pnpm/css-loader@6.10.0_webpack@5.90.2/node_modules/css-loader/dist/cjs.js!./node_modules/.pnpm/sass-loader@13.3.3_sass@1.72.0_webpack@5.90.2/node_modules/sass-loader/dist/cjs.js!./node_modules/.pnpm/@community+hubs@2.0.20_xrlecvytmkdnppxshg3hjh3v5u/node_modules/@community/hubs/dist/app/shared/components/Heading/Heading.scss ***!
+  \*****************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+/*************************************************************************
+ *
+ * ADOBE CONFIDENTIAL
+ * ___________________
+ *
+ *  Copyright 2023 Adobe
+ *  All Rights Reserved.
+ *
+ * NOTICE: All information contained herein is, and remains
+ * the property of Adobe and its suppliers, if any. The intellectual
+ * and technical concepts contained herein are proprietary to Adobe
+ * and its suppliers and are protected by all applicable intellectual
+ * property laws, including trade secret and copyright laws.
+ * Dissemination of this information or reproduction of this material
+ * is strictly forbidden unless prior written permission is obtained
+ * from Adobe.
+ **************************************************************************/
+.heading {
+  font-family: var(--default-UI-font);
+}
+
+.headingXXL {
+  font-size: var(--spectrum-font-size-1100);
+}
+@media only screen and (max-width: 768px) {
+  .headingXXL {
+    font-size: var(--spectrum-font-size-900);
+  }
+}
+
+.headingXL {
+  font-size: var(--spectrum-font-size-900);
+}
+@media only screen and (max-width: 768px) {
+  .headingXL {
+    font-size: var(--spectrum-font-size-700);
+  }
+}
+
+.headingL {
+  font-size: var(--spectrum-font-size-700);
+}
+@media only screen and (max-width: 768px) {
+  .headingL {
+    font-size: var(--spectrum-font-size-500);
+  }
+}
+
+.headingM {
+  font-size: var(--spectrum-font-size-500);
+}
+@media only screen and (max-width: 768px) {
+  .headingM {
+    font-size: var(--spectrum-font-size-300);
+  }
+}
+
+.headingS {
+  font-size: var(--spectrum-font-size-300);
+}
+@media only screen and (max-width: 768px) {
+  .headingS {
+    font-size: var(--spectrum-font-size-200);
+  }
+}
+
+.headingXS {
+  font-size: var(--spectrum-font-size-200);
+}
+@media only screen and (max-width: 768px) {
+  .headingXS {
+    font-size: var(--spectrum-font-size-100);
+  }
+}
+
+.headingXXS {
+  font-size: var(--spectrum-font-size-100);
+}
+/*!********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/.pnpm/css-loader@6.10.0_webpack@5.90.2/node_modules/css-loader/dist/cjs.js!./node_modules/.pnpm/sass-loader@13.3.3_sass@1.72.0_webpack@5.90.2/node_modules/sass-loader/dist/cjs.js!./node_modules/.pnpm/@community+hubs@2.0.20_xrlecvytmkdnppxshg3hjh3v5u/node_modules/@community/hubs/dist/app/components/ProfileModal/ProfileModal.scss ***!
+  \********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+.profileDivider {
+  margin-top: 18px;
+  margin-bottom: 18px;
+}
+
+.profileDialog {
+  background-color: var(--spectrum-gray-50);
+  border-radius: 16px;
+  max-width: 94vw;
+  font-family: "adobe-clean";
+}
+
+.profileText {
+  margin-bottom: 18px;
+  font-size: 16px;
+}
+
+.profileNameField {
+  width: 250px;
+}
+@media only screen and (max-width: 384px) {
+  .profileNameField {
+    width: 223px;
+  }
+}
+
+.modalCloseButton {
+  position: "absolute";
+  top: 10px;
+  right: 10px;
+}
+
+.profileHeader {
+  padding-bottom: 16px;
+}
+
+.profileImage {
+  margin-right: 40px;
+}
+@media only screen and (max-width: 768px) {
+  .profileImage {
+    width: 100%;
+    margin-right: 0px;
+    margin-bottom: 12px;
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  .profileName {
+    align-items: center;
+    width: 100%;
+  }
+}
+
+.underlay {
+  z-index: 10000;
+}
+
+.dialogContent {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10001;
+}
+
+.blur-background {
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+}
+
+.dim-background {
+  background-color: rgb(0, 0, 0);
+  border-radius: var(--spectrum-global-dimension-size-200);
+}
+@media screen and (max-width: 768px) {
+  .dim-background {
+    max-width: 100dvw;
+  }
+}
+/*!**********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/.pnpm/css-loader@6.10.0_webpack@5.90.2/node_modules/css-loader/dist/cjs.js!./node_modules/.pnpm/sass-loader@13.3.3_sass@1.72.0_webpack@5.90.2/node_modules/sass-loader/dist/cjs.js!./node_modules/.pnpm/@community+hubs@2.0.20_xrlecvytmkdnppxshg3hjh3v5u/node_modules/@community/hubs/dist/app/shared/components/Dialog/FeedbackModal.scss ***!
+  \**********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+/*************************************************************************
+ *
+ * ADOBE CONFIDENTIAL
+ * ___________________
+ *
+ *  Copyright 2023 Adobe
+ *  All Rights Reserved.
+ *
+ * NOTICE: All information contained herein is, and remains
+ * the property of Adobe and its suppliers, if any. The intellectual
+ * and technical concepts contained herein are proprietary to Adobe
+ * and its suppliers and are protected by all applicable intellectual
+ * property laws, including trade secret and copyright laws.
+ * Dissemination of this information or reproduction of this material
+ * is strictly forbidden unless prior written permission is obtained
+ * from Adobe.
+ **************************************************************************/
+.feedbackDialog {
+  background-color: var(--spectrum-gray-50);
+  border-radius: var(--spectrum-global-dimension-size-50);
+  max-width: 87vw;
+  font-family: "adobe-clean";
+}
+.feedbackDialog .feedbackElement {
+  width: 100%;
+  margin: auto 0;
+}
+.feedbackDialog .radioButton {
+  padding-left: 4px;
+}
+.feedbackDialog .reportFeedbackElement {
+  width: 50%;
+  height: var(--spectrum-global-dimension-size-400);
+  margin: auto 0;
+}
+.feedbackDialog .reportFeedbackElement p {
+  font-size: var(--spectrum-font-size-75);
+  line-height: var(--spectrum-global-dimension-size-185);
+}
+.feedbackDialog .feedbackHeading {
+  padding-bottom: var(--spectrum-global-dimension-size-50);
+}
+.feedbackDialog .feedbackImageCheckboxThumbnail {
+  width: var(--spectrum-global-dimension-size-1000);
+  height: var(--spectrum-global-dimension-size-650);
+  object-fit: cover;
+  margin: var(--spectrum-global-dimension-size-125) 0;
+  border: 2px solid var(--spectrum-global-color-gray-700);
+}
+.feedbackDialog .feedbackElementWithImage {
+  width: 100%;
+  margin: auto 0;
+}
+.feedbackDialog .feedbackElementWithImage p {
+  font-size: var(--spectrum-font-size-75);
+  line-height: var(--spectrum-global-dimension-size-185);
+}
+.feedbackDialog .feedbackForm {
+  max-height: calc(100vh - var(--spectrum-global-dimension-size-3000));
+  overflow: auto;
+}
+
+.underlay {
+  z-index: 10000;
+}
+
+.dialogContent {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10001;
+}
+
+.blur-background {
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+}
+
+.dim-background {
+  background-color: rgb(0, 0, 0);
+  border-radius: var(--spectrum-global-dimension-size-200);
+}
+@media screen and (max-width: 768px) {
+  .dim-background {
+    max-width: 100dvw;
+  }
+}
+
+.heading {
+  font-family: var(--default-UI-font);
+}
+
+.headingXXL {
+  font-size: var(--spectrum-font-size-1100);
+}
+@media only screen and (max-width: 768px) {
+  .headingXXL {
+    font-size: var(--spectrum-font-size-900);
+  }
+}
+
+.headingXL {
+  font-size: var(--spectrum-font-size-900);
+}
+@media only screen and (max-width: 768px) {
+  .headingXL {
+    font-size: var(--spectrum-font-size-700);
+  }
+}
+
+.headingL {
+  font-size: var(--spectrum-font-size-700);
+}
+@media only screen and (max-width: 768px) {
+  .headingL {
+    font-size: var(--spectrum-font-size-500);
+  }
+}
+
+.headingM {
+  font-size: var(--spectrum-font-size-500);
+}
+@media only screen and (max-width: 768px) {
+  .headingM {
+    font-size: var(--spectrum-font-size-300);
+  }
+}
+
+.headingS {
+  font-size: var(--spectrum-font-size-300);
+}
+@media only screen and (max-width: 768px) {
+  .headingS {
+    font-size: var(--spectrum-font-size-200);
+  }
+}
+
+.headingXS {
+  font-size: var(--spectrum-font-size-200);
+}
+@media only screen and (max-width: 768px) {
+  .headingXS {
+    font-size: var(--spectrum-font-size-100);
+  }
+}
+
+.headingXXS {
+  font-size: var(--spectrum-font-size-100);
+}
+/*!**************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/.pnpm/css-loader@6.10.0_webpack@5.90.2/node_modules/css-loader/dist/cjs.js!./node_modules/.pnpm/sass-loader@13.3.3_sass@1.72.0_webpack@5.90.2/node_modules/sass-loader/dist/cjs.js!./node_modules/.pnpm/@community+hubs@2.0.20_xrlecvytmkdnppxshg3hjh3v5u/node_modules/@community/hubs/dist/app/components/SubmissionModal/SubmissionModal.scss ***!
+  \**************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+.submissionImage {
+  margin-right: 16px;
+}
+@media only screen and (max-width: 768px) {
+  .submissionImage {
+    width: 100%;
+    margin-right: 0px;
+    margin-bottom: 16px;
+  }
+}
+
+.imageContainer {
+  height: 262px;
+  width: 262px;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}
+
+.submissionHeader {
+  padding-bottom: 16px;
+}
+
+.submissionText {
+  font-size: 14px;
+  line-height: 150%;
+}
+.submissionText .boldText {
+  font-weight: 700;
+  line-height: 150%;
+  padding-bottom: 8px;
+}
+.submissionText .submissionNote {
+  font-size: 11px;
+  line-height: 150%;
+}
+@media only screen and (max-width: 768px) {
+  .submissionText .submissionNote {
+    padding-bottom: 16px;
+  }
+}
+.submissionText .submissionIcons {
+  font-size: 12px;
+  line-height: 150%;
+  display: flex;
+  padding: var(--Number, 0px);
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-200, 12px);
+}
+
+.submissionContent {
+  display: flex;
+  flex-flow: nowrap;
+  justify-content: center;
+  align-items: center;
+  max-height: calc(100vh - var(--spectrum-global-dimension-size-3000));
+  overflow: auto;
+}
+@media only screen and (max-width: 768px) {
+  .submissionContent {
+    width: 100%;
+    flex-flow: wrap;
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  .fadingGradientBottom {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    height: 17px;
+    margin-top: -16px;
+  }
+  .darkGradient {
+    background: linear-gradient(0deg, rgb(29, 29, 29) 0%, rgba(29, 29, 29, 0) 100%);
+  }
+  .lightGradient {
+    background: linear-gradient(0deg, rgb(255, 255, 255) 0%, rgba(255, 255, 255, 0) 100%);
+  }
+  .submissionButton {
+    margin-top: -16px;
+  }
+}
+@media only screen and (max-width: 768px) {
+  .submissionDialog {
+    width: 345px;
+  }
+}
+
+.guidelines {
+  align-items: self-start;
+}
+
+.iconContainer {
+  display: flex;
+  width: 20px;
+  height: 20px;
+  align-items: flex-start;
+  flex-shrink: 0;
+}
+/*!***********************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/.pnpm/css-loader@6.10.0_webpack@5.90.2/node_modules/css-loader/dist/cjs.js!./node_modules/.pnpm/sass-loader@13.3.3_sass@1.72.0_webpack@5.90.2/node_modules/sass-loader/dist/cjs.js!./node_modules/.pnpm/@community+hubs@2.0.20_xrlecvytmkdnppxshg3hjh3v5u/node_modules/@community/hubs/dist/app/components/Artwork/CardLike.scss ***!
+  \***********************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+.likeButton {
+  gap: 0;
+  position: absolute;
+  left: var(--spectrum-global-dimension-size-150);
+  bottom: var(--spectrum-global-dimension-size-150);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #ffffff;
+  color: #292929;
+}
+
+.likeButton:hover {
+  background-color: #E9E9E9;
+}
+
+.likeIconContainer {
+  margin-left: -5px;
+  vertical-align: middle;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.likedIcon {
+  display: none;
+}
+
+.liked .likeIcon {
+  display: none;
+}
+
+.liked .likedIcon {
+  display: block;
+}
+/*!************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/.pnpm/css-loader@6.10.0_webpack@5.90.2/node_modules/css-loader/dist/cjs.js!./node_modules/.pnpm/sass-loader@13.3.3_sass@1.72.0_webpack@5.90.2/node_modules/sass-loader/dist/cjs.js!./node_modules/.pnpm/@community+hubs@2.0.20_xrlecvytmkdnppxshg3hjh3v5u/node_modules/@community/hubs/dist/app/components/ImageWithPlaceholder/ImageWithPlaceholder.scss ***!
+  \************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+/*************************************************************************
+ *
+ * ADOBE CONFIDENTIAL
+ * ___________________
+ *
+ *  Copyright 2023 Adobe
+ *  All Rights Reserved.
+ *
+ * NOTICE: All information contained herein is, and remains
+ * the property of Adobe and its suppliers, if any. The intellectual
+ * and technical concepts contained herein are proprietary to Adobe
+ * and its suppliers and are protected by all applicable intellectual
+ * property laws, including trade secret and copyright laws.
+ * Dissemination of this information or reproduction of this material
+ * is strictly forbidden unless prior written permission is obtained
+ * from Adobe.
+ **************************************************************************/
+.container {
+  position: relative;
+  z-index: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.blur {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  filter: blur(20px) brightness(0.5);
+  overflow: hidden;
+}
+
+.container > * {
+  transition: opacity 0.2s ease-in-out;
+}
+
+.main {
+  z-index: 1;
+}
+
+.loading > .main {
+  opacity: 0;
+}
+
+.loaded > .main {
+  opacity: 1;
+}
+
+.loading > span,
+.loaded > span {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(-45deg, var(--spectrum-gray-75), var(--spectrum-gray-300));
+  background-size: 400% 400%;
+}
+
+.loading > span {
+  opacity: 1;
+  animation: gradient 2s ease infinite;
+}
+
+.loaded > span {
+  opacity: 0;
+  animation: none;
+}
+
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+/*!**********************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/.pnpm/css-loader@6.10.0_webpack@5.90.2/node_modules/css-loader/dist/cjs.js!./node_modules/.pnpm/sass-loader@13.3.3_sass@1.72.0_webpack@5.90.2/node_modules/sass-loader/dist/cjs.js!./node_modules/.pnpm/@community+hubs@2.0.20_xrlecvytmkdnppxshg3hjh3v5u/node_modules/@community/hubs/dist/app/components/Artwork/Artwork.scss ***!
+  \**********************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+.inspire-holder {
+  height: 100%;
+  border-radius: var(--spectrum-alias-border-radius-medium);
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.inspire-sample-overlay {
+  border-radius: var(--spectrum-alias-border-radius-medium);
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  right: 0px;
+  bottom: 0px;
+  padding: var(--spectrum-global-dimension-size-150);
+  background-color: var(--spectrum-gray-900, #000);
+  opacity: 0.69;
+  color: white;
+  opacity: 0;
+  animation-play-state: paused;
+  transition: opacity 0.3s ease-in-out 0.1s;
+  cursor: pointer;
+}
+
+.selected-no-hover {
+  animation-play-state: running;
+  opacity: 1;
+}
+
+.inspire-sample-overlay:hover,
+.inspire-sample-overlay:focus-within,
+:focus-visible .inspire-sample-overlay {
+  animation-play-state: running;
+  opacity: 1;
+  transition-delay: 0s;
+}
+
+.inspire-sample-description-container {
+  overflow: hidden;
+  position: relative;
+  cursor: default;
+  display: flex;
+  gap: 10px;
+  flex-direction: column;
+  height: 100%;
+  font-size: var(--spectrum-global-dimension-font-size-300);
+  -webkit-mask-image: linear-gradient(to top, transparent 2%, black 50%);
+  mask-image: linear-gradient(to top, transparent 2%, black 50%);
+  /* Make sure text doesn't overlap with Content Credentials icon */
+  margin-right: var(--spectrum-global-dimension-size-300);
+  padding-bottom: 20px;
+  cursor: pointer;
+  animation-play-state: inherit;
+}
+.inspire-sample-description-container .inspire-sample-description {
+  display: inline-block;
+  width: 100%;
+}
+.inspire-sample-description-container .isAnimated {
+  animation: prompt-scroll linear infinite;
+  animation-play-state: inherit;
+  animation-duration: var(--animation-speed);
+}
+
+.inspire-sample-description-container-animated {
+  -webkit-mask-image: linear-gradient(to top, transparent 0%, black 25%, black 75%, transparent 100%);
+  mask-image: linear-gradient(to top, transparent 0%, black 25%, black 75%, transparent 100%);
+  height: fit-content;
+}
+
+@keyframes prompt-scroll {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(0, calc(-100% - 10px));
+  }
+}
+.inspire-sample-action {
+  min-height: 30px;
+}
+
+.try-prompt-button {
+  position: absolute;
+  right: var(--spectrum-global-dimension-size-150);
+  bottom: var(--spectrum-global-dimension-size-150);
+  background-color: #ffffff;
+  color: #292929;
+}
+
+.try-prompt-button:hover {
+  background-color: #E9E9E9;
+}
+
+.feed-item {
+  outline: none;
+  position: relative;
+}
+.feed-item:focus-visible::after {
+  content: "";
+  display: flex;
+  width: calc(100% + 2 * var(--spectrum-focus-indicator-thickness));
+  height: calc(100% + 2 * var(--spectrum-focus-indicator-thickness));
+  top: calc(-1 * var(--spectrum-focus-indicator-thickness));
+  left: calc(-1 * var(--spectrum-focus-indicator-thickness));
+  pointer-events: none;
+  position: absolute;
+  border-radius: var(--spectrum-alias-border-radius-medium);
+  transition: box-shadow var(--spectrum-global-animation-duration-100) ease-in-out;
+  box-shadow: 0 0 0 var(--spectrum-focus-indicator-thickness) var(--highcontrast-focus-indicator-color, var(--spectrum-alias-focus-ring-color));
+}
+/*!*********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/.pnpm/css-loader@6.10.0_webpack@5.90.2/node_modules/css-loader/dist/cjs.js!./node_modules/.pnpm/sass-loader@13.3.3_sass@1.72.0_webpack@5.90.2/node_modules/sass-loader/dist/cjs.js!./node_modules/.pnpm/@community+hubs@2.0.20_xrlecvytmkdnppxshg3hjh3v5u/node_modules/@community/hubs/dist/app/components/Social/SocialDialog/HubSocialComponent.scss ***!
+  \*********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+.try-prompt-button {
+  position: absolute;
+  right: var(--spectrum-global-dimension-size-150);
+  bottom: var(--spectrum-global-dimension-size-150);
+}
+
+.social-modal {
+  width: 325px;
+  margin-top: 24px;
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, 0);
+}
+
+.social-modal-overlay {
+  z-index: 9999;
+  background: var(--palette-transparent-black-800, rgba(0, 0, 0, 0.84));
+  position: fixed;
+  inset: 0px;
+  height: 100%;
+  overflow: auto;
+}
+
+.ReactModal__Content:focus-visible {
+  outline: 0;
+}
+
+.social-modal-wrapper {
+  padding-top: 24px;
+  display: flex;
+  align-items: flex-start;
+  margin-top: var(--spacing-400, 24px) var(--Number, 0px);
+}
+
+#social-modal-main {
+  margin-top: 28px;
+}
+
+.tiktok-modal-main {
+  width: 325px;
+}
+
+.instagram-modal-main {
+  max-width: 345px;
+}
+
+#social-iframe {
+  background-color: var(--spectrum-gray-900, #FFF);
+  border: 0;
+  border-radius: var(--spacing-100, 8px) var(--spacing-100, 8px) var(--Number, 0px) var(--Number, 0px);
+}
+
+.tiktok-iframe {
+  height: 766px;
+  width: 325px;
+}
+
+.instagram-iframe {
+  height: 657px;
+  width: 345px;
+}
+
+.video-action {
+  border-radius: var(--Number, 0px);
+  background: var(--alias-background-neutral-down, #131313);
+  color: var(--palette-white, var(--palette-white, #FFF));
+  font-family: "adobe-clean";
+  font-size: 15px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+  display: flex;
+  padding: var(--spacing-200, 12px);
+  justify-content: space-between;
+  align-items: center;
+  margin-top: -3px;
+}
+.video-action .try-now {
+  min-width: fit-content;
+}
+
+.social-report-container {
+  background-color: black;
+}
+
+.social-report-button {
+  width: 100%;
+  padding: var(--spacing-75, 4px) var(--spacing-200, 12px);
+  gap: var(--spacing-200, 5px);
+  border-radius: var(--Number, 0px) var(--Number, 0px) var(--spacing-100, 8px) var(--spacing-100, 8px);
+  background: var(--alias-background-app-frame-base, #E9E9E9);
+  border: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--alias-content-neutral-default, var(--alias-content-neutral-default, #292929));
+  cursor: pointer;
+  font-family: "adobe-clean";
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
+}
+
+.social-modal-close {
+  max-width: fit-content;
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.social-modal-close img {
+  max-width: fit-content;
+}
+/*!*************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/.pnpm/css-loader@6.10.0_webpack@5.90.2/node_modules/css-loader/dist/cjs.js!./node_modules/.pnpm/sass-loader@13.3.3_sass@1.72.0_webpack@5.90.2/node_modules/sass-loader/dist/cjs.js!./node_modules/.pnpm/@community+hubs@2.0.20_xrlecvytmkdnppxshg3hjh3v5u/node_modules/@community/hubs/dist/app/components/Social/SocialHover.scss ***!
+  \*************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+.report-button {
+  gap: 0;
+  position: absolute;
+  left: var(--spectrum-global-dimension-size-150);
+  bottom: var(--spectrum-global-dimension-size-150);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #ffffff;
+  color: #292929;
+}
+
+.report-button:hover {
+  background-color: #E9E9E9;
+}
+
+.report-icon-container {
+  margin-left: -5px;
+  vertical-align: middle;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.report-button path {
+  fill: var(--spectrum-neutral-content-color-down);
+}
+
+.play-button {
+  position: absolute;
+  left: calc(50% - 16px);
+  top: calc(50% - 16px);
+  width: 32px;
+  height: 32px;
+  z-index: 2;
+}
+
+.card-user-row {
+  display: flex;
+  align-items: center;
+}
+
+.card-user-avatar {
+  display: block;
+  width: 24px;
+  height: 24px;
+  background-color: #eaeaea;
+  margin-right: 4px;
+  border-radius: 12px;
+}
+
+.card-user-name {
+  font-family: "adobe-clean";
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 18px;
+  overflow: hidden;
+  color: var(--palette-white, #FFF);
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  flex: 1 0 0;
+}
+
+.card-description {
+  padding: var(--spacing-75, 4px) 0 var(--Number, 0px) 0;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  color: var(--palette-white, #FFF);
+  /* Body/Sans/Sans S */
+  font-family: "adobe-clean";
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 21px; /* 150% */
+}
+
+.card-logo {
+  position: absolute;
+  right: var(--spectrum-global-dimension-size-150);
+  top: var(--spectrum-global-dimension-size-150);
+  z-index: 2;
+}
+
+.card-logo img {
+  width: var(--spacing-300, 16px);
+  height: var(--spacing-300, 16px);
+}
+/*!***********************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/.pnpm/css-loader@6.10.0_webpack@5.90.2/node_modules/css-loader/dist/cjs.js!./node_modules/.pnpm/@react-spectrum+icon@3.7.11_@react-spectrum+provider@3.9.5_react-dom@18.2.0_react@18.2.0__react@18.2.0__react@18.2.0/node_modules/@react-spectrum/icon/dist/main.css ***!
+  \***********************************************************************************************************************************************************************************************************************************************************************************************/
+.yxBNXG_spectrum-Icon, .yxBNXG_spectrum-UIIcon {
+  color: inherit;
+  fill: currentColor;
+  pointer-events: none;
+  display: inline-block;
+}
+
+:is(.yxBNXG_spectrum-Icon, .yxBNXG_spectrum-UIIcon):not(:root) {
+  overflow: hidden;
+}
+
+@media (forced-colors: active) {
+  .yxBNXG_spectrum-Icon, .yxBNXG_spectrum-UIIcon {
+    forced-color-adjust: auto;
+  }
+}
+
+.yxBNXG_spectrum-Icon--sizeXXS {
+  block-size: calc(var(--spectrum-alias-workflow-icon-size, var(--spectrum-global-dimension-size-225)) / 2);
+  inline-size: calc(var(--spectrum-alias-workflow-icon-size, var(--spectrum-global-dimension-size-225)) / 2);
+}
+
+.yxBNXG_spectrum-Icon--sizeXXS img {
+  block-size: calc(var(--spectrum-alias-workflow-icon-size, var(--spectrum-global-dimension-size-225)) / 2);
+  inline-size: calc(var(--spectrum-alias-workflow-icon-size, var(--spectrum-global-dimension-size-225)) / 2);
+}
+
+.yxBNXG_spectrum-Icon--sizeXXS svg {
+  block-size: calc(var(--spectrum-alias-workflow-icon-size, var(--spectrum-global-dimension-size-225)) / 2);
+  inline-size: calc(var(--spectrum-alias-workflow-icon-size, var(--spectrum-global-dimension-size-225)) / 2);
+}
+
+.yxBNXG_spectrum-Icon--sizeXS {
+  block-size: calc(var(--spectrum-global-dimension-size-300) / 2);
+  inline-size: calc(var(--spectrum-global-dimension-size-300) / 2);
+}
+
+.yxBNXG_spectrum-Icon--sizeXS img {
+  block-size: calc(var(--spectrum-global-dimension-size-300) / 2);
+  inline-size: calc(var(--spectrum-global-dimension-size-300) / 2);
+}
+
+.yxBNXG_spectrum-Icon--sizeXS svg {
+  block-size: calc(var(--spectrum-global-dimension-size-300) / 2);
+  inline-size: calc(var(--spectrum-global-dimension-size-300) / 2);
+}
+
+.yxBNXG_spectrum-Icon--sizeS {
+  block-size: var(--spectrum-alias-workflow-icon-size, var(--spectrum-global-dimension-size-225));
+  inline-size: var(--spectrum-alias-workflow-icon-size, var(--spectrum-global-dimension-size-225));
+}
+
+.yxBNXG_spectrum-Icon--sizeS img {
+  block-size: var(--spectrum-alias-workflow-icon-size, var(--spectrum-global-dimension-size-225));
+  inline-size: var(--spectrum-alias-workflow-icon-size, var(--spectrum-global-dimension-size-225));
+}
+
+.yxBNXG_spectrum-Icon--sizeS svg {
+  block-size: var(--spectrum-alias-workflow-icon-size, var(--spectrum-global-dimension-size-225));
+  inline-size: var(--spectrum-alias-workflow-icon-size, var(--spectrum-global-dimension-size-225));
+}
+
+.yxBNXG_spectrum-Icon--sizeM {
+  block-size: var(--spectrum-global-dimension-size-300);
+  inline-size: var(--spectrum-global-dimension-size-300);
+}
+
+.yxBNXG_spectrum-Icon--sizeM img {
+  block-size: var(--spectrum-global-dimension-size-300);
+  inline-size: var(--spectrum-global-dimension-size-300);
+}
+
+.yxBNXG_spectrum-Icon--sizeM svg {
+  block-size: var(--spectrum-global-dimension-size-300);
+  inline-size: var(--spectrum-global-dimension-size-300);
+}
+
+.yxBNXG_spectrum-Icon--sizeL {
+  block-size: calc(var(--spectrum-alias-workflow-icon-size, var(--spectrum-global-dimension-size-225)) * 2);
+  inline-size: calc(var(--spectrum-alias-workflow-icon-size, var(--spectrum-global-dimension-size-225)) * 2);
+}
+
+.yxBNXG_spectrum-Icon--sizeL img {
+  block-size: calc(var(--spectrum-alias-workflow-icon-size, var(--spectrum-global-dimension-size-225)) * 2);
+  inline-size: calc(var(--spectrum-alias-workflow-icon-size, var(--spectrum-global-dimension-size-225)) * 2);
+}
+
+.yxBNXG_spectrum-Icon--sizeL svg {
+  block-size: calc(var(--spectrum-alias-workflow-icon-size, var(--spectrum-global-dimension-size-225)) * 2);
+  inline-size: calc(var(--spectrum-alias-workflow-icon-size, var(--spectrum-global-dimension-size-225)) * 2);
+}
+
+.yxBNXG_spectrum-Icon--sizeXL {
+  block-size: calc(var(--spectrum-global-dimension-size-300) * 2);
+  inline-size: calc(var(--spectrum-global-dimension-size-300) * 2);
+}
+
+.yxBNXG_spectrum-Icon--sizeXL img {
+  block-size: calc(var(--spectrum-global-dimension-size-300) * 2);
+  inline-size: calc(var(--spectrum-global-dimension-size-300) * 2);
+}
+
+.yxBNXG_spectrum-Icon--sizeXL svg {
+  block-size: calc(var(--spectrum-global-dimension-size-300) * 2);
+  inline-size: calc(var(--spectrum-global-dimension-size-300) * 2);
+}
+
+.yxBNXG_spectrum-Icon--sizeXXL {
+  block-size: calc(var(--spectrum-global-dimension-size-300) * 3);
+  inline-size: calc(var(--spectrum-global-dimension-size-300) * 3);
+}
+
+.yxBNXG_spectrum-Icon--sizeXXL img {
+  block-size: calc(var(--spectrum-global-dimension-size-300) * 3);
+  inline-size: calc(var(--spectrum-global-dimension-size-300) * 3);
+}
+
+.yxBNXG_spectrum-Icon--sizeXXL svg {
+  block-size: calc(var(--spectrum-global-dimension-size-300) * 3);
+  inline-size: calc(var(--spectrum-global-dimension-size-300) * 3);
+}
+
+.yxBNXG_spectrum--medium .yxBNXG_spectrum-UIIcon--large {
+  display: none;
+}
+
+.yxBNXG_spectrum--medium .yxBNXG_spectrum-UIIcon--medium {
+  display: inline;
+}
+
+.yxBNXG_spectrum--large .yxBNXG_spectrum-UIIcon--medium {
+  display: none;
+}
+
+.yxBNXG_spectrum--large .yxBNXG_spectrum-UIIcon--large {
+  display: inline;
+}
+
+.yxBNXG_spectrum--large {
+  --ui-icon-large-display: block;
+  --ui-icon-medium-display: none;
+}
+
+.yxBNXG_spectrum--medium {
+  --ui-icon-medium-display: block;
+  --ui-icon-large-display: none;
+}
+
+.yxBNXG_spectrum-UIIcon--large {
+  display: var(--ui-icon-large-display);
+}
+
+.yxBNXG_spectrum-UIIcon--medium {
+  display: var(--ui-icon-medium-display);
+}
+
+.yxBNXG_spectrum-UIIcon-AlertMedium {
+  inline-size: var(--spectrum-icon-alert-medium-width, var(--spectrum-global-dimension-size-225));
+  block-size: var(--spectrum-icon-alert-medium-height, var(--spectrum-global-dimension-size-225));
+}
+
+.yxBNXG_spectrum-UIIcon-AlertSmall {
+  inline-size: var(--spectrum-icon-alert-small-width, var(--spectrum-global-dimension-size-175));
+  block-size: var(--spectrum-icon-alert-small-height, var(--spectrum-global-dimension-size-175));
+}
+
+.yxBNXG_spectrum-UIIcon-ArrowDownSmall {
+  inline-size: var(--spectrum-icon-arrow-down-small-width, var(--spectrum-global-dimension-size-100));
+  block-size: var(--spectrum-icon-arrow-down-small-height);
+}
+
+.yxBNXG_spectrum-UIIcon-ArrowLeftMedium {
+  inline-size: var(--spectrum-icon-arrow-left-medium-width, var(--spectrum-global-dimension-size-175));
+  block-size: var(--spectrum-icon-arrow-left-medium-height);
+}
+
+.yxBNXG_spectrum-UIIcon-Asterisk {
+  inline-size: var(--spectrum-fieldlabel-asterisk-size, var(--spectrum-global-dimension-size-100));
+  block-size: var(--spectrum-fieldlabel-asterisk-size, var(--spectrum-global-dimension-size-100));
+}
+
+.yxBNXG_spectrum-UIIcon-CheckmarkMedium {
+  inline-size: var(--spectrum-icon-checkmark-medium-width);
+  block-size: var(--spectrum-icon-checkmark-medium-height);
+}
+
+.yxBNXG_spectrum-UIIcon-CheckmarkSmall {
+  inline-size: var(--spectrum-icon-checkmark-small-width);
+  block-size: var(--spectrum-icon-checkmark-small-height);
+}
+
+.yxBNXG_spectrum-UIIcon-ChevronDownMedium {
+  inline-size: var(--spectrum-icon-chevron-down-medium-width);
+  block-size: var(--spectrum-icon-chevron-down-medium-height, var(--spectrum-global-dimension-size-75));
+}
+
+.yxBNXG_spectrum-UIIcon-ChevronDownSmall {
+  inline-size: var(--spectrum-icon-chevron-down-small-width, var(--spectrum-global-dimension-size-100));
+  block-size: var(--spectrum-icon-chevron-down-small-height, var(--spectrum-global-dimension-size-75));
+}
+
+.yxBNXG_spectrum-UIIcon-ChevronLeftLarge {
+  inline-size: var(--spectrum-icon-chevron-left-large-width);
+  block-size: var(--spectrum-icon-chevron-left-large-height, var(--spectrum-global-dimension-size-200));
+}
+
+.yxBNXG_spectrum-UIIcon-ChevronLeftMedium {
+  inline-size: var(--spectrum-icon-chevron-left-medium-width, var(--spectrum-global-dimension-size-75));
+  block-size: var(--spectrum-icon-chevron-left-medium-height);
+}
+
+.yxBNXG_spectrum-UIIcon-ChevronRightLarge {
+  inline-size: var(--spectrum-icon-chevron-right-large-width);
+  block-size: var(--spectrum-icon-chevron-right-large-height, var(--spectrum-global-dimension-size-200));
+}
+
+.yxBNXG_spectrum-UIIcon-ChevronRightMedium {
+  inline-size: var(--spectrum-icon-chevron-right-medium-width, var(--spectrum-global-dimension-size-75));
+  block-size: var(--spectrum-icon-chevron-right-medium-height);
+}
+
+.yxBNXG_spectrum-UIIcon-ChevronRightSmall {
+  inline-size: var(--spectrum-icon-chevron-right-small-width, var(--spectrum-global-dimension-size-75));
+  block-size: var(--spectrum-icon-chevron-right-small-height, var(--spectrum-global-dimension-size-100));
+}
+
+.yxBNXG_spectrum-UIIcon-ChevronUpSmall {
+  inline-size: var(--spectrum-icon-chevron-up-small-width, var(--spectrum-global-dimension-size-100));
+  block-size: var(--spectrum-icon-chevron-up-small-height, var(--spectrum-global-dimension-size-75));
+}
+
+.yxBNXG_spectrum-UIIcon-CornerTriangle {
+  inline-size: var(--spectrum-icon-cornertriangle-width, var(--spectrum-global-dimension-size-65));
+  block-size: var(--spectrum-icon-cornertriangle-height, var(--spectrum-global-dimension-size-65));
+}
+
+.yxBNXG_spectrum-UIIcon-CrossLarge {
+  inline-size: var(--spectrum-icon-cross-large-width);
+  block-size: var(--spectrum-icon-cross-large-height);
+}
+
+.yxBNXG_spectrum-UIIcon-CrossMedium {
+  inline-size: var(--spectrum-icon-cross-medium-width, var(--spectrum-global-dimension-size-100));
+  block-size: var(--spectrum-icon-cross-medium-height, var(--spectrum-global-dimension-size-100));
+}
+
+.yxBNXG_spectrum-UIIcon-CrossSmall {
+  inline-size: var(--spectrum-icon-cross-small-width, var(--spectrum-global-dimension-size-100));
+  block-size: var(--spectrum-icon-cross-small-height, var(--spectrum-global-dimension-size-100));
+}
+
+.yxBNXG_spectrum-UIIcon-DashSmall {
+  inline-size: var(--spectrum-icon-dash-small-width);
+  block-size: var(--spectrum-icon-dash-small-height);
+}
+
+.yxBNXG_spectrum-UIIcon-DoubleGripper {
+  inline-size: var(--spectrum-icon-doublegripper-width, var(--spectrum-global-dimension-size-200));
+  block-size: var(--spectrum-icon-doublegripper-height, var(--spectrum-global-dimension-size-50));
+}
+
+.yxBNXG_spectrum-UIIcon-FolderBreadcrumb {
+  inline-size: var(--spectrum-icon-folderbreadcrumb-width, var(--spectrum-global-dimension-size-225));
+  block-size: var(--spectrum-icon-folderbreadcrumb-height, var(--spectrum-global-dimension-size-225));
+}
+
+.yxBNXG_spectrum-UIIcon-HelpMedium {
+  inline-size: var(--spectrum-icon-info-medium-width, var(--spectrum-global-dimension-size-225));
+  block-size: var(--spectrum-icon-info-medium-height, var(--spectrum-global-dimension-size-225));
+}
+
+.yxBNXG_spectrum-UIIcon-HelpSmall {
+  inline-size: var(--spectrum-icon-info-small-width, var(--spectrum-global-dimension-size-175));
+  block-size: var(--spectrum-icon-info-small-height, var(--spectrum-global-dimension-size-175));
+}
+
+.yxBNXG_spectrum-UIIcon-InfoMedium {
+  inline-size: var(--spectrum-icon-info-medium-width, var(--spectrum-global-dimension-size-225));
+  block-size: var(--spectrum-icon-info-medium-height, var(--spectrum-global-dimension-size-225));
+}
+
+.yxBNXG_spectrum-UIIcon-InfoSmall {
+  inline-size: var(--spectrum-icon-info-small-width, var(--spectrum-global-dimension-size-175));
+  block-size: var(--spectrum-icon-info-small-height, var(--spectrum-global-dimension-size-175));
+}
+
+.yxBNXG_spectrum-UIIcon-ListGripper {
+  inline-size: var(--spectrum-global-dimension-size-65);
+  block-size: var(--spectrum-global-dimension-size-150);
+}
+
+.yxBNXG_spectrum-UIIcon-Magnifier {
+  inline-size: var(--spectrum-icon-magnifier-width, var(--spectrum-global-dimension-size-200));
+  block-size: var(--spectrum-icon-magnifier-height, var(--spectrum-global-dimension-size-200));
+}
+
+.yxBNXG_spectrum-UIIcon-SkipLeft {
+  inline-size: var(--spectrum-icon-skip-left-width);
+  block-size: var(--spectrum-icon-skip-left-height);
+}
+
+.yxBNXG_spectrum-UIIcon-SkipRight {
+  inline-size: var(--spectrum-icon-skip-right-width);
+  block-size: var(--spectrum-icon-skip-right-height);
+}
+
+.yxBNXG_spectrum-UIIcon-Star {
+  inline-size: var(--spectrum-icon-star-width, var(--spectrum-global-dimension-size-225));
+  block-size: var(--spectrum-icon-star-height, var(--spectrum-global-dimension-size-225));
+}
+
+.yxBNXG_spectrum-UIIcon-StarOutline {
+  inline-size: var(--spectrum-icon-star-outline-width, var(--spectrum-global-dimension-size-225));
+  block-size: var(--spectrum-icon-star-outline-height, var(--spectrum-global-dimension-size-225));
+}
+
+.yxBNXG_spectrum-UIIcon-SuccessMedium {
+  inline-size: var(--spectrum-icon-success-medium-width, var(--spectrum-global-dimension-size-225));
+  block-size: var(--spectrum-icon-success-medium-height, var(--spectrum-global-dimension-size-225));
+}
+
+.yxBNXG_spectrum-UIIcon-SuccessSmall {
+  inline-size: var(--spectrum-icon-success-small-width, var(--spectrum-global-dimension-size-175));
+  block-size: var(--spectrum-icon-success-small-height, var(--spectrum-global-dimension-size-175));
+}
+
+.yxBNXG_spectrum-UIIcon-TripleGripper {
+  inline-size: var(--spectrum-icon-triplegripper-width);
+  block-size: var(--spectrum-icon-triplegripper-height, var(--spectrum-global-dimension-size-85));
+}
+
+/*# sourceMappingURL=main.css.map */
+
+/*!*********************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/.pnpm/css-loader@6.10.0_webpack@5.90.2/node_modules/css-loader/dist/cjs.js!./node_modules/.pnpm/@react-spectrum+provider@3.9.5_react-dom@18.2.0_react@18.2.0__react@18.2.0/node_modules/@react-spectrum/provider/dist/main.css ***!
+  \*********************************************************************************************************************************************************************************************************************************************************/
+.JuTe6q_i18nFontFamily {
+  font-synthesis: weight;
+  font-family: adobe-clean, Source Sans Pro, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Ubuntu, Trebuchet MS, Lucida Grande, sans-serif;
+}
+
+.JuTe6q_i18nFontFamily:lang(ar) {
+  font-family: myriad-arabic, adobe-clean, Source Sans Pro, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Ubuntu, Trebuchet MS, Lucida Grande, sans-serif;
+}
+
+.JuTe6q_i18nFontFamily:lang(he) {
+  font-family: myriad-hebrew, adobe-clean, Source Sans Pro, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Ubuntu, Trebuchet MS, Lucida Grande, sans-serif;
+}
+
+.JuTe6q_i18nFontFamily:lang(zh) {
+  font-family: adobe-clean-han-traditional, source-han-traditional, MingLiu, Heiti TC Light, sans-serif;
+}
+
+.JuTe6q_i18nFontFamily:lang(zh-Hans) {
+  font-family: adobe-clean-han-simplified-c, source-han-simplified-c, SimSun, Heiti SC Light, sans-serif;
+}
+
+.JuTe6q_i18nFontFamily:lang(zh-Hant) {
+  font-family: adobe-clean-han-traditional, source-han-traditional, MingLiu, Microsoft JhengHei UI, Microsoft JhengHei, Heiti TC Light, sans-serif;
+}
+
+.JuTe6q_i18nFontFamily:lang(zh-SG) {
+  font-family: adobe-clean-han-simplified-c, source-han-simplified-c, SimSun, Heiti SC Light, sans-serif;
+}
+
+.JuTe6q_i18nFontFamily:lang(zh-CN) {
+  font-family: adobe-clean-han-simplified-c, source-han-simplified-c, SimSun, Heiti SC Light, sans-serif;
+}
+
+.JuTe6q_i18nFontFamily:lang(ko) {
+  font-family: adobe-clean-han-korean, source-han-korean, Malgun Gothic, Apple Gothic, sans-serif;
+}
+
+.JuTe6q_i18nFontFamily:lang(ja) {
+  font-family: adobe-clean-han-japanese, Hiragino Kaku Gothic ProN, ヒラギノ角ゴ ProN W3, Osaka, YuGothic, Yu Gothic, メイリオ, Meiryo, ＭＳ Ｐゴシック, MS PGothic, sans-serif;
+}
+
+.JuTe6q_spectrum-FocusRing-ring {
+  --spectrum-focus-ring-border-radius: var(--spectrum-textfield-border-radius, var(--spectrum-alias-border-radius-regular));
+  --spectrum-focus-ring-gap: var(--spectrum-alias-input-focusring-gap);
+  --spectrum-focus-ring-size: var(--spectrum-alias-input-focusring-size);
+  --spectrum-focus-ring-border-size: 0px;
+  --spectrum-focus-ring-color: var(--spectrum-high-contrast-focus-ring-color, var(--spectrum-alias-focus-ring-color, var(--spectrum-alias-focus-color)));
+}
+
+.JuTe6q_spectrum-FocusRing-ring:after {
+  border-radius: calc(var(--spectrum-focus-ring-border-radius)  + var(--spectrum-focus-ring-gap));
+  content: "";
+  margin: calc(-1 * var(--spectrum-focus-ring-border-size));
+  pointer-events: none;
+  transition: box-shadow var(--spectrum-global-animation-duration-100, .13s) ease-out, margin var(--spectrum-global-animation-duration-100, .13s) ease-out;
+  display: block;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.JuTe6q_spectrum-FocusRing {
+}
+
+.JuTe6q_spectrum-FocusRing.JuTe6q_focus-ring:after {
+  margin: calc(var(--spectrum-focus-ring-gap) * -1 - var(--spectrum-focus-ring-border-size));
+  box-shadow: 0 0 0 var(--spectrum-focus-ring-size) var(--spectrum-focus-ring-color);
+}
+
+.JuTe6q_spectrum-FocusRing--quiet:after {
+  border-radius: 0;
+}
+
+.JuTe6q_spectrum-FocusRing--quiet.JuTe6q_focus-ring:after {
+  margin: 0 0 calc(var(--spectrum-focus-ring-gap) * -1 - var(--spectrum-focus-ring-border-size)) 0;
+  box-shadow: 0 var(--spectrum-focus-ring-size) 0 var(--spectrum-focus-ring-color);
+}
+
+.JuTe6q_spectrum {
+  background-color: var(--spectrum-alias-background-color-default, var(--spectrum-global-color-gray-100));
+  -webkit-tap-highlight-color: #0000;
+}
+
+._5QszkG_i18nFontFamily {
+  font-synthesis: weight;
+  font-family: adobe-clean, Source Sans Pro, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Ubuntu, Trebuchet MS, Lucida Grande, sans-serif;
+}
+
+._5QszkG_i18nFontFamily:lang(ar) {
+  font-family: myriad-arabic, adobe-clean, Source Sans Pro, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Ubuntu, Trebuchet MS, Lucida Grande, sans-serif;
+}
+
+._5QszkG_i18nFontFamily:lang(he) {
+  font-family: myriad-hebrew, adobe-clean, Source Sans Pro, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Ubuntu, Trebuchet MS, Lucida Grande, sans-serif;
+}
+
+._5QszkG_i18nFontFamily:lang(zh) {
+  font-family: adobe-clean-han-traditional, source-han-traditional, MingLiu, Heiti TC Light, sans-serif;
+}
+
+._5QszkG_i18nFontFamily:lang(zh-Hans) {
+  font-family: adobe-clean-han-simplified-c, source-han-simplified-c, SimSun, Heiti SC Light, sans-serif;
+}
+
+._5QszkG_i18nFontFamily:lang(zh-Hant) {
+  font-family: adobe-clean-han-traditional, source-han-traditional, MingLiu, Microsoft JhengHei UI, Microsoft JhengHei, Heiti TC Light, sans-serif;
+}
+
+._5QszkG_i18nFontFamily:lang(zh-SG) {
+  font-family: adobe-clean-han-simplified-c, source-han-simplified-c, SimSun, Heiti SC Light, sans-serif;
+}
+
+._5QszkG_i18nFontFamily:lang(zh-CN) {
+  font-family: adobe-clean-han-simplified-c, source-han-simplified-c, SimSun, Heiti SC Light, sans-serif;
+}
+
+._5QszkG_i18nFontFamily:lang(ko) {
+  font-family: adobe-clean-han-korean, source-han-korean, Malgun Gothic, Apple Gothic, sans-serif;
+}
+
+._5QszkG_i18nFontFamily:lang(ja) {
+  font-family: adobe-clean-han-japanese, Hiragino Kaku Gothic ProN, ヒラギノ角ゴ ProN W3, Osaka, YuGothic, Yu Gothic, メイリオ, Meiryo, ＭＳ Ｐゴシック, MS PGothic, sans-serif;
+}
+
+._5QszkG_spectrum-FocusRing-ring {
+  --spectrum-focus-ring-border-radius: var(--spectrum-textfield-border-radius, var(--spectrum-alias-border-radius-regular));
+  --spectrum-focus-ring-gap: var(--spectrum-alias-input-focusring-gap);
+  --spectrum-focus-ring-size: var(--spectrum-alias-input-focusring-size);
+  --spectrum-focus-ring-border-size: 0px;
+  --spectrum-focus-ring-color: var(--spectrum-high-contrast-focus-ring-color, var(--spectrum-alias-focus-ring-color, var(--spectrum-alias-focus-color)));
+}
+
+._5QszkG_spectrum-FocusRing-ring:after {
+  border-radius: calc(var(--spectrum-focus-ring-border-radius)  + var(--spectrum-focus-ring-gap));
+  content: "";
+  margin: calc(-1 * var(--spectrum-focus-ring-border-size));
+  pointer-events: none;
+  transition: box-shadow var(--spectrum-global-animation-duration-100, .13s) ease-out, margin var(--spectrum-global-animation-duration-100, .13s) ease-out;
+  display: block;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+._5QszkG_spectrum-FocusRing {
+}
+
+._5QszkG_spectrum-FocusRing._5QszkG_focus-ring:after {
+  margin: calc(var(--spectrum-focus-ring-gap) * -1 - var(--spectrum-focus-ring-border-size));
+  box-shadow: 0 0 0 var(--spectrum-focus-ring-size) var(--spectrum-focus-ring-color);
+}
+
+._5QszkG_spectrum-FocusRing--quiet:after {
+  border-radius: 0;
+}
+
+._5QszkG_spectrum-FocusRing--quiet._5QszkG_focus-ring:after {
+  margin: 0 0 calc(var(--spectrum-focus-ring-gap) * -1 - var(--spectrum-focus-ring-border-size)) 0;
+  box-shadow: 0 var(--spectrum-focus-ring-size) 0 var(--spectrum-focus-ring-color);
+}
+
+._5QszkG_spectrum {
+  font-size: var(--spectrum-alias-font-size-default, var(--spectrum-global-dimension-font-size-100));
+  color: var(--spectrum-body-text-color, var(--spectrum-alias-text-color));
+}
+
+._5QszkG_spectrum, ._5QszkG_spectrum-Body, ._5QszkG_spectrum, ._5QszkG_spectrum-Body {
+  font-size: var(--spectrum-body-4-text-size, var(--spectrum-alias-font-size-default));
+  font-weight: var(--spectrum-body-4-text-font-weight, var(--spectrum-alias-body-text-font-weight));
+  line-height: var(--spectrum-body-4-text-line-height, var(--spectrum-alias-body-text-line-height));
+  font-style: var(--spectrum-body-4-text-font-style, var(--spectrum-global-font-style-regular));
+}
+
+._5QszkG_spectrum-Body--italic {
+  font-style: var(--spectrum-body-4-emphasis-text-font-style, var(--spectrum-global-font-style-italic));
+}
+
+/*# sourceMappingURL=main.css.map */
+
+/*!******************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/.pnpm/css-loader@6.10.0_webpack@5.90.2/node_modules/css-loader/dist/cjs.js!./node_modules/.pnpm/sass-loader@13.3.3_sass@1.72.0_webpack@5.90.2/node_modules/sass-loader/dist/cjs.js!./node_modules/.pnpm/@community+hubs@2.0.20_xrlecvytmkdnppxshg3hjh3v5u/node_modules/@community/hubs/dist/app/components/CommunityCarousel/CommunityCarousel.scss ***!
+  \******************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+/*************************************************************************
+ *
+ * ADOBE CONFIDENTIAL
+ * ___________________
+ *
+ *  Copyright 2024 Adobe
+ *  All Rights Reserved.
+ *
+ * NOTICE: All information contained herein is, and remains
+ * the property of Adobe and its suppliers, if any. The intellectual
+ * and technical concepts contained herein are proprietary to Adobe
+ * and its suppliers and are protected by all applicable intellectual
+ * property laws, including trade secret and copyright laws.
+ * Dissemination of this information or reproduction of this material
+ * is strictly forbidden unless prior written permission is obtained
+ * from Adobe.
+ **************************************************************************/
+.carousel {
+  width: 100%;
+  margin-bottom: var(--spectrum-global-dimension-size-300, var(--spectrum-alias-size-300));
+  box-sizing: border-box;
+  position: relative;
+  left: -3px;
+}
+.carousel.hide-right .carousel-button.left {
+  display: flex;
+}
+.carousel.hide-right .carousel-dim-edge {
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 10%);
+  mask-image: linear-gradient(to right, transparent 0%, black 10%);
+}
+.carousel.hide-left .carousel-button.right {
+  display: flex;
+}
+.carousel.hide-left .carousel-dim-edge {
+  -webkit-mask-image: linear-gradient(to left, transparent 0%, black 10%);
+  mask-image: linear-gradient(to left, transparent 0%, black 10%);
+}
+.carousel.hide-left.hide-right .carousel-dim-edge {
+  -webkit-mask-image: linear-gradient(to left, transparent 0%, black 10%, black 90%, transparent 100%);
+  mask-image: linear-gradient(to left, transparent 0%, black 10%, black 90%, transparent 100%);
+}
+
+.carousel-mask {
+  position: relative;
+  overflow-y: hidden;
+  height: 100%;
+  -ms-overflow-style: none;
+  /* Internet Explorer 10+ */
+  scrollbar-width: none;
+  /* Firefox */
+  padding: calc(2 * var(--spectrum-focus-indicator-thickness)) 0;
+}
+
+.carousel-mask::-webkit-scrollbar {
+  display: none;
+  /* Chrome */
+}
+
+.carousel-inner {
+  display: flex;
+  align-items: center;
+}
+
+.carousel-item {
+  height: 100%;
+  flex-shrink: 0;
+  outline: none;
+  position: relative;
+}
+.carousel-item:first-of-type {
+  margin-inline-start: calc(2 * var(--spectrum-focus-indicator-thickness));
+}
+.carousel-item:last-of-type {
+  margin-inline-end: calc(2 * var(--spectrum-focus-indicator-thickness));
+}
+.carousel-item:focus-visible::after {
+  content: "";
+  display: flex;
+  width: calc(100% + 2 * var(--spectrum-focus-indicator-thickness));
+  height: calc(100% + 2 * var(--spectrum-focus-indicator-thickness));
+  top: calc(-1 * var(--spectrum-focus-indicator-thickness));
+  left: calc(-1 * var(--spectrum-focus-indicator-thickness));
+  pointer-events: none;
+  position: absolute;
+  border-radius: var(--spectrum-alias-border-radius-medium);
+  transition: box-shadow var(--spectrum-global-animation-duration-100) ease-in-out;
+  box-shadow: 0 0 0 var(--spectrum-focus-indicator-thickness) var(--highcontrast-focus-indicator-color, var(--spectrum-alias-focus-ring-color));
+}
+
+.carousel-button {
+  position: absolute;
+  top: 50%;
+  height: 32px;
+  width: 32px;
+  border-radius: 50%;
+  border: none;
+  box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.1607843137);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  display: none;
+  transform: translateY(-50%);
+  background-color: #FFFFFF;
+}
+.carousel-button:focus-visible::after {
+  content: "";
+  width: calc(100% + 2 * var(--spectrum-focus-indicator-thickness));
+  height: calc(100% + 2 * var(--spectrum-focus-indicator-thickness));
+  display: flex;
+  top: calc(-1 * var(--spectrum-focus-indicator-thickness));
+  left: calc(-1 * var(--spectrum-focus-indicator-thickness));
+  pointer-events: none;
+  position: absolute;
+  border-radius: inherit;
+  transition: box-shadow var(--spectrum-global-animation-duration-100) ease-in-out;
+  box-shadow: 0 0 0 var(--spectrum-focus-indicator-thickness) var(--highcontrast-focus-indicator-color, var(--spectrum-alias-focus-ring-color));
+}
+.carousel-button.left {
+  left: -15px;
+  z-index: 3;
+}
+.carousel-button.right {
+  right: -15px;
+  z-index: 3;
+}
+
+.view-gallery {
+  color: var(--spectrum-blue-900);
+  font-weight: var(--spectrum-global-font-weight-semi-bold);
+}
+
+.communityThumbnailItem {
+  height: 100%;
+  flex-shrink: 0;
+  outline: none;
+}
+
+@media screen and (max-width: 767px) {
+  .carousel {
+    margin-bottom: 0px;
+  }
+  .view-gallery {
+    padding-left: 5px;
+  }
+}
+/*!**********************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/.pnpm/css-loader@6.10.0_webpack@5.90.2/node_modules/css-loader/dist/cjs.js!./node_modules/.pnpm/sass-loader@13.3.3_sass@1.72.0_webpack@5.90.2/node_modules/sass-loader/dist/cjs.js!./node_modules/.pnpm/@community+hubs@2.0.20_xrlecvytmkdnppxshg3hjh3v5u/node_modules/@community/hubs/dist/app/components/Section/Section.scss ***!
+  \**********************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+/*************************************************************************
+ *
+ * ADOBE CONFIDENTIAL
+ * ___________________
+ *
+ *  Copyright 2024 Adobe
+ *  All Rights Reserved.
+ *
+ * NOTICE: All information contained herein is, and remains
+ * the property of Adobe and its suppliers, if any. The intellectual
+ * and technical concepts contained herein are proprietary to Adobe
+ * and its suppliers and are protected by all applicable intellectual
+ * property laws, including trade secret and copyright laws.
+ * Dissemination of this information or reproduction of this material
+ * is strictly forbidden unless prior written permission is obtained
+ * from Adobe.
+ **************************************************************************/
+.section {
+  padding-right: 15px;
+  padding-left: 15px;
+}
+
+.section-heading-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 12px;
+}
+
+.section-header {
+  color: #2C2C2C;
+  font: 700 22px/35px adobe-clean;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.section-subheader {
+  margin-top: 0;
+  margin-bottom: 0;
+  color: #2C2C2C;
+  font: 400 16px/24px adobe-clean;
+}
+
+.section-link {
+  color: #0265DC;
+  font: 400 17px/22px adobe-clean;
+}
+
+.section-link-external-icon {
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+@media only screen and (max-width: 767px) {
+  .section-link-desktop {
+    display: none;
+  }
+}
+
+.section-link-mobile {
+  display: none;
+}
+@media only screen and (max-width: 767px) {
+  .section-link-mobile {
+    display: block;
+    margin-top: 12px;
+  }
+}
+/*!***************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/.pnpm/css-loader@6.10.0_webpack@5.90.2/node_modules/css-loader/dist/cjs.js!./node_modules/.pnpm/sass-loader@13.3.3_sass@1.72.0_webpack@5.90.2/node_modules/sass-loader/dist/cjs.js!./node_modules/.pnpm/@community+hubs@2.0.20_xrlecvytmkdnppxshg3hjh3v5u/node_modules/@community/hubs/dist/app/components/Error/ErrorComponent.scss ***!
+  \***************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+.error-component {
+  border-radius: var(--spacing-75, 4px);
+  background: #E9E9E9;
+  height: 68px;
+  display: flex;
+  padding: var(--spacing-400, 24px) var(--spacing-200, 12px);
+  justify-content: center;
+  align-items: center;
+  gap: var(--spacing-75, 4px);
+}
+
+.error-text {
+  display: flex;
+  color: #8F8F8F;
+  font-family: "adobe-clean";
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 130%; /* 18.2px */
+  gap: var(--spacing-75, 4px);
+}
+
+.refresh-page-text {
+  text-decoration-line: underline;
+  cursor: pointer;
+}
+/*!**********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/.pnpm/css-loader@6.10.0_webpack@5.90.2/node_modules/css-loader/dist/cjs.js!./node_modules/.pnpm/sass-loader@13.3.3_sass@1.72.0_webpack@5.90.2/node_modules/sass-loader/dist/cjs.js!./node_modules/.pnpm/@community+hubs@2.0.20_xrlecvytmkdnppxshg3hjh3v5u/node_modules/@community/hubs/dist/app/components/FeaturedPosts/FeaturedPosts.scss ***!
+  \**********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+/*************************************************************************
+ *
+ * ADOBE CONFIDENTIAL
+ * ___________________
+ *
+ *  Copyright 2024 Adobe
+ *  All Rights Reserved.
+ *
+ * NOTICE: All information contained herein is, and remains
+ * the property of Adobe and its suppliers, if any. The intellectual
+ * and technical concepts contained herein are proprietary to Adobe
+ * and its suppliers and are protected by all applicable intellectual
+ * property laws, including trade secret and copyright laws.
+ * Dissemination of this information or reproduction of this material
+ * is strictly forbidden unless prior written permission is obtained
+ * from Adobe.
+ **************************************************************************/
+.featuredPostHeading {
+  color: #2C2C2C;
+  font-family: "adobe-clean";
+  font-size: 22px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 35px; /* 159.091% */
+  padding-bottom: 12px;
+}
+
+.postCard {
+  display: flex;
+  height: -webkit-fill-available;
+  height: -moz-available;
+  padding: 24px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  flex: 1 0 0;
+  border-radius: 10px;
+  border: 1px solid var(--Palette-gray-200, #E1E1E1);
+  background: var(--Palette-gray-25, #FFF);
+  cursor: pointer;
+}
+
+.subjectLayout {
+  display: flex;
+  padding: 0px;
+  align-items: center;
+  align-content: flex-start;
+  gap: 16px var(--spacing-300, 16px);
+  align-self: stretch;
+  height: 80px;
+}
+
+.featuredImageContainer,
+#featuredPostImage.featuredImageContainer img {
+  width: 80px;
+  height: 80px;
+  border-radius: 5.128px;
+  background: lightgray 50%;
+}
+@media screen and (max-width: 768px) {
+  .featuredImageContainer,
+  #featuredPostImage.featuredImageContainer img {
+    display: none;
+  }
+}
+
+.postSubject {
+  overflow: hidden;
+  color: #2C2C2C;
+  text-overflow: ellipsis;
+  font-family: "adobe-clean";
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 140%; /* 25.2px */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.postBody {
+  overflow: hidden;
+  color: #6E6E6E;
+  text-overflow: ellipsis;
+  font-family: "adobe-clean";
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 22px;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  height: 48px;
+  margin-bottom: -2px;
+}
+
+.bodyLayout {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.featuredSocialStatus {
+  display: flex;
+  flex-direction: row;
+  gap: 14px;
+}
+
+.socialIcons {
+  display: flex;
+  gap: 4px;
+  color: #8E8E8E;
+  font-family: "adobe-clean";
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 140%; /* 16.8px */
+}
+
+.socialIconImage {
+  height: 18px;
+  width: 18px;
+}
+
+.viewMoreFeaturedPost {
+  font-size: 17px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+}
+
+.postEnd {
+  align-self: center;
+  margin-left: auto;
+}
+@media screen and (max-width: 767px) {
+  .postEnd {
+    display: none;
+  }
+}
+
+.postBottom {
+  display: none;
+  margin-top: -16px;
+}
+@media screen and (max-width: 767px) {
+  .postBottom {
+    display: block;
+  }
+}
+
+.featureCardContainer {
+  margin: 0;
+  padding: 20px 0;
+}
+/*!****************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/.pnpm/css-loader@6.10.0_webpack@5.90.2/node_modules/css-loader/dist/cjs.js!./node_modules/.pnpm/sass-loader@13.3.3_sass@1.72.0_webpack@5.90.2/node_modules/sass-loader/dist/cjs.js!./node_modules/.pnpm/@community+hubs@2.0.20_xrlecvytmkdnppxshg3hjh3v5u/node_modules/@community/hubs/dist/app/components/Gallery/GalleryHeader.scss ***!
+  \****************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+.headingContainer {
+  display: flex;
+  padding: var(--spacing-400, 24px) var(--Number, 0px);
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-200, 12px);
+  border-radius: var(--Number, 0px);
+}
+
+.headingContainer1 {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  align-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+@media screen and (max-width: 768px) {
+  .headingContainer1 {
+    padding: 0 var(--spacing-400, 20px);
+  }
+}
+@media screen and (max-width: 384px) {
+  .headingContainer1 {
+    padding: 0 var(--spacing-400, 16px);
+  }
+}
+
+.Heading1 {
+  text-align: center;
+  /* Heading / Sans / Sans Heavy XL */
+  font-family: adobe-clean;
+  font-size: 36px;
+  font-style: normal;
+  font-weight: 900;
+  line-height: 46px; /* 127.778% */
+  margin: 0;
+}
+
+.headingContainer2 {
+  display: block;
+  text-align: center;
+  padding: var(--Number, 0px);
+}
+@media screen and (max-width: 768px) {
+  .headingContainer2 {
+    padding: 0 var(--spacing-400, 20px);
+    text-align: center;
+    display: block;
+  }
+}
+@media screen and (max-width: 384px) {
+  .headingContainer2 {
+    padding: 0 var(--spacing-400, 16px);
+  }
+}
+
+.Heading2 {
+  /* Body / Sans / Sans XXL */
+  font-family: "adobe-clean";
+  font-size: 22px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 33px; /* 150% */
+}
+
+.infoActionButton {
+  padding: 3px 0 0 0;
+  background-color: transparent;
+}
+.infoActionButton :hover {
+  background-color: transparent;
+}
+
+.viewSubmissionContainer {
+  display: flex;
+  padding-bottom: var(--spacing-400, 24px);
+  justify-content: flex-end;
+  align-items: flex-start;
+  gap: var(--Number, 0px);
+  flex-shrink: 0;
+  padding-right: var(--spacing-400, 48px);
+}
+@media screen and (max-width: 1024px) {
+  .viewSubmissionContainer {
+    padding-right: var(--spacing-400, 32px);
+  }
+}
+@media screen and (max-width: 768px) {
+  .viewSubmissionContainer {
+    justify-content: center;
+    align-items: center;
+    padding-right: 0;
+  }
+}
+
+.viewSubmissionsBtn {
+  background: var(--spectrum-gray-200, #FFF);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 7px;
+}
+
+.viewSubmissionsBtnText {
+  font-family: adobe-clean;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
+  display: flex;
+  align-items: center;
+}
+.viewSubmissionsBtnText path {
+  fill: var(--spectrum-actionbutton-content-color-default);
+}
+/*!************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/.pnpm/css-loader@6.10.0_webpack@5.90.2/node_modules/css-loader/dist/cjs.js!./node_modules/.pnpm/sass-loader@13.3.3_sass@1.72.0_webpack@5.90.2/node_modules/sass-loader/dist/cjs.js!./node_modules/.pnpm/@community+hubs@2.0.20_xrlecvytmkdnppxshg3hjh3v5u/node_modules/@community/hubs/dist/app/components/LiveCard/LiveCard.scss ***!
+  \************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+.adobe-live-holder {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--spectrum-alias-border-radius-medium);
+  overflow: hidden;
+  position: relative;
+}
+/*!**************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/.pnpm/css-loader@6.10.0_webpack@5.90.2/node_modules/css-loader/dist/cjs.js!./node_modules/.pnpm/sass-loader@13.3.3_sass@1.72.0_webpack@5.90.2/node_modules/sass-loader/dist/cjs.js!./node_modules/.pnpm/@community+hubs@2.0.20_xrlecvytmkdnppxshg3hjh3v5u/node_modules/@community/hubs/dist/app/components/AdobeLive/AdobeLive.scss ***!
+  \**************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+/*************************************************************************
+ *
+ * ADOBE CONFIDENTIAL
+ * ___________________
+ *
+ *  Copyright 2024 Adobe
+ *  All Rights Reserved.
+ *
+ * NOTICE: All information contained herein is, and remains
+ * the property of Adobe and its suppliers, if any. The intellectual
+ * and technical concepts contained herein are proprietary to Adobe
+ * and its suppliers and are protected by all applicable intellectual
+ * property laws, including trade secret and copyright laws.
+ * Dissemination of this information or reproduction of this material
+ * is strictly forbidden unless prior written permission is obtained
+ * from Adobe.
+ **************************************************************************/
+.adobe-past-live-header {
+  width: 100%;
+  color: #2C2C2C;
+  font-family: "adobe-clean";
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 130%; /* 23.4px */
+  padding: 12px 0;
+  margin-left: 8px;
+}
+
+.past-live-container {
+  padding-top: 20px;
+  margin-left: -8px;
+}
+
+.past-live-container .carousel {
+  margin-left: 7px;
+}
+
+.past-live-card {
+  width: 303px;
+  flex-shrink: 0;
+}
+@media only screen and (max-width: 767px) {
+  .past-live-card {
+    width: 284px;
+  }
+}
+
+.past-live-duration {
+  flex-direction: row;
+  align-items: center;
+  display: inline-flex;
+  color: white;
+  background-color: black;
+  padding: 3px 4px;
+  height: 12px;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.2rem;
+  letter-spacing: 0.5px;
+  float: right;
+  position: relative;
+  right: 2px;
+  bottom: 25px;
+}
+
+.past-live-image-thumbnail, .past-live-image-thumbnail img {
+  width: 100%;
+  flex-shrink: 0;
+  cursor: pointer;
+  border-radius: var(--Number, 8px);
+  height: 170.44px;
+}
+@media only screen and (max-width: 767px) {
+  .past-live-image-thumbnail, .past-live-image-thumbnail img {
+    width: 284px;
+    height: 160px;
+  }
+}
+
+.past-live-title {
+  width: 273px;
+  height: 46px;
+  flex-shrink: 0;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  margin-bottom: 6px;
+  color: #2C2C2C;
+  font-family: "adobe-clean";
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 130%; /* 23.4px */
+  padding-top: 10px;
+}
+@media only screen and (max-width: 767px) {
+  .past-live-title {
+    width: 258px;
+  }
+}
+
+.past-live-show-icon-frame {
+  width: 16px;
+  height: 16px;
+  align-items: flex-start;
+  padding-top: 10px;
+  padding-left: 6px;
+}
+
+.past-live-show-icon-frame button {
+  padding: 0px;
+  background-color: none;
+  background: none;
+  color: inherit;
+  border: none;
+}
+
+.past-live-view-count {
+  width: 263px;
+  height: 21px;
+  flex-shrink: 0;
+  color: #6E6E6E;
+  font-family: "adobe-clean";
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 130%; /* 20.8px */
+}
+@media only screen and (max-width: 767px) {
+  .past-live-view-count {
+    width: 284px;
+  }
+}
+
+.adobe-live-header {
+  color: #2C2C2C;
+  font-family: "adobe-clean";
+  font-size: 22px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 35px; /* 159.091% */
+}
+
+.adobe-live-subheader {
+  height: 27px;
+  flex-shrink: 0;
+  color: #2C2C2C;
+  font-family: "adobe-clean";
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 130%; /* 20.8px */
+  margin: 0 auto;
+}
+
+.live-badge {
+  height: 23px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2.93px;
+  background-color: #D31510;
+  font-weight: 700;
+  font-size: 10px;
+  font-family: "adobe-clean";
+  color: #FFFFFF;
+  padding: 0 5px;
+}
+
+.adobe-live-container {
+  aspect-ratio: 3;
+  padding-top: 12px;
+  display: flex;
+  gap: var(--Number, 20px);
+  width: 100%;
+}
+@media only screen and (max-width: 767px) {
+  .adobe-live-container {
+    flex-direction: column;
+  }
+}
+
+.live-card {
+  aspect-ratio: 16/9;
+}
+@media only screen and (min-width: 768px) {
+  .live-card {
+    flex: 50%;
+  }
+}
+@media only screen and (min-width: 1280px) {
+  .live-card {
+    flex: 70%;
+  }
+}
+
+.live-description {
+  flex: 48%;
+  display: inline-grid;
+  grid-template-rows: min-content;
+}
+@media only screen and (max-width: 1279px) {
+  .live-description {
+    flex: 30%;
+  }
+}
+@media screen and (max-width: 1279px) {
+  .live-description {
+    max-height: -webkit-fill-available;
+    max-height: -moz-available;
+  }
+}
+
+.live-title {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.live-data-container {
+  overflow: hidden;
+  align-self: flex-start;
+  max-height: 100%;
+  -webkit-column-width: 100vw;
+}
+
+.live-data {
+  color: #6E6E6E;
+  font-weight: 400;
+  font-family: "adobe-clean";
+  font-size: 16px;
+}
+
+.view-more-text {
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+  color: #006EFF;
+}
+
+.view-more-live {
+  align-self: end;
+}
+
+.live-card-end {
+  align-self: center;
+  margin-left: auto;
+}
+@media screen and (max-width: 767px) {
+  .live-card-end {
+    display: none;
+  }
+}
+
+.live-card-bottom {
+  display: none;
+}
+@media screen and (max-width: 767px) {
+  .live-card-bottom {
+    display: block;
+  }
+}
+
+.live-card iframe {
+  height: 100%;
+  width: 100%;
+}
+
+.fadingGradient {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 17px;
+  margin-top: -16px;
+  background: linear-gradient(0deg, rgb(255, 255, 255) 0%, rgba(255, 255, 255, 0) 100%);
+}
+
+.adobe-live-holder {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--spectrum-corner-radius-200);
+  overflow: hidden;
+  position: relative;
+}
+
+.live-data p br {
+  display: none;
+}
+/*!****************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/.pnpm/css-loader@6.10.0_webpack@5.90.2/node_modules/css-loader/dist/cjs.js!./node_modules/.pnpm/sass-loader@13.3.3_sass@1.72.0_webpack@5.90.2/node_modules/sass-loader/dist/cjs.js!./node_modules/.pnpm/@community+hubs@2.0.20_xrlecvytmkdnppxshg3hjh3v5u/node_modules/@community/hubs/dist/app/components/Social/SocialCarousel.scss ***!
+  \****************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+/*************************************************************************
+*
+* ADOBE CONFIDENTIAL
+* ___________________
+*
+*  Copyright 2024 Adobe
+*  All Rights Reserved.
+*
+* NOTICE: All information contained herein is, and remains
+* the property of Adobe and its suppliers, if any. The intellectual
+* and technical concepts contained herein are proprietary to Adobe
+* and its suppliers and are protected by all applicable intellectual
+* property laws, including trade secret and copyright laws.
+* Dissemination of this information or reproduction of this material
+* is strictly forbidden unless prior written permission is obtained
+* from Adobe.
+**************************************************************************/
+.social .carousel-item {
+  width: 214px;
+  border-radius: 8px;
+}
+/*!*******************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/.pnpm/css-loader@6.10.0_webpack@5.90.2/node_modules/css-loader/dist/cjs.js!./node_modules/.pnpm/sass-loader@13.3.3_sass@1.72.0_webpack@5.90.2/node_modules/sass-loader/dist/cjs.js!./src/app/components/NavTabs/Navtabs.scss ***!
+  \*******************************************************************************************************************************************************************************************************************************************************/
+/*************************************************************************
+ *
+ * ADOBE CONFIDENTIAL
+ * ___________________
+ *
+ *  Copyright 2023 Adobe
+ *  All Rights Reserved.
+ *
+ * NOTICE: All information contained herein is, and remains
+ * the property of Adobe and its suppliers, if any. The intellectual
+ * and technical concepts contained herein are proprietary to Adobe
+ * and its suppliers and are protected by all applicable intellectual
+ * property laws, including trade secret and copyright laws.
+ * Dissemination of this information or reproduction of this material
+ * is strictly forbidden unless prior written permission is obtained
+ * from Adobe.
+ **************************************************************************/
+.tabsContent {
+  flex-direction: row;
+  text-align: left;
+  overflow: visible;
+  position: relative;
+  text-align: center;
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  border-bottom: 2px solid;
+  border-bottom-color: #f4f4f4;
+  margin-top: 12px;
+  margin-bottom: 24px;
+}
+
+.tabItems {
+  cursor: pointer;
+  height: 44px;
+  color: #747474;
+  font-weight: 700;
+}
+.tabItems:hover {
+  color: #323232;
+}
+
+.tabsContent sp-tab[selected] {
+  color: #323232;
+}
+
+.tabsList {
+  bottom: -2px;
+}
+
+.new-badge {
+  display: inline-flex;
+  align-items: center;
+  background-color: #3B63FB;
+  margin-left: 7px !important;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: #ffffff;
+  -webkit-font-smoothing: subpixel-antialiased;
+  justify-content: center;
+}
+
+.new-badge-label {
+  line-height: 1.3;
+  color: #ffffff;
+  padding: 2.7px 7.2px;
+  font-family: "adobe-clean";
+  font-size: 9.9px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
+}
+/*!************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/.pnpm/css-loader@6.10.0_webpack@5.90.2/node_modules/css-loader/dist/cjs.js!./node_modules/.pnpm/sass-loader@13.3.3_sass@1.72.0_webpack@5.90.2/node_modules/sass-loader/dist/cjs.js!./src/app/components/Coachmarks/Coachmark.scss ***!
+  \************************************************************************************************************************************************************************************************************************************************************/
+/*************************************************************************
+ *
+ * ADOBE CONFIDENTIAL
+ * ___________________
+ *
+ *  Copyright 2024 Adobe
+ *  All Rights Reserved.
+ *
+ * NOTICE: All information contained herein is, and remains
+ * the property of Adobe and its suppliers, if any. The intellectual
+ * and technical concepts contained herein are proprietary to Adobe
+ * and its suppliers and are protected by all applicable intellectual
+ * property laws, including trade secret and copyright laws.
+ * Dissemination of this information or reproduction of this material
+ * is strictly forbidden unless prior written permission is obtained
+ * from Adobe.
+ **************************************************************************/
+.coachmarkPosition {
+  margin: 0;
+  position: absolute;
+  top: 3px;
+  left: 106px;
+}
+
+.popupDialog-container {
+  position: absolute;
+  pointer-events: all;
+  color: var(--spectrum-dialog-confirm-title-text-color, var(--spectrum-alias-heading-text-color));
+  transition: var(--spectrum-animation-duration-600) ease;
+  min-width: var(--spectrum-global-dimension-static-size-3500);
+  height: var(--spectrum-global-dimension-static-size-4600);
+  max-height: calc(100dvh - var(--spectrum-text-area-minimum-width));
+  z-index: 200;
+  width: 300px;
+  top: 50px;
+  left: 100px;
+}
+@media screen and (max-width: 368px) {
+  .popupDialog-container {
+    left: 0;
+  }
+}
+@media screen and (min-width: 368px) and (max-width: 450px) {
+  .popupDialog-container {
+    left: 30px;
+  }
+}
+.popupDialog-container--withoutImage {
+  height: var(--spectrum-global-dimension-static-size-3400);
+}
+.popupDialog-container .popupDialog-popover {
+  overflow: hidden;
+  display: flex;
+  justify-content: flex-end;
+}
+.popupDialog-container .popupDialog-content {
+  padding: var(--spectrum-spacing-400);
+  gap: var(--spectrum-spacing-200);
+  justify-content: flex-start;
+  display: flex;
+  text-align: justify;
+}
+.popupDialog-container .popupDialog-buttons {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--spectrum-global-dimension-static-size-100);
+}
+.popupDialog-container .popoverHeaderText {
+  margin-bottom: 15px;
+  font-family: "adobe-clean";
+  font-size: 16px;
+  font-weight: 600;
+}
+.popupDialog-container .popoverBodyText {
+  margin-bottom: 15px;
+  font-family: "adobe-clean";
+  font-size: 14px;
+}
+/*!*****************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/.pnpm/css-loader@6.10.0_webpack@5.90.2/node_modules/css-loader/dist/cjs.js!./node_modules/.pnpm/sass-loader@13.3.3_sass@1.72.0_webpack@5.90.2/node_modules/sass-loader/dist/cjs.js!./src/app/components/GlobalFooter/GlobalFooter.scss ***!
+  \*****************************************************************************************************************************************************************************************************************************************************************/
+/*************************************************************************
+ *
+ * ADOBE CONFIDENTIAL
+ * ___________________
+ *
+ *  Copyright 2024 Adobe
+ *  All Rights Reserved.
+ *
+ * NOTICE: All information contained herein is, and remains
+ * the property of Adobe and its suppliers, if any. The intellectual
+ * and technical concepts contained herein are proprietary to Adobe
+ * and its suppliers and are protected by all applicable intellectual
+ * property laws, including trade secret and copyright laws.
+ * Dissemination of this information or reproduction of this material
+ * is strictly forbidden unless prior written permission is obtained
+ * from Adobe.
+ **************************************************************************/
+.footerContainer {
+  border-top: 1px solid #eaeaea;
+  background-color: #fafafa;
+  margin-top: 10px;
+  padding: 0 24px;
+  bottom: 0;
+}
+@media screen and (max-width: 768px) {
+  .footerContainer {
+    padding: 0 16px;
+  }
+}
+
+.footerContent {
+  display: flex;
+  height: 41px;
+  max-width: 1280px;
+  margin: auto;
+}
+
+.copyrightText {
+  margin-right: 16px;
+}
+
+.footerOptions {
+  text-decoration: none;
+  align-self: center;
+  text-align: center;
+  color: #707070;
+  font-size: 12px;
+}
+
+#onetrust-consent-sdk {
+  font-family: "adobe-clean";
+}
+/*!************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/.pnpm/css-loader@6.10.0_webpack@5.90.2/node_modules/css-loader/dist/cjs.js!./node_modules/.pnpm/sass-loader@13.3.3_sass@1.72.0_webpack@5.90.2/node_modules/sass-loader/dist/cjs.js!./src/app/components/Toast/ToastContainer.scss ***!
+  \************************************************************************************************************************************************************************************************************************************************************/
+/*************************************************************************
+ *
+ * ADOBE CONFIDENTIAL
+ * ___________________
+ *
+ *  Copyright 2024 Adobe
+ *  All Rights Reserved.
+ *
+ * NOTICE: All information contained herein is, and remains
+ * the property of Adobe and its suppliers, if any. The intellectual
+ * and technical concepts contained herein are proprietary to Adobe
+ * and its suppliers and are protected by all applicable intellectual
+ * property laws, including trade secret and copyright laws.
+ * Dissemination of this information or reproduction of this material
+ * is strictly forbidden unless prior written permission is obtained
+ * from Adobe.
+ **************************************************************************/
+.toastWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10003;
+  position: relative;
+}
+.toastWrapper sp-toast {
+  align-items: center;
+  --mod-toast-spacing-top-edge-to-icon: 0;
+}
+
+.toastContainer {
+  position: fixed;
+  --mod-toast-max-inline-size: 500px;
+}
+
+.toastContainer-unstyled {
+  padding: 0;
+  background-color: var(--spectrum-global-color-gray-50);
+  --spectrum-toast-spacing-block-start: 0;
+  --spectrum-toast-spacing-block-end: 0;
+  --spectrum-toast-divider-color: var(--spectrum-global-color-gray-500);
+  --mod-closebutton-static-background-color-default: transparent;
+  --mod-closebutton-static-background-color-hover: var(
+    --spectrum-global-color-gray-200
+  );
+  --mod-closebutton-static-background-color-down: var(
+    --spectrum-global-color-gray-300
+  );
+  --mod-closebutton-static-background-color-focus: var(
+    --spectrum-global-color-gray-200
+  );
+  --mod-closebutton-icon-color-default: var(--spectrum-global-color-gray-800);
+}
+
+.toastContainer-top {
+  top: var(--spectrum-global-dimension-size-200);
+}
+
+.toastContainer-bottom {
+  bottom: var(--spectrum-global-dimension-size-200);
+}
+
+.toastContainer-bottom-right {
+  bottom: var(--spectrum-global-dimension-size-200);
+  right: var(--spectrum-global-dimension-size-200);
+}
+
+.toastContainer-mobile {
+  width: 90vw;
+}
+
+@keyframes fromTheBottom {
+  0% {
+    bottom: -100%;
+  }
+  100% {
+    bottom: 0;
+  }
+}
+/*!***********************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/.pnpm/css-loader@6.10.0_webpack@5.90.2/node_modules/css-loader/dist/cjs.js!./node_modules/.pnpm/sass-loader@13.3.3_sass@1.72.0_webpack@5.90.2/node_modules/sass-loader/dist/cjs.js!./src/app/components/UFDHome/UFDHomePage.scss ***!
+  \***********************************************************************************************************************************************************************************************************************************************************/
+.community-ufd-home-layout {
+  flex-direction: column;
+  width: 100%;
+  padding: 64px 0px 64px 0px;
+  align-items: center;
+}
+
+.ufd-section-heading {
+  font-family: "adobe-clean";
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 150%;
+}
+
+.ufd-section-description {
+  font-family: "adobe-clean";
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 130%;
+}
+
+.events-section-heading {
+  font-family: "adobe-clean";
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 150%;
+  color: white;
+}
+
+.events-section-description {
+  font-family: "adobe-clean";
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 130%;
+  color: white;
+}
+
+.ufd-section-header {
+  align-items: center;
+  width: 100%;
+}
+
+.ufd-main-title-heading {
+  font-family: "adobe-clean";
+  font-size: 36px;
+  font-weight: 900;
+  line-height: 130%;
+}
+
+.ufd-header-icon {
+  width: 32px;
+  height: 30.857px;
+  align-self: center;
+}
+
+.ufd-image-card {
+  overflow: hidden;
+  border-radius: 10px 10px 0px 0px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease-in-out;
+  display: flex; /* Ensures the image is properly contained */
+}
+
+.ufd-image-card img {
+  width: 100%; /* Ensures the image covers the full container */
+  transition: transform 0.3s ease-in-out; /* Ensures smooth animation */
+}
+
+.ufd-image-card:hover img {
+  transform: scale(1.1);
+}
+
+.content-card-header {
+  color: #FFF;
+  font-family: "adobe-clean";
+  font-size: 22px;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 120%;
+}
+
+.content-card-subheader {
+  color: #FFF;
+  font-family: "adobe-clean";
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 150%;
+}
+
+.ufd-content-card {
+  display: flex;
+  padding: 20px;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-start;
+  gap: var(--100, 8px);
+  flex: 1 0 0;
+  border-radius: 0px 0px 10px 10px;
+  min-width: 248px;
+  max-width: 248px;
+  margin-top: -2px;
+}
+
+.ufd-directory-card {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+}
+
+.directory-card-content {
+  display: flex;
+  padding: 20px;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-start;
+  gap: var(--100, 8px);
+  flex: 1 0 0;
+  height: 200px;
+  width: 200px;
+  margin-top: -150px;
+  position: relative;
+  border-radius: 10px;
+  background: #C42E0E;
+  pointer-events: none;
+}
+
+.directory-card-content::after {
+  content: "";
+  inset: 0;
+  pointer-events: none; /* Allows interaction with content */
+}
+
+.community-stats {
+  width: 96px;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+}
+
+.community-stats-count {
+  font-family: "adobe-clean";
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 130%;
+}
+
+.community-stats-text {
+  font-family: "adobe-clean";
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+}
+
+.communty-stats-wrapper {
+  align-self: center;
+}
+
+.featured-card-container {
+  display: flex;
+  padding: 20px 20px 16px 20px;
+  width: 389px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  flex: 1 0 0;
+  border-radius: var(--Large, 10px);
+  background: var(--Palette-gray-25, #FFF);
+  box-shadow: 0px 1px 6px 0px var(--Alias-drop-shadow-emphasized-default, rgba(0, 0, 0, 0.12));
+}
+
+.featured-card-author-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.featured-card-product-text {
+  font-family: "adobe-clean";
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
+  color: #292929;
+}
+
+.featured-card-author {
+  display: flex;
+  padding: 6px 0px 8px 0px;
+  align-items: center;
+  gap: 4px;
+}
+
+.featured-card-author-name {
+  font-family: "adobe-clean";
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
+}
+
+.featured-card-author-avatar {
+  display: flex;
+  width: 32px;
+  height: 32px;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  aspect-ratio: 1/1;
+}
+
+.featured-card-author-avatar img {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 1000px;
+  background: lightgray 50%;
+}
+
+.featured-card-product {
+  display: flex;
+  padding: 6px 0px 8px 0px;
+  align-items: center;
+  gap: 3px;
+  color: #505050;
+}
+
+.featured-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.featured-card-stats {
+  display: flex;
+  align-items: center;
+  gap: var(--300, 16px);
+  color: #292929;
+}
+
+.featured-card-stats-icon-wrapper {
+  display: flex;
+  height: 32px;
+  align-items: flex-start;
+  gap: 5px;
+  align-items: center;
+}
+
+.featured-card-stats-icon {
+  height: 20px;
+  width: 20px;
+}
+
+.featured-card-stats-count {
+  display: flex;
+  padding: 6px 0px 8px 0px;
+  align-items: flex-start;
+  font-family: "adobe-clean";
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
+}
+
+.featured-card-title {
+  color: #131313;
+  font-family: "adobe-clean";
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 130%; /* 23.4px */
+}
+
+.featured-card-description {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  color: #292929;
+  text-overflow: ellipsis;
+  font-family: "adobe-clean";
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 150%;
+}
+
+.connect-with-us-icons {
+  display: flex;
+  flex-direction: row;
+  gap: 24px;
+  align-self: center;
+}
+
+.connect-with-us-icon-container {
+  display: flex;
+  padding: 12px;
+  justify-content: center;
+  align-items: center;
+  aspect-ratio: 1/1;
+  border-radius: 32px;
+  background: var(--Palette-gray-25, #FFF);
+  /* Drop shadow/emphasized-default */
+  box-shadow: 0px 1px 6px 0px var(--Alias-drop-shadow-emphasized-default, rgba(0, 0, 0, 0.12));
+}
+
+.connect-with-us-icon-container img {
+  height: 24px;
+  width: 24px;
+}
+
+.gallery-container {
+  width: 100%;
+}
+
+.ff-gallery-view {
+  width: 100%;
+}
+
+.explore-button {
+  display: flex;
+  min-width: 72px;
+  justify-content: center;
+  align-items: flex-start;
+  border-radius: 16px;
+  border: 2px solid var(--Palette-gray-800, #292929);
+  width: fit-content;
+  align-self: center;
+  padding: 5px 15px 5px 15px;
+}
+
+.explore-button-text {
+  color: var(--Alias-content-neutral-default, var(--Alias-content-neutral-default, #292929));
+  /* Component/M/Bold */
+  font-family: "adobe-clean";
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+}
+
+.community-product-mneumonic {
+  display: flex;
+  align-items: flex-start;
+  flex: 1 0 0;
+  border-radius: 10px;
+  background: var(--Alias-background-app-frame-layer-2, #FFF);
+  box-shadow: 0px 1px 6px 0px var(--Alias-drop-shadow-emphasized-default, rgba(0, 0, 0, 0.12));
+}
+
+.community-product-mneumonic-icon-container {
+  display: flex;
+  padding: 20px 0px 20px 20px;
+  align-items: flex-start;
+  gap: 10px;
+}
+.community-product-mneumonic-icon-container img {
+  width: 40px;
+  height: 38.5px;
+}
+
+.community-product-mneumonic-icon {
+  display: flex;
+  width: 40px;
+  height: 38.571px;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.community-product-mneumonic-content {
+  display: flex;
+  padding: 16px 12px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  flex: 1 0 0;
+  align-self: stretch;
+}
+
+.community-product-mneumonic-title {
+  color: var(--Alias-content-typography-title, var(--Alias-content-typography-title, #131313));
+  /* Title/L */
+  font-family: "adobe-clean";
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 130%; /* 23.4px */
+}
+
+.community-product-mneumonic-chatIcon {
+  display: flex;
+  width: 20px;
+  height: 20px;
+  align-items: flex-start;
+}
+
+.community-product-mneumonic-post-count {
+  color: var(--Alias-content-neutral-subdued-default, var(--Alias-content-neutral-subdued-default, #505050));
+  /* Component/M/Regular */
+  font-family: "adobe-clean";
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+}
+
+.community-events-container {
+  display: flex;
+  padding: var(--800, 64px) 120px;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--800, 64px);
+  align-self: stretch;
+  background: var(--Alias-background-app-frame-base, #111);
+}
+
+.event-card-container {
+  display: flex;
+  gap: 12px;
+}
+
+.learn-blade-container {
+  width: 100%;
+  align-items: center;
+}
+
+.scroll-wrapper {
+  width: 1200px; /* Ensures container doesn't overflow */
+  overflow: hidden;
+  position: relative;
+  height: 322px;
+}
+
+.scroll-container {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  gap: 16px; /* Space between cards */
+  padding: 10px;
+  width: 100%;
+  white-space: nowrap;
+  scrollbar-width: none; /* Hide scrollbar on Firefox */
+  -ms-overflow-style: none; /* Hide scrollbar on IE/Edge */
+}
+
+/* Hide scrollbar for WebKit browsers */
+.scroll-container::-webkit-scrollbar {
+  display: none;
+}
+
+.long-card {
+  flex: 0 0 auto; /* Prevent shrinking */
+  min-width: 795px; /* Minimum width of the card */
+  max-width: 795px; /* Maximum width */
+  height: 322px;
+  width: 389px;
+  background-color: lightblue;
+  display: flex;
+  justify-content: center;
+  border-radius: 10px 10px;
+  scroll-snap-align: start;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.short-card {
+  width: 389px;
+  flex: 0 0 auto; /* Prevent shrinking */
+  height: 322px;
+  background-color: lightblue;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  border-radius: 10px;
+  scroll-snap-align: start;
+}
+
+.creator-content-card {
+  width: 389px;
+  align-items: center;
+  justify-content: center;
+  padding: 15px;
+  align-self: center;
+}
+
+.creator-title {
+  color: var(--Palette-white, var(--Palette-white, #FFF));
+  /* Heading/M */
+  font-family: "adobe-clean";
+  font-size: 22px;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 130%;
+}
+
+.creator-desc {
+  color: var(--Palette-white, var(--Palette-white, #FFF));
+  /* Body/M */
+  font-family: "adobe-clean";
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 150%;
+}
+
+.prod-icon {
+  position: absolute;
+  top: 10px; /* Adjust as needed */
+  right: 10px; /* Adjust as needed */
+}
+
+.long-card,
+.short-card {
+  position: relative; /* Ensure the icon is positioned within the card */
+}
