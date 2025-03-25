@@ -1385,10 +1385,11 @@ const awaitMartech = () => new Promise((resolve) => {
 const getUserCountry = (config) => {
   const { mep } = config;
   return mep?.geoLocation ? {
-    userCountry: mep.userCountry,
-    countryPromise: mep.countryPromise,
+    userCountry: mep?.userCountry,
+    countryPromise: mep?.countryPromise,
   } : {};
 };
+
 export async function init(enablements = {}) {
   let manifests = [];
   const {
