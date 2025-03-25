@@ -44,6 +44,7 @@ const MILO_BLOCKS = [
   'instagram',
   'locui',
   'locui-create',
+  'm7',
   'marketo',
   'marquee',
   'marquee-anchors',
@@ -109,7 +110,9 @@ const AUTO_BLOCKS = [
   { 'pdf-viewer': '.pdf', styles: false },
   { video: '.mp4' },
   { merch: '/tools/ost?' },
-  { 'mas-autoblock': 'mas.adobe.com/studio' },
+  { 'mas-autoblock': 'mas.adobe.com/studio', styles: false },
+  { m7: '/creativecloud/business-plans.html', styles: false },
+  { m7: '/creativecloud/education-plans.html', styles: false },
 ];
 const DO_NOT_INLINE = [
   'accordion',
