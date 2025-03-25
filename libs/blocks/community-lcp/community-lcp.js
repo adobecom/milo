@@ -15,7 +15,7 @@ function createImageCard(el) {
 }
 
 export default async function init(el) {
-  const cardsec = el.closest('.section').querySelector('ufd-directory-card');
+  const cardsec = el.closest('.section').querySelector('.ufd-directory-card');
   if (cardsec) {
     const imgCard = createImageCard(el);
     cardsec.append(imgCard);
