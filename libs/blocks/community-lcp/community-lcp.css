@@ -3947,6 +3947,10 @@
     padding: 0;
     border-radius: 12px 0 0 12px;
   }
+  
+  .directory-card-content .content-card-subheader {
+    display: none;
+  }
 }
 
 @media only screen and (min-width: 600px) and (max-width: 1200px) {
@@ -3972,6 +3976,10 @@
     margin: 0;
     padding: 0;
     border-radius: 12px 0 0 12px;
+  }
+  
+  .directory-card-content .content-card-subheader {
+    display: none;
   }
 }
 
