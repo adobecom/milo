@@ -18,7 +18,7 @@ function createImageCard(el) {
   const textContent = el.querySelector('a').innerText.trim();
   const redirectLink = el.querySelector('a').href;
   const screenWidth = defineDeviceByScreenSize()
-  let background = el.querySelector(':scope > div:first-child > div:first-child').innerText.trim();
+  let background = el.querySelector(':scope div:first-child > div:first-child').innerText.trim();
   let img = el.querySelector(':scope > div:nth-child(2) > picture');
   if (screenWidth == 'DESKTOP') {
     background = el.querySelector(':scope div:first-child > div:last-child').innerText.trim();
