@@ -9,7 +9,7 @@ function createImageCard(el) {
   const dcCardContent = createTag('div', {class: 'directory-card-content', style: `background: ${background}`});
   dcCardContent.append(createTag('div', {class: 'content-card-header'}, heading.innerText.trim()));
   dcCardContent.append(createTag('div', {class: 'content-card-subheader'}, textContent));
-  const dcimg = createTag('div', {class: 'ufd-image-card', style: "width: 240px;"}, img);
+  const dcimg = createTag('div', {class: 'ufd-image-card'}, img);
   const dcContainer = createTag('div', {}, dcimg);
   dcContainer.append(dcCardContent);
   dcContainer.addEventListener('click', () => {
