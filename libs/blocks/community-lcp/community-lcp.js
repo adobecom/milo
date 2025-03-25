@@ -8,7 +8,7 @@ function createImageCard(el) {
   const background = el.querySelector('div:first-child').innerText.trim();
   const dcCardContent = createTag('div', {class: 'directory-card-content', style: `background: ${background}`});
   dcCardContent.append(createTag('div', {class: 'content-card-header'}, heading.innerText.trim()));
-  dcCardContent.append(createTag('div', {class: 'content-card-subheader'}, textContent.innerText.trim()));
+  dcCardContent.append(createTag('div', {class: 'content-card-subheader'}, textContent));
   const dcimg = createTag('div', {class: 'ufd-image-card', style: "width: 240px;"}, img);
   const dcContainer = createTag('div', {}, dcimg);
   dcContainer.append(dcCardContent);
