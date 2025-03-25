@@ -3938,20 +3938,25 @@
   
   .ufd-image-card {
     width: 72px;
-    border-radius: 0 12px 12px 0;
+        min-width: 72px;
+        border-radius: 0 12px 12px 0;
+        position: relative;
+        z-index: -1;
   }
 
   .ufd-image-card img {
     margin: 0;
     padding: 0;
     display: flex;
+    position: relative;
+    z-index: -1;
   }
   
   .directory-card-content {
     display: flex;
     height: 36px;
-    position: relative;
-    width: 236px;
+    position: absolute;
+        min-width: 236px;
     padding: 18px 20px 18px 20px;
     margin: 0;
     border-radius: 12px 0 0 12px;
@@ -3975,8 +3980,11 @@
   }
   
   .ufd-image-card {
-    width: 72px;
-    border-radius: 0 12px 12px 0;
+            width: 72px;
+        min-width: 72px;
+        border-radius: 0 12px 12px 0;
+        position: relative;
+        z-index: -1;
   }
 
   .ufd-image-card img {
@@ -3989,8 +3997,8 @@
     display: flex;
     background: linear-gradient(to top, rgb(154, 71, 226) 40%, transparent 80%);
     height: 36px;
-    position: relative;
-    width: 236px;
+    position: absolute;
+        min-width: 236px;
     padding: 18px 20px 18px 20px;
     margin: 0;
     border-radius: 12px 0 0 12px;
