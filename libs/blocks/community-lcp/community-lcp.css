@@ -3927,7 +3927,8 @@
 @media only screen and (max-width: 600px) {
   .ufd-directory-card {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
   }
   
   .ufd-directory-card > div {
