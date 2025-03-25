@@ -91,7 +91,7 @@ function defineDeviceByScreenSize() {
     let imgs = null;
     if (screenWidth == 'DESKTOP') imgs = document.querySelectorAll('body > main > div:nth-child(1) community-lcp picture:nth-child(2)');
     else imgs = document.querySelectorAll('body > main > div:nth-child(1) community-lcp picture:nth-child(1)')
-    [...imgs].forEach((img) => eagerLoad(img))
+    imgs.forEach((img) => eagerLoad(img))
   }
 
 (async function loadPage() {
