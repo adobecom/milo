@@ -11,6 +11,7 @@ import '../src/merch-card.js';
 import '../src/aem-fragment.js';
 import { EVENT_MAS_ERROR } from '../src/constants.js';
 import { getFragmentById } from '../src/aem-fragment.js';
+import { MasError } from '../src/mas-error.js';
 
 chai.use(chaiAsPromised);
 
@@ -57,7 +58,6 @@ runTests(async () => {
     describe('aem-fragment web component', () => {
         let aemMock;
         let spTheme = document.querySelector('sp-theme');
-
         beforeEach(async () => {
             [, aemMock] = await mockFetch(withWcs, withAem);
             cache.clear();
@@ -66,28 +66,41 @@ runTests(async () => {
         it('has fragment cache', async () => {
             expect(cache).to.exist;
             expect(cache.has('id123')).to.false;
-            cache.add({ id: 'id123', test: 1 });
+            cache.add('id123', { id: 'id123', test: 1 });
             expect(cache.has('id123')).to.true;
             cache.clear();
             expect(cache.has('id123')).to.false;
         });
 
+        it('caches localized fragment by requested(en_US) id', async () => {
+          expect(cache).to.exist;
+          expect(cache.has('id123en_US')).to.false;
+          cache.addByRequestedId('id123en_US', { id: 'id567', test: 1 });
+          expect(cache.has('id123en_US')).to.true;
+          cache.clear();
+          expect(cache.has('id123en_US')).to.false;
+        });
+
         it('renders a merch card from cache', async () => {
-            cache.add(cc, photoshop);
+            cache.add(cc);
             expect(aemMock.count).to.equal(0);
 
-            const [ccCard, photoshopCard] = getTemplateContent('cards');
-            spTheme.append(ccCard, photoshopCard);
+            const [ccCard] = getTemplateContent('cards');
+            spTheme.append(ccCard);
 
             const ccdDataSource = ccCard.querySelector('aem-fragment');
             await ccdDataSource.updateComplete;
-            await ccCard.updateComplete;
+            await delay(100);
 
+            // Check that the aem-fragment has no error class
+            expect(ccdDataSource.classList.contains('error')).to.be.false;
+
+            await ccCard.updateComplete;
             const slotElements = [
                 ...ccCard.querySelectorAll('[slot]'),
                 ...(ccCard.shadowRoot
                     ? ccCard.shadowRoot.querySelectorAll('[slot]')
-                    : [])
+                    : []),
             ];
 
             expect(slotElements).to.have.length(4);
@@ -107,13 +120,37 @@ runTests(async () => {
             expect(footerSlot).to.exist;
             footerSlot.setAttribute('test', 'true');
 
-            await aemFragment.refresh(true);
-            await aemFragment.updateComplete;
+            await aemFragment.refresh();
             const after = ccCard.innerHTML;
 
             expect(before).to.equal(after);
             expect(footerSlot.getAttribute('test')).to.equal('true');
             expect(aemMock.count).to.equal(2);
+        });
+
+        it('falls back to last good data when fetch fails with same fragment ID', async () => {
+            // Set up the card and load initial data
+            const [ccCard] = getTemplateContent('merch-card-refresh-error');
+            spTheme.append(ccCard);
+            const aemFragment = ccCard.querySelector('aem-fragment');
+
+            await ccCard.checkReady();
+
+            // Store the initial data for comparison
+            const initialData = aemFragment.data;
+            expect(initialData).to.exist;
+
+            // Trigger a refresh which should now fail
+            await aemFragment.refresh();
+            await delay(100);
+            await aemFragment.updateComplete;
+
+            // Verify the component still has data (fallback mechanism worked)
+            expect(aemFragment.data).to.exist;
+            expect(aemFragment.data).to.deep.equal(initialData);
+
+            // Verify the component didn't show an error state
+            expect(aemFragment.classList.contains('error')).to.be.false;
         });
 
         it('ignores incomplete markup', async () => {
@@ -126,7 +163,8 @@ runTests(async () => {
               }
             });
 
-            const aemFragment = cardWithMissingPath.querySelector('aem-fragment');
+            const aemFragment =
+                cardWithMissingPath.querySelector('aem-fragment');
             let aemErrorTriggered = false;
             aemFragment.addEventListener('aem:error', (e) => {
               if (e.target.tagName === 'AEM-FRAGMENT') {
@@ -195,8 +233,19 @@ runTests(async () => {
         });
 
         it('throws an error if response is not ok', async () => {
-            const promise = getFragmentById('notfound', masCommerceService);
-            await expect(promise).to.be.rejectedWith('Failed to get fragment: 404 Not Found');
+            const promise = getFragmentById('notfound');
+            try {
+                await promise;
+                expect.fail('Promise should have been rejected');
+            } catch (error) {
+                expect(error).to.be.instanceOf(MasError);
+                expect(error.context).to.have.property('duration');
+                expect(error.context).to.have.property('startTime');
+                expect(error.context).to.include({
+                    status: 404,
+                    url: 'http://localhost:2023/test/notfound',
+                });
+            }
         });
 
         it('fetches fragment from freyja on publish', async () => {

@@ -1,5 +1,3 @@
-const MAS_IO_URL = 'mas-io-url';
-
 let polyfillsPromise;
 export async function polyfills() {
   if (polyfillsPromise) return polyfillsPromise;
@@ -32,27 +30,52 @@ const toggleTheme = (theme, event, params) => {
   }
 }
 
+const toggleLocale = (event, params) => {
+  event?.preventDefault();
+  const val = event.target.getAttribute('value');
+  if (val.includes(',')) {
+    const [country, language] = val.split(',');
+    params.set('country', country);
+    params.set('language', language);
+    params.delete('locale');
+  } else {
+    params.set('locale', val);
+    params.delete('country');
+    params.delete('language');
+  }
+  history.replaceState(
+      null,
+      '',
+      `${location.pathname}?${params}`,
+  );
+  createMasCommerceService(params);
+}
+
+const createMasCommerceService = (params) => {
+  const old = document.querySelector('mas-commerce-service');
+  if (old) {
+    old.remove();
+  }
+  const masCommerceService = document.createElement('mas-commerce-service');
+  ['locale','country','language','env'].forEach((attribute) => {
+    const value = params.get(attribute);
+    if (value) masCommerceService.setAttribute(attribute, value);
+  });
+  masCommerceService.setAttribute('lana-tags', 'nala');
+  masCommerceService.setAttribute('lana-sample-rate', '100');
+  document.head.appendChild(masCommerceService);
+}
+
 const init = async () => {
   await polyfills();
+  await import('../dist/mas.js');
   const params = new URLSearchParams(document.location.search);
-  if (params.get(MAS_IO_URL)) {
-    const meta = document.createElement('meta');
-    meta.name = MAS_IO_URL;
-    meta.content = params.get(MAS_IO_URL);
-    document.head.appendChild(meta);
-  }
 
   // theme
   toggleTheme(params.get('theme') ?? 'light');
 
   // mas-commerce-service
-  const masCommerceService = document.querySelector('mas-commerce-service');
-  ['locale','country','language','env'].forEach((attribute) => {
-    const value = params.get(attribute);
-    if (value) masCommerceService.setAttribute(attribute, value);
-  });
-  await import('../dist/mas.js');
-  masCommerceService.refreshFragments();
+  createMasCommerceService(params);
 
   document.querySelectorAll('a.theme-toggle').forEach((link) => 
     link.addEventListener('click', (event) =>
@@ -61,33 +84,9 @@ const init = async () => {
   );
 
   document.querySelectorAll('a.locale-toggle').forEach((link) => 
-    link.addEventListener('click', (e) => {
-      e?.preventDefault();
-      if (e.target.getAttribute('value').includes(',')) {
-        const [country, language] = e.target.getAttribute('value').split(',');
-        masCommerceService.setAttribute('country', country);
-        masCommerceService.setAttribute('language', language);
-        masCommerceService.removeAttribute('locale');
-        params.set('country', country);
-        params.set('language', language);
-        params.delete('locale');
-      } else {
-        masCommerceService.setAttribute('locale', e.target.getAttribute('value'));
-        masCommerceService.removeAttribute('country');
-        masCommerceService.removeAttribute('language');
-        params.set('locale', e.target.getAttribute('value'));
-        params.delete('country');
-        params.delete('language');
-      }
-      masCommerceService.refreshFragments();
-      history.replaceState(
-          null,
-          '',
-          `${location.pathname}?${params}`,
-      );
-    }
+    link.addEventListener('click', (event) => toggleLocale(event, params)
     )
   );
 }
-window.log = (target, ...messages) =>  (target.textContent = `${messages.join(' ')}${target.textContent}`);
+window.log = (target, ...messages) =>  (target.innerHTML =  `${messages.join(' ')}<br>${target.innerHTML}`);
 export { init };
