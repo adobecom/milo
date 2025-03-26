@@ -476,6 +476,8 @@
   outline: revert;
   outline-offset: revert;
   margin-inline-start: revert;
+  color: inherit;
+  text-shadow: revert;
 }
 
 /* Section Metadata */
