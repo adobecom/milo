@@ -1185,12 +1185,12 @@ async function determineUserCountry(config) {
   const urlParams = new URLSearchParams(window.location.search);
   const country = urlParams.get('country') || (document.cookie.split('; ').find((row) => row.startsWith('international='))?.split('=')[1]);
   if (country) {
-    console.log('got userCountry from country params or from international cookie');
+    console.log(`got userCountry from country params or from international cookie: normCountry${normCountry(country)}`);
     config.mep = { userCountry: normCountry(country) };
   } else {
     const akamaiCode = urlParams.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
     if (akamaiCode) {
-      console.log('usercountry set from akamaiLocale in params or akamai in session storage');
+      console.log(`usercountry set from akamaiLocale in params or akamai in session storage:${normCountry(akamaiCode)}`);
       config.mep = { userCountry: normCountry(akamaiCode) };
     } else {
       const { getAkamaiCode } = await import('../features/georoutingv2/georoutingv2.js');
