@@ -95,21 +95,22 @@ const MILO_BLOCKS = [
 ];
 const AUTO_BLOCKS = [
   { adobetv: 'tv.adobe.com' },
-  { gist: 'https://gist.github.com' },
+  { gist: 'gist.github.com' },
   { caas: '/tools/caas' },
   { faas: '/tools/faas' },
   { fragment: '/fragments/', styles: false },
-  { instagram: 'https://www.instagram.com' },
-  { slideshare: 'https://www.slideshare.net', styles: false },
-  { tiktok: 'https://www.tiktok.com', styles: false },
-  { twitter: 'https://twitter.com' },
-  { vimeo: 'https://vimeo.com' },
-  { vimeo: 'https://player.vimeo.com' },
-  { youtube: 'https://www.youtube.com' },
-  { youtube: 'https://youtu.be' },
+  { instagram: 'instagram.com' },
+  { slideshare: 'slideshare.net', styles: false },
+  { tiktok: 'tiktok.com', styles: false },
+  { twitter: 'twitter.com' },
+  { vimeo: 'vimeo.com' },
+  { vimeo: 'player.vimeo.com' },
+  { youtube: 'youtube.com' },
+  { youtube: 'youtu.be' },
   { 'pdf-viewer': '.pdf', styles: false },
   { video: '.mp4' },
   { merch: '/tools/ost?' },
+  { merch: '/miniplans' },
   { 'mas-autoblock': 'mas.adobe.com/studio', styles: false },
   { m7: '/creativecloud/business-plans.html', styles: false },
   { m7: '/creativecloud/education-plans.html', styles: false },
@@ -636,9 +637,18 @@ export function decorateImageLinks(el) {
   });
 }
 
+export function isTrustedAutoBlock(autoBlock, url) {
+  if (!url.href.includes(autoBlock)) return false;
+  const urlHostname = url.hostname.replace('www.', '');
+  return urlHostname === window.location.hostname
+    || urlHostname.endsWith('.adobe.com')
+    || urlHostname === 'adobe.com'
+    || urlHostname === autoBlock
+    || (autoBlock === '.pdf' && url.pathname.endsWith(autoBlock));
+}
+
 export function decorateAutoBlock(a) {
   const config = getConfig();
-  const { hostname } = window.location;
   let url;
   try {
     url = new URL(a.href);
@@ -647,14 +657,9 @@ export function decorateAutoBlock(a) {
     return false;
   }
 
-  const href = hostname === url.hostname
-    ? `${url.pathname}${url.search}${url.hash}`
-    : a.href;
-
   return config.autoBlocks.find((candidate) => {
     const key = Object.keys(candidate)[0];
-    const match = href.includes(candidate[key]);
-    if (!match) return false;
+    if (!isTrustedAutoBlock(candidate[key], url)) return false;
 
     if (key === 'pdf-viewer' && !a.textContent.includes('.pdf')) {
       a.target = '_blank';
