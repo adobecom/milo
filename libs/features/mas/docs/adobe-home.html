@@ -14,22 +14,6 @@
         <script src="/libs/deps/lit-all.min.js" type="module"></script>
 
         <script>
-            const ENVS = {
-                qa: 'qa-odin',
-                stage: 'stage-odin',
-                prod: 'odin',
-            };
-            const href = window.location.href;
-            const envOverride = new URL(href).searchParams.get('aem.env');
-            const env =
-                envOverride && ENVS[envOverride]
-                    ? ENVS[envOverride]
-                    : ENVS.prod;
-            const meta = document.createElement('meta');
-            meta.name = 'aem-base-url';
-            meta.content = `https://${env}.adobe.com`;
-            document.head.appendChild(meta);
-
             const params = new URLSearchParams(document.location.search);
             function toggleTheme(theme) {
                 document.body.className = 'spectrum spectrum--medium';
@@ -47,24 +31,10 @@
         </script>
         <script type="module" src="./mas-sidenav.js"></script>
         <script type="module">
-            // mas-commerce-service
-            const masCommerceService = document.createElement(
-                'mas-commerce-service',
-            );
-            ['locale', 'language', 'env'].forEach((attribute) => {
-                const value = params.get(attribute);
-                if (value) masCommerceService.setAttribute(attribute, value);
-            });
-            masCommerceService.setAttribute('host-env', 'prod');
-            masCommerceService.setAttribute('lana-tags', 'ah');
-            masCommerceService.setAttribute('lana-sample-rate', '100'); // optional, default value is set to '1'
-            document.head.appendChild(masCommerceService);
+          import { init } from './common.js';
+          init();
         </script>
-        <script type="module" src="../dist/mas.js"></script>
-        <script
-            type="module"
-            src="../../../features/spectrum-web-components/dist/button.js"
-        ></script>
+        <script type="module" src="../../../features/spectrum-web-components/dist/button.js"></script>
     </head>
 
     <body class="spectrum spectrum--medium spectrum--light">
@@ -94,6 +64,11 @@
                             href="javascript:toggleTheme('light');"
                             >Light</a
                         >
+                    </div>
+                    <div>
+                      Switch Locale: <a class="spectrum-Link spectrum-Link--secondary" href="?locale=en_US">en_US</a> OR <a class="spectrum-Link spectrum-Link--secondary" href="?locale=fr_FR">fr_FR</a>
+                    </div>
+                    <div>Switch country/language: <a class="spectrum-Link spectrum-Link--secondary" href="?country=US&language=en">Country: US, language: en</a> OR <a class="spectrum-Link spectrum-Link--secondary" href="?country=FR&language=fr">Country: FR, language: fr</a>
                     </div>
                     <div class="adobe-home-container">
                         <h2 id="ah-try-buy-widget" tabindex="-1">
