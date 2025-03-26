@@ -21,7 +21,7 @@ function addLoader(a) {
   return container;
 }
 
-async function decorateQuickLink(a, hasConsent) {
+async function decorateQuickLink(a, hasConsent, isNewTab) {
   let ecid = null;
   try {
     const data = await window.alloy_getIdentity;
@@ -34,7 +34,8 @@ async function decorateQuickLink(a, hasConsent) {
     urlObj.searchParams.set('ecid', ecid);
     a.href = urlObj.href;
   }
-  window.location.href = a.href;
+  if (isNewTab) window.open(a.href, '_blank');
+  else window.location.href = a.href;
 }
 
 export default function processQuickLink(a) {
@@ -72,6 +73,7 @@ export default function processQuickLink(a) {
     if (getMetadata('quick-link-loader') === 'on') loader = addLoader(a);
     const hasConsent = await waitForConsent();
     if (loader) loader.replaceWith(a);
-    decorateQuickLink(a, hasConsent);
+    const isNewTab = (e.metaKey || e.ctrlKey);
+    decorateQuickLink(a, hasConsent, isNewTab);
   });
 }

@@ -20,6 +20,13 @@ export const EVENT_TYPE_READY = 'wcms:commerce:ready';
  */
 export const TAG_NAME_SERVICE = 'mas-commerce-service';
 
+export const SELECTOR_MAS_INLINE_PRICE =
+    'span[is="inline-price"][data-wcs-osi]';
+export const SELECTOR_MAS_CHECKOUT_LINK =
+    'a[is="checkout-link"][data-wcs-osi],button[is="checkout-button"][data-wcs-osi]';
+export const SELECTOR_MAS_SP_BUTTON = 'sp-button[data-wcs-osi]';
+export const SELECTOR_MAS_ELEMENT = `${SELECTOR_MAS_INLINE_PRICE},${SELECTOR_MAS_CHECKOUT_LINK}`;
+
 /** Event to dispatch when a merch-offer is ready */
 export const EVENT_MERCH_OFFER_READY = 'merch-offer:ready';
 
@@ -86,25 +93,33 @@ export const Landscape = {
     PUBLISHED: 'PUBLISHED',
 };
 
+export const HEADER_X_REQUEST_ID = 'X-Request-Id';
+
+export const MAS_COMMERCE_SERVICE_INIT_TIME_MEASURE_NAME =
+    'mas-commerce-service:initTime';
+
 export const WORKFLOW_STEP = {
-  CHECKOUT: 'checkout',
-  CHECKOUT_EMAIL: 'checkout/email',
-  SEGMENTATION: 'segmentation',
-  BUNDLE: 'bundle',
-  COMMITMENT: 'commitment',
-  RECOMMENDATION: 'recommendation',
-  EMAIL: 'email',
-  PAYMENT: 'payment',
-  CHANGE_PLAN_TEAM_PLANS: 'change-plan/team-upgrade/plans',
-  CHANGE_PLAN_TEAM_PAYMENT: 'change-plan/team-upgrade/payment',
-}
+    CHECKOUT: 'checkout',
+    CHECKOUT_EMAIL: 'checkout/email',
+    SEGMENTATION: 'segmentation',
+    BUNDLE: 'bundle',
+    COMMITMENT: 'commitment',
+    RECOMMENDATION: 'recommendation',
+    EMAIL: 'email',
+    PAYMENT: 'payment',
+    CHANGE_PLAN_TEAM_PLANS: 'change-plan/team-upgrade/plans',
+    CHANGE_PLAN_TEAM_PAYMENT: 'change-plan/team-upgrade/payment',
+};
 
 export const PROVIDER_ENVIRONMENT = {
-  PRODUCTION: 'PRODUCTION',
+    PRODUCTION: 'PRODUCTION',
 };
 
 export const MODAL_TYPE_3_IN_1 = {
-  TWP: 'twp',
-  D2P: 'd2p',
-  CRM: 'crm',
-}
+    TWP: 'twp',
+    D2P: 'd2p',
+    CRM: 'crm',
+};
+
+export const MARK_START_SUFFIX = ':start';
+export const MARK_DURATION_SUFFIX = ':duration';

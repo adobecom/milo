@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="spectrum.css">
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://p.typekit.net/p.css?s=1&amp;k=hah7vzn&amp;ht=tk&amp;f=7180.7181.7182.7183.22474.22749.22750.22751.22753&amp;a=8634977&amp;app=typekit&amp;e=css">
     <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
   
   <!-- Include your custom element script as an ES6 module -->
@@ -19,18 +20,7 @@
   <script type="module" src="./mas-sidenav.js"></script>
 </head>
 <body class="spectrum spectrum--medium spectrum--light">
-<aside class="sidenav">
-    <a href="/libs/features/mas/docs/mas.html">Home</a>
-    <a href="/libs/features/mas/docs/mas.js.html">mas.js</a>
-    <a href="/libs/features/mas/docs/checkout-link.html">Checkout Link</a>
-    <a href="/libs/features/mas/docs/checkout-button.html">Checkout Button</a>
-    <a href="/libs/features/mas/docs/inline-price.html">Inline Price</a>
-    <a href="/libs/features/mas/docs/merch-card.html">Merch Card</a>
-    <a href="/libs/features/mas/docs/ccd.html">CCD Gallery</a>
-    <a href="/libs/features/mas/docs/adobe-home.html">Adobe Home Gallery</a>
-    <a href="/libs/features/mas/docs/plans.html">Plans Gallery</a>
-    <a href="/libs/features/mas/docs/benchmarks.html">Benchmarks</a>
-</aside>
+    <aside is="mas-sidenav"></aside>
 <main>
 <sp-theme color="light" scale="medium">
 <script type="module" src="../../spectrum-web-components/dist/button.js"></script>
@@ -94,7 +84,7 @@ Adobe Home Gallery provides a comprehensive list of all supported card variants 
 <pre><code id="log1" class="language-html">
 </code></pre>
 <h3 id="with-static-content-(dynamic-pricing)" tabindex="-1">With static content (dynamic pricing) <a class="header-anchor" href="#with-static-content-(dynamic-pricing)" href="#with-static-content-(dynamic-pricing)" title="Permalink to this heading">#</a></h3>
-<pre><code class="hljs demo light language-html"><span class="hljs-tag">&lt;<span class="hljs-name">merch-card</span> <span class="hljs-attr">variant</span>=<span class="hljs-string">&quot;plans&quot;</span> <span class="hljs-attr">badge-color</span>=<span class="hljs-string">&quot;#EDCC2D&quot;</span> <span class="hljs-attr">badge-background-color</span>=<span class="hljs-string">&quot;#000000&quot;</span>&quot; <span class="hljs-attr">badge-text</span>=<span class="hljs-string">&quot; Best value&quot;</span>&gt;</span>
+<pre><code class="hljs demo light language-html"><span class="hljs-tag">&lt;<span class="hljs-name">merch-card</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;static&quot;</span> <span class="hljs-attr">variant</span>=<span class="hljs-string">&quot;plans&quot;</span> <span class="hljs-attr">badge-color</span>=<span class="hljs-string">&quot;#EDCC2D&quot;</span> <span class="hljs-attr">badge-background-color</span>=<span class="hljs-string">&quot;#000000&quot;</span>&quot; <span class="hljs-attr">badge-text</span>=<span class="hljs-string">&quot; Best value&quot;</span>&gt;</span>
   <span class="hljs-tag">&lt;<span class="hljs-name">merch-icon</span> <span class="hljs-attr">slot</span>=<span class="hljs-string">&quot;icons&quot;</span> <span class="hljs-attr">size</span>=<span class="hljs-string">&quot;l&quot;</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;https://www.adobe.com/content/dam/shared/images/product-icons/svg/creative-cloud.svg&quot;</span> <span class="hljs-attr">alt</span>=<span class="hljs-string">&quot;Creative Cloud All Apps&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">merch-icon</span>&gt;</span>
   <span class="hljs-tag">&lt;<span class="hljs-name">h4</span> <span class="hljs-attr">slot</span>=<span class="hljs-string">&quot;heading-xs&quot;</span>&gt;</span>Creative Cloud All Apps<span class="hljs-tag">&lt;/<span class="hljs-name">h4</span>&gt;</span>
   <span class="hljs-tag">&lt;<span class="hljs-name">h3</span> <span class="hljs-attr">slot</span>=<span class="hljs-string">&quot;heading-m&quot;</span>&gt;</span>
@@ -229,59 +219,183 @@ The reason is that some merch cards are resolved very quickly and event could di
         <span class="hljs-attribute">margin-top</span>: <span class="hljs-number">16px</span>;
     }
 </span><span class="hljs-tag">&lt;/<span class="hljs-name">style</span>&gt;</span>
-<span class="hljs-tag">&lt;<span class="hljs-name">merch-card</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;event-demo&quot;</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;btnRefreshFragments&quot;</span>&gt;</span>Refresh Fragments<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;module&quot;</span>&gt;</span><span class="language-javascript">
+    { 
+        <span class="hljs-keyword">const</span> logReady = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;log-mas-ready&#x27;</span>);
+        <span class="hljs-keyword">const</span> <span class="hljs-title function_">message</span> = (<span class="hljs-params">e, type</span>) =&gt; {
+          <span class="hljs-keyword">const</span> id = e.<span class="hljs-property">target</span>.<span class="hljs-title function_">getAttribute</span>(<span class="hljs-string">&#x27;id&#x27;</span>) || e.<span class="hljs-property">target</span>.<span class="hljs-title function_">getAttribute</span>(<span class="hljs-string">&#x27;data-wcs-osi&#x27;</span>);
+          <span class="hljs-keyword">const</span> detail = e.<span class="hljs-property">detail</span> ? <span class="hljs-string">`: <span class="hljs-subst">${<span class="hljs-built_in">JSON</span>.stringify(e.detail, <span class="hljs-literal">null</span>, <span class="hljs-number">2</span>)}</span>`</span> : <span class="hljs-string">&#x27;&#x27;</span>;
+          <span class="hljs-keyword">return</span> <span class="hljs-string">`&#x27;<span class="hljs-subst">${type}</span>&#x27; on <span class="hljs-subst">${e.target.nodeName}</span> #<span class="hljs-subst">${id}</span><span class="hljs-subst">${detail}</span>`</span>;
+        };
+        <span class="hljs-comment">// WCS request failed</span>
+        <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;mas:failed&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">event</span>) =&gt;</span> {
+            <span class="hljs-title function_">log</span>(<span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;log-mas-failed&#x27;</span>), <span class="hljs-title function_">message</span>(event, <span class="hljs-string">&#x27;mas:failed&#x27;</span>));
+        });
+        <span class="hljs-comment">// Freyja request failed</span>
+        <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;aem:error&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">event</span>) =&gt;</span>
+            <span class="hljs-title function_">log</span>(<span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;log-aem-error&#x27;</span>), <span class="hljs-title function_">message</span>(event, <span class="hljs-string">&#x27;aem:error&#x27;</span>)),
+        );
+        <span class="hljs-comment">// Error in merch-card (WCS or Frejya request, or any other issue)</span>
+        <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;mas:error&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">event</span>) =&gt;</span> {
+            event.<span class="hljs-property">target</span>.<span class="hljs-property">classList</span>.<span class="hljs-title function_">remove</span>(<span class="hljs-string">&#x27;ready&#x27;</span>);
+            event.<span class="hljs-property">target</span>.<span class="hljs-property">classList</span>.<span class="hljs-title function_">add</span>(<span class="hljs-string">&#x27;error&#x27;</span>);
+            <span class="hljs-title function_">log</span>(<span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;log-mas-error&#x27;</span>), <span class="hljs-title function_">message</span>(event, <span class="hljs-string">&#x27;mas:error&#x27;</span>));
+        });
+        <span class="hljs-comment">// success events</span>
+        <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;aem:ready&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">event</span>) =&gt;</span>
+            <span class="hljs-title function_">log</span>(logReady, <span class="hljs-title function_">message</span>(event, <span class="hljs-string">&#x27;aem:ready&#x27;</span>)),
+        );
+        <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;mas:ready&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">event</span>) =&gt;</span> {
+            event.<span class="hljs-property">target</span>.<span class="hljs-property">classList</span>.<span class="hljs-title function_">add</span>(<span class="hljs-string">&#x27;ready&#x27;</span>);
+            event.<span class="hljs-property">target</span>.<span class="hljs-property">classList</span>.<span class="hljs-title function_">remove</span>(<span class="hljs-string">&#x27;error&#x27;</span>);
+            <span class="hljs-title function_">log</span>(logReady, <span class="hljs-title function_">message</span>(event, <span class="hljs-string">&#x27;mas:ready&#x27;</span>));
+        }); 
+        
+        <span class="hljs-comment">// refresh btn </span>
+        <span class="hljs-variable language_">document</span>
+          .<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;btnRefreshFragments&#x27;</span>)
+          .<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;click&#x27;</span>, <span class="hljs-function">() =&gt;</span> {
+              <span class="hljs-variable language_">document</span>
+                  .<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&#x27;mas-commerce-service&#x27;</span>)
+                  .<span class="hljs-title function_">refreshFragments</span>();
+          });
+    }
+</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+
+<span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Valid card<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">merch-card</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;event-demo&quot;</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;valid-card&quot;</span>&gt;</span>
     <span class="hljs-tag">&lt;<span class="hljs-name">aem-fragment</span>
         <span class="hljs-attr">fragment</span>=<span class="hljs-string">&quot;d8008cac-010f-4607-bacc-a7a327da1312&quot;</span>
     &gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">aem-fragment</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">merch-card</span>&gt;</span>
 
 <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Checkout link OSI is wrong<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
-<span class="hljs-tag">&lt;<span class="hljs-name">merch-card</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;event-demo&quot;</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">merch-card</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;event-demo&quot;</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;wrongosi&quot;</span>&gt;</span>
     <span class="hljs-tag">&lt;<span class="hljs-name">aem-fragment</span>
         <span class="hljs-attr">fragment</span>=<span class="hljs-string">&quot;3c29614a-a024-458f-8bd6-ee910898f684&quot;</span>
     &gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">aem-fragment</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">merch-card</span>&gt;</span>
 
 <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Fragment id is wrong<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
-<span class="hljs-tag">&lt;<span class="hljs-name">merch-card</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;event-demo&quot;</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">aem-fragment</span> <span class="hljs-attr">fragment</span>=<span class="hljs-string">&quot;wrong-fragment-id&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">aem-fragment</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">merch-card</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;event-demo&quot;</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;invalid-fragment-id&quot;</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">aem-fragment</span> <span class="hljs-attr">fragment</span>=<span class="hljs-string">&quot;wrong-fragment-id&quot;</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;invalid-fragment-id&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">aem-fragment</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">merch-card</span>&gt;</span>
 
-<span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;btnRefreshFragments&quot;</span>&gt;</span>Refresh Fragments<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
-
-<span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;module&quot;</span>&gt;</span><span class="language-javascript">
-    {
-        <span class="hljs-keyword">const</span> target = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;log2&#x27;</span>);
-        [...<span class="hljs-variable language_">document</span>.<span class="hljs-title function_">querySelectorAll</span>(<span class="hljs-string">&#x27;.event-demo&#x27;</span>)].<span class="hljs-title function_">forEach</span>(<span class="hljs-function">(<span class="hljs-params">card</span>) =&gt;</span> {
-            card.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;aem:ready&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">e</span>) =&gt;</span>
-                <span class="hljs-title function_">log</span>(target, <span class="hljs-string">`<span class="hljs-subst">${e.target.nodeName}</span>: <span class="hljs-subst">${e.detail}</span>`</span>),
-            );
-            card.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;aem:error&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">e</span>) =&gt;</span>
-                <span class="hljs-title function_">log</span>(target, <span class="hljs-string">`<span class="hljs-subst">${e.target.nodeName}</span>: <span class="hljs-subst">${e.detail}</span>`</span>),
-            );
-
-            card.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;mas:ready&#x27;</span>, <span class="hljs-function">() =&gt;</span> {
-                card.<span class="hljs-property">classList</span>.<span class="hljs-title function_">add</span>(<span class="hljs-string">&#x27;ready&#x27;</span>);
-                card.<span class="hljs-property">classList</span>.<span class="hljs-title function_">remove</span>(<span class="hljs-string">&#x27;error&#x27;</span>);
-            });
-            card.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;mas:error&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">e</span>) =&gt;</span> {
-                card.<span class="hljs-property">classList</span>.<span class="hljs-title function_">remove</span>(<span class="hljs-string">&#x27;ready&#x27;</span>);
-                card.<span class="hljs-property">classList</span>.<span class="hljs-title function_">add</span>(<span class="hljs-string">&#x27;error&#x27;</span>);
-                <span class="hljs-title function_">log</span>(target, <span class="hljs-string">`<span class="hljs-subst">${e.target.nodeName}</span>: <span class="hljs-subst">${e.detail}</span>`</span>);
-            });
-
-            <span class="hljs-variable language_">document</span>
-                .<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;btnRefreshFragments&#x27;</span>)
-                .<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;click&#x27;</span>, <span class="hljs-function">() =&gt;</span> {
-                    <span class="hljs-variable language_">document</span>
-                        .<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&#x27;mas-commerce-service&#x27;</span>)
-                        .<span class="hljs-title function_">refreshFragments</span>();
-                });
-        });
-    }
-</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
 </code></pre>
-<pre><code id="log2" class="language-html">
+<h3 id="mas%3Afailed-log" tabindex="-1">mas:failed log <a class="header-anchor" href="#mas%3Afailed-log" href="#mas%3Afailed-log" title="Permalink to this heading">#</a></h3>
+<pre><code id="log-mas-failed" class="language-html"></code></pre>
+<h3 id="aem%3Aerror-log" tabindex="-1">aem:error log <a class="header-anchor" href="#aem%3Aerror-log" href="#aem%3Aerror-log" title="Permalink to this heading">#</a></h3>
+<pre><code id="log-aem-error" class="language-html"></code></pre>
+<h3 id="mas%3Aerror-log" tabindex="-1">mas:error log <a class="header-anchor" href="#mas%3Aerror-log" href="#mas%3Aerror-log" title="Permalink to this heading">#</a></h3>
+<pre><code id="log-mas-error" class="language-html"></code></pre>
+<h3 id="mas%3Aready-log" tabindex="-1">mas:ready log <a class="header-anchor" href="#mas%3Aready-log" href="#mas%3Aready-log" title="Permalink to this heading">#</a></h3>
+<pre><code id="log-mas-ready" class="language-html"></code></pre>
+<h2 id="error-handling" tabindex="-1">Error Handling <a class="header-anchor" href="#error-handling" href="#error-handling" title="Permalink to this heading">#</a></h2>
+<p>The <code>merch-card</code> component can raise several types of errors during its lifecycle. These errors are dispatched as events that can be caught and handled by the consumer.</p>
+<h3 id="potential-errors" tabindex="-1">Potential Errors <a class="header-anchor" href="#potential-errors" href="#potential-errors" title="Permalink to this heading">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>Error Type</th>
+<th>Description</th>
+<th>Event</th>
+<th>Cause</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>“Missing fragment id”</td>
+<td>Occurs when an <code>aem-fragment</code> is used without specifying a fragment ID</td>
+<td><code>aem:error</code></td>
+<td>The <code>fragment</code> attribute is missing or empty</td>
+</tr>
+<tr>
+<td>“Failed to fetch fragment”</td>
+<td>Occurs when there’s a network error fetching the fragment</td>
+<td><code>aem:error</code></td>
+<td>Network issues, CORS problems</td>
+</tr>
+<tr>
+<td>“Unexpected fragment response”</td>
+<td>Occurs when the server returns a non-OK response</td>
+<td><code>aem:error</code></td>
+<td>Server errors, invalid fragment ID</td>
+</tr>
+<tr>
+<td>“AEM fragment cannot be loaded”</td>
+<td>Occurs when the merch-card detects that the fragment failed to load</td>
+<td><code>mas:error</code></td>
+<td>Propagated from <code>aem:error</code> events</td>
+</tr>
+<tr>
+<td><code>Contains offers that were not resolved within ${MERCH_CARD_LOAD_TIMEOUT} timeout</code></td>
+<td>Occurs when offers are not resolved within the timeout period</td>
+<td><code>mas:error</code></td>
+<td>Offers take too long to resolve</td>
+</tr>
+<tr>
+<td>“Contains unresolved offers”</td>
+<td>Occurs when offers cannot be resolved</td>
+<td><code>mas:error</code></td>
+<td>Pricing or checkout information cannot be retrieved</td>
+</tr>
+</tbody>
+</table>
+<h3 id="error-event-flow" tabindex="-1">Error Event Flow <a class="header-anchor" href="#error-event-flow" href="#error-event-flow" title="Permalink to this heading">#</a></h3>
+<ol>
+<li>When an error occurs in an <code>aem-fragment</code>, it dispatches an <code>aem:error</code> event with detailed information in the <code>detail</code> property that includes:
+<ul>
+<li><code>message</code>: The error message string</li>
+<li><code>context</code>: Additional context about the error (may include response details, timing information)</li>
+</ul>
+</li>
+<li>The <code>merch-card</code> listens for this event and calls its internal <code>#fail</code> method, which:
+<ul>
+<li>Logs the error with additional context</li>
+<li>Sets the <code>failed</code> property to <code>true</code></li>
+<li>Propagates it as a <code>mas:error</code> event with the error message in the <code>detail</code> property</li>
+</ul>
+</li>
+<li>For WCS (Web Commerce Service) errors, a <code>mas:failed</code> event is dispatched</li>
+<li>The <code>merch-card</code> component will mark itself as failed and stop trying to resolve offers</li>
+</ol>
+<h3 id="handling-errors" tabindex="-1">Handling Errors <a class="header-anchor" href="#handling-errors" href="#handling-errors" title="Permalink to this heading">#</a></h3>
+<p>To properly handle errors, add event listeners directly on the merch-card element:</p>
+<pre><code class="hljs language-javascript"><span class="hljs-comment">// Get reference to the merch-card element</span>
+<span class="hljs-keyword">const</span> merchCard = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;my-merch-card&#x27;</span>);
+
+<span class="hljs-comment">// Listen for merch-card errors</span>
+merchCard.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;mas:error&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">event</span>) =&gt;</span> {
+    <span class="hljs-comment">// event.detail contains the error message string</span>
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">&#x27;Merch card error:&#x27;</span>, event.<span class="hljs-property">detail</span>);
+    <span class="hljs-comment">// Add error styling</span>
+    merchCard.<span class="hljs-property">classList</span>.<span class="hljs-title function_">add</span>(<span class="hljs-string">&#x27;error&#x27;</span>);
+});
+
+<span class="hljs-comment">// Listen for merch-card ready event</span>
+merchCard.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;mas:ready&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">event</span>) =&gt;</span> {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&#x27;Merch card is ready:&#x27;</span>, event.<span class="hljs-property">target</span>.<span class="hljs-property">variant</span>);
+    <span class="hljs-comment">// Remove error styling if it was previously applied</span>
+    merchCard.<span class="hljs-property">classList</span>.<span class="hljs-title function_">remove</span>(<span class="hljs-string">&#x27;error&#x27;</span>);
+});
+
+<span class="hljs-comment">// Get reference to the aem-fragment inside the merch-card</span>
+<span class="hljs-keyword">const</span> aemFragment = merchCard.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&#x27;aem-fragment&#x27;</span>);
+
+<span class="hljs-comment">// Listen for AEM fragment errors</span>
+aemFragment.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;aem:error&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">event</span>) =&gt;</span> {
+    <span class="hljs-comment">// event.detail contains { message, context }</span>
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">&#x27;AEM fragment error message:&#x27;</span>, event.<span class="hljs-property">detail</span>.<span class="hljs-property">message</span>);
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">&#x27;AEM fragment error context:&#x27;</span>, event.<span class="hljs-property">detail</span>.<span class="hljs-property">context</span>);
+});
+
+<span class="hljs-comment">// Listen for AEM fragment load event</span>
+aemFragment.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;aem:load&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">event</span>) =&gt;</span> {
+    <span class="hljs-comment">// event.detail contains the fragment data</span>
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&#x27;AEM fragment loaded:&#x27;</span>, event.<span class="hljs-property">detail</span>);
+});
 </code></pre>
 <h3 id="spectrum-%3D-%E2%80%98swc%E2%80%99" tabindex="-1">spectrum = ‘swc’ <a class="header-anchor" href="#spectrum-%3D-%E2%80%98swc%E2%80%99" href="#spectrum-%3D-%E2%80%98swc%E2%80%99" title="Permalink to this heading">#</a></h3>
 <p>The <code>spectrum</code> attribute is used to specify the Spectrum technology to use for rendering the CTAs.
@@ -328,6 +442,9 @@ However, it can be accessed via <code>e.target.source</code> property.</p>
 <pre><code id="log3" class="language-html">
 </code></pre>
 <h2 id="aem-fragment-custom-element" tabindex="-1">aem-fragment custom element <a class="header-anchor" href="#aem-fragment-custom-element" href="#aem-fragment-custom-element" title="Permalink to this heading">#</a></h2>
+<p><code>aem-fragment</code> custom element is used to load a fragment from Odin/Frejya.
+It supports retrying to load the fragment in case of errors two times with 500ms of delay between attempts.
+It also falls back to last successfully loaded fragment for the same fragment id.</p>
 <h3 id="attributes-1" tabindex="-1">Attributes <a class="header-anchor" href="#attributes-1" href="#attributes-1" title="Permalink to this heading">#</a></h3>
 <table>
 <thead>
@@ -432,7 +549,7 @@ However, it can be accessed via <code>e.target.source</code> property.</p>
         });
         <span class="hljs-keyword">const</span> aemFragment = psCard.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&#x27;aem-fragment&#x27;</span>);
         aemFragment.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;aem:load&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">e</span>) =&gt;</span> {
-            <span class="hljs-title function_">log</span>(target, <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(e.<span class="hljs-property">detail</span>));
+            <span class="hljs-title function_">log</span>(target, <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(e.<span class="hljs-property">detail</span>, <span class="hljs-literal">null</span>, <span class="hljs-number">2</span>));
             <span class="hljs-title function_">log</span>(target, <span class="hljs-string">&#x27;aem-fragment has loaded&#x27;</span>);
         });
         <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;btnRefresh&#x27;</span>).<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;click&#x27;</span>, <span class="hljs-function">() =&gt;</span> {
@@ -460,7 +577,7 @@ The <code>sp-action-button</code> custom element renders into the default slot a
         <span class="hljs-attribute">display</span>: block;
     }
 </span><span class="hljs-tag">&lt;/<span class="hljs-name">style</span>&gt;</span>
-<span class="hljs-tag">&lt;<span class="hljs-name">merch-card</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">merch-card</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;headless&quot;</span>&gt;</span>
     <span class="hljs-tag">&lt;<span class="hljs-name">aem-fragment</span>
         <span class="hljs-attr">fragment</span>=<span class="hljs-string">&quot;d8008cac-010f-4607-bacc-a7a327da1312&quot;</span>
     &gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">aem-fragment</span>&gt;</span>

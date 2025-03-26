@@ -1,0 +1,47 @@
+{
+  "description": "Plans Page: CC All Apps - Students",
+  "fields": {
+    "badge": {
+      "mimeType": "text/html",
+      "value": "Exclusive price"
+    },
+    "callout": {
+      "mimeType": "text/html",
+      "value": "<p></p>"
+    },
+    "cardTitle": "Creative Cloud All Apps",
+    "ctas": {
+      "mimeType": "text/html",
+      "value": "<a data-checkout-workflow-step=\"commitment\" data-wcs-osi=\"Hnk2P6L5wYhnpZLFYTW5upuk2Y3AJXlso8VGWQ0l2TI\" data-template=\"checkoutUrl\" data-analytics-id=\"buy-now\">Buy now</a>"
+    },
+    "description": {
+      "mimeType": "text/html",
+      "value": "<p><em>Annual, paid monthly</em></p><p>Get 20+ Creative Cloud apps, including Photoshop, Acrobat Pro, and more. Pay <span is=\"inline-price\" class=\"placeholder-resolved\" data-display-old-price=\"true\" data-display-per-unit=\"false\" data-template=\"price\" data-wcs-osi=\"a2BclUUkea_JeR4CLVkbrsqNFOf3ClN-B8nQ79n7LlE\"></span> the first year and <span is=\"inline-price\" class=\"placeholder-resolved\" data-display-old-price=\"true\" data-display-per-unit=\"false\" data-template=\"price\" data-wcs-osi=\"DFaWY47EmtzYVOApli4DjncThGsfaeCSDZRoHkC8pGY\"></span> after that.</p>"
+    },
+    "locReady": true,
+    "mnemonicAlt": ["Creative Cloud All Apps"],
+    "mnemonicIcon": ["https://www.adobe.com/cc-shared/assets/img/product-icons/svg/creative-cloud.svg"],
+    "mnemonicLink": ["https://www.adobe.com/creativecloud/all-apps.html"],
+    "prices": {
+      "mimeType": "text/html",
+      "value": "<p><span is=\"inline-price\" data-template=\"strikethrough\" data-wcs-osi=\"r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8\"></span> <span is=\"inline-price\" data-template=\"price\" data-wcs-osi=\"Hnk2P6L5wYhnpZLFYTW5upuk2Y3AJXlso8VGWQ0l2TI\"></span></p>"
+    },
+    "shortDescription": {
+      "mimeType": "text/html"
+    },
+    "showStockCheckbox": true,
+    "tags": [],
+    "variant": "plans"
+  },
+  "id": "2bee9d3e-55ae-4701-b946-44b32fa5d9fa",
+  "model": {
+    "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NhcmQ"
+  },
+  "name": "",
+  "path": "/content/dam/mas/acom/en_US/create111111211",
+  "references": {
+
+  },
+  "referencesTree": [],
+  "title": "Plans Page: CC All Apps - Students"
+}

@@ -14,6 +14,7 @@ import {
     expect,
     disableMasCommerceService,
 } from './utilities.js';
+import { MasError } from '../src/mas-error.js';
 
 /**
  * @param {string} wcsOsi
@@ -156,9 +157,20 @@ describe('class "InlinePrice"', () => {
         await initMasCommerceService();
         const inlinePrice = mockInlinePrice('xyz');
         inlinePrice.innerHTML = 'test';
-        await expect(inlinePrice.onceSettled()).to.be.eventually.rejectedWith(
-            'Bad WCS request: 404, url: https://www.adobe.com/web_commerce_artifact?offer_selector_ids=xyz&country=US&locale=en_US&landscape=PUBLISHED&api_key=wcms-commerce-ims-ro-user-milo&language=MULT'
-        );
+        try {
+          await inlinePrice.onceSettled();
+          // Should not reach here
+          expect.fail('Promise should have been rejected');
+      } catch (error) {
+          // Verify it's a MasError instance
+          expect(error).to.be.instanceOf(MasError);
+          expect(error.context).to.have.property('duration');
+          expect(error.context).to.have.property('startTime');
+          expect(error.context).to.include({
+              status: 404,
+              url: 'https://www.adobe.com//web_commerce_artifact?offer_selector_ids=xyz&country=US&locale=en_US&landscape=PUBLISHED&api_key=wcms-commerce-ims-ro-user-milo&language=MULT',
+          });
+      }
         expect(inlinePrice.innerHTML).to.be.empty;
     });
 

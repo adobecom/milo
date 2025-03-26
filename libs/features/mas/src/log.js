@@ -10,7 +10,6 @@ const LogLevels = {
     WARN: 'warn',
 };
 
-const startTime = Date.now();
 const appenders = new Set();
 const filters = new Set();
 const loggerIndexes = new Map();
@@ -42,7 +41,7 @@ function createEntry(level, message, namespace, params, source) {
             return params;
         },
         source,
-        timestamp: Date.now() - startTime,
+        timestamp: performance.now().toFixed(3),
     };
 }
 

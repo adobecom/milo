@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="aem-base-url" content="http://localhost:2023" />
+        <meta name="mas-io-url" content="http://localhost:2023/mas/io" />
         <title>Merch Datasource Web Component test page</title>
         <script>
             window.process = {
@@ -35,7 +35,6 @@
             src="http://localhost:2023/__wds-outside-root__/2/features/spectrum-web-components/dist/button.js"
             type="module"
         ></script>
-        <mas-commerce-service></mas-commerce-service>
         <script type="module" src="./aem-fragment.test.html.js"></script>
     </head>
 
@@ -44,50 +43,57 @@
             <sp-theme color="light" scale="medium"></sp-theme>
         </main>
         <template id="cards">
-            <merch-card>
+            <merch-card id="card-cc-all-apps">
                 <aem-fragment
                     title="Creative Cloud All Apps"
                     fragment="fragment-cc-all-apps"
-                    author
                 >
                 </aem-fragment>
             </merch-card>
-            <merch-card>
+            <merch-card id="card-photoshop">
                 <aem-fragment
                     title="Photoshop"
                     fragment="fragment-photoshop"
-                    author
                 >
                 </aem-fragment>
             </merch-card>
-            <merch-card consonant>
+            <merch-card id="card-cc-all-apps-consonant" consonant>
                 <aem-fragment
                     title="Creative Cloud All Apps"
                     fragment="fragment-cc-all-apps"
                 >
                 </aem-fragment>
             </merch-card>
-            <merch-card>
+            <merch-card id="card-empty">
                 <aem-fragment></aem-fragment>
             </merch-card>
-            <merch-card>
+            <merch-card id="card-cc-all-apps-ims">
                 <aem-fragment
                     title="Creative Cloud All Apps"
                     fragment="fragment-cc-all-apps"
-                    ims
                 >
                 </aem-fragment>
             </merch-card>
-            <merch-card>
+            <merch-card id="card-wrong-price-checkout">
                 <aem-fragment fragment="with-wrong-price-and-checkout-osis">
                 </aem-fragment>
             </merch-card>
 
-            <merch-card title="CCD Slice Wide with Badge">
+            <merch-card id="card-cc-all-apps-badge" title="CCD Slice Wide with Badge">
                 <aem-fragment
                     fragment="fragment-cc-all-apps-badge"
+                    fragment="3d26df5b-0784-4967-8149-8a9e59131084"
                 ></aem-fragment>
             </merch-card>
+        </template>
+        <template id="merch-card-refresh-error">
+          <merch-card id="card-refresh-error">
+            <aem-fragment
+                title="Creative Cloud All Apps"
+                fragment="fragment-cc-all-apps2"
+            >
+            </aem-fragment>
+        </merch-card>
         </template>
     </body>
 </html>

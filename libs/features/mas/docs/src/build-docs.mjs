@@ -57,7 +57,11 @@ const styleDependecy = ['plans.md'].includes(sourceFile)
   : '<link rel="stylesheet" href="spectrum.css">';
 
 // Render Markdown to HTML
-const htmlContent = md.render(inputContent);
+let htmlContent = md.render(inputContent);
+// wrap in sp-theme
+htmlContent = ['ccd.md'].includes(sourceFile) 
+  ? htmlContent 
+  : `<sp-theme color="light" scale="medium">\n${htmlContent}\n</sp-theme>`;
 
 // HTML template with your custom element script
 const htmlTemplate = `
@@ -69,6 +73,7 @@ const htmlTemplate = `
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     ${styleDependecy}
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://p.typekit.net/p.css?s=1&amp;k=hah7vzn&amp;ht=tk&amp;f=7180.7181.7182.7183.22474.22749.22750.22751.22753&amp;a=8634977&amp;app=typekit&amp;e=css">
     <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
   
   <!-- Include your custom element script as an ES6 module -->
@@ -81,22 +86,9 @@ const htmlTemplate = `
   <script type="module" src="./mas-sidenav.js"></script>
 </head>
 <body class="spectrum spectrum--medium spectrum--light">
-<aside class="sidenav">
-    <a href="/libs/features/mas/docs/mas.html">Home</a>
-    <a href="/libs/features/mas/docs/mas.js.html">mas.js</a>
-    <a href="/libs/features/mas/docs/checkout-link.html">Checkout Link</a>
-    <a href="/libs/features/mas/docs/checkout-button.html">Checkout Button</a>
-    <a href="/libs/features/mas/docs/inline-price.html">Inline Price</a>
-    <a href="/libs/features/mas/docs/merch-card.html">Merch Card</a>
-    <a href="/libs/features/mas/docs/ccd.html">CCD Gallery</a>
-    <a href="/libs/features/mas/docs/adobe-home.html">Adobe Home Gallery</a>
-    <a href="/libs/features/mas/docs/plans.html">Plans Gallery</a>
-    <a href="/libs/features/mas/docs/benchmarks.html">Benchmarks</a>
-</aside>
+    <aside is="mas-sidenav"></aside>
 <main>
-<sp-theme color="light" scale="medium">
 ${htmlContent}
-</sp-theme>
 </main>
 <script type="module">
   document.querySelectorAll('code.demo').forEach(el => {

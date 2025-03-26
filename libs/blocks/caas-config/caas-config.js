@@ -162,7 +162,7 @@ const defaultOptions = {
   },
   paginationType: {
     paginator: 'Paginator',
-    loadMore: 'Load More',
+    loadMore: 'Load more',
   },
   search: {
     'contentArea.title': 'Card Titles',
@@ -658,6 +658,7 @@ const SearchPanel = () => html`
 const PaginationPanel = () => {
   const { state } = useContext(ConfiguratorContext);
   const paginationOptions = html`
+    <${Input} label="Show Pagination Quantity" prop="paginationQuantityShown" type="checkbox" />
     <${Select}
       label="Load More Button Style"
       prop="loadMoreBtnStyle"
@@ -678,7 +679,6 @@ const PaginationPanel = () => {
 
   return html`
     <${Input} label="Enable Pagination" prop="paginationEnabled" type="checkbox" />
-    <${Input} label="Show Pagination Quantity" prop="paginationQuantityShown" type="checkbox" />
     ${state.paginationEnabled && paginationOptions}
   `;
 };

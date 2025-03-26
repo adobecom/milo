@@ -429,9 +429,9 @@ export function cleanup(merchCard) {
 }
 
 export async function hydrate(fragment, merchCard) {
-    const { fields } = fragment;
+    const { id, fields } = fragment;
     const { variant } = fields;
-    if (!variant) return;
+    if (!variant) throw new Error (`hydrate: no variant found in payload ${id}`);
     // temporary hardcode for plans. this data will be coming from settings (MWPW-166756)
     const settings = {
       stockCheckboxLabel: 'Add a 30-day free trial of Adobe Stock.*', // to be {{stock-checkbox-label}}
@@ -439,7 +439,7 @@ export async function hydrate(fragment, merchCard) {
       secureLabel: 'Secure transaction' // to be {{secure-transaction}}
     };
     cleanup(merchCard);
-    merchCard.id = fragment.id;
+    merchCard.id ??= fragment.id;
 
 
     merchCard.removeAttribute('background-image');
@@ -456,7 +456,7 @@ export async function hydrate(fragment, merchCard) {
     await merchCard.updateComplete;
 
     const { aemFragmentMapping } = merchCard.variantLayout;
-    if (!aemFragmentMapping) return;
+    if (!aemFragmentMapping) throw new Error (`hydrate: aemFragmentMapping found for ${id}`)
 
     if (aemFragmentMapping.style === 'consonant') {
       merchCard.setAttribute('consonant', true);
