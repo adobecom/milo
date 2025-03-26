@@ -51,6 +51,11 @@ const outputPath = path.join(targetFile);
 // Read the Markdown file
 const inputContent = fs.readFileSync(inputPath, 'utf8');
 
+// depending on surface, load either Milo consonant or Spectrum styles
+const styleDependecy = ['plans.md'].includes(sourceFile) 
+  ? '<link rel="stylesheet" href="../../../styles/styles.css">' 
+  : '<link rel="stylesheet" href="spectrum.css">';
+
 // Render Markdown to HTML
 const htmlContent = md.render(inputContent);
 
@@ -62,7 +67,7 @@ const htmlTemplate = `
     <meta charset="UTF-8">
     <title>M@S Web Components</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="spectrum.css">
+    ${styleDependecy}
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
   
@@ -73,15 +78,19 @@ const htmlTemplate = `
   </script>
   <!-- Include Highlight.js stylesheet for syntax highlighting -->
   <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
+  <script type="module" src="./mas-sidenav.js"></script>
 </head>
 <body class="spectrum spectrum--medium spectrum--light">
 <aside class="sidenav">
     <a href="/libs/features/mas/docs/mas.html">Home</a>
     <a href="/libs/features/mas/docs/mas.js.html">mas.js</a>
     <a href="/libs/features/mas/docs/checkout-link.html">Checkout Link</a>
+    <a href="/libs/features/mas/docs/checkout-button.html">Checkout Button</a>
     <a href="/libs/features/mas/docs/inline-price.html">Inline Price</a>
     <a href="/libs/features/mas/docs/merch-card.html">Merch Card</a>
     <a href="/libs/features/mas/docs/ccd.html">CCD Gallery</a>
+    <a href="/libs/features/mas/docs/adobe-home.html">Adobe Home Gallery</a>
+    <a href="/libs/features/mas/docs/plans.html">Plans Gallery</a>
     <a href="/libs/features/mas/docs/benchmarks.html">Benchmarks</a>
 </aside>
 <main>
@@ -99,6 +108,7 @@ ${htmlContent}
       const scriptTags = targetContainer.getElementsByTagName('script');
       for (let i = 0; i < scriptTags.length; i++) {
           const script = document.createElement('script');
+          script.type = 'module';
           script.text = scriptTags[i].text;
           document.body.appendChild(script); // Appends to the document to execute
           scriptTags[i].remove(); // Remove the script tag

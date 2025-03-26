@@ -40,6 +40,8 @@ const FORM_MAP = {
   'success-section': SUCCESS_SECTION,
   'co-partner-names': 'program.copartnernames',
   'sfdc-campaign-id': 'program.campaignids.sfdc',
+  'poi-field': 'field_filters.products',
+  'hardcoded-poi': 'program.poi',
 };
 export const FORM_PARAM = 'form';
 
@@ -97,9 +99,13 @@ export const setPreferences = (formData) => {
 };
 
 const showSuccessSection = (formData) => {
-  const show = (sections) => {
+  const show = async (sections) => {
     sections.forEach((section) => section.classList.remove('hide-block'));
-    sections[0]?.scrollIntoView({ behavior: 'smooth' });
+    await new Promise((resolve) => { setTimeout(resolve, 300); });
+    const pageTop = document.querySelector('header')?.offsetHeight ?? 0;
+    const targetPosition = sections[0]?.getBoundingClientRect().top ?? 0;
+    const offsetPosition = targetPosition + window.scrollY - pageTop;
+    window.scrollTo(0, offsetPosition);
   };
   const successClass = formData[SUCCESS_SECTION]?.toLowerCase().replaceAll(' ', '-');
   if (!successClass) {
@@ -180,6 +186,10 @@ export const loadMarketo = (el, formData) => {
 
       MktoForms2.loadForm(`//${baseURL}`, munchkinID, formID);
       MktoForms2.whenReady((form) => { readyForm(form, formData); });
+      /* c8 ignore next 3 */
+      if (el.classList.contains('multi-step')) {
+        import('./marketo-multi.js').then(({ default: multiStep }) => multiStep(el));
+      }
     })
     .catch(() => {
       /* c8 ignore next 2 */
@@ -261,6 +271,10 @@ export default function init(el) {
   fragment.append(formWrapper);
   el.replaceChildren(fragment);
   el.classList.add('loading');
+  /* c8 ignore next 3 */
+  if (el.classList.contains('multi-2') || el.classList.contains('multi-3')) {
+    el.classList.add('multi-step');
+  }
 
   loadLink(`https://${baseURL}`, { rel: 'dns-prefetch' });
 
