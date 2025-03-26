@@ -7,6 +7,11 @@
     clientId: '',
     endpoint: 'https://www.adobe.com/lana/ll',
     endpointStage: 'https://www.stage.adobe.com/lana/ll',
+    /**
+     * Type of error being logged:
+     * 'e' - explicit (manually logged errors/messages)
+     * 'i' - implicit (automatically caught errors)
+     */
     errorType: 'e',
     sampleRate: 1,
     tags: '',
@@ -14,6 +19,9 @@
     useProd: true,
     isProdDomain: false,
   };
+
+  // Valid severity values (both full and abbreviated formats)
+  const VALID_SEVERITIES = new Set(['d', 'debug', 'i', 'info', 'w', 'warn', 'e', 'error', 'c', 'critical']);
 
   const w = window;
 
@@ -52,6 +60,14 @@
     }, {});
   }
 
+  function hasDebugParam() {
+    return w.location.search.toLowerCase().indexOf('lanadebug') !== -1;
+  }
+
+  function isLocalhost() {
+    return w.location.host.toLowerCase().indexOf('localhost') !== -1;
+  }
+
   function log(msg, options) {
     msg = msg && msg.stack ? msg.stack : (msg || '');
     if (msg.length > MSG_LIMIT) {
@@ -62,6 +78,24 @@
     if (!o.clientId) {
       console.warn('LANA ClientID is not set in options.');
       return;
+    }
+
+    // Process severity only if it's explicitly provided in original options
+    let severity;
+    if (options && options.severity !== undefined) {
+      // Check if value is valid
+      if (VALID_SEVERITIES.has(options.severity)) {
+        severity = options.severity;
+      } else {
+        // Invalid severity, use default based on debug mode
+        const isDebugMode = hasDebugParam() || w.lana.debug;
+        const defaultSeverity = isDebugMode ? 'd' : 'i';
+        console.warn(`LANA: Invalid severity '${options.severity}'. Defaulting to '${defaultSeverity}'.`);
+        severity = defaultSeverity;
+      }
+    } else if (w.lana.debug) {
+      // In debug mode, use debug severity if enabled
+      severity = 'd';
     }
 
     const sampleRateParam = parseInt(new URL(window.location).searchParams.get('lana-sample'), 10);
@@ -78,6 +112,11 @@
       `s=${sampleRate}`,
       `t=${encodeURI(o.errorType)}`,
     ];
+
+    // Only add severity parameter if it's explicitly provided
+    if (severity) {
+      queryParams.push(`r=${encodeURI(severity)}`);
+    }
 
     if (o.tags) {
       queryParams.push(`tags=${encodeURI(o.tags)}`);
@@ -100,16 +139,12 @@
     }
   }
 
+  /**
+   * Sends unhandled errors to Lana with errorType 'i' (implicit)
+   * Used for errors that are automatically caught by window error handlers
+   */
   function sendUnhandledError(e) {
     log(e.reason || e.error || e.message, { errorType: 'i' });
-  }
-
-  function hasDebugParam() {
-    return w.location.search.toLowerCase().indexOf('lanadebug') !== -1;
-  }
-
-  function isLocalhost() {
-    return w.location.host.toLowerCase().indexOf('localhost') !== -1;
   }
 
   w.lana = {
