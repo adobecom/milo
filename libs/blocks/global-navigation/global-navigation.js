@@ -4,12 +4,50 @@ import {
   getConfig,
   getMetadata,
   loadIms,
+  loadStyle,
   decorateLinks,
   loadScript,
   getGnavSource,
+  getFederatedUrl,
   getFedsPlaceholderConfig,
 } from '../../utils/utils.js';
-import {
+
+(() => {
+  const { miloLibs, codeRoot } = getConfig();
+  const url = `${miloLibs || codeRoot}/blocks/global-navigation/`;
+  loadStyle(`${url}base.css`, () => {
+    if (getConfig().theme === 'dark') loadStyle(`${url}dark-nav.css`);
+  });
+})();
+
+const plainHTMLPromise = (async () => {
+  const source = await getGnavSource();
+  const [url] = source.split('#');
+  let federatedURL = getFederatedUrl(url);
+  const mepGnav = getConfig()?.mep?.inBlock?.['global-navigation'];
+  const mepFragment = mepGnav?.fragments?.[federatedURL];
+  if (mepFragment && mepFragment.action === 'replace') {
+    federatedURL = mepFragment.content;
+  }
+  const res = await fetch(federatedURL.replace(/(\.html$|$)/, '.plain.html'));
+  return res;
+})();
+
+const asideJsPromise = getMetadata('gnav-promo-source') ? import('./features/aside/aside.js') : null;
+
+const breadCrumbsJsPromise = document.querySelector('header')?.classList.contains('has-breadcrumbs') ? import('./features/breadcrumbs/breadcrumbs.js') : null;
+
+const [utilities, placeholders, merch] = await Promise.all([
+  import('./utilities/utilities.js'),
+  import('../../features/placeholders.js'),
+  import('../merch/merch.js'),
+]);
+
+const { replaceKey, replaceKeyArray } = placeholders;
+
+const { getMiloLocaleSettings } = merch;
+
+const {
   closeAllDropdowns,
   decorateCta,
   fetchAndProcessPlainHtml,
@@ -21,7 +59,6 @@ import {
   isDesktop,
   isTangentToViewport,
   lanaLog,
-  loadBaseStyles,
   loadDecorateMenu,
   rootPath,
   loadStyles,
@@ -45,11 +82,7 @@ import {
   setAsyncDropdownCount,
   branchBannerLoadCheck,
   getBranchBannerInfo,
-} from './utilities/utilities.js';
-
-import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
-
-import { getMiloLocaleSettings } from '../merch/merch.js';
+} = utilities;
 
 const SIGNIN_CONTEXT = getConfig()?.signInContext;
 
@@ -116,9 +149,9 @@ export const CONFIG = {
               enableProfileSwitcher: true,
               miniAppContext: {
                 logger: {
-                  trace: () => {},
-                  debug: () => {},
-                  info: () => {},
+                  trace: () => { },
+                  debug: () => { },
+                  info: () => { },
                   warn: (e) => lanaLog({ message: 'Profile Menu warning', e, tags: 'universalnav', errorType: 'warn' }),
                   error: (e) => lanaLog({ message: 'Profile Menu error', e, tags: 'universalnav', errorType: 'error' }),
                 },
@@ -379,7 +412,6 @@ class Gnav {
       this.decorateMainNav,
       this.decorateTopNav,
       this.decorateTopnavWrapper,
-      loadBaseStyles,
       this.ims,
       this.addChangeEventListeners,
     ];
@@ -994,13 +1026,13 @@ class Gnav {
     const promoPath = getMetadata('gnav-promo-source');
     const fedsPromoWrapper = document.querySelector('.feds-promo-aside-wrapper');
 
-    if (!promoPath) {
+    if (!promoPath || !asideJsPromise) {
       fedsPromoWrapper?.remove();
       this.block.classList.remove('has-promo');
       return this.elements.aside;
     }
 
-    const { default: decorate } = await import('./features/aside/aside.js');
+    const { default: decorate } = await asideJsPromise;
     if (!decorate) return this.elements.aside;
     this.elements.aside = await decorate({ headerElem: this.block, fedsPromoWrapper, promoPath });
     fedsPromoWrapper.append(this.elements.aside);
@@ -1320,7 +1352,8 @@ class Gnav {
     const breadcrumbsElem = this.block.querySelector('.breadcrumbs');
     // Breadcrumbs are not initially part of the nav, need to decorate the links
     if (breadcrumbsElem) decorateLinks(breadcrumbsElem);
-    const { default: createBreadcrumbs } = await import('./features/breadcrumbs/breadcrumbs.js');
+    if (!breadCrumbsJsPromise) return null;
+    const { default: createBreadcrumbs } = await breadCrumbsJsPromise;
     this.elements.breadcrumbsWrapper = await createBreadcrumbs(breadcrumbsElem);
     return this.elements.breadcrumbsWrapper;
   };
@@ -1365,7 +1398,7 @@ export default async function init(block) {
   if (hash === '_noActiveItem') {
     setDisableAEDState();
   }
-  const content = await fetchAndProcessPlainHtml({ url });
+  const content = await fetchAndProcessPlainHtml({ url, plainHTMLPromise });
   if (!content) {
     const error = new Error('Could not create global navigation. Content not found!');
     error.tags = 'gnav';
