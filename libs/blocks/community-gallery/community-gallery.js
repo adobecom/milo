@@ -14,7 +14,7 @@ export default async function init(el) {
       loadScript(`${window.location.origin}/libs/blocks/community-gallery/spectrum-lit-all.min.js`, 'module'),
       loadScript(`${window.location.origin}/libs/blocks/community-gallery/spectrum-theme.js`, 'module')
   ]);
-  setTimeout(()=> {
+  setTimeout(async ()=> {
     await loadComponent();
     const c = createTag('sp-theme', { dir: 'ltr', scale: 'medium', color: 'light'});
     el.insertAdjacentElement("afterend", c);
