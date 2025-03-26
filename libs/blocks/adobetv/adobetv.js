@@ -1,6 +1,5 @@
 import { decorateAnchorVideo } from '../../utils/decorate.js';
 import { createTag } from '../../utils/utils.js';
-import { getMetadata } from '../section-metadata/section-metadata.js';
 
 export default function init(a) {
   a.classList.add('hide-video');
@@ -13,9 +12,9 @@ export default function init(a) {
       anchorTag: a,
     });
   } else {
-    const sectionMetadata = a.parentElement.parentElement.parentElement?.querySelector('.section-metadata');
-    const metadataTitle = sectionMetadata ? getMetadata(sectionMetadata)?.title?.text : null;
-    const title = metadataTitle || 'Adobe Video Publishing Cloud Player';
+    const textContent = a?.textContent?.trim();
+    const titleFromText = textContent?.includes('|') ? textContent.split('|')[1].trim() : null;
+    const title = titleFromText || 'Adobe Video Publishing Cloud Player';
 
     const iframe = createTag('iframe', {
       src: a.href,
