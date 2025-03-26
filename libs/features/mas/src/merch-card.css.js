@@ -18,6 +18,10 @@ export const styles = css`
         text-align: start;
     }
 
+    :host([failed]) {
+        display: none;
+    }
+
     :host(.placeholder) {
         visibility: hidden;
     }
