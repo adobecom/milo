@@ -8,6 +8,7 @@ import {
     priceWithAnnual,
     pricePromoWithAnnual,
     priceAlternative,
+    priceOpticalAlternative,
     omitProperties,
     toBoolean,
     discount,
@@ -85,9 +86,6 @@ export function Price({ literals, providers, settings }) {
             case 'strikethrough':
                 method = priceStrikethrough;
                 break;
-            case 'optical':
-                method = priceOptical;
-                break;
             case 'annual':
                 method = priceAnnual;
                 break;
@@ -96,6 +94,9 @@ export function Price({ literals, providers, settings }) {
                     method = options.promotionCode
                         ? pricePromoWithAnnual
                         : priceWithAnnual;
+                } 
+                else if (options.template === 'optical' && options.alternativePrice) {
+                    method = priceOpticalAlternative;
                 } else if (options.alternativePrice) {
                     method = priceAlternative;
                 } else {
