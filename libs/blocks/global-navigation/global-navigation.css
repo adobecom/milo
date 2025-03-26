@@ -1368,9 +1368,3 @@ html:has(body.disable-ios-scroll) { /* this class is only added on iOS */
   position: relative;
   display: block;
 }
-
-.feds-popup .feds-menu-items .feds-navLink-content .feds-navLink-description {
-  white-space: normal;
-}
-
-/* .feds-topnav--overflowing .feds-cta */
