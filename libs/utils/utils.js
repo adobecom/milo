@@ -110,6 +110,7 @@ const AUTO_BLOCKS = [
   { 'pdf-viewer': '.pdf', styles: false },
   { video: '.mp4' },
   { merch: '/tools/ost?' },
+  { merch: '/miniplans' },
   { 'mas-autoblock': 'mas.adobe.com/studio', styles: false },
   { m7: '/creativecloud/business-plans.html', styles: false },
   { m7: '/creativecloud/education-plans.html', styles: false },
