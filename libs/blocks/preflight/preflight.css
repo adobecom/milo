@@ -193,7 +193,7 @@ a.preflight-edit.da-icon {
 }
 
 .preflight-group-items {
-  max-height: 1000px;
+  max-height: 9000px;
   transition: max-height .2s ease-in-out;
   overflow: hidden;
 }
