@@ -28,7 +28,7 @@ async function main({ github, context } = {}) {
 
     await slackNotification(
         `${prefix} <${html_url}|#${number}: ${title}>.`,
-        process.env.MILO_RELEASE_SLACK_WH
+        process.env.OKAN_SLACK_WEBHOOK
     );
 }
 
