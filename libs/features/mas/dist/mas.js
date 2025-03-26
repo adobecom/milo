@@ -945,6 +945,10 @@ merch-card .footer-row-cell:nth-child(8) {
 :root {
   --consonant-merch-card-plans-width: 300px;
   --consonant-merch-card-plans-icon-size: 40px;
+  
+}
+
+merch-card[variant="plans"] {
   --consonant-merch-card-callout-icon-size: 18px;
 }
 
