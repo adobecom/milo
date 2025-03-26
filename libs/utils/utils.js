@@ -1178,18 +1178,20 @@ export function enablePersonalizationV2() {
   return !!enablePersV2 && isSignedOut();
 }
 
+function normCountry(country) {
+  return (country.toLowerCase() === 'uk' ? 'gb' : country.toLowerCase()).split('_')[0];
+}
 async function determineUserCountry(config) {
   const urlParams = new URLSearchParams(window.location.search);
   const country = urlParams.get('country') || (document.cookie.split('; ').find((row) => row.startsWith('international='))?.split('=')[1]);
   if (country) {
-    console.log('got userCOuntry from params or from international cookie');
-    config.mep = { userCountry: country.toLowerCase() === 'uk' ? 'gb' : country.toLowerCase().split('_')[0] };
+    console.log('got userCountry from country params or from international cookie');
+    config.mep = { userCountry: normCountry(country) };
   } else {
-    let akamaiCode = urlParams.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
+    const akamaiCode = urlParams.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
     if (akamaiCode) {
-      console.log('usercountry set from akamaiLocale in params or akamai in sessions storage');
-      if (akamaiCode === 'gb') akamaiCode = 'uk';
-      config.mep = { userCountry: akamaiCode };
+      console.log('usercountry set from akamaiLocale in params or akamai in session storage');
+      config.mep = { userCountry: normCountry(akamaiCode) };
     } else {
       const { getAkamaiCode } = await import('../features/georoutingv2/georoutingv2.js');
       config.mep = { countryPromise: getAkamaiCode(true) };
