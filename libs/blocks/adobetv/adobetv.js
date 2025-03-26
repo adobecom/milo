@@ -12,12 +12,16 @@ export default function init(a) {
       anchorTag: a,
     });
   } else {
+    const textContent = a?.textContent?.trim();
+    const titleFromText = textContent?.includes('|') ? textContent.split('|')[1].trim() : null;
+    const title = titleFromText || 'Adobe Video Publishing Cloud Player';
+
     const iframe = createTag('iframe', {
       src: a.href,
       class: 'adobetv',
       scrolling: 'no',
       allow: 'encrypted-media; fullscreen',
-      title: 'Adobe Video Publishing Cloud Player',
+      title,
       loading: 'lazy',
     });
     const embed = createTag('div', { class: 'milo-video' }, iframe);
