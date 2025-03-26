@@ -42,12 +42,11 @@ function dropdownOptions(props) {
 async function checkAlt() {
   if (altResult.value.checked) return;
   // If images are not scoped, tracking pixel/images are picked up.
-  const images = document.querySelectorAll('header img, main img, footer img');
+  const images = document.querySelectorAll(':is(header, main, footer) img:not(.accessibility-control)');
   const result = { ...altResult.value };
   if (!images) return;
 
   images.forEach((img) => {
-    if (img.classList.contains('accessibility-control')) return;
     const alt = img.getAttribute('alt');
     let parent = '';
 

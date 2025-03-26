@@ -595,6 +595,10 @@ span.preflight-time {
 }
 
 /* Assets css */
+body.preflight-assets-analysis {
+  overflow: auto;
+}
+
 .assets-columns {
   margin: 24px 48px;
   display: grid;

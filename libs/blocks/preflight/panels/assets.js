@@ -5,6 +5,7 @@ function isViewportTooSmall() {
   return !window.matchMedia('(min-width: 1200px)').matches;
 }
 
+const maxFullWidth = 1920;
 const imagesWithMismatch = signal([]);
 const imagesWithMatch = signal([]);
 const checksPerformed = signal(false);
@@ -29,6 +30,7 @@ async function checkImageDimensions() {
         img.setAttribute('loading', 'eager');
         return new Promise((resolve) => {
           img.addEventListener('load', resolve);
+          img.addEventListener('error', resolve);
         });
       }
       return Promise.resolve();
@@ -38,12 +40,14 @@ async function checkImageDimensions() {
   // Filter the loaded images to ensure they are visible, not an icon, and not an SVG
   const images = allImages.filter((img) => img.checkVisibility()
     && !img.closest('.icon-area')
-    && !img.src.endsWith('.svg'));
+    && !img.src.includes('.svg'));
 
   if (!images.length) return;
 
-  const maxFullWidth = 1920;
   const viewportWidth = document.documentElement.clientWidth;
+
+  // Apply overflow class to body to prevent scrolling issues during image analysis
+  document.body.classList.add('preflight-assets-analysis');
 
   for (const img of images) {
     // Get the original dimensions of the uploaded image; fallback to the natural dimensions
@@ -104,6 +108,9 @@ async function checkImageDimensions() {
 
     pictureMetaElem.append(assetMessage);
   }
+
+  // Remove overflow class from body after analysis is complete
+  document.body.classList.remove('preflight-assets-analysis');
 }
 
 function AssetsItem({ title, description }) {
