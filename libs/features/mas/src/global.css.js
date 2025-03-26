@@ -305,6 +305,22 @@ merch-card [slot='callout-content'] > div > div {
     color: var(--consonant-merch-card-callout-font-color);
 }
 
+merch-card [slot='callout-content'] > div > div > div {
+    display: inline-block;
+    text-align: start;
+    font: normal normal normal var(--consonant-merch-card-callout-font-size)/var(--consonant-merch-card-callout-line-height) var(--body-font-family, 'Adobe Clean');
+    letter-spacing: var(--consonant-merch-card-callout-letter-spacing);
+    color: var(--consonant-merch-card-callout-font-color);
+}
+
+merch-card [slot='callout-content'] img {
+    width: var(--consonant-merch-card-callout-icon-size);
+    height: var(--consonant-merch-card-callout-icon-size);
+    margin-inline-end: 2.5px;
+    margin-inline-start: 9px;
+    margin-block-start: 2.5px;
+}
+
 merch-card [slot='callout-content'] .icon-button {
     height: 16px;
     padding: 0;
