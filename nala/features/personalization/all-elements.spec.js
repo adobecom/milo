@@ -7,7 +7,7 @@ module.exports = {
       desc: 'insertBefore and insertAfter should work with fragment selectors',
       path: '/drafts/nala/features/personalization/all-elements/all-elements',
       data: { defaultURL: '/drafts/nala/features/personalization/all-elements/all-elements?mep=%2Fdrafts%2Fnala%2Ffeatures%2Fpersonalization%2Fall-elements%2Fall-elements.json--default' },
-      tags: '@all-elements0 @smoke @regression @milo ',
+      tags: '@all-elements0 @mep @smoke @regression @milo ',
     },
     {
       tcid: '1',
@@ -15,7 +15,7 @@ module.exports = {
       desc: 'The #_all flag should change all matching elements',
       path: '/drafts/nala/features/personalization/all-elements/all-elements2',
       data: { defaultURL: '/drafts/nala/features/personalization/all-elements/all-elements2?mep=%2Fdrafts%2Fnala%2Ffeatures%2Fpersonalization%2Fall-elements%2Fall-elements2.json--default' },
-      tags: '@all-elements1 @smoke @regression @milo ',
+      tags: '@all-elements1 @mep @smoke @regression @milo ',
     },
     {
       tcid: '2',
@@ -23,7 +23,7 @@ module.exports = {
       desc: 'the #_include-fragments flag should search within fragments',
       path: '/drafts/nala/features/personalization/all-elements/all-elements3',
       data: { defaultURL: '/drafts/nala/features/personalization/all-elements/all-elements3?mep=%2Fdrafts%2Fnala%2Ffeatures%2Fpersonalization%2Fall-elements%2Fall-elements3.json--default' },
-      tags: '@all-elements2 @smoke @regression @milo ',
+      tags: '@all-elements2 @mep @smoke @regression @milo ',
     },
   ],
 };
