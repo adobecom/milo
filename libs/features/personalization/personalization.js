@@ -858,8 +858,8 @@ async function setMepUserCountry(config) {
       if (userCountry) {
         userCountry = userCountry === 'uk' ? 'gb' : userCountry.split('_')[0];
         config.mep.userCountry = userCountry;
+        console.log('set from countryPromise', config.mep.userCountry);
       }
-      console.log('config.mep.userCountry', config.mep.userCountry);
     } catch (e) {
       log('MEP Error: Unable to get user country');
     }
@@ -1387,6 +1387,7 @@ const getUserCountry = (config) => {
   return mep?.geoLocation ? {
     userCountry: mep?.userCountry,
     countryPromise: mep?.countryPromise,
+    geoLocation: mep?.geoLocation,
   } : {};
 };
 

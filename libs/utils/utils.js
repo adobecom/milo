@@ -1182,10 +1182,12 @@ async function determineUserCountry(config) {
   const urlParams = new URLSearchParams(window.location.search);
   const country = urlParams.get('country') || (document.cookie.split('; ').find((row) => row.startsWith('international='))?.split('=')[1]);
   if (country) {
+    console.log('got userCOuntry from params or from international cookie');
     config.mep = { userCountry: country.toLowerCase() === 'uk' ? 'gb' : country.toLowerCase().split('_')[0] };
   } else {
     let akamaiCode = urlParams.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
     if (akamaiCode) {
+      console.log('usercountry set from akamaiLocale in params or akamai in sessions storage');
       if (akamaiCode === 'gb') akamaiCode = 'uk';
       config.mep = { userCountry: akamaiCode };
     } else {
