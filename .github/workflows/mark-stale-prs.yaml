@@ -9,7 +9,7 @@ jobs:
     if: github.repository_owner == 'adobecom'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/stale@v9
+      - uses: actions/stale@5bef64f19d7facfb25b37b414482c7164d639639
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           stale-pr-message: 'This PR has not been updated recently and will be closed in 7 days if no action is taken. Please ensure all checks are passing, https://github.com/orgs/adobecom/discussions/997 provides instructions. If the PR is ready to be merged, please mark it with the "Ready for Stage" label.'

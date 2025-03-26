@@ -20,17 +20,17 @@ jobs:
     if: github.repository_owner == 'adobecom' && (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || (github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'main' && github.event.pull_request.head.ref == 'stage'))
 
     steps:
-      - uses: actions/create-github-app-token@v1
+      - uses: actions/create-github-app-token@21cfef2b496dd8ef5b904c159339626a10ad380e
         id: milo-pr-merge-token
         with:
           app-id: ${{ secrets.MILO_PR_MERGE_APP_ID }}
           private-key: ${{ secrets.MILO_PR_MERGE_PRIVATE_KEY }}
 
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Merge to main
-        uses: actions/github-script@v7
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
         with:
           github-token: ${{ steps.milo-pr-merge-token.outputs.token }}
           script: |
