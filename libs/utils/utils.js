@@ -1185,7 +1185,7 @@ async function determineUserCountry(config) {
   const urlParams = new URLSearchParams(window.location.search);
   const country = urlParams.get('country') || (document.cookie.split('; ').find((row) => row.startsWith('international='))?.split('=')[1]);
   if (country) {
-    console.log(`got userCountry from country params or from international cookie: normCountry${normCountry(country)}`);
+    console.log(`got userCountry from country params or from international cookie: ${normCountry(country)}`);
     config.mep = { userCountry: normCountry(country) };
   } else {
     const akamaiCode = urlParams.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
