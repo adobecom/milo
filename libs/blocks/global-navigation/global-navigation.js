@@ -13,9 +13,10 @@ import {
 } from '../../utils/utils.js';
 
 (() => {
-  const path = '/libs/blocks/global-navigation';
-  loadStyle(`${path}/base.css`, () => {
-    if (getConfig().theme === 'dark') loadStyle(`${path}/dark-nav.css`);
+  const { miloLibs, codeRoot } = getConfig();
+  const url = `${miloLibs || codeRoot}/blocks/global-navigation/`;
+  loadStyle(`${url}base.css`, () => {
+    if (getConfig().theme === 'dark') loadStyle(`${url}/dark-nav.css`);
   });
 })();
 
