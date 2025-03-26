@@ -46,9 +46,9 @@ describe('Bootstrapper', async () => {
     });
     window.AdobeMessagingExperienceClient = window.AdobeMessagingExperienceClient
       || {
-        openMessagingWindow: () => {},
-        isAdobeMessagingClientInitialized: () => {},
-        getMessagingExperienceState: () => {},
+        openMessagingWindow: () => { },
+        isAdobeMessagingClientInitialized: () => { },
+        getMessagingExperienceState: () => { },
       };
     openMessagingWindowSpy = spy(window.AdobeMessagingExperienceClient, 'openMessagingWindow');
     setConfig({ miloLibs, contentRoot: '/federal/dev' });
@@ -98,7 +98,7 @@ describe('Bootstrapper', async () => {
     blockConfig.header.isLocalNav = true;
     blockConfig.header.mobileGnavV2 = true;
     setConfig({ contentRoot: '/federal/localnav' });
-    const { default: init } = await import('../../libs/blocks/global-navigation/global-navigation.js');
+    const { default: init } = await import('../../libs/blocks/global-navigation/global-navigation.js?unique=unique');
     await loadBlock(init, blockConfig.header);
     const el = document.querySelector('header');
     expect(el.nextElementSibling.classList.contains('feds-localnav')).to.be.true;
