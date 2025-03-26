@@ -503,44 +503,60 @@ function applyStylesBasedOnScreenSize(table, originTable) {
     const headings = table.querySelectorAll('.row-heading .col');
     const headingsLength = headings.length;
 
+    table.querySelectorAll('.hide-mobile').forEach((col) => { col.classList.remove('hide-mobile'); });
+
     if (isMerch && headingsLength > 2) {
-      table.querySelectorAll('.col:not(.col-1, .col-2)').forEach((col) => col.remove());
+      table.querySelectorAll('.col:not(.col-1, .col-2)').forEach((col) => { col.classList.add('hide-mobile'); });
     } else if (headingsLength > 3) {
-      table.querySelectorAll('.col:not(.col-1, .col-2, .col-3), .col.no-borders').forEach((col) => col.remove());
+      table.querySelectorAll('.col:not(.col-1, .col-2, .col-3), .col.no-borders').forEach((col) => { col.classList.add('hide-mobile'); });
     }
 
     if ((!isMerch && !table.querySelector('.col-3'))
       || (isMerch && !table.querySelector('.col-2'))) return;
 
-    const filterChangeEvent = () => {
-      table.innerHTML = originTable.innerHTML;
-      reAssignEvents(table);
+    const filterChangeEvent = (e) => {
       const filters = Array.from(table.parentElement.querySelectorAll('.filter')).map((f) => parseInt(f.value, 10));
       const rows = table.querySelectorAll('.row');
 
+      table.querySelectorAll('.hide-mobile, .force-last').forEach((col) => { col.classList.remove('hide-mobile', 'force-last'); });
+
+      rows.forEach((row) => {
+        const clonedCols = row.querySelectorAll('.col[data-cloned]');
+        clonedCols.forEach((col) => col.remove());
+      });
+
       if (isMerch) {
-        table.querySelectorAll(`.col:not(.col-${filters[0] + 1}, .col-${filters[1] + 1})`).forEach((col) => col.remove());
+        table.querySelectorAll(`.col:not(.col-${filters[0] + 1}, .col-${filters[1] + 1})`).forEach((col) => { col.classList.add('hide-mobile'); });
       } else {
-        table.querySelectorAll(`.col:not(.col-1, .col-${filters[0] + 1}, .col-${filters[1] + 1}), .col.no-borders`).forEach((col) => col.remove());
+        table.querySelectorAll(`.col:not(.col-1, .col-${filters[0] + 1}, .col-${filters[1] + 1}), .col.no-borders`).forEach((col) => { col.classList.add('hide-mobile'); });
       }
 
-      if (filters[0] > filters[1]) {
-        if (isMerch) {
-          rows.forEach((row) => row.querySelector('.col:not(.section-row-title)')
-            .classList.add('force-last'));
-        } else {
-          rows.forEach((row) => row.querySelector('.col:not(.section-row-title, .col-1)')
-            .classList.add('force-last'));
-        }
-      } else if (filters[0] === filters[1]) {
+      rows.forEach((row) => {
+        const secondFilterCol = row.querySelector(`.col-${filters[1] + 1}`);
+        if (secondFilterCol) secondFilterCol.classList.add('force-last');
+      });
+
+      if (filters[0] === filters[1]) {
+        const selectedCol = filters[0] + 1;
         rows.forEach((row) => {
-          row.append(row.querySelector('.col:last-child').cloneNode(true));
+          const selectedColumn = row.querySelector(`.col-${selectedCol}`);
+          if (!selectedColumn) {
+            return;
+          }
+
+          selectedColumn.classList.remove('force-last');
+          selectedColumn.classList.remove('rounded-left', 'rounded-right');
+          const clone = selectedColumn.cloneNode(true);
+          clone.setAttribute('data-cloned', 'true');
+          clone.classList.remove('rounded-left', 'rounded-right');
+          row.appendChild(clone);
         });
       }
 
       setRowStyle();
 
       if (table.matches('.sticky')) handleScrollEffect(table);
+      if (e) handleEqualHeight(table, '.row-heading');
     };
 
     // Remove filter if table there are only 2 columns
@@ -575,6 +591,15 @@ function applyStylesBasedOnScreenSize(table, originTable) {
     }
   };
 
+  const removeClones = () => {
+    const rows = table.querySelectorAll('.row');
+
+    rows.forEach((row) => {
+      const clonedCols = row.querySelectorAll('.col[data-cloned]');
+      clonedCols.forEach((col) => col.remove());
+    });
+  };
+
   // For Mobile (else: tablet / desktop)
   if (!isMerch && !table.querySelector('.row-heading .col-2')) {
     table.querySelector('.row-heading').style.display = 'block';
@@ -582,9 +607,21 @@ function applyStylesBasedOnScreenSize(table, originTable) {
   }
 
   if (deviceBySize === 'MOBILE' || (isMerch && deviceBySize === 'TABLET')) {
+    removeClones();
     mobileRenderer();
   } else {
-    table.innerHTML = originTable.innerHTML;
+    removeClones();
+    table.querySelectorAll('.hide-mobile').forEach((col) => { col.classList.remove('hide-mobile'); });
+    const element = table.querySelector('.row-heading');
+
+    if (element) {
+      const columns = [...element.children];
+      columns.forEach(({ children }) => {
+        [...children].forEach((row) => {
+          row.style.removeProperty('height');
+        });
+      });
+    }
     reAssignEvents(table);
     table.parentElement.querySelectorAll('.filters select').forEach((select, index) => {
       select.querySelectorAll('option').item(index).selected = true;
@@ -656,9 +693,7 @@ export default function init(el) {
 
     let deviceBySize = defineDeviceByScreenSize();
     window.addEventListener('resize', () => {
-      if (el.classList.contains('has-addon')) {
-        debounce(handleEqualHeight(el, '.row-heading'), 300);
-      }
+      debounce(handleEqualHeight(el, '.row-heading'), 300);
       if (deviceBySize === defineDeviceByScreenSize()) return;
       deviceBySize = defineDeviceByScreenSize();
       handleResize();
