@@ -4,6 +4,8 @@ const KNDCTR_COOKIE_KEYS = [
   'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_identity',
   'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_cluster',
 ];
+const KNDCTR_CONSENT_COOKIE = 'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent';
+const OPT_ON_AND_CONSENT_COOKIE = 'OptanonConsent';
 
 const DATA_STREAM_IDS_PROD = {
   excludeDS: '57c20bab-94c3-425e-95cb-0b9948b1fdd4',
@@ -154,7 +156,7 @@ function getUpdatedVisitAttempt() {
   const secondVisitAttempt = Number(localStorage.getItem('secondHit')) || 0;
 
   const isAdobeDomain = hostname === 'www.adobe.com' || hostname === 'www.stage.adobe.com';
-  const consentCookieValue = getCookie('OptanonConsent');
+  const consentCookieValue = getCookie(OPT_ON_AND_CONSENT_COOKIE);
 
   if (consentCookieValue?.includes('C0002:1') && isAdobeDomain) {
     const updatedVisitAttempt = secondVisitAttempt === 0 ? 1 : secondVisitAttempt + 1;
@@ -285,6 +287,11 @@ function createRequestPayload({ updatedContext, pageName, locale, env, hitType }
     digitalData.target = { at_property_val: AT_PROPERTY_VAL };
     data.web = { webPageDetails };
     data.eventType = hitTypeEventTypeMap[hitType];
+    let val = 'unknown';
+    if (getCookie(OPT_ON_AND_CONSENT_COOKIE)) {
+      val = getCookie(KNDCTR_CONSENT_COOKIE) ? 'post' : 'pre';
+    }
+    data._adobe_corpnew.cmp.state = val;
 
     if (getUpdatedVisitAttempt() === 2) {
       digitalData.adobe = {
@@ -385,7 +392,7 @@ export const createRequestUrl = ({
   dataStreamId = env === 'prod' ? DATA_STREAM_IDS_PROD.default : DATA_STREAM_IDS_STAGE.default;
   if (hitType === 'pageView' || hitType === 'propositionDisplay') {
     const isFirstVisit = !getCookie(AMCV_COOKIE);
-    const consentCookie = getCookie('OptanonConsent') || '';
+    const consentCookie = getCookie(OPT_ON_AND_CONSENT_COOKIE) || '';
     if (isFirstVisit || !consentCookie || consentCookie.includes('C0004:0')) {
       dataStreamId = env === 'prod' ? DATA_STREAM_IDS_PROD.excludeDS : DATA_STREAM_IDS_STAGE.excludeDS;
     }
@@ -511,7 +518,7 @@ function sendPropositionDisplayRequest(filteredPayload, env, requestPayload) {
 export const loadAnalyticsAndInteractionData = async (
   { locale, env, calculatedTimeout, hybridPersEnabled },
 ) => {
-  const value = getCookie('kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent');
+  const value = getCookie(KNDCTR_CONSENT_COOKIE);
 
   if (value === 'general=out') {
     return {};
