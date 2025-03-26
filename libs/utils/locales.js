@@ -3,7 +3,7 @@ export default {
   ae_ar: { ietf: 'ar-AE', tk: 'lpk1hwn.css', dir: 'rtl' },
   ae_en: { ietf: 'en', tk: 'hah7vzn.css' },
   africa: { ietf: 'en', tk: 'hah7vzn.css' },
-  ar: { ietf: 'es-AR', tk: 'oln4yqj.css' },
+  ar: { ietf: 'es-AR', tk: 'hah7vzn.css' },
   at: { ietf: 'de-AT', tk: 'hah7vzn.css' },
   au: { ietf: 'en-AU', tk: 'hah7vzn.css' },
   be_en: { ietf: 'en-BE', tk: 'hah7vzn.css' },
