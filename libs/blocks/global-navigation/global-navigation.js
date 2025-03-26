@@ -16,7 +16,7 @@ import {
   const { miloLibs, codeRoot } = getConfig();
   const url = `${miloLibs || codeRoot}/blocks/global-navigation/`;
   loadStyle(`${url}base.css`, () => {
-    if (getConfig().theme === 'dark') loadStyle(`${url}/dark-nav.css`);
+    if (getConfig().theme === 'dark') loadStyle(`${url}dark-nav.css`);
   });
 })();
 
@@ -35,7 +35,7 @@ const plainHTMLPromise = (async () => {
 
 const asideJsPromise = getMetadata('gnav-promo-source') ? import('./features/aside/aside.js') : null;
 
-const breadCrumbsJsPromise = document.querySelector('header').classList.contains('has-breadcrumbs') ? import('./features/breadcrumbs/breadcrumbs.js') : null;
+const breadCrumbsJsPromise = document.querySelector('header')?.classList.contains('has-breadcrumbs') ? import('./features/breadcrumbs/breadcrumbs.js') : null;
 
 const [utilities, placeholders, merch] = await Promise.all([
   import('./utilities/utilities.js'),
