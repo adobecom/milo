@@ -314,7 +314,7 @@ describe('Utils', () => {
 
     it('Does not setup nofollow links', async () => {
       window.fetch = mockFetch({ payload: { data: [] } });
-      await utils.loadDeferred(document, [], { links: 'on' }, () => {});
+      await utils.loadDeferred(document, [], { links: 'on' }, () => { });
       const gaLink = document.querySelector('a[href="https://analytics.google.com/"]');
       expect(gaLink.getAttribute('rel')).to.be.null;
     });
@@ -329,7 +329,7 @@ describe('Utils', () => {
       metaPath.content = '/test/utils/mocks/nofollow.json';
 
       document.head.append(metaOn, metaPath);
-      await utils.loadDeferred(document, [], { contentRoot: '' }, () => {});
+      await utils.loadDeferred(document, [], { contentRoot: '' }, () => { });
       const gaLink = document.querySelector('a[href^="https://analytics.google.com"]');
       expect(gaLink).to.exist;
     });
@@ -785,7 +785,7 @@ describe('Utils', () => {
       div.className = 'global-navigation';
       document.body.appendChild(div);
       window.location.hash = '#not-block';
-      window.scrollBy = () => {};
+      window.scrollBy = () => { };
     });
 
     it('should scroll to the hashed element', () => {
@@ -941,7 +941,7 @@ describe('Utils', () => {
       const resultExperiment = resultConfig.mep.experiments[0];
       expect(resultConfig.mep.preview).to.be.true;
       expect(resultConfig.mep.experiments.length).to.equal(3);
-      expect(resultExperiment.manifest).to.equal('https://main--milo--adobecom.hlx.page/products/special-offers-manifest.json');
+      expect(resultExperiment.manifest).to.equal('/products/special-offers-manifest.json');
     });
   });
 
