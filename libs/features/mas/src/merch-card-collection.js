@@ -125,7 +125,9 @@ export class MerchCardCollection extends LitElement {
         this.resultCount = undefined;
         this.displayResult = false;
         this.data = null;
+        this.variant = null;
         this.hydrating = false;
+        this.hydrationReady = null;
     }
 
     render() {
@@ -140,7 +142,11 @@ export class MerchCardCollection extends LitElement {
         const timeoutPromise = new Promise((resolve) =>
             setTimeout(() => resolve(false), MERCH_CARD_COLLECTION_LOAD_TIMEOUT),
         );
-        return Promise.race([aemFragment.updateComplete, timeoutPromise])
+        const hydration = async () => {
+            await aemFragment.updateComplete;
+            await this.hydrationReady;
+        }
+        return Promise.race([hydration(), timeoutPromise])
     }
 
     updated(changedProperties) {
@@ -241,6 +247,10 @@ export class MerchCardCollection extends LitElement {
         if (!aemFragment) return;
 
         this.hydrating = true;
+        let resolveHydration;
+        this.hydrationReady = new Promise((resolve) => {
+            resolveHydration = resolve;
+        });
         
         aemFragment.addEventListener(EVENT_AEM_ERROR, (event) => {
             console.error(event.detail);
@@ -248,8 +258,237 @@ export class MerchCardCollection extends LitElement {
             aemFragment.remove();
         });
         aemFragment.addEventListener(EVENT_AEM_LOAD, async (event) => {
-            this.data = event.detail;
-            const { cards, categories } = event.detail.fields;
+            this.data = {
+                "fields": {
+                    "cards": {
+                        "1736f2c9-0931-401b-b3c0-fe87ff72ad38": {
+                            "description": "some description",
+                            "fields": {
+                                "badge": {
+                                    "mimeType": "text/html"
+                                },
+                                "callout": {
+                                    "mimeType": "text/html"
+                                },
+                                "cardTitle": "Photography  (1TB)",
+                                "ctas": {
+                                    "mimeType": "text/html",
+                                    "value": "<a is=\"checkout-link\" data-promotion-code=\"FY25PLES256MROW\" data-wcs-osi=\"MzCpF9nUi8rEzyW-9slEUwtRenS69PRW5fp84a93uK4\" data-template=\"checkoutUrl\" data-analytics-id=\"buy-now\">Buy now</a>"
+                                },
+                                "description": {
+                                    "mimeType": "text/html",
+                                    "value": "<p>Edit and organize photos. Save&nbsp;25% for the first 6 months.&nbsp;Ends Feb 26.&nbsp;<a href=\"https://www.adobe.com/offer-terms/ccpp-1tb-terms.html\" target=\"_blank\">See terms.</a><br><a href=\"https://www.adobe.com/creativecloud/photography/compare-plans.html\">Compare photography plans</a><br><a class=\"modal-Link\" href=\"https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/photography1tb/master.html\" target=\"_blank\">See all plans &amp; pricing details</a></p>"
+                                },
+                                "locReady": true,
+                                "mnemonicAlt": [
+                                    "Lightroom",
+                                    "Illustrator"
+                                ],
+                                "mnemonicIcon": [
+                                    "https://www.adobe.com/content/dam/shared/images/product-icons/svg/lightroom.svg",
+                                    "https://www.adobe.com/content/dam/shared/images/product-icons/svg/photoshop.svg"
+                                ],
+                                "mnemonicLink": [
+                                    "https://www.adobe.com/products/catalog.html",
+                                    "https://www.adobe.com"
+                                ],
+                                "prices": {
+                                    "mimeType": "text/html",
+                                    "value": "<span is=\"inline-price\" data-promotion-code=\"FY25PLES256MROW\" data-template=\"price\" data-wcs-osi=\"MzCpF9nUi8rEzyW-9slEUwtRenS69PRW5fp84a93uK4\"></span>"
+                                },
+                                "shortDescription": {
+                                    "mimeType": "text/html"
+                                },
+                                "showStockCheckbox": true,
+                                "tags": [],
+                                "variant": "plans"
+                            },
+                            "id": "1736f2c9-0931-401b-b3c0-fe87ff72ad38",
+                            "model": {
+                                "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NhcmQ"
+                            },
+                            "name": "",
+                            "path": "/content/dam/mas/nala/en_US/acom/create11111",
+                            "title": "Plans Nala Card 1"
+                        },
+                        "616273eb-3aad-462a-a6d7-6f6857973b77": {
+                            "description": "some description",
+                            "fields": {
+                                "badge": {
+                                    "mimeType": "text/html"
+                                },
+                                "callout": {
+                                    "mimeType": "text/html"
+                                },
+                                "cardTitle": "Illustrator",
+                                "ctas": {
+                                    "mimeType": "text/html",
+                                    "value": "<a is=\"checkout-link\" data-promotion-code=\"FY25PLES256MROW\" data-wcs-osi=\"MzCpF9nUi8rEzyW-9slEUwtRenS69PRW5fp84a93uK4\" data-template=\"checkoutUrl\" data-analytics-id=\"buy-now\">Buy now</a>"
+                                },
+                                "description": {
+                                    "mimeType": "text/html",
+                                    "value": "<p>Edit and organize photos. Save&nbsp;25% for the first 6 months.&nbsp;Ends Feb 26.&nbsp;<a href=\"https://www.adobe.com/offer-terms/ccpp-1tb-terms.html\" target=\"_blank\">See terms.</a><br><a href=\"https://www.adobe.com/creativecloud/photography/compare-plans.html\">Compare photography plans</a><br><a class=\"modal-Link\" href=\"https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/photography1tb/master.html\" target=\"_blank\">See all plans &amp; pricing details</a></p>"
+                                },
+                                "locReady": true,
+                                "mnemonicAlt": [
+                                    "Lightroom"
+                                ],
+                                "mnemonicIcon": [
+                                    "https://www.adobe.com/content/dam/shared/images/product-icons/svg/illustrator.svg"
+                                ],
+                                "mnemonicLink": [
+                                    "https://www.adobe.com/products/catalog.html"
+                                ],
+                                "prices": {
+                                    "mimeType": "text/html",
+                                    "value": "<span is=\"inline-price\" data-promotion-code=\"FY25PLES256MROW\" data-template=\"price\" data-wcs-osi=\"1KfaN_o5h4Gvmvh_QwfK7KB7xGPpNpsTXsdhqpJUT5Y\"></span>"
+                                },
+                                "promoText": "Save over 30% with an annual plan.",
+                                "shortDescription": {
+                                    "mimeType": "text/html"
+                                },
+                                "showStockCheckbox": true,
+                                "tags": [],
+                                "variant": "plans"
+                            },
+                            "id": "616273eb-3aad-462a-a6d7-6f6857973b77",
+                            "model": {
+                                "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NhcmQ"
+                            },
+                            "name": "",
+                            "path": "/content/dam/mas/nala/en_US/acom/create111112",
+                            "title": "Plans Nala Card 1"
+                        },
+                        "8373b5c2-69e6-4e9c-befc-b424dd33469b": {
+                            "description": "some description",
+                            "fields": {
+                                "badge": {
+                                    "mimeType": "text/html",
+                                    "value": "Badge text"
+                                },
+                                "callout": {
+                                    "mimeType": "text/html",
+                                    "value": "<p>Callout text <span class=\"icon-button\" title=\"Info tooltip\"></span></p>"
+                                },
+                                "cardTitle": "Illustrator",
+                                "ctas": {
+                                    "mimeType": "text/html",
+                                    "value": "<a is=\"checkout-link\" data-promotion-code=\"FY25PLES256MROW\" data-wcs-osi=\"MzCpF9nUi8rEzyW-9slEUwtRenS69PRW5fp84a93uK4\" data-template=\"checkoutUrl\" data-analytics-id=\"buy-now\">Buy now</a>"
+                                },
+                                "description": {
+                                    "mimeType": "text/html",
+                                    "value": "<p>Edit and organize photos. Save&nbsp;25% for the first 6 months.&nbsp;Ends Feb 26.&nbsp;<a href=\"https://www.adobe.com/offer-terms/ccpp-1tb-terms.html\" target=\"_blank\">See terms.</a><br><a href=\"https://www.adobe.com/creativecloud/photography/compare-plans.html\">Compare photography plans</a><br><a class=\"modal-Link\" href=\"https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/photography1tb/master.html\" target=\"_blank\">See all plans &amp; pricing details</a></p>"
+                                },
+                                "locReady": true,
+                                "mnemonicAlt": [
+                                    "Lightroom"
+                                ],
+                                "mnemonicIcon": [
+                                    "https://www.adobe.com/content/dam/shared/images/product-icons/svg/illustrator.svg"
+                                ],
+                                "mnemonicLink": [
+                                    "https://www.adobe.com/products/catalog.html"
+                                ],
+                                "prices": {
+                                    "mimeType": "text/html",
+                                    "value": "<span is=\"inline-price\" data-promotion-code=\"FY25PLES256MROW\" data-template=\"price\" data-wcs-osi=\"1KfaN_o5h4Gvmvh_QwfK7KB7xGPpNpsTXsdhqpJUT5Y\"></span>"
+                                },
+                                "promoText": "Save over 30% with an annual plan.",
+                                "quantitySelect": "<merch-quantity-select title=\"Select quantity\" min=\"3\" max=\"10\" step=\"1\"></merch-quantity-select>",
+                                "shortDescription": {
+                                    "mimeType": "text/html"
+                                },
+                                "showStockCheckbox": true,
+                                "tags": [],
+                                "variant": "plans"
+                            },
+                            "id": "8373b5c2-69e6-4e9c-befc-b424dd33469b",
+                            "model": {
+                                "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NhcmQ"
+                            },
+                            "name": "",
+                            "path": "/content/dam/mas/nala/en_US/acom/create1111121",
+                            "title": "Plans Nala Card 1"
+                        },
+                        "a15b77f7-fb32-4608-8b5c-a1b98675ad85": {
+                            "description": "some description",
+                            "fields": {
+                                "badge": {
+                                    "mimeType": "text/html"
+                                },
+                                "callout": {
+                                    "mimeType": "text/html"
+                                },
+                                "cardTitle": "Acrobat Pro",
+                                "ctas": {
+                                    "mimeType": "text/html",
+                                    "value": "<a is=\"checkout-link\" data-promotion-code=\"FY25PLES256MROW\" data-wcs-osi=\"MzCpF9nUi8rEzyW-9slEUwtRenS69PRW5fp84a93uK4\" data-template=\"checkoutUrl\" data-analytics-id=\"buy-now\">Buy now</a>"
+                                },
+                                "description": {
+                                    "mimeType": "text/html",
+                                    "value": "<p>Create, edit, sign, and manage your PDFs — quickly, easily, anywhere.<br><a class=\"modal-Link\" href=\"https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/photography1tb/master.html\" target=\"_blank\">See all plans &amp; pricing details</a></p>"
+                                },
+                                "locReady": true,
+                                "mnemonicAlt": [
+                                    "Acrobat Pro"
+                                ],
+                                "mnemonicIcon": [
+                                    "https://www.adobe.com/content/dam/shared/images/product-icons/svg/acrobat.svg"
+                                ],
+                                "mnemonicLink": [
+                                    "https://www.adobe.com/products/catalog.html"
+                                ],
+                                "prices": {
+                                    "mimeType": "text/html",
+                                    "value": "<p><span is=\"inline-price\" data-template=\"price\" data-wcs-osi=\"VbDsK1jsr3uGWMCxyps3lJH_voQxJHKsRR5tz9lZoDo\"></span></p>"
+                                },
+                                "promoText": "Save over 30% with an annual plan.",
+                                "shortDescription": {
+                                    "mimeType": "text/html"
+                                },
+                                "showStockCheckbox": true,
+                                "tags": [],
+                                "variant": "plans"
+                            },
+                            "id": "a15b77f7-fb32-4608-8b5c-a1b98675ad85",
+                            "model": {
+                                "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NhcmQ"
+                            },
+                            "name": "",
+                            "path": "/content/dam/mas/nala/en_US/acom/create111111",
+                            "title": "Plans Nala Card 1"
+                        }
+                    },
+                    "categories": [
+                        {
+                            "cards": [
+                                "8373b5c2-69e6-4e9c-befc-b424dd33469b",
+                                "1736f2c9-0931-401b-b3c0-fe87ff72ad38",
+                                "616273eb-3aad-462a-a6d7-6f6857973b77",
+                                "a15b77f7-fb32-4608-8b5c-a1b98675ad85"
+                            ],
+                            "label": "All"
+                        },
+                        {
+                            "cards": [
+                                "1736f2c9-0931-401b-b3c0-fe87ff72ad38"
+                            ],
+                            "label": "Photo"
+                        },
+                        {
+                            "cards": [
+                                "616273eb-3aad-462a-a6d7-6f6857973b77",
+                                "8373b5c2-69e6-4e9c-befc-b424dd33469b"
+                            ],
+                            "label": "Illustration"
+                        }
+                    ],
+                    "locReady": false
+                },
+                "id": "09634c2e-1a8f-49c1-936e-8540cac715b7",
+                "stale": false
+            };
+            const { cards, categories } = this.data.fields;
             const fragments = Object.keys(cards).map(key => cards[key]);
             for (const fragment of fragments) {
                 const merchCard = document.createElement('merch-card');
@@ -278,11 +517,13 @@ export class MerchCardCollection extends LitElement {
             }
 
             const variant = fragments[0]?.fields.variant;
+            this.variant = variant;
             this.classList.add('merch-card-collection', variant, ...(VARIANT_CLASSES[variant] || []));
 
             this.displayResult = true;
             this.hydrating = false;
             aemFragment.remove();
+            resolveHydration();
         });
     }
 

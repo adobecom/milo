@@ -21,6 +21,16 @@ merch-card[variant="plans"] [slot="quantity-select"] {
   padding: var(--consonant-merch-spacing-xs);
 }
 
+.plans-container {
+  display: flex;
+  justify-content: center;
+  gap: 36px;
+}
+
+.plans-container merch-card-collection {
+  padding: 0;
+}
+
 .one-merch-card.plans,
 .two-merch-cards.plans,
 .three-merch-cards.plans,
