@@ -33,6 +33,8 @@ const plainHTMLPromise = (async () => {
   return res;
 })();
 
+const asideJsPromise = getMetadata('gnav-promo-source') ? import('./features/aside/aside.js') : null;
+
 const breadCrumbsJsPromise = document.querySelector('header').classList.contains('has-breadcrumbs') ? import('./features/breadcrumbs/breadcrumbs.js') : null;
 
 const [utilities, placeholders, merch] = await Promise.all([
@@ -1024,13 +1026,13 @@ class Gnav {
     const promoPath = getMetadata('gnav-promo-source');
     const fedsPromoWrapper = document.querySelector('.feds-promo-aside-wrapper');
 
-    if (!promoPath) {
+    if (!promoPath || !asideJsPromise) {
       fedsPromoWrapper?.remove();
       this.block.classList.remove('has-promo');
       return this.elements.aside;
     }
 
-    const { default: decorate } = await import('./features/aside/aside.js');
+    const { default: decorate } = await asideJsPromise;
     if (!decorate) return this.elements.aside;
     this.elements.aside = await decorate({ headerElem: this.block, fedsPromoWrapper, promoPath });
     fedsPromoWrapper.append(this.elements.aside);
