@@ -27,6 +27,10 @@
   grid-template-rows: 1fr;
 }
 
+.preflight-tab-panel a {
+  color: #fff;
+}
+
 .preflight-heading {
   display: flex;
   align-items: end;

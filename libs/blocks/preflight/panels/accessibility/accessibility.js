@@ -4,7 +4,7 @@ import customAccessibilityChecks from './accessibility-custom-checks.js';
 
 const axeCoreConfig = {
   include: [['body']],
-  exclude: [['.preflight'], ['header'], ['.global-navigation'], ['footer']],
+  exclude: [['.preflight'], ['aem-sidekick'], ['header'], ['.global-navigation'], ['footer']],
   runOnly: {
     type: 'tag',
     values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'],
@@ -14,7 +14,7 @@ const axeCoreConfig = {
 const customChecksConfig = {
   checks: ['altText', 'color-contrast'],
   include: [['body']],
-  exclude: [['.preflight'], ['header'], ['.global-navigation'], ['footer'], ['.global-footer']],
+  exclude: [['.preflight'], ['aem-sidekick'], ['header'], ['.global-navigation'], ['footer'], ['.global-footer']],
 };
 
 /**
