@@ -34,6 +34,7 @@ header.global-navigation {
   z-index: 10;
   background-color: var(--feds-background-nav);
   box-sizing: content-box;
+  overflow-x: clip;
 }
 
 .feds-topnav-wrapper {
@@ -525,10 +526,6 @@ header.global-navigation {
 
 /* Desktop styles */
 @media (min-width: 900px) {
-  header.global-navigation {
-    contain: layout;
-  }
-
   /* General */
   .global-navigation.has-breadcrumbs {
     padding-bottom: var(--feds-height-breadcrumbs);
@@ -804,14 +801,6 @@ header.new-nav .feds-nav-wrapper {
   transition: translate 0.4s ease-out, opacity 0.4s ease, visibility 0s linear 0.5s;
   display: flex;
   visibility: hidden;
-}
-
-header.new-nav .feds-nav-wrapper:not(:has(.feds-dropdown--active)) {
-  overflow-x: clip;
-}
-
-header.new-nav.global-navigation:has(.feds-dropdown--active) {
-  overflow-x: clip;
 }
 
 [dir = "rtl"] header.new-nav .feds-nav-wrapper {
