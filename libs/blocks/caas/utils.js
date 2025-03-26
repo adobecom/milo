@@ -721,7 +721,7 @@ export const getConfig = async (originalState, strs = {}) => {
       type: state.paginationType,
       i18n: {
         loadMore: {
-          btnText: strs.pgLoadMore || 'Load More',
+          btnText: strs.pgLoadMore || 'Load more',
           resultsQuantityText: strs.pgLoadMoreResultsQty || '{start} of {end} displayed',
         },
         paginator: {
