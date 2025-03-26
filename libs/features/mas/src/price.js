@@ -37,6 +37,7 @@ export function Price({ literals, providers, settings }) {
             country = defaultCountry,
             language = defaultLanguage,
             perpetual,
+            displayAnnual,
             promotionCode = defaultPromotionCode,
             quantity = defaultQuantity,
             template,
@@ -50,6 +51,7 @@ export function Price({ literals, providers, settings }) {
             displayPerUnit: toBoolean(displayPerUnit),
             displayRecurrence: toBoolean(displayRecurrence),
             displayTax: toBoolean(displayTax),
+            displayAnnual: toBoolean(displayAnnual),
             forceTaxExclusive: toBoolean(forceTaxExclusive),
             language,
             perpetual: toBoolean(perpetual),
@@ -88,7 +90,7 @@ export function Price({ literals, providers, settings }) {
                 method = priceAnnual;
                 break;
             default:
-                if (options.country === 'AU' && offers[0].planType === 'ABM') {
+                if (options.country === 'AU' && offers[0].planType === 'ABM' && options.displayAnnual) {
                     method = options.promotionCode
                         ? pricePromoWithAnnual
                         : priceWithAnnual;

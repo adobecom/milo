@@ -1,5 +1,5 @@
 import {
-  createTag, getConfig, loadArea, loadScript, loadStyle, localizeLink, SLD,
+  createTag, getConfig, loadArea, loadScript, loadStyle, localizeLink, SLD, getMetadata,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
@@ -683,6 +683,7 @@ export async function getPriceContext(el, params) {
   const displayPerUnit = params.get('seat');
   const displayRecurrence = params.get('term');
   const displayTax = params.get('tax');
+  const displayAnnual = getConfig().locale?.prefix === '/au' && (params.get('annual') || !getMetadata('invert-au-abm-annual'));
   const forceTaxExclusive = params.get('exclusive');
   // The PRICE_TEMPLATE_MAPPING supports legacy OST links
   const template = PRICE_TEMPLATE_MAPPING.get(params.get('type')) ?? PRICE_TEMPLATE_REGULAR;
@@ -692,6 +693,7 @@ export async function getPriceContext(el, params) {
     displayPerUnit,
     displayRecurrence,
     displayTax,
+    displayAnnual: displayAnnual || undefined,
     forceTaxExclusive,
     template,
   };
