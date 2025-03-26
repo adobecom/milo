@@ -1170,6 +1170,7 @@ export function enablePersonalizationV2() {
   return !!enablePersV2 && isSignedOut();
 }
 
+const edgePers = getMepEnablement('edge-pers');
 async function checkForPageMods() {
   const {
     mep: mepParam,
@@ -1219,7 +1220,6 @@ async function checkForPageMods() {
       })
       .catch((e) => { console.log('Unable to load IMS:', e); });
   }
-
   const { init } = await import('../features/personalization/personalization.js');
   await init({
     mepParam,
@@ -1236,6 +1236,9 @@ async function checkForPageMods() {
 }
 
 async function loadPostLCP(config) {
+  if (edgePers) {
+    await checkForPageMods();
+  }
   const { default: loadFavIcon } = await import('./favicon.js');
   loadFavIcon(createTag, getConfig(), getMetadata);
   await decoratePlaceholders(document.body.querySelector('header'), config);
@@ -1462,7 +1465,9 @@ export async function loadArea(area = document) {
   const isDoc = area === document;
 
   if (isDoc) {
-    await checkForPageMods();
+    if (!edgePers) {
+      await checkForPageMods();
+    }
     appendHtmlToCanonicalUrl();
     appendSuffixToTitles();
   }
