@@ -90,13 +90,14 @@ export function Price({ literals, providers, settings }) {
                 method = priceAnnual;
                 break;
             default:
-                if (options.country === 'AU' && offers[0].planType === 'ABM') {
+                if (options.template === 'optical' && options.alternativePrice) {
+                    method = priceOpticalAlternative;
+                } else if (options.template === 'optical') {
+                    method = priceOptical;
+                } else if (options.country === 'AU' && offers[0].planType === 'ABM') {
                     method = options.promotionCode
                         ? pricePromoWithAnnual
                         : priceWithAnnual;
-                } 
-                else if (options.template === 'optical' && options.alternativePrice) {
-                    method = priceOpticalAlternative;
                 } else if (options.alternativePrice) {
                     method = priceAlternative;
                 } else {
