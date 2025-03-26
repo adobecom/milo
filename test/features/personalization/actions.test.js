@@ -81,15 +81,17 @@ describe('replace action', () => {
 });
 
 describe('updateAttribute action', async () => {
-  it('updateAttribute should add or modify a html element attribute', async () => {
+  it('updateAttribute should add or modify a html element attribute, including placeholders', async () => {
     let manifestJson = await readFile({ path: './mocks/actions/manifestUpdateAttribute.json' });
     manifestJson = JSON.parse(manifestJson);
     setFetchResponse(manifestJson);
     await init(mepSettings);
+    config.placeholders = { 'my-aria-test': 'Hello world!' };
     await handleCommands(manifestJson.data, undefined, true, true);
     expect(document.querySelector('.marquee h2').getAttribute('class')).to.equal('added-class');
     expect(document.querySelector('.marquee strong a').getAttribute('href')).to.equal('https://www.google.com/?osi=new-parameter#_inline');
     expect(document.querySelector('.marquee em a').getAttribute('new-attribute')).to.equal('added-attribute');
+    expect(document.querySelector('#placeholder-replace').getAttribute('aria-label')).to.equal('Hello world!');
   });
 });
 

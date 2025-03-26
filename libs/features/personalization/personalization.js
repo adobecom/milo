@@ -234,6 +234,7 @@ const COMMANDS = {
     const { manifestId, targetManifestId } = cmd;
     if (!cmd.attribute || !cmd.content) return;
     const [attribute, parameter] = cmd.attribute.split('_');
+    cmd.content = replacePlaceholders(cmd.content);
 
     let value;
 
