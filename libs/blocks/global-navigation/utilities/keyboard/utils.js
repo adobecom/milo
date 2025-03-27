@@ -29,6 +29,7 @@ const selectors = {
   cta: '.feds-cta',
   openSearch: '.feds-search-trigger[aria-expanded = "true"]',
   regionPicker: '.feds-regionPicker',
+  regionPickerWrapper: '.feds-regionPicker-wrapper',
   socialLink: '.feds-social-link',
   privacyLink: '.feds-footer-privacyLink',
   menuContent: '.feds-menu-content',
