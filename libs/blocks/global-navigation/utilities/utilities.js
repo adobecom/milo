@@ -319,15 +319,28 @@ export const [hasActiveLink, setActiveLink, isActiveLink, getActiveLink] = (() =
   ];
 })();
 
-export function closeAllDropdowns({ type } = {}) {
+export function closeAllDropdowns({
+  type,
+  animatedElement = undefined,
+  animationType = undefined,
+} = {}) {
   const selector = selectorMap[type] || `${selectors.globalNav} [aria-expanded = "true"], ${selectors.localNav} [aria-expanded = "true"]`;
 
-  const openElements = document.querySelectorAll(selector);
-  if (!openElements) return;
-  [...openElements].forEach((el) => {
-    if ('fedsPreventautoclose' in el.dataset || (type === 'localNavItem' && el.classList.contains('feds-localnav-title'))) return;
-    el.setAttribute('aria-expanded', 'false');
-  });
+  const closeAllOpenElements = () => {
+    const openElements = document.querySelectorAll(selector);
+    if (!openElements) return;
+    [...openElements].forEach((el) => {
+      if ('fedsPreventautoclose' in el.dataset || (type === 'localNavItem' && el.classList.contains('feds-localnav-title'))) return;
+      el.setAttribute('aria-expanded', 'false');
+    });
+  };
+
+  if (animatedElement && animationType) {
+    animatedElement.addEventListener(`${animationType}end`, closeAllOpenElements, { once: true });
+    animatedElement.setAttribute('aria-expanded', 'false');
+  } else {
+    closeAllOpenElements();
+  }
 
   setActiveDropdown(undefined, type);
 
@@ -352,10 +365,16 @@ export const enableMobileScroll = () => {
   window.scroll(0, y || 0, { behavior: 'instant' });
 };
 
-export function trigger({ element, event, type } = {}) {
+export function trigger({
+  element,
+  event,
+  type,
+  animatedElement = undefined,
+  animationType = undefined,
+} = {}) {
   if (event) event.preventDefault();
   const isOpen = element?.getAttribute('aria-expanded') === 'true';
-  closeAllDropdowns({ type });
+  closeAllDropdowns({ type, animatedElement, animationType });
   if (isOpen) return false;
   element.setAttribute('aria-expanded', 'true');
   if (!isDesktop.matches && type === 'dropdown'
