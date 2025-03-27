@@ -308,7 +308,6 @@ export class MerchCardCollection extends LitElement {
                 const mcAemFragment = document.createElement('aem-fragment');
                 mcAemFragment.setAttribute('fragment', fragment.id);
                 merchCard.append(mcAemFragment);
-                mcAemFragment.refresh(false);
 
                 this.append(merchCard);
             }

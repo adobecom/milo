@@ -159,11 +159,11 @@ export class AemFragment extends HTMLElement {
     }
 
     async activate(masCommerceService, resolve, reject) {
-      this.#service = masCommerceService;
-    //   const flushCache = !this.#author;
-      this.refresh(false)
-        .then((result) => resolve(result))
-        .catch((e)=> reject(e));
+        this.#service = masCommerceService;
+        // const flushCache = !this.#author;
+        this.refresh(false)
+            .then((result) => resolve(result))
+            .catch((e)=> reject(e));
     }
 
     async refresh(flushCache = true) {
