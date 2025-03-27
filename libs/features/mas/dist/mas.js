@@ -159,11 +159,7 @@ Opts:`,d),!n.lana.localhost||n.lana.debug){let E=new XMLHttpRequest;return n.lan
         display: inline-flex;
         align-items: center;
         cursor: pointer;
-        gap: 9px; /*same as spectrum */
-        color: var(--spectrum-gray-800);
-        line-height: var(--consonant-merch-card-detail-m-line-height);
-        padding-top: 4px;
-        padding-bottom: 5px;
+        gap: 10px; /*same as spectrum */
     }
 
     #stock-checkbox > input {
@@ -173,10 +169,10 @@ Opts:`,d),!n.lana.localhost||n.lana.debug){let E=new XMLHttpRequest;return n.lan
     #stock-checkbox > span {
         display: inline-block;
         box-sizing: border-box;
-        border: 2px solid var(--spectrum-gray-600);
+        border: 2px solid rgb(117, 117, 117);
         border-radius: 2px;
-        width: 12px;
-        height: 12px;
+        width: 14px;
+        height: 14px;
     }
 
     #stock-checkbox > input:checked + span {
@@ -950,6 +946,20 @@ merch-card .footer-row-cell:nth-child(8) {
 
 merch-card[variant="plans"] {
   --consonant-merch-card-callout-icon-size: 18px;
+  --link-color: rgb(20, 115, 230);
+}
+
+merch-card[variant="plans"] [slot="icons"] {
+  --img-width: 41.5px;
+}
+
+merch-card[variant="plans"] span.price.price-strikethrough {
+  line-height: var(--consonant-merch-card-body-xs-line-height);
+  font-weight: 700;
+}
+
+merch-card[variant="plans"] [slot="promo-text"] {
+  line-height: var(--consonant-merch-card-body-xs-line-height);
 }
 
 merch-card[variant="plans"] [slot="description"] {
@@ -1043,7 +1053,16 @@ merch-card[variant="plans"] [slot="quantity-select"] {
         --merch-card-plans-max-width: 244px;
         --merch-card-plans-padding: 15px;
         --merch-card-plans-heading-min-height: 23px;
+        --merch-color-green-promo: rgb(0, 122, 77);
         --secure-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23505050' viewBox='0 0 12 15'%3E%3Cpath d='M11.5 6H11V5A5 5 0 1 0 1 5v1H.5a.5.5 0 0 0-.5.5v8a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5v-8a.5.5 0 0 0-.5-.5ZM3 5a3 3 0 1 1 6 0v1H3Zm4 6.111V12.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1.389a1.5 1.5 0 1 1 2 0Z'/%3E%3C/svg%3E");
+        font-weight: 400;
+    }
+
+    :host([variant='plans']) #badge {
+        border-radius: 4px 0 0 4px;
+        font-weight: 400;
+        line-height: 21px;
+        padding: 2px 10px 3px;
     }
 
     :host([variant='plans']) ::slotted([slot='heading-xs']) {
@@ -1058,6 +1077,17 @@ merch-card[variant="plans"] [slot="quantity-select"] {
 
     :host([variant='plans']) #stock-checkbox {
         margin-top: 8px;
+        gap: 9px;
+        color: rgb(34, 34, 34);
+        line-height: var(--consonant-merch-card-detail-xs-line-height);
+        padding-top: 4px;
+        padding-bottom: 5px;
+    }
+
+    :host([variant='plans']) #stock-checkbox > span {
+        border: 2px solid rgb(109, 109, 109);
+        width: 12px;
+        height: 12px;
     }
 
     :host([variant='plans']) footer {
@@ -1066,7 +1096,8 @@ merch-card[variant="plans"] [slot="quantity-select"] {
     }
 
     :host([variant='plans']) .secure-transaction-label {
-        color: #505050;
+        color: rgb(80, 80, 80);
+        line-height: var(--consonant-merch-card-detail-xs-line-height);
     }
       
     :host([variant='plans']) ::slotted([slot='heading-xs']) {
@@ -1986,6 +2017,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
     --consonant-merch-card-heading-xl-line-height: 45px;
 
     /* detail */
+    --consonant-merch-card-detail-xs-line-height: 12px;
     --consonant-merch-card-detail-s-font-size: 11px;
     --consonant-merch-card-detail-s-line-height: 14px;
     --consonant-merch-card-detail-m-font-size: 12px;

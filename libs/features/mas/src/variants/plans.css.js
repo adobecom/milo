@@ -8,6 +8,20 @@ export const CSS = `
 
 merch-card[variant="plans"] {
   --consonant-merch-card-callout-icon-size: 18px;
+  --link-color: rgb(20, 115, 230);
+}
+
+merch-card[variant="plans"] [slot="icons"] {
+  --img-width: 41.5px;
+}
+
+merch-card[variant="plans"] span.price.price-strikethrough {
+  line-height: var(--consonant-merch-card-body-xs-line-height);
+  font-weight: 700;
+}
+
+merch-card[variant="plans"] [slot="promo-text"] {
+  line-height: var(--consonant-merch-card-body-xs-line-height);
 }
 
 merch-card[variant="plans"] [slot="description"] {

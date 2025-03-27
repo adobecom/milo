@@ -157,11 +157,7 @@ export const styles = css`
         display: inline-flex;
         align-items: center;
         cursor: pointer;
-        gap: 9px; /*same as spectrum */
-        color: var(--spectrum-gray-800);
-        line-height: var(--consonant-merch-card-detail-m-line-height);
-        padding-top: 4px;
-        padding-bottom: 5px;
+        gap: 10px; /*same as spectrum */
     }
 
     #stock-checkbox > input {
@@ -171,10 +167,10 @@ export const styles = css`
     #stock-checkbox > span {
         display: inline-block;
         box-sizing: border-box;
-        border: 2px solid var(--spectrum-gray-600);
+        border: 2px solid rgb(117, 117, 117);
         border-radius: 2px;
-        width: 12px;
-        height: 12px;
+        width: 14px;
+        height: 14px;
     }
 
     #stock-checkbox > input:checked + span {
