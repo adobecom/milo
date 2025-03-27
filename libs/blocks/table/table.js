@@ -622,12 +622,12 @@ function applyStylesBasedOnScreenSize(table, originTable) {
         });
       });
     }
-    reAssignEvents(table);
     table.parentElement.querySelectorAll('.filters select').forEach((select, index) => {
       select.querySelectorAll('option').item(index).selected = true;
     });
   }
 
+  reAssignEvents(table);
   setRowStyle();
 }
 
