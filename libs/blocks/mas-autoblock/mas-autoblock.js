@@ -10,7 +10,7 @@ export function getFragmentId(el) {
   const { hash } = new URL(el.href);
   const hashValue = hash.startsWith('#') ? hash.substring(1) : hash;
   const searchParams = new URLSearchParams(hashValue);
-  return searchParams.get('fragment');
+  return searchParams.get('query') || searchParams.get('fragment');
 }
 
 /**
