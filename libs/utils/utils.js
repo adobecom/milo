@@ -640,10 +640,12 @@ export function decorateImageLinks(el) {
 export function isTrustedAutoBlock(autoBlock, url) {
   if (!url.href.includes(autoBlock)) return false;
   const urlHostname = url.hostname.replace('www.', '');
-  return urlHostname === window.location.hostname
+  const locationHostname = window.location.hostname.replace('www.', '');
+  return urlHostname === locationHostname
     || urlHostname.endsWith('.adobe.com')
     || urlHostname === 'adobe.com'
     || urlHostname === autoBlock
+    || !!urlHostname.match(/\.(hlx|aem)\.(page|live)$/)
     || (autoBlock === '.pdf' && url.pathname.endsWith(autoBlock));
 }
 
