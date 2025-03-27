@@ -172,7 +172,7 @@
   padding-left: 36px;
   font-size: 14px;
   font-weight: 500;
-  font-family: "adobe-clean";
+  font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
 }
 .searchField:focus-visible {
   outline: 0px;
