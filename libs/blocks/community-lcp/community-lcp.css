@@ -3483,7 +3483,7 @@
 
 .content-card-subheader {
   color: #FFF;
-  font-family: "adobe-clean";
+  font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
   font-size: 14px;
   font-style: normal;
   font-weight: 400;
