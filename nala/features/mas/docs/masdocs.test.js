@@ -51,8 +51,11 @@ test.describe('MAS Docs feature test suite', () => {
 
     await test.step('step-2: Verify successfull mas:ready events', async () => {
       const eventsLog = page.locator('#log-mas-ready');
-      await expect(eventsLog).toContainText("'mas:ready' on MERCH-CARD #830f76be-0e83-4faf-9051-3dbb1a1dff04");
-      await expect(eventsLog).toContainText("'mas:ready' on MERCH-CARD #d8008cac-010f-4607-bacc-a7a327da1312");
+      await expect(eventsLog).toContainText("'mas:ready' on MERCH-CARD #card1");
+      await expect(eventsLog).toContainText("'mas:ready' on MERCH-CARD #cardSwc");
+      await expect(eventsLog).toContainText("'mas:ready' on MERCH-CARD #headless");
+      await expect(eventsLog).toContainText("'mas:ready' on MERCH-CARD #psCard2");
+      await expect(eventsLog).toContainText("'mas:ready' on MERCH-CARD #valid-card");
       await expect(eventsLog).toContainText("'mas:ready' on MERCH-CARD #static");
     });
 
@@ -61,10 +64,10 @@ test.describe('MAS Docs feature test suite', () => {
       await expect(masFailedLog).toContainText(/'mas:failed' on A #wrongosi/);
 
       const aemErrorLog = page.locator('#log-aem-error');
-      await expect(aemErrorLog).toContainText(/'aem:error' on AEM-FRAGMENT/);
+      await expect(aemErrorLog).toContainText(/'aem:error' on AEM-FRAGMENT #invalid-fragment-id/);
 
       const masErrorLog = page.locator('#log-mas-error');
-      await expect(masErrorLog).toContainText(/'mas:error' on MERCH-CARD #3c29614a-a024-458f-8bd6-ee910898f684/);
+      await expect(masErrorLog).toContainText(/'mas:error' on MERCH-CARD #wrongosi/);
       await expect(masErrorLog).toContainText(/'mas:error' on MERCH-CARD #invalid-fragment-id/);
     });
   });
