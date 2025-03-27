@@ -207,7 +207,7 @@ export const addAriaLabelToCTA = (cta, productNames, textsToAddProductNames, tex
  */
 export default async function addAriaLabels() {
   let selector = '.con-button:not([aria-label])';
-  if (window.location.href.includes('adobe.com/express')) selector = 'a.button:not([aria-label]), .con-button:not([aria-label])';
+  if (window.location.href.includes('adobe.com/express') || window.location.href.includes('main--express-milo--adobecom.aem.live')) selector = 'a.button:not([aria-label]), .con-button:not([aria-label])';
   const ctas = document.body.querySelectorAll(selector);
   if (!ctas.length) return;
 
