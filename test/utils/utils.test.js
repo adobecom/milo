@@ -1006,7 +1006,7 @@ describe('Utils', () => {
       document.head.appendChild(metaTag);
     });
   });
-  describe('isTrustedAutoBlcok', () => {
+  describe('isTrustedAutoBlock', () => {
     const { origin } = window.location;
     const autoBlocks = [
       ['tv.adobe.com', 'https://tv.adobe.com/v1/123', true],
