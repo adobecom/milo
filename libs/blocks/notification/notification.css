@@ -90,6 +90,10 @@
   margin: 0;
   inline-size: 100%;
 }
+.notification.pill.split .foreground {
+  padding-inline: var(--spacing-xs);
+  padding-block: var(--spacing-xs);
+}
 
 .notification.ribbon.xxs-padding .foreground {
   padding-block: var(--spacing-xxs);
@@ -345,6 +349,41 @@
 .notification.pill.max-width-12 { max-width: 1200px; }
 .notification.pill.max-width-auto { max-width: unset; }
 
+.notification.pill.split .text .copy-wrap,
+.notification.pill.split .split-list-area {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  padding-inline-end: 0px;
+  inline-size: 100%;
+}
+
+.notification.pill.split .split-list-area .split-list-item
+ {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.notification.pill.split .split-list-area .split-list-item .text-content {
+  display: flex;
+  gap: var(--spacing-xxs);
+  align-items: center;
+  font-weight: 700;
+}
+
+.notification.pill.split .split-list-area .split-list-item .con-button {
+  white-space: normal;
+  text-align: center;
+  min-width: 89px;
+  max-width: 89px;
+}
+
+.notification.pill.split .split-list-area .split-list-item img {
+  width: var(--icon-size-xs);
+  height: auto;
+}
+
 @media screen and (min-width: 600px) {
   .notification {
     --max-inline-size-image: 188px;
@@ -491,6 +530,10 @@
   .notification.pill.max-width-10-tablet { max-width: 1000px; }
   .notification.pill.max-width-12-tablet { max-width: 1200px; }
   .notification.pill.max-width-auto-tablet { max-width: unset; }
+
+  .notification.pill.split {
+    display: none;
+  }
 }
 
 @media screen and (min-width: 1200px) {
