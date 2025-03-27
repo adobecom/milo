@@ -114,26 +114,40 @@ export async function checkReady(control) {
 }
 
 export function getCollectionSidenav(control) {
-  const categories = control.data?.fields?.categories;
-  if (!categories) return null;
+  const hierarchy = control.data?.hierarchy;
+  if (!hierarchy) return null;
 
-  const sidenav = document.createElement('merch-sidenav');
-  sidenav.setAttribute('sidenavTitle', 'Categories');
-  sidenav.setAttribute('slot', 'sidenav');
+  const sidenav = createTag('merch-sidenav', { sidenavTitle: 'Categories' });
 
-  const sidenavList = document.createElement('merch-sidenav-list');
-  sidenavList.setAttribute('deeplink', 'filter');
-  const spSidenav = document.createElement('sp-sidenav');
-  spSidenav.setAttribute('manageTabIndex', true);
-  sidenavList.append(spSidenav);
-
-  for (const category of categories) {
-    const value = category.label.toLowerCase();
-    const item = document.createElement('sp-sidenav-item');
-    item.setAttribute('label', category.label);
-    item.setAttribute('value', value);
-    spSidenav.append(item);
+  /* Search */
+  const searchText = control.data?.placeholders?.searchText || 'Search all products';
+  if (searchText) {
+    const spectrumSearch = createTag('sp-search', { placeholder: searchText });
+    const search = createTag('merch-search', { deeplink: 'search' });
+    search.append(spectrumSearch);
+    sidenav.append(search);
   }
+
+  /* Filters */
+  const spSidenav = createTag('sp-sidenav', { manageTabIndex: true });
+  spSidenav.setAttribute('manageTabIndex', true);
+  const sidenavList = createTag('merch-sidenav-list', { deeplink: 'filter' }, spSidenav);
+
+  let multilevel = false;
+  function generateLevelItems(level, parent) {
+    for (const node of level) {
+      const value = node.label.toLowerCase();
+      const item = createTag('sp-sidenav-item', { label: node.label, value });
+      parent.append(item);
+      if (node.collections) {
+        multilevel = true;
+        generateLevelItems(node.collections, item);
+      }
+    }
+  }
+
+  generateLevelItems(hierarchy, spSidenav);
+  if (multilevel) spSidenav.setAttribute('variant', 'multilevel');
 
   sidenav.append(sidenavList);
 
@@ -175,6 +189,8 @@ export async function createControl(el, options, tagName) {
         const sidenav = getCollectionSidenav(control);
         if (!sidenav) break;
         element.insertBefore(sidenav, control);
+        control.sidenav = sidenav;
+        control.requestUpdate();
       }
 
       element.classList.add(`${control.variant}-container`);
