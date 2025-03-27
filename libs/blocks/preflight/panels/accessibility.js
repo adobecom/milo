@@ -1,4 +1,5 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
+import { createTag } from '../../../utils/utils.js';
 
 const DEF_DESC = 'Checking...';
 const decorativeImages = signal([]);
@@ -41,7 +42,7 @@ function dropdownOptions(props) {
 async function checkAlt() {
   if (altResult.value.checked) return;
   // If images are not scoped, tracking pixel/images are picked up.
-  const images = document.querySelectorAll('header img, main img, footer img');
+  const images = document.querySelectorAll(':is(header, main, footer) img:not(.accessibility-control)');
   const result = { ...altResult.value };
   if (!images) return;
 
@@ -52,8 +53,32 @@ async function checkAlt() {
     if (img.closest('header')) parent = 'gnav';
     if (img.closest('main')) parent = 'main-content';
     if (img.closest('footer')) parent = 'footer';
+
+    let pictureMetaElem;
+    const picture = img.closest('picture');
+
+    if (picture) {
+      pictureMetaElem = picture.querySelector('.picture-meta');
+      if (!pictureMetaElem) {
+        pictureMetaElem = createTag('div', { class: 'picture-meta' });
+        picture.insertBefore(pictureMetaElem, img.nextSibling);
+      }
+    } else {
+      pictureMetaElem = createTag('div', { class: 'picture-meta no-picture-tag' });
+      img.parentNode.insertBefore(pictureMetaElem, img.nextSibling);
+    }
+
+    let a11yMessage;
+
     if (alt === '') {
-      img.dataset.altCheck = 'decorative';
+      img.dataset.altCheck = 'Decorative';
+
+      a11yMessage = createTag(
+        'div',
+        { class: 'picture-meta-a11y is-decorative' },
+        img.dataset.altCheck,
+      );
+
       decorativeImages.value = [...decorativeImages.value,
         {
           src: img.getAttribute('src'),
@@ -62,6 +87,12 @@ async function checkAlt() {
         }];
     }
     if (alt) {
+      a11yMessage = createTag(
+        'div',
+        { class: 'picture-meta-a11y has-alt' },
+        `Alt: ${alt}`,
+      );
+
       altTextImages.value = [...altTextImages.value,
         {
           src: img.getAttribute('src'),
@@ -69,6 +100,8 @@ async function checkAlt() {
           parent,
         }];
     }
+
+    pictureMetaElem.append(a11yMessage);
     img.dataset.pageLocation = parent;
   });
   result.description = 'All images listed below. Please validate each alt text has been set appropriately. Decorative images have been highlighted in yellow on the page.';
@@ -99,7 +132,7 @@ function ImageGroups({ group }) {
     ${imgArray.value.length > 0 && html`
     <div class="access-image-grid ${setFilterView.value}">
       <div class="access-image-grid-item filter">
-        Filter images by: 
+        Filter images by:
         <select onChange=${(e) => filterGrid(e)} class="image-filter">
         ${filterOptions.map((option) => html`<${dropdownOptions} option=${option} />`)}
         </select>
