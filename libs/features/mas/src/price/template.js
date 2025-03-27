@@ -424,7 +424,7 @@ const createPriceWithAnnualTemplate = () => (context, value, attributes) => {
         displayTax: false,
         displayPerUnit: false,
     };
-    return `${createPriceTemplate()(context, value, attributes)}${renderSpan(cssClassNames.containerAnnualPrefix, '&nbsp;(')}${createPriceTemplate(
+    return `${createPriceTemplate({ isAlternativePrice: context.displayOldPrice })(context, value, attributes)}${renderSpan(cssClassNames.containerAnnualPrefix, '&nbsp;(')}${createPriceTemplate(
         {
             displayAnnual: true,
         },
