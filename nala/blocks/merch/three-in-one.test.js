@@ -7,8 +7,11 @@ const miloLibs = process.env.MILO_LIBS || '';
 let webUtil;
 
 test.describe('ThreeInOne Block test suite', () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, browserName }) => {
     webUtil = new WebUtil(page);
+    if (browserName === 'chromium') {
+      await page.setExtraHTTPHeaders({ 'sec-ch-ua': '"Chromium";v="123", "Not:A-Brand";v="8"' });
+    }
   });
 
   test(`${features[0].name}, ${features[0].tags}`, async ({ page, baseURL }) => {
