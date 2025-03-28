@@ -571,7 +571,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
       filter2.addEventListener('change', filterChangeEvent);
       table.parentElement.insertBefore(filters, table);
       table.parentElement.classList.add(`table-${table.classList.contains('merch') ? 'merch-' : ''}section`);
-      if (!isMerch && filter === 3) { filters.style.display = 'none'; }
+      if (!isMerch && headingsLength < 4) { filters.style.display = 'none'; }
       filterChangeEvent();
     }
   };
