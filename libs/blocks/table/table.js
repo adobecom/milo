@@ -544,7 +544,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
     };
 
     // Remove filter if table there are only 2 columns
-    const filter = isMerch ? headingsLength > 2 : headingsLength > 3;
+    const filter = isMerch ? headingsLength > 2 : headingsLength > 2;
     if (!table.parentElement.querySelector('.filters') && filter) {
       const filters = createTag('div', { class: 'filters' });
       const filter1 = createTag('div', { class: 'filter-wrapper' });
@@ -571,6 +571,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
       filter2.addEventListener('change', filterChangeEvent);
       table.parentElement.insertBefore(filters, table);
       table.parentElement.classList.add(`table-${table.classList.contains('merch') ? 'merch-' : ''}section`);
+      if (!isMerch && filter === 3) { filters.style.display = 'none'; }
       filterChangeEvent();
     }
   };
