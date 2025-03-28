@@ -1,5 +1,6 @@
 /* eslint-disable import/no-relative-packages */
-import { createTag } from '../../utils/utils.js';
+import { createTag, getConfig } from '../../utils/utils.js';
+import { replaceKeyArray } from '../../features/placeholders.js';
 import '../../features/spectrum-web-components/dist/theme.js';
 import '../../features/spectrum-web-components/dist/progress-circle.js';
 
@@ -31,9 +32,10 @@ export const reloadIframe = ({ iframe, theme, msgWrapper, handleTimeoutError }) 
   setTimeout(handleTimeoutError, 15000);
 };
 
-export const showErrorMsg = ({ iframe, miloIframe, showBtn, theme, handleTimeoutError }) => {
+export const showErrorMsg = async ({ iframe, miloIframe, showBtn, theme, handleTimeoutError }) => {
   theme.style.display = 'none';
   iframe.style.display = 'none';
+  const [errorRefresh, errorTryLater, tryAgain] = await replaceKeyArray(['error-refresh', 'error-try-later', 'try-again'], getConfig());
   const iconAndText = `
   <div class="icon-and-text">
     <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
@@ -49,12 +51,12 @@ export const showErrorMsg = ({ iframe, miloIframe, showBtn, theme, handleTimeout
       <path class="fill"
         d="M11.418,1.72L0.267,21.675c-0.134,0.238,0.033,0.535,0.581,0.535h22.305c0.547,0,0.714-0.297,0.581-0.535L12.582,1.72c-0.134-0.238-1.031-0.238-1.164,0ZM13.333,19.669c0,0.333-0.333,0.333-0.333,0.333h-2c0,0-0.333,0-0.333-0.333v-2c0-0.333,0.333-0.333,0.333-0.333h2c0,0,0.333,0,0.333,0.333Zm0-4c0,0.333-0.333,0.333-0.333,0.333h-2c0,0-0.333,0-0.333-0.333v-8c0-0.333,0.333-0.333,0.333-0.333h2c0,0,0.333,0,0.333,0.333Z" />
     </svg>
-    <p class="error-msg">${showBtn ? '{{error-refresh}}' : '{{error-try-later}}'}</p>
+    <p class="error-msg">${showBtn ? `${errorRefresh}` : `${errorTryLater}`}</p>
   </div>`;
   const msgWrapper = createTag('div', { class: 'error-wrapper' }, iconAndText, { parent: miloIframe });
 
   if (showBtn) {
-    const btn = createTag('button', { class: 'try-again-btn' }, '{{try-again}}', { parent: msgWrapper });
+    const btn = createTag('button', { class: 'try-again-btn' }, `${tryAgain}`, { parent: msgWrapper });
     btn.addEventListener('click', () => reloadIframe({ iframe, theme, msgWrapper, handleTimeoutError }));
   }
 };
