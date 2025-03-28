@@ -372,7 +372,7 @@ export class MerchCardCollection extends LitElement {
     }
 
     get filtersButton() {
-        return this.mobileAndTablet.matches
+        return this.sidenav && this.mobileAndTablet.matches
             ? html`<sp-action-button
                   id="filtersButton"
                   variant="secondary"

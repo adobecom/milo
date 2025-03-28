@@ -442,6 +442,7 @@ export const testCollectionPayload = {
         },
         "fields": {
           "label": "Photo",
+          "icon": "https://main--milo--adobecom.hlx.page/drafts/astatescu/icons/camera.svg",
           "cards": [
             "8391265d-2542-4533-8089-b75fb19d28d8"
           ],

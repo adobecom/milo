@@ -37,7 +37,13 @@ export function getOptions(el) {
   const searchParams = new URLSearchParams(hashValue);
   const options = { ...defaultOptions };
   for (const [key, value] of searchParams.entries()) {
-    options[key] = value;
+    switch (key) {
+      case 'sidenav':
+        options[key] = value === 'true';
+        break;
+      default:
+        options[key] = value;
+    }
   }
   return options;
 }
@@ -142,6 +148,10 @@ export function getCollectionSidenav(control) {
     for (const node of level) {
       const value = node.label.toLowerCase();
       const item = createTag('sp-sidenav-item', { label: node.label, value });
+      if (node.icon) {
+        const icon = createTag('img', { src: node.icon, slot: 'icon', style: 'height: fit-content;' });
+        item.append(icon);
+      }
       parent.append(item);
       if (node.collections) {
         multilevel = true;
@@ -190,14 +200,14 @@ export async function createControl(el, options, tagName) {
 
       /* Sidenav */
       if (options.sidenav) {
+        element.classList.add(`${control.variant}-container`);
         const sidenav = getCollectionSidenav(control);
         if (!sidenav) break;
         element.insertBefore(sidenav, control);
         control.sidenav = sidenav;
-        control.requestUpdate();
       }
 
-      element.classList.add(`${control.variant}-container`);
+      control.requestUpdate();
 
       break;
     }
