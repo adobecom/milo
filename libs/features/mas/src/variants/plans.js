@@ -12,7 +12,7 @@ export const PLANS_AEM_FRAGMENT_MAPPING = {
   quantitySelect: { tag: 'div', slot: 'quantity-select' },
   stockOffer: true,
   secureLabel: true,
-  badge: { backgroundColor: '#FFCC00' },
+  badge: true,
   ctas: { slot: 'footer', size: 'm' },
   style: 'consonant'
 };

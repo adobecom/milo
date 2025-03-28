@@ -65,20 +65,20 @@ export function processMnemonics(fields, merchCard, mnemonicsConfig) {
     });
 }
 
-function processBadge(fields, merchCard, badgeConfig) {
+function processBadge(fields, merchCard) {
     if (fields.badge) {
         merchCard.setAttribute('badge-text', fields.badge);
         merchCard.setAttribute(
             'badge-color',
-            badgeConfig?.color || fields.badgeColor || DEFAULT_BADGE_COLOR,
+            fields.badgeColor || DEFAULT_BADGE_COLOR,
         );
         merchCard.setAttribute(
             'badge-background-color',
-            badgeConfig?.backgroundColor || fields.badgeBackgroundColor || DEFAULT_BADGE_BACKGROUND_COLOR,
+            fields.badgeBackgroundColor || DEFAULT_BADGE_BACKGROUND_COLOR,
         );
         merchCard.setAttribute(
             'border-color',
-            badgeConfig?.backgroundColor || fields.badgeBackgroundColor || DEFAULT_BADGE_BACKGROUND_COLOR,
+            fields.badgeBackgroundColor || DEFAULT_BADGE_BACKGROUND_COLOR,
         );
     } else {
         merchCard.setAttribute(
@@ -462,7 +462,7 @@ export async function hydrate(fragment, merchCard) {
       merchCard.setAttribute('consonant', true);
     }
     processMnemonics(fields, merchCard, aemFragmentMapping.mnemonics);
-    processBadge(fields, merchCard, aemFragmentMapping.badge);
+    processBadge(fields, merchCard);
     processSize(fields, merchCard, aemFragmentMapping.size);
     processTitle(fields, merchCard, aemFragmentMapping.title);
     processSubtitle(fields, merchCard, aemFragmentMapping);
