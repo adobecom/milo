@@ -1028,7 +1028,7 @@ merch-card[variant="plans"] [slot="quantity-select"] {
         <slot name="quantity-select"></slot>
         ${this.secureLabelFooter}`}};p(ft,"variantStyle",L`
     :host([variant='plans']) {
-      min-height: 348px;
+      height: 100%;
     }
       
     :host([variant='plans']) ::slotted([slot='heading-xs']) {

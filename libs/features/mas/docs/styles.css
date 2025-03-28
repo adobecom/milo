@@ -173,6 +173,20 @@ button {
     & .studio-link {
         font-size: 14px;
     }
+
+    & .plans-item {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+
+        & > div {
+            flex-grow: 1;
+        }
+
+        & > a {
+            margin-left: 8px;
+        }
+    }
 }
 
 code {
