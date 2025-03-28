@@ -121,9 +121,9 @@ export function setItemsParameter(items, parameters) {
 /**
  * Builds a UCv3 Checkout URL out of given parameters.
  */
-export function buildCheckoutUrl(checkoutData) {
+export function buildCheckoutUrl(checkoutData, modalType) {
   validateCheckoutData(checkoutData);
-  const { env, items, workflowStep, ms, marketSegment, ot, offerType, pa, productArrangementCode, landscape, ...rest } =
+  const { env, items, workflowStep, ms, marketSegment, customerSegment, ot, offerType, pa, productArrangementCode, landscape, ...rest } =
     checkoutData;
   const segmentationParameters = {
     marketSegment: marketSegment ?? ms,
@@ -141,6 +141,19 @@ export function buildCheckoutUrl(checkoutData) {
   addParameters(rest, url.searchParams, ALLOWED_KEYS);
   if (landscape === Landscape.DRAFT) {
     addParameters({ af: AF_DRAFT_LANDSCAPE }, url.searchParams, ALLOWED_KEYS);
+  }
+  if (modalType === 'crm') {
+    url.searchParams.set('af', 'uc_segmentation_hide_tabs,uc_new_user_iframe,uc_new_system_close');
+    url.searchParams.set('cli', 'creative');
+  } else if (modalType === 'twp' || modalType === 'd2p') {
+    url.searchParams.set('af', 'uc_new_user_iframe,uc_new_system_close');
+    url.searchParams.set('cli', 'mini_plans');
+    if (customerSegment === 'INDIVIDUAL' && marketSegment === 'EDU') {
+      url.searchParams.set('ms', 'e');
+    }
+    if (customerSegment === 'TEAM' && marketSegment === 'COM') {
+      url.searchParams.set('cs', 't');
+    }
   }
   return url.toString();
 }

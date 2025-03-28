@@ -73,4 +73,81 @@ describe('buildCheckoutUrl', () => {
   it('should throw an error if required fields are missing', () => {
     expect(() => buildCheckoutUrl({ workflowStep: WORKFLOW_STEP.CHECKOUT })).to.throw();
   });
+
+  it('should set correct parameters for CRM modal type', () => {
+    const checkoutData = {
+      env: PROVIDER_ENVIRONMENT.PRODUCTION,
+      workflowStep: WORKFLOW_STEP.CHECKOUT,
+      clientId: 'testClient',
+      country: 'US',
+      items: [{ quantity: 1 }],
+    };
+    const url = buildCheckoutUrl(checkoutData, 'crm');
+    
+    const parsedUrl = new URL(url);
+    expect(parsedUrl.searchParams.get('af')).to.equal('uc_segmentation_hide_tabs,uc_new_user_iframe,uc_new_system_close');
+    expect(parsedUrl.searchParams.get('cli')).to.equal('creative');
+  });
+
+  it('should set correct parameters for TWP modal type', () => {
+    const checkoutData = {
+      env: PROVIDER_ENVIRONMENT.PRODUCTION,
+      workflowStep: WORKFLOW_STEP.CHECKOUT,
+      clientId: 'testClient',
+      country: 'US',
+      items: [{ quantity: 1 }],
+    };
+    const url = buildCheckoutUrl(checkoutData, 'twp');
+    
+    const parsedUrl = new URL(url);
+    expect(parsedUrl.searchParams.get('af')).to.equal('uc_new_user_iframe,uc_new_system_close');
+    expect(parsedUrl.searchParams.get('cli')).to.equal('mini_plans');
+  });
+
+  it('should set correct parameters for D2P modal type', () => {
+    const checkoutData = {
+      env: PROVIDER_ENVIRONMENT.PRODUCTION,
+      workflowStep: WORKFLOW_STEP.CHECKOUT,
+      clientId: 'testClient',
+      country: 'US',
+      items: [{ quantity: 1 }],
+    };
+    const url = buildCheckoutUrl(checkoutData, 'd2p');
+    
+    const parsedUrl = new URL(url);
+    expect(parsedUrl.searchParams.get('af')).to.equal('uc_new_user_iframe,uc_new_system_close');
+    expect(parsedUrl.searchParams.get('cli')).to.equal('mini_plans');
+  });
+
+  it('should set market segment for EDU individual customer', () => {
+    const checkoutData = {
+      env: PROVIDER_ENVIRONMENT.PRODUCTION,
+      workflowStep: WORKFLOW_STEP.CHECKOUT,
+      clientId: 'testClient',
+      country: 'US',
+      items: [{ quantity: 1 }],
+      customerSegment: 'INDIVIDUAL',
+      marketSegment: 'EDU'
+    };
+    const url = buildCheckoutUrl(checkoutData, 'twp');
+    
+    const parsedUrl = new URL(url);
+    expect(parsedUrl.searchParams.get('ms')).to.equal('e');
+  });
+
+  it('should set customer segment for COM team customer', () => {
+    const checkoutData = {
+      env: PROVIDER_ENVIRONMENT.PRODUCTION,
+      workflowStep: WORKFLOW_STEP.CHECKOUT,
+      clientId: 'testClient',
+      country: 'US',
+      items: [{ quantity: 1 }],
+      customerSegment: 'TEAM',
+      marketSegment: 'COM'
+    };
+    const url = buildCheckoutUrl(checkoutData, 'twp');
+    
+    const parsedUrl = new URL(url);
+    expect(parsedUrl.searchParams.get('cs')).to.equal('t');
+  });
 });
