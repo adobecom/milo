@@ -27,6 +27,7 @@ describe('getSettings', () => {
         expect(getSettings()).to.deep.equal({
             ...Defaults,
             locale: `${Defaults.language}_${Defaults.country}`,
+            masIOUrl: 'https://www.adobe.com/mas/io',
             quantity: [Defaults.quantity],
         });
     });
@@ -48,10 +49,9 @@ describe('getSettings', () => {
       url.searchParams.set('modal', 'true');
       url.searchParams.set('commerce.landscape', 'DRAFT');
       url.searchParams.set('commerce.env', 'STAGE');
-      url.searchParams.set('wcsBufferDelay', '30');
-      url.searchParams.set('wcsBufferLimit', '5');
       url.searchParams.set('quantity', '2');
       url.searchParams.set('wcsApiKey', 'testapikey');
+      url.searchParams.set('mas-io-url', 'https://mycustomurl');
       window.history.replaceState({}, '', url.toString());
      
       const config = { commerce: { allowOverride: '' }, };
@@ -69,11 +69,10 @@ describe('getSettings', () => {
           entitlement: true,
           modal: true,
           landscape: 'DRAFT',
-          wcsBufferDelay: 30,
-          wcsBufferLimit: 5,
           quantity: [2],
           wcsApiKey: 'testapikey',
           locale: "en_US",
+          masIOUrl: 'https://mycustomurl',
           env: "STAGE",
           wcsURL: WCS_STAGE_URL
       });
@@ -107,6 +106,7 @@ describe('getSettings', () => {
             env: Env.STAGE,
             language: 'nb',
             locale: 'nb_NO',
+            masIOUrl: 'https://www.stage.adobe.com/mas/io', // because env === Env.STAGE
             quantity: [Defaults.quantity],
             wcsApiKey,
             wcsURL: WCS_STAGE_URL,
