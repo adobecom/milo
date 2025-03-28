@@ -58,6 +58,9 @@ export class Plans extends VariantLayout {
     if (!mobile && stockInBody) {
       stockInFooter ? stockInBody.remove() : footer.prepend(stockInBody);
     }
+    if (!this.card.closest('merch-card-collection,overlay-trigger')) {
+      this.card.removeAttribute('size');
+    }
   }
 
   postCardUpdateHook() {
