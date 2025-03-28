@@ -14,14 +14,14 @@ describe('mas autoblock', () => {
     it('no fragment id in URL', () => {
       const a = document.createElement('a');
       a.setAttribute('href', 'https://mas.adobe.com/studio.html#path=acom');
-      expect(getOptions(a).fragment).to.be.null;
+      expect(getOptions(a).fragment).to.be.undefined;
     });
 
     it('no hash in URL', () => {
       const a = document.createElement('a');
       a.setAttribute('href', 'https://mas.adobe.com/studio.html');
       init(a);
-      expect(getOptions(a).fragment).to.be.null;
+      expect(getOptions(a).fragment).to.be.undefined;
     });
   });
 
@@ -69,10 +69,13 @@ describe('mas autoblock', () => {
     });
 
     it('create card', async () => {
+      const content = document.createElement('div');
+      content.classList.add('content');
       const a = document.createElement('a');
       a.setAttribute('href', 'https://mas.adobe.com/studio.html#path=acom&fragment=a657fd3d9f67');
       a.textContent = 'merch-card: ACOM / Catalog / Test Card';
-      document.body.append(a);
+      content.append(a);
+      document.body.append(content);
       await init(a);
       const card = document.body.querySelector('merch-card');
       expect(card.querySelector('[slot="heading-xs"]')?.textContent).to.equal('Creative Cloud All Apps');

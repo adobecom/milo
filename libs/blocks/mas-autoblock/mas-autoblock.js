@@ -3,8 +3,8 @@ import '../../deps/mas/merch-card.js';
 import { initService } from '../merch/merch.js';
 
 const MAS_AUTOBLOCK_TIMEOUT = 5000;
+const DEFAULT_OPTIONS = { sidenav: true };
 let log;
-const defaultOptions = { sidenav: true };
 
 function getTimeoutPromise() {
   return new Promise((resolve) => {
@@ -16,7 +16,7 @@ export function getOptions(el) {
   const { hash } = new URL(el.href);
   const hashValue = hash.startsWith('#') ? hash.substring(1) : hash;
   const searchParams = new URLSearchParams(hashValue);
-  const options = { ...defaultOptions };
+  const options = { ...DEFAULT_OPTIONS };
   for (const [key, value] of searchParams.entries()) {
     switch (key) {
       case 'sidenav':
