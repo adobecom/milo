@@ -301,7 +301,7 @@ export class InlinePrice extends HTMLSpanElement {
                 const inlinePrices = parentEl?.querySelectorAll('span[is="inline-price"]');
                 if (inlinePrices.length > 1 && inlinePrices.length === parentEl.querySelectorAll('span[data-template="strikethrough"]').length * 2) {
                     inlinePrices.forEach((price) => {
-                        if (price.dataset.template !== 'strikethrough' && !price.options.alternativePrice) {
+                        if (price.dataset.template !== 'strikethrough' && price.options && !price.options.alternativePrice) {
                             price.options.alternativePrice = true;
                             price.innerHTML = service.buildPriceHTML(offers, price.options);
                         }
