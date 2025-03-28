@@ -84,6 +84,10 @@ var P=Object.defineProperty;var A=o=>{throw TypeError(o)};var H=(o,e,t)=>e in o?
                 z-index: 2;
             }
 
+            :host h2 {
+              color: var(--spectrum-global-color-gray-900);
+            }
+
             :host(:not([modal])) {
                 --mod-sidenav-item-background-default-selected: #222;
                 --mod-sidenav-content-color-default-selected: #fff;
@@ -97,6 +101,7 @@ var P=Object.defineProperty;var A=o=>{throw TypeError(o)};var H=(o,e,t)=>e in o?
                 justify-content: center;
                 align-items: baseline;
             }
+            
 
             :host([modal]) ::slotted(merch-search) {
                 display: none;
