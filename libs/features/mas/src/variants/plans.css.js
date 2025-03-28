@@ -6,7 +6,7 @@ export const CSS = `
 }
 
 merch-card[variant="plans"] {
-  width: 276px;
+  width: var(--consonant-merch-card-plans-width);
 }
 
 merch-card[variant="plans"] [slot="description"] {
@@ -19,6 +19,16 @@ merch-card[variant="plans"] [slot="quantity-select"] {
   box-sizing: border-box;
   width: 100%;
   padding: var(--consonant-merch-spacing-xs);
+}
+
+.plans-container {
+  display: flex;
+  justify-content: center;
+  gap: 36px;
+}
+
+.plans-container merch-card-collection {
+  padding: 0;
 }
 
 .one-merch-card.plans,
@@ -48,11 +58,9 @@ merch-card[variant="plans"] [slot="quantity-select"] {
   :root {
     --consonant-merch-card-plans-width: 276px;
   }
-  .three-merch-cards.plans {
-      grid-template-columns: repeat(3, var(--consonant-merch-card-plans-width));
-  }
+  .three-merch-cards.plans,
   .four-merch-cards.plans {
-      grid-template-columns: repeat(4, var(--consonant-merch-card-plans-width));
+      grid-template-columns: repeat(3, var(--consonant-merch-card-plans-width));
   }
 }
 

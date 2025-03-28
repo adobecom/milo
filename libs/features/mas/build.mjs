@@ -7,7 +7,7 @@ const defaults = {
     bundle: true,
     format: 'esm',
     minify: true,
-    sourcemap: false,
+    sourcemap: process.argv.includes('sourcemap'),
     platform: 'browser',
     target: ['es2020'],
 };

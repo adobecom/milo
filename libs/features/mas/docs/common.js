@@ -48,7 +48,7 @@ const toggleLocale = (event, params) => {
       '',
       `${location.pathname}?${params}`,
   );
-  createMasCommerceService(params);
+  window.location.reload();
 }
 
 const createMasCommerceService = (params) => {
