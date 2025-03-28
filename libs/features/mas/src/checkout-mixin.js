@@ -155,9 +155,6 @@ export function CheckoutMixin(Base) {
         add3in1ModalParams(url, modalType) {
           try {
             const newUrl = new URL(url);
-            if (new URLSearchParams(window.location.search).get('commerce-stg') === 'on') {
-              newUrl.hostname = newUrl.hostname.replace('commerce', 'commerce-stg');
-            }
             newUrl.searchParams.set('ctx', 'if');
             newUrl.searchParams.set('rtc', 't');
             if (modalType === MODAL_TYPE_3_IN_1.CRM) {
