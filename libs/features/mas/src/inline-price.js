@@ -299,11 +299,11 @@ export class InlinePrice extends HTMLSpanElement {
                 const parentEl = this.closest('p, h3, div');
                 if (!parentEl || !parentEl.querySelector('span[data-template="strikethrough"]') || parentEl.querySelector('.alt-aria-label')) return true;
                 const inlinePrices = parentEl?.querySelectorAll('span[is="inline-price"]');
-                if (inlinePrices.length === 2) {
+                if (inlinePrices.length > 1 && inlinePrices.length === parentEl.querySelectorAll('span[data-template="strikethrough"]').length * 2) {
                     inlinePrices.forEach((price) => {
-                        if (price.dataset.template === 'strikethrough' && !options.alternativePrice) {
-                            options.alternativePrice = true;
-                            this.innerHTML = service.buildPriceHTML(offers, options);
+                        if (price.dataset.template !== 'strikethrough' && !price.options.alternativePrice) {
+                            price.options.alternativePrice = true;
+                            price.innerHTML = service.buildPriceHTML(offers, price.options);
                         }
                     });
                 }
