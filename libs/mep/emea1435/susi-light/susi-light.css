@@ -1,0 +1,5 @@
+/* preserving modal space for ux */
+.dialog-modal:has(.susi-light) {
+    width: 360px;
+    min-height: 462px;
+}
