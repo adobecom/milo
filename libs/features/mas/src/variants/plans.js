@@ -12,7 +12,7 @@ export const PLANS_AEM_FRAGMENT_MAPPING = {
   quantitySelect: { tag: 'div', slot: 'quantity-select' },
   stockOffer: true,
   secureLabel: true,
-  badge: true,
+  badge: { backgroundColor: '#FFCC00' },
   ctas: { slot: 'footer', size: 'm' },
   style: 'consonant'
 };
@@ -74,13 +74,6 @@ export class Plans extends VariantLayout {
         font-weight: 400;
     }
 
-    :host([variant='plans']) #badge {
-        border-radius: 4px 0 0 4px;
-        font-weight: 400;
-        line-height: 21px;
-        padding: 2px 10px 3px;
-    }
-
     :host([variant='plans']) ::slotted([slot='heading-xs']) {
         min-height: var(--merch-card-plans-heading-min-height);
     }
@@ -118,6 +111,13 @@ export class Plans extends VariantLayout {
       
     :host([variant='plans']) ::slotted([slot='heading-xs']) {
         max-width: var(--consonant-merch-card-heading-xs-max-width, 100%);
+    }
+
+    :host([variant='plans']) #badge {
+        border-radius: 4px 0 0 4px;
+        font-weight: 400;
+        line-height: 21px;
+        padding: 2px 10px 3px;
     }
   `;
 }
