@@ -19,6 +19,7 @@ const DEFAULT_PLACEHOLDERS = {
   noSearchResultsText: 'Your search for <strong><span data-placeholder="searchTerm"></span></strong> did not yield any results.',
   noSearchResultsMobileText: '<p>Your search for <strong><span data-placeholder="searchTerm"></span></strong> did not yield any results. Try a different search term.</p><p>Suggestions:</p><ul><li>Make sure all words are spelled correctly</li><li>Use quotes to search for an entire phrase, such as "crop an image"</li></ul>',
   showMoreText: 'Show more',
+  plansSidenavTitle: 'Categories',
 };
 const MAS_AUTOBLOCK_TIMEOUT = 5000;
 let log;
@@ -114,13 +115,16 @@ export async function checkReady(control) {
 }
 
 export function getCollectionSidenav(control) {
-  const hierarchy = control.data?.hierarchy;
+  if (!control.data) return null;
+  const { hierarchy } = control.data;
+  const placeholders = control.data.placeholders || DEFAULT_PLACEHOLDERS;
   if (!hierarchy) return null;
 
-  const sidenav = createTag('merch-sidenav', { sidenavTitle: 'Categories' });
+  const titleKey = `${control.variant}SidenavTitle`;
+  const sidenav = createTag('merch-sidenav', { sidenavTitle: placeholders?.[titleKey] });
 
   /* Search */
-  const searchText = control.data?.placeholders?.searchText || 'Search all products';
+  const searchText = placeholders?.searchText;
   if (searchText) {
     const spectrumSearch = createTag('sp-search', { placeholder: searchText });
     const search = createTag('merch-search', { deeplink: 'search' });
