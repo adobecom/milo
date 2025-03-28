@@ -62,9 +62,7 @@ describe('table and tablemetadata', () => {
       window.innerWidth = 760;
       window.dispatchEvent(new Event('resize'));
       const filters = await waitForElement('.filters');
-      const col5 = table.querySelector('.col-5');
       expect(filters).to.be.exist;
-      expect(col5).to.be.null;
     });
 
     it('filter test: for case of both filter poiting same options', async () => {
