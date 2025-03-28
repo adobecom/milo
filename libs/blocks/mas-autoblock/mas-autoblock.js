@@ -2,25 +2,6 @@ import { createTag, getConfig } from '../../utils/utils.js';
 import '../../deps/mas/merch-card.js';
 import { initService } from '../merch/merch.js';
 
-// Should probably be removed (?)
-const DEFAULT_PLACEHOLDERS = {
-  searchText: 'Search all products',
-  filtersText: 'Filters',
-  sortText: 'Sort',
-  popularityText: 'Popularity',
-  alphabeticallyText: 'Alphabetically',
-  noResultsText: '0 results',
-  resultText: '1 result in <strong><span data-placeholder="filter"></span></strong>',
-  resultsText: '<span data-placeholder="resultCount"></span> results in <strong><span data-placeholder="filter"></span></strong>',
-  searchResultText: '1 result for <strong><span data-placeholder="searchTerm"></span></strong>',
-  searchResultsText: '<span data-placeholder="resultCount"></span> results for <strong><span data-placeholder="searchTerm"></span></strong>',
-  searchResultMobileText: '1 result for: <strong><span data-placeholder="searchTerm"></span></strong>',
-  searchResultsMobileText: '<span data-placeholder="resultCount"></span> results for: <strong><span data-placeholder="searchTerm"></span></strong>',
-  noSearchResultsText: 'Your search for <strong><span data-placeholder="searchTerm"></span></strong> did not yield any results.',
-  noSearchResultsMobileText: '<p>Your search for <strong><span data-placeholder="searchTerm"></span></strong> did not yield any results. Try a different search term.</p><p>Suggestions:</p><ul><li>Make sure all words are spelled correctly</li><li>Use quotes to search for an entire phrase, such as "crop an image"</li></ul>',
-  showMoreText: 'Show more',
-  plansSidenavTitle: 'Categories',
-};
 const MAS_AUTOBLOCK_TIMEOUT = 5000;
 let log;
 const defaultOptions = { sidenav: true };
@@ -122,8 +103,7 @@ export async function checkReady(control) {
 
 export function getCollectionSidenav(control) {
   if (!control.data) return null;
-  const { hierarchy } = control.data;
-  const placeholders = control.data.placeholders || DEFAULT_PLACEHOLDERS;
+  const { hierarchy, placeholders } = control.data;
   if (!hierarchy) return null;
 
   const titleKey = `${control.variant}SidenavTitle`;
@@ -190,7 +170,7 @@ export async function createControl(el, options, tagName) {
   switch (tagName) {
     case 'merch-card-collection': {
       /* Placeholders */
-      const placeholders = control.data?.placeholders || DEFAULT_PLACEHOLDERS;
+      const placeholders = control.data?.placeholders || {};
       for (const key of Object.keys(placeholders)) {
         const value = placeholders[key];
         const tag = value.includes('<p>') ? 'div' : 'p';

@@ -254,7 +254,7 @@ export class MerchCardCollection extends LitElement {
         });
 
         function normalizePayload(fragment) {
-            const payload = { cards: [], hierarchy: [] };
+            const payload = { cards: [], hierarchy: [], placeholders: fragment.placeholders };
 
             function traverseReferencesTree(root, references) {
                 for (const reference of references) {
