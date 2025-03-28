@@ -26,7 +26,7 @@ merch-card[variant="plans"] [slot="quantity-select"] {
   justify-content: flex-start;
   box-sizing: border-box;
   width: 100%;
-  padding-top: 0;
+  padding-top: var(--consonant-merch-spacing-xs);
 }
 
 /* Mobile */
