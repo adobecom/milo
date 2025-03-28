@@ -18,13 +18,8 @@ export function getOptions(el) {
   const searchParams = new URLSearchParams(hashValue);
   const options = { ...DEFAULT_OPTIONS };
   for (const [key, value] of searchParams.entries()) {
-    switch (key) {
-      case 'sidenav':
-        options[key] = value === 'true';
-        break;
-      default:
-        options[key] = value;
-    }
+    if (key === 'sidenav') options[key] = value === 'true';
+    else options[key] = value;
   }
   return options;
 }
@@ -38,7 +33,7 @@ export function getTagName(el) {
   return el.textContent.trim().match(/^[^:\s]+/)?.[0] || 'merch-card';
 }
 
-async function loadControl(tagName) {
+async function loadDependencies(tagName) {
   /** Load service first */
   const servicePromise = initService();
   const success = await Promise.race([servicePromise, getTimeoutPromise()]);
@@ -50,27 +45,24 @@ async function loadControl(tagName) {
 
   /** Load the control and any dependencies */
   const { base } = getConfig();
-  switch (tagName) {
-    case 'merch-card-collection':
-      await import('../../deps/mas/merch-card-collection.js');
-      await import('../../deps/mas/merch-sidenav.js');
-      await import(`${base}/features/spectrum-web-components/dist/theme.js`);
-      await import(`${base}/features/spectrum-web-components/dist/button.js`);
-      await import(`${base}/features/spectrum-web-components/dist/action-button.js`);
-      await import(`${base}/features/spectrum-web-components/dist/action-menu.js`);
-      await import(`${base}/features/spectrum-web-components/dist/search.js`);
-      await import(`${base}/features/spectrum-web-components/dist/sidenav.js`);
-      await import(`${base}/features/spectrum-web-components/dist/menu.js`);
-      await import(`${base}/features/spectrum-web-components/dist/checkbox.js`);
-      await import(`${base}/features/spectrum-web-components/dist/dialog.js`);
-      await import(`${base}/features/spectrum-web-components/dist/link.js`);
-      await import(`${base}/features/spectrum-web-components/dist/overlay.js`);
-      await import(`${base}/features/spectrum-web-components/dist/tray.js`);
-      await import(`${base}/features/spectrum-web-components/dist/shared.js`);
-      await import(`${base}/features/spectrum-web-components/dist/base.js`);
-      break;
-    default:
-      break;
+
+  if (tagName === 'merch-card-collection') {
+    await import('../../deps/mas/merch-card-collection.js');
+    await import('../../deps/mas/merch-sidenav.js');
+    await import(`${base}/features/spectrum-web-components/dist/theme.js`);
+    await import(`${base}/features/spectrum-web-components/dist/button.js`);
+    await import(`${base}/features/spectrum-web-components/dist/action-button.js`);
+    await import(`${base}/features/spectrum-web-components/dist/action-menu.js`);
+    await import(`${base}/features/spectrum-web-components/dist/search.js`);
+    await import(`${base}/features/spectrum-web-components/dist/sidenav.js`);
+    await import(`${base}/features/spectrum-web-components/dist/menu.js`);
+    await import(`${base}/features/spectrum-web-components/dist/checkbox.js`);
+    await import(`${base}/features/spectrum-web-components/dist/dialog.js`);
+    await import(`${base}/features/spectrum-web-components/dist/link.js`);
+    await import(`${base}/features/spectrum-web-components/dist/overlay.js`);
+    await import(`${base}/features/spectrum-web-components/dist/tray.js`);
+    await import(`${base}/features/spectrum-web-components/dist/shared.js`);
+    await import(`${base}/features/spectrum-web-components/dist/base.js`);
   }
 }
 
@@ -81,32 +73,25 @@ async function loadControl(tagName) {
 function getTagAttributesAndContent(fragment, tagName) {
   let attributes;
   const html = createTag('aem-fragment', { fragment });
-  switch (tagName) {
-    case 'merch-card':
-      attributes = { consonant: '' };
-      break;
-    case 'merch-card-collection':
-    default:
-      break;
-  }
+  if (tagName === 'merch-card') attributes = { consonant: '' };
   return [attributes, html];
 }
 
-export async function checkReady(control) {
-  const readyPromise = control.checkReady();
+export async function checkReady(masElement) {
+  const readyPromise = masElement.checkReady();
   const success = await Promise.race([readyPromise, getTimeoutPromise()]);
 
   if (!success) {
-    log.error(`${control.tagName} did not initialize withing give timeout`);
+    log.error(`${masElement.tagName} did not initialize withing give timeout`);
   }
 }
 
-export function getCollectionSidenav(control) {
-  if (!control.data) return null;
-  const { hierarchy, placeholders } = control.data;
+export function getCollectionSidenav(collection) {
+  if (!collection.data) return null;
+  const { hierarchy, placeholders } = collection.data;
   if (!hierarchy) return null;
 
-  const titleKey = `${control.variant}SidenavTitle`;
+  const titleKey = `${collection.variant}SidenavTitle`;
   const sidenav = createTag('merch-sidenav', { sidenavTitle: placeholders?.[titleKey] });
 
   /* Search */
@@ -148,51 +133,40 @@ export function getCollectionSidenav(control) {
   return sidenav;
 }
 
-export async function createControl(el, options, tagName) {
+export async function createMasElement(el, options, tagName) {
   const [attributes, html] = getTagAttributesAndContent(options.fragment, tagName);
-  const control = createTag(tagName, attributes, html);
-  let element = control;
+  const masElement = createTag(tagName, attributes, html);
+  let element = masElement;
 
-  switch (tagName) {
-    case 'merch-card-collection':
-      if (options.sidenav) {
-        const container = createTag('div', null, control);
-        element = container;
-      }
-      break;
-    default:
-      break;
+  if (tagName === 'merch-card-collection' && options.sidenav) {
+    const container = createTag('div', null, masElement);
+    element = container;
   }
 
   el.replaceWith(element);
-  await checkReady(control);
+  await checkReady(masElement);
 
-  switch (tagName) {
-    case 'merch-card-collection': {
-      /* Placeholders */
-      const placeholders = control.data?.placeholders || {};
-      for (const key of Object.keys(placeholders)) {
-        const value = placeholders[key];
-        const tag = value.includes('<p>') ? 'div' : 'p';
-        const placeholder = createTag(tag, { slot: key }, value);
-        control.append(placeholder);
-      }
-
-      /* Sidenav */
-      if (options.sidenav) {
-        element.classList.add(`${control.variant}-container`);
-        const sidenav = getCollectionSidenav(control);
-        if (!sidenav) break;
-        element.insertBefore(sidenav, control);
-        control.sidenav = sidenav;
-      }
-
-      control.requestUpdate();
-
-      break;
+  if (tagName === 'merch-card-collection') {
+    /* Placeholders */
+    const placeholders = masElement.data?.placeholders || {};
+    for (const key of Object.keys(placeholders)) {
+      const value = placeholders[key];
+      const tag = value.includes('<p>') ? 'div' : 'p';
+      const placeholder = createTag(tag, { slot: key }, value);
+      masElement.append(placeholder);
     }
-    default:
-      break;
+
+    /* Sidenav */
+    if (options.sidenav) {
+      element.classList.add(`${masElement.variant}-container`);
+      const sidenav = getCollectionSidenav(masElement);
+      if (sidenav) {
+        element.insertBefore(sidenav, masElement);
+        masElement.sidenav = sidenav;
+      }
+    }
+
+    masElement.requestUpdate();
   }
 }
 
@@ -200,6 +174,6 @@ export default async function init(el) {
   const options = getOptions(el);
   if (!options.fragment) return;
   const tagName = getTagName(el);
-  await loadControl(tagName);
-  await createControl(el.closest('.content'), options, tagName);
+  await loadDependencies(tagName);
+  await createMasElement(el.closest('.content'), options, tagName);
 }
