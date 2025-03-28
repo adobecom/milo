@@ -27,7 +27,7 @@ function createSVGWrapper(icon, sheetSize, alt, altSrc) {
   return svgWrapper;
 }
 
-export function getIconDeprecated(icons, alt, size = 44, altSrc) {
+export function getIconDeprecated(icons, alt, size = 44, altSrc = false) {
   // eslint-disable-next-line no-param-reassign
   icons = Array.isArray(icons) ? icons : [icons];
   const [defaultIcon, mobileIcon] = icons;
@@ -188,9 +188,7 @@ function sendEventToAnalytics(type, eventName, client_id) {
         web: {
           webInteraction: {
             name: eventName,
-            linkClicks: {
-              value: 1,
-            },
+            linkClicks: { value: 1 },
             type,
           },
         },
@@ -234,7 +232,11 @@ function createSUSIComponent({ variant, config, authParams, destURL }) {
   return susi;
 }
 
-function buildSUSIParams({ client_id, variant, destURL, locale, title, hideIcon }) {
+function buildSUSIParams(
+  {
+    client_id, variant, destURL, locale, title, hideIcon,
+  },
+) {
   const params = {
     variant,
     authParams: {
@@ -299,7 +301,7 @@ function buildSUSITabs(el, options) {
     const id = sanitizeId(`${tabName}-${tabsId}`);
     panel.setAttribute('aria-labelledby', `tab-${id}`);
     panel.id = `panel-${id}`;
-    i > 0 && panel.classList.add('hide');
+    if (i > 0) panel.classList.add('hide');
     const tab = createTag('button', {
       role: 'tab',
       'aria-selected': i === 0,
@@ -310,7 +312,8 @@ function buildSUSITabs(el, options) {
       tabList.querySelector('[aria-selected=true]')?.setAttribute('aria-selected', false);
       tab.setAttribute('aria-selected', true);
       panels.forEach((p) => {
-        p !== panel ? p.classList.add('hide') : p.classList.remove('hide');
+        if (p !== panel) p.classList.add('hide');
+        else p.classList.remove('hide');
       });
     });
     tabList.append(tab);
@@ -332,12 +335,12 @@ function redirectIfLoggedIn(destURL) {
     window.location.assign(destURL);
   };
   if (window.adobeIMS) {
-    window.adobeIMS.isSignedInUser() && goDest();
+    if (window.adobeIMS.isSignedInUser()) goDest();
   } else {
     loadIms()
       .then(() => {
         /* c8 ignore next */
-        window.adobeIMS?.isSignedInUser() && goDest();
+        if (window.adobeIMS?.isSignedInUser()) goDest();
       })
       .catch((e) => { window.lana?.log(`Unable to load IMS in susi-light: ${e}`); });
   }
@@ -359,9 +362,9 @@ export default async function init(el) {
     const client_id = rows[1]?.textContent?.trim() || (imsClientId ?? 'AdobeExpressWeb');
     const title = rows[2]?.textContent?.trim();
     const variant = 'edu-express';
-    const params = buildSUSIParams({
-      client_id, variant, destURL: getDestURL(redirectUrl), locale, title,
-    });
+    const params = buildSUSIParams(
+      { client_id, variant, destURL: getDestURL(redirectUrl), locale, title },
+    );
     if (!noRedirect) {
       redirectIfLoggedIn(params.destURL);
     }
