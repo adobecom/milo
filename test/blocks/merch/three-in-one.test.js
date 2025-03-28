@@ -2,7 +2,7 @@ import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
 import sinon from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
-import openThreeInOneModal, { handle3in1IFrameEvents, MSG_SUBTYPE, reloadIframe } from '../../../libs/blocks/merch/three-in-one.js';
+import openThreeInOneModal, { handle3in1IFrameEvents, MSG_SUBTYPE, showErrorMsg, handleTimeoutError } from '../../../libs/blocks/merch/three-in-one.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/threeInOne.html' });
 
@@ -127,74 +127,50 @@ describe('Three-in-one modal', () => {
     modal.remove();
   });
 
-  it('should show error message after 15 seconds if page not loaded', async () => {
+  it('should show error message with try again button', async () => {
     const modal = await openThreeInOneModal(twpLink);
+    const miloIframe = modal.querySelector('.milo-iframe');
     const iframe = modal.querySelector('iframe');
-    const spTheme = modal.querySelector('sp-theme');
-    expect(iframe.classList.contains('loading')).to.be.true;
-    expect(spTheme).to.exist;
-    clock.tick(15000);
-    const errorWrapper = modal.querySelector('.error-wrapper');
+    const theme = modal.querySelector('sp-theme');
+    await showErrorMsg({ iframe, miloIframe, showBtn: true, theme, handleTimeoutError });
+    const errorWrapper = miloIframe.querySelector('.error-wrapper');
     expect(errorWrapper).to.exist;
-    expect(errorWrapper.querySelector('.error-msg')).to.exist;
+    expect(errorWrapper.querySelector('.error-msg').textContent).to.include('error refresh');
     expect(errorWrapper.querySelector('.try-again-btn')).to.exist;
     expect(iframe.style.display).to.equal('none');
-    expect(spTheme.style.display).to.equal('none');
+    expect(theme.style.display).to.equal('none');
     modal.remove();
   });
 
-  it('should not show error message if page loaded before timeout', async () => {
+  it('should show error message without try again button', async () => {
     const modal = await openThreeInOneModal(twpLink);
+    const miloIframe = modal.querySelector('.milo-iframe');
     const iframe = modal.querySelector('iframe');
-    clock.tick(5000);
-    handle3in1IFrameEvents({ data: `{"app":"ucv3","subType": "${MSG_SUBTYPE.AppLoaded}"}` });
-    clock.tick(10000);
-    const errorWrapper = modal.querySelector('.error-wrapper');
-    expect(errorWrapper).to.not.exist;
-    expect(iframe.classList.contains('loading')).to.be.false;
+    const theme = modal.querySelector('sp-theme');
+    await showErrorMsg({ iframe, miloIframe, showBtn: false, theme, handleTimeoutError });
+    const errorWrapper = miloIframe.querySelector('.error-wrapper');
+    expect(errorWrapper).to.exist;
+    expect(errorWrapper.querySelector('.error-msg').textContent).to.include('error try later');
+    expect(errorWrapper.querySelector('.try-again-btn')).to.not.exist;
+    expect(iframe.style.display).to.equal('none');
+    expect(theme.style.display).to.equal('none');
     modal.remove();
   });
 
   it('should reload iframe when try again button is clicked', async () => {
     const modal = await openThreeInOneModal(twpLink);
+    const miloIframe = modal.querySelector('.milo-iframe');
     const iframe = modal.querySelector('iframe');
-    const spTheme = modal.querySelector('sp-theme');
-    clock.tick(15000);
-    const errorWrapper = modal.querySelector('.error-wrapper');
+    const theme = modal.querySelector('sp-theme');
+    await showErrorMsg({ iframe, miloIframe, showBtn: true, theme, handleTimeoutError });
+    const errorWrapper = miloIframe.querySelector('.error-wrapper');
     const tryAgainBtn = errorWrapper.querySelector('.try-again-btn');
-    const originalSrc = iframe.src;
     tryAgainBtn.click();
     expect(iframe.getAttribute('data-wasreloaded')).to.equal('true');
     expect(iframe.style.display).to.equal('block');
-    expect(iframe.src).to.equal(originalSrc);
     expect(iframe.classList.contains('loading')).to.be.true;
-    expect(spTheme.style.display).to.equal('block');
-    expect(modal.querySelector('.error-wrapper')).to.not.exist;
-    modal.remove();
-  });
-
-  it('should do nothing if required parameters are missing in reloadIframe', async () => {
-    const modal = await openThreeInOneModal(twpLink);
-    const iframe = modal.querySelector('iframe');
-    const spTheme = modal.querySelector('sp-theme');
-    clock.tick(15000);
-    const errorWrapper = modal.querySelector('.error-wrapper');
-    reloadIframe({});
-    reloadIframe({
-      iframe: null,
-      theme: spTheme,
-      msgWrapper: errorWrapper,
-      handleTimeoutError: () => {},
-    });
-    reloadIframe({ iframe, theme: null, msgWrapper: errorWrapper, handleTimeoutError: () => {} });
-    reloadIframe({ iframe, theme: spTheme, msgWrapper: null, handleTimeoutError: () => {} });
-    reloadIframe({ iframe, theme: spTheme, msgWrapper: errorWrapper, handleTimeoutError: null });
-
-    // Verify nothing changed
-    expect(errorWrapper).to.exist;
-    expect(iframe.style.display).to.equal('none');
-    expect(spTheme.style.display).to.equal('none');
-
+    expect(theme.style.display).to.equal('block');
+    expect(miloIframe.querySelector('.error-wrapper')).to.not.exist;
     modal.remove();
   });
 });
