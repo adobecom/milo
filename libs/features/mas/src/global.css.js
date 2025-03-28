@@ -43,6 +43,7 @@ styles.innerHTML = `
     --consonant-merch-card-heading-xl-line-height: 45px;
 
     /* detail */
+    --consonant-merch-card-detail-xs-line-height: 12px;
     --consonant-merch-card-detail-s-font-size: 11px;
     --consonant-merch-card-detail-s-line-height: 14px;
     --consonant-merch-card-detail-m-font-size: 12px;
@@ -301,6 +302,8 @@ merch-card [slot='callout-content'] > div > div {
     background: rgba(203 203 203 / 50%);
     border-radius: var(--consonant-merch-spacing-xxxs);
     padding: var(--consonant-merch-spacing-xxxs) var(--consonant-merch-spacing-xxxs) var(--consonant-merch-spacing-xxxs) var(--consonant-merch-spacing-xxs);
+    width: fit-content;
+    color: var(--consonant-merch-card-callout-font-color);
 }
 
 merch-card [slot='callout-content'] > div > div > div {
@@ -317,6 +320,17 @@ merch-card [slot='callout-content'] img {
     margin-inline-end: 2.5px;
     margin-inline-start: 9px;
     margin-block-start: 2.5px;
+}
+
+merch-card [slot='callout-content'] .icon-button {
+    height: 16px;
+    padding: 0;
+    border: 0;
+    min-inline-size: 16px;
+}
+
+merch-card [slot='callout-content'] .icon-button:hover {
+    background-color: transparent;
 }
 
 merch-card [slot='detail-s'] {
