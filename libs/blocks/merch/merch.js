@@ -1,5 +1,5 @@
 import {
-  createTag, getConfig, loadArea, loadScript, loadStyle, localizeLink, SLD, getMetadata,
+  createTag, getConfig, loadArea, loadScript, loadStyle, localizeLink, SLD,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
