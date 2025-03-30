@@ -6,6 +6,7 @@ import {
   loadIms,
   decorateLinks,
   loadScript,
+  getGnavSource,
   getFedsPlaceholderConfig,
 } from '../../utils/utils.js';
 import {
@@ -47,6 +48,8 @@ import {
 } from './utilities/utilities.js';
 
 import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
+
+import { getMiloLocaleSettings } from '../merch/merch.js';
 
 const SIGNIN_CONTEXT = getConfig()?.signInContext;
 
@@ -123,6 +126,7 @@ export const CONFIG = {
               ...getConfig().unav?.profile?.config,
             },
           },
+          complexConfig: getConfig().unav?.profile?.complexConfig || null,
           callbacks: {
             onSignIn: () => { window.adobeIMS?.signIn(SIGNIN_CONTEXT); },
             onSignUp: () => { window.adobeIMS?.signIn(SIGNIN_CONTEXT); },
@@ -425,6 +429,7 @@ class Gnav {
         ${getMetadata('product-entry-cta')?.toLowerCase() === 'on' ? this.decorateProductEntryCTA() : ''}
         ${getConfig().searchEnabled === 'on' ? toFragment`<div class="feds-client-search"></div>` : ''}
         ${this.useUniversalNav ? this.blocks.universalNav : ''}
+        ${getConfig().selfIntegrateUnav ? toFragment`<div class="feds-client-unav"></div>` : ''}
         ${(!this.useUniversalNav && this.blocks.profile.rawElem) ? this.blocks.profile.decoratedElem : ''}
         ${this.decorateLogo()}
       </nav>
@@ -774,6 +779,7 @@ class Gnav {
       target: this.blocks.universalNav,
       env: environment,
       locale,
+      countryCode: getMiloLocaleSettings(getConfig().locale)?.country || 'US',
       imsClientId: window.adobeid?.client_id,
       theme: isDarkMode() ? 'dark' : 'light',
       analyticsContext: {
@@ -1156,6 +1162,7 @@ class Gnav {
           elem?.addEventListener('click', (e) => {
             trigger({ element: e.currentTarget, event: e, type: 'headline' });
           });
+          elem.textContent = elem.textContent?.trim();
         });
       }
     };
@@ -1347,16 +1354,6 @@ class Gnav {
 
     return this.elements.search;
   };
-}
-
-async function getGnavSource() {
-  const { locale, dynamicNavKey } = getConfig();
-  let url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
-  if (dynamicNavKey) {
-    const { default: dynamicNav } = await import('../../features/dynamic-navigation/dynamic-navigation.js');
-    url = dynamicNav(url, dynamicNavKey);
-  }
-  return url;
 }
 
 export default async function init(block) {
