@@ -3,6 +3,7 @@
   margin: 0 auto;
   position: relative;
   padding: var(--spacing-s) 0;
+  color:#888;
 }
 
 .dark .media,
