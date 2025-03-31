@@ -1,5 +1,5 @@
 import { html, css } from 'lit';
-import { VariantLayout } from './variant-layout';
+import { VariantLayout, BADGE_COLORS } from './variant-layout';
 import { CSS } from './special-offer.css.js';
 
 export const SPECIAL_OFFERS_AEM_FRAGMENT_MAPPING = {
@@ -9,6 +9,9 @@ export const SPECIAL_OFFERS_AEM_FRAGMENT_MAPPING = {
     prices: { tag: 'h3', slot: 'heading-xs' },
     description: { tag: 'div', slot: 'body-xs' },
     ctas: { slot: 'footer', size: 'l' },
+    badge: { tag: 'div', slot: 'badge' },
+    allowedBorderColors: BADGE_COLORS,
+    borderColor: { attribute: 'border-color' },
 };
 
 export class SpecialOffer extends VariantLayout {
@@ -54,6 +57,7 @@ export class SpecialOffer extends VariantLayout {
     static variantStyle = css`
         :host([variant='special-offers']) {
             min-height: 439px;
+            border: 1px solid var(--merch-card-custom-border-color, transparent);
         }
 
         :host([variant='special-offers']) {

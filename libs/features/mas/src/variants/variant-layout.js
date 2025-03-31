@@ -1,5 +1,7 @@
 import { html } from 'lit';
 
+export const BADGE_COLORS = ['spectrum-yellow-300', 'spectrum-gray-200', 'spectrum-green-800'];
+
 export class VariantLayout {
     static styleMap = {};
 
@@ -79,6 +81,7 @@ export class VariantLayout {
     get cardImage() {
         return html` <div class="image">
             <slot name="bg-image"></slot>
+            <slot name="badge"></slot>
             ${this.badge}
         </div>`;
     }

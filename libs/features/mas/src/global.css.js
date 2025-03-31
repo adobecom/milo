@@ -93,6 +93,10 @@ styles.innerHTML = `
     --consonant-merch-card-heading-xxxs-color: #131313;
     --consonant-merch-card-body-xxs-color: #292929;
 
+    --spectrum-yellow-300: #F8D904;
+    --spectrum-gray-200: #D1D1D1;
+    --spectrum-green-800: #2D9D78;
+
     /* ccd colors */
     --ccd-gray-200-light: #E6E6E6;
     --ccd-gray-800-dark: #222;
@@ -264,6 +268,19 @@ merch-card [slot='callout-content'] {
     flex-direction: column;
     margin: var(--consonant-merch-spacing-xxxs) 0px;
     gap: var(--consonant-merch-card-callout-spacing-xxs);
+}
+
+merch-card[variant='catalog'] [slot='badge'] {
+    margin-left: 8px;
+    line-height: 16px;
+}
+
+merch-card[variant='special-offers'] [slot='badge'],
+merch-card[variant='plans'] [slot='badge'] {
+    position: absolute;
+    top: 16px;
+    right: 0;
+    line-height: 16px;
 }
 
 merch-card [slot='callout-content'] > p {

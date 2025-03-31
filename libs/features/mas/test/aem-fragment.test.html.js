@@ -212,9 +212,7 @@ runTests(async () => {
                 : sliceCard.querySelector('slot[name="footer"]');
             expect(footerSlot).to.exist;
 
-            const badge = sliceCard.shadowRoot
-                ? sliceCard.shadowRoot.querySelector('div#badge')
-                : sliceCard.querySelector('div#badge');
+            const badge = sliceCard.querySelector('merch-badge');
             expect(badge).to.exist;
         });
     });

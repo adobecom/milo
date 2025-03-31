@@ -8,6 +8,7 @@ import {
 
 import './global.css.js';
 import './aem-fragment.js';
+import './merch-badge.js';
 import {
     EVENT_AEM_LOAD,
     EVENT_MERCH_CARD_READY,
@@ -24,7 +25,7 @@ import {
     MARK_START_SUFFIX,
 } from './constants.js';
 import { VariantLayout } from './variants/variant-layout.js';
-import { hydrate, ANALYTICS_SECTION_ATTR } from './hydrate.js';
+import { hydrate, ANALYTICS_SECTION_ATTR, DEFAULT_BORDER_COLOR } from './hydrate.js';
 import { Log } from './log.js';
 import { getMasCommerceServiceDurationLog } from './utils.js';
 
@@ -174,6 +175,14 @@ export class MerchCard extends LitElement {
                 '--consonant-merch-card-border',
                 this.computedBorderStyle,
             );
+            this.style.setProperty(
+                '--merch-card-custom-border-color',
+                this.computedBorderColor,
+            );
+        }
+
+        if (!this.style.getPropertyValue('--merch-card-custom-border-color')) {
+            this.style.setProperty('--merch-card-custom-border-color', DEFAULT_BORDER_COLOR);
         }
         this.variantLayout?.postCardUpdateHook(changedProperties);
     }
@@ -207,6 +216,13 @@ export class MerchCard extends LitElement {
             return `1px solid ${
                 this.borderColor ? this.borderColor : this.badgeBackgroundColor
             }`;
+        }
+        return '';
+    }
+
+    get computedBorderColor() {
+        if (!['twp', 'ccd-slice', 'ccd-suggested'].includes(this.variant)) {
+            return this.borderColor ? this.borderColor : this.badgeBackgroundColor;
         }
         return '';
     }

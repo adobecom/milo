@@ -1,10 +1,12 @@
 import { html, css } from 'lit';
-import { VariantLayout } from './variant-layout.js';
+import { VariantLayout, BADGE_COLORS } from './variant-layout.js';
 import { CSS } from './ccd-suggested.css.js';
 
 export const CCD_SUGGESTED_AEM_FRAGMENT_MAPPING = {
     backgroundImage: { attribute: 'background-image' },
-    badge: true,
+    badge: { tag: 'div', slot: 'badge' },
+    allowedBorderColors: BADGE_COLORS,
+    borderColor: { attribute: 'border-color' },
     ctas: { slot: 'cta', size: 'M' },
     description: { tag: 'div', slot: 'body-xs' },
     mnemonics: { size: 'l' },
@@ -40,6 +42,7 @@ export class CCDSuggested extends VariantLayout {
                     <div class="top-section">
                         <slot name="icons"></slot>
                         ${this.badge}
+                        <slot name="badge"></slot>
                     </div>
                     <div class="headings">
                         <slot name="detail-s"></slot>
@@ -98,6 +101,7 @@ export class CCDSuggested extends VariantLayout {
             display: flex;
             flex-flow: wrap;
             overflow: hidden;
+            border: 1px solid var(--merch-card-custom-border-color, transparent);
         }
 
         :host([variant='ccd-slice']) * {

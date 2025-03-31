@@ -1,11 +1,13 @@
-import { VariantLayout } from './variant-layout.js';
+import { VariantLayout, BADGE_COLORS } from './variant-layout.js';
 import { html, css } from 'lit';
 import { isMobileOrTablet } from '../utils.js';
 import { EVENT_MERCH_CARD_ACTION_MENU_TOGGLE } from '../constants.js';
 import { CSS } from './catalog.css.js';
 
 export const CATALOG_AEM_FRAGMENT_MAPPING = {
-    badge: true,
+    badge: { tag: 'div', slot: 'badge' },
+    allowedBorderColors: BADGE_COLORS,
+    borderColor: { attribute: 'border-color' },
     ctas: { slot: 'footer', size: 'm' },
     description: { tag: 'div', slot: 'body-xs' },
     mnemonics: { size: 'l' },
@@ -36,6 +38,7 @@ export class Catalog extends VariantLayout {
         return html` <div class="body">
                 <div class="top-section">
                     <slot name="icons"></slot> ${this.badge}
+                    <slot name="badge"></slot>
                     <div
                         class="action-menu
                 ${isMobileOrTablet() && this.card.actionMenu
@@ -133,6 +136,7 @@ export class Catalog extends VariantLayout {
         :host([variant='catalog']) {
             min-height: 330px;
             width: var(--consonant-merch-card-catalog-width);
+            border: 1px solid var(--merch-card-custom-border-color, transparent);
         }
 
         .body .catalog-badge {

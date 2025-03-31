@@ -32,9 +32,9 @@ runTests(async () => {
 
       it('should render badge', async () => {
         const card = document.querySelector('merch-card#withBadge');
-        const badge = card.shadowRoot?.querySelector('div#badge');
+        const badge = card.querySelector('merch-badge');
         expect(badge).to.exist;
-        expect(badge.innerText).to.equal('Huge Savings');
+        expect(badge.textContent).to.equal('Huge Savings');
         expect(badge.style?.backgroundColor).to.equal('rgb(248, 217, 4)');
 
         // should not change card border to badge colour

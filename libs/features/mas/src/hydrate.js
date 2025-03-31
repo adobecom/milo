@@ -1,9 +1,9 @@
 import { UptLink } from './upt-link.js';
 import { createTag } from './utils.js';
+import { BADGE_COLORS } from './variants/variant-layout.js'
 
-const DEFAULT_BADGE_COLOR = '#000000';
-const DEFAULT_BADGE_BACKGROUND_COLOR = '#F8D904';
-const DEFAULT_BORDER_COLOR = '#EAEAEA';
+const DEFAULT_BADGE_BACKGROUND_COLOR = BADGE_COLORS[0];
+export const DEFAULT_BORDER_COLOR = '#EAEAEA';
 const CHECKOUT_STYLE_PATTERN = /(accent|primary|secondary)(-(outline|link))?/;
 export const ANALYTICS_TAG = 'mas:product_code/';
 export const ANALYTICS_LINK_ATTR = 'daa-ll';
@@ -65,27 +65,13 @@ export function processMnemonics(fields, merchCard, mnemonicsConfig) {
     });
 }
 
-function processBadge(fields, merchCard) {
-    if (fields.badge) {
-        merchCard.setAttribute('badge-text', fields.badge);
-        merchCard.setAttribute(
-            'badge-color',
-            fields.badgeColor || DEFAULT_BADGE_COLOR,
-        );
-        merchCard.setAttribute(
-            'badge-background-color',
-            fields.badgeBackgroundColor || DEFAULT_BADGE_BACKGROUND_COLOR,
-        );
-        merchCard.setAttribute(
-            'border-color',
-            fields.badgeBackgroundColor || DEFAULT_BADGE_BACKGROUND_COLOR,
-        );
-    } else {
-        merchCard.setAttribute(
-            'border-color',
-            fields.borderColor || DEFAULT_BORDER_COLOR,
-        );
+function processBadge(fields, merchCard, mapping) {
+    // for back-compatibility
+    if (fields.badge?.length && !fields.badge?.startsWith('<merch-badge')) {
+        fields.badge = `<merch-badge variant="${fields.variant}" background-color="${DEFAULT_BADGE_BACKGROUND_COLOR}">${fields.badge}</merch-badge>`;
+        if (!fields.borderColor && (fields.variant === 'plans' || fields.variant === 'special-offers')) fields.borderColor = DEFAULT_BADGE_BACKGROUND_COLOR;
     }
+    appendSlot('badge', fields, merchCard, mapping);
 }
 
 export function processSize(fields, merchCard, sizeConfig) {
@@ -117,8 +103,14 @@ export function processBackgroundColor(fields, merchCard, allowedColors) {
 }
 
 export function processBorderColor(fields, merchCard, borderColorConfig) {
+    const customBorderColor = '--merch-card-custom-border-color';
+    merchCard.style.removeProperty(customBorderColor);
     if (fields.borderColor && borderColorConfig && fields.borderColor !== 'transparent') {
-        merchCard.style.setProperty('--merch-card-custom-border-color', `var(--${fields.borderColor})`);
+        merchCard.style.setProperty(customBorderColor, `var(--${fields.borderColor})`);
+    }
+
+    if (!merchCard.style.getPropertyValue(customBorderColor) && borderColorConfig && fields.borderColor !== 'transparent') {
+        merchCard.style.setProperty(customBorderColor, DEFAULT_BORDER_COLOR);
     }
 }
 
@@ -462,7 +454,7 @@ export async function hydrate(fragment, merchCard) {
       merchCard.setAttribute('consonant', true);
     }
     processMnemonics(fields, merchCard, aemFragmentMapping.mnemonics);
-    processBadge(fields, merchCard);
+    processBadge(fields, merchCard, aemFragmentMapping);
     processSize(fields, merchCard, aemFragmentMapping.size);
     processTitle(fields, merchCard, aemFragmentMapping.title);
     processSubtitle(fields, merchCard, aemFragmentMapping);

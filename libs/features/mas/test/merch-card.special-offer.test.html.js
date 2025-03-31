@@ -36,9 +36,7 @@ runTests(async () => {
         });
         it('should display a merch-badge', async () => {
             expect(
-                document
-                    .querySelector('merch-card[variant="special-offers"]')
-                    .shadowRoot.querySelector('.special-offers-badge'),
+                document.querySelector('merch-card[variant="special-offers"] merch-badge'),
             ).to.exist;
         });
     });
