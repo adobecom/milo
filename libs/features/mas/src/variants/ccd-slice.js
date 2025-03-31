@@ -54,7 +54,7 @@ export class CCDSlice extends VariantLayout {
             border-radius: 4px;
             display: flex;
             flex-flow: wrap;
-            border: 1px solid var(--merch-card-custom-border-color, transparent);
+            border: 1px solid var(--merch-card-custom-border-color, rgb(230, 230, 230));
         }
 
         :host([variant='ccd-slice']) * {

@@ -181,7 +181,7 @@ export class MerchCard extends LitElement {
             );
         }
 
-        if (!this.style.getPropertyValue('--merch-card-custom-border-color')) {
+        if (!this.style.getPropertyValue('--merch-card-custom-border-color') && !['ccd-slice', 'ccd-suggested'].includes(this.variant)) {
             this.style.setProperty('--merch-card-custom-border-color', DEFAULT_BORDER_COLOR);
         }
         this.variantLayout?.postCardUpdateHook(changedProperties);

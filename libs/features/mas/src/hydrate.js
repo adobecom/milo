@@ -109,7 +109,8 @@ export function processBorderColor(fields, merchCard, borderColorConfig) {
         merchCard.style.setProperty(customBorderColor, `var(--${fields.borderColor})`);
     }
 
-    if (!merchCard.style.getPropertyValue(customBorderColor) && borderColorConfig && fields.borderColor !== 'transparent') {
+    if (!merchCard.style.getPropertyValue(customBorderColor) && borderColorConfig && fields.borderColor !== 'transparent'
+      && !['ccd-slice', 'ccd-suggested'].includes(fields.variant)) {
         merchCard.style.setProperty(customBorderColor, DEFAULT_BORDER_COLOR);
     }
 }

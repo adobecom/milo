@@ -101,7 +101,7 @@ export class CCDSuggested extends VariantLayout {
             display: flex;
             flex-flow: wrap;
             overflow: hidden;
-            border: 1px solid var(--merch-card-custom-border-color, transparent);
+            border: 1px solid var(--merch-card-custom-border-color, rgb(225, 225, 225));
         }
 
         :host([variant='ccd-slice']) * {
