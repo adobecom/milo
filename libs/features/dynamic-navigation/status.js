@@ -130,28 +130,15 @@ const createStatusWidget = (dynamicNavKey) => {
   return statusWidget;
 };
 
-const loadWidget = (navKey) => {
-  const statusWidget = createStatusWidget(navKey);
-  const topNav = document.querySelector('.feds-topnav');
-  const fedsWrapper = document.querySelector('.feds-nav-wrapper');
+export default async function main() {
+  const { dynamicNavKey } = getConfig();
+  const statusWidget = createStatusWidget(dynamicNavKey);
+  const topNav = document.querySelector('.global-navigation');
   const dnsClose = statusWidget.querySelector('.dns-close');
 
   dnsClose.addEventListener('click', () => {
     topNav.removeChild(statusWidget);
   });
 
-  if (fedsWrapper) fedsWrapper.after(statusWidget);
-};
-
-export default async function main() {
-  const { dynamicNavKey } = getConfig();
-
-  if (document.querySelector('.feds-nav-wrapper')) {
-    loadWidget(dynamicNavKey);
-    return;
-  }
-
-  window.addEventListener('feds:navLoaded', () => {
-    loadWidget(dynamicNavKey);
-  });
+  if (topNav) topNav.appendChild(statusWidget);
 }
