@@ -684,6 +684,7 @@ export async function getPriceContext(el, params) {
   const displayRecurrence = params.get('term');
   const displayTax = params.get('tax');
   const forceTaxExclusive = params.get('exclusive');
+  const alternativePrice = params.get('alt');
   // The PRICE_TEMPLATE_MAPPING supports legacy OST links
   const template = PRICE_TEMPLATE_MAPPING.get(params.get('type')) ?? PRICE_TEMPLATE_REGULAR;
   return {
@@ -693,6 +694,7 @@ export async function getPriceContext(el, params) {
     displayRecurrence,
     displayTax,
     forceTaxExclusive,
+    alternativePrice,
     template,
   };
 }
