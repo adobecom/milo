@@ -178,7 +178,7 @@ describe('tabs', () => {
         expect(button.getAttribute('daa-state')).to.equal('true');
         expect(button.getAttribute('daa-ll')).to.exist;
       });
-      expect(document.querySelector('#tab-2-tab-b').getAttribute('daa-ll')).to.equal('tab-Tab B-2');
+      expect(document.querySelector('#tab-2-tab-b').getAttribute('daa-ll')).to.equal('tab-2-tab-b');
     });
   });
 });
