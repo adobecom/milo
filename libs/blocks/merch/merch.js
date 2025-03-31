@@ -690,6 +690,7 @@ export async function getPriceContext(el, params) {
   const displayRecurrence = params.get('term');
   const displayTax = params.get('tax');
   const forceTaxExclusive = params.get('exclusive');
+  const alternativePrice = params.get('alt');
   // The PRICE_TEMPLATE_MAPPING supports legacy OST links
   const template = PRICE_TEMPLATE_MAPPING.get(params.get('type')) ?? PRICE_TEMPLATE_REGULAR;
   return {
@@ -699,6 +700,7 @@ export async function getPriceContext(el, params) {
     displayRecurrence,
     displayTax,
     forceTaxExclusive,
+    alternativePrice,
     template,
   };
 }
@@ -737,7 +739,10 @@ export async function buildCta(el, params) {
   }
 
   // Adding aria-label for checkout-link using productFamily and customerSegment as placeholder key.
-  if (!cta.getAttribute('aria-label')) {
+  if (el.ariaLabel) {
+    // If Milo aria-label available from sharepoint doc, just use it.
+    cta.setAttribute('aria-label', el.ariaLabel);
+  } else if (!cta.ariaLabel) {
     cta.onceSettled().finally(async () => {
       const productFamily = cta.value[0]?.productArrangement?.productFamily;
       const marketSegment = cta.value[0]?.marketSegments[0];
