@@ -553,6 +553,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
           clone.setAttribute('data-cloned', 'true');
           clone.classList.remove('rounded-left', 'rounded-right');
           row.appendChild(clone);
+          setTooltipListeners(clone);
         });
       }
 
