@@ -92,7 +92,7 @@ export function getCollectionSidenav(collection) {
   if (!hierarchy) return null;
 
   const titleKey = `${collection.variant}SidenavTitle`;
-  const sidenav = createTag('merch-sidenav', { sidenavTitle: placeholders?.[titleKey] });
+  const sidenav = createTag('merch-sidenav', { sidenavTitle: placeholders?.[titleKey] || '' });
 
   /* Search */
   const searchText = placeholders?.searchText;

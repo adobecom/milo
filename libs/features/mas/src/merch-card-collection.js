@@ -13,7 +13,6 @@ import { TABLET_DOWN } from './media.js';
 import { styles } from './merch-card-collection.css.js';
 import { getSlotText } from './utils.js';
 import './mas-commerce-service';
-import { testCollectionPayload } from './merch-card-collection-test.js';
 
 const MERCH_CARD_COLLECTION = 'merch-card-collection';
 const MERCH_CARD_COLLECTION_LOAD_TIMEOUT = 10000;
@@ -285,7 +284,7 @@ export class MerchCardCollection extends LitElement {
             aemFragment.remove();
         });
         aemFragment.addEventListener(EVENT_AEM_LOAD, async (event) => {
-            this.data = normalizePayload(testCollectionPayload); //(event.detail);
+            this.data = normalizePayload(event.detail);
             const { cards, hierarchy } = this.data;
             aemFragment.cache.add(...cards);
             for (const fragment of cards) {
@@ -385,8 +384,7 @@ export class MerchCardCollection extends LitElement {
 
     get searchBar() {
         const searchPlaceholder = getSlotText(this, 'searchText');
-
-        return this.mobileAndTablet.matches
+        return searchPlaceholder && this.mobileAndTablet.matches
             ? html`<merch-search deeplink="search">
                   <sp-search
                       id="searchBar"
