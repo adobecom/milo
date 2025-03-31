@@ -20,6 +20,8 @@ class LiteYTEmbed extends HTMLElement {
   }
 
   async fetchVideoTitle() {
+    if (this.getAttribute('isTextLink') === 'true') return null;
+
     try {
       const response = await fetch(`https://www.youtube.com/oembed?url=http://www.youtube.com/watch?v=${this.videoId}&format=json`);
       const data = await response.json();
@@ -91,11 +93,12 @@ export default async function init(a) {
 
   const embedVideo = () => {
     if (isInTextNode(a) || !a.origin?.includes('youtu')) return;
-    const title = !a.textContent.includes('http') ? a.textContent : 'Youtube Video';
+    const isTextLink = !a.textContent.includes('http');
+    const title = isTextLink ? a.textContent : 'Youtube Video';
     const searchParams = new URLSearchParams(a.search);
     const id = searchParams.get('v') || a.pathname.split('/').pop();
     searchParams.delete('v');
-    const liteYTElement = createTag('lite-youtube', { videoid: id, playlabel: title });
+    const liteYTElement = createTag('lite-youtube', { videoid: id, playlabel: title, isTextLink });
 
     if (searchParams.toString()) liteYTElement.setAttribute('params', searchParams.toString());
 
