@@ -16,6 +16,19 @@ dd.content .sort-options > .field {
   margin-bottom: -5px;
 }
 
+.panel-section-title {
+  font-weight: 800;
+  color: #fff;
+  font-size: 18px;
+  margin: 0;
+}
+
+.panel-section-title:not(:first-of-type) {
+  border-top: solid 1px #999;
+  padding-top: 10px;
+  margin-top: 20px;
+}
+
 .cardid {
   display: none;
 }

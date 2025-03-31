@@ -346,7 +346,7 @@ const BasicsPanel = ({ tagsData }) => {
   }
 
   const countryLangOptions = html`
-    <${Select} options=${countryTags} prop="country" label="Country" sort />
+    <${DropdownSelect} options=${countryTags} prop="country" label="Country" sort />
     <${Select} options=${languageTags} prop="language" label="Language" sort />`;
 
   const partialLoadOptions = html`
@@ -359,51 +359,61 @@ const BasicsPanel = ({ tagsData }) => {
     <${DropdownSelect} options=${defaultOptions.source} prop="source" label="Source" />
     <${Input} label="Results Per Page" prop="resultsPerPage" type="number" />
     <${Input} label="Total Cards to Show" prop="totalCardsToShow" type="number" />
+    <${Input} label="Partial Load Enabled" prop="partialLoadEnabled" options="${defaultOptions.partialLoadEnabled}" type="checkbox"  />
+    ${state.partialLoadEnabled && partialLoadOptions}
     <${Input} label="Auto detect country & lang" prop="autoCountryLang" type="checkbox" />
     ${!state.autoCountryLang && countryLangOptions}
-  <${Input} label="Partial Load Enabled" prop="partialLoadEnabled" options="${defaultOptions.partialLoadEnabled}" type="checkbox"  />
-    ${state.partialLoadEnabled && partialLoadOptions}
+
   `;
 };
 
 const UiPanel = () => html`
-  <${Input} label="Show Card Borders" prop="setCardBorders" type="checkbox" />
-  <${Input} label="Show Footer Dividers" prop="showFooterDivider" type="checkbox" />
-  <${Input} label="Disable Card Banners" prop="disableBanners" type="checkbox" />
+  <p class="panel-section-title">Collection Settings</p>
   <${Input} label="Use Light Text" prop="useLightText" type="checkbox" />
   <${Input} label="Use Overlay Links" prop="useOverlayLinks" type="checkbox" />
   <${Input} label="Show total card count at top" prop="showTotalResults" type="checkbox" />
   <${Input} label="Hide date for on-demand content" prop="hideDateInterval" type="checkbox" />
-  <${Input} label="Enable showing card badges (by default hidden)" prop="showCardBadges" type="checkbox" />
   <${Input} label="Show a different CTA for live events" prop="dynamicCTAForLiveEvents" type="checkbox" />
-  <${Select} label="Card Style" prop="cardStyle" options=${defaultOptions.cardStyle} />
-  <${Select} options=${defaultOptions.cardTitleAccessibilityLevel} prop="cardTitleAccessibilityLevel" label="Card Accessibility Title Level" />
   <${Select} label="Layout" prop="container" options=${defaultOptions.container} />
+
   <${Select} label="Layout Type" prop="layoutType" options=${defaultOptions.layoutType} />
   <${Select} label="Grid Gap (Gutter)" prop="gutter" options=${defaultOptions.gutter} />
   <${Select} label="Theme" prop="theme" options=${defaultOptions.theme} />
-  <${Select} label="Details Text" prop="detailsTextOption" options=${defaultOptions.detailsTextOption} />
+
+  <${Select}
+    label="Load More Button Style"
+    prop="loadMoreBtnStyle"
+    options=${defaultOptions.loadMoreBtnStyle}
+  />
+
+  <p class="panel-section-title">Card Settings</p>
+  <${Input} label="Show Card Borders" prop="setCardBorders" type="checkbox" />
+  <${Input} label="Hide Card Banners (Top-right)" prop="disableBanners" type="checkbox" />
+  <${Input} label="Show Card badges (Top-left)" prop="showCardBadges" type="checkbox" />
+  <${Input} label="Show Footer Dividers" prop="showFooterDivider" type="checkbox" />
+
+  <${Select} label="Card Style" prop="cardStyle" options=${defaultOptions.cardStyle} />
   <${Select}
     label="Card Hover Effect"
     prop="cardHoverEffect"
     options=${defaultOptions.cardHoverEffect}
   />
+  <${Select} options=${defaultOptions.cardTitleAccessibilityLevel} prop="cardTitleAccessibilityLevel" label="Card Accessibility Title Level" />
+  <${Select} label="Details Text" prop="detailsTextOption" options=${defaultOptions.detailsTextOption} />
   <${Select}
     label="Collection Button Style"
     prop="collectionBtnStyle"
     options=${defaultOptions.collectionBtnStyle}
   />
   <${Select}
-    label="Load More Button Style"
-    prop="loadMoreBtnStyle"
-    options=${defaultOptions.loadMoreBtnStyle}
-  />
-  <${Input} label="Custom Card HTML" prop="customCard" type="text" />
-  <${Select}
     label="CTA Link Behavior"
     prop="ctaAction"
     options=${defaultOptions.ctaActions}
   />
+
+  <p class="panel-section-title">Custom Card Markup</p>
+  <${Input} label="Custom HTML" prop="customCard" type="text" />
+
 `;
 
 const TagsPanel = ({ tagsData }) => {
