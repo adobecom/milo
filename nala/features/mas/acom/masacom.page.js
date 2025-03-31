@@ -79,7 +79,7 @@ export default class MasAcom {
         'line-height': '21px',
       },
       stockCheckbox: {
-        text: { 
+        text: {
           color: 'rgb(34, 34, 34)',
           'font-size': '12px',
           'font-weight': '400',

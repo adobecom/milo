@@ -27,9 +27,7 @@ module.exports = {
       tcid: '1',
       name: '@MAS-Plans-CSS',
       path: '/libs/features/mas/docs/plans.html',
-      data: {
-        id: '8373b5c2-69e6-4e9c-befc-b424dd33469b',
-      },
+      data: { id: '8373b5c2-69e6-4e9c-befc-b424dd33469b' },
       browserParams: '?theme=darkest',
       tags: '@mas-acom @mas-plans-card @commerce @smoke @regression @milo',
     },
