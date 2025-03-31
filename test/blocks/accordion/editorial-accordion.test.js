@@ -1,4 +1,4 @@
-import { readFile } from '@web/test-runner-commands';
+import { readFile, setViewport } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
@@ -65,8 +65,9 @@ describe('Accordion', () => {
     expect(firstAccordionButton.getAttribute('aria-expanded')).to.equal('true');
   });
 
-  describe('with Expand All Button', () => {
+  describe('with Expand All Button', async () => {
     const el = document.querySelector('#accordion-expand-all');
+    await setViewport({ width: 1200 });
 
     it('shows first image when rich media is all expanded', () => {
       const btn = el.querySelector('.expand-btn');
