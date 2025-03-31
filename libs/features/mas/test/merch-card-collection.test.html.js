@@ -18,6 +18,7 @@ import '../src/merch-card-collection.js';
 
 import { withWcs } from './mocks/wcs.js';
 import mas from './mas.js';
+import { EVENT_AEM_LOAD } from '../src/constants.js';
 
 const searchParams = new URLSearchParams(document.location.search);
 
@@ -214,6 +215,44 @@ runTests(async () => {
             );
         });
     });
+
+    describe('merch-card-collection autoblock features', () => {
+        let individualPlansFragment, collectionElement;
+
+        before(async () => {
+            individualPlansFragment = await fetch('mocks/sites/fragments/fragment-test-collection.json')
+                .then(
+                    (res) => res.json(),
+                );
+        });
+
+        beforeEach(async () => {
+            document.location.hash = '';
+            [collectionElement, render] = prepareTemplate('collectionAutoblock', false);
+        });
+
+        it('should hydrate from child aem-fragment', async () => {
+            render();
+            const aemFragment = collectionElement.querySelector('aem-fragment');
+            aemFragment.dispatchEvent(new CustomEvent(EVENT_AEM_LOAD, { 
+                detail: individualPlansFragment
+             }))
+            await delay(100);
+            const merchCard = collectionElement.querySelector('merch-card');
+            expect(merchCard).to.exist;
+        });
+
+        it('should populate filters in hydration', async () => {
+            render();
+            const aemFragment = collectionElement.querySelector('aem-fragment');
+            aemFragment.dispatchEvent(new CustomEvent(EVENT_AEM_LOAD, { 
+                detail: individualPlansFragment
+             }))
+            await delay(100);
+            const merchCard = collectionElement.querySelector('merch-card[id="ca835d11-fe6b-40f8-96d1-50ac800c9f70"]');
+            expect(merchCard.getAttribute('filters')).to.equal('all:1:wide');
+        });
+    })
 });
 
 document.getElementById('showMore').addEventListener('click', () => {
