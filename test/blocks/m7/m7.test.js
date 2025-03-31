@@ -1,7 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import init, { generateM7Link } from '../../../libs/blocks/m7/m7.js';
-import { setConfig } from '../../../libs/utils/utils';
+import { setConfig } from '../../../libs/utils/utils.js';
 
 describe('m7business autoblock', () => {
   before(async () => {

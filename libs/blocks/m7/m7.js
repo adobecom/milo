@@ -18,7 +18,7 @@ export async function generateM7Link(href) {
   const { locale } = getConfig();
   const localeSettings = getMiloLocaleSettings(locale);
   const country = imsCountry || localeSettings.country || 'US';
-  const language = localeSettings.language;
+  const { language } = localeSettings;
 
   const m7link = new URL('https://commerce.adobe.com/store/segmentation?cli=creative&cs=t');
   m7link.searchParams.append('co', country);
