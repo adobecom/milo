@@ -1,6 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import init, { generateM7Link } from '../../../libs/blocks/m7/m7.js';
+import { setConfig } from '../../../libs/utils/utils';
 
 describe('m7business autoblock', () => {
   before(async () => {
@@ -56,16 +57,6 @@ describe('m7business autoblock', () => {
     window.adobeIMS = buIms;
   });
 
-  it('Converts business plans link to M7 link for signed in user', async () => {
-    document.head.innerHTML = '<meta name="m7-pa-code" content="ccsn_direct_individual">';
-    const buIms = window.adobeIMS;
-    const profile = { countryCode: 'CH' };
-    window.adobeIMS = { initialized: true, getProfile: () => profile, isSignedInUser: () => true };
-    const m7Link = await generateM7Link('/creativecloud/business-plans');
-    expect(m7Link).to.equal('https://commerce.adobe.com/store/segmentation?cli=creative&cs=t&co=CH&pa=ccsn_direct_individual');
-    window.adobeIMS = buIms;
-  });
-
   it('Converts business plans link to M7 link for signed in user - IMS not ready', async () => {
     document.head.innerHTML = '<meta name="m7-pa-code" content="ccsn_direct_individual">';
     const buIms = window.adobeIMS;
@@ -79,5 +70,23 @@ describe('m7business autoblock', () => {
       window.adobeIMS = buIms;
     }, 100);
     await init(a);
+  });
+
+  it('Converts business plans link to M7 link for signed in user', async () => {
+    const cfg = {
+      pathname: '/ch_fr/blah.html',
+      locales: {
+        '': { ietf: 'en-US' },
+        ch_fr: { ietf: 'fr-CH' },
+      },
+    };
+    setConfig(cfg);
+    document.head.innerHTML = '<meta name="m7-pa-code" content="ccsn_direct_individual">';
+    const buIms = window.adobeIMS;
+    const profile = { countryCode: 'CH' };
+    window.adobeIMS = { initialized: true, getProfile: () => profile, isSignedInUser: () => true };
+    const m7Link = await generateM7Link('/creativecloud/business-plans');
+    expect(m7Link).to.equal('https://commerce.adobe.com/store/segmentation?cli=creative&cs=t&co=CH&pa=ccsn_direct_individual&lang=fr');
+    window.adobeIMS = buIms;
   });
 });
