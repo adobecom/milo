@@ -1,5 +1,7 @@
 :root {
   --modal-focus-color: #109cde;
+  --modal-max-height: calc((100vh - 6px) - 2em);
+  --modal-max-width-tablet: 80vw;
 }
 
 .dialog-modal {
@@ -12,7 +14,7 @@
   right: 0;
   bottom: 0;
   max-width: calc((100% - 6px) - 2em);
-  max-height: calc((100% - 6px) - 2em);
+  max-height: var(--modal-max-height);
   height: fit-content;
   width: 100%;
   user-select: text;
@@ -245,7 +247,7 @@
 
 @media (min-width: 600px) {
   .dialog-modal {
-    max-width: 80vw;
+    max-width: var(--modal-max-width-tablet);
     width: fit-content;
   }
 
