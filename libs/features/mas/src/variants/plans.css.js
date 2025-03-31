@@ -15,7 +15,7 @@ merch-card[variant="plans"] [slot="icons"] {
   --img-width: 41.5px;
 }
 
-merch-card[variant="plans"] [slot="heading-m"] span.price.price-strikethrough {
+merch-card[variant="plans"] span.price.price-strikethrough {
   line-height: var(--consonant-merch-card-body-xs-line-height);
   font-weight: 700;
 }
