@@ -464,9 +464,8 @@ export function getCountryAndLang({ autoCountryLang, country, language }) {
     };
   }
   return {
-    // country = ['ccas:country/us', 'ccas:country/ca']'
-    country: country ? country.map((c) => c.split('/').pop()) : ['US'],
     // country: country ? country.split('/').pop() : 'US',
+    country: country ? country.map((c) => c.split('/').pop()) : ['US'],
     language: language ? language.split('/').pop() : 'en',
     locales,
   };
