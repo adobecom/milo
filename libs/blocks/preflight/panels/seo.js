@@ -371,9 +371,9 @@ export default function Panel() {
         ${badLinks.value.map((link, idx) => html`
           <tr>
             <td>${idx + 1}.</td>
-            <td><a href='${link.liveHref}' target='_blank'>${link.liveHref}</a></td>
-            <td><span>${link.parent}</span></td>
-            <td><span>${link.status}</span></td>
+            <td><a href='${link?.liveHref}' target='_blank'>${link?.liveHref}</a></td>
+            <td><span>${link?.parent}</span></td>
+            <td><span>${link?.status}</span></td>
           </tr>`)}
       </table>`}
     </div>`;
