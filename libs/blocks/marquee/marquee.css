@@ -1,3 +1,6 @@
+.marquee .text .body-m {
+  font-weight: 800;
+}
 .marquee {
   position: relative;
   color: var(--color-white);
