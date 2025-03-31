@@ -12,9 +12,7 @@ export default function init(a) {
       anchorTag: a,
     });
   } else {
-    const textContent = a?.textContent?.trim();
-    const titleFromText = textContent?.includes('|') ? textContent.split('|')[1].trim() : null;
-    const title = titleFromText || 'Adobe Video Publishing Cloud Player';
+    const title = a?.textContent.split('|')?.[1]?.trim() || 'Adobe Video Publishing Cloud Player';
 
     const iframe = createTag('iframe', {
       src: a.href,
