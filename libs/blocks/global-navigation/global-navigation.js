@@ -1435,6 +1435,5 @@ export default async function init(block) {
   block.setAttribute('daa-lh', `gnav|${getExperienceName()}${mepMartech}`);
   if (isDarkMode()) block.classList.add('feds--dark');
   block.classList.add('ready');
-  window.dispatchEvent(new CustomEvent('feds:navLoaded'));
   return gnav;
 }
