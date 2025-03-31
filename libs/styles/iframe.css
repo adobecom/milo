@@ -26,6 +26,18 @@
   padding-bottom: 0;
 }
 
+@media (min-width: 600px) {
+  .dialog-modal:has(.milo-video) {
+    width: 100%;
+  }
+
+  .dialog-modal .milo-video {
+    padding-bottom: 0;
+    min-width: unset;
+    height: min(calc(80vw * 0.5625), calc((100vh - 6px) - 2em));
+  }
+}
+
 @media (max-width: 1199px) {
   .dialog-modal.commerce-frame .milo-iframe {
     /* fallback to vh if dvh is not supported */
