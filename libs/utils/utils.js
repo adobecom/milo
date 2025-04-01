@@ -1280,7 +1280,7 @@ async function loadPostLCP(config) {
     import('../features/personalization/personalization.js')
       .then(({ addMepAnalytics }) => addMepAnalytics(config, header));
   }
-  // privacy here - test 2
+  // load privacy if quick-link is present
   if (document.querySelector('.quick-link')) {
     const { loadPrivacy } = await import('../scripts/delayed.js');
     loadPrivacy(getConfig, loadScript);
@@ -1490,7 +1490,7 @@ export async function loadArea(area = document) {
     decorateDocumentExtras();
   }
 
-  // privacy here - test 1
+  // privacy - test 1
   // const { loadPrivacy } = await import('../scripts/delayed.js');
   // loadPrivacy(getConfig, loadScript);
 
