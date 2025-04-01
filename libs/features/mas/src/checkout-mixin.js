@@ -156,6 +156,7 @@ export function CheckoutMixin(Base) {
           try {
             const newUrl = new URL(url);
             newUrl.searchParams.set('ctx', 'if');
+            newUrl.searchParams.set('rtc', 't');
             if (modalType === MODAL_TYPE_3_IN_1.CRM) {
               newUrl.searchParams.set('af', 'uc_segmentation_hide_tabs,uc_new_user_iframe,uc_new_system_close');
               newUrl.searchParams.set('cli', 'creative');
