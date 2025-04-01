@@ -90,16 +90,17 @@
   margin: 0;
   inline-size: 100%;
 }
-.notification.pill.split .foreground {
-  padding-inline: var(--spacing-xs);
-  padding-block: var(--spacing-xs);
-}
 
 .notification.ribbon.xxs-padding .foreground {
   padding-block: var(--spacing-xxs);
 }
 
 .notification.ribbon.xs-padding .foreground {
+  padding-block: var(--spacing-xs);
+}
+
+.notification.split .foreground {
+  padding-inline: var(--spacing-xs);
   padding-block: var(--spacing-xs);
 }
 
@@ -349,8 +350,13 @@
 .notification.pill.max-width-12 { max-width: 1200px; }
 .notification.pill.max-width-auto { max-width: unset; }
 
-.notification.pill.split .text .copy-wrap,
-.notification.pill.split .split-list-area {
+
+.notification.split .copy-wrap > [class^="heading-"] {
+  max-width: 274px;
+}
+
+.notification.split .foreground .text .copy-wrap,
+.notification.split .foreground .text .split-list-area {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xs);
@@ -358,28 +364,28 @@
   inline-size: 100%;
 }
 
-.notification.pill.split .split-list-area .split-list-item
+.notification.split .split-list-area .split-list-item
  {
   display: flex;
   justify-content: space-between;
   width: 100%;
 }
 
-.notification.pill.split .split-list-area .split-list-item .text-content {
+.notification.split .split-list-area .split-list-item .text-content {
   display: flex;
   gap: var(--spacing-xxs);
   align-items: center;
   font-weight: 700;
 }
 
-.notification.pill.split .split-list-area .split-list-item .con-button {
+.notification.split .split-list-area .split-list-item .con-button {
   white-space: normal;
   text-align: center;
   min-width: 89px;
   max-width: 89px;
 }
 
-.notification.pill.split .split-list-area .split-list-item img {
+.notification.split .split-list-area .split-list-item img {
   width: var(--icon-size-xs);
   height: auto;
 }
@@ -531,7 +537,7 @@
   .notification.pill.max-width-12-tablet { max-width: 1200px; }
   .notification.pill.max-width-auto-tablet { max-width: unset; }
 
-  .notification.pill.split {
+  .notification.split {
     display: none;
   }
 }
