@@ -139,8 +139,8 @@ function decorateSplitList(listContent) {
     const pic = item.querySelector('picture');
     if (!pic) return;
     const textli = ['STRONG', 'EM', 'A'].includes(item.lastElementChild.nodeName)
-                    ? item
-                    : item.nextElementSibling;
+      ? item
+      : item.nextElementSibling;
     const btn = createTag('div', {}, textli.lastElementChild);
     const textContent = createTag('div', { class: 'text-content' });
     const text = createTag('div', {}, textli.innerText.trim());
