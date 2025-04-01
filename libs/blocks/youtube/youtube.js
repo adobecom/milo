@@ -2,6 +2,8 @@
 import { createIntersectionObserver, createTag, isInTextNode, loadLink } from '../../utils/utils.js';
 
 class LiteYTEmbed extends HTMLElement {
+  static defaultTitle = 'Youtube Video';
+
   connectedCallback() {
     this.isMobile = navigator.userAgent.includes('Mobi');
     this.videoId = this.getAttribute('videoid');
@@ -20,7 +22,7 @@ class LiteYTEmbed extends HTMLElement {
   }
 
   async fetchVideoTitle() {
-    if (this.getAttribute('isTextLink') === 'true') return null;
+    if (this.playLabel !== LiteYTEmbed.defaultTitle) return null;
 
     try {
       const response = await fetch(`https://www.youtube.com/oembed?url=http://www.youtube.com/watch?v=${this.videoId}&format=json`);
@@ -93,12 +95,12 @@ export default async function init(a) {
 
   const embedVideo = () => {
     if (isInTextNode(a) || !a.origin?.includes('youtu')) return;
-    const isTextLink = !a.textContent.includes('http');
-    const title = isTextLink ? a.textContent : 'Youtube Video';
+    const ariaLabel = a.getAttribute('aria-label');
+    const title = ariaLabel || LiteYTEmbed.defaultTitle;
     const searchParams = new URLSearchParams(a.search);
     const id = searchParams.get('v') || a.pathname.split('/').pop();
     searchParams.delete('v');
-    const liteYTElement = createTag('lite-youtube', { videoid: id, playlabel: title, isTextLink });
+    const liteYTElement = createTag('lite-youtube', { videoid: id, playlabel: title });
 
     if (searchParams.toString()) liteYTElement.setAttribute('params', searchParams.toString());
 
