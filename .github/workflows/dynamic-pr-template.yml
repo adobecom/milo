@@ -1,0 +1,115 @@
+name: Dynamic PR Template
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  update-template:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v39
+        with:
+          files: |
+            libs/blocks/global-navigation/**
+            libs/blocks/global-footer/**
+
+      - name: Generate test URLs
+        id: test-urls
+        run: |
+          # Initialize test URLs array
+          TEST_URLS=()
+          
+          # Check if changes are in either global navigation or footer
+          if [[ "${{ steps.changed-files.outputs.all_changed_files }}" == *"libs/blocks/global-navigation/"* ]] || [[ "${{ steps.changed-files.outputs.all_changed_files }}" == *"libs/blocks/global-footer/"* ]]; then
+            TEST_URLS=(
+              "<!-- Before submitting, please review all open PRs. -->"
+              ""
+              "* Add your"
+              "* Specific"
+              "* Features or fixes"
+              ""
+              "Resolves: [MWPW-NUMBER](https://jira.corp.adobe.com/browse/MWPW-NUMBER)"
+              ""
+              "**Test URLs:**"
+              "**Acrobat:**"
+              "- Before: https://www.stage.adobe.com/acrobat/online/sign-pdf.html?martech=off"
+              "- After: https://www.stage.adobe.com/acrobat/online/sign-pdf.html?martech=off&milolibs=<branch>--milo--<owner>"
+              ""
+              "**BACOM:**"
+              "- Before: https://business.stage.adobe.com/fr/customer-success-stories.html?martech=off"
+              "- After: https://business.stage.adobe.com/fr/customer-success-stories.html?martech=off&milolibs=<branch>--milo--<owner>"
+              ""
+              "**CC:**"
+              "- Before: https://main--cc--adobecom.hlx.live/?martech=off"
+              "- After: https://main--cc--adobecom.hlx.live/?martech=off&milolibs=<branch>--milo--<owner>"
+              ""
+              "**Homepage:**"
+              "- Before: https://main--homepage--adobecom.hlx.page/homepage/index-loggedout?martech=off"
+              "- After: https://main--homepage--adobecom.hlx.page/homepage/index-loggedout?martech=off&milolibs=<branch>--milo--<owner>"
+              ""
+              "**Blog:**"
+              "- Before: https://main--blog--adobecom.hlx.page/"
+              "- After: https://main--blog--adobecom.hlx.page/?milolibs=<branch>--milo--<owner>"
+              ""
+              "**Milo:**"
+              "- Before: https://main--milo--adobecom.aem.page/ch_de/drafts/ramuntea/gnav-refactor?martech=off"
+              "- After: https://<branch>--milo--<owner>.aem.page/ch_de/drafts/ramuntea/gnav-refactor?martech=off"
+            )
+          fi
+          
+          # If no specific changes detected, add default test URLs
+          if [ ${#TEST_URLS[@]} -eq 0 ]; then
+            TEST_URLS=(
+              "<!-- Before submitting, please review all open PRs. -->"
+              ""
+              "* Add your"
+              "* Specific"
+              "* Features or fixes"
+              ""
+              "Resolves: [MWPW-NUMBER](https://jira.corp.adobe.com/browse/MWPW-NUMBER)"
+              ""
+              "**Test URLs:**"
+              "- Before: https://main--milo--adobecom.aem.page/?martech=off"
+              "- After: https://<branch>--milo--adobecom.aem.page/?martech=off"
+            )
+          fi
+          
+          # Convert array to JSON
+          JSON_ARRAY=$(printf '%s\n' "${TEST_URLS[@]}" | jq -R . | jq -s .)
+          echo "test_urls=$JSON_ARRAY" >> $GITHUB_OUTPUT
+
+      - name: Update PR description
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
+        with:
+          script: |
+            const testUrls = JSON.parse(process.env.TEST_URLS);
+            const prNumber = context.issue.number;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            
+            // Get current PR description
+            const { data: pullRequest } = await github.rest.pulls.get({
+              owner,
+              repo,
+              pull_number: prNumber,
+            });
+            
+            // Create new description with test URLs
+            const testUrlsSection = testUrls.join('\n');
+            const newDescription = pullRequest.body.replace(/## Test URLs[\s\S]*?(?=\n\n|$)/, `## Test URLs\n${testUrlsSection}`);
+            
+            // Update PR description
+            await github.rest.pulls.update({
+              owner,
+              repo,
+              pull_number: prNumber,
+              body: newDescription,
+            });
+        env:
+          TEST_URLS: ${{ steps.test-urls.outputs.test_urls }} 
