@@ -1282,8 +1282,9 @@ async function loadPostLCP(config) {
   }
   // load privacy if quick-link is present
   if (document.querySelector('.quick-link')) {
-    const { loadPrivacy } = await import('../scripts/delayed.js');
-    loadPrivacy(getConfig, loadScript);
+    import('../scripts/delayed.js').then(({ loadPrivacy }) => {
+      loadPrivacy(getConfig, loadScript);
+    });
   }
 }
 
