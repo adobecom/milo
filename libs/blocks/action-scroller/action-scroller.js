@@ -23,11 +23,7 @@ const getBlockProps = (el) => [...el.childNodes].reduce((attr, row) => {
   return attr;
 }, {});
 
-function parsePxToInt(pxString, defaultValue) {
-  if (!pxString) return defaultValue;
-  const parsedValue = parseInt(pxString.replace('px', ''), 10);
-  return Number.isNaN(parsedValue) ? defaultValue : parsedValue;
-}
+const parsePxToInt = (pxString, defaultValue) => return isNaN(parseInt(pxString, 10)) ? defaultValue : parseInt(pxString, 10);
 
 export function getScrollerPropertyValues(el) {
   const itemWidthStyle = el.parentElement?.style?.getPropertyValue('--action-scroller-item-width');
