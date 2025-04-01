@@ -95,8 +95,7 @@ export default async function init(a) {
 
   const embedVideo = () => {
     if (isInTextNode(a) || !a.origin?.includes('youtu')) return;
-    const ariaLabel = a.getAttribute('aria-label');
-    const title = ariaLabel || LiteYTEmbed.defaultTitle;
+    const title = !a.textContent.includes('http') ? a.textContent : LiteYTEmbed.defaultTitle;
     const searchParams = new URLSearchParams(a.search);
     const id = searchParams.get('v') || a.pathname.split('/').pop();
     searchParams.delete('v');
