@@ -103,6 +103,7 @@
 
 .hero-marquee h1 {
   font-weight: 800;
+  font-synthesis: none;
 }
 
 .hero-marquee .main-copy p,
