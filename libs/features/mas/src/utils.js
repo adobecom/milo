@@ -1,4 +1,6 @@
-import { MAS_COMMERCE_SERVICE_INIT_TIME_MEASURE_NAME } from './constants.js';
+import { EVENT_TYPE_READY, MAS_COMMERCE_SERVICE_INIT_TIME_MEASURE_NAME } from './constants.js';
+
+const MAS_COMMERCE_SERVICE = 'mas-commerce-service';
 
 export function debounce(func, delay) {
     let debounceTimer;
@@ -69,4 +71,30 @@ export function getMasCommerceServiceDurationLog() {
         [MAS_COMMERCE_SERVICE_INIT_TIME_MEASURE_NAME]:
             masCommerceService.initDuration,
     };
+}
+
+/**
+ * Calls given `getConfig` every time new instance of the commerce service is activated,
+ * passing new instance as the only argument.
+ * @param {(commerce: Commerce.Instance) => void} getConfig
+ * @param {{ once?: boolean; }} options
+ * @returns {() => void}
+ * A function, stopping notifications when called.
+ */
+export function discoverService(getConfig, { once = false } = {}) {
+    let latest = null;
+    function discover() {
+        /** @type { Commerce.Instance } */
+        const current = document.querySelector(MAS_COMMERCE_SERVICE);
+        if (current === latest) return;
+        latest = current;
+        if (current) getConfig(current);
+    }
+    document.addEventListener(EVENT_TYPE_READY, discover, { once });
+    setTimeout(discover, 0);
+    return () => document.removeEventListener(EVENT_TYPE_READY, discover);
+}
+
+export function getService() {
+  return document.getElementsByTagName(MAS_COMMERCE_SERVICE)?.[0];
 }

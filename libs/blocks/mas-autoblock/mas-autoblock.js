@@ -1,6 +1,6 @@
 import { createTag, getConfig } from '../../utils/utils.js';
-import '../../deps/mas/merch-card.js';
 import { initService } from '../merch/merch.js';
+import '../../deps/mas/merch-card.js';
 
 const MAS_AUTOBLOCK_TIMEOUT = 5000;
 const DEFAULT_OPTIONS = { sidenav: true };
@@ -172,6 +172,7 @@ export async function createMasElement(el, options, tagName) {
 
 export default async function init(el) {
   const options = getOptions(el);
+  options.fragment ??= options.query;
   if (!options.fragment) return;
   const tagName = getTagName(el);
   await loadDependencies(tagName);

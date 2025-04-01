@@ -1,7 +1,12 @@
 import { LOG_NAMESPACE } from './constants.js';
-import { getParameter, isFunction, toBoolean } from './external.js';
+import { getParameter, isFunction, toBoolean } from '@dexter/tacocat-core';
 import { lanaAppender, updateConfig } from './lana.js';
-import { HostEnv } from './settings.js';
+
+const HostEnv = Object.freeze({
+    LOCAL: 'local',
+    PROD: 'prod',
+    STAGE: 'stage',
+});
 
 const LogLevels = {
     DEBUG: 'debug',

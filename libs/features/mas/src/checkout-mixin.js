@@ -4,7 +4,7 @@ import {
     updateMasElement,
     MasElement,
 } from './mas-element.js';
-import { selectOffers, useService } from './utilities.js';
+import { selectOffers, getService } from './utilities.js';
 import { MODAL_TYPE_3_IN_1 } from '../src/constants.js';
 
 export const CLASS_NAME_DOWNLOAD = 'download';
@@ -12,7 +12,7 @@ export const CLASS_NAME_UPGRADE = 'upgrade';
 
 export function createCheckoutElement(Class, options = {}, innerHTML = '') {
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    const service = useService();
+    const service = getService();
     if (!service) return null;
     const {
         checkoutMarketSegment,
@@ -106,7 +106,7 @@ export function CheckoutMixin(Base) {
 
         async render(overrides = {}) {
             // eslint-disable-next-line react-hooks/rules-of-hooks
-            const service = useService();
+            const service = getService();
             if (!service) return false;
             if (!this.dataset.imsCountry) {
                 service.imsCountryPromise.then((countryCode) => {
@@ -203,7 +203,7 @@ export function CheckoutMixin(Base) {
             version = undefined,
         ) {
             // eslint-disable-next-line react-hooks/rules-of-hooks
-            const service = useService();
+            const service = getService();
             if (!service) return false;
             const extraOptions = JSON.parse(
                 this.dataset.extraOptions ?? 'null',
@@ -259,7 +259,7 @@ export function CheckoutMixin(Base) {
 
         updateOptions(options = {}) {
             // eslint-disable-next-line react-hooks/rules-of-hooks
-            const service = useService();
+            const service = getService();
             if (!service) return false;
             const {
                 checkoutMarketSegment,

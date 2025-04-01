@@ -1,9 +1,8 @@
 import { EVENT_AEM_LOAD, EVENT_AEM_ERROR, MARK_START_SUFFIX, MARK_DURATION_SUFFIX } from './constants.js';
 import { Log } from './log.js';
 import { MasError } from './mas-error.js';
-import { getMasCommerceServiceDurationLog } from './utils.js';
+import { discoverService, getMasCommerceServiceDurationLog } from './utils.js';
 import { masFetch } from './utils/mas-fetch.js';
-import { discoverService } from './utilities.js';
 
 const sheet = new CSSStyleSheet();
 sheet.replaceSync(':host { display: contents; }');

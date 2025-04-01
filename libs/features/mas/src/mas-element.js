@@ -9,9 +9,9 @@ import {
     STATE_RESOLVED,
 } from './constants.js';
 import { ignore } from './external.js';
-import { discoverService, setImmediate, useService } from './utilities.js';
+import { setImmediate, getService } from './utilities.js';
 import { Log } from './log.js';
-import { getMasCommerceServiceDurationLog } from './utils.js';
+import { discoverService, getMasCommerceServiceDurationLog } from './utils.js';
 import { MasError } from './mas-error.js';
 
 const StateClassName = {
@@ -190,7 +190,7 @@ export class MasElement {
      */
     requestUpdate(force = false) {
         // eslint-disable-next-line react-hooks/rules-of-hooks
-        if (!this.wrapperElement.isConnected || !useService()) return;
+        if (!this.wrapperElement.isConnected || !getService()) return;
         // Batch consecutive updates
         if (this.timer) return;
         // Save current state to restore it if needed
