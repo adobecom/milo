@@ -2,7 +2,7 @@ import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
 import sinon from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
-import openThreeInOneModal, { handle3in1IFrameEvents, MSG_SUBTYPE } from '../../../libs/blocks/merch/three-in-one.js';
+import openThreeInOneModal, { handle3in1IFrameEvents, MSG_SUBTYPE, showErrorMsg, handleTimeoutError } from '../../../libs/blocks/merch/three-in-one.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/threeInOne.html' });
 
@@ -17,11 +17,16 @@ describe('Three-in-one modal', () => {
   const twpLink = document.querySelector('#twp-link');
   const crmLink = document.querySelector('#crm-link');
   const d2pLink = document.querySelector('#d2p-link');
+  let clock;
+
   beforeEach(async () => {
     window.open = sinon.stub(window, 'open');
+    clock = sinon.useFakeTimers();
   });
+
   afterEach(() => {
     window.open = originalOpen;
+    clock.restore();
   });
 
   it('should return undefined if no href or modal type', async () => {
@@ -119,6 +124,53 @@ describe('Three-in-one modal', () => {
     handle3in1IFrameEvents({ data: `{"app":"ucv3","subType": "${MSG_SUBTYPE.EXTERNAL}", "data":{}}` });
     expect(iframe.classList.contains('loading')).to.be.true;
     expect(window.open.notCalled).to.be.true;
+    modal.remove();
+  });
+
+  it('should show error message with try again button', async () => {
+    const modal = await openThreeInOneModal(twpLink);
+    const miloIframe = modal.querySelector('.milo-iframe');
+    const iframe = modal.querySelector('iframe');
+    const theme = modal.querySelector('sp-theme');
+    await showErrorMsg({ iframe, miloIframe, showBtn: true, theme, handleTimeoutError });
+    const errorWrapper = miloIframe.querySelector('.error-wrapper');
+    expect(errorWrapper).to.exist;
+    expect(errorWrapper.querySelector('.error-msg').textContent).to.include('error refresh');
+    expect(errorWrapper.querySelector('.try-again-btn')).to.exist;
+    expect(iframe.style.display).to.equal('none');
+    expect(theme.style.display).to.equal('none');
+    modal.remove();
+  });
+
+  it('should show error message without try again button', async () => {
+    const modal = await openThreeInOneModal(twpLink);
+    const miloIframe = modal.querySelector('.milo-iframe');
+    const iframe = modal.querySelector('iframe');
+    const theme = modal.querySelector('sp-theme');
+    await showErrorMsg({ iframe, miloIframe, showBtn: false, theme, handleTimeoutError });
+    const errorWrapper = miloIframe.querySelector('.error-wrapper');
+    expect(errorWrapper).to.exist;
+    expect(errorWrapper.querySelector('.error-msg').textContent).to.include('error try later');
+    expect(errorWrapper.querySelector('.try-again-btn')).to.not.exist;
+    expect(iframe.style.display).to.equal('none');
+    expect(theme.style.display).to.equal('none');
+    modal.remove();
+  });
+
+  it('should reload iframe when try again button is clicked', async () => {
+    const modal = await openThreeInOneModal(twpLink);
+    const miloIframe = modal.querySelector('.milo-iframe');
+    const iframe = modal.querySelector('iframe');
+    const theme = modal.querySelector('sp-theme');
+    await showErrorMsg({ iframe, miloIframe, showBtn: true, theme, handleTimeoutError });
+    const errorWrapper = miloIframe.querySelector('.error-wrapper');
+    const tryAgainBtn = errorWrapper.querySelector('.try-again-btn');
+    tryAgainBtn.click();
+    expect(iframe.getAttribute('data-wasreloaded')).to.equal('true');
+    expect(iframe.style.display).to.equal('block');
+    expect(iframe.classList.contains('loading')).to.be.true;
+    expect(theme.style.display).to.equal('block');
+    expect(miloIframe.querySelector('.error-wrapper')).to.not.exist;
     modal.remove();
   });
 });

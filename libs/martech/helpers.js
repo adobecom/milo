@@ -149,6 +149,22 @@ function getOrGenerateUserId() {
   };
 }
 
+function getUpdatedVisitAttempt() {
+  const { hostname } = window.location;
+  const secondVisitAttempt = Number(localStorage.getItem('secondHit')) || 0;
+
+  const isAdobeDomain = hostname === 'www.adobe.com' || hostname === 'www.stage.adobe.com';
+  const consentCookieValue = getCookie('OptanonConsent');
+
+  if (consentCookieValue?.includes('C0002:1') && isAdobeDomain) {
+    const updatedVisitAttempt = secondVisitAttempt === 0 ? 1 : secondVisitAttempt + 1;
+    localStorage.setItem('secondHit', updatedVisitAttempt);
+    return updatedVisitAttempt;
+  }
+
+  return secondVisitAttempt;
+}
+
 function getPageNameForAnalytics({ locale }) {
   const { host, pathname } = new URL(window.location.href);
   const [modifiedPath] = pathname.split('/').filter((x) => x !== locale.prefix).join(':').split('.');
@@ -240,6 +256,7 @@ function createRequestPayload({ updatedContext, pageName, locale, env, hitType }
             approach: 'martech-API',
             edgeConfigIdLaunch: dataStreamId,
             edgeConfigId: dataStreamId,
+            personalisation: 'hybrid',
           },
         },
       },
@@ -269,10 +286,16 @@ function createRequestPayload({ updatedContext, pageName, locale, env, hitType }
     data.web = { webPageDetails };
     data.eventType = hitTypeEventTypeMap[hitType];
 
+    if (getUpdatedVisitAttempt() === 2) {
+      digitalData.adobe = {
+        libraryVersions: 'alloy-api',
+        experienceCloud: { secondVisits: 'setEvent' },
+      };
+    }
     xdm.implementationDetails = {
       name: 'https://ns.adobe.com/experience/alloy/reactor',
-      version: '1.0',
-      environment: 'serverapi',
+      version: '2.0',
+      environment: 'browser',
     };
   }
 
@@ -496,22 +519,17 @@ export const loadAnalyticsAndInteractionData = async (
 
   const CURRENT_DATE = new Date();
   const localTime = CURRENT_DATE.toISOString();
-
   const timezoneOffset = CURRENT_DATE.getTimezoneOffset();
   if (hybridPersEnabled) {
     window.hybridPers = true;
   }
   const hitType = hybridPersEnabled ? 'pageView' : 'propositionFetch';
-
   const pageName = getPageNameForAnalytics({ locale });
-
   const updatedContext = getUpdatedContext({ ...getDeviceInfo(), localTime, timezoneOffset });
-
   const requestUrl = createRequestUrl({
     env,
     hitType,
   });
-
   const requestPayload = { updatedContext, pageName, locale, env, hitType };
   const requestBody = createRequestPayload(requestPayload);
 
