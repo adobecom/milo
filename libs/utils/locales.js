@@ -1,5 +1,5 @@
 export default {
-  '': { ietf: 'en-US', tk: 'hah7vzn.css' },
+  '': { ietf: 'en-US', tk: 'poq1ezm.css' },
   ae_ar: { ietf: 'ar-AE', tk: 'lpk1hwn.css', dir: 'rtl' },
   ae_en: { ietf: 'en', tk: 'hah7vzn.css' },
   africa: { ietf: 'en', tk: 'hah7vzn.css' },

@@ -181,7 +181,7 @@ export function getEnv(conf) {
 
 export function getLocale(locales, pathname = window.location.pathname) {
   if (!locales) {
-    return { ietf: 'en-US', tk: 'hah7vzn.css', prefix: '' };
+    return { ietf: 'en-US', tk: 'poq1ezm.css', prefix: '' };
   }
   const split = pathname.split('/');
   const localeString = split[1];
