@@ -149,7 +149,7 @@ export default async function init(block) {
         langLink.className = 'language-link';
         langLink.innerHTML = `
           <span class="language-name">${lang.name}</span>
-          ${isCurrentLang ? '<svg class="check-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="16" height="16" fill="#5258E4"/></svg>' : ''}
+          ${isCurrentLang ? '<svg class="check-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13.3337 4L6.00033 11.3333L2.66699 8" stroke="#5258E4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' : ''}
         `;
 
 
