@@ -408,7 +408,7 @@ header.global-navigation {
   display: flex;
   align-items: center;
   padding: 0 var(--feds-gutter);
-  z-index: 3; /* Useful for UNav dropdowns */
+  z-index: 1; /* Useful for UNav dropdowns */
 }
 
 .feds-utilities .unav-comp-app-switcher-popover, /* App Switcher */
@@ -426,6 +426,7 @@ header.global-navigation {
   position: relative;
   justify-content: end;
 }
+
 header.new-nav.global-navigation:not(:has(.feds-dropdown--active)) .feds-profile {
   z-index: 3;
 }
@@ -804,11 +805,17 @@ header.new-nav .feds-nav-wrapper {
 header.new-nav .feds-nav-wrapper:not(:has(.feds-dropdown--active)) {
   overflow-x: clip;
 }
+
 header.new-nav .feds-nav-wrapper:not(.feds-nav-wrapper--expanded) {
   position: fixed;
 }
+
 header.new-nav.global-navigation:has(.feds-dropdown--active) {
   overflow-x: clip;
+}
+
+header.new-nav.global-navigation:has(.feds-nav-wrapper--expanded):not(:has(.feds-dropdown--active)) .feds-utilities{
+  z-index: 3;
 }
 
 [dir = "rtl"] header.new-nav .feds-nav-wrapper {
