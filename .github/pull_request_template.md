@@ -1,17 +1,11 @@
-## Description
+<!-- Before submitting, please review all open PRs. -->
 
-<!-- Please provide a clear and concise description of the changes -->
+* Add your
+* Specific
+* Features or fixes
 
-## Related Issue
 Resolves: [MWPW-NUMBER](https://jira.corp.adobe.com/browse/MWPW-NUMBER)
 
-## Testing instructions
-<!-- Please provide clear testing instructions for the changes -->
-
-## Screenshots (if appropriate):
-
-## Test URLs
-<!-- This section will be automatically populated based on changed files -->
-
-## Additional Notes
-<!-- Any additional information that reviewers should know -->
+**Test URLs:**
+- Before: https://main--milo--adobecom.aem.page/?martech=off
+- After: https://<branch>--milo--adobecom.aem.page/?martech=off

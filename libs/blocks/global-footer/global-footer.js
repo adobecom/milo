@@ -420,7 +420,7 @@ export default function init(block) {
     if (isDarkMode()) block.classList.add('feds--dark');
     return footer;
   } catch (e) {
-    lanaLog({ message: 'Sorry, Could not create footer', e });
+    lanaLog({ message: 'Could not create footer...', e });
     return null;
   }
 }
