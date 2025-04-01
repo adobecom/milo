@@ -123,6 +123,7 @@
 
 .hero-marquee .body-m {
   font-weight: 800 !important;
+  font-synthesis: none;
 }
 
 html[dir="rtl"] .hero-marquee .foreground {
