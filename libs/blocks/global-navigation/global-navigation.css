@@ -407,7 +407,7 @@ header.global-navigation {
   display: flex;
   align-items: center;
   padding: 0 var(--feds-gutter);
-  z-index: 1; /* Useful for UNav dropdowns */
+  z-index: 3; /* Useful for UNav dropdowns */
 }
 
 .feds-utilities .unav-comp-app-switcher-popover, /* App Switcher */
