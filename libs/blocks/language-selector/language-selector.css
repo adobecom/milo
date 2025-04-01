@@ -1,6 +1,7 @@
 .language-selector {
   position: relative;
-  width: 200px;
+  width: 196px;
+  height: 261px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
 }
 
@@ -126,7 +127,7 @@
 }
 
 .check-icon {
-  color: var(--feds-color-link);
+  color: #5258E4;
   font-weight: bold;
 }
 
