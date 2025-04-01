@@ -60,11 +60,11 @@
 }
 
 .search-icon {
-  color: #666;
-  font-size: 14px;
+  width: 16px;
+  height: 16px;
   margin-right: 8px;
+  flex-shrink: 0;
 }
-
 .search-input {
   border: none;
   background: transparent;
@@ -127,8 +127,10 @@
 }
 
 .check-icon {
-  color: #5258E4;
-  font-weight: bold;
+  width: 16px;
+  height: 16px;
+  margin-left: 8px;
+  flex-shrink: 0;
 }
 
 /* Custom scrollbar */
