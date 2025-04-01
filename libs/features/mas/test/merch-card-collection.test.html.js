@@ -220,7 +220,7 @@ runTests(async () => {
         let individualPlansFragment, collectionElement;
 
         before(async () => {
-            individualPlansFragment = await fetch('mocks/sites/fragments/fragment-test-collection.json')
+            individualPlansFragment = await fetch('mocks/sites/fragments/fragment-individual-plans-collection.json')
                 .then(
                     (res) => res.json(),
                 );
@@ -237,7 +237,7 @@ runTests(async () => {
             aemFragment.dispatchEvent(new CustomEvent(EVENT_AEM_LOAD, { 
                 detail: individualPlansFragment
              }))
-            await delay(100);
+            await collectionElement.checkReady();
             const merchCard = collectionElement.querySelector('merch-card');
             expect(merchCard).to.exist;
         });
@@ -248,9 +248,9 @@ runTests(async () => {
             aemFragment.dispatchEvent(new CustomEvent(EVENT_AEM_LOAD, { 
                 detail: individualPlansFragment
              }))
-            await delay(100);
+            await collectionElement.checkReady();
             const merchCard = collectionElement.querySelector('merch-card[id="ca835d11-fe6b-40f8-96d1-50ac800c9f70"]');
-            expect(merchCard.getAttribute('filters')).to.equal('all:1:wide');
+            expect(merchCard.getAttribute('filters')).to.equal('all:4:wide,cloud:2:wide,subcategory:1:wide');
         });
     })
 });
