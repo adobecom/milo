@@ -121,8 +121,9 @@
   gap: var(--spacing-m);
 }
 
-.hero-marquee .body-m {
-  font-weight: 800 !important;
+.hero-marquee .main-copy .body-m {
+  font-family: adobe-clean, sans-serif;
+  font-weight: 800;
   font-synthesis: none;
 }
 
