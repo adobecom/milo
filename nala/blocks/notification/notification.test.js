@@ -9,24 +9,24 @@ let notification;
 
 const miloLibs = process.env.MILO_LIBS || '';
 
-test.describe('Milo Marquee Block test suite', () => {
+test.describe('Milo Notification Block test suite', () => {
   test.beforeEach(async ({ page }) => {
     webUtil = new WebUtil(page);
     notification = new NotificationBlock(page);
   });
 
-  // Test 0 : Marquee (light)
+  // Test 0 : Notification
   test(`[Test Id - ${features[0].tcid}] ${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
     console.info(`[Test Page]: ${baseURL}${features[0].path}${miloLibs}`);
     const { data } = features[0];
 
-    await test.step('step-1: Go to Marquee (light) block test page', async () => {
+    await test.step('step-1: Go to Notification block test page', async () => {
       await page.goto(`${baseURL}${features[0].path}${miloLibs}`);
       await page.waitForLoadState('domcontentloaded');
       await expect(page).toHaveURL(`${baseURL}${features[0].path}${miloLibs}`);
     });
 
-    await test.step('step-2: Verify marquee(light) specs', async () => {
+    await test.step('step-2: Verify Notification specs', async () => {
       await expect(await notification.notification).toBeVisible();
 
       await expect(await notification.headingM).toContainText(data.h3Text);
@@ -41,7 +41,7 @@ test.describe('Milo Marquee Block test suite', () => {
       await expect(await notification.blueButton).toHaveAttribute('daa-ll', await webUtil.getLinkDaall(data.blueButtonText, 1, data.h3Text));
     });
 
-    await test.step('step-4: Verify the accessibility test on the marquee(light) block', async () => {
+    await test.step('step-4: Verify the accessibility test on the Notification block', async () => {
       await runAccessibilityTest({ page, testScope: notification.notification });
     });
   });
