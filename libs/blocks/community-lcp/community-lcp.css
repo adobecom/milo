@@ -4013,6 +4013,10 @@
 }
 
 @media only screen and (min-width: 1200px) {
+  .ufd-directory-card > div {
+    cursor: pointer;
+  }
+  
   .ufd-image-card {
     width: 240px;
   }
