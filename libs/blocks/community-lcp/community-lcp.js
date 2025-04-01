@@ -32,7 +32,7 @@ function createImageCard(el) {
   const dcContainer = createTag('div', {}, dcimg);
   dcContainer.append(dcCardContent);
   dcContainer.addEventListener('click', () => {
-    window.location.href = redirectLink;
+    window.open(redirectLink, '_blank');
   });
   return dcContainer;
 }
