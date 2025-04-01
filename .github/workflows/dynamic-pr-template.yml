@@ -49,14 +49,6 @@ jobs:
           if [[ "${{ steps.changed-files.outputs.all_changed_files }}" == *"libs/blocks/global-navigation/"* ]] || [[ "${{ steps.changed-files.outputs.all_changed_files }}" == *"libs/blocks/global-footer/"* ]]; then
             echo "Changes detected in global navigation or footer"
             TEST_URLS=(
-              "<!-- Before submitting, please review all open PRs. -->"
-              ""
-              "* Add your"
-              "* Specific"
-              "* Features or fixes"
-              ""
-              "Resolves: [MWPW-NUMBER](https://jira.corp.adobe.com/browse/MWPW-NUMBER)"
-              ""
               "**Acrobat:**"
               "- Before: https://www.stage.adobe.com/acrobat/online/sign-pdf.html?martech=off"
               "- After: https://www.stage.adobe.com/acrobat/online/sign-pdf.html?martech=off&milolibs=<branch>--milo--<owner>"
@@ -83,24 +75,6 @@ jobs:
             )
           else
             echo "No changes detected in global navigation or footer"
-          fi
-          
-          # If no specific changes detected, add default test URLs
-          if [ ${#TEST_URLS[@]} -eq 0 ]; then
-            echo "Adding default test URLs"
-            TEST_URLS=(
-              "<!-- Before submitting, please review all open PRs. -->"
-              ""
-              "* Add your"
-              "* Specific"
-              "* Features or fixes"
-              ""
-              "Resolves: [MWPW-NUMBER](https://jira.corp.adobe.com/browse/MWPW-NUMBER)"
-              ""
-              "**Test URLs:**"
-              "- Before: https://main--milo--adobecom.aem.page/?martech=off"
-              "- After: https://<branch>--milo--adobecom.aem.page/?martech=off"
-            )
           fi
           
           # Convert array to JSON and set output
