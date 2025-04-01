@@ -352,7 +352,7 @@
 
 
 .notification.split .copy-wrap > [class^="heading-"] {
-  max-width: 274px;
+  max-width: 92.6%;
 }
 
 .notification.split .foreground .text .copy-wrap,
@@ -376,6 +376,11 @@
   gap: var(--spacing-xxs);
   align-items: center;
   font-weight: 700;
+}
+
+
+.notification.split .split-list-area .split-list-item .text-content div {
+  max-width: 79.042%;
 }
 
 .notification.split .split-list-area .split-list-item .con-button {
