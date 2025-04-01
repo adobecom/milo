@@ -652,7 +652,7 @@ export function decorateAutoBlock(a) {
     ? `${url.pathname}${url.search}${url.hash}`
     : a.href;
 
-  return config.autoBlocks.find((candidate) => {
+  return config.autoBlocks?.find((candidate) => {
     const key = Object.keys(candidate)[0];
     const match = href.includes(candidate[key]);
     if (!match) return false;
