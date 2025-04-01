@@ -144,8 +144,8 @@ function decorateSplitList(listContent) {
     const btn = createTag('div', {}, textli.lastElementChild);
     const textContent = createTag('div', { class: 'text-content' });
     const text = createTag('div', {}, textli.innerText.trim());
-    textContent.append(...[pic, text]);
-    listItem.append(...[textContent, btn]);
+    textContent.append(pic, text);
+    listItem.append(textContent, btn);
     listContainer.append(listItem);
     pic.querySelector('img').loading = 'eager';
   });
