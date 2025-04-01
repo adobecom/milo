@@ -176,5 +176,5 @@ export default async function init(el) {
   if (!options.fragment) return;
   const tagName = getTagName(el);
   await loadDependencies(tagName);
-  await createMasElement(el.closest('.content'), options, tagName);
+  await createMasElement(el, options, tagName);
 }
