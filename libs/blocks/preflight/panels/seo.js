@@ -128,7 +128,7 @@ async function checkLorem() {
   const result = { ...loremResult.value };
   const { innerHTML } = document.documentElement;
   const htmlWithoutPreflight = innerHTML.replace(document.getElementById('preflight')?.outerHTML, '');
-  if (htmlWithoutPreflight.includes('Lorem ipsum')) {
+  if (htmlWithoutPreflight.toLowerCase().includes('lorem ipsum')) {
     result.icon = fail;
     result.description = 'Reason: Lorem ipsum is used on the page.';
   } else {
@@ -371,9 +371,9 @@ export default function Panel() {
         ${badLinks.value.map((link, idx) => html`
           <tr>
             <td>${idx + 1}.</td>
-            <td><a href='${link.liveHref}' target='_blank'>${link.liveHref}</a></td>
-            <td><span>${link.parent}</span></td>
-            <td><span>${link.status}</span></td>
+            <td><a href='${link?.liveHref}' target='_blank'>${link?.liveHref}</a></td>
+            <td><span>${link?.parent}</span></td>
+            <td><span>${link?.status}</span></td>
           </tr>`)}
       </table>`}
     </div>`;
