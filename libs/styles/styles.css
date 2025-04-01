@@ -682,6 +682,10 @@ div[class*='-up'] .con-block.has-bg.no-spacing { padding: 0; }
     local('TrebuchetMS');
 }
 
+html:focus-within {
+  scroll-padding-top: var(--global-height-nav);
+}
+
 body {
   display: block;
   font-family: var(--body-font-family);
