@@ -34,7 +34,7 @@ export function getScrollerPropertyValues(el) {
   const itemWidth = itemWidthStyle ? Number(itemWidthStyle) : defaultItemWidth;
   const columns = Number(el.parentElement?.style?.getPropertyValue('--action-scroller-columns'));
 
-  const elProperties = window.getComputedStyle(el, null);
+  const elProperties = window.getComputedStyle(el);
 
   const gapStyle = elProperties.getPropertyValue('column-gap');
   const gridGap = parsePxToInt(gapStyle, defaultGridGap);
