@@ -99,6 +99,10 @@ styles.innerHTML = `
     --ccd-gray-700-dark: #464646;
     --ccd-gray-600-light: #6D6D6D;
 
+    --spectrum-yellow-300: #F8D904;
+    --spectrum-gray-200: #D1D1D1;
+    --spectrum-green-800: #2D9D78;
+
     /* ah colors */
     --ah-gray-500: #717171;
   
@@ -264,6 +268,13 @@ merch-card [slot='callout-content'] {
     flex-direction: column;
     margin: var(--consonant-merch-spacing-xxxs) 0px;
     gap: var(--consonant-merch-card-callout-spacing-xxs);
+}
+
+merch-card[variant='plans'] [slot='badge'] {
+    position: absolute;
+    top: 16px;
+    right: 0;
+    line-height: 16px;
 }
 
 merch-card [slot='callout-content'] > p {

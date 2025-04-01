@@ -1,5 +1,6 @@
 import { UptLink } from './upt-link.js';
 import { createTag } from './utils.js';
+import { BADGE_COLORS } from './variants/variant-layout.js'
 
 const DEFAULT_BADGE_COLOR = '#000000';
 const DEFAULT_BADGE_BACKGROUND_COLOR = '#F8D904';
@@ -65,7 +66,17 @@ export function processMnemonics(fields, merchCard, mnemonicsConfig) {
     });
 }
 
-function processBadge(fields, merchCard) {
+function processBadge(fields, merchCard, mapping) {
+    if (fields.variant === 'plans') {
+        // for back-compatibility
+        if (fields.badge?.length && !fields.badge?.startsWith('<merch-badge')) {
+            fields.badge = `<merch-badge variant="${fields.variant}" background-color="${BADGE_COLORS[0]}">${fields.badge}</merch-badge>`;
+            if (!fields.borderColor) fields.borderColor = BADGE_COLORS[0];
+        }
+        appendSlot('badge', fields, merchCard, mapping);
+        return;
+    }
+
     if (fields.badge) {
         merchCard.setAttribute('badge-text', fields.badge);
         merchCard.setAttribute(
@@ -117,8 +128,12 @@ export function processBackgroundColor(fields, merchCard, allowedColors) {
 }
 
 export function processBorderColor(fields, merchCard, borderColorConfig) {
-    if (fields.borderColor && borderColorConfig && fields.borderColor !== 'transparent') {
-        merchCard.style.setProperty('--merch-card-custom-border-color', `var(--${fields.borderColor})`);
+    const customBorderColor = '--merch-card-custom-border-color';
+    if (fields.borderColor?.toLowerCase() === 'transparent') {
+        merchCard.style.removeProperty(customBorderColor);
+        if (fields.variant === 'plans') merchCard.style.setProperty(customBorderColor, 'transparent');
+    } else if (fields.borderColor && borderColorConfig) {
+        merchCard.style.setProperty(customBorderColor, `var(--${fields.borderColor})`);
     }
 }
 
@@ -462,7 +477,7 @@ export async function hydrate(fragment, merchCard) {
       merchCard.setAttribute('consonant', true);
     }
     processMnemonics(fields, merchCard, aemFragmentMapping.mnemonics);
-    processBadge(fields, merchCard);
+    processBadge(fields, merchCard, aemFragmentMapping);
     processSize(fields, merchCard, aemFragmentMapping.size);
     processTitle(fields, merchCard, aemFragmentMapping.title);
     processSubtitle(fields, merchCard, aemFragmentMapping);

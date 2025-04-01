@@ -1,4 +1,4 @@
-import { VariantLayout } from "./variant-layout";
+import { VariantLayout, BADGE_COLORS } from './variant-layout';
 import { html, css } from 'lit';
 import { CSS } from './plans.css.js';
 
@@ -12,7 +12,9 @@ export const PLANS_AEM_FRAGMENT_MAPPING = {
   quantitySelect: { tag: 'div', slot: 'quantity-select' },
   stockOffer: true,
   secureLabel: true,
-  badge: true,
+  badge: { tag: 'div', slot: 'badge' },
+  allowedBorderColors: BADGE_COLORS,
+  borderColor: { attribute: 'border-color' },
   ctas: { slot: 'footer', size: 'm' },
   style: 'consonant'
 };
@@ -58,6 +60,7 @@ export class Plans extends VariantLayout {
             <slot name="body-xs"></slot>
             <slot name="callout-content"></slot> 
             ${this.stockCheckbox}
+            <slot name="badge"></slot>
         </div>
         <slot name="quantity-select"></slot>
         ${this.secureLabelFooter}`;
@@ -66,6 +69,7 @@ export class Plans extends VariantLayout {
   static variantStyle = css`
     :host([variant='plans']) {
       min-height: 348px;
+      border: 1px solid var(--merch-card-custom-border-color, #EAEAEA);
     }
       
     :host([variant='plans']) ::slotted([slot='heading-xs']) {
