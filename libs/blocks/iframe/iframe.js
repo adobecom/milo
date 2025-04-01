@@ -35,8 +35,7 @@ export function handleIFrameEvents({ data }) {
 
 export default function init(el) {
   const anchor = el.querySelector('a');
-  const anchorText = anchor?.textContent;
-  const textAfterPipe = anchorText?.split('|')[1]?.trim();
+  const ariaLabel = anchor.getAttribute('aria-label');
   const linkHref = el.href ?? anchor?.href;
   el.classList.remove('iframe');
   const classes = [...el.classList].join(' ');
@@ -52,16 +51,12 @@ export default function init(el) {
   const embed = createTag('div', { class: `milo-iframe ${classes}` }, iframe);
 
   iframe.onload = () => {
-    if ((new URL(iframe.src).origin !== window.location.origin) && textAfterPipe) {
-      iframe.title = textAfterPipe;
+    if ((new URL(iframe.src).origin !== window.location.origin) && ariaLabel) {
+      iframe.title = ariaLabel;
       return;
     }
 
-    const frameDoc = iframe.contentWindow.document;
-    const heading = frameDoc.querySelector('h1, h2, h3, h4, h5, h6');
-    const headingText = heading?.textContent;
-
-    iframe.title = textAfterPipe || headingText;
+    iframe.title = ariaLabel || iframe.contentWindow.document.querySelector('h1, h2, h3, h4, h5, h6')?.textContent;
   };
 
   el.insertAdjacentElement('afterend', embed);

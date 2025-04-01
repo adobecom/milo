@@ -5,6 +5,8 @@ import { createIntersectionObserver, createTag, getConfig, isInTextNode, loadLin
 class LiteVimeo extends HTMLElement {
   static preconnected = false;
 
+  static defaultTitle = 'Content from Vimeo';
+
   connectedCallback() {
     this.isMobile = navigator.userAgent.includes('Mobi');
     this.videoId = this.getAttribute('videoid');
@@ -16,7 +18,7 @@ class LiteVimeo extends HTMLElement {
   }
 
   async fetchVideoTitle() {
-    if (this.getAttribute('isTextLink') === 'true') return null;
+    if (this.title !== LiteVimeo.defaultTitle) return null;
 
     try {
       const response = await fetch(`https://vimeo.com/api/oembed.json?url=https://vimeo.com/${this.videoId}`);
@@ -85,16 +87,14 @@ export default async function init(a) {
   if (isInTextNode(a)) return;
   if (!customElements.get('lite-vimeo')) customElements.define('lite-vimeo', LiteVimeo);
 
+  const ariaLabel = a.getAttribute('aria-label');
   const embedVimeo = () => {
     const url = new URL(a.href);
     const videoid = url.pathname.split('/')[url.hostname === 'player.vimeo.com' ? 2 : 1];
-    const isTextLink = !a.textContent.includes('http');
-    const title = isTextLink ? a.textContent : 'Content from Vimeo';
-    const textAfterPipe = title?.split('|')[1]?.trim();
+    const title = ariaLabel || LiteVimeo.defaultTitle;
     const liteVimeo = createTag('lite-vimeo', {
       videoid,
-      title: textAfterPipe || title,
-      isTextLink,
+      title,
     });
     const wrapper = createTag('div', { class: 'embed-vimeo' }, liteVimeo);
     a.parentElement.replaceChild(wrapper, a);

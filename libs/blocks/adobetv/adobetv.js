@@ -12,7 +12,7 @@ export default function init(a) {
       anchorTag: a,
     });
   } else {
-    const title = a?.textContent.split('|')?.[1]?.trim() || 'Adobe Video Publishing Cloud Player';
+    const title = a.getAttribute('aria-label') || 'Adobe Video Publishing Cloud Player';
 
     const iframe = createTag('iframe', {
       src: a.href,
