@@ -287,6 +287,8 @@ const init = (block) => {
         'aria-selected': (i === 0) ? 'true' : 'false',
         'aria-controls': `tab-panel-${tabId}-${tabName}`,
         'data-block-id': `tabs-${tabId}`,
+        'daa-state': 'true',
+        'daa-ll': `tab-${tabId}-${tabName}`,
       };
       const tabBtn = createTag('button', tabBtnAttributes);
       tabBtn.innerText = item.textContent;

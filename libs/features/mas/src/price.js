@@ -7,6 +7,8 @@ import {
     priceAnnual,
     priceWithAnnual,
     pricePromoWithAnnual,
+    priceAlternative,
+    priceOpticalAlternative,
     omitProperties,
     toBoolean,
     discount,
@@ -27,6 +29,7 @@ export function Price({ literals, providers, settings }) {
             language: defaultLanguage,
             promotionCode: defaultPromotionCode,
             quantity: defaultQuantity,
+            alternativePrice: defaultAlternativePrice,
         } = settings;
         const {
             displayOldPrice = defaultDisplayOldPrice,
@@ -40,6 +43,7 @@ export function Price({ literals, providers, settings }) {
             displayAnnual,
             promotionCode = defaultPromotionCode,
             quantity = defaultQuantity,
+            alternativePrice = defaultAlternativePrice,
             template,
             wcsOsi,
             ...rest
@@ -57,6 +61,7 @@ export function Price({ literals, providers, settings }) {
             perpetual: toBoolean(perpetual),
             promotionCode: computePromoStatus(promotionCode).effectivePromoCode,
             quantity: toQuantity(quantity, Defaults.quantity),
+            alternativePrice: toBoolean(alternativePrice),
             template,
             wcsOsi: toOfferSelectorIds(wcsOsi),
         });
@@ -83,17 +88,20 @@ export function Price({ literals, providers, settings }) {
             case 'strikethrough':
                 method = priceStrikethrough;
                 break;
-            case 'optical':
-                method = priceOptical;
-                break;
             case 'annual':
                 method = priceAnnual;
                 break;
             default:
-                if (options.country === 'AU' && offers[0].planType === 'ABM' && options.displayAnnual) {
+                if (options.template === 'optical' && options.alternativePrice) {
+                    method = priceOpticalAlternative;
+                } else if (options.template === 'optical') {
+                    method = priceOptical;
+                } else if (options.displayAnnual && offers[0].planType === 'ABM') {
                     method = options.promotionCode
                         ? pricePromoWithAnnual
                         : priceWithAnnual;
+                } else if (options.alternativePrice) {
+                    method = priceAlternative;
                 } else {
                     method = options.promotionCode ? pricePromo : price;
                 }

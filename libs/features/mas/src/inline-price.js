@@ -111,6 +111,7 @@ export class InlinePrice extends HTMLSpanElement {
             perpetual,
             promotionCode,
             quantity,
+            alternativePrice,
             template,
             wcsOsi,
         } = service.collectPriceOptions(options);
@@ -124,6 +125,7 @@ export class InlinePrice extends HTMLSpanElement {
             perpetual,
             promotionCode,
             quantity,
+            alternativePrice,
             template,
             wcsOsi,
         });
@@ -295,6 +297,19 @@ export class InlinePrice extends HTMLSpanElement {
         if (offers.length) {
             if (this.masElement.toggleResolved(version, offers, options)) {
                 this.innerHTML = service.buildPriceHTML(offers, options);
+
+                // Adding logic for options.alternativePrice to add <sr-only>Alternatively at</sr-only>
+                const parentEl = this.closest('p, h3, div');
+                if (!parentEl || !parentEl.querySelector('span[data-template="strikethrough"]') || parentEl.querySelector('.alt-aria-label')) return true;
+                const inlinePrices = parentEl?.querySelectorAll('span[is="inline-price"]');
+                if (inlinePrices.length > 1 && inlinePrices.length === parentEl.querySelectorAll('span[data-template="strikethrough"]').length * 2) {
+                    inlinePrices.forEach((price) => {
+                        if (price.dataset.template !== 'strikethrough' && price.options && !price.options.alternativePrice) {
+                            price.options.alternativePrice = true;
+                            price.innerHTML = service.buildPriceHTML(offers, price.options);
+                        }
+                    });
+                }
                 return true;
             }
         } else {
@@ -313,6 +328,7 @@ export class InlinePrice extends HTMLSpanElement {
         const service = useService();
         if (!service) return false;
         const {
+            alternativePrice,
             displayOldPrice,
             displayPerUnit,
             displayRecurrence,
@@ -325,6 +341,7 @@ export class InlinePrice extends HTMLSpanElement {
             wcsOsi,
         } = service.collectPriceOptions(options);
         updateMasElement(this, {
+            alternativePrice,
             displayOldPrice,
             displayPerUnit,
             displayRecurrence,
