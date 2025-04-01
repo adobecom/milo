@@ -21,6 +21,7 @@ export function getOptions(el) {
     if (key === 'sidenav') options[key] = value === 'true';
     else options[key] = value;
   }
+  options.fragment = options.query || options.fragment;
   return options;
 }
 
