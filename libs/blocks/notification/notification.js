@@ -134,7 +134,7 @@ async function decorateLockup(lockupArea, el) {
 
 function decorateSplitList(listContent) {
   const listContainer = createTag('div', { class: 'split-list-area' });
-  [...listContent.querySelectorAll('li')].forEach((item) => {
+  listContent?.querySelectorAll('li').forEach((item) => {
     const listItem = createTag('div', { class: 'split-list-item' });
     const pic = item.querySelector('picture');
     if (!pic) return;
