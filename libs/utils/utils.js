@@ -1555,5 +1555,3 @@ export function loadLana(options = {}) {
 }
 
 export const reloadPage = () => window.location.reload();
-
-alert('ejejej');
