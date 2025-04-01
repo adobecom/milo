@@ -19,9 +19,9 @@ export function getOptions(el) {
   const options = { ...DEFAULT_OPTIONS };
   for (const [key, value] of searchParams.entries()) {
     if (key === 'sidenav') options[key] = value === 'true';
+    if (key === 'fragment' || key === 'query') options.fragment = value;
     else options[key] = value;
   }
-  options.fragment = options.query || options.fragment;
   return options;
 }
 
