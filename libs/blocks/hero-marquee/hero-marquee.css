@@ -102,7 +102,6 @@
 .hero-marquee .norm p { margin: var(--spacing-xs) 0; }
 
 .hero-marquee .main-copy h1 {
-  font-family: adobe-clean;
   font-weight: 800;
   font-synthesis: none;
 }
