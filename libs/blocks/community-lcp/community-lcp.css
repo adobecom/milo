@@ -3511,7 +3511,6 @@
   width: 100%;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
 }
 
 .directory-card-content {
@@ -3980,6 +3979,7 @@
     width: 312px;
     display: flex;
     flex-direction: row-reverse;
+    cursor: pointer;
   }
   
   .ufd-image-card {
