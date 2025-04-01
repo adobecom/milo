@@ -136,17 +136,18 @@ function decorateSplitList(listContent) {
   const listContainer = createTag('div', { class: 'split-list-area' });
   [...listContent.querySelectorAll('li')].forEach((item) => {
     const listItem = createTag('div', { class: 'split-list-item' });
-    if (['STRONG', 'EM', 'A'].includes(item.lastElementChild.nodeName)) {
-      listItem.append(createTag('div', {}, item.lastElementChild));
-    }
-    const img = item.querySelector('img');
-    if (img) {
-      const textContent = createTag('div', { class: 'text-content' });
-      const text = createTag('div', {}, item.innerText.trim());
-      textContent.append(...[img, text]);
-      listItem.prepend(textContent);
-    }
+    const pic = item.querySelector('picture');
+    if (!pic) return;
+    const textli = ['STRONG', 'EM', 'A'].includes(item.lastElementChild.nodeName)
+                    ? item
+                    : item.nextElementSibling;
+    const btn = createTag('div', {}, textli.lastElementChild);
+    const textContent = createTag('div', { class: 'text-content' });
+    const text = createTag('div', {}, textli.innerText.trim());
+    textContent.append(...[pic, text]);
+    listItem.append(...[textContent, btn]);
     listContainer.append(listItem);
+    pic.querySelector('img').loading = 'eager';
   });
   listContent.replaceWith(listContainer);
 }

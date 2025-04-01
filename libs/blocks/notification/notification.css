@@ -385,7 +385,8 @@
   max-width: 89px;
 }
 
-.notification.split .split-list-area .split-list-item img {
+.notification.split .split-list-area .split-list-item picture {
+  display: flex;
   width: var(--icon-size-xs);
   height: auto;
 }
