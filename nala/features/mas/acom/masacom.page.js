@@ -64,7 +64,7 @@ export default class MasAcom {
         'line-height': '21px',
       },
       legalLink: {
-        color: 'rgb(20, 115, 230)',
+        color: 'rgb(39, 77, 234)',
         'font-size': '14px',
         'font-weight': '400',
         'line-height': '21px',
@@ -99,7 +99,7 @@ export default class MasAcom {
         'line-height': '12px',
       },
       cta: {
-        'background-color': 'rgb(20, 115, 230)',
+        'background-color': 'rgb(59, 99, 251)',
         color: 'rgb(255, 255, 255)',
         'font-size': '15px',
         'font-weight': '700',
