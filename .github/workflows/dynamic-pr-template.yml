@@ -129,9 +129,25 @@ jobs:
                 pull_number: prNumber,
               });
               
+              console.log('Current PR description:', pullRequest.body);
+              
               // Create new description with test URLs
               const testUrlsSection = testUrls.join('\n');
-              const newDescription = pullRequest.body.replace(/## Test URLs[\s\S]*?(?=\n\n|$)/, `## Test URLs\n${testUrlsSection}`);
+              console.log('New test URLs section:', testUrlsSection);
+              
+              // Check if Test URLs section exists
+              const hasTestUrlsSection = pullRequest.body.includes('## Test URLs');
+              
+              let newDescription;
+              if (hasTestUrlsSection) {
+                // Replace existing Test URLs section
+                newDescription = pullRequest.body.replace(/## Test URLs[\s\S]*?(?=\n\n|$)/, `## Test URLs\n${testUrlsSection}`);
+              } else {
+                // Add Test URLs section at the end
+                newDescription = `${pullRequest.body}\n\n## Test URLs\n${testUrlsSection}`;
+              }
+              
+              console.log('New PR description:', newDescription);
               
               // Update PR description
               await github.rest.pulls.update({
@@ -144,6 +160,7 @@ jobs:
               console.log('Successfully updated PR description');
             } catch (error) {
               console.log('Error updating PR description:', error.message);
+              console.log('Error details:', error);
               // Don't fail the workflow if we can't update the PR
               process.exit(0);
             }
