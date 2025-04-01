@@ -126,7 +126,7 @@
 }
 
 .check-icon {
-  color: #2196F3;
+  color: var(--feds-color-link);
   font-weight: bold;
 }
 
