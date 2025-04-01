@@ -388,10 +388,10 @@
 .notification.split .split-list-area .split-list-item picture,
 .notification.split .split-list-area .split-list-item picture img {
   display: flex;
-  width: var(--icon-size-xs);
-  height: auto;
-  min-width: var(--icon-size-xs);
-  max-width: var(--icon-size-xs);
+  width: auto;
+  height: var(--icon-size-xs);
+  min-width: unset;
+  max-width: unset;
 }
 
 @media screen and (min-width: 600px) {
