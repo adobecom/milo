@@ -32,7 +32,8 @@
   position: absolute;
   bottom: calc(100% + 5px);
   left: 0;
-  width: 200px;
+  width: 196px;
+  height: 261px;
   /*width: 100%;*/
   background: white;
   border-radius: 8px;
