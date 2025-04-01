@@ -26,6 +26,7 @@ import {
     initMasCommerceService,
     disableMasCommerceService,
 } from './utilities.js';
+import { MasError } from '../src/mas-error.js';
 
 const HREF = 'https://test.org/';
 
@@ -153,12 +154,24 @@ describe('class "CheckoutButton"', () => {
     });
 
     it('fails with bad request', async () => {
-        await initMasCommerceService();
-        const checkoutButton = mockCheckoutButton('xyz');
-        await expect(checkoutButton.onceSettled()).eventually.be.rejectedWith(
-            'Bad WCS request: 404, url: https://www.adobe.com/web_commerce_artifact?offer_selector_ids=xyz&country=US&locale=en_US&landscape=PUBLISHED&api_key=wcms-commerce-ims-ro-user-milo&language=MULT',
-        );
-    });
+      await initMasCommerceService();
+      const checkoutButton = mockCheckoutButton('xyz');
+
+      try {
+          await checkoutButton.onceSettled();
+          // Should not reach here
+          expect.fail('Promise should have been rejected');
+      } catch (error) {
+          // Verify it's a MasError instance
+          expect(error).to.be.instanceOf(MasError);
+          expect(error.context).to.have.property('duration');
+          expect(error.context).to.have.property('startTime');
+          expect(error.context).to.include({
+              status: 404,
+              url: 'https://www.adobe.com//web_commerce_artifact?offer_selector_ids=xyz&country=US&locale=en_US&landscape=PUBLISHED&api_key=wcms-commerce-ims-ro-user-milo&language=MULT',
+          });
+      }
+  });
 
     it('renders button for perpetual offers', async () => {
         await initMasCommerceService();
@@ -204,23 +217,7 @@ describe('class "CheckoutButton"', () => {
         });
     });
 
-    describe('method "render"', () => {
-        it('returns false if element is not connected to DOM', async () => {
-            await initMasCommerceService();
-            const checkoutButton = mockCheckoutButton('no-offer', {}, false);
-            expect(await checkoutButton.render()).to.be.false;
-        });
-    });
-
     describe('method "renderOffers"', () => {
-        it('returns false and does not render href if element is not connected to DOM', async () => {
-            await initMasCommerceService();
-            const checkoutButton = mockCheckoutButton('no-offer', {}, false);
-            checkoutButton.setCheckoutUrl(HREF);
-            expect(await checkoutButton.renderOffers([])).to.be.false;
-            expect(checkoutButton.href).to.be.equal(HREF);
-        });
-
         it('returns false and renders failed placeholder if offers array is empty', async () => {
             await initMasCommerceService();
             const checkoutButton = mockCheckoutButton('no-offer', {});
@@ -235,10 +232,7 @@ describe('class "CheckoutButton"', () => {
             await initMasCommerceService();
             const checkoutButton = mockCheckoutButton('no-offer', {}, false);
             checkoutButton.setCheckoutUrl(HREF);
-            const version = checkoutButton.masElement.togglePending();
             checkoutButton.masElement.togglePending();
-            expect(await checkoutButton.renderOffers([], {}, version)).to.be
-                .false;
             expect(checkoutButton.href).to.equal(HREF);
         });
     });

@@ -9,7 +9,7 @@ async function validateAuthorUrl(url) {
   const resp = await fetch(`${url.toLowerCase()}.plain.html`);
   if (!resp?.ok) {
     /* c8 ignore next 3 */
-    window.lana?.log(`Could not retrieve metadata for ${url}`, { tags: 'errorType=warn,module=article-header' });
+    window.lana?.log(`Could not retrieve metadata for ${url}`, { tags: 'article-header' });
     return null;
   }
 
@@ -182,6 +182,15 @@ function decorateFigure(el) {
   el.lastElementChild.remove();
 }
 
+function decorateMedia(el) {
+  if (el.querySelector('picture')) {
+    decorateFigure(el);
+    return;
+  }
+
+  el.classList.add('article-feature-video');
+}
+
 export default async function init(blockEl) {
   const childrenEls = Array.from(blockEl.children);
   const categoryContainer = childrenEls[0];
@@ -214,8 +223,8 @@ export default async function init(blockEl) {
   const shareBlock = await buildSharing();
   bylineContainer.append(shareBlock);
 
-  const featureImgContainer = childrenEls[3];
-  decorateFigure(featureImgContainer);
+  const mediaContainer = childrenEls[3];
+  decorateMedia(mediaContainer);
 
   document.addEventListener('milo:deferred', () => updateShareText(shareBlock));
 }
