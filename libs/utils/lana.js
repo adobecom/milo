@@ -7,11 +7,6 @@
     clientId: '',
     endpoint: 'https://www.adobe.com/lana/ll',
     endpointStage: 'https://www.stage.adobe.com/lana/ll',
-    /**
-     * Type of error being logged:
-     * 'e' - explicit (manually logged errors/messages)
-     * 'i' - implicit (automatically caught errors)
-     */
     errorType: 'e',
     sampleRate: 1,
     tags: '',
@@ -20,7 +15,6 @@
     isProdDomain: false,
   };
 
-  // Valid severity values (both full and abbreviated formats)
   const VALID_SEVERITIES = new Set(['d', 'debug', 'i', 'info', 'w', 'warn', 'e', 'error', 'c', 'critical']);
 
   const w = window;
@@ -80,21 +74,17 @@
       return;
     }
 
-    // Process severity only if it's explicitly provided in original options
     let severity;
     if (options && options.severity !== undefined) {
-      // Check if value is valid
       if (VALID_SEVERITIES.has(options.severity)) {
         severity = options.severity;
       } else {
-        // Invalid severity, use default based on debug mode
         const isDebugMode = hasDebugParam() || w.lana.debug;
         const defaultSeverity = isDebugMode ? 'd' : 'i';
         console.warn(`LANA: Invalid severity '${options.severity}'. Defaulting to '${defaultSeverity}'.`);
         severity = defaultSeverity;
       }
     } else if (w.lana.debug) {
-      // In debug mode, use debug severity if enabled
       severity = 'd';
     }
 
@@ -113,7 +103,6 @@
       `t=${encodeURI(o.errorType)}`,
     ];
 
-    // Only add severity parameter if it's explicitly provided
     if (severity) {
       queryParams.push(`r=${encodeURI(severity)}`);
     }
@@ -139,10 +128,6 @@
     }
   }
 
-  /**
-   * Sends unhandled errors to Lana with errorType 'i' (implicit)
-   * Used for errors that are automatically caught by window error handlers
-   */
   function sendUnhandledError(e) {
     log(e.reason || e.error || e.message, { errorType: 'i' });
   }
