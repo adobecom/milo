@@ -55,7 +55,7 @@ function closePanel(btn, panel) {
 function closeMediaPanel(displayArea, el, dd, clickedId) {
   closePanel(el, dd);
   const clickedMedia = displayArea.childNodes[clickedId - 1];
-  const video = clickedMedia.querySelector('video');
+  const video = clickedMedia?.querySelector('video');
   if (video) pauseVideo(video);
   const otherExpandedPanels = el.closest('.accordion').querySelectorAll('.accordion-trigger[aria-expanded="true"]');
   if (!otherExpandedPanels.length) return;
@@ -70,7 +70,7 @@ function openMediaPanel(displayArea, el, dd, clickedId) {
     const video = mediaCollectionItem.querySelector('video');
     if (idx === clickedId - 1) {
       openPanel(el, dd);
-      displayArea.childNodes[idx].classList.add('expanded');
+      displayArea?.childNodes[idx]?.classList.add('expanded');
       if (video) playVideo(video);
       return;
     }
@@ -140,10 +140,11 @@ function createItem(accordion, id, heading, num, edit) {
   const dd = createTag('div', { 'aria-labelledby': triggerId, id: panelId, hidden: true, class: 'descr-details' }, panel);
   const dm = createTag('div', { class: 'media-p' });
 
-  if (edit) {
+  const isMobile = window.matchMedia('(max-width: 1199px)').matches;
+
+  if (edit && isMobile) {
     const ogMedia = mediaCollection[id][num - 1];
-    const mediaCopy = ogMedia.cloneNode(true);
-    dm.append(mediaCopy);
+    dm.append(ogMedia);
     dd.prepend(dm);
   }
 
