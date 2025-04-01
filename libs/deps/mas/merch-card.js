@@ -970,14 +970,13 @@ merch-card .footer-row-cell:nth-child(8) {
 
 merch-card[variant="plans"] {
   --consonant-merch-card-callout-icon-size: 18px;
-  --link-color: rgb(20, 115, 230);
-  --color-accent: rgb(20, 115, 230);
 }
 
 merch-card[variant="plans"] [slot="icons"] {
   --img-width: 41.5px;
 }
 
+merch-card[variant="plans"] [slot="heading-xs"] span.price.price-strikethrough,
 merch-card[variant="plans"] [slot="heading-m"] span.price.price-strikethrough {
   line-height: var(--consonant-merch-card-body-xs-line-height);
   font-weight: 700;
@@ -992,7 +991,11 @@ merch-card[variant="plans"] [slot="description"] {
 }
 
 merch-card[variant="plans"] [slot="body-xs"] a {
-  color: var(--color-accent);
+  color: var(--link-color);
+}
+
+merch-card[variant="plans"] [slot="promo-text"] a {
+  color: inherit;
 }
 
 merch-card[variant="plans"] [slot="callout-content"] {
@@ -1033,11 +1036,6 @@ merch-card[variant="plans"] [slot="quantity-select"] {
 merch-card[variant="plans"] [slot="footer"] a {
     line-height: 19px;
     padding: 3px 16px 4px;
-}
-
-merch-card[variant="plans"] [slot="footer"] a.con-button.blue {
-    padding: 5px 18px 6px;
-    border: none;
 }
 
 .one-merch-card.plans,
