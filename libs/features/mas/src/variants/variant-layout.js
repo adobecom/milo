@@ -1,7 +1,5 @@
 import { html } from 'lit';
 
-export const BADGE_COLORS = ['spectrum-yellow-300', 'spectrum-gray-200', 'spectrum-green-800'];
-
 export class VariantLayout {
     static styleMap = {};
 

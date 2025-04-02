@@ -1,8 +1,8 @@
 import { UptLink } from './upt-link.js';
 import { createTag } from './utils.js';
-import { BADGE_COLORS } from './variants/variant-layout.js'
 
 const DEFAULT_BADGE_COLOR = '#000000';
+const DEFAULT_PLANS_BADGE_COLOR = 'spectrum-yellow-300-plans';
 const DEFAULT_BADGE_BACKGROUND_COLOR = '#F8D904';
 const DEFAULT_BORDER_COLOR = '#EAEAEA';
 const CHECKOUT_STYLE_PATTERN = /(accent|primary|secondary)(-(outline|link))?/;
@@ -70,8 +70,8 @@ function processBadge(fields, merchCard, mapping) {
     if (fields.variant === 'plans') {
         // for back-compatibility
         if (fields.badge?.length && !fields.badge?.startsWith('<merch-badge')) {
-            fields.badge = `<merch-badge variant="${fields.variant}" background-color="${BADGE_COLORS[0]}">${fields.badge}</merch-badge>`;
-            if (!fields.borderColor) fields.borderColor = BADGE_COLORS[0];
+            fields.badge = `<merch-badge variant="${fields.variant}" background-color="${DEFAULT_PLANS_BADGE_COLOR}">${fields.badge}</merch-badge>`;
+            if (!fields.borderColor) fields.borderColor = DEFAULT_PLANS_BADGE_COLOR;
         }
         appendSlot('badge', fields, merchCard, mapping);
         return;

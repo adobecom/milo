@@ -99,12 +99,14 @@ styles.innerHTML = `
     --ccd-gray-700-dark: #464646;
     --ccd-gray-600-light: #6D6D6D;
 
-    --spectrum-yellow-300: #F8D904;
-    --spectrum-gray-200: #D1D1D1;
-    --spectrum-green-800: #2D9D78;
-
     /* ah colors */
     --ah-gray-500: #717171;
+    
+    /* plans colors */
+    --spectrum-yellow-300-plans: #F5C700;
+    --spectrum-gray-100-plans: #F8F8F8;
+    --spectrum-green-900-plans: #05834E;
+    --spectrum-gray-300-plans: #DADADA;
   
     /* merch card generic */
     --consonant-merch-card-max-width: 300px;
