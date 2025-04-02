@@ -13,7 +13,7 @@ export const PLANS_AEM_FRAGMENT_MAPPING = {
   stockOffer: true,
   secureLabel: true,
   badge: { tag: 'div', slot: 'badge' },
-  allowedBadgeColors: ['spectrum-yellow-300-plans', 'spectrum-gray-100-plans', 'spectrum-green-900-plans'],
+  allowedBadgeColors: ['spectrum-yellow-300-plans', 'spectrum-gray-100-plans', 'spectrum-gray-300-plans', 'spectrum-green-900-plans'],
   allowedBorderColors: ['spectrum-yellow-300-plans', 'spectrum-gray-300-plans', 'spectrum-green-900-plans'],
   borderColor: { attribute: 'border-color' },
   ctas: { slot: 'footer', size: 'm' },
