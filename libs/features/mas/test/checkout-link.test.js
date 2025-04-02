@@ -275,6 +275,38 @@ describe('class "CheckoutLink"', () => {
         });
     });
 
+    describe('3-in-1 modal related functions', () => {
+        let checkoutLink;
+
+        beforeEach(async () => {
+            await initMasCommerceService();
+            checkoutLink = mockCheckoutLink('abm');
+            await checkoutLink.onceSettled();
+        });
+
+        describe('setModalType', () => {
+            it('handles all valid modal types', () => {
+                const modalTypes = ['twp', 'd2p', 'crm'];
+                
+                modalTypes.forEach(type => {
+                    const url = `https://commerce.adobe.com/store/checkout?modal=${type}`;
+                    const modalType = checkoutLink.setModalType(checkoutLink, url);
+
+                    expect(modalType).to.equal(type);
+                    expect(checkoutLink.getAttribute('data-modal-type')).to.equal(type);
+                });
+            });
+
+            it('does not set modal type for invalid modal parameter', () => {
+                const url = 'https://commerce.adobe.com/store/checkout?modal=invalid';
+                const modalType = checkoutLink.setModalType(checkoutLink, url);
+
+                expect(modalType).to.be.undefined;
+                expect(checkoutLink.getAttribute('data-modal-type')).to.be.null;
+            });
+        });
+    });
+
     describe('logged-in features', () => {
         it('renders download link', async () => {
             mockIms('US');
