@@ -124,7 +124,7 @@ export function toFragment(htmlStrings, ...values) {
     return existingElement;
   }
 
-  Array.from(newElement.querySelectorAll('elem')).forEach(replaceable => {
+  Array.from(fragment.querySelectorAll('elem')).forEach(replaceable => {
     const ref = replaceable.getAttribute('ref');
     replaceable.replaceWith(values[ref].cloneNode(true));
   });
