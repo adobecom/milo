@@ -124,12 +124,12 @@ export function toFragment(htmlStrings, ...values) {
     return existingElement;
   }
 
-  Array.from(fragment.querySelectorAll('elem')).forEach(replaceable => {
+  Array.prototype.map.call(fragment.querySelectorAll('elem'), (replaceable) => {
     const ref = replaceable.getAttribute('ref');
-    replaceable.replaceWith(values[ref].cloneNode(true));
+    replaceable.replaceWith(values[ref]);
   });
 
-  return newElement;
+  return fragment;
 }
 
 function generateUniqueSelector(element) {
