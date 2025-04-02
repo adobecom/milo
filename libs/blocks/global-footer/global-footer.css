@@ -328,12 +328,7 @@ span.feds-footer-privacyLink-divider {
 
 /* max-width (1440) + 2 x gutter (32) */
 @media (min-width: 1504px) {
-  .feds-footer-wrapper .feds-menu-content,
-  .feds-footer-options {
-    margin: 0 calc(var(--feds-gutter-footer) * -1);
-  }
-
-  .feds-featuredProducts {
-    margin: 0;
+  .feds-footer-wrapper {
+    max-width: 1504px;
   }
 }
