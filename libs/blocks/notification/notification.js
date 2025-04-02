@@ -132,11 +132,35 @@ async function decorateLockup(lockupArea, el) {
   if (pre && pre[2] === 'icon') el.classList.replace(pre[0], `${pre[1]}-lockup`);
 }
 
+function decorateSplitList(listContent) {
+  const listContainer = createTag('div', { class: 'split-list-area' });
+  listContent?.querySelectorAll('li').forEach((item) => {
+    const listItem = createTag('div', { class: 'split-list-item' });
+    const pic = item.querySelector('picture');
+    if (!pic) return;
+    const textli = ['STRONG', 'EM', 'A'].includes(item.lastElementChild.nodeName)
+      ? item
+      : item.nextElementSibling;
+    const btn = createTag('div', {}, textli.lastElementChild);
+    const textContent = createTag('div', { class: 'text-content' });
+    const text = createTag('div', {}, textli.innerText.trim());
+    textContent.append(pic, text);
+    listItem.append(textContent, btn);
+    listContainer.append(listItem);
+    pic.querySelector('img').loading = 'eager';
+  });
+  listContent.replaceWith(listContainer);
+}
+
 async function decorateForegroundText(el, container) {
   const text = container?.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
   text?.classList.add('text');
   if (el.classList.contains('countdown-timer') && !el.classList.contains('pill') && !el.classList.contains('ribbon')) {
     await loadCDT(text, el.classList);
+  }
+  if (el.classList.contains('split')) {
+    decorateSplitList(text?.querySelector('ul'));
+    return;
   }
   const iconArea = text?.querySelector('p:has(picture)');
   iconArea?.classList.add('icon-area');

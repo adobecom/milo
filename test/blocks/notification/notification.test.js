@@ -92,4 +92,15 @@ describe('notification', async () => {
       expect(close.closest('.notification').style.display).to.equal('none');
     });
   });
+
+  describe('split notifications', () => {
+    let splits;
+    beforeEach(() => {
+      splits = [...notifs].filter((e) => e.classList.contains('split'));
+    });
+    it('has stacked item list added', () => {
+      const stacks = splits[0].querySelectorAll('.split-list-item').length;
+      expect(stacks).to.equal(2);
+    });
+  });
 });
