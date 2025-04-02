@@ -254,9 +254,7 @@ export function getVideoAttrs(hash, dataset) {
 export function syncPausePlayIcon(video, event) {
   if (!video.getAttributeNames().includes('data-hoverplay')) {
     const offsetFiller = video.closest('.video-holder').querySelector('.offset-filler');
-    if (event?.type === 'playing' && offsetFiller?.classList.contains('is-playing')) {
-      return;
-    }
+    if (event?.type === 'playing' && offsetFiller?.classList.contains('is-playing')) return;
     const anchorTag = video.closest('.video-holder').querySelector('a');
     offsetFiller?.classList.toggle('is-playing');
     const isPlaying = offsetFiller?.classList.contains('is-playing');
