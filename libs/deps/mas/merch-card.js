@@ -1025,7 +1025,7 @@ merch-card[variant="plans"] [slot="quantity-select"] {
         grid-template-columns: repeat(4, var(--consonant-merch-card-plans-width));
     }
 }
-`;var Ht={title:{tag:"p",slot:"heading-xs"},prices:{tag:"p",slot:"heading-m"},promoText:{tag:"p",slot:"promo-text"},description:{tag:"div",slot:"body-xs"},mnemonics:{size:"l"},callout:{tag:"div",slot:"callout-content"},quantitySelect:{tag:"div",slot:"quantity-select"},stockOffer:!0,secureLabel:!0,badge:{tag:"div",slot:"badge"},allowedBadgeColors:["spectrum-yellow-300-plans","spectrum-gray-100-plans","spectrum-gray-300-plans","spectrum-green-900-plans"],allowedBorderColors:["spectrum-yellow-300-plans","spectrum-gray-300-plans","spectrum-green-900-plans"],borderColor:{attribute:"border-color"},ctas:{slot:"footer",size:"m"},style:"consonant"},ge=class extends S{constructor(t){super(t)}get aemFragmentMapping(){return Ht}getGlobalCSS(){return nn}postCardUpdateHook(){this.adjustTitleWidth()}get stockCheckbox(){return this.card.checkboxLabel?on`<label id="stock-checkbox">
+`;var Ht={title:{tag:"p",slot:"heading-xs"},prices:{tag:"p",slot:"heading-m"},promoText:{tag:"p",slot:"promo-text"},description:{tag:"div",slot:"body-xs"},mnemonics:{size:"l"},callout:{tag:"div",slot:"callout-content"},quantitySelect:{tag:"div",slot:"quantity-select"},stockOffer:!0,secureLabel:!0,badge:{tag:"div",slot:"badge"},allowedBorderColors:["spectrum-yellow-300-plans","spectrum-gray-300-plans","spectrum-gray-700-plans","spectrum-green-900-plans"],borderColor:{attribute:"border-color"},ctas:{slot:"footer",size:"m"},style:"consonant"},ge=class extends S{constructor(t){super(t)}get aemFragmentMapping(){return Ht}getGlobalCSS(){return nn}postCardUpdateHook(){this.adjustTitleWidth()}get stockCheckbox(){return this.card.checkboxLabel?on`<label id="stock-checkbox">
                 <input type="checkbox" @change=${this.card.toggleStockOffer}></input>
                 <span></span>
                 ${this.card.checkboxLabel}
@@ -2029,9 +2029,9 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
     
     /* plans colors */
     --spectrum-yellow-300-plans: #F5C700;
-    --spectrum-gray-100-plans: #F8F8F8;
     --spectrum-green-900-plans: #05834E;
     --spectrum-gray-300-plans: #DADADA;
+    --spectrum-gray-700-plans: #505050;
   
     /* merch card generic */
     --consonant-merch-card-max-width: 300px;

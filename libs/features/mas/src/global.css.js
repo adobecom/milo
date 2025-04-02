@@ -104,9 +104,9 @@ styles.innerHTML = `
     
     /* plans colors */
     --spectrum-yellow-300-plans: #F5C700;
-    --spectrum-gray-100-plans: #F8F8F8;
     --spectrum-green-900-plans: #05834E;
     --spectrum-gray-300-plans: #DADADA;
+    --spectrum-gray-700-plans: #505050;
   
     /* merch card generic */
     --consonant-merch-card-max-width: 300px;
