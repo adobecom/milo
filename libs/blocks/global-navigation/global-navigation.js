@@ -12,9 +12,27 @@ import {
   getFedsPlaceholderConfig,
 } from '../../utils/utils.js';
 
-(() => {
-  const { miloLibs, codeRoot } = getConfig();
+(async () => {
+  const { miloLibs, codeRoot, theme } = getConfig();
   const url = `${miloLibs || codeRoot}/blocks/global-navigation/`;
+  const loadStylePromise = (u) => new Promise((resolve) => {
+    loadStyle(u, (e) => {
+      if (e === 'error') throw new Error(u);
+      resolve();
+    });
+  });
+  try {
+    await loadStylePromise(`${url}base.css`);
+    if (theme === 'dark') await loadStylePromise(`${url}dark-nav.css`);
+  } catch (e) {
+    const gnavSource = getMetadata('gnav-source');
+    window.lana.log(`GNAV: Error in loadStyles | gnav-source: ${gnavSource} | href: ${window.location.href} | error loading style: ${e.message}`, {
+      clientId: 'feds-milo',
+      sampleRate: 1,
+      tags: 'utilities',
+      errorType: 'info',
+    });
+  }
   loadStyle(`${url}base.css`, () => {
     if (getConfig().theme === 'dark') loadStyle(`${url}dark-nav.css`);
   });
