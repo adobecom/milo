@@ -5,6 +5,7 @@ import {
   getMetadata,
   loadIms,
   loadStyle,
+  loadLana,
   decorateLinks,
   loadScript,
   getGnavSource,
@@ -15,10 +16,10 @@ import {
 (async () => {
   const { miloLibs, codeRoot, theme } = getConfig();
   const url = `${miloLibs || codeRoot}/blocks/global-navigation/`;
-  const loadStylePromise = (u) => new Promise((resolve) => {
+  const loadStylePromise = (u) => new Promise((resolve, reject) => {
     loadStyle(u, (e) => {
-      if (e === 'error') throw new Error(u);
-      resolve();
+      if (e === 'error') return reject(u);
+      return resolve();
     });
   });
   try {
@@ -26,6 +27,7 @@ import {
     if (theme === 'dark') await loadStylePromise(`${url}dark-nav.css`);
   } catch (e) {
     const gnavSource = getMetadata('gnav-source');
+    if (!window.lana?.log) loadLana();
     window.lana.log(`GNAV: Error in loadStyles | gnav-source: ${gnavSource} | href: ${window.location.href} | error loading style: ${e.message}`, {
       clientId: 'feds-milo',
       sampleRate: 1,
