@@ -85,7 +85,7 @@ export function addMepHighlightAndTargetId(el, source) {
   return el;
 }
 
-export function toFragment(htmlStrings, ...values) {
+export function toFragment1(htmlStrings, ...values) {
   const templateStr = htmlStrings.reduce((acc, htmlString, index) => {
     if (values[index] instanceof HTMLElement) {
       return `${acc + htmlString}<elem ref="${index}"></elem>`;
@@ -101,6 +101,51 @@ export function toFragment(htmlStrings, ...values) {
   });
 
   return fragment;
+}
+
+export function toFragment(htmlStrings, ...values) {
+  // Generate the template string with placeholders
+  const templateStr = htmlStrings.reduce((acc, htmlString, index) => {
+    const value = values[index];
+    return value instanceof HTMLElement
+      ? `${acc}${htmlString}<elem ref="${index}"></elem>`
+      : `${acc}${htmlString}${value || ''}`;
+  }, '');
+
+
+  // Create new element and process placeholders
+  const fragment = document.createRange().createContextualFragment(templateStr).children[0];
+  // Generate unique selector based on attributes
+  const selector = generateUniqueSelector(fragment);
+  // Check for existing element with this selector
+  const existingElement = document.querySelector('header').querySelector(selector);
+
+  if (existingElement) {
+    return existingElement;
+  }
+
+  Array.from(newElement.querySelectorAll('elem')).forEach(replaceable => {
+    const ref = replaceable.getAttribute('ref');
+    replaceable.replaceWith(values[ref].cloneNode(true));
+  });
+
+  return newElement;
+}
+
+function generateUniqueSelector(element) {
+  const tag = element.tagName.toLowerCase();
+  const id = element.id ? `#${element.id}` : '';
+  const classes = element.className 
+    ? `.${element.className.trim().replace(/\s+/g, '.')}` 
+    : '';
+
+  // Include other attributes in selector
+  const attributes = Array.from(element.attributes)
+    .filter(attr => !['id', 'class'].includes(attr.name))
+    .map(attr => attr.value ? `[${attr.name}="${attr.value}"]` : `[${attr.name}]`)
+    .join('');
+
+  return `${tag}${id}${classes}${attributes}`;
 }
 
 const getPath = (urlOrPath = '') => {

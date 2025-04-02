@@ -51,6 +51,8 @@ import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
 
 import { getMiloLocaleSettings } from '../merch/merch.js';
 
+window.ssr = true;
+
 const SIGNIN_CONTEXT = getConfig()?.signInContext;
 
 function getHelpChildren() {
@@ -230,9 +232,10 @@ const decorateSignIn = async ({ rawElem, decoratedElem }) => {
       lanaLog({ message: 'Sign in link not found in dropdown.', tags: 'gnav', errorType: 'warn' });
     }
 
+    if(!window.ssr)
     decoratedElem.append(dropdownElem);
   }
-
+  if(!window.ssr)
   decoratedElem.prepend(signInElem);
 };
 
@@ -456,9 +459,11 @@ class Gnav {
         errorType: 'info',
       });
       localNav = toFragment`<div class="feds-localnav"/>`;
+      if(!window.ssr)
       this.block.after(localNav);
     }
     localNav.setAttribute('daa-lh', `${title}_localNav`);
+    if(!window.ssr)
     localNav.append(toFragment`<button class="feds-navLink--hoverCaret feds-localnav-title" aria-haspopup="true" aria-expanded="false" daa-ll="${title}_localNav|open"></button>`, toFragment` <div class="feds-localnav-curtain"></div>`, toFragment` <div class="feds-localnav-items"></div>`, toFragment`<a href="#" class="feds-sr-only feds-localnav-exit">.</a>`);
 
     const itemWrapper = localNav.querySelector('.feds-localnav-items');
@@ -519,6 +524,7 @@ class Gnav {
       </div>
       `;
 
+    if(!window.ssr)
     this.block.append(
       this.elements.curtain,
       this.elements.topnavWrapper,
@@ -1043,6 +1049,7 @@ class Gnav {
       await yieldToMain();
       const mainNavItem = this.decorateMainNavItem(item, index);
       if (mainNavItem) {
+        if(!window.ssr)
         this.elements.mainNav.appendChild(mainNavItem);
       }
     }
