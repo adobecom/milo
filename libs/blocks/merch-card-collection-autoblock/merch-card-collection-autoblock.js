@@ -117,12 +117,11 @@ export async function checkReady(masElement) {
 }
 
 export async function createCollection(el, options) {
-  const collectionOptions = { ...DEFAULT_OPTIONS, ...options };
   const aemFragment = createTag('aem-fragment', { fragment: options.fragment });
   const collection = createTag('merch-card-collection', null, aemFragment);
   let container = collection;
 
-  if (collectionOptions.sidenav) {
+  if (options.sidenav) {
     container = createTag('div', null, collection);
   }
 
@@ -141,7 +140,7 @@ export async function createCollection(el, options) {
   }
 
   /* Sidenav */
-  if (collectionOptions.sidenav) {
+  if (options.sidenav) {
     const sidenav = getSidenav(collection);
     if (sidenav) {
       container.insertBefore(sidenav, collection);
@@ -153,7 +152,7 @@ export async function createCollection(el, options) {
 }
 
 export default async function init(el) {
-  const options = getOptions(el);
+  const options = { ...DEFAULT_OPTIONS, ...getOptions(el) };
   if (!options.fragment) return;
   await loadDependencies(options);
   await createCollection(el, options);
