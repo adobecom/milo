@@ -35,9 +35,6 @@ import {
       errorType: 'info',
     });
   }
-  loadStyle(`${url}base.css`, () => {
-    if (getConfig().theme === 'dark') loadStyle(`${url}dark-nav.css`);
-  });
 })();
 
 const plainHTMLPromise = (async () => {
