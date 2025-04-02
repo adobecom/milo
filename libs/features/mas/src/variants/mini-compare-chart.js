@@ -74,7 +74,10 @@ export class MiniCompareChart extends VariantLayout {
   adjustMiniCompareFooterRows() {
     if (this.card.getBoundingClientRect().width === 0) return;
     const footerRows = this.card.querySelector('[slot="footer-rows"] ul');
-    [...footerRows?.children].forEach((el, index) => {
+    
+    if (!footerRows || !footerRows.children) return;
+    
+    [...footerRows.children].forEach((el, index) => {
         const height = Math.max(
             FOOTER_ROW_MIN_HEIGHT,
             parseFloat(window.getComputedStyle(el).height) || 0,

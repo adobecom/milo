@@ -14,6 +14,7 @@ import {
     expect,
     disableMasCommerceService,
 } from './utilities.js';
+import { MasError } from '../src/mas-error.js';
 
 /**
  * @param {string} wcsOsi
@@ -156,9 +157,20 @@ describe('class "InlinePrice"', () => {
         await initMasCommerceService();
         const inlinePrice = mockInlinePrice('xyz');
         inlinePrice.innerHTML = 'test';
-        await expect(inlinePrice.onceSettled()).to.be.eventually.rejectedWith(
-            'Bad WCS request: 404, url: https://www.adobe.com/web_commerce_artifact?offer_selector_ids=xyz&country=US&locale=en_US&landscape=PUBLISHED&api_key=wcms-commerce-ims-ro-user-milo&language=MULT'
-        );
+        try {
+          await inlinePrice.onceSettled();
+          // Should not reach here
+          expect.fail('Promise should have been rejected');
+      } catch (error) {
+          // Verify it's a MasError instance
+          expect(error).to.be.instanceOf(MasError);
+          expect(error.context).to.have.property('duration');
+          expect(error.context).to.have.property('startTime');
+          expect(error.context).to.include({
+              status: 404,
+              url: 'https://www.adobe.com//web_commerce_artifact?offer_selector_ids=xyz&country=US&locale=en_US&landscape=PUBLISHED&api_key=wcms-commerce-ims-ro-user-milo&language=MULT',
+          });
+      }
         expect(inlinePrice.innerHTML).to.be.empty;
     });
 
@@ -227,6 +239,20 @@ describe('class "InlinePrice"', () => {
                 inlinePrice.masElement.togglePending(),
             );
             expect(inlinePrice.state).to.equal(InlinePrice.STATE_FAILED);
+        });
+
+        it('alternativePrice option test for aria label: both price should have sr-only.', async () => {
+            await initMasCommerceService();
+            const inlinePrice = mockInlinePrice('puf');
+            Object.assign(inlinePrice.dataset, { template: 'strikethrough' });
+            const inlinePrice2 = mockInlinePrice('abm');
+            const p = document.createElement('p');
+            p.append(...document.body.children);
+            document.body.append(p);
+            await inlinePrice.onceSettled();
+            await inlinePrice2.onceSettled();
+            const srOnlyLabels = document.querySelectorAll('sr-only');
+            expect(srOnlyLabels.length).to.equal(2);
         });
     });
 
