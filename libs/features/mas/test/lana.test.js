@@ -41,7 +41,7 @@ describe('lana', () => {
             {
                 clientId: 'merch-at-scale',
                 delimiter: '¶',
-                ignoredProperties: ['analytics', 'literals'],
+                ignoredProperties: ['analytics', 'literals', 'element'],
                 isProdDomain: false,
                 serializableTypes: ['Array', 'Object'],
                 sampleRate: 1,
@@ -70,7 +70,7 @@ describe('lana', () => {
           {
               clientId: 'merch-at-scale',
               delimiter: '¶',
-              ignoredProperties: ['analytics', 'literals'],
+              ignoredProperties: ['analytics', 'literals', 'element'],
               isProdDomain: false,
               serializableTypes: ['Array', 'Object'],
               sampleRate: 1,
