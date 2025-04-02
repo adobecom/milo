@@ -30,7 +30,7 @@ describe('merch-card-collection autoblock', () => {
   });
 
   describe('init method', () => {
-    beforeEach(async () => {
+    before(async () => {
       sinon.stub(window, 'fetch').callsFake(async () => {
         const result = await originalFetch('/test/blocks/merch-card-collection-autoblock/mocks/fragment.json').then((res) => {
           if (res.ok) return res;
@@ -43,7 +43,6 @@ describe('merch-card-collection autoblock', () => {
     });
 
     afterEach(() => {
-      if (window.fetch.restore) window.fetch.restore();
       document.body.innerHTML = '';
     });
 
