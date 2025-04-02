@@ -28,7 +28,7 @@ import {
   } catch (e) {
     const gnavSource = getMetadata('gnav-source');
     if (!window.lana?.log) loadLana();
-    window.lana.log(`GNAV: Error in loadStyles | gnav-source: ${gnavSource} | href: ${window.location.href} | error loading style: ${e.message}`, {
+    window.lana.log(`GNAV: Error in loadStyles | gnav-source: ${gnavSource} | href: ${window.location.href} | error loading style: ${e}`, {
       clientId: 'feds-milo',
       sampleRate: 1,
       tags: 'utilities',
