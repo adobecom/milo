@@ -17,6 +17,7 @@
   --icon-size-xl: 64px;
   --pill-radius: 16px;
   --pill-shadow: 0 3px 6px #00000029;
+  --split-shadow: 0px 0px 16px 0px rgba(0, 0, 0, 0.16);
 
   display: flex;
   inline-size: 100%;
@@ -303,6 +304,10 @@
   inline-size: calc(100% - var(--spacing-m));
   margin-inline: auto;
   box-shadow: var(--pill-shadow);
+}
+
+.notification.split.pill {
+  box-shadow: var(--split-shadow);
 }
 
 .notification.pill .foreground .action-area {
