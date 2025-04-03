@@ -113,7 +113,7 @@ const AUTO_BLOCKS = [
   { merch: '/tools/ost?' },
   { merch: '/miniplans' },
   { 'merch-card-collection-autoblock': 'mas.adobe.com/studio.html#content-type=merch-card-collection', styles: false },
-  { 'merch-card-autoblock': 'mas.adobe.com/studio.html#content-type=merch-card', styles: false },
+  { 'merch-card-autoblock': 'mas.adobe.com/studio.html', styles: false },
   { m7: '/creativecloud/business-plans.html', styles: false },
   { m7: '/creativecloud/education-plans.html', styles: false },
 ];
