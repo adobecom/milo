@@ -1,5 +1,6 @@
 /* eslint-disable no-async-promise-executor */
 import {
+  loadBlock,
   decorateAutoBlock,
   decorateLinks,
   getMetadata,
@@ -94,9 +95,15 @@ class Footer {
     [regionParent, socialParent].forEach((parent) => parent?.replaceChildren());
 
     decorateLinks(this.body);
-
+    
     regionParent?.appendChild(region);
     socialParent?.appendChild(social);
+    
+    // Support auto populated modal
+    const modals = this.body.querySelectorAll('.modal');
+    if (modals.length > 0) {
+      await Promise.all(Array.from(modals).map(modal => loadBlock(modal)));
+    }
 
     const path = getFederatedUrl(url);
     federatePictureSources({ section: this.body, forceFederate: path.includes('/federal/') });
