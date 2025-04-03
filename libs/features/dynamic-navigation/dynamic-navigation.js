@@ -23,21 +23,25 @@ function dynamicNavGroupMatches(groupMetaData) {
 }
 
 export default function dynamicNav(url, key) {
+  const storageSource = 'gnavSource';
+  const storageKey = 'dynamicNavKey';
+  const storageGroup = 'dynamicNavGroup';
+
   if (foundDisableValues()) return url;
   const metadataContent = getMetadata('dynamic-nav');
   const dynamicNavGroup = getMetadata('dynamic-nav-group');
 
   if (metadataContent === 'reset') {
-    window.sessionStorage.removeItem('gnavSource', url);
-    window.sessionStorage.removeItem('dynamicNavKey', key);
-    window.sessionStorage.removeItem('dynamicNavGroup', dynamicNavGroup);
+    window.sessionStorage.removeItem(storageSource, url);
+    window.sessionStorage.removeItem(storageKey, key);
+    window.sessionStorage.removeItem(storageGroup, dynamicNavGroup);
     return url;
   }
 
   if (metadataContent === 'entry') {
-    window.sessionStorage.setItem('gnavSource', url);
-    window.sessionStorage.setItem('dynamicNavKey', key);
-    if (dynamicNavGroup) window.sessionStorage.setItem('dynamicNavGroup', dynamicNavGroup);
+    window.sessionStorage.setItem(storageSource, url);
+    window.sessionStorage.setItem(storageKey, key);
+    if (dynamicNavGroup) window.sessionStorage.setItem(storageGroup, dynamicNavGroup);
     return url;
   }
 
@@ -45,7 +49,7 @@ export default function dynamicNav(url, key) {
     if (!dynamicNavGroupMatches(dynamicNavGroup)) return url;
   }
 
-  if (metadataContent !== 'on' || key !== window.sessionStorage.getItem('dynamicNavKey')) return url;
+  if (metadataContent !== 'on' || key !== window.sessionStorage.getItem(storageKey)) return url;
 
-  return window.sessionStorage.getItem('gnavSource') || url;
+  return window.sessionStorage.getItem(storageSource) || url;
 }
