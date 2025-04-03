@@ -1283,13 +1283,13 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
 
 .feds-localnav .feds-localnav-curtain {
   opacity: 0;
-  height: 101lvh;
   background: var(--feds-color-black-v2);
   transition: opacity 600ms ease-in-out;
 }
 
 .feds-localnav.feds-localnav--active .feds-localnav-curtain {
   width: 100%;
+  height: 101lvh;
   opacity: 0.7;
 }
 
