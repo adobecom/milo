@@ -543,9 +543,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
         const selectedCol = filters[0] + 1;
         rows.forEach((row) => {
           const selectedColumn = row.querySelector(`.col-${selectedCol}`);
-          if (!selectedColumn) {
-            return;
-          }
+          if (!selectedColumn) return;
 
           selectedColumn.classList.remove('force-last');
           selectedColumn.classList.remove('rounded-left', 'rounded-right');
@@ -595,14 +593,9 @@ function applyStylesBasedOnScreenSize(table, originTable) {
     }
   };
 
-  const removeClones = () => {
-    const rows = table.querySelectorAll('.row');
-
-    rows.forEach((row) => {
-      const clonedCols = row.querySelectorAll('.col[data-cloned]');
-      clonedCols.forEach((col) => col.remove());
-    });
-  };
+  const removeClones = () => table
+    .querySelectorAll('.row .col[data-cloned]')
+    .forEach((clonedCol) => clonedCol.remove());
 
   // For Mobile (else: tablet / desktop)
   if (!isMerch && !table.querySelector('.row-heading .col-2')) {
@@ -610,22 +603,13 @@ function applyStylesBasedOnScreenSize(table, originTable) {
     table.querySelector('.row-heading .col-1').style.display = 'flex';
   }
 
+  removeClones();
   if (deviceBySize === 'MOBILE' || (isMerch && deviceBySize === 'TABLET')) {
-    removeClones();
     mobileRenderer();
   } else {
-    removeClones();
     table.querySelectorAll('.hide-mobile').forEach((col) => { col.classList.remove('hide-mobile'); });
-    const element = table.querySelector('.row-heading');
-
-    if (element) {
-      const columns = [...element.children];
-      columns.forEach(({ children }) => {
-        [...children].forEach((row) => {
-          row.style.removeProperty('height');
-        });
-      });
-    }
+    [...(table.querySelector('.row-heading')?.children || [])]
+      .forEach((column) => [...column.children].forEach((row) => row.style.removeProperty('height')));
     table.parentElement.querySelectorAll('.filters select').forEach((select, index) => {
       select.querySelectorAll('option').item(index).selected = true;
     });

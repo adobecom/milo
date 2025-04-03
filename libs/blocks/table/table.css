@@ -697,8 +697,8 @@
     border-top-right-radius: var(--border-radius);
   }
 
-  .table .row .col.hide-mobile {
-    display: none;
+  .table .hide-mobile {
+    display: none !important;
   }
 }
 
