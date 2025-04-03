@@ -1170,11 +1170,18 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
 }
 
 .feds-localnav-items {
-  padding: 20px 0 24px;
   background: var(--feds-background-popup);
   border-bottom: 1px solid var(--feds-borderColor-localnav-v2);
-  display: none;
   box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+  transition: 320ms max-height ease-in-out;
+  overflow: hidden;
+  pointer-events: none;
+  position: absolute;
+  display: block;
+  width: 100%;
+  top: var(--feds-localnav-height);
+  max-height: 0;
+  overscroll-behavior: contain;
 }
 
 .feds-localnav-items .feds-navLink {
@@ -1186,31 +1193,38 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
 }
 
 .feds-localnav.feds-localnav--active .feds-localnav-items {
-  display: block;
-  width: 100%;
-  position: absolute;
   overflow: auto;
-  top: var(--feds-localnav-height);
+  pointer-events: auto;
+}
+
+/* first child/last-child margin instead of padding because the padding
+ * was messing up the localnav animation */
+.feds-localnav .feds-localnav-items .feds-navItem:first-child {
+  margin-top: 20px;
+}
+
+.feds-localnav .feds-localnav-items .feds-navItem:last-child {
+  margin-bottom: 24px;
 }
 
 .feds-localnav .feds-localnav-items li {
   list-style: none;
 }
 
-.feds-localnav.feds-localnav--active .feds-localnav-items .feds-menu-items {
+.feds-localnav .feds-localnav-items .feds-menu-items {
   padding: 0;
   border-bottom: 0;
 }
 
-.feds-localnav.feds-localnav--active .feds-localnav-items .feds-menu-column > ul {
+.feds-localnav .feds-localnav-items .feds-menu-column > ul {
   padding: 0;
 }
 
-.feds-localnav.feds-localnav--active .feds-localnav-items .feds-menu-column .feds-navLink {
+.feds-localnav .feds-localnav-items .feds-menu-column .feds-navLink {
   padding-left: 38px;
 }
 
-.feds-localnav.feds-localnav--active .feds-localnav-items .feds-menu-items .feds-navLink {
+.feds-localnav .feds-localnav-items .feds-menu-items .feds-navLink {
   padding: 12px 56px;
 }
 
@@ -1267,10 +1281,15 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
   transform: rotateZ(-135deg);
 }
 
+.feds-localnav .feds-localnav-curtain {
+  opacity: 0;
+  background: var(--feds-color-black-v2);
+  transition: opacity 600ms ease-in-out;
+}
+
 .feds-localnav.feds-localnav--active .feds-localnav-curtain {
   width: 100%;
   height: 101lvh;
-  background: var(--feds-color-black-v2);
   opacity: 0.7;
 }
 
