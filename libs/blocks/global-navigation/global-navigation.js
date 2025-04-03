@@ -1024,9 +1024,16 @@ class Gnav {
     fedsPromoWrapper.append(this.elements.aside);
 
     const updateLayout = () => {
-      fedsPromoWrapper.style.height = `${this.elements.aside.clientHeight}px`;
-      if (!document.querySelector('.feds-localnav')) {
-        document.querySelector('header').style.top = `${this.elements.aside.clientHeight}px`;
+      const promoHeight = `${this.elements.aside.clientHeight}px`;
+      const header = document.querySelector('header');
+      const localNav = document.querySelector('.feds-localnav');
+      
+      fedsPromoWrapper.style.height = promoHeight;
+      header.style.top = promoHeight;
+
+      if (!isDesktop.matches && localNav) {
+        header.style.top = 0;
+        localNav.style.top = promoHeight;
       }
     }
 
