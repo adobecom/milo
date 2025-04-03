@@ -24,6 +24,10 @@ export class Catalog extends VariantLayout {
         return CATALOG_AEM_FRAGMENT_MAPPING;
     }
 
+    get cardTitle() {
+        return this.card.querySelector('.card-heading')?.textContent;
+    }
+
     get actionMenu() {
         return this.card.shadowRoot.querySelector('.action-menu');
     }
@@ -47,7 +51,7 @@ export class Catalog extends VariantLayout {
                         tabindex="0"
                         aria-expanded="false"
                         role="button"
-                    >Action Menu</div>
+                    >Device availability and creative categories - ${this.card.cardTitle}</div>
                 </div>
                 <slot
                     name="action-menu-content"
