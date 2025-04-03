@@ -56,9 +56,6 @@ dealing w/ groups of media and associated text
 .lockup-area a:focus,
 .lockup-area a:active { text-decoration: underline; }
 
-.center .lockup-area { justify-content: center; }
-.right .lockup-area { justify-content: flex-end; }
-
 .xxs-lockup .lockup-area {
   font-size: var(--type-lockup-xxs-size);
   letter-spacing:var(--type-lockup-xxs-ls);
@@ -100,6 +97,9 @@ dealing w/ groups of media and associated text
   letter-spacing:var(--type-lockup-xxl-ls);
   gap: 20px;
 }
+
+.right:not(.tabs.right) .lockup-area { justify-content: flex-end; }
+.center:not(.tabs.center):not(.section.center) .lockup-area { justify-content: center; }
 
 .xxs-lockup .lockup-area img { height: var(--icon-size-xxs); }
 .xs-lockup .lockup-area img { height: var(--icon-size-xs); }
