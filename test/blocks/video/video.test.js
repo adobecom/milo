@@ -201,14 +201,14 @@ describe('video uploaded using franklin bot', () => {
     const block = document.querySelector('.video.autoplay1.hoverplay.no-viewportplay');
     const a = block.querySelector('a');
     init(a);
-    setTimeout(callback, 0);
-    await clock.runAllAsync();
     const pausePlayWrapper = block.querySelector('.pause-play-wrapper');
     const video = block.querySelector('video');
+    video.autoplay = false;
     pausePlayWrapper.focus();
+    video.playPromise = sinon.promise((res) => res());
+    pausePlayWrapper.blur();
     setTimeout(callback, 0);
     await clock.runAllAsync();
-    pausePlayWrapper.blur();
     expect(video.paused).to.be.true;
   });
 
