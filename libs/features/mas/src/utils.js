@@ -37,12 +37,16 @@ export function createTag(tag, attributes = {}, content = null, is = null) {
     return element;
 }
 
+export function matchMobile() {
+  return window.matchMedia('(max-width: 767px)');
+}
+
 /**
  * Checks if the current device is mobile based on the screen width.
  * @returns {boolean} True if the device is mobile, otherwise false.
  */
 export function isMobile() {
-    return window.matchMedia('(max-width: 767px)').matches;
+  return matchMobile().matches;
 }
 
 /**
