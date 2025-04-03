@@ -17,7 +17,7 @@ const statusText = (parentElement) => {
   return info;
 };
 
-const GNAV_SOURCE = 'https://main--milo--adobecom.hlx.live/some-source-string';
+const GNAV_SOURCE = 'https://main--milo--adobecom.aem.live/some-source-string';
 
 describe('Dynamic Nav Status', () => {
   beforeEach(async () => {
@@ -128,7 +128,7 @@ describe('Dynamic Nav Status', () => {
 
     it('displays the correct information to the user for the active state "on"', () => {
       document.querySelector('meta[name="dynamic-nav"]').setAttribute('content', 'on');
-      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.hlx/test');
+      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.aem.live/test');
       window.sessionStorage.setItem('gnavSource', GNAV_SOURCE);
 
       dynamicNav();
@@ -147,7 +147,7 @@ describe('Dynamic Nav Status', () => {
 
     it('displays the correct information to the user for the active state "off"', () => {
       document.querySelector('meta[name="dynamic-nav"]').setAttribute('content', '');
-      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.hlx/test');
+      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.aem.live/test');
       window.sessionStorage.setItem('gnavSource', GNAV_SOURCE);
 
       dynamicNav();
@@ -166,7 +166,7 @@ describe('Dynamic Nav Status', () => {
 
     it('displays the correct information to the user for the enabled state "on"', () => {
       document.querySelector('meta[name="dynamic-nav"]').setAttribute('content', 'on');
-      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.hlx/test');
+      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.aem.live/test');
 
       dynamicNav();
       status();
@@ -184,7 +184,7 @@ describe('Dynamic Nav Status', () => {
 
     it('displays the correct information to the user for the enabled state "reset"', () => {
       document.querySelector('meta[name="dynamic-nav"]').setAttribute('content', 'reset');
-      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.hlx/test');
+      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.aem.live/test');
 
       dynamicNav();
       status();
@@ -202,7 +202,7 @@ describe('Dynamic Nav Status', () => {
 
     it('displays the correct information for a group match', () => {
       document.querySelector('meta[name="dynamic-nav"]').setAttribute('content', 'on');
-      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.hlx/test');
+      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.aem.live/test');
 
       dynamicNav();
       status();
@@ -218,7 +218,7 @@ describe('Dynamic Nav Status', () => {
 
     it('displays the correct information for a group mismatch', () => {
       document.querySelector('meta[name="dynamic-nav"]').setAttribute('content', 'on');
-      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.hlx/test');
+      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.aem.live/test');
 
       window.sessionStorage.setItem('dynamicNavGroup', 'no-test');
 
@@ -236,7 +236,7 @@ describe('Dynamic Nav Status', () => {
 
     it('displays the correct information for no group being set', () => {
       document.querySelector('meta[name="dynamic-nav"]').setAttribute('content', 'on');
-      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.hlx/test');
+      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.aem.live/test');
 
       document.querySelector('meta[name="dynamic-nav-group"]').remove();
       window.sessionStorage.setItem('dynamicNavGroup', 'no-test');
@@ -254,7 +254,7 @@ describe('Dynamic Nav Status', () => {
 
     it('remains active when there is no group match but the nav is active', () => {
       document.querySelector('meta[name="dynamic-nav"]').setAttribute('content', 'on');
-      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.hlx/test');
+      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.aem.live/test');
 
       document.querySelector('meta[name="dynamic-nav-group"]').remove();
       window.sessionStorage.setItem('dynamicNavGroup', 'no-test');
@@ -274,7 +274,7 @@ describe('Dynamic Nav Status', () => {
       const ppn = createTag('meta', { name: 'primaryproductname', content: 'Commerce Cloud' });
       document.querySelector('head').append(disableTag, ppn);
       document.querySelector('meta[name="dynamic-nav"]').setAttribute('content', 'on');
-      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.hlx/test');
+      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.aem.live/test');
       window.sessionStorage.setItem('gnavSource', GNAV_SOURCE);
 
       dynamicNav();
@@ -291,7 +291,7 @@ describe('Dynamic Nav Status', () => {
       const ppn = createTag('meta', { name: 'primaryproductname', content: 'Commerce Cloud' });
       document.querySelector('head').append(disableTag, ppn);
       document.querySelector('meta[name="dynamic-nav"]').setAttribute('content', 'on');
-      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.hlx/test');
+      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.aem.live/test');
       window.sessionStorage.setItem('gnavSource', GNAV_SOURCE);
 
       dynamicNav();
@@ -308,7 +308,7 @@ describe('Dynamic Nav Status', () => {
       const ppn = createTag('meta', { name: 'primaryproductname', content: 'Commerce Cloud' });
       document.querySelector('head').append(disableTag, ppn);
       document.querySelector('meta[name="dynamic-nav"]').setAttribute('content', 'on');
-      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.hlx/test');
+      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.aem.live/test');
       window.sessionStorage.setItem('gnavSource', GNAV_SOURCE);
 
       dynamicNav();
