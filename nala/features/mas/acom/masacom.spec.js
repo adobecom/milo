@@ -3,7 +3,7 @@
 module.exports = {
   FeatureName: 'Merch Acom Cards Feature',
   features: [
-    // SUGGESTED CARDS
+    // PLANS CARDS
     {
       tcid: '0',
       name: '@MAS-Plans',
@@ -20,6 +20,14 @@ module.exports = {
         seeAllPlansText: 'See all plans & pricing details',
         stockCheckboxLabel: 'Add a 30-day free trial of Adobe Stock.*',
       },
+      browserParams: '?theme=darkest',
+      tags: '@mas-acom @mas-plans-card @commerce @smoke @regression @milo',
+    },
+    {
+      tcid: '1',
+      name: '@MAS-Plans-CSS',
+      path: '/libs/features/mas/docs/plans.html',
+      data: { id: '8373b5c2-69e6-4e9c-befc-b424dd33469b' },
       browserParams: '?theme=darkest',
       tags: '@mas-acom @mas-plans-card @commerce @smoke @regression @milo',
     },
