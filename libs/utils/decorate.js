@@ -251,9 +251,10 @@ export function getVideoAttrs(hash, dataset) {
   return `${globalAttrs} controls`;
 }
 
-export function syncPausePlayIcon(video) {
+export function syncPausePlayIcon(video, event) {
   if (!video.getAttributeNames().includes('data-hoverplay')) {
     const offsetFiller = video.closest('.video-holder').querySelector('.offset-filler');
+    if (event?.type === 'playing' && offsetFiller?.classList.contains('is-playing')) return;
     const anchorTag = video.closest('.video-holder').querySelector('a');
     offsetFiller?.classList.toggle('is-playing');
     const isPlaying = offsetFiller?.classList.contains('is-playing');
@@ -261,6 +262,7 @@ export function syncPausePlayIcon(video) {
     const changedLabel = `${isPlaying ? videoLabels?.pauseMotion : videoLabels?.playMotion}`;
     const oldLabel = `${!isPlaying ? videoLabels?.pauseMotion : videoLabels?.playMotion}`;
     const ariaLabel = `${changedLabel} ${indexOfVideo}`.trim();
+    anchorTag?.setAttribute('title', `${ariaLabel}`);
     anchorTag?.setAttribute('aria-label', `${ariaLabel} `);
     anchorTag?.setAttribute('aria-pressed', isPlaying ? 'true' : 'false');
     const daaLL = anchorTag.getAttribute('daa-ll');
@@ -276,10 +278,10 @@ export function addAccessibilityControl(videoString, videoAttrs, indexOfVideo, t
   }
   return `
     <div class='video-container video-holder'>${videoString}
-      <a class='pause-play-wrapper' role='button' tabindex=${tabIndex} aria-pressed=true video-index=${indexOfVideo}>
-        <div class='offset-filler ${videoAttrs.includes('autoplay') ? 'is-playing' : ''}'>
-          <img class='accessibility-control pause-icon' src='${fedRoot}/federal/assets/svgs/accessibility-pause.svg'/>
-          <img class='accessibility-control play-icon' src='${fedRoot}/federal/assets/svgs/accessibility-play.svg'/>
+      <a class='pause-play-wrapper' title='${videoLabels.pauseMotion}' role='button' tabindex=${tabIndex} aria-pressed=true video-index=${indexOfVideo}>
+        <div class='offset-filler'>
+          <img class='accessibility-control pause-icon' alt='${videoLabels.pauseIcon}' src='${fedRoot}/federal/assets/svgs/accessibility-pause.svg'/>
+          <img class='accessibility-control play-icon' alt='${videoLabels.playIcon}' src='${fedRoot}/federal/assets/svgs/accessibility-play.svg'/>
         </div>
       </a>
     </div>
@@ -324,8 +326,9 @@ export function applyAccessibilityEvents(videoEl) {
     pausePlayWrapper.addEventListener('keydown', handlePause);
   }
   if (videoEl.hasAttribute('autoplay')) {
-    videoEl.addEventListener('canplay', () => { videoEl.play(); });
-    videoEl.addEventListener('ended', () => { syncPausePlayIcon(videoEl); });
+    videoEl.addEventListener('canplay', () => videoEl.play());
+    videoEl.addEventListener('playing', (event) => syncPausePlayIcon(videoEl, event));
+    videoEl.addEventListener('ended', () => syncPausePlayIcon(videoEl));
   }
 }
 
