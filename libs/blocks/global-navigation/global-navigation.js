@@ -1022,6 +1022,26 @@ class Gnav {
     if (!decorate) return this.elements.aside;
     this.elements.aside = await decorate({ headerElem: this.block, fedsPromoWrapper, promoPath });
     fedsPromoWrapper.append(this.elements.aside);
+
+    const updateLayout = () => {
+      fedsPromoWrapper.style.height = `${this.elements.aside.clientHeight}px`;
+      if (!document.querySelector('.feds-localnav')) {
+        document.querySelector('header').style.top = `${this.elements.aside.clientHeight}px`;
+      }
+    }
+
+    if (this.elements.aside.clientHeight > fedsPromoWrapper.clientHeight) {
+      updateLayout();
+      const resizeObserver = new ResizeObserver(() => {
+        updateLayout();
+      });
+      resizeObserver.observe(this.elements.aside);
+      resizeObserver.observe(fedsPromoWrapper);
+      window.addEventListener('unload', () => {
+        resizeObserver.disconnect();
+      });
+    }
+  
     return this.elements.aside;
   };
 
