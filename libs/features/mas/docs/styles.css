@@ -25,6 +25,7 @@ body.spectrum--darkest {
     font-size: 13px;
     font-weight: bold; /* Makes text bold */
     text-transform: uppercase; /* Converts text to uppercase */
+    line-height: 16px;
 }
 
 .sidenav a:hover {
@@ -145,7 +146,7 @@ pre {
 #log2,
 #log3,
 #log4 {
-  display: block;
+    display: block;
 }
 
 button {
@@ -153,8 +154,25 @@ button {
 }
 
 .gallery-content {
-  display: block;
-  padding: 30px;
+    display: block;
+    padding: 30px;
+}
+
+.plans-gallery-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px;
+    line-height: 16px;
+
+    & h1,
+    h2 {
+        margin-block: 10px;
+    }
+
+    & .plans-link {
+        font-size: 14px;
+    }
 }
 
 code {
@@ -224,11 +242,11 @@ h2,
 h3,
 h4,
 h5 {
-  color: var(--spectrum-gray-900);
+    color: var(--spectrum-gray-900);
 }
 
 .theme-selection {
-  color: var(--spectrum-gray-900);
+    color: var(--spectrum-gray-900);
 }
 
 .adobe-home-container {
@@ -262,7 +280,7 @@ h5 {
 }
 
 .theme-toggle {
-  color: var(--spectrum-gray-900);
+    color: var(--spectrum-gray-900);
 }
 
 .flex-cards {

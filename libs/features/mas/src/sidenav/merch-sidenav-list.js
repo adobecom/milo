@@ -86,9 +86,6 @@ export class MerchSidenavList extends LitElement {
         if (parentNode?.tagName === 'SP-SIDENAV') {
             //swc does not consider, in multilevel, first level as a potential selection
             //and does not close other parents, we'll do that here
-            if (shouldUpdateHash) {
-              pushStateFromComponent(this, value);
-            }
             item.selected = true;
             parentNode
                 .querySelectorAll(
@@ -111,6 +108,9 @@ export class MerchSidenavList extends LitElement {
                       item.selected = false;
                   }
               });
+        }
+        if (shouldUpdateHash) {
+            pushStateFromComponent(this, value);
         }
     }
 
