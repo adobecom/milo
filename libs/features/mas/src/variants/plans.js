@@ -36,6 +36,11 @@ export class Plans extends VariantLayout {
   }
 
   adaptForMobile() {
+    if (!this.card.closest('merch-card-collection,overlay-trigger')) {
+      this.card.removeAttribute('size');
+      return;
+    }
+
     const shadowRoot = this.card.shadowRoot;
     const footer = shadowRoot.querySelector('footer');
     const size = this.card.getAttribute('size');
@@ -57,9 +62,6 @@ export class Plans extends VariantLayout {
     }
     if (!mobile && stockInBody) {
       stockInFooter ? stockInBody.remove() : footer.prepend(stockInBody);
-    }
-    if (!this.card.closest('merch-card-collection,overlay-trigger')) {
-      this.card.removeAttribute('size');
     }
   }
 
