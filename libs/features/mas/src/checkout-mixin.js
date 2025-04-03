@@ -1,10 +1,10 @@
-import { ignore } from './external.js';
+import { ignore } from '@dexter/tacocat-core';
 import {
     createMasElement,
     updateMasElement,
     MasElement,
 } from './mas-element.js';
-import { selectOffers, useService } from './utilities.js';
+import { selectOffers, getService } from './utilities.js';
 import { MODAL_TYPE_3_IN_1 } from '../src/constants.js';
 
 export const CLASS_NAME_DOWNLOAD = 'download';
@@ -12,7 +12,7 @@ export const CLASS_NAME_UPGRADE = 'upgrade';
 
 export function createCheckoutElement(Class, options = {}, innerHTML = '') {
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    const service = useService();
+    const service = getService();
     if (!service) return null;
     const {
         checkoutMarketSegment,
@@ -106,7 +106,7 @@ export function CheckoutMixin(Base) {
 
         async render(overrides = {}) {
             // eslint-disable-next-line react-hooks/rules-of-hooks
-            const service = useService();
+            const service = getService();
             if (!service) return false;
             if (!this.dataset.imsCountry) {
                 service.imsCountryPromise.then((countryCode) => {
@@ -167,7 +167,7 @@ export function CheckoutMixin(Base) {
 
         /**
          * Renders checkout link href for provided offers into this component.
-         * @param {Commerce.Wcs.Offer[]} offers
+         * @param {Offer[]} offers
          * @param {Commerce.Checkout.Options} options
          * @param {Commerce.Checkout.AnyOptions} overrides
          * @param {Commerce.Checkout.CheckoutAction} checkoutAction
@@ -181,7 +181,7 @@ export function CheckoutMixin(Base) {
             version = undefined,
         ) {
             // eslint-disable-next-line react-hooks/rules-of-hooks
-            const service = useService();
+            const service = getService();
             if (!service) return false;
             const extraOptions = JSON.parse(
                 this.dataset.extraOptions ?? 'null',
@@ -236,7 +236,7 @@ export function CheckoutMixin(Base) {
 
         updateOptions(options = {}) {
             // eslint-disable-next-line react-hooks/rules-of-hooks
-            const service = useService();
+            const service = getService();
             if (!service) return false;
             const {
                 checkoutMarketSegment,

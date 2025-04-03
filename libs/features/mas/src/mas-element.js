@@ -8,10 +8,9 @@ import {
     STATE_PENDING,
     STATE_RESOLVED,
 } from './constants.js';
-import { ignore } from './external.js';
-import { discoverService, setImmediate, useService } from './utilities.js';
+import { ignore } from '@dexter/tacocat-core';
+import { setImmediate, getService } from './utilities.js';
 import { Log } from './log.js';
-import { getMasCommerceServiceDurationLog } from './utils.js';
 import { MasError } from './mas-error.js';
 
 const StateClassName = {
@@ -26,6 +25,7 @@ const StateEventType = {
 };
 
 export class MasElement {
+    #service;
     changes = new Map();
     connected = false;
     dispose = ignore;
@@ -37,7 +37,6 @@ export class MasElement {
     timer = null;
     value = undefined;
     version = 0;
-
     wrapperElement;
 
     constructor(wrapperElement) {
@@ -96,7 +95,8 @@ export class MasElement {
      * requests placeholder update.
      */
     connectedCallback() {
-        this.dispose = discoverService(() => this.requestUpdate(true));
+        this.#service = getService();
+        this.requestUpdate(true);
     }
 
     /**
@@ -161,7 +161,7 @@ export class MasElement {
         this.log?.error(`${wcName}: Failed to render: ${error.message}`, {
             element: this.wrapperElement,
             ...error.context,
-            ...getMasCommerceServiceDurationLog(),
+            ...this.#service?.duration,
         });
         setImmediate(() => this.notify());
         return true;
@@ -190,7 +190,7 @@ export class MasElement {
      */
     requestUpdate(force = false) {
         // eslint-disable-next-line react-hooks/rules-of-hooks
-        if (!this.wrapperElement.isConnected || !useService()) return;
+        if (!this.wrapperElement.isConnected || !getService()) return;
         // Batch consecutive updates
         if (this.timer) return;
         // Save current state to restore it if needed

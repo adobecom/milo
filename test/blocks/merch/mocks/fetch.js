@@ -1,5 +1,5 @@
 import sinon from 'sinon';
-import { applyPlanType } from '../../../../libs/deps/mas/commerce.js';
+import '../../../../libs/deps/mas/commerce.js';
 
 const { fetch } = window;
 
@@ -32,7 +32,8 @@ export async function mockFetch() {
     } = offer;
     // eslint-disable-next-line no-nested-ternary
     const segment = customerSegment === 'TEAM' ? 'cct' : marketSegment === 'COM' ? 'cci' : 'cce';
-    const { planType } = applyPlanType(offer);
+    const service = document.querySelector('mas-commerce-service');
+    const { planType } = service.applyPlanType(offer);
     const osi = `${productFamily}-${offerType}-${planType}-${language}-${segment}`.toLowerCase();
     offerSelectorIds.unshift(osi);
   });

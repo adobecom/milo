@@ -47,36 +47,36 @@ Adobe Home Gallery provides a comprehensive list of all supported card variants 
 <span class="hljs-tag">&lt;/<span class="hljs-name">merch-card</span>&gt;</span>
 
 <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;module&quot;</span>&gt;</span><span class="language-javascript">
-      <span class="hljs-keyword">const</span> target = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;log1&#x27;</span>);
+    <span class="hljs-keyword">const</span> target = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;log1&#x27;</span>);
 
-      <span class="hljs-keyword">const</span> fragment1 = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;fragment1&#x27;</span>);
-      fragment1.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;aem:load&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">e</span>) =&gt;</span> {
-          <span class="hljs-title function_">log</span>(
-              target,
-              <span class="hljs-string">&#x27;aem-fragment is loaded: &#x27;</span>,
-              <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(e.<span class="hljs-property">target</span>.<span class="hljs-property">data</span>, <span class="hljs-literal">null</span>, <span class="hljs-string">&#x27;\t&#x27;</span>),
-          );
-      });
+    <span class="hljs-keyword">const</span> fragment1 = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;fragment1&#x27;</span>);
+    fragment1.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;aem:load&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">e</span>) =&gt;</span> {
+        <span class="hljs-title function_">log</span>(
+            target,
+            <span class="hljs-string">&#x27;aem-fragment is loaded: &#x27;</span>,
+            <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(e.<span class="hljs-property">target</span>.<span class="hljs-property">data</span>, <span class="hljs-literal">null</span>, <span class="hljs-string">&#x27;\t&#x27;</span>),
+        );
+    });
 
-      <span class="hljs-keyword">const</span> card1 = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;card1&#x27;</span>);
-      card1.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;mas:ready&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">e</span>) =&gt;</span> {
-          <span class="hljs-title function_">log</span>(target, <span class="hljs-string">&#x27;merch-card is ready: &#x27;</span>, e.<span class="hljs-property">target</span>.<span class="hljs-property">variant</span>);
-      });
+    <span class="hljs-keyword">const</span> card1 = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;card1&#x27;</span>);
+    card1.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;mas:ready&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">e</span>) =&gt;</span> {
+        <span class="hljs-title function_">log</span>(target, <span class="hljs-string">&#x27;merch-card is ready: &#x27;</span>, e.<span class="hljs-property">target</span>.<span class="hljs-property">variant</span>);
+    });
 
-      card1.<span class="hljs-title function_">addEventListener</span>(
-          <span class="hljs-string">&#x27;click&#x27;</span>,
-          <span class="hljs-function">(<span class="hljs-params">e</span>) =&gt;</span> {
-              e.<span class="hljs-title function_">preventDefault</span>();
-              e.<span class="hljs-title function_">stopPropagation</span>();
-              <span class="hljs-keyword">if</span> (e.<span class="hljs-property">target</span>.<span class="hljs-property">isCheckoutButton</span>) {
-                  <span class="hljs-title function_">log</span>(target, <span class="hljs-string">&#x27;merch-card checkout-button click: &#x27;</span>, e.<span class="hljs-property">target</span>);
-              } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (e.<span class="hljs-property">target</span>.<span class="hljs-property">isInlinePrice</span>) {
-                  <span class="hljs-title function_">log</span>(target, <span class="hljs-string">&#x27;merch-card price click: &#x27;</span>, e.<span class="hljs-property">target</span>.<span class="hljs-property">innerText</span>);
-              } <span class="hljs-keyword">else</span> {
-                  <span class="hljs-title function_">log</span>(target, <span class="hljs-string">&#x27;merch-card click: &#x27;</span>, e.<span class="hljs-property">target</span>);
-              }
-          },
-      { <span class="hljs-attr">capture</span>: <span class="hljs-literal">true</span> },
+    card1.<span class="hljs-title function_">addEventListener</span>(
+        <span class="hljs-string">&#x27;click&#x27;</span>,
+        <span class="hljs-function">(<span class="hljs-params">e</span>) =&gt;</span> {
+            e.<span class="hljs-title function_">preventDefault</span>();
+            e.<span class="hljs-title function_">stopPropagation</span>();
+            <span class="hljs-keyword">if</span> (e.<span class="hljs-property">target</span>.<span class="hljs-property">isCheckoutButton</span>) {
+                <span class="hljs-title function_">log</span>(target, <span class="hljs-string">&#x27;merch-card checkout-button click: &#x27;</span>, e.<span class="hljs-property">target</span>);
+            } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (e.<span class="hljs-property">target</span>.<span class="hljs-property">isInlinePrice</span>) {
+                <span class="hljs-title function_">log</span>(target, <span class="hljs-string">&#x27;merch-card price click: &#x27;</span>, e.<span class="hljs-property">target</span>.<span class="hljs-property">innerText</span>);
+            } <span class="hljs-keyword">else</span> {
+                <span class="hljs-title function_">log</span>(target, <span class="hljs-string">&#x27;merch-card click: &#x27;</span>, e.<span class="hljs-property">target</span>);
+            }
+        },
+        { <span class="hljs-attr">capture</span>: <span class="hljs-literal">true</span> },
     );
 </span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
 </code></pre>
@@ -161,7 +161,6 @@ Adobe Home Gallery provides a comprehensive list of all supported card variants 
 <li><code>product</code></li>
 <li><code>segment</code></li>
 <li><code>special-offers</code></li>
-<li><code>twp</code></li>
 <li><code>ccd-slice</code></li>
 <li><code>ccd-suggested</code></li>
 <li><code>ah-try-buy-widget</code></li>
@@ -222,26 +221,39 @@ The reason is that some merch cards are resolved very quickly and event could di
 
 <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;btnRefreshFragments&quot;</span>&gt;</span>Refresh Fragments<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
 <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;module&quot;</span>&gt;</span><span class="language-javascript">
-    { 
+    {
         <span class="hljs-keyword">const</span> logReady = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;log-mas-ready&#x27;</span>);
         <span class="hljs-keyword">const</span> <span class="hljs-title function_">message</span> = (<span class="hljs-params">e, type</span>) =&gt; {
-          <span class="hljs-keyword">const</span> id = e.<span class="hljs-property">target</span>.<span class="hljs-title function_">getAttribute</span>(<span class="hljs-string">&#x27;id&#x27;</span>) || e.<span class="hljs-property">target</span>.<span class="hljs-title function_">getAttribute</span>(<span class="hljs-string">&#x27;data-wcs-osi&#x27;</span>);
-          <span class="hljs-keyword">const</span> detail = e.<span class="hljs-property">detail</span> ? <span class="hljs-string">`: <span class="hljs-subst">${<span class="hljs-built_in">JSON</span>.stringify(e.detail, <span class="hljs-literal">null</span>, <span class="hljs-number">2</span>)}</span>`</span> : <span class="hljs-string">&#x27;&#x27;</span>;
-          <span class="hljs-keyword">return</span> <span class="hljs-string">`&#x27;<span class="hljs-subst">${type}</span>&#x27; on <span class="hljs-subst">${e.target.nodeName}</span> #<span class="hljs-subst">${id}</span><span class="hljs-subst">${detail}</span>`</span>;
+            <span class="hljs-keyword">const</span> id =
+                e.<span class="hljs-property">target</span>.<span class="hljs-title function_">getAttribute</span>(<span class="hljs-string">&#x27;id&#x27;</span>) ||
+                e.<span class="hljs-property">target</span>.<span class="hljs-title function_">getAttribute</span>(<span class="hljs-string">&#x27;data-wcs-osi&#x27;</span>);
+            <span class="hljs-keyword">const</span> detail = e.<span class="hljs-property">detail</span>
+                ? <span class="hljs-string">`: <span class="hljs-subst">${<span class="hljs-built_in">JSON</span>.stringify(e.detail, <span class="hljs-literal">null</span>, <span class="hljs-number">2</span>)}</span>`</span>
+                : <span class="hljs-string">&#x27;&#x27;</span>;
+            <span class="hljs-keyword">return</span> <span class="hljs-string">`&#x27;<span class="hljs-subst">${type}</span>&#x27; on <span class="hljs-subst">${e.target.nodeName}</span> #<span class="hljs-subst">${id}</span><span class="hljs-subst">${detail}</span>`</span>;
         };
         <span class="hljs-comment">// WCS request failed</span>
         <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;mas:failed&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">event</span>) =&gt;</span> {
-            <span class="hljs-title function_">log</span>(<span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;log-mas-failed&#x27;</span>), <span class="hljs-title function_">message</span>(event, <span class="hljs-string">&#x27;mas:failed&#x27;</span>));
+            <span class="hljs-title function_">log</span>(
+                <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;log-mas-failed&#x27;</span>),
+                <span class="hljs-title function_">message</span>(event, <span class="hljs-string">&#x27;mas:failed&#x27;</span>),
+            );
         });
         <span class="hljs-comment">// Freyja request failed</span>
         <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;aem:error&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">event</span>) =&gt;</span>
-            <span class="hljs-title function_">log</span>(<span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;log-aem-error&#x27;</span>), <span class="hljs-title function_">message</span>(event, <span class="hljs-string">&#x27;aem:error&#x27;</span>)),
+            <span class="hljs-title function_">log</span>(
+                <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;log-aem-error&#x27;</span>),
+                <span class="hljs-title function_">message</span>(event, <span class="hljs-string">&#x27;aem:error&#x27;</span>),
+            ),
         );
         <span class="hljs-comment">// Error in merch-card (WCS or Frejya request, or any other issue)</span>
         <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;mas:error&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">event</span>) =&gt;</span> {
             event.<span class="hljs-property">target</span>.<span class="hljs-property">classList</span>.<span class="hljs-title function_">remove</span>(<span class="hljs-string">&#x27;ready&#x27;</span>);
             event.<span class="hljs-property">target</span>.<span class="hljs-property">classList</span>.<span class="hljs-title function_">add</span>(<span class="hljs-string">&#x27;error&#x27;</span>);
-            <span class="hljs-title function_">log</span>(<span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;log-mas-error&#x27;</span>), <span class="hljs-title function_">message</span>(event, <span class="hljs-string">&#x27;mas:error&#x27;</span>));
+            <span class="hljs-title function_">log</span>(
+                <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;log-mas-error&#x27;</span>),
+                <span class="hljs-title function_">message</span>(event, <span class="hljs-string">&#x27;mas:error&#x27;</span>),
+            );
         });
         <span class="hljs-comment">// success events</span>
         <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;aem:ready&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">event</span>) =&gt;</span>
@@ -251,16 +263,16 @@ The reason is that some merch cards are resolved very quickly and event could di
             event.<span class="hljs-property">target</span>.<span class="hljs-property">classList</span>.<span class="hljs-title function_">add</span>(<span class="hljs-string">&#x27;ready&#x27;</span>);
             event.<span class="hljs-property">target</span>.<span class="hljs-property">classList</span>.<span class="hljs-title function_">remove</span>(<span class="hljs-string">&#x27;error&#x27;</span>);
             <span class="hljs-title function_">log</span>(logReady, <span class="hljs-title function_">message</span>(event, <span class="hljs-string">&#x27;mas:ready&#x27;</span>));
-        }); 
-        
-        <span class="hljs-comment">// refresh btn </span>
+        });
+
+        <span class="hljs-comment">// refresh btn</span>
         <span class="hljs-variable language_">document</span>
-          .<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;btnRefreshFragments&#x27;</span>)
-          .<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;click&#x27;</span>, <span class="hljs-function">() =&gt;</span> {
-              <span class="hljs-variable language_">document</span>
-                  .<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&#x27;mas-commerce-service&#x27;</span>)
-                  .<span class="hljs-title function_">refreshFragments</span>();
-          });
+            .<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;btnRefreshFragments&#x27;</span>)
+            .<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;click&#x27;</span>, <span class="hljs-function">() =&gt;</span> {
+                <span class="hljs-variable language_">document</span>
+                    .<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&#x27;mas-commerce-service&#x27;</span>)
+                    .<span class="hljs-title function_">refreshFragments</span>();
+            });
     }
 </span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
 
@@ -280,18 +292,24 @@ The reason is that some merch cards are resolved very quickly and event could di
 
 <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Fragment id is wrong<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
 <span class="hljs-tag">&lt;<span class="hljs-name">merch-card</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;event-demo&quot;</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;invalid-fragment-id&quot;</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">aem-fragment</span> <span class="hljs-attr">fragment</span>=<span class="hljs-string">&quot;wrong-fragment-id&quot;</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;invalid-fragment-id&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">aem-fragment</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">aem-fragment</span>
+        <span class="hljs-attr">fragment</span>=<span class="hljs-string">&quot;wrong-fragment-id&quot;</span>
+        <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;invalid-fragment-id&quot;</span>
+    &gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">aem-fragment</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">merch-card</span>&gt;</span>
-
 </code></pre>
 <h3 id="mas%3Afailed-log" tabindex="-1">mas:failed log <a class="header-anchor" href="#mas%3Afailed-log" href="#mas%3Afailed-log" title="Permalink to this heading">#</a></h3>
-<pre><code id="log-mas-failed" class="language-html"></code></pre>
+<pre><code id="log-mas-failed" class="language-html">
+</code></pre>
 <h3 id="aem%3Aerror-log" tabindex="-1">aem:error log <a class="header-anchor" href="#aem%3Aerror-log" href="#aem%3Aerror-log" title="Permalink to this heading">#</a></h3>
-<pre><code id="log-aem-error" class="language-html"></code></pre>
+<pre><code id="log-aem-error" class="language-html">
+</code></pre>
 <h3 id="mas%3Aerror-log" tabindex="-1">mas:error log <a class="header-anchor" href="#mas%3Aerror-log" href="#mas%3Aerror-log" title="Permalink to this heading">#</a></h3>
-<pre><code id="log-mas-error" class="language-html"></code></pre>
+<pre><code id="log-mas-error" class="language-html">
+</code></pre>
 <h3 id="mas%3Aready-log" tabindex="-1">mas:ready log <a class="header-anchor" href="#mas%3Aready-log" href="#mas%3Aready-log" title="Permalink to this heading">#</a></h3>
-<pre><code id="log-mas-ready" class="language-html"></code></pre>
+<pre><code id="log-mas-ready" class="language-html">
+</code></pre>
 <h2 id="error-handling" tabindex="-1">Error Handling <a class="header-anchor" href="#error-handling" href="#error-handling" title="Permalink to this heading">#</a></h2>
 <p>The <code>merch-card</code> component can raise several types of errors during its lifecycle. These errors are dispatched as events that can be caught and handled by the consumer.</p>
 <h3 id="potential-errors" tabindex="-1">Potential Errors <a class="header-anchor" href="#potential-errors" href="#potential-errors" title="Permalink to this heading">#</a></h3>
@@ -409,34 +427,34 @@ However, it can be accessed via <code>e.target.source</code> property.</p>
 <span class="hljs-tag">&lt;/<span class="hljs-name">merch-card</span>&gt;</span>
 
 <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;module&quot;</span>&gt;</span><span class="language-javascript">
-      <span class="hljs-keyword">const</span> target = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;log3&#x27;</span>);
+    <span class="hljs-keyword">const</span> target = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;log3&#x27;</span>);
 
-      <span class="hljs-keyword">const</span> cardSwc = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;cardSwc&#x27;</span>);
-      <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&#x27;cardSwc&#x27;</span>, cardSwc);
-      cardSwc.<span class="hljs-title function_">addEventListener</span>(
-          <span class="hljs-string">&#x27;click&#x27;</span>,
-          <span class="hljs-function">(<span class="hljs-params">e</span>) =&gt;</span> {
-              e.<span class="hljs-title function_">preventDefault</span>();
-              <span class="hljs-keyword">if</span> (e.<span class="hljs-property">target</span>.<span class="hljs-property">source</span>?.<span class="hljs-property">isCheckoutButton</span>) {
-                  <span class="hljs-title function_">log</span>(
-                      target,
-                      <span class="hljs-string">&#x27;merch-card checkout-button click: &#x27;</span>,
-                      <span class="hljs-string">&#x27;\n\t&#x27;</span>,
-                      e.<span class="hljs-property">target</span>.<span class="hljs-property">dataset</span>.<span class="hljs-property">navigationUrl</span>,
-                      <span class="hljs-string">&#x27;\n\t&#x27;</span>,
-                      e.<span class="hljs-property">target</span>.<span class="hljs-property">outerHTML</span>,
-                      <span class="hljs-string">&#x27;\n\t&#x27;</span>,
-                      e.<span class="hljs-property">target</span>.<span class="hljs-property">source</span>.<span class="hljs-property">outerHTML</span>,
-                      <span class="hljs-string">&#x27;\n&#x27;</span>,
-                  );
-              } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (e.<span class="hljs-property">target</span>.<span class="hljs-property">isInlinePrice</span>) {
-                  <span class="hljs-title function_">log</span>(target, <span class="hljs-string">&#x27;merch-card price click: &#x27;</span>, e.<span class="hljs-property">target</span>.<span class="hljs-property">innerText</span>);
-              } <span class="hljs-keyword">else</span> {
-                  <span class="hljs-title function_">log</span>(target, <span class="hljs-string">&#x27;merch-card click: &#x27;</span>, e.<span class="hljs-property">target</span>);
-              }
-          },
-          { <span class="hljs-attr">capture</span>: <span class="hljs-literal">true</span> },
-      );
+    <span class="hljs-keyword">const</span> cardSwc = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;cardSwc&#x27;</span>);
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&#x27;cardSwc&#x27;</span>, cardSwc);
+    cardSwc.<span class="hljs-title function_">addEventListener</span>(
+        <span class="hljs-string">&#x27;click&#x27;</span>,
+        <span class="hljs-function">(<span class="hljs-params">e</span>) =&gt;</span> {
+            e.<span class="hljs-title function_">preventDefault</span>();
+            <span class="hljs-keyword">if</span> (e.<span class="hljs-property">target</span>.<span class="hljs-property">source</span>?.<span class="hljs-property">isCheckoutButton</span>) {
+                <span class="hljs-title function_">log</span>(
+                    target,
+                    <span class="hljs-string">&#x27;merch-card checkout-button click: &#x27;</span>,
+                    <span class="hljs-string">&#x27;\n\t&#x27;</span>,
+                    e.<span class="hljs-property">target</span>.<span class="hljs-property">dataset</span>.<span class="hljs-property">navigationUrl</span>,
+                    <span class="hljs-string">&#x27;\n\t&#x27;</span>,
+                    e.<span class="hljs-property">target</span>.<span class="hljs-property">outerHTML</span>,
+                    <span class="hljs-string">&#x27;\n\t&#x27;</span>,
+                    e.<span class="hljs-property">target</span>.<span class="hljs-property">source</span>.<span class="hljs-property">outerHTML</span>,
+                    <span class="hljs-string">&#x27;\n&#x27;</span>,
+                );
+            } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (e.<span class="hljs-property">target</span>.<span class="hljs-property">isInlinePrice</span>) {
+                <span class="hljs-title function_">log</span>(target, <span class="hljs-string">&#x27;merch-card price click: &#x27;</span>, e.<span class="hljs-property">target</span>.<span class="hljs-property">innerText</span>);
+            } <span class="hljs-keyword">else</span> {
+                <span class="hljs-title function_">log</span>(target, <span class="hljs-string">&#x27;merch-card click: &#x27;</span>, e.<span class="hljs-property">target</span>);
+            }
+        },
+        { <span class="hljs-attr">capture</span>: <span class="hljs-literal">true</span> },
+    );
 </span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
 </code></pre>
 <pre><code id="log3" class="language-html">

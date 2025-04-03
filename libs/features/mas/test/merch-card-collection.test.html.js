@@ -17,7 +17,7 @@ import '../src/sidenav/merch-sidenav.js';
 import '../src/merch-card-collection.js';
 
 import { withWcs } from './mocks/wcs.js';
-import mas from './mas.js';
+import '../src/mas.js';
 
 const searchParams = new URLSearchParams(document.location.search);
 
@@ -76,7 +76,7 @@ runTests(async () => {
     appendMiloStyles();
     mockLana();
     await mockFetch(withWcs);
-    await mas();
+
     if (shouldSkipTests === 'true') return;
     describe('merch-card-collection web component on phones and tablets', () => {
         before(async () => {
