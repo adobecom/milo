@@ -683,7 +683,19 @@ div[class*='-up'] .con-block.has-bg.no-spacing { padding: 0; }
 }
 
 html:focus-within {
-  scroll-padding-top: var(--global-height-nav);
+  scroll-padding-top: 50vh;
+  scroll-padding-bottom: 50vh;
+}
+
+html:focus-within #onetrust-consent-sdk:not(:focus-within) {
+  position: sticky;
+  bottom: 0;
+  /* #onetrust-banner-sdk z-index value */
+  z-index: 2147483645;
+}
+
+html:focus-within #onetrust-banner-sdk:not(:focus-within) {
+  position: sticky;
 }
 
 body {
