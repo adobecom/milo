@@ -1032,14 +1032,7 @@ class Gnav {
 
     if (this.elements.aside.clientHeight > fedsPromoWrapper.clientHeight) {
       updateLayout();
-      const resizeObserver = new ResizeObserver(() => {
-        updateLayout();
-      });
-      resizeObserver.observe(this.elements.aside);
-      resizeObserver.observe(fedsPromoWrapper);
-      window.addEventListener('unload', () => {
-        resizeObserver.disconnect();
-      });
+      new ResizeObserver(updateLayout).observe(this.elements.aside);
     }
   
     return this.elements.aside;
