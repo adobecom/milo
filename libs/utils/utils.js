@@ -112,8 +112,8 @@ const AUTO_BLOCKS = [
   { merch: '/tools/ost?' },
   { merch: '/miniplans' },
   { 'mas-autoblock': 'mas.adobe.com/studio', styles: false },
-  { m7: '/creativecloud/business-plans.html', styles: false },
-  { m7: '/creativecloud/education-plans.html', styles: false },
+  { m7: '/creativecloud/business-plans', styles: false },
+  { m7: '/creativecloud/education-plans', styles: false },
 ];
 const DO_NOT_INLINE = [
   'accordion',
