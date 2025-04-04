@@ -96,7 +96,7 @@ export const LOCALES = {
   it: { ietf: 'it-IT' },
   kw_ar: { ietf: 'ar-KW' },
   kw_en: { ietf: 'en-GB' },
-  kw: {ietf: 'xx-kw' },
+  kw: { ietf: 'xx-kw' },
   lv: { ietf: 'lv-LV' },
   lt: { ietf: 'lt-LT' },
   lu_de: { ietf: 'de-LU' },
