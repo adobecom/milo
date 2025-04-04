@@ -49,7 +49,7 @@ export const LANGS = {
   hi: 'hi',
   el: 'el',
   '': 'en',
-}
+};
 
 export const LOCALES = {
   // Americas
