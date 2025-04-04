@@ -315,7 +315,7 @@ const getCountryAndLang = async (options) => {
     return {
       country: countryStr,
       lang: langStr,
-    }
+    };
   }
   /* c8 ignore next */
   const langStr = window.location.pathname.includes('/tools/send-to-caas/bulkpublisher')
