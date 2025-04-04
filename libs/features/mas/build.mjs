@@ -8,7 +8,6 @@ const defaults = {
     format: 'esm',
     minify: true,
     sourcemap: false,
-    metafile: true,
     platform: 'browser',
     target: ['es2020'],
 };
@@ -24,6 +23,7 @@ const { metafile } = await build({
     },
     entryPoints: ['./src/commerce.js'],
     outfile: `${outfolder}/commerce.js`,
+    metafile: true,
     platform: 'browser',
     banner: {
         js: `window.masPriceLiterals = ${priceLiteralsContent}.data;`,

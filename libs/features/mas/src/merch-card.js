@@ -311,7 +311,7 @@ export class MerchCard extends LitElement {
 
     connectedCallback() {
         super.connectedCallback();
-        this.#service = getService(this);
+        this.#service = getService();
         this.#log = this.#service.Log.module(MERCH_CARD);
         this.id ??=
             this.querySelector('aem-fragment')?.getAttribute('fragment');
