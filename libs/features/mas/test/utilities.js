@@ -1,7 +1,7 @@
 import chaiAsPromised from '@esm-bundle/chai-as-promised';
 import { expect, use } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import priceLiteralsJson from '../price-literals.json' with { type: 'json' }; // eslint-disable-line
+import priceLiteralsJson from '../price-literals.json' with { type: 'json' };
 import { equalsCaseInsensitive } from '@dexter/tacocat-core';
 
 const TAG_NAME_SERVICE = 'mas-commerce-service';
