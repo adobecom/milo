@@ -33,13 +33,16 @@ jobs:
 
       - name: Generate test URLs
         id: test-urls
+        env:
+          BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
+          REPO_OWNER: ${{ github.repository_owner }}
         run: |
           # Initialize test URLs array
           TEST_URLS=()
           
           # Get branch name and owner from PR event
-          BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
-          REPO_OWNER="${{ github.repository_owner }}"
+          BRANCH_NAME="$BRANCH_NAME"
+          REPO_OWNER="$REPO_OWNER"
           
           # Check if changes are in either global navigation or footer
           if [[ "${{ steps.changed-files.outputs.all_changed_files }}" == *"libs/blocks/global-navigation/"* ]] || [[ "${{ steps.changed-files.outputs.all_changed_files }}" == *"libs/blocks/global-footer/"* ]]; then
