@@ -88,7 +88,7 @@ function wrapCopy(foreground) {
 
 function addCloseAction(el, btn) {
   btn.addEventListener('click', (e) => {
-    if (btn.nodeName == 'A') e.preventDefault();
+    if (btn.nodeName === 'A') e.preventDefault();
     el.style.display = 'none';
     el.closest('.section')?.classList.add('close-sticky-section');
     document.dispatchEvent(new CustomEvent('milo:sticky:closed'));
