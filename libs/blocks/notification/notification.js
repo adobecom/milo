@@ -137,6 +137,7 @@ async function decorateLockup(lockupArea, el) {
 }
 
 function decorateSplitList(el, listContent) {
+  const closeEvent = "#_evt-close";
   const listContainer = createTag('div', { class: 'split-list-area' });
   listContent?.querySelectorAll('li').forEach((item) => {
     const listItem = createTag('div', { class: 'split-list-item' });
@@ -147,8 +148,8 @@ function decorateSplitList(el, listContent) {
       : item.nextElementSibling;
     const btn = createTag('div', {}, textli.lastElementChild);
     const btnA = btn.querySelector('a');
-    if (btnA.href.includes('#_evt-close')) {
-      btnA.href = '#_evt-close';
+    if (btnA?.href.includes(closeEvent)) {
+      btnA.href = closeEvent;
       addCloseAction(el, btnA);
     }
     const textContent = createTag('div', { class: 'text-content' });
