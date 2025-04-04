@@ -57,6 +57,7 @@ export class MerchCard extends LitElement {
         },
         badgeText: { type: String, attribute: 'badge-text' },
         actionMenu: { type: Boolean, attribute: 'action-menu' },
+        actionMenuLabel: { type: String, attribute: 'action-menu-label' },
         customHr: { type: Boolean, attribute: 'custom-hr' },
         consonant: { type: Boolean, attribute: 'consonant' },
         failed: { type: Boolean, attribute: 'failed', reflect: true },
@@ -138,6 +139,7 @@ export class MerchCard extends LitElement {
         this.failed = false;
         this.filters = {};
         this.types = '';
+        this.actionMenuLabel = 'xx';
         this.selected = false;
         this.spectrum = 'css';
         this.loading = 'lazy';

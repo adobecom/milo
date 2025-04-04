@@ -633,6 +633,7 @@ export default async function init(el) {
     : null;
   if (actionMenuContent) {
     merchCard.setAttribute('action-menu', true);
+    merchCard.setAttribute('action-menu-label', 'bozo_test');
     merchCard.append(
       createTag(
         'div',

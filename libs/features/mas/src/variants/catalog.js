@@ -47,7 +47,7 @@ export class Catalog extends VariantLayout {
                         tabindex="0"
                         aria-expanded="false"
                         role="button"
-                    >Device availability and creative categories - ${this.card.querySelector('.card-heading')?.textContent}</div>
+                    >${this.card.actionMenuLabel} - ${this.card.title}</div>
                 </div>
                 <slot
                     name="action-menu-content"
