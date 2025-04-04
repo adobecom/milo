@@ -88,7 +88,7 @@ function wrapCopy(foreground) {
 
 function addCloseAction(el, btn) {
   btn.addEventListener('click', (e) => {
-    e.preventDefault();
+    if (btn.nodeName == 'A') e.preventDefault();
     el.style.display = 'none';
     el.closest('.section')?.classList.add('close-sticky-section');
     document.dispatchEvent(new CustomEvent('milo:sticky:closed'));
@@ -146,8 +146,11 @@ function decorateSplitList(el, listContent) {
       ? item
       : item.nextElementSibling;
     const btn = createTag('div', {}, textli.lastElementChild);
-    const hasCloseHash = btn.querySelector('a').href.includes('#_close');
-    if (hasCloseHash) addCloseAction(el, btn);
+    const btnA = btn.querySelector('a');
+    if (btnA.href.includes('#_close')) {
+      btnA.href = "#_close"
+      addCloseAction(el, btnA);
+    }
     const textContent = createTag('div', { class: 'text-content' });
     const text = createTag('div', {}, textli.innerText.trim());
     textContent.append(pic, text);
