@@ -86,14 +86,18 @@ function wrapCopy(foreground) {
   });
 }
 
-function decorateClose(el) {
-  const btn = createTag('button', { 'aria-label': 'close', class: 'close' }, closeSvg);
-  btn.addEventListener('click', () => {
+function addCloseAction(el, btn) {
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
     el.style.display = 'none';
     el.closest('.section')?.classList.add('close-sticky-section');
     document.dispatchEvent(new CustomEvent('milo:sticky:closed'));
   });
+}
 
+function decorateClose(el) {
+  const btn = createTag('button', { 'aria-label': 'close', class: 'close' }, closeSvg);
+  addCloseAction(el, btn);
   el.appendChild(btn);
 }
 
@@ -132,7 +136,7 @@ async function decorateLockup(lockupArea, el) {
   if (pre && pre[2] === 'icon') el.classList.replace(pre[0], `${pre[1]}-lockup`);
 }
 
-function decorateSplitList(listContent) {
+function decorateSplitList(el, listContent) {
   const listContainer = createTag('div', { class: 'split-list-area' });
   listContent?.querySelectorAll('li').forEach((item) => {
     const listItem = createTag('div', { class: 'split-list-item' });
@@ -142,6 +146,8 @@ function decorateSplitList(listContent) {
       ? item
       : item.nextElementSibling;
     const btn = createTag('div', {}, textli.lastElementChild);
+    const hasCloseHash = btn.querySelector('a').href.includes('#_close');
+    if (hasCloseHash) addCloseAction(el, btn);
     const textContent = createTag('div', { class: 'text-content' });
     const text = createTag('div', {}, textli.innerText.trim());
     textContent.append(pic, text);
@@ -159,7 +165,7 @@ async function decorateForegroundText(el, container) {
     await loadCDT(text, el.classList);
   }
   if (el.classList.contains('split')) {
-    decorateSplitList(text?.querySelector('ul'));
+    decorateSplitList(el, text?.querySelector('ul'));
     return;
   }
   const iconArea = text?.querySelector('p:has(picture)');
