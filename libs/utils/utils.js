@@ -157,6 +157,9 @@ export const SLD = PAGE_URL.hostname.includes('.aem.') ? 'aem' : 'hlx';
 const PROMO_PARAM = 'promo';
 let isMartechLoaded = false;
 
+let localeToLanguageMap;
+let siteLanguages;
+
 export function getEnv(conf) {
   const { host } = window.location;
   const query = PAGE_URL.searchParams.get('env');
@@ -198,6 +201,32 @@ export function getLocale(locales, pathname = window.location.pathname) {
   return locale;
 }
 
+export function getLanguage(languages, locales, pathname = window.location.pathname) {
+  const defaultLang = { ietf: 'en', tk: 'hah7vzn.css', prefix: '/en' };
+  if (!languages) {
+    return defaultLang;
+  }
+  const split = pathname.split('/');
+  const baseSplit = [LANGSTORE, PREVIEW].includes(split[1]) ? 1 : 0;
+  const languageString = split[baseSplit + 1];
+  const region = split[baseSplit + 2];
+
+  const language = languages[languageString];
+  if (language && region && language.regions) {
+    const [matchingRegion] = language.regions.filter((r) => r.region === region);
+    language.region = matchingRegion;
+  }
+
+  // if no language, allow for support of locale based routing still
+  if (!language || (language.languageBased === false && !language.region)) {
+    return getLocale(locales, pathname);
+  }
+
+  language.prefix = `/${languageString}${region ? `/${region}` : ''}`;
+  language.languageBased = true;
+  return language;
+}
+
 export function getMetadata(name, doc = document) {
   const attr = name && name.includes(':') ? 'property' : 'name';
   const meta = doc.head.querySelector(`meta[${attr}="${name}"]`);
@@ -236,7 +265,13 @@ export const [setConfig, updateConfig, getConfig] = (() => {
       config = { env: getEnv(conf), ...conf };
       config.codeRoot = conf.codeRoot ? `${origin}${conf.codeRoot}` : origin;
       config.base = config.miloLibs || config.codeRoot;
-      config.locale = pathname ? getLocale(conf.locales, pathname) : getLocale(conf.locales);
+      if (conf.languages) {
+        config.locale = pathname
+          ? getLanguage(conf.languages, conf.locales, pathname)
+          : getLanguage(conf.languages, conf.locales);
+      } else {
+        config.locale = pathname ? getLocale(conf.locales, pathname) : getLocale(conf.locales);
+      }
       config.autoBlocks = conf.autoBlocks ? [...AUTO_BLOCKS, ...conf.autoBlocks] : AUTO_BLOCKS;
       config.signInContext = conf.signInContext || {};
       config.doNotInline = conf.doNotInline
@@ -306,6 +341,39 @@ export const getFederatedUrl = (url = '') => {
   return url;
 };
 
+function hasLanguageLinks(area) {
+  const targetDomains = [
+    // don't add milo too. It's a special case because of tools, merch, etc.
+    'news.adobe.com',
+    '--news--adobecom.',
+  ];
+
+  return Array.from(area.querySelectorAll('a[href]')).some((link) => {
+    try {
+      const url = new URL(link.href);
+      return targetDomains.some((domain) => url.hostname.includes(domain));
+    } catch (e) {
+      return false;
+    }
+  });
+}
+
+async function loadLanguageConfig() {
+  try {
+    const config = await fetch(`${getFederatedContentRoot()}/federal/assets/data/languages-config.json`);
+    const configJson = await config.json();
+
+    localeToLanguageMap = configJson['locale-to-language-map'].data;
+    siteLanguages = configJson['site-languages'].data.map((site) => {
+      site.domainMatches = site.domainMatches.split(/[\n,]+/).map((t) => t.trim()).filter(Boolean);
+      site.languages = site.languages.split(/[\n,]+/).map((t) => t.trim()).filter(Boolean);
+      return site;
+    });
+  } catch (e) {
+    window.lana?.log('Failed to load language-config.json:', e);
+  }
+}
+
 let fedsPlaceholderConfig;
 export const getFedsPlaceholderConfig = ({ useCache = true } = {}) => {
   if (useCache && fedsPlaceholderConfig) return fedsPlaceholderConfig;
@@ -370,17 +438,40 @@ export function localizeLink(
     const extension = getExtension(path);
     const allowedExts = ['', 'html', 'json'];
     if (!allowedExts.includes(extension)) return processedHref;
-    const { locale, locales, prodDomains } = getConfig();
-    if (!locale || !locales) return processedHref;
+    const { locale, locales, languages, prodDomains } = getConfig();
+    if (!locale || !(locales || languages)) return processedHref;
     const isLocalizable = relative || (prodDomains && prodDomains.includes(url.hostname))
       || overrideDomain;
     if (!isLocalizable) return processedHref;
     const isLocalizedLink = path.startsWith(`/${LANGSTORE}`)
       || path.startsWith(`/${PREVIEW}`)
+      || Object.keys(languages).some((lang) => lang !== '' && (path.startsWith(`/${lang}/`)))
       || Object.keys(locales).some((loc) => loc !== '' && (path.startsWith(`/${loc}/`)
         || path.endsWith(`/${loc}`)));
     if (isLocalizedLink) return processedHref;
-    const urlPath = `${locale.prefix}${path}${url.search}${hash}`;
+
+    let { prefix } = locale;
+    if (locale.languageBased && !url.hostname.includes('localhost')) {
+      const site = siteLanguages?.find(
+        (s) => s.domainMatches.some((d) => url.hostname.includes(d)),
+      );
+      if (!site) {
+        const mappedLocale = localeToLanguageMap.find((m) => `/${m.languagePath}` === locale.prefix);
+        if (mappedLocale) prefix = `/${mappedLocale.locale}`;
+      }
+    } else if (siteLanguages) {
+      const site = siteLanguages?.find(
+        (s) => s.domainMatches.some((d) => url.hostname.includes(d)),
+      );
+      if (site) {
+        const language = site.languages.find((l) => `/${l}` === locale.prefix);
+        if (!language) {
+          const mappedLocale = localeToLanguageMap.find((m) => `/${m.languagePath}` === locale.prefix);
+          if (mappedLocale) prefix = `/${mappedLocale.locale}`;
+        }
+      }
+    }
+    const urlPath = `${prefix}${path}${url.search}${hash}`;
     return relative ? urlPath : `${url.origin}${urlPath}`;
   } catch (error) {
     return href;
@@ -1480,6 +1571,9 @@ export async function loadArea(area = document) {
     appendSuffixToTitles();
   }
   const config = getConfig();
+  if ((!localeToLanguageMap && !siteLanguages) && (hasLanguageLinks(area) || config.languages)) {
+    await loadLanguageConfig();
+  }
 
   if (isDoc) {
     decorateDocumentExtras();

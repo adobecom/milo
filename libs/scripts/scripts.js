@@ -17,6 +17,7 @@ import {
   getMetadata,
 } from '../utils/utils.js';
 import locales from '../utils/locales.js';
+import languages from '../utils/languages.js';
 
 // Production Domain
 const prodDomains = ['milo.adobe.com', 'business.adobe.com', 'www.adobe.com'];
@@ -50,6 +51,7 @@ const config = {
   imsClientId: 'milo',
   codeRoot: '/libs',
   locales,
+  languages,
   prodDomains,
   stageDomainsMap,
   jarvis: {
