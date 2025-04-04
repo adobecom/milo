@@ -5,27 +5,25 @@ import { expect } from '@esm-bundle/chai';
 import { mockLana } from './mocks/lana.js';
 import { mockFetch } from './mocks/fetch.js';
 
-import './utils.js';
-import '../src/merch-offer.js';
-import '../src/merch-offer-select.js';
-import '../src/merch-quantity-select.js';
 import { delay } from './utils.js';
 
 import { mockIms } from './mocks/ims.js';
 import { withWcs } from './mocks/wcs.js';
-import mas from './mas.js';
 
 runTests(async () => {
     mockIms();
     mockLana();
     await mockFetch(withWcs);
-    await mas();
+    await import('../src/mas.js');
+
     describe('merch-card web component with mini-compare variant', () => {
         it('mini-compare-chart should have same body slot heights', async () => {
             const miniCompareCharts = document.querySelectorAll(
                 'merch-card[variant="mini-compare-chart"]',
             );
-            await Promise.all(Array.from(miniCompareCharts).map((card) => card.checkReady()));
+            await Promise.all(
+                Array.from(miniCompareCharts).map((card) => card.checkReady()),
+            );
             await delay();
             const [card1Slots, card2Slots, card3Slots] = [
                 ...miniCompareCharts,

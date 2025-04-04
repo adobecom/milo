@@ -1,7 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import '../../spectrum-web-components/dist/button.js';
-import mas from './mas.js';
+import '../src/mas.js';
 import {
     hydrate,
     processMnemonics,
@@ -52,7 +52,6 @@ const mockMerchCard = () => {
     return merchCard;
 };
 
-await mas();
 await mockFetch(withWcs);
 
 document.head.appendChild(document.createElement('mas-commerce-service'));
@@ -273,7 +272,6 @@ describe('processSubtitle', () => {
     let merchCard;
 
     before(async () => {
-        await mas();
         await mockFetch(withWcs);
     });
 

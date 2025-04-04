@@ -1,38 +1,16 @@
-import { EVENT_TYPE_READY } from './constants.js';
 import {
     forceTaxExclusivePrice,
     isNotEmptyString,
     isPositiveFiniteNumber,
     toPositiveFiniteInteger,
-} from './external.js';
+} from '@dexter/tacocat-core';
 
 const MAS_COMMERCE_SERVICE = 'mas-commerce-service';
-/**
- * Calls given `getConfig` every time new instance of the commerce service is activated,
- * passing new instance as the only argument.
- * @param {(commerce: Commerce.Instance) => void} getConfig
- * @param {{ once?: boolean; }} options
- * @returns {() => void}
- * A function, stopping notifications when called.
- */
-export function discoverService(getConfig, { once = false } = {}) {
-    let latest = null;
-    function discover() {
-        /** @type { Commerce.Instance } */
-        const current = document.querySelector(MAS_COMMERCE_SERVICE);
-        if (current === latest) return;
-        latest = current;
-        if (current) getConfig(current);
-    }
-    document.addEventListener(EVENT_TYPE_READY, discover, { once });
-    setImmediate(discover);
-    return () => document.removeEventListener(EVENT_TYPE_READY, discover);
-}
 
 /**
- * @param {Commerce.Wcs.Offer[]} offers
+ * @param {Offer[]} offers
  * @param {Commerce.Options} options
- * @returns {Commerce.Wcs.Offer[]}
+ * @returns {Offer[]}
  */
 export function selectOffers(
     offers,
@@ -84,7 +62,6 @@ export function toOfferSelectorIds(value) {
  * If commerce service has not been yet activated or was resetted, `null`.
  * @returns 
  */
-export function useService() {
+export function getService() {
     return document.getElementsByTagName(MAS_COMMERCE_SERVICE)?.[0];
 }
-

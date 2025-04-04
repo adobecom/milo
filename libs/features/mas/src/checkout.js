@@ -1,12 +1,7 @@
 import { CheckoutLink } from './checkout-link.js';
-import {
-    CheckoutWorkflow,
-    CheckoutWorkflowStep,
-    computePromoStatus,
-    omitProperties,
-    toBoolean,
-    toEnumeration,
-} from './external.js';
+import { omitProperties, toBoolean, toEnumeration, computePromoStatus } from '@dexter/tacocat-core';
+import { CheckoutWorkflow, CheckoutWorkflowStep } from './constants.js';
+
 import { buildCheckoutUrl } from './buildCheckoutUrl.js';
 import { Defaults } from './defaults.js';
 import { toOfferSelectorIds, toQuantity } from './utilities.js';
@@ -15,16 +10,23 @@ import { toOfferSelectorIds, toQuantity } from './utilities.js';
  * generate Checkout configuration
  */
 export function Checkout({ providers, settings }) {
+    // Memoize settings for frequently used values
+    const {
+        checkoutClientId,
+        checkoutWorkflow: defaultWorkflow,
+        checkoutWorkflowStep: defaultWorkflowStep,
+        country: defaultCountry,
+        language: defaultLanguage,
+        promotionCode: defaultPromotionCode,
+        quantity: defaultQuantity,
+        env, 
+        landscape
+    } = settings;
+
     function collectCheckoutOptions(overrides, placeholder) {
-        const {
-            checkoutClientId,
-            checkoutWorkflow: defaultWorkflow,
-            checkoutWorkflowStep: defaultWorkflowStep,
-            country: defaultCountry,
-            language: defaultLanguage,
-            promotionCode: defaultPromotionCode,
-            quantity: defaultQuantity,
-        } = settings;
+        // Use nullish coalescing for simpler defaults
+        const placeholderData = placeholder?.dataset ?? {};
+        
         const {
             checkoutMarketSegment,
             checkoutWorkflow = defaultWorkflow,
@@ -41,20 +43,24 @@ export function Checkout({ providers, settings }) {
             wcsOsi,
             extraOptions,
             ...rest
-        } = Object.assign({}, placeholder?.dataset ?? {}, overrides ?? {});
+        } = { ...placeholderData, ...overrides };
+        
         const workflow = toEnumeration(
             checkoutWorkflow,
             CheckoutWorkflow,
             Defaults.checkoutWorkflow,
         );
-        let workflowStep = CheckoutWorkflowStep.CHECKOUT;
-        if (workflow === CheckoutWorkflow.V3) {
-            workflowStep = toEnumeration(
+        
+        // Default workflow step based on workflow type
+        const workflowStep = workflow === CheckoutWorkflow.V3 
+            ? toEnumeration(
                 checkoutWorkflowStep,
                 CheckoutWorkflowStep,
                 Defaults.checkoutWorkflowStep,
-            );
-        }
+              )
+            : CheckoutWorkflowStep.CHECKOUT;
+        
+        // Build options object once with all transformations
         const options = omitProperties({
             ...rest,
             extraOptions,
@@ -72,11 +78,13 @@ export function Checkout({ providers, settings }) {
             promotionCode: computePromoStatus(promotionCode).effectivePromoCode,
             wcsOsi: toOfferSelectorIds(wcsOsi),
         });
-        if (placeholder) {
+        
+        if (placeholder && providers.checkout) {
             for (const provider of providers.checkout) {
                 provider(placeholder, options);
             }
         }
+        
         return options;
     }
 
@@ -86,11 +94,11 @@ export function Checkout({ providers, settings }) {
      * @returns a checkout URL
      */
     function buildCheckoutURL(offers, options, modalType) {
-      /* c8 ignore next 3 */
+        // Fast-path for empty offers
         if (!Array.isArray(offers) || !offers.length || !options) {
             return '';
         }
-        const { env, landscape } = settings;
+        
         const {
             checkoutClientId: clientId,
             checkoutMarketSegment: marketSegment,
@@ -101,7 +109,11 @@ export function Checkout({ providers, settings }) {
             quantity,
             ...rest
         } = collectCheckoutOptions(options);
+        
+        // Determine context only once
         const context = window.frameElement || modalType ? 'if' : 'fp';
+        
+        // Create data object with defaults to avoid repetition
         const data = {
             checkoutPromoCode,
             clientId,
@@ -114,42 +126,44 @@ export function Checkout({ providers, settings }) {
             landscape,
             ...rest,
         };
+        
+        // Optimize single vs multiple offer handling
         if (offers.length === 1) {
-            const [{ offerId, offerType, productArrangementCode }] = offers;
-            const {
-                marketSegments: [marketSegment],
-                customerSegment,
-            } = offers[0];
+            const [{ offerId, offerType, productArrangementCode, marketSegments, customerSegment }] = offers;
+            
             Object.assign(data, {
-                marketSegment,
+                marketSegment: marketSegments?.[0] ?? marketSegment,
                 customerSegment,
                 offerType,
                 productArrangementCode,
             });
+            
+            // Avoid unnecessary object creation for quantity = 1
             data.items.push(
                 quantity[0] === 1
                     ? { id: offerId }
-                    : { id: offerId, quantity: quantity[0] },
+                    : { id: offerId, quantity: quantity[0] }
             );
         } else {
-            /* c8 ignore next 7 */
-            data.items.push(
-                ...offers.map(({ offerId }, index) => ({
-                    id: offerId,
-                    quantity: quantity[index] ?? Defaults.quantity,
-                })),
-            );
+            // Optimize multiple offers handling with map
+            data.items = offers.map(({ offerId }, index) => ({
+                id: offerId,
+                quantity: quantity[index] ?? Defaults.quantity,
+            }));
         }
+        
         return buildCheckoutUrl(data, modalType);
     }
 
+    // Destructure only once
     const { createCheckoutLink } = CheckoutLink;
+    
     return {
-      CheckoutLink,
-      CheckoutWorkflow,
-      CheckoutWorkflowStep,
-      buildCheckoutURL,
-      collectCheckoutOptions,
-      createCheckoutLink,
+        CheckoutLink,
+        CheckoutWorkflow,
+        CheckoutWorkflowStep,
+        buildCheckoutURL,
+        collectCheckoutOptions,
+        createCheckoutLink,
     };
 }

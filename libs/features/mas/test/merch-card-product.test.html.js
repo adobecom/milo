@@ -12,14 +12,14 @@ import '../src/merch-quantity-select.js';
 import { appendMiloStyles, toggleLargeDesktop, delay } from './utils.js';
 import { mockIms } from './mocks/ims.js';
 import { withWcs } from './mocks/wcs.js';
-import mas from './mas.js';
+import '../src/mas.js';
 
 runTests(async () => {
     appendMiloStyles();
     mockIms();
     mockLana();
     await mockFetch(withWcs);
-    await mas();
+
     await toggleLargeDesktop();
 
     describe('merch-card web component', () => {

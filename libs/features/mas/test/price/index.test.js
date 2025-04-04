@@ -16,18 +16,6 @@ const data = await fetch('/test/price/data.json').then((response) =>
     response.json(),
 );
 
-const defaultLiterals = await fetch('/price-literals.json')
-    .then((response) => response.json())
-    .then((literals) =>
-        literals.data.find((literals) => literals.lang === 'en'),
-    );
-
-const literals = {
-    ...defaultLiterals,
-    recurrenceLabel:
-        '{recurrenceTerm, select, MONTH {<p>/mo</p>} YEAR {<p>/yr</p>} other {}}',
-};
-
 const root = document.createElement('div');
 document.body.append(root);
 
