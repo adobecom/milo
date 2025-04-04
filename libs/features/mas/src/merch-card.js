@@ -139,7 +139,7 @@ export class MerchCard extends LitElement {
         this.failed = false;
         this.filters = {};
         this.types = '';
-        this.actionMenuLabel = 'xx';
+        this.actionMenuLabel = '';
         this.selected = false;
         this.spectrum = 'css';
         this.loading = 'lazy';
