@@ -1184,6 +1184,26 @@ export function enablePersonalizationV2() {
   return !!enablePersV2 && isSignedOut();
 }
 
+function normCountry(country) {
+  return (country.toLowerCase() === 'uk' ? 'gb' : country.toLowerCase()).split('_')[0];
+}
+async function determineUserCountry(config) {
+  const urlParams = new URLSearchParams(window.location.search);
+  const country = urlParams.get('country') || (document.cookie.split('; ').find((row) => row.startsWith('international='))?.split('=')[1]);
+  config.mep = config.mep || {};
+  if (country) {
+    config.mep.countryChoice = normCountry(country);
+  }
+  const akamaiCode = urlParams.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
+  if (akamaiCode) {
+    config.mep.countryIP = normCountry(akamaiCode);
+  } else {
+    const { getAkamaiCode } = await import('../features/georoutingv2/georoutingv2.js');
+    config.mep.countryIPPromise = getAkamaiCode(true);
+  }
+  config.mep.geoLocation = true;
+}
+
 async function checkForPageMods() {
   const {
     mep: mepParam,
@@ -1199,10 +1219,15 @@ async function checkForPageMods() {
   const target = martech === 'off' ? false : getMepEnablement('target');
   const xlg = martech === 'off' ? false : getMepEnablement('xlg');
   const ajo = martech === 'off' ? false : getMepEnablement('ajo');
+  const mepgeolocation = martech === 'off' ? false : getMepEnablement('mepgeolocation');
 
   if (!(pzn || target || promo || mepParam
     || mepHighlight || mepButton || mepParam === '' || xlg || ajo)) return;
 
+  if (mepgeolocation) {
+    const config = getConfig();
+    determineUserCountry(config);
+  }
   const enablePersV2 = enablePersonalizationV2();
   const hybridPersEnabled = getMepEnablement('hybrid-pers');
   if ((target || xlg) && enablePersV2) {
