@@ -4,10 +4,10 @@
   align-items: center;
   align-content: center;
   justify-items: center;
-  grid-template-columns: 13% auto 11.5% auto 23%;
-  padding: 20px 0;
+  padding: 32px 0;
   box-sizing: border-box;
   overflow-y: scroll;
+  min-height: calc(100vh - calc(var(--feds-height-nav, 63px) + 67px) );
 }
 
 .login-container {
@@ -21,77 +21,146 @@
   display: none;
 }
 
+.susi-product {
+  display: flex;
+  gap: 10px;
+}
+
+.login-product {
+  display: flex;
+  gap: 7px;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.susi-product-title {
+  display: inline-block;
+  color: #222;
+  font-family: "Adobe Clean";
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 700;
+}
+
 .login-title {
   color: #000;
   font-family: "Adobe Clean";
   font-size: 22px;
   font-style: normal;
-  font-weight: 700;
+  font-weight: 900;
   line-height: 28px;
   padding: 0 24px;
+  text-align: center;
 }
 
 .login-description {
-  color: #222;
-  font-family: "Adobe Clean";
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: 24px; /* 150% */
-  padding: 0 24px;
+  display: none;
 }
 
 .guest-footer {
   padding: 10px 16px;
   background-color: white;
-  border-radius: 16px;
+  border-radius: 8px;
   justify-items: center;
   color: #222;
+  font-size: 14px;
   font-family: "Adobe Clean";
-  font-size: 17px;
   font-style: normal;
-  font-weight: 400;
+  font-weight: 700;
   line-height: 25px;
+  background: #F3F3F3;
+}
+
+.guest-footer a {
+  color: #292929;
+  font-weight: 500;
+  text-decoration-line: underline;
+  text-decoration-style: solid;
+  text-decoration-skip-ink: none;
+}
+
+.susi-product-logo {
+  width: 24px;
+  height: 24px;
 }
 
 .susi-light-wrapper {
-  padding: 16px;
   background-color: white;
-  height: 550px;
   border-radius: 16px;
   box-sizing: border-box;
+  justify-items: center;
+}
+
+susi-sentry-light {
+  display: block;
+  width: 348px;
+  height: 466px;
 }
 
 @media (min-width: 900px) {
 
   .susi-light {
-    height: calc(100vh - calc(var(--feds-height-nav) + 67px) );
+    grid-template-columns: minmax(78px, 13fr) 400px minmax(72px, 12fr) 352px 23fr;
+    height: calc(100vh - calc(var(--feds-height-nav, 63px) + 67px) );
     min-height: 700px;
     justify-content: initial;
     flex-direction: initial;
     box-sizing: border-box;
+    padding: 20px 0;
   }
   
   .login-container {
     grid-column: 2 / 3;
     gap: 10px;
+    min-width: 400px;
+  }
+
+  .login-product {
+    display: none;
+  }
+
+  .login-title {
+    text-align:left;
+    font-weight: 700;
+  }
+
+  .login-description {
+    display: block;
+    color: #222;
+    font-family: "Adobe Clean";
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 24px; /* 150% */
+    padding: 0 24px;
   }
 
   .susi-product-info {
     width: 352px;
     grid-column: 4 / 5;
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     gap: 10px;
   }
   
   .guest-footer {
+    font-size: 17px;
     padding: 20px 32px;
+    border-radius: 16px;
+    font-weight: 400;
   }
+
+  .guest-footer a {
+    color: var(--link-color, #274DEA);
+    font-weight: 400;
+  }
+
   .susi-product-logo {
     width: 44px;
     height: 44px;
   }
+
   .susi-product-title {
     display: inline-block;
     color: #222;
@@ -111,7 +180,9 @@
     line-height: 130%; /* 28.6px */
   }
   .susi-light-wrapper {
-    padding: 32px;
+    padding: 32px 32px 8px;
+    min-height: 550px;
+    justify-items: unset;
   }
   [dir = "rtl"] .login-container {
     margin-right: 12.5%; 

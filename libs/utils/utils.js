@@ -1173,7 +1173,7 @@ export async function loadMartech({
  *
  * @returns {boolean} True if the user is signed out, otherwise false.
  */
-function isSignedOut() {
+export function isSignedOut() {
   const serverTiming = window.performance?.getEntriesByType('navigation')?.[0]?.serverTiming?.reduce(
     (acc, { name, description }) => ({ ...acc, [name]: description }),
     {},
