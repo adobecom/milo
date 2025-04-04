@@ -315,3 +315,5 @@ export function Wcs({ settings }) {
         flushWcsCacheInternal,
     };
 }
+
+export { applyPlanType };
