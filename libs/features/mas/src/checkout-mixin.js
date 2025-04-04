@@ -148,28 +148,6 @@ export function CheckoutMixin(Base) {
         }
 
         /**
-         * Adds 3-in-1 modal related parameters to the URL.
-         * @param {string} url
-         * @param {'twp' | 'd2p' | 'crm'} modalType
-         */
-        add3in1ModalParams(url, modalType) {
-          try {
-            const newUrl = new URL(url);
-            newUrl.searchParams.set('ctx', 'if');
-            if (modalType === MODAL_TYPE_3_IN_1.CRM) {
-              newUrl.searchParams.set('af', 'uc_segmentation_hide_tabs,uc_new_user_iframe,uc_new_system_close');
-              newUrl.searchParams.set('cli', 'creative');
-            } else {
-              newUrl.searchParams.set('af', 'uc_new_user_iframe,uc_new_system_close');
-              newUrl.searchParams.set('cli', 'mini_plans');
-            }
-            return newUrl.toString();
-          } catch (error) {
-            this.masElement.log?.error('Failed to add 3-in-1 modal parameters', error);
-          }
-        }
-
-        /**
          * Sets `data-modal-type` attribute and returns the modal type.
          * @param {HTMLElement} el
          * @param {string} url
@@ -233,9 +211,8 @@ export function CheckoutMixin(Base) {
             }
             if (offers.length) {
                 if (this.masElement.toggleResolved(version, offers, options)) {
-                    const url = service.buildCheckoutURL(offers, options);
-                    const urlToSet = checkoutAction && modalType ? this.add3in1ModalParams(url, modalType) : url;
-                    this.setCheckoutUrl(urlToSet);
+                    const url = service.buildCheckoutURL(offers, options, modalType);
+                    this.setCheckoutUrl(url);
                     return true;
                 }
             } else {

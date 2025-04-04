@@ -314,7 +314,7 @@ describe('Utils', () => {
 
     it('Does not setup nofollow links', async () => {
       window.fetch = mockFetch({ payload: { data: [] } });
-      await utils.loadDeferred(document, [], { links: 'on' }, () => {});
+      await utils.loadDeferred(document, [], { links: 'on' }, () => { });
       const gaLink = document.querySelector('a[href="https://analytics.google.com/"]');
       expect(gaLink.getAttribute('rel')).to.be.null;
     });
@@ -329,7 +329,7 @@ describe('Utils', () => {
       metaPath.content = '/test/utils/mocks/nofollow.json';
 
       document.head.append(metaOn, metaPath);
-      await utils.loadDeferred(document, [], { contentRoot: '' }, () => {});
+      await utils.loadDeferred(document, [], { contentRoot: '' }, () => { });
       const gaLink = document.querySelector('a[href^="https://analytics.google.com"]');
       expect(gaLink).to.exist;
     });
@@ -785,7 +785,7 @@ describe('Utils', () => {
       div.className = 'global-navigation';
       document.body.appendChild(div);
       window.location.hash = '#not-block';
-      window.scrollBy = () => {};
+      window.scrollBy = () => { };
     });
 
     it('should scroll to the hashed element', () => {
@@ -941,7 +941,7 @@ describe('Utils', () => {
       const resultExperiment = resultConfig.mep.experiments[0];
       expect(resultConfig.mep.preview).to.be.true;
       expect(resultConfig.mep.experiments.length).to.equal(3);
-      expect(resultExperiment.manifest).to.equal('https://main--milo--adobecom.hlx.page/products/special-offers-manifest.json');
+      expect(resultExperiment.manifest).to.equal('/products/special-offers-manifest.json');
     });
   });
 
@@ -1004,6 +1004,73 @@ describe('Utils', () => {
       metaTag.setAttribute('name', 'footer');
       metaTag.setAttribute('content', 'on');
       document.head.appendChild(metaTag);
+    });
+  });
+  describe('isTrustedAutoBlock', () => {
+    const { origin } = window.location;
+    const autoBlocks = [
+      ['tv.adobe.com', 'https://tv.adobe.com/v1/123', true],
+      ['tv.adobe.com', 'https://tv.notadobe.com/v1/123', false],
+      ['tv.adobe.com', 'https://tv.notadobe.com/v1/123?url=tv.adobe.com/v1/123', false],
+      ['gist.github.com', 'https://gist.github.com/valid-gist', true],
+      ['gist.github.com', 'https://gist.github-not.com/invalid-gist', false],
+      ['/tools/caas', `${origin}/tools/caas`, true],
+      ['/tools/caas', 'https://adobe.com/tools/caas', true],
+      ['/tools/caas', 'https://unknown-origin.com/tools/caas', false],
+      ['/tools/faas', `${origin}/tools/faas`, true],
+      ['/tools/faas', 'https://unknown-origin.com/tools/faas', false],
+      ['/tools/faas', 'https://fake-adobe.com/tools/faas', false],
+      ['/tools/faas', 'https://adobe.com/tools/faas', true],
+      ['/fragments/', `${origin}/fragments/test`, true],
+      ['/fragments/', 'https://adobe.com/fragments/test', true],
+      ['/fragments/', 'https://unknown-origin.com/fragments/test', false],
+      ['instagram.com', 'https://www.instagram.com/test', true],
+      ['instagram.com', 'https://not-instagram.com/test', false],
+      ['slideshare.net', 'https://slideshare.net', true],
+      ['slideshare.net', 'https://not-slideshare.net', false],
+      ['tiktok.com', 'https://www.tiktok.com/test-test', true],
+      ['tiktok.com', 'https://tiktok-not.com/test-test', false],
+      ['twitter.com', 'https://twitter.com/test', true],
+      ['twitter.com', 'https://not-twitter.com/test', false],
+      ['vimeo.com', 'https://vimeo.com/test', true],
+      ['vimeo.com', 'https://fake-vimeo.com/test', false],
+      ['player.vimeo.com', 'https://player.vimeo.com/test', true],
+      ['player.vimeo.com', 'https://false-player.vimeo.com/test', false],
+      ['youtube.com', 'https://www.youtube.com/test', true],
+      ['youtube.com', 'https://www.not-youtube.com/test', false],
+      ['youtu.be', 'https://youtu.be/test', true],
+      ['youtu.be', 'https://fake-youtu.be/test', false],
+      ['.pdf', 'https://adobe.com/test.pdf', true],
+      ['.pdf', 'https://other-website.com/test.pdf', true],
+      ['.mp4', `${origin}/media_1234.mp4`, true],
+      ['.mp4', `${origin}/media_1234.mp3`, false],
+      ['.mp4', 'https://fake-website.com/media_1234.mp4', false],
+      ['.mp4', 'https://main--milo--adobecom.hlx.page/media_1234.mp4', true],
+      ['.mp4', 'https://main--milo--adobecom.hlx.live/media_1234.mp4', true],
+      ['.mp4', 'https://main--milo--adobecom.aem.page/media_1234.mp4', true],
+      ['.mp4', 'https://main--milo--adobecom.aem.live/media_1234.mp4', true],
+      ['.mp4', 'https://adobe.com/media_1234.mp4', true],
+      ['/tools/ost?', `${origin}/tools/ost?test=test`, true],
+      ['/tools/ost?', 'https://adobe.com/tools/ost?test=test', true],
+      ['/tools/ost?', 'https://fake-website.com/tools/ost?test=test', false],
+      ['mas.adobe.com/studio', 'https://mas.adobe.com/studio', true],
+      ['mas.adobe.com/studio', 'https://mas.not-adobe.com/studio', false],
+      ['/miniplans', `${origin}/miniplans`, true],
+      ['/miniplans', 'https://adobe.com/miniplans', true],
+      ['/miniplans', 'https://fake-website.com/miniplans', false],
+      ['/creativecloud/business-plans.html', `${origin}/creativecloud/business-plans.html`, true],
+      ['/creativecloud/business-plans.html', 'https://adobe.com/creativecloud/business-plans.html', true],
+      ['/creativecloud/business-plans.html', 'https://fake-website/creativecloud/business-plans.html', false],
+      ['/creativecloud/education-plans.html', `${origin}/creativecloud/education-plans.html`, true],
+      ['/creativecloud/education-plans.html', 'https://adobe.com/creativecloud/education-plans.html', true],
+      ['/creativecloud/education-plans.html', 'https://fake-website/creativecloud/education-plans.html', false],
+      ['not-block', 'https://example.com', false],
+    ];
+    it('Should return true if autoblock has trusted source', () => {
+      autoBlocks.forEach(([block, url, isValid]) => {
+        const isValidAutoBlock = utils.isTrustedAutoBlock(block, new URL(url));
+        expect(isValidAutoBlock).to.be[isValid];
+      });
     });
   });
 });
