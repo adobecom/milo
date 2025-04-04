@@ -118,10 +118,15 @@ jobs:
               
               // Check if Test URLs section exists
               const hasTestUrlsSection = pullRequest.body.includes('## GNav Test URLs');
+              let newDescription;
+              if (hasTestUrlsSection) {
+                // Replace existing Test URLs section
+                newDescription = pullRequest.body.replace(/## GNav Test URLs[\s\S]*?(?=\n\n|$)/, testUrlsSection);
+              } else {
+                // Add Test URLs section at the end
+                newDescription = `${pullRequest.body}\n\n${testUrlsSection}`;
+              }
               
-              // Add Test URLs section at the end
-              const newDescription = `${pullRequest.body}\n\n${testUrlsSection}`;
-                            
               // Update PR description
               await github.rest.pulls.update({
                 owner,
