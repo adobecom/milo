@@ -148,7 +148,7 @@ function decorateSplitList(el, listContent) {
     const btn = createTag('div', {}, textli.lastElementChild);
     const btnA = btn.querySelector('a');
     if (btnA.href.includes('#_close')) {
-      btnA.href = "#_close"
+      btnA.href = '#_close';
       addCloseAction(el, btnA);
     }
     const textContent = createTag('div', { class: 'text-content' });
