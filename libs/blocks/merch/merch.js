@@ -509,7 +509,7 @@ export async function openModal(e, url, offerType, hash, extraOptions, el) {
   } else {
     modal = await openExternalModal(url, getModal, extraOptions, el);
   }
-  if (modal) {
+  if (modal === 'true') {
     modal.classList.add(offerTypeClass);
   }
 }
@@ -537,7 +537,6 @@ export async function getModalAction(offers, options, el) {
     productArrangementCode,
     productArrangement: { productCode, productFamily: offerFamily } = {},
   }] = offers ?? [{}];
-  if (options.modal !== true) return undefined;
   const checkoutLinkConfig = await getCheckoutLinkConfig(
     offerFamily,
     productCode,

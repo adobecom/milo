@@ -235,6 +235,15 @@ describe('class "CheckoutLink"', () => {
             checkoutLink.masElement.togglePending();
             expect(checkoutLink.href).to.equal(HREF);
         });
+
+        it('does not set the checkout URL if the modal is a 3-in-1 modal', async () => {
+          await initMasCommerceService();
+          const checkoutLink = mockCheckoutLink('abm', {
+            modal: 'true',
+          });
+          await checkoutLink.onceSettled();
+          expect(checkoutLink.getAttribute('href')).to.equal('');
+        })
     });
 
     describe('method "updateOptions"', () => {
@@ -284,27 +293,15 @@ describe('class "CheckoutLink"', () => {
             await checkoutLink.onceSettled();
         });
 
-        describe('setModalType', () => {
-            it('handles all valid modal types', () => {
-                const modalTypes = ['twp', 'd2p', 'crm'];
-                
-                modalTypes.forEach(type => {
-                    const url = `https://commerce.adobe.com/store/checkout?modal=${type}`;
-                    const modalType = checkoutLink.setModalType(checkoutLink, url);
+        it('sets the opens3in1Modal property', () => {
+          checkoutLink.setAttribute('data-modal', 'crm');
+          expect(checkoutLink.opens3in1Modal).to.be.true;
+        })
 
-                    expect(modalType).to.equal(type);
-                    expect(checkoutLink.getAttribute('data-modal-type')).to.equal(type);
-                });
-            });
-
-            it('does not set modal type for invalid modal parameter', () => {
-                const url = 'https://commerce.adobe.com/store/checkout?modal=invalid';
-                const modalType = checkoutLink.setModalType(checkoutLink, url);
-
-                expect(modalType).to.be.undefined;
-                expect(checkoutLink.getAttribute('data-modal-type')).to.be.null;
-            });
-        });
+        it('does not set the opens3in1Modal property if the modal is not a 3-in-1 modal', () => {
+          checkoutLink.setAttribute('data-modal', 'true');
+          expect(checkoutLink.opens3in1Modal).to.be.false;
+        })
     });
 
     describe('logged-in features', () => {
