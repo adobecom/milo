@@ -210,11 +210,13 @@ export function getLanguage(languages, locales, pathname = window.location.pathn
   const baseSplit = [LANGSTORE, PREVIEW].includes(split[1]) ? 1 : 0;
   const languageString = split[baseSplit + 1];
   const region = split[baseSplit + 2];
+  let regionPath = '';
 
   const language = languages[languageString];
   if (language && region && language.regions) {
     const [matchingRegion] = language.regions.filter((r) => r.region === region);
     language.region = matchingRegion;
+    regionPath = matchingRegion ? `/${region}` : '';
   }
 
   // if no language, allow for support of locale based routing still
@@ -222,7 +224,7 @@ export function getLanguage(languages, locales, pathname = window.location.pathn
     return getLocale(locales, pathname);
   }
 
-  language.prefix = `/${languageString}${region ? `/${region}` : ''}`;
+  language.prefix = `/${languageString}${regionPath}`;
   language.languageBased = true;
   return language;
 }
@@ -341,7 +343,7 @@ export const getFederatedUrl = (url = '') => {
   return url;
 };
 
-function hasLanguageLinks(area) {
+export function hasLanguageLinks(area) {
   const targetDomains = [
     // don't add milo too. It's a special case because of tools, merch, etc.
     'news.adobe.com',
@@ -358,7 +360,7 @@ function hasLanguageLinks(area) {
   });
 }
 
-async function loadLanguageConfig() {
+export async function loadLanguageConfig() {
   try {
     const config = await fetch(`${getFederatedContentRoot()}/federal/assets/data/languages-config.json`);
     const configJson = await config.json();
