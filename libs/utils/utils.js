@@ -152,6 +152,11 @@ const TARGET_TIMEOUT_MS = 4000;
 const LANGSTORE = 'langstore';
 const PREVIEW = 'target-preview';
 const PAGE_URL = new URL(window.location.href);
+const LANGUAGE_BASED_DOMAINS = [
+  // don't add milo too. It's a special case because of tools, merch, etc.
+  'news.adobe.com',
+  '--news--adobecom.',
+];
 export const SLD = PAGE_URL.hostname.includes('.aem.') ? 'aem' : 'hlx';
 
 const PROMO_PARAM = 'promo';
@@ -344,33 +349,32 @@ export const getFederatedUrl = (url = '') => {
 };
 
 export function hasLanguageLinks(area) {
-  const targetDomains = [
-    // don't add milo too. It's a special case because of tools, merch, etc.
-    'news.adobe.com',
-    '--news--adobecom.',
-  ];
-
-  return Array.from(area.querySelectorAll('a[href]')).some((link) => {
+  for (const link of area.querySelectorAll('a[href]')) {
     try {
-      const url = new URL(link.href);
-      return targetDomains.some((domain) => url.hostname.includes(domain));
-    } catch (e) {
-      return false;
+      const { hostname } = new URL(link.href);
+      if (LANGUAGE_BASED_DOMAINS.some((domain) => hostname.includes(domain))) {
+        return true;
+      }
+    } catch {
+      // do nothing
     }
-  });
+  }
+  return false;
 }
 
 export async function loadLanguageConfig() {
+  const parseList = (str) => str.split(/[\n,]+/).map((t) => t.trim()).filter(Boolean);
   try {
-    const config = await fetch(`${getFederatedContentRoot()}/federal/assets/data/languages-config.json`);
-    const configJson = await config.json();
+    const response = await fetch(`${getFederatedContentRoot()}/federal/assets/data/languages-config.json`);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const configJson = await response.json();
 
-    localeToLanguageMap = configJson['locale-to-language-map'].data;
-    siteLanguages = configJson['site-languages'].data.map((site) => {
-      site.domainMatches = site.domainMatches.split(/[\n,]+/).map((t) => t.trim()).filter(Boolean);
-      site.languages = site.languages.split(/[\n,]+/).map((t) => t.trim()).filter(Boolean);
-      return site;
-    });
+    localeToLanguageMap = configJson['locale-to-language-map']?.data;
+    siteLanguages = configJson['site-languages']?.data?.map((site) => ({
+      ...site,
+      domainMatches: parseList(site.domainMatches),
+      languages: parseList(site.languages),
+    }));
   } catch (e) {
     window.lana?.log('Failed to load language-config.json:', e);
   }
@@ -425,6 +429,11 @@ function getExtension(path) {
   return pageName.includes('.') ? pageName.split('.').pop() : '';
 }
 
+function mapPrefixToLocale(currentPrefix) {
+  const mapped = localeToLanguageMap?.find((m) => `/${m.languagePath}` === currentPrefix);
+  return mapped ? `/${mapped.locale}` : currentPrefix;
+}
+
 export function localizeLink(
   href,
   originHostName = window.location.hostname,
@@ -447,30 +456,23 @@ export function localizeLink(
     if (!isLocalizable) return processedHref;
     const isLocalizedLink = path.startsWith(`/${LANGSTORE}`)
       || path.startsWith(`/${PREVIEW}`)
-      || Object.keys(languages).some((lang) => lang !== '' && (path.startsWith(`/${lang}/`)))
-      || Object.keys(locales).some((loc) => loc !== '' && (path.startsWith(`/${loc}/`)
-        || path.endsWith(`/${loc}`)));
+      || (languages && Object.keys(languages).some((lang) => lang !== '' && (path.startsWith(`/${lang}/`))))
+      || (locales && Object.keys(locales).some((loc) => loc !== '' && (path.startsWith(`/${loc}/`)
+        || path.endsWith(`/${loc}`))));
     if (isLocalizedLink) return processedHref;
 
     let { prefix } = locale;
-    if (locale.languageBased && !url.hostname.includes('localhost')) {
-      const site = siteLanguages?.find(
-        (s) => s.domainMatches.some((d) => url.hostname.includes(d)),
-      );
-      if (!site) {
-        const mappedLocale = localeToLanguageMap.find((m) => `/${m.languagePath}` === locale.prefix);
-        if (mappedLocale) prefix = `/${mappedLocale.locale}`;
+    const site = siteLanguages?.find((s) => s.domainMatches.some((d) => url.hostname.includes(d)));
+
+    if (locale.languageBased && url.hostname !== 'localhost') {
+      const hasValidLanguage = site?.languages.some((l) => locale.prefix.includes(l));
+      if (!site || !hasValidLanguage) {
+        prefix = mapPrefixToLocale(prefix);
       }
-    } else if (siteLanguages) {
-      const site = siteLanguages?.find(
-        (s) => s.domainMatches.some((d) => url.hostname.includes(d)),
-      );
-      if (site) {
-        const language = site.languages.find((l) => `/${l}` === locale.prefix);
-        if (!language) {
-          const mappedLocale = localeToLanguageMap.find((m) => `/${m.languagePath}` === locale.prefix);
-          if (mappedLocale) prefix = `/${mappedLocale.locale}`;
-        }
+    } else if (site) {
+      const siteHasLanguage = site.languages.some((l) => `/${l}` === prefix);
+      if (!siteHasLanguage) {
+        prefix = mapPrefixToLocale(prefix);
       }
     }
     const urlPath = `${prefix}${path}${url.search}${hash}`;
@@ -1573,7 +1575,7 @@ export async function loadArea(area = document) {
     appendSuffixToTitles();
   }
   const config = getConfig();
-  if ((!localeToLanguageMap && !siteLanguages) && (hasLanguageLinks(area) || config.languages)) {
+  if ((!localeToLanguageMap && !siteLanguages) && (config.languages || hasLanguageLinks(area))) {
     await loadLanguageConfig();
   }
 
