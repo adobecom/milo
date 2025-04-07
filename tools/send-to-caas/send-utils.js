@@ -310,8 +310,10 @@ const getCountryAndLang = async (options) => {
   if (langFirst) {
     const localeArr = window.location.pathname.split('/');
     const langStr = (localeArr.length > 1) ? LANGS[localeArr[1]] || LANGS[''] : 'en';
-    const countryStr = (localeArr.length > 2)
-      ? LOCALES[localeArr[2]].ietf.split('-')[1].toLowerCase() || 'xx' : 'xx';
+    let countryStr = (localeArr.length > 3) ? LOCALES[localeArr[4]] || 'xx' : 'xx';
+    if (typeof countryStr === 'object') {
+      countryStr = countryStr.ietf.split('-')[1];
+    }
     return {
       country: countryStr,
       lang: langStr,
