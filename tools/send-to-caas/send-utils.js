@@ -313,7 +313,9 @@ const getCountryAndLang = async (options) => {
     let countryStr = (localeArr.length > 3) ? LOCALES[localeArr[4]] || 'xx' : 'xx';
     if (typeof countryStr === 'object') {
       const { ietf } = countryStr;
-      countryStr = ietf.split('-')[1];
+      const localeAttributes = ietf?.split('-');
+      const [, c = 'xx'] = localeAttributes;
+      countryStr = c;
     }
     return {
       country: countryStr,
