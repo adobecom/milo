@@ -116,7 +116,7 @@ test.describe('Milo Video Block test suite', () => {
       await expect(await video.miloVideo).toBeVisible();
       await expect(await video.iframe).toBeVisible();
 
-      await expect(await video.iframe).toHaveAttribute('title', data.iframeTitle);
+      await expect(await video.iframe).toHaveAttribute('title', data.h1Title);
       await expect(await video.iframe).toHaveAttribute('src', data.source);
       expect(await webUtil.verifyAttributes(video.iframe, video.attributes['iframe-mpc'])).toBeTruthy();
     });

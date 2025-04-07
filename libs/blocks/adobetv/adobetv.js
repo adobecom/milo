@@ -30,7 +30,7 @@ export default function init(a) {
       window.fetch(`https://video.tv.adobe.com/v/${videoId}?format=json-ld`)
         .then((res) => res.json())
         .then((info) => {
-          iframe.setAttribute('title', `${info?.jsonLinkedData?.name} ${info?.jsonLinkedData?.description}`);
+          iframe.setAttribute('title', `${info?.jsonLinkedData?.name}`);
         });
     }
 
