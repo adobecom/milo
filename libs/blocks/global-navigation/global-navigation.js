@@ -1024,7 +1024,6 @@ class Gnav {
     fedsPromoWrapper.append(this.elements.aside);
 
     const updateLayout = () => {
-      lanaLog({ message: 'Promo height is more than expected, potential CLS', tags: 'gnav-promo', errorType: 'info' });
       const promoHeight = `${this.elements.aside.clientHeight}px`;
       const header = document.querySelector('header');
       const localNav = document.querySelector('.feds-localnav');
@@ -1039,8 +1038,14 @@ class Gnav {
     };
 
     if (this.elements.aside.clientHeight > fedsPromoWrapper.clientHeight) {
+      lanaLog({ message: 'Promo height is more than expected, potential CLS', tags: 'gnav-promo', errorType: 'info' });
       updateLayout();
-      new ResizeObserver(updateLayout).observe(this.elements.aside);
+
+      if (this.promoResizeObserver) {
+        this.promoResizeObserver.disconnect();
+      }
+      this.promoResizeObserver = new ResizeObserver(updateLayout);
+      this.promoResizeObserver.observe(this.elements.aside);
     }
 
     return this.elements.aside;
@@ -1115,8 +1120,9 @@ class Gnav {
     const popup = activePopup || this.elements.mainNav.querySelector('.feds-navItem--section.feds-dropdown--active .feds-popup');
     if (!popup) return;
     const yOffset = window.scrollY || Math.abs(parseInt(document.body.style.top, 10)) || 0;
+    const promoHeight = this.elements.aside?.clientHeight;
     const navOffset = this.block.classList.contains('has-promo')
-      ? 'var(--feds-height-nav) - var(--global-height-navPromo)'
+      ? `var(--feds-height-nav) - ${promoHeight}px`
       : 'var(--feds-height-nav)';
     popup.removeAttribute('style');
     popup.style.top = `calc(${yOffset}px - ${navOffset} - 2px)`;
