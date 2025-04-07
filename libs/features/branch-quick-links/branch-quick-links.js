@@ -39,7 +39,7 @@ async function decorateQuickLink(a, hasConsent, isNewTab) {
 }
 
 export default function processQuickLink(a) {
-  a.classList.add('quick-link');
+  a.classList.add('quick-link-ecid');
   const getConsentStatus = () => {
     const cookieGrp = window.adobePrivacy?.activeCookieGroups();
     return cookieGrp?.includes('C0002') && cookieGrp?.includes('C0004');
@@ -68,6 +68,10 @@ export default function processQuickLink(a) {
   }
 
   a.addEventListener('click', async (e) => {
+    if (!window.alloy) {
+      a.classList.remove('quick-link-ecid');
+      return;
+    }
     e.preventDefault();
     let loader;
     if (getMetadata('quick-link-loader') === 'on') loader = addLoader(a);
