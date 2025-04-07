@@ -513,6 +513,10 @@
   border-bottom-color: var(--tabs-active-bg-color);
 }
 
+.tabs #tablist-label-radio {
+  display: none;
+}
+
 @media screen and (min-width: 600px) {
   .tabs.radio div[role="tablist"].tabList .tab-list-container {
     flex-direction: row;
