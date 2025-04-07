@@ -3,7 +3,6 @@ import { sizeStyles, styles } from './merch-card.css.js';
 import './merch-icon.js';
 import {
     getVariantLayout,
-    getVariantStyles,
     variantFragmentMappings,
     registerVariant,
 } from './variants/variants.js';
@@ -121,7 +120,7 @@ export class MerchCard extends LitElement {
         loading: { type: String },
     };
 
-    static styles = [styles, getVariantStyles(), ...sizeStyles()];
+    static styles = [styles, ...sizeStyles()];
 
     static registerVariant = registerVariant;
 

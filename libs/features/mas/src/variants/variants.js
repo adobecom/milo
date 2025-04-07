@@ -56,18 +56,20 @@ registerVariant(
 
 const getVariantLayout = (card, mustMatch = false) => {
     const VariantClass = variantRegistry.get(card.variant);
-    if (VariantClass) {
-        return new VariantClass(card);
+    if (!VariantClass) {
+        return mustMatch ? undefined : new Product(card);
     }
-    return mustMatch ? undefined : new Product(card);
+    const style = variantStylesRegistry.get(card.variant);
+    if (style) {
+        const sheet = new CSSStyleSheet();
+        sheet.replaceSync(style.cssText);
+        card.shadowRoot.adoptedStyleSheets.push(sheet);
+    }
+    return new VariantClass(card);
 };
 
 export const variantFragmentMappings = Object.fromEntries(
     variantFragmentMappingsRegistry,
 );
 
-const getVariantStyles = () => {
-    return Array.from(variantStylesRegistry.values());
-};
-
-export { getVariantLayout, getVariantStyles };
+export { getVariantLayout };
