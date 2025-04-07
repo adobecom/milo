@@ -1,4 +1,4 @@
-import { TABLET_UP, DESKTOP_UP, LARGE_DESKTOP } from '../media.js';
+import { MOBILE_LANDSCAPE, TABLET_UP, DESKTOP_UP, LARGE_DESKTOP } from '../media.js';
 export const CSS = `
 :root {
     --consonant-merch-card-plans-width: 300px;
@@ -22,6 +22,10 @@ merch-card[variant="plans"] [slot="heading-m"] span.price.price-strikethrough {
 
 merch-card[variant="plans"] [slot="promo-text"] {
     line-height: var(--consonant-merch-card-body-xs-line-height);
+}
+
+merch-card-collection merch-card[variant="plans"] {
+  width: auto;
 }
 
 merch-card[variant="plans"] [slot="description"] {
@@ -63,12 +67,16 @@ merch-card[variant="plans"] [slot="callout-content"] .icon-button::before {
     background-size: 18px 18px;
 }
 
+merch-card[variant="plans"] [slot="whats-included"] [slot="description"] {
+  min-height: auto;
+}
+
 merch-card[variant="plans"] [slot="quantity-select"] {
     display: flex;
     justify-content: flex-start;
     box-sizing: border-box;
     width: 100%;
-    padding: var(--consonant-merch-spacing-xs);
+    padding-top: 16px;
 }
 
 merch-card[variant="plans"] [slot="footer"] a {
@@ -85,6 +93,21 @@ merch-card[variant="plans"] [slot="footer"] a {
 .plans-container merch-card-collection {
     padding: 0;
 }
+
+/* Mobile */
+@media screen and ${MOBILE_LANDSCAPE} {
+    merch-whats-included merch-mnemonic-list,
+    merch-whats-included [slot="heading"] {
+        width: 100%;
+    }
+}
+
+merch-card[variant="plans"]:not([size]) {
+    merch-whats-included merch-mnemonic-list,
+    merch-whats-included [slot="heading"] {
+        width: 100%;
+    }
+} 
 
 .one-merch-card.plans,
 .two-merch-cards.plans,
