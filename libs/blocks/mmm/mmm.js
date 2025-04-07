@@ -16,6 +16,7 @@ const LAST_SEEN_OPTIONS = {
   year: { value: 'Year', key: 'year' },
   all: { value: 'All', key: 'all' },
 };
+
 const SUBDOMAIN_OPTIONS = {
   www: { value: 'www', key: 'www' },
   business: { value: 'business', key: 'business' },
@@ -455,6 +456,7 @@ async function createPageList(el, search) {
  * The search criteria change event is fired inside filterPageList()
  */
 function subscribeToSearchCriteriaChanges() {
+  console.log('running branch: mmm-newfilters');
   document.addEventListener(SEARCH_CRITERIA_CHANGE_EVENT, (el) => {
     // clear url of search params (if user came from a share link)
     if (document.location.search) {
