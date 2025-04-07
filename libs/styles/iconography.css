@@ -100,7 +100,6 @@ dealing w/ groups of media and associated text
 
 .center:not(.tabs, .section) .lockup-area { justify-content: center; }
 .right:not(.tabs) .lockup-area { justify-content: flex-end; }
-
 .xxs-lockup .lockup-area img { height: var(--icon-size-xxs); }
 .xs-lockup .lockup-area img { height: var(--icon-size-xs); }
 .s-lockup .lockup-area img { height: var(--icon-size-s); }
