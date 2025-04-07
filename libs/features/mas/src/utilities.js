@@ -87,3 +87,4 @@ export function toOfferSelectorIds(value) {
 export function useService() {
     return document.getElementsByTagName(MAS_COMMERCE_SERVICE)?.[0];
 }
+
