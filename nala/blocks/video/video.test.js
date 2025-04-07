@@ -162,9 +162,11 @@ test.describe('Milo Video Block test suite', () => {
       await expect(await video.miloVideo).toBeVisible();
       await expect(await video.youtubePlayButton).toBeVisible();
       await expect(await video.youtubePlayButton).toHaveAttribute('type', 'button');
-
-      await expect(await video.liteYoutube).toHaveAttribute('playlabel', data.playLabel);
       await expect(await video.liteYoutube).toHaveAttribute('videoid', data.videoId);
+      await video.youtubePlayButton.click();
+      await page.waitForTimeout(300);
+      const iframeTitle = await video.iframe.getAttribute('title');
+      expect(iframeTitle).toBe(data.playLabel);
     });
   });
 

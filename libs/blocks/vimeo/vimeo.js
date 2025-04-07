@@ -5,8 +5,6 @@ import { createIntersectionObserver, createTag, getConfig, isInTextNode, loadLin
 class LiteVimeo extends HTMLElement {
   static preconnected = false;
 
-  static defaultTitle = 'Content from Vimeo';
-
   connectedCallback() {
     this.isMobile = navigator.userAgent.includes('Mobi');
     this.videoId = this.getAttribute('videoid');
@@ -18,15 +16,12 @@ class LiteVimeo extends HTMLElement {
   }
 
   async fetchVideoTitle() {
-    if (this.title !== LiteVimeo.defaultTitle) return null;
-
     try {
       const response = await fetch(`https://vimeo.com/api/oembed.json?url=https://vimeo.com/${this.videoId}`);
       const data = await response.json();
       if (data.title && this.iframeEl) this.iframeEl.title = data.title;
-      return null;
     } catch (error) {
-      return null;
+      window.lana.log('Error fetching Vimeo video title', { error });
     }
   }
 
@@ -67,7 +62,6 @@ class LiteVimeo extends HTMLElement {
 
   async addIframe() {
     if (this.classList.contains('ltv-activated')) return;
-    this.fetchVideoTitle();
     this.classList.add('ltv-activated');
     this.iframeEl = createTag('iframe', {
       style: 'border: 0; top: 0; left: 0; width: 100%; height: 100%; position: absolute; background-color: #000;',
@@ -80,6 +74,7 @@ class LiteVimeo extends HTMLElement {
     this.insertAdjacentElement('afterend', this.iframeEl);
     this.iframeEl.addEventListener('load', () => this.iframeEl.focus(), { once: true });
     this.remove();
+    this.fetchVideoTitle();
   }
 }
 
@@ -87,14 +82,12 @@ export default async function init(a) {
   if (isInTextNode(a)) return;
   if (!customElements.get('lite-vimeo')) customElements.define('lite-vimeo', LiteVimeo);
 
-  const ariaLabel = a.getAttribute('aria-label');
   const embedVimeo = () => {
     const url = new URL(a.href);
     const videoid = url.pathname.split('/')[url.hostname === 'player.vimeo.com' ? 2 : 1];
-    const title = ariaLabel || LiteVimeo.defaultTitle;
     const liteVimeo = createTag('lite-vimeo', {
       videoid,
-      title,
+      title: 'Content from Vimeo',
     });
     const wrapper = createTag('div', { class: 'embed-vimeo' }, liteVimeo);
     a.parentElement.replaceChild(wrapper, a);

@@ -12,18 +12,27 @@ export default function init(a) {
       anchorTag: a,
     });
   } else {
-    const title = a.getAttribute('aria-label') || 'Adobe Video Publishing Cloud Player';
-
     const iframe = createTag('iframe', {
       src: a.href,
       class: 'adobetv',
       scrolling: 'no',
       allow: 'encrypted-media; fullscreen',
-      title,
+      title: 'Adobe Video Publishing Cloud Player',
       loading: 'lazy',
     });
     const embed = createTag('div', { class: 'milo-video' }, iframe);
     a.insertAdjacentElement('afterend', embed);
+
+    const idMatch = a.href.match(/\/v\/(\d+)/);
+    const videoId = idMatch ? idMatch[1] : null;
+
+    if (videoId) {
+      window.fetch(`https://video.tv.adobe.com/v/${videoId}?format=json-ld`)
+        .then((res) => res.json())
+        .then((info) => {
+          iframe.setAttribute('title', `${info?.jsonLinkedData?.name} ${info?.jsonLinkedData?.description}`);
+        });
+    }
 
     window.addEventListener('message', (event) => {
       if (event.origin !== 'https://video.tv.adobe.com' || !event.data) return;
