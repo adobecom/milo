@@ -24,7 +24,7 @@ export default class MerchBadge extends LitElement {
         }
         this.style.setProperty('--merch-badge-background-color', `var(--${this.backgroundColor})`);
         this.style.setProperty('--merch-badge-color', this.color);
-        this.style.setProperty('--merch-badge-padding', '7px 11px 7px 10px');
+        this.style.setProperty('--merch-badge-padding', '4px 10px 4px 9px');
         this.style.setProperty('--merch-badge-border-radius', '5px 0 0 5px');
         this.style.setProperty('--merch-badge-font-size', 'var(--consonant-merch-card-body-xs-font-size)');
         if (this.variant === 'plans') {
