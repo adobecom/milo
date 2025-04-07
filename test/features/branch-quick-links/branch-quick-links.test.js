@@ -28,7 +28,7 @@ describe('branch quick links', () => {
     window.dispatchEvent(new CustomEvent('adobePrivacy:PrivacyConsent'));
     window.dispatchEvent(new CustomEvent('adobePrivacy:PrivacyCustom'));
     window.dispatchEvent(new CustomEvent('adobePrivacy:PrivacyReject'));
-    expect(quickLink.classList.contains('quick-link-ecid')).to.be.true;
+    expect(quickLink.classList.contains('quick-link')).to.be.true;
   });
 
   it('should throw an error while fetching ecid', async () => {
