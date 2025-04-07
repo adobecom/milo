@@ -177,9 +177,17 @@ export class AemFragment extends HTMLElement {
 
         this.#fetchPromise = this.fetchData()
             .then(() => {
+                const { references, referencesTree, placeholders } =
+                    this.#rawData || {};
                 this.dispatchEvent(
                     new CustomEvent(EVENT_AEM_LOAD, {
-                        detail: { ...this.data, stale: this.#stale },
+                        detail: {
+                            ...this.data,
+                            stale: this.#stale,
+                            references,
+                            referencesTree,
+                            placeholders,
+                        },
                         bubbles: true,
                         composed: true,
                     }),
