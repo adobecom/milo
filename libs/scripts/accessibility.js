@@ -1,19 +1,20 @@
 const CONSENT_EVENTS = ['adobePrivacy:PrivacyConsent', 'adobePrivacy:PrivacyCustom', 'adobePrivacy:PrivacyReject'];
 
-const setScrollPaddingBottom = (stickyBottomHeight = 0, consentBannerHeight = 0) => {
-  document.documentElement.style.setProperty('--scroll-padding-bottom', `${Math.max(stickyBottomHeight, consentBannerHeight)}px`);
+// eslint-disable-next-line max-len
+const setScrollPaddingBottom = (stickyBottomHeight = 0, bottomOffset = 0, consentBannerHeight = 0) => {
+  document.documentElement.style.setProperty('--scroll-padding-bottom', `${Math.max(stickyBottomHeight + bottomOffset, consentBannerHeight)}px`);
 };
 
 const setScrollPaddingTop = (gnavHeight, stickyTopHeight = 0) => {
   document.documentElement.style.setProperty('--scroll-padding-top', `${stickyTopHeight + gnavHeight}px`);
 };
 
-export const setScrollPadding = () => {
+const setScrollPadding = () => {
   // Get sticky elements height and gnav height
   const stickyTop = document.querySelector('.sticky-top');
   const stickyBottom = document.querySelector('.sticky-bottom');
   // Sticky notification pill has bottom: --spacing-xs(16)
-  const stickyBottomOffset = stickyBottom?.querySelector('.pill') ? 16 : 0;
+  const bottomOffset = stickyBottom?.querySelector('.pill') ? 16 : 0;
   const gnavHeightStyle = getComputedStyle(document.documentElement).getPropertyValue('--global-height-nav');
   const breadcrumbsStyle = getComputedStyle(document.documentElement).getPropertyValue('--global-height-breadcrumbs');
   const onlyGnavHeight = parseInt(gnavHeightStyle, 10) ?? 0;
@@ -27,24 +28,24 @@ export const setScrollPadding = () => {
   let consentBannerShow = null;
 
   const handleConsentBannerShow = () => {
-    setScrollPaddingBottom(stickyBottom?.clientHeight + stickyBottomOffset, consentBanner?.clientHeight);
-  }
+    setScrollPaddingBottom(stickyBottom?.clientHeight, bottomOffset, consentBanner?.clientHeight);
+  };
 
   // On viewport < 1024px cookie banner can be hidden
   const handleConsentBannerHide = () => {
-    setScrollPaddingBottom(stickyBottom?.clientHeight + stickyBottomOffset);
+    setScrollPaddingBottom(stickyBottom?.clientHeight, bottomOffset);
     consentBannerShow = document.querySelector('#ot-cookie-button');
     consentBannerShow?.addEventListener('click', handleConsentBannerShow);
-  }
+  };
 
   // Update values on resize
   const handleResize = () => {
     setScrollPaddingTop(gnavHeight, stickyTop?.clientHeight);
-    setScrollPaddingBottom(stickyBottom?.clientHeight + stickyBottomOffset, consentBanner?.clientHeight);
-  }
+    setScrollPaddingBottom(stickyBottom?.clientHeight, bottomOffset, consentBanner?.clientHeight);
+  };
 
   setScrollPaddingTop(gnavHeight, stickyTop?.clientHeight);
-  setScrollPaddingBottom(stickyBottom?.clientHeight + stickyBottomOffset);
+  setScrollPaddingBottom(stickyBottom?.clientHeight, bottomOffset);
 
   if (!stickyTop && !stickyBottom && isClosedConsent) return;
 
@@ -56,11 +57,11 @@ export const setScrollPadding = () => {
       consentBanner = document.querySelector('#onetrust-banner-sdk');
       if (attempts === 5) clearInterval(consentBannerInterval);
       if (!consentBanner) {
-        attempts++;
+        attempts += 1;
         return;
       }
       clearInterval(consentBannerInterval);
-      setScrollPaddingBottom(stickyBottom?.clientHeight + stickyBottomOffset, consentBanner.clientHeight);
+      setScrollPaddingBottom(stickyBottom?.clientHeight, bottomOffset, consentBanner.clientHeight);
       consentBannerHide = consentBanner.querySelector('#ot-banner-close');
       consentBannerHide?.addEventListener('click', handleConsentBannerHide);
     }, 1000);
@@ -69,7 +70,7 @@ export const setScrollPadding = () => {
       window.addEventListener(event, () => {
         if (!stickyBottom && !stickyTop) window.removeEventListener('resize', handleResize);
         isClosedConsent = true;
-        setScrollPaddingBottom(stickyBottom?.clientHeight + stickyBottomOffset);
+        setScrollPaddingBottom(stickyBottom?.clientHeight, bottomOffset);
         consentBannerHide?.removeEventListener('click', handleConsentBannerHide);
         consentBannerShow?.removeEventListener('click', handleConsentBannerShow);
       });
@@ -101,13 +102,15 @@ export const setScrollPadding = () => {
       stickyObserver?.disconnect();
       window.removeEventListener('resize', handleResize);
     });
-    // If sticky section has 'hide-sticky-section' observe the changes so we can update padding when section is shown
+    // If sticky section has 'hide-sticky-section'
+    // observe the changes so we can update padding when section is shown
     if (sticky.classList.contains('hide-sticky-section')) {
       stickyObserver = new MutationObserver((mutationsList) => {
         for (const mutation of mutationsList) {
           if (mutation.attributeName === 'class') {
             if (sticky.classList.contains('sticky-bottom')) {
-              setScrollPaddingBottom(sticky.clientHeight + stickyBottomOffset, consentBanner?.clientHeight);
+              // eslint-disable-next-line max-len
+              setScrollPaddingBottom(sticky.clientHeight, bottomOffset, consentBanner?.clientHeight);
             } else {
               setScrollPaddingTop(gnavHeight, sticky.clientHeight);
             }
@@ -118,3 +121,5 @@ export const setScrollPadding = () => {
     }
   });
 };
+
+export default setScrollPadding;

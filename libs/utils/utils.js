@@ -1394,7 +1394,7 @@ function decorateDocumentExtras() {
 async function documentPostSectionLoading(config) {
   decorateFooterPromo();
   import('../scripts/accessibility.js').then((accessibility) => {
-    accessibility.setScrollPadding();
+    accessibility.default();
   });
   if (getMetadata('seotech-structured-data') === 'on' || getMetadata('seotech-video-url')) {
     import('../features/seotech/seotech.js').then((module) => module.default(
