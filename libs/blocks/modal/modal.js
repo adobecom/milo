@@ -116,7 +116,7 @@ export async function getModal(details, custom) {
   const { id } = details || custom;
 
   dialogLoadingSet.add(id);
-  const dialog = createTag('div', { class: 'dialog-modal', id });
+  const dialog = createTag('div', { class: 'dialog-modal', id, role: 'dialog' });
   const loadedEvent = new Event('milo:modal:loaded');
 
   if (custom) getCustomModal(custom, dialog);
@@ -202,6 +202,23 @@ export async function getModal(details, custom) {
 
   const iframe = dialog.querySelector('iframe');
   if (iframe) {
+    if (iframe.title) {
+      dialog.setAttribute('aria-label', iframe.title);
+    } else {
+      iframe.onload = () => {
+        try {
+          if (iframe.contentWindow.location.origin !== window.location.origin) {
+            return;
+          }
+
+          const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+          const iframeHeading = iframeDoc.querySelector('h1, h2, h3, h4, h5, h6');
+          if (iframeHeading) dialog.setAttribute('aria-label', iframeHeading.textContent.trim());
+        } catch (e) {
+          // Cross-origin iframe, can't access content
+        }
+      };
+    }
     if (dialog.classList.contains('commerce-frame') || dialog.classList.contains('dynamic-height')) {
       const { default: enableCommerceFrameFeatures } = await import('./modal.merch.js');
       await enableCommerceFrameFeatures({ dialog, iframe });
@@ -212,6 +229,9 @@ export async function getModal(details, custom) {
       iframe.style.height = '100%';
     }
     if (!custom?.closeEvent) dialog.addEventListener('iframe:modal:closed', () => closeModal(dialog));
+  } else {
+    const firstHeading = dialog.querySelector('h1, h2, h3, h4, h5, h6');
+    if (firstHeading) dialog.setAttribute('aria-label', firstHeading.textContent.trim());
   }
 
   return dialog;
