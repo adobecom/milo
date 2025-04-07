@@ -1497,10 +1497,6 @@ export async function loadArea(area = document) {
     decorateDocumentExtras();
   }
 
-  // privacy - test 1
-  // const { loadPrivacy } = await import('../scripts/delayed.js');
-  // loadPrivacy(getConfig, loadScript);
-
   const sections = decorateSections(area, isDoc);
 
   const areaBlocks = [];
