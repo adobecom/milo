@@ -3,21 +3,21 @@ import { Landscape, CheckoutWorkflowStep, PROVIDER_ENVIRONMENT } from './constan
 const AF_DRAFT_LANDSCAPE = 'p_draft_landscape';
 const UCV3_PREFIX = '/store/';
 const PARAMETERS = new Map([
-    ['countrySpecific', 'cs'],
-    ['customerSegment', 'cs'],
-    ['quantity', 'q'],
-    ['authCode', 'code'],
-    ['checkoutPromoCode', 'apc'],
-    ['rurl', 'rUrl'],
-    ['curl', 'cUrl'],
-    ['ctxrturl', 'ctxRtUrl'],
-    ['country', 'co'],
-    ['language', 'lang'],
-    ['clientId', 'cli'],
-    ['context', 'ctx'],
-    ['productArrangementCode', 'pa'],
-    ['offerType', 'ot'],
-    ['marketSegment', 'ms'],
+  ['countrySpecific', 'cs'],
+  ['customerSegment', 'cs'],
+  ['quantity', 'q'],
+  ['authCode', 'code'],
+  ['checkoutPromoCode', 'apc'],
+  ['rurl', 'rUrl'],
+  ['curl', 'cUrl'],
+  ['ctxrturl', 'ctxRtUrl'],
+  ['country', 'co'],
+  ['language', 'lang'],
+  ['clientId', 'cli'],
+  ['context', 'ctx'],
+  ['productArrangementCode', 'pa'],
+  ['offerType', 'ot'],
+  ['marketSegment', 'ms'],
 ]);
 /*?*
  * List of the keys that can be used to construct Checkout URL.
@@ -25,51 +25,51 @@ const PARAMETERS = new Map([
  * 'checkoutData'. The library will ignore any unknown key in 'checkoutData'.
  */
 const ALLOWED_KEYS = new Set([
-    'af',
-    'ai',
-    'apc',
-    'appctxid',
-    'cli',
-    'co',
-    'cs',
-    'csm',
-    'ctx',
-    'ctxRtUrl',
-    'DCWATC',
-    'dp', // Enable digital payments for iframe context
-    'fr', // represents the commerce app redirecting to UC
-    'gsp',
-    'ijt',
-    'lang',
-    'lo',
-    'mal',
-    'ms',
-    'mv',
-    'mv2',
-    'nglwfdata',
-    'ot',
-    'otac',
-    'pa',
-    'pcid', // Unified Paywall configuration ID for analytics
-    'promoid',
-    'q',
-    'rf',
-    'sc',
-    'scl',
-    'sdid',
-    'sid', // x-adobe-clientsession
-    'spint',
-    'svar',
-    'th',
-    'thm',
-    'trackingid',
-    'usid',
-    'workflowid',
-    'context.guid',
-    'so.ca',
-    'so.su',
-    'so.tr',
-    'so.va',
+  'af',
+  'ai',
+  'apc',
+  'appctxid',
+  'cli',
+  'co',
+  'cs',
+  'csm',
+  'ctx',
+  'ctxRtUrl',
+  'DCWATC',
+  'dp', // Enable digital payments for iframe context
+  'fr', // represents the commerce app redirecting to UC
+  'gsp',
+  'ijt',
+  'lang',
+  'lo',
+  'mal',
+  'ms',
+  'mv',
+  'mv2',
+  'nglwfdata',
+  'ot',
+  'otac',
+  'pa',
+  'pcid', // Unified Paywall configuration ID for analytics
+  'promoid',
+  'q',
+  'rf',
+  'sc',
+  'scl',
+  'sdid',
+  'sid', // x-adobe-clientsession
+  'spint',
+  'svar',
+  'th',
+  'thm',
+  'trackingid',
+  'usid',
+  'workflowid',
+  'context.guid',
+  'so.ca',
+  'so.su',
+  'so.tr',
+  'so.va',
 ]);
 const REQUIRED_KEYS = ['env', 'workflowStep', 'clientId', 'country'];
 
@@ -83,22 +83,22 @@ export const mapParameterName = (field) => PARAMETERS.get(field) ?? field;
  * For each of the given inputParameters checks if a parameter is allow-listed and adds it to the result with a correct
  * Checkout name (calling mapping in mapParameterName).
  */
-export function addParameters(inputParameters, resultParameters, allowedKeys) {
-    for (const [key, value] of Object.entries(inputParameters)) {
-        const mappedKey = mapParameterName(key);
-        if (value != null && allowedKeys.has(mappedKey)) {
-            resultParameters.set(mappedKey, value);
-        }
+export function addParameters( inputParameters, resultParameters, allowedKeys) {
+  for (const [key, value] of Object.entries(inputParameters)) {
+    const mappedKey = mapParameterName(key);
+    if (value != null && allowedKeys.has(mappedKey)) {
+      resultParameters.set(mappedKey, value);
     }
+  }
 }
 
 export function getHostName(env) {
-    switch (env) {
-        case PROVIDER_ENVIRONMENT.PRODUCTION:
-            return 'https://commerce.adobe.com';
-        default:
-            return 'https://commerce-stg.adobe.com';
-    }
+  switch (env) {
+    case PROVIDER_ENVIRONMENT.PRODUCTION:
+      return 'https://commerce.adobe.com';
+    default:
+      return 'https://commerce-stg.adobe.com';
+  }
 }
 
 /**
@@ -108,76 +108,54 @@ export function getHostName(env) {
  * @param parameters result array of Checkout URL parameters
  */
 export function setItemsParameter(items, parameters) {
-    for (const idx in items) {
-        const item = items[idx];
-        for (const [key, value] of Object.entries(item)) {
-            if (value == null) continue;
-            const parameterName = mapParameterName(key);
-            parameters.set(`items[${idx}][${parameterName}]`, value);
-        }
+  for (const idx in items) {
+    const item = items[idx];
+    for (const [key, value] of Object.entries(item)) {
+      if (value == null) continue;
+      const parameterName = mapParameterName(key);
+      parameters.set(`items[${idx}][${parameterName}]`, value);
     }
+  }
 }
 
 /**
  * Builds a UCv3 Checkout URL out of given parameters.
  */
 export function buildCheckoutUrl(checkoutData, modalType) {
-    validateCheckoutData(checkoutData);
-    const {
-        env,
-        items,
-        workflowStep,
-        ms,
-        marketSegment,
-        customerSegment,
-        ot,
-        offerType,
-        pa,
-        productArrangementCode,
-        landscape,
-        ...rest
-    } = checkoutData;
-    const segmentationParameters = {
-        marketSegment: marketSegment ?? ms,
-        offerType: offerType ?? ot,
-        productArrangementCode: productArrangementCode ?? pa,
-    };
-    const url = new URL(getHostName(env));
-    url.pathname = `${UCV3_PREFIX}${workflowStep}`;
-    if (
-        workflowStep !== CheckoutWorkflowStep.SEGMENTATION &&
-        workflowStep !== CheckoutWorkflowStep.CHANGE_PLAN_TEAM_PLANS
-    ) {
-        setItemsParameter(items, url.searchParams);
+  validateCheckoutData(checkoutData);
+  const { env, items, workflowStep, ms, marketSegment, customerSegment, ot, offerType, pa, productArrangementCode, landscape, ...rest } =
+    checkoutData;
+  const segmentationParameters = {
+    marketSegment: marketSegment ?? ms,
+    offerType: offerType ?? ot,
+    productArrangementCode: productArrangementCode ?? pa,
+  };
+  const url = new URL(getHostName(env));
+  url.pathname = `${UCV3_PREFIX}${workflowStep}`;
+  if (workflowStep !== CheckoutWorkflowStep.SEGMENTATION && workflowStep !== CheckoutWorkflowStep.CHANGE_PLAN_TEAM_PLANS) {
+    setItemsParameter(items, url.searchParams);
+  }
+  if (workflowStep === CheckoutWorkflowStep.SEGMENTATION) {
+    addParameters(segmentationParameters, url.searchParams, ALLOWED_KEYS);
+  }
+  addParameters(rest, url.searchParams, ALLOWED_KEYS);
+  if (landscape === Landscape.DRAFT) {
+    addParameters({ af: AF_DRAFT_LANDSCAPE }, url.searchParams, ALLOWED_KEYS);
+  }
+  if (modalType === 'crm') {
+    url.searchParams.set('af', 'uc_segmentation_hide_tabs,uc_new_user_iframe,uc_new_system_close');
+    url.searchParams.set('cli', 'creative');
+  } else if (modalType === 'twp' || modalType === 'd2p') {
+    url.searchParams.set('af', 'uc_new_user_iframe,uc_new_system_close');
+    url.searchParams.set('cli', 'mini_plans');
+    if (customerSegment === 'INDIVIDUAL' && marketSegment === 'EDU') {
+      url.searchParams.set('ms', 'e');
     }
-    if (workflowStep === CheckoutWorkflowStep.SEGMENTATION) {
-        addParameters(segmentationParameters, url.searchParams, ALLOWED_KEYS);
+    if (customerSegment === 'TEAM' && marketSegment === 'COM') {
+      url.searchParams.set('cs', 't');
     }
-    addParameters(rest, url.searchParams, ALLOWED_KEYS);
-    if (landscape === Landscape.DRAFT) {
-        addParameters(
-            { af: AF_DRAFT_LANDSCAPE },
-            url.searchParams,
-            ALLOWED_KEYS,
-        );
-    }
-    if (modalType === 'crm') {
-        url.searchParams.set(
-            'af',
-            'uc_segmentation_hide_tabs,uc_new_user_iframe,uc_new_system_close',
-        );
-        url.searchParams.set('cli', 'creative');
-    } else if (modalType === 'twp' || modalType === 'd2p') {
-        url.searchParams.set('af', 'uc_new_user_iframe,uc_new_system_close');
-        url.searchParams.set('cli', 'mini_plans');
-        if (customerSegment === 'INDIVIDUAL' && marketSegment === 'EDU') {
-            url.searchParams.set('ms', 'e');
-        }
-        if (customerSegment === 'TEAM' && marketSegment === 'COM') {
-            url.searchParams.set('cs', 't');
-        }
-    }
-    return url.toString();
+  }
+  return url.toString();
 }
 
 /**
@@ -189,19 +167,17 @@ export function buildCheckoutUrl(checkoutData, modalType) {
  * @param checkoutData object holding the data required to build the checkout URL
  */
 function validateCheckoutData(checkoutData) {
-    for (const key of REQUIRED_KEYS) {
-        if (!checkoutData[key]) {
-            throw new Error(
-                'Argument "checkoutData" is not valid, missing: ' + key,
-            );
-        }
+  for (const key of REQUIRED_KEYS) {
+    if (!checkoutData[key]) {
+      throw new Error('Argument "checkoutData" is not valid, missing: ' + key);
     }
-    if (
-        checkoutData.workflowStep !== CheckoutWorkflowStep.SEGMENTATION &&
-        checkoutData.workflowStep !== CheckoutWorkflowStep.CHANGE_PLAN_TEAM_PLANS &&
-        !checkoutData.items
-    ) {
-        throw new Error('Argument "checkoutData" is not valid, missing: items');
-    }
-    return true;
+  }
+  if (
+    checkoutData.workflowStep !== CheckoutWorkflowStep.SEGMENTATION &&
+    checkoutData.workflowStep !== CheckoutWorkflowStep.CHANGE_PLAN_TEAM_PLANS &&
+    !checkoutData.items
+  ) {
+    throw new Error('Argument "checkoutData" is not valid, missing: items');
+  }
+  return true;
 }
