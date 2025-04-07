@@ -102,9 +102,8 @@ describe('notification', async () => {
       const stacks = splits[0].querySelectorAll('.split-list-item').length;
       expect(stacks).to.equal(2);
     });
-    it('closes the notiification', () => {
-      const event = new CustomEvent('click', { bubbles: true });
-      splits[0].querySelector('a[href*="#_evt-close"]').dispatchEvent(event);
+    it('closes the notification', () => {
+      splits[0].querySelector('a[href*="#_evt-close"]').dispatchEvent(new MouseEvent('click'));
       expect(splits[0].closest('.section').classList.contains('close-sticky-section')).to.be.true;
     });
   });
