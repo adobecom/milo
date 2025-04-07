@@ -499,19 +499,20 @@ export async function openModal(e, url, offerType, hash, extraOptions, el) {
       window.history.pushState({}, document.title, prevHash !== '' ? `#${prevHash}` : `${window.location.pathname}${window.location.search}`);
     }, { once: true });
   }
-  if (isInternalModal(url)) {
-    const fragmentPath = url.split(/(hlx|aem).(page|live)/).pop();
-    modal = await openFragmentModal(fragmentPath, getModal);
-  } else if (el?.opens3in1Modal) {
+
+  if (el?.opens3in1Modal) {
     const { default: openThreeInOneModal, handle3in1IFrameEvents } = await import('./three-in-one.js');
     window.addEventListener('message', handle3in1IFrameEvents);
     modal = await openThreeInOneModal(el);
+    return;
+  }
+  if (isInternalModal(url)) {
+    const fragmentPath = url.split(/(hlx|aem).(page|live)/).pop();
+    modal = await openFragmentModal(fragmentPath, getModal);
   } else {
     modal = await openExternalModal(url, getModal, extraOptions, el);
   }
-  if (modal === 'true') {
-    modal.classList.add(offerTypeClass);
-  }
+  modal.classList.add(offerTypeClass);
 }
 
 export function setCtaHash(el, checkoutLinkConfig, offerType) {

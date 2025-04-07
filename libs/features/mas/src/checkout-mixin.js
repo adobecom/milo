@@ -80,7 +80,8 @@ export function CheckoutMixin(Base) {
         }
 
         get opens3in1Modal() {
-          return Object.values(MODAL_TYPE_3_IN_1).includes(this.getAttribute('data-modal')) && !!this.href;
+          const masFF3in1 = document.querySelector('meta[name=mas-ff-3in1]');
+          return Object.values(MODAL_TYPE_3_IN_1).includes(this.getAttribute('data-modal')) && (!masFF3in1 || masFF3in1.content !== 'off');
         }
 
         requestUpdate(force = false) {
@@ -191,7 +192,7 @@ export function CheckoutMixin(Base) {
             if (offers.length) {
                 if (this.masElement.toggleResolved(version, offers, options)) {
                     const url = service.buildCheckoutURL(offers, options);
-                    if (options.modal !== 'true' && !this.classList.contains(CLASS_NAME_DOWNLOAD) && !this.classList.contains(CLASS_NAME_UPGRADE)) {
+                    if (this.opens3in1Modal && !this.classList.contains(CLASS_NAME_DOWNLOAD) && !this.classList.contains(CLASS_NAME_UPGRADE)) {
                       this.setCheckoutUrl(url);
                     }
                     return true;
