@@ -755,6 +755,13 @@ const matchesCountryChoiceOrIP = (name, config) => {
   return countryList.includes(testCountry);
 };
 
+function hasCountryMatch(str, config) {
+  if (str.includes('countrychoice') || str.includes('countryip')) {
+    const modifiedStr = str.replace('uk', 'gb');
+    return matchesCountryChoiceOrIP(modifiedStr, config);
+  }
+  return false;
+}
 /* c8 ignore start */
 export function parsePlaceholders(placeholders, config, selectedVariantName = '') {
   if (!placeholders?.length || selectedVariantName === 'default') return config;
@@ -772,13 +779,8 @@ export function parsePlaceholders(placeholders, config, selectedVariantName = ''
   ];
   const keys = placeholders?.length ? Object.entries(placeholders[0]) : [];
   const keyVal = keys.find(([key]) => {
-    let modifiedStr = key.toLowerCase();
-    if (valueNames.includes(modifiedStr)) return true;
-    if (modifiedStr.includes('countrychoice') || modifiedStr.includes('countryip')) {
-      modifiedStr = modifiedStr.replace('uk', 'gb');
-      return matchesCountryChoiceOrIP(modifiedStr, config);
-    }
-    return false;
+    const modifiedStr = key.toLowerCase();
+    return valueNames.includes(modifiedStr) || hasCountryMatch(modifiedStr, config);
   });
   const key = keyVal?.[0];
 
@@ -901,10 +903,7 @@ async function getPersonalizationVariant(
     if (!name) return true;
     if (name === variantLabel?.toLowerCase()) return true;
     if (name.startsWith('param-')) return checkForParamMatch(name);
-    if (name.includes('countrychoice') || name.includes('countryip')) {
-      const modifiedName = name.replace('uk', 'gb');
-      return matchesCountryChoiceOrIP(modifiedName, config);
-    }
+    if (hasCountryMatch(name, config)) return true;
     if (userEntitlements?.includes(name)) return true;
     return PERSONALIZATION_KEYS.includes(name) && PERSONALIZATION_TAGS[name]();
   };
