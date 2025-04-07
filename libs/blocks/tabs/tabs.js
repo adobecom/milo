@@ -1,3 +1,6 @@
+
+
+
 /*
  * tabs - consonant v6
  * https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles/Tab_Role
@@ -118,7 +121,7 @@ function configTabs(config, rootElem) {
 }
 
 function initTabs(elm, config, rootElem) {
-  const tabs = elm.querySelectorAll('[role="tab"]');
+  const tabs = elm.querySelectorAll('[role="tab"], [role="radio"]');
   const tabLists = elm.querySelectorAll('[role="tablist"]');
   let tabFocus = 0;
 
@@ -157,8 +160,8 @@ function nextTab(current, i, arr) {
   return (previous && isTabInTabListView(previous) && !isTabInTabListView(current));
 }
 
-function initPaddles(tabList, left, right) {
-  const tabListItems = tabList.querySelectorAll('[role="tab"]');
+function initPaddles(tabList, left, right, isRadio) {
+  const tabListItems = tabList.querySelectorAll(isRadio ? '[role="radio"]' : '[role="tab"]');
   const tabListItemsArray = [...tabListItems];
   const firstTab = tabListItemsArray[0];
   const lastTab = tabListItemsArray[tabListItemsArray.length - 1];
@@ -273,6 +276,8 @@ const init = (block) => {
   tabList.setAttribute('role', 'tablist');
   const tabListContainer = tabList.querySelector(':scope > div');
   tabListContainer.classList.add('tab-list-container');
+  const tabListLabel = config.pretext;
+  tabList.setAttribute('aria-label', tabListLabel);
   const tabListItems = rows[0].querySelectorAll(':scope li');
   if (tabListItems) {
     const pillVariant = [...block.classList].find((variant) => variant.includes('pill'));
@@ -280,7 +285,7 @@ const init = (block) => {
     tabListItems.forEach((item, i) => {
       const tabName = config.id ? i + 1 : getStringKeyName(item.textContent);
       const tabBtnAttributes = {
-        role: 'tab',
+        role: block.classList.contains('radio') ? 'radio' : 'tab',
         class: btnClass,
         id: `tab-${tabId}-${tabName}`,
         tabindex: '0',
@@ -315,7 +320,7 @@ const init = (block) => {
   const paddleRight = createTag('button', { class: 'paddle paddle-right', disabled: '', 'aria-hidden': true, 'aria-label': 'Scroll tabs to right' }, PADDLE);
   tabList.insertAdjacentElement('afterend', paddleRight);
   block.prepend(paddleLeft);
-  initPaddles(tabList, paddleLeft, paddleRight);
+  initPaddles(tabList, paddleLeft, paddleRight, block.classList.contains('radio'));
 
   // Tab Sections
   const allSections = Array.from(rootElem.querySelectorAll('div.section'));
