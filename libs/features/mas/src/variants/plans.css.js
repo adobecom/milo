@@ -1,38 +1,39 @@
 import { TABLET_UP, DESKTOP_UP, LARGE_DESKTOP } from '../media.js';
 export const CSS = `
 :root {
-  --consonant-merch-card-plans-width: 300px;
-  --consonant-merch-card-plans-icon-size: 40px;
+    --consonant-merch-card-plans-width: 300px;
+    --consonant-merch-card-plans-icon-size: 40px;
 }
 
 merch-card[variant="plans"] {
-  --consonant-merch-card-callout-icon-size: 18px;
+    --consonant-merch-card-callout-icon-size: 18px;
+    width: var(--consonant-merch-card-plans-width);
 }
 
 merch-card[variant="plans"] [slot="icons"] {
-  --img-width: 41.5px;
+    --img-width: 41.5px;
 }
 
 merch-card[variant="plans"] [slot="heading-xs"] span.price.price-strikethrough,
 merch-card[variant="plans"] [slot="heading-m"] span.price.price-strikethrough {
-  line-height: var(--consonant-merch-card-body-xs-line-height);
-  font-weight: 700;
+    line-height: var(--consonant-merch-card-body-xs-line-height);
+    font-weight: 700;
 }
 
 merch-card[variant="plans"] [slot="promo-text"] {
-  line-height: var(--consonant-merch-card-body-xs-line-height);
+    line-height: var(--consonant-merch-card-body-xs-line-height);
 }
 
 merch-card[variant="plans"] [slot="description"] {
-  min-height: 84px;
+    min-height: 84px;
 }
 
 merch-card[variant="plans"] [slot="body-xs"] a {
-  color: var(--link-color);
+    color: var(--link-color);
 }
 
 merch-card[variant="plans"] [slot="promo-text"] a {
-  color: inherit;
+    color: inherit;
 }
 
 merch-card[variant="plans"] [slot="callout-content"] {
@@ -63,16 +64,26 @@ merch-card[variant="plans"] [slot="callout-content"] .icon-button::before {
 }
 
 merch-card[variant="plans"] [slot="quantity-select"] {
-  display: flex;
-  justify-content: flex-start;
-  box-sizing: border-box;
-  width: 100%;
-  padding: var(--consonant-merch-spacing-xs);
+    display: flex;
+    justify-content: flex-start;
+    box-sizing: border-box;
+    width: 100%;
+    padding: var(--consonant-merch-spacing-xs);
 }
 
 merch-card[variant="plans"] [slot="footer"] a {
     line-height: 19px;
     padding: 3px 16px 4px;
+}
+
+.plans-container {
+    display: flex;
+    justify-content: center;
+    gap: 36px;
+}
+
+.plans-container merch-card-collection {
+    padding: 0;
 }
 
 .one-merch-card.plans,
@@ -102,11 +113,9 @@ merch-card[variant="plans"] [slot="footer"] a {
   :root {
     --consonant-merch-card-plans-width: 276px;
   }
-  .three-merch-cards.plans {
-      grid-template-columns: repeat(3, var(--consonant-merch-card-plans-width));
-  }
+  .three-merch-cards.plans,
   .four-merch-cards.plans {
-      grid-template-columns: repeat(4, var(--consonant-merch-card-plans-width));
+      grid-template-columns: repeat(3, var(--consonant-merch-card-plans-width));
   }
 }
 
