@@ -1024,10 +1024,11 @@ class Gnav {
     fedsPromoWrapper.append(this.elements.aside);
 
     const updateLayout = () => {
+      lanaLog({ message: 'Promo height is more than expected, potential CLS', tags: 'gnav-promo', errorType: 'info' });
       const promoHeight = `${this.elements.aside.clientHeight}px`;
       const header = document.querySelector('header');
       const localNav = document.querySelector('.feds-localnav');
-      
+
       fedsPromoWrapper.style.height = promoHeight;
       header.style.top = promoHeight;
 
@@ -1035,13 +1036,13 @@ class Gnav {
         header.style.top = 0;
         localNav.style.top = promoHeight;
       }
-    }
+    };
 
     if (this.elements.aside.clientHeight > fedsPromoWrapper.clientHeight) {
       updateLayout();
       new ResizeObserver(updateLayout).observe(this.elements.aside);
     }
-  
+
     return this.elements.aside;
   };
 
