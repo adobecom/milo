@@ -2,6 +2,8 @@
 
  :root {
   --global-height-nav: 64px;
+  --scroll-padding-top: 0;
+  --scroll-padding-bottom: 0;
   --global-height-breadcrumbs: 33px;
   /* stylelint-disable-next-line custom-property-pattern */
   --global-height-navPromo: 72px;
@@ -683,18 +685,18 @@ div[class*='-up'] .con-block.has-bg.no-spacing { padding: 0; }
 }
 
 html:focus-within {
-  scroll-padding-top: 50vh;
-  scroll-padding-bottom: 50vh;
+  scroll-padding-top: var(--scroll-padding-top);
+  scroll-padding-bottom: var(--scroll-padding-bottom);
 }
 
-html:focus-within #onetrust-consent-sdk:not(:focus-within) {
+html:focus-within #onetrust-consent-sdk:not(:focus-within, :has(#ot-cookie-button.show)) {
   position: sticky;
   bottom: 0;
   /* #onetrust-banner-sdk z-index value */
   z-index: 2147483645;
 }
 
-html:focus-within #onetrust-banner-sdk:not(:focus-within) {
+html:focus-within #onetrust-banner-sdk:not(:focus-within, :has(#ot-cookie-button.show)) {
   position: sticky;
 }
 
