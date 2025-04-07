@@ -88,5 +88,10 @@ const init = async () => {
     )
   );
 }
+
+window.onceEvent = (element, event, handler) => {
+  element.addEventListener(event, handler, { once: true });
+}
+
 window.log = (target, ...messages) =>  (target.innerHTML =  `${messages.join(' ')}<br>${target.innerHTML}`);
 export { init };
