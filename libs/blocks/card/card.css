@@ -8,11 +8,7 @@
   height: unset;
 }
 
-.card .consonant-OneHalfCard-title {
-  max-height: unset;
-}
-
-.card .consonant-OneHalfCard-text {
+.card .consonant-OneHalfCard-title, .card .consonant-OneHalfCard-text {
   max-height: unset;
 }
 
