@@ -943,6 +943,50 @@ describe('Utils', () => {
       expect(resultExperiment.manifest).to.equal('/products/special-offers-manifest.json');
     });
   });
+  describe('mepgeolocation', () => {
+    beforeEach(() => {
+      document.cookie = 'international=UK';
+    });
+    afterEach(() => {
+      document.cookie = 'international=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    });
+    it('should enable mepgeolocation via metadata', async () => {
+      const oldHead = document.head.innerHTML;
+      const oldBody = document.body.innerHTML;
+      config.mep = { geolocation: false };
+      document.head.innerHTML = await readFile({ path: './mocks/head-personalization.html' });
+      document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+      await utils.loadArea();
+      document.head.innerHTML = oldHead;
+      document.body.innerHTML = oldBody;
+    });
+    it('should set countryIP from session storage ', async () => {
+      sinon.stub(sessionStorage, 'getItem').withArgs('akamai').returns('ca');
+      await utils.determineUserCountry(config);
+      expect(config.mep.countryIP).to.equal('ca');
+      sessionStorage.getItem.restore();
+    });
+    it('should set countryChoice from international cookie', async () => {
+      await utils.determineUserCountry(config);
+      expect(config.mep.countryChoice).to.equal('gb');
+    });
+    it('should should overwrite countryIP with akamaiLocale parameter', async () => {
+      const mockUrlParams = new URLSearchParams('?akamaiLocale=FR');
+      sinon.stub(window, 'URLSearchParams').returns(mockUrlParams);
+      sinon.stub(sessionStorage, 'getItem').withArgs('akamai').returns('ca');
+      await utils.determineUserCountry(config);
+      expect(config.mep.countryIP).to.equal('fr');
+      sessionStorage.getItem.restore();
+      window.URLSearchParams.restore();
+    });
+    it('should overwrite countryChoice with country parameter ', async () => {
+      const mockUrlParams = new URLSearchParams('?country=sg');
+      sinon.stub(window, 'URLSearchParams').returns(mockUrlParams);
+      await utils.determineUserCountry(config);
+      expect(config.mep.countryChoice).to.equal('sg');
+      window.URLSearchParams.restore();
+    });
+  });
 
   describe('filterDuplicatedLinkBlocks', () => {
     it('returns empty array if receives invalid params', () => {

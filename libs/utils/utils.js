@@ -1293,7 +1293,7 @@ export function enablePersonalizationV2() {
 function normCountry(country) {
   return (country.toLowerCase() === 'uk' ? 'gb' : country.toLowerCase()).split('_')[0];
 }
-async function determineUserCountry(config) {
+export async function determineUserCountry(config) {
   const urlParams = new URLSearchParams(window.location.search);
   const country = urlParams.get('country') || (document.cookie.split('; ').find((row) => row.startsWith('international='))?.split('=')[1]);
   config.mep = config.mep || {};
