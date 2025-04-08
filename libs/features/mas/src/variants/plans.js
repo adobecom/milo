@@ -136,6 +136,14 @@ export class Plans extends VariantLayout {
         padding: var(--merch-card-plans-padding);
     }
 
+    :host([variant='plans'][size]) .body {
+        max-width: none;
+    }
+
+    :host([variant='plans']) .wide-footer #stock-checkbox {
+        margin-top: 0;
+    }
+
     :host([variant='plans']) #stock-checkbox {
         margin-top: 8px;
         gap: 9px;
