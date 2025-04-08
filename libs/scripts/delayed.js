@@ -24,6 +24,16 @@ export const loadJarvisChat = async (getConfig, getMetadata, loadScript, loadSty
   initJarvisChat(config, loadScript, loadStyle, getMetadata);
 };
 
+export const loadDelist = async (getConfig, loadStyle) => {
+  const { env, miloLibs, codeRoot } = getConfig();
+  const base = miloLibs || codeRoot;
+  console.log('config', env.name);
+  if (env.name !== 'prod') {
+    loadStyle(`${base}/styles/delist.css`);
+    import('../utils/delist.js');
+  }
+};
+
 export const loadPrivacy = async (getConfig, loadScript) => {
   const acom = '7a5eb705-95ed-4cc4-a11d-0cc5760e93db';
   const ids = {
@@ -76,6 +86,7 @@ const loadDelayed = ([
     loadPrivacy(getConfig, loadScript);
     loadJarvisChat(getConfig, getMetadata, loadScript, loadStyle);
     loadGoogleLogin(getMetadata, loadIms, loadScript, getConfig);
+    loadDelist(getConfig, loadStyle);
     if (getMetadata('interlinks') === 'on') {
       const { locale } = getConfig();
       const path = `${locale.contentRoot}/keywords.json`;

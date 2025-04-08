@@ -1,0 +1,29 @@
+.delisted {
+  border: 4px solid hotpink;
+  box-sizing:border-box;
+  position: relative;
+}
+
+.delisted::before {
+  content: 'DELISTED';
+  font-size: 12px;
+  font-weight: bold;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: hotpink;
+  padding: 0 5px;
+  z-index: 2;
+}
+
+.delisted::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  background: hotpink;
+  opacity: .4;
+  z-index: 1;
+}
