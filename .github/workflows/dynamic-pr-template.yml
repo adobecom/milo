@@ -125,7 +125,7 @@ jobs:
 
               if (hasTestUrlsSection) {
                 // Replace existing Test URLs section
-                newDescription = pullRequest.body.replace(/## GNav Test URLs[\s\S]*?(?=\n\n|$)/, testUrlsSection);
+                newDescription = pullRequest.body.replace(/## GNav Test URLs[\s\S]*?(?=(^##\s|\Z))/m, testUrlsSection);
               } else {
                 // Add Test URLs section at the end
                 newDescription = `${pullRequest.body}\n\n${testUrlsSection}`;
