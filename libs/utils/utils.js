@@ -463,7 +463,7 @@ export function localizeLink(
     let { prefix } = locale;
     const site = siteLanguages?.find((s) => s.domainMatches.some((d) => url.hostname.includes(d)));
 
-    if (locale.languageBased && url.hostname !== 'localhost') {
+    if (locale.language && url.hostname !== 'localhost') {
       const hasValidLanguage = site?.languages.some((l) => locale.prefix.includes(l));
       if (!site || !hasValidLanguage) {
         prefix = mapPrefixToLocale(prefix);
