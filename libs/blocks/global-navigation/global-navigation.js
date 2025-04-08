@@ -1041,9 +1041,7 @@ class Gnav {
       lanaLog({ message: 'Promo height is more than expected, potential CLS', tags: 'gnav-promo', errorType: 'info' });
       updateLayout();
 
-      if (this.promoResizeObserver) {
-        this.promoResizeObserver.disconnect();
-      }
+      this.promoResizeObserver?.disconnect();
       this.promoResizeObserver = new ResizeObserver(updateLayout);
       this.promoResizeObserver.observe(this.elements.aside);
     }
