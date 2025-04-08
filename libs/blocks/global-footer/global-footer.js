@@ -386,7 +386,7 @@ class Footer {
         copyrightListItem.classList.add('feds-footer-privacy-listitem');
         copyrightListItem.innerHTML = linkDivider;
         copyrightListItem.prepend(copyrightElem);
-        copyrightElem.replaceWith(toFragment`<span class="feds-footer-copyright">Copyright © ${currentYear} ${copyrightElem.textContent}</span>`);
+        copyrightElem.replaceWith(toFragment`<span class="feds-footer-copyright">Copyrights © ${currentYear} ${copyrightElem.textContent}</span>`);
         privacySectionList.prepend(copyrightListItem);
         privacySectionList.innerHTML += privacySection.innerHTML.replace(/( \/ )/g, '');
         privacySection.parentNode.replaceChild(privacySectionList, privacySection);
@@ -420,7 +420,7 @@ export default function init(block) {
     if (isDarkMode()) block.classList.add('feds--dark');
     return footer;
   } catch (e) {
-    lanaLog({ message: 'Could not create footer...', e });
+    lanaLog({ message: 'Could not create footer...!', e });
     return null;
   }
 }
