@@ -49,11 +49,12 @@ const MILO_BLOCKS = [
   'marquee',
   'marquee-anchors',
   'martech-metadata',
-  'mas-autoblock',
   'media',
   'merch',
   'merch-card',
+  'merch-card-autoblock',
   'merch-card-collection',
+  'merch-card-collection-autoblock',
   'merch-offers',
   'mmm',
   'mnemonic-list',
@@ -111,7 +112,8 @@ const AUTO_BLOCKS = [
   { video: '.mp4' },
   { merch: '/tools/ost?' },
   { merch: '/miniplans' },
-  { 'mas-autoblock': 'mas.adobe.com/studio', styles: false },
+  { 'merch-card-collection-autoblock': 'mas.adobe.com/studio.html#content-type=merch-card-collection', styles: false },
+  { 'merch-card-autoblock': 'mas.adobe.com/studio.html', styles: false },
   { m7: '/creativecloud/business-plans', styles: false },
   { m7: '/creativecloud/education-plans', styles: false },
 ];
@@ -933,9 +935,14 @@ const findReplaceableNodes = (area) => {
     let matchFound = false;
     if (node.nodeType === Node.TEXT_NODE) {
       matchFound = regex.test(node.nodeValue);
-    } else if (node.nodeType === Node.ELEMENT_NODE && node.hasAttribute('href')) {
-      const hrefValue = node.getAttribute('href');
-      matchFound = regex.test(hrefValue);
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+      const { attributes } = node;
+      for (let i = 0; i < attributes.length; i += 1) {
+        const { value: attrValue } = attributes[i];
+        if (regex.test(attrValue)) {
+          matchFound = true;
+        }
+      }
     }
     if (matchFound) {
       nodes.push(node);
