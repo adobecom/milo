@@ -53,7 +53,7 @@ const getInitialValues = () => {
 };
 
 const SEARCH_INITIAL_VALUES = getInitialValues() ?? {
-  lastSeenManifest: isReport() ? LAST_SEEN_OPTIONS.week : LAST_SEEN_OPTIONS.threeMonths.key,
+  lastSeenManifest: isReport() ? LAST_SEEN_OPTIONS.week.key : LAST_SEEN_OPTIONS.threeMonths.key,
   pageNum: 1,
   subdomain: SUBDOMAIN_OPTIONS.www.key,
   perPage: 25,
