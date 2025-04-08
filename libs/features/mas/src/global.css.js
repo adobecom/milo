@@ -266,6 +266,10 @@ merch-card [slot='heading-xl'] {
     margin: 0;
 }
 
+merch-card [slot='whats-included'] {
+    margin: var(--consonant-merch-spacing-xxxs) 0px;
+}
+
 merch-card [slot='callout-content'] {
     display: flex;
     flex-direction: column;
