@@ -34,8 +34,7 @@ export function decorateLink(link, path) {
   if (pathname.startsWith('http')) {
     try { pathname = new URL(pathname).pathname; } catch (e) { /* href does not contain domain */ }
   }
-  const linkParts = pathname.split('/');
-  const prefix = linkParts[1] || '';
+  const prefix = pathname.split('/').slice(1, 3).join('/').replace(/\/$/, '');
   let { href } = link;
   if (href.endsWith('/')) href = href.slice(0, -1);
 
