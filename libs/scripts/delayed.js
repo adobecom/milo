@@ -49,7 +49,10 @@ export const loadPrivacy = async (getConfig, loadScript) => {
   document.addEventListener('click', (event) => {
     if (event.target.closest('a[href*="#openPrivacy"]')) {
       event.preventDefault();
-      window.adobePrivacy?.showPreferenceCenter();
+      window.adobePrivacy?.showPreferenceCenter({
+        modalLaunchMethod: 'Footer link',
+        triggerElement: event.target,
+      });
     }
   });
 };
