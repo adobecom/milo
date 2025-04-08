@@ -513,7 +513,7 @@
   border-bottom-color: var(--tabs-active-bg-color);
 }
 
-.tabs #tablist-label-radio {
+.tabs .tablist-label {
   display: none;
 }
 
