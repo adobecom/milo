@@ -22,6 +22,7 @@ import {
   toFragment,
   federatePictureSources,
   isDarkMode,
+  decorateGenericLogo,
 } from '../global-navigation/utilities/utilities.js';
 
 import { replaceKey } from '../../features/placeholders.js';
@@ -397,9 +398,20 @@ class Footer {
     return this.elements.legal;
   };
 
+  decorateLogo = () => {
+    return decorateGenericLogo({
+      classPrefix: 'footer-logo',
+      includeLabel: false,
+      analyticsValue: 'Logo',
+      rawBlock: this.body.querySelector('.adobe-logo'),
+    })
+  }
+
   decorateFooter = () => {
     this.elements.footer = toFragment`<div class="feds-footer-wrapper">
         ${this.elements.footerMenu}
+        ${this.elements.adobeLogo}
+        ${this.decorateLogo()}
         ${this.elements.featuredProducts}
         <div class="feds-footer-options">
           <div class="feds-footer-miscLinks">

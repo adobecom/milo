@@ -45,6 +45,7 @@ import {
   setAsyncDropdownCount,
   branchBannerLoadCheck,
   getBranchBannerInfo,
+  decorateGenericLogo,
 } from './utilities/utilities.js';
 
 import { replaceKey, replaceKeyArray } from '../../features/placeholders.js';
@@ -929,66 +930,6 @@ class Gnav {
     return toggle;
   };
 
-  decorateGenericLogo = ({ selector, classPrefix, includeLabel = true, analyticsValue } = {}) => {
-    const rawBlock = this.content.querySelector(selector);
-    if (!rawBlock) return '';
-
-    // Get all non-image links
-    const imgRegex = /(\.png|\.jpg|\.jpeg)/;
-    const blockLinks = [...rawBlock.querySelectorAll('a')];
-    const link = blockLinks.find((blockLink) => !imgRegex.test(blockLink.href)
-      && !imgRegex.test(blockLink.textContent));
-
-    if (!link) return '';
-
-    // Check which elements should be rendered
-    const isBrandImage = rawBlock.matches(selectors.brandImageOnly);
-    const renderImage = !rawBlock.matches('.no-logo');
-    const renderLabel = !isBrandImage && includeLabel && !rawBlock.matches('.image-only');
-
-    if (!renderImage && !renderLabel) return '';
-
-    // Create image element
-    const getImageEl = () => {
-      if (isDarkMode()) {
-        const allSvgImgs = rawBlock.querySelectorAll('picture img[src$=".svg"]');
-        if (allSvgImgs.length === 2) return allSvgImgs[1];
-
-        const images = blockLinks.filter((blockLink) => imgRegex.test(blockLink.href)
-          || imgRegex.test(blockLink.textContent));
-        if (images.length === 2) return getBrandImage(images[1], isBrandImage);
-      }
-      const svgImg = rawBlock.querySelector('picture img[src$=".svg"]');
-      if (svgImg) return svgImg;
-
-      const image = blockLinks.find((blockLink) => imgRegex.test(blockLink.href)
-        || imgRegex.test(blockLink.textContent));
-      return getBrandImage(image, isBrandImage);
-    };
-
-    const brandImageClass = isBrandImage ? ` ${selectors.brandImageOnly.slice(1)}` : '';
-    const imageEl = renderImage
-      ? toFragment`<span class="${classPrefix}-image${brandImageClass}">${getImageEl()}</span>`
-      : '';
-
-    // Create label element
-    const labelEl = renderLabel
-      ? toFragment`<span class="${classPrefix}-label">${link.textContent}</span>`
-      : '';
-
-    // Create final template
-    const decoratedElem = toFragment`
-      <a href="${link.href}" class="${classPrefix}" daa-ll="${analyticsValue}">
-        ${imageEl}
-        ${labelEl}
-      </a>`;
-
-    // Add accessibility attributes if just an image is rendered
-    if (!renderLabel && link.textContent.length) decoratedElem.setAttribute('aria-label', link.textContent);
-
-    return decoratedElem;
-  };
-
   decorateAside = async () => {
     this.elements.aside = '';
     const promoPath = getMetadata('gnav-promo-source');
@@ -1007,17 +948,18 @@ class Gnav {
     return this.elements.aside;
   };
 
-  decorateBrand = () => this.decorateGenericLogo({
-    selector: '.gnav-brand',
+  decorateBrand = () => decorateGenericLogo({
     classPrefix: 'feds-brand',
     analyticsValue: 'Brand',
+    rawBlock: this.content.querySelector('.gnav-brand'),
   });
 
-  decorateLogo = () => this.decorateGenericLogo({
-    selector: '.adobe-logo',
+  decorateLogo = () => decorateGenericLogo({
     classPrefix: 'feds-logo',
     includeLabel: false,
     analyticsValue: 'Logo',
+    rawBlock: this.content.querySelector('.adobe-logo'),
+
   });
 
   decorateMainNav = async () => {
