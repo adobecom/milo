@@ -68,7 +68,6 @@ export default function processQuickLink(a) {
   }
 
   a.addEventListener('click', async (e) => {
-    if (!window.alloy) return;
     e.preventDefault();
     let loader;
     if (getMetadata('quick-link-loader') === 'on') loader = addLoader(a);
