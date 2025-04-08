@@ -207,14 +207,10 @@ export function getLocale(locales, pathname = window.location.pathname) {
 }
 
 export function getLanguage(languages, locales, pathname = window.location.pathname) {
-  const defaultLang = { ietf: 'en', tk: 'hah7vzn.css', prefix: '/en' };
-  if (!languages) {
-    return defaultLang;
-  }
   const split = pathname.split('/');
-  const baseSplit = [LANGSTORE, PREVIEW].includes(split[1]) ? 1 : 0;
-  const languageString = split[baseSplit + 1];
-  const region = split[baseSplit + 2];
+  const locOffset = [LANGSTORE, PREVIEW].includes(split[1]) ? 1 : 0;
+  const languageString = split[locOffset + 1];
+  const region = split[locOffset + 2];
   let regionPath = '';
 
   const language = languages[languageString];
@@ -225,12 +221,15 @@ export function getLanguage(languages, locales, pathname = window.location.pathn
   }
 
   // if no language, allow for support of locale based routing still
+  // when removing this, account for the root /en/ not existing and instead being just /
   if (!language || (language.languageBased === false && !language.region)) {
-    return getLocale(locales, pathname);
+    const locale = getLocale(locales, pathname);
+    if (locale.prefix === '') locale.language = 'en';
+    return locale;
   }
 
+  language.language = languageString;
   language.prefix = `/${languageString}${regionPath}`;
-  language.languageBased = true;
   return language;
 }
 
