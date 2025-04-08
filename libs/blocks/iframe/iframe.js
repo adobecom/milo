@@ -51,8 +51,8 @@ export default function init(el) {
   const embed = createTag('div', { class: `milo-iframe ${classes}` }, iframe);
 
   iframe.onload = () => {
-    if ((new URL(iframe.src).origin !== window.location.origin) && ariaLabel) {
-      iframe.title = ariaLabel;
+    if (new URL(iframe.src).origin !== window.location.origin) {
+      iframe.title = ariaLabel || '';
       return;
     }
 
