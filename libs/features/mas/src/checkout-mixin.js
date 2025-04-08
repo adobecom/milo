@@ -192,7 +192,7 @@ export function CheckoutMixin(Base) {
             if (offers.length) {
                 if (this.masElement.toggleResolved(version, offers, options)) {
                     const url = service.buildCheckoutURL(offers, options);
-                    if (this.opens3in1Modal && !this.classList.contains(CLASS_NAME_DOWNLOAD) && !this.classList.contains(CLASS_NAME_UPGRADE)) {
+                    if (!this.classList.contains(CLASS_NAME_DOWNLOAD) && !this.classList.contains(CLASS_NAME_UPGRADE)) {
                       this.setCheckoutUrl(url);
                     }
                     return true;

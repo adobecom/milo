@@ -235,15 +235,6 @@ describe('class "CheckoutLink"', () => {
             checkoutLink.masElement.togglePending();
             expect(checkoutLink.href).to.equal(HREF);
         });
-
-        it('does not set the checkout URL if the modal is a 3-in-1 modal', async () => {
-          await initMasCommerceService();
-          const checkoutLink = mockCheckoutLink('abm', {
-            modal: 'true',
-          });
-          await checkoutLink.onceSettled();
-          expect(checkoutLink.getAttribute('href')).to.equal('');
-        })
     });
 
     describe('method "updateOptions"', () => {
