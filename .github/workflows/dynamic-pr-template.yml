@@ -115,11 +115,14 @@ jobs:
                             
               // Create new description with test URLs
               const testUrlsSection = testUrls.join('\n');
-              console.log('New test URLs section:', testUrlsSection);
+              
               
               // Check if Test URLs section exists
               const hasTestUrlsSection = pullRequest.body.includes('## GNav Test URLs');
               let newDescription;
+              console.log('THibotttt:', hasTestUrlsSection);
+              console.log('THibottttfai:', pullRequest.body);
+
               if (hasTestUrlsSection) {
                 // Replace existing Test URLs section
                 newDescription = pullRequest.body.replace(/## GNav Test URLs[\s\S]*?(?=\n\n|$)/, testUrlsSection);
