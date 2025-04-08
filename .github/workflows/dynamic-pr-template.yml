@@ -120,7 +120,6 @@ jobs:
               // Check if Test URLs section exists
               const hasTestUrlsSection = pullRequest.body.includes('## GNav Test URLs');
               let newDescription;
-
               if (hasTestUrlsSection) {
                 // Replace existing Test URLs section
                 newDescription = pullRequest.body.replace(/## GNav Test URLs[\s\S]*?(?=(^##\s|\Z))/m, testUrlsSection);
