@@ -3,6 +3,7 @@ import { createTag } from './utils.js';
 
 const DEFAULT_BADGE_COLOR = '#000000';
 const DEFAULT_BADGE_BACKGROUND_COLOR = '#F8D904';
+const DEFAULT_BORDER_COLOR = '#EAEAEA';
 const CHECKOUT_STYLE_PATTERN = /(accent|primary|secondary)(-(outline|link))?/;
 export const ANALYTICS_TAG = 'mas:product_code/';
 export const ANALYTICS_LINK_ATTR = 'daa-ll';
@@ -74,6 +75,15 @@ function processBadge(fields, merchCard) {
         merchCard.setAttribute(
             'badge-background-color',
             fields.badgeBackgroundColor || DEFAULT_BADGE_BACKGROUND_COLOR,
+        );
+        merchCard.setAttribute(
+            'border-color',
+            fields.badgeBackgroundColor || DEFAULT_BADGE_BACKGROUND_COLOR,
+        );
+    } else {
+        merchCard.setAttribute(
+            'border-color',
+            fields.borderColor || DEFAULT_BORDER_COLOR,
         );
     }
 }
@@ -153,6 +163,8 @@ export function processDescription(fields, merchCard, mapping) {
   appendSlot('promoText', fields, merchCard, mapping);
   appendSlot('description', fields, merchCard, mapping);
   appendSlot('callout', fields, merchCard, mapping);
+  appendSlot('quantitySelect', fields, merchCard, mapping);
+  appendSlot('whatsIncluded', fields, merchCard, mapping);
 }
 
 export function processStockOffersAndSecureLabel(fields, merchCard, aemFragmentMapping, settings) {
@@ -418,9 +430,9 @@ export function cleanup(merchCard) {
 }
 
 export async function hydrate(fragment, merchCard) {
-    const { fields } = fragment;
+    const { id, fields } = fragment;
     const { variant } = fields;
-    if (!variant) return;
+    if (!variant) throw new Error (`hydrate: no variant found in payload ${id}`);
     // temporary hardcode for plans. this data will be coming from settings (MWPW-166756)
     const settings = {
       stockCheckboxLabel: 'Add a 30-day free trial of Adobe Stock.*', // to be {{stock-checkbox-label}}
@@ -428,7 +440,7 @@ export async function hydrate(fragment, merchCard) {
       secureLabel: 'Secure transaction' // to be {{secure-transaction}}
     };
     cleanup(merchCard);
-    merchCard.id = fragment.id;
+    merchCard.id ??= fragment.id;
 
 
     merchCard.removeAttribute('background-image');
@@ -445,7 +457,7 @@ export async function hydrate(fragment, merchCard) {
     await merchCard.updateComplete;
 
     const { aemFragmentMapping } = merchCard.variantLayout;
-    if (!aemFragmentMapping) return;
+    if (!aemFragmentMapping) throw new Error (`hydrate: aemFragmentMapping found for ${id}`)
 
     if (aemFragmentMapping.style === 'consonant') {
       merchCard.setAttribute('consonant', true);

@@ -44,15 +44,17 @@ const MILO_BLOCKS = [
   'instagram',
   'locui',
   'locui-create',
+  'm7',
   'marketo',
   'marquee',
   'marquee-anchors',
   'martech-metadata',
-  'mas-autoblock',
   'media',
   'merch',
   'merch-card',
+  'merch-card-autoblock',
   'merch-card-collection',
+  'merch-card-collection-autoblock',
   'merch-offers',
   'mmm',
   'mnemonic-list',
@@ -94,22 +96,26 @@ const MILO_BLOCKS = [
 ];
 const AUTO_BLOCKS = [
   { adobetv: 'tv.adobe.com' },
-  { gist: 'https://gist.github.com' },
+  { gist: 'gist.github.com' },
   { caas: '/tools/caas' },
   { faas: '/tools/faas' },
   { fragment: '/fragments/', styles: false },
-  { instagram: 'https://www.instagram.com' },
-  { slideshare: 'https://www.slideshare.net', styles: false },
-  { tiktok: 'https://www.tiktok.com', styles: false },
-  { twitter: 'https://twitter.com' },
-  { vimeo: 'https://vimeo.com' },
-  { vimeo: 'https://player.vimeo.com' },
-  { youtube: 'https://www.youtube.com' },
-  { youtube: 'https://youtu.be' },
+  { instagram: 'instagram.com' },
+  { slideshare: 'slideshare.net', styles: false },
+  { tiktok: 'tiktok.com', styles: false },
+  { twitter: 'twitter.com' },
+  { vimeo: 'vimeo.com' },
+  { vimeo: 'player.vimeo.com' },
+  { youtube: 'youtube.com' },
+  { youtube: 'youtu.be' },
   { 'pdf-viewer': '.pdf', styles: false },
   { video: '.mp4' },
   { merch: '/tools/ost?' },
-  { 'mas-autoblock': 'mas.adobe.com/studio' },
+  { merch: '/miniplans' },
+  { 'merch-card-collection-autoblock': 'mas.adobe.com/studio.html#content-type=merch-card-collection', styles: false },
+  { 'merch-card-autoblock': 'mas.adobe.com/studio.html', styles: false },
+  { m7: '/creativecloud/business-plans.html', styles: false },
+  { m7: '/creativecloud/education-plans.html', styles: false },
 ];
 const DO_NOT_INLINE = [
   'accordion',
@@ -633,9 +639,20 @@ export function decorateImageLinks(el) {
   });
 }
 
+export function isTrustedAutoBlock(autoBlock, url) {
+  if (!url.href.includes(autoBlock)) return false;
+  const urlHostname = url.hostname.replace('www.', '');
+  const locationHostname = window.location.hostname.replace('www.', '');
+  return urlHostname === locationHostname
+    || urlHostname.endsWith('.adobe.com')
+    || urlHostname === 'adobe.com'
+    || urlHostname === autoBlock
+    || !!urlHostname.match(/\.(hlx|aem)\.(page|live)$/)
+    || (autoBlock === '.pdf' && url.pathname.endsWith(autoBlock));
+}
+
 export function decorateAutoBlock(a) {
   const config = getConfig();
-  const { hostname } = window.location;
   let url;
   try {
     url = new URL(a.href);
@@ -644,14 +661,9 @@ export function decorateAutoBlock(a) {
     return false;
   }
 
-  const href = hostname === url.hostname
-    ? `${url.pathname}${url.search}${url.hash}`
-    : a.href;
-
   return config.autoBlocks.find((candidate) => {
     const key = Object.keys(candidate)[0];
-    const match = href.includes(candidate[key]);
-    if (!match) return false;
+    if (!isTrustedAutoBlock(candidate[key], url)) return false;
 
     if (key === 'pdf-viewer' && !a.textContent.includes('.pdf')) {
       a.target = '_blank';
@@ -842,6 +854,16 @@ function decorateDefaults(el) {
   });
 }
 
+export async function getGnavSource() {
+  const { locale, dynamicNavKey } = getConfig();
+  let url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
+  if (dynamicNavKey) {
+    const { default: dynamicNav } = await import('../features/dynamic-navigation/dynamic-navigation.js');
+    url = dynamicNav(url, dynamicNavKey);
+  }
+  return url;
+}
+
 export function isLocalNav() {
   const { locale = {} } = getConfig();
   const gnavSource = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
@@ -913,9 +935,14 @@ const findReplaceableNodes = (area) => {
     let matchFound = false;
     if (node.nodeType === Node.TEXT_NODE) {
       matchFound = regex.test(node.nodeValue);
-    } else if (node.nodeType === Node.ELEMENT_NODE && node.hasAttribute('href')) {
-      const hrefValue = node.getAttribute('href');
-      matchFound = regex.test(hrefValue);
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+      const { attributes } = node;
+      for (let i = 0; i < attributes.length; i += 1) {
+        const { value: attrValue } = attributes[i];
+        if (regex.test(attrValue)) {
+          matchFound = true;
+        }
+      }
     }
     if (matchFound) {
       nodes.push(node);
@@ -1247,13 +1274,15 @@ async function loadPostLCP(config) {
   const georouting = getMetadata('georouting') || config.geoRouting;
   if (georouting === 'on') {
     const jsonPromise = fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
-    const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
-    await loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle, jsonPromise);
+    import('../features/georoutingv2/georoutingv2.js')
+      .then(({ default: loadGeoRouting }) => {
+        loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle, jsonPromise);
+      });
   }
   const header = document.querySelector('header');
   if (header) {
     header.classList.add('gnav-hide');
-    await loadBlock(header);
+    loadBlock(header);
     header.classList.remove('gnav-hide');
   }
   loadTemplate();

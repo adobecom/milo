@@ -213,6 +213,10 @@
   bottom: var(--spacing-xs);
 }
 
+.section.sticky-bottom:has(.notification.split) {
+  bottom: 5px;
+}
+
 .section[class*='grid-width-'] {
   padding-left: var(--grid-margins-width);
   padding-right: var(--grid-margins-width);

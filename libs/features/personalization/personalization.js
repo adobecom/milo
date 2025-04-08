@@ -89,6 +89,7 @@ export const normalizePath = (p, localize = true) => {
     const url = new URL(path);
     const { hash, pathname } = url;
     const firstFolder = pathname.split('/')[1];
+    const mepHash = '#_dnt';
 
     if (path.startsWith(config.codeRoot)
       || path.includes('.hlx.')
@@ -96,7 +97,7 @@ export const normalizePath = (p, localize = true) => {
       || path.includes('.adobe.')) {
       if (!localize
         || config.locale.ietf === 'en-US'
-        || hash.includes('#_dnt')
+        || hash.includes(mepHash)
         || firstFolder in config.locales
         || path.includes('.json')) {
         path = pathname;
@@ -104,7 +105,7 @@ export const normalizePath = (p, localize = true) => {
         path = `${config.locale.prefix}${pathname}`;
       }
     }
-    return `${path}${hash}`;
+    return `${path}${hash.replace(mepHash, '')}`;
   } catch (e) {
     return path;
   }
@@ -219,13 +220,8 @@ export const createContent = (el, { content, manifestId, targetManifestId, actio
 };
 
 const COMMANDS = {
-  [COMMANDS_KEYS.remove]: (el, { content, manifestId }) => {
-    if (content === 'false') return;
-    if (manifestId && !el.href?.includes('/tools/ost')) {
-      el.dataset.removedManifestId = manifestId;
-      return;
-    }
-    el.classList.add(CLASS_EL_DELETE);
+  [COMMANDS_KEYS.remove]: (el, { content }) => {
+    if (content !== 'false') el.classList.add(CLASS_EL_DELETE);
   },
   [COMMANDS_KEYS.replace]: (el, cmd) => {
     if (!el || el.classList.contains(CLASS_EL_REPLACE)) return;
@@ -238,6 +234,7 @@ const COMMANDS = {
     const { manifestId, targetManifestId } = cmd;
     if (!cmd.attribute || !cmd.content) return;
     const [attribute, parameter] = cmd.attribute.split('_');
+    cmd.content = replacePlaceholders(cmd.content);
 
     let value;
 
@@ -566,6 +563,17 @@ export const deleteMarkedEls = (rootEl = document) => {
     .forEach((el) => el.remove());
 };
 
+export function addSectionAnchors(rootEl = document) {
+  rootEl.querySelectorAll('.section-metadata').forEach((block) => {
+    [...block.children].forEach((row) => {
+      const col1 = row.children[0]?.textContent.toLowerCase().trim();
+      const col2 = row.children[1]?.textContent.toLowerCase().trim().replaceAll(/\s+/g, '-');
+      if (!col1 || !col2 || col1 !== 'anchor') return;
+      block.parentElement.setAttribute('id', col2);
+    });
+  });
+}
+
 export function handleCommands(
   commands,
   rootEl = document,
@@ -573,6 +581,7 @@ export function handleCommands(
   forceRootEl = false,
 ) {
   const section1 = document.querySelector('main > div');
+  addSectionAnchors(rootEl);
   commands.forEach((cmd) => {
     const { action, content, selector } = cmd;
     cmd.content = forceInline && getSelectorType(content) === 'fragment' ? addHash(content, INLINE_HASH) : content;
@@ -1045,6 +1054,7 @@ export function cleanAndSortManifestList(manifests, conf) {
     try {
       if (!manifest?.manifest) return;
       if (!manifest.manifestPath) manifest.manifestPath = normalizePath(manifest.manifest);
+      if (manifest.source && !manifest.source.includes('target')) manifest.manifest = normalizePath(manifest.manifest);
       if (manifest.manifestPath in manifestObj) {
         let fullManifest = manifestObj[manifest.manifestPath];
         let freshManifest = manifest;
@@ -1098,11 +1108,7 @@ export function handleFragmentCommand(command, a) {
     return fragment;
   }
   if (action === COMMANDS_KEYS.remove) {
-    if (manifestId) {
-      a.parentElement.dataset.removedManifestId = manifestId;
-    } else {
-      a.parentElement.remove();
-    }
+    a.parentElement.remove();
   }
   return false;
 }

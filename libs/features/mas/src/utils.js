@@ -1,3 +1,5 @@
+import { MAS_COMMERCE_SERVICE_INIT_TIME_MEASURE_NAME } from './constants.js';
+
 export function debounce(func, delay) {
     let debounceTimer;
     return function () {
@@ -35,12 +37,16 @@ export function createTag(tag, attributes = {}, content = null, is = null) {
     return element;
 }
 
+export function matchMobile() {
+  return window.matchMedia('(max-width: 767px)');
+}
+
 /**
  * Checks if the current device is mobile based on the screen width.
  * @returns {boolean} True if the device is mobile, otherwise false.
  */
 export function isMobile() {
-    return window.matchMedia('(max-width: 767px)').matches;
+  return matchMobile().matches;
 }
 
 /**
@@ -54,4 +60,17 @@ export function isMobileOrTablet() {
 /* c8 ignore next 4 */
 export function wait(ms = 1000) {
     return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Returns the duration of the mas-commerce-service initialization.
+ * @returns {number} The duration of the mas-commerce-service initialization.
+ */
+export function getMasCommerceServiceDurationLog() {
+    const masCommerceService = document.querySelector('mas-commerce-service');
+    if (!masCommerceService) return {};
+    return {
+        [MAS_COMMERCE_SERVICE_INIT_TIME_MEASURE_NAME]:
+            masCommerceService.initDuration,
+    };
 }

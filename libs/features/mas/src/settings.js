@@ -100,15 +100,9 @@ function getSettings(config = {}) {
         wcsURL = WCS_STAGE_URL;
     }
 
-    let wcsBufferDelay = toPositiveFiniteInteger(
-        getParameter('wcsBufferDelay', commerce),
-        Defaults.wcsBufferDelay,
-    );
-    let wcsBufferLimit = toPositiveFiniteInteger(
-        getParameter('wcsBufferLimit', commerce),
-        Defaults.wcsBufferLimit,
-    );
-
+    const masIOUrl = getParameter('mas-io-url') 
+                  ?? config.masIOUrl 
+                  ?? `https://www${env === Env.STAGE ? '.stage' : ''}.adobe.com/mas/io`;
     return {
         ...getLocaleSettings(config),
         displayOldPrice,
@@ -125,11 +119,11 @@ function getSettings(config = {}) {
         forceTaxExclusive,
         promotionCode,
         quantity,
+        alternativePrice: Defaults.alternativePrice,
         wcsApiKey,
-        wcsBufferDelay,
-        wcsBufferLimit,
         wcsURL,
         landscape,
+        masIOUrl,
     };
 }
 
