@@ -100,10 +100,7 @@ class Footer {
     socialParent?.appendChild(social);
 
     // Support auto populated modal
-    const modals = this.body.querySelectorAll('.modal');
-    if (modals.length > 0) {
-      await Promise.all(Array.from(modals).map((modal) => loadBlock(modal)));
-    }
+    await Promise.all([...this.body.querySelectorAll('.modal')].map(loadBlock));
 
     const path = getFederatedUrl(url);
     federatePictureSources({ section: this.body, forceFederate: path.includes('/federal/') });
