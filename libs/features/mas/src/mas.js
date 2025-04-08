@@ -1,16 +1,17 @@
+import '../../../utils/lana.js';
 import './commerce.js';
-
-import './aem-fragment.js';
-
 import './merch-card.js';
+import './merch-icon.js';
+import './merch-mnemonic-list.js';
 import './merch-offer-select.js';
 import './merch-offer.js';
 import './merch-quantity-select.js';
+import './merch-whats-included.js';
 
-import '../../../utils/lana.js';
-
-import { updateConfig } from './lana.js';
 import { registerVariant } from './variants/variants.js';
+import { updateConfig } from './lana.js';
+
+updateConfig({ sampleRate: 1 });
 
 // Import ccd variants
 import {
@@ -47,5 +48,3 @@ registerVariant(
     AH_TRY_BUY_WIDGET_AEM_FRAGMENT_MAPPING,
     AHTryBuyWidget.variantStyle,
 );
-
-updateConfig({ sampleRate: 1 });
