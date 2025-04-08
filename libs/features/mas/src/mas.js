@@ -6,6 +6,7 @@ import './merch-mnemonic-list.js';
 import './merch-offer-select.js';
 import './merch-offer.js';
 import './merch-quantity-select.js';
+import './merch-badge.js';
 import './merch-whats-included.js';
 
 import { registerVariant } from './variants/variants.js';
