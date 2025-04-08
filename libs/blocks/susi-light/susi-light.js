@@ -54,7 +54,7 @@ export class SusiLight {
     const { imsClientId, locale, imsScope } = getConfig();
     return {
       client_id: imsClientId,
-      scope: imsScope,
+      scope: imsScope || window.adobeid.scope || 'AdobeID,openid,gnav',
       response_type: 'token',
       redirect_uri: this.children[5]?.textContent?.trim() || 'https://www.adobe.com/home',
       locale: locale.ietf || 'en-us',
