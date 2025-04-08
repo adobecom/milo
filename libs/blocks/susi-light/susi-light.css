@@ -91,14 +91,14 @@
   justify-items: center;
 }
 
-@media (min-width: 900px) {
+susi-sentry-light {
+  display: block;
+  width: 348px;
+  height: 466px;
+  overflow: scroll;
+}
 
-  susi-sentry-light {
-    display: block;
-    width: 348px;
-    height: 466px;
-    overflow: scroll;
-  }
+@media (min-width: 900px) {
 
   .susi-light {
     grid-template-columns: minmax(78px, 13fr) 400px minmax(72px, 12fr) 352px 23fr;

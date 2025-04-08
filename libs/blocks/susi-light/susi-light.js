@@ -90,7 +90,7 @@ export class SusiLight {
 
   createProductInfo = (product) => {
     const prodInfo = this.children[3]?.querySelectorAll(':scope p');
-    const logoURL = prodInfo[0].querySelector('img')?.getAttribute('src');
+    const logoURL = prodInfo[0].querySelector('img')?.getAttribute('src') || '';
     const logo = createTag('img', { class: 'susi-product-logo', src: logoURL });
     const titleText = prodInfo[1].textContent;
     const title = createTag('span', { class: 'susi-product-title' }, titleText);
