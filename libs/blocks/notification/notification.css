@@ -17,6 +17,7 @@
   --icon-size-xl: 64px;
   --pill-radius: 16px;
   --pill-shadow: 0 3px 6px #00000029;
+  --split-shadow: 0 6px 16px 0 rgb(0 0 0 / 0.16);
 
   display: flex;
   inline-size: 100%;
@@ -96,6 +97,11 @@
 }
 
 .notification.ribbon.xs-padding .foreground {
+  padding-block: var(--spacing-xs);
+}
+
+.notification.split .foreground {
+  padding-inline: var(--spacing-xs);
   padding-block: var(--spacing-xs);
 }
 
@@ -300,6 +306,10 @@
   box-shadow: var(--pill-shadow);
 }
 
+.notification.split.pill {
+  box-shadow: var(--split-shadow);
+}
+
 .notification.pill .foreground .action-area {
   justify-content: flex-end;
   flex-wrap: wrap;
@@ -344,6 +354,55 @@
 .notification.pill.max-width-10 { max-width: 1000px; }
 .notification.pill.max-width-12 { max-width: 1200px; }
 .notification.pill.max-width-auto { max-width: unset; }
+
+
+.notification.split .copy-wrap > [class^="heading-"] {
+  max-width: 92.6%;
+}
+
+.notification.split .foreground .text .copy-wrap,
+.notification.split .foreground .text .split-list-area {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  padding-inline-end: 0px;
+  inline-size: 100%;
+}
+
+.notification.split .split-list-area .split-list-item
+ {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.notification.split .split-list-area .split-list-item .text-content {
+  display: flex;
+  gap: var(--spacing-xxs);
+  align-items: center;
+  font-weight: 700;
+}
+
+
+.notification.split .split-list-area .split-list-item .text-content div {
+  max-width: 79.042%;
+}
+
+.notification.split .split-list-area .split-list-item .con-button {
+  white-space: normal;
+  text-align: center;
+  min-width: 89px;
+  max-width: 89px;
+}
+
+.notification.split .split-list-area .split-list-item picture,
+.notification.split .split-list-area .split-list-item picture img {
+  display: flex;
+  width: auto;
+  height: var(--icon-size-xs);
+  min-width: unset;
+  max-width: unset;
+}
 
 @media screen and (min-width: 600px) {
   .notification {
@@ -491,6 +550,10 @@
   .notification.pill.max-width-10-tablet { max-width: 1000px; }
   .notification.pill.max-width-12-tablet { max-width: 1200px; }
   .notification.pill.max-width-auto-tablet { max-width: unset; }
+
+  .notification.split {
+    display: none;
+  }
 }
 
 @media screen and (min-width: 1200px) {

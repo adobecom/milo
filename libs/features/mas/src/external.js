@@ -9,6 +9,8 @@ import {
     priceAnnual,
     priceWithAnnual,
     pricePromoWithAnnual,
+    priceAlternative,
+    priceOpticalAlternative,
 } from './price/index.js';
 
 import { discount } from './discount/index.js';
@@ -87,6 +89,8 @@ export {
     priceOptical,
     priceStrikethrough,
     priceAnnual,
+    priceAlternative,
+    priceOpticalAlternative,
     priceWithAnnual,
     pricePromoWithAnnual,
     discount,

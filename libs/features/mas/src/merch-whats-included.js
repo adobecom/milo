@@ -3,25 +3,18 @@ import { html, css, LitElement } from 'lit';
 export class MerchWhatsIncluded extends LitElement {
     static styles = css`
         :host {
-            display: inline-grid;
-            place-items: end start;
-            grid-auto-flow: row;
-            width: auto;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
             overflow: hidden;
-            place-content: stretch start;
             box-sizing: border-box;
-            align-self: baseline;
-            margin-bottom: 16px;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            grid-auto-rows: unset;
-            height: inherit;
+            row-gap: 10px;
         }
 
         ::slotted([slot='heading']) {
-            grid-column: 1 / -1;
-            font-size: 18px;
-            margin: 0;
-            margin-bottom: 16px;
+            font-size: 14px;
+            font-weight: 700;
+            margin-right: 16px;
         }
 
         ::slotted([slot='content']) {
@@ -36,7 +29,6 @@ export class MerchWhatsIncluded extends LitElement {
             font-size: 14px;
             text-decoration: underline;
             color: var(--link-color-dark);
-            margin-top: 16px;
         }
     `;
 

@@ -107,6 +107,7 @@ describe('commerce service', () => {
                 });
                 expect(el.settings).to.deep.contains({
                     locale: 'fr_CA',
+                    masIOUrl: 'https://www.stage.adobe.com/mas/io',
                     language: 'es',
                     country: 'CA',
                     env: 'STAGE',
@@ -135,12 +136,12 @@ describe('commerce service', () => {
                     landscape: 'PUBLISHED',
                     language: 'en',
                     locale: 'en_US',
+                    masIOUrl: 'https://www.adobe.com/mas/io',
                     modal: false,
                     promotionCode: '',
                     quantity: [1],
+                    alternativePrice: false,
                     wcsApiKey: 'wcms-commerce-ims-ro-user-milo',
-                    wcsBufferDelay: 1,
-                    wcsBufferLimit: 1,
                     wcsURL: 'https://www.adobe.com/web_commerce_artifact',
                 });
             });
@@ -149,7 +150,7 @@ describe('commerce service', () => {
                 const el = await initMasCommerceService({
                     'lana-tags': 'ccd',
                     'lana-sample-rate': '100',
-                    'host-env': 'stage',
+                    'env': 'stage',
                 });
                 el.log.error('test error');
                 const [, url] = calls[0].open.lastCall.args;
