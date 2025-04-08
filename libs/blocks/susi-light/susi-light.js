@@ -1,18 +1,18 @@
 import { loadScript, createTag, getConfig, loadIms, isSignedOut } from '../../utils/utils.js';
 
 const loadSusiLight = async () => {
-  const lib = 'https://auth-light.identity-stage.adobe.com/sentry/wrapper.js';
+  const { env } = getConfig();
+  const lib = `https://auth-light.identity${env.name === 'prod' ? '' : '-stage'}.adobe.com/sentry/wrapper.js`;
   await loadScript(lib);
 };
 
-const redirectIfLoggedIn = async (destURL = 'https://www.adobe.com') => {
+const redirectIfLoggedIn = async (destURL = 'https://www.adobe.com/home') => {
   const redirect = () => {
     window.location.replace(destURL);
   };
   if (!isSignedOut()) redirect();
-  if (window.adobeIMS?.isSignedInUser()) redirect();
   try {
-    await loadIms();
+    if (!window.adobeIMS) await loadIms();
     if (window.adobeIMS?.isSignedInUser()) {
       redirect();
     }
@@ -25,7 +25,7 @@ const onRedirect = (e) => {
   window.location.replace(e.detail);
 };
 
-class SusiLight {
+export class SusiLight {
   constructor(el) {
     this.el = el;
     this.children = el.querySelectorAll(':scope > div');
@@ -51,13 +51,13 @@ class SusiLight {
   };
 
   createAuthParams = () => {
-    const { imsClientId } = getConfig();
+    const { imsClientId, locale, imsScope } = getConfig();
     return {
       client_id: imsClientId,
-      scope: 'AdobeID,openid,gnav',
+      scope: imsScope,
       response_type: 'token',
       redirect_uri: this.children[5]?.textContent?.trim() || 'https://www.adobe.com/home',
-      locale: window.location.hash.substring(1) || 'en-us',
+      locale: locale.ietf || 'en-us',
     };
   };
 
@@ -89,10 +89,10 @@ class SusiLight {
   };
 
   createProductInfo = (product) => {
-    const ps = this.children[3].querySelectorAll(':scope p');
-    const logoURL = ps[0].querySelector('img')?.getAttribute('src');
+    const prodInfo = this.children[3]?.querySelectorAll(':scope p');
+    const logoURL = prodInfo[0].querySelector('img')?.getAttribute('src');
     const logo = createTag('img', { class: 'susi-product-logo', src: logoURL });
-    const titleText = ps[1].textContent;
+    const titleText = prodInfo[1].textContent;
     const title = createTag('span', { class: 'susi-product-title' }, titleText);
     product.appendChild(logo);
     product.appendChild(title);
@@ -100,10 +100,9 @@ class SusiLight {
   };
 
   createProductInfoElement = () => {
-    const ps = this.children[3].querySelectorAll(':scope p');
+    const prodInfo = this.children[3]?.querySelectorAll(':scope p');
     const productInfo = createTag('div', { class: 'susi-product-info' });
-    const taglineText = ps[2].textContent;
-    const tagline = createTag('div', { class: 'susi-product-tagline' }, taglineText);
+    const tagline = createTag('div', { class: 'susi-product-tagline' }, prodInfo[2].textContent);
     const product = createTag('div', { class: 'susi-product' });
     productInfo.appendChild(this.createProductInfo(product));
     productInfo.appendChild(tagline);
@@ -111,7 +110,7 @@ class SusiLight {
   };
 
   setBackground = () => {
-    const bgImg = this.children[0].textContent?.trim();
+    const bgImg = this.children[0]?.textContent?.trim();
     try {
       const bgUrl = new URL(bgImg).href;
       if (this.isDesktop.matches && bgImg) this.el.style.backgroundImage = `url(${bgUrl})`;
