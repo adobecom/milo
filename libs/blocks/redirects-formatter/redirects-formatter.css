@@ -1,0 +1,92 @@
+
+:root {
+  --notch-size: 12px;
+}
+
+h1 {
+  margin: 20px;
+  width: fit-content;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--text-color);
+}
+
+textarea {
+  white-space: pre;
+  min-height: 200px;
+  height: fit-content;
+}
+
+button {
+  width: fit-content;
+  grid-column: 4;
+  margin: 16px 0;
+  border: none;
+  height: 36px;
+  font-family: adobe-clean, sans-serif;
+  color: var(--color-white);
+  background: #FF1593;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 0 18px;
+  clip-path: polygon(0% 0%, var(--notch-size) 0%, calc(100% - var(--notch-size)) 0%, 100% var(--notch-size), 100% calc(100% - var(--notch-size)), 100% 100%, 0% 100%, 0% 100%);
+}
+
+button:hover {
+  background-color: #d07;
+}
+
+label {
+  margin: 16px 5px;
+  align-self: center;
+}
+
+.redirects-formatter,
+.redirects-container {
+  display: flex;
+  flex-direction: column;
+  margin: 0 20px 20px;
+}
+
+.instructions {
+  margin: 0 20px;
+}
+
+.checkbox-container {
+  display: flex;
+  flex-wrap: wrap;
+  background: #efefef;
+  grid-column: 1/3;
+  border: 1px solid black;
+}
+
+.checkbox-wrapper {
+  padding: 5px;
+  min-width: 100px;
+  display: flex;
+  align-items: center;
+}
+
+.redirects-container section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin-bottom: 20px;
+}
+
+.redirects-container section textarea {
+  grid-column: 1/3;
+}
+
+.redirects-container section button {
+  grid-column-start: 2;
+  justify-self: end;
+}
+
+.error {
+  margin: 10px 20px;
+  min-height: 30px;
+  color: red;
+}
+
+.error-border {
+  border: 1px solid red;
+}
