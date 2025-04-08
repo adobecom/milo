@@ -1,4 +1,4 @@
-import { getConfig } from '../../utils/utils.js';
+import { getConfig, getLanguage } from '../../utils/utils.js';
 
 const queriedPages = [];
 
@@ -34,12 +34,14 @@ export function decorateLink(link, path) {
   if (pathname.startsWith('http')) {
     try { pathname = new URL(pathname).pathname; } catch (e) { /* href does not contain domain */ }
   }
-  const linkParts = pathname.split('/');
-  const prefix = linkParts[1] || '';
+  const { languageMap, languages, locales } = getConfig();
+  const language = getLanguage(languages, locales, pathname);
+  const prefix = language.prefix;
+  /*const linkParts = pathname.split('/');
+  const prefix = linkParts[1] || '';*/
   let { href } = link;
   if (href.endsWith('/')) href = href.slice(0, -1);
-
-  const { languageMap } = getConfig();
+  
   if (languageMap && !getConfig().locales[prefix]) {
     const valueInMap = languageMap[prefix];
     href = href.replace(`/${prefix}`, valueInMap ? `/${valueInMap}` : '');
