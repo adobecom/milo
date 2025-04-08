@@ -36,7 +36,7 @@ export function decorateLink(link, path) {
   }
   const { languageMap, languages, locales } = getConfig();
   const language = getLanguage(languages, locales, pathname);
-  const prefix = language.prefix;
+  const prefix = language.prefix.replace('/', '');
   /*const linkParts = pathname.split('/');
   const prefix = linkParts[1] || '';*/
   let { href } = link;
