@@ -156,7 +156,7 @@ function filterPageList(pageNum, perPage, event) {
     let { value } = searchValues[key];
     if (value.replace) {
       value = value.replace(',', '');
-      value = value.replace('\n', ',\n');
+      value = value.replace(/\n/g, ',\n');
     }
     detail[key] = value;
   });
