@@ -32,13 +32,14 @@ const MUNCHKIN_ID = 'marketo munckin';
 const SUCCESS_TYPE = 'form.success.type';
 const SUCCESS_CONTENT = 'form.success.content';
 const SUCCESS_SECTION = 'form.success.section';
-const SUCCESS_HIDE_SECTION = 'form.success.hide section';
+const SUCCESS_HIDE_SECTION = 'form.success.hide.section';
 const FORM_MAP = {
   'success-type': SUCCESS_TYPE,
   'destination-type': SUCCESS_TYPE,
   'success-content': SUCCESS_CONTENT,
   'destination-url': SUCCESS_CONTENT,
   'success-section': SUCCESS_SECTION,
+  'success-hide-section': SUCCESS_HIDE_SECTION,
   'co-partner-names': 'program.copartnernames',
   'sfdc-campaign-id': 'program.campaignids.sfdc',
   'poi-field': 'field_filters.products',
