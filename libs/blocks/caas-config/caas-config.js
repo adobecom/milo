@@ -345,9 +345,11 @@ const BasicsPanel = ({ tagsData }) => {
     delete countryTags['caas:country/gr_en'];
   }
 
+  countryTags['caas:country/xx'] = 'All';
+
   const countryLangOptions = html`
-    <${Select} options=${countryTags} prop="country" label="Country" sort />
-    <${Select} options=${languageTags} prop="language" label="Language" sort />`;
+    <${Select} options=${languageTags} prop="language" label="Language" />  
+    <${Select} prop="country" options=${countryTags} label="Country(s)" />`;
 
   const partialLoadOptions = html`
     <${Input} label="Partial Load Count" prop="partialLoadCount" type="number" />`;
@@ -359,7 +361,7 @@ const BasicsPanel = ({ tagsData }) => {
     <${DropdownSelect} options=${defaultOptions.source} prop="source" label="Source" />
     <${Input} label="Results Per Page" prop="resultsPerPage" type="number" />
     <${Input} label="Total Cards to Show" prop="totalCardsToShow" type="number" />
-    <${Input} label="Auto detect country & lang" prop="autoCountryLang" type="checkbox" />
+    <${Input} label="Auto detect language & country" prop="autoCountryLang" type="checkbox" />
     ${!state.autoCountryLang && countryLangOptions}
   <${Input} label="Partial Load Enabled" prop="partialLoadEnabled" options="${defaultOptions.partialLoadEnabled}" type="checkbox"  />
     ${state.partialLoadEnabled && partialLoadOptions}
