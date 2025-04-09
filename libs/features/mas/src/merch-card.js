@@ -8,6 +8,7 @@ import {
 
 import './global.css.js';
 import './aem-fragment.js';
+import './merch-badge.js';
 import './merch-mnemonic-list.js';
 import './merch-whats-included.js';
 import {
