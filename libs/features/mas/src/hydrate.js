@@ -328,11 +328,13 @@ function createSpectrumSwcButton(cta, aemFragmentMapping, isOutline, variant) {
 }
 
 function createConsonantButton(cta, isAccent) {
-    cta.classList.add('con-button');
+    const CheckoutLink = customElements.get('checkout-link');
+    const checkoutLink = CheckoutLink.createCheckoutLink(cta.dataset, cta.innerHTML);
+    checkoutLink.classList.add('con-button');
     if (isAccent) {
-        cta.classList.add('blue');
+      checkoutLink.classList.add('blue');
     }
-    return cta;
+    return checkoutLink;
 }
 
 export function processCTAs(fields, merchCard, aemFragmentMapping, variant) {
