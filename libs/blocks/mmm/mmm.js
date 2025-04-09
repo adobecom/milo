@@ -517,9 +517,6 @@ function subscribeToSearchCriteriaChanges() {
 
 export default async function init(el) {
   isReport = el.classList.contains('target-cleanup');
-  console.log(isReport);
-
-
   await createPageList(el);
   createForm(el);
   subscribeToSearchCriteriaChanges();
