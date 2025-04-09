@@ -1,4 +1,4 @@
-import { VariantLayout } from "./variant-layout";
+import { VariantLayout } from './variant-layout';
 import { html, css } from 'lit';
 import { CSS } from './plans.css.js';
 import { isMobile, matchMobile } from '../utils.js';
@@ -13,7 +13,10 @@ export const PLANS_AEM_FRAGMENT_MAPPING = {
   quantitySelect: { tag: 'div', slot: 'quantity-select' },
   stockOffer: true,
   secureLabel: true,
-  badge: true,
+  badge: { tag: 'div', slot: 'badge' },
+  allowedBadgeColors: ['spectrum-yellow-300-plans', 'spectrum-gray-300-plans', 'spectrum-gray-700-plans', 'spectrum-green-900-plans'],
+  allowedBorderColors: ['spectrum-yellow-300-plans', 'spectrum-gray-300-plans'],
+  borderColor: { attribute: 'border-color' },
   size: ['wide', 'super-wide'],
   whatsIncluded: { tag: 'div', slot: 'whats-included' },
   ctas: { slot: 'footer', size: 'm' },
@@ -104,6 +107,7 @@ export class Plans extends VariantLayout {
             <slot name="whats-included"></slot>
             <slot name="callout-content"></slot>
             ${this.stockCheckbox}
+            <slot name="badge"></slot>
             <slot name="quantity-select"></slot>
         </div>
         ${this.secureLabelFooter}`;
@@ -111,6 +115,8 @@ export class Plans extends VariantLayout {
 
   static variantStyle = css`
     :host([variant='plans']) {
+        min-height: 348px;
+        border: 1px solid var(--merch-card-custom-border-color, #DADADA);
         --merch-card-plans-min-width: 244px;
         --merch-card-plans-max-width: 244px;
         --merch-card-plans-padding: 15px;
@@ -128,6 +134,14 @@ export class Plans extends VariantLayout {
         min-width: var(--merch-card-plans-min-width);
         max-width: var(--merch-card-plans-max-width);
         padding: var(--merch-card-plans-padding);
+    }
+
+    :host([variant='plans'][size]) .body {
+        max-width: none;
+    }
+
+    :host([variant='plans']) .wide-footer #stock-checkbox {
+        margin-top: 0;
     }
 
     :host([variant='plans']) #stock-checkbox {
