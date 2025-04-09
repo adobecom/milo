@@ -49,6 +49,18 @@ describe('MMM', () => {
     await module.default(document.querySelector('.mmm'));
   });
 
+  it('Renders with mmm class', async () => {
+    const mmmDl = document.querySelector('dl.mmm');
+    expect(mmmDl).to.exist;
+    const mmmDt = mmmDl.querySelectorAll('dt');
+    expect(mmmDt.length).to.equal(5);
+    expect(mmmDt[0].textContent).to.equal('https://www.adobe.com/1 Manifest(s) found');
+    const mmmDd = mmmDl.querySelectorAll('dd');
+    expect(mmmDd.length).to.equal(5);
+    const loading = mmmDd[0].querySelector('.loading');
+    expect(loading).to.exist;
+  });
+
   it('Expand collapse', async () => {
     await loadJsonAndSetResponse('./mocks/get-page.json');
     const [firstMmmButton, secondMmmButton] = document.body.querySelectorAll('dt button');
