@@ -23,17 +23,17 @@ const SUBDOMAIN_OPTIONS = {
   all: { value: 'all', key: 'all' },
 };
 
-const isReport = () => window.location.href.includes('mmm-target-cleanup');
+let isReport = false;
 
 export const getLocalStorageFilter = () => {
-  const cookie = localStorage.getItem(isReport()
+  const cookie = localStorage.getItem(isReport
     ? MMM_REPORT_LOCAL_STORAGE_KEY
     : MMM_LOCAL_STORAGE_KEY);
   return cookie ? JSON.parse(cookie) : null;
 };
 
 const setLocalStorageFilter = (obj) => {
-  localStorage.setItem(isReport()
+  localStorage.setItem(isReport
     ? MMM_REPORT_LOCAL_STORAGE_KEY
     : MMM_LOCAL_STORAGE_KEY, JSON.stringify(obj));
 };
@@ -53,7 +53,7 @@ const getInitialValues = () => {
 };
 
 const SEARCH_INITIAL_VALUES = getInitialValues() ?? {
-  lastSeenManifest: isReport() ? LAST_SEEN_OPTIONS.week.key : LAST_SEEN_OPTIONS.threeMonths.key,
+  lastSeenManifest: isReport ? LAST_SEEN_OPTIONS.week.key : LAST_SEEN_OPTIONS.threeMonths.key,
   pageNum: 1,
   subdomain: SUBDOMAIN_OPTIONS.www.key,
   perPage: 25,
@@ -296,14 +296,14 @@ function createLastSeenManifestAndDomainDD() {
     'div',
     { id: 'mmm-dropdown-container', class: 'mmm-form-container' },
     `<div>
-      <label for="mmm-lastSeenManifest">Manifests ${isReport() ? 'not ' : ''}seen in the last:</label>
+      <label for="mmm-lastSeenManifest">Manifests ${isReport ? 'not ' : ''}seen in the last:</label>
       <select id="mmm-lastSeenManifest" type="text" name="mmm-lastSeenManifest" class="text-field-input">
         ${Object.keys(LAST_SEEN_OPTIONS).map((key) => `
           <option value="${LAST_SEEN_OPTIONS[key].key}" ${SEARCH_INITIAL_VALUES.lastSeenManifest === LAST_SEEN_OPTIONS[key].key ? 'selected' : ''}>${LAST_SEEN_OPTIONS[key].value}</option>
         `)}
       </select>
     </div>
-    ${!isReport() ? `<div>
+    ${!isReport ? `<div>
       <label for="mmm-subdomain">Subdomain:</label>
       <select id="mmm-subdomain" type="text" name="mmm-subdomain" class="text-field-input">
         ${Object.keys(SUBDOMAIN_OPTIONS).map((key) => `
@@ -467,7 +467,8 @@ async function createPageList(el, search) {
     role: 'presentation',
   });
   mmmElContainer.append(mmmEl);
-  const url = isReport() ? API_URLS.report : API_URLS.pageList;
+
+  const url = isReport ? API_URLS.report : API_URLS.pageList;
   const response = await fetchData(
     url,
     DATA_TYPE.JSON,
@@ -476,7 +477,7 @@ async function createPageList(el, search) {
       body: JSON.stringify(search ?? SEARCH_INITIAL_VALUES),
     },
   );
-  if (isReport()) {
+  if (isReport) {
     createReport(mmmEl, response);
   } else {
     response.result?.map((page) => createButtonDetailsPair(mmmEl, page));
@@ -515,6 +516,10 @@ function subscribeToSearchCriteriaChanges() {
 }
 
 export default async function init(el) {
+  isReport = el.classList.contains('target-cleanup');
+  console.log(isReport);
+
+
   await createPageList(el);
   createForm(el);
   subscribeToSearchCriteriaChanges();
