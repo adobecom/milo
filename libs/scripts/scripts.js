@@ -17,10 +17,9 @@ import {
   getMetadata,
 } from '../utils/utils.js';
 import locales from '../utils/locales.js';
-import languages from '../utils/languages.js';
 
 // Production Domain
-const prodDomains = ['milo.adobe.com', 'business.adobe.com', 'www.adobe.com'];
+const prodDomains = ['milo.adobe.com', 'business.adobe.com', 'www.adobe.com', 'news.adobe.com'];
 
 const stageDomainsMap = {
   'www.stage.adobe.com': {
@@ -51,7 +50,26 @@ const config = {
   imsClientId: 'milo',
   codeRoot: '/libs',
   locales,
-  languages,
+  languages: {
+    en: {
+      ietf: 'en',
+      tk: 'hah7vzn.css',
+      languageBased: false,
+      regions: [
+        { region: 'us', ietf: 'en-US', tk: 'hah7vzn.css' },
+        { region: 'gb', ietf: 'en-GB', tk: 'hah7vzn.css' },
+        { region: 'apac', ietf: 'en', tk: 'hah7vzn.css' },
+      ],
+    },
+    de: {
+      ietf: 'de',
+      tk: 'hah7vzn.css',
+      regions: [
+        { region: 'ch', ietf: 'de-CH', tk: 'hah7vzn.css' },
+        { region: 'de', ietf: 'de-DE', tk: 'hah7vzn.css' },
+      ],
+    },
+  },
   prodDomains,
   stageDomainsMap,
   jarvis: {

@@ -152,7 +152,7 @@ const TARGET_TIMEOUT_MS = 4000;
 const LANGSTORE = 'langstore';
 const PREVIEW = 'target-preview';
 const PAGE_URL = new URL(window.location.href);
-const LANGUAGE_BASED_DOMAINS = [
+const LANGUAGE_BASED_PATHS = [
   // don't add milo too. It's a special case because of tools, merch, etc.
   'news.adobe.com',
   '--news--adobecom.',
@@ -347,18 +347,20 @@ export const getFederatedUrl = (url = '') => {
   return url;
 };
 
-export function hasLanguageLinks(area) {
-  for (const link of area.querySelectorAll('a[href]')) {
-    try {
-      const { hostname } = new URL(link.href);
-      if (LANGUAGE_BASED_DOMAINS.some((domain) => hostname.includes(domain))) {
-        return true;
+export function hasLanguageLinks(container, paths = LANGUAGE_BASED_PATHS) {
+  if (!container) return false;
+  const links = container.querySelectorAll('a');
+  return Array.from(links).some((link) => {
+    const { href } = link;
+    if (!href) return false;
+    return paths.some((path) => {
+      if (path.includes('*')) {
+        const regex = new RegExp(path.replace(/\*/g, '[a-zA-Z]{1}'));
+        return regex.test(href);
       }
-    } catch {
-      // do nothing
-    }
-  }
-  return false;
+      return href.includes(path);
+    });
+  });
 }
 
 export async function loadLanguageConfig() {
@@ -463,14 +465,15 @@ export function localizeLink(
     let { prefix } = locale;
     const site = siteLanguages?.find((s) => s.domainMatches.some((d) => url.hostname.includes(d)));
 
-    if (locale.language && url.hostname !== 'localhost') {
-      const hasValidLanguage = site?.languages.some((l) => locale.prefix.includes(l));
-      if (!site || !hasValidLanguage) {
-        prefix = mapPrefixToLocale(prefix);
+    if (!locale.language && site && localeToLanguageMap) {
+      const siteLanguage = localeToLanguageMap?.find((m) => `/${m.locale}` === prefix);
+      const language = site.languages.find((l) => `${l}` === siteLanguage.languagePath); // ch_de
+      if (language) {
+        prefix = `${language !== '' ? '/' : ''}${language}`;
       }
-    } else if (site) {
-      const siteHasLanguage = site.languages.some((l) => `/${l}` === prefix);
-      if (!siteHasLanguage) {
+    } else if (locale.language) {
+      const siteHasLanguage = site?.languages.some((l) => `/${l}` === prefix);
+      if (!relative && !siteHasLanguage) {
         prefix = mapPrefixToLocale(prefix);
       }
     }
