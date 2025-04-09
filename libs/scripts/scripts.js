@@ -52,21 +52,18 @@ const config = {
   locales,
   languages: {
     en: {
-      ietf: 'en',
       tk: 'hah7vzn.css',
-      languageBased: false,
       regions: [
-        { region: 'us', tk: 'hah7vzn.css' },
-        { region: 'gb', tk: 'hah7vzn.css' },
-        { region: 'apac', ietf: 'en', tk: 'hah7vzn.css' },
+        { region: 'us' },
+        { region: 'gb' },
+        { region: 'apac', ietf: 'en' },
       ],
     },
     de: {
-      ietf: 'de',
       tk: 'hah7vzn.css',
       regions: [
-        { region: 'ch', tk: 'hah7vzn.css' },
-        { region: 'de', tk: 'hah7vzn.css' },
+        { region: 'ch' },
+        { region: 'de' },
       ],
     },
   },
