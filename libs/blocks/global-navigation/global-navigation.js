@@ -1120,8 +1120,8 @@ class Gnav {
     const hasPromo = this.block.classList.contains('has-promo');
     const promoHeight = this.elements.aside?.clientHeight;
 
-    if (!this.isLocalNav() && hasPromo) {
-      popup.style.top = `calc(0px - var(--feds-height-nav) - ${promoHeight}px)`;
+    if (!this.isLocalNav()) {
+      if (hasPromo) popup.style.top = `calc(0px - var(--feds-height-nav) - ${promoHeight}px)`;
       return;
     }
     const yOffset = window.scrollY || Math.abs(parseInt(document.body.style.top, 10)) || 0;
