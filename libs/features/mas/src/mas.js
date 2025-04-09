@@ -2,6 +2,7 @@ import '../../../utils/lana.js';
 import './merch-card.js';
 import './merch-icon.js';
 import './merch-quantity-select.js';
+import './merch-badge.js';
 import './merch-whats-included.js';
 import './merch-mnemonic-list.js';
 import './aem-fragment.js';
