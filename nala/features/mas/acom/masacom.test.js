@@ -89,4 +89,22 @@ test.describe('ACOM MAS cards feature test suite', () => {
       expect(await webUtil.verifyCSS(await acomPage.getCardCTA(data.id), acomPage.cssProp.cta)).toBeTruthy();
     });
   });
+
+  // @MAS-Plans-Students-CSS
+  test(`${features[2].name},${features[2].tags}`, async ({ page, baseURL }) => {
+    const testPage = `${baseURL}${features[2].path}${miloLibs}`;
+    const { data } = features[2];
+    console.info('[Test Page]: ', testPage);
+
+    await test.step('step-1: Go to Plans Merch Card feature test page', async () => {
+      await page.goto(testPage);
+      await page.waitForLoadState('domcontentloaded');
+      await expect(page).toHaveURL(`${baseURL}${features[2].path}`);
+    });
+
+    await test.step('step-2: Verify Plans Students Merch Card CSS', async () => {
+      await expect(acomPage.getCard(data.id)).toBeVisible();
+      expect(await webUtil.verifyCSS(await acomPage.getCard(data.id), acomPage.studentsCssProp.card)).toBeTruthy();
+    });
+  });
 });
