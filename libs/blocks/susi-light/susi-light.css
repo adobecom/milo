@@ -131,7 +131,7 @@ susi-sentry-light {
     font-size: 16px;
     font-style: normal;
     font-weight: 400;
-    line-height: 24px; /* 150% */
+    line-height: 24px;
     padding: 0 24px;
   }
 
@@ -177,7 +177,7 @@ susi-sentry-light {
     font-style: normal;
     font-weight: 700;
     font-size: 22px;
-    line-height: 130%; /* 28.6px */
+    line-height: 130%;
   }
 
   .susi-light-wrapper {
