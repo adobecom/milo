@@ -1,30 +1,73 @@
-import { createSingleInput,
-  createSingleTabsUi,
-  createMultiTabsUi,
-  parseUrlString,
-  generateRedirectList,
-} from './utils.js';
+import { createCheckboxArea} from './utils/checkboxes.js';
 
-export const SELECT_ALL_REGIONS = 'Select All Regions';
-export const DESELECT_ALL_REGIONS = 'De-select All Regions';
+export const NO_LOCALE_ERROR = 'No locales selected from list';
+const INPUT_LABEL_TEXT = 'Paste source and destination URLs here:';
 const OUTPUT_LABEL_TEXT = 'Localized results appear here:';
+const PROCESS_TEXT = 'Process redirects';
 const COPY_TO_CLIPBOARD = 'Copy to clipboard';
 const INSTRUCTIONS_TEXT = 'Select the locales you require by checking the checkboxes. Paste URLs copied from an excel sheet'
   + ' into the first input. Press "Process Redirects" to generate localized URLs to paste into redirects.xlsx. To copy your URLS,'
   + ' press "Copy to clipboard" or select them with the cursor manually.';
 
-async function createLocaleCheckboxes(prefixGroup) {
-  const { createTag } = await import('../../utils/utils.js');
+export function parseUrlString(input) {
+  const pairs = input.split('\n');
 
-  return Object.keys(prefixGroup).map((key) => {
-    const { prefix } = prefixGroup[key];
-    const currLocale = prefix === '' ? 'en' : prefix;
-    if (currLocale === 'langstore') return undefined;
-    const checkbox = createTag('input', { class: 'locale-checkbox', type: 'checkbox', id: `${currLocale}`, name: `${currLocale}` });
-    const label = createTag('label', { class: 'locale-label', for: `${currLocale}` }, currLocale);
+  return pairs.reduce((rdx, pairString) => {
+    const pair = pairString.split(/\t| /);
+    rdx.push(pair);
+    return rdx;
+  }, []);
+}
 
-    return createTag('div', { class: 'checkbox-wrapper' }, [checkbox, label]);
-  });
+function handleError(e, eSection) {
+  const errorElem = document.querySelector('.error');
+  setTimeout(() => {
+    errorElem.innerText = '';
+    eSection.classList.remove('error-border');
+  }, 2000);
+  errorElem.innerText = e;
+  eSection.classList.add('error-border');
+}
+
+export function generateRedirectList(urls, locales) {
+  const inputSection = document.querySelector('.redirects-text-area');
+  const checkboxSection = document.querySelector('.checkbox-container');
+  const errorMessage = 'Invalid URL. URLs must start with "https://" e.g: "https://business.adobe.com"';
+
+  return urls.reduce((rdx, urlPair) => {
+    if (!locales.length) handleError(NO_LOCALE_ERROR, checkboxSection);
+
+    locales.forEach((locale) => {
+      let from;
+      let to;
+      try {
+        from = new URL(urlPair[0]);
+      } catch (e) {
+        handleError(errorMessage, inputSection);
+        return;
+      }
+      try {
+        to = new URL(urlPair[1]);
+      } catch (e) {
+        handleError(errorMessage, inputSection);
+        return;
+      }
+      const fromPath = from.pathname.split('.html')[0];
+      const toPath = () => {
+        const excludeHTMLPaths = ['/blog', '.html'];
+        if (!to.origin.endsWith('.adobe.com') || excludeHTMLPaths.some((p) => to.pathname.includes(p)) || to.pathname === '/') {
+          return to.pathname;
+        }
+        return `${to.pathname}.html`;
+      };
+      rdx.push([`/${locale}${fromPath}`, `${to.origin}/${locale}${toPath()}`]);
+    });
+    return rdx;
+  }, []);
+}
+
+export function stringifyListForExcel(urls) {
+  return urls.reduce((rdx, url) => `${rdx}${url[0]}\t${url[1]}\n`, '');
 }
 
 export default async function init(el) {
@@ -39,19 +82,17 @@ export default async function init(el) {
   const instructions = createTag('p', { class: 'instructions' }, INSTRUCTIONS_TEXT);
   const errorSection = createTag('p', { class: 'error' });
 
-  // Tabs 
-  const singleTab = createTag('p', { class: 'single-tab' }, 'Single redirects');
-  const multiTab = createTag('p', { class: 'multi-tab' }, 'Multiple redirects');
-  const singleTabContent = createTag('section', { class: 'single-tab-content' });
-  const multiTabContent = createTag('section', { class: 'multi-tab-content' });
-
   // Checkboxes
   const checkBoxesHeader = createTag('p', { class: 'cb-label' });
   checkBoxesHeader.innerText = 'Select Locales';
-  const checkBoxes = await createLocaleCheckboxes(data);
-  const checkBoxesContainer = createTag('div', { class: 'checkbox-container' }, checkBoxes);
-  const selectAllCB = createTag('button', { class: 'select-all-cb' }, SELECT_ALL_REGIONS);
-  const checkBoxesArea = createTag('section', { class: 'cb-area' }, [checkBoxesHeader, selectAllCB, checkBoxesContainer]);
+  const checkBoxes = await createCheckboxArea(data);
+
+  // Text input area
+  const inputAreaContainer = createTag('section', { class: 'input-container' });
+  const textAreaInput = createTag('textarea', { class: 'redirects-text-area', id: 'redirects-input', name: 'redirects-input' });
+  const taiLabel = createTag('label', { class: 'io-label', for: 'redirects-input' }, INPUT_LABEL_TEXT);
+  const submitButton = createTag('button', { class: 'process-redirects' }, PROCESS_TEXT);
+  inputAreaContainer.append(taiLabel, submitButton, textAreaInput);
 
   // Text output Area
   const outputAreaContainer = createTag('section', { class: 'output-container' });
@@ -60,22 +101,19 @@ export default async function init(el) {
   const copyButton = createTag('button', { class: 'copy' }, COPY_TO_CLIPBOARD);
   outputAreaContainer.append(taoLabel, copyButton, textAreaOutput);
 
-  // Areas
-  const multiTabsUi = createMultiTabsUi(multiTabContent, createTag, textAreaOutput);
-  const singleTabsUi = createSingleTabsUi(singleTabContent, createTag);
+  submitButton.addEventListener('click', () => {
+    const locales = [...document.querySelectorAll("[type='checkbox']")].reduce((rdx, cb) => {
+      if (cb.checked) {
+        rdx.push(cb.id);
+      }
+      return rdx;
+    }, []);
 
-  redirectsContainer.append(checkBoxesArea, singleTab, singleTabsUi, multiTab, multiTabsUi, outputAreaContainer);
-  el.append(header, instructions, errorSection, redirectsContainer);
+    const parsedInput = parseUrlString(textAreaInput.value);
+    const redirList = generateRedirectList(parsedInput, locales);
+    const outputString = stringifyListForExcel(redirList);
 
-  // Event listeners
-  selectAllCB.addEventListener('click', () => {
-    const allNotSelected = selectAllCB.innerText === SELECT_ALL_REGIONS;
-
-    document.querySelectorAll('.locale-checkbox').forEach((cb) => {
-      cb.checked = allNotSelected;
-    });
-
-    selectAllCB.innerText = allNotSelected ? DESELECT_ALL_REGIONS : SELECT_ALL_REGIONS;
+    textAreaOutput.value = outputString;
   });
 
   copyButton.addEventListener('click', () => {
@@ -97,19 +135,6 @@ export default async function init(el) {
     );
   });
 
-  document.querySelector('.process-redirects').addEventListener('click', () => {
-    const locales = [...document.querySelectorAll("[type='checkbox']")].reduce((rdx, cb) => {
-      if (cb.checked) {
-        rdx.push(cb.id);
-      }
-      return rdx;
-    }, []);
-
-    const textAreaInput = document.querySelector('.redirects-text-area');
-    const parsedInput = parseUrlString(textAreaInput.value);
-    const redirList = generateRedirectList(parsedInput, locales);
-    const outputString = stringifyListForExcel(redirList);
-
-    textAreaOutput.value = outputString;
-  });
+  redirectsContainer.append(checkBoxes, inputAreaContainer, outputAreaContainer);
+  el.append(header, instructions, errorSection, redirectsContainer);
 }

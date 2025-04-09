@@ -1,6 +1,9 @@
 
 :root {
   --notch-size: 12px;
+  --text-color: #2c2c2c;
+  --color-white: #FFF;
+  --color-black: #000;
 }
 
 h1 {
@@ -17,26 +20,34 @@ textarea {
 }
 
 button {
-  width: fit-content;
-  grid-column: 4;
-  margin: 16px 0;
-  border: none;
-  height: 36px;
-  font-family: adobe-clean, sans-serif;
-  color: var(--color-white);
-  background: #FF1593;
-  font-size: 16px;
+  background-color: transparent;
+  border-radius: 16px;
+  border: 2px solid var(--text-color);
+  color: var(--text-color);
+  display: inline-block;
+  font-size: 15px;
+  font-style: normal;
   font-weight: 700;
-  padding: 0 18px;
-  clip-path: polygon(0% 0%, var(--notch-size) 0%, calc(100% - var(--notch-size)) 0%, 100% var(--notch-size), 100% calc(100% - var(--notch-size)), 100% 100%, 0% 100%, 0% 100%);
+  line-height: 16px;
+  padding: 5px 14px;
+  text-decoration: none;
+  min-height: 21px;
 }
 
 button:hover {
-  background-color: #d07;
+  background-color: var(--color-black);
+  border-color: var(--color-black);
+  color: var(--color-white);
+}
+
+button.selected {
+  background-color: var(--color-black);
+  border-color: var(--color-black);
+  color: var(--color-white);
 }
 
 label {
-  margin: 16px 5px;
+  margin: 4px;
   align-self: center;
 }
 
@@ -51,22 +62,62 @@ label {
   margin: 0 20px;
 }
 
-.checkbox-container {
-  display: flex;
-  flex-wrap: wrap;
+section .checkboxes-container {
+  display: grid;
   background: #efefef;
   grid-column: 1/3;
   border: 1px solid black;
+  width: 100%;
+}
+
+.checkbox-ui {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.checkboxes-container .tabs {
+  display: flex;
+  flex-direction: row;
+  justify-content: left;
+  margin: 20px;
+}
+
+.checkboxes-container .tabs button{
+  margin: 0 15px 0 5px;
+}
+
+.select-all-container {
+  display: flex;
+  justify-content: center;
+  border-left: 2px solid black;
+  margin: 20px;
+  width: 20%;
+}
+
+.select-all-container button {
+  min-width: 115px;
 }
 
 .checkbox-wrapper {
   padding: 5px;
-  min-width: 100px;
+  min-width: 130px;
   display: flex;
   align-items: center;
 }
 
-.redirects-container section {
+.checkbox-grouping {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: left;
+  margin: 0 20px 20px;
+}
+
+.checkboxes .checkbox-grouping:not(.selected) {
+  display: none;
+}
+
+.redirects-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
   margin-bottom: 20px;
