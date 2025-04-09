@@ -82,7 +82,7 @@ test.describe('Milo Table block feature test suite', () => {
 
       await expect(await table.stickyRow).toHaveAttribute('class', 'row row-1 row-heading top-border-transparent');
       await expect(await table.stickyRow).toHaveCSS('position', 'sticky');
-      await expect(await table.stickyRow).toHaveCSS('top', '56px');
+      await expect(await table.stickyRow).toHaveCSS('top', '64px');
 
       // verify table row, column count
       await expect(await table.rows).toHaveCount(data.rowsCount);
