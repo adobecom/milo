@@ -155,7 +155,6 @@ const PAGE_URL = new URL(window.location.href);
 const LANGUAGE_BASED_PATHS = [
   // don't add milo too. It's a special case because of tools, merch, etc.
   'news.adobe.com',
-  '--news--adobecom.',
 ];
 export const SLD = PAGE_URL.hostname.includes('.aem.') ? 'aem' : 'hlx';
 
